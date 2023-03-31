@@ -1,0 +1,57 @@
+{
+	"name": "@roboplay/discord",
+	"version": "0.2.0",
+	"private": false,
+	"description": "Elevate your Discord.js bot game to the next level",
+	"main": "dist/index.js",
+	"engines": {
+		"node": ">=18.0.0"
+	},
+	"scripts": {
+		"build": "tsup && tsup --config tsup-cli.config.ts"
+	},
+	"bin": {
+		"robo": "dist/cli/index.js"
+	},
+	"type": "module",
+	"files": [
+		"dist/",
+		"src/",
+		"LICENSE",
+		"README.md",
+		"types.js",
+		"types.d.ts"
+	],
+	"dependencies": {
+		"chalk": "5.2.0",
+		"chokidar": "3.5.3",
+		"commander": "10.0.0",
+		"dotenv": "16.0.3",
+		"p-limit": "4.0.0",
+		"tar": "^6.1.13"
+	},
+	"devDependencies": {
+		"@swc/core": "1.3.41",
+		"@types/node": "18.15.5",
+		"@types/tar": "^6.1.4",
+		"discord.js": "14.8.0",
+		"tsup": "6.7.0",
+		"typescript": "5.0.2"
+	},
+	"peerDependencies": {
+		"@swc/core": "^1.3.41",
+		"discord.js": "^14.0.0",
+		"typescript": "^5.0.0"
+	},
+	"peerDependenciesMeta": {
+		"@swc/core": {
+			"optional": true
+		},
+		"discord.js": {
+			"optional": false
+		},
+		"typescript": {
+			"optional": true
+		}
+	}
+}

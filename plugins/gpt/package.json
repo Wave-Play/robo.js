@@ -1,0 +1,28 @@
+{
+	"name": "robo-gpt-plugin",
+	"version": "1.0.0",
+	"description": "Chat commands powered by OpenAI's GPT",
+	"scripts": {
+		"build": "robo build plugin"
+	},
+	"keywords": [
+		"gpt",
+		"robo",
+		"roboplay",
+		"plugin"
+	],
+	"type": "module",
+	"license": "MIT",
+	"author": "WavePlay <dev@waveplay.com> (waveplay.com)",
+	"contributors": [
+		"Pkmmte Xeleon <pk@waveplay.com>"
+	],
+	"dependencies": {
+		"openai": "^3.2.1"
+	},
+	"devDependencies": {
+		"@roboplay/discord": "workspace:../../packages/discord",
+		"@types/node": "18.14.6",
+		"discord.js": "14.7.1"
+	}
+}

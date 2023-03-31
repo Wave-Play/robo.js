@@ -1,0 +1,22 @@
+{
+	"name": "discord-robo",
+	"version": "1.0.0",
+	"description": "",
+	"scripts": {
+		"build": "robo build",
+		"dev": "robo dev",
+		"deploy": "robo deploy",
+		"start": "robo start"
+	},
+	"keywords": [],
+	"author": "",
+	"type": "module",
+	"license": "ISC",
+	"dependencies": {
+		"@roboplay/discord": "workspace:../../packages/discord",
+		"discord.js": "^14.7.1"
+	},
+	"devDependencies": {
+		"@types/node": "^18.14.6"
+	}
+}

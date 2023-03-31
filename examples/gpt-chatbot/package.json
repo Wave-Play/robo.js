@@ -1,0 +1,23 @@
+{
+	"name": "chatbot-gpt-plugin",
+	"version": "1.0.0",
+	"description": "",
+	"scripts": {
+		"build": "robo build",
+		"dev": "robo dev",
+		"deploy": "robo deploy",
+		"start": "robo start"
+	},
+	"keywords": [],
+	"author": "",
+	"type": "module",
+	"license": "MIT",
+	"dependencies": {
+		"@roboplay/discord": "workspace:../../packages/discord",
+		"discord.js": "^14.7.1",
+		"robo-gpt-plugin": "link:/Users/pkmmte/Documents/GitHub/project-robo/plugins/gpt"
+	},
+	"devDependencies": {
+		"@types/node": "^18.14.6"
+	}
+}
