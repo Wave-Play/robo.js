@@ -1,4 +1,4 @@
-import type { CommandConfig } from '@roboplay/discord'
+import type { CommandConfig } from '@roboplay/robo.js'
 import type { CommandInteraction } from 'discord.js'
 import type { ChatCompletionRequestMessage } from 'openai'
 import { openai, pluginOptions } from '../core.js'

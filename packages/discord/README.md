@@ -7,7 +7,7 @@ Robo is a lightweight, supercharged Node.js metaframework for Discord.js, design
 ## Installation
 
 ```bash
-npm install @roboplay/discord
+npm install @roboplay/robo.js
 ```
 
 ## Getting Started
@@ -105,7 +105,7 @@ Robo supports configuration through a configuration file, allowing you to enable
 // @ts-check
 
 /**
- * @type {import('@roboplay/discord').Config}
+ * @type {import('@roboplay/robo.js').Config}
  **/
 export default {
 	intents: ['Guilds', 'GuildMessages', 'MessageContent']

@@ -1,5 +1,5 @@
 // @ts-expect-error - This is valid once command file is parsed
-import { client, getManifest } from '@roboplay/discord'
+import { client, getManifest } from '@roboplay/robo.js'
 import type { CommandConfig } from './types/commands.js'
 
 export const config: CommandConfig = {

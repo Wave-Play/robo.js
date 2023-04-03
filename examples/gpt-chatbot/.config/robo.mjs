@@ -1,7 +1,7 @@
 // @ts-check
 
 /**
- * @type {import('@roboplay/discord').Config}
+ * @type {import('@roboplay/robo.js').Config}
  **/
 export default {
 	intents: ['Guilds'],
