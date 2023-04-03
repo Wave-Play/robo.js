@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.1.1
+
+### Patch Changes
+
+- 0ff716e: perf: improved node_modules lookup for pnpm
+
 ## 0.1.0
 
 ### Minor Changes
