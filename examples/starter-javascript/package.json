@@ -13,7 +13,7 @@
 	"type": "module",
 	"license": "ISC",
 	"dependencies": {
-		"@roboplay/discord": "workspace:../../packages/discord",
+		"@roboplay/discord": "0.2.0",
 		"discord.js": "^14.7.1"
 	}
 }
