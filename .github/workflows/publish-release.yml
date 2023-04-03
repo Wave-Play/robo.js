@@ -1,0 +1,49 @@
+name: Publish Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - uses: pnpm/action-setup@v2.2.4
+        with:
+          version: 7
+
+      - name: Read Node.js version to install from `.nvmrc`
+        run: echo "##[set-output name=NVMRC;]$(cat .nvmrc)"
+        id: nvm
+
+      - name: Install required Node.js version
+        uses: actions/setup-node@v3
+        with:
+          cache: 'pnpm'
+          node-version: "${{ steps.nvm.outputs.NVMRC }}"
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: PNPM install
+        run: pnpm install
+
+      - name: Create Release Pull Request or Publish to npm
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          commit: "chore(release): changesets versioning & publication"
+          createGithubReleases: true
+          publish: pnpm run publish:release
+          title: "Changesets: Versioning & Publication"
+          version: pnpm exec changeset version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
