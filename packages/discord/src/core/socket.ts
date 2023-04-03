@@ -43,7 +43,7 @@ async function start() {
 
 	// Notify lifecycle event handlers
 	await executeEventHandler('_start', client)
-	
+
 	// Define event handlers
 	for (const key of events.keys()) {
 		client.on(key, async (...args) => {
@@ -232,22 +232,29 @@ async function executeEventHandler(eventName: string, ...eventData: unknown[]) {
 	const config = getConfig()
 	const isLifecycleEvent = eventName.startsWith('_')
 	await Promise.all(
-		callbacks.map((callback) => {
-			// Execute handler without timeout if not a lifecycle event
-			const handlerPromise = callback.handler.default(eventData[0], plugins.get(callback.plugin?.name)?.options)
-			if (!isLifecycleEvent) {
-				return handlerPromise
-			}
+		callbacks.map(async (callback) => {
+			try {
+				// Execute handler without timeout if not a lifecycle event
+				const handlerPromise = callback.handler.default(eventData[0], plugins.get(callback.plugin?.name)?.options)
+				if (!isLifecycleEvent) {
+					return handlerPromise
+				}
 
-			// Enforce timeouts for lifecycle events
-			const timeoutPromise = timeout(() => TIMEOUT, config?.timeouts?.lifecycle || DEFAULT.timeouts.lifecycle)
-			return Promise.race([handlerPromise, timeoutPromise]).catch((error) => {
+				// Enforce timeouts for lifecycle events
+				const timeoutPromise = timeout(() => TIMEOUT, config?.timeouts?.lifecycle || DEFAULT.timeouts.lifecycle)
+				return await Promise.race([handlerPromise, timeoutPromise])
+			} catch (error) {
+				const metaOptions = plugins.get(callback.plugin?.name)?.metaOptions ?? {}
 				if (error === TIMEOUT) {
 					logger.warn(`${eventName} lifecycle event handler timed out`)
+				} else if (!callback.plugin) {
+					logger.error(`Error executing ${eventName} event handler:`, error)
+				} else if (eventName === '_start' && metaOptions.failSafe) {
+					logger.warn(`${callback.plugin.name} plugin failed to start:`, error)
 				} else {
-					throw error
+					logger.error(`${callback.plugin.name} plugin error in event ${eventName}:`, error)
 				}
-			})
+			}
 		})
 	)
 }
@@ -305,8 +312,8 @@ function loadPluginData() {
 		if (typeof plugin === 'string') {
 			collection.set(plugin, { name: plugin })
 		} else if (Array.isArray(plugin)) {
-			const [name, options] = plugin
-			collection.set(name, { name, options })
+			const [name, options, metaOptions] = plugin
+			collection.set(name, { name, options, metaOptions })
 		}
 	}
 

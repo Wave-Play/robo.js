@@ -21,11 +21,16 @@ export type SageOptions = {
 	reply?: boolean
 }
 
-export type Plugin = string | [string, unknown]
+export type Plugin = string | [string, unknown, PluginMetaOptions?]
 
 export interface PluginData {
 	name: string
 	options?: unknown
+	metaOptions?: PluginMetaOptions
+}
+
+export interface PluginMetaOptions {
+	failSafe?: boolean
 }
 
 export interface BaseConfig {
