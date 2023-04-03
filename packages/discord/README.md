@@ -1,6 +1,6 @@
 # Robo
 
-Robo is a lightweight, supercharged Node.js metaframework for Discord.js, designed to make building Discord bots a breeze. It features a powerful plugin architecture and simplified interaction handling with Sage, all while allowing full access to the underlying Discord.js features.
+Robo is a lightweight, supercharged Node.js metaframework for Discord.js, designed to make building Discord bots a breeze. It features a powerful plugin architecture and streamlined interaction handling with Sage, all while allowing full access to the underlying Discord.js features.
 
 > **Note:** This is a pre-release and is likely to undergo breaking changes before reaching version 1.0.
 
@@ -20,15 +20,15 @@ Check out the three example projects included in the GitHub repo to help you get
 
 ## Features
 
-- **Easy command and event creation:** Simply create .ts or .js files in the appropriate directories.
-- **Sage:** A built-in mechanism for simplified interaction handling.
+- **Effortless command and event generation:** Create .ts or .js files in the relevant directories.
+- **Sage:** A built-in mechanism for streamlined interaction handling.
 - **Plugins:** Install npm packages and configure them in your project to extend your bot's functionality.
 - **CLI:** Includes commands like doctor, invite, and deploy for convenient bot management and deployment.
 - **RoboPlay integration:** Host your Robo-powered bots on the RoboPlay service, with both free and paid tiers available.
 
 ## Command Handling
 
-Creating commands is easy with Robo's file-based structure. For example, to create a /ping command, follow this structure:
+With Robo's file-based structure, creating commands is a breeze. For example, to create a `/ping` command, follow this structure:
 
 ```bash
 /src
@@ -36,11 +36,11 @@ Creating commands is easy with Robo's file-based structure. For example, to crea
     ping.js
 ```
 
-The `ping.js` file can be as simple as:
+Creating the `ping.js` file is a breeze, requiring only a few lines:
 
 ```javascript
 export default () => {
-  return 'Pong!'
+	return 'Pong!'
 }
 ```
 
@@ -52,7 +52,7 @@ export const config = {
 }
 
 export default () => {
-  return 'Pong!'
+	return 'Pong!'
 }
 ```
 
@@ -66,7 +66,7 @@ Event listening works similarly to command handling by using a file-based struct
     ready.js
 ```
 
-The ready.js file can be as simple as:
+Crafting the `ready.js` file is a piece of cake, requiring only a minimal number of lines:
 
 ```javascript
 export default () => {
@@ -87,6 +87,7 @@ To register multiple listeners for the same event, use directories instead of fi
 The file names can be anything you want, but we recommend using descriptive names.
 
 ## CLI
+
 The built-in CLI features the following commands:
 
 - `dev`: Run your bot in development mode.
