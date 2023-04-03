@@ -31,7 +31,7 @@ importers:
       discord.js: ^14.7.1
     dependencies:
       '@roboplay/plugin-gpt': 1.0.0
-      '@roboplay/robo.js': link:../../packages/discord
+      '@roboplay/robo.js': 0.2.0_discord.js@14.8.0
       discord.js: 14.8.0
     devDependencies:
       '@types/node': 18.15.5
@@ -3836,6 +3836,7 @@ packages:
   /mkdirp/1.0.4:
     resolution: {integrity: sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==}
     engines: {node: '>=10'}
+    hasBin: true
     dev: false
 
   /mri/1.2.0:
