@@ -1,6 +1,6 @@
 {
 	"name": "@roboplay/robo.js",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"private": false,
 	"description": "Elevate your Discord.js bot game to the next level",
 	"main": "dist/index.js",
