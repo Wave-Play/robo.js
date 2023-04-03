@@ -1,5 +1,5 @@
 {
-	"name": "robo-gpt-plugin",
+	"name": "@roboplay/plugin-gpt",
 	"version": "1.0.0",
 	"description": "Chat commands powered by OpenAI's GPT",
 	"scripts": {
@@ -16,6 +16,11 @@
 	"author": "WavePlay <dev@waveplay.com> (waveplay.com)",
 	"contributors": [
 		"Pkmmte Xeleon <pk@waveplay.com>"
+	],
+	"files": [
+		".robo/",
+		"src/",
+		"README.md"
 	],
 	"dependencies": {
 		"openai": "^3.2.1"

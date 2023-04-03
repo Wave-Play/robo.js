@@ -7,7 +7,7 @@ export default {
 	intents: ['Guilds'],
 	plugins: [
 		[
-			'robo-gpt-plugin',
+			'@roboplay/plugin-gpt',
 			{
 				openaiKey: process.env.OPENAI_KEY
 			}
