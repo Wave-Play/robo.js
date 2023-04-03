@@ -5,6 +5,10 @@ import { logger } from './logger.js'
 import { buildSlashCommands, findChangedCommands, registerCommands } from './commands.js'
 import { hasProperties } from './utils.js'
 import { loadConfig } from './config.js'
+import { exec } from 'child_process'
+import { promisify } from 'util'
+
+const execAsync = promisify(exec)
 
 // Global manifest reference
 let _manifest: Manifest = null
@@ -337,6 +341,7 @@ async function findNodeModules(basePath: string): Promise<string | null> {
 async function findPackagePath(packageName: string, currentPath: string): Promise<string | null> {
 	const nodeModulesPath = await findNodeModules(currentPath)
 	if (!nodeModulesPath) {
+		logger.debug(`Could not find node_modules folder for ${packageName}`)
 		return null
 	}
 
@@ -349,21 +354,18 @@ async function findPackagePath(packageName: string, currentPath: string): Promis
 	let packagePath: string | null = null
 
 	if (isPnpm) {
-		const packageVersionPath = path.join(pnpmNodeModulesPath, packageName)
+		logger.debug(`Found pnpm node_modules folder for ${packageName}`)
 		try {
-			await fs.access(packageVersionPath)
-			const packageVersions = await fs.readdir(packageVersionPath)
-
-			if (packageVersions.length > 0) {
-				// Assuming the first version found is the correct one
-				const packageVersion = packageVersions[0]
-				packagePath = path.join(packageVersionPath, packageVersion, 'node_modules', packageName)
-			}
+			const { stdout } = await execAsync(`pnpm list ${packageName} --json`, { cwd: currentPath })
+			const packages = JSON.parse(stdout)
+			const packageInfo = Array.isArray(packages) ? packages[0] : packages
+			packagePath = packageInfo.dependencies[packageName].path
 		} catch (error) {
-			// Do nothing
+			console.error(error)
 		}
 	} else {
 		const candidatePath = path.join(nodeModulesPath, packageName)
+		logger.debug(`Checking for ${packageName} in ${candidatePath}`)
 		try {
 			await fs.access(candidatePath)
 			packagePath = candidatePath
