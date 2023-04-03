@@ -2,6 +2,7 @@
 	"name": "@roboplay/plugin-gpt",
 	"version": "1.0.1",
 	"description": "Chat commands powered by OpenAI's GPT",
+	"private": false,
 	"scripts": {
 		"build": "robo build plugin"
 	},
@@ -22,6 +23,15 @@
 		"src/",
 		"README.md"
 	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Wave-Play/robo.git",
+		"directory": "plugins/gpt"
+	},
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://registry.npmjs.org/"
+	},
 	"dependencies": {
 		"openai": "^3.2.1"
 	},
