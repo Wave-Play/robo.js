@@ -33,7 +33,7 @@ type PackageManager = 'npm' | 'pnpm' | 'yarn'
 const IS_WINDOWS = /^win/.test(process.platform)
 
 export function cmd(packageManager: PackageManager): string {
-	return IS_WINDOWS && packageManager !== 'pnpm' ? `${packageManager}.cmd` : packageManager
+	return IS_WINDOWS ? `${packageManager}.cmd` : packageManager
 }
 
 export function getPkgManager(): PackageManager {
