@@ -31,7 +31,12 @@ async function createDefaultHelpFile() {
  * @param dir
  * @param compilerOptions
  */
-async function traverse(dir: string, options: RoboCompileOptions, compilerOptions: CompilerOptions, transform: typeof SwcTransform) {
+async function traverse(
+	dir: string,
+	options: RoboCompileOptions,
+	compilerOptions: CompilerOptions,
+	transform: typeof SwcTransform
+) {
 	const { parallel = 20 } = options
 
 	// Read directory contents
