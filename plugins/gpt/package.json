@@ -1,6 +1,6 @@
 {
 	"name": "@roboplay/plugin-gpt",
-	"version": "1.0.2",
+	"version": "1.1.0",
 	"description": "Chat commands powered by OpenAI's GPT",
 	"private": false,
 	"scripts": {
