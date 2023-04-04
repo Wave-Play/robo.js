@@ -20,6 +20,7 @@ export function init(options: PluginOptions) {
 
 export interface PluginOptions {
 	openaiKey: string
+	quoteMessage?: string
 	systemMessage?: string
 	temperature?: number
 }

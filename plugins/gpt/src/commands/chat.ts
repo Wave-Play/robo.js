@@ -41,5 +41,6 @@ export default async (interaction: CommandInteraction) => {
 		result = `Sorry, my system is malfunctioning. Please try again later.`
 	}
 
-	return result ?? "Sorry, I don't know how to reply to that."
+	const quote = pluginOptions.quoteMessage ? `> ${message}\n\n` : ''
+	return quote + result ?? "Sorry, I don't know how to reply to that."
 }
