@@ -66,9 +66,9 @@ export function printBuildSummary(manifest: Manifest, totalSize: number, startTi
 	let sizeColor = chalk.green
 	if (totalSize >= 1024 * 1024 * 1024) {
 		sizeColor = chalk.bold.red.bgBlack.underline
-	} else if (totalSize >= 100 * 1024 * 1024) {
+	} else if (totalSize >= 500 * 1024 * 1024) {
 		sizeColor = chalk.red
-	} else if (totalSize >= 25 * 1024 * 1024) {
+	} else if (totalSize >= 100 * 1024 * 1024) {
 		sizeColor = chalk.yellow
 	}
 
