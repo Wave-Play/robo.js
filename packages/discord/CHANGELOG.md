@@ -1,5 +1,12 @@
 # robo.js
 
+## 0.2.2
+
+### Patch Changes
+
+- 050eaa5: fix: windows usage with pnpm
+- 14be7e7: chore: upped build size warning thresholds
+
 ## 0.2.1
 
 ### Patch Changes
