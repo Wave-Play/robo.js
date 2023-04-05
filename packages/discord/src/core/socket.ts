@@ -7,6 +7,7 @@ import { logger } from '../cli/utils/logger.js'
 import { getManifest, loadManifest } from '../cli/utils/manifest.js'
 import { env } from './env.js'
 import { DEFAULT, TIMEOUT } from './constants.js'
+import { pathToFileURL } from 'node:url'
 import type { AutocompleteInteraction, CommandInteraction } from 'discord.js'
 import type { CommandConfig, CommandRecord, EventRecord, Handler, PluginData, RoboMessage } from '../types/index.js'
 
@@ -277,9 +278,10 @@ async function loadHandlerModules<T extends Handler | Handler[]>(type: 'commands
 		await Promise.all(
 			items.map(async (itemConfig) => {
 				const basePath = path.join(process.cwd(), itemConfig.__plugin?.path ?? '.', `.robo/build/${type}`)
+				const importPath = pathToFileURL(path.join(basePath, itemConfig.__path)).toString()
 
 				const handler = {
-					handler: await import(path.join(basePath, itemConfig.__path)),
+					handler: await import(importPath),
 					plugin: itemConfig.__plugin
 				}
 

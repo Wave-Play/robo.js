@@ -1,5 +1,6 @@
 import { Config } from '../../types/index.js'
 import { logger } from './logger.js'
+import { pathToFileURL } from 'node:url'
 
 // Global config reference
 let _config: Config = null
@@ -19,7 +20,8 @@ export async function loadConfig(file = 'robo'): Promise<Config | null> {
 	for (const ext of extensions) {
 		const fullPath = `${process.cwd()}/${prefix}${file}${ext}`
 		try {
-			const imported = await import(fullPath)
+			const importPath = pathToFileURL(fullPath).toString()
+			const imported = await import(importPath)
 			const config = imported.default ?? imported ?? {}
 			_config = config
 			logger.debug(`Loaded configuration file:`, config)

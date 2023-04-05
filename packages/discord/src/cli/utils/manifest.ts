@@ -5,8 +5,9 @@ import { logger } from './logger.js'
 import { buildSlashCommands, findChangedCommands, registerCommands } from './commands.js'
 import { hasProperties } from './utils.js'
 import { loadConfig } from './config.js'
-import { exec } from 'child_process'
-import { promisify } from 'util'
+import { exec } from 'node:child_process'
+import { promisify } from 'node:util'
+import { pathToFileURL } from 'node:url'
 
 const execAsync = promisify(exec)
 
@@ -201,7 +202,8 @@ async function generateObjectFromDirectory<T>(
 					}))
 				} else if (path.extname(file) === '.js') {
 					const key = path.basename(file, path.extname(file))
-					const module = await import(fullPath)
+					const importPath = pathToFileURL(fullPath).toString()
+					const module = await import(importPath)
 					const value: T = getValue(type, module.config) as T
 					return {
 						key: rootKey || key,
