@@ -29,7 +29,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           cache: 'pnpm'
-          node-version: "${{ steps.nvm.outputs.NVMRC }}"
+          node-version: '${{ steps.nvm.outputs.NVMRC }}'
           registry-url: 'https://registry.npmjs.org'
 
       - name: PNPM install
@@ -39,10 +39,10 @@ jobs:
         id: changesets
         uses: changesets/action@v1
         with:
-          commit: "chore(release): changesets versioning & publication"
+          commit: 'chore(release): changesets versioning & publication'
           createGithubReleases: true
           publish: pnpm run publish:release
-          title: "Changesets: Versioning & Publication"
+          title: 'Changesets: Versioning & Publication'
           version: pnpm exec changeset version
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
