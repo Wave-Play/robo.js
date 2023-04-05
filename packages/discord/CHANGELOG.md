@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.2.3
+
+### Patch Changes
+
+- e289560: fix: absolute imports on windows
+
 ## 0.2.2
 
 ### Patch Changes
