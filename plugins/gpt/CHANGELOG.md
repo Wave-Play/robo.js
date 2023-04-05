@@ -1,5 +1,11 @@
 # @roboplay/plugin-gpt
 
+## 1.1.0
+
+### Minor Changes
+
+- d541090: feat: option to quote query message
+
 ## 1.0.2
 
 ### Patch Changes
