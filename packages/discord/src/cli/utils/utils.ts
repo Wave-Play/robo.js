@@ -30,7 +30,7 @@ export function sleep(ms: number) {
 
 type PackageManager = 'npm' | 'pnpm' | 'yarn'
 
-const IS_WINDOWS = /^win/.test(process.platform)
+export const IS_WINDOWS = /^win/.test(process.platform)
 
 export function cmd(packageManager: PackageManager): string {
 	return IS_WINDOWS ? `${packageManager}.cmd` : packageManager

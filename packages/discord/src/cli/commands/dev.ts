@@ -7,7 +7,7 @@ import chalk from 'chalk'
 import { CONFIG_FILES, DEFAULT } from '../../core/constants.js'
 import { loadConfig } from '../utils/config.js'
 import { Config } from 'src/types/index.js'
-import { cmd, getPkgManager, timeout } from '../utils/utils.js'
+import { IS_WINDOWS, cmd, getPkgManager, timeout } from '../utils/utils.js'
 
 const command = new Command('dev')
 	.description('Ready, set, code your bot to life! Starts development mode.')
@@ -78,8 +78,15 @@ async function devAction(options: DevCommandOptions) {
 // Use a separate process to avoid module cache issues
 async function buildInSeparateProcess() {
 	return new Promise<void>((resolve, reject) => {
-		const pkgManager = getPkgManager()
 		const args = ['robo', 'build', '--dev', '--silent']
+		let pkgManager = getPkgManager()
+		
+		// Unfortunately, Windows has issues recursively spawning processes via PNPM
+		// If you're reading this and know how to fix it, please open a PR!
+		if (pkgManager === 'pnpm' && IS_WINDOWS) {
+			logger.warn(`Detected Windows. Using ${chalk.bold(cmd('npm'))} instead of ${chalk.bold(cmd('pnpm'))} to build.`)
+			pkgManager = 'npm'
+		}
 
 		// Check if args include option flags
 		if (pkgManager === 'npm' || pkgManager === 'pnpm') {
