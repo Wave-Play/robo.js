@@ -236,7 +236,7 @@ async function executeEventHandler(eventName: string, ...eventData: unknown[]) {
 		callbacks.map(async (callback) => {
 			try {
 				// Execute handler without timeout if not a lifecycle event
-				const handlerPromise = callback.handler.default(eventData[0], plugins.get(callback.plugin?.name)?.options)
+				const handlerPromise = callback.handler.default(...eventData, plugins.get(callback.plugin?.name)?.options)
 				if (!isLifecycleEvent) {
 					return handlerPromise
 				}

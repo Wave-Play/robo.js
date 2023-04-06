@@ -1,7 +1,7 @@
 import type { BaseConfig, Handler } from './index.js'
 
 export interface Event {
-	default: (data: unknown, options?: unknown) => unknown | Promise<unknown>
+	default: (...data: unknown[]) => unknown | Promise<unknown>
 }
 
 export interface EventRecord extends Handler {
