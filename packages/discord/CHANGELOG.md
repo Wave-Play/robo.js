@@ -1,5 +1,12 @@
 # robo.js
 
+## 0.2.4
+
+### Patch Changes
+
+- fa7fbd3: fix: correctly pass all event parameters
+- f0d8cd1: fix: recursive pnpm on windows
+
 ## 0.2.3
 
 ### Patch Changes
