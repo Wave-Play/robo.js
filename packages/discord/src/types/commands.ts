@@ -30,7 +30,7 @@ export interface CommandOption {
 	name: string
 	nameLocalizations?: Record<string, string>
 	required?: boolean
-	type?: 'string' | 'integer' | 'boolean' | 'channel'
+	type?: 'string' | 'integer' | 'boolean' | 'channel' | 'attachment' | 'role' | 'user' | 'mention'
 }
 
 export interface CommandRecord extends Handler {
