@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.2.6
+
+### Patch Changes
+
+- 1e4ad58: chore: updated types to reflect new options
+
 ## 0.2.5
 
 ### Patch Changes
