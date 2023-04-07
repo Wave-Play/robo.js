@@ -76,6 +76,16 @@ export function addOptionToCommandBuilder(
 					.setRequired(option.required || false)
 			)
 			break
+		case 'attachment':
+			commandBuilder.addAttachmentOption((optionBuilder) =>
+				optionBuilder
+					.setName(option.name)
+					.setNameLocalizations(option.nameLocalizations ?? {})
+					.setDescription(option.description || 'No description provided')
+					.setDescriptionLocalizations(option.descriptionLocalizations ?? {})
+					.setRequired(option.required || false)
+			)
+			break
 		case 'channel':
 			commandBuilder.addChannelOption((optionBuilder) =>
 				optionBuilder
@@ -86,8 +96,38 @@ export function addOptionToCommandBuilder(
 					.setRequired(option.required || false)
 			)
 			break
+		case 'mention':
+			commandBuilder.addMentionableOption((optionBuilder) =>
+				optionBuilder
+					.setName(option.name)
+					.setNameLocalizations(option.nameLocalizations ?? {})
+					.setDescription(option.description || 'No description provided')
+					.setDescriptionLocalizations(option.descriptionLocalizations ?? {})
+					.setRequired(option.required || false)
+			)
+			break
+		case 'role':
+			commandBuilder.addRoleOption((optionBuilder) =>
+				optionBuilder
+					.setName(option.name)
+					.setNameLocalizations(option.nameLocalizations ?? {})
+					.setDescription(option.description || 'No description provided')
+					.setDescriptionLocalizations(option.descriptionLocalizations ?? {})
+					.setRequired(option.required || false)
+			)
+			break
+		case 'user':
+			commandBuilder.addUserOption((optionBuilder) =>
+				optionBuilder
+					.setName(option.name)
+					.setNameLocalizations(option.nameLocalizations ?? {})
+					.setDescription(option.description || 'No description provided')
+					.setDescriptionLocalizations(option.descriptionLocalizations ?? {})
+					.setRequired(option.required || false)
+			)
+			break
 		default:
-			console.warn(`Invalid option type: ${type}`)
+			logger.warn(`Invalid option type: ${type}`)
 	}
 }
 
@@ -126,7 +166,7 @@ export async function registerCommands(
 	const { clientId, guildId, token } = env.discord
 
 	if (!token || !clientId) {
-		console.error('DISCORD_TOKEN or DISCORD_CLIENT_ID not found in environment variables')
+		logger.error('DISCORD_TOKEN or DISCORD_CLIENT_ID not found in environment variables')
 		return
 	}
 
