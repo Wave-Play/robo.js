@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.2.5
+
+### Patch Changes
+
+- f97d57b: feat: support for more option types
+
 ## 0.2.4
 
 ### Patch Changes
