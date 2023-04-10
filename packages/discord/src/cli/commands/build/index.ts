@@ -1,10 +1,11 @@
 import { Command } from 'commander'
-import { generateManifest } from '../../utils/manifest.js'
+import { generateManifest, loadManifest } from '../../utils/manifest.js'
 import { logger } from '../../utils/logger.js'
 import { performance } from 'node:perf_hooks'
 import { loadConfig } from '../../utils/config.js'
 import { getProjectSize, printBuildSummary } from '../../utils/build-summary.js'
 import plugin from './plugin.js'
+import { findChangedCommands, registerCommands } from '../../utils/commands.js'
 
 const command = new Command('build')
 	.description('Builds your bot for production.')
@@ -47,10 +48,25 @@ async function buildAction(options: BuildCommandOptions) {
 	logger.debug(`Computed Robo size in ${Math.round(performance.now() - sizeStartTime)}ms`)
 
 	// Generate manifest.json
+	const oldManifest = await loadManifest()
 	const manifestTime = performance.now()
-	const manifest = await generateManifest(options.dev, options.force, false)
+	const manifest = await generateManifest()
 	logger.debug(`Generated manifest in ${Math.round(performance.now() - manifestTime)}ms`)
 
 	// Log commands and events from the manifest
 	printBuildSummary(manifest, totalSize, startTime, false)
+
+	// Compare the old manifest with the new one and register any new commands
+	const oldCommands = oldManifest.commands
+	const newCommands = manifest.commands
+	const addedCommands = Object.keys(newCommands).filter((key) => !(key in oldCommands))
+	const removedCommands = Object.keys(oldCommands).filter((key) => !(key in newCommands))
+	const changedCommands = findChangedCommands(oldCommands, newCommands)
+
+	if (options.force) {
+		logger.warn('Forcefully registering commands.')
+	}
+	if (options.force || addedCommands.length > 0 || removedCommands.length > 0 || changedCommands.length > 0) {
+		await registerCommands(options.dev, newCommands, changedCommands, addedCommands, removedCommands)
+	}
 }

@@ -2,7 +2,6 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { BaseConfig, CommandConfig, CommandOption, Config, EventConfig, Manifest, Plugin } from '../../types/index.js'
 import { logger } from './logger.js'
-import { buildSlashCommands, findChangedCommands, registerCommands } from './commands.js'
 import { hasProperties } from './utils.js'
 import { loadConfig } from './config.js'
 import { exec } from 'node:child_process'
@@ -46,9 +45,8 @@ const mergeEvents = (baseEvents: Record<string, EventConfig[]>, newEvents: Recor
 	return mergedEvents
 }
 
-export async function generateManifest(dev: boolean, force: boolean, plugin: boolean): Promise<Manifest> {
+export async function generateManifest(): Promise<Manifest> {
 	const config = await loadConfig()
-	const currentManifest = await loadManifest()
 	const pluginsManifest = await readPluginManifest(config?.plugins)
 	const commands = await generateObjectFromDirectory<CommandConfig>('.robo/build/commands', 'command')
 	const events = (await generateObjectFromDirectory<EventConfig>('.robo/build/events', 'event')) as Record<
@@ -72,12 +70,6 @@ export async function generateManifest(dev: boolean, force: boolean, plugin: boo
 	// Make sure newManifest commands are in alphabetical order
 	newManifest.commands = Object.fromEntries(Object.entries(newManifest.commands).sort(([a], [b]) => a.localeCompare(b)))
 	newManifest.events = Object.fromEntries(Object.entries(newManifest.events).sort(([a], [b]) => a.localeCompare(b)))
-
-	// Compare the current manifest with the new one and register any new commands
-	// Only do this if we're not building a plugin
-	if (!plugin) {
-		await compareManifests(dev, force, currentManifest.commands, newManifest.commands)
-	}
 
 	// Our new source of truth is ready!
 	await fs.writeFile(path.join('.robo', 'manifest.json'), JSON.stringify(newManifest, null, 2))
@@ -159,25 +151,6 @@ export async function loadManifest(name = '', basePath = ''): Promise<Manifest> 
 		throw e
 	} finally {
 		_manifest = manifest
-	}
-}
-
-async function compareManifests(
-	dev: boolean,
-	force: boolean,
-	currentCommands: Record<string, CommandConfig>,
-	newCommands: Record<string, CommandConfig>
-) {
-	const addedCommands = Object.keys(newCommands).filter((key) => !(key in currentCommands))
-	const removedCommands = Object.keys(currentCommands).filter((key) => !(key in newCommands))
-	const changedCommands = findChangedCommands(currentCommands, newCommands)
-
-	if (force) {
-		logger.warn('Forcefully registering commands.')
-	}
-	if (force || addedCommands.length > 0 || removedCommands.length > 0 || changedCommands.length > 0) {
-		const slashCommands = buildSlashCommands(dev, newCommands)
-		await registerCommands(slashCommands, changedCommands, addedCommands, removedCommands)
 	}
 }
 

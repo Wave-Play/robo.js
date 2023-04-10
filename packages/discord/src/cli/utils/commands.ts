@@ -157,7 +157,8 @@ function hasChangedFields(obj1: CommandConfig, obj2: CommandConfig, fields: (key
 }
 
 export async function registerCommands(
-	slashCommands: SlashCommandBuilder[],
+	dev: boolean,
+	newCommands: Record<string, CommandConfig>,
 	changedCommands: string[],
 	addedCommands: string[],
 	removedCommands: string[]
@@ -174,6 +175,7 @@ export async function registerCommands(
 	const rest = new REST({ version: '9' }).setToken(token)
 
 	try {
+		const slashCommands = buildSlashCommands(dev, newCommands)
 		const addedChanges = addedCommands.map((cmd) => chalk.green(`/${chalk.bold(cmd)} (new)`))
 		const removedChanges = removedCommands.map((cmd) => chalk.red(`/${chalk.bold(cmd)} (deleted)`))
 		const updatedChanges = changedCommands.map((cmd) => chalk.blue(`/${chalk.bold(cmd)} (updated)`))
@@ -204,7 +206,7 @@ export async function registerCommands(
 		const commandType = guildId ? 'guild (' + guildId + ')' : 'global'
 		logger.info(`Successfully updated ${chalk.bold(commandType + ' commands')} in ${endTime}ms`)
 	} catch (error) {
-		logger.error('Could not register commands! ' + JSON.stringify(error))
+		logger.error('Could not register commands!', error)
 		logger.warn(`Run ${chalk.bold('robo build --force')} to try again.`)
 	}
 }
