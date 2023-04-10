@@ -45,8 +45,8 @@ async function startAction(options: StartCommandOptions) {
 	}
 
 	// Imported dynamically to prevent multiple process hooks
-	const { RoboSocket } = await import('../../core/socket.js')
+	const { Robo } = await import('../../core/robo.js')
 
 	// Start Roboooooooo!! :D
-	RoboSocket.start()
+	Robo.start()
 }

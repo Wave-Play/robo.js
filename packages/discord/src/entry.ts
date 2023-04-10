@@ -6,5 +6,5 @@
  *
  * As a bonus, this also reduces the overhead of the `robo` CLI.
  */
-import { RoboSocket } from './core/socket.js'
-RoboSocket.start()
+import { Robo } from './core/robo.js'
+Robo.start()

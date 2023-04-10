@@ -11,7 +11,7 @@ import { pathToFileURL } from 'node:url'
 import type { APIEmbed, APIEmbedField, AutocompleteInteraction } from 'discord.js'
 import type { CommandConfig, CommandRecord, EventRecord, Handler, PluginData, RoboMessage } from '../types/index.js'
 
-export const RoboSocket = { restart, start, stop }
+export const Robo = { restart, start, stop }
 
 // Each Robo instance has its own client, exported for convenience
 export let client: Client
