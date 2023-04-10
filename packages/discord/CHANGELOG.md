@@ -1,5 +1,24 @@
 # robo.js
 
+## 0.3.0
+
+### Minor Changes
+
+- 9c47ed7: feat: new restart robo function
+- 59b8ff6: refactor: commands now register after build
+- 8cd2790: refactor: renamed robosocket to robo
+- bae3b0e: feat(config): intents replaced with client options
+- f8df8b9: feat(sage): smarter deferrals with buffer time
+- fa6429f: feat: sage now provides better error data in development
+
+### Patch Changes
+
+- 4dc61a4: fix: error stack traces in logger
+- a7fbe32: chore: ready message now includes datetime
+- df74d3f: fix(dev): gracefully handle manual stops
+- fca4243: chore(debug): cleaned up incorrect logger usage
+- e097334: chore(debug): changed windows pnpm fix log level to debug
+
 ## 0.2.6
 
 ### Patch Changes
