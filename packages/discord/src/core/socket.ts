@@ -11,7 +11,7 @@ import { pathToFileURL } from 'node:url'
 import type { APIEmbed, APIEmbedField, AutocompleteInteraction } from 'discord.js'
 import type { CommandConfig, CommandRecord, EventRecord, Handler, PluginData, RoboMessage } from '../types/index.js'
 
-export const RoboSocket = { start, stop }
+export const RoboSocket = { restart, start, stop }
 
 // Each Robo instance has its own client, exported for convenience
 export let client: Client
@@ -106,22 +106,27 @@ async function stop() {
 	process.exit(0)
 }
 
-process.on('SIGINT', async () => {
+async function restart() {
+	// Notify lifecycle handler
+	await executeEventHandler('_restart', client)
+	client?.destroy()
+	process.exit(0)
+}
+
+process.on('SIGINT', () => {
 	logger.debug('Received SIGINT signal.')
-	await stop()
+	stop()
 })
 
-process.on('SIGTERM', async () => {
+process.on('SIGTERM', () => {
 	logger.debug('Received SIGTERM signal.')
-	await stop()
+	stop()
 })
 
-process.on('message', async (message: RoboMessage) => {
+process.on('message', (message: RoboMessage) => {
 	logger.debug('Received message from parent:', message)
 	if (message?.type === 'restart') {
-		await executeEventHandler('_restart', client)
-		client?.destroy()
-		process.exit(0)
+		restart()
 	} else {
 		logger.debug('Unknown message:', message)
 	}
