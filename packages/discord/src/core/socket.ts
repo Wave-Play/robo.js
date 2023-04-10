@@ -58,7 +58,7 @@ async function start() {
 
 	// When the client is ready, run this code (only once)
 	client.once(Events.ClientReady, async (c) => {
-		logger.ready(`On standby as ${chalk.bold(c.user.tag)}`)
+		logger.ready(`On standby as ${chalk.bold(c.user.tag)} (${new Date().toLocaleString()})`)
 
 		// Ping heartbeat monitor if configured
 		if (config.heartbeat?.url) {
