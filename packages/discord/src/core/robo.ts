@@ -388,19 +388,18 @@ function printErrorResponse(error: unknown, interaction: unknown, details?: stri
 				value: '`' + event.path + '`'
 			})
 		}
-		fields.push({
-			name: 'Stack',
-			value: stack
-				? '```js\n' + stackTruncated + `\n... ${stackLines - stackLinesTruncated} more (truncated)\n` + '```'
-				: '*N/A*'
-		})
+		if (stack) {
+			fields.push({
+				name: 'Stack',
+				value: '```js\n' + stackTruncated + `\n... ${stackLines - stackLinesTruncated} more (truncated)\n` + '```'
+			})
+		}
 
 		// Assemble response as an embed
 		const response: APIEmbed = {
-			title: 'Robo Error',
-			description: message,
 			color: Colors.Red,
-			fields: fields
+			fields: fields,
+			title: message
 		}
 
 		// Send response as follow-up if the command has already been replied to
