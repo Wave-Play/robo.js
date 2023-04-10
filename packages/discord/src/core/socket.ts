@@ -211,7 +211,6 @@ async function executeCommandHandler(interaction: CommandInteraction) {
 		}
 	} catch (error) {
 		logger.error('Chat input command error:', error)
-		console.error(error)
 		printErrorResponse(error, interaction)
 	}
 }

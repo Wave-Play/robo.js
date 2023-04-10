@@ -33,7 +33,7 @@ class Logger extends BaseLogger {
 				console.warn(formattedMessage, ...args)
 				break
 			case 'error':
-				console.error(formattedMessage)
+				console.error(formattedMessage, ...args)
 				break
 			default:
 				console.log(formattedMessage, ...args)
