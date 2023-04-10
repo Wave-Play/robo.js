@@ -84,7 +84,7 @@ async function buildInSeparateProcess() {
 		// Unfortunately, Windows has issues recursively spawning processes via PNPM
 		// If you're reading this and know how to fix it, please open a PR!
 		if (pkgManager === 'pnpm' && IS_WINDOWS) {
-			logger.warn(`Detected Windows. Using ${chalk.bold(cmd('npm'))} instead of ${chalk.bold(cmd('pnpm'))} to build.`)
+			logger.debug(`Detected Windows. Using ${chalk.bold(cmd('npm'))} instead of ${chalk.bold(cmd('pnpm'))} to build.`)
 			pkgManager = 'npm'
 		}
 
