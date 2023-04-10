@@ -5,6 +5,7 @@ export * from './manifest.js'
 
 export interface Handler {
 	handler: unknown
+	path: string
 	plugin?: {
 		name: string
 		path: string
@@ -18,6 +19,7 @@ export interface RoboMessage {
 export type SageOptions = {
 	defer?: boolean
 	ephemeral?: boolean
+	errorReplies?: boolean
 	reply?: boolean
 }
 

@@ -7,6 +7,7 @@ export function getSage(commandConfig?: CommandConfig, config?: Config): SageOpt
 		return {
 			defer: false,
 			ephemeral: false,
+			errorReplies: false,
 			reply: false
 		}
 	}

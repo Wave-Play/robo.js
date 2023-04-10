@@ -1,14 +1,14 @@
 import chalk from 'chalk'
-import { Client, Collection, Events } from 'discord.js'
+import { Client, Collection, Colors, CommandInteraction, Events, Message } from 'discord.js'
 import path from 'node:path'
 import { getSage, timeout } from '../cli/utils/utils.js'
 import { getConfig, loadConfig } from '../cli/utils/config.js'
 import { logger } from '../cli/utils/logger.js'
 import { getManifest, loadManifest } from '../cli/utils/manifest.js'
 import { env } from './env.js'
-import { DEFAULT, TIMEOUT } from './constants.js'
+import { DEFAULT, STACK_TRACE_LIMIT, TIMEOUT } from './constants.js'
 import { pathToFileURL } from 'node:url'
-import type { AutocompleteInteraction, CommandInteraction } from 'discord.js'
+import type { APIEmbed, APIEmbedField, AutocompleteInteraction } from 'discord.js'
 import type { CommandConfig, CommandRecord, EventRecord, Handler, PluginData, RoboMessage } from '../types/index.js'
 
 export const RoboSocket = { start, stop }
@@ -212,15 +212,7 @@ async function executeCommandHandler(interaction: CommandInteraction) {
 	} catch (error) {
 		logger.error('Chat input command error:', error)
 		console.error(error)
-		try {
-			if (interaction.replied || interaction.deferred) {
-				await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true })
-			} else {
-				await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true })
-			}
-		} catch (error) {
-			logger.warn('Input command error:', error)
-		}
+		printErrorResponse(error, interaction)
 	}
 }
 
@@ -235,10 +227,12 @@ async function executeEventHandler(eventName: string, ...eventData: unknown[]) {
 	await Promise.all(
 		callbacks.map(async (callback) => {
 			try {
+				logger.debug(`Executing event handler: ${chalk.bold(callback.path)}`)
+
 				// Execute handler without timeout if not a lifecycle event
 				const handlerPromise = callback.handler.default(...eventData, plugins.get(callback.plugin?.name)?.options)
 				if (!isLifecycleEvent) {
-					return handlerPromise
+					return await handlerPromise
 				}
 
 				// Enforce timeouts for lifecycle events
@@ -246,15 +240,24 @@ async function executeEventHandler(eventName: string, ...eventData: unknown[]) {
 				return await Promise.race([handlerPromise, timeoutPromise])
 			} catch (error) {
 				const metaOptions = plugins.get(callback.plugin?.name)?.metaOptions ?? {}
+				let message
+
 				if (error === TIMEOUT) {
-					logger.warn(`${eventName} lifecycle event handler timed out`)
+					message = `${eventName} lifecycle event handler timed out`
+					logger.warn(message)
 				} else if (!callback.plugin) {
-					logger.error(`Error executing ${eventName} event handler:`, error)
+					message = `Error executing ${eventName} event handler`
+					logger.error(message, error)
 				} else if (eventName === '_start' && metaOptions.failSafe) {
-					logger.warn(`${callback.plugin.name} plugin failed to start:`, error)
+					message = `${callback.plugin.name} plugin failed to start`
+					logger.warn(message, error)
 				} else {
-					logger.error(`${callback.plugin.name} plugin error in event ${eventName}:`, error)
+					message = `${callback.plugin.name} plugin error in event ${eventName}`
+					logger.error(message, error)
 				}
+
+				// Print error response to Discord if in development mode
+				printErrorResponse(error, eventData[0], message, callback)
 			}
 		})
 	)
@@ -282,6 +285,7 @@ async function loadHandlerModules<T extends Handler | Handler[]>(type: 'commands
 
 				const handler = {
 					handler: await import(importPath),
+					path: itemConfig.__path,
 					plugin: itemConfig.__plugin
 				}
 
@@ -320,4 +324,85 @@ function loadPluginData() {
 	}
 
 	return collection
+}
+
+function printErrorResponse(error: unknown, interaction: unknown, details?: string, event?: EventRecord) {
+	const { errorReplies = true } = getSage()
+
+	// Don't print errors in production - they may contain sensitive information
+	if (process.env.NODE_ENV === 'production' || !errorReplies) {
+		return
+	}
+
+	// Return if interaction is not a Discord command interaction or a message directed at the bot
+	if (!(interaction instanceof CommandInteraction) && !(interaction instanceof Message)) {
+		return
+	}
+
+	try {
+		// Extract readable error message or assign default
+		let message = 'There was an error while executing this command!'
+		if (error instanceof Error) {
+			message = error.message
+		} else if (typeof error === 'string') {
+			message = error
+		}
+		
+		// Truncate stack trace if it's too long to fit in a Discord embed (1024 characters reply limit)
+		const stack = error instanceof Error ? error.stack : null
+		const stackTruncated = stack?.substring(0, STACK_TRACE_LIMIT)
+		const stackLines = stack?.split('\n')?.length ?? 0
+		const stackLinesTruncated = stackTruncated?.split('\n')?.length ?? 0
+
+		// Assemble error response using fanceh embeds
+		const fields: APIEmbedField[] = []
+
+		// Include additional details available
+		if (interaction instanceof CommandInteraction) {
+			fields.push({
+				name: 'Command',
+				value: '`/' + interaction.commandName + '`'
+			})
+		}
+		if (details) {
+			fields.push({
+				name: 'Details',
+				value: details
+			})
+		}
+		if (event) {
+			fields.push({
+				name: 'Event',
+				value: '`' + event.path + '`'
+			})
+		}
+		fields.push({
+			name: 'Stack',
+			value: stack
+				? '```js\n' + stackTruncated + `\n... ${stackLines - stackLinesTruncated} more (truncated)\n` + '```'
+				: '*N/A*'
+		})
+
+		// Assemble response as an embed
+		const response: APIEmbed = {
+			title: 'Robo Error',
+			description: message,
+			color: Colors.Red,
+			fields: fields
+		}
+
+		// Send response as follow-up if the command has already been replied to
+		if (interaction instanceof CommandInteraction) {
+			if (interaction.replied || interaction.deferred) {
+				interaction.followUp({ embeds: [response] })
+			} else {
+				interaction.reply({ embeds: [response] })
+			}
+		} else if (interaction instanceof Message) {
+			interaction.channel.send({ embeds: [response] })
+		}
+	} catch (error) {
+		// Error-ception!
+		logger.debug('Error printing error response:', error)
+	}
 }

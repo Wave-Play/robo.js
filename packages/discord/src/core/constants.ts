@@ -10,6 +10,7 @@ export const DEFAULT = {
 	sage: {
 		defer: true,
 		ephemeral: false,
+		errorReplies: true,
 		reply: true
 	},
 	timeouts: {
@@ -17,5 +18,8 @@ export const DEFAULT = {
 		registerCommands: 3 * 1000
 	}
 }
+
+// Number of characters to truncate the stack trace to
+export const STACK_TRACE_LIMIT = 640
 
 export const TIMEOUT = Symbol('TIMEOUT')
