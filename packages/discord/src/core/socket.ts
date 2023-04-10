@@ -36,7 +36,7 @@ async function start() {
 	plugins = loadPluginData()
 
 	// Create the new client instance
-	client = new Client({ intents: config.intents })
+	client = new Client(config.clientOptions)
 
 	// Load command and event modules
 	commands = await loadHandlerModules<CommandRecord>('commands')

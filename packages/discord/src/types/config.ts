@@ -1,8 +1,9 @@
 import type { LogLevel } from './../cli/utils/base-logger.js'
-import type { BitFieldResolvable, GatewayIntentsString, PermissionsString } from 'discord.js'
+import type { ClientOptions, PermissionsString } from 'discord.js'
 import type { Plugin, SageOptions } from './index.js'
 
 export interface Config {
+	clientOptions: ClientOptions
 	defaults?: {
 		help?: boolean
 	}
@@ -11,7 +12,6 @@ export interface Config {
 		interval?: number
 		url: string
 	}
-	intents: BitFieldResolvable<GatewayIntentsString, number>
 	invite?: {
 		permissions?: PermissionsString[] | number
 		scopes?: Scope[]
@@ -32,6 +32,7 @@ export interface Config {
 		lifecycle?: number
 	}
 }
+
 type Scope =
 	| 'identify'
 	| 'email'

@@ -1,7 +1,13 @@
 import { DEFAULT } from '../../core/constants.js'
 import { CommandConfig, Config, SageOptions } from '../../types'
+import { getConfig } from './config.js'
 
 export function getSage(commandConfig?: CommandConfig, config?: Config): SageOptions {
+	// Ensure config always has a value
+	if (!config) {
+		config = getConfig()
+	}
+
 	// Disable all sage options if commandConfig.sage is disabled or if it is undefined and config.sage is disabled
 	if (commandConfig?.sage === false || (commandConfig?.sage === undefined && config?.sage === false)) {
 		return {

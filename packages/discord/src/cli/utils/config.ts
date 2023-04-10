@@ -33,8 +33,12 @@ export async function loadConfig(file = 'robo'): Promise<Config | null> {
 
 	const fileName = `${prefix}${file}`
 	if (fileName.endsWith('.config')) {
-		_config = {} as Config
-		return {} as Config
+		_config = {
+			clientOptions: {
+				intents: []
+			}
+		}
+		return _config
 	} else {
 		return loadConfig(file + '.config')
 	}
