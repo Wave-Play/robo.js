@@ -363,7 +363,7 @@ async function findPackagePath(packageName: string, currentPath: string): Promis
 			const packageInfo = Array.isArray(packages) ? packages[0] : packages
 			packagePath = packageInfo.dependencies[packageName].path
 		} catch (error) {
-			console.error(error)
+			logger.error('', error)
 		}
 	} else {
 		const candidatePath = path.join(nodeModulesPath, packageName)

@@ -20,7 +20,7 @@ async function createDefaultHelpFile() {
 		await fs.mkdir(path.dirname(distPath), { recursive: true })
 		await fs.copyFile(defaultHelpPath, distPath)
 	} catch (err) {
-		console.error('default-help.js file not found')
+		logger.error('default-help.js file not found')
 		process.exit(1)
 	}
 }
@@ -145,7 +145,7 @@ export async function compile(options?: RoboCompileOptions) {
 	// Parse tsconfig.json and convert compiler options
 	const { config: tsconfig, error } = ts.parseConfigFileTextToJson(configFileName, configFileContents)
 	if (error) {
-		console.error('Error parsing tsconfig.json:', error)
+		logger.error('Error parsing tsconfig.json:', error)
 		process.exit(1)
 	}
 
@@ -154,7 +154,7 @@ export async function compile(options?: RoboCompileOptions) {
 		path.dirname(configFileName)
 	)
 	if (tsOptions.errors) {
-		console.error('Error parsing compiler options from tsconfig.json')
+		logger.error('Error parsing compiler options from tsconfig.json')
 		process.exit(1)
 	}
 

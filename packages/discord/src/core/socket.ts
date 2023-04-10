@@ -130,7 +130,7 @@ process.on('message', async (message: RoboMessage) => {
 async function executeAutocompleteHandler(interaction: AutocompleteInteraction) {
 	const command = commands.get(interaction.commandName)
 	if (!command) {
-		console.error(`No command matching ${interaction.commandName} was found.`)
+		logger.error(`No command matching ${interaction.commandName} was found.`)
 		return
 	}
 
@@ -161,7 +161,7 @@ async function executeCommandHandler(interaction: CommandInteraction) {
 	// Find command handler
 	const command = commands.get(interaction.commandName)
 	if (!command) {
-		console.error(`No command matching ${interaction.commandName} was found.`)
+		logger.error(`No command matching ${interaction.commandName} was found.`)
 		return
 	}
 
