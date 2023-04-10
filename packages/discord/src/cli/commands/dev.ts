@@ -35,7 +35,17 @@ async function devAction(options: DevCommandOptions) {
 
 	// Run after preparing first build
 	await buildInSeparateProcess()
-	let bot = run()
+	let botProcess = run()
+
+	// Make sure to kill the bot process when the process exits
+	process.on('SIGINT', () => {
+		botProcess?.kill('SIGINT')
+		process.exit(0)
+	})
+	process.on('SIGTERM', () => {
+		botProcess?.kill('SIGTERM')
+		process.exit(0)
+	})
 
 	// Watch for changes in the "src" directory or config file
 	const watcher = chokidar.watch(['src', ...CONFIG_FILES], {
@@ -61,9 +71,9 @@ async function devAction(options: DevCommandOptions) {
 				logger.info(`Change detected. Restarting Robo...`)
 			}
 
-			const updatedBot = await rebuildAndRestartBot(bot, config)
+			const updatedBot = await rebuildAndRestartBot(botProcess, config)
 			if (updatedBot) {
-				bot = updatedBot
+				botProcess = updatedBot
 			}
 		} finally {
 			isUpdating = false
