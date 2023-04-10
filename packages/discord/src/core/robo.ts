@@ -6,7 +6,7 @@ import { getConfig, loadConfig } from '../cli/utils/config.js'
 import { logger } from '../cli/utils/logger.js'
 import { getManifest, loadManifest } from '../cli/utils/manifest.js'
 import { env } from './env.js'
-import { DEFAULT, STACK_TRACE_LIMIT, TIMEOUT } from './constants.js'
+import { BUFFER, DEFAULT, STACK_TRACE_LIMIT, TIMEOUT } from './constants.js'
 import { pathToFileURL } from 'node:url'
 import type { APIEmbed, APIEmbedField, AutocompleteInteraction } from 'discord.js'
 import type { CommandConfig, CommandRecord, EventRecord, Handler, PluginData, RoboMessage } from '../types/index.js'
@@ -180,25 +180,33 @@ async function executeCommandHandler(interaction: CommandInteraction) {
 		// Delegate to command handler
 		const result = command.handler.default(interaction)
 		const promises = []
+		let response
+
 		if (sage.defer && result instanceof Promise) {
-			logger.debug(`Sage is deferring async command...`)
-			promises.push(result)
-			await interaction.deferReply({ ephemeral: sage.ephemeral })
+			const bufferTime = timeout(() => BUFFER, sage.deferBuffer)
+			const raceResult = await Promise.race([result, bufferTime])
+
+			if (raceResult === BUFFER && !interaction.replied) {
+				logger.debug(`Sage is deferring async command...`)
+				promises.push(result)
+				await interaction.deferReply({ ephemeral: sage.ephemeral })
+			} else {
+				response = raceResult
+			}
 		}
 
 		// Enforce timeout only if custom timeout is configured
-		let response
 		if (promises.length > 0) {
 			if (config?.timeouts?.commandDeferral) {
-				promises.push(timeout(() => null, config.timeouts.commandDeferral))
+				promises.push(timeout(() => TIMEOUT, config.timeouts.commandDeferral))
 			}
 
 			// Wait for response or timeout
 			response = await Promise.race(promises)
-			if (!response) {
+			if (response === TIMEOUT) {
 				throw new Error('Command timed out')
 			}
-		} else {
+		} else if (!(result instanceof Promise)) {
 			response = result
 		}
 
@@ -351,7 +359,7 @@ function printErrorResponse(error: unknown, interaction: unknown, details?: stri
 		} else if (typeof error === 'string') {
 			message = error
 		}
-		
+
 		// Truncate stack trace if it's too long to fit in a Discord embed (1024 characters reply limit)
 		const stack = error instanceof Error ? error.stack : null
 		const stackTruncated = stack?.substring(0, STACK_TRACE_LIMIT)

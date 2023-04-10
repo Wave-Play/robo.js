@@ -9,6 +9,7 @@ export const DEFAULT = {
 	},
 	sage: {
 		defer: true,
+		deferBuffer: 250,
 		ephemeral: false,
 		errorReplies: true,
 		reply: true
@@ -22,4 +23,6 @@ export const DEFAULT = {
 // Number of characters to truncate the stack trace to
 export const STACK_TRACE_LIMIT = 640
 
+// Timer symbols
+export const BUFFER = Symbol('BUFFER')
 export const TIMEOUT = Symbol('TIMEOUT')

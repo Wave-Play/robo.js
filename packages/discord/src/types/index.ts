@@ -18,6 +18,7 @@ export interface RoboMessage {
 
 export type SageOptions = {
 	defer?: boolean
+	deferBuffer?: number
 	ephemeral?: boolean
 	errorReplies?: boolean
 	reply?: boolean

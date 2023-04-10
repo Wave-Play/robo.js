@@ -12,6 +12,7 @@ export function getSage(commandConfig?: CommandConfig, config?: Config): SageOpt
 	if (commandConfig?.sage === false || (commandConfig?.sage === undefined && config?.sage === false)) {
 		return {
 			defer: false,
+			deferBuffer: 0,
 			ephemeral: false,
 			errorReplies: false,
 			reply: false
