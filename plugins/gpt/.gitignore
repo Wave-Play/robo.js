@@ -1,8 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# roboplay
-/.robo
-!/.robo/manifest.json
+# robo
+.robo/*
+!.robo/manifest.json
 
 # dependencies
 /node_modules
