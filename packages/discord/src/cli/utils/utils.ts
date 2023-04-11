@@ -1,4 +1,4 @@
-import { DEFAULT } from '../../core/constants.js'
+import { DEFAULT_CONFIG } from '../../core/constants.js'
 import { CommandConfig, Config, SageOptions } from '../../types'
 import { getConfig } from './config.js'
 
@@ -20,7 +20,7 @@ export function getSage(commandConfig?: CommandConfig, config?: Config): SageOpt
 	}
 
 	return {
-		...DEFAULT.sage,
+		...DEFAULT_CONFIG.sage,
 		...(config?.sage === false ? {} : commandConfig?.sage ?? config?.sage ?? {})
 	}
 }

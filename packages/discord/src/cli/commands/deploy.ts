@@ -5,7 +5,7 @@ import { uploadToBackblazeB2 } from '../utils/upload.js'
 import path from 'node:path'
 import fs from 'node:fs/promises'
 import tar from 'tar'
-import { DEFAULT } from '../../core/constants.js'
+import { env } from '../../core/env.js'
 
 const command = new Command('deploy')
 	.description('Deploys your bot to RoboPlay!')
@@ -98,7 +98,7 @@ interface DeployResult {
 }
 async function createDeployment() {
 	logger.debug(`Preparing deployment job...`)
-	const response = await fetch(DEFAULT.roboplay.api + '/deploy', {
+	const response = await fetch(env.roboplay.api + '/deploy', {
 		method: 'POST'
 	})
 	return (await response.json()) as DeployResult
@@ -111,7 +111,7 @@ async function uploadBundle(bundlePath: string, deploy: DeployResult) {
 
 async function notifyUpload(deploy: DeployResult) {
 	logger.debug(`Notifying RoboPlay of upload...`)
-	const response = await fetch(DEFAULT.roboplay.api + '/deploy/' + deploy.deploy.id, {
+	const response = await fetch(env.roboplay.api + '/deploy/' + deploy.deploy.id, {
 		method: 'PUT'
 	})
 	logger.debug(`Notify result:`, response)

@@ -8,6 +8,7 @@ export const env = {
 		token: process.env.DISCORD_TOKEN
 	},
 	roboplay: {
+		api: process.env.ROBOPLAY_API ?? 'https://api.roboplay.dev',
 		host: process.env.ROBOPLAY_HOST
 	}
 }

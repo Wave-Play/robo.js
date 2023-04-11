@@ -4,7 +4,7 @@ import { performance } from 'node:perf_hooks'
 import chalk from 'chalk'
 import { CommandConfig, CommandOption } from '../../types/index.js'
 import { loadConfig } from './config.js'
-import { DEFAULT } from '../../core/constants.js'
+import { DEFAULT_CONFIG } from '../../core/constants.js'
 import { env } from '../../core/env.js'
 import { timeout } from './utils.js'
 
@@ -193,7 +193,7 @@ export async function registerCommands(
 		).then(() => ({ type: 'registerCommands' }))
 		const timeoutPromise = timeout(
 			() => ({ type: 'timeout' }),
-			config.timeouts?.commandRegistration || DEFAULT.timeouts.registerCommands
+			config.timeouts?.commandRegistration || DEFAULT_CONFIG.timeouts.commandRegistration
 		)
 
 		const result = await Promise.race([registerCommandsPromise, timeoutPromise])

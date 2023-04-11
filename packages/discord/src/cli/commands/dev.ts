@@ -4,7 +4,7 @@ import { run } from '../utils/run.js'
 import { spawn, type ChildProcess } from 'child_process'
 import { logger } from '../utils/logger.js'
 import chalk from 'chalk'
-import { CONFIG_FILES, DEFAULT } from '../../core/constants.js'
+import { CONFIG_FILES, DEFAULT_CONFIG } from '../../core/constants.js'
 import { loadConfig } from '../utils/config.js'
 import { Config } from 'src/types/index.js'
 import { IS_WINDOWS, cmd, getPkgManager, timeout } from '../utils/utils.js'
@@ -150,7 +150,7 @@ async function rebuildAndRestartBot(bot: ChildProcess | null, config: Config) {
 			logger.warn('Robo termination timed out. Force stopping...')
 			bot?.kill('SIGKILL')
 		}
-	}, config?.timeouts?.lifecycle ?? DEFAULT.timeouts.lifecycle)
+	}, config?.timeouts?.lifecycle ?? DEFAULT_CONFIG.timeouts.lifecycle)
 
 	// Wait for the bot to exit or force abort
 	bot?.send({ type: 'restart' })

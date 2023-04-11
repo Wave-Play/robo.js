@@ -6,7 +6,7 @@ import { getConfig, loadConfig } from '../cli/utils/config.js'
 import { logger } from '../cli/utils/logger.js'
 import { getManifest, loadManifest } from '../cli/utils/manifest.js'
 import { env } from './env.js'
-import { BUFFER, DEFAULT, STACK_TRACE_LIMIT, TIMEOUT } from './constants.js'
+import { BUFFER, DEFAULT_CONFIG, STACK_TRACE_LIMIT, TIMEOUT } from './constants.js'
 import { pathToFileURL } from 'node:url'
 import type { APIEmbed, APIEmbedField, AutocompleteInteraction } from 'discord.js'
 import type { CommandConfig, CommandRecord, EventRecord, Handler, PluginData, RoboMessage } from '../types/index.js'
@@ -78,7 +78,7 @@ async function start() {
 					logger.debug('Sending heartbeat...', new Date().toISOString())
 				}
 				fetch(config.heartbeat.url)
-			}, config.heartbeat?.interval || DEFAULT.heartbeat.interval)
+			}, config.heartbeat?.interval || DEFAULT_CONFIG.heartbeat.interval)
 		}
 	})
 
@@ -248,7 +248,7 @@ async function executeEventHandler(eventName: string, ...eventData: unknown[]) {
 				}
 
 				// Enforce timeouts for lifecycle events
-				const timeoutPromise = timeout(() => TIMEOUT, config?.timeouts?.lifecycle || DEFAULT.timeouts.lifecycle)
+				const timeoutPromise = timeout(() => TIMEOUT, config?.timeouts?.lifecycle || DEFAULT_CONFIG.timeouts.lifecycle)
 				return await Promise.race([handlerPromise, timeoutPromise])
 			} catch (error) {
 				const metaOptions = plugins.get(callback.plugin?.name)?.metaOptions ?? {}
