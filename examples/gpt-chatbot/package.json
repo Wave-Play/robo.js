@@ -14,7 +14,7 @@
 	"license": "MIT",
 	"dependencies": {
 		"@roboplay/plugin-gpt": "1.0.0",
-		"@roboplay/robo.js": "^0.2.0",
+		"@roboplay/robo.js": "0.3.0",
 		"discord.js": "^14.7.1"
 	},
 	"devDependencies": {

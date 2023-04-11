@@ -36,7 +36,7 @@
 		"openai": "^3.2.1"
 	},
 	"devDependencies": {
-		"@roboplay/robo.js": "0.2.0",
+		"@roboplay/robo.js": "0.3.0",
 		"@types/node": "18.14.6",
 		"discord.js": "14.7.1"
 	}
