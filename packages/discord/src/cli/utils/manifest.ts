@@ -2,7 +2,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { BaseConfig, CommandConfig, CommandOption, Config, EventConfig, Manifest, Plugin } from '../../types/index.js'
 import { logger } from './logger.js'
-import { hasProperties } from './utils.js'
+import { hasProperties, packageJson } from './utils.js'
 import { loadConfig } from './config.js'
 import { exec } from 'node:child_process'
 import { promisify } from 'node:util'
@@ -58,7 +58,9 @@ export async function generateManifest(): Promise<Manifest> {
 		...BASE_MANIFEST,
 		...pluginsManifest,
 		__robo: {
-			config: redactPluginOptions(config)
+			config: redactPluginOptions(config),
+			updatedAt: new Date().toISOString(),
+			version: packageJson.version
 		},
 		commands: {
 			...pluginsManifest.commands,

@@ -4,7 +4,7 @@ import chalk from 'chalk'
 import { logger } from '../utils/logger.js'
 import { performance } from 'node:perf_hooks'
 import { Manifest } from '../../types/index.js'
-import { packageJson } from '../index.js'
+import { packageJson } from './utils.js'
 
 export async function getProjectSize(directory: string): Promise<number> {
 	let entries = await fs.readdir(directory, { withFileTypes: true })

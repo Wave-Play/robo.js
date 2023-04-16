@@ -1,6 +1,11 @@
 import { DEFAULT_CONFIG } from '../../core/constants.js'
 import { CommandConfig, Config, SageOptions } from '../../types'
 import { getConfig } from './config.js'
+import { createRequire } from 'node:module'
+
+// Read the version from the package.json file
+const require = createRequire(import.meta.url)
+export const packageJson = require('../../../package.json')
 
 export function getSage(commandConfig?: CommandConfig, config?: Config): SageOptions {
 	// Ensure config always has a value

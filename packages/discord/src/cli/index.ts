@@ -7,11 +7,7 @@ import dev from './commands/dev.js'
 import doctor from './commands/doctor.js'
 import invite from './commands/invite.js'
 import start from './commands/start.js'
-import { createRequire } from 'node:module'
-
-// Read the version from the package.json file
-const require = createRequire(import.meta.url)
-export const packageJson = require('../../package.json')
+import { packageJson } from './utils/utils.js'
 
 new Command('robo')
 	.name('robo')

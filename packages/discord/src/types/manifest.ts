@@ -6,6 +6,8 @@ export interface Manifest {
 	__README: string
 	__robo: {
 		config: Config | null
+		updatedAt?: string
+		version?: string
 	}
 	commands: Record<string, CommandConfig>
 	events: Record<string, EventConfig[]>
