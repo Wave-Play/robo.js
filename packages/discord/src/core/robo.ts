@@ -1,15 +1,15 @@
 import chalk from 'chalk'
-import { Client, Collection, Colors, CommandInteraction, Events, Message } from 'discord.js'
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Client, Collection, Colors, CommandInteraction, Events, Message } from 'discord.js'
 import path from 'node:path'
 import { getSage, timeout } from '../cli/utils/utils.js'
 import { getConfig, loadConfig } from '../cli/utils/config.js'
 import { logger } from '../cli/utils/logger.js'
 import { getManifest, loadManifest } from '../cli/utils/manifest.js'
 import { env } from './env.js'
-import { BUFFER, DEFAULT_CONFIG, STACK_TRACE_LIMIT, TIMEOUT } from './constants.js'
+import { BUFFER, DEFAULT_CONFIG, TIMEOUT } from './constants.js'
 import { pathToFileURL } from 'node:url'
 import fs from 'node:fs/promises'
-import type { APIEmbed, APIEmbedField, AutocompleteInteraction } from 'discord.js'
+import type { APIEmbed, APIEmbedField, APIMessage, AutocompleteInteraction, InteractionResponse, MessageComponentInteraction, BaseMessageOptions } from 'discord.js'
 import type { CommandConfig, CommandRecord, EventRecord, Handler, PluginData, RoboMessage } from '../types/index.js'
 
 export const Robo = { restart, start, stop }
@@ -363,18 +363,8 @@ async function printErrorResponse(error: unknown, interaction: unknown, details?
 		}
 		message += '\n\u200b'
 
-		// Truncate stack trace if it's too long to fit in a Discord embed (1024 characters reply limit)
-		const stack = error instanceof Error ? error.stack : null
-		const stackLines = stack?.split('\n')?.length ?? 0
-
-		// Replace ".robo/build" in stack trace with "src" for readability
-		let stackTruncated = stack?.substring(0, STACK_TRACE_LIMIT)
-		const stackLinesTruncated = stackTruncated?.split('\n')?.length ?? 0
-		if (stackTruncated) {
-			stackTruncated = stackTruncated.replaceAll('/.robo/build/commands', '').replaceAll('/.robo/build/events', '')
-		}
-
 		// Try to get code at fault from stack trace
+		const stack = error instanceof Error ? error.stack : null
 		const source = error instanceof Error ? await getCodeCodeAtFault(error) : null
 
 		// Assemble error response using fanceh embeds
@@ -405,12 +395,6 @@ async function printErrorResponse(error: unknown, interaction: unknown, details?
 				value: `\`${source.file.replace(process.cwd(), '')}\`\n` + '```' + `${source.type}\n` + source.code + '\n```'
 			})
 		}
-		if (stack) {
-			fields.push({
-				name: 'Stack',
-				value: '```js\n' + stackTruncated + `\n... ${stackLines - stackLinesTruncated} more (truncated)\n` + '```'
-			})
-		}
 
 		// Assemble response as an embed
 		const response: APIEmbed = {
@@ -418,16 +402,57 @@ async function printErrorResponse(error: unknown, interaction: unknown, details?
 			fields: fields
 		}
 
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder({
+				label: 'Stack trace',
+				style: ButtonStyle.Danger,
+				customId: 'stack_trace'
+			})
+		)
+
 		// Send response as follow-up if the command has already been replied to
+		let reply: Message | APIMessage | InteractionResponse
+		const content: BaseMessageOptions = {
+			content: message,
+			embeds: [response],
+			components: [row]
+		}
+
 		if (interaction instanceof CommandInteraction) {
 			if (interaction.replied || interaction.deferred) {
-				await interaction.followUp({ content: message, embeds: [response] })
+				reply = await interaction.followUp(content)
 			} else {
-				await interaction.reply({ content: message, embeds: [response] })
+				reply = await interaction.reply(content)
 			}
 		} else if (interaction instanceof Message) {
-			await interaction.channel.send({ content: message, embeds: [response] })
+			reply = await interaction.channel.send(content)
 		}
+
+		// Wait for user to click on the "Stack trace" button
+		(reply as Message).awaitMessageComponent({
+			filter: (i: MessageComponentInteraction) => i.customId === 'stack_trace'
+		}).then(async (i) => {
+			try {
+				// Make button disabled
+				await i.update({
+					components: [
+						new ActionRowBuilder<ButtonBuilder>().addComponents(
+							new ButtonBuilder({
+								label: 'Stack trace',
+								style: ButtonStyle.Danger,
+								customId: 'stack_trace',
+								disabled: true
+							})
+						)
+					]
+				})
+				const stackTrace = stack.replace('/.robo/build/commands', '').replace('/.robo/build/events', '').replaceAll('\n', '\n> ')
+				await i.followUp('> ```js\n> ' + stackTrace + '\n> ```')
+			} catch (error) {
+				// Error-ception!! T-T
+				logger.debug('Error sending stack trace:', error)
+			}
+		})
 	} catch (error) {
 		// This had one job... and it failed
 		logger.debug('Error printing error response:', error)
