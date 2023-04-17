@@ -25,9 +25,7 @@ async function pluginAction(options: PluginCommandOptions) {
 
 	// Use SWC to compile into .robo/build
 	const { compile } = await import('../../../core/compiler.js')
-	const compileTime = await compile({
-		defaultHelp: false
-	})
+	const compileTime = await compile()
 	logger.debug(`Compiled in ${Math.round(compileTime)}ms`)
 
 	// Get the size of the entire current working directory

@@ -38,9 +38,7 @@ async function buildAction(options: BuildCommandOptions) {
 
 	// Use SWC to compile into .robo/build
 	const { compile } = await import('../../../core/compiler.js')
-	const compileTime = await compile({
-		defaultHelp: config?.defaults?.help ?? true
-	})
+	const compileTime = await compile()
 	logger.debug(`Compiled in ${Math.round(compileTime)}ms`)
 
 	// Assign default commands and events
