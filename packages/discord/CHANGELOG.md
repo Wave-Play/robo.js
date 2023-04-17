@@ -1,5 +1,18 @@
 # robo.js
 
+## 0.3.1
+
+### Patch Changes
+
+- 3a00456: fix: better nested error handling
+- ee7429a: feat: show exact code at fault in error messages
+- 66a09cd: refactor: less robo branding on error messages
+- 78353da: refactor: error message moved outside embed
+- 6090b4d: feat: compact error message with stack trace follow up
+- 3a1f016: feat: manifest now contains version and updatedAt
+- 43c1bea: chore: minor logging improvements
+- 1feb074: feat: support for source maps in dev mode
+
 ## 0.3.0
 
 ### Minor Changes
