@@ -339,7 +339,7 @@ function loadPluginData() {
 	return collection
 }
 
-function printErrorResponse(error: unknown, interaction: unknown, details?: string, event?: EventRecord) {
+async function printErrorResponse(error: unknown, interaction: unknown, details?: string, event?: EventRecord) {
 	const { errorReplies = true } = getSage()
 
 	// Don't print errors in production - they may contain sensitive information
@@ -406,15 +406,15 @@ function printErrorResponse(error: unknown, interaction: unknown, details?: stri
 		// Send response as follow-up if the command has already been replied to
 		if (interaction instanceof CommandInteraction) {
 			if (interaction.replied || interaction.deferred) {
-				interaction.followUp({ embeds: [response] })
+				await interaction.followUp({ embeds: [response] })
 			} else {
-				interaction.reply({ embeds: [response] })
+				await interaction.reply({ embeds: [response] })
 			}
 		} else if (interaction instanceof Message) {
-			interaction.channel.send({ embeds: [response] })
+			await interaction.channel.send({ embeds: [response] })
 		}
 	} catch (error) {
-		// Error-ception!
+		// This had one job... and it failed
 		logger.debug('Error printing error response:', error)
 	}
 }
