@@ -111,7 +111,7 @@ async function buildInSeparateProcess() {
 			}
 		}
 
-		logger.debug(`Running ${cmd(pkgManager)} ${args.join(' ')}`)
+		logger.debug(`> ${cmd(pkgManager)} ${args.join(' ')}`)
 		const childProcess = spawn(cmd(pkgManager), args, {
 			env: { ...process.env, FORCE_COLOR: '1' },
 			stdio: 'inherit'

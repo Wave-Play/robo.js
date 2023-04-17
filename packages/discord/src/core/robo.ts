@@ -48,7 +48,7 @@ async function start() {
 	// Define event handlers
 	for (const key of events.keys()) {
 		client.on(key, async (...args) => {
-			logger.event(`Event received: ${key}`)
+			logger.event(`Event received: ${chalk.bold(key)}`)
 			logger.trace('Event args:', args)
 
 			// Notify event handler
@@ -82,9 +82,10 @@ async function start() {
 		}
 	})
 
+	// Forward command interactions to our fancy handler
 	client.on(Events.InteractionCreate, async (interaction) => {
 		if (interaction.isChatInputCommand()) {
-			logger.event(`Received chat input command`)
+			logger.event(`Received slash command interaction: ${chalk.bold('/' + interaction.commandName)}`)
 			logger.trace('Chat input command:', interaction.toJSON())
 			await executeCommandHandler(interaction)
 		} else if (interaction.isAutocomplete()) {
