@@ -8,6 +8,7 @@ import { getManifest, loadManifest } from '../cli/utils/manifest.js'
 import { env } from './env.js'
 import { BUFFER, DEFAULT_CONFIG, STACK_TRACE_LIMIT, TIMEOUT } from './constants.js'
 import { pathToFileURL } from 'node:url'
+import fs from 'node:fs/promises'
 import type { APIEmbed, APIEmbedField, AutocompleteInteraction } from 'discord.js'
 import type { CommandConfig, CommandRecord, EventRecord, Handler, PluginData, RoboMessage } from '../types/index.js'
 
@@ -373,6 +374,9 @@ async function printErrorResponse(error: unknown, interaction: unknown, details?
 			stackTruncated = stackTruncated.replaceAll('/.robo/build/commands', '').replaceAll('/.robo/build/events', '')
 		}
 
+		// Try to get code at fault from stack trace
+		const source = error instanceof Error ? await getCodeCodeAtFault(error) : null
+
 		// Assemble error response using fanceh embeds
 		const fields: APIEmbedField[] = []
 
@@ -393,6 +397,12 @@ async function printErrorResponse(error: unknown, interaction: unknown, details?
 			fields.push({
 				name: 'Event',
 				value: '`' + event.path + '`'
+			})
+		}
+		if (source) {
+			fields.push({
+				name: 'Source',
+				value: `\`${source.file.replace(process.cwd(), '')}\`\n` + '```' + `${source.type}\n` + source.code + '\n```'
 			})
 		}
 		if (stack) {
@@ -421,5 +431,50 @@ async function printErrorResponse(error: unknown, interaction: unknown, details?
 	} catch (error) {
 		// This had one job... and it failed
 		logger.debug('Error printing error response:', error)
+	}
+}
+async function getCodeCodeAtFault(err: Error) {
+	try {
+		const stackLines = err.stack?.split('\n')
+		if (!stackLines) {
+			throw new Error('No stack trace found')
+		}
+
+		const stackLineRegex = /at .* \((.*):(\d+):(\d+)\)/
+		const [, filePath, line, column] = stackLines[1].match(stackLineRegex) || []
+
+		if (!filePath || !line || !column) {
+			throw new Error('Could not parse stack trace')
+		}
+
+		// Read file contents
+		const file = filePath.replaceAll('/.robo/build/commands', '').replaceAll('/.robo/build/events', '')
+		const fileContent = await fs.readFile(
+			path.resolve(file),
+			'utf-8'
+		)
+		const lines = fileContent.split('\n')
+		const lineNumber = parseInt(line, 10)
+		const columnNumber = parseInt(column, 10)
+		const maxLineNumber = Math.min(lineNumber + 2, lines.length)
+		const lineNumberPadding = maxLineNumber.toString().length
+
+		let result = ''
+		for (let i = Math.max(lineNumber - 3, 0); i < maxLineNumber; i++) {
+			const paddedLineNumber = (i + 1).toString().padStart(lineNumberPadding, ' ')
+			result += `${paddedLineNumber} | ${lines[i]}\n`
+			if (i === lineNumber - 1) {
+				result += ' '.repeat(columnNumber + lineNumberPadding + 2) + '^' + '\n'
+			}
+		}
+
+		return {
+			code: result,
+			file: file,
+			type: file.endsWith('.ts') ? 'ts' : 'js'
+		}
+	} catch (error) {
+		logger.debug('Error getting code at fault:', error)
+		return null
 	}
 }
