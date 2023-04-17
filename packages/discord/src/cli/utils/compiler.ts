@@ -3,7 +3,7 @@ import path from 'path'
 import type { CompilerOptions } from 'typescript'
 import type { transform as SwcTransform } from '@swc/core'
 import { performance } from 'node:perf_hooks'
-import { hasProperties } from './/utils.js'
+import { hasProperties } from './utils.js'
 import { logger } from '../../core/logger.js'
 import { env } from '../../core/env.js'
 
