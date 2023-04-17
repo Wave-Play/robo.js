@@ -6,6 +6,7 @@ import { performance } from 'node:perf_hooks'
 import { fileURLToPath } from 'node:url'
 import { hasProperties } from '../cli/utils/utils.js'
 import { logger } from '../cli/utils/logger.js'
+import { env } from './env.js'
 
 const srcDir = 'src'
 const distDir = path.join('.robo', 'build')
@@ -67,6 +68,7 @@ async function traverse(
 					const fileContents = await fs.readFile(filePath, 'utf-8')
 					const transformed = await transform(fileContents, {
 						filename: filePath,
+						sourceMaps: env.nodeEnv === 'production' ? false : 'inline',
 						jsc: {
 							target: 'esnext',
 							parser: {

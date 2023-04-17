@@ -363,9 +363,14 @@ async function printErrorResponse(error: unknown, interaction: unknown, details?
 
 		// Truncate stack trace if it's too long to fit in a Discord embed (1024 characters reply limit)
 		const stack = error instanceof Error ? error.stack : null
-		const stackTruncated = stack?.substring(0, STACK_TRACE_LIMIT)
 		const stackLines = stack?.split('\n')?.length ?? 0
+
+		// Replace ".robo/build" in stack trace with "src" for readability
+		let stackTruncated = stack?.substring(0, STACK_TRACE_LIMIT)
 		const stackLinesTruncated = stackTruncated?.split('\n')?.length ?? 0
+		if (stackTruncated) {
+			stackTruncated = stackTruncated.replaceAll('/.robo/build/commands', '').replaceAll('/.robo/build/events', '')
+		}
 
 		// Assemble error response using fanceh embeds
 		const fields: APIEmbedField[] = []
