@@ -19,8 +19,7 @@ export function getSage(commandConfig?: CommandConfig, config?: Config): SageOpt
 			defer: false,
 			deferBuffer: 0,
 			ephemeral: false,
-			errorReplies: false,
-			reply: false
+			errorReplies: false
 		}
 	}
 

@@ -212,9 +212,10 @@ async function executeCommandHandler(interaction: CommandInteraction) {
 			response = result
 		}
 
-		// Stop here if sage mode is disabled
-		if (!sage.reply) {
-			return logger.debug('Sage reply is disabled, skipping response')
+		// Stop here if command returned nothing
+		if (response === undefined) {
+			logger.debug('Command returned void, skipping response')
+			return
 		}
 
 		logger.debug(`Sage is handling reply:`, response)

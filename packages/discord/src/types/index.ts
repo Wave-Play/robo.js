@@ -21,7 +21,6 @@ export type SageOptions = {
 	deferBuffer?: number
 	ephemeral?: boolean
 	errorReplies?: boolean
-	reply?: boolean
 }
 
 export type Plugin = string | [string, unknown, PluginMetaOptions?]

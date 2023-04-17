@@ -12,8 +12,7 @@ export const DEFAULT_CONFIG: Config = {
 		defer: true,
 		deferBuffer: 250,
 		ephemeral: false,
-		errorReplies: true,
-		reply: true
+		errorReplies: true
 	},
 	timeouts: {
 		commandRegistration: 3 * 1000,

@@ -1,7 +1,7 @@
 import type { ApplicationCommandOptionChoiceData, AutocompleteInteraction, CommandInteraction } from 'discord.js'
 import type { BaseConfig, Handler, SageOptions } from './index.js'
 
-type BaseCommandResult = BaseCommandResultData | string
+type BaseCommandResult = BaseCommandResultData | string | void
 
 type BaseCommandResultData = {
 	embeds: Embed[]
