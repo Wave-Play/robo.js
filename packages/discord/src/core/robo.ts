@@ -360,6 +360,7 @@ async function printErrorResponse(error: unknown, interaction: unknown, details?
 		} else if (typeof error === 'string') {
 			message = error
 		}
+		message += '\n\u200b'
 
 		// Truncate stack trace if it's too long to fit in a Discord embed (1024 characters reply limit)
 		const stack = error instanceof Error ? error.stack : null
@@ -404,19 +405,18 @@ async function printErrorResponse(error: unknown, interaction: unknown, details?
 		// Assemble response as an embed
 		const response: APIEmbed = {
 			color: Colors.Red,
-			fields: fields,
-			title: message
+			fields: fields
 		}
 
 		// Send response as follow-up if the command has already been replied to
 		if (interaction instanceof CommandInteraction) {
 			if (interaction.replied || interaction.deferred) {
-				await interaction.followUp({ embeds: [response] })
+				await interaction.followUp({ content: message, embeds: [response] })
 			} else {
-				await interaction.reply({ embeds: [response] })
+				await interaction.reply({ content: message, embeds: [response] })
 			}
 		} else if (interaction instanceof Message) {
-			await interaction.channel.send({ embeds: [response] })
+			await interaction.channel.send({ content: message, embeds: [response] })
 		}
 	} catch (error) {
 		// This had one job... and it failed
