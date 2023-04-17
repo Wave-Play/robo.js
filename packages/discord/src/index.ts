@@ -1,5 +1,5 @@
 export { getConfig } from './cli/utils/config.js'
 export { getManifest } from './cli/utils/manifest.js'
 export { client, commands } from './core/robo.js'
-export { logger } from './cli/utils/logger.js'
+export { logger } from './core/logger.js'
 export * from './types/index.js'

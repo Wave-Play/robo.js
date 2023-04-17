@@ -1,5 +1,5 @@
 import { Command } from 'commander'
-import { logger } from '../utils/logger.js'
+import { logger } from '../../core/logger.js'
 import { loadManifest } from '../utils/manifest.js'
 import chalk from 'chalk'
 import { Manifest } from '../../types/index.js'

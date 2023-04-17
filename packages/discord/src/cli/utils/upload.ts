@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises'
 import crypto from 'node:crypto'
-import { logger } from './logger.js'
+import { logger } from '../../core/logger.js'
 
 async function calculateSha1(fileBuffer: Buffer): Promise<string> {
 	return new Promise((resolve) => {

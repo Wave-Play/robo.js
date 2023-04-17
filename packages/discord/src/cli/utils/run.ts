@@ -1,5 +1,5 @@
 import { fork } from 'child_process'
-import { logger } from './logger.js'
+import { logger } from '../../core/logger.js'
 
 const ENTRY_FILE = './node_modules/@roboplay/robo.js/dist/entry.js'
 

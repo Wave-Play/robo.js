@@ -3,7 +3,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Client, Collection, Color
 import path from 'node:path'
 import { getSage, timeout } from '../cli/utils/utils.js'
 import { getConfig, loadConfig } from '../cli/utils/config.js'
-import { logger } from '../cli/utils/logger.js'
+import { logger } from './logger.js'
 import { getManifest, loadManifest } from '../cli/utils/manifest.js'
 import { env } from './env.js'
 import { BUFFER, DEFAULT_CONFIG, TIMEOUT } from './constants.js'

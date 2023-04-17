@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import chalk from 'chalk'
-import { logger } from '../utils/logger.js'
+import { logger } from '../../core/logger.js'
 import { performance } from 'node:perf_hooks'
 import { Manifest } from '../../types/index.js'
 import { packageJson } from './utils.js'

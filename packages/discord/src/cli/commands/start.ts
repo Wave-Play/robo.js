@@ -1,6 +1,6 @@
 import { Command } from 'commander'
 import fs from 'fs/promises'
-import { logger } from '../utils/logger.js'
+import { logger } from '../../core/logger.js'
 import chalk from 'chalk'
 import { hasFilesRecursively } from '../utils/fs-helper.js'
 

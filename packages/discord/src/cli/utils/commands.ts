@@ -1,5 +1,5 @@
 import { REST, Routes, SlashCommandBuilder } from 'discord.js'
-import { logger as globalLogger, Logger } from './logger.js'
+import { logger as globalLogger, Logger } from '../../core/logger.js'
 import { performance } from 'node:perf_hooks'
 import chalk from 'chalk'
 import { CommandConfig, CommandOption } from '../../types/index.js'

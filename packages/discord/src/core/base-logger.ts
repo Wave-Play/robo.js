@@ -1,5 +1,5 @@
 import chalk from 'chalk'
-import { env } from '../../core/env.js'
+import { env } from './env.js'
 
 export type LogLevel = 'trace' | 'debug' | 'info' | 'other' | 'event' | 'ready' | 'warn' | 'error'
 

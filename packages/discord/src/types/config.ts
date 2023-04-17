@@ -1,4 +1,4 @@
-import type { LogLevel } from './../cli/utils/base-logger.js'
+import type { LogLevel } from '../core/base-logger.js'
 import type { ClientOptions, PermissionsString } from 'discord.js'
 import type { Plugin, SageOptions } from './index.js'
 

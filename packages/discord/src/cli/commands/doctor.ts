@@ -3,7 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import chalk from 'chalk'
 import dotenv from 'dotenv'
-import { logger } from '../utils/logger.js'
+import { logger } from '../../core/logger.js'
 
 const command = new Command('doctor').description('Checks if your project is healthy').action(doctor)
 export default command

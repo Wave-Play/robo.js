@@ -1,5 +1,5 @@
 import { Command } from 'commander'
-import { logger } from '../utils/logger.js'
+import { logger } from '../../core/logger.js'
 import chalk from 'chalk'
 import { uploadToBackblazeB2 } from '../utils/upload.js'
 import path from 'node:path'

@@ -1,7 +1,7 @@
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { logger } from './logger.js'
+import { logger } from '../../core/logger.js'
 import { hasProperties } from './utils.js'
 
 const srcDir = 'src'

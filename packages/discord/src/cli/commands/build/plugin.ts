@@ -1,6 +1,6 @@
 import { Command } from 'commander'
 import { generateManifest } from '../../utils/manifest.js'
-import { logger } from '../../utils/logger.js'
+import { logger } from '../../../core/logger.js'
 import { performance } from 'node:perf_hooks'
 import { getProjectSize, printBuildSummary } from '../../utils/build-summary.js'
 
@@ -24,7 +24,7 @@ async function pluginAction(options: PluginCommandOptions) {
 	const startTime = performance.now()
 
 	// Use SWC to compile into .robo/build
-	const { compile } = await import('../../../core/compiler.js')
+	const { compile } = await import('../../utils/compiler.js')
 	const compileTime = await compile()
 	logger.debug(`Compiled in ${Math.round(compileTime)}ms`)
 

@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { BaseConfig, CommandConfig, CommandOption, Config, EventConfig, Manifest, Plugin } from '../../types/index.js'
-import { logger } from './logger.js'
+import { logger } from '../../core/logger.js'
 import { hasProperties, packageJson } from './utils.js'
 import { loadConfig } from './config.js'
 import { exec } from 'node:child_process'
