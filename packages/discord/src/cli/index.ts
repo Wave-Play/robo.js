@@ -7,6 +7,7 @@ import dev from './commands/dev.js'
 import doctor from './commands/doctor.js'
 import invite from './commands/invite.js'
 import start from './commands/start.js'
+import why from './commands/why.js'
 import { packageJson } from './utils/utils.js'
 
 new Command('robo')
@@ -19,4 +20,5 @@ new Command('robo')
 	.addCommand(doctor)
 	.addCommand(invite)
 	.addCommand(start)
+	.addCommand(why)
 	.parse(process.argv)
