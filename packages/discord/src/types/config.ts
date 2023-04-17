@@ -33,7 +33,7 @@ export interface Config {
 	}
 }
 
-type Scope =
+export type Scope =
 	| 'identify'
 	| 'email'
 	| 'connections'
