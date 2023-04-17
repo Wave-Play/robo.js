@@ -3,28 +3,12 @@ import path from 'path'
 import type { CompilerOptions } from 'typescript'
 import type { transform as SwcTransform } from '@swc/core'
 import { performance } from 'node:perf_hooks'
-import { fileURLToPath } from 'node:url'
 import { hasProperties } from '../cli/utils/utils.js'
 import { logger } from '../cli/utils/logger.js'
 import { env } from './env.js'
 
 const srcDir = 'src'
 const distDir = path.join('.robo', 'build')
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-
-async function createDefaultHelpFile() {
-	const defaultHelpPath = path.join(__dirname, '..', 'default-help.js')
-	const distPath = path.join(distDir, 'commands', 'help.js')
-
-	try {
-		await fs.access(defaultHelpPath)
-		await fs.mkdir(path.dirname(distPath), { recursive: true })
-		await fs.copyFile(defaultHelpPath, distPath)
-	} catch (err) {
-		logger.error('default-help.js file not found')
-		process.exit(1)
-	}
-}
 
 /**
  * Recursively traverse a directory and transform TypeScript files using SWC
@@ -103,7 +87,6 @@ async function traverse(
 }
 
 interface RoboCompileOptions {
-	defaultHelp?: boolean
 	parallel?: number
 }
 
@@ -121,22 +104,12 @@ export async function compile(options?: RoboCompileOptions) {
 		logger.debug('Copying srcDir to distDir without transversing...')
 		await copyDir(srcDir, distDir)
 
-		// Create a default help file if one does not exist
-		if (options?.defaultHelp && !(await checkForHelpFile())) {
-			await createDefaultHelpFile()
-		}
-
 		return performance.now() - startTime
 	}
 
 	if (typeof ts === 'undefined' || typeof transform === 'undefined') {
 		logger.debug('Copying srcDir to distDir without transversing...')
 		await copyDir(srcDir, distDir)
-
-		// Create a default help file if one does not exist
-		if (options?.defaultHelp && !(await checkForHelpFile())) {
-			await createDefaultHelpFile()
-		}
 
 		return performance.now() - startTime
 	}
@@ -166,28 +139,7 @@ export async function compile(options?: RoboCompileOptions) {
 	// Traverse the source directory and transform files
 	await traverse(srcDir, options ?? {}, tsOptions, transform)
 
-	// Create a default help file if one does not exist
-	if (options?.defaultHelp && !(await checkForHelpFile())) {
-		await createDefaultHelpFile()
-	}
-
 	return performance.now() - startTime
-}
-
-async function checkForHelpFile(): Promise<boolean> {
-	const commandsDir = path.join(srcDir, 'commands')
-
-	try {
-		const files = await fs.readdir(commandsDir)
-		const helpFileExists = files.some((file) => /^help\.(ts|tsx|js|jsx)$/.test(file))
-		return helpFileExists
-	} catch (e) {
-		if (hasProperties<{ code: unknown }>(e, ['code']) && e.code === 'ENOENT') {
-			return false
-		} else {
-			throw e
-		}
-	}
 }
 
 async function copyDir(src: string, dest: string) {

@@ -1,6 +1,6 @@
 // @ts-expect-error - This is valid once command file is parsed
-import { client, getManifest } from '@roboplay/robo.js'
-import type { CommandConfig } from './types/commands.js'
+import { getManifest } from '@roboplay/robo.js'
+import type { CommandConfig } from '../../types/commands.js'
 
 export const config: CommandConfig = {
 	__auto: true,
@@ -25,11 +25,6 @@ export default () => {
 						inline: false
 					}
 				],
-				provider: {
-					// Hai, Discord developers! ヾ(＾∇＾)
-					name: 'RoboPlay',
-					url: 'https://roboplay.dev?ref=bot&tag=' + encodeURIComponent(client?.user?.tag)
-				},
 				color: 16771899,
 				title: 'Commands'
 			}

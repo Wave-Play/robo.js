@@ -6,6 +6,7 @@ import { loadConfig } from '../../utils/config.js'
 import { getProjectSize, printBuildSummary } from '../../utils/build-summary.js'
 import plugin from './plugin.js'
 import { findChangedCommands, registerCommands } from '../../utils/commands.js'
+import { generateDefaults } from '../../utils/generate-defaults.js'
 
 const command = new Command('build')
 	.description('Builds your bot for production.')
@@ -41,6 +42,9 @@ async function buildAction(options: BuildCommandOptions) {
 		defaultHelp: config?.defaults?.help ?? true
 	})
 	logger.debug(`Compiled in ${Math.round(compileTime)}ms`)
+
+	// Assign default commands and events
+	await generateDefaults()
 
 	// Get the size of the entire current working directory
 	const sizeStartTime = performance.now()

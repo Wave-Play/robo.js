@@ -57,32 +57,6 @@ async function start() {
 		})
 	}
 
-	// When the client is ready, run this code (only once)
-	client.once(Events.ClientReady, async (c) => {
-		logger.ready(`On standby as ${chalk.bold(c.user.tag)} (${new Date().toLocaleString()})`)
-
-		// Ping heartbeat monitor if configured
-		if (config.heartbeat?.url) {
-			// Supress Fetch API experimental warning
-			process.removeAllListeners('warning')
-
-			setInterval(() => {
-				if (!client?.isReady() || client?.uptime <= 0) {
-					if (config.heartbeat.debug) {
-						logger.warn('Robo is not ready, skipping heartbeat.')
-					}
-					return
-				}
-
-				// Bah-dumtz!
-				if (config.heartbeat.debug) {
-					logger.debug('Sending heartbeat...', new Date().toISOString())
-				}
-				fetch(config.heartbeat.url)
-			}, config.heartbeat?.interval || DEFAULT_CONFIG.heartbeat.interval)
-		}
-	})
-
 	// Forward command interactions to our fancy handler
 	client.on(Events.InteractionCreate, async (interaction) => {
 		if (interaction.isChatInputCommand()) {
