@@ -9,6 +9,9 @@ export const config: CommandConfig = {
 
 export default () => {
 	const manifest = getManifest()
+	const poweredBy = process.env.ROBOPLAY_HOST
+		? 'Powered by [**RoboPlay** ✨](https://roboplay.dev)'
+		: 'Powered by [**Robo.js**](https://roboplay.dev/robo)'
 
 	return {
 		embeds: [
@@ -21,7 +24,7 @@ export default () => {
 					})),
 					{
 						name: '\u200b', // Zero-width space
-						value: 'Powered by [**RoboPlay** ✨](https://roboplay.dev)',
+						value: poweredBy,
 						inline: false
 					}
 				],
