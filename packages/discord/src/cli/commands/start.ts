@@ -21,8 +21,8 @@ async function startAction(options: StartCommandOptions) {
 	logger({
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : 'info'
-	}).event(`Starting Robo in ${chalk.bold('production mode')}...`)
-	logger.warn(`Thank you for trying Robo! This is a pre-release version, so please let us know of issues on GitHub.`)
+	}).info(`Starting Robo in ${chalk.bold('production mode')}...`)
+	logger.warn(`Thank you for trying Robo.js! This is a pre-release version, so please let us know of issues on GitHub.`)
 
 	// Check if .robo/build directory has .js files (recursively)
 	if (!(await hasFilesRecursively('.robo/build'))) {

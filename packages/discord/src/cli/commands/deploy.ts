@@ -24,8 +24,8 @@ async function deployAction(options: DeployCommandOptions) {
 	logger({
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : 'info'
-	}).event(`Deploying to ${chalk.bold('RoboPlay')} ✨`)
-	logger.warn(`Thank you for trying Robo! This is a pre-release version, so please let us know of issues on GitHub.`)
+	}).info(`Deploying to ${chalk.bold('RoboPlay')} ✨`)
+	logger.warn(`Thank you for trying Robo.js! This is a pre-release version, so please let us know of issues on GitHub.`)
 
 	try {
 		// Prepare to upload project (bundle & create job)

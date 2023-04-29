@@ -29,7 +29,7 @@ async function buildAction(options: BuildCommandOptions) {
 	logger({
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : 'info'
-	}).event(`Building Robo...`)
+	}).info(`Building Robo...`)
 	const startTime = performance.now()
 	const config = await loadConfig()
 	if (!config) {

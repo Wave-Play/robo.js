@@ -20,7 +20,7 @@ async function pluginAction(options: PluginCommandOptions) {
 	logger({
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : 'info'
-	}).event(`Building Robo plugin...`)
+	}).info(`Building Robo plugin...`)
 	const startTime = performance.now()
 
 	// Use SWC to compile into .robo/build

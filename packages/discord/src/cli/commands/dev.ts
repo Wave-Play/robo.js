@@ -26,8 +26,8 @@ async function devAction(options: DevCommandOptions) {
 	logger({
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : 'info'
-	}).event('Starting Robo in development mode...')
-	logger.warn(`Thank you for trying Robo! This is a pre-release version, so please let us know of issues on GitHub.`)
+	}).info('Starting Robo in development mode...')
+	logger.warn(`Thank you for trying Robo.js! This is a pre-release version, so please let us know of issues on GitHub.`)
 	const config = await loadConfig()
 	if (!config) {
 		logger.warn(`Could not find configuration file.`)

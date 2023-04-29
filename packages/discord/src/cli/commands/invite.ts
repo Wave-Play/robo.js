@@ -10,7 +10,7 @@ const command = new Command('invite').description('Generates a link for servers 
 export default command
 
 async function inviteAction() {
-	logger.event(`Generating Robo invite ...`)
+	logger.info(`Generating Robo invite ...`)
 	logger.warn(
 		`This is experimental and may not generate the correct permissions. If you have issues, use the ${chalk.bold(
 			'Discord Developer Portal'
