@@ -219,7 +219,7 @@ async function printErrorResponse(error: unknown, interaction: unknown, details?
 
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			new ButtonBuilder({
-				label: 'Stack trace',
+				label: 'Show stack trace',
 				style: ButtonStyle.Danger,
 				customId: 'stack_trace'
 			})
@@ -253,7 +253,7 @@ async function printErrorResponse(error: unknown, interaction: unknown, details?
 					components: [
 						new ActionRowBuilder<ButtonBuilder>().addComponents(
 							new ButtonBuilder({
-								label: 'Stack trace',
+								label: 'Show stack trace',
 								style: ButtonStyle.Danger,
 								customId: 'stack_trace',
 								disabled: true
