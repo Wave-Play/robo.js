@@ -7,6 +7,7 @@ import { loadConfig } from './config.js'
 import { exec } from 'node:child_process'
 import { promisify } from 'node:util'
 import { pathToFileURL } from 'node:url'
+import { DefaultGen } from './generate-defaults.js'
 
 const execAsync = promisify(exec)
 
@@ -45,14 +46,19 @@ const mergeEvents = (baseEvents: Record<string, EventConfig[]>, newEvents: Recor
 	return mergedEvents
 }
 
-export async function generateManifest(): Promise<Manifest> {
+export async function generateManifest(generatedDefaults: DefaultGen): Promise<Manifest> {
 	const config = await loadConfig()
 	const pluginsManifest = await readPluginManifest(config?.plugins)
-	const commands = await generateObjectFromDirectory<CommandConfig>('.robo/build/commands', 'command')
-	const events = (await generateObjectFromDirectory<EventConfig>('.robo/build/events', 'event')) as Record<
-		string,
-		EventConfig[]
-	>
+	const commands = await generateObjectFromDirectory<CommandConfig>(
+		'.robo/build/commands',
+		'command',
+		generatedDefaults
+	)
+	const events = (await generateObjectFromDirectory<EventConfig>(
+		'.robo/build/events',
+		'event',
+		generatedDefaults
+	)) as Record<string, EventConfig[]>
 
 	const newManifest: Manifest = {
 		...BASE_MANIFEST,
@@ -159,6 +165,7 @@ export async function loadManifest(name = '', basePath = ''): Promise<Manifest> 
 async function generateObjectFromDirectory<T>(
 	dirPath: string,
 	type: DirType,
+	generatedDefaults: DefaultGen,
 	rootKey?: string
 ): Promise<Record<string, T | T[]>> {
 	try {
@@ -170,13 +177,15 @@ async function generateObjectFromDirectory<T>(
 				const stats = await fs.stat(fullPath)
 
 				if (stats.isDirectory()) {
-					const nestedObjects = await generateObjectFromDirectory<T>(fullPath, type, rootKey || file)
+					const nestedObjects = await generateObjectFromDirectory<T>(fullPath, type, generatedDefaults, rootKey || file)
 					return Object.entries(nestedObjects).map(([key, value]) => ({
 						key: rootKey ? `${rootKey}/${key}` : key,
 						value
 					}))
 				} else if (path.extname(file) === '.js') {
 					const key = path.basename(file, path.extname(file))
+					const generated = type === 'command' ? generatedDefaults?.commands : generatedDefaults?.events
+					const isGenerated = generated && Object.keys(generated).includes(rootKey ?? key)
 					const importPath = pathToFileURL(fullPath).toString()
 					const module = await import(importPath)
 					const value: T = getValue(type, module.config) as T
@@ -184,6 +193,7 @@ async function generateObjectFromDirectory<T>(
 						key: rootKey || key,
 						value: {
 							...value,
+							__auto: isGenerated ? true : undefined,
 							__path: rootKey ? rootKey + '/' + file : file
 						}
 					}

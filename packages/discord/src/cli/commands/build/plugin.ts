@@ -35,7 +35,7 @@ async function pluginAction(options: PluginCommandOptions) {
 
 	// Generate manifest.json
 	const manifestTime = performance.now()
-	const manifest = await generateManifest()
+	const manifest = await generateManifest({ commands: {}, events: {} })
 	logger.debug(`Generated manifest in ${Math.round(performance.now() - manifestTime)}ms`)
 
 	// Log commands and events from the manifest

@@ -42,7 +42,7 @@ async function buildAction(options: BuildCommandOptions) {
 	logger.debug(`Compiled in ${Math.round(compileTime)}ms`)
 
 	// Assign default commands and events
-	await generateDefaults()
+	const generatedFiles = await generateDefaults()
 
 	// Get the size of the entire current working directory
 	const sizeStartTime = performance.now()
@@ -52,7 +52,7 @@ async function buildAction(options: BuildCommandOptions) {
 	// Generate manifest.json
 	const oldManifest = await loadManifest()
 	const manifestTime = performance.now()
-	const manifest = await generateManifest()
+	const manifest = await generateManifest(generatedFiles)
 	logger.debug(`Generated manifest in ${Math.round(performance.now() - manifestTime)}ms`)
 
 	// Log commands and events from the manifest

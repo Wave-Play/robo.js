@@ -3,7 +3,6 @@ import { getManifest } from '@roboplay/robo.js'
 import type { CommandConfig } from '../../types/commands.js'
 
 export const config: CommandConfig = {
-	__auto: true,
 	description: 'Displays a list of commands.'
 }
 
