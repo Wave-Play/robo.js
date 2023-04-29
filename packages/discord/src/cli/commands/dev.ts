@@ -66,9 +66,9 @@ async function devAction(options: DevCommandOptions) {
 		try {
 			const fileName = path.split('/').pop()
 			if (CONFIG_FILES.includes(path)) {
-				logger.info(`${chalk.bold(fileName)} file was updated. Restarting to apply configuration...`)
+				logger.wait(`${chalk.bold(fileName)} file was updated. Restarting to apply configuration...`)
 			} else {
-				logger.info(`Change detected. Restarting Robo...`)
+				logger.wait(`Change detected. Restarting Robo...`)
 			}
 
 			const updatedBot = await rebuildAndRestartBot(botProcess, config)

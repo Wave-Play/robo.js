@@ -1,7 +1,7 @@
 import chalk from 'chalk'
 import { env } from './env.js'
 
-export type LogLevel = 'trace' | 'debug' | 'info' | 'other' | 'event' | 'ready' | 'warn' | 'error'
+export type LogLevel = 'trace' | 'debug' | 'info' | 'wait' | 'other' | 'event' | 'ready' | 'warn' | 'error'
 
 export interface BaseLoggerOptions {
 	enabled?: boolean
@@ -42,6 +42,12 @@ abstract class BaseLogger {
 		}
 	}
 
+	public wait(message: string, ...args: unknown[]) {
+		if (this._enabled && LogLevelValues[this._level] <= LogLevelValues.wait) {
+			this._log('wait', message, ...args)
+		}
+	}
+
 	public log(message: string, ...args: unknown[]) {
 		if (this._enabled && LogLevelValues[this._level] <= LogLevelValues.other) {
 			this._log('other', message, ...args)
@@ -79,6 +85,7 @@ const LogLevelValues: Record<LogLevel, number> = {
 	trace: 0,
 	debug: 1,
 	info: 2,
+	wait: 2,
 	other: 2,
 	event: 3,
 	ready: 5,
@@ -90,6 +97,7 @@ const colorizedLogLevels = {
 	trace: chalk.gray('trace'.padEnd(5)),
 	debug: chalk.cyan('debug'.padEnd(5)),
 	info: chalk.blue('info'.padEnd(5)),
+	wait: chalk.cyan('wait'.padEnd(5)),
 	event: chalk.magenta('event'.padEnd(5)),
 	ready: chalk.green('ready'.padEnd(5)),
 	warn: chalk.yellow('warn'.padEnd(5)),

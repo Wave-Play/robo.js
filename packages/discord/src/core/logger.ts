@@ -26,6 +26,9 @@ class Logger extends BaseLogger {
 			case 'info':
 				console.info(formattedMessage, ...args)
 				break
+			case 'wait':
+				console.info(formattedMessage, ...args)
+				break
 			case 'event':
 				console.log(formattedMessage, ...args)
 				break
@@ -65,6 +68,10 @@ logger.debug = function (message: string, ...args: unknown[]): void {
 
 logger.info = function (message: string, ...args: unknown[]): void {
 	return logger().info(message, ...args)
+}
+
+logger.wait = function (message: string, ...args: unknown[]): void {
+	return logger().wait(message, ...args)
 }
 
 logger.log = function (message: string, ...args: unknown[]): void {
