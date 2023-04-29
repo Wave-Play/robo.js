@@ -6,8 +6,8 @@ import { logger } from './logger.js'
 import { getManifest, loadManifest } from '../cli/utils/manifest.js'
 import { env } from './env.js'
 import { pathToFileURL } from 'node:url'
-import type { CommandRecord, EventRecord, Handler, PluginData, RoboMessage } from '../types/index.js'
 import { executeAutocompleteHandler, executeCommandHandler, executeEventHandler } from './handlers.js'
+import type { CommandRecord, EventRecord, Handler, PluginData, RoboMessage } from '../types/index.js'
 
 export const Robo = { restart, start, stop }
 
@@ -45,8 +45,11 @@ async function start() {
 
 	// Define event handlers
 	for (const key of events.keys()) {
+		const onlyAuto = events.get(key).every((event) => event.auto)
 		client.on(key, async (...args) => {
-			logger.event(`Event received: ${chalk.bold(key)}`)
+			if (!onlyAuto) {
+				logger.event(`Event received: ${chalk.bold(key)}`)
+			}
 			logger.trace('Event args:', args)
 
 			// Notify event handler
@@ -54,7 +57,7 @@ async function start() {
 		})
 	}
 
-	// Forward command interactions to our fancy handler
+	// Forward command interactions to our fancy handlers
 	client.on(Events.InteractionCreate, async (interaction) => {
 		if (interaction.isChatInputCommand()) {
 			logger.event(`Received slash command interaction: ${chalk.bold('/' + interaction.commandName)}`)
@@ -126,6 +129,7 @@ async function loadHandlerModules<T extends Handler | Handler[]>(type: 'commands
 				const importPath = pathToFileURL(path.join(basePath, itemConfig.__path)).toString()
 
 				const handler = {
+					auto: itemConfig.__auto,
 					handler: await import(importPath),
 					path: itemConfig.__path,
 					plugin: itemConfig.__plugin

@@ -4,6 +4,7 @@ export * from './events.js'
 export * from './manifest.js'
 
 export interface Handler {
+	auto?: boolean
 	handler: unknown
 	path: string
 	plugin?: {
