@@ -1,15 +1,32 @@
 import chalk from 'chalk'
-import { commands, events } from './robo.js'
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Colors, CommandInteraction, Message } from 'discord.js'
+import { client, commands, events } from './robo.js'
+import {
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonStyle,
+	ChannelType,
+	Colors,
+	CommandInteraction,
+	Message
+} from 'discord.js'
 import path from 'node:path'
 import { getSage, timeout } from '../cli/utils/utils.js'
 import { getConfig } from '../cli/utils/config.js'
 import { logger } from './logger.js'
 import { BUFFER, DEFAULT_CONFIG, TIMEOUT } from './constants.js'
 import fs from 'node:fs/promises'
-import type { APIEmbed, APIEmbedField, APIMessage, AutocompleteInteraction, InteractionResponse, MessageComponentInteraction, BaseMessageOptions } from 'discord.js'
+import type {
+	APIEmbed,
+	APIEmbedField,
+	APIMessage,
+	AutocompleteInteraction,
+	InteractionResponse,
+	MessageComponentInteraction,
+	BaseMessageOptions
+} from 'discord.js'
 import type { CommandConfig, EventRecord, PluginData } from '../types/index.js'
 import type { Collection } from 'discord.js'
+import { env } from './env.js'
 
 export async function executeAutocompleteHandler(interaction: AutocompleteInteraction) {
 	const command = commands.get(interaction.commandName)
@@ -108,7 +125,11 @@ export async function executeCommandHandler(interaction: CommandInteraction) {
 	}
 }
 
-export async function executeEventHandler(plugins: Collection<string, PluginData>, eventName: string, ...eventData: unknown[]) {
+export async function executeEventHandler(
+	plugins: Collection<string, PluginData>,
+	eventName: string,
+	...eventData: unknown[]
+) {
 	const callbacks = events.get(eventName)
 	if (!callbacks?.length) {
 		return Promise.resolve()
@@ -169,110 +190,57 @@ async function printErrorResponse(error: unknown, interaction: unknown, details?
 	}
 
 	try {
-		// Extract readable error message or assign default
-		let message = 'There was an error while executing this command!'
-		if (error instanceof Error) {
-			message = error.message
-		} else if (typeof error === 'string') {
-			message = error
-		}
-		message += '\n\u200b'
-
-		// Try to get code at fault from stack trace
-		const stack = error instanceof Error ? error.stack : null
-		const source = error instanceof Error ? await getCodeCodeAtFault(error) : null
-
-		// Assemble error response using fanceh embeds
-		const fields: APIEmbedField[] = []
-
-		// Include additional details available
-		if (interaction instanceof CommandInteraction) {
-			fields.push({
-				name: 'Command',
-				value: '`/' + interaction.commandName + '`'
-			})
-		}
-		if (details) {
-			fields.push({
-				name: 'Details',
-				value: details
-			})
-		}
-		if (event) {
-			fields.push({
-				name: 'Event',
-				value: '`' + event.path + '`'
-			})
-		}
-		if (source) {
-			fields.push({
-				name: 'Source',
-				value: `\`${source.file.replace(process.cwd(), '')}\`\n` + '```' + `${source.type}\n` + source.code + '\n```'
-			})
-		}
-
-		// Assemble response as an embed
-		const response: APIEmbed = {
-			color: Colors.Red,
-			fields: fields
-		}
-
-		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-			new ButtonBuilder({
-				label: 'Show stack trace',
-				style: ButtonStyle.Danger,
-				customId: 'stack_trace'
-			})
-		)
+		const { message, stack } = await formatError({ error, interaction, details, event })
 
 		// Send response as follow-up if the command has already been replied to
 		let reply: Message | APIMessage | InteractionResponse
-		const content: BaseMessageOptions = {
-			content: message,
-			embeds: [response],
-			components: [row]
-		}
-
 		if (interaction instanceof CommandInteraction) {
 			if (interaction.replied || interaction.deferred) {
-				reply = await interaction.followUp(content)
+				reply = await interaction.followUp(message)
 			} else {
-				reply = await interaction.reply(content)
+				reply = await interaction.reply(message)
 			}
 		} else if (interaction instanceof Message) {
-			reply = await interaction.channel.send(content)
+			reply = await interaction.channel.send(message)
 		}
 
-		// Wait for user to click on the "Stack trace" button
-		(reply as Message).awaitMessageComponent({
-			filter: (i: MessageComponentInteraction) => i.customId === 'stack_trace'
-		}).then(async (i) => {
-			try {
-				// Make button disabled
-				await i.update({
-					components: [
-						new ActionRowBuilder<ButtonBuilder>().addComponents(
-							new ButtonBuilder({
-								label: 'Show stack trace',
-								style: ButtonStyle.Danger,
-								customId: 'stack_trace',
-								disabled: true
-							})
-						)
-					]
-				})
-				const stackTrace = stack.replace('/.robo/build/commands', '').replace('/.robo/build/events', '').replaceAll('\n', '\n> ')
-				await i.followUp('> ```js\n> ' + stackTrace + '\n> ```')
-			} catch (error) {
-				// Error-ception!! T-T
-				logger.debug('Error sending stack trace:', error)
-			}
-		})
+		handleErrorStack(reply as Message, stack)
 	} catch (error) {
 		// This had one job... and it failed
 		logger.debug('Error printing error response:', error)
 	}
 }
+
+export async function sendDebugError(error: unknown) {
+	try {
+		// Find the guild by its ID
+		const guild = client.guilds.cache.get(env.discord.guildId)
+		const channel = guild?.channels?.cache?.get(env.discord.debugChannelId)
+		if (!guild || !channel) {
+			logger.info(
+				`Fix the error or set DISCORD_GUILD_ID and DISCORD_DEBUG_CHANNEL_ID to prevent your Robo from stopping.`
+			)
+			return false
+		}
+
+		// Ensure the channel is a text-based channel
+		if (channel.type !== ChannelType.GuildText) {
+			logger.warn(`Debug channel specified is not a text-based channel.`)
+			return false
+		}
+
+		// Send the message to the channel
+		const { message, stack } = await formatError({ error })
+		const reply = await channel.send(message)
+		handleErrorStack(reply, stack)
+		logger.debug(`Message sent to channel ${env.discord.debugChannelId} in guild ${env.discord.guildId}.`)
+		return true
+	} catch (error) {
+		logger.error('Error sending message:', error)
+		return false
+	}
+}
+
 async function getCodeCodeAtFault(err: Error) {
 	try {
 		const stackLines = err.stack?.split('\n')
@@ -289,10 +257,7 @@ async function getCodeCodeAtFault(err: Error) {
 
 		// Read file contents
 		const file = filePath.replaceAll('/.robo/build/commands', '').replaceAll('/.robo/build/events', '')
-		const fileContent = await fs.readFile(
-			path.resolve(file),
-			'utf-8'
-		)
+		const fileContent = await fs.readFile(path.resolve(file), 'utf-8')
 		const lines = fileContent.split('\n')
 		const lineNumber = parseInt(line, 10)
 		const columnNumber = parseInt(column, 10)
@@ -317,4 +282,120 @@ async function getCodeCodeAtFault(err: Error) {
 		logger.debug('Error getting code at fault:', error)
 		return null
 	}
+}
+
+interface FormatErrorOptions {
+	details?: string
+	error: unknown
+	event?: EventRecord
+	interaction?: unknown
+}
+
+interface FormatErrorResult {
+	message: BaseMessageOptions
+	stack?: string
+}
+
+async function formatError(options: FormatErrorOptions): Promise<FormatErrorResult> {
+	const { details, error, event, interaction } = options
+
+	// Extract readable error message or assign default
+	let message = 'There was an error while executing this command!'
+	if (error instanceof Error) {
+		message = error.message
+	} else if (typeof error === 'string') {
+		message = error
+	}
+	message += '\n\u200b'
+
+	// Try to get code at fault from stack trace
+	const stack = error instanceof Error ? error.stack : null
+	const source = error instanceof Error ? await getCodeCodeAtFault(error) : null
+
+	// Assemble error response using fanceh embeds
+	const fields: APIEmbedField[] = []
+
+	// Include additional details available
+	if (interaction instanceof CommandInteraction) {
+		fields.push({
+			name: 'Command',
+			value: '`/' + interaction.commandName + '`'
+		})
+	}
+	if (details) {
+		fields.push({
+			name: 'Details',
+			value: details
+		})
+	}
+	if (event) {
+		fields.push({
+			name: 'Event',
+			value: '`' + event.path + '`'
+		})
+	}
+	if (source) {
+		fields.push({
+			name: 'Source',
+			value: `\`${source.file.replace(process.cwd(), '')}\`\n` + '```' + `${source.type}\n` + source.code + '\n```'
+		})
+	}
+
+	// Assemble response as an embed
+	const response: APIEmbed = {
+		color: Colors.Red,
+		fields: fields
+	}
+
+	const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+		new ButtonBuilder({
+			label: 'Show stack trace',
+			style: ButtonStyle.Danger,
+			customId: 'stack_trace'
+		})
+	)
+
+	return {
+		message: {
+			content: message,
+			embeds: [response],
+			components: [row]
+		},
+		stack: stack
+	}
+}
+
+/**
+ * Wait for user to click on the "Show stack trace" button
+ */
+function handleErrorStack(reply: Message, stack: string) {
+	reply
+		.awaitMessageComponent({
+			filter: (i: MessageComponentInteraction) => i.customId === 'stack_trace'
+		})
+		.then(async (i) => {
+			try {
+				// Make button disabled
+				await i.update({
+					components: [
+						new ActionRowBuilder<ButtonBuilder>().addComponents(
+							new ButtonBuilder({
+								label: 'Show stack trace',
+								style: ButtonStyle.Danger,
+								customId: 'stack_trace',
+								disabled: true
+							})
+						)
+					]
+				})
+				const stackTrace = stack
+					.replace('/.robo/build/commands', '')
+					.replace('/.robo/build/events', '')
+					.replaceAll('\n', '\n> ')
+				await i.followUp('> ```js\n> ' + stackTrace + '\n> ```')
+			} catch (error) {
+				// Error-ception!! T-T
+				logger.debug('Error sending stack trace:', error)
+			}
+		})
 }

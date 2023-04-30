@@ -6,7 +6,7 @@ import { logger } from './logger.js'
 import { getManifest, loadManifest } from '../cli/utils/manifest.js'
 import { env } from './env.js'
 import { pathToFileURL } from 'node:url'
-import { executeAutocompleteHandler, executeCommandHandler, executeEventHandler } from './handlers.js'
+import { executeAutocompleteHandler, executeCommandHandler, executeEventHandler, sendDebugError } from './handlers.js'
 import type { CommandRecord, EventRecord, Handler, PluginData, RoboMessage } from '../types/index.js'
 
 export const Robo = { restart, start, stop }
@@ -105,6 +105,28 @@ process.on('message', (message: RoboMessage) => {
 		restart()
 	} else {
 		logger.debug('Unknown message:', message)
+	}
+})
+
+process.on('unhandledRejection', async (reason) => {
+	// Exit right away if the client isn't ready yet
+	// We don't want to send a message to Discord nor notify handlers if we can't
+	if (!client?.isReady()) {
+		logger.error(reason)
+		process.exit(1)
+	}
+
+	// Log error and ignore it in production
+	logger.error(reason)
+	if (env.nodeEnv === 'production') {
+		return
+	}
+
+	// Development mode works a bit differently because we don't want developers to ignore errors
+	// Errors will stop the process unless there's a special channel to send them to
+	const handledError = await sendDebugError(reason)
+	if (!handledError) {
+		stop(1)
 	}
 })
 

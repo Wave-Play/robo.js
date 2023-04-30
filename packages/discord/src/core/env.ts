@@ -4,6 +4,7 @@ dotenv.config()
 export const env = {
 	discord: {
 		clientId: process.env.DISCORD_CLIENT_ID,
+		debugChannelId: process.env.DISCORD_DEBUG_CHANNEL_ID,
 		guildId: process.env.DISCORD_GUILD_ID,
 		token: process.env.DISCORD_TOKEN
 	},
