@@ -74,12 +74,12 @@ async function start() {
 	await client.login(env.discord.token)
 }
 
-async function stop() {
+async function stop(exitCode = 0) {
 	// Notify lifecycle handler
 	await executeEventHandler(plugins, '_stop', client)
 	client?.destroy()
-	logger.debug(`Stopped Robo`)
-	process.exit(0)
+	logger.debug(`Stopped Robo at ` + new Date().toLocaleString())
+	process.exit(exitCode)
 }
 
 async function restart() {
