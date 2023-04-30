@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.4.1
+
+### Patch Changes
+
+- 080f67e: fix(cli): copy instead of compiling for normal js projects
+
 ## 0.4.0
 
 ### Minor Changes
