@@ -93,8 +93,18 @@ interface RoboCompileOptions {
 export async function compile(options?: RoboCompileOptions) {
 	const startTime = performance.now()
 
-	const { default: ts } = await import('typescript')
-	const { transform } = await import('@swc/core')
+	let ts, transform
+	try {
+		// Try to import TypeScript and SWC
+		ts = (await import('typescript')).default
+		transform = (await import('@swc/core')).transform
+	} catch (error) {
+		// If either of them fail, just copy the srcDir to distDir
+		logger.debug('Copying srcDir to distDir without transversing...')
+		await copyDir(srcDir, distDir)
+
+		return performance.now() - startTime
+	}
 
 	// Read the tsconfig.json file
 	const configFileName = path.join(process.cwd(), 'tsconfig.json')
