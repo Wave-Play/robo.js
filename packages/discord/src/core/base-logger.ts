@@ -24,61 +24,61 @@ abstract class BaseLogger {
 		}
 	}
 
-	public trace(message: string, ...args: unknown[]) {
+	public trace(...data: unknown[]) {
 		if (this._enabled && LogLevelValues[this._level] <= LogLevelValues.trace) {
-			this._log('trace', message, ...args)
+			this._log('trace', ...data)
 		}
 	}
 
-	public debug(message: string, ...args: unknown[]) {
+	public debug(...data: unknown[]) {
 		if (this._enabled && LogLevelValues[this._level] <= LogLevelValues.debug) {
-			this._log('debug', message, ...args)
+			this._log('debug', ...data)
 		}
 	}
 
-	public info(message: string, ...args: unknown[]) {
+	public info(...data: unknown[]) {
 		if (this._enabled && LogLevelValues[this._level] <= LogLevelValues.info) {
-			this._log('info', message, ...args)
+			this._log('info', ...data)
 		}
 	}
 
-	public wait(message: string, ...args: unknown[]) {
+	public wait(...data: unknown[]) {
 		if (this._enabled && LogLevelValues[this._level] <= LogLevelValues.wait) {
-			this._log('wait', message, ...args)
+			this._log('wait', ...data)
 		}
 	}
 
-	public log(message: string, ...args: unknown[]) {
+	public log(...data: unknown[]) {
 		if (this._enabled && LogLevelValues[this._level] <= LogLevelValues.other) {
-			this._log('other', message, ...args)
+			this._log('other', ...data)
 		}
 	}
 
-	public event(message: string, ...args: unknown[]) {
+	public event(...data: unknown[]) {
 		if (this._enabled && LogLevelValues[this._level] <= LogLevelValues.event) {
-			this._log('event', message, ...args)
+			this._log('event', ...data)
 		}
 	}
 
-	public ready(message: string, ...args: unknown[]) {
+	public ready(...data: unknown[]) {
 		if (this._enabled && LogLevelValues[this._level] <= LogLevelValues.ready) {
-			this._log('ready', message, ...args)
+			this._log('ready', ...data)
 		}
 	}
 
-	public warn(message: string, ...args: unknown[]) {
+	public warn(...data: unknown[]) {
 		if (this._enabled && LogLevelValues[this._level] <= LogLevelValues.warn) {
-			this._log('warn', message, ...args)
+			this._log('warn', ...data)
 		}
 	}
 
-	public error(message: string, ...args: unknown[]) {
+	public error(...data: unknown[]) {
 		if (this._enabled && LogLevelValues[this._level] <= LogLevelValues.error) {
-			this._log('error', message, ...args)
+			this._log('error', ...data)
 		}
 	}
 
-	protected abstract _log(level: LogLevel, message: string, ...args: unknown[]): void
+	protected abstract _log(level: LogLevel, ...data: unknown[]): void
 }
 
 const LogLevelValues: Record<LogLevel, number> = {

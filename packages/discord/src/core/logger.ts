@@ -6,7 +6,18 @@ class Logger extends BaseLogger {
 		super(options)
 	}
 
-	protected _log(level: LogLevel, message: string, ...args: unknown[]): void {
+	protected _log(level: LogLevel, ...data: unknown[]): void {
+		// Get the message from the first data element unless it's not a string
+		const first = data[0]
+		let message
+		if (typeof first === 'string') {
+			message = ' ' + first
+			data.splice(0, 1)
+		} else {
+			message = ''
+		}
+
+		// Format the message all pretty and stuff
 		let formattedLevel = ''
 		let formattedMessage = ''
 
@@ -15,31 +26,31 @@ class Logger extends BaseLogger {
 		} else {
 			const colorizedLevel = colorizedLogLevels[level]
 			formattedLevel = colorizedLevel ? colorizedLevel : level.padEnd(5)
-			formattedMessage = `${formattedLevel} - ${message}`
+			formattedMessage = `${formattedLevel} -${message}`
 		}
 
 		switch (level) {
 			case 'trace':
 			case 'debug':
-				console.debug(formattedMessage, ...args)
+				console.debug(formattedMessage, ...data)
 				break
 			case 'info':
-				console.info(formattedMessage, ...args)
+				console.info(formattedMessage, ...data)
 				break
 			case 'wait':
-				console.info(formattedMessage, ...args)
+				console.info(formattedMessage, ...data)
 				break
 			case 'event':
-				console.log(formattedMessage, ...args)
+				console.log(formattedMessage, ...data)
 				break
 			case 'warn':
-				console.warn(formattedMessage, ...args)
+				console.warn(formattedMessage, ...data)
 				break
 			case 'error':
-				console.error(formattedMessage, ...args)
+				console.error(formattedMessage, ...data)
 				break
 			default:
-				console.log(formattedMessage, ...args)
+				console.log(formattedMessage, ...data)
 		}
 	}
 }
@@ -58,38 +69,38 @@ export function logger(options?: BaseLoggerOptions): Logger {
 	return _logger
 }
 
-logger.trace = function (message: string, ...args: unknown[]): void {
-	return logger().trace(message, ...args)
+logger.trace = function (...data: unknown[]): void {
+	return logger().trace(...data)
 }
 
-logger.debug = function (message: string, ...args: unknown[]): void {
-	return logger().debug(message, ...args)
+logger.debug = function (...data: unknown[]): void {
+	return logger().debug(...data)
 }
 
-logger.info = function (message: string, ...args: unknown[]): void {
-	return logger().info(message, ...args)
+logger.info = function (...data: unknown[]): void {
+	return logger().info(...data)
 }
 
-logger.wait = function (message: string, ...args: unknown[]): void {
-	return logger().wait(message, ...args)
+logger.wait = function (...data: unknown[]): void {
+	return logger().wait(...data)
 }
 
-logger.log = function (message: string, ...args: unknown[]): void {
-	return logger().log(message, ...args)
+logger.log = function (...data: unknown[]): void {
+	return logger().log(...data)
 }
 
-logger.event = function (message: string, ...args: unknown[]): void {
-	return logger().event(message, ...args)
+logger.event = function (...data: unknown[]): void {
+	return logger().event(...data)
 }
 
-logger.ready = function (message: string, ...args: unknown[]): void {
-	return logger().ready(message, ...args)
+logger.ready = function (...data: unknown[]): void {
+	return logger().ready(...data)
 }
 
-logger.warn = function (message: string, ...args: unknown[]): void {
-	return logger().warn(message, ...args)
+logger.warn = function (...data: unknown[]): void {
+	return logger().warn(...data)
 }
 
-logger.error = function (message: string, ...args: unknown[]): void {
-	return logger().error(message, ...args)
+logger.error = function (...data: unknown[]): void {
+	return logger().error(...data)
 }
