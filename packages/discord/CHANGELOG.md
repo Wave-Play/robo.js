@@ -1,5 +1,28 @@
 # robo.js
 
+## 0.4.0
+
+### Minor Changes
+
+- ee2b5a9: feat: automatic promise rejection handling
+- ad5768f: feat: command return values are now optional
+
+### Patch Changes
+
+- 116ebab: feat(cli): new "why" command that explains your robo structure
+- 51b608b: refactor: default commands now in /default directory with events support
+- 647e99b: fix(cli): auto-generated commands and events are now properly marked as "auto"
+- a6ed21a: fix(cli): "auto" marker for auto generated events
+- 07bd8f0: refactor: renamed "stack trace" button to "show stack trace" in errors
+- 7375d4f: refactor: more accurate "powered by" wording
+- 16a0531: feat: stop() function now supports custom exit codes
+- 099cf9a: fix(cli): generated defaults no longer override events and commands check for more file types
+- 2f77aed: feat: export chalk and logger
+- 3a20df8: feat: more flexible logger parameters
+- 08afac9: chore: skip trigger logs for auto-generated events
+- 9f56985: refactor(cli): use "info" instead of "event" for initial log
+- 9bb58f7: refactor(cli): print "wait" instead of "info" for restarts
+
 ## 0.3.1
 
 ### Patch Changes
