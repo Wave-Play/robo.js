@@ -1,2 +1,5 @@
 allow:
+  - easy
   - host-hostess
+  - just
+  - simple
