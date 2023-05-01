@@ -1,0 +1,49 @@
+{
+	"name": "create-robo",
+	"version": "0.0.0",
+	"private": false,
+	"description": "Create Robo.js Discord bots with one command",
+	"engines": {
+		"node": ">=18.0.0"
+	},
+	"scripts": {
+		"build": "tsup"
+	},
+	"bin": {
+		"create-robo": "dist/index.js"
+	},
+	"keywords": [],
+	"license": "MIT",
+	"author": "WavePlay <dev@waveplay.com> (waveplay.com)",
+	"contributors": [
+		"Pkmmte Xeleon <pk@waveplay.com>"
+	],
+	"type": "module",
+	"files": [
+		"dist/",
+		"src/",
+		"templates/",
+		"LICENSE",
+		"README.md"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Wave-Play/robo.git",
+		"directory": "packages/create-robo"
+	},
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://registry.npmjs.org/"
+	},
+	"dependencies": {
+		"chalk": "5.2.0",
+		"commander": "10.0.0",
+		"inquirer": "^9.2.0"
+	},
+	"devDependencies": {
+		"@types/inquirer": "^9.0.3",
+		"@types/node": "^18.16.3",
+		"tsup": "6.7.0",
+		"typescript": "5.0.2"
+	}
+}
