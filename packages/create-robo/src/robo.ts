@@ -15,6 +15,7 @@ interface PackageJson {
 	engines: {
 		node: string
 	}
+	type: 'module' | 'commonjs'
 	scripts: Record<string, string>
 	dependencies: {
 		'discord.js': string
@@ -83,6 +84,7 @@ export default class Robo {
 			engines: {
 				node: '>=18.0.0'
 			},
+			type: 'module',
 			scripts: {
 				build: 'robo build',
 				deploy: 'robo deploy',
