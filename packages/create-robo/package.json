@@ -1,6 +1,6 @@
 {
 	"name": "create-robo",
-	"version": "0.0.0",
+	"version": "0.1.0",
 	"private": false,
 	"description": "Create Robo.js Discord bots with one command",
 	"engines": {
