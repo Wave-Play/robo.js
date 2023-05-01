@@ -101,6 +101,8 @@ export default class Robo {
 
 		const runPrefix = packageManager + packageManager === 'npm' ? 'npm run ' : packageManager + ' '
 		if (features.includes('TypeScript')) {
+			packageJson.devDependencies['@swc/core'] = '^1.3.44'
+			packageJson.devDependencies['@types/node'] = '^18.14.6'
 			packageJson.devDependencies['typescript'] = '^5.0.0'
 		}
 		if (features.includes('ESLint')) {
