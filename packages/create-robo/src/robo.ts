@@ -185,8 +185,8 @@ export default class Robo {
 		}
 
 		// Update DISCORD_TOKEN and DISCORD_CLIENT_ID variables
-		envContent = updateOrAddVariable(envContent, 'DISCORD_TOKEN', discordToken ?? '')
 		envContent = updateOrAddVariable(envContent, 'DISCORD_CLIENT_ID', discordClientId ?? '')
+		envContent = updateOrAddVariable(envContent, 'DISCORD_TOKEN', discordToken ?? '')
 
 		await fs.writeFile(envFilePath, envContent)
 	}
