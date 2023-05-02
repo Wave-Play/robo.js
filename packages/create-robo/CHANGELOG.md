@@ -1,5 +1,16 @@
 # create-robo
 
+## 0.2.0
+
+### Minor Changes
+
+- a5c1e6f: refactor(cr): ask for typescript support separately from features
+- a5c1e6f: feat(cr): official plugins now included in the feature selection
+
+### Patch Changes
+
+- ed8987b: refactor(cr): minor logging changes
+
 ## 0.1.1
 
 ### Patch Changes
