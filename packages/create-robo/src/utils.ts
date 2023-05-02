@@ -1,11 +1,40 @@
-import { spawn } from 'child_process'
-import { logger } from './logger.js'
-import type { SpawnOptions } from 'child_process'
+import { spawn } from 'node:child_process'
 import chalk from 'chalk'
+import { logger } from './logger.js'
+import type { SpawnOptions } from 'node:child_process'
+import type { Plugin } from '@roboplay/robo.js'
 
 type PackageManager = 'npm' | 'pnpm' | 'yarn'
 
+export const ESLINT_IGNORE = `node_modules
+.config
+.robo\n`
+
 export const IS_WINDOWS = /^win/.test(process.platform)
+
+export const PRETTIER_CONFIG = `module.exports = {
+	printWidth: 120,
+	semi: false,
+	singleQuote: true,
+	trailingComma: 'none',
+	tabWidth: 2,
+	useTabs: true
+}\n`
+
+const ROBO_CONFIG = `// @ts-check
+
+/**
+ * @type {import('@roboplay/robo.js').Config}
+ **/
+export default {
+	clientOptions: {
+		intents: [
+			'Guilds',
+			'GuildMessages'
+		]
+	},
+	plugins: {{plugins}}
+}\n`
 
 /**
  * Eh, just Windows things
@@ -24,7 +53,7 @@ export function exec(command: string, options?: SpawnOptions) {
 		// Run command as child process
 		const args = command.split(' ')
 		const childProcess = spawn(args.shift(), args, {
-			...options ?? {},
+			...(options ?? {}),
 			env: { ...process.env, FORCE_COLOR: '1' },
 			stdio: 'inherit'
 		})
@@ -43,6 +72,11 @@ export function exec(command: string, options?: SpawnOptions) {
 			reject(error)
 		})
 	})
+}
+
+export function generateRoboConfig(plugins: Plugin[]) {
+	const stringifiedPlugins = JSON.stringify(plugins, null, 2).replace(/\n/g, '\n  ')
+	return ROBO_CONFIG.replace('{{plugins}}', stringifiedPlugins)
 }
 
 /**
@@ -66,4 +100,13 @@ export function hasProperties<T extends Record<string, unknown>>(
 	props: (keyof T)[]
 ): obj is T & Record<keyof T, unknown> {
 	return typeof obj === 'object' && obj !== null && props.every((prop) => prop in obj)
+}
+
+export function sortObjectKeys(obj: Record<string, string>) {
+	return Object.keys(obj)
+		.sort()
+		.reduce((acc, key) => {
+			acc[key] = obj[key]
+			return acc
+		}, {} as Record<string, string>)
 }

@@ -26,18 +26,14 @@ new Command('create-robo <projectName>')
 		const projectName = args[0]
 		const robo = new Robo(projectName)
 
+		await robo.askUseTypeScript()
+
 		// Get user input to determine which features to include or use the recommended defaults
 		const selectedFeaturesOrDefaults = await robo.getUserInput()
-		if (selectedFeaturesOrDefaults === 'defaults') {
-			await robo.createPackage(['TypeScript', 'ESLint', 'Prettier'])
-		} else {
-			await robo.createPackage(selectedFeaturesOrDefaults)
-		}
+		await robo.createPackage(selectedFeaturesOrDefaults)
 
 		// Determine if TypeScript is selected and copy the corresponding template files
-		const useTypeScript =
-			selectedFeaturesOrDefaults === 'defaults' || (selectedFeaturesOrDefaults as string[]).includes('TypeScript')
-		await robo.copyTemplateFiles('', useTypeScript)
+		await robo.copyTemplateFiles('')
 
 		// Ask the user for their Discord credentials (token and client ID) and store them for later use
 		await robo.askForDiscordCredentials()
