@@ -21,7 +21,7 @@ interface PackageJson {
 	name: string
 	description: string
 	version: string
-	engines: {
+	engines?: {
 		node: string
 	}
 	type: 'module' | 'commonjs'
@@ -98,11 +98,8 @@ export default class Robo {
 		// Create a package.json file based on the selected features
 		const packageJson: PackageJson = {
 			name: this._name,
-			version: '0.1.0',
 			description: '',
-			engines: {
-				node: '>=18.0.0'
-			},
+			version: '1.0.0',
 			type: 'module',
 			scripts: {
 				build: 'robo build',
