@@ -7,50 +7,34 @@ class Logger extends BaseLogger {
 	}
 
 	protected _log(level: LogLevel, ...data: unknown[]): void {
-		// Get the message from the first data element unless it's not a string
-		const first = data[0]
-		let message
-		if (typeof first === 'string') {
-			message = ' ' + first
-			data.splice(0, 1)
-		} else {
-			message = ''
-		}
-
 		// Format the message all pretty and stuff
-		let formattedLevel = ''
-		let formattedMessage = ''
-
-		if (level === 'other') {
-			formattedMessage = message
-		} else {
+		if (level !== 'other') {
 			const colorizedLevel = colorizedLogLevels[level]
-			formattedLevel = colorizedLevel ? colorizedLevel : level.padEnd(5)
-			formattedMessage = `${formattedLevel} -${message}`
+			data.unshift((colorizedLevel ?? level.padEnd(5)) + ' -')
 		}
 
 		switch (level) {
 			case 'trace':
 			case 'debug':
-				console.debug(formattedMessage, ...data)
+				console.debug(...data)
 				break
 			case 'info':
-				console.info(formattedMessage, ...data)
+				console.info(...data)
 				break
 			case 'wait':
-				console.info(formattedMessage, ...data)
+				console.info(...data)
 				break
 			case 'event':
-				console.log(formattedMessage, ...data)
+				console.log(...data)
 				break
 			case 'warn':
-				console.warn(formattedMessage, ...data)
+				console.warn(...data)
 				break
 			case 'error':
-				console.error(formattedMessage, ...data)
+				console.error(...data)
 				break
 			default:
-				console.log(formattedMessage, ...data)
+				console.log(...data)
 		}
 	}
 }
