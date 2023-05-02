@@ -19,7 +19,10 @@ new Command('create-robo <projectName>')
 	.action(async (options: CommandOptions, { args }) => {
 		logger({
 			level: options.verbose ? 'debug' : 'info'
-		}).info(`Creating new Robo.js project...\n`)
+		}).debug(`Creating new Robo.js project...`)
+		logger.log('')
+
+		// Create a new Robo project prototype
 		const projectName = args[0]
 		const robo = new Robo(projectName)
 

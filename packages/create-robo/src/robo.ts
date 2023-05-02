@@ -148,11 +148,11 @@ export default class Robo {
 	}
 
 	async askForDiscordCredentials(): Promise<void> {
-		logger.log('\n')
-		logger.info(
-			chalk.blue('To get your Discord Token and Client ID, register your bot at the Discord Developer portal.')
-		)
-		logger.info(`Discord Developer Portal: ${chalk.bold.underline('https://discord.com/developers/applications')}\n`)
+		const discordPortal = chalk.bold('Discord Developer Portal:')
+		const discordPortalUrl = chalk.blue.underline('https://discord.com/developers/applications')
+		logger.log('')
+		logger.log('To get your Discord Token and Client ID, register your bot at the Discord Developer portal.')
+		logger.log(`${discordPortal} ${discordPortalUrl}\n`)
 
 		const { discordToken, discordClientId } = await inquirer.prompt([
 			{
