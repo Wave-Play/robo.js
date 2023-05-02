@@ -100,6 +100,7 @@ export async function compile(options?: RoboCompileOptions) {
 		transform = (await import('@swc/core')).transform
 	} catch (error) {
 		// If either of them fail, just copy the srcDir to distDir
+		await fs.rm(distDir, { recursive: true, force: true })
 		logger.debug('Copying srcDir to distDir without transversing...')
 		await copyDir(srcDir, distDir)
 
@@ -111,6 +112,7 @@ export async function compile(options?: RoboCompileOptions) {
 	try {
 		await fs.access(configFileName)
 	} catch (error) {
+		await fs.rm(distDir, { recursive: true, force: true })
 		logger.debug('Copying srcDir to distDir without transversing...')
 		await copyDir(srcDir, distDir)
 
@@ -118,6 +120,7 @@ export async function compile(options?: RoboCompileOptions) {
 	}
 
 	if (typeof ts === 'undefined' || typeof transform === 'undefined') {
+		await fs.rm(distDir, { recursive: true, force: true })
 		logger.debug('Copying srcDir to distDir without transversing...')
 		await copyDir(srcDir, distDir)
 
