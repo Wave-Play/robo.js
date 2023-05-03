@@ -1,5 +1,11 @@
 # create-robo
 
+## 0.2.1
+
+### Patch Changes
+
+- 8d219c6: refactor(cr): updated default version and removed engines key
+
 ## 0.2.0
 
 ### Minor Changes

@@ -1,5 +1,13 @@
 # robo.js
 
+## 0.4.2
+
+### Patch Changes
+
+- b0b3ec8: fix(cli): clean .build directory for pure js builds as well
+- 2c63084: feat: keep a small log buffer in dev mode
+- 953741b: feat: new "show logs" button in debug errors
+
 ## 0.4.1
 
 ### Patch Changes
