@@ -27,6 +27,7 @@ import type {
 import type { CommandConfig, EventRecord, PluginData } from '../types/index.js'
 import type { Collection } from 'discord.js'
 import { env } from './env.js'
+import { DEBUG_MODE } from './debug.js'
 
 export async function executeAutocompleteHandler(interaction: AutocompleteInteraction) {
 	const command = commands.get(interaction.commandName)
@@ -120,7 +121,7 @@ export async function executeCommandHandler(interaction: CommandInteraction) {
 			await interaction.reply(reply)
 		}
 	} catch (error) {
-		logger.error('Chat input command error:', error)
+		logger.error('Command error:', error)
 		printErrorResponse(error, interaction)
 	}
 }
@@ -180,7 +181,7 @@ async function printErrorResponse(error: unknown, interaction: unknown, details?
 	const { errorReplies = true } = getSage()
 
 	// Don't print errors in production - they may contain sensitive information
-	if (process.env.NODE_ENV === 'production' || !errorReplies) {
+	if (!DEBUG_MODE || !errorReplies) {
 		return
 	}
 
@@ -190,7 +191,7 @@ async function printErrorResponse(error: unknown, interaction: unknown, details?
 	}
 
 	try {
-		const { message, stack } = await formatError({ error, interaction, details, event })
+		const { logs, message, stack } = await formatError({ error, interaction, details, event })
 
 		// Send response as follow-up if the command has already been replied to
 		let reply: Message | APIMessage | InteractionResponse
@@ -204,7 +205,7 @@ async function printErrorResponse(error: unknown, interaction: unknown, details?
 			reply = await interaction.channel.send(message)
 		}
 
-		handleErrorStack(reply as Message, stack)
+		handleDebugButtons(reply as Message, stack, logs)
 	} catch (error) {
 		// This had one job... and it failed
 		logger.debug('Error printing error response:', error)
@@ -230,9 +231,9 @@ export async function sendDebugError(error: unknown) {
 		}
 
 		// Send the message to the channel
-		const { message, stack } = await formatError({ error })
+		const { logs, message, stack } = await formatError({ error })
 		const reply = await channel.send(message)
-		handleErrorStack(reply, stack)
+		handleDebugButtons(reply, stack, logs)
 		logger.debug(`Message sent to channel ${env.discord.debugChannelId} in guild ${env.discord.guildId}.`)
 		return true
 	} catch (error) {
@@ -292,6 +293,7 @@ interface FormatErrorOptions {
 }
 
 interface FormatErrorResult {
+	logs: string[]
 	message: BaseMessageOptions
 	stack?: string
 }
@@ -309,6 +311,7 @@ async function formatError(options: FormatErrorOptions): Promise<FormatErrorResu
 	message += '\n\u200b'
 
 	// Try to get code at fault from stack trace
+	const logs = logger.getRecentLogs().map((log) => log.message())
 	const stack = error instanceof Error ? error.stack : null
 	const source = error instanceof Error ? await getCodeCodeAtFault(error) : null
 
@@ -352,10 +355,16 @@ async function formatError(options: FormatErrorOptions): Promise<FormatErrorResu
 			label: 'Show stack trace',
 			style: ButtonStyle.Danger,
 			customId: 'stack_trace'
+		}),
+		new ButtonBuilder({
+			label: 'Show logs',
+			style: ButtonStyle.Primary,
+			customId: 'logs'
 		})
 	)
 
 	return {
+		logs: logs,
 		message: {
 			content: message,
 			embeds: [response],
@@ -366,36 +375,116 @@ async function formatError(options: FormatErrorOptions): Promise<FormatErrorResu
 }
 
 /**
- * Wait for user to click on the "Show stack trace" button
+ * Wait for user to click on the button bar and handle the response
  */
-function handleErrorStack(reply: Message, stack: string) {
+function handleDebugButtons(reply: Message, stack: string, logs: string[]) {
 	reply
 		.awaitMessageComponent({
-			filter: (i: MessageComponentInteraction) => i.customId === 'stack_trace'
+			filter: (i: MessageComponentInteraction) => {
+				return i.customId === 'stack_trace' || i.customId === 'logs'
+			}
 		})
 		.then(async (i) => {
 			try {
-				// Make button disabled
-				await i.update({
-					components: [
-						new ActionRowBuilder<ButtonBuilder>().addComponents(
-							new ButtonBuilder({
-								label: 'Show stack trace',
-								style: ButtonStyle.Danger,
-								customId: 'stack_trace',
-								disabled: true
-							})
-						)
-					]
-				})
-				const stackTrace = stack
-					.replace('/.robo/build/commands', '')
-					.replace('/.robo/build/events', '')
-					.replaceAll('\n', '\n> ')
-				await i.followUp('> ```js\n> ' + stackTrace + '\n> ```')
+				const stackButtonDisabled = i.message.components[0].components[0].disabled
+				const logsButtonDisabled = i.message.components[0].components[1].disabled
+
+				if (i.customId === 'stack_trace') {
+					// Make button disabled
+					await i.update({
+						components: [
+							new ActionRowBuilder<ButtonBuilder>().addComponents(
+								new ButtonBuilder({
+									label: 'Show stack trace',
+									style: ButtonStyle.Danger,
+									customId: 'stack_trace',
+									disabled: true
+								}),
+								new ButtonBuilder({
+									label: 'Show logs',
+									style: ButtonStyle.Primary,
+									customId: 'logs',
+									disabled: logsButtonDisabled
+								})
+							)
+						]
+					})
+
+					const stackTrace = stack
+						.replace('/.robo/build/commands', '')
+						.replace('/.robo/build/events', '')
+						.replaceAll('\n', '\n> ')
+					await i.followUp('> ```js\n> ' + stackTrace + '\n> ```')
+					handleDebugButtons(reply, stack, logs)
+				} else if (i.customId === 'logs') {
+					// Make button disabled
+					await i.update({
+						components: [
+							new ActionRowBuilder<ButtonBuilder>().addComponents(
+								new ButtonBuilder({
+									label: 'Show stack trace',
+									style: ButtonStyle.Danger,
+									customId: 'stack_trace',
+									disabled: stackButtonDisabled
+								}),
+								new ButtonBuilder({
+									label: 'Show logs',
+									style: ButtonStyle.Primary,
+									customId: 'logs',
+									disabled: true
+								})
+							)
+						]
+					})
+
+					await handleLogButtons(logs, 0, i)
+					handleDebugButtons(reply, stack, logs)
+				}
 			} catch (error) {
 				// Error-ception!! T-T
 				logger.debug('Error sending stack trace:', error)
+			}
+		})
+}
+
+const LOG_INCREMENT = 10
+
+async function handleLogButtons(logs: string[], startIndex: number, interaction: MessageComponentInteraction) {
+	const filteredLogs = logs.filter(Boolean)
+	const endIndex = startIndex + LOG_INCREMENT
+	const hasOlderLogs = endIndex < filteredLogs.length
+	const hasNewerLogs = startIndex > 0
+
+	const logsToShow = filteredLogs.slice(startIndex, endIndex).reverse().join('\n> ')
+
+	const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+		new ButtonBuilder({
+			label: 'Older',
+			style: ButtonStyle.Secondary,
+			customId: 'older_logs',
+			disabled: !hasOlderLogs
+		}),
+		new ButtonBuilder({
+			label: 'Newer',
+			style: ButtonStyle.Secondary,
+			customId: 'newer_logs',
+			disabled: !hasNewerLogs
+		})
+	)
+	await interaction.followUp({ content: '> ```\n> ' + logsToShow + '\n> ```', components: [row] })
+	interaction.channel
+		.awaitMessageComponent({
+			filter: (i: MessageComponentInteraction) => {
+				return i.customId === 'older_logs' || i.customId === 'newer_logs'
+			}
+		})
+		.then(async (i) => {
+			if (i.customId === 'older_logs') {
+				await i.deferUpdate()
+				await handleLogButtons(logs, startIndex + LOG_INCREMENT, i)
+			} else if (i.customId === 'newer_logs') {
+				await i.deferUpdate()
+				await handleLogButtons(logs, startIndex - LOG_INCREMENT, i)
 			}
 		})
 }
