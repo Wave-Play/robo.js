@@ -25,7 +25,7 @@ importers:
 
   packages/create-robo:
     specifiers:
-      '@roboplay/robo.js': 0.3.0
+      '@roboplay/robo.js': 0.4.1
       '@types/inquirer': ^9.0.3
       '@types/node': ^18.16.3
       chalk: 5.2.0
@@ -39,7 +39,7 @@ importers:
       commander: 10.0.0
       inquirer: 9.2.0
     devDependencies:
-      '@roboplay/robo.js': 0.3.0_kz6zchzvbrfuhk2zgidpjpdplq
+      '@roboplay/robo.js': 0.4.1_kz6zchzvbrfuhk2zgidpjpdplq
       '@types/inquirer': 9.0.3
       '@types/node': 18.16.3
       discord.js: 14.10.2
@@ -796,8 +796,8 @@ packages:
       tar: 6.1.14
     dev: true
 
-  /@roboplay/robo.js/0.3.0_kz6zchzvbrfuhk2zgidpjpdplq:
-    resolution: {integrity: sha512-P6hq8ARtd+e4bCKzeyMJfs8YiTmbm+xp5WV3iS1P/sdagrhoGv4xX/7CMI2MlDwoaOQqtV4n3qmtDPivLqoaeg==}
+  /@roboplay/robo.js/0.4.1_kz6zchzvbrfuhk2zgidpjpdplq:
+    resolution: {integrity: sha512-XHT35m5JNGwI7wycHE26Gp7bjjf6aHWmVdWSxyYyiRhCcabrLzNC7WSPvr0MEytYurUwt6fQkd+x2rVGArZwcg==}
     engines: {node: '>=18.0.0'}
     hasBin: true
     peerDependencies:
