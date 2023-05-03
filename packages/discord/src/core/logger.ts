@@ -1,9 +1,43 @@
 import { BaseLogger, LogLevel, colorizedLogLevels } from './base-logger.js'
+import { DEBUG_MODE } from './debug.js'
 import type { BaseLoggerOptions } from './base-logger.js'
 
+const DEFAULT_MAX_ENTRIES = 100
+
+// eslint-disable-next-line no-control-regex
+const ANSI_REGEX = /\x1b\[.*?m/g
+
+class LogEntry {
+	level: LogLevel
+	timestamp: Date
+	data: unknown[]
+
+	constructor(level: LogLevel, data: unknown[]) {
+		this.level = level
+		this.data = data
+		this.timestamp = new Date()
+	}
+
+	message(): string {
+		return this.data.join(' ').replace(ANSI_REGEX, '')
+	}
+}
+
+interface LoggerOptions extends BaseLoggerOptions {
+	maxEntries?: number
+}
+
 class Logger extends BaseLogger {
-	constructor(options?: BaseLoggerOptions) {
+	// Circular log buffer that overwrites old entries
+	private _currentIndex: number
+	private _logBuffer: LogEntry[]
+
+	constructor(options?: LoggerOptions) {
 		super(options)
+
+		// Initialize the log buffer
+		this._currentIndex = 0
+		this._logBuffer = new Array(options?.maxEntries ?? DEFAULT_MAX_ENTRIES)
 	}
 
 	protected _log(level: LogLevel, ...data: unknown[]): void {
@@ -11,6 +45,12 @@ class Logger extends BaseLogger {
 		if (level !== 'other') {
 			const colorizedLevel = colorizedLogLevels[level]
 			data.unshift((colorizedLevel ?? level.padEnd(5)) + ' -')
+		}
+
+		// Persist the log entry in debug mode
+		if (DEBUG_MODE) {
+			this._logBuffer[this._currentIndex] = new LogEntry(level, data)
+			this._currentIndex = (this._currentIndex + 1) % this._logBuffer.length
 		}
 
 		switch (level) {
@@ -37,6 +77,25 @@ class Logger extends BaseLogger {
 				console.log(...data)
 		}
 	}
+
+	public getRecentLogs(count = 50): LogEntry[] {
+		if (count <= 0) {
+			return []
+		}
+
+		// Ensure the count doesn't exceed the number of logs in the buffer
+		count = Math.min(count, this._logBuffer.length)
+		const startIndex = (this._currentIndex - count + this._logBuffer.length) % this._logBuffer.length
+		let recentLogs: LogEntry[]
+
+		if (startIndex < this._currentIndex) {
+			recentLogs = this._logBuffer.slice(startIndex, this._currentIndex)
+		} else {
+			recentLogs = this._logBuffer.slice(startIndex).concat(this._logBuffer.slice(0, this._currentIndex))
+		}
+
+		return recentLogs.reverse()
+	}
 }
 
 export { Logger }
@@ -51,6 +110,10 @@ export function logger(options?: BaseLoggerOptions): Logger {
 	}
 
 	return _logger
+}
+
+logger.getRecentLogs = function (count = 25): LogEntry[] {
+	return logger().getRecentLogs(count)
 }
 
 logger.trace = function (...data: unknown[]): void {
