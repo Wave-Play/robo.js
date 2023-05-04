@@ -11,7 +11,7 @@ import {
 } from 'discord.js'
 import path from 'node:path'
 import { getSage, timeout } from '../cli/utils/utils.js'
-import { getConfig } from '../cli/utils/config.js'
+import { getConfig } from './config.js'
 import { logger } from './logger.js'
 import { BUFFER, DEFAULT_CONFIG, TIMEOUT } from './constants.js'
 import fs from 'node:fs/promises'

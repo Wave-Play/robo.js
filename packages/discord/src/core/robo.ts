@@ -1,7 +1,7 @@
 import chalk from 'chalk'
 import { Client, Collection, Events } from 'discord.js'
 import path from 'node:path'
-import { getConfig, loadConfig } from '../cli/utils/config.js'
+import { getConfig, loadConfig } from './config.js'
 import { logger } from './logger.js'
 import { getManifest, loadManifest } from '../cli/utils/manifest.js'
 import { env } from './env.js'

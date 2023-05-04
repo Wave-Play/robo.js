@@ -1,7 +1,7 @@
 import chalkLib from 'chalk'
 import { DEFAULT_CONFIG } from '../../core/constants.js'
 import { CommandConfig, Config, SageOptions } from '../../types/index.js'
-import { getConfig } from './config.js'
+import { getConfig } from '../../core/config.js'
 import { createRequire } from 'node:module'
 
 // Read the version from the package.json file

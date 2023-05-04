@@ -1,6 +1,6 @@
 import fs from 'node:fs'
-import { Config } from '../../types/index.js'
-import { logger } from '../../core/logger.js'
+import { Config } from '../types/index.js'
+import { logger } from './logger.js'
 import { pathToFileURL } from 'node:url'
 
 // Global config reference
