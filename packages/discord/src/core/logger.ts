@@ -19,7 +19,19 @@ class LogEntry {
 	}
 
 	message(): string {
-		return this.data.join(' ').replace(ANSI_REGEX, '')
+		const messageParts = this.data.map((item) => {
+			if (typeof item === 'object') {
+				try {
+					return JSON.stringify(item)
+				} catch (error) {
+					// In case of circular structures or other stringify errors, return a fallback string
+					return '[unserializable object]'
+				}
+			}
+			return item
+		})
+
+		return messageParts.join(' ').replace(ANSI_REGEX, '')
 	}
 }
 
