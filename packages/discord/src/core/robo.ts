@@ -6,7 +6,8 @@ import { logger } from './logger.js'
 import { getManifest, loadManifest } from '../cli/utils/manifest.js'
 import { env } from './env.js'
 import { pathToFileURL } from 'node:url'
-import { executeAutocompleteHandler, executeCommandHandler, executeEventHandler, sendDebugError } from './handlers.js'
+import { executeAutocompleteHandler, executeCommandHandler, executeEventHandler } from './handlers.js'
+import { sendDebugError } from './debug.js'
 import type { CommandRecord, EventRecord, Handler, PluginData, RoboMessage } from '../types/index.js'
 
 export const Robo = { restart, start, stop }
