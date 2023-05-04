@@ -1,3 +1,4 @@
+import fs from 'node:fs'
 import { Config } from '../../types/index.js'
 import { logger } from '../../core/logger.js'
 import { pathToFileURL } from 'node:url'
@@ -13,7 +14,27 @@ export function getConfig(): Config | null {
 	return _config
 }
 
-export async function loadConfig(file = 'robo'): Promise<Config | null> {
+export async function loadConfig(file = 'robo'): Promise<Config> {
+	const configPath = await loadConfigPath(file)
+	let config: Config
+
+	if (configPath) {
+		const imported = await import(configPath)
+		config = imported.default ?? imported ?? {}
+		logger.debug(`Loaded configuration file:`, config)
+	} else {
+		config = {
+			clientOptions: {
+				intents: []
+			}
+		}
+	}
+
+	_config = config
+	return config
+}
+
+export async function loadConfigPath(file = 'robo'): Promise<string> {
 	const extensions = ['.mjs', '.cjs']
 	const prefix = file.endsWith('.config') ? '' : '.config/'
 
@@ -21,11 +42,9 @@ export async function loadConfig(file = 'robo'): Promise<Config | null> {
 		const fullPath = `${process.cwd()}/${prefix}${file}${ext}`
 		try {
 			const importPath = pathToFileURL(fullPath).toString()
-			const imported = await import(importPath)
-			const config = imported.default ?? imported ?? {}
-			_config = config
-			logger.debug(`Loaded configuration file:`, config)
-			return config
+			fs.existsSync(importPath)
+			logger.debug(`Found configuration file at`, importPath)
+			return importPath
 		} catch (ignored) {
 			// empty
 		}
@@ -33,13 +52,8 @@ export async function loadConfig(file = 'robo'): Promise<Config | null> {
 
 	const fileName = `${prefix}${file}`
 	if (fileName.endsWith('.config')) {
-		_config = {
-			clientOptions: {
-				intents: []
-			}
-		}
-		return _config
+		return null
 	} else {
-		return loadConfig(file + '.config')
+		return loadConfigPath(file + '.config')
 	}
 }
