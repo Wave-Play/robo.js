@@ -1,7 +1,5 @@
 import type { Config } from '../types/index.js'
 
-export const CONFIG_FILES = ['.config/robo.mjs', '.config/robo.cjs', 'robo.config.mjs', 'robo.config.cjs']
-
 export const DEFAULT_CONFIG: Config = {
 	clientOptions: null,
 	heartbeat: {

@@ -1,13 +1,15 @@
 import { Command } from 'commander'
-import chokidar from 'chokidar'
+import nodeWatch from 'node-watch'
 import { run } from '../utils/run.js'
 import { spawn, type ChildProcess } from 'child_process'
 import { logger } from '../../core/logger.js'
 import chalk from 'chalk'
-import { CONFIG_FILES, DEFAULT_CONFIG } from '../../core/constants.js'
-import { loadConfig } from '../utils/config.js'
-import { Config } from 'src/types/index.js'
+import { DEFAULT_CONFIG } from '../../core/constants.js'
+import { loadConfig, loadConfigPath } from '../utils/config.js'
 import { IS_WINDOWS, cmd, getPkgManager, timeout } from '../utils/utils.js'
+import path from 'node:path'
+import url from 'node:url'
+import type { Config } from '../../types/index.js'
 
 const command = new Command('dev')
 	.description('Ready, set, code your bot to life! Starts development mode.')
@@ -28,9 +30,16 @@ async function devAction(options: DevCommandOptions) {
 		level: options.verbose ? 'debug' : 'info'
 	}).info('Starting Robo in development mode...')
 	logger.warn(`Thank you for trying Robo.js! This is a pre-release version, so please let us know of issues on GitHub.`)
+
+	// Load the configuration before anything else
 	const config = await loadConfig()
-	if (!config) {
-		logger.warn(`Could not find configuration file.`)
+	const configPath = await loadConfigPath()
+	let configRelative: string
+
+	if (configPath) {
+		configRelative = path.relative(process.cwd(), url.fileURLToPath(configPath))
+	} else {
+		logger.warn(`Could not find configuration file. Using default configuration.`)
 	}
 
 	// Run after preparing first build
@@ -48,15 +57,19 @@ async function devAction(options: DevCommandOptions) {
 	})
 
 	// Watch for changes in the "src" directory or config file
-	const watcher = chokidar.watch(['src', ...CONFIG_FILES], {
-		ignored: /(^|[/\\])\.(?!config)[^.]/, // ignore dotfiles except .config and directories
-		persistent: true,
-		ignoreInitial: true
+	const watchedPaths = ['src']
+	if (configPath) {
+		watchedPaths.push(configRelative)
+	}
+
+	const watcher = nodeWatch(watchedPaths, {
+		recursive: true,
+		filter: (f) => !/(^|[/\\])\.(?!config)[^.]/.test(f) // ignore dotfiles except .config and directories
 	})
 
-	// This `watch` wrapper is used to prevent multiple restarts from happening at the same time
+	// Watch while preventing multiple restarts from happening at the same time
 	let isUpdating = false
-	const watch = (event: 'add' | 'change' | 'unlink') => async (path: string) => {
+	watcher.on('change', async (event: string, path: string) => {
 		logger.debug(`Watcher event: ${event}`)
 		if (isUpdating) {
 			return logger.debug(`Already updating, skipping...`)
@@ -64,8 +77,8 @@ async function devAction(options: DevCommandOptions) {
 		isUpdating = true
 
 		try {
-			const fileName = path.split('/').pop()
-			if (CONFIG_FILES.includes(path)) {
+			if (path === configRelative) {
+				const fileName = path.split('/').pop()
 				logger.wait(`${chalk.bold(fileName)} file was updated. Restarting to apply configuration...`)
 			} else {
 				logger.wait(`Change detected. Restarting Robo...`)
@@ -78,11 +91,7 @@ async function devAction(options: DevCommandOptions) {
 		} finally {
 			isUpdating = false
 		}
-	}
-
-	watcher.on('add', watch('add'))
-	watcher.on('change', watch('change'))
-	watcher.on('unlink', watch('unlink'))
+	})
 }
 
 // Use a separate process to avoid module cache issues
