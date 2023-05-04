@@ -22,8 +22,19 @@ import type {
 import { env } from './env.js'
 import path from 'node:path'
 import type { EventRecord } from '../types/events.js'
+import type { CommandConfig } from '../types/commands.js'
 
 export const DEBUG_MODE = process.env.NODE_ENV !== 'production'
+
+export const devCommand = async (interaction: MessageComponentInteraction) => {
+	await interaction.deferReply()
+	const logs = logger.getRecentLogs().map((log) => log.message())
+	handleLogButtons(logs, 0, interaction)
+}
+
+export const devCommandConfig: CommandConfig = {
+	description: 'View most recent logs'
+}
 
 export async function printErrorResponse(error: unknown, interaction: unknown, details?: string, event?: EventRecord) {
 	const { errorReplies = true } = getSage()

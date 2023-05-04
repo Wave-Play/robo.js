@@ -5,10 +5,10 @@ import { getSage, timeout } from '../cli/utils/utils.js'
 import { getConfig } from './config.js'
 import { logger } from './logger.js'
 import { BUFFER, DEFAULT_CONFIG, TIMEOUT } from './constants.js'
+import { printErrorResponse } from './debug.js'
 import type { AutocompleteInteraction } from 'discord.js'
 import type { CommandConfig, PluginData } from '../types/index.js'
 import type { Collection } from 'discord.js'
-import { printErrorResponse } from './debug.js'
 
 export async function executeAutocompleteHandler(interaction: AutocompleteInteraction) {
 	const command = commands.get(interaction.commandName)

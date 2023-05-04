@@ -3,6 +3,8 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { logger } from '../../core/logger.js'
 import { hasProperties } from './utils.js'
+import { DEBUG_MODE } from '../../core/debug.js'
+import { env } from '../../core/env.js'
 
 const srcDir = 'src'
 const distDir = path.join('.robo', 'build')
@@ -18,7 +20,7 @@ export interface DefaultGen {
 
 /**
  * Generates default commands and events provided by Robo.js
- * 
+ *
  * Generated commands can be disabled via the config file or by creating your own with the same name.
  * Generated events cannot be disabled as they are required for Robo.js to function properly.
  */
@@ -54,7 +56,7 @@ async function checkFileExistence(srcPathBase: string) {
 
 /**
  * Generates commands provided by Robo.js by default.
- * 
+ *
  * Developers can override these commands by creating their own with the same name.
  * Additionally, they can be disabled via the config file.
  */
@@ -66,6 +68,12 @@ async function generateCommands() {
 		// Only copy over files with the supported extensions
 		const fileExtensionPattern = /\.(ts|tsx|js|jsx)$/
 		if (!fileExtensionPattern.test(file)) {
+			continue
+		}
+
+		// Only apply the "dev" command outside of production
+		// A guild ID is also required to prevent accidental exposure to the public
+		if (file === 'dev.js' && (!DEBUG_MODE || !env.discord.guildId)) {
 			continue
 		}
 
@@ -88,7 +96,7 @@ async function generateCommands() {
 
 /**
  * Generates events provided by Robo.js by default.
- * 
+ *
  * These events are not overridable by developers nor can they be disabled.
  * They are required for Robo.js to function properly.
  * However, they don't override developer events either, so they can be used in conjunction.
