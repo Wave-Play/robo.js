@@ -1,11 +1,6 @@
-import type { ApplicationCommandOptionChoiceData, AutocompleteInteraction, CommandInteraction } from 'discord.js'
+import type { ApplicationCommandOptionChoiceData, AutocompleteInteraction, CommandInteraction, InteractionReplyOptions, MessagePayload } from 'discord.js'
 import type { BaseConfig, Handler, SageOptions } from './index.js'
 
-type BaseCommandResult = BaseCommandResultData | string | void
-
-type BaseCommandResultData = {
-	embeds: Embed[]
-}
 export interface Command {
 	autocomplete?: (
 		interaction: AutocompleteInteraction
@@ -37,9 +32,4 @@ export interface CommandRecord extends Handler {
 	handler: Command
 }
 
-export type CommandResult = BaseCommandResult | Promise<BaseCommandResult>
-
-interface Embed {
-	description: string
-	title: string
-}
+export type CommandResult = string | InteractionReplyOptions | MessagePayload | void
