@@ -32,7 +32,7 @@ async function pluginAction() {
 
 	// Get the size of the entire current working directory
 	const sizeStartTime = performance.now()
-	const totalSize = await getProjectSize(process.cwd() + '/.robo')
+	const totalSize = await getProjectSize(process.cwd())
 	logger.debug(`Computed plugin size in ${Math.round(performance.now() - sizeStartTime)}ms`)
 
 	// Generate manifest.json

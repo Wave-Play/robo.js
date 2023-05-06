@@ -147,9 +147,11 @@ export async function compile(options?: RoboCompileOptions) {
 	}
 
 	// Clear the destination directory before compiling
+	logger.debug(`Cleaning ${distDir}...`)
 	await fs.rm(distDir, { recursive: true, force: true })
 
 	// Traverse the source directory and transform files
+	logger.debug(`Compiling ${srcDir} to ${distDir}...`)
 	await traverse(srcDir, options ?? {}, tsOptions, transform)
 
 	return performance.now() - startTime

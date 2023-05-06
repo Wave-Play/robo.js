@@ -80,6 +80,7 @@ export async function generateManifest(generatedDefaults: DefaultGen): Promise<M
 	newManifest.events = Object.fromEntries(Object.entries(newManifest.events).sort(([a], [b]) => a.localeCompare(b)))
 
 	// Our new source of truth is ready!
+	await fs.mkdir('.robo', { recursive: true })
 	await fs.writeFile(path.join('.robo', 'manifest.json'), JSON.stringify(newManifest, null, 2))
 	logger.debug(`Generated manifest:`, newManifest)
 	return newManifest
