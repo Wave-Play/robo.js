@@ -57,6 +57,10 @@ export default class Robo {
 		this._useTypeScript = useTypeScript
 	}
 
+	useTypeScript(useTypeScript: boolean) {
+		this._useTypeScript = useTypeScript
+	}
+
 	async getUserInput(): Promise<string[]> {
 		const { selectedFeatures } = await inquirer.prompt([
 			{

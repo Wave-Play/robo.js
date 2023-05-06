@@ -9,24 +9,35 @@ const require = createRequire(import.meta.url)
 const packageJson = require('../package.json')
 
 interface CommandOptions {
+	javascript?: boolean
+	typescript?: boolean
 	verbose?: boolean
 }
 
 new Command('create-robo <projectName>')
 	.description('Create a new Robo project')
 	.version(packageJson.version)
+	.option('-js --javascript', 'create a Robo using JavaScript')
+	.option('-ts --typescript', 'create a Robo using TypeScript')
 	.option('-v --verbose', 'print more information for debugging')
 	.action(async (options: CommandOptions, { args }) => {
 		logger({
 			level: options.verbose ? 'debug' : 'info'
 		}).debug(`Creating new Robo.js project...`)
+		logger.debug(`Using options: ${JSON.stringify(options)}`)
 		logger.log('')
 
 		// Create a new Robo project prototype
 		const projectName = args[0]
 		const robo = new Robo(projectName)
 
-		await robo.askUseTypeScript()
+		if (options.javascript || options.typescript) {
+			const useTypeScript = options.typescript ?? false
+			robo.useTypeScript(useTypeScript)
+			logger.info(`Using ${useTypeScript ? 'TypeScript' : 'JavaScript'}`)
+		} else {
+			await robo.askUseTypeScript()
+		}
 
 		// Get user input to determine which features to include or use the recommended defaults
 		const selectedFeaturesOrDefaults = await robo.getUserInput()
