@@ -2,6 +2,7 @@ import fs from 'node:fs/promises'
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
+	ButtonInteraction,
 	ButtonStyle,
 	ChannelType,
 	Colors,
@@ -38,6 +39,7 @@ export const devCommandConfig: CommandConfig = {
 
 export async function printErrorResponse(error: unknown, interaction: unknown, details?: string, event?: EventRecord) {
 	const { errorReplies = true } = getSage()
+	logger.debug('Error response:', error)
 
 	// Don't print errors in production - they may contain sensitive information
 	if (!DEBUG_MODE || !errorReplies) {
@@ -45,7 +47,7 @@ export async function printErrorResponse(error: unknown, interaction: unknown, d
 	}
 
 	// Return if interaction is not a Discord command interaction or a message directed at the bot
-	if (!(interaction instanceof CommandInteraction) && !(interaction instanceof Message)) {
+	if (!(interaction instanceof CommandInteraction) && !(interaction instanceof Message) && !(interaction instanceof ButtonInteraction)) {
 		return
 	}
 
@@ -54,7 +56,7 @@ export async function printErrorResponse(error: unknown, interaction: unknown, d
 
 		// Send response as follow-up if the command has already been replied to
 		let reply: Message | APIMessage | InteractionResponse
-		if (interaction instanceof CommandInteraction) {
+		if (interaction instanceof CommandInteraction || interaction instanceof ButtonInteraction) {
 			if (interaction.replied || interaction.deferred) {
 				reply = await interaction.followUp(message)
 			} else {
