@@ -16,7 +16,9 @@ interface PluginCommandOptions {
 	verbose?: boolean
 }
 
-async function pluginAction(options: PluginCommandOptions) {
+async function pluginAction() {
+	// Extract options from parent due to commander not passing them down
+	const options = command.parent.opts() as PluginCommandOptions;
 	logger({
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : 'info'
