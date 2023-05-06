@@ -5,7 +5,7 @@ export default defineConfig({
 	outDir: 'dist',
 	format: ['esm'],
 	bundle: false,
-	clean: false,
+	clean: true,
 	dts: true,
 	minify: true,
 	sourcemap: true,
