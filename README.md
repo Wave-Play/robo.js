@@ -1,42 +1,57 @@
-# Robo
+<p align="center">
+	<img src="https://raw.githubusercontent.com/Wave-Play/robo/main/docs/_assets/sage-avatar.png" height="128">
+  <h1 align="center">Robo.js</h1>
+</p>
 
-Robo is a lightweight, supercharged Node.js metaframework for Discord.js, designed to make building Discord bots a breeze. It features a powerful plugin architecture and streamlined interaction handling with Sage, all while allowing full access to the underlying Discord.js features.
+<div align="center">
 
-> **Note:** This is a pre-release and is likely to undergo breaking changes before reaching version 1.0.
+[![GitHub license](https://img.shields.io/github/license/Wave-Play/robo?style=flat)](https://github.com/Wave-Play/robo/blob/main/LICENSE) ![npm](https://img.shields.io/npm/v/@roboplay/robo.js) [![install size](https://packagephobia.com/badge?p=@roboplay/robo.js@0.4.2)](https://packagephobia.com/result?p=@roboplay/robo.js@0.4.2)
 
-## Installation
+**Turbocharge [Discord.js](https://discord.js.org/) with effortless power!** ⚡
+
+Robo.js turbocharges Discord bot-building with a snappy plugin system and Sage's streamlined handling, all while keeping Discord.js' power. 🚀✨
+
+> **Heads up!** This is a pre-release, so brace for some breaking changes before **v1.0**. 🚧
+
+</div>
+
+## Documentation
+
+Get well-versed with Robo.js and unlock its full potential!
+
+**➞ [📚 Dive into the full documentation for all the deets.](/docs)**
+
+## Quick start
+
+Kickstart your own Robo.js bot with our super-helpful CLI:
+
+```bash
+npx create-robo my-awesome-bot
+```
+
+We'll walk you through a breezy customization process and whip up a fully working template in no time!
+
+## Adding to an existing project
 
 ```bash
 npm install @roboplay/robo.js
 ```
 
-## Getting Started
+## Epic Simplicity
 
-Check out the three example projects included in the GitHub repo to help you get started:
+Robo.js powers up your bot-making game with Discord.js, while keeping it all super simple. Its top strengths include:
 
-- [Starter JavaScript](/examples/starter-javascript/)
-- [Starter TypeScript](/examples/starter-typescript/)
-- [Chatbot w/ GPT plugin](/examples/gpt-chatbot/)
+1. **Easy-peasy:** No fuss, just a smooth start to bot development, so you can focus on crafting cool features.
+2. **Built-in awesomeness:** Commands, events, plugins - it's all there, ready to create bots that pack a punch.
+3. **Sage's helping hand:** Sage simplifies command interaction and offers smart error replies, making debugging a breeze.
+4. **Customizable & scalable:** Adjust, grow, and adapt your bot as needed with Robo.js's flexibility.
+5. **Community power:** Tap into the know-how and support of the Discord.js community.
 
-## Features
+Robo.js brings the best of Discord.js, with added ease and pizzazz, helping you create bots that truly shine. 🌟
 
-- **Effortless command and event generation:** Create .ts or .js files in the relevant directories.
-- **Sage:** A built-in mechanism for streamlined interaction handling.
-- **Plugins:** Install npm packages and configure them in your project to extend your bot's functionality.
-- **CLI:** Includes commands like doctor, invite, and deploy for convenient bot management and deployment.
-- **RoboPlay integration:** Host your Robo-powered bots on the RoboPlay service, with both free and paid tiers available.
+## Usage
 
-## Command Handling
-
-With Robo's file-based structure, creating commands is a breeze. For example, to create a `/ping` command, follow this structure:
-
-```bash
-/src
-  /commands
-    ping.js
-```
-
-Creating the `ping.js` file is a breeze, requiring only a few lines:
+Crafting a simple Robo is a piece of cake! First, whip up a `/ping` command by creating a `ping.js` file in your `/src/commands` folder:
 
 ```javascript
 export default () => {
@@ -44,76 +59,34 @@ export default () => {
 }
 ```
 
-You can further customize the command by exporting a `config` object:
+Miss your interaction object? No worries, it's still got your back! Here's another example using `interaction.reply`:
 
 ```javascript
-export const config = {
-	description: 'Replies with Pong!'
-}
-
-export default () => {
-	return 'Pong!'
+export default (interaction) => {
+	interaction.reply('Pong!')
 }
 ```
 
-## Event Listening
-
-Event listening works similarly to command handling by using a file-based structure. For example, to create a ready event listener:
-
-```bash
-/src
-  /events
-    ready.js
-```
-
-Crafting the `ready.js` file is a piece of cake, requiring only a minimal number of lines:
+For events, say you want to listen to `messageCreate` events. Create a `messageCreate.js` file inside your `/src/events` folder:
 
 ```javascript
-export default () => {
-	// This event will run if the bot starts, and logs in, successfully.
+export default (message) => {
+    if (message.content.includes('hello')) {
+        message.channel.send('Hello there!');
+    }
 }
 ```
 
-To register multiple listeners for the same event, use directories instead of files:
+Robo.js will automatically handle the necessary permissions when you run `robo invite`.
 
-```bash
-/src
-  /events
-    /ready
-      one.js
-      example.js
-```
+### No Learning Curve
 
-The file names can be anything you want, but we recommend using descriptive names.
+With Robo.js, there's practically no learning curve! As a framework for Discord.js, you'll still have access to everything Discord.js has to offer. 🎉
 
-## CLI
+To get your Robo grooving in development mode, bust out `robo dev` (or `npm run dev`). When you're all set to host your Robo, hit `robo build`, then kick things off with `robo start`. Don't forget to explore the [full documentation](/docs) for even more awesomeness! 🔥
 
-The built-in CLI features the following commands:
+## License 📜
 
-- `dev`: Run your bot in development mode.
-- `build`: Build your bot for production.
-- `start`: Start your bot.
-- `doctor`: Verify that your project is set up correctly.
-- `invite`: Generate URLs to add your Robo to servers (in beta).
-- `deploy`: Host your bot on RoboPlay for free.
+Robo.js is all about freedom, so we've got you covered with the permissive MIT License! Go wild and build amazing bots without worrying about legalities.
 
-## Configuration
-
-Robo supports configuration through a configuration file, allowing you to enable or disable features like Sage, set up permissions and intents, and configure installed plugins.
-
-```javascript
-// @ts-check
-
-/**
- * @type {import('@roboplay/robo.js').Config}
- **/
-export default {
-	intents: ['Guilds', 'GuildMessages', 'MessageContent']
-}
-```
-
-## License
-
-MIT License
-
-Copyright (c) 2023 WavePlay
+Feel free to check out the [LICENSE](LICENSE) file for more info!
