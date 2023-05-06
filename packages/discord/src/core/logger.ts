@@ -20,7 +20,9 @@ class LogEntry {
 
 	message(): string {
 		const messageParts = this.data.map((item) => {
-			if (typeof item === 'object') {
+			if (item instanceof Error) {
+				return item.message
+			} else if (typeof item === 'object') {
 				try {
 					return JSON.stringify(item)
 				} catch (error) {
