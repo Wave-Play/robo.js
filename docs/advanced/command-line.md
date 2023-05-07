@@ -58,6 +58,8 @@ Commands:
 
 The `create-robo` interactive CLI is your go-to for kickstarting fresh Robo.js projects and plugins! It's a nifty standalone tool that won't bloat your project, and it'll hold your hand through the setup process like a pro.
 
+#### Crafting Your Robo 🤖
+
 Ready to create a project named "my-awesome-robo"? Here's how:
 
 ```bash
@@ -70,7 +72,22 @@ Once you're in, the CLI will walk you through three easy-peasy steps:
 2. Choose your features! (ESLint, Prettier, Plugins - mix and match, or skip 'em all!)
 3. Pop in your Discord token and client id. Wanna skip it? Just press enter, but remember to edit your `.env` file later.
 
-Feeling adventurous? The CLI's got options for ya:
+#### Forging a Plugin 🔧
+
+Got your eyes on crafting a plugin? Run the CLI with the `--plugin` option:
+
+```bash
+npx create-robo my-awesome-plugin --plugin
+```
+
+This will guide you through two simple steps:
+
+1. TypeScript or nah? (yes/no)
+2. Choose your features! (ESLint, Prettier)
+
+#### Options
+
+Feeling adventurous? This CLI's got options for ya:
 - `--js` skips the TypeScript question and jumps straight to JavaScript
 - `--ts` does the opposite: skips the TypeScript question and dives into TypeScript
 - `-p`, `--plugin` lets you craft a plugin project instead of a full-fledged Robo
