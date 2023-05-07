@@ -119,6 +119,11 @@ export default class Robo {
 			devDependencies: {}
 		}
 
+		// Copy the /docs/robo-readme.md file to the project root as README.md
+		// Make sure to replace the placeholder text with the project name
+		const readme = await fs.readFile(path.join(__dirname, '../docs/robo-readme.md'), 'utf-8')
+		await fs.writeFile(path.join(this._workingDir, 'README.md'), readme.replaceAll('{{projectName}}', this._name))
+
 		const runPrefix = packageManager + packageManager === 'npm' ? 'npm run ' : packageManager + ' '
 		if (this._useTypeScript) {
 			packageJson.devDependencies['@swc/core'] = '^1.3.44'
