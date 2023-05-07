@@ -203,7 +203,7 @@ export async function registerCommands(
 		}
 
 		const endTime = Math.round(performance.now() - startTime)
-		const commandType = guildId ? 'guild (' + guildId + ')' : 'global'
+		const commandType = guildId ? 'guild' : 'global'
 		logger.info(`Successfully updated ${chalk.bold(commandType + ' commands')} in ${endTime}ms`)
 	} catch (error) {
 		logger.error('Could not register commands!', error)
