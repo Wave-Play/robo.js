@@ -9,7 +9,7 @@
 
 **Turbocharge [Discord.js](https://discord.js.org/) with effortless power!** ⚡
 
-Robo.js turbocharges Discord bot-building with a snappy plugin system and Sage's streamlined handling, all while keeping Discord.js' power. 🚀✨
+Upgrade your bots with a snappy plugin system and Sage's streamlined interactions, all while keeping Discord.js' power. 🚀✨
 
 > **Heads up!** This is a pre-release, so brace for some breaking changes before **v1.0**. 🚧
 
@@ -75,6 +75,16 @@ export default (message) => {
         message.channel.send('Hello there!');
     }
 }
+```
+
+Following the above examples, your file structure should look a lil' something like this:
+
+```
+src/
+├── commands/
+│   └── ping.js
+└── events/
+    └── messageCreate.js
 ```
 
 Robo.js will automatically handle the necessary permissions when you run `robo invite`.
