@@ -5,13 +5,16 @@ import { performance } from 'node:perf_hooks'
 import { getProjectSize, printBuildSummary } from '../../utils/build-summary.js'
 import { buildInSeparateProcess } from '../dev.js'
 import nodeWatch from 'node-watch'
+import fs from 'node:fs/promises'
 import path from 'node:path'
 import url from 'node:url'
 import { loadConfigPath } from '../../../core/config.js'
 import chalk from 'chalk'
+import { hasProperties } from '../../utils/utils.js'
 
 const command = new Command('plugin')
 	.description('Builds your plugin for distribution.')
+	.option('-d --dev', 'build for development')
 	.option('-s --silent', 'do not print anything')
 	.option('-v --verbose', 'print more information for debugging')
 	.option('-w --watch', 'watch for changes and rebuild')
@@ -19,6 +22,7 @@ const command = new Command('plugin')
 export default command
 
 interface PluginCommandOptions {
+	dev?: boolean
 	silent?: boolean
 	verbose?: boolean
 	watch?: boolean
@@ -50,6 +54,35 @@ async function pluginAction() {
 
 	// Log commands and events from the manifest
 	printBuildSummary(manifest, totalSize, startTime, true)
+
+	// Generate a watch file to indicate that the build was successful
+	// This is used to determine whether or not to restart the Robo
+	if (options.watch || options.dev) {
+		const watchFile = path.join(process.cwd(), '.robo', 'watch.mjs')
+		const watchContents = `export default ${JSON.stringify(
+			{
+				updatedAt: Date.now()
+			},
+			null,
+			'\t'
+		)}`
+
+		await fs.writeFile(watchFile, watchContents)
+	} else {
+		// Clean up watch file if it exists
+		const watchFile = path.join(process.cwd(), '.robo', 'watch.mjs')
+
+		try {
+			const exists = await fs.stat(watchFile)
+			if (exists.isFile()) {
+				await fs.rm(watchFile)
+			}
+		} catch (e) {
+			if (hasProperties<{ code: unknown }>(e, ['code']) && e.code !== 'ENOENT') {
+				logger.warn(`Failed to clean up watch file! Please delete it manually at ${watchFile}`)
+			}
+		}
+	}
 
 	if (options.watch) {
 		// Watch for changes in the "src" directory or config file
@@ -86,7 +119,7 @@ async function pluginAction() {
 				}
 
 				const time = performance.now()
-				await buildInSeparateProcess('robo build plugin --silent')
+				await buildInSeparateProcess('robo build plugin --dev --silent')
 				logger.ready(`Successfully rebuilt in ${Math.round(performance.now() - time)}ms`)
 			} finally {
 				isUpdating = false

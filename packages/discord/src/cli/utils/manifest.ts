@@ -2,14 +2,10 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { BaseConfig, CommandConfig, CommandOption, Config, EventConfig, Manifest, Plugin } from '../../types/index.js'
 import { logger } from '../../core/logger.js'
-import { hasProperties, packageJson } from './utils.js'
+import { findPackagePath, hasProperties, packageJson } from './utils.js'
 import { loadConfig } from '../../core/config.js'
-import { exec } from 'node:child_process'
-import { promisify } from 'node:util'
 import { pathToFileURL } from 'node:url'
 import { DefaultGen } from './generate-defaults.js'
-
-const execAsync = promisify(exec)
 
 // Global manifest reference
 let _manifest: Manifest = null
@@ -309,65 +305,6 @@ function getValue<T extends AllConfig>(type: DirType, config: BaseConfig): T {
 			acc[key as keyof T] = value[key as keyof T]
 			return acc
 		}, {} as T)
-}
-
-async function findNodeModules(basePath: string): Promise<string | null> {
-	const nodeModulesPath = path.join(basePath, 'node_modules')
-	try {
-		await fs.access(nodeModulesPath)
-		return nodeModulesPath
-	} catch (error) {
-		const parentPath = path.resolve(basePath, '..')
-		if (parentPath !== basePath) {
-			return findNodeModules(parentPath)
-		} else {
-			return null
-		}
-	}
-}
-
-async function findPackagePath(packageName: string, currentPath: string): Promise<string | null> {
-	const nodeModulesPath = await findNodeModules(currentPath)
-	if (!nodeModulesPath) {
-		logger.debug(`Could not find node_modules folder for ${packageName}`)
-		return null
-	}
-
-	const pnpmNodeModulesPath = path.resolve(nodeModulesPath, '.pnpm')
-	const isPnpm = await fs.access(pnpmNodeModulesPath).then(
-		() => true,
-		() => false
-	)
-
-	let packagePath: string | null = null
-
-	if (isPnpm) {
-		logger.debug(`Found pnpm node_modules folder for ${packageName}`)
-		try {
-			const { stdout } = await execAsync(`pnpm list ${packageName} --json`, { cwd: currentPath })
-			const packages = JSON.parse(stdout)
-			const packageInfo = Array.isArray(packages) ? packages[0] : packages
-			packagePath = packageInfo.dependencies[packageName].path
-		} catch (error) {
-			logger.error('', error)
-		}
-	} else {
-		const candidatePath = path.join(nodeModulesPath, packageName)
-		logger.debug(`Checking for ${packageName} in ${candidatePath}`)
-		try {
-			await fs.access(candidatePath)
-			packagePath = candidatePath
-		} catch (error) {
-			// Do nothing
-		}
-	}
-
-	if (packagePath) {
-		return path.relative(process.cwd(), packagePath)
-	}
-
-	const parentPath = path.resolve(nodeModulesPath, '..')
-	return parentPath !== currentPath ? findPackagePath(packageName, parentPath) : null
 }
 
 /**

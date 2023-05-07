@@ -6,7 +6,7 @@ import { logger } from '../../core/logger.js'
 import chalk from 'chalk'
 import { DEFAULT_CONFIG } from '../../core/constants.js'
 import { loadConfig, loadConfigPath } from '../../core/config.js'
-import { IS_WINDOWS, cmd, getPkgManager, timeout } from '../utils/utils.js'
+import { IS_WINDOWS, cmd, getPkgManager, getWatchedPlugins, timeout } from '../utils/utils.js'
 import path from 'node:path'
 import url from 'node:url'
 import type { Config } from '../../types/index.js'
@@ -64,13 +64,17 @@ async function devAction(options: DevCommandOptions) {
 		watchedPaths.push(configRelative)
 	}
 
+	// Watch all plugins that are also currently in development mode
+	const watchedPlugins = await getWatchedPlugins(config)
+	Object.keys(watchedPlugins).forEach((pluginPath) => watchedPaths.push(pluginPath))
+
+	// Watch while preventing multiple restarts from happening at the same time
 	const watcher = nodeWatch(watchedPaths, {
 		recursive: true,
 		filter: (f) => !/(^|[/\\])\.(?!config)[^.]/.test(f) // ignore dotfiles except .config and directories
 	})
-
-	// Watch while preventing multiple restarts from happening at the same time
 	let isUpdating = false
+
 	watcher.on('change', async (event: string, path: string) => {
 		logger.debug(`Watcher event: ${event}`)
 		if (isUpdating) {
@@ -82,6 +86,9 @@ async function devAction(options: DevCommandOptions) {
 			if (path === configRelative) {
 				const fileName = path.split('/').pop()
 				logger.wait(`${chalk.bold(fileName)} file was updated. Restarting to apply configuration...`)
+			} else if (Object.keys(watchedPlugins).includes(path)) {
+				const plugin = watchedPlugins[path]
+				logger.wait(`${chalk.bold(plugin.name)} plugin was updated. Restarting to apply changes...`)
 			} else {
 				logger.wait(`Change detected. Restarting Robo...`)
 			}
@@ -101,7 +108,7 @@ export async function buildInSeparateProcess(command: string) {
 	return new Promise<void>((resolve, reject) => {
 		const args = command.split(' ')
 		let pkgManager = getPkgManager()
-		
+
 		// Unfortunately, Windows has issues recursively spawning processes via PNPM
 		// If you're reading this and know how to fix it, please open a PR!
 		if (pkgManager === 'pnpm' && IS_WINDOWS) {
