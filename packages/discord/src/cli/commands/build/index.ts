@@ -14,6 +14,7 @@ const command = new Command('build')
 	.option('-f --force', 'force register commands')
 	.option('-s --silent', 'do not print anything')
 	.option('-v --verbose', 'print more information for debugging')
+	.option('-w --watch', 'watch for changes and rebuild')
 	.action(buildAction)
 	.addCommand(plugin)
 export default command
@@ -23,6 +24,7 @@ interface BuildCommandOptions {
 	force?: boolean
 	silent?: boolean
 	verbose?: boolean
+	watch?: boolean
 }
 
 async function buildAction(options: BuildCommandOptions) {
@@ -31,6 +33,15 @@ async function buildAction(options: BuildCommandOptions) {
 		level: options.verbose ? 'debug' : 'info'
 	}).info(`Building Robo...`)
 	const startTime = performance.now()
+
+	// Make sure the user isn't trying to watch builds
+	// This only makes sense for plugins anyway
+	if (options.watch) {
+		logger.error(`Watch mode is only available for building plugins.`)
+		process.exit(1)
+	}
+
+	// Load the configuration file
 	const config = await loadConfig()
 	if (!config) {
 		logger.warn(`Could not find configuration file.`)

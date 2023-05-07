@@ -23,6 +23,8 @@ interface DevCommandOptions {
 	verbose?: boolean
 }
 
+const buildCommand = 'robo build --dev --silent'
+
 async function devAction(options: DevCommandOptions) {
 	// Create a logger
 	logger({
@@ -43,7 +45,7 @@ async function devAction(options: DevCommandOptions) {
 	}
 
 	// Run after preparing first build
-	await buildInSeparateProcess()
+	await buildInSeparateProcess(buildCommand)
 	let botProcess = run()
 
 	// Make sure to kill the bot process when the process exits
@@ -95,9 +97,9 @@ async function devAction(options: DevCommandOptions) {
 }
 
 // Use a separate process to avoid module cache issues
-async function buildInSeparateProcess() {
+export async function buildInSeparateProcess(command: string) {
 	return new Promise<void>((resolve, reject) => {
-		const args = ['robo', 'build', '--dev', '--silent']
+		const args = command.split(' ')
 		let pkgManager = getPkgManager()
 		
 		// Unfortunately, Windows has issues recursively spawning processes via PNPM
@@ -163,7 +165,7 @@ async function rebuildAndRestartBot(bot: ChildProcess | null, config: Config) {
 
 	// Wait for the bot to exit or force abort
 	bot?.send({ type: 'restart' })
-	await Promise.all([buildInSeparateProcess(), Promise.race([terminate, forceAbort])])
+	await Promise.all([buildInSeparateProcess(buildCommand), Promise.race([terminate, forceAbort])])
 
 	// Start a new process
 	return run()
