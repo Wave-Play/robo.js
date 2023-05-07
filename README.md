@@ -5,7 +5,7 @@
 
 <div align="center">
 
-[![GitHub license](https://img.shields.io/github/license/Wave-Play/robo?style=flat)](https://github.com/Wave-Play/robo/blob/main/LICENSE) ![npm](https://img.shields.io/npm/v/@roboplay/robo.js) [![install size](https://packagephobia.com/badge?p=@roboplay/robo.js@0.4.2)](https://packagephobia.com/result?p=@roboplay/robo.js@0.4.2)
+[![GitHub license](https://img.shields.io/github/license/Wave-Play/robo?style=flat)](https://github.com/Wave-Play/robo/blob/main/LICENSE) ![npm](https://img.shields.io/npm/v/@roboplay/robo.js) [![install size](https://packagephobia.com/badge?p=@roboplay/robo.js@latest)](https://packagephobia.com/result?p=@roboplay/robo.js@latest)
 
 **Turbocharge [Discord.js](https://discord.js.org/) with effortless power!** ⚡
 
