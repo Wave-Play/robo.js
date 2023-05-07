@@ -17,6 +17,28 @@ import type { Plugin } from '@roboplay/robo.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
+const roboScripts = {
+	build: 'robo build',
+	deploy: 'robo deploy',
+	dev: 'robo dev',
+	doctor: 'robo doctor',
+	start: 'robo start'
+}
+
+const pluginScripts = {
+	build: 'robo build plugin',
+	dev: 'robo build plugin --watch'
+}
+
+const optionalPlugins = [
+	new inquirer.Separator('\nOptional Plugins:'),
+	{
+		name: `${chalk.bold('GPT')} - Enable your bot to generate human-like text with the power of GPT.`,
+		short: 'GPT',
+		value: 'gpt'
+	}
+]
+
 interface PackageJson {
 	name: string
 	description: string
@@ -36,9 +58,33 @@ export default class Robo {
 	private _useTypeScript: boolean
 	private _workingDir: string
 
-	constructor(name: string) {
+	// Same as above, but exposed as getters
+	private _isPlugin: boolean
+
+	public get isPlugin(): boolean {
+		return this._isPlugin
+	}
+
+	constructor(name: string, isPlugin: boolean) {
+		this._isPlugin = isPlugin
 		this._name = name
 		this._workingDir = path.join(process.cwd(), name)
+	}
+
+	async askIsPlugin() {
+		const { isPlugin } = await inquirer.prompt([
+			{
+				type: 'list',
+				name: 'isPlugin',
+				message: chalk.blue('This sounds like a plugin. Would you like to set it up as one?'),
+				choices: [
+					{ name: 'Yes', value: true },
+					{ name: 'No', value: false }
+				]
+			}
+		])
+
+		this._isPlugin = isPlugin
 	}
 
 	async askUseTypeScript() {
@@ -80,12 +126,7 @@ export default class Robo {
 						value: 'prettier',
 						checked: true
 					},
-					new inquirer.Separator('\nOptional Plugins:'),
-					{
-						name: `${chalk.bold('GPT')} - Enable your bot to generate human-like text with the power of GPT.`,
-						short: 'GPT',
-						value: 'gpt'
-					}
+					...(this._isPlugin ? [] : optionalPlugins)
 				]
 			}
 		])
@@ -105,13 +146,7 @@ export default class Robo {
 			description: '',
 			version: '1.0.0',
 			type: 'module',
-			scripts: {
-				build: 'robo build',
-				deploy: 'robo deploy',
-				dev: 'robo dev',
-				doctor: 'robo doctor',
-				start: 'robo start'
-			},
+			scripts: this._isPlugin ? pluginScripts : roboScripts,
 			dependencies: {
 				'discord.js': '^14.7.1',
 				'@roboplay/robo.js': 'latest'
@@ -119,10 +154,32 @@ export default class Robo {
 			devDependencies: {}
 		}
 
-		// Copy the /docs/robo-readme.md file to the project root as README.md
-		// Make sure to replace the placeholder text with the project name
-		const readme = await fs.readFile(path.join(__dirname, '../docs/robo-readme.md'), 'utf-8')
-		await fs.writeFile(path.join(this._workingDir, 'README.md'), readme.replaceAll('{{projectName}}', this._name))
+		// Generate customized documentation
+		if (this._isPlugin) {
+			let pluginName = this._name
+				.replace(/[^a-zA-Z0-9]/g, ' ')
+				.split(' ')
+				.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+				.join('')
+			pluginName = pluginName.charAt(0).toLowerCase() + pluginName.slice(1)
+			if (!pluginName.toLowerCase().includes('plugin')) {
+				pluginName += 'Plugin'
+			}
+
+			const readme = await fs.readFile(path.join(__dirname, '../docs/plugin-readme.md'), 'utf-8')
+			const customReadme = readme
+				.replaceAll('{{projectName}}', this._name)
+				.replaceAll('{{pluginVariableName}}', pluginName)
+			await fs.writeFile(path.join(this._workingDir, 'README.md'), customReadme)
+
+			const development = await fs.readFile(path.join(__dirname, '../docs/plugin-development.md'), 'utf-8')
+			const customDevelopment = development.replaceAll('{{projectName}}', this._name)
+			await fs.writeFile(path.join(this._workingDir, 'DEVELOPMENT.md'), customDevelopment)
+		} else {
+			const readme = await fs.readFile(path.join(__dirname, '../docs/robo-readme.md'), 'utf-8')
+			const customReadme = readme.replaceAll('{{projectName}}', this._name)
+			await fs.writeFile(path.join(this._workingDir, 'README.md'), customReadme)
+		}
 
 		const runPrefix = packageManager + packageManager === 'npm' ? 'npm run ' : packageManager + ' '
 		if (this._useTypeScript) {
