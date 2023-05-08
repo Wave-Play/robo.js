@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { Command } from 'commander'
+import inquirer from 'inquirer'
 import { createRequire } from 'node:module'
 import Robo from './robo.js'
 import { logger } from './logger.js'
@@ -29,8 +30,26 @@ new Command('create-robo <projectName>')
 		logger.debug(`Using options: ${JSON.stringify(options)}`)
 		logger.log('')
 
+		// Request the project name from the user if it was not provided
+		let projectName = args[0]
+		if (!projectName) {
+			const answers = await inquirer.prompt([
+				{
+					type: 'input',
+					name: 'projectName',
+					message: `What would you like to call your Robo?`,
+					validate: (input) => {
+						if (input.trim().length < 1) {
+							return 'Oops! Please enter a name for your Robo before continuing.'
+						}
+						return true
+					}
+				}
+			])
+			projectName = answers.projectName
+		}
+
 		// Create a new Robo project prototype
-		const projectName = args[0]
 		const robo = new Robo(projectName, options.plugin)
 
 		// Verify plugin status if it sounds like one
