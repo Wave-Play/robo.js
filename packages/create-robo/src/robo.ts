@@ -22,6 +22,7 @@ const roboScripts = {
 	deploy: 'robo deploy',
 	dev: 'robo dev',
 	doctor: 'robo doctor',
+	invite: 'robo invite',
 	start: 'robo start'
 }
 
