@@ -1,5 +1,26 @@
 # robo.js
 
+## 0.5.0
+
+### Minor Changes
+
+- 9698694: feat(cli): watched plugin builds now also trigger robo restarts
+- 540ce7c: feat(cli): --watch flag for continuously building plugins
+- 6069ddd: feat: manifest scopes/permissions & inherit from plugins
+- 6233208: feat: new automatic "dev" command when running in development mode
+- 4f59425: refactor: reduced package size by 28% by replacing chokidar with node-watch
+
+### Patch Changes
+
+- 07db24e: fix: complete command result type
+- 2efb113: fix(cli): no longer crashes when trying to build an empty plugin directory
+- 8af3e9d: fix: stringify objects when printing log messages
+- 9d0635f: refactor(cli): stricter child process termination when restarting
+- d0652d4: fix(cli): "build plugin" command now finds options correctly
+- 5b32c3a: chore(cli): no longer show guild id in command updates log
+- 86d01e0: feat: include error messages in debug logs
+- 0b43b7b: feat: sage error replies for button interactions
+
 ## 0.4.2
 
 ### Patch Changes

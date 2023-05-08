@@ -1,5 +1,12 @@
 # @roboplay/plugin-gpt
 
+## 1.1.1
+
+### Patch Changes
+
+- a7176c9: chore: added missing license
+- bae2b99: chore: added default setup documentation
+
 ## 1.1.0
 
 ### Minor Changes

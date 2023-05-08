@@ -1,6 +1,6 @@
 {
 	"name": "create-robo",
-	"version": "0.2.1",
+	"version": "0.3.0",
 	"private": false,
 	"description": "Create Robo.js Discord bots with one command",
 	"engines": {
@@ -41,7 +41,7 @@
 		"inquirer": "^9.2.0"
 	},
 	"devDependencies": {
-		"@roboplay/robo.js": "0.4.1",
+		"@roboplay/robo.js": "0.5.0",
 		"@types/inquirer": "^9.0.3",
 		"@types/node": "^18.16.3",
 		"discord.js": "^14.10.2",
