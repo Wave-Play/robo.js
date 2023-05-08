@@ -1,5 +1,21 @@
 allow:
+  - crash
+  - crashes
+  - dad-mom
+  - dive
+  - dives
   - easy
+  - execute
+  - executed
+  - execution
+  - fire
+  - firing
+  - gal-guy
+  - hang
   - host-hostess
+  - hostesses-hosts
   - just
+  - nasty
   - simple
+  - special
+  - weapon
