@@ -150,11 +150,14 @@ export async function buildInSeparateProcess(command: string) {
 }
 
 async function rebuildAndRestartBot(bot: ChildProcess | null, config: Config) {
+	// Guard against accidentally killing the new process
+	const currentBot = bot
+
 	// Kill the previous process if it's still running
 	// We wait for the process to exit before starting a new one
 	let isTerminated = false
 	const terminate = new Promise<void>((resolve) =>
-		bot?.on('exit', () => {
+		currentBot?.on('exit', () => {
 			logger.debug('Terminated previous bot process')
 			isTerminated = true
 			resolve()
@@ -166,12 +169,12 @@ async function rebuildAndRestartBot(bot: ChildProcess | null, config: Config) {
 	const forceAbort = timeout(() => {
 		if (!isTerminated) {
 			logger.warn('Robo termination timed out. Force stopping...')
-			bot?.kill('SIGKILL')
 		}
+		currentBot?.kill('SIGKILL')
 	}, config?.timeouts?.lifecycle ?? DEFAULT_CONFIG.timeouts.lifecycle)
 
 	// Wait for the bot to exit or force abort
-	bot?.send({ type: 'restart' })
+	currentBot?.send({ type: 'restart' })
 	await Promise.all([buildInSeparateProcess(buildCommand), Promise.race([terminate, forceAbort])])
 
 	// Start a new process

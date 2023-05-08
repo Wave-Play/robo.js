@@ -87,6 +87,7 @@ async function restart() {
 	// Notify lifecycle handler
 	await executeEventHandler(plugins, '_restart', client)
 	client?.destroy()
+	logger.debug(`Restarted Robo at ` + new Date().toLocaleString())
 	process.exit(0)
 }
 
