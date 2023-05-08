@@ -1,0 +1,45 @@
+{
+	"name": "@roboplay/plugin-poll",
+	"version": "0.0.0",
+	"description": "Poll command made easy with Robo.js",
+	"private": false,
+	"scripts": {
+		"build": "robo build plugin",
+		"dev": "robo build plugin --watch"
+	},
+	"keywords": [
+		"gpt",
+		"robo",
+		"roboplay",
+		"plugin"
+	],
+	"type": "module",
+	"license": "MIT",
+	"author": "WavePlay <dev@waveplay.com> (waveplay.com)",
+	"contributors": [
+		"Pkmmte Xeleon <pk@waveplay.com>"
+	],
+	"files": [
+		".robo/",
+		"src/",
+		"LICENSE",
+		"README.md"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Wave-Play/robo.git",
+		"directory": "plugins/poll"
+	},
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://registry.npmjs.org/"
+	},
+	"dependencies": {},
+	"devDependencies": {
+		"@roboplay/robo.js": "link:/Users/pkmmte/Documents/GitHub/robo/packages/discord",
+		"@swc/core": "^1.3.44",
+		"@types/node": "^18.14.6",
+		"discord.js": "14.7.1",
+		"typescript": "^5.0.0"
+	}
+}

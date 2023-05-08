@@ -33,7 +33,7 @@
 	},
 	"dependencies": {
 		"chalk": "5.2.0",
-		"commander": "10.0.0",
+		"commander": "10.0.1",
 		"dotenv": "16.0.3",
 		"node-watch": "0.7.3",
 		"p-limit": "4.0.0",
