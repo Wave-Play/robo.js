@@ -9,7 +9,7 @@
 
 **Turbocharge [Discord.js](https://discord.js.org/) with effortless power!** ⚡
 
-Upgrade your bots with a next-gen framework, snappy plugin system, and Sage's streamlined interactions, all while keeping Discord.js' power. 🚀✨
+Upgrade your bots with next-gen simplicity, snappy plugin system, epic debugging, and Sage's streamlined interactions, all while keeping Discord.js' power. 🚀✨
 
 > **Heads up!** This is a pre-release, so brace for some breaking changes before **v1.0**. 🚧
 
@@ -33,9 +33,11 @@ We'll walk you through a breezy customization process and whip up a fully workin
 
 ## Adding to an existing project
 
-```bash
-npm install @roboplay/robo.js
-```
+Depending on your bot's complexity, there are 3 smooth migration paths to choose from. Each tailored to make your bot's transition as seamless as possible.
+
+Check out our migration guide for a detailed breakdown of the 3 migration options, and pick the one that suits your bot best.
+
+**➞ [📚 See the full migration guide](/docs/developing/overview.md)**
 
 ## Epic Simplicity
 
