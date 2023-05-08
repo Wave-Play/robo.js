@@ -12,7 +12,7 @@ npx create-robo <projectName>
 
 This command guides you through setting up a project tailored to your preferences, including TypeScript, linting, styling, and plugins.
 
-> Note: Don't forget to replace `<projectName>` with the desired name for your new Robo project.
+> Note: Don't forget to replace `<projectName>` with the desired name for your new Robo.
 
 ## Upgrading Existing Project ⏫
 
