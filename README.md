@@ -9,7 +9,7 @@
 
 **Turbocharge [Discord.js](https://discord.js.org/) with effortless power!** ⚡
 
-Upgrade your bots with a snappy plugin system and Sage's streamlined interactions, all while keeping Discord.js' power. 🚀✨
+Upgrade your bots with a next-gen framework, snappy plugin system, and Sage's streamlined interactions, all while keeping Discord.js' power. 🚀✨
 
 > **Heads up!** This is a pre-release, so brace for some breaking changes before **v1.0**. 🚧
 
@@ -19,7 +19,7 @@ Upgrade your bots with a snappy plugin system and Sage's streamlined interaction
 
 Get well-versed with Robo.js and unlock its full potential!
 
-**➞ [📚 Dive into the full documentation for all the deets.](/docs)**
+**➞ [📚 Dive into the full documentation for more.](/docs)**
 
 ## Quick start
 
@@ -39,15 +39,13 @@ npm install @roboplay/robo.js
 
 ## Epic Simplicity
 
-Robo.js powers up your bot-making game with Discord.js, while keeping it all super simple. Its top strengths include:
+Robo.js dishes out Discord.js goodness with a focus on simplicity, making it easy-peasy to craft bots that truly sparkle – all without compromises! 🌟
 
-1. **Easy-peasy:** No fuss, just a smooth start to bot development, so you can focus on crafting cool features.
-2. **Built-in awesomeness:** Commands, events, plugins - it's all there, ready to create bots that pack a punch.
-3. **Sage's helping hand:** Sage simplifies command interaction and offers smart error replies, making debugging a breeze.
-4. **Customizable & scalable:** Adjust, grow, and adapt your bot as needed with Robo.js's flexibility.
-5. **Community power:** Tap into the know-how and support of the Discord.js community.
-
-Robo.js brings the best of Discord.js, with added ease and pizzazz, helping you create bots that truly shine. 🌟
+- **Easy-peasy:** No fuss, just a smooth start to bot development, so you can focus on crafting cool features.
+- **Built-in awesomeness:** Commands, events, plugins - it's all there, ready to create bots that pack a punch.
+- **Sage's helping hand:** Sage simplifies command interaction and offers smart error replies, making debugging a breeze.
+- **Customizable & scalable:** Adjust, grow, and adapt your bot as needed with Robo.js's flexibility.
+- **Community power:** Tap into the know-how and support of the Discord.js community.
 
 ## Usage
 
