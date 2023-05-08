@@ -1,6 +1,6 @@
 {
 	"name": "@roboplay/plugin-gpt",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"description": "Chat commands powered by OpenAI's GPT",
 	"private": false,
 	"scripts": {
@@ -37,7 +37,7 @@
 		"openai": "^3.2.1"
 	},
 	"devDependencies": {
-		"@roboplay/robo.js": "0.3.0",
+		"@roboplay/robo.js": "0.5.0",
 		"@types/node": "18.14.6",
 		"discord.js": "14.7.1"
 	}
