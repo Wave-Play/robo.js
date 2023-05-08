@@ -37,6 +37,11 @@ const optionalPlugins = [
 		name: `${chalk.bold('GPT')} - Enable your bot to generate human-like text with the power of GPT.`,
 		short: 'GPT',
 		value: 'gpt'
+	},
+	{
+		name: `${chalk.bold('Polls')} - Add the ability to create and manage polls with ease.`,
+		short: 'Polls',
+		value: 'polls'
 	}
 ]
 
