@@ -29,8 +29,7 @@ async function inviteAction() {
 	const permissions = getPermissionsFromManifest(manifest)
 
 	// Generate the invite link
-	const hasCommandsScope = manifest.commands && Object.keys(manifest.commands).length > 0
-	const scope = hasCommandsScope ? 'applications.commands' : ''
+	const scope = manifest.scopes.join('%20')
 	const inviteLink = `https://discord.com/oauth2/authorize?client_id=${clientId}&scope=${scope}&permissions=${permissions}`
 
 	// Pretty log output
@@ -60,9 +59,8 @@ async function inviteAction() {
 	)
 }
 
-// TODO: Inherit permissions from plugins
 function getPermissionsFromManifest(manifest: Manifest) {
-	const manifestPermissions = manifest.__robo?.config?.invite?.permissions
+	const manifestPermissions = manifest.permissions
 	if (!manifestPermissions) {
 		logger.warn('No permissions found in manifest... ;-;')
 		return BigInt(0)

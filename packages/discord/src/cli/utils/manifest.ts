@@ -1,11 +1,21 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { BaseConfig, CommandConfig, CommandOption, Config, EventConfig, Manifest, Plugin } from '../../types/index.js'
+import {
+	BaseConfig,
+	CommandConfig,
+	CommandOption,
+	Config,
+	EventConfig,
+	Manifest,
+	Plugin,
+	Scope
+} from '../../types/index.js'
 import { logger } from '../../core/logger.js'
 import { findPackagePath, hasProperties, packageJson } from './utils.js'
 import { loadConfig } from '../../core/config.js'
 import { pathToFileURL } from 'node:url'
 import { DefaultGen } from './generate-defaults.js'
+import type { PermissionsString } from 'discord.js'
 
 // Global manifest reference
 let _manifest: Manifest = null
@@ -26,7 +36,29 @@ const BASE_MANIFEST: Manifest = {
 		config: null
 	},
 	commands: {},
-	events: {}
+	events: {},
+	permissions: [],
+	scopes: []
+}
+
+// TODO: Replace with file scanning to detect actual usage
+// Bot permissions are not directly tied to intents
+const INTENT_PERMISSIONS: Record<string, PermissionsString[]> = {
+	DirectMessages: [],
+	DirectMessageReactions: [],
+	DirectMessageTyping: [],
+	Guilds: ['ViewChannel'],
+	GuildMembers: [],
+	GuildBans: ['BanMembers', 'ViewAuditLog'],
+	GuildEmojisAndStickers: ['ManageEmojisAndStickers'],
+	GuildIntegrations: ['ManageGuild', 'ViewAuditLog'],
+	GuildWebhooks: ['ManageWebhooks', 'ViewAuditLog'],
+	GuildInvites: ['CreateInstantInvite', 'ManageGuild'],
+	GuildVoiceStates: ['Connect', 'Speak', 'MuteMembers', 'DeafenMembers', 'MoveMembers', 'UseVAD'],
+	GuildPresences: [],
+	GuildMessages: ['ReadMessageHistory', 'SendMessages'],
+	GuildMessageReactions: ['ReadMessageHistory', 'AddReactions'],
+	GuildMessageTyping: ['ReadMessageHistory']
 }
 
 const mergeEvents = (baseEvents: Record<string, EventConfig[]>, newEvents: Record<string, EventConfig[]>) => {
@@ -50,11 +82,13 @@ export async function generateManifest(generatedDefaults: DefaultGen): Promise<M
 		'command',
 		generatedDefaults
 	)
+	logger.debug(`Found ${Object.keys(commands).length} commands`)
 	const events = (await generateObjectFromDirectory<EventConfig>(
 		'.robo/build/events',
 		'event',
 		generatedDefaults
 	)) as Record<string, EventConfig[]>
+	logger.debug(`Found ${Object.keys(events).length} events`)
 
 	const newManifest: Manifest = {
 		...BASE_MANIFEST,
@@ -70,6 +104,10 @@ export async function generateManifest(generatedDefaults: DefaultGen): Promise<M
 		} as Record<string, CommandConfig>,
 		events: mergeEvents(pluginsManifest.events, events)
 	}
+
+	// Smartly detect permissions and scopes
+	newManifest.permissions = await generatePermissions(config)
+	newManifest.scopes = generateScopes(config, newManifest)
 
 	// Make sure newManifest commands are in alphabetical order
 	newManifest.commands = Object.fromEntries(Object.entries(newManifest.commands).sort(([a], [b]) => a.localeCompare(b)))
@@ -94,6 +132,9 @@ async function readPluginManifest(plugins: Plugin[]): Promise<Manifest> {
 		const packagePath = await findPackagePath(pluginName, process.cwd())
 		const manifest = await loadManifest(pluginName, packagePath)
 
+		// For now, we only supporting merging plugin permissions as strings
+		const validPermissions = manifest.permissions && typeof manifest.permissions !== 'number'
+
 		pluginsManifest = {
 			...pluginsManifest,
 			commands: {
@@ -103,7 +144,12 @@ async function readPluginManifest(plugins: Plugin[]): Promise<Manifest> {
 			events: {
 				...pluginsManifest.events,
 				...manifest.events
-			}
+			},
+			permissions: [
+				...(pluginsManifest.permissions as PermissionsString[]),
+				...(validPermissions ? (manifest.permissions as PermissionsString[]) : [])
+			],
+			scopes: [...pluginsManifest.scopes, ...(manifest.scopes ?? [])]
 		}
 	}
 
@@ -157,6 +203,57 @@ export async function loadManifest(name = '', basePath = ''): Promise<Manifest> 
 	} finally {
 		_manifest = manifest
 	}
+}
+
+async function generatePermissions(config: Config): Promise<PermissionsString[]> {
+	const permissions: PermissionsString[] = []
+	const autoPermissions = config?.invite?.autoPermissions ?? true
+
+	if (autoPermissions) {
+		// Scan all intents to come up with a list of permissions we need
+		const intents = Object.values(config.clientOptions?.intents || {})
+		for (const intent of intents) {
+			if (typeof intent === 'string') {
+				// Determine what permissions this intent requires
+				const intentPermissions = INTENT_PERMISSIONS[intent]
+				if (intentPermissions) {
+					permissions.push(...intentPermissions)
+				}
+			}
+		}
+	}
+
+	// Include all permissions specified in the config
+	const configPermissions = config.invite?.permissions
+	if (typeof configPermissions !== 'number' && configPermissions?.length) {
+		permissions.push(...configPermissions)
+	}
+
+	// Sort permissions alphabetically (this is very important to me)
+	permissions.sort((a, b) => a.localeCompare(b))
+
+	// Filter out duplicates and nulls before returning
+	return [...new Set(permissions)].filter((permission) => permission)
+}
+
+function generateScopes(config: Config, newManifest: Manifest): Scope[] {
+	const scopes: Scope[] = ['bot']
+
+	// Include application.commands if there are any commands in the manifest
+	if (Object.keys(newManifest.commands).length) {
+		scopes.push('applications.commands')
+	}
+
+	// Include all scopes specified in the config
+	if (config.invite?.scopes?.length) {
+		scopes.push(...config.invite.scopes)
+	}
+
+	// Sort scopes alphabetically (this is very important to me)
+	scopes.sort((a, b) => a.localeCompare(b))
+
+	// Filter out duplicates and nulls before returning
+	return [...new Set(scopes)].filter((scope) => scope)
 }
 
 async function generateObjectFromDirectory<T>(

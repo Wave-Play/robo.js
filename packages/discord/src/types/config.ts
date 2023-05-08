@@ -13,6 +13,7 @@ export interface Config {
 		url: string
 	}
 	invite?: {
+		autoPermissions?: boolean
 		permissions?: PermissionsString[] | number
 		scopes?: Scope[]
 	}
