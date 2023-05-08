@@ -30,7 +30,8 @@ export default {
 	clientOptions: {
 		intents: [
 			'Guilds',
-			'GuildMessages'
+			'GuildMessages',
+			'MessageContent'
 		]
 	},
 	plugins: {{plugins}}
