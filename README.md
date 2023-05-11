@@ -37,7 +37,7 @@ Depending on your bot's complexity, there are 3 smooth migration paths to choose
 
 Check out our migration guide for a detailed breakdown of the 3 migration options, and pick the one that suits your bot best.
 
-**➞ [📚 See the full migration guide](/docs/developing/overview.md)**
+**➞ [📚 See the full migration guide](/docs/migrating.md)**
 
 ## Epic Simplicity
 
