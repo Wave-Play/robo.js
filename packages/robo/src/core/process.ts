@@ -11,6 +11,12 @@ import type { RoboMessage, RoboStateMessage } from '../types/index.js'
  * - Imports are done inline to avoid potential crashes due to errors in them.
  */
 
+// This is used to wait for the state to be loaded before continuing
+let stateLoadResolve: () => void
+export const stateLoad = new Promise<void>((resolve) => {
+	stateLoadResolve = resolve
+})
+
 process.on('SIGINT', async () => {
 	const { logger } = await import('./logger.js')
 	const { Robo } = await import('./robo.js')
@@ -40,6 +46,7 @@ process.on('message', async (message: RoboMessage) => {
 	} else if (message?.type === 'state-load') {
 		const { loadState } = await import('./state.js')
 		loadState((message as RoboStateMessage).state)
+		stateLoadResolve()
 	} else {
 		logger.debug('Unknown message:', message)
 	}

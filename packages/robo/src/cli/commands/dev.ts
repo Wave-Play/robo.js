@@ -60,6 +60,7 @@ async function devAction(options: DevCommandOptions) {
 		process.exit(0)
 	})
 	botProcess = await botPromise
+	botProcess.send({ type: 'state-load', state: {} })
 
 	// Watch for changes in the "src" directory or config file
 	const watchedPaths = ['src']

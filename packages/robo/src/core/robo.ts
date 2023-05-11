@@ -6,6 +6,7 @@ import { getConfig, loadConfig } from './config.js'
 import { logger } from './logger.js'
 import { getManifest, loadManifest } from '../cli/utils/manifest.js'
 import { env } from './env.js'
+import { stateLoad } from './process.js'
 import { pathToFileURL } from 'node:url'
 import { executeAutocompleteHandler, executeCommandHandler, executeEventHandler } from './handlers.js'
 import type { CommandRecord, EventRecord, Handler, PluginData } from '../types/index.js'
@@ -22,7 +23,13 @@ export let events: Collection<string, EventRecord[]>
 // Don't export plugin, as they may contain sensitive data in their options
 let plugins: Collection<string, PluginData>
 
-async function start() {
+interface StartOptions {
+	awaitState?: boolean
+}
+
+async function start(options?: StartOptions) {
+	const { awaitState } = options ?? {}
+
 	// Load config and manifest right away
 	// This makes them available globally via getConfig() and getManifest()
 	const [config] = await Promise.all([loadConfig(), loadManifest()])
@@ -30,6 +37,11 @@ async function start() {
 		enabled: config?.logger?.enabled,
 		level: config?.logger?.level
 	}).debug('Starting Robo...')
+
+	// Wait for states to be loaded
+	if (awaitState) {
+		await stateLoad
+	}
 
 	// Load plugin options
 	plugins = loadPluginData()
