@@ -14,8 +14,14 @@ export interface Handler {
 }
 
 export interface RoboMessage {
-	type: 'restart'
+	type: 'ready' | 'restart' | 'state-load' | 'state-save'
 }
+
+export interface RoboStateMessage extends RoboMessage {
+	state: State
+}
+
+export type State = Record<string, unknown>
 
 export type SageOptions = {
 	defer?: boolean

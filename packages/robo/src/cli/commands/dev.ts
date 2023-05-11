@@ -9,6 +9,7 @@ import { loadConfig, loadConfigPath } from '../../core/config.js'
 import { IS_WINDOWS, cmd, getPkgManager, getWatchedPlugins, timeout } from '../utils/utils.js'
 import path from 'node:path'
 import url from 'node:url'
+import { getStateSave } from '../../core/state.js'
 import type { Config } from '../../types/index.js'
 
 const command = new Command('dev')
@@ -175,11 +176,15 @@ async function rebuildAndRestartBot(bot: ChildProcess | null, config: Config) {
 		currentBot?.kill('SIGKILL')
 	}, config?.timeouts?.lifecycle ?? DEFAULT_CONFIG.timeouts.lifecycle)
 
+	// Get state dump before restarting
+	const savedState = await getStateSave(currentBot)
+
 	// Wait for the bot to exit or force abort
 	currentBot?.send({ type: 'restart' })
 	await Promise.all([buildInSeparateProcess(buildCommand), Promise.race([terminate, forceAbort])])
 
 	// Start a new process
 	const newBot = await run()
+	newBot.send({ type: 'state-load', state: savedState })
 	return newBot
 }

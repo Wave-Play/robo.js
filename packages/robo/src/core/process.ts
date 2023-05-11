@@ -34,6 +34,12 @@ process.on('message', async (message: RoboMessage) => {
 	logger.debug('Received message from parent:', message)
 	if (message?.type === 'restart') {
 		Robo.restart()
+	} else if (message?.type === 'state-save') {
+		const { saveState } = await import('./state.js')
+		saveState()
+	} else if (message?.type === 'state-load') {
+		const { loadState } = await import('./state.js')
+		loadState((message as RoboStateMessage).state)
 	} else {
 		logger.debug('Unknown message:', message)
 	}
