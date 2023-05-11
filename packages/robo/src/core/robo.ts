@@ -1,3 +1,4 @@
+import './process.js'
 import chalk from 'chalk'
 import { Client, Collection, Events } from 'discord.js'
 import path from 'node:path'
@@ -7,8 +8,7 @@ import { getManifest, loadManifest } from '../cli/utils/manifest.js'
 import { env } from './env.js'
 import { pathToFileURL } from 'node:url'
 import { executeAutocompleteHandler, executeCommandHandler, executeEventHandler } from './handlers.js'
-import { sendDebugError } from './debug.js'
-import type { CommandRecord, EventRecord, Handler, PluginData, RoboMessage } from '../types/index.js'
+import type { CommandRecord, EventRecord, Handler, PluginData } from '../types/index.js'
 
 export const Robo = { restart, start, stop }
 
@@ -90,47 +90,6 @@ async function restart() {
 	logger.debug(`Restarted Robo at ` + new Date().toLocaleString())
 	process.exit(0)
 }
-
-process.on('SIGINT', () => {
-	logger.debug('Received SIGINT signal.')
-	stop()
-})
-
-process.on('SIGTERM', () => {
-	logger.debug('Received SIGTERM signal.')
-	stop()
-})
-
-process.on('message', (message: RoboMessage) => {
-	logger.debug('Received message from parent:', message)
-	if (message?.type === 'restart') {
-		restart()
-	} else {
-		logger.debug('Unknown message:', message)
-	}
-})
-
-process.on('unhandledRejection', async (reason) => {
-	// Exit right away if the client isn't ready yet
-	// We don't want to send a message to Discord nor notify handlers if we can't
-	if (!client?.isReady()) {
-		logger.error(reason)
-		process.exit(1)
-	}
-
-	// Log error and ignore it in production
-	logger.error(reason)
-	if (env.nodeEnv === 'production') {
-		return
-	}
-
-	// Development mode works a bit differently because we don't want developers to ignore errors
-	// Errors will stop the process unless there's a special channel to send them to
-	const handledError = await sendDebugError(reason)
-	if (!handledError) {
-		stop(1)
-	}
-})
 
 async function loadHandlerModules<T extends Handler | Handler[]>(type: 'commands' | 'events') {
 	const collection = new Collection<string, T>()

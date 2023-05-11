@@ -46,7 +46,8 @@ async function devAction(options: DevCommandOptions) {
 
 	// Run after preparing first build
 	await buildInSeparateProcess(buildCommand)
-	let botProcess = run()
+	let botProcess: ChildProcess
+	const botPromise = run()
 
 	// Make sure to kill the bot process when the process exits
 	process.on('SIGINT', () => {
@@ -57,6 +58,7 @@ async function devAction(options: DevCommandOptions) {
 		botProcess?.kill('SIGTERM')
 		process.exit(0)
 	})
+	botProcess = await botPromise
 
 	// Watch for changes in the "src" directory or config file
 	const watchedPaths = ['src']
@@ -178,5 +180,6 @@ async function rebuildAndRestartBot(bot: ChildProcess | null, config: Config) {
 	await Promise.all([buildInSeparateProcess(buildCommand), Promise.race([terminate, forceAbort])])
 
 	// Start a new process
-	return run()
+	const newBot = await run()
+	return newBot
 }
