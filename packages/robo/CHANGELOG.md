@@ -1,5 +1,14 @@
 # robo.js
 
+## 0.5.1
+
+### Patch Changes
+
+- c80d247: fix: export primary robo object
+- 5749b9d: feat: introducing states (experimental)
+- 12284fa: refactor: wait for child process to be ready in development mode
+- 5a89c11: feat: await state load before robo start
+
 ## 0.5.0
 
 ### Minor Changes
