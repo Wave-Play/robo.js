@@ -7,6 +7,7 @@ export interface Manifest {
 	__README: string
 	__robo: {
 		config: Config | null
+		type: 'plugin' | 'robo'
 		updatedAt?: string
 		version?: string
 	}

@@ -63,7 +63,7 @@ async function buildAction(options: BuildCommandOptions) {
 	// Generate manifest.json
 	const oldManifest = await loadManifest()
 	const manifestTime = performance.now()
-	const manifest = await generateManifest(generatedFiles)
+	const manifest = await generateManifest(generatedFiles, 'robo')
 	logger.debug(`Generated manifest in ${Math.round(performance.now() - manifestTime)}ms`)
 
 	// Log commands and events from the manifest
