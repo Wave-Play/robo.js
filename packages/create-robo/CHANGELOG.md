@@ -1,5 +1,11 @@
 # create-robo
 
+## 0.3.1
+
+### Patch Changes
+
+- de05122: fix: include docs in distributed package
+
 ## 0.3.0
 
 ### Minor Changes

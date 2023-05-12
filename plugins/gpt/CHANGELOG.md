@@ -1,5 +1,11 @@
 # @roboplay/plugin-gpt
 
+## 1.1.2
+
+### Patch Changes
+
+- 3509913: chore: version bump
+
 ## 1.1.1
 
 ### Patch Changes
