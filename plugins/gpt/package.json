@@ -4,7 +4,8 @@
 	"description": "Chat commands powered by OpenAI's GPT",
 	"private": false,
 	"scripts": {
-		"build": "robo build plugin"
+		"build": "robo build plugin",
+		"dev": "robo build plugin --watch"
 	},
 	"keywords": [
 		"gpt",
