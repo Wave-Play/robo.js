@@ -1,4 +1,5 @@
 node_modules
+docosaurus
 **/dist/**
 **/tsup.config.ts
 **/tsup-cli.config.ts
