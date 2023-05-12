@@ -6,8 +6,7 @@
 export default {
 	clientOptions: {
 		intents: [
-			'Guilds',
-			'GuildMessages'
+			'Guilds'
 		]
 	},
 	plugins: []

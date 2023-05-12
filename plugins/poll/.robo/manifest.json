@@ -4,14 +4,14 @@
     "config": {
       "clientOptions": {
         "intents": [
-          "Guilds",
-          "GuildMessages"
+          "Guilds"
         ]
       },
       "plugins": []
     },
-    "updatedAt": "2023-05-08T05:36:28.084Z",
     "version": "0.4.2"
+    "type": "plugin",
+    "updatedAt": "2023-05-11T17:47:05.804Z",
   },
   "commands": {
     "poll": {
@@ -54,8 +54,6 @@
     ]
   },
   "permissions": [
-    "ReadMessageHistory",
-    "SendMessages",
     "ViewChannel"
   ],
   "scopes": [
