@@ -25,10 +25,11 @@ let plugins: Collection<string, PluginData>
 
 interface StartOptions {
 	awaitState?: boolean
+	client?: Client
 }
 
 async function start(options?: StartOptions) {
-	const { awaitState } = options ?? {}
+	const { awaitState, client: optionsClient } = options ?? {}
 
 	// Load config and manifest right away
 	// This makes them available globally via getConfig() and getManifest()
@@ -47,7 +48,7 @@ async function start(options?: StartOptions) {
 	plugins = loadPluginData()
 
 	// Create the new client instance
-	client = new Client(config.clientOptions)
+	client = optionsClient ?? new Client(config.clientOptions)
 
 	// Load command and event modules
 	commands = await loadHandlerModules<CommandRecord>('commands')
