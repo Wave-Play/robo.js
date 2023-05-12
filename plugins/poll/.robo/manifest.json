@@ -9,9 +9,9 @@
       },
       "plugins": []
     },
-    "version": "0.4.2"
     "type": "plugin",
     "updatedAt": "2023-05-11T17:47:05.804Z",
+    "version": "0.5.1"
   },
   "commands": {
     "poll": {
