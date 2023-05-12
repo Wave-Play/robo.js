@@ -19,7 +19,7 @@ Upgrade your bots with next-gen simplicity, snappy plugin system, epic debugging
 
 Get well-versed with Robo.js and unlock its full potential!
 
-**➞ [📚 Dive into the full documentation for more.](/docs)**
+**➞ [📚 Dive into the full documentation for more.](https://docs.roboplay.dev/docs/getting-started)**
 
 ## Quick start
 
@@ -37,7 +37,7 @@ Depending on your bot's complexity, there are 3 smooth migration paths to choose
 
 Check out our migration guide for a detailed breakdown of the 3 migration options, and pick the one that suits your bot best.
 
-**➞ [📚 See the full migration guide](/docs/migrating.md)**
+**➞ [📚 See the full migration guide](https://docs.roboplay.dev/docs/migrating)**
 
 ## Epic Simplicity
 
@@ -93,7 +93,7 @@ Robo.js will automatically handle the necessary permissions when you run `robo i
 
 With Robo.js, there's practically no learning curve! As a framework for Discord.js, you'll still have access to everything Discord.js has to offer. 🎉
 
-To get your Robo grooving in development mode, bust out `robo dev` (or `npm run dev`). When you're all set to host your Robo, hit `robo build`, then kick things off with `robo start`. Don't forget to explore the [full documentation](/docs) for even more awesomeness! 🔥
+To get your Robo grooving in development mode, bust out `robo dev` (or `npm run dev`). When you're all set to host your Robo, hit `robo build`, then kick things off with `robo start`. Don't forget to explore the [full documentation](https://docs.roboplay.dev/docs/getting-started) for even more awesomeness! 🔥
 
 ## License 📜
 
