@@ -1,5 +1,12 @@
 # robo.js
 
+## 0.5.2
+
+### Patch Changes
+
+- 8fd0f67: feat: accept custom client in robo start options
+- 6ce14ec: feat(cli): include build type in manifest
+
 ## 0.5.1
 
 ### Patch Changes
