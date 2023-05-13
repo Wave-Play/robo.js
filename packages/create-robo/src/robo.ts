@@ -153,11 +153,17 @@ export default class Robo {
 			version: '1.0.0',
 			type: 'module',
 			scripts: this._isPlugin ? pluginScripts : roboScripts,
-			dependencies: {
-				'discord.js': '^14.7.1',
-				'@roboplay/robo.js': 'latest'
-			},
+			dependencies: {},
 			devDependencies: {}
+		}
+
+		// Robo.js and Discord.js are normal dependencies, unless this is a plugin
+		if (!this._isPlugin) {
+			packageJson.dependencies['@roboplay/robo.js'] = 'latest'
+			packageJson.dependencies['discord.js'] = '^14.7.1'
+		} else {
+			packageJson.devDependencies['@roboplay/robo.js'] = 'latest'
+			packageJson.devDependencies['discord.js'] = '^14.7.1'
 		}
 
 		// Generate customized documentation
