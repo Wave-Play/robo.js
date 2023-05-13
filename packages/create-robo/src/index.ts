@@ -28,10 +28,17 @@ new Command('create-robo <projectName>')
 			level: options.verbose ? 'debug' : 'info'
 		}).debug(`Creating new Robo.js ${options.plugin ? 'plugin' : 'project'}...`)
 		logger.debug(`Using options: ${JSON.stringify(options)}`)
-		logger.log('')
 
-		// Request the project name from the user if it was not provided
+		// Infer project name from current directory if it was not provided
 		let projectName = args[0]
+		let useSameDirectory = false
+
+		if (!projectName) {
+			projectName = process.cwd().split('/').pop()
+			useSameDirectory = true
+		}
+
+		// Ask the user for Robo name directly as a fallback
 		if (!projectName) {
 			const answers = await inquirer.prompt([
 				{
@@ -47,10 +54,16 @@ new Command('create-robo <projectName>')
 				}
 			])
 			projectName = answers.projectName
+			useSameDirectory = true
 		}
 
 		// Create a new Robo project prototype
-		const robo = new Robo(projectName, options.plugin)
+		const robo = new Robo(projectName, options.plugin, useSameDirectory)
+
+		if (useSameDirectory) {
+			logger.log(`This new ${robo.isPlugin ? 'plugin' : 'Robo'} will be created in the current directory.`)
+		}
+		logger.log('')
 
 		// Verify plugin status if it sounds like one
 		if (!robo.isPlugin && projectName.toLowerCase().includes('plugin')) {

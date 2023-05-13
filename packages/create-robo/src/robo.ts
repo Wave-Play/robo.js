@@ -71,10 +71,10 @@ export default class Robo {
 		return this._isPlugin
 	}
 
-	constructor(name: string, isPlugin: boolean) {
+	constructor(name: string, isPlugin: boolean, useSameDirectory: boolean) {
 		this._isPlugin = isPlugin
 		this._name = name
-		this._workingDir = path.join(process.cwd(), name)
+		this._workingDir = useSameDirectory ? process.cwd() : path.join(process.cwd(), name)
 	}
 
 	async askIsPlugin() {
