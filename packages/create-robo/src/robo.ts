@@ -242,6 +242,10 @@ export default class Robo {
 				}
 			])
 		}
+		if (features.includes('polls')) {
+			packageJson.dependencies['@roboplay/plugin-poll'] = '^0.1.0'
+			plugins.push('@roboplay/plugin-poll')
+		}
 
 		// Create the robo.mjs file
 		const roboConfig = generateRoboConfig(plugins)
