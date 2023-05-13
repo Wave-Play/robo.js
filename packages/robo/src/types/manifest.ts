@@ -1,5 +1,5 @@
 import type { PermissionsString } from 'discord.js'
-import type { CommandConfig } from './commands.js'
+import type { CommandEntry } from './commands.js'
 import type { Config, Scope } from './config.js'
 import type { EventConfig } from './events.js'
 
@@ -11,7 +11,7 @@ export interface Manifest {
 		updatedAt?: string
 		version?: string
 	}
-	commands: Record<string, CommandConfig>
+	commands: Record<string, CommandEntry>
 	events: Record<string, EventConfig[]>
 	permissions?: PermissionsString[] | number
 	scopes?: Scope[]

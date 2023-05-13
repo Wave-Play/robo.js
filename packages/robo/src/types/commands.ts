@@ -18,6 +18,8 @@ export interface CommandConfig extends BaseConfig {
 	timeout?: number
 }
 
+export type CommandEntry = CommandConfig
+
 export interface CommandOption {
 	autocomplete?: boolean
 	description?: string

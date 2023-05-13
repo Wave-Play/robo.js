@@ -2,7 +2,7 @@ import { REST, Routes, SlashCommandBuilder } from 'discord.js'
 import { logger as globalLogger, Logger } from '../../core/logger.js'
 import { performance } from 'node:perf_hooks'
 import chalk from 'chalk'
-import { CommandConfig, CommandOption } from '../../types/index.js'
+import { CommandEntry, CommandOption } from '../../types/index.js'
 import { loadConfig } from '../../core/config.js'
 import { DEFAULT_CONFIG } from '../../core/constants.js'
 import { env } from '../../core/env.js'
@@ -11,7 +11,7 @@ import { timeout } from './utils.js'
 // @ts-expect-error - Global logger is overriden by dev mode
 let logger: Logger = globalLogger
 
-export function buildSlashCommands(dev: boolean, commands: Record<string, CommandConfig>): SlashCommandBuilder[] {
+export function buildSlashCommands(dev: boolean, commands: Record<string, CommandEntry>): SlashCommandBuilder[] {
 	if (dev) {
 		logger = new Logger({
 			enabled: true,
@@ -19,7 +19,7 @@ export function buildSlashCommands(dev: boolean, commands: Record<string, Comman
 		})
 	}
 
-	return Object.entries(commands).map(([key, config]) => {
+	return Object.entries(commands).map(([key, config]): SlashCommandBuilder => {
 		logger.debug(`Building slash command: ${key}`)
 		const commandBuilder = new SlashCommandBuilder()
 			.setName(key)
@@ -132,18 +132,18 @@ export function addOptionToCommandBuilder(
 }
 
 export function findChangedCommands(
-	currentCommands: Record<string, CommandConfig>,
-	newCommands: Record<string, CommandConfig>
+	currentCommands: Record<string, CommandEntry>,
+	newCommands: Record<string, CommandEntry>
 ): string[] {
 	const commonKeys = Object.keys(currentCommands).filter((key) => key in newCommands)
-	const fieldsToCompare: (keyof CommandConfig)[] = ['description', 'options']
+	const fieldsToCompare: (keyof CommandEntry)[] = ['description', 'options']
 	const changedKeys = commonKeys.filter((key) =>
 		hasChangedFields(currentCommands[key], newCommands[key], fieldsToCompare)
 	)
 	return changedKeys
 }
 
-function hasChangedFields(obj1: CommandConfig, obj2: CommandConfig, fields: (keyof CommandConfig)[]): boolean {
+function hasChangedFields(obj1: CommandEntry, obj2: CommandEntry, fields: (keyof CommandEntry)[]): boolean {
 	for (const field of fields) {
 		if (field === 'options') {
 			if (JSON.stringify(obj1[field]) !== JSON.stringify(obj2[field])) {
@@ -158,7 +158,7 @@ function hasChangedFields(obj1: CommandConfig, obj2: CommandConfig, fields: (key
 
 export async function registerCommands(
 	dev: boolean,
-	newCommands: Record<string, CommandConfig>,
+	newCommands: Record<string, CommandEntry>,
 	changedCommands: string[],
 	addedCommands: string[],
 	removedCommands: string[]
