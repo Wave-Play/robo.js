@@ -1,5 +1,19 @@
 # create-robo
 
+## 0.4.0
+
+### Minor Changes
+
+- f4d93ee: refactor: not specifying name now creates project within same directory
+- e6b3b89: refactor: robo.js and discord.js are now dev dependencies when creating plugin
+
+### Patch Changes
+
+- eb8eb15: refactor: discord client id now requested before token
+- 8bafb1f: fix: no longer fails to install dependencies on windows
+- e32367b: fix: missing poll dependency when feature was selected
+- 9cf46eb: patch: token instructions now include link to official guide
+
 ## 0.3.1
 
 ### Patch Changes

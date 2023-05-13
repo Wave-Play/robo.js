@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.5.3
+
+### Patch Changes
+
+- 8b77331: refactor(cli): revamped internal manifest generation code
+
 ## 0.5.2
 
 ### Patch Changes
