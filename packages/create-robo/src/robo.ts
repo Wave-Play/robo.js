@@ -295,9 +295,12 @@ export default class Robo {
 	async askForDiscordCredentials(): Promise<void> {
 		const discordPortal = chalk.bold('Discord Developer Portal:')
 		const discordPortalUrl = chalk.blue.underline('https://discord.com/developers/applications')
+		const officialGuide = chalk.bold('Official Guide:')
+		const officialGuideUrl = chalk.blue.underline('https://docs.roboplay.dev/docs/advanced/environment-variables')
 		logger.log('')
 		logger.log('To get your Discord Token and Client ID, register your bot at the Discord Developer portal.')
-		logger.log(`${discordPortal} ${discordPortalUrl}\n`)
+		logger.log(`${discordPortal} ${discordPortalUrl}`)
+		logger.log(`${officialGuide} ${officialGuideUrl}\n`)
 
 		const { discordToken, discordClientId } = await inquirer.prompt([
 			{
