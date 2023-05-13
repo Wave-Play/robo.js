@@ -302,16 +302,16 @@ export default class Robo {
 		logger.log(`${discordPortal} ${discordPortalUrl}`)
 		logger.log(`${officialGuide} ${officialGuideUrl}\n`)
 
-		const { discordToken, discordClientId } = await inquirer.prompt([
-			{
-				type: 'input',
-				name: 'discordToken',
-				message: 'Enter your Discord Token (press Enter to skip):'
-			},
+		const { discordClientId, discordToken } = await inquirer.prompt([
 			{
 				type: 'input',
 				name: 'discordClientId',
 				message: 'Enter your Discord Client ID (press Enter to skip):'
+			},
+			{
+				type: 'input',
+				name: 'discordToken',
+				message: 'Enter your Discord Token (press Enter to skip):'
 			}
 		])
 
