@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url'
 import {
 	ESLINT_IGNORE,
 	PRETTIER_CONFIG,
+	cmd,
 	exec,
 	generateRoboConfig,
 	getPackageManager,
@@ -267,7 +268,7 @@ export default class Robo {
 		await fs.writeFile(path.join(this._workingDir, 'package.json'), JSON.stringify(packageJson, null, 2))
 
 		// Install dependencies using the package manager that triggered the command
-		await exec(`${packageManager} install`, { cwd: this._workingDir })
+		await exec(`${cmd(packageManager)} install`, { cwd: this._workingDir })
 	}
 
 	async copyTemplateFiles(sourceDir: string): Promise<void> {
