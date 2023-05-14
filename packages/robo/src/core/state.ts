@@ -14,7 +14,11 @@ export function getState<T = string>(key: string): T | null {
 	return state[key] as T | null
 }
 
-export function getStateSave(botProcess: ChildProcess): Promise<State> {
+export function getStateSave(botProcess: ChildProcess | null): Promise<State> {
+	if (!botProcess) {
+		return Promise.resolve({})
+	}
+
 	return new Promise((resolve, reject) => {
 		const messageListener = (message: RoboMessage) => {
 			// Check for the specific type of message we're waiting for
