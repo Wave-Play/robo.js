@@ -1,4 +1,4 @@
-import './process.js'
+import { registerProcessEvents } from './process.js'
 import chalk from 'chalk'
 import { Client, Collection, Events } from 'discord.js'
 import path from 'node:path'
@@ -31,7 +31,11 @@ interface StartOptions {
 async function start(options?: StartOptions) {
 	const { awaitState, client: optionsClient } = options ?? {}
 
-	// Load config and manifest right away
+	// Important! Register process events before doing anything else
+	// This ensures the "ready" signal is sent to the parent process
+	registerProcessEvents()
+
+	// Load config and manifest up next!
 	// This makes them available globally via getConfig() and getManifest()
 	const [config] = await Promise.all([loadConfig(), loadManifest()])
 	logger({
