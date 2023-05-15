@@ -153,18 +153,22 @@ async function rebuildAndRestartBot(bot: ChildProcess | null, config: Config) {
 	// Kill the previous process if it's still running
 	// We wait for the process to exit before starting a new one
 	let isTerminated = false
-	const terminate = new Promise<void>((resolve) =>
+	const terminate = new Promise<void>((resolve) => {
+		if (!currentBot) {
+			return resolve()
+		}
+
 		currentBot?.on('exit', () => {
 			logger.debug('Terminated previous bot process')
 			isTerminated = true
 			resolve()
 		})
-	)
+	})
 
 	// Force abort the bot if it doesn't exit after n seconds
 	// This is to prevent the bot from running multiple instances
 	const forceAbort = timeout(() => {
-		if (!isTerminated) {
+		if (!isTerminated && currentBot) {
 			logger.warn('Robo termination timed out. Force stopping...')
 		}
 		currentBot?.kill('SIGKILL')
