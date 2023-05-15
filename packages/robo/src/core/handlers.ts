@@ -55,6 +55,11 @@ export async function executeCommandHandler(interaction: CommandInteraction, com
 	logger.debug(`Sage options:`, sage)
 
 	try {
+		logger.debug(`Executing command handler: ${chalk.bold(command.path)}`)
+		if (!command.handler.default) {
+			throw `Missing default export function for command: ${chalk.bold('/' + commandKey)}`
+		}
+
 		// Delegate to command handler
 		const result = command.handler.default(interaction)
 		const promises = []
@@ -102,7 +107,7 @@ export async function executeCommandHandler(interaction: CommandInteraction, com
 			await interaction.reply(reply)
 		}
 	} catch (error) {
-		logger.error('Command error:', error)
+		logger.error(error)
 		printErrorResponse(error, interaction)
 	}
 }
@@ -123,6 +128,9 @@ export async function executeEventHandler(
 		callbacks.map(async (callback) => {
 			try {
 				logger.debug(`Executing event handler: ${chalk.bold(callback.path)}`)
+				if (!callback.handler.default) {
+					throw `Missing default export function for event: ${chalk.bold(eventName)}`
+				}
 
 				// Execute handler without timeout if not a lifecycle event
 				const handlerPromise = callback.handler.default(...eventData, plugins.get(callback.plugin?.name)?.options)
