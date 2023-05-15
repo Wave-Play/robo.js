@@ -115,7 +115,9 @@ export async function registerCommands(
 	const { clientId, guildId, token } = env.discord
 
 	if (!token || !clientId) {
-		logger.error('DISCORD_TOKEN or DISCORD_CLIENT_ID not found in environment variables')
+		logger.error(
+			`${chalk.bold('DISCORD_TOKEN')} or ${chalk.bold('DISCORD_CLIENT_ID')} not found in environment variables`
+		)
 		return
 	}
 
