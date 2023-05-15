@@ -1,5 +1,11 @@
 # create-robo
 
+## 0.4.1
+
+### Patch Changes
+
+- e03dad1: fix: updated template .gitignore to no longer exclude tsconfig.json
+
 ## 0.4.0
 
 ### Minor Changes
