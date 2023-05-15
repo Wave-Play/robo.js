@@ -135,18 +135,25 @@ export function findCommandDifferences(
 			(key) => newKeys.includes(key) && hasChangedFields(oldCommands[key], newCommands[key])
 		)
 	}
-
 	differenceKeys = differenceKeys.map((key) => (prefix ? `${prefix} ${key}` : key))
 
-	for (const key of newKeys) {
-		if (newCommands[key].subcommands && oldCommands[key]?.subcommands) {
+	const allKeys = Array.from(new Set([...oldKeys, ...newKeys]))
+	for (const key of allKeys) {
+		if (oldCommands[key]?.subcommands || newCommands[key]?.subcommands) {
 			const subDifferenceKeys = findCommandDifferences(
-				oldCommands[key].subcommands,
-				newCommands[key].subcommands,
+				oldCommands[key]?.subcommands ?? {},
+				newCommands[key]?.subcommands ?? {},
 				differenceType,
 				prefix ? `${prefix} ${key}` : key
 			)
 			differenceKeys = differenceKeys.concat(subDifferenceKeys)
+
+			if (
+				(differenceType === 'removed' && oldKeys.includes(key) && !newKeys.includes(key)) ||
+				(differenceType === 'added' && newKeys.includes(key) && !oldKeys.includes(key))
+			) {
+				differenceKeys = differenceKeys.filter((k) => k !== (prefix ? `${prefix} ${key}` : key))
+			}
 		}
 	}
 
