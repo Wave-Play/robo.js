@@ -33,7 +33,7 @@ async function pluginAction() {
 	const options = command.parent.opts() as PluginCommandOptions
 	logger({
 		enabled: !options.silent,
-		level: options.verbose ? 'debug' : 'info'
+		level: options.verbose ? 'debug' : options.dev ? 'warn' : 'info'
 	}).info(`Building Robo plugin...`)
 	const startTime = performance.now()
 

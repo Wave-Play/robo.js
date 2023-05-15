@@ -24,7 +24,7 @@ interface DevCommandOptions {
 	verbose?: boolean
 }
 
-const buildCommand = 'robo build --dev --silent'
+const buildCommand = 'robo build --dev'
 
 async function devAction(options: DevCommandOptions) {
 	// Create a logger
