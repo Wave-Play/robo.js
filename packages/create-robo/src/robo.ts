@@ -236,7 +236,7 @@ export default class Robo {
 			}
 
 			// Create the prettier.config.js file
-			await fs.writeFile(path.join(this._workingDir, 'prettier.config.js'), PRETTIER_CONFIG)
+			await fs.writeFile(path.join(this._workingDir, 'prettier.config.mjs'), PRETTIER_CONFIG)
 		}
 
 		const plugins: Plugin[] = []
