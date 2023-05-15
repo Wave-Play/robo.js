@@ -50,15 +50,6 @@ async function devAction(options: DevCommandOptions) {
 	let botProcess: ChildProcess
 	const botPromise = run()
 
-	// Make sure to kill the bot process when the process exits
-	process.on('SIGINT', () => {
-		botProcess?.kill('SIGINT')
-		process.exit(0)
-	})
-	process.on('SIGTERM', () => {
-		botProcess?.kill('SIGTERM')
-		process.exit(0)
-	})
 	botProcess = await botPromise
 	botProcess.send({ type: 'state-load', state: {} })
 

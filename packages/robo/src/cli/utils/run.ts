@@ -29,6 +29,16 @@ export function run(): Promise<ChildProcess> {
 			}
 		}
 
+		// Make sure to kill the bot process when the process exits
+		process.on('SIGINT', () => {
+			childProcess?.kill('SIGINT')
+			process.exit(0)
+		})
+		process.on('SIGTERM', () => {
+			childProcess?.kill('SIGTERM')
+			process.exit(0)
+		})
+
 		logger.debug('Waiting for new process to be ready...')
 		childProcess.on('message', onMonitorReady)
 		childProcess.once('error', (error) => {
