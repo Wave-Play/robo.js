@@ -1,11 +1,8 @@
 import { BaseLogger, LogLevel, colorizedLogLevels } from './base-logger.js'
-import { DEBUG_MODE } from './debug.js'
+import { ANSI_REGEX, DEBUG_MODE } from './debug.js'
 import type { BaseLoggerOptions } from './base-logger.js'
 
 const DEFAULT_MAX_ENTRIES = 100
-
-// eslint-disable-next-line no-control-regex
-const ANSI_REGEX = /\x1b\[.*?m/g
 
 class LogEntry {
 	level: LogLevel

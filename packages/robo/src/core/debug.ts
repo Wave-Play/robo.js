@@ -27,6 +27,9 @@ import type { CommandConfig } from '../types/commands.js'
 
 export const DEBUG_MODE = process.env.NODE_ENV !== 'production'
 
+// eslint-disable-next-line no-control-regex
+export const ANSI_REGEX = /\x1b\[.*?m/g
+
 export const devCommand = async (interaction: MessageComponentInteraction) => {
 	await interaction.deferReply()
 	const logs = logger.getRecentLogs().map((log) => log.message())
@@ -169,6 +172,7 @@ async function formatError(options: FormatErrorOptions): Promise<FormatErrorResu
 	} else if (typeof error === 'string') {
 		message = error
 	}
+	message = message.replace(ANSI_REGEX, '')
 	message += '\n\u200b'
 
 	// Try to get code at fault from stack trace
