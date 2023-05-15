@@ -1,5 +1,30 @@
 # robo.js
 
+## 0.6.0
+
+### Minor Changes
+
+- 074f417: feat(cli): auto register subcommand and subcommand group changes
+- afe2f5f: feat: support for subcommands and subcommand groups
+- cc0277d: feat: continue watching for changes when build fails in development mode
+- d252636: feat: show errors and warnings from build process in development mode
+
+### Patch Changes
+
+- 9b5923f: fix(cli): copy non-ts files for typescript builds
+- 1bbe924: refactor(cli): simpler predicate function for less code repetition
+- e379000: fix: return quickly when saving state for null process
+- 72b65bf: patch: updated default /help to support new subcommands and subcommand groups
+- 8fe87c3: patch: error reply embed field now shows correct subcommand and subcommand group keys
+- 295e446: patch(cli): delegate child process exit events as a global with only o(1) event listeners
+- caa3268: patch: register process event listeners only when starting the robo
+- 2c53541: patch: better diffing when registering subcommand and subcommand group updates
+- 1e3ce0d: chore(cli): bold environment variable names when registering commands
+- 4c6a9e4: fix(cli): handle potentially null child process
+- aff8a56: patch: better error messages for missing default exports in commands and events
+- 5fb4a05: patch: removed ansi decorators from top level error messages in error replies
+- 24c9447: refactor: parent process delegate responsibilities now handled in run() rather than dev command
+
 ## 0.5.3
 
 ### Patch Changes
