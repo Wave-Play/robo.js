@@ -275,7 +275,7 @@ async function scanDir(directive: (fileKeys: string[], fullPath: string) => Prom
 
 			// Group files and directories accordingly
 			if (stats.isFile() && path.extname(file) !== '.js') {
-				logger.warn(`Non-JS file encountered while scanning directory: ${fullPath}`)
+				return
 			} else if (stats.isFile()) {
 				files.push(file)
 			} else if (stats.isDirectory()) {

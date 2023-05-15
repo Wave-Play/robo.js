@@ -154,10 +154,14 @@ export async function compile(options?: RoboCompileOptions) {
 	logger.debug(`Compiling ${srcDir} to ${distDir}...`)
 	await traverse(srcDir, options ?? {}, tsOptions, transform)
 
+	// Copy any non-TypeScript files to the destination directory
+	logger.debug(`Copying non-TypeScript files from ${srcDir} to ${distDir}...`)
+	await copyDir(srcDir, distDir, ['.ts', '.tsx'])
+
 	return performance.now() - startTime
 }
 
-async function copyDir(src: string, dest: string) {
+async function copyDir(src: string, dest: string, excludeExtensions: string[] = []) {
 	await fs.mkdir(dest, { recursive: true })
 	const entries = await fs.readdir(src)
 
@@ -166,8 +170,12 @@ async function copyDir(src: string, dest: string) {
 		const destPath = path.join(dest, entry)
 
 		const entryStat = await fs.stat(srcPath)
-		if (entryStat.isDirectory()) {
-			await copyDir(srcPath, destPath)
+		const entryExt = path.extname(srcPath)
+
+		if (excludeExtensions.includes(entryExt)) {
+			continue
+		} else if (entryStat.isDirectory()) {
+			await copyDir(srcPath, destPath, excludeExtensions)
 		} else {
 			await fs.copyFile(srcPath, destPath)
 		}
