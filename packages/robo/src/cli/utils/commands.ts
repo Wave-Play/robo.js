@@ -41,10 +41,10 @@ export function buildSlashCommands(dev: boolean, commands: Record<string, Comman
 				if (subcommandEntry.subcommands) {
 					commandBuilder.addSubcommandGroup((subcommandGroup) => {
 						subcommandGroup
-								.setName(subcommandName)
-								.setNameLocalizations(subcommandEntry.nameLocalizations || {})
-								.setDescription(subcommandEntry.description || 'No description provided')
-								.setDescriptionLocalizations(subcommandEntry.descriptionLocalizations || {})
+							.setName(subcommandName)
+							.setNameLocalizations(subcommandEntry.nameLocalizations || {})
+							.setDescription(subcommandEntry.description || 'No description provided')
+							.setDescriptionLocalizations(subcommandEntry.descriptionLocalizations || {})
 						for (const [subcommandGroupName, subcommandGroupEntry] of Object.entries(subcommandEntry.subcommands)) {
 							// Add subcommands for this subcommand group
 							subcommandGroup.addSubcommand((subcommand) =>
@@ -116,20 +116,47 @@ export function addOptionToCommandBuilder(commandBuilder: SlashCommandBuilder, t
 	}
 }
 
-export function findChangedCommands(
-	currentCommands: Record<string, CommandEntry>,
-	newCommands: Record<string, CommandEntry>
+export function findCommandDifferences(
+	oldCommands: Record<string, CommandEntry>,
+	newCommands: Record<string, CommandEntry>,
+	differenceType: 'added' | 'removed' | 'changed',
+	prefix = ''
 ): string[] {
-	const commonKeys = Object.keys(currentCommands).filter((key) => key in newCommands)
-	const fieldsToCompare: (keyof CommandEntry)[] = ['description', 'options']
-	const changedKeys = commonKeys.filter((key) =>
-		hasChangedFields(currentCommands[key], newCommands[key], fieldsToCompare)
-	)
-	return changedKeys
+	let differenceKeys: string[] = []
+	const oldKeys = Object.keys(oldCommands)
+	const newKeys = Object.keys(newCommands)
+
+	if (differenceType === 'added') {
+		differenceKeys = newKeys.filter((key) => !oldKeys.includes(key))
+	} else if (differenceType === 'removed') {
+		differenceKeys = oldKeys.filter((key) => !newKeys.includes(key))
+	} else if (differenceType === 'changed') {
+		differenceKeys = oldKeys.filter(
+			(key) => newKeys.includes(key) && hasChangedFields(oldCommands[key], newCommands[key])
+		)
+	}
+
+	differenceKeys = differenceKeys.map((key) => (prefix ? `${prefix} ${key}` : key))
+
+	for (const key of newKeys) {
+		if (newCommands[key].subcommands && oldCommands[key]?.subcommands) {
+			const subDifferenceKeys = findCommandDifferences(
+				oldCommands[key].subcommands,
+				newCommands[key].subcommands,
+				differenceType,
+				prefix ? `${prefix} ${key}` : key
+			)
+			differenceKeys = differenceKeys.concat(subDifferenceKeys)
+		}
+	}
+
+	return differenceKeys
 }
 
-function hasChangedFields(obj1: CommandEntry, obj2: CommandEntry, fields: (keyof CommandEntry)[]): boolean {
-	for (const field of fields) {
+function hasChangedFields(obj1: CommandEntry, obj2: CommandEntry): boolean {
+	const fieldsToCompare: (keyof CommandEntry)[] = ['description', 'options']
+
+	for (const field of fieldsToCompare) {
 		if (field === 'options') {
 			if (JSON.stringify(obj1[field]) !== JSON.stringify(obj2[field])) {
 				return true

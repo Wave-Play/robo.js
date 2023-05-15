@@ -18,7 +18,9 @@ export interface CommandConfig extends BaseConfig {
 	timeout?: number
 }
 
-export type CommandEntry = CommandConfig
+export interface CommandEntry extends CommandConfig {
+	subcommands?: Record<string, CommandEntry>
+}
 
 export interface CommandOption {
 	autocomplete?: boolean

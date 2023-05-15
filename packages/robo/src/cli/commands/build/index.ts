@@ -5,7 +5,7 @@ import { performance } from 'node:perf_hooks'
 import { loadConfig } from '../../../core/config.js'
 import { getProjectSize, printBuildSummary } from '../../utils/build-summary.js'
 import plugin from './plugin.js'
-import { findChangedCommands, registerCommands } from '../../utils/commands.js'
+import { findCommandDifferences, registerCommands } from '../../utils/commands.js'
 import { generateDefaults } from '../../utils/generate-defaults.js'
 
 const command = new Command('build')
@@ -72,9 +72,9 @@ async function buildAction(options: BuildCommandOptions) {
 	// Compare the old manifest with the new one and register any new commands
 	const oldCommands = oldManifest.commands
 	const newCommands = manifest.commands
-	const addedCommands = Object.keys(newCommands).filter((key) => !(key in oldCommands))
-	const removedCommands = Object.keys(oldCommands).filter((key) => !(key in newCommands))
-	const changedCommands = findChangedCommands(oldCommands, newCommands)
+	const addedCommands = findCommandDifferences(oldCommands, newCommands, 'added')
+	const removedCommands = findCommandDifferences(oldCommands, newCommands, 'removed')
+	const changedCommands = findCommandDifferences(oldCommands, newCommands, 'changed')
 
 	if (options.force) {
 		logger.warn('Forcefully registering commands.')
