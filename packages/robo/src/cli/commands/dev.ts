@@ -46,12 +46,16 @@ async function devAction(options: DevCommandOptions) {
 	}
 
 	// Run after preparing first build
-	await buildInSeparateProcess(buildCommand)
+	const buildSuccess = await buildInSeparateProcess(buildCommand)
 	let botProcess: ChildProcess
-	const botPromise = run()
 
-	botProcess = await botPromise
-	botProcess.send({ type: 'state-load', state: {} })
+	if (buildSuccess) {
+		const botPromise = run()
+		botProcess = await botPromise
+		botProcess.send({ type: 'state-load', state: {} })
+	} else {
+		logger.wait(`Build failed! Waiting for changes before retrying...`)
+	}
 
 	// Watch for changes in the "src" directory or config file
 	const watchedPaths = ['src']
@@ -88,10 +92,7 @@ async function devAction(options: DevCommandOptions) {
 				logger.wait(`Change detected. Restarting Robo...`)
 			}
 
-			const updatedBot = await rebuildAndRestartBot(botProcess, config)
-			if (updatedBot) {
-				botProcess = updatedBot
-			}
+			botProcess = await rebuildAndRestartBot(botProcess, config)
 		} finally {
 			isUpdating = false
 		}
@@ -100,7 +101,7 @@ async function devAction(options: DevCommandOptions) {
 
 // Use a separate process to avoid module cache issues
 export async function buildInSeparateProcess(command: string) {
-	return new Promise<void>((resolve, reject) => {
+	return new Promise<boolean>((resolve, reject) => {
 		const args = command.split(' ')
 		let pkgManager = getPkgManager()
 
@@ -132,14 +133,15 @@ export async function buildInSeparateProcess(command: string) {
 
 		childProcess.on('close', (code) => {
 			if (code === 0) {
-				resolve()
+				resolve(true)
 			} else {
-				reject(new Error(`Child process exited with code ${code}`))
+				resolve(false)
 			}
 		})
 
 		childProcess.on('error', (error) => {
 			reject(error)
+			resolve(false)
 		})
 	})
 }
@@ -173,7 +175,14 @@ async function rebuildAndRestartBot(bot: ChildProcess | null, config: Config) {
 
 	// Wait for the bot to exit or force abort
 	currentBot?.send({ type: 'restart' })
-	await Promise.all([buildInSeparateProcess(buildCommand), Promise.race([terminate, forceAbort])])
+	const awaitStop = Promise.race([terminate, forceAbort])
+	const [success] = await Promise.all([buildInSeparateProcess(buildCommand), awaitStop])
+
+	// Return null for the bot if the build failed so we can retry later
+	if (!success) {
+		logger.wait(`Build failed! Waiting for changes before retrying...`)
+		return null
+	}
 
 	// Start a new process
 	const newBot = await run()
