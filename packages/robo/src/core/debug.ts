@@ -1,3 +1,4 @@
+import { hasProperties } from '../cli/utils/utils.js'
 import fs from 'node:fs/promises'
 import {
 	ActionRowBuilder,
@@ -50,7 +51,11 @@ export async function printErrorResponse(error: unknown, interaction: unknown, d
 	}
 
 	// Return if interaction is not a Discord command interaction or a message directed at the bot
-	if (!(interaction instanceof CommandInteraction) && !(interaction instanceof Message) && !(interaction instanceof ButtonInteraction)) {
+	if (
+		!(interaction instanceof CommandInteraction) &&
+		!(interaction instanceof Message) &&
+		!(interaction instanceof ButtonInteraction)
+	) {
 		return
 	}
 
@@ -185,9 +190,25 @@ async function formatError(options: FormatErrorOptions): Promise<FormatErrorResu
 
 	// Include additional details available
 	if (interaction instanceof CommandInteraction) {
+		const commandKeys = [interaction.commandName]
+		if (hasProperties<{ getSubcommandGroup: () => string }>(interaction.options, ['getSubcommandGroup'])) {
+			try {
+				commandKeys.push(interaction.options.getSubcommandGroup())
+			} catch {
+				// Ignore
+			}
+		}
+		if (hasProperties<{ getSubcommand: () => string }>(interaction.options, ['getSubcommand'])) {
+			try {
+				commandKeys.push(interaction.options.getSubcommand())
+			} catch {
+				// Ignore
+			}
+		}
+
 		fields.push({
 			name: 'Command',
-			value: '`/' + interaction.commandName + '`'
+			value: '`/' + commandKeys.filter(Boolean).join(' ') + '`'
 		})
 	}
 	if (details) {
