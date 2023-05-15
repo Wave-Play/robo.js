@@ -2,4 +2,4 @@
 '@roboplay/robo.js': patch
 ---
 
-fix(cli): handle potential null current process
+fix(cli): handle potentially null child process

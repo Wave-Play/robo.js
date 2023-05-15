@@ -1,5 +1,5 @@
 ---
-'@roboplay/robo.js': patch
+'@roboplay/robo.js': minor
 ---
 
-fix: show errors and warnings from build process in development mode
+feat: show errors and warnings from build process in development mode
