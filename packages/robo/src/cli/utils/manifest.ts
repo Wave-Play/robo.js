@@ -17,6 +17,7 @@ import { loadConfig } from '../../core/config.js'
 import { pathToFileURL } from 'node:url'
 import { DefaultGen } from './generate-defaults.js'
 import type { PermissionsString } from 'discord.js'
+import chalk from 'chalk'
 
 // Global manifest reference
 let _manifest: Manifest = null
@@ -306,44 +307,102 @@ async function scanDir(directive: (fileKeys: string[], fullPath: string) => Prom
 		})
 	)
 }
-async function generateEntries<T>(type: 'commands', generatedKeys: string[]): Promise<Record<string, T>>;
-async function generateEntries<T>(type: 'events', generatedKeys: string[]): Promise<Record<string, T[]>>;
-async function generateEntries<T>(type: 'commands' | 'events', generatedKeys: string[]): Promise<Record<string, T | T[]>> {
+async function generateEntries<T>(type: 'commands', generatedKeys: string[]): Promise<Record<string, T>>
+async function generateEntries<T>(type: 'events', generatedKeys: string[]): Promise<Record<string, T[]>>
+async function generateEntries<T>(
+	type: 'commands' | 'events',
+	generatedKeys: string[]
+): Promise<Record<string, T | T[]>> {
 	try {
 		const directory = path.join(process.cwd(), '.robo', 'build', type)
 		const entries: Record<string, T | T[]> = {}
 
-		await scanDir(async (fileKeys, fullPath) => {
-			logger.debug(`[${type}] Generating ${JSON.stringify(fileKeys)} from ${fullPath}`)
-			const isGenerated = generatedKeys.includes(fileKeys[0])
-			const importPath = pathToFileURL(fullPath).toString()
-			const module = await import(importPath)
-			let entry = {
-				...getValue(type, module.config),
-				__auto: isGenerated ? true : undefined,
-				__path: fileKeys.join('/') + '.js'
-			} as T
-			let existingEntry = entries[fileKeys[0]]
+		await scanDir(
+			async (fileKeys, fullPath) => {
+				logger.debug(`[${type}] Generating ${JSON.stringify(fileKeys)} from ${fullPath}`)
+				const isGenerated = generatedKeys.includes(fileKeys[0])
+				const importPath = pathToFileURL(fullPath).toString()
+				const module = await import(importPath)
+				let entry = {
+					...getValue(type, module.config),
+					__auto: isGenerated ? true : undefined,
+					__path: fileKeys.join('/') + '.js'
+				} as T
+				let existingEntry = entries[fileKeys[0]]
 
-			// Sort entry object alphabetically because I'd be a savage if we didn't
-			entry = Object.fromEntries(Object.entries(entry).sort(([a], [b]) => a.localeCompare(b))) as T
+				// Sort entry object alphabetically because I'd be a savage if we didn't
+				entry = Object.fromEntries(Object.entries(entry).sort(([a], [b]) => a.localeCompare(b))) as T
 
-			// Events entries are an array of objects unlike commands which are single objects
-			if (type === 'events' && !existingEntry) {
-				entries[fileKeys[0]] = existingEntry = []
+				// Events entries are an array of objects unlike commands which are single objects
+				if (type === 'events' && !existingEntry) {
+					entries[fileKeys[0]] = existingEntry = []
+				}
+
+				if (type === 'events' && Array.isArray(existingEntry)) {
+					existingEntry.push(entry)
+				}
+
+				// Third level command? Add it to the parent subcommand (subcommand group)
+				if (type === 'commands' && fileKeys.length === 3) {
+					let parentCommand = entries[fileKeys[0]] as CommandEntry
+
+					// Make sure there's no file for the parent command
+					// Discord does not allow calling a subcommand's parent directly
+					if (parentCommand?.__path) {
+						const commandPath = chalk.bold(`/src/${type}/${parentCommand.__path}`)
+						logger.error('You cannot have a parent command alongside subcommand groups! Source: ' + commandPath)
+						process.exit(1)
+					}
+
+					if (!parentCommand) {
+						parentCommand = { subcommands: {} }
+						entries[fileKeys[0]] = parentCommand as T
+					}
+
+					let parentSubcommand = parentCommand.subcommands[fileKeys[1]] as CommandEntry
+					if (parentSubcommand?.__path) {
+						const subcommandPath = chalk.bold(`/src/${type}/${parentSubcommand.__path}`)
+						logger.error('You cannot have a subcommand alongside subcommand groups! Source: ' + subcommandPath)
+						process.exit(1)
+					}
+
+					if (!parentSubcommand) {
+						parentSubcommand = { subcommands: {} }
+						parentCommand.subcommands[fileKeys[1]] = parentSubcommand as T
+					}
+
+					parentSubcommand.subcommands[fileKeys[2]] = entry
+				}
+
+				// If this is a second level command, find the parent command and add it as a subcommand
+				if (type === 'commands' && fileKeys.length === 2) {
+					let parentCommand = entries[fileKeys[0]] as CommandEntry
+
+					// Make sure there's no file for the parent command
+					// Discord does not allow calling a subcommand's parent directly
+					if (parentCommand?.__path) {
+						const commandPath = chalk.bold(`/src/${type}/${parentCommand.__path}`)
+						logger.error('You cannot have a parent command alongside subcommands! Source: ' + commandPath)
+						process.exit(1)
+					}
+
+					// Append this subcommand to the parent command
+					if (!parentCommand) {
+						parentCommand = { subcommands: {} }
+						entries[fileKeys[0]] = parentCommand as T
+					}
+					parentCommand.subcommands[fileKeys[1]] = entry
+				}
+
+				// Top-level commands are simpler single objects uwu
+				if (type === 'commands' && fileKeys.length === 1) {
+					entries[fileKeys[0]] = entry
+				}
+			},
+			{
+				path: directory
 			}
-
-			if (type === 'events' && Array.isArray(existingEntry)) {
-				existingEntry.push(entry)
-			}
-
-			// Commands are simpler single objects uwu
-			if (type === 'commands') {
-				entries[fileKeys[0]] = entry
-			}
-		}, {
-			path: directory
-		})
+		)
 
 		logger.debug(`Generated ${Object.keys(entries).length} unique ${type}`)
 		return entries

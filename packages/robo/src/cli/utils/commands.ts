@@ -20,17 +20,54 @@ export function buildSlashCommands(dev: boolean, commands: Record<string, Comman
 		})
 	}
 
-	return Object.entries(commands).map(([key, config]): SlashCommandBuilder => {
+	return Object.entries(commands).map(([key, entry]): SlashCommandBuilder => {
 		logger.debug(`Building slash command: ${key}`)
 		const commandBuilder = new SlashCommandBuilder()
 			.setName(key)
-			.setNameLocalizations(config.nameLocalizations || {})
-			.setDescription(config.description || 'No description provided')
-			.setDescriptionLocalizations(config.descriptionLocalizations || {})
+			.setNameLocalizations(entry.nameLocalizations || {})
+			.setDescription(entry.description || 'No description provided')
+			.setDescriptionLocalizations(entry.descriptionLocalizations || {})
 
-		if (config.options) {
-			for (const option of config.options) {
+		if (entry.options) {
+			for (const option of entry.options) {
 				addOptionToCommandBuilder(commandBuilder, option.type, option)
+			}
+		}
+
+		// Add subcommands
+		if (entry.subcommands) {
+			for (const [subcommandName, subcommandEntry] of Object.entries(entry.subcommands)) {
+				// Add subcommands for this subcommand group
+				if (subcommandEntry.subcommands) {
+					commandBuilder.addSubcommandGroup((subcommandGroup) => {
+						subcommandGroup
+								.setName(subcommandName)
+								.setNameLocalizations(subcommandEntry.nameLocalizations || {})
+								.setDescription(subcommandEntry.description || 'No description provided')
+								.setDescriptionLocalizations(subcommandEntry.descriptionLocalizations || {})
+						for (const [subcommandGroupName, subcommandGroupEntry] of Object.entries(subcommandEntry.subcommands)) {
+							// Add subcommands for this subcommand group
+							subcommandGroup.addSubcommand((subcommand) =>
+								subcommand
+									.setName(subcommandGroupName)
+									.setNameLocalizations(subcommandGroupEntry.nameLocalizations || {})
+									.setDescription(subcommandGroupEntry.description || 'No description provided')
+									.setDescriptionLocalizations(subcommandGroupEntry.descriptionLocalizations || {})
+							)
+						}
+						return subcommandGroup
+					})
+					continue
+				}
+
+				// Just add a normal subcommand
+				commandBuilder.addSubcommand((subcommand) =>
+					subcommand
+						.setName(subcommandName)
+						.setNameLocalizations(subcommandEntry.nameLocalizations || {})
+						.setDescription(subcommandEntry.description || 'No description provided')
+						.setDescriptionLocalizations(subcommandEntry.descriptionLocalizations || {})
+				)
 			}
 		}
 

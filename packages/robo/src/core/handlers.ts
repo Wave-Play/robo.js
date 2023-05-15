@@ -40,11 +40,11 @@ export async function executeAutocompleteHandler(interaction: AutocompleteIntera
 	}
 }
 
-export async function executeCommandHandler(interaction: CommandInteraction) {
+export async function executeCommandHandler(interaction: CommandInteraction, commandKey: string) {
 	// Find command handler
-	const command = commands.get(interaction.commandName)
+	const command = commands.get(commandKey)
 	if (!command) {
-		logger.error(`No command matching ${interaction.commandName} was found.`)
+		logger.error(`No command matching "${commandKey}" was found.`)
 		return
 	}
 
