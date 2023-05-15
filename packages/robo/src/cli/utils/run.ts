@@ -5,9 +5,12 @@ import type { RoboMessage } from '../../types/index.js'
 
 const ENTRY_FILE = './node_modules/@roboplay/robo.js/dist/entry.js'
 
+let _currentProcess: ChildProcess | null = null
+let _eventsRegistered = false
+
 /**
  * Runs the Robo entry file in a child process.
- * 
+ *
  * The Robo is run in a child process in development mode for various reasons:
  * - This clears the import cache, which is crucial for refreshing code changes
  * - The plugin cache is cleared, which is also crucial for refreshing code changes
@@ -20,6 +23,20 @@ export function run(): Promise<ChildProcess> {
 			execArgv: ['--enable-source-maps'],
 			stdio: 'inherit'
 		})
+		_currentProcess = childProcess
+
+		// Make sure to kill the bot process when the process exits
+		if (!_eventsRegistered) {
+			process.on('SIGINT', () => {
+				_currentProcess?.kill('SIGINT')
+				process.exit(0)
+			})
+			process.on('SIGTERM', () => {
+				_currentProcess?.kill('SIGTERM')
+				process.exit(0)
+			})
+			_eventsRegistered = true
+		}
 
 		const onMonitorReady = (message: RoboMessage) => {
 			if (message.type === 'ready') {
@@ -28,16 +45,6 @@ export function run(): Promise<ChildProcess> {
 				resolve(childProcess)
 			}
 		}
-
-		// Make sure to kill the bot process when the process exits
-		process.on('SIGINT', () => {
-			childProcess?.kill('SIGINT')
-			process.exit(0)
-		})
-		process.on('SIGTERM', () => {
-			childProcess?.kill('SIGTERM')
-			process.exit(0)
-		})
 
 		logger.debug('Waiting for new process to be ready...')
 		childProcess.on('message', onMonitorReady)
