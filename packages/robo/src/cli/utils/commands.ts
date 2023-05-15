@@ -7,6 +7,7 @@ import { loadConfig } from '../../core/config.js'
 import { DEFAULT_CONFIG } from '../../core/constants.js'
 import { env } from '../../core/env.js'
 import { timeout } from './utils.js'
+import type { ApplicationCommandOptionBase } from 'discord.js'
 
 // @ts-expect-error - Global logger is overriden by dev mode
 let logger: Logger = globalLogger
@@ -37,94 +38,41 @@ export function buildSlashCommands(dev: boolean, commands: Record<string, Comman
 	})
 }
 
-export function addOptionToCommandBuilder(
-	commandBuilder: SlashCommandBuilder,
-	type: string,
-	option: CommandOption
-): void {
+export function addOptionToCommandBuilder(commandBuilder: SlashCommandBuilder, type: string, option: CommandOption) {
+	const optionPredicate = <T extends ApplicationCommandOptionBase>(optionBuilder: T) =>
+		optionBuilder
+			.setName(option.name)
+			.setNameLocalizations(option.nameLocalizations ?? {})
+			.setDescription(option.description || 'No description provided')
+			.setDescriptionLocalizations(option.descriptionLocalizations ?? {})
+			.setRequired(option.required || false)
+
 	switch (type) {
 		case undefined:
 		case null:
 		case 'string':
-			commandBuilder.addStringOption((optionBuilder) =>
-				optionBuilder
-					.setName(option.name)
-					.setNameLocalizations(option.nameLocalizations ?? {})
-					.setDescription(option.description || 'No description provided')
-					.setDescriptionLocalizations(option.descriptionLocalizations ?? {})
-					.setRequired(option.required || false)
-					.setAutocomplete(option.autocomplete || false)
-			)
+			commandBuilder.addStringOption(optionPredicate)
 			break
 		case 'integer':
-			commandBuilder.addIntegerOption((optionBuilder) =>
-				optionBuilder
-					.setName(option.name)
-					.setNameLocalizations(option.nameLocalizations ?? {})
-					.setDescription(option.description || 'No description provided')
-					.setDescriptionLocalizations(option.descriptionLocalizations ?? {})
-					.setRequired(option.required || false)
-			)
+			commandBuilder.addIntegerOption(optionPredicate)
 			break
 		case 'boolean':
-			commandBuilder.addBooleanOption((optionBuilder) =>
-				optionBuilder
-					.setName(option.name)
-					.setNameLocalizations(option.nameLocalizations || {})
-					.setDescription(option.description ?? 'No description provided')
-					.setDescriptionLocalizations(option.descriptionLocalizations ?? {})
-					.setRequired(option.required || false)
-			)
+			commandBuilder.addBooleanOption(optionPredicate)
 			break
 		case 'attachment':
-			commandBuilder.addAttachmentOption((optionBuilder) =>
-				optionBuilder
-					.setName(option.name)
-					.setNameLocalizations(option.nameLocalizations ?? {})
-					.setDescription(option.description || 'No description provided')
-					.setDescriptionLocalizations(option.descriptionLocalizations ?? {})
-					.setRequired(option.required || false)
-			)
+			commandBuilder.addAttachmentOption(optionPredicate)
 			break
 		case 'channel':
-			commandBuilder.addChannelOption((optionBuilder) =>
-				optionBuilder
-					.setName(option.name)
-					.setNameLocalizations(option.nameLocalizations ?? {})
-					.setDescription(option.description || 'No description provided')
-					.setDescriptionLocalizations(option.descriptionLocalizations ?? {})
-					.setRequired(option.required || false)
-			)
+			commandBuilder.addChannelOption(optionPredicate)
 			break
 		case 'mention':
-			commandBuilder.addMentionableOption((optionBuilder) =>
-				optionBuilder
-					.setName(option.name)
-					.setNameLocalizations(option.nameLocalizations ?? {})
-					.setDescription(option.description || 'No description provided')
-					.setDescriptionLocalizations(option.descriptionLocalizations ?? {})
-					.setRequired(option.required || false)
-			)
+			commandBuilder.addMentionableOption(optionPredicate)
 			break
 		case 'role':
-			commandBuilder.addRoleOption((optionBuilder) =>
-				optionBuilder
-					.setName(option.name)
-					.setNameLocalizations(option.nameLocalizations ?? {})
-					.setDescription(option.description || 'No description provided')
-					.setDescriptionLocalizations(option.descriptionLocalizations ?? {})
-					.setRequired(option.required || false)
-			)
+			commandBuilder.addRoleOption(optionPredicate)
 			break
 		case 'user':
-			commandBuilder.addUserOption((optionBuilder) =>
-				optionBuilder
-					.setName(option.name)
-					.setNameLocalizations(option.nameLocalizations ?? {})
-					.setDescription(option.description || 'No description provided')
-					.setDescriptionLocalizations(option.descriptionLocalizations ?? {})
-					.setRequired(option.required || false)
-			)
+			commandBuilder.addUserOption(optionPredicate)
 			break
 		default:
 			logger.warn(`Invalid option type: ${type}`)
