@@ -10,7 +10,7 @@ import { IS_WINDOWS, cmd, getPkgManager, getWatchedPlugins, timeout } from '../u
 import path from 'node:path'
 import url from 'node:url'
 import { getStateSave } from '../../core/state.js'
-import type { Config } from '../../types/index.js'
+import type { Config, RoboMessage } from '../../types/index.js'
 
 const command = new Command('dev')
 	.description('Ready, set, code your bot to life! Starts development mode.')
@@ -49,9 +49,18 @@ async function devAction(options: DevCommandOptions) {
 	const buildSuccess = await buildInSeparateProcess(buildCommand + (options.verbose ? ' --verbose' : ''))
 	let botProcess: ChildProcess
 
+	const registerProcessEvents = () => {
+		botProcess?.on('message', async (message: RoboMessage) => {
+			if (message.type === 'restart') {
+				logger.wait(`Restarting Robo...`)
+				botProcess = await rebuildAndRestartBot(botProcess, config, options.verbose)
+			}
+		})
+	}
+
 	if (buildSuccess) {
-		const botPromise = run()
-		botProcess = await botPromise
+		botProcess = await run()
+		registerProcessEvents()
 		botProcess.send({ type: 'state-load', state: {} })
 	} else {
 		logger.wait(`Build failed! Waiting for changes before retrying...`)
@@ -93,6 +102,7 @@ async function devAction(options: DevCommandOptions) {
 			}
 
 			botProcess = await rebuildAndRestartBot(botProcess, config, options.verbose)
+			registerProcessEvents()
 		} finally {
 			isUpdating = false
 		}

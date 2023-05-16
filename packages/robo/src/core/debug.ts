@@ -31,14 +31,26 @@ export const DEBUG_MODE = process.env.NODE_ENV !== 'production'
 // eslint-disable-next-line no-control-regex
 export const ANSI_REGEX = /\x1b\[.*?m/g
 
-export const devLogCommand = async (interaction: MessageComponentInteraction) => {
+export const devLogCommand = async (interaction: CommandInteraction) => {
 	await interaction.deferReply()
 	const logs = logger.getRecentLogs().map((log) => log.message())
-	handleLogButtons(logs, 0, interaction)
+	handleLogButtons(logs, 0, interaction as unknown as MessageComponentInteraction)
 }
 
 export const devLogCommandConfig: CommandConfig = {
 	description: 'View most recent logs'
+}
+
+export const devRestartCommand = async (interaction: MessageComponentInteraction) => {
+	await interaction.reply({
+		content: 'Restarting...',
+		ephemeral: true
+	})
+	process.send?.({ type: 'restart' })
+}
+
+export const devRestartCommandConfig: CommandConfig = {
+	description: 'Restart this Robo'
 }
 
 export async function printErrorResponse(error: unknown, interaction: unknown, details?: string, event?: EventRecord) {
