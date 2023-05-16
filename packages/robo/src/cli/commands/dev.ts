@@ -46,7 +46,7 @@ async function devAction(options: DevCommandOptions) {
 	}
 
 	// Run after preparing first build
-	const buildSuccess = await buildInSeparateProcess(buildCommand)
+	const buildSuccess = await buildInSeparateProcess(buildCommand + (options.verbose ? ' --verbose' : ''))
 	let botProcess: ChildProcess
 
 	if (buildSuccess) {
@@ -92,7 +92,7 @@ async function devAction(options: DevCommandOptions) {
 				logger.wait(`Change detected. Restarting Robo...`)
 			}
 
-			botProcess = await rebuildAndRestartBot(botProcess, config)
+			botProcess = await rebuildAndRestartBot(botProcess, config, options.verbose)
 		} finally {
 			isUpdating = false
 		}
@@ -146,7 +146,7 @@ export async function buildInSeparateProcess(command: string) {
 	})
 }
 
-async function rebuildAndRestartBot(bot: ChildProcess | null, config: Config) {
+async function rebuildAndRestartBot(bot: ChildProcess | null, config: Config, verbose: boolean) {
 	// Guard against accidentally killing the new process
 	const currentBot = bot
 
@@ -180,7 +180,7 @@ async function rebuildAndRestartBot(bot: ChildProcess | null, config: Config) {
 	// Wait for the bot to exit or force abort
 	currentBot?.send({ type: 'restart' })
 	const awaitStop = Promise.race([terminate, forceAbort])
-	const [success] = await Promise.all([buildInSeparateProcess(buildCommand), awaitStop])
+	const [success] = await Promise.all([buildInSeparateProcess(buildCommand + (verbose ? ' --verbose' : '')), awaitStop])
 
 	// Return null for the bot if the build failed so we can retry later
 	if (!success) {

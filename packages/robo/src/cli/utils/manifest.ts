@@ -441,7 +441,7 @@ async function generateEntries<T>(
 			}
 		)
 
-		logger.warn(`Generated ${Object.keys(entries).length} unique ${type}`)
+		logger.debug(`Generated ${Object.keys(entries).length} unique ${type}`)
 		return entries
 	} catch (error) {
 		if (hasProperties<{ code: unknown }>(error, ['code']) && error.code === 'ENOENT') {
