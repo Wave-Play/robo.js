@@ -249,8 +249,9 @@ function generateScopes(config: Config, newManifest: Manifest): Scope[] {
 }
 
 interface ScanDirOptions {
-	path: string
 	recursionKeys?: string[]
+	recursionPath?: string
+	type: 'commands' | 'events'
 }
 
 /**
@@ -261,8 +262,9 @@ interface ScanDirOptions {
  * This ensures parent entries are always created before children.
  */
 async function scanDir(directive: (fileKeys: string[], fullPath: string) => Promise<void>, options: ScanDirOptions) {
-	const { path: dirPath, recursionKeys = [] } = options
-	const directory = await fs.readdir(dirPath)
+	const { recursionKeys = [], recursionPath, type } = options
+	const directoryPath = recursionPath ?? path.join(process.cwd(), '.robo', 'build', type)
+	const directory = await fs.readdir(directoryPath)
 
 	// Filter out directories using fs.stat in parallel
 	const files: string[] = []
@@ -270,7 +272,7 @@ async function scanDir(directive: (fileKeys: string[], fullPath: string) => Prom
 
 	await Promise.all(
 		directory.map(async (file) => {
-			const fullPath = path.resolve(dirPath, file)
+			const fullPath = path.resolve(directoryPath, file)
 			const stats = await fs.stat(fullPath)
 
 			// Group files and directories accordingly
@@ -287,12 +289,39 @@ async function scanDir(directive: (fileKeys: string[], fullPath: string) => Prom
 		})
 	)
 
+	// If not currently recursing, be sure to also check the "modules" directory
+	const modules: string[] = []
+	if (!recursionPath) {
+		try {
+			// Read the modules directory one level higher than the current directory
+			const modulesDirectory = await fs.readdir(path.join(process.cwd(), '.robo', 'build', 'modules'))
+
+			// For each module, add it to the list of directories to scan
+			await Promise.all(
+				modulesDirectory.map(async (module) => {
+					const fullPath = path.resolve(process.cwd(), '.robo', 'build', 'modules', module, type)
+
+					// Only add modules to the list of modules to scan
+					const stats = await fs.stat(fullPath)
+					if (stats.isDirectory()) {
+						modules.push(path.join(process.cwd(), '.robo', 'build', 'modules', module, type))
+					}
+				})
+			)
+		} catch (error) {
+			// Only throw error not related to the directory not existing
+			if (hasProperties<{ code: string }>(error, ['code']) && !['ENOENT', 'ENOTDIR'].includes(error.code)) {
+				throw error
+			}
+		}
+	}
+
 	// Run the directive on all files first in parallel before recursing
 	// This ensures parent entries are always created before children
 	await Promise.all(
 		files.map(async (file) => {
 			const fileKeys = [...recursionKeys, path.basename(file, path.extname(file))]
-			const fullPath = path.resolve(dirPath, file)
+			const fullPath = path.resolve(directoryPath, file)
 
 			return directive(fileKeys, fullPath)
 		})
@@ -301,12 +330,21 @@ async function scanDir(directive: (fileKeys: string[], fullPath: string) => Prom
 	// Recurse through all directories in parallel now that all parent entries have been created
 	await Promise.all(
 		directories.map(async (childDir) => {
-			const directoryPath = path.resolve(dirPath, childDir)
+			const nestedPath = path.resolve(directoryPath, childDir)
 			const fileKeys = [...recursionKeys, childDir]
-			return scanDir(directive, { path: directoryPath, recursionKeys: fileKeys })
+			return scanDir(directive, { recursionKeys: fileKeys, recursionPath: nestedPath, type })
+		})
+	)
+
+	// Similarly, recurse through all module directories in parallel
+	await Promise.all(
+		modules.map(async (module) => {
+			const nestedPath = path.resolve(module)
+			return scanDir(directive, { recursionKeys: [], recursionPath: nestedPath, type })
 		})
 	)
 }
+
 async function generateEntries<T>(type: 'commands', generatedKeys: string[]): Promise<Record<string, T>>
 async function generateEntries<T>(type: 'events', generatedKeys: string[]): Promise<Record<string, T[]>>
 async function generateEntries<T>(
@@ -314,7 +352,6 @@ async function generateEntries<T>(
 	generatedKeys: string[]
 ): Promise<Record<string, T | T[]>> {
 	try {
-		const directory = path.join(process.cwd(), '.robo', 'build', type)
 		const entries: Record<string, T | T[]> = {}
 
 		await scanDir(
@@ -326,7 +363,7 @@ async function generateEntries<T>(
 				let entry = {
 					...getValue(type, module.config),
 					__auto: isGenerated ? true : undefined,
-					__path: fileKeys.join('/') + '.js'
+					__path: fullPath.replace(process.cwd(), '')
 				} as T
 				let existingEntry = entries[fileKeys[0]]
 
@@ -400,11 +437,11 @@ async function generateEntries<T>(
 				}
 			},
 			{
-				path: directory
+				type: type
 			}
 		)
 
-		logger.debug(`Generated ${Object.keys(entries).length} unique ${type}`)
+		logger.warn(`Generated ${Object.keys(entries).length} unique ${type}`)
 		return entries
 	} catch (error) {
 		if (hasProperties<{ code: unknown }>(error, ['code']) && error.code === 'ENOENT') {

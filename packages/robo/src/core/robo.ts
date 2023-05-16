@@ -174,7 +174,8 @@ async function loadHandlerModules<T extends Handler | Handler[]>(type: 'commands
 			}
 
 			// Load the module
-			const basePath = path.join(process.cwd(), entry.__plugin?.path ?? '.', `.robo/build/${type}`)
+			// TODO: Remove plugin compat path in next major version
+			const basePath = path.join(process.cwd(), entry.__plugin?.path ?? '.', entry.__plugin?.path ? `.robo/build/${type}` : '.')
 			const importPath = pathToFileURL(path.join(basePath, entry.__path)).toString()
 
 			const handler = {
