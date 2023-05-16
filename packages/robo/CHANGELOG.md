@@ -1,5 +1,16 @@
 # robo.js
 
+## 0.6.1
+
+### Patch Changes
+
+- 99dbe81: fix(cli): show subcommands and subcommand groups in build summary
+- d37066b: patch(cli): verbose flag in "dev" command now prints more build logs
+- 3571f59: fix: correctly mark auto subcommands as automatic
+- 7d0b5ad: feat: new "/dev restart" subcommand
+- bd4db92: refactor: "/dev" command has been renamed to "/dev logs" subcommand
+- b590dec: feat: support for module subfolders
+
 ## 0.6.0
 
 ### Minor Changes
