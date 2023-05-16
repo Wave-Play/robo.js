@@ -72,12 +72,14 @@ async function generateCommands() {
 
 		// Only apply the "dev" command outside of production
 		// A guild ID is also required to prevent accidental exposure to the public
-		if (file === 'dev.js' && (!DEBUG_MODE || !env.discord.guildId)) {
+		const extension = path.extname(file)
+		const commandKey = path.relative(defaultCommandsDir, fullPath).replace(extension, '')
+		if (['dev/logs', 'dev/restart'].includes(file) && (!DEBUG_MODE || !env.discord.guildId)) {
 			return
 		}
 
 		// Check if such command already exists
-		const baseFilename = path.basename(file, path.extname(file))
+		const baseFilename = path.basename(file, extension)
 		const srcPathBase = path.join(srcDir, 'commands', baseFilename)
 		const distPath = path.join(distDir, 'commands', path.relative(defaultCommandsDir, fullPath))
 		const fileExists = await checkFileExistence(srcPathBase)
@@ -86,7 +88,7 @@ async function generateCommands() {
 		if (!fileExists) {
 			await fs.mkdir(path.dirname(distPath), { recursive: true })
 			await fs.copyFile(fullPath, distPath)
-			generated[baseFilename] = true
+			generated[commandKey] = true
 		}
 	})
 

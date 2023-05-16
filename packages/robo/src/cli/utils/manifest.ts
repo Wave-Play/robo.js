@@ -357,7 +357,7 @@ async function generateEntries<T>(
 		await scanDir(
 			async (fileKeys, fullPath) => {
 				logger.debug(`[${type}] Generating ${JSON.stringify(fileKeys)} from ${fullPath}`)
-				const isGenerated = generatedKeys.includes(fileKeys[0])
+				const isGenerated = generatedKeys.includes(fileKeys.join('/'))
 				const importPath = pathToFileURL(fullPath).toString()
 				const module = await import(importPath)
 				let entry = {
