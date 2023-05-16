@@ -61,35 +61,34 @@ async function checkFileExistence(srcPathBase: string) {
  * Additionally, they can be disabled via the config file.
  */
 async function generateCommands() {
-	const defaultFiles = await fs.readdir(defaultCommandsDir)
 	const generated: Record<string, boolean> = {}
 
-	for (const file of defaultFiles) {
+	await recursiveDirScan(defaultCommandsDir, async (file, fullPath) => {
 		// Only copy over files with the supported extensions
 		const fileExtensionPattern = /\.(ts|tsx|js|jsx)$/
 		if (!fileExtensionPattern.test(file)) {
-			continue
+			return
 		}
 
 		// Only apply the "dev" command outside of production
 		// A guild ID is also required to prevent accidental exposure to the public
 		if (file === 'dev.js' && (!DEBUG_MODE || !env.discord.guildId)) {
-			continue
+			return
 		}
 
 		// Check if such command already exists
 		const baseFilename = path.basename(file, path.extname(file))
 		const srcPathBase = path.join(srcDir, 'commands', baseFilename)
-		const distPath = path.join(distDir, 'commands', file)
+		const distPath = path.join(distDir, 'commands', path.relative(defaultCommandsDir, fullPath))
 		const fileExists = await checkFileExistence(srcPathBase)
 
 		// Only copy over the file if it doesn't exist to prevent overwriting
 		if (!fileExists) {
 			await fs.mkdir(path.dirname(distPath), { recursive: true })
-			await fs.copyFile(path.join(defaultCommandsDir, file), distPath)
+			await fs.copyFile(fullPath, distPath)
 			generated[baseFilename] = true
 		}
-	}
+	})
 
 	return generated
 }
@@ -102,23 +101,39 @@ async function generateCommands() {
  * However, they don't override developer events either, so they can be used in conjunction.
  */
 async function generateEvents() {
-	const defaultFiles = await fs.readdir(defaultEventsDir)
 	const generated: Record<string, boolean> = {}
 
-	for (const file of defaultFiles) {
+	await recursiveDirScan(defaultEventsDir, async (file, fullPath) => {
 		// Only copy over files with the supported extensions
 		const fileExtensionPattern = /\.(ts|tsx|js|jsx)$/
 		if (!fileExtensionPattern.test(file)) {
-			continue
+			return
 		}
 
 		// Copy the file to the .robo build directory using a special prefix to prevent collisions
 		const baseFilename = path.basename(file, path.extname(file))
 		const distPath = path.join(distDir, 'events', baseFilename, '__robo_' + file)
 		await fs.mkdir(path.dirname(distPath), { recursive: true })
-		await fs.copyFile(path.join(defaultEventsDir, file), distPath)
+		await fs.copyFile(fullPath, distPath)
 		generated[baseFilename] = true
-	}
+	})
 
 	return generated
+}
+
+// Recursive helper function to scan directories and apply a predicate function to each file
+async function recursiveDirScan(dirPath: string, predicate: (file: string, fullPath: string) => Promise<void>) {
+	const files = await fs.readdir(dirPath)
+
+	for (const file of files) {
+		const fullPath = path.join(dirPath, file)
+		const fileStat = await fs.stat(fullPath)
+
+		if (fileStat.isDirectory()) {
+			// Recursive call for directories
+			await recursiveDirScan(fullPath, predicate)
+		} else {
+			await predicate(file, fullPath)
+		}
+	}
 }

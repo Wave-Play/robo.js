@@ -31,13 +31,13 @@ export const DEBUG_MODE = process.env.NODE_ENV !== 'production'
 // eslint-disable-next-line no-control-regex
 export const ANSI_REGEX = /\x1b\[.*?m/g
 
-export const devCommand = async (interaction: MessageComponentInteraction) => {
+export const devLogCommand = async (interaction: MessageComponentInteraction) => {
 	await interaction.deferReply()
 	const logs = logger.getRecentLogs().map((log) => log.message())
 	handleLogButtons(logs, 0, interaction)
 }
 
-export const devCommandConfig: CommandConfig = {
+export const devLogCommandConfig: CommandConfig = {
 	description: 'View most recent logs'
 }
 
