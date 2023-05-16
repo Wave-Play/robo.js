@@ -1,4 +1,4 @@
-## Hosting 🏠
+# Hosting 🏠
 
 Robo.js is built to work seamlessly with RoboPlay, a WavePlay service. But hey, we won't judge if you prefer to host it on another Node-supporting platform! This guide will show you the ropes of hosting your Robo.js, ensuring your creation stays up and running 24/7, even when your computer takes a nap.
 
@@ -34,7 +34,7 @@ Link your Robo's code to any of these slots, giving your software the hardware i
 
 ## Self-hosting 🏢
 
-Not feeling RoboPlay? No worries! Robo.js plays nice with any Node-supporting host, like W3School's Full Stack Spaces.
+Not feeling RoboPlay? No worries! Robo.js plays nice with any Node-supporting host, like [W3Schools' Full Stack Spaces](https://www.w3schools.com/spaces).
 
 #### Building 🛠️
 

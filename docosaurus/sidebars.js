@@ -27,8 +27,8 @@ const sidebars = {
     'migrating',
     {
       type: 'category',
-      label: 'Developing',
       items: ['developing/overview'],
+      label: 'Development',
     },
     {
       type: 'category',
