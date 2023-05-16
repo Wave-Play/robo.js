@@ -27,13 +27,13 @@ const sidebars = {
     'migrating',
     {
       type: 'category',
-      items: ['developing/overview'],
       label: 'Development',
+      items: ['developing/overview', 'developing/commands', 'developing/events'],
     },
     {
       type: 'category',
       label: 'Advanced',
-      items: ['advanced/configuration', 'advanced/command-line', 'advanced/debugging', 'advanced/environment-variables', 'advanced/linting', 'advanced/typescript', 'advanced/plugins']
+      items: ['advanced/configuration', 'advanced/command-line', 'advanced/debugging', 'advanced/environment-variables', 'advanced/linting', 'advanced/modules', 'advanced/plugins', 'advanced/typescript']
     }
   ],
 

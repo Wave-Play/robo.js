@@ -1,26 +1,34 @@
-# Developing Overview
+# Overview 🚀
 
-## Commands 🎮
+Next-gen bot development is all about organization, and that's where Robo.js shines! 🌟
 
-With Robo.js, creating slash commands is a breeze! Simply add a file to the `commands` folder, and its name becomes your slash command. For example, if you want a `/ping` command, create a `ping.js` file inside the `commands` folder. Piece of cake!
-
-## Events 🎉
-
-Events work similarly to commands! Create a file with the same name as the Discord event you want to listen to, and Robo.js will do the rest. For stacked events, use a directory named after the event and toss your event files inside. It's best to name stacked event files based on their purpose, like `dm.js` and `hello.js` under `messageCreate`.
+If you're familiar with Next.js, you'll feel right at home. If not, no worries—Robo.js keeps things simple. All you need to know is how to arrange your files. And that's it. Seriously!
 
 ## The Robo.js File Structure 📂
 
-In Robo.js, you'll want a `src` directory at the root with `commands` and `events` directories chillin' inside. The command file's name becomes the command name, and the event file's name transforms into the triggering event's name. Stack commands to whip up subcommands and use a directory with the same name as the event for stacked events.
+To start with, you'll need a `src` directory at the root with `commands` and `events` directories inside. The command file's name becomes the command name, and the event file's name turns into the triggering event's name. 
 
-Here's a little example of a Robo.js file structure for commands and events:
+Here's a basic example of a Robo.js file structure:
+
+```
+src/
+├── commands/
+│   └── ping.js
+└── events/
+    └── messageCreate.js
+```
+
+Want to go a step further? No problem! You can nest files to create subcommands and grouped events. Here's a more complex example:
 
 ```
 src/
 ├── commands/
 │   ├── ping.js
-│   ├── settings.js
+│   ├── ban/
+│   │   └── user.js
 │   └── settings/
-│       └── subcommand.js
+│       └── update/
+│           └── something.js
 └── events/
     ├── ready.js
     └── messageCreate/
@@ -28,6 +36,73 @@ src/
         └── hello.js
 ```
 
-## Sage 🧙
+## Modular Magic 📦
 
-Sage Mode simplifies interaction handling and helps debug your bot with smart error replies. Debugging has never been easier! Want to learn more? Check out the [Sage Docs](./sage) for all the juicy details!
+For larger Robo projects, modules are your best friends! They allow you to group the same folder structure within modular subfolders. Think of it like having mini Robo projects within your main project. The names of the folders inside "modules/" can be anything you want, as long as what's inside follows the Robo file structure. 
+
+Here's an example of a Robo.js file structure with modules:
+
+```
+src/
+└── modules/
+    ├── moderation/
+    │   ├── commands/
+    │   └── events/
+    └── fun/
+        ├── commands/
+        └── events/
+```
+
+For a deeper dive into the world of modules, check out the [modules documentation](./modules.md).
+
+## Creating Commands 📜
+
+Commands in Robo.js are super straightforward. Just create a file in the `commands` directory, and the name of the file becomes the name of the command. Easy peasy, right? It's a cinch to create robust slash commands, and Robo.js takes care of registering them for you. You can even nest commands for those extra spicy subcommands! 🌶️
+
+Here's how your command file structure might look:
+
+```
+/src
+  /commands
+    ping.js
+```
+
+And the ping.js file could be as simple as:
+
+```javascript
+export default () => {
+	return 'Pong!'
+}
+```
+
+To learn more about commands and their full potential, head over to the [commands documentation](./commands.md).
+
+## Listening to Events 📡
+
+Just like commands, events in Robo.js follow the same naming convention. Create a file in the `events` directory, and the name of the file becomes the Discord event you're listening to. But wait, there's more! Events can be stacked for even more control over your bot's responses. 🤖
+
+Here's a quick peek at your event file structure:
+
+```
+/src
+  /events
+    messageCreate.js
+```
+
+And the messageCreate.js file could be:
+
+```javascript
+export default (message) => {
+    if (message.content.includes('hello')) {
+        message.channel.send('Hello there!')
+    }
+}
+```
+
+To dive deeper into events, check out the [events documentation](./events.md).
+
+## Sage Mode 🧙‍♂️
+
+Meet Sage, your new best friend in interaction handling. Sage Mode operates behind the scenes, automatically simplifying interaction handling and providing smart error replies that make debugging a breeze. With Sage Mode, you can focus on what you do best: creating epic bot interactions! 👋
+
+Unlock the full power of Sage Mode by visiting the [Sage documentation](./sage.md).
