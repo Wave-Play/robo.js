@@ -18,7 +18,7 @@ src/
     └── messageCreate.js
 ```
 
-Want to go a step further? No problem! You can nest files to create subcommands and grouped events. Here's a more complex example:
+Want to go a step further? No problem! You can nest files to create subcommands and grouped events.
 
 ```
 src/
@@ -38,9 +38,7 @@ src/
 
 ## Modular Magic 📦
 
-For larger Robo projects, modules are your best friends! They allow you to group the same folder structure within modular subfolders. Think of it like having mini Robo projects within your main project. The names of the folders inside "modules/" can be anything you want, as long as what's inside follows the Robo file structure. 
-
-Here's an example of a Robo.js file structure with modules:
+For larger Robo projects, modules are your best friends! They allow you to group the same folder structure within modular subfolders. Think of it like having mini Robo projects within your main project. The names of the folders inside "modules/" can be anything you want, as long as what's inside follows the Robo file structure.
 
 ```
 src/
@@ -101,8 +99,8 @@ export default (message) => {
 
 To dive deeper into events, check out the [events documentation](./events.md).
 
-## Sage Mode 🧙‍♂️
+## Sage Mode 🔮
 
-Meet Sage, your new best friend in interaction handling. Sage Mode operates behind the scenes, automatically simplifying interaction handling and providing smart error replies that make debugging a breeze. With Sage Mode, you can focus on what you do best: creating epic bot interactions! 👋
+Meet Sage, your new best friend in interaction handling. Sage operates behind the scenes, automatically simplifying interaction handling and providing smart error replies that make debugging a breeze. With Sage, you can focus on what you do best: creating epic bot interactions! ✨
 
 Unlock the full power of Sage Mode by visiting the [Sage documentation](./sage.md).

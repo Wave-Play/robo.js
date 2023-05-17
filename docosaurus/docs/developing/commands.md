@@ -14,7 +14,7 @@ src/
     └── ping.js
 ```
 
-And inside your `ping.js`? Straightforward. Here's an example:
+And inside your `ping.js`? Straightforward:
 
 ```javascript
 export default () => {
@@ -22,7 +22,7 @@ export default () => {
 }
 ```
 
-To use the interaction object directly, here's an alternative example:
+To use the interaction object directly:
 
 ```javascript
 export default (interaction) => {
@@ -33,7 +33,7 @@ In this case, Sage steps back, letting you handle the interaction directly.
 
 ## Subcommands and Subcommand Groups 📚
 
-Creating subcommands with Robo.js is as simple as creating new files in a folder. The folder name becomes the parent command, and the file names become the subcommands. But remember, you can't have a parent command file and subcommand files together. Here's an example:
+Creating subcommands with Robo.js is as simple as creating new files in a folder. The folder name becomes the parent command, and the file names become the subcommands. But remember, you can't have a parent command file and subcommand files together.
 
 ```plaintext
 src/
@@ -42,7 +42,7 @@ src/
         └── user.js
 ```
 
-And subcommand groups? It's the same concept, but one level deeper. Again, parent commands or subcommands can't live alongside subcommand groups. Here's an example:
+And subcommand groups? It's the same concept, but one level deeper. Again, parent commands or subcommands can't live alongside subcommand groups.
 
 ```plaintext
 src/
@@ -54,7 +54,7 @@ src/
 
 ## Customizing Commands 🖋️
 
-Give your commands some context with descriptions. You can do this by exporting a `config` object from your command file. Here's how you do it in JavaScript:
+Give your commands some context with descriptions. You can do this by exporting a `config` object from your command file.
 
 ```javascript
 export const config = {
@@ -62,7 +62,7 @@ export const config = {
 }
 ```
 
-For TypeScript users, you can add typings for both the `config` object and the command result. Here's the TypeScript version:
+For TypeScript users, you can add typings for both the `config` object and the command result.
 
 ```typescript
 import type { CommandConfig, CommandResult } from '@roboplay/robo.js'
@@ -80,7 +80,7 @@ The `config` object also lets you customize stuff like locale translations, Sage
 
 ## Command Options 🎚️
 
-Robo.js allows you to further customize your commands with options. You can define these options in your `config` object and then access their values in your command function. Here's how:
+Robo.js allows you to further customize your commands with options. You can define these options in your `config` object and then access their values in your command function.
 
 ```javascript
 export const config = {
@@ -103,7 +103,7 @@ Want to explore more options? Check the [configuration section](./config.md).
 
 ## Autocomplete 🧠
 
-Autocomplete can take your commands to the next level by providing suggestions as users type. You can implement autocomplete by exporting an `autocomplete` function in your command file. Here's a simple implementation:
+Autocomplete can take your commands to the next level by providing suggestions as users type. You can implement autocomplete by exporting an `autocomplete` function in your command file.
 
 ```javascript
 export const config = {
@@ -134,7 +134,7 @@ In this example, the `autocomplete` function returns an array of colors that sta
 
 ## Command Registration 📝
 
-The cherry on top? You don't need to manually register your commands. Robo.js handles it for you when you run `robo dev` or `robo build`, automatically! However, if things go sideways for some reason, you can use the `--force` flag to force registration:
+The cherry on top? You don't need to manually register your commands. Robo.js handles it for you when you run `robo dev` or `robo build`, automatically! However, if things go sideways for some reason, you can use the `--force` flag to force registration.
 
 ```plaintext
 robo build --force

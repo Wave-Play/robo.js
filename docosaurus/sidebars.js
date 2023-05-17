@@ -28,7 +28,7 @@ const sidebars = {
     {
       type: 'category',
       label: 'Development',
-      items: ['developing/overview', 'developing/commands', 'developing/events'],
+      items: ['developing/overview', 'developing/commands', 'developing/events', 'developing/sage'],
     },
     {
       type: 'category',
