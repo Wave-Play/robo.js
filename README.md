@@ -31,11 +31,9 @@ npx create-robo my-awesome-bot
 
 We'll walk you through a breezy customization process and whip up a fully working template in no time!
 
-## Adding to an existing project
+## Upgrading an existing bot
 
-Depending on your bot's complexity, there are 3 smooth migration paths to choose from. Each tailored to make your bot's transition as seamless as possible.
-
-Check out our migration guide for a detailed breakdown of the 3 migration options, and pick the one that suits your bot best.
+Got a bot that's simple or loaded with complexity? No worries! We've whipped up three migration paths that cater to all bot types. For the full lowdown, our migration guide is ready and waiting. Pick the path that makes your bot's transition smoother than butter on a hot day.
 
 **➞ [📚 See the full migration guide](https://docs.roboplay.dev/docs/migrating)**
 
@@ -87,16 +85,18 @@ src/
     └── messageCreate.js
 ```
 
-Robo.js will automatically handle the necessary permissions when you run `robo invite`.
+To get your Robo grooving in development mode, bust out `robo dev`. And that's it. Really!
+
+When you're all set to host your Robo, hit `robo build`, then kick things off with `robo start`. Don't forget to explore the [full documentation](https://docs.roboplay.dev/docs/getting-started) for even more awesomeness! 🔥
 
 ### No Learning Curve
 
-With Robo.js, there's practically no learning curve! As a framework for Discord.js, you'll still have access to everything Discord.js has to offer. 🎉
+Get ready for a twist - **there's virtually no learning curve with Robo.js!** 
 
-To get your Robo grooving in development mode, bust out `robo dev` (or `npm run dev`). When you're all set to host your Robo, hit `robo build`, then kick things off with `robo start`. Don't forget to explore the [full documentation](https://docs.roboplay.dev/docs/getting-started) for even more awesomeness! 🔥
+Wait, is it actually an... inverse learning curve? You heard right, there's more to unlearn than learn! It's that simple, yet you still have access to all that Discord.js has to offer, just easier and with less code. 🎉
 
 ## License 📜
 
-Robo.js is all about freedom, so we've got you covered with the permissive MIT License! Go wild and build amazing bots without worrying about legalities.
+We're all about freedom, so we've got you covered with the permissive MIT License! Go wild and build amazing bots without worrying about legalities.
 
 Feel free to check out the [LICENSE](LICENSE) file for more info!
