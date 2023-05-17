@@ -74,7 +74,7 @@ async function generateCommands() {
 		// A guild ID is also required to prevent accidental exposure to the public
 		const extension = path.extname(file)
 		const commandKey = path.relative(defaultCommandsDir, fullPath).replace(extension, '')
-		if (['dev/logs', 'dev/restart'].includes(file) && (!DEBUG_MODE || !env.discord.guildId)) {
+		if (['dev/logs', 'dev/restart', 'dev/status'].includes(commandKey) && (!DEBUG_MODE || !env.discord.guildId)) {
 			return
 		}
 

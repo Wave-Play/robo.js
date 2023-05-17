@@ -1,5 +1,6 @@
 import { hasProperties } from '../cli/utils/utils.js'
 import fs from 'node:fs/promises'
+import os from 'node:os'
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
@@ -41,7 +42,7 @@ export const devLogCommandConfig: CommandConfig = {
 	description: 'View most recent logs'
 }
 
-export const devRestartCommand = async (interaction: MessageComponentInteraction) => {
+export const devRestartCommand = async (interaction: CommandInteraction) => {
 	await interaction.reply({
 		content: 'Restarting...',
 		ephemeral: true
@@ -51,6 +52,58 @@ export const devRestartCommand = async (interaction: MessageComponentInteraction
 
 export const devRestartCommandConfig: CommandConfig = {
 	description: 'Restart this Robo'
+}
+
+export const devStatusCommand = () => {
+	let totalSeconds = client.uptime / 1000
+	const days = Math.floor(totalSeconds / 86400)
+	const hours = Math.floor(totalSeconds / 3600)
+	totalSeconds %= 3600
+	const minutes = Math.floor(totalSeconds / 60)
+	const seconds = Math.floor(totalSeconds % 60)
+
+	let uptime = ''
+	if (days > 0) uptime += `${days} days, `
+	if (hours > 0) uptime += `${hours} hours, `
+	if (minutes > 0) uptime += `${minutes} minutes, `
+	if (seconds > 0) uptime += `${seconds} seconds`
+	uptime = uptime.replace(/, $/, '')
+
+	const cpuUsage = process.cpuUsage()
+	const cpuUsagePercent = ((cpuUsage.user + cpuUsage.system) / 1000000).toFixed(2)
+
+	const memoryUsage = process.memoryUsage().rss / (1024 * 1024)
+	const totalMemory = os.totalmem() / (1024 * 1024 * 1024)
+	const freeMemory = os.freemem() / (1024 * 1024 * 1024)
+
+	return {
+		embeds: [
+			{
+				title: 'Bot Status',
+				color: Colors.Blurple,
+				fields: [
+					{ name: 'Uptime', value: uptime, inline: true },
+					{ name: 'Ping', value: `${client.ws.ping}ms`, inline: true },
+					{ name: '\u200B', value: '\u200B', inline: true },
+					{ name: 'CPU Usage', value: `${cpuUsagePercent}%`, inline: true },
+					{ name: 'RAM Usage', value: `${memoryUsage.toFixed(2)} MB`, inline: true },
+					{ name: '\u200B', value: '\u200B', inline: true },
+					{ name: 'Total RAM', value: `${totalMemory.toFixed(2)} GB`, inline: true },
+					{ name: 'Available RAM', value: `${freeMemory.toFixed(2)} GB`, inline: true },
+					{ name: '\u200B', value: '\u200B', inline: true },
+					{
+						name: 'Operating System',
+						value: `${os.platform()} ${os.version()} ${os.arch()} (${os.release()})`,
+						inline: false
+					}
+				]
+			}
+		]
+	}
+}
+
+export const devStatusCommandConfig: CommandConfig = {
+	description: 'View status of this Robo'
 }
 
 export async function printErrorResponse(error: unknown, interaction: unknown, details?: string, event?: EventRecord) {
