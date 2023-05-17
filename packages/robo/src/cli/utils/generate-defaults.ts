@@ -80,7 +80,7 @@ async function generateCommands() {
 
 		// Check if such command already exists
 		const baseFilename = path.basename(file, extension)
-		const srcPathBase = path.join(srcDir, 'commands', baseFilename)
+		const srcPathBase = path.join(srcDir, 'commands', commandKey.substring(0, commandKey.lastIndexOf('/')), baseFilename)
 		const distPath = path.join(distDir, 'commands', path.relative(defaultCommandsDir, fullPath))
 		const fileExists = await checkFileExistence(srcPathBase)
 
