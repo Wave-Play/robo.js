@@ -114,10 +114,13 @@ async function generateEvents() {
 
 		// Copy the file to the .robo build directory using a special prefix to prevent collisions
 		const baseFilename = path.basename(file, path.extname(file))
-		const distPath = path.join(distDir, 'events', baseFilename, '__robo_' + file)
+		const distFile = '__robo_' + file
+		const distPath = path.join(distDir, 'events', baseFilename, distFile)
+		const extension = path.extname(file)
+		const eventKey = baseFilename + '/' + distFile.replace(extension, '')
 		await fs.mkdir(path.dirname(distPath), { recursive: true })
 		await fs.copyFile(fullPath, distPath)
-		generated[baseFilename] = true
+		generated[eventKey] = true
 	})
 
 	return generated

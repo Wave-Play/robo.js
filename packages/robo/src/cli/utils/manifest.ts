@@ -512,10 +512,6 @@ function getValue<T extends AllConfig>(type: 'commands' | 'events', config: Base
 		value.frequency = (config as EventConfig).frequency ?? 'always'
 	}
 
-	if (config.__auto) {
-		value.__auto = true
-	}
-
 	if (config.timeout !== undefined) {
 		value.timeout = config.timeout
 	}
