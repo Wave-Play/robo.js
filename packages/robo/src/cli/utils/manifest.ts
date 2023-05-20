@@ -538,7 +538,7 @@ function redactPluginOptions(config: Config): Config {
 		return config
 	}
 
-	const redactedPlugins = config.plugins.map((plugin): Plugin => {
+	const redactedPlugins = config.plugins?.map((plugin): Plugin => {
 		if (Array.isArray(plugin)) {
 			const [pluginName, pluginOptions] = plugin
 

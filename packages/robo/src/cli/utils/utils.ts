@@ -107,7 +107,7 @@ interface WatchedPlugin {
 
 export async function getWatchedPlugins(config: Config) {
 	// Get a list of all plugin names
-	const pluginNames = config.plugins.map((plugin) => (typeof plugin === 'string' ? plugin : plugin[0]))
+	const pluginNames = config.plugins?.map((plugin) => (typeof plugin === 'string' ? plugin : plugin[0]))
 	const watchedPlugins: Record<string, WatchedPlugin> = {}
 
 	for (const name of pluginNames) {
