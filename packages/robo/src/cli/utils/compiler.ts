@@ -55,6 +55,8 @@ async function traverse(
 						sourceMaps: env.nodeEnv === 'production' ? false : 'inline',
 						jsc: {
 							target: 'esnext',
+							baseUrl: options.baseUrl,
+							paths: options.paths,
 							parser: {
 								// Configure parser options for TypeScript files
 								syntax: 'typescript',
@@ -87,7 +89,9 @@ async function traverse(
 }
 
 interface RoboCompileOptions {
+	baseUrl?: string
 	parallel?: number
+	paths?: Record<string, string[]>
 }
 
 export async function compile(options?: RoboCompileOptions) {
@@ -152,7 +156,12 @@ export async function compile(options?: RoboCompileOptions) {
 
 	// Traverse the source directory and transform files
 	logger.debug(`Compiling ${srcDir} to ${distDir}...`)
-	await traverse(srcDir, options ?? {}, tsOptions, transform)
+	const compileOptions = {
+		baseUrl: tsOptions.baseUrl,
+		paths: tsOptions.paths,
+		...options ?? {}
+	}
+	await traverse(srcDir, compileOptions, tsOptions, transform)
 
 	// Copy any non-TypeScript files to the destination directory
 	logger.debug(`Copying non-TypeScript files from ${srcDir} to ${distDir}...`)
