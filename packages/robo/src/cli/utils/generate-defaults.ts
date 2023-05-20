@@ -6,9 +6,9 @@ import { hasProperties } from './utils.js'
 import { DEBUG_MODE } from '../../core/debug.js'
 import { env } from '../../core/env.js'
 
-const srcDir = 'src'
-const distDir = path.join('.robo', 'build')
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const srcDir = path.join(process.cwd(), 'src')
+const distDir = path.join(process.cwd(), '.robo', 'build')
 const defaultCommandsDir = path.join(__dirname, '..', '..', 'default', 'commands')
 const defaultEventsDir = path.join(__dirname, '..', '..', 'default', 'events')
 const supportedExtensions = ['.ts', '.tsx', '.js', '.jsx']
@@ -39,9 +39,10 @@ export async function generateDefaults(): Promise<DefaultGen> {
  * Check if a file exists with any of the supported extensions
  * This is to prevent accidentally overwriting a command that already exists
  */
-async function checkFileExistence(srcPathBase: string) {
+async function checkFileExistence(srcPathBase: string, module?: string) {
 	for (const ext of supportedExtensions) {
-		const srcPath = srcPathBase + ext
+		const modulePath = module ? path.join('modules', module) : '.'
+		const srcPath = path.join(srcDir, modulePath, srcPathBase + ext)
 		try {
 			await fs.access(srcPath)
 			return true
@@ -51,6 +52,38 @@ async function checkFileExistence(srcPathBase: string) {
 			}
 		}
 	}
+
+	// Check if there are modules and call recursively if so
+	if (!module) {
+		const modules = path.join(srcDir, 'modules')
+		let modulesExist = false
+		try {
+			modulesExist = (await fs.stat(modules))?.isDirectory()
+		} catch (e) {
+			if (hasProperties<{ code: unknown }>(e, ['code']) && e.code !== 'ENOENT') {
+				throw e
+			}
+		}
+
+		if (!modulesExist) {
+			return false
+		}
+
+		const files = await fs.readdir(modules)
+
+		for (const file of files) {
+			const fullPath = path.join(modules, file)
+			const fileStat = await fs.stat(fullPath)
+
+			if (fileStat.isDirectory()) {
+				const exists = await checkFileExistence(srcPathBase, file)
+				if (exists) {
+					return true
+				}
+			}
+		}
+	}
+
 	return false
 }
 
@@ -80,7 +113,7 @@ async function generateCommands() {
 
 		// Check if such command already exists
 		const baseFilename = path.basename(file, extension)
-		const srcPathBase = path.join(srcDir, 'commands', commandKey.substring(0, commandKey.lastIndexOf('/')), baseFilename)
+		const srcPathBase = path.join('commands', commandKey.substring(0, commandKey.lastIndexOf('/')), baseFilename)
 		const distPath = path.join(distDir, 'commands', path.relative(defaultCommandsDir, fullPath))
 		const fileExists = await checkFileExistence(srcPathBase)
 
