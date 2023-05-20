@@ -1,4 +1,4 @@
-import { REST, Routes, SlashCommandBuilder } from 'discord.js'
+import { REST, Routes, SlashCommandBuilder, SlashCommandSubcommandBuilder } from 'discord.js'
 import { logger as globalLogger, Logger } from '../../core/logger.js'
 import { performance } from 'node:perf_hooks'
 import chalk from 'chalk'
@@ -28,12 +28,6 @@ export function buildSlashCommands(dev: boolean, commands: Record<string, Comman
 			.setDescription(entry.description || 'No description provided')
 			.setDescriptionLocalizations(entry.descriptionLocalizations || {})
 
-		if (entry.options) {
-			for (const option of entry.options) {
-				addOptionToCommandBuilder(commandBuilder, option.type, option)
-			}
-		}
-
 		// Add subcommands
 		if (entry.subcommands) {
 			for (const [subcommandName, subcommandEntry] of Object.entries(entry.subcommands)) {
@@ -47,13 +41,19 @@ export function buildSlashCommands(dev: boolean, commands: Record<string, Comman
 							.setDescriptionLocalizations(subcommandEntry.descriptionLocalizations || {})
 						for (const [subcommandGroupName, subcommandGroupEntry] of Object.entries(subcommandEntry.subcommands)) {
 							// Add subcommands for this subcommand group
-							subcommandGroup.addSubcommand((subcommand) =>
+							subcommandGroup.addSubcommand((subcommand) => {
 								subcommand
 									.setName(subcommandGroupName)
 									.setNameLocalizations(subcommandGroupEntry.nameLocalizations || {})
 									.setDescription(subcommandGroupEntry.description || 'No description provided')
 									.setDescriptionLocalizations(subcommandGroupEntry.descriptionLocalizations || {})
-							)
+
+								subcommandGroupEntry.options?.forEach((option) => {
+									addOptionToCommandBuilder(subcommand, option.type, option)
+								})
+
+								return subcommand
+							})
 						}
 						return subcommandGroup
 					})
@@ -61,21 +61,35 @@ export function buildSlashCommands(dev: boolean, commands: Record<string, Comman
 				}
 
 				// Just add a normal subcommand
-				commandBuilder.addSubcommand((subcommand) =>
+				commandBuilder.addSubcommand((subcommand) => {
 					subcommand
 						.setName(subcommandName)
 						.setNameLocalizations(subcommandEntry.nameLocalizations || {})
 						.setDescription(subcommandEntry.description || 'No description provided')
 						.setDescriptionLocalizations(subcommandEntry.descriptionLocalizations || {})
-				)
+
+					subcommandEntry.options?.forEach((option) => {
+						addOptionToCommandBuilder(subcommand, option.type, option)
+					})
+
+					return subcommand
+				})
 			}
+		} else {
+			entry.options?.forEach((option) => {
+				addOptionToCommandBuilder(commandBuilder, option.type, option)
+			})
 		}
 
 		return commandBuilder
 	})
 }
 
-export function addOptionToCommandBuilder(commandBuilder: SlashCommandBuilder, type: string, option: CommandOption) {
+export function addOptionToCommandBuilder(
+	commandBuilder: SlashCommandBuilder | SlashCommandSubcommandBuilder,
+	type: string,
+	option: CommandOption
+) {
 	const optionPredicate = <T extends ApplicationCommandOptionBase>(optionBuilder: T) =>
 		optionBuilder
 			.setName(option.name)
