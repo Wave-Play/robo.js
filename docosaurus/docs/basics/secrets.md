@@ -1,4 +1,4 @@
-# Environment Variables 🔑
+# Secrets 🔑
 
 Keeping your project's sensitive info under wraps is a top priority. That's why we use a `.env` file to store critical values like API keys and tokens. It helps prevent accidentally sharing these secrets on platforms like GitHub.
 
@@ -8,7 +8,7 @@ Robo.js makes it a breeze to work with environment variables. It automatically h
 
 These environment variables are essential for your Robo.js project to work its magic. Don't worry—we'll walk you through how to get them.
 
-#### DISCORD_CLIENT_ID
+### DISCORD_CLIENT_ID
 
 To get the `DISCORD_CLIENT_ID`, also referred to as the Application ID by Discord, follow these steps:
 
@@ -18,7 +18,7 @@ To get the `DISCORD_CLIENT_ID`, also referred to as the Application ID by Discor
 4. In the "General Information" tab, find the "Application ID" field.
 5. In the `.env` file, add the following line: `DISCORD_CLIENT_ID=<your_application_id>`, replacing `<your_application_id>` with the value you just obtained.
 
-#### DISCORD_TOKEN
+### DISCORD_TOKEN
 
 To get your `DISCORD_TOKEN`, follow these steps:
 
@@ -31,7 +31,7 @@ To get your `DISCORD_TOKEN`, follow these steps:
 
 The environment variables below are not strictly necessary, but they're sure to make your life easier during development and testing.
 
-#### DISCORD_GUILD_ID
+### DISCORD_GUILD_ID
 
 Setting up a `DISCORD_GUILD_ID` environment variable is a neat trick for testing. It ensures that any new commands you create only get applied to the Discord server this ID belongs to. To learn more about setting up test Discord servers, check out our [previous documentation](/docs/getting-started.md). To get the `DISCORD_GUILD_ID`, follow these steps:
 
@@ -46,7 +46,7 @@ DISCORD_GUILD_ID=<your_guild_id>
 
 Replace `<your_guild_id>` with the value you just obtained.
 
-#### DISCORD_DEBUG_CHANNEL_ID
+### DISCORD_DEBUG_CHANNEL_ID
 
 The `DISCORD_DEBUG_CHANNEL_ID` environment variable is useful for directing errors to a specific channel during development. This helps developers focus on the task at hand and handle async errors that may occur during development and are out of their control. To get the `DISCORD_DEBUG_CHANNEL_ID`, follow these steps:
 
@@ -74,3 +74,20 @@ Enabling Developer Mode in Discord allows you to access handy features, like cop
 4. Toggle on the "Developer Mode" switch.
 
 That's it! You now have Developer Mode enabled, unlocking a world of possibilities for your bot development journey. 🚀
+
+## Your Secret Keeper: .gitignore 🔐
+
+Remember, your `.env` file is the sanctum of all your secret keys and sensitive info. And as the guardian of your Robo's secrets, its safety is paramount. 
+
+To ensure that your secrets never accidentally tumble out into the open world, we strongly advise including `.env` in your `.gitignore` file. This prevents the `.env` file from being committed to your Git repository, keeping your secrets safely tucked away from prying eyes.
+
+Here's how you add it to your `.gitignore` file:
+
+```gitignore
+# add this anywhere in your .gitignore
+.env
+```
+
+With this line, your `.env` will stay local and confidential, as it should. Think of it as your Robo's personal diary - meant for its eyes only! Always remember: A Robo's secrets are best kept... secret.
+
+GitHub, Bitbucket, GitLab, or anywhere else your code calls home, this little trick keeps your Robo's secrets out of sight and out of mind. Remember, loose lips sink ships... and leaky code can do a lot worse!
