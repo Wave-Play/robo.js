@@ -44,6 +44,33 @@ importers:
       tsup: 6.7.0_typescript@5.0.2
       typescript: 5.0.2
 
+  packages/plugin-gpt:
+    specifiers:
+      '@roboplay/robo.js': 0.5.1
+      '@types/node': 18.14.6
+      discord.js: 14.7.1
+      openai: ^3.2.1
+    dependencies:
+      openai: 3.2.1
+    devDependencies:
+      '@roboplay/robo.js': 0.5.1_discord.js@14.7.1
+      '@types/node': 18.14.6
+      discord.js: 14.7.1
+
+  packages/plugin-poll:
+    specifiers:
+      '@roboplay/robo.js': 0.5.1
+      '@swc/core': ^1.3.44
+      '@types/node': ^18.14.6
+      discord.js: 14.7.1
+      typescript: ^5.0.0
+    devDependencies:
+      '@roboplay/robo.js': 0.5.1_a5ukon6iyjd4c2ymg7klnii2au
+      '@swc/core': 1.3.57
+      '@types/node': 18.16.8
+      discord.js: 14.7.1
+      typescript: 5.0.2
+
   packages/robo:
     specifiers:
       '@swc/core': 1.3.41
@@ -71,33 +98,6 @@ importers:
       '@types/tar': 6.1.5
       discord.js: 14.10.2
       tsup: 6.7.0_w6avwkdklr2pf4o6fcw5zz7r3e
-      typescript: 5.0.2
-
-  plugins/gpt:
-    specifiers:
-      '@roboplay/robo.js': 0.5.1
-      '@types/node': 18.14.6
-      discord.js: 14.7.1
-      openai: ^3.2.1
-    dependencies:
-      openai: 3.2.1
-    devDependencies:
-      '@roboplay/robo.js': 0.5.1_discord.js@14.7.1
-      '@types/node': 18.14.6
-      discord.js: 14.7.1
-
-  plugins/poll:
-    specifiers:
-      '@roboplay/robo.js': 0.5.1
-      '@swc/core': ^1.3.44
-      '@types/node': ^18.14.6
-      discord.js: 14.7.1
-      typescript: ^5.0.0
-    devDependencies:
-      '@roboplay/robo.js': 0.5.1_a5ukon6iyjd4c2ymg7klnii2au
-      '@swc/core': 1.3.57
-      '@types/node': 18.16.8
-      discord.js: 14.7.1
       typescript: 5.0.2
 
 packages:

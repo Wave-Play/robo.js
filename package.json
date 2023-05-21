@@ -4,8 +4,7 @@
 	"private": true,
 	"workspaces": {
 		"packages": [
-			"packages/*",
-			"plugins/*"
+			"packages/*"
 		]
 	},
 	"engines": {
