@@ -33,6 +33,7 @@ async function devAction(options: DevCommandOptions) {
 		level: options.verbose ? 'debug' : 'info'
 	}).info('Starting Robo in development mode...')
 	logger.warn(`Thank you for trying Robo.js! This is a pre-release version, so please let us know of issues on GitHub.`)
+	logger.debug(`Current working directory:`, process.cwd())
 
 	// Load the configuration before anything else
 	const config = await loadConfig()

@@ -2,8 +2,9 @@ import { fork } from 'child_process'
 import { logger } from '../../core/logger.js'
 import type { ChildProcess } from 'child_process'
 import type { RoboMessage } from '../../types/index.js'
+import { locateInHierarchy } from './utils.js'
 
-const ENTRY_FILE = './node_modules/@roboplay/robo.js/dist/entry.js'
+const ENTRY_FILE = '/node_modules/@roboplay/robo.js/dist/entry.js'
 
 let _currentProcess: ChildProcess | null = null
 let _eventsRegistered = false
@@ -18,37 +19,42 @@ let _eventsRegistered = false
  */
 export function run(): Promise<ChildProcess> {
 	return new Promise((resolve, reject) => {
-		logger.debug(`> ${ENTRY_FILE} --enable-source-maps`)
-		const childProcess = fork(ENTRY_FILE, {
-			execArgv: ['--enable-source-maps'],
-			stdio: 'inherit'
-		})
-		_currentProcess = childProcess
-
-		// Make sure to kill the bot process when the process exits
-		if (!_eventsRegistered) {
-			process.on('SIGINT', () => {
-				_currentProcess?.kill('SIGINT')
-				process.exit(0)
+		locateInHierarchy(ENTRY_FILE).then((entryFile) => {
+			logger.debug(`> ${entryFile} --enable-source-maps`)
+			const childProcess = fork(entryFile, {
+				execArgv: ['--enable-source-maps'],
+				stdio: 'inherit'
 			})
-			process.on('SIGTERM', () => {
-				_currentProcess?.kill('SIGTERM')
-				process.exit(0)
-			})
-			_eventsRegistered = true
-		}
-
-		const onMonitorReady = (message: RoboMessage) => {
-			if (message.type === 'ready') {
-				logger.debug('New child process is ready!')
-				childProcess.off('message', onMonitorReady)
-				resolve(childProcess)
+			_currentProcess = childProcess
+	
+			// Make sure to kill the bot process when the process exits
+			if (!_eventsRegistered) {
+				process.on('SIGINT', () => {
+					_currentProcess?.kill('SIGINT')
+					process.exit(0)
+				})
+				process.on('SIGTERM', () => {
+					_currentProcess?.kill('SIGTERM')
+					process.exit(0)
+				})
+				_eventsRegistered = true
 			}
-		}
-
-		logger.debug('Waiting for new process to be ready...')
-		childProcess.on('message', onMonitorReady)
-		childProcess.once('error', (error) => {
+	
+			const onMonitorReady = (message: RoboMessage) => {
+				if (message.type === 'ready') {
+					logger.debug('New child process is ready!')
+					childProcess.off('message', onMonitorReady)
+					resolve(childProcess)
+				}
+			}
+	
+			logger.debug('Waiting for new process to be ready...')
+			childProcess.on('message', onMonitorReady)
+			childProcess.once('error', (error) => {
+				reject(error)
+			})
+		}).catch((error) => {
+			logger.error(`Failed to locate Robo entry file: ${ENTRY_FILE}`)
 			reject(error)
 		})
 	})

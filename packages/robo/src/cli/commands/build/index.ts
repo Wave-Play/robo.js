@@ -32,6 +32,7 @@ async function buildAction(options: BuildCommandOptions) {
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : options.dev ? 'warn' : 'info'
 	}).info(`Building Robo...`)
+	logger.debug(`Current working directory:`, process.cwd())
 	const startTime = performance.now()
 
 	// Make sure the user isn't trying to watch builds

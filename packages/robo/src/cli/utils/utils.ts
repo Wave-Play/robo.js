@@ -134,6 +134,32 @@ export function hasProperties<T extends Record<string, unknown>>(
 	return typeof obj === 'object' && obj !== null && props.every((prop) => prop in obj)
 }
 
+/**
+ * Checks recursively upwards for the given file or directory, preserving the trailing path.
+ *
+ * @param targetPath - The target file or directory path
+ * @param currentDir - The current directory
+ * @returns - The located path if exists or undefined
+ */
+export async function locateInHierarchy(targetPath: string, currentDir = process.cwd()): Promise<string | undefined> {
+	const currentPath = path.join(currentDir, targetPath)
+
+	try {
+		// Check if the file or directory exists
+		await fs.access(currentPath)
+		return currentPath
+	} catch {
+		// Base case: we've reached the root directory
+		const upperDir = path.dirname(currentDir)
+		if (upperDir === currentDir) {
+			return undefined
+		}
+
+		// Recursive case: go up one level and try again
+		return locateInHierarchy(targetPath, upperDir)
+	}
+}
+
 export function sleep(ms: number) {
 	return new Promise((resolve) => setTimeout(resolve, ms))
 }

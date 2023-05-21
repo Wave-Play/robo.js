@@ -35,6 +35,7 @@ async function pluginAction() {
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : options.dev ? 'warn' : 'info'
 	}).info(`Building Robo plugin...`)
+	logger.debug(`Current working directory:`, process.cwd())
 	const startTime = performance.now()
 
 	// Use SWC to compile into .robo/build
