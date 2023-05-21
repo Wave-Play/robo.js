@@ -19,6 +19,31 @@ export const packageJson = require('../../../package.json')
 // Convenience internal access for default commands and events injected by the CLI
 export const chalk = chalkLib
 
+/**
+ * Filters an array of paths to only include those that exist.
+ *
+ * @param paths - The original array of relative paths
+ * @param basePath - The base path (expected to be working directory by default)
+ * @returns - The array of existing paths
+ */
+export async function filterExistingPaths(paths: string[], basePath = process.cwd()) {
+	const result: string[] = []
+
+	for (const relativePath of paths) {
+		const absolutePath = path.resolve(basePath, relativePath)
+
+		try {
+			await fs.stat(absolutePath)
+			// If stat didn't throw an error, the file exists
+			result.push(relativePath)
+		} catch (err) {
+			// The file doesn't exist, ignore this path
+		}
+	}
+
+	return result
+}
+
 export async function findNodeModules(basePath: string): Promise<string | null> {
 	const nodeModulesPath = path.join(basePath, 'node_modules')
 	try {

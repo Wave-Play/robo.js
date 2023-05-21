@@ -6,7 +6,7 @@ import { logger } from '../../core/logger.js'
 import chalk from 'chalk'
 import { DEFAULT_CONFIG } from '../../core/constants.js'
 import { loadConfig, loadConfigPath } from '../../core/config.js'
-import { IS_WINDOWS, cmd, getPkgManager, getWatchedPlugins, timeout } from '../utils/utils.js'
+import { IS_WINDOWS, cmd, filterExistingPaths, getPkgManager, getWatchedPlugins, timeout } from '../utils/utils.js'
 import path from 'node:path'
 import url from 'node:url'
 import { getStateSave } from '../../core/state.js'
@@ -67,17 +67,17 @@ async function devAction(options: DevCommandOptions) {
 		logger.wait(`Build failed! Waiting for changes before retrying...`)
 	}
 
-	// Watch for changes in the "src" directory or config file
+	// Watch for changes in the "src" directory alongside special files
 	const watchedPaths = ['src']
-	if (configPath) {
-		watchedPaths.push(configRelative)
-	}
+	const additionalFiles = await filterExistingPaths(['.env', 'tsconfig.json', configRelative])
+	watchedPaths.push(...additionalFiles)
 
 	// Watch all plugins that are also currently in development mode
 	const watchedPlugins = await getWatchedPlugins(config)
 	Object.keys(watchedPlugins).forEach((pluginPath) => watchedPaths.push(pluginPath))
 
 	// Watch while preventing multiple restarts from happening at the same time
+	logger.debug(`Watching:`, watchedPaths)
 	const watcher = nodeWatch(watchedPaths, {
 		recursive: true,
 		filter: (f) => !/(^|[/\\])\.(?!config)[^.]/.test(f) // ignore dotfiles except .config and directories
