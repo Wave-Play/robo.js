@@ -2,9 +2,9 @@
 import { Command } from 'commander'
 import inquirer from 'inquirer'
 import { createRequire } from 'node:module'
+import path from 'node:path'
 import Robo from './robo.js'
 import { logger } from './logger.js'
-import { IS_WINDOWS } from './utils.js'
 
 // Read the version from the package.json file
 const require = createRequire(import.meta.url)
@@ -35,7 +35,7 @@ new Command('create-robo <projectName>')
 		let useSameDirectory = false
 
 		if (!projectName) {
-			projectName = process.cwd().split(IS_WINDOWS ? '\\' : '/').pop()
+			projectName = process.cwd().split(path.sep).pop()
 			useSameDirectory = true
 		}
 
