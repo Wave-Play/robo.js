@@ -1,10 +1,12 @@
 import { logger } from '@roboplay/robo.js'
-import { polls, updatePoll } from '../core/data.js'
+import { ID_PREFIX, polls, updatePoll } from '../core/data.js'
 import type { ButtonInteraction } from 'discord.js'
 
 export default async (interaction: ButtonInteraction) => {
-	// Only handle button interactions here
-	if (!interaction.isButton()) return
+	// Only handle button interactions related to these polls here
+	if (!interaction.isButton() || !interaction.customId?.startsWith(ID_PREFIX)) {
+		return
+	}
 
 	// Find the poll this button belongs to
 	const pollId = interaction.message.id
@@ -20,7 +22,7 @@ export default async (interaction: ButtonInteraction) => {
 	}
 
 	// Find the index of the choice that was voted for
-	const choiceIndex = parseInt(interaction.customId.split('_')[1])
+	const choiceIndex = parseInt(interaction.customId.split('_')[2])
 	const previousVoteIndex = poll.voters.get(interaction.user.id)
 
 	// Validate vote

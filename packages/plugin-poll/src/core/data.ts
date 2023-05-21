@@ -13,6 +13,8 @@ interface Poll {
 
 export const polls = new Map<string, Poll>()
 
+export const ID_PREFIX = 'poll-plugin_'
+
 /**
  * Creates a poll in the channel the interaction was sent in.
  * If the channel is a stage channel, an error will be thrown.
@@ -45,7 +47,7 @@ export const createPoll = async (interaction: CommandInteraction, question: stri
 					type: 2,
 					label: choice,
 					style: ButtonStyle.Primary,
-					custom_id: choice + '_' + index
+					custom_id: ID_PREFIX + choice + '_' + index
 				}))
 			}
 		]
@@ -79,7 +81,7 @@ export const stopAllPolls = async () => {
 							type: 2,
 							label: choice,
 							style: ButtonStyle.Primary,
-							custom_id: choice + '_' + index,
+							custom_id: ID_PREFIX + choice + '_' + index,
 							disabled: true
 						}))
 					}

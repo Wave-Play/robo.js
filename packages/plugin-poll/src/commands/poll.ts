@@ -31,7 +31,7 @@ export default async (interaction: CommandInteraction) => {
 	// Remove whitespace from choices
 	choices = choices?.filter(Boolean)?.map((choice) => choice.trim())
 	logger.debug(`Poll: ${question} (${JSON.stringify(choices)})`)
-	//
+
 	// Discord only allows up to 5 choices in a single row
 	if (choices.length > 5) {
 		return {
