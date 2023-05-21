@@ -7,8 +7,8 @@ import { env } from '../../core/env.js'
 import type { CompilerOptions } from 'typescript'
 import type { transform as SwcTransform } from '@swc/core'
 
-const srcDir = 'src'
-const distDir = path.join('.robo', 'build')
+const srcDir = path.join(process.cwd(), 'src')
+const distDir = path.join(process.cwd(), '.robo', 'build')
 
 /**
  * Recursively traverse a directory and transform TypeScript files using SWC
@@ -159,10 +159,11 @@ export async function compile(options?: RoboCompileOptions) {
 	const compileOptions = {
 		baseUrl: baseUrl,
 		paths: replaceSrcWithBuildInRecord(tsOptions.paths ?? {}),
-		...options ?? {}
+		...(options ?? {})
 	}
 	logger.debug(`Compiler options:`, compileOptions)
 	await traverse(srcDir, compileOptions, tsOptions, transform)
+	await fs.rm(path.join(process.cwd(), '.swc'), { recursive: true, force: true })
 
 	// Copy any non-TypeScript files to the destination directory
 	logger.debug(`Copying additional non-TypeScript files from ${srcDir} to ${distDir}...`)
