@@ -1,11 +1,11 @@
 import fs from 'fs/promises'
 import path from 'path'
-import type { CompilerOptions } from 'typescript'
-import type { transform as SwcTransform } from '@swc/core'
 import { performance } from 'node:perf_hooks'
-import { hasProperties } from './utils.js'
+import { hasProperties, replaceSrcWithBuildInRecord } from './utils.js'
 import { logger } from '../../core/logger.js'
 import { env } from '../../core/env.js'
+import type { CompilerOptions } from 'typescript'
+import type { transform as SwcTransform } from '@swc/core'
 
 const srcDir = 'src'
 const distDir = path.join('.robo', 'build')
@@ -58,7 +58,6 @@ async function traverse(
 							baseUrl: options.baseUrl,
 							paths: options.paths,
 							parser: {
-								// Configure parser options for TypeScript files
 								syntax: 'typescript',
 								tsx: filePath.endsWith('.tsx'),
 								dynamicImport: true,
@@ -156,15 +155,17 @@ export async function compile(options?: RoboCompileOptions) {
 
 	// Traverse the source directory and transform files
 	logger.debug(`Compiling ${srcDir} to ${distDir}...`)
+	const baseUrl = tsOptions.baseUrl ?? process.cwd()
 	const compileOptions = {
-		baseUrl: tsOptions.baseUrl,
-		paths: tsOptions.paths,
+		baseUrl: baseUrl,
+		paths: replaceSrcWithBuildInRecord(tsOptions.paths ?? {}),
 		...options ?? {}
 	}
+	logger.debug(`Compiler options:`, compileOptions)
 	await traverse(srcDir, compileOptions, tsOptions, transform)
 
 	// Copy any non-TypeScript files to the destination directory
-	logger.debug(`Copying non-TypeScript files from ${srcDir} to ${distDir}...`)
+	logger.debug(`Copying additional non-TypeScript files from ${srcDir} to ${distDir}...`)
 	await copyDir(srcDir, distDir, ['.ts', '.tsx'])
 
 	return performance.now() - startTime

@@ -160,6 +160,33 @@ export async function locateInHierarchy(targetPath: string, currentDir = process
 	}
 }
 
+/**
+ * Replaces 'src/' with '.robo/build' in the given key-value record, if the path starts with 'src/'.
+ *
+ * @param record - The original key-value record
+ * @param basePath - The base path (expected to be working directory by default)
+ * @returns - The modified key-value record
+ */
+export function replaceSrcWithBuildInRecord(record: Record<string, string[]>, basePath = process.cwd()) {
+	const result: Record<string, string[]> = {}
+
+	for (const [key, values] of Object.entries(record)) {
+		result[key] = values.map((value) => {
+			const relativePath = path.relative(basePath, value)
+
+			// Replace 'src/' with the correct build path
+			if (relativePath.startsWith('src/')) {
+				return relativePath.replace('src/', '../.robo/build/')
+			}
+
+			// Otherwise, return the original path up one level to account for extra ".robo" folder
+			return '../' + relativePath
+		})
+	}
+
+	return result
+}
+
 export function sleep(ms: number) {
 	return new Promise((resolve) => setTimeout(resolve, ms))
 }
