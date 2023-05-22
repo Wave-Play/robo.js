@@ -1,5 +1,33 @@
 # robo.js
 
+## 0.7.0
+
+### Minor Changes
+
+- 51d158c: feat: new experimental middleware
+- 61ea387: feat(cli): native support for monorepos
+- 9d13ec9: feat: support for context menu commands
+- 0d8524e: feat: support for path alises with typescript
+- a7f9e23: feat: ability to enable/disable modules at runtime
+- 04e4b9b: feat: new "portal" api
+- 8f4e86f: feat: support for recursive modules
+
+### Patch Changes
+
+- 8129a17: fix(cli): use correct source path when generating defaults
+- 3eed386: fix: allow modules to completely override default commands
+- 599baff: fix: compatibility with older manifest files when generating context
+- 8c7605a: fix(sage): only auto defer if not already deferred
+- 38b928a: fix(cli): correctly mark auto generated default events as "auto"
+- a9d7408: feat(cli): attach module name to handler records inside manifest
+- 830e545: fix(cli): never assume plugins are always defined in config
+- 3b8cfd9: refactor(types): replaced handler variants with generic handler record
+- 5d3c35a: fix(compiler): path aliases now take monorepos into account
+- e3cd405: feat: new "/dev status" default subcommand
+- 863ac30: feat(cli): watch ".env" and "tsconfig.json" files in dev mode
+- fda6979: chore(compiler): clean up empty .swc directory after compiling
+- e62dccc: fix(cli): register options for subcommands and subcommand groups
+
 ## 0.6.1
 
 ### Patch Changes

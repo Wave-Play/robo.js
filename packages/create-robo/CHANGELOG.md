@@ -1,5 +1,12 @@
 # create-robo
 
+## 0.4.2
+
+### Patch Changes
+
+- 6fe8a7e: refactor: use "path.prep" for windows separator
+- b398be4: fix: cwd dir name extraction on windows
+
 ## 0.4.1
 
 ### Patch Changes
