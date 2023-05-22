@@ -1,5 +1,5 @@
 ---
-'@roboplay/robo.js': patch
+'@roboplay/robo.js': minor
 ---
 
 feat: support for path alises with typescript
