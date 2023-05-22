@@ -1,6 +1,6 @@
 export { getConfig } from './core/config.js'
 export { getManifest } from './cli/utils/manifest.js'
-export { client, commands, Robo } from './core/robo.js'
+export { client, portal, Robo } from './core/robo.js'
 export { logger } from './core/logger.js'
 export { getState, setState } from './core/state.js'
 export * from './types/index.js'

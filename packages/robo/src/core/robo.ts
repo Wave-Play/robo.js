@@ -1,13 +1,11 @@
 import { registerProcessEvents } from './process.js'
 import chalk from 'chalk'
 import { Client, Collection, Events } from 'discord.js'
-import path from 'node:path'
 import { getConfig, loadConfig } from './config.js'
 import { logger } from './logger.js'
-import { getManifest, loadManifest } from '../cli/utils/manifest.js'
+import { loadManifest } from '../cli/utils/manifest.js'
 import { env } from './env.js'
 import { stateLoad } from './process.js'
-import { pathToFileURL } from 'node:url'
 import {
 	executeAutocompleteHandler,
 	executeCommandHandler,
@@ -15,19 +13,18 @@ import {
 	executeEventHandler
 } from './handlers.js'
 import { hasProperties } from '../cli/utils/utils.js'
-import type { BaseConfig, CommandRecord, ContextRecord, EventRecord, Handler, PluginData } from '../types/index.js'
+import Portal from './portal.js'
+import type { PluginData } from '../types/index.js'
 
 export const Robo = { restart, start, stop }
 
 // Each Robo instance has its own client, exported for convenience
 export let client: Client
 
-// Oh yeah, you probably want to export these too!
-export let commands: Collection<string, CommandRecord>
-export let context: Collection<string, ContextRecord>
-export let events: Collection<string, EventRecord[]>
+// A Portal is exported with each Robo to allow for dynamic controls
+export let portal: Portal
 
-// Don't export plugin, as they may contain sensitive data in their options
+// Be careful, plugins may contain sensitive data in their config
 let plugins: Collection<string, PluginData>
 
 interface StartOptions {
@@ -56,22 +53,20 @@ async function start(options?: StartOptions) {
 	}
 
 	// Load plugin options
-	plugins = loadPluginData()
+	const plugins = loadPluginData()
 
 	// Create the new client instance
 	client = optionsClient ?? new Client(config.clientOptions)
 
-	// Load command and event modules
-	commands = await loadHandlerModules<CommandRecord>('commands')
-	context = await loadHandlerModules<ContextRecord>('context')
-	events = await loadHandlerModules<EventRecord[]>('events')
+	// Load the portal (commands, context, events)
+	portal = await Portal.open()
 
 	// Notify lifecycle event handlers
 	await executeEventHandler(plugins, '_start', client)
 
 	// Define event handlers
-	for (const key of events.keys()) {
-		const onlyAuto = events.get(key).every((event) => event.auto)
+	for (const key of portal.events.keys()) {
+		const onlyAuto = portal.events.get(key).every((event) => event.auto)
 		client.on(key, async (...args) => {
 			if (!onlyAuto) {
 				logger.event(`Event received: ${chalk.bold(key)}`)
@@ -134,96 +129,6 @@ async function restart() {
 	client?.destroy()
 	logger.debug(`Restarted Robo at ` + new Date().toLocaleString())
 	process.exit(0)
-}
-
-interface ScanOptions<T> {
-	manifestEntries: Record<string, T | T[]>
-	recursionKeys?: string[]
-}
-type ScanPredicate = <T>(entry: T, entryKeys: string[]) => Promise<void>
-
-async function scanEntries<T>(predicate: ScanPredicate, options: ScanOptions<T>) {
-	const { manifestEntries, recursionKeys = [] } = options
-	const promises: Promise<unknown>[] = []
-
-	for (const entryName in manifestEntries) {
-		const entryItem = manifestEntries[entryName]
-		const entries = Array.isArray(entryItem) ? entryItem : [entryItem]
-
-		entries.forEach((entry) => {
-			const entryKeys = [...recursionKeys, entryName]
-			promises.push(predicate(entry, entryKeys))
-
-			if (hasProperties<{ subcommands: Record<string, T> }>(entry, ['subcommands']) && entry.subcommands) {
-				const resursion = scanEntries(predicate, {
-					manifestEntries: entry.subcommands,
-					recursionKeys: entryKeys
-				})
-				promises.push(resursion)
-			}
-		})
-	}
-
-	return Promise.all(promises)
-}
-
-async function loadHandlerModules<T extends Handler | Handler[]>(type: 'commands' | 'context' | 'events') {
-	const collection = new Collection<string, T>()
-	const manifest = getManifest()
-
-	// Log manifest objects as debug info
-	const color =
-		type === 'commands' ? chalk.blue.bold : type === 'context' ? chalk.hex('#536DFE').bold : chalk.magenta.bold
-	const formatCommand = (command: string) => color(`/${command}`)
-	const formatContext = (context: string) => color(`${context} (${context})`)
-	const formatEvent = (event: string) => color(`${event} (${manifest.events[event].length})`)
-	const formatter = type === 'commands' ? formatCommand : type === 'context' ? formatContext : formatEvent
-	const handlers = Object.keys(manifest[type]).map(formatter)
-	logger.debug(`Loading ${type}: ${handlers.join(', ')}`)
-
-	const scanPredicate: ScanPredicate = async (entry: BaseConfig, entryKeys) => {
-		// Skip for nested entries (no __path)
-		if (!entry.__path) {
-			return
-		}
-
-		// Load the module
-		const basePath = path.join(process.cwd(), entry.__plugin?.path ?? '.')
-		const importPath = pathToFileURL(path.join(basePath, entry.__path)).toString()
-
-		const handler: Handler = {
-			auto: entry.__auto,
-			handler: await import(importPath),
-			path: entry.__path,
-			plugin: entry.__plugin
-		}
-
-		// Assign the handler to the collection, handling difference between types
-		if (type === 'events') {
-			const eventKey = entryKeys[0]
-			if (!collection.has(eventKey)) {
-				collection.set(eventKey, [] as T)
-			}
-			const handlers = collection.get(eventKey) as Handler[]
-			handlers.push(handler)
-		} else if (type === 'commands') {
-			const commandKey = entryKeys.join(' ')
-			collection.set(commandKey, handler as T)
-		} else if (type === 'context') {
-			const contextKey = entryKeys[0]
-			collection.set(contextKey, handler as T)
-		}
-	}
-
-	// Scan context a bit differently due to nesting
-	if (type === 'context') {
-		await scanEntries(scanPredicate, { manifestEntries: manifest.context.message })
-		await scanEntries(scanPredicate, { manifestEntries: manifest.context.user })
-	} else {
-		await scanEntries(scanPredicate, { manifestEntries: manifest[type] })
-	}
-
-	return collection
 }
 
 function loadPluginData() {

@@ -1,5 +1,5 @@
 import chalk from 'chalk'
-import { commands, context, events } from './robo.js'
+import { portal } from './robo.js'
 import { CommandInteraction, ContextMenuCommandInteraction } from 'discord.js'
 import { getSage, timeout } from '../cli/utils/utils.js'
 import { getConfig } from './config.js'
@@ -11,7 +11,7 @@ import type { CommandConfig, ContextConfig, PluginData } from '../types/index.js
 import type { Collection } from 'discord.js'
 
 export async function executeAutocompleteHandler(interaction: AutocompleteInteraction) {
-	const command = commands.get(interaction.commandName)
+	const command = portal.commands.get(interaction.commandName)
 	if (!command) {
 		logger.error(`No command matching ${interaction.commandName} was found.`)
 		return
@@ -42,7 +42,7 @@ export async function executeAutocompleteHandler(interaction: AutocompleteIntera
 
 export async function executeCommandHandler(interaction: CommandInteraction, commandKey: string) {
 	// Find command handler
-	const command = commands.get(commandKey)
+	const command = portal.commands.get(commandKey)
 	if (!command) {
 		logger.error(`No command matching "${commandKey}" was found.`)
 		return
@@ -116,7 +116,7 @@ export async function executeCommandHandler(interaction: CommandInteraction, com
 
 export async function executeContextHandler(interaction: ContextMenuCommandInteraction, commandKey: string) {
 	// Find command handler
-	const command = context.get(commandKey)
+	const command = portal.context.get(commandKey)
 	if (!command) {
 		logger.error(`No command matching "${commandKey}" was found.`)
 		return
@@ -201,7 +201,7 @@ export async function executeEventHandler(
 	eventName: string,
 	...eventData: unknown[]
 ) {
-	const callbacks = events.get(eventName)
+	const callbacks = portal.events.get(eventName)
 	if (!callbacks?.length) {
 		return Promise.resolve()
 	}
