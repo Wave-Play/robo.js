@@ -264,8 +264,8 @@ function generateScopes(config: Config, newManifest: Manifest): Scope[] {
 }
 
 interface ScanDirOptions {
+	recurseModules?: boolean
 	recursionKeys?: string[]
-	recursionLevel?: number
 	recursionModuleKeys?: string[]
 	recursionPath?: string
 	type: 'commands' | 'context' | 'events'
@@ -281,7 +281,7 @@ type ScanDirPredicate = (fileKeys: string[], fullPath: string, moduleKeys: strin
  * This ensures parent entries are always created before children.
  */
 async function scanDir(predicate: ScanDirPredicate, options: ScanDirOptions) {
-	const { recursionKeys = [], recursionLevel = 0, recursionModuleKeys = [], recursionPath, type } = options
+	const { recurseModules = true, recursionKeys = [], recursionModuleKeys = [], recursionPath, type } = options
 	const directoryPath = recursionPath ?? path.join(process.cwd(), '.robo', 'build', type)
 	const directory = await fs.readdir(directoryPath)
 
@@ -310,20 +310,23 @@ async function scanDir(predicate: ScanDirPredicate, options: ScanDirOptions) {
 
 	// If not currently recursing, be sure to also check the "modules" directory
 	const modules: string[] = []
-	if (recursionLevel === 0) {
+	if (recurseModules) {
 		try {
 			// Read the modules directory one level higher than the current directory
-			const modulesDirectory = await fs.readdir(path.join(process.cwd(), '.robo', 'build', 'modules'))
+			const modulesPath = recursionPath
+				? path.join(recursionPath, '..', 'modules')
+				: path.join(process.cwd(), '.robo', 'build', 'modules')
+			const modulesDirectory = await fs.readdir(modulesPath)
 
 			// For each module, add it to the list of directories to scan
 			await Promise.all(
 				modulesDirectory.map(async (module) => {
-					const fullPath = path.resolve(process.cwd(), '.robo', 'build', 'modules', module, type)
+					const fullPath = path.resolve(modulesPath, module, type)
 
 					// Only add modules to the list of modules to scan
 					const stats = await fs.stat(fullPath)
 					if (stats.isDirectory()) {
-						modules.push(path.join(process.cwd(), '.robo', 'build', 'modules', module, type))
+						modules.push(path.join(modulesPath, module, type))
 					}
 				})
 			)
@@ -352,7 +355,11 @@ async function scanDir(predicate: ScanDirPredicate, options: ScanDirOptions) {
 			const nestedPath = path.resolve(directoryPath, childDir)
 			const fileKeys = [...recursionKeys, childDir]
 			return scanDir(predicate, {
-				recursionKeys: fileKeys, recursionLevel: recursionLevel + 1, recursionModuleKeys, recursionPath: nestedPath, type
+				recursionKeys: fileKeys,
+				recurseModules: false,
+				recursionModuleKeys,
+				recursionPath: nestedPath,
+				type
 			})
 		})
 	)
@@ -363,14 +370,21 @@ async function scanDir(predicate: ScanDirPredicate, options: ScanDirOptions) {
 			const nestedPath = path.resolve(module)
 			const moduleKeys = [...recursionModuleKeys, path.basename(path.dirname(module))]
 			return scanDir(predicate, {
-				recursionKeys: [], recursionLevel: recursionLevel + 1, recursionModuleKeys: moduleKeys, recursionPath: nestedPath, type
+				recursionKeys: [],
+				recurseModules: true,
+				recursionModuleKeys: moduleKeys,
+				recursionPath: nestedPath,
+				type
 			})
 		})
 	)
 }
 
 async function generateEntries<T>(type: 'commands', generatedKeys: string[]): Promise<Record<string, T>>
-async function generateEntries<T>(type: 'context', generatedKeys: string[]): Promise<Record<'message' | 'user', Record<string, T>>>
+async function generateEntries<T>(
+	type: 'context',
+	generatedKeys: string[]
+): Promise<Record<'message' | 'user', Record<string, T>>>
 async function generateEntries<T>(type: 'events', generatedKeys: string[]): Promise<Record<string, T[]>>
 async function generateEntries<T>(
 	type: 'commands' | 'context' | 'events',
