@@ -72,7 +72,9 @@ export async function executeCommandHandler(interaction: CommandInteraction, com
 			if (raceResult === BUFFER && !interaction.replied) {
 				logger.debug(`Sage is deferring async command...`)
 				promises.push(result)
-				await interaction.deferReply({ ephemeral: sage.ephemeral })
+				if (!interaction.deferred) {
+					await interaction.deferReply({ ephemeral: sage.ephemeral })
+				}
 			} else {
 				response = raceResult
 			}
@@ -152,7 +154,9 @@ export async function executeContextHandler(interaction: ContextMenuCommandInter
 			if (raceResult === BUFFER && !interaction.replied) {
 				logger.debug(`Sage is deferring async command...`)
 				promises.push(result)
-				await interaction.deferReply({ ephemeral: sage.ephemeral })
+				if (!interaction.deferred) {
+					await interaction.deferReply({ ephemeral: sage.ephemeral })
+				}
 			} else {
 				response = raceResult
 			}

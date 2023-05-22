@@ -33,7 +33,6 @@ export const DEBUG_MODE = process.env.NODE_ENV !== 'production'
 export const ANSI_REGEX = /\x1b\[.*?m/g
 
 export const devLogCommand = async (interaction: CommandInteraction) => {
-	await interaction.deferReply()
 	const logs = logger.getRecentLogs().map((log) => log.message())
 	handleLogButtons(logs, 0, interaction as unknown as MessageComponentInteraction)
 }
