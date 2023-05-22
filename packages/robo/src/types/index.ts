@@ -19,6 +19,7 @@ export interface Context {
 export interface HandlerRecord<T = unknown> {
 	auto?: boolean
 	handler: T
+	module?: string
 	path: string
 	plugin?: {
 		name: string
@@ -57,6 +58,7 @@ export interface PluginMetaOptions {
 
 export interface BaseConfig {
 	__auto?: true
+	__module?: string
 	__path?: string
 	__plugin?: {
 		name: string

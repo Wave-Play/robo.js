@@ -28,9 +28,9 @@ export default class Portal {
 	 * Warning: Do not call this method directly. Use the `portal` export instead.
 	 */
 	public static async open(): Promise<Portal> {
-		const commands = await loadHandlerModules<HandlerRecord<Command>>('commands')
-		const context = await loadHandlerModules<HandlerRecord<Context>>('context')
-		const events = await loadHandlerModules<HandlerRecord<Event>[]>('events')
+		const commands = await loadHandlerRecords<HandlerRecord<Command>>('commands')
+		const context = await loadHandlerRecords<HandlerRecord<Context>>('context')
+		const events = await loadHandlerRecords<HandlerRecord<Event>[]>('events')
 
 		return new Portal(commands, context, events)
 	}
@@ -67,7 +67,7 @@ async function scanEntries<T>(predicate: ScanPredicate, options: ScanOptions<T>)
 	return Promise.all(promises)
 }
 
-async function loadHandlerModules<T extends HandlerRecord | HandlerRecord[]>(type: 'commands' | 'context' | 'events') {
+async function loadHandlerRecords<T extends HandlerRecord | HandlerRecord[]>(type: 'commands' | 'context' | 'events') {
 	const collection = new Collection<string, T>()
 	const manifest = getManifest()
 
@@ -94,6 +94,7 @@ async function loadHandlerModules<T extends HandlerRecord | HandlerRecord[]>(typ
 		const handler: HandlerRecord = {
 			auto: entry.__auto,
 			handler: await import(importPath),
+			module: entry.__module,
 			path: entry.__path,
 			plugin: entry.__plugin
 		}

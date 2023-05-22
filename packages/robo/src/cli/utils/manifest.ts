@@ -265,19 +265,23 @@ function generateScopes(config: Config, newManifest: Manifest): Scope[] {
 
 interface ScanDirOptions {
 	recursionKeys?: string[]
+	recursionLevel?: number
+	recursionModuleKeys?: string[]
 	recursionPath?: string
 	type: 'commands' | 'context' | 'events'
 }
 
+type ScanDirPredicate = (fileKeys: string[], fullPath: string, moduleKeys: string[]) => Promise<void>
+
 /**
- * Walks through a directory and passes only files to the directive function.
+ * Walks through a directory and passes only files to the predicate function.
  * This function is recursive and includes general data about the file.
  *
  * Files will always be walked first, then directories after.
  * This ensures parent entries are always created before children.
  */
-async function scanDir(directive: (fileKeys: string[], fullPath: string) => Promise<void>, options: ScanDirOptions) {
-	const { recursionKeys = [], recursionPath, type } = options
+async function scanDir(predicate: ScanDirPredicate, options: ScanDirOptions) {
+	const { recursionKeys = [], recursionLevel = 0, recursionModuleKeys = [], recursionPath, type } = options
 	const directoryPath = recursionPath ?? path.join(process.cwd(), '.robo', 'build', type)
 	const directory = await fs.readdir(directoryPath)
 
@@ -306,7 +310,7 @@ async function scanDir(directive: (fileKeys: string[], fullPath: string) => Prom
 
 	// If not currently recursing, be sure to also check the "modules" directory
 	const modules: string[] = []
-	if (!recursionPath) {
+	if (recursionLevel === 0) {
 		try {
 			// Read the modules directory one level higher than the current directory
 			const modulesDirectory = await fs.readdir(path.join(process.cwd(), '.robo', 'build', 'modules'))
@@ -338,7 +342,7 @@ async function scanDir(directive: (fileKeys: string[], fullPath: string) => Prom
 			const fileKeys = [...recursionKeys, path.basename(file, path.extname(file))]
 			const fullPath = path.resolve(directoryPath, file)
 
-			return directive(fileKeys, fullPath)
+			return predicate(fileKeys, fullPath, recursionModuleKeys)
 		})
 	)
 
@@ -347,7 +351,9 @@ async function scanDir(directive: (fileKeys: string[], fullPath: string) => Prom
 		directories.map(async (childDir) => {
 			const nestedPath = path.resolve(directoryPath, childDir)
 			const fileKeys = [...recursionKeys, childDir]
-			return scanDir(directive, { recursionKeys: fileKeys, recursionPath: nestedPath, type })
+			return scanDir(predicate, {
+				recursionKeys: fileKeys, recursionLevel: recursionLevel + 1, recursionModuleKeys, recursionPath: nestedPath, type
+			})
 		})
 	)
 
@@ -355,7 +361,10 @@ async function scanDir(directive: (fileKeys: string[], fullPath: string) => Prom
 	await Promise.all(
 		modules.map(async (module) => {
 			const nestedPath = path.resolve(module)
-			return scanDir(directive, { recursionKeys: [], recursionPath: nestedPath, type })
+			const moduleKeys = [...recursionModuleKeys, path.basename(path.dirname(module))]
+			return scanDir(predicate, {
+				recursionKeys: [], recursionLevel: recursionLevel + 1, recursionModuleKeys: moduleKeys, recursionPath: nestedPath, type
+			})
 		})
 	)
 }
@@ -371,7 +380,7 @@ async function generateEntries<T>(
 		const entries: Record<string, T | T[]> = {}
 
 		await scanDir(
-			async (fileKeys, fullPath) => {
+			async (fileKeys, fullPath, moduleKeys) => {
 				logger.debug(`[${type}] Generating ${JSON.stringify(fileKeys)} from ${fullPath}`)
 				const isGenerated = generatedKeys.includes(fileKeys.join('/'))
 				const importPath = pathToFileURL(fullPath).toString()
@@ -379,6 +388,7 @@ async function generateEntries<T>(
 				let entry = {
 					...getValue(type, module.config),
 					__auto: isGenerated ? true : undefined,
+					__module: moduleKeys.join('/') || undefined,
 					__path: fullPath.replace(process.cwd(), '')
 				} as T
 				let existingEntry = entries[fileKeys[0]]
