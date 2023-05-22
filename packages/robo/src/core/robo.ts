@@ -8,9 +8,14 @@ import { getManifest, loadManifest } from '../cli/utils/manifest.js'
 import { env } from './env.js'
 import { stateLoad } from './process.js'
 import { pathToFileURL } from 'node:url'
-import { executeAutocompleteHandler, executeCommandHandler, executeEventHandler } from './handlers.js'
+import {
+	executeAutocompleteHandler,
+	executeCommandHandler,
+	executeContextHandler,
+	executeEventHandler
+} from './handlers.js'
 import { hasProperties } from '../cli/utils/utils.js'
-import type { CommandRecord, EventRecord, Handler, PluginData } from '../types/index.js'
+import type { BaseConfig, CommandRecord, ContextRecord, EventRecord, Handler, PluginData } from '../types/index.js'
 
 export const Robo = { restart, start, stop }
 
@@ -19,6 +24,7 @@ export let client: Client
 
 // Oh yeah, you probably want to export these too!
 export let commands: Collection<string, CommandRecord>
+export let context: Collection<string, ContextRecord>
 export let events: Collection<string, EventRecord[]>
 
 // Don't export plugin, as they may contain sensitive data in their options
@@ -57,6 +63,7 @@ async function start(options?: StartOptions) {
 
 	// Load command and event modules
 	commands = await loadHandlerModules<CommandRecord>('commands')
+	context = await loadHandlerModules<ContextRecord>('context')
 	events = await loadHandlerModules<EventRecord[]>('events')
 
 	// Notify lifecycle event handlers
@@ -96,12 +103,16 @@ async function start(options?: StartOptions) {
 			}
 			const commandKey = commandKeys.filter(Boolean).join(' ')
 			logger.event(`Received slash command interaction: ${chalk.bold('/' + commandKey)}`)
-			logger.trace('Chat input command:', interaction.toJSON())
+			logger.trace('Slash command interaction:', interaction.toJSON())
 			await executeCommandHandler(interaction, commandKey)
 		} else if (interaction.isAutocomplete()) {
-			logger.event(`Received autocomplete interaction`)
+			logger.event(`Received autocomplete interaction for: ${chalk.bold(interaction.commandName)}`)
 			logger.trace('Autocomplete interaction:', interaction.toJSON())
 			await executeAutocompleteHandler(interaction)
+		} else if (interaction.isContextMenuCommand()) {
+			logger.event(`Received context menu interaction: ${chalk.bold(interaction.commandName)}`)
+			logger.trace('Context menu interaction:', interaction.toJSON())
+			await executeContextHandler(interaction, interaction.commandName)
 		}
 	})
 
@@ -129,8 +140,9 @@ interface ScanOptions<T> {
 	manifestEntries: Record<string, T | T[]>
 	recursionKeys?: string[]
 }
+type ScanPredicate = <T>(entry: T, entryKeys: string[]) => Promise<void>
 
-async function scanEntries<T>(predicate: (entry: T, entryKeys: string[]) => Promise<void>, options: ScanOptions<T>) {
+async function scanEntries<T>(predicate: ScanPredicate, options: ScanOptions<T>) {
 	const { manifestEntries, recursionKeys = [] } = options
 	const promises: Promise<unknown>[] = []
 
@@ -155,53 +167,61 @@ async function scanEntries<T>(predicate: (entry: T, entryKeys: string[]) => Prom
 	return Promise.all(promises)
 }
 
-async function loadHandlerModules<T extends Handler | Handler[]>(type: 'commands' | 'events') {
+async function loadHandlerModules<T extends Handler | Handler[]>(type: 'commands' | 'context' | 'events') {
 	const collection = new Collection<string, T>()
 	const manifest = getManifest()
 
 	// Log manifest objects as debug info
-	const color = type === 'commands' ? chalk.blue.bold : chalk.magenta.bold
+	const color =
+		type === 'commands' ? chalk.blue.bold : type === 'context' ? chalk.hex('#536DFE').bold : chalk.magenta.bold
 	const formatCommand = (command: string) => color(`/${command}`)
+	const formatContext = (context: string) => color(`${context} (${context})`)
 	const formatEvent = (event: string) => color(`${event} (${manifest.events[event].length})`)
-	const handlers = Object.keys(manifest[type]).map(type === 'commands' ? formatCommand : formatEvent)
+	const formatter = type === 'commands' ? formatCommand : type === 'context' ? formatContext : formatEvent
+	const handlers = Object.keys(manifest[type]).map(formatter)
 	logger.debug(`Loading ${type}: ${handlers.join(', ')}`)
 
-	await scanEntries(
-		async (entry, entryKeys) => {
-			// Skip for nested entries (no __path)
-			if (!entry.__path) {
-				return
-			}
-
-			// Load the module
-			// TODO: Remove plugin compat path in next major version
-			const basePath = path.join(process.cwd(), entry.__plugin?.path ?? '.', entry.__plugin?.path ? `.robo/build/${type}` : '.')
-			const importPath = pathToFileURL(path.join(basePath, entry.__path)).toString()
-
-			const handler = {
-				auto: entry.__auto,
-				handler: await import(importPath),
-				path: entry.__path,
-				plugin: entry.__plugin
-			}
-
-			// Assign the handler to the collection, handling difference between types
-			if (type === 'events') {
-				const eventKey = entryKeys[0]
-				if (!collection.has(eventKey)) {
-					collection.set(eventKey, [] as T)
-				}
-				const handlers = collection.get(eventKey) as Handler[]
-				handlers.push(handler)
-			} else {
-				const commandKey = entryKeys.join(' ')
-				collection.set(commandKey, handler as T)
-			}
-		},
-		{
-			manifestEntries: manifest[type]
+	const scanPredicate: ScanPredicate = async (entry: BaseConfig, entryKeys) => {
+		// Skip for nested entries (no __path)
+		if (!entry.__path) {
+			return
 		}
-	)
+
+		// Load the module
+		const basePath = path.join(process.cwd(), entry.__plugin?.path ?? '.')
+		const importPath = pathToFileURL(path.join(basePath, entry.__path)).toString()
+
+		const handler: Handler = {
+			auto: entry.__auto,
+			handler: await import(importPath),
+			path: entry.__path,
+			plugin: entry.__plugin
+		}
+
+		// Assign the handler to the collection, handling difference between types
+		if (type === 'events') {
+			const eventKey = entryKeys[0]
+			if (!collection.has(eventKey)) {
+				collection.set(eventKey, [] as T)
+			}
+			const handlers = collection.get(eventKey) as Handler[]
+			handlers.push(handler)
+		} else if (type === 'commands') {
+			const commandKey = entryKeys.join(' ')
+			collection.set(commandKey, handler as T)
+		} else if (type === 'context') {
+			const contextKey = entryKeys[0]
+			collection.set(contextKey, handler as T)
+		}
+	}
+
+	// Scan context a bit differently due to nesting
+	if (type === 'context') {
+		await scanEntries(scanPredicate, { manifestEntries: manifest.context.message })
+		await scanEntries(scanPredicate, { manifestEntries: manifest.context.user })
+	} else {
+		await scanEntries(scanPredicate, { manifestEntries: manifest[type] })
+	}
 
 	return collection
 }

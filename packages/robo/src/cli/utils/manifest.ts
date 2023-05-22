@@ -16,8 +16,8 @@ import { findPackagePath, hasProperties, packageJson } from './utils.js'
 import { loadConfig } from '../../core/config.js'
 import { pathToFileURL } from 'node:url'
 import { DefaultGen } from './generate-defaults.js'
-import type { PermissionsString } from 'discord.js'
 import chalk from 'chalk'
+import type { PermissionsString } from 'discord.js'
 
 // Global manifest reference
 let _manifest: Manifest = null
@@ -37,6 +37,10 @@ const BASE_MANIFEST: Manifest = {
 		type: 'robo'
 	},
 	commands: {},
+	context: {
+		message: {},
+		user: {}
+	},
 	events: {},
 	permissions: [],
 	scopes: []
@@ -79,6 +83,7 @@ export async function generateManifest(generatedDefaults: DefaultGen, type: 'plu
 	const config = await loadConfig()
 	const pluginsManifest = type === 'plugin' ? BASE_MANIFEST : await readPluginManifest(config?.plugins)
 	const commands = await generateEntries<CommandEntry>('commands', Object.keys(generatedDefaults?.commands ?? {}))
+	const context = await generateEntries<CommandEntry>('context', Object.keys(generatedDefaults?.context ?? {}))
 	const events = await generateEntries<EventConfig>('events', Object.keys(generatedDefaults?.events ?? {}))
 
 	const newManifest: Manifest = {
@@ -94,6 +99,16 @@ export async function generateManifest(generatedDefaults: DefaultGen, type: 'plu
 			...pluginsManifest.commands,
 			...commands
 		} as Record<string, CommandConfig>,
+		context: {
+			message: {
+				...pluginsManifest.context?.message,
+				...context.message
+			},
+			user: {
+				...pluginsManifest.context?.user,
+				...context.user
+			}
+		},
 		events: mergeEvents(pluginsManifest.events, events)
 	}
 
@@ -251,7 +266,7 @@ function generateScopes(config: Config, newManifest: Manifest): Scope[] {
 interface ScanDirOptions {
 	recursionKeys?: string[]
 	recursionPath?: string
-	type: 'commands' | 'events'
+	type: 'commands' | 'context' | 'events'
 }
 
 /**
@@ -346,11 +361,12 @@ async function scanDir(directive: (fileKeys: string[], fullPath: string) => Prom
 }
 
 async function generateEntries<T>(type: 'commands', generatedKeys: string[]): Promise<Record<string, T>>
+async function generateEntries<T>(type: 'context', generatedKeys: string[]): Promise<Record<'message' | 'user', Record<string, T>>>
 async function generateEntries<T>(type: 'events', generatedKeys: string[]): Promise<Record<string, T[]>>
 async function generateEntries<T>(
-	type: 'commands' | 'events',
+	type: 'commands' | 'context' | 'events',
 	generatedKeys: string[]
-): Promise<Record<string, T | T[]>> {
+): Promise<Record<string, T | T[] | Record<string, T>>> {
 	try {
 		const entries: Record<string, T | T[]> = {}
 
@@ -377,6 +393,17 @@ async function generateEntries<T>(
 
 				if (type === 'events' && Array.isArray(existingEntry)) {
 					existingEntry.push(entry)
+				}
+
+				// Context entries must be grouped by context type, meaning level 2 nesting
+				if (type === 'context' && fileKeys.length === 2) {
+					const contextType = fileKeys[0] as 'message' | 'user'
+					if (!entries[contextType]) {
+						entries[contextType] = {} as T
+					}
+
+					// Add the entry to the context type
+					(entries[contextType] as Record<string, T>)[fileKeys[1]] = entry
 				}
 
 				// Third level command? Add it to the parent subcommand (subcommand group)
@@ -453,7 +480,7 @@ async function generateEntries<T>(
 }
 
 type AllConfig = CommandConfig & EventConfig
-function getValue<T extends AllConfig>(type: 'commands' | 'events', config: BaseConfig): T {
+function getValue<T extends AllConfig>(type: 'commands' | 'context' | 'events', config: BaseConfig): T {
 	const value = {} as T
 	if (!config) {
 		return value

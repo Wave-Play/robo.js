@@ -15,6 +15,7 @@ const supportedExtensions = ['.ts', '.tsx', '.js', '.jsx']
 
 export interface DefaultGen {
 	commands: Record<string, boolean>
+	context: Record<string, boolean>
 	events: Record<string, boolean>
 }
 
@@ -27,8 +28,9 @@ export interface DefaultGen {
 export async function generateDefaults(): Promise<DefaultGen> {
 	try {
 		const commands = await generateCommands()
+		const context = {}
 		const events = await generateEvents()
-		return { commands, events }
+		return { commands, context, events }
 	} catch (err) {
 		logger.error('Error generating default files', err)
 		process.exit(1)

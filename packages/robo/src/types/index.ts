@@ -3,6 +3,23 @@ export * from './config.js'
 export * from './events.js'
 export * from './manifest.js'
 
+export interface ContextConfig extends BaseConfig {
+	nameLocalizations?: Record<string, string>
+	sage?: false | SageOptions
+	timeout?: number
+}
+
+export type ContextEntry = ContextConfig
+
+export interface Context {
+	config?: ContextConfig
+	default: (...data: unknown[]) => unknown | Promise<unknown>
+}
+
+export interface ContextRecord extends Handler {
+	handler: Context
+}
+
 export interface Handler {
 	auto?: boolean
 	handler: unknown

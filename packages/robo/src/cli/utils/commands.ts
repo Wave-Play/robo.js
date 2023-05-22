@@ -1,16 +1,35 @@
-import { REST, Routes, SlashCommandBuilder, SlashCommandSubcommandBuilder } from 'discord.js'
+import { ApplicationCommandType, ContextMenuCommandBuilder, REST, Routes, SlashCommandBuilder, SlashCommandSubcommandBuilder } from 'discord.js'
 import { logger as globalLogger, Logger } from '../../core/logger.js'
 import { performance } from 'node:perf_hooks'
 import chalk from 'chalk'
-import { CommandEntry, CommandOption } from '../../types/index.js'
 import { loadConfig } from '../../core/config.js'
 import { DEFAULT_CONFIG } from '../../core/constants.js'
 import { env } from '../../core/env.js'
 import { timeout } from './utils.js'
 import type { ApplicationCommandOptionBase } from 'discord.js'
+import type { CommandEntry, CommandOption, ContextEntry } from '../../types/index.js'
 
 // @ts-expect-error - Global logger is overriden by dev mode
 let logger: Logger = globalLogger
+
+export function buildContextCommands(dev: boolean, contextCommands: Record<string, ContextEntry>, type: 'message' | 'user'): ContextMenuCommandBuilder[] {
+	if (dev) {
+		logger = new Logger({
+			enabled: true,
+			level: 'info'
+		})
+	}
+
+	return Object.entries(contextCommands).map(([key, entry]): ContextMenuCommandBuilder => {
+		logger.debug(`Building context command: ${key}`)
+		const commandBuilder = new ContextMenuCommandBuilder()
+			.setName(key)
+			.setNameLocalizations(entry.nameLocalizations || {})
+			.setType(type === 'message' ? ApplicationCommandType.Message : ApplicationCommandType.User)
+
+		return commandBuilder
+	})
+}
 
 export function buildSlashCommands(dev: boolean, commands: Record<string, CommandEntry>): SlashCommandBuilder[] {
 	if (dev) {
@@ -192,9 +211,14 @@ function hasChangedFields(obj1: CommandEntry, obj2: CommandEntry): boolean {
 export async function registerCommands(
 	dev: boolean,
 	newCommands: Record<string, CommandEntry>,
+	newMessageContextCommands: Record<string, ContextEntry>,
+	newUserContextCommands: Record<string, ContextEntry>,
 	changedCommands: string[],
 	addedCommands: string[],
-	removedCommands: string[]
+	removedCommands: string[],
+	changedContextCommands: string[],
+	addedContextCommands: string[],
+	removedContextCommands: string[]
 ) {
 	const config = await loadConfig()
 	const { clientId, guildId, token } = env.discord
@@ -211,16 +235,37 @@ export async function registerCommands(
 
 	try {
 		const slashCommands = buildSlashCommands(dev, newCommands)
+		const contextMessageCommands = buildContextCommands(dev, newMessageContextCommands, 'message')
+		const contextUserCommands = buildContextCommands(dev, newUserContextCommands, 'user')
 		const addedChanges = addedCommands.map((cmd) => chalk.green(`/${chalk.bold(cmd)} (new)`))
 		const removedChanges = removedCommands.map((cmd) => chalk.red(`/${chalk.bold(cmd)} (deleted)`))
 		const updatedChanges = changedCommands.map((cmd) => chalk.blue(`/${chalk.bold(cmd)} (updated)`))
+		const addedContextChanges = addedContextCommands.map((cmd) => chalk.green(`${chalk.bold(cmd)} (new)`))
+		const removedContextChanges = removedContextCommands.map((cmd) => chalk.red(`${chalk.bold(cmd)} (deleted)`))
+		const updatedContextChanges = changedContextCommands.map((cmd) => chalk.blue(`${chalk.bold(cmd)} (updated)`))
 
-		const allChanges = [...addedChanges, ...removedChanges, ...updatedChanges]
+		const allChanges = [
+			...addedChanges,
+			...removedChanges,
+			...updatedChanges
+		]
+		const allContextChanges = [
+			...addedContextChanges,
+			...removedContextChanges,
+			...updatedContextChanges
+		]
 		if (allChanges.length > 0) {
 			logger.info('Command changes: ' + allChanges.join(', '))
 		}
+		if (allContextChanges.length > 0) {
+			logger.info('Context menu changes: ' + allContextChanges.join(', '))
+		}
 
-		const commandData = slashCommands.map((command) => command.toJSON())
+		const commandData = [
+			...slashCommands.map((command) => command.toJSON()),
+			...contextMessageCommands.map((command) => command.toJSON()),
+			...contextUserCommands.map((command) => command.toJSON())
+		]
 		const registerCommandsPromise = (
 			guildId
 				? rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commandData })

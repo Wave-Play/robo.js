@@ -1,13 +1,13 @@
 import chalk from 'chalk'
-import { commands, events } from './robo.js'
-import { CommandInteraction } from 'discord.js'
+import { commands, context, events } from './robo.js'
+import { CommandInteraction, ContextMenuCommandInteraction } from 'discord.js'
 import { getSage, timeout } from '../cli/utils/utils.js'
 import { getConfig } from './config.js'
 import { logger } from './logger.js'
 import { BUFFER, DEFAULT_CONFIG, TIMEOUT } from './constants.js'
 import { printErrorResponse } from './debug.js'
 import type { AutocompleteInteraction } from 'discord.js'
-import type { CommandConfig, PluginData } from '../types/index.js'
+import type { CommandConfig, ContextConfig, PluginData } from '../types/index.js'
 import type { Collection } from 'discord.js'
 
 export async function executeAutocompleteHandler(interaction: AutocompleteInteraction) {
@@ -96,6 +96,86 @@ export async function executeCommandHandler(interaction: CommandInteraction, com
 		// Stop here if command returned nothing
 		if (response === undefined) {
 			logger.debug('Command returned void, skipping response')
+			return
+		}
+
+		logger.debug(`Sage is handling reply:`, response)
+		const reply = typeof response === 'string' ? { content: response } : response
+		if (interaction.deferred) {
+			await interaction.editReply(reply)
+		} else {
+			await interaction.reply(reply)
+		}
+	} catch (error) {
+		logger.error(error)
+		printErrorResponse(error, interaction)
+	}
+}
+
+export async function executeContextHandler(interaction: ContextMenuCommandInteraction, commandKey: string) {
+	// Find command handler
+	const command = context.get(commandKey)
+	if (!command) {
+		logger.error(`No command matching "${commandKey}" was found.`)
+		return
+	}
+
+	// Prepare options and config
+	const commandConfig: ContextConfig = command.handler.config
+	const config = getConfig()
+	const sage = getSage(commandConfig, config)
+	logger.debug(`Sage options:`, sage)
+
+	try {
+		logger.debug(`Executing context menu handler: ${chalk.bold(command.path)}`)
+		if (!command.handler.default) {
+			throw `Missing default export function for command: ${chalk.bold('/' + commandKey)}`
+		}
+
+		// Determine target
+		let target
+		if (interaction.isMessageContextMenuCommand()) {
+			target = interaction.targetMessage
+		} else if (interaction.isUserContextMenuCommand()) {
+			target = interaction.targetUser
+		}
+
+		// Delegate to context menu handler
+		const result = command.handler.default(interaction, target)
+		const promises = []
+		let response
+
+		if (sage.defer && result instanceof Promise) {
+			const bufferTime = timeout(() => BUFFER, sage.deferBuffer)
+			const raceResult = await Promise.race([result, bufferTime])
+
+			if (raceResult === BUFFER && !interaction.replied) {
+				logger.debug(`Sage is deferring async command...`)
+				promises.push(result)
+				await interaction.deferReply({ ephemeral: sage.ephemeral })
+			} else {
+				response = raceResult
+			}
+		}
+
+		// Enforce timeout only if custom timeout is configured
+		if (promises.length > 0) {
+			if (config?.timeouts?.commandDeferral) {
+				promises.push(timeout(() => TIMEOUT, config.timeouts.commandDeferral))
+			}
+
+			// Wait for response or timeout
+			response = await Promise.race(promises)
+			if (response === TIMEOUT) {
+				throw new Error('Context menu command timed out')
+			}
+		} else if (!(result instanceof Promise)) {
+			response = result
+		}
+
+		// Stop here if command returned nothing
+		if (response === undefined) {
+			logger.debug('Context menu command returned void, skipping response')
 			return
 		}
 
