@@ -17,6 +17,12 @@ export async function executeAutocompleteHandler(interaction: AutocompleteIntera
 		return
 	}
 
+	// Check if the autocomplete command's module is enabled
+	if (!portal.module(command.module).isEnabled) {
+		logger.debug(`Tried to execute disabled command from module: ${chalk.bold(command.module)}`)
+		return
+	}
+
 	const config = getConfig()
 	try {
 		// Delegate to autocomplete handler
@@ -45,6 +51,12 @@ export async function executeCommandHandler(interaction: CommandInteraction, com
 	const command = portal.commands.get(commandKey)
 	if (!command) {
 		logger.error(`No command matching "${commandKey}" was found.`)
+		return
+	}
+
+	// Check if the command's module is enabled
+	if (!portal.module(command.module).isEnabled) {
+		logger.debug(`Tried to execute disabled command from module: ${chalk.bold(command.module)}`)
 		return
 	}
 
@@ -118,7 +130,13 @@ export async function executeContextHandler(interaction: ContextMenuCommandInter
 	// Find command handler
 	const command = portal.context.get(commandKey)
 	if (!command) {
-		logger.error(`No command matching "${commandKey}" was found.`)
+		logger.error(`No context menu command matching "${commandKey}" was found.`)
+		return
+	}
+
+	// Check if the context menu's module is enabled
+	if (!portal.module(command.module).isEnabled) {
+		logger.debug(`Tried to execute disabled context menu command from module: ${chalk.bold(command.module)}`)
 		return
 	}
 
@@ -214,6 +232,12 @@ export async function executeEventHandler(
 				logger.debug(`Executing event handler: ${chalk.bold(callback.path)}`)
 				if (!callback.handler.default) {
 					throw `Missing default export function for event: ${chalk.bold(eventName)}`
+				}
+
+				// Check if the command's module is enabled
+				if (!portal.module(callback.module).isEnabled) {
+					logger.debug(`Tried to execute disabled event from module: ${chalk.bold(callback.module)}`)
+					return
 				}
 
 				// Execute handler without timeout if not a lifecycle event

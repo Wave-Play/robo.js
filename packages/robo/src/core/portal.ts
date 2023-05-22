@@ -11,6 +11,8 @@ export default class Portal {
 	public commands: Collection<string, HandlerRecord<Command>>
 	public context: Collection<string, HandlerRecord<Context>>
 	public events: Collection<string, HandlerRecord<Event>[]>
+	private _enabledModules: Record<string, boolean> = {}
+	private _modules: Record<string, Module> = {}
 
 	constructor(
 		commands: Collection<string, HandlerRecord<Command>>,
@@ -22,9 +24,18 @@ export default class Portal {
 		this.events = events
 	}
 
+	module(moduleName: string) {
+		let moduleInstance = this._modules[moduleName]
+		if (!moduleInstance) {
+			moduleInstance = new Module(moduleName, this._enabledModules)
+			this._modules[moduleName] = moduleInstance
+		}
+		return moduleInstance
+	}
+
 	/**
 	 * Creates a new Portal instance from the manifest file.
-	 * 
+	 *
 	 * Warning: Do not call this method directly. Use the `portal` export instead.
 	 */
 	public static async open(): Promise<Portal> {
@@ -33,6 +44,18 @@ export default class Portal {
 		const events = await loadHandlerRecords<HandlerRecord<Event>[]>('events')
 
 		return new Portal(commands, context, events)
+	}
+}
+
+class Module {
+	constructor(private _moduleName: string, private _enabledModules: Record<string, boolean>) {}
+
+	get isEnabled(): boolean {
+		return this._enabledModules[this._moduleName] ?? true
+	}
+
+	setEnabled(value: boolean) {
+		this._enabledModules[this._moduleName] = value
 	}
 }
 
