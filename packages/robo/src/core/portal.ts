@@ -5,23 +5,27 @@ import { pathToFileURL } from 'node:url'
 import { getManifest } from '../cli/utils/manifest.js'
 import { hasProperties } from '../cli/utils/utils.js'
 import { logger } from './logger.js'
-import type { BaseConfig, Command, Context, Event, HandlerRecord } from '../types/index.js'
+import type { BaseConfig, Command, Context, Event, HandlerRecord, Middleware } from '../types/index.js'
 
 export default class Portal {
 	public commands: Collection<string, HandlerRecord<Command>>
 	public context: Collection<string, HandlerRecord<Context>>
 	public events: Collection<string, HandlerRecord<Event>[]>
+	public middleware: HandlerRecord<Middleware>[] = []
+
 	private _enabledModules: Record<string, boolean> = {}
 	private _modules: Record<string, Module> = {}
 
 	constructor(
 		commands: Collection<string, HandlerRecord<Command>>,
 		context: Collection<string, HandlerRecord<Context>>,
-		events: Collection<string, HandlerRecord<Event>[]>
+		events: Collection<string, HandlerRecord<Event>[]>,
+		middleware: HandlerRecord<Middleware>[]
 	) {
 		this.commands = commands
 		this.context = context
 		this.events = events
+		this.middleware = middleware
 	}
 
 	module(moduleName: string) {
@@ -42,8 +46,9 @@ export default class Portal {
 		const commands = await loadHandlerRecords<HandlerRecord<Command>>('commands')
 		const context = await loadHandlerRecords<HandlerRecord<Context>>('context')
 		const events = await loadHandlerRecords<HandlerRecord<Event>[]>('events')
+		const middleware = [...(await loadHandlerRecords<HandlerRecord<Middleware>>('middleware')).values()]
 
-		return new Portal(commands, context, events)
+		return new Portal(commands, context, events, middleware)
 	}
 }
 
@@ -60,7 +65,7 @@ class Module {
 }
 
 interface ScanOptions<T> {
-	manifestEntries: Record<string, T | T[]>
+	manifestEntries: Record<string, T | T[]> | T[]
 	recursionKeys?: string[]
 }
 type ScanPredicate = <T>(entry: T, entryKeys: string[]) => Promise<void>
@@ -70,7 +75,7 @@ async function scanEntries<T>(predicate: ScanPredicate, options: ScanOptions<T>)
 	const promises: Promise<unknown>[] = []
 
 	for (const entryName in manifestEntries) {
-		const entryItem = manifestEntries[entryName]
+		const entryItem = Array.isArray(manifestEntries) ? manifestEntries : manifestEntries[entryName]
 		const entries = Array.isArray(entryItem) ? entryItem : [entryItem]
 
 		entries.forEach((entry) => {
@@ -90,17 +95,33 @@ async function scanEntries<T>(predicate: ScanPredicate, options: ScanOptions<T>)
 	return Promise.all(promises)
 }
 
-async function loadHandlerRecords<T extends HandlerRecord | HandlerRecord[]>(type: 'commands' | 'context' | 'events') {
+async function loadHandlerRecords<T extends HandlerRecord | HandlerRecord[]>(
+	type: 'commands' | 'context' | 'events' | 'middleware'
+) {
 	const collection = new Collection<string, T>()
 	const manifest = getManifest()
 
 	// Log manifest objects as debug info
 	const color =
-		type === 'commands' ? chalk.blue.bold : type === 'context' ? chalk.hex('#536DFE').bold : chalk.magenta.bold
+		type === 'commands'
+			? chalk.blue.bold
+			: type === 'context'
+			? chalk.hex('#536DFE').bold
+			: type === 'events'
+			? chalk.magenta.bold
+			: chalk.gray.bold
 	const formatCommand = (command: string) => color(`/${command}`)
 	const formatContext = (context: string) => color(`${context} (${context})`)
 	const formatEvent = (event: string) => color(`${event} (${manifest.events[event].length})`)
-	const formatter = type === 'commands' ? formatCommand : type === 'context' ? formatContext : formatEvent
+	const formatMiddleware = (middleware: string) => color(`${middleware}`)
+	const formatter =
+		type === 'commands'
+			? formatCommand
+			: type === 'context'
+			? formatContext
+			: type === 'events'
+			? formatEvent
+			: formatMiddleware
 	const handlers = Object.keys(manifest[type]).map(formatter)
 	logger.debug(`Loading ${type}: ${handlers.join(', ')}`)
 
@@ -117,9 +138,11 @@ async function loadHandlerRecords<T extends HandlerRecord | HandlerRecord[]>(typ
 		const handler: HandlerRecord = {
 			auto: entry.__auto,
 			handler: await import(importPath),
+			key: entryKeys.join('/'),
 			module: entry.__module,
 			path: entry.__path,
-			plugin: entry.__plugin
+			plugin: entry.__plugin,
+			type: type === 'events' ? 'event' : type === 'commands' ? 'command' : type
 		}
 
 		// Assign the handler to the collection, handling difference between types
@@ -136,6 +159,8 @@ async function loadHandlerRecords<T extends HandlerRecord | HandlerRecord[]>(typ
 		} else if (type === 'context') {
 			const contextKey = entryKeys[0]
 			collection.set(contextKey, handler as T)
+		} else if (type === 'middleware') {
+			collection.set(entryKeys[0], handler as T)
 		}
 	}
 

@@ -8,6 +8,7 @@ import {
 	Config,
 	EventConfig,
 	Manifest,
+	MiddlewareEntry,
 	Plugin,
 	Scope
 } from '../../types/index.js'
@@ -43,6 +44,7 @@ const BASE_MANIFEST: Manifest = {
 	},
 	events: {},
 	permissions: [],
+	middleware: [],
 	scopes: []
 }
 
@@ -85,6 +87,7 @@ export async function generateManifest(generatedDefaults: DefaultGen, type: 'plu
 	const commands = await generateEntries<CommandEntry>('commands', Object.keys(generatedDefaults?.commands ?? {}))
 	const context = await generateEntries<CommandEntry>('context', Object.keys(generatedDefaults?.context ?? {}))
 	const events = await generateEntries<EventConfig>('events', Object.keys(generatedDefaults?.events ?? {}))
+	const middleware = Object.values(await generateEntries<MiddlewareEntry>('middleware', [])).flat()
 
 	const newManifest: Manifest = {
 		...BASE_MANIFEST,
@@ -109,7 +112,8 @@ export async function generateManifest(generatedDefaults: DefaultGen, type: 'plu
 				...context.user
 			}
 		},
-		events: mergeEvents(pluginsManifest.events, events)
+		events: mergeEvents(pluginsManifest.events, events),
+		middleware: [...pluginsManifest.middleware, ...middleware]
 	}
 
 	// Smartly detect permissions and scopes
@@ -268,7 +272,7 @@ interface ScanDirOptions {
 	recursionKeys?: string[]
 	recursionModuleKeys?: string[]
 	recursionPath?: string
-	type: 'commands' | 'context' | 'events'
+	type: 'commands' | 'context' | 'events' | 'middleware'
 }
 
 type ScanDirPredicate = (fileKeys: string[], fullPath: string, moduleKeys: string[]) => Promise<void>
@@ -386,8 +390,9 @@ async function generateEntries<T>(
 	generatedKeys: string[]
 ): Promise<Record<'message' | 'user', Record<string, T>>>
 async function generateEntries<T>(type: 'events', generatedKeys: string[]): Promise<Record<string, T[]>>
+async function generateEntries<T>(type: 'middleware', generatedKeys: string[]): Promise<Record<string, T>>
 async function generateEntries<T>(
-	type: 'commands' | 'context' | 'events',
+	type: 'commands' | 'context' | 'events' | 'middleware',
 	generatedKeys: string[]
 ): Promise<Record<string, T | T[] | Record<string, T>>> {
 	try {
@@ -486,6 +491,11 @@ async function generateEntries<T>(
 				if (type === 'commands' && fileKeys.length === 1) {
 					entries[fileKeys[0]] = entry
 				}
+
+				// Middleware is a single object that gets flattened into an array later
+				if (type === 'middleware') {
+					entries[fileKeys.join('/')] = entry
+				}
 			},
 			{
 				type: type
@@ -504,7 +514,7 @@ async function generateEntries<T>(
 }
 
 type AllConfig = CommandConfig & EventConfig
-function getValue<T extends AllConfig>(type: 'commands' | 'context' | 'events', config: BaseConfig): T {
+function getValue<T extends AllConfig>(type: 'commands' | 'context' | 'events' | 'middleware', config: BaseConfig): T {
 	const value = {} as T
 	if (!config) {
 		return value

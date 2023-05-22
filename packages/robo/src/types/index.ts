@@ -19,13 +19,30 @@ export interface Context {
 export interface HandlerRecord<T = unknown> {
 	auto?: boolean
 	handler: T
+	key: string
 	module?: string
 	path: string
 	plugin?: {
 		name: string
 		path: string
 	}
+	type: 'command' | 'context' | 'event' | 'middleware'
 }
+
+export interface MiddlewareData {
+	payload: unknown[]
+	record: HandlerRecord
+}
+
+export interface MiddlewareResult {
+	abort?: boolean
+}
+
+export interface Middleware {
+	default: (data: MiddlewareData) => void | MiddlewareResult | Promise<MiddlewareResult>
+}
+
+export type MiddlewareEntry = BaseConfig
 
 export interface RoboMessage {
 	type: 'ready' | 'restart' | 'state-load' | 'state-save'

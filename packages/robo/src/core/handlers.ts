@@ -23,6 +23,25 @@ export async function executeAutocompleteHandler(interaction: AutocompleteIntera
 		return
 	}
 
+	// Execute middleware
+	try {
+		for (const middleware of portal.middleware) {
+			logger.debug(`Executing middleware: ${chalk.bold(middleware.path)}`)
+			const result = await middleware.handler.default({
+				payload: [interaction],
+				record: command
+			})
+
+			if (result && result.abort) {
+				logger.debug(`Middleware aborted autocomplete: ${chalk.bold(interaction.commandName)}`)
+				return
+			}
+		}
+	} catch (error) {
+		logger.error('Aborting due to middleware error:', error)
+		return
+	}
+
 	const config = getConfig()
 	try {
 		// Delegate to autocomplete handler
@@ -57,6 +76,25 @@ export async function executeCommandHandler(interaction: CommandInteraction, com
 	// Check if the command's module is enabled
 	if (!portal.module(command.module).isEnabled) {
 		logger.debug(`Tried to execute disabled command from module: ${chalk.bold(command.module)}`)
+		return
+	}
+
+	// Execute middleware
+	try {
+		for (const middleware of portal.middleware) {
+			logger.debug(`Executing middleware: ${chalk.bold(middleware.path)}`)
+			const result = await middleware.handler.default({
+				payload: [interaction],
+				record: command
+			})
+
+			if (result && result.abort) {
+				logger.debug(`Middleware aborted command: ${chalk.bold(commandKey)}`)
+				return
+			}
+		}
+	} catch (error) {
+		logger.error('Aborting due to middleware error:', error)
 		return
 	}
 
@@ -137,6 +175,25 @@ export async function executeContextHandler(interaction: ContextMenuCommandInter
 	// Check if the context menu's module is enabled
 	if (!portal.module(command.module).isEnabled) {
 		logger.debug(`Tried to execute disabled context menu command from module: ${chalk.bold(command.module)}`)
+		return
+	}
+
+	// Execute middleware
+	try {
+		for (const middleware of portal.middleware) {
+			logger.debug(`Executing middleware: ${chalk.bold(middleware.path)}`)
+			const result = await middleware.handler.default({
+				payload: [interaction],
+				record: command
+			})
+
+			if (result && result.abort) {
+				logger.debug(`Middleware aborted context command: ${chalk.bold(commandKey)}`)
+				return
+			}
+		}
+	} catch (error) {
+		logger.error('Aborting due to middleware error:', error)
 		return
 	}
 
@@ -237,6 +294,25 @@ export async function executeEventHandler(
 				// Check if the command's module is enabled
 				if (!portal.module(callback.module).isEnabled) {
 					logger.debug(`Tried to execute disabled event from module: ${chalk.bold(callback.module)}`)
+					return
+				}
+
+				// Execute middleware
+				try {
+					for (const middleware of portal.middleware) {
+						logger.debug(`Executing middleware: ${chalk.bold(middleware.path)}`)
+						const result = await middleware.handler.default({
+							payload: eventData,
+							record: callback
+						})
+
+						if (result && result.abort) {
+							logger.debug(`Middleware aborted event: ${chalk.bold(eventName)}`)
+							return
+						}
+					}
+				} catch (error) {
+					logger.error('Aborting due to middleware error:', error)
 					return
 				}
 
