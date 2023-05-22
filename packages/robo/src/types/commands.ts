@@ -1,5 +1,5 @@
 import type { ApplicationCommandOptionChoiceData, AutocompleteInteraction, CommandInteraction, InteractionReplyOptions, MessagePayload } from 'discord.js'
-import type { BaseConfig, Handler, SageOptions } from './index.js'
+import type { BaseConfig, SageOptions } from './index.js'
 
 export interface Command {
 	autocomplete?: (
@@ -30,10 +30,6 @@ export interface CommandOption {
 	nameLocalizations?: Record<string, string>
 	required?: boolean
 	type?: 'string' | 'integer' | 'boolean' | 'channel' | 'attachment' | 'role' | 'user' | 'mention'
-}
-
-export interface CommandRecord extends Handler {
-	handler: Command
 }
 
 export type CommandResult = string | InteractionReplyOptions | MessagePayload | void

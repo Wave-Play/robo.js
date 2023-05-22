@@ -24,8 +24,7 @@ import type {
 } from 'discord.js'
 import { env } from './env.js'
 import path from 'node:path'
-import type { EventRecord } from '../types/events.js'
-import type { CommandConfig } from '../types/commands.js'
+import type { CommandConfig, Event, HandlerRecord } from '../types/index.js'
 
 export const DEBUG_MODE = process.env.NODE_ENV !== 'production'
 
@@ -106,7 +105,12 @@ export const devStatusCommandConfig: CommandConfig = {
 	description: 'View status of this Robo'
 }
 
-export async function printErrorResponse(error: unknown, interaction: unknown, details?: string, event?: EventRecord) {
+export async function printErrorResponse(
+	error: unknown,
+	interaction: unknown,
+	details?: string,
+	event?: HandlerRecord<Event>
+) {
 	const { errorReplies = true } = getSage()
 	logger.debug('Error response:', error)
 
@@ -222,7 +226,7 @@ async function getCodeCodeAtFault(err: Error) {
 interface FormatErrorOptions {
 	details?: string
 	error: unknown
-	event?: EventRecord
+	event?: HandlerRecord<Event>
 	interaction?: unknown
 }
 

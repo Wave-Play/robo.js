@@ -5,19 +5,17 @@ import { pathToFileURL } from 'node:url'
 import { getManifest } from '../cli/utils/manifest.js'
 import { hasProperties } from '../cli/utils/utils.js'
 import { logger } from './logger.js'
-import type { EventRecord } from './../types/events.js'
-import type { CommandRecord } from '../types/commands.js'
-import type { BaseConfig, ContextRecord, Handler } from '../types/index.js'
+import type { BaseConfig, Command, Context, Event, HandlerRecord } from '../types/index.js'
 
 export default class Portal {
-	public commands: Collection<string, CommandRecord>
-	public context: Collection<string, ContextRecord>
-	public events: Collection<string, EventRecord[]>
+	public commands: Collection<string, HandlerRecord<Command>>
+	public context: Collection<string, HandlerRecord<Context>>
+	public events: Collection<string, HandlerRecord<Event>[]>
 
 	constructor(
-		commands: Collection<string, CommandRecord>,
-		context: Collection<string, ContextRecord>,
-		events: Collection<string, EventRecord[]>
+		commands: Collection<string, HandlerRecord<Command>>,
+		context: Collection<string, HandlerRecord<Context>>,
+		events: Collection<string, HandlerRecord<Event>[]>
 	) {
 		this.commands = commands
 		this.context = context
@@ -30,9 +28,9 @@ export default class Portal {
 	 * Warning: Do not call this method directly. Use the `portal` export instead.
 	 */
 	public static async open(): Promise<Portal> {
-		const commands = await loadHandlerModules<CommandRecord>('commands')
-		const context = await loadHandlerModules<ContextRecord>('context')
-		const events = await loadHandlerModules<EventRecord[]>('events')
+		const commands = await loadHandlerModules<HandlerRecord<Command>>('commands')
+		const context = await loadHandlerModules<HandlerRecord<Context>>('context')
+		const events = await loadHandlerModules<HandlerRecord<Event>[]>('events')
 
 		return new Portal(commands, context, events)
 	}
@@ -69,7 +67,7 @@ async function scanEntries<T>(predicate: ScanPredicate, options: ScanOptions<T>)
 	return Promise.all(promises)
 }
 
-async function loadHandlerModules<T extends Handler | Handler[]>(type: 'commands' | 'context' | 'events') {
+async function loadHandlerModules<T extends HandlerRecord | HandlerRecord[]>(type: 'commands' | 'context' | 'events') {
 	const collection = new Collection<string, T>()
 	const manifest = getManifest()
 
@@ -93,7 +91,7 @@ async function loadHandlerModules<T extends Handler | Handler[]>(type: 'commands
 		const basePath = path.join(process.cwd(), entry.__plugin?.path ?? '.')
 		const importPath = pathToFileURL(path.join(basePath, entry.__path)).toString()
 
-		const handler: Handler = {
+		const handler: HandlerRecord = {
 			auto: entry.__auto,
 			handler: await import(importPath),
 			path: entry.__path,
@@ -106,7 +104,7 @@ async function loadHandlerModules<T extends Handler | Handler[]>(type: 'commands
 			if (!collection.has(eventKey)) {
 				collection.set(eventKey, [] as T)
 			}
-			const handlers = collection.get(eventKey) as Handler[]
+			const handlers = collection.get(eventKey) as HandlerRecord[]
 			handlers.push(handler)
 		} else if (type === 'commands') {
 			const commandKey = entryKeys.join(' ')

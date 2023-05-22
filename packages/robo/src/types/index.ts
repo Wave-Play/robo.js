@@ -16,13 +16,9 @@ export interface Context {
 	default: (...data: unknown[]) => unknown | Promise<unknown>
 }
 
-export interface ContextRecord extends Handler {
-	handler: Context
-}
-
-export interface Handler {
+export interface HandlerRecord<T = unknown> {
 	auto?: boolean
-	handler: unknown
+	handler: T
 	path: string
 	plugin?: {
 		name: string
