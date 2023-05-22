@@ -79,18 +79,30 @@ async function buildAction(options: BuildCommandOptions) {
 	const hasCommandChanges = addedCommands.length > 0 || removedCommands.length > 0 || changedCommands.length > 0
 
 	// Do the same but for context commands
-	const oldContextCommands = { ...oldManifest.context.message, ...oldManifest.context.user }
+	const oldContextCommands = { ...(oldManifest.context?.message ?? {}), ...(oldManifest.context?.user ?? {}) }
 	const newContextCommands = { ...manifest.context.message, ...manifest.context.user }
 	const addedContextCommands = findCommandDifferences(oldContextCommands, newContextCommands, 'added')
 	const removedContextCommands = findCommandDifferences(oldContextCommands, newContextCommands, 'removed')
 	const changedContextCommands = findCommandDifferences(oldContextCommands, newContextCommands, 'changed')
-	const hasContextCommandChanges = addedContextCommands.length > 0 || removedContextCommands.length > 0 || changedContextCommands.length > 0
+	const hasContextCommandChanges =
+		addedContextCommands.length > 0 || removedContextCommands.length > 0 || changedContextCommands.length > 0
 
 	// Register command changes
 	if (options.force) {
 		logger.warn('Forcefully registering commands.')
 	}
 	if (options.force || hasCommandChanges || hasContextCommandChanges) {
-		await registerCommands(options.dev, newCommands, manifest.context.message, manifest.context.user, changedCommands, addedCommands, removedCommands, changedContextCommands, addedContextCommands, removedContextCommands)
+		await registerCommands(
+			options.dev,
+			newCommands,
+			manifest.context.message,
+			manifest.context.user,
+			changedCommands,
+			addedCommands,
+			removedCommands,
+			changedContextCommands,
+			addedContextCommands,
+			removedContextCommands
+		)
 	}
 }
