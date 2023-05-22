@@ -1,5 +1,11 @@
 # @roboplay/plugin-gpt
 
+## 1.1.3
+
+### Patch Changes
+
+- e132324: chore: updated dev dependency to robo.js 0.6.0
+
 ## 1.1.2
 
 ### Patch Changes
