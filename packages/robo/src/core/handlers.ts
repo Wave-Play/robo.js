@@ -317,7 +317,7 @@ export async function executeEventHandler(
 				}
 
 				// Execute handler without timeout if not a lifecycle event
-				const handlerPromise = callback.handler.default(...eventData, plugins.get(callback.plugin?.name)?.options)
+				const handlerPromise = callback.handler.default(...eventData, plugins?.get(callback.plugin?.name)?.options)
 				if (!isLifecycleEvent) {
 					return await handlerPromise
 				}
@@ -326,7 +326,7 @@ export async function executeEventHandler(
 				const timeoutPromise = timeout(() => TIMEOUT, config?.timeouts?.lifecycle || DEFAULT_CONFIG.timeouts.lifecycle)
 				return await Promise.race([handlerPromise, timeoutPromise])
 			} catch (error) {
-				const metaOptions = plugins.get(callback.plugin?.name)?.metaOptions ?? {}
+				const metaOptions = plugins?.get(callback.plugin?.name)?.metaOptions ?? {}
 				let message
 
 				if (error === TIMEOUT) {
