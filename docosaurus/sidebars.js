@@ -28,12 +28,12 @@ const sidebars = {
     {
       type: 'category',
       label: 'Basics',
-      items: ['basics/overview', 'basics/commands', 'basics/events', 'basics/sage', 'basics/secrets'],
+      items: ['basics/overview', 'basics/commands', 'basics/context-menu', 'basics/events', 'basics/sage', 'basics/secrets'],
     },
     {
       type: 'category',
       label: 'Advanced',
-      items: ['advanced/command-line', 'advanced/configuration', 'advanced/debugging', 'advanced/linting', 'advanced/modules', 'advanced/plugins', 'advanced/typescript']
+      items: ['advanced/command-line', 'advanced/configuration', 'advanced/debugging', 'advanced/linting', 'advanced/middleware', 'advanced/modules', 'advanced/plugins', 'advanced/portal', 'advanced/typescript']
     }
   ],
 

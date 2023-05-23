@@ -141,14 +141,15 @@ In this shared utopia, your Robo can coexist with other projects. Here's a typic
 
 ```
 /my-monorepo
-├── /robo
-│   ├── /.robo
-│   ├── /src
-│   └── package.json
-├── /api
-│   ├── /dist
-│   ├── /src
-│   └── package.json
+├── /packages
+│   ├── /robo
+│   │   ├── /.robo
+│   │   ├── /src
+│   │   └── package.json
+│   └── /api
+│       ├── /dist
+│       ├── /src
+│       └── package.json
 └── package.json
 ```
 
