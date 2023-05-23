@@ -85,18 +85,16 @@ src/
     └── messageCreate.js
 ```
 
-To get your Robo grooving in development mode, bust out `robo dev`. And that's it. Really!
+Before you get your Robo rockin', update your `.env` with `DISCORD_TOKEN` and `DISCORD_CLIENT_ID`. Then, hit `robo dev` and let the show begin! Seriously, that's it!
 
-When you're all set to host your Robo, hit `robo build`, then kick things off with `robo start`. Don't forget to explore the [full documentation](https://docs.roboplay.dev/docs/getting-started) for even more awesomeness! 🔥
+Crave more power? Check the [**Documentation**](https://docs.roboplay.dev/docs/getting-started)! 🔥
 
 ### No Learning Curve
 
-Get ready for a twist - **there's virtually no learning curve with Robo.js!** 
+Get ready for a twist - **there's virtually no learning curve with Robo.js!**
 
 Wait, is it actually an... inverse learning curve? You heard right, there's more to unlearn than learn! It's that simple, yet you still have access to all that Discord.js has to offer, just easier and with less code. 🎉
 
 ## License 📜
 
-We're all about freedom, so we've got you covered with the permissive MIT License! Go wild and build amazing bots without worrying about legalities.
-
-Feel free to check out the [LICENSE](LICENSE) file for more info!
+We're all about freedom, so we've got you covered with the permissive [MIT License](LICENSE)! Go wild and build amazing bots without worrying about legalities.
