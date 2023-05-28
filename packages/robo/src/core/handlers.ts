@@ -272,7 +272,7 @@ export async function executeContextHandler(interaction: ContextMenuCommandInter
 }
 
 export async function executeEventHandler(
-	plugins: Collection<string, PluginData>,
+	plugins: Collection<string, PluginData> | null,
 	eventName: string,
 	...eventData: unknown[]
 ) {
@@ -326,25 +326,29 @@ export async function executeEventHandler(
 				const timeoutPromise = timeout(() => TIMEOUT, config?.timeouts?.lifecycle || DEFAULT_CONFIG.timeouts.lifecycle)
 				return await Promise.race([handlerPromise, timeoutPromise])
 			} catch (error) {
-				const metaOptions = plugins?.get(callback.plugin?.name)?.metaOptions ?? {}
-				let message
+				try {
+					const metaOptions = plugins?.get(callback.plugin?.name)?.metaOptions ?? {}
+					let message
 
-				if (error === TIMEOUT) {
-					message = `${eventName} lifecycle event handler timed out`
-					logger.warn(message)
-				} else if (!callback.plugin) {
-					message = `Error executing ${eventName} event handler`
-					logger.error(message, error)
-				} else if (eventName === '_start' && metaOptions.failSafe) {
-					message = `${callback.plugin.name} plugin failed to start`
-					logger.warn(message, error)
-				} else {
-					message = `${callback.plugin.name} plugin error in event ${eventName}`
-					logger.error(message, error)
+					if (error === TIMEOUT) {
+						message = `${eventName} lifecycle event handler timed out`
+						logger.warn(message)
+					} else if (!callback.plugin) {
+						message = `Error executing ${eventName} event handler`
+						logger.error(message, error)
+					} else if (eventName === '_start' && metaOptions.failSafe) {
+						message = `${callback.plugin.name} plugin failed to start`
+						logger.warn(message, error)
+					} else {
+						message = `${callback.plugin.name} plugin error in event ${eventName}`
+						logger.error(message, error)
+					}
+
+					// Print error response to Discord if in development mode
+					printErrorResponse(error, eventData[0], message, callback)
+				} catch (nestedError) {
+					logger.error(`Error handling event error...`, nestedError)
 				}
-
-				// Print error response to Discord if in development mode
-				printErrorResponse(error, eventData[0], message, callback)
 			}
 		})
 	)
