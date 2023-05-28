@@ -1,5 +1,13 @@
 # robo.js
 
+## 0.7.1
+
+### Patch Changes
+
+- 2da1fba: refactor: removed "node-watch" dependency in favor of custom implementation
+- e8d3ebc: patch: nested try catch around error event handling
+- 5e7eb34: fix: safely access plugins reference (useful for shutdowns)
+
 ## 0.7.0
 
 ### Minor Changes
