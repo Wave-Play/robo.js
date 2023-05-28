@@ -4,13 +4,13 @@ import { logger } from '../../../core/logger.js'
 import { performance } from 'node:perf_hooks'
 import { getProjectSize, printBuildSummary } from '../../utils/build-summary.js'
 import { buildInSeparateProcess } from '../dev.js'
-import nodeWatch from 'node-watch'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import url from 'node:url'
 import { loadConfigPath } from '../../../core/config.js'
 import chalk from 'chalk'
 import { hasProperties } from '../../utils/utils.js'
+import Watcher from '../../utils/watcher.js'
 
 const command = new Command('plugin')
 	.description('Builds your plugin for distribution.')
@@ -95,16 +95,15 @@ async function pluginAction() {
 			watchedPaths.push(configRelative)
 		}
 
-		const watcher = nodeWatch(watchedPaths, {
-			recursive: true,
-			filter: (f) => !/(^|[/\\])\.(?!config)[^.]/.test(f) // ignore dotfiles except .config and directories
+		const watcher = new Watcher(watchedPaths, {
+			exclude: ['node_modules', '.git']
 		})
 
 		// Watch while preventing multiple restarts from happening at the same time
 		let isUpdating = false
 		logger.ready(`Watching for changes...`)
 
-		watcher.on('change', async (event: string, path: string) => {
+		watcher.start(async (event: string, path: string) => {
 			logger.debug(`Watcher event: ${event}`)
 			if (isUpdating) {
 				return logger.debug(`Already building, skipping...`)

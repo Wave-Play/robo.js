@@ -1,5 +1,4 @@
 import { Command } from 'commander'
-import nodeWatch from 'node-watch'
 import { run } from '../utils/run.js'
 import { spawn, type ChildProcess } from 'child_process'
 import { logger } from '../../core/logger.js'
@@ -10,6 +9,7 @@ import { IS_WINDOWS, cmd, filterExistingPaths, getPkgManager, getWatchedPlugins,
 import path from 'node:path'
 import url from 'node:url'
 import { getStateSave } from '../../core/state.js'
+import Watcher from '../utils/watcher.js'
 import type { Config, RoboMessage } from '../../types/index.js'
 
 const command = new Command('dev')
@@ -78,13 +78,12 @@ async function devAction(options: DevCommandOptions) {
 
 	// Watch while preventing multiple restarts from happening at the same time
 	logger.debug(`Watching:`, watchedPaths)
-	const watcher = nodeWatch(watchedPaths, {
-		recursive: true,
-		filter: (f) => !/(^|[/\\])\.(?!config)[^.]/.test(f) // ignore dotfiles except .config and directories
+	const watcher = new Watcher(watchedPaths, {
+		exclude: ['node_modules', '.git']
 	})
 	let isUpdating = false
 
-	watcher.on('change', async (event: string, path: string) => {
+	watcher.start(async (event: string, path: string) => {
 		logger.debug(`Watcher event: ${event}`)
 		if (isUpdating) {
 			return logger.debug(`Already updating, skipping...`)

@@ -81,7 +81,6 @@ importers:
       commander: 10.0.1
       discord.js: 14.10.2
       dotenv: 16.0.3
-      node-watch: 0.7.3
       p-limit: 4.0.0
       tar: ^6.1.13
       tsup: 6.7.0
@@ -90,7 +89,6 @@ importers:
       chalk: 5.2.0
       commander: 10.0.1
       dotenv: 16.0.3
-      node-watch: 0.7.3
       p-limit: 4.0.0
       tar: 6.1.14
     devDependencies:
@@ -2922,6 +2920,7 @@ packages:
   /node-watch/0.7.3:
     resolution: {integrity: sha512-3l4E8uMPY1HdMMryPRUAl+oIHtXtyiTlIiESNSVSNxcPfzAFzeTbXFQkZfAwBbo0B1qMSG8nUABx+Gd+YrbKrQ==}
     engines: {node: '>=6'}
+    dev: true
 
   /normalize-package-data/2.5.0:
     resolution: {integrity: sha512-/5CMN3T0R4XTj4DcGaexo+roZSdSFW/0AOOTROrjxzCG1wrWXEsGbRKevjlIL+ZDE4sZlJr5ED4YW0yqmkK+eA==}
