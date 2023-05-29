@@ -15,6 +15,8 @@ import {
 } from './utils.js'
 import { logger } from './logger.js'
 import type { Plugin } from '@roboplay/robo.js'
+import { RepoInfo, downloadAndExtractRepo, getRepoInfo, hasRepo } from './templates.js'
+import retry from 'async-retry'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -108,6 +110,59 @@ export default class Robo {
 		])
 
 		this._useTypeScript = useTypeScript
+	}
+
+	async downloadTemplate(url: string) {
+		logger.debug(`Using template: ${url}`)
+		let repoUrl: URL | undefined
+		let repoInfo: RepoInfo | undefined
+
+		try {
+			repoUrl = new URL(url)
+		} catch (error) {
+			if (hasProperties(error, ['code']) && error.code !== 'ERR_INVALID_URL') {
+				logger.error(error)
+				process.exit(1)
+			}
+		}
+
+		if (repoUrl) {
+			logger.debug(`Validating template URL:`, repoUrl)
+			if (repoUrl.origin !== 'https://github.com') {
+				logger.error(
+					`Invalid URL: ${chalk.red(
+						`"${url}"`
+					)}. Only GitHub repositories are supported. Please use a GitHub URL and try again.`
+				)
+				process.exit(1)
+			}
+
+			repoInfo = await getRepoInfo(repoUrl)
+			logger.debug(`Found repo info:`, repoInfo)
+
+			if (!repoInfo) {
+				logger.error(`Found invalid GitHub URL: ${chalk.red(`"${url}"`)}. Please fix the URL and try again.`)
+				process.exit(1)
+			}
+
+			const found = await hasRepo(repoInfo)
+
+			if (!found) {
+				logger.error(
+					`Could not locate the repository for ${chalk.red(
+						`"${url}"`
+					)}. Please check that the repository exists and try again.`
+				)
+				process.exit(1)
+			}
+		}
+
+		logger.info(`Downloading files from repo ${chalk.cyan(url)}. This might take a moment.`)
+		logger.log()
+		await retry(() => downloadAndExtractRepo(this._workingDir, repoInfo), {
+			retries: 3
+		})
+		logger.debug(`Finished downloading files from repo ${chalk.cyan(url)}.`)
 	}
 
 	useTypeScript(useTypeScript: boolean) {

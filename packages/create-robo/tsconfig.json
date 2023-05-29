@@ -2,7 +2,7 @@
 	"include": ["src"],
 	"compilerOptions": {
 		"target": "ESNext",
-		"module": "esnext",
+		"module": "node16",
 		"lib": ["dom", "dom.iterable", "esnext"],
 		"types": ["node"],
 		"baseUrl": ".",
@@ -22,7 +22,7 @@
 		"sourceMap": true,
 		"rootDir": ".",
 		"noUnusedLocals": true,
-		"moduleResolution": "node",
+		"moduleResolution": "node16",
 		"outDir": "dist"
 	}
 }

@@ -13,6 +13,7 @@ const packageJson = require('../package.json')
 interface CommandOptions {
 	javascript?: boolean
 	plugin?: boolean
+	template?: string
 	typescript?: boolean
 	verbose?: boolean
 }
@@ -22,6 +23,7 @@ new Command('create-robo <projectName>')
 	.version(packageJson.version)
 	.option('-js --javascript', 'create a Robo using JavaScript')
 	.option('-p --plugin', 'create a Robo plugin instead of a bot')
+	.option('-t --template <templateUrl>', 'create a Robo from an online template')
 	.option('-ts --typescript', 'create a Robo using TypeScript')
 	.option('-v --verbose', 'print more information for debugging')
 	.action(async (options: CommandOptions, { args }) => {
@@ -66,26 +68,30 @@ new Command('create-robo <projectName>')
 		}
 		logger.log('')
 
-		// Verify plugin status if it sounds like one
-		if (!robo.isPlugin && projectName.toLowerCase().includes('plugin')) {
-			await robo.askIsPlugin()
-		}
-
-		// Copy the template files to the new project directory
-		if (options.javascript || options.typescript) {
-			const useTypeScript = options.typescript ?? false
-			robo.useTypeScript(useTypeScript)
-			logger.info(`Using ${useTypeScript ? 'TypeScript' : 'JavaScript'}`)
+		if (options.template) {
+			await robo.downloadTemplate(options.template)
 		} else {
-			await robo.askUseTypeScript()
+			// Verify plugin status if it sounds like one
+			if (!robo.isPlugin && projectName.toLowerCase().includes('plugin')) {
+				await robo.askIsPlugin()
+			}
+
+			// Copy the template files to the new project directory
+			if (options.javascript || options.typescript) {
+				const useTypeScript = options.typescript ?? false
+				robo.useTypeScript(useTypeScript)
+				logger.info(`Using ${useTypeScript ? 'TypeScript' : 'JavaScript'}`)
+			} else {
+				await robo.askUseTypeScript()
+			}
+
+			// Get user input to determine which features to include or use the recommended defaults
+			const selectedFeaturesOrDefaults = await robo.getUserInput()
+			await robo.createPackage(selectedFeaturesOrDefaults)
+
+			// Determine if TypeScript is selected and copy the corresponding template files
+			await robo.copyTemplateFiles('')
 		}
-
-		// Get user input to determine which features to include or use the recommended defaults
-		const selectedFeaturesOrDefaults = await robo.getUserInput()
-		await robo.createPackage(selectedFeaturesOrDefaults)
-
-		// Determine if TypeScript is selected and copy the corresponding template files
-		await robo.copyTemplateFiles('')
 
 		// Ask the user for their Discord credentials (token and client ID) and store them for later use
 		// Skip this step if the user is creating a plugin
