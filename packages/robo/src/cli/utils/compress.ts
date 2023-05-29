@@ -1,12 +1,13 @@
 import fs from 'node:fs/promises'
-import { WriteStream, createReadStream, createWriteStream } from 'node:fs'
+import { createReadStream, createWriteStream } from 'node:fs'
 import path from 'node:path'
 import zlib from 'node:zlib'
 import { logger } from '../../core/logger.js'
-import { finished } from 'node:stream'
+import { pipeline } from 'node:stream/promises'
 import { packageJson } from './utils.js'
 
 export interface FileMetadata {
+	compressedSize?: number
 	filePath: string
 	size: number
 }
@@ -40,9 +41,32 @@ export async function compressDirectory(inputDir: string, outputFile: string, ig
 		await fs.mkdir(outputDir, { recursive: true })
 	}
 
-	const writeStream = createWriteStream(outputFile)
+	// Create temp directory
+	const tempDir = outputFile.slice(0, outputFile.lastIndexOf('.')) + '-tmp'
+	await fs.mkdir(tempDir, { recursive: true })
+	const tempFilePaths: Record<string, string> = {}
 
 	try {
+		// Compress each file and write it to a temporary file
+		await Promise.all(
+			fileMetadatas.map(async (metadata) => {
+				try {
+					logger.debug(`Compressing ${metadata.size} bytes of data for ${metadata.filePath}...`)
+					const tempFilePath = path.join(tempDir, metadata.filePath.replace(/\//g, '-')) + '.tmp'
+					await compressFile(metadata.filePath, tempFilePath)
+					tempFilePaths[metadata.filePath] = tempFilePath
+					const stats = await fs.stat(tempFilePath)
+					metadata.compressedSize = stats.size
+				} catch (e) {
+					logger.error(`Failed to compress ${metadata.filePath}:`, e)
+					throw e
+				}
+			})
+		)
+
+		// Write metadata and compressed files to the archive
+		const writeStream = createWriteStream(outputFile)
+
 		// Serialize metadata into a string and calculate its length in bytes
 		const metadataString = JSON.stringify(archiveMetadata)
 		const metadataLength = Buffer.byteLength(metadataString)
@@ -54,40 +78,33 @@ export async function compressDirectory(inputDir: string, outputFile: string, ig
 		writeStream.write(metadataString)
 		logger.debug(`Wrote ${metadataLength} bytes of metadata to the archive`)
 
-		// Compress each file and write it to the archive
+		// Write files
 		for (const metadata of fileMetadatas) {
-			try {
-				logger.debug(`Compressing ${metadata.size} bytes of data for ${metadata.filePath}...`)
-				await compressFile(metadata.filePath, writeStream)
-			} catch (e) {
-				logger.error(`Failed to compress ${metadata.filePath}:`, e)
-				throw e
+			const readStream = createReadStream(tempFilePaths[metadata.filePath])
+			for await (const chunk of readStream) {
+				writeStream.write(chunk)
 			}
 		}
+		writeStream.end()
 	} finally {
 		logger.debug(`Finished compressing ${fileMetadatas.length} files into ${outputFile}`)
-		writeStream.end()
 	}
+
+	// Cleanup temporary files
+	await Promise.all(Object.values(tempFilePaths).map((tempFilePath) => fs.unlink(tempFilePath)))
+	await fs.rmdir(tempDir)
 }
 
 /**
  * Employs streams to manage memory consumption effectively during the
  * compression process, particularly for large files.
  */
-async function compressFile(filePath: string, writeStream: WriteStream): Promise<void> {
-	const readStream = createReadStream(path.join(process.cwd(), filePath))
-	const gzip = zlib.createGzip()
+async function compressFile(filePath: string, outputFile: string) {
+	const readStream = createReadStream(filePath)
+	const writeStream = createWriteStream(outputFile)
+	const brotli = zlib.createBrotliCompress()
 
-	return new Promise<void>((resolve, reject) => {
-		readStream.on('error', reject).pipe(gzip).on('error', reject).pipe(writeStream, { end: false }).on('error', reject)
-		finished(gzip, (err) => {
-			if (err) {
-				reject(err)
-			} else {
-				resolve()
-			}
-		})
-	})
+	await pipeline(readStream, brotli, writeStream)
 }
 
 /**
