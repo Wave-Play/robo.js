@@ -85,26 +85,16 @@ importers:
     specifiers:
       '@swc/core': 1.3.41
       '@types/node': 18.15.5
-      '@types/tar': ^6.1.4
-      chalk: 5.2.0
       chokidar-cli: ^3.0.0
       commander: 10.0.1
       discord.js: 14.10.2
-      dotenv: 16.0.3
-      p-limit: 4.0.0
-      tar: ^6.1.13
       tsup: 6.7.0
       typescript: 5.0.2
     dependencies:
-      chalk: 5.2.0
       commander: 10.0.1
-      dotenv: 16.0.3
-      p-limit: 4.0.0
-      tar: 6.1.14
     devDependencies:
       '@swc/core': 1.3.41
       '@types/node': 18.15.5
-      '@types/tar': 6.1.5
       chokidar-cli: 3.0.0
       discord.js: 14.10.2
       tsup: 6.7.0_w6avwkdklr2pf4o6fcw5zz7r3e
@@ -1827,6 +1817,7 @@ packages:
   /dotenv/16.0.3:
     resolution: {integrity: sha512-7GO6HghkA5fYG9TYnNxi14/7K9f5occMlp3zXAuSxn7CKCxt9xbNWG7yF8hTCSUchlfWSe3uLmlPfigevRItzQ==}
     engines: {node: '>=12'}
+    dev: true
 
   /emoji-regex/7.0.3:
     resolution: {integrity: sha512-CwBLREIQ7LvYFB0WyRvwhq5N5qPhc6PMjD6bYggFlI5YyDgl+0vxq5VHbMOFqLg7hfWzmu8T5Z1QofhmTIhItA==}
@@ -3188,6 +3179,7 @@ packages:
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
     dependencies:
       yocto-queue: 1.0.0
+    dev: true
 
   /p-locate/3.0.0:
     resolution: {integrity: sha512-x+12w/To+4GFfgJhBEpiDcLozRJGegY+Ei7/z0tSLkMmxGZNybVMSfWj9aJn8Z5Fc7dBUNJOOVgPv2H7IwulSQ==}
@@ -4302,3 +4294,4 @@ packages:
   /yocto-queue/1.0.0:
     resolution: {integrity: sha512-9bnSc/HEW2uRy67wc+T8UwauLuPJVn28jb+GtJY16iiKWyvmYJRXVT4UamsAEGQfPohgr2q4Tq0sQbQlxTfi1g==}
     engines: {node: '>=12.20'}
+    dev: true
