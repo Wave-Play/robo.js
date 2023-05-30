@@ -13,6 +13,7 @@ import {
 	executeEventHandler
 } from './handlers.js'
 import { hasProperties } from '../cli/utils/utils.js'
+import { prepareFlashcore } from './flashcore.js';
 import Portal from './portal.js'
 import type { PluginData } from '../types/index.js'
 
@@ -52,8 +53,9 @@ async function start(options?: StartOptions) {
 		await stateLoad
 	}
 
-	// Load plugin options
+	// Load plugin options and start up Flashcore
 	const plugins = loadPluginData()
+	await prepareFlashcore()
 
 	// Create the new client instance
 	client = optionsClient ?? new Client(config.clientOptions)

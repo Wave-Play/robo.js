@@ -46,6 +46,7 @@
 	"peerDependencies": {
 		"@swc/core": "^1.3.41",
 		"discord.js": "^14.0.0",
+		"keyv": "^4.5.2",
 		"typescript": "^5.0.0"
 	},
 	"peerDependenciesMeta": {
@@ -54,6 +55,9 @@
 		},
 		"discord.js": {
 			"optional": false
+		},
+		"keyv": {
+			"optional": true
 		},
 		"typescript": {
 			"optional": true

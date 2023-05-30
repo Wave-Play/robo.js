@@ -16,6 +16,14 @@ export interface Context {
 	default: (...data: unknown[]) => unknown | Promise<unknown>
 }
 
+export interface FlashcoreAdapter<K = string, V = unknown> {
+	clear(): Promise<boolean> | boolean
+	delete(key: K): Promise<boolean> | boolean
+	get(key: K): Promise<V | undefined> | V | undefined
+	init(): Promise<void> | void
+	set(key: K, value: V): Promise<boolean> | boolean
+}
+
 export interface HandlerRecord<T = unknown> {
 	auto?: boolean
 	handler: T

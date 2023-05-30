@@ -7,6 +7,9 @@ export interface Config {
 	defaults?: {
 		help?: boolean
 	}
+	flashcore?: {
+		adapter?: string
+	}
 	heartbeat?: {
 		debug?: boolean
 		interval?: number
