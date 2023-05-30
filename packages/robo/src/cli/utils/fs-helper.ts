@@ -1,6 +1,6 @@
-import fs from 'fs/promises'
-import path from 'path'
-import pLimit from 'p-limit'
+import fs from 'node:fs/promises'
+import path from 'node:path'
+import pLimit from './utils.js'
 
 // Limit the number of concurrent file system operations
 // This is to avoid hitting the OS's file descriptor limit
