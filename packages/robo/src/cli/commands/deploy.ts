@@ -1,3 +1,4 @@
+import fs from 'node:fs/promises';
 import { Command } from 'commander'
 import { logger } from '../../core/logger.js'
 import { color, composeColors } from '../../cli/utils/color.js'
@@ -46,7 +47,7 @@ async function deployAction(options: DeployCommandOptions) {
 	} finally {
 		// Clean up temp files
 		logger.debug(`Cleaning up temporary files...`)
-		await fs.rm(path.join(process.cwd(), '.robo/temp'), { recursive: true })
+		await fs.rm(path.join(process.cwd(), '.robo', 'temp'), { recursive: true })
 	}
 }
 
