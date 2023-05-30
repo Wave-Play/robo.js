@@ -2,14 +2,14 @@ import { Command } from 'commander'
 import fs from 'fs'
 import path from 'path'
 import chalk from 'chalk'
-import dotenv from 'dotenv'
 import { logger } from '../../core/logger.js'
+import { loadEnv } from '../../core/dotenv.js'
 
 const command = new Command('doctor').description('Checks if your project is healthy').action(doctor)
 export default command
 
 function doctor() {
-	dotenv.config()
+	loadEnv({ sync: true })
 	const results: CheckResult[] = [checkTypescript(), checkStructure(), checkEnvironmentVariables()]
 	logger.log(chalk.bold.underline('\nHealth Check Results:'))
 	results.forEach((result) => {
@@ -104,7 +104,7 @@ function checkStructure(): CheckResult {
 
 function checkEnvironmentVariables(): CheckResult {
 	const requiredVars = ['DISCORD_CLIENT_ID', 'DISCORD_TOKEN']
-	const missingVars = requiredVars.filter((variable) => !(process.env[variable] || dotenv.config().parsed?.[variable]))
+	const missingVars = requiredVars.filter((variable) => !(process.env[variable]))
 	if (missingVars.length === 0) {
 		return {
 			ok: true,

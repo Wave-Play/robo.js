@@ -1,5 +1,5 @@
-import dotenv from 'dotenv'
-dotenv.config()
+import { loadEnv } from './dotenv.js'
+loadEnv({ sync: true })
 
 export const env = {
 	discord: {
