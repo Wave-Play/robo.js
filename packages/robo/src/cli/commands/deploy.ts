@@ -3,9 +3,8 @@ import { logger } from '../../core/logger.js'
 import { color, composeColors } from '../../cli/utils/color.js'
 import { uploadToBackblazeB2 } from '../utils/upload.js'
 import path from 'node:path'
-import fs from 'node:fs/promises'
-import tar from 'tar'
 import { env } from '../../core/env.js'
+import { compressDirectory } from '../utils/compress.js'
 
 const command = new Command('deploy')
 	.description('Deploys your bot to RoboPlay!')
@@ -54,30 +53,13 @@ async function deployAction(options: DeployCommandOptions) {
 async function createBundle() {
 	logger.debug(`Creating bundle...`)
 	try {
-		const currentTime = new Date().toISOString().replace(/[-:]/g, '').replace('.', '_')
-		const fileName = `${currentTime}.tar.gz`
-		const outputPath = path.join(process.cwd(), '.robo/temp', fileName)
+		const currentTime = new Date().toISOString().split('.')[0].replace(/[:-]/g, '')
+		const projectName = path.basename(process.cwd()).toLowerCase()
+		const fileName = `${projectName}-${currentTime}.robopack`
+		const outputPath = path.join(process.cwd(), '.robo', 'temp', fileName)
 
-		// Ensure the output directory exists
-		const outputDir = path.dirname(outputPath)
-		try {
-			await fs.access(outputDir)
-		} catch (error) {
-			await fs.mkdir(outputDir, { recursive: true })
-		}
-
-		// Bundle the current working directory into a tar file
-		const tarOptions = {
-			gzip: true,
-			file: outputPath,
-			cwd: process.cwd(),
-			noDirRecurse: false,
-			filter: (filePath: string) => {
-				const relativePath = path.relative(process.cwd(), filePath)
-				return !relativePath.startsWith(path.join('.robo', 'temp')) && !relativePath.startsWith('node_modules')
-			}
-		}
-		tar.create(tarOptions, ['.'])
+		// Bundle the current working directory
+		await compressDirectory('.', outputPath, ['.git', 'node_modules', '.robo/build', '.robo/temp'])
 
 		logger.debug(`Created bundle:`, outputPath)
 		return outputPath
