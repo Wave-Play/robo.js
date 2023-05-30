@@ -1,3 +1,4 @@
+import { color } from './../../utils/color.js';
 import { Command } from 'commander'
 import { generateManifest } from '../../utils/manifest.js'
 import { logger } from '../../../core/logger.js'
@@ -8,7 +9,6 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import url from 'node:url'
 import { loadConfigPath } from '../../../core/config.js'
-import chalk from 'chalk'
 import { hasProperties } from '../../utils/utils.js'
 import Watcher from '../../utils/watcher.js'
 
@@ -113,7 +113,7 @@ async function pluginAction() {
 			try {
 				if (path === configRelative) {
 					const fileName = path.split('/').pop()
-					logger.wait(`${chalk.bold(fileName)} file was updated. Rebuilding to apply configuration...`)
+					logger.wait(`${color.bold(fileName)} file was updated. Rebuilding to apply configuration...`)
 				} else {
 					logger.wait(`Change detected. Rebuilding plugin...`)
 				}

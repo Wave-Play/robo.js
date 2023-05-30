@@ -1,4 +1,4 @@
-import chalk from 'chalk'
+import { color } from './../cli/utils/color.js';
 import { env } from './env.js'
 
 export type LogLevel = 'trace' | 'debug' | 'info' | 'wait' | 'other' | 'event' | 'ready' | 'warn' | 'error'
@@ -94,14 +94,14 @@ const LogLevelValues: Record<LogLevel, number> = {
 }
 
 const colorizedLogLevels = {
-	trace: chalk.gray('trace'.padEnd(5)),
-	debug: chalk.cyan('debug'.padEnd(5)),
-	info: chalk.blue('info'.padEnd(5)),
-	wait: chalk.cyan('wait'.padEnd(5)),
-	event: chalk.magenta('event'.padEnd(5)),
-	ready: chalk.green('ready'.padEnd(5)),
-	warn: chalk.yellow('warn'.padEnd(5)),
-	error: chalk.red('error'.padEnd(5))
+	trace: color.gray('trace'.padEnd(5)),
+	debug: color.cyan('debug'.padEnd(5)),
+	info: color.blue('info'.padEnd(5)),
+	wait: color.cyan('wait'.padEnd(5)),
+	event: color.magenta('event'.padEnd(5)),
+	ready: color.green('ready'.padEnd(5)),
+	warn: color.yellow('warn'.padEnd(5)),
+	error: color.red('error'.padEnd(5))
 }
 
 export { BaseLogger, colorizedLogLevels }

@@ -1,13 +1,13 @@
 import { ApplicationCommandType, ContextMenuCommandBuilder, REST, Routes, SlashCommandBuilder, SlashCommandSubcommandBuilder } from 'discord.js'
 import { logger as globalLogger, Logger } from '../../core/logger.js'
 import { performance } from 'node:perf_hooks'
-import chalk from 'chalk'
 import { loadConfig } from '../../core/config.js'
 import { DEFAULT_CONFIG } from '../../core/constants.js'
 import { env } from '../../core/env.js'
 import { timeout } from './utils.js'
 import type { ApplicationCommandOptionBase } from 'discord.js'
 import type { CommandEntry, CommandOption, ContextEntry } from '../../types/index.js'
+import { color } from './color.js'
 
 // @ts-expect-error - Global logger is overriden by dev mode
 let logger: Logger = globalLogger
@@ -225,7 +225,7 @@ export async function registerCommands(
 
 	if (!token || !clientId) {
 		logger.error(
-			`${chalk.bold('DISCORD_TOKEN')} or ${chalk.bold('DISCORD_CLIENT_ID')} not found in environment variables`
+			`${color.bold('DISCORD_TOKEN')} or ${color.bold('DISCORD_CLIENT_ID')} not found in environment variables`
 		)
 		return
 	}
@@ -237,12 +237,12 @@ export async function registerCommands(
 		const slashCommands = buildSlashCommands(dev, newCommands)
 		const contextMessageCommands = buildContextCommands(dev, newMessageContextCommands, 'message')
 		const contextUserCommands = buildContextCommands(dev, newUserContextCommands, 'user')
-		const addedChanges = addedCommands.map((cmd) => chalk.green(`/${chalk.bold(cmd)} (new)`))
-		const removedChanges = removedCommands.map((cmd) => chalk.red(`/${chalk.bold(cmd)} (deleted)`))
-		const updatedChanges = changedCommands.map((cmd) => chalk.blue(`/${chalk.bold(cmd)} (updated)`))
-		const addedContextChanges = addedContextCommands.map((cmd) => chalk.green(`${chalk.bold(cmd)} (new)`))
-		const removedContextChanges = removedContextCommands.map((cmd) => chalk.red(`${chalk.bold(cmd)} (deleted)`))
-		const updatedContextChanges = changedContextCommands.map((cmd) => chalk.blue(`${chalk.bold(cmd)} (updated)`))
+		const addedChanges = addedCommands.map((cmd) => color.green(`/${color.bold(cmd)} (new)`))
+		const removedChanges = removedCommands.map((cmd) => color.red(`/${color.bold(cmd)} (deleted)`))
+		const updatedChanges = changedCommands.map((cmd) => color.blue(`/${color.bold(cmd)} (updated)`))
+		const addedContextChanges = addedContextCommands.map((cmd) => color.green(`${color.bold(cmd)} (new)`))
+		const removedContextChanges = removedContextCommands.map((cmd) => color.red(`${color.bold(cmd)} (deleted)`))
+		const updatedContextChanges = changedContextCommands.map((cmd) => color.blue(`${color.bold(cmd)} (updated)`))
 
 		const allChanges = [
 			...addedChanges,
@@ -278,15 +278,15 @@ export async function registerCommands(
 
 		const result = await Promise.race([registerCommandsPromise, timeoutPromise])
 		if (result.type === 'timeout') {
-			logger.warn(`Command registration timed out. Run ${chalk.bold('robo build --force')} later to try again.`)
+			logger.warn(`Command registration timed out. Run ${color.bold('robo build --force')} later to try again.`)
 			return
 		}
 
 		const endTime = Math.round(performance.now() - startTime)
 		const commandType = guildId ? 'guild' : 'global'
-		logger.info(`Successfully updated ${chalk.bold(commandType + ' commands')} in ${endTime}ms`)
+		logger.info(`Successfully updated ${color.bold(commandType + ' commands')} in ${endTime}ms`)
 	} catch (error) {
 		logger.error('Could not register commands!', error)
-		logger.warn(`Run ${chalk.bold('robo build --force')} to try again.`)
+		logger.warn(`Run ${color.bold('robo build --force')} to try again.`)
 	}
 }

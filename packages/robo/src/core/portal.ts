@@ -1,10 +1,10 @@
-import chalk from 'chalk'
 import { Collection } from 'discord.js'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { getManifest } from '../cli/utils/manifest.js'
 import { hasProperties } from '../cli/utils/utils.js'
 import { logger } from './logger.js'
+import { color, composeColors, hex } from '../cli/utils/color.js'
 import type { BaseConfig, Command, Context, Event, HandlerRecord, Middleware } from '../types/index.js'
 
 export default class Portal {
@@ -102,18 +102,18 @@ async function loadHandlerRecords<T extends HandlerRecord | HandlerRecord[]>(
 	const manifest = getManifest()
 
 	// Log manifest objects as debug info
-	const color =
+	const pcolor =
 		type === 'commands'
-			? chalk.blue.bold
+			? composeColors(color.blue, color.bold)
 			: type === 'context'
-			? chalk.hex('#536DFE').bold
+			? composeColors(hex('#536DFE'), color.bold)
 			: type === 'events'
-			? chalk.magenta.bold
-			: chalk.gray.bold
-	const formatCommand = (command: string) => color(`/${command}`)
-	const formatContext = (context: string) => color(`${context} (${context})`)
-	const formatEvent = (event: string) => color(`${event} (${manifest.events[event].length})`)
-	const formatMiddleware = (middleware: string) => color(`${middleware}`)
+			? composeColors(color.magenta, color.bold)
+			: composeColors(color.gray, color.bold)
+	const formatCommand = (command: string) => pcolor(`/${command}`)
+	const formatContext = (context: string) => pcolor(`${context} (${context})`)
+	const formatEvent = (event: string) => pcolor(`${event} (${manifest.events[event].length})`)
+	const formatMiddleware = (middleware: string) => pcolor(`${middleware}`)
 	const formatter =
 		type === 'commands'
 			? formatCommand

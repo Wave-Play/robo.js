@@ -1,7 +1,7 @@
 import { Command } from 'commander'
 import { logger } from '../../core/logger.js'
-import chalk from 'chalk'
 import { loadManifest } from '../utils/manifest.js'
+import { color } from '../utils/color.js'
 
 const command = new Command('why')
 	.description('Find out why a command, event, permission, or scope is in your Robo.\ne.g. /ping, @ready, %ADMINISTRATOR, +applications.commands')
@@ -59,7 +59,7 @@ async function whyAction(text: string, options: WhyCommandOptions) {
 
 	// Remove full or symbol prefix from text
 	const entity = text.startsWith(prefixType.full) ? text.slice(prefixType.full.length) : text.slice(prefixType.symbol.length)
-	logger.debug(`Searching for ${prefixType.full.replace(':', '')} ${chalk.blue(entity)}...`)
+	logger.debug(`Searching for ${prefixType.full.replace(':', '')} ${color.blue(entity)}...`)
 
 	// Look for the entity in the manifest
 	const manifest = await loadManifest()
@@ -70,11 +70,11 @@ async function whyAction(text: string, options: WhyCommandOptions) {
 		if (!command) {
 			logger.info('This command does not exist.')
 		} else if (command.__plugin) {
-			logger.info(`This command is provided by the ${chalk.blue(command.__plugin.name)} plugin.`)
+			logger.info(`This command is provided by the ${color.blue(command.__plugin.name)} plugin.`)
 		} else if (command.__auto) {
 			logger.info('This is a default command. You can override it by creating a command with the same name or disable it in your config file.')
 		} else {
-			logger.info(`This command exists in your Robo because you created it: ${chalk.blue('/src/commands/' + command.__path)}`)
+			logger.info(`This command exists in your Robo because you created it: ${color.blue('/src/commands/' + command.__path)}`)
 		}
 	} else if (prefixType.full === 'event:') {
 		const event = manifest.events[entity]
@@ -103,23 +103,23 @@ async function whyAction(text: string, options: WhyCommandOptions) {
 		}
 		logger.info(`This event is being handled by the following:\n`)
 		if (plugins.length) {
-			logger.log('        ' + chalk.bold(`Plugins`))
+			logger.log('        ' + color.bold(`Plugins`))
 			plugins.forEach(e => {
-				logger.log(`        ${chalk.blue(e.__plugin.name) + ':'}`, e.__path)
+				logger.log(`        ${color.blue(e.__plugin.name) + ':'}`, e.__path)
 			})
 			logger.log('')
 		}
 		if (defaults.length) {
-			logger.log('        ' + chalk.bold(`Default config`))
+			logger.log('        ' + color.bold(`Default config`))
 			defaults.forEach(e => {
-				logger.log(`        ${chalk.blue('Δ')}`, e.__path)
+				logger.log(`        ${color.blue('Δ')}`, e.__path)
 			})
 			logger.log('')
 		}
 		if (custom.length) {
-			logger.log('        ' + chalk.bold(`Files`))
+			logger.log('        ' + color.bold(`Files`))
 			custom.forEach(e => {
-				logger.log(`        ${chalk.blue('/src/events/' + e.__path)}`)
+				logger.log(`        ${color.blue('/src/events/' + e.__path)}`)
 			})
 			logger.log('')
 		}
@@ -132,7 +132,7 @@ async function whyAction(text: string, options: WhyCommandOptions) {
 		const entityData = manifest[prefixType.full.slice(0, -1)]?.[entity]
 		logger.debug(`Entity data:`, entityData)
 		if (!entityData) {
-			logger.error(`Could not find ${prefixType.full.replace(':', '')} ${chalk.blue(entity)}.`)
+			logger.error(`Could not find ${prefixType.full.replace(':', '')} ${color.blue(entity)}.`)
 			process.exit(1)
 		}
 	}

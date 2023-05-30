@@ -1,5 +1,5 @@
+import { color } from './../cli/utils/color.js';
 import { registerProcessEvents } from './process.js'
-import chalk from 'chalk'
 import { Client, Collection, Events } from 'discord.js'
 import { getConfig, loadConfig } from './config.js'
 import { logger } from './logger.js'
@@ -69,7 +69,7 @@ async function start(options?: StartOptions) {
 		const onlyAuto = portal.events.get(key).every((event) => event.auto)
 		client.on(key, async (...args) => {
 			if (!onlyAuto) {
-				logger.event(`Event received: ${chalk.bold(key)}`)
+				logger.event(`Event received: ${color.bold(key)}`)
 			}
 			logger.trace('Event args:', args)
 
@@ -97,15 +97,15 @@ async function start(options?: StartOptions) {
 				}
 			}
 			const commandKey = commandKeys.filter(Boolean).join(' ')
-			logger.event(`Received slash command interaction: ${chalk.bold('/' + commandKey)}`)
+			logger.event(`Received slash command interaction: ${color.bold('/' + commandKey)}`)
 			logger.trace('Slash command interaction:', interaction.toJSON())
 			await executeCommandHandler(interaction, commandKey)
 		} else if (interaction.isAutocomplete()) {
-			logger.event(`Received autocomplete interaction for: ${chalk.bold(interaction.commandName)}`)
+			logger.event(`Received autocomplete interaction for: ${color.bold(interaction.commandName)}`)
 			logger.trace('Autocomplete interaction:', interaction.toJSON())
 			await executeAutocompleteHandler(interaction)
 		} else if (interaction.isContextMenuCommand()) {
-			logger.event(`Received context menu interaction: ${chalk.bold(interaction.commandName)}`)
+			logger.event(`Received context menu interaction: ${color.bold(interaction.commandName)}`)
 			logger.trace('Context menu interaction:', interaction.toJSON())
 			await executeContextHandler(interaction, interaction.commandName)
 		}

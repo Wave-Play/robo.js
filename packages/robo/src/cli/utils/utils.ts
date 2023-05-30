@@ -1,5 +1,4 @@
 import fs from 'node:fs/promises'
-import chalkLib from 'chalk'
 import { DEFAULT_CONFIG } from '../../core/constants.js'
 import { CommandConfig, Config, SageOptions } from '../../types/index.js'
 import { getConfig } from '../../core/config.js'
@@ -15,9 +14,6 @@ const execAsync = promisify(exec)
 // Read the version from the package.json file
 const require = createRequire(import.meta.url)
 export const packageJson = require('../../../package.json')
-
-// Convenience internal access for default commands and events injected by the CLI
-export const chalk = chalkLib
 
 /**
  * Filters an array of paths to only include those that exist.

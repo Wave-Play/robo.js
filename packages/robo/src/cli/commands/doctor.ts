@@ -1,8 +1,8 @@
 import { Command } from 'commander'
 import fs from 'fs'
 import path from 'path'
-import chalk from 'chalk'
 import { logger } from '../../core/logger.js'
+import { color, composeColors } from '../utils/color.js'
 import { loadEnv } from '../../core/dotenv.js'
 
 const command = new Command('doctor').description('Checks if your project is healthy').action(doctor)
@@ -11,9 +11,9 @@ export default command
 function doctor() {
 	loadEnv({ sync: true })
 	const results: CheckResult[] = [checkTypescript(), checkStructure(), checkEnvironmentVariables()]
-	logger.log(chalk.bold.underline('\nHealth Check Results:'))
+	logger.log(composeColors(color.bold, color.underline)('\nHealth Check Results:'))
 	results.forEach((result) => {
-		logger.log(chalk.bold(`${result.ok ? chalk.green('✓') : chalk.red('✗')} ${result.message}`))
+		logger.log(color.bold(`${result.ok ? color.green('✓') : color.red('✗')} ${result.message}`))
 	})
 	logger.log('\n')
 }

@@ -1,6 +1,6 @@
 import { Command } from 'commander'
 import { logger } from '../../core/logger.js'
-import chalk from 'chalk'
+import { color, composeColors } from '../../cli/utils/color.js'
 import { uploadToBackblazeB2 } from '../utils/upload.js'
 import path from 'node:path'
 import fs from 'node:fs/promises'
@@ -24,13 +24,13 @@ async function deployAction(options: DeployCommandOptions) {
 	logger({
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : 'info'
-	}).info(`Deploying to ${chalk.bold('RoboPlay')} ✨`)
+	}).info(`Deploying to ${color.bold('RoboPlay')} ✨`)
 	logger.warn(`Thank you for trying Robo.js! This is a pre-release version, so please let us know of issues on GitHub.`)
 
 	try {
 		// Prepare to upload project (bundle & create job)
 		logger.log('')
-		logger.event(`Compressing project files and uploading to ${chalk.bold('RoboPlay')}...`)
+		logger.event(`Compressing project files and uploading to ${color.bold('RoboPlay')}...`)
 		const bundle = await createBundle()
 		const deploy = await createDeployment()
 
@@ -41,9 +41,9 @@ async function deployAction(options: DeployCommandOptions) {
 		await notifyUpload(deploy)
 
 		// Print deployment job info
-		logger.info(`${chalk.green('✔')} Uploaded to ${chalk.bold('RoboPlay')}!\n`)
+		logger.info(`${color.green('✔')} Uploaded to ${color.bold('RoboPlay')}!\n`)
 		const buildDetails = `https://roboplay.dev/builds/${deploy.deploy.id}`
-		logger.info(`Build details: ${chalk.bold.underline.blue(buildDetails)}\n`)
+		logger.info(`Build details: ${composeColors(color.bold, color.underline, color.blue)(buildDetails)}\n`)
 	} finally {
 		// Clean up temp files
 		logger.debug(`Cleaning up temporary files...`)

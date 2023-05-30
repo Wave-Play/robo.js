@@ -17,7 +17,7 @@ import { findPackagePath, hasProperties, packageJson } from './utils.js'
 import { loadConfig } from '../../core/config.js'
 import { pathToFileURL } from 'node:url'
 import { DefaultGen } from './generate-defaults.js'
-import chalk from 'chalk'
+import { color } from './color.js'
 import type { PermissionsString } from 'discord.js'
 
 // Global manifest reference
@@ -442,7 +442,7 @@ async function generateEntries<T>(
 					// Make sure there's no file for the parent command
 					// Discord does not allow calling a subcommand's parent directly
 					if (parentCommand?.__path) {
-						const commandPath = chalk.bold(`/src/${type}/${parentCommand.__path}`)
+						const commandPath = color.bold(`/src/${type}/${parentCommand.__path}`)
 						logger.error('You cannot have a parent command alongside subcommand groups! Source: ' + commandPath)
 						process.exit(1)
 					}
@@ -454,7 +454,7 @@ async function generateEntries<T>(
 
 					let parentSubcommand = parentCommand.subcommands[fileKeys[1]] as CommandEntry
 					if (parentSubcommand?.__path) {
-						const subcommandPath = chalk.bold(`/src/${type}/${parentSubcommand.__path}`)
+						const subcommandPath = color.bold(`/src/${type}/${parentSubcommand.__path}`)
 						logger.error('You cannot have a subcommand alongside subcommand groups! Source: ' + subcommandPath)
 						process.exit(1)
 					}
@@ -474,7 +474,7 @@ async function generateEntries<T>(
 					// Make sure there's no file for the parent command
 					// Discord does not allow calling a subcommand's parent directly
 					if (parentCommand?.__path) {
-						const commandPath = chalk.bold(`/src/${type}/${parentCommand.__path}`)
+						const commandPath = color.bold(`/src/${type}/${parentCommand.__path}`)
 						logger.error('You cannot have a parent command alongside subcommands! Source: ' + commandPath)
 						process.exit(1)
 					}

@@ -2,7 +2,6 @@ import { Command } from 'commander'
 import { run } from '../utils/run.js'
 import { spawn, type ChildProcess } from 'child_process'
 import { logger } from '../../core/logger.js'
-import chalk from 'chalk'
 import { DEFAULT_CONFIG } from '../../core/constants.js'
 import { loadConfig, loadConfigPath } from '../../core/config.js'
 import { IS_WINDOWS, cmd, filterExistingPaths, getPkgManager, getWatchedPlugins, timeout } from '../utils/utils.js'
@@ -11,6 +10,7 @@ import url from 'node:url'
 import { getStateSave } from '../../core/state.js'
 import Watcher from '../utils/watcher.js'
 import type { Config, RoboMessage } from '../../types/index.js'
+import { color } from '../utils/color.js'
 
 const command = new Command('dev')
 	.description('Ready, set, code your bot to life! Starts development mode.')
@@ -93,10 +93,10 @@ async function devAction(options: DevCommandOptions) {
 		try {
 			if (path === configRelative) {
 				const fileName = path.split('/').pop()
-				logger.wait(`${chalk.bold(fileName)} file was updated. Restarting to apply configuration...`)
+				logger.wait(`${color.bold(fileName)} file was updated. Restarting to apply configuration...`)
 			} else if (Object.keys(watchedPlugins).includes(path)) {
 				const plugin = watchedPlugins[path]
-				logger.wait(`${chalk.bold(plugin.name)} plugin was updated. Restarting to apply changes...`)
+				logger.wait(`${color.bold(plugin.name)} plugin was updated. Restarting to apply changes...`)
 			} else {
 				logger.wait(`Change detected. Restarting Robo...`)
 			}
@@ -118,7 +118,7 @@ export async function buildInSeparateProcess(command: string) {
 		// Unfortunately, Windows has issues recursively spawning processes via PNPM
 		// If you're reading this and know how to fix it, please open a PR!
 		if (pkgManager === 'pnpm' && IS_WINDOWS) {
-			logger.debug(`Detected Windows. Using ${chalk.bold(cmd('npm'))} instead of ${chalk.bold(cmd('pnpm'))} to build.`)
+			logger.debug(`Detected Windows. Using ${color.bold(cmd('npm'))} instead of ${color.bold(cmd('pnpm'))} to build.`)
 			pkgManager = 'npm'
 		}
 

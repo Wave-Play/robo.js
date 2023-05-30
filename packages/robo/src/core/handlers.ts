@@ -1,4 +1,3 @@
-import chalk from 'chalk'
 import { portal } from './robo.js'
 import { CommandInteraction, ContextMenuCommandInteraction } from 'discord.js'
 import { getSage, timeout } from '../cli/utils/utils.js'
@@ -6,6 +5,7 @@ import { getConfig } from './config.js'
 import { logger } from './logger.js'
 import { BUFFER, DEFAULT_CONFIG, TIMEOUT } from './constants.js'
 import { printErrorResponse } from './debug.js'
+import { color } from '../cli/utils/color.js'
 import type { AutocompleteInteraction } from 'discord.js'
 import type { CommandConfig, ContextConfig, PluginData } from '../types/index.js'
 import type { Collection } from 'discord.js'
@@ -19,21 +19,21 @@ export async function executeAutocompleteHandler(interaction: AutocompleteIntera
 
 	// Check if the autocomplete command's module is enabled
 	if (!portal.module(command.module).isEnabled) {
-		logger.debug(`Tried to execute disabled command from module: ${chalk.bold(command.module)}`)
+		logger.debug(`Tried to execute disabled command from module: ${color.bold(command.module)}`)
 		return
 	}
 
 	// Execute middleware
 	try {
 		for (const middleware of portal.middleware) {
-			logger.debug(`Executing middleware: ${chalk.bold(middleware.path)}`)
+			logger.debug(`Executing middleware: ${color.bold(middleware.path)}`)
 			const result = await middleware.handler.default({
 				payload: [interaction],
 				record: command
 			})
 
 			if (result && result.abort) {
-				logger.debug(`Middleware aborted autocomplete: ${chalk.bold(interaction.commandName)}`)
+				logger.debug(`Middleware aborted autocomplete: ${color.bold(interaction.commandName)}`)
 				return
 			}
 		}
@@ -75,21 +75,21 @@ export async function executeCommandHandler(interaction: CommandInteraction, com
 
 	// Check if the command's module is enabled
 	if (!portal.module(command.module).isEnabled) {
-		logger.debug(`Tried to execute disabled command from module: ${chalk.bold(command.module)}`)
+		logger.debug(`Tried to execute disabled command from module: ${color.bold(command.module)}`)
 		return
 	}
 
 	// Execute middleware
 	try {
 		for (const middleware of portal.middleware) {
-			logger.debug(`Executing middleware: ${chalk.bold(middleware.path)}`)
+			logger.debug(`Executing middleware: ${color.bold(middleware.path)}`)
 			const result = await middleware.handler.default({
 				payload: [interaction],
 				record: command
 			})
 
 			if (result && result.abort) {
-				logger.debug(`Middleware aborted command: ${chalk.bold(commandKey)}`)
+				logger.debug(`Middleware aborted command: ${color.bold(commandKey)}`)
 				return
 			}
 		}
@@ -105,9 +105,9 @@ export async function executeCommandHandler(interaction: CommandInteraction, com
 	logger.debug(`Sage options:`, sage)
 
 	try {
-		logger.debug(`Executing command handler: ${chalk.bold(command.path)}`)
+		logger.debug(`Executing command handler: ${color.bold(command.path)}`)
 		if (!command.handler.default) {
-			throw `Missing default export function for command: ${chalk.bold('/' + commandKey)}`
+			throw `Missing default export function for command: ${color.bold('/' + commandKey)}`
 		}
 
 		// Delegate to command handler
@@ -174,21 +174,21 @@ export async function executeContextHandler(interaction: ContextMenuCommandInter
 
 	// Check if the context menu's module is enabled
 	if (!portal.module(command.module).isEnabled) {
-		logger.debug(`Tried to execute disabled context menu command from module: ${chalk.bold(command.module)}`)
+		logger.debug(`Tried to execute disabled context menu command from module: ${color.bold(command.module)}`)
 		return
 	}
 
 	// Execute middleware
 	try {
 		for (const middleware of portal.middleware) {
-			logger.debug(`Executing middleware: ${chalk.bold(middleware.path)}`)
+			logger.debug(`Executing middleware: ${color.bold(middleware.path)}`)
 			const result = await middleware.handler.default({
 				payload: [interaction],
 				record: command
 			})
 
 			if (result && result.abort) {
-				logger.debug(`Middleware aborted context command: ${chalk.bold(commandKey)}`)
+				logger.debug(`Middleware aborted context command: ${color.bold(commandKey)}`)
 				return
 			}
 		}
@@ -204,9 +204,9 @@ export async function executeContextHandler(interaction: ContextMenuCommandInter
 	logger.debug(`Sage options:`, sage)
 
 	try {
-		logger.debug(`Executing context menu handler: ${chalk.bold(command.path)}`)
+		logger.debug(`Executing context menu handler: ${color.bold(command.path)}`)
 		if (!command.handler.default) {
-			throw `Missing default export function for command: ${chalk.bold('/' + commandKey)}`
+			throw `Missing default export function for command: ${color.bold('/' + commandKey)}`
 		}
 
 		// Determine target
@@ -286,28 +286,28 @@ export async function executeEventHandler(
 	await Promise.all(
 		callbacks.map(async (callback) => {
 			try {
-				logger.debug(`Executing event handler: ${chalk.bold(callback.path)}`)
+				logger.debug(`Executing event handler: ${color.bold(callback.path)}`)
 				if (!callback.handler.default) {
-					throw `Missing default export function for event: ${chalk.bold(eventName)}`
+					throw `Missing default export function for event: ${color.bold(eventName)}`
 				}
 
 				// Check if the command's module is enabled
 				if (!portal.module(callback.module).isEnabled) {
-					logger.debug(`Tried to execute disabled event from module: ${chalk.bold(callback.module)}`)
+					logger.debug(`Tried to execute disabled event from module: ${color.bold(callback.module)}`)
 					return
 				}
 
 				// Execute middleware
 				try {
 					for (const middleware of portal.middleware) {
-						logger.debug(`Executing middleware: ${chalk.bold(middleware.path)}`)
+						logger.debug(`Executing middleware: ${color.bold(middleware.path)}`)
 						const result = await middleware.handler.default({
 							payload: eventData,
 							record: callback
 						})
 
 						if (result && result.abort) {
-							logger.debug(`Middleware aborted event: ${chalk.bold(eventName)}`)
+							logger.debug(`Middleware aborted event: ${color.bold(eventName)}`)
 							return
 						}
 					}
