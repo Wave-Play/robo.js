@@ -2,4 +2,4 @@
 '@roboplay/robo.js': minor
 ---
 
-feat: replaced tar with new ".robopack" format
+feat: replaced ".tar" with new ".robopack" format
