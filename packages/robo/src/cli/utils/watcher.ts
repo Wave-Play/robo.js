@@ -1,6 +1,5 @@
 import { promises as fs, watch, FSWatcher } from 'node:fs'
 import path from 'node:path'
-import os from 'node:os'
 import { logger } from '../../core/logger.js'
 import { hasProperties } from './utils.js'
 
@@ -72,10 +71,7 @@ export default class Watcher {
 			if (!this.isFirstTime) {
 				callback('added', path.basename(targetPath), path.dirname(targetPath))
 			}
-		} else if (
-			stats.isDirectory() &&
-			(!options.exclude || !options.exclude.includes(path.basename(targetPath)))
-		) {
+		} else if (stats.isDirectory() && (!options.exclude || !options.exclude.includes(path.basename(targetPath)))) {
 			// If a directory, read all the contents and watch them.
 			const files = await this.retry(() => fs.readdir(targetPath, { withFileTypes: true }))
 
@@ -85,19 +81,29 @@ export default class Watcher {
 			}
 
 			// Special handling for Linux: Also watch the directory for new files.
-			if (os.platform() === 'linux') {
-				const watcher = watch(targetPath, async (event, filename) => {
-					if (filename) {
-						const newFilePath = path.join(targetPath, filename)
-						const stats = await fs.lstat(newFilePath)
-						if (stats.isDirectory() && !this.watchers.has(newFilePath)) {
+			const watcher = watch(targetPath, async (_event, filename) => {
+				if (filename) {
+					const newFilePath = path.join(targetPath, filename)
+					if (!this.watchers.has(newFilePath)) {
+						try {
+							await fs.access(newFilePath, fs.constants.F_OK)
 							await this.watchPath(newFilePath, options, callback)
+							if (!this.isFirstTime) {
+								callback('added', filename, path.dirname(targetPath))
+							}
+						} catch (e) {
+							// If the file is not found, it was removed or it's a temporary file.
+							if (hasProperties<{ code: unknown }>(e, ['code']) && e.code === 'ENOENT') {
+								logger.warn(`File ${newFilePath} was not found`)
+							} else {
+								logger.error(`Unable to access file: ${newFilePath}`)
+							}
 						}
 					}
-				})
+				}
+			})
 
-				this.watchers.set(targetPath, watcher)
-			}
+			this.watchers.set(targetPath, watcher)
 		} else if (stats.isSymbolicLink()) {
 			// If a symlink, resolve the real path and watch that.
 			const realPath = await fs.realpath(targetPath)
