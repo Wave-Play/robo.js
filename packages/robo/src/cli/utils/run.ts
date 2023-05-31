@@ -40,15 +40,16 @@ export function run(): Promise<ChildProcess> {
 				_eventsRegistered = true
 			}
 	
+			const start = Date.now()
 			const onMonitorReady = (message: RoboMessage) => {
 				if (message.type === 'ready') {
-					logger.debug('New child process is ready!')
+					logger.debug(`New Robo process became ready in ${Date.now() - start}ms`)
 					childProcess.off('message', onMonitorReady)
 					resolve(childProcess)
 				}
 			}
 	
-			logger.debug('Waiting for new process to be ready...')
+			logger.debug('Waiting for Robo process to be ready...')
 			childProcess.on('message', onMonitorReady)
 			childProcess.once('error', (error) => {
 				reject(error)

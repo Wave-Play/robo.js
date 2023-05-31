@@ -1,7 +1,6 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { logger } from '../../core/logger.js'
-import { performance } from 'node:perf_hooks'
 import { CommandEntry, Manifest } from '../../types/index.js'
 import { packageJson } from './utils.js'
 import { color, composeColors, hex } from './color.js'
@@ -123,7 +122,7 @@ export function printBuildSummary(manifest: Manifest, totalSize: number, startTi
 		sizeColor = color.yellow
 	}
 
-	const buildTime = Math.round(performance.now() - startTime)
+	const buildTime = Date.now() - startTime
 	let buildColor = color.green
 	if (buildTime < 5000) {
 		buildColor = color.green

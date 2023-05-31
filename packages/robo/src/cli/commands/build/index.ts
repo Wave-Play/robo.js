@@ -1,7 +1,6 @@
 import { Command } from 'commander'
 import { generateManifest, loadManifest } from '../../utils/manifest.js'
 import { logger } from '../../../core/logger.js'
-import { performance } from 'node:perf_hooks'
 import { loadConfig } from '../../../core/config.js'
 import { getProjectSize, printBuildSummary } from '../../utils/build-summary.js'
 import plugin from './plugin.js'
@@ -33,7 +32,7 @@ export async function buildAction(options: BuildCommandOptions) {
 		level: options.verbose ? 'debug' : options.dev ? 'warn' : 'info'
 	}).info(`Building Robo...`)
 	logger.debug(`Current working directory:`, process.cwd())
-	const startTime = performance.now()
+	const startTime = Date.now()
 
 	// Make sure the user isn't trying to watch builds
 	// This only makes sense for plugins anyway
@@ -51,22 +50,22 @@ export async function buildAction(options: BuildCommandOptions) {
 	// Use SWC to compile into .robo/build
 	const { compile } = await import('../../utils/compiler.js')
 	const compileTime = await compile()
-	logger.debug(`Compiled in ${Math.round(compileTime)}ms`)
+	logger.debug(`Compiled in ${compileTime}ms`)
 
 	// Assign default commands and events
 	const generatedFiles = await generateDefaults()
 
 	// Generate manifest.json
 	const oldManifest = await loadManifest()
-	const manifestTime = performance.now()
+	const manifestTime = Date.now()
 	const manifest = await generateManifest(generatedFiles, 'robo')
-	logger.debug(`Generated manifest in ${Math.round(performance.now() - manifestTime)}ms`)
+	logger.debug(`Generated manifest in ${Date.now() - manifestTime}ms`)
 
 	if (!options.dev) {
 		// Get the size of the entire current working directory
-		const sizeStartTime = performance.now()
+		const sizeStartTime = Date.now()
 		const totalSize = await getProjectSize(process.cwd())
-		logger.debug(`Computed Robo size in ${Math.round(performance.now() - sizeStartTime)}ms`)
+		logger.debug(`Computed Robo size in ${Date.now() - sizeStartTime}ms`)
 
 		// Log commands and events from the manifest
 		printBuildSummary(manifest, totalSize, startTime, false)

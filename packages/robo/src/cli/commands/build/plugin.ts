@@ -122,7 +122,7 @@ async function pluginAction() {
 
 				const time = Date.now()
 				await buildAsync('robo build plugin --dev', config)
-				logger.ready(`Successfully rebuilt in ${Math.round(Date.now() - time)}ms`)
+				logger.ready(`Successfully rebuilt in ${Date.now() - time}ms`)
 			} finally {
 				isUpdating = false
 			}

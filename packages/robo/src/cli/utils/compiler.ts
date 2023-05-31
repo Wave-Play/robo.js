@@ -1,6 +1,5 @@
 import fs from 'fs/promises'
 import path from 'path'
-import { performance } from 'node:perf_hooks'
 import { hasProperties, replaceSrcWithBuildInRecord } from './utils.js'
 import { logger } from '../../core/logger.js'
 import { env } from '../../core/env.js'
@@ -94,7 +93,7 @@ interface RoboCompileOptions {
 }
 
 export async function compile(options?: RoboCompileOptions) {
-	const startTime = performance.now()
+	const startTime = Date.now()
 
 	let ts, transform
 	try {
@@ -107,7 +106,7 @@ export async function compile(options?: RoboCompileOptions) {
 		logger.debug('Copying srcDir to distDir without transversing...')
 		await copyDir(srcDir, distDir)
 
-		return performance.now() - startTime
+		return Date.now() - startTime
 	}
 
 	// Read the tsconfig.json file
@@ -119,7 +118,7 @@ export async function compile(options?: RoboCompileOptions) {
 		logger.debug('Copying srcDir to distDir without transversing...')
 		await copyDir(srcDir, distDir)
 
-		return performance.now() - startTime
+		return Date.now() - startTime
 	}
 
 	if (typeof ts === 'undefined' || typeof transform === 'undefined') {
@@ -127,7 +126,7 @@ export async function compile(options?: RoboCompileOptions) {
 		logger.debug('Copying srcDir to distDir without transversing...')
 		await copyDir(srcDir, distDir)
 
-		return performance.now() - startTime
+		return Date.now() - startTime
 	}
 
 	//
@@ -169,7 +168,7 @@ export async function compile(options?: RoboCompileOptions) {
 	logger.debug(`Copying additional non-TypeScript files from ${srcDir} to ${distDir}...`)
 	await copyDir(srcDir, distDir, ['.ts', '.tsx'])
 
-	return performance.now() - startTime
+	return Date.now() - startTime
 }
 
 async function copyDir(src: string, dest: string, excludeExtensions: string[] = []) {

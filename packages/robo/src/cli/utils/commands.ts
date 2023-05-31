@@ -1,6 +1,5 @@
 import { ApplicationCommandType, ContextMenuCommandBuilder, REST, Routes, SlashCommandBuilder, SlashCommandSubcommandBuilder } from 'discord.js'
 import { logger as globalLogger, Logger } from '../../core/logger.js'
-import { performance } from 'node:perf_hooks'
 import { loadConfig } from '../../core/config.js'
 import { DEFAULT_CONFIG } from '../../core/constants.js'
 import { env } from '../../core/env.js'
@@ -230,7 +229,7 @@ export async function registerCommands(
 		return
 	}
 
-	const startTime = performance.now()
+	const startTime = Date.now()
 	const rest = new REST({ version: '9' }).setToken(token)
 
 	try {
@@ -282,7 +281,7 @@ export async function registerCommands(
 			return
 		}
 
-		const endTime = Math.round(performance.now() - startTime)
+		const endTime = Date.now() - startTime
 		const commandType = guildId ? 'guild' : 'global'
 		logger.info(`Successfully updated ${color.bold(commandType + ' commands')} in ${endTime}ms`)
 	} catch (error) {
