@@ -1,16 +1,14 @@
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { logger } from '../../core/logger.js'
-import { hasProperties } from './utils.js'
+import { __DIRNAME, hasProperties } from './utils.js'
 import { DEBUG_MODE } from '../../core/debug.js'
 import { env } from '../../core/env.js'
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const srcDir = path.join(process.cwd(), 'src')
 const distDir = path.join(process.cwd(), '.robo', 'build')
-const defaultCommandsDir = path.join(__dirname, '..', '..', 'default', 'commands')
-const defaultEventsDir = path.join(__dirname, '..', '..', 'default', 'events')
+const defaultCommandsDir = path.join(__DIRNAME, '..', '..', 'default', 'commands')
+const defaultEventsDir = path.join(__DIRNAME, '..', '..', 'default', 'events')
 const supportedExtensions = ['.ts', '.tsx', '.js', '.jsx']
 
 export interface DefaultGen {

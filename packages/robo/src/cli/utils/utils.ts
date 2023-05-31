@@ -7,7 +7,9 @@ import { exec } from 'node:child_process'
 import { promisify } from 'node:util'
 import { logger } from '../../core/logger.js'
 import path from 'node:path'
-import { pathToFileURL } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+
+export const __DIRNAME = path.dirname(fileURLToPath(import.meta.url))
 
 const execAsync = promisify(exec)
 
