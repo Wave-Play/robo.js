@@ -3,6 +3,7 @@ import fs from 'fs/promises'
 import { logger } from '../../core/logger.js'
 import { hasFilesRecursively } from '../utils/fs-helper.js'
 import { color, composeColors } from '../utils/color.js'
+import { loadConfig } from '../../core/config.js'
 
 const command = new Command('start')
 	.description('Starts your bot in production mode.')
@@ -42,6 +43,14 @@ async function startAction(options: StartCommandOptions) {
 			)} file is missing. Make sure your project structure is correct and run ${composeColors(color.bold, color.blue)('"robo build"')} again.`
 		)
 		process.exit(1)
+	}
+
+	// Experimental warning
+	const config = await loadConfig()
+	const experimentalKeys = Object.keys(config.experimental ?? {})
+	if (experimentalKeys.length > 0) {
+		const features = experimentalKeys.map((key) => color.bold(key)).join(', ')
+		logger.warn(`Experimental flags enabled: ${features}. These may be unstable and change often!`)
 	}
 
 	// Imported dynamically to prevent multiple process hooks

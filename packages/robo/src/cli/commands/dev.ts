@@ -1,6 +1,6 @@
 import { Command } from 'commander'
 import { run } from '../utils/run.js'
-import { spawn, type ChildProcess } from 'child_process'
+import { spawn } from 'child_process'
 import { logger } from '../../core/logger.js'
 import { DEFAULT_CONFIG } from '../../core/constants.js'
 import { loadConfig, loadConfigPath } from '../../core/config.js'
@@ -9,8 +9,9 @@ import path from 'node:path'
 import url from 'node:url'
 import { getStateSave } from '../../core/state.js'
 import Watcher from '../utils/watcher.js'
-import type { Config, RoboMessage } from '../../types/index.js'
 import { color } from '../utils/color.js'
+import type { Config, RoboMessage } from '../../types/index.js'
+import type { ChildProcess } from 'child_process'
 
 const command = new Command('dev')
 	.description('Ready, set, code your bot to life! Starts development mode.')
@@ -44,6 +45,13 @@ async function devAction(options: DevCommandOptions) {
 		configRelative = path.relative(process.cwd(), url.fileURLToPath(configPath))
 	} else {
 		logger.warn(`Could not find configuration file. Using default configuration.`)
+	}
+
+	// Experimental warning
+	const experimentalKeys = Object.keys(config.experimental ?? {})
+	if (experimentalKeys.length > 0) {
+		const features = experimentalKeys.map((key) => color.bold(key)).join(', ')
+		logger.warn(`Experimental flags enabled: ${features}. These may be unstable and change often!`)
 	}
 
 	// Run after preparing first build

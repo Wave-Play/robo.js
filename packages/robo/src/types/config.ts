@@ -7,6 +7,10 @@ export interface Config {
 	defaults?: {
 		help?: boolean
 	}
+	experimental?: {
+		incrementalBuilds?: boolean
+		workerThreads?: boolean
+	}
 	flashcore?: {
 		adapter?: string
 	}
