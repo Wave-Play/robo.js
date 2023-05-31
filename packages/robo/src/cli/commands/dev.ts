@@ -4,12 +4,21 @@ import { spawn } from 'child_process'
 import { logger } from '../../core/logger.js'
 import { DEFAULT_CONFIG } from '../../core/constants.js'
 import { loadConfig, loadConfigPath } from '../../core/config.js'
-import { IS_WINDOWS, cmd, filterExistingPaths, getPkgManager, getWatchedPlugins, timeout } from '../utils/utils.js'
+import {
+	IS_WINDOWS,
+	__DIRNAME,
+	cmd,
+	filterExistingPaths,
+	getPkgManager,
+	getWatchedPlugins,
+	timeout
+} from '../utils/utils.js'
 import path from 'node:path'
 import url from 'node:url'
 import { getStateSave } from '../../core/state.js'
 import Watcher from '../utils/watcher.js'
 import { color } from '../utils/color.js'
+import { Worker } from 'node:worker_threads'
 import type { Config, RoboMessage } from '../../types/index.js'
 import type { ChildProcess } from 'child_process'
 
@@ -26,6 +35,8 @@ interface DevCommandOptions {
 }
 
 const buildCommand = 'robo build --dev'
+
+let workerThread: Worker | undefined
 
 async function devAction(options: DevCommandOptions) {
 	// Create a logger
@@ -54,8 +65,13 @@ async function devAction(options: DevCommandOptions) {
 		logger.warn(`Experimental flags enabled: ${features}. These may be unstable and change often!`)
 	}
 
+	// Ensure worker thread is ready
+	if (config.experimental?.workerThreads) {
+		workerThread = new Worker(path.join(__DIRNAME, '..', 'worker.js'))
+	}
+
 	// Run after preparing first build
-	const buildSuccess = await buildInSeparateProcess(buildCommand + (options.verbose ? ' --verbose' : ''))
+	const buildSuccess = await buildAsync(buildCommand + (options.verbose ? ' --verbose' : ''), config, options.verbose)
 	let botProcess: ChildProcess
 
 	const registerProcessEvents = () => {
@@ -117,50 +133,81 @@ async function devAction(options: DevCommandOptions) {
 	})
 }
 
-// Use a separate process to avoid module cache issues
-export async function buildInSeparateProcess(command: string) {
+/**
+ * Building in a separate process/thread clears the import cache.
+ * This is necessary to prevent the bot from using old code.
+ */
+export async function buildAsync(command: string, config: Config, verbose?: boolean) {
 	return new Promise<boolean>((resolve, reject) => {
 		const args = command.split(' ')
-		let pkgManager = getPkgManager()
+		const start = Date.now()
 
-		// Unfortunately, Windows has issues recursively spawning processes via PNPM
-		// If you're reading this and know how to fix it, please open a PR!
-		if (pkgManager === 'pnpm' && IS_WINDOWS) {
-			logger.debug(`Detected Windows. Using ${color.bold(cmd('npm'))} instead of ${color.bold(cmd('pnpm'))} to build.`)
-			pkgManager = 'npm'
-		}
+		if (config.experimental?.workerThreads) {
+			workerThread.postMessage({
+				command: 'build',
+				verbose: verbose
+			})
 
-		// Check if args include option flags
-		if (pkgManager === 'npm' || pkgManager === 'pnpm') {
-			args.splice(0, 0, 'exec')
-		}
+			workerThread.on('exit', (code) => {
+				workerThread = new Worker(path.join(__DIRNAME, '..', 'worker.js'))
+				if (code === 0) {
+					logger.debug(`Build completed in ${Date.now() - start}ms`)
+					resolve(true)
+				} else {
+					resolve(false)
+				}
+			})
 
-		// Inserts -- before options to make sure they're being passed correctly
-		if (pkgManager === 'npm') {
-			const optionsIndex = args.findIndex((arg) => arg.startsWith('-'))
-			if (optionsIndex !== -1) {
-				args.splice(optionsIndex, 0, '--')
-			}
-		}
-
-		logger.debug(`> ${cmd(pkgManager)} ${args.join(' ')}`)
-		const childProcess = spawn(cmd(pkgManager), args, {
-			env: { ...process.env, FORCE_COLOR: '1' },
-			stdio: 'inherit'
-		})
-
-		childProcess.on('close', (code) => {
-			if (code === 0) {
-				resolve(true)
-			} else {
+			workerThread.on('error', (error) => {
+				workerThread = new Worker(path.join(__DIRNAME, '..', 'worker.js'))
+				reject(error)
 				resolve(false)
-			}
-		})
+			})
+		} else {
+			let pkgManager = getPkgManager()
 
-		childProcess.on('error', (error) => {
-			reject(error)
-			resolve(false)
-		})
+			// Unfortunately, Windows has issues recursively spawning processes via PNPM
+			// If you're reading this and know how to fix it, please open a PR!
+			if (pkgManager === 'pnpm' && IS_WINDOWS) {
+				logger.debug(
+					`Detected Windows. Using ${color.bold(cmd('npm'))} instead of ${color.bold(cmd('pnpm'))} to build.`
+				)
+				pkgManager = 'npm'
+			}
+
+			// Check if args include option flags
+			if (pkgManager === 'npm' || pkgManager === 'pnpm') {
+				args.splice(0, 0, 'exec')
+			}
+
+			// Inserts -- before options to make sure they're being passed correctly
+			if (pkgManager === 'npm') {
+				const optionsIndex = args.findIndex((arg) => arg.startsWith('-'))
+				if (optionsIndex !== -1) {
+					args.splice(optionsIndex, 0, '--')
+				}
+			}
+
+			logger.debug(`> ${cmd(pkgManager)} ${args.join(' ')}`)
+			const childProcess = spawn(cmd(pkgManager), args, {
+				env: { ...process.env, FORCE_COLOR: '1' },
+				stdio: 'inherit'
+			})
+
+			childProcess.on('close', (code) => {
+				if (code === 0) {
+					logger.debug(`Build completed in ${Date.now() - start}ms`)
+					resolve(true)
+				} else {
+					resolve(false)
+				}
+			})
+
+			childProcess.on('error', (error) => {
+				reject(error)
+				resolve(false)
+			})
+		}
 	})
 }
 
@@ -198,7 +245,10 @@ async function rebuildAndRestartBot(bot: ChildProcess | null, config: Config, ve
 	// Wait for the bot to exit or force abort
 	currentBot?.send({ type: 'restart' })
 	const awaitStop = Promise.race([terminate, forceAbort])
-	const [success] = await Promise.all([buildInSeparateProcess(buildCommand + (verbose ? ' --verbose' : '')), awaitStop])
+	const [success] = await Promise.all([
+		buildAsync(buildCommand + (verbose ? ' --verbose' : ''), config, verbose),
+		awaitStop
+	])
 
 	// Return null for the bot if the build failed so we can retry later
 	if (!success) {

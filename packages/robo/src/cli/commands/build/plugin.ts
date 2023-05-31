@@ -3,11 +3,11 @@ import { Command } from 'commander'
 import { generateManifest } from '../../utils/manifest.js'
 import { logger } from '../../../core/logger.js'
 import { getProjectSize, printBuildSummary } from '../../utils/build-summary.js'
-import { buildInSeparateProcess } from '../dev.js'
+import { buildAsync } from '../dev.js'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import url from 'node:url'
-import { loadConfigPath } from '../../../core/config.js'
+import { loadConfig, loadConfigPath } from '../../../core/config.js'
 import { hasProperties } from '../../utils/utils.js'
 import Watcher from '../../utils/watcher.js'
 
@@ -36,6 +36,7 @@ async function pluginAction() {
 	}).info(`Building Robo plugin...`)
 	logger.debug(`Current working directory:`, process.cwd())
 	const startTime = Date.now()
+	const config = await loadConfig()
 
 	// Use SWC to compile into .robo/build
 	const { compile } = await import('../../utils/compiler.js')
@@ -119,8 +120,8 @@ async function pluginAction() {
 					logger.wait(`Change detected. Rebuilding plugin...`)
 				}
 
-				await buildInSeparateProcess('robo build plugin --dev --silent')
 				const time = Date.now()
+				await buildAsync('robo build plugin --dev', config)
 				logger.ready(`Successfully rebuilt in ${Math.round(Date.now() - time)}ms`)
 			} finally {
 				isUpdating = false
