@@ -56,19 +56,21 @@ async function buildAction(options: BuildCommandOptions) {
 	// Assign default commands and events
 	const generatedFiles = await generateDefaults()
 
-	// Get the size of the entire current working directory
-	const sizeStartTime = performance.now()
-	const totalSize = await getProjectSize(process.cwd())
-	logger.debug(`Computed Robo size in ${Math.round(performance.now() - sizeStartTime)}ms`)
-
 	// Generate manifest.json
 	const oldManifest = await loadManifest()
 	const manifestTime = performance.now()
 	const manifest = await generateManifest(generatedFiles, 'robo')
 	logger.debug(`Generated manifest in ${Math.round(performance.now() - manifestTime)}ms`)
 
-	// Log commands and events from the manifest
-	printBuildSummary(manifest, totalSize, startTime, false)
+	if (!options.dev) {
+		// Get the size of the entire current working directory
+		const sizeStartTime = performance.now()
+		const totalSize = await getProjectSize(process.cwd())
+		logger.debug(`Computed Robo size in ${Math.round(performance.now() - sizeStartTime)}ms`)
+
+		// Log commands and events from the manifest
+		printBuildSummary(manifest, totalSize, startTime, false)
+	}
 
 	// Compare the old manifest with the new one
 	const oldCommands = oldManifest.commands

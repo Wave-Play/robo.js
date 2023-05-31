@@ -2,7 +2,6 @@ import { color } from './../../utils/color.js';
 import { Command } from 'commander'
 import { generateManifest } from '../../utils/manifest.js'
 import { logger } from '../../../core/logger.js'
-import { performance } from 'node:perf_hooks'
 import { getProjectSize, printBuildSummary } from '../../utils/build-summary.js'
 import { buildInSeparateProcess } from '../dev.js'
 import fs from 'node:fs/promises'
@@ -36,25 +35,27 @@ async function pluginAction() {
 		level: options.verbose ? 'debug' : options.dev ? 'warn' : 'info'
 	}).info(`Building Robo plugin...`)
 	logger.debug(`Current working directory:`, process.cwd())
-	const startTime = performance.now()
+	const startTime = Date.now()
 
 	// Use SWC to compile into .robo/build
 	const { compile } = await import('../../utils/compiler.js')
 	const compileTime = await compile()
-	logger.debug(`Compiled in ${Math.round(compileTime)}ms`)
-
-	// Get the size of the entire current working directory
-	const sizeStartTime = performance.now()
-	const totalSize = await getProjectSize(process.cwd())
-	logger.debug(`Computed plugin size in ${Math.round(performance.now() - sizeStartTime)}ms`)
+	logger.debug(`Compiled in ${compileTime}ms`)
 
 	// Generate manifest.json
-	const manifestTime = performance.now()
+	const manifestTime = Date.now()
 	const manifest = await generateManifest({ commands: {}, context: {}, events: {} }, 'plugin')
-	logger.debug(`Generated manifest in ${Math.round(performance.now() - manifestTime)}ms`)
+	logger.debug(`Generated manifest in ${Date.now() - manifestTime}ms`)
 
-	// Log commands and events from the manifest
-	printBuildSummary(manifest, totalSize, startTime, true)
+	if (!options.dev) {
+		// Get the size of the entire current working directory
+		const sizeStartTime = Date.now()
+		const totalSize = await getProjectSize(process.cwd())
+		logger.debug(`Computed plugin size in ${Date.now() - sizeStartTime}ms`)
+
+		// Log commands and events from the manifest
+		printBuildSummary(manifest, totalSize, startTime, true)
+	}
 
 	// Generate a watch file to indicate that the build was successful
 	// This is used to determine whether or not to restart the Robo
@@ -118,9 +119,9 @@ async function pluginAction() {
 					logger.wait(`Change detected. Rebuilding plugin...`)
 				}
 
-				const time = performance.now()
 				await buildInSeparateProcess('robo build plugin --dev --silent')
-				logger.ready(`Successfully rebuilt in ${Math.round(performance.now() - time)}ms`)
+				const time = Date.now()
+				logger.ready(`Successfully rebuilt in ${Math.round(Date.now() - time)}ms`)
 			} finally {
 				isUpdating = false
 			}
