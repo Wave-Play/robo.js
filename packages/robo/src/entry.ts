@@ -7,6 +7,6 @@
  * As a bonus, this also reduces the overhead of the `robo` CLI.
  */
 import { Robo } from './core/robo.js'
-Robo.start({
-	awaitState: true
-})
+import { stateLoad } from './core/process.js'
+
+Robo.start({ stateLoad })

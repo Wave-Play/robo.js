@@ -5,7 +5,6 @@ import { getConfig, loadConfig } from './config.js'
 import { logger } from './logger.js'
 import { loadManifest } from '../cli/utils/manifest.js'
 import { env } from './env.js'
-import { stateLoad } from './process.js'
 import {
 	executeAutocompleteHandler,
 	executeCommandHandler,
@@ -29,12 +28,12 @@ export let portal: Portal
 let plugins: Collection<string, PluginData>
 
 interface StartOptions {
-	awaitState?: boolean
 	client?: Client
+	stateLoad?: Promise<void>
 }
 
 async function start(options?: StartOptions) {
-	const { awaitState, client: optionsClient } = options ?? {}
+	const { client: optionsClient, stateLoad } = options ?? {}
 
 	// Important! Register process events before doing anything else
 	// This ensures the "ready" signal is sent to the parent process
@@ -49,7 +48,8 @@ async function start(options?: StartOptions) {
 	}).debug('Starting Robo...')
 
 	// Wait for states to be loaded
-	if (awaitState) {
+	if (stateLoad) {
+		logger.debug('Waiting for state...')
 		await stateLoad
 	}
 
