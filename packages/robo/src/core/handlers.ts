@@ -6,6 +6,7 @@ import { logger } from './logger.js'
 import { BUFFER, DEFAULT_CONFIG, TIMEOUT } from './constants.js'
 import { printErrorResponse } from './debug.js'
 import { color } from '../cli/utils/color.js'
+import path from 'node:path'
 import type { AutocompleteInteraction } from 'discord.js'
 import type { CommandConfig, ContextConfig, PluginData } from '../types/index.js'
 import type { Collection } from 'discord.js'
@@ -45,6 +46,7 @@ export async function executeAutocompleteHandler(interaction: AutocompleteIntera
 	const config = getConfig()
 	try {
 		// Delegate to autocomplete handler
+		logger.debug(`Executing autocomplete handler: ${color.bold(path.join(command.plugin?.path ?? '.', command.path))}`)
 		const promises = [command.handler.autocomplete(interaction)]
 		const timeoutDuration = config?.timeouts?.autocomplete
 
@@ -105,7 +107,7 @@ export async function executeCommandHandler(interaction: CommandInteraction, com
 	logger.debug(`Sage options:`, sage)
 
 	try {
-		logger.debug(`Executing command handler: ${color.bold(command.path)}`)
+		logger.debug(`Executing command handler: ${color.bold(path.join(command.plugin?.path ?? '.', command.path))}`)
 		if (!command.handler.default) {
 			throw `Missing default export function for command: ${color.bold('/' + commandKey)}`
 		}
@@ -204,7 +206,7 @@ export async function executeContextHandler(interaction: ContextMenuCommandInter
 	logger.debug(`Sage options:`, sage)
 
 	try {
-		logger.debug(`Executing context menu handler: ${color.bold(command.path)}`)
+		logger.debug(`Executing context menu handler: ${color.bold(path.join(command.plugin?.path ?? '.', command.path))}`)
 		if (!command.handler.default) {
 			throw `Missing default export function for command: ${color.bold('/' + commandKey)}`
 		}
@@ -286,7 +288,7 @@ export async function executeEventHandler(
 	await Promise.all(
 		callbacks.map(async (callback) => {
 			try {
-				logger.debug(`Executing event handler: ${color.bold(callback.path)}`)
+				logger.debug(`Executing event handler: ${color.bold(path.join(callback.plugin?.path ?? '.', callback.path))}`)
 				if (!callback.handler.default) {
 					throw `Missing default export function for event: ${color.bold(eventName)}`
 				}
