@@ -1,4 +1,4 @@
-import { color } from './../cli/utils/color.js';
+import { color } from './../cli/utils/color.js'
 import { registerProcessEvents } from './process.js'
 import { Client, Collection, Events } from 'discord.js'
 import { getConfig, loadConfig } from './config.js'
@@ -12,8 +12,9 @@ import {
 	executeEventHandler
 } from './handlers.js'
 import { hasProperties } from '../cli/utils/utils.js'
-import { prepareFlashcore } from './flashcore.js';
+import { prepareFlashcore } from './flashcore.js'
 import Portal from './portal.js'
+import { isMainThread, parentPort } from 'node:worker_threads'
 import type { PluginData } from '../types/index.js'
 
 export const Robo = { restart, start, stop }
@@ -122,7 +123,11 @@ async function stop(exitCode = 0) {
 	await executeEventHandler(plugins, '_stop', client)
 	client?.destroy()
 	logger.debug(`Stopped Robo at ` + new Date().toLocaleString())
-	process.exit(exitCode)
+	if (isMainThread) {
+		process.exit(exitCode)
+	} else {
+		parentPort?.postMessage({ event: 'exit' })
+	}
 }
 
 async function restart() {
@@ -130,7 +135,11 @@ async function restart() {
 	await executeEventHandler(plugins, '_restart', client)
 	client?.destroy()
 	logger.debug(`Restarted Robo at ` + new Date().toLocaleString())
-	process.exit(0)
+	if (isMainThread) {
+		process.exit(0)
+	} else {
+		parentPort?.postMessage({ event: 'exit' })
+	}
 }
 
 function loadPluginData() {
