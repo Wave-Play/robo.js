@@ -80,21 +80,39 @@ export default class Watcher {
 				await this.watchPath(filePath, options, callback)
 			}
 
-			// Special handling for Linux: Also watch the directory for new files.
-			const watcher = watch(targetPath, async (_event, filename) => {
+			// Watch the directory for new files and rename events.
+			const watcher = watch(targetPath, async (event, filename) => {
 				if (filename) {
 					const newFilePath = path.join(targetPath, filename)
-					if (!this.watchers.has(newFilePath)) {
+					if (event === 'rename') {
 						try {
 							await fs.access(newFilePath, fs.constants.F_OK)
-							await this.watchPath(newFilePath, options, callback)
-							if (!this.isFirstTime) {
-								callback('added', filename, path.dirname(targetPath))
+							// If the file still exists under the new path, it was added or moved/renamed to this path.
+							if (!this.watchers.has(newFilePath)) {
+								await this.watchPath(newFilePath, options, callback)
+								if (!this.isFirstTime) {
+									callback('added', filename, path.dirname(targetPath))
+								}
+							} else {
+								// The file was moved or renamed within this directory. The old path will not exist anymore.
+								const watcher = this.watchers.get(newFilePath)
+								if (watcher) {
+									watcher.close()
+								}
+								this.watchers.delete(newFilePath)
+								// Re-establish the watcher on the new path.
+								await this.watchPath(newFilePath, options, callback)
 							}
 						} catch (e) {
-							// If the file is not found, it was removed or it's a temporary file.
+							// If the file does not exist anymore, it was removed.
 							if (hasProperties<{ code: unknown }>(e, ['code']) && e.code === 'ENOENT') {
 								logger.warn(`File ${newFilePath} was not found`)
+								const watcher = this.watchers.get(newFilePath)
+								if (watcher) {
+									callback('removed', filename, path.dirname(targetPath))
+									watcher.close()
+									this.watchers.delete(newFilePath)
+								}
 							} else {
 								logger.error(`Unable to access file: ${newFilePath}`)
 							}
@@ -115,14 +133,14 @@ export default class Watcher {
 	private watchFile(filePath: string, callback: Callback) {
 		const watcher = watch(filePath, async (event, filename) => {
 			if (event === 'rename') {
-				// If the file is renamed, try to access it. If it exists, it was added. Otherwise, removed.
+				// If the file still exists, it was not moved or renamed, but rather a new file was added.
 				try {
 					await this.retry(() => fs.access(filePath, fs.constants.F_OK))
 					if (!this.isFirstTime) {
 						callback('added', filename, path.dirname(filePath))
 					}
 				} catch (e) {
-					// If the file is not found, it was removed.
+					// If the file does not exist anymore, it was moved or renamed.
 					if (hasProperties<{ code: unknown }>(e, ['code']) && e.code === 'ENOENT') {
 						const watcher = this.watchers.get(filePath)
 						if (watcher) {
