@@ -60,6 +60,15 @@ export interface RoboStateMessage extends RoboMessage {
 	state: State
 }
 
+export interface SpiritMessage {
+	command?: 'build' | 'restart' | 'start'
+	error?: unknown
+	event?: 'command' | 'exit' | 'ready' | 'state-load' | 'state-save'
+	response?: unknown
+	state?: State
+	verbose?: boolean
+}
+
 export type State = Record<string, unknown>
 
 export type SageOptions = {
