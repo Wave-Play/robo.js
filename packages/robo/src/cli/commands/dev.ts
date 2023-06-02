@@ -4,23 +4,16 @@ import { spawn } from 'child_process'
 import { logger } from '../../core/logger.js'
 import { DEFAULT_CONFIG } from '../../core/constants.js'
 import { loadConfig, loadConfigPath } from '../../core/config.js'
-import {
-	IS_WINDOWS,
-	__DIRNAME,
-	cmd,
-	filterExistingPaths,
-	getPkgManager,
-	getWatchedPlugins,
-	timeout
-} from '../utils/utils.js'
+import { IS_WINDOWS, cmd, filterExistingPaths, getPkgManager, getWatchedPlugins, timeout } from '../utils/utils.js'
 import path from 'node:path'
 import url from 'node:url'
 import { getStateSave } from '../../core/state.js'
 import Watcher from '../utils/watcher.js'
 import { color } from '../utils/color.js'
-import { Worker } from 'node:worker_threads'
-import type { Config, RoboMessage } from '../../types/index.js'
+import { Spirits } from '../utils/spirits.js'
+import type { Config, RoboMessage, SpiritMessage } from '../../types/index.js'
 import type { ChildProcess } from 'child_process'
+import { buildAction } from './build/index.js'
 
 const command = new Command('dev')
 	.description('Ready, set, code your bot to life! Starts development mode.')
@@ -36,7 +29,7 @@ interface DevCommandOptions {
 
 const buildCommand = 'robo build --dev'
 
-let workerThread: Worker | undefined
+let spirits: Spirits | undefined
 
 async function devAction(options: DevCommandOptions) {
 	// Create a logger
@@ -65,14 +58,26 @@ async function devAction(options: DevCommandOptions) {
 		logger.warn(`Experimental flags enabled: ${features}.`)
 	}
 
-	// Ensure worker thread is ready
+	// Ensure worker spirits are ready
 	if (config.experimental?.workerThreads) {
-		workerThread = new Worker(path.join(__DIRNAME, '..', 'worker.js'))
+		spirits = new Spirits()
 	}
 
-	// Run after preparing first build
-	const buildSuccess = await buildAsync(buildCommand + (options.verbose ? ' --verbose' : ''), config, options.verbose)
+	// Run first build
+	let buildSuccess = false
+	try {
+		const start = Date.now()
+		await buildAction({
+			dev: true,
+			verbose: options.verbose
+		})
+		logger.debug(`Build completed in ${Date.now() - start}ms`)
+		buildSuccess = true
+	} catch (error) {
+		logger.error(error)
+	}
 	let botProcess: ChildProcess
+	let roboSpirit: number
 
 	const registerProcessEvents = () => {
 		botProcess?.on('message', async (message: RoboMessage) => {
@@ -83,7 +88,12 @@ async function devAction(options: DevCommandOptions) {
 		})
 	}
 
-	if (buildSuccess) {
+	if (buildSuccess && config.experimental?.workerThreads) {
+		roboSpirit = await spirits.newTask<number>({
+			command: 'start'
+		})
+		spirits.send(roboSpirit, { event: 'state-load', state: {} })
+	} else if (buildSuccess) {
 		botProcess = await run()
 		registerProcessEvents()
 		botProcess.send({ type: 'state-load', state: {} })
@@ -125,8 +135,12 @@ async function devAction(options: DevCommandOptions) {
 				logger.wait(`Change detected. Restarting Robo...`)
 			}
 
-			botProcess = await rebuildAndRestartBot(botProcess, config, options.verbose)
-			registerProcessEvents()
+			if (config.experimental?.workerThreads) {
+				roboSpirit = await rebuildRobo(roboSpirit, config, options.verbose)
+			} else {
+				botProcess = await rebuildAndRestartBot(botProcess, config, options.verbose)
+				registerProcessEvents()
+			}
 		} finally {
 			isUpdating = false
 		}
@@ -143,26 +157,16 @@ export async function buildAsync(command: string, config: Config, verbose?: bool
 		const start = Date.now()
 
 		if (config.experimental?.workerThreads) {
-			workerThread.postMessage({
-				command: 'build',
-				verbose: verbose
-			})
-
-			workerThread.on('exit', (code) => {
-				workerThread = new Worker(path.join(__DIRNAME, '..', 'worker.js'))
-				if (code === 0) {
+			spirits
+				.newTask({
+					command: 'build',
+					verbose: verbose
+				})
+				.then(() => {
 					logger.debug(`Build completed in ${Date.now() - start}ms`)
 					resolve(true)
-				} else {
-					resolve(false)
-				}
-			})
-
-			workerThread.on('error', (error) => {
-				workerThread = new Worker(path.join(__DIRNAME, '..', 'worker.js'))
-				reject(error)
-				resolve(false)
-			})
+				})
+				.catch(() => resolve(false))
 		} else {
 			let pkgManager = getPkgManager()
 
@@ -211,6 +215,75 @@ export async function buildAsync(command: string, config: Config, verbose?: bool
 	})
 }
 
+async function rebuildRobo(spiritId: number, config: Config, verbose: boolean) {
+	// Guard against accidentally killing the new spirit
+	const roboSpirit = spiritId
+	const isValid = roboSpirit !== null && roboSpirit !== undefined
+
+	// Stop the previous spirit if it's still running
+	// We wait for the spirit to exit before starting a new one
+	let isTerminated = false
+	const terminate = new Promise<void>((resolve) => {
+		if (!isValid) {
+			return resolve()
+		}
+		const spirit = spirits.get(roboSpirit)
+
+		const callback = () => {
+			logger.debug(`Terminated Robo spirit ${roboSpirit}`)
+			spirit.worker.off('exit', callback)
+			spirit.isTerminated = true
+			isTerminated = true
+			resolve()
+		}
+
+		spirit.worker.once('exit', callback)
+		spirit.worker.on('message', (message: SpiritMessage) => {
+			if (message.event === 'exit' || message.response === 'exit') {
+				callback()
+			}
+		})
+		spirits.send(roboSpirit, { command: 'restart', verbose })
+	})
+
+	// Force abort the bot if it doesn't exit after n seconds
+	// This is to prevent the bot from running multiple instances
+	const forceAbort = timeout(() => {
+		if (!isTerminated && isValid) {
+			logger.warn('Robo termination timed out. Force stopping...')
+		}
+
+		spirits.stop(roboSpirit, true)
+	}, config?.timeouts?.lifecycle ?? DEFAULT_CONFIG.timeouts.lifecycle)
+
+	// Get state dump before restarting
+	logger.debug('Saving state...')
+	const savedState = {} // await getStateSave(currentBot)
+
+	// Wait for the bot to exit or force abort
+	logger.debug('Sending restart signal...')
+	const awaitStop = Promise.race([terminate, forceAbort])
+	const [success] = await Promise.all([
+		buildAsync(buildCommand + (verbose ? ' --verbose' : ''), config, verbose),
+		awaitStop
+	])
+
+	// Return null for the bot if the build failed so we can retry later
+	if (!success) {
+		logger.wait(`Build failed! Waiting for changes before retrying...`)
+		return null
+	}
+
+	// Start bot via spirit if worker threads are enabled
+	const start = Date.now()
+	const newSpiritId = await spirits.newTask<number>({
+		command: 'start'
+	})
+	logger.debug(`Robo spirit (${newSpiritId}) started in ${Date.now() - start}ms`)
+	spirits.send(newSpiritId, { event: 'state-load', state: savedState })
+	return newSpiritId
+}
+
 async function rebuildAndRestartBot(bot: ChildProcess | null, config: Config, verbose: boolean) {
 	// Guard against accidentally killing the new process
 	const currentBot = bot
@@ -240,9 +313,11 @@ async function rebuildAndRestartBot(bot: ChildProcess | null, config: Config, ve
 	}, config?.timeouts?.lifecycle ?? DEFAULT_CONFIG.timeouts.lifecycle)
 
 	// Get state dump before restarting
+	logger.debug('Saving state...')
 	const savedState = await getStateSave(currentBot)
 
 	// Wait for the bot to exit or force abort
+	logger.debug('Sending restart signal...')
 	currentBot?.send({ type: 'restart' })
 	const awaitStop = Promise.race([terminate, forceAbort])
 	const [success] = await Promise.all([
