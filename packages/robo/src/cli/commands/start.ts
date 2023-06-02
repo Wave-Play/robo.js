@@ -50,7 +50,7 @@ async function startAction(options: StartCommandOptions) {
 	const experimentalKeys = Object.keys(config.experimental ?? {})
 	if (experimentalKeys.length > 0) {
 		const features = experimentalKeys.map((key) => color.bold(key)).join(', ')
-		logger.warn(`Experimental flags enabled: ${features}. These may be unstable and change often!`)
+		logger.warn(`Experimental flags enabled: ${features}.`)
 	}
 
 	// Imported dynamically to prevent multiple process hooks

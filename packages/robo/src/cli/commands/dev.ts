@@ -62,7 +62,7 @@ async function devAction(options: DevCommandOptions) {
 	const experimentalKeys = Object.keys(config.experimental ?? {})
 	if (experimentalKeys.length > 0) {
 		const features = experimentalKeys.map((key) => color.bold(key)).join(', ')
-		logger.warn(`Experimental flags enabled: ${features}. These may be unstable and change often!`)
+		logger.warn(`Experimental flags enabled: ${features}.`)
 	}
 
 	// Ensure worker thread is ready
