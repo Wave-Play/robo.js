@@ -13,7 +13,7 @@ interface Options {
 
 // The interface for the callback function.
 interface Callback {
-	(changeType: ChangeType, filename: string, dirPath: string): void
+	(changeType: ChangeType, filePath: string): void
 }
 
 // Watcher class will monitor files and directories for changes.
@@ -69,7 +69,7 @@ export default class Watcher {
 			this.watchFile(targetPath, callback)
 			// Fire the callback if not first time.
 			if (!this.isFirstTime) {
-				callback('added', path.basename(targetPath), path.dirname(targetPath))
+				callback('added', targetPath)
 			}
 		} else if (stats.isDirectory() && (!options.exclude || !options.exclude.includes(path.basename(targetPath)))) {
 			// If a directory, read all the contents and watch them.
@@ -91,7 +91,7 @@ export default class Watcher {
 							if (!this.watchers.has(newFilePath)) {
 								await this.watchPath(newFilePath, options, callback)
 								if (!this.isFirstTime) {
-									callback('added', filename, path.dirname(targetPath))
+									callback('added', newFilePath)
 								}
 							} else {
 								// The file was moved or renamed within this directory. The old path will not exist anymore.
@@ -109,7 +109,7 @@ export default class Watcher {
 								logger.warn(`File ${newFilePath} was not found`)
 								const watcher = this.watchers.get(newFilePath)
 								if (watcher) {
-									callback('removed', filename, path.dirname(targetPath))
+									callback('removed', newFilePath)
 									watcher.close()
 									this.watchers.delete(newFilePath)
 								}
@@ -131,20 +131,20 @@ export default class Watcher {
 
 	// Watch a single file. Set up the FSWatcher and callback for changes.
 	private watchFile(filePath: string, callback: Callback) {
-		const watcher = watch(filePath, async (event, filename) => {
+		const watcher = watch(filePath, async (event) => {
 			if (event === 'rename') {
 				// If the file still exists, it was not moved or renamed, but rather a new file was added.
 				try {
 					await this.retry(() => fs.access(filePath, fs.constants.F_OK))
 					if (!this.isFirstTime) {
-						callback('added', filename, path.dirname(filePath))
+						callback('added', filePath)
 					}
 				} catch (e) {
 					// If the file does not exist anymore, it was moved or renamed.
 					if (hasProperties<{ code: unknown }>(e, ['code']) && e.code === 'ENOENT') {
 						const watcher = this.watchers.get(filePath)
 						if (watcher) {
-							callback('removed', filename, path.dirname(filePath))
+							callback('removed', filePath)
 							watcher.close()
 							this.watchers.delete(filePath)
 						}
@@ -158,7 +158,7 @@ export default class Watcher {
 				if (this.watchedFiles.get(filePath)?.getTime() !== stat.mtime.getTime()) {
 					this.watchedFiles.set(filePath, stat.mtime)
 					if (!this.isFirstTime) {
-						callback('changed', filename, path.dirname(filePath))
+						callback('changed', filePath)
 					}
 				}
 			}
