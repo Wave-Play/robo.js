@@ -61,6 +61,19 @@ async function devAction(options: DevCommandOptions) {
 	// Ensure worker spirits are ready
 	if (config.experimental?.workerThreads) {
 		spirits = new Spirits()
+
+		// Stop spirits on process exit
+		let isStopping = false
+		const callback = async () => {
+			if (isStopping) {
+				return
+			}
+			isStopping = true
+			await spirits.stopAll()
+			process.exit(0)
+		}
+		process.on('SIGINT', callback)
+		process.on('SIGTERM', callback)
 	}
 
 	// Run first build

@@ -122,8 +122,10 @@ export class Spirits {
 			spirit.task = task
 
 			// Strip functions before sending task to worker
-			const workerTask: Task = { ...task, reject: undefined, resolve: undefined }
-			logger.debug(`Sending task to spirit ${this.nextActiveIndex}:`, workerTask)
+			const workerTask: Task = { ...task }
+			delete workerTask.resolve
+			delete workerTask.reject
+			logger.debug(`Sending task to spirit ${spirit.id}:`, workerTask)
 			spirit.worker.postMessage(workerTask)
 		}
 
@@ -134,6 +136,9 @@ export class Spirits {
 	// New stop method to send shutdown signal to specific workers
 	public async stop(spiritId: string, force?: boolean) {
 		const spirit = this.get(spiritId)
+		if (spirit.isTerminated) {
+			return Promise.resolve()
+		}
 		logger.debug(`Stopping spirit ${spiritId} (force: ${force})`)
 
 		// If the worker isn't doing anything or if forced, terminate it immediately
@@ -146,8 +151,9 @@ export class Spirits {
 		return new Promise<void>((resolve) => {
 			spirit.worker.once('exit', resolve)
 			spirit.worker.on('message', (message: SpiritMessage) => {
-				if (message.response === 'exit') {
+				if (message.event === 'exit' || message.response === 'exit') {
 					spirit.task?.resolve()
+					spirit.isTerminated = true
 					resolve()
 					this.newSpirit(spirit)
 					this.tryNextTask()

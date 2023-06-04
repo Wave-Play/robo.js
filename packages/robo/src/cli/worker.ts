@@ -14,6 +14,7 @@ setInterval(() => {
 }, 1000).unref()
 
 // This is used to wait for the state to be loaded before continuing
+let isRobo = false
 let stateLoadResolve: () => void
 const stateLoad = new Promise<void>((resolve) => {
 	stateLoadResolve = resolve
@@ -32,12 +33,25 @@ async function run(message: SpiritMessage): Promise<unknown> {
 		})
 		return 'exit'
 	} else if (message.command === 'restart') {
+		if (!isRobo) {
+			return 'exit'
+		}
+
 		const { Robo } = await import('../core/robo.js')
 		Robo.restart()
 		return 'ok'
 	} else if (message.command === 'start') {
 		const { Robo } = await import('../core/robo.js')
 		Robo.start({ stateLoad })
+		isRobo = true
+		return 'ok'
+	} else if (message.command === 'stop') {
+		if (!isRobo) {
+			return 'exit'
+		}
+
+		const { Robo } = await import('../core/robo.js')
+		Robo.stop()
 		return 'ok'
 	} else if (message.event === 'state-load') {
 		const { loadState } = await import('../core/state.js')
