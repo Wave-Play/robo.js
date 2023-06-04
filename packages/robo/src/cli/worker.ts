@@ -61,6 +61,13 @@ parentPort.on('message', async (message: SpiritMessage) => {
 	} catch (error) {
 		result = { response: 'exit', error }
 	}
+
+	// Preemptively flush logs if we're exiting
+	if (result.response === 'exit') {
+		await logger.flush()
+	}
+
+	// Forward response to main thread
 	parentPort.postMessage(result)
 
 	// Stop living once work is done ;-;

@@ -1,6 +1,27 @@
 import { BaseLogger, LogLevel, colorizedLogLevels } from './base-logger.js'
 import { ANSI_REGEX, DEBUG_MODE } from './debug.js'
+import { inspect } from 'util'
 import type { BaseLoggerOptions } from './base-logger.js'
+
+const pendingWrites = new Set<Promise<void>>()
+
+type LogStream = typeof process.stderr | typeof process.stdout
+
+function writeLog(stream: LogStream, ...data: unknown[]) {
+	return new Promise<void>((resolve, reject) => {
+		const parts = data?.map((item) => {
+			if (typeof item === 'object' || item instanceof Error || Array.isArray(item)) {
+				return inspect(item, { colors: true, depth: null })
+			}
+			return item
+		})
+
+		stream.write(parts?.join(' ') + '\n', 'utf8', (error) => {
+			if (error) reject(error)
+			else resolve()
+		})
+	})
+}
 
 const DEFAULT_MAX_ENTRIES = 100
 
@@ -64,29 +85,40 @@ class Logger extends BaseLogger {
 			this._currentIndex = (this._currentIndex + 1) % this._logBuffer.length
 		}
 
+		let promise: Promise<void>
 		switch (level) {
 			case 'trace':
 			case 'debug':
-				console.debug(...data)
+				promise = writeLog(process.stdout, ...data)
 				break
 			case 'info':
-				console.info(...data)
+				promise = writeLog(process.stdout, ...data)
 				break
 			case 'wait':
-				console.info(...data)
+				promise = writeLog(process.stdout, ...data)
 				break
 			case 'event':
-				console.log(...data)
+				promise = writeLog(process.stdout, ...data)
 				break
 			case 'warn':
-				console.warn(...data)
+				promise = writeLog(process.stderr, ...data)
 				break
 			case 'error':
-				console.error(...data)
+				promise = writeLog(process.stderr, ...data)
 				break
 			default:
-				console.log(...data)
+				promise = writeLog(process.stdout, ...data)
+				break
 		}
+
+		pendingWrites.add(promise)
+		promise.finally(() => {
+			pendingWrites.delete(promise)
+		})
+	}
+
+	public flush() {
+		return Promise.allSettled([...pendingWrites])
 	}
 
 	public getRecentLogs(count = 50): LogEntry[] {
@@ -121,6 +153,10 @@ export function logger(options?: BaseLoggerOptions): Logger {
 	}
 
 	return _logger
+}
+
+logger.flush = async function (): Promise<void> {
+	await logger().flush()
 }
 
 logger.getRecentLogs = function (count = 25): LogEntry[] {
