@@ -1,7 +1,11 @@
 import { BaseLogger, LogLevel, colorizedLogLevels } from './base-logger.js'
-import { ANSI_REGEX, DEBUG_MODE } from './debug.js'
 import { inspect } from 'util'
 import type { BaseLoggerOptions } from './base-logger.js'
+
+export const DEBUG_MODE = process.env.NODE_ENV !== 'production'
+
+// eslint-disable-next-line no-control-regex
+export const ANSI_REGEX = /\x1b\[.*?m/g
 
 const pendingWrites = new Set<Promise<void>>()
 
