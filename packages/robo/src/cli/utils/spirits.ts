@@ -35,8 +35,10 @@ export class Spirits {
 	}
 
 	public newSpirit(oldSpirit?: Spirit) {
-		const worker = new Worker(path.join(__DIRNAME, '..', 'worker.js'))
 		const spiritId = `${this.spiritIndex++}-${nameGenerator()}`
+		const worker = new Worker(path.join(__DIRNAME, '..', 'worker.js'), {
+			workerData: { spiritId }
+		})
 		const newSpirit: Spirit = { id: spiritId, task: null, worker }
 		this.spirits[newSpirit.id] = newSpirit
 
@@ -132,6 +134,7 @@ export class Spirits {
 	// New stop method to send shutdown signal to specific workers
 	public async stop(spiritId: string, force?: boolean) {
 		const spirit = this.get(spiritId)
+		logger.debug(`Stopping spirit ${spiritId} (force: ${force})`)
 
 		// If the worker isn't doing anything or if forced, terminate it immediately
 		if (force || !spirit.task) {

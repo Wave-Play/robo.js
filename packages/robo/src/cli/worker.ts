@@ -1,4 +1,4 @@
-import { isMainThread, parentPort } from 'node:worker_threads'
+import { isMainThread, parentPort, workerData } from 'node:worker_threads'
 import { logger } from '../core/logger.js'
 import type { SpiritMessage } from '../types/index.js'
 
@@ -52,7 +52,7 @@ async function run(message: SpiritMessage): Promise<unknown> {
 parentPort.on('message', async (message: SpiritMessage) => {
 	logger({
 		level: message.verbose ? 'debug' : 'info'
-	}).debug(`Spirit received message:`, message)
+	}).debug(`Spirit (${workerData.spiritId}) received message:`, message)
 
 	// Handle message and send response (if any) back to main thread
 	let result: SpiritMessage
@@ -61,6 +61,7 @@ parentPort.on('message', async (message: SpiritMessage) => {
 	} catch (error) {
 		result = { response: 'exit', error }
 	}
+	logger.debug(`Spirit (${workerData.spiritId}) sending response:`, result)
 
 	// Preemptively flush logs if we're exiting
 	if (result.response === 'exit') {
