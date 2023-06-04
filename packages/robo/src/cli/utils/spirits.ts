@@ -3,6 +3,7 @@ import { Worker } from 'node:worker_threads'
 import { __DIRNAME } from './utils.js'
 import { logger } from '../../core/logger.js'
 import { SpiritMessage } from 'src/types/index.js'
+import { nameGenerator } from './name-generator.js'
 
 interface Task<T = unknown> {
 	command: 'build' | 'start'
@@ -12,14 +13,14 @@ interface Task<T = unknown> {
 }
 
 interface Spirit {
-	currentTask: Task | null
-	id: number
+	id: string
 	isTerminated?: boolean
+	task: Task | null
 	worker: Worker
 }
 
 export class Spirits {
-	private spirits: Record<number, Spirit> = {}
+	private spirits: Record<string, Spirit> = {}
 	private taskQueue: Task[] = []
 	private spiritIndex = 0
 
@@ -35,20 +36,21 @@ export class Spirits {
 
 	public newSpirit(oldSpirit?: Spirit) {
 		const worker = new Worker(path.join(__DIRNAME, '..', 'worker.js'))
-		const newSpirit: Spirit = { currentTask: null, id: this.spiritIndex++, worker }
+		const spiritId = `${this.spiritIndex++}-${nameGenerator()}`
+		const newSpirit: Spirit = { id: spiritId, task: null, worker }
 		this.spirits[newSpirit.id] = newSpirit
 
 		worker.on('message', (message: SpiritMessage) => {
 			const spirit = this.spirits[newSpirit.id]
 			logger.debug(`Spirit (${spirit.id}) sent message:`, message)
 			if (message.event === 'exit' || message.response === 'exit') {
-				spirit.currentTask?.resolve()
+				spirit.task?.resolve()
 				spirit.isTerminated = true
 				worker.terminate()
 				this.newSpirit(spirit)
 				this.tryNextTask()
 			} else if (message.response === 'ok') {
-				spirit.currentTask?.resolve(spirit.id)
+				spirit.task?.resolve(spirit.id)
 			}
 		})
 
@@ -62,9 +64,9 @@ export class Spirits {
 			logger.debug(`Spirit (${spirit.id}) exited with code ${exitCode}`, spirit)
 			spirit.isTerminated = true
 			if (exitCode === 0) {
-				spirit.currentTask?.resolve()
+				spirit.task?.resolve()
 			} else {
-				spirit.currentTask?.reject(new Error(`Spirit exited with error code ${exitCode}`))
+				spirit.task?.reject(new Error(`Spirit exited with error code ${exitCode}`))
 			}
 
 			this.newSpirit(spirit)
@@ -73,7 +75,7 @@ export class Spirits {
 
 		worker.on('error', (err) => {
 			const spirit = this.spirits[newSpirit.id]
-			spirit.currentTask?.reject(err)
+			spirit.task?.reject(err)
 
 			this.newSpirit(spirit)
 			this.tryNextTask()
@@ -96,11 +98,11 @@ export class Spirits {
 		})
 	}
 
-	public get(spiritId: number) {
+	public get(spiritId: string) {
 		return this.spirits[spiritId]
 	}
 
-	public send(spiritId: number, message: SpiritMessage) {
+	public send(spiritId: string, message: SpiritMessage) {
 		logger.debug(`Sending message to spirit ${spiritId}:`, message)
 		this.get(spiritId).worker.postMessage(message)
 	}
@@ -112,10 +114,10 @@ export class Spirits {
 		}
 
 		const spirit = this.activeSpirits[this.nextActiveIndex]
-		if (spirit.currentTask === null) {
+		if (spirit.task === null) {
 			// Spirit is free, send it the next task!
 			const task = this.taskQueue.shift()
-			spirit.currentTask = task
+			spirit.task = task
 
 			// Strip functions before sending task to worker
 			const workerTask: Task = { ...task, reject: undefined, resolve: undefined }
@@ -128,11 +130,11 @@ export class Spirits {
 	}
 
 	// New stop method to send shutdown signal to specific workers
-	public async stop(spiritId: number, force?: boolean) {
+	public async stop(spiritId: string, force?: boolean) {
 		const spirit = this.get(spiritId)
 
 		// If the worker isn't doing anything or if forced, terminate it immediately
-		if (force || !spirit.currentTask) {
+		if (force || !spirit.task) {
 			spirit.worker.terminate()
 			return Promise.resolve()
 		}
@@ -142,7 +144,7 @@ export class Spirits {
 			spirit.worker.once('exit', resolve)
 			spirit.worker.on('message', (message: SpiritMessage) => {
 				if (message.response === 'exit') {
-					spirit.currentTask?.resolve()
+					spirit.task?.resolve()
 					spirit.worker.terminate()
 					resolve()
 					this.newSpirit(spirit)
@@ -155,8 +157,7 @@ export class Spirits {
 
 	// New stopAll method to shutdown all workers
 	public async stopAll() {
-		for (let i = 0; i < this.size; i++) {
-			await this.stop(i)
-		}
+		const promises = Object.values(this.spirits).map((spirit) => this.stop(spirit.id))
+		return Promise.all(promises)
 	}
 }

@@ -77,7 +77,7 @@ async function devAction(options: DevCommandOptions) {
 		logger.error(error)
 	}
 	let botProcess: ChildProcess
-	let roboSpirit: number
+	let roboSpirit: string
 
 	const registerProcessEvents = () => {
 		botProcess?.on('message', async (message: RoboMessage) => {
@@ -89,7 +89,7 @@ async function devAction(options: DevCommandOptions) {
 	}
 
 	if (buildSuccess && config.experimental?.workerThreads) {
-		roboSpirit = await spirits.newTask<number>({
+		roboSpirit = await spirits.newTask<string>({
 			command: 'start'
 		})
 		spirits.send(roboSpirit, { event: 'state-load', state: {} })
@@ -215,7 +215,7 @@ export async function buildAsync(command: string, config: Config, verbose?: bool
 	})
 }
 
-async function rebuildRobo(spiritId: number, config: Config, verbose: boolean) {
+async function rebuildRobo(spiritId: string, config: Config, verbose: boolean) {
 	// Guard against accidentally killing the new spirit
 	const roboSpirit = spiritId
 	const isValid = roboSpirit !== null && roboSpirit !== undefined
@@ -261,7 +261,6 @@ async function rebuildRobo(spiritId: number, config: Config, verbose: boolean) {
 	const savedState = {} // await getStateSave(currentBot)
 
 	// Wait for the bot to exit or force abort
-	logger.debug('Sending restart signal...')
 	const awaitStop = Promise.race([terminate, forceAbort])
 	const [success] = await Promise.all([
 		buildAsync(buildCommand + (verbose ? ' --verbose' : ''), config, verbose),
@@ -276,7 +275,7 @@ async function rebuildRobo(spiritId: number, config: Config, verbose: boolean) {
 
 	// Start bot via spirit if worker threads are enabled
 	const start = Date.now()
-	const newSpiritId = await spirits.newTask<number>({
+	const newSpiritId = await spirits.newTask<string>({
 		command: 'start'
 	})
 	logger.debug(`Robo spirit (${newSpiritId}) started in ${Date.now() - start}ms`)
