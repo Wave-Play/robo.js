@@ -1,11 +1,12 @@
 import { Command } from 'commander'
 import { generateManifest, loadManifest } from '../../utils/manifest.js'
-import { logger } from '../../../core/logger.js'
+import { logger as defaultLogger, Logger } from '../../../core/logger.js'
 import { loadConfig } from '../../../core/config.js'
 import { getProjectSize, printBuildSummary } from '../../utils/build-summary.js'
 import plugin from './plugin.js'
 import { findCommandDifferences, registerCommands } from '../../utils/commands.js'
 import { generateDefaults } from '../../utils/generate-defaults.js'
+import type { LoggerOptions } from '../../../core/logger.js'
 
 const command = new Command('build')
 	.description('Builds your bot for production.')
@@ -27,10 +28,12 @@ interface BuildCommandOptions {
 }
 
 export async function buildAction(options: BuildCommandOptions) {
-	logger({
+	const loggerOptions: LoggerOptions = {
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : options.dev ? 'warn' : 'info'
-	}).info(`Building Robo...`)
+	}
+	const logger = options.dev ? new Logger(loggerOptions) : defaultLogger(loggerOptions)
+	logger.info(`Building Robo...`)
 	logger.debug(`Current working directory:`, process.cwd())
 	const startTime = Date.now()
 

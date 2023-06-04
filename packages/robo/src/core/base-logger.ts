@@ -88,8 +88,8 @@ const LogLevelValues: Record<LogLevel, number> = {
 	wait: 2,
 	other: 2,
 	event: 3,
-	ready: 5,
 	warn: 4,
+	ready: 5,
 	error: 5
 }
 

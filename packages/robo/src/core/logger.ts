@@ -34,7 +34,7 @@ class LogEntry {
 	}
 }
 
-interface LoggerOptions extends BaseLoggerOptions {
+export interface LoggerOptions extends BaseLoggerOptions {
 	maxEntries?: number
 }
 
