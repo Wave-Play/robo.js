@@ -119,30 +119,36 @@ async function start(options?: StartOptions) {
 }
 
 async function stop(exitCode = 0) {
-	// Notify lifecycle handler
-	await executeEventHandler(plugins, '_stop', client)
-	client?.destroy()
-	logger.debug(`Stopped Robo at ` + new Date().toLocaleString())
-	if (isMainThread) {
-		process.exit(exitCode)
-	} else {
-		await logger.flush()
-		parentPort?.postMessage({ event: 'exit' })
-		parentPort?.close()
+	try {
+		// Notify lifecycle handler
+		await executeEventHandler(plugins, '_stop', client)
+		client?.destroy()
+		logger.debug(`Stopped Robo at ` + new Date().toLocaleString())
+	} finally {
+		if (isMainThread) {
+			process.exit(exitCode)
+		} else {
+			await logger.flush()
+			parentPort?.postMessage({ event: 'exit' })
+			parentPort?.close()
+		}
 	}
 }
 
 async function restart() {
-	// Notify lifecycle handler
-	await executeEventHandler(plugins, '_restart', client)
-	client?.destroy()
-	logger.debug(`Restarted Robo at ` + new Date().toLocaleString())
-	if (isMainThread) {
-		process.exit(0)
-	} else {
-		await logger.flush()
-		parentPort?.postMessage({ event: 'exit' })
-		parentPort?.close()
+	try {
+		// Notify lifecycle handler
+		await executeEventHandler(plugins, '_restart', client)
+		client?.destroy()
+		logger.debug(`Restarted Robo at ` + new Date().toLocaleString())
+	} finally {
+		if (isMainThread) {
+			process.exit(0)
+		} else {
+			await logger.flush()
+			parentPort?.postMessage({ event: 'exit' })
+			parentPort?.close()
+		}
 	}
 }
 
