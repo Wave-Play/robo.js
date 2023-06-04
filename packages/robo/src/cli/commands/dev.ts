@@ -230,7 +230,7 @@ async function rebuildRobo(spiritId: string, config: Config, verbose: boolean) {
 		const spirit = spirits.get(roboSpirit)
 
 		const callback = () => {
-			logger.debug(`Terminated Robo spirit ${roboSpirit}`)
+			logger.debug(`Gracefully stopped Robo spirit (${roboSpirit})`)
 			spirit.worker.off('exit', callback)
 			spirit.isTerminated = true
 			isTerminated = true
@@ -251,9 +251,8 @@ async function rebuildRobo(spiritId: string, config: Config, verbose: boolean) {
 	const forceAbort = timeout(() => {
 		if (!isTerminated && isValid) {
 			logger.warn('Robo termination timed out. Force stopping...')
+			spirits.stop(roboSpirit, true)
 		}
-
-		spirits.stop(roboSpirit, true)
 	}, config?.timeouts?.lifecycle ?? DEFAULT_CONFIG.timeouts.lifecycle)
 
 	// Get state dump before restarting

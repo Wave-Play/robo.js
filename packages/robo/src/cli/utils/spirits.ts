@@ -35,7 +35,8 @@ export class Spirits {
 	}
 
 	public newSpirit(oldSpirit?: Spirit) {
-		const spiritId = `${this.spiritIndex++}-${nameGenerator()}`
+		const index = oldSpirit ? this.activeSpirits.indexOf(oldSpirit) : this.activeSpirits.length
+		const spiritId = `${this.spiritIndex++}-${nameGenerator()}-${['a', 'b', 'c'][index]}`
 		const worker = new Worker(path.join(__DIRNAME, '..', 'worker.js'), {
 			workerData: { spiritId }
 		})
@@ -48,7 +49,6 @@ export class Spirits {
 			if (message.event === 'exit' || message.response === 'exit') {
 				spirit.task?.resolve()
 				spirit.isTerminated = true
-				worker.terminate()
 				this.newSpirit(spirit)
 				this.tryNextTask()
 			} else if (message.response === 'ok') {
@@ -57,13 +57,14 @@ export class Spirits {
 		})
 
 		worker.on('exit', (exitCode: number) => {
-			const spirit = this.spirits[newSpirit.id]
+			logger.debug(`Spirit (${spiritId}) exited with code ${exitCode}`)
+
 			// No need to handle this if the spirit is already terminated elsewhere
+			const spirit = this.spirits[newSpirit.id]
 			if (spirit.isTerminated) {
 				return
 			}
 
-			logger.debug(`Spirit (${spirit.id}) exited with code ${exitCode}`, spirit)
 			spirit.isTerminated = true
 			if (exitCode === 0) {
 				spirit.task?.resolve()
@@ -85,7 +86,6 @@ export class Spirits {
 
 		// If old spirit was passed, swap it out for the new one, otherwise push it to the end
 		if (oldSpirit) {
-			const index = this.activeSpirits.indexOf(oldSpirit)
 			this.activeSpirits[index] = newSpirit
 		} else {
 			this.activeSpirits.push(newSpirit)
@@ -148,7 +148,6 @@ export class Spirits {
 			spirit.worker.on('message', (message: SpiritMessage) => {
 				if (message.response === 'exit') {
 					spirit.task?.resolve()
-					spirit.worker.terminate()
 					resolve()
 					this.newSpirit(spirit)
 					this.tryNextTask()

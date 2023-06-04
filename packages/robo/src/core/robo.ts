@@ -126,7 +126,9 @@ async function stop(exitCode = 0) {
 	if (isMainThread) {
 		process.exit(exitCode)
 	} else {
+		await logger.flush()
 		parentPort?.postMessage({ event: 'exit' })
+		parentPort?.close()
 	}
 }
 
@@ -138,7 +140,9 @@ async function restart() {
 	if (isMainThread) {
 		process.exit(0)
 	} else {
+		await logger.flush()
 		parentPort?.postMessage({ event: 'exit' })
+		parentPort?.close()
 	}
 }
 
