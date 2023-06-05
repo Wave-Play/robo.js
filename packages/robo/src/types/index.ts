@@ -57,7 +57,7 @@ export interface RoboMessage {
 }
 
 export interface RoboStateMessage extends RoboMessage {
-	state: State
+	state: Record<string, unknown>
 }
 
 export interface SpiritMessage {
@@ -72,11 +72,9 @@ export interface SpiritMessage {
 		| 'start'
 		| 'stop'
 	payload?: unknown
-	state?: State
+	state?: Record<string, unknown>
 	verbose?: boolean
 }
-
-export type State = Record<string, unknown>
 
 export type SageOptions = {
 	defer?: boolean

@@ -13,7 +13,7 @@ import { color } from '../utils/color.js'
 import { Spirits } from '../utils/spirits.js'
 import { buildAction } from './build/index.js'
 import { Flashcore, prepareFlashcore } from '../../core/flashcore.js'
-import type { Config, RoboMessage, SpiritMessage, State } from '../../types/index.js'
+import type { Config, RoboMessage, SpiritMessage } from '../../types/index.js'
 import type { ChildProcess } from 'child_process'
 
 const command = new Command('dev')
@@ -118,7 +118,7 @@ async function devAction(options: DevCommandOptions) {
 	// Get state saved to disk as the default
 	const stateStart = Date.now()
 	await prepareFlashcore()
-	const persistedState = await Flashcore.get<State>(FLASHCORE_KEYS.state) ?? {}
+	const persistedState = (await Flashcore.get<Record<string, unknown>>(FLASHCORE_KEYS.state)) ?? {}
 	logger.debug(`State loaded in ${Date.now() - stateStart}ms`)
 
 	// Start the Robo!
@@ -257,7 +257,7 @@ async function rebuildRobo(spiritId: string, config: Config, verbose: boolean) {
 	// Get state dump before restarting
 	const stateSaveStart = Date.now()
 	logger.debug('Saving state...')
-	const savedState = await spirits.exec<State>(roboSpirit, {
+	const savedState = await spirits.exec<Record<string, unknown>>(roboSpirit, {
 		event: 'get-state'
 	})
 	logger.debug(`Saved state in ${Date.now() - stateSaveStart}ms:`, savedState)
