@@ -59,7 +59,7 @@ async function devAction(options: DevCommandOptions) {
 	}
 
 	// Ensure worker spirits are ready
-	if (config.experimental?.workerThreads) {
+	if (config.experimental?.spirits) {
 		spirits = new Spirits()
 
 		// Stop spirits on process exit
@@ -110,7 +110,7 @@ async function devAction(options: DevCommandOptions) {
 		}
 	}
 
-	if (buildSuccess && config.experimental?.workerThreads) {
+	if (buildSuccess && config.experimental?.spirits) {
 		roboSpirit = await spirits.newTask<string>({ event: 'start' })
 		spirits.on(roboSpirit, restartCallback)
 		spirits.send(roboSpirit, { event: 'state-load', state: {} })
@@ -156,7 +156,7 @@ async function devAction(options: DevCommandOptions) {
 				logger.wait(`Change detected. Restarting Robo...`)
 			}
 
-			if (config.experimental?.workerThreads) {
+			if (config.experimental?.spirits) {
 				roboSpirit = await rebuildRobo(roboSpirit, config, options.verbose)
 				spirits.on(roboSpirit, restartCallback)
 			} else {
@@ -178,7 +178,7 @@ export async function buildAsync(command: string, config: Config, verbose?: bool
 		const args = command.split(' ')
 		const start = Date.now()
 
-		if (config.experimental?.workerThreads) {
+		if (config.experimental?.spirits) {
 			spirits
 				.newTask({
 					event: 'build',

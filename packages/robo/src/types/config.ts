@@ -9,7 +9,7 @@ export interface Config {
 	}
 	experimental?: {
 		incrementalBuilds?: boolean
-		workerThreads?: boolean
+		spirits?: boolean
 	}
 	flashcore?: {
 		adapter?: string
