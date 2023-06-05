@@ -67,9 +67,13 @@ async function run(message: SpiritMessage): Promise<unknown> {
 }
 
 parentPort.on('message', async (message: SpiritMessage) => {
-	logger({
-		level: message.verbose ? 'debug' : 'info'
-	}).debug(`Spirit (${workerData.spiritId}) received message:`, message)
+	// Update logger only if this spirit isn't already a Robo
+	if (!isRobo) {
+		logger({
+			level: message.verbose ? 'debug' : 'info'
+		})
+	}
+	logger.debug(`Spirit (${workerData.spiritId}) received message:`, message)
 
 	// Handle message and send response (if any) back to main thread
 	let result: SpiritMessage
