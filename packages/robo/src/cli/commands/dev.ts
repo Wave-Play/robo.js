@@ -242,6 +242,13 @@ async function rebuildRobo(spiritId: string, config: Config, verbose: boolean) {
 	const roboSpirit = spiritId
 	const isValid = roboSpirit !== null && roboSpirit !== undefined
 
+	// Get state dump before restarting
+	logger.debug('Saving state...')
+	const savedState = await spirits.exec<State>(roboSpirit, {
+		event: 'get-state'
+	})
+	logger.debug(`Saved state:`, savedState)
+
 	// Stop the previous spirit if it's still running
 	// We wait for the spirit to exit before starting a new one
 	let isTerminated = false
@@ -276,13 +283,6 @@ async function rebuildRobo(spiritId: string, config: Config, verbose: boolean) {
 			spirits.stop(roboSpirit, true)
 		}
 	}, config?.timeouts?.lifecycle ?? DEFAULT_CONFIG.timeouts.lifecycle)
-
-	// Get state dump before restarting
-	logger.debug('Saving state...')
-	const savedState = await spirits.exec<State>(roboSpirit, {
-		event: 'get-state'
-	})
-	logger.debug(`Saved state:`, savedState)
 
 	// Wait for the bot to exit or force abort
 	const awaitStop = Promise.race([terminate, forceAbort])
