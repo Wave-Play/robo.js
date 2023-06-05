@@ -6,7 +6,6 @@ import { SpiritMessage } from 'src/types/index.js'
 import { nameGenerator } from './name-generator.js'
 
 interface Task<T = unknown> extends SpiritMessage {
-	onMessage?: (message: SpiritMessage) => void
 	reject?: (reason: T) => void
 	resolve?: (value?: T) => void
 	verbose?: boolean
@@ -47,7 +46,7 @@ export class Spirits {
 			const spirit = this.spirits[newSpirit.id]
 			logger.debug(`Spirit (${spirit.id}) sent message:`, message)
 			if (message.payload === 'exit') {
-				spirit.task?.resolve()
+				spirit.task?.resolve(spirit.id)
 				spirit.isTerminated = true
 				this.newSpirit(spirit)
 				this.tryNextTask()
@@ -67,7 +66,7 @@ export class Spirits {
 
 			spirit.isTerminated = true
 			if (exitCode === 0) {
-				spirit.task?.resolve()
+				spirit.task?.resolve(spirit.id)
 			} else {
 				spirit.task?.reject(new Error(`Spirit exited with error code ${exitCode}`))
 			}
@@ -125,6 +124,14 @@ export class Spirits {
 		return this.spirits[spiritId]
 	}
 
+	public off(spiritId: string, callback: (message: SpiritMessage) => void | Promise<void>) {
+		this.get(spiritId).worker.off('message', callback)
+	}
+
+	public on(spiritId: string, callback: (message: SpiritMessage) => void | Promise<void>) {
+		this.get(spiritId).worker.on('message', callback)
+	}
+
 	public send(spiritId: string, message: SpiritMessage) {
 		logger.debug(`Sending message to spirit ${spiritId}:`, message)
 		this.get(spiritId).worker.postMessage(message)
@@ -144,13 +151,9 @@ export class Spirits {
 
 			// Strip functions before sending task to worker
 			const workerTask: Task = { ...task }
-			delete workerTask.onMessage
 			delete workerTask.resolve
 			delete workerTask.reject
 			logger.debug(`Sending task to spirit ${spirit.id}:`, workerTask)
-			if (task.onMessage) {
-				spirit.worker.on('message', task.onMessage)
-			}
 			spirit.worker.postMessage(workerTask)
 		}
 

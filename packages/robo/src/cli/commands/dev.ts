@@ -101,17 +101,18 @@ async function devAction(options: DevCommandOptions) {
 		})
 	}
 
+	const restartCallback = async (message: SpiritMessage) => {
+		if (message.event === 'restart' && message.payload === 'trigger') {
+			logger.wait(`Restarting Robo...`)
+			spirits.off(roboSpirit, restartCallback)
+			roboSpirit = await rebuildRobo(roboSpirit, config, options.verbose)
+			spirits.on(roboSpirit, restartCallback)
+		}
+	}
+
 	if (buildSuccess && config.experimental?.workerThreads) {
-		roboSpirit = await spirits.newTask<string>({
-			event: 'start',
-			onMessage: async (message: SpiritMessage) => {
-				if (message.event === 'restart' && message.payload === 'trigger') {
-					logger.wait(`Restarting Robo...`)
-					spirits?.stop(roboSpirit)
-					roboSpirit = await rebuildRobo(roboSpirit, config, options.verbose)
-				}
-			}
-		})
+		roboSpirit = await spirits.newTask<string>({ event: 'start' })
+		spirits.on(roboSpirit, restartCallback)
 		spirits.send(roboSpirit, { event: 'state-load', state: {} })
 	} else if (buildSuccess) {
 		botProcess = await run()
@@ -157,6 +158,7 @@ async function devAction(options: DevCommandOptions) {
 
 			if (config.experimental?.workerThreads) {
 				roboSpirit = await rebuildRobo(roboSpirit, config, options.verbose)
+				spirits.on(roboSpirit, restartCallback)
 			} else {
 				botProcess = await rebuildAndRestartBot(botProcess, config, options.verbose)
 				registerProcessEvents()
@@ -280,6 +282,7 @@ async function rebuildRobo(spiritId: string, config: Config, verbose: boolean) {
 	const savedState = await spirits.exec<State>(roboSpirit, {
 		event: 'get-state'
 	})
+	logger.debug(`Saved state:`, savedState)
 
 	// Wait for the bot to exit or force abort
 	const awaitStop = Promise.race([terminate, forceAbort])
@@ -296,9 +299,7 @@ async function rebuildRobo(spiritId: string, config: Config, verbose: boolean) {
 
 	// Start bot via spirit if worker threads are enabled
 	const start = Date.now()
-	const newSpiritId = await spirits.newTask<string>({
-		event: 'start'
-	})
+	const newSpiritId = await spirits.newTask<string>({ event: 'start' })
 	logger.debug(`Robo spirit (${newSpiritId}) started in ${Date.now() - start}ms`)
 	spirits.send(newSpiritId, { event: 'state-load', state: savedState })
 	return newSpiritId
