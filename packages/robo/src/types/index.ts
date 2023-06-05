@@ -61,10 +61,18 @@ export interface RoboStateMessage extends RoboMessage {
 }
 
 export interface SpiritMessage {
-	command?: 'build' | 'restart' | 'start'
 	error?: unknown
-	event?: 'command' | 'exit' | 'ready' | 'restart' | 'state-load' | 'state-save'
-	response?: unknown
+	event?:
+		| 'build'
+		| 'get-state'
+		| 'command'
+		| 'ready'
+		| 'restart'
+		| 'start'
+		| 'state-load'
+		| 'state-save'
+		| 'stop'
+	payload?: unknown
 	state?: State
 	verbose?: boolean
 }

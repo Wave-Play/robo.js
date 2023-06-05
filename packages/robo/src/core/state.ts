@@ -2,7 +2,7 @@ import { logger } from './logger.js'
 import type { RoboMessage, RoboStateMessage, State } from '../types/index.js'
 import type { ChildProcess } from 'child_process'
 
-const state: State = {}
+export const state: State = {}
 
 export function clearState(): void {
 	Object.keys(state).forEach((key) => {

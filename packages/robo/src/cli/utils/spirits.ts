@@ -5,8 +5,7 @@ import { logger } from '../../core/logger.js'
 import { SpiritMessage } from 'src/types/index.js'
 import { nameGenerator } from './name-generator.js'
 
-interface Task<T = unknown> {
-	command: 'build' | 'start'
+interface Task<T = unknown> extends SpiritMessage {
 	onMessage?: (message: SpiritMessage) => void
 	reject?: (reason: T) => void
 	resolve?: (value?: T) => void
@@ -47,12 +46,12 @@ export class Spirits {
 		worker.on('message', (message: SpiritMessage) => {
 			const spirit = this.spirits[newSpirit.id]
 			logger.debug(`Spirit (${spirit.id}) sent message:`, message)
-			if (message.event === 'exit' || message.response === 'exit') {
+			if (message.payload === 'exit') {
 				spirit.task?.resolve()
 				spirit.isTerminated = true
 				this.newSpirit(spirit)
 				this.tryNextTask()
-			} else if (message.response === 'ok') {
+			} else if (message.payload === 'ok') {
 				spirit.task?.resolve(spirit.id)
 			}
 		})
@@ -101,6 +100,27 @@ export class Spirits {
 		})
 	}
 
+	public exec<T>(spiritId: string, message: SpiritMessage): Promise<T> {
+		return new Promise((resolve, reject) => {
+			logger.debug(`Executing message on spirit (${spiritId}):`, message)
+			const spirit = this.get(spiritId)
+			if (!spirit) {
+				return reject(new Error(`Spirit ${spiritId} not found`))
+			}
+
+			// Listen for similar messages from the spirit
+			const callback = (response: SpiritMessage) => {
+				if (response.event === message.event) {
+					spirit.worker.off('message', callback)
+					resolve(response.payload as T)
+				}
+			}
+
+			spirit.worker.on('message', callback)
+			spirit.worker.postMessage(message)
+		})
+	}
+
 	public get(spiritId: string) {
 		return this.spirits[spiritId]
 	}
@@ -138,7 +158,6 @@ export class Spirits {
 		this.nextActiveIndex = (this.nextActiveIndex + 1) % this.size
 	}
 
-	// New stop method to send shutdown signal to specific workers
 	public async stop(spiritId: string, force?: boolean) {
 		const spirit = this.get(spiritId)
 		if (spirit.isTerminated) {
@@ -156,7 +175,7 @@ export class Spirits {
 		return new Promise<void>((resolve) => {
 			spirit.worker.once('exit', resolve)
 			spirit.worker.on('message', (message: SpiritMessage) => {
-				if (message.event === 'exit' || message.response === 'exit') {
+				if (message.payload === 'exit') {
 					spirit.task?.resolve()
 					spirit.isTerminated = true
 					resolve()
@@ -164,11 +183,10 @@ export class Spirits {
 					this.tryNextTask()
 				}
 			})
-			spirit.worker.postMessage({ command: 'stop' })
+			spirit.worker.postMessage({ event: 'stop' })
 		})
 	}
 
-	// New stopAll method to shutdown all workers
 	public async stopAll() {
 		const promises = Object.values(this.spirits).map((spirit) => this.stop(spirit.id))
 		return Promise.all(promises)

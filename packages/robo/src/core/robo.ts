@@ -129,7 +129,7 @@ async function stop(exitCode = 0) {
 			process.exit(exitCode)
 		} else {
 			await logger.flush()
-			parentPort?.postMessage({ event: 'exit' })
+			parentPort?.postMessage({ event: 'stop', payload: 'exit' })
 			parentPort?.close()
 		}
 	}
@@ -146,7 +146,7 @@ async function restart() {
 			process.exit(0)
 		} else {
 			await logger.flush()
-			parentPort?.postMessage({ event: 'exit' })
+			parentPort?.postMessage({ event: 'stop', payload: 'exit' })
 			parentPort?.close()
 		}
 	}

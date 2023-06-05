@@ -11,7 +11,7 @@ import { getStateSave } from '../../core/state.js'
 import Watcher from '../utils/watcher.js'
 import { color } from '../utils/color.js'
 import { Spirits } from '../utils/spirits.js'
-import type { Config, RoboMessage, SpiritMessage } from '../../types/index.js'
+import type { Config, RoboMessage, SpiritMessage, State } from '../../types/index.js'
 import type { ChildProcess } from 'child_process'
 import { buildAction } from './build/index.js'
 
@@ -103,9 +103,9 @@ async function devAction(options: DevCommandOptions) {
 
 	if (buildSuccess && config.experimental?.workerThreads) {
 		roboSpirit = await spirits.newTask<string>({
-			command: 'start',
+			event: 'start',
 			onMessage: async (message: SpiritMessage) => {
-				if (message.event === 'restart') {
+				if (message.event === 'restart' && message.payload === 'trigger') {
 					logger.wait(`Restarting Robo...`)
 					spirits?.stop(roboSpirit)
 					roboSpirit = await rebuildRobo(roboSpirit, config, options.verbose)
@@ -179,7 +179,7 @@ export async function buildAsync(command: string, config: Config, verbose?: bool
 		if (config.experimental?.workerThreads) {
 			spirits
 				.newTask({
-					command: 'build',
+					event: 'build',
 					verbose: verbose
 				})
 				.then(() => {
@@ -259,11 +259,11 @@ async function rebuildRobo(spiritId: string, config: Config, verbose: boolean) {
 
 		spirit.worker.once('exit', callback)
 		spirit.worker.on('message', (message: SpiritMessage) => {
-			if (message.event === 'exit' || message.response === 'exit') {
+			if (message.payload === 'exit') {
 				callback()
 			}
 		})
-		spirits.send(roboSpirit, { command: 'restart', verbose })
+		spirits.send(roboSpirit, { event: 'restart', verbose })
 	})
 
 	// Force abort the bot if it doesn't exit after n seconds
@@ -277,7 +277,9 @@ async function rebuildRobo(spiritId: string, config: Config, verbose: boolean) {
 
 	// Get state dump before restarting
 	logger.debug('Saving state...')
-	const savedState = {} // await getStateSave(currentBot)
+	const savedState = await spirits.exec<State>(roboSpirit, {
+		event: 'get-state'
+	})
 
 	// Wait for the bot to exit or force abort
 	const awaitStop = Promise.race([terminate, forceAbort])
@@ -295,7 +297,7 @@ async function rebuildRobo(spiritId: string, config: Config, verbose: boolean) {
 	// Start bot via spirit if worker threads are enabled
 	const start = Date.now()
 	const newSpiritId = await spirits.newTask<string>({
-		command: 'start'
+		event: 'start'
 	})
 	logger.debug(`Robo spirit (${newSpiritId}) started in ${Date.now() - start}ms`)
 	spirits.send(newSpiritId, { event: 'state-load', state: savedState })

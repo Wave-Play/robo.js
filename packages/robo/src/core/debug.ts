@@ -51,7 +51,7 @@ export const devRestartCommand = async (interaction: CommandInteraction) => {
 	if (isMainThread) {
 		process.send?.({ type: 'restart' })
 	} else {
-		parentPort?.postMessage({ event: 'restart' })
+		parentPort?.postMessage({ event: 'restart', payload: 'trigger' })
 	}
 }
 

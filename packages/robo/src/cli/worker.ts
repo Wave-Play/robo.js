@@ -25,14 +25,17 @@ const stateLoad = new Promise<void>((resolve) => {
  * Each job may be different, and some don't end until told to do so.
  */
 async function run(message: SpiritMessage): Promise<unknown> {
-	if (message.command === 'build') {
+	if (message.event === 'build') {
 		const { buildAction } = await import('./commands/build/index.js')
 		await buildAction({
 			dev: true,
 			verbose: message.verbose
 		})
 		return 'exit'
-	} else if (message.command === 'restart') {
+	} else if (message.event === 'get-state') {
+		const { state } = await import('../core/state.js')
+		return state
+	} else if (message.event === 'restart') {
 		if (!isRobo) {
 			return 'exit'
 		}
@@ -40,12 +43,12 @@ async function run(message: SpiritMessage): Promise<unknown> {
 		const { Robo } = await import('../core/robo.js')
 		Robo.restart()
 		return 'ok'
-	} else if (message.command === 'start') {
+	} else if (message.event === 'start') {
 		const { Robo } = await import('../core/robo.js')
 		Robo.start({ stateLoad })
 		isRobo = true
 		return 'ok'
-	} else if (message.command === 'stop') {
+	} else if (message.event === 'stop') {
 		if (!isRobo) {
 			return 'exit'
 		}
@@ -59,7 +62,7 @@ async function run(message: SpiritMessage): Promise<unknown> {
 		stateLoadResolve()
 		return 'ok'
 	} else {
-		throw `Unknown worker message: ${message.command}`
+		throw `Unknown Spirit message event: ${message.event}`
 	}
 }
 
@@ -71,14 +74,15 @@ parentPort.on('message', async (message: SpiritMessage) => {
 	// Handle message and send response (if any) back to main thread
 	let result: SpiritMessage
 	try {
-		result = { response: await run(message) }
+		const payload = await run(message)
+		result = { event: message.event, payload }
 	} catch (error) {
-		result = { response: 'exit', error }
+		result = { error, payload: 'exit' }
 	}
 	logger.debug(`Spirit (${workerData.spiritId}) sending response:`, result)
 
 	// Preemptively flush logs if we're exiting
-	if (result.response === 'exit') {
+	if (result.payload === 'exit') {
 		await logger.flush()
 	}
 
@@ -86,7 +90,7 @@ parentPort.on('message', async (message: SpiritMessage) => {
 	parentPort.postMessage(result)
 
 	// Stop living once work is done ;-;
-	if (result.response === 'exit') {
+	if (result.payload === 'exit') {
 		parentPort.close()
 	}
 })
