@@ -1,4 +1,6 @@
+import { FLASHCORE_KEYS } from './constants.js'
 import { logger } from './logger.js'
+import { Flashcore } from './flashcore.js'
 import type { RoboMessage, RoboStateMessage, State } from '../types/index.js'
 import type { ChildProcess } from 'child_process'
 
@@ -55,6 +57,20 @@ export function saveState() {
 	process.send({ type: 'state-save', state })
 }
 
-export function setState<T>(key: string, value: T): void {
+interface SetStateOptions {
+	persist?: boolean
+}
+
+export function setState<T>(key: string, value: T, options?: SetStateOptions): void {
+	const { persist } = options ?? {}
 	state[key] = value
+
+	// Persist state to disk if requested
+	if (persist) {
+		(async () => {
+			const persistedState = await Flashcore.get<State>(FLASHCORE_KEYS.state) ?? {}
+			persistedState[key] = value
+			Flashcore.set(FLASHCORE_KEYS.state, persistedState)
+		})()
+	}
 }

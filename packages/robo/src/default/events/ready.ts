@@ -1,7 +1,7 @@
 // @ts-expect-error - This is valid once command file is parsed
 import { getConfig, getState, logger, setState } from '@roboplay/robo.js'
 // @ts-expect-error - This is valid once command file is parsed
-import { DEFAULT_CONFIG } from '@roboplay/robo.js/dist/core/constants.js'
+import { DEFAULT_CONFIG, STATE_KEYS } from '@roboplay/robo.js/dist/core/constants.js'
 // @ts-expect-error - This is valid once command file is parsed
 import { color } from '@roboplay/robo.js/dist/cli/utils/color.js'
 import { ChannelType, Client } from 'discord.js'
@@ -11,7 +11,7 @@ export default async (client: Client) => {
 	const config = getConfig()
 
 	// Send update message if this Robo was just restarted
-	const restartData = getState('__robo_restart')
+	const restartData = getState(STATE_KEYS.restart)
 	if (restartData) {
 		const { channelId, startTime } = restartData
 		const channel = client.channels.cache.get(channelId)
@@ -20,9 +20,8 @@ export default async (client: Client) => {
 			return
 		}
 
-		// Load message
 		channel.send('```\n' + `Successfully restarted in ${Date.now() - startTime}ms` + '\n```')
-		setState('__robo_restart', undefined)
+		setState(STATE_KEYS.restart, undefined)
 	}
 
 	// Ping heartbeat monitor if configured

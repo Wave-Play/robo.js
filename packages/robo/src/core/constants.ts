@@ -18,6 +18,14 @@ export const DEFAULT_CONFIG: Config = {
 	}
 }
 
+export const FLASHCORE_KEYS = {
+	state: '__robo_state'
+}
+
+export const STATE_KEYS = {
+	restart: '__robo_restart'
+}
+
 // Timer symbols
 export const BUFFER = Symbol('BUFFER')
 export const TIMEOUT = Symbol('TIMEOUT')

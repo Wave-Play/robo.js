@@ -27,6 +27,7 @@ import path from 'node:path'
 import { setState } from './state.js'
 import { isMainThread, parentPort } from 'node:worker_threads'
 import type { CommandConfig, Event, HandlerRecord } from '../types/index.js'
+import { STATE_KEYS } from './constants.js'
 
 export const DEBUG_MODE = process.env.NODE_ENV !== 'production'
 
@@ -50,7 +51,7 @@ export const devRestartCommand = async (interaction: CommandInteraction) => {
 	await interaction.reply({
 		content: '```bash\nRestarting...\n```'
 	})
-	setState('__robo_restart', {
+	setState(STATE_KEYS.restart, {
 		channelId: interaction.channelId,
 		guildId: interaction.guildId,
 		startTime: Date.now()

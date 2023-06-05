@@ -2,7 +2,7 @@ import { Command } from 'commander'
 import { run } from '../utils/run.js'
 import { spawn } from 'child_process'
 import { logger } from '../../core/logger.js'
-import { DEFAULT_CONFIG } from '../../core/constants.js'
+import { DEFAULT_CONFIG, FLASHCORE_KEYS } from '../../core/constants.js'
 import { loadConfig, loadConfigPath } from '../../core/config.js'
 import { IS_WINDOWS, cmd, filterExistingPaths, getPkgManager, getWatchedPlugins, timeout } from '../utils/utils.js'
 import path from 'node:path'
@@ -11,9 +11,10 @@ import { getStateSave } from '../../core/state.js'
 import Watcher from '../utils/watcher.js'
 import { color } from '../utils/color.js'
 import { Spirits } from '../utils/spirits.js'
+import { buildAction } from './build/index.js'
+import { Flashcore, prepareFlashcore } from '../../core/flashcore.js'
 import type { Config, RoboMessage, SpiritMessage, State } from '../../types/index.js'
 import type { ChildProcess } from 'child_process'
-import { buildAction } from './build/index.js'
 
 const command = new Command('dev')
 	.description('Ready, set, code your bot to life! Starts development mode.')
@@ -94,6 +95,7 @@ async function devAction(options: DevCommandOptions) {
 	let botProcess: ChildProcess
 	let roboSpirit: string
 
+	// These callbacks are necessary to ensure "/dev restart" works
 	const registerProcessEvents = () => {
 		botProcess?.on('message', async (message: RoboMessage) => {
 			if (message.type === 'restart') {
@@ -113,14 +115,21 @@ async function devAction(options: DevCommandOptions) {
 		}
 	}
 
+	// Get state saved to disk as the default
+	const stateStart = Date.now()
+	await prepareFlashcore()
+	const persistedState = await Flashcore.get<State>(FLASHCORE_KEYS.state) ?? {}
+	logger.debug(`State loaded in ${Date.now() - stateStart}ms`)
+
+	// Start the Robo!
 	if (buildSuccess && config.experimental?.spirits) {
 		roboSpirit = await spirits.newTask<string>({ event: 'start' })
 		spirits.on(roboSpirit, restartCallback)
-		spirits.send(roboSpirit, { event: 'set-state', state: {} })
+		spirits.send(roboSpirit, { event: 'set-state', state: persistedState })
 	} else if (buildSuccess) {
 		botProcess = await run()
 		registerProcessEvents()
-		botProcess.send({ type: 'state-load', state: {} })
+		botProcess.send({ type: 'state-load', state: persistedState })
 	} else {
 		logger.wait(`Build failed! Waiting for changes before retrying...`)
 	}
@@ -246,11 +255,12 @@ async function rebuildRobo(spiritId: string, config: Config, verbose: boolean) {
 	const isValid = roboSpirit !== null && roboSpirit !== undefined
 
 	// Get state dump before restarting
+	const stateSaveStart = Date.now()
 	logger.debug('Saving state...')
 	const savedState = await spirits.exec<State>(roboSpirit, {
 		event: 'get-state'
 	})
-	logger.debug(`Saved state:`, savedState)
+	logger.debug(`Saved state in ${Date.now() - stateSaveStart}ms:`, savedState)
 
 	// Stop the previous spirit if it's still running
 	// We wait for the spirit to exit before starting a new one
