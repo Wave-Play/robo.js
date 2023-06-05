@@ -17,10 +17,9 @@ export interface Context {
 }
 
 export interface FlashcoreAdapter<K = string, V = unknown> {
-	clear(): Promise<boolean> | boolean
+	clear(): Promise<boolean> | Promise<void> | boolean | void
 	delete(key: K): Promise<boolean> | boolean
 	get(key: K): Promise<V | undefined> | V | undefined
-	init(): Promise<void> | void
 	set(key: K, value: V): Promise<boolean> | boolean
 }
 

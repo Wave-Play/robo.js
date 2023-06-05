@@ -40,6 +40,7 @@
 		"@types/node": "18.15.5",
 		"chokidar-cli": "^3.0.0",
 		"discord.js": "14.10.2",
+		"keyv": "^4.5.2",
 		"tsup": "6.7.0",
 		"typescript": "5.0.2"
 	},

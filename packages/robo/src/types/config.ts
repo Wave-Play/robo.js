@@ -12,7 +12,7 @@ export interface Config {
 		spirits?: boolean
 	}
 	flashcore?: {
-		adapter?: string
+		keyv?: unknown
 	}
 	heartbeat?: {
 		debug?: boolean

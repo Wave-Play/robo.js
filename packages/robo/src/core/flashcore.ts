@@ -1,5 +1,6 @@
 import { getConfig } from './config.js'
 import { FlashcoreFileAdapter } from './flashcore-fs.js'
+import { logger } from './logger.js'
 import type { FlashcoreAdapter } from '../types/index.js'
 
 let _adapter: FlashcoreAdapter | undefined
@@ -10,7 +11,7 @@ export const Flashcore = {
 	 *
 	 * @returns {Promise<boolean> | boolean} - Resolves to a boolean indicating whether the operation was successful.
 	 */
-	clear: (): Promise<boolean> | boolean => {
+	clear: (): Promise<boolean> | Promise<void> | boolean | void => {
 		return _adapter.clear()
 	},
 
@@ -50,17 +51,21 @@ export const Flashcore = {
 
 export async function prepareFlashcore() {
 	const config = getConfig()
-	if (config.flashcore?.adapter) {
+	if (config.flashcore?.keyv) {
 		try {
-			// @ts-expect-error - This is a dynamic peer import
+			logger.debug(`Using Keyv Flashcore adapter`)
 			const Keyv = (await import('keyv')).default
-			const Adapter = await import(config.flashcore?.adapter)
-			_adapter = new Keyv({ store: new Adapter() })
+			const keyv = new Keyv(config.flashcore.keyv)
+			keyv.on('error', (error) => {
+				logger.error(`Keyv error:`, error)
+			})
+			_adapter = keyv
 		} catch (error) {
+			logger.error(error)
 			throw new Error('Failed to import or setup the adapter with keyv package.')
 		}
 	} else {
 		_adapter = new FlashcoreFileAdapter()
-		await _adapter.init()
+		await (_adapter as FlashcoreFileAdapter).init()
 	}
 }
