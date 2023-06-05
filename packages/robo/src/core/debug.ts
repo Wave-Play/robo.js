@@ -24,6 +24,7 @@ import type {
 } from 'discord.js'
 import { env } from './env.js'
 import path from 'node:path'
+import { isMainThread, parentPort } from 'node:worker_threads'
 import type { CommandConfig, Event, HandlerRecord } from '../types/index.js'
 
 export const DEBUG_MODE = process.env.NODE_ENV !== 'production'
@@ -46,7 +47,12 @@ export const devRestartCommand = async (interaction: CommandInteraction) => {
 		content: 'Restarting...',
 		ephemeral: true
 	})
-	process.send?.({ type: 'restart' })
+
+	if (isMainThread) {
+		process.send?.({ type: 'restart' })
+	} else {
+		parentPort?.postMessage({ event: 'restart' })
+	}
 }
 
 export const devRestartCommandConfig: CommandConfig = {

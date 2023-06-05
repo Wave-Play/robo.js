@@ -7,9 +7,10 @@ import { nameGenerator } from './name-generator.js'
 
 interface Task<T = unknown> {
 	command: 'build' | 'start'
-	verbose?: boolean
-	resolve?: (value?: T) => void
+	onMessage?: (message: SpiritMessage) => void
 	reject?: (reason: T) => void
+	resolve?: (value?: T) => void
+	verbose?: boolean
 }
 
 interface Spirit {
@@ -123,9 +124,13 @@ export class Spirits {
 
 			// Strip functions before sending task to worker
 			const workerTask: Task = { ...task }
+			delete workerTask.onMessage
 			delete workerTask.resolve
 			delete workerTask.reject
 			logger.debug(`Sending task to spirit ${spirit.id}:`, workerTask)
+			if (task.onMessage) {
+				spirit.worker.on('message', task.onMessage)
+			}
 			spirit.worker.postMessage(workerTask)
 		}
 

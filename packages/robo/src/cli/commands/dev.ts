@@ -103,7 +103,14 @@ async function devAction(options: DevCommandOptions) {
 
 	if (buildSuccess && config.experimental?.workerThreads) {
 		roboSpirit = await spirits.newTask<string>({
-			command: 'start'
+			command: 'start',
+			onMessage: async (message: SpiritMessage) => {
+				if (message.event === 'restart') {
+					logger.wait(`Restarting Robo...`)
+					spirits?.stop(roboSpirit)
+					roboSpirit = await rebuildRobo(roboSpirit, config, options.verbose)
+				}
+			}
 		})
 		spirits.send(roboSpirit, { event: 'state-load', state: {} })
 	} else if (buildSuccess) {
