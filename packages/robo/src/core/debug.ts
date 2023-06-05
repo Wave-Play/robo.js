@@ -39,7 +39,10 @@ export const devLogCommand = async (interaction: CommandInteraction) => {
 }
 
 export const devLogCommandConfig: CommandConfig = {
-	description: 'View most recent logs'
+	description: 'View most recent logs',
+	sage: {
+		defer: false
+	}
 }
 
 export const devRestartCommand = async (interaction: CommandInteraction) => {
