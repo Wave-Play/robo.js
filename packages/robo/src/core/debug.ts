@@ -24,6 +24,7 @@ import type {
 } from 'discord.js'
 import { env } from './env.js'
 import path from 'node:path'
+import { setState } from './state.js'
 import { isMainThread, parentPort } from 'node:worker_threads'
 import type { CommandConfig, Event, HandlerRecord } from '../types/index.js'
 
@@ -47,8 +48,12 @@ export const devLogCommandConfig: CommandConfig = {
 
 export const devRestartCommand = async (interaction: CommandInteraction) => {
 	await interaction.reply({
-		content: 'Restarting...',
-		ephemeral: true
+		content: '```bash\nRestarting...\n```'
+	})
+	setState('__robo_restart', {
+		channelId: interaction.channelId,
+		guildId: interaction.guildId,
+		startTime: Date.now()
 	})
 
 	if (isMainThread) {
@@ -59,7 +64,10 @@ export const devRestartCommand = async (interaction: CommandInteraction) => {
 }
 
 export const devRestartCommandConfig: CommandConfig = {
-	description: 'Restart this Robo'
+	description: 'Restart this Robo',
+	sage: {
+		defer: false
+	}
 }
 
 export const devStatusCommand = () => {
