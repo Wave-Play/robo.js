@@ -1,7 +1,7 @@
 export { getConfig } from './core/config.js'
 export { getManifest } from './cli/utils/manifest.js'
 export { Flashcore } from './core/flashcore.js'
-export { logger } from './core/logger.js'
+export { logger, Logger } from './core/logger.js'
 export { client, portal, Robo } from './core/robo.js'
 export { getState, setState } from './core/state.js'
 export * from './types/index.js'
