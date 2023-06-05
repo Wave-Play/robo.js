@@ -52,7 +52,9 @@ async function devAction(options: DevCommandOptions) {
 	}
 
 	// Experimental warning
-	const experimentalKeys = Object.keys(config.experimental ?? {})
+	const experimentalKeys = Object.entries(config.experimental ?? {})
+		.filter(([, value]) => value)
+		.map(([key]) => key)
 	if (experimentalKeys.length > 0) {
 		const features = experimentalKeys.map((key) => color.bold(key)).join(', ')
 		logger.warn(`Experimental flags enabled: ${features}.`)
@@ -97,6 +99,7 @@ async function devAction(options: DevCommandOptions) {
 			if (message.type === 'restart') {
 				logger.wait(`Restarting Robo...`)
 				botProcess = await rebuildAndRestartBot(botProcess, config, options.verbose)
+				registerProcessEvents()
 			}
 		})
 	}

@@ -28,7 +28,10 @@ async function startAction(options: StartCommandOptions) {
 	// Check if .robo/build directory has .js files (recursively)
 	if (!(await hasFilesRecursively('.robo/build'))) {
 		logger.error(
-			`No production build found. Make sure to compile your Robo using ${composeColors(color.bold, color.blue)('"robo build"')} first.`
+			`No production build found. Make sure to compile your Robo using ${composeColors(
+				color.bold,
+				color.blue
+			)('"robo build"')} first.`
 		)
 		process.exit(1)
 	}
@@ -40,14 +43,19 @@ async function startAction(options: StartCommandOptions) {
 		logger.error(
 			`The ${color.bold(
 				'.robo/manifest.json'
-			)} file is missing. Make sure your project structure is correct and run ${composeColors(color.bold, color.blue)('"robo build"')} again.`
+			)} file is missing. Make sure your project structure is correct and run ${composeColors(
+				color.bold,
+				color.blue
+			)('"robo build"')} again.`
 		)
 		process.exit(1)
 	}
 
 	// Experimental warning
 	const config = await loadConfig()
-	const experimentalKeys = Object.keys(config.experimental ?? {})
+	const experimentalKeys = Object.entries(config.experimental ?? {})
+		.filter(([, value]) => value)
+		.map(([key]) => key)
 	if (experimentalKeys.length > 0) {
 		const features = experimentalKeys.map((key) => color.bold(key)).join(', ')
 		logger.warn(`Experimental flags enabled: ${features}.`)

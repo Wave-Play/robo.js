@@ -36,7 +36,7 @@ export class Spirits {
 	public newSpirit(oldSpirit?: Spirit) {
 		const index = oldSpirit ? this.activeSpirits.indexOf(oldSpirit) : this.activeSpirits.length
 		const spiritId = `${this.spiritIndex++}-${nameGenerator()}-${['a', 'b', 'c'][index]}`
-		const worker = new Worker(path.join(__DIRNAME, '..', 'worker.js'), {
+		const worker = new Worker(path.join(__DIRNAME, '..', 'spirit.js'), {
 			workerData: { spiritId }
 		})
 		const newSpirit: Spirit = { id: spiritId, task: null, worker }
