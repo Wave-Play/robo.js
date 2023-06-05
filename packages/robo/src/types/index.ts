@@ -68,9 +68,8 @@ export interface SpiritMessage {
 		| 'command'
 		| 'ready'
 		| 'restart'
+		| 'set-state'
 		| 'start'
-		| 'state-load'
-		| 'state-save'
 		| 'stop'
 	payload?: unknown
 	state?: State

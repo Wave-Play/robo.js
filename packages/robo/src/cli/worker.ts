@@ -43,6 +43,11 @@ async function run(message: SpiritMessage): Promise<unknown> {
 		const { Robo } = await import('../core/robo.js')
 		Robo.restart()
 		return 'ok'
+	} else if (message.event === 'set-state') {
+		const { loadState } = await import('../core/state.js')
+		loadState(message.state)
+		stateLoadResolve()
+		return 'ok'
 	} else if (message.event === 'start') {
 		const { Robo } = await import('../core/robo.js')
 		Robo.start({ stateLoad })
@@ -55,11 +60,6 @@ async function run(message: SpiritMessage): Promise<unknown> {
 
 		const { Robo } = await import('../core/robo.js')
 		Robo.stop()
-		return 'ok'
-	} else if (message.event === 'state-load') {
-		const { loadState } = await import('../core/state.js')
-		loadState(message.state)
-		stateLoadResolve()
 		return 'ok'
 	} else {
 		throw `Unknown Spirit message event: ${message.event}`

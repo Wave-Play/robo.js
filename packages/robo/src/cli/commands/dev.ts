@@ -113,7 +113,7 @@ async function devAction(options: DevCommandOptions) {
 	if (buildSuccess && config.experimental?.spirits) {
 		roboSpirit = await spirits.newTask<string>({ event: 'start' })
 		spirits.on(roboSpirit, restartCallback)
-		spirits.send(roboSpirit, { event: 'state-load', state: {} })
+		spirits.send(roboSpirit, { event: 'set-state', state: {} })
 	} else if (buildSuccess) {
 		botProcess = await run()
 		registerProcessEvents()
@@ -301,7 +301,7 @@ async function rebuildRobo(spiritId: string, config: Config, verbose: boolean) {
 	const start = Date.now()
 	const newSpiritId = await spirits.newTask<string>({ event: 'start' })
 	logger.debug(`Robo spirit (${newSpiritId}) started in ${Date.now() - start}ms`)
-	spirits.send(newSpiritId, { event: 'state-load', state: savedState })
+	spirits.send(newSpiritId, { event: 'set-state', state: savedState })
 	return newSpiritId
 }
 
