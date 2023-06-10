@@ -11,7 +11,7 @@ import type { LoggerOptions } from '../../../core/logger.js'
 
 const command = new Command('build')
 	.description('Builds your bot for production.')
-	.argument('<files...>')
+	.argument('[files...]')
 	.option('-d --dev', 'build for development')
 	.option('-f --force', 'force register commands')
 	.option('-s --silent', 'do not print anything')
