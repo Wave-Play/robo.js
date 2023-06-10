@@ -4,8 +4,10 @@ import { __DIRNAME } from './utils.js'
 import { logger } from '../../core/logger.js'
 import { SpiritMessage } from 'src/types/index.js'
 import { nameGenerator } from './name-generator.js'
+import { color, composeColors } from './color.js'
 
 interface Task<T = unknown> extends SpiritMessage {
+	payload?: unknown
 	reject?: (reason: T) => void
 	resolve?: (value?: T) => void
 	verbose?: boolean
@@ -44,7 +46,7 @@ export class Spirits {
 
 		worker.on('message', (message: SpiritMessage) => {
 			const spirit = this.spirits[newSpirit.id]
-			logger.debug(`Spirit (${spirit.id}) sent message:`, message)
+			logger.debug(`Spirit (${composeColors(color.bold, color.cyan)(spirit.id)}) sent message:`, message)
 			if (message.payload === 'exit') {
 				spirit.task?.resolve(spirit.id)
 				spirit.isTerminated = true
@@ -56,7 +58,7 @@ export class Spirits {
 		})
 
 		worker.on('exit', (exitCode: number) => {
-			logger.debug(`Spirit (${spiritId}) exited with code ${exitCode}`)
+			logger.debug(`Spirit (${composeColors(color.bold, color.cyan)(spiritId)}) exited with code ${exitCode}`)
 
 			// No need to handle this if the spirit is already terminated elsewhere
 			const spirit = this.spirits[newSpirit.id]
@@ -101,7 +103,7 @@ export class Spirits {
 
 	public exec<T>(spiritId: string, message: SpiritMessage): Promise<T> {
 		return new Promise((resolve, reject) => {
-			logger.debug(`Executing message on spirit (${spiritId}):`, message)
+			logger.debug(`Executing message on spirit (${composeColors(color.bold, color.cyan)(spiritId)}):`, message)
 			const spirit = this.get(spiritId)
 			if (!spirit) {
 				return reject(new Error(`Spirit ${spiritId} not found`))
@@ -133,7 +135,7 @@ export class Spirits {
 	}
 
 	public send(spiritId: string, message: SpiritMessage) {
-		logger.debug(`Sending message to spirit ${spiritId}:`, message)
+		logger.debug(`Sending message to spirit ${composeColors(color.bold, color.cyan)(spiritId)}:`, message)
 		this.get(spiritId).worker.postMessage(message)
 	}
 
@@ -153,7 +155,7 @@ export class Spirits {
 			const workerTask: Task = { ...task }
 			delete workerTask.resolve
 			delete workerTask.reject
-			logger.debug(`Sending task to spirit ${spirit.id}:`, workerTask)
+			logger.debug(`Sending task to spirit ${composeColors(color.bold, color.cyan)(spirit.id)}:`, workerTask)
 			spirit.worker.postMessage(workerTask)
 		}
 
@@ -161,12 +163,12 @@ export class Spirits {
 		this.nextActiveIndex = (this.nextActiveIndex + 1) % this.size
 	}
 
-	public async stop(spiritId: string, force?: boolean) {
+	public async stop(spiritId: string, force = false) {
 		const spirit = this.get(spiritId)
 		if (spirit.isTerminated) {
 			return Promise.resolve()
 		}
-		logger.debug(`Stopping spirit ${spiritId} (force: ${force})`)
+		logger.debug(`Stopping spirit ${composeColors(color.bold, color.cyan)(spiritId)} (force: ${force})`)
 
 		// If the worker isn't doing anything or if forced, terminate it immediately
 		if (force || !spirit.task) {

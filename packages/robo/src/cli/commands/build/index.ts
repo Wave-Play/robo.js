@@ -6,10 +6,12 @@ import { getProjectSize, printBuildSummary } from '../../utils/build-summary.js'
 import plugin from './plugin.js'
 import { findCommandDifferences, registerCommands } from '../../utils/commands.js'
 import { generateDefaults } from '../../utils/generate-defaults.js'
+import { compile } from '../../utils/compiler.js'
 import type { LoggerOptions } from '../../../core/logger.js'
 
 const command = new Command('build')
 	.description('Builds your bot for production.')
+	.argument('<files...>')
 	.option('-d --dev', 'build for development')
 	.option('-f --force', 'force register commands')
 	.option('-s --silent', 'do not print anything')
@@ -21,13 +23,14 @@ export default command
 
 interface BuildCommandOptions {
 	dev?: boolean
+	files?: string[]
 	force?: boolean
 	silent?: boolean
 	verbose?: boolean
 	watch?: boolean
 }
 
-export async function buildAction(options: BuildCommandOptions) {
+export async function buildAction(files: string[], options: BuildCommandOptions) {
 	const loggerOptions: LoggerOptions = {
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : options.dev ? 'warn' : 'info'
@@ -51,8 +54,7 @@ export async function buildAction(options: BuildCommandOptions) {
 	}
 
 	// Use SWC to compile into .robo/build
-	const { compile } = await import('../../utils/compiler.js')
-	const compileTime = await compile()
+	const compileTime = await compile({ files })
 	logger.debug(`Compiled in ${compileTime}ms`)
 
 	// Assign default commands and events

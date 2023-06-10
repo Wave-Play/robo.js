@@ -1,4 +1,5 @@
 import { isMainThread, parentPort, workerData } from 'node:worker_threads'
+import { color, composeColors } from './utils/color.js'
 import { logger } from '../core/logger.js'
 import type { SpiritMessage } from '../types/index.js'
 
@@ -27,7 +28,7 @@ const stateLoad = new Promise<void>((resolve) => {
 async function run(message: SpiritMessage): Promise<unknown> {
 	if (message.event === 'build') {
 		const { buildAction } = await import('./commands/build/index.js')
-		await buildAction({
+		await buildAction(message.payload as string[], {
 			dev: true,
 			verbose: message.verbose
 		})
@@ -73,7 +74,7 @@ parentPort.on('message', async (message: SpiritMessage) => {
 			level: message.verbose ? 'debug' : 'info'
 		})
 	}
-	logger.debug(`Spirit (${workerData.spiritId}) received message:`, message)
+	logger.debug(`Spirit (${composeColors(color.bold, color.cyan)(workerData.spiritId)}) received message:`, message)
 
 	// Handle message and send response (if any) back to main thread
 	let result: SpiritMessage
@@ -83,7 +84,7 @@ parentPort.on('message', async (message: SpiritMessage) => {
 	} catch (error) {
 		result = { error, payload: 'exit' }
 	}
-	logger.debug(`Spirit (${workerData.spiritId}) sending response:`, result)
+	logger.debug(`Spirit (${composeColors(color.bold, color.cyan)(workerData.spiritId)}) sending response:`, result)
 
 	// Preemptively flush logs if we're exiting
 	if (result.payload === 'exit') {

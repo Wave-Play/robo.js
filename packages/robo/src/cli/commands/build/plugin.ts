@@ -105,23 +105,24 @@ async function pluginAction() {
 		let isUpdating = false
 		logger.ready(`Watching for changes...`)
 
-		watcher.start(async (event: string, path: string) => {
-			logger.debug(`Watcher event: ${event}`)
+		watcher.start(async (changes) => {
+			logger.debug(`Watcher events: ${changes.map((change) => change.changeType).join(', ')}`)
 			if (isUpdating) {
 				return logger.debug(`Already building, skipping...`)
 			}
 			isUpdating = true
 
 			try {
-				if (path === configRelative) {
-					const fileName = path.split('/').pop()
+				const configChange = changes.find((change) => change.filePath === configRelative)
+				if (configChange) {
+					const fileName = configChange.filePath.split('/').pop()
 					logger.wait(`${color.bold(fileName)} file was updated. Rebuilding to apply configuration...`)
 				} else {
 					logger.wait(`Change detected. Rebuilding plugin...`)
 				}
 
 				const time = Date.now()
-				await buildAsync('robo build plugin --dev', config)
+				await buildAsync('robo build plugin --dev', config, options?.verbose, [])
 				logger.ready(`Successfully rebuilt in ${Date.now() - time}ms`)
 			} finally {
 				isUpdating = false

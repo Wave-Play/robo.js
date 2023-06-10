@@ -6,6 +6,11 @@ import { hasProperties } from './utils.js'
 // Defining the possible values for file changes.
 type ChangeType = 'added' | 'removed' | 'changed'
 
+export interface Change {
+	changeType: ChangeType
+	filePath: string
+}
+
 // The interface for options parameter allowing to exclude certain directories.
 interface Options {
 	exclude?: string[]
@@ -24,15 +29,20 @@ export default class Watcher {
 	private watchedFiles: Map<string, Date> = new Map()
 	// A flag to avoid triggering callbacks on the initial setup.
 	private isFirstTime = true
+	private debouncer: Debouncer
 
 	// Initialize with paths to watch and options.
 	constructor(private paths: string[], private options: Options) {}
 
 	// Start the watcher. Files are read, and callbacks are set up.
-	async start(callback: Callback) {
+	async start(callback: (changes: Change[]) => Promise<void>) {
+		this.debouncer = new Debouncer(callback)
+
 		await Promise.all(
 			this.paths.map((filePath) => {
-				return this.watchPath(filePath, this.options, callback)
+				return this.watchPath(filePath, this.options, (changeType, filePath) => {
+					this.debouncer.addChange({ changeType, filePath })
+				})
 			})
 		)
 		// After setting up, mark this as no longer the first time.
@@ -165,5 +175,40 @@ export default class Watcher {
 		})
 
 		this.watchers.set(filePath, watcher)
+	}
+}
+
+/**
+ * Groups multiple changes into a single callback invocation.
+ * This is useful where multiple changes can be triggered in quick succession.
+ */
+class Debouncer {
+	private callback: (changes: Change[]) => void
+	private wait: number
+	private timerId: NodeJS.Timeout | null
+	private changes: Map<string, Change>
+
+	constructor(callback: (changes: Change[]) => void, wait = 100) {
+		this.callback = callback
+		this.wait = wait
+		this.timerId = null
+		this.changes = new Map()
+	}
+
+	addChange(change: Change) {
+		this.changes.set(change.filePath, change)
+		this.startTimer()
+	}
+
+	startTimer() {
+		if (this.timerId !== null) {
+			clearTimeout(this.timerId)
+		}
+		this.timerId = setTimeout(() => this.invokeCallback(), this.wait)
+	}
+
+	invokeCallback() {
+		this.callback(Array.from(this.changes.values()))
+		this.changes.clear()
 	}
 }

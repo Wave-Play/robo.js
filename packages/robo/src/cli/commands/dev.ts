@@ -8,8 +8,8 @@ import { IS_WINDOWS, cmd, filterExistingPaths, getPkgManager, getWatchedPlugins,
 import path from 'node:path'
 import url from 'node:url'
 import { getStateSave } from '../../core/state.js'
-import Watcher from '../utils/watcher.js'
-import { color } from '../utils/color.js'
+import Watcher, { Change } from '../utils/watcher.js'
+import { color, composeColors } from '../utils/color.js'
 import { Spirits } from '../utils/spirits.js'
 import { buildAction } from './build/index.js'
 import { Flashcore, prepareFlashcore } from '../../core/flashcore.js'
@@ -83,7 +83,7 @@ async function devAction(options: DevCommandOptions) {
 	let buildSuccess = false
 	try {
 		const start = Date.now()
-		await buildAction({
+		await buildAction([], {
 			dev: true,
 			verbose: options.verbose
 		})
@@ -100,7 +100,7 @@ async function devAction(options: DevCommandOptions) {
 		botProcess?.on('message', async (message: RoboMessage) => {
 			if (message.type === 'restart') {
 				logger.wait(`Restarting Robo...`)
-				botProcess = await rebuildAndRestartBot(botProcess, config, options.verbose)
+				botProcess = await rebuildAndRestartBot(botProcess, config, options.verbose, [])
 				registerProcessEvents()
 			}
 		})
@@ -110,7 +110,7 @@ async function devAction(options: DevCommandOptions) {
 		if (message.event === 'restart' && message.payload === 'trigger') {
 			logger.wait(`Restarting Robo...`)
 			spirits.off(roboSpirit, restartCallback)
-			roboSpirit = await rebuildRobo(roboSpirit, config, options.verbose)
+			roboSpirit = await rebuildRobo(roboSpirit, config, options.verbose, [])
 			spirits.on(roboSpirit, restartCallback)
 		}
 	}
@@ -150,29 +150,31 @@ async function devAction(options: DevCommandOptions) {
 	})
 	let isUpdating = false
 
-	watcher.start(async (event: string, path: string) => {
-		logger.debug(`Watcher event: ${event}`)
+	watcher.start(async (changes) => {
+		logger.debug(`Watcher events: ${changes.map((change) => change.changeType).join(', ')}`)
 		if (isUpdating) {
 			return logger.debug(`Already updating, skipping...`)
 		}
 		isUpdating = true
 
 		try {
-			if (path === configRelative) {
-				const fileName = path.split('/').pop()
+			const configChange = changes.find((change) => change.filePath === configRelative)
+			const pluginChange = changes.find((change) => Object.keys(watchedPlugins).includes(change.filePath))
+			if (configChange) {
+				const fileName = configChange.filePath.split('/').pop()
 				logger.wait(`${color.bold(fileName)} file was updated. Restarting to apply configuration...`)
-			} else if (Object.keys(watchedPlugins).includes(path)) {
-				const plugin = watchedPlugins[path]
+			} else if (pluginChange) {
+				const plugin = watchedPlugins[pluginChange.filePath]
 				logger.wait(`${color.bold(plugin.name)} plugin was updated. Restarting to apply changes...`)
 			} else {
 				logger.wait(`Change detected. Restarting Robo...`)
 			}
 
 			if (config.experimental?.spirits) {
-				roboSpirit = await rebuildRobo(roboSpirit, config, options.verbose)
+				roboSpirit = await rebuildRobo(roboSpirit, config, options.verbose, changes)
 				spirits.on(roboSpirit, restartCallback)
 			} else {
-				botProcess = await rebuildAndRestartBot(botProcess, config, options.verbose)
+				botProcess = await rebuildAndRestartBot(botProcess, config, options.verbose, changes)
 				registerProcessEvents()
 			}
 		} finally {
@@ -185,7 +187,7 @@ async function devAction(options: DevCommandOptions) {
  * Building in a separate process/thread clears the import cache.
  * This is necessary to prevent the bot from using old code.
  */
-export async function buildAsync(command: string, config: Config, verbose?: boolean) {
+export async function buildAsync(command: string, config: Config, verbose: boolean, changes: Change[]) {
 	return new Promise<boolean>((resolve, reject) => {
 		const args = command.split(' ')
 		const start = Date.now()
@@ -194,6 +196,7 @@ export async function buildAsync(command: string, config: Config, verbose?: bool
 			spirits
 				.newTask({
 					event: 'build',
+					payload: changes.map((change) => change.filePath),
 					verbose: verbose
 				})
 				.then(() => {
@@ -249,7 +252,7 @@ export async function buildAsync(command: string, config: Config, verbose?: bool
 	})
 }
 
-async function rebuildRobo(spiritId: string, config: Config, verbose: boolean) {
+async function rebuildRobo(spiritId: string, config: Config, verbose: boolean, changes: Change[]) {
 	// Guard against accidentally killing the new spirit
 	const roboSpirit = spiritId
 	const isValid = roboSpirit !== null && roboSpirit !== undefined
@@ -272,7 +275,7 @@ async function rebuildRobo(spiritId: string, config: Config, verbose: boolean) {
 		const spirit = spirits.get(roboSpirit)
 
 		const callback = () => {
-			logger.debug(`Gracefully stopped Robo spirit (${roboSpirit})`)
+			logger.debug(`Gracefully stopped Robo spirit (${composeColors(color.bold, color.cyan)(roboSpirit)})`)
 			spirit.worker.off('exit', callback)
 			spirit.isTerminated = true
 			isTerminated = true
@@ -300,7 +303,7 @@ async function rebuildRobo(spiritId: string, config: Config, verbose: boolean) {
 	// Wait for the bot to exit or force abort
 	const awaitStop = Promise.race([terminate, forceAbort])
 	const [success] = await Promise.all([
-		buildAsync(buildCommand + (verbose ? ' --verbose' : ''), config, verbose),
+		buildAsync(buildCommand + (verbose ? ' --verbose' : ''), config, verbose, changes),
 		awaitStop
 	])
 
@@ -313,12 +316,12 @@ async function rebuildRobo(spiritId: string, config: Config, verbose: boolean) {
 	// Start bot via spirit if worker threads are enabled
 	const start = Date.now()
 	const newSpiritId = await spirits.newTask<string>({ event: 'start' })
-	logger.debug(`Robo spirit (${newSpiritId}) started in ${Date.now() - start}ms`)
+	logger.debug(`Robo spirit (${composeColors(color.bold, color.cyan)(newSpiritId)}) started in ${Date.now() - start}ms`)
 	spirits.send(newSpiritId, { event: 'set-state', state: savedState })
 	return newSpiritId
 }
 
-async function rebuildAndRestartBot(bot: ChildProcess | null, config: Config, verbose: boolean) {
+async function rebuildAndRestartBot(bot: ChildProcess | null, config: Config, verbose: boolean, changes: Change[]) {
 	// Guard against accidentally killing the new process
 	const currentBot = bot
 
@@ -355,7 +358,7 @@ async function rebuildAndRestartBot(bot: ChildProcess | null, config: Config, ve
 	currentBot?.send({ type: 'restart' })
 	const awaitStop = Promise.race([terminate, forceAbort])
 	const [success] = await Promise.all([
-		buildAsync(buildCommand + (verbose ? ' --verbose' : ''), config, verbose),
+		buildAsync(buildCommand + (verbose ? ' --verbose' : ''), config, verbose, changes),
 		awaitStop
 	])
 

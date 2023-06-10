@@ -3,11 +3,23 @@ import path from 'path'
 import { hasProperties, replaceSrcWithBuildInRecord } from './utils.js'
 import { logger } from '../../core/logger.js'
 import { env } from '../../core/env.js'
-import type { CompilerOptions } from 'typescript'
+import type { default as Typescript, CompilerOptions } from 'typescript'
 import type { transform as SwcTransform } from '@swc/core'
 
 const srcDir = path.join(process.cwd(), 'src')
 const distDir = path.join(process.cwd(), '.robo', 'build')
+
+// Load Typescript compiler in a try/catch block
+// This is to maintain compatibility with JS-only projects
+let ts: typeof Typescript
+let transform: typeof SwcTransform
+try {
+	const [typescript, swc] = await Promise.all([import('typescript'), import('@swc/core')])
+	ts = typescript.default
+	transform = swc.transform
+} catch {
+	// Ignore
+}
 
 /**
  * Recursively traverse a directory and transform TypeScript files using SWC
@@ -22,11 +34,17 @@ async function traverse(
 	transform: typeof SwcTransform
 ) {
 	const { parallel = 20 } = options
+	const isIncremental = options.files?.length > 0
 
 	// Read directory contents
 	let files
 	try {
-		files = await fs.readdir(dir)
+		if (isIncremental) {
+			files = options.files.map((file) => path.join(process.cwd(), file))
+			logger.debug(`Incrementally compiling:`, files)
+		} else {
+			files = await fs.readdir(dir)
+		}
 	} catch (e) {
 		if (hasProperties<{ code: unknown }>(e, ['code']) && e.code === 'ENOENT') {
 			logger.debug(`Directory ${dir} does not exist, skipping traversal.`)
@@ -38,11 +56,11 @@ async function traverse(
 	const tasks = []
 
 	for (const file of files) {
-		const filePath = path.join(dir, file)
+		const filePath = isIncremental ? file : path.join(dir, file)
 		const stat = await fs.stat(filePath)
 
-		// Recursively traverse subdirectories
-		if (stat.isDirectory()) {
+		// Recursively traverse subdirectories, only if no files are specified
+		if (stat.isDirectory() && !isIncremental) {
 			tasks.push(traverse(filePath, options, compilerOptions, transform))
 		} else if (/\.(js|ts|tsx)$/.test(file)) {
 			// Queue up a task to transform the file
@@ -88,6 +106,7 @@ async function traverse(
 
 interface RoboCompileOptions {
 	baseUrl?: string
+	files?: string[]
 	parallel?: number
 	paths?: Record<string, string[]>
 }
@@ -95,12 +114,7 @@ interface RoboCompileOptions {
 export async function compile(options?: RoboCompileOptions) {
 	const startTime = Date.now()
 
-	let ts, transform
-	try {
-		// Try to import TypeScript and SWC
-		ts = (await import('typescript')).default
-		transform = (await import('@swc/core')).transform
-	} catch (error) {
+	if (typeof ts === 'undefined' || typeof transform === 'undefined') {
 		// If either of them fail, just copy the srcDir to distDir
 		await fs.rm(distDir, { recursive: true, force: true })
 		logger.debug('Copying srcDir to distDir without transversing...')
@@ -149,8 +163,10 @@ export async function compile(options?: RoboCompileOptions) {
 	}
 
 	// Clear the destination directory before compiling
-	logger.debug(`Cleaning ${distDir}...`)
-	await fs.rm(distDir, { recursive: true, force: true })
+	if (!options?.files?.length) {
+		logger.debug(`Cleaning ${distDir}...`)
+		await fs.rm(distDir, { recursive: true, force: true })
+	}
 
 	// Traverse the source directory and transform files
 	logger.debug(`Compiling ${srcDir} to ${distDir}...`)
