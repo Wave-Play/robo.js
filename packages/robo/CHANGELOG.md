@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.8.1
+
+### Patch Changes
+
+- 24676fe: fix: attach plugin info to more manifest entries
+
 ## 0.8.0
 
 ### Minor Changes
