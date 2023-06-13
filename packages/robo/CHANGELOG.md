@@ -1,5 +1,55 @@
 # robo.js
 
+## 0.8.0
+
+### Minor Changes
+
+- 6171ae6: feat: spirits
+- 5647aa4: feat: new "flashcore" api for easy persistent storage - compatible with keyv adapters
+- e537306: feat: 300x faster dev mode when using experimental flag
+- 509f19e: feat: significantly faster builds with worker threads
+- bdf4187: refactor: logger now writes to stdout/stderr directly, flush() function, and better formatting
+- b7535f2: feat: api routes
+- 85e6374: feat: experimental incremental builds
+- 545ea90: feat: replaced ".tar" with new ".robopack" format
+- 2fe42db: refactor: removed now-unnecessary dependencies (-%45 package size)
+
+### Patch Changes
+
+- 73609bb: patch: minor log changes to server ready message
+- 9bf6abe: refactor(cli): replaced bloated .env loading with similar implementation
+- a8adb81: chore: exit robo threads differently than process
+- 6c264dd: feat(cli): experimental new file format for roboplay deployments
+- fd4a343: fix: expanded special linux watcher logic onto all os types
+- 18a7c6d: patch: minor fixes
+- cc537be: fix: tell sage not to defer "/dev logs" command
+- 61bdca0: refactor: logger now imports less modules
+- f13e33f: feat: experimental flag toggles
+- 06db4e6: patch(flashcore): improved support for keyv adapters
+- 5e5949c: fix: spirit messages no longer override robo logger configuration
+- 9bddd29: refactor: dev mode builds no longer show print summary in verbose mode
+- 9baeed9: refactor(cli): handle parallel limits internally
+- 4a89c6c: refactor: spirit ids are now passed down via workerdata
+- 0171ef1: feat: spirit mode restart now on-par with process
+- a49dde7: refactor: "/dev restart" now sends restart confirmation + timing
+- c28bff6: refactor(cli): forked and improved "colorette" as "chalk" replacement
+- 9a88db5: feat(state): new "persist" option for setting state
+- d3d4983: fix: added missing fs import when deploying
+- f51a531: refactor: avoid terminating workers unless necessary for graceful spirit shutdowns
+- 64595bb: feat(state): forkable states for easy prefixing
+- 1c9c04b: fix: race condition when saving state
+- 789f412: patch: error handling for robo stop() and restart() functions
+- 7ef2faa: refactor: waiting for state now handled as robo option rather than flag
+- 54c10bf: refactor(cli): more descriptive spirit ids while still remaining predictable
+- aaa6245: refactor(spirit): merged "command" and "event" fields; renamed "response" to "payload"
+- d1cf55c: feat: export logger class
+- ad43a9c: patch: watcher callback now passes full path instead of separate name + dir
+- 6b125d6: refactor: include plugin path in handler debug logs
+- fd1f0d2: fix: watcher rename events now handled better outside of linux
+- 3692ffe: feat: restored ability to restart programatically in spirit mode
+- 156f59e: fix: files build argument now optional
+- 88a73d2: fix: graceful spirit worker thread shutdowns
+
 ## 0.7.1
 
 ### Patch Changes

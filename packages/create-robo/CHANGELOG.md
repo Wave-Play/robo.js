@@ -1,5 +1,11 @@
 # create-robo
 
+## 0.5.0
+
+### Minor Changes
+
+- 9dd5c65: feat: new "--template" option for remote templates
+
 ## 0.4.2
 
 ### Patch Changes
