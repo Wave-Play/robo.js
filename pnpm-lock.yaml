@@ -75,7 +75,7 @@ importers:
       discord.js: ^14.7.1
       typescript: ^5.0.0
     devDependencies:
-      '@roboplay/robo.js': link:../robo
+      '@roboplay/robo.js': 0.8.0_tnhvk5khpgbqmftxluwqbhc4u4
       '@swc/core': 1.3.57
       '@types/node': 18.16.8
       discord.js: 14.10.2
@@ -792,6 +792,29 @@ packages:
       dotenv: 16.0.3
       p-limit: 4.0.0
       tar: 6.1.14
+      typescript: 5.0.2
+    dev: true
+
+  /@roboplay/robo.js/0.8.0_tnhvk5khpgbqmftxluwqbhc4u4:
+    resolution: {integrity: sha512-ClLEH7faAToyJPzbSlE7PdJhSjh25mnq0wiPf+RYnVsJrr0dpveulAaMNoegvElOiUkDrFy5erU6CbPA6FfP9A==}
+    engines: {node: '>=18.0.0'}
+    hasBin: true
+    peerDependencies:
+      '@swc/core': ^1.3.41
+      discord.js: ^14.0.0
+      keyv: ^4.5.2
+      typescript: ^5.0.0
+    peerDependenciesMeta:
+      '@swc/core':
+        optional: true
+      keyv:
+        optional: true
+      typescript:
+        optional: true
+    dependencies:
+      '@swc/core': 1.3.57
+      commander: 10.0.1
+      discord.js: 14.10.2
       typescript: 5.0.2
     dev: true
 
