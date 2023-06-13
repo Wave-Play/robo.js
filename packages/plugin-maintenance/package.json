@@ -1,0 +1,17 @@
+{
+	"name": "@roboplay/plugin-maintenance",
+	"description": "",
+	"version": "0.0.0",
+	"type": "module",
+	"scripts": {
+		"build": "robo build plugin",
+		"dev": "robo build plugin --watch"
+	},
+	"devDependencies": {
+		"@roboplay/robo.js": "0.8.0",
+		"@swc/core": "^1.3.44",
+		"@types/node": "^18.14.6",
+		"discord.js": "^14.7.1",
+		"typescript": "^5.0.0"
+	}
+}
