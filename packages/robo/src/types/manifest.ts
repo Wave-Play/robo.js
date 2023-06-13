@@ -2,7 +2,7 @@ import type { PermissionsString } from 'discord.js'
 import type { CommandEntry } from './commands.js'
 import type { Config, Scope } from './config.js'
 import type { EventConfig } from './events.js'
-import type { ContextEntry, MiddlewareEntry } from './index.js'
+import type { ApiEntry, ContextEntry, MiddlewareEntry } from './index.js'
 
 export interface Manifest {
 	__README: string
@@ -12,6 +12,7 @@ export interface Manifest {
 		updatedAt?: string
 		version?: string
 	}
+	api: Record<string, ApiEntry>
 	commands: Record<string, CommandEntry>
 	context: {
 		message: Record<string, ContextEntry>

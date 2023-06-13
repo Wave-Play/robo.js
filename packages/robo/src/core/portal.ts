@@ -5,9 +5,10 @@ import { getManifest } from '../cli/utils/manifest.js'
 import { hasProperties } from '../cli/utils/utils.js'
 import { logger } from './logger.js'
 import { color, composeColors, hex } from '../cli/utils/color.js'
-import type { BaseConfig, Command, Context, Event, HandlerRecord, Middleware } from '../types/index.js'
+import type { Api, BaseConfig, Command, Context, Event, HandlerRecord, Middleware } from '../types/index.js'
 
 export default class Portal {
+	public apis: Collection<string, HandlerRecord<Api>>
 	public commands: Collection<string, HandlerRecord<Command>>
 	public context: Collection<string, HandlerRecord<Context>>
 	public events: Collection<string, HandlerRecord<Event>[]>
@@ -17,11 +18,13 @@ export default class Portal {
 	private _modules: Record<string, Module> = {}
 
 	constructor(
+		apis: Collection<string, HandlerRecord<Api>>,
 		commands: Collection<string, HandlerRecord<Command>>,
 		context: Collection<string, HandlerRecord<Context>>,
 		events: Collection<string, HandlerRecord<Event>[]>,
 		middleware: HandlerRecord<Middleware>[]
 	) {
+		this.apis = apis
 		this.commands = commands
 		this.context = context
 		this.events = events
@@ -43,12 +46,13 @@ export default class Portal {
 	 * Warning: Do not call this method directly. Use the `portal` export instead.
 	 */
 	public static async open(): Promise<Portal> {
+		const apis = await loadHandlerRecords<HandlerRecord<Api>>('api')
 		const commands = await loadHandlerRecords<HandlerRecord<Command>>('commands')
 		const context = await loadHandlerRecords<HandlerRecord<Context>>('context')
 		const events = await loadHandlerRecords<HandlerRecord<Event>[]>('events')
 		const middleware = [...(await loadHandlerRecords<HandlerRecord<Middleware>>('middleware')).values()]
 
-		return new Portal(commands, context, events, middleware)
+		return new Portal(apis, commands, context, events, middleware)
 	}
 }
 
@@ -88,6 +92,12 @@ async function scanEntries<T>(predicate: ScanPredicate, options: ScanOptions<T>)
 					recursionKeys: entryKeys
 				})
 				promises.push(resursion)
+			} else if (hasProperties<{ subroutes: Record<string, T> }>(entry, ['subroutes']) && entry.subroutes) {
+				const resursion = scanEntries(predicate, {
+					manifestEntries: entry.subroutes,
+					recursionKeys: entryKeys
+				})
+				promises.push(resursion)
 			}
 		})
 	}
@@ -96,7 +106,7 @@ async function scanEntries<T>(predicate: ScanPredicate, options: ScanOptions<T>)
 }
 
 async function loadHandlerRecords<T extends HandlerRecord | HandlerRecord[]>(
-	type: 'commands' | 'context' | 'events' | 'middleware'
+	type: 'api' | 'commands' | 'context' | 'events' | 'middleware'
 ) {
 	const collection = new Collection<string, T>()
 	const manifest = getManifest()
@@ -161,6 +171,8 @@ async function loadHandlerRecords<T extends HandlerRecord | HandlerRecord[]>(
 			collection.set(contextKey, handler as T)
 		} else if (type === 'middleware') {
 			collection.set(entryKeys[0], handler as T)
+		} else if (type === 'api') {
+			collection.set(entryKeys.join('/'), handler as T)
 		}
 	}
 

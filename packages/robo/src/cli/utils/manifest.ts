@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import {
+	ApiEntry,
 	BaseConfig,
 	CommandConfig,
 	CommandEntry,
@@ -37,6 +38,7 @@ const BASE_MANIFEST: Manifest = {
 		config: null,
 		type: 'robo'
 	},
+	api: {},
 	commands: {},
 	context: {
 		message: {},
@@ -84,6 +86,7 @@ const mergeEvents = (baseEvents: Record<string, EventConfig[]>, newEvents: Recor
 export async function generateManifest(generatedDefaults: DefaultGen, type: 'plugin' | 'robo'): Promise<Manifest> {
 	const config = await loadConfig()
 	const pluginsManifest = type === 'plugin' ? BASE_MANIFEST : await readPluginManifest(config?.plugins)
+	const api = await generateEntries<ApiEntry>('api', [])
 	const commands = await generateEntries<CommandEntry>('commands', Object.keys(generatedDefaults?.commands ?? {}))
 	const context = await generateEntries<CommandEntry>('context', Object.keys(generatedDefaults?.context ?? {}))
 	const events = await generateEntries<EventConfig>('events', Object.keys(generatedDefaults?.events ?? {}))
@@ -97,6 +100,10 @@ export async function generateManifest(generatedDefaults: DefaultGen, type: 'plu
 			type: type,
 			updatedAt: new Date().toISOString(),
 			version: packageJson.version
+		},
+		api: {
+			...pluginsManifest.api,
+			...api
 		},
 		commands: {
 			...pluginsManifest.commands,
@@ -121,6 +128,7 @@ export async function generateManifest(generatedDefaults: DefaultGen, type: 'plu
 	newManifest.scopes = generateScopes(config, newManifest)
 
 	// Make sure newManifest commands are in alphabetical order
+	newManifest.api = Object.fromEntries(Object.entries(newManifest.api).sort(([a], [b]) => a.localeCompare(b)))
 	newManifest.commands = Object.fromEntries(Object.entries(newManifest.commands).sort(([a], [b]) => a.localeCompare(b)))
 	newManifest.events = Object.fromEntries(Object.entries(newManifest.events).sort(([a], [b]) => a.localeCompare(b)))
 
@@ -148,9 +156,23 @@ async function readPluginManifest(plugins: Plugin[]): Promise<Manifest> {
 
 		pluginsManifest = {
 			...pluginsManifest,
+			api: {
+				...pluginsManifest.api,
+				...manifest.api
+			},
 			commands: {
 				...pluginsManifest.commands,
 				...manifest.commands
+			},
+			context: {
+				message: {
+					...pluginsManifest.context?.message,
+					...manifest.context?.message
+				},
+				user: {
+					...pluginsManifest.context?.user,
+					...manifest.context?.user
+				}
 			},
 			events: {
 				...pluginsManifest.events,
@@ -272,7 +294,7 @@ interface ScanDirOptions {
 	recursionKeys?: string[]
 	recursionModuleKeys?: string[]
 	recursionPath?: string
-	type: 'commands' | 'context' | 'events' | 'middleware'
+	type: 'api' | 'commands' | 'context' | 'events' | 'middleware'
 }
 
 type ScanDirPredicate = (fileKeys: string[], fullPath: string, moduleKeys: string[]) => Promise<void>
@@ -384,6 +406,7 @@ async function scanDir(predicate: ScanDirPredicate, options: ScanDirOptions) {
 	)
 }
 
+async function generateEntries<T>(type: 'api', generatedKeys: string[]): Promise<Record<string, T>>
 async function generateEntries<T>(type: 'commands', generatedKeys: string[]): Promise<Record<string, T>>
 async function generateEntries<T>(
 	type: 'context',
@@ -392,7 +415,7 @@ async function generateEntries<T>(
 async function generateEntries<T>(type: 'events', generatedKeys: string[]): Promise<Record<string, T[]>>
 async function generateEntries<T>(type: 'middleware', generatedKeys: string[]): Promise<Record<string, T>>
 async function generateEntries<T>(
-	type: 'commands' | 'context' | 'events' | 'middleware',
+	type: 'api' | 'commands' | 'context' | 'events' | 'middleware',
 	generatedKeys: string[]
 ): Promise<Record<string, T | T[] | Record<string, T>>> {
 	try {
@@ -496,6 +519,34 @@ async function generateEntries<T>(
 				if (type === 'middleware') {
 					entries[fileKeys.join('/')] = entry
 				}
+
+				// API Routes are infinitely nested objects
+				if (type === 'api') {
+					if (fileKeys.length > 1) {
+						// Find the parent object based on ApiEntry subroutes
+						let parent = entries[fileKeys[0]] as ApiEntry
+						if (!parent) {
+							parent = { subroutes: {} }
+							entries[fileKeys[0]] = parent as T
+						}
+						if (!parent.subroutes) {
+							parent.subroutes = {}
+						}
+
+						for (let i = 1; i < fileKeys.length - 1; i++) {
+							const key = fileKeys[i]
+							if (!parent.subroutes[key]) {
+								parent.subroutes[key] = { subroutes: {} }
+							}
+							parent = parent.subroutes[key]
+						}
+
+						// Add the entry to the parent object
+						parent.subroutes[fileKeys[fileKeys.length - 1]] = entry
+					} else {
+						entries[fileKeys[0]] = entry
+					}
+				}
 			},
 			{
 				type: type
@@ -514,7 +565,10 @@ async function generateEntries<T>(
 }
 
 type AllConfig = CommandConfig & EventConfig
-function getValue<T extends AllConfig>(type: 'commands' | 'context' | 'events' | 'middleware', config: BaseConfig): T {
+function getValue<T extends AllConfig>(
+	type: 'api' | 'commands' | 'context' | 'events' | 'middleware',
+	config: BaseConfig
+): T {
 	const value = {} as T
 	if (!config) {
 		return value

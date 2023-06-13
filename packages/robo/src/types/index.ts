@@ -1,3 +1,4 @@
+export * from './api.js'
 export * from './commands.js'
 export * from './config.js'
 export * from './events.js'
@@ -33,7 +34,7 @@ export interface HandlerRecord<T = unknown> {
 		name: string
 		path: string
 	}
-	type: 'command' | 'context' | 'event' | 'middleware'
+	type: 'api' | 'command' | 'context' | 'event' | 'middleware'
 }
 
 export interface MiddlewareData {
