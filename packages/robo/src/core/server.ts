@@ -4,6 +4,7 @@ import { parse } from 'node:querystring'
 import { Router } from './router.js'
 import { logger } from './logger.js'
 import { portal } from './robo.js'
+import { color, composeColors } from '../cli/utils/color.js'
 import type { HttpMethod, RoboReply, RoboRequest } from '../types/index.js'
 
 const MAX_BODY_SIZE = 5 * 1024 * 1024 // 5MB
@@ -75,7 +76,7 @@ const Server = {
 				const route = _router.find(parsedUrl.pathname)
 
 				if (!route?.handler) {
-					reply.code(404).send('Route not found.')
+					reply.code(404).send('API Route not found.')
 					return
 				}
 
@@ -85,7 +86,7 @@ const Server = {
 						reply.code(200).send(result.toString())
 					}
 				} catch (error) {
-					logger.error(`Error in request handler: ${error}`)
+					logger.error(`API Route error: ${error}`)
 					res.statusCode = 500
 					res.end('Server encountered an error.')
 				}
@@ -95,7 +96,7 @@ const Server = {
 
 			_isRunning = true
 			_server.listen(port, () => {
-				logger.info(`🚀 Server is live at http://localhost:${port}`)
+				logger.ready(`🚀 Server is live at ${composeColors(color.bold, color.underline)(`http://localhost:${port}`)}`)
 				resolve()
 			})
 		})
