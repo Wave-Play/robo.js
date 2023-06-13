@@ -23,7 +23,7 @@ importers:
 
   packages/create-robo:
     specifiers:
-      '@roboplay/robo.js': 0.6.1
+      '@roboplay/robo.js': 0.7.1
       '@types/async-retry': ^1.4.5
       '@types/inquirer': ^9.0.3
       '@types/node': ^18.16.3
@@ -45,7 +45,7 @@ importers:
       inquirer: 9.2.2
       tar: 6.1.14
     devDependencies:
-      '@roboplay/robo.js': 0.6.1_kz6zchzvbrfuhk2zgidpjpdplq
+      '@roboplay/robo.js': 0.7.1_kz6zchzvbrfuhk2zgidpjpdplq
       '@types/async-retry': 1.4.5
       '@types/inquirer': 9.0.3
       '@types/node': 18.16.8
@@ -758,8 +758,8 @@ packages:
       tar: 6.1.14
     dev: true
 
-  /@roboplay/robo.js/0.6.1_kz6zchzvbrfuhk2zgidpjpdplq:
-    resolution: {integrity: sha512-iXBR5m8a8wO8MIlNNQBvw9cYhOaRphktEGOHUa8ucACC0lJsQVybspsk0wftD3qTjalCJWzVT3+OTK7SXkTOQg==}
+  /@roboplay/robo.js/0.7.1_kz6zchzvbrfuhk2zgidpjpdplq:
+    resolution: {integrity: sha512-stUHEhkqnNJcp6kQfk7+GfR1CbAtAL88nnfYrw1a48JuLomnI9ZaDSwNmTCn+P23y9QNFDsbhHOCW186r9CTww==}
     engines: {node: '>=18.0.0'}
     hasBin: true
     peerDependencies:
@@ -776,7 +776,6 @@ packages:
       commander: 10.0.1
       discord.js: 14.10.2
       dotenv: 16.0.3
-      node-watch: 0.7.3
       p-limit: 4.0.0
       tar: 6.1.14
       typescript: 5.0.2
