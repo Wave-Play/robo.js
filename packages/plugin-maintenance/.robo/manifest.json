@@ -10,11 +10,24 @@
       "plugins": []
     },
     "type": "plugin",
-    "updatedAt": "2023-06-13T09:40:43.259Z",
-    "version": "0.8.0"
+    "updatedAt": "2023-06-14T06:25:33.737Z",
+    "version": "0.8.1"
   },
   "api": {},
-  "commands": {},
+  "commands": {
+    "maintenance": {
+      "__path": "/.robo/build/commands/maintenance.js",
+      "description": "Set maintenance mode",
+      "options": [
+        {
+          "name": "enabled",
+          "description": "Whether to enable or disable maintenance mode",
+          "required": true,
+          "type": "boolean"
+        }
+      ]
+    }
+  },
   "context": {
     "message": {},
     "user": {}
@@ -23,11 +36,6 @@
     "_start": [
       {
         "__path": "/.robo/build/events/_start.js"
-      }
-    ],
-    "messageCreate": [
-      {
-        "__path": "/.robo/build/events/messageCreate.js"
       }
     ]
   },
@@ -40,6 +48,7 @@
     }
   ],
   "scopes": [
+    "applications.commands",
     "bot"
   ]
 }
