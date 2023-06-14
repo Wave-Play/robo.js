@@ -1,9 +1,9 @@
-import { maintenanceEnabled, maintenanceMessage } from '../core/config.js'
+import { excludeCommands, excludeContexts, excludeEvents, maintenanceEnabled, maintenanceMessage } from '../core/config.js'
 import type { MiddlewareData, MiddlewareResult } from '@roboplay/robo.js'
 import type { CommandInteraction, ContextMenuCommandInteraction } from 'discord.js'
 
 export default async (data: MiddlewareData): Promise<MiddlewareResult | void> => {
-	const { auto, plugin, type } = data.record
+	const { auto, key, plugin, type } = data.record
 	const isRoboDefault = !plugin && auto
 	const isSelfPlugin = plugin?.name === '@roboplay/plugin-maintenance'
 
@@ -15,6 +15,13 @@ export default async (data: MiddlewareData): Promise<MiddlewareResult | void> =>
 			interaction.reply(maintenanceMessage)
 		}
 
-		return { abort: true }
+		// Abort as long as it's not explicitly excluded
+		const isExcludedCommand = type === 'command' && excludeCommands.includes(key)
+		const isExcludedContext = type === 'context' && excludeContexts.includes(key)
+		const isExcludedEvent = type === 'event' && excludeEvents.includes(key)
+
+		if (!isExcludedCommand && !isExcludedContext && !isExcludedEvent) {
+			return { abort: true }
+		}
 	}
 }
