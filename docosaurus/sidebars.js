@@ -28,7 +28,7 @@ const sidebars = {
     {
       type: 'category',
       label: 'Basics',
-      items: ['basics/overview', 'basics/commands', 'basics/context-menu', 'basics/events', 'basics/sage', 'basics/secrets'],
+      items: ['basics/overview', 'basics/commands', 'basics/context-menu', 'basics/events', 'basics/sage', 'basics/secrets', 'basics/states'],
     },
     {
       type: 'category',
