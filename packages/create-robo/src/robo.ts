@@ -37,9 +37,14 @@ const pluginScripts = {
 const optionalPlugins = [
 	new inquirer.Separator('\nOptional Plugins:'),
 	{
-		name: `${chalk.bold('GPT')} - Enable your bot to generate human-like text with the power of GPT.`,
+		name: `${chalk.bold('GPT')} - Enable your robo to generate human-like text with the power of GPT.`,
 		short: 'GPT',
 		value: 'gpt'
+	},
+	{
+		name: `${chalk.bold('Maintenance')} - Add a maintenance mode to your robo.`,
+		short: 'Maintenance',
+		value: 'maintenance'
 	},
 	{
 		name: `${chalk.bold('Polls')} - Add the ability to create and manage polls with ease.`,
@@ -303,6 +308,10 @@ export default class Robo {
 					openaiKey: 'YOUR_OPENAI_KEY_HERE'
 				}
 			])
+		}
+		if (features.includes('maintenance')) {
+			packageJson.dependencies['@roboplay/plugin-maintenance'] = '^0.1.0'
+			plugins.push('@roboplay/plugin-maintenance')
 		}
 		if (features.includes('polls')) {
 			packageJson.dependencies['@roboplay/plugin-poll'] = '^0.1.0'
