@@ -27,7 +27,7 @@ export async function executeAutocompleteHandler(interaction: AutocompleteIntera
 	// Execute middleware
 	try {
 		for (const middleware of portal.middleware) {
-			logger.debug(`Executing middleware: ${color.bold(middleware.path)}`)
+			logger.debug(`Executing middleware: ${color.bold(path.join(middleware.plugin?.path ?? '.', middleware.path))}`)
 			const result = await middleware.handler.default({
 				payload: [interaction],
 				record: command
@@ -84,7 +84,7 @@ export async function executeCommandHandler(interaction: CommandInteraction, com
 	// Execute middleware
 	try {
 		for (const middleware of portal.middleware) {
-			logger.debug(`Executing middleware: ${color.bold(middleware.path)}`)
+			logger.debug(`Executing middleware: ${color.bold(path.join(middleware.plugin?.path ?? '.', middleware.path))}`)
 			const result = await middleware.handler.default({
 				payload: [interaction],
 				record: command
@@ -183,7 +183,7 @@ export async function executeContextHandler(interaction: ContextMenuCommandInter
 	// Execute middleware
 	try {
 		for (const middleware of portal.middleware) {
-			logger.debug(`Executing middleware: ${color.bold(middleware.path)}`)
+			logger.debug(`Executing middleware: ${color.bold(path.join(middleware.plugin?.path ?? '.', middleware.path))}`)
 			const result = await middleware.handler.default({
 				payload: [interaction],
 				record: command
@@ -302,7 +302,7 @@ export async function executeEventHandler(
 				// Execute middleware
 				try {
 					for (const middleware of portal.middleware) {
-						logger.debug(`Executing middleware: ${color.bold(middleware.path)}`)
+						logger.debug(`Executing middleware: ${color.bold(path.join(middleware.plugin?.path ?? '.', middleware.path))}`)
 						const result = await middleware.handler.default({
 							payload: eventData,
 							record: callback
