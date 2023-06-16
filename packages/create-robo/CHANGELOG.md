@@ -1,5 +1,12 @@
 # create-robo
 
+## 0.5.1
+
+### Patch Changes
+
+- 7dd9023: chore: added maintenance plugin as option
+- b11990c: patch: encourage source maps for dev mode
+
 ## 0.5.0
 
 ### Minor Changes

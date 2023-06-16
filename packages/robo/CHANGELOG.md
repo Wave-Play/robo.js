@@ -1,5 +1,16 @@
 # robo.js
 
+## 0.8.2
+
+### Patch Changes
+
+- 68a1be5: feat(sage): show node_modules source in addition to project source
+- 82122b6: patch: include middleware plugin path in debug logs
+- 01e06bb: fix: check for empty embeds in sage error messages
+- 365edb3: fix: handle multiple middleware entries better (fixes duplicates)
+- 383a3b3: fix: account for file:// protocol when computing error source
+- 649956e: fix(cli): handle missing plugins config option when adding watchers
+
 ## 0.8.1
 
 ### Patch Changes
