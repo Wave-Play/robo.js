@@ -80,8 +80,10 @@ async function scanEntries<T>(predicate: ScanPredicate, options: ScanOptions<T>)
 	const promises: Promise<unknown>[] = []
 
 	for (const entryName in manifestEntries) {
-		// @ts-expect-error - Middleware is an array
-		const entryItem = Array.isArray(manifestEntries) && type !== 'middleware' ? manifestEntries : manifestEntries[entryName]
+		const entryItem =
+			Array.isArray(manifestEntries) && type !== 'middleware'
+				? (manifestEntries as T[])
+				: (manifestEntries as Record<string, T | T[]>)[entryName]
 		const entries = Array.isArray(entryItem) ? entryItem : [entryItem]
 
 		entries.forEach((entry) => {
