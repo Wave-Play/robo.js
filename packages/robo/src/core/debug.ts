@@ -340,7 +340,7 @@ async function formatError(options: FormatErrorOptions): Promise<FormatErrorResu
 		logs: logs,
 		message: {
 			content: message,
-			embeds: [response],
+			embeds: fields.length ? [response] : [],
 			components: [row]
 		},
 		stack: stack
