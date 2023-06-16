@@ -23,7 +23,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const roboScripts = {
 	build: 'robo build',
 	deploy: 'robo deploy',
-	dev: 'robo dev',
+	dev: 'NODE_OPTIONS=--enable-source-maps robo dev',
 	doctor: 'robo doctor',
 	invite: 'robo invite',
 	start: 'robo start'
