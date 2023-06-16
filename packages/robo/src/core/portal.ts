@@ -71,15 +71,17 @@ class Module {
 interface ScanOptions<T> {
 	manifestEntries: Record<string, T | T[]> | T[]
 	recursionKeys?: string[]
+	type: string
 }
 type ScanPredicate = <T>(entry: T, entryKeys: string[]) => Promise<void>
 
 async function scanEntries<T>(predicate: ScanPredicate, options: ScanOptions<T>) {
-	const { manifestEntries, recursionKeys = [] } = options
+	const { manifestEntries, recursionKeys = [], type } = options
 	const promises: Promise<unknown>[] = []
 
 	for (const entryName in manifestEntries) {
-		const entryItem = Array.isArray(manifestEntries) ? manifestEntries : manifestEntries[entryName]
+		// @ts-expect-error - Middleware is an array
+		const entryItem = Array.isArray(manifestEntries) && type !== 'middleware' ? manifestEntries : manifestEntries[entryName]
 		const entries = Array.isArray(entryItem) ? entryItem : [entryItem]
 
 		entries.forEach((entry) => {
@@ -89,13 +91,15 @@ async function scanEntries<T>(predicate: ScanPredicate, options: ScanOptions<T>)
 			if (hasProperties<{ subcommands: Record<string, T> }>(entry, ['subcommands']) && entry.subcommands) {
 				const resursion = scanEntries(predicate, {
 					manifestEntries: entry.subcommands,
-					recursionKeys: entryKeys
+					recursionKeys: entryKeys,
+					type
 				})
 				promises.push(resursion)
 			} else if (hasProperties<{ subroutes: Record<string, T> }>(entry, ['subroutes']) && entry.subroutes) {
 				const resursion = scanEntries(predicate, {
 					manifestEntries: entry.subroutes,
-					recursionKeys: entryKeys
+					recursionKeys: entryKeys,
+					type
 				})
 				promises.push(resursion)
 			}
@@ -120,12 +124,15 @@ async function loadHandlerRecords<T extends HandlerRecord | HandlerRecord[]>(
 			: type === 'events'
 			? composeColors(color.magenta, color.bold)
 			: composeColors(color.gray, color.bold)
+	const formatApi = (api: string) => pcolor(`${api}`)
 	const formatCommand = (command: string) => pcolor(`/${command}`)
 	const formatContext = (context: string) => pcolor(`${context} (${context})`)
 	const formatEvent = (event: string) => pcolor(`${event} (${manifest.events[event].length})`)
-	const formatMiddleware = (middleware: string) => pcolor(`${middleware}`)
+	const formatMiddleware = (middleware: string) => pcolor(manifest.middleware[parseInt(middleware)]?.__path)
 	const formatter =
-		type === 'commands'
+		type === 'api'
+			? formatApi
+			: type === 'commands'
 			? formatCommand
 			: type === 'context'
 			? formatContext
@@ -178,10 +185,10 @@ async function loadHandlerRecords<T extends HandlerRecord | HandlerRecord[]>(
 
 	// Scan context a bit differently due to nesting
 	if (type === 'context') {
-		await scanEntries(scanPredicate, { manifestEntries: manifest.context.message })
-		await scanEntries(scanPredicate, { manifestEntries: manifest.context.user })
+		await scanEntries(scanPredicate, { manifestEntries: manifest.context.message, type })
+		await scanEntries(scanPredicate, { manifestEntries: manifest.context.user, type })
 	} else {
-		await scanEntries(scanPredicate, { manifestEntries: manifest[type] })
+		await scanEntries(scanPredicate, { manifestEntries: manifest[type], type })
 	}
 
 	return collection
