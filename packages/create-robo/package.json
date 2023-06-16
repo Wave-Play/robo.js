@@ -45,7 +45,7 @@
 		"tar": "^6.1.13"
 	},
 	"devDependencies": {
-		"@roboplay/robo.js": "0.8.2",
+		"@roboplay/robo.js": "0.8.1",
 		"@types/async-retry": "^1.4.5",
 		"@types/inquirer": "^9.0.3",
 		"@types/node": "^18.16.3",
