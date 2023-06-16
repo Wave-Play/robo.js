@@ -23,7 +23,7 @@ import type {
 	MessageComponentInteraction
 } from 'discord.js'
 import { env } from './env.js'
-import path from 'node:path'
+import { URL } from 'node:url'
 import { setState } from './state.js'
 import { isMainThread, parentPort } from 'node:worker_threads'
 import type { CommandConfig, Event, HandlerRecord } from '../types/index.js'
@@ -212,9 +212,15 @@ async function getCodeCodeAtFault(err: Error) {
 			throw new Error('Could not parse stack trace')
 		}
 
-		// Read file contents
+		// Find original source file path
 		const file = filePath.replaceAll('/.robo/build/commands', '').replaceAll('/.robo/build/events', '')
-		const fileContent = await fs.readFile(path.resolve(file), 'utf-8')
+		let normalizedPath = file.startsWith('file:') ? decodeURI(new URL(file).pathname) : file
+		if (normalizedPath.startsWith('/') && process.platform === 'win32') {
+			normalizedPath = normalizedPath.slice(1)
+		}
+
+		// Read file contents
+		const fileContent = await fs.readFile(normalizedPath, 'utf-8')
 		const lines = fileContent.split('\n')
 		const lineNumber = parseInt(line, 10)
 		const columnNumber = parseInt(column, 10)
@@ -232,7 +238,7 @@ async function getCodeCodeAtFault(err: Error) {
 
 		return {
 			code: result,
-			file: file,
+			file: normalizedPath,
 			type: file.endsWith('.ts') ? 'ts' : 'js'
 		}
 	} catch (error) {
