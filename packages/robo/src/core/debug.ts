@@ -26,8 +26,9 @@ import { env } from './env.js'
 import { URL } from 'node:url'
 import { setState } from './state.js'
 import { isMainThread, parentPort } from 'node:worker_threads'
-import type { CommandConfig, Event, HandlerRecord } from '../types/index.js'
 import { STATE_KEYS } from './constants.js'
+import path from 'node:path'
+import type { CommandConfig, Event, HandlerRecord } from '../types/index.js'
 
 export const DEBUG_MODE = process.env.NODE_ENV !== 'production'
 
@@ -198,15 +199,31 @@ export async function sendDebugError(error: unknown) {
 	}
 }
 
-async function getCodeCodeAtFault(err: Error) {
+const stackLineRegex = /at .* \((.*):(\d+):(\d+)\)/
+
+async function getCodeCodeAtFault(err: Error, type: 'dependency' | 'source') {
 	try {
+		// Parse out lines from stack trace, removing the first line
 		const stackLines = err.stack?.split('\n')
+		stackLines?.shift()
 		if (!stackLines) {
 			throw new Error('No stack trace found')
 		}
 
-		const stackLineRegex = /at .* \((.*):(\d+):(\d+)\)/
-		const [, filePath, line, column] = stackLines[1].match(stackLineRegex) || []
+		// Find first module line, removing if not the first and Robo.js to avoid underlying framework caller
+		const deps = '/node_modules/'
+		const depIndex = stackLines.findIndex((line) => line.includes(deps))
+		if (type === 'dependency' && depIndex > 0 && stackLines[depIndex].includes(deps + '@roboplay/robo.js/')) {
+			return null
+		}
+
+		// Find stack line to analyze
+		const projectPredicate = (line: string) => {
+			const x = line.trim()
+			return x && !x.includes(deps) && !x.includes('node:') && x.includes(':') && x.includes(path.sep)
+		}
+		const stackLine = type === 'dependency' ? stackLines[depIndex] : stackLines.find(projectPredicate)
+		const [, filePath, line, column] = stackLine.match(stackLineRegex) || []
 
 		if (!filePath || !line || !column) {
 			throw new Error('Could not parse stack trace')
@@ -276,7 +293,8 @@ async function formatError(options: FormatErrorOptions): Promise<FormatErrorResu
 	// Try to get code at fault from stack trace
 	const logs = logger.getRecentLogs().map((log) => log.message())
 	const stack = error instanceof Error ? error.stack : null
-	const source = error instanceof Error ? await getCodeCodeAtFault(error) : null
+	const dependencySource = error instanceof Error ? await getCodeCodeAtFault(error, 'dependency') : null
+	const source = error instanceof Error ? await getCodeCodeAtFault(error, 'source') : null
 
 	// Assemble error response using fanceh embeds
 	const fields: APIEmbedField[] = []
@@ -316,10 +334,18 @@ async function formatError(options: FormatErrorOptions): Promise<FormatErrorResu
 			value: '`' + event.path + '`'
 		})
 	}
-	if (source) {
+	if (dependencySource) {
+		const file = dependencySource.file.replace(process.cwd(), '')
 		fields.push({
-			name: 'Source',
-			value: `\`${source.file.replace(process.cwd(), '')}\`\n` + '```' + `${source.type}\n` + source.code + '\n```'
+			name: 'Dependency Source',
+			value: `\`${file}\`\n` + '```' + `${dependencySource.type}\n` + dependencySource.code + '\n```'
+		})
+	}
+	if (source) {
+		const file = source.file.replace(process.cwd(), '')
+		fields.push({
+			name: 'Project Source',
+			value: `\`${file}\`\n` + '```' + `${source.type}\n` + source.code + '\n```'
 		})
 	}
 
