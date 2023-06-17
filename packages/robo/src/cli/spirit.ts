@@ -16,6 +16,10 @@ const stateLoad = new Promise<void>((resolve) => {
 	stateLoadResolve = resolve
 })
 
+interface BuildPayload {
+	files: string[]
+}
+
 /**
  * Spirits continue living in the background until their job is done.
  * Each job may be different, and some don't end until told to do so.
@@ -23,7 +27,8 @@ const stateLoad = new Promise<void>((resolve) => {
 async function run(message: SpiritMessage): Promise<unknown> {
 	if (message.event === 'build') {
 		const { buildAction } = await import('./commands/build/index.js')
-		await buildAction(message.payload as string[], {
+		const payload = message.payload as BuildPayload
+		await buildAction(payload.files, {
 			dev: true,
 			verbose: message.verbose
 		})

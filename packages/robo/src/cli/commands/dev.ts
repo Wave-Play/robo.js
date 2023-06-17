@@ -213,7 +213,9 @@ export async function buildAsync(command: string, config: Config, verbose: boole
 			spirits
 				.newTask({
 					event: 'build',
-					payload: changes.map((change) => change.filePath),
+					payload: {
+						files: changes.map((change) => change.filePath)
+					},
 					verbose: verbose
 				})
 				.then(() => {
