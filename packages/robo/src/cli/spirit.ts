@@ -9,11 +9,6 @@ if (isMainThread) {
 	process.exit(1)
 }
 
-// Keep this worker thread alive
-setInterval(() => {
-	/* :3 */
-}, 1000).unref()
-
 // This is used to wait for the state to be loaded before continuing
 let isRobo = false
 let stateLoadResolve: () => void
@@ -97,5 +92,6 @@ parentPort.on('message', async (message: SpiritMessage) => {
 	// Stop living once work is done ;-;
 	if (result.payload === 'exit') {
 		parentPort.close()
+		process.exit()
 	}
 })
