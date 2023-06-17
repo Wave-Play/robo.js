@@ -19,8 +19,6 @@ const sidebars = {
   // But you can create a sidebar manually
 
   tutorialSidebar: [
-    // 'intro',
-    // 'hello',
     'getting-started',
     'adding-to-server',
     'hosting',
@@ -28,7 +26,7 @@ const sidebars = {
     {
       type: 'category',
       label: 'Basics',
-      items: ['basics/overview', 'basics/commands', 'basics/context-menu', 'basics/events', 'basics/sage', 'basics/secrets', 'basics/states'],
+      items: ['basics/overview', 'basics/commands', 'basics/context-menu', 'basics/events', 'basics/flashcore', 'basics/sage', 'basics/secrets', 'basics/states'],
     },
     {
       type: 'category',
