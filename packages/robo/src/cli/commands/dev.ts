@@ -9,6 +9,7 @@ import path from 'node:path'
 import url from 'node:url'
 import { getStateSave } from '../../core/state.js'
 import Watcher, { Change } from '../utils/watcher.js'
+import { loadManifest } from '../utils/manifest.js'
 import { color, composeColors } from '../utils/color.js'
 import { Spirits } from '../utils/spirits.js'
 import { buildAction } from './build/index.js'
@@ -134,6 +135,9 @@ async function devAction(options: DevCommandOptions) {
 		logger.wait(`Build failed! Waiting for changes before retrying...`)
 	}
 
+	// Load manifest to compare later
+	let manifest = await loadManifest()
+
 	// Watch for changes in the "src" directory alongside special files
 	const watchedPaths = ['src']
 	const additionalFiles = await filterExistingPaths(['.env', 'tsconfig.json', configRelative])
@@ -170,12 +174,25 @@ async function devAction(options: DevCommandOptions) {
 				logger.wait(`Change detected. Restarting Robo...`)
 			}
 
+			// Rebuild and restart
 			if (config.experimental?.spirits) {
 				roboSpirit = await rebuildRobo(roboSpirit, config, options.verbose, changes)
 				spirits.on(roboSpirit, restartCallback)
 			} else {
 				botProcess = await rebuildAndRestartBot(botProcess, config, options.verbose, changes)
 				registerProcessEvents()
+			}
+
+			// Compare manifest to warn about permission changes
+			const newManifest = await loadManifest()
+			const oldPermissions = manifest.permissions ?? []
+			const newPermissions = newManifest.permissions ?? []
+			manifest = newManifest
+
+			if (JSON.stringify(oldPermissions) !== JSON.stringify(newPermissions)) {
+				logger.warn(
+					`Permissions have changed! Run ${color.bold('robo invite')} to update your Robo's guild permissions.`
+				)
 			}
 		} finally {
 			isUpdating = false
