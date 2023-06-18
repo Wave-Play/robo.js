@@ -12,7 +12,7 @@ interface CustomLevel {
 export interface LoggerOptions {
 	customLevels?: Record<string, CustomLevel>
 	enabled?: boolean
-	level?: LogLevel
+	level?: LogLevel | string
 	maxEntries?: number
 }
 
@@ -76,7 +76,7 @@ class LogEntry {
 export class Logger {
 	protected _customLevels: Record<string, CustomLevel>
 	protected _enabled: boolean
-	protected _level: LogLevel
+	protected _level: LogLevel | string
 	protected _levelValues: Record<string, number>
 	private _currentIndex: number
 	private _logBuffer: LogEntry[]
