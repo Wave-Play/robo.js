@@ -1,6 +1,13 @@
-import { BaseLogger, LogLevel, colorizedLogLevels } from './base-logger.js'
+import { color } from './../cli/utils/color.js'
+import { env } from './env.js'
 import { inspect } from 'util'
-import type { BaseLoggerOptions } from './base-logger.js'
+
+export type LogLevel = 'trace' | 'debug' | 'info' | 'wait' | 'other' | 'event' | 'ready' | 'warn' | 'error'
+
+export interface BaseLoggerOptions {
+	enabled?: boolean
+	level?: LogLevel
+}
 
 export const DEBUG_MODE = process.env.NODE_ENV !== 'production'
 
@@ -63,13 +70,22 @@ export interface LoggerOptions extends BaseLoggerOptions {
 	maxEntries?: number
 }
 
-class Logger extends BaseLogger {
-	// Circular log buffer that overwrites old entries
+export class Logger {
+	protected _enabled: boolean
+	protected _level: LogLevel
 	private _currentIndex: number
 	private _logBuffer: LogEntry[]
 
 	constructor(options?: LoggerOptions) {
-		super(options)
+		const { enabled = true, level } = options ?? {}
+
+		this._enabled = enabled
+		if (env.roboplay.host) {
+			// This allows developers to have better control over the logs when hosted
+			this._level = 'trace'
+		} else {
+			this._level = level ?? 'info'
+		}
 
 		// Initialize the log buffer
 		this._currentIndex = 0
@@ -77,48 +93,50 @@ class Logger extends BaseLogger {
 	}
 
 	protected _log(level: LogLevel, ...data: unknown[]): void {
-		// Format the message all pretty and stuff
-		if (level !== 'other') {
-			const colorizedLevel = colorizedLogLevels[level]
-			data.unshift((colorizedLevel ?? level.padEnd(5)) + ' -')
-		}
+		if (LogLevelValues[this._level] <= LogLevelValues[level]) {
+			// Format the message all pretty and stuff
+			if (level !== 'other') {
+				const colorizedLevel = colorizedLogLevels[level]
+				data.unshift((colorizedLevel ?? level.padEnd(5)) + ' -')
+			}
 
-		// Persist the log entry in debug mode
-		if (DEBUG_MODE) {
-			this._logBuffer[this._currentIndex] = new LogEntry(level, data)
-			this._currentIndex = (this._currentIndex + 1) % this._logBuffer.length
-		}
+			// Persist the log entry in debug mode
+			if (DEBUG_MODE) {
+				this._logBuffer[this._currentIndex] = new LogEntry(level, data)
+				this._currentIndex = (this._currentIndex + 1) % this._logBuffer.length
+			}
 
-		let promise: Promise<void>
-		switch (level) {
-			case 'trace':
-			case 'debug':
-				promise = writeLog(process.stdout, ...data)
-				break
-			case 'info':
-				promise = writeLog(process.stdout, ...data)
-				break
-			case 'wait':
-				promise = writeLog(process.stdout, ...data)
-				break
-			case 'event':
-				promise = writeLog(process.stdout, ...data)
-				break
-			case 'warn':
-				promise = writeLog(process.stderr, ...data)
-				break
-			case 'error':
-				promise = writeLog(process.stderr, ...data)
-				break
-			default:
-				promise = writeLog(process.stdout, ...data)
-				break
-		}
+			let promise: Promise<void>
+			switch (level) {
+				case 'trace':
+				case 'debug':
+					promise = writeLog(process.stdout, ...data)
+					break
+				case 'info':
+					promise = writeLog(process.stdout, ...data)
+					break
+				case 'wait':
+					promise = writeLog(process.stdout, ...data)
+					break
+				case 'event':
+					promise = writeLog(process.stdout, ...data)
+					break
+				case 'warn':
+					promise = writeLog(process.stderr, ...data)
+					break
+				case 'error':
+					promise = writeLog(process.stderr, ...data)
+					break
+				default:
+					promise = writeLog(process.stdout, ...data)
+					break
+			}
 
-		pendingWrites.add(promise)
-		promise.finally(() => {
-			pendingWrites.delete(promise)
-		})
+			pendingWrites.add(promise)
+			promise.finally(() => {
+				pendingWrites.delete(promise)
+			})
+		}
 	}
 
 	public flush() {
@@ -143,9 +161,66 @@ class Logger extends BaseLogger {
 
 		return recentLogs.reverse()
 	}
+
+	public trace(...data: unknown[]) {
+		this._log('trace', ...data)
+	}
+
+	public debug(...data: unknown[]) {
+		this._log('debug', ...data)
+	}
+
+	public info(...data: unknown[]) {
+		this._log('info', ...data)
+	}
+
+	public wait(...data: unknown[]) {
+		this._log('wait', ...data)
+	}
+
+	public log(...data: unknown[]) {
+		this._log('other', ...data)
+	}
+
+	public event(...data: unknown[]) {
+		this._log('event', ...data)
+	}
+
+	public ready(...data: unknown[]) {
+		this._log('ready', ...data)
+	}
+
+	public warn(...data: unknown[]) {
+		this._log('warn', ...data)
+	}
+
+	public error(...data: unknown[]) {
+		this._log('error', ...data)
+	}
 }
 
-export { Logger }
+const LogLevelValues: Record<LogLevel, number> = {
+	trace: 0,
+	debug: 1,
+	info: 2,
+	wait: 3,
+	other: 4,
+	event: 5,
+	ready: 6,
+	warn: 7,
+	error: 8
+}
+
+const colorizedLogLevels = {
+	trace: color.gray('trace'.padEnd(5)),
+	debug: color.cyan('debug'.padEnd(5)),
+	info: color.blue('info'.padEnd(5)),
+	wait: color.cyan('wait'.padEnd(5)),
+	event: color.magenta('event'.padEnd(5)),
+	ready: color.green('ready'.padEnd(5)),
+	warn: color.yellow('warn'.padEnd(5)),
+	error: color.red('error'.padEnd(5))
+}
 
 let _logger: Logger | null = null
 
