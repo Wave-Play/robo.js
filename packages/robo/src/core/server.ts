@@ -4,7 +4,7 @@ import { parse } from 'node:querystring'
 import { Router } from './router.js'
 import { logger } from './logger.js'
 import { portal } from './robo.js'
-import { color, composeColors } from '../cli/utils/color.js'
+import { color, composeColors } from './color.js'
 import type { HttpMethod, RoboReply, RoboRequest } from '../types/index.js'
 
 const MAX_BODY_SIZE = 5 * 1024 * 1024 // 5MB

@@ -1,7 +1,7 @@
 import { Command } from 'commander'
 import { logger } from '../../core/logger.js'
 import { loadManifest } from '../utils/manifest.js'
-import { color } from '../utils/color.js'
+import { color } from '../../core/color.js'
 
 const command = new Command('why')
 	.description('Find out why a command, event, permission, or scope is in your Robo.\ne.g. /ping, @ready, %ADMINISTRATOR, +applications.commands')

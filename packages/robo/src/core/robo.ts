@@ -1,4 +1,4 @@
-import { color } from './../cli/utils/color.js'
+import { color } from './color.js'
 import { registerProcessEvents } from './process.js'
 import { Client, Collection, Events } from 'discord.js'
 import { getConfig, loadConfig } from './config.js'

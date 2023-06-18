@@ -1,5 +1,5 @@
 import { inspect } from 'node:util'
-import { color } from './../cli/utils/color.js'
+import { color } from './color.js'
 import { env } from './env.js'
 
 export type LogLevel = 'trace' | 'debug' | 'info' | 'wait' | 'other' | 'event' | 'ready' | 'warn' | 'error'

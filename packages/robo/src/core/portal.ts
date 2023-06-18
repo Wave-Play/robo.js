@@ -4,7 +4,7 @@ import { pathToFileURL } from 'node:url'
 import { getManifest } from '../cli/utils/manifest.js'
 import { hasProperties } from '../cli/utils/utils.js'
 import { logger } from './logger.js'
-import { color, composeColors, hex } from '../cli/utils/color.js'
+import { color, composeColors, hex } from './color.js'
 import type { Api, BaseConfig, Command, Context, Event, HandlerRecord, Middleware } from '../types/index.js'
 
 export default class Portal {

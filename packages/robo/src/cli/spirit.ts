@@ -1,5 +1,5 @@
 import { isMainThread, parentPort, workerData } from 'node:worker_threads'
-import { color, composeColors } from './utils/color.js'
+import { color, composeColors } from '../core/color.js'
 import { logger } from '../core/logger.js'
 import type { SpiritMessage } from '../types/index.js'
 

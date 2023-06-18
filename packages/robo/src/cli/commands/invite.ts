@@ -4,7 +4,7 @@ import { loadManifest } from '../utils/manifest.js'
 import { Manifest } from '../../types/index.js'
 import { env } from '../../core/env.js'
 import { PermissionFlagsBits } from 'discord.js'
-import { color, composeColors } from '../utils/color.js'
+import { color, composeColors } from '../../core/color.js'
 
 const command = new Command('invite').description('Generates a link for servers to add your Robo.').action(inviteAction)
 export default command

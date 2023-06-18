@@ -19,7 +19,7 @@ import { findPackagePath, hasProperties, packageJson } from './utils.js'
 import { loadConfig } from '../../core/config.js'
 import { pathToFileURL } from 'node:url'
 import { DefaultGen } from './generate-defaults.js'
-import { color } from './color.js'
+import { color } from '../../core/color.js'
 import type { PermissionsString } from 'discord.js'
 
 // Global manifest reference

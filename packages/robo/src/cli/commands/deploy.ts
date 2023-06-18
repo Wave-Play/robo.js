@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import { Command } from 'commander'
 import { logger } from '../../core/logger.js'
-import { color, composeColors } from '../../cli/utils/color.js'
+import { color, composeColors } from '../../core/color.js'
 import { uploadToBackblazeB2 } from '../utils/upload.js'
 import path from 'node:path'
 import { env } from '../../core/env.js'

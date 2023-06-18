@@ -4,7 +4,7 @@ import { __DIRNAME } from './utils.js'
 import { logger } from '../../core/logger.js'
 import { SpiritMessage } from 'src/types/index.js'
 import { nameGenerator } from './name-generator.js'
-import { color, composeColors } from './color.js'
+import { color, composeColors } from '../../core/color.js'
 
 interface Task<T = unknown> extends SpiritMessage {
 	payload?: unknown

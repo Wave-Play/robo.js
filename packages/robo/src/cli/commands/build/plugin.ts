@@ -1,4 +1,4 @@
-import { color } from './../../utils/color.js';
+import { color } from '../../../core/color.js';
 import { Command } from 'commander'
 import { generateManifest } from '../../utils/manifest.js'
 import { logger } from '../../../core/logger.js'

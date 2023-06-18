@@ -2,7 +2,7 @@ import { Command } from 'commander'
 import fs from 'fs/promises'
 import { logger } from '../../core/logger.js'
 import { hasFilesRecursively } from '../utils/fs-helper.js'
-import { color, composeColors } from '../utils/color.js'
+import { color, composeColors } from '../../core/color.js'
 import { loadConfig } from '../../core/config.js'
 
 const command = new Command('start')

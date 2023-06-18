@@ -3,7 +3,7 @@ import { getConfig, getState, logger, setState } from '@roboplay/robo.js'
 // @ts-expect-error - This is valid once command file is parsed
 import { DEFAULT_CONFIG, STATE_KEYS } from '@roboplay/robo.js/dist/core/constants.js'
 // @ts-expect-error - This is valid once command file is parsed
-import { color } from '@roboplay/robo.js/dist/cli/utils/color.js'
+import { color } from '@roboplay/robo.js/dist/core/color.js'
 import { ChannelType, Client } from 'discord.js'
 
 export default async (client: Client) => {

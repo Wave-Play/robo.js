@@ -3,7 +3,7 @@ import path from 'node:path'
 import { logger } from '../../core/logger.js'
 import { CommandEntry, Manifest } from '../../types/index.js'
 import { packageJson } from './utils.js'
-import { color, composeColors, hex } from './color.js'
+import { color, composeColors, hex } from '../../core/color.js'
 
 export async function getProjectSize(directory: string): Promise<number> {
 	let entries = await fs.readdir(directory, { withFileTypes: true })

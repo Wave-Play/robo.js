@@ -13,7 +13,7 @@ import { env } from '../../core/env.js'
 import { timeout } from './utils.js'
 import type { ApplicationCommandOptionBase } from 'discord.js'
 import type { CommandEntry, CommandOption, ContextEntry } from '../../types/index.js'
-import { color } from './color.js'
+import { color } from '../../core/color.js'
 
 // @ts-expect-error - Global logger is overriden by dev mode
 let logger: Logger = globalLogger

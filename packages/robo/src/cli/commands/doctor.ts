@@ -2,7 +2,7 @@ import { Command } from 'commander'
 import fs from 'fs'
 import path from 'path'
 import { logger } from '../../core/logger.js'
-import { color, composeColors } from '../utils/color.js'
+import { color, composeColors } from '../../core/color.js'
 import { loadEnv } from '../../core/dotenv.js'
 
 const command = new Command('doctor').description('Checks if your project is healthy').action(doctor)
