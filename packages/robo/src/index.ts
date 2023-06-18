@@ -1,3 +1,4 @@
+export { color } from './core/color.js'
 export { getConfig } from './core/config.js'
 export { getManifest } from './cli/utils/manifest.js'
 export { Flashcore } from './core/flashcore.js'
