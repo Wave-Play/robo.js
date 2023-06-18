@@ -1,4 +1,11 @@
-import { ApplicationCommandType, ContextMenuCommandBuilder, REST, Routes, SlashCommandBuilder, SlashCommandSubcommandBuilder } from 'discord.js'
+import {
+	ApplicationCommandType,
+	ContextMenuCommandBuilder,
+	REST,
+	Routes,
+	SlashCommandBuilder,
+	SlashCommandSubcommandBuilder
+} from 'discord.js'
 import { logger as globalLogger, Logger } from '../../core/logger.js'
 import { loadConfig } from '../../core/config.js'
 import { DEFAULT_CONFIG } from '../../core/constants.js'
@@ -11,7 +18,11 @@ import { color } from './color.js'
 // @ts-expect-error - Global logger is overriden by dev mode
 let logger: Logger = globalLogger
 
-export function buildContextCommands(dev: boolean, contextCommands: Record<string, ContextEntry>, type: 'message' | 'user'): ContextMenuCommandBuilder[] {
+export function buildContextCommands(
+	dev: boolean,
+	contextCommands: Record<string, ContextEntry>,
+	type: 'message' | 'user'
+): ContextMenuCommandBuilder[] {
 	if (dev) {
 		logger = new Logger({
 			enabled: true,
@@ -108,40 +119,47 @@ export function addOptionToCommandBuilder(
 	type: string,
 	option: CommandOption
 ) {
-	const optionPredicate = <T extends ApplicationCommandOptionBase>(optionBuilder: T) =>
-		optionBuilder
+	const optionPredicate = <T extends ApplicationCommandOptionBase>(builder: T) => {
+		const optionResult = builder
 			.setName(option.name)
 			.setNameLocalizations(option.nameLocalizations ?? {})
 			.setDescription(option.description || 'No description provided')
 			.setDescriptionLocalizations(option.descriptionLocalizations ?? {})
 			.setRequired(option.required || false)
 
+		return optionResult
+	}
+
 	switch (type) {
 		case undefined:
 		case null:
 		case 'string':
-			commandBuilder.addStringOption(optionPredicate)
+			commandBuilder.addStringOption((builder) =>
+				optionPredicate(builder).setAutocomplete(option.autocomplete ?? false)
+			)
 			break
 		case 'integer':
-			commandBuilder.addIntegerOption(optionPredicate)
+			commandBuilder.addIntegerOption((builder) =>
+				optionPredicate(builder).setAutocomplete(option.autocomplete ?? false)
+			)
 			break
 		case 'boolean':
-			commandBuilder.addBooleanOption(optionPredicate)
+			commandBuilder.addBooleanOption((builder) => optionPredicate(builder))
 			break
 		case 'attachment':
-			commandBuilder.addAttachmentOption(optionPredicate)
+			commandBuilder.addAttachmentOption((builder) => optionPredicate(builder))
 			break
 		case 'channel':
-			commandBuilder.addChannelOption(optionPredicate)
+			commandBuilder.addChannelOption((builder) => optionPredicate(builder))
 			break
 		case 'mention':
-			commandBuilder.addMentionableOption(optionPredicate)
+			commandBuilder.addMentionableOption((builder) => optionPredicate(builder))
 			break
 		case 'role':
-			commandBuilder.addRoleOption(optionPredicate)
+			commandBuilder.addRoleOption((builder) => optionPredicate(builder))
 			break
 		case 'user':
-			commandBuilder.addUserOption(optionPredicate)
+			commandBuilder.addUserOption((builder) => optionPredicate(builder))
 			break
 		default:
 			logger.warn(`Invalid option type: ${type}`)
@@ -243,16 +261,8 @@ export async function registerCommands(
 		const removedContextChanges = removedContextCommands.map((cmd) => color.red(`${color.bold(cmd)} (deleted)`))
 		const updatedContextChanges = changedContextCommands.map((cmd) => color.blue(`${color.bold(cmd)} (updated)`))
 
-		const allChanges = [
-			...addedChanges,
-			...removedChanges,
-			...updatedChanges
-		]
-		const allContextChanges = [
-			...addedContextChanges,
-			...removedContextChanges,
-			...updatedContextChanges
-		]
+		const allChanges = [...addedChanges, ...removedChanges, ...updatedChanges]
+		const allContextChanges = [...addedContextChanges, ...removedContextChanges, ...updatedContextChanges]
 		if (allChanges.length > 0) {
 			logger.info('Command changes: ' + allChanges.join(', '))
 		}

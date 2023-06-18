@@ -17,6 +17,7 @@ import Portal from './portal.js'
 import Server from './server.js'
 import { isMainThread, parentPort } from 'node:worker_threads'
 import type { PluginData } from '../types/index.js'
+import type { AutocompleteInteraction, CommandInteraction } from 'discord.js'
 
 export const Robo = { restart, start, stop }
 
@@ -85,29 +86,15 @@ async function start(options?: StartOptions) {
 	// Forward command interactions to our fancy handlers
 	client.on(Events.InteractionCreate, async (interaction) => {
 		if (interaction.isChatInputCommand()) {
-			const commandKeys = [interaction.commandName]
-			if (hasProperties<{ getSubcommandGroup: () => string }>(interaction.options, ['getSubcommandGroup'])) {
-				try {
-					commandKeys.push(interaction.options.getSubcommandGroup())
-				} catch {
-					// Ignore
-				}
-			}
-			if (hasProperties<{ getSubcommand: () => string }>(interaction.options, ['getSubcommand'])) {
-				try {
-					commandKeys.push(interaction.options.getSubcommand())
-				} catch {
-					// Ignore
-				}
-			}
-			const commandKey = commandKeys.filter(Boolean).join(' ')
+			const commandKey = getCommandKey(interaction)
 			logger.event(`Received slash command interaction: ${color.bold('/' + commandKey)}`)
 			logger.trace('Slash command interaction:', interaction.toJSON())
 			await executeCommandHandler(interaction, commandKey)
 		} else if (interaction.isAutocomplete()) {
+			const commandKey = getCommandKey(interaction)
 			logger.event(`Received autocomplete interaction for: ${color.bold(interaction.commandName)}`)
 			logger.trace('Autocomplete interaction:', interaction.toJSON())
-			await executeAutocompleteHandler(interaction)
+			await executeAutocompleteHandler(interaction, commandKey)
 		} else if (interaction.isContextMenuCommand()) {
 			logger.event(`Received context menu interaction: ${color.bold(interaction.commandName)}`)
 			logger.trace('Context menu interaction:', interaction.toJSON())
@@ -164,6 +151,25 @@ async function restart() {
 			process.exit()
 		}
 	}
+}
+
+function getCommandKey(interaction: AutocompleteInteraction | CommandInteraction) {
+	const commandKeys = [interaction.commandName]
+	if (hasProperties<{ getSubcommandGroup: () => string }>(interaction.options, ['getSubcommandGroup'])) {
+		try {
+			commandKeys.push(interaction.options.getSubcommandGroup())
+		} catch {
+			// Ignore
+		}
+	}
+	if (hasProperties<{ getSubcommand: () => string }>(interaction.options, ['getSubcommand'])) {
+		try {
+			commandKeys.push(interaction.options.getSubcommand())
+		} catch {
+			// Ignore
+		}
+	}
+	return commandKeys.filter(Boolean).join(' ')
 }
 
 function loadPluginData() {

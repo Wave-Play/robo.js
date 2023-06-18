@@ -11,10 +11,10 @@ import type { AutocompleteInteraction } from 'discord.js'
 import type { CommandConfig, ContextConfig, PluginData } from '../types/index.js'
 import type { Collection } from 'discord.js'
 
-export async function executeAutocompleteHandler(interaction: AutocompleteInteraction) {
-	const command = portal.commands.get(interaction.commandName)
+export async function executeAutocompleteHandler(interaction: AutocompleteInteraction, commandKey: string) {
+	const command = portal.commands.get(commandKey)
 	if (!command) {
-		logger.error(`No command matching ${interaction.commandName} was found.`)
+		logger.error(`No command matching ${commandKey} was found.`)
 		return
 	}
 
@@ -302,7 +302,9 @@ export async function executeEventHandler(
 				// Execute middleware
 				try {
 					for (const middleware of portal.middleware) {
-						logger.debug(`Executing middleware: ${color.bold(path.join(middleware.plugin?.path ?? '.', middleware.path))}`)
+						logger.debug(
+							`Executing middleware: ${color.bold(path.join(middleware.plugin?.path ?? '.', middleware.path))}`
+						)
 						const result = await middleware.handler.default({
 							payload: eventData,
 							record: callback
