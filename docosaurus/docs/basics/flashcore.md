@@ -1,4 +1,4 @@
-# Flashcore 🌩️
+# Flashcore ⚡
 
 Flashcore is like your Robo's built-in database—ready to hold onto all the key-value pairs your Robo needs for the long haul. Trust us, it's a breeze to use!
 
