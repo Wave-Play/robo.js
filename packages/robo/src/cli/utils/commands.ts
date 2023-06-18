@@ -37,6 +37,13 @@ export function buildContextCommands(
 			.setNameLocalizations(entry.nameLocalizations || {})
 			.setType(type === 'message' ? ApplicationCommandType.Message : ApplicationCommandType.User)
 
+		if (entry.defaultMemberPermissions !== undefined) {
+			commandBuilder.setDefaultMemberPermissions(entry.defaultMemberPermissions)
+		}
+		if (entry.dmPermission !== undefined) {
+			commandBuilder.setDMPermission(entry.dmPermission)
+		}
+
 		return commandBuilder
 	})
 }
@@ -84,6 +91,7 @@ export function buildSlashCommands(dev: boolean, commands: Record<string, Comman
 								return subcommand
 							})
 						}
+
 						return subcommandGroup
 					})
 					continue
@@ -108,6 +116,13 @@ export function buildSlashCommands(dev: boolean, commands: Record<string, Comman
 			entry.options?.forEach((option) => {
 				addOptionToCommandBuilder(commandBuilder, option.type, option)
 			})
+
+			if (entry.defaultMemberPermissions !== undefined) {
+				commandBuilder.setDefaultMemberPermissions(entry.defaultMemberPermissions)
+			}
+			if (entry.dmPermission !== undefined) {
+				commandBuilder.setDMPermission(entry.dmPermission)
+			}
 		}
 
 		return commandBuilder

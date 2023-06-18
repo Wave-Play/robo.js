@@ -5,6 +5,8 @@ export * from './events.js'
 export * from './manifest.js'
 
 export interface ContextConfig extends BaseConfig {
+	defaultMemberPermissions?: string | number | bigint
+	dmPermission?: boolean
 	nameLocalizations?: Record<string, string>
 	sage?: false | SageOptions
 	timeout?: number

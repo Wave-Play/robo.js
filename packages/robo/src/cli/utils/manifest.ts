@@ -7,6 +7,7 @@ import {
 	CommandEntry,
 	CommandOption,
 	Config,
+	ContextConfig,
 	EventConfig,
 	Manifest,
 	MiddlewareEntry,
@@ -601,6 +602,12 @@ function getValue<T extends AllConfig>(
 	}
 
 	if (type === 'commands' && config) {
+		if ((config as CommandConfig).defaultMemberPermissions !== undefined) {
+			value.defaultMemberPermissions = (config as CommandConfig).defaultMemberPermissions
+		}
+		if ((config as CommandConfig).dmPermission !== undefined) {
+			value.dmPermission = (config as CommandConfig).dmPermission
+		}
 		if ((config as CommandConfig).description) {
 			value.description = (config as CommandConfig).description
 		}
@@ -649,6 +656,16 @@ function getValue<T extends AllConfig>(
 			}
 		}
 	}
+
+	if (type === 'context' && config !== undefined) {
+		if ((config as ContextConfig).defaultMemberPermissions) {
+			value.defaultMemberPermissions = (config as ContextConfig).defaultMemberPermissions
+		}
+		if ((config as ContextConfig).dmPermission !== undefined) {
+			value.dmPermission = (config as ContextConfig).dmPermission
+		}
+	}
+
 	if (type === 'events' && config) {
 		value.frequency = (config as EventConfig).frequency ?? 'always'
 	}
