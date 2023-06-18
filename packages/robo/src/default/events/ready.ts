@@ -39,7 +39,10 @@ export default async (client: Client) => {
 			if (config.heartbeat.debug) {
 				logger.debug('Sending heartbeat...', new Date().toISOString())
 			}
-			fetch(config.heartbeat.url)
+
+			fetch(config.heartbeat.url).catch((error) => {
+				logger.debug('Heartbeat failed!', error)
+			})
 		}, config.heartbeat?.interval || DEFAULT_CONFIG.heartbeat.interval)
 	}
 }
