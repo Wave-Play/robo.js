@@ -1,5 +1,21 @@
 # robo.js
 
+## 0.8.3
+
+### Patch Changes
+
+- 3fb5a01: refactor: accept string type for "level" in logger constructor
+- 8bfff61: refactor: simplified logger file
+- 49a99c3: patch(spirits): exit worker threads with process.exit()
+- 5ede058: refactor(sage): use source event file path when available
+- cc996c1: feat(cli): warn about permission changes in dev mode
+- 5549238: feat: expose "composeColors" utility
+- 059ef3c: feat: expose "color" utility
+- 7a0852b: feat: permission config fields
+- cdba883: fix: log background heartbeat errors as debug logs
+- c2c893f: feat: custom levels when creating new logger instance
+- a239224: fix: autocomplete option field now registers correctly again
+
 ## 0.8.2
 
 ### Patch Changes

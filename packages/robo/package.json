@@ -1,6 +1,6 @@
 {
 	"name": "@roboplay/robo.js",
-	"version": "0.8.2",
+	"version": "0.8.3",
 	"private": false,
 	"description": "Turbocharge Discord.js with effortless power!",
 	"main": "dist/index.js",
