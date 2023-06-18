@@ -1,12 +1,19 @@
+import { inspect } from 'node:util'
 import { color } from './../cli/utils/color.js'
 import { env } from './env.js'
-import { inspect } from 'util'
 
 export type LogLevel = 'trace' | 'debug' | 'info' | 'wait' | 'other' | 'event' | 'ready' | 'warn' | 'error'
 
-export interface BaseLoggerOptions {
+interface CustomLevel {
+	label: string
+	priority: number
+}
+
+export interface LoggerOptions {
+	customLevels?: Record<string, CustomLevel>
 	enabled?: boolean
 	level?: LogLevel
+	maxEntries?: number
 }
 
 export const DEBUG_MODE = process.env.NODE_ENV !== 'production'
@@ -37,11 +44,11 @@ function writeLog(stream: LogStream, ...data: unknown[]) {
 const DEFAULT_MAX_ENTRIES = 100
 
 class LogEntry {
-	level: LogLevel
+	level: string
 	timestamp: Date
 	data: unknown[]
 
-	constructor(level: LogLevel, data: unknown[]) {
+	constructor(level: string, data: unknown[]) {
 		this.level = level
 		this.data = data
 		this.timestamp = new Date()
@@ -66,19 +73,18 @@ class LogEntry {
 	}
 }
 
-export interface LoggerOptions extends BaseLoggerOptions {
-	maxEntries?: number
-}
-
 export class Logger {
+	protected _customLevels: Record<string, CustomLevel>
 	protected _enabled: boolean
 	protected _level: LogLevel
+	protected _levelValues: Record<string, number>
 	private _currentIndex: number
 	private _logBuffer: LogEntry[]
 
 	constructor(options?: LoggerOptions) {
-		const { enabled = true, level } = options ?? {}
+		const { customLevels, enabled = true, level } = options ?? {}
 
+		this._customLevels = customLevels
 		this._enabled = enabled
 		if (env.roboplay.host) {
 			// This allows developers to have better control over the logs when hosted
@@ -87,17 +93,23 @@ export class Logger {
 			this._level = level ?? 'info'
 		}
 
+		// Combine the default log levels with the custom ones
+		this._levelValues = {
+			...LogLevelValues,
+			...Object.fromEntries(Object.entries(this._customLevels ?? {}).map(([key, value]) => [key, value.priority]))
+		}
+
 		// Initialize the log buffer
 		this._currentIndex = 0
 		this._logBuffer = new Array(options?.maxEntries ?? DEFAULT_MAX_ENTRIES)
 	}
 
-	protected _log(level: LogLevel, ...data: unknown[]): void {
-		if (LogLevelValues[this._level] <= LogLevelValues[level]) {
+	protected _log(level: string, ...data: unknown[]): void {
+		if (this._enabled && this._levelValues[this._level] <= this._levelValues[level]) {
 			// Format the message all pretty and stuff
 			if (level !== 'other') {
-				const colorizedLevel = colorizedLogLevels[level]
-				data.unshift((colorizedLevel ?? level.padEnd(5)) + ' -')
+				const label = this._customLevels ? this._customLevels[level]?.label : colorizedLogLevels[level]
+				data.unshift((label ?? level.padEnd(5)) + ' -')
 			}
 
 			// Persist the log entry in debug mode
@@ -197,9 +209,15 @@ export class Logger {
 	public error(...data: unknown[]) {
 		this._log('error', ...data)
 	}
+
+	public custom(level: string, ...data: unknown[]): void {
+		if (this._customLevels?.[level]) {
+			this._log(level, ...data)
+		}
+	}
 }
 
-const LogLevelValues: Record<LogLevel, number> = {
+const LogLevelValues: Record<string, number> = {
 	trace: 0,
 	debug: 1,
 	info: 2,
@@ -211,7 +229,7 @@ const LogLevelValues: Record<LogLevel, number> = {
 	error: 8
 }
 
-const colorizedLogLevels = {
+const colorizedLogLevels: Record<string, string> = {
 	trace: color.gray('trace'.padEnd(5)),
 	debug: color.cyan('debug'.padEnd(5)),
 	info: color.blue('info'.padEnd(5)),
@@ -224,7 +242,7 @@ const colorizedLogLevels = {
 
 let _logger: Logger | null = null
 
-export function logger(options?: BaseLoggerOptions): Logger {
+export function logger(options?: LoggerOptions): Logger {
 	if (options) {
 		_logger = new Logger(options)
 	} else if (!_logger) {
@@ -276,4 +294,8 @@ logger.warn = function (...data: unknown[]): void {
 
 logger.error = function (...data: unknown[]): void {
 	return logger().error(...data)
+}
+
+logger.custom = function (level: string, ...data: unknown[]): void {
+	return logger().custom(level, ...data)
 }
