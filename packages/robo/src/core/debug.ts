@@ -329,9 +329,10 @@ async function formatError(options: FormatErrorOptions): Promise<FormatErrorResu
 		})
 	}
 	if (event) {
+		const filepath = source?.file?.replace(process.cwd(), '') ?? event.path
 		fields.push({
 			name: 'Event',
-			value: '`' + event.path + '`'
+			value: '`' + filepath + '`'
 		})
 	}
 	if (dependencySource) {
