@@ -211,7 +211,7 @@ async function getCodeCodeAtFault(err: Error, type: 'dependency' | 'source') {
 		}
 
 		// Find first module line, removing if not the first and Robo.js to avoid underlying framework caller
-		const deps = '/node_modules/'
+		const deps = path.sep + 'node_modules' + path.sep
 		const depIndex = stackLines.findIndex((line) => line.includes(deps))
 		if (type === 'dependency' && depIndex > 0 && stackLines[depIndex].includes(deps + '@roboplay/robo.js/')) {
 			return null
