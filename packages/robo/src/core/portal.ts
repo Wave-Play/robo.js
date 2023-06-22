@@ -156,6 +156,7 @@ async function loadHandlerRecords<T extends HandlerRecord | HandlerRecord[]>(
 
 		const handler: HandlerRecord = {
 			auto: entry.__auto,
+			description: entry.description,
 			handler: await import(importPath),
 			key: entryKeys.join('/'),
 			module: entry.__module,

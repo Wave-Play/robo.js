@@ -28,6 +28,7 @@ export interface FlashcoreAdapter<K = string, V = unknown> {
 
 export interface HandlerRecord<T = unknown> {
 	auto?: boolean
+	description?: string
 	handler: T
 	key: string
 	module?: string
@@ -105,5 +106,6 @@ export interface BaseConfig {
 		name: string
 		path: string
 	}
+	description?: string
 	timeout?: number
 }

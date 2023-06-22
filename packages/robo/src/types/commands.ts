@@ -12,7 +12,6 @@ export interface Command {
 export interface CommandConfig extends BaseConfig {
 	defaultMemberPermissions?: string | number | bigint
 	dmPermission?: boolean
-	description?: string
 	descriptionLocalizations?: Record<string, string>
 	nameLocalizations?: Record<string, string>
 	options?: CommandOption[]
