@@ -135,7 +135,7 @@ export async function generateManifest(generatedDefaults: DefaultGen, type: 'plu
 
 	// Our new source of truth is ready!
 	await fs.mkdir('.robo', { recursive: true })
-	await fs.writeFile(path.join('.robo', 'manifest.json'), JSON.stringify(newManifest, null, 2))
+	await fs.writeFile(path.join('.robo', 'manifest.json'), JSON.stringify(newManifest, jsonReplacer, 2))
 	logger.debug(`Generated manifest:`, newManifest)
 	return newManifest
 }
@@ -201,7 +201,7 @@ export async function loadManifest(name = '', basePath = ''): Promise<Manifest> 
 			manifest = BASE_MANIFEST
 			return manifest
 		}
-		manifest = JSON.parse(manifestContent) as Manifest
+		manifest = JSON.parse(manifestContent, jsonReviver) as Manifest
 
 		// Inject plugin info if this is being built as a plugin
 		if (name && basePath) {
@@ -262,6 +262,22 @@ export async function loadManifest(name = '', basePath = ''): Promise<Manifest> 
 		throw e
 	} finally {
 		_manifest = manifest
+	}
+}
+
+function jsonReplacer(key: string, value: unknown) {
+	if (key === 'defaultMemberPermissions' && typeof value === 'bigint') {
+		return value.toString() + 'n'
+	} else {
+		return value
+	}
+}
+
+function jsonReviver(key: string, value: unknown) {
+	if (key === 'defaultMemberPermissions' && typeof value === 'string' && value.slice(-1) === 'n') {
+		return BigInt(value.slice(0, -1))
+	} else {
+		return value
 	}
 }
 
