@@ -6,6 +6,7 @@ import { hasProperties } from '../cli/utils/utils.js'
 import { logger } from './logger.js'
 import { color, composeColors, hex } from './color.js'
 import type { Api, BaseConfig, Command, Context, Event, HandlerRecord, Middleware } from '../types/index.js'
+import { getConfig } from './config.js'
 
 export default class Portal {
 	public apis: Collection<string, HandlerRecord<Api>>
@@ -66,6 +67,22 @@ class Module {
 	setEnabled(value: boolean) {
 		this._enabledModules[this._moduleName] = value
 	}
+}
+
+/**
+ * Gets the config options for a specific plugin package.
+ *
+ * @param packageName The name of the package to get the options for.
+ * @returns The options for the package, or null if the package is not installed nor configured.
+ */
+export function getPluginOptions(packageName: string): unknown | null {
+	const config = getConfig()
+	const pluginOptions = config.plugins?.find((plugin) => {
+		return (typeof plugin === 'string' ? plugin : plugin[0]) === packageName
+	})
+	const options = typeof pluginOptions === 'string' ? null : pluginOptions?.[1]
+
+	return options ?? null
 }
 
 interface ScanOptions<T> {
