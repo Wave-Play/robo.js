@@ -27,20 +27,30 @@ import type { APIEmbed, APIEmbedField, BaseMessageOptions, MessageComponentInter
 
 const DEBUG_ID_PREFIX = 'robo_debug_'
 
+const LOG_INCREMENT = 10
+
 export const DEBUG_MODE = process.env.NODE_ENV !== 'production'
 
 // eslint-disable-next-line no-control-regex
 export const ANSI_REGEX = /\x1b\[.*?m/g
 
 interface ErrorData {
+	logIndex?: number
 	logs: string[]
 	stack?: string
 }
 
 export const devLogCommand = async (interaction: CommandInteraction) => {
 	await interaction.deferReply()
+
+	// Increment session error counter
 	const logs = logger.getRecentLogs().map((log) => log.message())
-	handleLogs(logs, 0, interaction as unknown as MessageComponentInteraction)
+	const errorCounter = getState<number>(DEBUG_ID_PREFIX + 'error_counter') ?? -1
+	const errorId = errorCounter + 1
+	setState(DEBUG_ID_PREFIX + 'error_counter', errorId)
+	setState(`${DEBUG_ID_PREFIX}_error_${errorId}`, { logs })
+
+	handleLogs(errorId, 0, interaction as unknown as MessageComponentInteraction, 'new')
 }
 
 export const devLogCommandConfig: CommandConfig = {
@@ -463,7 +473,6 @@ export async function handleDebugButton(interaction: ButtonInteraction) {
 			]
 		})
 
-					await handleLogButtons(logs, 0, i)
 		const stackTrace = stack
 			.replace('/.robo/build/commands', '')
 			.replace('/.robo/build/events', '')
@@ -471,7 +480,6 @@ export async function handleDebugButton(interaction: ButtonInteraction) {
 		await interaction.followUp('> ```js\n> ' + stackTrace + '\n> ```')
 	} else if (id.startsWith('logs')) {
 		const errorId = parseInt(id.replace('logs_', ''))
-		const { logs } = getState<ErrorData>(`${DEBUG_ID_PREFIX}_error_${errorId}`)
 
 		// Make button disabled
 		await interaction.update({
@@ -492,46 +500,49 @@ export async function handleDebugButton(interaction: ButtonInteraction) {
 				)
 			]
 		})
+
+		handleLogs(errorId, 0, interaction, 'new')
+	} else if (id.startsWith('older_logs')) {
+		const errorId = parseInt(id.replace('older_logs_', ''))
+		const { logIndex = 0, ...rest } = getState<ErrorData>(`${DEBUG_ID_PREFIX}_error_${errorId}`)
+		setState(`${DEBUG_ID_PREFIX}_error_${errorId}`, { ...rest, logIndex: logIndex + LOG_INCREMENT })
+		handleLogs(errorId, logIndex + LOG_INCREMENT, interaction, 'existing')
+	} else if (id.startsWith('newer_logs')) {
+		const errorId = parseInt(id.replace('newer_logs_', ''))
+		const { logIndex = 0, ...rest } = getState<ErrorData>(`${DEBUG_ID_PREFIX}_error_${errorId}`)
+		setState(`${DEBUG_ID_PREFIX}_error_${errorId}`, { ...rest, logIndex: logIndex - LOG_INCREMENT })
+		handleLogs(errorId, logIndex - LOG_INCREMENT, interaction, 'existing')
+	}
 }
 
-const LOG_INCREMENT = 10
-
-async function handleLogButtons(logs: string[], startIndex: number, interaction: MessageComponentInteraction) {
+async function handleLogs(errorId: number, startIndex: number, interaction: MessageComponentInteraction, type: 'existing' | 'new') {
+	const { logs } = getState<ErrorData>(`${DEBUG_ID_PREFIX}_error_${errorId}`)
 	const filteredLogs = logs.filter(Boolean)
 	const endIndex = startIndex + LOG_INCREMENT
 	const hasOlderLogs = endIndex < filteredLogs.length
 	const hasNewerLogs = startIndex > 0
 
-	const logsToShow = filteredLogs.slice(startIndex, endIndex).reverse().join('\n> ')
+	// Cap logs such that they don't exceed 2000 character limit
+	const logsToShow = filteredLogs.slice(startIndex, endIndex).reverse().join('\n> ').substring(0, 1986)
 
 	const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 		new ButtonBuilder({
 			label: 'Older',
 			style: ButtonStyle.Secondary,
-			customId: 'older_logs',
+			customId: `${DEBUG_ID_PREFIX}older_logs_${errorId}`,
 			disabled: !hasOlderLogs
 		}),
 		new ButtonBuilder({
 			label: 'Newer',
 			style: ButtonStyle.Secondary,
-			customId: 'newer_logs',
+			customId: `${DEBUG_ID_PREFIX}newer_logs_${errorId}`,
 			disabled: !hasNewerLogs
 		})
 	)
-	await interaction.followUp({ content: '> ```\n> ' + logsToShow + '\n> ```', components: [row] })
-	interaction.channel
-		.awaitMessageComponent({
-			filter: (i: MessageComponentInteraction) => {
-				return i.customId === 'older_logs' || i.customId === 'newer_logs'
-			}
-		})
-		.then(async (i) => {
-			if (i.customId === 'older_logs') {
-				await i.deferUpdate()
-				await handleLogButtons(logs, startIndex + LOG_INCREMENT, i)
-			} else if (i.customId === 'newer_logs') {
-				await i.deferUpdate()
-				await handleLogButtons(logs, startIndex - LOG_INCREMENT, i)
-			}
-		})
+
+	if (type === 'new') {
+		await interaction.followUp({ content: '> ```\n> ' + logsToShow + '\n> ```', components: [row] })
+	} else if (type === 'existing') {
+		await interaction.update({ content: '> ```\n> ' + logsToShow + '\n> ```', components: [row] })
+	}
 }
