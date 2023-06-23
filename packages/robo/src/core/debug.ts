@@ -15,32 +15,32 @@ import {
 import { getSage } from '../cli/utils/utils.js'
 import { client } from './robo.js'
 import { logger } from './logger.js'
-import type {
-	APIEmbed,
-	APIEmbedField,
-	APIMessage,
-	BaseMessageOptions,
-	InteractionResponse,
-	MessageComponentInteraction
-} from 'discord.js'
 import { env } from './env.js'
 import { URL } from 'node:url'
-import { setState } from './state.js'
+import { getState, setState } from './state.js'
 import { isMainThread, parentPort } from 'node:worker_threads'
 import { STATE_KEYS } from './constants.js'
 import path from 'node:path'
 import { color } from './color.js'
 import type { CommandConfig, Event, HandlerRecord } from '../types/index.js'
+import type { APIEmbed, APIEmbedField, BaseMessageOptions, MessageComponentInteraction } from 'discord.js'
+
+const DEBUG_ID_PREFIX = 'robo_debug_'
 
 export const DEBUG_MODE = process.env.NODE_ENV !== 'production'
 
 // eslint-disable-next-line no-control-regex
 export const ANSI_REGEX = /\x1b\[.*?m/g
 
+interface ErrorData {
+	logs: string[]
+	stack?: string
+}
+
 export const devLogCommand = async (interaction: CommandInteraction) => {
 	await interaction.deferReply()
 	const logs = logger.getRecentLogs().map((log) => log.message())
-	handleLogButtons(logs, 0, interaction as unknown as MessageComponentInteraction)
+	handleLogs(logs, 0, interaction as unknown as MessageComponentInteraction)
 }
 
 export const devLogCommandConfig: CommandConfig = {
@@ -132,7 +132,7 @@ export async function printErrorResponse(
 	details?: string,
 	event?: HandlerRecord<Event>
 ) {
-	const { errorReplies = true } = getSage()
+	const { errorChannelId, errorMessage, errorReplies = true } = getSage()
 	logger.debug('Error response:', error)
 
 	// Don't print errors in production - they may contain sensitive information
@@ -150,7 +150,7 @@ export async function printErrorResponse(
 	}
 
 	try {
-		const { logs, message, stack } = await formatError({ error, interaction, details, event })
+		const { message } = await formatError({ error, interaction, details, event })
 
 		if (errorChannelId) {
 			// Send to custom error channel
@@ -169,8 +169,6 @@ export async function printErrorResponse(
 		} else {
 			await sendReply(message, interaction)
 		}
-
-		handleDebugButtons(reply as Message, stack, logs)
 	} catch (error) {
 		// This had one job... and it failed
 		logger.debug('Error printing error response:', error)
@@ -212,9 +210,8 @@ export async function sendDebugError(error: unknown) {
 		}
 
 		// Send the message to the channel
-		const { logs, message, stack } = await formatError({ error })
-		const reply = await channel.send(message)
-		handleDebugButtons(reply, stack, logs)
+		const { message } = await formatError({ error })
+		await channel.send(message)
 		logger.debug(`Message sent to channel ${env.discord.debugChannelId} in guild ${env.discord.guildId}.`)
 		return true
 	} catch (error) {
@@ -303,6 +300,7 @@ interface FormatErrorResult {
 
 async function formatError(options: FormatErrorOptions): Promise<FormatErrorResult> {
 	const { details, error, event, interaction } = options
+	const { errorChannelId } = getSage()
 
 	// Extract readable error message or assign default
 	let message = 'There was an error while executing this command!'
@@ -380,16 +378,23 @@ async function formatError(options: FormatErrorOptions): Promise<FormatErrorResu
 		fields: fields
 	}
 
+	// Increment session error counter
+	const errorCounter = getState<number>(DEBUG_ID_PREFIX + 'error_counter') ?? -1
+	const errorId = errorCounter + 1
+	setState(DEBUG_ID_PREFIX + 'error_counter', errorId)
+	setState(`${DEBUG_ID_PREFIX}_error_${errorId}`, { logs, stack })
+
+	// Assemble button bar
 	const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 		new ButtonBuilder({
 			label: 'Show stack trace',
 			style: ButtonStyle.Danger,
-			customId: 'stack_trace'
+			customId: `${DEBUG_ID_PREFIX}stack_trace_${errorId}`
 		}),
 		new ButtonBuilder({
 			label: 'Show logs',
 			style: ButtonStyle.Primary,
-			customId: 'logs'
+			customId: `${DEBUG_ID_PREFIX}logs_${errorId}`
 		})
 	)
 
@@ -407,73 +412,69 @@ async function formatError(options: FormatErrorOptions): Promise<FormatErrorResu
 /**
  * Wait for user to click on the button bar and handle the response
  */
-function handleDebugButtons(reply: Message, stack: string, logs: string[]) {
-	reply
-		.awaitMessageComponent({
-			filter: (i: MessageComponentInteraction) => {
-				return i.customId === 'stack_trace' || i.customId === 'logs'
-			}
+export async function handleDebugButton(interaction: ButtonInteraction) {
+	// Only handle debug buttons made by Robo.js
+	if (!interaction.isButton() || !interaction.customId.startsWith(DEBUG_ID_PREFIX)) {
+		return
+	}
+
+	// Parse button ID alongside existing disabled states
+	const id = interaction.customId.replace(DEBUG_ID_PREFIX, '')
+	const stackButtonDisabled = interaction.message.components[0].components[0].disabled
+	const logsButtonDisabled = interaction.message.components[0].components[1].disabled
+
+	if (id.startsWith('stack_trace')) {
+		const errorId = id.replace('stack_trace_', '')
+		const { stack } = getState<ErrorData>(`${DEBUG_ID_PREFIX}_error_${errorId}`)
+
+		// Make button disabled
+		await interaction.update({
+			components: [
+				new ActionRowBuilder<ButtonBuilder>().addComponents(
+					new ButtonBuilder({
+						label: 'Show stack trace',
+						style: ButtonStyle.Danger,
+						customId: `${DEBUG_ID_PREFIX}stack_trace_${errorId}`,
+						disabled: true
+					}),
+					new ButtonBuilder({
+						label: 'Show logs',
+						style: ButtonStyle.Primary,
+						customId: `${DEBUG_ID_PREFIX}logs_${errorId}`,
+						disabled: logsButtonDisabled
+					})
+				)
+			]
 		})
-		.then(async (i) => {
-			try {
-				const stackButtonDisabled = i.message.components[0].components[0].disabled
-				const logsButtonDisabled = i.message.components[0].components[1].disabled
-
-				if (i.customId === 'stack_trace') {
-					// Make button disabled
-					await i.update({
-						components: [
-							new ActionRowBuilder<ButtonBuilder>().addComponents(
-								new ButtonBuilder({
-									label: 'Show stack trace',
-									style: ButtonStyle.Danger,
-									customId: 'stack_trace',
-									disabled: true
-								}),
-								new ButtonBuilder({
-									label: 'Show logs',
-									style: ButtonStyle.Primary,
-									customId: 'logs',
-									disabled: logsButtonDisabled
-								})
-							)
-						]
-					})
-
-					const stackTrace = stack
-						.replace('/.robo/build/commands', '')
-						.replace('/.robo/build/events', '')
-						.replaceAll('\n', '\n> ')
-					await i.followUp('> ```js\n> ' + stackTrace + '\n> ```')
-					handleDebugButtons(reply, stack, logs)
-				} else if (i.customId === 'logs') {
-					// Make button disabled
-					await i.update({
-						components: [
-							new ActionRowBuilder<ButtonBuilder>().addComponents(
-								new ButtonBuilder({
-									label: 'Show stack trace',
-									style: ButtonStyle.Danger,
-									customId: 'stack_trace',
-									disabled: stackButtonDisabled
-								}),
-								new ButtonBuilder({
-									label: 'Show logs',
-									style: ButtonStyle.Primary,
-									customId: 'logs',
-									disabled: true
-								})
-							)
-						]
-					})
 
 					await handleLogButtons(logs, 0, i)
-					handleDebugButtons(reply, stack, logs)
-				}
-			} catch (error) {
-				// Error-ception!! T-T
-				logger.debug('Error sending stack trace:', error)
-			}
+		const stackTrace = stack
+			.replace('/.robo/build/commands', '')
+			.replace('/.robo/build/events', '')
+			.replaceAll('\n', '\n> ')
+		await interaction.followUp('> ```js\n> ' + stackTrace + '\n> ```')
+	} else if (id.startsWith('logs')) {
+		const errorId = parseInt(id.replace('logs_', ''))
+		const { logs } = getState<ErrorData>(`${DEBUG_ID_PREFIX}_error_${errorId}`)
+
+		// Make button disabled
+		await interaction.update({
+			components: [
+				new ActionRowBuilder<ButtonBuilder>().addComponents(
+					new ButtonBuilder({
+						label: 'Show stack trace',
+						style: ButtonStyle.Danger,
+						customId: `${DEBUG_ID_PREFIX}stack_trace_${errorId}`,
+						disabled: stackButtonDisabled
+					}),
+					new ButtonBuilder({
+						label: 'Show logs',
+						style: ButtonStyle.Primary,
+						customId: `${DEBUG_ID_PREFIX}logs_${errorId}`,
+						disabled: true
+					})
+				)
+			]
 		})
 }
 
