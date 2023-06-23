@@ -9,7 +9,8 @@ import {
 	ChannelType,
 	Colors,
 	CommandInteraction,
-	Message
+	Message,
+	TextChannel
 } from 'discord.js'
 import { getSage } from '../cli/utils/utils.js'
 import { client } from './robo.js'
@@ -28,6 +29,7 @@ import { setState } from './state.js'
 import { isMainThread, parentPort } from 'node:worker_threads'
 import { STATE_KEYS } from './constants.js'
 import path from 'node:path'
+import { color } from './color.js'
 import type { CommandConfig, Event, HandlerRecord } from '../types/index.js'
 
 export const DEBUG_MODE = process.env.NODE_ENV !== 'production'
@@ -150,16 +152,22 @@ export async function printErrorResponse(
 	try {
 		const { logs, message, stack } = await formatError({ error, interaction, details, event })
 
-		// Send response as follow-up if the command has already been replied to
-		let reply: Message | APIMessage | InteractionResponse
-		if (interaction instanceof CommandInteraction || interaction instanceof ButtonInteraction) {
-			if (interaction.replied || interaction.deferred) {
-				reply = await interaction.followUp(message)
-			} else {
-				reply = await interaction.reply(message)
+		if (errorChannelId) {
+			// Send to custom error channel
+			const channel = client.channels.cache.get(errorChannelId) as TextChannel
+			if (!channel) {
+				logger.error('No error channel found with ID:', errorChannelId)
+				return
 			}
-		} else if (interaction instanceof Message) {
-			reply = await interaction.channel.send(message)
+
+			await channel.send(message)
+			if (errorMessage) {
+				await sendReply({ content: errorMessage }, interaction)
+			} else {
+				logger.warn(`Set ${color.bold('errorMessage')} in your Sage config to send a default error reply to the user`)
+			}
+		} else {
+			await sendReply(message, interaction)
 		}
 
 		handleDebugButtons(reply as Message, stack, logs)
@@ -169,14 +177,30 @@ export async function printErrorResponse(
 	}
 }
 
+// Send response as follow-up if the command has already been replied to
+async function sendReply(message: BaseMessageOptions, interaction: unknown) {
+	if (interaction instanceof CommandInteraction || interaction instanceof ButtonInteraction) {
+		if (interaction.replied || interaction.deferred) {
+			return interaction.followUp(message)
+		} else {
+			return interaction.reply(message)
+		}
+	} else if (interaction instanceof Message) {
+		return interaction.channel.send(message)
+	}
+}
+
 export async function sendDebugError(error: unknown) {
 	try {
 		// Find the guild by its ID
+		const { errorChannelId } = getSage()
 		const guild = client.guilds.cache.get(env.discord.guildId)
-		const channel = guild?.channels?.cache?.get(env.discord.debugChannelId)
+		const channel = guild?.channels?.cache?.get(env.discord.debugChannelId ?? errorChannelId)
 		if (!guild || !channel) {
-			logger.info(
-				`Fix the error or set DISCORD_GUILD_ID and DISCORD_DEBUG_CHANNEL_ID to prevent your Robo from stopping.`
+			logger.warn(
+				`Fix the error or set ${color.bold('DISCORD_GUILD_ID')} and ${color.bold(
+					'DISCORD_DEBUG_CHANNEL_ID'
+				)} environment variables to prevent your Robo from stopping.`
 			)
 			return false
 		}
