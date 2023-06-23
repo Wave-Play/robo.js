@@ -125,7 +125,19 @@ export async function executeCommandHandler(interaction: CommandInteraction, com
 				logger.debug(`Sage is deferring async command...`)
 				promises.push(result)
 				if (!interaction.deferred) {
-					await interaction.deferReply({ ephemeral: sage.ephemeral })
+					try {
+						await interaction.deferReply({ ephemeral: sage.ephemeral })
+					} catch (error) {
+						const message = error instanceof Error ? error.message : (error as string)
+						if (
+							!message.includes('Unknown interaction') &&
+							!message.includes('Interaction has already been acknowledged')
+						) {
+							throw error
+						} else {
+							logger.debug(`Interaction was already handled, skipping Sage deferral`)
+						}
+					}
 				}
 			} else {
 				response = raceResult
