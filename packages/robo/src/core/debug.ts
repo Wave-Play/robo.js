@@ -339,6 +339,19 @@ async function formatError(options: FormatErrorOptions): Promise<FormatErrorResu
 			}
 		}
 
+		// Include channel and user if replying in different channel
+		if (errorChannelId) {
+			fields.push({
+				name: 'Channel',
+				value: `<#${interaction.channelId}>`
+			})
+
+			fields.push({
+				name: 'User',
+				value: `<@${interaction.user.id}>`
+			})
+		}
+
 		fields.push({
 			name: 'Command',
 			value: '`/' + commandKeys.filter(Boolean).join(' ') + '`'
@@ -371,6 +384,9 @@ async function formatError(options: FormatErrorOptions): Promise<FormatErrorResu
 			value: `\`${file}\`\n` + '```' + `${source.type}\n` + source.code + '\n```'
 		})
 	}
+
+	// Sort fields alphabetically
+	fields.sort((a, b) => a.name.localeCompare(b.name))
 
 	// Assemble response as an embed
 	const response: APIEmbed = {
