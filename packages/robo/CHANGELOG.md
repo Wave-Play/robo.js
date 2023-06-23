@@ -1,5 +1,19 @@
 # robo.js
 
+## 0.8.4
+
+### Patch Changes
+
+- 74c06c3: refactor(sage): prev/next buttons in logs now handled via events rather than collectors
+- 8729d64: feat(sage): include channel and user info in redirected error messages
+- cf45d9b: refactor(sage): error message interactions now handled via events rather than collector
+- f68fffb: feat: convenience function for getting plugin options
+- 2f61192: fix(sage): handle cases where interaction may already be used up prior to auto deferrals
+- 3ce7a81: refactor: moved description entry field onto base entry interface
+- fc1706f: fix: custom permission manifest parsing for bigints
+- 3a7064b: feat(sage): error message channel redirects & custom messages
+- 75cda40: fix: use correct path separator for debugging modules on windows
+
 ## 0.8.3
 
 ### Patch Changes
