@@ -297,7 +297,7 @@ async function rebuildRobo(spiritId: string, config: Config, verbose: boolean, c
 	logger.debug('Saving state...')
 	const savedState = await spirits.exec<Record<string, unknown>>(roboSpirit, {
 		event: 'get-state'
-	})
+	}) ?? {}
 	logger.debug(`Saved state in ${Date.now() - stateSaveStart}ms:`, savedState)
 
 	// Stop the previous spirit if it's still running

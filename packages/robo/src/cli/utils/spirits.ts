@@ -138,6 +138,11 @@ export class Spirits {
 				return reject(new Error(`Spirit ${spiritId} not found`))
 			}
 
+			if (spirit.isTerminated) {
+				resolve(null)
+				return
+			}
+
 			// Listen for similar messages from the spirit
 			const callback = (response: SpiritMessage) => {
 				if (response.event === message.event) {
