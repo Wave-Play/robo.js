@@ -638,6 +638,9 @@ function getValue<T extends AllConfig>(
 				if (option.autocomplete) {
 					optionValue.autocomplete = option.autocomplete
 				}
+				if (option.choices) {
+					optionValue.choices = option.choices
+				}
 				if (option.description) {
 					optionValue.description = option.description
 				}

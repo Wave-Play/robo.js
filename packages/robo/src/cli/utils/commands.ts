@@ -1,4 +1,5 @@
 import {
+	APIApplicationCommandOptionChoice,
 	ApplicationCommandType,
 	ContextMenuCommandBuilder,
 	REST,
@@ -149,14 +150,31 @@ export function addOptionToCommandBuilder(
 		case undefined:
 		case null:
 		case 'string':
-			commandBuilder.addStringOption((builder) =>
+			commandBuilder.addStringOption((builder) => {
 				optionPredicate(builder).setAutocomplete(option.autocomplete ?? false)
-			)
+				if (option.choices) {
+					builder.addChoices(...(option.choices as APIApplicationCommandOptionChoice<string>[]))
+				}
+				return builder
+			})
 			break
 		case 'integer':
-			commandBuilder.addIntegerOption((builder) =>
+			commandBuilder.addIntegerOption((builder) => {
 				optionPredicate(builder).setAutocomplete(option.autocomplete ?? false)
-			)
+				if (option.choices) {
+					builder.addChoices(...(option.choices as APIApplicationCommandOptionChoice<number>[]))
+				}
+				return builder
+			})
+			break
+		case 'number':
+			commandBuilder.addNumberOption((builder) => {
+				optionPredicate(builder).setAutocomplete(option.autocomplete ?? false)
+				if (option.choices) {
+					builder.addChoices(...(option.choices as APIApplicationCommandOptionChoice<number>[]))
+				}
+				return builder
+			})
 			break
 		case 'boolean':
 			commandBuilder.addBooleanOption((builder) => optionPredicate(builder))
