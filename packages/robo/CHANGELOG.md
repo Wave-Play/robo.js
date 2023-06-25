@@ -1,5 +1,14 @@
 # robo.js
 
+## 0.8.5
+
+### Patch Changes
+
+- 4f9ebaf: fix: exit early when running "exec" on terminated spirits
+- a76cfe4: patch: automatically re-run bot after process exit in dev mode
+- fbc3a91: feat: support for "max" and "min" option fields
+- 37590d5: feat: support for "choices" option field
+
 ## 0.8.4
 
 ### Patch Changes
