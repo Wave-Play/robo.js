@@ -124,7 +124,23 @@ async function devAction(options: DevCommandOptions) {
 
 	// Start the Robo!
 	if (buildSuccess && config.experimental?.spirits) {
-		roboSpirit = await spirits.newTask<string>({ event: 'start' })
+		roboSpirit = await spirits.newTask<string>({
+			event: 'start',
+			onExit: (exitCode: number) => {
+				if (exitCode !== 0) {
+					logger.error(
+						composeColors(color.bgBlack, color.redBright, color.underline, color.bold)(`Robo exited with code ${exitCode}.`),
+						`Restarting...`
+					)
+					return true
+				}
+			},
+			onRetry: (value: string) => {
+				roboSpirit = value
+				spirits.on(roboSpirit, restartCallback)
+				spirits.send(roboSpirit, { event: 'set-state', state: persistedState })
+			}
+		})
 		spirits.on(roboSpirit, restartCallback)
 		spirits.send(roboSpirit, { event: 'set-state', state: persistedState })
 	} else if (buildSuccess) {

@@ -7,6 +7,8 @@ import { nameGenerator } from './name-generator.js'
 import { color, composeColors } from '../../core/color.js'
 
 interface Task<T = unknown> extends SpiritMessage {
+	onExit?: (exitCode: number) => boolean | void
+	onRetry?: (value: T) => void
 	payload?: unknown
 	reject?: (reason: T) => void
 	resolve?: (value?: T) => void
@@ -57,7 +59,7 @@ export class Spirits {
 			}
 		})
 
-		worker.on('exit', (exitCode: number) => {
+		worker.on('exit', async (exitCode: number) => {
 			logger.debug(`Spirit (${composeColors(color.bold, color.cyan)(spiritId)}) exited with code ${exitCode}`)
 
 			// No need to handle this if the spirit is already terminated elsewhere
@@ -66,7 +68,17 @@ export class Spirits {
 				return
 			}
 
+			// Delegate exit callback and check if we should retry
+			const retry = spirit.task?.onExit?.(exitCode)
 			spirit.isTerminated = true
+
+			if (retry) {
+				this.newSpirit(spirit)
+				const value = await this.newTask(spirit.task)
+				spirit.task?.onRetry?.(value)
+				return
+			}
+
 			if (exitCode === 0) {
 				spirit.task?.resolve(spirit.id)
 			} else {
@@ -77,9 +89,21 @@ export class Spirits {
 			this.tryNextTask()
 		})
 
-		worker.on('error', (err) => {
+		worker.on('error', async (err) => {
+			logger.error(err)
 			const spirit = this.spirits[newSpirit.id]
 			spirit.task?.reject(err)
+			spirit.isTerminated = true
+
+			// Delegate exit callback and check if we should retry
+			const retry = spirit.task?.onExit?.(1)
+
+			if (retry) {
+				this.newSpirit(spirit)
+				const value = await this.newTask(spirit.task)
+				spirit.task?.onRetry?.(value)
+				return
+			}
 
 			this.newSpirit(spirit)
 			this.tryNextTask()
@@ -96,7 +120,12 @@ export class Spirits {
 	public async newTask<T = unknown>(task: Task<T>) {
 		logger.debug(`New spirit task:`, task)
 		return new Promise<T>((resolve, reject) => {
-			this.taskQueue.push({ ...task, resolve: resolve as () => void, reject })
+			this.taskQueue.push({
+				...task,
+				onRetry: task.onRetry as () => void,
+				resolve: resolve as () => void,
+				reject
+			})
 			this.tryNextTask()
 		})
 	}
@@ -153,6 +182,8 @@ export class Spirits {
 
 			// Strip functions before sending task to worker
 			const workerTask: Task = { ...task }
+			delete workerTask.onExit
+			delete workerTask.onRetry
 			delete workerTask.resolve
 			delete workerTask.reject
 			logger.debug(`Sending task to spirit ${composeColors(color.bold, color.cyan)(spirit.id)}:`, workerTask)
