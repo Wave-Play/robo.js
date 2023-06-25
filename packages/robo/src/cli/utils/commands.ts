@@ -155,6 +155,12 @@ export function addOptionToCommandBuilder(
 				if (option.choices) {
 					builder.addChoices(...(option.choices as APIApplicationCommandOptionChoice<string>[]))
 				}
+				if (option.max) {
+					builder.setMaxLength(option.max)
+				}
+				if (option.min) {
+					builder.setMinLength(option.min)
+				}
 				return builder
 			})
 			break
@@ -164,6 +170,12 @@ export function addOptionToCommandBuilder(
 				if (option.choices) {
 					builder.addChoices(...(option.choices as APIApplicationCommandOptionChoice<number>[]))
 				}
+				if (option.max) {
+					builder.setMaxValue(option.max)
+				}
+				if (option.min) {
+					builder.setMinValue(option.min)
+				}
 				return builder
 			})
 			break
@@ -172,6 +184,12 @@ export function addOptionToCommandBuilder(
 				optionPredicate(builder).setAutocomplete(option.autocomplete ?? false)
 				if (option.choices) {
 					builder.addChoices(...(option.choices as APIApplicationCommandOptionChoice<number>[]))
+				}
+				if (option.max) {
+					builder.setMaxValue(option.max)
+				}
+				if (option.min) {
+					builder.setMinValue(option.min)
 				}
 				return builder
 			})

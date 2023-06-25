@@ -34,6 +34,8 @@ export interface CommandOption {
 	choices?: ApplicationCommandOptionChoiceData<string | number>[]
 	description?: string
 	descriptionLocalizations?: Record<string, string>
+	max?: number
+	min?: number
 	name: string
 	nameLocalizations?: Record<string, string>
 	required?: boolean

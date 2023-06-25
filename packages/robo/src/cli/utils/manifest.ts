@@ -647,6 +647,12 @@ function getValue<T extends AllConfig>(
 				if (option.descriptionLocalizations) {
 					optionValue.descriptionLocalizations = option.descriptionLocalizations
 				}
+				if (option.max) {
+					optionValue.max = option.max
+				}
+				if (option.min) {
+					optionValue.min = option.min
+				}
 				if (option.nameLocalizations) {
 					optionValue.nameLocalizations = option.nameLocalizations
 				}
