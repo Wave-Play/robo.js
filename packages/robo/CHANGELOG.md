@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.8.6
+
+### Patch Changes
+
+- 47d898f: feat: exposed module keys via portal api
+
 ## 0.8.5
 
 ### Patch Changes
