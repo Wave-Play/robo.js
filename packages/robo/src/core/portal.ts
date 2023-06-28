@@ -14,6 +14,7 @@ export default class Portal {
 	public context: Collection<string, HandlerRecord<Context>>
 	public events: Collection<string, HandlerRecord<Event>[]>
 	public middleware: HandlerRecord<Middleware>[] = []
+	public moduleKeys = new Set<string>()
 
 	private _enabledModules: Record<string, boolean> = {}
 	private _modules: Record<string, Module> = {}
@@ -30,6 +31,36 @@ export default class Portal {
 		this.context = context
 		this.events = events
 		this.middleware = middleware
+
+		// Generate module keys based off of entries then sort alphabetically
+		apis.forEach((api) => {
+			if (api.module) {
+				this.moduleKeys.add(api.module)
+			}
+		})
+		commands.forEach((command) => {
+			if (command.module) {
+				this.moduleKeys.add(command.module)
+			}
+		})
+		context.forEach((context) => {
+			if (context.module) {
+				this.moduleKeys.add(context.module)
+			}
+		})
+		events.forEach((event) => {
+			event.forEach((handler) => {
+				if (handler.module) {
+					this.moduleKeys.add(handler.module)
+				}
+			})
+		})
+		middleware.forEach((middleware) => {
+			if (middleware.module) {
+				this.moduleKeys.add(middleware.module)
+			}
+		})
+		this.moduleKeys = new Set([...this.moduleKeys].sort())
 	}
 
 	module(moduleName: string) {
