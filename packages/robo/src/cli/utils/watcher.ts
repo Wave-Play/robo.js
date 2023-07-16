@@ -116,7 +116,6 @@ export default class Watcher {
 						} catch (e) {
 							// If the file does not exist anymore, it was removed.
 							if (hasProperties<{ code: unknown }>(e, ['code']) && e.code === 'ENOENT') {
-								logger.warn(`File ${newFilePath} was not found`)
 								const watcher = this.watchers.get(newFilePath)
 								if (watcher) {
 									callback('removed', newFilePath)
