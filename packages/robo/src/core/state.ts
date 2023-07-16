@@ -59,21 +59,26 @@ const builtInTypes = ['String', 'Number', 'Boolean', 'Array', 'Object']
  * Class instances are not serializable.
  * This function removes them from the state while preserving the rest of the state.
  */
-export function removeInstances(value: unknown): unknown {
+export function removeInstances(value: unknown, warned = { value: false }): unknown {
 	if (typeof value === 'function') {
 		return undefined
 	}
 
 	if (value !== null && typeof value === 'object') {
 		if (!builtInTypes.includes(value.constructor.name)) {
+			if (!warned.value) {
+				logger.warn('Removed state value as it is not serializable:', value)
+				warned.value = true
+			}
+
 			return undefined
 		} else if (Array.isArray(value)) {
-			return value.map(removeInstances).filter((item) => item !== undefined)
+			return value.map((item) => removeInstances(item, warned)).filter((item) => item !== undefined)
 		} else {
 			const result: Record<string, unknown> = {}
 
 			for (const key in value as Record<string, unknown>) {
-				const processedValue = removeInstances((value as Record<string, unknown>)[key])
+				const processedValue = removeInstances((value as Record<string, unknown>)[key], warned)
 				if (processedValue !== undefined) {
 					result[key] = processedValue
 				}
