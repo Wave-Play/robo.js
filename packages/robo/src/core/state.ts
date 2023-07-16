@@ -15,6 +15,8 @@ interface StateOptions {
 }
 
 export class State {
+	private static readonly _prefixes = new Set<string>()
+
 	private readonly _prefix: string
 	private readonly _options?: StateOptions
 
@@ -27,7 +29,12 @@ export class State {
 	}
 
 	static fork(prefix: string, options?: StateOptions) {
+		State._prefixes.add(prefix)
 		return new State(prefix, options)
+	}
+
+	static listForks() {
+		return new Array(...State._prefixes)
 	}
 
 	fork(prefix: string, options?: StateOptions) {
