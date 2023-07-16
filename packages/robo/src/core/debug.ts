@@ -226,7 +226,7 @@ export async function sendDebugError(error: unknown) {
 		return true
 	} catch (error) {
 		logger.error('Error sending message:', error)
-		return false
+		return true
 	}
 }
 
