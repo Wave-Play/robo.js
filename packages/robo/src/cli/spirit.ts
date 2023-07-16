@@ -1,6 +1,7 @@
 import { isMainThread, parentPort, workerData } from 'node:worker_threads'
 import { color, composeColors } from '../core/color.js'
 import { logger } from '../core/logger.js'
+import { removeInstances } from '../core/state.js'
 import type { SpiritMessage } from '../types/index.js'
 
 // This should only be run in a worker thread
@@ -35,7 +36,7 @@ async function run(message: SpiritMessage): Promise<unknown> {
 		return 'exit'
 	} else if (message.event === 'get-state') {
 		const { state } = await import('../core/state.js')
-		return state
+		return removeInstances(state)
 	} else if (message.event === 'restart') {
 		if (!isRobo) {
 			return 'exit'
