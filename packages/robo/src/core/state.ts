@@ -28,6 +28,14 @@ export class State {
 		this.setState = this.setState.bind(this)
 	}
 
+	/**
+	 * Creates a new state fork.
+	 * This is useful for preventing state collisions between different parts of the Robo.
+	 *
+	 * @param prefix Fork prefix (e.g. 'polls')
+	 * @param options Options for the fork (persisting all state by default)
+	 * @returns A new state fork you can deconstruct (e.g. `const { getState, setState } = State.fork('polls')`
+	 */
 	static fork(prefix: string, options?: StateOptions) {
 		State._prefixes.add(prefix)
 		return new State(prefix, options)
@@ -41,10 +49,25 @@ export class State {
 		return new State(`${this._prefix}__${prefix}`, options)
 	}
 
+	/**
+	 * Get a value from the forked state.
+	 * If the value does not exist, null is returned.
+	 *
+	 * @param key The key to get the value for.
+	 * @returns The value for the given key, or null if the key does not exist.
+	 */
 	getState<T = string>(key: string): T | null {
 		return getState<T>(`${this._prefix}__${key}`)
 	}
 
+	/**
+	 * Set a value in the forked state.
+	 * When the persist option is set to true, the state will be persisted to disk.
+	 *
+	 * @param key The key to set the value for.
+	 * @param value The value to set.
+	 * @param options Options for setting the state. (Persisting to disk)
+	 */
 	setState<T>(key: string, value: T, options?: SetStateOptions): void {
 		setState(`${this._prefix}__${key}`, value, {
 			...(options ?? {}),
@@ -97,6 +120,13 @@ export function clearState(): void {
 	})
 }
 
+/**
+ * Get a value from the state.
+ * If the value does not exist, null is returned.
+ *
+ * @param key The key to get the value for.
+ * @returns The value for the given key, or null if the key does not exist.
+ */
 export function getState<T = string>(key: string): T | null {
 	return state[key] as T | null
 }
@@ -142,6 +172,14 @@ export function saveState() {
 	process.send({ type: 'state-save', state })
 }
 
+/**
+ * Set a value in the state.
+ * When the persist option is set to true, the state will be persisted to disk.
+ *
+ * @param key The key to set the value for.
+ * @param value The value to set.
+ * @param options Options for setting the state. (Persisting to disk)
+ */
 export function setState<T>(key: string, value: T, options?: SetStateOptions): void {
 	const { persist } = options ?? {}
 	state[key] = value

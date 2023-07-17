@@ -3,7 +3,13 @@ import { FlashcoreFileAdapter } from './flashcore-fs.js'
 import { logger } from './logger.js'
 import type { FlashcoreAdapter } from '../types/index.js'
 
+type WatcherCallback<V = unknown> = (oldValue: V, newValue: V) => void | Promise<void>
+
+// Store that powers the Flashcore API.
 let _adapter: FlashcoreAdapter | undefined
+
+// Watchers for listening to changes in the store.
+const _watchers = new Map<string, Set<WatcherCallback>>()
 
 export const Flashcore = {
 	/**
@@ -37,6 +43,41 @@ export const Flashcore = {
 	},
 
 	/**
+	 * Unregisters a callback from a key, so it will no longer be executed when the key's value changes.
+	 *
+	 * @param {string} key - The key to stop watching.
+	 * @param {WatcherCallback} callback - The callback function to remove from the key's watch list.
+	 * If no callback is provided, all callbacks associated with the key are removed.
+	 */
+	off: (key: string, callback?: WatcherCallback) => {
+		if (_watchers.has(key) && callback) {
+			_watchers.get(key)?.delete(callback)
+
+			if (_watchers.get(key)?.size === 0) {
+				_watchers.delete(key)
+			}
+		} else if (_watchers.has(key)) {
+			_watchers.delete(key)
+		}
+	},
+
+	/**
+	 * Registers a callback to be executed when a specific key's value changes in the store.
+	 *
+	 * @template V - The type of the value.
+	 * @param {string} key - The key to watch for changes.
+	 * @param {WatcherCallback} callback - The callback function to execute when the key's value changes.
+	 * The callback receives the new and old values as arguments.
+	 */
+	on: (key: string, callback: WatcherCallback) => {
+		if (!_watchers.has(key)) {
+			_watchers.set(key, new Set())
+		}
+
+		_watchers.get(key)?.add(callback)
+	},
+
+	/**
 	 * Sets a key-value pair in the store.
 	 *
 	 * @template V - The type of the value.
@@ -45,17 +86,35 @@ export const Flashcore = {
 	 * @returns {Promise<boolean> | boolean} - Resolves to a boolean indicating whether the operation was successful.
 	 */
 	set: <V>(key: string, value: V): Promise<boolean> | boolean => {
+		if (_watchers.has(key)) {
+			const oldValue = _adapter.get(key)
+			if (oldValue instanceof Promise) {
+				// Return as promise to avoid race condition fetching the old value.
+				// I believe this is ideal, as promise-based values are likely to be used with async/await.
+				return oldValue
+					.then((oldValue) => {
+						_watchers.get(key).forEach((callback) => callback(oldValue, value))
+					})
+					.then(() => _adapter.set(key, value))
+					.finally(() => _adapter.set(key, value))
+			} else {
+				_watchers.get(key).forEach((callback) => callback(oldValue, value))
+			}
+		}
+
 		return _adapter.set(key, value)
 	}
 }
 
 export async function prepareFlashcore() {
 	const config = getConfig()
+
 	if (config.flashcore?.keyv) {
 		try {
 			logger.debug(`Using Keyv Flashcore adapter`)
 			const Keyv = (await import('keyv')).default
 			const keyv = new Keyv(config.flashcore.keyv)
+
 			keyv.on('error', (error) => {
 				logger.error(`Keyv error:`, error)
 			})
