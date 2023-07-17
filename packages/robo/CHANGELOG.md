@@ -1,5 +1,19 @@
 # robo.js
 
+## 0.8.7
+
+### Patch Changes
+
+- 3688354: fix(spirits): handle missing id when running exec()
+- 0fde55c: patch: removed unnecessary watcher warning when removing files
+- 8ae6768: feat(flashcore): new .on() and .off() apis for watching key changes
+- c3ecab1: patch: failed error messages no longer stop process
+- f81d555: patch: issue a warning when removing value from saved state
+- dfa31d1: fix: remove class instances when saving state
+- e02fe0b: feat(flashcore): .delete() now triggers watcher callbacks as well
+- 691f200: feat: new static state.listforks() function to get all forked state names
+- a85325f: fix(flashcore): file adapter's .delete() api now uses safe key to delete correct value
+
 ## 0.8.6
 
 ### Patch Changes
