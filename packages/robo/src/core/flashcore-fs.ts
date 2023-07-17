@@ -22,10 +22,11 @@ export class FlashcoreFileAdapter<K = string, V = unknown> implements FlashcoreA
 
 	async delete(key: K): Promise<boolean> {
 		try {
-			const fileName = path.join(FlashcoreFileAdapter.DATA_DIR, key.toString())
+			const fileName = path.join(FlashcoreFileAdapter.DATA_DIR, this._getSafeKey(key))
 			await fs.unlink(fileName)
 			return true
-		} catch {
+		} catch (e) {
+			logger.warn(`Failed to delete key "${key}" from Flashcore file adapter.`, e)
 			return false
 		}
 	}
