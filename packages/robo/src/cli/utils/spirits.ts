@@ -130,8 +130,15 @@ export class Spirits {
 		})
 	}
 
-	public exec<T>(spiritId: string, message: SpiritMessage): Promise<T> {
+	public exec<T>(spiritId: string | null, message: SpiritMessage): Promise<T> {
 		return new Promise((resolve, reject) => {
+			// Lack of spirit id likely means a dependency spirit failed to start
+			if (!spiritId) {
+				logger.debug(`No spirit id provided, skipping exec message:`, message)
+				resolve(null)
+				return
+			}
+
 			logger.debug(`Executing message on spirit (${composeColors(color.bold, color.cyan)(spiritId)}):`, message)
 			const spirit = this.get(spiritId)
 			if (!spirit) {
