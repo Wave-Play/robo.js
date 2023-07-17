@@ -28,6 +28,22 @@ export const Flashcore = {
 	 * @returns {Promise<boolean> | boolean} - Resolves to a boolean indicating whether the operation was successful.
 	 */
 	delete: (key: string): Promise<boolean> | boolean => {
+		if (_watchers.has(key)) {
+			const oldValue = _adapter.get(key)
+			if (oldValue instanceof Promise) {
+				// Return as promise to avoid race condition fetching the old value.
+				// I believe this is ideal, as promise-based values are likely to be used with async/await.
+				return oldValue
+					.then((oldValue) => {
+						_watchers.get(key).forEach((callback) => callback(oldValue, undefined))
+					})
+					.then(() => _adapter.delete(key))
+					.catch(() => _adapter.delete(key))
+			} else {
+				_watchers.get(key).forEach((callback) => callback(oldValue, undefined))
+			}
+		}
+
 		return _adapter.delete(key)
 	},
 
@@ -96,7 +112,7 @@ export const Flashcore = {
 						_watchers.get(key).forEach((callback) => callback(oldValue, value))
 					})
 					.then(() => _adapter.set(key, value))
-					.finally(() => _adapter.set(key, value))
+					.catch(() => _adapter.set(key, value))
 			} else {
 				_watchers.get(key).forEach((callback) => callback(oldValue, value))
 			}
