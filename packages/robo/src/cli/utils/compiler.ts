@@ -117,7 +117,7 @@ export async function compile(options?: RoboCompileOptions) {
 	if (typeof ts === 'undefined' || typeof transform === 'undefined') {
 		// If either of them fail, just copy the srcDir to distDir
 		await fs.rm(distDir, { recursive: true, force: true })
-		logger.debug('Copying srcDir to distDir without transversing...')
+		logger.debug(`Cannot find Typescript or SWC! Copying source without compiling...`)
 		await copyDir(srcDir, distDir)
 
 		return Date.now() - startTime
@@ -129,24 +129,14 @@ export async function compile(options?: RoboCompileOptions) {
 		await fs.access(configFileName)
 	} catch (error) {
 		await fs.rm(distDir, { recursive: true, force: true })
-		logger.debug('Copying srcDir to distDir without transversing...')
+		logger.debug(`Cannot find tsconfig.json! Copying source without compiling...`)
 		await copyDir(srcDir, distDir)
 
 		return Date.now() - startTime
 	}
-
-	if (typeof ts === 'undefined' || typeof transform === 'undefined') {
-		await fs.rm(distDir, { recursive: true, force: true })
-		logger.debug('Copying srcDir to distDir without transversing...')
-		await copyDir(srcDir, distDir)
-
-		return Date.now() - startTime
-	}
-
-	//
-	const configFileContents = await fs.readFile(configFileName, 'utf8')
 
 	// Parse tsconfig.json and convert compiler options
+	const configFileContents = await fs.readFile(configFileName, 'utf8')
 	const { config: tsconfig, error } = ts.parseConfigFileTextToJson(configFileName, configFileContents)
 	if (error) {
 		logger.error('Error parsing tsconfig.json:', error)
@@ -184,6 +174,7 @@ export async function compile(options?: RoboCompileOptions) {
 	logger.debug(`Copying additional non-TypeScript files from ${srcDir} to ${distDir}...`)
 	await copyDir(srcDir, distDir, ['.ts', '.tsx'])
 
+	logger.debug(`Compiled successfully!`)
 	return Date.now() - startTime
 }
 
