@@ -14,6 +14,8 @@ export interface LoggerOptions {
 	enabled?: boolean
 	level?: LogLevel | string
 	maxEntries?: number
+	parent?: Logger
+	prefix?: string
 }
 
 export const DEBUG_MODE = process.env.NODE_ENV !== 'production'
@@ -78,14 +80,19 @@ export class Logger {
 	protected _enabled: boolean
 	protected _level: LogLevel | string
 	protected _levelValues: Record<string, number>
+	protected _parent: Logger | undefined
+	protected _prefix: string | undefined
 	private _currentIndex: number
 	private _logBuffer: LogEntry[]
 
 	constructor(options?: LoggerOptions) {
-		const { customLevels, enabled = true, level } = options ?? {}
+		const { customLevels, enabled = true, level, parent, prefix } = options ?? {}
 
 		this._customLevels = customLevels
 		this._enabled = enabled
+		this._parent = parent
+		this._prefix = prefix
+
 		if (env.roboplay.host) {
 			// This allows developers to have better control over the logs when hosted
 			this._level = 'trace'
@@ -105,6 +112,12 @@ export class Logger {
 	}
 
 	protected _log(level: string, ...data: unknown[]): void {
+		// Delegate to parent if forked
+		if (this._parent) {
+			data.unshift(this._prefix)
+			return this._parent._log(level, ...data)
+		}
+
 		if (this._enabled && this._levelValues[this._level] <= this._levelValues[level]) {
 			// Format the message all pretty and stuff
 			if (level !== 'other') {
@@ -151,11 +164,44 @@ export class Logger {
 		}
 	}
 
-	public flush() {
-		return Promise.allSettled([...pendingWrites])
+	/**
+	 * Waits for all pending log writes to complete.
+	 */
+	public async flush(): Promise<void> {
+		// Delegate to parent if forked
+		if (this._parent) {
+			return this._parent.flush()
+		}
+	
+		await Promise.allSettled([...pendingWrites])
+	}
+
+	/**
+	 * Creates a new logger instance with the specified prefix.
+	 * This is useful for creating a logger for a specific plugin, big features, or modules.
+	 * 
+	 * All writes and cached logs will be delegated to the parent logger, so debugging will still work.
+	 * 
+	 * @param prefix The prefix to add to the logger (e.g. 'my-plugin')
+	 * @returns A new logger instance with the specified prefix
+	 */
+	public fork(prefix: string): Logger {
+		return new Logger({
+			customLevels: this._customLevels,
+			enabled: this._enabled,
+			level: this._level,
+			parent: this,
+			prefix: this._prefix ? this._prefix + prefix : prefix
+		})
 	}
 
 	public getRecentLogs(count = 50): LogEntry[] {
+		// Delegate to parent if forked
+		if (this._parent) {
+			return this._parent.getRecentLogs(count)
+		}
+
+		// Return an empty array if the log buffer is empty
 		if (count <= 0) {
 			return []
 		}
@@ -254,6 +300,10 @@ export function logger(options?: LoggerOptions): Logger {
 
 logger.flush = async function (): Promise<void> {
 	await logger().flush()
+}
+
+logger.fork = function (prefix: string): Logger {
+	return logger().fork(prefix)
 }
 
 logger.getRecentLogs = function (count = 25): LogEntry[] {
