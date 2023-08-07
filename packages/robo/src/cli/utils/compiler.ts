@@ -109,6 +109,7 @@ interface RoboCompileOptions {
 	files?: string[]
 	parallel?: number
 	paths?: Record<string, string[]>
+	plugin?: boolean
 }
 
 export async function compile(options?: RoboCompileOptions) {
@@ -174,6 +175,14 @@ export async function compile(options?: RoboCompileOptions) {
 	logger.debug(`Copying additional non-TypeScript files from ${srcDir} to ${distDir}...`)
 	await copyDir(srcDir, distDir, ['.ts', '.tsx'])
 
+	// Generate declaration files for plugins
+	if (options?.plugin) {
+		const declarationTime = Date.now()
+		logger.debug(`Generating declaration files for plugins...`)
+		compileDeclarationFiles()
+		logger.debug(`Generated declaration files in ${Date.now() - declarationTime}ms`)
+	}
+
 	logger.debug(`Compiled successfully!`)
 	return Date.now() - startTime
 }
@@ -196,5 +205,39 @@ async function copyDir(src: string, dest: string, excludeExtensions: string[] = 
 		} else {
 			await fs.copyFile(srcPath, destPath)
 		}
+	}
+}
+
+function compileDeclarationFiles() {
+	// Define the compiler options specifically for declaration files
+	const options: CompilerOptions = {
+		rootDir: 'src',
+		outDir: '.robo/build',
+		declaration: true,
+		emitDeclarationOnly: true,
+		skipLibCheck: true,
+		noEmit: false
+	}
+
+	// Emit the declaration files
+	const fileNames = ts.sys.readDirectory('src', ['.ts', '.tsx'])
+	const program = ts.createProgram(fileNames, options)
+	const emitResult = program.emit()
+
+	// Collect and display the diagnostics, if any
+	const allDiagnostics = ts.getPreEmitDiagnostics(program).concat(emitResult.diagnostics)
+	allDiagnostics.forEach((diagnostic) => {
+		if (diagnostic.file) {
+			const { line, character } = ts.getLineAndCharacterOfPosition(diagnostic.file, diagnostic.start!)
+			const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')
+			logger.error(`${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`)
+		} else {
+			logger.error(ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'))
+		}
+	})
+
+	// Exit the process if there were any errors
+	if (emitResult.emitSkipped) {
+		process.exit(1)
 	}
 }
