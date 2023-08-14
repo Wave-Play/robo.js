@@ -179,7 +179,7 @@ export async function compile(options?: RoboCompileOptions) {
 	if (options?.plugin) {
 		const declarationTime = Date.now()
 		logger.debug(`Generating declaration files for plugins...`)
-		compileDeclarationFiles()
+		compileDeclarationFiles(tsOptions)
 		logger.debug(`Generated declaration files in ${Date.now() - declarationTime}ms`)
 	}
 
@@ -208,15 +208,19 @@ async function copyDir(src: string, dest: string, excludeExtensions: string[] = 
 	}
 }
 
-function compileDeclarationFiles() {
+function compileDeclarationFiles(tsOptions?: CompilerOptions) {
 	// Define the compiler options specifically for declaration files
 	const options: CompilerOptions = {
+		target: ts.ScriptTarget.Latest,
 		rootDir: 'src',
 		outDir: '.robo/build',
 		declaration: true,
 		emitDeclarationOnly: true,
+		moduleResolution: ts.ModuleResolutionKind.NodeNext,
+		noEmit: false,
 		skipLibCheck: true,
-		noEmit: false
+		...(tsOptions ?? {}),
+		incremental: false
 	}
 
 	// Emit the declaration files
