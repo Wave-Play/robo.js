@@ -3,7 +3,7 @@ import path from 'path'
 import { hasProperties, replaceSrcWithBuildInRecord } from './utils.js'
 import { logger } from '../../core/logger.js'
 import { env } from '../../core/env.js'
-import type { default as Typescript, CompilerOptions } from 'typescript'
+import type { default as Typescript, CompilerOptions, Diagnostic } from 'typescript'
 import type { transform as SwcTransform } from '@swc/core'
 
 const srcDir = path.join(process.cwd(), 'src')
@@ -227,17 +227,32 @@ function compileDeclarationFiles() {
 	// Collect and display the diagnostics, if any
 	const allDiagnostics = ts.getPreEmitDiagnostics(program).concat(emitResult.diagnostics)
 	allDiagnostics.forEach((diagnostic) => {
-		if (diagnostic.file) {
-			const { line, character } = ts.getLineAndCharacterOfPosition(diagnostic.file, diagnostic.start!)
-			const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')
-			logger.error(`${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`)
-		} else {
-			logger.error(ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'))
+		switch (diagnostic.category) {
+			case ts.DiagnosticCategory.Error:
+				logger.error(formatDiagnostic(diagnostic))
+				break
+			case ts.DiagnosticCategory.Warning:
+				logger.warn(formatDiagnostic(diagnostic))
+				break
+			case ts.DiagnosticCategory.Message:
+			case ts.DiagnosticCategory.Suggestion:
+				logger.info(formatDiagnostic(diagnostic))
+				break
 		}
 	})
 
 	// Exit the process if there were any errors
 	if (emitResult.emitSkipped) {
 		process.exit(1)
+	}
+}
+
+function formatDiagnostic(diagnostic: Diagnostic): string {
+	if (diagnostic.file) {
+		const { line, character } = ts.getLineAndCharacterOfPosition(diagnostic.file, diagnostic.start!)
+		const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')
+		return `${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`
+	} else {
+		return ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')
 	}
 }
