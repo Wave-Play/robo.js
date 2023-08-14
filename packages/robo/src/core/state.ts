@@ -6,11 +6,11 @@ import type { ChildProcess } from 'child_process'
 
 export const state: Record<string, unknown> = {}
 
-interface SetStateOptions {
+export interface SetStateOptions {
 	persist?: boolean
 }
 
-interface StateOptions {
+export interface StateOptions {
 	persist?: boolean
 }
 
