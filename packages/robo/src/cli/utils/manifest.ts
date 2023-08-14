@@ -175,10 +175,7 @@ async function readPluginManifest(plugins: Plugin[]): Promise<Manifest> {
 					...manifest.context?.user
 				}
 			},
-			events: {
-				...pluginsManifest.events,
-				...manifest.events
-			},
+			events: mergeEvents(pluginsManifest.events, manifest.events),
 			middleware: [...(pluginsManifest.middleware ?? []), ...(manifest.middleware ?? [])],
 			permissions: [
 				...(pluginsManifest.permissions as PermissionsString[]),
