@@ -1,4 +1,4 @@
-import { Command } from 'commander'
+import { Command } from '../../utils/cli-handler.js'
 import { generateManifest, loadManifest } from '../../utils/manifest.js'
 import { logger as defaultLogger, Logger } from '../../../core/logger.js'
 import { loadConfig } from '../../../core/config.js'
@@ -11,13 +11,12 @@ import type { LoggerOptions } from '../../../core/logger.js'
 
 const command = new Command('build')
 	.description('Builds your bot for production.')
-	.argument('[files...]')
-	.option('-d --dev', 'build for development')
-	.option('-f --force', 'force register commands')
-	.option('-s --silent', 'do not print anything')
-	.option('-v --verbose', 'print more information for debugging')
-	.option('-w --watch', 'watch for changes and rebuild')
-	.action(buildAction)
+	.option('-d', '--dev', 'build for development')
+	.option('-f', '--force', 'force register commands')
+	.option('-s', '--silent', 'do not print anything')
+	.option('-v', '--verbose', 'print more information for debugging')
+	.option('-w', '--watch', 'watch for changes and rebuild')
+	.handler(buildAction)
 	.addCommand(plugin)
 export default command
 

@@ -1,5 +1,5 @@
 import { color } from '../../../core/color.js';
-import { Command } from 'commander'
+import { Command } from '../../utils/cli-handler.js'
 import { generateManifest } from '../../utils/manifest.js'
 import { logger } from '../../../core/logger.js'
 import { getProjectSize, printBuildSummary } from '../../utils/build-summary.js'
@@ -13,11 +13,11 @@ import Watcher from '../../utils/watcher.js'
 
 const command = new Command('plugin')
 	.description('Builds your plugin for distribution.')
-	.option('-d --dev', 'build for development')
-	.option('-s --silent', 'do not print anything')
-	.option('-v --verbose', 'print more information for debugging')
-	.option('-w --watch', 'watch for changes and rebuild')
-	.action(pluginAction)
+	.option('-d', '--dev', 'build for development')
+	.option('-s', '--silent', 'do not print anything')
+	.option('-v', '--verbose', 'print more information for debugging')
+	.option('-w', '--watch', 'watch for changes and rebuild')
+	.handler(pluginAction)
 export default command
 
 interface PluginCommandOptions {
@@ -27,9 +27,7 @@ interface PluginCommandOptions {
 	watch?: boolean
 }
 
-async function pluginAction() {
-	// Extract options from parent due to commander not passing them down
-	const options = command.parent.opts() as PluginCommandOptions
+async function pluginAction(_args: string[], options: PluginCommandOptions) {
 	logger({
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : options.dev ? 'warn' : 'info'

@@ -1,5 +1,5 @@
 import fs from 'node:fs/promises';
-import { Command } from 'commander'
+import { Command } from '../utils/cli-handler.js'
 import { logger } from '../../core/logger.js'
 import { color, composeColors } from '../../core/color.js'
 import { uploadToBackblazeB2 } from '../utils/upload.js'
@@ -9,9 +9,9 @@ import { compressDirectory } from '../utils/compress.js'
 
 const command = new Command('deploy')
 	.description('Deploys your bot to RoboPlay!')
-	.option('-s --silent', 'do not print anything')
-	.option('-v --verbose', 'print more information for debugging')
-	.action(deployAction)
+	.option('-s', '--silent', 'do not print anything')
+	.option('-v', '--verbose', 'print more information for debugging')
+	.handler(deployAction)
 export default command
 
 interface DeployCommandOptions {
@@ -19,7 +19,7 @@ interface DeployCommandOptions {
 	verbose?: boolean
 }
 
-async function deployAction(options: DeployCommandOptions) {
+async function deployAction(_args: string[], options: DeployCommandOptions) {
 	// Create a logger
 	logger({
 		enabled: !options.silent,

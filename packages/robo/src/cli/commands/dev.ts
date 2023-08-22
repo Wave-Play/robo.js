@@ -1,4 +1,4 @@
-import { Command } from 'commander'
+import { Command } from '../utils/cli-handler.js'
 import { run } from '../utils/run.js'
 import { spawn } from 'child_process'
 import { logger } from '../../core/logger.js'
@@ -19,9 +19,9 @@ import type { ChildProcess } from 'child_process'
 
 const command = new Command('dev')
 	.description('Ready, set, code your bot to life! Starts development mode.')
-	.option('-s --silent', 'do not print anything')
-	.option('-v --verbose', 'print more information for debugging')
-	.action(devAction)
+	.option('-s', '--silent', 'do not print anything')
+	.option('-v', '--verbose', 'print more information for debugging')
+	.handler(devAction)
 export default command
 
 interface DevCommandOptions {
@@ -33,7 +33,7 @@ const buildCommand = 'robo build --dev'
 
 let spirits: Spirits | undefined
 
-async function devAction(options: DevCommandOptions) {
+async function devAction(_args: string[], options: DevCommandOptions) {
 	// Create a logger
 	logger({
 		enabled: !options.silent,

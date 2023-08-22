@@ -1,4 +1,4 @@
-import { Command } from 'commander'
+import { Command } from '../utils/cli-handler.js'
 import { logger } from '../../core/logger.js'
 import { loadManifest } from '../utils/manifest.js'
 import { Manifest } from '../../types/index.js'
@@ -6,7 +6,7 @@ import { env } from '../../core/env.js'
 import { PermissionFlagsBits } from 'discord.js'
 import { color, composeColors } from '../../core/color.js'
 
-const command = new Command('invite').description('Generates a link for servers to add your Robo.').action(inviteAction)
+const command = new Command('invite').description('Generates a link for servers to add your Robo.').handler(inviteAction)
 export default command
 
 async function inviteAction() {

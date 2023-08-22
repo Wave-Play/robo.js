@@ -1,11 +1,11 @@
-import { Command } from 'commander'
+import { Command } from '../utils/cli-handler.js'
 import fs from 'fs'
 import path from 'path'
 import { logger } from '../../core/logger.js'
 import { color, composeColors } from '../../core/color.js'
 import { loadEnv } from '../../core/dotenv.js'
 
-const command = new Command('doctor').description('Checks if your project is healthy').action(doctor)
+const command = new Command('doctor').description('Checks if your project is healthy').handler(doctor)
 export default command
 
 function doctor() {

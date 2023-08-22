@@ -1,4 +1,4 @@
-import { Command } from 'commander'
+import { Command } from '../utils/cli-handler.js'
 import fs from 'fs/promises'
 import { logger } from '../../core/logger.js'
 import { hasFilesRecursively } from '../utils/fs-helper.js'
@@ -7,9 +7,9 @@ import { loadConfig } from '../../core/config.js'
 
 const command = new Command('start')
 	.description('Starts your bot in production mode.')
-	.option('-s --silent', 'do not print anything')
-	.option('-v --verbose', 'print more information for debugging')
-	.action(startAction)
+	.option('-s' ,'--silent', 'do not print anything')
+	.option('-v', '--verbose', 'print more information for debugging')
+	.handler(startAction)
 export default command
 
 interface StartCommandOptions {
@@ -17,7 +17,7 @@ interface StartCommandOptions {
 	verbose?: boolean
 }
 
-async function startAction(options: StartCommandOptions) {
+async function startAction(_args: string[], options: StartCommandOptions) {
 	// Create a logger
 	logger({
 		enabled: !options.silent,

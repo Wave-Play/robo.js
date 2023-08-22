@@ -1,14 +1,13 @@
-import { Command } from 'commander'
+import { Command } from '../utils/cli-handler.js'
 import { logger } from '../../core/logger.js'
 import { loadManifest } from '../utils/manifest.js'
 import { color } from '../../core/color.js'
 
 const command = new Command('why')
 	.description('Find out why a command, event, permission, or scope is in your Robo.\ne.g. /ping, @ready, %ADMINISTRATOR, +applications.commands')
-	.arguments('[text]')
-	.option('-s --silent', 'do not print anything')
-	.option('-v --verbose', 'print more information for debugging')
-	.action(whyAction)
+	.option('-s', '--silent', 'do not print anything')
+	.option('-v', '--verbose', 'print more information for debugging')
+	.handler(whyAction)
 export default command
 
 const validPrefixes = [
@@ -23,7 +22,9 @@ interface WhyCommandOptions {
 	verbose?: boolean
 }
 
-async function whyAction(text: string, options: WhyCommandOptions) {
+async function whyAction(args: string[], options: WhyCommandOptions) {
+	const text = args[0]
+
 	// Create a logger
 	logger({
 		enabled: !options.silent,
