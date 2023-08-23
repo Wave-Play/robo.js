@@ -349,7 +349,17 @@ type ScanDirPredicate = (fileKeys: string[], fullPath: string, moduleKeys: strin
 async function scanDir(predicate: ScanDirPredicate, options: ScanDirOptions) {
 	const { recurseModules = true, recursionKeys = [], recursionModuleKeys = [], recursionPath, type } = options
 	const directoryPath = recursionPath ?? path.join(process.cwd(), '.robo', 'build', type)
-	const directory = await fs.readdir(directoryPath)
+	let directory: string[] = []
+
+	try {
+		directory = await fs.readdir(directoryPath)
+	} catch (error) {
+		if (hasProperties<{ code: unknown }>(error, ['code']) && error.code === 'ENOENT') {
+			// Ignore primary directory not existing and move on to modules
+		} else {
+			throw error
+		}
+	}
 
 	// Filter out directories using fs.stat in parallel
 	const files: string[] = []
@@ -387,12 +397,19 @@ async function scanDir(predicate: ScanDirPredicate, options: ScanDirOptions) {
 			// For each module, add it to the list of directories to scan
 			await Promise.all(
 				modulesDirectory.map(async (module) => {
-					const fullPath = path.resolve(modulesPath, module, type)
+					try {
+						const fullPath = path.resolve(modulesPath, module, type)
 
-					// Only add modules to the list of modules to scan
-					const stats = await fs.stat(fullPath)
-					if (stats.isDirectory()) {
-						modules.push(path.join(modulesPath, module, type))
+						// Only add modules to the list of modules to scan
+						const stats = await fs.stat(fullPath)
+						if (stats.isDirectory()) {
+							modules.push(path.join(modulesPath, module, type))
+						}
+					} catch (error) {
+						// Only throw error not related to the directory not existing
+						if (hasProperties<{ code: string }>(error, ['code']) && !['ENOENT', 'ENOTDIR'].includes(error.code)) {
+							throw error
+						}
 					}
 				})
 			)
@@ -435,6 +452,7 @@ async function scanDir(predicate: ScanDirPredicate, options: ScanDirOptions) {
 		modules.map(async (module) => {
 			const nestedPath = path.resolve(module)
 			const moduleKeys = [...recursionModuleKeys, path.basename(path.dirname(module))]
+
 			return scanDir(predicate, {
 				recursionKeys: [],
 				recurseModules: true,
