@@ -1,6 +1,7 @@
-import fs from 'node:fs'
 import { Config } from '../types/index.js'
 import { logger } from './logger.js'
+import fs from 'node:fs'
+import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 // Global config reference
@@ -36,21 +37,28 @@ export async function loadConfig(file = 'robo'): Promise<Config> {
 
 export async function loadConfigPath(file = 'robo'): Promise<string> {
 	const extensions = ['.mjs', '.cjs']
-	const prefix = file.endsWith('.config') ? '' : '.config/'
+	const prefixes = [
+		file.endsWith('.config') ? '' : 'config' + path.sep,
+		file.endsWith('.config') ? '' : '.config' + path.sep
+	]
 
-	for (const ext of extensions) {
-		const fullPath = `${process.cwd()}/${prefix}${file}${ext}`
-		try {
-			const importPath = pathToFileURL(fullPath).toString()
-			fs.existsSync(importPath)
-			logger.debug(`Found configuration file at`, importPath)
-			return importPath
-		} catch (ignored) {
-			// empty
+	for (const prefix of prefixes) {
+		for (const ext of extensions) {
+			const fullPath = path.join(process.cwd(), `${prefix}${file}${ext}`)
+
+			try {
+				logger.error(fs.existsSync(fullPath))
+				if (fs.existsSync(fullPath)) {
+					logger.debug(`Found configuration file at`, fullPath)
+					return pathToFileURL(fullPath).toString()
+				}
+			} catch (ignored) {
+				// empty
+			}
 		}
 	}
 
-	const fileName = `${prefix}${file}`
+	const fileName = path.join(prefixes[1], file)
 	if (fileName.endsWith('.config')) {
 		return null
 	} else {
