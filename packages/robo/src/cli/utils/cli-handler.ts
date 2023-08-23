@@ -129,7 +129,6 @@ export class Command {
 	}
 
 	private async processSubCommand(command: Command, args: string[]) {
-		console.log(`> Processing command: ${command._name} with args:`, args)
 		// If there are no arguments provided, and the current command does not have a handler,
 		// it means there's nothing to process further. Hence, return early.
 		if (args.length === 0 && !command._handler) {
@@ -157,16 +156,13 @@ export class Command {
 			// Check if arg is a subcommand
 			const subCommand = command._commands.find((cmd) => cmd._name === arg)
 			if (subCommand) {
-				console.log(`> THIS IS A SUBCOMMAND:`, subCommand._name)
 				const { positionalArgs: subPosArgs, optionsArgs: subOptArgs } = this.splitArgs(args.slice(i + 1))
 				this.processSubCommand(subCommand, [...subPosArgs, ...subOptArgs])
-				console.log(`> Existing command: ${command._name}`)
 				return
 			}
 
 			// If arg is not an option or a subcommand, treat as a positional argument
 			positionalArgs.push(arg)
-			console.log(`> THIS IS A POSITIONAL ARGUMENT:`, arg)
 		}
 
 		const optionsArgs = args.slice(optionsArgsStart)
@@ -179,12 +175,10 @@ export class Command {
 
 		// If the current command has a version, and the user has provided the version flag, display the version and exit.
 		if (command._commands.length && command._version && (args.includes('-v') || args.includes('--version'))) {
-			console.log(`> Showing version for command: ${command._name}`)
 			console.log(command._version)
 			process.exit(0)
 		}
 
-		console.log(`> Handling command: ${command._name}`)
 		await command._handler(positionalArgs, parsedOptions)
 	}
 
