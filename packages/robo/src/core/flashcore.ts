@@ -102,19 +102,36 @@ export const Flashcore = {
 	 * @returns {Promise<boolean> | boolean} - Resolves to a boolean indicating whether the operation was successful.
 	 */
 	set: <V>(key: string, value: V): Promise<boolean> | boolean => {
-		if (_watchers.has(key)) {
-			const oldValue = _adapter.get(key)
+		if (_watchers.has(key) || typeof value === 'function') {
+			// Fetch the old value only when necessary for minimal overhead
+			const oldValue: unknown = _adapter.get(key)
+
+			const setValue = async (resolvedOldValue: V) => {
+				let newValue = value
+
+				// If value is a function, use it to compute the new value based on the old value
+				if (typeof value === 'function') {
+					newValue = (value as (oldValue: V) => V)(resolvedOldValue as V)
+				}
+
+				// Run the watcher callbacks if any are set for this key
+				if (_watchers.has(key)) {
+					_watchers.get(key).forEach((callback) => callback(resolvedOldValue, newValue))
+				}
+
+				// Set the new value in the adapter
+				return _adapter.set(key, newValue)
+			}
+
+			// If the old value is a promise, wait for it to resolve before proceeding
 			if (oldValue instanceof Promise) {
 				// Return as promise to avoid race condition fetching the old value.
 				// I believe this is ideal, as promise-based values are likely to be used with async/await.
 				return oldValue
-					.then((oldValue) => {
-						_watchers.get(key).forEach((callback) => callback(oldValue, value))
-					})
-					.then(() => _adapter.set(key, value))
-					.catch(() => _adapter.set(key, value))
+					.then(async (resolvedOldValue) => await setValue(resolvedOldValue))
+					.catch(() => _adapter.set(key, value)) // Fallback to set the value directly in case of an error
 			} else {
-				_watchers.get(key).forEach((callback) => callback(oldValue, value))
+				return setValue(oldValue as V)
 			}
 		}
 
