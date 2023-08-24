@@ -118,13 +118,14 @@ export function getPluginOptions(packageName: string): unknown | null {
 
 interface ScanOptions<T> {
 	manifestEntries: Record<string, T | T[]> | T[]
+	parentEntry?: T
 	recursionKeys?: string[]
 	type: string
 }
 type ScanPredicate = <T>(entry: T, entryKeys: string[]) => Promise<void>
 
 async function scanEntries<T>(predicate: ScanPredicate, options: ScanOptions<T>) {
-	const { manifestEntries, recursionKeys = [], type } = options
+	const { manifestEntries, parentEntry = {}, recursionKeys = [], type } = options
 	const promises: Promise<unknown>[] = []
 
 	for (const entryName in manifestEntries) {
@@ -136,11 +137,15 @@ async function scanEntries<T>(predicate: ScanPredicate, options: ScanOptions<T>)
 
 		entries.forEach((entry) => {
 			const entryKeys = [...recursionKeys, entryName]
-			promises.push(predicate(entry, entryKeys))
+			promises.push(predicate({
+				...parentEntry,
+				...entry
+			}, entryKeys))
 
 			if (hasProperties<{ subcommands: Record<string, T> }>(entry, ['subcommands']) && entry.subcommands) {
 				const resursion = scanEntries(predicate, {
 					manifestEntries: entry.subcommands,
+					parentEntry: entry,
 					recursionKeys: entryKeys,
 					type
 				})
@@ -148,6 +153,7 @@ async function scanEntries<T>(predicate: ScanPredicate, options: ScanOptions<T>)
 			} else if (hasProperties<{ subroutes: Record<string, T> }>(entry, ['subroutes']) && entry.subroutes) {
 				const resursion = scanEntries(predicate, {
 					manifestEntries: entry.subroutes,
+					parentEntry: entry,
 					recursionKeys: entryKeys,
 					type
 				})
