@@ -47,7 +47,6 @@ export async function loadConfigPath(file = 'robo'): Promise<string> {
 			const fullPath = path.join(process.cwd(), `${prefix}${file}${ext}`)
 
 			try {
-				logger.error(fs.existsSync(fullPath))
 				if (fs.existsSync(fullPath)) {
 					logger.debug(`Found configuration file at`, fullPath)
 					return pathToFileURL(fullPath).toString()
