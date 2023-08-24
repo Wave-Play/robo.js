@@ -121,9 +121,10 @@ export const config = {
 const colors = ['red', 'green', 'blue', 'yellow', 'black', 'white', 'pink', 'purple', 'brown']
 
 export const autocomplete = (interaction) => {
-  const colorQuery = interaction.options.get('color')?.value as string
-  return colors.filter(color => color.startsWith(colorQuery))
-}
+  const colorQuery = interaction.options.get("color")?.value as string;
+  const filtered = colors.filter((color) => color.startsWith(colorQuery));
+  return interaction.respond(filtered.map((colors) => ({ name: colors, value: colors })));
+};
 
 export default (interaction) => {
   return `You chose ${interaction.options.get('color')?.value}`
@@ -131,6 +132,8 @@ export default (interaction) => {
 ```
 
 In this example, the `autocomplete` function returns an array of colors that start with the user's input, providing a dynamic and responsive user experience.
+
+Note: the type of the Interaction is: `AutocompleteInteraction`
 
 ## Command Registration 📝
 
