@@ -63,7 +63,7 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 	}
 
 	// Ensure worker spirits are ready
-	if (config.experimental?.spirits) {
+	if (!config.experimental?.legacyProcess) {
 		spirits = new Spirits()
 
 		// Stop spirits on process exit
@@ -123,13 +123,18 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 	logger.debug(`State loaded in ${Date.now() - stateStart}ms`)
 
 	// Start the Robo!
-	if (buildSuccess && config.experimental?.spirits) {
+	if (buildSuccess && !config.experimental?.legacyProcess) {
 		roboSpirit = await spirits.newTask<string>({
 			event: 'start',
 			onExit: (exitCode: number) => {
 				if (exitCode !== 0) {
 					logger.error(
-						composeColors(color.bgBlack, color.redBright, color.underline, color.bold)(`Robo exited with code ${exitCode}.`),
+						composeColors(
+							color.bgBlack,
+							color.redBright,
+							color.underline,
+							color.bold
+						)(`Robo exited with code ${exitCode}.`),
 						`Restarting...`
 					)
 					return true
@@ -191,7 +196,7 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 			}
 
 			// Rebuild and restart
-			if (config.experimental?.spirits) {
+			if (!config.experimental?.legacyProcess) {
 				roboSpirit = await rebuildRobo(roboSpirit, config, options.verbose, changes)
 				spirits.on(roboSpirit, restartCallback)
 			} else {
@@ -225,7 +230,7 @@ export async function buildAsync(command: string, config: Config, verbose: boole
 		const args = command.split(' ')
 		const start = Date.now()
 
-		if (config.experimental?.spirits) {
+		if (!config.experimental?.legacyProcess) {
 			spirits
 				.newTask({
 					event: 'build',
@@ -295,9 +300,10 @@ async function rebuildRobo(spiritId: string, config: Config, verbose: boolean, c
 	// Get state dump before restarting
 	const stateSaveStart = Date.now()
 	logger.debug('Saving state...')
-	const savedState = await spirits.exec<Record<string, unknown>>(roboSpirit, {
-		event: 'get-state'
-	}) ?? {}
+	const savedState =
+		(await spirits.exec<Record<string, unknown>>(roboSpirit, {
+			event: 'get-state'
+		})) ?? {}
 	logger.debug(`Saved state in ${Date.now() - stateSaveStart}ms:`, savedState)
 
 	// Stop the previous spirit if it's still running

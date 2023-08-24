@@ -9,7 +9,7 @@ export interface Config {
 	}
 	experimental?: {
 		incrementalBuilds?: boolean
-		spirits?: boolean
+		legacyProcess?: boolean
 	}
 	flashcore?: {
 		keyv?: unknown
