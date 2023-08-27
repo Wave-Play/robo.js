@@ -225,12 +225,11 @@ async function devAction(_args: string[], options: DevCommandOptions) {
  * Building in a separate process/thread clears the import cache.
  * This is necessary to prevent the bot from using old code.
  */
-export async function buildAsync(command: string, config: Config, verbose: boolean, changes: Change[]) {
+export async function buildAsync(command: string | null, config: Config, verbose: boolean, changes: Change[]) {
 	return new Promise<boolean>((resolve, reject) => {
-		const args = command.split(' ')
 		const start = Date.now()
 
-		if (!config.experimental?.legacyProcess) {
+		if (!command && !config.experimental?.legacyProcess) {
 			spirits
 				.newTask({
 					event: 'build',
@@ -245,6 +244,7 @@ export async function buildAsync(command: string, config: Config, verbose: boole
 				})
 				.catch(() => resolve(false))
 		} else {
+			const args = command.split(' ')
 			let pkgManager = getPkgManager()
 
 			// Unfortunately, Windows has issues recursively spawning processes via PNPM
@@ -344,7 +344,7 @@ async function rebuildRobo(spiritId: string, config: Config, verbose: boolean, c
 	// Wait for the bot to exit or force abort
 	const awaitStop = Promise.race([terminate, forceAbort])
 	const [success] = await Promise.all([
-		buildAsync(buildCommand + (verbose ? ' --verbose' : ''), config, verbose, changes),
+		buildAsync(null, config, verbose, changes),
 		awaitStop
 	])
 
