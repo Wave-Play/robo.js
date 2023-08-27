@@ -168,11 +168,11 @@ export class Spirits {
 	}
 
 	public off(spiritId: string, callback: (message: SpiritMessage) => void | Promise<void>) {
-		this.get(spiritId).worker.off('message', callback)
+		this.get(spiritId)?.worker?.off('message', callback)
 	}
 
 	public on(spiritId: string, callback: (message: SpiritMessage) => void | Promise<void>) {
-		this.get(spiritId).worker.on('message', callback)
+		this.get(spiritId)?.worker?.on('message', callback)
 	}
 
 	public send(spiritId: string, message: SpiritMessage) {
