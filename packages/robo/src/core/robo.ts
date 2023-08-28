@@ -14,7 +14,6 @@ import {
 import { hasProperties } from '../cli/utils/utils.js'
 import { prepareFlashcore } from './flashcore.js'
 import Portal from './portal.js'
-import Server from './server.js'
 import { isMainThread, parentPort } from 'node:worker_threads'
 import type { PluginData } from '../types/index.js'
 import type { AutocompleteInteraction, CommandInteraction } from 'discord.js'
@@ -102,11 +101,6 @@ async function start(options?: StartOptions) {
 		}
 	})
 
-	// Start HTTP server only if API Routes are defined
-	if (portal.apis.size > 0) {
-		await Server.start()
-	}
-
 	// Log in to Discord with your client's token
 	await client.login(env.discord.token)
 }
@@ -116,9 +110,6 @@ async function stop(exitCode = 0) {
 		// Notify lifecycle handler
 		await executeEventHandler(plugins, '_stop', client)
 		client?.destroy()
-		if (Server.isRunning()) {
-			await Server.stop()
-		}
 		logger.debug(`Stopped Robo at ` + new Date().toLocaleString())
 	} finally {
 		if (isMainThread) {
@@ -137,9 +128,6 @@ async function restart() {
 		// Notify lifecycle handler
 		await executeEventHandler(plugins, '_restart', client)
 		client?.destroy()
-		if (Server.isRunning()) {
-			await Server.stop()
-		}
 		logger.debug(`Restarted Robo at ` + new Date().toLocaleString())
 	} finally {
 		if (isMainThread) {
