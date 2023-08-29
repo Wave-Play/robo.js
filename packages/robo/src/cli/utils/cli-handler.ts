@@ -103,10 +103,16 @@ export class Command {
 		}
 	}
 
+	/**
+	 * Parses the options from the provided arguments array.
+	 *
+	 * @param {string[]} args - The arguments array.
+	 * @returns {Record<string, unknown>} - Returns an object containing parsed options.
+	 */
 	private parseOptions(args: string[]): Record<string, unknown> {
 		const options: Record<string, unknown> = {}
 
-		for (let i = 0; i < args.length; i += 2) {
+		for (let i = 0; i < args.length; i++) {
 			const arg = args[i]
 			const nextArg = args[i + 1]
 
@@ -114,13 +120,23 @@ export class Command {
 				const option = this._options.find((opt) => opt.name === arg)
 
 				if (option) {
-					options[arg.slice(2)] = nextArg || true
+					if (nextArg && !nextArg.startsWith('-')) {
+						options[arg.slice(2)] = nextArg
+						i++ // Skip value since we used it
+					} else {
+						options[arg.slice(2)] = true
+					}
 				}
 			} else if (arg.startsWith('-')) {
 				const option = this._options.find((opt) => opt.alias === arg)
 
 				if (option) {
-					options[option.name.slice(2)] = nextArg || true
+					if (nextArg && !nextArg.startsWith('-')) {
+						options[option.name.slice(2)] = nextArg
+						i++ // Skip value since we used it
+					} else {
+						options[option.name.slice(2)] = true
+					}
 				}
 			}
 		}
