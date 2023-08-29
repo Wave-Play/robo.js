@@ -14,7 +14,7 @@ import { env } from '../../core/env.js'
 import { timeout } from './utils.js'
 import type { ApplicationCommandOptionBase } from 'discord.js'
 import type { CommandEntry, CommandOption, ContextEntry } from '../../types/index.js'
-import { color } from '../../core/color.js'
+import { bold, color } from '../../core/color.js'
 
 // @ts-expect-error - Global logger is overriden by dev mode
 let logger: Logger = globalLogger
@@ -58,12 +58,19 @@ export function buildSlashCommands(dev: boolean, commands: Record<string, Comman
 	}
 
 	return Object.entries(commands).map(([key, entry]): SlashCommandBuilder => {
-		logger.debug(`Building slash command: ${key}`)
-		const commandBuilder = new SlashCommandBuilder()
-			.setName(key)
-			.setNameLocalizations(entry.nameLocalizations || {})
-			.setDescription(entry.description || 'No description provided')
-			.setDescriptionLocalizations(entry.descriptionLocalizations || {})
+		logger.debug(`Building slash command:`, key)
+
+		let commandBuilder: SlashCommandBuilder
+		try {
+			commandBuilder = new SlashCommandBuilder()
+				.setName(key)
+				.setNameLocalizations(entry.nameLocalizations || {})
+				.setDescription(entry.description || 'No description provided')
+				.setDescriptionLocalizations(entry.descriptionLocalizations || {})
+		} catch (e) {
+			logger.error('Could not build slash command:', bold(`/${key}`))
+			throw e
+		}
 
 		// Add subcommands
 		if (entry.subcommands) {
@@ -71,25 +78,36 @@ export function buildSlashCommands(dev: boolean, commands: Record<string, Comman
 				// Add subcommands for this subcommand group
 				if (subcommandEntry.subcommands) {
 					commandBuilder.addSubcommandGroup((subcommandGroup) => {
-						subcommandGroup
-							.setName(subcommandName)
-							.setNameLocalizations(subcommandEntry.nameLocalizations || {})
-							.setDescription(subcommandEntry.description || 'No description provided')
-							.setDescriptionLocalizations(subcommandEntry.descriptionLocalizations || {})
+						try {
+							subcommandGroup
+								.setName(subcommandName)
+								.setNameLocalizations(subcommandEntry.nameLocalizations || {})
+								.setDescription(subcommandEntry.description || 'No description provided')
+								.setDescriptionLocalizations(subcommandEntry.descriptionLocalizations || {})
+						} catch (e) {
+							logger.error('Could not build subcommand:', bold(`/${key} ${subcommandName}`))
+							throw e
+						}
+
 						for (const [subcommandGroupName, subcommandGroupEntry] of Object.entries(subcommandEntry.subcommands)) {
 							// Add subcommands for this subcommand group
 							subcommandGroup.addSubcommand((subcommand) => {
-								subcommand
-									.setName(subcommandGroupName)
-									.setNameLocalizations(subcommandGroupEntry.nameLocalizations || {})
-									.setDescription(subcommandGroupEntry.description || 'No description provided')
-									.setDescriptionLocalizations(subcommandGroupEntry.descriptionLocalizations || {})
+								try {
+									subcommand
+										.setName(subcommandGroupName)
+										.setNameLocalizations(subcommandGroupEntry.nameLocalizations || {})
+										.setDescription(subcommandGroupEntry.description || 'No description provided')
+										.setDescriptionLocalizations(subcommandGroupEntry.descriptionLocalizations || {})
 
-								subcommandGroupEntry.options?.forEach((option) => {
-									addOptionToCommandBuilder(subcommand, option.type, option)
-								})
+									subcommandGroupEntry.options?.forEach((option) => {
+										addOptionToCommandBuilder(subcommand, option.type, option)
+									})
 
-								return subcommand
+									return subcommand
+								} catch (e) {
+									logger.error('Could not build subcommand group:', `/${key} ${subcommandName} ${subcommandGroupName}`)
+									throw e
+								}
 							})
 						}
 
@@ -100,17 +118,22 @@ export function buildSlashCommands(dev: boolean, commands: Record<string, Comman
 
 				// Just add a normal subcommand
 				commandBuilder.addSubcommand((subcommand) => {
-					subcommand
-						.setName(subcommandName)
-						.setNameLocalizations(subcommandEntry.nameLocalizations || {})
-						.setDescription(subcommandEntry.description || 'No description provided')
-						.setDescriptionLocalizations(subcommandEntry.descriptionLocalizations || {})
+					try {
+						subcommand
+							.setName(subcommandName)
+							.setNameLocalizations(subcommandEntry.nameLocalizations || {})
+							.setDescription(subcommandEntry.description || 'No description provided')
+							.setDescriptionLocalizations(subcommandEntry.descriptionLocalizations || {})
 
-					subcommandEntry.options?.forEach((option) => {
-						addOptionToCommandBuilder(subcommand, option.type, option)
-					})
+						subcommandEntry.options?.forEach((option) => {
+							addOptionToCommandBuilder(subcommand, option.type, option)
+						})
 
-					return subcommand
+						return subcommand
+					} catch (e) {
+						logger.error('Could not build subcommand:', bold(`/${key} ${subcommandName}`))
+						throw e
+					}
 				})
 			}
 		} else {
