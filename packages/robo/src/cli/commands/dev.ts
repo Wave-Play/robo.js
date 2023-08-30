@@ -317,10 +317,14 @@ async function rebuildRobo(spiritId: string, config: Config, verbose: boolean, c
 
 		const callback = () => {
 			logger.debug(`Gracefully stopped Robo spirit (${composeColors(color.bold, color.cyan)(roboSpirit)})`)
-			spirit.worker.off('exit', callback)
+			spirit.worker?.off('exit', callback)
 			spirit.isTerminated = true
 			isTerminated = true
 			resolve()
+		}
+		
+		if (spirit?.isTerminated) {
+			return callback()
 		}
 
 		spirit.worker.once('exit', callback)
