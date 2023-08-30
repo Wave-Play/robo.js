@@ -9,7 +9,7 @@
 	},
 	"scripts": {
 		"build": "tsup && tsup --config tsup-cli.config.ts",
-		"build:dev": "chokidar \"src/**/*.ts\" -d 1000 -c \"pnpm build\" --initial"
+		"dev": "chokidar \"src/**/*.ts\" -d 1000 -c \"pnpm build\" --initial"
 	},
 	"bin": {
 		"robo": "dist/cli/index.js"
