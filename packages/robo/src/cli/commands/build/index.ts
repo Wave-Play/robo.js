@@ -7,6 +7,8 @@ import plugin from './plugin.js'
 import { findCommandDifferences, registerCommands } from '../../utils/commands.js'
 import { generateDefaults } from '../../utils/generate-defaults.js'
 import { compile } from '../../utils/compiler.js'
+import { Flashcore, prepareFlashcore } from '../../../core/flashcore.js'
+import { bold } from '../../../core/color.js'
 import type { LoggerOptions } from '../../../core/logger.js'
 
 const command = new Command('build')
@@ -51,6 +53,9 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 	if (!config) {
 		logger.warn(`Could not find configuration file.`)
 	}
+
+	// Initialize Flashcore to persist build error data
+	await prepareFlashcore()
 
 	// Use SWC to compile into .robo/build
 	const compileTime = await compile({ files })
@@ -109,5 +114,10 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 			addedContextCommands,
 			removedContextCommands
 		)
+	} else {
+		const hasPreviousError = await Flashcore.get<boolean>('__robo_command_register_error')
+		if (hasPreviousError) {
+			logger.warn(`Previous command registration failed. Run ${bold('robo build --force')} to try again.`)
+		}
 	}
 }

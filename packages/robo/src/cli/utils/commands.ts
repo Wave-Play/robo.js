@@ -12,9 +12,10 @@ import { loadConfig } from '../../core/config.js'
 import { DEFAULT_CONFIG } from '../../core/constants.js'
 import { env } from '../../core/env.js'
 import { timeout } from './utils.js'
+import { bold, color } from '../../core/color.js'
+import { Flashcore } from '../../core/flashcore.js'
 import type { ApplicationCommandOptionBase } from 'discord.js'
 import type { CommandEntry, CommandOption, ContextEntry } from '../../types/index.js'
-import { bold, color } from '../../core/color.js'
 
 // @ts-expect-error - Global logger is overriden by dev mode
 let logger: Logger = globalLogger
@@ -368,8 +369,10 @@ export async function registerCommands(
 		const endTime = Date.now() - startTime
 		const commandType = guildId ? 'guild' : 'global'
 		logger.info(`Successfully updated ${color.bold(commandType + ' commands')} in ${endTime}ms`)
+		await Flashcore.delete('__robo_command_register_error')
 	} catch (error) {
 		logger.error('Could not register commands!', error)
 		logger.warn(`Run ${color.bold('robo build --force')} to try again.`)
+		await Flashcore.set('__robo_command_register_error', true)
 	}
 }
