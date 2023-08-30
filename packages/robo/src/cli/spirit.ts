@@ -52,7 +52,11 @@ async function run(message: SpiritMessage): Promise<unknown> {
 		return 'ok'
 	} else if (message.event === 'start') {
 		const { Robo } = await import('../core/robo.js')
-		Robo.start({ stateLoad })
+		Robo.start({ stateLoad }).catch((error) => {
+			logger.error(error)
+			logger.wait(`Robo failed to start, please check the logs for more information. Waiting for changes before retrying...`)
+			process.exit(1)
+		})
 		isRobo = true
 		return 'ok'
 	} else if (message.event === 'stop') {
