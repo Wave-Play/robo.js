@@ -81,7 +81,7 @@ Privileged intents include `GUILD_PRESENCES` and `GUILD_MEMBERS`, which cover ev
 
 ## Common Event Names 📜
 
-For a complete list of event names, check out this handy [Event Names Cheat Sheet](https://gist.github.com/koad/316b265a91d933fd1b62dddfcc3ff584). Remember, you don't need to use `client.on` like the examples in the sheet—just create a file named after the event!
+For a complete list of event names, check out this handy [Event Names Cheat Sheet](https://gist.github.com/Iliannnn/f4985563833e2538b1b96a8cb89d72bb). Remember, you don't need to use `client.on` like the examples in the sheet—just create a file named after the event!
 
 ## Robo Lifecycle 🔄
 
