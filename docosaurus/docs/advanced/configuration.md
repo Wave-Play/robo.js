@@ -57,7 +57,7 @@ export default {
 
 Now, let's break down each config key and their options:
 
-#### `clientOptions`
+### `clientOptions`
 
 These are the options passed to the Discord.js client. Use this to specify intents that your Robo.js should handle.
 
@@ -69,7 +69,7 @@ clientOptions: {
 }
 ```
 
-#### `defaults`
+### `defaults`
 
 Use this to customize default behavior, like enabling or disabling the help command.
 
@@ -85,7 +85,27 @@ defaults: {
 }
 ```
 
-#### `heartbeat`
+### `excludePaths`
+
+Got files or directories you don't want to include in the final build? Use excludePaths. Just list the file or directory prefixes you want to exclude, and Robo.js will steer clear of them during the build process.
+
+**Use cases:**
+
+- Keeping test files out of the build.
+- Preventing sensitive JSON files (like config or secrets) from being copied over
+
+```js
+excludePaths: [
+  '/src/test',
+  '/src/modules/example/statics.json'
+]
+```
+
+In this example, any file or directory that starts with `/src/test` or `/src/modules/example/statics.json` will be ignored during the build process.
+
+> **Note:** This feature works with directory and file prefixes, not glob patterns.
+
+### `heartbeat`
 
 This config key is for customizing the heartbeat (ping) options.
 
@@ -103,7 +123,7 @@ heartbeat: {
 }
 ```
 
-#### `invite`
+### `invite`
 
 Configure your Robo's invite options.
 
@@ -121,7 +141,7 @@ invite: {
 }
 ```
 
-#### `logger`
+### `logger`
 
 Customize your logging preferences.
 
