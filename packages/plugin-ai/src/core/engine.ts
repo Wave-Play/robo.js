@@ -105,10 +105,11 @@ export function isReplyingToUser(userId: string): boolean {
 interface CallGptOptions {
 	channel?: TextBasedChannel
 	member?: GuildMember | null
+	model?: string
 	onReply?: (message: string) => Promise<void> | void
 }
 async function callGpt(messages: GptChatMessage[], options: CallGptOptions) {
-	const { channel, member, onReply } = options
+	const { channel, member, model = 'gpt-4', onReply } = options
 	let gptMessages = messages
 
 	// Add to replying registry
@@ -175,7 +176,7 @@ async function callGpt(messages: GptChatMessage[], options: CallGptOptions) {
 		await channel?.sendTyping()
 
 		const response = await chat({
-			model: 'gpt-4-0613',
+			model: model,
 			messages: gptMessages,
 			functions: gptFunctions
 		})

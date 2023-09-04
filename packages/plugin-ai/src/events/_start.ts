@@ -1,4 +1,4 @@
-import { Command, logger, portal } from '@roboplay/robo.js'
+import { Command, portal } from '@roboplay/robo.js'
 import { GptFunction, GptFunctionParameters, GptFunctionProperty } from '../core/openai.js'
 import { Client } from 'discord.js'
 
