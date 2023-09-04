@@ -1,5 +1,11 @@
 # create-robo
 
+## 0.5.2
+
+### Patch Changes
+
+- e76674b: patch: removed noemit tsconfig option
+
 ## 0.5.1
 
 ### Patch Changes
