@@ -105,6 +105,22 @@ In this example, any file or directory that starts with `/src/test` or `/src/mod
 
 > **Note:** This feature works with directory and file prefixes, not glob patterns.
 
+### `experimental`
+
+Activate experimental features or revert to older behaviors for compatibility. This field takes an object containing the following optional boolean values:
+
+- `incrementalBuilds`: Enable incremental builds to improve build performance by only recompiling changed files.
+- `legacyProcess`: Switch back to the older child process runtime model. Recommended only if you encounter issues with the newer thread-based model.
+
+```js
+experimental: {
+  incrementalBuilds: true,
+  legacyProcess: false
+}
+```
+
+> **Caution:** Features toggled through the experimental field may be unstable and are subject to change outside of semver. Use at your own risk.
+
 ### `heartbeat`
 
 This config key is for customizing the heartbeat (ping) options.
