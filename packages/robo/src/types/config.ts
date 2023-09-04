@@ -7,6 +7,7 @@ export interface Config {
 	defaults?: {
 		help?: boolean
 	}
+	excludePaths?: string[]
 	experimental?: {
 		incrementalBuilds?: boolean
 		legacyProcess?: boolean

@@ -33,7 +33,7 @@ async function traverse(
 	compilerOptions: CompilerOptions,
 	transform: typeof SwcTransform
 ) {
-	const { parallel = 20 } = options
+	const { excludePaths = [], parallel = 20 } = options
 	const isIncremental = options.files?.length > 0
 
 	// Read directory contents
@@ -57,12 +57,13 @@ async function traverse(
 
 	for (const file of files) {
 		const filePath = isIncremental ? file : path.join(dir, file)
+		const relativePath = '/' + path.relative(process.cwd(), filePath)
 		const stat = await fs.stat(filePath)
 
 		// Recursively traverse subdirectories, only if no files are specified
 		if (stat.isDirectory() && !isIncremental) {
 			tasks.push(traverse(filePath, options, compilerOptions, transform))
-		} else if (/\.(js|ts|tsx)$/.test(file)) {
+		} else if (/\.(js|ts|tsx)$/.test(file) && !excludePaths.some((p) => relativePath.startsWith(p))) {
 			// Queue up a task to transform the file
 			tasks.push(
 				(async () => {
@@ -106,6 +107,7 @@ async function traverse(
 
 interface RoboCompileOptions {
 	baseUrl?: string
+	excludePaths?: string[]
 	files?: string[]
 	parallel?: number
 	paths?: Record<string, string[]>
@@ -119,7 +121,7 @@ export async function compile(options?: RoboCompileOptions) {
 		// If either of them fail, just copy the srcDir to distDir
 		await fs.rm(distDir, { recursive: true, force: true })
 		logger.debug(`Cannot find Typescript or SWC! Copying source without compiling...`)
-		await copyDir(srcDir, distDir)
+		await copyDir(srcDir, distDir, [], options.excludePaths ?? [])
 
 		return Date.now() - startTime
 	}
@@ -131,7 +133,7 @@ export async function compile(options?: RoboCompileOptions) {
 	} catch (error) {
 		await fs.rm(distDir, { recursive: true, force: true })
 		logger.debug(`Cannot find tsconfig.json! Copying source without compiling...`)
-		await copyDir(srcDir, distDir)
+		await copyDir(srcDir, distDir, [], options.excludePaths ?? [])
 
 		return Date.now() - startTime
 	}
@@ -173,7 +175,7 @@ export async function compile(options?: RoboCompileOptions) {
 
 	// Copy any non-TypeScript files to the destination directory
 	logger.debug(`Copying additional non-TypeScript files from ${srcDir} to ${distDir}...`)
-	await copyDir(srcDir, distDir, ['.ts', '.tsx'])
+	await copyDir(srcDir, distDir, ['.ts', '.tsx'], options.excludePaths ?? [])
 
 	// Generate declaration files for plugins
 	if (options?.plugin) {
@@ -187,7 +189,7 @@ export async function compile(options?: RoboCompileOptions) {
 	return Date.now() - startTime
 }
 
-async function copyDir(src: string, dest: string, excludeExtensions: string[] = []) {
+async function copyDir(src: string, dest: string, excludeExtensions: string[], excludePaths: string[]) {
 	await fs.mkdir(dest, { recursive: true })
 	const entries = await fs.readdir(src)
 
@@ -197,11 +199,13 @@ async function copyDir(src: string, dest: string, excludeExtensions: string[] = 
 
 		const entryStat = await fs.stat(srcPath)
 		const entryExt = path.extname(srcPath)
+		const relativePath = '/' + path.relative(process.cwd(), srcPath)
+		const isIgnored = excludePaths.some((p) => relativePath.startsWith(p))
 
-		if (excludeExtensions.includes(entryExt)) {
+		if (isIgnored || excludeExtensions.includes(entryExt)) {
 			continue
 		} else if (entryStat.isDirectory()) {
-			await copyDir(srcPath, destPath, excludeExtensions)
+			await copyDir(srcPath, destPath, excludeExtensions, excludePaths)
 		} else {
 			await fs.copyFile(srcPath, destPath)
 		}
@@ -253,7 +257,7 @@ function compileDeclarationFiles(tsOptions?: CompilerOptions) {
 
 function formatDiagnostic(diagnostic: Diagnostic): string {
 	if (diagnostic.file) {
-		const { line, character } = ts.getLineAndCharacterOfPosition(diagnostic.file, diagnostic.start!)
+		const { line, character } = ts.getLineAndCharacterOfPosition(diagnostic.file, diagnostic.start)
 		const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')
 		return `${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`
 	} else {

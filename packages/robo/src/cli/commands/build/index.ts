@@ -4,6 +4,7 @@ import { logger as defaultLogger, Logger } from '../../../core/logger.js'
 import { loadConfig } from '../../../core/config.js'
 import { getProjectSize, printBuildSummary } from '../../utils/build-summary.js'
 import plugin from './plugin.js'
+import path from 'node:path'
 import { findCommandDifferences, registerCommands } from '../../utils/commands.js'
 import { generateDefaults } from '../../utils/generate-defaults.js'
 import { compile } from '../../utils/compiler.js'
@@ -58,7 +59,10 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 	await prepareFlashcore()
 
 	// Use SWC to compile into .robo/build
-	const compileTime = await compile({ files })
+	const compileTime = await compile({
+		excludePaths: config.excludePaths?.map((p) => p.replaceAll('/', path.sep)),
+		files: files
+	})
 	logger.debug(`Compiled in ${compileTime}ms`)
 
 	// Assign default commands and events

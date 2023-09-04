@@ -38,7 +38,10 @@ async function pluginAction(_args: string[], options: PluginCommandOptions) {
 
 	// Use SWC to compile into .robo/build
 	const { compile } = await import('../../utils/compiler.js')
-	const compileTime = await compile({ plugin: true })
+	const compileTime = await compile({
+		excludePaths: config.excludePaths?.map((p) => p.replaceAll('/', path.sep)),
+		plugin: true
+	})
 	logger.debug(`Compiled in ${compileTime}ms`)
 
 	// Generate manifest.json
