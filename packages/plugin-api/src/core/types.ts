@@ -3,11 +3,11 @@ import type { BaseConfig } from '@roboplay/robo.js'
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'OPTIONS' | 'HEAD'
 
-export interface RoboRequest {
+export interface RoboRequest<T = Record<string, unknown>> {
 	req: IncomingMessage
-	body: Record<string, unknown>
+	body: T
 	method: HttpMethod
-	query: Record<string, unknown>
+	query: Record<string, string | string[]>
 	params: Record<string, unknown>
 }
 
