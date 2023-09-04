@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "build": "robo build plugin",
     "dev": "NODE_OPTIONS=--enable-source-maps robo build plugin --watch"
   },
   "devDependencies": {
