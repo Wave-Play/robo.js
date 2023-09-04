@@ -116,25 +116,27 @@ export function isUserTyping(userId: string) {
 }
 
 export function waitForTyping(userId: string) {
-	return new Promise<string[]>(async (resolve) => {
-		// Loop until the user stops typing
-		while (isUserTyping(userId)) {
+	return new Promise<string[]>((resolve) => {
+		(async () => {
+			// Loop until the user stops typing
+			while (isUserTyping(userId)) {
+				const state = UserStatus[userId]
+
+				// Delay by the remaining debounce time (up to max in case message was sent)
+				const remaining = Math.min(DEBOUNCE_TIME - (Date.now() - state.lastTypedAt), DEBOUNCE_MAX)
+				logger.debug(`Waiting for user @${userId} to stop typing (${remaining}ms)`)
+				await new Promise((resolve) => setTimeout(resolve, remaining))
+			}
+
+			// Resolve with the user's context (while clearing for next time)
 			const state = UserStatus[userId]
-
-			// Delay by the remaining debounce time (up to max in case message was sent)
-			const remaining = Math.min(DEBOUNCE_TIME - (Date.now() - state.lastTypedAt), DEBOUNCE_MAX)
-			logger.debug(`Waiting for user @${userId} to stop typing (${remaining}ms)`)
-			await new Promise((resolve) => setTimeout(resolve, remaining))
-		}
-
-		// Resolve with the user's context (while clearing for next time)
-		const state = UserStatus[userId]
-		const context = state?.context ?? []
-		if (state) {
-			state.context = []
-			clearUserTyping(userId)
-		}
-		logger.debug(`User @${userId} stopped typing. Context:`, context)
-		resolve(context)
+			const context = state?.context ?? []
+			if (state) {
+				state.context = []
+				clearUserTyping(userId)
+			}
+			logger.debug(`User @${userId} stopped typing. Context:`, context)
+			resolve(context)
+		})()
 	})
 }
