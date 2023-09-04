@@ -1,5 +1,37 @@
 # robo.js
 
+## 0.9.0
+
+### Minor Changes
+
+- 91dd336: feat(compiler): declaration generation now uses tsconfig.json as base & better defaults
+- 2a599e6: feat: spirits system now enabled by default
+- 8a51502: feat(compiler): new config option to exclude files from being processed
+- e839778: feat: support for config files inside "config" directory
+- f6168a0: feat(compiler): create declaration files for plugin builds
+- 8d0558d: feat(flashcore): support for functional updates in "set" function
+- 65d596a: feat(logger): can now fork logger instances
+- 90de0b0: refactor(cli): parse arguments directly instead of using commander
+- a57cc0b: feat: support for new plugin config files
+- 680ea66: refactor: removed built-in api server functionality in favor of new plugin
+
+### Patch Changes
+
+- 16dd50b: feat: remember command registration errors as warnings until successful retry
+- 0debaa6: patch: faster restarts after failed attempts
+- f39a8a3: fix(cli): correctly parse adjacent cli options without positional values
+- 608fc39: patch: more descriptive logs after failed restarts
+- e6af082: chore: export types for state functions
+- d2a97f2: patch(compiler): use logger levels typescript dianostic output
+- f4c1e58: fix(cli): only apply spirit system in buildasync function for non-plugin builds
+- 1d271cd: fix: continue checking modules when building manifest even if root is empty
+- aab42e9: fix(spirit): listener functions now handle undefined values better
+- 7f20457: fix(portal): delegate plugin and auto metadata to nested entries
+- fb97b95: patch(compiler): improved debug messages & removed redundant check
+- c758ebb: patch: print manifest summary rather than entire content after generating
+- 2b95206: patch(cli): print specific command key that caused registration error
+- 392a36f: fix: correctly merge events when reading plugins manifest
+
 ## 0.8.7
 
 ### Patch Changes
