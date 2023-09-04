@@ -19,7 +19,7 @@ import { findPackagePath, hasProperties, packageJson } from './utils.js'
 import { loadConfig } from '../../core/config.js'
 import { pathToFileURL } from 'node:url'
 import { DefaultGen } from './generate-defaults.js'
-import { color } from '../../core/color.js'
+import { bold, color } from '../../core/color.js'
 import type { PermissionsString } from 'discord.js'
 
 // Global manifest reference
@@ -136,7 +136,7 @@ export async function generateManifest(generatedDefaults: DefaultGen, type: 'plu
 	// Our new source of truth is ready!
 	await fs.mkdir('.robo', { recursive: true })
 	await fs.writeFile(path.join('.robo', 'manifest.json'), JSON.stringify(newManifest, jsonReplacer, 2))
-	logger.debug(`Generated manifest:`, newManifest)
+	logger.debug(`Generated manifest with paths:`, bold(Object.keys(newManifest).join(', ')))
 	return newManifest
 }
 
