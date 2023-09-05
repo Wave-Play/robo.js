@@ -83,7 +83,7 @@ importers:
         specifier: workspace:^
         version: link:../plugin-api
       '@roboplay/robo.js':
-        specifier: workspace:^
+        specifier: 0.9.0
         version: link:../robo
       '@swc/core':
         specifier: ^1.3.44
@@ -101,7 +101,7 @@ importers:
   packages/plugin-api:
     devDependencies:
       '@roboplay/robo.js':
-        specifier: workspace:^
+        specifier: 0.9.0
         version: link:../robo
       '@swc/core':
         specifier: ^1.3.44
