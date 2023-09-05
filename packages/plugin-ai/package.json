@@ -1,7 +1,7 @@
 {
 	"name": "@roboplay/plugin-ai",
 	"description": "",
-	"version": "0.0.0",
+	"version": "0.1.0",
 	"type": "module",
 	"main": ".robo/build/index.js",
 	"scripts": {
