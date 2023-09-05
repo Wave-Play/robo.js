@@ -23,10 +23,10 @@ export default (event: Typing) => {
 
 	// Don't do anything unless currently replying to a user
 	if (!isReplyingToUser(user.id)) {
-		logger.warn(`User @${user.username} started typing but not currently replying`)
+		logger.debug(`User @${user.username} started typing but not currently replying`)
 		return
 	}
-	logger.info(`User @${user.username} started typing`)
+	logger.debug(`User @${user.username} started typing`)
 
 	// Clear any existing debounce
 	const state = UserStatus[event.user.id]

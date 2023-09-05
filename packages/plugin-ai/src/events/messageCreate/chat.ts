@@ -5,8 +5,7 @@ import { GptChatMessage } from '../../core/openai.js'
 import { chunkMessage, replaceUsernamesWithIds } from '../../utils/discord-utils.js'
 import { addUserFollowUp } from '../typingStart/debounce.js'
 import { logger } from '../../core/logger.js'
-
-const CHANNEL_WHITELIST: string[] = []
+import { options as pluginOptions } from '../_start.js'
 
 export default async (message: Message) => {
 	// Make sure the bot isn't responding to itself
@@ -15,7 +14,7 @@ export default async (message: Message) => {
 	}
 
 	// Don't respond unless mentioned unless in whitelisted channel or DM
-	const isOpenConvo = CHANNEL_WHITELIST.includes(message.channel.id) || message.channel.isDMBased()
+	const isOpenConvo = pluginOptions.whitelist?.channelIds?.includes(message.channel.id) || message.channel.isDMBased()
 	if (!message.mentions.users.has(client.user?.id ?? '') && !isOpenConvo) {
 		if (isReplyingToUser(message.author.id)) {
 			addUserFollowUp(message.author.id, message, message.content)
@@ -26,7 +25,7 @@ export default async (message: Message) => {
 
 		return
 	}
-	
+
 	// Target referenced message if replying to someone else
 	let targetMessage = message
 	if (message.reference?.messageId) {
@@ -63,7 +62,7 @@ export default async (message: Message) => {
 	// If currently already replying to this user, add as follow up context
 	if (isReplyingToUser(targetMessage.author.id)) {
 		addUserFollowUp(targetMessage.author.id, targetMessage, processedContent)
-		logger.info(`Added follow up message for ${targetMessage.author.username}`)
+		logger.debug(`Added follow up message for ${targetMessage.author.username}`)
 		return
 	}
 
@@ -85,9 +84,9 @@ export default async (message: Message) => {
 	const userIterator = targetMessage.guild ? targetMessage.guild.members.cache.values() : []
 	for (const user of userIterator) {
 		userMap[user.user.username] = user.user.id
-	} 
+	}
 
-	// Structure messages for GPT 
+	// Structure messages for GPT
 	await AiEngine.chat(
 		messages.map(
 			(message): GptChatMessage => ({
@@ -108,7 +107,7 @@ export default async (message: Message) => {
 					lastMessage = await lastMessage.reply(content)
 				}
 			}
-		} 
+		}
 	)
 }
 

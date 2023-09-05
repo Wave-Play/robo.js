@@ -157,7 +157,7 @@ async function callGpt(messages: GptChatMessage[], options: CallGptOptions) {
 			// Wait for user to finish typing if they're about to follow up
 			newMessages = await waitForTyping(member.user.id)
 			if (newMessages.length > 0) {
-				logger.info(`User typed something new!`, newMessages)
+				logger.debug(`User typed something new!`, newMessages)
 			}
 
 			// If user typed something, add it to the messages and recurse
@@ -186,7 +186,7 @@ async function callGpt(messages: GptChatMessage[], options: CallGptOptions) {
 			// Wait for user to finish typing if they're about to follow up
 			newMessages = await waitForTyping(member.user.id)
 			if (newMessages.length > 0) {
-				logger.info(`User typed something new!`, newMessages)
+				logger.debug(`User typed something new!`, newMessages)
 			}
 
 			// If user typed something, add it to the messages and recurse
@@ -326,7 +326,7 @@ async function getCommandReply(
 	}
 
 	let result = ''
-	logger.wait(`Function result >`, functionResult)
+	logger.debug(`Function result >`, functionResult)
 	if (typeof functionResult === 'string') {
 		result = functionResult
 	} else if (typeof functionResult === 'object') {
