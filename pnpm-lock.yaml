@@ -80,10 +80,10 @@ importers:
   packages/plugin-ai:
     devDependencies:
       '@roboplay/plugin-api':
-        specifier: link:/Users/pkmmte/Documents/GitHub/robo/packages/plugin-api
+        specifier: workspace:^
         version: link:../plugin-api
       '@roboplay/robo.js':
-        specifier: latest
+        specifier: workspace:^
         version: link:../robo
       '@swc/core':
         specifier: ^1.3.44
