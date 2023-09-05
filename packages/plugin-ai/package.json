@@ -1,17 +1,19 @@
 {
-  "name": "@roboplay/plugin-ai",
-  "description": "",
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "NODE_OPTIONS=--enable-source-maps robo build plugin --watch"
-  },
-  "devDependencies": {
-    "@roboplay/plugin-api": "link:/Users/pkmmte/Documents/GitHub/robo/packages/plugin-api",
-    "@roboplay/robo.js": "latest",
-    "@swc/core": "^1.3.44",
-    "@types/node": "^18.14.6",
-    "discord.js": "^14.7.1",
-    "typescript": "^5.0.0"
-  }
+	"name": "@roboplay/plugin-ai",
+	"description": "",
+	"version": "0.0.0",
+	"type": "module",
+	"main": ".robo/build/index.js",
+	"scripts": {
+		"build": "robo build plugin",
+		"dev": "NODE_OPTIONS=--enable-source-maps robo build plugin --watch"
+	},
+	"devDependencies": {
+		"@roboplay/plugin-api": "workspace:^",
+		"@roboplay/robo.js": "workspace:^",
+		"@swc/core": "^1.3.44",
+		"@types/node": "^18.14.6",
+		"discord.js": "^14.7.1",
+		"typescript": "^5.0.0"
+	}
 }
