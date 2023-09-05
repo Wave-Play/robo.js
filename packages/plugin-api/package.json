@@ -4,6 +4,17 @@
 	"version": "0.1.0",
 	"type": "module",
 	"main": ".robo/build/index.js",
+	"license": "MIT",
+	"author": "WavePlay <dev@waveplay.com> (waveplay.com)",
+	"contributors": [
+		"Pkmmte Xeleon <pk@waveplay.com>"
+	],
+	"files": [
+		".robo/",
+		"src/",
+		"LICENSE",
+		"README.md"
+	],
 	"scripts": {
 		"build": "robo build plugin",
 		"dev": "NODE_OPTIONS=--enable-source-maps robo build plugin --watch",
