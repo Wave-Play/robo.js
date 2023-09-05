@@ -5,6 +5,8 @@
 	"workspaces": {
 		"packages": [
 			"packages/create-robo",
+			"packages/plugin-ai",
+			"packages/plugin-api",
 			"packages/plugin-gpt",
 			"packages/plugin-maintenance",
 			"packages/plugin-poll",
