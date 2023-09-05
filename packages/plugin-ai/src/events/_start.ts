@@ -61,5 +61,5 @@ export default (_client: Client, pluginOptions: PluginOptions) => {
 			})
 			gptFunctionHandlers[functionName] = command.handler
 		})
-	logger.warn(`Loaded ${gptFunctions.length} GPT functions:`, gptFunctions)
+	logger.debug(`Loaded ${gptFunctions.length} GPT functions:`, gptFunctions)
 }
