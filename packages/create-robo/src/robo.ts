@@ -37,6 +37,16 @@ const pluginScripts = {
 const optionalPlugins = [
 	new inquirer.Separator('\nOptional Plugins:'),
 	{
+		name: `${chalk.bold('AI')} - Transform your Robo into an engaging chatbot using AI. Supports customized behaviors and Discord commands.`,
+		short: 'AI',
+		value: 'ai'
+	},
+	{
+		name: `${chalk.bold('API')} - Effortlessly create and manage API routes, turning your Robo project into a full-fledged API server.`,
+		short: 'API',
+		value: 'api'
+	},
+	{
 		name: `${chalk.bold('GPT')} - Enable your robo to generate human-like text with the power of GPT.`,
 		short: 'GPT',
 		value: 'gpt'
@@ -300,6 +310,30 @@ export default class Robo {
 		}
 
 		const plugins: Plugin[] = []
+		if (features.includes('ai')) {
+			packageJson.dependencies['@roboplay/plugin-ai'] = '^0.1.0'
+			plugins.push([
+				'@roboplay/plugin-ai',
+				{
+					commands: false,
+					openaiKey: 'YOUR_OPENAI_KEY_HERE',
+					systemMessage: 'You are a helpful Robo.',
+					whitelist: {
+						channelIds: []
+					}
+				}
+			])
+		}
+		if (features.includes('api')) {
+			packageJson.dependencies['@roboplay/plugin-api'] = '^0.1.0'
+			plugins.push([
+				'@roboplay/plugin-api',
+				{
+					cors: true,
+					port: 3000
+				}
+			])
+		}
 		if (features.includes('gpt')) {
 			packageJson.dependencies['@roboplay/plugin-gpt'] = '^1.0.0'
 			plugins.push([
