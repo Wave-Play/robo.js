@@ -1,5 +1,11 @@
 # create-robo
 
+## 0.5.3
+
+### Patch Changes
+
+- 58f61ee: chore: ai and api plugin options
+
 ## 0.5.2
 
 ### Patch Changes
