@@ -2,6 +2,7 @@ import { IncomingMessage, ServerResponse } from 'node:http'
 import url from 'node:url'
 import { parse } from 'node:querystring'
 import { logger } from '@roboplay/robo.js'
+import { pluginOptions } from '../events/_start.js'
 import type { HttpMethod, RoboReply, RoboRequest } from './types.js'
 import type { Router } from './router.js'
 
@@ -10,6 +11,20 @@ const MAX_BODY_SIZE = 5 * 1024 * 1024 // 5MB
 export function createServerHandler(router: Router) {
 	return async (req: IncomingMessage, res: ServerResponse<IncomingMessage>) => {
 		const parsedUrl = url.parse(req.url, true)
+
+		if (pluginOptions.cors) {
+			// CORS Headers (to allow any origin, any method, and any header)
+			res.setHeader('Access-Control-Allow-Origin', '*')
+			res.setHeader('Access-Control-Allow-Methods', '*')
+			res.setHeader('Access-Control-Allow-Headers', '*')
+
+			// Preflight request. Reply successfully:
+			if (req.method === 'OPTIONS') {
+				res.writeHead(200)
+				res.end()
+				return
+			}
+		}
 
 		// Parse request body if applicable
 		let body: Record<string, unknown>

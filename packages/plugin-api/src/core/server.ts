@@ -10,7 +10,7 @@ let _server: http.Server | null = null
 const Server = {
 	isRunning: () => _isRunning,
 
-	start: (port = 3000): Promise<void> => {
+	start: (port: number): Promise<void> => {
 		return new Promise((resolve) => {
 			if (_server) {
 				logger.warn('Server is already up and running. No action taken.')
@@ -30,8 +30,10 @@ const Server = {
 			// Create server instance
 			_server = http.createServer(createServerHandler(_router))
 
+			// Handle server errors
 			_server.on('error', (error: Error) => logger.error(`Server error: ${error}`))
 
+			// Start server
 			_isRunning = true
 			_server.listen(port, () => {
 				logger.ready(`🚀 Server is live at ${composeColors(color.bold, color.underline)(`http://localhost:${port}`)}`)
