@@ -16,6 +16,15 @@
 		"LICENSE",
 		"README.md"
 	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Wave-Play/robo.git",
+		"directory": "packages/plugin-ai"
+	},
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://registry.npmjs.org/"
+	},
 	"scripts": {
 		"build": "robo build plugin",
 		"dev": "NODE_OPTIONS=--enable-source-maps robo build plugin --watch"
