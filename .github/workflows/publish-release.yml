@@ -34,7 +34,7 @@ jobs:
 
       # https://github.com/pnpm/pnpm/issues/1801
       - name: PNPM Stubs
-        run: echo "#! /usr/bin/env node" > ./packages/plugin-api/node_modules/.bin/robo
+        run: mkdir -p ./packages/plugin-api/node_modules/.bin/ && echo "#! /usr/bin/env node" > ./packages/plugin-api/node_modules/.bin/robo
 
       - name: PNPM install
         run: pnpm install
