@@ -2,6 +2,7 @@
 	"name": "@roboplay/plugin-ai",
 	"description": "",
 	"version": "0.1.0",
+	"private": false,
 	"type": "module",
 	"main": ".robo/build/index.js",
 	"license": "MIT",
