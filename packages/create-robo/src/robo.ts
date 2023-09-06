@@ -67,10 +67,25 @@ interface PackageJson {
 	name: string
 	description: string
 	version: string
+	private: boolean
 	engines?: {
 		node: string
 	}
 	type: 'module' | 'commonjs'
+	main?: string
+	license?: string
+	author?: string
+	contributors?: string[]
+	files?: string[]
+	repository?: {
+		directory: string
+		type: string
+		url: string
+	}
+	publishConfig?: {
+		access: 'public' | 'restricted'
+		registry: string
+	}
 	scripts: Record<string, string>
 	dependencies: Record<string, string>
 	devDependencies: Record<string, string>
@@ -223,6 +238,16 @@ export default class Robo {
 			description: '',
 			version: '1.0.0',
 			type: 'module',
+			private: !this._isPlugin,
+			main: this._isPlugin ? '.robo/build/index.js' : undefined,
+			license: this._isPlugin ? 'MIT' : undefined,
+			author: this._isPlugin ? `Your Name <email>` : undefined,
+			contributors: this._isPlugin ? [`Your Name <email>`] : undefined,
+			files: this._isPlugin ? ['.robo/', 'src/', 'LICENSE', 'README.md'] : undefined,
+			publishConfig: this._isPlugin ? {
+				access: 'public',
+				registry: 'https://registry.npmjs.org/'
+			} : undefined,
 			scripts: this._isPlugin ? pluginScripts : roboScripts,
 			dependencies: {},
 			devDependencies: {}
@@ -235,6 +260,13 @@ export default class Robo {
 		} else {
 			packageJson.devDependencies['@roboplay/robo.js'] = 'latest'
 			packageJson.devDependencies['discord.js'] = '^14.7.1'
+
+			// Clean up undefined fields from packageJson
+			Object.keys(packageJson).forEach((key) => {
+				if (packageJson[key as keyof PackageJson] === undefined) {
+					delete packageJson[key as keyof PackageJson]
+				}
+			})
 		}
 
 		// Generate customized documentation
