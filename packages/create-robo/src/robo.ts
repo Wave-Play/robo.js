@@ -354,8 +354,8 @@ export default class Robo {
 
 		// Create the robo.mjs file
 		const roboConfig = generateRoboConfig(plugins)
-		await fs.mkdir(path.join(this._workingDir, '.config'), { recursive: true })
-		await fs.writeFile(path.join(this._workingDir, '.config', 'robo.mjs'), roboConfig)
+		await fs.mkdir(path.join(this._workingDir, 'config'), { recursive: true })
+		await fs.writeFile(path.join(this._workingDir, 'config', 'robo.mjs'), roboConfig)
 
 		// Sort scripts, dependencies and devDependencies alphabetically because this is important to me
 		packageJson.scripts = sortObjectKeys(packageJson.scripts)
