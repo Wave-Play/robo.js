@@ -31,7 +31,7 @@ const roboScripts = {
 
 const pluginScripts = {
 	build: 'robo build plugin',
-	dev: 'robo build plugin --watch'
+	dev: 'NODE_OPTIONS=--enable-source-maps robo build plugin --watch'
 }
 
 const optionalPlugins = [
