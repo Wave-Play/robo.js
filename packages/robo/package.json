@@ -15,6 +15,7 @@
 		"robo": "dist/cli/index.js"
 	},
 	"type": "module",
+	"license": "MIT",
 	"files": [
 		"dist/",
 		"src/",
