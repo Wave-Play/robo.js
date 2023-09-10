@@ -4,7 +4,15 @@ import { spawn } from 'child_process'
 import { logger } from '../../core/logger.js'
 import { DEFAULT_CONFIG, FLASHCORE_KEYS } from '../../core/constants.js'
 import { loadConfig, loadConfigPath } from '../../core/config.js'
-import { IS_WINDOWS, cmd, filterExistingPaths, getPkgManager, getWatchedPlugins, timeout } from '../utils/utils.js'
+import {
+	IS_WINDOWS,
+	cmd,
+	filterExistingPaths,
+	getPkgManager,
+	getWatchedPlugins,
+	packageJson,
+	timeout
+} from '../utils/utils.js'
 import path from 'node:path'
 import url from 'node:url'
 import { getStateSave } from '../../core/state.js'
@@ -219,6 +227,13 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 			isUpdating = false
 		}
 	})
+
+	// Check for updates
+	try {
+		await checkUpdates()
+	} catch (error) {
+		logger.warn(error)
+	}
 }
 
 /**
@@ -292,6 +307,25 @@ export async function buildAsync(command: string | null, config: Config, verbose
 	})
 }
 
+async function checkUpdates() {
+	// Check NPM registry for updates
+	const response = await fetch(`https://registry.npmjs.org/${packageJson.name}/latest`)
+	const latestVersion = (await response.json()).version
+
+	// Compare versions
+	if (packageJson.version !== latestVersion) {
+		// Prepare commands
+		const packageManager = getPkgManager()
+		const commandName = packageManager === 'npm' ? 'install' : 'add'
+		const command = `${packageManager} ${commandName} ${packageJson.name}`
+
+		// Print update message
+		const highlightColor = composeColors(color.green, color.bold)
+		const highlight = highlightColor(`A new version of Robo.js is available! (v${packageJson.version})`)
+		logger.info(`${highlight} Run ${color.bold(command)} to update.`)
+	}
+}
+
 async function rebuildRobo(spiritId: string, config: Config, verbose: boolean, changes: Change[]) {
 	// Guard against accidentally killing the new spirit
 	const roboSpirit = spiritId
@@ -322,7 +356,7 @@ async function rebuildRobo(spiritId: string, config: Config, verbose: boolean, c
 			isTerminated = true
 			resolve()
 		}
-		
+
 		if (spirit?.isTerminated) {
 			return callback()
 		}
@@ -347,10 +381,7 @@ async function rebuildRobo(spiritId: string, config: Config, verbose: boolean, c
 
 	// Wait for the bot to exit or force abort
 	const awaitStop = Promise.race([terminate, forceAbort])
-	const [success] = await Promise.all([
-		buildAsync(null, config, verbose, changes),
-		awaitStop
-	])
+	const [success] = await Promise.all([buildAsync(null, config, verbose, changes), awaitStop])
 
 	// Return null for the bot if the build failed so we can retry later
 	if (!success) {
