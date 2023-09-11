@@ -1,6 +1,6 @@
 import { fork } from 'child_process'
 import { logger } from '../../core/logger.js'
-import { locateInHierarchy } from './utils.js'
+import { getPackageManager, locateInHierarchy } from './utils.js'
 import type { ChildProcess } from 'child_process'
 import type { RoboMessage } from '../../types/index.js'
 
@@ -21,8 +21,9 @@ export function run(): Promise<ChildProcess> {
 	return new Promise((resolve, reject) => {
 		locateInHierarchy(ENTRY_FILE).then((entryFile) => {
 			logger.debug(`> ${entryFile} --enable-source-maps`)
+			const isBun = getPackageManager() === 'bun'
 			const childProcess = fork(entryFile, {
-				execArgv: ['--enable-source-maps'],
+				execArgv: isBun ? [] : ['--enable-source-maps'],
 				stdio: 'inherit'
 			})
 			_currentProcess = childProcess

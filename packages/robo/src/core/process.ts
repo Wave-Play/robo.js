@@ -79,10 +79,14 @@ export function registerProcessEvents() {
 	})
 
 	// Tell the parent process we're ready to receive messages
-	process.send?.({ type: 'ready' })
+	if (typeof process.send === 'function') {
+		process.send?.({ type: 'ready' })
+	}
 
 	// Backup message with delay to prevent race conditions
 	setTimeout(() => {
-		process.send?.({ type: 'ready', delayed: true })
+		if (typeof process.send === 'function') {
+			process.send?.({ type: 'ready', delayed: true })
+		}
 	}, 1000)
 }

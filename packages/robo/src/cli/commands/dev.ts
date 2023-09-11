@@ -8,7 +8,7 @@ import {
 	IS_WINDOWS,
 	cmd,
 	filterExistingPaths,
-	getPkgManager,
+	getPackageManager,
 	getWatchedPlugins,
 	packageJson,
 	timeout
@@ -260,7 +260,7 @@ export async function buildAsync(command: string | null, config: Config, verbose
 				.catch(() => resolve(false))
 		} else {
 			const args = command.split(' ')
-			let pkgManager = getPkgManager()
+			let pkgManager = getPackageManager()
 
 			// Unfortunately, Windows has issues recursively spawning processes via PNPM
 			// If you're reading this and know how to fix it, please open a PR!
@@ -334,7 +334,7 @@ async function checkUpdates(config: Config) {
 	// Compare versions
 	if (packageJson.version !== latestVersion) {
 		// Prepare commands
-		const packageManager = getPkgManager()
+		const packageManager = getPackageManager()
 		const commandName = packageManager === 'npm' ? 'install' : 'add'
 		const command = `${packageManager} ${commandName} ${packageJson.name}`
 
