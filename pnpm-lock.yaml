@@ -67,6 +67,9 @@ importers:
       '@types/tar':
         specifier: ^6.1.4
         version: 6.1.5
+      chokidar-cli:
+        specifier: ^3.0.0
+        version: 3.0.0
       discord.js:
         specifier: ^14.10.2
         version: 14.10.2
