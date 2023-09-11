@@ -403,7 +403,7 @@ export default class Robo {
 		logger.debug(`Writing Robo config file...`)
 		await fs.mkdir(path.join(this._workingDir, 'config'), { recursive: true })
 		await fs.writeFile(path.join(this._workingDir, 'config', 'robo.mjs'), roboConfig)
-		logger.debug(`Finished writing Robo config file:`, roboConfig)
+		logger.debug(`Finished writing Robo config file:\n`, roboConfig)
 
 		// Sort scripts, dependencies and devDependencies alphabetically because this is important to me
 		packageJson.scripts = sortObjectKeys(packageJson.scripts)

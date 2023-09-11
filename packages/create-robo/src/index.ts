@@ -5,6 +5,7 @@ import { createRequire } from 'node:module'
 import path from 'node:path'
 import Robo from './robo.js'
 import { logger } from './logger.js'
+import { getPackageManager } from './utils.js'
 
 // Read the version from the package.json file
 const require = createRequire(import.meta.url)
@@ -31,6 +32,9 @@ new Command('create-robo <projectName>')
 			level: options.verbose ? 'debug' : 'info'
 		}).debug(`Creating new Robo.js ${options.plugin ? 'plugin' : 'project'}...`)
 		logger.debug(`Using options: ${JSON.stringify(options)}`)
+		logger.debug(`Package manager:`, getPackageManager())
+		logger.debug(`create-robo version:`, packageJson.version)
+		logger.debug(`Current working directory:`, process.cwd())
 
 		// Infer project name from current directory if it was not provided
 		let projectName = args[0]
