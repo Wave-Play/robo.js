@@ -89,6 +89,8 @@ interface PackageJson {
 	scripts: Record<string, string>
 	dependencies: Record<string, string>
 	devDependencies: Record<string, string>
+	peerDependencies?: Record<string, string>
+	peerDependenciesMeta?: Record<string, Record<string, unknown>>
 }
 
 export default class Robo {
@@ -260,6 +262,14 @@ export default class Robo {
 		} else {
 			packageJson.devDependencies['@roboplay/robo.js'] = 'latest'
 			packageJson.devDependencies['discord.js'] = '^14.7.1'
+			packageJson.peerDependencies = {
+				'@roboplay/robo.js': '^0.9.0'
+			}
+			packageJson.peerDependenciesMeta = {
+				'@roboplay/robo.js': {
+					optional: false
+				}
+			}
 
 			// Clean up undefined fields from packageJson
 			Object.keys(packageJson).forEach((key) => {
