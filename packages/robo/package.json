@@ -1,9 +1,19 @@
 {
 	"name": "@roboplay/robo.js",
-	"version": "0.9.0-1",
+	"version": "0.9.1",
 	"private": false,
 	"description": "Turbocharge Discord.js with effortless power!",
-	"keywords": ["discord", "bot", "framework", "discord.js", "javascript", "typescript", "waveplay", "roboplay", "discordjs"],
+	"keywords": [
+		"discord",
+		"bot",
+		"framework",
+		"discord.js",
+		"javascript",
+		"typescript",
+		"waveplay",
+		"roboplay",
+		"discordjs"
+	],
 	"main": "dist/index.js",
 	"engines": {
 		"node": ">=18.0.0"

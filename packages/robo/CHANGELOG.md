@@ -1,5 +1,14 @@
 # robo.js
 
+## 0.9.1
+
+### Patch Changes
+
+- 2583050: feat: bun support
+- 0cc8e56: patch: no need to parse .env file in bun
+- 9d9eb0a: feat: customizable update check interval
+- 453eac8: feat: check for framework updates in dev mode
+
 ## 0.9.0
 
 ### Minor Changes

@@ -1,5 +1,21 @@
 # create-robo
 
+## 0.6.0
+
+### Minor Changes
+
+- 93c1637: feat: bun support
+- 399804a: feat: generate additional package.json fields for plugins
+- 14f6ef2: chore: updated auto-generated docs
+- 951b816: patch: more extensive debug logging
+- abe2704: refactor: enable source maps when building plugins in dev mode
+- d5699cb: refactor: generate config files in new /config directory
+- c5ebd51: feat: list robo.js as a peer dependency when creating plugins
+
+### Patch Changes
+
+- ff33102: patch: more extensive debug logging
+
 ## 0.5.3
 
 ### Patch Changes
