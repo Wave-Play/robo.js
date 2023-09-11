@@ -7,7 +7,8 @@
 		"node": ">=18.0.0"
 	},
 	"scripts": {
-		"build": "tsup"
+		"build": "tsup",
+		"dev": "chokidar \"src/**/*.ts\" -d 1000 -c \"pnpm build\" --initial"
 	},
 	"bin": {
 		"create-robo": "dist/index.js"
@@ -50,6 +51,7 @@
 		"@types/inquirer": "^9.0.3",
 		"@types/node": "^18.16.3",
 		"@types/tar": "^6.1.4",
+		"chokidar-cli": "^3.0.0",
 		"discord.js": "^14.10.2",
 		"tsup": "6.7.0",
 		"typescript": "5.0.2"
