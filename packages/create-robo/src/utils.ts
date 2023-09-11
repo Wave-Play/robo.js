@@ -4,7 +4,7 @@ import { logger } from './logger.js'
 import type { SpawnOptions } from 'node:child_process'
 import type { Plugin } from '@roboplay/robo.js'
 
-type PackageManager = 'npm' | 'pnpm' | 'yarn'
+type PackageManager = 'npm' | 'bun' | 'pnpm' | 'yarn'
 
 export const ESLINT_IGNORE = `node_modules
 .config
@@ -87,7 +87,9 @@ export function generateRoboConfig(plugins: Plugin[]) {
 export function getPackageManager(): PackageManager {
 	const userAgent = process.env.npm_config_user_agent
 
-	if (userAgent?.startsWith('yarn')) {
+	if (userAgent?.startsWith('bun')) {
+		return 'bun'
+	} else if (userAgent?.startsWith('yarn')) {
 		return 'yarn'
 	} else if (userAgent?.startsWith('pnpm')) {
 		return 'pnpm'
