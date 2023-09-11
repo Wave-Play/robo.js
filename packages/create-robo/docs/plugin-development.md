@@ -24,16 +24,16 @@ To test your plugin during development, you can `npm install` it from your local
 npm install /path/to/{{projectName}}
 ```
 
-Replace `/path/to/{{projectName}}` with the actual path to your plugin's directory. Remember to build your plugin between changes using the `npm run build` command.
+Replace `/path/to/{{projectName}}` with the actual path to your plugin's directory. Remember to build your plugin between changes using the `npx robo build` command.
 
-You can use `npm run dev` (set up as "dev" in your generated package.json scripts) to automatically rebuild your plugin when changes are detected. This is the recommended way to develop your plugin, as it provides a smoother development experience. If your test robo is also running in dev mode, it will auto-reload when your plugin is rebuilt.
+You can use `npx robo dev` to automatically rebuild your plugin when changes are detected. This is the recommended way to develop your plugin, as it provides a smoother development experience. If your test robo is also running in dev mode, it will auto-reload when your plugin is rebuilt.
 
 ## Building the Plugin 🔨
 
 Robo comes with a built-in compiler to help you package your plugin for distribution. To build your plugin, run the following command:
 
 ```bash
-npm run build
+npx robo build
 ```
 
 This will compile your plugin and prepare it for publishing to NPM.

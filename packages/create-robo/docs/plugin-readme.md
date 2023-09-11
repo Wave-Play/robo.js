@@ -12,7 +12,7 @@ To install this plugin, navigate to your Robo project's directory and run the fo
 npm install {{projectName}}
 ```
 
-Next, add the plugin to your Robo's configuration file, typically located at `.config/robo.mjs`. Add the following lines:
+Next, add the plugin to your Robo's configuration file, typically located at `config/robo.mjs`. Add the following lines:
 
 ```javascript
 /**
@@ -34,6 +34,6 @@ export default {
 }
 ```
 
-That's it! Your Robo now has access to the additional features provided by this plugin. The plugin's commands and events are automatically linked, and if your Robo requires any additional bot permissions, they will be inherited when running `robo invite` to generate an invite link.
+That's it! Your Robo now has access to the additional features provided by this plugin. The plugin's commands and events are automatically linked, and if your Robo requires any additional bot permissions, they will be inherited when running `npx robo invite` to generate an invite link.
 
 Enjoy your enhanced Robo! 🚀
