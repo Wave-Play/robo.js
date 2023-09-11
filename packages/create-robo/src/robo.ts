@@ -271,6 +271,7 @@ export default class Robo {
 
 		// Generate customized documentation
 		if (this._isPlugin) {
+			logger.debug(`Generating plugin documentation...`)
 			let pluginName = this._name
 				.replace(/[^a-zA-Z0-9]/g, ' ')
 				.split(' ')
@@ -291,6 +292,7 @@ export default class Robo {
 			const customDevelopment = development.replaceAll('{{projectName}}', this._name)
 			await fs.writeFile(path.join(this._workingDir, 'DEVELOPMENT.md'), customDevelopment)
 		} else {
+			logger.debug(`Generating Robo documentation...`)
 			const readme = await fs.readFile(path.join(__dirname, '../docs/robo-readme.md'), 'utf-8')
 			const customReadme = readme.replaceAll('{{projectName}}', this._name)
 			await fs.writeFile(path.join(this._workingDir, 'README.md'), customReadme)
@@ -302,6 +304,8 @@ export default class Robo {
 			packageJson.devDependencies['@types/node'] = '^18.14.6'
 			packageJson.devDependencies['typescript'] = '^5.0.0'
 		}
+
+		logger.debug(`Adding features:`, features)
 		if (features.includes('eslint')) {
 			packageJson.devDependencies['eslint'] = '^8.36.0'
 			packageJson.scripts['lint'] = runPrefix + 'lint:eslint'
@@ -386,8 +390,10 @@ export default class Robo {
 
 		// Create the robo.mjs file
 		const roboConfig = generateRoboConfig(plugins)
+		logger.debug(`Writing Robo config file...`)
 		await fs.mkdir(path.join(this._workingDir, 'config'), { recursive: true })
 		await fs.writeFile(path.join(this._workingDir, 'config', 'robo.mjs'), roboConfig)
+		logger.debug(`Finished writing Robo config file:`, roboConfig)
 
 		// Sort scripts, dependencies and devDependencies alphabetically because this is important to me
 		packageJson.scripts = sortObjectKeys(packageJson.scripts)
@@ -395,6 +401,7 @@ export default class Robo {
 		packageJson.devDependencies = sortObjectKeys(packageJson.devDependencies)
 
 		// Order scripts, dependencies and devDependencies
+		logger.debug(`Writing package.json file...`)
 		await fs.writeFile(path.join(this._workingDir, 'package.json'), JSON.stringify(packageJson, null, 2))
 
 		// Install dependencies using the package manager that triggered the command

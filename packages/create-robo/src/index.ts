@@ -40,9 +40,11 @@ new Command('create-robo <projectName>')
 			projectName = process.cwd().split(path.sep).pop()
 			useSameDirectory = true
 		}
+		logger.debug(`Project name: ${projectName}`)
 
 		// Ask the user for Robo name directly as a fallback
 		if (!projectName) {
+			logger.debug(`Project name not provided, asking user...`)
 			const answers = await inquirer.prompt([
 				{
 					type: 'input',
@@ -61,6 +63,7 @@ new Command('create-robo <projectName>')
 		}
 
 		// Create a new Robo project prototype
+		logger.debug(`Creating Robo prototype...`)
 		const robo = new Robo(projectName, options.plugin, useSameDirectory)
 
 		if (useSameDirectory) {
@@ -69,6 +72,7 @@ new Command('create-robo <projectName>')
 		logger.log('')
 
 		if (options.template) {
+			logger.debug(`Downloading template: ${options.template}`)
 			await robo.downloadTemplate(options.template)
 		} else {
 			// Verify plugin status if it sounds like one
@@ -90,12 +94,15 @@ new Command('create-robo <projectName>')
 			await robo.createPackage(selectedFeaturesOrDefaults)
 
 			// Determine if TypeScript is selected and copy the corresponding template files
+			logger.debug(`Copying template files...`)
 			await robo.copyTemplateFiles('')
+			logger.debug(`Finished copying template files!`)
 		}
 
 		// Ask the user for their Discord credentials (token and client ID) and store them for later use
 		// Skip this step if the user is creating a plugin
 		if (!robo.isPlugin) {
+			logger.debug(`Asking for Discord credentials...`)
 			await robo.askForDiscordCredentials()
 		}
 		logger.log('')
