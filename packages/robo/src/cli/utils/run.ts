@@ -1,8 +1,8 @@
 import { fork } from 'child_process'
 import { logger } from '../../core/logger.js'
+import { locateInHierarchy } from './utils.js'
 import type { ChildProcess } from 'child_process'
 import type { RoboMessage } from '../../types/index.js'
-import { locateInHierarchy } from './utils.js'
 
 const ENTRY_FILE = '/node_modules/@roboplay/robo.js/dist/entry.js'
 
