@@ -40,6 +40,9 @@ export interface Config {
 		commandRegistration?: number
 		lifecycle?: number
 	}
+
+	/** How often to check for updates to Robo.js in seconds. Default: 1 hour */
+	updateCheckInterval?: number
 }
 
 export type Scope =

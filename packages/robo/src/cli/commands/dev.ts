@@ -230,7 +230,7 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 
 	// Check for updates
 	try {
-		await checkUpdates()
+		await checkUpdates(config)
 	} catch (error) {
 		logger.warn(error)
 	}
@@ -307,10 +307,29 @@ export async function buildAsync(command: string | null, config: Config, verbose
 	})
 }
 
-async function checkUpdates() {
+async function checkUpdates(config: Config) {
+	const { updateCheckInterval = 60 * 60 } = config
+
+	// Ignore if disabled
+	if (updateCheckInterval <= 0) {
+		return
+	}
+
+	// Check if update check is due
+	const lastUpdateCheck = (await Flashcore.get<number>(FLASHCORE_KEYS.lastUpdateCheck)) ?? 0
+	const now = Date.now()
+	const isDue = now - lastUpdateCheck > updateCheckInterval * 1000
+
+	if (!isDue) {
+		return
+	}
+
 	// Check NPM registry for updates
 	const response = await fetch(`https://registry.npmjs.org/${packageJson.name}/latest`)
 	const latestVersion = (await response.json()).version
+
+	// Update last update check time
+	await Flashcore.set(FLASHCORE_KEYS.lastUpdateCheck, now)
 
 	// Compare versions
 	if (packageJson.version !== latestVersion) {
