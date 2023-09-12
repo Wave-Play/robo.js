@@ -6,6 +6,7 @@ import path from 'node:path'
 import Robo from './robo.js'
 import { logger } from './logger.js'
 import { getPackageManager } from './utils.js'
+import chalk from 'chalk'
 
 // Read the version from the package.json file
 const require = createRequire(import.meta.url)
@@ -35,6 +36,9 @@ new Command('create-robo <projectName>')
 		logger.debug(`Package manager:`, getPackageManager())
 		logger.debug(`create-robo version:`, packageJson.version)
 		logger.debug(`Current working directory:`, process.cwd())
+
+		// Check for updates
+		await checkUpdates()
 
 		// Infer project name from current directory if it was not provided
 		let projectName = args[0]
@@ -113,3 +117,30 @@ new Command('create-robo <projectName>')
 		logger.ready(`Successfully created ${projectName}. Happy coding!`)
 	})
 	.parse(process.argv)
+
+async function checkUpdates() {
+	// Check NPM registry for updates
+	logger.debug(`Checking for updates...`)
+	const response = await fetch(`https://registry.npmjs.org/${packageJson.name}/latest`)
+	const latestVersion = (await response.json()).version
+	logger.debug(`Latest version on NPM Registry: ${latestVersion}`)
+
+	// Compare versions
+	if (packageJson.version !== latestVersion) {
+		// Prepare commands
+		const packageManager = getPackageManager()
+		let commandName = 'npx'
+		if (packageManager === 'yarn') {
+			commandName = 'yarn dlx'
+		} else if (packageManager === 'pnpm') {
+			commandName = 'pnpx'
+		} else if (packageManager === 'bun') {
+			commandName = 'bunx'
+		}
+		const command = `${commandName} ${packageJson.name}@${latestVersion}`
+
+		// Print update message
+		logger.info(chalk.bold.green(`A new version of ${chalk.bold('create-robo')} is available! (v${latestVersion})`))
+		logger.info(`Run as ${chalk.bold(command)} instead to get the latest updates.`)
+	}
+}
