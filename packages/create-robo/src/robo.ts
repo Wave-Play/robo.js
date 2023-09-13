@@ -439,7 +439,7 @@ export default class Robo {
 		}
 	}
 
-	async askForDiscordCredentials(): Promise<void> {
+	async askForDiscordCredentials(features: string[]): Promise<void> {
 		const discordPortal = chalk.bold('Discord Developer Portal:')
 		const discordPortalUrl = chalk.blue.underline('https://discord.com/developers/applications')
 		const officialGuide = chalk.bold('Official Guide:')
@@ -473,19 +473,16 @@ export default class Robo {
 			}
 		}
 
-		// Helper function to update or add a variable
-		const updateOrAddVariable = (content: string, variable: string, value: string): string => {
-			const regex = new RegExp(`(${variable}\\s*=)(.*)`, 'i')
-			if (regex.test(content)) {
-				return content.replace(regex, `$1${value}`)
-			} else {
-				return `${content}${variable}="${value}"\n`
-			}
-		}
-
 		// Update DISCORD_TOKEN and DISCORD_CLIENT_ID variables
 		envContent = updateOrAddVariable(envContent, 'DISCORD_CLIENT_ID', discordClientId ?? '')
 		envContent = updateOrAddVariable(envContent, 'DISCORD_TOKEN', discordToken ?? '')
+
+		if (features.includes('ai') || features.includes('gpt')) {
+			envContent = updateOrAddVariable(envContent, 'OPENAI_KEY', '')
+		}
+		if (features.includes('api')) {
+			envContent = updateOrAddVariable(envContent, 'PORT', '3000')
+		}
 
 		await fs.writeFile(envFilePath, envContent)
 	}

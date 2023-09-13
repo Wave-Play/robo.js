@@ -79,6 +79,7 @@ new Command('create-robo <projectName>')
 		}
 		logger.log('')
 
+		let selectedFeaturesOrDefaults: string[] = []
 		if (options.template) {
 			logger.debug(`Downloading template: ${options.template}`)
 			await robo.downloadTemplate(options.template)
@@ -98,7 +99,7 @@ new Command('create-robo <projectName>')
 			}
 
 			// Get user input to determine which features to include or use the recommended defaults
-			const selectedFeaturesOrDefaults = await robo.getUserInput()
+			selectedFeaturesOrDefaults = await robo.getUserInput()
 			await robo.createPackage(selectedFeaturesOrDefaults)
 
 			// Determine if TypeScript is selected and copy the corresponding template files
@@ -111,7 +112,7 @@ new Command('create-robo <projectName>')
 		// Skip this step if the user is creating a plugin
 		if (!robo.isPlugin) {
 			logger.debug(`Asking for Discord credentials...`)
-			await robo.askForDiscordCredentials()
+			await robo.askForDiscordCredentials(selectedFeaturesOrDefaults)
 		}
 		logger.log('')
 		logger.ready(`Successfully created ${projectName}. Happy coding!`)
