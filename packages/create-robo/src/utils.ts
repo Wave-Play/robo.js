@@ -2,7 +2,6 @@ import { spawn } from 'node:child_process'
 import chalk from 'chalk'
 import { logger } from './logger.js'
 import type { SpawnOptions } from 'node:child_process'
-import type { Plugin } from '@roboplay/robo.js'
 
 type PackageManager = 'npm' | 'bun' | 'pnpm' | 'yarn'
 
@@ -21,7 +20,7 @@ export const PRETTIER_CONFIG = `module.exports = {
 	useTabs: true
 }\n`
 
-const ROBO_CONFIG = `// @ts-check
+export const ROBO_CONFIG = `// @ts-check
 
 /**
  * @type {import('@roboplay/robo.js').Config}
@@ -33,8 +32,7 @@ export default {
 			'GuildMessages',
 			'MessageContent'
 		]
-	},
-	plugins: {{plugins}}
+	}
 }\n`
 
 /**
@@ -75,11 +73,6 @@ export function exec(command: string, options?: SpawnOptions) {
 	})
 }
 
-export function generateRoboConfig(plugins: Plugin[]) {
-	const stringifiedPlugins = JSON.stringify(plugins, null, 2).replace(/\n/g, '\n  ')
-	return ROBO_CONFIG.replace('{{plugins}}', stringifiedPlugins)
-}
-
 /**
  * Get the package manager used to run this CLI
  * This allows developers to use their preferred package manager seamlessly
@@ -105,6 +98,52 @@ export function hasProperties<T extends Record<string, unknown>>(
 	return typeof obj === 'object' && obj !== null && props.every((prop) => prop in obj)
 }
 
+/**
+ * Stringifies an object, array, or primitive to a readable string.
+ * Handles special cases like omitting optional quotes and supporting environment variables.
+ *
+ * @param obj - The object, array, or primitive to stringify.
+ * @param indentation - The current indentation level (used for recursion).
+ * @returns A string representation of the object, array, or primitive.
+ */
+export function prettyStringify(obj: unknown, indentation = 0): string {
+	if (obj === null || obj === undefined || typeof obj === 'number' || typeof obj === 'boolean') {
+		return `${obj}`
+	}
+
+	if (typeof obj === 'string') {
+		if (obj.startsWith('process.env.')) {
+			return obj
+		}
+		return `'${obj}'`
+	}
+
+	if (Array.isArray(obj)) {
+		if (obj.length === 0) {
+			return '[]'
+		}
+		const arrElements = obj.map((value) => `${'\t'.repeat(indentation + 1)}${prettyStringify(value, indentation + 1)}`)
+		return `[\n${arrElements.join(',\n')}\n${'\t'.repeat(indentation)}]`
+	}
+
+	if (typeof obj === 'object') {
+		const objKeys = Object.keys(obj as Record<string, unknown>)
+		if (objKeys.length === 0) {
+			return '{}'
+		}
+		const objElements = objKeys.map((key) => {
+			const formattedKey = /^[a-zA-Z_$][a-zA-Z_$0-9]*$/.test(key) ? key : `"${key}"`
+			return `${'\t'.repeat(indentation + 1)}${formattedKey}: ${prettyStringify(
+				(obj as Record<string, unknown>)[key],
+				indentation + 1
+			)}`
+		})
+		return `{\n${objElements.join(',\n')}\n${'\t'.repeat(indentation)}}`
+	}
+
+	return ''
+}
+
 export function sortObjectKeys(obj: Record<string, string>) {
 	return Object.keys(obj)
 		.sort()
@@ -112,4 +151,15 @@ export function sortObjectKeys(obj: Record<string, string>) {
 			acc[key] = obj[key]
 			return acc
 		}, {} as Record<string, string>)
+}
+
+// Helper function to update or add a variable
+export function updateOrAddVariable(content: string, variable: string, value: string): string {
+	const regex = new RegExp(`(${variable}\\s*=)(.*)`, 'i')
+
+	if (regex.test(content)) {
+		return content.replace(regex, `$1${value}`)
+	} else {
+		return `${content}${variable}="${value}"\n`
+	}
 }

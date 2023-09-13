@@ -6,15 +6,16 @@ import { fileURLToPath } from 'node:url'
 import {
 	ESLINT_IGNORE,
 	PRETTIER_CONFIG,
+	ROBO_CONFIG,
 	cmd,
 	exec,
-	generateRoboConfig,
 	getPackageManager,
 	hasProperties,
-	sortObjectKeys
+	prettyStringify,
+	sortObjectKeys,
+	updateOrAddVariable
 } from './utils.js'
 import { logger } from './logger.js'
-import type { Plugin } from '@roboplay/robo.js'
 import { RepoInfo, downloadAndExtractRepo, getRepoInfo, hasRepo } from './templates.js'
 import retry from 'async-retry'
 
@@ -37,12 +38,16 @@ const pluginScripts = {
 const optionalPlugins = [
 	new inquirer.Separator('\nOptional Plugins:'),
 	{
-		name: `${chalk.bold('AI')} - Transform your Robo into an engaging chatbot using AI. Supports customized behaviors and Discord commands.`,
+		name: `${chalk.bold(
+			'AI'
+		)} - Transform your Robo into an engaging chatbot using AI. Supports customized behaviors and Discord commands.`,
 		short: 'AI',
 		value: 'ai'
 	},
 	{
-		name: `${chalk.bold('API')} - Effortlessly create and manage API routes, turning your Robo project into a full-fledged API server.`,
+		name: `${chalk.bold(
+			'API'
+		)} - Effortlessly create and manage API routes, turning your Robo project into a full-fledged API server.`,
 		short: 'API',
 		value: 'api'
 	},
@@ -235,6 +240,10 @@ export default class Robo {
 		await fs.mkdir(this._workingDir, { recursive: true })
 
 		// Create a package.json file based on the selected features
+		const npmRegistry = {
+			access: 'public',
+			registry: 'https://registry.npmjs.org/'
+		} as const
 		const packageJson: PackageJson = {
 			name: this._name,
 			description: '',
@@ -246,10 +255,7 @@ export default class Robo {
 			author: this._isPlugin ? `Your Name <email>` : undefined,
 			contributors: this._isPlugin ? [`Your Name <email>`] : undefined,
 			files: this._isPlugin ? ['.robo/', 'src/', 'LICENSE', 'README.md'] : undefined,
-			publishConfig: this._isPlugin ? {
-				access: 'public',
-				registry: 'https://registry.npmjs.org/'
-			} : undefined,
+			publishConfig: this._isPlugin ? npmRegistry : undefined,
 			scripts: this._isPlugin ? pluginScripts : roboScripts,
 			dependencies: {},
 			devDependencies: {}
@@ -355,55 +361,45 @@ export default class Robo {
 			await fs.writeFile(path.join(this._workingDir, 'prettier.config.mjs'), PRETTIER_CONFIG)
 		}
 
-		const plugins: Plugin[] = []
+		// Create the robo.mjs file
+		logger.debug(`Writing Robo config file...`)
+		await fs.mkdir(path.join(this._workingDir, 'config', 'plugins'), { recursive: true })
+		await fs.writeFile(path.join(this._workingDir, 'config', 'robo.mjs'), ROBO_CONFIG)
+		logger.debug(`Finished writing Robo config file:\n`, ROBO_CONFIG)
+		logger.debug(`Setting up plugins...`)
+
 		if (features.includes('ai')) {
 			packageJson.dependencies['@roboplay/plugin-ai'] = '^0.1.0'
-			plugins.push([
-				'@roboplay/plugin-ai',
-				{
-					commands: false,
-					openaiKey: 'YOUR_OPENAI_KEY_HERE',
-					systemMessage: 'You are a helpful Robo.',
-					whitelist: {
-						channelIds: []
-					}
+			await this.createPluginConfig('@roboplay/plugin-ai', {
+				commands: false,
+				openaiKey: 'process.env.OPENAI_KEY',
+				systemMessage: 'You are a helpful Robo.',
+				whitelist: {
+					channelIds: []
 				}
-			])
+			})
 		}
 		if (features.includes('api')) {
 			packageJson.dependencies['@roboplay/plugin-api'] = '^0.1.0'
-			plugins.push([
-				'@roboplay/plugin-api',
-				{
-					cors: true,
-					port: 3000
-				}
-			])
+			await this.createPluginConfig('@roboplay/plugin-api', {
+				cors: true,
+				port: 3000
+			})
 		}
 		if (features.includes('gpt')) {
 			packageJson.dependencies['@roboplay/plugin-gpt'] = '^1.0.0'
-			plugins.push([
-				'@roboplay/plugin-gpt',
-				{
-					openaiKey: 'YOUR_OPENAI_KEY_HERE'
-				}
-			])
+			await this.createPluginConfig('@roboplay/plugin-gpt', {
+				openaiKey: 'process.env.OPENAI_KEY',
+			})
 		}
 		if (features.includes('maintenance')) {
 			packageJson.dependencies['@roboplay/plugin-maintenance'] = '^0.1.0'
-			plugins.push('@roboplay/plugin-maintenance')
+			await this.createPluginConfig('@roboplay/plugin-maintenance', {})
 		}
 		if (features.includes('polls')) {
 			packageJson.dependencies['@roboplay/plugin-poll'] = '^0.1.0'
-			plugins.push('@roboplay/plugin-poll')
+			await this.createPluginConfig('@roboplay/plugin-poll', {})
 		}
-
-		// Create the robo.mjs file
-		const roboConfig = generateRoboConfig(plugins)
-		logger.debug(`Writing Robo config file...`)
-		await fs.mkdir(path.join(this._workingDir, 'config'), { recursive: true })
-		await fs.writeFile(path.join(this._workingDir, 'config', 'robo.mjs'), roboConfig)
-		logger.debug(`Finished writing Robo config file:\n`, roboConfig)
 
 		// Sort scripts, dependencies and devDependencies alphabetically because this is important to me
 		packageJson.scripts = sortObjectKeys(packageJson.scripts)
@@ -485,5 +481,29 @@ export default class Robo {
 		}
 
 		await fs.writeFile(envFilePath, envContent)
+	}
+
+	/**
+	 * Generates a plugin config file in the config/plugins directory.
+	 *
+	 * @param pluginName The name of the plugin (e.g. @roboplay/plugin-ai)
+	 * @param config The plugin config
+	 */
+	private async createPluginConfig(pluginName: string, config: Record<string, unknown>) {
+		const pluginParts = pluginName.replace(/^@/, '').split('/')
+
+		// Create parent directory if this is a scoped plugin
+		if (pluginName.startsWith('@')) {
+			await fs.mkdir(path.join(this._workingDir, 'config', 'plugins', pluginParts[0]), {
+				recursive: true
+			})
+		}
+
+		// Normalize plugin path
+		const pluginPath = path.join(this._workingDir, 'config', 'plugins', ...pluginParts) + '.mjs'
+		const pluginConfig = prettyStringify(config) + '\n'
+
+		logger.debug(`Writing ${pluginName} config to ${pluginPath}...`)
+		await fs.writeFile(pluginPath, `export default ${pluginConfig}`)
 	}
 }
