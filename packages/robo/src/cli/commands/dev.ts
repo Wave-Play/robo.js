@@ -144,10 +144,9 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 							color.redBright,
 							color.underline,
 							color.bold
-						)(`Robo exited with code ${exitCode}.`),
-						`Restarting...`
+						)(`Robo exited with code ${exitCode}`)
 					)
-					return true
+					return false
 				}
 			},
 			onRetry: (value: string) => {
