@@ -9,7 +9,7 @@ import {
 } from 'discord.js'
 import { logger as globalLogger, Logger } from '../../core/logger.js'
 import { loadConfig } from '../../core/config.js'
-import { DEFAULT_CONFIG } from '../../core/constants.js'
+import { DEFAULT_CONFIG, FLASHCORE_KEYS } from '../../core/constants.js'
 import { env } from '../../core/env.js'
 import { timeout } from './utils.js'
 import { bold, color } from '../../core/color.js'
@@ -369,10 +369,10 @@ export async function registerCommands(
 		const endTime = Date.now() - startTime
 		const commandType = guildId ? 'guild' : 'global'
 		logger.info(`Successfully updated ${color.bold(commandType + ' commands')} in ${endTime}ms`)
-		await Flashcore.delete('__robo_command_register_error')
+		await Flashcore.delete(FLASHCORE_KEYS.commandRegisterError)
 	} catch (error) {
 		logger.error('Could not register commands!', error)
 		logger.warn(`Run ${color.bold('robo build --force')} to try again.`)
-		await Flashcore.set('__robo_command_register_error', true)
+		await Flashcore.set(FLASHCORE_KEYS.commandRegisterError, true)
 	}
 }

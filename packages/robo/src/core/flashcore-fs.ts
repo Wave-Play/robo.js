@@ -4,6 +4,7 @@ import { pipeline } from 'node:stream/promises'
 import zlib from 'node:zlib'
 import { createReadStream, createWriteStream } from 'node:fs'
 import { logger } from './logger.js'
+import { hasProperties } from '../cli/utils/utils.js'
 import { createHash } from 'node:crypto'
 import type { FlashcoreAdapter } from '../types/index.js'
 
@@ -26,7 +27,11 @@ export class FlashcoreFileAdapter<K = string, V = unknown> implements FlashcoreA
 			await fs.unlink(fileName)
 			return true
 		} catch (e) {
-			logger.warn(`Failed to delete key "${key}" from Flashcore file adapter.`, e)
+			// Warn about failures except ENOENT because that just means the key doesn't exist (normal)
+			if (hasProperties<{ code: unknown }>(e, ['code']) && e.code !== 'ENOENT') {
+				logger.warn(`Failed to delete key "${key}" from Flashcore file adapter.`, e)
+			}
+
 			return false
 		}
 	}

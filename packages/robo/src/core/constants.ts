@@ -19,6 +19,7 @@ export const DEFAULT_CONFIG: Config = {
 }
 
 export const FLASHCORE_KEYS = {
+	commandRegisterError: '__robo_command_register_error',
 	lastUpdateCheck: '__robo_last_update_check',
 	state: '__robo_state'
 }

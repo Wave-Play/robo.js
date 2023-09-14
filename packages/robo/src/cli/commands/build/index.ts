@@ -10,6 +10,7 @@ import { generateDefaults } from '../../utils/generate-defaults.js'
 import { compile } from '../../utils/compiler.js'
 import { Flashcore, prepareFlashcore } from '../../../core/flashcore.js'
 import { bold } from '../../../core/color.js'
+import { FLASHCORE_KEYS } from '../../../core/constants.js'
 import type { LoggerOptions } from '../../../core/logger.js'
 
 const command = new Command('build')
@@ -119,7 +120,7 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 			removedContextCommands
 		)
 	} else {
-		const hasPreviousError = await Flashcore.get<boolean>('__robo_command_register_error')
+		const hasPreviousError = await Flashcore.get<boolean>(FLASHCORE_KEYS.commandRegisterError)
 		if (hasPreviousError) {
 			logger.warn(`Previous command registration failed. Run ${bold('robo build --force')} to try again.`)
 		}
