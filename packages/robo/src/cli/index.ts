@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 process.removeAllListeners('warning') // <-- Supresses Fetch API experimental warning
 import { Command } from './utils/cli-handler.js'
+import add from './commands/add.js'
 import build from './commands/build/index.js'
 import deploy from './commands/deploy.js'
 import dev from './commands/dev.js'
@@ -13,6 +14,7 @@ import { packageJson } from './utils/utils.js'
 new Command('robo')
 	.description('Elevate your Discord.js bot game to the next level')
 	.version(packageJson.version)
+	.addCommand(add)
 	.addCommand(build)
 	.addCommand(deploy)
 	.addCommand(dev)
