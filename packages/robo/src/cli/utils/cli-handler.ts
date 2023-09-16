@@ -1,4 +1,4 @@
-interface Option {
+export interface Option {
 	alias: string
 	name: string
 	description: string
@@ -11,6 +11,7 @@ export class Command {
 	private _options: Option[] = []
 	private _commands: Command[] = []
 	private _version?: string
+	protected _parent?: Command
 
 	constructor(name: string) {
 		this._name = name
@@ -27,8 +28,10 @@ export class Command {
 	 */
 	public addCommand(command: Command): this {
 		this._commands.push(command)
+		command._parent = this
 		return this
 	}
+
 
 	/**
 	 * Set the description for the command.
@@ -39,6 +42,51 @@ export class Command {
 	public description(desc: string): this {
 		this._description = desc
 		return this
+	}
+
+	/**
+	 * Gets the children commands of the current command.
+	 *
+	 * @returns {Command[]} - Get the children commands of the current command.
+	 */
+	public getChildCommands(): Command[] {
+		return this._commands
+	}
+
+	/**
+	 * Gets the parent command.
+	 *
+	 * @returns {Command} - Returns the parent command.
+	 */
+	public getParentCommand(): Command {
+		return this._parent
+	}
+
+	/**
+	 * Returns the name of the current command.
+	 *
+	 * @returns {string} - Returns the name of the command.
+	 */
+	public getName(): string {
+		return this._name
+	}
+
+	/**
+	 * Returns the description of the current command.
+	 *
+	 * @returns {string} - Returns the description of the current command.
+	 */
+	public getDescription(): string {
+		return this._description
+	}
+
+	/**
+	 * Returns the options of the current command.
+	 *
+	 * @returns {Option[]} - Returns the options of the current command.
+	 */
+	public getOptions(): Option[] {
+		return this._options
 	}
 
 	/**
