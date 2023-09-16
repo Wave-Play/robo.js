@@ -10,8 +10,8 @@ import { cmd, exec, getPackageManager } from '../utils/utils.js'
 const require = createRequire(import.meta.url)
 
 const command = new Command('add')
-	.description('Builds your bot for production.')
-	.option('-f', '--force', 'force register commands')
+	.description('Adds a plugin to your Robo.')
+	.option('-f', '--force', 'forcefully install & register packages')
 	.option('-s', '--silent', 'do not print anything')
 	.option('-v', '--verbose', 'print more information for debugging')
 	.handler(addAction)
@@ -29,12 +29,12 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : 'info'
 	}).info(`Adding ${packages.length} plugin${packages.length === 1 ? '' : 's'}...`)
-	logger.debug(`Plugins to add:`, packages)
+	logger.debug(`Adding plugins:`, packages)
 	logger.debug(`Current working directory:`, process.cwd())
 	const startTime = Date.now()
 
 	if (packages.length === 0) {
-		logger.error(`No packages specified. Use ${color.bold('robo add <package>')} to add a package.`)
+		logger.error(`No packages specified. Use ${color.bold('robo add <package>')} to add a plugin.`)
 		return
 	}
 
@@ -43,15 +43,19 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
 	const pendingRegistration = packages.filter((pkg) => {
 		return options.force || !config.plugins.includes(pkg)
 	})
-	logger.debug(`Pending registration:`, pendingRegistration)
+	logger.debug(`Pending registration add:`, pendingRegistration)
 
 	// Check which plugins need to be installed
 	const packageJsonPath = path.join(process.cwd(), 'package.json')
 	const packageJson = require(packageJsonPath)
 	const pendingInstall = packages.filter((pkg) => {
-		return options.force || !Object.keys(packageJson.dependencies).includes(pkg)
+		return (
+			options.force ||
+			(!Object.keys(packageJson.dependencies).includes(pkg) &&
+				!config.plugins.find((p) => Array.isArray(p) && p[0] === pkg))
+		)
 	})
-	logger.debug(`Pending installation:`, pendingInstall)
+	logger.debug(`Pending installation add:`, pendingInstall)
 
 	// Install plugin packages
 	if (pendingInstall.length > 0) {
