@@ -22,7 +22,6 @@ export async function loadConfig(file = 'robo'): Promise<Config> {
 	if (configPath) {
 		const imported = await import(configPath)
 		config = imported.default ?? imported ?? {}
-		logger.debug(`Loaded configuration file:`, config)
 
 		// Load plugin files when using "/config" directory
 		if (configPath.includes(path.sep + 'config' + path.sep)) {
@@ -48,6 +47,7 @@ export async function loadConfig(file = 'robo'): Promise<Config> {
 	}
 
 	_config = config
+	logger.debug(`Loaded configuration file:`, config)
 	return config
 }
 
