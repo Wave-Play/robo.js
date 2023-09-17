@@ -11,7 +11,7 @@ import deploy from './commands/deploy.js'
 import doctor from './commands/doctor.js'
 import invite from './commands/invite.js'
 import why from './commands/why.js'
-import help from './commands/help.js'
+import help, { helpCommandHandler } from './commands/help.js'
 
 const command = new Command('robo')
 export default command
@@ -19,7 +19,6 @@ export default command
 command.description('Elevate your Discord.js bot game to the next level')
 command.version(packageJson.version)
 command.addCommand(build)
-command.addCommand(plugin)
 command.addCommand(start)
 command.addCommand(dev)
 command.addCommand(deploy)
@@ -27,4 +26,5 @@ command.addCommand(doctor)
 command.addCommand(invite)
 command.addCommand(why)
 command.addCommand(help)
+command.handler(helpCommandHandler)
 command.parse()
