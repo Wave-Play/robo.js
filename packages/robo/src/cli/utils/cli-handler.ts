@@ -1,3 +1,13 @@
+import { color } from "../../core/color.js"
+import { logger } from "../../core/logger.js"
+
+
+/* 
+			logger.error(color.red(`The command ${command.getName()} doesn't exist.`))
+			logger.log(`Try ${color.blue("robo --help")} to see all available commands.`);
+*/
+
+
 export interface Option {
 	alias: string
 	name: string
@@ -133,21 +143,23 @@ export class Command {
 	}
 
 	private showHelp(): void {
-		console.log(`\nCommand: ${this._name}`)
-		console.log(`Description: ${this._description}`)
+		console.log(color.blue(`\n Command: ${this._name}`))
+		console.log(` Description: ${this._description}`)
 
 		if (this._options.length > 0) {
-			console.log(`Options:`)
+			console.log(color.red(` Options:`))
 			this._options.forEach((opt) => {
-				console.log(`  ${opt.alias}, ${opt.name}: ${opt.description}`)
+				console.log(`   ${color.red(`${opt.alias}`)}${color.white(",")} ${color.red(`${opt.name}`)}: ${opt.description}`)
 			})
+			console.log(`\n`)
 		}
 
 		if (this._commands.length > 0) {
-			console.log(`Subcommands:`)
+			console.log(color.red(` Subcommands:`))
 			this._commands.forEach((cmd) => {
-				console.log(`  ${cmd._name}: ${cmd._description}`)
+				console.log(`${color.yellow(`   ${cmd._name}: ${cmd._description}`)}`)
 			})
+			console.log(`\n`)
 		}
 	}
 
@@ -227,6 +239,14 @@ export class Command {
 
 			// If arg is not an option or a subcommand, treat as a positional argument
 			positionalArgs.push(arg)
+			
+			if(!subCommand){
+				logger.log("\n")
+				logger.error(color.red(`The command "${arg}" does not exist.`))
+				logger.info(`Try ${color.bold(color.blue("robo --help"))} to see all available commands.`);
+				logger.log("\n")
+				return;
+			}
 		}
 
 		const optionsArgs = args.slice(optionsArgsStart)
