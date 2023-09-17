@@ -9,7 +9,6 @@ const command = new Command('why')
 	)
 	.option('-s', '--silent', 'do not print anything')
 	.option('-v', '--verbose', 'print more information for debugging')
-	.option("-h", '--help', 'shows the options of the command')
 	.handler(whyAction)
 export default command
 

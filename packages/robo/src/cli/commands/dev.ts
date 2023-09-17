@@ -29,7 +29,6 @@ const command = new Command('dev')
 	.description('Ready, set, code your bot to life! Starts development mode.')
 	.option('-s', '--silent', 'do not print anything')
 	.option('-v', '--verbose', 'print more information for debugging')
-	.option("-h", '--help', 'shows the options of the command')
 	.handler(devAction)
 export default command
 

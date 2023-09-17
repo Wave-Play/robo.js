@@ -9,7 +9,6 @@ const command = new Command('start')
 	.description('Starts your bot in production mode.')
 	.option('-s' ,'--silent', 'do not print anything')
 	.option('-v', '--verbose', 'print more information for debugging')
-	.option("-h", '--help', 'shows the options of the command')
 	.handler(startAction)
 export default command
 
