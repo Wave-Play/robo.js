@@ -17,6 +17,7 @@ const command = new Command('plugin')
 	.option('-s', '--silent', 'do not print anything')
 	.option('-v', '--verbose', 'print more information for debugging')
 	.option('-w', '--watch', 'watch for changes and rebuild')
+	.option('-h', '--help', 'Shows the available command options')
 	.handler(pluginAction)
 export default command
 
