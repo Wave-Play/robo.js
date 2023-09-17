@@ -149,7 +149,7 @@ export class Command {
 		if (this._options.length > 0) {
 			console.log(color.red(` Options:`))
 			this._options.forEach((opt) => {
-				console.log(`   ${color.red(`${opt.alias}`)}${color.white(",")} ${color.red(`${opt.name}`)}: ${opt.description}`)
+				console.log(`${color.white(`   ${color.red(`${opt.alias}`)}${color.white(",")} ${color.red(`${opt.name}`)}: ${opt.description}`)}`)
 			})
 			console.log(`\n`)
 		}
@@ -157,7 +157,7 @@ export class Command {
 		if (this._commands.length > 0) {
 			console.log(color.red(` Subcommands:`))
 			this._commands.forEach((cmd) => {
-				console.log(`${color.yellow(`   ${cmd._name}: ${cmd._description}`)}`)
+				console.log(`${color.white(`   ${cmd._name}: ${cmd._description}`)}`)
 			})
 			console.log(`\n`)
 		}
