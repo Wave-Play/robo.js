@@ -1,11 +1,5 @@
-import { color } from "../../core/color.js"
-import { logger } from "../../core/logger.js"
-
-
-/* 
-			logger.error(color.red(`The command ${command.getName()} doesn't exist.`))
-			logger.log(`Try ${color.blue("robo --help")} to see all available commands.`);
-*/
+import { color } from '../../core/color.js'
+import { logger } from '../../core/logger.js'
 
 
 export interface Option {
@@ -41,7 +35,6 @@ export class Command {
 		command._parent = this
 		return this
 	}
-
 
 	/**
 	 * Set the description for the command.
@@ -149,7 +142,11 @@ export class Command {
 		if (this._options.length > 0) {
 			console.log(color.red(` Options:`))
 			this._options.forEach((opt) => {
-				console.log(`${color.white(`   ${color.red(`${opt.alias}`)}${color.white(",")} ${color.red(`${opt.name}`)}: ${opt.description}`)}`)
+				console.log(
+					`${color.white(
+						`   ${color.red(`${opt.alias}`)}${color.white(',')} ${color.red(`${opt.name}`)}: ${opt.description}`
+					)}`
+				)
 			})
 			console.log(`\n`)
 		}
@@ -239,13 +236,14 @@ export class Command {
 
 			// If arg is not an option or a subcommand, treat as a positional argument
 			positionalArgs.push(arg)
-			
-			if(!subCommand){
-				logger.log("\n")
+
+			// if subcommand is invalid show a message to inform the user.
+			if (!subCommand) {
+				logger.log('\n')
 				logger.error(color.red(`The command "${arg}" does not exist.`))
-				logger.info(`Try ${color.bold(color.blue("robo --help"))} to see all available commands.`);
-				logger.log("\n")
-				return;
+				logger.info(`Try ${color.bold(color.blue('robo --help'))} to see all available commands.`)
+				logger.log('\n')
+				return
 			}
 		}
 
