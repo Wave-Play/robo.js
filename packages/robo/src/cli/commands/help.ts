@@ -202,6 +202,7 @@ function breakLine(desc: string, lineBreakSpaces: number, charactersToDivideInto
 
 
 /**
+ * Formats the command into a structured Object. 
  * 
  * @param {commandGroup[]} commandGroup - Array of CommandGroup.
  * @returns {FormattedCommand[]} - Returns the commandGroup array in the shape of FormattedCommand array.
