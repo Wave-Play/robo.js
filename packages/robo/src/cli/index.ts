@@ -4,7 +4,6 @@ import { Command } from './utils/cli-handler.js'
 
 import { packageJson } from './utils/utils.js'
 import build from './commands/build/index.js'
-import plugin from './commands/build/plugin.js'
 import start from './commands/start.js'
 import dev from './commands/dev.js'
 import deploy from './commands/deploy.js'
