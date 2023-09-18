@@ -215,7 +215,7 @@ function formatCommand(commandGroup: CommandGroup[]): FormattedCommand[]{
 		const childCommands = commandObject.command.getChildCommands();
 		const alias = commandObject.command
 		.getOptions()
-		.map((flags: Option) => `${flags.alias} ${flags.name}`)
+		.map((flags: Option) => `${flags.alias}`)
 		.join(' ')
 
 		const lastCommandInTheGroup = () => {
