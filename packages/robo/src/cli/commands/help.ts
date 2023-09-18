@@ -46,7 +46,7 @@ function splitCommandsIntoGroups(commandNames: commandNames[][]): CommandGroup[]
 	const commands = rootCommand.getChildCommands().map((command: Command) => command);
 
 	let groupId = 0;
-	let orderedCommands: CommandGroup[] = [];
+	const orderedCommands: CommandGroup[] = [];
 
 	for(const commandName of commandNames){
 		++groupId;
@@ -55,7 +55,7 @@ function splitCommandsIntoGroups(commandNames: commandNames[][]): CommandGroup[]
 			if(command.length <= 0) {
 				logger.error(color.red(`The ${commandName} command doesn't exist\n`))
 				return 
-			};
+			}
 			return {
 				groupId: groupId,
 				command: command[0]
