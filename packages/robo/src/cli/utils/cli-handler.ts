@@ -140,23 +140,23 @@ export class Command {
 		console.log(` Description: ${this._description}`)
 
 		if (this._options.length > 0) {
-			console.log(color.red(` Options:`))
+			logger.log(color.green(` Options:`))
 			this._options.forEach((opt) => {
-				console.log(
+				logger.log(
 					`${color.white(
-						`   ${color.red(`${opt.alias}`)}${color.white(',')} ${color.red(`${opt.name}`)}: ${opt.description}`
+						`   ${color.green(`${opt.alias}`)}${color.white(',')} ${color.green(`${opt.name}`)}: ${opt.description}`
 					)}`
 				)
 			})
-			console.log(`\n`)
+			logger.log(`\n`)
 		}
 
 		if (this._commands.length > 0) {
-			console.log(color.red(` Subcommands:`))
+			logger.log(color.red(` Subcommands:`))
 			this._commands.forEach((cmd) => {
-				console.log(`${color.white(`   ${cmd._name}: ${cmd._description}`)}`)
+				logger.log(`${color.white(`   ${cmd._name}: ${cmd._description}`)}`)
 			})
-			console.log(`\n`)
+			logger.log(`\n`)
 		}
 	}
 
