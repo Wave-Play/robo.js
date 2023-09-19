@@ -173,7 +173,7 @@ function calcSpacing(longestCommandName: number, commandNameLength: number): num
 
 // Might wanna re-work that, it splits every "70~" characters. So it's not good for every string.
 // Perhaps, adding strict grammar rules to the description might help with that.
-// line_break_spaces is basically the spaces I need to reach until the "-" of a command description.
+// lineBreakSpaces is basically the spaces I need to reach until the "-" of a command description.
 
 /**
  * Breaks the description into smaller lines to fit the CLi and aligns them.
@@ -181,7 +181,7 @@ function calcSpacing(longestCommandName: number, commandNameLength: number): num
  * @param {string} desc - Description of the command.
  * @param {number} lineBreakSpaces - Number of spaces to add so the new line is aligned.
  * @param {number} charactersToDivideInto - Number of characters the strings should be divided in.
- * @returns
+ * 
  */
 function breakLine(desc: string, lineBreakSpaces: number, charactersToDivideInto: number) {
 	const numberOfDividedLines = Math.floor(desc.length / charactersToDivideInto)
