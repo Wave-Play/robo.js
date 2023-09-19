@@ -7,7 +7,7 @@ import { packageJson } from '../utils/utils.js'
 const command = new Command('help').description('Shows that menu').handler(helpCommandHandler)
 export default command
 
-type commandNames = 'build' | 'start' | 'dev' | 'deploy' | 'doctor' | 'invite' | 'why' | 'help' | 'build plugin'
+type CommandName  = 'build' | 'start' | 'dev' | 'deploy' | 'doctor' | 'invite' | 'why' | 'help' | 'build plugin'
 
 interface CommandGroup {
 	groupId: number
@@ -15,10 +15,10 @@ interface CommandGroup {
 }
 
 interface FormattedCommand {
-	groupId: number,
-	name: commandNames,
-	flags: string,
-	description: string,
+	groupId: number
+	name: CommandName 
+	flags: string
+	description: string
 }
 
 /**
@@ -42,7 +42,7 @@ export function helpCommandHandler() {
  * @return {CommandGroup[]} - returns an array objects with the command and the groupId.
  */
 
-function splitCommandsIntoGroups(commandNames: commandNames[][]): CommandGroup[]{
+function splitCommandsIntoGroups(commandNames: CommandName[][]): CommandGroup[]{
 	const commands = rootCommand.getChildCommands().map((command: Command) => command);
 
 	let groupId = 0;
@@ -226,20 +226,19 @@ function formatCommand(commandGroup: CommandGroup[]): FormattedCommand[]{
 			}
 		}
 
-		if(childCommands.length > 0){
-			for(let i = 0; i < childCommands.length; ++i){
-				formattedCommands.push({
-					groupId: commandObject.groupId,
-					name: `${commandObject.command.getName()} ${childCommands[i].getName()}` as commandNames,
-					flags: alias,
-					description: childCommands[i].getDescription()
-				});
-			}
-		}
-
+		
+		childCommands.forEach((childCommand: Command) => {
+			formattedCommands.push({
+				groupId: commandObject.groupId,
+				name: `${commandObject.command.getName()} ${childCommand.getName()}` as CommandName,
+				flags: alias,
+				description: childCommand.getDescription()
+			});
+		});
+		
 		formattedCommands.push({
 			groupId: commandObject.groupId,
-			name: commandObject.command.getName() as commandNames,
+			name: commandObject.command.getName() as CommandName ,
 			flags: alias,
 			description: lastCommandInTheGroup()
 		});
