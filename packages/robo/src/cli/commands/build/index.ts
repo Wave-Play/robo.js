@@ -23,6 +23,7 @@ const command = new Command('build')
 	.option('-h', '--help', 'Shows the available command options')
 	.handler(buildAction)
 	.addCommand(plugin)
+	.positionalArgs(true)
 export default command
 
 interface BuildCommandOptions {
