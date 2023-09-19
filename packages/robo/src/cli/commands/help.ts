@@ -22,7 +22,7 @@ interface FormattedCommand {
 }
 
 /**
- * Function that is being called when we use the help flag in the CLI.
+ * Function that is being called when we use the help command in the CLI.
  *
  */
 export function helpCommandHandler() {
@@ -30,7 +30,7 @@ export function helpCommandHandler() {
 		color.yellow(`${color.blue('Robo.js')} ${color.white("-")} Where bot creation meets endless possibilities !`),
 		color.gray('(' + packageJson.version + ')\n\n')
 	)
-	const groups = splitCommandsIntoGroups([["dev", "start", "build",], ["deploy", "doctor", "invite", "why"], ["help"]]);
+	const groups = splitCommandsIntoGroups([["dev", "start", "build"], ["deploy", "doctor", "invite", "why"], ["help"]]);
 	prettyPrint(formatCommand(groups));
 	
 }
