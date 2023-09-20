@@ -6,34 +6,12 @@ Welcome to *@roboplay/plugin-gpt*! This plugin is designed to seamlessly integra
 
 ## Installation 💻
 
-To install this plugin, navigate to your Robo project's directory and run the following command:
+To install this plugin, navigate to your existing Robo project's directory and run the following command:
 
 ```bash
-npm install @roboplay/plugin-gpt
+npx robo add @roboplay/plugin-gpt
 ```
 
-Next, add the plugin to your Robo's configuration file, typically located at `.config/robo.mjs`. Add the following lines:
-
-```javascript
-/**
- * @type {import('@roboplay/robo.js').Plugin}
- **/
-const roboplayPluginGpt = [
-	'@roboplay/plugin-gpt',
-	{
-		// ... optional customization options
-	}
-]
-
-/**
- * @type {import('@roboplay/robo.js').Config}
- **/
-export default {
-	// ... rest of your configuration
-	plugins: [roboplayPluginGpt]
-}
-```
-
-That's it! Your Robo now has access to the additional features provided by this plugin. The plugin's commands and events are automatically linked, and if your Robo requires any additional bot permissions, they will be inherited when running `robo invite` to generate an invite link.
+That's it! Your Robo now has access to the additional features provided by this plugin. The plugin's commands and events are automatically linked, and if your Robo requires any additional bot permissions, they will be inherited when running `npx robo invite` to generate an invite link.
 
 Enjoy your enhanced Robo! 🚀
