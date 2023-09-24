@@ -65,6 +65,8 @@ export function getPackageManager(): PackageManager {
 	}
 }
 
+export const IS_BUN = getPackageManager() === 'bun'
+
 /**
  * Filters an array of paths to only include those that exist.
  *
@@ -112,15 +114,17 @@ export async function findPackagePath(packageName: string, currentPath: string):
 		return null
 	}
 
+	// Determine if node_modules folder is managed by pnpm
+	// Note: This does *not* mean that the process was started with pnpm
 	const pnpmNodeModulesPath = path.resolve(nodeModulesPath, '.pnpm')
-	const isPnpm = await fs.access(pnpmNodeModulesPath).then(
+	const isPnpmModules = await fs.access(pnpmNodeModulesPath).then(
 		() => true,
 		() => false
 	)
 
 	let packagePath: string | null = null
 
-	if (isPnpm) {
+	if (isPnpmModules && !IS_BUN) {
 		logger.debug(`Found pnpm node_modules folder for ${packageName}`)
 		try {
 			const { stdout } = await execAsync(`pnpm list ${packageName} --json`, { cwd: currentPath })
