@@ -13,13 +13,7 @@
 	"badgeTemplate": "[![All Contributors](https://img.shields.io/github/all-contributors/<%= projectOwner %>/<%= projectName %>?color=ee8449&style=flat-square)](#contributors)",
 	"contributorTemplate": "<a href=\"<%= contributor.profile %>\"><img src=\"<%= contributor.avatar_url %>\" width=\"<%= options.imageSize %>px;\" alt=\"\"/><br /><sub><b><%= contributor.name %></b></sub></a>",
 	"wrapperTemplate": "\n<table>\n  <tbody><%= bodyContent %>  </tbody>\n<%= tableFooterContent %></table>\n\n",
-	"types": {
-		"staff": {
-      "symbol": "✨",
-      "description": "WavePlay Staff",
-      "link": "[<%= symbol %>](<%= url %> \"<%= description %>\"),"
-    }
-	},
+	"types": {},
 	"linkToUsage": true,
 	"skipCi": true,
 	"contributors": []
