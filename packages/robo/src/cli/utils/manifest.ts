@@ -15,7 +15,7 @@ import {
 	Scope
 } from '../../types/index.js'
 import { logger } from '../../core/logger.js'
-import { findPackagePath, hasProperties, packageJson } from './utils.js'
+import { IS_BUN, findPackagePath, hasProperties, packageJson } from './utils.js'
 import { loadConfig } from '../../core/config.js'
 import { pathToFileURL } from 'node:url'
 import { DefaultGen } from './generate-defaults.js'
@@ -483,7 +483,10 @@ async function generateEntries<T>(
 			async (fileKeys, fullPath, moduleKeys) => {
 				logger.debug(`[${type}] Generating`, fileKeys, 'from', fullPath)
 				const isGenerated = generatedKeys.includes(fileKeys.join('/'))
-				const importPath = pathToFileURL(fullPath).toString()
+				let importPath = pathToFileURL(fullPath).toString()
+				if (IS_BUN) {
+					importPath = decodeURIComponent(importPath)
+				}
 				const module = await import(importPath)
 				let entry = {
 					...getValue(type, module.config),
