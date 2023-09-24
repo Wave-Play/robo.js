@@ -15,6 +15,7 @@ export class Command {
 	private _options: Option[] = []
 	private _commands: Command[] = []
 	private _version?: string
+	private _positionalArgs?: boolean
 	protected _parent?: Command
 
 	constructor(name: string) {
@@ -54,6 +55,17 @@ export class Command {
 	 */
 	public getChildCommands(): Command[] {
 		return this._commands
+	}
+
+	/**
+	 * Set the value for positionalArgs.
+	 *
+	 * @param {boolean} positionalArg - positionalArgs boolean.
+	 * @returns {Command} - Returns the current Command object for chaining.
+	 */
+	public positionalArgs(positionalArg: boolean): this{
+		this._positionalArgs = positionalArg;
+		return this
 	}
 
 	/**
@@ -237,8 +249,8 @@ export class Command {
 			// If arg is not an option or a subcommand, treat as a positional argument
 			positionalArgs.push(arg)
 
-			// if subcommand is invalid show a message to inform the user.
-			if (!subCommand) {
+			// if _positionalArgs is false show a message to inform the user.
+			if (!command._positionalArgs) {
 				logger.log('\n')
 				logger.error(color.red(`The command "${arg}" does not exist.`))
 				logger.info(`Try ${color.bold(color.blue('robo --help'))} to see all available commands.`)
