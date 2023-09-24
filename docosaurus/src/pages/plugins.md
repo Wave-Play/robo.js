@@ -1,4 +1,4 @@
-# Robo.js Plugins 🤖🔌
+# Plugin Directory 🤖🔌
 
 Robo.js provides an extensive set of plugins to supercharge your bots, each aiming to extend the functionalities of Robo.js to its maximum. To install any plugin, simply use the command:
 ```sh
@@ -7,23 +7,23 @@ npx robo add <package>
 
 ## Official Plugins 🏆
 ---
-### **AI Plugin**
+### [AI](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-ai)
 Package: `@roboplay/plugin-ai`  
 Transform your Robo into an engaging chatbot utilizing AI. Supports customized behaviors and Discord commands.
 
-### **API Plugin**
+### [API](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-api)
 Package: `@roboplay/plugin-api`  
 Effortlessly create and manage API routes, allowing your Robo project to function as a full-fledged API server.
 
-### **GPT Plugin**
+### [GPT](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-gpt)
 Package: `@roboplay/plugin-gpt`  
 Empower your Robo to generate human-like text with the revolutionary capabilities of GPT.
 
-### **Maintenance Mode**
-Package: `maintenance`  
+### [Maintenance](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-maintenance)
+Package: `@roboplay/plugin-maintenance`  
 Enable a maintenance mode for your Robo, ensuring smoother user experiences during updates or fixes.
 
-### **Poll Plugin**
+### [Polls](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-poll)
 Package: `@roboplay/plugin-poll`  
 Easily create and manage interactive polls, engaging your community with minimal effort.
 
