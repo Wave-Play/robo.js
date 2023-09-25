@@ -99,3 +99,9 @@ Wait, is it actually an... inverse learning curve? You heard right, there's more
 ## License 📜
 
 We're all about freedom, so we've got you covered with the permissive [MIT License](LICENSE)! Go wild and build amazing bots without worrying about legalities.
+
+## Contributors
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore -->
+<!-- ALL-CONTRIBUTORS-LIST:END -->
