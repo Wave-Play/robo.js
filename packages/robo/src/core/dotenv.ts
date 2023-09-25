@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
-import { getPackageManager } from '../cli/utils/utils.js'
+import { IS_BUN } from '../cli/utils/utils.js'
 
 function parseEnvFile(envFileContent: string): { [key: string]: string } {
 	const lines = envFileContent.split('\n')
@@ -51,7 +51,7 @@ function parseEnvFile(envFileContent: string): { [key: string]: string } {
 
 export async function loadEnv(options: { filePath?: string; sync?: boolean } = {}): Promise<void> {
 	// No need to load .env file if using Bun (it's already loaded)
-	if (getPackageManager() === 'bun') {
+	if (IS_BUN) {
 		return
 	}
 
