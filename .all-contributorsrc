@@ -2,7 +2,8 @@
 	"projectName": "robo.js",
 	"projectOwner": "WavePlay",
 	"files": [
-		"CONTRIBUTORS.md"
+		"CONTRIBUTORS.md",
+		"README.md"
 	],
 	"repoType": "github",
 	"repoHost": "https://github.com",
