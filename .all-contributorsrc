@@ -14,7 +14,9 @@
 			"avatar_url": "https://avatars.githubusercontent.com/u/3953360?v=4",
 			"profile": "http://pkmmte.com",
 			"contributions": [
-				"code"
+				"code",
+        "maintenance",
+        "staff"
 			]
 		}
 	],
