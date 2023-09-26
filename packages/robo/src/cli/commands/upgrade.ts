@@ -82,6 +82,7 @@ export async function upgradeAction(_files: string[], options: UpgradeCommandOpt
 		const bindings: Bindings = {}
 		const context = { bindings, child_process, color, console, cwd: process.cwd(), exec, fs, logger, path }
 		
+		createContext(context)
 		codemod.runInContext(context)
 		logger.debug(`Prepared codemod!`)
 
