@@ -20,6 +20,7 @@ import { loadConfig } from '../../core/config.js'
 import { pathToFileURL } from 'node:url'
 import { DefaultGen } from './generate-defaults.js'
 import { bold, color } from '../../core/color.js'
+import { ALLOWED_EXTENSIONS } from '../../core/constants.js'
 import type { PermissionsString } from 'discord.js'
 
 // Global manifest reference
@@ -371,7 +372,7 @@ async function scanDir(predicate: ScanDirPredicate, options: ScanDirOptions) {
 			const stats = await fs.stat(fullPath)
 
 			// Group files and directories accordingly
-			if (stats.isFile() && path.extname(file) !== '.js') {
+			if (stats.isFile() && !ALLOWED_EXTENSIONS.includes(path.extname(file))) {
 				return
 			} else if (stats.isFile()) {
 				files.push(file)

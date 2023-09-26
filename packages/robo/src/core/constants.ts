@@ -1,5 +1,7 @@
 import type { Config } from '../types/index.js'
 
+export const ALLOWED_EXTENSIONS = ['.js', '.jsx', '.ts', '.tsx']
+
 export const DEFAULT_CONFIG: Config = {
 	clientOptions: null,
 	heartbeat: {
