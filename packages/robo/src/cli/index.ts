@@ -9,11 +9,12 @@ import doctor from './commands/doctor.js'
 import invite from './commands/invite.js'
 import remove from './commands/remove.js'
 import start from './commands/start.js'
+import upgrade from './commands/upgrade.js'
 import why from './commands/why.js'
 import { packageJson } from './utils/utils.js'
 
 new Command('robo')
-	.description('Elevate your Discord.js bot game to the next level')
+	.description('Turbocharge Discord.js with effortless power! ⚡')
 	.version(packageJson.version)
 	.addCommand(add)
 	.addCommand(build)
@@ -23,5 +24,6 @@ new Command('robo')
 	.addCommand(invite)
 	.addCommand(remove)
 	.addCommand(start)
+	.addCommand(upgrade)
 	.addCommand(why)
 	.parse()
