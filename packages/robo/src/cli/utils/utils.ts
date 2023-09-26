@@ -18,6 +18,10 @@ const execAsync = promisify(nodeExec)
 const require = createRequire(import.meta.url)
 export const packageJson = require('../../../package.json')
 
+export function cleanTempDir() {
+	return fs.rm(path.join(process.cwd(), '.robo', 'temp'), { recursive: true })
+}
+
 /**
  * Run a command as a child process
  */

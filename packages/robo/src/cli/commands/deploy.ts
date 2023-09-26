@@ -1,4 +1,3 @@
-import fs from 'node:fs/promises';
 import { Command } from '../utils/cli-handler.js'
 import { logger } from '../../core/logger.js'
 import { color, composeColors } from '../../core/color.js'
@@ -6,6 +5,7 @@ import { uploadToBackblazeB2 } from '../utils/upload.js'
 import path from 'node:path'
 import { env } from '../../core/env.js'
 import { compressDirectory } from '../utils/compress.js'
+import { cleanTempDir } from '../utils/utils.js';
 
 const command = new Command('deploy')
 	.description('Deploys your bot to RoboPlay!')
@@ -47,7 +47,7 @@ async function deployAction(_args: string[], options: DeployCommandOptions) {
 	} finally {
 		// Clean up temp files
 		logger.debug(`Cleaning up temporary files...`)
-		await fs.rm(path.join(process.cwd(), '.robo', 'temp'), { recursive: true })
+		await cleanTempDir()
 	}
 }
 
