@@ -83,11 +83,11 @@ importers:
   packages/plugin-ai:
     devDependencies:
       '@roboplay/plugin-api':
-        specifier: workspace:^
+        specifier: 0.1.0
         version: link:../plugin-api
       '@roboplay/robo.js':
-        specifier: ../robo
-        version: link:../robo
+        specifier: 0.9.0
+        version: 0.9.0(@swc/core@1.3.57)(discord.js@14.11.0)(typescript@5.0.2)
       '@swc/core':
         specifier: ^1.3.44
         version: 1.3.57
@@ -120,11 +120,11 @@ importers:
         specifier: ^0.16.0
         version: 0.16.0(opusscript@0.1.0)
       '@roboplay/plugin-ai':
-        specifier: ../plugin-ai
+        specifier: 0.1.0
         version: link:../plugin-ai
       '@roboplay/robo.js':
-        specifier: ../robo
-        version: link:../robo
+        specifier: 0.9.0
+        version: 0.9.0(@swc/core@1.3.57)(discord.js@14.11.0)(typescript@5.0.2)
       '@swc/core':
         specifier: ^1.3.44
         version: 1.3.57
