@@ -63,8 +63,12 @@ export default async (oldState: VoiceState, newState: VoiceState) => {
 
 	// Check if bot has switched voice channels
 	else if (oldState.channel?.id !== newState.channel?.id) {
-		await onLeave(oldState.channel!)
-		await onJoin(newState.channel!)
+		if (oldState.channel) {
+			await onLeave(oldState.channel)
+		}
+		if (newState.channel) {
+			await onJoin(newState.channel)
+		}
 	}
 }
 
@@ -278,21 +282,23 @@ async function onJoin(channel: VoiceBasedChannel) {
 								})
 
 								// TODO: Testing sending to a specific channel
-								channel.send({
-									embeds: [
-										{
-											color: Colors.Greyple,
-											description: gptReply,
-											author: {
-												name: client.user!.username,
-												icon_url: client.user!.avatarURL() ?? client.user!.avatar ?? undefined
-											},
-											footer: {
-												text: 'GPT message'
+								if (client.user) {
+									channel.send({
+										embeds: [
+											{
+												color: Colors.Greyple,
+												description: gptReply,
+												author: {
+													name: client.user.username,
+													icon_url: client.user.avatarURL() ?? client.user.avatar ?? undefined
+												},
+												footer: {
+													text: 'GPT message'
+												}
 											}
-										}
-									]
-								})
+										]
+									})
+								}
 
 								// Remove emojis so they're not read out
 								const cleanReply = gptReply
@@ -303,24 +309,28 @@ async function onJoin(channel: VoiceBasedChannel) {
 									)
 								// Remove system emojis
 								logger.info(`Clean reply:`, cleanReply)
-								debugMessage('generating-speech', channel, client.user!)
-								channel.send({
-									embeds: [
-										{
-											color: Colors.LightGrey,
-											footer: {
-												icon_url: client.user!.avatarURL() ?? client.user!.avatar ?? undefined,
-												text: 'Generating speech...'
+								if (client.user) {
+									debugMessage('generating-speech', channel, client.user)
+									channel.send({
+										embeds: [
+											{
+												color: Colors.LightGrey,
+												footer: {
+													icon_url: client.user.avatarURL() ?? client.user.avatar ?? undefined,
+													text: 'Generating speech...'
+												}
 											}
-										}
-									]
-								})
+										]
+									})
+								}
 
 								// Generate speech
 								const fileName = await textToSpeech(cleanReply, path.join('.robo', 'temp', `speech-${job.id}.mp3`))
 								const resource = createAudioResource(createReadStream(fileName))
 								player.play(resource)
-								debugMessage('ai-speaking', channel, client.user!)
+								if (client.user) {
+									debugMessage('ai-speaking', channel, client.user)
+								}
 							}
 						}
 					)

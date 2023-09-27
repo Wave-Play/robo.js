@@ -8,8 +8,8 @@ export function textToSpeech(text: string, filePath: string): Promise<string> {
 	return new Promise((resolve, reject) => {
 		const audioConfig = sdk.AudioConfig.fromAudioFileOutput(filePath)
 		const speechConfig = sdk.SpeechConfig.fromSubscription(
-			process.env.AZURE_SUBSCRIPTION_KEY!,
-			process.env.AZURE_SUBSCRIPTION_REGION!
+			process.env.AZURE_SUBSCRIPTION_KEY ?? '',
+			process.env.AZURE_SUBSCRIPTION_REGION ?? ''
 		)
 		speechConfig.speechSynthesisVoiceName = 'en-US-AmberNeural'
 		speechConfig.speechSynthesisOutputFormat = sdk.SpeechSynthesisOutputFormat.Audio24Khz160KBitRateMonoMp3
