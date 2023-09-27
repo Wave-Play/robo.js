@@ -1,5 +1,20 @@
 # robo.js
 
+## 0.9.2
+
+### Patch Changes
+
+- 690cb5e: feat: new "robo remove" command for uninstalling plugins
+- 203b3a3: patch(build): decode import path when generating manifest using bun
+- 38a2668: patch: don't auto restart immediately after robo start failure in dev mode
+- e21caad: feat(bun): optimized typescript compiler
+- 05defa3: patch(bun): skip .env loading when using bun
+- 5e4174f: fix(bun): skip pnpm-specific plugin package lookups when using bun
+- 9ddc7fb: patch: rolled back native bun support for ts files
+- f16f282: fix(flashcore): dont warn about enoent errors when deleting keys
+- f6d0573: feat(cli): upgrade command
+- 31e7003: feat: new "robo add" command for installing plugins
+
 ## 0.9.1
 
 ### Patch Changes
