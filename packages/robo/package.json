@@ -20,7 +20,7 @@
 	},
 	"scripts": {
 		"build": "tsup && tsup --config tsup-cli.config.ts && tsup --config tsup-codemod.config.ts",
-		"dev": "chokidar \"src/**/*.ts\" \"codemod/**/*.ts\" -d 1000 -c \"pnpm build\" --initial",
+		"dev": "chokidar \"src/**/*.ts\" \"codemod/**/*.ts\" -d 1000 -c \"pnpm build\" --initial"
 	},
 	"bin": {
 		"robo": "dist/cli/index.js"
