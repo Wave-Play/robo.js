@@ -12,37 +12,20 @@
       "plugins": []
     },
     "type": "plugin",
-    "updatedAt": "2023-09-27T06:13:36.328Z",
+    "updatedAt": "2023-09-27T06:18:36.545Z",
     "version": "0.9.1"
   },
-  "api": {
-    "ai": {
-      "subroutes": {
-        "chat": {
-          "__path": "/.robo/build/api/ai/chat.js"
-        }
-      }
-    }
-  },
+  "api": {},
   "commands": {},
   "context": {
     "message": {},
     "user": {}
   },
   "events": {
-    "_start": [
+    "voiceStateUpdate": [
       {
-        "__path": "/.robo/build/events/_start.js"
-      }
-    ],
-    "messageCreate": [
-      {
-        "__path": "/.robo/build/events/messageCreate/chat.js"
-      }
-    ],
-    "typingStart": [
-      {
-        "__path": "/.robo/build/events/typingStart/debounce.js"
+        "__path": "/.robo/build/events/voiceStateUpdate/chat.js",
+        "frequency": "always"
       }
     ]
   },
