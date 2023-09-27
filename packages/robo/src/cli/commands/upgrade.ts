@@ -27,6 +27,11 @@ interface UpgradeCommandOptions {
 	verbose?: boolean
 }
 
+// TODO:
+// - Let user choose which changes to apply
+// - Auto accept option for ci
+// - Load changelog
+// - Verify codemod hash
 export async function upgradeAction(_files: string[], options: UpgradeCommandOptions) {
 	// Create a logger
 	logger({
@@ -88,7 +93,6 @@ export async function upgradeAction(_files: string[], options: UpgradeCommandOpt
 
 		// Check what needs to be changed
 		const data = await context.bindings.check(update.latestVersion, config, manifest)
-		logger.warn(`Woah, I got data:`, data)
 
 		// Execute all changes
 		// TODO: Let user choose which changes to apply
