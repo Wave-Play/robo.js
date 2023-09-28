@@ -1,5 +1,11 @@
 # create-robo
 
+## 0.7.1
+
+### Patch Changes
+
+- c380e26: chore: added ai-voice plugin as option
+
 ## 0.7.0
 
 ### Minor Changes
