@@ -11,6 +11,10 @@ npx robo add <package>
 Package: `@roboplay/plugin-ai`  
 Transform your Robo into an engaging chatbot utilizing AI. Supports customized behaviors and Discord commands.
 
+### [AI Voice](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-ai-voice)
+Package: `@roboplay/plugin-ai-voice`  
+Give your Robo a voice! Command and converse with it verbally in voice channels.
+
 ### [API](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-api)
 Package: `@roboplay/plugin-api`  
 Effortlessly create and manage API routes, allowing your Robo project to function as a full-fledged API server.
