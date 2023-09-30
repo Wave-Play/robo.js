@@ -20,8 +20,10 @@ const command = new Command('build')
 	.option('-s', '--silent', 'do not print anything')
 	.option('-v', '--verbose', 'print more information for debugging')
 	.option('-w', '--watch', 'watch for changes and rebuild')
+	.option('-h', '--help', 'Shows the available command options')
 	.handler(buildAction)
 	.addCommand(plugin)
+	.positionalArgs(true)
 export default command
 
 interface BuildCommandOptions {

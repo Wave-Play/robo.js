@@ -11,6 +11,7 @@ const command = new Command('deploy')
 	.description('Deploys your bot to RoboPlay!')
 	.option('-s', '--silent', 'do not print anything')
 	.option('-v', '--verbose', 'print more information for debugging')
+	.option('-h', '--help', 'Shows the available command options')
 	.handler(deployAction)
 export default command
 

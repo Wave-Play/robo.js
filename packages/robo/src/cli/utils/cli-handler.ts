@@ -1,4 +1,8 @@
-interface Option {
+import { color } from '../../core/color.js'
+import { logger } from '../../core/logger.js'
+
+
+export interface Option {
 	alias: string
 	name: string
 	description: string
@@ -11,6 +15,8 @@ export class Command {
 	private _options: Option[] = []
 	private _commands: Command[] = []
 	private _version?: string
+	private _positionalArgs?: boolean
+	protected _parent?: Command
 
 	constructor(name: string) {
 		this._name = name
@@ -27,6 +33,7 @@ export class Command {
 	 */
 	public addCommand(command: Command): this {
 		this._commands.push(command)
+		command._parent = this
 		return this
 	}
 
@@ -39,6 +46,62 @@ export class Command {
 	public description(desc: string): this {
 		this._description = desc
 		return this
+	}
+
+	/**
+	 * Gets the children commands of the current command.
+	 *
+	 * @returns {Command[]} - Get the children commands of the current command.
+	 */
+	public getChildCommands(): Command[] {
+		return this._commands
+	}
+
+	/**
+	 * Set the value for positionalArgs.
+	 *
+	 * @param {boolean} positionalArg - positionalArgs boolean.
+	 * @returns {Command} - Returns the current Command object for chaining.
+	 */
+	public positionalArgs(positionalArg: boolean): this{
+		this._positionalArgs = positionalArg;
+		return this
+	}
+
+	/**
+	 * Gets the parent command.
+	 *
+	 * @returns {Command} - Returns the parent command.
+	 */
+	public getParentCommand(): Command {
+		return this._parent
+	}
+
+	/**
+	 * Returns the name of the current command.
+	 *
+	 * @returns {string} - Returns the name of the command.
+	 */
+	public getName(): string {
+		return this._name
+	}
+
+	/**
+	 * Returns the description of the current command.
+	 *
+	 * @returns {string} - Returns the description of the current command.
+	 */
+	public getDescription(): string {
+		return this._description
+	}
+
+	/**
+	 * Returns the options of the current command.
+	 *
+	 * @returns {Option[]} - Returns the options of the current command.
+	 */
+	public getOptions(): Option[] {
+		return this._options
 	}
 
 	/**
@@ -85,21 +148,27 @@ export class Command {
 	}
 
 	private showHelp(): void {
-		console.log(`\nCommand: ${this._name}`)
-		console.log(`Description: ${this._description}`)
+		console.log(color.blue(`\n Command: ${this._name}`))
+		console.log(` Description: ${this._description}`)
 
 		if (this._options.length > 0) {
-			console.log(`Options:`)
+			logger.log(color.green(` Options:`))
 			this._options.forEach((opt) => {
-				console.log(`  ${opt.alias}, ${opt.name}: ${opt.description}`)
+				logger.log(
+					`${color.white(
+						`   ${color.green(`${opt.alias}`)}${color.white(',')} ${color.green(`${opt.name}`)}: ${opt.description}`
+					)}`
+				)
 			})
+			logger.log(`\n`)
 		}
 
 		if (this._commands.length > 0) {
-			console.log(`Subcommands:`)
+			logger.log(color.red(` Subcommands:`))
 			this._commands.forEach((cmd) => {
-				console.log(`  ${cmd._name}: ${cmd._description}`)
+				logger.log(`${color.white(`   ${cmd._name}: ${cmd._description}`)}`)
 			})
+			logger.log(`\n`)
 		}
 	}
 
@@ -179,6 +248,15 @@ export class Command {
 
 			// If arg is not an option or a subcommand, treat as a positional argument
 			positionalArgs.push(arg)
+
+			// if _positionalArgs is false show a message to inform the user.
+			if (!command._positionalArgs) {
+				logger.log('\n')
+				logger.error(color.red(`The command "${arg}" does not exist.`))
+				logger.info(`Try ${color.bold(color.blue('robo --help'))} to see all available commands.`)
+				logger.log('\n')
+				return
+			}
 		}
 
 		const optionsArgs = args.slice(optionsArgsStart)
