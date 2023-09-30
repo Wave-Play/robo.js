@@ -1,9 +1,10 @@
+import { color } from '../../core/color.js'
 import fs from 'node:fs/promises'
 import { DEFAULT_CONFIG } from '../../core/constants.js'
 import { CommandConfig, Config, SageOptions } from '../../types/index.js'
 import { getConfig } from '../../core/config.js'
 import { createRequire } from 'node:module'
-import { exec } from 'node:child_process'
+import { SpawnOptions, exec as nodeExec, spawn } from 'node:child_process'
 import { promisify } from 'node:util'
 import { logger } from '../../core/logger.js'
 import path from 'node:path'
@@ -11,11 +12,42 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 
 export const __DIRNAME = path.dirname(fileURLToPath(import.meta.url))
 
-const execAsync = promisify(exec)
+const execAsync = promisify(nodeExec)
 
 // Read the version from the package.json file
 const require = createRequire(import.meta.url)
 export const packageJson = require('../../../package.json')
+
+export function cleanTempDir() {
+	return fs.rm(path.join(process.cwd(), '.robo', 'temp'), { recursive: true })
+}
+
+/**
+ * Run a command as a child process
+ */
+export function exec(command: string, options?: SpawnOptions) {
+	return new Promise<void>((resolve, reject) => {
+		logger.debug(`> ${color.bold(command)}`)
+
+		// Run command as child process
+		const args = command.split(' ')
+		const childProcess = spawn(args.shift(), args, {
+			env: { ...process.env, FORCE_COLOR: '1' },
+			stdio: 'inherit',
+			...(options ?? {})
+		})
+
+		// Resolve promise when child process exits
+		childProcess.on('error', reject)
+		childProcess.on('close', (code) => {
+			if (code === 0) {
+				resolve()
+			} else {
+				reject(`Command exited with code ${code}`)
+			}
+		})
+	})
+}
 
 type PackageManager = 'npm' | 'bun' | 'pnpm' | 'yarn'
 
@@ -36,6 +68,8 @@ export function getPackageManager(): PackageManager {
 		return 'npm'
 	}
 }
+
+export const IS_BUN = getPackageManager() === 'bun'
 
 /**
  * Filters an array of paths to only include those that exist.
@@ -84,15 +118,17 @@ export async function findPackagePath(packageName: string, currentPath: string):
 		return null
 	}
 
+	// Determine if node_modules folder is managed by pnpm
+	// Note: This does *not* mean that the process was started with pnpm
 	const pnpmNodeModulesPath = path.resolve(nodeModulesPath, '.pnpm')
-	const isPnpm = await fs.access(pnpmNodeModulesPath).then(
+	const isPnpmModules = await fs.access(pnpmNodeModulesPath).then(
 		() => true,
 		() => false
 	)
 
 	let packagePath: string | null = null
 
-	if (isPnpm) {
+	if (isPnpmModules && !IS_BUN) {
 		logger.debug(`Found pnpm node_modules folder for ${packageName}`)
 		try {
 			const { stdout } = await execAsync(`pnpm list ${packageName} --json`, { cwd: currentPath })

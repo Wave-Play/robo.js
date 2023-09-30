@@ -310,12 +310,18 @@ export async function buildAsync(command: string | null, config: Config, verbose
 	})
 }
 
-async function checkUpdates(config: Config) {
+export async function checkUpdates(config: Config, forceCheck = false, suggest = true) {
 	const { updateCheckInterval = 60 * 60 } = config
 
+	const update = {
+		currentVersion: packageJson.version,
+		hasUpdate: false,
+		latestVersion: ''
+	}
+
 	// Ignore if disabled
-	if (updateCheckInterval <= 0) {
-		return
+	if (!forceCheck && updateCheckInterval <= 0) {
+		return update
 	}
 
 	// Check if update check is due
@@ -323,19 +329,21 @@ async function checkUpdates(config: Config) {
 	const now = Date.now()
 	const isDue = now - lastUpdateCheck > updateCheckInterval * 1000
 
-	if (!isDue) {
-		return
+	if (!forceCheck && !isDue) {
+		return update
 	}
 
 	// Check NPM registry for updates
 	const response = await fetch(`https://registry.npmjs.org/${packageJson.name}/latest`)
 	const latestVersion = (await response.json()).version
+	update.hasUpdate = packageJson.version !== latestVersion
+	update.latestVersion = latestVersion
 
 	// Update last update check time
 	await Flashcore.set(FLASHCORE_KEYS.lastUpdateCheck, now)
 
 	// Compare versions
-	if (packageJson.version !== latestVersion) {
+	if (update.hasUpdate) {
 		// Prepare commands
 		const packageManager = getPackageManager()
 		const commandName = packageManager === 'npm' ? 'install' : 'add'
@@ -343,9 +351,14 @@ async function checkUpdates(config: Config) {
 
 		// Print update message
 		const highlightColor = composeColors(color.green, color.bold)
-		const highlight = highlightColor(`A new version of Robo.js is available! (v${packageJson.version})`)
-		logger.info(`${highlight} Run ${color.bold(command)} to update.`)
+		const highlight = highlightColor(
+			`A new version of Robo.js is available! (v${packageJson.version} -> v${latestVersion})`
+		)
+		const suggestion = suggest ? `Run ${color.bold(command)} to update.` : ''
+		logger.info(highlight, suggestion)
 	}
+
+	return update
 }
 
 async function rebuildRobo(spiritId: string, config: Config, verbose: boolean, changes: Change[]) {

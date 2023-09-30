@@ -1,5 +1,24 @@
 # create-robo
 
+## 0.7.1
+
+### Patch Changes
+
+- c380e26: chore: added ai-voice plugin as option
+
+## 0.7.0
+
+### Minor Changes
+
+- 8caef39: refactor(docs): updated generated plugin readme to show usage with new `robo add` command
+- 1f8b8b5: refactor: use new config file structure for plugins
+- 38a60a0: feat: check for create-robo tool updates automatically
+- 990f588: refactor: include openai .env placeholder when applicable
+
+### Patch Changes
+
+- dd92437: patch(docs): recommend npx syntax for building plugin prior to publishing on npm
+
 ## 0.6.0
 
 ### Minor Changes

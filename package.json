@@ -6,6 +6,7 @@
 		"packages": [
 			"packages/create-robo",
 			"packages/plugin-ai",
+			"packages/plugin-ai-voice",
 			"packages/plugin-api",
 			"packages/plugin-gpt",
 			"packages/plugin-maintenance",

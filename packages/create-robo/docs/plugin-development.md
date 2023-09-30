@@ -40,7 +40,7 @@ This will compile your plugin and prepare it for publishing to NPM.
 
 ## Publishing to NPM 📦
 
-Once you've built your plugin using the `npm run build` command, you're ready to publish it to NPM. Make sure you've set up your NPM account and are logged in through the CLI.
+Once you've built your plugin using the `npx robo build` command, you're ready to publish it to NPM. Make sure you've set up your NPM account and are logged in through the CLI.
 
 Run the following command to publish your plugin:
 

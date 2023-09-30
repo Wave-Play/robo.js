@@ -7,36 +7,17 @@ Plugins empower developers to effortlessly add new features to their existing Ro
 To install a plugin, run the following command:
 
 ```bash
-npm install awesome-robo-plugin
+npx robo add awesome-robo-plugin
 ```
 
-After that, add the plugin to your Robo's configuration file, which is usually located at `.config/robo.mjs`. Incorporate the following lines:
 
-```js
-/**
- * @type {import('@roboplay/robo.js').Plugin}
- **/
-const awesomeRoboPlugin = [
-	'awesome-robo-plugin',
-	{
-		// ... optional customization options
-	}
-]
+That's it! Your Robo now has access to the additional features provided by the plugin. 
 
-/**
- * @type {import('@roboplay/robo.js').Config}
- **/
-export default {
-	// ... rest of your configuration
-	plugins: [awesomeRoboPlugin]
-}
-```
-
-And there you have it! Your Robo now has access to the additional features provided by the plugin. The plugin's commands and events are automatically linked. Plus, if your Robo needs any extra bot permissions, they'll be inherited when running `robo invite` to generate an invite link. So just sit back and enjoy the extra functionality!
+The plugin's commands and events are automatically linked. Plus, if your Robo needs any extra bot permissions, they'll be inherited when running `robo invite` to generate an invite link. So just sit back and enjoy the extra functionality!
 
 ## Creating Plugins 🛠️
 
-Developing a Robo plugin works in the same way as developing features for a Robo. Check out the [/developing-features](/developing-features) section for more details on how to develop a plugin.
+Developing a Robo plugin works in the same way as developing features for a Robo. Check out the [developing features](/developing-features) section for more details on how to develop a plugin.
 
 To create a new plugin project, run the following command:
 

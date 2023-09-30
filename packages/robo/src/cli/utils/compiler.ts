@@ -1,6 +1,6 @@
 import fs from 'fs/promises'
 import path from 'path'
-import { hasProperties, replaceSrcWithBuildInRecord } from './utils.js'
+import { IS_BUN, hasProperties, replaceSrcWithBuildInRecord } from './utils.js'
 import { logger } from '../../core/logger.js'
 import { env } from '../../core/env.js'
 import type { default as Typescript, CompilerOptions, Diagnostic } from 'typescript'
@@ -14,9 +14,11 @@ const distDir = path.join(process.cwd(), '.robo', 'build')
 let ts: typeof Typescript
 let transform: typeof SwcTransform
 try {
-	const [typescript, swc] = await Promise.all([import('typescript'), import('@swc/core')])
-	ts = typescript.default
-	transform = swc.transform
+	if (!IS_BUN) {
+		const [typescript, swc] = await Promise.all([import('typescript'), import('@swc/core')])
+		ts = typescript.default
+		transform = swc.transform
+	}
 } catch {
 	// Ignore
 }

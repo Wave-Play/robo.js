@@ -15,11 +15,12 @@ import {
 	Scope
 } from '../../types/index.js'
 import { logger } from '../../core/logger.js'
-import { findPackagePath, hasProperties, packageJson } from './utils.js'
+import { IS_BUN, findPackagePath, hasProperties, packageJson } from './utils.js'
 import { loadConfig } from '../../core/config.js'
 import { pathToFileURL } from 'node:url'
 import { DefaultGen } from './generate-defaults.js'
 import { bold, color } from '../../core/color.js'
+import { ALLOWED_EXTENSIONS } from '../../core/constants.js'
 import type { PermissionsString } from 'discord.js'
 
 // Global manifest reference
@@ -371,7 +372,7 @@ async function scanDir(predicate: ScanDirPredicate, options: ScanDirOptions) {
 			const stats = await fs.stat(fullPath)
 
 			// Group files and directories accordingly
-			if (stats.isFile() && path.extname(file) !== '.js') {
+			if (stats.isFile() && !ALLOWED_EXTENSIONS.includes(path.extname(file))) {
 				return
 			} else if (stats.isFile()) {
 				files.push(file)
@@ -483,7 +484,10 @@ async function generateEntries<T>(
 			async (fileKeys, fullPath, moduleKeys) => {
 				logger.debug(`[${type}] Generating`, fileKeys, 'from', fullPath)
 				const isGenerated = generatedKeys.includes(fileKeys.join('/'))
-				const importPath = pathToFileURL(fullPath).toString()
+				let importPath = pathToFileURL(fullPath).toString()
+				if (IS_BUN) {
+					importPath = decodeURIComponent(importPath)
+				}
 				const module = await import(importPath)
 				let entry = {
 					...getValue(type, module.config),

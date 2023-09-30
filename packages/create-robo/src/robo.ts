@@ -46,6 +46,13 @@ const optionalPlugins = [
 	},
 	{
 		name: `${chalk.bold(
+			'AI Voice'
+		)} - Give your Robo a voice! Command and converse with it verbally in voice channels.`,
+		short: 'AI Voice',
+		value: 'ai-voice'
+	},
+	{
+		name: `${chalk.bold(
 			'API'
 		)} - Effortlessly create and manage API routes, turning your Robo project into a full-fledged API server.`,
 		short: 'API',
@@ -379,6 +386,10 @@ export default class Robo {
 				}
 			})
 		}
+		if (features.includes('ai-voice')) {
+			packageJson.dependencies['@roboplay/plugin-ai-voice'] = '^0.1.0'
+			await this.createPluginConfig('@roboplay/plugin-ai-voice', {})
+		}
 		if (features.includes('api')) {
 			packageJson.dependencies['@roboplay/plugin-api'] = '^0.1.0'
 			await this.createPluginConfig('@roboplay/plugin-api', {
@@ -389,7 +400,7 @@ export default class Robo {
 		if (features.includes('gpt')) {
 			packageJson.dependencies['@roboplay/plugin-gpt'] = '^1.0.0'
 			await this.createPluginConfig('@roboplay/plugin-gpt', {
-				openaiKey: 'process.env.OPENAI_KEY',
+				openaiKey: 'process.env.OPENAI_KEY'
 			})
 		}
 		if (features.includes('maintenance')) {
@@ -475,6 +486,10 @@ export default class Robo {
 
 		if (features.includes('ai') || features.includes('gpt')) {
 			envContent = updateOrAddVariable(envContent, 'OPENAI_KEY', '')
+		}
+		if (features.includes('ai-voice')) {
+			envContent = updateOrAddVariable(envContent, 'AZURE_SUBSCRIPTION_KEY', '')
+			envContent = updateOrAddVariable(envContent, 'AZURE_SUBSCRIPTION_REGION', '')
 		}
 		if (features.includes('api')) {
 			envContent = updateOrAddVariable(envContent, 'PORT', '3000')

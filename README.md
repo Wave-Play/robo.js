@@ -5,7 +5,8 @@
 
 <div align="center">
 
-[![GitHub license](https://img.shields.io/github/license/Wave-Play/robo?style=flat)](https://github.com/Wave-Play/robo/blob/main/LICENSE) ![npm](https://img.shields.io/npm/v/@roboplay/robo.js) [![install size](https://packagephobia.com/badge?p=@roboplay/robo.js@latest)](https://packagephobia.com/result?p=@roboplay/robo.js@latest)
+[![GitHub license](https://img.shields.io/github/license/Wave-Play/robo)](https://github.com/Wave-Play/robo/blob/main/LICENSE) [![npm](https://img.shields.io/npm/v/@roboplay/robo.js)](https://www.npmjs.com/package/@roboplay/robo.js) [![install size](https://packagephobia.com/badge?p=@roboplay/robo.js@latest)](https://packagephobia.com/result?p=@roboplay/robo.js@latest) [![Discord](https://img.shields.io/discord/1087134933908193330?color=7289da)](https://discord.gg/fASAKnJxUP) [![All Contributors](https://img.shields.io/github/all-contributors/Wave-Play/robo.js?color=cf7cfc)](#contributors)
+
 
 **Turbocharge [Discord.js](https://discord.js.org/) with effortless power!** ⚡
 
@@ -98,3 +99,23 @@ Wait, is it actually an... inverse learning curve? You heard right, there's more
 ## License 📜
 
 We're all about freedom, so we've got you covered with the permissive [MIT License](LICENSE)! Go wild and build amazing bots without worrying about legalities.
+
+## Contributors
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="http://pkmmte.com"><img src="https://avatars.githubusercontent.com/u/3953360?v=4?s=100" width="100px;" alt="Pkmmte Xeleon"/><br /><sub><b>Pkmmte Xeleon</b></sub></a><br /><a href="https://github.com/Wave-Play/robo.js/commits?author=Pkmmte" title="Code">💻</a> <a href="#maintenance-Pkmmte" title="Maintenance">🚧</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+<!-- prettier-ignore -->
+<!-- ALL-CONTRIBUTORS-LIST:END -->

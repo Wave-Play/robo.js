@@ -1,5 +1,6 @@
 {
 	"include": ["src"],
+	"exclude": ["node_modules", "codemod"],
 	"compilerOptions": {
 		"target": "ESNext",
 		"module": "esnext",
