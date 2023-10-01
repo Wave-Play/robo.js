@@ -27,6 +27,10 @@ Empower your Robo to generate human-like text with the revolutionary capabilitie
 Package: `@roboplay/plugin-maintenance`  
 Enable a maintenance mode for your Robo, ensuring smoother user experiences during updates or fixes.
 
+### [Moderation Tools](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-modtools)
+Package: `@roboplay/plugin-modtools`  
+Equip your bot with essential tools to manage and maintain your server.
+
 ### [Polls](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-poll)
 Package: `@roboplay/plugin-poll`  
 Easily create and manage interactive polls, engaging your community with minimal effort.
