@@ -3,11 +3,19 @@
 	"projectOwner": "Wave-Play",
 	"repoType": "github",
 	"repoHost": "https://github.com",
-	"files": ["CONTRIBUTORS.md"],
+	"files": ["CONTRIBUTORS.md", "README.md"],
 	"imageSize": 100,
-	"commit": true,
+	"commit": false,
+	"commitType": "docs",
 	"commitConvention": "angular",
 	"contributors": [
+		{
+			"login": "Pkmmte",
+			"name": "Pkmmte Xeleon",
+			"avatar_url": "https://avatars.githubusercontent.com/u/3953360?v=4",
+			"profile": "http://pkmmte.com",
+			"contributions": ["staff", "code", "maintenance"]
+		},
 		{
 			"login": "Nazeofel",
 			"name": "Alexander",
@@ -17,6 +25,14 @@
 		}
 	],
 	"contributorsPerLine": 7,
-	"linkToUsage": true
+	"skipCi": true,
+	"linkToUsage": true,
+	"types": {
+		"staff": {
+			"symbol": "✨",
+			"description": "WavePlay Staff",
+			"link": "[<%= symbol %>](\"<%= description %>\"),"
+		}
+	}
 }
 
