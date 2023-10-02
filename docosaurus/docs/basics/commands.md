@@ -76,7 +76,7 @@ export default (): CommandResult => {
 }
 ```
 
-The `config` object also lets you customize stuff like locale translations, Sage options, and command timeouts. To understand more about the available configuration options, check out the [configuration section](./config.md).
+The `config` object also lets you customize stuff like locale translations, Sage options, and command timeouts. To understand more about the available configuration options, check out the [configuration section](/docs/advanced/configuration).
 
 ## Command Options 🎚️
 
@@ -99,7 +99,7 @@ export default (interaction) => {
   return loud ? 'PONG!!!' : 'Pong!'
 }
 ```
-Want to explore more options? Check the [configuration section](./config.md).
+Want to explore more options? Check the [configuration section](/docs/advanced/configuration).
 
 ## Autocomplete 🧠
 

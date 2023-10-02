@@ -26,7 +26,7 @@ Next up, choose a migration option based on your existing bot's complexity.
 
 For simple bots, we recommend diving headfirst into the Robo.js File Structure. You'll get automatic command registration, plugins, and more. Say goodbye to managing the Discord.js client object manually when you migrate your handlers (events/commands) to the Robo.js File Structure. 
 
-1. Migrate your bot to the [Robo.js File Structure](/developing/overview).
+1. Migrate your bot to the [Robo.js File Structure](/docs/basics/overview).
 
 2. Update your `.config/robo.mjs` file with any client options you used with the Discord.js client. For example:
 ```js
@@ -70,7 +70,7 @@ export default {
 
 3. Use `robo dev` to run your bot during development.
 
-By doing this, you'll enjoy most of Robo.js features while gradually migrating your handlers (events/commands) to the [Robo.js File Structure](/developing/overview).
+By doing this, you'll enjoy most of Robo.js features while gradually migrating your handlers (events/commands) to the [Robo.js File Structure](/docs/basics/overview).
 
 > **Note:** Robo.js handles the `client.login` part for you, so no worries there! 
 
@@ -91,7 +91,7 @@ client.on('messageCreate', (message) => {
 Robo.start({ client })
 ```
 
-With this setup, you can start migrating your existing commands into the [Robo.js File Structure](/developing/overview) or create new ones this way while you work your way there. 
+With this setup, you can start migrating your existing commands into the [Robo.js File Structure](/docs/basics/overview) or create new ones this way while you work your way there. 
 
 Start by moving your `clientOptions` into a`.config/robo.mjs` file instead of creating your own custom client. Once you're done migrating, you can kick off your projects using `robo dev` instead of your own entry file.
 
@@ -101,4 +101,4 @@ We're huge fans of the Robo.js File Structure 'cause it unlocks awesome features
 
 Whichever migration path you pick, adopting Robo.js is gonna help you level up your bot development process and give you a more organized, efficient way to manage your bot.
 
-> **By the way...** It's not required, but TypeScript + Linting while you're working with Robo.js can be super handy. Check out the [TypeScript Docs](/developing/typescript) and [Linting Docs](/developing/linting) to get started.
+> **By the way...** It's not required, but TypeScript + Linting while you're working with Robo.js can be super handy. Check out the [TypeScript Docs](/docs/advanced/typescript) and [Linting Docs](/docs/advanced/linting) to get started.

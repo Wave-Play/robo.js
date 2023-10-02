@@ -52,7 +52,7 @@ After building your Robo, fire it up with the `robo start` command. If you used 
 npm start
 ```
 
-> Remember to set up your environment variables before starting your Robo! Check out the [Environment variables](/environment-variables) page for more info. You'll need to set NODE_ENV to "production" to run your Robo in production mode.
+> Remember to set up your environment variables before starting your Robo! Check out the [Secrets](/docs/basics/secrets) page for more info. You'll need to set `NODE_ENV` to `"production"` to run your Robo in production mode.
 
 ## Extra tidbits 📌
 

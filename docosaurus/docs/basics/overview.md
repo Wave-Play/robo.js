@@ -51,7 +51,7 @@ src/
         └── events/
 ```
 
-For a deeper dive into the world of modules, check out the [modules documentation](./modules.md).
+For a deeper dive into the world of modules, check out the [modules documentation](/docs/advanced/modules).
 
 ## Creating Commands 📜
 

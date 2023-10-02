@@ -4,7 +4,7 @@ Flashcore is like your Robo's built-in database—ready to hold onto all the key
 
 ## Riding the Flashcore Wave 🏄‍♂️
 
-Think of Flashcore as [States](./states) with a time capsule. It's in it for the long game, and yes, it's async! Here's how we're handling a user's high score in a game:
+Think of Flashcore as [States](/docs/basics/states) with a time capsule. It's in it for the long game, and yes, it's async! Here's how we're handling a user's high score in a game:
 
 Stashing the high score:
 

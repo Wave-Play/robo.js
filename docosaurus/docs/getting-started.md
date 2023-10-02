@@ -20,7 +20,7 @@ Depending on your bot's complexity, there are 3 smooth migration paths to choose
 
 Check out our migration guide for a detailed breakdown of the 3 migration options, and pick the one that suits your bot best. Get ready to level up your bot development experience!
 
-**➞ [📚 See the full migration guide](/docs/developing/overview.md)**
+**➞ [📚 See the full migration guide](/docs/migrating)**
 
 ## Robo.js CLI Commands & Benefits ⌨️
 
@@ -30,13 +30,13 @@ Boost your bot development with Robo.js' nifty CLI commands. Use `robo dev` to r
 npm run dev
 ```
 
-Wanna know more? Check out the [Command Line Interface](./cli.md) documentation.
+Wanna know more? Check out the [Command Line Interface](/docs/advanced/command-line) documentation.
 
 > With Robo.js, there's no need for a separate script to register command updates. Sit back and relax—Robo.js has got you covered!
 
 ## Troubleshooting 🛠️
 
-If you run into issues, execute `robo doctor` to automatically detect common problems and offer fixes. This command can also identify issues with Robo.js plugins. Check out the [Debugging Docs](./debugging.md) and feel free to ask **Sage** for help.
+If you run into issues, execute `robo doctor` to automatically detect common problems and offer fixes. This command can also identify issues with Robo.js plugins. Check out the [Debugging Docs](/docs/advanced/debugging) and feel free to ask **Sage** for help.
 
 > **Note:** You can summon **Sage** in the documentation site at any time by pressing *Command + K* or *Control + K*.
 
@@ -44,7 +44,7 @@ If you run into issues, execute `robo doctor` to automatically detect common pro
 
 Now that you're all set up, explore these sections to level up your Robo.js skills:
 
-1. [Developing your Robo](./developing.md) - Learn how to develop your Robo, create commands and events, and interact with the Discord API.
-2. [Adding to Discord server](./adding-to-server.md) - Discover how to add your Robo to a Discord server and set up permissions.
-3. [Creating Plugins](./plugins.md) - Discover how to create plugins that extend the functionality of Robo.js and share them with the community.
-4. [Hosting your Robo](./hosting.md) - Get your Robo up and running on a hosting service to ensure it's always online and ready to serve your Discord server.
+1. [Developing your Robo](/docs/basics/overview) - Learn how to develop your Robo, create commands and events, and interact with the Discord API.
+2. [Adding to Discord server](/docs/adding-to-server) - Discover how to add your Robo to a Discord server and set up permissions.
+3. [Creating Plugins](/docs/advanced/plugins) - Discover how to create plugins that extend the functionality of Robo.js and share them with the community.
+4. [Hosting your Robo](/docs/hosting) - Get your Robo up and running on a hosting service to ensure it's always online and ready to serve your Discord server.

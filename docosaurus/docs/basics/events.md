@@ -46,7 +46,7 @@ export default () => {
 
 Now, when the bot is ready, it will not only log 'Bot is ready!' in the console, but also set its status to 'Playing with code'!
 
-For larger bots with more complex use cases, check out our [Modules Documentation](./modules.md) to group your events and commands.
+For larger bots with more complex use cases, check out our [Modules Documentation](/docs/advanced/modules) to group your events and commands.
 
 ## Use Cases 🛠️
 
@@ -69,7 +69,7 @@ export default (oldState, newState) => {
 
 ## Intents & Privileged Intents 🛡️
 
-Depending on the events you're trying to listen to, you might need to add more intents in your bot's [configuration](./config.md). Note: some events like `messageContent` may require privileged intents to be toggled on in your bot's Discord application settings.
+Depending on the events you're trying to listen to, you might need to add more intents in your bot's [configuration](/docs/advanced/configuration). Note: some events like `messageContent` may require privileged intents to be toggled on in your bot's Discord application settings.
 
 Privileged intents include `GUILD_PRESENCES` and `GUILD_MEMBERS`, which cover events related to guild members' presence and activities. To enable these, you need to:
 
@@ -87,6 +87,6 @@ For a complete list of event names, check out this handy [Event Names Cheat Shee
 
 In Robo.js, we've got some special events to give you an extra level of control over your bot's shenanigans: `_start`, `_stop`, and `_restart`. Each one of these handy events receive the `client` object as a parameter.
 
-Here's the lowdown: `_start` gets called *before* your bot has logged in. You can return a Promise in these events and Robo.js will patiently wait for them to finish up, but don't leave it hanging too long – there's a 5-second time limit. [Check out the details on timeouts here](./timeouts.md).
+Here's the lowdown: `_start` gets called *before* your bot has logged in. You can return a Promise in these events and Robo.js will patiently wait for them to finish up, but don't leave it hanging too long – there's a 5-second time limit. <!-- [Check out the details on timeouts here](/docs/advanced/configuration#timeouts). -->
 
 Use these lifecycle events to tidy up or get things ready for your Robo's grand entrance or exit. Perhaps you need to fire up an API server or disable buttons while your bot's snoozing. 
