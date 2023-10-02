@@ -22,6 +22,20 @@
 			"avatar_url": "https://avatars.githubusercontent.com/u/96749659?v=4",
 			"profile": "https://github.com/Nazeofel",
 			"contributions": ["code"]
+		},
+		{
+			"login": "0xMouiz",
+			"name": "Mouiz",
+			"avatar_url": "https://avatars.githubusercontent.com/u/96005374?v=4",
+			"profile": "https://github.com/0xMouiz",
+			"contributions": ["doc"]
+		},
+		{
+			"login": "mbos2",
+			"name": "Matej Bošnjak",
+			"avatar_url": "https://avatars.githubusercontent.com/u/56090587?v=4",
+			"profile": "https://github.com/mbos2",
+			"contributions": ["doc"]
 		}
 	],
 	"contributorsPerLine": 7,
