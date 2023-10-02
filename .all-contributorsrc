@@ -1,37 +1,22 @@
 {
-	"files": [
-		"CONTRIBUTORS.md",
-		"README.md"
-	],
+	"projectName": "robo.js",
+	"projectOwner": "Wave-Play",
+	"repoType": "github",
+	"repoHost": "https://github.com",
+	"files": ["CONTRIBUTORS.md"],
 	"imageSize": 100,
-	"commit": false,
-	"commitType": "docs",
+	"commit": true,
 	"commitConvention": "angular",
 	"contributors": [
 		{
-			"login": "Pkmmte",
-			"name": "Pkmmte Xeleon",
-			"avatar_url": "https://avatars.githubusercontent.com/u/3953360?v=4",
-			"profile": "http://pkmmte.com",
-			"contributions": [
-				"code",
-        "maintenance",
-        "staff"
-			]
+			"login": "Nazeofel",
+			"name": "Alexander",
+			"avatar_url": "https://avatars.githubusercontent.com/u/96749659?v=4",
+			"profile": "https://github.com/Nazeofel",
+			"contributions": ["code"]
 		}
 	],
 	"contributorsPerLine": 7,
-	"linkToUsage": false,
-	"skipCi": true,
-	"repoType": "github",
-	"repoHost": "https://github.com",
-	"projectName": "robo.js",
-	"projectOwner": "Wave-Play",
-	"types": {
-		"staff": {
-			"symbol": "✨",
-			"description": "WavePlay Staff",
-			"link": "[<%= symbol %>](<%= url %> \"<%= description %>\"),"
-		}
-	}
+	"linkToUsage": true
 }
+
