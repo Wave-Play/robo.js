@@ -10,7 +10,7 @@ We totes recommend creating a personal Discord server for your Robo to chill in.
 
 Doing this means command updates will only show up in this cool server during development mode. Plus, you'll unlock the special debugging features mentioned here for this server only.
 
-> Note: Peep [Environment Variables](/environment-variables) for more deets
+> **Note:** Check out [Secrets](/docs/basics/secrets) for more
 
 ## Sage Error Replies 🔮
 
@@ -29,7 +29,7 @@ export default {
 }
 ```
 
-> Note: Check out [Sage Documentation](/advanced/sage) to learn more about the Sage suite and its awesome features
+> Note: Check out [Sage Documentation](/docs/basics/sage) to learn more about the Sage suite and its awesome features
 
 ## Logging 📝
 
@@ -59,7 +59,7 @@ Log levels and their priority values look like this:
 
 So, setting `level` to `debug` (priority 1) will show all logs with a greater value, `info` (priority 2) is the default, and setting it to `error` (priority 5) will only show error logs and logs with a priority value of 5.
 
-> Note: Dive into [Advanced Configuration](/advanced/configuration) for more info on the config file and its values
+> Note: Dive into [Advanced Configuration](/docs/advanced/configuration) for more info on the config file and its values
 
 ## Handling Async Errors ⏰
 

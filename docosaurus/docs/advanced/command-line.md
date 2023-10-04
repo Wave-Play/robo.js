@@ -45,7 +45,7 @@ Commands:
 
 #### Debugging 🔍
 
-- **`doctor`**: Automatically detects common problems and offers fixes. It can also allow plugins to tell you if they're set up correctly. For more information on fixing bugs, check out the [Debugging page](#).
+- **`doctor`**: Automatically detects common problems and offers fixes. It can also allow plugins to tell you if they're set up correctly. For more information on fixing bugs, check out the [Debugging page](/docs/advanced/debugging).
 - **`why`**: Analyzes why a command, event, permission, or scope is in your Robo. This can be used to track down which plugin added certain things or why specific events are firing. Use it like this: `robo why /ping`
 - **`help`**: Displays help for this CLI or a specific command. Can be used like this: `robo help` or also as a command option `robo build --help`
 

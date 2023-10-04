@@ -17,7 +17,7 @@ The plugin's commands and events are automatically linked. Plus, if your Robo ne
 
 ## Creating Plugins 🛠️
 
-Developing a Robo plugin works in the same way as developing features for a Robo. Check out the [developing features](/developing-features) section for more details on how to develop a plugin.
+Developing a Robo plugin works in the same way as developing features for a Robo. Check out the [overview section](/docs/basics/overview) for more details on how to develop a plugin.
 
 To create a new plugin project, run the following command:
 
