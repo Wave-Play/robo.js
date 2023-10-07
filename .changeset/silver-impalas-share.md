@@ -1,5 +1,5 @@
 ---
-'@roboplay/robo.js': minor
+'@roboplay/robo.js': patch
 ---
 
-fixed bug with command arguments
+fix(cli): missing positional arguments options
