@@ -15,6 +15,7 @@ const command = new Command('remove')
 	.option('-f', '--force', 'forcefully remove & unregister packages')
 	.option('-s', '--silent', 'do not print anything')
 	.option('-v', '--verbose', 'print more information for debugging')
+	.positionalArgs(true)
 	.handler(removeAction)
 export default command
 
