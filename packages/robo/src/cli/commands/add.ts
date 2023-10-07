@@ -15,6 +15,7 @@ const command = new Command('add')
 	.option('-f', '--force', 'forcefully install & register packages')
 	.option('-s', '--silent', 'do not print anything')
 	.option('-v', '--verbose', 'print more information for debugging')
+	.positionalArgs(true)
 	.handler(addAction)
 export default command
 
