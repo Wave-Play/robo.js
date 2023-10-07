@@ -38,19 +38,23 @@ Easily create and manage interactive polls, engaging your community with minimal
 ## Third-party Plugins 🎉
 ---
 Be the first to [create a plugin for Robo.js](/docs/advanced/plugins#creating-plugins) and get featured here!
+
+<!-- Hacktoberfest Start -->
+
 <!--
-### **Fun Reactions Plugin**
-Package: `fun-reactions-plugin`  
-Spruce up your Robo with spontaneous and entertaining reactions.
 
-### **Dynamic Widgets Plugin**
-Package: `dynamic-widgets-plugin`  
-Upgrade your Robo with dynamic widgets, adding a layer of interaction and dynamism.
+Make a pull request editing this file with your plugin added in order to be counted for Hacktoberfest!
+Please use the following template:
 
-### **Enhanced Security Plugin**
-*Package:* `enhanced-security-plugin`  
-Fortify your Robo with advanced security features, ensuring a safer environment for your community.
+### [Name](Link)
+Package: `package-name`  
+Your plugin description here.
+
+Add your plugin below:
+
 -->
+
+<!-- Hacktoberfest End -->
 
 ## List Your Plugin 🛠️
 ---
@@ -58,3 +62,5 @@ Fortify your Robo with advanced security features, ensuring a safer environment 
 Created a plugin and eager to share it with the Robo.js community? Awesome! 🌟
 
 Please respond to [this GitHub Discussion](https://github.com/Wave-Play/robo.js/discussions/48) with the details of your plugin, and it might get listed here! Upon review, your plugin will be added to the list.
+
+**➞ [📚 Learn how to make plugins](/docs/advanced/plugins#creating-plugins)**
