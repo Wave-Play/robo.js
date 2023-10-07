@@ -1,8 +1,9 @@
 import fs from 'fs/promises'
 import path from 'path'
-import { IS_BUN, hasProperties, replaceSrcWithBuildInRecord } from './utils.js'
+import { hasProperties, replaceSrcWithBuildInRecord } from './utils.js'
 import { logger } from '../../core/logger.js'
 import { env } from '../../core/env.js'
+import { IS_BUN } from './runtime-utils.js'
 import type { default as Typescript, CompilerOptions, Diagnostic } from 'typescript'
 import type { transform as SwcTransform } from '@swc/core'
 

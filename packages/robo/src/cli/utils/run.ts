@@ -1,6 +1,7 @@
 import { fork } from 'child_process'
 import { logger } from '../../core/logger.js'
-import { IS_BUN, locateInHierarchy } from './utils.js'
+import { locateInHierarchy } from './utils.js'
+import { IS_BUN } from './runtime-utils.js'
 import type { ChildProcess } from 'child_process'
 import type { RoboMessage } from '../../types/index.js'
 

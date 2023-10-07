@@ -8,7 +8,6 @@ import {
 	IS_WINDOWS,
 	cmd,
 	filterExistingPaths,
-	getPackageManager,
 	getWatchedPlugins,
 	packageJson,
 	timeout
@@ -22,6 +21,7 @@ import { color, composeColors } from '../../core/color.js'
 import { Spirits } from '../utils/spirits.js'
 import { buildAction } from './build/index.js'
 import { Flashcore, prepareFlashcore } from '../../core/flashcore.js'
+import { getPackageManager } from '../utils/runtime-utils.js'
 import type { Config, RoboMessage, SpiritMessage } from '../../types/index.js'
 import type { ChildProcess } from 'child_process'
 

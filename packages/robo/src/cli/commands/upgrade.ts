@@ -10,7 +10,8 @@ import { readFileSync } from 'node:fs'
 import child_process from 'node:child_process'
 import path from 'node:path'
 import { createContext, Script } from 'node:vm'
-import { cleanTempDir, cmd, exec, getPackageManager, packageJson } from '../utils/utils.js'
+import { cleanTempDir, cmd, exec, packageJson } from '../utils/utils.js'
+import { getPackageManager } from '../utils/runtime-utils.js'
 import type { Bindings } from '../../../codemod/types'
 
 const command = new Command('upgrade')

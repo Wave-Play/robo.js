@@ -15,12 +15,13 @@ import {
 	Scope
 } from '../../types/index.js'
 import { logger } from '../../core/logger.js'
-import { IS_BUN, findPackagePath, hasProperties, packageJson } from './utils.js'
+import { findPackagePath, hasProperties, packageJson } from './utils.js'
 import { loadConfig } from '../../core/config.js'
 import { pathToFileURL } from 'node:url'
 import { DefaultGen } from './generate-defaults.js'
 import { bold, color } from '../../core/color.js'
 import { ALLOWED_EXTENSIONS } from '../../core/constants.js'
+import { IS_BUN } from './runtime-utils.js'
 import type { PermissionsString } from 'discord.js'
 
 // Global manifest reference

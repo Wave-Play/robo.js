@@ -5,7 +5,8 @@ import { loadConfig } from '../../core/config.js'
 import { logger } from '../../core/logger.js'
 import { Command } from '../utils/cli-handler.js'
 import { createRequire } from 'node:module'
-import { cmd, exec, getPackageManager } from '../utils/utils.js'
+import { cmd, exec } from '../utils/utils.js'
+import { getPackageManager } from '../utils/runtime-utils.js'
 
 const require = createRequire(import.meta.url)
 

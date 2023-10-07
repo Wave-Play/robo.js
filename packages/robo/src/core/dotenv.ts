@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
-import { IS_BUN } from '../cli/utils/utils.js'
+import { IS_BUN } from '../cli/utils/runtime-utils.js'
 
 function parseEnvFile(envFileContent: string): { [key: string]: string } {
 	const lines = envFileContent.split('\n')
