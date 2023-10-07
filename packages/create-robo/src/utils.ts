@@ -33,7 +33,8 @@ export default {
 			'MessageContent'
 		]
 	},
-	plugins: []
+	plugins: [],
+	type: 'robo'
 }\n`
 
 /**

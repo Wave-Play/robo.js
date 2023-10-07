@@ -369,10 +369,15 @@ export default class Robo {
 		}
 
 		// Create the robo.mjs file
+		let roboConfig = ROBO_CONFIG
+		if (this._isPlugin) {
+			roboConfig = roboConfig.replace(`type: 'robo'`, `type: 'plugin'`)
+		}
+
 		logger.debug(`Writing Robo config file...`)
 		await fs.mkdir(path.join(this._workingDir, 'config', 'plugins'), { recursive: true })
-		await fs.writeFile(path.join(this._workingDir, 'config', 'robo.mjs'), ROBO_CONFIG)
-		logger.debug(`Finished writing Robo config file:\n`, ROBO_CONFIG)
+		await fs.writeFile(path.join(this._workingDir, 'config', 'robo.mjs'), roboConfig)
+		logger.debug(`Finished writing Robo config file:\n`, roboConfig)
 		logger.debug(`Setting up plugins...`)
 
 		if (features.includes('ai')) {
