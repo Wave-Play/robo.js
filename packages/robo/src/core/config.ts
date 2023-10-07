@@ -26,6 +26,7 @@ export async function loadConfig(file = 'robo'): Promise<Config> {
 		// Load plugin files when using "/config" directory
 		if (configPath.includes(path.sep + 'config' + path.sep)) {
 			logger.debug('Scanning for plugin files...')
+			config.plugins = config.plugins ?? []
 
 			await scanPlugins(fileURLToPath(configPath), (plugin, pluginConfig) => {
 				// Remove existing plugin config if it exists

@@ -214,6 +214,7 @@ export async function loadManifest(name = '', basePath = ''): Promise<Manifest> 
 
 			Object.keys(manifest.api ?? {}).forEach((key) => {
 				manifest.api[key].__auto = true
+				manifest.api[key].__path = manifest.api[key].__path.replaceAll('\\', path.sep)
 				manifest.api[key].__plugin = {
 					name,
 					path: basePath
@@ -221,6 +222,7 @@ export async function loadManifest(name = '', basePath = ''): Promise<Manifest> 
 			})
 			Object.keys(manifest.commands).forEach((key) => {
 				manifest.commands[key].__auto = true
+				manifest.commands[key].__path = manifest.commands[key].__path.replaceAll('\\', path.sep)
 				manifest.commands[key].__plugin = {
 					name,
 					path: basePath
@@ -228,6 +230,7 @@ export async function loadManifest(name = '', basePath = ''): Promise<Manifest> 
 			})
 			Object.keys(manifest.context?.message ?? {}).forEach((key) => {
 				manifest.context.message[key].__auto = true
+				manifest.context.message[key].__path = manifest.context.message[key].__path.replaceAll('\\', path.sep)
 				manifest.context.message[key].__plugin = {
 					name,
 					path: basePath
@@ -235,6 +238,7 @@ export async function loadManifest(name = '', basePath = ''): Promise<Manifest> 
 			})
 			Object.keys(manifest.context?.user ?? {}).forEach((key) => {
 				manifest.context.user[key].__auto = true
+				manifest.context.user[key].__path = manifest.context.user[key].__path.replaceAll('\\', path.sep)
 				manifest.context.user[key].__plugin = {
 					name,
 					path: basePath
@@ -243,12 +247,14 @@ export async function loadManifest(name = '', basePath = ''): Promise<Manifest> 
 			Object.keys(manifest.events).forEach((key) => {
 				manifest.events[key] = manifest.events[key].map((eventConfig) => ({
 					...pluginInfo,
-					...eventConfig
+					...eventConfig,
+					__path: eventConfig.__path.replaceAll('\\', path.sep)
 				}))
 			})
 			manifest.middleware = manifest.middleware?.map((middleware) => ({
 				...pluginInfo,
-				...middleware
+				...middleware,
+				__path: middleware.__path.replaceAll('\\', path.sep)
 			}))
 		}
 
