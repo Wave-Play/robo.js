@@ -40,6 +40,7 @@ export interface Config {
 		commandRegistration?: number
 		lifecycle?: number
 	}
+	type?: 'plugin' | 'robo'
 
 	/** How often to check for updates to Robo.js in seconds. Default: 1 hour */
 	updateCheckInterval?: number
