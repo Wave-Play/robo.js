@@ -32,7 +32,8 @@ export default {
 			'GuildMessages',
 			'MessageContent'
 		]
-	}
+	},
+	plugins: []
 }\n`
 
 /**
