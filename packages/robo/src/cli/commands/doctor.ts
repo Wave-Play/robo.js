@@ -4,18 +4,29 @@ import path from 'path'
 import { logger } from '../../core/logger.js'
 import { color, composeColors } from '../../core/color.js'
 import { loadEnv } from '../../core/dotenv.js'
+import { loadConfig } from '../../core/config.js'
 
 const command = new Command('doctor').description('Checks if your project is healthy').handler(doctor)
 export default command
 
-function doctor() {
+async function doctor() {
 	loadEnv({ sync: true })
-	const results: CheckResult[] = [checkTypescript(), checkStructure(), checkEnvironmentVariables()]
+	const config = await loadConfig()
+
+	// Group and run checks
+	const checks = [checkTypescript, checkStructure]
+	if (config.type !== 'plugin') {
+		checks.push(checkEnvironmentVariables)
+	}
+
+	const results: CheckResult[] = checks.map((check) => check())
+
+	// Print results
 	logger.log(composeColors(color.bold, color.underline)('\nHealth Check Results:'))
 	results.forEach((result) => {
 		logger.log(color.bold(`${result.ok ? color.green('✓') : color.red('✗')} ${result.message}`))
 	})
-	logger.log('\n')
+	logger.log('')
 }
 
 interface CheckResult {
@@ -104,7 +115,7 @@ function checkStructure(): CheckResult {
 
 function checkEnvironmentVariables(): CheckResult {
 	const requiredVars = ['DISCORD_CLIENT_ID', 'DISCORD_TOKEN']
-	const missingVars = requiredVars.filter((variable) => !(process.env[variable]))
+	const missingVars = requiredVars.filter((variable) => !process.env[variable])
 	if (missingVars.length === 0) {
 		return {
 			ok: true,
