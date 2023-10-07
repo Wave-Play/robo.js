@@ -42,7 +42,7 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
 	// Check which plugin packages are already registered
 	const config = await loadConfig()
 	const pendingRegistration = packages.filter((pkg) => {
-		return options.force || !config.plugins.includes(pkg)
+		return options.force || !config.plugins?.includes(pkg)
 	})
 	logger.debug(`Pending registration add:`, pendingRegistration)
 
@@ -53,7 +53,7 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
 		return (
 			options.force ||
 			(!Object.keys(packageJson.dependencies).includes(pkg) &&
-				!config.plugins.find((p) => Array.isArray(p) && p[0] === pkg))
+				!config.plugins?.find((p) => Array.isArray(p) && p[0] === pkg))
 		)
 	})
 	logger.debug(`Pending installation add:`, pendingInstall)

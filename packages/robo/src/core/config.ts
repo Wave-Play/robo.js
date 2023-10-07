@@ -26,16 +26,15 @@ export async function loadConfig(file = 'robo'): Promise<Config> {
 		// Load plugin files when using "/config" directory
 		if (configPath.includes(path.sep + 'config' + path.sep)) {
 			logger.debug('Scanning for plugin files...')
-			config.plugins = config.plugins ?? []
 
 			await scanPlugins(fileURLToPath(configPath), (plugin, pluginConfig) => {
 				// Remove existing plugin config if it exists
-				const existingIndex = config.plugins.findIndex((p) => p === plugin || p[0] === plugin)
+				const existingIndex = config.plugins?.findIndex((p) => p === plugin || p[0] === plugin)
 				if (existingIndex !== -1) {
-					config.plugins.splice(existingIndex, 1)
+					config.plugins?.splice(existingIndex, 1)
 				}
 
-				config.plugins.push([plugin, pluginConfig])
+				config.plugins?.push([plugin, pluginConfig])
 			})
 		}
 	} else {
