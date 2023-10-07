@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.9.4
+
+### Patch Changes
+
+- ec93830: fix(cli): missing positional arguments options
+
 ## 0.9.3
 
 ### Patch Changes
