@@ -1,5 +1,12 @@
 # create-robo
 
+## 0.7.2
+
+### Patch Changes
+
+- 454007b: refactor: generate appropriate "type" field in default config file
+- fbdef6f: refactor: re-added empty plugins array to default config file
+
 ## 0.7.1
 
 ### Patch Changes

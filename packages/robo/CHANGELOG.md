@@ -1,5 +1,17 @@
 # robo.js
 
+## 0.9.3
+
+### Patch Changes
+
+- 935513b: chore(cli): added new command entries to help command
+- 28a6d82: fix(build): always use native slashes when merging manifest plugins
+- ba7fe09: fix(cli): never assume plugins array always exists
+- 1c1c5d9: refactor(cli): runtime utils moved into own file
+- cfa5b28: refactor(cli): don't run env checks on plugins
+- 57ae042: feat: added help command
+- 0b9953b: feat: new optional "type" config field
+
 ## 0.9.2
 
 ### Patch Changes
