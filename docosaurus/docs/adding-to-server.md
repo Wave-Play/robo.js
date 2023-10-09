@@ -8,10 +8,10 @@ Don't worry, we've got you covered with two ways to generate these links: the Ro
 
 ## Robo.js CLI: The Cool Way 🔥
 
-Robo.js has a rad feature that lets you generate invite links in a snap. If you used `create-robo`, you've got a package script ready to go. Just run the command below, and you'll get an invite link to share or use to add your Robo to Discord servers:
+Robo.js has a rad feature that lets you generate invite links in a snap. Just run the command below, and you'll get an invite link to share or use to add your Robo to Discord servers:
 
 ```bash
-npm run invite
+npx robo invite
 ```
 
 > **Heads up!** The `robo invite` command is currently in beta, so it might not detect all the permissions necessary, or it could ask for extra ones you don't need.
@@ -31,7 +31,7 @@ You're all set! Your invite link is ready to share or use to add your Robo to Di
 
 ## Customizing Permissions in the Config File 🛠️
 
-Wanna personalize permissions and scopes? Add an `invite` section to your config file like this:
+Wanna personalize permissions and scopes for `robo invite`? Add an `invite` section to your config file like this:
 
 ```javascript
 /**

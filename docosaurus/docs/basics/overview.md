@@ -55,7 +55,7 @@ For a deeper dive into the world of modules, check out the [modules documentatio
 
 ## Creating Commands 📜
 
-Commands in Robo.js are super straightforward. Just create a file in the `commands` directory, and the name of the file becomes the name of the command. Easy peasy, right? It's a cinch to create robust slash commands, and Robo.js takes care of registering them for you. You can even nest commands for those extra spicy subcommands! 🌶️
+Commands in Robo.js are super straightforward. Just create a file in the `commands` directory, and the name of the file becomes the name of the command. Easy peasy, right? Plus, Robo.js also takes care of registering them for you. You can even nest commands for those extra spicy subcommands! 🌶️
 
 Here's how your command file structure might look:
 

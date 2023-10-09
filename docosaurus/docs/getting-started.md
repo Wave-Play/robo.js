@@ -27,7 +27,7 @@ Check out our migration guide for a detailed breakdown of the 3 migration option
 Boost your bot development with Robo.js' nifty CLI commands. Use `robo dev` to run your project, automatically watch for changes, and restart. Plus, Robo.js takes care of those tricky lifecycle events to dodge common bot bugs. When you're set to deploy, just hit `robo build` to compile and `robo start` to launch production mode.
 
 ```bash
-npm run dev
+npx robo dev
 ```
 
 Wanna know more? Check out the [Command Line Interface](/docs/advanced/command-line) documentation.
@@ -38,7 +38,9 @@ Wanna know more? Check out the [Command Line Interface](/docs/advanced/command-l
 
 If you run into issues, execute `robo doctor` to automatically detect common problems and offer fixes. This command can also identify issues with Robo.js plugins. Check out the [Debugging Docs](/docs/advanced/debugging) and feel free to ask **Sage** for help.
 
+<!--
 > **Note:** You can summon **Sage** in the documentation site at any time by pressing *Command + K* or *Control + K*.
+-->
 
 ## Next Steps 🧭
 
