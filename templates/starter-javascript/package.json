@@ -1,19 +1,20 @@
 {
-	"name": "robo-starter-javascript",
-	"version": "1.0.0",
-	"description": "",
-	"scripts": {
-		"build": "robo build",
-		"dev": "robo dev",
-		"deploy": "robo deploy",
-		"start": "robo start"
-	},
-	"keywords": [],
-	"author": "",
-	"type": "module",
-	"license": "ISC",
-	"dependencies": {
-		"@roboplay/robo.js": "0.3.0",
-		"discord.js": "^14.7.1"
-	}
+  "name": "starter-javascript",
+  "description": "",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "robo build",
+    "deploy": "robo deploy",
+    "dev": "NODE_OPTIONS=--enable-source-maps robo dev",
+    "doctor": "robo doctor",
+    "invite": "robo invite",
+    "start": "robo start"
+  },
+  "dependencies": {
+    "@roboplay/robo.js": "latest",
+    "discord.js": "^14.7.1"
+  },
+  "devDependencies": {}
 }
