@@ -1,5 +1,16 @@
+<div align="center">
+
+| ✨🎃 **Hacktoberfest Event** 🎃✨ |
+|:-----------------------------------:|
+| Build something with Robo.js to win prizes! |
+| **[Details & Prizes](https://blog.waveplay.com/hacktoberfest-with-robo-js-build-bots-or-plugins-win-cool-prizes)** |
+
+</div>
+
+&nbsp;
+
 <p align="center">
-	<img src="https://raw.githubusercontent.com/Wave-Play/robo/main/docosaurus/static/img/logo.png" height="128">
+  <img src="https://raw.githubusercontent.com/Wave-Play/robo/main/docosaurus/static/img/logo.png" height="128">
   <h1 align="center">Robo.js</h1>
 </p>
 
