@@ -11,6 +11,7 @@ export async function selectOne(
 	const { types = 'choices' } = options ?? {}
 	const prompt = `Choose one of the following ${types} that best matches "${selection}": ${choices.join(', ')}`
 	const response = await chat({
+		model: 'gpt-3.5-turbo',
 		messages: [
 			{
 				role: 'system',

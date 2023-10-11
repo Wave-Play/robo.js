@@ -41,7 +41,7 @@ export interface GptFunctionProperty {
 }
 
 export async function chat(options: GptChatOptions) {
-	const { backoff = true, functions, messages, model = 'gpt-3.5-turbo-0613', retries = 3 } = options
+	const { backoff = true, functions, messages, model = 'gpt-3.5-turbo', retries = 3 } = options
 	let retryCount = 0
 
 	if (!pluginOptions.openaiKey) {

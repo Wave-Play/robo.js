@@ -109,7 +109,7 @@ interface CallGptOptions {
 	onReply?: (message: string) => Promise<void> | void
 }
 async function callGpt(messages: GptChatMessage[], options: CallGptOptions) {
-	const { channel, member, model = 'gpt-4', onReply } = options
+	const { channel, member, model = pluginOptions?.model ?? 'gpt-3.5-turbo', onReply } = options
 	let gptMessages = messages
 
 	// Add to replying registry
