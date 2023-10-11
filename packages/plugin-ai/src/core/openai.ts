@@ -75,10 +75,11 @@ export async function chat(options: GptChatOptions) {
 			return jsonResponse
 		} catch (error) {
 			if (retryCount === retries) {
-				logger.error('Retries limit reached', error)
+				logger.error(error)
 				return null
 			}
 
+			logger.debug(`Error calling GPT:`, error)
 			if (backoff) {
 				// Wait for 2^retryCount * 1000 ms (exponential backoff)
 				logger.warn(`Retrying in ${2 ** retryCount * 4000}ms...`)
