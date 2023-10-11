@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.9.5
+
+### Patch Changes
+
+- 8f505e8: fix(cli): account for nested routes without paths when building manifest
+
 ## 0.9.4
 
 ### Patch Changes

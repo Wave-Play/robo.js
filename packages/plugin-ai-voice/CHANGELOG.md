@@ -1,5 +1,16 @@
 # @roboplay/plugin-ai-voice
 
+## 1.0.0
+
+### Patch Changes
+
+- Updated dependencies [a2d6b09]
+- Updated dependencies [1458e34]
+- Updated dependencies [e718a6b]
+- Updated dependencies [8f505e8]
+  - @roboplay/plugin-ai@0.2.0
+  - @roboplay/robo.js@0.9.5
+
 ## 0.1.0
 
 ### Minor Changes
