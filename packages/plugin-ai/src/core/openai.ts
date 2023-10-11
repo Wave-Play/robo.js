@@ -56,7 +56,11 @@ export async function chat(options: GptChatOptions) {
 					'Content-Type': 'application/json',
 					Authorization: `Bearer ${pluginOptions.openaiKey}`
 				},
-				body: JSON.stringify({ functions, messages, model })
+				body: JSON.stringify({
+					functions: functions?.length ? functions : undefined,
+					messages: messages,
+					model: model
+				})
 			})
 
 			const jsonResponse = await response.json()
