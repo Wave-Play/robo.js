@@ -49,6 +49,8 @@ Got a bot that's simple or loaded with complexity? No worries! We've whipped up 
 
 **➞ [📚 See the full migration guide](https://docs.roboplay.dev/docs/migrating)**
 
+**➞ [📖 Tutorial: Making a "To-do" Robo](https://blog.waveplay.com/how-to-make-a-discord-robo)**
+
 ## Epic Simplicity
 
 Robo.js dishes out Discord.js goodness with a focus on simplicity, making it easy-peasy to craft bots that truly sparkle – all without compromises! 🌟
