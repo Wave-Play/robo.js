@@ -1,4 +1,4 @@
-import type { LogLevel } from '../core/logger.js'
+import type { LogDrain, LogLevel } from '../core/logger.js'
 import type { ClientOptions, PermissionsString } from 'discord.js'
 import type { Plugin, SageOptions } from './index.js'
 
@@ -26,6 +26,7 @@ export interface Config {
 		scopes?: Scope[]
 	}
 	logger?: {
+		drain?: LogDrain
 		enabled?: boolean
 		level?: LogLevel
 	}

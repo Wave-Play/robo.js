@@ -45,6 +45,7 @@ async function start(options?: StartOptions) {
 	// This makes them available globally via getConfig() and getManifest()
 	const [config] = await Promise.all([loadConfig(), loadManifest()])
 	logger({
+		drain: config?.logger?.drain,
 		enabled: config?.logger?.enabled,
 		level: config?.logger?.level
 	}).debug('Starting Robo...')

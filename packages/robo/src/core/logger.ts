@@ -2,6 +2,8 @@ import { inspect } from 'node:util'
 import { color } from './color.js'
 import { env } from './env.js'
 
+export type LogDrain = (level: string, ...data: unknown[]) => Promise<void>
+
 export type LogLevel = 'trace' | 'debug' | 'info' | 'wait' | 'other' | 'event' | 'ready' | 'warn' | 'error'
 
 interface CustomLevel {
@@ -11,6 +13,7 @@ interface CustomLevel {
 
 export interface LoggerOptions {
 	customLevels?: Record<string, CustomLevel>
+	drain?: LogDrain
 	enabled?: boolean
 	level?: LogLevel | string
 	maxEntries?: number
@@ -23,9 +26,25 @@ export const DEBUG_MODE = process.env.NODE_ENV !== 'production'
 // eslint-disable-next-line no-control-regex
 export const ANSI_REGEX = /\x1b\[.*?m/g
 
-const pendingWrites = new Set<Promise<void>>()
+const pendingDrains = new Set<Promise<void>>()
 
 type LogStream = typeof process.stderr | typeof process.stdout
+
+function consoleDrain(level: string, ...data: unknown[]): Promise<void> {
+	switch (level) {
+		case 'trace':
+		case 'debug':
+		case 'info':
+		case 'wait':
+		case 'event':
+			return writeLog(process.stdout, ...data)
+		case 'warn':
+		case 'error':
+			return writeLog(process.stderr, ...data)
+		default:
+			return writeLog(process.stdout, ...data)
+	}
+}
 
 function writeLog(stream: LogStream, ...data: unknown[]) {
 	return new Promise<void>((resolve, reject) => {
@@ -83,12 +102,14 @@ export class Logger {
 	protected _parent: Logger | undefined
 	protected _prefix: string | undefined
 	private _currentIndex: number
+	private _drain: LogDrain
 	private _logBuffer: LogEntry[]
 
 	constructor(options?: LoggerOptions) {
-		const { customLevels, enabled = true, level, parent, prefix } = options ?? {}
+		const { customLevels, drain = consoleDrain, enabled = true, level, parent, prefix } = options ?? {}
 
 		this._customLevels = customLevels
+		this._drain = drain
 		this._enabled = enabled
 		this._parent = parent
 		this._prefix = prefix
@@ -131,35 +152,11 @@ export class Logger {
 				this._currentIndex = (this._currentIndex + 1) % this._logBuffer.length
 			}
 
-			let promise: Promise<void>
-			switch (level) {
-				case 'trace':
-				case 'debug':
-					promise = writeLog(process.stdout, ...data)
-					break
-				case 'info':
-					promise = writeLog(process.stdout, ...data)
-					break
-				case 'wait':
-					promise = writeLog(process.stdout, ...data)
-					break
-				case 'event':
-					promise = writeLog(process.stdout, ...data)
-					break
-				case 'warn':
-					promise = writeLog(process.stderr, ...data)
-					break
-				case 'error':
-					promise = writeLog(process.stderr, ...data)
-					break
-				default:
-					promise = writeLog(process.stdout, ...data)
-					break
-			}
-
-			pendingWrites.add(promise)
+			// Drain the log entry
+			const promise = this._drain(level, ...data)
+			pendingDrains.add(promise)
 			promise.finally(() => {
-				pendingWrites.delete(promise)
+				pendingDrains.delete(promise)
 			})
 		}
 	}
@@ -172,16 +169,16 @@ export class Logger {
 		if (this._parent) {
 			return this._parent.flush()
 		}
-	
-		await Promise.allSettled([...pendingWrites])
+
+		await Promise.allSettled([...pendingDrains])
 	}
 
 	/**
 	 * Creates a new logger instance with the specified prefix.
 	 * This is useful for creating a logger for a specific plugin, big features, or modules.
-	 * 
+	 *
 	 * All writes and cached logs will be delegated to the parent logger, so debugging will still work.
-	 * 
+	 *
 	 * @param prefix The prefix to add to the logger (e.g. 'my-plugin')
 	 * @returns A new logger instance with the specified prefix
 	 */
@@ -218,6 +215,10 @@ export class Logger {
 		}
 
 		return recentLogs.reverse()
+	}
+
+	public setDrain(drain: LogDrain) {
+		this._drain = drain
 	}
 
 	public trace(...data: unknown[]) {
