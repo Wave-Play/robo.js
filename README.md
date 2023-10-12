@@ -33,6 +33,8 @@ Get well-versed with Robo.js and unlock its full potential!
 
 **➞ [📚 Dive into the full documentation for more.](https://docs.roboplay.dev/docs/getting-started)**
 
+**➞ [📖 Tutorial: Making a "To-do" Robo](https://blog.waveplay.com/how-to-make-a-discord-robo)**
+
 ## Quick start
 
 Kickstart your own Robo.js bot with our super-helpful CLI:
@@ -48,8 +50,6 @@ We'll walk you through a breezy customization process and whip up a fully workin
 Got a bot that's simple or loaded with complexity? No worries! We've whipped up three migration paths that cater to all bot types. For the full lowdown, our migration guide is ready and waiting. Pick the path that makes your bot's transition smoother than butter on a hot day.
 
 **➞ [📚 See the full migration guide](https://docs.roboplay.dev/docs/migrating)**
-
-**➞ [📖 Tutorial: Making a "To-do" Robo](https://blog.waveplay.com/how-to-make-a-discord-robo)**
 
 ## Epic Simplicity
 
