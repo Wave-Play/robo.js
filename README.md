@@ -31,7 +31,7 @@ Upgrade your bots with next-gen simplicity, snappy plugin system, epic debugging
 
 Get well-versed with Robo.js and unlock its full potential!
 
-**➞ [📚 Dive into the full documentation for more.](https://docs.roboplay.dev/docs/getting-started)**
+**➞ [📚 Documentation: Getting started](https://docs.roboplay.dev/docs/getting-started)**
 
 **➞ [📖 Tutorial: Making a "To-do" Robo](https://blog.waveplay.com/how-to-make-a-discord-robo)**
 
