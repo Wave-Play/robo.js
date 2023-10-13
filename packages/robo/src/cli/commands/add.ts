@@ -10,6 +10,8 @@ import { getPackageManager } from '../utils/runtime-utils.js'
 
 const require = createRequire(import.meta.url)
 
+const localPrefixes = ['file:', '.', '/', '~', ':']
+
 const command = new Command('add')
 	.description('Adds a plugin to your Robo.')
 	.option('-f', '--force', 'forcefully install & register packages')
@@ -42,9 +44,26 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
 
 	// Check which plugin packages are already registered
 	const config = await loadConfig()
-	const pendingRegistration = packages.filter((pkg) => {
-		return options.force || !config.plugins?.includes(pkg)
-	})
+	const pendingRegistration = await Promise.all(
+		packages
+			.filter((pkg) => {
+				return options.force || !config.plugins?.includes(pkg)
+			})
+			.map(async (pkg) => {
+				// Extract real package name from local paths
+				const isLocal = localPrefixes.some((prefix) => {
+					return prefix === ':' ? pkg.indexOf(prefix) === 1 : pkg.startsWith(prefix)
+				})
+
+				if (isLocal) {
+					const packageJsonPath = path.join(pkg, 'package.json')
+					const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'))
+					return packageJson.name
+				}
+
+				return pkg
+			})
+	)
 	logger.debug(`Pending registration add:`, pendingRegistration)
 
 	// Check which plugins need to be installed
@@ -80,12 +99,7 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
 	}
 
 	// Register plugins by adding them to the config
-	await Promise.all(
-		pendingRegistration.map(async (pkg) => {
-			return createPluginConfig(pkg, {})
-		})
-	)
-
+	await Promise.all(pendingRegistration.map((pkg) => createPluginConfig(pkg, {})))
 	logger.debug(`Successfully completed in ${Date.now() - startTime}ms`)
 }
 
@@ -96,6 +110,7 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
  * @param config The plugin config
  */
 async function createPluginConfig(pluginName: string, config: Record<string, unknown>) {
+	// Split plugin name into parts to create parent directories
 	const pluginParts = pluginName.replace(/^@/, '').split('/')
 
 	// Create parent directory if this is a scoped plugin
