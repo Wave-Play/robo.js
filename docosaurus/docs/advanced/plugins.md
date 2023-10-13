@@ -29,29 +29,35 @@ npx create-robo your-awesome-robo-plugin --plugin
 
 ### Testing Your Plugin 🧪
 
-To test your plugin during development, you can `npm install` it from your local directory in a test Robo project. First, navigate to your test Robo project's directory and run the following command:
+To test your plugin during development, you can install it from your local directory in a test Robo project. First, navigate to your test Robo project's directory and run the following command:
 
 ```bash
-npm install /path/to/your-awesome-robo-plugin
+npx robo add /path/to/your-awesome-robo-plugin
 ```
 
-Replace `/path/to/your-awesome-robo-plugin` with the actual path to your plugin's directory. Remember to build your plugin between changes using the `npm run build` command.
+> **Heads up:** On Windows, the path may look like this instead: `C:\path\to\your-awesome-robo-plugin`
 
-You can use `npm run dev` (set up as "dev" in your generated `package.json` scripts) to automatically rebuild your plugin when changes are detected. This is the recommended way to develop your plugin, as it provides a smoother development experience. If your test Robo is also running in dev mode, it will auto-reload when your plugin is rebuilt.
+Replace `/path/to/your-awesome-robo-plugin` with the actual path to your plugin's directory. Remember to build your plugin between changes using the `robo build plugin` command.
+
+You can use the `--watch` flag to automatically rebuild your plugin when changes are detected. This is the recommended way to develop your plugin, as it provides a smoother development experience. If your test Robo is also running in dev mode, it will auto-reload when your plugin is rebuilt.
+
+```bash
+npx robo build plugin --watch
+```
 
 ### Building the Plugin 🔨
 
 Robo comes with a built-in compiler to help you package your plugin for distribution. To build your plugin, run the following command:
 
 ```bash
-npm run build
+npx robo build plugin
 ```
 
 This will compile your plugin and prepare it for publishing to NPM.
 
 ### Publishing to NPM 📦
 
-Once you've built your plugin using the `npm run build` command, you're ready to publish it to NPM. Make sure you've set up your NPM account and are logged in through the CLI.
+Once you've built your plugin using `robo build plugin`, you're ready to publish it to NPM. Make sure you've set up your NPM account and are logged in through the CLI.
 
 Run the following command to publish your plugin:
 
