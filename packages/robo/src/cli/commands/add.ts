@@ -100,7 +100,7 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
 
 	// Register plugins by adding them to the config
 	await Promise.all(pendingRegistration.map((pkg) => createPluginConfig(pkg, {})))
-	logger.debug(`Successfully completed in ${Date.now() - startTime}ms`)
+	logger.info(`Successfully completed in ${Date.now() - startTime}ms`)
 }
 
 /**
