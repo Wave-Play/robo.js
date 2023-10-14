@@ -1,8 +1,10 @@
 # 🚀 @roboplay/plugin-better-stack
 
-Welcome to _@roboplay/plugin-better-stack_! This plugin is designed to seamlessly integrate with your existing **[Robo.js](https://github.com/Wave-Play/robo)** project and provide new features and enhancements to your robo. The best part? Everything automatically works once you install this plugin!
+Welcome to _@roboplay/plugin-better-stack_! This plugin seamlessly integrates with your existing **[Robo.js](https://github.com/Wave-Play/robo)** project, providing a comprehensive link to Better Stack, a renowned third-party service. With Better Stack, monitor your Robo's uptime and integrate logs in a visually appealing and searchable format.
 
-👩‍💻 Are you the plugin developer? Check out the **[Development Guide](DEVELOPMENT.md)** for instructions on how to develop, build, and publish this plugin.
+## Prerequisites
+
+Before integrating this plugin, ensure you've signed up for an account on [Better Stack](https://betterstack.com).
 
 ## Installation 💻
 
@@ -12,8 +14,71 @@ To install this plugin, navigate to your existing Robo project's directory and r
 npx robo add @roboplay/plugin-better-stack
 ```
 
-That's it! Your Robo now has access to the additional features provided by this plugin. The plugin's commands and events are automatically linked, and if your Robo requires any additional bot permissions, they will be inherited when running `npx robo invite` to generate an invite link.
+Once installed, the plugin enhances your Robo with Better Stack's capabilities.
 
-Enjoy your enhanced Robo! 🚀
+## Heartbeat Monitoring Setup
 
-> **Don't have a Robo project?** [Create your own!](https://docs.roboplay.dev/docs/getting-started)
+To initiate heartbeat monitoring:
+
+1. Log into your Better Stack account.
+2. Create a new heartbeat, preferably naming it after your Robo.
+3. Copy the generated URL.
+4. Paste the URL into the plugin's config file: `/config/plugins/roboplay/plugin-better-stack.mjs`
+
+```js
+export default {
+	heartbeat: {
+		url: 'https://uptime.betterstack.com/api/v1/heartbeat/8XMvMa5y7xtONEtUfj2yb8f'
+	}
+}
+```
+
+### Optional Configurations:
+
+- `interval`: Set the frequency of requests to the heartbeat URL in milliseconds. Defaults to 5000ms (5 seconds).
+- `debug`: Control debug logging for the heartbeat. While it's set to false by default to prevent spam, turning it on ensures correct heartbeat setup.
+
+## Log Integration
+
+Firstly, set up your source in Better Stack to receive a unique `sourceToken`.
+
+**Method 1: Using Config File**
+
+In the plugin config file, pass your `sourceToken`:
+
+```js
+export default {
+	sourceToken: 'YOUR_UNIQUE_SOURCE_TOKEN'
+}
+```
+
+**Method 2: Using Environment Variable**
+
+Use an environment variable in your `.env` file:
+
+```
+BETTER_STACK_SOURCE_TOKEN="YOUR_UNIQUE_SOURCE_TOKEN"
+```
+
+**Method 3: Direct Drain Creation**
+
+Create a drain directly within the primary config file, `robo.mjs`. This method captures logs early, ensuring comprehensive log coverage.
+
+```js
+// @ts-check
+import { createLogtailDrain } from '@roboplay/plugin-better-stack'
+
+/**
+ * @type {import('@roboplay/robo.js').Config}
+ **/
+export default {
+	// ... other configurations
+	logger: {
+		drain: createLogtailDrain(process.env.LOGTAIL_TOKEN)
+	}
+}
+```
+
+> **Yet to embark on a Robo.js journey?** [Kickstart your Robo project!](https://docs.roboplay.dev/docs/getting-started)
+
+Harness the synergy of Robo.js and Better Stack for an enhanced bot experience! 🚀
