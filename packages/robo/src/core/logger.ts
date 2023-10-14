@@ -2,7 +2,7 @@ import { inspect } from 'node:util'
 import { color } from './color.js'
 import { env } from './env.js'
 
-export type LogDrain = (level: string, ...data: unknown[]) => Promise<void>
+export type LogDrain = (logger: Logger, level: string, ...data: unknown[]) => Promise<void>
 
 export type LogLevel = 'trace' | 'debug' | 'info' | 'wait' | 'other' | 'event' | 'ready' | 'warn' | 'error'
 
@@ -30,7 +30,7 @@ const pendingDrains = new Set<Promise<void>>()
 
 type LogStream = typeof process.stderr | typeof process.stdout
 
-function consoleDrain(level: string, ...data: unknown[]): Promise<void> {
+function consoleDrain(logger: Logger, level: string, ...data: unknown[]): Promise<void> {
 	switch (level) {
 		case 'trace':
 		case 'debug':
@@ -139,26 +139,34 @@ export class Logger {
 			return this._parent._log(level, ...data)
 		}
 
-		if (this._enabled && this._levelValues[this._level] <= this._levelValues[level]) {
-			// Format the message all pretty and stuff
-			if (level !== 'other') {
-				const label = this._customLevels ? this._customLevels[level]?.label : colorizedLogLevels[level]
-				data.unshift((label ?? level.padEnd(5)) + ' -')
-			}
-
-			// Persist the log entry in debug mode
-			if (DEBUG_MODE) {
-				this._logBuffer[this._currentIndex] = new LogEntry(level, data)
-				this._currentIndex = (this._currentIndex + 1) % this._logBuffer.length
-			}
-
-			// Drain the log entry
-			const promise = this._drain(level, ...data)
-			pendingDrains.add(promise)
-			promise.finally(() => {
-				pendingDrains.delete(promise)
-			})
+		// Only log if the level is enabled
+		if (!this._enabled) {
+			return
 		}
+
+		// If using the default drain, perform the level check
+		if (this._drain === consoleDrain && this._levelValues[this._level] > this._levelValues[level]) {
+			return
+		}
+
+		// Format the message all pretty and stuff
+		if (level !== 'other') {
+			const label = this._customLevels ? this._customLevels[level]?.label : colorizedLogLevels[level]
+			data.unshift((label ?? level.padEnd(5)) + ' -')
+		}
+
+		// Persist the log entry in debug mode
+		if (DEBUG_MODE) {
+			this._logBuffer[this._currentIndex] = new LogEntry(level, data)
+			this._currentIndex = (this._currentIndex + 1) % this._logBuffer.length
+		}
+
+		// Drain the log entry
+		const promise = this._drain(this, level, ...data)
+		pendingDrains.add(promise)
+		promise.finally(() => {
+			pendingDrains.delete(promise)
+		})
 	}
 
 	/**
@@ -190,6 +198,24 @@ export class Logger {
 			parent: this,
 			prefix: this._prefix ? this._prefix + prefix : prefix
 		})
+	}
+
+	public getLevel(): LogLevel | string {
+		// Delegate to parent if forked
+		if (this._parent) {
+			return this._parent.getLevel()
+		}
+
+		return this._level
+	}
+
+	public getLevelValues(): Record<string, number> {
+		// Delegate to parent if forked
+		if (this._parent) {
+			return this._parent.getLevelValues()
+		}
+
+		return this._levelValues
 	}
 
 	public getRecentLogs(count = 50): LogEntry[] {
