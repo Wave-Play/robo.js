@@ -12,7 +12,10 @@ interface PluginConfig {
 }
 
 export default (_client: Client, config: PluginConfig) => {
-	logger().setDrain(createLogtailDrain(config.sourceToken))
+	const sourceToken = config.sourceToken ?? process.env.BETTER_STACK_SOURCE_TOKEN
+	if (sourceToken) {
+		logger().setDrain(createLogtailDrain(sourceToken))
+	}
 
 	// Ping heartbeat monitor if configured
 	const { debug, interval = 5_000, url } = config.heartbeat ?? {}
