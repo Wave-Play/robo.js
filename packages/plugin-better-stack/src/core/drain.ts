@@ -2,6 +2,10 @@ import { inspect } from 'node:util'
 import { Logtail } from '@logtail/node'
 import type { LogDrain } from '@roboplay/robo.js'
 
+const ANSI_REGEX = new RegExp(`(${String.fromCharCode(27)}\\[[0-9;]*m)([^${String.fromCharCode(27)}]+)`, 'g')
+const MAGENTA_REGEX = new RegExp(String.fromCharCode(27) + '\\[35m', 'g')
+const RESET_SEQUENCE = '\x1b[0m'
+
 export function createLogtailDrain(sourceToken: string): LogDrain {
 	const logtail = new Logtail(sourceToken)
 
@@ -13,7 +17,7 @@ export function createLogtailDrain(sourceToken: string): LogDrain {
 			}
 			return item
 		})
-		const message = parts?.join(' ')
+		const message = fixAnsi(parts?.join(' '))
 
 		// Write to the console
 		const stream = level === 'warn' || level === 'error' ? process.stderr : process.stdout
@@ -50,4 +54,18 @@ export function createLogtailDrain(sourceToken: string): LogDrain {
 			/* empty */
 		})
 	}
+}
+
+function fixAnsi(input: string): string {
+	return (
+		input
+			// Magenta is not supported by Logtail; replace with blue
+			?.replaceAll(MAGENTA_REGEX, '\u001B[34m')
+			// Fix bold ansi codes
+			?.replaceAll('\x1b[22m', '\x1b[0m')
+			// Fix ansi codes that Logtail doesn't support
+			?.replace(ANSI_REGEX, (_, colorCode, text) => {
+				return colorCode + text + RESET_SEQUENCE
+			})
+	)
 }
