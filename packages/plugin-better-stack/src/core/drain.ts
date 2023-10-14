@@ -1,6 +1,6 @@
 import { inspect } from 'node:util'
 import { Logtail } from '@logtail/node'
-import type { LogDrain } from '@roboplay/robo.js'
+import type { LogDrain, Logger } from '@roboplay/robo.js'
 
 const ANSI_REGEX = new RegExp(`(${String.fromCharCode(27)}\\[[0-9;]*m)([^${String.fromCharCode(27)}]+)`, 'g')
 const MAGENTA_REGEX = new RegExp(String.fromCharCode(27) + '\\[35m', 'g')
@@ -9,7 +9,7 @@ const RESET_SEQUENCE = '\x1b[0m'
 export function createLogtailDrain(sourceToken: string): LogDrain {
 	const logtail = new Logtail(sourceToken)
 
-	return (level: string, ...data: unknown[]): Promise<void> => {
+	return (logger: Logger, level: string, ...data: unknown[]): Promise<void> => {
 		// Parse data into a string
 		const parts = data?.map((item) => {
 			if (typeof item === 'object' || item instanceof Error || Array.isArray(item)) {
@@ -22,11 +22,18 @@ export function createLogtailDrain(sourceToken: string): LogDrain {
 		// Write to the console
 		const stream = level === 'warn' || level === 'error' ? process.stderr : process.stdout
 		const promises = []
-		promises.push(new Promise((resolve) => stream.write(parts?.join(' ') + '\n', 'utf8', resolve)))
+
+		// Only write to console with level check
+		const levelValues = logger.getLevelValues()
+		if (levelValues[logger.getLevel()] <= levelValues[level]) {
+			promises.push(new Promise((resolve) => stream.write(parts?.join(' ') + '\n', 'utf8', resolve)))
+		}
 
 		// Forward to Better Stack
 		switch (level) {
 			case 'trace':
+				// Trace is too verbose for Better Stack
+				break
 			case 'debug':
 				promises.push(logtail.debug(message))
 				break
