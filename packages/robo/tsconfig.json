@@ -1,11 +1,11 @@
 {
-	"include": ["src"],
+	"include": ["__tests__", "src"],
 	"exclude": ["node_modules", "codemod"],
 	"compilerOptions": {
 		"target": "ESNext",
 		"module": "esnext",
 		"lib": ["dom", "dom.iterable", "esnext"],
-		"types": ["node"],
+		"types": ["jest", "node"],
 		"baseUrl": ".",
 		"allowJs": true,
 		"skipLibCheck": true,

@@ -8,7 +8,6 @@ import type { default as Typescript, CompilerOptions, Diagnostic } from 'typescr
 import type { transform as SwcTransform } from '@swc/core'
 
 const srcDir = path.join(process.cwd(), 'src')
-const distDir = path.join(process.cwd(), '.robo', 'build')
 
 // Load Typescript compiler in a try/catch block
 // This is to maintain compatibility with JS-only projects
