@@ -6,7 +6,6 @@ import { DEBUG_MODE } from '../../core/debug.js'
 import { env } from '../../core/env.js'
 
 const srcDir = path.join(process.cwd(), 'src')
-const distDir = path.join(process.cwd(), '.robo', 'build')
 const defaultCommandsDir = path.join(__DIRNAME, '..', '..', 'default', 'commands')
 const defaultEventsDir = path.join(__DIRNAME, '..', '..', 'default', 'events')
 const supportedExtensions = ['.ts', '.tsx', '.js', '.jsx']
@@ -23,11 +22,13 @@ export interface DefaultGen {
  * Generated commands can be disabled via the config file or by creating your own with the same name.
  * Generated events cannot be disabled as they are required for Robo.js to function properly.
  */
-export async function generateDefaults(): Promise<DefaultGen> {
+export async function generateDefaults(buildDir = path.join('.robo', 'build')): Promise<DefaultGen> {
+	const distDir = path.join(process.cwd(), buildDir)
+
 	try {
-		const commands = await generateCommands()
+		const commands = await generateCommands(distDir)
 		const context = {}
-		const events = await generateEvents()
+		const events = await generateEvents(distDir)
 		return { commands, context, events }
 	} catch (err) {
 		logger.error('Error generating default files', err)
@@ -93,7 +94,7 @@ async function checkFileExistence(srcPathBase: string, module?: string) {
  * Developers can override these commands by creating their own with the same name.
  * Additionally, they can be disabled via the config file.
  */
-async function generateCommands() {
+async function generateCommands(distDir: string) {
 	const generated: Record<string, boolean> = {}
 
 	await recursiveDirScan(defaultCommandsDir, async (file, fullPath) => {
@@ -135,7 +136,7 @@ async function generateCommands() {
  * They are required for Robo.js to function properly.
  * However, they don't override developer events either, so they can be used in conjunction.
  */
-async function generateEvents() {
+async function generateEvents(distDir: string) {
 	const generated: Record<string, boolean> = {}
 
 	await recursiveDirScan(defaultEventsDir, async (file, fullPath) => {

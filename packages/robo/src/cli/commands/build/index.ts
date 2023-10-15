@@ -63,13 +63,14 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 
 	// Use SWC to compile into .robo/build
 	const compileTime = await compile({
+		distDir: config.experimental?.buildDirectory,
 		excludePaths: config.excludePaths?.map((p) => p.replaceAll('/', path.sep)),
 		files: files
 	})
 	logger.debug(`Compiled in ${compileTime}ms`)
 
 	// Assign default commands and events
-	const generatedFiles = await generateDefaults()
+	const generatedFiles = await generateDefaults(config.experimental?.buildDirectory)
 
 	// Generate manifest.json
 	const oldManifest = await loadManifest()

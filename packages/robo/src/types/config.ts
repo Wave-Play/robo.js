@@ -9,6 +9,7 @@ export interface Config {
 	}
 	excludePaths?: string[]
 	experimental?: {
+		buildDirectory?: string
 		incrementalBuilds?: boolean
 		legacyProcess?: boolean
 	}

@@ -32,6 +32,7 @@ try {
  */
 async function traverse(
 	dir: string,
+	distDir: string,
 	options: RoboCompileOptions,
 	compilerOptions: CompilerOptions,
 	transform: typeof SwcTransform
@@ -65,7 +66,7 @@ async function traverse(
 
 		// Recursively traverse subdirectories, only if no files are specified
 		if (stat.isDirectory() && !isIncremental) {
-			tasks.push(traverse(filePath, options, compilerOptions, transform))
+			tasks.push(traverse(filePath, distDir, options, compilerOptions, transform))
 		} else if (/\.(js|ts|tsx)$/.test(file) && !excludePaths.some((p) => relativePath.startsWith(p))) {
 			// Queue up a task to transform the file
 			tasks.push(
@@ -110,6 +111,7 @@ async function traverse(
 
 interface RoboCompileOptions {
 	baseUrl?: string
+	distDir?: string
 	excludePaths?: string[]
 	files?: string[]
 	parallel?: number
@@ -119,6 +121,14 @@ interface RoboCompileOptions {
 
 export async function compile(options?: RoboCompileOptions) {
 	const startTime = Date.now()
+	const distDir = options.distDir
+		? path.join(process.cwd(), options.distDir)
+		: path.join(process.cwd(), '.robo', 'build')
+
+	// Force load compilers for Bun in plugin builds
+	if (IS_BUN && options?.plugin) {
+		await preloadTypescript()
+	}
 
 	if (typeof ts === 'undefined' || typeof transform === 'undefined') {
 		// If either of them fail, just copy the srcDir to distDir
@@ -173,7 +183,7 @@ export async function compile(options?: RoboCompileOptions) {
 		...(options ?? {})
 	}
 	logger.debug(`Compiler options:`, compileOptions)
-	await traverse(srcDir, compileOptions, tsOptions, transform)
+	await traverse(srcDir, distDir, compileOptions, tsOptions, transform)
 	await fs.rm(path.join(process.cwd(), '.swc'), { recursive: true, force: true })
 
 	// Copy any non-TypeScript files to the destination directory

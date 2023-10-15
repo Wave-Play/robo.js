@@ -16,7 +16,7 @@ import {
 } from '../../types/index.js'
 import { logger } from '../../core/logger.js'
 import { findPackagePath, hasProperties, packageJson } from './utils.js'
-import { loadConfig } from '../../core/config.js'
+import { getConfig, loadConfig } from '../../core/config.js'
 import { pathToFileURL } from 'node:url'
 import { DefaultGen } from './generate-defaults.js'
 import { bold, color } from '../../core/color.js'
@@ -338,6 +338,7 @@ function generateScopes(config: Config, newManifest: Manifest): Scope[] {
 }
 
 interface ScanDirOptions {
+	buildDirectory?: string
 	recurseModules?: boolean
 	recursionKeys?: string[]
 	recursionModuleKeys?: string[]
@@ -355,8 +356,21 @@ type ScanDirPredicate = (fileKeys: string[], fullPath: string, moduleKeys: strin
  * This ensures parent entries are always created before children.
  */
 async function scanDir(predicate: ScanDirPredicate, options: ScanDirOptions) {
-	const { recurseModules = true, recursionKeys = [], recursionModuleKeys = [], recursionPath, type } = options
-	const directoryPath = recursionPath ?? path.join(process.cwd(), '.robo', 'build', type)
+	const {
+		buildDirectory,
+		recurseModules = true,
+		recursionKeys = [],
+		recursionModuleKeys = [],
+		recursionPath,
+		type
+	} = options
+	let directoryPath = recursionPath
+	if (!directoryPath) {
+		const buildDir = buildDirectory
+			? path.join(process.cwd(), buildDirectory)
+			: path.join(process.cwd(), '.robo', 'build')
+		directoryPath = path.join(buildDir, type)
+	}
 	let directory: string[] = []
 
 	try {
@@ -446,6 +460,7 @@ async function scanDir(predicate: ScanDirPredicate, options: ScanDirOptions) {
 			const nestedPath = path.resolve(directoryPath, childDir)
 			const fileKeys = [...recursionKeys, childDir]
 			return scanDir(predicate, {
+				buildDirectory: buildDirectory,
 				recursionKeys: fileKeys,
 				recurseModules: false,
 				recursionModuleKeys,
@@ -462,6 +477,7 @@ async function scanDir(predicate: ScanDirPredicate, options: ScanDirOptions) {
 			const moduleKeys = [...recursionModuleKeys, path.basename(path.dirname(module))]
 
 			return scanDir(predicate, {
+				buildDirectory: buildDirectory,
 				recursionKeys: [],
 				recurseModules: true,
 				recursionModuleKeys: moduleKeys,
@@ -618,6 +634,7 @@ async function generateEntries<T>(
 				}
 			},
 			{
+				buildDirectory: getConfig().experimental?.buildDirectory,
 				type: type
 			}
 		)

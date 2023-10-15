@@ -7,7 +7,7 @@ import { loadConfig } from '../../core/config.js'
 
 const command = new Command('start')
 	.description('Starts your bot in production mode.')
-	.option('-s' ,'--silent', 'do not print anything')
+	.option('-s', '--silent', 'do not print anything')
 	.option('-v', '--verbose', 'print more information for debugging')
 	.option('-h', '--help', 'Shows the available command options')
 	.handler(startAction)
@@ -27,7 +27,7 @@ async function startAction(_args: string[], options: StartCommandOptions) {
 	logger.warn(`Thank you for trying Robo.js! This is a pre-release version, so please let us know of issues on GitHub.`)
 
 	// Check if .robo/build directory has .js files (recursively)
-	if (!(await hasFilesRecursively('.robo/build'))) {
+	if (!(await hasFilesRecursively(path.join('.robo', 'build')))) {
 		logger.error(
 			`No production build found. Make sure to compile your Robo using ${composeColors(
 				color.bold,
@@ -39,7 +39,7 @@ async function startAction(_args: string[], options: StartCommandOptions) {
 
 	// Check if .robo/manifest.json is missing
 	try {
-		await fs.access('.robo/manifest.json')
+		await fs.access(path.join('.robo', 'manifest.json'))
 	} catch (err) {
 		logger.error(
 			`The ${color.bold(
