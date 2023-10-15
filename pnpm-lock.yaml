@@ -87,7 +87,7 @@ importers:
     devDependencies:
       '@roboplay/plugin-api':
         specifier: 0.1.0
-        version: link:../plugin-api
+        version: 0.1.0
       '@roboplay/robo.js':
         specifier: 0.9.0
         version: 0.9.0(@swc/core@1.3.57)(discord.js@14.11.0)(typescript@5.0.2)
@@ -181,8 +181,8 @@ importers:
         version: 0.4.12
     devDependencies:
       '@roboplay/robo.js':
-        specifier: workspace:*
-        version: link:../robo
+        specifier: 0.9.6
+        version: 0.9.6(@swc/core@1.3.57)(discord.js@14.11.0)(typescript@5.0.2)
       '@swc/core':
         specifier: ^1.3.44
         version: 1.3.57
@@ -1494,6 +1494,10 @@ packages:
     resolution: {integrity: sha512-9uwAA32WlSZSs+WzdWNIWp7YjQZcB1dJUmbsyq/YF3C55qex0MnZ7utxlXbD2+SOgJViqDxEWmgOjlyj+s1N2w==}
     dev: true
 
+  /@roboplay/plugin-api@0.1.0:
+    resolution: {integrity: sha512-miJP4Ix8DHHtx3Vn3aIVJDRSUtR7tXwFzqCpr57B3W/6A29ThI7hSnuvKnj5nZ+/vpVuDio8Rj3BGLsibMccRg==}
+    dev: true
+
   /@roboplay/robo.js@0.6.1(@swc/core@1.3.57)(discord.js@14.7.1)(typescript@5.0.2):
     resolution: {integrity: sha512-iXBR5m8a8wO8MIlNNQBvw9cYhOaRphktEGOHUa8ucACC0lJsQVybspsk0wftD3qTjalCJWzVT3+OTK7SXkTOQg==}
     engines: {node: '>=18.0.0'}
@@ -1582,6 +1586,28 @@ packages:
         optional: true
     dependencies:
       discord.js: 14.10.2
+      typescript: 5.0.2
+    dev: true
+
+  /@roboplay/robo.js@0.9.6(@swc/core@1.3.57)(discord.js@14.11.0)(typescript@5.0.2):
+    resolution: {integrity: sha512-yyV/QR+zgkvEmunaaB/weTl6DV58FbJSRdP9ONumsqsxvfvoKYd8GCQm0RMGtGIvg0OEcRH3cpAyplGV+q+YJg==}
+    engines: {node: '>=18.0.0'}
+    hasBin: true
+    peerDependencies:
+      '@swc/core': ^1.3.41
+      discord.js: ^14.0.0
+      keyv: ^4.5.2
+      typescript: ^5.0.0
+    peerDependenciesMeta:
+      '@swc/core':
+        optional: true
+      keyv:
+        optional: true
+      typescript:
+        optional: true
+    dependencies:
+      '@swc/core': 1.3.57
+      discord.js: 14.11.0
       typescript: 5.0.2
     dev: true
 
