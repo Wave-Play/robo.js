@@ -1,5 +1,16 @@
 # robo.js
 
+## 0.9.6
+
+### Patch Changes
+
+- 867facc: refactor(cli): show success message for "add" and "remove" commands
+- 2c4f2ab: feat: support for local plugin installs
+- 9c172e6: refactor(logger): expose level fields and pass instance to log drains
+- 951e9d7: feat: support for .json config files
+- 07bf9ae: feat: support for custom log drains
+- 1c4342d: feat: new experimental field to select custom build directory
+
 ## 0.9.5
 
 ### Patch Changes
