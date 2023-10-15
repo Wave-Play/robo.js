@@ -6,7 +6,6 @@ import { getProjectSize, printBuildSummary } from '../../utils/build-summary.js'
 import { buildAsync } from '../dev.js'
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import url from 'node:url'
 import { loadConfig, loadConfigPath } from '../../../core/config.js'
 import { hasProperties } from '../../utils/utils.js'
 import Watcher from '../../utils/watcher.js'
@@ -95,7 +94,7 @@ async function pluginAction(_args: string[], options: PluginCommandOptions) {
 		const configPath = await loadConfigPath()
 		let configRelative: string
 		if (configPath) {
-			configRelative = path.relative(process.cwd(), url.fileURLToPath(configPath))
+			configRelative = path.relative(process.cwd(), configPath)
 			watchedPaths.push(configRelative)
 		}
 

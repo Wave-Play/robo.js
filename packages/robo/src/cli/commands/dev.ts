@@ -13,7 +13,6 @@ import {
 	timeout
 } from '../utils/utils.js'
 import path from 'node:path'
-import url from 'node:url'
 import { getStateSave } from '../../core/state.js'
 import Watcher, { Change } from '../utils/watcher.js'
 import { loadManifest } from '../utils/manifest.js'
@@ -60,7 +59,7 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 	let configRelative: string
 
 	if (configPath) {
-		configRelative = path.relative(process.cwd(), url.fileURLToPath(configPath))
+		configRelative = path.relative(process.cwd(), configPath)
 	} else {
 		logger.warn(`Could not find configuration file. Using default configuration.`)
 	}

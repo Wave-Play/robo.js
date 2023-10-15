@@ -2,7 +2,7 @@ import { Config } from '../types/index.js'
 import { logger } from './logger.js'
 import fs from 'node:fs'
 import path from 'node:path'
-import { fileURLToPath, pathToFileURL } from 'node:url'
+import { pathToFileURL } from 'node:url'
 
 // Global config reference
 let _config: Config = null
@@ -20,15 +20,14 @@ export async function loadConfig(file = 'robo'): Promise<Config> {
 	let config: Config
 
 	if (configPath) {
-		const imported = await import(configPath)
-		config = imported.default ?? imported ?? {}
+		config = await read<Config>(configPath)
 
 		// Load plugin files when using "/config" directory
 		if (configPath.includes(path.sep + 'config' + path.sep)) {
 			logger.debug('Scanning for plugin files...')
 			config.plugins = config.plugins ?? []
 
-			await scanPlugins(fileURLToPath(configPath), (plugin, pluginConfig) => {
+			await scanPlugins(configPath, (plugin, pluginConfig) => {
 				// Remove existing plugin config if it exists
 				const existingIndex = config.plugins?.findIndex((p) => p === plugin || p[0] === plugin)
 				if (existingIndex !== -1) {
@@ -52,7 +51,7 @@ export async function loadConfig(file = 'robo'): Promise<Config> {
 }
 
 export async function loadConfigPath(file = 'robo'): Promise<string> {
-	const extensions = ['.mjs', '.cjs']
+	const extensions = ['.mjs', '.cjs', '.json']
 	const prefixes = [
 		file.endsWith('.config') ? '' : 'config' + path.sep,
 		file.endsWith('.config') ? '' : '.config' + path.sep
@@ -67,7 +66,7 @@ export async function loadConfigPath(file = 'robo'): Promise<string> {
 					logger.debug(`Found configuration file at`, fullPath)
 
 					// Convert to file URL to allow for dynamic import()
-					return pathToFileURL(fullPath).toString()
+					return fullPath
 				}
 			} catch (ignored) {
 				// empty
@@ -131,12 +130,32 @@ async function importConfigFile(configPath: string, basePath?: string): Promise<
 	const pluginName = resolvedPath.split('.')[0]
 
 	try {
-		const imported = await import(configPath)
-		const pluginConfig = imported.default ?? imported ?? {}
-
+		const pluginConfig = await read(configPath)
 		return [pluginName, pluginConfig]
 	} catch (e) {
 		logger.debug(`Failed to load plugin configuration file for ${pluginName}:`, e)
 		return [pluginName, {}]
+	}
+}
+
+async function read<T = unknown>(configPath: string): Promise<T> {
+	// If the file is a JSON file, handle it differently
+	if (configPath.endsWith('.json')) {
+		try {
+			const rawData = fs.readFileSync(configPath, 'utf8')
+			const pluginConfig = JSON.parse(rawData)
+			return pluginConfig ?? {}
+		} catch (e) {
+			return {} as T
+		}
+	} else {
+		try {
+			// Convert to file URL to allow for a seamless dynamic import()
+			const imported = await import(pathToFileURL(configPath).toString())
+			const pluginConfig = imported.default ?? imported
+			return pluginConfig ?? {}
+		} catch (e) {
+			return {} as T
+		}
 	}
 }
