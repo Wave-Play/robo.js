@@ -24,7 +24,8 @@
 		"lint:style": "prettier --write .",
 		"publish:canary": "pnpm lint && turbo run build --filter=@roboplay/robo.js && turbo run build && changeset publish --tag canary",
 		"publish:next": "pnpm lint && turbo run build --filter=@roboplay/robo.js && turbo run build && changeset publish --tag next",
-		"publish:release": "pnpm lint && turbo run build --filter=@roboplay/robo.js && turbo run build && changeset publish"
+		"publish:release": "pnpm lint && turbo run build --filter=@roboplay/robo.js && turbo run build && changeset publish",
+		"test": "turbo run test"
 	},
 	"repository": {
 		"type": "git",
