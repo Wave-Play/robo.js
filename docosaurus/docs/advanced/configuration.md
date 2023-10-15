@@ -4,7 +4,7 @@ Customizing Robo.js to fit your needs is a piece of cake! 🍰 This guide will w
 
 To configure your Robo.js, create a config file named `robo.mjs` in a `.config` folder.
 
-> Alternatively, you can use CommonJS syntax by naming it `robo.cjs`. Files named `robo.config.mjs` or `robo.config.js` at the root directory are also supported but discouraged.
+> Alternatively, you can use CommonJS with the name `robo.cjs` or a simpler JSON format as `robo.json`. Using the JSON format is not as robust as JS, but it's a viable choice if you encounter issues with either `.cjs` or `.mjs` on your web host.
 
 ## Example configuration
 
@@ -23,7 +23,8 @@ const gptPlugin = [
 	{
 		openaiKey: process.env.OPENAI_KEY,
 		quoteMessage: true,
-		systemMessage: "You are Baguette. Use <2k chars. Reply using Violet from Violet Evergarden's writing style. Make at least one pun in each reply."
+		systemMessage:
+			"You are Baguette. Use <2k chars. Reply using Violet from Violet Evergarden's writing style. Make at least one pun in each reply."
 	},
 	{
 		failSafe: true
@@ -35,22 +36,18 @@ const gptPlugin = [
  **/
 export default {
 	clientOptions: {
-		intents: ['DirectMessages', 'Guilds', 'GuildMembers', 'GuildMessages', 'GuildVoiceStates', 'MessageContent'],
+		intents: ['DirectMessages', 'Guilds', 'GuildMembers', 'GuildMessages', 'GuildVoiceStates', 'MessageContent']
 	},
-	plugins: [
-		gptPlugin,
-		'@roboplay/plugin-poll',
-	],
+	plugins: [gptPlugin, '@roboplay/plugin-poll'],
 	logger: {
 		level: 'info'
 	},
 	sage: {
 		defer: true,
 		deferBuffer: 2000,
-		errorReplies: false,
+		errorReplies: false
 	}
 }
-
 ```
 
 ## What it means
@@ -95,10 +92,7 @@ Got files or directories you don't want to include in the final build? Use exclu
 - Preventing sensitive JSON files (like config or secrets) from being copied over
 
 ```js
-excludePaths: [
-  '/src/test',
-  '/src/modules/example/statics.json'
-]
+excludePaths: ['/src/test', '/src/modules/example/statics.json']
 ```
 
 In this example, any file or directory that starts with `/src/test` or `/src/modules/example/statics.json` will be ignored during the build process.
@@ -109,11 +103,13 @@ In this example, any file or directory that starts with `/src/test` or `/src/mod
 
 Activate experimental features or revert to older behaviors for compatibility. This field takes an object containing the following optional boolean values:
 
+- `buildDirectory`: Determine where to compile your code. The default is .robo/build, but you can specify another location.
 - `incrementalBuilds`: Enable incremental builds to improve build performance by only recompiling changed files.
 - `legacyProcess`: Switch back to the older child process runtime model. Recommended only if you encounter issues with the newer thread-based model.
 
 ```js
 experimental: {
+  buildDirectory: 'dist',
   incrementalBuilds: true,
   legacyProcess: false
 }
@@ -187,10 +183,7 @@ The `failSafe` option ensures that plugin initialization won't crash your Robo, 
 Example:
 
 ```javascript
-plugins: [
-  gptPlugin,
-  '@roboplay/plugin-poll',
-]
+plugins: [gptPlugin, '@roboplay/plugin-poll']
 ```
 
 In the example above, `gptPlugin` is an array containing the package name, plugin-specific options, and optional system-wide plugin settings. The `@roboplay/plugin-poll` is added as a string, using the default settings for that plugin.
