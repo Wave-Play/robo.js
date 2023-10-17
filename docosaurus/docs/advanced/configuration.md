@@ -2,7 +2,7 @@
 
 Customizing Robo.js to fit your needs is a piece of cake! 🍰 This guide will walk you through tweaking defaults, adding new intents, specifying permissions, changing sage mode behavior, and more.
 
-To configure your Robo.js, create a config file named `robo.mjs` in a `.config` folder.
+To configure your Robo.js, create a config file named `robo.mjs` in a `config` folder.
 
 > Alternatively, you can use CommonJS with the name `robo.cjs` or a simpler JSON format as `robo.json`. Using the JSON format is not as robust as JS, but it's a viable choice if you encounter issues with either `.cjs` or `.mjs` on your web host.
 
@@ -16,32 +16,16 @@ Here's an example implementation of a configuration file:
 // @ts-check
 
 /**
- * @type {import('@roboplay/robo.js').Plugin}
- **/
-const gptPlugin = [
-	'@roboplay/plugin-gpt',
-	{
-		openaiKey: process.env.OPENAI_KEY,
-		quoteMessage: true,
-		systemMessage:
-			"You are Baguette. Use <2k chars. Reply using Violet from Violet Evergarden's writing style. Make at least one pun in each reply."
-	},
-	{
-		failSafe: true
-	}
-]
-
-/**
  * @type {import('@roboplay/robo.js').Config}
  **/
 export default {
 	clientOptions: {
 		intents: ['DirectMessages', 'Guilds', 'GuildMembers', 'GuildMessages', 'GuildVoiceStates', 'MessageContent']
 	},
-	plugins: [gptPlugin, '@roboplay/plugin-poll'],
 	logger: {
 		level: 'info'
 	},
+	plugins: [],
 	sage: {
 		defer: true,
 		deferBuffer: 2000,
@@ -103,7 +87,7 @@ In this example, any file or directory that starts with `/src/test` or `/src/mod
 
 Activate experimental features or revert to older behaviors for compatibility. This field takes an object containing the following optional boolean values:
 
-- `buildDirectory`: Determine where to compile your code. The default is .robo/build, but you can specify another location.
+- `buildDirectory`: Determine where to compile your code. The default is `.robo/build`, but you can specify another location.
 - `incrementalBuilds`: Enable incremental builds to improve build performance by only recompiling changed files.
 - `legacyProcess`: Switch back to the older child process runtime model. Recommended only if you encounter issues with the newer thread-based model.
 
