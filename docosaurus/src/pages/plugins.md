@@ -6,7 +6,6 @@ npx robo add <package>
 ```
 
 ## Official Plugins 🏆
----
 ### [AI](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-ai)
 Package: `@roboplay/plugin-ai`  
 Transform your Robo into an engaging chatbot utilizing AI. Supports customized behaviors and Discord commands.
@@ -18,6 +17,10 @@ Give your Robo a voice! Command and converse with it verbally in voice channels.
 ### [API](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-api)
 Package: `@roboplay/plugin-api`  
 Effortlessly create and manage API routes, allowing your Robo project to function as a full-fledged API server.
+
+### [Better Stack](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-better-stack)
+Package: `@roboplay/plugin-better-stack`  
+Visualize uptime and search logs in a visually appealing and searchable format.
 
 ### [GPT](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-gpt)
 Package: `@roboplay/plugin-gpt`  
@@ -36,8 +39,6 @@ Package: `@roboplay/plugin-poll`
 Easily create and manage interactive polls, engaging your community with minimal effort.
 
 ## Third-party Plugins 🎉
----
-Be the first to [create a plugin for Robo.js](/docs/advanced/plugins#creating-plugins) and get featured here!
 
 <!-- Hacktoberfest Start -->
 
@@ -54,10 +55,14 @@ Add your plugin below:
 
 -->
 
+
+### [Emoji Reaction Plugin](https://www.npmjs.com/package/emoji-reaction-plugin)
+Package: `emoji-reaction-plugin`  
+Make your conversations fun and interactive with various emoji based reactions.
+
 <!-- Hacktoberfest End -->
 
 ## List Your Plugin 🛠️
----
 
 Created a plugin and eager to share it with the Robo.js community? Awesome! 🌟
 
