@@ -9,10 +9,10 @@ import {
 import badwordsFilter from "bad-words";
 
 export const config: CommandConfig = {
-  description: "Confess Something In A Guild!",
+  description: "Ready to confess something? Share it with the guild!",
   options: [
     {
-      description: "Your Confession  to be sent",
+      description: "Type your confession here...Ssshhhh!!..",
       name: "confession",
       required: true,
       type: "string",
@@ -67,7 +67,7 @@ export default async (interaction: CommandInteraction) => {
     .setTitle("Anonymous Confession!")
     .setDescription(`${parseConfession(confession!.toString())}`)
     .setFooter({
-      text: `⚠ This confession is fully Anonymous and filtered!`,
+      text: `⚠ This confession is completely anonymous and subject to content filtering`,
     })
     .setTimestamp();
 
@@ -78,6 +78,6 @@ export default async (interaction: CommandInteraction) => {
 
   // reply
   await interaction.editReply({
-    content: "Confession Sent Successfully!",
+    content: "🎉 Surpise! Your confession has been sent.",
   });
 };

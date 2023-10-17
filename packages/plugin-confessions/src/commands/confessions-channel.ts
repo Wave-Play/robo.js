@@ -1,14 +1,14 @@
 // imports
 import { FLASHCORE_KEY } from "../core/config.js";
 import { Flashcore, type CommandConfig } from "@roboplay/robo.js";
-import type { Channel, CommandInteraction } from "discord.js";
+import { PermissionFlagsBits, type Channel, type CommandInteraction } from "discord.js";
 import { setState, getState } from "@roboplay/robo.js";
 
 export const config: CommandConfig = {
-  description: "Set confessions channel",
+  description: "Specify the Confessions Channel",
   options: [
     {
-      description: "Channel to be set confessions channel",
+      description: "Specify the Confessions Channel!",
       name: "channel",
       required: false,
       type: "channel",
@@ -32,7 +32,12 @@ export default async (interaction: CommandInteraction) => {
 
   // channel mentioned is wrong
   if (!(channel.type == 0))
-    return "Mentioned Channel Should Be A Text Channel!";
+    return "Please note that the mentioned channel should be a 'Text Channel' for this operation to work correctly.";
+
+  // admin check 
+  if(!(interaction.memberPermissions?.has(PermissionFlagsBits.Administrator) || interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild))){
+    return "Oops! It looks like you need administrative permissions to run that command. Please contact an admin or server manager for assistance."
+  }
 
   // save channel as confessions channel
   setState(`${FLASHCORE_KEY}_${channel.guild.id}`, channel.id, {
@@ -41,7 +46,7 @@ export default async (interaction: CommandInteraction) => {
 
   // return status
   return (
-    "Confessions Channel Set Successfully!" +
+    "Great news! The Confessions Channel has been set up successfully!" +
     getState(`${FLASHCORE_KEY}_${channel.guild.id}`)
   );
 };
