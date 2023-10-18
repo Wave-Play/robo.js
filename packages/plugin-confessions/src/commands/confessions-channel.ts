@@ -28,10 +28,6 @@ export default async (interaction: CommandInteraction) => {
 			: `No Confessions Channel is set for this Guild!\n> ### Ask Admins to configure Confessions channel using commands \` / confessions-channel \``
 	}
 
-	// channel mentioned is wrong
-	if (!(channel.type == 0)) {
-		return 'Please note that the mentioned channel should be a ` Text Channel ` for this operation to work correctly.'
-	}
 	// admin check
 	if (
 		!(
@@ -42,14 +38,16 @@ export default async (interaction: CommandInteraction) => {
 		return 'Oops! It looks like you need administrative permissions to run that command. Please contact an admin or server manager for assistance.'
 	}
 
+	// channel mentioned is wrong
+	if (!(channel.type == 0)) {
+		return 'Please note that the mentioned channel should be a ` Text Channel ` for this operation to work correctly.'
+	}
+
 	// save channel as confessions channel
 	setState(`${FLASHCORE_KEY}_${channel.guild.id}`, channel.id, {
 		persist: true
 	})
 
 	// return status
-	return (
-		'Great news! The Confessions Channel has been set up successfully!' +
-		getState(`${FLASHCORE_KEY}_${channel.guild.id}`)
-	)
+	return 'Great news! The Confessions Channel has been set up successfully!'
 }
