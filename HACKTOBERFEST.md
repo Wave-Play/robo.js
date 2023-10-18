@@ -34,7 +34,7 @@ We encourage you to provide a contact method for prize distribution, but it's no
 
 ### Emoji Reaction Plugin
 
-- **Package**: (emoji-reaction-plugin)[https://www.npmjs.com/package/emoji-reaction-plugin]
+- **Package**: [emoji-reaction-plugin](https://www.npmjs.com/package/emoji-reaction-plugin)
 - **Description**: Make your conversations fun and interactive with various emoji based reactions.
 - **Contact**: bekool.sh
 
