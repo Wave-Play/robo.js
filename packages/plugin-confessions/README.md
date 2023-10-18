@@ -9,7 +9,7 @@ Welcome to _plugin-confessions_! This plugin is designed to seamlessly integrate
 To install this plugin, navigate to your existing Robo project's directory and run the following command:
 
 ```bash
-npx robo add plugin-confessions
+npx robo add @roboplay/plugin-confessions
 ```
 
 That's it! Your Robo now has access to the additional features provided by this plugin. The plugin's commands and events are automatically linked, and if your Robo requires any additional bot permissions, they will be inherited when running `npx robo invite` to generate an invite link.
