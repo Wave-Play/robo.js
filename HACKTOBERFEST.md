@@ -6,9 +6,10 @@ For detailed event information, check out our [blog post](https://blog.waveplay.
 
 ## Guidelines
 
-1. Add your details as per the format below. We accept both plugins and bots (robos)!
-2. Ensure your submission adheres to the Robo.js and Hacktoberfest guidelines.
-3. Please keep the list in alphabetical order based on the name.
+1. Consider registering on the [Hacktoberfest website](https://hacktoberfest.com/) to receive official badges and recognition for your contributions.
+2. Add your details as per the format below. We accept both plugins and bots (robos)!
+3. Ensure your submission adheres to the Robo.js and Hacktoberfest guidelines.
+4. Please keep the list in alphabetical order based on the name.
 
 We encourage you to provide a contact method for prize distribution, but it's not mandatory. If you'd like to be contacted for prizes, consider one of the following options:
 
