@@ -72,6 +72,6 @@ export default async (interaction: CommandInteraction) => {
 
 	// reply
 	await interaction.editReply({
-		content: '🎉 Surpise! Your confession has been sent.'
+		content: '🎉 Surprise! Your confession has been sent.'
 	})
 }
