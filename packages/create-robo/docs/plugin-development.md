@@ -18,22 +18,26 @@ To listen to new events, create a file named after the event in `/src/events`. F
 
 ## Testing Your Plugin 🧪
 
-To test your plugin during development, you can `npm install` it from your local directory in a test robo project. First, navigate to your test robo project's directory and run the following command:
+To test your plugin during development, you can `robo add` it from your local directory in a test robo project. First, navigate to your test robo project's directory and run the following command:
 
 ```bash
-npm install /path/to/{{projectName}}
+npx robo add /path/to/{{projectName}}
 ```
 
-Replace `/path/to/{{projectName}}` with the actual path to your plugin's directory. Remember to build your plugin between changes using the `npx robo build` command.
+Replace `/path/to/{{projectName}}` with the actual path to your plugin's directory. Remember to build your plugin between changes using the `robo build` command.
 
-You can use `npx robo dev` to automatically rebuild your plugin when changes are detected. This is the recommended way to develop your plugin, as it provides a smoother development experience. If your test robo is also running in dev mode, it will auto-reload when your plugin is rebuilt.
+You can use `robo dev` to automatically rebuild your plugin when changes are detected. This is the recommended way to develop your plugin, as it provides a smoother development experience. If your test robo is also running in dev mode, it will auto-reload when your plugin is rebuilt.
+
+```bash
+npx robo dev
+```
 
 ## Building the Plugin 🔨
 
 Robo comes with a built-in compiler to help you package your plugin for distribution. To build your plugin, run the following command:
 
 ```bash
-npx robo build
+npx robo build plugin
 ```
 
 This will compile your plugin and prepare it for publishing to NPM.
