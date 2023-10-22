@@ -9,6 +9,7 @@
 			"packages/plugin-ai-voice",
 			"packages/plugin-api",
 			"packages/plugin-better-stack",
+			"packages/plugin-confessions",
 			"packages/plugin-gpt",
 			"packages/plugin-maintenance",
 			"packages/plugin-poll",
