@@ -272,10 +272,10 @@ export default class Robo {
 		// Robo.js and Discord.js are normal dependencies, unless this is a plugin
 		if (!this._isPlugin) {
 			packageJson.dependencies['@roboplay/robo.js'] = 'latest'
-			packageJson.dependencies['discord.js'] = '^14.7.1'
+			packageJson.dependencies['discord.js'] = '^14.13.0'
 		} else {
 			packageJson.devDependencies['@roboplay/robo.js'] = 'latest'
-			packageJson.devDependencies['discord.js'] = '^14.7.1'
+			packageJson.devDependencies['discord.js'] = '^14.13.0'
 			packageJson.peerDependencies = {
 				'@roboplay/robo.js': '^0.9.0'
 			}
