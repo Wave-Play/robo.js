@@ -11,6 +11,7 @@ import {
 	exec,
 	getPackageManager,
 	hasProperties,
+	getNodeOptions,
 	prettyStringify,
 	sortObjectKeys,
 	updateOrAddVariable
@@ -24,7 +25,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const roboScripts = {
 	build: 'robo build',
 	deploy: 'robo deploy',
-	dev: 'NODE_OPTIONS=--enable-source-maps robo dev',
+	dev: `${getNodeOptions()} robo dev`,
 	doctor: 'robo doctor',
 	invite: 'robo invite',
 	start: 'robo start'
@@ -32,7 +33,7 @@ const roboScripts = {
 
 const pluginScripts = {
 	build: 'robo build plugin',
-	dev: 'NODE_OPTIONS=--enable-source-maps robo build plugin --watch'
+	dev: `${getNodeOptions()} robo build plugin --watch`
 }
 
 const optionalPlugins = [
