@@ -1,0 +1,28 @@
+{
+	"include": ["src"],
+	"compilerOptions": {
+		"target": "ESNext",
+		"module": "node16",
+		"lib": ["dom", "dom.iterable", "esnext"],
+		"types": ["node"],
+		"baseUrl": ".",
+		"allowJs": true,
+		"skipLibCheck": true,
+		"strict": true,
+		"strictNullChecks": false,
+		"forceConsistentCasingInFileNames": true,
+		"noEmit": false,
+		"esModuleInterop": true,
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"allowSyntheticDefaultImports": true,
+		"jsx": "react-jsx",
+		"importHelpers": true,
+		"declaration": true,
+		"sourceMap": true,
+		"rootDir": ".",
+		"noUnusedLocals": true,
+		"moduleResolution": "node16",
+		"outDir": "dist"
+	}
+}

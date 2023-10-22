@@ -1,0 +1,59 @@
+{
+	"name": "@roboplay/codemod",
+	"version": "0.0.0",
+	"private": false,
+	"description": "Codemod for Robo.js",
+	"engines": {
+		"node": ">=18.0.0"
+	},
+	"main": "dist/index.js",
+	"type": "module",
+	"files": [
+		"dist/",
+		"src/",
+		"LICENSE",
+		"README.md"
+	],
+	"scripts": {
+		"build": "tsup",
+		"dev": "chokidar \"src/**/*.ts\" -d 1000 -c \"pnpm build\" --initial"
+	},
+	"keywords": [
+		"codemod",
+		"bot",
+		"discord.js",
+		"javascript",
+		"typescript",
+		"robo",
+		"robo.js",
+		"roboplay"
+	],
+	"license": "MIT",
+	"author": "WavePlay <dev@waveplay.com> (waveplay.com)",
+	"contributors": [
+		"Pkmmte Xeleon <pk@waveplay.com>"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Wave-Play/robo.js.git",
+		"directory": "packages/codemod"
+	},
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://registry.npmjs.org/"
+	},
+	"bin": "dist/index.js",
+	"devDependencies": {
+		"@types/node": "18.15.5",
+		"@types/tar": "^6.1.4",
+		"chokidar-cli": "^3.0.0",
+		"tsup": "6.7.0",
+		"typescript": "5.0.2"
+	},
+	"dependencies": {
+		"@roboplay/robo.js": "0.9.5",
+		"commander": "10.0.0",
+		"inquirer": "^9.2.0",
+		"tar": "^6.1.13"
+	}
+}
