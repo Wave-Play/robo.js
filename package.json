@@ -13,7 +13,8 @@
 			"packages/plugin-gpt",
 			"packages/plugin-maintenance",
 			"packages/plugin-poll",
-			"packages/robo"
+			"packages/robo",
+			"packages/sage"
 		]
 	},
 	"engines": {

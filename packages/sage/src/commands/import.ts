@@ -81,14 +81,19 @@ async function importAction(plugins: string[], options: ImportOptions) {
 		.then(() => true)
 		.catch(() => false)
 
-	//if (needsTypescript && !tsExists) {
+	if (needsTypescript && !tsExists) {
 		const docs = composeColors(color.underline, color.cyan)('https://docs.roboplay.dev/docs/advanced/typescript')
 		logger.info(`One or more of your plugins requires TypeScript.`)
 		logger.info(`See the following docs for more information:`, docs)
-	//}
+	}
 }
 
-async function importPlugin(plugin: string, packageJson: any) {
+interface PackageJson {
+	dependencies?: Record<string, string>
+	devDependencies?: Record<string, string>
+}
+
+async function importPlugin(plugin: string, packageJson: PackageJson) {
 	// Get info from registry
 	const npmResponse = await fetch(`https://registry.npmjs.org/${plugin}/latest`)
 	const info = await npmResponse.json()
