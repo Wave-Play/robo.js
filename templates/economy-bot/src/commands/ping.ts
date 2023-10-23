@@ -4,10 +4,10 @@ import { CommandInteraction } from 'discord.js'
 
 /**
  * @name /ping
- * @description Check the bot's latency.
+ * @description Check the bot's latency!
  */
 export const config: CommandConfig = {
-	description: 'Replies with Pong!'
+	description: 'Check the bot's latency!'
 }
 
 export default (interaction: CommandInteraction) => {
