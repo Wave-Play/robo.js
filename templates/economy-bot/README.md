@@ -11,8 +11,34 @@ To run your Robo, simply use the following command:
 ```bash
 npx robo dev
 ```
+> No need to re-run when you make changes. Your Robo will automatically restart! 🔄
 
-No need to re-run when you make changes. Your Robo will automatically restart! 🔄
+## Template Overview ✨
+
+The Robo.js Economy Bot is a beginner-friendly Discord bot built on the Discord.js framework. This bot provides a simple yet effective starting point for those looking to implement economy-related features in their Discord server.
+
+## Slash Commands 🦈
+The bot supports several Slash commands to manage the in-server economy. Here are the available commands:
+
+| Command   | Description                                        |
+| --------- | -------------------------------------------------- |
+| `/ping`   | Pings the bot to check if it's online.            |
+| `/balance`| Check your account balance.                        |
+| `/withdraw`| Withdraw currency from your account.              |
+| `/deposit` | Deposit currency to your account.                 |
+| `/daily`  | Claim your daily currency reward.                 |
+| `/share`  | Share currency with another user in the server.  |
+| `/roll_dice`| Roll a dice and win or lose currency.           |
+
+## Features 🌬️
+- [x] **Guild-Only Middleware**: Commands can only be used within the server where the bot is deployed.
+- [x] **Flashcore**: All data is stored safely with Flashcore, you can event add Custom Database using Keyv!
+- [x] **Automatic Account Creation**: User accounts are created automatically when they first interact with the bot.
+- [x] **Preventing Forced Participation**: Users cannot force other users to participate in the economy commands without even playing game once.
+
+> **Feel free to customize, expand, or modify this bot to suit your server's needs. Have fun building your own economy system with Robo.js Economy Bot!**
+
+## Deployment 💥
 
 Ready to deploy and keep your Robo online at all times? Check out the [Deployment Documentation](<[#deployment](https://github.com/Wave-Play/robo/blob/main/docs/hosting.md)>).
 
