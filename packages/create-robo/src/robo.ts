@@ -33,7 +33,8 @@ const roboScripts = {
 
 const pluginScripts = {
 	build: 'robo build plugin',
-	dev: `${getNodeOptions()} robo build plugin --watch`
+	dev: `${getNodeOptions()} robo build plugin --watch`,
+	prepublishOnly: 'robo build plugin'
 }
 
 const optionalPlugins = [
