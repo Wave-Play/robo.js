@@ -23,12 +23,12 @@ The bot supports several Slash commands to manage the in-server economy. Here ar
 | Command   | Description                                        |
 | --------- | -------------------------------------------------- |
 | `/ping`   | Pings the bot to check if it's online.            |
-| `/balance`| Check your account balance.                        |
-| `/withdraw`| Withdraw currency from your account.              |
-| `/deposit` | Deposit currency to your account.                 |
+| `/balance`| Check your or others account balance                      |
+| `/withdraw`| Withdraw credits from your bank to your wallet       |
+| `/deposit` | Deposit credits from your wallet into your bank.           |
 | `/daily`  | Claim your daily currency reward.                 |
-| `/share`  | Share currency with another user in the server.  |
-| `/roll_dice`| Roll a dice and win or lose currency.           |
+| `/share`  | Share credits to another user.  |
+| `/roll_dice`| Roll a dice to test your luck and win or lose credits.    |
 
 ## Features 🌬️
 - [x] **Guild-Only Middleware**: Commands can only be used within the server where the bot is deployed.
@@ -91,3 +91,4 @@ Run the `npx robo deploy` command to automatically deploy to **[RoboPlay](https:
 You can also run `npx robo invite` (beta) to automatically generate a server invite to test it yourself or show it off! You can also use the [Discord Developer Portal](https://discord.com/developers/applications) to generate an invite as usual.
 
 Happy coding! 🎉
+
