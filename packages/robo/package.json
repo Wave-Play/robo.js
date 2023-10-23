@@ -11,6 +11,8 @@
 		"javascript",
 		"typescript",
 		"waveplay",
+		"robo",
+		"robo.js",
 		"roboplay",
 		"discordjs"
 	],
@@ -35,6 +37,10 @@
 		"README.md",
 		"types.js",
 		"types.d.ts"
+	],
+	"author": "WavePlay <dev@waveplay.com> (waveplay.com)",
+	"contributors": [
+		"Pkmmte Xeleon <pk@waveplay.com>"
 	],
 	"repository": {
 		"type": "git",
