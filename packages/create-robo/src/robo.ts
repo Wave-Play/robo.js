@@ -242,7 +242,7 @@ export default class Robo {
 		return selectedFeatures
 	}
 
-	async createPackage(features: string[]): Promise<void> {
+	async createPackage(features: string[], install: boolean): Promise<void> {
 		// Find the package manager that triggered this command
 		const packageManager = getPackageManager()
 		logger.debug(`Using ${chalk.bold(packageManager)} in ${this._workingDir}...`)
@@ -429,7 +429,9 @@ export default class Robo {
 		await fs.writeFile(path.join(this._workingDir, 'package.json'), JSON.stringify(packageJson, null, 2))
 
 		// Install dependencies using the package manager that triggered the command
-		await exec(`${cmd(packageManager)} install`, { cwd: this._workingDir })
+		if (install) {
+			await exec(`${cmd(packageManager)} install`, { cwd: this._workingDir })
+		}
 	}
 
 	async copyTemplateFiles(sourceDir: string): Promise<void> {

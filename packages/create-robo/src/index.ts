@@ -14,6 +14,7 @@ const packageJson = require('../package.json')
 
 interface CommandOptions {
 	features?: string
+	install?: boolean
 	javascript?: boolean
 	plugin?: boolean
 	template?: string
@@ -27,6 +28,7 @@ new Command('create-robo <projectName>')
 	.option('-f --features <features>', 'comma-separated list of features to include')
 	.option('-js --javascript', 'create a Robo using JavaScript')
 	.option('-p --plugin', 'create a Robo plugin instead of a bot')
+	.option('-ni --no-install', 'skip installing dependencies')
 	.option('-t --template <templateUrl>', 'create a Robo from an online template')
 	.option('-ts --typescript', 'create a Robo using TypeScript')
 	.option('-v --verbose', 'print more information for debugging')
@@ -101,8 +103,8 @@ new Command('create-robo <projectName>')
 			}
 
 			// Get user input to determine which features to include or use the recommended defaults
-			await robo.createPackage(selectedFeaturesOrDefaults)
 			selectedFeaturesOrDefaults = options.features?.split(',') ?? (await robo.getUserInput())
+			await robo.createPackage(selectedFeaturesOrDefaults, options.install ?? true)
 
 			// Determine if TypeScript is selected and copy the corresponding template files
 			logger.debug(`Copying template files...`)
