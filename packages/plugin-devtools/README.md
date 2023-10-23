@@ -13,7 +13,9 @@ npx robo add @roboplay/plugin-devtools
 Voilà! Your Robo is now supercharged with development tools.
 
 ## ⚠️ Important Note
-This plugin is crafted explicitly for development environments. Before deploying your Robo, ensure you uninstall this plugin to prevent users from directly manipulating your server or database. Execute the following to safely remove:
+This plugin is crafted explicitly for development environments. Before deploying your Robo, ensure you uninstall this plugin to prevent users from directly manipulating your server or database.
+
+Execute the following to safely remove:
 
 ```bash
 npx robo remove @roboplay/plugin-devtools
