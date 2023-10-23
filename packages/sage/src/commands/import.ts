@@ -8,6 +8,7 @@ import { mkdirSync } from 'node:fs'
 import { access, cp, readFile, writeFile } from 'node:fs/promises'
 // @ts-expect-error - TODO: Move from /cli to /core and expose as @roboplay/robo.js/utils
 import { cleanTempDir } from '@roboplay/robo.js/dist/cli/utils/utils.js'
+import type { PackageJson } from '../core/types.js'
 
 const command = new Command('import')
 	.arguments('[plugins...]')
@@ -34,11 +35,11 @@ async function importAction(plugins: string[], options: ImportOptions) {
 
 	// Validate
 	if (plugins.length < 1) {
-		logger.error('Please provide at least one plugin to import.')
+		logger.error('Please provide at least one plugin to import!')
 		process.exit(1)
 	}
 	if (!(await isRoboProject())) {
-		logger.error(`This does not appear to be a Robo project.`)
+		logger.error(`This does not appear to be a Robo project!`)
 		process.exit(1)
 	}
 
@@ -86,11 +87,6 @@ async function importAction(plugins: string[], options: ImportOptions) {
 		logger.warn(`One or more of your plugins requires TypeScript.`)
 		logger.warn(`See the following docs for more information:`, docs)
 	}
-}
-
-interface PackageJson {
-	dependencies?: Record<string, string>
-	devDependencies?: Record<string, string>
 }
 
 async function importPlugin(plugin: string, packageJson: PackageJson) {

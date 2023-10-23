@@ -1,5 +1,5 @@
 import { color } from '@roboplay/robo.js';
-// @ts-expect-error
+// @ts-expect-error - Internal module
 import { loadManifest } from '@roboplay/robo.js/dist/cli/utils/manifest.js'
 import { Command } from 'commander'
 import { logger } from '../core/logger.js'
