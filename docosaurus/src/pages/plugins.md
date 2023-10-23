@@ -6,6 +6,9 @@ npx robo add <package>
 ```
 
 ## Official Plugins 🏆
+
+Plugins directly developed and maintained by the Robo.js team, ensuring optimal compatibility and functionality:
+
 ### [AI](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-ai)
 Package: `@roboplay/plugin-ai`  
 Transform your Robo into an engaging chatbot utilizing AI. Supports customized behaviors and Discord commands.
@@ -21,6 +24,14 @@ Effortlessly create and manage API routes, allowing your Robo project to functio
 ### [Better Stack](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-better-stack)
 Package: `@roboplay/plugin-better-stack`  
 Visualize uptime and search logs in a visually appealing and searchable format.
+
+### [Confessions](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-confessions)
+Package: `@roboplay/plugin-confessions`  
+Facilitate anonymous confessions within your guild, complete with safety filters, and admin controls for a wholesome experience.
+
+### [DevTools](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-devtools)
+Package: `@roboplay/plugin-devtools`  
+Optimize your development process with utilities to test Robo APIs, monitor resources, and replicate specific behaviors.
 
 ### [GPT](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-gpt)
 Package: `@roboplay/plugin-gpt`  
@@ -38,7 +49,9 @@ Equip your bot with essential tools to manage and maintain your server.
 Package: `@roboplay/plugin-poll`  
 Easily create and manage interactive polls, engaging your community with minimal effort.
 
-## Third-party Plugins 🎉
+## Community Plugins 🎉
+
+Innovative plugins crafted by the dedicated and creative Robo.js community:
 
 <!-- Hacktoberfest Start -->
 
