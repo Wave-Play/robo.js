@@ -5,7 +5,7 @@ import { logger } from '../core/logger.js'
 import { cmd, downloadFile, exec, getPackageManager, isRoboProject } from '../core/utils.js'
 import path from 'node:path'
 import { mkdirSync } from 'node:fs'
-import { access, cp, readFile } from 'node:fs/promises'
+import { access, cp, readFile, writeFile } from 'node:fs/promises'
 // @ts-expect-error - TODO: Move from /cli to /core and expose as @roboplay/robo.js/utils
 import { cleanTempDir } from '@roboplay/robo.js/dist/cli/utils/utils.js'
 
@@ -83,8 +83,8 @@ async function importAction(plugins: string[], options: ImportOptions) {
 
 	if (needsTypescript && !tsExists) {
 		const docs = composeColors(color.underline, color.cyan)('https://docs.roboplay.dev/docs/advanced/typescript')
-		logger.info(`One or more of your plugins requires TypeScript.`)
-		logger.info(`See the following docs for more information:`, docs)
+		logger.warn(`One or more of your plugins requires TypeScript.`)
+		logger.warn(`See the following docs for more information:`, docs)
 	}
 }
 
@@ -139,27 +139,41 @@ async function importPlugin(plugin: string, packageJson: PackageJson) {
 		recursive: true
 	})
 
-	// Check if plugin has a `tsconfig.json` file
-	logger.debug(prefix, `Checking for tsconfig.json...`)
-	const pluginTsPath = path.join(pluginDir, 'tsconfig.json')
-	const pluginTsExists = await access(pluginTsPath)
+	// Also copy the plugin's `README.md` if it exists
+	const pluginReadmePath = path.join(pluginDir, 'README.md')
+	const pluginReadmeExists = await access(pluginReadmePath)
 		.then(() => true)
 		.catch(() => false)
 
+	if (pluginReadmeExists) {
+		// Make sure to inject note at the top of the README saying that it was imported
+		const readmeContents = await readFile(pluginReadmePath, 'utf-8')
+		const readmeSource = `**[View original source](https://www.npmjs.com/package/${plugin})**`
+		const readmeHeader = `> ***Import*ant:** This module was imported from the plugin package "${plugin}". ${readmeSource}\n\n`
+		await writeFile(pluginReadmePath, readmeHeader + readmeContents)
+		await cp(pluginReadmePath, path.join(roboSrcDir, 'README.md'))
+	}
+
 	// Check plugin's package.json and compare to project's package.json
 	// Install dependencies if necessary
-	logger.debug(prefix, `Comparing dependencies...`)
+	logger.debug(prefix, `Reading plugin's package.json...`)
 	const pluginPackageJson = JSON.parse(await readFile(path.join(pluginDir, 'package.json'), 'utf-8'))
 	const pluginDeps = pluginPackageJson.dependencies ?? {}
 	const pluginDevDeps = pluginPackageJson.devDependencies ?? {}
 	const projectDeps = packageJson.dependencies ?? {}
 	const projectDevDeps = packageJson.devDependencies ?? {}
 
+	// Check if plugin is configured for TypeScript by checking dev dependencies for `typescript`
+	logger.info(prefix, `Checking for TypeScript...`)
+	const pluginHasTs = Object.keys(pluginDevDeps).includes('typescript')
+	logger.debug(prefix, `Plugin ${pluginHasTs ? 'contains' : 'does not contain'} TypeScript.`)
+
 	// It's safe to assume core is necessary for all plugins' development
 	delete pluginDevDeps['@roboplay/robo.js']
 	delete projectDevDeps['discord.js']
 
 	// Install dependencies
+	logger.debug(prefix, `Comparing dependencies...`)
 	const depsToInstall = Object.keys(pluginDeps).filter((dep) => !projectDeps[dep])
 	const devDepsToInstall = Object.keys(pluginDevDeps).filter((dep) => !projectDevDeps[dep])
 	logger.debug(prefix, `Dependencies to install:`, depsToInstall)
@@ -182,6 +196,6 @@ async function importPlugin(plugin: string, packageJson: PackageJson) {
 
 	logger.info(prefix, `Successfully imported!`)
 	return {
-		typescript: pluginTsExists
+		typescript: pluginHasTs
 	}
 }
