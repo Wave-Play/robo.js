@@ -1,52 +1,74 @@
 {
-	"projectName": "robo.js",
-	"projectOwner": "Wave-Play",
-	"repoType": "github",
-	"repoHost": "https://github.com",
-	"files": ["CONTRIBUTORS.md", "README.md"],
-	"imageSize": 100,
-	"commit": false,
-	"commitType": "docs",
-	"commitConvention": "angular",
-	"contributors": [
-		{
-			"login": "Pkmmte",
-			"name": "Pkmmte Xeleon",
-			"avatar_url": "https://avatars.githubusercontent.com/u/3953360?v=4",
-			"profile": "http://pkmmte.com",
-			"contributions": ["staff", "code", "maintenance"]
-		},
-		{
-			"login": "Nazeofel",
-			"name": "Alexander",
-			"avatar_url": "https://avatars.githubusercontent.com/u/96749659?v=4",
-			"profile": "https://github.com/Nazeofel",
-			"contributions": ["code"]
-		},
-		{
-			"login": "0xMouiz",
-			"name": "Mouiz",
-			"avatar_url": "https://avatars.githubusercontent.com/u/96005374?v=4",
-			"profile": "https://github.com/0xMouiz",
-			"contributions": ["doc"]
-		},
-		{
-			"login": "mbos2",
-			"name": "Matej Bošnjak",
-			"avatar_url": "https://avatars.githubusercontent.com/u/56090587?v=4",
-			"profile": "https://github.com/mbos2",
-			"contributions": ["doc"]
-		}
-	],
-	"contributorsPerLine": 7,
-	"skipCi": true,
-	"linkToUsage": true,
-	"types": {
-		"staff": {
-			"symbol": "✨",
-			"description": "WavePlay Staff",
-			"link": "[<%= symbol %>](\"<%= description %>\"),"
-		}
-	}
+  "projectName": "robo.js",
+  "projectOwner": "Wave-Play",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "CONTRIBUTORS.md",
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "commitType": "docs",
+  "commitConvention": "angular",
+  "contributors": [
+    {
+      "login": "Pkmmte",
+      "name": "Pkmmte Xeleon",
+      "avatar_url": "https://avatars.githubusercontent.com/u/3953360?v=4",
+      "profile": "http://pkmmte.com",
+      "contributions": [
+        "staff",
+        "code",
+        "maintenance"
+      ]
+    },
+    {
+      "login": "Nazeofel",
+      "name": "Alexander",
+      "avatar_url": "https://avatars.githubusercontent.com/u/96749659?v=4",
+      "profile": "https://github.com/Nazeofel",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "0xMouiz",
+      "name": "Mouiz",
+      "avatar_url": "https://avatars.githubusercontent.com/u/96005374?v=4",
+      "profile": "https://github.com/0xMouiz",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "mbos2",
+      "name": "Matej Bošnjak",
+      "avatar_url": "https://avatars.githubusercontent.com/u/56090587?v=4",
+      "profile": "https://github.com/mbos2",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "ArnavK-09",
+      "name": "Arnav K",
+      "avatar_url": "https://avatars.githubusercontent.com/u/69188140?v=4",
+      "profile": "https://github.com/ArnavK-09",
+      "contributions": [
+        "example",
+        "plugin"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "skipCi": true,
+  "linkToUsage": true,
+  "types": {
+    "staff": {
+      "symbol": "✨",
+      "description": "WavePlay Staff",
+      "link": "[<%= symbol %>](\"<%= description %>\"),"
+    }
+  }
 }
-
