@@ -31,11 +31,11 @@ Upgrade your bots with next-gen simplicity, snappy plugin system, epic debugging
 
 Get well-versed with Robo.js and unlock its full potential!
 
-**➞ [📚 Documentation: Getting started](https://docs.roboplay.dev/docs/getting-started)**
+➞ [📚 **Documentation:** Getting started](https://docs.roboplay.dev/docs/getting-started)
 
-**➞ [📖 Tutorial: Making a "To-do" Robo](https://blog.waveplay.com/how-to-make-a-discord-robo)**
+➞ [📖 **Tutorial:** Making a "To-do" Robo](https://blog.waveplay.com/how-to-make-a-discord-robo)
 
-**➞ [🚀 Community: Join our Discord server](https://roboplay.dev/discord)**
+➞ [🚀 **Community:** Join our Discord server](https://roboplay.dev/discord)
 
 ## Quick start
 
@@ -113,7 +113,7 @@ Wait, is it actually an... inverse learning curve? You heard right, there's more
 
 ## License 📜
 
-We're all about freedom, so we've got you covered with the permissive [MIT License](LICENSE)! Go wild and build amazing bots without worrying about legalities.
+We're all about freedom, so we've got you covered with the permissive **[MIT License](LICENSE)**! Go wild and build amazing bots without worrying about legalities.
 
 ## Contributors
 
