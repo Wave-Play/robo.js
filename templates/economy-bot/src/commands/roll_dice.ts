@@ -17,10 +17,19 @@ export const config: CommandConfig = {
 			required: true,
 			min: 1,
 			max: 6
+		},
+		{
+			name: 'amount',
+			description: 'Choose amount to bet on... Default amount = $100',
+			type: 'number',
+			required: false,
+			min: 5
 		}
 	]
 }
 
 export default async (interaction: CommandInteraction) => {
-	return await rollDiceGame()
+	const num = (interaction.options.get('amount')?.value as number) ?? 3
+	const amount = (interaction.options.get('amount')?.value as number) ?? 100
+	return await rollDiceGame(num, amount, interaction.user.id, interaction.guild!.id)
 }

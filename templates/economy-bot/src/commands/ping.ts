@@ -7,7 +7,7 @@ import { CommandInteraction } from 'discord.js'
  * @description Check the bot's latency!
  */
 export const config: CommandConfig = {
-	description: 'Check the bot's latency!'
+	description: "Check the bot's latency!"
 }
 
 export default (interaction: CommandInteraction) => {

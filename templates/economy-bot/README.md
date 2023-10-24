@@ -11,6 +11,7 @@ To run your Robo, simply use the following command:
 ```bash
 npx robo dev
 ```
+
 > No need to re-run when you make changes. Your Robo will automatically restart! 🔄
 
 ## Template Overview ✨
@@ -18,19 +19,21 @@ npx robo dev
 The Robo.js Economy Bot is a beginner-friendly Discord bot built on the Discord.js framework. This bot provides a simple yet effective starting point for those looking to implement economy-related features in their Discord server.
 
 ## Slash Commands 🦈
+
 The bot supports several Slash commands to manage the in-server economy. Here are the available commands:
 
-| Command   | Description                                        |
-| --------- | -------------------------------------------------- |
-| `/ping`   | Pings the bot to check if it's online.            |
-| `/balance`| Check your or others account balance                      |
-| `/withdraw`| Withdraw credits from your bank to your wallet       |
-| `/deposit` | Deposit credits from your wallet into your bank.           |
-| `/daily`  | Claim your daily currency reward.                 |
-| `/share`  | Share credits to another user.  |
-| `/roll_dice`| Roll a dice to test your luck and win or lose credits.    |
+| Command      | Description                                            |
+| ------------ | ------------------------------------------------------ |
+| `/ping`      | Pings the bot to check if it's online.                 |
+| `/balance`   | Check your or others account balance                   |
+| `/withdraw`  | Withdraw credits from your bank to your wallet         |
+| `/deposit`   | Deposit credits from your wallet into your bank.       |
+| `/daily`     | Claim your daily currency reward.                      |
+| `/share`     | Share credits to another user.                         |
+| `/roll_dice` | Roll a dice to test your luck and win or lose credits. |
 
 ## Features 🌬️
+
 - [x] **Guild-Only Middleware**: Commands can only be used within the server where the bot is deployed.
 - [x] **Flashcore**: All data is stored safely with Flashcore, you can event add Custom Database using Keyv!
 - [x] **Automatic Account Creation**: User accounts are created automatically when they first interact with the bot.
@@ -91,4 +94,3 @@ Run the `npx robo deploy` command to automatically deploy to **[RoboPlay](https:
 You can also run `npx robo invite` (beta) to automatically generate a server invite to test it yourself or show it off! You can also use the [Discord Developer Portal](https://discord.com/developers/applications) to generate an invite as usual.
 
 Happy coding! 🎉
-

@@ -1,7 +1,7 @@
 // imports
 import type { CommandConfig } from '@roboplay/robo.js'
 import { CommandInteraction } from 'discord.js'
-import { createPlayerProfile, sharePlayerMoney } from '../utils.js'
+import { sharePlayerMoney } from '../utils.js'
 
 /**
  * @name /share
@@ -30,6 +30,6 @@ export default async (interaction: CommandInteraction) => {
 	const receiver = interaction.options.get('receiver')?.value as any
 	const amount = interaction.options.get('amount')?.value as number
 
-	// return 
+	// return
 	return await sharePlayerMoney(amount ?? 0, interaction.user.id, receiver, interaction.guild!.id)
 }
