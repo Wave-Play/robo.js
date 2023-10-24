@@ -1,6 +1,7 @@
 // imports
 import type { CommandConfig } from '@roboplay/robo.js'
 import { CommandInteraction } from 'discord.js'
+import { claimDailyPlayer } from '../utils.js'
 
 /**
  * @name /daily
@@ -10,6 +11,6 @@ export const config: CommandConfig = {
 	description: 'Claim your daily credits.'
 }
 
-export default (interaction: CommandInteraction) => {
-	return `## 🏓 Latency is ${Date.now() - interaction.createdTimestamp}ms!`
+export default async (interaction: CommandInteraction) => {
+	return await claimDailyPlayer(interaction.user.id, interaction.guild!.id)
 }

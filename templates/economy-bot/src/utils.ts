@@ -16,7 +16,7 @@ export type PlayerProfile = {
 	id: Snowflake | number
 	wallet: number
 	bank: number
-	timer: unknown
+	timer?: number
 }
 
 /**
@@ -28,8 +28,7 @@ export const createPlayerProfile = async (id: Snowflake, guild: Snowflake) => {
 	const userProfile: PlayerProfile = {
 		id,
 		wallet: 500,
-		bank: 500,
-		timer: null
+		bank: 500
 	}
 	await Flashcore.set(`${id}_${guild}`, JSON.stringify(userProfile))
 }
@@ -166,4 +165,34 @@ export const rollDiceGame = async (num: number, amount: number, id: Snowflake, g
 		? 'Won'
 		: 'Loose'
 	).toUpperCase()}** total **$${amount}** credits.`
+}
+
+/**
+ * Claim your daily credits
+ * @param id
+ * @param guild
+ */
+export const claimDailyPlayer = async (id: Snowflake, guild: Snowflake) => {
+	// vars
+	const playerProfile: PlayerProfile = JSON.parse(await Flashcore.get(`${id}_${guild}`))
+	const reward: number = randomFromArray([100, 150, 200, 50, 25, 75, 85, 120, 180, 135])
+	const now = Date.now()
+
+	// check cooldown
+	const lastDailyTimestamp = playerProfile.timer || 0
+	const cooldownTime = 24 * 60 * 60 * 1000 // 24 hours
+	const timer = Math.max(0, lastDailyTimestamp + cooldownTime - now)
+
+	// if time left
+	if (timer > 0) {
+		const hours = Math.floor(timer / 3600000)
+		const minutes = Math.floor((timer % 3600000) / 60000)
+		return `You can claim your daily reward in \` ${hours} hours and ${minutes} minutes \``
+	}
+
+	// if able to claim
+	playerProfile.wallet += reward
+	playerProfile.timer = Date.now()
+	await Flashcore.set(`${id}_${guild}`, JSON.stringify(playerProfile))
+	return `You claimed your daily reward of **$${reward}** credits!`
 }
