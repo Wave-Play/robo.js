@@ -35,7 +35,7 @@ The bot supports several Slash commands to manage the in-server economy. Here ar
 ## Features 🌬️
 
 - [x] **Guild-Only Middleware**: Commands can only be used within the server where the bot is deployed.
-- [x] **Flashcore**: All data is stored safely with Flashcore, you can event add Custom Database using Keyv!
+- [x] **Flashcore**: All data is stored safely with Flashcore, you can even add Custom Database using Keyv!
 - [x] **Automatic Account Creation**: User accounts are created automatically when they first interact with the bot.
 - [x] **Preventing Forced Participation**: Users cannot force other users to participate in the economy commands without even playing game once.
 
