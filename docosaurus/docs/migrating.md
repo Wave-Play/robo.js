@@ -26,9 +26,9 @@ Next up, choose a migration option based on your existing bot's complexity.
 
 For simple bots, we recommend diving headfirst into the Robo.js File Structure. You'll get automatic command registration, plugins, and more. Say goodbye to managing the Discord.js client object manually when you migrate your handlers (events/commands) to the Robo.js File Structure. 
 
-1. Migrate your bot to the [Robo.js File Structure](/docs/basics/overview).
+1. Migrate your bot to the **[Robo.js File Structure](/docs/basics/overview#the-robojs-file-structure)**.
 
-2. Update your `.config/robo.mjs` file with any client options you used with the Discord.js client. For example:
+2. Update your `config/robo.mjs` file with any client options you used with the Discord.js client. For example:
 ```js
 import { Intents } from 'discord.js'
 
@@ -40,6 +40,10 @@ export default {
 ```
 
 3. Use `robo dev` to run your bot during development.
+
+```bash
+npx robo dev
+```
 
 ## Option 2: Classic Handlers 🎛️
 
@@ -57,7 +61,7 @@ export default () => {
 }
 ```
 
-2. Update your `.config/robo.mjs` file with any client options you used with the Discord.js client.
+2. Update your `config/robo.mjs` file with any client options you used with the Discord.js client.
 ```js
 import { Intents } from 'discord.js'
 
@@ -70,9 +74,13 @@ export default {
 
 3. Use `robo dev` to run your bot during development.
 
-By doing this, you'll enjoy most of Robo.js features while gradually migrating your handlers (events/commands) to the [Robo.js File Structure](/docs/basics/overview).
+```bash
+npx robo dev
+```
 
-> **Note:** Robo.js handles the `client.login` part for you, so no worries there! 
+By doing this, you'll enjoy most of Robo.js features while gradually migrating your handlers (events/commands) to the **[Robo.js File Structure](/docs/basics/overview#the-robojs-file-structure)**.
+
+> **Note:** Robo.js handles the `client.login()` part for you, so no worries there! 
 
 ## Option 3: Slow Migration (Complex Bots) 🚪
 
@@ -93,7 +101,11 @@ Robo.start({ client })
 
 With this setup, you can start migrating your existing commands into the [Robo.js File Structure](/docs/basics/overview) or create new ones this way while you work your way there. 
 
-Start by moving your `clientOptions` into a`.config/robo.mjs` file instead of creating your own custom client. Once you're done migrating, you can kick off your projects using `robo dev` instead of your own entry file.
+Start by moving your `clientOptions` into a`config/robo.mjs` file instead of creating your own custom client. Once you're done migrating, you can kick off your projects using `robo dev` instead of your own entry file.
+
+```bash
+npx robo dev
+```
 
 ## Why We're All About the Robo.js File Structure 🏗️
 

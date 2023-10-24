@@ -1,15 +1,15 @@
 # Hosting 🏠
 
-Robo.js is built to work seamlessly with RoboPlay, a WavePlay service. But hey, we won't judge if you prefer to host it on another Node-supporting platform! This guide will show you the ropes of hosting your Robo.js, ensuring your creation stays up and running 24/7, even when your computer takes a nap.
+Robo.js is built to work seamlessly with **[RoboPlay](https://roboplay.dev)**, a **[WavePlay](https://waveplay.com)** service. But hey, we won't judge if you prefer to host it on another Node-supporting platform! This guide will show you the ropes of hosting your Robo.js, ensuring your creation stays up and running 24/7, even when your computer takes a nap.
 
-> Heads up: RoboPlay is currently invite-only, but keep an eye out for when it opens up to the public!
+> **Heads up:** RoboPlay is currently invite-only, but keep an eye out for when it opens up to the public!
 
 ## Deploying to RoboPlay 🚀
 
-Robo.js and RoboPlay are a match made in heaven, so deploying your code is a breeze. Just run `robo deploy` (or `npm run deploy` if you bootstrapped with `create-robo`):
+Robo.js and RoboPlay are a match made in heaven, so deploying your code is a breeze. Just run this one command:
 
 ```bash
-npm run deploy
+npx robo deploy
 ```
 
 This command will optimize your source code and host it for free on RoboPlay. First-time deployers will be guided through a quick setup, including choosing a slot.
@@ -34,14 +34,14 @@ Link your Robo's code to any of these slots, giving your software the hardware i
 
 ## Self-hosting 🏢
 
-Not feeling RoboPlay? No worries! Robo.js plays nice with any Node-supporting host, like [W3Schools' Full Stack Spaces](https://www.w3schools.com/spaces).
+Not feeling RoboPlay? No worries! Robo.js plays nice with any Node-supporting host, like **[W3Schools Full Stack Spaces](https://www.w3schools.com/spaces)**.
 
 #### Building 🛠️
 
 Some hosts might need you to run `robo build` before or after uploading your code. This step compiles your source code into an optimized production format, especially important for TypeScript users.
 
 ```bash
-npm run build
+npx robo build
 ```
 
 #### Starting 🏁
@@ -52,8 +52,8 @@ After building your Robo, fire it up with the `robo start` command. If you used 
 npm start
 ```
 
-> Remember to set up your environment variables before starting your Robo! Check out the [Secrets](/docs/basics/secrets) page for more info. You'll need to set `NODE_ENV` to `"production"` to run your Robo in production mode.
+> Remember to set up your environment variables before starting your Robo! Check out the **[Secrets](/docs/basics/secrets)** page for more info. You'll need to set `NODE_ENV` to `"production"` to run your Robo in production mode.
 
 ## Extra tidbits 📌
 
-Don't forget to invite your Robo to a Discord server! Check out the [Adding to Discord servers](#) page for all the deets.
+Don't forget to invite your Robo to a Discord server! Check out the **[Adding to Discord servers](/docs/adding-to-server)** page for all the deets.
