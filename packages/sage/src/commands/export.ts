@@ -1,4 +1,5 @@
 import { Command } from 'commander'
+import depcheck from 'depcheck'
 import { color } from '../core/color.js'
 import { logger } from '../core/logger.js'
 import { cmd, exec, getPackageManager, isRoboProject } from '../core/utils.js'
@@ -108,6 +109,9 @@ async function exportModule(module: string, project: ProjectInfo, commandOptions
 	if (features.length > 0) {
 		options.push('--features', features.join(','))
 	}
+	if (commandOptions.verbose) {
+		options.push('--verbose')
+	}
 
 	logger.debug(`Creating plugin project in "${color.bold(exportPath)}"...`)
 	await exec(`${commandName} create-robo ${options.join(' ')}`, {
@@ -140,6 +144,42 @@ async function exportModule(module: string, project: ProjectInfo, commandOptions
 		await writeFile(generatedReadmePath, generatedReadme + note)
 	}
 
+	// Read existing LICENSE (if it exists)
+	const licensePath = path.join(process.cwd(), 'LICENSE')
+	const licenseExists = await access(licensePath)
+		.then(() => true)
+		.catch(() => false)
+
+	// Copy LICENSE
+	if (licenseExists) {
+		logger.debug(`Copying LICENSE...`)
+		await cp(licensePath, path.join(exportPath, 'LICENSE'))
+	}
+
+	// Read generated package.json
+	logger.debug(`Reading generated package.json...`)
+	const generatedPackageJsonPath = path.join(exportPath, 'package.json')
+	const generatedPackageJson: PackageJson = JSON.parse(await readFile(generatedPackageJsonPath, 'utf-8'))
+
+	// Check for missing dependencies
+	logger.debug(`Checking for missing dependencies...`)
+	const depResults = await depcheck(srcPath, {
+		package: generatedPackageJson
+	})
+
+	const missingDeps = Object.keys(depResults.missing ?? {})
+	if (missingDeps) {
+		logger.debug(`Missing dependencies:`, depResults.missing)
+		logger.info(`Installing missing dependencies...`)
+		try {
+			await exec(`${cmd(packageManager)} install ${missingDeps.join(' ')}`, {
+				cwd: exportPath
+			})
+		} catch (error) {
+			logger.error(`Failed to install missing dependencies:`, error)
+		}
+	}
+
 	// Build the plugin
 	logger.debug(`Building plugin...`)
 	await exec(`${commandName} robo build plugin`, {
@@ -148,7 +188,7 @@ async function exportModule(module: string, project: ProjectInfo, commandOptions
 
 	// Install dependencies
 	logger.debug(`Installing dependencies...`)
-	await exec(`${cmd(packageManager)} install${commandOptions.verbose ? ' -v' : ''}`, {
+	await exec(`${cmd(packageManager)} install`, {
 		cwd: exportPath
 	})
 
