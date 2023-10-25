@@ -147,7 +147,7 @@ export const rollDiceGame = async (num: number, amount: number, id: Snowflake, g
 	}
 
 	// if not win
-	if (winNum !== num) {
+	if (winNum !== parseInt(num)) {
 		win = false
 		playerProfile.wallet -= amount
 	}
