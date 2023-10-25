@@ -136,11 +136,6 @@ export const rollDiceGame = async (num: number, amount: number, id: Snowflake, g
 		return 'Sorry, your wallet balance is **insufficient** for this game.'
 	}
 
-	// num check
-	if (!dices.includes(num)) {
-		num = randomFromArray(dices)
-	}
-
 	// win num
 	const winNum = randomFromArray(dices)
 	let win = false
