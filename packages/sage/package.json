@@ -42,13 +42,9 @@
 		"access": "public",
 		"registry": "https://registry.npmjs.org/"
 	},
-	"bin": "dist/index.js",
-	"devDependencies": {
-		"@types/node": "18.15.5",
-		"@types/tar": "^6.1.4",
-		"chokidar-cli": "^3.0.0",
-		"tsup": "6.7.0",
-		"typescript": "5.0.2"
+	"bin": {
+		"@roboplay/sage": "dist/index.js",
+		"sage": "dist/index.js"
 	},
 	"dependencies": {
 		"@roboplay/robo.js": "0.9.5",
@@ -56,5 +52,13 @@
 		"depcheck": "^1.4.7",
 		"inquirer": "^9.2.0",
 		"tar": "^6.1.13"
+	},
+	"devDependencies": {
+		"@types/inquirer": "^9.0.3",
+		"@types/node": "18.15.5",
+		"@types/tar": "^6.1.4",
+		"chokidar-cli": "^3.0.0",
+		"tsup": "6.7.0",
+		"typescript": "5.0.2"
 	}
 }
