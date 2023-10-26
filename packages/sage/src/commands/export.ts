@@ -1,6 +1,7 @@
 import { Command } from 'commander'
 import depcheck from 'depcheck'
-import { color } from '../core/color.js'
+import inquirer from 'inquirer'
+import { color, composeColors } from '../core/color.js'
 import { logger } from '../core/logger.js'
 import { cmd, exec, getPackageManager, isRoboProject } from '../core/utils.js'
 import path from 'node:path'
@@ -178,20 +179,52 @@ async function exportModule(module: string, project: ProjectInfo, commandOptions
 		} catch (error) {
 			logger.error(`Failed to install missing dependencies:`, error)
 		}
+	} else {
+		// Install dependencies
+		logger.info(`Installing dependencies...`)
+		await exec(`${cmd(packageManager)} install`, {
+			cwd: exportPath
+		})
 	}
 
 	// Build the plugin
 	logger.debug(`Building plugin...`)
-	await exec(`${commandName} robo build plugin`, {
-		cwd: exportPath
-	})
-
-	// Install dependencies
-	logger.debug(`Installing dependencies...`)
-	await exec(`${cmd(packageManager)} install`, {
+	await exec(`${commandName} robo build plugin${commandOptions.verbose ? ' --verbose' : ''}`, {
 		cwd: exportPath
 	})
 
 	// Print success message
 	logger.ready(`Successfully exported module "${color.bold(module)}" as a plugin!`)
+	logger.info(`You can find the plugin project here:`, color.bold(exportPath))
+
+	// Ask if they want to add the new plugin
+	logger.log('')
+	const { addPlugin } = await inquirer.prompt([
+		{
+			type: 'list',
+			name: 'addPlugin',
+			message: color.blue(`Want to add ${packageName} to your Robo?`),
+			choices: [
+				{ name: 'Yes', value: true },
+				{ name: 'No', value: false },
+				new inquirer.Separator(
+					color.reset(`\n${composeColors(color.bold, color.yellow)('Warning:')} this will delete the original module!`)
+				)
+			]
+		}
+	])
+
+	// Add plugin to project via `robo add` command
+	if (addPlugin) {
+		logger.debug(`Adding plugin to project...`)
+		const absolutePath = path.join(process.cwd(), '..', packageName)
+		await exec(`${commandName} robo add ${absolutePath}${commandOptions.verbose ? ' --verbose' : ''}`, {
+			cwd: process.cwd()
+		})
+
+		// Remove module from project
+		logger.debug(`Removing module from project...`)
+		await rm(modulePath, { recursive: true, force: true })
+		logger.ready(`Successfully added plugin "${color.bold(packageName)}" to your Robo!`)
+	}
 }
