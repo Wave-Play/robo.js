@@ -3,7 +3,7 @@ import depcheck from 'depcheck'
 import inquirer from 'inquirer'
 import { color, composeColors } from '../core/color.js'
 import { logger } from '../core/logger.js'
-import { cmd, exec, getPackageManager, isRoboProject } from '../core/utils.js'
+import { checkSageUpdates, cmd, exec, getPackageManager, isRoboProject } from '../core/utils.js'
 import path from 'node:path'
 import { access, cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import type { PackageJson } from '../core/types.js'
@@ -35,6 +35,7 @@ async function exportAction(modules: string[], options: ExportOptions) {
 	}).info(`Exporting ${modules.length} module${modules.length === 1 ? '' : 's'}...`)
 	logger.debug(`Package manager:`, getPackageManager())
 	logger.debug(`Current working directory:`, process.cwd())
+	await checkSageUpdates()
 
 	// Validate
 	if (modules.length < 1) {

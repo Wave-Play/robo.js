@@ -8,7 +8,7 @@ import whyCommand from './commands/why.js'
 
 // Read the version from the package.json file
 const require = createRequire(import.meta.url)
-const packageJson = require('../package.json')
+export const packageJson = require('../package.json')
 
 // TODO:
 // - Verify codemod version before running each command

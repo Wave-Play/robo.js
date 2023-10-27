@@ -2,7 +2,7 @@
 import { packageJson } from '@roboplay/robo.js/dist/cli/utils/utils.js'
 import { Command } from 'commander'
 import { logger } from '../core/logger.js'
-import { checkUpdates, cmd, exec, getPackageManager } from '../core/utils.js'
+import { checkSageUpdates, checkUpdates, cmd, exec, getPackageManager } from '../core/utils.js'
 import { loadConfig } from '@roboplay/robo.js/dist/core/config.js'
 import { prepareFlashcore } from '@roboplay/robo.js/dist/core/flashcore.js'
 import { color, composeColors } from '../core/color.js'
@@ -35,6 +35,7 @@ async function upgradeAction(options: UpgradeOptions) {
 	}).info(`Checking for updates...`)
 	logger.debug(`Package manager:`, getPackageManager())
 	logger.debug(`Current working directory:`, process.cwd())
+	await checkSageUpdates()
 
 	const config = await loadConfig()
 	await prepareFlashcore()

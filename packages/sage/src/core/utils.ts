@@ -8,6 +8,7 @@ import { color } from './color.js'
 import { FLASHCORE_KEYS } from '@roboplay/robo.js/dist/core/constants.js'
 import { spawn } from 'node:child_process'
 import { Config, Flashcore } from '@roboplay/robo.js'
+import { packageJson } from '../index.js'
 import type { SpawnOptions } from 'node:child_process'
 import type { PackageJson } from './types.js'
 
@@ -16,6 +17,33 @@ type PackageManager = 'npm' | 'bun' | 'pnpm' | 'yarn'
 const pipelineAsync = promisify(pipeline)
 
 export const IS_WINDOWS = /^win/.test(process.platform)
+
+export async function checkSageUpdates() {
+	// Check NPM registry for updates
+	logger.debug(`Checking for updates...`)
+	const response = await fetch(`https://registry.npmjs.org/${packageJson.name}/latest`)
+	const latestVersion = (await response.json()).version
+	logger.debug(`Latest version on NPM Registry: ${latestVersion}`)
+
+	// Compare versions
+	if (packageJson.version !== latestVersion) {
+		// Prepare commands
+		const packageManager = getPackageManager()
+		let commandName = 'npx'
+		if (packageManager === 'yarn') {
+			commandName = 'yarn dlx'
+		} else if (packageManager === 'pnpm') {
+			commandName = 'pnpx'
+		} else if (packageManager === 'bun') {
+			commandName = 'bunx'
+		}
+		const command = `${commandName} ${packageJson.name}@${latestVersion}`
+
+		// Print update message
+		logger.info(color.green(`A new version of ${color.bold('@roboplay/sage')} is available! (v${latestVersion})`))
+		logger.info(`Run as ${color.bold(command)} instead to get the latest updates.`)
+	}
+}
 
 export async function checkUpdates(packageJson: PackageJson, config: Config, forceCheck = false) {
 	const { updateCheckInterval = 60 * 60 } = config

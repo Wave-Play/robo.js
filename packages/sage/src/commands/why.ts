@@ -3,6 +3,7 @@ import { color } from '@roboplay/robo.js';
 import { loadManifest } from '@roboplay/robo.js/dist/cli/utils/manifest.js'
 import { Command } from 'commander'
 import { logger } from '../core/logger.js'
+import { checkSageUpdates } from '../core/utils.js';
 
 const command = new Command('why')
 	.arguments('[entities...]')
@@ -26,6 +27,7 @@ interface WhyOptions {
 
 async function whyAction(entities: string[], options: WhyOptions) {
 	const text = entities[0]
+	await checkSageUpdates()
 
 	// Create a logger
 	logger({

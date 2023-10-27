@@ -2,7 +2,7 @@ import { Command } from 'commander'
 import tar from 'tar'
 import { color, composeColors } from '../core/color.js'
 import { logger } from '../core/logger.js'
-import { cmd, downloadFile, exec, getPackageManager, isRoboProject } from '../core/utils.js'
+import { checkSageUpdates, cmd, downloadFile, exec, getPackageManager, isRoboProject } from '../core/utils.js'
 import path from 'node:path'
 import { mkdirSync } from 'node:fs'
 import { access, cp, readFile, writeFile } from 'node:fs/promises'
@@ -32,6 +32,7 @@ async function importAction(plugins: string[], options: ImportOptions) {
 	logger.debug(`Package manager:`, getPackageManager())
 	logger.debug(`Current working directory:`, process.cwd())
 	logger.debug(`Plugins:`, plugins)
+	await checkSageUpdates()
 
 	// Validate
 	if (plugins.length < 1) {
