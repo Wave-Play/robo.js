@@ -1,5 +1,21 @@
 # create-robo
 
+## 0.8.0
+
+### Minor Changes
+
+- 5264920: feat: new -ni --no-install option
+- ce3406c: feat: new -f --features option
+
+### Patch Changes
+
+- 35c1ec6: refactor: add "prepublishOnly" script to plugins
+- e95eb3d: patch: updated plugin development guide
+- 02d6b20: chore: updated pre-installed version of discord.js to 14.13.0
+- bd783c5: chore: updated default readmes
+- 32e58ec: patch(create-robo): Fixed NODE_OPTIONS for Windows
+- c653c2a: chore(docs): updated default robo readme
+
 ## 0.7.2
 
 ### Patch Changes
