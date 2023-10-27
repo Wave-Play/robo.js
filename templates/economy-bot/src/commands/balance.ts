@@ -26,10 +26,9 @@ export default async (interaction: CommandInteraction) => {
 	// get profile
 	const player: PlayerProfile = await getPlayerProfile(user ?? interaction.user.id, interaction.guild!.id)
 
-
 	// if no profile
 	if (!player) {
-		return `This User haven't created their player profile yet :(`
+		return "This User haven't created their player profile yet :(";
 	}
 
 	// return
