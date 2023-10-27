@@ -5,14 +5,77 @@ import { promisify } from 'node:util'
 import { readFile } from 'node:fs/promises'
 import { logger } from './logger.js'
 import { color } from './color.js'
+import { FLASHCORE_KEYS } from '@roboplay/robo.js/dist/core/constants.js'
 import { spawn } from 'node:child_process'
+import { Config, Flashcore } from '@roboplay/robo.js'
 import type { SpawnOptions } from 'node:child_process'
+import type { PackageJson } from './types.js'
 
 type PackageManager = 'npm' | 'bun' | 'pnpm' | 'yarn'
 
 const pipelineAsync = promisify(pipeline)
 
 export const IS_WINDOWS = /^win/.test(process.platform)
+
+export async function checkUpdates(packageJson: PackageJson, config: Config, forceCheck = false) {
+	const { updateCheckInterval = 60 * 60 } = config
+
+	const update = {
+		changelogUrl: '',
+		currentVersion: packageJson.version,
+		hasUpdate: false,
+		latestVersion: ''
+	}
+
+	// Ignore if disabled
+	if (!forceCheck && updateCheckInterval <= 0) {
+		return update
+	}
+
+	// Check if update check is due
+	const lastUpdateCheck = (await Flashcore.get<number>(FLASHCORE_KEYS.lastUpdateCheck)) ?? 0
+	const now = Date.now()
+	const isDue = now - lastUpdateCheck > updateCheckInterval * 1000
+
+	if (!forceCheck && !isDue) {
+		return update
+	}
+
+	// Check NPM registry for updates
+	const response = await fetch(`https://registry.npmjs.org/${packageJson.name}/latest`)
+	const latestVersion = (await response.json()).version
+	update.hasUpdate = packageJson.version !== latestVersion
+	update.latestVersion = latestVersion
+
+	// Get changelog URL
+	if (packageJson.repository?.url) {
+		logger.debug(`Getting changelog URL from repository URL...`, packageJson.repository)
+
+		// Construct raw changelog URL based on common convention
+		let changelogUrl = packageJson.repository?.url
+		changelogUrl = changelogUrl.replace('.git', '').replace('git+', '') + '/main'
+		if (packageJson.repository.directory) {
+			changelogUrl += `/${packageJson.repository.directory}`
+		}
+		if (changelogUrl.includes('github.com')) {
+			changelogUrl = changelogUrl.replace('github.com', 'raw.githubusercontent.com')
+		}
+		changelogUrl += '/CHANGELOG.md'
+
+		// Ping changelog URL to make sure it exists
+		const changelogResponse = await fetch(changelogUrl)
+		if (!changelogResponse.ok) {
+			logger.debug(`Changelog URL does not exist:`, changelogUrl)
+		} else {
+			update.changelogUrl = changelogUrl
+		}
+	}
+
+	// Update last update check time
+	await Flashcore.set(FLASHCORE_KEYS.lastUpdateCheck, now)
+
+	return update
+}
 
 export function cmd(packageManager: PackageManager): string {
 	return IS_WINDOWS ? `${packageManager}.cmd` : packageManager
