@@ -121,15 +121,16 @@ export const sharePlayerMoney = async (amount: number, sender: Snowflake, receiv
 
 /**
  * Roll dice game
- * @param number
+ * @param _num
  * @param amount
  * @param id
  * @param guild
  */
-export const rollDiceGame = async (num: number, amount: number, id: Snowflake, guild: Snowflake) => {
+export const rollDiceGame = async (_num: any, amount: number, id: Snowflake, guild: Snowflake) => {
 	// get player
 	const playerProfile: PlayerProfile = JSON.parse(await Flashcore.get(`${id}_${guild}`))
 	const dices: number[] = [1, 2, 3, 4, 5, 6]
+	const num = parseInt(_num) as number
 
 	// balance check
 	if (playerProfile.wallet < amount) {
@@ -141,13 +142,14 @@ export const rollDiceGame = async (num: number, amount: number, id: Snowflake, g
 	let win = false
 
 	// if win
-	if (winNum == parseInt(num)) {
+	if (winNum == num) {
 		win = true
+		amount += Math.floor(amount * 0.5)
 		playerProfile.wallet += amount
 	}
 
 	// if not win
-	if (winNum !== parseInt(num)) {
+	if (winNum !== num) {
 		win = false
 		playerProfile.wallet -= amount
 	}
