@@ -6,6 +6,8 @@ Let's get started on your journey to create the perfect Discord bot!
 
 ➞ [📚 **Documentation:** Getting started](https://docs.roboplay.dev/docs/getting-started)
 
+➞ [🚀 **Community:** Join our Discord server](https://roboplay.dev/discord)
+
 ## Running 🏃‍♂️
 
 To run your Robo, simply use the following command:
