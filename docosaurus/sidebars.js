@@ -31,7 +31,7 @@ const sidebars = {
     {
       type: 'category',
       label: 'Advanced',
-      items: ['advanced/command-line', 'advanced/configuration', 'advanced/debugging', 'advanced/linting', 'advanced/middleware', 'advanced/modules', 'advanced/plugins', 'advanced/portal', 'advanced/typescript']
+      items: ['advanced/command-line', 'advanced/configuration', 'advanced/debugging', 'advanced/linting', 'advanced/middleware', 'advanced/modules', 'advanced/plugins', 'advanced/portal', 'advanced/typescript', 'advanced/how-it-works']
     }
   ],
 
