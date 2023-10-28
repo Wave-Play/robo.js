@@ -17,12 +17,14 @@ interface ProjectInfo {
 const command = new Command('export')
 	.arguments('[modules...]')
 	.description('Export module(s) from your Robo as plugins')
+	.option('-ns --no-self-check', 'do not check for updates to Sage CLI')
 	.option('-s --silent', 'do not print anything')
 	.option('-v --verbose', 'print more information for debugging')
 	.action(exportAction)
 export default command
 
 interface ExportOptions {
+	selfCheck?: boolean
 	silent?: boolean
 	verbose?: boolean
 }
@@ -33,9 +35,12 @@ async function exportAction(modules: string[], options: ExportOptions) {
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : 'info'
 	}).info(`Exporting ${modules.length} module${modules.length === 1 ? '' : 's'}...`)
+	logger.debug(`CLI Options:`, options)
 	logger.debug(`Package manager:`, getPackageManager())
 	logger.debug(`Current working directory:`, process.cwd())
-	await checkSageUpdates()
+	if (options.selfCheck) {
+		await checkSageUpdates()
+	}
 
 	// Validate
 	if (modules.length < 1) {

@@ -1,13 +1,16 @@
-import { color } from '@roboplay/robo.js';
+import { color } from '@roboplay/robo.js'
 // @ts-expect-error - Internal module
 import { loadManifest } from '@roboplay/robo.js/dist/cli/utils/manifest.js'
 import { Command } from 'commander'
 import { logger } from '../core/logger.js'
-import { checkSageUpdates } from '../core/utils.js';
+import { checkSageUpdates } from '../core/utils.js'
 
 const command = new Command('why')
 	.arguments('[entities...]')
-	.description('Find out why a command, event, permission, or scope is in your Robo. e.g. /ping, @ready, %ADMINISTRATOR, +applications.commands')
+	.description(
+		'Find out why a command, event, permission, or scope is in your Robo. e.g. /ping, @ready, %ADMINISTRATOR, +applications.commands'
+	)
+	.option('-ns --no-self-check', 'do not check for updates to Sage CLI')
 	.option('-s --silent', 'do not print anything')
 	.option('-v --verbose', 'print more information for debugging')
 	.action(whyAction)
@@ -21,21 +24,24 @@ const validPrefixes = [
 ]
 
 interface WhyOptions {
+	selfCheck?: boolean
 	silent?: boolean
 	verbose?: boolean
 }
 
 async function whyAction(entities: string[], options: WhyOptions) {
-	const text = entities[0]
-	await checkSageUpdates()
-
 	// Create a logger
 	logger({
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : 'info'
 	})
-	logger.debug(`> "${text}"`)
+	logger.debug(`CLI Options:`, options)
+	if (options.selfCheck) {
+		await checkSageUpdates()
+	}
 
+	const text = entities[0]
+	logger.debug(`> "${text}"`)
 	if (!text) {
 		logger.error('Please provide a command, event, permission, or scope.')
 		process.exit(1)

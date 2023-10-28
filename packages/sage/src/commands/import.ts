@@ -13,12 +13,14 @@ import type { PackageJson } from '../core/types.js'
 const command = new Command('import')
 	.arguments('[plugins...]')
 	.description('Import plugin(s) as modules into your Robo')
+	.option('-ns --no-self-check', 'do not check for updates to Sage CLI')
 	.option('-s --silent', 'do not print anything')
 	.option('-v --verbose', 'print more information for debugging')
 	.action(importAction)
 export default command
 
 interface ImportOptions {
+	selfCheck?: boolean
 	silent?: boolean
 	verbose?: boolean
 }
@@ -29,10 +31,13 @@ async function importAction(plugins: string[], options: ImportOptions) {
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : 'info'
 	}).info(`Importing ${plugins.length} plugin${plugins.length === 1 ? '' : 's'}...`)
+	logger.debug(`CLI Options:`, options)
 	logger.debug(`Package manager:`, getPackageManager())
 	logger.debug(`Current working directory:`, process.cwd())
 	logger.debug(`Plugins:`, plugins)
-	await checkSageUpdates()
+	if (options.selfCheck) {
+		await checkSageUpdates()
+	}
 
 	// Validate
 	if (plugins.length < 1) {
