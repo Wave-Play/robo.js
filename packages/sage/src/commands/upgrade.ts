@@ -4,14 +4,11 @@ import { Command } from 'commander'
 import { logger } from '../core/logger.js'
 import { checkSageUpdates, checkUpdates, cmd, exec, getPackageManager } from '../core/utils.js'
 import { loadConfig } from '@roboplay/robo.js/dist/core/config.js'
-// @ts-expect-error - no types
-import { loadManifest } from '@roboplay/robo.js/dist/cli/utils/manifest.js'
 import { prepareFlashcore } from '@roboplay/robo.js/dist/core/flashcore.js'
 import { color, composeColors } from '../core/color.js'
 import fs from 'node:fs'
 import path from 'node:path'
 import inquirer from 'inquirer'
-import type { Config, Manifest } from '@roboplay/robo.js'
 
 const command = new Command('upgrade')
 	.description('Upgrades your Robo to the latest version')
@@ -45,7 +42,6 @@ async function upgradeAction(options: UpgradeOptions) {
 	}
 
 	const config = await loadConfig()
-	const manifest: Manifest = await loadManifest()
 	await prepareFlashcore()
 
 	// Check NPM registry for updates
@@ -123,7 +119,7 @@ async function upgradeAction(options: UpgradeOptions) {
 	await exec(`${cmd(packageManager)} ${command} ${packageJson.name}@${update.latestVersion}`)
 
 	// Check what needs to be changed
-	const data = await check(update.latestVersion, config, manifest)
+	const data = await check(update.latestVersion)
 	logger.debug(`Check data:`, data)
 
 	if (data.breaking.length === 0 && data.suggestions.length === 0) {
@@ -143,7 +139,7 @@ async function upgradeAction(options: UpgradeOptions) {
 			}
 		])
 		logger.log('')
-		await execute(changes, config, manifest)
+		await execute(changes)
 	}
 
 	logger.ready(`Successfully upgraded to v${update.latestVersion}! 🎉`)
@@ -250,7 +246,7 @@ const CHANGES: Record<string, Change> = {
  * @param config The current Robo config
  * @param manifest The current Robo manifest
  */
-async function check(version: string, _config: Config, _manifest: Manifest): Promise<CheckResult> {
+async function check(version: string): Promise<CheckResult> {
 	logger.info(`Checking version ${version}...`)
 	const breaking: Change[] = []
 	const suggestions: Change[] = []
@@ -270,7 +266,7 @@ async function check(version: string, _config: Config, _manifest: Manifest): Pro
  * @param config The current Robo config
  * @param manifest The current Robo manifest
  */
-async function execute(changes: Change[], _config: Config, _manifest: Manifest) {
+async function execute(changes: Change[]) {
 	logger.info(`Applying changes:`, changes.map((change) => change.name).join(', '))
 
 	for (const change of changes) {
