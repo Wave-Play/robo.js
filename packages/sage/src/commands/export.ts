@@ -3,7 +3,7 @@ import depcheck from 'depcheck'
 import inquirer from 'inquirer'
 import { color, composeColors } from '../core/color.js'
 import { logger } from '../core/logger.js'
-import { checkSageUpdates, cmd, exec, getPackageManager, isRoboProject } from '../core/utils.js'
+import { checkSageUpdates, cmd, exec, getPackageExecutor, getPackageManager, isRoboProject } from '../core/utils.js'
 import path from 'node:path'
 import { access, cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import type { PackageJson } from '../core/types.js'
@@ -91,15 +91,8 @@ async function exportModule(module: string, project: ProjectInfo, commandOptions
 	mkdir(exportPath, { recursive: true })
 
 	// Execute `create-robo` in the new folder
+	const packageExecutor = getPackageExecutor()
 	const packageManager = getPackageManager()
-	let commandName = 'npx'
-	if (packageManager === 'yarn') {
-		commandName = 'yarn dlx'
-	} else if (packageManager === 'pnpm') {
-		commandName = 'pnpx'
-	} else if (packageManager === 'bun') {
-		commandName = 'bunx'
-	}
 
 	const features = []
 	if (project.hasEslint) {
@@ -121,7 +114,7 @@ async function exportModule(module: string, project: ProjectInfo, commandOptions
 	}
 
 	logger.debug(`Creating plugin project in "${color.bold(exportPath)}"...`)
-	await exec(`${commandName} create-robo ${options.join(' ')}`, {
+	await exec(`${cmd(packageExecutor)} create-robo ${options.join(' ')}`, {
 		cwd: exportPath
 	})
 
@@ -195,7 +188,7 @@ async function exportModule(module: string, project: ProjectInfo, commandOptions
 
 	// Build the plugin
 	logger.debug(`Building plugin...`)
-	await exec(`${commandName} robo build plugin${commandOptions.verbose ? ' --verbose' : ''}`, {
+	await exec(`${cmd(packageExecutor)} robo build plugin${commandOptions.verbose ? ' --verbose' : ''}`, {
 		cwd: exportPath
 	})
 
@@ -224,7 +217,7 @@ async function exportModule(module: string, project: ProjectInfo, commandOptions
 	if (addPlugin) {
 		logger.debug(`Adding plugin to project...`)
 		const absolutePath = path.join(process.cwd(), '..', packageName)
-		await exec(`${commandName} robo add ${absolutePath}${commandOptions.verbose ? ' --verbose' : ''}`, {
+		await exec(`${cmd(packageExecutor)} robo add ${absolutePath}${commandOptions.verbose ? ' --verbose' : ''}`, {
 			cwd: process.cwd()
 		})
 

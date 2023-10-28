@@ -117,7 +117,7 @@ export async function checkUpdates(packageJson: PackageJson, config: Config, for
 	return update
 }
 
-export function cmd(packageManager: PackageManager): string {
+export function cmd(packageManager: string): string {
 	return IS_WINDOWS ? `${packageManager}.cmd` : packageManager
 }
 
