@@ -9,6 +9,7 @@ import { FLASHCORE_KEYS } from '@roboplay/robo.js/dist/core/constants.js'
 import { spawn } from 'node:child_process'
 import { Config, Flashcore } from '@roboplay/robo.js'
 import { packageJson } from '../index.js'
+import inquirer from 'inquirer'
 import type { SpawnOptions } from 'node:child_process'
 import type { PackageJson } from './types.js'
 
@@ -27,21 +28,32 @@ export async function checkSageUpdates() {
 
 	// Compare versions
 	if (packageJson.version !== latestVersion) {
-		// Prepare commands
-		const packageManager = getPackageManager()
-		let commandName = 'npx'
-		if (packageManager === 'yarn') {
-			commandName = 'yarn dlx'
-		} else if (packageManager === 'pnpm') {
-			commandName = 'pnpx'
-		} else if (packageManager === 'bun') {
-			commandName = 'bunx'
-		}
-		const command = `${commandName} ${packageJson.name}@${latestVersion}`
-
 		// Print update message
-		logger.info(color.green(`A new version of ${color.bold('@roboplay/sage')} is available! (v${latestVersion})`))
-		logger.info(`Run as ${color.bold(command)} instead to get the latest updates.`)
+		logger.info(color.green(`A new version of ${color.bold('@roboplay/sage')} is available! (v${latestVersion})\n`))
+		const { useLatest } = await inquirer.prompt<{ useLatest: boolean }>([
+			{
+				type: 'list',
+				name: 'useLatest',
+				message: 'Would you like to use the latest version?',
+				choices: [
+					{ name: 'Yes, use latest', value: true },
+					{ name: 'No, stick with v' + packageJson.version, value: false }
+				]
+			}
+		])
+		logger.log('')
+
+		if (useLatest) {
+			// Prepare commands
+			const packageExecutor = getPackageExecutor()
+			let cliPackage = process.argv[1] ?? packageJson.name
+			if (path.isAbsolute(cliPackage)) {
+				cliPackage = path.basename(cliPackage)
+			}
+
+			await exec(`${packageExecutor} ${cliPackage}@${packageJson.version} ${process.argv.slice(2).join(' ')}`.trim())
+			process.exit(0)
+		}
 	}
 }
 
@@ -175,6 +187,19 @@ export function getPackageManager(): PackageManager {
 		return 'pnpm'
 	} else {
 		return 'npm'
+	}
+}
+
+export function getPackageExecutor(): string {
+	const packageManager = getPackageManager()
+	if (packageManager === 'yarn') {
+		return 'yarn dlx'
+	} else if (packageManager === 'pnpm') {
+		return 'pnpx'
+	} else if (packageManager === 'bun') {
+		return 'bunx'
+	} else {
+		return 'npx'
 	}
 }
 

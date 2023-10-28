@@ -18,4 +18,20 @@ export function getPackageManager(): PackageManager {
 	}
 }
 
+/**
+ * Get the "npx" or equivalent for the current package manager
+ */
+export function getPackageExecutor(): string {
+	const packageManager = getPackageManager()
+	if (packageManager === 'yarn') {
+		return 'yarn dlx'
+	} else if (packageManager === 'pnpm') {
+		return 'pnpx'
+	} else if (packageManager === 'bun') {
+		return 'bunx'
+	} else {
+		return 'npx'
+	}
+}
+
 export const IS_BUN = getPackageManager() === 'bun'

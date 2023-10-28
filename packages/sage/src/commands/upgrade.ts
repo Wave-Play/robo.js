@@ -11,6 +11,7 @@ import inquirer from 'inquirer'
 const command = new Command('upgrade')
 	.description('Upgrades your Robo to the latest version')
 	.option('-f --force', 'forcefully install')
+	.option('-ns --no-self-check', 'do not check for updates to Sage CLI')
 	.option('-s --silent', 'do not print anything')
 	.option('-v --verbose', 'print more information for debugging')
 	.action(upgradeAction)
@@ -18,6 +19,7 @@ export default command
 
 interface UpgradeOptions {
 	force?: boolean
+	selfCheck?: boolean
 	silent?: boolean
 	verbose?: boolean
 }
@@ -33,9 +35,12 @@ async function upgradeAction(options: UpgradeOptions) {
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : 'info'
 	}).info(`Checking for updates...`)
+	logger.debug(`CLI Options:`, options)
 	logger.debug(`Package manager:`, getPackageManager())
 	logger.debug(`Current working directory:`, process.cwd())
-	await checkSageUpdates()
+	if (options.selfCheck) {
+		await checkSageUpdates()
+	}
 
 	const config = await loadConfig()
 	await prepareFlashcore()
