@@ -1,5 +1,11 @@
 # @roboplay/sage
 
+## 0.2.1
+
+### Patch Changes
+
+- 2927930: fix: executable suffix for npx and equivalent commands
+
 ## 0.2.0
 
 ### Minor Changes
