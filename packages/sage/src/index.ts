@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { Command } from 'commander'
 import { createRequire } from 'node:module'
+import doctorCommand from './commands/doctor.js'
 import exportCommand from './commands/export.js'
 import importCommand from './commands/import.js'
 import upgradeCommand from './commands/upgrade.js'
@@ -13,6 +14,7 @@ export const packageJson = require('../package.json')
 new Command('@roboplay/sage')
 	.description('Codemod for Robo.js')
 	.version(packageJson.version)
+	.addCommand(doctorCommand)
 	.addCommand(exportCommand)
 	.addCommand(importCommand)
 	.addCommand(upgradeCommand)
