@@ -4,9 +4,14 @@ import { Command } from 'commander'
 import { logger } from '../core/logger.js'
 import { checkSageUpdates, checkUpdates, cmd, exec, getPackageManager } from '../core/utils.js'
 import { loadConfig } from '@roboplay/robo.js/dist/core/config.js'
+// @ts-expect-error - no types
+import { loadManifest } from '@roboplay/robo.js/dist/cli/utils/manifest.js'
 import { prepareFlashcore } from '@roboplay/robo.js/dist/core/flashcore.js'
 import { color, composeColors } from '../core/color.js'
+import fs from 'node:fs'
+import path from 'node:path'
 import inquirer from 'inquirer'
+import type { Config, Manifest } from '@roboplay/robo.js'
 
 const command = new Command('upgrade')
 	.description('Upgrades your Robo to the latest version')
@@ -25,9 +30,6 @@ interface UpgradeOptions {
 }
 
 // TODO:
-// - Check and show codemod changes
-// - Let user choose which changes to apply
-// - Apply changes
 // - Auto accept option for ci
 async function upgradeAction(options: UpgradeOptions) {
 	// Create a logger
@@ -43,6 +45,7 @@ async function upgradeAction(options: UpgradeOptions) {
 	}
 
 	const config = await loadConfig()
+	const manifest: Manifest = await loadManifest()
 	await prepareFlashcore()
 
 	// Check NPM registry for updates
@@ -118,6 +121,31 @@ async function upgradeAction(options: UpgradeOptions) {
 	logger.debug(`Package manager:`, packageManager)
 
 	await exec(`${cmd(packageManager)} ${command} ${packageJson.name}@${update.latestVersion}`)
+
+	// Check what needs to be changed
+	const data = await check(update.latestVersion, config, manifest)
+	logger.debug(`Check data:`, data)
+
+	if (data.breaking.length === 0 && data.suggestions.length === 0) {
+		logger.info(`No changes to apply.`)
+	} else {
+		// Let user choose which changes to apply
+		const { changes } = await inquirer.prompt([
+			{
+				type: 'checkbox',
+				name: 'changes',
+				message: 'Which changes would you like to apply?',
+				choices: [
+					...data.breaking.map((change) => ({ name: change.name, value: change })),
+					new inquirer.Separator(),
+					...data.suggestions.map((change) => ({ name: change.name, value: change }))
+				]
+			}
+		])
+		logger.log('')
+		await execute(changes, config, manifest)
+	}
+
 	logger.ready(`Successfully upgraded to v${update.latestVersion}! 🎉`)
 }
 
@@ -188,4 +216,69 @@ function printChangelog(changelog: Changelog) {
 	}
 
 	logger.log('\n')
+}
+
+export interface Change {
+	id: number
+	name: string
+	description: string
+}
+
+export interface CheckResult {
+	breaking: Change[]
+	suggestions: Change[]
+}
+
+let _id = 0
+
+const CHANGES: Record<string, Change> = {
+	configDirectory: {
+		id: ++_id,
+		name: 'Config directory',
+		description: 'The config directory has been renamed from `.config` to `config`.'
+	}
+}
+
+/**
+ * Checks for any changes between current and target version.
+ *
+ * This is to be called after the upgrade has been installed, but before
+ * executing this upgrade script. This is to ensure that the user is able
+ * to select which changes they want to apply and why.
+ *
+ * @param version The target version being upgraded to
+ * @param config The current Robo config
+ * @param manifest The current Robo manifest
+ */
+async function check(version: string, _config: Config, _manifest: Manifest): Promise<CheckResult> {
+	logger.info(`Checking version ${version}...`)
+	const breaking: Change[] = []
+	const suggestions: Change[] = []
+
+	// Check for breaking changes
+	if (fs.existsSync(path.join(process.cwd(), '.config'))) {
+		breaking.push(CHANGES.configDirectory)
+	}
+
+	return { breaking, suggestions }
+}
+
+/**
+ * Executes the changes selected by the user.
+ *
+ * @param changes The changes selected by the user
+ * @param config The current Robo config
+ * @param manifest The current Robo manifest
+ */
+async function execute(changes: Change[], _config: Config, _manifest: Manifest) {
+	logger.info(`Applying changes:`, changes.map((change) => change.name).join(', '))
+
+	for (const change of changes) {
+		if (change.id === CHANGES.configDirectory.id) {
+			logger.debug(`Renaming config directory...`)
+			fs.renameSync(path.join(process.cwd(), '.config'), path.join(process.cwd(), 'config'))
+		}
+	}
+
+	logger.info(`Successfully applied changes!`)
 }
