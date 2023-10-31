@@ -113,6 +113,11 @@ async function createPluginConfig(pluginName: string, config: Record<string, unk
 	// Split plugin name into parts to create parent directories
 	const pluginParts = pluginName.replace(/^@/, '').split('/')
 
+	// Make sure the directory exists
+	await fs.mkdir(path.join(process.cwd(), 'config', 'plugins'), {
+		recursive: true
+	})
+
 	// Create parent directory if this is a scoped plugin
 	if (pluginName.startsWith('@')) {
 		await fs.mkdir(path.join(process.cwd(), 'config', 'plugins', pluginParts[0]), {
