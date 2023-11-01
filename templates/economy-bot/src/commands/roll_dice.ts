@@ -29,7 +29,7 @@ export const config: CommandConfig = {
 }
 
 export default async (interaction: CommandInteraction) => {
-	const num = (interaction.options.get('number')?.value as number) ?? 3
+	const num = (interaction.options.get('number')?.value) ?? '3';
 	const amount = (interaction.options.get('amount')?.value as number) ?? 100
 	return await rollDiceGame(num, amount, interaction.user.id, interaction.guild!.id)
 }
