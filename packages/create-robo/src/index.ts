@@ -20,6 +20,7 @@ interface CommandOptions {
 	template?: string
 	typescript?: boolean
 	verbose?: boolean
+	roboVersion?: string
 }
 
 new Command('create-robo <projectName>')
@@ -32,7 +33,7 @@ new Command('create-robo <projectName>')
 	.option('-t --template <templateUrl>', 'create a Robo from an online template')
 	.option('-ts --typescript', 'create a Robo using TypeScript')
 	.option('-v --verbose', 'print more information for debugging')
-	.option('-rv --robo-version', 'choose which version of robo your project will use')
+	.option('-rv, --robo-version <value>', 'choose which version of robo your project will use')
 	.action(async (options: CommandOptions, { args }) => {
 		logger({
 			level: options.verbose ? 'debug' : 'info'
@@ -43,13 +44,13 @@ new Command('create-robo <projectName>')
 		logger.debug(`Current working directory:`, process.cwd())
 
 		// parses robo version argument
-		const rv = await getRoboversionArg()
+		const rv = await getRoboversionArg(options.roboVersion)
 
 		// Check for updates
 		await checkUpdates()
 
 		// Infer project name from current directory if it was not provided
-		let projectName = args[0] == rv ? '' : args[0]
+		let projectName = args[0]
 		let useSameDirectory = false
 
 		if (!projectName) {
@@ -154,16 +155,11 @@ async function checkUpdates() {
 	}
 }
 
-async function getRoboversionArg(): Promise<string> {
+async function getRoboversionArg(roboVersion: string): Promise<string> {
 	let roboversion = 'latest'
-	if (process.argv.includes('-rv') || process.argv.includes('--robo-version')) {
-		const idx =
-			process.argv.indexOf('--robo-version') == -1
-				? process.argv.indexOf('-rv')
-				: process.argv.indexOf('--robo-version')
-		const rv = process.argv[idx + 1]
 
-		const response = await fetch(`https://registry.npmjs.org/@roboplay/robo.js/${rv}`)
+	if (roboVersion) {
+		const response = await fetch(`https://registry.npmjs.org/@roboplay/robo.js/${roboVersion}`)
 		const version = (await response.json()).version
 
 		if (version) {
@@ -172,6 +168,5 @@ async function getRoboversionArg(): Promise<string> {
 			logger().error('Invalid Robo version, falling back to latest..')
 		}
 	}
-
 	return roboversion
 }
