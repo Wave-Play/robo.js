@@ -32,6 +32,7 @@ new Command('create-robo <projectName>')
 	.option('-t --template <templateUrl>', 'create a Robo from an online template')
 	.option('-ts --typescript', 'create a Robo using TypeScript')
 	.option('-v --verbose', 'print more information for debugging')
+	.option('-rv --robo-version', 'choose which version of robo your project will use')
 	.action(async (options: CommandOptions, { args }) => {
 		logger({
 			level: options.verbose ? 'debug' : 'info'
@@ -41,11 +42,14 @@ new Command('create-robo <projectName>')
 		logger.debug(`create-robo version:`, packageJson.version)
 		logger.debug(`Current working directory:`, process.cwd())
 
+		// parses robo version argument
+		const rv = await getRoboversionArg()
+
 		// Check for updates
 		await checkUpdates()
 
 		// Infer project name from current directory if it was not provided
-		let projectName = args[0]
+		let projectName = args[0] == rv ? '' : args[0]
 		let useSameDirectory = false
 
 		if (!projectName) {
@@ -104,7 +108,7 @@ new Command('create-robo <projectName>')
 
 			// Get user input to determine which features to include or use the recommended defaults
 			selectedFeaturesOrDefaults = options.features?.split(',') ?? (await robo.getUserInput())
-			await robo.createPackage(selectedFeaturesOrDefaults, options.install ?? true)
+			await robo.createPackage(selectedFeaturesOrDefaults, options.install ?? true, rv)
 
 			// Determine if TypeScript is selected and copy the corresponding template files
 			logger.debug(`Copying template files...`)
@@ -148,4 +152,26 @@ async function checkUpdates() {
 		logger.info(chalk.bold.green(`A new version of ${chalk.bold('create-robo')} is available! (v${latestVersion})`))
 		logger.info(`Run as ${chalk.bold(command)} instead to get the latest updates.`)
 	}
+}
+
+async function getRoboversionArg(): Promise<string> {
+	let roboversion = 'latest'
+	if (process.argv.includes('-rv') || process.argv.includes('--robo-version')) {
+		const idx =
+			process.argv.indexOf('--robo-version') == -1
+				? process.argv.indexOf('-rv')
+				: process.argv.indexOf('--robo-version')
+		const rv = process.argv[idx + 1]
+
+		const response = await fetch(`https://registry.npmjs.org/@roboplay/robo.js/${rv}`)
+		const version = (await response.json()).version
+
+		if (version) {
+			roboversion = version
+		} else {
+			logger().error('Invalid Robo version, falling back to latest..')
+		}
+	}
+
+	return roboversion
 }
