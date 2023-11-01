@@ -126,7 +126,7 @@ export const sharePlayerMoney = async (amount: number, sender: Snowflake, receiv
  * @param id
  * @param guild
  */
-export const rollDiceGame = async (_num: any, amount: number, id: Snowflake, guild: Snowflake) => {
+export const rollDiceGame = async (_num: string, amount: number, id: Snowflake, guild: Snowflake) => {
 	// get player
 	const playerProfile: PlayerProfile = JSON.parse(await Flashcore.get(`${id}_${guild}`))
 	const dices: number[] = [1, 2, 3, 4, 5, 6]
