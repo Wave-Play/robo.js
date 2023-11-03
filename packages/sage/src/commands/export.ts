@@ -96,7 +96,7 @@ async function exportModule(module: string, project: ProjectInfo, commandOptions
 
 	// Execute `create-robo` in the new folder
 	const packageExecutor = getPackageExecutor()
-	const packageManager = getPackageManager()
+	const command = getPackageManager() == 'npm' && !project.hasWorkspaces ? 'npx' : getPackageManager()
 
 	const features = []
 	if (project.hasEslint) {
@@ -107,6 +107,10 @@ async function exportModule(module: string, project: ProjectInfo, commandOptions
 	}
 
 	const options = ['--no-install', '--plugin']
+
+	if (project.roboversion) {
+		options.push(`--robo-version ${project.roboversion}`)
+	}
 
 	if (project.hasTypescript) {
 		options.push('--typescript')
@@ -119,7 +123,7 @@ async function exportModule(module: string, project: ProjectInfo, commandOptions
 	}
 
 	logger.debug(`Creating plugin project in "${color.bold(exportPath)}"...`)
-	await exec(`${cmd(packageExecutor)} create-robo --robo-version ${project.roboversion} ${options.join(' ')}`, {
+	await exec(`${cmd(packageExecutor)} create-robo ${options.join(' ')}`, {
 		cwd: exportPath
 	})
 
@@ -178,10 +182,7 @@ async function exportModule(module: string, project: ProjectInfo, commandOptions
 		logger.info(`Installing missing dependencies...`)
 		try {
 			await exec(
-				`${cmd(packageManager == 'npm' ? 'npx' : packageManager)} ${await isUsingWorkspacesAndNpm(
-					packageManager,
-					project.hasWorkspaces
-				)} ${missingDeps.join(' ')}`,
+				`${cmd(command)} ${await usesLocalWorkaround(command, project.hasWorkspaces)} ${missingDeps.join(' ')}`,
 				{
 					cwd: exportPath
 				}
@@ -193,10 +194,7 @@ async function exportModule(module: string, project: ProjectInfo, commandOptions
 		// Install dependencies
 		logger.info(`Installing dependencies...`)
 		await exec(
-			`${cmd(packageManager == 'npm' ? 'npx' : packageManager)} ${await isUsingWorkspacesAndNpm(
-				packageManager,
-				project.hasWorkspaces
-			)}
+			`${cmd(command)} ${await usesLocalWorkaround(command, project.hasWorkspaces)}
 			`,
 			{ cwd: exportPath }
 		)
@@ -244,7 +242,7 @@ async function exportModule(module: string, project: ProjectInfo, commandOptions
 	}
 }
 
-async function isUsingWorkspacesAndNpm(packageManager: string, hasWorkspaces: boolean): Promise<string> {
+async function usesLocalWorkaround(packageManager: string, hasWorkspaces: boolean): Promise<string> {
 	if (packageManager === 'npm' && !hasWorkspaces) {
 		return 'install-local'
 	} else {
