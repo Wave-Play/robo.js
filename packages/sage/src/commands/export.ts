@@ -12,6 +12,8 @@ interface ProjectInfo {
 	hasEslint: boolean
 	hasPrettier: boolean
 	hasTypescript: boolean
+	hasWorkspaces: boolean
+	roboversion: string
 }
 
 const command = new Command('export')
@@ -59,7 +61,9 @@ async function exportAction(modules: string[], options: ExportOptions) {
 	const projectInfo: ProjectInfo = {
 		hasEslint: !!packageJson.devDependencies['eslint'],
 		hasPrettier: !!packageJson.devDependencies['prettier'],
-		hasTypescript: !!packageJson.devDependencies['typescript']
+		hasTypescript: !!packageJson.devDependencies['typescript'],
+		hasWorkspaces: !!packageJson.workspaces,
+		roboversion: packageJson.dependencies['@roboplay/robo.js']
 	}
 
 	const results: unknown[] = []
@@ -92,7 +96,7 @@ async function exportModule(module: string, project: ProjectInfo, commandOptions
 
 	// Execute `create-robo` in the new folder
 	const packageExecutor = getPackageExecutor()
-	const packageManager = getPackageManager()
+	const command = getPackageManager() == 'npm' && !project.hasWorkspaces ? 'npx' : getPackageManager()
 
 	const features = []
 	if (project.hasEslint) {
@@ -103,6 +107,11 @@ async function exportModule(module: string, project: ProjectInfo, commandOptions
 	}
 
 	const options = ['--no-install', '--plugin']
+
+	if (project.roboversion) {
+		options.push(`--robo-version ${project.roboversion}`)
+	}
+
 	if (project.hasTypescript) {
 		options.push('--typescript')
 	}
@@ -172,18 +181,23 @@ async function exportModule(module: string, project: ProjectInfo, commandOptions
 		logger.debug(`Missing dependencies:`, depResults.missing)
 		logger.info(`Installing missing dependencies...`)
 		try {
-			await exec(`${cmd(packageManager)} install ${missingDeps.join(' ')}`, {
-				cwd: exportPath
-			})
+			await exec(
+				`${cmd(command)} ${await usesLocalWorkaround(command, project.hasWorkspaces)} ${missingDeps.join(' ')}`,
+				{
+					cwd: exportPath
+				}
+			)
 		} catch (error) {
 			logger.error(`Failed to install missing dependencies:`, error)
 		}
 	} else {
 		// Install dependencies
 		logger.info(`Installing dependencies...`)
-		await exec(`${cmd(packageManager)} install`, {
-			cwd: exportPath
-		})
+		await exec(
+			`${cmd(command)} ${await usesLocalWorkaround(command, project.hasWorkspaces)}
+			`,
+			{ cwd: exportPath }
+		)
 	}
 
 	// Build the plugin
@@ -225,5 +239,13 @@ async function exportModule(module: string, project: ProjectInfo, commandOptions
 		logger.debug(`Removing module from project...`)
 		await rm(modulePath, { recursive: true, force: true })
 		logger.ready(`Successfully added plugin "${color.bold(packageName)}" to your Robo!`)
+	}
+}
+
+async function usesLocalWorkaround(packageManager: string, hasWorkspaces: boolean): Promise<string> {
+	if (packageManager === 'npm' && !hasWorkspaces) {
+		return 'install-local'
+	} else {
+		return 'install'
 	}
 }

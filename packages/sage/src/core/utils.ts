@@ -51,7 +51,7 @@ export async function checkSageUpdates() {
 				cliPackage = path.basename(cliPackage)
 			}
 
-			await exec(`${packageExecutor} ${cliPackage}@${packageJson.version} ${process.argv.slice(2).join(' ')}`.trim())
+			await exec(`${cmd(packageExecutor)} ${cliPackage}@${packageJson.version} ${process.argv.slice(2).join(' ')}`.trim())
 			process.exit(0)
 		}
 	}

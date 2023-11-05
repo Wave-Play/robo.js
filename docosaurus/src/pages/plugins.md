@@ -73,6 +73,10 @@ Add your plugin below:
 Package: `emoji-reaction-plugin`  
 Make your conversations fun and interactive with various emoji based reactions.
 
+### [Community Challenges Plugin](https://www.npmjs.com/package/community-challenges)
+Package: `community-challenges`  
+Submit your challenge ideas to the community challenges directly from your bot.
+
 <!-- Hacktoberfest End -->
 
 ## List Your Plugin 🛠️

@@ -1,5 +1,11 @@
 # create-robo
 
+## 0.9.0
+
+### Minor Changes
+
+- 26b9c08: feat(create-robo): option to specify Robo.js version
+
 ## 0.8.0
 
 ### Minor Changes

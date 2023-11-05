@@ -1,5 +1,17 @@
 # @roboplay/sage
 
+## 0.2.2
+
+### Patch Changes
+
+- 35269d1: refactor(sage-cli): export
+- 1a02e7b: patch: fixed executor command usage for windows when running for sage updates
+- Updated dependencies [0850950]
+- Updated dependencies [18913ee]
+- Updated dependencies [76f6d92]
+- Updated dependencies [bf23d17]
+  - @roboplay/robo.js@0.9.7
+
 ## 0.2.1
 
 ### Patch Changes
