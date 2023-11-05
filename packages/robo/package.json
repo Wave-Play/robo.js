@@ -26,7 +26,8 @@
 		"test": "jest --config jest.config.mjs"
 	},
 	"bin": {
-		"robo": "dist/cli/index.js"
+		"robo": "dist/cli/index.js",
+		"sage": "dist/cli/sage.js"
 	},
 	"type": "module",
 	"license": "MIT",
