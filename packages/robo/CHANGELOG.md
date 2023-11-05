@@ -1,5 +1,14 @@
 # robo.js
 
+## 0.9.7
+
+### Patch Changes
+
+- 0850950: fix(cli): ensure plugins directory always exist prior to adding
+- 18913ee: fix: multi nesting support for plugins
+- 76f6d92: feat(flashcore): support for key namespaces
+- bf23d17: chore: updated package readme
+
 ## 0.9.6
 
 ### Patch Changes

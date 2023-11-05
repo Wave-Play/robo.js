@@ -1,6 +1,6 @@
 {
 	"name": "@roboplay/sage",
-	"version": "0.2.1",
+	"version": "0.2.2",
 	"private": false,
 	"description": "Codemod for Robo.js",
 	"engines": {
@@ -47,7 +47,7 @@
 		"sage": "dist/index.js"
 	},
 	"dependencies": {
-		"@roboplay/robo.js": "0.9.5",
+		"@roboplay/robo.js": "0.9.7",
 		"commander": "10.0.0",
 		"depcheck": "^1.4.7",
 		"inquirer": "^9.2.0",
