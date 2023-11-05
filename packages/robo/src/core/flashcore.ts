@@ -11,6 +11,10 @@ let _adapter: FlashcoreAdapter | undefined
 // Watchers for listening to changes in the store.
 const _watchers = new Map<string, Set<WatcherCallback>>()
 
+interface FlashcoreOptions {
+	namespace?: string
+}
+
 export const Flashcore = {
 	/**
 	 * Clears all key-value pairs from the store.
@@ -27,7 +31,12 @@ export const Flashcore = {
 	 * @param {string} key - The key associated with the value to delete.
 	 * @returns {Promise<boolean> | boolean} - Resolves to a boolean indicating whether the operation was successful.
 	 */
-	delete: (key: string): Promise<boolean> | boolean => {
+	delete: (key: string, options?: FlashcoreOptions): Promise<boolean> | boolean => {
+		// If a namespace is provided, prepend it to the key
+		if (options?.namespace) {
+			key = `${options.namespace}__${key}`
+		}
+
 		if (_watchers.has(key)) {
 			const oldValue = _adapter.get(key)
 			if (oldValue instanceof Promise) {
@@ -54,7 +63,12 @@ export const Flashcore = {
 	 * @param {string} key - The key associated with the value.
 	 * @returns {Promise<V> | V} - May return a promise you can await or the value directly.
 	 */
-	get: <V>(key: string): Promise<V> | V => {
+	get: <V>(key: string, options?: FlashcoreOptions): Promise<V> | V => {
+		// If a namespace is provided, prepend it to the key
+		if (options?.namespace) {
+			key = `${options.namespace}__${key}`
+		}
+
 		return _adapter.get(key) as V
 	},
 
@@ -65,7 +79,12 @@ export const Flashcore = {
 	 * @param {WatcherCallback} callback - The callback function to remove from the key's watch list.
 	 * If no callback is provided, all callbacks associated with the key are removed.
 	 */
-	off: (key: string, callback?: WatcherCallback) => {
+	off: (key: string, callback?: WatcherCallback, options?: FlashcoreOptions) => {
+		// If a namespace is provided, prepend it to the key
+		if (options?.namespace) {
+			key = `${options.namespace}__${key}`
+		}
+
 		if (_watchers.has(key) && callback) {
 			_watchers.get(key)?.delete(callback)
 
@@ -85,7 +104,12 @@ export const Flashcore = {
 	 * @param {WatcherCallback} callback - The callback function to execute when the key's value changes.
 	 * The callback receives the new and old values as arguments.
 	 */
-	on: (key: string, callback: WatcherCallback) => {
+	on: (key: string, callback: WatcherCallback, options?: FlashcoreOptions) => {
+		// If a namespace is provided, prepend it to the key
+		if (options?.namespace) {
+			key = `${options.namespace}__${key}`
+		}
+
 		if (!_watchers.has(key)) {
 			_watchers.set(key, new Set())
 		}
@@ -101,7 +125,12 @@ export const Flashcore = {
 	 * @param {V} value - The value to set.
 	 * @returns {Promise<boolean> | boolean} - Resolves to a boolean indicating whether the operation was successful.
 	 */
-	set: <V>(key: string, value: V): Promise<boolean> | boolean => {
+	set: <V>(key: string, value: V, options?: FlashcoreOptions): Promise<boolean> | boolean => {
+		// If a namespace is provided, prepend it to the key
+		if (options?.namespace) {
+			key = `${options.namespace}__${key}`
+		}
+
 		if (_watchers.has(key) || typeof value === 'function') {
 			// Fetch the old value only when necessary for minimal overhead
 			const oldValue: unknown = _adapter.get(key)
