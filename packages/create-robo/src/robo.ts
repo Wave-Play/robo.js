@@ -323,7 +323,7 @@ export default class Robo {
 			await fs.writeFile(path.join(this._workingDir, 'README.md'), customReadme)
 		}
 
-		const runPrefix = packageManager + packageManager === 'npm' ? 'npm run ' : packageManager + ' '
+		const runPrefix = packageManager === 'npm' ? 'npm run ' : packageManager + ' '
 		if (this._useTypeScript) {
 			packageJson.devDependencies['@swc/core'] = '^1.3.44'
 			packageJson.devDependencies['@types/node'] = '^18.14.6'
