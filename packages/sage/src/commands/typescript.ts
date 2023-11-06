@@ -3,7 +3,7 @@ import { Dirent } from 'node:fs'
 import { access, readFile, readdir, rename, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { cmd, exec, getPackageManager } from '../core/utils.js'
-import { logger } from '@roboplay/robo.js'
+import { logger } from '../core/logger.js'
 import inquirer from 'inquirer'
 import { PackageJson } from 'src/core/types.js'
 
@@ -38,6 +38,7 @@ const TSCONFIG = `{
 
 async function codemodAction() {
 	const packageManager = getPackageManager()
+	const command = packageManager === 'npm' ? 'install' : 'add'
 	const tsconfigPath = path.join(process.cwd(), 'tsconfig.json')
 	const packageJsonPath = path.join(process.cwd(), 'package.json')
 	const packageJson: PackageJson = JSON.parse(await readFile(packageJsonPath, 'utf-8'))
@@ -47,7 +48,7 @@ async function codemodAction() {
 
 	try {
 		if (!projectInfo.hasSWC) {
-			await exec(`${cmd(packageManager)} install @swc/core --save-dev`)
+			await exec(`${cmd(packageManager)} ${command} --save-dev @swc/core`)
 		}
 		const tsFileExist = await access(tsconfigPath)
 			.then(() => true)
@@ -60,7 +61,7 @@ async function codemodAction() {
 					{
 						type: 'list',
 						name: 'tsconfig',
-						message: `Would you like your tsconfig file be overwritten ?`,
+						message: `tsconfig found !, would you like your tsconfig file be overwritten ?`,
 						choices: [
 							{ name: 'Yes', value: true },
 							{ name: 'No', value: false }
@@ -86,10 +87,11 @@ async function codemodAction() {
 // walk dir recursively
 
 async function convertJsToTS() {
+	const dir = path.join(process.cwd(), 'src')
 	const walk = async (filePath: string) => {
 		const cwd = await readdir(filePath, { withFileTypes: true })
 		cwd.forEach((file: Dirent) => {
-			if (file.name.slice(-3) === '.js') {
+			if (path.extname(file.name) === '.js') {
 				const convertedFileType = file.name.replace('js', 'ts')
 				const jsFilePath = path.join(filePath, file.name)
 				const tsFilePath = path.join(filePath, convertedFileType)
@@ -101,5 +103,5 @@ async function convertJsToTS() {
 			}
 		})
 	}
-	await walk('./src/')
+	await walk(dir)
 }

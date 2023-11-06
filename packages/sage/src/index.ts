@@ -6,7 +6,7 @@ import exportCommand from './commands/export.js'
 import importCommand from './commands/import.js'
 import upgradeCommand from './commands/upgrade.js'
 import whyCommand from './commands/why.js'
-import typescriptCommand from './commands/codemod.js'
+import typescriptCommand from './commands/typescript.js'
 
 // Read the version from the package.json file
 const require = createRequire(import.meta.url)
