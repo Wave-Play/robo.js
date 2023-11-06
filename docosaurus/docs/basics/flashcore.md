@@ -128,6 +128,14 @@ export default async (interaction) => {
 }
 ```
 
+Now every server has its own high score for each user! Just remember to namespace your keys when you're fetching them too:
+
+```javascript
+await Flashcore.get(userId, {
+	namespace: interaction.guild.id
+})
+```
+
 ## Using Keyv Adapters 🎛️
 
 Flashcore's storage medium isn't set in stone. It's cozy with the file system by default but can switch to Keyv adapters. Want to use SQLite instead of the file system? You can configure this in the `robo.mjs` config file:
