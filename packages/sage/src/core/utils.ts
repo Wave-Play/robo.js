@@ -51,7 +51,9 @@ export async function checkSageUpdates() {
 				cliPackage = path.basename(cliPackage)
 			}
 
-			await exec(`${cmd(packageExecutor)} ${cliPackage}@${packageJson.version} ${process.argv.slice(2).join(' ')}`.trim())
+			await exec(
+				`${cmd(packageExecutor)} ${cliPackage}@${packageJson.version} ${process.argv.slice(2).join(' ')}`.trim()
+			)
 			process.exit(0)
 		}
 	}
@@ -118,7 +120,7 @@ export async function checkUpdates(packageJson: PackageJson, config: Config, for
 }
 
 export function cmd(packageManager: string): string {
-	return IS_WINDOWS ? `${packageManager}.cmd` : packageManager
+	return IS_WINDOWS && packageManager !== 'pnpm' ? `${packageManager}.cmd` : packageManager
 }
 
 export function createNodeReadable(webReadable: ReadableStream<Uint8Array>): NodeJS.ReadableStream {
