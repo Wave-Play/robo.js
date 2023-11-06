@@ -29,7 +29,7 @@ Visualize uptime and search logs in a visually appealing and searchable format.
 Package: `@roboplay/plugin-confessions`  
 Facilitate anonymous confessions within your guild, complete with safety filters, and admin controls for a wholesome experience.
 
-### [DevTools](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-devtools)
+### [Developer Tools](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-devtools)
 Package: `@roboplay/plugin-devtools`  
 Optimize your development process with utilities to test Robo APIs, monitor resources, and replicate specific behaviors.
 
@@ -53,31 +53,13 @@ Easily create and manage interactive polls, engaging your community with minimal
 
 Innovative plugins crafted by the dedicated and creative Robo.js community:
 
-<!-- Hacktoberfest Start -->
-
-<!--
-
-Make a pull request editing this file with your plugin added in order to be counted for Hacktoberfest!
-Please use the following template:
-
-### [Name](Link)
-Package: `package-name`  
-Your plugin description here.
-
-Add your plugin below:
-
--->
-
-
-### [Emoji Reaction Plugin](https://www.npmjs.com/package/emoji-reaction-plugin)
+### [Emoji Reaction](https://www.npmjs.com/package/emoji-reaction-plugin)
 Package: `emoji-reaction-plugin`  
 Make your conversations fun and interactive with various emoji based reactions.
 
-### [Community Challenges Plugin](https://www.npmjs.com/package/community-challenges)
+### [Community Challenges](https://www.npmjs.com/package/community-challenges)
 Package: `community-challenges`  
 Submit your challenge ideas to the community challenges directly from your bot.
-
-<!-- Hacktoberfest End -->
 
 ## List Your Plugin 🛠️
 
