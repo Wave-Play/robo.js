@@ -41,7 +41,7 @@ We highly encourage you to follow **[Conventional Commits](https://www.conventio
 
 We follow **[Semantic Versioning](https://semver.org/)** (SemVer) for packages v1.0.0 and up. Under that? The second digit is for breaking changes and the third for everything else.
 
-We also rely on **[Changesets](https://github.com/changesets/changesets)** for change management. Just run `pnpm changesets` and let the CLI guide you. 
+We also rely on **[Changesets](https://github.com/changesets/changesets)** for change management. Just run `pnpm changeset` and let the CLI guide you. 
 
 Starting a new package? Use `0.0.0` as your initial version and Changesets will handle the rest.
 
