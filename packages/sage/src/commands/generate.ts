@@ -17,7 +17,7 @@ async function generateDocAction() {
 		const manifestEvents: EventConfig = manifest.events
 		const manifestContextCommands: Record<string, ContextEntry> = manifest.context
 
-		const showOptions = (options: CommandOption[], required?: boolean): string => {
+		const displayOptions = (options: CommandOption[], required?: boolean): string => {
 			const str: string[] = []
 			if (options && options.length > 0) {
 				options.forEach((option: CommandOption) => {
@@ -31,25 +31,24 @@ async function generateDocAction() {
 			return str.length > 0 ? str.join(',') : 'no options'
 		}
 
-		const subCommandShow = (command: CommandEntry): string => {
-			const subCommandsName: string[] = []
-			let subC: CommandEntry = command.subcommands
-			while (subC) {
-				subCommandsName.push(Object.keys(subC)[0])
-				const s: CommandEntry = Object.values(subC)[0]
-				subC = s.subcommands
+		const displaySubcommand = (command: CommandEntry): string => {
+			const subCommandsNames: string[] = []
+			let subCommand: CommandEntry = command.subcommands
+			while (subCommand) {
+				subCommandsNames.push(Object.keys(subCommand)[0])
+				const s: CommandEntry = Object.values(subCommand)[0]
+				subCommand = s.subcommands
 			}
-			return subCommandsName.join(' ')
+			return subCommandsNames.join(' ')
 		}
 
 		let table = `# Slash commands:\n| Name |  Options  | Required | Description |\n| ----------- | ----------- | ----------- | ----------- |\n`
 
 		for (const [commandKey, commandValue] of Object.entries(manifestCommands)) {
 			const desc = commandValue.description ? commandValue.description : 'no description available'
-			table += `|${commandKey} ${subCommandShow(commandValue)}|${showOptions(commandValue.options)}|${showOptions(
-				commandValue.options,
-				true
-			)}|${desc}|\n`
+			table += `|${commandKey} ${displaySubcommand(commandValue)}|${displayOptions(
+				commandValue.options
+			)}|${displayOptions(commandValue.options, true)}|${desc}|\n`
 		}
 
 		table +=
