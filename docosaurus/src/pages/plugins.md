@@ -61,6 +61,10 @@ Make your conversations fun and interactive with various emoji based reactions.
 Package: `community-challenges`  
 Submit your challenge ideas to the community challenges directly from your bot.
 
+### [Discord User Profile](https://www.npmjs.com/package/discord-user-profile)
+Package: `discord-user-profile`  
+Create your own user profile on a discord server and share it. Allow anyone to do the same!.
+
 ## List Your Plugin 🛠️
 
 Created a plugin and eager to share it with the Robo.js community? Awesome! 🌟
