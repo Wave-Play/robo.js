@@ -17,6 +17,7 @@ export type GptChatMessageContent = string | Array<{
 export interface GptChatOptions {
 	backoff?: boolean
 	functions?: GptFunction[]
+	maxTokens?: number
 	messages: GptChatMessage[]
 	model?: string
 	retries?: number
@@ -47,7 +48,7 @@ export interface GptFunctionProperty {
 }
 
 export async function chat(options: GptChatOptions) {
-	const { backoff = true, functions, messages, model = 'gpt-3.5-turbo', retries = 3 } = options
+	const { backoff = true, functions, maxTokens = 1024, messages, model = 'gpt-3.5-turbo', retries = 3 } = options
 	let retryCount = 0
 
 	if (!pluginOptions.openaiKey) {
@@ -64,7 +65,7 @@ export async function chat(options: GptChatOptions) {
 				},
 				body: JSON.stringify({
 					functions: functions?.length && !model.includes('vision') ? functions : undefined,
-					max_tokens: 1024,
+					max_tokens: maxTokens,
 					messages: messages,
 					model: model
 				})

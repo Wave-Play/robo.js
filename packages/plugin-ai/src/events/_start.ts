@@ -8,6 +8,7 @@ export const gptFunctionHandlers: Record<string, Command> = {}
 
 export interface PluginOptions {
 	commands?: boolean | string[]
+	maxTokens?: number
 	model?: string
 	openaiKey: string
 	systemMessage?: string
