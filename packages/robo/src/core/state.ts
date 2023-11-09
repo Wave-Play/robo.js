@@ -180,17 +180,28 @@ export function saveState() {
  * @param value The value to set.
  * @param options Options for setting the state. (Persisting to disk)
  */
-export function setState<T>(key: string, value: T, options?: SetStateOptions): void {
+export function setState<T>(key: string, value: T | ((oldValue: T) => T), options?: SetStateOptions): T {
 	const { persist } = options ?? {}
-	state[key] = value
+
+	// If value is a function, use it to compute the new value based on the old value
+	let newValue = value
+	if (typeof value === 'function') {
+		const oldValue = state[key] as T
+		newValue = (value as (oldValue: T) => T)(oldValue as T)
+	}
+
+	// Apply the new value to the state
+	state[key] = newValue
 
 	// Persist state to disk if requested
 	if (persist) {
 		const persistState = async () => {
 			const persistedState = (await Flashcore.get<Record<string, unknown>>(FLASHCORE_KEYS.state)) ?? {}
-			persistedState[key] = value
+			persistedState[key] = newValue
 			Flashcore.set(FLASHCORE_KEYS.state, persistedState)
 		}
 		persistState()
 	}
+
+	return newValue as T
 }
