@@ -6,7 +6,12 @@ import type { ChildProcess } from 'child_process'
 
 export const state: Record<string, unknown> = {}
 
+export interface GetStateOptions {
+	namespace?: string
+}
+
 export interface SetStateOptions {
+	namespace?: string
 	persist?: boolean
 }
 
@@ -127,7 +132,12 @@ export function clearState(): void {
  * @param key The key to get the value for.
  * @returns The value for the given key, or null if the key does not exist.
  */
-export function getState<T = string>(key: string): T | null {
+export function getState<T = string>(key: string, options?: GetStateOptions): T | null {
+	// If a namespace is provided, prepend it to the key
+	if (options?.namespace) {
+		key = `${options.namespace}__${key}`
+	}
+
 	return state[key] as T | null
 }
 
@@ -182,6 +192,11 @@ export function saveState() {
  */
 export function setState<T>(key: string, value: T | ((oldValue: T) => T), options?: SetStateOptions): T {
 	const { persist } = options ?? {}
+
+	// If a namespace is provided, prepend it to the key
+	if (options?.namespace) {
+		key = `${options.namespace}__${key}`
+	}
 
 	// If value is a function, use it to compute the new value based on the old value
 	let newValue = value
