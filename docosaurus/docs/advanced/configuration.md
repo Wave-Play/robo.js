@@ -101,24 +101,6 @@ experimental: {
 
 > **Caution:** Features toggled through the experimental field may be unstable and are subject to change outside of semver. Use at your own risk.
 
-### `heartbeat`
-
-This config key is for customizing the heartbeat (ping) options.
-
-Options:
-
-- `debug`: (boolean) Set to `true` to enable debug mode.
-- `interval`: (number) The interval in milliseconds between heartbeat pings.
-
-Example:
-
-```javascript
-heartbeat: {
-  debug: true,
-  interval: 10000,
-}
-```
-
 ### `invite`
 
 Configure your Robo's invite options.

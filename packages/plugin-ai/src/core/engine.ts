@@ -1,5 +1,5 @@
 import { APIEmbed, GuildMember, GuildTextBasedChannel, InteractionReplyOptions, TextBasedChannel } from 'discord.js'
-import { GptChatMessage, GptFunctionCall, chat } from './openai.js'
+import { GptChatMessage, GptChatMessageContent, GptFunctionCall, chat } from './openai.js'
 import { Command, Flashcore, client, color } from '@roboplay/robo.js'
 import { gptFunctionHandlers, gptFunctions } from '../events/_start.js'
 import { randomUUID } from 'crypto'
@@ -94,7 +94,7 @@ export const AiEngine = {
 
 // Keeps track of users currently being replied to
 interface UserReplying {
-	originalMessage: string
+	originalMessage: GptChatMessageContent
 }
 const replying: Record<string, Set<UserReplying>> = {}
 

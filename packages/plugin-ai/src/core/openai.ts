@@ -2,11 +2,17 @@ import { logger } from './logger.js'
 import { options as pluginOptions } from '../events/_start.js'
 
 export interface GptChatMessage {
-	content: string
+	content: GptChatMessageContent
 	function_call?: GptFunctionCall
 	name?: string
 	role: 'assistant' | 'function' | 'system' | 'user'
 }
+
+export type GptChatMessageContent = string | Array<{
+	image_url?: string
+	text?: string
+	type: 'image_url' | 'text'
+}>
 
 export interface GptChatOptions {
 	backoff?: boolean
@@ -57,7 +63,8 @@ export async function chat(options: GptChatOptions) {
 					Authorization: `Bearer ${pluginOptions.openaiKey}`
 				},
 				body: JSON.stringify({
-					functions: functions?.length ? functions : undefined,
+					functions: functions?.length && !model.includes('vision') ? functions : undefined,
+					max_tokens: 1024,
 					messages: messages,
 					model: model
 				})
