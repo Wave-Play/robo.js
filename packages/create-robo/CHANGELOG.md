@@ -1,5 +1,11 @@
 # create-robo
 
+## 0.9.1
+
+### Patch Changes
+
+- 62199f4: patch: fixed lint script generated for npm
+
 ## 0.9.0
 
 ### Minor Changes

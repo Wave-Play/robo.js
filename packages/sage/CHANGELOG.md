@@ -1,5 +1,11 @@
 # @roboplay/sage
 
+## 0.3.0
+
+### Minor Changes
+
+- ca2cd0e: feat(sage-cli): new `typescript` codemod command
+
 ## 0.2.2
 
 ### Patch Changes
