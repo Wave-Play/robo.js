@@ -1,5 +1,15 @@
 # @roboplay/plugin-ai
 
+## 0.3.0
+
+### Minor Changes
+
+- d14461d: feat: support for vision models
+
+### Patch Changes
+
+- a56d366: feat: "maxTokens" option
+
 ## 0.2.0
 
 ### Minor Changes
