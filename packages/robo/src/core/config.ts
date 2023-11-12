@@ -50,12 +50,22 @@ export async function loadConfig(file = 'robo'): Promise<Config> {
 	return config
 }
 
+/**
+ * Looks for the config file in the current project.
+ * Will look for the following files in order:
+ * - config/robo.mjs
+ * - config/robo.cjs
+ * - config/robo.json
+ * - .config/robo.mjs
+ * - .config/robo.cjs
+ * - .config/robo.json
+ *
+ * @param file The name of the config file to look for. Defaults to "robo".
+ * @returns The path to the config file, or null if it could not be found.
+ */
 export async function loadConfigPath(file = 'robo'): Promise<string> {
 	const extensions = ['.mjs', '.cjs', '.json']
-	const prefixes = [
-		file.endsWith('.config') ? '' : 'config' + path.sep,
-		file.endsWith('.config') ? '' : '.config' + path.sep
-	]
+	const prefixes = ['config' + path.sep, '.config' + path.sep]
 
 	for (const prefix of prefixes) {
 		for (const ext of extensions) {
@@ -63,9 +73,8 @@ export async function loadConfigPath(file = 'robo'): Promise<string> {
 
 			try {
 				if (fs.existsSync(fullPath)) {
-					logger.debug(`Found configuration file at`, fullPath)
-
 					// Convert to file URL to allow for dynamic import()
+					logger.debug(`Found configuration file at`, fullPath)
 					return fullPath
 				}
 			} catch (ignored) {
@@ -74,12 +83,8 @@ export async function loadConfigPath(file = 'robo'): Promise<string> {
 		}
 	}
 
-	const fileName = path.join(prefixes[1], file)
-	if (fileName.endsWith('.config')) {
-		return null
-	} else {
-		return loadConfigPath(file + '.config')
-	}
+	// If no config file was found, return null
+	return null
 }
 
 /**
