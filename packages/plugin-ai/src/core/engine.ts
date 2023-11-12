@@ -176,6 +176,7 @@ async function callGpt(messages: GptChatMessage[], options: CallGptOptions) {
 		await channel?.sendTyping()
 
 		const response = await chat({
+			maxTokens: pluginOptions?.maxTokens,
 			model: model,
 			messages: gptMessages,
 			functions: gptFunctions
