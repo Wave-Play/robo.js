@@ -233,6 +233,7 @@ export function addOptionToCommandBuilder(
 		case 'role':
 			commandBuilder.addRoleOption((builder) => optionPredicate(builder))
 			break
+		case 'member':
 		case 'user':
 			commandBuilder.addUserOption((builder) => optionPredicate(builder))
 			break

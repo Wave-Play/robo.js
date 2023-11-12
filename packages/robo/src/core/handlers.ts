@@ -11,6 +11,8 @@ import type { AutocompleteInteraction } from 'discord.js'
 import type { CommandConfig, ContextConfig, PluginData } from '../types/index.js'
 import type { Collection } from 'discord.js'
 
+const optionPrimitives = ['boolean', 'integer', 'number', 'string']
+
 export async function executeAutocompleteHandler(interaction: AutocompleteInteraction, commandKey: string) {
 	const command = portal.commands.get(commandKey)
 	if (!command) {
@@ -112,8 +114,29 @@ export async function executeCommandHandler(interaction: CommandInteraction, com
 			throw `Missing default export function for command: ${color.bold('/' + commandKey)}`
 		}
 
+		// For each option, get the value from the interaction
+		const options: Record<string, unknown> = {}
+		commandConfig?.options?.forEach((option) => {
+			if (optionPrimitives.includes(option.type)) {
+				options[option.name] = interaction.options.get(option.name)?.value
+			} else if (option.type === 'attachment') {
+				options[option.name] = interaction.options.get(option.name)?.attachment
+			} else if (option.type === 'channel') {
+				options[option.name] = interaction.options.get(option.name)?.channel
+			} else if (option.type === 'mention') {
+				const optionValue = interaction.options.get(option.name)
+				options[option.name] = optionValue?.member ?? optionValue?.role
+			} else if (option.type === 'role') {
+				options[option.name] = interaction.options.get(option.name)?.role
+			} else if (option.type === 'user') {
+				options[option.name] = interaction.options.get(option.name)?.user
+			} else if (option.type === 'member') {
+				options[option.name] = interaction.options.get(option.name)?.member
+			}
+		})
+
 		// Delegate to command handler
-		const result = command.handler.default(interaction)
+		const result = command.handler.default(interaction, options)
 		const promises = []
 		let response
 
@@ -368,4 +391,16 @@ export async function executeEventHandler(
 			}
 		})
 	)
+}
+
+type ExactConfig<C extends CommandConfig> = {
+	[K in keyof C]: K extends keyof CommandConfig ? C[K] : never
+}
+
+type EnforceConfig<C extends CommandConfig> = Exclude<keyof C, keyof CommandConfig> extends never
+	? C
+	: 'Extra properties are not allowed in CommandConfig'
+
+export function createCommandConfig<C extends CommandConfig>(config: ExactConfig<C> & EnforceConfig<C>): C {
+	return config as C
 }

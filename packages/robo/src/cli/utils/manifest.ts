@@ -709,7 +709,7 @@ function getValue<T extends AllConfig>(
 			})
 
 			// Sort options order by required
-			value.options.sort((a, b) => {
+			const options = [...value.options].sort((a, b) => {
 				if (a.required && !b.required) {
 					return -1
 				}
@@ -718,6 +718,7 @@ function getValue<T extends AllConfig>(
 				}
 				return 0
 			})
+			value.options = options
 
 			if ((config as CommandConfig).sage !== undefined) {
 				value.sage = (config as CommandConfig).sage
