@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.9.8
+
+### Patch Changes
+
+- 3d647c7: fix(cli): missing start import
+
 ## 0.9.7
 
 ### Patch Changes
