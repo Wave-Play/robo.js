@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.9.9
+
+### Patch Changes
+
+- 289faee: chore: version bump
+
 ## 0.9.8
 
 ### Patch Changes
