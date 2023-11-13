@@ -1,5 +1,6 @@
 import { Command } from '../utils/cli-handler.js'
 import fs from 'fs/promises'
+import path from 'node:path'
 import { logger } from '../../core/logger.js'
 import { hasFilesRecursively } from '../utils/fs-helper.js'
 import { color, composeColors } from '../../core/color.js'
