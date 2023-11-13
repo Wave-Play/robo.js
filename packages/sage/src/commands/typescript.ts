@@ -42,13 +42,16 @@ async function codemodAction() {
 	const tsconfigPath = path.join(process.cwd(), 'tsconfig.json')
 	const packageJsonPath = path.join(process.cwd(), 'package.json')
 	const packageJson: PackageJson = JSON.parse(await readFile(packageJsonPath, 'utf-8'))
+
 	const projectInfo: ProjectInfo = {
-		hasSWC: !!packageJson.devDependencies['@swc/core'] || !!packageJson.dependencies['@swc/core']
+		hasSWC: packageJson.devDependencies
+			? !!packageJson.devDependencies['@swc/core']
+			: !!packageJson.dependencies['@swc/core']
 	}
 
 	try {
 		if (!projectInfo.hasSWC) {
-			await exec(`${cmd(packageManager)} ${command} --save-dev @swc/core`)
+			await exec(`${cmd(packageManager)} ${command} --save-dev @swc/core typescript`)
 		}
 		const tsFileExist = await access(tsconfigPath)
 			.then(() => true)
