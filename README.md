@@ -1,4 +1,4 @@
-<div align="center">
+<!--<div align="center">
 
 | ✨🎃 **Hacktoberfest Event** 🎃✨ |
 |:-----------------------------------:|
@@ -7,7 +7,7 @@
 
 </div>
 
-&nbsp;
+&nbsp;-->
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/Wave-Play/robo/main/docosaurus/static/img/logo.png" height="128">
