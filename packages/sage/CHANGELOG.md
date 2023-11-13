@@ -1,5 +1,13 @@
 # @roboplay/sage
 
+## 0.3.1
+
+### Patch Changes
+
+- 2e9bf0a: fix(sage-cli): typescript command missing typescript dependency
+- Updated dependencies [3d647c7]
+  - @roboplay/robo.js@0.9.8
+
 ## 0.3.0
 
 ### Minor Changes
