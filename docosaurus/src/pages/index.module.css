@@ -17,6 +17,12 @@
 }
 
 .buttons {
+  display: grid;
+  place-items: center;
+  gap: 1rem;
+}
+
+.ghbtn {
   display: flex;
   align-items: center;
   justify-content: center;

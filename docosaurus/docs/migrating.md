@@ -29,7 +29,8 @@ For simple bots, we recommend diving headfirst into the Robo.js File Structure. 
 1. Migrate your bot to the **[Robo.js File Structure](/docs/basics/overview#the-robojs-file-structure)**.
 
 2. Update your `config/robo.mjs` file with any client options you used with the Discord.js client. For example:
-```js
+
+```js title="config/robo.mjs" showLineNumbers
 import { Intents } from 'discord.js'
 
 export default {
@@ -51,7 +52,7 @@ You can use the Robo.js client object to listen to Discord events just like you'
 
 1. Copy your existing handlers into the `_start.js` file under the `src/events/` directory.
 
-```js
+```js {4-6} title="/src/events/_start.js" showLineNumbers
 import { client } from '@roboplay/robo.js'
 
 export default () => {
@@ -62,7 +63,7 @@ export default () => {
 ```
 
 2. Update your `config/robo.mjs` file with any client options you used with the Discord.js client.
-```js
+```js title="config/robo.mjs" showLineNumbers
 import { Intents } from 'discord.js'
 
 export default {
@@ -80,13 +81,17 @@ npx robo dev
 
 By doing this, you'll enjoy most of Robo.js features while gradually migrating your handlers (events/commands) to the **[Robo.js File Structure](/docs/basics/overview#the-robojs-file-structure)**.
 
-> **Note:** Robo.js handles the `client.login()` part for you, so no worries there! 
+:::tip
+
+#### Robo.js handles the `client.login()` part for you, so no worries there! 
+
+:::
 
 ## Option 3: Slow Migration (Complex Bots) 🚪
 
 For complex bots, think about importing and starting Robo in your existing entry file. This lets you slowly migrate your existing bot to Robo.js.
 
-```js
+```js show showLineNumbers {2,10}
 import { Client } from 'discord.js'
 import { Robo } from '@roboplay/robo.js'
 
@@ -113,4 +118,8 @@ We're huge fans of the Robo.js File Structure 'cause it unlocks awesome features
 
 Whichever migration path you pick, adopting Robo.js is gonna help you level up your bot development process and give you a more organized, efficient way to manage your bot.
 
-> **By the way...** It's not required, but TypeScript + Linting while you're working with Robo.js can be super handy. Check out the [TypeScript Docs](/docs/advanced/typescript) and [Linting Docs](/docs/advanced/linting) to get started.
+:::info **By the way...** 
+
+It's not required, but **TypeScript + Linting** while you're working with Robo.js can be super handy. Check out the [TypeScript Docs](/docs/advanced/typescript) and [Linting Docs](/docs/advanced/linting) to get started.
+
+:::

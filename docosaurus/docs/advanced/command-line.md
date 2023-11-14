@@ -2,7 +2,7 @@
 
 Robo.js comes with a powerful Command Line Interface (CLI) to streamline your bot development process, making it more fun and easy! Here's how to use it:
 
-```bash
+```bash 
 npm exec robo dev
 ```
 

@@ -2,7 +2,11 @@
 
 Robo.js is built to work seamlessly with **[RoboPlay](https://roboplay.dev)**, a **[WavePlay](https://waveplay.com)** service. But hey, we won't judge if you prefer to host it on another Node-supporting platform! This guide will show you the ropes of hosting your Robo.js, ensuring your creation stays up and running 24/7, even when your computer takes a nap.
 
-> **Heads up:** RoboPlay is currently invite-only, but keep an eye out for when it opens up to the public!
+:::info **Listen!** 
+
+RoboPlay is currently invite-only, but keep an eye out for when it opens up to the public!
+
+:::
 
 ## Deploying to RoboPlay 🚀
 
@@ -30,7 +34,7 @@ Every account gets 2 free **Microbot** slots and can buy unlimited **Mecha** slo
 
 Link your Robo's code to any of these slots, giving your software the hardware it deserves! Buying a **Mecha**? Choose to upgrade an existing **Microbot** (keeping your config intact) or get a new Mecha slot.
 
-> Upgrading an existing Microbot? You'll get a new Microbot slot, so you'll always have 2 free Microbots for tinkering!
+> #### Upgrading an existing Microbot? You'll get a new Microbot slot, so you'll always have 2 free Microbots for tinkering!
 
 ## Self-hosting 🏢
 
@@ -52,7 +56,11 @@ After building your Robo, fire it up with the `robo start` command. If you used 
 npm start
 ```
 
-> Remember to set up your environment variables before starting your Robo! Check out the **[Secrets](/docs/basics/secrets)** page for more info. You'll need to set `NODE_ENV` to `"production"` to run your Robo in production mode.
+:::tip
+
+Remember to set up your environment variables before starting your Robo! Check out the **[Secrets](/docs/basics/secrets)** page for more info. You'll need to set `NODE_ENV` to `"production"` to run your Robo in production mode.
+
+:::
 
 ## Extra tidbits 📌
 

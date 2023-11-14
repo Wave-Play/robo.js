@@ -38,7 +38,11 @@ src/
         └── events/
 ```
 
-> **Heads up!** While events can overlap, commands gotta be unique. You can't have multiple files with the same name chillin' in different command folders across different modules. Keep your command names unique to dodge any confusion.
+:::info
+
+**Heads up!** While **events** can **overlap**, **commands** gotta be **unique**. You can't have multiple files with the same name chillin' in different command folders across different modules. Keep your command names unique to dodge any confusion.
+
+:::
 
 ## Modules All The Way Down 🪐
 Now here's where it gets really interesting! These magical modules can be nested infinitely. Picture this: A module, living inside another module, with another module tucked away inside it, and another... and another... You get the idea—it's modules within modules all the way to the edge of the universe!

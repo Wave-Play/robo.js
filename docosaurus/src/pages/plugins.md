@@ -1,7 +1,8 @@
 # Plugin Directory 🤖🔌
 
 Robo.js provides an extensive set of plugins to supercharge your bots, each aiming to extend the functionalities of Robo.js to its maximum. To install any plugin, simply use the command:
-```sh
+
+```bash
 npx robo add <package>
 ```
 

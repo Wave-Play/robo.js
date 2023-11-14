@@ -67,7 +67,7 @@ Here's how your command file structure might look:
 
 And the ping.js file could be as simple as:
 
-```javascript
+```javascript showLineNumbers title="/src/commands/ping.js"
 export default () => {
 	return 'Pong!'
 }
@@ -89,7 +89,7 @@ Here's a quick peek at your event file structure:
 
 And the messageCreate.js file could be:
 
-```javascript
+```javascript showLineNumbers title="/src/events/messageCreate.js"
 export default (message) => {
     if (message.content.includes('hello')) {
         message.channel.send('Hello there!')
@@ -103,4 +103,8 @@ To dive deeper into events, check out the [events documentation](./events.md).
 
 Meet Sage, your new best friend in interaction handling. Sage operates behind the scenes, automatically simplifying interaction handling and providing smart error replies that make debugging a breeze. With Sage, you can focus on what you do best: creating epic bot interactions! ✨
 
+:::tip Do This
+
 Unlock the full power of Sage Mode by visiting the [Sage documentation](./sage.md).
+
+:::

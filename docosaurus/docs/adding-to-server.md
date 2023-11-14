@@ -4,7 +4,11 @@ You've crafted an amazing Robo, and now it's time to bring it to life on your Di
 
 Don't worry, we've got you covered with two ways to generate these links: the Robo.js CLI and the Discord Developer Portal. 
 
-> **Note:** You can always re-generate invite links and add your Robo again to update the permissions given.
+:::tip **Note:** 
+
+You can always re-generate invite links and add your Robo again to update the permissions given.
+
+:::
 
 ## Robo.js CLI: The Cool Way 🔥
 
@@ -14,7 +18,11 @@ Robo.js has a rad feature that lets you generate invite links in a snap. Just ru
 npx robo invite
 ```
 
-> **Heads up!** The `robo invite` command is currently in beta, so it might not detect all the permissions necessary, or it could ask for extra ones you don't need.
+:::info **Heads up!** 
+
+The `robo invite` command is currently in beta, so it might not detect all the permissions necessary, or it could ask for extra ones you don't need.
+
+:::
 
 ## Discord Developer Portal: The Classic Way 🕰️
 
@@ -33,7 +41,7 @@ You're all set! Your invite link is ready to share or use to add your Robo to Di
 
 Wanna personalize permissions and scopes for `robo invite`? Add an `invite` section to your config file like this:
 
-```javascript
+```javascript showLineNumbers {6-10} title="config/robo.mjs"
 /**
  * @type {import('@roboplay/robo.js').Config}
  **/
@@ -55,7 +63,7 @@ Intents let Robo.js know which permissions to add automatically. Set 'em up in t
 
 Here's an example of setting up intents in your config file:
 
-```javascript
+```javascript showLineNumbers title="config/robo.mjs"
 /**
  * @type {import('@roboplay/robo.js').Config}
  **/
@@ -77,4 +85,8 @@ Curious about permissions, scopes, and intents? Check out these reference links 
 
 It's especially important to understand intents, as they help Robo.js know which permissions to add automatically.
 
-> **Note:** Permissions and scopes are usually handled for you, but knowing the ins and outs of intents can be super helpful! 🧠
+:::info
+
+#### Permissions and scopes are usually handled for you, but knowing the ins and outs of intents can be super helpful! 🧠
+
+:::

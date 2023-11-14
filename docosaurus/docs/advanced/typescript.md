@@ -20,7 +20,7 @@ npm install --save-dev @swc/core typescript
 
 Here's an example `tsconfig.json` file to get you started:
 
-```json
+```json title="tsconfig.json" showLineNumbers
 {
 	"compilerOptions": {
 		"target": "ESNext",
@@ -46,7 +46,7 @@ Here's an example `tsconfig.json` file to get you started:
 
 Robo.js was born and raised with TypeScript, so it's got native support for all those types. You'll run into common ones like `CommandConfig`, `EventConfig`, `CommandResult`, and `Config`, along with more advanced types like `Plugin` and `Manifest`. Check out this code example of an async Robo command with a custom export config object:
 
-```typescript
+```typescript title="/src/commands/command.ts" {1} showLineNumbers
 import { CommandConfig, CommandResult } from '@roboplay/robo.js'
 
 export const config: CommandConfig = {
@@ -61,7 +61,7 @@ export default async (): Promise<CommandResult> => {
 
 Using TypeScript means you'll need types for interactions and other related objects. No worries, just import them straight from Discord.js! Here's an example:
 
-```typescript
+```typescript title="/src/commands/ts-command.ts" showLineNumbers
 import { CommandInteraction } from 'discord.js'
 
 export default (interaction: CommandInteraction) => {
@@ -83,7 +83,7 @@ Config files may be in JavaScript format, but TypeScript's still got your back! 
 
 Here's an example of a config file with the GPT plugin:
 
-```javascript
+```javascript showLineNumbers {3} {11} filename="config/robo.mjs"
 // @ts-check
 
 /** @type {import('@roboplay/robo.js').Plugin} */
@@ -109,9 +109,8 @@ Do `../../` paths keep showing up in your nightmares? If the answer is a resound
 
 Slide this setup into your `tsconfig.json`:
 
-```json
+```json showLineNumbers title="tsconfig.json" {4-5}
 {
-	// ... rest of tsconfig.json
 	"compilerOptions": {
 		"paths": {
 			"@/robo/*": ["src/*"],
@@ -125,7 +124,7 @@ Now, TypeScript is your faithful sidekick, transforming any `@/robo/` or `@/some
 
 Voila! Your import statements turn magical:
 
-```typescript
+```typescript showLineNumbers title="/src/commands/easy-peasy.ts"
 // Before
 import { someVariable } from '../../../../modules/something/commands/someCommand.js'
 
@@ -157,7 +156,7 @@ Although Robo.js and monorepos naturally get along, there's a secret sauce for i
 
 Let's configure the path aliases:
 
-```json
+```json title="tsconfig.json" showLineNumbers
 {
 	// ... rest of tsconfig.json
 	"compilerOptions": {
@@ -170,7 +169,11 @@ Let's configure the path aliases:
 }
 ```
 
-> **Just one golden rule:** always reference the compiled files (residing in `/dist`), not the raw `.ts` ones when sharing code across TypeScript projects.
+:::tip **Just one golden rule!** 
+
+Always reference the compiled files (residing in `/dist`), not the raw `.ts` ones when sharing code across TypeScript projects.
+
+:::
 
 With this, `@/api` points to `/api/dist` — home to the compiled files from the `api` project. For example, importing a function from the api project into your Robo.js project is as simple as:
 

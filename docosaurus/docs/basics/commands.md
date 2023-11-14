@@ -16,7 +16,7 @@ src/
 
 And inside your `ping.js`? Straightforward:
 
-```javascript
+```javascript title="commands/ping.js"
 export default () => {
   return 'Pong!'
 }
@@ -24,7 +24,7 @@ export default () => {
 
 To use the interaction object directly:
 
-```javascript
+```javascript title="commands/ping.js"
 export default (interaction) => {
   interaction.reply('Pong!')
 }
@@ -64,7 +64,7 @@ export const config = {
 
 For TypeScript users, you can add typings for both the `config` object and the command result.
 
-```typescript
+```typescript  title="commands/ping.ts"
 import type { CommandConfig, CommandResult } from '@roboplay/robo.js'
 
 export const config: CommandConfig = {
@@ -82,7 +82,7 @@ The `config` object also lets you customize stuff like locale translations, Sage
 
 Robo.js allows you to further customize your commands with options. You can define these options in your `config` object and then access their values in your command function.
 
-```javascript
+```javascript title="commands/ping.js" {3-9} showLineNumbers
 export const config = {
   description: 'Responds with Pong!',
   options: [
@@ -105,7 +105,7 @@ Want to explore more options? Check the [configuration section](/docs/advanced/c
 
 Autocomplete can take your commands to the next level by providing suggestions as users type. You can implement autocomplete by exporting an `autocomplete` function in your command file.
 
-```javascript
+```javascript showLineNumbers title="commands/choosa-a-color.js" {15-19}
 export const config = {
   description: 'Chooses a color',
   options: [
@@ -139,7 +139,7 @@ Note: the type of the Interaction is: `AutocompleteInteraction`
 
 The cherry on top? You don't need to manually register your commands. Robo.js handles it for you when you run `robo dev` or `robo build`, automatically! However, if things go sideways for some reason, you can use the `--force` flag to force registration.
 
-```plaintext
+```bash
 robo build --force
 ```
 

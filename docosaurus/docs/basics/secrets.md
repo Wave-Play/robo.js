@@ -40,11 +40,11 @@ Setting up a `DISCORD_GUILD_ID` environment variable is a neat trick for testing
 
 In your `.env` file, add the following line:
 
-```
-DISCORD_GUILD_ID=<your_guild_id>
+```bash title=".env"
+DISCORD_GUILD_ID={your_guild_id}
 ```
 
-Replace `<your_guild_id>` with the value you just obtained.
+Replace `{your_guild_id}` with the value you just obtained.
 
 ### DISCORD_DEBUG_CHANNEL_ID
 
@@ -56,13 +56,17 @@ The `DISCORD_DEBUG_CHANNEL_ID` environment variable is useful for directing erro
 
 In your `.env` file, add the following line:
 
-```
-DISCORD_DEBUG_CHANNEL_ID=<your_debug_channel_id>
+```bash title=".env"
+DISCORD_DEBUG_CHANNEL_ID={your_debug_channel_id}
 ```
 
-Remember to replace `<your_debug_channel_id>` with the value you just obtained.
+Remember to replace `{your_debug_channel_id}` with the value you just obtained.
 
-> 🚨 Note: Using `DISCORD_DEBUG_CHANNEL_ID` is not strictly necessary, and we gently discourage its use. You shouldn't just shove errors away in a place where you can ignore them. Instead, check out the [Debugging Documentation](/docs/advanced/debugging.md) to learn how to handle errors effectively.
+:::warning 🚨 Note
+
+Using `DISCORD_DEBUG_CHANNEL_ID` is not strictly necessary, and we gently discourage its use. You shouldn't just shove errors away in a place where you can ignore them. Instead, check out the [Debugging Documentation](/docs/advanced/debugging.md) to learn how to handle errors effectively.
+
+:::
 
 ## Enabling Developer Mode in Discord 🔧
 
@@ -83,8 +87,8 @@ To ensure that your secrets never accidentally tumble out into the open world, w
 
 Here's how you add it to your `.gitignore` file:
 
-```gitignore
-# add this anywhere in your .gitignore
+```py title=".gitignore" {2}
+# add secrets file
 .env
 ```
 

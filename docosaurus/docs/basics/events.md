@@ -14,7 +14,8 @@ File structure:
 ```
 
 Code for `ready.js`:
-```javascript
+
+```javascript title="/src/events/ready.js"
 export default () => {
   console.log('Bot is ready!');
 };
@@ -22,7 +23,7 @@ export default () => {
 
 Bam! Now, when your bot is ready, it will log 'Bot is ready!' in the console.
 
-> **Btw, this is just for example purposes.** Your Robo will automatically log when ready by default!
+> #### **Btw, this is just for example purposes.** Your Robo will automatically log when ready by default!
 
 ## Stacked Events 🥞
 
@@ -38,7 +39,7 @@ File structure:
 ```
 
 Code for `playStatus.js`:
-```javascript
+```javascript title="src/events/ready/playStatus.js"
 export default () => {
   bot.user.setActivity('with code');
 };
@@ -60,8 +61,7 @@ Listening to events opens up a world of possibilities! Here are a few examples:
 
 Different events will pass different parameters. For example, the `messageCreate` event will pass the `message` object, and you can use it to reply, react, or do whatever you want! Some events, like `voiceStateUpdate`, even pass down multiple parameters:
 
-```javascript
-// voiceStateUpdate.js
+```javascript  title="/src/events/voiceStateUpdate.js"
 export default (oldState, newState) => {
   // do something with oldState and newState
 };

@@ -8,7 +8,7 @@ Ever wondered what it'd be like to flick a switch and make a module disappear? W
 
 Here's the magic spell to disable a module:
 
-```javascript
+```javascript showLineNumbers
 import { portal } from '@roboplay/robo.js'
 
 // Poof! The 'admin' module is gone
@@ -17,7 +17,7 @@ portal.module('admin').setEnabled(false)
 
 And if you're curious whether a module is enabled or not, just ask:
 
-```javascript
+```javascript 
 // Is 'admin' playing hide and seek?
 const isAdminEnabled = portal.module('admin').isEnabled
 ```
@@ -29,8 +29,6 @@ The Portal isn't just a magic wand for modules—it's a secret map to the comman
 Get a peek at your bot's commands:
 
 ```javascript
-import { portal } from '@roboplay/robo.js'
-
 // Get a list of your bot's commands
 const commands = portal.commands
 ```
@@ -56,7 +54,11 @@ And last but not least, check out your bot's middleware:
 const middleware = portal.middleware
 ```
 
-> 🔔 **Friendly reminder:** Changes you make through the Portal are as fleeting as dreams. They're alive and kicking while your Robo's running, but once it restarts, poof—they're gone. Keep that in mind when you're playing around in there!
+:::tip Friendly reminder 🔔
+
+Changes you make through the Portal are as fleeting as dreams. They're alive and kicking while your Robo's running, but once it restarts, poof—they're gone. Keep that in mind when you're playing around in there!
+
+:::
 
 ## Making Changes Stick 🧠
 
@@ -64,8 +66,7 @@ Okay, so you want to make changes that stick around, even after a restart? We've
 
 Check out this nifty trick to remember which modules should be enabled or disabled:
 
-```javascript
-// /src/events/_start.js
+```javascript showLineNumbers title="/src/events/_start.js" {9}
 export default async function() {
   const database = ... // load your database
 

@@ -8,16 +8,16 @@ Sage is all about smoothing out the rough edges, doing the heavy lifting, and le
 
 Let's kick things off with replies. Normally, you'd need to use interaction.reply() to respond to a command, but Sage has a better idea. Just return your reply straight from your command function, and Sage will make sure it gets where it needs to go. It's tidier, it's simpler, and it even handles the tricky stuff like deferred commands.
 
-**Classic Way**
-```javascript
-// src/commands/hello.js
+- **Classic Way**
+
+```javascript showLineNumbers title="/src/commands/hello.js"
 export default (interaction) => {
   interaction.reply({ content: 'Hello, classic!' });
 }
 ```
 
-**Sage Way**
-```javascript
+- **Sage Way**
+```javascript showLineNumbers title="/src/commands/hello.js"
 export default () => {
   return { content: 'Hello, Sage!' }
 }
@@ -37,8 +37,8 @@ Every bot runs into tasks that take a bit longer, and that's where deferred repl
 
 Here's how it works:
 
-**Classic Way**
-```javascript
+- **Classic Way**
+```javascript showLineNumbers title="/src/commands/hello.js"
 export default async (interaction) => {
   interaction.deferReply()
   await new Promise(resolve => setTimeout(resolve, 4000)) // Artificial delay
@@ -46,8 +46,8 @@ export default async (interaction) => {
 }
 ```
 
-**Sage Way**
-```javascript
+- **Sage Way**
+```javascript showLineNumbers title="/src/commands/hello.js"
 export default async () => {
   await new Promise(resolve => setTimeout(resolve, 4000))
   return 'Hello, Sage!'
@@ -56,7 +56,7 @@ export default async () => {
 
 And in case you're wondering, Sage won't waste time deferring if it's not needed. Check out how it handles a command that finishes in a flash:
 
-```javascript
+```javascript showLineNumbers title="/src/commands/hello.js"
 export default async () => {
   await new Promise(resolve => setTimeout(resolve, 100))
   return 'Hello, Sage!'
@@ -71,13 +71,13 @@ Everyone fumbles sometimes, even the best coders. But fret not. Sage has your ba
 
 Let's say you've got a command function with a not-so-obvious oopsie:
 
-```javascript
-// src/commands/whoops.js
+```javascript showLineNumbers title="/src/commands/whoooops.js"
 export default () => {
   const undefinedVariable
   return undefinedVariable.toString()
 }
 ```
+
 Sage won't just shrug it off. It'll dish up the error info, a stack trace to guide your debugging journey, and even a time-locked log snapshot to show you exactly what went down.
 
 ## Background Errors 🌌
@@ -105,9 +105,8 @@ In the bustling world of Robos, flexibility is key, and Sage is no exception. Sa
 
 You can set these options globally for your entire Robo in the config file, or tune them individually for each command, context menu, or event.
 
-**Config File (robo-wide settings)**
-```javascript
-// .config/robo.mjs
+- **Config File (robo-wide settings)**
+```javascript showLineNumbers filename="/config/robo.mjs"
 export default {
   // ... other config options
   sage: {
@@ -119,9 +118,8 @@ export default {
 }
 ```
 
-**Command, Context Menu, or Event Config (individual settings)**
-```javascript
-// src/commands/hello.js
+- **Command, Context Menu, or Event Config (individual settings)**
+```javascript showLineNumbers filename="/src/commands/hello.js"
 export const config = {
   sage: {
     defer: false,

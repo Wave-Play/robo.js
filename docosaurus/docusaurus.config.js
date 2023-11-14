@@ -11,7 +11,7 @@ const config = {
 	favicon: 'img/favicon.ico',
 
 	// Set the production url of your site here
-	url: 'https://example.com',
+	url: 'https://docs.roboplay.dev',
 	// Set the /<baseUrl>/ pathname under which your site is served
 	// For GitHub pages deployment, it is often '/<projectName>/'
 	baseUrl: '/',
@@ -65,7 +65,7 @@ const config = {
 			navbar: {
 				title: 'Robo.js',
 				logo: {
-					alt: 'My Site Logo',
+					alt: 'Site Logo',
 					src: 'img/logo.png'
 				},
 				items: [
@@ -88,6 +88,15 @@ const config = {
 						'aria-label': 'GitHub'
 					}
 				]
+			},
+			footer: {
+				logo: {
+					alt: 'Sage Logo',
+					src: '/img/logo.png',
+					width: 55,
+					height: 55,
+				},
+				copyright: `MIT © ${new Date().getFullYear()} <strong>Robo.js</strong> By <strong>Waveplay</strong>.`,
 			},
 			prism: {
 				theme: lightCodeTheme,

@@ -4,7 +4,11 @@ Customizing Robo.js to fit your needs is a piece of cake! 🍰 This guide will w
 
 To configure your Robo.js, create a config file named `robo.mjs` in a `config` folder.
 
-> Alternatively, you can use CommonJS with the name `robo.cjs` or a simpler JSON format as `robo.json`. Using the JSON format is not as robust as JS, but it's a viable choice if you encounter issues with either `.cjs` or `.mjs` on your web host.
+:::tip
+
+Alternatively, you can use CommonJS with the name `robo.cjs` or a simpler JSON format as `robo.json`. Using the JSON format is not as robust as JS, but it's a viable choice if you encounter issues with either `.cjs` or `.mjs` on your web host.
+
+:::
 
 ## Example configuration
 
@@ -12,7 +16,7 @@ You only need to provide configuration for the options you want to change. If yo
 
 Here's an example implementation of a configuration file:
 
-```javascript
+```javascript title="config/robo.mjs" showLineNumbers
 // @ts-check
 
 /**
@@ -60,7 +64,7 @@ Options:
 
 Example:
 
-```javascript
+```javascript {2}
 defaults: {
   help: false,
 }
@@ -81,7 +85,11 @@ excludePaths: ['/src/test', '/src/modules/example/statics.json']
 
 In this example, any file or directory that starts with `/src/test` or `/src/modules/example/statics.json` will be ignored during the build process.
 
-> **Note:** This feature works with directory and file prefixes, not glob patterns.
+:::info
+
+This feature works with directory and file prefixes, not glob patterns.
+
+:::
 
 ### `experimental`
 
@@ -99,7 +107,11 @@ experimental: {
 }
 ```
 
-> **Caution:** Features toggled through the experimental field may be unstable and are subject to change outside of semver. Use at your own risk.
+:::warning
+
+Features toggled through the **experimental field** may be unstable and are subject to change outside of semver. Use at your own risk.
+
+:::
 
 ### `invite`
 

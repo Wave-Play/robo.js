@@ -8,8 +8,7 @@ Think of **Flashcore** as **[States](/docs/basics/states)** except permanent. It
 
 Stashing the high score:
 
-```javascript
-// File: /src/commands/update-score.js
+```javascript showLineNumbers title="/src/commands/update-score.js" {18}
 import { Flashcore } from '@roboplay/robo.js'
 
 export const config = {
@@ -34,8 +33,7 @@ export default async (interaction) => {
 
 Fetching the high score:
 
-```javascript
-// File: /src/commands/get-score.js
+```javascript title="/src/commands/get-score.js" showLineNumbers {6}
 import { Flashcore } from '@roboplay/robo.js'
 
 export default async (interaction) => {
@@ -46,7 +44,11 @@ export default async (interaction) => {
 }
 ```
 
-> **Heads up:** Don't forget to `await` your Flashcore calls!
+:::info Heads Up!!!
+
+### Don't forget to `await` your Flashcore calls!
+
+:::
 
 ## Deleting Data
 
@@ -54,8 +56,7 @@ You can delete a key from Flashcore with the `delete()` function.
 
 Here's a command that deletes a user's high score:
 
-```javascript
-// File: /src/commands/delete-score.js
+```javascript title="/src/commands/delete-score.js" showLineNumbers {6}
 import { Flashcore } from '@roboplay/robo.js'
 
 export default async (interaction) => {
@@ -71,7 +72,7 @@ export default async (interaction) => {
 
 Feel free to store any **_serializable_** data type in Flashcore. Primitives and objects are both supported, but not functions or class instances!
 
-```javascript
+```javascript showLineNumbers
 await Flashcore.set('banned', true)
 await Flashcore.set('score', 40)
 await Flashcore.set('top-name', 'Robo')
@@ -88,7 +89,7 @@ await Flashcore.set('top-games', [
 
 When you fetch this data again, it'll be the same type as when you saved it.
 
-```javascript
+```javascript showLineNumbers 
 const isBanned = await Flashcore.get('banned') // boolean
 const score = await Flashcore.get('score') // number
 const topName = await Flashcore.get('top-name') // string
@@ -101,8 +102,7 @@ You can also watch for changes to a key's value over time with the `on()` functi
 
 Here's a command that sends a message to a channel whenever a user's high score changes:
 
-```javascript
-// File: /src/commands/watch-score.js
+```javascript showLineNumbers title="/src/commmands/watch-score.js" {6-8}
 import { Flashcore } from '@roboplay/robo.js'
 
 export default async (interaction) => {
@@ -120,8 +120,7 @@ You can also stop watching for changes with the `off()` function.
 
 Here's a command that stops watching for changes to a user's high score:
 
-```javascript
-// File: /src/commands/stop-watching-score.js
+```javascript showLineNumbers title="/src/commands/stop-watching-score..js" {6}
 import { Flashcore } from '@roboplay/robo.js'
 
 export default async (interaction) => {
@@ -147,8 +146,7 @@ Flashcore.set('my-key', 'example-value', {
 
 Here's how we're namespacing a user's high score for specific servers:
 
-```javascript
-// File: /src/commands/update-score.js
+```javascript showLineNumbers title="/src/commands/update-score.js" {19-21}
 import { Flashcore } from '@roboplay/robo.js'
 
 export const config = {
@@ -187,8 +185,7 @@ await Flashcore.get(userId, {
 
 Flashcore's storage medium isn't set in stone. It's cozy with the file system by default but can switch to Keyv adapters. Want to use SQLite instead of the file system? You can configure this in the `robo.mjs` config file:
 
-```javascript
-// File: /.config/robo.mjs
+```javascript showLineNumbers title="/config/robo.mjs" {5-7}
 import { SQLite } from '@keyv/sqlite'
 
 export default {
@@ -200,13 +197,17 @@ export default {
 }
 ```
 
-> Dig into more about Keyv Adapters on their [GitHub repo](https://github.com/jaredwray/keyv/tree/main#storage-adapters).
+:::tip
+
+Dig into more about Keyv Adapters on their [GitHub repo](https://github.com/jaredwray/keyv/tree/main#storage-adapters).
+
+:::
 
 ### TypeScript Support
 
 Flashcore supports generics when retrieving data with TypeScript. This means you can specify the type of data you're expecting to get back from Flashcore for better type safety.
 
-```typescript
+```typescript showLineNumbers 
 // Primitives are fully supported
 const isBanned = await Flashcore.get<boolean>(userId + '-banned')
 const score = await Flashcore.get<number>(userId + '-score')
@@ -224,4 +225,8 @@ const topGames = await Flashcore.get<Game[]>('top-games')
 const settings = await Flashcore.get<UserSettings>(userId + '-settings')
 ```
 
-> **Heads up:** This will only tell TypeScript what type of data you're expecting to get back. It won't parse the data into that type for you, so make sure you're saving the right type of data to begin with!
+:::info Disclaimer
+
+This will only tell TypeScript what type of data you're expecting to get back. It won't parse the data into that type for you, so make sure you're saving the right type of data to begin with!
+
+:::

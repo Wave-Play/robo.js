@@ -25,8 +25,7 @@ When your message command is summoned, you'll receive a `MessageContextMenuComma
 
 Let's say you're crafting a command to translate a message:
 
-```javascript
-// /src/context/message/Translate.js
+```javascript title="/src/context/message/Translate.js"
 import { translateMessage } from '../services/translator.js'
 
 export default async function (interaction, message) {
@@ -41,8 +40,7 @@ If you're stirring up a user command instead, you'll be served a `UserContextMen
 
 Here's a glimpse of a user command in action, giving a user the ol' kickaroo:
 
-```javascript
-// /src/context/user/Kick.js
+```javascript title="/src/context/user/Kick.js"
 export default async function (interaction, user) {
 	const guildMember = interaction.guild.members.resolve(user)
 	await guildMember.kick()
