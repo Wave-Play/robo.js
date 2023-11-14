@@ -26,10 +26,10 @@ You can turn off Sage error replies in the config file if you want. Here's an ex
 
 ```javascript title="config/robo.mjs" showLineNumbers {3-5}
 export default {
-  // ... the rest of your config
-  sage: {
-    errorReplies: false
-  }
+	// ... the rest of your config
+	sage: {
+		errorReplies: false
+	}
 }
 ```
 
@@ -47,10 +47,10 @@ Wanna customize your log levels? Each log has a priority level that you can togg
 
 ```javascript title="config/robo.mjs" showLineNumbers {3-5}
 export default {
-  // ... the rest of your config
-  logger: {
-    level: 'debug' // This shows *all* the logs
-  }
+	// ... the rest of your config
+	logger: {
+		level: 'debug' // This shows *all* the logs
+	}
 }
 ```
 
@@ -86,9 +86,9 @@ message.react('👍')
 
 // Yay: Using try/catch and await helps you handle the error
 try {
-  await message.react('👍')
+	await message.react('👍')
 } catch (error) {
-  console.error('Failed to react with 👍:', error)
+	console.error('Failed to react with 👍:', error)
 }
 ```
 
@@ -104,12 +104,12 @@ Wanna turn off this command? No prob. Just tweak the config file by setting it t
 
 ```javascript showLineNumbers title="config/robo.mjs"
 export default {
-  // ... the rest of your config vibes
-  override: {
-    commands: {
-      dev: false
-    }
-  }
+	// ... the rest of your config vibes
+	override: {
+		commands: {
+			dev: false
+		}
+	}
 }
 ```
 

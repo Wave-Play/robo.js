@@ -81,7 +81,7 @@ That's it! You now have Developer Mode enabled, unlocking a world of possibiliti
 
 ## Your Secret Keeper: .gitignore 🔐
 
-Remember, your `.env` file is the sanctum of all your secret keys and sensitive info. And as the guardian of your Robo's secrets, its safety is paramount. 
+Remember, your `.env` file is the sanctum of all your secret keys and sensitive info. And as the guardian of your Robo's secrets, its safety is paramount.
 
 To ensure that your secrets never accidentally tumble out into the open world, we strongly advise including `.env` in your `.gitignore` file. This prevents the `.env` file from being committed to your Git repository, keeping your secrets safely tucked away from prying eyes.
 

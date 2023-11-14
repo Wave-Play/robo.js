@@ -8,7 +8,7 @@ On the flip side, if you're tweaking your Robo using `/dev restart` or playing a
 
 States are a breeze to use. Check out this example:
 
-```javascript showLineNumbers title="/src/commands/add-points.js" 
+```javascript showLineNumbers title="/src/commands/add-points.js"
 import { setState, getState } from '@roboplay/robo.js'
 
 export default () => {
@@ -33,7 +33,7 @@ export default () => {
 
 Imagine two different modules trying to use a state named `counter`. Without careful management, they could conflict, leading to unexpected results. Here's how it might look:
 
-```javascript showLineNumbers title="/src/modules/foo/commands/increment.js" 
+```javascript showLineNumbers title="/src/modules/foo/commands/increment.js"
 import { setState, getState } from '@roboplay/robo.js'
 
 export default () => {
@@ -91,7 +91,7 @@ export default () => {
 
 Now, even if your Robo powers down, the `importantData` state will still be there when it wakes up. Under the hood, Robo.js uses **Flashcore** to make all this magical persistence happen. Pretty cool, right?
 
-:::info 
+:::info
 
 Values stored as state must be serializable. If they're not, they can't be persisted. Don't try to store complex objects like a Discord.js Guild or Message—keep it simple.
 

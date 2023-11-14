@@ -2,9 +2,9 @@
 
 You've crafted an amazing Robo, and now it's time to bring it to life on your Discord Servers! To add your Robo, you'll need special invite links with the necessary permissions and scopes.
 
-Don't worry, we've got you covered with two ways to generate these links: the Robo.js CLI and the Discord Developer Portal. 
+Don't worry, we've got you covered with two ways to generate these links: the Robo.js CLI and the Discord Developer Portal.
 
-:::tip **Note:** 
+:::tip **Note:**
 
 You can always re-generate invite links and add your Robo again to update the permissions given.
 
@@ -18,7 +18,7 @@ Robo.js has a rad feature that lets you generate invite links in a snap. Just ru
 npx robo invite
 ```
 
-:::info **Heads up!** 
+:::info **Heads up!**
 
 The `robo invite` command is currently in beta, so it might not detect all the permissions necessary, or it could ask for extra ones you don't need.
 
@@ -46,12 +46,12 @@ Wanna personalize permissions and scopes for `robo invite`? Add an `invite` sect
  * @type {import('@roboplay/robo.js').Config}
  **/
 export default {
-  // ...rest of config
-  invite: {
-    autoPermissions: false,
-    permissions: ['SendMessages', 'ReadMessageHistory', 'AddReactions'],
-    scopes: ['applications.commands']
-  }
+	// ...rest of config
+	invite: {
+		autoPermissions: false,
+		permissions: ['SendMessages', 'ReadMessageHistory', 'AddReactions'],
+		scopes: ['applications.commands']
+	}
 }
 ```
 
@@ -68,10 +68,10 @@ Here's an example of setting up intents in your config file:
  * @type {import('@roboplay/robo.js').Config}
  **/
 export default {
-  // ...rest of config
-  clientOptions: {
-    intents: ['GUILD_MESSAGES', 'GUILD_PRESENCES']
-  }
+	// ...rest of config
+	clientOptions: {
+		intents: ['GUILD_MESSAGES', 'GUILD_PRESENCES']
+	}
 }
 ```
 

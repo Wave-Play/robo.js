@@ -4,7 +4,7 @@ Slash commands have changed the game in Discord, making it a breeze for users to
 
 ## Crafting Simple Commands 🛠️
 
-Start off with a simple command. Create a file in the `commands` directory. The file name? That's your command! 
+Start off with a simple command. Create a file in the `commands` directory. The file name? That's your command!
 
 For instance, to create a `/ping` command, your file structure would look like this:
 
@@ -18,7 +18,7 @@ And inside your `ping.js`? Straightforward:
 
 ```javascript title="commands/ping.js"
 export default () => {
-  return 'Pong!'
+	return 'Pong!'
 }
 ```
 
@@ -26,9 +26,10 @@ To use the interaction object directly:
 
 ```javascript title="commands/ping.js"
 export default (interaction) => {
-  interaction.reply('Pong!')
+	interaction.reply('Pong!')
 }
 ```
+
 In this case, Sage steps back, letting you handle the interaction directly.
 
 ## Subcommands and Subcommand Groups 📚
@@ -58,21 +59,21 @@ Give your commands some context with descriptions. You can do this by exporting 
 
 ```javascript
 export const config = {
-  description: 'Responds with Pong!'
+	description: 'Responds with Pong!'
 }
 ```
 
 For TypeScript users, you can add typings for both the `config` object and the command result.
 
-```typescript  title="commands/ping.ts"
+```typescript title="commands/ping.ts"
 import type { CommandConfig, CommandResult } from '@roboplay/robo.js'
 
 export const config: CommandConfig = {
-  description: 'Responds with Pong!'
+	description: 'Responds with Pong!'
 }
 
 export default (): CommandResult => {
-  return 'Pong!'
+	return 'Pong!'
 }
 ```
 
@@ -99,6 +100,7 @@ export default (interaction) => {
   return loud ? 'PONG!!!' : 'Pong!'
 }
 ```
+
 Want to explore more options? Check the [configuration section](/docs/advanced/configuration).
 
 ## Autocomplete 🧠

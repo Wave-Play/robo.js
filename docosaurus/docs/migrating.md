@@ -24,7 +24,7 @@ Next up, choose a migration option based on your existing bot's complexity.
 
 ## Option 1: Full-swoop Migration (Simple Bots) 🦅
 
-For simple bots, we recommend diving headfirst into the Robo.js File Structure. You'll get automatic command registration, plugins, and more. Say goodbye to managing the Discord.js client object manually when you migrate your handlers (events/commands) to the Robo.js File Structure. 
+For simple bots, we recommend diving headfirst into the Robo.js File Structure. You'll get automatic command registration, plugins, and more. Say goodbye to managing the Discord.js client object manually when you migrate your handlers (events/commands) to the Robo.js File Structure.
 
 1. Migrate your bot to the **[Robo.js File Structure](/docs/basics/overview#the-robojs-file-structure)**.
 
@@ -34,9 +34,9 @@ For simple bots, we recommend diving headfirst into the Robo.js File Structure. 
 import { Intents } from 'discord.js'
 
 export default {
-  clientOptions: {
-    intents: [Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS]
-  }
+	clientOptions: {
+		intents: [Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS]
+	}
 }
 ```
 
@@ -48,7 +48,7 @@ npx robo dev
 
 ## Option 2: Classic Handlers 🎛️
 
-You can use the Robo.js client object to listen to Discord events just like you're used to in Discord.js. 
+You can use the Robo.js client object to listen to Discord events just like you're used to in Discord.js.
 
 1. Copy your existing handlers into the `_start.js` file under the `src/events/` directory.
 
@@ -63,13 +63,14 @@ export default () => {
 ```
 
 2. Update your `config/robo.mjs` file with any client options you used with the Discord.js client.
+
 ```js title="config/robo.mjs" showLineNumbers
 import { Intents } from 'discord.js'
 
 export default {
-  clientOptions: {
-    intents: [Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS]
-  }
+	clientOptions: {
+		intents: [Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS]
+	}
 }
 ```
 
@@ -83,7 +84,7 @@ By doing this, you'll enjoy most of Robo.js features while gradually migrating y
 
 :::tip
 
-#### Robo.js handles the `client.login()` part for you, so no worries there! 
+#### Robo.js handles the `client.login()` part for you, so no worries there!
 
 :::
 
@@ -98,13 +99,13 @@ import { Robo } from '@roboplay/robo.js'
 const client = new Client()
 
 client.on('messageCreate', (message) => {
-  console.log(message.content)
+	console.log(message.content)
 })
 
 Robo.start({ client })
 ```
 
-With this setup, you can start migrating your existing commands into the [Robo.js File Structure](/docs/basics/overview) or create new ones this way while you work your way there. 
+With this setup, you can start migrating your existing commands into the [Robo.js File Structure](/docs/basics/overview) or create new ones this way while you work your way there.
 
 Start by moving your `clientOptions` into a`config/robo.mjs` file instead of creating your own custom client. Once you're done migrating, you can kick off your projects using `robo dev` instead of your own entry file.
 
@@ -118,7 +119,7 @@ We're huge fans of the Robo.js File Structure 'cause it unlocks awesome features
 
 Whichever migration path you pick, adopting Robo.js is gonna help you level up your bot development process and give you a more organized, efficient way to manage your bot.
 
-:::info **By the way...** 
+:::info **By the way...**
 
 It's not required, but **TypeScript + Linting** while you're working with Robo.js can be super handy. Check out the [TypeScript Docs](/docs/advanced/typescript) and [Linting Docs](/docs/advanced/linting) to get started.
 

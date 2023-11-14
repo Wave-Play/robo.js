@@ -6,7 +6,7 @@ If you're familiar with Next.js, you'll feel right at home. If not, no worriesâ€
 
 ## The Robo.js File Structure ðŸ“‚
 
-To start with, you'll need a `src` directory at the root with `commands` and `events` directories inside. The command file's name becomes the command name, and the event file's name turns into the triggering event's name. 
+To start with, you'll need a `src` directory at the root with `commands` and `events` directories inside. The command file's name becomes the command name, and the event file's name turns into the triggering event's name.
 
 Here's a basic example of a Robo.js file structure:
 
@@ -91,9 +91,9 @@ And the messageCreate.js file could be:
 
 ```javascript showLineNumbers title="/src/events/messageCreate.js"
 export default (message) => {
-    if (message.content.includes('hello')) {
-        message.channel.send('Hello there!')
-    }
+	if (message.content.includes('hello')) {
+		message.channel.send('Hello there!')
+	}
 }
 ```
 

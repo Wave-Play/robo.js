@@ -45,6 +45,7 @@ src/
 :::
 
 ## Modules All The Way Down 🪐
+
 Now here's where it gets really interesting! These magical modules can be nested infinitely. Picture this: A module, living inside another module, with another module tucked away inside it, and another... and another... You get the idea—it's modules within modules all the way to the edge of the universe!
 
 Let's glance into the abyss:

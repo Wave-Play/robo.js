@@ -2,7 +2,7 @@
 
 Robo.js is built to work seamlessly with **[RoboPlay](https://roboplay.dev)**, a **[WavePlay](https://waveplay.com)** service. But hey, we won't judge if you prefer to host it on another Node-supporting platform! This guide will show you the ropes of hosting your Robo.js, ensuring your creation stays up and running 24/7, even when your computer takes a nap.
 
-:::info **Listen!** 
+:::info **Listen!**
 
 RoboPlay is currently invite-only, but keep an eye out for when it opens up to the public!
 
@@ -23,11 +23,13 @@ This command will optimize your source code and host it for free on RoboPlay. Fi
 Every account gets 2 free **Microbot** slots and can buy unlimited **Mecha** slots.
 
 **Microbot:** A free, lightweight slot for your Robo. It's perfect for small bots that don't need much power.
+
 - 100MB size limit
 - Limited battery life
 - Might take a nap in idle mode to save energy
 
 **Mecha:** A powerful slot for your Robo. It's perfect for large bots that need lots of power 24/7.
+
 - 1GB size limit
 - Unlimited battery power
 - Speedy CPU

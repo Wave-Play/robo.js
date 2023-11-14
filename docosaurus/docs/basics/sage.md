@@ -12,14 +12,15 @@ Let's kick things off with replies. Normally, you'd need to use interaction.repl
 
 ```javascript showLineNumbers title="/src/commands/hello.js"
 export default (interaction) => {
-  interaction.reply({ content: 'Hello, classic!' });
+	interaction.reply({ content: 'Hello, classic!' })
 }
 ```
 
 - **Sage Way**
+
 ```javascript showLineNumbers title="/src/commands/hello.js"
 export default () => {
-  return { content: 'Hello, Sage!' }
+	return { content: 'Hello, Sage!' }
 }
 ```
 
@@ -38,19 +39,21 @@ Every bot runs into tasks that take a bit longer, and that's where deferred repl
 Here's how it works:
 
 - **Classic Way**
+
 ```javascript showLineNumbers title="/src/commands/hello.js"
 export default async (interaction) => {
-  interaction.deferReply()
-  await new Promise(resolve => setTimeout(resolve, 4000)) // Artificial delay
-  interaction.editReply('Hello, classic!')
+	interaction.deferReply()
+	await new Promise((resolve) => setTimeout(resolve, 4000)) // Artificial delay
+	interaction.editReply('Hello, classic!')
 }
 ```
 
 - **Sage Way**
+
 ```javascript showLineNumbers title="/src/commands/hello.js"
 export default async () => {
-  await new Promise(resolve => setTimeout(resolve, 4000))
-  return 'Hello, Sage!'
+	await new Promise((resolve) => setTimeout(resolve, 4000))
+	return 'Hello, Sage!'
 }
 ```
 
@@ -58,8 +61,8 @@ And in case you're wondering, Sage won't waste time deferring if it's not needed
 
 ```javascript showLineNumbers title="/src/commands/hello.js"
 export default async () => {
-  await new Promise(resolve => setTimeout(resolve, 100))
-  return 'Hello, Sage!'
+	await new Promise((resolve) => setTimeout(resolve, 100))
+	return 'Hello, Sage!'
 }
 ```
 
@@ -106,31 +109,33 @@ In the bustling world of Robos, flexibility is key, and Sage is no exception. Sa
 You can set these options globally for your entire Robo in the config file, or tune them individually for each command, context menu, or event.
 
 - **Config File (robo-wide settings)**
+
 ```javascript showLineNumbers filename="/config/robo.mjs"
 export default {
-  // ... other config options
-  sage: {
-    defer: false,        // Disable automatic deferrals
-    deferBuffer: 500,    // Change deferral threshold to 500ms
-    ephemeral: true,     // Make all replies ephemeral
-    errorReplies: true   // Mute error messages
-  }
+	// ... other config options
+	sage: {
+		defer: false, // Disable automatic deferrals
+		deferBuffer: 500, // Change deferral threshold to 500ms
+		ephemeral: true, // Make all replies ephemeral
+		errorReplies: true // Mute error messages
+	}
 }
 ```
 
 - **Command, Context Menu, or Event Config (individual settings)**
+
 ```javascript showLineNumbers filename="/src/commands/hello.js"
 export const config = {
-  sage: {
-    defer: false,
-    deferBuffer: 500,
-    ephemeral: true,
-    errorReplies: true
-  }
+	sage: {
+		defer: false,
+		deferBuffer: 500,
+		ephemeral: true,
+		errorReplies: true
+	}
 }
 
 export default () => {
-  return 'Hello, Sage!'
+	return 'Hello, Sage!'
 }
 ```
 

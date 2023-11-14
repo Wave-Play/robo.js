@@ -4,7 +4,7 @@ Ready to understand how it comes alive? Here's a simplified overview of Robo.js'
 
 :::tip
 
-*You don't need to understand this to use Robo.js,* but it's helpful to know what's going on under the hood if you're curious!
+_You don't need to understand this to use Robo.js,_ but it's helpful to know what's going on under the hood if you're curious!
 
 :::
 

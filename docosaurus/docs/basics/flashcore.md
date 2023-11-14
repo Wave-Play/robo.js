@@ -89,7 +89,7 @@ await Flashcore.set('top-games', [
 
 When you fetch this data again, it'll be the same type as when you saved it.
 
-```javascript showLineNumbers 
+```javascript showLineNumbers
 const isBanned = await Flashcore.get('banned') // boolean
 const score = await Flashcore.get('score') // number
 const topName = await Flashcore.get('top-name') // string
@@ -207,7 +207,7 @@ Dig into more about Keyv Adapters on their [GitHub repo](https://github.com/jare
 
 Flashcore supports generics when retrieving data with TypeScript. This means you can specify the type of data you're expecting to get back from Flashcore for better type safety.
 
-```typescript showLineNumbers 
+```typescript showLineNumbers
 // Primitives are fully supported
 const isBanned = await Flashcore.get<boolean>(userId + '-banned')
 const score = await Flashcore.get<number>(userId + '-score')

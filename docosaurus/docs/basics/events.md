@@ -7,6 +7,7 @@ Events are the real MVPs in bot development! They're the magical building blocks
 Setting up events is as easy as creating a file with the name of the event you want to listen to in the `events` directory. Let's say we want to respond when our bot is ready:
 
 File structure:
+
 ```
 /src
   /events
@@ -17,8 +18,8 @@ Code for `ready.js`:
 
 ```javascript title="/src/events/ready.js"
 export default () => {
-  console.log('Bot is ready!');
-};
+	console.log('Bot is ready!')
+}
 ```
 
 Bam! Now, when your bot is ready, it will log 'Bot is ready!' in the console.
@@ -30,6 +31,7 @@ Bam! Now, when your bot is ready, it will log 'Bot is ready!' in the console.
 Need to listen to the same event with multiple files? No problem! Robo.js allows you to stack events. This is great for separating out different logic or features related to the same event. Let's say we want to do something else when the bot is ready:
 
 File structure:
+
 ```
 /src
   /events
@@ -39,10 +41,11 @@ File structure:
 ```
 
 Code for `playStatus.js`:
+
 ```javascript title="src/events/ready/playStatus.js"
 export default () => {
-  bot.user.setActivity('with code');
-};
+	bot.user.setActivity('with code')
+}
 ```
 
 Now, when the bot is ready, it will not only log 'Bot is ready!' in the console, but also set its status to 'Playing with code'!
@@ -61,10 +64,10 @@ Listening to events opens up a world of possibilities! Here are a few examples:
 
 Different events will pass different parameters. For example, the `messageCreate` event will pass the `message` object, and you can use it to reply, react, or do whatever you want! Some events, like `voiceStateUpdate`, even pass down multiple parameters:
 
-```javascript  title="/src/events/voiceStateUpdate.js"
+```javascript title="/src/events/voiceStateUpdate.js"
 export default (oldState, newState) => {
-  // do something with oldState and newState
-};
+	// do something with oldState and newState
+}
 ```
 
 ## Intents & Privileged Intents 🛡️
@@ -87,6 +90,6 @@ For a complete list of event names, check out this handy [Event Names Cheat Shee
 
 In Robo.js, we've got some special events to give you an extra level of control over your bot's shenanigans: `_start`, `_stop`, and `_restart`. Each one of these handy events receive the `client` object as a parameter.
 
-Here's the lowdown: `_start` gets called *before* your bot has logged in. You can return a Promise in these events and Robo.js will patiently wait for them to finish up, but don't leave it hanging too long – there's a 5-second time limit. <!-- [Check out the details on timeouts here](/docs/advanced/configuration#timeouts). -->
+Here's the lowdown: `_start` gets called _before_ your bot has logged in. You can return a Promise in these events and Robo.js will patiently wait for them to finish up, but don't leave it hanging too long – there's a 5-second time limit. <!-- [Check out the details on timeouts here](/docs/advanced/configuration#timeouts). -->
 
-Use these lifecycle events to tidy up or get things ready for your Robo's grand entrance or exit. Perhaps you need to fire up an API server or disable buttons while your bot's snoozing. 
+Use these lifecycle events to tidy up or get things ready for your Robo's grand entrance or exit. Perhaps you need to fire up an API server or disable buttons while your bot's snoozing.

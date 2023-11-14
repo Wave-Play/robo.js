@@ -2,11 +2,11 @@
 
 Robo.js comes with a powerful Command Line Interface (CLI) to streamline your bot development process, making it more fun and easy! Here's how to use it:
 
-```bash 
+```bash
 npm exec robo dev
 ```
 
-Simple, right? 
+Simple, right?
 
 ## Robo.js CLI 🌟
 
@@ -20,15 +20,15 @@ Options:
 Commands:
   dev [options]         Ready, set, code your bot to life! Starts development mode.
   start [options]       Starts your bot in production mode.
-  
+
   build [options]       Builds your bot for production.
   build plugin          Optimizes your source files to be published as a plugin via npm.
-  
+
   doctor                Checks if your project is healthy
   why [options] [text]  Find out why a command, event, permission, or scope is in your Robo.
                         e.g. /ping, @ready, %ADMINISTRATOR, +applications.commands
   help [command]        display help for command
-  
+
   deploy [options]      Deploys your bot to RoboPlay!
   invite                Generates a link for servers to add your Robo.
 ```
@@ -93,6 +93,7 @@ This will guide you through two simple steps:
 ### Options
 
 Feeling adventurous? This CLI's got options for ya:
+
 - `--js` skips the TypeScript question and jumps straight to JavaScript
 - `--ts` does the opposite: skips the TypeScript question and dives into TypeScript
 - `-p`, `--plugin` lets you craft a plugin project instead of a full-fledged Robo

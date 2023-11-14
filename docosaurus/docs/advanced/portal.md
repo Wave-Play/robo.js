@@ -17,7 +17,7 @@ portal.module('admin').setEnabled(false)
 
 And if you're curious whether a module is enabled or not, just ask:
 
-```javascript 
+```javascript
 // Is 'admin' playing hide and seek?
 const isAdminEnabled = portal.module('admin').isEnabled
 ```

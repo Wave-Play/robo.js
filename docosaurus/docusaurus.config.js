@@ -94,9 +94,9 @@ const config = {
 					alt: 'Sage Logo',
 					src: '/img/logo.png',
 					width: 55,
-					height: 55,
+					height: 55
 				},
-				copyright: `MIT © ${new Date().getFullYear()} <strong>Robo.js</strong> By <strong>Waveplay</strong>.`,
+				copyright: `MIT © ${new Date().getFullYear()} <strong>Robo.js</strong> By <strong>Waveplay</strong>.`
 			},
 			prism: {
 				theme: lightCodeTheme,
