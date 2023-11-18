@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.9.10
+
+### Patch Changes
+
+- 55f1a3f: fix(cli): added missing state loader for persisted data
+
 ## 0.9.9
 
 ### Patch Changes
