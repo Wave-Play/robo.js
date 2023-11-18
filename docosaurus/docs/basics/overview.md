@@ -1,3 +1,6 @@
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Overview 🚀
 
 Next-gen bot development is all about organization, and that's where Robo.js shines! 🌟
@@ -67,11 +70,28 @@ Here's how your command file structure might look:
 
 And the ping.js file could be as simple as:
 
-```javascript showLineNumbers title="/src/commands/ping.js"
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
+
+```javascript title="commands/ping.js"
 export default () => {
 	return 'Pong!'
 }
 ```
+
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```typescript title="commands/ping.ts"
+import type { CommandConfig } from '@roboplay/robo.js'
+
+export default (): CommandResult => {
+	return 'Pong!'
+}
+```
+
+</TabItem>
+</Tabs>
 
 To learn more about commands and their full potential, head over to the [commands documentation](./commands.md).
 
@@ -89,6 +109,9 @@ Here's a quick peek at your event file structure:
 
 And the messageCreate.js file could be:
 
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
+
 ```javascript showLineNumbers title="/src/events/messageCreate.js"
 export default (message) => {
 	if (message.content.includes('hello')) {
@@ -96,6 +119,22 @@ export default (message) => {
 	}
 }
 ```
+
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```typescript showLineNumbers title="/src/events/messageCreate.ts"
+import type { Message } from 'discord.js'
+
+export default (message: Message) => {
+	if (message.content.includes('hello')) {
+		message.channel.send('Hello there!')
+	}
+}
+```
+
+</TabItem>
+</Tabs>
 
 To dive deeper into events, check out the [events documentation](./events.md).
 

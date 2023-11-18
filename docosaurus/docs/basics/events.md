@@ -1,3 +1,6 @@
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Events 📡
 
 Events are the real MVPs in bot development! They're the magical building blocks that make your bot come alive—everything, including commands, are built on top of events!
@@ -41,12 +44,28 @@ File structure:
 ```
 
 Code for `playStatus.js`:
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
 
 ```javascript title="src/events/ready/playStatus.js"
-export default () => {
-	bot.user.setActivity('with code')
+export default (_, _, client) => {
+	client.user.setActivity('with code')
 }
 ```
+
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```typescript title="src/events/ready/playStatus.ts"
+import type { Client } from 'discord.js'
+
+export default (_, _, client: Client) => {
+	client.user.setActivity('with code')
+}
+```
+
+</TabItem>
+</Tabs>
 
 Now, when the bot is ready, it will not only log 'Bot is ready!' in the console, but also set its status to 'Playing with code'!
 
@@ -64,11 +83,28 @@ Listening to events opens up a world of possibilities! Here are a few examples:
 
 Different events will pass different parameters. For example, the `messageCreate` event will pass the `message` object, and you can use it to reply, react, or do whatever you want! Some events, like `voiceStateUpdate`, even pass down multiple parameters:
 
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
+
 ```javascript title="/src/events/voiceStateUpdate.js"
 export default (oldState, newState) => {
 	// do something with oldState and newState
 }
 ```
+
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```typescript title="/src/events/voiceStateUpdate.ts"
+import type { VoiceState } from 'discord.js'
+
+export default (oldState: VoiceState, newState: VoiceState) => {
+	// do something with oldState and newState
+}
+```
+
+</TabItem>
+</Tabs>
 
 ## Intents & Privileged Intents 🛡️
 

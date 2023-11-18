@@ -1,3 +1,6 @@
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Sage 🔮
 
 Your Robo is more than just a bot; it's got its very own spirit guide: Sage.
@@ -10,13 +13,33 @@ Let's kick things off with replies. Normally, you'd need to use interaction.repl
 
 - **Classic Way**
 
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
+
 ```javascript showLineNumbers title="/src/commands/hello.js"
 export default (interaction) => {
 	interaction.reply({ content: 'Hello, classic!' })
 }
 ```
 
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```typescript showLineNumbers title="/src/commands/hello.ts"
+import type { CommandInteraction } from 'discord.js'
+
+export default (interaction: CommandInteraction) => {
+	interaction.reply({ content: 'Hello, classic!' })
+}
+```
+
+</TabItem>
+</Tabs>
+
 - **Sage Way**
+
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
 
 ```javascript showLineNumbers title="/src/commands/hello.js"
 export default () => {
@@ -24,11 +47,41 @@ export default () => {
 }
 ```
 
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```typescript showLineNumbers title="/src/commands/hello.ts"
+import type { CommandResult } from '@roboplay/robo.js'
+
+export default (): CommandResult => {
+	return { content: 'Hello, Sage!' }
+}
+```
+
+</TabItem>
+</Tabs>
+
 Or for the minimalists among you...
 
-```javascript
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
+
+```javascript showLineNumbers title="/src/commands/hello.js"
 export default () => 'Hello, Sage!'
 ```
+
+</TabItem>
+
+<TabItem value="ts" label="Typescript">
+
+```typescript showLineNumbers title="/src/commands/hello.ts"
+import type { CommandResult } from '@roboplay/robo.js'
+
+export default (): CommandResult => 'Hello, Sage!'
+```
+
+</TabItem>
+</Tabs>
 
 By the way, Sage has the same game plan for autocomplete functions. And if you decide to go rogue and do your own thing? No problem. Sage knows when to step aside and let you take the wheel.
 
@@ -40,6 +93,9 @@ Here's how it works:
 
 - **Classic Way**
 
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
+
 ```javascript showLineNumbers title="/src/commands/hello.js"
 export default async (interaction) => {
 	interaction.deferReply()
@@ -48,7 +104,26 @@ export default async (interaction) => {
 }
 ```
 
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```typescript showLineNumbers title="/src/commands/hello.ts"
+import type { CommandInteraction } from 'discord.js'
+
+export default async (interaction: CommandInteraction) => {
+	interaction.deferReply()
+	await new Promise((resolve) => setTimeout(resolve, 4000)) // Artificial delay
+	interaction.editReply('Hello, classic!')
+}
+```
+
+</TabItem>
+</Tabs>
+
 - **Sage Way**
+
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
 
 ```javascript showLineNumbers title="/src/commands/hello.js"
 export default async () => {
@@ -56,6 +131,21 @@ export default async () => {
 	return 'Hello, Sage!'
 }
 ```
+
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```typescript showLineNumbers title="/src/commands/hello.ts"
+import type { CommandResult } from '@roboplay/robo.js'
+
+export default async (): CommandResult => {
+	await new Promise((resolve) => setTimeout(resolve, 4000))
+	return 'Hello, Sage!'
+}
+```
+
+</TabItem>
+</Tabs>
 
 And in case you're wondering, Sage won't waste time deferring if it's not needed. Check out how it handles a command that finishes in a flash:
 
@@ -124,6 +214,9 @@ export default {
 
 - **Command, Context Menu, or Event Config (individual settings)**
 
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
+
 ```javascript showLineNumbers filename="/src/commands/hello.js"
 export const config = {
 	sage: {
@@ -138,5 +231,28 @@ export default () => {
 	return 'Hello, Sage!'
 }
 ```
+
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```typescript showLineNumbers filename="/src/commands/hello.ts"
+import type { CommandConfig, CommandResult } from '@roboplay/robo.js'
+
+export const config: CommandConfig = {
+	sage: {
+		defer: false,
+		deferBuffer: 500,
+		ephemeral: true,
+		errorReplies: true
+	}
+}
+
+export default (): CommandResult => {
+	return 'Hello, Sage!'
+}
+```
+
+</TabItem>
+</Tabs>
 
 Now you've got the magic wand in your hand, ready to make Sage dance to your tune!

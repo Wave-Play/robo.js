@@ -1,3 +1,6 @@
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Flashcore ⚡
 
 **Flashcore** is your Robo's built-in database—ready to hold onto all the key-value pairs your Robo needs for the long haul. Trust us, it's a breeze to use!
@@ -7,6 +10,9 @@
 Think of **Flashcore** as **[States](/docs/basics/states)** except permanent. It's in it for the long game, and yes, it's async! Here's how we're handling a user's high score in a game:
 
 Stashing the high score:
+
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
 
 ```javascript showLineNumbers title="/src/commands/update-score.js" {18}
 import { Flashcore } from '@roboplay/robo.js'
@@ -24,6 +30,33 @@ export const config = {
 
 export default async (interaction) => {
 	const userId = interaction.user.id
+	const score = interaction.options.get('score')?.value
+
+	await Flashcore.set(userId, score)
+	return `New high score of ${score} stashed away! 🎉`
+}
+```
+
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```typescript showLineNumbers title="/src/commands/update-score.ts" {18}
+import { Flashcore, type CommandConfig } from '@roboplay/robo.js'
+import type { CommandInteraction } from 'discord.js'
+
+export const config: CommandConfig = {
+	options: [
+		{
+			name: 'score',
+			description: 'The new high score',
+			type: 'integer',
+			required: true
+		}
+	]
+}
+
+export default async (interaction: CommandInteraction) => {
+	const userId = interaction.user.id
 	const score = interaction.options.get('score')?.value as number
 
 	await Flashcore.set(userId, score)
@@ -31,7 +64,13 @@ export default async (interaction) => {
 }
 ```
 
+</TabItem>
+</Tabs>
+
 Fetching the high score:
+
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
 
 ```javascript title="/src/commands/get-score.js" showLineNumbers {6}
 import { Flashcore } from '@roboplay/robo.js'
@@ -43,6 +82,24 @@ export default async (interaction) => {
 	return score ? `High score alert: ${score}! 🏆` : 'No high score found. Game time! 🎮'
 }
 ```
+
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```typescript title="/src/commands/get-score.ts" showLineNumbers {6}
+import { Flashcore } from '@roboplay/robo.js'
+import type { CommandInteraction } from 'discord.js'
+
+export default async (interaction: CommandInteraction) => {
+	const userId = interaction.user.id
+
+	const score = await Flashcore.get(userId)
+	return score ? `High score alert: ${score}! 🏆` : 'No high score found. Game time! 🎮'
+}
+```
+
+</TabItem>
+</Tabs>
 
 :::info Heads Up!!!
 
@@ -56,6 +113,9 @@ You can delete a key from Flashcore with the `delete()` function.
 
 Here's a command that deletes a user's high score:
 
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
+
 ```javascript title="/src/commands/delete-score.js" showLineNumbers {6}
 import { Flashcore } from '@roboplay/robo.js'
 
@@ -67,6 +127,25 @@ export default async (interaction) => {
 	return `Deleted ${userId}'s high score...`
 }
 ```
+
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```typescript title="/src/commands/delete-score.ts" showLineNumbers {6}
+import { Flashcore } from '@roboplay/robo.js'
+import type { CommandInteraction } from 'discord.js'
+
+export default async (interaction: CommandInteraction) => {
+	const userId = interaction.user.id
+
+	await Flashcore.delete(userId)
+
+	return `Deleted ${userId}'s high score...`
+}
+```
+
+</TabItem>
+</Tabs>
 
 ## Data Types
 
@@ -101,6 +180,8 @@ const topGames = await Flashcore.get('top-games') // object array
 You can also watch for changes to a key's value over time with the `on()` function.
 
 Here's a command that sends a message to a channel whenever a user's high score changes:
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
 
 ```javascript showLineNumbers title="/src/commmands/watch-score.js" {6-8}
 import { Flashcore } from '@roboplay/robo.js'
@@ -116,11 +197,34 @@ export default async (interaction) => {
 }
 ```
 
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```typescript showLineNumbers title="/src/commmands/watch-score.ts" {6-8}
+import { Flashcore } from '@roboplay/robo.js'
+import type { CommandInteraction } from 'discord.js'
+
+export default async (interaction: CommandInteraction) => {
+	const userId = interaction.user.id
+
+	Flashcore.on(userId, (score) => {
+		interaction.channel.send(`High score alert for ${userId}: ${score}! 🏆`)
+	})
+
+	return `Watching for changes to ${userId}'s high score...`
+}
+```
+
+</TabItem>
+</Tabs>
+
 You can also stop watching for changes with the `off()` function.
 
 Here's a command that stops watching for changes to a user's high score:
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
 
-```javascript showLineNumbers title="/src/commands/stop-watching-score..js" {6}
+```javascript showLineNumbers title="/src/commands/stop-watching-score.js" {6}
 import { Flashcore } from '@roboplay/robo.js'
 
 export default async (interaction) => {
@@ -131,6 +235,25 @@ export default async (interaction) => {
 	return `Stopped watching for changes to ${userId}'s high score...`
 }
 ```
+
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```typescript showLineNumbers title="/src/commands/stop-watching-score.ts" {6}
+import { Flashcore } from '@roboplay/robo.js'
+import type { CommandInteraction } from 'discord.js'
+
+export default async (interaction: CommandInteraction) => {
+	const userId = interaction.user.id
+
+	Flashcore.off(userId)
+
+	return `Stopped watching for changes to ${userId}'s high score...`
+}
+```
+
+</TabItem>
+</Tabs>
 
 ## Namespaces
 
@@ -145,6 +268,8 @@ Flashcore.set('my-key', 'example-value', {
 ```
 
 Here's how we're namespacing a user's high score for specific servers:
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
 
 ```javascript showLineNumbers title="/src/commands/update-score.js" {19-21}
 import { Flashcore } from '@roboplay/robo.js'
@@ -163,6 +288,37 @@ export const config = {
 export default async (interaction) => {
 	const userId = interaction.user.id
 	const serverId = interaction.guild.id
+	const score = interaction.options.get('score')?.value
+
+	await Flashcore.set(userId, score, {
+		namespace: serverId
+	})
+
+	return `New high score of ${score} stashed away! 🎉`
+}
+```
+
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```typescript showLineNumbers title="/src/commands/update-score.ts" {19-21}
+import { Flashcore, type CommandConfig } from '@roboplay/robo.js'
+import type { CommandInteraction } from 'discord.js'
+
+export const config: CommandConfig = {
+	options: [
+		{
+			name: 'score',
+			description: 'The new high score',
+			type: 'integer',
+			required: true
+		}
+	]
+}
+
+export default async (interaction: CommandInteraction) => {
+	const userId = interaction.user.id
+	const serverId = interaction.guild.id
 	const score = interaction.options.get('score')?.value as number
 
 	await Flashcore.set(userId, score, {
@@ -172,6 +328,9 @@ export default async (interaction) => {
 	return `New high score of ${score} stashed away! 🎉`
 }
 ```
+
+</TabItem>
+</Tabs>
 
 Now every server has its own high score for each user! Just remember to namespace your keys when you're fetching them too:
 

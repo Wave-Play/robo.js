@@ -1,3 +1,6 @@
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Context Menu 🖱️
 
 These are your quick, right-click interactions that swoop in when users right-click a message or a user. They may not boast options, descriptions, or command stacking like slash commands, but they shine in simplicity and context awareness. Choose between "Message" and "User" to suit the situation.
@@ -25,6 +28,9 @@ When your message command is summoned, you'll receive a `MessageContextMenuComma
 
 Let's say you're crafting a command to translate a message:
 
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
+
 ```javascript title="/src/context/message/Translate.js"
 import { translateMessage } from '../services/translator.js'
 
@@ -34,11 +40,30 @@ export default async function (interaction, message) {
 }
 ```
 
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```javascript title="/src/context/message/Translate.ts"
+import { translateMessage } from '../services/translator.js'
+import type { MessageContextMenuCommandInteraction, Message } from 'discord.js'
+
+export default async function (interaction: MessageContextMenuCommandInteraction, message: Message) {
+	const translatedContent = await translateMessage(message.content)
+	return `Translation: ${translatedContent}`
+}
+```
+
+</TabItem>
+</Tabs>
+
 ## User Command Example 👤
 
 If you're stirring up a user command instead, you'll be served a `UserContextMenuCommandInteraction` object along with the selected user.
 
 Here's a glimpse of a user command in action, giving a user the ol' kickaroo:
+
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
 
 ```javascript title="/src/context/user/Kick.js"
 export default async function (interaction, user) {
@@ -47,6 +72,22 @@ export default async function (interaction, user) {
 	return `Yeeted ${user.username} from the server. Bye! 👋`
 }
 ```
+
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```typescript title="/src/context/user/Kick.ts"
+import type { UserContextMenuCommandInteraction, GuildMember } from 'discord.js'
+
+export default async function (interaction: UserContextMenuCommandInteraction, user: GuildMember) {
+	const guildMember = interaction.guild.members.resolve(user)
+	await guildMember.kick()
+	return `Yeeted ${user.username} from the server. Bye! 👋`
+}
+```
+
+</TabItem>
+</Tabs>
 
 ## Smooth Sailing from Here 🌊
 

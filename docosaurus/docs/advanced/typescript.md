@@ -169,7 +169,7 @@ Let's configure the path aliases:
 }
 ```
 
-:::tip **Just one golden rule!** 
+:::tip **Just one golden rule!**
 
 Always reference the compiled files (residing in `/dist`), not the raw `.ts` ones when sharing code across TypeScript projects.
 
