@@ -5,12 +5,15 @@ import { logger } from '../../core/logger.js'
 import { hasFilesRecursively } from '../utils/fs-helper.js'
 import { color, composeColors } from '../../core/color.js'
 import { loadConfig } from '../../core/config.js'
+import { Flashcore, prepareFlashcore } from '../../core/flashcore.js'
+import { FLASHCORE_KEYS } from '../../core/constants.js'
+import { loadState } from '../../core/state.js'
 
 const command = new Command('start')
 	.description('Starts your bot in production mode.')
+	.option('-h', '--help', 'Shows the available command options')
 	.option('-s', '--silent', 'do not print anything')
 	.option('-v', '--verbose', 'print more information for debugging')
-	.option('-h', '--help', 'Shows the available command options')
 	.handler(startAction)
 export default command
 
@@ -63,9 +66,27 @@ async function startAction(_args: string[], options: StartCommandOptions) {
 		logger.warn(`Experimental flags enabled: ${features}.`)
 	}
 
+	// Load state from Flashcore
+	const stateStart = Date.now()
+	const stateLoadPromise = new Promise<void>((resolve) => {
+		async function load() {
+			await prepareFlashcore()
+			const state = await Flashcore.get<Record<string, unknown>>(FLASHCORE_KEYS.state)
+			if (state) {
+				loadState(state)
+			}
+
+			logger.debug(`State loaded in ${Date.now() - stateStart}ms`)
+			resolve()
+		}
+		load()
+	})
+
 	// Imported dynamically to prevent multiple process hooks
 	const { Robo } = await import('../../core/robo.js')
 
 	// Start Roboooooooo!! :D
-	Robo.start()
+	Robo.start({
+		stateLoad: stateLoadPromise
+	})
 }
