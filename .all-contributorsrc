@@ -5,7 +5,6 @@
   "repoHost": "https://github.com",
   "files": [
     "CONTRIBUTING.md",
-    "CONTRIBUTORS.md",
     "README.md"
   ],
   "imageSize": 100,
@@ -60,7 +59,8 @@
       "profile": "https://github.com/ArnavK-09",
       "contributions": [
         "example",
-        "plugin"
+        "plugin",
+        "doc"
       ]
     }
   ],
