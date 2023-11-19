@@ -1,7 +1,9 @@
 import { Command } from 'commander'
-import { color } from '../core/color.js'
+import depcheck from 'depcheck'
+import inquirer from 'inquirer'
+import { color, composeColors } from '../core/color.js'
 import { logger } from '../core/logger.js'
-import { cmd, exec, getPackageManager, isRoboProject } from '../core/utils.js'
+import { checkSageUpdates, cmd, exec, getPackageExecutor, getPackageManager, isRoboProject } from '../core/utils.js'
 import path from 'node:path'
 import { access, cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import type { PackageJson } from '../core/types.js'
@@ -10,17 +12,21 @@ interface ProjectInfo {
 	hasEslint: boolean
 	hasPrettier: boolean
 	hasTypescript: boolean
+	hasWorkspaces: boolean
+	roboversion: string
 }
 
 const command = new Command('export')
 	.arguments('[modules...]')
 	.description('Export module(s) from your Robo as plugins')
+	.option('-ns --no-self-check', 'do not check for updates to Sage CLI')
 	.option('-s --silent', 'do not print anything')
 	.option('-v --verbose', 'print more information for debugging')
 	.action(exportAction)
 export default command
 
 interface ExportOptions {
+	selfCheck?: boolean
 	silent?: boolean
 	verbose?: boolean
 }
@@ -31,8 +37,12 @@ async function exportAction(modules: string[], options: ExportOptions) {
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : 'info'
 	}).info(`Exporting ${modules.length} module${modules.length === 1 ? '' : 's'}...`)
+	logger.debug(`CLI Options:`, options)
 	logger.debug(`Package manager:`, getPackageManager())
 	logger.debug(`Current working directory:`, process.cwd())
+	if (options.selfCheck) {
+		await checkSageUpdates()
+	}
 
 	// Validate
 	if (modules.length < 1) {
@@ -51,7 +61,9 @@ async function exportAction(modules: string[], options: ExportOptions) {
 	const projectInfo: ProjectInfo = {
 		hasEslint: !!packageJson.devDependencies['eslint'],
 		hasPrettier: !!packageJson.devDependencies['prettier'],
-		hasTypescript: !!packageJson.devDependencies['typescript']
+		hasTypescript: !!packageJson.devDependencies['typescript'],
+		hasWorkspaces: !!packageJson.workspaces,
+		roboversion: packageJson.dependencies['@roboplay/robo.js']
 	}
 
 	const results: unknown[] = []
@@ -83,15 +95,8 @@ async function exportModule(module: string, project: ProjectInfo, commandOptions
 	mkdir(exportPath, { recursive: true })
 
 	// Execute `create-robo` in the new folder
-	const packageManager = getPackageManager()
-	let commandName = 'npx'
-	if (packageManager === 'yarn') {
-		commandName = 'yarn dlx'
-	} else if (packageManager === 'pnpm') {
-		commandName = 'pnpx'
-	} else if (packageManager === 'bun') {
-		commandName = 'bunx'
-	}
+	const packageExecutor = getPackageExecutor()
+	const command = getPackageManager() == 'npm' && !project.hasWorkspaces ? 'npx' : getPackageManager()
 
 	const features = []
 	if (project.hasEslint) {
@@ -102,15 +107,23 @@ async function exportModule(module: string, project: ProjectInfo, commandOptions
 	}
 
 	const options = ['--no-install', '--plugin']
+
+	if (project.roboversion) {
+		options.push(`--robo-version ${project.roboversion}`)
+	}
+
 	if (project.hasTypescript) {
 		options.push('--typescript')
 	}
 	if (features.length > 0) {
 		options.push('--features', features.join(','))
 	}
+	if (commandOptions.verbose) {
+		options.push('--verbose')
+	}
 
 	logger.debug(`Creating plugin project in "${color.bold(exportPath)}"...`)
-	await exec(`${commandName} create-robo ${options.join(' ')}`, {
+	await exec(`${cmd(packageExecutor)} create-robo ${options.join(' ')}`, {
 		cwd: exportPath
 	})
 
@@ -140,18 +153,99 @@ async function exportModule(module: string, project: ProjectInfo, commandOptions
 		await writeFile(generatedReadmePath, generatedReadme + note)
 	}
 
-	// Build the plugin
-	logger.debug(`Building plugin...`)
-	await exec(`${commandName} robo build plugin`, {
-		cwd: exportPath
+	// Read existing LICENSE (if it exists)
+	const licensePath = path.join(process.cwd(), 'LICENSE')
+	const licenseExists = await access(licensePath)
+		.then(() => true)
+		.catch(() => false)
+
+	// Copy LICENSE
+	if (licenseExists) {
+		logger.debug(`Copying LICENSE...`)
+		await cp(licensePath, path.join(exportPath, 'LICENSE'))
+	}
+
+	// Read generated package.json
+	logger.debug(`Reading generated package.json...`)
+	const generatedPackageJsonPath = path.join(exportPath, 'package.json')
+	const generatedPackageJson: PackageJson = JSON.parse(await readFile(generatedPackageJsonPath, 'utf-8'))
+
+	// Check for missing dependencies
+	logger.debug(`Checking for missing dependencies...`)
+	const depResults = await depcheck(srcPath, {
+		package: generatedPackageJson
 	})
 
-	// Install dependencies
-	logger.debug(`Installing dependencies...`)
-	await exec(`${cmd(packageManager)} install${commandOptions.verbose ? ' -v' : ''}`, {
+	const missingDeps = Object.keys(depResults.missing ?? {})
+	if (missingDeps) {
+		logger.debug(`Missing dependencies:`, depResults.missing)
+		logger.info(`Installing missing dependencies...`)
+		try {
+			await exec(
+				`${cmd(command)} ${await usesLocalWorkaround(command, project.hasWorkspaces)} ${missingDeps.join(' ')}`,
+				{
+					cwd: exportPath
+				}
+			)
+		} catch (error) {
+			logger.error(`Failed to install missing dependencies:`, error)
+		}
+	} else {
+		// Install dependencies
+		logger.info(`Installing dependencies...`)
+		await exec(
+			`${cmd(command)} ${await usesLocalWorkaround(command, project.hasWorkspaces)}
+			`,
+			{ cwd: exportPath }
+		)
+	}
+
+	// Build the plugin
+	logger.debug(`Building plugin...`)
+	await exec(`${cmd(packageExecutor)} robo build plugin${commandOptions.verbose ? ' --verbose' : ''}`, {
 		cwd: exportPath
 	})
 
 	// Print success message
 	logger.ready(`Successfully exported module "${color.bold(module)}" as a plugin!`)
+	logger.info(`You can find the plugin project here:`, color.bold(exportPath))
+
+	// Ask if they want to add the new plugin
+	logger.log('')
+	const { addPlugin } = await inquirer.prompt([
+		{
+			type: 'list',
+			name: 'addPlugin',
+			message: color.blue(`Want to add ${packageName} to your Robo?`),
+			choices: [
+				{ name: 'Yes', value: true },
+				{ name: 'No', value: false },
+				new inquirer.Separator(
+					color.reset(`\n${composeColors(color.bold, color.yellow)('Warning:')} this will delete the original module!`)
+				)
+			]
+		}
+	])
+
+	// Add plugin to project via `robo add` command
+	if (addPlugin) {
+		logger.debug(`Adding plugin to project...`)
+		const absolutePath = path.join(process.cwd(), '..', packageName)
+		await exec(`${cmd(packageExecutor)} robo add ${absolutePath}${commandOptions.verbose ? ' --verbose' : ''}`, {
+			cwd: process.cwd()
+		})
+
+		// Remove module from project
+		logger.debug(`Removing module from project...`)
+		await rm(modulePath, { recursive: true, force: true })
+		logger.ready(`Successfully added plugin "${color.bold(packageName)}" to your Robo!`)
+	}
+}
+
+async function usesLocalWorkaround(packageManager: string, hasWorkspaces: boolean): Promise<string> {
+	if (packageManager === 'npm' && !hasWorkspaces) {
+		return 'install-local'
+	} else {
+		return 'install'
+	}
 }

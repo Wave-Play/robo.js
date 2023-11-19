@@ -4,6 +4,7 @@
   "repoType": "github",
   "repoHost": "https://github.com",
   "files": [
+    "CONTRIBUTING.md",
     "CONTRIBUTORS.md",
     "README.md"
   ],
@@ -29,7 +30,9 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/96749659?v=4",
       "profile": "https://github.com/Nazeofel",
       "contributions": [
-        "code"
+        "staff",
+        "code",
+        "maintenance"
       ]
     },
     {

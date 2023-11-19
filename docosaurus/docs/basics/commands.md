@@ -1,10 +1,13 @@
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Commands 📜
 
 Slash commands have changed the game in Discord, making it a breeze for users to interact with bots (or as we like to call them, Robos). And with Robo.js, weaving your own slash commands is as easy as pie. Let's unravel this together!
 
 ## Crafting Simple Commands 🛠️
 
-Start off with a simple command. Create a file in the `commands` directory. The file name? That's your command! 
+Start off with a simple command. Create a file in the `commands` directory. The file name? That's your command!
 
 For instance, to create a `/ping` command, your file structure would look like this:
 
@@ -14,21 +17,55 @@ src/
     └── ping.js
 ```
 
-And inside your `ping.js`? Straightforward:
+And inside your `ping` command file? Straightforward:
 
-```javascript
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
+
+```javascript title="commands/ping.js"
 export default () => {
-  return 'Pong!'
+	return 'Pong!'
 }
 ```
+
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```typescript title="commands/ping.ts"
+import type { CommandResult } from '@roboplay/robo.js'
+
+export default (): CommandResult => {
+	return 'Pong!'
+}
+```
+
+</TabItem>
+</Tabs>
 
 To use the interaction object directly:
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
 
-```javascript
+```javascript title="commands/ping.js"
 export default (interaction) => {
-  interaction.reply('Pong!')
+	interaction.reply('Pong!')
 }
 ```
+
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```typescript title="commands/ping.ts"
+import type { CommandInteraction } from 'discord.js'
+
+export default (interaction: CommandInteraction) => {
+	interaction.reply('Pong!')
+}
+```
+
+</TabItem>
+</Tabs>
+
 In this case, Sage steps back, letting you handle the interaction directly.
 
 ## Subcommands and Subcommand Groups 📚
@@ -58,21 +95,21 @@ Give your commands some context with descriptions. You can do this by exporting 
 
 ```javascript
 export const config = {
-  description: 'Responds with Pong!'
+	description: 'Responds with Pong!'
 }
 ```
 
 For TypeScript users, you can add typings for both the `config` object and the command result.
 
-```typescript
+```typescript title="commands/ping.ts"
 import type { CommandConfig, CommandResult } from '@roboplay/robo.js'
 
 export const config: CommandConfig = {
-  description: 'Responds with Pong!'
+	description: 'Responds with Pong!'
 }
 
 export default (): CommandResult => {
-  return 'Pong!'
+	return 'Pong!'
 }
 ```
 
@@ -82,7 +119,10 @@ The `config` object also lets you customize stuff like locale translations, Sage
 
 Robo.js allows you to further customize your commands with options. You can define these options in your `config` object and then access their values in your command function.
 
-```javascript
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
+
+```javascript title="commands/ping.js" {3-9} showLineNumbers
 export const config = {
   description: 'Responds with Pong!',
   options: [
@@ -99,14 +139,77 @@ export default (interaction) => {
   return loud ? 'PONG!!!' : 'Pong!'
 }
 ```
+
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```javascript title="commands/ping.ts" {3-9} showLineNumbers
+import type { CommandConfig, CommandResult } from '@roboplay/robo.js'
+import type { CommandInteraction } from 'discord.js'
+
+export const config: CommandConfig = {
+  description: 'Responds with Pong!',
+  options: [
+    {
+      name: 'loud',
+      description: 'Respond loudly?',
+      type: 'boolean'
+    }
+  ]
+}
+
+export default (interaction: CommandInteraction): CommandResult => {
+  const loud = interaction.options.get('loud')?.value as boolean
+  return loud ? 'PONG!!!' : 'Pong!'
+}
+```
+
+</TabItem>
+</Tabs>
+
 Want to explore more options? Check the [configuration section](/docs/advanced/configuration).
 
 ## Autocomplete 🧠
 
 Autocomplete can take your commands to the next level by providing suggestions as users type. You can implement autocomplete by exporting an `autocomplete` function in your command file.
 
-```javascript
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
+
+```javascript showLineNumbers title="commands/choosa-a-color.js" {15-19}
 export const config = {
+	description: 'Chooses a color',
+	options: [
+		{
+			name: 'color',
+			description: 'Your favorite color',
+			type: 'string',
+			autocomplete: true
+		}
+	]
+}
+
+const colors = ['red', 'green', 'blue', 'yellow', 'black', 'white', 'pink', 'purple', 'brown']
+
+export const autocomplete = (interaction) => {
+	const colorQuery = interaction.options.get('color')?.value
+	const filtered = colors.filter((color) => color.startsWith(colorQuery))
+	return interaction.respond(filtered.map((colors) => ({ name: colors, value: colors })))
+}
+
+export default (interaction) => {
+	return `You chose ${interaction.options.get('color')?.value}`
+}
+```
+
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```javascript showLineNumbers title="commands/choosa-a-color.ts" {15-19}
+import type { CommandConfig, CommandResult } from '@roboplay/robo.js'
+import type { CommandInteraction, AutocompleteInteraction } from 'discord.js'
+
+export const config: CommandConfig = {
   description: 'Chooses a color',
   options: [
     {
@@ -118,18 +221,21 @@ export const config = {
   ]
 }
 
-const colors = ['red', 'green', 'blue', 'yellow', 'black', 'white', 'pink', 'purple', 'brown']
+const colors: Array<string> = ['red', 'green', 'blue', 'yellow', 'black', 'white', 'pink', 'purple', 'brown']
 
-export const autocomplete = (interaction) => {
+export const autocomplete = (interaction: AutocompleteInteraction) => {
   const colorQuery = interaction.options.get("color")?.value as string;
   const filtered = colors.filter((color) => color.startsWith(colorQuery));
   return interaction.respond(filtered.map((colors) => ({ name: colors, value: colors })));
 };
 
-export default (interaction) => {
+export default (interaction: CommandInteraction): CommandResult => {
   return `You chose ${interaction.options.get('color')?.value}`
 }
 ```
+
+</TabItem>
+</Tabs>
 
 In this example, the `autocomplete` function returns an array of colors that start with the user's input, providing a dynamic and responsive user experience.
 
@@ -139,7 +245,7 @@ Note: the type of the Interaction is: `AutocompleteInteraction`
 
 The cherry on top? You don't need to manually register your commands. Robo.js handles it for you when you run `robo dev` or `robo build`, automatically! However, if things go sideways for some reason, you can use the `--force` flag to force registration.
 
-```plaintext
+```bash
 robo build --force
 ```
 

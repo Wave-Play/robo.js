@@ -242,7 +242,7 @@ export default class Robo {
 		return selectedFeatures
 	}
 
-	async createPackage(features: string[], install: boolean): Promise<void> {
+	async createPackage(features: string[], install: boolean, roboversion: string): Promise<void> {
 		// Find the package manager that triggered this command
 		const packageManager = getPackageManager()
 		logger.debug(`Using ${chalk.bold(packageManager)} in ${this._workingDir}...`)
@@ -272,10 +272,10 @@ export default class Robo {
 
 		// Robo.js and Discord.js are normal dependencies, unless this is a plugin
 		if (!this._isPlugin) {
-			packageJson.dependencies['@roboplay/robo.js'] = 'latest'
+			packageJson.dependencies['@roboplay/robo.js'] = `${roboversion}`
 			packageJson.dependencies['discord.js'] = '^14.13.0'
 		} else {
-			packageJson.devDependencies['@roboplay/robo.js'] = 'latest'
+			packageJson.devDependencies['@roboplay/robo.js'] = `${roboversion}`
 			packageJson.devDependencies['discord.js'] = '^14.13.0'
 			packageJson.peerDependencies = {
 				'@roboplay/robo.js': '^0.9.0'
@@ -323,7 +323,7 @@ export default class Robo {
 			await fs.writeFile(path.join(this._workingDir, 'README.md'), customReadme)
 		}
 
-		const runPrefix = packageManager + packageManager === 'npm' ? 'npm run ' : packageManager + ' '
+		const runPrefix = packageManager === 'npm' ? 'npm run ' : packageManager + ' '
 		if (this._useTypeScript) {
 			packageJson.devDependencies['@swc/core'] = '^1.3.44'
 			packageJson.devDependencies['@types/node'] = '^18.14.6'

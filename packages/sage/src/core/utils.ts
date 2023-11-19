@@ -5,8 +5,13 @@ import { promisify } from 'node:util'
 import { readFile } from 'node:fs/promises'
 import { logger } from './logger.js'
 import { color } from './color.js'
+import { FLASHCORE_KEYS } from '@roboplay/robo.js/dist/core/constants.js'
 import { spawn } from 'node:child_process'
+import { Config, Flashcore } from '@roboplay/robo.js'
+import { packageJson } from '../index.js'
+import inquirer from 'inquirer'
 import type { SpawnOptions } from 'node:child_process'
+import type { PackageJson } from './types.js'
 
 type PackageManager = 'npm' | 'bun' | 'pnpm' | 'yarn'
 
@@ -14,8 +19,108 @@ const pipelineAsync = promisify(pipeline)
 
 export const IS_WINDOWS = /^win/.test(process.platform)
 
-export function cmd(packageManager: PackageManager): string {
-	return IS_WINDOWS ? `${packageManager}.cmd` : packageManager
+export async function checkSageUpdates() {
+	// Check NPM registry for updates
+	logger.debug(`Checking for updates...`)
+	const response = await fetch(`https://registry.npmjs.org/${packageJson.name}/latest`)
+	const latestVersion = (await response.json()).version
+	logger.debug(`Latest version on NPM Registry: ${latestVersion}`)
+
+	// Compare versions
+	if (packageJson.version !== latestVersion) {
+		// Print update message
+		logger.info(color.green(`A new version of ${color.bold('@roboplay/sage')} is available! (v${latestVersion})\n`))
+		const { useLatest } = await inquirer.prompt<{ useLatest: boolean }>([
+			{
+				type: 'list',
+				name: 'useLatest',
+				message: 'Would you like to use the latest version?',
+				choices: [
+					{ name: 'Yes, use latest', value: true },
+					{ name: 'No, stick with v' + packageJson.version, value: false }
+				]
+			}
+		])
+		logger.log('')
+
+		if (useLatest) {
+			// Prepare commands
+			const packageExecutor = getPackageExecutor()
+			let cliPackage = process.argv[1] ?? packageJson.name
+			if (path.isAbsolute(cliPackage)) {
+				cliPackage = path.basename(cliPackage)
+			}
+
+			await exec(
+				`${cmd(packageExecutor)} ${cliPackage}@${packageJson.version} ${process.argv.slice(2).join(' ')}`.trim()
+			)
+			process.exit(0)
+		}
+	}
+}
+
+export async function checkUpdates(packageJson: PackageJson, config: Config, forceCheck = false) {
+	const { updateCheckInterval = 60 * 60 } = config
+
+	const update = {
+		changelogUrl: '',
+		currentVersion: packageJson.version,
+		hasUpdate: false,
+		latestVersion: ''
+	}
+
+	// Ignore if disabled
+	if (!forceCheck && updateCheckInterval <= 0) {
+		return update
+	}
+
+	// Check if update check is due
+	const lastUpdateCheck = (await Flashcore.get<number>(FLASHCORE_KEYS.lastUpdateCheck)) ?? 0
+	const now = Date.now()
+	const isDue = now - lastUpdateCheck > updateCheckInterval * 1000
+
+	if (!forceCheck && !isDue) {
+		return update
+	}
+
+	// Check NPM registry for updates
+	const response = await fetch(`https://registry.npmjs.org/${packageJson.name}/latest`)
+	const latestVersion = (await response.json()).version
+	update.hasUpdate = packageJson.version !== latestVersion
+	update.latestVersion = latestVersion
+
+	// Get changelog URL
+	if (packageJson.repository?.url) {
+		logger.debug(`Getting changelog URL from repository URL...`, packageJson.repository)
+
+		// Construct raw changelog URL based on common convention
+		let changelogUrl = packageJson.repository?.url
+		changelogUrl = changelogUrl.replace('.git', '').replace('git+', '') + '/main'
+		if (packageJson.repository.directory) {
+			changelogUrl += `/${packageJson.repository.directory}`
+		}
+		if (changelogUrl.includes('github.com')) {
+			changelogUrl = changelogUrl.replace('github.com', 'raw.githubusercontent.com')
+		}
+		changelogUrl += '/CHANGELOG.md'
+
+		// Ping changelog URL to make sure it exists
+		const changelogResponse = await fetch(changelogUrl)
+		if (!changelogResponse.ok) {
+			logger.debug(`Changelog URL does not exist:`, changelogUrl)
+		} else {
+			update.changelogUrl = changelogUrl
+		}
+	}
+
+	// Update last update check time
+	await Flashcore.set(FLASHCORE_KEYS.lastUpdateCheck, now)
+
+	return update
+}
+
+export function cmd(packageManager: string): string {
+	return IS_WINDOWS && packageManager !== 'pnpm' ? `${packageManager}.cmd` : packageManager
 }
 
 export function createNodeReadable(webReadable: ReadableStream<Uint8Array>): NodeJS.ReadableStream {
@@ -84,6 +189,19 @@ export function getPackageManager(): PackageManager {
 		return 'pnpm'
 	} else {
 		return 'npm'
+	}
+}
+
+export function getPackageExecutor(): string {
+	const packageManager = getPackageManager()
+	if (packageManager === 'yarn') {
+		return 'yarn dlx'
+	} else if (packageManager === 'pnpm') {
+		return 'pnpx'
+	} else if (packageManager === 'bun') {
+		return 'bunx'
+	} else {
+		return 'npx'
 	}
 }
 

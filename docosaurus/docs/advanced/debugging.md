@@ -10,7 +10,11 @@ We totes recommend creating a personal Discord server for your Robo to chill in.
 
 Doing this means command updates will only show up in this cool server during development mode. Plus, you'll unlock the special debugging features mentioned here for this server only.
 
-> **Note:** Check out [Secrets](/docs/basics/secrets) for more
+:::info
+
+#### Check out [Secrets](/docs/basics/secrets) for more
+
+:::
 
 ## Sage Error Replies 🔮
 
@@ -20,16 +24,20 @@ Sage will spill the tea in the same channel that triggered the error, like where
 
 You can turn off Sage error replies in the config file if you want. Here's an example of how to do it:
 
-```javascript
+```javascript title="config/robo.mjs" showLineNumbers {3-5}
 export default {
-  // ... the rest of your config
-  sage: {
-    errorReplies: false
-  }
+	// ... the rest of your config
+	sage: {
+		errorReplies: false
+	}
 }
 ```
 
-> Note: Check out [Sage Documentation](/docs/basics/sage) to learn more about the Sage suite and its awesome features
+:::info
+
+Check out **[Sage Documentation](/docs/basics/sage)** to learn more about the Sage suite and its awesome features
+
+:::
 
 ## Logging 📝
 
@@ -37,12 +45,12 @@ Logging is like the bread and butter of debugging. You can use JavaScript's buil
 
 Wanna customize your log levels? Each log has a priority level that you can toggle on or off in the config.
 
-```javascript
+```javascript title="config/robo.mjs" showLineNumbers {3-5}
 export default {
-  // ... the rest of your config
-  logger: {
-    level: 'debug' // This shows *all* the logs
-  }
+	// ... the rest of your config
+	logger: {
+		level: 'debug' // This shows *all* the logs
+	}
 }
 ```
 
@@ -59,7 +67,11 @@ Log levels and their priority values look like this:
 
 So, setting `level` to `debug` (priority 1) will show all logs with a greater value, `info` (priority 2) is the default, and setting it to `error` (priority 5) will only show error logs and logs with a priority value of 5.
 
-> Note: Dive into [Advanced Configuration](/docs/advanced/configuration) for more info on the config file and its values
+:::tip
+
+Dive into [Advanced Configuration](/docs/advanced/configuration) for more info on the config file and its values
+
+:::
 
 ## Handling Async Errors ⏰
 
@@ -67,16 +79,16 @@ Sometimes your Robo runs into errors in async code that are out of your control.
 
 The smart move is to handle async errors yourself. You can stop these crashes from happening by awaiting promises and handling the errors, like this:
 
-```javascript
+```javascript showLineNumbers {6-10}
 // Oopsie: This will crash your Robo in development mode
 // In production mode and debug channels, the error will be shown instead
 message.react('👍')
 
 // Yay: Using try/catch and await helps you handle the error
 try {
-  await message.react('👍')
+	await message.react('👍')
 } catch (error) {
-  console.error('Failed to react with 👍:', error)
+	console.error('Failed to react with 👍:', error)
 }
 ```
 
@@ -90,18 +102,22 @@ Your Robo's got a built-in `/dev` command you can whip out in Discord to peep Ro
 
 Wanna turn off this command? No prob. Just tweak the config file by setting it to `false`. Or, you can flex your creative muscles and cook up your own `dev` command to overwrite the default one.
 
-```javascript
+```javascript showLineNumbers title="config/robo.mjs"
 export default {
-  // ... the rest of your config vibes
-  override: {
-    commands: {
-      dev: false
-    }
-  }
+	// ... the rest of your config vibes
+	override: {
+		commands: {
+			dev: false
+		}
+	}
 }
 ```
 
-> Heads up: The `/dev` command is only up for grabs when your Robo's in development mode and chilling in your test server.
+:::note
+
+**Heads up:** The **`/dev` command** is only up for grabs when your Robo's in development mode and chilling in your test server.
+
+:::
 
 ## Debugging Events 🎉
 

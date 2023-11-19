@@ -5,8 +5,8 @@ import { getManifest } from '../cli/utils/manifest.js'
 import { hasProperties } from '../cli/utils/utils.js'
 import { logger } from './logger.js'
 import { color, composeColors, hex } from './color.js'
-import type { Api, BaseConfig, Command, Context, Event, HandlerRecord, Middleware } from '../types/index.js'
 import { getConfig } from './config.js'
+import type { Api, BaseConfig, Command, Context, Event, HandlerRecord, Middleware } from '../types/index.js'
 
 export default class Portal {
 	public apis: Collection<string, HandlerRecord<Api>>
@@ -137,15 +137,13 @@ async function scanEntries<T>(predicate: ScanPredicate, options: ScanOptions<T>)
 
 		entries.forEach((entry) => {
 			const entryKeys = [...recursionKeys, entryName]
-			promises.push(predicate({
-				...parentEntry,
-				...entry
-			}, entryKeys))
+			const mergedEntry = { ...parentEntry, ...entry }
+			promises.push(predicate(mergedEntry, entryKeys))
 
 			if (hasProperties<{ subcommands: Record<string, T> }>(entry, ['subcommands']) && entry.subcommands) {
 				const resursion = scanEntries(predicate, {
 					manifestEntries: entry.subcommands,
-					parentEntry: entry,
+					parentEntry: mergedEntry,
 					recursionKeys: entryKeys,
 					type
 				})
@@ -153,7 +151,7 @@ async function scanEntries<T>(predicate: ScanPredicate, options: ScanOptions<T>)
 			} else if (hasProperties<{ subroutes: Record<string, T> }>(entry, ['subroutes']) && entry.subroutes) {
 				const resursion = scanEntries(predicate, {
 					manifestEntries: entry.subroutes,
-					parentEntry: entry,
+					parentEntry: mergedEntry,
 					recursionKeys: entryKeys,
 					type
 				})

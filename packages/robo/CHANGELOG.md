@@ -1,5 +1,32 @@
 # robo.js
 
+## 0.9.10
+
+### Patch Changes
+
+- 55f1a3f: fix(cli): added missing state loader for persisted data
+
+## 0.9.9
+
+### Patch Changes
+
+- 289faee: chore: version bump
+
+## 0.9.8
+
+### Patch Changes
+
+- 3d647c7: fix(cli): missing start import
+
+## 0.9.7
+
+### Patch Changes
+
+- 0850950: fix(cli): ensure plugins directory always exist prior to adding
+- 18913ee: fix: multi nesting support for plugins
+- 76f6d92: feat(flashcore): support for key namespaces
+- bf23d17: chore: updated package readme
+
 ## 0.9.6
 
 ### Patch Changes

@@ -12,7 +12,11 @@ npx create-robo <projectName>
 
 This command guides you through setting up a project tailored to your preferences, including TypeScript, linting, styling, and plugins.
 
-> Note: Don't forget to replace `<projectName>` with the desired name for your new Robo.
+:::tip
+
+Don't forget to replace `<projectName>` with the desired name for your new Robo.
+
+:::
 
 ## Upgrading Existing Project ⏫
 
@@ -32,7 +36,11 @@ npx robo dev
 
 Wanna know more? Check out the [Command Line Interface](/docs/advanced/command-line) documentation.
 
-> With Robo.js, there's no need for a separate script to register command updates. Sit back and relax—Robo.js has got you covered!
+:::info Relax
+
+With Robo.js, there's no need for a separate script to register command updates. Sit back and relax—Robo.js has got you covered!
+
+:::
 
 ## Troubleshooting 🛠️
 

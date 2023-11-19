@@ -2,7 +2,7 @@ import { Command } from 'commander'
 import tar from 'tar'
 import { color, composeColors } from '../core/color.js'
 import { logger } from '../core/logger.js'
-import { cmd, downloadFile, exec, getPackageManager, isRoboProject } from '../core/utils.js'
+import { checkSageUpdates, cmd, downloadFile, exec, getPackageManager, isRoboProject } from '../core/utils.js'
 import path from 'node:path'
 import { mkdirSync } from 'node:fs'
 import { access, cp, readFile, writeFile } from 'node:fs/promises'
@@ -13,12 +13,14 @@ import type { PackageJson } from '../core/types.js'
 const command = new Command('import')
 	.arguments('[plugins...]')
 	.description('Import plugin(s) as modules into your Robo')
+	.option('-ns --no-self-check', 'do not check for updates to Sage CLI')
 	.option('-s --silent', 'do not print anything')
 	.option('-v --verbose', 'print more information for debugging')
 	.action(importAction)
 export default command
 
 interface ImportOptions {
+	selfCheck?: boolean
 	silent?: boolean
 	verbose?: boolean
 }
@@ -29,9 +31,13 @@ async function importAction(plugins: string[], options: ImportOptions) {
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : 'info'
 	}).info(`Importing ${plugins.length} plugin${plugins.length === 1 ? '' : 's'}...`)
+	logger.debug(`CLI Options:`, options)
 	logger.debug(`Package manager:`, getPackageManager())
 	logger.debug(`Current working directory:`, process.cwd())
 	logger.debug(`Plugins:`, plugins)
+	if (options.selfCheck) {
+		await checkSageUpdates()
+	}
 
 	// Validate
 	if (plugins.length < 1) {

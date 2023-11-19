@@ -1,11 +1,11 @@
 import { client } from '@roboplay/robo.js'
 import { Message } from 'discord.js'
 import { AiEngine, isReplyingToUser } from '../../core/engine.js'
-import { GptChatMessage } from '../../core/openai.js'
 import { chunkMessage, replaceUsernamesWithIds } from '../../utils/discord-utils.js'
 import { addUserFollowUp } from '../typingStart/debounce.js'
 import { logger } from '../../core/logger.js'
 import { options as pluginOptions } from '../_start.js'
+import type { GptChatMessage, GptChatMessageContent } from '../../core/openai.js'
 
 export default async (message: Message) => {
 	// Make sure the bot isn't responding to itself
@@ -67,7 +67,7 @@ export default async (message: Message) => {
 	}
 
 	// Include reply chain messages for context
-	const messages = [{ ...targetMessage, content: processedContent }]
+	const messages = [{ ...targetMessage, content: processedContent } as Message]
 	try {
 		const replyChain = await getReplyChain(targetMessage, {
 			context: isOpenConvo ? 'channel' : 'reference'
@@ -87,28 +87,51 @@ export default async (message: Message) => {
 	}
 
 	// Structure messages for GPT
-	await AiEngine.chat(
-		messages.map(
-			(message): GptChatMessage => ({
-				role: message.author.id === client.user?.id ? 'assistant' : 'user',
-				// TODO: Handle prefix for answer-other differently! (dedicated processContent function?)
-				content: message.author.username + ': ' + message.content // Prefix who sent the message (who to refer to)
-			})
-		),
-		{
-			channel: message.channel,
-			member: message.member ?? message.guild?.members.cache.get(message.author.id),
-			onReply: async (reply) => {
-				const chunks = chunkMessage(reply)
-				let lastMessage = targetMessage
+	const gptMessages: GptChatMessage[] = messages.map((message) => ({
+		role: message.author.id === client.user?.id ? 'assistant' : 'user',
+		content: getMessageContent(message)
+	}))
 
-				for (const chunk of chunks) {
-					const content = replaceUsernamesWithIds(chunk, userMap)
-					lastMessage = await lastMessage.reply(content)
-				}
+	await AiEngine.chat(gptMessages, {
+		channel: message.channel,
+		member: message.member ?? message.guild?.members.cache.get(message.author.id),
+		onReply: async (reply) => {
+			const chunks = chunkMessage(reply)
+			let lastMessage = targetMessage
+
+			for (const chunk of chunks) {
+				const content = replaceUsernamesWithIds(chunk, userMap)
+				lastMessage = await lastMessage.reply(content)
 			}
 		}
-	)
+	})
+}
+
+// TODO: Handle prefix for answer-other differently! (dedicated processContent function?)
+function getMessageContent(message: Message): GptChatMessageContent {
+	// Prefix who sent the message (who to refer to)
+	const content = message.author.username + ': ' + message.content
+
+	// Include attachments if they exist and the model supports it
+	if (message.attachments?.size && pluginOptions.model?.includes('vision')) {
+		logger.debug(`Including ${message.attachments.size} attachments`)
+
+		return [
+			{
+				type: 'text',
+				text: content
+			},
+			...message.attachments.map(
+				(attachment) =>
+					({
+						type: 'image_url',
+						image_url: attachment.url
+					} as const)
+			)
+		]
+	}
+
+	return content
 }
 
 interface ReplyChainOptions {
