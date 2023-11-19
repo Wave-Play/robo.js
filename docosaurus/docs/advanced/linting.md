@@ -12,7 +12,7 @@ To get ESLint up and running in your project, follow the steps in the [ESLint Ge
 
 Create a file named `.eslintrc.json` in your project's root directory and add your ESLint configuration:
 
-```json
+```json title=".eslintrc.json" showLineNumbers
 {
 	"extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
 	"env": {
@@ -27,7 +27,7 @@ Create a file named `.eslintrc.json` in your project's root directory and add yo
 
 Oh, and don't forget to create an `.eslintignore` file too. This helps ESLint skip files and folders that don't need linting, like `node_modules`. Just add the following content to the `.eslintignore` file:
 
-```
+```title=".eslintignore" showLineNumbers
 node_modules
 .config
 .robo
@@ -41,7 +41,7 @@ To get Prettier set up, head over to the [Prettier Installation guide](https://p
 
 Create a file named `prettier.config.js` in your project's root directory and add your Prettier configuration:
 
-```js
+```js title="prettier.config.js" showLineNumbers
 module.exports = {
 	printWidth: 120,
 	semi: false,

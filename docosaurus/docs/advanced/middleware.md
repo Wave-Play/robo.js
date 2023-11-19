@@ -34,7 +34,7 @@ The `record` object has key information:
 
 Middleware is empowered to mutate the interaction objects, thus impacting the way events and commands behave:
 
-```javascript
+```javascript title="/src/middleware/01-example.middleware.js" showLineNumbers
 export default function (data) {
 	const [interaction] = data.payload
 	interaction.middlewareTimestamp = Date.now()
@@ -45,7 +45,7 @@ export default function (data) {
 
 Middleware can be a gatekeeper, deciding if an event or command should proceed. If a middleware function returns `{ abort: true }`, the event or command execution is halted. Here's an example:
 
-```javascript
+```javascript showLineNumbers {7} title="/src/middleware/02-example.middleware.js"
 import { isModuleEnabled } from './utils.js'
 
 export default async function (data) {
@@ -61,7 +61,7 @@ export default async function (data) {
 
 This ability can be leveraged for user roles-based access control:
 
-```javascript
+```javascript showLineNumbers {5-8} title="/src/middleware/03-admin.middleware.js"
 export default function (data) {
 	const [interaction] = data.payload
 	const userRoles = interaction.member.roles.cache.map((role) => role.name)
