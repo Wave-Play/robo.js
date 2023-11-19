@@ -217,7 +217,7 @@ export default {
 <Tabs groupId="examples-script">
 <TabItem value="js" label="Javascript">
 
-```javascript showLineNumbers filename="/src/commands/hello.js" {2-7}
+```javascript showLineNumbers title="/src/commands/hello.js" {2-7}
 export const config = {
 	sage: {
 		defer: false,
@@ -235,7 +235,7 @@ export default () => {
 </TabItem>
 <TabItem value="ts" label="Typescript">
 
-```typescript showLineNumbers filename="/src/commands/hello.ts" {4-9}
+```typescript showLineNumbers title="/src/commands/hello.ts" {4-9}
 import type { CommandConfig, CommandResult } from '@roboplay/robo.js'
 
 export const config: CommandConfig = {
