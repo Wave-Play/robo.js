@@ -200,7 +200,7 @@ You can set these options globally for your entire Robo in the config file, or t
 
 - **Config File (robo-wide settings)**
 
-```javascript showLineNumbers filename="/config/robo.mjs"
+```javascript showLineNumbers title="/config/robo.mjs"
 export default {
 	// ... other config options
 	sage: {
@@ -217,7 +217,7 @@ export default {
 <Tabs groupId="examples-script">
 <TabItem value="js" label="Javascript">
 
-```javascript showLineNumbers filename="/src/commands/hello.js"
+```javascript showLineNumbers filename="/src/commands/hello.js" {2-7}
 export const config = {
 	sage: {
 		defer: false,
@@ -235,7 +235,7 @@ export default () => {
 </TabItem>
 <TabItem value="ts" label="Typescript">
 
-```typescript showLineNumbers filename="/src/commands/hello.ts"
+```typescript showLineNumbers filename="/src/commands/hello.ts" {4-9}
 import type { CommandConfig, CommandResult } from '@roboplay/robo.js'
 
 export const config: CommandConfig = {
