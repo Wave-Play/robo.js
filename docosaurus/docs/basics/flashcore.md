@@ -40,7 +40,7 @@ export default async (interaction) => {
 </TabItem>
 <TabItem value="ts" label="Typescript">
 
-```typescript showLineNumbers title="/src/commands/update-score.ts" {18}
+```typescript showLineNumbers title="/src/commands/update-score.ts" {19}
 import { Flashcore, type CommandConfig } from '@roboplay/robo.js'
 import type { CommandInteraction } from 'discord.js'
 
@@ -86,7 +86,7 @@ export default async (interaction) => {
 </TabItem>
 <TabItem value="ts" label="Typescript">
 
-```typescript title="/src/commands/get-score.ts" showLineNumbers {6}
+```typescript title="/src/commands/get-score.ts" showLineNumbers {7}
 import { Flashcore } from '@roboplay/robo.js'
 import type { CommandInteraction } from 'discord.js'
 
@@ -131,7 +131,7 @@ export default async (interaction) => {
 </TabItem>
 <TabItem value="ts" label="Typescript">
 
-```typescript title="/src/commands/delete-score.ts" showLineNumbers {6}
+```typescript title="/src/commands/delete-score.ts" showLineNumbers {7}
 import { Flashcore } from '@roboplay/robo.js'
 import type { CommandInteraction } from 'discord.js'
 
@@ -200,7 +200,7 @@ export default async (interaction) => {
 </TabItem>
 <TabItem value="ts" label="Typescript">
 
-```typescript showLineNumbers title="/src/commmands/watch-score.ts" {6-8}
+```typescript showLineNumbers title="/src/commmands/watch-score.ts" {7-9}
 import { Flashcore } from '@roboplay/robo.js'
 import type { CommandInteraction } from 'discord.js'
 
@@ -239,7 +239,7 @@ export default async (interaction) => {
 </TabItem>
 <TabItem value="ts" label="Typescript">
 
-```typescript showLineNumbers title="/src/commands/stop-watching-score.ts" {6}
+```typescript showLineNumbers title="/src/commands/stop-watching-score.ts" {7}
 import { Flashcore } from '@roboplay/robo.js'
 import type { CommandInteraction } from 'discord.js'
 
@@ -301,7 +301,7 @@ export default async (interaction) => {
 </TabItem>
 <TabItem value="ts" label="Typescript">
 
-```typescript showLineNumbers title="/src/commands/update-score.ts" {19-21}
+```typescript showLineNumbers title="/src/commands/update-score.ts" {20-22}
 import { Flashcore, type CommandConfig } from '@roboplay/robo.js'
 import type { CommandInteraction } from 'discord.js'
 

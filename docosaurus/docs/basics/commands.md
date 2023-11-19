@@ -143,7 +143,7 @@ export default (interaction) => {
 </TabItem>
 <TabItem value="ts" label="Typescript">
 
-```javascript title="commands/ping.ts" {3-9} showLineNumbers
+```javascript title="commands/ping.ts" {6-12} showLineNumbers
 import type { CommandConfig, CommandResult } from '@roboplay/robo.js'
 import type { CommandInteraction } from 'discord.js'
 
@@ -205,7 +205,7 @@ export default (interaction) => {
 </TabItem>
 <TabItem value="ts" label="Typescript">
 
-```javascript showLineNumbers title="commands/choosa-a-color.ts" {15-19}
+```javascript showLineNumbers title="commands/choosa-a-color.ts" {18-22}
 import type { CommandConfig, CommandResult } from '@roboplay/robo.js'
 import type { CommandInteraction, AutocompleteInteraction } from 'discord.js'
 

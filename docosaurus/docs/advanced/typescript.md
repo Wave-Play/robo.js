@@ -83,7 +83,7 @@ Config files may be in JavaScript format, but TypeScript's still got your back! 
 
 Here's an example of a config file with the GPT plugin:
 
-```javascript showLineNumbers {3} {11} filename="config/robo.mjs"
+```javascript showLineNumbers {3} {11} title="config/robo.mjs"
 // @ts-check
 
 /** @type {import('@roboplay/robo.js').Plugin} */
