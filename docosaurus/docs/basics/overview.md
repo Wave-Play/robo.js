@@ -1,3 +1,6 @@
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Overview 🚀
 
 Next-gen bot development is all about organization, and that's where Robo.js shines! 🌟
@@ -6,7 +9,7 @@ If you're familiar with Next.js, you'll feel right at home. If not, no worries�
 
 ## The Robo.js File Structure 📂
 
-To start with, you'll need a `src` directory at the root with `commands` and `events` directories inside. The command file's name becomes the command name, and the event file's name turns into the triggering event's name. 
+To start with, you'll need a `src` directory at the root with `commands` and `events` directories inside. The command file's name becomes the command name, and the event file's name turns into the triggering event's name.
 
 Here's a basic example of a Robo.js file structure:
 
@@ -67,11 +70,28 @@ Here's how your command file structure might look:
 
 And the ping.js file could be as simple as:
 
-```javascript
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
+
+```javascript title="commands/ping.js"
 export default () => {
 	return 'Pong!'
 }
 ```
+
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```typescript title="commands/ping.ts"
+import type { CommandConfig } from '@roboplay/robo.js'
+
+export default (): CommandResult => {
+	return 'Pong!'
+}
+```
+
+</TabItem>
+</Tabs>
 
 To learn more about commands and their full potential, head over to the [commands documentation](./commands.md).
 
@@ -89,13 +109,32 @@ Here's a quick peek at your event file structure:
 
 And the messageCreate.js file could be:
 
-```javascript
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
+
+```javascript showLineNumbers title="/src/events/messageCreate.js"
 export default (message) => {
-    if (message.content.includes('hello')) {
-        message.channel.send('Hello there!')
-    }
+	if (message.content.includes('hello')) {
+		message.channel.send('Hello there!')
+	}
 }
 ```
+
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```typescript showLineNumbers title="/src/events/messageCreate.ts"
+import type { Message } from 'discord.js'
+
+export default (message: Message) => {
+	if (message.content.includes('hello')) {
+		message.channel.send('Hello there!')
+	}
+}
+```
+
+</TabItem>
+</Tabs>
 
 To dive deeper into events, check out the [events documentation](./events.md).
 
@@ -103,4 +142,8 @@ To dive deeper into events, check out the [events documentation](./events.md).
 
 Meet Sage, your new best friend in interaction handling. Sage operates behind the scenes, automatically simplifying interaction handling and providing smart error replies that make debugging a breeze. With Sage, you can focus on what you do best: creating epic bot interactions! ✨
 
+:::tip Do This
+
 Unlock the full power of Sage Mode by visiting the [Sage documentation](./sage.md).
+
+:::

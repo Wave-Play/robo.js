@@ -10,8 +10,7 @@ To install a plugin, run the following command:
 npx robo add awesome-robo-plugin
 ```
 
-
-That's it! Your Robo now has access to the additional features provided by the plugin. 
+That's it! Your Robo now has access to the additional features provided by the plugin.
 
 The plugin's commands and events are automatically linked. Plus, if your Robo needs any extra bot permissions, they'll be inherited when running `robo invite` to generate an invite link. So just sit back and enjoy the extra functionality!
 
@@ -67,6 +66,10 @@ npm publish
 
 🎉 Congratulations! Your plugin is now available on NPM for other Robo.js users to install and enjoy.
 
-⚠️ Remember to keep sensitive information out of your plugin. Avoid including any `.env` files or similar data that should not be shared with other users.
+:::info
+
+Remember to **keep sensitive information out of your plugin**. Avoid including any `.env` files or similar data that should not be shared with other users.
+
+:::
 
 Happy plugin development! 🚀

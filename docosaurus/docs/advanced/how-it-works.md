@@ -2,7 +2,11 @@
 
 Ready to understand how it comes alive? Here's a simplified overview of Robo.js's internals so you can get started with confidence.
 
-> **Note:** *You don't need to understand this to use Robo.js,* but it's helpful to know what's going on under the hood if you're curious!
+:::tip
+
+_You don't need to understand this to use Robo.js,_ but it's helpful to know what's going on under the hood if you're curious!
+
+:::
 
 ## The Installed Package
 
