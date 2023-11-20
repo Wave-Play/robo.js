@@ -66,13 +66,12 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 		})
 	}
 
-	// Add infraction to member
-	await Flashcore.set('infractions', (count = 0) => count + 1, {
-		namespace: interaction.guildId + '-' + member.id
-	})
-	const infractions = await Flashcore.get<number>('infractions', {
-		namespace: interaction.guildId + '-' + member.id
-	})
+	// Get current infractions
+	const infractions =
+		(await Flashcore.get<number>('infractions', {
+			namespace: interaction.guildId + '-' + member.id
+		})) ?? 0
+	const newInfractions = infractions + 1
 	const plural = infractions === 1 ? '' : 's'
 
 	// Prepare message payload
@@ -96,10 +95,11 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 	// Log action to modlogs channel if this is not it
 	const { logsChannelId, testMode } = await getSettings(interaction.guildId)
 	if (interaction.channelId !== logsChannelId) {
+		const testPrefix = testMode ? '[TEST] ' : ''
 		logAction(interaction.guildId, {
 			embeds: [
 				{
-					title: 'Member warned',
+					title: testPrefix + 'Member warned',
 					description: `${member} has been warned`,
 					thumbnail: {
 						url: member.displayAvatarURL()
@@ -116,19 +116,27 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 		})
 	}
 
-	// Test mode - don't send message
+	// Test mode - don't send warning
 	if (testMode) {
 		return {
 			embeds: [
 				{
 					title: 'Test mode',
 					description: 'This is a test. No action has been taken.',
-					color: Colors.Yellow
+					color: Colors.Yellow,
+					footer: {
+						text: (logsChannelId ? 'See' : 'Setup') + ` modlogs channel for details`
+					}
 				}
 			],
 			ephemeral: true
 		}
 	}
+
+	// Add infraction to member
+	await Flashcore.set('infractions', newInfractions, {
+		namespace: interaction.guildId + '-' + member.id
+	})
 
 	if (anonymous) {
 		await interaction.channel?.send(messagePayload as MessageCreateOptions)

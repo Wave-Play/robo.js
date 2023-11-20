@@ -1,5 +1,6 @@
 import { autocompleteDeleteMessages, deleteMessagesOptions } from '../../core/constants.js'
-import { deleteRecentUserMessages } from '../../core/utils.js'
+import { deleteRecentUserMessages, logAction } from '../../core/utils.js'
+import { getSettings } from '../../core/settings.js'
 import { logger } from '@roboplay/robo.js'
 import { Colors, PermissionFlagsBits } from 'discord.js'
 import type { CommandConfig, CommandResult } from '@roboplay/robo.js'
@@ -60,9 +61,14 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 		return 'You do not have permission to ban members'
 	}
 
+	// Get settings
+	const { logsChannelId, testMode } = await getSettings(interaction.guildId)
+
 	// Do the actual kick - Sayonara!
-	await interaction.guild.members.kick(user, reason)
-	logger.info(`Kicked`, user, `for`, reason, `in guild`, interaction.guild.name)
+	if (!testMode) {
+		await interaction.guild.members.kick(user, reason)
+		logger.info(`Kicked`, user, `for`, reason, `in guild`, interaction.guild.name)
+	}
 
 	// Prepare response embed fields
 	const fields = [
@@ -85,7 +91,7 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 	}
 
 	// Delete messages if requested in the background
-	if (deleteMessages) {
+	if (deleteMessages && !testMode) {
 		deleteRecentUserMessages(interaction.guild, user.id)
 	}
 
@@ -94,7 +100,7 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 	const messagePayload: CommandResult = {
 		embeds: [
 			{
-				color: Colors.DarkRed,
+				color: Colors.Red,
 				title: `${user.username} was kicked`,
 				thumbnail: {
 					url: user.displayAvatarURL()
@@ -115,6 +121,45 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 				]
 			}
 		]
+	}
+
+	// Log action to modlogs channel if this is not it
+	if (interaction.channelId !== logsChannelId) {
+		const testPrefix = testMode ? '[TEST] ' : ''
+		await logAction(interaction.guildId, {
+			embeds: [
+				{
+					title: testPrefix + `${user.username} was kicked`,
+					thumbnail: {
+						url: user.displayAvatarURL()
+					},
+					description: `${user} was kicked`,
+					color: Colors.Red,
+					timestamp: new Date().toISOString(),
+					footer: {
+						icon_url: interaction.user.displayAvatarURL(),
+						text: 'by @' + interaction.user.username
+					}
+				}
+			]
+		})
+	}
+
+	// Test mode - don't actually kick
+	if (testMode) {
+		return {
+			embeds: [
+				{
+					title: 'Test mode',
+					description: 'This is a test. No action has been taken.',
+					color: Colors.Yellow,
+					footer: {
+						text: (logsChannelId ? 'See' : 'Setup') + ` modlogs channel for details`
+					}
+				}
+			],
+			ephemeral: true
+		}
 	}
 
 	// Send the message

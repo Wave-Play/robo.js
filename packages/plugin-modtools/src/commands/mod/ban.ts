@@ -1,4 +1,6 @@
 import { autocompleteDeleteMessages, deleteMessagesOptions } from '../../core/constants.js'
+import { getSettings } from '../../core/settings.js'
+import { logAction } from '../../core/utils.js'
 import { logger } from '@roboplay/robo.js'
 import { ButtonStyle, Colors, ComponentType, PermissionFlagsBits } from 'discord.js'
 import type { CommandConfig, CommandResult } from '@roboplay/robo.js'
@@ -38,8 +40,6 @@ export const config: CommandConfig = {
 	]
 }
 
-// TODO:
-// - Complete `deleteMessages` functionality
 export default async (interaction: CommandInteraction): Promise<CommandResult> => {
 	const anonymous = (interaction.options.get('anonymous')?.value as boolean) ?? true
 	const deleteMessages = interaction.options.get('delete_messages')?.value as string
@@ -59,14 +59,19 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 		return 'Sorry, you cannot ban me'
 	}
 
+	// Get settings
+	const { logsChannelId, testMode } = await getSettings(interaction.guildId)
+
 	// Validate permissions
 	if ((interaction.memberPermissions.bitfield & PermissionFlagsBits.BanMembers) !== PermissionFlagsBits.BanMembers) {
 		return 'You do not have permission to ban members'
 	}
 
 	// Do the actual ban - Farewell forever!
-	await interaction.guild.members.ban(user, { reason })
-	logger.info(`Banned`, user, `for`, reason, `in guild`, interaction.guild.name)
+	if (!testMode) {
+		await interaction.guild.members.ban(user, { reason })
+		logger.info(`Banned`, user, `for`, reason, `in guild`, interaction.guild.name)
+	}
 
 	// Prepare response embed fields
 	const fields = [
@@ -81,7 +86,7 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 	]
 
 	// This can be achieved by fetching all channels and then fetching the last n messages from each channel asynchronously
-	if (deleteMessages) {
+	if (deleteMessages && !testMode) {
 		fields.push({
 			name: 'Messages Deleted',
 			value: deleteMessages
@@ -127,6 +132,45 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 				]
 			}
 		]
+	}
+
+	// Log action to modlogs channel if this is not it
+	if (interaction.channelId !== logsChannelId) {
+		const testPrefix = testMode ? '[TEST] ' : ''
+		logAction(interaction.guildId, {
+			embeds: [
+				{
+					title: testPrefix + `Member banned`,
+					thumbnail: {
+						url: user.displayAvatarURL()
+					},
+					description: `${user} has been banned`,
+					color: Colors.DarkRed,
+					timestamp: new Date().toISOString(),
+					footer: {
+						icon_url: interaction.user.displayAvatarURL(),
+						text: 'by @' + interaction.user.username
+					}
+				}
+			]
+		})
+	}
+
+	// Test mode - don't execute ban
+	if (testMode) {
+		return {
+			embeds: [
+				{
+					title: 'Test mode',
+					description: 'This is a test. No action has been taken.',
+					color: Colors.Yellow,
+					footer: {
+						text: (logsChannelId ? 'See' : 'Setup') + ` modlogs channel for details`
+					}
+				}
+			],
+			ephemeral: true
+		}
 	}
 
 	if (anonymous) {

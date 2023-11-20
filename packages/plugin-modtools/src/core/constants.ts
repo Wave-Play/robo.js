@@ -31,13 +31,6 @@ export const deleteMessagesOptions = [
 	}
 ]
 
-export const timeoutDurationOptions = [
-	{
-		name: '60 secs',
-		value: 60
-	}
-]
-
 export function autocompleteDeleteMessages(interaction: AutocompleteInteraction) {
 	const focusedValue = interaction.options.getFocused().trim().toLowerCase()
 	const options = deleteMessagesOptions.filter((option) => option.name.toLowerCase().includes(focusedValue))

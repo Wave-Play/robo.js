@@ -42,11 +42,6 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 		}
 	}
 
-	// Update infractions
-	await Flashcore.set('infractions', 0, {
-		namespace: interaction.guildId + '-' + member.id
-	})
-
 	// Prepare message payload
 	const messagePayload: CommandResult = {
 		content: member.toString(),
@@ -66,16 +61,17 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 	}
 
 	// Log action to modlogs channel if this is not it
-	const { logsChannelId } = await getSettings(interaction.guildId)
+	const { logsChannelId, testMode } = await getSettings(interaction.guildId)
 	if (interaction.channelId !== logsChannelId) {
+		const testPrefix = testMode ? '[TEST] ' : ''
 		logAction(interaction.guildId, {
 			embeds: [
 				{
-					title: `Member forgiven`,
+					title: testPrefix + `Member forgiven`,
 					thumbnail: {
 						url: member.displayAvatarURL()
 					},
-					description: `${member} has been forgiven by ${interaction.user}`,
+					description: `${member} has been forgiven`,
 					color: Colors.Green,
 					timestamp: new Date().toISOString(),
 					footer: {
@@ -86,6 +82,28 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 			]
 		})
 	}
+
+	// Test mode - don't actually forgive
+	if (testMode) {
+		return {
+			embeds: [
+				{
+					title: 'Test mode',
+					description: 'This is a test. No action has been taken.',
+					color: Colors.Yellow,
+					footer: {
+						text: (logsChannelId ? 'See' : 'Setup') + ` modlogs channel for details`
+					}
+				}
+			],
+			ephemeral: true
+		}
+	}
+
+	// Update infractions
+	await Flashcore.set('infractions', 0, {
+		namespace: interaction.guildId + '-' + member.id
+	})
 
 	if (anonymous) {
 		await interaction.channel?.send(messagePayload as MessageCreateOptions)

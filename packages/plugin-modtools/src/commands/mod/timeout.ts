@@ -1,3 +1,6 @@
+import { getSettings } from '../../core/settings.js'
+import { logAction } from '../../core/utils.js'
+import { logger } from '@roboplay/robo.js'
 import { Colors, PermissionFlagsBits } from 'discord.js'
 import type { CommandConfig, CommandResult } from '@roboplay/robo.js'
 import type { CommandInteraction, GuildMember } from 'discord.js'
@@ -57,13 +60,77 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 	const reason = interaction.options.get('reason')?.value as string
 	const user = interaction.options.get('user')?.member as GuildMember
 
-	user.timeout(duration, reason)
+	// Validate the command
+	if (!interaction.guild) {
+		return 'This command can only be used in a server'
+	} else if (!user || interaction.memberPermissions === null) {
+		return 'Invalid command usage'
+	} else if (user.id === interaction.user.id) {
+		return 'Sorry, you cannot time yourself out'
+	} else if (user.id === interaction.client.user?.id) {
+		return 'Sorry, you cannot time me out'
+	}
+
+	// Get settings
+	const { logsChannelId, testMode } = await getSettings(interaction.guildId)
+
+	// Validate permissions
+	if ((interaction.memberPermissions.bitfield & PermissionFlagsBits.BanMembers) !== PermissionFlagsBits.BanMembers) {
+		return 'You do not have permission to timeout members'
+	}
+
+	// Time out! >:3
+	if (!testMode) {
+		await user.timeout(duration, reason)
+		logger.info(`Timed out ${user.user.tag} for ${duration} seconds`)
+	}
+
+	// Log action to modlogs channel if this is not it
+	if (logsChannelId && interaction.channelId !== logsChannelId) {
+		const testPrefix = testMode ? '[TEST] ' : ''
+		logAction(interaction.guildId, {
+			embeds: [
+				{
+					title: testPrefix + `Timed out member`,
+					thumbnail: {
+						url: user.displayAvatarURL()
+					},
+					description: `${user} has been timed out for ${duration} seconds`,
+					color: Colors.Yellow,
+					timestamp: new Date().toISOString(),
+					footer: {
+						icon_url: interaction.user.displayAvatarURL(),
+						text: 'by @' + interaction.user.username
+					}
+				}
+			]
+		})
+	}
+
+	// Test mode - don't send timeout
+	if (testMode) {
+		return {
+			embeds: [
+				{
+					title: 'Test mode',
+					description: 'This is a test. No action has been taken.',
+					color: Colors.Yellow,
+					footer: {
+						text: (logsChannelId ? 'See' : 'Setup') + ` modlogs channel for details`
+					}
+				}
+			]
+		}
+	}
 
 	return {
 		embeds: [
 			{
 				title: 'Timed out member',
-				description: `**${user.user.tag}** has been timed out for ${duration} seconds`,
+				thumbnail: {
+					url: user.displayAvatarURL()
+				},
+				description: `${user} has been timed out for ${duration} seconds`,
 				color: Colors.Yellow
 			}
 		]
