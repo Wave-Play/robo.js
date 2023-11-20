@@ -12,6 +12,7 @@
 			"packages/plugin-confessions",
 			"packages/plugin-gpt",
 			"packages/plugin-maintenance",
+			"packages/plugin-modtools",
 			"packages/plugin-poll",
 			"packages/robo",
 			"packages/sage"
