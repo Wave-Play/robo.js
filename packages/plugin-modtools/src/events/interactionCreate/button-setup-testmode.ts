@@ -4,7 +4,12 @@ import { hasPermission, logAction } from '../../core/utils.js'
 import { getSettings, updateSettings } from '../../core/settings.js'
 import { logger } from '@roboplay/robo.js'
 import { Colors } from 'discord.js'
+import type { EventConfig } from '@roboplay/robo.js'
 import type { ButtonInteraction } from 'discord.js'
+
+export const config: EventConfig = {
+	description: `Toggles test mode when the setup button is clicked`
+}
 
 export default async (interaction: ButtonInteraction) => {
 	// Only handle interaction meant for this file

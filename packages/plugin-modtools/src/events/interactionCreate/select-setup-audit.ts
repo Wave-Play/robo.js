@@ -4,7 +4,12 @@ import { updateSettings } from '../../core/settings.js'
 import { hasPermission, logAction } from '../../core/utils.js'
 import { logger } from '@roboplay/robo.js'
 import { ChannelType, Colors } from 'discord.js'
+import type { EventConfig } from '@roboplay/robo.js'
 import type { Channel, ChannelSelectMenuInteraction } from 'discord.js'
+
+export const config: EventConfig = {
+	description: `Sets the audit logs channel when the setup select menu is used`
+}
 
 export default async (interaction: ChannelSelectMenuInteraction) => {
 	// Only handle interaction meant for this file

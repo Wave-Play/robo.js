@@ -3,7 +3,12 @@ import { logAction } from '../../core/utils.js'
 import { getSettings } from '../../core/settings.js'
 import { getState, logger, setState } from '@roboplay/robo.js'
 import { ChannelType, Colors } from 'discord.js'
+import type { EventConfig } from '@roboplay/robo.js'
 import type { Message, ModalSubmitInteraction } from 'discord.js'
+
+export const config: EventConfig = {
+	description: `Submits a report to the modmail channel when the report message modal is submitted`
+}
 
 export default async (interaction: ModalSubmitInteraction) => {
 	// Only handle interaction meant for this file

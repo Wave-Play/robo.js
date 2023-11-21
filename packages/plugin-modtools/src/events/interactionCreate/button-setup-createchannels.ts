@@ -3,8 +3,13 @@ import { Buttons, Selects } from '../../core/constants.js'
 import { hasPermission, logAction } from '../../core/utils.js'
 import { getSettings, updateSettings } from '../../core/settings.js'
 import { client, logger, setState } from '@roboplay/robo.js'
-import { ChannelType, PermissionFlagsBits, Guild, OverwriteResolvable, BaseInteraction, Colors, ComponentType } from 'discord.js'
-import type { ButtonInteraction } from 'discord.js'
+import { ChannelType, PermissionFlagsBits, Colors, ComponentType } from 'discord.js'
+import type { EventConfig } from '@roboplay/robo.js'
+import type { BaseInteraction, ButtonInteraction, Guild, OverwriteResolvable } from 'discord.js'
+
+export const config: EventConfig = {
+	description: `Creates moderator channels when the setup button is clicked`
+}
 
 export default async (interaction: ButtonInteraction) => {
 	// Only handle interaction meant for this file

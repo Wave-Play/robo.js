@@ -2,7 +2,12 @@ import { Selects } from '../../core/constants.js'
 import { hasPermission, logAction } from '../../core/utils.js'
 import { getState, logger } from '@roboplay/robo.js'
 import { Colors } from 'discord.js'
+import type { EventConfig } from '@roboplay/robo.js'
 import type { RoleSelectMenuInteraction, TextChannel } from 'discord.js'
+
+export const config: EventConfig = {
+	description: `Adds roles to moderation channels when the roles select menu is used`
+}
 
 export default async (interaction: RoleSelectMenuInteraction) => {
 	// Only handle interaction meant for this file
