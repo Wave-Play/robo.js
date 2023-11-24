@@ -1,13 +1,16 @@
+import { Modals, TextInputs } from './constants.js'
 import { getSettings } from './settings.js'
-import { client, logger } from '@roboplay/robo.js'
-import { ChannelType } from 'discord.js'
+import { client, logger, setState } from '@roboplay/robo.js'
+import { ChannelType, ComponentType, TextInputStyle } from 'discord.js'
 import type {
 	MessageCreateOptions,
 	Collection,
 	Guild,
 	Message,
 	BaseInteraction,
-	PermissionResolvable
+	PermissionResolvable,
+	ChatInputCommandInteraction,
+	ModalSubmitInteraction
 } from 'discord.js'
 
 const MAX_MESSAGES_PER_CHANNEL = 100
@@ -127,4 +130,32 @@ export async function isBanned(guild: Guild, userId: string): Promise<boolean> {
 	} catch (error: unknown) {
 		return false
 	}
+}
+
+export async function showConfirmation(interaction: ChatInputCommandInteraction, callback: (interaction: ModalSubmitInteraction) => Promise<void> | void) {
+	setState('modal-confirm', {callback}, {
+		namespace: interaction.guildId + interaction.user.id
+	})
+	console.log(`Setting namespace:`, interaction.guildId + interaction.user.id)
+
+	await interaction.showModal({
+		title: 'Are you sure?',
+		components: [
+			{
+				type: ComponentType.ActionRow,
+				components: [
+					{
+						type: ComponentType.TextInput,
+						label: 'Type "yes" to confirm',
+						placeholder: 'yes',
+						minLength: 3,
+						maxLength: 3,
+						customId: TextInputs.Confirm.id,
+						style: TextInputStyle.Short
+					}
+				]
+			}
+		],
+		customId: Modals.Confirm.id
+	})
 }

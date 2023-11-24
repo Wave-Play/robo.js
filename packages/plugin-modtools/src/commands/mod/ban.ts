@@ -1,10 +1,10 @@
 import { Buttons, ID_NAMESPACE, autocompleteDeleteMessages, deleteMessagesOptions } from '../../core/constants.js'
 import { getSettings } from '../../core/settings.js'
-import { logAction } from '../../core/utils.js'
+import { logAction, showConfirmation } from '../../core/utils.js'
 import { Flashcore, logger } from '@roboplay/robo.js'
 import { ButtonStyle, Colors, ComponentType, PermissionFlagsBits } from 'discord.js'
 import type { CommandConfig, CommandResult } from '@roboplay/robo.js'
-import type { CommandInteraction, MessageCreateOptions } from 'discord.js'
+import type { ChatInputCommandInteraction, MessageCreateOptions, ModalSubmitInteraction } from 'discord.js'
 
 export const config: CommandConfig = {
 	defaultMemberPermissions: PermissionFlagsBits.BanMembers,
@@ -40,7 +40,7 @@ export const config: CommandConfig = {
 	]
 }
 
-export default async (interaction: CommandInteraction): Promise<CommandResult> => {
+export default async (interaction: ChatInputCommandInteraction): Promise<CommandResult> => {
 	const anonymous = (interaction.options.get('anonymous')?.value as boolean) ?? false
 	const deleteMessages = interaction.options.get('delete_messages')?.value as string
 	const user = interaction.options.getUser('member')
@@ -60,22 +60,11 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 	}
 
 	// Get settings
-	const { logsChannelId, testMode } = await getSettings(interaction.guildId)
+	const { logsChannelId, requireConfirmation, testMode } = await getSettings(interaction.guildId)
 
 	// Validate permissions
 	if ((interaction.memberPermissions.bitfield & PermissionFlagsBits.BanMembers) !== PermissionFlagsBits.BanMembers) {
 		return 'You do not have permission to ban members'
-	}
-
-	// Do the actual ban - Farewell forever!
-	if (!testMode) {
-		await interaction.guild.members.ban(user, { reason })
-		await Flashcore.set('ban', {
-			reason: reason
-		}, {
-			namespace: ID_NAMESPACE + interaction.guildId + user.id
-		})
-		logger.info(`Banned @${user.username} for ${reason} in guild ${interaction.guild.name} by @${interaction.user.username}`)
 	}
 
 	// Prepare response embed fields
@@ -139,44 +128,99 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 		]
 	}
 
-	// Log action to modlogs channel if this is not it
-	if (interaction.channelId !== logsChannelId) {
-		const testPrefix = testMode ? '[TEST] ' : ''
-		logAction(interaction.guildId, {
-			embeds: [
+	// Do the actual ban - Farewell forever!
+	const execute = async (interaction: ChatInputCommandInteraction | ModalSubmitInteraction) => {
+		logger.warn(`Interaction:`, interaction)
+		if (!testMode) {
+			await interaction.guild?.members.ban(user, { reason })
+			await Flashcore.set(
+				'ban',
 				{
-					title: testPrefix + `Member banned`,
-					thumbnail: {
-						url: user.displayAvatarURL()
-					},
-					description: `${user} has been banned`,
-					color: Colors.DarkRed,
-					timestamp: new Date().toISOString(),
-					footer: {
-						icon_url: interaction.user.displayAvatarURL(),
-						text: 'by @' + interaction.user.username
+					reason: reason
+				},
+				{
+					namespace: ID_NAMESPACE + interaction.guildId + user.id
+				}
+			)
+			logger.info(
+				`Banned @${user.username} for ${reason} in guild ${interaction.guild?.name} by @${interaction.user.username}`
+			)
+		}
+
+		// Log action to modlogs channel if this is not it
+		if (interaction.channelId !== logsChannelId) {
+			const testPrefix = testMode ? '[TEST] ' : ''
+			logAction(interaction.guildId, {
+				embeds: [
+					{
+						title: testPrefix + `Member banned`,
+						thumbnail: {
+							url: user.displayAvatarURL()
+						},
+						description: `${user} has been banned`,
+						color: Colors.DarkRed,
+						timestamp: new Date().toISOString(),
+						footer: {
+							icon_url: interaction.user.displayAvatarURL(),
+							text: 'by @' + interaction.user.username
+						}
 					}
+				]
+			})
+		}
+
+		interaction.reply({
+			embeds: messagePayload.embeds,
+			components: [
+				{
+					type: ComponentType.ActionRow,
+					components: [
+						{
+							type: ComponentType.Button,
+							label: 'Unban',
+							style: ButtonStyle.Danger,
+							customId: Buttons.Unban.id + '/' + user.id
+						}
+					]
 				}
 			]
 		})
 	}
 
 	// Test mode - don't execute ban
-	if (testMode) {
-		return {
-			embeds: [
-				{
-					title: 'Test mode',
-					description: 'This is a test. No action has been taken.',
-					color: Colors.Yellow,
-					footer: {
-						text: (logsChannelId ? 'See' : 'Setup') + ` modlogs channel for details`
+	const test = (interaction: ModalSubmitInteraction | ChatInputCommandInteraction) => {
+		if (testMode) {
+			interaction.reply({
+				embeds: [
+					{
+						title: 'Test mode',
+						description: 'This is a test. No action has been taken.',
+						color: Colors.Yellow,
+						footer: {
+							text: (logsChannelId ? 'See' : 'Setup') + ` modlogs channel for details`
+						}
 					}
-				}
-			],
-			ephemeral: true
+				],
+				ephemeral: true
+			})
+			return true
 		}
 	}
+
+	// Show confirmation modal if required
+	if (requireConfirmation) {
+		await showConfirmation(interaction, (interaction: ModalSubmitInteraction) => {
+			if (!test(interaction)) {
+				execute(interaction)
+			}
+		})
+		return
+	}
+
+	if (test(interaction)) {
+		return
+	}
+	execute(interaction)
 
 	if (anonymous) {
 		interaction.channel?.send(messagePayload as MessageCreateOptions)

@@ -66,8 +66,11 @@ export const Buttons = {
 }
 
 export const Modals = {
+	Confirm: {
+		id: ID_NAMESPACE + 'modal-confirm'
+	},
 	ReportMessage: {
-		id: ID_NAMESPACE + 'report-message'
+		id: ID_NAMESPACE + 'modal-report-message'
 	}
 }
 
@@ -87,6 +90,9 @@ export const Selects = {
 }
 
 export const TextInputs = {
+	Confirm: {
+		id: ID_NAMESPACE + 'text-input-confirm'
+	},
 	ReportReason: {
 		id: ID_NAMESPACE + 'text-input-report-reason'
 	}
