@@ -17,6 +17,7 @@ export default {
 		]
 	},
 	invite: {
+		autoPermissions: false,
 		permissions: [
 			'BanMembers',
 			'KickMembers',
