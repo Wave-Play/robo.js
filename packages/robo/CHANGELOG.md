@@ -1,5 +1,12 @@
 # robo.js
 
+## 0.9.11
+
+### Patch Changes
+
+- 69e6aa0: feat(states): support for namespace via options
+- 69e6aa0: feat(states): support for updater functions as value
+
 ## 0.9.10
 
 ### Patch Changes
