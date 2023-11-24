@@ -1,7 +1,7 @@
 {
   "name": "@roboplay/plugin-modtools",
   "description": "A Robo.js plugin for moderating your Discord server.",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "private": false,
   "main": ".robo/build/index.js",
