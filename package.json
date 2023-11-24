@@ -10,6 +10,7 @@
 			"packages/plugin-api",
 			"packages/plugin-better-stack",
 			"packages/plugin-confessions",
+			"packages/plugin-devtools",
 			"packages/plugin-gpt",
 			"packages/plugin-maintenance",
 			"packages/plugin-modtools",
