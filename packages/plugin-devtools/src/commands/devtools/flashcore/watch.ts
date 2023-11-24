@@ -16,6 +16,10 @@ export const config: CommandConfig = {
 			name: 'remove',
 			description: 'Whether to remove the watcher',
 			type: 'boolean'
+		},
+		{
+			name: 'namespace',
+			description: 'The namespace to watch the key in'
 		}
 	]
 }
@@ -23,10 +27,11 @@ export const config: CommandConfig = {
 export default (interaction: CommandInteraction): CommandResult => {
 	const key = interaction.options.get('key')?.value as string
 	const remove = interaction.options.get('remove')?.value as boolean
+	const namespace = interaction.options.get('namespace')?.value as string
 
 	// Remove the watcher if requested
 	if (remove) {
-		Flashcore.off(key)
+		Flashcore.off(key, undefined, { namespace })
 		return `Removed watcher for Flashcore key \`${key}\``
 	}
 
@@ -49,12 +54,16 @@ export default (interaction: CommandInteraction): CommandResult => {
 						{
 							name: 'New value',
 							value: '`' + newValue + '`'
+						},
+						{
+							name: 'Namespace',
+							value: namespace ?? 'none'
 						}
 					]
 				}
 			]
 		})
-	})
+	}, { namespace })
 
 	return `Now watching Flashcore key \`${key}\``
 }
