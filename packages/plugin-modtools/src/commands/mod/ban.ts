@@ -1,7 +1,7 @@
-import { autocompleteDeleteMessages, deleteMessagesOptions } from '../../core/constants.js'
+import { Buttons, ID_NAMESPACE, autocompleteDeleteMessages, deleteMessagesOptions } from '../../core/constants.js'
 import { getSettings } from '../../core/settings.js'
 import { logAction } from '../../core/utils.js'
-import { logger } from '@roboplay/robo.js'
+import { Flashcore, logger } from '@roboplay/robo.js'
 import { ButtonStyle, Colors, ComponentType, PermissionFlagsBits } from 'discord.js'
 import type { CommandConfig, CommandResult } from '@roboplay/robo.js'
 import type { CommandInteraction, MessageCreateOptions } from 'discord.js'
@@ -41,7 +41,7 @@ export const config: CommandConfig = {
 }
 
 export default async (interaction: CommandInteraction): Promise<CommandResult> => {
-	const anonymous = (interaction.options.get('anonymous')?.value as boolean) ?? true
+	const anonymous = (interaction.options.get('anonymous')?.value as boolean) ?? false
 	const deleteMessages = interaction.options.get('delete_messages')?.value as string
 	const user = interaction.options.getUser('member')
 	const reason = interaction.options.get('reason')?.value as string
@@ -70,7 +70,12 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 	// Do the actual ban - Farewell forever!
 	if (!testMode) {
 		await interaction.guild.members.ban(user, { reason })
-		logger.info(`Banned`, user, `for`, reason, `in guild`, interaction.guild.name)
+		await Flashcore.set('ban', {
+			reason: reason
+		}, {
+			namespace: ID_NAMESPACE + interaction.guildId + user.id
+		})
+		logger.info(`Banned @${user.username} for ${reason} in guild ${interaction.guild.name} by @${interaction.user.username}`)
 	}
 
 	// Prepare response embed fields
@@ -127,7 +132,7 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 						type: ComponentType.Button,
 						label: 'Unban',
 						style: ButtonStyle.Danger,
-						customId: 'unban'
+						customId: Buttons.Unban.id + '/' + user.id
 					}
 				]
 			}

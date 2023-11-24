@@ -34,7 +34,7 @@ export const config: CommandConfig = {
 }
 
 export default async (interaction: CommandInteraction): Promise<CommandResult> => {
-	const anonymous = (interaction.options.get('anonymous')?.value as boolean) ?? true
+	const anonymous = (interaction.options.get('anonymous')?.value as boolean) ?? false
 	const member = interaction.options.get('member')?.member as GuildMember
 	const message = interaction.options.get('message')?.value as string
 	const reason = interaction.options.get('reason')?.value as string
@@ -69,7 +69,7 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 	// Get current infractions
 	const infractions =
 		(await Flashcore.get<number>('infractions', {
-			namespace: interaction.guildId + '-' + member.id
+			namespace: interaction.guildId + member.id
 		})) ?? 0
 	const newInfractions = infractions + 1
 	const plural = infractions === 1 ? '' : 's'
@@ -135,7 +135,7 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 
 	// Add infraction to member
 	await Flashcore.set('infractions', newInfractions, {
-		namespace: interaction.guildId + '-' + member.id
+		namespace: interaction.guildId + member.id
 	})
 
 	if (anonymous) {

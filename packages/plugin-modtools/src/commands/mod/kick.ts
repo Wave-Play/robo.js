@@ -36,7 +36,7 @@ export const config: CommandConfig = {
 }
 
 export default async (interaction: CommandInteraction): Promise<CommandResult> => {
-	const anonymous = (interaction.options.get('anonymous')?.value as boolean) ?? true
+	const anonymous = (interaction.options.get('anonymous')?.value as boolean) ?? false
 	const deleteMessages = interaction.options.get('delete_messages')?.value as string
 	const user = interaction.options.getUser('member')
 	const reason = interaction.options.get('reason')?.value as string

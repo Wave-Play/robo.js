@@ -1,7 +1,14 @@
 import { getSettings } from './settings.js'
 import { client, logger } from '@roboplay/robo.js'
 import { ChannelType } from 'discord.js'
-import type { MessageCreateOptions, Collection, Guild, Message, BaseInteraction, PermissionResolvable } from 'discord.js'
+import type {
+	MessageCreateOptions,
+	Collection,
+	Guild,
+	Message,
+	BaseInteraction,
+	PermissionResolvable
+} from 'discord.js'
 
 const MAX_MESSAGES_PER_CHANNEL = 100
 const MAX_DELETIONS = 5
@@ -111,4 +118,13 @@ export function hasPermission(interaction: BaseInteraction, permission: Permissi
 	}
 
 	return true
+}
+
+export async function isBanned(guild: Guild, userId: string): Promise<boolean> {
+	try {
+		const ban = await guild?.bans.fetch(userId)
+		return !!ban
+	} catch (error: unknown) {
+		return false
+	}
 }

@@ -1,5 +1,9 @@
 import type { AutocompleteInteraction } from 'discord.js'
 
+export interface BanData {
+	reason?: string
+}
+
 export const deleteMessagesOptions = [
 	{
 		name: `Don't Delete Any`,
@@ -38,9 +42,12 @@ export function autocompleteDeleteMessages(interaction: AutocompleteInteraction)
 	return options
 }
 
-export const ID_NAMESPACE = 'plugin-modtools__'
+export const ID_NAMESPACE = 'plugin-modtools:'
 
 export const Buttons = {
+	Ban: {
+		id: ID_NAMESPACE + 'ban'
+	},
 	CreateChannels: {
 		id: ID_NAMESPACE + 'create-channels'
 	},
