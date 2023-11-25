@@ -12,8 +12,8 @@
       "plugins": []
     },
     "type": "plugin",
-    "updatedAt": "2023-09-27T06:13:36.328Z",
-    "version": "0.9.1"
+    "updatedAt": "2023-11-25T07:04:32.229Z",
+    "version": "0.9.11"
   },
   "api": {
     "ai": {
@@ -24,7 +24,38 @@
       }
     }
   },
-  "commands": {},
+  "commands": {
+    "ai": {
+      "subcommands": {
+        "say": {
+          "__path": "/.robo/build/commands/ai/say.js",
+          "description": "What would you like me to say?",
+          "options": [
+            {
+              "name": "message",
+              "description": "What should I say?",
+              "required": true
+            },
+            {
+              "name": "exact",
+              "description": "Say exactly?",
+              "type": "boolean"
+            },
+            {
+              "name": "channel",
+              "description": "Where should I send the message to?",
+              "type": "channel"
+            },
+            {
+              "name": "mention",
+              "description": "Who should I mention?",
+              "type": "mention"
+            }
+          ]
+        },
+      }
+    }
+  },
   "context": {
     "message": {},
     "user": {}
@@ -53,6 +84,7 @@
   ],
   "middleware": [],
   "scopes": [
+    "applications.commands",
     "bot"
   ]
 }
