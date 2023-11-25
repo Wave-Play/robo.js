@@ -1,7 +1,7 @@
 {
 	"name": "@roboplay/plugin-devtools",
 	"description": "Tools for Robo development.",
-	"version": "0.0.0",
+	"version": "0.1.0",
 	"type": "module",
 	"private": false,
 	"main": ".robo/build/index.js",
@@ -27,14 +27,14 @@
 	},
 	"dependencies": {},
 	"devDependencies": {
-		"@roboplay/robo.js": "0.9.6",
+		"@roboplay/robo.js": "0.9.11",
 		"@swc/core": "^1.3.44",
 		"@types/node": "^18.14.6",
 		"discord.js": "^14.13.0",
 		"typescript": "^5.0.0"
 	},
 	"peerDependencies": {
-		"@roboplay/robo.js": "^0.9.0"
+		"@roboplay/robo.js": "^0.9.11"
 	},
 	"peerDependenciesMeta": {
 		"@roboplay/robo.js": {

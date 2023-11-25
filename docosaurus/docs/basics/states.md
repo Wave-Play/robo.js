@@ -163,7 +163,7 @@ export default () => {
 </TabItem>
 <TabItem value="ts" label="Typescript">
 
-```typescript showLineNumbers title="/src/modules/foo/commands/increment.ts" {5}
+```typescript showLineNumbers title="/src/modules/foo/commands/increment.ts" {6}
 import { setState, getState } from '../state.js'
 import type { CommandResult } from '@roboplay/robo.js'
 
@@ -197,7 +197,7 @@ export default () => {
 </TabItem>
 <TabItem value="ts" label="Typescript">
 
-```typescript title="/src/commands/set-important-data.ts" showLineNumbers {5}
+```typescript title="/src/commands/set-important-data.ts" showLineNumbers {6}
 import { setState } from '@roboplay/robo.js'
 import type { CommandResult } from '@roboplay/robo.js'
 
