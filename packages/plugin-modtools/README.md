@@ -14,6 +14,12 @@ To add this plugin to your Robo.js project:
 npx robo add @roboplay/plugin-modtools
 ```
 
+New to Robo.js? Start your project with this plugin pre-installed:
+
+```bash
+npx create-robo <project-name> -p @roboplay/plugin-modtools
+```
+
 ## Slash Commands
 
 Utilize these commands for efficient moderation:
