@@ -87,6 +87,12 @@ export function createSetupMessage(interaction: BaseInteraction, settings: Guild
 			label: 'Require confirmation',
 			style: settings.requireConfirmation ? ButtonStyle.Primary : ButtonStyle.Secondary,
 			customId: Buttons.RequireConfirmation.id
+		},
+		{
+			type: ComponentType.Button,
+			label: 'Lockdown mode',
+			style: settings.lockdownMode ? ButtonStyle.Primary : ButtonStyle.Danger,
+			customId: Buttons.LockdownMode.id
 		}
 	]
 
