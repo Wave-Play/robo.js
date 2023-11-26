@@ -57,18 +57,18 @@ const optionalPlugins = [
 		name: `${chalk.bold(
 			'API'
 		)} - Effortlessly create and manage API routes, turning your Robo project into a full-fledged API server.`,
-		short: 'API',
+		short: 'API Server',
 		value: 'api'
-	},
-	{
-		name: `${chalk.bold('GPT')} - Enable your robo to generate human-like text with the power of GPT.`,
-		short: 'GPT',
-		value: 'gpt'
 	},
 	{
 		name: `${chalk.bold('Maintenance')} - Add a maintenance mode to your robo.`,
 		short: 'Maintenance',
 		value: 'maintenance'
+	},
+	{
+		name: `${chalk.bold('Moderation Tools')} - Equip your bot with essential tools to manage and maintain your server.`,
+		short: 'Moderation Tools',
+		value: 'modtools'
 	},
 	{
 		name: `${chalk.bold('Polls')} - Add the ability to create and manage polls with ease.`,
@@ -404,15 +404,13 @@ export default class Robo {
 				port: 3000
 			})
 		}
-		if (features.includes('gpt')) {
-			packageJson.dependencies['@roboplay/plugin-gpt'] = '^1.0.0'
-			await this.createPluginConfig('@roboplay/plugin-gpt', {
-				openaiKey: 'process.env.OPENAI_KEY'
-			})
-		}
 		if (features.includes('maintenance')) {
 			packageJson.dependencies['@roboplay/plugin-maintenance'] = '^0.1.0'
 			await this.createPluginConfig('@roboplay/plugin-maintenance', {})
+		}
+		if (features.includes('modtools')) {
+			packageJson.dependencies['@roboplay/plugin-modtools'] = '^0.1.0'
+			await this.createPluginConfig('@roboplay/plugin-modtools', {})
 		}
 		if (features.includes('polls')) {
 			packageJson.dependencies['@roboplay/plugin-poll'] = '^0.1.0'
