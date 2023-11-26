@@ -12,7 +12,7 @@ export const config: ContextConfig = {
 
 export default async (interaction: MessageContextMenuCommandInteraction, message: Message) => {
 	// Validate modmail channel
-	const { mailChannelId } = await getSettings(interaction.guildId)
+	const { mailChannelId } = getSettings(interaction.guildId)
 	if (!mailChannelId) {
 		logger.debug(`No modmail channel set for guild ${interaction.guildId}`)
 		return {

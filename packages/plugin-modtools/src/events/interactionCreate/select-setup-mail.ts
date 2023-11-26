@@ -47,7 +47,7 @@ export default async (interaction: ChannelSelectMenuInteraction) => {
 	}
 
 	// Set mail channel
-	const newSettings = await updateSettings(interaction.guildId, {
+	const newSettings = updateSettings(interaction.guildId, {
 		mailChannelId: channel.id
 	})
 

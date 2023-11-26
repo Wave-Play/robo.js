@@ -29,8 +29,8 @@ export default async (interaction: ButtonInteraction) => {
 
 	// Toggle require confirmation
 	logger.debug(`Toggling confirmation mode for guild ${interaction.guildId}`)
-	const settings = await getSettings(interaction.guildId)
-	const newSettings = await updateSettings(interaction.guildId, {
+	const settings = getSettings(interaction.guildId)
+	const newSettings = updateSettings(interaction.guildId, {
 		requireConfirmation: !settings.requireConfirmation
 	})
 

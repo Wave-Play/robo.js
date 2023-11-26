@@ -62,7 +62,7 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 	}
 
 	// Get settings
-	const { logsChannelId, testMode } = await getSettings(interaction.guildId)
+	const { logsChannelId, testMode } = getSettings(interaction.guildId)
 
 	// Do the actual kick - Sayonara!
 	if (!testMode) {

@@ -36,7 +36,7 @@ export default async (interaction: ChatInputCommandInteraction): Promise<Command
 	}
 
 	// Load settings and craft setup message
-	const settings = await getSettings(interaction.guildId)
+	const settings = getSettings(interaction.guildId)
 	const setupMessage = createSetupMessage(interaction, settings)
 
 	return {

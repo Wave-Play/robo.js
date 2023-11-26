@@ -29,7 +29,7 @@ export default async (interaction: ButtonInteraction) => {
 
 	// Reset settings
 	logger.debug(`Resetting settings for guild ${interaction.guildId}`)
-	const newSettings = await updateSettings(interaction.guildId, {
+	const newSettings = updateSettings(interaction.guildId, {
 		auditLogsChannelId: undefined,
 		logsChannelId: undefined,
 		mailChannelId: undefined,
