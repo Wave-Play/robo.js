@@ -219,4 +219,112 @@ Values stored as state must be serializable. If they're not, they can't be persi
 
 :::
 
-Let's keep that Robo memory working for you! Enjoy exploring with states. 🚀
+## Namespaces
+
+Namespacing in States helps you avoid key collisions and keep your data well-organized, particularly when dealing with multiple contexts like different users or servers.
+
+### How it Works
+
+Namespacing functions similarly to drawers or compartments where you can categorize and store your data separately. This is incredibly useful when you need to store similar types of data for different entities without any mix-up.
+
+To use a namespace in States, you include it in the `options` object when you call `getState` or `setState`. This object has a `namespace` property where you define your desired namespace.
+
+For example, setting a value with a namespace looks like this:
+
+```javascript
+setState('my-key', 'example-value', {
+	namespace: 'my-namespace'
+})
+```
+
+Here, the key `'my-key'` is placed under the `'my-namespace'` category, keeping it distinct from the same key in other namespaces. To retrieve the value, you would use the same namespace:
+
+```javascript
+const value = await getState('my-key', {
+	namespace: 'my-namespace'
+})
+```
+
+### Practical Example
+
+Imagine you have a Discord bot that hosts daily challenges in different servers. You want to track each user's participation in these challenges separately for each server. This is where namespacing becomes incredibly useful.
+
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
+
+```javascript showLineNumbers title="/src/commmands/daily-challenge.js" {9,18}
+import { getState, setState } from '@roboplay/robo.js'
+
+export default async (interaction) => {
+	const userId = interaction.user.id
+	const challengeId = 'daily-challenge' // Example challenge ID
+
+	// Fetch the user's challenge participation state for this server
+	const userParticipation = (await getState(userId, {
+			namespace: interaction.guildId
+	})) ?? {}
+
+	// Increment the user's participation count for the specific challenge
+	const newParticipationCount = (userParticipation[challengeId] ?? 0) + 1
+	userParticipation[challengeId] = newParticipationCount
+
+	// Update the state with the new count
+	await setState(userId, userParticipation, {
+		namespace: interaction.guildId
+	})
+
+	return `You've participated in the '${challengeId}' ${newParticipationCount} times in this server! Keep it up!`
+}
+```
+
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```typescript showLineNumbers title="/src/commmands/daily-challenge.ts" {11,20}
+import { getState, setState } from '@roboplay/robo.js'
+import type { CommandResult } from '@roboplay/robo.js'
+import type { ChatInputCommandInteraction } from 'discord.js'
+
+export default async (interaction: ChatInputCommandInteraction): Promise<CommandResult> => {
+	const userId = interaction.user.id
+	const challengeId = 'daily-challenge' // Example challenge ID
+
+	// Fetch the user's challenge participation state for this server
+	const userParticipation = (await getState(userId, {
+			namespace: interaction.guildId
+	})) ?? {}
+
+	// Increment the user's participation count for the specific challenge
+	const newParticipationCount = (userParticipation[challengeId] ?? 0) + 1
+	userParticipation[challengeId] = newParticipationCount
+
+	// Update the state with the new count
+	await setState(userId, userParticipation, {
+		namespace: interaction.guildId
+	})
+
+	return `You've participated in the '${challengeId}' ${newParticipationCount} times in this server! Keep it up!`
+}
+```
+
+</TabItem>
+</Tabs>
+
+In this example, the bot tracks how many times a user has participated in a specific challenge (`daily-challenge`) in each server. The `getState` and `setState` functions use the server ID as the namespace, ensuring that participation counts are kept separate and accurate for each server.
+
+By using namespacing in this way, you can create complex, server-specific interactions that enrich the user experience without data collision or confusion.
+
+<!--
+### Multi-Layered Namespacing
+
+States also support multi-dimensional namespaces using arrays. This is especially handy when you want to organize data by multiple factors, such as server and user.
+
+```javascript
+setState('someKey', someData, {
+	namespace: [interaction.guildId, interaction.userId]
+})
+```
+
+In this example, the data is tagged with both the server ID and the user ID, creating a highly organized and collision-free storage system in memory.
+
+-->
