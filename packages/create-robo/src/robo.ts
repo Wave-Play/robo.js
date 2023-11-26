@@ -14,7 +14,8 @@ import {
 	getNodeOptions,
 	prettyStringify,
 	sortObjectKeys,
-	updateOrAddVariable
+	updateOrAddVariable,
+	getPackageExecutor
 } from './utils.js'
 import { logger } from './logger.js'
 import { RepoInfo, downloadAndExtractRepo, getRepoInfo, hasRepo } from './templates.js'
@@ -242,7 +243,7 @@ export default class Robo {
 		return selectedFeatures
 	}
 
-	async createPackage(features: string[], install: boolean, roboversion: string): Promise<void> {
+	async createPackage(features: string[], plugins: string[], install: boolean, roboversion: string): Promise<void> {
 		// Find the package manager that triggered this command
 		const packageManager = getPackageManager()
 		logger.debug(`Using ${chalk.bold(packageManager)} in ${this._workingDir}...`)
@@ -429,6 +430,18 @@ export default class Robo {
 		// Install dependencies using the package manager that triggered the command
 		if (install) {
 			await exec(`${cmd(packageManager)} install`, { cwd: this._workingDir })
+		}
+
+		// Install and register the necessary plugins
+		if (plugins.length > 0) {
+			const executor = getPackageExecutor()
+
+			try {
+				await exec(`${executor} robo add ${plugins.join(' ')}`, { cwd: this._workingDir })
+			} catch (error) {
+				logger.error(`Failed to install plugins:`, error)
+				logger.warn(`Please add the plugins manually using ${chalk.bold(executor + ' robo add')}`)
+			}
 		}
 	}
 

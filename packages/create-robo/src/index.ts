@@ -17,6 +17,7 @@ interface CommandOptions {
 	install?: boolean
 	javascript?: boolean
 	plugin?: boolean
+	plugins?: string[]
 	template?: string
 	typescript?: boolean
 	verbose?: boolean
@@ -28,7 +29,8 @@ new Command('create-robo <projectName>')
 	.version(packageJson.version)
 	.option('-f --features <features>', 'comma-separated list of features to include')
 	.option('-js --javascript', 'create a Robo using JavaScript')
-	.option('-p --plugin', 'create a Robo plugin instead of a bot')
+	.option('-p --plugins <plugins...>', 'pre-install plugins along with the project')
+	.option('-P --plugin', 'create a Robo plugin instead of a bot')
 	.option('-ni --no-install', 'skip installing dependencies')
 	.option('-t --template <templateUrl>', 'create a Robo from an online template')
 	.option('-ts --typescript', 'create a Robo using TypeScript')
@@ -44,7 +46,7 @@ new Command('create-robo <projectName>')
 		logger.debug(`Current working directory:`, process.cwd())
 
 		// parses robo version argument
-		const rv = await getRoboversionArg(options.roboVersion)
+		const roboVersion = await getRoboversionArg(options.roboVersion)
 
 		// Check for updates
 		await checkUpdates()
@@ -82,6 +84,7 @@ new Command('create-robo <projectName>')
 		// Create a new Robo project prototype
 		logger.debug(`Creating Robo prototype...`)
 		const robo = new Robo(projectName, options.plugin, useSameDirectory)
+		const plugins = options.plugins ?? []
 
 		if (useSameDirectory) {
 			logger.log(`This new ${robo.isPlugin ? 'plugin' : 'Robo'} will be created in the current directory.`)
@@ -109,7 +112,7 @@ new Command('create-robo <projectName>')
 
 			// Get user input to determine which features to include or use the recommended defaults
 			selectedFeaturesOrDefaults = options.features?.split(',') ?? (await robo.getUserInput())
-			await robo.createPackage(selectedFeaturesOrDefaults, options.install ?? true, rv)
+			await robo.createPackage(selectedFeaturesOrDefaults, plugins, options.install ?? true, roboVersion)
 
 			// Determine if TypeScript is selected and copy the corresponding template files
 			logger.debug(`Copying template files...`)

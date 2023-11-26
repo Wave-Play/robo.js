@@ -98,6 +98,19 @@ export function getPackageManager(): PackageManager {
 	}
 }
 
+export function getPackageExecutor(): string {
+	const packageManager = getPackageManager()
+	if (packageManager === 'yarn') {
+		return 'yarn dlx'
+	} else if (packageManager === 'pnpm') {
+		return 'pnpx'
+	} else if (packageManager === 'bun') {
+		return 'bunx'
+	} else {
+		return 'npx'
+	}
+}
+
 export function hasProperties<T extends Record<string, unknown>>(
 	obj: unknown,
 	props: (keyof T)[]
