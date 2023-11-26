@@ -1,5 +1,15 @@
 # create-robo
 
+## 0.10.0
+
+### Minor Changes
+
+- dfb0b4f: feat!: new "--plugins" option to pre-install plugins
+
+### Patch Changes
+
+- 2d62cb6: refactor: replaced plugin-gpt in selection with plugin-modtools
+
 ## 0.9.1
 
 ### Patch Changes
