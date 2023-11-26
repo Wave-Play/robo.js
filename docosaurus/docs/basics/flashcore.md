@@ -257,9 +257,11 @@ export default async (interaction: CommandInteraction) => {
 
 ## Namespaces
 
-Flashcore is a key-value store, so it's important to keep your keys unique. To help with this, Flashcore supports namespacing. Namespacing is a way to group your keys so they don't collide with other keys in the store. _This is particularly useful when you're working with multiple servers or users!_
+In key-value stores, ensuring that your keys are unique is crucial. Flashcore's namespacing feature helps you do just that!
 
-Every Flashcore function accepts an `options` object as its last argument. This object has a `namespace` property that you can use to namespace your keys.
+Think of namespacing like creating separate drawers for different categories of items. This way, the same item name in different drawers doesn't get mixed up. It's especially handy when you're managing data for various servers or user groups.
+
+When you use any Flashcore function, you can include an `options` object as the last parameter. Within this, specify a `namespace` property to categorize your keys.
 
 ```javascript
 Flashcore.set('my-key', 'example-value', {
@@ -267,11 +269,17 @@ Flashcore.set('my-key', 'example-value', {
 })
 ```
 
-Here's how we're namespacing a user's high score for specific servers:
+This line effectively places `'my-key'` into a specific category or
+"drawer" labeled `'my-namespace'`.
+
+Let’s apply this to a real-world scenario, like tracking high scores for users across different servers. For each server, you can create a unique namespace. This way, the same user can have different scores on different servers, and there's no mix-up.
+
+Here’s a snippet showing how to set a user's high score in a specific server's namespace:
+
 <Tabs groupId="examples-script">
 <TabItem value="js" label="Javascript">
 
-```javascript showLineNumbers title="/src/commands/update-score.js" {19-21}
+```javascript showLineNumbers title="/src/commands/update-score.ts" {18-20}
 import { Flashcore } from '@roboplay/robo.js'
 
 export const config = {
@@ -287,11 +295,10 @@ export const config = {
 
 export default async (interaction) => {
 	const userId = interaction.user.id
-	const serverId = interaction.guild.id
 	const score = interaction.options.get('score')?.value
 
 	await Flashcore.set(userId, score, {
-		namespace: serverId
+		namespace: interaction.guildId
 	})
 
 	return `New high score of ${score} stashed away! 🎉`
@@ -301,7 +308,7 @@ export default async (interaction) => {
 </TabItem>
 <TabItem value="ts" label="Typescript">
 
-```typescript showLineNumbers title="/src/commands/update-score.ts" {20-22}
+```typescript showLineNumbers title="/src/commands/update-score.ts" {19-21}
 import { Flashcore, type CommandConfig } from '@roboplay/robo.js'
 import type { CommandInteraction } from 'discord.js'
 
@@ -318,11 +325,10 @@ export const config: CommandConfig = {
 
 export default async (interaction: CommandInteraction) => {
 	const userId = interaction.user.id
-	const serverId = interaction.guild.id
 	const score = interaction.options.get('score')?.value as number
 
 	await Flashcore.set(userId, score, {
-		namespace: serverId
+		namespace: interaction.guildId
 	})
 
 	return `New high score of ${score} stashed away! 🎉`
@@ -332,13 +338,25 @@ export default async (interaction: CommandInteraction) => {
 </TabItem>
 </Tabs>
 
-Now every server has its own high score for each user! Just remember to namespace your keys when you're fetching them too:
+In this example, `interaction.guildId` is our namespace. By doing this, each server gets its own unique set of high scores for each user.
+
+And when you need to get a score, use the same namespace:
 
 ```javascript
 await Flashcore.get(userId, {
-	namespace: interaction.guild.id
+	namespace: interaction.guildId
 })
 ```
+
+With namespacing, you efficiently manage data for different groups or contexts without any overlap or confusion!
+
+<!-- You can also use arrays to create multi-layered namespaces. This is useful when you want to categorize data by multiple criteria. For instance, to store data for a user within a specific server, you can do something like this:
+
+```javascript
+await Flashcore.set('someKey', someData, { namespace: ['server123', 'user456'] });
+```
+
+Here, the data is categorized under both the server and user IDs, ensuring unique and organized storage. -->
 
 ## Using Keyv Adapters
 
