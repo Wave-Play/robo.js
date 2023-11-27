@@ -1,20 +1,43 @@
-import { logger } from './logger.js'
-import { options as pluginOptions } from '../events/_start.js'
+import { BaseEngine, ChatMessage, ChatOptions, ChatResult } from './base.js'
+import { gptFunctions, options as pluginOptions } from '@/events/_start.js'
+import { logger } from '@roboplay/robo.js'
 
-export interface GptChatMessage {
+export class OpenAiEngine extends BaseEngine {
+	public async chat(messages: ChatMessage[], options: ChatOptions): Promise<ChatResult> {
+		const { functions, model = pluginOptions?.model ?? 'gpt-3.5-turbo' } = options ?? {}
+
+		const response = await chat({
+			maxTokens: pluginOptions?.maxTokens,
+			model: model,
+			messages: messages,
+			functions: functions
+		})
+		logger.debug(`GPT Response:`, response)
+
+		const reply = response?.choices?.[0]
+		return {
+			finish_reason: reply?.finish_reason,
+			message: reply?.message
+		}
+	}
+}
+
+interface GptChatMessage {
 	content: GptChatMessageContent
 	function_call?: GptFunctionCall
 	name?: string
 	role: 'assistant' | 'function' | 'system' | 'user'
 }
 
-export type GptChatMessageContent = string | Array<{
+type GptChatMessageContentObject = {
 	image_url?: string
 	text?: string
 	type: 'image_url' | 'text'
-}>
+}
 
-export interface GptChatOptions {
+type GptChatMessageContent = string | GptChatMessageContentObject[]
+
+interface GptChatOptions {
 	backoff?: boolean
 	functions?: GptFunction[]
 	maxTokens?: number
@@ -23,32 +46,32 @@ export interface GptChatOptions {
 	retries?: number
 }
 
-export interface GptFunction {
+interface GptFunction {
 	name: string
 	description: string
 	parameters: GptFunctionParameters
 }
 
-export interface GptFunctionParameters {
+interface GptFunctionParameters {
 	properties: Record<string, GptFunctionProperty>
 	required?: string[]
 	type?: 'array' | 'object'
 }
 
-export interface GptFunctionCall {
+interface GptFunctionCall {
 	name: string
 	arguments: Record<string, string>
 }
 
-export interface GptFunctionProperty {
+interface GptFunctionProperty {
 	description?: string
 	enum?: string[]
 	items?: GptFunctionProperty
 	type: 'array' | 'string'
 }
 
-export async function chat(options: GptChatOptions) {
-	const { backoff = true, functions, maxTokens = 1024, messages, model = 'gpt-3.5-turbo', retries = 3 } = options
+async function chat(options: GptChatOptions) {
+	const { backoff = true, functions = gptFunctions, maxTokens = 1024, messages, model = 'gpt-3.5-turbo', retries = 3 } = options
 	let retryCount = 0
 
 	if (!pluginOptions.openaiKey) {

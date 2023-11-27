@@ -1,11 +1,11 @@
+import { AI, isReplyingToUser } from '@/core/ai.js'
+import { chunkMessage, replaceUsernamesWithIds } from '@/utils/discord-utils.js'
+import { addUserFollowUp } from '@/events/typingStart/debounce.js'
+import { logger } from '@/core/logger.js'
+import { options as pluginOptions } from '@/events/_start.js'
 import { client } from '@roboplay/robo.js'
 import { Message } from 'discord.js'
-import { AiEngine, isReplyingToUser } from '../../core/engine.js'
-import { chunkMessage, replaceUsernamesWithIds } from '../../utils/discord-utils.js'
-import { addUserFollowUp } from '../typingStart/debounce.js'
-import { logger } from '../../core/logger.js'
-import { options as pluginOptions } from '../_start.js'
-import type { GptChatMessage, GptChatMessageContent } from '../../core/openai.js'
+import type { ChatMessage, ChatMessageContent } from '@/engines/base.js'
 
 export default async (message: Message) => {
 	// Make sure the bot isn't responding to itself
@@ -87,12 +87,12 @@ export default async (message: Message) => {
 	}
 
 	// Structure messages for GPT
-	const gptMessages: GptChatMessage[] = messages.map((message) => ({
+	const gptMessages: ChatMessage[] = messages.map((message) => ({
 		role: message.author.id === client.user?.id ? 'assistant' : 'user',
 		content: getMessageContent(message)
 	}))
 
-	await AiEngine.chat(gptMessages, {
+	await AI.chat(gptMessages, {
 		channel: message.channel,
 		member: message.member ?? message.guild?.members.cache.get(message.author.id),
 		onReply: async (reply) => {
@@ -108,7 +108,7 @@ export default async (message: Message) => {
 }
 
 // TODO: Handle prefix for answer-other differently! (dedicated processContent function?)
-function getMessageContent(message: Message): GptChatMessageContent {
+function getMessageContent(message: Message): ChatMessageContent {
 	// Prefix who sent the message (who to refer to)
 	const content = message.author.username + ': ' + message.content
 

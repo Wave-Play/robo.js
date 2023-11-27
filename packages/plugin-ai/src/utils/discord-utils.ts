@@ -52,7 +52,7 @@ export function chunkMessage(message: string): string[] {
 }
 
 export function mockInteraction(
-	channel: TextBasedChannel | undefined,
+	channel: TextBasedChannel | null | undefined,
 	member: GuildMember | null | undefined,
 	args: Record<string, string>
 ) {
@@ -142,7 +142,10 @@ export function mockInteraction(
 	return { interaction, replyPromise }
 }
 
-export function mockMessage(content: string | InteractionReplyOptions, channel: TextBasedChannel | undefined): Message {
+export function mockMessage(
+	content: string | InteractionReplyOptions,
+	channel: TextBasedChannel | null | undefined
+): Message {
 	const messageData: APIMessage = {
 		id: Date.now().toString(),
 		type: 0,

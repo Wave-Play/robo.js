@@ -1,9 +1,9 @@
+import { logger } from '@/core/logger.js'
 import { Command, portal } from '@roboplay/robo.js'
-import { GptFunction, GptFunctionParameters, GptFunctionProperty } from '../core/openai.js'
 import { Client } from 'discord.js'
-import { logger } from '../core/logger.js'
+import type { ChatFunction, ChatFunctionParameters, ChatFunctionProperty } from '@/engines/base.js'
 
-export const gptFunctions: GptFunction[] = []
+export const gptFunctions: ChatFunction[] = []
 export const gptFunctionHandlers: Record<string, Command> = {}
 
 export interface PluginOptions {
@@ -35,7 +35,7 @@ export default (_client: Client, pluginOptions: PluginOptions) => {
 			}
 		})
 		.forEach((command) => {
-			const commandParameters: GptFunctionParameters = {
+			const commandParameters: ChatFunctionParameters = {
 				type: 'object',
 				required: [],
 				properties: {}
@@ -52,7 +52,7 @@ export default (_client: Client, pluginOptions: PluginOptions) => {
 						commandParameters.required?.push(option.name)
 					}
 					return properties
-				}, {} as Record<string, GptFunctionProperty>) ?? {}
+				}, {} as Record<string, ChatFunctionProperty>) ?? {}
 
 			// Add the GPT function to the list
 			const functionName = command.key.replaceAll('/', '_')

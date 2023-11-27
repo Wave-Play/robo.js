@@ -1,4 +1,4 @@
-import { AiEngine } from '../../core/engine.js'
+import { AI } from '@/core/ai.js'
 import { logger } from '@roboplay/robo.js'
 import { ChannelType, CommandInteraction } from 'discord.js'
 import type { CommandConfig } from '@roboplay/robo.js'
@@ -41,7 +41,11 @@ export default async (interaction: CommandInteraction) => {
 		return 'You need to provide a message to send!'
 	}
 
-	if (channel?.type !== ChannelType.GuildText || !('send' in channel)) {
+	if (!channel) {
+		return 'Invalid channel.'
+	}
+
+	if (![ChannelType.GuildAnnouncement, ChannelType.GuildText].includes(channel.type) || !('send' in channel)) {
 		return 'The specified channel is not a text channel.'
 	}
 
@@ -61,7 +65,7 @@ export default async (interaction: CommandInteraction) => {
 	let result: string | undefined = undefined
 	try {
 		result = await new Promise<string>((resolve) => {
-			AiEngine.chat(
+			AI.chat(
 				[
 					{
 						role: 'user',
