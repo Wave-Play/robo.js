@@ -1,4 +1,4 @@
-import { BaseEngine, ChatMessage, ChatOptions, ChatResult } from './base.js'
+import { BaseEngine, ChatMessage, ChatOptions, ChatResult, GenerateImageOptions, GenerateImageResult } from './base.js'
 import { gptFunctions, options as pluginOptions } from '@/events/_start.js'
 import { logger } from '@roboplay/robo.js'
 
@@ -18,6 +18,20 @@ export class OpenAiEngine extends BaseEngine {
 		return {
 			finish_reason: reply?.finish_reason,
 			message: reply?.message
+		}
+	}
+
+	public async generateImage(options: GenerateImageOptions): Promise<GenerateImageResult> {
+		const { model = 'dall-e-3', prompt } = options
+
+		const response = await createImage({
+			model,
+			prompt
+		})
+		logger.debug(`GPT Image Response:`, response)
+
+		return {
+			images: response?.data
 		}
 	}
 }
@@ -71,7 +85,14 @@ interface GptFunctionProperty {
 }
 
 async function chat(options: GptChatOptions) {
-	const { backoff = true, functions = gptFunctions, maxTokens = 1024, messages, model = 'gpt-3.5-turbo', retries = 3 } = options
+	const {
+		backoff = true,
+		functions = gptFunctions,
+		maxTokens = 1024,
+		messages,
+		model = 'gpt-3.5-turbo',
+		retries = 3
+	} = options
 	let retryCount = 0
 
 	if (!pluginOptions.openaiKey) {
@@ -122,4 +143,53 @@ async function chat(options: GptChatOptions) {
 			retryCount++
 		}
 	}
+}
+
+interface CreateImageOptions {
+	prompt: string
+	model?: string
+	n?: number
+	quality?: string
+	response_format?: string
+	size?: string
+	style?: string
+	user?: string
+}
+
+interface CreateImageResult {
+	created: number
+	data: Array<{
+		url: string
+	}>
+}
+
+async function createImage(options: CreateImageOptions): Promise<CreateImageResult> {
+	if (!pluginOptions.openaiKey) {
+		throw new Error('OpenAI key not found, please set it via plugin options.')
+	}
+
+	const response = await fetch('https://api.openai.com/v1/images/generations', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${pluginOptions.openaiKey}`
+		},
+		body: JSON.stringify(options)
+	})
+
+	const jsonResponse = await response.json()
+	if (jsonResponse.error) {
+		throw new Error(jsonResponse.error.message)
+	}
+
+	if (!response.ok) {
+		throw new Error(`HTTP Error status code: ${response.status}`)
+	}
+
+	return jsonResponse
+}
+
+export const OpenAi = {
+	chat,
+	createImage
 }

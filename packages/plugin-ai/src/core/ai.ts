@@ -1,4 +1,11 @@
-import { BaseEngine, ChatMessage, ChatMessageContent, ChatOptions } from '@/engines/base.js'
+import {
+	BaseEngine,
+	ChatMessage,
+	ChatMessageContent,
+	ChatOptions,
+	GenerateImageOptions,
+	GenerateImageResult
+} from '@/engines/base.js'
 import { OpenAiEngine } from '@/engines/openai.js'
 import { gptFunctionHandlers, options as pluginOptions } from '@/events/_start.js'
 import { waitForTyping } from '@/events/typingStart/debounce.js'
@@ -175,9 +182,14 @@ async function chatSync(messages: ChatMessage[], options: Omit<ChatOptions, 'onR
 	})
 }
 
+async function generateImage(options: GenerateImageOptions): Promise<GenerateImageResult> {
+	return _engine.generateImage(options)
+}
+
 export const AI = {
 	chat,
-	chatSync
+	chatSync,
+	generateImage
 }
 
 export async function executeFunctionCall(

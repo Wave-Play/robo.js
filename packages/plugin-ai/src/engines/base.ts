@@ -58,6 +58,17 @@ export interface ChatOptions {
 	showTyping?: boolean
 }
 
+export interface GenerateImageOptions {
+	model?: string
+	prompt: string
+}
+
+export interface GenerateImageResult {
+	images: Array<{
+		url: string
+	}>
+}
+
 export interface ChatResult {
 	finish_reason: string
 	message?: ChatMessage
@@ -80,6 +91,8 @@ export abstract class BaseEngine {
 	}
 
 	public abstract chat(messages: ChatMessage[], options: ChatOptions): Promise<ChatResult>
+
+	public abstract generateImage(options: GenerateImageOptions): Promise<GenerateImageResult>
 
 	public off(event: HookEvent, hook: Hook) {
 		const index = this._hooks[event].indexOf(hook)
