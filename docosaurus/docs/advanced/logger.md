@@ -110,7 +110,7 @@ const recentLogs = logger.getRecentLogs();
 You can also specify the number of recent logs to retrieve by passing the `count` parameter:
 
 ```javascript
-const recent20Logs = logger.getRecentLogs(20);
+const recent20Logs = logger.getRecentLogs(20); // Default: 50
 ```
 > This allows you to customize the length of the retrieved log entries, providing flexibility based on your debugging and analysis needs. 
 
