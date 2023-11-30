@@ -105,7 +105,7 @@ Retrieve an array of recent log entries from the logger's buffer.
 const recentLogs = logger.getRecentLogs();
 ```
 
-:::info How Much?
+::::info How Much?
 
 You can also specify the number of recent logs to retrieve by passing the `count` parameter:
 
@@ -119,4 +119,4 @@ This allows you to customize the length of the retrieved log entries, providing 
 
 :::
 
-:::
+::::
