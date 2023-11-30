@@ -45,7 +45,7 @@ logger.debug("Debugging message");
 logger.info("Info message");
 logger.warn("Warning message");
 logger.error("Error message");
-logger.othet("3rd Party message");
+logger.other("3rd Party message");
 logger.event("Event Patched message");
 ```
 
@@ -105,13 +105,18 @@ Retrieve an array of recent log entries from the logger's buffer.
 const recentLogs = logger.getRecentLogs();
 ```
 
-:::info 
+:::info How Much?
 
 You can also specify the number of recent logs to retrieve by passing the `count` parameter:
 
 ```javascript
 const recent20Logs = logger.getRecentLogs(20); // Default: 50
 ```
-> This allows you to customize the length of the retrieved log entries, providing flexibility based on your debugging and analysis needs. 
+
+:::tip
+
+This allows you to customize the length of the retrieved log entries, providing flexibility based on your debugging and analysis needs. 
+
+:::
 
 :::
