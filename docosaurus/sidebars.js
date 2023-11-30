@@ -45,6 +45,7 @@ const sidebars = {
 				'advanced/configuration',
 				'advanced/debugging',
 				'advanced/linting',
+     'advanced/logger',
 				'advanced/middleware',
 				'advanced/modules',
 				'advanced/plugins',
