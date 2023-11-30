@@ -37,6 +37,8 @@ logger.debug("Debugging message");
 logger.info("Info message");
 logger.warn("Warning message");
 logger.error("Error message");
+logger.othet("3rd Party message");
+logger.event("Event Patched message");
 ```
 
 The log level determines which messages get logged.
