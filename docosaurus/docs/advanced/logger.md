@@ -28,7 +28,7 @@ const logger = new Logger();
 
 You can pass configuration options during instantiation:
 
-```javascript {2}
+```javascript {2-4}
 const logger = new Logger({
   level: "debug", // Set log level 
   prefix: "DiscordLogger",// Prefix For Logs
