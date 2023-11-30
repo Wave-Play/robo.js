@@ -20,7 +20,7 @@ const logger = new Logger();
 
 You can pass configuration options during instantiation:
 
-```javascript
+```javascript {2}
 const logger = new Logger({
   level: "debug", // Set log level 
 });
@@ -84,6 +84,8 @@ await logger.flush();
 
 This ensures all buffered log writes finish before proceeding.
 
----
+:::tip
 
 The Logger class provides a comprehensive logging solution for your Discord bot development with Robo.js. Customize it according to your needs and leverage its features for effective debugging and monitoring.
+
+:::
