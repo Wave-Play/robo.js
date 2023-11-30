@@ -1,6 +1,6 @@
 # Logger 🌳
 
-The `Logger` class in Robo.js is a powerful tool for logging messages in your Discord bot development. Below, we've structured the documentation for seamless integration with Docusaurus, incorporating code highlights and additional tips.
+The `Logger` class in Robo.js is a powerful tool for logging messages in your Discord bot development.
 
 ## Importing the Logger.📪
 
