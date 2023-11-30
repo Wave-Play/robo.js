@@ -2,6 +2,14 @@
 
 The `Logger` class in Robo.js is a powerful tool for logging messages in your Discord bot development.
 
+
+:::tip Overview
+
+The Logger class provides a comprehensive logging solution for your Discord bot development with Robo.js. Customize it according to your needs and leverage its features for effective debugging and monitoring.
+
+:::
+
+
 ## Importing the Logger.📪
 
 Import the `Logger` class in your code:
@@ -88,8 +96,22 @@ await logger.flush();
 
 This ensures all buffered log writes finish before proceeding.
 
-:::tip
+## Get Recent Logs 📡
 
-The Logger class provides a comprehensive logging solution for your Discord bot development with Robo.js. Customize it according to your needs and leverage its features for effective debugging and monitoring.
+Retrieve an array of recent log entries from the logger's buffer.
+
+
+```javascript
+const recentLogs = logger.getRecentLogs();
+```
+
+:::info 
+
+You can also specify the number of recent logs to retrieve by passing the `count` parameter:
+
+```javascript
+const recent20Logs = logger.getRecentLogs(20);
+```
+> This allows you to customize the length of the retrieved log entries, providing flexibility based on your debugging and analysis needs. 
 
 :::
