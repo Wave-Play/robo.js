@@ -68,8 +68,8 @@ logger.level = "debug"; // Enable debug logs
 You can create namespaced child loggers using `logger.fork()`:
 
 ```javascript {1}
-const authLogger = logger.fork("auth");
-authLogger.info("User authenticated");
+const dbLogger = logger.fork("database");
+dbLogger.info("Connection Initiated!");
 ```
 
 This prefixes all logs with "auth".
