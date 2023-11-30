@@ -23,6 +23,8 @@ You can pass configuration options during instantiation:
 ```javascript {2}
 const logger = new Logger({
   level: "debug", // Set log level 
+  prefix: "DiscordLogger",// Prefix For Logs
+  maxEntries: 200, // Default: 100
 });
 ```
 
