@@ -72,7 +72,7 @@ const dbLogger = logger.fork("database");
 dbLogger.info("Connection Initiated!");
 ```
 
-This prefixes all logs with "auth".
+**This prefixes all logs with "database"**
 
 ## Flushing Logs 🚽
 
