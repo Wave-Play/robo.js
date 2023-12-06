@@ -321,6 +321,36 @@ importers:
         specifier: ^5.0.0
         version: 5.0.2
 
+  packages/plugin-roles:
+    devDependencies:
+      '@roboplay/robo.js':
+        specifier: latest
+        version: 0.9.11(@swc/core@1.3.57)(discord.js@14.13.0)(typescript@5.0.2)
+      '@swc/core':
+        specifier: ^1.3.44
+        version: 1.3.57
+      '@types/node':
+        specifier: ^18.14.6
+        version: 18.16.8
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^5.56.0
+        version: 5.56.0(@typescript-eslint/parser@5.56.0)(eslint@8.36.0)(typescript@5.0.2)
+      '@typescript-eslint/parser':
+        specifier: ^5.56.0
+        version: 5.56.0(eslint@8.36.0)(typescript@5.0.2)
+      discord.js:
+        specifier: ^14.13.0
+        version: 14.13.0
+      eslint:
+        specifier: ^8.36.0
+        version: 8.36.0
+      prettier:
+        specifier: ^2.8.5
+        version: 2.8.5
+      typescript:
+        specifier: ^5.0.0
+        version: 5.0.2
+
   packages/robo:
     devDependencies:
       '@swc/core':
@@ -392,6 +422,28 @@ importers:
         version: 6.7.0(@swc/core@1.3.41)(typescript@5.0.2)
       typescript:
         specifier: 5.0.2
+        version: 5.0.2
+
+  test/bot:
+    dependencies:
+      '@roboplay/robo.js':
+        specifier: latest
+        version: 0.9.11(@swc/core@1.3.57)(discord.js@14.13.0)(typescript@5.0.2)
+      discord.js:
+        specifier: ^14.13.0
+        version: 14.13.0
+      plugin-roles:
+        specifier: link:../../packages/plugin-roles
+        version: link:../../packages/plugin-roles
+    devDependencies:
+      '@swc/core':
+        specifier: ^1.3.44
+        version: 1.3.57
+      '@types/node':
+        specifier: ^18.14.6
+        version: 18.16.8
+      typescript:
+        specifier: ^5.0.0
         version: 5.0.2
 
 packages:
@@ -914,10 +966,10 @@ packages:
     resolution: {integrity: sha512-CTCh8NqED3iecTNuiz49mwSsrc2iQb4d0MjMdmS/8pb69Y4IlzJ/DIy/p5GFlgOrFbNO2WzMHkWKQSiJ3VNXaw==}
     engines: {node: '>=16.9.0'}
     dependencies:
-      '@discordjs/formatters': 0.3.1
+      '@discordjs/formatters': 0.3.2
       '@discordjs/util': 0.3.1
       '@sapphire/shapeshift': 3.9.0
-      discord-api-types: 0.37.42
+      discord-api-types: 0.37.50
       fast-deep-equal: 3.1.3
       ts-mixer: 6.0.3
       tslib: 2.6.2
@@ -948,7 +1000,7 @@ packages:
     resolution: {integrity: sha512-M7X4IGiSeh4znwcRGcs+49B5tBkNDn4k5bmhxJDAUhRxRHTiFAOTVUNQ6yAKySu5jZTnCbSvTYHW3w0rAzV1MA==}
     engines: {node: '>=16.9.0'}
     dependencies:
-      discord-api-types: 0.37.42
+      discord-api-types: 0.37.50
     dev: true
 
   /@discordjs/formatters@0.3.2:
@@ -961,11 +1013,11 @@ packages:
     resolution: {integrity: sha512-Ofa9UqT0U45G/eX86cURQnX7gzOJLG2oC28VhIk/G6IliYgQF7jFByBJEykPSHE4MxPhqCleYvmsrtfKh1nYmQ==}
     engines: {node: '>=16.9.0'}
     dependencies:
-      '@discordjs/collection': 1.5.1
+      '@discordjs/collection': 1.5.3
       '@discordjs/util': 0.3.1
       '@sapphire/async-queue': 1.5.0
       '@sapphire/snowflake': 3.5.1
-      discord-api-types: 0.37.42
+      discord-api-types: 0.37.50
       file-type: 18.4.0
       tslib: 2.6.2
       undici: 5.22.1
@@ -1021,13 +1073,13 @@ packages:
     resolution: {integrity: sha512-hcYtppanjHecbdNyCKQNH2I4RP9UrphDgmRgLYrATEQF1oo4sYSve7ZmGsBEXSzH72MO2tBPdWSThunbxUVk0g==}
     engines: {node: '>=16.9.0'}
     dependencies:
-      '@discordjs/collection': 1.5.1
+      '@discordjs/collection': 1.5.3
       '@discordjs/rest': 1.7.1
       '@discordjs/util': 0.3.1
       '@sapphire/async-queue': 1.5.0
-      '@types/ws': 8.5.4
+      '@types/ws': 8.5.8
       '@vladfrangu/async_event_emitter': 2.2.2
-      discord-api-types: 0.37.42
+      discord-api-types: 0.37.50
       tslib: 2.6.2
       ws: 8.13.0
     transitivePeerDependencies:
@@ -1760,7 +1812,6 @@ packages:
       '@swc/core': 1.3.57
       discord.js: 14.13.0
       typescript: 5.0.2
-    dev: true
 
   /@roboplay/robo.js@0.9.5(discord.js@14.13.0)(typescript@5.0.2):
     resolution: {integrity: sha512-DZb2dPB19d5FLEc51VCmQWe7/sPm72FWkTXtg3qettE4v9pEUg4RQ8Pn1yMbMEOc3qk5bPqG/KneiOICtwctsQ==}
@@ -1864,7 +1915,6 @@ packages:
     cpu: [arm64]
     os: [darwin]
     requiresBuild: true
-    dev: true
     optional: true
 
   /@swc/core-darwin-x64@1.3.41:
@@ -1882,7 +1932,6 @@ packages:
     cpu: [x64]
     os: [darwin]
     requiresBuild: true
-    dev: true
     optional: true
 
   /@swc/core-linux-arm-gnueabihf@1.3.41:
@@ -1900,7 +1949,6 @@ packages:
     cpu: [arm]
     os: [linux]
     requiresBuild: true
-    dev: true
     optional: true
 
   /@swc/core-linux-arm64-gnu@1.3.41:
@@ -1918,7 +1966,6 @@ packages:
     cpu: [arm64]
     os: [linux]
     requiresBuild: true
-    dev: true
     optional: true
 
   /@swc/core-linux-arm64-musl@1.3.41:
@@ -1936,7 +1983,6 @@ packages:
     cpu: [arm64]
     os: [linux]
     requiresBuild: true
-    dev: true
     optional: true
 
   /@swc/core-linux-x64-gnu@1.3.41:
@@ -1954,7 +2000,6 @@ packages:
     cpu: [x64]
     os: [linux]
     requiresBuild: true
-    dev: true
     optional: true
 
   /@swc/core-linux-x64-musl@1.3.41:
@@ -1972,7 +2017,6 @@ packages:
     cpu: [x64]
     os: [linux]
     requiresBuild: true
-    dev: true
     optional: true
 
   /@swc/core-win32-arm64-msvc@1.3.41:
@@ -1990,7 +2034,6 @@ packages:
     cpu: [arm64]
     os: [win32]
     requiresBuild: true
-    dev: true
     optional: true
 
   /@swc/core-win32-ia32-msvc@1.3.41:
@@ -2008,7 +2051,6 @@ packages:
     cpu: [ia32]
     os: [win32]
     requiresBuild: true
-    dev: true
     optional: true
 
   /@swc/core-win32-x64-msvc@1.3.41:
@@ -2026,7 +2068,6 @@ packages:
     cpu: [x64]
     os: [win32]
     requiresBuild: true
-    dev: true
     optional: true
 
   /@swc/core@1.3.41:
@@ -2066,7 +2107,6 @@ packages:
       '@swc/core-win32-arm64-msvc': 1.3.57
       '@swc/core-win32-ia32-msvc': 1.3.57
       '@swc/core-win32-x64-msvc': 1.3.57
-    dev: true
 
   /@szmarczak/http-timer@5.0.1:
     resolution: {integrity: sha512-+PmQX0PiAYPMeVYe237LJAYvOMYW1j2rH5YROyS3b4CTVJum34HfRvKvAzozHAQG0TnHNdUfY9nCeUyRAs//cw==}
