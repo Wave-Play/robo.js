@@ -2,7 +2,7 @@
 
 This plugin morphs your **[Robo](https://github.com/Wave-Play/robo.js)** into a sophisticated AI chatbot. By simply mentioning it or replying to its messages on Discord, you initiate a natural conversation - as if you're chatting with a fellow human!
 
-🔑 To bring this magic to life, secure an **[OpenAI API key](https://openai.com/)**. Once in hand, slide it into the `openaiKey` slot of your plugin config, and your Robo is good to go.
+> 🔑 To bring this magic to life, secure an **[OpenAI API key](https://openai.com/)**. Set it as an environment variable named `OPENAI_API_KEY`, and your Robo is good to go.
 
 ## Installation 💻
 
@@ -12,7 +12,13 @@ To add this amazingness to your Robo, just use this spell (I mean, command):
 npx robo add @roboplay/plugin-ai
 ```
 
-And there you go! Your Robo, now powered by AI, is ready to have a chat.
+And there you go! Your Robo, now powered by AI, is ready to have a chat!
+
+New to Robo.js? Start your project with this plugin pre-installed:
+
+```bash
+npx create-robo <project-name> -p @roboplay/plugin-ai
+```
 
 ## Your Robo's Personality 🧬
 
@@ -21,7 +27,6 @@ Desire a Robo with a backstory, specific character traits, or a distinctive pers
 ```js
 // config/plugins/roboplay/plugin-ai.mjs
 export default {
-	openaiKey: process.env.OPENAI_API_KEY, // Your special key here
 	systemMessage: 'You are Batman, protector of the Weeb City Discord server.'
 }
 ```
@@ -54,9 +59,6 @@ Here's a quick look at all the settings you can play with:
 ```js
 // config/plugins/roboplay/plugin-ai.mjs
 export default {
-	// Set this with your OpenAI key! (string) (required)
-	openaiKey: 'YOUR_OPENAI_API_KEY',
-
 	// Model for your AI. You might stick with the default. (string)
 	model: 'gpt-3.5-turbo',
 
@@ -75,18 +77,44 @@ export default {
 
 ## JavaScript API 🧰
 
-For those who like to tinker and build:
+For those who like to tinker and build, this plugin also exposes a JavaScript API to enhance things even further!
 
-- `AIEngine.chat()`: Prompt a chat query and obtain the AI's response.
-- `AIEngine.on()`: Be the puppeteer! Control AI events or alter certain values.
-- `AIEngine.off()`: Disconnect from an AI event.
+```js
+import { AI } from '@roboplay/plugin-ai'
+
+// Prompt a chat query and obtain the AI's response.
+AI.chat()
+
+// Be the puppeteer! Control AI events or alter certain values.
+AI.on()
+
+// Disconnect from an AI event.
+AI.off()
+```
+
+We've also got some handy AI tools for you to use:
+
 - `selectOne`: Match strings semantically from a range of choices.
 - `chat`: A low-level variant of `AIEngine.chat()` for direct OpenAI API interactions.
 
 And guess what? With tools like these, other cool plugins like `@roboplay/plugin-ai-voice` let your Robo chat in voice channels too!
 
+## Voice Capabilities 🎙️
+
+If you've added the `@roboplay/plugin-ai-voice` to your Robo, you're in for a treat! This AI plugin will let your Robo talk in voice channels!
+
+```bash
+npx robo add @roboplay/plugin-ai-voice
+```
+
+How cool is that? Your Robo can now talk to you in voice channels, just like a real person!
+
 ## Web API 🌐
 
 Now, if you've added the `@roboplay/plugin-api` to your Robo, there's another treat waiting. This AI plugin will unveil a shiny new `/api/ai/chat` path, letting your Robo have fun chats on websites!
+
+```bash
+npx robo add @roboplay/plugin-api
+```
 
 Imagine a chat window with your Robo on your favorite webpage. Pretty cool, right?
