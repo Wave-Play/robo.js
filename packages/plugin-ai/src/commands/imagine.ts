@@ -1,6 +1,7 @@
-import { CommandConfig, CommandResult, logger } from '@roboplay/robo.js'
-import { CommandInteraction } from 'discord.js'
 import { AI } from '@/core/ai.js'
+import { logger } from '@/core/logger.js'
+import { CommandConfig, CommandResult } from '@roboplay/robo.js'
+import { CommandInteraction } from 'discord.js'
 
 export const config: CommandConfig = {
 	description: 'Bring your creative visions to life!',
@@ -18,7 +19,7 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 
 	const response = await AI.generateImage({ prompt })
 	const images = response?.images?.map((image) => image.url)
-	logger.debug(`Generated ${images?.length} images:`, images)
+	logger.debug(`Imagined ${images?.length} images:`, images)
 
 	if (!images?.length) {
 		logger.warn('No images were generated.')
@@ -26,9 +27,14 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 	}
 
 	// Fetch image url as buffer then return as file
-	const arrayBuffer = await fetch(images[0]).then((res) => res.arrayBuffer())
+	const buffers = await Promise.all(
+		images.map(async (image) => {
+			const response = await fetch(image)
+			return Buffer.from(await response.arrayBuffer())
+		})
+	)
 
 	return {
-		files: [Buffer.from(arrayBuffer)]
+		files: buffers
 	}
 }
