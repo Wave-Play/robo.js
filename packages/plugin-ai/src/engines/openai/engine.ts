@@ -1,8 +1,9 @@
 import { packageJson } from '@/core/constants.js'
+import { logger } from '@/core/logger.js'
 import { BaseEngine } from '@/engines/base.js'
 import { openai } from '@/engines/openai/api.js'
 import { options as pluginOptions } from '@/events/_start.js'
-import { logger, portal } from '@roboplay/robo.js'
+import { portal } from '@roboplay/robo.js'
 import type { ChatFunction, ChatFunctionParameters, ChatFunctionProperty, ChatMessage, ChatOptions, ChatResult, GenerateImageOptions, GenerateImageResult } from '@/engines/base.js'
 import type { Command } from '@roboplay/robo.js'
 
@@ -14,7 +15,7 @@ export class OpenAiEngine extends BaseEngine {
 		const { functions = this.gptFunctions, model = pluginOptions?.model ?? 'gpt-3.5-turbo' } = options ?? {}
 
 		const response = await openai.chat({
-			maxTokens: pluginOptions?.maxTokens,
+			max_tokens: pluginOptions?.maxTokens,
 			model: model,
 			messages: messages,
 			functions: functions

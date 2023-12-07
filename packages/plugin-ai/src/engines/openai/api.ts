@@ -1,5 +1,5 @@
-import { options as pluginOptions } from '@/events/_start.js'
-import { logger } from '@roboplay/robo.js'
+import { logger } from '@/core/logger.js'
+import { hasProperties } from '@/utils/other-utils.js'
 
 /**
  * API bindings for OpenAI.
@@ -8,6 +8,91 @@ import { logger } from '@roboplay/robo.js'
 export const openai = {
 	chat,
 	createImage
+}
+
+interface RequestOptions {
+	apiKey?: string
+	backoff?: boolean
+	body?: unknown
+	method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS'
+	retries?: number
+}
+
+/**
+ * Calls the OpenAI chat endpoint.
+ *
+ * @param options The chat options.
+ * @returns The chat response.
+ */
+async function request<T = unknown>(urlPath: string, options: RequestOptions): Promise<T> {
+	const { apiKey = process.env.OPENAI_API_KEY, backoff = true, body, method = 'GET', retries = 3 } = options
+	let retryCount = 0
+
+	if (!apiKey) {
+		throw new Error('OpenAI API key not found, please set it as an environment variable called OPENAI_API_KEY.')
+	}
+
+	while (retryCount <= retries) {
+		try {
+			const response = await fetch('https://api.openai.com/v1' + urlPath, {
+				method: method,
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${apiKey}`
+				},
+				body: body ? JSON.stringify(body) : undefined
+			})
+
+			const jsonResponse = await response.json()
+			if (jsonResponse.error) {
+				throw new Error(jsonResponse.error.message)
+			}
+
+			if (!response.ok) {
+				throw new Error(`HTTP Error status code: ${response.status}`)
+			}
+
+			return jsonResponse
+		} catch (error) {
+			// Throw error if we've reached the max number of retries
+			if (retryCount === retries) {
+				logger.error(error)
+				throw error
+			}
+
+			// Wait for 2^retryCount * 1000 ms (exponential backoff)
+			const delay = backoff ? 2 ** retryCount * 1000 : 1000
+			const message = hasProperties<{ message: string }>(error, ['message']) ? error.message + ' - ' : ''
+			logger.debug(error)
+			logger.warn(`${message}Retrying in ${delay}ms...`)
+			await new Promise((r) => setTimeout(r, delay))
+
+			retryCount++
+		}
+	}
+
+	throw new Error('Failed to call OpenAI API')
+}
+
+async function chat(options: GptChatOptions) {
+	const { functions, max_tokens = 1024, messages, model = 'gpt-3.5-turbo' } = options
+
+	return request<ChatResult>('/chat/completions', {
+		method: 'POST',
+		body: {
+			functions: functions?.length && !model.includes('vision') ? functions : undefined,
+			max_tokens: max_tokens,
+			messages: messages,
+			model: model
+		}
+	})
+}
+
+async function createImage(options: CreateImageOptions) {
+	return request<CreateImageResult>('/images/generations', {
+		method: 'POST',
+		body: options
+	})
 }
 
 interface GptChatMessage {
@@ -26,12 +111,10 @@ type GptChatMessageContentObject = {
 type GptChatMessageContent = string | GptChatMessageContentObject[]
 
 interface GptChatOptions {
-	backoff?: boolean
 	functions?: GptFunction[]
-	maxTokens?: number
+	max_tokens?: number
 	messages: GptChatMessage[]
 	model?: string
-	retries?: number
 }
 
 interface GptFunction {
@@ -58,67 +141,6 @@ interface GptFunctionProperty {
 	type: 'array' | 'string'
 }
 
-async function chat(options: GptChatOptions) {
-	const {
-		backoff = true,
-		functions,
-		maxTokens = 1024,
-		messages,
-		model = 'gpt-3.5-turbo',
-		retries = 3
-	} = options
-	let retryCount = 0
-
-	if (!pluginOptions.openaiKey) {
-		throw new Error('OpenAI key not found, please set it via plugin options.')
-	}
-
-	while (retryCount <= retries) {
-		try {
-			const response = await fetch('https://api.openai.com/v1/chat/completions', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `Bearer ${pluginOptions.openaiKey}`
-				},
-				body: JSON.stringify({
-					functions: functions?.length && !model.includes('vision') ? functions : undefined,
-					max_tokens: maxTokens,
-					messages: messages,
-					model: model
-				})
-			})
-
-			const jsonResponse = await response.json()
-			if (jsonResponse.error) {
-				throw new Error(jsonResponse.error.message)
-			}
-
-			if (!response.ok) {
-				throw new Error(`HTTP Error status code: ${response.status}`)
-			}
-
-			return jsonResponse
-		} catch (error) {
-			if (retryCount === retries) {
-				logger.error(error)
-				return null
-			}
-
-			logger.debug(`Error calling GPT:`, error)
-			if (backoff) {
-				// Wait for 2^retryCount * 1000 ms (exponential backoff)
-				logger.warn(`Retrying in ${2 ** retryCount * 4000}ms...`)
-				await new Promise((r) => setTimeout(r, 2 ** retryCount * 4000))
-			} else {
-				logger.warn('Retrying...')
-			}
-
-			retryCount++
-		}
-	}
-}
-
 interface Assistant {
 	id: string
 	object: string
@@ -139,6 +161,14 @@ interface CreateAssistantOptions {
 	name?: string
 }
 
+interface ChatResult {
+	choices: Array<{
+		finish_reason: string
+		index: number
+		message: GptChatMessage
+	}>
+}
+
 interface CreateImageOptions {
 	prompt: string
 	model?: string
@@ -155,30 +185,4 @@ interface CreateImageResult {
 	data: Array<{
 		url: string
 	}>
-}
-
-async function createImage(options: CreateImageOptions): Promise<CreateImageResult> {
-	if (!pluginOptions.openaiKey) {
-		throw new Error('OpenAI key not found, please set it via plugin options.')
-	}
-
-	const response = await fetch('https://api.openai.com/v1/images/generations', {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			Authorization: `Bearer ${pluginOptions.openaiKey}`
-		},
-		body: JSON.stringify(options)
-	})
-
-	const jsonResponse = await response.json()
-	if (jsonResponse.error) {
-		throw new Error(jsonResponse.error.message)
-	}
-
-	if (!response.ok) {
-		throw new Error(`HTTP Error status code: ${response.status}`)
-	}
-
-	return jsonResponse
 }
