@@ -1,167 +1,278 @@
-import { Flashcore } from "@roboplay/robo.js";
-import { ButtonInteraction, ModalSubmitInteraction, type Interaction, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, Snowflake } from "discord.js";
-import { RoleSetupData, REGEXPS as regexps } from "../core/types.js";
-import {getRolesSetupEmbed,getRolesSetupButtons, printRoleSetup} from "../core/utils.js";
+// imports
+import { Flashcore } from '@roboplay/robo.js'
+import {
+	ButtonInteraction,
+	ModalSubmitInteraction,
+	type Interaction,
+	ModalBuilder,
+	TextInputBuilder,
+	TextInputStyle,
+	ActionRowBuilder,
+	Snowflake,
+	RoleSelectMenuInteraction,
+	Role
+} from 'discord.js'
+import { RoleSetupData, RoleSetupDataRole, REGEXPS as regexps } from '../core/types.js'
+import { getRolesSetupEmbed, getRolesSetupButtons, printRoleSetup } from '../core/utils.js'
 
 /**
- * @todo
- * @param i 
- * @param id 
+ * Get data from flashcore
+ * @param {Interaction} i
+ * @param {string} id
  * @returns {RoleSetupData} RoleSetupData
  */
 const getRolesSetupInfo = (i: Interaction, id: string): any => {
-    return new Promise(async (resolve, reject) => {
-        const data = await Flashcore.get(`__roles_Setup@${id}`)
-        if (!data) {
-            reject()
-        } else {
-            resolve(data as RoleSetupData)
-        }
-    })
+	return new Promise(async (resolve, reject) => {
+		const data = await Flashcore.get(`__roles_Setup@${id}`)
+		if (!data) {
+			reject()
+		} else {
+			resolve(data as RoleSetupData)
+		}
+	})
 }
 
 export default async (interaction: Interaction) => {
-    console.log(interaction, interaction.isModalSubmit(), interaction.id)
-    /**
-     * @plugin Roles Btns
-     * @btns Print Setup
-     */
-    if (interaction.isButton()) {
-        console.log("HEREOEEE", interaction.customId, (regexps.addBtn.test(interaction.customId)))
-        // Btn Info 
-        const btn = interaction as ButtonInteraction
-        const btnID = btn.customId.split("@")[1];
+	/**
+	 * Add Role in Role Setup
+	 */
+	if (interaction.isRoleSelectMenu() && regexps.roleSetupAddRoleSelector.test(interaction.customId)) {
+		const i = interaction as RoleSelectMenuInteraction
+		const role = interaction.roles.first()
+		const me = await interaction.guild?.members.fetchMe({ force: true })
+		const rolesSetupInfo: RoleSetupData = await getRolesSetupInfo(i, i.customId.split('@')[1])
 
-        // Handlers 
-        if (regexps.deleteBtn.test(btn.customId)) {
-            // Delete Role Button 
-            const rolesSetupInfo: RoleSetupData = await getRolesSetupInfo(btn, btnID)
-            const deleteModal = new ModalBuilder()
-                .setCustomId(`deleteModal@${rolesSetupInfo.id}`)
-                .setTitle('Delete Role From Setup!');
-            const roleIDInput = new TextInputBuilder()
-                .setCustomId('roleID')
-                .setLabel("Enter The ID Of Role You Want To Delete!")
-                .setPlaceholder("For Example: 1 or #1")
-                .setMaxLength(2)
-                .setMinLength(1)
-                .setStyle(TextInputStyle.Short);
-            deleteModal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(roleIDInput));
-            await btn.showModal(deleteModal)
-        }
-        if (true || regexps.addBtn.test(btn.customId)) {
-            // Add Role Button 
-            const rolesSetupInfo: RoleSetupData = await getRolesSetupInfo(btn, btnID)
-            const addModal = new ModalBuilder()
-                .setCustomId(`addModal@${rolesSetupInfo.id}`)
-                .setTitle('Add Role In Setup!');
-            const roleIDInput = new TextInputBuilder()
-                .setCustomId('roleID')
-                .setLabel("Enter The ID Of Role You Want To Add!")
-                .setPlaceholder("For Example: 739454321661313000")
-                .setMaxLength(18)
-                .setMinLength(18)
-                .setStyle(TextInputStyle.Short);
-            const roleEmote = new TextInputBuilder()
-                .setCustomId('roleEmote')
-                .setLabel("Enter Single Emote for Role You Want To Add!")
-                .setPlaceholder("For Example: 🤡 (optional)")
-                .setRequired(false)
-                .setStyle(TextInputStyle.Short);
+		if (role?.managed) {
+			return interaction.reply({
+				content: 'Integration Rolle',
+				ephemeral: true
+			})
+		}
+		if (me && role!.position > me.roles.highest.position) {
+			return interaction.reply({
+				content: 'Rolle higher',
+				ephemeral: true
+			})
+		}
+		if (rolesSetupInfo.roles?.filter((i) => i.role == role!.id)) {
+			return interaction.reply({ content: "You can't add same role again!" })
+		}
 
-            addModal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(roleIDInput));
-            addModal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(roleEmote));
-            await btn.showModal(addModal)
-        }
-        // Print 
-        if(regexps.printSetupBtn.test(btn.customId)) {
-            const rolesSetupInfo: RoleSetupData = await getRolesSetupInfo(btn, btnID)
-            const data = printRoleSetup(rolesSetupInfo)
-            await interaction.channel?.send(data).then(async () => {
-                return await interaction.reply({
-                    content: "Success!"
-                })
-            }).catch(async () => {
-                return await interaction.reply({
-                    ephemeral: true,
-                    content: "Internal Error"
-                })
-            })
-        }
-        // Dropper Button 
-        if(regexps.roleDropper.test(btn.customId)) {
-            const roleID = btn.customId.split("@").join("");
-            const role = await interaction.guild?.roles.fetch(roleID);
-            if(!role) {
-                return await interaction.reply({
-                    ephemeral: true,
-                    content: "Internal Error"
-                })
-            }
-            try {
-                await interaction.guild?.roles.fetch()
-                const member = await interaction.guild?.members.fetch(interaction.user.id)
-                member!.roles.add(role)
-            } catch {
-                return await interaction.reply({
-                    ephemeral: true,
-                    content: "Internal Error"
-                })
-            }
-        }
-    }
+		// all fine show modal
+		const customData = {
+			label: role?.name,
+			id: role?.id
+		}
+		// short custom id to validate 100 limit
+		const addModal = new ModalBuilder()
+			.setCustomId(`RSetupM@${rolesSetupInfo.id}@${Buffer.from(JSON.stringify(customData)).toString('utf-8')}`)
+			.setTitle('Add Role In Setup!')
+		const roleIDInput = new TextInputBuilder()
+			.setCustomId('roleDescription')
+			.setLabel('Enter The Description For The Role!')
+			.setPlaceholder('For Example: 739454321661313000')
+			.setMaxLength(40)
+			.setValue(`Select @${role?.name} Role Here!`)
+			.setRequired(false)
+			.setStyle(TextInputStyle.Paragraph)
+		const roleEmote = new TextInputBuilder()
+			.setCustomId('roleEmote')
+			.setLabel('Enter Single Emote for Role!')
+			.setPlaceholder('For Example: 🤡 (optional)')
+			.setRequired(false)
+			.setStyle(TextInputStyle.Short)
 
-    /**
-     * @plugin Roles Btns
-     * @modals Print Setup
-     */
-    if (interaction.isModalSubmit()) {
-        // Modal Info 
-        const modal = interaction as ModalSubmitInteraction
-        const modalID = modal.customId.split("@")[1];
-        // Handlers 
-        if (regexps.deleteModal.test(modal.customId)) {
-            // delete Role 
-            const rolesSetupInfo: RoleSetupData = await getRolesSetupInfo(modal, modalID)
-            const deleteIndex = parseInt(modal.fields.getTextInputValue('roleID').toString().replaceAll("#", ''));
-            if (isNaN(deleteIndex)) return;
-            delete rolesSetupInfo.roles![deleteIndex];
-            await Flashcore.set(`__roles_Setup@${modalID}`, rolesSetupInfo)
-            await interaction.editReply({
-                embeds: [getRolesSetupEmbed(rolesSetupInfo)],
-                components: [getRolesSetupButtons(rolesSetupInfo.id)]
-            })
-        }
-        if (true || regexps.addModal.test(modal.customId)) {
-            // add Role 
-            const rolesSetupInfo: RoleSetupData = await getRolesSetupInfo(modal, modalID)
-            const roleID = (modal.fields.getTextInputValue('roleID').toString().replaceAll("@", '').replaceAll("<", '').replaceAll(">", ''));
-            const roleEmote = modal.fields.getTextInputValue('roleEmote');
+		addModal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(roleEmote))
+		addModal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(roleIDInput))
+		await i.showModal(addModal)
+	}
+	/**
+	 * Delete Role in Role Setup
+	 */
+	if (interaction.isRoleSelectMenu() && regexps.roleSetupDeleteRoleSelector.test(interaction.customId)) {
+		const i = interaction as RoleSelectMenuInteraction
+		const id = i.customId.split('@')[1]
+		const rolesSetupInfo: RoleSetupData = await getRolesSetupInfo(i, id)
+		const roles = interaction.roles
+		const [x, y, z] = getRolesSetupButtons(id, rolesSetupInfo)
 
-            // resolving 
-            // const ROLE = await interaction.guild?.roles.fetch(roleID.toString(), {force: true});
-            // const ROLE = interaction.guild?.roles.cache.get(roleID.toString());
-            const test = await interaction.guild?.roles.fetch()
-            const test2 = interaction.guild?.roles.cache.entries()
-            const ROLE =interaction.guild?.roles.cache.find(x => x.id == roleID)
-            const ROLE_EMOTE = interaction.guild?.emojis.resolveIdentifier(roleEmote);
-            console.log("****", ROLE, roleID, test, test2)
-            if (!ROLE) {
-                return await interaction.reply({
-                    content: "Invalid Role"
-                })
-            };
-            rolesSetupInfo.roles?.push({
-                label: ROLE.name,
-                role: ROLE.id,
-                emote: ROLE_EMOTE ?? null
-            })
-            await Flashcore.set(`__roles_Setup@${modalID}`, rolesSetupInfo)
-            await interaction.message?.edit({
-                embeds: [getRolesSetupEmbed(rolesSetupInfo)],
-                components: [getRolesSetupButtons(rolesSetupInfo.id)]
-            })
-        }
-    }
+		// check
+		roles.forEach((x) => {
+			rolesSetupInfo.roles?.forEach((y, i) => {
+				if (y.role.toString() == x.id.toString()) {
+					delete rolesSetupInfo.roles![i]
+				}
+			})
+		})
 
+		// set
+		await Flashcore.set(`__roles_Setup@${id}`, rolesSetupInfo)
+		interaction.message
+			?.edit({
+				embeds: [getRolesSetupEmbed(rolesSetupInfo)],
+				components: [x, y, z]
+			})
+			.then(async () => {
+				return await interaction.reply({
+					content: 'Selected Role(s) Deleted Fully!',
+					ephemeral: true
+				})
+			})
+	}
+	/**
+	 * Select Role By Member Role Embed
+	 */
+	if (interaction.isRoleSelectMenu() && regexps.roleDropperRoleSelectFromEmbed.test(interaction.customId)) {
+		const i = interaction as RoleSelectMenuInteraction
+		const roleID = interaction.customId.split('@')[1]
+	}
+
+	/**
+	 * @handler Buttons
+	 */
+	if (interaction.isButton()) {
+		// Btn Info
+		const btn = interaction as ButtonInteraction
+		const btnID = btn.customId.split('@')[1]
+
+		/**
+		 * Edit Embed Button To Show Modal In RoleSetup
+		 */
+		if (regexps.editEmbedInRoleSetupButton.test(btn.customId)) {
+			// Get Data
+			const rolesSetupInfo: RoleSetupData = await getRolesSetupInfo(btn, btnID)
+			const editEmbedModal = new ModalBuilder()
+				.setCustomId(`editEmbedInRoleSetupModal@${rolesSetupInfo.id}`)
+				.setTitle('Edit Role Selector Embed!')
+
+			// input fields
+			const titleInput = new TextInputBuilder()
+				.setCustomId('embedTitle')
+				.setLabel('Enter Title For Embed')
+				.setPlaceholder('For Example: Select Roles!')
+				.setMaxLength(200)
+				.setValue(rolesSetupInfo.title)
+				.setMinLength(1)
+				.setStyle(TextInputStyle.Short)
+			const descriptionInput = new TextInputBuilder()
+				.setCustomId('embedDescription')
+				.setLabel('Enter Description For Embed')
+				.setPlaceholder('For Example: Just Chose Roles From Dropdown!')
+				.setMaxLength(2000)
+				.setValue(rolesSetupInfo.description)
+				.setStyle(TextInputStyle.Paragraph)
+
+			// show modal
+			editEmbedModal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(titleInput))
+			editEmbedModal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(descriptionInput))
+			await btn.showModal(editEmbedModal)
+		}
+
+		/**
+		 * Print Setup Button
+		 */
+		if (regexps.printSetupBtn.test(btn.customId)) {
+			// Get Data
+			const rolesSetupInfo: RoleSetupData = await getRolesSetupInfo(btn, btnID)
+
+			// print
+			await interaction.channel?.send(printRoleSetup(rolesSetupInfo)).then(async () => {
+				await interaction.reply({
+					content: 'Success'
+				})
+			})
+
+			// cleanup
+			return await Flashcore.delete(`__roles_Setup@${btnID}`)
+		}
+	}
+
+	/**
+	 * @handler Modals
+	 */
+	if (interaction.isModalSubmit()) {
+		// Modal Info
+		const modal = interaction as ModalSubmitInteraction
+		const modalID = modal.customId.split('@')[1]
+
+		/**
+		 * Add Role With Data Modal
+		 */
+		if (regexps.roleSetupAddRoleSelectedModal.test(modal.customId)) {
+			// vars
+			const roleDescription = modal.fields.getTextInputValue('roleDescription').trim()
+			const roleEmote = modal.fields.getTextInputValue('roleEmote').trim()
+			const rolesSetupInfo: RoleSetupData = await getRolesSetupInfo(modal, modalID)
+			const [x, y, z] = getRolesSetupButtons(modalID, rolesSetupInfo)
+
+			// extract data
+			const data = JSON.parse(modal.customId.split('@')[2])
+			const roleName = data.label
+			const roleID = data.id
+			try {
+				let newRoleData: RoleSetupDataRole = {
+					label: roleName,
+					role: roleID,
+					description: roleDescription.trim().length > 1 ? roleDescription.trim() : undefined,
+					emote: interaction.guild?.emojis.resolveIdentifier(roleEmote) ?? undefined
+				}
+				if (rolesSetupInfo.roles) {
+					rolesSetupInfo.roles.push(newRoleData)
+				} else {
+					rolesSetupInfo.roles = [newRoleData]
+				}
+				await Flashcore.set(`__roles_Setup@${modalID}`, rolesSetupInfo)
+				interaction.message
+					?.edit({
+						embeds: [getRolesSetupEmbed(rolesSetupInfo)],
+						components: [x, y, z]
+					})
+					.then(async () => {
+						await interaction.reply({
+							content: 'Role Added',
+							ephemeral: true
+						})
+					})
+			} catch {
+				return interaction.reply({
+					content: 'Internal Error',
+					ephemeral: true
+				})
+			}
+		}
+
+		/**
+		 * Edit Embed Modal
+		 */
+		if (regexps.editEmbedInRoleSetupModal.test(modal.customId)) {
+			// vars
+			const rolesSetupInfo: RoleSetupData = await getRolesSetupInfo(modal, modalID)
+			const [x, y, z] = getRolesSetupButtons(modalID, rolesSetupInfo)
+			const embedTitle = modal.fields.getTextInputValue('embedTitle').trim()
+			const embedDescription = modal.fields.getTextInputValue('embedDescription').trim()
+
+			// edit data
+			rolesSetupInfo.title = embedTitle
+			rolesSetupInfo.description = embedDescription.trim()
+
+			try {
+				await interaction.message
+					?.edit({
+						embeds: [getRolesSetupEmbed(rolesSetupInfo)],
+						components: [x, y, z]
+					})
+					.then(async () => {
+						await Flashcore.set(`__roles_Setup@${modalID}`, rolesSetupInfo)
+						await interaction.reply({
+							content: 'Embed Updated!',
+							ephemeral: true
+						})
+					})
+			} catch {
+				return interaction.reply({
+					content: 'Internal Error'
+				})
+			}
+		}
+	}
 }

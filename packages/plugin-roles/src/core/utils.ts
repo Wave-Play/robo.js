@@ -1,66 +1,96 @@
-import { ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, BaseMessageOptions, ButtonBuilder, ButtonStyle, EmbedBuilder, APISelectMenuComponent } from "discord.js";
-import { RoleSetupData } from "./types";
+// imports
+import {
+	ActionRowBuilder,
+	StringSelectMenuBuilder,
+	StringSelectMenuOptionBuilder,
+	BaseMessageOptions,
+	ButtonBuilder,
+	ButtonStyle,
+	EmbedBuilder,
+	APISelectMenuComponent,
+	RoleSelectMenuBuilder
+} from 'discord.js'
+import { RoleSetupData } from './types'
 
+/**
+ * Embed During Active Role Setup Creation
+ */
 export const getRolesSetupEmbed = (data: RoleSetupData) => {
-    const introEmbed = new EmbedBuilder()
-        .setTitle(data.title ?? 'Role Selector!')
-        .setColor((data.color) ? ((`#${data.color.replaceAll("#", '').toString()}`)) : "Blurple")
-        .setDescription(data.description ?? 'Select Roles From Dropdown Below!')
-        .setTimestamp();
-
-    data.roles?.forEach((x, i) => introEmbed.addFields({ name: `Roles Added To Dropper #${i + 1}`, value: `${x.emote ?? `#${i + 1}`} - **<@!${x.label}>**` }))
-    return introEmbed
+	const introEmbed = new EmbedBuilder()
+		.setTitle(data.title ?? 'Role Selector!')
+		.setColor(data.color ? `#${data.color.replaceAll('#', '').toString()}` : 'Blurple')
+		.setDescription(data.description ?? 'Select Roles From Dropdown Below!')
+		.setTimestamp()
+	data.roles?.forEach((x, i) =>
+		introEmbed.addFields({
+			name: `Roles Added To Dropper #${i + 1}`,
+			value: `${x.emote ?? `#${i + 1}`} - **<@&${x.role}>** - ${x.description ?? `No Description!`}`
+		})
+	)
+	return introEmbed
+}
+/**
+ * Buttons followed by Embed During Active Role Setup Creation
+ */
+export const getRolesSetupButtons = (ID: string, data: RoleSetupData) => {
+	// Buttons
+	console.log('FUNC', data)
+	const disabled = data.roles ? data.roles.length == 0 : true
+	const editBtn = new ButtonBuilder()
+		.setCustomId(`editEmbedInRoleSetupButton@${ID}`)
+		.setLabel('Edit Embed')
+		.setEmoji('✍')
+		.setStyle(ButtonStyle.Secondary)
+	const printBtn = new ButtonBuilder()
+		.setCustomId(`printSetupBtn@${ID}`)
+		.setEmoji('👣')
+		.setLabel('Print Setup')
+		.setDisabled(disabled)
+		.setStyle(ButtonStyle.Success)
+	// intro row
+	const introRow = new ActionRowBuilder<ButtonBuilder>().addComponents(printBtn, editBtn)
+	const introRow2 = new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(
+		new RoleSelectMenuBuilder().setPlaceholder('Select Role To Add!').setCustomId(`roleSetupAddRoleSelector@${ID}`)
+	)
+	const introRow3 = new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(
+		new RoleSelectMenuBuilder()
+			.setPlaceholder('Select Role(s) To Remove!')
+			.setCustomId(`roleSetupDeleteRoleSelector@${ID}`)
+			.setMaxValues(25)
+	)
+	return [introRow, introRow2, introRow3]
 }
 
-export const getRolesSetupButtons = (ID: string, disabled: boolean = true) => {
-    // Buttons 
-    const addBtn = new ButtonBuilder()
-        .setCustomId(`addBtn@${ID}`)
-        .setLabel('Add Role')
-        .setStyle(ButtonStyle.Primary);
-    const deleteBtn = new ButtonBuilder()
-        .setCustomId(`deleteBtn@${ID}`)
-        .setLabel('Delete Role')
-        .setDisabled(disabled)
-        .setStyle(ButtonStyle.Danger);
-    const printBtn = new ButtonBuilder()
-        .setCustomId(`printSetupBtn@${ID}`)
-        .setLabel('Print Setup')
-        .setDisabled(disabled)
-        .setStyle(ButtonStyle.Success);
-    // intro row 
-    const introRow = new ActionRowBuilder<ButtonBuilder>()
-        .addComponents(addBtn, deleteBtn, printBtn);
-    return introRow
-}
-
+/**
+ * Clean up and print func, final step for setup
+ */
 export const printRoleSetup = (data: RoleSetupData): BaseMessageOptions => {
-    const embed = new EmbedBuilder()
-        .setTitle(data.title ?? 'Role Selector!')
-        .setColor((data.color) ? ((`#${data.color.replaceAll("#", '').toString()}`)) : "Blurple")
-        .setDescription(data.description ?? 'Select Roles From Dropdown Below!')
-        .setTimestamp();
+	const embed = new EmbedBuilder()
+		.setTitle(data.title ?? 'Role Selector!')
+		.setColor(data.color ? `#${data.color.replaceAll('#', '').toString()}` : 'Blurple')
+		.setDescription(data.description ?? 'Select Roles From Dropdown Below!')
+		.setTimestamp()
 
-    const rolesDropdownOptions: StringSelectMenuOptionBuilder[] = [];
+	const rolesDropdownOptions: StringSelectMenuOptionBuilder[] = []
 
-    data.roles?.forEach(x => {
-        rolesDropdownOptions.push(
-            new StringSelectMenuOptionBuilder()
-                .setLabel(x.label)
-                .setValue(`roleDropper@${x.role}`)
-        )
-    })
+	data.roles?.forEach((x) => {
+		rolesDropdownOptions.push(
+			new StringSelectMenuOptionBuilder()
+				.setLabel(x.label)
+				.setDescription(x.description ?? '')
+				.setValue(`roleDropper@${x.role}`)
+		)
+	})
 
-    const rolesDropdown = new StringSelectMenuBuilder()
-        .setCustomId(`rolesSelector@${data.id}`)
-        .setPlaceholder('Select Your Role Here!')
-        .addOptions(rolesDropdownOptions);
+	const rolesDropdown = new StringSelectMenuBuilder()
+		.setCustomId(`rolesSelector@${data.id}`)
+		.setPlaceholder('Select Your Role Here!')
+		.addOptions(rolesDropdownOptions)
 
-    const row = new ActionRowBuilder<StringSelectMenuBuilder>()
-        .addComponents(rolesDropdown);
+	const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(rolesDropdown)
 
-    return {
-        embeds: [embed],
-        components: [row]
-    }
+	return {
+		embeds: [embed],
+		components: [row]
+	}
 }
