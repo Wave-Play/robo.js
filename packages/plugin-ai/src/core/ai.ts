@@ -56,7 +56,8 @@ export function setEngineReady() {
 }
 
 export interface ChatReply {
-	embeds?: APIEmbed[]
+	components?: InteractionReplyOptions['components']
+	embeds?: InteractionReplyOptions['embeds']
 	files?: InteractionReplyOptions['files']
 	text?: string
 }
@@ -182,9 +183,10 @@ async function chat(messages: ChatMessage[], options: ChatOptions): Promise<void
 			logger.debug(`Function call result:`, result)
 
 			// If this includes special data such as files or embeds, send them ahead of time
-			if (result.reply?.files?.length || result.reply?.embeds?.length) {
+			if (result.reply?.components?.length || result.reply?.files?.length || result.reply?.embeds?.length) {
 				logger.debug(`Sending special data ahead of time...`)
 				await onReply?.({
+					components: result.reply.components,
 					embeds: result.reply.embeds,
 					files: result.reply.files
 				})
@@ -316,6 +318,7 @@ async function getCommandReply(
 	}
 
 	const result: CommandReply = {
+		components: [],
 		embeds: [],
 		files: [],
 		message: '',
@@ -328,6 +331,7 @@ async function getCommandReply(
 		const reply = functionResult as InteractionReplyOptions
 		const replyEmbeds = reply.embeds as APIEmbed[]
 
+		result.components = reply.components
 		result.embeds = replyEmbeds
 		result.files = reply.files
 		result.text = reply.content
