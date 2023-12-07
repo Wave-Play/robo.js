@@ -6,9 +6,9 @@
 	"private": false,
 	"main": ".robo/build/index.js",
 	"license": "MIT",
-	"author": "Your Name <email>",
+	"author": "ArnavK-09 <arnavkaushal09@gmail.com>",
 	"contributors": [
-		"Your Name <email>"
+		"ArnavK-09 <arnavkaushal09@gmail.com>"
 	],
 	"files": [
 		".robo/",

@@ -94,3 +94,22 @@ export const printRoleSetup = (data: RoleSetupData): BaseMessageOptions => {
 		components: [row]
 	}
 }
+
+/**
+ * Check perms helper
+ */
+export function hasPerm(interaction: BaseInteraction, permission: PermissionResolvable): boolean {
+	// Validate channel
+	const channel = interaction.channel
+	if (!channel || !channel.isTextBased() || channel.isDMBased()) {
+		return false
+	}
+
+	// Add self to logs channel if needed
+	const userId = interaction.member?.user?.id as string
+	if (!channel.permissionsFor(userId)?.has(permission)) {
+		return false
+	}
+
+	return true
+}
