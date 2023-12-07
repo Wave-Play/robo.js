@@ -1,39 +1,13 @@
-import { BaseEngine, ChatMessage, ChatOptions, ChatResult, GenerateImageOptions, GenerateImageResult } from './base.js'
-import { gptFunctions, options as pluginOptions } from '@/events/_start.js'
+import { options as pluginOptions } from '@/events/_start.js'
 import { logger } from '@roboplay/robo.js'
 
-export class OpenAiEngine extends BaseEngine {
-	public async chat(messages: ChatMessage[], options: ChatOptions): Promise<ChatResult> {
-		const { functions, model = pluginOptions?.model ?? 'gpt-3.5-turbo' } = options ?? {}
-
-		const response = await chat({
-			maxTokens: pluginOptions?.maxTokens,
-			model: model,
-			messages: messages,
-			functions: functions
-		})
-		logger.debug(`GPT Response:`, response)
-
-		const reply = response?.choices?.[0]
-		return {
-			finish_reason: reply?.finish_reason,
-			message: reply?.message
-		}
-	}
-
-	public async generateImage(options: GenerateImageOptions): Promise<GenerateImageResult> {
-		const { model = 'dall-e-3', prompt } = options
-
-		const response = await createImage({
-			model,
-			prompt
-		})
-		logger.debug(`GPT Image Response:`, response)
-
-		return {
-			images: response?.data
-		}
-	}
+/**
+ * API bindings for OpenAI.
+ * @see https://platform.openai.com/docs/api-reference
+ */
+export const openai = {
+	chat,
+	createImage
 }
 
 interface GptChatMessage {
@@ -87,7 +61,7 @@ interface GptFunctionProperty {
 async function chat(options: GptChatOptions) {
 	const {
 		backoff = true,
-		functions = gptFunctions,
+		functions,
 		maxTokens = 1024,
 		messages,
 		model = 'gpt-3.5-turbo',
@@ -145,6 +119,26 @@ async function chat(options: GptChatOptions) {
 	}
 }
 
+interface Assistant {
+	id: string
+	object: string
+	created_at: number
+	name: string
+	description: string | null
+	model: string
+	instructions: string
+	tools: Array<{
+		type: string
+	}>
+	file_ids: string[]
+	metadata: Record<string, unknown>
+}
+
+interface CreateAssistantOptions {
+	model: string
+	name?: string
+}
+
 interface CreateImageOptions {
 	prompt: string
 	model?: string
@@ -187,9 +181,4 @@ async function createImage(options: CreateImageOptions): Promise<CreateImageResu
 	}
 
 	return jsonResponse
-}
-
-export const OpenAi = {
-	chat,
-	createImage
 }
