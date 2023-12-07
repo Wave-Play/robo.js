@@ -1,4 +1,5 @@
-import { GuildMember, TextBasedChannel } from 'discord.js'
+import type { Command } from '@roboplay/robo.js'
+import type { GuildMember, TextBasedChannel } from 'discord.js'
 
 export type Hook = (context: HookContext, iteration: number) => Promise<ChatMessage[]>
 
@@ -93,6 +94,17 @@ export abstract class BaseEngine {
 	public abstract chat(messages: ChatMessage[], options: ChatOptions): Promise<ChatResult>
 
 	public abstract generateImage(options: GenerateImageOptions): Promise<GenerateImageResult>
+
+	public abstract getFunctionHandlers(): Record<string, Command>
+
+	public abstract getInfo(): Record<string, unknown>
+
+	/**
+	 * Perform any initialization required by the engine here.
+	 */
+	public async init(): Promise<void> {
+		// Do nothing by default
+	}
 
 	public off(event: HookEvent, hook: Hook) {
 		const index = this._hooks[event].indexOf(hook)
