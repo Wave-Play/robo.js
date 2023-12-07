@@ -3,11 +3,11 @@ import { CommandInteraction } from 'discord.js'
 import { AI } from '@/core/ai.js'
 
 export const config: CommandConfig = {
-	description: 'Generate an image of your imagination!',
+	description: 'Bring your creative visions to life!',
 	options: [
 		{
 			name: 'prompt',
-			description: 'The prompt to imagine',
+			description: 'Describe your imaginative scene or concept for artistic creation',
 			required: true
 		}
 	]
