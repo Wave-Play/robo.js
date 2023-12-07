@@ -55,7 +55,6 @@ export interface ChatOptions {
 	functions?: ChatFunction[]
 	member?: GuildMember | null
 	model?: string
-	onReply: (message: string) => Promise<void> | void
 	showTyping?: boolean
 }
 

@@ -24,10 +24,7 @@ export async function selectOne(
 		],
 		{
 			functions: [],
-			model: 'gpt-3.5-turbo',
-			onReply: () => {
-				// Do nothing
-			}
+			model: 'gpt-3.5-turbo'
 		}
 	)
 	const reply = response.message?.content as string

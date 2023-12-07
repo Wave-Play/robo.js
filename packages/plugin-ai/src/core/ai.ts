@@ -1,13 +1,14 @@
+import { logger } from '@/core/logger.js'
 import { options as pluginOptions } from '@/events/_start.js'
 import { waitForTyping } from '@/events/typingStart/debounce.js'
 import { mockInteraction } from '@/utils/discord-utils.js'
-import { Command, client, color, logger } from '@roboplay/robo.js'
+import { Command, client, color } from '@roboplay/robo.js'
 import type {
 	BaseEngine,
 	ChatFunctionCall,
 	ChatMessage,
 	ChatMessageContent,
-	ChatOptions,
+	ChatOptions as BaseChatOptions,
 	GenerateImageOptions,
 	GenerateImageResult
 } from '@/engines/base.js'
@@ -52,6 +53,16 @@ export function setEngine(engine: BaseEngine) {
 
 export function setEngineReady() {
 	_initialized = true
+}
+
+export interface ChatReply {
+	embeds?: APIEmbed[]
+	files?: InteractionReplyOptions['files']
+	text?: string
+}
+
+interface ChatOptions extends BaseChatOptions {
+	onReply: (reply: ChatReply) => void | Promise<void>
 }
 
 async function chat(messages: ChatMessage[], options: ChatOptions): Promise<void> {
@@ -160,19 +171,35 @@ async function chat(messages: ChatMessage[], options: ChatOptions): Promise<void
 				content = content.slice(clientUsername.length + 1).trim()
 			}
 
-			await onReply?.(content)
+			await onReply?.({
+				text: content
+			})
 		}
 
 		// Execute a function call if there is one
 		if (reply.message?.function_call && reply.finish_reason === 'function_call') {
 			const result = await executeFunctionCall(reply.message.function_call, options?.channel, options?.member)
+			logger.debug(`Function call result:`, result)
+
+			// If this includes special data such as files or embeds, send them ahead of time
+			if (result.reply?.files?.length || result.reply?.embeds?.length) {
+				logger.debug(`Sending special data ahead of time...`)
+				await onReply?.({
+					embeds: result.reply.embeds,
+					files: result.reply.files
+				})
+			}
 
 			// Add the function result to the messages
 			aiMessages.push(reply.message)
 			aiMessages.push({
 				role: 'function',
 				name: reply.message.function_call.name,
-				content: JSON.stringify(result)
+				content: JSON.stringify({
+					error: result.error,
+					message: result.reply?.message,
+					success: result.success
+				})
 			})
 			continue
 		}
@@ -186,7 +213,7 @@ async function chat(messages: ChatMessage[], options: ChatOptions): Promise<void
 	}
 }
 
-async function chatSync(messages: ChatMessage[], options: Omit<ChatOptions, 'onReply'>): Promise<string> {
+async function chatSync(messages: ChatMessage[], options: Omit<ChatOptions, 'onReply'>): Promise<ChatReply> {
 	return new Promise((resolve) => {
 		chat(messages, {
 			...options,
@@ -201,7 +228,7 @@ async function generateImage(options: GenerateImageOptions): Promise<GenerateIma
 	return _engine.generateImage(options)
 }
 
-export async function executeFunctionCall(
+async function executeFunctionCall(
 	call: ChatFunctionCall,
 	channel: TextBasedChannel | null | undefined,
 	member: GuildMember | null | undefined
@@ -253,11 +280,12 @@ export async function executeFunctionCall(
 
 	// Execute the function
 	try {
-		const result = await getCommandReply(gptFunctionHandler, channel, member, args)
+		const reply = await getCommandReply(gptFunctionHandler, channel, member, args)
+		logger.debug(`Command function reply:`, reply)
 
 		return {
 			success: true,
-			message: result
+			reply: reply
 		}
 	} catch (err) {
 		logger.debug(color.red(`Error executing AI function:`), err)
@@ -269,12 +297,15 @@ export async function executeFunctionCall(
 	}
 }
 
+interface CommandReply extends ChatReply {
+	message: string
+}
 async function getCommandReply(
 	command: Command,
 	channel: TextBasedChannel | null | undefined,
 	member: GuildMember | null | undefined,
 	args: Record<string, string>
-) {
+): Promise<CommandReply> {
 	logger.debug(`Executing command:`, command.config, args)
 	const { interaction, replyPromise } = mockInteraction(channel, member, args)
 	let functionResult = await command.default(interaction)
@@ -284,14 +315,28 @@ async function getCommandReply(
 		functionResult = await replyPromise
 	}
 
-	let result = ''
-	logger.debug(`Function result:`, functionResult)
+	const result: CommandReply = {
+		embeds: [],
+		files: [],
+		message: '',
+		text: ''
+	}
 	if (typeof functionResult === 'string') {
-		result = functionResult
+		result.message = functionResult
+		result.text = functionResult
 	} else if (typeof functionResult === 'object') {
 		const reply = functionResult as InteractionReplyOptions
 		const replyEmbeds = reply.embeds as APIEmbed[]
-		result = reply.content || replyEmbeds?.[0]?.title || replyEmbeds?.[0]?.description || ''
+
+		result.embeds = replyEmbeds
+		result.files = reply.files
+		result.text = reply.content
+		result.message = reply.content || replyEmbeds?.[0]?.title || replyEmbeds?.[0]?.description || ''
+	}
+
+	// Describe result if there's no message but there is something
+	if (!result.message && result.files?.length) {
+		result.message = `The file processing task is complete. (do not include file references in reply)`
 	}
 
 	return result

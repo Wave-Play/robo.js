@@ -96,12 +96,28 @@ export default async (message: Message) => {
 		channel: message.channel,
 		member: message.member ?? message.guild?.members.cache.get(message.author.id),
 		onReply: async (reply) => {
-			const chunks = chunkMessage(reply)
+			let { embeds, files } = reply
+			const chunks = chunkMessage(reply.text ?? '')
 			let lastMessage = targetMessage
+
+			// If there's no chunks to split, just send special data
+			if (!chunks.length) {
+				await lastMessage.reply({
+					embeds,
+					files
+				})
+				return
+			}
 
 			for (const chunk of chunks) {
 				const content = replaceUsernamesWithIds(chunk, userMap)
-				lastMessage = await lastMessage.reply(content)
+				lastMessage = await lastMessage.reply({
+					content,
+					embeds,
+					files
+				})
+				embeds = undefined
+				files = undefined
 			}
 		}
 	})

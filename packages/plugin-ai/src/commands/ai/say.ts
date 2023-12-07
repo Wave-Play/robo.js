@@ -1,6 +1,7 @@
 import { AI } from '@/core/ai.js'
-import { logger } from '@roboplay/robo.js'
+import { logger } from '@/core/logger.js'
 import { ChannelType, CommandInteraction } from 'discord.js'
+import type { ChatReply } from '@/core/ai.js'
 import type { CommandConfig } from '@roboplay/robo.js'
 
 export const config: CommandConfig = {
@@ -62,9 +63,9 @@ export default async (interaction: CommandInteraction) => {
 
 
 	// Reply using the AI engine
-	let result: string | undefined = undefined
+	let result: ChatReply | undefined = undefined
 	try {
-		result = await new Promise<string>((resolve) => {
+		result = await new Promise<ChatReply>((resolve) => {
 			AI.chat(
 				[
 					{
@@ -74,18 +75,13 @@ export default async (interaction: CommandInteraction) => {
 				],
 				{
 					channel: interaction.channel ?? undefined,
-					onReply: (reply: string) => {
+					onReply: (reply) => {
 						resolve(reply)
 					}
 				}
 			)
 		})
 	} catch (error) {
-		// empty
-	}
-
-	// Error privately if failed
-	if (!result) {
 		return {
 			content: 'I could not send the message. Please try again later.',
 			ephemeral: true

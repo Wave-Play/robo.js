@@ -37,7 +37,7 @@ export default (req: RoboRequest<ApiChatRequest>): Promise<ApiChatResponse> => {
 				onReply: (message) => {
 					logger.debug('API Chat response:', message)
 					resolve({
-						message: message
+						message: message.text ?? ''
 					})
 				}
 			})
