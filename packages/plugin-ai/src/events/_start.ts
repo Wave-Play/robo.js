@@ -1,13 +1,12 @@
+import { setEngine } from '@/core/ai.js'
 import { logger } from '@/core/logger.js'
-import { Command, portal } from '@roboplay/robo.js'
+import { OpenAiEngine } from '@/engines/openai/engine.js'
 import { Client } from 'discord.js'
-import type { ChatFunction, ChatFunctionParameters, ChatFunctionProperty } from '@/engines/base.js'
-
-export const gptFunctions: ChatFunction[] = []
-export const gptFunctionHandlers: Record<string, Command> = {}
+import type { BaseEngine } from '@/engines/base.js'
 
 export interface PluginOptions {
 	commands?: boolean | string[]
+	engine?: BaseEngine
 	maxTokens?: number
 	model?: string
 	openaiKey: string
@@ -25,43 +24,15 @@ export let options: PluginOptions
 export default (_client: Client, pluginOptions: PluginOptions) => {
 	options = pluginOptions
 
-	portal.commands
-		.filter((command) => {
-			// Only allow commands enabled in the plugin options
-			if (Array.isArray(options.commands)) {
-				return options.commands.includes(command.key.replaceAll('/', ' '))
-			} else {
-				return options.commands
-			}
-		})
-		.forEach((command) => {
-			const commandParameters: ChatFunctionParameters = {
-				type: 'object',
-				required: [],
-				properties: {}
-			}
+	// OpenAI is the default engine for now
+	if (!options.engine) {
+		options.engine = new OpenAiEngine()
+	}
+	setEngine(options.engine)
 
-			// Convert Discord command options to GPT function parameters
-			commandParameters.properties =
-				command.handler.config?.options?.reduce((properties, option) => {
-					properties[option.name] = {
-						type: 'string',
-						description: option.description ?? ''
-					}
-					if (option.required) {
-						commandParameters.required?.push(option.name)
-					}
-					return properties
-				}, {} as Record<string, ChatFunctionProperty>) ?? {}
-
-			// Add the GPT function to the list
-			const functionName = command.key.replaceAll('/', '_')
-			gptFunctions.push({
-				name: functionName,
-				description: command.description ?? '',
-				parameters: commandParameters
-			})
-			gptFunctionHandlers[functionName] = command.handler
-		})
-	logger.debug(`Loaded ${gptFunctions.length} GPT functions:`, gptFunctions)
+	// Prepare the AI engine in the background
+	logger.debug('Initializing AI engine...')
+	options.engine.init().then(() => {
+		logger.debug('AI engine is ready!')
+	})
 }

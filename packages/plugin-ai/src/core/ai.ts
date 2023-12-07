@@ -1,17 +1,16 @@
-import {
+import { options as pluginOptions } from '@/events/_start.js'
+import { waitForTyping } from '@/events/typingStart/debounce.js'
+import { mockInteraction } from '@/utils/discord-utils.js'
+import { Command, client, color, logger } from '@roboplay/robo.js'
+import type {
 	BaseEngine,
+	ChatFunctionCall,
 	ChatMessage,
 	ChatMessageContent,
 	ChatOptions,
 	GenerateImageOptions,
 	GenerateImageResult
 } from '@/engines/base.js'
-import { OpenAiEngine } from '@/engines/openai.js'
-import { gptFunctionHandlers, options as pluginOptions } from '@/events/_start.js'
-import { waitForTyping } from '@/events/typingStart/debounce.js'
-import { Command, client, color, logger } from '@roboplay/robo.js'
-import { ChatFunctionCall } from '@/engines/base.js'
-import { mockInteraction } from '@/utils/discord-utils.js'
 import type {
 	APIEmbed,
 	GuildMember,
@@ -19,6 +18,17 @@ import type {
 	InteractionReplyOptions,
 	TextBasedChannel
 } from 'discord.js'
+
+/**
+ * The core AI interface.
+ * Use this to call AI features programatically.
+ */
+export const AI = {
+	chat,
+	chatSync,
+	generateImage,
+	isReady: () => _initialized
+}
 
 // Keeps track of users currently being replied to
 interface UserReplying {
@@ -33,10 +43,15 @@ export function isReplyingToUser(userId: string): boolean {
 	return !!replying[userId]
 }
 
-export let _engine: BaseEngine = new OpenAiEngine()
+export let _engine: BaseEngine
+let _initialized = false
 
 export function setEngine(engine: BaseEngine) {
 	_engine = engine
+}
+
+export function setEngineReady() {
+	_initialized = true
 }
 
 async function chat(messages: ChatMessage[], options: ChatOptions): Promise<void> {
@@ -186,18 +201,12 @@ async function generateImage(options: GenerateImageOptions): Promise<GenerateIma
 	return _engine.generateImage(options)
 }
 
-export const AI = {
-	chat,
-	chatSync,
-	generateImage
-}
-
 export async function executeFunctionCall(
 	call: ChatFunctionCall,
 	channel: TextBasedChannel | null | undefined,
 	member: GuildMember | null | undefined
 ) {
-	const gptFunctionHandler = gptFunctionHandlers[call.name]
+	const gptFunctionHandler = _engine.getFunctionHandlers()[call.name]
 	const args = JSON.parse((call.arguments as unknown as string) ?? '{}')
 	logger.debug(`Executing function call:`, call.name, args)
 
