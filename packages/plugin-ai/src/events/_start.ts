@@ -9,7 +9,6 @@ export interface PluginOptions {
 	engine?: BaseEngine
 	maxTokens?: number
 	model?: string
-	openaiKey: string
 	systemMessage?: string
 	whitelist?: {
 		channelIds: string[]
