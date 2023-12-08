@@ -46,7 +46,7 @@ export default async (data: MiddlewareData): Promise<MiddlewareResult | void> =>
 	// Alright, restrict time
 	if (!hasPerm(interaction, PermissionFlagsBits.Administrator) && interaction.reply) {
 		await interaction.reply({
-			content: `Sorry, this command is currently restricted to you!`,
+			content: `😓 Apologies, this command is currently restricted to you!`,
 			ephemeral: true
 		})
 
