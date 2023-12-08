@@ -5,7 +5,7 @@ import { hasPerm } from '../../core/utils.js'
 import { RoleRestrictionData } from '../../core/types.js'
 
 export const config: CommandConfig = {
-	description: 'Restrict Commands',
+	description: 'Configure restrictions for specific commands to designated roles',
 	dmPermission: false,
 	options: [
 		{
