@@ -83,7 +83,7 @@ export const printRoleSetup = (data: RoleSetupData): BaseMessageOptions => {
 	// component group
 	const rolesDropdown = new StringSelectMenuBuilder()
 		.setCustomId(`role_Setup_roleDropper@${data.id}`)
-		.setPlaceholder('Select Your Role Here!')
+		.setPlaceholder('Pick A Role Here!')
 		.addOptions(rolesDropdownOptions);
 	const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(rolesDropdown)
 
