@@ -17,11 +17,11 @@ import { getRolesSetupEmbed, getRolesSetupButtons, printRoleSetup, hasPerm } fro
 
 /**
  * Get data from flashcore
- * @param {Interaction} i
  * @param {string} id
  * @returns {RoleSetupData} RoleSetupData
  */
-const getRolesSetupInfo = (i: Interaction, id: string): any => {
+const getRolesSetupInfo = (id: string): Promise<RoleSetupData> => {
+	/* eslint-disable no-async-promise-executor */
 	return new Promise(async (resolve, reject) => {
 		const data = await Flashcore.get(`__roles_Setup@${id}`)
 		if (!data) {
@@ -37,10 +37,12 @@ export default async (interaction: Interaction) => {
 	 * Perms Check
 	 */
 	if (!hasPerm(interaction, PermissionFlagsBits.ManageRoles)) {
-		return await (interaction as MessageComponentInteraction).reply({
-			content: `You don't have permission to use this.`,
-			ephemeral: true
-		}).catch(logger.error)
+		return await (interaction as MessageComponentInteraction)
+			.reply({
+				content: `You don't have permission to use this.`,
+				ephemeral: true
+			})
+			.catch(logger.error)
 	}
 
 	/**
@@ -50,7 +52,7 @@ export default async (interaction: Interaction) => {
 		const i = interaction as RoleSelectMenuInteraction
 		const role = interaction.roles.first()
 		const me = await interaction.guild?.members.fetchMe({ force: true })
-		const rolesSetupInfo: RoleSetupData = await getRolesSetupInfo(i, i.customId.split('@')[1])
+		const rolesSetupInfo: RoleSetupData = await getRolesSetupInfo(i.customId.split('@')[1])
 
 		if (role?.managed) {
 			return interaction.reply({
@@ -102,7 +104,7 @@ export default async (interaction: Interaction) => {
 	if (interaction.isRoleSelectMenu() && regexps.roleSetupDeleteRoleSelector.test(interaction.customId)) {
 		const i = interaction as RoleSelectMenuInteraction
 		const id = i.customId.split('@')[1]
-		const rolesSetupInfo: RoleSetupData = await getRolesSetupInfo(i, id)
+		const rolesSetupInfo: RoleSetupData = await getRolesSetupInfo(id)
 		const roles = interaction.roles
 		const [x, y, z] = getRolesSetupButtons(id, rolesSetupInfo)
 
@@ -130,7 +132,8 @@ export default async (interaction: Interaction) => {
 			})
 	}
 	/**
-	 * Select Role By Member Role Embed
+	 * Select Role By Member Role embedDescription
+	 * @todo
 	 */
 	if (interaction.isRoleSelectMenu() && regexps.roleDropperRoleSelectFromEmbed.test(interaction.customId)) {
 		const i = interaction as RoleSelectMenuInteraction
@@ -150,7 +153,7 @@ export default async (interaction: Interaction) => {
 		 */
 		if (regexps.editEmbedInRoleSetupButton.test(btn.customId)) {
 			// Get Data
-			const rolesSetupInfo: RoleSetupData = await getRolesSetupInfo(btn, btnID)
+			const rolesSetupInfo: RoleSetupData = await getRolesSetupInfo(btnID)
 			const editEmbedModal = new ModalBuilder()
 				.setCustomId(`editEmbedInRoleSetupModal@${rolesSetupInfo.id}`)
 				.setTitle('Edit Role Selector Embed!')
@@ -183,7 +186,7 @@ export default async (interaction: Interaction) => {
 		 */
 		if (regexps.printSetupBtn.test(btn.customId)) {
 			// Get Data
-			const rolesSetupInfo: RoleSetupData = await getRolesSetupInfo(btn, btnID)
+			const rolesSetupInfo: RoleSetupData = await getRolesSetupInfo(btnID)
 
 			// print
 			await interaction.channel?.send(printRoleSetup(rolesSetupInfo)).then(async () => {
@@ -212,7 +215,7 @@ export default async (interaction: Interaction) => {
 			// vars
 			const roleDescription = modal.fields.getTextInputValue('roleDescription').trim()
 			const roleEmote = modal.fields.getTextInputValue('roleEmote').trim()
-			const rolesSetupInfo: RoleSetupData = await getRolesSetupInfo(modal, modalID)
+			const rolesSetupInfo: RoleSetupData = await getRolesSetupInfo(modalID)
 			const [x, y, z] = getRolesSetupButtons(modalID, rolesSetupInfo)
 
 			// extract data
@@ -220,7 +223,7 @@ export default async (interaction: Interaction) => {
 			const roleName = data.label
 			const roleID = data.id
 			try {
-				let newRoleData: RoleSetupDataRole = {
+				const newRoleData: RoleSetupDataRole = {
 					label: roleName,
 					role: roleID,
 					description: roleDescription.trim().length > 1 ? roleDescription.trim() : undefined,
@@ -256,7 +259,7 @@ export default async (interaction: Interaction) => {
 		 */
 		if (regexps.editEmbedInRoleSetupModal.test(modal.customId)) {
 			// vars
-			const rolesSetupInfo: RoleSetupData = await getRolesSetupInfo(modal, modalID)
+			const rolesSetupInfo: RoleSetupData = await getRolesSetupInfo(modalID)
 			const [x, y, z] = getRolesSetupButtons(modalID, rolesSetupInfo)
 			const embedTitle = modal.fields.getTextInputValue('embedTitle').trim()
 			const embedDescription = modal.fields.getTextInputValue('embedDescription').trim()

@@ -26,7 +26,7 @@ export interface RoleSetupData {
 /**
  * Role Restriction Data DB Instance
  */
-export type RoleRestrictionData = { command: string, role: Snowflake, restrict: boolean }
+export type RoleRestrictionData = { command: string; role: Snowflake; restrict: boolean }
 
 /**
  * Codes to match and find appropirate handler

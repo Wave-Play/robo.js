@@ -35,7 +35,7 @@ export const config: CommandConfig = {
 export const autocomplete = (interaction: AutocompleteInteraction) => {
 	const query = (interaction.options.get('command')?.value as string).toString().toLowerCase().trim()
 	const collection = portal.commands.filter((x) => x.key.toLowerCase().includes(query))
-	let results: Array<{ name: string; value: string }> = []
+	const results: Array<{ name: string; value: string }> = []
 	collection.forEach((x) => results.push({ name: x.key.toUpperCase(), value: x.key.toLowerCase() }))
 	return results.map((r) => r)
 }
@@ -54,38 +54,38 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 		}
 	}
 
-	// get data 
-	const data: RoleRestrictionData[] | undefined = await Flashcore.get(`__roles_Setup_Restrict@${interaction.guild!.id}`);
+	// get data
+	const data: RoleRestrictionData[] | undefined = await Flashcore.get(`__roles_Setup_Restrict@${interaction.guild!.id}`)
 
-	let newData: RoleRestrictionData[] = [];
-	// check data 
+	let newData: RoleRestrictionData[] = []
+	// check data
 	if (data) {
 		newData = data
 	}
 
-	// check 
+	// check
 	newData.forEach((x, i) => {
-		if (x.command == command as string && x.role == role) {
-			// already exist delete it 
+		if (x.command == (command as string) && x.role == role) {
+			// already exist delete it
 			delete newData[i]
 		}
 	})
 
-	// add data 
+	// add data
 	newData.push({
 		command: command as string,
-		role: (role as Snowflake),
-		restrict: restrict as boolean ?? true
+		role: role as Snowflake,
+		restrict: (restrict as boolean) ?? true
 	})
 
-	// filter 
-	newData = newData.filter(x => x !== undefined)
-	newData = newData.filter(x => x.restrict == true)
-	newData = newData.filter(x => x.command !== "roles/restrict")
+	// filter
+	newData = newData.filter((x) => x !== undefined)
+	newData = newData.filter((x) => x.restrict == true)
+	newData = newData.filter((x) => x.command !== 'roles/restrict')
 
-	// save 
+	// save
 	await Flashcore.set(`__roles_Setup_Restrict@${interaction.guild!.id}`, newData)
 	return {
-		content: "Done!"
+		content: 'Done!'
 	}
 }
