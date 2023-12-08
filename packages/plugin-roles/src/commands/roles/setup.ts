@@ -21,7 +21,7 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 
 	if (!hasPerm(interaction, PermissionFlagsBits.ManageRoles)) {
 		return {
-			content: `You don't have permission to use this.`,
+			content: `🌡️ Insufficient permissions to use this command!`,
 			ephemeral: true
 		}
 	}
