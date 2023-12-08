@@ -22,9 +22,9 @@ This plugin offers drop down menu roles for discord guild as well as option to r
 
 ## 🎚️ Plugin Commands
 
-- `/roles setup\` - Initiate setup for role picker menu! user friendly! 
+- `/roles setup` - Initiate setup for role picker menu! user friendly! 
 
-- `/role restrict\` - Configure role-based restrictions for slash commands!  
+- `/role restrict` - Configure role-based restrictions for slash commands!  
 
 > **The plugin handles role assignment and restrictions automatically based on configurations!**
 
