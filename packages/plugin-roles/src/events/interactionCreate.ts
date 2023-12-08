@@ -77,7 +77,7 @@ export default async (interaction: Interaction) => {
 	if (!hasPerm(interaction, PermissionFlagsBits.ManageRoles)) {
 		return await (interaction as MessageComponentInteraction)
 			.reply({
-				content: `You don't have permission to use this.`,
+				content: `🌡️ Insufficient permissions to use this command!`,
 				ephemeral: true
 			})
 			.catch(logger.error)
@@ -95,13 +95,13 @@ export default async (interaction: Interaction) => {
 		// check basic role thingz
 		if (role?.managed) {
 			return interaction.reply({
-				content: 'Integration Rolle',
+				content: '⚙️ The selected role is an integration role managed by Discord!',
 				ephemeral: true
 			})
 		}
 		if (me && role!.position > me.roles.highest.position) {
 			return interaction.reply({
-				content: 'Rolle higher',
+				content: '⚖️ Your selected role is higher than my top-most role, please adjust my permissions accordingly!',
 				ephemeral: true
 			})
 		}
@@ -110,7 +110,7 @@ export default async (interaction: Interaction) => {
 		const res = rolesSetupInfo.roles?.filter((i) => i.role == role!.id)
 
 		if (res && res.length > 0) {
-			return interaction.reply({ content: "You can't add same role again!", ephemeral: true })
+			return interaction.reply({ content: "⛑️ You can't add the same role again!", ephemeral: true })
 		}
 
 		// all fine show modal
@@ -121,10 +121,10 @@ export default async (interaction: Interaction) => {
 		// short custom id to validate 100 limit
 		const addModal = new ModalBuilder()
 			.setCustomId(`RSetupM@${rolesSetupInfo.id}@${Buffer.from(JSON.stringify(customData)).toString('utf-8')}`)
-			.setTitle('Add Role In Setup!')
+			.setTitle('Fill This Form To Add Role!')
 		const roleIDInput = new TextInputBuilder()
 			.setCustomId('roleDescription')
-			.setLabel('Enter The Description For The Role!')
+			.setLabel('Enter the description for the Role!')
 			.setPlaceholder('For Example: 739454321661313000')
 			.setMaxLength(40)
 			.setValue(`Select @${role?.name} Role Here!`)
@@ -169,7 +169,7 @@ export default async (interaction: Interaction) => {
 			})
 			.then(async () => {
 				return await interaction.reply({
-					content: 'Selected Role(s) Deleted Fully!',
+					content: '🗑️ Selected Role(s) erased from existence!',
 					ephemeral: true
 				})
 			})
@@ -191,27 +191,27 @@ export default async (interaction: Interaction) => {
 			const rolesSetupInfo: RoleSetupData = await getRolesSetupInfo(btnID)
 			const editEmbedModal = new ModalBuilder()
 				.setCustomId(`editEmbedInRoleSetupModal@${rolesSetupInfo.id}`)
-				.setTitle('Edit Role Selector Embed!')
+				.setTitle('Edit Drop-Down Picker Embed!')
 
 			// input fields
 			const titleInput = new TextInputBuilder()
 				.setCustomId('embedTitle')
-				.setLabel('Enter Title For Embed')
-				.setPlaceholder('For Example: Select Roles!')
+				.setLabel('Enter a Title for the embed.')
+				.setPlaceholder('For Example: Pick Roles!')
 				.setMaxLength(200)
 				.setValue(rolesSetupInfo.title)
 				.setMinLength(1)
 				.setStyle(TextInputStyle.Short)
 			const descriptionInput = new TextInputBuilder()
 				.setCustomId('embedDescription')
-				.setLabel('Enter Description For Embed')
-				.setPlaceholder('For Example: Just Chose Roles From Dropdown!')
+				.setLabel('Enter Description for the embed.')
+				.setPlaceholder('For Example: Just Choose Roles From Dropdown!')
 				.setMaxLength(2000)
 				.setValue(rolesSetupInfo.description)
 				.setStyle(TextInputStyle.Paragraph)
 			const colorInput = new TextInputBuilder()
 				.setCustomId('embedColor')
-				.setLabel('Enter Color For Embed')
+				.setLabel('Pick Color for the Embed')
 				.setPlaceholder('For Example: #ffa500')
 				.setMaxLength(10)
 				.setMinLength(6)
@@ -326,7 +326,7 @@ export default async (interaction: Interaction) => {
 					.then(async () => {
 						await Flashcore.set(`__roles_Setup@${modalID}`, rolesSetupInfo)
 						await interaction.reply({
-							content: 'Embed Updated!',
+							content: '🎸 Embed masterfully updated, tailored to perfection with your configurations and customizations!',
 							ephemeral: true
 						})
 					})
