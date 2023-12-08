@@ -44,7 +44,7 @@ export default async (interaction: Interaction) => {
 		// data
 		const i = interaction as StringSelectMenuInteraction
 		const roles = i.values
-		let message = 'Roles Toggled:-'
+		let message = 'Role(s) Toggled:-'
 
 		// loop
 		roles.forEach((role) => {
@@ -295,7 +295,7 @@ export default async (interaction: Interaction) => {
 					})
 			} catch {
 				return interaction.reply({
-					content: 'Internal Error',
+					content: '💥 Internal error: Something went wrong on our end. Please try again later!',
 					ephemeral: true
 				})
 			}
@@ -332,7 +332,7 @@ export default async (interaction: Interaction) => {
 					})
 			} catch {
 				return interaction.reply({
-					content: 'Internal Error'
+					content: '💥 Internal error: Something went wrong on our end. Please try again later!'
 				})
 			}
 		}
