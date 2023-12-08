@@ -84,8 +84,7 @@ export const printRoleSetup = (data: RoleSetupData): BaseMessageOptions => {
 	const rolesDropdown = new StringSelectMenuBuilder()
 		.setCustomId(`role_Setup_roleDropper@${data.id}`)
 		.setPlaceholder('Select Your Role Here!')
-		.setMaxValues(25)
-		.addOptions(rolesDropdownOptions)
+		.addOptions(rolesDropdownOptions);
 	const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(rolesDropdown)
 
 	return {

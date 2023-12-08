@@ -53,9 +53,9 @@ export default async (interaction: Interaction) => {
 			// toggling role
 			try {
 				if (!(i.member?.roles as GuildMemberRoleManager).cache.has(roleID)) {
-					;(i.member?.roles as GuildMemberRoleManager).add(roleID as Snowflake)
+					(i.member?.roles as GuildMemberRoleManager).add(roleID as Snowflake)
 				} else {
-					;(i.member?.roles as GuildMemberRoleManager).remove(roleID as Snowflake)
+					(i.member?.roles as GuildMemberRoleManager).remove(roleID as Snowflake)
 					added = false
 				}
 				message += `\n- \` ${added ? '+' : '-'} \` <@&${roleID}>`
