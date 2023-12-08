@@ -44,7 +44,7 @@ export default async (interaction: Interaction) => {
 		// data
 		const i = interaction as StringSelectMenuInteraction
 		const roles = i.values
-		let message = 'Role(s) Toggled:-'
+		let message = '📜 Log for your Role(s) Updates :-'
 
 		// loop
 		roles.forEach((role) => {
@@ -58,7 +58,7 @@ export default async (interaction: Interaction) => {
 					(i.member?.roles as GuildMemberRoleManager).remove(roleID as Snowflake)
 					added = false
 				}
-				message += `\n- \` ${added ? '+' : '-'} \` <@&${roleID}>`
+				message += `\n\` ${added ? '+' : '-'} \` <@&${roleID}>`
 			} catch {
 				message += `\n\n- > Some Internal Error Occured!`
 			}
