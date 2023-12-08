@@ -9,7 +9,8 @@ import {
 	EmbedBuilder,
 	RoleSelectMenuBuilder,
 	BaseInteraction,
-	PermissionResolvable
+	PermissionResolvable,
+	ComponentEmojiResolvable
 } from 'discord.js'
 import { RoleSetupData } from './types'
 
@@ -35,8 +36,7 @@ export const getRolesSetupEmbed = (data: RoleSetupData) => {
  */
 export const getRolesSetupButtons = (ID: string, data: RoleSetupData) => {
 	// Buttons
-	console.log('FUNC', data)
-	const disabled = data.roles ? data.roles.length == 0 : true
+	const disabled = false //data.roles ? data.roles.length == 0 : true
 	const editBtn = new ButtonBuilder()
 		.setCustomId(`editEmbedInRoleSetupButton@${ID}`)
 		.setLabel('Edit Embed')
@@ -70,24 +70,22 @@ export const printRoleSetup = (data: RoleSetupData): BaseMessageOptions => {
 		.setTitle(data.title ?? 'Role Selector!')
 		.setColor(data.color ? `#${data.color.replaceAll('#', '').toString()}` : 'Blurple')
 		.setDescription(data.description ?? 'Select Roles From Dropdown Below!')
-		.setTimestamp()
 
 	const rolesDropdownOptions: StringSelectMenuOptionBuilder[] = []
 
 	data.roles?.forEach((x) => {
-		rolesDropdownOptions.push(
-			new StringSelectMenuOptionBuilder()
-				.setLabel(x.label)
-				.setDescription(x.description ?? '')
-				.setValue(`roleDropper@${x.role}`)
-		)
+		const DATA = new StringSelectMenuOptionBuilder().setLabel(x.label).setValue(`role_Setup_roleDropper_ROLE@${x.role}`)
+		if (x.description && x.description.trim().length > 0) DATA.setDescription(x.description)
+		if (x.emote) DATA.setEmoji(x.emote as ComponentEmojiResolvable)
+		rolesDropdownOptions.push(DATA)
 	})
 
+	// component group
 	const rolesDropdown = new StringSelectMenuBuilder()
-		.setCustomId(`rolesSelector@${data.id}`)
+		.setCustomId(`role_Setup_roleDropper@${data.id}`)
 		.setPlaceholder('Select Your Role Here!')
+		.setMaxValues(25)
 		.addOptions(rolesDropdownOptions)
-
 	const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(rolesDropdown)
 
 	return {
@@ -111,6 +109,5 @@ export function hasPerm(interaction: BaseInteraction, permission: PermissionReso
 	if (!channel.permissionsFor(userId)?.has(permission)) {
 		return false
 	}
-
 	return true
 }

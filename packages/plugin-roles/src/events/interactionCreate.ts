@@ -10,7 +10,10 @@ import {
 	ActionRowBuilder,
 	MessageComponentInteraction,
 	RoleSelectMenuInteraction,
-	PermissionFlagsBits
+	PermissionFlagsBits,
+	GuildMemberRoleManager,
+	Snowflake,
+	StringSelectMenuInteraction
 } from 'discord.js'
 import { RoleSetupData, RoleSetupDataRole, REGEXPS as regexps } from '../core/types.js'
 import { getRolesSetupEmbed, getRolesSetupButtons, printRoleSetup, hasPerm } from '../core/utils.js'
@@ -34,7 +37,42 @@ const getRolesSetupInfo = (id: string): Promise<RoleSetupData> => {
 
 export default async (interaction: Interaction) => {
 	/**
-	 * Perms Check
+	 * Select Role By Member Role embedDescription
+	 * @before perms check
+	 */
+	if (interaction.isStringSelectMenu() && regexps.roleDropperRoleDropdownFromEmbed.test(interaction.customId)) {
+		// data
+		const i = interaction as StringSelectMenuInteraction
+		const roles = i.values
+		let message = 'Roles Toggled:-'
+
+		// loop
+		roles.forEach((role) => {
+			const roleID = role.split('@')[1]
+			let added = true
+			// toggling role
+			try {
+				if (!(i.member?.roles as GuildMemberRoleManager).cache.has(roleID)) {
+					;(i.member?.roles as GuildMemberRoleManager).add(roleID as Snowflake)
+				} else {
+					;(i.member?.roles as GuildMemberRoleManager).remove(roleID as Snowflake)
+					added = false
+				}
+				message += `\n- \` ${added ? '+' : '-'} \` <@&${roleID}>`
+			} catch {
+				message += `\n\n- > Some Internal Error Occured!`
+			}
+		})
+
+		// result
+		await i.reply({
+			content: message,
+			ephemeral: true
+		})
+	}
+
+	/**
+	 * Perms Check For Further Interactions
 	 */
 	if (!hasPerm(interaction, PermissionFlagsBits.ManageRoles)) {
 		return await (interaction as MessageComponentInteraction)
@@ -54,6 +92,7 @@ export default async (interaction: Interaction) => {
 		const me = await interaction.guild?.members.fetchMe({ force: true })
 		const rolesSetupInfo: RoleSetupData = await getRolesSetupInfo(i.customId.split('@')[1])
 
+		// check basic role thingz
 		if (role?.managed) {
 			return interaction.reply({
 				content: 'Integration Rolle',
@@ -66,8 +105,12 @@ export default async (interaction: Interaction) => {
 				ephemeral: true
 			})
 		}
-		if (rolesSetupInfo.roles?.filter((i) => i.role == role!.id)) {
-			return interaction.reply({ content: "You can't add same role again!" })
+
+		// if role exists
+		const res = rolesSetupInfo.roles?.filter((i) => i.role == role!.id)
+
+		if (res && res.length > 0) {
+			return interaction.reply({ content: "You can't add same role again!", ephemeral: true })
 		}
 
 		// all fine show modal
@@ -131,14 +174,6 @@ export default async (interaction: Interaction) => {
 				})
 			})
 	}
-	/**
-	 * Select Role By Member Role embedDescription
-	 * @todo
-	 */
-	if (interaction.isRoleSelectMenu() && regexps.roleDropperRoleSelectFromEmbed.test(interaction.customId)) {
-		const i = interaction as RoleSelectMenuInteraction
-		const roleID = interaction.customId.split('@')[1]
-	}
 
 	/**
 	 * @handler Buttons
@@ -174,10 +209,20 @@ export default async (interaction: Interaction) => {
 				.setMaxLength(2000)
 				.setValue(rolesSetupInfo.description)
 				.setStyle(TextInputStyle.Paragraph)
+			const colorInput = new TextInputBuilder()
+				.setCustomId('embedColor')
+				.setLabel('Enter Color For Embed')
+				.setPlaceholder('For Example: #ffa500')
+				.setMaxLength(10)
+				.setMinLength(6)
+				.setValue(rolesSetupInfo.color ?? 'Blurple')
+				.setMinLength(3)
+				.setStyle(TextInputStyle.Short)
 
 			// show modal
 			editEmbedModal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(titleInput))
 			editEmbedModal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(descriptionInput))
+			editEmbedModal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(colorInput))
 			await btn.showModal(editEmbedModal)
 		}
 
@@ -189,14 +234,16 @@ export default async (interaction: Interaction) => {
 			const rolesSetupInfo: RoleSetupData = await getRolesSetupInfo(btnID)
 
 			// print
-			await interaction.channel?.send(printRoleSetup(rolesSetupInfo)).then(async () => {
-				await interaction.reply({
-					content: 'Success'
-				})
-			})
+			await interaction.channel?.send(printRoleSetup(rolesSetupInfo))
 
 			// cleanup
-			return await Flashcore.delete(`__roles_Setup@${btnID}`)
+			await Flashcore.delete(`__roles_Setup@${btnID}`)
+
+			// try deleting message
+			await interaction.message.delete().catch(console.error)
+
+			// return
+			return
 		}
 	}
 
@@ -227,7 +274,7 @@ export default async (interaction: Interaction) => {
 					label: roleName,
 					role: roleID,
 					description: roleDescription.trim().length > 1 ? roleDescription.trim() : undefined,
-					emote: interaction.guild?.emojis.resolveIdentifier(roleEmote) ?? undefined
+					emote: roleEmote
 				}
 				if (rolesSetupInfo.roles) {
 					rolesSetupInfo.roles.push(newRoleData)
@@ -263,10 +310,12 @@ export default async (interaction: Interaction) => {
 			const [x, y, z] = getRolesSetupButtons(modalID, rolesSetupInfo)
 			const embedTitle = modal.fields.getTextInputValue('embedTitle').trim()
 			const embedDescription = modal.fields.getTextInputValue('embedDescription').trim()
+			const embedColor = modal.fields.getTextInputValue('embedColor').trim()
 
 			// edit data
 			rolesSetupInfo.title = embedTitle
 			rolesSetupInfo.description = embedDescription.trim()
+			rolesSetupInfo.color = `#${embedColor.trim().replaceAll('#', '')}`
 
 			try {
 				await interaction.message

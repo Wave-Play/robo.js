@@ -30,7 +30,6 @@ export type RoleRestrictionData = { command: string; role: Snowflake; restrict: 
 
 /**
  * Codes to match and find appropirate handler
- * @todo FIX IT
  */
 export const REGEXPS = {
 	editEmbedInRoleSetupModal: new RegExp(
@@ -51,5 +50,8 @@ export const REGEXPS = {
 	roleSetupAddRoleSelectedModal: new RegExp(
 		/^RSetupM@([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})@(.+)$/
 	),
-	roleDropperRoleSelectFromEmbed: new RegExp('todo')
+	roleDropperRoleDropdownFromEmbed: new RegExp(
+		/^role_Setup_roleDropper@([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})$/
+	),
+	roleDropperRoleSelectFromEmbed: new RegExp(/^role_Setup_roleDropper_ROLE@(\d+)$/)
 }
