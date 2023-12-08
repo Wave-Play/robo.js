@@ -7,7 +7,7 @@ import { getRolesSetupButtons, getRolesSetupEmbed, hasPerm } from '../../core/ut
 
 export const config: CommandConfig = {
 	dmPermission: false,
-	description: 'Setup roles'
+	description: 'Initialize setup for drop-down roles creation'
 }
 
 export default async (interaction: CommandInteraction): Promise<CommandResult> => {
@@ -15,8 +15,8 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 	const ID = crypto.randomUUID()
 	const BASE_DATA: RoleSetupData = {
 		id: ID,
-		title: 'Role Selector!',
-		description: 'Select Roles From Dropdown Below!'
+		title: '🍣 Drop-Down Role Selector!',
+		description: `> Navigate below to access the dropdown menu and choose your desired role. Enhance your server experience by selecting the roles that align with your interests or responsibilities. This allows you to tailor your engagement and access specific channels or features. Make your selection, and enjoy a personalized and enriched interaction within the community`
 	}
 
 	if (!hasPerm(interaction, PermissionFlagsBits.ManageRoles)) {
