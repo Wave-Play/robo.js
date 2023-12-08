@@ -1,6 +1,6 @@
 {
-	"name": "plugin-roles",
-	"description": "",
+	"name": "@roboplay/plugin-roles",
+	"description": "🎭 Plugin for Guild Command Command Restrictions & Drop-down Role Selector Builder!",
 	"version": "1.0.0",
 	"type": "module",
 	"private": false,
