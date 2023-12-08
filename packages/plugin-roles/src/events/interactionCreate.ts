@@ -1,5 +1,5 @@
 // imports
-import { Flashcore } from '@roboplay/robo.js'
+import { Flashcore, logger } from '@roboplay/robo.js'
 import {
 	ButtonInteraction,
 	ModalSubmitInteraction,
@@ -8,12 +8,12 @@ import {
 	TextInputBuilder,
 	TextInputStyle,
 	ActionRowBuilder,
-	Snowflake,
+	MessageComponentInteraction,
 	RoleSelectMenuInteraction,
-	Role
+	PermissionFlagsBits
 } from 'discord.js'
 import { RoleSetupData, RoleSetupDataRole, REGEXPS as regexps } from '../core/types.js'
-import { getRolesSetupEmbed, getRolesSetupButtons, printRoleSetup } from '../core/utils.js'
+import { getRolesSetupEmbed, getRolesSetupButtons, printRoleSetup, hasPerm } from '../core/utils.js'
 
 /**
  * Get data from flashcore
@@ -33,6 +33,16 @@ const getRolesSetupInfo = (i: Interaction, id: string): any => {
 }
 
 export default async (interaction: Interaction) => {
+	/**
+	 * Perms Check
+	 */
+	if (!hasPerm(interaction, PermissionFlagsBits.ManageRoles)) {
+		return await (interaction as MessageComponentInteraction).reply({
+			content: `You don't have permission to use this.`,
+			ephemeral: true
+		}).catch(logger.error)
+	}
+
 	/**
 	 * Add Role in Role Setup
 	 */

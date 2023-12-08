@@ -7,8 +7,9 @@ import {
 	ButtonBuilder,
 	ButtonStyle,
 	EmbedBuilder,
-	APISelectMenuComponent,
-	RoleSelectMenuBuilder
+	RoleSelectMenuBuilder,
+	BaseInteraction,
+	PermissionResolvable
 } from 'discord.js'
 import { RoleSetupData } from './types'
 

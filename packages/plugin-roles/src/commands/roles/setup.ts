@@ -1,11 +1,12 @@
 // imports
 import type { CommandConfig, CommandResult } from '@roboplay/robo.js'
-import type { CommandInteraction } from 'discord.js'
+import { PermissionFlagsBits, type CommandInteraction } from 'discord.js'
 import { Flashcore } from '@roboplay/robo.js'
 import { RoleSetupData } from '../../core/types.js'
 import { getRolesSetupButtons, getRolesSetupEmbed, hasPerm } from '../../core/utils.js'
 
 export const config: CommandConfig = {
+	dmPermission: false,
 	description: 'Setup roles'
 }
 
@@ -18,7 +19,7 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 		description: 'Select Roles From Dropdown Below!'
 	}
 
-	if (!hasPerm(interaction, 'ManagePermission')) {
+	if (!hasPerm(interaction, PermissionFlagsBits.ManageRoles)) {
 		return {
 			content: `You don't have permission to use this.`,
 			ephemeral: true

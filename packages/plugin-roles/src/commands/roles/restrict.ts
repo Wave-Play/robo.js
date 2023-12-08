@@ -1,10 +1,12 @@
 // imports
-import { portal, type CommandConfig, CommandResult } from '@roboplay/robo.js'
-import type { CommandInteraction, AutocompleteInteraction } from 'discord.js'
-import { hasPerm } from '../../core/utils'
+import { portal, type CommandConfig, CommandResult, Flashcore } from '@roboplay/robo.js'
+import { type CommandInteraction, type AutocompleteInteraction, type Snowflake, PermissionFlagsBits } from 'discord.js'
+import { hasPerm } from '../../core/utils.js'
+import { RoleRestrictionData } from '../../core/types.js'
 
 export const config: CommandConfig = {
 	description: 'Restrict Commands',
+	dmPermission: false,
 	options: [
 		{
 			name: 'command',
@@ -45,11 +47,45 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 	const restrict = interaction.options.get('restrict')?.value
 
 	// check
-	if (!hasPerm(interaction, 'ManagePermissions')) {
+	if (!hasPerm(interaction, PermissionFlagsBits.ManageGuild)) {
 		return {
 			content: `You don't have permission to use this.`,
 			ephemeral: true
 		}
 	}
-	console.log(command, role, restrict)
+
+	// get data 
+	const data: RoleRestrictionData[] | undefined = await Flashcore.get(`__roles_Setup_Restrict@${interaction.guild!.id}`);
+
+	let newData: RoleRestrictionData[] = [];
+	// check data 
+	if (data) {
+		newData = data
+	}
+
+	// check 
+	newData.forEach((x, i) => {
+		if (x.command == command as string && x.role == role) {
+			// already exist delete it 
+			delete newData[i]
+		}
+	})
+
+	// add data 
+	newData.push({
+		command: command as string,
+		role: (role as Snowflake),
+		restrict: restrict as boolean ?? true
+	})
+
+	// filter 
+	newData = newData.filter(x => x !== undefined)
+	newData = newData.filter(x => x.restrict == true)
+	newData = newData.filter(x => x.command !== "roles/restrict")
+
+	// save 
+	await Flashcore.set(`__roles_Setup_Restrict@${interaction.guild!.id}`, newData)
+	return {
+		content: "Done!"
+	}
 }
