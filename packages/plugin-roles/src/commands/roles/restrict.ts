@@ -23,7 +23,7 @@ export const config: CommandConfig = {
 		},
 		{
 			name: 'restrict',
-			description: 'Change Status',
+			description: 'Change Restriction Status',
 			type: 'boolean'
 		}
 	]
@@ -49,7 +49,7 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 	// check
 	if (!hasPerm(interaction, PermissionFlagsBits.ManageGuild)) {
 		return {
-			content: `You don't have permission to use this.`,
+			content: `🌡️ Insufficient permissions to use this command!`,
 			ephemeral: true
 		}
 	}
@@ -86,6 +86,6 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 	// save
 	await Flashcore.set(`__roles_Setup_Restrict@${interaction.guild!.id}`, newData)
 	return {
-		content: 'Done!'
+		content: '☑️ Restriction successfully configured!'
 	}
 }
