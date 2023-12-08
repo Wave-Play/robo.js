@@ -19,13 +19,13 @@ import { RoleSetupData } from './types'
  */
 export const getRolesSetupEmbed = (data: RoleSetupData) => {
 	const introEmbed = new EmbedBuilder()
-		.setTitle(data.title ?? 'Role Selector!')
+		.setTitle(data.title ?? '🍣 Drop-Down Role Picker!')
 		.setColor(data.color ? `#${data.color.replaceAll('#', '').toString()}` : 'Blurple')
-		.setDescription(data.description ?? 'Select Roles From Dropdown Below!')
+		.setDescription(data.description ?? `> Navigate below to access the dropdown menu and choose your desired role. Enhance your server experience by selecting the roles that align with your interests or responsibilities. This allows you to tailor your engagement and access specific channels or features. Make your selection, and enjoy a personalized and enriched interaction within the community`)
 		.setTimestamp()
 	data.roles?.forEach((x, i) =>
 		introEmbed.addFields({
-			name: `Roles Added To Dropper #${i + 1}`,
+			name: `Role Added #${i + 1}`,
 			value: `${x.emote ?? `#${i + 1}`} - **<@&${x.role}>** - ${x.description ?? `No Description!`}`
 		})
 	)
@@ -39,23 +39,23 @@ export const getRolesSetupButtons = (ID: string, data: RoleSetupData) => {
 	const disabled = false //data.roles ? data.roles.length == 0 : true
 	const editBtn = new ButtonBuilder()
 		.setCustomId(`editEmbedInRoleSetupButton@${ID}`)
-		.setLabel('Edit Embed')
+		.setLabel('Edit Embed!')
 		.setEmoji('✍')
 		.setStyle(ButtonStyle.Secondary)
 	const printBtn = new ButtonBuilder()
 		.setCustomId(`printSetupBtn@${ID}`)
 		.setEmoji('👣')
-		.setLabel('Print Setup')
+		.setLabel('Publush Setup!')
 		.setDisabled(disabled)
 		.setStyle(ButtonStyle.Success)
 	// intro row
 	const introRow = new ActionRowBuilder<ButtonBuilder>().addComponents(printBtn, editBtn)
 	const introRow2 = new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(
-		new RoleSelectMenuBuilder().setPlaceholder('Select Role To Add!').setCustomId(`roleSetupAddRoleSelector@${ID}`)
+		new RoleSelectMenuBuilder().setPlaceholder('Select a role to add to yourself').setCustomId(`roleSetupAddRoleSelector@${ID}`)
 	)
 	const introRow3 = new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(
 		new RoleSelectMenuBuilder()
-			.setPlaceholder('Select Role(s) To Remove!')
+			.setPlaceholder('Choose role(s) to remove!')
 			.setCustomId(`roleSetupDeleteRoleSelector@${ID}`)
 			.setMaxValues(25)
 	)
@@ -69,7 +69,7 @@ export const printRoleSetup = (data: RoleSetupData): BaseMessageOptions => {
 	const embed = new EmbedBuilder()
 		.setTitle(data.title ?? 'Role Selector!')
 		.setColor(data.color ? `#${data.color.replaceAll('#', '').toString()}` : 'Blurple')
-		.setDescription(data.description ?? 'Select Roles From Dropdown Below!')
+		.setDescription(data.description ?? `> Navigate below to access the dropdown menu and choose your desired role. Enhance your server experience by selecting the roles that align with your interests or responsibilities. This allows you to tailor your engagement and access specific channels or features. Make your selection, and enjoy a personalized and enriched interaction within the community`)
 
 	const rolesDropdownOptions: StringSelectMenuOptionBuilder[] = []
 
