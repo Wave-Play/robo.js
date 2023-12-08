@@ -58,7 +58,7 @@ export default async (interaction: Interaction) => {
 					(i.member?.roles as GuildMemberRoleManager).remove(roleID as Snowflake)
 					added = false
 				}
-				message += `\n\` ${added ? '+' : '-'} \` <@&${roleID}>`
+				message += `\n - \` ${added ? '+' : '-'} \` <@&${roleID}>`
 			} catch {
 				message += `\n\n- > Some Internal Error Occured!`
 			}
