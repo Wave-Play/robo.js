@@ -328,3 +328,12 @@ setState('someKey', someData, {
 In this example, the data is tagged with both the server ID and the user ID, creating a highly organized and collision-free storage system in memory.
 
 -->
+
+## Opting for States over Flashcore
+
+Opt for States when handling data that's needed temporarily or within a single session. States excel in scenarios where speed is crucial and data doesn't need to survive a Robo shutdown.
+
+- **Speed & Synchronicity:** Immediate updates and access, ideal for data requiring quick interactions.
+- **Session-Specific Data:** Perfect for temporary, transient data not meant to be stored long-term.
+- **In-Memory Storage:** Operates using RAM, ensuring rapid data manipulation.
+- **Data Type Flexibility:** Can store diverse data types, including complex objects and classes.
