@@ -54,6 +54,6 @@ export const REGEXPS = {
 		/^role_Setup_roleDropper@([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})$/
 	),
 	roleDropperRoleSelectFromEmbed: new RegExp(
-  /^role_Setup_roleDropper_ROLE@(\d+)$/
-  )
+        /^role_Setup_roleDropper_ROLE@(\d+)$/
+        )
 }
