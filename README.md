@@ -10,7 +10,7 @@
 &nbsp;-->
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Wave-Play/robo/main/docosaurus/static/img/logo.png" height="128">
+  <img src="https://raw.githubusercontent.com/Wave-Play/robo/main/docs/static/img/logo.png" height="128">
   <h1 align="center">Robo.js</h1>
 </p>
 
