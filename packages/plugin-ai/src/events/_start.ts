@@ -7,6 +7,7 @@ import type { BaseEngine } from '@/engines/base.js'
 export interface PluginOptions {
 	commands?: boolean | string[]
 	engine?: BaseEngine
+	insight?: boolean
 	maxTokens?: number
 	model?: string
 	systemMessage?: string
@@ -29,9 +30,14 @@ export default (_client: Client, pluginOptions: PluginOptions) => {
 	}
 	setEngine(options.engine)
 
+	// Insights are enabled by default
+	if (options.insight === undefined) {
+		options.insight = true
+	}
+
 	// Prepare the AI engine in the background
 	logger.debug('Initializing AI engine...')
 	options.engine.init().then(() => {
-		logger.debug('AI engine is ready!')
+		logger.ready('AI is ready!')
 	})
 }

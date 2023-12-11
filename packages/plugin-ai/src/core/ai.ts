@@ -62,7 +62,9 @@ export interface ChatReply {
 	text?: string
 }
 
-interface ChatOptions extends BaseChatOptions {
+interface ChatOptions extends Omit<BaseChatOptions, 'threadId' | 'userId'> {
+	channel?: TextBasedChannel | null
+	member?: GuildMember | null
 	onReply: (reply: ChatReply) => void | Promise<void>
 }
 
@@ -136,7 +138,11 @@ async function chat(messages: ChatMessage[], options: ChatOptions): Promise<void
 			await channel?.sendTyping()
 		}
 
-		const reply = await _engine.chat(aiMessages, options)
+		const reply = await _engine.chat(aiMessages, {
+			...options,
+			threadId: channel?.id as string,
+			userId: member?.user.id as string
+		})
 
 		if (member) {
 			// Wait for user to finish typing if they're about to follow up

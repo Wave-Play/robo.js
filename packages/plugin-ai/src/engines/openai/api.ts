@@ -1,5 +1,9 @@
 import { logger } from '@/core/logger.js'
 import { hasProperties } from '@/utils/other-utils.js'
+import { FormData } from 'formdata-node'
+import { Assistant, type AssistantData } from '@/engines/openai/assistant.js'
+import { Message, Run, Thread } from './types.js'
+import { color } from '@roboplay/robo.js'
 
 /**
  * API bindings for OpenAI.
@@ -7,14 +11,28 @@ import { hasProperties } from '@/utils/other-utils.js'
  */
 export const openai = {
 	chat,
-	createImage
+	createAssistant,
+	createImage,
+	createMessage,
+	createRun,
+	createThread,
+	getAssistant,
+	getRun,
+	getThread,
+	getThreadMessages,
+	listAssistants,
+	listFiles,
+	modifyAssistant,
+	uploadFile
 }
 
 interface RequestOptions {
 	apiKey?: string
 	backoff?: boolean
 	body?: unknown
+	headers?: Record<string, string>
 	method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS'
+	query?: Record<string, unknown>
 	retries?: number
 }
 
@@ -25,22 +43,50 @@ interface RequestOptions {
  * @returns The chat response.
  */
 async function request<T = unknown>(urlPath: string, options: RequestOptions): Promise<T> {
-	const { apiKey = process.env.OPENAI_API_KEY, backoff = true, body, method = 'GET', retries = 3 } = options
+	const {
+		apiKey = process.env.OPENAI_API_KEY,
+		backoff = true,
+		body,
+		headers,
+		method = 'GET',
+		query,
+		retries = 3
+	} = options
 	let retryCount = 0
 
 	if (!apiKey) {
 		throw new Error('OpenAI API key not found, please set it as an environment variable called OPENAI_API_KEY.')
 	}
 
+	let queryString = ''
+	if (query) {
+		const normalizedQuery: Record<string, string> = {}
+		Object.entries(query).forEach(([key, value]) => {
+			if (value !== undefined) {
+				normalizedQuery[key] = String(value)
+			}
+		})
+		queryString = '?' + new URLSearchParams(normalizedQuery).toString()
+	}
+
 	while (retryCount <= retries) {
 		try {
-			const response = await fetch('https://api.openai.com/v1' + urlPath, {
+			const extraHeaders: Record<string, string> = {}
+			let requestBody
+			if (body instanceof FormData) {
+				requestBody = body as BodyInit
+			} else if (body) {
+				requestBody = JSON.stringify(body)
+				extraHeaders['Content-Type'] = 'application/json'
+			}
+			const response = await fetch('https://api.openai.com/v1' + urlPath + queryString, {
 				method: method,
 				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `Bearer ${apiKey}`
+					Authorization: `Bearer ${apiKey}`,
+					...extraHeaders,
+					...(headers ?? {})
 				},
-				body: body ? JSON.stringify(body) : undefined
+				body: requestBody
 			})
 
 			const jsonResponse = await response.json()
@@ -74,10 +120,25 @@ async function request<T = unknown>(urlPath: string, options: RequestOptions): P
 	throw new Error('Failed to call OpenAI API')
 }
 
+interface SplitOptionsResult<T extends RequestOptions> {
+	bodyOptions: Omit<T, keyof RequestOptions>
+	requestOptions: RequestOptions
+}
+function splitOptions<T extends RequestOptions>(options?: T): SplitOptionsResult<T> {
+	const { apiKey, backoff, body, headers, method, retries, ...rest } = options ?? {}
+
+	return {
+		bodyOptions: rest as Omit<T, keyof RequestOptions>,
+		requestOptions: { apiKey, backoff, body, headers, method, retries }
+	}
+}
+
 async function chat(options: GptChatOptions) {
-	const { functions, max_tokens = 1024, messages, model = 'gpt-3.5-turbo' } = options
+	const { bodyOptions, requestOptions } = splitOptions(options)
+	const { functions, max_tokens = 1024, messages, model = 'gpt-3.5-turbo' } = bodyOptions
 
 	return request<ChatResult>('/chat/completions', {
+		...requestOptions,
 		method: 'POST',
 		body: {
 			functions: functions?.length && !model.includes('vision') ? functions : undefined,
@@ -88,10 +149,268 @@ async function chat(options: GptChatOptions) {
 	})
 }
 
-async function createImage(options: CreateImageOptions) {
-	return request<CreateImageResult>('/images/generations', {
+interface CreateAssistantOptions extends RequestOptions {
+	description?: string | null
+	file_ids?: string[]
+	instructions?: string
+	metadata?: Record<string, string>
+	model: string
+	name?: string
+	tools?: Array<{
+		function?: {
+			description?: string
+			name: string
+			parameters: GptFunctionParameters
+		}
+		type: 'code_interpreter' | 'function' | 'retrieval'
+	}>
+}
+
+async function createAssistant(options: CreateAssistantOptions) {
+	const { bodyOptions, requestOptions } = splitOptions(options)
+
+	const assistantData = await request<AssistantData>('/assistants', {
+		...requestOptions,
+		headers: {
+			'OpenAI-Beta': 'assistants=v1'
+		},
 		method: 'POST',
-		body: options
+		body: bodyOptions
+	})
+	return new Assistant(assistantData)
+}
+
+async function createImage(options: CreateImageOptions) {
+	const { bodyOptions, requestOptions } = splitOptions(options)
+
+	return request<CreateImageResult>('/images/generations', {
+		...requestOptions,
+		method: 'POST',
+		body: bodyOptions
+	})
+}
+
+interface CreateMessageOptions extends RequestOptions {
+	thread_id: string
+	role: 'user'
+	content: string
+	file_ids?: string[]
+	metadata?: Record<string, string>
+}
+async function createMessage(options: CreateMessageOptions) {
+	const { bodyOptions, requestOptions } = splitOptions(options)
+	const { thread_id, ...rest } = bodyOptions
+
+	return request<Message>('/threads/' + thread_id + '/messages', {
+		...requestOptions,
+		method: 'POST',
+		headers: {
+			'OpenAI-Beta': 'assistants=v1'
+		},
+		body: rest
+	})
+}
+
+interface CreateRunOptions extends RequestOptions {
+	assistant_id: string
+	thread_id: string
+	model?: string
+	instructions?: string
+	tools?: Array<{
+		function?: {
+			description?: string
+			name: string
+			parameters: GptFunctionParameters
+		}
+		type: 'code_interpreter' | 'function' | 'retrieval'
+	}>
+	metadata?: Record<string, string>
+}
+async function createRun(options: CreateRunOptions) {
+	const { bodyOptions, requestOptions } = splitOptions(options)
+	const { thread_id, ...rest } = bodyOptions
+
+	return request<Run>('/threads/' + thread_id + '/runs', {
+		...requestOptions,
+		method: 'POST',
+		headers: {
+			'OpenAI-Beta': 'assistants=v1'
+		},
+		body: rest
+	})
+}
+
+export interface CreateThreadOptions extends RequestOptions {
+	messages?: Array<{
+		role: 'user'
+		content: string
+		file_ids?: string[]
+		metadata?: Record<string, string>
+	}>
+	metadata?: Record<string, string>
+}
+async function createThread(options: CreateThreadOptions) {
+	const { bodyOptions, requestOptions } = splitOptions(options)
+
+	logger.debug(`Creating ${color.bold('thread')} with options:`, bodyOptions)
+	return request<Thread>('/threads', {
+		...requestOptions,
+		method: 'POST',
+		headers: {
+			'OpenAI-Beta': 'assistants=v1'
+		},
+		body: bodyOptions
+	})
+}
+
+interface GetAssistantOptions extends RequestOptions {
+	assistant_id: string
+}
+async function getAssistant(options: GetAssistantOptions) {
+	const { requestOptions } = splitOptions(options)
+
+	const assistantData = await request<AssistantData>(`/assistants/${options.assistant_id}`, {
+		...requestOptions,
+		headers: {
+			'OpenAI-Beta': 'assistants=v1'
+		}
+	})
+	return new Assistant(assistantData)
+}
+
+interface GetRunOptions extends RequestOptions {
+	run_id: string
+	thread_id: string
+}
+async function getRun(options: GetRunOptions) {
+	const { requestOptions } = splitOptions(options)
+
+	return request<Run>(`/threads/${options.thread_id}/runs/${options.run_id}`, {
+		...requestOptions,
+		headers: {
+			'OpenAI-Beta': 'assistants=v1'
+		}
+	})
+}
+
+interface GetThreadOptions extends RequestOptions {
+	thread_id: string
+}
+async function getThread(options: GetThreadOptions) {
+	const { requestOptions } = splitOptions(options)
+
+	return request<Thread>(`/threads/${options.thread_id}`, {
+		...requestOptions,
+		headers: {
+			'OpenAI-Beta': 'assistants=v1'
+		}
+	})
+}
+
+interface GetThreadMessagesOptions extends RequestOptions {
+	thread_id: string
+	limit?: number
+	order?: 'asc' | 'desc'
+	after?: string
+	before?: string
+}
+interface GetThreadMessagesResult {
+	object: 'list'
+	data: Message[]
+	first_id: string
+	has_more: boolean
+	last_id: string
+}
+async function getThreadMessages(options: GetThreadMessagesOptions) {
+	const { bodyOptions, requestOptions } = splitOptions(options)
+	const { thread_id, ...rest } = bodyOptions
+
+	return request<GetThreadMessagesResult>(`/threads/${thread_id}/messages`, {
+		...requestOptions,
+		headers: {
+			'OpenAI-Beta': 'assistants=v1'
+		},
+		query: rest
+	})
+}
+
+interface ListAssistantsOptions extends RequestOptions {
+	after?: string
+	before?: string
+	limit?: number
+	order?: 'asc' | 'desc'
+}
+
+interface ListAssistantsResult {
+	data: AssistantData[]
+	first_id: string
+	has_more: boolean
+	last_id: string
+	object: string
+}
+
+async function listAssistants(options?: ListAssistantsOptions) {
+	const { bodyOptions, requestOptions } = splitOptions(options)
+
+	const assistantData = await request<ListAssistantsResult>(`/assistants`, {
+		...requestOptions,
+		headers: {
+			'OpenAI-Beta': 'assistants=v1'
+		},
+		body: bodyOptions
+	})
+	return assistantData.data.map((data) => new Assistant(data))
+}
+
+interface ListFilesOptions extends RequestOptions {
+	purpose?: string
+}
+async function listFiles(options?: ListFilesOptions) {
+	const { bodyOptions, requestOptions } = splitOptions(options)
+	const { purpose } = bodyOptions
+
+	const query = purpose ? `?purpose=${purpose}` : ''
+	return request<File[]>(`/files${query}`, {
+		...requestOptions,
+		body: bodyOptions
+	})
+}
+
+interface ModifyAssistantOptions extends CreateAssistantOptions {
+	assistant_id: string
+}
+async function modifyAssistant(options: ModifyAssistantOptions) {
+	const { bodyOptions, requestOptions } = splitOptions(options)
+	const { assistant_id, ...rest } = bodyOptions
+
+	const assistantData = await request<AssistantData>(`/assistants/${assistant_id}`, {
+		...requestOptions,
+		headers: {
+			'OpenAI-Beta': 'assistants=v1'
+		},
+		method: 'POST',
+		body: rest
+	})
+	return new Assistant(assistantData)
+}
+
+interface UploadFileOptions extends RequestOptions {
+	file: Blob
+	fileName: string
+	purpose: string
+}
+async function uploadFile(options: UploadFileOptions) {
+	const { bodyOptions, requestOptions } = splitOptions(options)
+	const { file, fileName, purpose } = bodyOptions
+	const formData = new FormData()
+	formData.set('file', file, fileName)
+	formData.set('purpose', purpose)
+
+	//return uploadFileTest()
+	return request<File>(`/files`, {
+		...requestOptions,
+		method: 'POST',
+		body: formData
 	})
 }
 
@@ -110,7 +429,7 @@ type GptChatMessageContentObject = {
 
 type GptChatMessageContent = string | GptChatMessageContentObject[]
 
-interface GptChatOptions {
+interface GptChatOptions extends RequestOptions {
 	functions?: GptFunction[]
 	max_tokens?: number
 	messages: GptChatMessage[]
@@ -141,24 +460,13 @@ interface GptFunctionProperty {
 	type: 'array' | 'string'
 }
 
-interface Assistant {
+interface File {
 	id: string
-	object: string
+	bytes: number
 	created_at: number
-	name: string
-	description: string | null
-	model: string
-	instructions: string
-	tools: Array<{
-		type: string
-	}>
-	file_ids: string[]
-	metadata: Record<string, unknown>
-}
-
-interface CreateAssistantOptions {
-	model: string
-	name?: string
+	filename: string
+	object: string
+	purpose: string
 }
 
 interface ChatResult {
@@ -169,7 +477,7 @@ interface ChatResult {
 	}>
 }
 
-interface CreateImageOptions {
+interface CreateImageOptions extends RequestOptions {
 	prompt: string
 	model?: string
 	n?: number

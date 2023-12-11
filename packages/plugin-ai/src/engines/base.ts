@@ -51,11 +51,11 @@ export interface ChatFunctionProperty {
 }
 
 export interface ChatOptions {
-	channel?: TextBasedChannel | null
 	functions?: ChatFunction[]
-	member?: GuildMember | null
 	model?: string
 	showTyping?: boolean
+	threadId?: string | null
+	userId?: string | null
 }
 
 export interface GenerateImageOptions {

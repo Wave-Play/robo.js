@@ -24,7 +24,9 @@ export async function selectOne(
 		],
 		{
 			functions: [],
-			model: 'gpt-3.5-turbo'
+			model: 'gpt-3.5-turbo',
+			threadId: null,
+			userId: null
 		}
 	)
 	const reply = response.message?.content as string
