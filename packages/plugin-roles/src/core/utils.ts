@@ -51,7 +51,7 @@ export const getRolesSetupButtons = (ID: string, data: RoleSetupData) => {
 	// intro row
 	const introRow = new ActionRowBuilder<ButtonBuilder>().addComponents(printBtn, editBtn)
 	const introRow2 = new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(
-		new RoleSelectMenuBuilder().setPlaceholder('Select a role to add to yourself').setCustomId(`roleSetupAddRoleSelector@${ID}`)
+		new RoleSelectMenuBuilder().setPlaceholder('Select a role to add to drop-down setup!').setCustomId(`roleSetupAddRoleSelector@${ID}`)
 	)
 	const introRow3 = new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(
 		new RoleSelectMenuBuilder()
