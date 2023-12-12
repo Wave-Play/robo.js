@@ -407,3 +407,12 @@ const settings = await Flashcore.get<UserSettings>(userId + '-settings')
 This will only tell TypeScript what type of data you're expecting to get back. It won't parse the data into that type for you, so make sure you're saving the right type of data to begin with!
 
 :::
+
+## Opting for Flashcore over States
+
+Flashcore should be your choice for data that requires long-term storage or needs to be preserved across sessions. It's particularly useful for settings, historical data, or any information that needs consistent and reliable storage.
+
+- **Data Persistence:** Ensures long-term data storage, ideal for settings and permanent records.
+- **Asynchronous Operations:** Provides consistent and reliable data operations, necessary for durable storage.
+- **External Storage with Keyv Adapters:** Enables storing data in external databases like Postgres, offering flexibility and scalability.
+- **Serializable Data Only:** Suited for serializable data, maintaining data stability and compatibility.

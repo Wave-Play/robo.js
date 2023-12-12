@@ -6,6 +6,16 @@ Robo.js provides an extensive set of plugins to supercharge your bots, each aimi
 npx robo add <package>
 ```
 
+:::tip List Your Plugin
+
+Created a plugin and eager to share it with the Robo.js community? Awesome! 🌟
+
+Please respond to [this GitHub Discussion](https://github.com/Wave-Play/robo.js/discussions/48) with the details of your plugin, and it might get listed here! Upon review, your plugin will be added to the list.
+
+**➞ [📚 Learn how to make plugins](/docs/advanced/plugins#creating-plugins)**
+
+:::
+
 ## Official Plugins 🏆
 
 Plugins directly developed and maintained by the Robo.js team, ensuring optimal compatibility and functionality:
@@ -78,11 +88,3 @@ Submit your challenge ideas to the community challenges directly from your bot.
 
 Package: `discord-user-profile`  
 Create your own user profile on a discord server and share it. Allow anyone to do the same!.
-
-## List Your Plugin 🛠️
-
-Created a plugin and eager to share it with the Robo.js community? Awesome! 🌟
-
-Please respond to [this GitHub Discussion](https://github.com/Wave-Play/robo.js/discussions/48) with the details of your plugin, and it might get listed here! Upon review, your plugin will be added to the list.
-
-**➞ [📚 Learn how to make plugins](/docs/advanced/plugins#creating-plugins)**
