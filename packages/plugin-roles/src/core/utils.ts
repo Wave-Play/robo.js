@@ -45,7 +45,7 @@ export const getRolesSetupButtons = (ID: string, data: RoleSetupData) => {
 	const printBtn = new ButtonBuilder()
 		.setCustomId(`printSetupBtn@${ID}`)
 		.setEmoji('👣')
-		.setLabel('Publush Setup!')
+		.setLabel('Publish Setup!')
 		.setDisabled(disabled)
 		.setStyle(ButtonStyle.Success)
 	// intro row
