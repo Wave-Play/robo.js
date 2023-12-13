@@ -169,6 +169,38 @@ export default (interaction: CommandInteraction): CommandResult => {
 
 Want to explore more options? Check the [configuration section](/docs/advanced/configuration).
 
+### DM Permission
+
+Control whether your command is accessible in direct messages with `dmPermission`. Setting this to `true` allows users to use the command in DMs with the bot, while `false` restricts it.
+
+```javascript
+export const config = {
+  // ... other configuration options
+  dmPermission: false // Restricts this command in DMs
+}
+```
+
+### Default Member Permissions
+
+Use `defaultMemberPermissions` to define server-based permissions for your command. This field accepts `PermissionFlagsBits` from Discord.js, allowing you to specify which roles or permissions are needed to access the command in a server context.
+
+```javascript
+import { PermissionFlagsBits } from 'discord.js';
+
+export const config = {
+  // ... other configuration options
+  defaultMemberPermissions: PermissionFlagsBits.KickMembers // Only users who can kick members can use this command
+}
+```
+
+:::warning
+
+Remember, server admins can adjust these default permissions for their own servers. Also, due to a Discord quirk, default permissions might not apply as expected to subcommands.
+
+:::
+
+<!-- For a more comprehensive overview of command permissions in Discord, check out our [Permissions Guide](/docs/advanced/permissions). -->
+
 ## Autocomplete 🧠
 
 Autocomplete can take your commands to the next level by providing suggestions as users type. You can implement autocomplete by exporting an `autocomplete` function in your command file.
