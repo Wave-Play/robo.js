@@ -13,7 +13,13 @@ export function compare(obj1: Record<string, unknown>, obj2: Record<string, unkn
 					differentFields.push(key)
 				}
 			} else {
-				// Object or array: compare stringified values
+				// Object or array: compare stringified values (but sort arrays first)
+				if (Array.isArray(value1)) {
+					value1.sort()
+				}
+				if (Array.isArray(value2)) {
+					value2.sort()
+				}
 				if (JSON.stringify(value1) !== JSON.stringify(value2)) {
 					differentFields.push(key)
 				}
