@@ -89,7 +89,15 @@ export default async (interaction: CommandInteraction) => {
 	}
 
 	// Send the message to the text channel
-	channel.send((mention ? mention.toString() + ' ' : '') + result)
+	if (mention) {
+		result.text = mention.toString() + ' ' + result.text
+	}
+	channel.send({
+		content: result.text,
+		components: result.components,
+		embeds: result.embeds,
+		files: result.files
+	})
 	return {
 		content: 'Message sent!',
 		ephemeral: true
