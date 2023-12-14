@@ -20,6 +20,7 @@ import type {
 	GenerateImageResult
 } from '@/engines/base.js'
 import type { AssistantData } from '@/engines/openai/assistant.js'
+import type { File } from '@/engines/openai/types.js'
 import type { Command } from '@roboplay/robo.js'
 
 const DEFAULT_MODEL = 'gpt-3.5-turbo'
@@ -96,7 +97,7 @@ export class OpenAiEngine extends BaseEngine {
 						thread_id: thread.id,
 						limit: 1
 					})
-					
+
 					const reply = threadMessages?.data?.[0]
 					return {
 						finish_reason: 'stop', // TODO: Abstract this
@@ -217,10 +218,19 @@ async function loadAssistant(): Promise<Assistant | null | undefined> {
 
 	// Check if the /documents directory has files
 	const documentsDir = path.join(process.cwd(), 'documents')
-	let documentsExist = false
+	const documents: string[] = []
 
 	try {
-		documentsExist = (await fs.stat(documentsDir))?.isDirectory()
+		const documentStats = await fs.stat(documentsDir)
+		if (documentStats.isDirectory()) {
+			const dirs = await fs.readdir(documentsDir)
+			documents.push(...(dirs ?? []))
+			logger.debug(`Validating documents:`, documents)
+
+			assistantData.tools.push({
+				type: 'retrieval'
+			})
+		}
 	} catch (e) {
 		if (hasProperties<{ code: unknown }>(e, ['code']) && e.code !== 'ENOENT') {
 			throw e
@@ -228,28 +238,76 @@ async function loadAssistant(): Promise<Assistant | null | undefined> {
 	}
 
 	// Upload documents if they exist
-	if (documentsExist) {
-		const documents = await fs.readdir(documentsDir)
-		assistantData.tools.push({
-			type: 'retrieval'
-		})
-		logger.debug(`Uploading documents:`, documents)
+	const documentResults: Record<string, string> = {}
+	await Promise.all(
+		documents.map(async (document) => {
+			const filePath = path.join(documentsDir, document)
+			const fileStats = await fs.stat(filePath)
 
-		await Promise.all(
-			documents.map(async (document) => {
-				const documentPath = path.join(documentsDir, document)
-				const documentData = await fs.readFile(documentPath, 'utf-8')
-				const blob = new Blob([documentData])
+			// Skip directories
+			if (fileStats.isDirectory()) {
+				logger.warn(`Directories are not supported. Skipping ${color.bold(document)}`)
+				return
+			}
 
-				const file = await openai.uploadFile({
-					purpose: 'assistants',
-					file: blob,
-					fileName: path.basename(documentPath)
-				})
-				assistantData.file_ids.push(file.id)
-				logger.debug(`Uploaded document ${color.bold(document)}:`, file)
+			// Check if the file has already been uploaded and skip if it has
+			const cachedFile = await Flashcore.get<File>(document, {
+				namespace: _PREFIX + '/files'
 			})
-		)
+
+			if (cachedFile && cachedFile.bytes === fileStats.size) {
+				assistantData.file_ids.push(cachedFile.id)
+				logger.debug(`Using cached document ${color.bold(document)}:`, cachedFile)
+				return
+			}
+
+			// Upload the file if it doesn't exist
+			const fileBlob = new Blob([await fs.readFile(filePath, 'utf-8')])
+			const file = await openai.uploadFile({
+				purpose: 'assistants',
+				file: fileBlob,
+				fileName: document
+			})
+			assistantData.file_ids.push(file.id)
+			documentResults[document] = file.id
+			logger.debug(`Uploaded document ${color.bold(document)}:`, file)
+
+			// Cache the file ID for later use
+			await Flashcore.set<File>(
+				document,
+				{
+					id: file.id,
+					bytes: fileStats.size
+				},
+				{
+					namespace: _PREFIX + '/files'
+				}
+			)
+
+			// Update the list of cached file IDs
+			await Flashcore.set(
+				'files',
+				(files: Record<string, string>) => {
+					if (!files) {
+						files = {}
+					}
+					if (!files[document]) {
+						files[document] = file.id
+					}
+
+					return files
+				},
+				{
+					namespace: _PREFIX
+				}
+			)
+		})
+	)
+
+	const uploadedDocuments = Object.keys(documentResults)
+	if (uploadedDocuments.length > 0) {
+		logger.debug(documentResults)
+		logger.info(`Uploaded ${uploadedDocuments.length} documents:`, uploadedDocuments)
 	}
 
 	// Make sure the assistant is up to date on OpenAI's end
@@ -276,6 +334,55 @@ async function loadAssistant(): Promise<Assistant | null | undefined> {
 			retries: 0,
 			tools: assistantData.tools
 		})
+	}
+
+	// Get the list of cached file IDs and make sure they exist
+	const cachedFiles =
+		(await Flashcore.get<Record<string, string>>('files', {
+			namespace: _PREFIX
+		})) ?? {}
+	const cachedFileNames = Object.keys(cachedFiles)
+	logger.debug(`Found ${cachedFileNames.length} cached files:`, cachedFileNames)
+
+	// Remove any cached files that don't exist anymore
+	if (cachedFileNames.length > 0) {
+		const files = await openai.listFiles()
+		const fileNamesToRemove = cachedFileNames.filter((fileName) => {
+			const fileExists = documents?.find((file) => file === fileName)
+			return !fileExists
+		})
+		logger.debug(`Removing ${fileNamesToRemove.length} cached files:`, fileNamesToRemove)
+
+		// Only if also in OpenAI's list of files
+		const fileIdsToRemove = fileNamesToRemove
+			.map((fileName) => cachedFiles[fileName])
+			.filter((fileId) => {
+				const fileExists = files?.data?.find((file) => file.id === fileId)
+				return !!fileExists
+			})
+		logger.debug(`Removing ${fileIdsToRemove.length} cached files:`, fileIdsToRemove)
+
+		await Promise.all(
+			fileIdsToRemove.map(async (cachedFileId) => {
+				await openai.deleteFile({
+					file_id: cachedFileId
+				})
+				await Flashcore.delete(cachedFileId, {
+					namespace: _PREFIX + '/files'
+				})
+				await Flashcore.set(
+					'files',
+					(files: Record<string, string>) => {
+						delete files[cachedFileId]
+						return files
+					},
+					{
+						namespace: _PREFIX
+					}
+				)
+			})
+		)
+		logger.debug(`Successfully removed ${fileNamesToRemove.length} cached files.`)
 	}
 
 	return assistant

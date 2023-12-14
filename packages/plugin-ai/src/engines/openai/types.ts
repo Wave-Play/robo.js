@@ -1,3 +1,12 @@
+export interface File {
+	id: string
+	bytes?: number
+	created_at?: number
+	filename?: string
+	object?: string
+	purpose?: string
+}
+
 export interface Message {
 	id: string
 	object: 'thread.message'

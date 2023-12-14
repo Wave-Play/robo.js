@@ -1,9 +1,9 @@
 import { logger } from '@/core/logger.js'
 import { hasProperties } from '@/utils/other-utils.js'
+import { color } from '@roboplay/robo.js'
 import { FormData } from 'formdata-node'
 import { Assistant, type AssistantData } from '@/engines/openai/assistant.js'
-import { Message, Run, Thread } from './types.js'
-import { color } from '@roboplay/robo.js'
+import type { File, Message, Run, Thread } from './types.js'
 
 /**
  * API bindings for OpenAI.
@@ -16,6 +16,7 @@ export const openai = {
 	createMessage,
 	createRun,
 	createThread,
+	deleteFile,
 	getAssistant,
 	getRun,
 	getThread,
@@ -263,6 +264,18 @@ async function createThread(options: CreateThreadOptions) {
 	})
 }
 
+interface DeleteFileOptions extends RequestOptions {
+	file_id: string
+}
+async function deleteFile(options: DeleteFileOptions) {
+	const { requestOptions } = splitOptions(options)
+
+	return request<unknown>(`/files/${options.file_id}`, {
+		...requestOptions,
+		method: 'DELETE'
+	})
+}
+
 interface GetAssistantOptions extends RequestOptions {
 	assistant_id: string
 }
@@ -341,8 +354,8 @@ interface ListAssistantsOptions extends RequestOptions {
 	order?: 'asc' | 'desc'
 }
 
-interface ListAssistantsResult {
-	data: AssistantData[]
+interface ListResult<T> {
+	data: T[]
 	first_id: string
 	has_more: boolean
 	last_id: string
@@ -352,7 +365,7 @@ interface ListAssistantsResult {
 async function listAssistants(options?: ListAssistantsOptions) {
 	const { bodyOptions, requestOptions } = splitOptions(options)
 
-	const assistantData = await request<ListAssistantsResult>(`/assistants`, {
+	const assistantData = await request<ListResult<AssistantData>>(`/assistants`, {
 		...requestOptions,
 		headers: {
 			'OpenAI-Beta': 'assistants=v1'
@@ -365,14 +378,14 @@ async function listAssistants(options?: ListAssistantsOptions) {
 interface ListFilesOptions extends RequestOptions {
 	purpose?: string
 }
+
 async function listFiles(options?: ListFilesOptions) {
 	const { bodyOptions, requestOptions } = splitOptions(options)
 	const { purpose } = bodyOptions
 
 	const query = purpose ? `?purpose=${purpose}` : ''
-	return request<File[]>(`/files${query}`, {
-		...requestOptions,
-		body: bodyOptions
+	return request<ListResult<File>>(`/files${query}`, {
+		...requestOptions
 	})
 }
 
@@ -458,15 +471,6 @@ interface GptFunctionProperty {
 	enum?: string[]
 	items?: GptFunctionProperty
 	type: 'array' | 'string'
-}
-
-interface File {
-	id: string
-	bytes: number
-	created_at: number
-	filename: string
-	object: string
-	purpose: string
 }
 
 interface ChatResult {
