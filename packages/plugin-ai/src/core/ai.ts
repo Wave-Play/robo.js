@@ -169,9 +169,9 @@ async function chat(messages: ChatMessage[], options: ChatOptions): Promise<void
 		}
 
 		// Stream reply before executing function call
-		if (reply.message?.content) {
+		if (typeof reply.message?.content === 'string') {
 			// Clean up username prefix if it's there
-			let content = reply.message.content as string
+			let content = reply.message.content
 			const clientUsername = client.user?.username ?? 'mock'
 
 			if (content.toLowerCase().startsWith(clientUsername.toLowerCase() + ':')) {
@@ -242,8 +242,7 @@ async function executeFunctionCall(
 	member: GuildMember | null | undefined
 ) {
 	const gptFunctionHandler = _engine.getFunctionHandlers()[call.name]
-	const args = JSON.parse((call.arguments as unknown as string) ?? '{}')
-	logger.debug(`Executing function call:`, call.name, args)
+	logger.debug(`Executing function call:`, call.name, call.arguments)
 
 	// Validate that the function exists
 	if (!gptFunctionHandler) {
@@ -288,7 +287,7 @@ async function executeFunctionCall(
 
 	// Execute the function
 	try {
-		const reply = await getCommandReply(gptFunctionHandler, channel, member, args)
+		const reply = await getCommandReply(gptFunctionHandler, channel, member, call.arguments)
 		logger.debug(`Command function reply:`, reply)
 
 		return {

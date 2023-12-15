@@ -44,6 +44,19 @@ export interface Run {
 	object: 'thread.run'
 	created_at: number
 	assistant_id: string
+	required_action?: {
+		type: 'submit_tool_outputs',
+		submit_tool_outputs: {
+			tool_calls: Array<{
+				id: string
+				type: 'function',
+				function: {
+					name: string,
+					arguments: string
+				}
+			}>
+		}
+	}
 	thread_id: string
 	status: 'queued' | 'in_progress' | 'requires_action' | 'cancelling' | 'cancelled' | 'failed' | 'completed' | 'expired'
 }

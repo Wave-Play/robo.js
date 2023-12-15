@@ -8,7 +8,7 @@ import { compare, hasProperties } from '@/utils/other-utils.js'
 import path from 'node:path'
 import { readFile } from 'node:fs/promises'
 import { Assistant } from '@/engines/openai/assistant.js'
-import { Flashcore, color, portal } from '@roboplay/robo.js'
+import { Flashcore, color, getState, portal, setState } from '@roboplay/robo.js'
 import type {
 	ChatFunction,
 	ChatFunctionParameters,
@@ -20,7 +20,7 @@ import type {
 	GenerateImageResult
 } from '@/engines/base.js'
 import type { AssistantData } from '@/engines/openai/assistant.js'
-import type { File } from '@/engines/openai/types.js'
+import type { File, Message } from '@/engines/openai/types.js'
 import type { Command } from '@roboplay/robo.js'
 
 const DEFAULT_MODEL = 'gpt-3.5-turbo'
@@ -41,7 +41,7 @@ export class OpenAiEngine extends BaseEngine {
 		const { functions, functionHandlers } = await loadFunctions()
 		this._gptFunctions = functions
 		this._gptFunctionHandlers = functionHandlers
-		this._assistant = await loadAssistant()
+		this._assistant = await loadAssistant(functions)
 	}
 
 	public async chat(messages: ChatMessage[], options: ChatOptions): Promise<ChatResult> {
@@ -65,13 +65,53 @@ export class OpenAiEngine extends BaseEngine {
 			// Get the prepared thread data
 			const { thread, threadCreated } = await this._assistant.thread({ messages, threadId, threadMessage, userId })
 
+			// Wait thread runs to complete before continuing
+			const activeRun = getState<Promise<unknown>>('run', {
+				namespace: _PREFIX + '/thread/' + thread.id
+			})
+			if (activeRun) {
+				logger.debug(`Waiting for active run to complete...`)
+				await activeRun
+				logger.debug(`Active run completed.`)
+			}
+
 			// Add the messages to the thread unless it was just created
 			if (!threadCreated) {
-				await openai.createMessage({
-					...threadMessage,
-					thread_id: thread.id
-				})
-				logger.debug(`Added message to thread "${color.bold(thread.id)}":`, threadMessage)
+				try {
+					await openai.createMessage({
+						...threadMessage,
+						thread_id: thread.id
+					})
+					logger.debug(`Added message to thread "${color.bold(thread.id)}":`, threadMessage)
+				} catch (e) {
+					logger.debug(`Failed to add message to thread "${color.bold(thread.id)}":`, threadMessage)
+
+					// List most recent runs for this thread
+					const runs = await openai.listRuns({
+						thread_id: thread.id
+					})
+					logger.debug(`Runs for thread "${color.bold(thread.id)}":`, runs)
+
+					// Cancel any active runs
+					const activeRuns = runs?.data?.filter((run) => ['in_progress', 'requires_action'].includes(run.status))
+					logger.debug(`Cancelling ${activeRuns?.length} active runs...`)
+
+					await Promise.all(
+						activeRuns?.map(async (run) => {
+							await openai.cancelRun({
+								run_id: run.id,
+								thread_id: thread.id
+							})
+							logger.debug(`Cancelled run "${color.bold(run.id)}"`)
+						}) ?? []
+					)
+
+					await openai.createMessage({
+						...threadMessage,
+						thread_id: thread.id
+					})
+					logger.debug(`Added message to thread "${color.bold(thread.id)}":`, threadMessage)
+				}
 			}
 
 			// Run the assistant until we get something back!
@@ -82,34 +122,69 @@ export class OpenAiEngine extends BaseEngine {
 				assistant_id: this._assistant.data.id,
 				thread_id: thread.id
 			})
-			const response = null
-			while (['queued', 'in_progress'].includes(run.status)) {
-				await new Promise((resolve) => setTimeout(resolve, 400))
-				run = await openai.getRun({
-					run_id: run.id,
-					thread_id: thread.id
-				})
-				logger.debug(`Run status for "${color.bold(run.id)}":`, run.status)
+			let runResolve = (value: unknown) => value
+			const runPromise = new Promise((resolve) => {
+				runResolve = resolve
+			})
+			let response: Message | null = null
+			setState('run', runPromise, {
+				namespace: _PREFIX + '/thread/' + thread.id
+			})
 
-				if (run.status === 'completed') {
-					// TODO: Paginate via "before" cursor + message cache
-					const threadMessages = await openai.getThreadMessages({
-						thread_id: thread.id,
-						limit: 1
+			// Wait for the run to complete
+			try {
+				while (['queued', 'in_progress'].includes(run.status)) {
+					await new Promise((resolve) => setTimeout(resolve, 400))
+					run = await openai.getRun({
+						run_id: run.id,
+						thread_id: thread.id
 					})
+					logger.debug(`Run status for "${color.bold(run.id)}":`, run)
 
-					const reply = threadMessages?.data?.[0]
-					return {
-						finish_reason: 'stop', // TODO: Abstract this
-						message: {
-							role: reply?.role,
-							// @ts-expect-error - // TODO: Abstract this
-							content: reply?.content?.[0]?.text?.value
+					if (run.status === 'completed') {
+						// TODO: Paginate via "before" cursor + message cache
+						const threadMessages = await openai.getThreadMessages({
+							thread_id: thread.id,
+							limit: 1
+						})
+
+						response = threadMessages?.data?.[0]
+						return {
+							finish_reason: 'stop', // TODO: Abstract this
+							message: {
+								role: response?.role,
+								// @ts-expect-error - // TODO: Abstract this
+								content: response?.content?.[0]?.text?.value
+							}
+						}
+					} else if (run.status === 'failed') {
+						throw new Error(`Run failed: ${run}`)
+					} else if (run.status === 'requires_action') {
+						const functionCall = run.required_action?.submit_tool_outputs.tool_calls[0]
+						if (!functionCall) {
+							throw new Error(`No function call found for ${run.id}`)
+						}
+
+						return {
+							finish_reason: 'function_call',
+							message: {
+								role: 'assistant',
+								function_call: {
+									name: functionCall.function.name,
+									arguments: convertToJSON(functionCall.function.arguments)
+								},
+								content: []
+							}
 						}
 					}
 				}
+			} finally {
+				setState('run', null, {
+					namespace: _PREFIX + '/thread/' + thread.id
+				})
+				runResolve?.(response)
+				logger.debug(`Assistant response:`, response)
 			}
-			logger.debug(`Assistant response:`, response)
 		}
 
 		const response = await openai.chat({
@@ -121,9 +196,19 @@ export class OpenAiEngine extends BaseEngine {
 		logger.debug(`GPT Response:`, response)
 
 		const reply = response?.choices?.[0]
+		let replyFunction = undefined
+		if (reply?.message?.function_call) {
+			replyFunction = {
+				name: reply?.message?.function_call?.name,
+				arguments: JSON.parse((reply?.message?.function_call?.arguments as unknown as string) ?? '{}')
+			}
+		}
 		return {
 			finish_reason: reply?.finish_reason,
-			message: reply?.message
+			message: {
+				...reply?.message,
+				function_call: replyFunction
+			}
 		}
 	}
 
@@ -158,7 +243,7 @@ export class OpenAiEngine extends BaseEngine {
  *
  * @returns The Assistant instance, or null if the feature is disabled.
  */
-async function loadAssistant(): Promise<Assistant | null | undefined> {
+async function loadAssistant(functions?: ChatFunction[]): Promise<Assistant | null | undefined> {
 	// No need to load the assistant if Insight feature is disabled
 	if (!pluginOptions.insight) {
 		logger.debug('Insight is disabled. Skipping assistant initialization.')
@@ -310,6 +395,14 @@ async function loadAssistant(): Promise<Assistant | null | undefined> {
 		logger.info(`Uploaded ${uploadedDocuments.length} documents:`, uploadedDocuments)
 	}
 
+	// Got any functions? Add them to the assistant
+	functions?.forEach((fun) => {
+		assistantData.tools.push({
+			type: 'function',
+			function: fun
+		})
+	})
+
 	// Make sure the assistant is up to date on OpenAI's end
 	const differences = compare(assistant.data as unknown as Record<string, unknown>, assistantData, [
 		'description',
@@ -360,26 +453,29 @@ async function loadAssistant(): Promise<Assistant | null | undefined> {
 				const fileExists = files?.data?.find((file) => file.id === fileId)
 				return !!fileExists
 			})
-		logger.debug(`Removing ${fileIdsToRemove.length} cached files:`, fileIdsToRemove)
+		logger.debug(`Removing ${fileIdsToRemove.length} cached file IDs:`, fileIdsToRemove)
 
 		await Promise.all(
 			fileIdsToRemove.map(async (cachedFileId) => {
 				await openai.deleteFile({
 					file_id: cachedFileId
 				})
-				await Flashcore.delete(cachedFileId, {
-					namespace: _PREFIX + '/files'
-				})
-				await Flashcore.set(
-					'files',
-					(files: Record<string, string>) => {
-						delete files[cachedFileId]
-						return files
-					},
-					{
-						namespace: _PREFIX
-					}
-				)
+				const fileName = Object.keys(cachedFiles).find((fileName) => cachedFiles[fileName] === cachedFileId)
+				if (fileName) {
+					await Flashcore.delete(fileName, {
+						namespace: _PREFIX + '/files'
+					})
+					await Flashcore.set(
+						'files',
+						(files: Record<string, string>) => {
+							delete files[fileName]
+							return files
+						},
+						{
+							namespace: _PREFIX
+						}
+					)
+				}
 			})
 		)
 		logger.debug(`Successfully removed ${fileNamesToRemove.length} cached files.`)
@@ -453,4 +549,45 @@ async function loadFunctions() {
 		functions,
 		functionHandlers
 	}
+}
+
+/**
+ * Converts a function call to a JSON string like the older API.
+ */
+function convertToJSON(input: string): Record<string, string> {
+	// If the input is already JSON, return it
+	try {
+		const json = JSON.parse(input)
+		logger.debug(`Function call is already JSON:`, json)
+		return json
+	} catch {
+		// Do nothing, this is fine
+	}
+
+	// Extract the function name and parameters
+	const match = input.match(/^(\w+)\((.*)\)$/)
+	if (!match) {
+		throw new Error('Invalid input format')
+	}
+
+	// Split parameters into key-value pairs
+	const params = match[2].split(',').map((param) => param.trim())
+
+	// Construct an object from the key-value pairs
+	const result = params.reduce((obj, param) => {
+		const [key, value] = param.split('=').map((p) => p.trim())
+
+		// Remove leading and trailing single quotes and @ symbol from value
+		const formattedValue = value.replace(/^'@?|'$/g, '')
+
+		// Capitalize the first letter of the value if it's not a number
+		obj[key] = isNaN(formattedValue as unknown as number)
+			? formattedValue.charAt(0).toUpperCase() + formattedValue.slice(1)
+			: formattedValue
+		return obj
+	}, {} as Record<string, string>)
+	logger.debug(`Converted function call to JSON:`, result)
+
+	// Convert the object to a JSON string
+	return result
 }

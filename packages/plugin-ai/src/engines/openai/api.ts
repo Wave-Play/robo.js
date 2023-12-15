@@ -10,6 +10,7 @@ import type { File, Message, Run, Thread } from './types.js'
  * @see https://platform.openai.com/docs/api-reference
  */
 export const openai = {
+	cancelRun,
 	chat,
 	createAssistant,
 	createImage,
@@ -23,6 +24,7 @@ export const openai = {
 	getThreadMessages,
 	listAssistants,
 	listFiles,
+	listRuns,
 	modifyAssistant,
 	uploadFile
 }
@@ -132,6 +134,22 @@ function splitOptions<T extends RequestOptions>(options?: T): SplitOptionsResult
 		bodyOptions: rest as Omit<T, keyof RequestOptions>,
 		requestOptions: { apiKey, backoff, body, headers, method, retries }
 	}
+}
+
+interface CancelRunOptions extends RequestOptions {
+	run_id: string
+	thread_id: string
+}
+async function cancelRun(options: CancelRunOptions) {
+	const { requestOptions } = splitOptions(options)
+
+	return request<unknown>(`/threads/${options.thread_id}/runs/${options.run_id}/cancel`, {
+		...requestOptions,
+		method: 'POST',
+		headers: {
+			'OpenAI-Beta': 'assistants=v1'
+		}
+	})
 }
 
 async function chat(options: GptChatOptions) {
@@ -386,6 +404,22 @@ async function listFiles(options?: ListFilesOptions) {
 	const query = purpose ? `?purpose=${purpose}` : ''
 	return request<ListResult<File>>(`/files${query}`, {
 		...requestOptions
+	})
+}
+
+interface ListRunsOptions extends RequestOptions {
+	thread_id: string
+}
+
+async function listRuns(options?: ListRunsOptions) {
+	const { bodyOptions, requestOptions } = splitOptions(options)
+	const { thread_id } = bodyOptions
+
+	return request<ListResult<Run>>(`/threads/${thread_id}/runs`, {
+		...requestOptions,
+		headers: {
+			'OpenAI-Beta': 'assistants=v1'
+		}
 	})
 }
 

@@ -18,7 +18,7 @@ export default async (message: Message) => {
 	if (!message.mentions.users.has(client.user?.id ?? '') && !isOpenConvo) {
 		if (isReplyingToUser(message.author.id)) {
 			addUserFollowUp(message.author.id, message, message.content)
-			logger.debug(`Added follow up message for ${message.author.username}`)
+			logger.debug(`Added follow up message for ${message.author.username} but not mentioned`)
 		} else {
 			logger.debug(`Message received but not mentioned`)
 		}
@@ -62,7 +62,7 @@ export default async (message: Message) => {
 	// If currently already replying to this user, add as follow up context
 	if (isReplyingToUser(targetMessage.author.id)) {
 		addUserFollowUp(targetMessage.author.id, targetMessage, processedContent)
-		logger.debug(`Added follow up message for ${targetMessage.author.username}`)
+		logger.debug(`Added follow up message for @${targetMessage.author.username} because already replying`)
 		return
 	}
 
