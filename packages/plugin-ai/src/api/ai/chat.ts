@@ -1,12 +1,12 @@
-import { AiEngine } from '../../core/engine.js'
-import { logger } from '../../core/logger.js'
-import { options as pluginOptions } from '../../events/_start.js'
-import type { GptChatMessage } from '../../core/openai.js'
+import { AI } from '@/core/ai.js'
+import { logger } from '@/core/logger.js'
+import { options as pluginOptions } from '@/events/_start.js'
+import type { ChatMessage } from '@/engines/base.js'
 import type { RoboRequest } from '@roboplay/plugin-api'
 
 interface ApiChatRequest {
 	functionCall?: string
-	messages: GptChatMessage[]
+	messages: ChatMessage[]
 	model?: string
 }
 
@@ -33,11 +33,11 @@ export default (req: RoboRequest<ApiChatRequest>): Promise<ApiChatResponse> => {
 				})
 			}
 
-			AiEngine.chat(gptMessages, {
+			AI.chat(gptMessages, {
 				onReply: (message) => {
 					logger.debug('API Chat response:', message)
 					resolve({
-						message: message
+						message: message.text ?? ''
 					})
 				}
 			})
