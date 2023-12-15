@@ -118,3 +118,32 @@ npx robo add @roboplay/plugin-api
 ```
 
 Imagine a chat window with your Robo on your favorite webpage. Pretty cool, right?
+
+## Custom Models 🧪
+
+You can also use your own custom AI models with this plugin. Just set the `model` config your custom model instance and you're good to go!
+
+```js
+// config/plugins/roboplay/plugin-ai.mjs
+import LlamaModel from '../../../llama.js'
+
+export default {
+	// ... other configurations
+	model: new LlamaModel()
+}
+```
+
+Custom models must extend the `BaseEngine` class from `@roboplay/plugin-ai`. Here's a quick example:
+
+```js
+// llama.js
+import { BaseEngine } from '@roboplay/plugin-ai'
+
+export default class LlamaModel extends BaseEngine {
+	async chat(query) {
+		return `Llama says: ${query}`
+	}
+}
+```
+
+> **Warning:** The custom model API is still in beta. It may change in the future.
