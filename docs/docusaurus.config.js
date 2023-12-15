@@ -1,5 +1,6 @@
 // @ts-check
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { themes } = require('prism-react-renderer')
 const lightCodeTheme = themes.github
 const darkCodeTheme = themes.dracula
