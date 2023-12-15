@@ -1,5 +1,5 @@
 import { Command } from 'commander'
-import { readFile, writeFile } from 'node:fs/promises'
+import { writeFile } from 'node:fs/promises'
 import { logger } from '../core/logger.js'
 import type { Manifest, CommandEntry, ContextEntry, EventConfig, CommandOption } from '@roboplay/robo.js'
 import path from 'node:path'
@@ -34,7 +34,7 @@ async function generateDocAction() {
 			return str.length > 0 ? str.join(',') : 'no options'
 		}
 
-		const displayCommands = (command: CommandEntry, commandKey?: string): any => {
+		const displayCommands = (command: CommandEntry, commandKey?: string) => {
 			const subCommandsNames: string[] = []
 			let subCommand: CommandEntry = command.subcommands
 			while (subCommand) {
