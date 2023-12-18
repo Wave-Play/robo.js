@@ -165,6 +165,10 @@ export const Flashcore = {
 		}
 
 		return _adapter.set(key, value)
+	},
+
+	has: (key: string): Promise<boolean> | boolean => {
+		return _adapter.has(key)
 	}
 }
 
