@@ -24,6 +24,7 @@ export interface FlashcoreAdapter<K = string, V = unknown> {
 	delete(key: K): Promise<boolean> | boolean
 	get(key: K): Promise<V | undefined> | V | undefined
 	set(key: K, value: V): Promise<boolean> | boolean
+	has(key: K): Promise<boolean> | boolean
 }
 
 export interface HandlerRecord<T = unknown> {
@@ -65,15 +66,7 @@ export interface RoboStateMessage extends RoboMessage {
 
 export interface SpiritMessage {
 	error?: unknown
-	event?:
-		| 'build'
-		| 'get-state'
-		| 'command'
-		| 'ready'
-		| 'restart'
-		| 'set-state'
-		| 'start'
-		| 'stop'
+	event?: 'build' | 'get-state' | 'command' | 'ready' | 'restart' | 'set-state' | 'start' | 'stop'
 	payload?: unknown
 	state?: Record<string, unknown>
 	verbose?: boolean

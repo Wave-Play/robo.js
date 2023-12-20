@@ -69,6 +69,10 @@ export class FlashcoreFileAdapter<K = string, V = unknown> implements FlashcoreA
 		}
 	}
 
+	async has(key: K): Promise<boolean> {
+		return (await this.get(key)) ? true : false
+	}
+
 	private _getSafeKey(key: K): string {
 		return createHash('sha256').update(key.toString()).digest('hex')
 	}
