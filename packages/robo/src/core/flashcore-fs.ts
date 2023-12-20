@@ -48,6 +48,10 @@ export class FlashcoreFileAdapter<K = string, V = unknown> implements FlashcoreA
 		}
 	}
 
+	async has(key: K): Promise<boolean> {
+		return !!(await this.get(key))
+	}
+
 	async init() {
 		try {
 			await fs.mkdir(FlashcoreFileAdapter.DATA_DIR, { recursive: true })
@@ -67,10 +71,6 @@ export class FlashcoreFileAdapter<K = string, V = unknown> implements FlashcoreA
 		} catch {
 			return false
 		}
-	}
-
-	async has(key: K): Promise<boolean> {
-		return (await this.get(key)) ? true : false
 	}
 
 	private _getSafeKey(key: K): string {

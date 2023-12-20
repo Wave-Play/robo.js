@@ -1,5 +1,5 @@
 ---
-'@roboplay/robo.js': minor
+'@roboplay/robo.js': patch
 ---
 
-Added `has` feature to Flashcore.
+feat(flashcore): new `Flashcore.has()` function to check if a key exists
