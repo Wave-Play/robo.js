@@ -1,0 +1,22 @@
+html,
+body {
+  height: 100%;
+}
+
+.mainWrapper {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr auto;
+  min-height: 94vh;
+}
+
+/* Docusaurus-specific utility class */
+:global(.docusaurus-mt-lg) {
+  margin-top: 3rem;
+}
+
+:global(#__docusaurus) {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}

@@ -4,6 +4,7 @@ import Link from '@docusaurus/Link'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
 import HomepageFeatures from '@site/src/components/HomepageFeatures'
+import Footer from '@site/src/components/Footer/index.js'
 
 import styles from './index.module.css'
 
@@ -43,6 +44,7 @@ export default function Home() {
 			<main>
 				<HomepageFeatures />
 			</main>
+      <Footer className={'footer-home'}/>
 		</Layout>
 	)
 }
