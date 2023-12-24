@@ -8,6 +8,12 @@ body {
   grid-template-columns: 1fr;
   grid-template-rows: auto 1fr auto;
   min-height: 94vh;
+
+  @media (max-width: 720px) {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
 }
 
 /* Docusaurus-specific utility class */
