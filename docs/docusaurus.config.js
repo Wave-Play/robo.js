@@ -1,6 +1,8 @@
 // @ts-check
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
+// import React from 'react'
+// import Footer from './src/components/Footer';
 const { themes } = require('prism-react-renderer')
 const lightCodeTheme = themes.github
 const darkCodeTheme = themes.dracula
@@ -74,7 +76,7 @@ const config = {
 						type: 'docSidebar',
 						sidebarId: 'tutorialSidebar',
 						position: 'left',
-						label: 'Docs'
+						label: 'Docs',
 					},
 					{ to: '/plugins', label: 'Plugins', position: 'left' },
 					{
@@ -90,15 +92,15 @@ const config = {
 					}
 				]
 			},
-			footer: {
-				logo: {
-					alt: 'Sage Logo',
-					src: '/img/logo.png',
-					width: 55,
-					height: 55
-				},
-				copyright: `MIT © ${new Date().getFullYear()} <strong>Robo.js</strong> By <strong>WavePlay</strong>`
-			},
+			// footer: {
+			// 	logo: {
+			// 		alt: 'Sage Logo',
+			// 		src: '/img/logo.png',
+			// 		width: 55,
+			// 		height: 55
+			// 	},
+			// 	copyright: `MIT © ${new Date().getFullYear()} <strong>Robo.js</strong> By <strong>WavePlay</strong>`
+			// },
 			prism: {
 				theme: lightCodeTheme,
 				darkTheme: darkCodeTheme
