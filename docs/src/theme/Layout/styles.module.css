@@ -5,7 +5,7 @@ body {
 
 .mainWrapper {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 100%;
   grid-template-rows: auto 1fr auto;
   min-height: 94vh;
 
