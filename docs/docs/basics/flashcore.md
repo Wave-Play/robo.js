@@ -103,7 +103,7 @@ export default async (interaction: CommandInteraction) => {
 
 :::info Heads Up!!!
 
-### Don't forget to `await` your Flashcore calls!
+Don't forget to `await` your Flashcore calls!
 
 :::
 
