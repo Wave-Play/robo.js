@@ -326,66 +326,70 @@ async function loadAssistant(functions?: ChatFunction[]): Promise<Assistant | nu
 	const documentResults: Record<string, string> = {}
 	await Promise.all(
 		documents.map(async (document) => {
-			const filePath = path.join(documentsDir, document)
-			const fileStats = await fs.stat(filePath)
+			try {
+				const filePath = path.join(documentsDir, document)
+				const fileStats = await fs.stat(filePath)
 
-			// Skip directories
-			if (fileStats.isDirectory()) {
-				logger.warn(`Directories are not supported. Skipping ${color.bold(document)}`)
-				return
-			}
+				// Skip directories
+				if (fileStats.isDirectory()) {
+					logger.warn(`Directories are not supported. Skipping ${color.bold(document)}`)
+					return
+				}
 
-			// Check if the file has already been uploaded and skip if it has
-			const cachedFile = await Flashcore.get<File>(document, {
-				namespace: _PREFIX + '/files'
-			})
-
-			if (cachedFile && cachedFile.bytes === fileStats.size) {
-				assistantData.file_ids.push(cachedFile.id)
-				logger.debug(`Using cached document ${color.bold(document)}:`, cachedFile)
-				return
-			}
-
-			// Upload the file if it doesn't exist
-			const fileBlob = new Blob([await fs.readFile(filePath, 'utf-8')])
-			const file = await openai.uploadFile({
-				purpose: 'assistants',
-				file: fileBlob,
-				fileName: document
-			})
-			assistantData.file_ids.push(file.id)
-			documentResults[document] = file.id
-			logger.debug(`Uploaded document ${color.bold(document)}:`, file)
-
-			// Cache the file ID for later use
-			await Flashcore.set<File>(
-				document,
-				{
-					id: file.id,
-					bytes: fileStats.size
-				},
-				{
+				// Check if the file has already been uploaded and skip if it has
+				const cachedFile = await Flashcore.get<File>(document, {
 					namespace: _PREFIX + '/files'
-				}
-			)
+				})
 
-			// Update the list of cached file IDs
-			await Flashcore.set(
-				'files',
-				(files: Record<string, string>) => {
-					if (!files) {
-						files = {}
-					}
-					if (!files[document]) {
-						files[document] = file.id
-					}
-
-					return files
-				},
-				{
-					namespace: _PREFIX
+				if (cachedFile && cachedFile.bytes === fileStats.size) {
+					assistantData.file_ids.push(cachedFile.id)
+					logger.debug(`Using cached document ${color.bold(document)}:`, cachedFile)
+					return
 				}
-			)
+
+				// Upload the file if it doesn't exist
+				const fileBlob = new Blob([await fs.readFile(filePath, 'utf-8')])
+				const file = await openai.uploadFile({
+					purpose: 'assistants',
+					file: fileBlob,
+					fileName: document
+				})
+				assistantData.file_ids.push(file.id)
+				documentResults[document] = file.id
+				logger.debug(`Uploaded document ${color.bold(document)}:`, file)
+
+				// Cache the file ID for  later use
+				await Flashcore.set<File>(
+					document,
+					{
+						id: file.id,
+						bytes: fileStats.size
+					},
+					{
+						namespace: _PREFIX + '/files'
+					}
+				)
+
+				// Update the list of cached file IDs
+				await Flashcore.set(
+					'files',
+					(files: Record<string, string>) => {
+						if (!files) {
+							files = {}
+						}
+						if (!files[document]) {
+							files[document] = file.id
+						}
+
+						return files
+					},
+					{
+						namespace: _PREFIX
+					}
+				)
+			} catch (e) {
+				logger.error(`Error uploading document ${color.bold(document)}:`, e)
+			}
 		})
 	)
 
@@ -505,7 +509,7 @@ async function loadFunctions() {
 		return key
 	})
 
-	portal.commands
+	portal?.commands
 		.filter((command) => {
 			// Only allow commands enabled in the plugin options
 			if (Array.isArray(pluginOptions.commands)) {
