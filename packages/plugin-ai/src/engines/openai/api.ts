@@ -381,14 +381,13 @@ interface ListResult<T> {
 }
 
 async function listAssistants(options?: ListAssistantsOptions) {
-	const { bodyOptions, requestOptions } = splitOptions(options)
+	const { requestOptions } = splitOptions(options)
 
 	const assistantData = await request<ListResult<AssistantData>>(`/assistants`, {
 		...requestOptions,
 		headers: {
 			'OpenAI-Beta': 'assistants=v1'
-		},
-		body: bodyOptions
+		}
 	})
 	return assistantData.data.map((data) => new Assistant(data))
 }
