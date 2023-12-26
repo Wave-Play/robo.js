@@ -4,11 +4,14 @@ import path from 'node:path'
 // This has to be modified when the Robo will agree to being put in the __tests__ folder.
 const PATH_TO_ROBO = path.join(process.cwd(), 'robo-test')
 
-beforeEach(async () => {
-	await exec('npm robo build && npm robo start', {
+beforeAll(async () => {
+	await exec('npm run build && npm run start', {
 		cwd: PATH_TO_ROBO
 	})
-})
+
+	// eslint-disable-next-line @typescript-eslint/no-empty-function
+	setTimeout(() => {}, 10000)
+}, 15000)
 // npx create-robo api-plugin-robo-test --plugins ../
 describe('Integration tests for the API plug-in:', () => {
 	// returns undefined or null
@@ -171,11 +174,8 @@ function exec(command: string, options?: SpawnOptions) {
 		const childProcess = spawn(args.shift(), args, {
 			...(options ?? {}),
 			env: { ...process.env, FORCE_COLOR: '1' },
+			shell: true,
 			stdio: 'inherit'
-		})
-
-		childProcess.stderr.on('data', function (data) {
-			console.log('stdout: ' + data)
 		})
 
 		// Resolve promise when child process exits
