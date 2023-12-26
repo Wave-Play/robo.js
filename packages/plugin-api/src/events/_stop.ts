@@ -1,7 +1,8 @@
-import Server from '../core/server.js'
+import { pluginOptions } from '~/events/_start.js'
 
 export default async () => {
-	if (Server.isRunning()) {
-		await Server.stop()
+	const { server } = pluginOptions
+	if (server.isRunning()) {
+		await server.stop()
 	}
 }

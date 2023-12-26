@@ -1,5 +1,11 @@
 {
 	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+			"~/core/*": ["src/core/*"],
+			"~/events/*": ["src/events/*"],
+			"~/server/*": ["src/server/*"]
+		},
 		"target": "ESNext",
 		"lib": ["esnext"],
 		"allowJs": true,
