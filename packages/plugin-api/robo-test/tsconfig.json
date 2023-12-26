@@ -1,17 +1,10 @@
 {
 	"compilerOptions": {
-		"baseUrl": ".",
-		"paths": {
-			"~/core/*": ["src/core/*"],
-			"~/engines/*": ["src/engines/*"],
-			"~/events/*": ["src/events/*"]
-		},
 		"target": "ESNext",
-		"types": ["jest"],
 		"lib": ["esnext"],
 		"allowJs": true,
 		"skipLibCheck": true,
-		"strict": false,
+		"strict": true,
 		"forceConsistentCasingInFileNames": true,
 		"esModuleInterop": true,
 		"module": "esnext",
@@ -20,6 +13,6 @@
 		"isolatedModules": true,
 		"incremental": true
 	},
-	"include": ["**/*.ts", "__tests__"],
+	"include": ["**/*.ts"],
 	"exclude": ["node_modules"]
 }
