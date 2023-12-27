@@ -1,9 +1,12 @@
 import { createServerHandler } from '~/core/handler.js'
 import { logger } from '~/core/logger.js'
 import { Router } from '~/core/router.js'
+import { pluginOptions } from '~/events/_start.js'
 import { BaseServer, StartOptions } from '~/server/base.js'
 import http from 'node:http'
 import { color, composeColors, portal } from '@roboplay/robo.js'
+
+const PATH_REGEX = new RegExp(/\[(.+?)\]/g)
 
 export class NodeServer extends BaseServer {
 	private _isRunning = false
@@ -26,12 +29,19 @@ export class NodeServer extends BaseServer {
 
 			// Add loaded API modules onto new router instance
 			this._router = new Router()
+			const prefix = pluginOptions.prefix ?? ''
+
 			portal.apis.forEach((api) => {
+				const key = api.key.replace(PATH_REGEX, ':$1')
+
 				this._router.addRoute({
 					handler: api.handler.default,
-					path: '/api/' + api.key
+					path: prefix + '/' + key
 				})
 			})
+			const { routes } = this._router.stats()
+			const routePaths = routes.map((route) => route.path)
+			logger.debug(`Registered routes:`, routePaths)
 
 			// Create server instance
 			this._server = http.createServer(createServerHandler(this._router))
