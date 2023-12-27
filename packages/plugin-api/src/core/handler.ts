@@ -68,6 +68,8 @@ export function createServerHandler(router: Router) {
 
 		// Find matching route and execute handler
 		const route = router.find(parsedUrl.pathname)
+		requestWrapper.params = route?.params ?? {}
+
 		if (!route?.handler) {
 			replyWrapper.code(404).send('API Route not found.')
 			return
