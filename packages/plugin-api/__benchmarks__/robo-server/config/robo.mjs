@@ -11,6 +11,9 @@ export default {
 			'MessageContent'
 		]
 	},
+	logger: {
+		level: 'debug'
+	},
 	plugins: [],
 	type: 'robo'
 }
