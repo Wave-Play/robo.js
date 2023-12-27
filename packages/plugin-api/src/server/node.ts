@@ -37,12 +37,7 @@ export class NodeServer extends BaseServer {
 			this._server = http.createServer(createServerHandler(this._router))
 
 			// Handle server errors
-			this._server.on('error', (error: Error) => logger.error(`Server error: ${error}`))
-
-			this._server = http.createServer((req, res) => {
-				res.writeHead(200, { 'Content-Type': 'text/plain' })
-				res.end('Hello World!')
-			})
+			this._server.on('error', (error: Error) => logger.error(`Server error:`, error))
 
 			// Start server
 			this._isRunning = true
