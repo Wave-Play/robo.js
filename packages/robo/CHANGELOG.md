@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.9.12
+
+### Patch Changes
+
+- 0502c38: feat(flashcore): new `Flashcore.has()` function to check if a key exists
+
 ## 0.9.11
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # create-robo
 
+## 0.10.1
+
+### Patch Changes
+
+- 54f7738: feat: generate .env type definitions
+- 86f16f2: refactor: always generate with specific robo version
+
 ## 0.10.0
 
 ### Minor Changes
