@@ -1,4 +1,4 @@
-import { logger } from '@roboplay/robo.js'
+import { logger } from '~/core/logger.js'
 import { createRouter } from './radix3.js'
 import type { RouteHandler } from './types.js'
 

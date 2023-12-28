@@ -52,6 +52,14 @@ export default async (_client: Client, options: PluginOptions) => {
 }
 
 async function getDefaultEngine() {
+	// Return Fastify if available
+	const isFastifyAvailable = await hasDependency('fastify')
+	if (isFastifyAvailable) {
+		logger.debug('Fastify is available. Using it as the server engine.')
+		const { FastifyEngine } = await import('~/engines/fastify.js')
+		return new FastifyEngine()
+	}
+
 	// Default engine
 	logger.debug('Using Node.js as the server engine.')
 	const { NodeEngine } = await import('~/engines/node.js')
