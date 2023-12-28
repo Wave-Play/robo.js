@@ -516,6 +516,7 @@ export default class Robo {
 		}
 
 		await fs.writeFile(envFilePath, envContent)
+		await this.createEnvTsFile()
 	}
 
 	/**
@@ -540,5 +541,32 @@ export default class Robo {
 
 		logger.debug(`Writing ${pluginName} config to ${pluginPath}...`)
 		await fs.writeFile(pluginPath, `export default ${pluginConfig}`)
+	}
+
+	/**
+	 * Adds the "env.d.ts" entry to the compilerOptions in the tsconfig.json
+	 *
+	 */
+
+	private async createEnvTsFile() {
+		if (this._useTypeScript) {
+			const autoCompletionEnvVar = `export {}\ndeclare global {\n    namespace NodeJS {\n		interface ProcessEnv {\n			DISCORD_CLIENT_ID: string\n			DISCORD_TOKEN: string\n		}\n	} \n}`
+
+			const tsconfigPath = path.join(this._workingDir, 'tsconfig.json')
+
+			const tsconfig = await fs
+				.access(tsconfigPath)
+				.then(() => true)
+				.catch(() => false)
+
+			if (tsconfig) {
+				await fs.writeFile(path.join(this._workingDir, 'env.d.ts'), autoCompletionEnvVar)
+				const parsedTSConfig = JSON.parse(await fs.readFile(tsconfigPath, 'utf-8'))
+				const compilerOptions = parsedTSConfig['compilerOptions']
+				compilerOptions['typeRoots'] = ['./env.d.ts']
+
+				await fs.writeFile(tsconfigPath, JSON.stringify(parsedTSConfig, null, '\t'))
+			}
+		}
 	}
 }
