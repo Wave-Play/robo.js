@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.9.13
+
+### Patch Changes
+
+- 7a6a53c: fix: respect help command disabling
+
 ## 0.9.12
 
 ### Patch Changes
