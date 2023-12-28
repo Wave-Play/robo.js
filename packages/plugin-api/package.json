@@ -13,6 +13,8 @@
 	"files": [
 		".robo/",
 		"src/",
+		"engines.d.ts",
+		"engines.js",
 		"LICENSE",
 		"README.md"
 	],
