@@ -1,10 +1,10 @@
+import { logger } from '~/core/logger.js'
 import { IncomingMessage, ServerResponse } from 'node:http'
 import url from 'node:url'
 import { parse } from 'node:querystring'
-import { logger } from '@roboplay/robo.js'
-import { pluginOptions } from '../events/_start.js'
-import type { HttpMethod, RoboReply, RoboRequest } from './types.js'
-import type { Router } from './router.js'
+import { pluginOptions } from '~/events/_start.js'
+import type { Router } from '~/core/router.js'
+import type { HttpMethod, RoboReply, RoboRequest } from '~/core/types.js'
 
 const MAX_BODY_SIZE = 5 * 1024 * 1024 // 5MB
 
@@ -44,8 +44,14 @@ export function createServerHandler(router: Router) {
 			req,
 			body: body,
 			method: req.method as HttpMethod,
-			query: parse(req.url || ''),
+			query: {},
 			params: {} // to be filled by the route handler
+		}
+
+		// Parse query string if applicable
+		const queryIndex = req.url?.indexOf('?') ?? -1
+		if (queryIndex !== -1) {
+			requestWrapper.query = parse(req.url.substring(queryIndex + 1))
 		}
 
 		const replyWrapper: RoboReply = {
@@ -88,7 +94,7 @@ export function createServerHandler(router: Router) {
 	}
 }
 
-async function getRequestBody(req: IncomingMessage): Promise<Record<string, unknown>> {
+export async function getRequestBody(req: IncomingMessage): Promise<Record<string, unknown>> {
 	return new Promise((resolve, reject) => {
 		let body = ''
 		let size = 0
