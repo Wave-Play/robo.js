@@ -278,7 +278,7 @@ async function onJoin(channel: VoiceBasedChannel) {
 							onReply: async (gptReply) => {
 								conversation.push({
 									role: 'assistant',
-									content: gptReply.text!
+									content: gptReply.text ?? ''
 								})
 
 								// TODO: Testing sending to a specific channel
@@ -287,7 +287,7 @@ async function onJoin(channel: VoiceBasedChannel) {
 										embeds: [
 											{
 												color: Colors.Greyple,
-												description: gptReply.text!,
+												description: gptReply.text,
 												author: {
 													name: client.user.username,
 													icon_url: client.user.avatarURL() ?? client.user.avatar ?? undefined
@@ -301,7 +301,7 @@ async function onJoin(channel: VoiceBasedChannel) {
 								}
 
 								// Remove emojis so they're not read out
-								const cleanReply = gptReply.text!
+								const cleanReply = (gptReply.text ?? '')
 									.replace(/<a?:\w+:\d+>/g, '')
 									.replace(
 										/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
