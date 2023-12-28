@@ -159,17 +159,27 @@ async function checkUpdates() {
 }
 
 async function getRoboversionArg(roboVersion: string): Promise<string> {
-	let roboversion = 'latest'
+	let result = 'latest'
 
 	if (roboVersion) {
 		const response = await fetch(`https://registry.npmjs.org/@roboplay/robo.js/${roboVersion}`)
 		const version = (await response.json()).version
 
 		if (version) {
-			roboversion = version
+			result = version
 		} else {
-			logger().error('Invalid Robo version, falling back to latest..')
+			logger.error('Invalid Robo version, falling back to latest..')
+		}
+	} else {
+		logger.debug('No Robo version specified, reading latest from NPM registry...')
+		const response = await fetch(`https://registry.npmjs.org/@roboplay/robo.js/latest`)
+		const version = (await response.json()).version
+
+		if (version) {
+			result = version
+		} else {
+			logger.error('Failed to read latest Robo version from NPM registry, falling back to latest..')
 		}
 	}
-	return roboversion
+	return result
 }
