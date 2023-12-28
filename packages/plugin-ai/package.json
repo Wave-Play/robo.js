@@ -30,7 +30,7 @@
 		"dev": "NODE_OPTIONS=--enable-source-maps robo build plugin --watch"
 	},
 	"devDependencies": {
-		"@roboplay/plugin-api": "0.2.0",
+		"@roboplay/plugin-api": "workspace:*",
 		"@roboplay/robo.js": "workspace:*",
 		"@swc/core": "^1.3.44",
 		"@types/node": "^18.14.6",
