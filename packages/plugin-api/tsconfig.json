@@ -3,8 +3,8 @@
 		"baseUrl": ".",
 		"paths": {
 			"~/core/*": ["src/core/*"],
-			"~/events/*": ["src/events/*"],
-			"~/server/*": ["src/server/*"]
+			"~/engines/*": ["src/engines/*"],
+			"~/events/*": ["src/events/*"]
 		},
 		"target": "ESNext",
 		"lib": ["esnext"],
