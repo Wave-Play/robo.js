@@ -2,7 +2,7 @@ import { SpawnOptions, spawn } from 'child_process'
 import path from 'node:path'
 
 // This has to be modified when the Robo will agree to being put in the __tests__ folder.
-const PATH_TO_ROBO = path.join(process.cwd(), 'robo-test')
+const PATH_TO_ROBO = path.join(process.cwd(), 'api-project-test')
 
 beforeAll(async () => {
 	await exec('npm run build && npm run start', {
@@ -28,19 +28,19 @@ describe('Integration tests for the API plug-in:', () => {
 	 */
 	const apiPath = 'http://localhost:3000/api'
 	const mockData = { name: 'x', age: 56, id: 9999 }
-	/* test("Get Request:", async () => {
-	  const req = await fetch(`${apiPath}/getuser/michael`, {
-		method: "GET",
-	  });
-	  const status = req.status;
-  
-	  expect(status).toBe(200);
-	});*/
+	it('Get Request:', async () => {
+		const req = await fetch(`${apiPath}/getuser/michael`, {
+			method: 'GET'
+		})
+		const status = req.status
+
+		expect(status).toBe(200)
+	})
 
 	/**
 	 * Post Request
 	 */
-	test('Post Request:', async () => {
+	it('Post Request:', async () => {
 		const req = await fetch(`${apiPath}/CheckPost`, {
 			method: 'POST',
 			headers: {
@@ -57,7 +57,7 @@ describe('Integration tests for the API plug-in:', () => {
 	/**
 	 * Put Request
 	 */
-	test('Put Request:', async () => {
+	it('Put Request:', async () => {
 		const req = await fetch(`${apiPath}/CheckPut`, {
 			method: 'PUT',
 			headers: {
@@ -76,7 +76,7 @@ describe('Integration tests for the API plug-in:', () => {
 	 * Patch Request
 	 */
 
-	test('Patch Request:', async () => {
+	it('Patch Request:', async () => {
 		const req = await fetch(`${apiPath}/CheckPatch`, {
 			method: 'PATCH',
 			headers: {
@@ -94,7 +94,7 @@ describe('Integration tests for the API plug-in:', () => {
 	/**
 	 * Delete Request
 	 */
-	test('Delete Request:', async () => {
+	it('Delete Request:', async () => {
 		const req = await fetch(`${apiPath}/CheckDelete`, {
 			method: 'PATCH',
 			headers: {
@@ -112,7 +112,7 @@ describe('Integration tests for the API plug-in:', () => {
 	/**
 	 * Options Request
 	 */
-	test('Options Request:', async () => {
+	it('Options Request:', async () => {
 		const req = await fetch(`${apiPath}/CheckOptions`, {
 			method: 'OPTIONS'
 		})
@@ -125,7 +125,7 @@ describe('Integration tests for the API plug-in:', () => {
 	/**
 	 * Head Request
 	 */
-	test('Head Request:', async () => {
+	it('Head Request:', async () => {
 		const req = await fetch(`${apiPath}/CheckHead`, { method: 'HEAD' })
 
 		expect(req.headers.get('one-header')).toBe('token')
@@ -134,7 +134,7 @@ describe('Integration tests for the API plug-in:', () => {
 	/**
 	 * Post Request With Query Parameters
 	 */
-	test('Post Request and Query Params:', async () => {
+	it('Post Request and Query Params:', async () => {
 		const req = await fetch(`${apiPath}/checkqueryparams?name=Alex&age=21&id=5693`)
 
 		const status = req.status
@@ -145,7 +145,7 @@ describe('Integration tests for the API plug-in:', () => {
 	/**
 	 * admin/panel/statistics
 	 */
-	test('Request to Admin Panel for statitics', async () => {
+	it('Request to Admin Panel for statitics', async () => {
 		const req = await fetch(`${apiPath}/admin/panel/statistics`, {
 			method: 'POST',
 			headers: {
@@ -162,7 +162,7 @@ describe('Integration tests for the API plug-in:', () => {
 	/**
 	 * Error throwing inside API route
 	 */
-	test('Throw error inside API', async () => {
+	it('Throw error inside API', async () => {
 		await fetch(`${apiPath}/CheckCrash`)
 	})
 })

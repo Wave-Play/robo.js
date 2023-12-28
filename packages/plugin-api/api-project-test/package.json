@@ -1,5 +1,5 @@
 {
-	"name": "robo-test",
+	"name": "api-project-test",
 	"description": "",
 	"version": "1.0.0",
 	"type": "module",
@@ -15,11 +15,8 @@
 		"lint:style": "prettier --write .",
 		"start": "robo start"
 	},
-	"jest": {
-		"transform": {}
-	},
 	"dependencies": {
-		"@roboplay/plugin-api": "file:..",
+		"@roboplay/plugin-api": "^0.1.0",
 		"@roboplay/robo.js": "latest",
 		"discord.js": "^14.13.0"
 	},
