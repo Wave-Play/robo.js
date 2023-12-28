@@ -1,5 +1,12 @@
 # @roboplay/plugin-ai
 
+## 0.4.1
+
+### Patch Changes
+
+- 06da2f3: patch: do not pass request body to listAssistants API
+- 514ec39: patch: better error handling for file uploads
+
 ## 0.4.0
 
 ### Minor Changes
