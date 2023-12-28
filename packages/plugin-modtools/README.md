@@ -14,6 +14,12 @@ To add this plugin to your Robo.js project:
 npx robo add @roboplay/plugin-modtools
 ```
 
+New to Robo.js? Start your project with this plugin pre-installed:
+
+```bash
+npx create-robo <project-name> -p @roboplay/plugin-modtools
+```
+
 ## Slash Commands
 
 Utilize these commands for efficient moderation:
@@ -51,8 +57,9 @@ Moderation channels are dedicated spaces for tracking and managing server activi
 Once you add the plugin, run the `/mod setup` command as a moderator to configure your moderation tools:
 
 - **Moderation Channels**: Set up your moderation channels for logging and reporting.
-- **Test Mode**: Safely simulate moderation actions for training purposes.
 - **Confirmation Mode**: Require explicit confirmation for each action, avoiding accidental moderation.
+- **Lockdown Mode**: Allow only moderators to use this Robo.
+- **Test Mode**: Safely simulate moderation actions for training purposes.
 
 ## AI Integration
 

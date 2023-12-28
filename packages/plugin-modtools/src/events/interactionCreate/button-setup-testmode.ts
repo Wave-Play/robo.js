@@ -29,8 +29,8 @@ export default async (interaction: ButtonInteraction) => {
 
 	// Toggle test mode
 	logger.debug(`Toggling test mode for guild ${interaction.guildId}`)
-	const settings = await getSettings(interaction.guildId)
-	const newSettings = await updateSettings(interaction.guildId, {
+	const settings = getSettings(interaction.guildId)
+	const newSettings = updateSettings(interaction.guildId, {
 		testMode: !settings.testMode
 	})
 

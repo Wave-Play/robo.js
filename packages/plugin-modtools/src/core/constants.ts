@@ -46,22 +46,25 @@ export const ID_NAMESPACE = 'plugin-modtools:'
 
 export const Buttons = {
 	Ban: {
-		id: ID_NAMESPACE + 'ban'
+		id: ID_NAMESPACE + 'button-ban'
 	},
 	CreateChannels: {
-		id: ID_NAMESPACE + 'create-channels'
+		id: ID_NAMESPACE + 'button-create-channels'
+	},
+	LockdownMode: {
+		id: ID_NAMESPACE + 'button-lockdown-mode'
 	},
 	RequireConfirmation: {
-		id: ID_NAMESPACE + 'require-confirmation'
+		id: ID_NAMESPACE + 'button-require-confirmation'
 	},
 	ResetSettings: {
-		id: ID_NAMESPACE + 'reset-settings'
+		id: ID_NAMESPACE + 'button-reset-settings'
 	},
 	TestMode: {
-		id: ID_NAMESPACE + 'test-mode'
+		id: ID_NAMESPACE + 'button-test-mode'
 	},
 	Unban: {
-		id: ID_NAMESPACE + 'unban'
+		id: ID_NAMESPACE + 'button-unban'
 	},
 }
 

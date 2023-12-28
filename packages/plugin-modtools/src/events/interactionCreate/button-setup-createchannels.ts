@@ -40,7 +40,7 @@ export default async (interaction: ButtonInteraction) => {
 	// Create moderator channels
 	logger.debug(`Creating moderator channels for guild ${interaction.guildId}`)
 	const channelsCreated = []
-	let { logsChannelId, mailChannelId } = await getSettings(interaction.guildId)
+	let { logsChannelId, mailChannelId } = getSettings(interaction.guildId)
 	if (!logsChannelId) {
 		const logsChannel = await createChannel(interaction, 'moderator-logs', 'Moderation actions will be logged here.')
 		logsChannelId = logsChannel.id
@@ -53,7 +53,7 @@ export default async (interaction: ButtonInteraction) => {
 	}
 
 	// Update settings
-	const newSettings = await updateSettings(interaction.guildId, {
+	const newSettings = updateSettings(interaction.guildId, {
 		logsChannelId,
 		mailChannelId
 	})

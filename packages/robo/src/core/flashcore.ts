@@ -72,6 +72,10 @@ export const Flashcore = {
 		return _adapter.get(key) as V
 	},
 
+	has: (key: string): Promise<boolean> | boolean => {
+		return _adapter.has(key)
+	},
+
 	/**
 	 * Unregisters a callback from a key, so it will no longer be executed when the key's value changes.
 	 *
@@ -138,7 +142,7 @@ export const Flashcore = {
 			const setValue = async (resolvedOldValue: V) => {
 				let newValue = value
 
-				// If value is a function, use it to compute the new value based on the old value
+				// If value is an updater function, use it to compute the new value based on the old value
 				if (typeof value === 'function') {
 					newValue = (value as (oldValue: V) => V)(resolvedOldValue as V)
 				}

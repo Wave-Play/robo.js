@@ -1,5 +1,5 @@
 node_modules
-docosaurus
+docs
 **/codemod/**
 **/dist/**
 **/tsup.config.ts

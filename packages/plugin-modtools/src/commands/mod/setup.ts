@@ -36,7 +36,7 @@ export default async (interaction: ChatInputCommandInteraction): Promise<Command
 	}
 
 	// Load settings and craft setup message
-	const settings = await getSettings(interaction.guildId)
+	const settings = getSettings(interaction.guildId)
 	const setupMessage = createSetupMessage(interaction, settings)
 
 	return {
@@ -87,6 +87,12 @@ export function createSetupMessage(interaction: BaseInteraction, settings: Guild
 			label: 'Require confirmation',
 			style: settings.requireConfirmation ? ButtonStyle.Primary : ButtonStyle.Secondary,
 			customId: Buttons.RequireConfirmation.id
+		},
+		{
+			type: ComponentType.Button,
+			label: 'Lockdown mode',
+			style: settings.lockdownMode ? ButtonStyle.Primary : ButtonStyle.Danger,
+			customId: Buttons.LockdownMode.id
 		}
 	]
 

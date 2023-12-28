@@ -60,7 +60,7 @@ export default async (interaction: ChatInputCommandInteraction): Promise<Command
 	}
 
 	// Get settings
-	const { logsChannelId, requireConfirmation, testMode } = await getSettings(interaction.guildId)
+	const { logsChannelId, requireConfirmation, testMode } = getSettings(interaction.guildId)
 
 	// Validate permissions
 	if ((interaction.memberPermissions.bitfield & PermissionFlagsBits.BanMembers) !== PermissionFlagsBits.BanMembers) {

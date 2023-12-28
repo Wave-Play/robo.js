@@ -1,20 +1,21 @@
-import { Flashcore, logger } from '@roboplay/robo.js'
+import { getState, logger, setState } from '@roboplay/robo.js'
 import { ID_NAMESPACE } from './constants.js'
 
 export interface GuildSettings {
 	auditLogsChannelId?: string
 	logsChannelId?: string
 	mailChannelId?: string
+	lockdownMode?: boolean
 	requireConfirmation?: boolean
 	testMode?: boolean
 }
 
-export async function getSettings(guildId: string | null): Promise<GuildSettings> {
+export function getSettings(guildId: string | null): GuildSettings {
 	if (!guildId) {
 		throw new Error(`Guild ID is required to get moderation settings`)
 	}
 
-	const guildSettings = await Flashcore.get<GuildSettings>(`settings`, {
+	const guildSettings = getState<GuildSettings>(`settings`, {
 		namespace: ID_NAMESPACE + guildId
 	})
 
@@ -22,19 +23,20 @@ export async function getSettings(guildId: string | null): Promise<GuildSettings
 	return guildSettings ?? {}
 }
 
-export async function updateSettings(guildId: string | null, settings: GuildSettings): Promise<GuildSettings> {
+export function updateSettings(guildId: string | null, settings: GuildSettings): GuildSettings {
 	if (!guildId) {
 		throw new Error(`Guild ID is required to update moderation settings`)
 	}
 
-	const currentSettings = await getSettings(guildId)
+	const currentSettings = getSettings(guildId)
 	const newSettings = {
 		...currentSettings,
 		...settings
 	}
 
-	await Flashcore.set<GuildSettings>(`settings`, newSettings, {
-		namespace: ID_NAMESPACE + guildId
+	setState<GuildSettings>(`settings`, newSettings, {
+		namespace: ID_NAMESPACE + guildId,
+		persist: true
 	})
 	logger.debug(`Updated settings for guild ${guildId}:`, newSettings)
 

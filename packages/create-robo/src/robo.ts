@@ -14,7 +14,8 @@ import {
 	getNodeOptions,
 	prettyStringify,
 	sortObjectKeys,
-	updateOrAddVariable
+	updateOrAddVariable,
+	getPackageExecutor
 } from './utils.js'
 import { logger } from './logger.js'
 import { RepoInfo, downloadAndExtractRepo, getRepoInfo, hasRepo } from './templates.js'
@@ -57,18 +58,18 @@ const optionalPlugins = [
 		name: `${chalk.bold(
 			'API'
 		)} - Effortlessly create and manage API routes, turning your Robo project into a full-fledged API server.`,
-		short: 'API',
+		short: 'API Server',
 		value: 'api'
-	},
-	{
-		name: `${chalk.bold('GPT')} - Enable your robo to generate human-like text with the power of GPT.`,
-		short: 'GPT',
-		value: 'gpt'
 	},
 	{
 		name: `${chalk.bold('Maintenance')} - Add a maintenance mode to your robo.`,
 		short: 'Maintenance',
 		value: 'maintenance'
+	},
+	{
+		name: `${chalk.bold('Moderation Tools')} - Equip your bot with essential tools to manage and maintain your server.`,
+		short: 'Moderation Tools',
+		value: 'modtools'
 	},
 	{
 		name: `${chalk.bold('Polls')} - Add the ability to create and manage polls with ease.`,
@@ -242,7 +243,7 @@ export default class Robo {
 		return selectedFeatures
 	}
 
-	async createPackage(features: string[], install: boolean, roboversion: string): Promise<void> {
+	async createPackage(features: string[], plugins: string[], install: boolean, roboversion: string): Promise<void> {
 		// Find the package manager that triggered this command
 		const packageManager = getPackageManager()
 		logger.debug(`Using ${chalk.bold(packageManager)} in ${this._workingDir}...`)
@@ -404,15 +405,13 @@ export default class Robo {
 				port: 3000
 			})
 		}
-		if (features.includes('gpt')) {
-			packageJson.dependencies['@roboplay/plugin-gpt'] = '^1.0.0'
-			await this.createPluginConfig('@roboplay/plugin-gpt', {
-				openaiKey: 'process.env.OPENAI_KEY'
-			})
-		}
 		if (features.includes('maintenance')) {
 			packageJson.dependencies['@roboplay/plugin-maintenance'] = '^0.1.0'
 			await this.createPluginConfig('@roboplay/plugin-maintenance', {})
+		}
+		if (features.includes('modtools')) {
+			packageJson.dependencies['@roboplay/plugin-modtools'] = '^0.1.0'
+			await this.createPluginConfig('@roboplay/plugin-modtools', {})
 		}
 		if (features.includes('polls')) {
 			packageJson.dependencies['@roboplay/plugin-poll'] = '^0.1.0'
@@ -431,6 +430,18 @@ export default class Robo {
 		// Install dependencies using the package manager that triggered the command
 		if (install) {
 			await exec(`${cmd(packageManager)} install`, { cwd: this._workingDir })
+		}
+
+		// Install and register the necessary plugins
+		if (plugins.length > 0) {
+			const executor = getPackageExecutor()
+
+			try {
+				await exec(`${executor} robo add ${plugins.join(' ')}`, { cwd: this._workingDir })
+			} catch (error) {
+				logger.error(`Failed to install plugins:`, error)
+				logger.warn(`Please add the plugins manually using ${chalk.bold(executor + ' robo add')}`)
+			}
 		}
 	}
 
@@ -505,6 +516,7 @@ export default class Robo {
 		}
 
 		await fs.writeFile(envFilePath, envContent)
+		await this.createEnvTsFile()
 	}
 
 	/**
@@ -529,5 +541,32 @@ export default class Robo {
 
 		logger.debug(`Writing ${pluginName} config to ${pluginPath}...`)
 		await fs.writeFile(pluginPath, `export default ${pluginConfig}`)
+	}
+
+	/**
+	 * Adds the "env.d.ts" entry to the compilerOptions in the tsconfig.json
+	 *
+	 */
+
+	private async createEnvTsFile() {
+		if (this._useTypeScript) {
+			const autoCompletionEnvVar = `export {}\ndeclare global {\n    namespace NodeJS {\n		interface ProcessEnv {\n			DISCORD_CLIENT_ID: string\n			DISCORD_TOKEN: string\n		}\n	} \n}`
+
+			const tsconfigPath = path.join(this._workingDir, 'tsconfig.json')
+
+			const tsconfig = await fs
+				.access(tsconfigPath)
+				.then(() => true)
+				.catch(() => false)
+
+			if (tsconfig) {
+				await fs.writeFile(path.join(this._workingDir, 'env.d.ts'), autoCompletionEnvVar)
+				const parsedTSConfig = JSON.parse(await fs.readFile(tsconfigPath, 'utf-8'))
+				const compilerOptions = parsedTSConfig['compilerOptions']
+				compilerOptions['typeRoots'] = ['./env.d.ts']
+
+				await fs.writeFile(tsconfigPath, JSON.stringify(parsedTSConfig, null, '\t'))
+			}
+		}
 	}
 }

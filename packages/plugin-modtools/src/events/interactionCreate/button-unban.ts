@@ -18,7 +18,7 @@ export default async (interaction: ButtonInteraction) => {
 	await interaction.deferUpdate()
 
 	// Get settings
-	const { logsChannelId, testMode } = await getSettings(interaction.guildId)
+	const { logsChannelId, testMode } = getSettings(interaction.guildId)
 
 	// Validate permissions
 	if (!hasPermission(interaction, 'BanMembers')) {

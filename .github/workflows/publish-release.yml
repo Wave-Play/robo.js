@@ -39,6 +39,12 @@ jobs:
       - name: PNPM install
         run: pnpm install
 
+      - name: Build Robo
+        run: pnpm turbo run build --filter=@roboplay/robo.js
+
+      - name: PNPM install 2
+        run: pnpm install
+
       - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1

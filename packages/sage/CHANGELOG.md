@@ -1,5 +1,11 @@
 # @roboplay/sage
 
+## 0.4.0
+
+### Minor Changes
+
+- 01967c4: feat(sage-cli): new `generate docs` subcommand
+
 ## 0.3.1
 
 ### Patch Changes

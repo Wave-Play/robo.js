@@ -41,7 +41,7 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 	const reason = interaction.options.get('reason')?.value as string
 
 	// Validate modmail channel
-	const { mailChannelId } = await getSettings(interaction.guildId)
+	const { mailChannelId } = getSettings(interaction.guildId)
 	if (!mailChannelId) {
 		logger.debug(`No modmail channel set for guild ${interaction.guildId}`)
 		return {

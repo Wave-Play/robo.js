@@ -47,7 +47,7 @@ export default async (interaction: ChannelSelectMenuInteraction) => {
 	}
 
 	// Set logs channel
-	const newSettings = await updateSettings(interaction.guildId, {
+	const newSettings = updateSettings(interaction.guildId, {
 		logsChannelId: channel.id
 	})
 

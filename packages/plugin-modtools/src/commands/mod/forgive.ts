@@ -61,7 +61,7 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 	}
 
 	// Log action to modlogs channel if this is not it
-	const { logsChannelId, testMode } = await getSettings(interaction.guildId)
+	const { logsChannelId, testMode } = getSettings(interaction.guildId)
 	if (interaction.channelId !== logsChannelId) {
 		const testPrefix = testMode ? '[TEST] ' : ''
 		logAction(interaction.guildId, {

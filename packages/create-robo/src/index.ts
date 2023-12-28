@@ -17,6 +17,7 @@ interface CommandOptions {
 	install?: boolean
 	javascript?: boolean
 	plugin?: boolean
+	plugins?: string[]
 	template?: string
 	typescript?: boolean
 	verbose?: boolean
@@ -28,7 +29,8 @@ new Command('create-robo <projectName>')
 	.version(packageJson.version)
 	.option('-f --features <features>', 'comma-separated list of features to include')
 	.option('-js --javascript', 'create a Robo using JavaScript')
-	.option('-p --plugin', 'create a Robo plugin instead of a bot')
+	.option('-p --plugins <plugins...>', 'pre-install plugins along with the project')
+	.option('-P --plugin', 'create a Robo plugin instead of a bot')
 	.option('-ni --no-install', 'skip installing dependencies')
 	.option('-t --template <templateUrl>', 'create a Robo from an online template')
 	.option('-ts --typescript', 'create a Robo using TypeScript')
@@ -44,7 +46,7 @@ new Command('create-robo <projectName>')
 		logger.debug(`Current working directory:`, process.cwd())
 
 		// parses robo version argument
-		const rv = await getRoboversionArg(options.roboVersion)
+		const roboVersion = await getRoboversionArg(options.roboVersion)
 
 		// Check for updates
 		await checkUpdates()
@@ -82,6 +84,7 @@ new Command('create-robo <projectName>')
 		// Create a new Robo project prototype
 		logger.debug(`Creating Robo prototype...`)
 		const robo = new Robo(projectName, options.plugin, useSameDirectory)
+		const plugins = options.plugins ?? []
 
 		if (useSameDirectory) {
 			logger.log(`This new ${robo.isPlugin ? 'plugin' : 'Robo'} will be created in the current directory.`)
@@ -109,7 +112,7 @@ new Command('create-robo <projectName>')
 
 			// Get user input to determine which features to include or use the recommended defaults
 			selectedFeaturesOrDefaults = options.features?.split(',') ?? (await robo.getUserInput())
-			await robo.createPackage(selectedFeaturesOrDefaults, options.install ?? true, rv)
+			await robo.createPackage(selectedFeaturesOrDefaults, plugins, options.install ?? true, roboVersion)
 
 			// Determine if TypeScript is selected and copy the corresponding template files
 			logger.debug(`Copying template files...`)
@@ -156,17 +159,27 @@ async function checkUpdates() {
 }
 
 async function getRoboversionArg(roboVersion: string): Promise<string> {
-	let roboversion = 'latest'
+	let result = 'latest'
 
 	if (roboVersion) {
 		const response = await fetch(`https://registry.npmjs.org/@roboplay/robo.js/${roboVersion}`)
 		const version = (await response.json()).version
 
 		if (version) {
-			roboversion = version
+			result = version
 		} else {
-			logger().error('Invalid Robo version, falling back to latest..')
+			logger.error('Invalid Robo version, falling back to latest..')
+		}
+	} else {
+		logger.debug('No Robo version specified, reading latest from NPM registry...')
+		const response = await fetch(`https://registry.npmjs.org/@roboplay/robo.js/latest`)
+		const version = (await response.json()).version
+
+		if (version) {
+			result = version
+		} else {
+			logger.error('Failed to read latest Robo version from NPM registry, falling back to latest..')
 		}
 	}
-	return roboversion
+	return result
 }

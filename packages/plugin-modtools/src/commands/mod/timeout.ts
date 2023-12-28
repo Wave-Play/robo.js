@@ -72,7 +72,7 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 	}
 
 	// Get settings
-	const { logsChannelId, testMode } = await getSettings(interaction.guildId)
+	const { logsChannelId, testMode } = getSettings(interaction.guildId)
 
 	// Validate permissions
 	if ((interaction.memberPermissions.bitfield & PermissionFlagsBits.BanMembers) !== PermissionFlagsBits.BanMembers) {

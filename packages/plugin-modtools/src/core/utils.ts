@@ -87,7 +87,7 @@ export async function logAction(guildId: string | null, message: MessageCreateOp
 		return
 	}
 
-	const { logsChannelId } = await getSettings(guildId)
+	const { logsChannelId } = getSettings(guildId)
 	if (!logsChannelId) {
 		logger.debug(`Missing logs channel for guild ${guildId}`)
 		return
