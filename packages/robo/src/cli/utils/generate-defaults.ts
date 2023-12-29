@@ -113,11 +113,14 @@ async function generateCommands(distDir: string, config: Config) {
 		const commandKey = path.relative(defaultCommandsDir, fullPath).replace(extension, '')
 		const shouldCreateDev = config.defaults?.dev ?? true
 		const shouldCreateHelp = config.defaults?.help ?? true
+		logger.debug(`Validating default command "${commandKey}":`, `dev: ${shouldCreateDev}, help: ${shouldCreateHelp}, debug: ${DEBUG_MODE}, guildId: ${env.discord.guildId}`)
 
 		if (['dev/logs', 'dev/restart', 'dev/status'].includes(commandKey) && (!DEBUG_MODE || !env.discord.guildId || !shouldCreateDev)) {
+			logger.debug(`Skipping default command:`, file)
 			return
 		}
 		if (commandKey === 'help' && !shouldCreateHelp) {
+			logger.debug(`Skipping default command:`, file)
 			return
 		}
 
@@ -129,6 +132,7 @@ async function generateCommands(distDir: string, config: Config) {
 
 		// Only copy over the file if it doesn't exist to prevent overwriting
 		if (!fileExists) {
+			logger.debug(`Generating default command:`, file)
 			await fs.mkdir(path.dirname(distPath), { recursive: true })
 			await fs.copyFile(fullPath, distPath)
 			generated[commandKey] = true
