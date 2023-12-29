@@ -5,6 +5,7 @@ import type { Plugin, SageOptions } from './index.js'
 export interface Config {
 	clientOptions: ClientOptions
 	defaults?: {
+		dev?: boolean
 		help?: boolean
 	}
 	excludePaths?: string[]
