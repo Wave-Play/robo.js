@@ -16,7 +16,8 @@
 		"start": "robo start"
 	},
 	"dependencies": {
-		"@roboplay/plugin-api": "^0.1.0",
+		"@roboplay/plugin-api": "file:..",
+		"@roboplay/plugin-better-stack": "^0.1.0",
 		"@roboplay/robo.js": "latest",
 		"discord.js": "^14.13.0"
 	},

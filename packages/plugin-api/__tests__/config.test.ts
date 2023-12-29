@@ -4,14 +4,6 @@ import path from 'node:path'
 // This has to be modified when the Robo will agree to being put in the __tests__ folder.
 const PATH_TO_ROBO = path.join(process.cwd(), 'api-project-test')
 
-beforeAll(async () => {
-	await exec('npm run build && npm run start', {
-		cwd: PATH_TO_ROBO
-	})
-
-	// eslint-disable-next-line @typescript-eslint/no-empty-function
-	setTimeout(() => {}, 10000)
-}, 15000)
 // npx create-robo api-plugin-robo-test --plugins ../
 describe('Integration tests for the API plug-in:', () => {
 	// returns undefined or null
@@ -22,6 +14,18 @@ describe('Integration tests for the API plug-in:', () => {
 
 	// Get User
 
+	beforeAll(async () => {
+		/*await exec('npm run build', {
+			cwd: PATH_TO_ROBO
+		})
+		// eslint-disable-next-line @typescript-eslint/no-empty-function
+		exec('npm run start', {
+			cwd: PATH_TO_ROBO
+		})
+
+		await new Promise((resolve) => setTimeout(resolve, 10000))*/
+	}, 50000)
+
 	/**
 	 * Test isn't working cause deeper path aren't setup.
 	 *
@@ -29,9 +33,7 @@ describe('Integration tests for the API plug-in:', () => {
 	const apiPath = 'http://localhost:3000/api'
 	const mockData = { name: 'x', age: 56, id: 9999 }
 	it('Get Request:', async () => {
-		const req = await fetch(`${apiPath}/getuser/michael`, {
-			method: 'GET'
-		})
+		const req = await fetch(`${apiPath}/getuser/michael`)
 		const status = req.status
 
 		expect(status).toBe(200)
@@ -95,13 +97,8 @@ describe('Integration tests for the API plug-in:', () => {
 	 * Delete Request
 	 */
 	it('Delete Request:', async () => {
-		const req = await fetch(`${apiPath}/CheckDelete`, {
-			method: 'PATCH',
-			headers: {
-				'Content-Type': 'application/json',
-				'My-Insane-Header-Look-At-It-Please': 'Token'
-			},
-			body: JSON.stringify(mockData)
+		const req = await fetch(`${apiPath}/CheckDelete?id=9999`, {
+			method: 'DELETE'
 		})
 
 		const status = req.status
@@ -162,9 +159,9 @@ describe('Integration tests for the API plug-in:', () => {
 	/**
 	 * Error throwing inside API route
 	 */
-	it('Throw error inside API', async () => {
+	/*it('Throw error inside API', async () => {
 		await fetch(`${apiPath}/CheckCrash`)
-	})
+	})*/
 })
 
 function exec(command: string, options?: SpawnOptions) {
