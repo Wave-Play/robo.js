@@ -11,6 +11,7 @@ const srcDir = path.join(process.cwd(), 'src')
 const defaultCommandsDir = path.join(__DIRNAME, '..', '..', 'default', 'commands')
 const defaultEventsDir = path.join(__DIRNAME, '..', '..', 'default', 'events')
 const supportedExtensions = ['.ts', '.tsx', '.js', '.jsx']
+const devCommands = [`dev${path.sep}logs`, `dev${path.sep}restart`, `dev${path.sep}status`]
 
 export interface DefaultGen {
 	commands: Record<string, boolean>
@@ -113,9 +114,14 @@ async function generateCommands(distDir: string, config: Config) {
 		const commandKey = path.relative(defaultCommandsDir, fullPath).replace(extension, '')
 		const shouldCreateDev = config.defaults?.dev ?? true
 		const shouldCreateHelp = config.defaults?.help ?? true
-		logger.debug(`Validating default command "${commandKey}":`, `dev: ${shouldCreateDev}, help: ${shouldCreateHelp}, debug: ${DEBUG_MODE}, guildId: ${env.discord.guildId}`)
+		logger.debug(
+			`Validating default command "${commandKey}":`,
+			`dev: ${shouldCreateDev}, help: ${shouldCreateHelp}, debug: ${DEBUG_MODE}, guildId: ${
+				env.discord.guildId ? 'exists' : 'none'
+			}`
+		)
 
-		if (['dev/logs', 'dev/restart', 'dev/status'].includes(commandKey) && (!DEBUG_MODE || !env.discord.guildId || !shouldCreateDev)) {
+		if (devCommands.includes(commandKey) && (!DEBUG_MODE || !env.discord.guildId || !shouldCreateDev)) {
 			logger.debug(`Skipping default command:`, file)
 			return
 		}
@@ -126,7 +132,7 @@ async function generateCommands(distDir: string, config: Config) {
 
 		// Check if such command already exists
 		const baseFilename = path.basename(file, extension)
-		const srcPathBase = path.join('commands', commandKey.substring(0, commandKey.lastIndexOf('/')), baseFilename)
+		const srcPathBase = path.join('commands', commandKey.substring(0, commandKey.lastIndexOf(path.sep)), baseFilename)
 		const distPath = path.join(distDir, 'commands', path.relative(defaultCommandsDir, fullPath))
 		const fileExists = await checkFileExistence(srcPathBase)
 
@@ -164,7 +170,7 @@ async function generateEvents(distDir: string) {
 		const distFile = '__robo_' + file
 		const distPath = path.join(distDir, 'events', baseFilename, distFile)
 		const extension = path.extname(file)
-		const eventKey = baseFilename + '/' + distFile.replace(extension, '')
+		const eventKey = baseFilename + path.sep + distFile.replace(extension, '')
 		await fs.mkdir(path.dirname(distPath), { recursive: true })
 		await fs.copyFile(fullPath, distPath)
 		generated[eventKey] = true
