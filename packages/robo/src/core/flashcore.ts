@@ -12,7 +12,7 @@ let _adapter: FlashcoreAdapter | undefined
 const _watchers = new Map<string, Set<WatcherCallback>>()
 
 interface FlashcoreOptions {
-	namespace?: string
+	namespace?: string | Array<string>
 }
 
 export const Flashcore = {
@@ -34,7 +34,7 @@ export const Flashcore = {
 	delete: (key: string, options?: FlashcoreOptions): Promise<boolean> | boolean => {
 		// If a namespace is provided, prepend it to the key
 		if (options?.namespace) {
-			key = `${options.namespace}__${key}`
+			key = Array.isArray(options.namespace) ? `${options.namespace.join('/')}__${key}` : `${options.namespace}__${key}`
 		}
 
 		if (_watchers.has(key)) {
@@ -66,7 +66,7 @@ export const Flashcore = {
 	get: <V>(key: string, options?: FlashcoreOptions): Promise<V> | V => {
 		// If a namespace is provided, prepend it to the key
 		if (options?.namespace) {
-			key = `${options.namespace}__${key}`
+			key = Array.isArray(options.namespace) ? `${options.namespace.join('/')}__${key}` : `${options.namespace}__${key}`
 		}
 
 		return _adapter.get(key) as V
@@ -86,7 +86,7 @@ export const Flashcore = {
 	off: (key: string, callback?: WatcherCallback, options?: FlashcoreOptions) => {
 		// If a namespace is provided, prepend it to the key
 		if (options?.namespace) {
-			key = `${options.namespace}__${key}`
+			key = Array.isArray(options.namespace) ? `${options.namespace.join('/')}__${key}` : `${options.namespace}__${key}`
 		}
 
 		if (_watchers.has(key) && callback) {
@@ -111,7 +111,7 @@ export const Flashcore = {
 	on: (key: string, callback: WatcherCallback, options?: FlashcoreOptions) => {
 		// If a namespace is provided, prepend it to the key
 		if (options?.namespace) {
-			key = `${options.namespace}__${key}`
+			key = Array.isArray(options.namespace) ? `${options.namespace.join('/')}__${key}` : `${options.namespace}__${key}`
 		}
 
 		if (!_watchers.has(key)) {
@@ -132,7 +132,7 @@ export const Flashcore = {
 	set: <V>(key: string, value: V, options?: FlashcoreOptions): Promise<boolean> | boolean => {
 		// If a namespace is provided, prepend it to the key
 		if (options?.namespace) {
-			key = `${options.namespace}__${key}`
+			key = Array.isArray(options.namespace) ? `${options.namespace.join('/')}__${key}` : `${options.namespace}__${key}`
 		}
 
 		if (_watchers.has(key) || typeof value === 'function') {
