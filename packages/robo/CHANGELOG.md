@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.9.16
+
+### Patch Changes
+
+- 2f7f75e: fix: compare default commands using correct platform separator
+
 ## 0.9.15
 
 ### Patch Changes
