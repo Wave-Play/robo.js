@@ -1,5 +1,11 @@
 # @roboplay/plugin-api
 
+## 0.2.1
+
+### Patch Changes
+
+- 347315f: patch: corrected relative imports in node engine
+
 ## 0.2.0
 
 ### Minor Changes
