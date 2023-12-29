@@ -111,10 +111,13 @@ async function generateCommands(distDir: string, config: Config) {
 		// A guild ID is also required to prevent accidental exposure to the public
 		const extension = path.extname(file)
 		const commandKey = path.relative(defaultCommandsDir, fullPath).replace(extension, '')
-		if (['dev/logs', 'dev/restart', 'dev/status'].includes(commandKey) && (!DEBUG_MODE || !env.discord.guildId)) {
+		const shouldCreateDev = config.defaults?.dev ?? true
+		const shouldCreateHelp = config.defaults?.help ?? true
+
+		if (['dev/logs', 'dev/restart', 'dev/status'].includes(commandKey) && (!DEBUG_MODE || !env.discord.guildId || !shouldCreateDev)) {
 			return
 		}
-		if (commandKey === 'help' && !config.defaults?.help) {
+		if (commandKey === 'help' && !shouldCreateHelp) {
 			return
 		}
 
