@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.9.15
+
+### Patch Changes
+
+- 0921547: chore: additional logging when generating default commands
+
 ## 0.9.14
 
 ### Patch Changes
