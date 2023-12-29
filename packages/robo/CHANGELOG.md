@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.9.14
+
+### Patch Changes
+
+- a58e471: patch: manual opt-out for /dev commands
+
 ## 0.9.13
 
 ### Patch Changes
