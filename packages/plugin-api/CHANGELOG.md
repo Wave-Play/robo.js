@@ -1,5 +1,11 @@
 # @roboplay/plugin-api
 
+## 0.2.3
+
+### Patch Changes
+
+- 24c9552: chore: removed additional path aliases
+
 ## 0.2.2
 
 ### Patch Changes
