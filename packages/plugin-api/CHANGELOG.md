@@ -1,5 +1,11 @@
 # @roboplay/plugin-api
 
+## 0.2.2
+
+### Patch Changes
+
+- 3589724: patch: removed all path alias usage
+
 ## 0.2.1
 
 ### Patch Changes
