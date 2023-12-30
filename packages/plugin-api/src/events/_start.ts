@@ -1,7 +1,7 @@
-import { logger } from '~/core/logger.js'
-import { hasDependency } from '~/core/runtime-utils.js'
+import { logger } from '../core/logger.js'
+import { hasDependency } from '../core/runtime-utils.js'
 import { portal } from '@roboplay/robo.js'
-import type { BaseEngine } from '~/engines/base.js'
+import type { BaseEngine } from '../engines/base.js'
 import type { Client } from 'discord.js'
 
 const PATH_REGEX = new RegExp(/\[(.+?)\]/g)
@@ -56,12 +56,12 @@ async function getDefaultEngine() {
 	const isFastifyAvailable = await hasDependency('fastify')
 	if (isFastifyAvailable) {
 		logger.debug('Fastify is available. Using it as the server engine.')
-		const { FastifyEngine } = await import('~/engines/fastify.js')
+		const { FastifyEngine } = await import('../engines/fastify.js')
 		return new FastifyEngine()
 	}
 
 	// Default engine
 	logger.debug('Using Node.js as the server engine.')
-	const { NodeEngine } = await import('~/engines/node.js')
+	const { NodeEngine } = await import('../engines/node.js')
 	return new NodeEngine()
 }
