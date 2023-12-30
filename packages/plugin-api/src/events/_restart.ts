@@ -1,4 +1,4 @@
-import { pluginOptions } from '~/events/_start.js'
+import { pluginOptions } from '../events/_start.js'
 
 export default async () => {
 	const { engine } = pluginOptions
