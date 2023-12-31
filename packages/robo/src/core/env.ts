@@ -11,6 +11,6 @@ export const env = {
 	nodeEnv: process.env.NODE_ENV,
 	roboplay: {
 		api: process.env.ROBOPLAY_API ?? 'https://api.roboplay.dev',
-		host: process.env.ROBOPLAY_HOST
+		frontend: process.env.ROBOPLAY_FRONTEND ?? 'https://roboplay.dev',
 	}
 }

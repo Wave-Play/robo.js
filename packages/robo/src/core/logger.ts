@@ -114,7 +114,7 @@ export class Logger {
 		this._parent = parent
 		this._prefix = prefix
 
-		if (env.roboplay.host) {
+		if (env.roboplay.api) {
 			// This allows developers to have better control over the logs when hosted
 			this._level = 'trace'
 		} else {
@@ -132,11 +132,10 @@ export class Logger {
 		this._logBuffer = new Array(options?.maxEntries ?? DEFAULT_MAX_ENTRIES)
 	}
 
-	protected _log(level: string, ...data: unknown[]): void {
+	protected _log(prefix: string | null, level: string, ...data: unknown[]): void {
 		// Delegate to parent if forked
 		if (this._parent) {
-			data.unshift(this._prefix)
-			return this._parent._log(level, ...data)
+			return this._parent._log(this._prefix, level, ...data)
 		}
 
 		// Only log if the level is enabled
@@ -152,7 +151,14 @@ export class Logger {
 		// Format the message all pretty and stuff
 		if (level !== 'other') {
 			const label = this._customLevels ? this._customLevels[level]?.label : colorizedLogLevels[level]
-			data.unshift((label ?? level.padEnd(5)) + ' -')
+			let levelLabel = (label ?? level.padEnd(5)) + ' -'
+
+			// Add the prefix if specified
+			if (prefix) {
+				levelLabel = color.bold(colorMap[level](prefix + ':')) + levelLabel
+			}
+
+			data.unshift(levelLabel)
 		}
 
 		// Persist the log entry in debug mode
@@ -248,44 +254,44 @@ export class Logger {
 	}
 
 	public trace(...data: unknown[]) {
-		this._log('trace', ...data)
+		this._log(null, 'trace', ...data)
 	}
 
 	public debug(...data: unknown[]) {
-		this._log('debug', ...data)
+		this._log(null, 'debug', ...data)
 	}
 
 	public info(...data: unknown[]) {
-		this._log('info', ...data)
+		this._log(null, 'info', ...data)
 	}
 
 	public wait(...data: unknown[]) {
-		this._log('wait', ...data)
+		this._log(null, 'wait', ...data)
 	}
 
 	public log(...data: unknown[]) {
-		this._log('other', ...data)
+		this._log(null, 'other', ...data)
 	}
 
 	public event(...data: unknown[]) {
-		this._log('event', ...data)
+		this._log(null, 'event', ...data)
 	}
 
 	public ready(...data: unknown[]) {
-		this._log('ready', ...data)
+		this._log(null, 'ready', ...data)
 	}
 
 	public warn(...data: unknown[]) {
-		this._log('warn', ...data)
+		this._log(null, 'warn', ...data)
 	}
 
 	public error(...data: unknown[]) {
-		this._log('error', ...data)
+		this._log(null, 'error', ...data)
 	}
 
 	public custom(level: string, ...data: unknown[]): void {
 		if (this._customLevels?.[level]) {
-			this._log(level, ...data)
+			this._log(null, level, ...data)
 		}
 	}
 }
@@ -300,6 +306,17 @@ const LogLevelValues: Record<string, number> = {
 	ready: 6,
 	warn: 7,
 	error: 8
+}
+
+const colorMap: Record<string, (str: string) => string> = {
+	trace: color.gray,
+	debug: color.cyan,
+	info: color.blue,
+	wait: color.cyan,
+	event: color.magenta,
+	ready: color.green,
+	warn: color.yellow,
+	error: color.red
 }
 
 const colorizedLogLevels: Record<string, string> = {
