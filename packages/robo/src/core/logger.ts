@@ -114,7 +114,7 @@ export class Logger {
 		this._parent = parent
 		this._prefix = prefix
 
-		if (env.roboplay.api) {
+		if (env.roboplay.env) {
 			// This allows developers to have better control over the logs when hosted
 			this._level = 'trace'
 		} else {

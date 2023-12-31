@@ -4,10 +4,11 @@ import { DEFAULT_CONFIG } from '../../core/constants.js'
 import { CommandConfig, Config, SageOptions } from '../../types/index.js'
 import { getConfig } from '../../core/config.js'
 import { createRequire } from 'node:module'
-import { SpawnOptions, exec as nodeExec, spawn } from 'node:child_process'
+import { SpawnOptions, execSync, exec as nodeExec, spawn } from 'node:child_process'
 import { promisify } from 'node:util'
 import { logger } from '../../core/logger.js'
 import path from 'node:path'
+import os from 'node:os'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { IS_BUN, PackageManager } from './runtime-utils.js'
 
@@ -20,7 +21,11 @@ const require = createRequire(import.meta.url)
 export const packageJson = require('../../../package.json')
 
 export function cleanTempDir() {
-	return fs.rm(path.join(process.cwd(), '.robo', 'temp'), { recursive: true })
+	return fs.rm(getTempDir(), { recursive: true })
+}
+
+export function getTempDir() {
+	return path.join(process.cwd(), '.robo', 'temp')
 }
 
 /**
@@ -73,6 +78,38 @@ export async function filterExistingPaths(paths: string[], basePath = process.cw
 	}
 
 	return result
+}
+
+export function copyToClipboard(text: string) {
+	const platform = os.platform()
+
+	try {
+		if (platform === 'darwin') {
+			execSync(`echo "${text}" | pbcopy`)
+		} else if (platform === 'win32') {
+			execSync(`echo ${text} | clip`)
+		} else {
+			execSync(`echo "${text}" | xclip -selection clipboard`)
+		}
+	} catch (error) {
+		console.error('Failed to copy to clipboard:', error)
+	}
+}
+
+export function openBrowser(url: string) {
+	const platform = os.platform()
+
+	let command: string
+
+	if (platform === 'win32') {
+		command = `start ${url}`
+	} else if (platform === 'darwin') {
+		command = `open ${url}`
+	} else {
+		command = `xdg-open ${url}`
+	}
+
+	execSync(command)
 }
 
 export async function findNodeModules(basePath: string): Promise<string | null> {
