@@ -2,4 +2,4 @@
 '@roboplay/robo.js': patch
 ---
 
-feat(cli): fully functional login command
+feat(cli): login command
