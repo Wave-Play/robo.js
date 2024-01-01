@@ -1,6 +1,6 @@
 import { env } from '../core/env.js'
 import { logger } from '../core/logger.js'
-import { hasProperties } from '../cli/utils/utils.js'
+import { hasProperties, packageJson } from '../cli/utils/utils.js'
 import { createOAuth, pollOAuth, verifyOAuth } from './oauth.js'
 
 export const RoboPlay = {
@@ -48,7 +48,9 @@ export async function request<T = unknown>(urlPath: string, options?: RequestOpt
 
 	while (retryCount <= retries) {
 		try {
-			const extraHeaders: Record<string, string> = {}
+			const extraHeaders: Record<string, string> = {
+				'X-Robo-Version': packageJson.version
+			}
 			let requestBody
 			if (body instanceof FormData) {
 				requestBody = body as BodyInit
