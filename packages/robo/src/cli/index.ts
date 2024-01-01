@@ -9,6 +9,7 @@ import deploy from './commands/deploy.js'
 import doctor from './commands/doctor.js'
 import invite from './commands/invite.js'
 import login from './commands/login.js'
+import logout from './commands/logout.js'
 import remove from './commands/remove.js'
 import start from './commands/start.js'
 import upgrade from './commands/upgrade.js'
@@ -30,6 +31,7 @@ command.addCommand(deploy)
 command.addCommand(doctor)
 command.addCommand(invite)
 command.addCommand(login)
+command.addCommand(logout)
 command.addCommand(why)
 command.addCommand(help)
 command.handler(helpCommandHandler)
