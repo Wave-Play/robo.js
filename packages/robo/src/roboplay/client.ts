@@ -1,13 +1,21 @@
-import { env } from '../../core/env.js'
-import { logger } from '../../core/logger.js'
-import { hasProperties } from './utils.js'
+import { env } from '../core/env.js'
+import { logger } from '../core/logger.js'
+import { hasProperties } from '../cli/utils/utils.js'
+import { createOAuth, pollOAuth, verifyOAuth } from './oauth.js'
 
 export const RoboPlay = {
 	OAuth: {
 		create: createOAuth,
 		poll: pollOAuth,
 		verify: verifyOAuth
-	}
+	},
+	status: () =>
+		request('/status', {
+			backoff: false,
+			silent: true
+		})
+			.then(() => true)
+			.catch(() => false)
 }
 
 interface RequestOptions {
@@ -17,13 +25,14 @@ interface RequestOptions {
 	method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS'
 	query?: Record<string, unknown>
 	retries?: number
+	silent?: boolean
 }
 
 /**
  * Calls a RoboPlay API endpoint.
  */
-async function request<T = unknown>(urlPath: string, options?: RequestOptions): Promise<T> {
-	const { backoff = true, body, headers, method = 'GET', query, retries = 3 } = options ?? {}
+export async function request<T = unknown>(urlPath: string, options?: RequestOptions): Promise<T> {
+	const { backoff = true, body, headers, method = 'GET', query, retries = 3, silent } = options ?? {}
 	let retryCount = 0
 
 	let queryString = ''
@@ -69,7 +78,10 @@ async function request<T = unknown>(urlPath: string, options?: RequestOptions): 
 		} catch (error) {
 			// Throw error if we've reached the max number of retries
 			if (retryCount === retries) {
-				logger.error(error)
+				if (!silent) {
+					logger.error(error)
+				}
+
 				throw error
 			}
 
@@ -77,7 +89,9 @@ async function request<T = unknown>(urlPath: string, options?: RequestOptions): 
 			const delay = backoff ? 2 ** retryCount * 1000 : 1000
 			const message = hasProperties<{ message: string }>(error, ['message']) ? error.message + ' - ' : ''
 			logger.debug(error)
-			logger.warn(`${message}Retrying in ${delay}ms...`)
+			if (!silent) {
+				logger.warn(`${message}Retrying in ${delay}ms...`)
+			}
 			await new Promise((r) => setTimeout(r, delay))
 
 			retryCount++
@@ -85,65 +99,4 @@ async function request<T = unknown>(urlPath: string, options?: RequestOptions): 
 	}
 
 	throw new Error('Failed to call RoboPlay API')
-}
-
-type OAuthSessionStatus = 'Authorized' | 'Created' | 'Expired' | 'Invalid' | 'Paired' | 'Used'
-
-interface OAuthSession {
-	pairingCode: string
-	secret: string
-	status: OAuthSessionStatus
-	token: string
-}
-
-async function createOAuth() {
-	return request<OAuthSession>('/oauth', {
-		method: 'POST'
-	})
-}
-
-interface PollOAuthOptions {
-	token: string
-}
-
-interface PollOAuthResult {
-	error?: string
-	status: OAuthSessionStatus
-	success: boolean
-}
-
-async function pollOAuth(options: PollOAuthOptions) {
-	const { token } = options
-
-	return request<PollOAuthResult>(`/oauth/${token}/poll`)
-}
-
-interface VerifyOAuthOptions {
-	pairingCode: string
-	secret?: string
-	token: string
-}
-
-interface VerifyOAuthResult {
-	error?: string
-	status: OAuthSessionStatus
-	success: boolean
-	user?: User | null
-	userToken?: string | null
-}
-
-async function verifyOAuth(options: VerifyOAuthOptions) {
-	const { pairingCode, secret, token } = options
-
-	return request<VerifyOAuthResult>(`/oauth/${token}/verify`, {
-		method: 'PUT',
-		body: { pairingCode, secret }
-	})
-}
-
-interface User {
-	id: string
-	avatar?: string
-	displayName: string
-	email: string
 }

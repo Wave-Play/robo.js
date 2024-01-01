@@ -1,15 +1,12 @@
 import { Command } from '../utils/cli-handler.js'
 import { env } from '../../core/env.js'
 import { logger } from '../../core/logger.js'
-import { RoboPlay } from '../utils/roboplay.js'
+import { RoboPlay } from '../../roboplay/client.js'
 import { color, composeColors } from '../../core/color.js'
 import { Spinner } from '../utils/spinner.js'
 import { copyToClipboard, openBrowser, sleep } from '../utils/utils.js'
 import { KeyWatcher } from '../utils/key-watcher.js'
-import { mkdirSync } from 'node:fs'
-import os from 'node:os'
-import path from 'node:path'
-import { writeFile } from 'node:fs/promises'
+import { RoboPlaySession } from '../../roboplay/session.js'
 
 const command = new Command('login')
 	.description('Sign in to your RoboPlay account')
@@ -72,11 +69,11 @@ async function loginAction(_args: string[], options: LoginCommandOptions) {
 		sessionStatus = pollResult.status
 	}
 
-	// Stop loading spinner and key watcher
+	// Stop the fancy loading stuff so we can continue
 	spinner.stop()
 	keyWatcher.stop()
 
-	// Show error if session is either expired, invalid or used
+	// Show error if session was unsuccessful
 	logger.debug(`Completed OAuth session status: ${sessionStatus}`)
 	const badColor = composeColors(color.bold, color.red)
 	if (['Expired', 'Invalid', 'Used'].includes(sessionStatus)) {
@@ -98,17 +95,12 @@ async function loginAction(_args: string[], options: LoginCommandOptions) {
 	}
 
 	// Write the user and user token to ~/.robo/roboplay/session.json
-	// Use Node's fs module to write the file to the user's home directory
-	const session = {
+	await RoboPlaySession.save({
 		user: verifyResult.user,
 		userToken: verifyResult.userToken
-	}
-	const sessionPath = path.join(os.homedir(), '.robo', 'roboplay', 'session.json')
-	logger.debug(`Writing session file to ${sessionPath}`)
-
-	// Let's write the session file!
-	mkdirSync(path.dirname(sessionPath), { recursive: true })
-	await writeFile(sessionPath, JSON.stringify(session, null, 2))
-	logger.debug(`Session file written successfully!`)
-	logger.ready('\n' + Indent, `🎉 You are now logged in as ${color.bold(verifyResult.user.displayName ?? verifyResult.user.email)}.`)
+	})
+	logger.log(
+		'\n' + Indent,
+		color.green(`🎉 You are now signed in as ${color.bold(verifyResult.user.displayName ?? verifyResult.user.email)}.`)
+	)
 }
