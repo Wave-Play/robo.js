@@ -4,6 +4,7 @@ import { Command } from './utils/cli-handler.js'
 import { packageJson } from './utils/utils.js'
 import add from './commands/add.js'
 import build from './commands/build/index.js'
+import cloud from './commands/cloud/index.js'
 import dev from './commands/dev.js'
 import deploy from './commands/deploy.js'
 import doctor from './commands/doctor.js'
@@ -30,6 +31,7 @@ command.addCommand(upgrade)
 command.addCommand(deploy)
 command.addCommand(doctor)
 command.addCommand(invite)
+command.addCommand(cloud)
 command.addCommand(login)
 command.addCommand(logout)
 command.addCommand(why)
