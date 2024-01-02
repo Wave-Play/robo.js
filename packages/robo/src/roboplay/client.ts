@@ -2,12 +2,17 @@ import { env } from '../core/env.js'
 import { logger } from '../core/logger.js'
 import { hasProperties, packageJson } from '../cli/utils/utils.js'
 import { createOAuth, pollOAuth, verifyOAuth } from './oauth.js'
+import { getRoboStatus, listRobos } from './robos.js'
 
 export const RoboPlay = {
 	OAuth: {
 		create: createOAuth,
 		poll: pollOAuth,
 		verify: verifyOAuth
+	},
+	Robo: {
+		list: listRobos,
+		status: getRoboStatus
 	},
 	status: () =>
 		request('/status', {

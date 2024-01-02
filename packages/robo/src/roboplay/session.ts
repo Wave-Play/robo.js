@@ -1,9 +1,10 @@
+import { color } from '../core/color.js'
 import { logger } from '../core/logger.js'
 import { mkdirSync } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { readFile, unlink, writeFile } from 'node:fs/promises'
-import type { User } from './types.js'
+import type { Robo, User } from './types.js'
 
 export const RoboPlaySession = {
 	clear,
@@ -12,10 +13,15 @@ export const RoboPlaySession = {
 }
 
 interface Session {
+	linkedProjects: Record<string, string>
+	robos: Robo[]
 	user: User
 	userToken: string
 }
 
+/**
+ * Clear the RoboPlay session from the home directory.
+ */
 async function clear() {
 	// Find the session file
 	const sessionPath = path.join(os.homedir(), '.robo', 'roboplay', 'session.json')
@@ -25,6 +31,9 @@ async function clear() {
 	await unlink(sessionPath)
 }
 
+/**
+ * Get the RoboPlay session from the home directory.
+ */
 async function get() {
 	// Find the session file
 	const sessionPath = path.join(os.homedir(), '.robo', 'roboplay', 'session.json')
@@ -42,20 +51,19 @@ async function get() {
 	}
 }
 
-interface SaveOptions {
-	user: User
-	userToken: string
-}
 
 async function save(options: SaveOptions) {
 	const { user, userToken } = options
 
+/**
+ * Save the RoboPlay session to the home directory.
+ */
 	// Save to home directory
 	const sessionPath = path.join(os.homedir(), '.robo', 'roboplay', 'session.json')
 	logger.debug(`Writing session file to ${sessionPath}`)
 
 	// Let's write the session file!
 	mkdirSync(path.dirname(sessionPath), { recursive: true })
-	await writeFile(sessionPath, JSON.stringify({ user, userToken }, null, 2))
+	await writeFile(sessionPath, JSON.stringify(session, null, 2))
 	logger.debug(`Session file written successfully!`)
 }

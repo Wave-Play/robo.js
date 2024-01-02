@@ -36,12 +36,34 @@ async function statusAction(_args: string[], options: StatusCommandOptions) {
 	const roboplayColor = roboplay ? color.green : color.red
 	const roboplayStatus = roboplay ? 'Online' : 'Offline'
 
+	// Check if Robo is online
+	const roboResults = await Promise.all(
+		session?.robos?.map(async (robo) => {
+			try {
+				const statusResult = await RoboPlay.Robo.status({ roboId: robo.id })
+				const status = statusResult?.success && statusResult?.status === 'online' ? 'Online' : 'Offline'
+				const statusColor = status === 'Online' ? color.green : color.red
+				const linked = session.linkedProjects[robo.id] === process.cwd()
+
+				return { linked, robo, status, statusColor }
+			} catch (error) {
+				logger.debug(`Failed to get Robo status for ${robo.name}`, error)
+
+				return {
+					robo,
+					status: 'Unknown',
+					statusColor: color.yellow
+				}
+			}
+		})
+	)
+
 	// Log status for everything
 	logger.log('\n' + Indent, color.bold('🔒 Session'))
-	logger.log(Indent, 'Status:', composeColors(color.bold, sessionColor)(sessionStatus))
 	if (session?.user) {
 		logger.log(Indent, 'Account:', color.bold(session.user.displayName))
 	}
+	logger.log(Indent, 'Status:', composeColors(color.bold, sessionColor)(sessionStatus))
 
 	logger.log('\n' + Indent, color.bold('🌐 RoboPlay'))
 	logger.log(Indent, 'Status:', composeColors(color.bold, roboplayColor)(roboplayStatus))
@@ -49,8 +71,11 @@ async function statusAction(_args: string[], options: StatusCommandOptions) {
 		logger.log(Indent, 'More info:', composeColors(color.underline, color.blue)('https://status.roboplay.dev'))
 	}
 
-	//logger.log('\n' + Indent, color.bold('🤖 Robo'))
-	//logger.log(Indent, 'Status:', composeColors(color.bold, color.green)('Online'))
-	//logger.log(Indent, 'Response time:', color.bold('24ms'))
+	roboResults?.forEach(({ linked, robo, status, statusColor }) => {
+		logger.log('\n' + Indent, color.bold('🤖 Robo'))
+		logger.log(Indent, 'Name:', color.bold(robo.name), linked ? color.cyan('(linked)') : '')
+		logger.log(Indent, 'Status:', composeColors(color.bold, statusColor)(status))
+	})
+
 	logger.log()
 }
