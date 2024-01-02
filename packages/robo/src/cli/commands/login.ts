@@ -94,13 +94,27 @@ async function loginAction(_args: string[], options: LoginCommandOptions) {
 		return
 	}
 
-	// Write the user and user token to ~/.robo/roboplay/session.json
+	// Get the user's Robos
+	const robos = await RoboPlay.Robo.list({
+		bearerToken: verifyResult.userToken,
+		userId: verifyResult.user.id
+	})
+
+	// Save the session globally
 	await RoboPlaySession.save({
+		linkedProjects: {},
+		robos: robos.data,
 		user: verifyResult.user,
 		userToken: verifyResult.userToken
 	})
-	logger.log(
-		'\n' + Indent,
-		color.green(`🎉 You are now signed in as ${color.bold(verifyResult.user.displayName ?? verifyResult.user.email)}.`)
-	)
+
+	// Link the current project to a Robo
+	// TODO: Only link projects not already linked to prevent overwriting
+	const robo = robos.data[0]
+	await RoboPlaySession.link(robo.id)
+	logger.log('\n' + Indent, `Linked project to Robo ${composeColors(color.bold, color.cyan)(robo.name)}.`)
+
+	// Ta-dah!
+	const userName = verifyResult.user.displayName ?? verifyResult.user.email
+	logger.log('\n' + Indent, color.green(`🎉 You are now signed in as ${color.bold(userName)}.\n`))
 }

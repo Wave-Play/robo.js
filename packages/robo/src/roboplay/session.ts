@@ -9,6 +9,7 @@ import type { Robo, User } from './types.js'
 export const RoboPlaySession = {
 	clear,
 	get,
+	link,
 	save
 }
 
@@ -51,13 +52,41 @@ async function get() {
 	}
 }
 
+/**
+ * Link the current project to a Robo in the RoboPlay session.
+ */
+async function link(roboId: string) {
+	// Get the current session
+	const session = await get()
+	if (!session) {
+		throw new Error(`No RoboPlay session found. Please sign in with ${color.bold('robo login')}.`)
+	}
 
-async function save(options: SaveOptions) {
-	const { user, userToken } = options
+	// Make sure the ID specified is valid
+	const robo = session.robos.find((robo) => robo.id === roboId)
+	if (!robo) {
+		throw new Error(`No Robo found with ID ${color.bold(roboId)}.`)
+	}
+
+	// Make sure the current directory is a Robo project by checking for the dependency
+	const packageJsonPath = path.join(process.cwd(), 'package.json')
+	const packageJson = JSON.parse((await readFile(packageJsonPath, 'utf-8')) ?? '{}')
+	if (!packageJson.dependencies?.['@roboplay/robo.js']) {
+		throw new Error(`This directory is not a Robo project.`)
+	}
+
+	// Add the robo to the session
+	logger.debug(`Linking Robo ${roboId} to ${process.cwd()}`)
+	session.linkedProjects[roboId] = process.cwd()
+
+	// Save the session
+	await save(session)
+}
 
 /**
  * Save the RoboPlay session to the home directory.
  */
+async function save(session: Session) {
 	// Save to home directory
 	const sessionPath = path.join(os.homedir(), '.robo', 'roboplay', 'session.json')
 	logger.debug(`Writing session file to ${sessionPath}`)
