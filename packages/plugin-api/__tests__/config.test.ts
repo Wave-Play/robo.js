@@ -1,5 +1,6 @@
 import { SpawnOptions, spawn } from 'child_process'
 import path from 'node:path'
+import { URLSearchParams } from 'url'
 
 // This has to be modified when the Robo will agree to being put in the __tests__ folder.
 const PATH_TO_ROBO = path.join(process.cwd(), 'api-project-test')
@@ -15,7 +16,7 @@ describe('Integration tests for the API plug-in:', () => {
 	// Get User
 
 	beforeAll(async () => {
-		/*await exec('npm run build', {
+		await exec('npm run build', {
 			cwd: PATH_TO_ROBO
 		})
 		// eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -23,7 +24,7 @@ describe('Integration tests for the API plug-in:', () => {
 			cwd: PATH_TO_ROBO
 		})
 
-		await new Promise((resolve) => setTimeout(resolve, 10000))*/
+		await new Promise((resolve) => setTimeout(resolve, 10000))
 	}, 50000)
 
 	/**
@@ -89,7 +90,6 @@ describe('Integration tests for the API plug-in:', () => {
 		})
 
 		const status = req.status
-
 		expect(status).toBe(200)
 	})
 
@@ -132,7 +132,15 @@ describe('Integration tests for the API plug-in:', () => {
 	 * Post Request With Query Parameters
 	 */
 	it('Post Request and Query Params:', async () => {
-		const req = await fetch(`${apiPath}/checkqueryparams?name=Alex&age=21&id=5693`)
+		const data = { name: 'Alex', age: '21', id: '5693' }
+
+		const req = await fetch(`${apiPath}/checkqueryparams?test=oui`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(data)
+		})
 
 		const status = req.status
 
@@ -152,16 +160,15 @@ describe('Integration tests for the API plug-in:', () => {
 		})
 
 		const status = req.status
-		console.log(status)
 		expect(status).toBe(200)
 	})
 
 	/**
 	 * Error throwing inside API route
 	 */
-	/*it('Throw error inside API', async () => {
+	it('Throw error inside API', async () => {
 		await fetch(`${apiPath}/CheckCrash`)
-	})*/
+	})
 })
 
 function exec(command: string, options?: SpawnOptions) {

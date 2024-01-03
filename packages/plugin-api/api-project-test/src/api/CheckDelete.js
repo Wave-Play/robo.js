@@ -1,12 +1,4 @@
-import { Logger } from '@roboplay/robo.js'
-
 export default async function CheckDelete(req, res) {
-	const customLogger = new Logger({
-		level: 'debug', // Set log level
-		prefix: 'DiscordLogger', // Prefix For Logs
-		maxEntries: 200 // Default: 100
-	})
-
 	let dataSet = [
 		{
 			name: 'michael',
