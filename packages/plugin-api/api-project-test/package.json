@@ -13,8 +13,7 @@
 		"lint": "npm lint:eslint && npm lint:style",
 		"lint:eslint": "eslint . --ext js,jsx,ts,tsx",
 		"lint:style": "prettier --write .",
-		"start": "robo start",
-		"test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+		"start": "robo start"
 	},
 	"dependencies": {
 		"@roboplay/plugin-api": "file:..",
