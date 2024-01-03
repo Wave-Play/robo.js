@@ -1,4 +1,4 @@
-import { Logger, logger } from '@roboplay/robo.js'
+import { logger } from '@roboplay/robo.js'
 
 export default async function CheckQueryParams(req, res) {
 	let dataSet = [
