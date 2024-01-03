@@ -134,7 +134,7 @@ describe('Integration tests for the API plug-in:', () => {
 	it('Post Request and Query Params:', async () => {
 		const data = { name: 'Alex', age: '21', id: '5693' }
 
-		const req = await fetch(`${apiPath}/checkqueryparams?test=oui`, {
+		const req = await fetch(`${apiPath}/checkqueryparams?name=Alex&age=21&id=5693`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'

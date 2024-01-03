@@ -1,11 +1,6 @@
-import { Logger } from '@roboplay/robo.js'
+import { Logger, logger } from '@roboplay/robo.js'
 
 export default async function CheckQueryParams(req, res) {
-	const customLogger = new Logger({
-		level: 'debug', // Set log level
-		prefix: 'DiscordLogger', // Prefix For Logs
-		maxEntries: 200 // Default: 100
-	})
 	let dataSet = [
 		{
 			name: 'Alex',
@@ -16,9 +11,7 @@ export default async function CheckQueryParams(req, res) {
 
 	const query = req.query
 
-	customLogger.info(query)
-
-	console.log('HELLOOOOOOOOOOOOOOOOOOO')
+	logger.info(query)
 
 	const isUser = dataSet.filter((user) => user.id === parseInt(query.id, 10))
 	if (isUser.length >= 1) {
