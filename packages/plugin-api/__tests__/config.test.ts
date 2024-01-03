@@ -7,14 +7,6 @@ const PATH_TO_ROBO = path.join(process.cwd(), 'api-project-test')
 
 // npx create-robo api-plugin-robo-test --plugins ../
 describe('Integration tests for the API plug-in:', () => {
-	// returns undefined or null
-	/* test("Fetch returns undefined:", async () => {
-	  const x = await fetch("http://localhost:3000/api/undefined");
-	  expect(x).toBe(undefined);
-	});*/
-
-	// Get User
-
 	beforeAll(async () => {
 		await exec('npm run build', {
 			cwd: PATH_TO_ROBO
@@ -167,7 +159,11 @@ describe('Integration tests for the API plug-in:', () => {
 	 * Error throwing inside API route
 	 */
 	it('Throw error inside API', async () => {
-		await fetch(`${apiPath}/CheckCrash`)
+		const req = await fetch(`${apiPath}/CheckCrash`)
+
+		const status = req.status
+
+		expect(status).toBe(500)
 	})
 })
 
