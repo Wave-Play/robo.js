@@ -1,4 +1,4 @@
-import { SpawnOptions, spawn } from 'child_process'
+import { ChildProcess, SpawnOptions, spawn } from 'child_process'
 import path from 'node:path'
 import { URLSearchParams } from 'url'
 
@@ -7,17 +7,24 @@ const PATH_TO_ROBO = path.join(process.cwd(), 'api-project-test')
 
 // npx create-robo api-plugin-robo-test --plugins ../
 describe('Integration tests for the API plug-in:', () => {
+	let process: Promise<ChildProcess> = null
+
 	beforeAll(async () => {
 		await exec('npm run build', {
 			cwd: PATH_TO_ROBO
 		})
 		// eslint-disable-next-line @typescript-eslint/no-empty-function
-		exec('npm run start', {
+
+		process = exec('npm run start', {
 			cwd: PATH_TO_ROBO
 		})
-
 		await new Promise((resolve) => setTimeout(resolve, 10000))
 	}, 50000)
+
+	afterAll(async () => {
+		const x = await process
+		x.kill()
+	})
 
 	/**
 	 * Test isn't working cause deeper path aren't setup.
@@ -168,7 +175,7 @@ describe('Integration tests for the API plug-in:', () => {
 })
 
 function exec(command: string, options?: SpawnOptions) {
-	return new Promise<void>((resolve, reject) => {
+	return new Promise<ChildProcess>((resolve, reject) => {
 		// Run command as child process
 		const args = command.split(' ')
 		const childProcess = spawn(args.shift(), args, {
@@ -178,10 +185,12 @@ function exec(command: string, options?: SpawnOptions) {
 			stdio: 'inherit'
 		})
 
+		resolve(childProcess)
+
 		// Resolve promise when child process exits
 		childProcess.on('close', (code) => {
 			if (code === 0) {
-				resolve()
+				resolve(childProcess)
 			} else {
 				reject(new Error(`Child process exited with code ${code}`))
 			}
