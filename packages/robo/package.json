@@ -23,7 +23,7 @@
 	"scripts": {
 		"build": "tsup && tsup --config tsup-cli.config.ts && tsup --config tsup-codemod.config.ts",
 		"dev": "chokidar \"src/**/*.ts\" \"codemod/**/*.ts\" -d 1000 -c \"pnpm build\" --initial",
-		"test": "jest --config jest.config.mjs"
+		"test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
 	},
 	"bin": {
 		"robo": "dist/cli/index.js"
@@ -61,6 +61,7 @@
 		"jest-resolver-enhanced": "^1.1.0",
 		"keyv": "^4.5.2",
 		"ts-jest": "^29.1.1",
+		"tslib": "^2.6.2",
 		"tsup": "6.7.0",
 		"typescript": "5.0.2"
 	},
