@@ -22,6 +22,7 @@ export async function listRobos(options: ListRobosOptions) {
 }
 
 interface GetRoboStatusOptions {
+	bearerToken?: string
 	roboId: string
 }
 
@@ -32,10 +33,13 @@ interface GetRoboStatusResult {
 }
 
 export async function getRoboStatus(options: GetRoboStatusOptions) {
-	const { roboId } = options
+	const { bearerToken, roboId } = options
 
 	return request<GetRoboStatusResult>(`/robo/${roboId}/status`, {
 		backoff: false,
+		headers: {
+			Authorization: bearerToken ? `Bearer ${bearerToken}` : undefined
+		},
 		silent: true
 	})
 }

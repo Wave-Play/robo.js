@@ -1,11 +1,11 @@
 import { Command } from '../utils/cli-handler.js'
 import { logger } from '../../core/logger.js'
 import { color, composeColors } from '../../core/color.js'
-import { uploadToBackblazeB2 } from '../utils/upload.js'
-import path from 'node:path'
-import { env } from '../../core/env.js'
 import { compressDirectory } from '../utils/compress.js'
-import { cleanTempDir } from '../utils/utils.js';
+import { cleanTempDir } from '../utils/utils.js'
+import { RoboPlay } from '../../roboplay/client.js'
+import { RoboPlaySession } from '../../roboplay/session.js'
+import path from 'node:path'
 
 const command = new Command('deploy')
 	.description('Deploys your bot to RoboPlay!')
@@ -28,18 +28,44 @@ async function deployAction(_args: string[], options: DeployCommandOptions) {
 	}).info(`Deploying to ${color.bold('RoboPlay')} ✨`)
 	logger.warn(`Thank you for trying Robo.js! This is a pre-release version, so please let us know of issues on GitHub.`)
 
+	// Validate session
+	const session = await RoboPlaySession.get()
+	if (!session) {
+		logger.error(
+			`You must be logged in to deploy to RoboPlay. Run ${composeColors(
+				color.bold,
+				color.cyan
+			)('robo login')} to get started.`
+		)
+		return
+	}
+
+	// Prepare deployment
+	logger.log('')
+	const deploy = await RoboPlay.Deploy.create({ bearerToken: session.userToken })
+	if (!deploy.success) {
+		logger.error(deploy.error)
+		return
+	}
+
 	try {
-		// Prepare to upload project (bundle & create job)
-		logger.log('')
+		// Create bundle
 		logger.event(`Compressing project files and uploading to ${color.bold('RoboPlay')}...`)
 		const bundle = await createBundle()
-		const deploy = await createDeployment()
 
 		// Upload using assigned upload URL
-		await uploadBundle(bundle, deploy)
+		await RoboPlay.Deploy.upload({
+			bundlePath: bundle,
+			uploadKey: deploy.upload.key,
+			uploadToken: deploy.upload.token,
+			uploadUrl: deploy.upload.url
+		})
 
 		// Notify RoboPlay of upload result
-		await notifyUpload(deploy)
+		await RoboPlay.Deploy.update({
+			bearerToken: session.userToken,
+			deployId: deploy.deploy.id
+		})
 
 		// Print deployment job info
 		logger.info(`${color.green('✔')} Uploaded to ${color.bold('RoboPlay')}!\n`)
@@ -68,35 +94,4 @@ async function createBundle() {
 	} catch (error) {
 		logger.error('Error bundling directory:', error)
 	}
-}
-
-interface DeployResult {
-	deploy: {
-		id: string
-	}
-	upload: {
-		key: string
-		token: string
-		url: string
-	}
-}
-async function createDeployment() {
-	logger.debug(`Preparing deployment job...`)
-	const response = await fetch(env.roboplay.api + '/deploy', {
-		method: 'POST'
-	})
-	return (await response.json()) as DeployResult
-}
-
-async function uploadBundle(bundlePath: string, deploy: DeployResult) {
-	logger.debug(`Uploading bundle...`)
-	await uploadToBackblazeB2(deploy.upload.url, deploy.upload.token, bundlePath, deploy.upload.key)
-}
-
-async function notifyUpload(deploy: DeployResult) {
-	logger.debug(`Notifying RoboPlay of upload...`)
-	const response = await fetch(env.roboplay.api + '/deploy/' + deploy.deploy.id, {
-		method: 'PUT'
-	})
-	logger.debug(`Notify result:`, response)
 }

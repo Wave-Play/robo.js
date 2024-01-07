@@ -2,9 +2,15 @@ import { env } from '../core/env.js'
 import { logger } from '../core/logger.js'
 import { hasProperties, packageJson } from '../cli/utils/utils.js'
 import { createOAuth, pollOAuth, verifyOAuth } from './oauth.js'
+import { createDeployment, updateDeployment, uploadBundle } from './deploy.js'
 import { getRoboStatus, listRobos } from './robos.js'
 
 export const RoboPlay = {
+	Deploy: {
+		create: createDeployment,
+		update: updateDeployment,
+		upload: uploadBundle
+	},
 	OAuth: {
 		create: createOAuth,
 		poll: pollOAuth,
@@ -73,11 +79,7 @@ export async function request<T = unknown>(urlPath: string, options?: RequestOpt
 			})
 
 			const jsonResponse = await response.json()
-			if (jsonResponse.error) {
-				throw new Error(jsonResponse.error)
-			}
-
-			if (!response.ok) {
+			if (response.status >= 500) {
 				throw new Error(`HTTP Error status code: ${response.status}`)
 			}
 

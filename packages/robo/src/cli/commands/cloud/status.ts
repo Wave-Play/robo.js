@@ -40,7 +40,7 @@ async function statusAction(_args: string[], options: StatusCommandOptions) {
 	const roboResults = await Promise.all(
 		session?.robos?.map(async (robo) => {
 			try {
-				const statusResult = await RoboPlay.Robo.status({ roboId: robo.id })
+				const statusResult = await RoboPlay.Robo.status({ bearerToken: session.userToken, roboId: robo.id })
 				const status = statusResult?.success && statusResult?.status === 'online' ? 'Online' : 'Offline'
 				const statusColor = status === 'Online' ? color.green : color.red
 				const linked = session.linkedProjects[robo.id] === process.cwd()
