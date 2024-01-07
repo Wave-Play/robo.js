@@ -17,6 +17,7 @@ const command = new Command('login')
 export default command
 
 const Indent = '   '
+const OAuthTimeout = 10 * 60 * 1000 // 10 minutes
 
 interface LoginCommandOptions {
 	silent?: boolean
@@ -63,10 +64,19 @@ async function loginAction(_args: string[], options: LoginCommandOptions) {
 	keyWatcher.start()
 
 	// Wait for OAuth session to be authorized
+	const pollStart = Date.now()
 	while (!['Authorized', 'Expired', 'Invalid', 'Used'].includes(sessionStatus)) {
 		await sleep(4000)
 		const pollResult = await RoboPlay.OAuth.poll({ token: oauthSession.token })
 		sessionStatus = pollResult.status
+
+		// Timeout after 10 minutes
+		if (Date.now() - pollStart > OAuthTimeout) {
+			spinner.stop()
+			keyWatcher.stop()
+			logger.error(`Timed out waiting for OAuth session to be authorized.`)
+			return
+		}
 	}
 
 	// Stop the fancy loading stuff so we can continue
@@ -112,7 +122,7 @@ async function loginAction(_args: string[], options: LoginCommandOptions) {
 	// TODO: Only link projects not already linked to prevent overwriting
 	const robo = robos.data[0]
 	await RoboPlaySession.link(robo.id)
-	logger.log('\n' + Indent, `Linked project to Robo ${composeColors(color.bold, color.cyan)(robo.name)}.`)
+	logger.log('\n' + Indent, `Linked project to ${composeColors(color.bold, color.cyan)(robo.name)}.`)
 
 	// Ta-dah!
 	const userName = verifyResult.user.displayName ?? verifyResult.user.email
