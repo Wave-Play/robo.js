@@ -61,7 +61,8 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 	if (configPath) {
 		configRelative = path.relative(process.cwd(), configPath)
 	} else {
-		logger.warn(`Could not find configuration file. Using default configuration.`)
+		logger.error(`Could not find configuration file. Please make sure ${color.bold('/config/robo.mjs')} exists.`)
+		process.exit(1)
 	}
 
 	// Experimental warning
