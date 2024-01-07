@@ -1,5 +1,16 @@
 # robo.js
 
+## 0.9.17
+
+### Patch Changes
+
+- faf4ab1: patch: show errors caused by config files
+- 82b1379: feat(cli): logout command
+- 7fb6ea3: feat(cli): cloud status command
+- 86e745d: refactor(logger): updated styling for fork prefix
+- 2439383: feat(cli): `cloud status` now includes status for your robos
+- 177861a: feat(cli): login command
+
 ## 0.9.16
 
 ### Patch Changes
