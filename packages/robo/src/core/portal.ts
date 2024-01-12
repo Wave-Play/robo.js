@@ -206,6 +206,10 @@ async function loadHandlerRecords<T extends HandlerRecord | HandlerRecord[]>(
 		const basePath = path.join(process.cwd(), entry.__plugin?.path ?? '.')
 		const importPath = pathToFileURL(path.join(basePath, entry.__path)).toString()
 
+		if (entry.__plugin) {
+			entry.__plugin.name = entry.__plugin.name.replaceAll(path.sep, '/')
+		}
+
 		const handler: HandlerRecord = {
 			auto: entry.__auto,
 			description: entry.description,
