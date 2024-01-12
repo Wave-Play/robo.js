@@ -41,8 +41,8 @@ async function deployAction(_args: string[], options: DeployCommandOptions) {
 	}
 
 	// Prepare deployment
-	logger.log('')
 	const deploy = await RoboPlay.Deploy.create({ bearerToken: session.userToken })
+	logger.debug(`Deployment result:`, deploy)
 	if (!deploy.success) {
 		logger.error(deploy.error)
 		return
@@ -54,23 +54,43 @@ async function deployAction(_args: string[], options: DeployCommandOptions) {
 		const bundle = await createBundle()
 
 		// Upload using assigned upload URL
-		await RoboPlay.Deploy.upload({
-			bundlePath: bundle,
-			uploadKey: deploy.upload.key,
-			uploadToken: deploy.upload.token,
-			uploadUrl: deploy.upload.url
+		logger.debug(`Uploading bundle...`)
+		try {
+			await RoboPlay.Deploy.upload({
+				bundlePath: bundle,
+				uploadKey: deploy.upload.key,
+				uploadToken: deploy.upload.token,
+				uploadUrl: deploy.upload.url
+			})
+		} catch (e) {
+			// Notify RoboPlay of upload failure
+			await RoboPlay.Deploy.update({
+				bearerToken: session.userToken,
+				deployId: deploy.deploy.id,
+				event: 'upload-failed'
+			})
+			throw e
+		}
+
+		// Notify RoboPlay of upload success
+		logger.debug(`Notifying RoboPlay of upload result...`)
+		const updateResult = await RoboPlay.Deploy.update({
+			bearerToken: session.userToken,
+			deployId: deploy.deploy.id,
+			event: 'upload-success'
 		})
 
-		// Notify RoboPlay of upload result
-		await RoboPlay.Deploy.update({
-			bearerToken: session.userToken,
-			deployId: deploy.deploy.id
-		})
+		if (!updateResult.success) {
+			logger.error(updateResult.error)
+			return
+		}
 
 		// Print deployment job info
-		logger.info(`${color.green('✔')} Uploaded to ${color.bold('RoboPlay')}!\n`)
-		const buildDetails = `https://roboplay.dev/builds/${deploy.deploy.id}`
-		logger.info(`Build details: ${composeColors(color.bold, color.underline, color.blue)(buildDetails)}\n`)
+		logger.info(`${color.green('✔')} Deploying on ${color.bold('RoboPlay')}!\n`)
+		// const buildDetails = `https://roboplay.dev/builds/${deploy.deploy.id}`
+		// logger.info(`Build details: ${composeColors(color.bold, color.underline, color.blue)(buildDetails)}\n`)
+	} catch (e) {
+		logger.error(e)
 	} finally {
 		// Clean up temp files
 		logger.debug(`Cleaning up temporary files...`)

@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises'
 import crypto from 'node:crypto'
+import { color } from '../../core/color.js'
 import { logger } from '../../core/logger.js'
 
 async function calculateSha1(fileBuffer: Buffer): Promise<string> {
@@ -14,13 +15,17 @@ async function calculateSha1(fileBuffer: Buffer): Promise<string> {
 export async function uploadToBackblazeB2(uploadUrl: string, authToken: string, filePath: string, fileName: string) {
 	const maxRetries = 5
 
-	for (let attempt = 1; attempt <= maxRetries; attempt++) {
-		try {
-			// Read the file as a buffer
-			const fileBuffer = await fs.readFile(filePath)
-			const sha1 = await calculateSha1(fileBuffer)
+	// Read the file as a buffer
+	const fileBuffer = await fs.readFile(filePath)
+	const sha1 = await calculateSha1(fileBuffer)
+	logger.debug(`Uploading`, color.bold(filePath), 'to', color.bold(uploadUrl))
+	logger.debug(`Upload key:`, fileName)
+	logger.debug(`SHA1: ${sha1}`)
 
-			await fetch(uploadUrl, {
+	for (let attempt = 0; attempt <= maxRetries - 1; attempt++) {
+		try {
+			const startTime = Date.now()
+			const response = await fetch(uploadUrl, {
 				method: 'POST',
 				headers: {
 					Authorization: authToken,
@@ -32,9 +37,10 @@ export async function uploadToBackblazeB2(uploadUrl: string, authToken: string, 
 			})
 
 			// If successful, break out of the loop
+			logger.debug(`Upload successful (status ${response.status}) in ${Date.now() - startTime}ms`)
 			break
 		} catch (error) {
-			logger.error(`Error uploading file (attempt ${attempt}):`, error)
+			logger.debug(`Error uploading file (attempt ${attempt}):`, error)
 
 			// If the maximum number of retries has been reached, throw the error
 			if (attempt === maxRetries) {

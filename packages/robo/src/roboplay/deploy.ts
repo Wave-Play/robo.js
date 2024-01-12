@@ -32,16 +32,23 @@ export async function createDeployment(options: CreateDeploymentOptions) {
 interface UpdateDeploymentOptions {
 	bearerToken: string
 	deployId: string
+	event: 'upload-failed' | 'upload-success'
+}
+
+interface UpdateDeploymentResult {
+	error?: string
+	success?: boolean
 }
 
 export async function updateDeployment(options: UpdateDeploymentOptions) {
-	const { bearerToken, deployId } = options
+	const { bearerToken, deployId, event } = options
 
-	return request(`/deploy/${deployId}`, {
+	return request<UpdateDeploymentResult>(`/deploy/${deployId}`, {
 		method: 'PUT',
 		headers: {
 			Authorization: `Bearer ${bearerToken}`
-		}
+		},
+		body: { event }
 	})
 }
 
