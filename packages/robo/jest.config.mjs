@@ -1,7 +1,16 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} */
 export default {
-	preset: 'ts-jest',
+	extensionsToTreatAsEsm: ['.ts'],
+	preset: 'ts-jest/presets/default-esm',
 	resolver: 'jest-resolver-enhanced',
 	testEnvironment: 'node',
-	testMatch: ['**/__tests__/**/*.test.ts']
+	testMatch: ['**/__tests__/**/*.test.ts'],
+	transform: {
+		'^.+\\.(ts|tsx)$': [
+			'ts-jest',
+			{
+				useESM: true
+			}
+		]
+	}
 }
