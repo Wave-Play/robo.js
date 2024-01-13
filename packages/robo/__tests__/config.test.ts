@@ -5,8 +5,11 @@ import { loadConfig, getConfig } from '../src/core/config.js'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { logger } from '../src/core/logger.js'
 import { Flashcore, prepareFlashcore } from '../src/core/flashcore.js'
+import { fileURLToPath } from 'node:url'
 
-const tempConfigDir = path.join(__dirname, '..', 'config')
+export const __DIRNAME = path.dirname(fileURLToPath(import.meta.url))
+
+const tempConfigDir = path.join(__DIRNAME, '..', 'config')
 const tempConfigFile = path.join(tempConfigDir, 'robo.json')
 
 beforeEach(async () => {
