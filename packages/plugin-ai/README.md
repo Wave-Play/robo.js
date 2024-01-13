@@ -89,6 +89,11 @@ export default {
 	// Knowledge injection & long-term memory. (boolean; default: true)
 	insights: true,
 
+	// If specified, your AI will only respond to messages in these channels. (object with array of string IDs)
+	restrict: {
+		channelIds: ['channelID3']
+	},
+
 	// Special channels where Robo talks freely. (object with array of string IDs)
 	whitelist: {
 		channelIds: ['channelID1', 'channelID2']

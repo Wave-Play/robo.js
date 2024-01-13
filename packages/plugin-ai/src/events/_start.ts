@@ -10,6 +10,9 @@ export interface PluginOptions {
 	insight?: boolean
 	maxTokens?: number
 	model?: string
+	restrict?: {
+		channelIds: string[]
+	}
 	systemMessage?: string
 	whitelist?: {
 		channelIds: string[]
