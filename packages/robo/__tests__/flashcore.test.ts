@@ -1,7 +1,9 @@
+import { loadConfig } from '../src/core/config.js'
 import { Flashcore, prepareFlashcore } from '../src/core/flashcore.js'
 
 describe('Basics Flashcore Test', () => {
 	beforeAll(async () => {
+		await loadConfig()
 		await prepareFlashcore()
 	})
 

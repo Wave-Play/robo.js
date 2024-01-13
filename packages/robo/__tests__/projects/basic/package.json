@@ -1,0 +1,19 @@
+{
+  "name": "basic",
+  "description": "",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "robo build",
+    "deploy": "robo deploy",
+    "dev": "NODE_OPTIONS=--enable-source-maps robo dev",
+    "doctor": "robo doctor",
+    "invite": "robo invite",
+    "start": "robo start"
+  },
+  "dependencies": {
+    "@roboplay/robo.js": "file:../../..",
+    "discord.js": "^14.13.0"
+  }
+}
