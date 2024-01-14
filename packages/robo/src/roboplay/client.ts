@@ -3,7 +3,7 @@ import { logger } from '../core/logger.js'
 import { getRoboPackageJson, hasProperties, packageJson } from '../cli/utils/utils.js'
 import { createOAuth, pollOAuth, verifyOAuth } from './oauth.js'
 import { createDeployment, updateDeployment, uploadBundle } from './deploy.js'
-import { getRoboStatus, listPods, listRobos } from './robos.js'
+import { getRoboStatus, listPods, listRobos, startPod, stopPod } from './robos.js'
 
 export const RoboPlay = {
 	Deploy: {
@@ -17,7 +17,9 @@ export const RoboPlay = {
 		verify: verifyOAuth
 	},
 	Pod: {
-		list: listPods
+		list: listPods,
+		start: startPod,
+		stop: stopPod
 	},
 	Robo: {
 		list: listRobos,

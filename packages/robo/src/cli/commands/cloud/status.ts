@@ -6,7 +6,7 @@ import { RoboPlay } from '../../../roboplay/client.js'
 import type { ListResult, Pod } from '../../../roboplay/types.js'
 
 const command = new Command('status')
-	.description('Builds your plugin for distribution.')
+	.description('Check RoboPlay status.')
 	.option('-s', '--silent', 'do not print anything')
 	.option('-v', '--verbose', 'print more information for debugging')
 	.option('-h', '--help', 'Shows the available command options')
