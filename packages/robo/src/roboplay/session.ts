@@ -51,11 +51,30 @@ async function get() {
 		const sessionData = await readFile(sessionPath, 'utf-8')
 		const session = JSON.parse(sessionData) as Session
 
+		// Clear unsupported session data
+		if (isUnsupportedSessionData(session)) {
+			logger.info(`Session data is out of date. Clearing...`)
+			await clear()
+			return null
+		}
+
 		return session
 	} catch (error) {
 		logger.debug(`No RoboPlay session found.`)
 		return null
 	}
+}
+
+/**
+ * Whether the local session data is unsupported in the current version of Robo.
+ * For example, session data before we added the `roboVersion` property.
+ */
+function isUnsupportedSessionData(session: Session): boolean {
+	if (!session.roboVersion) {
+		return true
+	}
+
+	return false
 }
 
 /**
