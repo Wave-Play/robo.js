@@ -3,6 +3,7 @@ import { color, composeColors } from '../../../core/color.js'
 import { logger } from '../../../core/logger.js'
 import { RoboPlaySession } from '../../../roboplay/session.js'
 import { RoboPlay } from '../../../roboplay/client.js'
+import type { ListResult, Pod } from '../../../roboplay/types.js'
 
 const command = new Command('status')
 	.description('Builds your plugin for distribution.')
@@ -36,22 +37,25 @@ async function statusAction(_args: string[], options: StatusCommandOptions) {
 	const roboplayColor = roboplay ? color.green : color.red
 	const roboplayStatus = roboplay ? 'Online' : 'Offline'
 
-	// Check if Robo is online
-	const roboResults = await Promise.all(
-		session?.robos?.map(async (robo) => {
-			try {
-				const statusResult = await RoboPlay.Robo.status({ bearerToken: session.userToken, roboId: robo.id })
-				const status = statusResult?.success && statusResult?.status === 'online' ? 'Online' : 'Offline'
-				const statusColor = status === 'Online' ? color.green : color.red
-				const linked = session.linkedProjects[robo.id] === process.cwd()
+	// Check if each Pod is online
+	let pods: ListResult<Pod> = { data: [], success: false }
+	if (session?.userToken) {
+		pods = await RoboPlay.Pod.list({ bearerToken: session?.userToken, userId: session?.user?.id })
+	}
 
-				return { linked, robo, status, statusColor }
+	const podResults = await Promise.all(
+		pods?.data?.map(async (pod) => {
+			try {
+				// Get pod status
+				const statusColor = ['Deploying', 'Idle', 'Online', 'Ready'].includes(pod.status) ? color.green : color.red
+				const linked = session.linkedProjects[process.cwd()]?.podId === pod.id
+
+				return { linked, pod, statusColor }
 			} catch (error) {
-				logger.debug(`Failed to get Robo status for ${robo.name}`, error)
+				logger.debug(`Failed to get Pod status for ${pod.name}`, error)
 
 				return {
-					robo,
-					status: 'Unknown',
+					pod,
 					statusColor: color.yellow
 				}
 			}
@@ -71,10 +75,12 @@ async function statusAction(_args: string[], options: StatusCommandOptions) {
 		logger.log(Indent, 'More info:', composeColors(color.underline, color.blue)('https://status.roboplay.dev'))
 	}
 
-	roboResults?.forEach(({ linked, robo, status, statusColor }) => {
-		logger.log('\n' + Indent, color.bold('🤖 Robo'))
-		logger.log(Indent, 'Name:', color.bold(robo.name), linked ? color.cyan('(linked)') : '')
-		logger.log(Indent, 'Status:', composeColors(color.bold, statusColor)(status))
+	podResults?.forEach(({ linked, pod, statusColor }) => {
+		logger.log('\n' + Indent, color.bold('🤖 Pod - ' + pod.name))
+		if (pod.robo) {
+			logger.log(Indent, 'Robo:', color.bold(pod.robo?.name), linked ? color.cyan('(linked)') : '')
+		}
+		logger.log(Indent, 'Status:', composeColors(color.bold, statusColor)(pod.status))
 	})
 
 	logger.log()

@@ -1,14 +1,24 @@
 import { request } from './client.js'
-import type { Robo } from './types.js'
+import type { ListResult, Pod, Robo } from './types.js'
+
+interface ListPodsOptions {
+	bearerToken: string
+	userId: string
+}
 
 interface ListRobosOptions {
 	bearerToken: string
 	userId: string
 }
 
-interface ListResult<T = unknown> {
-	data: T[]
-	success: boolean
+export async function listPods(options: ListPodsOptions) {
+	const { bearerToken, userId } = options
+
+	return request<ListResult<Pod>>(`/user/${userId}/pods`, {
+		headers: {
+			Authorization: `Bearer ${bearerToken}`
+		}
+	})
 }
 
 export async function listRobos(options: ListRobosOptions) {

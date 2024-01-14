@@ -104,8 +104,8 @@ async function loginAction(_args: string[], options: LoginCommandOptions) {
 		return
 	}
 
-	// Get the user's Robos
-	const robos = await RoboPlay.Robo.list({
+	// Get the user's Pods
+	const pods = await RoboPlay.Pod.list({
 		bearerToken: verifyResult.userToken,
 		userId: verifyResult.user.id
 	})
@@ -113,16 +113,17 @@ async function loginAction(_args: string[], options: LoginCommandOptions) {
 	// Save the session globally
 	await RoboPlaySession.save({
 		linkedProjects: {},
-		robos: robos.data,
+		pods: pods.data,
+		robos: [],
 		user: verifyResult.user,
 		userToken: verifyResult.userToken
 	})
 
-	// Link the current project to a Robo
+	// Link the current project to a Pod
 	// TODO: Only link projects not already linked to prevent overwriting
-	const robo = robos.data[0]
-	await RoboPlaySession.link(robo.id)
-	logger.log('\n' + Indent, `Linked project to ${composeColors(color.bold, color.cyan)(robo.name)}.`)
+	const pod = pods.data[0]
+	await RoboPlaySession.link(pod.id)
+	logger.log('\n' + Indent, `Linked project to Pod ${composeColors(color.bold, color.cyan)(pod.name)}.`)
 
 	// Ta-dah!
 	const userName = verifyResult.user.displayName ?? verifyResult.user.email

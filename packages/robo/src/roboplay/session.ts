@@ -1,10 +1,11 @@
 import { color } from '../core/color.js'
 import { logger } from '../core/logger.js'
+import { packageJson } from '../cli/utils/utils.js'
 import { mkdirSync } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { readFile, unlink, writeFile } from 'node:fs/promises'
-import type { Robo, User } from './types.js'
+import type { Pod, Robo, User } from './types.js'
 
 export const RoboPlaySession = {
 	clear,
@@ -14,8 +15,13 @@ export const RoboPlaySession = {
 }
 
 interface Session {
-	linkedProjects: Record<string, string>
+	linkedProjects: Record<string, {
+		podId: string | null
+		roboId: string | null
+	}>
+	pods: Pod[]
 	robos: Robo[]
+	roboVersion: string
 	user: User
 	userToken: string
 }
@@ -53,9 +59,9 @@ async function get() {
 }
 
 /**
- * Link the current project to a Robo in the RoboPlay session.
+ * Link the current project to a Pod in the RoboPlay session.
  */
-async function link(roboId: string) {
+async function link(podId: string) {
 	// Get the current session
 	const session = await get()
 	if (!session) {
@@ -63,9 +69,9 @@ async function link(roboId: string) {
 	}
 
 	// Make sure the ID specified is valid
-	const robo = session.robos.find((robo) => robo.id === roboId)
-	if (!robo) {
-		throw new Error(`No Robo found with ID ${color.bold(roboId)}.`)
+	const pod = session.pods.find((pod) => pod.id === podId)
+	if (!pod) {
+		throw new Error(`No Pod found with ID ${color.bold(podId)}.`)
 	}
 
 	// Make sure the current directory is a Robo project by checking for the dependency
@@ -76,8 +82,11 @@ async function link(roboId: string) {
 	}
 
 	// Add the robo to the session
-	logger.debug(`Linking Robo ${roboId} to ${process.cwd()}`)
-	session.linkedProjects[roboId] = process.cwd()
+	logger.debug(`Linking ${process.cwd()} to Pod ${podId}...`)
+	session.linkedProjects[process.cwd()] = {
+		podId: podId,
+		roboId: null
+	}
 
 	// Save the session
 	await save(session)
@@ -86,13 +95,16 @@ async function link(roboId: string) {
 /**
  * Save the RoboPlay session to the home directory.
  */
-async function save(session: Session) {
+async function save(session: Omit<Session, 'roboVersion'>) {
 	// Save to home directory
 	const sessionPath = path.join(os.homedir(), '.robo', 'roboplay', 'session.json')
 	logger.debug(`Writing session file to ${sessionPath}`)
 
 	// Let's write the session file!
 	mkdirSync(path.dirname(sessionPath), { recursive: true })
-	await writeFile(sessionPath, JSON.stringify(session, null, 2))
+	await writeFile(sessionPath, JSON.stringify({
+		roboVersion: packageJson.version,
+		...session
+	}, null, 2))
 	logger.debug(`Session file written successfully!`)
 }
