@@ -1,6 +1,6 @@
 import { env } from '../core/env.js'
 import { logger } from '../core/logger.js'
-import { hasProperties, packageJson } from '../cli/utils/utils.js'
+import { getRoboPackageJson, hasProperties, packageJson } from '../cli/utils/utils.js'
 import { createOAuth, pollOAuth, verifyOAuth } from './oauth.js'
 import { createDeployment, updateDeployment, uploadBundle } from './deploy.js'
 import { getRoboStatus, listPods, listRobos } from './robos.js'
@@ -60,18 +60,27 @@ export async function request<T = unknown>(urlPath: string, options?: RequestOpt
 		queryString = '?' + new URLSearchParams(normalizedQuery).toString()
 	}
 
+	// Pass down Robo metadata with every request
+	const roboPackageJson = await getRoboPackageJson()
+	const extraHeaders: Record<string, string> = {
+		'X-Robo-Project-Description': roboPackageJson.description ?? '',
+		'X-Robo-Project-Name': roboPackageJson.name ?? '',
+		'X-Robo-Project-Version': roboPackageJson.version ?? '',
+		'X-Robo-Version': packageJson.version
+	}
+
+	// Prepare request body by parsing FormData or JSON when applicable
+	let requestBody
+
+	if (body instanceof FormData) {
+		requestBody = body as BodyInit
+	} else if (body) {
+		requestBody = JSON.stringify(body)
+		extraHeaders['Content-Type'] = 'application/json'
+	}
+
 	while (retryCount <= retries) {
 		try {
-			const extraHeaders: Record<string, string> = {
-				'X-Robo-Version': packageJson.version
-			}
-			let requestBody
-			if (body instanceof FormData) {
-				requestBody = body as BodyInit
-			} else if (body) {
-				requestBody = JSON.stringify(body)
-				extraHeaders['Content-Type'] = 'application/json'
-			}
 			const response = await fetch(env.roboplay.api + urlPath + queryString, {
 				method: method,
 				headers: {

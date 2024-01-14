@@ -1,6 +1,6 @@
 import { color } from '../core/color.js'
 import { logger } from '../core/logger.js'
-import { packageJson } from '../cli/utils/utils.js'
+import { getRoboPackageJson, packageJson } from '../cli/utils/utils.js'
 import { mkdirSync } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
@@ -94,8 +94,8 @@ async function link(podId: string) {
 	}
 
 	// Make sure the current directory is a Robo project by checking for the dependency
-	const packageJsonPath = path.join(process.cwd(), 'package.json')
-	const packageJson = JSON.parse((await readFile(packageJsonPath, 'utf-8')) ?? '{}')
+	const packageJson = await getRoboPackageJson()
+
 	if (!packageJson.dependencies?.['@roboplay/robo.js']) {
 		throw new Error(`This directory is not a Robo project.`)
 	}

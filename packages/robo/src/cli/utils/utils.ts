@@ -28,6 +28,13 @@ export function getTempDir() {
 	return path.join(process.cwd(), '.robo', 'temp')
 }
 
+export async function getRoboPackageJson() {
+	const packageJsonPath = path.join(process.cwd(), 'package.json')
+	const packageJson = JSON.parse((await fs.readFile(packageJsonPath, 'utf-8')) ?? '{}')
+
+	return packageJson
+}
+
 /**
  * Run a command as a child process
  */
