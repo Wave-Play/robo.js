@@ -107,7 +107,7 @@ async function createBundle() {
 		const outputPath = path.join(process.cwd(), '.robo', 'temp', fileName)
 
 		// Bundle the current working directory
-		await compressDirectory('.', outputPath, ['.git', 'node_modules', '.robo/build', '.robo/temp'])
+		await compressDirectory(process.cwd(), outputPath, ['.git', 'node_modules', `.robo${path.sep}build`, `.robo${path.sep}temp`])
 
 		logger.debug(`Created bundle:`, outputPath)
 		return outputPath

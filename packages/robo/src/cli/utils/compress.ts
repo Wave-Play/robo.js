@@ -42,7 +42,8 @@ export async function compressDirectory(inputDir: string, outputFile: string, ig
 	}
 
 	// Create temp directory
-	const tempDir = outputFile.slice(0, outputFile.lastIndexOf('.')) + '-tmp'
+	const tempDir = outputFile.slice(0, outputFile.lastIndexOf('.'))
+	logger.debug(`Creating temporary directory at`, tempDir)
 	await fs.mkdir(tempDir, { recursive: true })
 	const tempFilePaths: Record<string, string> = {}
 
@@ -52,11 +53,19 @@ export async function compressDirectory(inputDir: string, outputFile: string, ig
 			fileMetadatas.map(async (metadata) => {
 				try {
 					logger.debug(`Compressing ${metadata.size} bytes of data for ${metadata.filePath}...`)
-					const tempFilePath = path.join(tempDir, metadata.filePath.replace(/\//g, '-')) + '.tmp'
+					let cleanFileName = metadata.filePath.replace(process.cwd(), '').replaceAll(path.sep, '-')
+					if (cleanFileName.startsWith('-')) {
+						cleanFileName = cleanFileName.slice(1)
+					}
+
+					const tempFilePath = path.join(tempDir, cleanFileName + '.tmp')
+					logger.debug(`Writing compressed data to`, tempFilePath)
 					await compressFile(metadata.filePath, tempFilePath)
 					tempFilePaths[metadata.filePath] = tempFilePath
+
 					const stats = await fs.stat(tempFilePath)
 					metadata.compressedSize = stats.size
+					logger.debug(`Compressed ${metadata.size} bytes of data into ${metadata.compressedSize} bytes`)
 				} catch (e) {
 					logger.error(`Failed to compress ${metadata.filePath}:`, e)
 					throw e
@@ -92,7 +101,7 @@ export async function compressDirectory(inputDir: string, outputFile: string, ig
 
 	// Cleanup temporary files
 	await Promise.all(Object.values(tempFilePaths).map((tempFilePath) => fs.unlink(tempFilePath)))
-	await fs.rmdir(tempDir)
+	await fs.rm(tempDir, { force: true, recursive: true })
 }
 
 /**

@@ -21,7 +21,7 @@ const require = createRequire(import.meta.url)
 export const packageJson = require('../../../package.json')
 
 export function cleanTempDir() {
-	return fs.rm(getTempDir(), { recursive: true })
+	return fs.rm(getTempDir(), { force: true, recursive: true })
 }
 
 export function getTempDir() {
