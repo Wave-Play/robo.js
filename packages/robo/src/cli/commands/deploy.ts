@@ -86,7 +86,7 @@ async function deployAction(_args: string[], options: DeployCommandOptions) {
 		}
 
 		// Print deployment job info
-		logger.info(`${color.green('✔')} Deploying on ${color.bold('RoboPlay')}!\n`)
+		logger.info(`${color.green('✔')} Your Robo will be online in a few minutes! You can check the status with`, color.bold('robo cloud status'),`\n`)
 		// const buildDetails = `https://roboplay.dev/builds/${deploy.deploy.id}`
 		// logger.info(`Build details: ${composeColors(color.bold, color.underline, color.blue)(buildDetails)}\n`)
 	} catch (e) {

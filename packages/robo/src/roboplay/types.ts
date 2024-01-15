@@ -3,12 +3,21 @@ export interface ListResult<T = unknown> {
 	success: boolean
 }
 
+export type OAuthSessionStatus = 'Authorized' | 'Created' | 'Expired' | 'Invalid' | 'Paired' | 'Used'
+
+export interface OAuthSession {
+	pairingCode: string
+	secret: string
+	status: OAuthSessionStatus
+	token: string
+}
+
 export interface Pod {
 	id: string
 	name: string
 	robo: Robo | null
 	slug: string
-	status: 'Deploying' | 'Idle' | 'Online' | 'Ready' | 'Repairing'
+	status: 'Deploying' | 'Idle' | 'Online' | 'Ready' | 'Repairing' | 'Updating'
 	type: 'BetaMecha' | 'BetaMicro'
 }
 

@@ -1,17 +1,13 @@
 import { request } from './client.js'
-import type { User } from './types.js'
+import type { OAuthSession, OAuthSessionStatus, User } from './types.js'
 
-type OAuthSessionStatus = 'Authorized' | 'Created' | 'Expired' | 'Invalid' | 'Paired' | 'Used'
-
-interface OAuthSession {
-	pairingCode: string
-	secret: string
-	status: OAuthSessionStatus
-	token: string
+interface CreateOAuthResult extends OAuthSession {
+	error?: string
+	success: boolean
 }
 
 export async function createOAuth() {
-	return request<OAuthSession>('/oauth', {
+	return request<CreateOAuthResult>('/oauth', {
 		method: 'POST'
 	})
 }

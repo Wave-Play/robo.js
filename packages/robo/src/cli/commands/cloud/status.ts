@@ -47,7 +47,7 @@ async function statusAction(_args: string[], options: StatusCommandOptions) {
 		pods?.data?.map(async (pod) => {
 			try {
 				// Get pod status
-				const statusColor = ['Deploying', 'Idle', 'Online', 'Ready'].includes(pod.status) ? color.green : color.red
+				const statusColor = getPodStatusColor(pod.status)
 				const linked = session.linkedProjects[process.cwd()]?.podId === pod.id
 
 				return { linked, pod, statusColor }
@@ -84,4 +84,16 @@ async function statusAction(_args: string[], options: StatusCommandOptions) {
 	})
 
 	logger.log()
+}
+
+function getPodStatusColor(status: Pod['status']) {
+	if (['Deploying', 'Updating'].includes(status)) {
+		return color.cyan
+	} else if (['Idle', 'Stopped'].includes(status)) {
+		return color.gray
+	} else if (['Online', 'Ready'].includes(status)) {
+		return color.green
+	} {
+		return color.red
+	}
 }

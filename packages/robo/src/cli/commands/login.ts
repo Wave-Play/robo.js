@@ -29,17 +29,23 @@ async function loginAction(_args: string[], options: LoginCommandOptions) {
 	logger({
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : 'info'
-	}).log('\n' + Indent, `Welcome to ${color.bold('RoboPlay')} ✨`)
+	})
 
 	// Prepare OAuth session
 	const oauthSession = await RoboPlay.OAuth.create()
 	const url = env.roboplay.frontend + `/auth/cli?token=${oauthSession.token}`
 	let sessionStatus = oauthSession.status
 
+	if (!oauthSession.success) {
+		logger.error(oauthSession.error)
+		return
+	}
+
 	// Copy pairing code to clipboard and print user instructions
 	copyToClipboard(oauthSession.pairingCode)
 	const cta = composeColors(color.bold, color.cyan)('Press Enter')
 
+	logger.log('\n' + Indent, `Welcome to ${color.bold('RoboPlay')} ✨`)
 	logger.log('\n' + Indent, color.bold('🔒 For your security, please use an auth code.'))
 	logger.log(Indent, `Your auth code is: ${composeColors(color.bold, color.cyan)(oauthSession.pairingCode)}`)
 
