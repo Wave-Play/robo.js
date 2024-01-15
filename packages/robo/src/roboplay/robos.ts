@@ -1,6 +1,31 @@
 import { request } from './client.js'
 import type { ListResult, Pod, Robo } from './types.js'
 
+interface GetPodLogsOptions {
+	bearerToken: string
+	podId: string
+}
+
+interface GetPodLogsResult {
+	error?: string
+	logs: Array<{
+		ingestionTime: number
+		message: string
+		timestamp: number
+	}>
+	success: boolean
+}
+
+export async function getPodLogs(options: GetPodLogsOptions) {
+	const { bearerToken, podId } = options
+
+	return request<GetPodLogsResult>(`/pod/${podId}/logs`, {
+		headers: {
+			Authorization: `Bearer ${bearerToken}`
+		}
+	})
+}
+
 interface GetRoboStatusOptions {
 	bearerToken?: string
 	roboId: string
