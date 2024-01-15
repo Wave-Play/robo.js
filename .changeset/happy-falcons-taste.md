@@ -2,4 +2,4 @@
 '@roboplay/robo.js': patch
 ---
 
-Patch(robo): add FlashcoreOptions to has method.
+patch(flashcore): support options in `has()` function
