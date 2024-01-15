@@ -1,6 +1,7 @@
 import { loadConfig } from '../src/core/config.js'
 import { Flashcore, prepareFlashcore } from '../src/core/flashcore.js'
 
+let watcherValue = 0
 describe('Basics Flashcore Test', () => {
 	beforeAll(async () => {
 		await loadConfig()
@@ -81,25 +82,74 @@ describe('Advanced Flashcore Test', () => {
 
 	describe('Flashcore with Watcher functions', () => {
 		beforeAll(async () => {
-			await Flashcore.set('04022002', 53)
+			await Flashcore.set('04022002', 0)
+		})
 
-			Flashcore.on('04022002', (score) => {
-				console.log(score)
+		it('Changing the score after starting watching', async () => {
+			Flashcore.on('04022002', (_, newValue) => {
+				watcherValue = newValue as any
+			})
+			await Flashcore.set('04022002', 99)
+
+			expect(watcherValue).toBe(99)
+		})
+
+		it('Changing the score after stopping to watch', async () => {
+			Flashcore.on('04022002', (_, newValue) => {
+				watcherValue = newValue as any
+			})
+
+			Flashcore.off('04022002')
+
+			await Flashcore.set('04022002', 69)
+			expect(watcherValue).toBe(99)
+		})
+	})
+
+	describe('Flashcore with Watcher functions and a namespace', () => {
+		beforeAll(async () => {
+			await Flashcore.set('04022002', 0, {
+				namespace: 'my_insane_watched_value'
 			})
 		})
 
 		it('Changing the score after starting watching', async () => {
-			for (let i = 0; i < 10; ++i) {
-				await Flashcore.set('04022002', 60 + i)
-			}
+			Flashcore.on(
+				'04022002',
+				(_, newValue) => {
+					watcherValue = newValue as any
+				},
+				{
+					namespace: 'my_insane_watched_value'
+				}
+			)
+			await Flashcore.set('04022002', 99, {
+				namespace: 'my_insane_watched_value'
+			})
+
+			expect(watcherValue).toBe(99)
 		})
 
 		it('Changing the score after stopping to watch', async () => {
-			Flashcore.off('04022002')
+			Flashcore.on(
+				'04022002',
+				(_, newValue) => {
+					watcherValue = newValue as any
+				},
+				{
+					namespace: 'my_insane_watched_value'
+				}
+			)
 
-			for (let i = 0; i < 10; ++i) {
-				await Flashcore.set('04022002', 60 + i)
-			}
+			// eslint-disable-next-line @typescript-eslint/no-empty-function
+			Flashcore.off('04022002', undefined, {
+				namespace: 'my_insane_watched_value'
+			})
+
+			await Flashcore.set('04022002', 69, {
+				namespace: 'my_insane_watched_value'
+			})
+			expect(watcherValue).toBe(99)
 		})
 	})
 
