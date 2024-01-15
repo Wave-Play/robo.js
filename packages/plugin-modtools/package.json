@@ -33,7 +33,7 @@
     "typescript": "^5.0.0"
   },
   "peerDependencies": {
-    "@roboplay/robo.js": "^0.9.17"
+    "@roboplay/robo.js": "^0.9.18"
   },
   "peerDependenciesMeta": {
     "@roboplay/robo.js": {

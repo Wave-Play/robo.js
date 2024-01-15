@@ -1,5 +1,16 @@
 # robo.js
 
+## 0.9.18
+
+### Patch Changes
+
+- c21467b: chore(cli): auto clear old unsupported RoboPlay session data
+- 21538bc: patch(flashcore): support options in `has()` function
+- f80ce66: patch(cli): updated `robo deploy` to use newer api requirements
+- 5ed24e5: feat(cli): `robo cloud logs` command
+- 7b9e155: feat(cli): `robo cloud start` and `robo cloud stop` commands
+- ab03c32: refactor(cli): connect Robo to RoboPlay Pods after `robo login`
+
 ## 0.9.17
 
 ### Patch Changes

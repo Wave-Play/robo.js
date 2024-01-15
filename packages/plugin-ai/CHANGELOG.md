@@ -1,5 +1,12 @@
 # @roboplay/plugin-ai
 
+## 0.4.2
+
+### Patch Changes
+
+- 86cd358: feat: ability to restrict usage to certain channels
+- 7eb543d: refactor: removed redundant colon in logger prefix
+
 ## 0.4.1
 
 ### Patch Changes
