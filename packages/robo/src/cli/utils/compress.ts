@@ -53,7 +53,7 @@ export async function compressDirectory(inputDir: string, outputFile: string, ig
 			fileMetadatas.map(async (metadata) => {
 				try {
 					logger.debug(`Compressing ${metadata.size} bytes of data for ${metadata.filePath}...`)
-					let cleanFileName = metadata.filePath.replace(process.cwd(), '').replaceAll(path.sep, '-')
+					let cleanFileName = metadata.filePath.replaceAll(path.sep, '-')
 					if (cleanFileName.startsWith('-')) {
 						cleanFileName = cleanFileName.slice(1)
 					}
@@ -109,7 +109,7 @@ export async function compressDirectory(inputDir: string, outputFile: string, ig
  * compression process, particularly for large files.
  */
 async function compressFile(filePath: string, outputFile: string) {
-	const readStream = createReadStream(filePath)
+	const readStream = createReadStream(path.join(process.cwd(), filePath))
 	const writeStream = createWriteStream(outputFile)
 	const brotli = zlib.createBrotliCompress()
 
@@ -139,7 +139,7 @@ async function collectFileMetadatas(dirPath: string, baseDir: string, ignore: st
 			results = results.concat(subdirResults)
 		} else if (entry.isFile()) {
 			const stats = await fs.stat(fullPath)
-			results.push({ filePath: fullPath, size: stats.size })
+			results.push({ filePath: fullPath.replace(process.cwd(), ''), size: stats.size })
 		}
 	}
 
