@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.9.20
+
+### Patch Changes
+
+- 44017a8: patch(cli): tweaked .robopack compression for better compatibility
+
 ## 0.9.19
 
 ### Patch Changes
