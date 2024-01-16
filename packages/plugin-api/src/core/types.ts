@@ -28,3 +28,9 @@ export interface Api {
 export interface ApiEntry extends BaseConfig {
 	subroutes?: Record<string, ApiEntry>
 }
+
+export type TRoboError = {
+	message: string
+	status: number
+	headers?: string
+}

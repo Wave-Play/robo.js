@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
+import { TRoboError } from './types'
 
 export type PackageManager = 'npm' | 'bun' | 'pnpm' | 'yarn'
 
@@ -50,5 +51,16 @@ export async function hasDependency(name: string): Promise<boolean> {
 		return !!packageJson.dependencies?.[name]
 	} catch {
 		return false
+	}
+}
+
+export class RoboError extends Error {
+	public status: number | undefined = undefined
+	public headers: string | undefined = undefined
+	constructor(options: TRoboError) {
+		super()
+		this.message = options.message
+		this.status = options.status
+		this.headers = options.headers
 	}
 }

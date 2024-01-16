@@ -5,6 +5,7 @@ import { parse } from 'node:querystring'
 import { pluginOptions } from '../events/_start.js'
 import type { Router } from './router.js'
 import type { HttpMethod, RoboReply, RoboRequest } from './types.js'
+import { RoboError } from './runtime-utils.js'
 
 const MAX_BODY_SIZE = 5 * 1024 * 1024 // 5MB
 
@@ -87,9 +88,15 @@ export function createServerHandler(router: Router) {
 				replyWrapper.code(200).send(JSON.stringify(result))
 			}
 		} catch (error) {
-			logger.error(`API Route error: ${error}`)
-			res.statusCode = 500
-			res.end('Server encountered an error.')
+			if (error instanceof RoboError) {
+				logger.error(`API Route error: ${error}`)
+				res.statusCode = error.status
+				res.end(error.message)
+			} else {
+				logger.error(`API Route error: ${error}`)
+				res.statusCode = 500
+				res.end('Server encountered an error.')
+			}
 		}
 	}
 }
