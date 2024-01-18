@@ -141,6 +141,8 @@ export async function findPackagePath(packageName: string, currentPath: string):
 		return null
 	}
 
+	packageName = packageName.replaceAll(path.sep, '/')
+
 	// Determine if node_modules folder is managed by pnpm
 	// Note: This does *not* mean that the process was started with pnpm
 	const pnpmNodeModulesPath = path.resolve(nodeModulesPath, '.pnpm')
