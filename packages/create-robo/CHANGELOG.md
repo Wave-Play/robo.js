@@ -1,5 +1,11 @@
 # create-robo
 
+## 0.10.2
+
+### Patch Changes
+
+- f32b004: chore: updated optional dependency versions
+
 ## 0.10.1
 
 ### Patch Changes
