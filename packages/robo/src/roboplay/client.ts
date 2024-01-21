@@ -4,6 +4,7 @@ import { getRoboPackageJson, hasProperties, packageJson } from '../cli/utils/uti
 import { createOAuth, pollOAuth, verifyOAuth } from './oauth.js'
 import { createDeployment, updateDeployment, uploadBundle } from './deploy.js'
 import { getPodLogs, getRoboStatus, listPods, listRobos, startPod, stopPod } from './robos.js'
+import os from 'node:os'
 
 export const RoboPlay = {
 	Deploy: {
@@ -70,6 +71,15 @@ export async function request<T = unknown>(urlPath: string, options?: RequestOpt
 		'X-Robo-Project-Name': roboPackageJson.name ?? '',
 		'X-Robo-Project-Version': roboPackageJson.version ?? '',
 		'X-Robo-Version': packageJson.version
+	}
+
+	// Only include OS metadata if opted in to debug mode
+	if (env.roboplay.debug) {
+		extraHeaders['X-Robo-OS-Arch'] = os.arch()
+		extraHeaders['X-Robo-OS-Hostname'] = os.hostname()
+		extraHeaders['X-Robo-OS-Platform'] = os.platform()
+		extraHeaders['X-Robo-OS-Name'] = os.type()
+		extraHeaders['X-Robo-OS-Release'] = os.release()
 	}
 
 	// Prepare request body by parsing FormData or JSON when applicable
