@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.9.21
+
+### Patch Changes
+
+- 5f43d35: fix(compiler): specify module settings to fully resolve imports
+
 ## 0.9.20
 
 ### Patch Changes
