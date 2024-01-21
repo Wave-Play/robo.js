@@ -326,9 +326,9 @@ export default class Robo {
 
 		const runPrefix = packageManager === 'npm' ? 'npm run ' : packageManager + ' '
 		if (this._useTypeScript) {
-			packageJson.devDependencies['@swc/core'] = '^1.3.44'
+			packageJson.devDependencies['@swc/core'] = '^1.3.104'
 			packageJson.devDependencies['@types/node'] = '^18.14.6'
-			packageJson.devDependencies['typescript'] = '^5.0.0'
+			packageJson.devDependencies['typescript'] = '^5.3.0'
 		}
 
 		logger.debug(`Adding features:`, features)
@@ -384,10 +384,10 @@ export default class Robo {
 		logger.debug(`Setting up plugins...`)
 
 		if (features.includes('ai')) {
-			packageJson.dependencies['@roboplay/plugin-ai'] = '^0.1.0'
+			packageJson.dependencies['@roboplay/plugin-ai'] = '^0.4.2'
 			await this.createPluginConfig('@roboplay/plugin-ai', {
 				commands: false,
-				openaiKey: 'process.env.OPENAI_KEY',
+				openaiKey: 'process.env.OPENAI_API_KEY',
 				systemMessage: 'You are a helpful Robo.',
 				whitelist: {
 					channelIds: []
@@ -395,11 +395,11 @@ export default class Robo {
 			})
 		}
 		if (features.includes('ai-voice')) {
-			packageJson.dependencies['@roboplay/plugin-ai-voice'] = '^0.1.0'
+			packageJson.dependencies['@roboplay/plugin-ai-voice'] = '^0.1.1'
 			await this.createPluginConfig('@roboplay/plugin-ai-voice', {})
 		}
 		if (features.includes('api')) {
-			packageJson.dependencies['@roboplay/plugin-api'] = '^0.1.0'
+			packageJson.dependencies['@roboplay/plugin-api'] = '^0.2.3'
 			await this.createPluginConfig('@roboplay/plugin-api', {
 				cors: true,
 				port: 3000
@@ -410,7 +410,7 @@ export default class Robo {
 			await this.createPluginConfig('@roboplay/plugin-maintenance', {})
 		}
 		if (features.includes('modtools')) {
-			packageJson.dependencies['@roboplay/plugin-modtools'] = '^0.1.0'
+			packageJson.dependencies['@roboplay/plugin-modtools'] = '^0.2.0'
 			await this.createPluginConfig('@roboplay/plugin-modtools', {})
 		}
 		if (features.includes('polls')) {
