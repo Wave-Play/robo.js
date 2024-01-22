@@ -89,7 +89,7 @@ export function createServerHandler(router: Router) {
 			}
 		} catch (error) {
 			if (error instanceof RoboError) {
-				logger.error(`API Route error:\n${JSON.stringify(error, null, ' ')}`)
+				logger.error(`API Route error:\n`, error)
 				res.statusCode = error.status
 			} else {
 				logger.error(`API Route error: ${error}`)
