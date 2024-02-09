@@ -67,16 +67,16 @@ export async function request<T = unknown>(urlPath: string, options?: RequestOpt
 	// Pass down Robo metadata with every request
 	const roboPackageJson = await getRoboPackageJson()
 	const extraHeaders: Record<string, string> = {
-		'X-Robo-Project-Description': roboPackageJson.description ?? '',
-		'X-Robo-Project-Name': roboPackageJson.name ?? '',
-		'X-Robo-Project-Version': roboPackageJson.version ?? '',
+		'X-Robo-Project-Description': sanitizeForAscii(roboPackageJson.description ?? ''),
+		'X-Robo-Project-Name': sanitizeForAscii(roboPackageJson.name ?? ''),
+		'X-Robo-Project-Version': sanitizeForAscii(roboPackageJson.version ?? ''),
 		'X-Robo-Version': packageJson.version
 	}
 
 	// Only include OS metadata if opted in to debug mode
 	if (env.roboplay.debug) {
 		extraHeaders['X-Robo-OS-Arch'] = os.arch()
-		extraHeaders['X-Robo-OS-Hostname'] = os.hostname()
+		extraHeaders['X-Robo-OS-Hostname'] = sanitizeForAscii(os.hostname())
 		extraHeaders['X-Robo-OS-Platform'] = os.platform()
 		extraHeaders['X-Robo-OS-Name'] = os.type()
 		extraHeaders['X-Robo-OS-Release'] = os.release()
@@ -133,4 +133,15 @@ export async function request<T = unknown>(urlPath: string, options?: RequestOpt
 	}
 
 	throw new Error('Failed to call RoboPlay API')
+}
+
+// eslint-disable-next-line no-control-regex
+const AsciiRegex = new RegExp(/[^\x00-\x7F]/g)
+
+/**
+ * Sanitize a string for use in ASCII-only contexts. (0-127)
+ * This is necessary for fetch requests, as non-ASCII characters can cause issues.
+ */
+function sanitizeForAscii(input: string) {
+	return input?.replace(AsciiRegex, '_')
 }
