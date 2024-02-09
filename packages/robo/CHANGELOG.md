@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.9.22
+
+### Patch Changes
+
+- 5192bbb: patch(cli): sanitize non-ascii in project metadata when making requests
+
 ## 0.9.21
 
 ### Patch Changes
