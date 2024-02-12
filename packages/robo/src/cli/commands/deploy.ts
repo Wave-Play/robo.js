@@ -41,10 +41,11 @@ async function deployAction(_args: string[], options: DeployCommandOptions) {
 	}
 
 	// Prepare deployment
-	const deploy = await RoboPlay.Deploy.create({ bearerToken: session.userToken })
-	logger.debug(`Deployment result:`, deploy)
-	if (!deploy.success) {
-		logger.error(deploy.error)
+	const deployResult = await RoboPlay.Deploy.create({ bearerToken: session.userToken })
+	const { deploy, error, upload, success, url } = deployResult
+	logger.debug(`Deployment result:`, deployResult)
+	if (!success) {
+		logger.error(error)
 		return
 	}
 
@@ -58,15 +59,15 @@ async function deployAction(_args: string[], options: DeployCommandOptions) {
 		try {
 			await RoboPlay.Deploy.upload({
 				bundlePath: bundle,
-				uploadKey: deploy.upload.key,
-				uploadToken: deploy.upload.token,
-				uploadUrl: deploy.upload.url
+				uploadKey: upload.key,
+				uploadToken: upload.token,
+				uploadUrl: upload.url
 			})
 		} catch (e) {
 			// Notify RoboPlay of upload failure
 			await RoboPlay.Deploy.update({
 				bearerToken: session.userToken,
-				deployId: deploy.deploy.id,
+				deployId: deploy.id,
 				event: 'upload-failed'
 			})
 			throw e
@@ -76,7 +77,7 @@ async function deployAction(_args: string[], options: DeployCommandOptions) {
 		logger.debug(`Notifying RoboPlay of upload result...`)
 		const updateResult = await RoboPlay.Deploy.update({
 			bearerToken: session.userToken,
-			deployId: deploy.deploy.id,
+			deployId: deploy.id,
 			event: 'upload-success'
 		})
 
@@ -86,9 +87,14 @@ async function deployAction(_args: string[], options: DeployCommandOptions) {
 		}
 
 		// Print deployment job info
-		logger.info(`${color.green('✔')} Your Robo will be online in a few minutes! You can check the status with`, color.bold('robo cloud status'),`\n`)
-		// const buildDetails = `https://roboplay.dev/builds/${deploy.deploy.id}`
-		// logger.info(`Build details: ${composeColors(color.bold, color.underline, color.blue)(buildDetails)}\n`)
+		logger.info(
+			`${color.green('✔')} Your Robo will be online in a few minutes! You can check the status with`,
+			color.bold('robo cloud status'),
+			`\n`
+		)
+		if (url) {
+			logger.info(`Build details: ${composeColors(color.bold, color.underline, color.blue)(url)}\n`)
+		}
 	} catch (e) {
 		logger.error(e)
 	} finally {
@@ -107,7 +113,12 @@ async function createBundle() {
 		const outputPath = path.join(process.cwd(), '.robo', 'temp', fileName)
 
 		// Bundle the current working directory
-		await compressDirectory(process.cwd(), outputPath, ['.git', 'node_modules', `.robo${path.sep}build`, `.robo${path.sep}temp`])
+		await compressDirectory(process.cwd(), outputPath, [
+			'.git',
+			'node_modules',
+			`.robo${path.sep}build`,
+			`.robo${path.sep}temp`
+		])
 
 		logger.debug(`Created bundle:`, outputPath)
 		return outputPath

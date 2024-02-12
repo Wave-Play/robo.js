@@ -10,12 +10,14 @@ interface CreateDeploymentResult {
 		id: string
 	}
 	error?: string
+	signature?: string
 	success?: boolean
 	upload: {
 		key: string
 		token: string
 		url: string
 	}
+	url?: string
 }
 
 export async function createDeployment(options: CreateDeploymentOptions) {
