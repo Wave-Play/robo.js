@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.9.23
+
+### Patch Changes
+
+- 515901e: feat(cli): include link to new deployment page in `robo deploy`
+
 ## 0.9.22
 
 ### Patch Changes
