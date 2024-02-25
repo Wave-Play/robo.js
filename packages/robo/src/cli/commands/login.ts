@@ -55,7 +55,7 @@ async function loginAction(_args: string[], options: LoginCommandOptions) {
 	logger.log('\n' + Indent, color.bold('🔗 Prefer to navigate manually?'))
 	logger.log(Indent, composeColors(color.underline, color.blue)(url), '\n')
 
-	const spinner = new Spinner(Indent)
+	const spinner = new Spinner(Indent + ` {{spinner}} Waiting for sign in...`)
 	spinner.start()
 
 	// Open browser on key press (Enter)
