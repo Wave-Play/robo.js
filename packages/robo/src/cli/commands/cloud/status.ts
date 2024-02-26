@@ -1,6 +1,7 @@
 import { Command } from '../../utils/cli-handler.js'
 import { color, composeColors } from '../../../core/color.js'
 import { logger } from '../../../core/logger.js'
+import { getPodStatusColor } from '../../utils/utils.js'
 import { RoboPlaySession } from '../../../roboplay/session.js'
 import { RoboPlay } from '../../../roboplay/client.js'
 import type { ListResult, Pod } from '../../../roboplay/types.js'
@@ -84,16 +85,4 @@ async function statusAction(_args: string[], options: StatusCommandOptions) {
 	})
 
 	logger.log()
-}
-
-function getPodStatusColor(status: Pod['status']) {
-	if (['Deploying', 'Updating'].includes(status)) {
-		return color.cyan
-	} else if (['Idle', 'Stopped'].includes(status)) {
-		return color.gray
-	} else if (['Online', 'Ready'].includes(status)) {
-		return color.green
-	} {
-		return color.red
-	}
 }

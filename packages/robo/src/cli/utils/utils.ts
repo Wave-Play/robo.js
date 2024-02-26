@@ -11,6 +11,7 @@ import path from 'node:path'
 import os from 'node:os'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { IS_BUN, PackageManager } from './runtime-utils.js'
+import type { Pod } from '../../roboplay/types.js'
 
 export const __DIRNAME = path.dirname(fileURLToPath(import.meta.url))
 
@@ -23,6 +24,19 @@ export const packageJson = require('../../../package.json')
 export function cleanTempDir() {
 	return fs.rm(getTempDir(), { force: true, recursive: true })
 }
+
+export function getPodStatusColor(status: Pod['status']) {
+	if (['Deploying', 'Updating'].includes(status)) {
+		return color.cyan
+	} else if (['Idle', 'Stopped'].includes(status)) {
+		return color.dim
+	} else if (['Online', 'Ready'].includes(status)) {
+		return color.green
+	} {
+		return color.red
+	}
+}
+
 
 export function getTempDir() {
 	return path.join(process.cwd(), '.robo', 'temp')
