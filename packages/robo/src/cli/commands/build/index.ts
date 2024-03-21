@@ -128,4 +128,7 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 			logger.warn(`Previous command registration failed. Run ${bold('robo build --force')} to try again.`)
 		}
 	}
+
+	// Gracefully exit
+	process.exit(0)
 }

@@ -129,5 +129,8 @@ async function pluginAction(_args: string[], options: PluginCommandOptions) {
 				isUpdating = false
 			}
 		})
+	} else {
+		// Gracefully exit
+		process.exit(0)
 	}
 }
