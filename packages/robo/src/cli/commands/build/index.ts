@@ -130,5 +130,7 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 	}
 
 	// Gracefully exit
-	process.exit(0)
+	if (!options.dev) {
+		process.exit(0)
+	}
 }
