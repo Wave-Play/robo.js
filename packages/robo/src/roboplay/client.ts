@@ -43,6 +43,7 @@ interface RequestOptions {
 	headers?: Record<string, string>
 	method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS'
 	query?: Record<string, unknown>
+	raw?: boolean
 	retries?: number
 	silent?: boolean
 }
@@ -51,7 +52,7 @@ interface RequestOptions {
  * Calls a RoboPlay API endpoint.
  */
 export async function request<T = unknown>(urlPath: string, options?: RequestOptions): Promise<T> {
-	const { backoff = true, body, headers, method = 'GET', query, retries = 3, silent } = options ?? {}
+	const { backoff = true, body, headers, method = 'GET', query, raw, retries = 3, silent } = options ?? {}
 	let retryCount = 0
 
 	let queryString = ''
@@ -104,6 +105,10 @@ export async function request<T = unknown>(urlPath: string, options?: RequestOpt
 				body: requestBody
 			})
 
+			if (raw) {
+				return response as unknown as T
+			}
+
 			const jsonResponse = await response.json()
 			if (response.status >= 500) {
 				throw new Error(`HTTP Error status code: ${response.status}`)
@@ -134,6 +139,53 @@ export async function request<T = unknown>(urlPath: string, options?: RequestOpt
 	}
 
 	throw new Error('Failed to call RoboPlay API')
+}
+
+export async function requestStream<T = unknown>(
+	urlPath: string,
+	callback: (error: Error | Event, data: T) => void | Promise<void>
+) {
+	const response = await fetch(env.roboplay.api + urlPath, {
+		headers: {
+			'Content-Type': 'text/event-stream'
+		}
+	})
+
+	const reader = response.body?.getReader()
+
+	if (!reader) {
+		callback(new Error('Failed to get readable stream reader'), null)
+		return
+	}
+
+	let buffer = ''
+
+	// eslint-disable-next-line no-constant-condition
+	while (true) {
+		const { done, value } = await reader.read()
+
+		if (done) {
+			break
+		}
+
+		buffer += new TextDecoder().decode(value)
+
+		const parts = buffer.split('\n\n')
+		buffer = parts.pop()
+
+		for (const part of parts) {
+			const message = part.split('\n').reduce((acc, line) => {
+				const [key, value] = line.split(': ')
+				return { ...acc, [key]: value }
+			}, {})
+
+			// @ts-expect-error - ...
+			if (typeof message.data === 'string' && message.data.startsWith('{') && message.data.endsWith('}')) {
+				// @ts-expect-error - ...
+				callback(null, JSON.parse(message.data))
+			}
+		}
+	}
 }
 
 // eslint-disable-next-line no-control-regex

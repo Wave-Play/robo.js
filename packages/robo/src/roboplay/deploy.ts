@@ -1,5 +1,6 @@
 import { uploadToBackblazeB2 } from '../cli/utils/upload.js'
-import { request } from './client.js'
+import { request, requestStream } from './client.js'
+import type { Deployment, DeploymentLog, Pod } from './types.js'
 
 interface CreateDeploymentOptions {
 	bearerToken: string
@@ -29,6 +30,26 @@ export async function createDeployment(options: CreateDeploymentOptions) {
 			Authorization: `Bearer ${bearerToken}`
 		}
 	})
+}
+
+interface StreamDeploymentOptions {
+	deploymentId: string
+	signature?: string
+}
+
+type StreamDeploymentCallback = (
+	error: Error | Event,
+	data: {
+		deployment?: Deployment
+		logs?: DeploymentLog[]
+		podStatus?: Pod['status']
+	}
+) => void | Promise<void>
+
+export function streamDeployment(options: StreamDeploymentOptions, callback: StreamDeploymentCallback) {
+	const { deploymentId, signature } = options
+
+	return requestStream(`/deploy-stream/${deploymentId}?signature=${signature}`, callback)
 }
 
 interface UpdateDeploymentOptions {

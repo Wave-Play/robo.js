@@ -6,9 +6,10 @@ import { KeyWatcher } from '../utils/key-watcher.js'
 import { Spinner } from '../utils/spinner.js'
 import { cleanTempDir, getPodStatusColor, getRoboPackageJson, openBrowser } from '../utils/utils.js'
 import { RoboPlay } from '../../roboplay/client.js'
+import { streamDeployment } from '../../roboplay/deploy.js'
 import { RoboPlaySession } from '../../roboplay/session.js'
 import path from 'node:path'
-import type { Pod } from '../../roboplay/types.js'
+import type { DeploymentStep, Pod } from '../../roboplay/types.js'
 
 const Highlight = composeColors(color.bold, color.cyan)
 const Indent = ' '.repeat(3)
@@ -56,7 +57,7 @@ async function deployAction(_args: string[], options: DeployCommandOptions) {
 	spinner.start()
 
 	const deployResult = await RoboPlay.Deploy.create({ bearerToken: session.userToken })
-	const { deploy, error, upload, success, url } = deployResult
+	const { deploy, error, upload, signature, success, url } = deployResult
 
 	spinner.stop(false)
 	logger.debug(`Deployment result:`, deployResult)
@@ -66,6 +67,15 @@ async function deployAction(_args: string[], options: DeployCommandOptions) {
 		logger.error(error)
 		return
 	}
+
+	// Open browser on key press (Enter)
+	const keyWatcher = new KeyWatcher(() => {
+		spinner.getLogs().forEach(() => {
+			process.stdout.write('\x1b[1A')
+		})
+		spinner.setLogs(`${Indent}    ${color.dim('Opening browser...')}`)
+		openBrowser(url)
+	})
 
 	try {
 		logger.log('\n' + Indent, color.bold('📦 Uploading bundle'))
@@ -92,21 +102,60 @@ async function deployAction(_args: string[], options: DeployCommandOptions) {
 		}
 
 		spinner.stop(false)
-		logger.log('\r' + Indent, '   Transmission complete')
+		logger.log('\r' + Indent, '   Transmission complete', Space)
 
 		// Deploy to Pod
 		logger.log('\n' + Indent, color.bold(`🚀 Deploying to pod ${Highlight(pod.name)}`))
+		const spinnerOptions: UpdateDeploymentSpinnerOptions = { podStatus: null, steps: {}, url }
+		updateDeploymentSpinner(spinner, spinnerOptions)
 
-		// Print deployment job info
-		logger.info(
-			`${color.green('✔')} Your Robo will be online in a few minutes! You can check the status with`,
-			color.bold('robo cloud status'),
-			`\n`
-		)
-		if (url) {
-			logger.info(`Build details: ${composeColors(color.bold, color.underline, color.blue)(url)}\n`)
-		}
+		// Stream deployment status
+		keyWatcher.start()
+		spinner.start()
+		streamDeployment({ deploymentId: deploy.id, signature }, (error, data) => {
+			// Handle error
+			if (error) {
+				keyWatcher.stop()
+				spinner.stop(false)
+				logger.log('\n')
+				logger.error(error)
+				process.exit(1)
+			}
+
+			// Update spinner with new status
+			if (data.podStatus) {
+				spinnerOptions.podStatus = data.podStatus
+			}
+
+			if (data.deployment?.steps) {
+				spinnerOptions.steps.init = data.deployment.steps.find((step) => step.name === 'init')?.status
+				spinnerOptions.steps.build = data.deployment.steps.find((step) => step.name === 'build')?.status
+				spinnerOptions.steps.deploy = data.deployment.steps.find((step) => step.name === 'deploy')?.status
+			}
+
+			updateDeploymentSpinner(spinner, spinnerOptions)
+
+			// Exit when deployment is done (completed or failed)
+			if (['Completed', 'Failed'].includes(data.deployment?.status)) {
+				keyWatcher.stop()
+				spinner.stop(false)
+				updateDeploymentSpinner(null, spinnerOptions)
+				const emoji = data.deployment?.status === 'Completed' ? '🎉' : '❌'
+				logger.log(Indent, emoji, color.bold(`Deployment ${data.deployment?.status.toLowerCase()}!${Space}${Space}\n`))
+
+				process.exit(data.deployment?.status === 'Completed' ? 0 : 1)
+			}
+		})
+
+		// Load real Pod status
+		await Promise.all([
+			loadPodStatus(pod.id, session.userToken, spinner, spinnerOptions),
+			updateDeployment(deploy.id, session.userToken, 'upload-success')
+		])
 	} catch (e) {
+		keyWatcher.stop()
+		spinner.stop(false)
+		logger.log('\n')
 		logger.error(e)
 	} finally {
 		// Clean up temp files
@@ -165,24 +214,46 @@ async function updateDeployment(deployId: string, bearerToken: string, event: 'u
 
 interface UpdateDeploymentSpinnerOptions {
 	podStatus: Pod['status'] | null
+	steps: {
+		init?: DeploymentStep['status']
+		build?: DeploymentStep['status']
+		deploy?: DeploymentStep['status']
+	}
 	url?: string
 }
-function updateDeploymentSpinner(spinner: Spinner, options: UpdateDeploymentSpinnerOptions) {
-	const { podStatus, url } = options
+function updateDeploymentSpinner(spinner: Spinner | null, options: UpdateDeploymentSpinnerOptions) {
+	const { podStatus, steps, url } = options
 	const podSpinner = podStatus ? '' : '{{spinner}} '
 	const podStatusColor = podStatus ? getPodStatusColor(podStatus) : color.yellow
-
-	spinner.setText(
+	const text =
 		`${Indent}    Pod status: ${podSpinner}${composeColors(
 			color.bold,
 			podStatusColor
 		)(podStatus ?? 'Checking...')}${Space}` +
-			`\n\n${Indent}    ${color.bold('Deployment Progress:')}` +
-			`\n${Indent}    - Preparing: ${composeColors(color.bold, color.green)('✔ Done')}${Space}` +
-			`\n${Indent}    - Building: {{spinner}} ${composeColors(color.bold, color.yellow)('In Progress')}${Space}` +
-			`\n${Indent}    - Deploying: ${composeColors(color.bold, color.dim)('Pending')}${Space}` +
-			`\n\n${Indent}    ${color.bold('Track live status:')}` +
-			`\n${Indent}    ${color.blue(url)}` +
-			`\n\n${Indent}    ${Highlight('Press Enter')} to open status page.\n`
-	)
+		`\n\n${Indent}    ${color.bold('Deployment Progress:')}` +
+		`\n${Indent}    - Preparing: ${getStepStatus(steps.init)}${Space}` +
+		`\n${Indent}    - Building: ${getStepStatus(steps.build)}${Space}` +
+		`\n${Indent}    - Deploying: ${getStepStatus(steps.deploy)}${Space}` +
+		`\n\n${Indent}    ${color.bold('Track live status:')}` +
+		`\n${Indent}    ${color.blue(url)}` +
+		(spinner ? `\n\n${Indent}    ${Highlight('Press Enter')} to open status page.\n` : '\n')
+
+	if (spinner) {
+		spinner.setText(text, false)
+	} else {
+		logger.log('\r' + text)
+	}
+}
+
+function getStepStatus(status: DeploymentStep['status']) {
+	switch (status) {
+		case 'Completed':
+			return composeColors(color.bold, color.green)('✔ Done')
+		case 'Failed':
+			return composeColors(color.bold, color.red)('✖ Failed')
+		case 'Running':
+			return '{{spinner}} ' + composeColors(color.bold, color.yellow)('In Progress')
+		default:
+			return composeColors(color.bold, color.dim)('Pending')
+	}
 }
