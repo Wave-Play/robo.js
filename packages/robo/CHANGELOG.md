@@ -1,5 +1,12 @@
 # robo.js
 
+## 0.9.24
+
+### Patch Changes
+
+- 5331663: feat(cli): new `deploy` experience w/ real-time updates
+- 71a7ec0: patch(cli): gracefully exit build commands
+
 ## 0.9.23
 
 ### Patch Changes
