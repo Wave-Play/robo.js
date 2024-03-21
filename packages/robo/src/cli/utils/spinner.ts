@@ -60,10 +60,10 @@ export class Spinner {
 		this.logs = logs
 	}
 
-	public setText(text: string) {
+	public setText(text: string, defaultSpinner = true) {
 		this.text = text
 
-		if (!text.includes('{{spinner}}')) {
+		if (defaultSpinner && !text.includes('{{spinner}}')) {
 			this.text = '{{spinner}} ' + text
 		}
 	}
