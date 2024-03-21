@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.9.25
+
+### Patch Changes
+
+- c8720bf: fix(cli): graceful builds no longer cause dev command to exit prematurely
+
 ## 0.9.24
 
 ### Patch Changes
