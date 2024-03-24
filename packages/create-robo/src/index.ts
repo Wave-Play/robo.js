@@ -22,6 +22,7 @@ interface CommandOptions {
 	typescript?: boolean
 	verbose?: boolean
 	roboVersion?: string
+	kit?: string
 }
 
 new Command('create-robo <projectName>')
@@ -36,6 +37,7 @@ new Command('create-robo <projectName>')
 	.option('-ts --typescript', 'create a Robo using TypeScript')
 	.option('-v --verbose', 'print more information for debugging')
 	.option('-rv, --robo-version <value>', 'choose which version of robo your project will use')
+	.option('-kit, --kit <value>', 'blablfezfzfa', 'app')
 	.action(async (options: CommandOptions, { args }) => {
 		logger({
 			level: options.verbose ? 'debug' : 'info'
@@ -44,6 +46,9 @@ new Command('create-robo <projectName>')
 		logger.debug(`Package manager:`, getPackageManager())
 		logger.debug(`create-robo version:`, packageJson.version)
 		logger.debug(`Current working directory:`, process.cwd())
+
+		if (options.kit === 'app') {
+		}
 
 		// parses robo version argument
 		const roboVersion = await getRoboversionArg(options.roboVersion)
