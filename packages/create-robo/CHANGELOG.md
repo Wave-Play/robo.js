@@ -1,5 +1,11 @@
 # create-robo
 
+## 0.11.0
+
+### Minor Changes
+
+- 21e056d: feat: new -k --kit option
+
 ## 0.10.2
 
 ### Patch Changes

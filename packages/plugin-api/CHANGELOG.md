@@ -1,5 +1,12 @@
 # @roboplay/plugin-api
 
+## 0.3.0
+
+### Minor Changes
+
+- 7eb8520: feat: new .json reply function
+- 7eb8520: refactor: include json as content-type header by default
+
 ## 0.2.3
 
 ### Patch Changes
