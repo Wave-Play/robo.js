@@ -474,7 +474,7 @@ export default class Robo {
 
 	private isAppUsingTS(useTypeScript: boolean, isApp: boolean) {
 		if (isApp) {
-			return '../templates/dapp'
+			return useTypeScript ? '../templates/dapp-ts' : '../templates/dapp-js'
 		}
 		return useTypeScript ? '../templates/ts' : '../templates/js'
 	}
