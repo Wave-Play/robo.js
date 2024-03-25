@@ -37,8 +37,13 @@ const pluginScripts = {
 	dev: `${getNodeOptions()} robo build plugin --watch`,
 	prepublishOnly: 'robo build plugin'
 }
+type Plugin = {
+	name: string
+	short: string
+	value: string
+}[]
 
-const optionalPlugins = [
+const optionalPlugins: [string | inquirer.Separator, ...Plugin] = [
 	new inquirer.Separator('\nOptional Plugins:'),
 	{
 		name: `${chalk.bold(
@@ -113,6 +118,7 @@ export default class Robo {
 	private _name: string
 	private _useTypeScript: boolean
 	private _workingDir: string
+	private _isApp: boolean
 
 	// Same as above, but exposed as getters
 	private _isPlugin: boolean
@@ -121,9 +127,10 @@ export default class Robo {
 		return this._isPlugin
 	}
 
-	constructor(name: string, isPlugin: boolean, useSameDirectory: boolean) {
+	constructor(name: string, isPlugin: boolean, useSameDirectory: boolean, isApp: boolean) {
 		this._isPlugin = isPlugin
 		this._name = name
+		this._isApp = isApp
 		this._workingDir = useSameDirectory ? process.cwd() : path.join(process.cwd(), name)
 	}
 
@@ -235,7 +242,17 @@ export default class Robo {
 						value: 'prettier',
 						checked: true
 					},
-					...(this._isPlugin ? [] : optionalPlugins)
+					...(this._isPlugin
+						? []
+						: this._isApp
+						? optionalPlugins.filter((plugin) => {
+								const obj = plugin as unknown as Plugin[0]
+								if (obj.value === 'api') {
+									return
+								}
+								return plugin
+						  })
+						: optionalPlugins)
 				]
 			}
 		])
@@ -272,7 +289,17 @@ export default class Robo {
 		}
 
 		// Robo.js and Discord.js are normal dependencies, unless this is a plugin
-		if (!this._isPlugin) {
+		if (this._isApp) {
+			packageJson.dependencies['@discord/embedded-app-sdk'] = '^1.0.2'
+			packageJson.dependencies['dotenv'] = '^16.4.1'
+			packageJson.devDependencies['vite'] = '^5.0.8'
+			packageJson.dependencies['@roboplay/robo.js'] = `${roboversion}`
+			packageJson.dependencies['@roboplay/plugin-api'] = '^0.2.3'
+			await this.createPluginConfig('@roboplay/plugin-api', {
+				cors: true,
+				port: 3000
+			})
+		} else if (!this._isPlugin) {
 			packageJson.dependencies['@roboplay/robo.js'] = `${roboversion}`
 			packageJson.dependencies['discord.js'] = '^14.13.0'
 		} else {
@@ -445,8 +472,15 @@ export default class Robo {
 		}
 	}
 
+	private isAppUsingTS(useTypeScript: boolean, isApp: boolean) {
+		if (isApp) {
+			return '../templates/dapp'
+		}
+		return useTypeScript ? '../templates/ts' : '../templates/js'
+	}
+
 	async copyTemplateFiles(sourceDir: string): Promise<void> {
-		const templateDir = this._useTypeScript ? '../templates/ts' : '../templates/js'
+		const templateDir = this.isAppUsingTS(this._useTypeScript, this._isApp)
 		const sourcePath = path.join(__dirname, templateDir, sourceDir)
 		const targetPath = path.join(this._workingDir, sourceDir)
 
@@ -472,7 +506,11 @@ export default class Robo {
 		const officialGuide = chalk.bold('Official Guide:')
 		const officialGuideUrl = chalk.blue.underline('https://docs.roboplay.dev/docs/advanced/environment-variables')
 		logger.log('')
-		logger.log('To get your Discord Token and Client ID, register your bot at the Discord Developer portal.')
+		if (this._isApp) {
+			logger.log('To get your discord Secret Pair and Client ID, register your app at the Discord Developor portal.')
+		} else {
+			logger.log('To get your Discord Token and Client ID, register your bot at the Discord Developer portal.')
+		}
 		logger.log(`${discordPortal} ${discordPortalUrl}`)
 		logger.log(`${officialGuide} ${officialGuideUrl}\n`)
 
@@ -485,7 +523,9 @@ export default class Robo {
 			{
 				type: 'input',
 				name: 'discordToken',
-				message: 'Enter your Discord Token (press Enter to skip):'
+				message: this._isApp
+					? 'Enter your Secret pair (press enter to skip)'
+					: 'Enter your Discord Token (press Enter to skip):'
 			}
 		])
 
@@ -500,9 +540,15 @@ export default class Robo {
 			}
 		}
 
+		// client_id, secret_pair
+
 		// Update DISCORD_TOKEN and DISCORD_CLIENT_ID variables
 		envContent = updateOrAddVariable(envContent, 'DISCORD_CLIENT_ID', discordClientId ?? '')
-		envContent = updateOrAddVariable(envContent, 'DISCORD_TOKEN', discordToken ?? '')
+		envContent = updateOrAddVariable(
+			envContent,
+			this._isApp ? 'DISCORD_PAIR_SECRET' : 'DISCORD_TOKEN',
+			discordToken ?? ''
+		)
 
 		if (features.includes('ai') || features.includes('gpt')) {
 			envContent = updateOrAddVariable(envContent, 'OPENAI_KEY', '')
@@ -550,7 +596,10 @@ export default class Robo {
 
 	private async createEnvTsFile() {
 		if (this._useTypeScript) {
-			const autoCompletionEnvVar = `export {}\ndeclare global {\n    namespace NodeJS {\n		interface ProcessEnv {\n			DISCORD_CLIENT_ID: string\n			DISCORD_TOKEN: string\n		}\n	} \n}`
+			const autoCompletionEnvVar = `export {}\ndeclare global {\n    namespace NodeJS {\n		interface ProcessEnv {\n			DISCORD_CLIENT_ID: string\n			${
+				this._isApp ? 'DISCORD_SECRET_PAIR: string' : 'DISCORD_TOKEN: string'
+			}
+			}\n		}\n	} \n}`
 
 			const tsconfigPath = path.join(this._workingDir, 'tsconfig.json')
 
