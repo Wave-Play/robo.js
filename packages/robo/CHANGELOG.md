@@ -1,5 +1,36 @@
 # robo.js
 
+## 0.9.25
+
+### Patch Changes
+
+- c8720bf: fix(cli): graceful builds no longer cause dev command to exit prematurely
+
+## 0.9.24
+
+### Patch Changes
+
+- 5331663: feat(cli): new `deploy` experience w/ real-time updates
+- 71a7ec0: patch(cli): gracefully exit build commands
+
+## 0.9.23
+
+### Patch Changes
+
+- 515901e: feat(cli): include link to new deployment page in `robo deploy`
+
+## 0.9.22
+
+### Patch Changes
+
+- 5192bbb: patch(cli): sanitize non-ascii in project metadata when making requests
+
+## 0.9.21
+
+### Patch Changes
+
+- 5f43d35: fix(compiler): specify module settings to fully resolve imports
+
 ## 0.9.20
 
 ### Patch Changes

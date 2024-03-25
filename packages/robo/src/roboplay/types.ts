@@ -1,3 +1,29 @@
+export interface Deployment {
+	id: string
+	completedAt?: string
+	createdAt?: string
+	error?: string
+	robo?: Robo
+	source?: string
+	startedAt?: string
+	status?: string
+	steps?: DeploymentStep[]
+	user?: User
+}
+
+export interface DeploymentLog {
+	message: string
+	timestamp: string
+}
+
+export interface DeploymentStep {
+	id: string
+	completedAt?: string
+	name?: string
+	startedAt?: string
+	status?: 'Completed' | 'Failed' | 'Ignored' | 'Pending' | 'Running'
+}
+
 export interface ListResult<T = unknown> {
 	data: T[]
 	success: boolean

@@ -26,6 +26,27 @@ export async function getPodLogs(options: GetPodLogsOptions) {
 	})
 }
 
+interface GetPodStatusOptions {
+	bearerToken: string
+	podId: string
+}
+
+interface GetPodStatusResult {
+	error?: string
+	status: Pod['status']
+	success: boolean
+}
+
+export async function getPodStatus(options: GetPodStatusOptions) {
+	const { bearerToken, podId } = options
+
+	return request<GetPodStatusResult>(`/pod/${podId}/status`, {
+		headers: {
+			Authorization: `Bearer ${bearerToken}`
+		}
+	})
+}
+
 interface GetRoboStatusOptions {
 	bearerToken?: string
 	roboId: string

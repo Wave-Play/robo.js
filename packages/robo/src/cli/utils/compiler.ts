@@ -71,8 +71,18 @@ async function traverse(
 			tasks.push(
 				(async () => {
 					const fileContents = await fs.readFile(filePath, 'utf-8')
-					const transformed = await transform(fileContents, {
+					const compileResult = await transform(fileContents, {
 						filename: filePath,
+						module: {
+							type: 'es6',
+							strict: false,
+							strictMode: true,
+							lazy: false,
+							noInterop: false,
+							// @ts-expect-error - works but not in SWC types
+							// Necessary to ensure "/index.js" imports compile correctly in Linux
+							resolveFully: true
+						},
 						sourceMaps: env.nodeEnv === 'production' ? false : 'inline',
 						jsc: {
 							target: 'esnext',
@@ -93,7 +103,7 @@ async function traverse(
 					// Write transformed code to destination directory
 					const distPath = path.join(distDir, path.relative(srcDir, filePath.replace(/\.(js|ts|tsx)$/, '.js')))
 					await fs.mkdir(path.dirname(distPath), { recursive: true })
-					await fs.writeFile(distPath, transformed.code)
+					await fs.writeFile(distPath, compileResult.code)
 				})()
 			)
 		}
