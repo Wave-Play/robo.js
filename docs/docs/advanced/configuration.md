@@ -60,12 +60,15 @@ Use this to customize default behavior, like enabling or disabling the help comm
 
 Options:
 
+- `dev`: (boolean) Set to `false` to disable /dev subcommands.
+
 - `help`: (boolean) Set to `false` to disable the help command.
 
 Example:
 
 ```javascript {2}
 defaults: {
+  dev: false,
   help: false,
 }
 ```

@@ -1,8 +1,8 @@
-import { logger } from '~/core/logger.js'
-import { BaseEngine } from '~/engines/base.js'
+import { logger } from '../core/logger.js'
+import { BaseEngine } from './base.js'
 import { color, composeColors } from '@roboplay/robo.js'
-import type { HttpMethod, RoboReply, RoboRequest, RouteHandler } from '~/core/types.js'
-import type { StartOptions } from '~/engines/base.js'
+import type { HttpMethod, RoboReply, RoboRequest, RouteHandler } from '../core/types.js'
+import type { StartOptions } from './base.js'
 import type { FastifyInstance } from 'fastify'
 
 export class FastifyEngine extends BaseEngine {

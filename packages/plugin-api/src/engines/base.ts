@@ -1,4 +1,4 @@
-import type { RouteHandler } from '~/core/types'
+import type { RouteHandler } from '../core/types.js'
 
 export interface StartOptions {
 	port: number

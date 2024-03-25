@@ -4,11 +4,14 @@ import { logger } from '../../core/logger.js'
 import { __DIRNAME, hasProperties } from './utils.js'
 import { DEBUG_MODE } from '../../core/debug.js'
 import { env } from '../../core/env.js'
+import { getConfig } from '../../core/config.js'
+import type { Config } from '../../types/config.js'
 
 const srcDir = path.join(process.cwd(), 'src')
 const defaultCommandsDir = path.join(__DIRNAME, '..', '..', 'default', 'commands')
 const defaultEventsDir = path.join(__DIRNAME, '..', '..', 'default', 'events')
 const supportedExtensions = ['.ts', '.tsx', '.js', '.jsx']
+const devCommands = [`dev${path.sep}logs`, `dev${path.sep}restart`, `dev${path.sep}status`]
 
 export interface DefaultGen {
 	commands: Record<string, boolean>
@@ -24,9 +27,10 @@ export interface DefaultGen {
  */
 export async function generateDefaults(buildDir = path.join('.robo', 'build')): Promise<DefaultGen> {
 	const distDir = path.join(process.cwd(), buildDir)
+	const config = getConfig()
 
 	try {
-		const commands = await generateCommands(distDir)
+		const commands = await generateCommands(distDir, config)
 		const context = {}
 		const events = await generateEvents(distDir)
 		return { commands, context, events }
@@ -94,7 +98,7 @@ async function checkFileExistence(srcPathBase: string, module?: string) {
  * Developers can override these commands by creating their own with the same name.
  * Additionally, they can be disabled via the config file.
  */
-async function generateCommands(distDir: string) {
+async function generateCommands(distDir: string, config: Config) {
 	const generated: Record<string, boolean> = {}
 
 	await recursiveDirScan(defaultCommandsDir, async (file, fullPath) => {
@@ -108,18 +112,33 @@ async function generateCommands(distDir: string) {
 		// A guild ID is also required to prevent accidental exposure to the public
 		const extension = path.extname(file)
 		const commandKey = path.relative(defaultCommandsDir, fullPath).replace(extension, '')
-		if (['dev/logs', 'dev/restart', 'dev/status'].includes(commandKey) && (!DEBUG_MODE || !env.discord.guildId)) {
+		const shouldCreateDev = config.defaults?.dev ?? true
+		const shouldCreateHelp = config.defaults?.help ?? true
+		logger.debug(
+			`Validating default command "${commandKey}":`,
+			`dev: ${shouldCreateDev}, help: ${shouldCreateHelp}, debug: ${DEBUG_MODE}, guildId: ${
+				env.discord.guildId ? 'exists' : 'none'
+			}`
+		)
+
+		if (devCommands.includes(commandKey) && (!DEBUG_MODE || !env.discord.guildId || !shouldCreateDev)) {
+			logger.debug(`Skipping default command:`, file)
+			return
+		}
+		if (commandKey === 'help' && !shouldCreateHelp) {
+			logger.debug(`Skipping default command:`, file)
 			return
 		}
 
 		// Check if such command already exists
 		const baseFilename = path.basename(file, extension)
-		const srcPathBase = path.join('commands', commandKey.substring(0, commandKey.lastIndexOf('/')), baseFilename)
+		const srcPathBase = path.join('commands', commandKey.substring(0, commandKey.lastIndexOf(path.sep)), baseFilename)
 		const distPath = path.join(distDir, 'commands', path.relative(defaultCommandsDir, fullPath))
 		const fileExists = await checkFileExistence(srcPathBase)
 
 		// Only copy over the file if it doesn't exist to prevent overwriting
 		if (!fileExists) {
+			logger.debug(`Generating default command:`, file)
 			await fs.mkdir(path.dirname(distPath), { recursive: true })
 			await fs.copyFile(fullPath, distPath)
 			generated[commandKey] = true
@@ -151,7 +170,7 @@ async function generateEvents(distDir: string) {
 		const distFile = '__robo_' + file
 		const distPath = path.join(distDir, 'events', baseFilename, distFile)
 		const extension = path.extname(file)
-		const eventKey = baseFilename + '/' + distFile.replace(extension, '')
+		const eventKey = baseFilename + path.sep + distFile.replace(extension, '')
 		await fs.mkdir(path.dirname(distPath), { recursive: true })
 		await fs.copyFile(fullPath, distPath)
 		generated[eventKey] = true

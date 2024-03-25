@@ -72,7 +72,10 @@ export const Flashcore = {
 		return _adapter.get(key) as V
 	},
 
-	has: (key: string): Promise<boolean> | boolean => {
+	has: (key: string, options?: FlashcoreOptions): Promise<boolean> | boolean => {
+		if (options?.namespace) {
+			key = `${options.namespace}__${key}`
+		}
 		return _adapter.has(key)
 	},
 

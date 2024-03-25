@@ -52,6 +52,24 @@ export default {
 }
 ```
 
+## Insights
+
+`insights` is a special config that lets you inject your own custom knowledge into your Robo. It's a great way to make your Robo smarter and more capable!
+
+All you have to do is put files in a folder called `documents` in your Robo's root directory, and your Robo will automatically learn from them.
+
+```
+- /robo
+	- /src
+	- /documents
+		- /my-first-document.txt
+		- /my-second-document.txt
+```
+
+What's more, your Robo will remember what it learns, so it can use it in future conversations! It's like long-term memory for your Robo.
+
+> 💡 **By the way...** If you ever want to turn this off, just set the `insights` config field to `false`.
+
 ## Config file 🧠
 
 Here's a quick look at all the settings you can play with:
@@ -67,6 +85,14 @@ export default {
 
 	// Let Robo use or ignore specific commands. true for all commands, false for no commands, array for only specific commands. (boolean or string array)
 	commands: ['ban', 'kick', 'dev logs'],
+
+	// Knowledge injection & long-term memory. (boolean; default: true)
+	insights: true,
+
+	// If specified, your AI will only respond to messages in these channels. (object with array of string IDs)
+	restrict: {
+		channelIds: ['channelID3']
+	},
 
 	// Special channels where Robo talks freely. (object with array of string IDs)
 	whitelist: {

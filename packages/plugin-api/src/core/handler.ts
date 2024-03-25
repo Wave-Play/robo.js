@@ -1,10 +1,10 @@
-import { logger } from '~/core/logger.js'
+import { logger } from './logger.js'
 import { IncomingMessage, ServerResponse } from 'node:http'
 import url from 'node:url'
 import { parse } from 'node:querystring'
-import { pluginOptions } from '~/events/_start.js'
-import type { Router } from '~/core/router.js'
-import type { HttpMethod, RoboReply, RoboRequest } from '~/core/types.js'
+import { pluginOptions } from '../events/_start.js'
+import type { Router } from './router.js'
+import type { HttpMethod, RoboReply, RoboRequest } from './types.js'
 
 const MAX_BODY_SIZE = 5 * 1024 * 1024 // 5MB
 

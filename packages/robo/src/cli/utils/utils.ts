@@ -4,12 +4,14 @@ import { DEFAULT_CONFIG } from '../../core/constants.js'
 import { CommandConfig, Config, SageOptions } from '../../types/index.js'
 import { getConfig } from '../../core/config.js'
 import { createRequire } from 'node:module'
-import { SpawnOptions, exec as nodeExec, spawn } from 'node:child_process'
+import { SpawnOptions, execSync, exec as nodeExec, spawn } from 'node:child_process'
 import { promisify } from 'node:util'
 import { logger } from '../../core/logger.js'
 import path from 'node:path'
+import os from 'node:os'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { IS_BUN, PackageManager } from './runtime-utils.js'
+import type { Pod } from '../../roboplay/types.js'
 
 export const __DIRNAME = path.dirname(fileURLToPath(import.meta.url))
 
@@ -20,7 +22,31 @@ const require = createRequire(import.meta.url)
 export const packageJson = require('../../../package.json')
 
 export function cleanTempDir() {
-	return fs.rm(path.join(process.cwd(), '.robo', 'temp'), { recursive: true })
+	return fs.rm(getTempDir(), { force: true, recursive: true })
+}
+
+export function getPodStatusColor(status: Pod['status']) {
+	if (['Deploying', 'Updating'].includes(status)) {
+		return color.cyan
+	} else if (['Idle', 'Stopped'].includes(status)) {
+		return color.dim
+	} else if (['Online', 'Ready'].includes(status)) {
+		return color.green
+	} {
+		return color.red
+	}
+}
+
+
+export function getTempDir() {
+	return path.join(process.cwd(), '.robo', 'temp')
+}
+
+export async function getRoboPackageJson() {
+	const packageJsonPath = path.join(process.cwd(), 'package.json')
+	const packageJson = JSON.parse((await fs.readFile(packageJsonPath, 'utf-8')) ?? '{}')
+
+	return packageJson
 }
 
 /**
@@ -75,6 +101,38 @@ export async function filterExistingPaths(paths: string[], basePath = process.cw
 	return result
 }
 
+export function copyToClipboard(text: string) {
+	const platform = os.platform()
+
+	try {
+		if (platform === 'darwin') {
+			execSync(`echo "${text}" | pbcopy`)
+		} else if (platform === 'win32') {
+			execSync(`echo ${text} | clip`)
+		} else {
+			execSync(`echo "${text}" | xclip -selection clipboard`)
+		}
+	} catch (error) {
+		console.error('Failed to copy to clipboard:', error)
+	}
+}
+
+export function openBrowser(url: string) {
+	const platform = os.platform()
+
+	let command: string
+
+	if (platform === 'win32') {
+		command = `start ${url}`
+	} else if (platform === 'darwin') {
+		command = `open ${url}`
+	} else {
+		command = `xdg-open ${url}`
+	}
+
+	execSync(command)
+}
+
 export async function findNodeModules(basePath: string): Promise<string | null> {
 	const nodeModulesPath = path.join(basePath, 'node_modules')
 	try {
@@ -96,6 +154,8 @@ export async function findPackagePath(packageName: string, currentPath: string):
 		logger.debug(`Could not find node_modules folder for ${packageName}`)
 		return null
 	}
+
+	packageName = packageName.replaceAll(path.sep, '/')
 
 	// Determine if node_modules folder is managed by pnpm
 	// Note: This does *not* mean that the process was started with pnpm

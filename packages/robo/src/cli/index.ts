@@ -4,10 +4,13 @@ import { Command } from './utils/cli-handler.js'
 import { packageJson } from './utils/utils.js'
 import add from './commands/add.js'
 import build from './commands/build/index.js'
+import cloud from './commands/cloud/index.js'
 import dev from './commands/dev.js'
 import deploy from './commands/deploy.js'
 import doctor from './commands/doctor.js'
 import invite from './commands/invite.js'
+import login from './commands/login.js'
+import logout from './commands/logout.js'
 import remove from './commands/remove.js'
 import start from './commands/start.js'
 import upgrade from './commands/upgrade.js'
@@ -28,6 +31,9 @@ command.addCommand(upgrade)
 command.addCommand(deploy)
 command.addCommand(doctor)
 command.addCommand(invite)
+command.addCommand(cloud)
+command.addCommand(login)
+command.addCommand(logout)
 command.addCommand(why)
 command.addCommand(help)
 command.handler(helpCommandHandler)

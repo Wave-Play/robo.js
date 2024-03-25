@@ -160,6 +160,7 @@ async function read<T = unknown>(configPath: string): Promise<T> {
 			const pluginConfig = imported.default ?? imported
 			return pluginConfig ?? {}
 		} catch (e) {
+			logger.error(e)
 			return {} as T
 		}
 	}

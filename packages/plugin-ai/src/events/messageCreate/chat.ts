@@ -13,6 +13,13 @@ export default async (message: Message) => {
 		return
 	}
 
+	// Restrict to specific channels if specified
+	const isRestricted = pluginOptions.restrict?.channelIds?.length
+	if (isRestricted && !pluginOptions.restrict?.channelIds?.includes(message.channelId)) {
+		logger.debug(`Message received in channel ${message.channelId} but restricted to specific channels`)
+		return
+	}
+
 	// Don't respond unless mentioned unless in whitelisted channel or DM
 	const isOpenConvo = pluginOptions.whitelist?.channelIds?.includes(message.channel.id) || message.channel.isDMBased()
 	if (!message.mentions.users.has(client.user?.id ?? '') && !isOpenConvo) {

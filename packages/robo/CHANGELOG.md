@@ -1,5 +1,94 @@
 # robo.js
 
+## 0.9.25
+
+### Patch Changes
+
+- c8720bf: fix(cli): graceful builds no longer cause dev command to exit prematurely
+
+## 0.9.24
+
+### Patch Changes
+
+- 5331663: feat(cli): new `deploy` experience w/ real-time updates
+- 71a7ec0: patch(cli): gracefully exit build commands
+
+## 0.9.23
+
+### Patch Changes
+
+- 515901e: feat(cli): include link to new deployment page in `robo deploy`
+
+## 0.9.22
+
+### Patch Changes
+
+- 5192bbb: patch(cli): sanitize non-ascii in project metadata when making requests
+
+## 0.9.21
+
+### Patch Changes
+
+- 5f43d35: fix(compiler): specify module settings to fully resolve imports
+
+## 0.9.20
+
+### Patch Changes
+
+- 44017a8: patch(cli): tweaked .robopack compression for better compatibility
+
+## 0.9.19
+
+### Patch Changes
+
+- e007926: patch(cli): windows-related deployment bugs
+
+## 0.9.18
+
+### Patch Changes
+
+- c21467b: chore(cli): auto clear old unsupported RoboPlay session data
+- 21538bc: patch(flashcore): support options in `has()` function
+- f80ce66: patch(cli): updated `robo deploy` to use newer api requirements
+- 5ed24e5: feat(cli): `robo cloud logs` command
+- 7b9e155: feat(cli): `robo cloud start` and `robo cloud stop` commands
+- ab03c32: refactor(cli): connect Robo to RoboPlay Pods after `robo login`
+
+## 0.9.17
+
+### Patch Changes
+
+- faf4ab1: patch: show errors caused by config files
+- 82b1379: feat(cli): logout command
+- 7fb6ea3: feat(cli): cloud status command
+- 86e745d: refactor(logger): updated styling for fork prefix
+- 2439383: feat(cli): `cloud status` now includes status for your robos
+- 177861a: feat(cli): login command
+
+## 0.9.16
+
+### Patch Changes
+
+- 2f7f75e: fix: compare default commands using correct platform separator
+
+## 0.9.15
+
+### Patch Changes
+
+- 0921547: chore: additional logging when generating default commands
+
+## 0.9.14
+
+### Patch Changes
+
+- a58e471: patch: manual opt-out for /dev commands
+
+## 0.9.13
+
+### Patch Changes
+
+- 7a6a53c: fix: respect help command disabling
+
 ## 0.9.12
 
 ### Patch Changes

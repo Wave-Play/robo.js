@@ -1,5 +1,23 @@
 # @roboplay/plugin-api
 
+## 0.2.3
+
+### Patch Changes
+
+- 24c9552: chore: removed additional path aliases
+
+## 0.2.2
+
+### Patch Changes
+
+- 3589724: patch: removed all path alias usage
+
+## 0.2.1
+
+### Patch Changes
+
+- 347315f: patch: corrected relative imports in node engine
+
 ## 0.2.0
 
 ### Minor Changes
