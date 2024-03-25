@@ -41,6 +41,11 @@ export class FastifyEngine extends BaseEngine {
 					reply.code(statusCode)
 					return this
 				},
+				json: function (data: unknown) {
+					reply.header('Content-Type', 'application/json').send(JSON.stringify(data))
+					this.hasSent = true
+					return this
+				},
 				send: function (data: string) {
 					reply.send(data)
 					this.hasSent = true
@@ -54,12 +59,13 @@ export class FastifyEngine extends BaseEngine {
 
 			try {
 				const result = await handler(requestWrapper, replyWrapper)
+
 				if (!replyWrapper.hasSent && result) {
-					replyWrapper.code(200).send(JSON.stringify(result))
+					replyWrapper.code(200).json(result)
 				}
 			} catch (error) {
 				logger.error(error)
-				reply.status(500).send({
+				replyWrapper.code(500).json({
 					ok: false,
 					errors: Array.isArray(error) ? error.map((e) => e.message) : [error.message]
 				})

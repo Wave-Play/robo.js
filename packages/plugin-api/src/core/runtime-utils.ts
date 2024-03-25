@@ -1,6 +1,5 @@
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
-import { TRoboError } from './types'
 
 export type PackageManager = 'npm' | 'bun' | 'pnpm' | 'yarn'
 
@@ -54,13 +53,23 @@ export async function hasDependency(name: string): Promise<boolean> {
 	}
 }
 
+interface RoboErrorOptions {
+	data?: unknown
+	headers?: Record<string, string>
+	message: string
+	status?: number
+}
+
 export class RoboError extends Error {
-	public status: number | undefined = undefined
-	public headers: string | undefined = undefined
-	constructor(options: TRoboError) {
+	public readonly data: unknown | undefined
+	public readonly headers: Record<string, string> | undefined
+	public readonly status: number | undefined
+
+	constructor(options: RoboErrorOptions) {
 		super()
+		this.data = options.data
+		this.headers = options.headers
 		this.message = options.message
 		this.status = options.status
-		this.headers = options.headers
 	}
 }

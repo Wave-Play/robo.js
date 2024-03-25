@@ -14,6 +14,7 @@ export interface RoboRequest<T = Record<string, unknown>> {
 export interface RoboReply {
 	res: ServerResponse
 	code: (statusCode: number) => RoboReply
+	json: (data: unknown) => RoboReply
 	send: (data: string) => RoboReply
 	header: (name: string, value: string) => RoboReply
 	hasSent: boolean
@@ -27,10 +28,4 @@ export interface Api {
 
 export interface ApiEntry extends BaseConfig {
 	subroutes?: Record<string, ApiEntry>
-}
-
-export type TRoboError = {
-	message: string
-	status: number
-	headers?: string
 }
