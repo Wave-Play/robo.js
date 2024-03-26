@@ -13,7 +13,6 @@ export interface Config {
 		buildDirectory?: string
 		disableBot?: boolean
 		incrementalBuilds?: boolean
-		legacyProcess?: boolean
 	}
 	flashcore?: {
 		keyv?: unknown
