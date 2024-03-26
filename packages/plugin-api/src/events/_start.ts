@@ -26,7 +26,8 @@ export default async (_client: Client, options: PluginOptions) => {
 	}
 
 	// Start HTTP server only if API Routes are defined
-	const { engine } = pluginOptions
+	const { engine, port = parseInt(process.env.PORT ?? '3000') } = pluginOptions
+
 	if (portal.apis.size > 0) {
 		logger.debug(`Found ${portal.apis.size} API routes. Preparing server...`)
 		await engine.init()
@@ -43,9 +44,7 @@ export default async (_client: Client, options: PluginOptions) => {
 		logger.debug(`Registered routes:`, paths)
 
 		logger.debug(`Starting server...`)
-		await engine.start({
-			port: options?.port ?? parseInt(process.env.PORT ?? '3000')
-		})
+		await engine.start({ port })
 	} else {
 		logger.debug('No API routes defined. Skipping server start.')
 	}
