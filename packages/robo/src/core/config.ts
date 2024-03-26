@@ -6,6 +6,7 @@ import { pathToFileURL } from 'node:url'
 
 // Global config reference
 let _config: Config = null
+const _configPaths: Set<string> = new Set()
 
 /**
  * Returns the currently loaded configuration.
@@ -15,19 +16,27 @@ export function getConfig(): Config | null {
 	return _config
 }
 
+/**
+ * Returns the paths to all loaded configuration files.
+ */
+export function getConfigPaths(): Set<string> {
+	return _configPaths
+}
+
 export async function loadConfig(file = 'robo'): Promise<Config> {
 	const configPath = await loadConfigPath(file)
 	let config: Config
 
 	if (configPath) {
 		config = await read<Config>(configPath)
+		_configPaths.add(configPath)
 
 		// Load plugin files when using "/config" directory
 		if (configPath.includes(path.sep + 'config' + path.sep)) {
 			logger.debug('Scanning for plugin files...')
 			config.plugins = config.plugins ?? []
 
-			await scanPlugins(configPath, (plugin, pluginConfig) => {
+			await scanPlugins(configPath, (plugin, pluginConfig, pluginPath) => {
 				// Remove existing plugin config if it exists
 				const existingIndex = config.plugins?.findIndex((p) => p === plugin || p[0] === plugin)
 				if (existingIndex !== -1) {
@@ -35,6 +44,7 @@ export async function loadConfig(file = 'robo'): Promise<Config> {
 				}
 
 				config.plugins?.push([plugin, pluginConfig])
+				_configPaths.add(pluginPath)
 			})
 		}
 	} else {
@@ -92,7 +102,10 @@ export async function loadConfigPath(file = 'robo'): Promise<string> {
  *
  * @param callback A callback function to be called for each plugin found. The plugin name will be passed as the first argument, including the scoped organization if applicable. Second parameter is the plugin config object.
  */
-async function scanPlugins(configPath: string, callback: (plugin: string, pluginConfig: unknown) => void) {
+async function scanPlugins(
+	configPath: string,
+	callback: (plugin: string, pluginConfig: unknown, pluginPath: string) => void
+) {
 	// Look for plugins in the same directory as the config file
 	const pluginsPath = path.join(path.dirname(configPath), 'plugins')
 
@@ -111,12 +124,13 @@ async function scanPlugins(configPath: string, callback: (plugin: string, plugin
 			const scopedPlugins = fs.readdirSync(pluginPath)
 
 			for (const scopedPlugin of scopedPlugins) {
-				const [pluginName, pluginConfig] = await importConfigFile(path.join(pluginPath, scopedPlugin), pluginsPath)
-				callback('@' + pluginName, pluginConfig)
+				const scopedPath = path.join(pluginPath, scopedPlugin)
+				const [pluginName, pluginConfig] = await importConfigFile(scopedPath, pluginsPath)
+				callback('@' + pluginName, pluginConfig, scopedPath)
 			}
 		} else {
 			const [pluginName, pluginConfig] = await importConfigFile(pluginPath, pluginsPath)
-			callback(pluginName, pluginConfig)
+			callback(pluginName, pluginConfig, pluginPath)
 		}
 	}
 }

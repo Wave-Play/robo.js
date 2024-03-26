@@ -2,15 +2,8 @@ import { Command } from '../utils/cli-handler.js'
 import { spawn } from 'child_process'
 import { logger } from '../../core/logger.js'
 import { DEFAULT_CONFIG, FLASHCORE_KEYS } from '../../core/constants.js'
-import { loadConfig, loadConfigPath } from '../../core/config.js'
-import {
-	IS_WINDOWS,
-	cmd,
-	filterExistingPaths,
-	getWatchedPlugins,
-	packageJson,
-	timeout
-} from '../utils/utils.js'
+import { getConfigPaths, loadConfig, loadConfigPath } from '../../core/config.js'
+import { IS_WINDOWS, cmd, filterExistingPaths, getWatchedPlugins, packageJson, timeout } from '../utils/utils.js'
 import path from 'node:path'
 import Watcher, { Change } from '../utils/watcher.js'
 import { loadManifest } from '../utils/manifest.js'
@@ -71,20 +64,20 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 	}
 
 	// Ensure worker spirits are ready
-		spirits = new Spirits()
+	spirits = new Spirits()
 
-		// Stop spirits on process exit
-		let isStopping = false
-		const callback = async () => {
-			if (isStopping) {
-				return
-			}
-			isStopping = true
-			await spirits.stopAll()
-			process.exit(0)
+	// Stop spirits on process exit
+	let isStopping = false
+	const callback = async () => {
+		if (isStopping) {
+			return
 		}
-		process.on('SIGINT', callback)
-		process.on('SIGTERM', callback)
+		isStopping = true
+		await spirits.stopAll()
+		process.exit(0)
+	}
+	process.on('SIGINT', callback)
+	process.on('SIGTERM', callback)
 
 	// Run first build
 	let buildSuccess = false
@@ -154,9 +147,10 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 	const additionalFiles = await filterExistingPaths(['.env', 'tsconfig.json', configRelative])
 	watchedPaths.push(...additionalFiles)
 
-	// Watch all plugins that are also currently in development mode
+	// Watch all plugins that are also currently in development mode, along with their config files
 	const watchedPlugins = await getWatchedPlugins(config)
 	Object.keys(watchedPlugins).forEach((pluginPath) => watchedPaths.push(pluginPath))
+	getConfigPaths().forEach((configPath) => watchedPaths.push(path.relative(process.cwd(), configPath)))
 
 	// Watch while preventing multiple restarts from happening at the same time
 	logger.debug(`Watching:`, watchedPaths)
@@ -166,7 +160,7 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 	let isUpdating = false
 
 	watcher.start(async (changes) => {
-		logger.debug(`Watcher events: ${changes.map((change) => change.changeType).join(', ')}`)
+		logger.debug('Watcher events:', changes)
 		if (isUpdating) {
 			return logger.debug(`Already updating, skipping...`)
 		}
@@ -186,8 +180,8 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 			}
 
 			// Rebuild and restart
-				roboSpirit = await rebuildRobo(roboSpirit, config, options.verbose, changes)
-				spirits.on(roboSpirit, restartCallback)
+			roboSpirit = await rebuildRobo(roboSpirit, config, options.verbose, changes)
+			spirits.on(roboSpirit, restartCallback)
 
 			// Compare manifest to warn about permission changes
 			const newManifest = await loadManifest()
