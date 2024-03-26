@@ -401,8 +401,7 @@ export default class Robo {
 		if (features.includes('api')) {
 			packageJson.dependencies['@roboplay/plugin-api'] = '^0.2.3'
 			await this.createPluginConfig('@roboplay/plugin-api', {
-				cors: true,
-				port: 3000
+				cors: true
 			})
 		}
 		if (features.includes('maintenance')) {
