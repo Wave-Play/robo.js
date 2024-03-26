@@ -122,16 +122,17 @@ export async function getRequestBody(req: IncomingMessage): Promise<Record<strin
 			body += chunk
 		})
 		req.on('end', () => {
+			// It's okay to have empty body <3
+			if (!body) {
+				resolve({})
+				return
+			}
+
 			try {
-				let parsedBody
-				try {
-					parsedBody = JSON.parse(body)
-					resolve(parsedBody)
-				} catch (err) {
-					reject(new Error('Invalid JSON data'))
-				}
+				const parsedBody = JSON.parse(body)
+				resolve(parsedBody)
 			} catch (err) {
-				reject(err)
+				reject(new Error('Invalid JSON data'))
 			}
 		})
 	})
