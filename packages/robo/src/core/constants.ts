@@ -1,3 +1,4 @@
+import { logger } from './logger.js'
 import type { Config } from '../types/index.js'
 
 // TODO: Restore support for ['.js', '.jsx', '.ts', '.tsx']
@@ -7,10 +8,6 @@ export const discordLogger = logger.fork('discord')
 
 export const DEFAULT_CONFIG: Config = {
 	clientOptions: null,
-	heartbeat: {
-		interval: 5 * 1000,
-		url: null
-	},
 	sage: {
 		defer: true,
 		deferBuffer: 250,

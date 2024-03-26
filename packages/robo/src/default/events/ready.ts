@@ -20,28 +20,4 @@ export default async (client: Client) => {
 		channel.send('```\n' + `Successfully restarted in ${Date.now() - startTime}ms` + '\n```')
 		setState(STATE_KEYS.restart, undefined)
 	}
-
-	// Ping heartbeat monitor if configured
-	if (config.heartbeat?.url) {
-		// Supress Fetch API experimental warning
-		process.removeAllListeners('warning')
-
-		setInterval(() => {
-			if (!client?.isReady() || client?.uptime <= 0) {
-				if (config.heartbeat.debug) {
-					logger.warn('Robo is not ready, skipping heartbeat.')
-				}
-				return
-			}
-
-			// Bah-dumtz!
-			if (config.heartbeat.debug) {
-				logger.debug('Sending heartbeat...', new Date().toISOString())
-			}
-
-			fetch(config.heartbeat.url).catch((error) => {
-				logger.debug('Heartbeat failed!', error)
-			})
-		}, config.heartbeat?.interval || DEFAULT_CONFIG.heartbeat.interval)
-	}
 }

@@ -17,11 +17,6 @@ export interface Config {
 	flashcore?: {
 		keyv?: unknown
 	}
-	heartbeat?: {
-		debug?: boolean
-		interval?: number
-		url: string
-	}
 	invite?: {
 		autoPermissions?: boolean
 		permissions?: PermissionsString[] | number
