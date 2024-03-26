@@ -1,12 +1,11 @@
 // @ts-expect-error - This is valid once command file is parsed
-import { color, getConfig, getState, logger, setState } from '@roboplay/robo.js'
+import { color, getState, setState } from '@roboplay/robo.js'
 // @ts-expect-error - This is valid once command file is parsed
-import { DEFAULT_CONFIG, STATE_KEYS } from '@roboplay/robo.js/dist/core/constants.js'
+import { STATE_KEYS, discordLogger } from '@roboplay/robo.js/dist/core/constants.js'
 import { ChannelType, Client } from 'discord.js'
 
 export default async (client: Client) => {
-	logger.ready(`On standby as ${color.bold(client.user.tag)} (${new Date().toLocaleString()})`)
-	const config = getConfig()
+	discordLogger.ready(`On standby as ${color.bold(client.user.tag)} (${new Date().toLocaleString()})`)
 
 	// Send update message if this Robo was just restarted
 	const restartData = getState(STATE_KEYS.restart)

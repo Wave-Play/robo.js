@@ -2,8 +2,7 @@ import { portal } from './robo.js'
 import { CommandInteraction, ContextMenuCommandInteraction } from 'discord.js'
 import { getSage, timeout } from '../cli/utils/utils.js'
 import { getConfig } from './config.js'
-import { logger } from './logger.js'
-import { BUFFER, DEFAULT_CONFIG, TIMEOUT } from './constants.js'
+import { BUFFER, DEFAULT_CONFIG, TIMEOUT, discordLogger } from './constants.js'
 import { printErrorResponse } from './debug.js'
 import { color } from './color.js'
 import path from 'node:path'
@@ -16,39 +15,43 @@ const optionPrimitives = ['boolean', 'integer', 'number', 'string']
 export async function executeAutocompleteHandler(interaction: AutocompleteInteraction, commandKey: string) {
 	const command = portal.commands.get(commandKey)
 	if (!command) {
-		logger.error(`No command matching ${commandKey} was found.`)
+		discordLogger.error(`No command matching ${commandKey} was found.`)
 		return
 	}
 
 	// Check if the autocomplete command's module is enabled
 	if (!portal.module(command.module).isEnabled) {
-		logger.debug(`Tried to execute disabled command from module: ${color.bold(command.module)}`)
+		discordLogger.debug(`Tried to execute disabled command from module: ${color.bold(command.module)}`)
 		return
 	}
 
 	// Execute middleware
 	try {
 		for (const middleware of portal.middleware) {
-			logger.debug(`Executing middleware: ${color.bold(path.join(middleware.plugin?.path ?? '.', middleware.path))}`)
+			discordLogger.debug(
+				`Executing middleware: ${color.bold(path.join(middleware.plugin?.path ?? '.', middleware.path))}`
+			)
 			const result = await middleware.handler.default({
 				payload: [interaction],
 				record: command
 			})
 
 			if (result && result.abort) {
-				logger.debug(`Middleware aborted autocomplete: ${color.bold(interaction.commandName)}`)
+				discordLogger.debug(`Middleware aborted autocomplete: ${color.bold(interaction.commandName)}`)
 				return
 			}
 		}
 	} catch (error) {
-		logger.error('Aborting due to middleware error:', error)
+		discordLogger.error('Aborting due to middleware error:', error)
 		return
 	}
 
 	const config = getConfig()
 	try {
 		// Delegate to autocomplete handler
-		logger.debug(`Executing autocomplete handler: ${color.bold(path.join(command.plugin?.path ?? '.', command.path))}`)
+		discordLogger.debug(
+			`Executing autocomplete handler: ${color.bold(path.join(command.plugin?.path ?? '.', command.path))}`
+		)
 		const promises = [command.handler.autocomplete(interaction)]
 		const timeoutDuration = config?.timeouts?.autocomplete
 
@@ -65,7 +68,7 @@ export async function executeAutocompleteHandler(interaction: AutocompleteIntera
 
 		await interaction.respond(response)
 	} catch (error) {
-		logger.error('Autocomplete error:', error)
+		discordLogger.error('Autocomplete error:', error)
 	}
 }
 
@@ -73,32 +76,34 @@ export async function executeCommandHandler(interaction: CommandInteraction, com
 	// Find command handler
 	const command = portal.commands.get(commandKey)
 	if (!command) {
-		logger.error(`No command matching "${commandKey}" was found.`)
+		discordLogger.error(`No command matching "${commandKey}" was found.`)
 		return
 	}
 
 	// Check if the command's module is enabled
 	if (!portal.module(command.module).isEnabled) {
-		logger.debug(`Tried to execute disabled command from module: ${color.bold(command.module)}`)
+		discordLogger.debug(`Tried to execute disabled command from module: ${color.bold(command.module)}`)
 		return
 	}
 
 	// Execute middleware
 	try {
 		for (const middleware of portal.middleware) {
-			logger.debug(`Executing middleware: ${color.bold(path.join(middleware.plugin?.path ?? '.', middleware.path))}`)
+			discordLogger.debug(
+				`Executing middleware: ${color.bold(path.join(middleware.plugin?.path ?? '.', middleware.path))}`
+			)
 			const result = await middleware.handler.default({
 				payload: [interaction],
 				record: command
 			})
 
 			if (result && result.abort) {
-				logger.debug(`Middleware aborted command: ${color.bold(commandKey)}`)
+				discordLogger.debug(`Middleware aborted command: ${color.bold(commandKey)}`)
 				return
 			}
 		}
 	} catch (error) {
-		logger.error('Aborting due to middleware error:', error)
+		discordLogger.error('Aborting due to middleware error:', error)
 		return
 	}
 
@@ -106,10 +111,12 @@ export async function executeCommandHandler(interaction: CommandInteraction, com
 	const commandConfig: CommandConfig = command.handler.config
 	const config = getConfig()
 	const sage = getSage(commandConfig, config)
-	logger.debug(`Sage options:`, sage)
+	discordLogger.debug(`Sage options:`, sage)
 
 	try {
-		logger.debug(`Executing command handler: ${color.bold(path.join(command.plugin?.path ?? '.', command.path))}`)
+		discordLogger.debug(
+			`Executing command handler: ${color.bold(path.join(command.plugin?.path ?? '.', command.path))}`
+		)
 		if (!command.handler.default) {
 			throw `Missing default export function for command: ${color.bold('/' + commandKey)}`
 		}
@@ -145,7 +152,7 @@ export async function executeCommandHandler(interaction: CommandInteraction, com
 			const raceResult = await Promise.race([result, bufferTime])
 
 			if (raceResult === BUFFER && !interaction.replied) {
-				logger.debug(`Sage is deferring async command...`)
+				discordLogger.debug(`Sage is deferring async command...`)
 				promises.push(result)
 				if (!interaction.deferred) {
 					try {
@@ -158,7 +165,7 @@ export async function executeCommandHandler(interaction: CommandInteraction, com
 						) {
 							throw error
 						} else {
-							logger.debug(`Interaction was already handled, skipping Sage deferral`)
+							discordLogger.debug(`Interaction was already handled, skipping Sage deferral`)
 						}
 					}
 				}
@@ -184,11 +191,11 @@ export async function executeCommandHandler(interaction: CommandInteraction, com
 
 		// Stop here if command returned nothing
 		if (response === undefined) {
-			logger.debug('Command returned void, skipping response')
+			discordLogger.debug('Command returned void, skipping response')
 			return
 		}
 
-		logger.debug(`Sage is handling reply:`, response)
+		discordLogger.debug(`Sage is handling reply:`, response)
 		const reply = typeof response === 'string' ? { content: response } : response
 		if (interaction.deferred) {
 			await interaction.editReply(reply)
@@ -196,7 +203,7 @@ export async function executeCommandHandler(interaction: CommandInteraction, com
 			await interaction.reply(reply)
 		}
 	} catch (error) {
-		logger.error(error)
+		discordLogger.error(error)
 		printErrorResponse(error, interaction)
 	}
 }
@@ -205,32 +212,34 @@ export async function executeContextHandler(interaction: ContextMenuCommandInter
 	// Find command handler
 	const command = portal.context.get(commandKey)
 	if (!command) {
-		logger.error(`No context menu command matching "${commandKey}" was found.`)
+		discordLogger.error(`No context menu command matching "${commandKey}" was found.`)
 		return
 	}
 
 	// Check if the context menu's module is enabled
 	if (!portal.module(command.module).isEnabled) {
-		logger.debug(`Tried to execute disabled context menu command from module: ${color.bold(command.module)}`)
+		discordLogger.debug(`Tried to execute disabled context menu command from module: ${color.bold(command.module)}`)
 		return
 	}
 
 	// Execute middleware
 	try {
 		for (const middleware of portal.middleware) {
-			logger.debug(`Executing middleware: ${color.bold(path.join(middleware.plugin?.path ?? '.', middleware.path))}`)
+			discordLogger.debug(
+				`Executing middleware: ${color.bold(path.join(middleware.plugin?.path ?? '.', middleware.path))}`
+			)
 			const result = await middleware.handler.default({
 				payload: [interaction],
 				record: command
 			})
 
 			if (result && result.abort) {
-				logger.debug(`Middleware aborted context command: ${color.bold(commandKey)}`)
+				discordLogger.debug(`Middleware aborted context command: ${color.bold(commandKey)}`)
 				return
 			}
 		}
 	} catch (error) {
-		logger.error('Aborting due to middleware error:', error)
+		discordLogger.error('Aborting due to middleware error:', error)
 		return
 	}
 
@@ -238,10 +247,12 @@ export async function executeContextHandler(interaction: ContextMenuCommandInter
 	const commandConfig: ContextConfig = command.handler.config
 	const config = getConfig()
 	const sage = getSage(commandConfig, config)
-	logger.debug(`Sage options:`, sage)
+	discordLogger.debug(`Sage options:`, sage)
 
 	try {
-		logger.debug(`Executing context menu handler: ${color.bold(path.join(command.plugin?.path ?? '.', command.path))}`)
+		discordLogger.debug(
+			`Executing context menu handler: ${color.bold(path.join(command.plugin?.path ?? '.', command.path))}`
+		)
 		if (!command.handler.default) {
 			throw `Missing default export function for command: ${color.bold('/' + commandKey)}`
 		}
@@ -264,7 +275,7 @@ export async function executeContextHandler(interaction: ContextMenuCommandInter
 			const raceResult = await Promise.race([result, bufferTime])
 
 			if (raceResult === BUFFER && !interaction.replied) {
-				logger.debug(`Sage is deferring async command...`)
+				discordLogger.debug(`Sage is deferring async command...`)
 				promises.push(result)
 				if (!interaction.deferred) {
 					await interaction.deferReply({ ephemeral: sage.ephemeral })
@@ -291,11 +302,11 @@ export async function executeContextHandler(interaction: ContextMenuCommandInter
 
 		// Stop here if command returned nothing
 		if (response === undefined) {
-			logger.debug('Context menu command returned void, skipping response')
+			discordLogger.debug('Context menu command returned void, skipping response')
 			return
 		}
 
-		logger.debug(`Sage is handling reply:`, response)
+		discordLogger.debug(`Sage is handling reply:`, response)
 		const reply = typeof response === 'string' ? { content: response } : response
 		if (interaction.deferred) {
 			await interaction.editReply(reply)
@@ -303,7 +314,7 @@ export async function executeContextHandler(interaction: ContextMenuCommandInter
 			await interaction.reply(reply)
 		}
 	} catch (error) {
-		logger.error(error)
+		discordLogger.error(error)
 		printErrorResponse(error, interaction)
 	}
 }
@@ -323,21 +334,23 @@ export async function executeEventHandler(
 	await Promise.all(
 		callbacks.map(async (callback) => {
 			try {
-				logger.debug(`Executing event handler: ${color.bold(path.join(callback.plugin?.path ?? '.', callback.path))}`)
+				discordLogger.debug(
+					`Executing event handler: ${color.bold(path.join(callback.plugin?.path ?? '.', callback.path))}`
+				)
 				if (!callback.handler.default) {
 					throw `Missing default export function for event: ${color.bold(eventName)}`
 				}
 
 				// Check if the command's module is enabled
 				if (!portal.module(callback.module).isEnabled) {
-					logger.debug(`Tried to execute disabled event from module: ${color.bold(callback.module)}`)
+					discordLogger.debug(`Tried to execute disabled event from module: ${color.bold(callback.module)}`)
 					return
 				}
 
 				// Execute middleware
 				try {
 					for (const middleware of portal.middleware) {
-						logger.debug(
+						discordLogger.debug(
 							`Executing middleware: ${color.bold(path.join(middleware.plugin?.path ?? '.', middleware.path))}`
 						)
 						const result = await middleware.handler.default({
@@ -346,12 +359,12 @@ export async function executeEventHandler(
 						})
 
 						if (result && result.abort) {
-							logger.debug(`Middleware aborted event: ${color.bold(eventName)}`)
+							discordLogger.debug(`Middleware aborted event: ${color.bold(eventName)}`)
 							return
 						}
 					}
 				} catch (error) {
-					logger.error('Aborting due to middleware error:', error)
+					discordLogger.error('Aborting due to middleware error:', error)
 					return
 				}
 
@@ -371,22 +384,22 @@ export async function executeEventHandler(
 
 					if (error === TIMEOUT) {
 						message = `${eventName} lifecycle event handler timed out`
-						logger.warn(message)
+						discordLogger.warn(message)
 					} else if (!callback.plugin) {
 						message = `Error executing ${eventName} event handler`
-						logger.error(message, error)
+						discordLogger.error(message, error)
 					} else if (eventName === '_start' && metaOptions.failSafe) {
 						message = `${callback.plugin.name} plugin failed to start`
-						logger.warn(message, error)
+						discordLogger.warn(message, error)
 					} else {
 						message = `${callback.plugin.name} plugin error in event ${eventName}`
-						logger.error(message, error)
+						discordLogger.error(message, error)
 					}
 
 					// Print error response to Discord if in development mode
 					printErrorResponse(error, eventData[0], message, callback)
 				} catch (nestedError) {
-					logger.error(`Error handling event error...`, nestedError)
+					discordLogger.error(`Error handling event error...`, nestedError)
 				}
 			}
 		})

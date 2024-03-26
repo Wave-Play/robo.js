@@ -2,6 +2,7 @@ import { color } from './color.js'
 import { registerProcessEvents } from './process.js'
 import { Client, Collection, Events } from 'discord.js'
 import { getConfig, loadConfig } from './config.js'
+import { discordLogger } from './constants.js'
 import { logger } from './logger.js'
 import { loadManifest } from '../cli/utils/manifest.js'
 import { env } from './env.js'
@@ -79,9 +80,9 @@ async function start(options?: StartOptions) {
 			const onlyAuto = portal.events.get(key).every((event) => event.auto)
 			client.on(key, async (...args) => {
 				if (!onlyAuto) {
-					logger.event(`Event received: ${color.bold(key)}`)
+					discordLogger.event(`Event received: ${color.bold(key)}`)
 				}
-				logger.trace('Event args:', args)
+				discordLogger.trace('Event args:', args)
 
 				// Notify event handler
 				executeEventHandler(plugins, key, ...args)
@@ -92,17 +93,17 @@ async function start(options?: StartOptions) {
 		client.on(Events.InteractionCreate, async (interaction) => {
 			if (interaction.isChatInputCommand()) {
 				const commandKey = getCommandKey(interaction)
-				logger.event(`Received slash command interaction: ${color.bold('/' + commandKey)}`)
-				logger.trace('Slash command interaction:', interaction.toJSON())
+				discordLogger.event(`Received slash command interaction: ${color.bold('/' + commandKey)}`)
+				discordLogger.trace('Slash command interaction:', interaction.toJSON())
 				await executeCommandHandler(interaction, commandKey)
 			} else if (interaction.isAutocomplete()) {
 				const commandKey = getCommandKey(interaction)
-				logger.event(`Received autocomplete interaction for: ${color.bold(interaction.commandName)}`)
-				logger.trace('Autocomplete interaction:', interaction.toJSON())
+				discordLogger.event(`Received autocomplete interaction for: ${color.bold(interaction.commandName)}`)
+				discordLogger.trace('Autocomplete interaction:', interaction.toJSON())
 				await executeAutocompleteHandler(interaction, commandKey)
 			} else if (interaction.isContextMenuCommand()) {
-				logger.event(`Received context menu interaction: ${color.bold(interaction.commandName)}`)
-				logger.trace('Context menu interaction:', interaction.toJSON())
+				discordLogger.event(`Received context menu interaction: ${color.bold(interaction.commandName)}`)
+				discordLogger.trace('Context menu interaction:', interaction.toJSON())
 				await executeContextHandler(interaction, interaction.commandName)
 			}
 		})
