@@ -2,4 +2,4 @@
 '@roboplay/robo.js': patch
 ---
 
-feat(robo/flashcore): support for namespace arrays
+feat(flashcore): support for namespace arrays
