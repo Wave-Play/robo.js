@@ -56,7 +56,9 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 	const configPath = await loadConfigPath()
 	if (configPath?.includes('.config')) {
 		// Include deprecated warning
-		logger.warn(`The ${color.bold('.config')} directory is deprecated. Use ${color.bold('config')} instead. (without the dot)`)
+		logger.warn(
+			`The ${color.bold('.config')} directory is deprecated. Use ${color.bold('config')} instead. (without the dot)`
+		)
 	}
 	const config = await loadConfig()
 	if (!config) {
@@ -111,10 +113,13 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 		addedContextCommands.length > 0 || removedContextCommands.length > 0 || changedContextCommands.length > 0
 
 	// Register command changes
-	if (options.force) {
+	const shouldRegister = options.force || hasCommandChanges || hasContextCommandChanges
+
+	if (config.experimental?.disableBot !== true && options.force) {
 		logger.warn('Forcefully registering commands.')
 	}
-	if (options.force || hasCommandChanges || hasContextCommandChanges) {
+
+	if (config.experimental?.disableBot !== true && shouldRegister) {
 		await registerCommands(
 			options.dev,
 			newCommands,
@@ -127,7 +132,7 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 			addedContextCommands,
 			removedContextCommands
 		)
-	} else {
+	} else if (config.experimental?.disableBot !== true) {
 		const hasPreviousError = await Flashcore.get<boolean>(FLASHCORE_KEYS.commandRegisterError)
 		if (hasPreviousError) {
 			logger.warn(`Previous command registration failed. Run ${bold('robo build --force')} to try again.`)

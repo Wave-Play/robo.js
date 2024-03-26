@@ -11,6 +11,7 @@ export interface Config {
 	excludePaths?: string[]
 	experimental?: {
 		buildDirectory?: string
+		disableBot?: boolean
 		incrementalBuilds?: boolean
 		legacyProcess?: boolean
 	}
