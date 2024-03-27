@@ -471,7 +471,7 @@ export default class Robo {
 		}
 	}
 
-	private isAppUsingTS(useTypeScript: boolean, isApp: boolean) {
+	private whichTemplate(useTypeScript: boolean, isApp: boolean) {
 		if (isApp) {
 			return useTypeScript ? '../templates/dapp-ts' : '../templates/dapp-js'
 		}
@@ -479,7 +479,7 @@ export default class Robo {
 	}
 
 	async copyTemplateFiles(sourceDir: string): Promise<void> {
-		const templateDir = this.isAppUsingTS(this._useTypeScript, this._isApp)
+		const templateDir = this.whichTemplate(this._useTypeScript, this._isApp)
 		const sourcePath = path.join(__dirname, templateDir, sourceDir)
 		const targetPath = path.join(this._workingDir, sourceDir)
 
