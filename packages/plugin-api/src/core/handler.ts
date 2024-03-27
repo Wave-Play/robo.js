@@ -3,6 +3,7 @@ import { IncomingMessage, ServerResponse } from 'node:http'
 import url from 'node:url'
 import { parse } from 'node:querystring'
 import { pluginOptions } from '../events/_start.js'
+import { RoboError } from './runtime-utils.js'
 import type { Router } from './router.js'
 import type { HttpMethod, RoboReply, RoboRequest } from './types.js'
 
@@ -61,6 +62,12 @@ export function createServerHandler(router: Router) {
 				this.res.statusCode = statusCode
 				return this
 			},
+			json: function (data: unknown) {
+				this.res.setHeader('Content-Type', 'application/json')
+				this.res.end(JSON.stringify(data))
+				this.hasSent = true
+				return this
+			},
 			send: function (data: string) {
 				this.res.end(data)
 				this.hasSent = true
@@ -83,13 +90,21 @@ export function createServerHandler(router: Router) {
 
 		try {
 			const result = await route.handler(requestWrapper, replyWrapper)
+
 			if (!replyWrapper.hasSent && result) {
-				replyWrapper.code(200).send(JSON.stringify(result))
+				replyWrapper.code(200).json(result)
 			}
 		} catch (error) {
-			logger.error(`API Route error: ${error}`)
-			res.statusCode = 500
-			res.end('Server encountered an error.')
+			logger.error(`API Route error:`, error)
+
+			if (error instanceof RoboError) {
+				Object.entries(error.headers ?? {}).forEach(([key, value]) => {
+					replyWrapper.header(key, value)
+				})
+				replyWrapper.code(error.status ?? 500).json(error.data ?? error.message)
+			} else {
+				replyWrapper.code(500).send('Server encountered an error.')
+			}
 		}
 	}
 }
@@ -107,16 +122,17 @@ export async function getRequestBody(req: IncomingMessage): Promise<Record<strin
 			body += chunk
 		})
 		req.on('end', () => {
+			// It's okay to have empty body <3
+			if (!body) {
+				resolve({})
+				return
+			}
+
 			try {
-				let parsedBody
-				try {
-					parsedBody = JSON.parse(body)
-					resolve(parsedBody)
-				} catch (err) {
-					reject(new Error('Invalid JSON data'))
-				}
+				const parsedBody = JSON.parse(body)
+				resolve(parsedBody)
 			} catch (err) {
-				reject(err)
+				reject(new Error('Invalid JSON data'))
 			}
 		})
 	})

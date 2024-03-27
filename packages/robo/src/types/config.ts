@@ -11,16 +11,11 @@ export interface Config {
 	excludePaths?: string[]
 	experimental?: {
 		buildDirectory?: string
+		disableBot?: boolean
 		incrementalBuilds?: boolean
-		legacyProcess?: boolean
 	}
 	flashcore?: {
 		keyv?: unknown
-	}
-	heartbeat?: {
-		debug?: boolean
-		interval?: number
-		url: string
 	}
 	invite?: {
 		autoPermissions?: boolean

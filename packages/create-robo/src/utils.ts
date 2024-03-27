@@ -59,23 +59,19 @@ export function exec(command: string, options?: SpawnOptions) {
 		// Run command as child process
 		const args = command.split(' ')
 		const childProcess = spawn(args.shift(), args, {
-			...(options ?? {}),
 			env: { ...process.env, FORCE_COLOR: '1' },
-			stdio: 'inherit'
+			stdio: 'inherit',
+			...(options ?? {})
 		})
 
 		// Resolve promise when child process exits
+		childProcess.on('error', reject)
 		childProcess.on('close', (code) => {
 			if (code === 0) {
 				resolve()
 			} else {
-				reject(new Error(`Child process exited with code ${code}`))
+				reject(`Command exited with code ${code}`)
 			}
-		})
-
-		// Or reject when it errors
-		childProcess.on('error', (error) => {
-			reject(error)
 		})
 	})
 }

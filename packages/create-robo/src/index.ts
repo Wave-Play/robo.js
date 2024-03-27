@@ -22,7 +22,7 @@ interface CommandOptions {
 	typescript?: boolean
 	verbose?: boolean
 	roboVersion?: string
-	kit?: 'bot' | 'app'
+	kit?: 'app' | 'bot'
 }
 
 new Command('create-robo <projectName>')
@@ -37,7 +37,7 @@ new Command('create-robo <projectName>')
 	.option('-ts --typescript', 'create a Robo using TypeScript')
 	.option('-v --verbose', 'print more information for debugging')
 	.option('-rv, --robo-version <value>', 'choose which version of robo your project will use')
-	.option('-k, --kit <value>', 'blablfezfzfa', 'bot')
+	.option('-k, --kit <value>', 'choose a kit to start off with your robo', 'bot')
 	.action(async (options: CommandOptions, { args }) => {
 		logger({
 			level: options.verbose ? 'debug' : 'info'
@@ -46,6 +46,34 @@ new Command('create-robo <projectName>')
 		logger.debug(`Package manager:`, getPackageManager())
 		logger.debug(`create-robo version:`, packageJson.version)
 		logger.debug(`Current working directory:`, process.cwd())
+
+		// TODO:
+		// modify action depending on -k version (bot is default)
+		// I want to move the creation of the robo into another function so we could just switch call for "offical kits"
+		// and fetch with URL kits made by community (most likely uploaded on the Robo store ?)
+		// implement future logic that includes options for app and others uwu
+		//
+		// pseudo code for above
+		// switch(kit)
+		//  case app:
+		//        app();
+		//
+		//  case bot:
+		//        bot();
+		//
+		//  case ukit:
+		//        ukit();
+		//
+		// default:
+		//  return logger.error("Failed to get desired kit.")
+		//
+
+		// Ensure correct kit is selected (bot or app)
+		if (!['bot', 'app'].includes(options.kit)) {
+			logger.error('Only bot (default) and app kits are available at the moment.')
+			logger.error('Robo with special starter kits is coming soon !')
+			return
+		}
 
 		// parses robo version argument
 		const roboVersion = await getRoboversionArg(options.roboVersion)

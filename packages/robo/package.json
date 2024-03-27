@@ -21,12 +21,13 @@
 		"node": ">=18.0.0"
 	},
 	"scripts": {
-		"build": "tsup && tsup --config tsup-cli.config.ts && tsup --config tsup-codemod.config.ts",
+		"build": "tsup && tsup --config tsup-cli.config.ts",
 		"dev": "chokidar \"src/**/*.ts\" \"codemod/**/*.ts\" -d 1000 -c \"pnpm build\" --initial",
 		"test": "jest --config jest.config.mjs"
 	},
 	"bin": {
-		"robo": "dist/cli/index.js"
+		"robo": "dist/cli/index.js",
+		"sage": "dist/cli/sage.js"
 	},
 	"type": "module",
 	"license": "MIT",

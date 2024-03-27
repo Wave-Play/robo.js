@@ -14,6 +14,7 @@ export interface RoboRequest<T = Record<string, unknown>> {
 export interface RoboReply {
 	res: ServerResponse
 	code: (statusCode: number) => RoboReply
+	json: (data: unknown) => RoboReply
 	send: (data: string) => RoboReply
 	header: (name: string, value: string) => RoboReply
 	hasSent: boolean
