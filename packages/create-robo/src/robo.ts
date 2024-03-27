@@ -519,12 +519,11 @@ export default class Robo {
 		}
 	}
 
-	private whichTemplate(useTypeScript: boolean, isApp: boolean, appTemplate: appTemplate) {
+	private whichTemplate(useTypeScript: boolean, isApp: boolean, appTemplate: appTemplate): string {
 		if (isApp) {
 			switch (appTemplate) {
 				case 'RJS': {
-					logger.error("React JS isn't implemented yet.")
-					break
+					return 'none'
 				}
 				case 'RTS': {
 					return '../templates/dapp-rts'
@@ -538,8 +537,9 @@ export default class Robo {
 				default:
 					break
 			}
+		} else {
+			return useTypeScript ? '../templates/ts' : '../templates/js'
 		}
-		return useTypeScript ? '../templates/ts' : '../templates/js'
 	}
 
 	async copyTemplateFiles(sourceDir: string): Promise<void> {
