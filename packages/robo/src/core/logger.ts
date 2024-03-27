@@ -106,6 +106,10 @@ export class Logger {
 	private _logBuffer: LogEntry[]
 
 	constructor(options?: LoggerOptions) {
+		this.setup(options)
+	}
+
+	public setup(options?: LoggerOptions) {
 		const { customLevels, drain = consoleDrain, enabled = true, level, parent, prefix } = options ?? {}
 
 		this._customLevels = customLevels
