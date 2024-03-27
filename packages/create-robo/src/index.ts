@@ -111,58 +111,58 @@ new Command('create-robo <projectName>')
 			useSameDirectory = true
 		}
 
-		if (options.kit === 'bot' || options.kit === 'app') {
-			// Create a new Robo project prototype
-			logger.debug(`Creating Robo prototype...`)
-			const robo = new Robo(projectName, options.plugin, useSameDirectory, options.kit === 'app' ? true : false)
-			const plugins = options.plugins ?? []
+		// Create a new Robo project prototype
+		logger.debug(`Creating Robo prototype...`)
+		const isApp = options.kit === 'app' ? true : false
+		const robo = new Robo(projectName, options.plugin, useSameDirectory, isApp)
+		const plugins = options.plugins ?? []
 
-			if (useSameDirectory) {
-				logger.log(`This new ${robo.isPlugin ? 'plugin' : 'Robo'} will be created in the current directory.`)
+		if (useSameDirectory) {
+			logger.log(`This new ${robo.isPlugin ? 'plugin' : 'Robo'} will be created in the current directory.`)
+		}
+		logger.log('')
+
+		let selectedFeaturesOrDefaults: string[] = []
+		if (options.template) {
+			logger.debug(`Downloading template: ${options.template}`)
+			await robo.downloadTemplate(options.template)
+		} else {
+			// Verify plugin status if it sounds like one
+			if (!robo.isPlugin && projectName.toLowerCase().includes('plugin')) {
+				await robo.askIsPlugin()
 			}
-			logger.log('')
 
-			let selectedFeaturesOrDefaults: string[] = []
-			if (options.template) {
-				logger.debug(`Downloading template: ${options.template}`)
-				await robo.downloadTemplate(options.template)
+			// Copy the template files to the new project directory
+			if ((options.javascript && !isApp) || (options.typescript && !isApp)) {
+				const useTypeScript = options.typescript ?? false
+				robo.useTypeScript(useTypeScript)
+				logger.info(`Using ${useTypeScript ? 'TypeScript' : 'JavaScript'}`)
 			} else {
-				// Verify plugin status if it sounds like one
-				if (!robo.isPlugin && projectName.toLowerCase().includes('plugin')) {
-					await robo.askIsPlugin()
-				}
-
-				// Copy the template files to the new project directory
-				if (options.javascript || options.typescript) {
-					const useTypeScript = options.typescript ?? false
-					robo.useTypeScript(useTypeScript)
-					logger.info(`Using ${useTypeScript ? 'TypeScript' : 'JavaScript'}`)
+				if (isApp) {
+					await robo.askUseTemplate()
 				} else {
 					await robo.askUseTypeScript()
 				}
-
-				// Get user input to determine which features to include or use the recommended defaults
-				selectedFeaturesOrDefaults = options.features?.split(',') ?? (await robo.getUserInput())
-				await robo.createPackage(selectedFeaturesOrDefaults, plugins, options.install ?? true, roboVersion)
-
-				// Determine if TypeScript is selected and copy the corresponding template files
-				logger.debug(`Copying template files...`)
-				await robo.copyTemplateFiles('')
-				logger.debug(`Finished copying template files!`)
 			}
 
-			// Ask the user for their Discord credentials (token and client ID) and store them for later use
-			// Skip this step if the user is creating a plugin
-			if (!robo.isPlugin) {
-				logger.debug(`Asking for Discord credentials...`)
-				await robo.askForDiscordCredentials(selectedFeaturesOrDefaults)
-			}
-			logger.log('')
-			logger.ready(`Successfully created ${projectName}. Happy coding!`)
-		} else {
-			logger.error('The only options for the kit flag are: bot or app.')
-			return
+			// Get user input to determine which features to include or use the recommended defaults
+			selectedFeaturesOrDefaults = options.features?.split(',') ?? (await robo.getUserInput())
+			await robo.createPackage(selectedFeaturesOrDefaults, plugins, options.install ?? true, roboVersion)
+
+			// Determine if TypeScript is selected and copy the corresponding template files
+			logger.debug(`Copying template files...`)
+			await robo.copyTemplateFiles('')
+			logger.debug(`Finished copying template files!`)
 		}
+
+		// Ask the user for their Discord credentials (token and client ID) and store them for later use
+		// Skip this step if the user is creating a plugin
+		if (!robo.isPlugin) {
+			logger.debug(`Asking for Discord credentials...`)
+			await robo.askForDiscordCredentials(selectedFeaturesOrDefaults)
+		}
+		logger.log('')
+		logger.ready(`Successfully created ${projectName}. Happy coding!`)
 	})
 	.parse(process.argv)
 

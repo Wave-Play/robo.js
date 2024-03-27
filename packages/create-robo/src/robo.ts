@@ -20,6 +20,9 @@ import {
 import { logger } from './logger.js'
 import { RepoInfo, downloadAndExtractRepo, getRepoInfo, hasRepo } from './templates.js'
 import retry from 'async-retry'
+import Choice from 'inquirer/lib/objects/choice.js'
+import Choices from 'inquirer/lib/objects/choices.js'
+import { ucs2 } from 'punycode'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -112,6 +115,7 @@ interface PackageJson {
 	peerDependencies?: Record<string, string>
 	peerDependenciesMeta?: Record<string, Record<string, unknown>>
 }
+type appTemplate = 'VTS' | 'VJS' | 'RTS' | 'RJS' | undefined
 
 export default class Robo {
 	// Custom properties used to build the Robo project
@@ -119,6 +123,7 @@ export default class Robo {
 	private _useTypeScript: boolean
 	private _workingDir: string
 	private _isApp: boolean
+	private _appTemplate: appTemplate
 
 	// Same as above, but exposed as getters
 	private _isPlugin: boolean
@@ -148,6 +153,36 @@ export default class Robo {
 		])
 
 		this._isPlugin = isPlugin
+	}
+
+	async askUseTemplate() {
+		const { useTemplate } = await inquirer.prompt<Record<string, appTemplate>>([
+			{
+				type: 'list',
+				name: 'useTemplate',
+				message: chalk.blue('Choose a template for your app!'),
+				choices: [
+					{
+						name: 'Vanilla JS',
+						value: 'VJS'
+					},
+					{
+						name: 'Vanilla TS',
+						value: 'VTS'
+					},
+					{
+						name: 'React-TS',
+						value: 'RTS'
+					},
+					{
+						name: 'React-JS',
+						value: 'RJS'
+					}
+				]
+			}
+		])
+		this._useTypeScript = useTemplate.includes('TS')
+		this._appTemplate = useTemplate
 	}
 
 	async askUseTypeScript() {
@@ -299,6 +334,15 @@ export default class Robo {
 				cors: true,
 				port: 3000
 			})
+			if (this._appTemplate === 'RTS' || this._appTemplate === 'RJS') {
+				packageJson.dependencies['react'] = '^18.2.0'
+				packageJson.dependencies['react-dom'] = '^18.2.0'
+
+				packageJson.devDependencies['@types/react'] = '^18.2.66'
+				packageJson.devDependencies['@types/react-dom'] = '^18.2.22'
+				packageJson.devDependencies['eslint-plugin-react-hooks'] = '^4.6.0'
+				packageJson.devDependencies['eslint-plugin-react-refresh'] = '^0.4.6'
+			}
 		} else if (!this._isPlugin) {
 			packageJson.dependencies['@roboplay/robo.js'] = `${roboversion}`
 			packageJson.dependencies['discord.js'] = '^14.13.0'
@@ -353,9 +397,13 @@ export default class Robo {
 
 		const runPrefix = packageManager === 'npm' ? 'npm run ' : packageManager + ' '
 		if (this._useTypeScript) {
-			packageJson.devDependencies['@swc/core'] = '^1.3.104'
-			packageJson.devDependencies['@types/node'] = '^18.14.6'
-			packageJson.devDependencies['typescript'] = '^5.3.0'
+			if (this._appTemplate === 'RTS') {
+				packageJson.devDependencies['@vitejs/plugin-react-swc'] = '^3.5.0'
+			} else {
+				packageJson.devDependencies['@swc/core'] = '^1.3.104'
+				packageJson.devDependencies['@types/node'] = '^18.14.6'
+				packageJson.devDependencies['typescript'] = '^5.3.0'
+			}
 		}
 
 		logger.debug(`Adding features:`, features)
@@ -471,15 +519,31 @@ export default class Robo {
 		}
 	}
 
-	private whichTemplate(useTypeScript: boolean, isApp: boolean) {
+	private whichTemplate(useTypeScript: boolean, isApp: boolean, appTemplate: appTemplate) {
 		if (isApp) {
-			return useTypeScript ? '../templates/dapp-ts' : '../templates/dapp-js'
+			switch (appTemplate) {
+				case 'RJS': {
+					logger.error("React JS isn't implemented yet.")
+					break
+				}
+				case 'RTS': {
+					return '../templates/dapp-rts'
+				}
+				case 'VJS': {
+					return '../templates/dapp-js'
+				}
+				case 'VTS': {
+					return '../templates/dapp-ts'
+				}
+				default:
+					break
+			}
 		}
 		return useTypeScript ? '../templates/ts' : '../templates/js'
 	}
 
 	async copyTemplateFiles(sourceDir: string): Promise<void> {
-		const templateDir = this.whichTemplate(this._useTypeScript, this._isApp)
+		const templateDir = this.whichTemplate(this._useTypeScript, this._isApp, this._appTemplate)
 		const sourcePath = path.join(__dirname, templateDir, sourceDir)
 		const targetPath = path.join(this._workingDir, sourceDir)
 
