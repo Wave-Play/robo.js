@@ -337,10 +337,12 @@ const colorizedLogLevels: Record<string, string> = {
 let _logger: Logger | null = null
 
 export function logger(options?: LoggerOptions): Logger {
-	if (options) {
+	if (!_logger && options) {
 		_logger = new Logger(options)
 	} else if (!_logger) {
 		_logger = new Logger()
+	} else if (options) {
+		_logger.setup(options)
 	}
 
 	return _logger
