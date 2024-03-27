@@ -1,8 +1,9 @@
 import { Command } from '../utils/cli-handler.js'
-import { spawn } from 'child_process'
+import { ChildProcess, spawn } from 'child_process'
 import { logger } from '../../core/logger.js'
-import { DEFAULT_CONFIG, FLASHCORE_KEYS } from '../../core/constants.js'
+import { DEFAULT_CONFIG, FLASHCORE_KEYS, cloudflareLogger } from '../../core/constants.js'
 import { getConfigPaths, loadConfig, loadConfigPath } from '../../core/config.js'
+import { installCloudflared, isCloudflaredInstalled, startCloudflared, stopCloudflared } from '../utils/cloudflared.js'
 import { IS_WINDOWS, cmd, filterExistingPaths, getWatchedPlugins, packageJson, timeout } from '../utils/utils.js'
 import path from 'node:path'
 import Watcher, { Change } from '../utils/watcher.js'
@@ -17,15 +18,16 @@ import type { Config, SpiritMessage } from '../../types/index.js'
 
 const command = new Command('dev')
 	.description('Ready, set, code your bot to life! Starts development mode.')
-	.option('-s', '--silent', 'do not print anything')
-	.option('-v', '--verbose', 'print more information for debugging')
 	.option('-h', '--help', 'Shows the available command options')
-
+	.option('-s', '--silent', 'do not print anything')
+	.option('-t', '--tunnel', 'expose your local server to the internet')
+	.option('-v', '--verbose', 'print more information for debugging')
 	.handler(devAction)
 export default command
 
 interface DevCommandOptions {
 	silent?: boolean
+	tunnel?: boolean
 	verbose?: boolean
 }
 
@@ -58,26 +60,42 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 	const experimentalKeys = Object.entries(config.experimental ?? {})
 		.filter(([, value]) => value)
 		.map(([key]) => key)
+
 	if (experimentalKeys.length > 0) {
 		const features = experimentalKeys.map((key) => color.bold(key)).join(', ')
 		logger.warn(`Experimental flags enabled: ${features}.`)
 	}
 
+	// Install cloudflared & ensure PORT is set because we need it for the tunnel
+	if (options.tunnel && !isCloudflaredInstalled()) {
+		cloudflareLogger.event(`Installing Cloudflared...`)
+		await installCloudflared()
+		cloudflareLogger.info(`Cloudflared installed successfully!`)
+	}
+
+	if (options.tunnel && !process.env.PORT) {
+		cloudflareLogger.error(`Cannot start tunnel without a PORT environment variable.`)
+		process.exit(1)
+	}
+
 	// Ensure worker spirits are ready
 	spirits = new Spirits()
 
-	// Stop spirits on process exit
+	// Stop spirits & tunnel on process exit
 	let isStopping = false
-	const callback = async () => {
+	let tunnelProcess: ChildProcess | undefined
+
+	const callback = async (signal: NodeJS.Signals) => {
 		if (isStopping) {
 			return
 		}
+
 		isStopping = true
-		await spirits.stopAll()
+		await Promise.allSettled([spirits.stopAll(), stopCloudflared(tunnelProcess, signal)])
 		process.exit(0)
 	}
-	process.on('SIGINT', callback)
-	process.on('SIGTERM', callback)
+	process.on('SIGINT', () => callback('SIGINT'))
+	process.on('SIGTERM', () => callback('SIGTERM'))
 
 	// Run first build
 	let buildSuccess = false
@@ -184,20 +202,27 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 			spirits.on(roboSpirit, restartCallback)
 
 			// Compare manifest to warn about permission changes
-			const newManifest = await loadManifest()
-			const oldPermissions = manifest.permissions ?? []
-			const newPermissions = newManifest.permissions ?? []
-			manifest = newManifest
+			if (config.experimental?.disableBot !== true) {
+				const newManifest = await loadManifest()
+				const oldPermissions = manifest.permissions ?? []
+				const newPermissions = newManifest.permissions ?? []
+				manifest = newManifest
 
-			if (JSON.stringify(oldPermissions) !== JSON.stringify(newPermissions)) {
-				logger.warn(
-					`Permissions have changed! Run ${color.bold('robo invite')} to update your Robo's guild permissions.`
-				)
+				if (JSON.stringify(oldPermissions) !== JSON.stringify(newPermissions)) {
+					logger.warn(
+						`Permissions have changed! Run ${color.bold('robo invite')} to update your Robo's guild permissions.`
+					)
+				}
 			}
 		} finally {
 			isUpdating = false
 		}
 	})
+
+	// Run the tunnel if requested
+	if (options.tunnel) {
+		tunnelProcess = startCloudflared('http://localhost:' + process.env.PORT)
+	}
 
 	// Check for updates
 	try {

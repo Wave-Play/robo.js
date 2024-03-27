@@ -4,7 +4,7 @@ import { DEFAULT_CONFIG } from '../../core/constants.js'
 import { CommandConfig, Config, SageOptions } from '../../types/index.js'
 import { getConfig } from '../../core/config.js'
 import { createRequire } from 'node:module'
-import { SpawnOptions, execSync, exec as nodeExec, spawn } from 'node:child_process'
+import { ChildProcess, SpawnOptions, execSync, exec as nodeExec, spawn } from 'node:child_process'
 import { promisify } from 'node:util'
 import { logger } from '../../core/logger.js'
 import path from 'node:path'
@@ -32,11 +32,10 @@ export function getPodStatusColor(status: Pod['status']) {
 		return color.dim
 	} else if (['Online', 'Ready'].includes(status)) {
 		return color.green
-	} {
+	} else {
 		return color.red
 	}
 }
-
 
 export function getTempDir() {
 	return path.join(process.cwd(), '.robo', 'temp')
@@ -321,6 +320,18 @@ export function timeout<T = void>(callback: () => T, ms: number): Promise<T> {
 			resolve(callback())
 		}, ms)
 	)
+}
+
+export function waitForExit(child: ChildProcess) {
+	return new Promise<void>((resolve) => {
+		if (!child) {
+			resolve()
+		} else if (child.exitCode !== null) {
+			resolve()
+		} else {
+			child.on('exit', resolve)
+		}
+	})
 }
 
 type Task<T extends unknown[]> = (...args: T) => Promise<unknown>
