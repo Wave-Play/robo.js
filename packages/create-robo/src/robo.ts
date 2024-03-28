@@ -570,7 +570,7 @@ export default class Robo {
 		const officialGuideUrl = chalk.blue.underline('https://docs.roboplay.dev/docs/advanced/environment-variables')
 		logger.log('')
 		if (this._isApp) {
-			logger.log('To get your Discord Secret and Client ID, register your app at the Discord Developor portal.')
+			logger.log('To get your Discord Client Secret and Client ID, register your app at the Discord Developor portal.')
 		} else {
 			logger.log('To get your Discord Token and Client ID, register your bot at the Discord Developer portal.')
 		}
@@ -587,7 +587,7 @@ export default class Robo {
 				type: 'input',
 				name: 'discordToken',
 				message: this._isApp
-					? 'Enter your Discord Secret (press enter to skip)'
+					? 'Enter your Discord Client Secret (press enter to skip)'
 					: 'Enter your Discord Token (press Enter to skip):'
 			}
 		])
@@ -603,11 +603,9 @@ export default class Robo {
 			}
 		}
 
-		// client_id, secret_pair
-
-		// Update DISCORD_TOKEN and DISCORD_CLIENT_ID variables
+		
 		envContent = updateOrAddVariable(envContent, 'DISCORD_CLIENT_ID', discordClientId ?? '')
-		envContent = updateOrAddVariable(envContent, this._isApp ? 'DISCORD_SECRET' : 'DISCORD_TOKEN', discordToken ?? '')
+		envContent = updateOrAddVariable(envContent, this._isApp ? 'DISCORD_CLIENT_SECRET' : 'DISCORD_TOKEN', discordToken ?? '')
 
 		if (features.includes('ai') || features.includes('gpt')) {
 			envContent = updateOrAddVariable(envContent, 'OPENAI_KEY', '')
@@ -656,7 +654,7 @@ export default class Robo {
 	private async createEnvTsFile() {
 		if (this._useTypeScript) {
 			const autoCompletionEnvVar = `export {}\ndeclare global {\n    namespace NodeJS {\n		interface ProcessEnv {\n			DISCORD_CLIENT_ID: string\n			${
-				this._isApp ? 'DISCORD_SECRET: string' : 'DISCORD_TOKEN: string'
+				this._isApp ? 'DISCORD_CLIENT_SECRET: string' : 'DISCORD_TOKEN: string'
 			}
 			}\n		}\n	} \n}`
 
