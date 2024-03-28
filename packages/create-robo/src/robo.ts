@@ -660,7 +660,7 @@ export default class Robo {
 	private async createEnvTsFile() {
 		if (this._useTypeScript) {
 			const autoCompletionEnvVar = `export {}\ndeclare global {\n    namespace NodeJS {\n		interface ProcessEnv {\n			DISCORD_CLIENT_ID: string\n			${
-				this._isApp ? 'DISCORD_SECRET_PAIR: string' : 'DISCORD_TOKEN: string'
+				this._isApp ? 'DISCORD_SECRET: string' : 'DISCORD_TOKEN: string'
 			}
 			}\n		}\n	} \n}`
 
