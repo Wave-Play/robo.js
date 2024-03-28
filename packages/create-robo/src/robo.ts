@@ -570,7 +570,7 @@ export default class Robo {
 		const officialGuideUrl = chalk.blue.underline('https://docs.roboplay.dev/docs/advanced/environment-variables')
 		logger.log('')
 		if (this._isApp) {
-			logger.log('To get your discord Secret Pair and Client ID, register your app at the Discord Developor portal.')
+			logger.log('To get your Discord Secret and Client ID, register your app at the Discord Developor portal.')
 		} else {
 			logger.log('To get your Discord Token and Client ID, register your bot at the Discord Developer portal.')
 		}
@@ -587,7 +587,7 @@ export default class Robo {
 				type: 'input',
 				name: 'discordToken',
 				message: this._isApp
-					? 'Enter your Secret pair (press enter to skip)'
+					? 'Enter your Discord Secret (press enter to skip)'
 					: 'Enter your Discord Token (press Enter to skip):'
 			}
 		])
@@ -607,11 +607,7 @@ export default class Robo {
 
 		// Update DISCORD_TOKEN and DISCORD_CLIENT_ID variables
 		envContent = updateOrAddVariable(envContent, 'DISCORD_CLIENT_ID', discordClientId ?? '')
-		envContent = updateOrAddVariable(
-			envContent,
-			this._isApp ? 'DISCORD_PAIR_SECRET' : 'DISCORD_TOKEN',
-			discordToken ?? ''
-		)
+		envContent = updateOrAddVariable(envContent, this._isApp ? 'DISCORD_SECRET' : 'DISCORD_TOKEN', discordToken ?? '')
 
 		if (features.includes('ai') || features.includes('gpt')) {
 			envContent = updateOrAddVariable(envContent, 'OPENAI_KEY', '')
