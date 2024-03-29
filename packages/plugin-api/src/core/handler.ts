@@ -8,8 +8,11 @@ import type { Router } from './router.js'
 import type { HttpMethod, RoboReply, RoboRequest } from './types.js'
 
 const MAX_BODY_SIZE = 5 * 1024 * 1024 // 5MB
+const BodyMethods = ['PATCH', 'POST', 'PUT']
 
 export function createServerHandler(router: Router) {
+	const { parseBody = true } = pluginOptions
+
 	return async (req: IncomingMessage, res: ServerResponse<IncomingMessage>) => {
 		const parsedUrl = url.parse(req.url, true)
 
@@ -29,7 +32,8 @@ export function createServerHandler(router: Router) {
 
 		// Parse request body if applicable
 		let body: Record<string, unknown>
-		if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH') {
+		
+		if (parseBody && BodyMethods.includes(req.method)) {
 			try {
 				body = await getRequestBody(req)
 			} catch (err) {
