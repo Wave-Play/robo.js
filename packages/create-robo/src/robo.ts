@@ -15,7 +15,8 @@ import {
 	prettyStringify,
 	sortObjectKeys,
 	updateOrAddVariable,
-	getPackageExecutor
+	getPackageExecutor,
+	ROBO_CONFIG_APP
 } from './utils.js'
 import { logger } from './logger.js'
 import { RepoInfo, downloadAndExtractRepo, getRepoInfo, hasRepo } from './templates.js'
@@ -372,7 +373,7 @@ export default class Robo {
 		}
 
 		// Create the robo.mjs file
-		let roboConfig = ROBO_CONFIG
+		let roboConfig = this._isApp ? ROBO_CONFIG_APP : ROBO_CONFIG;
 		if (this._isPlugin) {
 			roboConfig = roboConfig.replace(`type: 'robo'`, `type: 'plugin'`)
 		}
