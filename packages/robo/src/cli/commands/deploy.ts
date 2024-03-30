@@ -11,6 +11,7 @@ import { RoboPlaySession } from '../../roboplay/session.js'
 import path from 'node:path'
 import { readFile } from 'node:fs/promises'
 import type { DeploymentStep, Pod } from '../../roboplay/types.js'
+import { loadConfig } from 'src/core/config.js'
 
 const Highlight = composeColors(color.bold, color.cyan)
 const Indent = ' '.repeat(3)
@@ -45,9 +46,8 @@ async function deployAction(_args: string[], options: DeployCommandOptions) {
 		return
 	}
 
-	const configFile = await readFile(path.join(process.cwd(), '.config', 'robo.mjs'))
-	const isApp  = configFile.includes("app: true")
-
+	
+	const isApp = (await loadConfig()).experimental.app.valueOf();
 	if(isApp){
 		logger.warn("RoboPlay does not currently support hosting discord SDKs applications.")
 	}
