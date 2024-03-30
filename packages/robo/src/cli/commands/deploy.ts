@@ -9,6 +9,7 @@ import { RoboPlay } from '../../roboplay/client.js'
 import { streamDeployment } from '../../roboplay/deploy.js'
 import { RoboPlaySession } from '../../roboplay/session.js'
 import path from 'node:path'
+import { readFile } from 'node:fs/promises'
 import type { DeploymentStep, Pod } from '../../roboplay/types.js'
 
 const Highlight = composeColors(color.bold, color.cyan)
@@ -43,6 +44,14 @@ async function deployAction(_args: string[], options: DeployCommandOptions) {
 		logger.error(`You must be logged in to deploy to RoboPlay. Run ${Highlight('robo login')} to get started.`)
 		return
 	}
+
+	const configFile = await readFile(path.join(process.cwd(), '.config', 'robo.mjs'))
+	const isApp  = configFile.includes("app: true")
+
+	if(isApp){
+		logger.warn("RoboPlay does not currently support hosting discord SDKs applications.")
+	}
+
 
 	// Prepare fancy formatting
 	const spinner = new Spinner()
