@@ -12,6 +12,8 @@ import chalk from 'chalk'
 const require = createRequire(import.meta.url)
 const packageJson = require('../package.json')
 
+const Indent = ' '.repeat(4)
+
 interface CommandOptions {
 	features?: string
 	install?: boolean
@@ -183,8 +185,11 @@ async function checkUpdates() {
 		const command = `${commandName} ${packageJson.name}@${latestVersion}`
 
 		// Print update message
-		logger.info(chalk.bold.green(`A new version of ${chalk.bold('create-robo')} is available! (v${latestVersion})`))
-		logger.info(`Run as ${chalk.bold(command)} instead to get the latest updates.`)
+		logger.log('')
+		logger.log(Indent, chalk.bold.green(`A new version of ${chalk.bold('create-robo')} is available!`) + chalk.dim(` (v${packageJson.version} -> v${latestVersion})`))
+		logger.log('\n' + Indent, `Run this instead to get the latest updates:`)
+		logger.log(Indent, chalk.bold.cyan(command))
+		logger.log('')
 	}
 }
 
