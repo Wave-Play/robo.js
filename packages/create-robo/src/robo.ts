@@ -56,10 +56,10 @@ const optionalPlugins = [
 	},
 	{
 		name: `${chalk.bold(
-			'API'
-		)} - Effortlessly create and manage API routes, turning your Robo project into a full-fledged API server.`,
-		short: 'API Server',
-		value: 'api'
+			'Web Server'
+		)} - Turn your Robo into a web server! Create and manage web pages, APIs, and more.`,
+		short: 'Web Server',
+		value: 'server'
 	},
 	{
 		name: `${chalk.bold('Maintenance')} - Add a maintenance mode to your robo.`,
@@ -398,9 +398,9 @@ export default class Robo {
 			packageJson.dependencies['@roboplay/plugin-ai-voice'] = '^0.1.1'
 			await this.createPluginConfig('@roboplay/plugin-ai-voice', {})
 		}
-		if (features.includes('api')) {
-			packageJson.dependencies['@roboplay/plugin-api'] = '^0.2.3'
-			await this.createPluginConfig('@roboplay/plugin-api', {
+		if (features.includes('server')) {
+			packageJson.dependencies['@robojs/server'] = '^0.2.3'
+			await this.createPluginConfig('@robojs/server', {
 				cors: true
 			})
 		}
@@ -510,7 +510,7 @@ export default class Robo {
 			envContent = updateOrAddVariable(envContent, 'AZURE_SUBSCRIPTION_KEY', '')
 			envContent = updateOrAddVariable(envContent, 'AZURE_SUBSCRIPTION_REGION', '')
 		}
-		if (features.includes('api')) {
+		if (features.includes('server')) {
 			envContent = updateOrAddVariable(envContent, 'PORT', '3000')
 		}
 
