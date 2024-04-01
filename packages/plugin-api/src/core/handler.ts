@@ -106,6 +106,8 @@ export function createServerHandler(router: Router) {
 					replyWrapper.header(key, value)
 				})
 				replyWrapper.code(error.status ?? 500).json(error.data ?? error.message)
+			} else if (error instanceof Error) {
+				replyWrapper.code(500).json(error.message ?? 'Server encountered an error.')
 			} else {
 				replyWrapper.code(500).send('Server encountered an error.')
 			}
