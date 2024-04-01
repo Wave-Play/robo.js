@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process'
 import chalk from 'chalk'
-import { logger } from './logger.js'
+import { logger } from '@roboplay/robo.js'
 import type { SpawnOptions } from 'node:child_process'
 
 type PackageManager = 'npm' | 'bun' | 'pnpm' | 'yarn'

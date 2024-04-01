@@ -18,11 +18,10 @@ import {
 	getPackageExecutor,
 	Indent
 } from './utils.js'
-import { logger } from './logger.js'
 import { RepoInfo, downloadAndExtractRepo, getRepoInfo, hasRepo } from './templates.js'
 import retry from 'async-retry'
 import { spawn } from 'node:child_process'
-import { color } from '@roboplay/robo.js'
+import { logger } from '@roboplay/robo.js'
 // @ts-expect-error - Internal
 import { Spinner } from '@roboplay/robo.js/dist/cli/utils/spinner.js'
 import type { CommandOptions } from './index.js'

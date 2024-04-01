@@ -4,7 +4,7 @@ import inquirer from 'inquirer'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import Robo from './robo.js'
-import { logger } from './logger.js'
+import { logger } from '@roboplay/robo.js'
 import { Indent, getPackageManager } from './utils.js'
 import chalk from 'chalk'
 
