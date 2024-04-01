@@ -5,16 +5,14 @@ import { createRequire } from 'node:module'
 import path from 'node:path'
 import Robo from './robo.js'
 import { logger } from './logger.js'
-import { getPackageManager } from './utils.js'
+import { Indent, getPackageManager } from './utils.js'
 import chalk from 'chalk'
 
 // Read the version from the package.json file
 const require = createRequire(import.meta.url)
 const packageJson = require('../package.json')
 
-const Indent = ' '.repeat(4)
-
-interface CommandOptions {
+export interface CommandOptions {
 	features?: string
 	install?: boolean
 	javascript?: boolean
@@ -39,7 +37,7 @@ new Command('create-robo <projectName>')
 	.option('-ts --typescript', 'create a Robo using TypeScript')
 	.option('-v --verbose', 'print more information for debugging')
 	.option('-rv, --robo-version <value>', 'choose which version of robo your project will use')
-	.option('-k, --kit <value>', 'choose a kit to start off with your robo', 'bot')
+	.option('-k, --kit <value>', 'choose a kit to start off with your robo')
 	.action(async (options: CommandOptions, { args }) => {
 		logger({
 			level: options.verbose ? 'debug' : 'info'
@@ -49,31 +47,9 @@ new Command('create-robo <projectName>')
 		logger.debug(`create-robo version:`, packageJson.version)
 		logger.debug(`Current working directory:`, process.cwd())
 
-		// TODO:
-		// modify action depending on -k version (bot is default)
-		// I want to move the creation of the robo into another function so we could just switch call for "offical kits"
-		// and fetch with URL kits made by community (most likely uploaded on the Robo store ?)
-		// implement future logic that includes options for app and others uwu
-		//
-		// pseudo code for above
-		// switch(kit)
-		//  case app:
-		//        app();
-		//
-		//  case bot:
-		//        bot();
-		//
-		//  case ukit:
-		//        ukit();
-		//
-		// default:
-		//  return logger.error("Failed to get desired kit.")
-		//
-
 		// Ensure correct kit is selected (bot or app)
-		if (!['bot', 'app'].includes(options.kit)) {
+		if (options.kit && !['bot', 'app'].includes(options.kit)) {
 			logger.error('Only bot (default) and app kits are available at the moment.')
-			logger.error('Robo with special starter kits is coming soon !')
 			return
 		}
 
@@ -113,14 +89,49 @@ new Command('create-robo <projectName>')
 			useSameDirectory = true
 		}
 
+		// Print introduction section
+		logger.log('')
+		logger.log(Indent, chalk.bold('✨ Welcome to Robo.js!'))
+		logger.log(Indent, `   Spawning ${chalk.bold.cyan(projectName)} into existence...`)
+
+		const metadata: Array<{ key: string; value: string }> = []
+		if (options.plugin) {
+			metadata.push({ key: 'Type', value: 'Plugin' })
+		}
+		if (options.kit) {
+			metadata.push({ key: 'Kit', value: options.kit })
+		}
+		if (options.javascript || options.typescript) {
+			metadata.push({ key: 'Language', value: options.typescript ? 'TypeScript' : 'JavaScript' })
+		}
+		if (options.features) {
+			metadata.push({ key: 'Features', value: options.features })
+		}
+		if (options.plugins) {
+			metadata.push({ key: 'Plugins', value: options.plugins.join(', ') })
+		}
+		if (options.template) {
+			metadata.push({ key: 'Template', value: options.template })
+		}
+		if (options.install === false) {
+			metadata.push({ key: 'Install dependencies', value: 'No' })
+		}
+		if (options.roboVersion) {
+			metadata.push({ key: 'Robo version', value: roboVersion })
+		}
+
+		if (metadata.length > 0) {
+			logger.log('')
+			logger.log(Indent, chalk.bold('   Specs:'))
+			metadata.forEach(({ key, value }) => {
+				logger.log(Indent, `   - ${key}:`, chalk.bold.cyan(value))
+			})
+		}
+
 		// Create a new Robo project prototype
 		logger.debug(`Creating Robo prototype...`)
 		const robo = new Robo(projectName, options.plugin, useSameDirectory)
 		const plugins = options.plugins ?? []
-
-		if (useSameDirectory) {
-			logger.log(`This new ${robo.isPlugin ? 'plugin' : 'Robo'} will be created in the current directory.`)
-		}
 		logger.log('')
 
 		let selectedFeaturesOrDefaults: string[] = []
@@ -137,14 +148,13 @@ new Command('create-robo <projectName>')
 			if (options.javascript || options.typescript) {
 				const useTypeScript = options.typescript ?? false
 				robo.useTypeScript(useTypeScript)
-				logger.info(`Using ${useTypeScript ? 'TypeScript' : 'JavaScript'}`)
 			} else {
 				await robo.askUseTypeScript()
 			}
 
 			// Get user input to determine which features to include or use the recommended defaults
 			selectedFeaturesOrDefaults = options.features?.split(',') ?? (await robo.getUserInput())
-			await robo.createPackage(selectedFeaturesOrDefaults, plugins, options.install ?? true, roboVersion)
+			await robo.createPackage(selectedFeaturesOrDefaults, plugins, options.install ?? true, roboVersion, options)
 
 			// Determine if TypeScript is selected and copy the corresponding template files
 			logger.debug(`Copying template files...`)
@@ -156,10 +166,27 @@ new Command('create-robo <projectName>')
 		// Skip this step if the user is creating a plugin
 		if (!robo.isPlugin) {
 			logger.debug(`Asking for Discord credentials...`)
-			await robo.askForDiscordCredentials(selectedFeaturesOrDefaults)
+			await robo.askForDiscordCredentials(selectedFeaturesOrDefaults, options.verbose)
+		}
+
+		const packageManager = getPackageManager()
+		logger.log(Indent.repeat(15))
+		logger.log(Indent, '🚀', chalk.bold.green('Your Robo is ready!'))
+		logger.log(Indent, '   Welcome to this world,', chalk.bold(projectName))
+		logger.log('')
+		logger.log(Indent, '   ' + chalk.bold('Next steps:'))
+		if (!useSameDirectory) {
+			logger.log(Indent, '   - Move into your Robo directory:', chalk.bold.cyan(`cd ${projectName}`))
+		}
+		logger.log(Indent, '   - Develop your Robo locally:', chalk.bold.cyan(packageManager + ' run dev'))
+		logger.log(Indent, '   - Deploy your Robo to the cloud:', chalk.bold.cyan(packageManager + ' run deploy'))
+
+		if (robo.installFailed) {
+			logger.log('')
+			logger.log(Indent, '   ' + chalk.bold.red('Resolve the following issues:'))
+			logger.log(Indent, '   - Install dependencies manually:', chalk.bold.cyan(packageManager + ' install'))
 		}
 		logger.log('')
-		logger.ready(`Successfully created ${projectName}. Happy coding!`)
 	})
 	.parse(process.argv)
 
@@ -183,13 +210,17 @@ async function checkUpdates() {
 			commandName = 'bunx'
 		}
 		const command = `${commandName} ${packageJson.name}@${latestVersion}`
+		const args = process.argv.slice(2).join(' ')
 
 		// Print update message
 		logger.log('')
-		logger.log(Indent, chalk.bold.green(`A new version of ${chalk.bold('create-robo')} is available!`) + chalk.dim(` (v${packageJson.version} -> v${latestVersion})`))
-		logger.log('\n' + Indent, `Run this instead to get the latest updates:`)
-		logger.log(Indent, chalk.bold.cyan(command))
-		logger.log('')
+		logger.log(
+			Indent,
+			chalk.bold.green(`💡 Update available!`),
+			chalk.dim(`(v${packageJson.version} → v${latestVersion})`)
+		)
+		logger.log(Indent, `   Run this instead to get the latest updates:`)
+		logger.log(Indent, '   ' + chalk.bold.cyan(command + ' ' + args))
 	}
 }
 

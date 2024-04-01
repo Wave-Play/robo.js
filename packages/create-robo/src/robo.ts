@@ -15,11 +15,17 @@ import {
 	prettyStringify,
 	sortObjectKeys,
 	updateOrAddVariable,
-	getPackageExecutor
+	getPackageExecutor,
+	Indent
 } from './utils.js'
 import { logger } from './logger.js'
 import { RepoInfo, downloadAndExtractRepo, getRepoInfo, hasRepo } from './templates.js'
 import retry from 'async-retry'
+import { spawn } from 'node:child_process'
+import { color } from '@roboplay/robo.js'
+// @ts-expect-error - Internal
+import { Spinner } from '@roboplay/robo.js/dist/cli/utils/spinner.js'
+import type { CommandOptions } from './index.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -104,13 +110,19 @@ interface PackageJson {
 }
 
 export default class Robo {
+	private readonly _spinner = new Spinner()
 	// Custom properties used to build the Robo project
+	private _installFailed: boolean
 	private _name: string
 	private _useTypeScript: boolean
 	private _workingDir: string
 
 	// Same as above, but exposed as getters
 	private _isPlugin: boolean
+
+	public get installFailed(): boolean {
+		return this._installFailed
+	}
 
 	public get isPlugin(): boolean {
 		return this._isPlugin
@@ -152,12 +164,19 @@ export default class Robo {
 		])
 
 		this._useTypeScript = useTypeScript
+
+		// Move up one line
+		logger.log('\x1B[1A\x1B[K\x1B[1A\x1B[K')
 	}
 
 	async downloadTemplate(url: string) {
 		logger.debug(`Using template: ${url}`)
 		let repoUrl: URL | undefined
 		let repoInfo: RepoInfo | undefined
+		logger.debug('\n')
+		logger.log('\x1B[1A\x1B[K\x1B[1A\x1B[K')
+		logger.log(Indent, chalk.bold('🌐 Creating from template'))
+		this._spinner.setText(Indent + '    {{spinner}} Downloading template...\n')
 
 		try {
 			repoUrl = new URL(url)
@@ -199,12 +218,11 @@ export default class Robo {
 			}
 		}
 
-		logger.info(`Downloading files from repo ${chalk.cyan(url)}. This might take a moment.`)
-		logger.log()
-		await retry(() => downloadAndExtractRepo(this._workingDir, repoInfo), {
+		const result = await retry(() => downloadAndExtractRepo(this._workingDir, repoInfo), {
 			retries: 3
 		})
-		logger.debug(`Finished downloading files from repo ${chalk.cyan(url)}.`)
+		this._spinner.stop(false)
+		logger.log(Indent, `   Bootstraped project successfully from ${chalk.bold.cyan(result?.name ?? 'repository')}.`)
 	}
 
 	useTypeScript(useTypeScript: boolean) {
@@ -235,14 +253,32 @@ export default class Robo {
 			}
 		])
 
+		// Move up one line
+		logger.log('\x1B[1A\x1B[K\x1B[1A\x1B[K')
+
 		return selectedFeatures
 	}
 
-	async createPackage(features: string[], plugins: string[], install: boolean, roboversion: string): Promise<void> {
+	async createPackage(
+		features: string[],
+		plugins: string[],
+		install: boolean,
+		roboversion: string,
+		cliOptions: CommandOptions
+	): Promise<void> {
 		// Find the package manager that triggered this command
 		const packageManager = getPackageManager()
 		logger.debug(`Using ${chalk.bold(packageManager)} in ${this._workingDir}...`)
 		await fs.mkdir(this._workingDir, { recursive: true })
+
+		// Move up one line and print new section
+		logger.debug('\n')
+		logger.log(
+			Indent,
+			chalk.bold(`📦 Creating ${chalk.cyan(this._useTypeScript ? 'TypeScript' : 'JavaScript')} project`)
+		)
+		this._spinner.setText(Indent + '    {{spinner}} Generating files...\n')
+		this._spinner.start()
 
 		// Create a package.json file based on the selected features
 		const npmRegistry = {
@@ -419,7 +455,41 @@ export default class Robo {
 
 		// Install dependencies using the package manager that triggered the command
 		if (install) {
-			await exec(`${cmd(packageManager)} install`, { cwd: this._workingDir })
+			this._spinner.setText(Indent + '    {{spinner}} Installing dependencies...\n')
+			if (cliOptions.verbose) {
+				this._spinner.stop()
+			}
+
+			try {
+				await new Promise<void>((resolve, reject) => {
+					const childProcess = spawn(cmd(packageManager), ['install'], {
+						cwd: this._workingDir,
+						env: { ...process.env, FORCE_COLOR: '1' },
+						stdio: 'pipe'
+					})
+
+					if (cliOptions.verbose) {
+						const onData = (data: Buffer) => {
+							const output = data.toString().trim()
+							logger.debug(Indent, color.dim(output))
+						}
+						childProcess.stderr?.on('data', onData)
+						childProcess.stdout?.on('data', onData)
+					}
+					childProcess.on('exit', (code) => (code ? reject() : resolve()))
+					childProcess.on('close', resolve)
+				})
+				this._spinner.stop(false)
+				let extra = ''
+				if (features.length > 0) {
+					extra = ` with ${features.map((f) => chalk.bold.cyan(f)).join(', ')}`
+				}
+				logger.log(Indent, `   Project created successfully${extra}.`)
+			} catch {
+				this._spinner.stop(false)
+				this._installFailed = true
+				logger.log(Indent, chalk.red(`   Could not install dependencies!`))
+			}
 		}
 
 		// Install and register the necessary plugins
@@ -456,15 +526,16 @@ export default class Robo {
 		}
 	}
 
-	async askForDiscordCredentials(features: string[]): Promise<void> {
-		const discordPortal = chalk.bold('Discord Developer Portal:')
-		const discordPortalUrl = chalk.blue.underline('https://discord.com/developers/applications')
-		const officialGuide = chalk.bold('Official Guide:')
-		const officialGuideUrl = chalk.blue.underline('https://docs.roboplay.dev/docs/advanced/environment-variables')
+	async askForDiscordCredentials(features: string[], verbose: boolean): Promise<void> {
+		const discordPortal = chalk.bold('Portal:')
+		const discordPortalUrl = chalk.blue('https://discord.com/developers/applications')
+		const officialGuide = chalk.bold('Guide:')
+		const officialGuideUrl = chalk.blue('https://docs.roboplay.dev/docs/advanced/environment-variables')
 		logger.log('')
-		logger.log('To get your Discord Token and Client ID, register your bot at the Discord Developer portal.')
-		logger.log(`${discordPortal} ${discordPortalUrl}`)
-		logger.log(`${officialGuide} ${officialGuideUrl}\n`)
+		logger.log(Indent, chalk.bold('🔑 Setting up credentials'))
+		logger.log(Indent, '   Get your credentials from the Discord Developer portal.\n')
+		logger.log(Indent, `   ${discordPortal} ${discordPortalUrl}`)
+		logger.log(Indent, `   ${officialGuide} ${officialGuideUrl}\n`)
 
 		const { discordClientId, discordToken } = await inquirer.prompt([
 			{
@@ -478,6 +549,13 @@ export default class Robo {
 				message: 'Enter your Discord Token (press Enter to skip):'
 			}
 		])
+		if (verbose) {
+			logger.log('')
+		} else {
+			logger.log('\x1B[1A\x1B[K\x1B[1A\x1B[K')
+		}
+		this._spinner.setText(Indent + '    {{spinner}} Applying credentials...\n')
+		this._spinner.start()
 
 		const envFilePath = path.join(this._workingDir, '.env')
 		let envContent = ''
@@ -507,6 +585,8 @@ export default class Robo {
 
 		await fs.writeFile(envFilePath, envContent)
 		await this.createEnvTsFile()
+		this._spinner.stop()
+		logger.log(Indent, '   Manage your credentials in the', chalk.bold.cyan('.env'), 'file.')
 	}
 
 	/**
