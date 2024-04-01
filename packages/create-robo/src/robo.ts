@@ -16,11 +16,11 @@ import {
 	sortObjectKeys,
 	updateOrAddVariable,
 	getPackageExecutor,
-	Indent
+	Indent,
+	ExecOptions
 } from './utils.js'
 import { RepoInfo, downloadAndExtractRepo, getRepoInfo, hasRepo } from './templates.js'
 import retry from 'async-retry'
-import { spawn } from 'node:child_process'
 import { logger } from '@roboplay/robo.js'
 // @ts-expect-error - Internal
 import { Spinner } from '@roboplay/robo.js/dist/cli/utils/spinner.js'
@@ -259,13 +259,9 @@ export default class Robo {
 		return selectedFeatures
 	}
 
-	async createPackage(
-		features: string[],
-		plugins: string[],
-		install: boolean,
-		roboversion: string,
-		cliOptions: CommandOptions
-	): Promise<void> {
+	async createPackage(features: string[], plugins: string[], cliOptions: CommandOptions): Promise<void> {
+		const { install = true } = cliOptions
+
 		// Find the package manager that triggered this command
 		const packageManager = getPackageManager()
 		logger.debug(`Using ${chalk.bold(packageManager)} in ${this._workingDir}...`)
@@ -285,6 +281,8 @@ export default class Robo {
 			access: 'public',
 			registry: 'https://registry.npmjs.org/'
 		} as const
+		const dependencies: string[] = []
+		const devDependencies: string[] = []
 		const packageJson: PackageJson = {
 			name: this._name,
 			description: '',
@@ -304,12 +302,14 @@ export default class Robo {
 		}
 
 		// Robo.js and Discord.js are normal dependencies, unless this is a plugin
+		const roboDep = '@roboplay/robo.js' + (cliOptions.roboVersion ? `@${cliOptions.roboVersion}` : '')
+
 		if (!this._isPlugin) {
-			packageJson.dependencies['@roboplay/robo.js'] = `${roboversion}`
-			packageJson.dependencies['discord.js'] = '^14.13.0'
+			dependencies.push(roboDep)
+			dependencies.push('discord.js')
 		} else {
-			packageJson.devDependencies['@roboplay/robo.js'] = `${roboversion}`
-			packageJson.devDependencies['discord.js'] = '^14.13.0'
+			devDependencies.push(roboDep)
+			devDependencies.push('discord.js')
 			packageJson.peerDependencies = {
 				'@roboplay/robo.js': '^0.9.0'
 			}
@@ -358,14 +358,14 @@ export default class Robo {
 
 		const runPrefix = packageManager === 'npm' ? 'npm run ' : packageManager + ' '
 		if (this._useTypeScript) {
-			packageJson.devDependencies['@swc/core'] = '^1.3.104'
-			packageJson.devDependencies['@types/node'] = '^18.14.6'
-			packageJson.devDependencies['typescript'] = '^5.3.0'
+			devDependencies.push('@swc/core')
+			devDependencies.push('@types/node')
+			devDependencies.push('typescript')
 		}
 
 		logger.debug(`Adding features:`, features)
 		if (features.includes('eslint')) {
-			packageJson.devDependencies['eslint'] = '^8.36.0'
+			devDependencies.push('eslint')
 			packageJson.scripts['lint'] = runPrefix + 'lint:eslint'
 			packageJson.scripts['lint:eslint'] = 'eslint . --ext js,jsx,ts,tsx'
 
@@ -384,14 +384,14 @@ export default class Robo {
 				eslintConfig.parser = '@typescript-eslint/parser'
 				eslintConfig.plugins.push('@typescript-eslint')
 
-				packageJson.devDependencies['@typescript-eslint/eslint-plugin'] = '^5.56.0'
-				packageJson.devDependencies['@typescript-eslint/parser'] = '^5.56.0'
+				devDependencies.push('@typescript-eslint/eslint-plugin')
+				devDependencies.push('@typescript-eslint/parser')
 			}
 			await fs.writeFile(path.join(this._workingDir, '.eslintignore'), ESLINT_IGNORE)
 			await fs.writeFile(path.join(this._workingDir, '.eslintrc.json'), JSON.stringify(eslintConfig, null, 2))
 		}
 		if (features.includes('prettier')) {
-			packageJson.devDependencies['prettier'] = '^2.8.5'
+			devDependencies.push('prettier')
 			packageJson.scripts['lint:style'] = 'prettier --write .'
 
 			const hasLintScript = packageJson.scripts['lint']
@@ -416,7 +416,7 @@ export default class Robo {
 		logger.debug(`Setting up plugins...`)
 
 		if (features.includes('ai')) {
-			packageJson.dependencies['@roboplay/plugin-ai'] = '^0.4.2'
+			dependencies.push('@roboplay/plugin-ai')
 			await this.createPluginConfig('@roboplay/plugin-ai', {
 				commands: false,
 				openaiKey: 'process.env.OPENAI_API_KEY',
@@ -427,59 +427,81 @@ export default class Robo {
 			})
 		}
 		if (features.includes('ai-voice')) {
-			packageJson.dependencies['@roboplay/plugin-ai-voice'] = '^0.1.1'
+			dependencies.push('@roboplay/plugin-ai-voice')
 			await this.createPluginConfig('@roboplay/plugin-ai-voice', {})
 		}
 		if (features.includes('server')) {
-			packageJson.dependencies['@robojs/server'] = '^0.2.3'
-			await this.createPluginConfig('@robojs/server', {
+			dependencies.push('@roboplay/plugin-api')
+			await this.createPluginConfig('@roboplay/plugin-api', {
 				cors: true
 			})
 		}
 		if (features.includes('maintenance')) {
-			packageJson.dependencies['@roboplay/plugin-maintenance'] = '^0.1.0'
+			dependencies.push('@roboplay/plugin-maintenance')
 			await this.createPluginConfig('@roboplay/plugin-maintenance', {})
 		}
 		if (features.includes('modtools')) {
-			packageJson.dependencies['@roboplay/plugin-modtools'] = '^0.2.0'
+			dependencies.push('@roboplay/plugin-modtools')
 			await this.createPluginConfig('@roboplay/plugin-modtools', {})
 		}
 
-		// Sort scripts, dependencies and devDependencies alphabetically because this is important to me
+		// Sort scripts, dependencies, and devDependencies alphabetically (this is important to me)
 		packageJson.scripts = sortObjectKeys(packageJson.scripts)
-		packageJson.dependencies = sortObjectKeys(packageJson.dependencies)
-		packageJson.devDependencies = sortObjectKeys(packageJson.devDependencies)
+		dependencies.sort()
+		devDependencies.sort()
 
-		// Order scripts, dependencies and devDependencies
+		if (!install) {
+			dependencies.forEach((dep) => {
+				const versionIndex = dep.lastIndexOf('@')
+
+				if (versionIndex > 0) {
+					packageJson.dependencies[dep.slice(0, versionIndex)] = dep.slice(versionIndex + 1)
+				} else {
+					packageJson.dependencies[dep] = 'latest'
+				}
+			})
+			devDependencies.forEach((dep) => {
+				const versionIndex = dep.lastIndexOf('@')
+
+				if (versionIndex > 0) {
+					packageJson.devDependencies[dep.slice(0, versionIndex)] = dep.slice(versionIndex + 1)
+				} else {
+					packageJson.devDependencies[dep] = 'latest'
+				}
+			})
+
+			this._spinner.stop(false)
+			let extra = ''
+			if (features.length > 0) {
+				extra = ` with ${features.map((f) => chalk.bold.cyan(f)).join(', ')}`
+			}
+			logger.log(Indent, `   Project created successfully${extra}.`)
+		}
+
+		// Write the package.json file
 		logger.debug(`Writing package.json file...`)
 		await fs.writeFile(path.join(this._workingDir, 'package.json'), JSON.stringify(packageJson, null, 2))
 
 		// Install dependencies using the package manager that triggered the command
 		if (install) {
-			this._spinner.setText(Indent + '    {{spinner}} Installing dependencies...\n')
 			if (cliOptions.verbose) {
 				this._spinner.stop()
 			}
 
 			try {
-				await new Promise<void>((resolve, reject) => {
-					const childProcess = spawn(cmd(packageManager), ['install'], {
-						cwd: this._workingDir,
-						env: { ...process.env, FORCE_COLOR: '1' },
-						stdio: 'pipe'
-					})
+				let baseCommand = cmd(packageManager) + ' ' + (packageManager === 'npm' ? 'install' : 'add')
+				this._spinner.setText(Indent + '    {{spinner}} Installing dependencies...\n')
+				const execOptions: ExecOptions = {
+					cwd: this._workingDir,
+					stdio: cliOptions.verbose ? 'pipe' : 'ignore',
+					verbose: cliOptions.verbose
+				}
 
-					if (cliOptions.verbose) {
-						const onData = (data: Buffer) => {
-							const output = data.toString().trim()
-							logger.debug(Indent, color.dim(output))
-						}
-						childProcess.stderr?.on('data', onData)
-						childProcess.stdout?.on('data', onData)
-					}
-					childProcess.on('exit', (code) => (code ? reject() : resolve()))
-					childProcess.on('close', resolve)
-				})
+				await exec(baseCommand + ' ' + dependencies.join(' '), execOptions)
+
+				this._spinner.setText(Indent + '    {{spinner}} Installing dev dependencies...\n')
+				baseCommand += packageManager === 'yarn' ? ' --dev' : ' --save-dev'
+				await exec(baseCommand + ' ' + devDependencies.join(' '), execOptions)
 				this._spinner.stop(false)
 				let extra = ''
 				if (features.length > 0) {

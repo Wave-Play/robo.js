@@ -53,9 +53,6 @@ new Command('create-robo <projectName>')
 			return
 		}
 
-		// parses robo version argument
-		const roboVersion = await getRoboversionArg(options.roboVersion)
-
 		// Check for updates
 		await checkUpdates()
 
@@ -117,7 +114,7 @@ new Command('create-robo <projectName>')
 			metadata.push({ key: 'Install dependencies', value: 'No' })
 		}
 		if (options.roboVersion) {
-			metadata.push({ key: 'Robo version', value: roboVersion })
+			metadata.push({ key: 'Robo version', value: options.roboVersion })
 		}
 
 		if (metadata.length > 0) {
@@ -154,7 +151,7 @@ new Command('create-robo <projectName>')
 
 			// Get user input to determine which features to include or use the recommended defaults
 			selectedFeaturesOrDefaults = options.features?.split(',') ?? (await robo.getUserInput())
-			await robo.createPackage(selectedFeaturesOrDefaults, plugins, options.install ?? true, roboVersion, options)
+			await robo.createPackage(selectedFeaturesOrDefaults, plugins, options)
 
 			// Determine if TypeScript is selected and copy the corresponding template files
 			logger.debug(`Copying template files...`)
@@ -176,10 +173,13 @@ new Command('create-robo <projectName>')
 		logger.log('')
 		logger.log(Indent, '   ' + chalk.bold('Next steps:'))
 		if (!useSameDirectory) {
-			logger.log(Indent, '   - Move into your Robo directory:', chalk.bold.cyan(`cd ${projectName}`))
+			logger.log(Indent, '   - Change directory:', chalk.bold.cyan(`cd ${projectName}`))
 		}
-		logger.log(Indent, '   - Develop your Robo locally:', chalk.bold.cyan(packageManager + ' run dev'))
-		logger.log(Indent, '   - Deploy your Robo to the cloud:', chalk.bold.cyan(packageManager + ' run deploy'))
+		if (!options.install) {
+			logger.log(Indent, '   - Install dependencies:', chalk.bold.cyan(packageManager + ' install'))
+		}
+		logger.log(Indent, '   - Develop locally:', chalk.bold.cyan(packageManager + ' run dev'))
+		logger.log(Indent, '   - Deploy to the cloud:', chalk.bold.cyan(packageManager + ' run deploy'))
 
 		if (robo.installFailed) {
 			logger.log('')
@@ -222,30 +222,4 @@ async function checkUpdates() {
 		logger.log(Indent, `   Run this instead to get the latest updates:`)
 		logger.log(Indent, '   ' + chalk.bold.cyan(command + ' ' + args))
 	}
-}
-
-async function getRoboversionArg(roboVersion: string): Promise<string> {
-	let result = 'latest'
-
-	if (roboVersion) {
-		const response = await fetch(`https://registry.npmjs.org/@roboplay/robo.js/${roboVersion}`)
-		const version = (await response.json()).version
-
-		if (version) {
-			result = version
-		} else {
-			logger.error('Invalid Robo version, falling back to latest..')
-		}
-	} else {
-		logger.debug('No Robo version specified, reading latest from NPM registry...')
-		const response = await fetch(`https://registry.npmjs.org/@roboplay/robo.js/latest`)
-		const version = (await response.json()).version
-
-		if (version) {
-			result = version
-		} else {
-			logger.error('Failed to read latest Robo version from NPM registry, falling back to latest..')
-		}
-	}
-	return result
 }

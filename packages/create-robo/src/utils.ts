@@ -2,6 +2,7 @@ import { spawn } from 'node:child_process'
 import chalk from 'chalk'
 import { logger } from '@roboplay/robo.js'
 import type { SpawnOptions } from 'node:child_process'
+import type { Logger } from '@roboplay/robo.js'
 
 type PackageManager = 'npm' | 'bun' | 'pnpm' | 'yarn'
 
@@ -51,30 +52,38 @@ export function cmd(packageManager: PackageManager): string {
 	return IS_WINDOWS ? `${packageManager}.cmd` : packageManager
 }
 
+export interface ExecOptions extends SpawnOptions {
+	logger?: Logger | typeof logger
+	resolveOnEvent?: 'close' | 'exit'
+	verbose?: boolean
+}
 /**
  * Run a command as a child process
  */
-export function exec(command: string, options?: SpawnOptions) {
+export function exec(command: string, options?: ExecOptions) {
+	const { logger: customLogger = logger, resolveOnEvent = 'close', verbose, ...spawnOptions } = options ?? {}
 	return new Promise<void>((resolve, reject) => {
-		logger.debug(`> ${chalk.bold(command)}`)
+		customLogger.debug(`> ${chalk.bold(command)}`)
 
 		// Run command as child process
 		const args = command.split(' ')
 		const childProcess = spawn(args.shift(), args, {
 			env: { ...process.env, FORCE_COLOR: '1' },
-			stdio: 'inherit',
-			...(options ?? {})
+			stdio: verbose ? 'pipe' : 'inherit',
+			...(spawnOptions ?? {})
 		})
 
-		// Resolve promise when child process exits
-		childProcess.on('error', reject)
-		childProcess.on('close', (code) => {
-			if (code === 0) {
-				resolve()
-			} else {
-				reject(`Command exited with code ${code}`)
+		if (verbose) {
+			const onData = (data: Buffer) => {
+				const output = data.toString()
+				customLogger.debug(Indent, chalk.dim(output))
 			}
-		})
+			childProcess.stderr?.on('data', onData)
+			childProcess.stdout?.on('data', onData)
+		}
+
+		// Resolve promise when child process exits
+		childProcess.on(resolveOnEvent, (code) => (code ? reject(`Command exited with code ${code}`) : resolve()))
 	})
 }
 
