@@ -70,11 +70,6 @@ const optionalPlugins = [
 		name: `${chalk.bold('Moderation Tools')} - Equip your bot with essential tools to manage and maintain your server.`,
 		short: 'Moderation Tools',
 		value: 'modtools'
-	},
-	{
-		name: `${chalk.bold('Polls')} - Add the ability to create and manage polls with ease.`,
-		short: 'Polls',
-		value: 'polls'
 	}
 ]
 
@@ -411,10 +406,6 @@ export default class Robo {
 		if (features.includes('modtools')) {
 			packageJson.dependencies['@roboplay/plugin-modtools'] = '^0.2.0'
 			await this.createPluginConfig('@roboplay/plugin-modtools', {})
-		}
-		if (features.includes('polls')) {
-			packageJson.dependencies['@roboplay/plugin-poll'] = '^0.1.0'
-			await this.createPluginConfig('@roboplay/plugin-poll', {})
 		}
 
 		// Sort scripts, dependencies and devDependencies alphabetically because this is important to me
