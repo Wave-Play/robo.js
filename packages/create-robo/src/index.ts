@@ -184,7 +184,7 @@ new Command('create-robo <projectName>')
 		if (robo.installFailed) {
 			logger.log('')
 			logger.log(Indent, '   ' + chalk.bold.red('Resolve the following issues:'))
-			logger.log(Indent, '   - Install dependencies manually:', chalk.bold.cyan(packageManager + ' install'))
+			logger.log(Indent, '   - Install dependencies manually:', chalk.bold.cyan(packageManager + ' install <packages>'))
 		}
 		logger.log('')
 	})

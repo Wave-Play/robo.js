@@ -465,7 +465,7 @@ export default class Robo {
 		dependencies.sort()
 		devDependencies.sort()
 
-		if (!install) {
+		const writeDependencies = () => {
 			dependencies.forEach((dep) => {
 				const versionIndex = dep.lastIndexOf('@')
 
@@ -484,7 +484,9 @@ export default class Robo {
 					packageJson.devDependencies[dep] = 'latest'
 				}
 			})
-
+		}
+		if (!install) {
+			writeDependencies()
 			this._spinner.stop(false)
 			let extra = ''
 			if (features.length > 0) {
@@ -527,6 +529,10 @@ export default class Robo {
 				this._spinner.stop(false)
 				this._installFailed = true
 				logger.log(Indent, chalk.red(`   Could not install dependencies!`))
+
+				writeDependencies()
+				logger.debug(`Updating package.json file...`)
+				await fs.writeFile(path.join(this._workingDir, 'package.json'), JSON.stringify(packageJson, null, 2))
 			}
 		}
 
