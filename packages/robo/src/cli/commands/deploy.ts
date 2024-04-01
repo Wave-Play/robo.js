@@ -223,6 +223,8 @@ interface UpdateDeploymentSpinnerOptions {
 }
 function updateDeploymentSpinner(spinner: Spinner | null, options: UpdateDeploymentSpinnerOptions) {
 	const { podStatus, steps, url } = options
+	const queryIndex = url.indexOf('?') // TODO: Remove cleanup once RoboPlay re-uses session
+	const cleanUrl = url?.substring(0, queryIndex !== -1 ? queryIndex : url.length)
 	const podSpinner = podStatus ? '' : '{{spinner}} '
 	const podStatusColor = podStatus ? getPodStatusColor(podStatus) : color.yellow
 	const text =
@@ -235,7 +237,7 @@ function updateDeploymentSpinner(spinner: Spinner | null, options: UpdateDeploym
 		`\n${Indent}    - Building: ${getStepStatus(steps.build)}${Space}` +
 		`\n${Indent}    - Deploying: ${getStepStatus(steps.deploy)}${Space}` +
 		`\n\n${Indent}    ${color.bold('Track live status:')}` +
-		`\n${Indent}    ${color.blue(url)}` +
+		`\n${Indent}    ${color.blue(cleanUrl)}` +
 		(spinner ? `\n\n${Indent}    ${Highlight('Press Enter')} to open status page.\n` : '\n')
 
 	if (spinner) {
