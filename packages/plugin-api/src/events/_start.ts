@@ -3,6 +3,7 @@ import { hasDependency } from '../core/runtime-utils.js'
 import { portal } from '@roboplay/robo.js'
 import type { BaseEngine } from '../engines/base.js'
 import type { Client } from 'discord.js'
+import type { ViteDevServer } from 'vite'
 
 const PATH_REGEX = new RegExp(/\[(.+?)\]/g)
 
@@ -12,6 +13,7 @@ interface PluginOptions {
 	parseBody?: boolean
 	port?: number
 	prefix?: string | null | false
+	vite?: ViteDevServer
 }
 export let pluginOptions: PluginOptions = {}
 
@@ -24,6 +26,23 @@ export default async (_client: Client, options: PluginOptions) => {
 	}
 	if (!pluginOptions.engine) {
 		pluginOptions.engine = await getDefaultEngine()
+	}
+
+	// If Vite is available, start the dev server
+	if (pluginOptions.vite) {
+		logger.debug('Using Vite server specified in options.')
+	} else if (await hasDependency('vite', true)){
+		try {
+			const { createServer: createViteServer } = await import('vite')
+
+			pluginOptions.vite = await createViteServer({
+				server: { middlewareMode: true },
+				root: process.cwd()
+			})
+			logger.debug('Vite server created successfully.')
+		} catch (e) {
+			logger.error(`Failed to start Vite server:`, e)
+		}
 	}
 
 	// Start HTTP server only if API Routes are defined

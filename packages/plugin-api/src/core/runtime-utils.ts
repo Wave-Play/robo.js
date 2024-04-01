@@ -42,10 +42,14 @@ export const IS_BUN = getPackageManager() === 'bun'
 /**
  * Reads the package.json file and returns whether the given dependency is installed.
  */
-export async function hasDependency(name: string): Promise<boolean> {
+export async function hasDependency(name: string, dev = false): Promise<boolean> {
 	try {
 		const packageJsonPath = path.join(process.cwd(), 'package.json')
 		const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf-8'))
+
+		if (dev) {
+			return !!packageJson.devDependencies?.[name]
+		}
 
 		return !!packageJson.dependencies?.[name]
 	} catch {
