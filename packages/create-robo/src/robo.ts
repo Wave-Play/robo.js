@@ -82,6 +82,7 @@ const optionalPlugins = [
 interface PackageJson {
 	name: string
 	description: string
+	keywords: string[]
 	version: string
 	private: boolean
 	engines?: {
@@ -291,6 +292,7 @@ export default class Robo {
 			version: '1.0.0',
 			type: 'module',
 			private: !this._isPlugin,
+			keywords: ['robo', 'robo.js', 'discord', 'discord.js', 'bot'],
 			main: this._isPlugin ? '.robo/build/index.js' : undefined,
 			license: this._isPlugin ? 'MIT' : undefined,
 			author: this._isPlugin ? `Your Name <email>` : undefined,
