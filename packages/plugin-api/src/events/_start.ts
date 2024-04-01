@@ -29,26 +29,21 @@ export default async (_client: Client, options: PluginOptions) => {
 	// Start HTTP server only if API Routes are defined
 	const { engine, port = parseInt(process.env.PORT ?? '3000') } = pluginOptions
 
-	if (portal.apis.size > 0) {
-		logger.debug(`Found ${portal.apis.size} API routes. Preparing server...`)
-		await engine.init()
+	logger.debug(`Found ${portal.apis.size} API routes. Preparing server with ${portal.apis.size} API routes...`)
+	await engine.init()
 
-		// Add loaded API modules onto new router instance
-		const prefix = pluginOptions.prefix ?? ''
-		const paths: string[] = []
+	// Add loaded API modules onto new router instance
+	const prefix = pluginOptions.prefix ?? ''
+	const paths: string[] = []
 
-		portal.apis.forEach((api) => {
-			const key = prefix + '/' + api.key.replace(PATH_REGEX, ':$1')
-			paths.push(key)
-			engine.registerRoute(key, api.handler.default)
-		})
-		logger.debug(`Registered routes:`, paths)
+	portal.apis.forEach((api) => {
+		const key = prefix + '/' + api.key.replace(PATH_REGEX, ':$1')
+		paths.push(key)
+		engine.registerRoute(key, api.handler.default)
+	})
 
-		logger.debug(`Starting server...`)
-		await engine.start({ port })
-	} else {
-		logger.debug('No API routes defined. Skipping server start.')
-	}
+	logger.debug(`Starting server...`)
+	await engine.start({ port })
 }
 
 async function getDefaultEngine() {
