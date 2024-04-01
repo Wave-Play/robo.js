@@ -289,7 +289,7 @@ export default class Robo {
 			version: '1.0.0',
 			type: 'module',
 			private: !this._isPlugin,
-			keywords: ['robo', 'robo.js', 'discord', 'discord.js', 'bot'],
+			keywords: ['robo', 'robo.js'],
 			main: this._isPlugin ? '.robo/build/index.js' : undefined,
 			license: this._isPlugin ? 'MIT' : undefined,
 			author: this._isPlugin ? `Your Name <email>` : undefined,
@@ -299,6 +299,12 @@ export default class Robo {
 			scripts: this._isPlugin ? pluginScripts : roboScripts,
 			dependencies: {},
 			devDependencies: {}
+		}
+
+		if (cliOptions.kit === 'app') {
+			packageJson.keywords.push('activity', 'discord', 'sdk', 'embed', 'embedded app')
+		} else {
+			packageJson.keywords.push('bot', 'discord', 'discord.js')
 		}
 
 		// Robo.js and Discord.js are normal dependencies, unless this is a plugin
@@ -358,9 +364,12 @@ export default class Robo {
 
 		const runPrefix = packageManager === 'npm' ? 'npm run ' : packageManager + ' '
 		if (this._useTypeScript) {
+			packageJson.keywords.push('typescript')
 			devDependencies.push('@swc/core')
 			devDependencies.push('@types/node')
 			devDependencies.push('typescript')
+		} else {
+			packageJson.keywords.push('javascript')
 		}
 
 		logger.debug(`Adding features:`, features)
@@ -416,6 +425,7 @@ export default class Robo {
 		logger.debug(`Setting up plugins...`)
 
 		if (features.includes('ai')) {
+			packageJson.keywords.push('ai', 'gpt', 'openai')
 			dependencies.push('@roboplay/plugin-ai')
 			await this.createPluginConfig('@roboplay/plugin-ai', {
 				commands: false,
@@ -427,25 +437,30 @@ export default class Robo {
 			})
 		}
 		if (features.includes('ai-voice')) {
+			packageJson.keywords.push('speech', 'voice')
 			dependencies.push('@roboplay/plugin-ai-voice')
 			await this.createPluginConfig('@roboplay/plugin-ai-voice', {})
 		}
 		if (features.includes('server')) {
+			packageJson.keywords.push('api', 'http', 'server', 'web')
 			dependencies.push('@roboplay/plugin-api')
 			await this.createPluginConfig('@roboplay/plugin-api', {
 				cors: true
 			})
 		}
 		if (features.includes('maintenance')) {
+			packageJson.keywords.push('maintenance')
 			dependencies.push('@roboplay/plugin-maintenance')
 			await this.createPluginConfig('@roboplay/plugin-maintenance', {})
 		}
 		if (features.includes('modtools')) {
+			packageJson.keywords.push('moderation', 'moderator')
 			dependencies.push('@roboplay/plugin-modtools')
 			await this.createPluginConfig('@roboplay/plugin-modtools', {})
 		}
 
-		// Sort scripts, dependencies, and devDependencies alphabetically (this is important to me)
+		// Sort keywords, scripts, dependencies, and devDependencies alphabetically (this is important to me)
+		packageJson.keywords.sort()
 		packageJson.scripts = sortObjectKeys(packageJson.scripts)
 		dependencies.sort()
 		devDependencies.sort()
