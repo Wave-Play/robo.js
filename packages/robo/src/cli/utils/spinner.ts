@@ -48,6 +48,18 @@ export class Spinner {
 		}
 	}
 
+	private render() {
+		const spinner = this.renderSpinner()
+		this.clear()
+
+		this.message = this.text.replaceAll('{{spinner}}', spinner)
+		process.stdout.write('\r' + this.message)
+		if (this.logs.length > 0) {
+			process.stdout.write('\n' + this.logs.join('\n'))
+		}
+		this.current = (this.current + 1) % this.symbols.length
+	}
+
 	private renderSpinner() {
 		return this.decoration(this.symbols[this.current])
 	}
@@ -69,23 +81,14 @@ export class Spinner {
 	}
 
 	public start() {
-		this.intervalId = setInterval(() => {
-			const spinner = this.renderSpinner()
-			this.clear()
-
-			this.message = this.text.replaceAll('{{spinner}}', spinner)
-			process.stdout.write('\r' + this.message)
-			if (this.logs.length > 0) {
-				process.stdout.write('\n' + this.logs.join('\n'))
-			}
-			this.current = (this.current + 1) % this.symbols.length
-		}, this.interval)
+		this.intervalId = setInterval(() => this.render(), this.interval)
 	}
 
 	public stop(moveUp = true) {
 		if (this.intervalId) {
 			clearInterval(this.intervalId)
 			this.intervalId = null
+			this.render()
 			this.clear(moveUp)
 			this.message = null
 		}
