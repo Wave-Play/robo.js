@@ -142,6 +142,7 @@ export default class Robo {
 
 	// Custom properties used to build the Robo project
 	private _installFailed: boolean
+	private _missingEnv: boolean
 	private _name: string
 	private _useTypeScript: boolean | undefined
 	private _workingDir: string
@@ -155,6 +156,10 @@ export default class Robo {
 
 	public get isPlugin(): boolean {
 		return this._isPlugin
+	}
+
+	public get missingEnv(): boolean {
+		return this._missingEnv
 	}
 
 	constructor(name: string, isPlugin: boolean, useSameDirectory: boolean) {
@@ -635,6 +640,11 @@ export default class Robo {
 				message: 'Enter your Discord Token (press Enter to skip):'
 			}
 		])
+
+		if (!discordClientId || !discordToken) {
+			this._missingEnv = true
+		}
+
 		if (verbose) {
 			logger.log('')
 		} else {

@@ -180,6 +180,9 @@ new Command('create-robo <projectName>')
 		if (!options.install) {
 			logger.log(Indent, '   - Install dependencies:', chalk.bold.cyan(packageManager + ' install'))
 		}
+		if (robo.missingEnv) {
+			logger.log(Indent, '   - Add missing variables:', chalk.bold.cyan('.env'))
+		}
 		logger.log(Indent, '   - Develop locally:', chalk.bold.cyan(packageManager + ' run dev'))
 		logger.log(Indent, '   - Deploy to the cloud:', chalk.bold.cyan(packageManager + ' run deploy'))
 
