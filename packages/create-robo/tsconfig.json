@@ -1,10 +1,10 @@
 {
-	"include": ["src"],
+	"include": ["__tests__", "src"],
 	"compilerOptions": {
 		"target": "ESNext",
 		"module": "node16",
 		"lib": ["dom", "dom.iterable", "esnext"],
-		"types": ["node"],
+		"types": ["node", "jest"],
 		"baseUrl": ".",
 		"allowJs": true,
 		"skipLibCheck": true,
