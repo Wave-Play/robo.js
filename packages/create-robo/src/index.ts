@@ -149,8 +149,6 @@ new Command('create-robo <projectName>')
 			if (options.javascript || options.typescript) {
 				const useTypeScript = options.typescript ?? false
 				robo.useTypeScript(useTypeScript)
-			} else {
-				await robo.askUseTypeScript()
 			}
 
 			// Get user input to determine which features to include or use the recommended defaults

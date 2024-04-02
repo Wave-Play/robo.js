@@ -44,6 +44,27 @@ const pluginScripts = {
 	prepublishOnly: 'robo build plugin'
 }
 
+const optionalFeatures = [
+	{
+		name: `${chalk.bold('TypeScript')} (recommended) - A superset of JavaScript that adds static types.`,
+		short: 'TypeScript',
+		value: 'typescript',
+		checked: true
+	},
+	{
+		name: `${chalk.bold('ESLint')} (recommended) - Keeps your code clean and consistent.`,
+		short: 'ESLint',
+		value: 'eslint',
+		checked: true
+	},
+	{
+		name: `${chalk.bold('Prettier')} (recommended) - Automatically formats your code for readability.`,
+		short: 'Prettier',
+		value: 'prettier',
+		checked: true
+	}
+]
+
 const optionalPlugins = [
 	new inquirer.Separator('\nOptional Plugins:'),
 	{
@@ -115,7 +136,7 @@ export default class Robo {
 	// Custom properties used to build the Robo project
 	private _installFailed: boolean
 	private _name: string
-	private _useTypeScript: boolean
+	private _useTypeScript: boolean | undefined
 	private _workingDir: string
 
 	// Same as above, but exposed as getters
@@ -149,25 +170,6 @@ export default class Robo {
 		])
 
 		this._isPlugin = isPlugin
-	}
-
-	async askUseTypeScript() {
-		const { useTypeScript } = await inquirer.prompt([
-			{
-				type: 'list',
-				name: 'useTypeScript',
-				message: chalk.blue('Would you like to use TypeScript?'),
-				choices: [
-					{ name: 'Yes', value: true },
-					{ name: 'No', value: false }
-				]
-			}
-		])
-
-		this._useTypeScript = useTypeScript
-
-		// Move up one line
-		logger.log('\x1B[1A\x1B[K\x1B[1A\x1B[K')
 	}
 
 	async downloadTemplate(url: string) {
@@ -231,28 +233,20 @@ export default class Robo {
 	}
 
 	async getUserInput(): Promise<string[]> {
+		const features =
+			this._useTypeScript !== undefined ? optionalFeatures.filter((f) => f.value !== 'typescript') : optionalFeatures
 		const { selectedFeatures } = await inquirer.prompt([
 			{
 				type: 'checkbox',
 				name: 'selectedFeatures',
 				message: 'Select features:',
-				choices: [
-					{
-						name: `${chalk.bold('ESLint')} (recommended) - Keeps your code clean and consistent.`,
-						short: 'ESLint',
-						value: 'eslint',
-						checked: true
-					},
-					{
-						name: `${chalk.bold('Prettier')} (recommended) - Automatically formats your code for readability.`,
-						short: 'Prettier',
-						value: 'prettier',
-						checked: true
-					},
-					...(this._isPlugin ? [] : optionalPlugins)
-				]
+				choices: [...features, ...(this._isPlugin ? [] : optionalPlugins)]
 			}
 		])
+
+		if (this._useTypeScript === undefined) {
+			this._useTypeScript = selectedFeatures.includes('typescript')
+		}
 
 		// Move up one line
 		logger.log('\x1B[1A\x1B[K\x1B[1A\x1B[K')
