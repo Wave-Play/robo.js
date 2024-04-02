@@ -42,14 +42,6 @@ export default {
 	type: 'robo'
 }\n`
 
-/**
- * Eh, just Windows things
- */
-
-export function getNodeOptions(): string {
-	return IS_WINDOWS ? 'set NODE_OPTIONS=--enable-source-maps &&' : 'NODE_OPTIONS=--enable-source-maps'
-}
-
 export function cmd(packageManager: PackageManager): string {
 	return IS_WINDOWS ? `${packageManager}.cmd` : packageManager
 }

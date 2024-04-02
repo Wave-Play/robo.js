@@ -11,7 +11,6 @@ import {
 	exec,
 	getPackageManager,
 	hasProperties,
-	getNodeOptions,
 	prettyStringify,
 	sortObjectKeys,
 	updateOrAddVariable,
@@ -32,7 +31,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const roboScripts = {
 	build: 'robo build',
 	deploy: 'robo deploy',
-	dev: `${getNodeOptions()} robo dev`,
+	dev: `robox dev`,
 	doctor: 'robo doctor',
 	invite: 'robo invite',
 	start: 'robo start'
@@ -40,7 +39,7 @@ const roboScripts = {
 
 const pluginScripts = {
 	build: 'robo build plugin',
-	dev: `${getNodeOptions()} robo build plugin --watch`,
+	dev: `robo build plugin --watch`,
 	prepublishOnly: 'robo build plugin'
 }
 
@@ -62,6 +61,12 @@ const optionalFeatures = [
 		short: 'Prettier',
 		value: 'prettier',
 		checked: true
+	},
+	{
+		name: `${chalk.bold('Extensionless')} - Removes the need for file extensions in imports.`,
+		short: 'Extensionless',
+		value: 'extensionless',
+		checked: false
 	}
 ]
 
@@ -132,7 +137,9 @@ interface PackageJson {
 }
 
 export default class Robo {
+	private readonly _nodeOptions = ['--enable-source-maps']
 	private readonly _spinner = new Spinner()
+
 	// Custom properties used to build the Robo project
 	private _installFailed: boolean
 	private _name: string
@@ -233,8 +240,20 @@ export default class Robo {
 	}
 
 	async getUserInput(): Promise<string[]> {
+		// Exclude TypeScript from the optional features if the user has already selected it
 		const features =
 			this._useTypeScript !== undefined ? optionalFeatures.filter((f) => f.value !== 'typescript') : optionalFeatures
+
+		// Sorry, plugin developers don't get Extensionless as an option
+		if (this._isPlugin) {
+			const index = features.findIndex((f) => f.value === 'extensionless')
+
+			if (index >= 0) {
+				features.splice(index, 1)
+			}
+		}
+
+		// Prompto! (I'm sorry)
 		const { selectedFeatures } = await inquirer.prompt([
 			{
 				type: 'checkbox',
@@ -244,6 +263,7 @@ export default class Robo {
 			}
 		])
 
+		// Determine if TypeScript is selected only if it wasn't previously set
 		if (this._useTypeScript === undefined) {
 			this._useTypeScript = selectedFeatures.includes('typescript')
 		}
@@ -394,6 +414,7 @@ export default class Robo {
 			await fs.writeFile(path.join(this._workingDir, '.eslintignore'), ESLINT_IGNORE)
 			await fs.writeFile(path.join(this._workingDir, '.eslintrc.json'), JSON.stringify(eslintConfig, null, 2))
 		}
+
 		if (features.includes('prettier')) {
 			devDependencies.push('prettier')
 			packageJson.scripts['lint:style'] = 'prettier --write .'
@@ -405,6 +426,16 @@ export default class Robo {
 
 			// Create the prettier.config.js file
 			await fs.writeFile(path.join(this._workingDir, 'prettier.config.mjs'), PRETTIER_CONFIG)
+		}
+
+		if (features.includes('extensionless')) {
+			dependencies.push('extensionless')
+			this._nodeOptions.push('--import=extensionless/register')
+
+			// Replace every "robo" command with "robox"
+			for (const [key, value] of Object.entries(packageJson.scripts)) {
+				packageJson.scripts[key] = value.replace('robo ', 'robox ')
+			}
 		}
 
 		// Create the robo.mjs file
@@ -480,12 +511,18 @@ export default class Robo {
 				}
 			})
 		}
+
+		const pureFeatures = features
+			.filter((f) => f !== 'typescript')
+			.map((f) => {
+				return optionalFeatures.find((feature) => feature.value === f)?.short ?? f
+			})
 		if (!install) {
 			writeDependencies()
 			this._spinner.stop(false)
 			let extra = ''
-			if (features.length > 0) {
-				extra = ` with ${features.map((f) => chalk.bold.cyan(f)).join(', ')}`
+			if (pureFeatures.length > 0) {
+				extra = ` with ${pureFeatures.map((f) => chalk.bold.cyan(f)).join(', ')}`
 			}
 			logger.log(Indent, `   Project created successfully${extra}.`)
 		}
@@ -516,16 +553,16 @@ export default class Robo {
 				await exec(baseCommand + ' ' + devDependencies.join(' '), execOptions)
 				this._spinner.stop(false)
 				let extra = ''
-				if (features.length > 0) {
-					extra = ` with ${features.map((f) => chalk.bold.cyan(f)).join(', ')}`
+				if (pureFeatures.length > 0) {
+					extra = ` with ${pureFeatures.map((f) => chalk.bold.cyan(f)).join(', ')}`
 				}
-				
+
 				// Oxford comma 'cause we fancy uwu
-				if (features.length > 1) {
+				if (pureFeatures.length > 1) {
 					const lastComma = extra.lastIndexOf(',')
 					extra = extra.slice(0, lastComma) + ' and' + extra.slice(lastComma + 1)
 				}
-				if (features.length > 2) {
+				if (pureFeatures.length > 2) {
 					extra = extra.replace(' and', ', and')
 				}
 
@@ -620,6 +657,7 @@ export default class Robo {
 		// Update DISCORD_TOKEN and DISCORD_CLIENT_ID variables
 		envContent = updateOrAddVariable(envContent, 'DISCORD_CLIENT_ID', discordClientId ?? '')
 		envContent = updateOrAddVariable(envContent, 'DISCORD_TOKEN', discordToken ?? '')
+		envContent = updateOrAddVariable(envContent, 'NODE_OPTIONS', this._nodeOptions.join(' '))
 
 		if (features.includes('ai') || features.includes('gpt')) {
 			envContent = updateOrAddVariable(envContent, 'OPENAI_KEY', '')
