@@ -12,6 +12,8 @@ export const ESLINT_IGNORE = `node_modules
 
 export const Indent = ' '.repeat(3)
 
+export const Space = ' '.repeat(8)
+
 export const IS_WINDOWS = /^win/.test(process.platform)
 
 export const PRETTIER_CONFIG = `module.exports = {

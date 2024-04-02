@@ -17,7 +17,8 @@ import {
 	updateOrAddVariable,
 	getPackageExecutor,
 	Indent,
-	ExecOptions
+	ExecOptions,
+	Space
 } from './utils.js'
 import { RepoInfo, downloadAndExtractRepo, getRepoInfo, hasRepo } from './templates.js'
 import retry from 'async-retry'
@@ -524,7 +525,7 @@ export default class Robo {
 				if (features.length > 0) {
 					extra = ` with ${features.map((f) => chalk.bold.cyan(f)).join(', ')}`
 				}
-				logger.log(Indent, `   Project created successfully${extra}.`)
+				logger.log(Indent, `   Project created successfully${extra}.`, Space)
 			} catch {
 				this._spinner.stop(false)
 				this._installFailed = true
