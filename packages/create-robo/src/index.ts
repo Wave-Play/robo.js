@@ -16,13 +16,13 @@ export interface CommandOptions {
 	features?: string
 	install?: boolean
 	javascript?: boolean
+	kit?: 'app' | 'bot'
 	plugin?: boolean
 	plugins?: string[]
 	template?: string
 	typescript?: boolean
 	verbose?: boolean
 	roboVersion?: string
-	kit?: 'app' | 'bot'
 	update?: boolean
 }
 
@@ -173,7 +173,7 @@ new Command('create-robo <projectName>')
 		const packageManager = getPackageManager()
 		logger.log(Indent.repeat(15))
 		logger.log(Indent, '🚀', chalk.bold.green('Your Robo is ready!'))
-		logger.log(Indent, '   Welcome to this world,', chalk.bold(projectName))
+		logger.log(Indent, '   Say hello to this world,', chalk.bold(projectName) + '.')
 		logger.log('')
 		logger.log(Indent, '   ' + chalk.bold('Next steps:'))
 		if (!useSameDirectory) {
