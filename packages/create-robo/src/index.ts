@@ -23,6 +23,7 @@ export interface CommandOptions {
 	verbose?: boolean
 	roboVersion?: string
 	kit?: 'app' | 'bot'
+	update?: boolean
 }
 
 new Command('create-robo <projectName>')
@@ -33,6 +34,7 @@ new Command('create-robo <projectName>')
 	.option('-p --plugins <plugins...>', 'pre-install plugins along with the project')
 	.option('-P --plugin', 'create a Robo plugin instead of a bot')
 	.option('-ni --no-install', 'skip installing dependencies')
+	.option('-nu --no-update', 'skip checking for updates')
 	.option('-t --template <templateUrl>', 'create a Robo from an online template')
 	.option('-ts --typescript', 'create a Robo using TypeScript')
 	.option('-v --verbose', 'print more information for debugging')
@@ -54,7 +56,9 @@ new Command('create-robo <projectName>')
 		}
 
 		// Check for updates
-		await checkUpdates()
+		if (options.update) {
+			await checkUpdates()
+		}
 
 		// Infer project name from current directory if it was not provided
 		let projectName = args[0]
