@@ -27,6 +27,7 @@
 	},
 	"bin": {
 		"robo": "dist/cli/index.js",
+		"robox": "dist/cli/robox.js",
 		"sage": "dist/cli/sage.js"
 	},
 	"type": "module",
