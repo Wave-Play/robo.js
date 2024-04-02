@@ -525,6 +525,16 @@ export default class Robo {
 				if (features.length > 0) {
 					extra = ` with ${features.map((f) => chalk.bold.cyan(f)).join(', ')}`
 				}
+				
+				// Oxford comma 'cause we fancy uwu
+				if (features.length > 1) {
+					const lastComma = extra.lastIndexOf(',')
+					extra = extra.slice(0, lastComma) + ' and' + extra.slice(lastComma + 1)
+				}
+				if (features.length > 2) {
+					extra = extra.replace(' and', ', and')
+				}
+
 				logger.log(Indent, `   Project created successfully${extra}.`, Space)
 			} catch {
 				this._spinner.stop(false)
@@ -572,10 +582,10 @@ export default class Robo {
 	}
 
 	async askForDiscordCredentials(features: string[], verbose: boolean): Promise<void> {
-		const discordPortal = chalk.bold('Portal:')
-		const discordPortalUrl = chalk.blue('https://discord.com/developers/applications')
-		const officialGuide = chalk.bold('Guide:')
-		const officialGuideUrl = chalk.blue('https://docs.roboplay.dev/docs/advanced/environment-variables')
+		const discordPortal = 'Portal:'
+		const discordPortalUrl = chalk.bold.blue('https://discord.com/developers/applications')
+		const officialGuide = 'Guide:'
+		const officialGuideUrl = chalk.bold.blue('https://roboplay.dev/botkey')
 		logger.log('')
 		logger.log(Indent, chalk.bold('🔑 Setting up credentials'))
 		logger.log(Indent, '   Get your credentials from the Discord Developer portal.\n')
