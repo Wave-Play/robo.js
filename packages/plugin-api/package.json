@@ -1,7 +1,7 @@
 {
-	"name": "@robojs/server",
-	"description": "Simplified web server for your Robo.",
-	"version": "0.2.3",
+	"name": "@roboplay/plugin-api",
+	"description": "",
+	"version": "0.3.0",
 	"private": false,
 	"type": "module",
 	"main": ".robo/build/index.js",
