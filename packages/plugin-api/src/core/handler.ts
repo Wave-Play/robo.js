@@ -6,11 +6,12 @@ import { pluginOptions } from '../events/_start.js'
 import { RoboError } from './runtime-utils.js'
 import type { Router } from './router.js'
 import type { HttpMethod, RoboReply, RoboRequest } from './types.js'
+import type { ViteDevServer } from 'vite'
 
 const MAX_BODY_SIZE = 5 * 1024 * 1024 // 5MB
 const BodyMethods = ['PATCH', 'POST', 'PUT']
 
-export function createServerHandler(router: Router) {
+export function createServerHandler(router: Router, vite?: ViteDevServer) {
 	const { parseBody = true } = pluginOptions
 
 	return async (req: IncomingMessage, res: ServerResponse<IncomingMessage>) => {
@@ -32,7 +33,7 @@ export function createServerHandler(router: Router) {
 
 		// Parse request body if applicable
 		let body: Record<string, unknown>
-		
+
 		if (parseBody && BodyMethods.includes(req.method)) {
 			try {
 				body = await getRequestBody(req)
@@ -87,8 +88,14 @@ export function createServerHandler(router: Router) {
 		const route = router.find(parsedUrl.pathname)
 		requestWrapper.params = route?.params ?? {}
 
+		if (!route?.handler && vite) {
+			logger.debug(`Forwarding to Vite:`, req.url)
+			vite.middlewares(req, res)
+			return
+		}
+
 		if (!route?.handler) {
-			replyWrapper.code(404).send('API Route not found.')
+			replyWrapper.code(404).json('API Route not found.')
 			return
 		}
 
@@ -99,7 +106,7 @@ export function createServerHandler(router: Router) {
 				replyWrapper.code(200).json(result)
 			}
 		} catch (error) {
-			logger.error(`API Route error:`, error)
+			logger.error(error)
 
 			if (error instanceof RoboError) {
 				Object.entries(error.headers ?? {}).forEach(([key, value]) => {

@@ -1,5 +1,7 @@
 import { logger } from '../core/logger.js'
 import { hasDependency } from '../core/runtime-utils.js'
+import { existsSync } from 'node:fs'
+import path from 'node:path'
 import { portal } from '@roboplay/robo.js'
 import type { BaseEngine } from '../engines/base.js'
 import type { Client } from 'discord.js'
@@ -31,12 +33,14 @@ export default async (_client: Client, options: PluginOptions) => {
 	// If Vite is available, start the dev server
 	if (pluginOptions.vite) {
 		logger.debug('Using Vite server specified in options.')
-	} else if (await hasDependency('vite', true)){
+	} else if (await hasDependency('vite', true)) {
 		try {
 			const { createServer: createViteServer } = await import('vite')
+			const viteConfigPath = path.join(process.cwd(), 'config', 'vite.mjs')
 
 			pluginOptions.vite = await createViteServer({
 				server: { middlewareMode: true },
+				configFile: existsSync(viteConfigPath) ? viteConfigPath : undefined,
 				root: process.cwd()
 			})
 			logger.debug('Vite server created successfully.')
@@ -48,6 +52,8 @@ export default async (_client: Client, options: PluginOptions) => {
 	// Start HTTP server only if API Routes are defined
 	const { engine, port = parseInt(process.env.PORT ?? '3000') } = pluginOptions
 
+	logger.debug(`Preparing server with ${portal.apis.size} API routes...`)
+	await engine.init({ vite: pluginOptions.vite })
 
 	// Add loaded API modules onto new router instance
 	const prefix = pluginOptions.prefix ?? ''

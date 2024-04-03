@@ -2,17 +2,24 @@ import { logger } from '../core/logger.js'
 import { BaseEngine } from './base.js'
 import { color, composeColors } from '@roboplay/robo.js'
 import type { HttpMethod, RoboReply, RoboRequest, RouteHandler } from '../core/types.js'
-import type { StartOptions } from './base.js'
+import type { InitOptions, StartOptions } from './base.js'
 import type { FastifyInstance } from 'fastify'
+import type { ViteDevServer } from 'vite'
 
 export class FastifyEngine extends BaseEngine {
 	private _isRunning = false
 	private _server: FastifyInstance | null = null
+	private _vite: ViteDevServer | null = null
 
-	public async init(): Promise<void> {
+	public async init(options: InitOptions): Promise<void> {
 		const { fastify } = await import('fastify')
 		this._server = fastify()
+		this._vite = options.vite
 
+		this._server.setNotFoundHandler((request, reply) => {
+			logger.debug(`Forwarding to Vite:`, request.url)
+			this._vite.middlewares(request.raw, reply.raw)
+		})
 		this._server.setErrorHandler((error, _request, reply) => {
 			logger.error(error)
 			reply.status(500).send({ ok: false })
@@ -96,9 +103,9 @@ export class FastifyEngine extends BaseEngine {
 	}
 
 	public async stop(): Promise<void> {
-		return new Promise((resolve) => {
+		const serverPromise = new Promise<void>((resolve) => {
 			if (!this._server) {
-				logger.warn(`Fastify server isn't running. Nothing to stop here.`)
+				logger.debug(`Fastify server isn't running. Nothing to stop here.`)
 				resolve()
 				return
 			}
@@ -114,5 +121,8 @@ export class FastifyEngine extends BaseEngine {
 					logger.error(`Error stopping the Fastify server: ${err}`)
 				})
 		})
+		const vitePromise = this._vite?.close()
+
+		await Promise.allSettled([serverPromise, vitePromise])
 	}
 }
