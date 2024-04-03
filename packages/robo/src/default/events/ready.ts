@@ -4,7 +4,8 @@ import { ChannelType } from 'discord.js'
 import type { Client } from 'discord.js'
 
 export default async (client: Client) => {
-	discordLogger.ready(`On standby as ${color.bold(client.user.tag)} (${new Date().toLocaleString()})`)
+	const readyAt = color.dim(`(${new Date().toLocaleString()})`)
+	discordLogger.ready(`On standby as ${color.bold(client.user.tag)}`, readyAt)
 
 	// Send update message if this Robo was just restarted
 	const restartData = getState<{ channelId: string; startTime: number }>(STATE_KEYS.restart)
