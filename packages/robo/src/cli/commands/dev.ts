@@ -1,7 +1,7 @@
 import { Command } from '../utils/cli-handler.js'
 import { ChildProcess, spawn } from 'child_process'
 import { logger } from '../../core/logger.js'
-import { DEFAULT_CONFIG, FLASHCORE_KEYS, cloudflareLogger } from '../../core/constants.js'
+import { DEFAULT_CONFIG, FLASHCORE_KEYS, Indent, cloudflareLogger } from '../../core/constants.js'
 import { getConfigPaths, loadConfig, loadConfigPath } from '../../core/config.js'
 import { installCloudflared, isCloudflaredInstalled, startCloudflared, stopCloudflared } from '../utils/cloudflared.js'
 import { IS_WINDOWS, cmd, filterExistingPaths, getWatchedPlugins, packageJson, timeout } from '../utils/utils.js'
@@ -38,11 +38,17 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 	logger({
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : 'info'
-	}).info('Starting Robo in development mode...')
-	logger.warn(`Thank you for trying Robo.js! This is a pre-release version, so please let us know of issues on GitHub.`)
+	})
 	logger.debug(`Package manager:`, getPackageManager())
 	logger.debug(`Robo.js version:`, packageJson.version)
 	logger.debug(`Current working directory:`, process.cwd())
+
+	// Welcomeee
+	const projectName = path.basename(process.cwd()).toLowerCase()
+	logger.log('')
+	logger.log(Indent, color.bold(`🚀 Starting ${color.cyan(projectName)} in ${color.cyan('development')} mode`))
+	logger.log(Indent, '   Beep boop... Code your Robo to life! Got feedback? Drop it on GitHub.')
+	logger.log('')
 
 	// Load the configuration before anything else
 	const config = await loadConfig()
