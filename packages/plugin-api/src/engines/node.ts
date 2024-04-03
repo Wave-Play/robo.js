@@ -40,7 +40,7 @@ export class NodeEngine extends BaseEngine {
 			// Start server
 			this._isRunning = true
 			this._server.listen(port, () => {
-				logger.ready(`🚀 Server is live at ${composeColors(color.bold, color.underline)(`http://localhost:${port}`)}`)
+				logger.ready(`Server is live at ${composeColors(color.bold, color.blue)(`http://localhost:${port}`)}`)
 				resolve()
 			})
 		})

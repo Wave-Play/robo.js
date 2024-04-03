@@ -48,8 +48,6 @@ export default async (_client: Client, options: PluginOptions) => {
 	// Start HTTP server only if API Routes are defined
 	const { engine, port = parseInt(process.env.PORT ?? '3000') } = pluginOptions
 
-	logger.debug(`Found ${portal.apis.size} API routes. Preparing server with ${portal.apis.size} API routes...`)
-	await engine.init()
 
 	// Add loaded API modules onto new router instance
 	const prefix = pluginOptions.prefix ?? ''
