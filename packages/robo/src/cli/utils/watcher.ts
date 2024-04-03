@@ -81,7 +81,11 @@ export default class Watcher {
 			if (!this.isFirstTime) {
 				callback('added', targetPath)
 			}
-		} else if (stats.isDirectory() && (!options.exclude || !options.exclude.includes(path.basename(targetPath)))) {
+		} else if (
+			stats.isDirectory() &&
+			(!options.exclude ||
+				(!options.exclude.includes(path.basename(targetPath)) && !options.exclude.includes(targetPath)))
+		) {
 			// If a directory, read all the contents and watch them.
 			const files = await this.retry(() => fs.readdir(targetPath, { withFileTypes: true }))
 

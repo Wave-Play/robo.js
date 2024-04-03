@@ -168,6 +168,7 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 
 	// Watch for changes in the "src" directory alongside special files
 	const watchedPaths = ['src']
+	const ignoredPaths = ['node_modules', '.git', ...(config.watcher?.ignore ?? [])]
 	const additionalFiles = await filterExistingPaths(['.env', 'tsconfig.json', configRelative])
 	watchedPaths.push(...additionalFiles)
 
@@ -178,9 +179,8 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 
 	// Watch while preventing multiple restarts from happening at the same time
 	logger.debug(`Watching:`, watchedPaths)
-	const watcher = new Watcher(watchedPaths, {
-		exclude: ['node_modules', '.git']
-	})
+	logger.debug(`Ignoring paths:`, ignoredPaths)
+	const watcher = new Watcher(watchedPaths, { exclude: ignoredPaths })
 	let isUpdating = false
 
 	watcher.start(async (changes) => {
