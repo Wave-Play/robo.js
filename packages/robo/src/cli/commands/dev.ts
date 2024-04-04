@@ -43,6 +43,11 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 	logger.debug(`Robo.js version:`, packageJson.version)
 	logger.debug(`Current working directory:`, process.cwd())
 
+	// Set NODE_ENV to development if not already set
+	if (!process.env.NODE_ENV) {
+		process.env.NODE_ENV = 'development'
+	}
+
 	// Welcomeee
 	const projectName = path.basename(process.cwd()).toLowerCase()
 	logger.log('')

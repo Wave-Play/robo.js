@@ -28,12 +28,17 @@ async function startAction(_args: string[], options: StartCommandOptions) {
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : 'info'
 	})
-	
+
+	// Set NODE_ENV to production if not already set
+	if (!process.env.NODE_ENV) {
+		process.env.NODE_ENV = 'production'
+	}
+
 	// Welcomeee
 	const projectName = path.basename(process.cwd()).toLowerCase()
 	logger.log('')
 	logger.log(Indent, color.bold(`🚀 Starting ${color.cyan(projectName)} in ${color.cyan('production')} mode`))
-	logger.log(Indent, '   Boop beep... Power on your Robo creation! Need hosting? Check out RoboPlay!')
+	logger.log(Indent, '   Boop beep... Powering on your Robo creation! Need hosting? Check out RoboPlay!')
 	logger.log('')
 
 	// Check if .robo/build directory has .js files (recursively)
