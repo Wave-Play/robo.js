@@ -25,43 +25,46 @@ export class FastifyEngine extends BaseEngine {
 			reply.status(500).send({ ok: false })
 		})
 
-		this._server.setNotFoundHandler(async (request, reply) => {
+		this._server.setNotFoundHandler((request, reply) => {
 			logger.debug(color.bold(request.method), request.raw.url)
 
 			if (options.vite) {
 				logger.debug(`Forwarding to Vite:`, request.url)
-				this._vite.middlewares(request.raw, reply.raw)
+				options.vite.middlewares(request.raw, reply.raw)
 				return
 			}
 
-			const parsedUrl = url.parse(request.url, true)
-			try {
-				const callback = async (filePath: string, mimeType: string) => {
-					await reply
-						.header('Content-Type', mimeType)
-						.header('X-Content-Type-Options', 'nosniff')
-						.type(mimeType)
-						.send(createReadStream(filePath))
+			const run = async () => {
+				try {
+					const callback = async (filePath: string, mimeType: string) => {
+						await reply
+							.header('Content-Type', mimeType)
+							.header('X-Content-Type-Options', 'nosniff')
+							.type(mimeType)
+							.send(createReadStream(filePath))
+					}
+
+					const parsedUrl = url.parse(request.url, true)
+					if (await handlePublicFile(parsedUrl, callback)) {
+						return
+					}
+				} catch (error) {
+					if (error instanceof RoboError) {
+						Object.entries(error.headers ?? {}).forEach(([key, value]) => {
+							reply.header(key, value)
+						})
+						reply.code(error.status ?? 500).send(error.data ?? error.message)
+						return
+					} else {
+						logger.error(error)
+					}
 				}
 
-				if (await handlePublicFile(parsedUrl, callback)) {
-					return
-				}
-			} catch (error) {
-				if (error instanceof RoboError) {
-					Object.entries(error.headers ?? {}).forEach(([key, value]) => {
-						reply.header(key, value)
-					})
-					reply.code(error.status ?? 500).send(error.data ?? error.message)
-					return
-				} else {
-					logger.error(error)
-				}
+				reply
+					.status(404)
+					.send({ message: `Route ${request.method}:${request.url} not found`, error: 'Not Found', statusCode: 404 })
 			}
-
-			reply
-				.status(404)
-				.send({ message: `Route ${request.method}:${request.url} not found`, error: 'Not Found', statusCode: 404 })
+			run()
 		})
 	}
 
