@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.9.26
+
+### Patch Changes
+
+- e2031ab: patch(cli): clean up printed urls
+
 ## 0.9.25
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
 	"name": "@roboplay/robo.js",
-	"version": "0.9.25",
+	"version": "0.9.26",
 	"private": false,
 	"description": "Turbocharge Discord.js with effortless power!",
 	"keywords": [
@@ -27,6 +27,7 @@
 	},
 	"bin": {
 		"robo": "dist/cli/index.js",
+		"robox": "dist/cli/robox.js",
 		"sage": "dist/cli/sage.js"
 	},
 	"type": "module",

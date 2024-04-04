@@ -4,25 +4,26 @@ import inquirer from 'inquirer'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import Robo from './robo.js'
-import { logger } from './logger.js'
-import { getPackageManager } from './utils.js'
+import { logger } from '@roboplay/robo.js'
+import { Indent, getPackageManager } from './utils.js'
 import chalk from 'chalk'
 
 // Read the version from the package.json file
 const require = createRequire(import.meta.url)
 const packageJson = require('../package.json')
 
-interface CommandOptions {
+export interface CommandOptions {
 	features?: string
 	install?: boolean
 	javascript?: boolean
+	kit?: 'app' | 'bot'
 	plugin?: boolean
 	plugins?: string[]
 	template?: string
 	typescript?: boolean
 	verbose?: boolean
 	roboVersion?: string
-	kit?: 'app' | 'bot'
+	update?: boolean
 }
 
 new Command('create-robo <projectName>')
@@ -33,11 +34,12 @@ new Command('create-robo <projectName>')
 	.option('-p --plugins <plugins...>', 'pre-install plugins along with the project')
 	.option('-P --plugin', 'create a Robo plugin instead of a bot')
 	.option('-ni --no-install', 'skip installing dependencies')
+	.option('-nu --no-update', 'skip checking for updates')
 	.option('-t --template <templateUrl>', 'create a Robo from an online template')
 	.option('-ts --typescript', 'create a Robo using TypeScript')
 	.option('-v --verbose', 'print more information for debugging')
 	.option('-rv, --robo-version <value>', 'choose which version of robo your project will use')
-	.option('-k, --kit <value>', 'choose a kit to start off with your robo', 'bot')
+	.option('-k, --kit <value>', 'choose a kit to start off with your robo')
 	.action(async (options: CommandOptions, { args }) => {
 		logger({
 			level: options.verbose ? 'debug' : 'info'
@@ -47,39 +49,16 @@ new Command('create-robo <projectName>')
 		logger.debug(`create-robo version:`, packageJson.version)
 		logger.debug(`Current working directory:`, process.cwd())
 
-		// TODO:
-		// modify action depending on -k version (bot is default)
-		// I want to move the creation of the robo into another function so we could just switch call for "offical kits"
-		// and fetch with URL kits made by community (most likely uploaded on the Robo store ?)
-		// implement future logic that includes options for app and others uwu
-		//
-		// pseudo code for above
-		// switch(kit)
-		//  case app:
-		//        app();
-		//
-		//  case bot:
-		//        bot();
-		//
-		//  case ukit:
-		//        ukit();
-		//
-		// default:
-		//  return logger.error("Failed to get desired kit.")
-		//
-
 		// Ensure correct kit is selected (bot or app)
-		if (!['bot', 'app'].includes(options.kit)) {
+		if (options.kit && !['bot', 'app'].includes(options.kit)) {
 			logger.error('Only bot (default) and app kits are available at the moment.')
-			logger.error('Robo with special starter kits is coming soon !')
 			return
 		}
 
-		// parses robo version argument
-		const roboVersion = await getRoboversionArg(options.roboVersion)
-
 		// Check for updates
-		await checkUpdates()
+		if (options.update) {
+			await checkUpdates()
+		}
 
 		// Infer project name from current directory if it was not provided
 		let projectName = args[0]
@@ -111,15 +90,50 @@ new Command('create-robo <projectName>')
 			useSameDirectory = true
 		}
 
+		// Print introduction section
+		logger.log('')
+		logger.log(Indent, chalk.bold('✨ Welcome to Robo.js!'))
+		logger.log(Indent, `   Spawning ${chalk.bold.cyan(projectName)} into existence...`)
+
+		const metadata: Array<{ key: string; value: string }> = []
+		if (options.plugin) {
+			metadata.push({ key: 'Type', value: 'Plugin' })
+		}
+		if (options.kit) {
+			metadata.push({ key: 'Kit', value: options.kit })
+		}
+		if (options.javascript || options.typescript) {
+			metadata.push({ key: 'Language', value: options.typescript ? 'TypeScript' : 'JavaScript' })
+		}
+		if (options.features) {
+			metadata.push({ key: 'Features', value: options.features })
+		}
+		if (options.plugins) {
+			metadata.push({ key: 'Plugins', value: options.plugins.join(', ') })
+		}
+		if (options.template) {
+			metadata.push({ key: 'Template', value: options.template })
+		}
+		if (options.install === false) {
+			metadata.push({ key: 'Install dependencies', value: 'No' })
+		}
+		if (options.roboVersion) {
+			metadata.push({ key: 'Robo version', value: options.roboVersion })
+		}
+
+		if (metadata.length > 0) {
+			logger.log('')
+			logger.log(Indent, chalk.bold('   Specs:'))
+			metadata.forEach(({ key, value }) => {
+				logger.log(Indent, `   - ${key}:`, chalk.bold.cyan(value))
+			})
+		}
+
 		// Create a new Robo project prototype
 		logger.debug(`Creating Robo prototype...`)
 		const isApp = options.kit === 'app' ? true : false
 		const robo = new Robo(projectName, options.plugin, useSameDirectory, isApp)
 		const plugins = options.plugins ?? []
-
-		if (useSameDirectory) {
-			logger.log(`This new ${robo.isPlugin ? 'plugin' : 'Robo'} will be created in the current directory.`)
-		}
 		logger.log('')
 
 		let selectedFeaturesOrDefaults: string[] = []
@@ -137,17 +151,13 @@ new Command('create-robo <projectName>')
 				const useTypeScript = options.typescript ?? false
 				robo.useTypeScript(useTypeScript)
 				logger.info(`Using ${useTypeScript ? 'TypeScript' : 'JavaScript'}`)
-			} else {
-				if (isApp) {
-					await robo.askUseTemplate()
-				} else {
-					await robo.askUseTypeScript()
-				}
+			} else if (isApp) {
+				await robo.askUseTemplate()
 			}
 
 			// Get user input to determine which features to include or use the recommended defaults
 			selectedFeaturesOrDefaults = options.features?.split(',') ?? (await robo.getUserInput())
-			await robo.createPackage(selectedFeaturesOrDefaults, plugins, options.install ?? true, roboVersion)
+			await robo.createPackage(selectedFeaturesOrDefaults, plugins, options)
 
 			// Determine if TypeScript is selected and copy the corresponding template files
 			logger.debug(`Copying template files...`)
@@ -159,10 +169,33 @@ new Command('create-robo <projectName>')
 		// Skip this step if the user is creating a plugin
 		if (!robo.isPlugin) {
 			logger.debug(`Asking for Discord credentials...`)
-			await robo.askForDiscordCredentials(selectedFeaturesOrDefaults)
+			await robo.askForDiscordCredentials(selectedFeaturesOrDefaults, options.verbose)
+		}
+
+		const packageManager = getPackageManager()
+		logger.log(Indent.repeat(15))
+		logger.log(Indent, '🚀', chalk.bold.green('Your Robo is ready!'))
+		logger.log(Indent, '   Say hello to this world,', chalk.bold(projectName) + '.')
+		logger.log('')
+		logger.log(Indent, '   ' + chalk.bold('Next steps:'))
+		if (!useSameDirectory) {
+			logger.log(Indent, '   - Change directory:', chalk.bold.cyan(`cd ${projectName}`))
+		}
+		if (!options.install) {
+			logger.log(Indent, '   - Install dependencies:', chalk.bold.cyan(packageManager + ' install'))
+		}
+		if (robo.missingEnv) {
+			logger.log(Indent, '   - Add missing variables:', chalk.bold.cyan('.env'))
+		}
+		logger.log(Indent, '   - Develop locally:', chalk.bold.cyan(packageManager + ' run dev'))
+		logger.log(Indent, '   - Deploy to the cloud:', chalk.bold.cyan(packageManager + ' run deploy'))
+
+		if (robo.installFailed) {
+			logger.log('')
+			logger.log(Indent, '   ' + chalk.bold.red('Resolve the following issues:'))
+			logger.log(Indent, '   - Install dependencies manually:', chalk.bold.cyan(packageManager + ' install <packages>'))
 		}
 		logger.log('')
-		logger.ready(`Successfully created ${projectName}. Happy coding!`)
 	})
 	.parse(process.argv)
 
@@ -186,35 +219,16 @@ async function checkUpdates() {
 			commandName = 'bunx'
 		}
 		const command = `${commandName} ${packageJson.name}@${latestVersion}`
+		const args = process.argv.slice(2).join(' ')
 
 		// Print update message
-		logger.info(chalk.bold.green(`A new version of ${chalk.bold('create-robo')} is available! (v${latestVersion})`))
-		logger.info(`Run as ${chalk.bold(command)} instead to get the latest updates.`)
+		logger.log('')
+		logger.log(
+			Indent,
+			chalk.bold.green(`💡 Update available!`),
+			chalk.dim(`(v${packageJson.version} → v${latestVersion})`)
+		)
+		logger.log(Indent, `   Run this instead to get the latest updates:`)
+		logger.log(Indent, '   ' + chalk.bold.cyan(command + ' ' + args))
 	}
-}
-
-async function getRoboversionArg(roboVersion: string): Promise<string> {
-	let result = 'latest'
-
-	if (roboVersion) {
-		const response = await fetch(`https://registry.npmjs.org/@roboplay/robo.js/${roboVersion}`)
-		const version = (await response.json()).version
-
-		if (version) {
-			result = version
-		} else {
-			logger.error('Invalid Robo version, falling back to latest..')
-		}
-	} else {
-		logger.debug('No Robo version specified, reading latest from NPM registry...')
-		const response = await fetch(`https://registry.npmjs.org/@roboplay/robo.js/latest`)
-		const version = (await response.json()).version
-
-		if (version) {
-			result = version
-		} else {
-			logger.error('Failed to read latest Robo version from NPM registry, falling back to latest..')
-		}
-	}
-	return result
 }

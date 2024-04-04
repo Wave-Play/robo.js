@@ -6,7 +6,7 @@ import { hasFilesRecursively } from '../utils/fs-helper.js'
 import { color, composeColors } from '../../core/color.js'
 import { loadConfig } from '../../core/config.js'
 import { Flashcore, prepareFlashcore } from '../../core/flashcore.js'
-import { FLASHCORE_KEYS } from '../../core/constants.js'
+import { FLASHCORE_KEYS, Indent } from '../../core/constants.js'
 import { loadState } from '../../core/state.js'
 
 const command = new Command('start')
@@ -27,8 +27,19 @@ async function startAction(_args: string[], options: StartCommandOptions) {
 	logger({
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : 'info'
-	}).info(`Starting Robo in ${color.bold('production mode')}...`)
-	logger.warn(`Thank you for trying Robo.js! This is a pre-release version, so please let us know of issues on GitHub.`)
+	})
+
+	// Set NODE_ENV to production if not already set
+	if (!process.env.NODE_ENV) {
+		process.env.NODE_ENV = 'production'
+	}
+
+	// Welcomeee
+	const projectName = path.basename(process.cwd()).toLowerCase()
+	logger.log('')
+	logger.log(Indent, color.bold(`🚀 Starting ${color.cyan(projectName)} in ${color.cyan('production')} mode`))
+	logger.log(Indent, '   Boop beep... Powering on your Robo creation! Need hosting? Check out RoboPlay!')
+	logger.log('')
 
 	// Check if .robo/build directory has .js files (recursively)
 	if (!(await hasFilesRecursively(path.join('.robo', 'build')))) {

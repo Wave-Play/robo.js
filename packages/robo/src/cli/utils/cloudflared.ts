@@ -17,6 +17,8 @@ const DEFAULT_BIN_PATH = path.join(process.cwd(), '.robo', 'bin', IS_WINDOWS ? '
 
 const RELEASE_BASE = 'https://github.com/cloudflare/cloudflared/releases/'
 
+const Ignore = ['https://api.trycloudflare.com']
+
 class UnsupportedError extends Error {
 	constructor(message: string) {
 		super(message)
@@ -74,19 +76,26 @@ export function isCloudflaredInstalled(to = DEFAULT_BIN_PATH): boolean {
 export function startCloudflared(url: string) {
 	cloudflareLogger.event(`Starting tunnel...`)
 	cloudflareLogger.debug(DEFAULT_BIN_PATH + ' tunnel --url ' + url)
-	const childProcess = spawn(DEFAULT_BIN_PATH, ['tunnel', '--url', url], { stdio: 'pipe' })
+	const childProcess = spawn(DEFAULT_BIN_PATH, ['tunnel', '--url', url, '--no-autoupdate'], { stdio: 'pipe' })
+	let lastMessage = ''
 
 	const onData = (data: Buffer) => {
-		const output = data.toString()
-		cloudflareLogger.debug(color.dim(output?.trim()))
+		lastMessage = data.toString()?.trim()
+		cloudflareLogger.debug(color.dim(lastMessage))
 
-		const tunnelUrl = extractTunnelUrl(output)
-		if (tunnelUrl) {
+		const tunnelUrl = extractTunnelUrl(lastMessage)
+		if (tunnelUrl && !Ignore.includes(tunnelUrl)) {
 			cloudflareLogger.ready(`Tunnel URL:`, composeColors(color.bold, color.blue)(tunnelUrl))
 		}
 	}
 	childProcess.stdout.on('data', onData)
 	childProcess.stderr.on('data', onData)
+
+	childProcess.on('exit', (code) => {
+		if (code !== 0) {
+			cloudflareLogger.error(lastMessage ?? 'Failed to start tunnel.')
+		}
+	})
 
 	return childProcess
 }

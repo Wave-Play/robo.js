@@ -1,3 +1,6 @@
+import { readFile } from 'node:fs/promises'
+import path from 'node:path'
+
 export type PackageManager = 'npm' | 'bun' | 'pnpm' | 'yarn'
 
 /**
@@ -31,6 +34,24 @@ export function getPackageExecutor(): string {
 		return 'bunx'
 	} else {
 		return 'npx'
+	}
+}
+
+/**
+ * Reads the package.json file and returns whether the given dependency is installed.
+ */
+export async function hasDependency(name: string, dev = false): Promise<boolean> {
+	try {
+		const packageJsonPath = path.join(process.cwd(), 'package.json')
+		const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf-8'))
+
+		if (dev) {
+			return !!packageJson.devDependencies?.[name]
+		}
+
+		return !!packageJson.dependencies?.[name]
+	} catch {
+		return false
 	}
 }
 

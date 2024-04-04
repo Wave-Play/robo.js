@@ -42,6 +42,10 @@ export interface Config {
 
 	/** How often to check for updates to Robo.js in seconds. Default: 1 hour */
 	updateCheckInterval?: number
+
+	watcher?: {
+		ignore?: string[]
+	}
 }
 
 export type Scope =
