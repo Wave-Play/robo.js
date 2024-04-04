@@ -33,7 +33,7 @@ export default async (_client: Client, options: PluginOptions) => {
 	// If Vite is available, start the dev server
 	if (pluginOptions.vite) {
 		logger.debug('Using Vite server specified in options.')
-	} else if (await hasDependency('vite', true)) {
+	} else if (process.env.NODE_ENV !== 'production' && (await hasDependency('vite', true))) {
 		try {
 			const { createServer: createViteServer } = await import('vite')
 			const viteConfigPath = path.join(process.cwd(), 'config', 'vite.mjs')

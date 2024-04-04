@@ -18,6 +18,7 @@ import type { ViteDevServer } from 'vite'
 const MAX_BODY_SIZE = 5 * 1024 * 1024 // 5MB
 const BodyMethods = ['PATCH', 'POST', 'PUT']
 const PublicPath = path.join(process.cwd(), 'public')
+const PublicBuildPath = path.join(process.cwd(), '.robo', 'public')
 
 export function createServerHandler(router: Router, vite?: ViteDevServer) {
 	const { parseBody = true } = pluginOptions
@@ -190,10 +191,12 @@ export async function handlePublicFile(
 	parsedUrl: UrlWithParsedQuery,
 	callback: (filePath: string, mimeType: string) => void | Promise<void>
 ) {
-	const filePath = decodeURI(path.join(PublicPath, parsedUrl.pathname))
+	// Determine which public folder to use (production or development)
+	const publicPath = process.env.NODE_ENV === 'production' ? PublicBuildPath : PublicPath
+	const filePath = decodeURI(path.join(publicPath, parsedUrl.pathname))
 
 	// Check if the requested path is within the public folder to guard against directory traversal
-	if (!filePath.startsWith(PublicPath)) {
+	if (!filePath.startsWith(publicPath)) {
 		logger.warn(`Requested path is outside the public folder. Denying access...`)
 		throw new RoboError({
 			status: 403,
