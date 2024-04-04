@@ -1,5 +1,9 @@
+import { handlePublicFile } from '~/core/handler.js'
 import { logger } from '../core/logger.js'
+import { RoboError } from '~/core/runtime-utils.js'
 import { BaseEngine } from './base.js'
+import { createReadStream } from 'node:fs'
+import url from 'node:url'
 import { color, composeColors } from '@roboplay/robo.js'
 import type { HttpMethod, RoboReply, RoboRequest, RouteHandler } from '../core/types.js'
 import type { InitOptions, StartOptions } from './base.js'
@@ -16,13 +20,48 @@ export class FastifyEngine extends BaseEngine {
 		this._server = fastify()
 		this._vite = options.vite
 
-		this._server.setNotFoundHandler((request, reply) => {
-			logger.debug(`Forwarding to Vite:`, request.url)
-			this._vite.middlewares(request.raw, reply.raw)
-		})
 		this._server.setErrorHandler((error, _request, reply) => {
 			logger.error(error)
 			reply.status(500).send({ ok: false })
+		})
+
+		this._server.setNotFoundHandler(async (request, reply) => {
+			logger.debug(color.bold(request.method), request.raw.url)
+
+			if (options.vite) {
+				logger.debug(`Forwarding to Vite:`, request.url)
+				this._vite.middlewares(request.raw, reply.raw)
+				return
+			}
+
+			const parsedUrl = url.parse(request.url, true)
+			try {
+				const callback = async (filePath: string, mimeType: string) => {
+					await reply
+						.header('Content-Type', mimeType)
+						.header('X-Content-Type-Options', 'nosniff')
+						.type(mimeType)
+						.send(createReadStream(filePath))
+				}
+
+				if (await handlePublicFile(parsedUrl, callback)) {
+					return
+				}
+			} catch (error) {
+				if (error instanceof RoboError) {
+					Object.entries(error.headers ?? {}).forEach(([key, value]) => {
+						reply.header(key, value)
+					})
+					reply.code(error.status ?? 500).send(error.data ?? error.message)
+					return
+				} else {
+					logger.error(error)
+				}
+			}
+
+			reply
+				.status(404)
+				.send({ message: `Route ${request.method}:${request.url} not found`, error: 'Not Found', statusCode: 404 })
 		})
 	}
 
@@ -65,6 +104,7 @@ export class FastifyEngine extends BaseEngine {
 			}
 
 			try {
+				logger.debug(color.bold(request.method), request.raw.url)
 				const result = await handler(requestWrapper, replyWrapper)
 
 				if (!replyWrapper.hasSent && result) {
@@ -94,7 +134,7 @@ export class FastifyEngine extends BaseEngine {
 				// Start server
 				this._isRunning = true
 				this._server.listen({ port }, () => {
-					logger.ready(`Fastify server is live at ${composeColors(color.bold, color.blue)(`http://localhost:${port}`)}`)
+					logger.ready(`Fastify server is live at`, composeColors(color.bold, color.blue)(`http://localhost:${port}`))
 					resolve()
 				})
 			}

@@ -1,15 +1,23 @@
 import { logger } from './logger.js'
-import { IncomingMessage, ServerResponse } from 'node:http'
-import url from 'node:url'
-import { parse } from 'node:querystring'
 import { pluginOptions } from '../events/_start.js'
 import { RoboError } from './runtime-utils.js'
+import { mimeDb } from './mime.js'
+import { createReadStream } from 'node:fs'
+import { readdir, stat } from 'node:fs/promises'
+import { IncomingMessage, ServerResponse } from 'node:http'
+import path from 'node:path'
+import { pipeline } from 'node:stream/promises'
+import url from 'node:url'
+import { parse } from 'node:querystring'
+import { color } from '@roboplay/robo.js'
 import type { Router } from './router.js'
 import type { HttpMethod, RoboReply, RoboRequest } from './types.js'
+import type { UrlWithParsedQuery } from 'node:url'
 import type { ViteDevServer } from 'vite'
 
 const MAX_BODY_SIZE = 5 * 1024 * 1024 // 5MB
 const BodyMethods = ['PATCH', 'POST', 'PUT']
+const PublicPath = path.join(process.cwd(), 'public')
 
 export function createServerHandler(router: Router, vite?: ViteDevServer) {
 	const { parseBody = true } = pluginOptions
@@ -85,9 +93,36 @@ export function createServerHandler(router: Router, vite?: ViteDevServer) {
 		}
 
 		// Find matching route and execute handler
+		logger.debug(color.bold(req.method), req.url)
 		const route = router.find(parsedUrl.pathname)
 		requestWrapper.params = route?.params ?? {}
 
+		// If route missing, check if we can return something from the public folder
+		if (!route?.handler) {
+			try {
+				const callback = async (filePath: string, mimeType: string) => {
+					res.setHeader('Content-Type', mimeType)
+					res.setHeader('X-Content-Type-Options', 'nosniff')
+					res.writeHead(200)
+					await pipeline(createReadStream(filePath), res)
+				}
+
+				if (await handlePublicFile(parsedUrl, callback)) {
+					return
+				}
+			} catch (error) {
+				if (error instanceof RoboError) {
+					Object.entries(error.headers ?? {}).forEach(([key, value]) => {
+						replyWrapper.header(key, value)
+					})
+					replyWrapper.code(error.status ?? 500).json(error.data ?? error.message)
+				} else {
+					logger.error(error)
+				}
+			}
+		}
+
+		// If Vite is available, forward the request to Vite
 		if (!route?.handler && vite) {
 			logger.debug(`Forwarding to Vite:`, req.url)
 			vite.middlewares(req, res)
@@ -149,4 +184,57 @@ export async function getRequestBody(req: IncomingMessage): Promise<Record<strin
 			}
 		})
 	})
+}
+
+export async function handlePublicFile(
+	parsedUrl: UrlWithParsedQuery,
+	callback: (filePath: string, mimeType: string) => void | Promise<void>
+) {
+	const filePath = decodeURI(path.join(PublicPath, parsedUrl.pathname))
+
+	// Check if the requested path is within the public folder to guard against directory traversal
+	if (!filePath.startsWith(PublicPath)) {
+		logger.warn(`Requested path is outside the public folder. Denying access...`)
+		throw new RoboError({
+			status: 403,
+			message: 'Access Denied'
+		})
+	}
+
+	// See if the file exists
+	try {
+		const stats = await stat(filePath)
+
+		if (stats.isFile()) {
+			logger.debug(`Serving public file: ${filePath}`)
+			const ext = path.extname(filePath).slice(1)
+			const mimeType = mimeDb[ext] ?? 'application/octet-stream'
+			await callback(filePath, mimeType)
+			return true
+		} else if (stats.isDirectory()) {
+			// Look for an index file in the directory
+			const files = await readdir(filePath)
+			const indexExtensions = ['html', 'htm', 'php', 'js', 'json']
+			const indexFile = files.find((file) => {
+				const extension = path.extname(file).slice(1)
+				return indexExtensions.includes(extension) && file.startsWith('index.')
+			})
+
+			if (indexFile) {
+				const indexFilePath = path.join(filePath, indexFile)
+				const ext = path.extname(indexFilePath).slice(1)
+				const mimeType = mimeDb[ext] ?? 'application/octet-stream'
+				logger.debug('Serving public index file:', indexFilePath)
+				await callback(indexFilePath, mimeType)
+				return true
+			}
+		}
+	} catch (error) {
+		// Ignore ENOENT errors (file not found)
+		if (error.code !== 'ENOENT') {
+			throw error
+		}
+	}
+
+	return false
 }
