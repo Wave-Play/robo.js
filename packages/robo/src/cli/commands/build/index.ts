@@ -10,6 +10,7 @@ import { generateDefaults } from '../../utils/generate-defaults.js'
 import { compile } from '../../utils/compiler.js'
 import { Flashcore, prepareFlashcore } from '../../../core/flashcore.js'
 import { bold, color } from '../../../core/color.js'
+import { buildVite } from '../../utils/vite.js'
 import { FLASHCORE_KEYS } from '../../../core/constants.js'
 import type { LoggerOptions } from '../../../core/logger.js'
 
@@ -86,6 +87,9 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 	logger.debug(`Generated manifest in ${Date.now() - manifestTime}ms`)
 
 	if (!options.dev) {
+		// Build Vite for production if available
+		await buildVite()
+
 		// Get the size of the entire current working directory
 		const sizeStartTime = Date.now()
 		const totalSize = await getProjectSize(process.cwd())
