@@ -1,3 +1,7 @@
+<p align="center">✨ <strong>Generated with <a href="https://roboplay.dev/create-robo">create-robo</a> magic!</strong> ✨</p>
+
+---
+
 # 🚀 {{projectName}}
 
 Welcome to *{{projectName}}*! This plugin is designed to seamlessly integrate with your existing **[Robo.js](https://github.com/Wave-Play/robo)** project and provide new features and enhancements to your robo. The best part? Everything automatically works once you install this plugin!
