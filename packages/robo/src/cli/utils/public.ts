@@ -12,7 +12,7 @@ const PublicBuildPath = path.join(process.cwd(), '.robo', 'public')
 export async function buildPublicDirectory() {
 	try {
 		if (await hasDependency('vite', true)) {
-			buildVite()
+			await buildVite()
 		} else {
 			// Clean up .robo/public directory
 			let time = Date.now()

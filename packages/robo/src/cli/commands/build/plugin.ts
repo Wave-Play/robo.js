@@ -51,7 +51,7 @@ async function pluginAction(_args: string[], options: PluginCommandOptions) {
 	logger.debug(`Generated manifest in ${Date.now() - manifestTime}ms`)
 
 	if (!options.dev) {
-		// Build Vite for production if available
+		// Build /public for production if available
 		await buildPublicDirectory()
 
 		// Get the size of the entire current working directory
