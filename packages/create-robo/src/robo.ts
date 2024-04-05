@@ -43,6 +43,11 @@ const pluginScripts = {
 	dev: `robo build plugin --watch`,
 	prepublishOnly: 'robo build plugin'
 }
+type Plugin = {
+	name: string
+	short: string
+	value: string
+}[]
 
 const optionalFeatures = [
 	{
@@ -71,7 +76,7 @@ const optionalFeatures = [
 	}
 ]
 
-const optionalPlugins = [
+const optionalPlugins: [string | inquirer.Separator, ...Plugin] = [
 	new inquirer.Separator('\nOptional Plugins:'),
 	{
 		name: `${chalk.bold(
@@ -136,6 +141,7 @@ interface PackageJson {
 	peerDependencies?: Record<string, string>
 	peerDependenciesMeta?: Record<string, Record<string, unknown>>
 }
+type appTemplate = 'VTS' | 'VJS' | 'RTS' | 'RJS' | undefined
 
 export default class Robo {
 	private readonly _nodeOptions = ['--enable-source-maps']
@@ -147,6 +153,8 @@ export default class Robo {
 	private _name: string
 	private _useTypeScript: boolean | undefined
 	private _workingDir: string
+	private _isApp: boolean
+	private _appTemplate: appTemplate
 
 	// Same as above, but exposed as getters
 	private _isPlugin: boolean
@@ -163,9 +171,10 @@ export default class Robo {
 		return this._missingEnv
 	}
 
-	constructor(name: string, isPlugin: boolean, useSameDirectory: boolean) {
+	constructor(name: string, isPlugin: boolean, useSameDirectory: boolean, isApp: boolean) {
 		this._isPlugin = isPlugin
 		this._name = name
+		this._isApp = isApp
 		this._workingDir = useSameDirectory ? process.cwd() : path.join(process.cwd(), name)
 	}
 
@@ -183,6 +192,36 @@ export default class Robo {
 		])
 
 		this._isPlugin = isPlugin
+	}
+
+	async askUseTemplate() {
+		const { useTemplate } = await inquirer.prompt<Record<string, appTemplate>>([
+			{
+				type: 'list',
+				name: 'useTemplate',
+				message: chalk.blue('Choose a template for your app!'),
+				choices: [
+					{
+						name: 'Vanilla JS',
+						value: 'VJS'
+					},
+					{
+						name: 'Vanilla TS',
+						value: 'VTS'
+					},
+					{
+						name: 'React-TS',
+						value: 'RTS'
+					},
+					{
+						name: 'React-JS',
+						value: 'RJS'
+					}
+				]
+			}
+		])
+		this._useTypeScript = useTemplate.includes('TS')
+		this._appTemplate = useTemplate
 	}
 
 	async downloadTemplate(url: string) {
@@ -260,12 +299,19 @@ export default class Robo {
 		}
 
 		// Prompto! (I'm sorry)
+		const optionalAppPlugins = optionalPlugins.filter((plugin) => {
+			const obj = plugin as unknown as Plugin[0]
+			if (obj.value === 'api') {
+				return
+			}
+			return plugin
+		})
 		const { selectedFeatures } = await inquirer.prompt([
 			{
 				type: 'checkbox',
 				name: 'selectedFeatures',
 				message: 'Select features:',
-				choices: [...features, ...(this._isPlugin ? [] : optionalPlugins)]
+				choices: [...features, ...(this._isPlugin ? [] : this._isApp ? optionalAppPlugins : optionalPlugins)]
 			}
 		])
 
@@ -320,6 +366,31 @@ export default class Robo {
 			scripts: this._isPlugin ? pluginScripts : roboScripts,
 			dependencies: {},
 			devDependencies: {}
+		}
+
+		// Robo.js and Discord.js are normal dependencies, unless this is a plugin
+		if (this._isApp) {
+			packageJson.dependencies['@discord/embedded-app-sdk'] = '^1.0.2'
+			packageJson.dependencies['dotenv'] = '^16.4.1'
+			packageJson.devDependencies['vite'] = '^5.0.8'
+			packageJson.dependencies['@roboplay/robo.js'] = 'latest'
+			packageJson.dependencies['@roboplay/plugin-api'] = '^0.2.3'
+			await this.createPluginConfig('@roboplay/plugin-api', {
+				cors: true,
+				port: 3000
+			})
+			if (this._appTemplate === 'RTS' || this._appTemplate === 'RJS') {
+				packageJson.dependencies['react'] = '^18.2.0'
+				packageJson.dependencies['react-dom'] = '^18.2.0'
+
+				packageJson.devDependencies['@types/react'] = '^18.2.66'
+				packageJson.devDependencies['@types/react-dom'] = '^18.2.22'
+				packageJson.devDependencies['eslint-plugin-react-hooks'] = '^4.6.0'
+				packageJson.devDependencies['eslint-plugin-react-refresh'] = '^0.4.6'
+			} else if (!this._isPlugin) {
+				packageJson.dependencies['@roboplay/robo.js'] = 'latest'
+				packageJson.dependencies['discord.js'] = '^14.13.0'
+			}
 		}
 
 		if (cliOptions.kit === 'app') {
@@ -385,6 +456,9 @@ export default class Robo {
 
 		const runPrefix = packageManager === 'npm' ? 'npm run ' : packageManager + ' '
 		if (this._useTypeScript) {
+			if (this._appTemplate === 'RTS') {
+				devDependencies.push('@vitejs/plugin-react-swc')
+			}
 			packageJson.keywords.push('typescript')
 			devDependencies.push('@swc/core')
 			devDependencies.push('@types/node')
@@ -598,8 +672,31 @@ export default class Robo {
 		}
 	}
 
+	private whichTemplate(useTypeScript: boolean, isApp: boolean, appTemplate: appTemplate): string {
+		if (isApp) {
+			switch (appTemplate) {
+				case 'RJS': {
+					return 'none'
+				}
+				case 'RTS': {
+					return '../templates/dapp-rts'
+				}
+				case 'VJS': {
+					return '../templates/dapp-js'
+				}
+				case 'VTS': {
+					return '../templates/dapp-ts'
+				}
+				default:
+					break
+			}
+		} else {
+			return useTypeScript ? '../templates/ts' : '../templates/js'
+		}
+	}
+
 	async copyTemplateFiles(sourceDir: string): Promise<void> {
-		const templateDir = this._useTypeScript ? '../templates/ts' : '../templates/js'
+		const templateDir = this.whichTemplate(this._useTypeScript, this._isApp, this._appTemplate)
 		const sourcePath = path.join(__dirname, templateDir, sourceDir)
 		const targetPath = path.join(this._workingDir, sourceDir)
 
@@ -625,8 +722,18 @@ export default class Robo {
 		const officialGuide = 'Guide:'
 		const officialGuideUrl = chalk.bold.blue('https://roboplay.dev/botkey')
 		logger.log('')
+		logger.log(`${discordPortal} ${discordPortalUrl}`)
+		logger.log(`${officialGuide} ${officialGuideUrl}\n`)
 		logger.log(Indent, chalk.bold('🔑 Setting up credentials'))
-		logger.log(Indent, '   Get your credentials from the Discord Developer portal.\n')
+
+		if (this._isApp) {
+			logger.log(
+				Indent,
+				'To get your Discord Client Secret and Client ID, register your app at the Discord Developor portal.'
+			)
+		} else {
+			logger.log(Indent, '   Get your credentials from the Discord Developer portal.\n')
+		}
 		logger.log(Indent, `   ${discordPortal} ${discordPortalUrl}`)
 		logger.log(Indent, `   ${officialGuide} ${officialGuideUrl}\n`)
 
@@ -639,7 +746,9 @@ export default class Robo {
 			{
 				type: 'input',
 				name: 'discordToken',
-				message: 'Enter your Discord Token (press Enter to skip):'
+				message: this._isApp
+					? 'Enter your Discord Client Secret (press enter to skip)'
+					: 'Enter your Discord Token (press Enter to skip):'
 			}
 		])
 
@@ -666,8 +775,12 @@ export default class Robo {
 			}
 		}
 
-		// Update DISCORD_TOKEN and DISCORD_CLIENT_ID variables
 		envContent = updateOrAddVariable(envContent, 'DISCORD_CLIENT_ID', discordClientId ?? '')
+		envContent = updateOrAddVariable(
+			envContent,
+			this._isApp ? 'DISCORD_CLIENT_SECRET' : 'DISCORD_TOKEN',
+			discordToken ?? ''
+		)
 		envContent = updateOrAddVariable(envContent, 'DISCORD_TOKEN', discordToken ?? '')
 		envContent = updateOrAddVariable(envContent, 'NODE_OPTIONS', this._nodeOptions.join(' '))
 
@@ -719,7 +832,10 @@ export default class Robo {
 
 	private async createEnvTsFile() {
 		if (this._useTypeScript) {
-			const autoCompletionEnvVar = `export {}\ndeclare global {\n    namespace NodeJS {\n		interface ProcessEnv {\n			DISCORD_CLIENT_ID: string\n			DISCORD_TOKEN: string\n		}\n	} \n}`
+			const autoCompletionEnvVar = `export {}\ndeclare global {\n    namespace NodeJS {\n		interface ProcessEnv {\n			DISCORD_CLIENT_ID: string\n			${
+				this._isApp ? 'DISCORD_CLIENT_SECRET: string' : 'DISCORD_TOKEN: string'
+			}
+			}\n		}\n	} \n}`
 
 			const tsconfigPath = path.join(this._workingDir, 'tsconfig.json')
 

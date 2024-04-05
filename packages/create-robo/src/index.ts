@@ -131,7 +131,8 @@ new Command('create-robo <projectName>')
 
 		// Create a new Robo project prototype
 		logger.debug(`Creating Robo prototype...`)
-		const robo = new Robo(projectName, options.plugin, useSameDirectory)
+		const isApp = options.kit === 'app' ? true : false
+		const robo = new Robo(projectName, options.plugin, useSameDirectory, isApp)
 		const plugins = options.plugins ?? []
 		logger.log('')
 
@@ -146,9 +147,12 @@ new Command('create-robo <projectName>')
 			}
 
 			// Copy the template files to the new project directory
-			if (options.javascript || options.typescript) {
+			if ((options.javascript && !isApp) || (options.typescript && !isApp)) {
 				const useTypeScript = options.typescript ?? false
 				robo.useTypeScript(useTypeScript)
+				logger.info(`Using ${useTypeScript ? 'TypeScript' : 'JavaScript'}`)
+			} else if (isApp) {
+				await robo.askUseTemplate()
 			}
 
 			// Get user input to determine which features to include or use the recommended defaults
