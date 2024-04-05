@@ -22,7 +22,14 @@ const require = createRequire(import.meta.url)
 export const packageJson = require('../../../package.json')
 
 export function cleanTempDir() {
-	return fs.rm(getTempDir(), { force: true, recursive: true })
+	try {
+		return fs.rm(getTempDir(), { force: true, recursive: true })
+	} catch (error) {
+		// ENOENT is okay
+		if (hasProperties(error, ['code']) && error.code !== 'ENOENT') {
+			throw error
+		}
+	}
 }
 
 export function getPodStatusColor(status: Pod['status']) {
