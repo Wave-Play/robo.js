@@ -98,6 +98,13 @@ export function createServerHandler(router: Router, vite?: ViteDevServer) {
 		const route = router.find(parsedUrl.pathname)
 		requestWrapper.params = route?.params ?? {}
 
+		// If Vite is available, forward the request to Vite
+		if (!route?.handler && vite) {
+			logger.debug(`Forwarding to Vite:`, req.url)
+			vite.middlewares(req, res)
+			return
+		}
+
 		// If route missing, check if we can return something from the public folder
 		if (!route?.handler) {
 			try {
@@ -121,13 +128,6 @@ export function createServerHandler(router: Router, vite?: ViteDevServer) {
 					logger.error(error)
 				}
 			}
-		}
-
-		// If Vite is available, forward the request to Vite
-		if (!route?.handler && vite) {
-			logger.debug(`Forwarding to Vite:`, req.url)
-			vite.middlewares(req, res)
-			return
 		}
 
 		if (!route?.handler) {

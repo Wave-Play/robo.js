@@ -9,7 +9,7 @@ import path from 'node:path'
 import { loadConfig, loadConfigPath } from '../../../core/config.js'
 import { hasProperties } from '../../utils/utils.js'
 import Watcher from '../../utils/watcher.js'
-import { buildVite } from '../../utils/vite.js'
+import { buildPublicDirectory } from '../../utils/public.js'
 
 const command = new Command('plugin')
 	.description('Builds your plugin for distribution.')
@@ -51,8 +51,8 @@ async function pluginAction(_args: string[], options: PluginCommandOptions) {
 	logger.debug(`Generated manifest in ${Date.now() - manifestTime}ms`)
 
 	if (!options.dev) {
-		// Build Vite for production if available
-		await buildVite()
+		// Build /public for production if available
+		await buildPublicDirectory()
 
 		// Get the size of the entire current working directory
 		const sizeStartTime = Date.now()

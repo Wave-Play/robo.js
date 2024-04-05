@@ -39,9 +39,8 @@ export default async (_client: Client, options: PluginOptions) => {
 			const viteConfigPath = path.join(process.cwd(), 'config', 'vite.mjs')
 
 			pluginOptions.vite = await createViteServer({
-				server: { middlewareMode: true },
 				configFile: existsSync(viteConfigPath) ? viteConfigPath : undefined,
-				root: process.cwd()
+				server: { middlewareMode: true }
 			})
 			logger.debug('Vite server created successfully.')
 		} catch (e) {
