@@ -10,7 +10,6 @@ export interface Config {
 	}
 	excludePaths?: string[]
 	experimental?: {
-		app?: boolean
 		buildDirectory?: string
 		disableBot?: boolean
 		incrementalBuilds?: boolean

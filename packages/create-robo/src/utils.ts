@@ -49,16 +49,9 @@ export const ROBO_CONFIG_APP = `// @ts-check
  * @type {import('@roboplay/robo.js').Config}
  **/
 export default {
-	clientOptions: {
-		intents: [
-			'Guilds',
-			'GuildMessages',
-			'MessageContent'
-		]
-	},
+	clientOptions: {},
 	experimental: {
-		app: true,
-		disableBot: false
+		disableBot: true
 	}
 	plugins: [],
 	type: 'robo'

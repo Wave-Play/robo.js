@@ -2,6 +2,7 @@ import { Command } from '../utils/cli-handler.js'
 import { logger } from '../../core/logger.js'
 import { color, composeColors } from '../../core/color.js'
 import { compressDirectory } from '../utils/compress.js'
+import { loadConfig } from '../../core/config.js'
 import { KeyWatcher } from '../utils/key-watcher.js'
 import { Spinner } from '../utils/spinner.js'
 import { cleanTempDir, getPodStatusColor, getRoboPackageJson, openBrowser } from '../utils/utils.js'
@@ -9,9 +10,7 @@ import { RoboPlay } from '../../roboplay/client.js'
 import { streamDeployment } from '../../roboplay/deploy.js'
 import { RoboPlaySession } from '../../roboplay/session.js'
 import path from 'node:path'
-import { readFile } from 'node:fs/promises'
 import type { DeploymentStep, Pod } from '../../roboplay/types.js'
-import { loadConfig } from 'src/core/config.js'
 
 const Highlight = composeColors(color.bold, color.cyan)
 const Indent = ' '.repeat(3)
@@ -46,12 +45,13 @@ async function deployAction(_args: string[], options: DeployCommandOptions) {
 		return
 	}
 
-	
-	const isApp = (await loadConfig()).experimental.app.valueOf();
-	if(isApp){
-		logger.warn("RoboPlay does not currently support hosting discord SDKs applications.")
-	}
+	// Sorry, only bots are supported right now!
+	const config = await loadConfig()
 
+	if (config.experimental?.disableBot) {
+		logger.warn('Sorry, only bots are supported right now!')
+		return
+	}
 
 	// Prepare fancy formatting
 	const spinner = new Spinner()
