@@ -15,6 +15,7 @@ import {
 	sortObjectKeys,
 	updateOrAddVariable,
 	getPackageExecutor,
+	ROBO_CONFIG_APP,
 	Indent,
 	ExecOptions,
 	Space
@@ -444,7 +445,8 @@ export default class Robo {
 		}
 
 		// Create the robo.mjs file
-		let roboConfig = ROBO_CONFIG
+		let roboConfig = this._isApp ? ROBO_CONFIG_APP : ROBO_CONFIG
+
 		if (this._isPlugin) {
 			roboConfig = roboConfig.replace(`type: 'robo'`, `type: 'plugin'`)
 		}

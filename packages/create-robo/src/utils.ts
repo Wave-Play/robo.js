@@ -42,6 +42,21 @@ export default {
 	type: 'robo'
 }\n`
 
+
+export const ROBO_CONFIG_APP = `// @ts-check
+
+/**
+ * @type {import('@roboplay/robo.js').Config}
+ **/
+export default {
+	clientOptions: {},
+	experimental: {
+		disableBot: true
+	}
+	plugins: [],
+	type: 'robo'
+}\n`
+
 export function cmd(packageManager: PackageManager): string {
 	return IS_WINDOWS ? `${packageManager}.cmd` : packageManager
 }
