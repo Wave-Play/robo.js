@@ -40,7 +40,9 @@
 		"logger.js",
 		"README.md",
 		"types.d.ts",
-		"types.js"
+		"types.js",
+		"utils.d.ts",
+		"utils.js"
 	],
 	"author": "WavePlay <dev@waveplay.com> (waveplay.com)",
 	"contributors": [
