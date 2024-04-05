@@ -36,9 +36,11 @@
 		"dist/",
 		"src/",
 		"LICENSE",
+		"logger.d.ts",
+		"logger.js",
 		"README.md",
-		"types.js",
-		"types.d.ts"
+		"types.d.ts",
+		"types.js"
 	],
 	"author": "WavePlay <dev@waveplay.com> (waveplay.com)",
 	"contributors": [
