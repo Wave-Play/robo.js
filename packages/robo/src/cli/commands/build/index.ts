@@ -10,7 +10,7 @@ import { generateDefaults } from '../../utils/generate-defaults.js'
 import { compile } from '../../utils/compiler.js'
 import { Flashcore, prepareFlashcore } from '../../../core/flashcore.js'
 import { bold, color } from '../../../core/color.js'
-import { buildVite } from '../../utils/vite.js'
+import { buildPublicDirectory } from '../../utils/public.js'
 import { FLASHCORE_KEYS } from '../../../core/constants.js'
 import type { LoggerOptions } from '../../../core/logger.js'
 
@@ -88,7 +88,7 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 
 	if (!options.dev) {
 		// Build Vite for production if available
-		await buildVite()
+		await buildPublicDirectory()
 
 		// Get the size of the entire current working directory
 		const sizeStartTime = Date.now()
