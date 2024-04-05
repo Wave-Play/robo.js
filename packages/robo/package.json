@@ -35,6 +35,8 @@
 	"files": [
 		"dist/",
 		"src/",
+		"cli.d.ts",
+		"cli.js",
 		"LICENSE",
 		"logger.d.ts",
 		"logger.js",
