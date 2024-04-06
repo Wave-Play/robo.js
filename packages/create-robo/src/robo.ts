@@ -33,7 +33,7 @@ const roboScripts = {
 	build: 'robo build',
 	deploy: 'robo deploy',
 	dev: `robox dev`,
-	doctor: 'robo doctor',
+	doctor: 'sage doctor',
 	invite: 'robo invite',
 	start: 'robo start'
 }
