@@ -162,7 +162,7 @@ new Command('create-robo <projectName>')
 		// Skip this step if the user is creating a plugin
 		if (!robo.isPlugin) {
 			logger.debug(`Asking for Discord credentials...`)
-			await robo.askForDiscordCredentials(selectedFeaturesOrDefaults, options.verbose)
+			await robo.askForDiscordCredentials()
 		}
 
 		const packageManager = getPackageManager()

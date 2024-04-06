@@ -56,8 +56,8 @@ export default {
 	type: 'robo'
 }\n`
 
-export function cmd(packageManager: PackageManager): string {
-	return IS_WINDOWS ? `${packageManager}.cmd` : packageManager
+export function cmd(packageManager: string): string {
+	return IS_WINDOWS && !['pnpm', 'pnpx'].includes(packageManager) ? `${packageManager}.cmd` : packageManager
 }
 
 export interface ExecOptions extends SpawnOptions {
