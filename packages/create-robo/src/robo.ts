@@ -511,6 +511,11 @@ export default class Robo {
 			this._packageJson.keywords.push('bot', 'discord', 'discord.js')
 		}
 
+		// I heard you like tunnels
+		if (this._isApp) {
+			this._packageJson.scripts['dev'] += ' --tunnel'
+		}
+
 		// Robo.js and Discord.js are normal dependencies, unless this is a plugin
 		// TODO: Update dependency name
 		const roboPkg = '@roboplay/robo.js'
