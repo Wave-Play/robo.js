@@ -3,7 +3,7 @@ import type { ClientOptions, PermissionsString } from 'discord.js'
 import type { Plugin, SageOptions } from './index.js'
 
 export interface Config {
-	clientOptions: ClientOptions
+	clientOptions?: ClientOptions
 	defaults?: {
 		dev?: boolean
 		help?: boolean
