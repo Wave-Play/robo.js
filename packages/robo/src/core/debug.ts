@@ -286,6 +286,13 @@ async function getCodeCodeAtFault(err: Error, type: 'dependency' | 'source') {
 			}
 		}
 
+		// Truncate entire data set presented if too long (includes decorators + safe offset)
+		const extraLength = normalizedPath.length + type.length + 10 + 5
+		const length = result.length + extraLength
+		if (length > 1024) {
+			result = result.slice(0, 1021 - extraLength) + '...'
+		}
+
 		return {
 			code: result,
 			file: normalizedPath,
