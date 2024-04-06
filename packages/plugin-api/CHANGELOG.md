@@ -1,5 +1,21 @@
 # @roboplay/plugin-api
 
+## 0.4.0
+
+### Minor Changes
+
+- 569c513: refactor: start server even when there's no routes
+- 09111ac: feat: start vite server as middleware if installed
+- 88d4ae2: feat: vite integration
+- b0e818e: feat: support for loading public assets
+- 4c25e59: refactor!: new package name
+- d8657b4: refactor!: renamed RoboError to RoboResponse
+
+### Patch Changes
+
+- c7038d9: fix: parse body as empty when none was provided
+- 8ee8ab8: chore: refined logs
+
 ## 0.3.0
 
 ### Minor Changes
