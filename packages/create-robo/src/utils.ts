@@ -28,7 +28,7 @@ export const PRETTIER_CONFIG = `module.exports = {
 export const ROBO_CONFIG = `// @ts-check
 
 /**
- * @type {import('@roboplay/robo.js').Config}
+ * @type {import('robo.js').Config}
  **/
 export default {
 	clientOptions: {
@@ -46,7 +46,7 @@ export default {
 export const ROBO_CONFIG_APP = `// @ts-check
 
 /**
- * @type {import('@roboplay/robo.js').Config}
+ * @type {import('robo.js').Config}
  **/
 export default {
 	experimental: {

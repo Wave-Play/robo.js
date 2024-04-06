@@ -5,7 +5,7 @@
 
 <div align="center">
 
-[![GitHub license](https://img.shields.io/github/license/Wave-Play/robo)](https://github.com/Wave-Play/robo/blob/main/LICENSE) [![npm](https://img.shields.io/npm/v/@roboplay/robo.js)](https://www.npmjs.com/package/@roboplay/robo.js) [![install size](https://packagephobia.com/badge?p=@roboplay/robo.js@latest)](https://packagephobia.com/result?p=@roboplay/robo.js@latest) [![Discord](https://img.shields.io/discord/1087134933908193330?color=7289da)](https://roboplay.dev/discord) [![All Contributors](https://img.shields.io/github/all-contributors/Wave-Play/robo.js?color=cf7cfc)](#contributors)
+[![GitHub license](https://img.shields.io/github/license/Wave-Play/robo)](https://github.com/Wave-Play/robo/blob/main/LICENSE) [![npm](https://img.shields.io/npm/v/robo.js)](https://www.npmjs.com/package/robo.js) [![install size](https://packagephobia.com/badge?p=robo.js@latest)](https://packagephobia.com/result?p=robo.js@latest) [![Discord](https://img.shields.io/discord/1087134933908193330?color=7289da)](https://roboplay.dev/discord) [![All Contributors](https://img.shields.io/github/all-contributors/Wave-Play/robo.js?color=cf7cfc)](#contributors)
 
 
 **Power up Discord with effortless activities, bots, web servers, and more!** ⚡

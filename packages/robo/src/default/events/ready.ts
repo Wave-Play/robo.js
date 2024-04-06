@@ -1,5 +1,5 @@
-import { color, getState, setState } from '@roboplay/robo.js'
-import { STATE_KEYS, discordLogger } from '@roboplay/robo.js/dist/core/constants.js'
+import { color, getState, setState } from 'robo.js'
+import { STATE_KEYS, discordLogger } from 'robo.js/dist/core/constants.js'
 import { ChannelType } from 'discord.js'
 import type { Client } from 'discord.js'
 

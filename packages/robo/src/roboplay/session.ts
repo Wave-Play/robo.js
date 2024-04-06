@@ -96,7 +96,7 @@ async function link(podId: string) {
 	// Make sure the current directory is a Robo project by checking for the dependency
 	const packageJson = await getRoboPackageJson()
 
-	if (!packageJson.dependencies?.['@roboplay/robo.js']) {
+	if (!packageJson.dependencies?.['robo.js']) {
 		throw new Error(`This directory is not a Robo project.`)
 	}
 
