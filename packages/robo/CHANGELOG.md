@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.10.1
+
+### Patch Changes
+
+- 0460b7f: patch: use new robo.js package name
+
 ## 0.10.0
 
 ### Minor Changes

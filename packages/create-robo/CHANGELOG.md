@@ -1,5 +1,11 @@
 # create-robo
 
+## 0.11.1
+
+### Patch Changes
+
+- 1c94e31: patch: use new robo.js package name
+
 ## 0.11.0
 
 ### Minor Changes
