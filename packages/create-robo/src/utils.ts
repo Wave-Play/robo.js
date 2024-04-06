@@ -49,10 +49,9 @@ export const ROBO_CONFIG_APP = `// @ts-check
  * @type {import('@roboplay/robo.js').Config}
  **/
 export default {
-	clientOptions: {},
 	experimental: {
 		disableBot: true
-	}
+	},
 	plugins: [],
 	type: 'robo'
 }\n`

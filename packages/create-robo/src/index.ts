@@ -131,8 +131,7 @@ new Command('create-robo <projectName>')
 
 		// Create a new Robo project prototype
 		logger.debug(`Creating Robo prototype...`)
-		const isApp = options.kit === 'app' ? true : false
-		const robo = new Robo(projectName, options.plugin, useSameDirectory, isApp)
+		const robo = new Robo(projectName, options, useSameDirectory)
 		const plugins = options.plugins ?? []
 		logger.log('')
 
@@ -146,24 +145,18 @@ new Command('create-robo <projectName>')
 				await robo.askIsPlugin()
 			}
 
-			// Copy the template files to the new project directory
-			if ((options.javascript && !isApp) || (options.typescript && !isApp)) {
-				const useTypeScript = options.typescript ?? false
-				robo.useTypeScript(useTypeScript)
-				logger.info(`Using ${useTypeScript ? 'TypeScript' : 'JavaScript'}`)
-			} else if (isApp) {
-				await robo.askUseTemplate()
-			}
-
 			// Get user input to determine which features to include or use the recommended defaults
 			selectedFeaturesOrDefaults = options.features?.split(',') ?? (await robo.getUserInput())
-			await robo.createPackage(selectedFeaturesOrDefaults, plugins, options)
+			await robo.createPackage(selectedFeaturesOrDefaults, plugins)
 
 			// Determine if TypeScript is selected and copy the corresponding template files
 			logger.debug(`Copying template files...`)
 			await robo.copyTemplateFiles('')
 			logger.debug(`Finished copying template files!`)
 		}
+
+		// Want some plugins?
+		await robo.plugins()
 
 		// Ask the user for their Discord credentials (token and client ID) and store them for later use
 		// Skip this step if the user is creating a plugin
@@ -189,6 +182,9 @@ new Command('create-robo <projectName>')
 		}
 		logger.log(Indent, '   - Develop locally:', chalk.bold.cyan(packageManager + ' run dev'))
 		logger.log(Indent, '   - Deploy to the cloud:', chalk.bold.cyan(packageManager + ' run deploy'))
+		if (robo.selectedPlugins.length < 1) {
+			logger.log(Indent, '   - Check out or create your own plugins')
+		}
 
 		if (robo.installFailed) {
 			logger.log('')

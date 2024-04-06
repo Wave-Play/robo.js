@@ -1,6 +1,6 @@
 import fs from 'fs/promises'
 import path from 'path'
-import inquirer from 'inquirer'
+import inquirer, { ChoiceOptions } from 'inquirer'
 import chalk from 'chalk'
 import { fileURLToPath } from 'node:url'
 import {
@@ -43,27 +43,30 @@ const pluginScripts = {
 	dev: `robo build plugin --watch`,
 	prepublishOnly: 'robo build plugin'
 }
-type Plugin = {
-	name: string
-	short: string
-	value: string
-}[]
+
+const Recommended = chalk.dim('(recommended)')
 
 const optionalFeatures = [
 	{
-		name: `${chalk.bold('TypeScript')} (recommended) - A superset of JavaScript that adds static types.`,
+		name: `${chalk.bold('TypeScript')} ${Recommended} - A superset of JavaScript that adds static types.`,
 		short: 'TypeScript',
 		value: 'typescript',
 		checked: true
 	},
 	{
-		name: `${chalk.bold('ESLint')} (recommended) - Keeps your code clean and consistent.`,
+		name: `${chalk.bold('React')} ${Recommended} - The library for web and native user interfaces.`,
+		short: 'React',
+		value: 'react',
+		checked: true
+	},
+	{
+		name: `${chalk.bold('ESLint')} ${Recommended} - Keeps your code clean and consistent.`,
 		short: 'ESLint',
 		value: 'eslint',
 		checked: true
 	},
 	{
-		name: `${chalk.bold('Prettier')} (recommended) - Automatically formats your code for readability.`,
+		name: `${chalk.bold('Prettier')} ${Recommended} - Automatically formats your code for readability.`,
 		short: 'Prettier',
 		value: 'prettier',
 		checked: true
@@ -76,12 +79,30 @@ const optionalFeatures = [
 	}
 ]
 
-const optionalPlugins: [string | inquirer.Separator, ...Plugin] = [
-	new inquirer.Separator('\nOptional Plugins:'),
+const appPlugins = [
 	{
 		name: `${chalk.bold(
 			'AI'
-		)} - Transform your Robo into an engaging chatbot using AI. Supports customized behaviors and Discord commands.`,
+		)} - Transform your Robo into a personalized AI chatbot! Supports Discord command execution.`,
+		short: 'AI',
+		value: 'ai'
+	},
+	new inquirer.Separator('\nRequired for apps:'),
+	{
+		checked: true,
+		name: `${chalk.bold(
+			'Web Server'
+		)} - Turn your Robo into a web server! Create and manage web pages, APIs, and more.`,
+		short: 'Web Server',
+		value: 'server'
+	}
+]
+
+const botPlugins = [
+	{
+		name: `${chalk.bold(
+			'AI'
+		)} - Transform your Robo into a personalized AI chatbot! Supports Discord command execution.`,
 		short: 'AI',
 		value: 'ai'
 	},
@@ -110,6 +131,46 @@ const optionalPlugins: [string | inquirer.Separator, ...Plugin] = [
 		value: 'modtools'
 	}
 ]
+
+interface PluginData {
+	config?: Record<string, unknown>
+	keywords: string[]
+	package: string
+}
+
+const PluginDb: Record<string, PluginData> = {
+	ai: {
+		config: {
+			commands: false,
+			openaiKey: 'process.env.OPENAI_API_KEY',
+			systemMessage: `You are a helpful Robo named {{name}}.`,
+			whitelist: {
+				channelIds: []
+			}
+		},
+		keywords: ['ai', 'gpt', 'openai'],
+		package: '@roboplay/plugin-ai'
+	},
+	'ai-voice': {
+		keywords: ['speech', 'voice'],
+		package: '@roboplay/plugin-ai-voice'
+	},
+	server: {
+		config: {
+			cors: true
+		},
+		keywords: ['api', 'http', 'server', 'vite', 'web'],
+		package: '@roboplay/plugin-api'
+	},
+	maintenance: {
+		keywords: ['maintenance'],
+		package: '@roboplay/plugin-maintenance'
+	},
+	modtools: {
+		keywords: ['moderation', 'moderator'],
+		package: '@roboplay/plugin-modtools'
+	}
+}
 
 interface PackageJson {
 	name: string
@@ -141,9 +202,11 @@ interface PackageJson {
 	peerDependencies?: Record<string, string>
 	peerDependenciesMeta?: Record<string, Record<string, unknown>>
 }
-type appTemplate = 'VTS' | 'VJS' | 'RTS' | 'RJS' | undefined
 
+// TODO: Refactor this mess into a Robo Builder-like circular structure
 export default class Robo {
+	private readonly _cliOptions: CommandOptions
+	private readonly _isApp: boolean
 	private readonly _nodeOptions = ['--enable-source-maps']
 	private readonly _spinner = new Spinner()
 
@@ -151,10 +214,11 @@ export default class Robo {
 	private _installFailed: boolean
 	private _missingEnv: boolean
 	private _name: string
+	private _packageJson: PackageJson
+	private _selectedFeatures: string[] = []
+	private _selectedPlugins: string[] = []
 	private _useTypeScript: boolean | undefined
 	private _workingDir: string
-	private _isApp: boolean
-	private _appTemplate: appTemplate
 
 	// Same as above, but exposed as getters
 	private _isPlugin: boolean
@@ -171,10 +235,16 @@ export default class Robo {
 		return this._missingEnv
 	}
 
-	constructor(name: string, isPlugin: boolean, useSameDirectory: boolean, isApp: boolean) {
-		this._isPlugin = isPlugin
+	public get selectedPlugins(): string[] {
+		return this._selectedPlugins
+	}
+
+	constructor(name: string, cliOptions: CommandOptions, useSameDirectory: boolean) {
+		this._cliOptions = cliOptions
+		this._isApp = cliOptions.kit === 'app'
+		this._isPlugin = cliOptions.plugin
 		this._name = name
-		this._isApp = isApp
+		this._useTypeScript = cliOptions.typescript
 		this._workingDir = useSameDirectory ? process.cwd() : path.join(process.cwd(), name)
 	}
 
@@ -192,36 +262,102 @@ export default class Robo {
 		])
 
 		this._isPlugin = isPlugin
+
+		// Move up one line
+		logger.log('\x1B[1A\x1B[K\x1B[1A\x1B[K')
 	}
 
-	async askUseTemplate() {
-		const { useTemplate } = await inquirer.prompt<Record<string, appTemplate>>([
+	public async plugins() {
+		logger.log('')
+		const { selectedPlugins } = await inquirer.prompt([
 			{
-				type: 'list',
-				name: 'useTemplate',
-				message: chalk.blue('Choose a template for your app!'),
-				choices: [
-					{
-						name: 'Vanilla JS',
-						value: 'VJS'
-					},
-					{
-						name: 'Vanilla TS',
-						value: 'VTS'
-					},
-					{
-						name: 'React-TS',
-						value: 'RTS'
-					},
-					{
-						name: 'React-JS',
-						value: 'RJS'
-					}
-				]
+				type: 'checkbox',
+				name: 'selectedPlugins',
+				message: 'Select optional plugins:',
+				choices: this._isApp ? appPlugins : botPlugins
 			}
 		])
-		this._useTypeScript = useTemplate.includes('TS')
-		this._appTemplate = useTemplate
+		this._selectedPlugins = selectedPlugins
+
+		// Move up one line
+		logger.log('\x1B[1A\x1B[K\x1B[1A\x1B[K')
+
+		// Print new section
+		logger.debug('\n')
+		logger.log(Indent, chalk.bold(`🔌 Plugin Power-Ups`))
+
+		// Skip if no plugins are selected
+		if (selectedPlugins.length === 0) {
+			logger.log(Indent, `   Traveling light, but the quest for plugins awaits!`)
+			return
+		}
+
+		// You spin me right round, baby, right round
+		this._spinner.setText(Indent + '    {{spinner}} Installing plugins...\n')
+		this._spinner.start()
+
+		if (this._cliOptions.verbose) {
+			this._spinner.stop(false)
+		}
+
+		// Get the package names for the selected plugins
+		const plugins = this._selectedPlugins.map((p) => PluginDb[p])
+		const packages = plugins.map((p) => p.package)
+
+		// Add the keywords to the package.json
+		const keywords = plugins.flatMap((p) => p.keywords)
+		this._packageJson.keywords.push(...keywords)
+		this._packageJson.keywords.sort()
+
+		logger.debug(`Updating package.json file...`)
+		await fs.writeFile(path.join(this._workingDir, 'package.json'), JSON.stringify(this._packageJson, null, '\t'))
+
+		// Install the selected plugin packages
+		const executor = getPackageExecutor()
+		const execOptions: ExecOptions = {
+			cwd: this._workingDir,
+			stdio: this._cliOptions.verbose ? 'pipe' : 'ignore',
+			verbose: this._cliOptions.verbose
+		}
+
+		try {
+			logger.debug(`Installing plugins:`, packages)
+			await exec(`${executor} robo add ${packages.join(' ')}`, execOptions)
+
+			// Update config files for each plugin with the provided configuration
+			const pendingConfigs = plugins
+				.filter((p) => p.config)
+				.map(async (plugin) => {
+					// Replace all {{name}} placeholders with the project name for each config value
+					const refinedConfig = JSON.parse(JSON.stringify(plugin.config).replaceAll('{{name}}', this._name))
+					await this.createPluginConfig(plugin.package, refinedConfig)
+				})
+			await Promise.all(pendingConfigs)
+
+			// Stahp
+			this._spinner.stop(false)
+
+			const cleanPlugins = plugins.filter((p) => !(p instanceof inquirer.Separator)) as ChoiceOptions[]
+			const pluginNames = this._selectedPlugins.map(
+				(p) => cleanPlugins.find((plugin) => plugin.value === p)?.short ?? p
+			)
+
+			let extra = ''
+			extra = `${pluginNames.map((f: string) => chalk.bold.cyan(f)).join(', ')}`
+
+			// Oxford comma 'cause we fancy uwu
+			if (selectedPlugins.length > 1) {
+				const lastComma = extra.lastIndexOf(',')
+				extra = extra.slice(0, lastComma) + ' and' + extra.slice(lastComma + 1)
+			}
+			if (selectedPlugins.length > 2) {
+				extra = extra.replace(' and', ', and')
+			}
+			logger.log(Indent, `   Gear acquired: ${extra}.`, Space)
+		} catch (error) {
+			this._spinner.stop(false)
+			logger.log(Indent, chalk.red(`   Could not install plugins!`))
+		}
 	}
 
 	async downloadTemplate(url: string) {
@@ -280,14 +416,19 @@ export default class Robo {
 		logger.log(Indent, `   Bootstraped project successfully from ${chalk.bold.cyan(result?.name ?? 'repository')}.`)
 	}
 
-	useTypeScript(useTypeScript: boolean) {
-		this._useTypeScript = useTypeScript
-	}
-
 	async getUserInput(): Promise<string[]> {
 		// Exclude TypeScript from the optional features if the user has already selected it
 		const features =
 			this._useTypeScript !== undefined ? optionalFeatures.filter((f) => f.value !== 'typescript') : optionalFeatures
+
+		// Only App developers get the option to use React
+		if (!this._isApp) {
+			const index = features.findIndex((f) => f.value === 'react')
+
+			if (index >= 0) {
+				features.splice(index, 1)
+			}
+		}
 
 		// Sorry, plugin developers don't get Extensionless as an option
 		if (this._isPlugin) {
@@ -299,21 +440,15 @@ export default class Robo {
 		}
 
 		// Prompto! (I'm sorry)
-		const optionalAppPlugins = optionalPlugins.filter((plugin) => {
-			const obj = plugin as unknown as Plugin[0]
-			if (obj.value === 'api') {
-				return
-			}
-			return plugin
-		})
 		const { selectedFeatures } = await inquirer.prompt([
 			{
 				type: 'checkbox',
 				name: 'selectedFeatures',
 				message: 'Select features:',
-				choices: [...features, ...(this._isPlugin ? [] : this._isApp ? optionalAppPlugins : optionalPlugins)]
+				choices: features
 			}
 		])
+		this._selectedFeatures = selectedFeatures
 
 		// Determine if TypeScript is selected only if it wasn't previously set
 		if (this._useTypeScript === undefined) {
@@ -326,15 +461,15 @@ export default class Robo {
 		return selectedFeatures
 	}
 
-	async createPackage(features: string[], plugins: string[], cliOptions: CommandOptions): Promise<void> {
-		const { install = true } = cliOptions
+	async createPackage(features: string[], plugins: string[]): Promise<void> {
+		const { install = true, kit, roboVersion, verbose } = this._cliOptions
 
 		// Find the package manager that triggered this command
 		const packageManager = getPackageManager()
 		logger.debug(`Using ${chalk.bold(packageManager)} in ${this._workingDir}...`)
 		await fs.mkdir(this._workingDir, { recursive: true })
 
-		// Move up one line and print new section
+		// Print new section
 		logger.debug('\n')
 		logger.log(
 			Indent,
@@ -350,7 +485,7 @@ export default class Robo {
 		} as const
 		const dependencies: string[] = []
 		const devDependencies: string[] = []
-		const packageJson: PackageJson = {
+		this._packageJson = {
 			name: this._name,
 			description: '',
 			version: '1.0.0',
@@ -368,61 +503,54 @@ export default class Robo {
 			devDependencies: {}
 		}
 
-		// Robo.js and Discord.js are normal dependencies, unless this is a plugin
-		if (this._isApp) {
-			packageJson.dependencies['@discord/embedded-app-sdk'] = '^1.0.2'
-			packageJson.dependencies['dotenv'] = '^16.4.1'
-			packageJson.devDependencies['vite'] = '^5.0.8'
-			packageJson.dependencies['@roboplay/robo.js'] = 'latest'
-			packageJson.dependencies['@roboplay/plugin-api'] = '^0.2.3'
-			await this.createPluginConfig('@roboplay/plugin-api', {
-				cors: true,
-				port: 3000
-			})
-			if (this._appTemplate === 'RTS' || this._appTemplate === 'RJS') {
-				packageJson.dependencies['react'] = '^18.2.0'
-				packageJson.dependencies['react-dom'] = '^18.2.0'
-
-				packageJson.devDependencies['@types/react'] = '^18.2.66'
-				packageJson.devDependencies['@types/react-dom'] = '^18.2.22'
-				packageJson.devDependencies['eslint-plugin-react-hooks'] = '^4.6.0'
-				packageJson.devDependencies['eslint-plugin-react-refresh'] = '^0.4.6'
-			} else if (!this._isPlugin) {
-				packageJson.dependencies['@roboplay/robo.js'] = 'latest'
-				packageJson.dependencies['discord.js'] = '^14.13.0'
-			}
-		}
-
-		if (cliOptions.kit === 'app') {
-			packageJson.keywords.push('activity', 'discord', 'sdk', 'embed', 'embedded app')
+		// Good SEO is important :3
+		if (kit === 'app') {
+			this._packageJson.keywords.push('activity', 'discord', 'sdk', 'embed', 'embedded app')
 		} else {
-			packageJson.keywords.push('bot', 'discord', 'discord.js')
+			this._packageJson.keywords.push('bot', 'discord', 'discord.js')
 		}
 
 		// Robo.js and Discord.js are normal dependencies, unless this is a plugin
-		const roboDep = '@roboplay/robo.js' + (cliOptions.roboVersion ? `@${cliOptions.roboVersion}` : '')
+		// TODO: Update dependency name
+		const roboPkg = '@roboplay/robo.js'
+		const roboDep = roboPkg + (roboVersion ? `@${roboVersion}` : '')
 
 		if (!this._isPlugin) {
 			dependencies.push(roboDep)
-			dependencies.push('discord.js')
+			dependencies.push(this._isApp ? '@discord/embedded-app-sdk' : 'discord.js')
 		} else {
 			devDependencies.push(roboDep)
-			devDependencies.push('discord.js')
-			packageJson.peerDependencies = {
-				'@roboplay/robo.js': '^0.9.0'
+			devDependencies.push(this._isApp ? '@discord/embedded-app-sdk' : 'discord.js')
+			this._packageJson.peerDependencies = {
+				[roboPkg]: '^0.9.0'
 			}
-			packageJson.peerDependenciesMeta = {
-				'@roboplay/robo.js': {
+			this._packageJson.peerDependenciesMeta = {
+				[roboPkg]: {
 					optional: false
 				}
 			}
 
 			// Clean up undefined fields from packageJson
-			Object.keys(packageJson).forEach((key) => {
-				if (packageJson[key as keyof PackageJson] === undefined) {
-					delete packageJson[key as keyof PackageJson]
+			Object.keys(this._packageJson).forEach((key) => {
+				if (this._packageJson[key as keyof PackageJson] === undefined) {
+					delete this._packageJson[key as keyof PackageJson]
 				}
 			})
+		}
+
+		// App developers always get Vite
+		logger.debug(`Adding features:`, features)
+		if (this._isApp) {
+			devDependencies.push('vite')
+		}
+		if (this._selectedFeatures.includes('react') && this._isPlugin) {
+			devDependencies.push('react')
+			devDependencies.push('react-dom')
+			devDependencies.push('@vitejs/plugin-react-swc')
+		} else if (this._selectedFeatures.includes('react')) {
+			dependencies.push('react')
+			dependencies.push('react-dom')
+			devDependencies.push('@vitejs/plugin-react-swc')
 		}
 
 		// Generate customized documentation
@@ -456,22 +584,28 @@ export default class Robo {
 
 		const runPrefix = packageManager === 'npm' ? 'npm run ' : packageManager + ' '
 		if (this._useTypeScript) {
-			if (this._appTemplate === 'RTS') {
-				devDependencies.push('@vitejs/plugin-react-swc')
-			}
-			packageJson.keywords.push('typescript')
+			this._packageJson.keywords.push('typescript')
 			devDependencies.push('@swc/core')
 			devDependencies.push('@types/node')
 			devDependencies.push('typescript')
 		} else {
-			packageJson.keywords.push('javascript')
+			this._packageJson.keywords.push('javascript')
 		}
 
-		logger.debug(`Adding features:`, features)
+		if (this._useTypeScript && this._selectedFeatures.includes('react')) {
+			devDependencies.push('@types/react')
+			devDependencies.push('@types/react-dom')
+		}
+
+		if (this._selectedFeatures.includes('eslint') && this._selectedFeatures.includes('react')) {
+			devDependencies.push('eslint-plugin-react-hooks')
+			devDependencies.push('eslint-plugin-react-refresh')
+		}
+
 		if (features.includes('eslint')) {
 			devDependencies.push('eslint')
-			packageJson.scripts['lint'] = runPrefix + 'lint:eslint'
-			packageJson.scripts['lint:eslint'] = 'eslint . --ext js,jsx,ts,tsx'
+			this._packageJson.scripts['lint'] = runPrefix + 'lint:eslint'
+			this._packageJson.scripts['lint:eslint'] = 'eslint . --ext js,jsx,ts,tsx'
 
 			const eslintConfig = {
 				extends: ['eslint:recommended'],
@@ -497,11 +631,11 @@ export default class Robo {
 
 		if (features.includes('prettier')) {
 			devDependencies.push('prettier')
-			packageJson.scripts['lint:style'] = 'prettier --write .'
+			this._packageJson.scripts['lint:style'] = 'prettier --write .'
 
-			const hasLintScript = packageJson.scripts['lint']
+			const hasLintScript = this._packageJson.scripts['lint']
 			if (hasLintScript) {
-				packageJson.scripts['lint'] += ' && ' + runPrefix + 'lint:style'
+				this._packageJson.scripts['lint'] += ' && ' + runPrefix + 'lint:style'
 			}
 
 			// Create the prettier.config.js file
@@ -513,8 +647,8 @@ export default class Robo {
 			this._nodeOptions.push('--import=extensionless/register')
 
 			// Replace every "robo" command with "robox"
-			for (const [key, value] of Object.entries(packageJson.scripts)) {
-				packageJson.scripts[key] = value.replace('robo ', 'robox ')
+			for (const [key, value] of Object.entries(this._packageJson.scripts)) {
+				this._packageJson.scripts[key] = value.replace('robo ', 'robox ')
 			}
 		}
 
@@ -529,46 +663,10 @@ export default class Robo {
 		await fs.mkdir(path.join(this._workingDir, 'config', 'plugins'), { recursive: true })
 		await fs.writeFile(path.join(this._workingDir, 'config', 'robo.mjs'), roboConfig)
 		logger.debug(`Finished writing Robo config file:\n`, roboConfig)
-		logger.debug(`Setting up plugins...`)
-
-		if (features.includes('ai')) {
-			packageJson.keywords.push('ai', 'gpt', 'openai')
-			dependencies.push('@roboplay/plugin-ai')
-			await this.createPluginConfig('@roboplay/plugin-ai', {
-				commands: false,
-				openaiKey: 'process.env.OPENAI_API_KEY',
-				systemMessage: 'You are a helpful Robo.',
-				whitelist: {
-					channelIds: []
-				}
-			})
-		}
-		if (features.includes('ai-voice')) {
-			packageJson.keywords.push('speech', 'voice')
-			dependencies.push('@roboplay/plugin-ai-voice')
-			await this.createPluginConfig('@roboplay/plugin-ai-voice', {})
-		}
-		if (features.includes('server')) {
-			packageJson.keywords.push('api', 'http', 'server', 'web')
-			dependencies.push('@roboplay/plugin-api')
-			await this.createPluginConfig('@roboplay/plugin-api', {
-				cors: true
-			})
-		}
-		if (features.includes('maintenance')) {
-			packageJson.keywords.push('maintenance')
-			dependencies.push('@roboplay/plugin-maintenance')
-			await this.createPluginConfig('@roboplay/plugin-maintenance', {})
-		}
-		if (features.includes('modtools')) {
-			packageJson.keywords.push('moderation', 'moderator')
-			dependencies.push('@roboplay/plugin-modtools')
-			await this.createPluginConfig('@roboplay/plugin-modtools', {})
-		}
 
 		// Sort keywords, scripts, dependencies, and devDependencies alphabetically (this is important to me)
-		packageJson.keywords.sort()
-		packageJson.scripts = sortObjectKeys(packageJson.scripts)
+		this._packageJson.keywords.sort()
+		this._packageJson.scripts = sortObjectKeys(this._packageJson.scripts)
 		dependencies.sort()
 		devDependencies.sort()
 
@@ -577,18 +675,18 @@ export default class Robo {
 				const versionIndex = dep.lastIndexOf('@')
 
 				if (versionIndex > 0) {
-					packageJson.dependencies[dep.slice(0, versionIndex)] = dep.slice(versionIndex + 1)
+					this._packageJson.dependencies[dep.slice(0, versionIndex)] = dep.slice(versionIndex + 1)
 				} else {
-					packageJson.dependencies[dep] = 'latest'
+					this._packageJson.dependencies[dep] = 'latest'
 				}
 			})
 			devDependencies.forEach((dep) => {
 				const versionIndex = dep.lastIndexOf('@')
 
 				if (versionIndex > 0) {
-					packageJson.devDependencies[dep.slice(0, versionIndex)] = dep.slice(versionIndex + 1)
+					this._packageJson.devDependencies[dep.slice(0, versionIndex)] = dep.slice(versionIndex + 1)
 				} else {
-					packageJson.devDependencies[dep] = 'latest'
+					this._packageJson.devDependencies[dep] = 'latest'
 				}
 			})
 		}
@@ -610,11 +708,11 @@ export default class Robo {
 
 		// Write the package.json file
 		logger.debug(`Writing package.json file...`)
-		await fs.writeFile(path.join(this._workingDir, 'package.json'), JSON.stringify(packageJson, null, 2))
+		await fs.writeFile(path.join(this._workingDir, 'package.json'), JSON.stringify(this._packageJson, null, '\t'))
 
 		// Install dependencies using the package manager that triggered the command
 		if (install) {
-			if (cliOptions.verbose) {
+			if (verbose) {
 				this._spinner.stop()
 			}
 
@@ -623,15 +721,20 @@ export default class Robo {
 				this._spinner.setText(Indent + '    {{spinner}} Installing dependencies...\n')
 				const execOptions: ExecOptions = {
 					cwd: this._workingDir,
-					stdio: cliOptions.verbose ? 'pipe' : 'ignore',
-					verbose: cliOptions.verbose
+					stdio: verbose ? 'pipe' : 'ignore',
+					verbose: verbose
 				}
 
 				await exec(baseCommand + ' ' + dependencies.join(' '), execOptions)
-
 				this._spinner.setText(Indent + '    {{spinner}} Installing dev dependencies...\n')
 				baseCommand += packageManager === 'yarn' ? ' --dev' : ' --save-dev'
 				await exec(baseCommand + ' ' + devDependencies.join(' '), execOptions)
+
+				// Read updated package.json file
+				const packageJsonPath = path.join(this._workingDir, 'package.json')
+				this._packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'))
+
+				// Stahp it
 				this._spinner.stop(false)
 				let extra = ''
 				if (pureFeatures.length > 0) {
@@ -655,7 +758,7 @@ export default class Robo {
 
 				writeDependencies()
 				logger.debug(`Updating package.json file...`)
-				await fs.writeFile(path.join(this._workingDir, 'package.json'), JSON.stringify(packageJson, null, 2))
+				await fs.writeFile(path.join(this._workingDir, 'package.json'), JSON.stringify(this._packageJson, null, '\t'))
 			}
 		}
 
@@ -672,31 +775,18 @@ export default class Robo {
 		}
 	}
 
-	private whichTemplate(useTypeScript: boolean, isApp: boolean, appTemplate: appTemplate): string {
-		if (isApp) {
-			switch (appTemplate) {
-				case 'RJS': {
-					return 'none'
-				}
-				case 'RTS': {
-					return '../templates/dapp-rts'
-				}
-				case 'VJS': {
-					return '../templates/dapp-js'
-				}
-				case 'VTS': {
-					return '../templates/dapp-ts'
-				}
-				default:
-					break
-			}
+	private getTemplate(): string {
+		if (this._isApp && this._selectedFeatures.includes('react')) {
+			return this._useTypeScript ? '../templates/app-ts-react' : '../templates/app-js-react'
+		} else if (this._isApp) {
+			return this._useTypeScript ? '../templates/app-ts' : '../templates/app-js'
 		} else {
-			return useTypeScript ? '../templates/ts' : '../templates/js'
+			return this._useTypeScript ? '../templates/bot-ts' : '../templates/bot-js'
 		}
 	}
 
 	async copyTemplateFiles(sourceDir: string): Promise<void> {
-		const templateDir = this.whichTemplate(this._useTypeScript, this._isApp, this._appTemplate)
+		const templateDir = this.getTemplate()
 		const sourcePath = path.join(__dirname, templateDir, sourceDir)
 		const targetPath = path.join(this._workingDir, sourceDir)
 
@@ -716,24 +806,14 @@ export default class Robo {
 		}
 	}
 
-	async askForDiscordCredentials(features: string[], verbose: boolean): Promise<void> {
+	async askForDiscordCredentials(): Promise<void> {
 		const discordPortal = 'Portal:'
 		const discordPortalUrl = chalk.bold.blue('https://discord.com/developers/applications')
 		const officialGuide = 'Guide:'
-		const officialGuideUrl = chalk.bold.blue('https://roboplay.dev/botkey')
+		const officialGuideUrl = chalk.bold.blue('https://roboplay.dev/' + (this._isApp ? 'appkey' : 'botkey'))
 		logger.log('')
-		logger.log(`${discordPortal} ${discordPortalUrl}`)
-		logger.log(`${officialGuide} ${officialGuideUrl}\n`)
 		logger.log(Indent, chalk.bold('🔑 Setting up credentials'))
-
-		if (this._isApp) {
-			logger.log(
-				Indent,
-				'To get your Discord Client Secret and Client ID, register your app at the Discord Developor portal.'
-			)
-		} else {
-			logger.log(Indent, '   Get your credentials from the Discord Developer portal.\n')
-		}
+		logger.log(Indent, '   Get your credentials from the Discord Developer portal.\n')
 		logger.log(Indent, `   ${discordPortal} ${discordPortalUrl}`)
 		logger.log(Indent, `   ${officialGuide} ${officialGuideUrl}\n`)
 
@@ -756,7 +836,7 @@ export default class Robo {
 			this._missingEnv = true
 		}
 
-		if (verbose) {
+		if (this._cliOptions.verbose) {
 			logger.log('')
 		} else {
 			logger.log('\x1B[1A\x1B[K\x1B[1A\x1B[K')
@@ -781,17 +861,16 @@ export default class Robo {
 			this._isApp ? 'DISCORD_CLIENT_SECRET' : 'DISCORD_TOKEN',
 			discordToken ?? ''
 		)
-		envContent = updateOrAddVariable(envContent, 'DISCORD_TOKEN', discordToken ?? '')
 		envContent = updateOrAddVariable(envContent, 'NODE_OPTIONS', this._nodeOptions.join(' '))
 
-		if (features.includes('ai') || features.includes('gpt')) {
+		if (this._selectedPlugins.includes('ai')) {
 			envContent = updateOrAddVariable(envContent, 'OPENAI_KEY', '')
 		}
-		if (features.includes('ai-voice')) {
+		if (this._selectedPlugins.includes('ai-voice')) {
 			envContent = updateOrAddVariable(envContent, 'AZURE_SUBSCRIPTION_KEY', '')
 			envContent = updateOrAddVariable(envContent, 'AZURE_SUBSCRIPTION_REGION', '')
 		}
-		if (features.includes('server')) {
+		if (this._selectedPlugins.includes('server')) {
 			envContent = updateOrAddVariable(envContent, 'PORT', '3000')
 		}
 
@@ -834,7 +913,6 @@ export default class Robo {
 		if (this._useTypeScript) {
 			const autoCompletionEnvVar = `export {}\ndeclare global {\n    namespace NodeJS {\n		interface ProcessEnv {\n			DISCORD_CLIENT_ID: string\n			${
 				this._isApp ? 'DISCORD_CLIENT_SECRET: string' : 'DISCORD_TOKEN: string'
-			}
 			}\n		}\n	} \n}`
 
 			const tsconfigPath = path.join(this._workingDir, 'tsconfig.json')
