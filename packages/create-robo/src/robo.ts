@@ -160,7 +160,7 @@ const PluginDb: Record<string, PluginData> = {
 			cors: true
 		},
 		keywords: ['api', 'http', 'server', 'vite', 'web'],
-		package: '@roboplay/plugin-api'
+		package: '@robojs/server'
 	},
 	maintenance: {
 		keywords: ['maintenance'],

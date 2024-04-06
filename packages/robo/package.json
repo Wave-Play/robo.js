@@ -1,6 +1,6 @@
 {
-	"version": "0.9.26",
 	"name": "robo.js",
+	"version": "0.9.26",
 	"private": false,
 	"description": "Power up Discord with effortless activities, bots, web servers, and more!",
 	"keywords": [
