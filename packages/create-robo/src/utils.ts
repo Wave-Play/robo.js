@@ -189,12 +189,15 @@ export function sortObjectKeys(obj: Record<string, string>) {
 }
 
 // Helper function to update or add a variable
+// TODO: Refactor this to read file in memory and update the variables then writing back to the file
 export function updateOrAddVariable(content: string, variable: string, value: string): string {
-	const regex = new RegExp(`(${variable}\\s*=)(.*)`, 'i')
+	//const regex = new RegExp(`(${variable}\\s*=)(.*)`, 'i')
 
-	if (regex.test(content)) {
-		return content.replace(regex, `$1${value}`)
-	} else {
+	//if (regex.test(content)) {
+	//	logger.warn(`Replacing existing ${variable} value with new value:`, value)
+	//	return content.replace(regex, `$1${value}`)
+	//} else {
+	//	logger.info(`Adding new ${variable} value:`, value)
 		return `${content}${variable}="${value}"\n`
-	}
+	//}
 }
