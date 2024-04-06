@@ -524,9 +524,15 @@ export default class Robo {
 		if (!this._isPlugin) {
 			dependencies.push(roboDep)
 			dependencies.push(this._isApp ? '@discord/embedded-app-sdk' : 'discord.js')
+			if (this._isApp) {
+				devDependencies.push('discord.js')
+			}
 		} else {
 			devDependencies.push(roboDep)
-			devDependencies.push(this._isApp ? '@discord/embedded-app-sdk' : 'discord.js')
+			devDependencies.push('discord.js')
+			if (this._isApp) {
+				devDependencies.push('@discord/embedded-app-sdk')
+			}
 			this._packageJson.peerDependencies = {
 				[roboPkg]: '^0.9.0'
 			}
