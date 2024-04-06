@@ -6,6 +6,7 @@ import { pathToFileURL } from 'node:url'
 
 // Global config reference
 let _config: Config = null
+const _configPaths: Set<string> = new Set()
 
 /**
  * Returns the currently loaded configuration.
@@ -15,19 +16,27 @@ export function getConfig(): Config | null {
 	return _config
 }
 
+/**
+ * Returns the paths to all loaded configuration files.
+ */
+export function getConfigPaths(): Set<string> {
+	return _configPaths
+}
+
 export async function loadConfig(file = 'robo'): Promise<Config> {
 	const configPath = await loadConfigPath(file)
 	let config: Config
 
 	if (configPath) {
 		config = await read<Config>(configPath)
+		_configPaths.add(configPath)
 
 		// Load plugin files when using "/config" directory
 		if (configPath.includes(path.sep + 'config' + path.sep)) {
 			logger.debug('Scanning for plugin files...')
 			config.plugins = config.plugins ?? []
 
-			await scanPlugins(configPath, (plugin, pluginConfig) => {
+			await scanPlugins(configPath, (plugin, pluginConfig, pluginPath) => {
 				// Remove existing plugin config if it exists
 				const existingIndex = config.plugins?.findIndex((p) => p === plugin || p[0] === plugin)
 				if (existingIndex !== -1) {
@@ -35,6 +44,7 @@ export async function loadConfig(file = 'robo'): Promise<Config> {
 				}
 
 				config.plugins?.push([plugin, pluginConfig])
+				_configPaths.add(pluginPath)
 			})
 		}
 	} else {
@@ -50,12 +60,22 @@ export async function loadConfig(file = 'robo'): Promise<Config> {
 	return config
 }
 
+/**
+ * Looks for the config file in the current project.
+ * Will look for the following files in order:
+ * - config/robo.mjs
+ * - config/robo.cjs
+ * - config/robo.json
+ * - .config/robo.mjs
+ * - .config/robo.cjs
+ * - .config/robo.json
+ *
+ * @param file The name of the config file to look for. Defaults to "robo".
+ * @returns The path to the config file, or null if it could not be found.
+ */
 export async function loadConfigPath(file = 'robo'): Promise<string> {
 	const extensions = ['.mjs', '.cjs', '.json']
-	const prefixes = [
-		file.endsWith('.config') ? '' : 'config' + path.sep,
-		file.endsWith('.config') ? '' : '.config' + path.sep
-	]
+	const prefixes = ['config' + path.sep, '.config' + path.sep]
 
 	for (const prefix of prefixes) {
 		for (const ext of extensions) {
@@ -63,9 +83,8 @@ export async function loadConfigPath(file = 'robo'): Promise<string> {
 
 			try {
 				if (fs.existsSync(fullPath)) {
-					logger.debug(`Found configuration file at`, fullPath)
-
 					// Convert to file URL to allow for dynamic import()
+					logger.debug(`Found configuration file at`, fullPath)
 					return fullPath
 				}
 			} catch (ignored) {
@@ -74,12 +93,8 @@ export async function loadConfigPath(file = 'robo'): Promise<string> {
 		}
 	}
 
-	const fileName = path.join(prefixes[1], file)
-	if (fileName.endsWith('.config')) {
-		return null
-	} else {
-		return loadConfigPath(file + '.config')
-	}
+	// If no config file was found, return null
+	return null
 }
 
 /**
@@ -87,7 +102,10 @@ export async function loadConfigPath(file = 'robo'): Promise<string> {
  *
  * @param callback A callback function to be called for each plugin found. The plugin name will be passed as the first argument, including the scoped organization if applicable. Second parameter is the plugin config object.
  */
-async function scanPlugins(configPath: string, callback: (plugin: string, pluginConfig: unknown) => void) {
+async function scanPlugins(
+	configPath: string,
+	callback: (plugin: string, pluginConfig: unknown, pluginPath: string) => void
+) {
 	// Look for plugins in the same directory as the config file
 	const pluginsPath = path.join(path.dirname(configPath), 'plugins')
 
@@ -106,12 +124,13 @@ async function scanPlugins(configPath: string, callback: (plugin: string, plugin
 			const scopedPlugins = fs.readdirSync(pluginPath)
 
 			for (const scopedPlugin of scopedPlugins) {
-				const [pluginName, pluginConfig] = await importConfigFile(path.join(pluginPath, scopedPlugin), pluginsPath)
-				callback('@' + pluginName, pluginConfig)
+				const scopedPath = path.join(pluginPath, scopedPlugin)
+				const [pluginName, pluginConfig] = await importConfigFile(scopedPath, pluginsPath)
+				callback('@' + pluginName, pluginConfig, scopedPath)
 			}
 		} else {
 			const [pluginName, pluginConfig] = await importConfigFile(pluginPath, pluginsPath)
-			callback(pluginName, pluginConfig)
+			callback(pluginName, pluginConfig, pluginPath)
 		}
 	}
 }

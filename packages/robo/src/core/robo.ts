@@ -2,6 +2,7 @@ import { color } from './color.js'
 import { registerProcessEvents } from './process.js'
 import { Client, Collection, Events } from 'discord.js'
 import { getConfig, loadConfig } from './config.js'
+import { discordLogger } from './constants.js'
 import { logger } from './logger.js'
 import { loadManifest } from '../cli/utils/manifest.js'
 import { env } from './env.js'
@@ -60,8 +61,12 @@ async function start(options?: StartOptions) {
 	const plugins = loadPluginData()
 	await prepareFlashcore()
 
-	// Create the new client instance
-	client = optionsClient ?? new Client(config.clientOptions)
+	// Create the new client instance (unless disabled)
+	if (config.experimental?.disableBot !== true) {
+		client = optionsClient ?? new Client(config.clientOptions)
+	} else {
+		logger.debug(`Bot is disabled, skipping client setup...`)
+	}
 
 	// Load the portal (commands, context, events)
 	portal = await Portal.open()
@@ -69,41 +74,43 @@ async function start(options?: StartOptions) {
 	// Notify lifecycle event handlers
 	await executeEventHandler(plugins, '_start', client)
 
-	// Define event handlers
-	for (const key of portal.events.keys()) {
-		const onlyAuto = portal.events.get(key).every((event) => event.auto)
-		client.on(key, async (...args) => {
-			if (!onlyAuto) {
-				logger.event(`Event received: ${color.bold(key)}`)
-			}
-			logger.trace('Event args:', args)
+	if (config.experimental?.disableBot !== true) {
+		// Define event handlers
+		for (const key of portal.events.keys()) {
+			const onlyAuto = portal.events.get(key).every((event) => event.auto)
+			client.on(key, async (...args) => {
+				if (!onlyAuto) {
+					discordLogger.event(`Event received: ${color.bold(key)}`)
+				}
+				discordLogger.trace('Event args:', args)
 
-			// Notify event handler
-			executeEventHandler(plugins, key, ...args)
-		})
-	}
-
-	// Forward command interactions to our fancy handlers
-	client.on(Events.InteractionCreate, async (interaction) => {
-		if (interaction.isChatInputCommand()) {
-			const commandKey = getCommandKey(interaction)
-			logger.event(`Received slash command interaction: ${color.bold('/' + commandKey)}`)
-			logger.trace('Slash command interaction:', interaction.toJSON())
-			await executeCommandHandler(interaction, commandKey)
-		} else if (interaction.isAutocomplete()) {
-			const commandKey = getCommandKey(interaction)
-			logger.event(`Received autocomplete interaction for: ${color.bold(interaction.commandName)}`)
-			logger.trace('Autocomplete interaction:', interaction.toJSON())
-			await executeAutocompleteHandler(interaction, commandKey)
-		} else if (interaction.isContextMenuCommand()) {
-			logger.event(`Received context menu interaction: ${color.bold(interaction.commandName)}`)
-			logger.trace('Context menu interaction:', interaction.toJSON())
-			await executeContextHandler(interaction, interaction.commandName)
+				// Notify event handler
+				executeEventHandler(plugins, key, ...args)
+			})
 		}
-	})
 
-	// Log in to Discord with your client's token
-	await client.login(env.discord.token)
+		// Forward command interactions to our fancy handlers
+		client.on(Events.InteractionCreate, async (interaction) => {
+			if (interaction.isChatInputCommand()) {
+				const commandKey = getCommandKey(interaction)
+				discordLogger.event(`Received slash command interaction: ${color.bold('/' + commandKey)}`)
+				discordLogger.trace('Slash command interaction:', interaction.toJSON())
+				await executeCommandHandler(interaction, commandKey)
+			} else if (interaction.isAutocomplete()) {
+				const commandKey = getCommandKey(interaction)
+				discordLogger.event(`Received autocomplete interaction for: ${color.bold(interaction.commandName)}`)
+				discordLogger.trace('Autocomplete interaction:', interaction.toJSON())
+				await executeAutocompleteHandler(interaction, commandKey)
+			} else if (interaction.isContextMenuCommand()) {
+				discordLogger.event(`Received context menu interaction: ${color.bold(interaction.commandName)}`)
+				discordLogger.trace('Context menu interaction:', interaction.toJSON())
+				await executeContextHandler(interaction, interaction.commandName)
+			}
+		})
+
+		// Log in to Discord with your client's token
+		await client.login(env.discord.token)
+	}
 }
 
 async function stop(exitCode = 0) {

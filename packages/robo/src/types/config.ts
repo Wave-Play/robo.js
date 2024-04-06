@@ -3,7 +3,7 @@ import type { ClientOptions, PermissionsString } from 'discord.js'
 import type { Plugin, SageOptions } from './index.js'
 
 export interface Config {
-	clientOptions: ClientOptions
+	clientOptions?: ClientOptions
 	defaults?: {
 		dev?: boolean
 		help?: boolean
@@ -11,16 +11,11 @@ export interface Config {
 	excludePaths?: string[]
 	experimental?: {
 		buildDirectory?: string
+		disableBot?: boolean
 		incrementalBuilds?: boolean
-		legacyProcess?: boolean
 	}
 	flashcore?: {
 		keyv?: unknown
-	}
-	heartbeat?: {
-		debug?: boolean
-		interval?: number
-		url: string
 	}
 	invite?: {
 		autoPermissions?: boolean
@@ -47,6 +42,10 @@ export interface Config {
 
 	/** How often to check for updates to Robo.js in seconds. Default: 1 hour */
 	updateCheckInterval?: number
+
+	watcher?: {
+		ignore?: string[]
+	}
 }
 
 export type Scope =

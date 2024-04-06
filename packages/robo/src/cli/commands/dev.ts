@@ -1,44 +1,35 @@
 import { Command } from '../utils/cli-handler.js'
-import { run } from '../utils/run.js'
-import { spawn } from 'child_process'
+import { ChildProcess, spawn } from 'child_process'
 import { logger } from '../../core/logger.js'
-import { DEFAULT_CONFIG, FLASHCORE_KEYS } from '../../core/constants.js'
-import { loadConfig, loadConfigPath } from '../../core/config.js'
-import {
-	IS_WINDOWS,
-	cmd,
-	filterExistingPaths,
-	getWatchedPlugins,
-	packageJson,
-	timeout
-} from '../utils/utils.js'
+import { DEFAULT_CONFIG, FLASHCORE_KEYS, Indent, cloudflareLogger } from '../../core/constants.js'
+import { getConfigPaths, loadConfig, loadConfigPath } from '../../core/config.js'
+import { installCloudflared, isCloudflaredInstalled, startCloudflared, stopCloudflared } from '../utils/cloudflared.js'
+import { IS_WINDOWS, cmd, filterExistingPaths, getWatchedPlugins, packageJson, timeout } from '../utils/utils.js'
 import path from 'node:path'
-import { getStateSave } from '../../core/state.js'
 import Watcher, { Change } from '../utils/watcher.js'
 import { loadManifest } from '../utils/manifest.js'
 import { color, composeColors } from '../../core/color.js'
 import { Spirits } from '../utils/spirits.js'
 import { buildAction } from './build/index.js'
 import { Flashcore, prepareFlashcore } from '../../core/flashcore.js'
-import { getPackageManager } from '../utils/runtime-utils.js'
-import type { Config, RoboMessage, SpiritMessage } from '../../types/index.js'
-import type { ChildProcess } from 'child_process'
+import { getPackageExecutor, getPackageManager } from '../utils/runtime-utils.js'
+import { setMode } from '../../core/mode.js'
+import type { Config, SpiritMessage } from '../../types/index.js'
 
 const command = new Command('dev')
 	.description('Ready, set, code your bot to life! Starts development mode.')
-	.option('-s', '--silent', 'do not print anything')
-	.option('-v', '--verbose', 'print more information for debugging')
 	.option('-h', '--help', 'Shows the available command options')
-
+	.option('-s', '--silent', 'do not print anything')
+	.option('-t', '--tunnel', 'expose your local server to the internet')
+	.option('-v', '--verbose', 'print more information for debugging')
 	.handler(devAction)
 export default command
 
 interface DevCommandOptions {
 	silent?: boolean
+	tunnel?: boolean
 	verbose?: boolean
 }
-
-const buildCommand = 'robo build --dev'
 
 let spirits: Spirits | undefined
 
@@ -47,11 +38,22 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 	logger({
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : 'info'
-	}).info('Starting Robo in development mode...')
-	logger.warn(`Thank you for trying Robo.js! This is a pre-release version, so please let us know of issues on GitHub.`)
+	})
 	logger.debug(`Package manager:`, getPackageManager())
 	logger.debug(`Robo.js version:`, packageJson.version)
 	logger.debug(`Current working directory:`, process.cwd())
+
+	// Set NODE_ENV to development if not already set
+	if (!process.env.NODE_ENV) {
+		process.env.NODE_ENV = 'development'
+	}
+
+	// Welcomeee
+	const projectName = path.basename(process.cwd()).toLowerCase()
+	logger.log('')
+	logger.log(Indent, color.bold(`🚀 Starting ${color.cyan(projectName)} in ${color.cyan('development')} mode`))
+	logger.log(Indent, '   Beep boop... Code your Robo to life! Got feedback? Tell us on Discord.')
+	logger.log('')
 
 	// Load the configuration before anything else
 	const config = await loadConfig()
@@ -69,28 +71,42 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 	const experimentalKeys = Object.entries(config.experimental ?? {})
 		.filter(([, value]) => value)
 		.map(([key]) => key)
+
 	if (experimentalKeys.length > 0) {
 		const features = experimentalKeys.map((key) => color.bold(key)).join(', ')
 		logger.warn(`Experimental flags enabled: ${features}.`)
 	}
 
-	// Ensure worker spirits are ready
-	if (!config.experimental?.legacyProcess) {
-		spirits = new Spirits()
-
-		// Stop spirits on process exit
-		let isStopping = false
-		const callback = async () => {
-			if (isStopping) {
-				return
-			}
-			isStopping = true
-			await spirits.stopAll()
-			process.exit(0)
-		}
-		process.on('SIGINT', callback)
-		process.on('SIGTERM', callback)
+	// Install cloudflared & ensure PORT is set because we need it for the tunnel
+	if (options.tunnel && !isCloudflaredInstalled()) {
+		cloudflareLogger.event(`Installing Cloudflared...`)
+		await installCloudflared()
+		cloudflareLogger.info(`Cloudflared installed successfully!`)
 	}
+
+	if (options.tunnel && !process.env.PORT) {
+		cloudflareLogger.error(`Cannot start tunnel without a PORT environment variable.`)
+		process.exit(1)
+	}
+
+	// Ensure worker spirits are ready
+	spirits = new Spirits()
+
+	// Stop spirits & tunnel on process exit
+	let isStopping = false
+	let tunnelProcess: ChildProcess | undefined
+
+	const callback = async (signal: NodeJS.Signals) => {
+		if (isStopping) {
+			return
+		}
+
+		isStopping = true
+		await Promise.allSettled([spirits.stopAll(), stopCloudflared(tunnelProcess, signal)])
+		process.exit(0)
+	}
+	process.on('SIGINT', () => callback('SIGINT'))
+	process.on('SIGTERM', () => callback('SIGTERM'))
 
 	// Run first build
 	let buildSuccess = false
@@ -105,20 +121,9 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 	} catch (error) {
 		logger.error(error)
 	}
-	let botProcess: ChildProcess
 	let roboSpirit: string
 
 	// These callbacks are necessary to ensure "/dev restart" works
-	const registerProcessEvents = () => {
-		botProcess?.on('message', async (message: RoboMessage) => {
-			if (message.type === 'restart') {
-				logger.wait(`Restarting Robo...`)
-				botProcess = await rebuildAndRestartBot(botProcess, config, options.verbose, [])
-				registerProcessEvents()
-			}
-		})
-	}
-
 	const restartCallback = async (message: SpiritMessage) => {
 		if (message.event === 'restart' && message.payload === 'trigger') {
 			logger.wait(`Restarting Robo...`)
@@ -135,7 +140,7 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 	logger.debug(`State loaded in ${Date.now() - stateStart}ms`)
 
 	// Start the Robo!
-	if (buildSuccess && !config.experimental?.legacyProcess) {
+	if (buildSuccess) {
 		roboSpirit = await spirits.newTask<string>({
 			event: 'start',
 			onExit: (exitCode: number) => {
@@ -159,10 +164,6 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 		})
 		spirits.on(roboSpirit, restartCallback)
 		spirits.send(roboSpirit, { event: 'set-state', state: persistedState })
-	} else if (buildSuccess) {
-		botProcess = await run()
-		registerProcessEvents()
-		botProcess.send({ type: 'state-load', state: persistedState })
 	} else {
 		logger.wait(`Build failed! Waiting for changes before retrying...`)
 	}
@@ -172,22 +173,23 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 
 	// Watch for changes in the "src" directory alongside special files
 	const watchedPaths = ['src']
+	const ignoredPaths = ['node_modules', '.git', ...(config.watcher?.ignore ?? [])]
 	const additionalFiles = await filterExistingPaths(['.env', 'tsconfig.json', configRelative])
 	watchedPaths.push(...additionalFiles)
 
-	// Watch all plugins that are also currently in development mode
+	// Watch all plugins that are also currently in development mode, along with their config files
 	const watchedPlugins = await getWatchedPlugins(config)
 	Object.keys(watchedPlugins).forEach((pluginPath) => watchedPaths.push(pluginPath))
+	getConfigPaths().forEach((configPath) => watchedPaths.push(path.relative(process.cwd(), configPath)))
 
 	// Watch while preventing multiple restarts from happening at the same time
 	logger.debug(`Watching:`, watchedPaths)
-	const watcher = new Watcher(watchedPaths, {
-		exclude: ['node_modules', '.git']
-	})
+	logger.debug(`Ignoring paths:`, ignoredPaths)
+	const watcher = new Watcher(watchedPaths, { exclude: ignoredPaths })
 	let isUpdating = false
 
 	watcher.start(async (changes) => {
-		logger.debug(`Watcher events: ${changes.map((change) => change.changeType).join(', ')}`)
+		logger.debug('Watcher events:', changes)
 		if (isUpdating) {
 			return logger.debug(`Already updating, skipping...`)
 		}
@@ -207,29 +209,31 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 			}
 
 			// Rebuild and restart
-			if (!config.experimental?.legacyProcess) {
-				roboSpirit = await rebuildRobo(roboSpirit, config, options.verbose, changes)
-				spirits.on(roboSpirit, restartCallback)
-			} else {
-				botProcess = await rebuildAndRestartBot(botProcess, config, options.verbose, changes)
-				registerProcessEvents()
-			}
+			roboSpirit = await rebuildRobo(roboSpirit, config, options.verbose, changes)
+			spirits.on(roboSpirit, restartCallback)
 
 			// Compare manifest to warn about permission changes
-			const newManifest = await loadManifest()
-			const oldPermissions = manifest.permissions ?? []
-			const newPermissions = newManifest.permissions ?? []
-			manifest = newManifest
+			if (config.experimental?.disableBot !== true) {
+				const newManifest = await loadManifest()
+				const oldPermissions = manifest.permissions ?? []
+				const newPermissions = newManifest.permissions ?? []
+				manifest = newManifest
 
-			if (JSON.stringify(oldPermissions) !== JSON.stringify(newPermissions)) {
-				logger.warn(
-					`Permissions have changed! Run ${color.bold('robo invite')} to update your Robo's guild permissions.`
-				)
+				if (JSON.stringify(oldPermissions) !== JSON.stringify(newPermissions)) {
+					logger.warn(
+						`Permissions have changed! Run ${color.bold('robo invite')} to update your Robo's guild permissions.`
+					)
+				}
 			}
 		} finally {
 			isUpdating = false
 		}
 	})
+
+	// Run the tunnel if requested
+	if (options.tunnel) {
+		tunnelProcess = startCloudflared('http://localhost:' + process.env.PORT)
+	}
 
 	// Check for updates
 	try {
@@ -247,7 +251,7 @@ export async function buildAsync(command: string | null, config: Config, verbose
 	return new Promise<boolean>((resolve, reject) => {
 		const start = Date.now()
 
-		if (!command && !config.experimental?.legacyProcess) {
+		if (!command) {
 			spirits
 				.newTask({
 					event: 'build',
@@ -345,9 +349,8 @@ export async function checkUpdates(config: Config, forceCheck = false, suggest =
 	// Compare versions
 	if (update.hasUpdate) {
 		// Prepare commands
-		const packageManager = getPackageManager()
-		const commandName = packageManager === 'npm' ? 'install' : 'add'
-		const command = `${packageManager} ${commandName} ${packageJson.name}`
+		const packageExecutor = getPackageExecutor()
+		const command = `${packageExecutor} sage upgrade`
 
 		// Print update message
 		const highlightColor = composeColors(color.green, color.bold)
@@ -430,57 +433,4 @@ async function rebuildRobo(spiritId: string, config: Config, verbose: boolean, c
 	logger.debug(`Robo spirit (${composeColors(color.bold, color.cyan)(newSpiritId)}) started in ${Date.now() - start}ms`)
 	spirits.send(newSpiritId, { event: 'set-state', state: savedState })
 	return newSpiritId
-}
-
-async function rebuildAndRestartBot(bot: ChildProcess | null, config: Config, verbose: boolean, changes: Change[]) {
-	// Guard against accidentally killing the new process
-	const currentBot = bot
-
-	// Kill the previous process if it's still running
-	// We wait for the process to exit before starting a new one
-	let isTerminated = false
-	const terminate = new Promise<void>((resolve) => {
-		if (!currentBot) {
-			return resolve()
-		}
-
-		currentBot?.on('exit', () => {
-			logger.debug('Terminated previous bot process')
-			isTerminated = true
-			resolve()
-		})
-	})
-
-	// Force abort the bot if it doesn't exit after n seconds
-	// This is to prevent the bot from running multiple instances
-	const forceAbort = timeout(() => {
-		if (!isTerminated && currentBot) {
-			logger.warn('Robo termination timed out. Force stopping...')
-		}
-		currentBot?.kill('SIGKILL')
-	}, config?.timeouts?.lifecycle ?? DEFAULT_CONFIG.timeouts.lifecycle)
-
-	// Get state dump before restarting
-	logger.debug('Saving state...')
-	const savedState = await getStateSave(currentBot)
-
-	// Wait for the bot to exit or force abort
-	logger.debug('Sending restart signal...')
-	currentBot?.send({ type: 'restart' })
-	const awaitStop = Promise.race([terminate, forceAbort])
-	const [success] = await Promise.all([
-		buildAsync(buildCommand + (verbose ? ' --verbose' : ''), config, verbose, changes),
-		awaitStop
-	])
-
-	// Return null for the bot if the build failed so we can retry later
-	if (!success) {
-		logger.wait(`Build failed! Waiting for changes before retrying...`)
-		return null
-	}
-
-	// Start a new process
-	const newBot = await run()
-	newBot.send({ type: 'state-load', state: savedState })
-	return newBot
 }

@@ -29,6 +29,12 @@ export async function generateDefaults(buildDir = path.join('.robo', 'build')): 
 	const distDir = path.join(process.cwd(), buildDir)
 	const config = getConfig()
 
+	// Only useful for bots, so skip if not in a bot project
+	if (config.experimental?.disableBot === true) {
+		logger.debug(`Skipping default file generation for disabled bot...`)
+		return { commands: {}, context: {}, events: {} }
+	}
+
 	try {
 		const commands = await generateCommands(distDir, config)
 		const context = {}

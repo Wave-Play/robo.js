@@ -1,4 +1,9 @@
 import type { RouteHandler } from '../core/types.js'
+import type { ViteDevServer } from 'vite'
+
+export interface InitOptions {
+	vite?: ViteDevServer
+}
 
 export interface StartOptions {
 	port: number
@@ -13,7 +18,7 @@ export abstract class BaseEngine {
 	 *
 	 * @returns A promise that resolves when the server has initialized.
 	 */
-	public abstract init(): Promise<void>
+	public abstract init(options: InitOptions): Promise<void>
 
 	/**
 	 * Returns whether the server is currently running.

@@ -120,7 +120,7 @@ export async function checkUpdates(packageJson: PackageJson, config: Config, for
 }
 
 export function cmd(packageManager: string): string {
-	return IS_WINDOWS && packageManager !== 'pnpm' ? `${packageManager}.cmd` : packageManager
+	return IS_WINDOWS && !['pnpm', 'pnpx'].includes(packageManager) ? `${packageManager}.cmd` : packageManager
 }
 
 export function createNodeReadable(webReadable: ReadableStream<Uint8Array>): NodeJS.ReadableStream {

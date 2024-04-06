@@ -1,9 +1,14 @@
 import type {
 	ApplicationCommandOptionChoiceData,
+	Attachment,
 	AutocompleteInteraction,
 	CommandInteraction,
+	GuildBasedChannel,
+	GuildMember,
 	InteractionReplyOptions,
-	MessagePayload
+	MessagePayload,
+	Role,
+	User
 } from 'discord.js'
 import type { BaseConfig, SageOptions } from './index.js'
 
@@ -12,7 +17,7 @@ export interface Command {
 		interaction: AutocompleteInteraction
 	) => Promise<ApplicationCommandOptionChoiceData<string | number>[]>
 	config?: CommandConfig
-	default: (interaction: CommandInteraction) => unknown | Promise<unknown>
+	default: (interaction: CommandInteraction, options: unknown) => unknown | Promise<unknown>
 }
 
 export interface CommandConfig extends BaseConfig {
@@ -20,7 +25,7 @@ export interface CommandConfig extends BaseConfig {
 	dmPermission?: boolean
 	descriptionLocalizations?: Record<string, string>
 	nameLocalizations?: Record<string, string>
-	options?: CommandOption[]
+	options?: readonly CommandOption[]
 	sage?: false | SageOptions
 	timeout?: number
 }
@@ -39,7 +44,34 @@ export interface CommandOption {
 	name: string
 	nameLocalizations?: Record<string, string>
 	required?: boolean
-	type?: 'string' | 'integer' | 'number' | 'boolean' | 'channel' | 'attachment' | 'role' | 'user' | 'mention'
+	type?: keyof CommandOptionTypes
 }
 
 export type CommandResult = string | InteractionReplyOptions | MessagePayload | void
+
+export type CommandOptionTypes = {
+	string: string
+	integer: number
+	number: number
+	boolean: boolean
+	user: User
+	channel: GuildBasedChannel
+	member: GuildMember
+	role: Role
+	attachment: Attachment
+	mention: GuildMember | Role
+}
+
+export type CommandOptions<ConfigType extends CommandConfig> = {
+	[K in NonNullable<ConfigType['options']>[number] as K['name']]: K extends { required: true; type: infer TypeName }
+		? TypeName extends keyof CommandOptionTypes
+			? CommandOptionTypes[TypeName]
+			: string
+		: K extends { type: infer TypeName }
+		? TypeName extends keyof CommandOptionTypes
+			? CommandOptionTypes[TypeName] | undefined
+			: string | undefined
+		: K extends { required: true }
+		? string
+		: string | undefined
+}

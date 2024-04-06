@@ -7,7 +7,6 @@ import build from './commands/build/index.js'
 import cloud from './commands/cloud/index.js'
 import dev from './commands/dev.js'
 import deploy from './commands/deploy.js'
-import doctor from './commands/doctor.js'
 import invite from './commands/invite.js'
 import login from './commands/login.js'
 import logout from './commands/logout.js'
@@ -20,7 +19,7 @@ import help, { helpCommandHandler } from './commands/help.js'
 const command = new Command('robo')
 export default command
 
-command.description('Turbocharge Discord.js with effortless power! ⚡')
+command.description('Power up Discord with effortless activities, bots, web servers, and more! ⚡')
 command.version(packageJson.version)
 command.addCommand(build)
 command.addCommand(start)
@@ -29,7 +28,6 @@ command.addCommand(add)
 command.addCommand(remove)
 command.addCommand(upgrade)
 command.addCommand(deploy)
-command.addCommand(doctor)
 command.addCommand(invite)
 command.addCommand(cloud)
 command.addCommand(login)

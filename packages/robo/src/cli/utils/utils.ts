@@ -4,13 +4,13 @@ import { DEFAULT_CONFIG } from '../../core/constants.js'
 import { CommandConfig, Config, SageOptions } from '../../types/index.js'
 import { getConfig } from '../../core/config.js'
 import { createRequire } from 'node:module'
-import { SpawnOptions, execSync, exec as nodeExec, spawn } from 'node:child_process'
+import { ChildProcess, SpawnOptions, execSync, exec as nodeExec, spawn } from 'node:child_process'
 import { promisify } from 'node:util'
 import { logger } from '../../core/logger.js'
 import path from 'node:path'
 import os from 'node:os'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { IS_BUN, PackageManager } from './runtime-utils.js'
+import { IS_BUN } from './runtime-utils.js'
 import type { Pod } from '../../roboplay/types.js'
 
 export const __DIRNAME = path.dirname(fileURLToPath(import.meta.url))
@@ -22,7 +22,14 @@ const require = createRequire(import.meta.url)
 export const packageJson = require('../../../package.json')
 
 export function cleanTempDir() {
-	return fs.rm(getTempDir(), { force: true, recursive: true })
+	try {
+		return fs.rm(getTempDir(), { force: true, recursive: true })
+	} catch (error) {
+		// ENOENT is okay
+		if (hasProperties(error, ['code']) && error.code !== 'ENOENT') {
+			throw error
+		}
+	}
 }
 
 export function getPodStatusColor(status: Pod['status']) {
@@ -32,11 +39,10 @@ export function getPodStatusColor(status: Pod['status']) {
 		return color.dim
 	} else if (['Online', 'Ready'].includes(status)) {
 		return color.green
-	} {
+	} else {
 		return color.red
 	}
 }
-
 
 export function getTempDir() {
 	return path.join(process.cwd(), '.robo', 'temp')
@@ -311,8 +317,8 @@ export function sleep(ms: number) {
 
 export const IS_WINDOWS = /^win/.test(process.platform)
 
-export function cmd(packageManager: PackageManager): string {
-	return IS_WINDOWS ? `${packageManager}.cmd` : packageManager
+export function cmd(packageManager: string): string {
+	return IS_WINDOWS && !['pnpm', 'pnpx'].includes(packageManager) ? `${packageManager}.cmd` : packageManager
 }
 
 export function timeout<T = void>(callback: () => T, ms: number): Promise<T> {
@@ -321,6 +327,18 @@ export function timeout<T = void>(callback: () => T, ms: number): Promise<T> {
 			resolve(callback())
 		}, ms)
 	)
+}
+
+export function waitForExit(child: ChildProcess) {
+	return new Promise<void>((resolve) => {
+		if (!child) {
+			resolve()
+		} else if (child.exitCode !== null) {
+			resolve()
+		} else {
+			child.on('exit', resolve)
+		}
+	})
 }
 
 type Task<T extends unknown[]> = (...args: T) => Promise<unknown>

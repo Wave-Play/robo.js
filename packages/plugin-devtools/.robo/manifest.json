@@ -11,8 +11,8 @@
       "type": "plugin"
     },
     "type": "plugin",
-    "updatedAt": "2023-11-06T07:17:45.423Z",
-    "version": "0.9.7"
+    "updatedAt": "2023-12-12T06:50:55.533Z",
+    "version": "0.9.11"
   },
   "api": {},
   "commands": {
@@ -59,80 +59,33 @@
             }
           }
         },
-        "flashcore": {
+        "module": {
           "subcommands": {
-            "clear": {
-              "__path": "/.robo/build/commands/devtools/flashcore/clear.js"
-            },
-            "delete": {
-              "__path": "/.robo/build/commands/devtools/flashcore/delete.js",
+            "check": {
+              "__path": "/.robo/build/commands/devtools/module/check.js",
+              "description": "Check if a specific module is enabled",
               "options": [
                 {
-                  "name": "key",
-                  "description": "The key to delete",
+                  "name": "module",
+                  "description": "The module to check",
                   "required": true
-                },
-                {
-                  "name": "namespace",
-                  "description": "The namespace to delete the value in"
-                }
-              ]
-            },
-            "get": {
-              "__path": "/.robo/build/commands/devtools/flashcore/get.js",
-              "options": [
-                {
-                  "name": "key",
-                  "description": "The key to get",
-                  "required": true
-                },
-                {
-                  "name": "namespace",
-                  "description": "The namespace to get the value in"
                 }
               ]
             },
             "set": {
-              "__path": "/.robo/build/commands/devtools/flashcore/set.js",
+              "__path": "/.robo/build/commands/devtools/module/set.js",
+              "description": "Set a module's enabled state",
               "options": [
                 {
-                  "name": "key",
-                  "description": "The key to set",
-                  "required": true
-                },
-                {
-                  "name": "value",
-                  "description": "The value to set",
-                  "required": true
-                },
-                {
-                  "name": "namespace",
-                  "description": "The namespace to set the value in"
-                },
-                {
-                  "name": "type",
-                  "autocomplete": true,
-                  "description": "The type of value to set"
-                }
-              ]
-            },
-            "watch": {
-              "__path": "/.robo/build/commands/devtools/flashcore/watch.js",
-              "description": "Watch for key changes",
-              "options": [
-                {
-                  "name": "key",
-                  "description": "The key to watch",
-                  "required": true
-                },
-                {
-                  "name": "remove",
-                  "description": "Whether to remove the watcher",
+                  "name": "enabled",
+                  "description": "Whether the module should be enabled",
+                  "required": true,
                   "type": "boolean"
                 },
                 {
-                  "name": "namespace",
-                  "description": "The namespace to watch the key in"
+                  "name": "module",
+                  "description": "The module to disable",
+                  "required": true
                 }
               ]
             }
@@ -140,22 +93,6 @@
         },
         "state": {
           "subcommands": {
-            "get": {
-              "__path": "/.robo/build/commands/devtools/state/get.js",
-              "description": "Get a state value",
-              "options": [
-                {
-                  "name": "key",
-                  "description": "The key to get",
-                  "required": true
-                },
-                {
-                  "name": "fork",
-                  "autocomplete": true,
-                  "description": "The fork to get the state from"
-                }
-              ]
-            },
             "set": {
               "__path": "/.robo/build/commands/devtools/state/set.js",
               "description": "Set a state value",
@@ -186,36 +123,100 @@
                   "description": "The type of value to set"
                 }
               ]
+            },
+            "get": {
+              "__path": "/.robo/build/commands/devtools/state/get.js",
+              "description": "Get a state value",
+              "options": [
+                {
+                  "name": "key",
+                  "description": "The key to get",
+                  "required": true
+                },
+                {
+                  "name": "fork",
+                  "autocomplete": true,
+                  "description": "The fork to get the state from"
+                }
+              ]
             }
           }
         },
-        "module": {
+        "flashcore": {
           "subcommands": {
-            "set": {
-              "__path": "/.robo/build/commands/devtools/module/set.js",
-              "description": "Set a module's enabled state",
+            "clear": {
+              "__path": "/.robo/build/commands/devtools/flashcore/clear.js"
+            },
+            "watch": {
+              "__path": "/.robo/build/commands/devtools/flashcore/watch.js",
+              "description": "Watch for key changes",
               "options": [
                 {
-                  "name": "enabled",
-                  "description": "Whether the module should be enabled",
-                  "required": true,
+                  "name": "key",
+                  "description": "The key to watch",
+                  "required": true
+                },
+                {
+                  "name": "remove",
+                  "description": "Whether to remove the watcher",
                   "type": "boolean"
                 },
                 {
-                  "name": "module",
-                  "description": "The module to disable",
-                  "required": true
+                  "name": "namespace",
+                  "description": "The namespace to watch the key in"
                 }
               ]
             },
-            "check": {
-              "__path": "/.robo/build/commands/devtools/module/check.js",
-              "description": "Check if a specific module is enabled",
+            "set": {
+              "__path": "/.robo/build/commands/devtools/flashcore/set.js",
+              "defaultMemberPermissions": "2n",
               "options": [
                 {
-                  "name": "module",
-                  "description": "The module to check",
+                  "name": "key",
+                  "description": "The key to set",
                   "required": true
+                },
+                {
+                  "name": "value",
+                  "description": "The value to set",
+                  "required": true
+                },
+                {
+                  "name": "namespace",
+                  "description": "The namespace to set the value in"
+                },
+                {
+                  "name": "type",
+                  "autocomplete": true,
+                  "description": "The type of value to set"
+                }
+              ]
+            },
+            "get": {
+              "__path": "/.robo/build/commands/devtools/flashcore/get.js",
+              "options": [
+                {
+                  "name": "key",
+                  "description": "The key to get",
+                  "required": true
+                },
+                {
+                  "name": "namespace",
+                  "description": "The namespace to get the value in"
+                }
+              ]
+            },
+            "delete": {
+              "__path": "/.robo/build/commands/devtools/flashcore/delete.js",
+              "options": [
+                {
+                  "name": "key",
+                  "description": "The key to delete",
+                  "required": true
+                },
+                {
+                  "name": "namespace",
+                  "description": "The namespace to delete the value in"
                 }
               ]
             }

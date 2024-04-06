@@ -2,6 +2,7 @@ import { Command } from '../utils/cli-handler.js'
 import { logger } from '../../core/logger.js'
 import { color, composeColors } from '../../core/color.js'
 import { compressDirectory } from '../utils/compress.js'
+import { loadConfig } from '../../core/config.js'
 import { KeyWatcher } from '../utils/key-watcher.js'
 import { Spinner } from '../utils/spinner.js'
 import { cleanTempDir, getPodStatusColor, getRoboPackageJson, openBrowser } from '../utils/utils.js'
@@ -41,6 +42,14 @@ async function deployAction(_args: string[], options: DeployCommandOptions) {
 
 	if (!session || !pod) {
 		logger.error(`You must be logged in to deploy to RoboPlay. Run ${Highlight('robo login')} to get started.`)
+		return
+	}
+
+	// Sorry, only bots are supported right now!
+	const config = await loadConfig()
+
+	if (config.experimental?.disableBot) {
+		logger.warn('Sorry, only bots are supported right now!')
 		return
 	}
 

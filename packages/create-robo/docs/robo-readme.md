@@ -1,4 +1,8 @@
-# Hiya, {{projectName}} ✨
+<p align="center">✨ <strong>Generated with <a href="https://roboplay.dev/create-robo">create-robo</a> magic!</strong> ✨</p>
+
+---
+
+# Hiya, {{projectName}} 🌈
 
 Welcome to your fresh **[Robo.js](https://github.com/Wave-Play/robo)** project! A Node framework for Discord.js bots, Robo.js handles boilerplate, automates command registration, simplifies Typescript support, and boasts "Sage" for easy interactions. Empowered by a dynamic plugin system, your robo thrives on RoboPlay or any Node-supporting host.
 
