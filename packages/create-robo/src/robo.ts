@@ -126,8 +126,8 @@ const botPlugins = [
 		value: 'maintenance'
 	},
 	{
-		name: `${chalk.bold('Moderation Tools')} - Equip your bot with essential tools to manage and maintain your server.`,
-		short: 'Moderation Tools',
+		name: `${chalk.bold('Moderation')} - Equip your bot with essential tools to manage and maintain your server.`,
+		short: 'Moderation',
 		value: 'modtools'
 	}
 ]
@@ -269,12 +269,13 @@ export default class Robo {
 
 	public async plugins() {
 		logger.log('')
+		const pluginChoices = this._isApp ? appPlugins : botPlugins
 		const { selectedPlugins } = await inquirer.prompt([
 			{
 				type: 'checkbox',
 				name: 'selectedPlugins',
 				message: 'Select optional plugins:',
-				choices: this._isApp ? appPlugins : botPlugins
+				choices: pluginChoices
 			}
 		])
 		this._selectedPlugins = selectedPlugins
@@ -293,7 +294,7 @@ export default class Robo {
 		}
 
 		// You spin me right round, baby, right round
-		this._spinner.setText(Indent + '    {{spinner}} Installing plugins...\n')
+		this._spinner.setText(Indent + '    {{spinner}} Learning skills...\n')
 		this._spinner.start()
 
 		if (this._cliOptions.verbose) {
@@ -334,10 +335,7 @@ export default class Robo {
 				})
 			await Promise.all(pendingConfigs)
 
-			// Stahp
-			this._spinner.stop(false)
-
-			const cleanPlugins = plugins.filter((p) => !(p instanceof inquirer.Separator)) as ChoiceOptions[]
+			const cleanPlugins = pluginChoices.filter((p) => !(p instanceof inquirer.Separator)) as ChoiceOptions[]
 			const pluginNames = this._selectedPlugins.map(
 				(p) => cleanPlugins.find((plugin) => plugin.value === p)?.short ?? p
 			)
@@ -353,7 +351,10 @@ export default class Robo {
 			if (selectedPlugins.length > 2) {
 				extra = extra.replace(' and', ', and')
 			}
-			logger.log(Indent, `   Gear acquired: ${extra}.`, Space)
+
+			// Stahp
+			this._spinner.stop(false)
+			logger.log(Indent, `   Skill${selectedPlugins.length > 1 ? 's' : ''} acquired: ${extra}.`, Space)
 		} catch (error) {
 			this._spinner.stop(false)
 			logger.log(Indent, chalk.red(`   Could not install plugins!`))
