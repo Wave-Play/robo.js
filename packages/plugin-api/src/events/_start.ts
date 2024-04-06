@@ -17,6 +17,7 @@ interface PluginOptions {
 	prefix?: string | null | false
 	vite?: ViteDevServer
 }
+
 export let pluginOptions: PluginOptions = {}
 
 export default async (_client: Client, options: PluginOptions) => {

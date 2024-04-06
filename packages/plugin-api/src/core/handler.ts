@@ -1,6 +1,6 @@
+import { RoboResponse } from './robo-response.js'
 import { logger } from './logger.js'
 import { pluginOptions } from '../events/_start.js'
-import { RoboError } from './runtime-utils.js'
 import { mimeDb } from './mime.js'
 import { createReadStream } from 'node:fs'
 import { readdir, stat } from 'node:fs/promises'
@@ -119,7 +119,11 @@ export function createServerHandler(router: Router, vite?: ViteDevServer) {
 					return
 				}
 			} catch (error) {
-				if (error instanceof RoboError) {
+				if (error instanceof RoboResponse) {
+					if (error?.status >= 400) {
+						logger.error(error)
+					}
+	
 					Object.entries(error.headers ?? {}).forEach(([key, value]) => {
 						replyWrapper.header(key, value)
 					})
@@ -142,16 +146,20 @@ export function createServerHandler(router: Router, vite?: ViteDevServer) {
 				replyWrapper.code(200).json(result)
 			}
 		} catch (error) {
-			logger.error(error)
+			if (error instanceof RoboResponse) {
+				if (error?.status >= 400) {
+					logger.error(error)
+				}
 
-			if (error instanceof RoboError) {
 				Object.entries(error.headers ?? {}).forEach(([key, value]) => {
 					replyWrapper.header(key, value)
 				})
 				replyWrapper.code(error.status ?? 500).json(error.data ?? error.message)
 			} else if (error instanceof Error) {
+				logger.error(error)
 				replyWrapper.code(500).json(error.message ?? 'Server encountered an error.')
 			} else {
+				logger.error(error)
 				replyWrapper.code(500).send('Server encountered an error.')
 			}
 		}
@@ -198,7 +206,7 @@ export async function handlePublicFile(
 	// Check if the requested path is within the public folder to guard against directory traversal
 	if (!filePath.startsWith(publicPath)) {
 		logger.warn(`Requested path is outside the public folder. Denying access...`)
-		throw new RoboError({
+		throw new RoboResponse({
 			status: 403,
 			message: 'Access Denied'
 		})

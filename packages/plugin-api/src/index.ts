@@ -1,2 +1,2 @@
 export * from './core/types.js'
-export { RoboError } from './core/runtime-utils.js'
+export { RoboResponse } from './core/robo-response.js'

@@ -56,24 +56,3 @@ export async function hasDependency(name: string, dev = false): Promise<boolean>
 		return false
 	}
 }
-
-interface RoboErrorOptions {
-	data?: unknown
-	headers?: Record<string, string>
-	message: string
-	status?: number
-}
-
-export class RoboError extends Error {
-	public readonly data: unknown | undefined
-	public readonly headers: Record<string, string> | undefined
-	public readonly status: number | undefined
-
-	constructor(options: RoboErrorOptions) {
-		super()
-		this.data = options.data
-		this.headers = options.headers
-		this.message = options.message
-		this.status = options.status
-	}
-}

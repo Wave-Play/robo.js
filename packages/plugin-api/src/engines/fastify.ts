@@ -1,7 +1,7 @@
 import { handlePublicFile } from '~/core/handler.js'
 import { logger } from '../core/logger.js'
-import { RoboError } from '~/core/runtime-utils.js'
 import { BaseEngine } from './base.js'
+import { RoboResponse } from '~/core/robo-response.js'
 import { createReadStream } from 'node:fs'
 import url from 'node:url'
 import { color, composeColors } from '@roboplay/robo.js'
@@ -49,7 +49,11 @@ export class FastifyEngine extends BaseEngine {
 						return
 					}
 				} catch (error) {
-					if (error instanceof RoboError) {
+					if (error instanceof RoboResponse) {
+						if (error?.status >= 400) {
+							logger.error(error)
+						}
+		
 						Object.entries(error.headers ?? {}).forEach(([key, value]) => {
 							reply.header(key, value)
 						})
