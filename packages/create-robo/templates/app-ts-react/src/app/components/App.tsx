@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { DiscordSDK } from '@discord/embedded-app-sdk'
 import setupDiscordSdk from '../_auth'
-import './../css/App.css'
+import '../css/App.css'
 
 function App() {
 	const [_, setAuth] = useState(null)
