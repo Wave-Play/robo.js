@@ -517,8 +517,7 @@ export default class Robo {
 		}
 
 		// Robo.js and Discord.js are normal dependencies, unless this is a plugin
-		// TODO: Update dependency name
-		const roboPkg = '@roboplay/robo.js'
+		const roboPkg = 'robo.js'
 		const roboDep = roboPkg + (roboVersion ? `@${roboVersion}` : '')
 
 		if (!this._isPlugin) {
