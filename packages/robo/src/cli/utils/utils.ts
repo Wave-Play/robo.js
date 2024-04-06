@@ -10,7 +10,7 @@ import { logger } from '../../core/logger.js'
 import path from 'node:path'
 import os from 'node:os'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { IS_BUN, PackageManager } from './runtime-utils.js'
+import { IS_BUN } from './runtime-utils.js'
 import type { Pod } from '../../roboplay/types.js'
 
 export const __DIRNAME = path.dirname(fileURLToPath(import.meta.url))
@@ -317,8 +317,8 @@ export function sleep(ms: number) {
 
 export const IS_WINDOWS = /^win/.test(process.platform)
 
-export function cmd(packageManager: PackageManager): string {
-	return IS_WINDOWS ? `${packageManager}.cmd` : packageManager
+export function cmd(packageManager: string): string {
+	return IS_WINDOWS && !['pnpm', 'pnpx'].includes(packageManager) ? `${packageManager}.cmd` : packageManager
 }
 
 export function timeout<T = void>(callback: () => T, ms: number): Promise<T> {
