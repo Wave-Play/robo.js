@@ -857,11 +857,12 @@ export default class Robo {
 		}
 
 		envContent = updateOrAddVariable(envContent, 'DISCORD_CLIENT_ID', discordClientId ?? '')
-		envContent = updateOrAddVariable(
-			envContent,
-			this._isApp ? 'DISCORD_CLIENT_SECRET' : 'DISCORD_TOKEN',
-			discordToken ?? ''
-		)
+		if (this._isApp) {
+			envContent = updateOrAddVariable(envContent, 'VITE_DISCORD_CLIENT_ID', discordClientId ?? '')
+			envContent = updateOrAddVariable(envContent, 'DISCORD_CLIENT_SECRET', discordToken ?? '')
+		} else {
+			envContent = updateOrAddVariable(envContent, 'DISCORD_TOKEN', discordToken ?? '')
+		}
 		envContent = updateOrAddVariable(envContent, 'NODE_OPTIONS', this._nodeOptions.join(' '))
 
 		if (this._selectedPlugins.includes('ai')) {
