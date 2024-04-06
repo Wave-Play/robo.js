@@ -5,3 +5,4 @@ docs
 **/tsup.config.ts
 **/tsup-cli.config.ts
 examples/**
+packages/create-robo/templates/**
