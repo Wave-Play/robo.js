@@ -1,5 +1,11 @@
 # @roboplay/sage
 
+## 0.4.1
+
+### Patch Changes
+
+- ef9b283: patch: better support for pnpm when executing commands on windows
+
 ## 0.4.0
 
 ### Minor Changes

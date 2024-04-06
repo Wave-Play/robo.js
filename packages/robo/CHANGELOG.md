@@ -1,5 +1,42 @@
 # robo.js
 
+## 0.10.0
+
+### Minor Changes
+
+- a1b7c8c: feat(cli): build vite alongside robo if applicable
+- fe8e6ee: feat(states): support for namespace via options
+- 6c57f69: refactor!: removed legacy process runtime
+- 622e07b: feat(cli): alias sage-cli commands within robo.js
+- b6fdd44: refactor: removed `robo doctor` command
+- e5e6514: feat: dedicated utils module
+- 053b2d7: feat(cli): set NODE_ENV when missing
+- 6397f98: feat(cli): new `robox` command wrapper
+- aa8649f: refactor: deprecate dot-based `.config` & remove `robo.config.*` support
+- 25f4a37: feat: options as second command parameter w/ type safety
+- 1e5273e: refactor(cli): delegate `robo upgrade` to `sage upgrade`
+- 93fdbe8: feat(states): support for updater functions as value
+- 3327196: feat: dedicated cli module
+- e4131d4: feat(cli): new -t --tunnel option w/ automatic cloudflared binary download
+- 18feec7: feat(config): can now exclude additional paths from watcher
+- 73cc21c: refactor: removed heartbeat support
+- c85ed36: feat: exposed logger in new separate module
+
+### Patch Changes
+
+- 98263ee: refactor(cli): new startup message
+- 8fb91f8: patch(cli): account for zero dependency projects when adding/removing plugins
+- 67458e9: fix: file watcher not including plugin config files
+- dbc108e: feat: experimental `disableBot` flag
+- 726c414: patch: better support for pnpm when executing commands on windows
+- 78a1fb2: feat(flashcore): support for namespace arrays
+- d3b5f15: chore(config): clientOptions now optional
+- 572a747: feat: new `.setup()` function in logger
+- d874ddd: patch: truncate stack trace code to fit discord embeds
+- f04375f: patch: don't override default logger instances when changing configuration
+- e50b0ca: chore: dim date time in ready event message
+- d4a1f3a: refactor: use scoped logger for discord-specific events
+
 ## 0.9.26
 
 ### Patch Changes
