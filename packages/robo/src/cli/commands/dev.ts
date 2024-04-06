@@ -349,9 +349,8 @@ export async function checkUpdates(config: Config, forceCheck = false, suggest =
 	// Compare versions
 	if (update.hasUpdate) {
 		// Prepare commands
-		const packageManager = getPackageManager()
-		const commandName = packageManager === 'npm' ? 'install' : 'add'
-		const command = `${packageManager} ${commandName} ${packageJson.name}`
+		const packageExecutor = getPackageExecutor()
+		const command = `${packageExecutor} sage upgrade`
 
 		// Print update message
 		const highlightColor = composeColors(color.green, color.bold)
