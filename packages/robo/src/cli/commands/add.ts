@@ -72,7 +72,7 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
 	const pendingInstall = packages.filter((pkg) => {
 		return (
 			options.force ||
-			(!Object.keys(packageJson.dependencies).includes(pkg) &&
+			(!Object.keys(packageJson.dependencies ?? {})?.includes(pkg) &&
 				!config.plugins?.find((p) => Array.isArray(p) && p[0] === pkg))
 		)
 	})

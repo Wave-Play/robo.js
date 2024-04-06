@@ -51,7 +51,7 @@ export async function removeAction(packages: string[], options: RemoveCommandOpt
 	const packageJsonPath = path.join(process.cwd(), 'package.json')
 	const packageJson = require(packageJsonPath)
 	const pendingUninstall = packages.filter((pkg) => {
-		return options.force || Object.keys(packageJson.dependencies).includes(pkg)
+		return options.force || Object.keys(packageJson.dependencies ?? {})?.includes(pkg)
 	})
 	logger.debug(`Pending installation remove:`, pendingUninstall)
 
