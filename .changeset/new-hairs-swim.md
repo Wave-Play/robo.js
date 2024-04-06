@@ -1,5 +1,5 @@
 ---
-'@roboplay/robo.js': minor
+'robo.js': minor
 ---
 
 feat(cli): new `robox` command wrapper

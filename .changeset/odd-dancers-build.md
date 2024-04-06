@@ -1,5 +1,5 @@
 ---
-'@roboplay/plugin-api': patch
+'@robojs/server': patch
 ---
 
 fix: parse body as empty when none was provided

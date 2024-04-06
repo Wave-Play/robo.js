@@ -1,5 +1,5 @@
 ---
-'@roboplay/robo.js': minor
+'robo.js': minor
 ---
 
 refactor!: removed legacy process runtime

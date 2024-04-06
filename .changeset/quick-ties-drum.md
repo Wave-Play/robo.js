@@ -1,5 +1,5 @@
 ---
-'@roboplay/robo.js': patch
+'robo.js': patch
 ---
 
 feat: new `.setup()` function in logger

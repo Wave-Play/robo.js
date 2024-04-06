@@ -1,5 +1,5 @@
 ---
-'@roboplay/robo.js': minor
+'robo.js': minor
 ---
 
 feat(config): can now exclude additional paths from watcher

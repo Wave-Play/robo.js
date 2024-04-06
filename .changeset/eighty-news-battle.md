@@ -1,5 +1,5 @@
 ---
-'@roboplay/robo.js': patch
+'robo.js': patch
 ---
 
 fix: file watcher not including plugin config files

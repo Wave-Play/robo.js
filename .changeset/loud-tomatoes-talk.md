@@ -1,5 +1,5 @@
 ---
-'@roboplay/robo.js': patch
+'robo.js': patch
 ---
 
 feat: experimental `disableBot` flag

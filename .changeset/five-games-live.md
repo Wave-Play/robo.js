@@ -1,5 +1,5 @@
 ---
-'@roboplay/robo.js': minor
+'robo.js': minor
 ---
 
 feat(states): support for namespace via options

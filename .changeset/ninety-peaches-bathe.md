@@ -1,5 +1,5 @@
 ---
-'@roboplay/robo.js': patch
+'robo.js': patch
 ---
 
 feat(flashcore): support for namespace arrays
