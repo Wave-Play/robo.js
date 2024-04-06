@@ -60,16 +60,16 @@ const optionalFeatures = [
 		checked: true
 	},
 	{
-		name: `${chalk.bold('ESLint')} ${Recommended} - Keeps your code clean and consistent.`,
-		short: 'ESLint',
-		value: 'eslint',
-		checked: true
-	},
-	{
 		name: `${chalk.bold('Prettier')} ${Recommended} - Automatically formats your code for readability.`,
 		short: 'Prettier',
 		value: 'prettier',
 		checked: true
+	},
+	{
+		name: `${chalk.bold('ESLint')} ${Recommended} - Keeps your code clean and consistent.`,
+		short: 'ESLint',
+		value: 'eslint',
+		checked: false
 	},
 	{
 		name: `${chalk.bold('Extensionless')} - Removes the need for file extensions in imports.`,
