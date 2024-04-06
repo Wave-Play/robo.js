@@ -1,7 +1,7 @@
 {
 	"name": "@robojs/server",
 	"description": "Simplified web server for your Robo.",
-	"version": "0.3.0",
+	"version": "0.4.0",
 	"private": false,
 	"type": "module",
 	"main": ".robo/build/index.js",

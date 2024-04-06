@@ -1,5 +1,29 @@
 # create-robo
 
+## 0.11.0
+
+### Minor Changes
+
+- 7934213: refactor!: revamped entire experience
+- 3cbe0b9: refactor: use robo.js logger directly
+- a47cbc0: refactor: separated plugin selection into separate step
+- a497cc1: refactor!: removed poll plugin option
+- 26f2de8: feat: optional `extensionless` feature
+- 80b15d1: feat: new -k --kit option
+- e0be4a1: feat: new `-ni --no-update` option
+- a0493a7: refactor: merged typescript prompt w/ features prompt
+- 7864690: refactor!: always use latest version of dependencies
+
+### Patch Changes
+
+- d0992f9: patch: added keywords field to generated package.json
+- 9e78663: chore: updated server plugin dependency name
+- 5b0e96e: fix: extensionless and server plugin no longer cause issues with .env
+- 7ce8b37: refactor: robo.js now a package dependency
+- 8482bf1: refactor: no longer include `port` option in API plugin by default
+- b0d6dcb: chore: create-robo disclaimer in generated readmes
+- 07afb69: refactor: no longer exclude robo manifest from .gitignore
+
 ## 0.10.2
 
 ### Patch Changes
