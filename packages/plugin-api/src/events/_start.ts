@@ -41,7 +41,10 @@ export default async (_client: Client, options: PluginOptions) => {
 
 			pluginOptions.vite = await createViteServer({
 				configFile: existsSync(viteConfigPath) ? viteConfigPath : undefined,
-				server: { middlewareMode: true }
+				server: {
+					hmr: { clientPort: 443 },
+					middlewareMode: true
+				}
 			})
 			logger.debug('Vite server created successfully.')
 		} catch (e) {
