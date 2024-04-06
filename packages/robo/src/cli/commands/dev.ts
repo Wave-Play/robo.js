@@ -52,7 +52,7 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 	const projectName = path.basename(process.cwd()).toLowerCase()
 	logger.log('')
 	logger.log(Indent, color.bold(`🚀 Starting ${color.cyan(projectName)} in ${color.cyan('development')} mode`))
-	logger.log(Indent, '   Beep boop... Code your Robo to life! Got feedback? Drop it on GitHub.')
+	logger.log(Indent, '   Beep boop... Code your Robo to life! Got feedback? Tell us on Discord.')
 	logger.log('')
 
 	// Load the configuration before anything else
