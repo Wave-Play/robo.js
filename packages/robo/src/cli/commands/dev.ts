@@ -13,7 +13,7 @@ import { Spirits } from '../utils/spirits.js'
 import { buildAction } from './build/index.js'
 import { Flashcore, prepareFlashcore } from '../../core/flashcore.js'
 import { getPackageExecutor, getPackageManager } from '../utils/runtime-utils.js'
-import { setMode } from '../../core/mode.js'
+// import { setMode } from '../../core/mode.js'
 import type { Config, SpiritMessage } from '../../types/index.js'
 
 const command = new Command('dev')
