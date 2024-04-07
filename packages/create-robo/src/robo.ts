@@ -109,7 +109,7 @@ const botPlugins = [
 	{
 		name: `${chalk.bold(
 			'AI Voice'
-		)} - Give your Robo a voice! Command and converse with it verbally in voice channels.`,
+		)} - Give your Robo a voice! Command and converse with it in voice channels.`,
 		short: 'AI Voice',
 		value: 'ai-voice'
 	},
