@@ -27,7 +27,7 @@ export interface CommandOptions {
 }
 
 new Command('create-robo <projectName>')
-	.description('Create a new Robo project')
+	.description('Launch epic projects instantly with Robo.js — effortless, powerful, complete!')
 	.version(packageJson.version)
 	.option('-f --features <features>', 'comma-separated list of features to include')
 	.option('-js --javascript', 'create a Robo using JavaScript')
