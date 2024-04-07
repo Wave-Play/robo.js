@@ -1,5 +1,11 @@
 # create-robo
 
+## 0.11.4
+
+### Patch Changes
+
+- 3c49239: patch: use updated package name in default bot-ts template type imports
+
 ## 0.11.3
 
 ### Patch Changes
