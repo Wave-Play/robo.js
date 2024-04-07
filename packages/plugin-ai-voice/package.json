@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@discordjs/voice": "^0.16.0",
-    "@roboplay/plugin-ai": "workspace:*",
+    "@robojs/ai": "workspace:*",
     "@roboplay/robo.js": "0.9.26",
     "@swc/core": "^1.3.44",
     "@types/fluent-ffmpeg": "^2.1.22",

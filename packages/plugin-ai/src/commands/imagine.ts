@@ -1,7 +1,7 @@
 import { AI } from '@/core/ai.js'
 import { logger } from '@/core/logger.js'
-import { CommandConfig, CommandResult } from '@roboplay/robo.js'
 import { CommandInteraction } from 'discord.js'
+import { CommandConfig, CommandResult } from 'robo.js'
 
 export const config: CommandConfig = {
 	description: 'Bring your creative visions to life!',

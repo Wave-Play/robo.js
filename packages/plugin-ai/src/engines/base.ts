@@ -1,5 +1,5 @@
-import type { Command } from '@roboplay/robo.js'
 import type { GuildMember, TextBasedChannel } from 'discord.js'
+import type { Command } from 'robo.js'
 
 export type Hook = (context: HookContext, iteration: number) => Promise<ChatMessage[]>
 

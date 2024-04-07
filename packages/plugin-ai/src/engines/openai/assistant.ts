@@ -1,8 +1,8 @@
-import { Flashcore, color, logger } from '@roboplay/robo.js'
 import { Thread } from './types.js'
 import { _PREFIX } from '@/core/constants.js'
 import { CreateThreadOptions, openai } from './api.js'
 import { ChatFunction, ChatMessage } from '../base.js'
+import { Flashcore, color, logger } from 'robo.js'
 
 export interface AssistantData {
 	id: string

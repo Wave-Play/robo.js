@@ -1,3 +1,3 @@
-import { State } from '@roboplay/robo.js'
+import { State } from 'robo.js'
 
-export const { getState, setState } = State.fork('@roboplay/plugin-ai')
+export const { getState, setState } = State.fork('@robojs/ai')

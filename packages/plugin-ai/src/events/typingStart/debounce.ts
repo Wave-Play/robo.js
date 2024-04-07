@@ -1,6 +1,6 @@
 import { isReplyingToUser } from '@/core/ai.js'
 import { logger } from '@/core/logger.js'
-import { client } from '@roboplay/robo.js'
+import { client } from 'robo.js'
 import type { Message, Typing } from 'discord.js'
 
 // 10 seconds emulates Discord's typing indicator timeout

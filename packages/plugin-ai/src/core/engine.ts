@@ -1,5 +1,5 @@
-import { Flashcore } from '@roboplay/robo.js'
 import { randomUUID } from 'crypto'
+import { Flashcore } from 'robo.js'
 
 interface Mode {
 	id: string

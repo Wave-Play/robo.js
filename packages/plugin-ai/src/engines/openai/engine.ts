@@ -8,7 +8,7 @@ import { compare, hasProperties } from '@/utils/other-utils.js'
 import path from 'node:path'
 import { readFile } from 'node:fs/promises'
 import { Assistant } from '@/engines/openai/assistant.js'
-import { Flashcore, color, getState, portal, setState } from '@roboplay/robo.js'
+import { Flashcore, color, getState, portal, setState } from 'robo.js'
 import type {
 	ChatFunction,
 	ChatFunctionParameters,
@@ -21,7 +21,7 @@ import type {
 } from '@/engines/base.js'
 import type { AssistantData } from '@/engines/openai/assistant.js'
 import type { File, Message } from '@/engines/openai/types.js'
-import type { Command } from '@roboplay/robo.js'
+import type { Command } from 'robo.js'
 
 const DEFAULT_MODEL = 'gpt-3.5-turbo'
 
@@ -259,7 +259,7 @@ async function loadAssistant(functions?: ChatFunction[]): Promise<Assistant | nu
 		instructions: pluginOptions?.systemMessage ?? '',
 		metadata: {
 			pluginVersion: packageJson.version,
-			roboVersion: roboPackageJson.dependencies?.['@roboplay/robo.js'] ?? 'unknown',
+			roboVersion: roboPackageJson.dependencies?.['robo.js'] ?? 'unknown',
 			version: roboPackageJson.version ?? 'unknown'
 		},
 		model: pluginOptions?.model ?? DEFAULT_MODEL,

@@ -1,7 +1,7 @@
 import { logger } from '@/core/logger.js'
 import { hasProperties } from '@/utils/other-utils.js'
-import { color } from '@roboplay/robo.js'
 import { FormData } from 'formdata-node'
+import { color } from 'robo.js'
 import { Assistant, type AssistantData } from '@/engines/openai/assistant.js'
 import type { File, Message, Run, Thread } from './types.js'
 

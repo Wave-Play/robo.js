@@ -1,7 +1,7 @@
 import { AI } from '@/core/ai.js'
 import { ChatMessage } from '@/engines/base.js'
-import type { CommandConfig } from '@roboplay/robo.js'
 import type { ChatInputCommandInteraction, GuildMember } from 'discord.js'
+import type { CommandConfig } from 'robo.js'
 
 export const config: CommandConfig = {
 	description: "Let's chat together!",

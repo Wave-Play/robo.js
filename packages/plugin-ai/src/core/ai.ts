@@ -2,7 +2,7 @@ import { logger } from '@/core/logger.js'
 import { options as pluginOptions } from '@/events/_start.js'
 import { waitForTyping } from '@/events/typingStart/debounce.js'
 import { mockInteraction } from '@/utils/discord-utils.js'
-import { Command, client, color } from '@roboplay/robo.js'
+import { Command, client, color } from 'robo.js'
 import type {
 	BaseEngine,
 	ChatFunctionCall,
@@ -315,7 +315,7 @@ async function getCommandReply(
 ): Promise<CommandReply> {
 	logger.debug(`Executing command:`, command.config, args)
 	const { interaction, replyPromise } = mockInteraction(channel, member, args)
-	let functionResult = await command.default(interaction)
+	let functionResult = await command.default(interaction, args) // TODO: Ensure args here match criteria (use Robo internal to extract args from interaction?)
 
 	// If function result is undefined, wait for the reply content
 	if (functionResult === undefined) {

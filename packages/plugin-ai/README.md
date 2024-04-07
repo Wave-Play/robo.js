@@ -1,4 +1,4 @@
-# 🚀 @roboplay/plugin-ai
+# 🚀 @robojs/ai
 
 This plugin morphs your **[Robo](https://github.com/Wave-Play/robo.js)** into a sophisticated AI chatbot. By simply mentioning it or replying to its messages on Discord, you initiate a natural conversation - as if you're chatting with a fellow human!
 
@@ -9,7 +9,7 @@ This plugin morphs your **[Robo](https://github.com/Wave-Play/robo.js)** into a 
 To add this amazingness to your Robo, just use this spell (I mean, command):
 
 ```bash
-npx robo add @roboplay/plugin-ai
+npx robo add @robojs/ai
 ```
 
 And there you go! Your Robo, now powered by AI, is ready to have a chat!
@@ -17,7 +17,7 @@ And there you go! Your Robo, now powered by AI, is ready to have a chat!
 New to Robo.js? Start your project with this plugin pre-installed:
 
 ```bash
-npx create-robo <project-name> -p @roboplay/plugin-ai
+npx create-robo <project-name> -p @robojs/ai
 ```
 
 ## Your Robo's Personality 🧬
@@ -25,7 +25,7 @@ npx create-robo <project-name> -p @roboplay/plugin-ai
 Desire a Robo with a backstory, specific character traits, or a distinctive personality? Tell it a story with the `systemMessage` config:
 
 ```js
-// config/plugins/roboplay/plugin-ai.mjs
+// config/plugins/robojs/ai.mjs
 export default {
 	systemMessage: 'You are Batman, protector of the Weeb City Discord server.'
 }
@@ -106,7 +106,7 @@ export default {
 For those who like to tinker and build, this plugin also exposes a JavaScript API to enhance things even further!
 
 ```js
-import { AI } from '@roboplay/plugin-ai'
+import { AI } from '@robojs/ai'
 
 // Prompt a chat query and obtain the AI's response.
 AI.chat()
@@ -123,24 +123,24 @@ We've also got some handy AI tools for you to use:
 - `selectOne`: Match strings semantically from a range of choices.
 - `chat`: A low-level variant of `AIEngine.chat()` for direct OpenAI API interactions.
 
-And guess what? With tools like these, other cool plugins like `@roboplay/plugin-ai-voice` let your Robo chat in voice channels too!
+And guess what? With tools like these, other cool plugins like `@robojs/ai-voice` let your Robo chat in voice channels too!
 
 ## Voice Capabilities 🎙️
 
-If you've added the `@roboplay/plugin-ai-voice` to your Robo, you're in for a treat! This AI plugin will let your Robo talk in voice channels!
+If you've added the `@robojs/ai-voice` to your Robo, you're in for a treat! This AI plugin will let your Robo talk in voice channels!
 
 ```bash
-npx robo add @roboplay/plugin-ai-voice
+npx robo add @robojs/ai-voice
 ```
 
 How cool is that? Your Robo can now talk to you in voice channels, just like a real person!
 
 ## Web API 🌐
 
-Now, if you've added the `@roboplay/plugin-api` to your Robo, there's another treat waiting. This AI plugin will unveil a shiny new `/api/ai/chat` path, letting your Robo have fun chats on websites!
+Now, if you've added the `@robojs/server` to your Robo, there's another treat waiting. This AI plugin will unveil a shiny new `/api/ai/chat` path, letting your Robo have fun chats on websites!
 
 ```bash
-npx robo add @roboplay/plugin-api
+npx robo add @robojs/server
 ```
 
 Imagine a chat window with your Robo on your favorite webpage. Pretty cool, right?
@@ -150,7 +150,7 @@ Imagine a chat window with your Robo on your favorite webpage. Pretty cool, righ
 You can also use your own custom AI models with this plugin. Just set the `model` config your custom model instance and you're good to go!
 
 ```js
-// config/plugins/roboplay/plugin-ai.mjs
+// config/plugins/robojs/ai.mjs
 import LlamaModel from '../../../llama.js'
 
 export default {
@@ -159,11 +159,11 @@ export default {
 }
 ```
 
-Custom models must extend the `BaseEngine` class from `@roboplay/plugin-ai`. Here's a quick example:
+Custom models must extend the `BaseEngine` class from `@robojs/ai`. Here's a quick example:
 
 ```js
 // llama.js
-import { BaseEngine } from '@roboplay/plugin-ai'
+import { BaseEngine } from '@robojs/ai'
 
 export default class LlamaModel extends BaseEngine {
 	async chat(query) {

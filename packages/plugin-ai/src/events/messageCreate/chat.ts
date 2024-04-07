@@ -3,8 +3,8 @@ import { chunkMessage, replaceUsernamesWithIds } from '@/utils/discord-utils.js'
 import { addUserFollowUp } from '@/events/typingStart/debounce.js'
 import { logger } from '@/core/logger.js'
 import { options as pluginOptions } from '@/events/_start.js'
-import { client } from '@roboplay/robo.js'
 import { Message } from 'discord.js'
+import { client } from 'robo.js'
 import type { ChatMessage, ChatMessageContent } from '@/engines/base.js'
 
 export default async (message: Message) => {

@@ -2,7 +2,7 @@ import { AI } from '@/core/ai.js'
 import { logger } from '@/core/logger.js'
 import { ChannelType, CommandInteraction } from 'discord.js'
 import type { ChatReply } from '@/core/ai.js'
-import type { CommandConfig } from '@roboplay/robo.js'
+import type { CommandConfig } from 'robo.js'
 
 export const config: CommandConfig = {
 	description: 'What would you like me to say?',

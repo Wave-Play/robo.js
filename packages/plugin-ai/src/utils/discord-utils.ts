@@ -1,13 +1,12 @@
-import { client } from '@roboplay/robo.js'
-import {
+import { ApplicationCommandType, InteractionType } from 'discord.js'
+import { client } from 'robo.js'
+import type {
 	APIInteraction,
 	APIMessage,
-	ApplicationCommandType,
 	CommandInteraction,
 	GuildMember,
 	GuildMemberFlags,
 	InteractionReplyOptions,
-	InteractionType,
 	Message,
 	TextBasedChannel,
 	User
