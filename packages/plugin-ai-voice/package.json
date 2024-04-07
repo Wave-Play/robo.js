@@ -1,5 +1,5 @@
 {
-  "name": "@roboplay/plugin-ai-voice",
+  "name": "@robojs/ai-voice",
   "description": "",
   "version": "0.1.1",
   "type": "module",
@@ -54,7 +54,7 @@
     "@discordjs/voice": {
       "optional": false
     },
-    "@roboplay/plugin-ai": {
+    "@robojs/ai": {
       "optional": false
     },
     "robo.js": {
