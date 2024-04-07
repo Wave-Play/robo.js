@@ -475,7 +475,7 @@ export default class Robo {
 		logger.debug('\n')
 		logger.log(
 			Indent,
-			chalk.bold(`📦 Creating ${chalk.cyan(this._useTypeScript ? 'TypeScript' : 'JavaScript')} project`)
+			chalk.bold(`📦 Creating ${chalk.cyan(this._useTypeScript ? 'TypeScript' : 'JavaScript')} ${this._isPlugin ? 'plugin' : 'project'}`)
 		)
 		this._spinner.setText(Indent + '    {{spinner}} Generating files...\n')
 		this._spinner.start()
