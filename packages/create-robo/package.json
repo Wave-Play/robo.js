@@ -43,7 +43,6 @@
 		"chalk": "5.2.0",
 		"commander": "10.0.0",
 		"got": "^13.0.0",
-		"inquirer": "^9.2.0",
 		"robo.js": "workspace:*",
 		"tar": "^6.1.13"
 	},
