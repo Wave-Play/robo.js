@@ -40,7 +40,7 @@ jobs:
         run: pnpm install
 
       - name: Build Robo
-        run: pnpm turbo run build --filter=@roboplay/robo.js
+        run: pnpm turbo run build --filter=robo.js
 
       - name: PNPM install 2
         run: pnpm install
