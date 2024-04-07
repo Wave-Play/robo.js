@@ -1,12 +1,12 @@
 #!/usr/bin/env node
+import Robo from './robo.js'
+import { Indent, getPackageManager } from './utils.js'
 import { Command } from 'commander'
 import inquirer from 'inquirer'
 import { createRequire } from 'node:module'
 import path from 'node:path'
-import Robo from './robo.js'
-import { logger } from '@roboplay/robo.js'
-import { Indent, getPackageManager } from './utils.js'
 import chalk from 'chalk'
+import { logger } from 'robo.js'
 
 // Read the version from the package.json file
 const require = createRequire(import.meta.url)

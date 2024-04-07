@@ -5,7 +5,7 @@ import { promisify } from 'util'
 import { join } from 'path'
 import { tmpdir } from 'os'
 import { createWriteStream, promises as fs } from 'fs'
-import { logger } from '@roboplay/robo.js'
+import { logger } from 'robo.js'
 
 const pipeline = promisify(Stream.pipeline)
 
