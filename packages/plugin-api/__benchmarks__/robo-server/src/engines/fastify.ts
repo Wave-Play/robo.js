@@ -1,6 +1,6 @@
 import { HttpMethod, RoboReply, RoboRequest } from '@roboplay/plugin-api'
 import { BaseServer, StartOptions } from '@roboplay/plugin-api/.robo/build/server/base.js'
-import { color, composeColors, logger, portal } from '@roboplay/robo.js'
+import { color, composeColors, logger, portal } from 'robo.js'
 import fastify from 'fastify'
 import type { FastifyInstance } from 'fastify'
 

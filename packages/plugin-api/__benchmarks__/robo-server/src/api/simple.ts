@@ -1,4 +1,4 @@
-import { logger } from '@roboplay/robo.js'
+import { logger } from 'robo.js'
 
 export default () => {
 	const now = new Date()

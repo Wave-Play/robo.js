@@ -1,5 +1,5 @@
 import { db } from '../events/_start.js'
-import { logger } from '@roboplay/robo.js'
+import { logger } from 'robo.js'
 import type { RoboRequest } from '@roboplay/plugin-api'
 
 export default async (request: RoboRequest) => {
