@@ -534,7 +534,7 @@ export default class Robo {
 				devDependencies.push('@discord/embedded-app-sdk')
 			}
 			this._packageJson.peerDependencies = {
-				[roboPkg]: '^0.9.0'
+				[roboPkg]: '^0.10.1'
 			}
 			this._packageJson.peerDependenciesMeta = {
 				[roboPkg]: {
