@@ -153,7 +153,7 @@ const PluginDb: Record<string, PluginData> = {
 	},
 	'ai-voice': {
 		keywords: ['speech', 'voice'],
-		package: '@roboplay/plugin-ai-voice'
+		package: '@robojs/ai-voice'
 	},
 	server: {
 		config: {
