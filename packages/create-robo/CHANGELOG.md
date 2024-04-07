@@ -1,5 +1,12 @@
 # create-robo
 
+## 0.11.3
+
+### Patch Changes
+
+- 114162e: patch: use updated version for robo.js peer dependency
+- b1bcf0a: patch: removed inquirer dependency
+
 ## 0.11.2
 
 ### Patch Changes
