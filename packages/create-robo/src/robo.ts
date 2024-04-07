@@ -1,6 +1,6 @@
 import fs from 'fs/promises'
 import path from 'path'
-import inquirer, { ChoiceOptions } from 'inquirer'
+import { checkbox, input, select, Separator } from '@inquirer/prompts'
 import chalk from 'chalk'
 import { fileURLToPath } from 'node:url'
 import {
@@ -87,7 +87,7 @@ const appPlugins = [
 		short: 'AI',
 		value: 'ai'
 	},
-	new inquirer.Separator('\nRequired for apps:'),
+	new Separator('\nRequired for apps:'),
 	{
 		checked: true,
 		name: `${chalk.bold(
@@ -131,6 +131,11 @@ const botPlugins = [
 		value: 'modtools'
 	}
 ]
+
+interface Choice {
+	value: string
+	short: string
+}
 
 interface PluginData {
 	config?: Record<string, unknown>
@@ -249,39 +254,36 @@ export default class Robo {
 	}
 
 	async askIsPlugin() {
-		const { isPlugin } = await inquirer.prompt([
+		const isPlugin = await select(
 			{
-				type: 'list',
-				name: 'isPlugin',
 				message: chalk.blue('This sounds like a plugin. Would you like to set it up as one?'),
 				choices: [
 					{ name: 'Yes', value: true },
 					{ name: 'No', value: false }
 				]
+			},
+			{
+				clearPromptOnDone: true
 			}
-		])
+		)
 
 		this._isPlugin = isPlugin
-
-		// Move up one line
-		logger.log('\x1B[1A\x1B[K\x1B[1A\x1B[K')
 	}
 
 	public async plugins() {
 		logger.log('')
 		const pluginChoices = this._isApp ? appPlugins : botPlugins
-		const { selectedPlugins } = await inquirer.prompt([
+		const selectedPlugins = await checkbox(
 			{
-				type: 'checkbox',
-				name: 'selectedPlugins',
 				message: 'Select optional plugins:',
+				loop: false,
 				choices: pluginChoices
+			},
+			{
+				clearPromptOnDone: true
 			}
-		])
+		)
 		this._selectedPlugins = selectedPlugins
-
-		// Move up one line
-		logger.log('\x1B[1A\x1B[K\x1B[1A\x1B[K')
 
 		// Print new section
 		logger.debug('\n')
@@ -335,7 +337,7 @@ export default class Robo {
 				})
 			await Promise.all(pendingConfigs)
 
-			const cleanPlugins = pluginChoices.filter((p) => !(p instanceof inquirer.Separator)) as ChoiceOptions[]
+			const cleanPlugins = pluginChoices.filter((p) => !(p instanceof Separator)) as Choice[]
 			const pluginNames = this._selectedPlugins.map(
 				(p) => cleanPlugins.find((plugin) => plugin.value === p)?.short ?? p
 			)
@@ -441,23 +443,22 @@ export default class Robo {
 		}
 
 		// Prompto! (I'm sorry)
-		const { selectedFeatures } = await inquirer.prompt([
+		const selectedFeatures = await checkbox(
 			{
-				type: 'checkbox',
-				name: 'selectedFeatures',
 				message: 'Select features:',
+				loop: false,
 				choices: features
+			},
+			{
+				clearPromptOnDone: true
 			}
-		])
+		)
 		this._selectedFeatures = selectedFeatures
 
 		// Determine if TypeScript is selected only if it wasn't previously set
 		if (this._useTypeScript === undefined) {
 			this._useTypeScript = selectedFeatures.includes('typescript')
 		}
-
-		// Move up one line
-		logger.log('\x1B[1A\x1B[K\x1B[1A\x1B[K')
 
 		return selectedFeatures
 	}
@@ -828,20 +829,14 @@ export default class Robo {
 		logger.log(Indent, `   ${discordPortal} ${discordPortalUrl}`)
 		logger.log(Indent, `   ${officialGuide} ${officialGuideUrl}\n`)
 
-		const { discordClientId, discordToken } = await inquirer.prompt([
-			{
-				type: 'input',
-				name: 'discordClientId',
-				message: 'Enter your Discord Client ID (press Enter to skip):'
-			},
-			{
-				type: 'input',
-				name: 'discordToken',
-				message: this._isApp
-					? 'Enter your Discord Client Secret (press enter to skip)'
-					: 'Enter your Discord Token (press Enter to skip):'
-			}
-		])
+		const discordClientId = await input({
+			message: 'Enter your Discord Client ID (press Enter to skip):'
+		})
+		const discordToken = await input({
+			message: this._isApp
+				? 'Enter your Discord Client Secret (press enter to skip)'
+				: 'Enter your Discord Token (press Enter to skip):'
+		})
 
 		if (!discordClientId || !discordToken) {
 			this._missingEnv = true

@@ -2,7 +2,7 @@
 import Robo from './robo.js'
 import { Indent, getPackageManager } from './utils.js'
 import { Command } from 'commander'
-import inquirer from 'inquirer'
+import { input } from '@inquirer/prompts'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import chalk from 'chalk'
@@ -73,20 +73,15 @@ new Command('create-robo <projectName>')
 		// Ask the user for Robo name directly as a fallback
 		if (!projectName) {
 			logger.debug(`Project name not provided, asking user...`)
-			const answers = await inquirer.prompt([
-				{
-					type: 'input',
-					name: 'projectName',
-					message: `What would you like to call your Robo?`,
-					validate: (input) => {
-						if (input.trim().length < 1) {
-							return 'Oops! Please enter a name for your Robo before continuing.'
-						}
-						return true
+			projectName = await input({
+				message: `What would you like to call your Robo?`,
+				validate: (input) => {
+					if (input.trim().length < 1) {
+						return 'Oops! Please enter a name for your Robo before continuing.'
 					}
+					return true
 				}
-			])
-			projectName = answers.projectName
+			})
 			useSameDirectory = true
 		}
 
