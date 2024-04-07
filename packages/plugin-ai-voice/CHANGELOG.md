@@ -1,5 +1,18 @@
 # @roboplay/plugin-ai-voice
 
+## 0.2.0
+
+### Minor Changes
+
+- 055d2c2: refactor!: new package name
+- c7c3ec9: refactor!: use new @robojs/ai package
+
+### Patch Changes
+
+- Updated dependencies [fb1bfa4]
+- Updated dependencies [826433a]
+  - @robojs/ai@0.5.0
+
 ## 0.1.1
 
 ### Patch Changes

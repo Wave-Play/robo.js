@@ -1,5 +1,14 @@
 # create-robo
 
+## 0.11.2
+
+### Patch Changes
+
+- 5fa5137: chore: point to new @robojs/ai-voice package name
+- f332a6a: refactor: updated tool description
+- c15beaf: chore: point to new @robojs/ai package name
+- 25dfe53: refactor: replaced `inquirer` package with `@inquirer/prompts`
+
 ## 0.11.1
 
 ### Patch Changes
