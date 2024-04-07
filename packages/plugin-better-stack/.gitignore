@@ -2,7 +2,6 @@
 
 # robo
 .robo/*
-!.robo/manifest.json
 
 # dependencies
 /node_modules
