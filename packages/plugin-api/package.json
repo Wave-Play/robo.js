@@ -1,6 +1,6 @@
 {
 	"name": "@robojs/server",
-	"description": "Simplified web server for your Robo.",
+	"description": "Turn your Robo into a web server! Create and manage web pages, APIs, and more.",
 	"version": "0.4.0",
 	"private": false,
 	"type": "module",
