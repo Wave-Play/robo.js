@@ -1,5 +1,12 @@
 # @roboplay/plugin-ai
 
+## 0.5.0
+
+### Minor Changes
+
+- fb1bfa4: refactor!: new package name
+- 826433a: refactor!: use new robo.js package name
+
 ## 0.4.2
 
 ### Patch Changes
