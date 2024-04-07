@@ -1,7 +1,7 @@
 import { logger } from '../../../core/helpers.js'
-import { Flashcore } from '@roboplay/robo.js'
+import { Flashcore } from 'robo.js'
 import { Colors } from 'discord.js'
-import type { CommandConfig, CommandResult } from '@roboplay/robo.js'
+import type { CommandConfig, CommandResult } from 'robo.js'
 import type { CommandInteraction } from 'discord.js'
 
 export const config: CommandConfig = {

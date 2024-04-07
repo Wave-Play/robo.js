@@ -1,5 +1,5 @@
 import { ButtonStyle, ChannelType, Colors } from 'discord.js'
-import { client, logger } from '@roboplay/robo.js'
+import { client, logger } from 'robo.js'
 import type { ButtonInteraction, CommandInteraction } from 'discord.js'
 
 interface Poll {

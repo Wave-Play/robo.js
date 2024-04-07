@@ -1,9 +1,9 @@
 import { Modals, TextInputs } from '../../core/constants.js'
 import { logAction } from '../../core/utils.js'
 import { getSettings } from '../../core/settings.js'
-import { getState, logger, setState } from '@roboplay/robo.js'
+import { getState, logger, setState } from 'robo.js'
 import { ChannelType, Colors } from 'discord.js'
-import type { EventConfig } from '@roboplay/robo.js'
+import type { EventConfig } from 'robo.js'
 import type { Message, ModalSubmitInteraction } from 'discord.js'
 
 export const config: EventConfig = {

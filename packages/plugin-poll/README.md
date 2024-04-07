@@ -16,7 +16,7 @@ Next, add the plugin to your Robo's configuration file, typically located at `.c
 
 ```javascript
 /**
- * @type {import('@roboplay/robo.js').Plugin}
+ * @type {import('robo.js').Plugin}
  **/
 const roboplayPluginPoll = [
 	'@roboplay/plugin-poll',
@@ -26,7 +26,7 @@ const roboplayPluginPoll = [
 ]
 
 /**
- * @type {import('@roboplay/robo.js').Config}
+ * @type {import('robo.js').Config}
  **/
 export default {
 	// ... rest of your configuration

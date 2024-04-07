@@ -1,8 +1,8 @@
 // imports
 import { FLASHCORE_KEY } from '../core/config.js'
-import { type CommandConfig } from '@roboplay/robo.js'
+import { type CommandConfig } from 'robo.js'
 import { PermissionFlagsBits, type Channel, type CommandInteraction } from 'discord.js'
-import { setState, getState } from '@roboplay/robo.js'
+import { setState, getState } from 'robo.js'
 
 export const config: CommandConfig = {
 	description: 'Specify the Confessions Channel',

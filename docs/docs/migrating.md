@@ -17,7 +17,7 @@ Robo.js spices up Discord.js with some awesome features like:
 First things first, install the Robo.js package:
 
 ```bash
-npm install @roboplay/robo.js
+npm install robo.js
 ```
 
 Next up, choose a migration option based on your existing bot's complexity.
@@ -53,7 +53,7 @@ You can use the Robo.js client object to listen to Discord events just like you'
 1. Copy your existing handlers into the `_start.js` file under the `src/events/` directory.
 
 ```js {4-6} title="/src/events/_start.js" showLineNumbers
-import { client } from '@roboplay/robo.js'
+import { client } from 'robo.js'
 
 export default () => {
 	client.on('messageCreate', (message) => {
@@ -94,7 +94,7 @@ For complex bots, think about importing and starting Robo in your existing entry
 
 ```js show showLineNumbers {2,10}
 import { Client } from 'discord.js'
-import { Robo } from '@roboplay/robo.js'
+import { Robo } from 'robo.js'
 
 const client = new Client()
 

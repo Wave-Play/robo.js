@@ -15,7 +15,7 @@ States are a breeze to use. Check out this example:
 <TabItem value="js" label="Javascript">
 
 ```javascript showLineNumbers title="/src/commands/add-points.js"
-import { setState, getState } from '@roboplay/robo.js'
+import { setState, getState } from 'robo.js'
 
 export default () => {
 	let currentPoints = getState('currentPoints') ?? 0
@@ -28,8 +28,8 @@ export default () => {
 <TabItem value="ts" label="Typescript">
 
 ```typescript showLineNumbers title="/src/commands/add-points.ts"
-import { setState, getState } from '@roboplay/robo.js'
-import type { CommandResult } from '@roboplay/robo.js'
+import { setState, getState } from 'robo.js'
+import type { CommandResult } from 'robo.js'
 
 export default (): CommandResult => {
 	let currentPoints = getState('currentPoints') ?? 0
@@ -47,7 +47,7 @@ And you can retrieve state values like so:
 <TabItem value="js" label="Javascript">
 
 ```javascript showLineNumbers title="/src/commands/get-points.js"
-import { getState } from '@roboplay/robo.js'
+import { getState } from 'robo.js'
 
 export default () => {
 	let currentPoints = getState('currentPoints') ?? 0
@@ -59,8 +59,8 @@ export default () => {
 <TabItem value="ts" label="Typescript">
 
 ```typescript showLineNumbers title="/src/commands/get-points.ts"
-import { getState } from '@roboplay/robo.js'
-import type { CommandResult } from '@roboplay/robo.js'
+import { getState } from 'robo.js'
+import type { CommandResult } from 'robo.js'
 
 export default (): CommandResult => {
 	let currentPoints = getState('currentPoints') ?? 0
@@ -79,7 +79,7 @@ Imagine two different modules trying to use a state named `counter`. Without car
 <TabItem value="js" label="Javascript">
 
 ```javascript showLineNumbers title="/src/modules/foo/commands/increment.js"
-import { setState, getState } from '@roboplay/robo.js'
+import { setState, getState } from 'robo.js'
 
 export default () => {
 	let counter = getState('counter') ?? 0
@@ -92,8 +92,8 @@ export default () => {
 <TabItem value="ts" label="Typescript">
 
 ```typescript showLineNumbers title="/src/modules/foo/commands/increment.ts"
-import { setState, getState } from '@roboplay/robo.js'
-import type { CommandResult } from '@roboplay/robo.js'
+import { setState, getState } from 'robo.js'
+import type { CommandResult } from 'robo.js'
 
 export default (): CommandResult => {
 	let counter = getState('counter') ?? 0
@@ -109,7 +109,7 @@ export default (): CommandResult => {
 <TabItem value="js" label="Javascript">
 
 ```javascript showLineNumbers title="/src/modules/bar/commands/bar-increment.js"
-import { setState, getState } from '@roboplay/robo.js'
+import { setState, getState } from 'robo.js'
 
 export default () => {
 	let counter = getState('counter') ?? 0
@@ -122,8 +122,8 @@ export default () => {
 <TabItem value="ts" label="Typescript">
 
 ```typescript showLineNumbers title="/src/modules/bar/commands/bar-increment.ts"
-import { setState, getState } from '@roboplay/robo.js'
-import type { CommandResult } from '@roboplay/robo.js'
+import { setState, getState } from 'robo.js'
+import type { CommandResult } from 'robo.js'
 
 export default (): CommandResult => {
 	let counter = getState('counter') ?? 0
@@ -138,7 +138,7 @@ export default (): CommandResult => {
 In this scenario, the `counter` state would get jumbled between the `foo` and `bar` modules. To avoid this mess, we can fork the state:
 
 ```javascript showLineNumbers title="/src/modules/foo/state.js/" {4}
-import { State } from '@roboplay/robo.js'
+import { State } from 'robo.js'
 
 // Forking the state object
 const { getState, setState } = State.fork('foo')
@@ -165,7 +165,7 @@ export default () => {
 
 ```typescript showLineNumbers title="/src/modules/foo/commands/increment.ts" {6}
 import { setState, getState } from '../state.js'
-import type { CommandResult } from '@roboplay/robo.js'
+import type { CommandResult } from 'robo.js'
 
 export default (): CommandResult => {
 	let counter = getState('counter') ?? 0
@@ -185,7 +185,7 @@ States vanish when your Robo powers off. Unless you set them to persist, that is
 <TabItem value="js" label="Javascript">
 
 ```javascript title="/src/commands/set-important-data.js" showLineNumbers {5}
-import { setState } from '@roboplay/robo.js'
+import { setState } from 'robo.js'
 
 export default () => {
 	// Setting a state with persist option
@@ -198,8 +198,8 @@ export default () => {
 <TabItem value="ts" label="Typescript">
 
 ```typescript title="/src/commands/set-important-data.ts" showLineNumbers {6}
-import { setState } from '@roboplay/robo.js'
-import type { CommandResult } from '@roboplay/robo.js'
+import { setState } from 'robo.js'
+import type { CommandResult } from 'robo.js'
 
 export default (): CommandResult => {
 	// Setting a state with persist option
@@ -253,7 +253,7 @@ Imagine you have a Discord bot that hosts daily challenges in different servers.
 <TabItem value="js" label="Javascript">
 
 ```javascript showLineNumbers title="/src/commmands/daily-challenge.js" {9,18}
-import { getState, setState } from '@roboplay/robo.js'
+import { getState, setState } from 'robo.js'
 
 export default async (interaction) => {
 	const userId = interaction.user.id
@@ -281,8 +281,8 @@ export default async (interaction) => {
 <TabItem value="ts" label="Typescript">
 
 ```typescript showLineNumbers title="/src/commmands/daily-challenge.ts" {11,20}
-import { getState, setState } from '@roboplay/robo.js'
-import type { CommandResult } from '@roboplay/robo.js'
+import { getState, setState } from 'robo.js'
+import type { CommandResult } from 'robo.js'
 import type { ChatInputCommandInteraction } from 'discord.js'
 
 export default async (interaction: ChatInputCommandInteraction): Promise<CommandResult> => {

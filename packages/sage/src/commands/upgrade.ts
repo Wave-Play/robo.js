@@ -1,10 +1,10 @@
 // @ts-expect-error - no types
-import { packageJson } from '@roboplay/robo.js/dist/cli/utils/utils.js'
+import { packageJson } from 'robo.js/dist/cli/utils/utils.js'
 import { Command } from 'commander'
 import { logger } from '../core/logger.js'
 import { checkSageUpdates, checkUpdates, cmd, exec, getPackageManager } from '../core/utils.js'
-import { loadConfig } from '@roboplay/robo.js/dist/core/config.js'
-import { prepareFlashcore } from '@roboplay/robo.js/dist/core/flashcore.js'
+import { loadConfig } from 'robo.js/dist/core/config.js'
+import { prepareFlashcore } from 'robo.js/dist/core/flashcore.js'
 import { color, composeColors } from '../core/color.js'
 import fs from 'node:fs'
 import path from 'node:path'

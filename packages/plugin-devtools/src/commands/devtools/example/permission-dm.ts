@@ -1,4 +1,4 @@
-import type { CommandConfig } from '@roboplay/robo.js'
+import type { CommandConfig } from 'robo.js'
 
 export const config: CommandConfig = {
 	description: `This is an example command that can't be used in DMs`,

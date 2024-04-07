@@ -1,4 +1,4 @@
-import { Flashcore, logger } from '@roboplay/robo.js'
+import { Flashcore, logger } from 'robo.js'
 
 const env = {
 	excludeCommands: process.env.ROBO_MAINTENANCE_EXCLUDE_COMMANDS,

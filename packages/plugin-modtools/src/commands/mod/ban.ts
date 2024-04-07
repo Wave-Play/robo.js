@@ -1,9 +1,9 @@
 import { Buttons, ID_NAMESPACE, autocompleteDeleteMessages, deleteMessagesOptions } from '../../core/constants.js'
 import { getSettings } from '../../core/settings.js'
 import { logAction, showConfirmation } from '../../core/utils.js'
-import { Flashcore, logger } from '@roboplay/robo.js'
+import { Flashcore, logger } from 'robo.js'
 import { ButtonStyle, Colors, ComponentType, PermissionFlagsBits } from 'discord.js'
-import type { CommandConfig, CommandResult } from '@roboplay/robo.js'
+import type { CommandConfig, CommandResult } from 'robo.js'
 import type { ChatInputCommandInteraction, MessageCreateOptions, ModalSubmitInteraction } from 'discord.js'
 
 export const config: CommandConfig = {

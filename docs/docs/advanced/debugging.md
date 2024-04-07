@@ -41,7 +41,7 @@ Check out **[Sage Documentation](/docs/basics/sage)** to learn more about the Sa
 
 ## Logging 📝
 
-Logging is like the bread and butter of debugging. You can use JavaScript's built-in `console.log` or the special `logger` object from `@roboplay/robo.js` – they work the same way. The difference is that logs made with the `logger` object will show up in your Robo's `/dev` command and error replies.
+Logging is like the bread and butter of debugging. You can use JavaScript's built-in `console.log` or the special `logger` object from `robo.js` – they work the same way. The difference is that logs made with the `logger` object will show up in your Robo's `/dev` command and error replies.
 
 Wanna customize your log levels? Each log has a priority level that you can toggle on or off in the config.
 

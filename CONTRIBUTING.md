@@ -63,7 +63,7 @@ Contribute to our official ones, enhance existing ones, or create your own!
 
 For more, follow the **[plugin guide](https://docs.roboplay.dev/docs/advanced/plugins)**. Want a suggestion? A template project is a stellar way to test your plugin.
 
-> **Smol heads up:** Make sure your plugin's `@roboplay/robo.js` version is consistent with your test project. For instance, if the Robo is at `0.9.6`, ensure your plugin's `devDependencies` match or you'll run into issues with stateful APIs like Flashcore or State.
+> **Smol heads up:** Make sure your plugin's `robo.js` version is consistent with your test project. For instance, if the Robo is at `0.9.6`, ensure your plugin's `devDependencies` match or you'll run into issues with stateful APIs like Flashcore or State.
 
 ## Templates
 

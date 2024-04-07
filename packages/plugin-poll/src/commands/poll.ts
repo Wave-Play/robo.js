@@ -1,4 +1,4 @@
-import { CommandConfig, logger } from '@roboplay/robo.js'
+import { CommandConfig, logger } from 'robo.js'
 import { CommandInteraction } from 'discord.js'
 import { createPoll, polls } from '../core/data.js'
 

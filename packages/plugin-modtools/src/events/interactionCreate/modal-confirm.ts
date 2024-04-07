@@ -1,6 +1,6 @@
 import { Modals, TextInputs } from '../../core/constants.js'
-import { getState, logger, setState } from '@roboplay/robo.js'
-import type { EventConfig } from '@roboplay/robo.js'
+import { getState, logger, setState } from 'robo.js'
+import type { EventConfig } from 'robo.js'
 import type { ModalSubmitInteraction } from 'discord.js'
 
 export const config: EventConfig = {

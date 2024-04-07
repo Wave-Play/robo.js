@@ -1,4 +1,4 @@
-import { color, composeColors, Logger } from '@roboplay/robo.js'
+import { color, composeColors, Logger } from 'robo.js'
 import type { Client } from 'discord.js'
 
 const logger = new Logger({

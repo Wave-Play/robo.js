@@ -6,8 +6,8 @@ import { checkSageUpdates, cmd, downloadFile, exec, getPackageManager, isRoboPro
 import path from 'node:path'
 import { mkdirSync } from 'node:fs'
 import { access, cp, readFile, writeFile } from 'node:fs/promises'
-// @ts-expect-error - TODO: Move from /cli to /core and expose as @roboplay/robo.js/utils
-import { cleanTempDir } from '@roboplay/robo.js/dist/cli/utils/utils.js'
+// @ts-expect-error - TODO: Move from /cli to /core and expose as robo.js/utils
+import { cleanTempDir } from 'robo.js/dist/cli/utils/utils.js'
 import type { PackageJson } from '../core/types.js'
 
 const command = new Command('import')
@@ -171,7 +171,7 @@ async function importPlugin(plugin: string, packageJson: PackageJson) {
 	logger.debug(prefix, `Plugin ${pluginHasTs ? 'contains' : 'does not contain'} TypeScript.`)
 
 	// It's safe to assume core is necessary for all plugins' development
-	delete pluginDevDeps['@roboplay/robo.js']
+	delete pluginDevDeps['robo.js']
 	delete projectDevDeps['discord.js']
 
 	// Install dependencies

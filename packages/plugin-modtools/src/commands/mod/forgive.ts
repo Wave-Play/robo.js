@@ -1,8 +1,8 @@
 import { hasPermission, logAction } from '../../core/utils.js'
 import { getSettings } from '../../core/settings.js'
-import { Flashcore, color, logger } from '@roboplay/robo.js'
+import { Flashcore, color, logger } from 'robo.js'
 import { Colors, PermissionFlagsBits } from 'discord.js'
-import type { CommandConfig, CommandResult } from '@roboplay/robo.js'
+import type { CommandConfig, CommandResult } from 'robo.js'
 import type { CommandInteraction, GuildMember, MessageCreateOptions } from 'discord.js'
 
 export const config: CommandConfig = {
