@@ -149,7 +149,7 @@ const PluginDb: Record<string, PluginData> = {
 			}
 		},
 		keywords: ['ai', 'gpt', 'openai'],
-		package: '@roboplay/plugin-ai'
+		package: '@robojs/ai'
 	},
 	'ai-voice': {
 		keywords: ['speech', 'voice'],
@@ -895,7 +895,7 @@ export default class Robo {
 	/**
 	 * Generates a plugin config file in the config/plugins directory.
 	 *
-	 * @param pluginName The name of the plugin (e.g. @roboplay/plugin-ai)
+	 * @param pluginName The name of the plugin (e.g. @robojs/ai)
 	 * @param config The plugin config
 	 */
 	private async createPluginConfig(pluginName: string, config: Record<string, unknown>) {

@@ -36,9 +36,6 @@ importers:
 
   packages/create-robo:
     dependencies:
-      '@roboplay/robo.js':
-        specifier: 0.9.26
-        version: 0.9.26(discord.js@14.10.2)(typescript@5.0.2)
       async-retry:
         specifier: ^1.3.3
         version: 1.3.3
@@ -54,6 +51,9 @@ importers:
       inquirer:
         specifier: ^9.2.0
         version: 9.2.2
+      robo.js:
+        specifier: workspace:*
+        version: link:../robo
       tar:
         specifier: ^6.1.13
         version: 6.1.14
@@ -89,12 +89,9 @@ importers:
         specifier: ^6.0.3
         version: 6.0.3
     devDependencies:
-      '@roboplay/plugin-api':
-        specifier: 0.3.0
-        version: 0.3.0
-      '@roboplay/robo.js':
-        specifier: 0.9.26
-        version: 0.9.26(@swc/core@1.3.57)(discord.js@14.11.0)(typescript@5.0.2)
+      '@robojs/server':
+        specifier: workspace:*
+        version: link:../plugin-api
       '@swc/core':
         specifier: ^1.3.44
         version: 1.3.57
@@ -104,12 +101,18 @@ importers:
       discord.js:
         specifier: ^14.7.1
         version: 14.11.0
+      robo.js:
+        specifier: workspace:*
+        version: link:../robo
       typescript:
         specifier: ^5.0.0
         version: 5.0.2
 
   packages/plugin-ai-voice:
     dependencies:
+      '@roboplay/plugin-ai':
+        specifier: ^0.4.2
+        version: 0.4.2
       fluent-ffmpeg:
         specifier: ^2.1.2
         version: 2.1.2
@@ -126,7 +129,7 @@ importers:
       '@discordjs/voice':
         specifier: ^0.16.0
         version: 0.16.0(opusscript@0.1.0)
-      '@roboplay/plugin-ai':
+      '@robojs/ai':
         specifier: workspace:*
         version: link:../plugin-ai
       '@roboplay/robo.js':
@@ -935,6 +938,7 @@ packages:
       fast-deep-equal: 3.1.3
       ts-mixer: 6.0.3
       tslib: 2.6.2
+    dev: true
 
   /@discordjs/builders@1.6.5:
     resolution: {integrity: sha512-SdweyCs/+mHj+PNhGLLle7RrRFX9ZAhzynHahMCLqp5Zeq7np7XC6/mgzHc79QoVlQ1zZtOkTTiJpOZu5V8Ufg==}
@@ -965,6 +969,7 @@ packages:
   /@discordjs/collection@1.5.1:
     resolution: {integrity: sha512-aWEc9DCf3TMDe9iaJoOnO2+JVAjeRNuRxPZQA6GVvBf+Z3gqUuWYBy2NWh4+5CLYq5uoc3MOvUQ5H5m8CJBqOA==}
     engines: {node: '>=16.9.0'}
+    dev: true
 
   /@discordjs/collection@1.5.3:
     resolution: {integrity: sha512-SVb428OMd3WO1paV3rm6tSjM4wC+Kecaa1EUGX7vc6/fddvw/6lg90z4QtCqm21zvVe92vMMDt9+DkIvjXImQQ==}
@@ -980,6 +985,7 @@ packages:
     engines: {node: '>=16.9.0'}
     dependencies:
       discord-api-types: 0.37.42
+    dev: true
 
   /@discordjs/formatters@0.3.2:
     resolution: {integrity: sha512-lE++JZK8LSSDRM5nLjhuvWhGuKiXqu+JZ/DsOR89DVVia3z9fdCJVcHF2W/1Zxgq0re7kCzmAJlCMMX3tetKpA==}
@@ -1007,6 +1013,7 @@ packages:
       file-type: 18.4.0
       tslib: 2.6.2
       undici: 5.22.1
+    dev: true
 
   /@discordjs/rest@2.0.1:
     resolution: {integrity: sha512-/eWAdDRvwX/rIE2tuQUmKaxmWeHmGealttIzGzlYfI4+a7y9b6ZoMp8BG/jaohs8D8iEnCNYaZiOFLVFLQb8Zg==}
@@ -1046,6 +1053,7 @@ packages:
   /@discordjs/util@0.3.1:
     resolution: {integrity: sha512-HxXKYKg7vohx2/OupUN/4Sd02Ev3PBJ5q0gtjdcvXb0ErCva8jNHWfe/v5sU3UKjIB/uxOhc+TDOnhqffj9pRA==}
     engines: {node: '>=16.9.0'}
+    dev: true
 
   /@discordjs/util@1.0.1:
     resolution: {integrity: sha512-d0N2yCxB8r4bn00/hvFZwM7goDcUhtViC5un4hPj73Ba4yrChLSJD8fy7Ps5jpTLg1fE9n4K0xBLc1y9WGwSsA==}
@@ -1091,6 +1099,7 @@ packages:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+    dev: true
 
   /@discordjs/ws@1.0.1:
     resolution: {integrity: sha512-avvAolBqN3yrSvdBPcJ/0j2g42ABzrv3PEL76e3YTp2WYMGH7cuspkjfSyNWaqYl1J+669dlLp+YFMxSVQyS5g==}
@@ -1951,14 +1960,11 @@ packages:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.15.0
 
-  /@roboplay/plugin-api@0.3.0:
-    resolution: {integrity: sha512-NAt4ENiEC5iDBMt1QyIWZnz4FgR73JVAKJixbk2Bn7h8k3a8gIqyOtciqx/0dGHVCkuApQbq9fb23O2AHot7cQ==}
-    peerDependencies:
-      fastify: ^4.15.0
-    peerDependenciesMeta:
-      fastify:
-        optional: true
-    dev: true
+  /@roboplay/plugin-ai@0.4.2:
+    resolution: {integrity: sha512-OOZYDiMbZx7lg144Tc6MtqNHz2V3bXasvnxY97Sot/DbP1AUpdCqGVDnIyz/uXlLXKM7Ci/nQxQbdAKA0KJwNQ==}
+    dependencies:
+      formdata-node: 6.0.3
+    dev: false
 
   /@roboplay/robo.js@0.6.1(@swc/core@1.3.57)(discord.js@14.7.1)(typescript@5.0.2):
     resolution: {integrity: sha512-iXBR5m8a8wO8MIlNNQBvw9cYhOaRphktEGOHUa8ucACC0lJsQVybspsk0wftD3qTjalCJWzVT3+OTK7SXkTOQg==}
@@ -2051,27 +2057,6 @@ packages:
       discord.js: 14.13.0
       typescript: 5.0.2
     dev: true
-
-  /@roboplay/robo.js@0.9.26(discord.js@14.10.2)(typescript@5.0.2):
-    resolution: {integrity: sha512-HKKT9CrV71SBZhUOgSrfr/QQIcMa4cWuu1bQQbvD06FV/Eto8bCqX/IMk5SI1Ix/BnGr1zed7m2ydtfEQq4UkQ==}
-    engines: {node: '>=18.0.0'}
-    hasBin: true
-    peerDependencies:
-      '@swc/core': ^1.3.41
-      discord.js: ^14.0.0
-      keyv: ^4.5.2
-      typescript: ^5.0.0
-    peerDependenciesMeta:
-      '@swc/core':
-        optional: true
-      keyv:
-        optional: true
-      typescript:
-        optional: true
-    dependencies:
-      discord.js: 14.10.2
-      typescript: 5.0.2
-    dev: false
 
   /@roboplay/robo.js@0.9.5(discord.js@14.14.1)(typescript@5.0.2):
     resolution: {integrity: sha512-DZb2dPB19d5FLEc51VCmQWe7/sPm72FWkTXtg3qettE4v9pEUg4RQ8Pn1yMbMEOc3qk5bPqG/KneiOICtwctsQ==}
@@ -2238,6 +2223,7 @@ packages:
     dependencies:
       fast-deep-equal: 3.1.3
       lodash: 4.17.21
+    dev: true
 
   /@sapphire/shapeshift@3.9.3:
     resolution: {integrity: sha512-WzKJSwDYloSkHoBbE8rkRW8UNKJiSRJ/P8NqJ5iVq7U2Yr/kriIBx2hW+wj2Z5e5EnXL1hgYomgaFsdK6b+zqQ==}
@@ -2499,6 +2485,7 @@ packages:
 
   /@tokenizer/token@0.3.0:
     resolution: {integrity: sha512-OvjF+z51L3ov0OyAU0duzsYuvO01PH7x4t6DJx+guahgTnBHkhJdG7soQeTSFLWN3efnHyibZ4Z8l2EuWwJN3A==}
+    dev: true
 
   /@types/async-retry@1.4.5:
     resolution: {integrity: sha512-YrdjSD+yQv7h6d5Ip+PMxh3H6ZxKyQk0Ts+PvaNRInxneG9PFVZjFg77ILAN+N6qYf7g4giSJ1l+ZjQ1zeegvA==}
@@ -2667,6 +2654,7 @@ packages:
     resolution: {integrity: sha512-zdQDHKUgcX/zBc4GrwsE/7dVdAD8JR4EuiAXiiUhhfyIJXXb2+PrGshFyeXWQPMmmZ2XxgaqclgpIC7eTXc1mg==}
     dependencies:
       '@types/node': 18.16.8
+    dev: true
 
   /@types/ws@8.5.8:
     resolution: {integrity: sha512-flUksGIQCnJd6sZ1l5dqCEG/ksaoAg/eUwiLAGTJQcfgvZJKF++Ta4bJA6A5aPSJmsr+xlseHn4KLgVlNnvPTg==}
@@ -3308,6 +3296,7 @@ packages:
     engines: {node: '>=10.16.0'}
     dependencies:
       streamsearch: 1.1.0
+    dev: true
 
   /bytesish@0.4.4:
     resolution: {integrity: sha512-i4uu6M4zuMUiyfZN4RU2+i9+peJh//pXhd9x1oSe1LBkZ3LEbCoygu8W0bXTukU1Jme2txKuotpCZRaC3FLxcQ==}
@@ -3782,6 +3771,7 @@ packages:
 
   /discord-api-types@0.37.42:
     resolution: {integrity: sha512-1Huaj9cQ1W7/uryS8MZs/tZemnoKB94thM1cE40lep3rpU3q7WHqkdjN/veX0prTkYlPhcyLd/DeF/pBO8X8oQ==}
+    dev: true
 
   /discord-api-types@0.37.50:
     resolution: {integrity: sha512-X4CDiMnDbA3s3RaUXWXmgAIbY1uxab3fqe3qwzg5XutR3wjqi7M3IkgQbsIBzpqBN2YWr/Qdv7JrFRqSgb4TFg==}
@@ -3812,6 +3802,7 @@ packages:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+    dev: true
 
   /discord.js@14.11.0:
     resolution: {integrity: sha512-CkueWYFQ28U38YPR8HgsBR/QT35oPpMbEsTNM30Fs8loBIhnA4s70AwQEoy6JvLcpWWJO7GY0y2BUzZmuBMepQ==}
@@ -4396,6 +4387,7 @@ packages:
       readable-web-to-node-stream: 3.0.2
       strtok3: 7.0.0
       token-types: 5.0.1
+    dev: true
 
   /fill-range@7.0.1:
     resolution: {integrity: sha512-qOo9F+dMUmC2Lcb4BbVvnKJxTPjCm+RRpe4gDuGrzkL7mEVl/djYSu2OdQ2Pa302N4oqkSg9ir6jaLWJ2USVpQ==}
@@ -6325,6 +6317,7 @@ packages:
   /peek-readable@5.0.0:
     resolution: {integrity: sha512-YtCKvLUOvwtMGmrniQPdO7MwPjgkFBtFIrmfSbYmYuq3tKDV/mcfAhBth1+C3ru7uXIZasc/pHnb+YDYNkkj4A==}
     engines: {node: '>=14.16'}
+    dev: true
 
   /pegjs@0.10.0:
     resolution: {integrity: sha512-qI5+oFNEGi3L5HAxDwN2LA4Gg7irF70Zs25edhjld9QemOgp0CbvMtbFcMvFtEo1OityPrcCzkQFB8JP/hxgow==}
@@ -6592,6 +6585,7 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       readable-stream: 3.6.2
+    dev: true
 
   /readdirp@3.6.0:
     resolution: {integrity: sha512-hOS089on8RduqdbhvQ5Z37A0ESjsqz6qnRcffsMU3495FuTdqSm+7bhJ29JvIOsBDEEnan5DPu9t3To9VRlMzA==}
@@ -6987,6 +6981,7 @@ packages:
   /streamsearch@1.1.0:
     resolution: {integrity: sha512-Mcc5wHehp9aXz1ax6bZUyY5afg9u2rv5cqQI3mRrYkGC8rW2hM02jWuwjtL++LS5qinSyhj2QfLyNsuc+VsExg==}
     engines: {node: '>=10.0.0'}
+    dev: true
 
   /string-length@4.0.2:
     resolution: {integrity: sha512-+l6rNN5fYHNhZZy41RXsYptCjA2Igmq4EG7kZAYFQI1E1VTXarr6ZPXBg6eq7Y6eK4FEhY6AJlyuFIb/v/S0VQ==}
@@ -7097,6 +7092,7 @@ packages:
     dependencies:
       '@tokenizer/token': 0.3.0
       peek-readable: 5.0.0
+    dev: true
 
   /sucrase@3.32.0:
     resolution: {integrity: sha512-ydQOU34rpSyj2TGyz4D2p8rbktIOZ8QY9s+DGLvFU1i5pWJE8vkpruCjGCMHsdXwnD7JDcS+noSwM/a7zyNFDQ==}
@@ -7222,6 +7218,7 @@ packages:
     dependencies:
       '@tokenizer/token': 0.3.0
       ieee754: 1.2.1
+    dev: true
 
   /tr46@0.0.3:
     resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
@@ -7290,6 +7287,7 @@ packages:
 
   /tslib@2.5.0:
     resolution: {integrity: sha512-336iVw3rtn2BUK7ORdIAHTyxHGRIHVReokCR3XjbckJMK7ms8FysBfhLR8IXnAgy7T0PTPNBWKiH514FOW/WSg==}
+    dev: true
 
   /tslib@2.6.2:
     resolution: {integrity: sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==}
@@ -7479,6 +7477,7 @@ packages:
     engines: {node: '>=14.0'}
     dependencies:
       busboy: 1.6.0
+    dev: true
 
   /undici@5.27.2:
     resolution: {integrity: sha512-iS857PdOEy/y3wlM3yRp+6SNQQ6xU0mmZcwRSriqk+et/cwWAtwmIGf6WkoDN2EK/AMdCO/dfXzIwi+rFMrjjQ==}
@@ -7753,6 +7752,7 @@ packages:
         optional: true
       utf-8-validate:
         optional: true
+    dev: true
 
   /ws@8.14.2:
     resolution: {integrity: sha512-wEBG1ftX4jcglPxgFCMJmZ2PLtSbJ2Peg6TmpJFTbe9GZYOQCDPdMYu/Tm0/bGZkw8paZnJY45J4K2PZrLYq8g==}
