@@ -1,6 +1,6 @@
 {
   "name": "@robojs/ai-voice",
-  "description": "",
+  "description": "Give your Robo a voice! Command and converse with it in voice channels.",
   "version": "0.1.1",
   "type": "module",
   "private": false,
