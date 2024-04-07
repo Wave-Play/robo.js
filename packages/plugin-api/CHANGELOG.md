@@ -1,5 +1,11 @@
 # @roboplay/plugin-api
 
+## 0.4.1
+
+### Patch Changes
+
+- 3d04d3a: refactor: use new `robo.js` package name
+
 ## 0.4.0
 
 ### Minor Changes
