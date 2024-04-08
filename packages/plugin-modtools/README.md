@@ -11,13 +11,13 @@ Tailored for Discord server management, this plugin includes a suite of commands
 To add this plugin to your Robo.js project:
 
 ```bash
-npx robo add @roboplay/plugin-modtools
+npx robo add @robojs/moderation
 ```
 
 New to Robo.js? Start your project with this plugin pre-installed:
 
 ```bash
-npx create-robo <project-name> -p @roboplay/plugin-modtools
+npx create-robo <project-name> -p @robojs/moderation
 ```
 
 ## Slash Commands

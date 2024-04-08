@@ -1,6 +1,6 @@
 {
-  "name": "@roboplay/plugin-modtools",
-  "description": "A Robo.js plugin for moderating your Discord server.",
+  "name": "@robojs/moderation",
+  "description": "Equip your bot with essential tools to manage and maintain your server.",
   "version": "0.2.0",
   "type": "module",
   "private": false,

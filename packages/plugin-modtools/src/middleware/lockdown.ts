@@ -10,7 +10,7 @@ interface LockdownData {
 
 export default async (data: MiddlewareData): Promise<MiddlewareResult | void> => {
 	const {  key, plugin, type } = data.record
-	const isSelfPlugin = plugin?.name === '@roboplay/plugin-modtools'
+	const isSelfPlugin = plugin?.name === '@robojs/moderation'
 
 	// Only lock down commands
 	if (type !== 'command') {
