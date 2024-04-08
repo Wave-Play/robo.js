@@ -1,5 +1,19 @@
 # create-robo
 
+## 0.11.5
+
+### Patch Changes
+
+- 68020f6: chore: point to new `@robojs/moderation` package name
+- 541f9b5: patch: ignore /src/app by default in app kit
+- 71f1596: chore: updated example plugin in generated readme
+- 031f2d6: chore: point to new `@robojs/maintenance` package name
+- 827ecae: patch: updated default prettier file for better vs code support
+- Updated dependencies [2b4fcbb]
+- Updated dependencies [6d32a61]
+- Updated dependencies [792658a]
+  - robo.js@0.10.2
+
 ## 0.11.4
 
 ### Patch Changes

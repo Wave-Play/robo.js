@@ -1,7 +1,7 @@
 {
 	"name": "@robojs/moderation",
 	"description": "Equip your bot with essential tools to manage and maintain your server.",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"type": "module",
 	"private": false,
 	"main": ".robo/build/index.js",
@@ -38,7 +38,7 @@
 		"typescript": "^5.0.0"
 	},
 	"peerDependencies": {
-		"robo.js": "^0.10.1"
+		"robo.js": "^0.10.2"
 	},
 	"peerDependenciesMeta": {
 		"robo.js": {
