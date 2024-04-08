@@ -150,9 +150,18 @@ async function readPluginManifest(plugins: Plugin[]): Promise<Manifest> {
 
 	logger.debug(`Reading plugins...`, plugins)
 	for (const plugin of plugins) {
+		// Skip if the plugin isn't actually installed
 		const pluginName = typeof plugin === 'string' ? plugin : plugin[0]
 		const packagePath = await findPackagePath(pluginName, process.cwd())
+
+		if (!packagePath) {
+			logger.debug(`Plugin ${pluginName} is not installed. Skipping...`)
+			continue
+		}
+
+		// Load the manifest from the plugin
 		const manifest = await loadManifest(pluginName, packagePath)
+		logger.debug(`Successfully loaded plugin manifest for ${pluginName} with metadata:`, manifest?.__robo)
 
 		// For now, we only supporting merging plugin permissions as strings
 		const validPermissions = manifest.permissions && typeof manifest.permissions !== 'number'
