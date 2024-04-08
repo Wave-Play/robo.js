@@ -5,6 +5,7 @@ import { Flashcore } from './flashcore.js'
 export const state: Record<string, unknown> = {}
 
 export interface GetStateOptions {
+	default?: unknown
 	namespace?: string
 }
 
@@ -136,7 +137,7 @@ export function getState<T = string>(key: string, options?: GetStateOptions): T 
 		key = `${options.namespace}__${key}`
 	}
 
-	return state[key] as T | null
+	return (state[key] ?? options?.default) as T | null
 }
 
 export function loadState(savedState: Record<string, unknown>) {
