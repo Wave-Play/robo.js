@@ -2,7 +2,7 @@
 import { spawn } from 'child_process'
 import { loadEnv } from '../core/dotenv.js'
 import { Command } from './utils/cli-handler.js'
-import { packageJson } from './utils/utils.js'
+import { IS_WINDOWS, packageJson } from './utils/utils.js'
 import { logger as defaultLogger } from '../core/logger.js'
 import { color } from '../core/color.js'
 
@@ -37,7 +37,7 @@ async function handler() {
 
 	// Execute the command
 	logger.debug(color.bold('> ' + args.join(' ')))
-	const child = spawn(args[0], args.slice(1), {
+	const child = spawn(`${IS_WINDOWS ? args[0] + '.cmd' : args[0]}`, args.slice(1), {
 		stdio: 'inherit',
 		shell: false
 	})
