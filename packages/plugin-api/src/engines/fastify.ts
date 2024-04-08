@@ -53,7 +53,7 @@ export class FastifyEngine extends BaseEngine {
 						if (error?.status >= 400) {
 							logger.error(error)
 						}
-		
+
 						Object.entries(error.headers ?? {}).forEach(([key, value]) => {
 							reply.header(key, value)
 						})
@@ -70,6 +70,10 @@ export class FastifyEngine extends BaseEngine {
 			}
 			run()
 		})
+	}
+
+	public getHttpServer() {
+		return this._server?.server
 	}
 
 	public isRunning(): boolean {
@@ -125,6 +129,10 @@ export class FastifyEngine extends BaseEngine {
 				})
 			}
 		})
+	}
+
+	public setupVite(vite: ViteDevServer) {
+		this._vite = vite
 	}
 
 	public async start(options: StartOptions): Promise<void> {

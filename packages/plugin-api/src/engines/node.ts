@@ -1,4 +1,4 @@
-import { createServerHandler } from '../core/handler.js'
+import { ServerHandler, createServerHandler } from '../core/handler.js'
 import { logger } from '../core/logger.js'
 import { Router } from '../core/router.js'
 import { BaseEngine } from '../engines/base.js'
@@ -12,14 +12,19 @@ export class NodeEngine extends BaseEngine {
 	private _isRunning = false
 	private _router: Router | null = null
 	private _server: http.Server | null = null
+	private _serverHandler: ServerHandler | null = null
 	private _vite: ViteDevServer | null = null
 
 	public async init(options: InitOptions): Promise<void> {
 		this._router = new Router()
-		this._server = http.createServer(createServerHandler(this._router, options?.vite))
-		this._vite = options.vite
+		this._serverHandler = createServerHandler(this._router, options?.vite)
+		this._server = http.createServer((req, res) => this._serverHandler?.(req, res))
 
 		this._server.on('error', (error: Error) => logger.error(`Server error:`, error))
+	}
+
+	public getHttpServer() {
+		return this._server
 	}
 
 	public isRunning(): boolean {
@@ -28,6 +33,11 @@ export class NodeEngine extends BaseEngine {
 
 	public registerRoute(path: string, handler: RouteHandler): void {
 		this._router.addRoute({ handler, path })
+	}
+
+	public setupVite(vite: ViteDevServer) {
+		this._vite = vite
+		this._serverHandler = createServerHandler(this._router, vite)
 	}
 
 	public async start(options: StartOptions): Promise<void> {

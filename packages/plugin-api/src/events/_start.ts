@@ -31,19 +31,26 @@ export default async (_client: Client, options: PluginOptions) => {
 		pluginOptions.engine = await getDefaultEngine()
 	}
 
+	// Start HTTP server only if API Routes are defined
+	const { engine, port = parseInt(process.env.PORT ?? '3000') } = pluginOptions
+	let vite: ViteDevServer | undefined = pluginOptions.vite
+
+	logger.debug(`Preparing server with ${portal.apis.size} API routes...`)
+	await engine.init({ vite })
+
 	// If Vite is available, start the dev server
-	if (pluginOptions.vite) {
+	if (vite) {
 		logger.debug('Using Vite server specified in options.')
 	} else if (process.env.NODE_ENV !== 'production' && (await hasDependency('vite', true))) {
 		try {
 			const { createServer: createViteServer } = await import('vite')
 			const viteConfigPath = path.join(process.cwd(), 'config', 'vite.mjs')
 
-			pluginOptions.vite = await createViteServer({
+			vite = await createViteServer({
 				configFile: existsSync(viteConfigPath) ? viteConfigPath : undefined,
 				server: {
-					hmr: { clientPort: 443 },
-					middlewareMode: true
+					hmr: { server: engine.getHttpServer() },
+					middlewareMode: { server: engine.getHttpServer() }
 				}
 			})
 			logger.debug('Vite server created successfully.')
@@ -52,11 +59,10 @@ export default async (_client: Client, options: PluginOptions) => {
 		}
 	}
 
-	// Start HTTP server only if API Routes are defined
-	const { engine, port = parseInt(process.env.PORT ?? '3000') } = pluginOptions
-
-	logger.debug(`Preparing server with ${portal.apis.size} API routes...`)
-	await engine.init({ vite: pluginOptions.vite })
+	// Setup Vite if available
+	if (vite) {
+		await engine.setupVite(vite)
+	}
 
 	// Add loaded API modules onto new router instance
 	const prefix = pluginOptions.prefix ?? ''

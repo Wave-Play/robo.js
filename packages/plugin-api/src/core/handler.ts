@@ -20,7 +20,9 @@ const BodyMethods = ['PATCH', 'POST', 'PUT']
 const PublicPath = path.join(process.cwd(), 'public')
 const PublicBuildPath = path.join(process.cwd(), '.robo', 'public')
 
-export function createServerHandler(router: Router, vite?: ViteDevServer) {
+export type ServerHandler = (req: IncomingMessage, res: ServerResponse<IncomingMessage>) => Promise<void> | void
+
+export function createServerHandler(router: Router, vite?: ViteDevServer): ServerHandler {
 	const { parseBody = true } = pluginOptions
 
 	return async (req: IncomingMessage, res: ServerResponse<IncomingMessage>) => {
