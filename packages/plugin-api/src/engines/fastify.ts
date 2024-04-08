@@ -28,9 +28,9 @@ export class FastifyEngine extends BaseEngine {
 		this._server.setNotFoundHandler((request, reply) => {
 			logger.debug(color.bold(request.method), request.raw.url)
 
-			if (options.vite) {
+			if (this._vite) {
 				logger.debug(`Forwarding to Vite:`, request.url)
-				options.vite.middlewares(request.raw, reply.raw)
+				this._vite.middlewares(request.raw, reply.raw)
 				return
 			}
 
