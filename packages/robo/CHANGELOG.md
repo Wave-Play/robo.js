@@ -1,5 +1,13 @@
 # robo.js
 
+## 0.10.2
+
+### Patch Changes
+
+- 2b4fcbb: feat(flashcore): convenience `default` option
+- 6d32a61: patch: avoid faulty plugins from duplicating manifest entries
+- 792658a: feat(state): convenience `default` option
+
 ## 0.10.1
 
 ### Patch Changes
