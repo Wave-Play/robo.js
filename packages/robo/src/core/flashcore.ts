@@ -63,13 +63,13 @@ export const Flashcore = {
 	 * @param {string} key - The key associated with the value.
 	 * @returns {Promise<V> | V} - May return a promise you can await or the value directly.
 	 */
-	get: <V>(key: string, options?: FlashcoreOptions): Promise<V> | V => {
+	get: <V>(key: string, options?: FlashcoreOptions & { default?: unknown }): Promise<V> | V => {
 		// If a namespace is provided, prepend it to the key
 		if (options?.namespace) {
 			key = Array.isArray(options.namespace) ? `${options.namespace.join('/')}__${key}` : `${options.namespace}__${key}`
 		}
 
-		return _adapter.get(key) as V
+		return (_adapter.get(key) ?? options?.default) as V
 	},
 
 	has: (key: string, options?: FlashcoreOptions): Promise<boolean> | boolean => {
