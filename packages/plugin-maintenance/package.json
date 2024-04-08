@@ -22,7 +22,7 @@
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/Wave-Play/robo.git",
-		"directory": "plugins/poll"
+		"directory": "packages/plugin-maintenance"
 	},
 	"publishConfig": {
 		"access": "public",
