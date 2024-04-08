@@ -188,9 +188,6 @@ importers:
         specifier: ^0.4.12
         version: 0.4.21
     devDependencies:
-      '@roboplay/robo.js':
-        specifier: 0.9.26
-        version: 0.9.26(@swc/core@1.4.12)(discord.js@14.14.1)(typescript@5.0.2)
       '@swc/core':
         specifier: ^1.3.44
         version: 1.4.12
@@ -200,6 +197,9 @@ importers:
       discord.js:
         specifier: ^14.7.1
         version: 14.14.1
+      robo.js:
+        specifier: workspace:*
+        version: link:../robo
       typescript:
         specifier: ^5.0.0
         version: 5.0.2
