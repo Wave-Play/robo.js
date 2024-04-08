@@ -51,7 +51,7 @@ export default () => {
 <TabItem value="ts" label="Typescript">
 
 ```typescript showLineNumbers title="/src/commands/hello.ts"
-import type { CommandResult } from '@roboplay/robo.js'
+import type { CommandResult } from 'robo.js'
 
 export default (): CommandResult => {
 	return { content: 'Hello, Sage!' }
@@ -75,7 +75,7 @@ export default () => 'Hello, Sage!'
 <TabItem value="ts" label="Typescript">
 
 ```typescript showLineNumbers title="/src/commands/hello.ts"
-import type { CommandResult } from '@roboplay/robo.js'
+import type { CommandResult } from 'robo.js'
 
 export default (): CommandResult => 'Hello, Sage!'
 ```
@@ -136,7 +136,7 @@ export default async () => {
 <TabItem value="ts" label="Typescript">
 
 ```typescript showLineNumbers title="/src/commands/hello.ts"
-import type { CommandResult } from '@roboplay/robo.js'
+import type { CommandResult } from 'robo.js'
 
 export default async (): CommandResult => {
 	await new Promise((resolve) => setTimeout(resolve, 4000))
@@ -236,7 +236,7 @@ export default () => {
 <TabItem value="ts" label="Typescript">
 
 ```typescript showLineNumbers title="/src/commands/hello.ts" {4-9}
-import type { CommandConfig, CommandResult } from '@roboplay/robo.js'
+import type { CommandConfig, CommandResult } from 'robo.js'
 
 export const config: CommandConfig = {
 	sage: {

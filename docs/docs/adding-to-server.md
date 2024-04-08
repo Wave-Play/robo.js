@@ -43,7 +43,7 @@ Wanna personalize permissions and scopes for `robo invite`? Add an `invite` sect
 
 ```javascript showLineNumbers {6-10} title="config/robo.mjs"
 /**
- * @type {import('@roboplay/robo.js').Config}
+ * @type {import('robo.js').Config}
  **/
 export default {
 	// ...rest of config
@@ -65,7 +65,7 @@ Here's an example of setting up intents in your config file:
 
 ```javascript showLineNumbers title="config/robo.mjs"
 /**
- * @type {import('@roboplay/robo.js').Config}
+ * @type {import('robo.js').Config}
  **/
 export default {
 	// ...rest of config

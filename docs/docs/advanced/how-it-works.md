@@ -10,7 +10,7 @@ _You don't need to understand this to use Robo.js,_ but it's helpful to know wha
 
 ## The Installed Package
 
-The core of Robo.js divides into two components: the **CLI** and the **Runtime**. When you install `@roboplay/robo.js`, these are added to your `node_modules`.
+The core of Robo.js divides into two components: the **CLI** and the **Runtime**. When you install `robo.js`, these are added to your `node_modules`.
 
 ### CLI
 
