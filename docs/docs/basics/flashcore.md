@@ -15,7 +15,7 @@ Stashing the high score:
 <TabItem value="js" label="Javascript">
 
 ```javascript showLineNumbers title="/src/commands/update-score.js" {18}
-import { Flashcore } from '@roboplay/robo.js'
+import { Flashcore } from 'robo.js'
 
 export const config = {
 	options: [
@@ -41,7 +41,7 @@ export default async (interaction) => {
 <TabItem value="ts" label="Typescript">
 
 ```typescript showLineNumbers title="/src/commands/update-score.ts" {19}
-import { Flashcore, type CommandConfig } from '@roboplay/robo.js'
+import { Flashcore, type CommandConfig } from 'robo.js'
 import type { CommandInteraction } from 'discord.js'
 
 export const config: CommandConfig = {
@@ -73,7 +73,7 @@ Fetching the high score:
 <TabItem value="js" label="Javascript">
 
 ```javascript title="/src/commands/get-score.js" showLineNumbers {6}
-import { Flashcore } from '@roboplay/robo.js'
+import { Flashcore } from 'robo.js'
 
 export default async (interaction) => {
 	const userId = interaction.user.id
@@ -87,7 +87,7 @@ export default async (interaction) => {
 <TabItem value="ts" label="Typescript">
 
 ```typescript title="/src/commands/get-score.ts" showLineNumbers {7}
-import { Flashcore } from '@roboplay/robo.js'
+import { Flashcore } from 'robo.js'
 import type { CommandInteraction } from 'discord.js'
 
 export default async (interaction: CommandInteraction) => {
@@ -117,7 +117,7 @@ Here's a command that deletes a user's high score:
 <TabItem value="js" label="Javascript">
 
 ```javascript title="/src/commands/delete-score.js" showLineNumbers {6}
-import { Flashcore } from '@roboplay/robo.js'
+import { Flashcore } from 'robo.js'
 
 export default async (interaction) => {
 	const userId = interaction.user.id
@@ -132,7 +132,7 @@ export default async (interaction) => {
 <TabItem value="ts" label="Typescript">
 
 ```typescript title="/src/commands/delete-score.ts" showLineNumbers {7}
-import { Flashcore } from '@roboplay/robo.js'
+import { Flashcore } from 'robo.js'
 import type { CommandInteraction } from 'discord.js'
 
 export default async (interaction: CommandInteraction) => {
@@ -184,7 +184,7 @@ Here's a command that sends a message to a channel whenever a user's high score 
 <TabItem value="js" label="Javascript">
 
 ```javascript showLineNumbers title="/src/commmands/watch-score.js" {6-8}
-import { Flashcore } from '@roboplay/robo.js'
+import { Flashcore } from 'robo.js'
 
 export default async (interaction) => {
 	const userId = interaction.user.id
@@ -201,7 +201,7 @@ export default async (interaction) => {
 <TabItem value="ts" label="Typescript">
 
 ```typescript showLineNumbers title="/src/commmands/watch-score.ts" {7-9}
-import { Flashcore } from '@roboplay/robo.js'
+import { Flashcore } from 'robo.js'
 import type { CommandInteraction } from 'discord.js'
 
 export default async (interaction: CommandInteraction) => {
@@ -225,7 +225,7 @@ Here's a command that stops watching for changes to a user's high score:
 <TabItem value="js" label="Javascript">
 
 ```javascript showLineNumbers title="/src/commands/stop-watching-score.js" {6}
-import { Flashcore } from '@roboplay/robo.js'
+import { Flashcore } from 'robo.js'
 
 export default async (interaction) => {
 	const userId = interaction.user.id
@@ -240,7 +240,7 @@ export default async (interaction) => {
 <TabItem value="ts" label="Typescript">
 
 ```typescript showLineNumbers title="/src/commands/stop-watching-score.ts" {7}
-import { Flashcore } from '@roboplay/robo.js'
+import { Flashcore } from 'robo.js'
 import type { CommandInteraction } from 'discord.js'
 
 export default async (interaction: CommandInteraction) => {
@@ -280,7 +280,7 @@ Here’s a snippet showing how to set a user's high score in a specific server's
 <TabItem value="js" label="Javascript">
 
 ```javascript showLineNumbers title="/src/commands/update-score.ts" {18-20}
-import { Flashcore } from '@roboplay/robo.js'
+import { Flashcore } from 'robo.js'
 
 export const config = {
 	options: [
@@ -309,7 +309,7 @@ export default async (interaction) => {
 <TabItem value="ts" label="Typescript">
 
 ```typescript showLineNumbers title="/src/commands/update-score.ts" {19-21}
-import { Flashcore, type CommandConfig } from '@roboplay/robo.js'
+import { Flashcore, type CommandConfig } from 'robo.js'
 import type { CommandInteraction } from 'discord.js'
 
 export const config: CommandConfig = {

@@ -13,7 +13,7 @@ Logs created using logger are not only prettified but also offer additional bene
 The logger is available as a global object in your Robo.js project:
 
 ```javascript
-import { logger } from '@roboplay/robo.js'
+import { logger } from 'robo.js'
 
 logger.info('Hello World!')
 ```
@@ -23,7 +23,7 @@ logger.info('Hello World!')
 Create a new Logger instance:
 
 ```javascript
-import { Logger } from '@roboplay/robo.js'
+import { Logger } from 'robo.js'
 
 const customLogger = new Logger()
 ```
@@ -147,7 +147,7 @@ You can set a new log drain using the `setDrain()` function or by specifying it 
 **Method 1: Using `setDrain()` Function**
 
 ```javascript
-import { logger } from '@roboplay/robo.js'
+import { logger } from 'robo.js'
 
 function customDrain(logger, level, ...data) {
 	// Your custom drain logic
@@ -159,7 +159,7 @@ logger.setDrain(customDrain)
 **Method 2: Specifying in the Logger Constructor**
 
 ```javascript
-import { Logger } from '@roboplay/robo.js'
+import { Logger } from 'robo.js'
 
 const logger = new Logger({
 	drain: customDrain
