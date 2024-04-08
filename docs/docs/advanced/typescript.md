@@ -47,7 +47,7 @@ Here's an example `tsconfig.json` file to get you started:
 Robo.js was born and raised with TypeScript, so it's got native support for all those types. You'll run into common ones like `CommandConfig`, `EventConfig`, `CommandResult`, and `Config`, along with more advanced types like `Plugin` and `Manifest`. Check out this code example of an async Robo command with a custom export config object:
 
 ```typescript title="/src/commands/command.ts" {1} showLineNumbers
-import { CommandConfig, CommandResult } from 'robo.js'
+import { CommandConfig, CommandResult } from '@roboplay/robo.js'
 
 export const config: CommandConfig = {
 	description: 'An async example command'
@@ -86,7 +86,7 @@ Here's an example of a config file with the GPT plugin:
 ```javascript showLineNumbers {3} {11} title="config/robo.mjs"
 // @ts-check
 
-/** @type {import('robo.js').Plugin} */
+/** @type {import('@roboplay/robo.js').Plugin} */
 const gptPlugin = [
 	'@roboplay/gpt',
 	{
@@ -94,7 +94,7 @@ const gptPlugin = [
 	}
 ]
 
-/** @type {import('robo.js').Config} */
+/** @type {import('@roboplay/robo.js').Config} */
 export default {
 	// Your config options...
 	plugins: [gptPlugin]

@@ -1,4 +1,4 @@
-import { logger } from 'robo.js'
+import { logger } from '@roboplay/robo.js'
 import { db } from '../../events/_start.js'
 import type { RoboRequest } from '@roboplay/plugin-api'
 

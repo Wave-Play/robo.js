@@ -1,6 +1,6 @@
 import { Modals, TextInputs } from './constants.js'
 import { getSettings } from './settings.js'
-import { client, logger, setState } from 'robo.js'
+import { client, logger, setState } from '@roboplay/robo.js'
 import { ChannelType, ComponentType, TextInputStyle } from 'discord.js'
 import type {
 	MessageCreateOptions,

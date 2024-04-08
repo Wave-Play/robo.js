@@ -1,4 +1,4 @@
-import type { CommandConfig } from 'robo.js'
+import type { CommandConfig } from '@roboplay/robo.js'
 
 export const config: CommandConfig = {
 	description: 'Replies with Pong!'

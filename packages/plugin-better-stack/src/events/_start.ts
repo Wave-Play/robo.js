@@ -1,5 +1,5 @@
 import { createLogtailDrain } from '../core/drain.js'
-import { logger } from 'robo.js'
+import { logger } from '@roboplay/robo.js'
 import type { Client } from 'discord.js'
 
 interface PluginConfig {

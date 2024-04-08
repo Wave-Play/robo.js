@@ -1,4 +1,4 @@
-import { Flashcore } from 'robo.js'
+import { Flashcore } from '@roboplay/robo.js'
 import {
 	DEFAULT_EXCLUDE_COMMANDS,
 	DEFAULT_EXCLUDE_CONTEXTS,

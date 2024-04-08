@@ -83,7 +83,7 @@ export default () => {
 <TabItem value="ts" label="Typescript">
 
 ```typescript title="commands/ping.ts"
-import type { CommandConfig } from 'robo.js'
+import type { CommandConfig } from '@roboplay/robo.js'
 
 export default (): CommandResult => {
 	return 'Pong!'

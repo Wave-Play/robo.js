@@ -1,7 +1,7 @@
 import { hasPermission } from '../core/utils.js'
 import { getSettings } from '../core/settings.js'
-import { logger } from 'robo.js'
-import type { MiddlewareData, MiddlewareResult } from 'robo.js'
+import { logger } from '@roboplay/robo.js'
+import type { MiddlewareData, MiddlewareResult } from '@roboplay/robo.js'
 import type { ChatInputCommandInteraction } from 'discord.js'
 
 interface LockdownData {

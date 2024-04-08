@@ -69,7 +69,7 @@ Create a drain directly within the primary config file, `robo.mjs`. This method 
 import { createLogtailDrain } from '@roboplay/plugin-better-stack'
 
 /**
- * @type {import('robo.js').Config}
+ * @type {import('@roboplay/robo.js').Config}
  **/
 export default {
 	// ... other configurations

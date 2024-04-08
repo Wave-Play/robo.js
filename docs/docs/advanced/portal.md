@@ -9,7 +9,7 @@ Ever wondered what it'd be like to flick a switch and make a module disappear? W
 Here's the magic spell to disable a module:
 
 ```javascript showLineNumbers
-import { portal } from 'robo.js'
+import { portal } from '@roboplay/robo.js'
 
 // Poof! The 'admin' module is gone
 portal.module('admin').setEnabled(false)

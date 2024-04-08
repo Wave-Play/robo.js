@@ -1,5 +1,5 @@
 import { excludeCommands, excludeContexts, excludeEvents, maintenanceEnabled, maintenanceMessage } from '../core/config.js'
-import type { MiddlewareData, MiddlewareResult } from 'robo.js'
+import type { MiddlewareData, MiddlewareResult } from '@roboplay/robo.js'
 import type { CommandInteraction, ContextMenuCommandInteraction } from 'discord.js'
 
 export default async (data: MiddlewareData): Promise<MiddlewareResult | void> => {

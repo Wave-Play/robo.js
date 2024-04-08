@@ -20,7 +20,7 @@ Here's an example implementation of a configuration file:
 // @ts-check
 
 /**
- * @type {import('robo.js').Config}
+ * @type {import('@roboplay/robo.js').Config}
  **/
 export default {
 	clientOptions: {

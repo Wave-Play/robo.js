@@ -63,7 +63,7 @@ async function exportAction(modules: string[], options: ExportOptions) {
 		hasPrettier: !!packageJson.devDependencies['prettier'],
 		hasTypescript: !!packageJson.devDependencies['typescript'],
 		hasWorkspaces: !!packageJson.workspaces,
-		roboversion: packageJson.dependencies['robo.js']
+		roboversion: packageJson.dependencies['@roboplay/robo.js']
 	}
 
 	const results: unknown[] = []

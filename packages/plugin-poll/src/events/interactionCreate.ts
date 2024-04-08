@@ -1,4 +1,4 @@
-import { logger } from 'robo.js'
+import { logger } from '@roboplay/robo.js'
 import { ID_PREFIX, polls, updatePoll } from '../core/data.js'
 import type { ButtonInteraction } from 'discord.js'
 

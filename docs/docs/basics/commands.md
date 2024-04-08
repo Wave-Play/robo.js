@@ -32,7 +32,7 @@ export default () => {
 <TabItem value="ts" label="Typescript">
 
 ```typescript title="commands/ping.ts"
-import type { CommandResult } from 'robo.js'
+import type { CommandResult } from '@roboplay/robo.js'
 
 export default (): CommandResult => {
 	return 'Pong!'
@@ -102,7 +102,7 @@ export const config = {
 For TypeScript users, you can add typings for both the `config` object and the command result.
 
 ```typescript title="commands/ping.ts"
-import type { CommandConfig, CommandResult } from 'robo.js'
+import type { CommandConfig, CommandResult } from '@roboplay/robo.js'
 
 export const config: CommandConfig = {
 	description: 'Responds with Pong!'
@@ -144,7 +144,7 @@ export default (interaction) => {
 <TabItem value="ts" label="Typescript">
 
 ```javascript title="commands/ping.ts" {6-12} showLineNumbers
-import type { CommandConfig, CommandResult } from 'robo.js'
+import type { CommandConfig, CommandResult } from '@roboplay/robo.js'
 import type { CommandInteraction } from 'discord.js'
 
 export const config: CommandConfig = {
@@ -238,7 +238,7 @@ export default (interaction) => {
 <TabItem value="ts" label="Typescript">
 
 ```javascript showLineNumbers title="commands/choosa-a-color.ts" {18-22}
-import type { CommandConfig, CommandResult } from 'robo.js'
+import type { CommandConfig, CommandResult } from '@roboplay/robo.js'
 import type { CommandInteraction, AutocompleteInteraction } from 'discord.js'
 
 export const config: CommandConfig = {

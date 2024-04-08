@@ -16,7 +16,7 @@ Next, add the plugin to your Robo's configuration file, typically located at `.c
 
 ```javascript
 /**
- * @type {import('robo.js').Plugin}
+ * @type {import('@roboplay/robo.js').Plugin}
  **/
 const roboplayPluginMaintenance = [
 	'@roboplay/plugin-maintenance',
@@ -26,7 +26,7 @@ const roboplayPluginMaintenance = [
 ]
 
 /**
- * @type {import('robo.js').Config}
+ * @type {import('@roboplay/robo.js').Config}
  **/
 export default {
 	// ... rest of your configuration

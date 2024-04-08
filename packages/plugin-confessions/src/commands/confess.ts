@@ -1,9 +1,9 @@
 // imports
 import { FLASHCORE_KEY } from '../core/config.js'
-import { type CommandConfig } from 'robo.js'
+import { type CommandConfig } from '@roboplay/robo.js'
 import { EmbedBuilder, type CommandInteraction, type TextChannel } from 'discord.js'
 import badwordsFilter from 'bad-words'
-import { getState } from 'robo.js'
+import { getState } from '@roboplay/robo.js'
 
 export const config: CommandConfig = {
 	description: 'Ready to confess something? Share it with the guild!',

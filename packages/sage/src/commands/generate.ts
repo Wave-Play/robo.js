@@ -1,10 +1,10 @@
 import { Command } from 'commander'
 import { writeFile } from 'node:fs/promises'
 import { logger } from '../core/logger.js'
-import type { Manifest, CommandEntry, ContextEntry, EventConfig, CommandOption } from 'robo.js'
+import type { Manifest, CommandEntry, ContextEntry, EventConfig, CommandOption } from '@roboplay/robo.js'
 import path from 'node:path'
 // @ts-expect-error - Internal module
-import { loadManifest } from 'robo.js/dist/cli/utils/manifest.js'
+import { loadManifest } from '@roboplay/robo.js/dist/cli/utils/manifest.js'
 
 const command = new Command('generate')
 command.command('docs').description('generates a basic doc file for the project').action(generateDocAction)
