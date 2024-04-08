@@ -84,7 +84,7 @@ Crafting something unique in your Robo project? You can turn your innovations in
 
 ## Deployment 🚀
 
-Run the `robo deploy` command to automatically deploy to **[RoboPlay](https://roboplay.dev)** for free once you're ready to keep your robo online 24/7.
+Run the `robo deploy` command to automatically deploy to **[RoboPlay](https://roboplay.dev)** once you're ready to keep your robo online 24/7.
 
 ```bash
 npx robo deploy
