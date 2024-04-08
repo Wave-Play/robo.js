@@ -16,7 +16,7 @@ export const Space = ' '.repeat(8)
 
 export const IS_WINDOWS = /^win/.test(process.platform)
 
-export const PRETTIER_CONFIG = `module.exports = {
+export const PRETTIER_CONFIG = `export default {
 	printWidth: 120,
 	semi: false,
 	singleQuote: true,

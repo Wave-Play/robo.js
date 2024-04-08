@@ -650,8 +650,8 @@ export default class Robo {
 				this._packageJson.scripts['lint'] += ' && ' + runPrefix + 'lint:style'
 			}
 
-			// Create the prettier.config.js file
-			await fs.writeFile(path.join(this._workingDir, 'prettier.config.mjs'), PRETTIER_CONFIG)
+			// Create the .prettierrc.mjs file
+			await fs.writeFile(path.join(this._workingDir, '.prettierrc.mjs'), PRETTIER_CONFIG)
 		}
 
 		if (features.includes('extensionless')) {
