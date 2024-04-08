@@ -169,7 +169,7 @@ const PluginDb: Record<string, PluginData> = {
 	},
 	maintenance: {
 		keywords: ['maintenance'],
-		package: '@roboplay/plugin-maintenance'
+		package: '@robojs/maintenance'
 	},
 	modtools: {
 		keywords: ['moderation', 'moderator'],
