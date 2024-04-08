@@ -69,10 +69,10 @@ The `.env` file contains your `DISCORD_TOKEN` and `DISCORD_CLIENT_ID`. Keep thes
 This Robo boasts an intuitive plugin system that grants new capabilities instantly!
 
 ```bash
-npx robo add @roboplay/plugin-ai
+npx robo add @robojs/ai
 ```
 
-> Swap out [`@roboplay/plugin-ai`](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-ai) with your chosen plugin's package name
+> Swap out [`@robojs/ai`](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-ai) with your chosen plugin's package name
 
 With that, your Robo automatically equips itself with all the features the plugin offers. Want to revert? Simply use [`robo remove`](https://docs.roboplay.dev/docs/advanced/command-line#plugins) to uninstall any plugin.
 
