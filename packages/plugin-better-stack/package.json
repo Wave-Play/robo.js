@@ -1,5 +1,5 @@
 {
-	"name": "@roboplay/plugin-better-stack",
+	"name": "@robojs/better-stack",
 	"description": "",
 	"version": "0.1.0",
 	"type": "module",
