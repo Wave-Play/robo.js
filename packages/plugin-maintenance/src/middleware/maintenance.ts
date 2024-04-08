@@ -5,7 +5,7 @@ import type { CommandInteraction, ContextMenuCommandInteraction } from 'discord.
 export default async (data: MiddlewareData): Promise<MiddlewareResult | void> => {
 	const { auto, key, plugin, type } = data.record
 	const isRoboDefault = !plugin && auto
-	const isSelfPlugin = plugin?.name === '@roboplay/plugin-maintenance'
+	const isSelfPlugin = plugin?.name === '@robojs/maintenance'
 
 	// Abort if maintenance mode is disabled
 	if (maintenanceEnabled && !isRoboDefault && !isSelfPlugin) {
