@@ -1,4 +1,4 @@
-import type { CommandConfig } from '@roboplay/robo.js/types'
+import type { CommandConfig } from 'robo.js/types'
 import type { CommandInteraction } from 'discord.js'
 
 export const config: CommandConfig = {

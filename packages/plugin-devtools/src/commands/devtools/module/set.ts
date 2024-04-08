@@ -1,5 +1,5 @@
-import { portal } from '@roboplay/robo.js'
-import type { CommandConfig } from '@roboplay/robo.js'
+import { portal } from 'robo.js'
+import type { CommandConfig } from 'robo.js'
 import type { CommandInteraction } from 'discord.js'
 
 export const config: CommandConfig = {
