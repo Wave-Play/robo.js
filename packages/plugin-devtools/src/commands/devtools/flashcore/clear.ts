@@ -1,7 +1,7 @@
 import { logger } from '../../../core/helpers.js'
 import { Colors } from 'discord.js'
-import { Flashcore } from '@roboplay/robo.js'
-import type { CommandResult } from '@roboplay/robo.js'
+import { Flashcore } from 'robo.js'
+import type { CommandResult } from 'robo.js'
 
 export default async (): Promise<CommandResult> => {
 	// Clear all values (and time it)
