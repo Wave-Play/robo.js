@@ -173,7 +173,7 @@ const PluginDb: Record<string, PluginData> = {
 	},
 	modtools: {
 		keywords: ['moderation', 'moderator'],
-		package: '@roboplay/plugin-modtools'
+		package: '@robojs/moderation'
 	}
 }
 
