@@ -1,8 +1,8 @@
 import { BanData, Buttons, ID_NAMESPACE } from '../../core/constants.js'
 import { isBanned } from '../../core/utils.js'
-import { Flashcore } from '@roboplay/robo.js'
+import { Flashcore } from 'robo.js'
 import { ButtonStyle, Colors, ComponentType, PermissionFlagsBits } from 'discord.js'
-import type { CommandConfig, CommandResult } from '@roboplay/robo.js'
+import type { CommandConfig, CommandResult } from 'robo.js'
 import type { APIEmbed, CommandInteraction, Guild, GuildMember, User } from 'discord.js'
 
 export const config: CommandConfig = {

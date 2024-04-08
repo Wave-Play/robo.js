@@ -2,9 +2,9 @@ import { createSetupMessage } from '../../commands/mod/setup.js'
 import { Selects } from '../../core/constants.js'
 import { updateSettings } from '../../core/settings.js'
 import { hasPermission, logAction } from '../../core/utils.js'
-import { logger } from '@roboplay/robo.js'
+import { logger } from 'robo.js'
 import { ChannelType, Colors } from 'discord.js'
-import type { EventConfig } from '@roboplay/robo.js'
+import type { EventConfig } from 'robo.js'
 import type { Channel, ChannelSelectMenuInteraction } from 'discord.js'
 
 export const config: EventConfig = {

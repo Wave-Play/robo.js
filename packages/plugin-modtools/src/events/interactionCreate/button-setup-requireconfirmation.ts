@@ -2,9 +2,9 @@ import { Buttons } from '../../core/constants.js'
 import { getSettings, updateSettings } from '../../core/settings.js'
 import { hasPermission, logAction } from '../../core/utils.js'
 import { createSetupMessage } from '../../commands/mod/setup.js'
-import { logger } from '@roboplay/robo.js'
+import { logger } from 'robo.js'
 import { Colors } from 'discord.js'
-import type { EventConfig } from '@roboplay/robo.js'
+import type { EventConfig } from 'robo.js'
 import type { ButtonInteraction } from 'discord.js'
 
 export const config: EventConfig = {

@@ -1,8 +1,8 @@
 import { getSettings } from '../../core/settings.js'
 import { logAction } from '../../core/utils.js'
-import { logger } from '@roboplay/robo.js'
+import { logger } from 'robo.js'
 import { ChannelType, Colors } from 'discord.js'
-import type { CommandConfig, CommandResult } from '@roboplay/robo.js'
+import type { CommandConfig, CommandResult } from 'robo.js'
 import type { CommandInteraction, GuildMember } from 'discord.js'
 
 export const config: CommandConfig = {

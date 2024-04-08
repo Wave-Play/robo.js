@@ -1,9 +1,9 @@
 import { createAuditEmbed } from '../../commands/mod/audit.js'
 import { hasPermission, isBanned } from '../../core/utils.js'
 import { ID_NAMESPACE, BanData, Buttons } from '../../core/constants.js'
-import { Flashcore, logger } from '@roboplay/robo.js'
+import { Flashcore, logger } from 'robo.js'
 import { ButtonStyle, ComponentType } from 'discord.js'
-import type { ContextConfig } from '@roboplay/robo.js'
+import type { ContextConfig } from 'robo.js'
 import type { Guild, GuildMember, User, UserContextMenuCommandInteraction } from 'discord.js'
 
 export const config: ContextConfig = {

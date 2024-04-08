@@ -1,4 +1,4 @@
-import { getState, logger, setState } from '@roboplay/robo.js'
+import { getState, logger, setState } from 'robo.js'
 import { ID_NAMESPACE } from './constants.js'
 
 export interface GuildSettings {

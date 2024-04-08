@@ -2,8 +2,8 @@ import { Buttons, Selects } from '../../core/constants.js'
 import { GuildSettings, getSettings } from '../../core/settings.js'
 import { hasPermission } from '../../core/utils.js'
 import { ButtonStyle, ChannelType, ComponentType, PermissionFlagsBits } from 'discord.js'
-import { color, logger } from '@roboplay/robo.js'
-import type { CommandConfig, CommandResult } from '@roboplay/robo.js'
+import { color, logger } from 'robo.js'
+import type { CommandConfig, CommandResult } from 'robo.js'
 import type {
 	BaseInteraction,
 	ChatInputCommandInteraction,

@@ -65,10 +65,10 @@ Once you add the plugin, run the `/mod setup` command as a moderator to configur
 
 > *"**@SageBot** please ban **@Baguette** for spamming bread"*
 
-Integrate with [`@roboplay/plugin-ai`](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-ai) to experience the next level of moderation. Use natural language for commands and watch your Robo execute them with AI's understanding.
+Integrate with [`@robojs/ai`](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-ai) to experience the next level of moderation. Use natural language for commands and watch your Robo execute them with AI's understanding.
 
 ```bash
-npx robo add @roboplay/plugin-ai
+npx robo add @robojs/ai
 ```
 
 ## Starting Your Robo.js Journey
