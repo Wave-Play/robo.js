@@ -53,7 +53,10 @@ export default {
 		disableBot: true
 	},
 	plugins: [],
-	type: 'robo'
+	type: 'robo',
+	watcher: {
+		ignore: ['src/app']
+	}
 }\n`
 
 export function cmd(packageManager: string): string {
