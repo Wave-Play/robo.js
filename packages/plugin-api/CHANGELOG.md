@@ -1,5 +1,12 @@
 # @roboplay/plugin-api
 
+## 0.4.2
+
+### Patch Changes
+
+- a088ae9: patch: support for vite's hmr and websockets
+- 5136afe: patch: fastify engine support for vite websockets
+
 ## 0.4.1
 
 ### Patch Changes
