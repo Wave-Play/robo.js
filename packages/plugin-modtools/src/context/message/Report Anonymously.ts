@@ -1,8 +1,8 @@
 import { getSettings } from '../../core/settings.js'
 import { Modals, TextInputs } from '../../core/constants.js'
-import { logger, setState } from '@roboplay/robo.js'
+import { logger, setState } from 'robo.js'
 import { ChannelType, Colors, ComponentType, TextInputStyle } from 'discord.js'
-import type { ContextConfig } from '@roboplay/robo.js'
+import type { ContextConfig } from 'robo.js'
 import type { MessageContextMenuCommandInteraction, Message } from 'discord.js'
 
 export const config: ContextConfig = {
