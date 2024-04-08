@@ -3,6 +3,7 @@ import chalk from 'chalk'
 import { logger } from 'robo.js'
 import type { SpawnOptions } from 'node:child_process'
 import type { Logger } from 'robo.js'
+import path from 'node:path'
 
 type PackageManager = 'npm' | 'bun' | 'pnpm' | 'yarn'
 
@@ -42,7 +43,6 @@ export default {
 	type: 'robo'
 }\n`
 
-
 export const ROBO_CONFIG_APP = `// @ts-check
 
 /**
@@ -55,7 +55,7 @@ export default {
 	plugins: [],
 	type: 'robo',
 	watcher: {
-		ignore: ['src/app']
+		ignore: ['src${path.sep}app']
 	}
 }\n`
 
@@ -201,6 +201,6 @@ export function updateOrAddVariable(content: string, variable: string, value: st
 	//	return content.replace(regex, `$1${value}`)
 	//} else {
 	//	logger.info(`Adding new ${variable} value:`, value)
-		return `${content}${variable}="${value}"\n`
+	return `${content}${variable}="${value}"\n`
 	//}
 }

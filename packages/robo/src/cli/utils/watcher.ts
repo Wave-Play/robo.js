@@ -74,6 +74,8 @@ export default class Watcher {
 	private async watchPath(targetPath: string, options: Options, callback: Callback) {
 		const stats = await fs.lstat(targetPath)
 
+		if (options.exclude.includes(targetPath)) return
+
 		if (stats.isFile()) {
 			// If a file, start watching the file.
 			this.watchFile(targetPath, callback)
