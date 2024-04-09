@@ -4,9 +4,11 @@
 
 # Hiya, {{projectName}} 🌈
 
-Welcome to your fresh **[Robo.js](https://github.com/Wave-Play/robo)** project! A Node framework for Discord.js bots, Robo.js handles boilerplate, automates command registration, simplifies Typescript support, and boasts "Sage" for easy interactions. Empowered by a dynamic plugin system, your robo thrives on RoboPlay or any Node-supporting host.
+Welcome to your fresh **[Robo.js](https://github.com/Wave-Play/robo)** project!
 
-Let's get started on your journey to create the perfect Discord bot!
+Embark on a journey where your Discord projects transcend the ordinary. With Robo.js as your guide, you'll experience a seamless, [file-based setup](https://docs.roboplay.dev/docs/basics/overview#the-robojs-file-structure), an [integrated database](https://docs.roboplay.dev/docs/basics/flashcore), [TypeScript support](https://docs.roboplay.dev/docs/advanced/typescript), and a multitude of [plugin-powered skills](https://docs.roboplay.dev/docs/advanced/plugins) to unlock along the way.
+
+Ready to embark on this adventure?
 
 ➞ [📚 **Documentation:** Getting started](https://docs.roboplay.dev/docs/getting-started)
 
@@ -14,19 +16,15 @@ Let's get started on your journey to create the perfect Discord bot!
 
 ## Running 🏃‍♂️
 
-To run your Robo, simply use the following command:
+Run your Robo in development mode with:
 
 ```bash
-npx robo dev
+npm run dev
 ```
 
-No need to re-run when you make changes. Your Robo will automatically restart! 🔄
+Your Robo auto-restarts with every change. 🔄
 
-Ready to deploy and keep your Robo online at all times? It's as simple as:
-
-```bash
-npx robo deploy
-```
+Check out the [deployment instructions](#deployment) to keep your Robo online 24/7.
 
 ## Developing 🏗️
 
@@ -84,25 +82,25 @@ Crafting something unique in your Robo project? You can turn your innovations in
 
 ## Deployment 🚀
 
-Run the `robo deploy` command to automatically deploy to **[RoboPlay](https://roboplay.dev)** once you're ready to keep your robo online 24/7.
+Run the `deploy` command to automatically deploy to **[RoboPlay](https://roboplay.dev)** once you're ready to keep your robo online 24/7.
 
 ```bash
-npx robo deploy
+npm run deploy
 ```
 
 **➞** [🚀 **RoboPlay:** Hosting your Robo](https://docs.roboplay.dev/docs/hosting)
 
-You can also self-host your robo anywhere that supports Node. Just make sure to run `robo build` followed by `npm start` (alias for `robo start` here):
+You can also self-host your robo anywhere that supports Node. Just make sure to run `build` followed by `start`:
 
 ```bash
-npx robo build
+npm run build
 npm start
 ```
 
-You can also run `robo invite` (beta) to automatically generate a server invite to test it yourself or show it off! You can also use the **[Discord Developer Portal](https://discord.com/developers/applications)** to generate an invite as usual.
+You can also run `invite` (beta) to automatically generate a server invite to test it yourself or show it off! You can also use the **[Discord Developer Portal](https://discord.com/developers/applications)** to generate an invite as usual.
 
 ```bash
-npx robo invite
+npm run invite
 ```
 
 Happy coding! 🎉
