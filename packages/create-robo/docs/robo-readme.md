@@ -16,15 +16,15 @@ Ready to embark on this adventure?
 
 ## Running 🏃‍♂️
 
-Run your Robo in development mode with:
+Run development mode with:
 
 ```bash
 npm run dev
 ```
 
-Your Robo auto-restarts with every change. 🔄
+Your Robo refreshes with every change. 🔄
 
-Check out the [deployment instructions](#deployment) to keep your Robo online 24/7.
+> **Psst...** Check out the [deployment instructions](#deployment) to keep your Robo online 24/7.
 
 ## Developing 🏗️
 

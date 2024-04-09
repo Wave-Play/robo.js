@@ -589,7 +589,8 @@ export default class Robo {
 			await fs.writeFile(path.join(this._workingDir, 'DEVELOPMENT.md'), customDevelopment)
 		} else {
 			logger.debug(`Generating Robo documentation...`)
-			const readme = await fs.readFile(path.join(__dirname, '../docs/robo-readme.md'), 'utf-8')
+			const fileName = this._isApp ? 'robo-readme-app.md' : 'robo-readme.md'
+			const readme = await fs.readFile(path.join(__dirname, '../docs/' + fileName), 'utf-8')
 			const customReadme = readme.replaceAll('{{projectName}}', this._name)
 			await fs.writeFile(path.join(this._workingDir, 'README.md'), customReadme)
 		}
