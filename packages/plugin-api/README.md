@@ -1,6 +1,6 @@
 # API Plugin Documentation
 
-Elevate your Robo.js project with `@roboplay/plugin-api`, a powerful plugin that provides an effortless way to create and manage web routes. This guide will walk you through the essentials of setting up and using the API plugin.
+Elevate your Robo.js project with `@robojs/server`, a powerful plugin that provides an effortless way to create and manage web routes. This guide will walk you through the essentials of setting up and using the API plugin.
 
 > **Heads up!** RoboPlay Pods are currently optimized for bots and do not support API servers. This will be supported in the coming weeks.
 
@@ -9,13 +9,13 @@ Elevate your Robo.js project with `@roboplay/plugin-api`, a powerful plugin that
 To add this plugin to your Robo.js project:
 
 ```bash
-npx robo add @roboplay/plugin-api
+npx robo add @robojs/server
 ```
 
 New to Robo.js? Start your project with this plugin pre-installed:
 
 ```bash
-npx create-robo <project-name> -p @roboplay/plugin-api
+npx create-robo <project-name> -p @robojs/server
 ```
 
 ## Getting Started
@@ -85,6 +85,40 @@ If you need to manually send a response, use the `reply` object. This object pro
 
 Don't want to use Robo's wrappers? Access the raw request and response objects using `request.req` and `reply.res`.
 
+### Throwable Responses
+
+Did you know that throwing an error in your route function will automatically send a response with the error message? This is a handy way to handle errors in your API routes.
+
+```javascript
+export default (request, reply) => {
+	if (!request.query.key) {
+		throw new Error('API key is required')
+	}
+
+	// ... perform some action with the key
+
+	return { message: 'Success!' }
+}
+```
+
+What's more, you can customize the response by throwing a `RoboResponse` object. This object allows you to set the status code, headers, and body of the response.
+
+```javascript
+export default (request, reply) => {
+	if (!request.query.key) {
+		throw new RoboResponse({
+			statusCode: 401,
+			headers: { 'WWW-Authenticate': 'Bearer' },
+			body: 'Unauthorized'
+		})
+	}
+
+	// ... perform some action with the key
+
+	return { message: 'Success!' }
+}
+```
+
 ### API Reference
 
 Here's a detailed breakdown of the methods and properties available in the `request` and `reply` objects, along with their TypeScript types:
@@ -112,7 +146,7 @@ Here's a detailed breakdown of the methods and properties available in the `requ
 These types can be imported from the plugin's package for enhanced TypeScript support.
 
 ```ts
-import type { RoboRequest, RoboReply } from '@roboplay/plugin-api'
+import type { RoboRequest, RoboReply } from '@robojs/server'
 ```
 
 ## Plugin Configuration
@@ -127,7 +161,7 @@ Customize your API plugin using these config fields:
 
 Example:
 
-```typescript title="config/plugins/roboplay/plugin-api.mjs"
+```typescript title="config/plugins/robojs/server.mjs"
 export default {
 	port: 5000, // Custom port
 	prefix: false, // Disable the '/api' prefix
