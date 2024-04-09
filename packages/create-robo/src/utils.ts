@@ -55,7 +55,7 @@ export default {
 	plugins: [],
 	type: 'robo',
 	watcher: {
-		ignore: ['src${path.sep}app']
+		ignore: ['src${IS_WINDOWS ? '\\\\' : '/'}app']
 	}
 }\n`
 
