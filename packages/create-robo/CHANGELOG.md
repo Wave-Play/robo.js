@@ -1,5 +1,11 @@
 # create-robo
 
+## 0.11.7
+
+### Patch Changes
+
+- 4862c10: Fixed path separator for Windows platform.
+
 ## 0.11.6
 
 ### Patch Changes
