@@ -1,5 +1,16 @@
 # create-robo
 
+## 0.11.6
+
+### Patch Changes
+
+- 61c0732: chore: updated javascript react template
+- d4dc884: chore: updated typescript react template
+- 2a65360: chore: separate readme for app kit
+- Updated dependencies [ce470a7]
+- Updated dependencies [e610a59]
+  - robo.js@0.10.3
+
 ## 0.11.5
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # @roboplay/plugin-better-stack
 
+## 0.2.1
+
+### Patch Changes
+
+- f539436: chore: bump
+- Updated dependencies [ce470a7]
+- Updated dependencies [e610a59]
+  - robo.js@0.10.3
+
 ## 0.2.0
 
 ### Minor Changes

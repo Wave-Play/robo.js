@@ -1,7 +1,7 @@
 {
 	"name": "@robojs/maintenance",
 	"description": "",
-	"version": "0.3.0",
+	"version": "0.3.1",
 	"private": false,
 	"type": "module",
 	"license": "MIT",
@@ -36,7 +36,7 @@
 		"typescript": "^5.0.0"
 	},
 	"peerDependencies": {
-		"robo.js": "^0.10.2"
+		"robo.js": "^0.10.3"
 	},
 	"peerDependenciesMeta": {
 		"robo.js": {
