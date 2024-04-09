@@ -1,7 +1,7 @@
 {
 	"name": "@robojs/better-stack",
 	"description": "",
-	"version": "0.2.0",
+	"version": "0.2.1",
 	"type": "module",
 	"private": false,
 	"main": ".robo/build/index.js",
@@ -40,7 +40,7 @@
 		"typescript": "^5.0.0"
 	},
 	"peerDependencies": {
-		"robo.js": "^0.10.2"
+		"robo.js": "^0.10.3"
 	},
 	"peerDependenciesMeta": {
 		"robo.js": {

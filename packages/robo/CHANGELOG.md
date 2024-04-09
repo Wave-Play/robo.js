@@ -1,5 +1,12 @@
 # robo.js
 
+## 0.10.3
+
+### Patch Changes
+
+- ce470a7: patch(cli): use command wrapper on windows `robox`
+- e610a59: patch(cli): watcher should honor excluded paths
+
 ## 0.10.2
 
 ### Patch Changes
