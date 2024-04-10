@@ -1,5 +1,11 @@
 # @roboplay/sage
 
+## 0.5.1
+
+### Patch Changes
+
+- 9d31b15: fix(upgrade): use correct robo package.json
+
 ## 0.5.0
 
 ### Minor Changes
