@@ -1,5 +1,17 @@
 # @roboplay/sage
 
+## 0.5.0
+
+### Minor Changes
+
+- 9cc0489: refactor!: replaced `inquirer` with `@inquirer/prompts`
+- 3940de7: refactor!: use new `robo.js` package name
+
+### Patch Changes
+
+- Updated dependencies [7f73414]
+  - robo.js@0.10.4
+
 ## 0.4.1
 
 ### Patch Changes
