@@ -47,10 +47,10 @@
 		"sage": "dist/index.js"
 	},
 	"dependencies": {
-		"@roboplay/robo.js": "0.9.5",
 		"commander": "10.0.0",
 		"depcheck": "^1.4.7",
 		"inquirer": "^9.2.0",
+		"robo.js": "workspace:*",
 		"tar": "^6.1.13"
 	},
 	"devDependencies": {

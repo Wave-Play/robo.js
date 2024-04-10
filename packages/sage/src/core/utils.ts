@@ -5,9 +5,9 @@ import { promisify } from 'node:util'
 import { readFile } from 'node:fs/promises'
 import { logger } from './logger.js'
 import { color } from './color.js'
-import { FLASHCORE_KEYS } from '@roboplay/robo.js/dist/core/constants.js'
+import { FLASHCORE_KEYS } from 'robo.js/dist/core/constants.js'
 import { spawn } from 'node:child_process'
-import { Config, Flashcore } from '@roboplay/robo.js'
+import { Config, Flashcore } from 'robo.js'
 import { packageJson } from '../index.js'
 import inquirer from 'inquirer'
 import type { SpawnOptions } from 'node:child_process'
@@ -206,14 +206,14 @@ export function getPackageExecutor(): string {
 }
 
 /**
- * Make sure that the working directory is a Robo project by checking for @roboplay/robo.js in package.json
+ * Make sure that the working directory is a Robo project by checking for robo.js in package.json
  */
 export async function isRoboProject(project = process.cwd()): Promise<boolean> {
 	try {
 		const packageJsonPath = path.join(project, 'package.json')
 		const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf-8'))
 
-		return packageJson.dependencies['@roboplay/robo.js'] || packageJson.devDependencies['@roboplay/robo.js']
+		return packageJson.dependencies['robo.js'] || packageJson.devDependencies['robo.js']
 	} catch (e) {
 		logger.debug(`Not a Robo project:`, e)
 		return false
