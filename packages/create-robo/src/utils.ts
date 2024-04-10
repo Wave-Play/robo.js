@@ -3,7 +3,6 @@ import chalk from 'chalk'
 import { logger } from 'robo.js'
 import type { SpawnOptions } from 'node:child_process'
 import type { Logger } from 'robo.js'
-import path from 'node:path'
 
 type PackageManager = 'npm' | 'bun' | 'pnpm' | 'yarn'
 
