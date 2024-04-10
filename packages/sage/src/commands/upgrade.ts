@@ -1,4 +1,5 @@
-import { packageJson } from 'robo.js/dist/cli/utils/utils.js'
+import { PackageJson } from './../core/types.js'
+import { findPackagePath } from 'robo.js/dist/cli/utils/utils.js'
 import { Command } from 'commander'
 import { logger } from '../core/logger.js'
 import { checkSageUpdates, checkUpdates, cmd, exec, getPackageManager } from '../core/utils.js'
@@ -8,6 +9,7 @@ import { color, composeColors } from '../core/color.js'
 import fs from 'node:fs'
 import path from 'node:path'
 import { checkbox, select, Separator } from '@inquirer/prompts'
+import { readFile } from 'node:fs/promises'
 
 const command = new Command('upgrade')
 	.description('Upgrades your Robo to the latest version')
@@ -27,6 +29,7 @@ interface UpgradeOptions {
 
 // TODO:
 // - Auto accept option for ci
+// - Upgrade plugins as well
 async function upgradeAction(options: UpgradeOptions) {
 	// Create a logger
 	logger({
@@ -44,6 +47,10 @@ async function upgradeAction(options: UpgradeOptions) {
 	await prepareFlashcore()
 
 	// Check NPM registry for updates
+	const packageJsonPath = path.join(await findPackagePath('robo.js', process.cwd()), 'package.json')
+	logger.debug(`Package JSON path:`, packageJsonPath)
+	const packageJson: PackageJson = JSON.parse(await readFile(packageJsonPath, 'utf-8'))
+	logger.debug(`Package JSON:`, packageJson)
 	const update = await checkUpdates(packageJson, config, true)
 	logger.debug(`Update payload:`, update)
 
@@ -64,7 +71,7 @@ async function upgradeAction(options: UpgradeOptions) {
 
 	logger.info(
 		composeColors(color.green, color.bold)(`A new version of Robo.js is available!`),
-		color.dim(`(v${packageJson.version} -> v${update.latestVersion})`)
+		color.dim(`(v${update.currentVersion} -> v${update.latestVersion})`)
 	)
 	logger.log('')
 	const upgradeChoice = await select({
@@ -107,7 +114,7 @@ async function upgradeAction(options: UpgradeOptions) {
 	const command = packageManager === 'npm' ? 'install' : 'add'
 	logger.debug(`Package manager:`, packageManager)
 
-	await exec(`${cmd(packageManager)} ${command} ${packageJson.name}@${update.latestVersion}`)
+	await exec(`${cmd(packageManager)} ${command} robo.js@${update.latestVersion}`)
 
 	// Check what needs to be changed
 	const data = await check(update.latestVersion)

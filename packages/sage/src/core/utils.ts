@@ -57,6 +57,7 @@ export async function checkSageUpdates() {
 
 export async function checkUpdates(packageJson: PackageJson, config: Config, forceCheck = false) {
 	const { updateCheckInterval = 60 * 60 } = config
+	logger.debug(`Checking for updates for package.json:`, packageJson)
 
 	const update = {
 		changelogUrl: '',
@@ -67,6 +68,7 @@ export async function checkUpdates(packageJson: PackageJson, config: Config, for
 
 	// Ignore if disabled
 	if (!forceCheck && updateCheckInterval <= 0) {
+		logger.debug(`Update check is disabled.`)
 		return update
 	}
 
@@ -74,6 +76,7 @@ export async function checkUpdates(packageJson: PackageJson, config: Config, for
 	const lastUpdateCheck = (await Flashcore.get<number>(FLASHCORE_KEYS.lastUpdateCheck)) ?? 0
 	const now = Date.now()
 	const isDue = now - lastUpdateCheck > updateCheckInterval * 1000
+	logger.debug(`Update check from ${new Date(lastUpdateCheck).toISOString()} is due:`, isDue)
 
 	if (!forceCheck && !isDue) {
 		return update
