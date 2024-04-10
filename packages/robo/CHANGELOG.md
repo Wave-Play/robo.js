@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.10.4
+
+### Patch Changes
+
+- 7f73414: patch: fixed `loadEnv` module export
+
 ## 0.10.3
 
 ### Patch Changes
