@@ -7,7 +7,7 @@ import { prepareFlashcore } from 'robo.js/dist/core/flashcore.js'
 import { color, composeColors } from '../core/color.js'
 import fs from 'node:fs'
 import path from 'node:path'
-import inquirer from 'inquirer'
+import { checkbox, select, Separator } from '@inquirer/prompts'
 
 const command = new Command('upgrade')
 	.description('Upgrades your Robo to the latest version')
@@ -67,14 +67,10 @@ async function upgradeAction(options: UpgradeOptions) {
 		color.dim(`(v${packageJson.version} -> v${update.latestVersion})`)
 	)
 	logger.log('')
-	const { upgradeChoice } = await inquirer.prompt([
-		{
-			type: 'list',
-			name: 'upgradeChoice',
-			message: 'Would you like to upgrade?',
-			choices: upgradeOptions
-		}
-	])
+	const upgradeChoice = await select({
+		message: 'Would you like to upgrade?',
+		choices: upgradeOptions
+	})
 	logger.log('')
 	logger.debug(`Upgrade choice:`, upgradeChoice)
 
@@ -90,17 +86,13 @@ async function upgradeAction(options: UpgradeOptions) {
 		printChangelog(changelog)
 
 		// Let user choose whether to upgrade or not
-		const { upgrade } = await inquirer.prompt([
-			{
-				type: 'list',
-				name: 'upgrade',
-				message: 'So, would you like to upgrade?',
-				choices: [
-					{ name: 'Yes, upgrade!', value: true },
-					{ name: 'Cancel', value: false }
-				]
-			}
-		])
+		const upgrade = await select({
+			message: 'So, would you like to upgrade?',
+			choices: [
+				{ name: 'Yes, upgrade!', value: true },
+				{ name: 'Cancel', value: false }
+			]
+		})
 		logger.log('')
 
 		// Exit if user cancels
@@ -125,18 +117,14 @@ async function upgradeAction(options: UpgradeOptions) {
 		logger.info(`No changes to apply.`)
 	} else {
 		// Let user choose which changes to apply
-		const { changes } = await inquirer.prompt([
-			{
-				type: 'checkbox',
-				name: 'changes',
-				message: 'Which changes would you like to apply?',
-				choices: [
-					...data.breaking.map((change) => ({ name: change.name, value: change })),
-					new inquirer.Separator(),
-					...data.suggestions.map((change) => ({ name: change.name, value: change }))
-				]
-			}
-		])
+		const changes = await checkbox({
+			message: 'Which changes would you like to apply?',
+			choices: [
+				...data.breaking.map((change) => ({ name: change.name, value: change })),
+				new Separator(),
+				...data.suggestions.map((change) => ({ name: change.name, value: change }))
+			]
+		})
 		logger.log('')
 		await execute(changes)
 	}

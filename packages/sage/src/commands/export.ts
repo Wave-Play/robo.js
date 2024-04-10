@@ -1,6 +1,6 @@
 import { Command } from 'commander'
 import depcheck from 'depcheck'
-import inquirer from 'inquirer'
+import { select, Separator } from '@inquirer/prompts'
 import { color, composeColors } from '../core/color.js'
 import { logger } from '../core/logger.js'
 import { checkSageUpdates, cmd, exec, getPackageExecutor, getPackageManager, isRoboProject } from '../core/utils.js'
@@ -212,20 +212,16 @@ async function exportModule(module: string, project: ProjectInfo, commandOptions
 
 	// Ask if they want to add the new plugin
 	logger.log('')
-	const { addPlugin } = await inquirer.prompt([
-		{
-			type: 'list',
-			name: 'addPlugin',
-			message: color.blue(`Want to add ${packageName} to your Robo?`),
-			choices: [
-				{ name: 'Yes', value: true },
-				{ name: 'No', value: false },
-				new inquirer.Separator(
-					color.reset(`\n${composeColors(color.bold, color.yellow)('Warning:')} this will delete the original module!`)
-				)
-			]
-		}
-	])
+	const addPlugin = await select({
+		message: color.blue(`Want to add ${packageName} to your Robo?`),
+		choices: [
+			{ name: 'Yes', value: true },
+			{ name: 'No', value: false },
+			new Separator(
+				color.reset(`\n${composeColors(color.bold, color.yellow)('Warning:')} this will delete the original module!`)
+			)
+		]
+	})
 
 	// Add plugin to project via `robo add` command
 	if (addPlugin) {

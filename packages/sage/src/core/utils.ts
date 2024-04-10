@@ -9,7 +9,7 @@ import { FLASHCORE_KEYS } from 'robo.js/dist/core/constants.js'
 import { spawn } from 'node:child_process'
 import { Config, Flashcore } from 'robo.js'
 import { packageJson } from '../index.js'
-import inquirer from 'inquirer'
+import { select } from '@inquirer/prompts'
 import type { SpawnOptions } from 'node:child_process'
 import type { PackageJson } from './types.js'
 
@@ -30,17 +30,13 @@ export async function checkSageUpdates() {
 	if (packageJson.version !== latestVersion) {
 		// Print update message
 		logger.info(color.green(`A new version of ${color.bold('@roboplay/sage')} is available! (v${latestVersion})\n`))
-		const { useLatest } = await inquirer.prompt<{ useLatest: boolean }>([
-			{
-				type: 'list',
-				name: 'useLatest',
-				message: 'Would you like to use the latest version?',
-				choices: [
-					{ name: 'Yes, use latest', value: true },
-					{ name: 'No, stick with v' + packageJson.version, value: false }
-				]
-			}
-		])
+		const useLatest = await select({
+			message: 'Would you like to use the latest version?',
+			choices: [
+				{ name: 'Yes, use latest', value: true },
+				{ name: 'No, stick with v' + packageJson.version, value: false }
+			]
+		})
 		logger.log('')
 
 		if (useLatest) {

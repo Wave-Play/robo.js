@@ -4,8 +4,8 @@ import { access, readFile, readdir, rename, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { cmd, exec, getPackageManager } from '../core/utils.js'
 import { logger } from '../core/logger.js'
-import inquirer from 'inquirer'
-import { PackageJson } from 'src/core/types.js'
+import { select } from '@inquirer/prompts'
+import type { PackageJson } from '../core/types.js'
 
 const command = new Command('typescript')
 	.description('Turns your Javascript project into Typescript!')
@@ -60,17 +60,13 @@ async function codemodAction() {
 		if (tsFileExist) {
 			const userTSCONFIG = await readFile(tsconfigPath, 'utf-8')
 			if (userTSCONFIG !== TSCONFIG) {
-				const { tsconfig } = await inquirer.prompt([
-					{
-						type: 'list',
-						name: 'tsconfig',
-						message: `tsconfig found !, would you like your tsconfig file be overwritten ?`,
-						choices: [
-							{ name: 'Yes', value: true },
-							{ name: 'No', value: false }
-						]
-					}
-				])
+				const tsconfig = await select({
+					message: `tsconfig found !, would you like your tsconfig file be overwritten ?`,
+					choices: [
+						{ name: 'Yes', value: true },
+						{ name: 'No', value: false }
+					]
+				})
 
 				if (tsconfig) {
 					await writeFile(tsconfigPath, TSCONFIG)
