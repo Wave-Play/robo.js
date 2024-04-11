@@ -1,7 +1,7 @@
 {
 	"name": "@robojs/moderation",
 	"description": "Equip your bot with essential tools to manage and maintain your server.",
-	"version": "0.3.0",
+	"version": "0.3.1",
 	"type": "module",
 	"private": false,
 	"main": ".robo/build/index.js",
