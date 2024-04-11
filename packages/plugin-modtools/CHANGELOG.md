@@ -1,5 +1,11 @@
 # @roboplay/plugin-modtools
 
+## 0.3.1
+
+### Patch Changes
+
+- 5aea548: feat: option to delete polls automatically
+
 ## 0.3.0
 
 ### Minor Changes
