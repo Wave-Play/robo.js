@@ -71,6 +71,17 @@ Integrate with [`@robojs/ai`](https://github.com/Wave-Play/robo.js/tree/main/pac
 npx robo add @robojs/ai
 ```
 
+## Automatic Poll Deletion
+
+Don't like poll spam? Enable automatic poll deletion to keep your server clean and organized.
+
+```js
+// config/plugins/robojs/moderation.mjs
+export default {
+	deletePolls: true
+}
+```
+
 ## Starting Your Robo.js Journey
 
 If you're new to Robo.js:
