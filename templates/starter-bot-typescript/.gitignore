@@ -1,8 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# robo
+# robo.js
 .robo/*
-!.robo/manifest.json
 
 # dependencies
 /node_modules
@@ -23,7 +22,9 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # local env files
+.env
 .env*.local
 
 # typescript
 *.tsbuildinfo
+.gitattributes
