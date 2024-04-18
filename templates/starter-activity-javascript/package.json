@@ -1,0 +1,42 @@
+{
+	"name": "starter-activity-javascript",
+	"description": "",
+	"version": "1.0.0",
+	"type": "module",
+	"private": true,
+	"keywords": [
+		"activity",
+		"api",
+		"discord",
+		"embed",
+		"embedded app",
+		"http",
+		"javascript",
+		"robo",
+		"robo.js",
+		"sdk",
+		"server",
+		"vite",
+		"web"
+	],
+	"scripts": {
+		"build": "robo build",
+		"deploy": "robo deploy",
+		"dev": "robox dev --tunnel",
+		"doctor": "sage doctor",
+		"invite": "robo invite",
+		"lint:style": "prettier --write .",
+		"start": "robo start",
+		"upgrade": "sage upgrade"
+	},
+	"dependencies": {
+		"@discord/embedded-app-sdk": "^1.1.2",
+		"@robojs/server": "^0.4.2",
+		"robo.js": "^0.10.4"
+	},
+	"devDependencies": {
+		"discord.js": "^14.14.1",
+		"prettier": "^3.2.5",
+		"vite": "^5.2.9"
+	}
+}
