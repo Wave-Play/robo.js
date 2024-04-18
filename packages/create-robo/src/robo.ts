@@ -560,10 +560,12 @@ export default class Robo {
 			devDependencies.push('react')
 			devDependencies.push('react-dom')
 			devDependencies.push('@vitejs/plugin-react-swc')
+			devDependencies.push('eslint-plugin-react-hooks')
 		} else if (this._selectedFeatures.includes('react')) {
 			dependencies.push('react')
 			dependencies.push('react-dom')
 			devDependencies.push('@vitejs/plugin-react-swc')
+			devDependencies.push('eslint-plugin-react-hooks')
 		}
 
 		// Generate customized documentation
