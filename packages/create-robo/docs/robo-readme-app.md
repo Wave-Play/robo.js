@@ -34,15 +34,27 @@ You can find your client-side code in the `/src/app` folder. This is where you c
 
 Things are powered by Vite under the hood, so you get the latest ES modules, hot module reloading, and more! ⚡
 
-Try editing the `main` file to get started! (`App` if you're using React)
+Try editing the `main` file to get started! (`Activity.tsx` if you're using React)
 
 **➞** [📚 **Documentation:** App development](https://docs.roboplay.dev/docs/app/overview)
+
+#### Authenticating
+
+The React template makes it easy to authenticate your activity with Discord. The `<DiscordProvider>` components in `App.tsx` accepts `authenticate` and `scope` props.
+
+```tsx
+<DiscordContextProvider authenticate scope={['identify', 'guilds']}>
+	<Activity />
+</DiscordContextProvider>
+```
+
+You can then get the SDK and other goodies from the `useDiscordSdk` hook!
 
 ## Backend Development 🛠️
 
 Your server-side code is located in the `/src/api` folder. This is where you can build your API, webhooks, and other fancy server-side features.
 
-This backend is powered by the [Server Plugin](#) - a powerful Robo plugin that creates an manages a Node `http` server for you. If you install Fastify, the server will automatically switch to it for better performance!
+This backend is powered by the [**Server Plugin**](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-api) - a powerful Robo plugin that creates an manages a Node `http` server for you. If you install Fastify, the server will automatically switch to it for better performance!
 
 Everything Robo is file-based, so you can create new routes by making new files in the `/src/api` directory. The file's name becomes the route's path. For example, let's try making a new route at `/health` by creating a new file named `health.js`:
 
@@ -52,7 +64,7 @@ export default () => {
 }
 ```
 
-Easy, right? Check out the [Server Plugin documentation](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-api) for more info!
+Easy, right? Check out the [**Server Plugin documentation**](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-api) for more info!
 
 ## Folder Structure 📁
 
