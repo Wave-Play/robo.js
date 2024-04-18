@@ -36,7 +36,7 @@ const roboScripts = {
 	doctor: 'sage doctor',
 	invite: 'robo invite',
 	start: 'robo start',
-	upgrade: 'robo upgrade'
+	upgrade: 'sage upgrade'
 }
 
 const pluginScripts = {
