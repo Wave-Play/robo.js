@@ -9,6 +9,10 @@
 
 &nbsp;-->
 
+<p align="center">✨ <strong>New:</strong> <a href="https://dev.to/waveplay/how-to-build-a-discord-activity-easily-with-robojs-5bng">Create Discord Activities with Robo.js</a> ✨</p>
+
+---
+
 <p align="center">
   <img src="https://raw.githubusercontent.com/Wave-Play/robo/main/docs/static/img/logo.png" height="128">
   <h1 align="center">Robo.js</h1>
