@@ -10,6 +10,8 @@ Build, deploy, and maintain your Discord activities with ease. With Robo.js as y
 
 Ready to embark on this adventure?
 
+➞ [📖 **Tutorial:** Creating a Discord Activity in seconds](https://dev.to/waveplay/how-to-build-a-discord-activity-easily-with-robojs-5bng)
+
 ➞ [📚 **Documentation:** Getting started](https://docs.roboplay.dev/docs/getting-started)
 
 ➞ [🚀 **Community:** Join our Discord server](https://roboplay.dev/discord)
