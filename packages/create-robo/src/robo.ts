@@ -35,7 +35,8 @@ const roboScripts = {
 	dev: `robox dev`,
 	doctor: 'sage doctor',
 	invite: 'robo invite',
-	start: 'robo start'
+	start: 'robo start',
+	upgrade: 'robo upgrade'
 }
 
 const pluginScripts = {
