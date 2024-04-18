@@ -2,7 +2,7 @@
 
 ---
 
-# Hiya, starter-activity-react-javascript 🌈
+# Hiya, starter-app-ts-react 🌈
 
 Welcome to your fresh **[Robo.js](https://github.com/Wave-Play/robo)** project!
 
