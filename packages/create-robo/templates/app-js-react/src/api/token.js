@@ -12,10 +12,7 @@ export default async (req) => {
 			code: req.body.code
 		})
 	})
-
-	// Retrieve the access_token from the response
 	const { access_token } = await response.json()
 
-	// Return the access_token to our client as { access_token: "..."}
 	return { access_token }
 }
