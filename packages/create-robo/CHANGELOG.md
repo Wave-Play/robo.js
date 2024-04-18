@@ -1,5 +1,14 @@
 # create-robo
 
+## 0.11.9
+
+### Patch Changes
+
+- 504067e: refactor: include `robo upgrade` script command by default
+- fdf16fa: chore: updated discord activity docs
+- c1d475e: chore: updated react templates
+- ada85f8: chore: include eslint rule for react hooks on react projects
+
 ## 0.11.8
 
 ### Patch Changes
