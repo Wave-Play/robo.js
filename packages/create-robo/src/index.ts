@@ -209,7 +209,7 @@ async function checkUpdates() {
 		} else if (packageManager === 'bun') {
 			commandName = 'bunx'
 		}
-		const command = `${commandName} ${packageJson.name}@${latestVersion}`
+		const command = `${commandName} ${packageJson.name}@latest`
 		const args = process.argv.slice(2).join(' ')
 
 		// Print update message
