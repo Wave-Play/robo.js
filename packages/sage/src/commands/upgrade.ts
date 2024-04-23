@@ -312,7 +312,7 @@ async function updateRobo(plugins: Plugin[], config: Config){
 			const upgrade = await select({
 				message: ``,
 				choices: [
-					{ name: 'Previous', value: false }
+					{ name: 'back', value: false }
 				],
 				loop: false,
 			},{
@@ -365,7 +365,7 @@ async function updateRobo(plugins: Plugin[], config: Config){
 		if(selectedPlugins){
 			u_options.push(new Separator('-----🎉-----'))
 			u_options.push({name: 'Proceed update', value: 'update'})
-		    u_options.push({name: 'Abort update', value: 'abort'})
+		    u_options.push({name: 'cancel', value: 'abort'})
 		  	await showChangelogList(selectedPlugins);
 		}
 	}
