@@ -92,10 +92,11 @@ async function traverse(
 								syntax: 'typescript',
 								tsx: filePath.endsWith('.tsx'),
 								dynamicImport: true,
-								decorators: true
+								decorators: compilerOptions.experimentalDecorators ?? true
 							},
 							transform: {
-								legacyDecorator: true
+								legacyDecorator: compilerOptions.experimentalDecorators ?? true,
+								useDefineForClassFields: compilerOptions.useDefineForClassFields ?? false
 							}
 						}
 					})
