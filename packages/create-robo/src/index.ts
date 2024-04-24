@@ -16,7 +16,7 @@ export interface CommandOptions {
 	features?: string
 	install?: boolean
 	javascript?: boolean
-	kit?: 'app' | 'bot'
+	kit?: 'activity' | 'app' | 'bot'
 	plugin?: boolean
 	plugins?: string[]
 	template?: string
@@ -48,6 +48,11 @@ new Command('create-robo <projectName>')
 		logger.debug(`Package manager:`, getPackageManager())
 		logger.debug(`create-robo version:`, packageJson.version)
 		logger.debug(`Current working directory:`, process.cwd())
+
+		// `activity` is an alias for `app`
+		if (options.kit === 'activity') {
+			options.kit = 'app'
+		}
 
 		// Ensure correct kit is selected (bot or app)
 		if (options.kit && !['bot', 'app'].includes(options.kit)) {
