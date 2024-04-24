@@ -16,6 +16,13 @@ export const Space = ' '.repeat(8)
 
 export const IS_WINDOWS = /^win/.test(process.platform)
 
+export const COLYSEUS_CONFIG = `// @ts-check
+import { ColyseusServerEngine } from '../../../.robo/build/core/server.js'
+
+export default {
+	engine: new ColyseusServerEngine()
+}\n`
+
 export const PRETTIER_CONFIG = `export default {
 	printWidth: 120,
 	semi: false,
