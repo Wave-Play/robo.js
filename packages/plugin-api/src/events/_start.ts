@@ -49,7 +49,7 @@ export default async (_client: Client, options: PluginOptions) => {
 			vite = await createViteServer({
 				configFile: existsSync(viteConfigPath) ? viteConfigPath : undefined,
 				server: {
-					hmr: { server: engine.getHttpServer() },
+					hmr: { path: '/hmr', server: engine.getHttpServer() },
 					middlewareMode: { server: engine.getHttpServer() }
 				}
 			})
