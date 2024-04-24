@@ -12,8 +12,8 @@ export class NodeEngine extends BaseEngine {
 	private _isRunning = false
 	private _router: Router | null = null
 	private _server: http.Server | null = null
-	private _serverHandler: ServerHandler | null = null
 	private _vite: ViteDevServer | null = null
+	protected _serverHandler: ServerHandler | null = null
 
 	public async init(options: InitOptions): Promise<void> {
 		this._router = new Router()
