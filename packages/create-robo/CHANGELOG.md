@@ -1,5 +1,17 @@
 # create-robo
 
+## 0.11.10
+
+### Patch Changes
+
+- 4bd78da: feat: added colyseus as an optional feature for apps
+- 9d3ff73: chore: include additional paths in watcher ignore for apps by default
+- ddf6792: chore: added link to tutorial for discord activities
+- 8da6b26: feat: `activity` alias for `app`
+- Updated dependencies [7450631]
+- Updated dependencies [7159c94]
+  - robo.js@0.10.5
+
 ## 0.11.9
 
 ### Patch Changes
