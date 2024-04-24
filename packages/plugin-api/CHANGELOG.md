@@ -1,5 +1,12 @@
 # @roboplay/plugin-api
 
+## 0.4.3
+
+### Patch Changes
+
+- a73732e: refactor: use /hmr path for vite by default
+- 5db2da4: patch: export correct paths in `engines.js` module
+
 ## 0.4.2
 
 ### Patch Changes

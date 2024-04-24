@@ -1,5 +1,12 @@
 # robo.js
 
+## 0.10.5
+
+### Patch Changes
+
+- 7450631: patch(compiler): updated defaults to better work with decorators and colyseus
+- 7159c94: patch: guard against duplicate cloudflare tunnel logs
+
 ## 0.10.4
 
 ### Patch Changes
