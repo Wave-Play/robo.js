@@ -84,7 +84,7 @@ export function startCloudflared(url: string) {
 		cloudflareLogger.debug(color.dim(lastMessage))
 
 		const tunnelUrl = extractTunnelUrl(lastMessage)
-		if (tunnelUrl && !Ignore.includes(tunnelUrl)) {
+		if (tunnelUrl && !Ignore.includes(tunnelUrl) && !lastMessage.includes('Request failed')) {
 			cloudflareLogger.ready(`Tunnel URL:`, composeColors(color.bold, color.blue)(tunnelUrl))
 		}
 	}
