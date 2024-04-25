@@ -12,7 +12,7 @@ export default async (interaction: ChatInputCommandInteraction): Promise<Command
     if (interaction.guild === null) return;
     
     const modal = new ModalBuilder()
-    .setCustomId('modmail_modal_chatting')∏
+    .setCustomId('modmail_modal_chatting')
 
     const one = new TextInputBuilder()
         .setCustomId('title')
