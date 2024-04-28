@@ -167,6 +167,57 @@ export default (interaction: CommandInteraction): CommandResult => {
 </TabItem>
 </Tabs>
 
+You can also use a second parameter next to the interaction object to access the options directly. These are automatically parsed and passed to your command function, with full type support too!
+
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
+
+```javascript
+export const config = {
+  description: 'Responds with Pong!',
+  options: [
+    {
+      name: 'loud',
+      description: 'Respond loudly?',
+      type: 'boolean'
+    }
+  ]
+}
+
+export default (interaction, options) => {
+  return options.loud ? 'PONG!!!' : 'Pong!'
+}
+```
+
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```typescript
+import { createCommandConfig } from 'robo.js'
+import type { CommandOptions, CommandResult } from 'robo.js'
+import type { CommandInteraction } from 'discord.js'
+
+export const config = createCommandConfig({
+  description: 'Responds with Pong!',
+  options: [
+    {
+      name: 'loud',
+      description: 'Respond loudly?',
+      type: 'boolean'
+    }
+  ]
+} as const)
+
+export default (interaction: CommandInteraction, options: CommandOptions<typeof config>): CommandResult => {
+  return options.loud ? 'PONG!!!' : 'Pong!'
+}
+```
+
+> **Heads up!** `createCommandConfig` and `as const` are important for TypeScript! `createCommandConfig` creates a command configuration object with the correct type, which tells your editor which options are available for your command for better autocompletion and type checking.
+
+</TabItem>
+</Tabs>
+
 Want to explore more options? Check the [configuration section](/docs/advanced/configuration).
 
 ### DM Permission
