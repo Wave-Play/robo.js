@@ -1,5 +1,6 @@
 import { logger } from '../core/logger.js'
 import { hasDependency } from '../core/runtime-utils.js'
+import { _readyPromiseResolve } from '~/core/plugin-utils.js'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { portal } from 'robo.js'
@@ -76,6 +77,7 @@ export default async (_client: Client, options: PluginOptions) => {
 
 	logger.debug(`Starting server...`)
 	await engine.start({ port })
+	_readyPromiseResolve()
 }
 
 async function getDefaultEngine() {
