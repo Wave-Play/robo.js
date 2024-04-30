@@ -1,9 +1,8 @@
-import { ApplicationCommandType, InteractionType } from 'discord.js'
+import { ApplicationCommandType, CommandInteraction, InteractionType } from 'discord.js'
 import { client } from 'robo.js'
 import type {
 	APIInteraction,
 	APIMessage,
-	CommandInteraction,
 	GuildMember,
 	GuildMemberFlags,
 	InteractionReplyOptions,
