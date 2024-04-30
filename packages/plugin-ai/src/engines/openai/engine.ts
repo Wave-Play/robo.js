@@ -51,6 +51,7 @@ export class OpenAiEngine extends BaseEngine {
 			threadId,
 			userId
 		} = options ?? {}
+		const { pollDelay = 1_000 } = pluginOptions
 
 		// Use the assistant if it's available
 		if (this._assistant && threadId) {
@@ -134,7 +135,7 @@ export class OpenAiEngine extends BaseEngine {
 			// Wait for the run to complete
 			try {
 				while (['queued', 'in_progress'].includes(run.status)) {
-					await new Promise((resolve) => setTimeout(resolve, 400))
+					await new Promise((resolve) => setTimeout(resolve, pollDelay))
 					run = await openai.getRun({
 						run_id: run.id,
 						thread_id: thread.id

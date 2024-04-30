@@ -10,6 +10,7 @@ export interface PluginOptions {
 	insight?: boolean
 	maxTokens?: number
 	model?: string
+	pollDelay?: number
 	restrict?: {
 		channelIds: string[]
 	}
