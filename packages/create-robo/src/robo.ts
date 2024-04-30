@@ -904,7 +904,7 @@ export default class Robo {
 		envContent = updateOrAddVariable(envContent, 'NODE_OPTIONS', this._nodeOptions.join(' '))
 
 		if (this._selectedPlugins.includes('ai')) {
-			envContent = updateOrAddVariable(envContent, 'OPENAI_KEY', '')
+			envContent = updateOrAddVariable(envContent, 'OPENAI_API_KEY', '')
 		}
 		if (this._selectedPlugins.includes('ai-voice')) {
 			envContent = updateOrAddVariable(envContent, 'AZURE_SUBSCRIPTION_KEY', '')
