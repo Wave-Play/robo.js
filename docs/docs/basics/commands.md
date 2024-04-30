@@ -332,4 +332,4 @@ The cherry on top? You don't need to manually register your commands. Robo.js ha
 robo build --force
 ```
 
-And voila! Crafting commands with Robo.js is a cinch. So what are you waiting for? Give it a whirl and watch your Robo come alive!
+This will also clean up any commands that are no longer in your `commands` directory. Pretty neat, right?
