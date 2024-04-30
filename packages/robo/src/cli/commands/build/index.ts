@@ -126,6 +126,7 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 	if (config.experimental?.disableBot !== true && shouldRegister) {
 		await registerCommands(
 			options.dev,
+			options.force,
 			newCommands,
 			manifest.context.message,
 			manifest.context.user,

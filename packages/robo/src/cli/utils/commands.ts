@@ -14,7 +14,7 @@ import { env } from '../../core/env.js'
 import { timeout } from './utils.js'
 import { bold, color } from '../../core/color.js'
 import { Flashcore } from '../../core/flashcore.js'
-import type { ApplicationCommandOptionBase } from 'discord.js'
+import type { APIApplicationCommand, ApplicationCommandOptionBase } from 'discord.js'
 import type { CommandEntry, CommandOption, ContextEntry } from '../../types/index.js'
 
 // @ts-expect-error - Global logger is overriden by dev mode
@@ -303,6 +303,7 @@ function hasChangedFields(obj1: CommandEntry, obj2: CommandEntry): boolean {
 
 export async function registerCommands(
 	dev: boolean,
+	force: boolean,
 	newCommands: Record<string, CommandEntry>,
 	newMessageContextCommands: Record<string, ContextEntry>,
 	newUserContextCommands: Record<string, ContextEntry>,
@@ -351,6 +352,41 @@ export async function registerCommands(
 			...contextMessageCommands.map((command) => command.toJSON()),
 			...contextUserCommands.map((command) => command.toJSON())
 		]
+
+		const existingCommands = (await rest.get(
+			guildId ? Routes.applicationGuildCommands(clientId, guildId) : Routes.applicationCommands(clientId)
+		)) as APIApplicationCommand[]
+		logger.debug(`Found ${existingCommands.length} existing commands:`, existingCommands)
+
+		if (force) {
+			// Start clean by forcing a deletion of all existing commands
+			const deletions = existingCommands.map((command) => {
+				return rest.delete(
+					guildId
+						? Routes.applicationGuildCommand(clientId, guildId, command.id)
+						: Routes.applicationCommand(clientId, command.id)
+				)
+			})
+			await Promise.all(deletions)
+			logger.debug('Successfully cleaned up existing commands')
+		} else {
+			// Remove only commands that are no longer in the manifest by default
+			const deletions = removedCommands.map((command) => {
+				const existingCommand = existingCommands.find((c) => c.name === command)
+
+				if (existingCommand) {
+					return rest.delete(
+						guildId
+							? Routes.applicationGuildCommand(clientId, guildId, existingCommand.id)
+							: Routes.applicationCommand(clientId, existingCommand.id)
+					)
+				}
+			})
+			await Promise.all(deletions)
+			logger.debug('Successfully removed deleted commands')
+		}
+
+		// Let's register the commands!
 		const registerCommandsPromise = (
 			guildId
 				? rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commandData })
@@ -370,6 +406,7 @@ export async function registerCommands(
 		const endTime = Date.now() - startTime
 		const commandType = guildId ? 'guild' : 'global'
 		logger.info(`Successfully updated ${color.bold(commandType + ' commands')} in ${endTime}ms`)
+		logger.info(color.dim('It may take a while for the changes to reflect in Discord.'))
 		await Flashcore.delete(FLASHCORE_KEYS.commandRegisterError)
 	} catch (error) {
 		logger.error('Could not register commands!', error)
