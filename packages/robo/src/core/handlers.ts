@@ -121,28 +121,8 @@ export async function executeCommandHandler(interaction: CommandInteraction, com
 			throw `Missing default export function for command: ${color.bold('/' + commandKey)}`
 		}
 
-		// For each option, get the value from the interaction
-		const options: Record<string, unknown> = {}
-		commandConfig?.options?.forEach((option) => {
-			if (optionPrimitives.includes(option.type)) {
-				options[option.name] = interaction.options.get(option.name)?.value
-			} else if (option.type === 'attachment') {
-				options[option.name] = interaction.options.get(option.name)?.attachment
-			} else if (option.type === 'channel') {
-				options[option.name] = interaction.options.get(option.name)?.channel
-			} else if (option.type === 'mention') {
-				const optionValue = interaction.options.get(option.name)
-				options[option.name] = optionValue?.member ?? optionValue?.role
-			} else if (option.type === 'role') {
-				options[option.name] = interaction.options.get(option.name)?.role
-			} else if (option.type === 'user') {
-				options[option.name] = interaction.options.get(option.name)?.user
-			} else if (option.type === 'member') {
-				options[option.name] = interaction.options.get(option.name)?.member
-			}
-		})
-
 		// Delegate to command handler
+		const options = extractCommandOptions(interaction, commandConfig?.options)
 		const result = command.handler.default(interaction, options)
 		const promises = []
 		let response
@@ -416,4 +396,32 @@ type EnforceConfig<C extends CommandConfig> = Exclude<keyof C, keyof CommandConf
 
 export function createCommandConfig<C extends CommandConfig>(config: ExactConfig<C> & EnforceConfig<C>): C {
 	return config as C
+}
+
+/**
+ * Extracts command options from a Discord interaction
+ */
+export function extractCommandOptions(interaction: CommandInteraction, commandOptions: CommandConfig['options']) {
+	const options: Record<string, unknown> = {}
+
+	commandOptions?.forEach((option) => {
+		if (optionPrimitives.includes(option.type)) {
+			options[option.name] = interaction.options.get(option.name)?.value
+		} else if (option.type === 'attachment') {
+			options[option.name] = interaction.options.get(option.name)?.attachment
+		} else if (option.type === 'channel') {
+			options[option.name] = interaction.options.get(option.name)?.channel
+		} else if (option.type === 'mention') {
+			const optionValue = interaction.options.get(option.name)
+			options[option.name] = optionValue?.member ?? optionValue?.role
+		} else if (option.type === 'role') {
+			options[option.name] = interaction.options.get(option.name)?.role
+		} else if (option.type === 'user') {
+			options[option.name] = interaction.options.get(option.name)?.user
+		} else if (option.type === 'member') {
+			options[option.name] = interaction.options.get(option.name)?.member
+		}
+	})
+
+	return options
 }
