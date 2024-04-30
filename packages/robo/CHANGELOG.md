@@ -1,5 +1,12 @@
 # robo.js
 
+## 0.10.6
+
+### Patch Changes
+
+- 838ed5d: feat: `extractCommandOptions` utility function
+- 6a4473d: patch: auto delete outdated slash commands
+
 ## 0.10.5
 
 ### Patch Changes

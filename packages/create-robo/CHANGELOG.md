@@ -1,5 +1,15 @@
 # create-robo
 
+## 0.11.11
+
+### Patch Changes
+
+- 1251a1d: patch: don't show `colyseus` preset for normal bots
+- f09e986: chore: renamed default openai .env variable
+- Updated dependencies [838ed5d]
+- Updated dependencies [6a4473d]
+  - robo.js@0.10.6
+
 ## 0.11.10
 
 ### Patch Changes

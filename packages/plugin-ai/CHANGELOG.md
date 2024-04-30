@@ -1,5 +1,20 @@
 # @roboplay/plugin-ai
 
+## 0.5.1
+
+### Patch Changes
+
+- 60c8235: refactor: increased default poll delay to 1 second
+- 60c8235: feat: new `pollDelay` option
+- afdbefb: fix: command execution
+- 6d532b8: patch: compatibility with robo.js automatic options extraction
+- Updated dependencies [838ed5d]
+- Updated dependencies [6a4473d]
+- Updated dependencies [7490206]
+- Updated dependencies [2bf83fe]
+  - robo.js@0.10.6
+  - @robojs/server@0.4.4
+
 ## 0.5.0
 
 ### Minor Changes

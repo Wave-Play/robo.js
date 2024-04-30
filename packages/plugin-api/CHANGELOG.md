@@ -1,5 +1,12 @@
 # @roboplay/plugin-api
 
+## 0.4.4
+
+### Patch Changes
+
+- 7490206: feat: `ready` utility function
+- 2bf83fe: feat: `getServerEngine` utility function
+
 ## 0.4.3
 
 ### Patch Changes
