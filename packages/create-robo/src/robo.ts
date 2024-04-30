@@ -445,6 +445,15 @@ export default class Robo {
 			}
 		}
 
+		// Colyseus is only available for activities
+		if (!this._isApp) {
+			const index = features.findIndex((f) => f.value === 'colyseus')
+
+			if (index >= 0) {
+				features.splice(index, 1)
+			}
+		}
+
 		// Sorry, plugin developers don't get Extensionless as an option
 		if (this._isPlugin) {
 			const index = features.findIndex((f) => f.value === 'extensionless')
