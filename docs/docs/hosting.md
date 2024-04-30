@@ -16,27 +16,53 @@ Robo.js and RoboPlay are a match made in heaven, so deploying your code is a bre
 npx robo deploy
 ```
 
-This command will optimize your source code and host it for free on RoboPlay. First-time deployers will be guided through a quick setup, including choosing a slot.
+This command will optimize your project and host it for free on RoboPlay. First-time deployers will be guided through a quick setup process, and you'll be up and running in no time!
 
-#### Robo slots 🎰
+Feel free to run this command anytime you want to update your Robo. RoboPlay will automatically update your Robo with the latest changes.
 
-Every account gets 2 free **Microbot** slots and can buy unlimited **Mecha** slots.
+### Pods
 
-**Microbot:** A free, lightweight slot for your Robo. It's perfect for small bots that don't need much power.
+RoboPlay offers **Pods**, which are like virtual private servers (VPS) for your Robo. Currently, each RoboPlay account comes with 1 free Beta Pod. Want more? We'll be offering additional Pods for a small fee in the future.
 
-- 100MB size limit
-- Limited battery life
-- Might take a nap in idle mode to save energy
+### Checking Status
 
-**Mecha:** A powerful slot for your Robo. It's perfect for large bots that need lots of power 24/7.
+To check the status of RoboPlay and your deployed Robos, run:
 
-- 1GB size limit
-- Unlimited battery power
-- Speedy CPU
+```bash
+npx robo cloud status
+```
 
-Link your Robo's code to any of these slots, giving your software the hardware it deserves! Buying a **Mecha**? Choose to upgrade an existing **Microbot** (keeping your config intact) or get a new Mecha slot.
+This will let you know if your Robos are up and running, or if there are any issues. You can also check our **[status page](https://status.roboplay.dev)** for updates.
 
-> #### Upgrading an existing Microbot? You'll get a new Microbot slot, so you'll always have 2 free Microbots for tinkering!
+> **Note:** Pods live independently from our main RoboPlay infrastructure, so rest assured that your Robos will stay up and running even if RoboPlay itself experiences downtime.
+
+### Managing Pods
+
+You can manage your pods with the command:
+
+```bash
+npx robo cloud stop
+```
+
+This will stop your selected pod and bring your Robo offline. Stopping your pod will *not* delete any data, so you can start it back up whenever you're ready.
+
+To start it back up, run:
+
+```bash
+npx robo cloud start
+```
+
+And that's it! Your Robo will be back online and ready to serve. Keep in mind that deploying again will automatically start your Robo.
+
+### Checking Logs
+
+To check the logs of your Robo, run:
+
+```bash
+npx robo cloud logs
+```
+
+This will show you the logs of your Robo, helping you debug any issues that may arise during runtime.
 
 ## Self-hosting 🏢
 
