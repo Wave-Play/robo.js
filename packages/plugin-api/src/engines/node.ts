@@ -4,7 +4,7 @@ import { Router } from '../core/router.js'
 import { BaseEngine } from '../engines/base.js'
 import http from 'node:http'
 import { color, composeColors } from 'robo.js'
-import type { RouteHandler } from '../core/types.js'
+import type { RouteHandler, WebSocketHandler } from '../core/types.js'
 import type { InitOptions, StartOptions } from '../engines/base.js'
 import type { ViteDevServer } from 'vite'
 
@@ -13,6 +13,7 @@ export class NodeEngine extends BaseEngine {
 	private _router: Router | null = null
 	private _server: http.Server | null = null
 	private _vite: ViteDevServer | null = null
+	private _websocketHandlers: Record<string, WebSocketHandler> = {}
 	protected _serverHandler: ServerHandler | null = null
 
 	public async init(options: InitOptions): Promise<void> {
@@ -21,6 +22,21 @@ export class NodeEngine extends BaseEngine {
 		this._server = http.createServer((req, res) => this._serverHandler?.(req, res))
 
 		this._server.on('error', (error: Error) => logger.error(`Server error:`, error))
+		this._server.on('upgrade', (req, socket, head) => {
+			const handler = this._websocketHandlers[req.url ?? '']
+
+			if (handler) {
+				handler(req, socket, head)
+				return
+			}
+
+			const defaultHandler = this._websocketHandlers['default']
+			if (defaultHandler) {
+				defaultHandler(req, socket, head)
+			} else {
+				logger.warn(`No WebSocket handler found for`, req.url)
+			}
+		})
 	}
 
 	public getHttpServer() {
@@ -31,8 +47,12 @@ export class NodeEngine extends BaseEngine {
 		return this._isRunning
 	}
 
-	public registerRoute(path: string, handler: RouteHandler): void {
+	public registerRoute(path: string, handler: RouteHandler) {
 		this._router.addRoute({ handler, path })
+	}
+
+	public registerWebsocket(path: string, handler: WebSocketHandler) {
+		this._websocketHandlers[path] = handler
 	}
 
 	public setupVite(vite: ViteDevServer) {

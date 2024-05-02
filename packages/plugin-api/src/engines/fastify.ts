@@ -131,6 +131,10 @@ export class FastifyEngine extends BaseEngine {
 		})
 	}
 
+	public registerWebsocket(): void {
+		logger.error(`Websockets are not supported in Fastify engine yet.`)
+	}
+
 	public setupVite(vite: ViteDevServer) {
 		this._vite = vite
 	}

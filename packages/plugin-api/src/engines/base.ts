@@ -1,4 +1,4 @@
-import type { RouteHandler } from '../core/types.js'
+import type { RouteHandler, WebSocketHandler } from '../core/types.js'
 import type { Server } from 'node:http'
 import type { ViteDevServer } from 'vite'
 
@@ -38,6 +38,8 @@ export abstract class BaseEngine {
 	 * @param handler The handler function to call when the path is requested.
 	 */
 	public abstract registerRoute(path: string, handler: RouteHandler): void | Promise<void>
+
+	public abstract registerWebsocket(path: string, handler: WebSocketHandler): void | Promise<void>
 
 	public abstract setupVite(vite: ViteDevServer): void | Promise<void>
 
