@@ -47,7 +47,7 @@
   },
   "peerDependencies": {
     "@discordjs/voice": "^0.16.0",
-    "@robojs/ai": "^0.5.1",
+    "@robojs/ai": "^0.5.2",
     "robo.js": "^0.10.6"
   },
   "peerDependenciesMeta": {

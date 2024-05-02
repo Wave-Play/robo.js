@@ -1,5 +1,14 @@
 # @roboplay/plugin-ai
 
+## 0.5.2
+
+### Patch Changes
+
+- 79b9d17: feat: temperature control
+- Updated dependencies [0113987]
+- Updated dependencies [0748de7]
+  - @robojs/server@0.4.5
+
 ## 0.5.1
 
 ### Patch Changes
