@@ -1,5 +1,5 @@
 ---
-'@robojs/server': minor
+'@robojs/server': patch
 ---
 
 feat: `registerWebsocket` engine function
