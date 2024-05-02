@@ -60,9 +60,14 @@ export default async (_client: Client, options: PluginOptions) => {
 		}
 	}
 
-	// Setup Vite if available
+	// Setup Vite if available and register socket bypass
 	if (vite) {
 		await engine.setupVite(vite)
+
+		// Prevent other plugins from registering the HMR route
+		engine.registerWebsocket('/hmr', () => {
+			logger.debug('Vite HMR connection detected. Skipping registration...')
+		})
 	}
 
 	// Add loaded API modules onto new router instance
