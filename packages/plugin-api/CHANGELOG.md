@@ -1,5 +1,12 @@
 # @roboplay/plugin-api
 
+## 0.4.5
+
+### Patch Changes
+
+- 0113987: feat: prevent vite hmr from being hijacked by default
+- 0748de7: feat: `registerWebsocket` engine function
+
 ## 0.4.4
 
 ### Patch Changes

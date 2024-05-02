@@ -1,5 +1,11 @@
 # create-robo
 
+## 0.11.12
+
+### Patch Changes
+
+- 275daff: chore: added new `@robojs/sync` plugin option for activities
+
 ## 0.11.11
 
 ### Patch Changes
