@@ -173,7 +173,7 @@ async function chat(messages: ChatMessage[], options: ChatOptions): Promise<void
 		if (typeof reply.message?.content === 'string') {
 			// Clean up username prefix if it's there
 			let content = reply.message.content
-			const clientUsername = client.user?.username ?? 'mock'
+			const clientUsername = client?.user?.username ?? 'mock'
 
 			if (content.toLowerCase().startsWith(clientUsername.toLowerCase() + ':')) {
 				content = content.slice(clientUsername.length + 1).trim()

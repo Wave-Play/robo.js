@@ -54,6 +54,7 @@ export interface ChatOptions {
 	functions?: ChatFunction[]
 	model?: string
 	showTyping?: boolean
+	temperature?: number
 	threadId?: string | null
 	userId?: string | null
 }

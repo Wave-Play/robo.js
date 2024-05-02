@@ -48,6 +48,7 @@ export class OpenAiEngine extends BaseEngine {
 		const {
 			functions = this._gptFunctions,
 			model = pluginOptions?.model ?? DEFAULT_MODEL,
+			temperature = pluginOptions?.temperature,
 			threadId,
 			userId
 		} = options ?? {}
@@ -192,7 +193,8 @@ export class OpenAiEngine extends BaseEngine {
 			max_tokens: pluginOptions?.maxTokens,
 			model: model,
 			messages: messages,
-			functions: functions
+			functions: functions,
+			temperature: temperature
 		})
 		logger.debug(`GPT Response:`, response)
 

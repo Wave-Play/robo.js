@@ -154,7 +154,7 @@ async function cancelRun(options: CancelRunOptions) {
 
 async function chat(options: GptChatOptions) {
 	const { bodyOptions, requestOptions } = splitOptions(options)
-	const { functions, max_tokens = 1024, messages, model = 'gpt-3.5-turbo' } = bodyOptions
+	const { functions, max_tokens = 1024, messages, model = 'gpt-3.5-turbo', temperature = 0 } = bodyOptions
 
 	return request<ChatResult>('/chat/completions', {
 		...requestOptions,
@@ -163,7 +163,8 @@ async function chat(options: GptChatOptions) {
 			functions: functions?.length && !model.includes('vision') ? functions : undefined,
 			max_tokens: max_tokens,
 			messages: messages,
-			model: model
+			model: model,
+			temperature: temperature
 		}
 	})
 }
@@ -480,6 +481,7 @@ interface GptChatOptions extends RequestOptions {
 	max_tokens?: number
 	messages: GptChatMessage[]
 	model?: string
+	temperature?: number
 }
 
 interface GptFunction {

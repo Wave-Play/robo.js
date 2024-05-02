@@ -15,6 +15,7 @@ export interface PluginOptions {
 		channelIds: string[]
 	}
 	systemMessage?: string
+	temperature?: number
 	whitelist?: {
 		channelIds: string[]
 	}
