@@ -15,6 +15,7 @@
 			"packages/plugin-maintenance",
 			"packages/plugin-modtools",
 			"packages/plugin-poll",
+			"packages/plugin-sync",
 			"packages/robo",
 			"packages/sage"
 		]
@@ -54,6 +55,6 @@
 		"typescript": "5.0.2"
 	},
 	"dependencies": {
-		"@changesets/cli": "2.26.0"
+		"@changesets/cli": "2.27.1"
 	}
 }
