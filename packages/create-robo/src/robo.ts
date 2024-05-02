@@ -95,6 +95,13 @@ const appPlugins = [
 		short: 'AI',
 		value: 'ai'
 	},
+	{
+		name: `${chalk.bold(
+			'Sync'
+		)} - Real-time state sync across clients. Perfect for multiplayer games and chat apps!`,
+		short: 'Sync',
+		value: 'sync'
+	},
 	new Separator('\nRequired for apps:'),
 	{
 		checked: true,
@@ -172,6 +179,10 @@ const PluginDb: Record<string, PluginData> = {
 		},
 		keywords: ['api', 'http', 'server', 'vite', 'web'],
 		package: '@robojs/server'
+	},
+	sync: {
+		keywords: ['multiplayer', 'real-time', 'sync', 'websocket'],
+		package: '@robojs/sync'
 	},
 	maintenance: {
 		keywords: ['maintenance'],
@@ -591,7 +602,7 @@ export default class Robo {
 			devDependencies.push('@vitejs/plugin-react-swc')
 			devDependencies.push('eslint-plugin-react-hooks')
 		}
-		
+
 		// Colyseus requires more dependencies
 		if (features.includes('colyseus')) {
 			dependencies.push('@colyseus/core')
