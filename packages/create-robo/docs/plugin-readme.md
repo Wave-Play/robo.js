@@ -15,14 +15,21 @@ Welcome to *{{projectName}}*! This plugin is designed to seamlessly integrate wi
 
 ## Installation 💻
 
-To install this plugin, navigate to your existing Robo project's directory and run the following command:
+To add this plugin to your Robo.js project:
 
 ```bash
 npx robo add {{projectName}}
 ```
 
-That's it! Your Robo now has access to the additional features provided by this plugin. The plugin's commands and events are automatically linked, and if your Robo requires any additional bot permissions, they will be inherited when running `npx robo invite` to generate an invite link.
+New to Robo.js? Start your project with this plugin pre-installed:
 
-Enjoy your enhanced Robo! 🚀
+```bash
+npx create-robo <project-name> -p {{projectName}}
+```
 
-> **Don't have a Robo project?** [Create your own!](https://docs.roboplay.dev/docs/getting-started)
+<!-- Replace the following with your plugin's usage instructions. -->
+<!--
+## Usage 🎨
+
+This plugin provides awesome new features to your Robo.js project. Here's an example of how you can use them in your project:
+-->
