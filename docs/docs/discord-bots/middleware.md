@@ -1,4 +1,4 @@
-# Middleware 🌙
+# Middleware
 
 In the heart of your Robo, there lies a potent feature known as Middleware. These are functions that are executed before each and every command or event, granting you the ability to manipulate data, introduce conditional flows, and even halt execution of events or commands based on custom criteria.
 

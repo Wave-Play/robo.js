@@ -48,14 +48,45 @@ const sidebars = {
 				'discord-bots/events',
 				'discord-bots/invite',
 				'discord-bots/middleware',
-				'discord-bots/migrate',
+				{
+					id: 'discord-bots/migrate',
+					label: 'Migrating',
+					type: 'doc'
+				},
 				'discord-bots/secrets'
 			]
 		},
 		{
 			type: 'category',
 			label: 'Hosting',
-			items: ['hosting/roboplay', 'hosting/self-host']
+			items: [
+				{
+					id: 'hosting/overview',
+					label: 'Overview',
+					type: 'doc'
+				},
+				'hosting/roboplay',
+				'hosting/self-host'
+			]
+		},
+		{
+			type: 'category',
+			label: 'Plugins',
+			items: [
+				{
+					id: 'plugins/overview',
+					label: 'Overview',
+					type: 'doc'
+				},
+				'plugins/ai',
+				'plugins/ai-voice',
+				'plugins/better-stack',
+				'plugins/dev',
+				'plugins/maintenance',
+				'plugins/moderation',
+				'plugins/server',
+				'plugins/sync'
+			]
 		},
 		{
 			type: 'category',
@@ -69,7 +100,11 @@ const sidebars = {
 				'robojs/cli',
 				'robojs/config',
 				'robojs/flashcore',
-				'robojs/internals',
+				{
+					id: 'robojs/internals',
+					label: 'Internals',
+					type: 'doc'
+				},
 				'robojs/logger',
 				'robojs/modules',
 				'robojs/plugins',

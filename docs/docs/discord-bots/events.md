@@ -1,7 +1,7 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Events 📡
+# Events
 
 Events are the real MVPs in bot development! They're the magical building blocks that make your bot come alive—everything, including commands, are built on top of events!
 

@@ -1,7 +1,7 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Commands 📜
+# Commands
 
 Slash commands have changed the game in Discord, making it a breeze for users to interact with bots (or as we like to call them, Robos). And with Robo.js, weaving your own slash commands is as easy as pie. Let's unravel this together!
 

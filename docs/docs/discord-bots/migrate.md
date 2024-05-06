@@ -1,4 +1,4 @@
-# Migrating to Robo.js 🚀
+# Migrating existing bots
 
 Robo.js is a rad framework built on top of Discord.js. It's got a simple but powerful file structure, a better development experience, and loads of extra features, all while being 100% compatible with Discord.js code.
 

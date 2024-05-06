@@ -1,4 +1,4 @@
-# Debugging 🐞
+# Debugging
 
 No code is perfect, and bugs are just part of the programming journey. But don't sweat it! Robo.js has got your back with nifty built-in features to help you squash those pesky bugs.
 

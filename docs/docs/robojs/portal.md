@@ -1,4 +1,4 @@
-# Portal 🌌
+# Portal
 
 What if we told you there was a gateway to your Robo's brain? One that lets you tinker with the bits and bobs that make your bot tick? Well, get ready to step into the _Portal_. This API lets you access your Robo's inner workings and even tweak 'em without messing around with files. Now, that's power at your fingertips!
 

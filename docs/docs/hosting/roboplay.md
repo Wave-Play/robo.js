@@ -1,4 +1,4 @@
-# Hosting on RoboPlay
+# RoboPlay
 
 Robo.js is built to work seamlessly with **[RoboPlay](https://roboplay.dev)**, a **[WavePlay](https://waveplay.com)** service. They were built for each other from the ground up to make deploying and managing your Robo.js projects as easy as possible.
 

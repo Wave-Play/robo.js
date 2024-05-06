@@ -1,4 +1,4 @@
-# Linting ✨
+# Linting
 
 Linting is like having a tiny coding assistant who keeps your code neat and tidy. It's super useful for catching and fixing annoying syntax and style issues before they become major headaches.
 

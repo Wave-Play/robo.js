@@ -1,7 +1,7 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Sage 🔮
+# Sage
 
 Your Robo is more than just a bot; it's got its very own spirit guide: Sage.
 

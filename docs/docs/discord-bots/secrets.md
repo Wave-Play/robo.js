@@ -1,4 +1,4 @@
-# Secrets 🔑
+# Secrets
 
 Keeping your project's sensitive info under wraps is a top priority. That's why we use a `.env` file to store critical values like API keys and tokens. It helps prevent accidentally sharing these secrets on platforms like GitHub.
 

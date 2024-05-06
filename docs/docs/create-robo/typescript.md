@@ -1,4 +1,4 @@
-# TypeScript 🚀
+# TypeScript
 
 TypeScript is like JavaScript's cooler cousin, ready to swoop in and save the day by catching those sneaky typos and helping you figure out what code exists. And guess what? It's super easy to learn, too! If you're already buds with JavaScript, hop on over to the [W3Schools TypeScript Tutorial](https://www.w3schools.com/typescript/) to kick things off!
 

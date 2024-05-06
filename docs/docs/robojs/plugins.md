@@ -1,4 +1,4 @@
-# Plugins 🧩
+# Plugins
 
 Plugins empower developers to effortlessly add new features to their existing Robos.
 
