@@ -1,14 +1,3 @@
-/**
- * Creating a sidebar enables you to:
- - create an ordered group of docs
- - render a sidebar for each doc of that group
- - provide next/previous navigation
-
- The sidebars can be generated from the filesystem, or explicitly defined here.
-
- Create as many sidebars as you want.
- */
-
 // @ts-check
 
 /** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
@@ -20,46 +9,73 @@ const sidebars = {
 
 	tutorialSidebar: [
 		'getting-started',
-		'adding-to-server',
-		'hosting',
-		'migrating',
 		{
 			type: 'category',
-			label: 'Basics',
+			label: 'Create Robo',
 			items: [
-				'basics/overview',
-				'basics/commands',
-				'basics/context-menu',
-				'basics/events',
-				'basics/flashcore',
-				'basics/sage',
-				'basics/secrets',
-				'basics/states'
+				{
+					id: 'create-robo/overview',
+					label: 'Overview',
+					type: 'doc'
+				},
+				'create-robo/linting',
+				'create-robo/typescript'
+			]
+		},
+		{
+			type: 'category',
+			label: 'Discord Activities',
+			items: [
+				{
+					id: 'discord-activities/overview',
+					label: 'Overview',
+					type: 'doc'
+				}
+			]
+		},
+		{
+			type: 'category',
+			label: 'Discord Bots',
+			items: [
+				{
+					id: 'discord-bots/overview',
+					label: 'Overview',
+					type: 'doc'
+				},
+				'discord-bots/commands',
+				'discord-bots/context-menu',
+				'discord-bots/debug',
+				'discord-bots/events',
+				'discord-bots/invite',
+				'discord-bots/middleware',
+				'discord-bots/migrate',
+				'discord-bots/secrets'
 			]
 		},
 		{
 			type: 'category',
 			label: 'Hosting',
-			items: [
-				'hosting/roboplay',
-				'hosting/self-host'
-			]
+			items: ['hosting/roboplay', 'hosting/self-host']
 		},
 		{
 			type: 'category',
-			label: 'Advanced',
+			label: 'Robo.js',
 			items: [
-				'advanced/command-line',
-				'advanced/configuration',
-				'advanced/debugging',
-				'advanced/linting',
-     'advanced/logger',
-				'advanced/middleware',
-				'advanced/modules',
-				'advanced/plugins',
-				'advanced/portal',
-				'advanced/typescript',
-				'advanced/how-it-works'
+				{
+					id: 'robojs/overview',
+					label: 'Overview',
+					type: 'doc'
+				},
+				'robojs/cli',
+				'robojs/config',
+				'robojs/flashcore',
+				'robojs/internals',
+				'robojs/logger',
+				'robojs/modules',
+				'robojs/plugins',
+				'robojs/portal',
+				'robojs/sage',
+				'robojs/states'
 			]
 		}
 	]

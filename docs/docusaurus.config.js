@@ -41,8 +41,96 @@ const config = {
 			{
 				redirects: [
 					{
+						from: '/docs/getting-started',
+						to: '/getting-started'
+					},
+					{
+						from: '/docs/advanced/linting',
+						to: '/create-robo/linting'
+					},
+					{
+						from: '/docs/advanced/typescript',
+						to: '/create-robo/typescript'
+					},
+					{
+						from: '/docs/basics/commands',
+						to: '/discord-bots/commands'
+					},
+					{
+						from: '/docs/basics/context-menu',
+						to: '/discord-bots/context-menu'
+					},
+					{
+						from: '/docs/advanced/debugging',
+						to: '/discord-bots/debug'
+					},
+					{
+						from: '/docs/basics/events',
+						to: '/discord-bots/events'
+					},
+					{
+						from: '/docs/adding-to-server',
+						to: '/discord-bots/invite'
+					},
+					{
+						from: '/docs/basics/middleware',
+						to: '/discord-bots/middleware'
+					},
+					{
+						from: '/docs/migrating',
+						to: '/discord-bots/migrate'
+					},
+					{
+						from: '/docs/basics/overview',
+						to: '/discord-bots/overview'
+					},
+					{
+						from: '/docs/basics/secrets',
+						to: '/discord-bots/secrets'
+					},
+					{
 						from: '/docs/hosting',
-						to: '/docs/hosting/roboplay'
+						to: '/hosting/roboplay'
+					},
+					{
+						from: '/docs/advanced/command-line',
+						to: '/robojs/cli'
+					},
+					{
+						from: '/docs/advanced/logger',
+						to: '/robojs/logger'
+					},
+					{
+						from: '/docs/basics/flashcore',
+						to: '/robojs/flashcore'
+					},
+					{
+						from: '/docs/advanced/configuration',
+						to: '/robojs/config'
+					},
+					{
+						from: '/docs/advanced/how-it-works',
+						to: '/robojs/internals'
+					},
+					{
+						from: '/docs/advanced/modules',
+						to: '/robojs/modules'
+					},
+					{
+						from: '/docs/advanced/plugins',
+						to: '/robojs/plugins'
+					},
+					{
+						from: '/docs/advanced/portal',
+						to: '/robojs/portal'
+					},
+					{
+						from: '/docs/basics/sage',
+						to: '/robojs/sage'
+					},
+					{
+						from: '/docs/basics/states',
+						to: '/robojs/states'
 					}
 				]
 			}
@@ -55,6 +143,7 @@ const config = {
 			/** @type {import('@docusaurus/preset-classic').Options} */
 			({
 				docs: {
+					routeBasePath: '/',
 					sidebarPath: require.resolve('./sidebars.js')
 					// Please change this to your repo.
 					// Remove this to remove the "edit this page" links.
