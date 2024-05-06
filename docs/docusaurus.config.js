@@ -35,6 +35,20 @@ const config = {
 		locales: ['en']
 	},
 
+	plugins: [
+		[
+			'@docusaurus/plugin-client-redirects',
+			{
+				redirects: [
+					{
+						from: '/docs/hosting',
+						to: '/docs/hosting/roboplay'
+					}
+				]
+			}
+		]
+	],
+
 	presets: [
 		[
 			'classic',
@@ -76,7 +90,7 @@ const config = {
 						type: 'docSidebar',
 						sidebarId: 'tutorialSidebar',
 						position: 'left',
-						label: 'Docs',
+						label: 'Docs'
 					},
 					{ to: '/plugins', label: 'Plugins', position: 'left' },
 					{

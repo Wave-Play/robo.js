@@ -39,6 +39,14 @@ const sidebars = {
 		},
 		{
 			type: 'category',
+			label: 'Hosting',
+			items: [
+				'hosting/roboplay',
+				'hosting/self-host'
+			]
+		},
+		{
+			type: 'category',
 			label: 'Advanced',
 			items: [
 				'advanced/command-line',
