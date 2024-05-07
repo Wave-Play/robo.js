@@ -99,6 +99,7 @@ const sidebars = {
 				},
 				'robojs/cli',
 				'robojs/config',
+				'robojs/files',
 				'robojs/flashcore',
 				{
 					id: 'robojs/internals',
