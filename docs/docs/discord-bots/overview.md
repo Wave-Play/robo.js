@@ -1,79 +1,100 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Overview 🚀
+# Overview
 
-Next-gen bot development is all about organization, and that's where Robo.js shines! 🌟
+Robo.js makes building Discord.js bots as easy as putting certain files in the right place. Want to create a command? Just make a file in the `/src/commands` directory. Events? Create files in `/src/events`. It's that simple!
 
-If you're familiar with Next.js, you'll feel right at home. If not, no worries—Robo.js keeps things simple. All you need to know is how to arrange your files. And that's it. Seriously!
+Continue reading below for a quick overview of files specific to Discord bots.
 
-## The Robo.js File Structure 📂
+:::tip Robo.js does *not* replace Discord.js!
 
-To start with, you'll need a `src` directory at the root with `commands` and `events` directories inside. The command file's name becomes the command name, and the event file's name turns into the triggering event's name.
+Instead, it simplifies the process of building Discord bots by taking care of boilerplate code. You still have access to the full Discord.js API and existing code is still compatible!
 
-Here's a basic example of a Robo.js file structure:
+**Got an existing bot?** Check out the **[Migration Guide](./migrate)** for how to upgrade to Robo.js.
 
-```
-src/
-├── commands/
-│   └── ping.js
-└── events/
-    └── messageCreate.js
-```
+:::
 
-Want to go a step further? No problem! You can nest files to create subcommands and grouped events.
+## File Structure
 
-```
-src/
-├── commands/
-│   ├── ping.js
-│   ├── ban/
-│   │   └── user.js
-│   └── settings/
-│       └── update/
-│           └── something.js
-└── events/
-    ├── ready.js
-    └── messageCreate/
-        └── dm.js
-        └── hello.js
-```
+Discord bots built with Robo.js follow the following file structure:
 
-## Modular Magic 📦
+- `/src/commands`: Slash commands. Can be nested for subcommands or subcommand groups.
+- `/src/context`: Context commands for either `/user` or `/message`.
+- `/src/events`: Discord events. Can be nested for grouped events.
 
-For larger Robo projects, modules are your best friends! They allow you to group the same folder structure within modular subfolders. Think of it like having mini Robo projects within your main project. The names of the folders inside "modules/" can be anything you want, as long as what's inside follows the Robo file structure.
-
-```
-src/
-└── modules/
-    ├── moderation/
-    │   ├── commands/
-    │   └── events/
-    └── fun/
-        ├── commands/
-        └── events/
-```
-
-For a deeper dive into the world of modules, check out the [modules documentation](/docs/advanced/modules).
-
-## Creating Commands 📜
-
-Commands in Robo.js are super straightforward. Just create a file in the `commands` directory, and the name of the file becomes the name of the command. Easy peasy, right? Plus, Robo.js also takes care of registering them for you. You can even nest commands for those extra spicy subcommands! 🌶️
-
-Here's how your command file structure might look:
+### Basic Example
 
 ```
 /src
-  /commands
-    ping.js
+├── /commands
+│   └── ping.js
+└── /events
+    └── messageCreate.js
 ```
 
-And the ping.js file could be as simple as:
+The above is used to create:
+
+- `/ping` command.
+- `messageCreate` event.
+
+### Advanced Example
+
+```
+/src
+├── /commands
+│   ├── ping.js
+│   ├── /ban
+│   │   └── user.js
+│   └── /settings
+│       └── /update
+│           └── something.js
+├── /context
+│   ├── /user
+│   │   └── Audit.js
+│   └── /message
+│       └── Report.js
+└── /events
+    ├── ready.js
+    └── /messageCreate
+        ├── dm.js
+        └── hello.js
+```
+
+The above is used to create:
+
+- `/ping` command.
+- `/ban user` subcommand.
+- `/settings update something` subcommand group.
+- `Audit` user context command.
+- `Report` message context command.
+- `ready` event.
+- `dm` and `hello` grouped `messageCreate` events.
+
+:::tip
+
+Check out the **[Robo.js File Structure](../robojs/files)** to learn more about Robo's standard files.
+
+:::
+
+### Modules
+
+For larger projects, you can use modules to group similar functionality together as if they were mini-projects within your main project. Each module follows the same file structure.
+
+See **[Modules](../robojs/modules)** for more information.
+
+## Slash Commands
+
+Slash commands in Robo.js are straightforward. Just create a file in the `commands` directory, and the name of the file becomes the name of the command. Easy peasy, right? You can even nest commands for those extra spicy subcommands!
+
+### Example Usage
+
+Creating a command is as easy as exporting a default function from a file in the `/src/commands` directory.
 
 <Tabs groupId="examples-script">
 <TabItem value="js" label="Javascript">
 
-```javascript title="commands/ping.js"
+```javascript title="/src/commands/ping.js"
 export default () => {
 	return 'Pong!'
 }
@@ -82,7 +103,7 @@ export default () => {
 </TabItem>
 <TabItem value="ts" label="Typescript">
 
-```typescript title="commands/ping.ts"
+```typescript title="/src/commands/ping.ts"
 import type { CommandConfig } from 'robo.js'
 
 export default (): CommandResult => {
@@ -93,21 +114,27 @@ export default (): CommandResult => {
 </TabItem>
 </Tabs>
 
-To learn more about commands and their full potential, head over to the [commands documentation](./commands.md).
+To learn more about commands and their full potential, head over to the **[Commands Section](./commands)**.
 
-## Listening to Events 📡
+### Registration
 
-Just like commands, events in Robo.js follow the same naming convention. Create a file in the `events` directory, and the name of the file becomes the Discord event you're listening to. But wait, there's more! Events can be stacked for even more control over your bot's responses. 🤖
+It's automatic! Robo.js will register command changes for you whenever you `build` or `dev` your project. So just sit back, relax, and code away!
 
-Here's a quick peek at your event file structure:
+If you run into any issues or don't see your changes, you can always run `build` with the `--force` flag. This will force Robo.js to clean up and re-register all commands.
 
-```
-/src
-  /events
-    messageCreate.js
-```
+## Context Commands
 
-And the messageCreate.js file could be:
+Ever right clicked on someone's profile or a message and seen an "Apps" section? Those are context commands!
+
+Creating and registering context commands in Robo.js is no different from regular commands. The `/context` directory can have two subdirectories: `/user` and `/message`. Just like commands, the name of the file becomes the name of the context command.
+
+## Event Listeners
+
+Listening to events using Robo.js again follows the same file structure. Create a file in the `events` directory, and the name of the file becomes the Discord event you're listening to. Noticing a pattern here?
+
+### Example Usage
+
+Registering an event listener is as simple as creating a file in the `/src/events` directory.
 
 <Tabs groupId="examples-script">
 <TabItem value="js" label="Javascript">
@@ -136,14 +163,12 @@ export default (message: Message) => {
 </TabItem>
 </Tabs>
 
-To dive deeper into events, check out the [events documentation](./events.md).
+Your default export is the equivalent of `client.on('messageCreate', (message) => {})` in Discord.js. The same exact parameters are passed to your event listener function.
 
-## Sage Mode 🔮
+To dive deeper into events, check out the **[Events Section](./events)**.
+
+## Sage Mode
 
 Meet Sage, your new best friend in interaction handling. Sage operates behind the scenes, automatically simplifying interaction handling and providing smart error replies that make debugging a breeze. With Sage, you can focus on what you do best: creating epic bot interactions! ✨
 
-:::tip Do This
-
-Unlock the full power of Sage Mode by visiting the [Sage documentation](./sage.md).
-
-:::
+Unlock the full power of Sage Mode by visiting the **[Sage Section](./sage)**.

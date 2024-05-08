@@ -40,27 +40,35 @@ See the **[Environment Variables](../discord-bots/secrets)** section for more in
 
 The `package.json` file is standard for Node.js projects. It contains metadata about your project, such as the name, version, and dependencies. You can also add scripts to run commands, like `npm run dev`.
 
+## Modules
+
+For larger projects, you can use modules to group similar functionality together to keep things clean. Each module is its own mini-project within your main project that follows the same Robo File Structure.
+
+Check out **[Modules](./modules)** for more information.
+
 ## .robo Directory
 
-The `/.robo` directory is special because it's managed by Robo.js. It contains generated files that Robo.js uses to manage your project. You can ignore this directory, as it's not meant for manual editing, but feel free to keep reading if you're curious.
+`/.robo` is special because it's managed by Robo.js. It contains generated files that Robo.js uses to manage your project. You can ignore this directory, as it's not meant for manual editing, but feel free to keep reading if you're curious.
 
 ### Build
 
-The `/.robo/build` directory contains compiled files from your project. This is where your TypeScript files are compiled to JavaScript, or where your project is bundled for production. For plugins, this is what gets published to NPM.
+`/.robo/build` contains compiled files from your project. This is where your TypeScript files are compiled to JavaScript, or where your project is bundled for production.
+
+For plugins, this is what gets published to NPM.
 
 ### Data
 
-The `/.robo/data` directory contains **[Flashcore](./flashcore)** data. Flashcore uses the local filesystem to store data by default, but can be configured to use a database of your choice.
+`/.robo/data` contains **[Flashcore](./flashcore)** data. Flashcore uses the local filesystem to store data by default, but can be configured to use a database of your choice.
 
 :::warning
 
-Be careful not to delete the `/.robo/data` directory or you may lose important data!
+Be careful not to delete this directory or you may lose important data!
 
 :::
 
 ### Manifest
 
-The `manifest.json` file in the `/.robo` directory contains information about your project, such as the project name, version, plugins, directories in use, and more. This file is generated and updated by Robo.js for performant startup times.
+The `/.robo/manifest.json` file contains information about your project, such as the project name, version, plugins, directories in use, and more. This file is generated and updated by Robo.js for performant startup times.
 
 ### Temp Files
 
