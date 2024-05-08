@@ -1,2 +1,25 @@
 # Hosting Overview
 
+Hosting your Robo.js project allows you to keep it running 24/7, so you can access it from anywhere at any time. No need to keep your computer on at all times, or worry about your internet connection.
+
+You can host your Robo on any platform that supports Node.js. We also have our own hosting platform called RoboPlay, which is built to work seamlessly with Robo.js.
+
+## RoboPlay
+
+Robo.js is built to work seamlessly with **[RoboPlay](https://roboplay.dev)**, a **[WavePlay](https://waveplay.com)** service. They were built for each other from the ground up to make deploying and managing your Robo.js projects as easy as possible.
+
+Deploying is as simple as running a single command:
+
+```bash
+npx robo deploy
+```
+
+The same command can be used to update your Robo. Feel free to run this command anytime you want to push new updates.
+
+Check out the **[RoboPlay Section](./roboplay)** for more information.
+
+## Self-Hosting
+
+If you prefer to host your Robo.js project yourself, you can do so on any platform that supports Node.js. Just make sure to build with `robo build` and start with `robo start`.
+
+Be careful when self-hosting, as you'll need to manage your server, security, and updates yourself. Make sure you also don't accidentally use `robo dev` in production, as it's not optimized for performance nor security.
