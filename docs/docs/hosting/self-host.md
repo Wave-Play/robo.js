@@ -4,6 +4,8 @@ Robo.js can be self-hosted, meaning you can run your own instance of Robo.js on 
 
 This is great for those who want to have full control over their projects, or for those who want to run Robo.js in a private environment isolated from civilization. Before you can self-host Robo.js, you'll need **[Node.js](https://nodejs.org)** v20 or newer installed on your server.
 
+Feeling overwhelmed? **[Deploy with one command on RoboPlay](./roboplay)**, a hosting service made for Robo.js projects!
+
 ## Running
 
 ### Install dependencies

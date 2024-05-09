@@ -1,3 +1,6 @@
+import { Card } from '@site/src/components/shared/Card'
+import { CardRow } from '@site/src/components/shared/CardRow'
+
 # Hosting Overview
 
 Hosting your Robo.js project allows you to keep it running 24/7, so you can access it from anywhere at any time. No need to keep your computer on at all times, or worry about your internet connection.
@@ -23,3 +26,18 @@ Check out the **[RoboPlay Section](./roboplay)** for more information.
 If you prefer to host your Robo.js project yourself, you can do so on any platform that supports Node.js. Just make sure to build with `robo build` and start with `robo start`.
 
 Be careful when self-hosting, as you'll need to manage your server, security, and updates yourself. Make sure you also don't accidentally use `robo dev` in production, as it's not optimized for performance nor security.
+
+## Learn More
+
+<CardRow>
+	<Card
+		href="./roboplay"
+		title="🚀 RoboPlay"
+		description="Deploy with as little as one command"
+	/>
+	<Card
+		href="./self-host"
+		title="🛠️ Self-Hosting"
+		description="Learn how to host and maintain it yourself"
+	/>
+</CardRow>
