@@ -30,7 +30,8 @@ const sidebars = {
 					id: 'discord-activities/overview',
 					label: '✨ Overview',
 					type: 'doc'
-				}
+				},
+				'discord-activities/multiplayer'
 			]
 		},
 		{
