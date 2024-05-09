@@ -1,4 +1,4 @@
-# Inviting to Servers
+# 🏠 Inviting to Servers
 
 You've crafted an amazing Robo, and now it's time to bring it to life on your Discord Servers! To add your Robo, you'll need special invite links with the necessary permissions and scopes.
 
