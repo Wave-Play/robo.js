@@ -1,7 +1,6 @@
 import { color } from '../../core/color.js'
 import { logger } from '../../core/logger.js'
 
-
 export interface Option {
 	alias: string
 	name: string
@@ -63,8 +62,8 @@ export class Command {
 	 * @param {boolean} positionalArg - positionalArgs boolean.
 	 * @returns {Command} - Returns the current Command object for chaining.
 	 */
-	public positionalArgs(positionalArg: boolean): this{
-		this._positionalArgs = positionalArg;
+	public positionalArgs(positionalArg: boolean): this {
+		this._positionalArgs = positionalArg
 		return this
 	}
 

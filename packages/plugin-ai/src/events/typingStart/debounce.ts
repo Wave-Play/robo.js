@@ -117,7 +117,7 @@ export function isUserTyping(userId: string) {
 
 export function waitForTyping(userId: string) {
 	return new Promise<string[]>((resolve) => {
-		(async () => {
+		;(async () => {
 			// Loop until the user stops typing
 			while (isUserTyping(userId)) {
 				const state = UserStatus[userId]

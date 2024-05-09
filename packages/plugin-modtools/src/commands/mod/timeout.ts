@@ -50,7 +50,7 @@ export const config: CommandConfig = {
 		},
 		{
 			name: 'reason',
-			description: 'The reason for timing them out, if any',
+			description: 'The reason for timing them out, if any'
 		}
 	]
 }

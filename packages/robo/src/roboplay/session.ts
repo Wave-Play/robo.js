@@ -15,10 +15,13 @@ export const RoboPlaySession = {
 }
 
 interface Session {
-	linkedProjects: Record<string, {
-		podId: string | null
-		roboId: string | null
-	}>
+	linkedProjects: Record<
+		string,
+		{
+			podId: string | null
+			roboId: string | null
+		}
+	>
 	pods: Pod[]
 	robos: Robo[]
 	roboVersion: string
@@ -121,9 +124,16 @@ async function save(session: Omit<Session, 'roboVersion'>) {
 
 	// Let's write the session file!
 	mkdirSync(path.dirname(sessionPath), { recursive: true })
-	await writeFile(sessionPath, JSON.stringify({
-		roboVersion: packageJson.version,
-		...session
-	}, null, 2))
+	await writeFile(
+		sessionPath,
+		JSON.stringify(
+			{
+				roboVersion: packageJson.version,
+				...session
+			},
+			null,
+			2
+		)
+	)
 	logger.debug(`Session file written successfully!`)
 }

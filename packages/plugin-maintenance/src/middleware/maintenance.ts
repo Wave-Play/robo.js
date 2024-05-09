@@ -1,4 +1,10 @@
-import { excludeCommands, excludeContexts, excludeEvents, maintenanceEnabled, maintenanceMessage } from '../core/config.js'
+import {
+	excludeCommands,
+	excludeContexts,
+	excludeEvents,
+	maintenanceEnabled,
+	maintenanceMessage
+} from '../core/config.js'
 import type { MiddlewareData, MiddlewareResult } from 'robo.js'
 import type { CommandInteraction, ContextMenuCommandInteraction } from 'discord.js'
 

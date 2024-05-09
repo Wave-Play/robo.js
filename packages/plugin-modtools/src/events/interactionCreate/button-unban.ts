@@ -61,9 +61,11 @@ export default async (interaction: ButtonInteraction) => {
 				{
 					title: testPrefix + `Unban`,
 					description: `User <@${userId}> has been unbanned`,
-					thumbnail: userAvatar ? {
-						url: userAvatar
-					} : undefined,
+					thumbnail: userAvatar
+						? {
+								url: userAvatar
+						  }
+						: undefined,
 					color: Colors.Green,
 					timestamp: new Date().toISOString(),
 					footer: {

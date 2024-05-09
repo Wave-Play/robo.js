@@ -6,7 +6,9 @@ import { env } from '../../core/env.js'
 import { PermissionFlagsBits } from 'discord.js'
 import { color, composeColors } from '../../core/color.js'
 
-const command = new Command('invite').description('Generates a link for servers to add your Robo.').handler(inviteAction)
+const command = new Command('invite')
+	.description('Generates a link for servers to add your Robo.')
+	.handler(inviteAction)
 export default command
 
 async function inviteAction() {
@@ -45,17 +47,27 @@ async function inviteAction() {
 		logger.log(composeColors(color.bold, color.blue)(padding + line))
 	})
 
-	logger.log(color.green(inviteLabel) + padding.slice(0, -inviteLabel.length) + composeColors(color.bold, color.blue)('  |__|    |__|  '))
+	logger.log(
+		color.green(inviteLabel) +
+			padding.slice(0, -inviteLabel.length) +
+			composeColors(color.bold, color.blue)('  |__|    |__|  ')
+	)
 	logger.log(color.green(`╒${horizontalLine}╕`))
 	logger.log(color.green(`│${' '.repeat(boxWidth)}│`))
-	logger.log(color.green(`│  `) + composeColors(color.bold, color.underline, color.blue)(inviteLink) + color.green(`  │`))
+	logger.log(
+		color.green(`│  `) + composeColors(color.bold, color.underline, color.blue)(inviteLink) + color.green(`  │`)
+	)
 	logger.log(color.green(`│${' '.repeat(boxWidth)}│`))
 	logger.log(color.green(`╘${horizontalLine}╛\n`))
 
 	// Additional message
 	logger.log(`Share your Robo's invite link with server owners. Remember to keep it running.`)
 	logger.log(
-		`Get free hosting from ${color.bold('RoboPlay')} at ${composeColors(color.bold, color.underline, color.blue)('https://roboplay.dev')}\n`
+		`Get free hosting from ${color.bold('RoboPlay')} at ${composeColors(
+			color.bold,
+			color.underline,
+			color.blue
+		)('https://roboplay.dev')}\n`
 	)
 }
 

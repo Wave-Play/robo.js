@@ -17,6 +17,7 @@ npm install
 ```
 
 ### Build for production
+
 Some hosts might need you to run `robo build` before or after uploading your code. This step compiles your source code into an optimized production format, especially important for TypeScript users.
 
 ```bash
@@ -37,7 +38,7 @@ Once you've built your project, you can start your Robo.js server with the follo
 npx robo start
 ```
 
-This will start your Robo.js server, making it accessible to the world. 
+This will start your Robo.js server, making it accessible to the world.
 
 ## Extra tidbits
 

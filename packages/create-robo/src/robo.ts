@@ -96,9 +96,7 @@ const appPlugins = [
 		value: 'ai'
 	},
 	{
-		name: `${chalk.bold(
-			'Sync'
-		)} - Real-time state sync across clients. Perfect for multiplayer games and chat apps!`,
+		name: `${chalk.bold('Sync')} - Real-time state sync across clients. Perfect for multiplayer games and chat apps!`,
 		short: 'Sync',
 		value: 'sync'
 	},

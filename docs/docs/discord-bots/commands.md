@@ -174,18 +174,18 @@ You can also use a second parameter next to the interaction object to access the
 
 ```javascript
 export const config = {
-  description: 'Responds with Pong!',
-  options: [
-    {
-      name: 'loud',
-      description: 'Respond loudly?',
-      type: 'boolean'
-    }
-  ]
+	description: 'Responds with Pong!',
+	options: [
+		{
+			name: 'loud',
+			description: 'Respond loudly?',
+			type: 'boolean'
+		}
+	]
 }
 
 export default (interaction, options) => {
-  return options.loud ? 'PONG!!!' : 'Pong!'
+	return options.loud ? 'PONG!!!' : 'Pong!'
 }
 ```
 
@@ -198,18 +198,18 @@ import type { CommandOptions, CommandResult } from 'robo.js'
 import type { CommandInteraction } from 'discord.js'
 
 export const config = createCommandConfig({
-  description: 'Responds with Pong!',
-  options: [
-    {
-      name: 'loud',
-      description: 'Respond loudly?',
-      type: 'boolean'
-    }
-  ]
+	description: 'Responds with Pong!',
+	options: [
+		{
+			name: 'loud',
+			description: 'Respond loudly?',
+			type: 'boolean'
+		}
+	]
 } as const)
 
 export default (interaction: CommandInteraction, options: CommandOptions<typeof config>): CommandResult => {
-  return options.loud ? 'PONG!!!' : 'Pong!'
+	return options.loud ? 'PONG!!!' : 'Pong!'
 }
 ```
 
@@ -226,8 +226,8 @@ Control whether your command is accessible in direct messages with `dmPermission
 
 ```javascript
 export const config = {
-  // ... other configuration options
-  dmPermission: false // Restricts this command in DMs
+	// ... other configuration options
+	dmPermission: false // Restricts this command in DMs
 }
 ```
 
@@ -236,11 +236,11 @@ export const config = {
 Use `defaultMemberPermissions` to define server-based permissions for your command. This field accepts `PermissionFlagsBits` from Discord.js, allowing you to specify which roles or permissions are needed to access the command in a server context.
 
 ```javascript
-import { PermissionFlagsBits } from 'discord.js';
+import { PermissionFlagsBits } from 'discord.js'
 
 export const config = {
-  // ... other configuration options
-  defaultMemberPermissions: PermissionFlagsBits.KickMembers // Only users who can kick members can use this command
+	// ... other configuration options
+	defaultMemberPermissions: PermissionFlagsBits.KickMembers // Only users who can kick members can use this command
 }
 ```
 

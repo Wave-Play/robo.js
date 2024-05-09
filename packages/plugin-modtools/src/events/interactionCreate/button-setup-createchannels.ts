@@ -70,7 +70,9 @@ export default async (interaction: ButtonInteraction) => {
 
 	// Send confirmation
 	await interaction.followUp({
-		content: `Missing moderator channels have been created!\n${channelsCreated.join('\n')}\n\nYou should update channel permissions to allow your moderators to view them, or you can select them below.`,
+		content: `Missing moderator channels have been created!\n${channelsCreated.join(
+			'\n'
+		)}\n\nYou should update channel permissions to allow your moderators to view them, or you can select them below.`,
 		ephemeral: true,
 		components: [
 			{

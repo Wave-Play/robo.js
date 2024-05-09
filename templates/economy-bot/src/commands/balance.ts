@@ -28,7 +28,7 @@ export default async (interaction: CommandInteraction) => {
 
 	// if no profile
 	if (!player) {
-		return "This User haven't created their player profile yet :(";
+		return "This User haven't created their player profile yet :("
 	}
 
 	// return

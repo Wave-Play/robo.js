@@ -125,7 +125,7 @@ export function createServerHandler(router: Router, vite?: ViteDevServer): Serve
 					if (error?.status >= 400) {
 						logger.error(error)
 					}
-	
+
 					Object.entries(error.headers ?? {}).forEach(([key, value]) => {
 						replyWrapper.header(key, value)
 					})

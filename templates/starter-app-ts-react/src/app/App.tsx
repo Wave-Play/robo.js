@@ -5,7 +5,7 @@ import './App.css'
 /**
  * 🔒 Set `authenticate` to true to enable Discord authentication
  * You can also set the `scope` prop to request additional permissions
- * 
+ *
  * Example:
  * ```
  * <DiscordContextProvider authenticate scope={['identify', 'guilds']}>

@@ -9,6 +9,7 @@ Check out some awesome templates using Robo.js to see what you can do with it!
 The bare minimum Discord.js bot template to get you started. Includes a simple ping command and a basic event handler.
 
 Tech Stack:
+
 - Discord.js
 
 ### [Starter Bot Typescript](./starter-bot-typescript)
@@ -16,6 +17,7 @@ Tech Stack:
 The bare minimum Discord.js bot template to get you started. Includes a simple ping command and a basic event handler.
 
 Tech Stack:
+
 - Discord.js
 - Typescript
 
@@ -26,15 +28,17 @@ Tech Stack:
 The bare minimum activity template using Discord's Embedded App SDK to get you started.
 
 Tech Stack:
+
 - Discord Embedded App SDK
 - Vanilla Javascript
 - Vite
-  
+
 ### [Starter Activity Typescript](./starter-activity-typescript)
 
 The bare minimum activity template using Discord's Embedded App SDK to get you started.
 
 Tech Stack:
+
 - Discord Embedded App SDK
 - Vanilla Typescript
 - Vite
@@ -44,6 +48,7 @@ Tech Stack:
 A React activity showing what it's like to use React with Discord's Embedded App SDK.
 
 Tech Stack:
+
 - Discord Embedded App SDK
 - React
 - Vite
@@ -53,6 +58,7 @@ Tech Stack:
 A React activity showing what it's like to use React with Discord's Embedded App SDK.
 
 Tech Stack:
+
 - Discord Embedded App SDK
 - React
 - Typescript
@@ -63,6 +69,7 @@ Tech Stack:
 A Colyseus activity showing what it's like to use Colyseus with Discord's Embedded App SDK.
 
 Tech Stack:
+
 - Discord Embedded App SDK
 - Colyseus
 - React
@@ -73,6 +80,7 @@ Tech Stack:
 A Colyseus activity showing what it's like to use Colyseus with Discord's Embedded App SDK.
 
 Tech Stack:
+
 - Discord Embedded App SDK
 - Colyseus
 - React
@@ -86,6 +94,7 @@ Tech Stack:
 A simple economy bot template using Discord.js. Includes a simple economy system with several commands.
 
 Tech Stack:
+
 - Discord.js
 
 ### [GPT Chatbot](./gpt-chatbot)
@@ -93,5 +102,6 @@ Tech Stack:
 A chatbot template using OpenAI's GPT- API. Includes a simple chatbot that can respond to messages.
 
 Tech Stack:
+
 - OpenAI API
 - Discord.js

@@ -18,7 +18,7 @@ We encourage you to provide a contact method for prize distribution, but it's no
 
 ## Submissions
 
-*Please note that the example below is not an actual submission; it's for illustration purposes. Replace it with your own details.*
+_Please note that the example below is not an actual submission; it's for illustration purposes. Replace it with your own details._
 
 ### [Name (Plugin/Bot)]
 
@@ -37,4 +37,3 @@ We encourage you to provide a contact method for prize distribution, but it's no
 - **Package**: [emoji-reaction-plugin](https://www.npmjs.com/package/emoji-reaction-plugin)
 - **Description**: Make your conversations fun and interactive with various emoji based reactions.
 - **Contact**: bekool.sh
-

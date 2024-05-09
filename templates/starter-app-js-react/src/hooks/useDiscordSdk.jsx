@@ -147,10 +147,10 @@ export async function authenticateSdk(options) {
 
 export function useDiscordSdkSetup(options) {
 	const { authenticate } = options ?? {}
-	const [accessToken, setAccessToken] = useState<string | null>(null)
-	const [session, setSession] = useState<DiscordSession | null>(null)
-	const [error, setError] = useState<string | null>(null)
-	const [status, setStatus] = useState<'authenticating' | 'error' | 'loading' | 'pending' | 'ready'>('pending')
+	const [accessToken, setAccessToken] = (useState < string) | (null > null)
+	const [session, setSession] = (useState < DiscordSession) | (null > null)
+	const [error, setError] = (useState < string) | (null > null)
+	const [status, setStatus] = (useState < 'authenticating') | 'error' | 'loading' | 'pending' | ('ready' > 'pending')
 
 	const setupDiscordSdk = useCallback(async () => {
 		try {

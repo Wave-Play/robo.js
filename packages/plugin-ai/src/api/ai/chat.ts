@@ -16,7 +16,7 @@ interface ApiChatResponse {
 
 export default (req: RoboRequest<ApiChatRequest>): Promise<ApiChatResponse> => {
 	return new Promise((resolve, reject) => {
-		(async () => {
+		;(async () => {
 			const { messages } = req.body
 			if (!messages?.length) {
 				return reject('No message provided')

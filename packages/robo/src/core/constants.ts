@@ -11,7 +11,6 @@ export const Space = ' '.repeat(8)
 export const cloudflareLogger = logger.fork('cloudflare')
 export const discordLogger = logger.fork('discord')
 
-
 export const DEFAULT_CONFIG: Config = {
 	clientOptions: null,
 	sage: {

@@ -54,7 +54,9 @@ async function run(message: SpiritMessage): Promise<unknown> {
 		const { Robo } = await import('../core/robo.js')
 		Robo.start({ stateLoad }).catch((error) => {
 			logger.error(error)
-			logger.wait(`Robo failed to start, please check the logs for more information. Waiting for changes before retrying...`)
+			logger.wait(
+				`Robo failed to start, please check the logs for more information. Waiting for changes before retrying...`
+			)
 			process.exit(1)
 		})
 		isRobo = true

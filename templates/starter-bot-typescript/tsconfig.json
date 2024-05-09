@@ -1,9 +1,7 @@
 {
 	"compilerOptions": {
 		"target": "ESNext",
-		"lib": [
-			"esnext"
-		],
+		"lib": ["esnext"],
 		"allowJs": true,
 		"skipLibCheck": true,
 		"strict": true,
@@ -14,14 +12,8 @@
 		"resolveJsonModule": true,
 		"isolatedModules": true,
 		"incremental": true,
-		"typeRoots": [
-			"./env.d.ts"
-		]
+		"typeRoots": ["./env.d.ts"]
 	},
-	"include": [
-		"**/*.ts"
-	],
-	"exclude": [
-		"node_modules"
-	]
+	"include": ["**/*.ts"],
+	"exclude": ["node_modules"]
 }
