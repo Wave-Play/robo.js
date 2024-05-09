@@ -1,7 +1,7 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Flashcore
+# ⚡ Flashcore
 
 **Flashcore** is your Robo's built-in database—ready to hold onto all the key-value pairs your Robo needs for the long haul. Trust us, it's a breeze to use!
 

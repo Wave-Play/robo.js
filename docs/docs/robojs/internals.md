@@ -1,4 +1,4 @@
-# Understanding Internals
+# 👀 Understanding Internals
 
 Ready to understand how it comes alive? Here's a simplified overview of Robo.js's internals so you can get started with confidence.
 

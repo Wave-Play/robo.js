@@ -1,4 +1,4 @@
-# Modules
+# 📦 Modules
 
 Robo.js ain't just about power—it's all about keeping things neat and tidy too. That's where modules come in. Picture a module like a mini-bot, all packed up inside your main bot. You've got commands and events, all hanging out together under one roof.
 

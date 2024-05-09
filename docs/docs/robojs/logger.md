@@ -1,4 +1,4 @@
-# Logger
+# 📝 Logger
 
 Effective logging is key to understanding and debugging your Robo.js projects. While you can use JavaScript's native `console.log`, Robo.js offers a more advanced `logger` object for enhanced logging capabilities.
 

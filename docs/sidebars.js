@@ -28,7 +28,7 @@ const sidebars = {
 			items: [
 				{
 					id: 'discord-activities/overview',
-					label: 'Overview',
+					label: '✨ Overview',
 					type: 'doc'
 				}
 			]
@@ -39,7 +39,7 @@ const sidebars = {
 			items: [
 				{
 					id: 'discord-bots/overview',
-					label: 'Overview',
+					label: '✨ Overview',
 					type: 'doc'
 				},
 				'discord-bots/commands',
@@ -50,7 +50,7 @@ const sidebars = {
 				'discord-bots/middleware',
 				{
 					id: 'discord-bots/migrate',
-					label: 'Migrating',
+					label: '⭐ Migrating',
 					type: 'doc'
 				},
 				'discord-bots/secrets'
@@ -94,7 +94,7 @@ const sidebars = {
 			items: [
 				{
 					id: 'robojs/overview',
-					label: 'Overview',
+					label: '✨ Overview',
 					type: 'doc'
 				},
 				'robojs/cli',
@@ -103,7 +103,7 @@ const sidebars = {
 				'robojs/flashcore',
 				{
 					id: 'robojs/internals',
-					label: 'Internals',
+					label: '👀 Internals',
 					type: 'doc'
 				},
 				'robojs/logger',

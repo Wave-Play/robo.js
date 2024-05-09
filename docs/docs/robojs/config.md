@@ -1,4 +1,4 @@
-# Configuration
+# 🛠️ Configuration
 
 Customizing Robo.js to fit your needs is a piece of cake! 🍰 This guide will walk you through tweaking defaults, adding new intents, specifying permissions, changing sage mode behavior, and more.
 

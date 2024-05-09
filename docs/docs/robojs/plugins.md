@@ -1,6 +1,6 @@
-# Plugins
+# 🔌 Using Plugins
 
-Plugins empower developers to effortlessly add new features to their existing Robos.
+Plugins automatically grant your Robo new skills and features. They're easy to install and they're a great way to enhance your Robo's capabilities.
 
 ## Installing plugins
 
