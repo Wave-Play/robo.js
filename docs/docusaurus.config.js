@@ -183,7 +183,7 @@ const config = {
 					},
 					{ to: '/plugins', label: 'Plugins', position: 'left' },
 					{
-						href: 'https://discord.gg/fASAKnJxUP',
+						href: 'https://roboplay.dev/discord',
 						label: 'Discord Community',
 						position: 'left'
 					},
