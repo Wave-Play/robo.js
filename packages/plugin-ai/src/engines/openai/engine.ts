@@ -160,6 +160,7 @@ export class OpenAiEngine extends BaseEngine {
 							}
 						}
 					} else if (run.status === 'failed') {
+						logger.error(`Run failed:`, run)
 						throw new Error(`Run failed: ${run}`)
 					} else if (run.status === 'requires_action') {
 						const functionCall = run.required_action?.submit_tool_outputs.tool_calls[0]
