@@ -3,9 +3,9 @@ import { check, sleep } from 'k6'
 
 export const options = {
 	stages: [
-		{ duration: '15s', target: 5 },  // Low load (idle scenario)
+		{ duration: '15s', target: 5 }, // Low load (idle scenario)
 		{ duration: '45s', target: 100 }, // Ramp-up to high load (announcement scenario)
-		{ duration: '30s', target: 5 },  // Sustained low load
+		{ duration: '30s', target: 5 } // Sustained low load
 	]
 }
 

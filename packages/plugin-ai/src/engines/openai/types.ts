@@ -13,26 +13,32 @@ export interface Message {
 	created_at: number
 	thread_id: string
 	role: 'assistant' | 'user'
-	content: Array<{
-		type: 'image_file'
-		image_file: unknown
-	} | {
-		type: 'text',
-		text: {
-			value: string
-			annotations: Array<{
-				type: 'file_citation'
-				text: string
-				start_index: number
-				end_index: number
-			} | {
-				type: 'file_path'
-				text: string
-				start_index: number
-				end_index: number
-			}>
-		}
-	}>
+	content: Array<
+		| {
+				type: 'image_file'
+				image_file: unknown
+		  }
+		| {
+				type: 'text'
+				text: {
+					value: string
+					annotations: Array<
+						| {
+								type: 'file_citation'
+								text: string
+								start_index: number
+								end_index: number
+						  }
+						| {
+								type: 'file_path'
+								text: string
+								start_index: number
+								end_index: number
+						  }
+					>
+				}
+		  }
+	>
 	assistant_id: string | null
 	run_id: string | null
 	file_ids: string[]
@@ -45,13 +51,13 @@ export interface Run {
 	created_at: number
 	assistant_id: string
 	required_action?: {
-		type: 'submit_tool_outputs',
+		type: 'submit_tool_outputs'
 		submit_tool_outputs: {
 			tool_calls: Array<{
 				id: string
-				type: 'function',
+				type: 'function'
 				function: {
-					name: string,
+					name: string
 					arguments: string
 				}
 			}>
