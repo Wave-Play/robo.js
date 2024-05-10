@@ -13,6 +13,6 @@ export const env = {
 		api: process.env.ROBOPLAY_API ?? 'https://api.roboplay.dev',
 		debug: process.env.ROBOPLAY_DEBUG === 'true',
 		env: process.env.ROBOPLAY_ENV,
-		frontend: process.env.ROBOPLAY_FRONTEND ?? 'https://roboplay.dev',
+		frontend: process.env.ROBOPLAY_FRONTEND ?? 'https://roboplay.dev'
 	}
 }

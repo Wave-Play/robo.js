@@ -549,7 +549,9 @@ async function generateEntries<T>(
 					}
 
 					// Add the entry to the context type
-					(entries[contextType] as Record<string, T>)[fileKeys[1]] = entry
+					if (entries[contextType] as Record<string, T>) {
+						entries[fileKeys[1]] = entry
+					}
 				}
 
 				// Third level command? Add it to the parent subcommand (subcommand group)
