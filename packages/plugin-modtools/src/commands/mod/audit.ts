@@ -48,7 +48,7 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 						type: ComponentType.Button,
 						style: ButtonStyle.Danger,
 						label: isUserBanned ? 'Unban' : 'Ban',
-						customId: (isUserBanned ? Buttons.Unban.id : Buttons.Ban.id ) + '/' + user.id
+						customId: (isUserBanned ? Buttons.Unban.id : Buttons.Ban.id) + '/' + user.id
 					}
 				]
 			}

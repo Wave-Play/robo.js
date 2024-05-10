@@ -9,7 +9,7 @@ export function useSyncState<T>(initialState: T, key: (string | null)[]) {
 
 	const setSyncState = (newState: Partial<T> | ((prevState: T) => T)) => {
 		// Run updater function if provided that way
-		const currentState = cache[key.join('.')] as T ?? initialState
+		const currentState = (cache[key.join('.')] as T) ?? initialState
 
 		if (typeof newState === 'function') {
 			newState = newState(currentState)

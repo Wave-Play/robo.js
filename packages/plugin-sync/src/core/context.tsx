@@ -6,7 +6,9 @@ export const SyncContext = createContext<ReturnType<typeof setupSyncState>>({
 	cache: {},
 	connected: false,
 	registerCallback: () => '',
-	unregisterCallback: () => { /* no-op */ },
+	unregisterCallback: () => {
+		/* no-op */
+	},
 	ws: null as WebSocket | null
 })
 

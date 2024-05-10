@@ -65,7 +65,7 @@ export const Buttons = {
 	},
 	Unban: {
 		id: ID_NAMESPACE + 'button-unban'
-	},
+	}
 }
 
 export const Modals = {

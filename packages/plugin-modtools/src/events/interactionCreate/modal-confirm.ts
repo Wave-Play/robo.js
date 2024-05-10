@@ -24,9 +24,10 @@ export default async (interaction: ModalSubmitInteraction) => {
 	}
 
 	// Get and validate confirmation callback
-	const { callback } = getState<{ callback: (interaction: ModalSubmitInteraction) => void }>('modal-confirm', {
-		namespace: interaction.guildId + interaction.user.id
-	}) ?? {}
+	const { callback } =
+		getState<{ callback: (interaction: ModalSubmitInteraction) => void }>('modal-confirm', {
+			namespace: interaction.guildId + interaction.user.id
+		}) ?? {}
 
 	if (!callback) {
 		console.log(`No callback found for guild ${interaction.guildId}`)
