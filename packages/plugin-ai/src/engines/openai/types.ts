@@ -7,38 +7,40 @@ export interface File {
 	purpose?: string
 }
 
+interface MessageContentImageFile {
+	type: 'image_file'
+	image_file: unknown
+}
+
+interface MessageContentTextFileCitation {
+	type: 'file_citation'
+	text: string
+	start_index: number
+	end_index: number
+}
+
+interface MessageContentTextFilePath {
+	type: 'file_path'
+	text: string
+	start_index: number
+	end_index: number
+}
+
+interface MessageContentText {
+	type: 'text'
+	text: {
+		value: string
+		annotations: Array<MessageContentTextFileCitation | MessageContentTextFilePath>
+	}
+}
+
 export interface Message {
 	id: string
 	object: 'thread.message'
 	created_at: number
 	thread_id: string
 	role: 'assistant' | 'user'
-	content: Array<
-		| {
-				type: 'image_file'
-				image_file: unknown
-		  }
-		| {
-				type: 'text'
-				text: {
-					value: string
-					annotations: Array<
-						| {
-								type: 'file_citation'
-								text: string
-								start_index: number
-								end_index: number
-						  }
-						| {
-								type: 'file_path'
-								text: string
-								start_index: number
-								end_index: number
-						  }
-					>
-				}
-		  }
-	>
+	content: Array<MessageContentImageFile | MessageContentText>
 	assistant_id: string | null
 	run_id: string | null
 	file_ids: string[]
