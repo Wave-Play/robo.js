@@ -53,7 +53,7 @@
 	box-shadow: var(--ifm-global-shadow-lw);
 	display: flex;
 	flex-direction: column;
-	overflow: hidden
+	overflow: hidden;
 }
 
 .cardContainer {
@@ -63,7 +63,7 @@
 	border: 1px solid var(--ifm-color-emphasis-200);
 	box-shadow: 0 1.5px 3px 0 #00000026;
 	transition: all var(--ifm-transition-fast) ease;
-	transition-property: border,box-shadow
+	transition-property: border, box-shadow;
 }
 
 .cardContainer:hover {

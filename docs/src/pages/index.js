@@ -44,7 +44,7 @@ export default function Home() {
 			<main>
 				<HomepageFeatures />
 			</main>
-      <Footer className={'footer-home'}/>
+			<Footer className={'footer-home'} />
 		</Layout>
 	)
 }

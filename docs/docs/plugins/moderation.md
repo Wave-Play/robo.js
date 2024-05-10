@@ -49,6 +49,7 @@ Enhance user experience with context-specific commands:
 Moderation channels are dedicated spaces for tracking and managing server activities:
 
 <!-- - **Audit Logs**: Comprehensive records of user interactions and changes. -->
+
 - **Moderator Logs**: Detailed logs of every moderation action taken.
 - **Moderator Mail**: Central hub for receiving and managing user reports.
 
@@ -63,7 +64,7 @@ Once you add the plugin, run the `/mod setup` command as a moderator to configur
 
 ## AI Integration
 
-> *"**@SageBot** please ban **@Baguette** for spamming bread"*
+> _"**@SageBot** please ban **@Baguette** for spamming bread"_
 
 Integrate with [`@robojs/ai`](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-ai) to experience the next level of moderation. Use natural language for commands and watch your Robo execute them with AI's understanding.
 

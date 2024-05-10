@@ -260,9 +260,10 @@ export default async (interaction) => {
 	const challengeId = 'daily-challenge' // Example challenge ID
 
 	// Fetch the user's challenge participation state for this server
-	const userParticipation = (await getState(userId, {
+	const userParticipation =
+		(await getState(userId, {
 			namespace: interaction.guildId
-	})) ?? {}
+		})) ?? {}
 
 	// Increment the user's participation count for the specific challenge
 	const newParticipationCount = (userParticipation[challengeId] ?? 0) + 1
@@ -290,9 +291,10 @@ export default async (interaction: ChatInputCommandInteraction): Promise<Command
 	const challengeId = 'daily-challenge' // Example challenge ID
 
 	// Fetch the user's challenge participation state for this server
-	const userParticipation = (await getState(userId, {
+	const userParticipation =
+		(await getState(userId, {
 			namespace: interaction.guildId
-	})) ?? {}
+		})) ?? {}
 
 	// Increment the user's participation count for the specific challenge
 	const newParticipationCount = (userParticipation[challengeId] ?? 0) + 1
