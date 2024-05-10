@@ -13,6 +13,7 @@ export interface Config {
 		buildDirectory?: string
 		disableBot?: boolean
 		incrementalBuilds?: boolean
+		userInstall?: boolean
 	}
 	flashcore?: {
 		keyv?: unknown

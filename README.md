@@ -22,7 +22,6 @@
 
 [![GitHub license](https://img.shields.io/github/license/Wave-Play/robo)](https://github.com/Wave-Play/robo/blob/main/LICENSE) [![npm](https://img.shields.io/npm/v/robo.js)](https://www.npmjs.com/package/robo.js) [![install size](https://packagephobia.com/badge?p=robo.js@latest)](https://packagephobia.com/result?p=robo.js@latest) [![Discord](https://img.shields.io/discord/1087134933908193330?color=7289da)](https://roboplay.dev/discord) [![All Contributors](https://img.shields.io/github/all-contributors/Wave-Play/robo.js?color=cf7cfc)](#contributors)
 
-
 **Power up Discord with effortless activities, bots, web servers, and more!** ⚡
 
 Upgrade your Discord projects with effortless integration, dynamic plugins, and advanced debugging—unlocking the full potential of Discord.js and beyond. 🚀✨
@@ -89,9 +88,9 @@ For events, say you want to listen to `messageCreate` events. Create a `messageC
 
 ```javascript
 export default (message) => {
-    if (message.content.includes('hello')) {
-        message.channel.send('Hello there!');
-    }
+	if (message.content.includes('hello')) {
+		message.channel.send('Hello there!')
+	}
 }
 ```
 

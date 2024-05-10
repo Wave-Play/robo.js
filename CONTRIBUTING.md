@@ -8,13 +8,13 @@ Hey there! First and foremost, a big **THANK YOU** for showing interest in our p
 
 This document will guide you through the process of contributing to Robo.js.
 
-**Not a coder but got a neat idea?** No worries!  
+**Not a coder but got a neat idea?** No worries!
 
 **➞ [📝 Suggest features by creating a GitHub Issue](https://github.com/your-repo-name/issues)**
 
 **➞ [🚀 Community: Join our Discord server](https://roboplay.dev/discord)**
 
-Remember, contributing to the core is different from making your own Robo or plugin. If you're looking for a starter guide:  
+Remember, contributing to the core is different from making your own Robo or plugin. If you're looking for a starter guide:
 
 **➞ [📖 Tutorial: Making a "To-do" Robo](https://blog.waveplay.com/how-to-make-a-discord-robo)**
 
@@ -66,7 +66,7 @@ Got the right VS Code plugins? These tools will be a lot of help getting PRs app
 
 ## Running
 
-Ready to run the project? 
+Ready to run the project?
 
 1. **Fork the repo**: You'll need the entire monorepo to run the project.
 2. **Install dependencies**: Run `pnpm install` to install all dependencies for the monorepo.
@@ -74,7 +74,7 @@ Ready to run the project?
 4. **Build packages**: Run `pnpm build` to build all packages. This will build all packages in the monorepo. You can also navigate to a specific package and run `pnpm build` there to build just that package.
 5. **Test it out**: Whether you're working on the core or a plugin, you can test your changes by running `pnpm dev` in the package directory. You can then link your package to a Robo project using `pnpm add <dirToPkg>`.
 
-If you'd like to auto rebuild, you can run `pnpm dev` instead of `pnpm build`. This will start a watcher that will rebuild your package whenever you make changes. 
+If you'd like to auto rebuild, you can run `pnpm dev` instead of `pnpm build`. This will start a watcher that will rebuild your package whenever you make changes.
 
 Plus, if you ran your test Robo in `dev` mode after that, it will automatically reload when you make changes!
 
@@ -90,7 +90,7 @@ We highly encourage you to follow **[Conventional Commits](https://www.conventio
 
 We follow **[Semantic Versioning](https://semver.org/)** (SemVer) for packages v1.0.0 and up. Under that? The second digit is for breaking changes and the third for everything else.
 
-We also rely on **[Changesets](https://github.com/changesets/changesets)** for change management. Just run `pnpm changeset` and let the CLI guide you. 
+We also rely on **[Changesets](https://github.com/changesets/changesets)** for change management. Just run `pnpm changeset` and let the CLI guide you.
 
 Starting a new package? Use `0.0.0` as your initial version and Changesets will handle the rest.
 
