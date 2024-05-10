@@ -42,13 +42,16 @@ const filterEmpty =
 
 const hexToRgb = (hex: string) => {
 	const match = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
-	return match
-		? {
-				r: parseInt(match[1], 16),
-				g: parseInt(match[2], 16),
-				b: parseInt(match[3], 16)
-		  }
-		: null
+
+	if (!match) {
+		return null
+	}
+
+	return {
+		r: parseInt(match[1], 16),
+		g: parseInt(match[2], 16),
+		b: parseInt(match[3], 16)
+	}
 }
 
 const init = (
