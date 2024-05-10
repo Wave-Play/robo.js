@@ -3,7 +3,6 @@ import type { ClientOptions, PermissionsString } from 'discord.js'
 import type { Plugin, SageOptions } from './index.js'
 
 export interface Config {
-	userinstall_enabled: boolean
 	clientOptions?: ClientOptions
 	defaults?: {
 		dev?: boolean
@@ -14,6 +13,7 @@ export interface Config {
 		buildDirectory?: string
 		disableBot?: boolean
 		incrementalBuilds?: boolean
+		userInstall?: boolean
 	}
 	flashcore?: {
 		keyv?: unknown

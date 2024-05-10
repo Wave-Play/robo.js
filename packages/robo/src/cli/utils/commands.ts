@@ -337,7 +337,6 @@ export async function registerCommands(
 		const addedContextChanges = addedContextCommands.map((cmd) => color.green(`${color.bold(cmd)} (new)`))
 		const removedContextChanges = removedContextCommands.map((cmd) => color.red(`${color.bold(cmd)} (deleted)`))
 		const updatedContextChanges = changedContextCommands.map((cmd) => color.blue(`${color.bold(cmd)} (updated)`))
-		const userinstall_enabled: boolean = config.userinstall_enabled
 		const allChanges = [...addedChanges, ...removedChanges, ...updatedChanges]
 		const allContextChanges = [...addedContextChanges, ...removedContextChanges, ...updatedContextChanges]
 		if (allChanges.length > 0) {
@@ -351,15 +350,18 @@ export async function registerCommands(
 			...contextMessageCommands.map((command) => command.toJSON()),
 			...contextUserCommands.map((command) => command.toJSON())
 		]
-		if (userinstall_enabled == true) {
-			logger.info('User install is enabled, injecting user install ')
-			slashCommands.map((command) => {
-				const commandData = command.toJSON()
-				commandData.integration_types = [0, 1] // Injecting the integration_types property
-				commandData.contexts = [0, 1, 2] // Injecting the context property
-				return commandData
+
+		// Inject user install if enabled
+		if (config.experimental?.userInstall) {
+			commandData.forEach((command) => {
+				// @ts-expect-error - Types outdated
+				command.integration_types = [0, 1]
+				// @ts-expect-error - Types outdated
+				command.contexts = [0, 1, 2]
 			})
 		}
+
+		// Get existing commands
 		const existingCommands = (await rest.get(
 			guildId ? Routes.applicationGuildCommands(clientId, guildId) : Routes.applicationCommands(clientId)
 		)) as APIApplicationCommand[]
@@ -411,7 +413,12 @@ export async function registerCommands(
 		}
 
 		const endTime = Date.now() - startTime
-		const commandType = guildId ? 'guild' : 'global'
+		let commandType = guildId ? 'guild' : 'global'
+
+		if (config.experimental?.userInstall) {
+			commandType += ' and user install'
+		}
+
 		logger.info(`Successfully updated ${color.bold(commandType + ' commands')} in ${endTime}ms`)
 		logger.info(color.dim('It may take a while for the changes to reflect in Discord.'))
 		await Flashcore.delete(FLASHCORE_KEYS.commandRegisterError)
