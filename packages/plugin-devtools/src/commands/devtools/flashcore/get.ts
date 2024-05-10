@@ -27,7 +27,12 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 	const value = await Flashcore.get(key, { namespace })
 
 	// Log the result
-	logger.custom('dev', `Flashcore.get(${key}):`, value, `- Time: ${Date.now() - start}ms - Namespace: ${namespace} - Type: ${typeof value}`)
+	logger.custom(
+		'dev',
+		`Flashcore.get(${key}):`,
+		value,
+		`- Time: ${Date.now() - start}ms - Namespace: ${namespace} - Type: ${typeof value}`
+	)
 
 	// Render as fancy embed
 	return {

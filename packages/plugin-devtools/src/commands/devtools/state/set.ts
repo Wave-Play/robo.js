@@ -146,7 +146,8 @@ export const autocomplete = (interaction: AutocompleteInteraction) => {
 		}))
 	} else if (focus.name === 'fork') {
 		const focusedValue = focus.value.trim().toLowerCase()
-		return State.listForks().filter((fork) => fork.includes(focusedValue)).map((fork) => ({ name: fork, value: fork }))
+		return State.listForks()
+			.filter((fork) => fork.includes(focusedValue))
+			.map((fork) => ({ name: fork, value: fork }))
 	}
 }
- 
