@@ -61,7 +61,9 @@ export default {
 	plugins: [],
 	type: 'robo',
 	watcher: {
-		ignore: ['src${IS_WINDOWS ? '\\\\' : '/'}app', 'src${IS_WINDOWS ? '\\\\' : '/'}components', 'src${IS_WINDOWS ? '\\\\' : '/'}hooks']
+		ignore: ['src${IS_WINDOWS ? '\\\\' : '/'}app', 'src${IS_WINDOWS ? '\\\\' : '/'}components', 'src${
+	IS_WINDOWS ? '\\\\' : '/'
+}hooks']
 	}
 }\n`
 
