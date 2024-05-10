@@ -80,7 +80,7 @@ Got files or directories you don't want to include in the final build? Use exclu
 **Use cases:**
 
 - Keeping test files out of the build.
-- Preventing sensitive JSON files (like config or secrets) from being copied over
+- Preventing sensitive files (like config or secrets) from being copied over
 
 ```js
 excludePaths: ['/src/test', '/src/modules/example/statics.json']
@@ -99,14 +99,16 @@ This feature works with directory and file prefixes, not glob patterns.
 Activate experimental features or revert to older behaviors for compatibility. This field takes an object containing the following optional boolean values:
 
 - `buildDirectory`: Determine where to compile your code. The default is `.robo/build`, but you can specify another location.
+- `disableBot`: Turn off bot features, allowing you to run Robo.js without a bot.
 - `incrementalBuilds`: Enable incremental builds to improve build performance by only recompiling changed files.
-- `legacyProcess`: Switch back to the older child process runtime model. Recommended only if you encounter issues with the newer thread-based model.
+- `userInstall`: Optimize command registration for user-installed apps.
 
 ```js
 experimental: {
-  buildDirectory: 'dist',
-  incrementalBuilds: true,
-  legacyProcess: false
+	buildDirectory: 'dist',
+	disableBot: true,
+	incrementalBuilds: true,
+	userInstall: true
 }
 ```
 

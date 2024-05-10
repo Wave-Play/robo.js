@@ -333,3 +333,24 @@ robo build --force
 ```
 
 This will also clean up any commands that are no longer in your `commands` directory. Pretty neat, right?
+
+## User Installs
+
+Robo.js now supports commands for user-installed apps! You will need to set experimental `userInstall` to `true` in your config file to enable this feature.
+
+```javascript title="/config/robo.mjs"
+export default {
+	// ... other config options
+	experimental: {
+		userInstall: true
+	}
+}
+```
+
+With this enabled, users can install your app and use its commands anywhere!
+
+:::tip
+
+Make sure you **[update your install settings](https://discord.com/developers/docs/tutorials/developing-a-user-installable-app#configuring-default-install-settings)** in the **[Discord Developer Portal](https://discord.com/developers/applications)** to allow user installs.
+
+:::
