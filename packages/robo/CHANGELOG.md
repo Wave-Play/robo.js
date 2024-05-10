@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.10.7
+
+### Patch Changes
+
+- d6138ef: feat: experimental support for user installs
+
 ## 0.10.6
 
 ### Patch Changes

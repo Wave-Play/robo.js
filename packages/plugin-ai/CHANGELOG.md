@@ -1,5 +1,14 @@
 # @roboplay/plugin-ai
 
+## 0.5.3
+
+### Patch Changes
+
+- 26780ac: patch: better error logging for failed runs
+- Updated dependencies [d6138ef]
+  - robo.js@0.10.7
+  - @robojs/server@0.4.5
+
 ## 0.5.2
 
 ### Patch Changes
