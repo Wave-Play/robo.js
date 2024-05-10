@@ -130,7 +130,7 @@ Want to add position (x, y) to each player and allow them to move? Piece of cake
 ```diff
 --- a/src/app/Activity.tsx
 +++ b/src/app/Activity.tsx
-@@ -2,9 +2,41 @@ 
+@@ -2,9 +2,41 @@
 +import { useEffect } from 'react'
  import { Player } from './Player'
 -import { usePlayers } from '../hooks/usePlayers'
