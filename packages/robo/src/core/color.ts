@@ -45,12 +45,12 @@ const hexToRgb = (hex: string) => {
 
 	if (!match) {
 		return null
-	}
-
-	return {
-		r: parseInt(match[1], 16),
-		g: parseInt(match[2], 16),
-		b: parseInt(match[3], 16)
+	} else {
+		return {
+			r: parseInt(match[1], 16),
+			g: parseInt(match[2], 16),
+			b: parseInt(match[3], 16)
+		}
 	}
 }
 
