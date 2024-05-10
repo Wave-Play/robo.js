@@ -1,6 +1,6 @@
 # @robojs/ai
 
-This plugin morphs your Robo into a sophisticated AI chatbot. By simply mentioning it or replying to its messages on Discord, you initiate a natural conversation - as if you're chatting with a fellow human!
+This plugin morphs your **[Robo](https://github.com/Wave-Play/robo.js)** into a sophisticated AI chatbot. By simply mentioning it or replying to its messages on Discord, you initiate a natural conversation - as if you're chatting with a fellow human!
 
 > 🔑 To bring this magic to life, secure an **[OpenAI API key](https://openai.com/)**. Set it as an environment variable named `OPENAI_API_KEY`, and your Robo is good to go.
 
@@ -75,7 +75,7 @@ What's more, your Robo will remember what it learns, so it can use it in future 
 Here's a quick look at all the settings you can play with:
 
 ```js
-// config/plugins/roboplay/plugin-ai.mjs
+// config/plugins/robojs/ai.mjs
 export default {
 	// Model for your AI. You might stick with the default. (string)
 	model: 'gpt-3.5-turbo',
@@ -89,10 +89,12 @@ export default {
 	// Knowledge injection & long-term memory. (boolean; default: true)
 	insights: true,
 
+	// Assistant API delay for OpenAI rate limiting (number; default: 1_000)
+	pollDelay: 4_000,
+
 	// If specified, your AI will only respond to messages in these channels. (object with array of string IDs)
 	restrict: {
 		channelIds: ['channelID3']
-		// TODO: We can also add a "roleIds" field here to restrict by role.
 	},
 
 	// Special channels where Robo talks freely. (object with array of string IDs)
@@ -174,3 +176,14 @@ export default class LlamaModel extends BaseEngine {
 ```
 
 > **Warning:** The custom model API is still in beta. It may change in the future.
+
+## Troubleshooting 🛠️
+
+If you encounter any issues with this plugin, feel free to reach out to us on **[Discord](https://discord.gg/roboplay)**. We're always here to help you out!
+
+### Common Issues
+
+- **OpenAI API Key**: Ensure you've set your OpenAI API key as an environment variable named `OPENAI_API_KEY` and set up billing on the OpenAI platform.
+- **Permissions**: Make sure your Robo has the necessary permissions to read and send messages in the channels you've configured, including the Message Content intent.
+- **Rate Limiting**: If you're hitting rate limits, try increasing the `pollDelay` config in your `config/plugins/robojs/ai.mjs` file.
+- **Insights**: Ensure your `/documents` folder is correctly set up and contains **[valid text files](https://platform.openai.com/docs/assistants/tools/file-search/supported-files)**. You may need to explicitly tell your Robo to use the uploaded files in your `systemMessage`.
