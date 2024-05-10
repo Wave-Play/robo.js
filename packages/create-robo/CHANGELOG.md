@@ -1,5 +1,13 @@
 # create-robo
 
+## 0.11.13
+
+### Patch Changes
+
+- c120a28: chore: updated default plugin readme
+- Updated dependencies [d6138ef]
+  - robo.js@0.10.7
+
 ## 0.11.12
 
 ### Patch Changes
