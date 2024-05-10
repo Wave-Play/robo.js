@@ -33,7 +33,7 @@ The environment variables below are not strictly necessary, but they're sure to 
 
 ### DISCORD_GUILD_ID
 
-Setting up a `DISCORD_GUILD_ID` environment variable is a neat trick for testing. It ensures that any new commands you create only get applied to the Discord server this ID belongs to. To learn more about setting up test Discord servers, check out our [previous documentation](/docs/getting-started.md). To get the `DISCORD_GUILD_ID`, follow these steps:
+Setting up a `DISCORD_GUILD_ID` environment variable is a neat trick for testing. It ensures that any new commands you create only get applied to the Discord server this ID belongs to. To learn more about setting up test Discord servers, check out our [previous documentation](./overview). To get the `DISCORD_GUILD_ID`, follow these steps:
 
 1. Open Discord and navigate to the server you want to use.
 2. Right-click the server icon and click "Copy ID."
@@ -64,7 +64,7 @@ Remember to replace `{your_debug_channel_id}` with the value you just obtained.
 
 :::warning 🚨 Note
 
-Using `DISCORD_DEBUG_CHANNEL_ID` is not strictly necessary, and we gently discourage its use. You shouldn't just shove errors away in a place where you can ignore them. Instead, check out the [Debugging Documentation](/docs/advanced/debugging.md) to learn how to handle errors effectively.
+Using `DISCORD_DEBUG_CHANNEL_ID` is not strictly necessary, and we gently discourage its use. You shouldn't just shove errors away in a place where you can ignore them. Instead, check out the [Debugging Documentation](./debug) to learn how to handle errors effectively.
 
 :::
 

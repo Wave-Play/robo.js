@@ -42,7 +42,7 @@ This will start your Robo.js server, making it accessible to the world.
 
 ## Extra tidbits
 
-Unlike **[Hosting on RoboPlay](./roboplay.md)**, self-hosting your Robo.js project means you're responsible for keeping your server up and running. Make sure you have the necessary resources and knowledge to maintain your server before self-hosting your Robo.js project.
+Unlike **[Hosting on RoboPlay](./roboplay)**, self-hosting your Robo.js project means you're responsible for keeping your server up and running. Make sure you have the necessary resources and knowledge to maintain your server before self-hosting your Robo.js project.
 
 The following are things that are already set up for you when you host on RoboPlay, but good to know when self-hosting.
 

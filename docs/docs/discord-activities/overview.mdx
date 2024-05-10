@@ -3,14 +3,14 @@ import { CardRow } from '@site/src/components/shared/CardRow'
 
 # Discord Activities Overview
 
-Robo.js is a powerful framework that allows you to create Discord activities with ease, **[among other things](../discord-bots/overview)**. This section will explain all the concepts behind **[Discord Activities](https://support.discord.com/hc/en-us/articles/4422142836759-Activities-on-Discord)**, and how they are simplified with Robo.js.
+**Robo.js** is a powerful framework that allows you to create **[Discord Activities](https://support.discord.com/hc/en-us/articles/4422142836759-Activities-on-Discord)** with ease, **[among other things](../discord-bots/overview)**. This section will explain all the concepts behind them, and how they are simplified with Robo.js.
 
 ## Getting Started
 
 Ready to embark on this adventure? Creating a Discord Activity with Robo.js is as easy as running one command.
 
 ```bash
-npx create-robo <projectName> --kit activity
+npx create-robo <projectName> -k activity
 ```
 
 This will walk you through setting up your project and installing the necessary dependencies. Once selected, you can run and start developing your Discord Activity right away!
@@ -19,33 +19,33 @@ This will walk you through setting up your project and installing the necessary 
 	<Card
 		href="https://dev.to/waveplay/how-to-build-a-discord-activity-easily-with-robojs-5bng"
 		title="📚 Tutorial"
-		description="How to create a Discord Activity in seconds"
+		description="How to create a Discord Activity in seconds."
 	/>
 </CardRow>
 
 ## What are Discord Activities?
 
-Discord Activities are interactive experiences that users can engage with on Discord. They can be games, quizzes, or any other type of interactive content that users can play with. Basically, they are mini web apps that run inside Discord via iframes!
+Discord Activities are web apps that run inside Discord. They can be games, quizzes, or any other type of interactive content that users can play with.
 
-Just like a regular web app, Discord Activities are built using **[HTML](https://developer.mozilla.org/en-US/docs/Web/HTTP)**, **[CSS](https://developer.mozilla.org/en-US/docs/Web/CSS)**, and **[JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript)**. You can use any front-end framework you like, such as **[React](https://react.dev/)**, **[Vue](https://vuejs.org/)**, **[Svelte](https://svelte.dev/)**, or none at all. The only difference is that you need to use **[Discord's Embedded App SDK](https://github.com/discord/embedded-app-sdk/)** to interact with Discord's APIs.
+Activities can be built using **[HTML](https://developer.mozilla.org/en-US/docs/Web/HTTP)**, **[CSS](https://developer.mozilla.org/en-US/docs/Web/CSS)**, and **[JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript)**, alongside any frontend framework such as **[React](https://react.dev/)**, **[Vue](https://vuejs.org/)**, **[Svelte](https://svelte.dev/)**, or none at all. They use **[Discord's Embedded App SDK](https://github.com/discord/embedded-app-sdk/)** to interact with Discord APIs.
 
 ## How does Robo.js help?
 
-Robo.js simplifies the process of creating Discord Activities by providing a file-based structure, an integrated database, TypeScript support, and a multitude of plugin-powered skills to unlock along the way. It is designed to be simple and easy to use.
+Robo.js simplifies the process by providing an ecosystem of plugins and features to help you build your Discord Activity faster and more efficiently. It is designed to be simple and easy to use.
 
 Here's what you can expect:
 
-- **[Single Project](../robojs/files)**: Everything is in one place, making it easy to manage. No need to set up separate backend and frontend projects then connect them together.
-- **[Integrated Database](../robojs/flashcore)**: Robo.js comes with an optional integrated database, so you don't have to worry about setting up a database server. You can store data directly in your project, or using an external database of your choice via adapters.
+- **[One Project](../robojs/files)**: Everything is in one place, making it easy to manage. No more separate backend and frontend projects.
+- **[Integrated Database](../robojs/flashcore)**: Robo.js has an built-in KV database that can be pointed to any data source via adapters.
 - **[TypeScript Support](../create-robo/typescript)**: TypeScript works out of the box, so you can use it without any additional setup.
-- **[Built-in Tunnels](./tunnels)**: The Robo.js CLI automatically sets up free Cloudflare tunnels for easy testing.
-- **[Plugin System](../plugins/overview)**: Robo.js has a powerful plugin system that allows you to extend your project with additional features. Because of the file-based structure, plugins seamlessly integrate with your project's backend and frontend alike.
-- **[Easy Hosting](../hosting/overview)**: Robo.js makes it easy to deploy your project to the web. Just run `robo deploy` and your project will be live for others to use in seconds.
-- **[Ecosystem](../plugins/overview)**: Robo.js has a growing ecosystem of plugins, templates, and tools to help you build your project faster and more powerful with less effort.
+- **[Built-in Tunnels](./tunnels)**: The Robo CLI automatically sets up free Cloudflare tunnels for easy testing.
+- **[Plugin System](../plugins/overview)**: Extend your activity's features with plugins that seamlessly add new functionality.
+- **[Easy Hosting](../hosting/overview)**: Deploy your activity for others to use with just one command, or self-host it on your own.
+- **[Ecosystem](../plugins/overview)**: A growing ecosystem of plugins, templates, and tools to help you build faster with less effort.
 
 ## Documentation
 
-Discord Activities are similar to regular web apps, but there are a few unique things you should know.
+Discord Activities are similar to web apps, but there are a few unique things you should know.
 
 This documentation covers everything you need to know about creating Discord Activities with Robo.js, from setting up your project to adding features and deploying it for others to use.
 
@@ -74,38 +74,38 @@ Sage is powered by **[@robojs/ai](../plugins/ai)** and can answer your questions
 
 ## Templates
 
-We have a collection of templates that you can use to kickstart your project or just use as a reference. Check them out on our GitHub repository!
+We have a collection of templates that you can use to kickstart your project or just use as a reference.
 
-Want to contribute your own? Feel free to submit a pull request!
+Want to contribute your own? Submit a pull request!
 
 <CardRow>
 	<Card
 		href="https://github.com/Wave-Play/robo.js/tree/main/templates/starter-app-js-react"
-		title="📚 Starter React Project (JavaScript)"
+		title="📚 Starter React (JS)"
 		description="A basic JavaScript project using React."
 	/>
 	<Card
 		href="https://github.com/Wave-Play/robo.js/tree/main/templates/starter-app-ts-react"
-		title="📚 Starter React Project (TypeScript)"
+		title="📚 Starter React (TS)"
 		description="A basic TypeScript project using React."
 	/>
 </CardRow>
 <CardRow>
 	<Card
 		href="https://github.com/Wave-Play/robo.js/tree/main/templates/starter-activity-javascript"
-		title="📚 Starter Vanilla Project (JavaScript)"
+		title="📚 Starter Vanilla (JS)"
 		description="A basic JavaScript project without any frameworks."
 	/>
 	<Card
 		href="https://github.com/Wave-Play/robo.js/tree/main/templates/starter-activity-typescript"
-		title="📚 Starter Vanilla Project (TypeScript)"
+		title="📚 Starter Vanilla (TS)"
 		description="A basic TypeScript project without any frameworks."
 	/>
 </CardRow>
 <CardRow>
 	<Card
 		href="https://github.com/Wave-Play/robo.js/tree/main/templates/starter-activity-javascript"
-		title="📚 Colyseus Project (TypeScript)"
+		title="📚 Colyseus Demo (TS)"
 		description="A simplified TypeScript project using Colyseus."
 	/>
 	<Card

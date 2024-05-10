@@ -56,16 +56,13 @@ export default async (interaction: ButtonInteraction) => {
 	// Log action to modlogs channel
 	if (interaction.channelId !== logsChannelId) {
 		const testPrefix = testMode ? '[TEST] ' : ''
+		const avatar = userAvatar ? { url: userAvatar } : undefined
 		logAction(interaction.guildId, {
 			embeds: [
 				{
 					title: testPrefix + `Unban`,
 					description: `User <@${userId}> has been unbanned`,
-					thumbnail: userAvatar
-						? {
-								url: userAvatar
-						  }
-						: undefined,
+					thumbnail: avatar,
 					color: Colors.Green,
 					timestamp: new Date().toISOString(),
 					footer: {
