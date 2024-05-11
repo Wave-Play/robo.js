@@ -65,7 +65,7 @@
 	},
 	"peerDependencies": {
 		"react": "^18.0.0",
-		"robo.js": "^0.10.7"
+		"robo.js": "^0.10.8"
 	},
 	"peerDependenciesMeta": {
 		"react": {

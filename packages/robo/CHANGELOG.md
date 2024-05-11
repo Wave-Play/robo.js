@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.10.8
+
+### Patch Changes
+
+- bf6db2e: fix: context commands not adding to manifest properly
+
 ## 0.10.7
 
 ### Patch Changes
