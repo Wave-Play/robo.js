@@ -1,5 +1,12 @@
 # create-robo
 
+## 0.11.14
+
+### Patch Changes
+
+- Updated dependencies [bf6db2e]
+  - robo.js@0.10.8
+
 ## 0.11.13
 
 ### Patch Changes
