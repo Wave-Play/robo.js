@@ -25,33 +25,7 @@ const sidebars = {
 		},
 		{
 			type: 'category',
-			label: 'Creating Projects',
-			items: [
-				{
-					id: 'create-robo/overview',
-					label: 'Overview',
-					type: 'doc'
-				},
-				'create-robo/linting',
-				'create-robo/typescript'
-			]
-		},
-		{
-			type: 'category',
-			label: 'Hosting',
-			items: [
-				{
-					id: 'hosting/overview',
-					label: 'Overview',
-					type: 'doc'
-				},
-				'hosting/roboplay',
-				'hosting/self-host'
-			]
-		},
-		{
-			type: 'category',
-			label: 'Robo.js',
+			label: 'Core Package',
 			items: [
 				{
 					id: 'robojs/overview',
@@ -73,6 +47,32 @@ const sidebars = {
 				'robojs/portal',
 				'robojs/sage',
 				'robojs/states'
+			]
+		},
+		{
+			type: 'category',
+			label: 'Creating Projects',
+			items: [
+				{
+					id: 'create-robo/overview',
+					label: '✨ Overview',
+					type: 'doc'
+				},
+				'create-robo/linting',
+				'create-robo/typescript'
+			]
+		},
+		{
+			type: 'category',
+			label: 'Hosting',
+			items: [
+				{
+					id: 'hosting/overview',
+					label: '✨ Overview',
+					type: 'doc'
+				},
+				'hosting/roboplay',
+				'hosting/self-host'
 			]
 		},
 		{
@@ -131,7 +131,7 @@ const sidebars = {
 			items: [
 				{
 					id: 'plugins/overview',
-					label: 'Overview',
+					label: '✨ Overview',
 					type: 'doc'
 				},
 				'plugins/ai',

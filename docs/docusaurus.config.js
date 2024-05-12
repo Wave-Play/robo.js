@@ -138,8 +138,7 @@ const config = {
 		[
 			'docusaurus-plugin-remote-content',
 			{
-				performCleanup: false,
-				name: 'markdown-content',
+				name: 'plugin-docs',
 				sourceBaseUrl: 'https://raw.githubusercontent.com/Wave-Play/robo.js/main/',
 				outDir: 'docs',
 				documents: [
@@ -153,7 +152,6 @@ const config = {
 					'packages/plugin-sync/README.md'
 				],
 				modifyContent: (filename, content) => {
-					console.log('filename', filename)
 					/*if (['CONTRIBUTING.md'].includes(filename)) {
 						// Return up to the "## Contributors" section
 						let newContent = content.split('## Contributors')[0]
@@ -168,7 +166,6 @@ const config = {
 					if (filename.includes('packages/plugin-')) {
 						// Normalize filename
 						let newFilename = 'plugins/' + filename.split('packages/plugin-')[1].replace('/README.md', '.mdx')
-						console.log(`Modified filename:`, newFilename)
 
 						// Some plugins need renamed
 						if (newFilename === 'plugins/api.mdx') {
@@ -181,11 +178,11 @@ const config = {
 
 						// Remove content above # pluginName
 						const pluginName = newFilename.replace('plugins/', '@robojs/').replace('.mdx', '')
-						console.log(`Plugin name:`, pluginName)
-						let newContent = content
 						const token = `# ${pluginName}`
+						let newContent = content
+
 						if (content.includes(token)) {
-						 	newContent = token + content.split(token)[1]
+							newContent = token + content.split(token)[1]
 						}
 
 						// Add copy disclaimer at the end of the content
