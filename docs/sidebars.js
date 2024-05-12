@@ -46,7 +46,7 @@ const sidebars = {
 				'robojs/plugins',
 				'robojs/portal',
 				'robojs/sage',
-				'robojs/states'
+				'robojs/state'
 			]
 		},
 		{

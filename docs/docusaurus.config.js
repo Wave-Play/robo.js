@@ -130,7 +130,7 @@ const config = {
 					},
 					{
 						from: '/docs/basics/states',
-						to: '/robojs/states'
+						to: '/robojs/state'
 					}
 				]
 			}
