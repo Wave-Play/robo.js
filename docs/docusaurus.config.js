@@ -134,6 +134,74 @@ const config = {
 					}
 				]
 			}
+		],
+		[
+			'docusaurus-plugin-remote-content',
+			{
+				performCleanup: false,
+				name: 'markdown-content',
+				sourceBaseUrl: 'https://raw.githubusercontent.com/Wave-Play/robo.js/main/',
+				outDir: 'docs',
+				documents: [
+					'packages/plugin-ai/README.md',
+					'packages/plugin-ai-voice/README.md',
+					'packages/plugin-api/README.md',
+					'packages/plugin-better-stack/README.md',
+					'packages/plugin-devtools/README.md',
+					'packages/plugin-maintenance/README.md',
+					'packages/plugin-modtools/README.md',
+					'packages/plugin-sync/README.md'
+				],
+				modifyContent: (filename, content) => {
+					console.log('filename', filename)
+					/*if (['CONTRIBUTING.md'].includes(filename)) {
+						// Return up to the "## Contributors" section
+						let newContent = content.split('## Contributors')[0]
+
+						// Remove all <!-- --> comments
+						newContent = newContent.replace(/<!--[\s\S]*?-->/g, '')
+
+						console.log(`Modified content:`, newContent)
+						return newContent
+					}*/
+
+					if (filename.includes('packages/plugin-')) {
+						// Normalize filename
+						let newFilename = 'plugins/' + filename.split('packages/plugin-')[1].replace('/README.md', '.mdx')
+						console.log(`Modified filename:`, newFilename)
+
+						// Some plugins need renamed
+						if (newFilename === 'plugins/api.mdx') {
+							newFilename = 'plugins/server.mdx'
+						} else if (newFilename === 'plugins/devtools.mdx') {
+							newFilename = 'plugins/dev.mdx'
+						} else if (newFilename === 'plugins/modtools.mdx') {
+							newFilename = 'plugins/moderation.mdx'
+						}
+
+						// Remove content above # pluginName
+						const pluginName = newFilename.replace('plugins/', '@robojs/').replace('.mdx', '')
+						console.log(`Plugin name:`, pluginName)
+						let newContent = content
+						const token = `# ${pluginName}`
+						if (content.includes(token)) {
+						 	newContent = token + content.split(token)[1]
+						}
+
+						// Add copy disclaimer at the end of the content
+						const head = `import { Card } from '@site/src/components/shared/Card'\nimport { CardRow } from '@site/src/components/shared/CardRow'\n\n`
+						const link = `\n\n---\n\n## More on GitHub\n\n<CardRow><Card href="https://dev.to/waveplay/how-to-build-a-discord-activity-easily-with-robojs-5bng" title="🔗 GitHub Repository" description="Explore source code on GitHub."/></CardRow>`
+						newContent = head + newContent + link
+
+						return {
+							content: newContent,
+							filename: newFilename
+						}
+					}
+
+					return undefined
+				}
+			}
 		]
 	],
 

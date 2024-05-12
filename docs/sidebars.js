@@ -25,7 +25,7 @@ const sidebars = {
 		},
 		{
 			type: 'category',
-			label: 'Create Robo',
+			label: 'Creating Projects',
 			items: [
 				{
 					id: 'create-robo/overview',
