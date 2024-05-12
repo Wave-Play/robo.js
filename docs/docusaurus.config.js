@@ -93,6 +93,10 @@ const config = {
 						to: '/discord-bots/getting-started'
 					},
 					{
+						from: '/docs/basics/sage',
+						to: '/discord-bots/sage'
+					},
+					{
 						from: '/docs/basics/secrets',
 						to: '/discord-bots/secrets'
 					},
@@ -131,10 +135,6 @@ const config = {
 					{
 						from: '/docs/advanced/portal',
 						to: '/robojs/portal'
-					},
-					{
-						from: '/docs/basics/sage',
-						to: '/robojs/sage'
 					},
 					{
 						from: '/docs/basics/states',

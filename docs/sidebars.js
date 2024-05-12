@@ -34,7 +34,6 @@ const sidebars = {
 				},
 				'robojs/cli',
 				'robojs/config',
-				'robojs/files',
 				'robojs/flashcore',
 				{
 					id: 'robojs/internals',
@@ -49,7 +48,7 @@ const sidebars = {
 					type: 'doc'
 				},
 				'robojs/portal',
-				'robojs/sage',
+				'robojs/files',
 				'robojs/state'
 			]
 		},
@@ -116,6 +115,7 @@ const sidebars = {
 					label: '⭐ Migrating',
 					type: 'doc'
 				},
+				'discord-bots/sage',
 				'discord-bots/secrets'
 			]
 		},
@@ -192,6 +192,11 @@ const sidebars = {
 					type: 'category',
 					label: 'Discord Bots',
 					items: [
+						{
+							type: 'link',
+							label: 'Economy TS',
+							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/economy-bot'
+						},
 						{
 							type: 'link',
 							label: 'Starter JS',

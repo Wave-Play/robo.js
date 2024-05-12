@@ -1,4 +1,4 @@
-# 📂 File Structure
+# 📂 Robo File Structure
 
 The primary way to create with Robo.js is through the file structure. This is the foundation of Robo.js and is used to determine your project's functionality.
 
