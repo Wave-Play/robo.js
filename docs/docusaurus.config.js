@@ -53,6 +53,10 @@ const config = {
 						to: '/create-robo/typescript'
 					},
 					{
+						from: '/discord-activities/overview',
+						to: '/discord-activities/getting-started'
+					},
+					{
 						from: '/docs/basics/commands',
 						to: '/discord-bots/commands'
 					},
@@ -82,7 +86,11 @@ const config = {
 					},
 					{
 						from: '/docs/basics/overview',
-						to: '/discord-bots/overview'
+						to: '/discord-bots/getting-started'
+					},
+					{
+						from: '/discord-bots/overview',
+						to: '/discord-bots/getting-started'
 					},
 					{
 						from: '/docs/basics/secrets',

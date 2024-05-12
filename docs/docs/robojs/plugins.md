@@ -1,4 +1,4 @@
-# 🔌 Using Plugins
+# 🔌 Instant Skills with Plugins
 
 Plugins automatically grant your Robo new skills and features. They're easy to install and they're a great way to enhance your Robo's capabilities.
 

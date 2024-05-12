@@ -43,7 +43,11 @@ const sidebars = {
 				},
 				'robojs/logger',
 				'robojs/modules',
-				'robojs/plugins',
+				{
+					id: 'robojs/plugins',
+					label: '🔌 Plugins',
+					type: 'doc'
+				},
 				'robojs/portal',
 				'robojs/sage',
 				'robojs/state'
@@ -85,7 +89,7 @@ const sidebars = {
 			label: 'Discord Activities',
 			items: [
 				{
-					id: 'discord-activities/overview',
+					id: 'discord-activities/getting-started',
 					label: '✨ Getting Started',
 					type: 'doc'
 				},
@@ -97,7 +101,7 @@ const sidebars = {
 			label: 'Discord Bots',
 			items: [
 				{
-					id: 'discord-bots/overview',
+					id: 'discord-bots/getting-started',
 					label: '✨ Getting Started',
 					type: 'doc'
 				},
