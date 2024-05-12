@@ -153,6 +153,11 @@ const sidebars = {
 			label: 'Templates',
 			items: [
 				{
+					id: 'templates/overview',
+					label: '✨ Overview',
+					type: 'doc'
+				},
+				{
 					type: 'category',
 					label: 'Discord Activities',
 					items: [
