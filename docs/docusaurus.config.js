@@ -183,11 +183,6 @@ const config = {
 					},
 					{ to: '/plugins', label: 'Plugins', position: 'left' },
 					{
-						href: 'https://roboplay.dev/discord',
-						label: 'Discord Community',
-						position: 'left'
-					},
-					{
 						href: 'https://github.com/Wave-Play/robo.js',
 						position: 'right',
 						className: 'header-github-link',

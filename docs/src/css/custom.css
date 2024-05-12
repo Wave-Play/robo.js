@@ -89,3 +89,14 @@
 .nodecor:hover {
 	text-decoration: none;
 }
+
+.sidebar-title {
+	color: var(--ifm-font-color-base);
+	font-size: 12px;
+	font-weight: 700;
+	opacity: 0.54;
+	padding-left: 12px;
+	margin-top: 16px;
+	cursor: default;
+	text-transform: uppercase;
+}
