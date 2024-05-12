@@ -1,5 +1,5 @@
 import { Card } from '@site/src/components/shared/Card'
-import { CardRow } from '@site/src/components/shared/CardRow'
+import { CardContainer } from '@site/src/components/shared/CardContainer'
 
 # ✨ Getting Started with Discord Activities
 
@@ -17,13 +17,13 @@ npx create-robo <projectName> -k activity
 
 This will walk you through setting up your project and installing the necessary dependencies. Once selected, you can run and start developing your **Discord Activity** right away!
 
-<CardRow>
+<CardContainer>
 	<Card
 		href="https://dev.to/waveplay/how-to-build-a-discord-activity-easily-with-robojs-5bng"
 		title="📚 Tutorial"
 		description="How to create a Discord Activity in seconds."
 	/>
-</CardRow>
+</CardContainer>
 
 ## How does Robo.js help?
 
@@ -45,22 +45,22 @@ Here's what you can expect:
 
 These docs cover everything you need to know about creating **Discord Activities** with **Robo.js**, from setting up your project to adding features and deploying it for others to use.
 
-<CardRow>
-	<Card href="../hosting/overview" title="🚀 Hosting" description="Deploy your activity for others to use." />
+<CardContainer>
 	<Card
 		href="./multiplayer"
 		title="⚔️ Multiplayer"
 		description="Add multiplayer functionality to your Discord Activity."
 	/>
-</CardRow>
+	<Card href="../hosting/overview" title="🚀 Hosting" description="Deploy your activity for others to use." />
+</CardContainer>
 
 ## Community
 
 Join our server to chat with other developers, ask questions, and share your projects.
 
-<CardRow>
+<CardContainer>
 	<Card href="https://roboplay.dev/discord" title="✨ Discord Server" description="Join our Discord community!" />
-</CardRow>
+</CardContainer>
 
 Our very own Robo, **Sage**, is there to answer any questions about **Robo.js**, Discord, and more.
 
@@ -76,7 +76,7 @@ We have a collection of templates that you can use to kickstart your project or 
 
 Want to contribute your own? Submit a pull request!
 
-<CardRow>
+<CardContainer>
 	<Card
 		href="https://github.com/Wave-Play/robo.js/tree/main/templates/starter-app-js-react"
 		title="🔗 Starter React (JS)"
@@ -87,8 +87,6 @@ Want to contribute your own? Submit a pull request!
 		title="🔗 Starter React (TS)"
 		description="A basic TypeScript project using React."
 	/>
-</CardRow>
-<CardRow>
 	<Card
 		href="https://github.com/Wave-Play/robo.js/tree/main/templates/starter-activity-javascript"
 		title="🔗 Starter Vanilla (JS)"
@@ -99,8 +97,6 @@ Want to contribute your own? Submit a pull request!
 		title="🔗 Starter Vanilla (TS)"
 		description="A basic TypeScript project without any frameworks."
 	/>
-</CardRow>
-<CardRow>
 	<Card
 		href="https://github.com/Wave-Play/robo.js/tree/main/templates/activity-ts-colyseus-react"
 		title="🔗 Multiplayer Colyseus (TS)"
@@ -111,4 +107,4 @@ Want to contribute your own? Submit a pull request!
 		title="📝 Contributing"
 		description="How to contribute to Robo.js"
 	/>
-</CardRow>
+</CardContainer>

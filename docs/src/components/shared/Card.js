@@ -7,7 +7,7 @@ export const Card = (props) => {
 
 	return (
 		<Link className="col col--6 nodecor margin-bottom--lg" to={href}>
-			<div className={'card padding--lg cardContainer'}>
+			<div className={'card padding--lg cardContent'}>
 				<Heading as="h2" className="text--truncate cardTitle">
 					{title}
 				</Heading>

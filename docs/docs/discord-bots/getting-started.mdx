@@ -1,5 +1,5 @@
 import { Card } from '@site/src/components/shared/Card'
-import { CardRow } from '@site/src/components/shared/CardRow'
+import { CardContainer } from '@site/src/components/shared/CardContainer'
 import Tabs from '@theme/Tabs'
 import TabItem from '@theme/TabItem'
 
@@ -25,13 +25,13 @@ npx create-robo <projectName> -k bot
 
 This will walk you through setting up your project and installing the necessary dependencies. Once selected, you can run and start developing your Discord bot right away!
 
-<CardRow>
+<CardContainer>
 	<Card
 		href="https://blog.waveplay.com/how-to-make-a-discord-robo/"
 		title="📚 Tutorial"
 		description="How to create a to-do Discord bot."
 	/>
-</CardRow>
+</CardContainer>
 
 ## File Structure
 
@@ -89,17 +89,17 @@ The above is used to create:
 - `ready` event.
 - `dm` and `hello` grouped `messageCreate` events.
 
-<CardRow>
+<CardContainer>
 	<Card href="../robojs/files" title="📂 Robo File Structure" description="Learn about standard Robo files." />
-</CardRow>
+</CardContainer>
 
 ### Modules
 
 For larger projects, you can use modules to group similar functionality together as if they were mini-projects within your main project. Each module follows the same file structure.
 
-<CardRow>
+<CardContainer>
 	<Card href="../robojs/modules" title="📦 Modules" description="Stay organized with modules." />
-</CardRow>
+</CardContainer>
 
 ## Slash Commands
 
@@ -140,9 +140,9 @@ It's automatic! Robo.js will register command changes for you whenever you `buil
 
 If you run into any issues or don't see your changes, you can always run `build` with the `--force` flag. This will force Robo.js to clean up and re-register all commands.
 
-<CardRow>
+<CardContainer>
 	<Card href="./commands" title="📜 Commands" description="Learn more about slash commands." />
-</CardRow>
+</CardContainer>
 
 ## Context Commands
 
@@ -150,9 +150,9 @@ Ever right clicked on someone's profile or a message and seen an "Apps" section?
 
 Creating and registering context commands in Robo.js is no different from regular commands. The `/context` directory can have two subdirectories: `/user` and `/message`. Just like commands, the name of the file becomes the name of the context command.
 
-<CardRow>
+<CardContainer>
 	<Card href="./context-menu" title="🖱️ Context Commands" description="Learn more about context commands." />
-</CardRow>
+</CardContainer>
 
 ## Event Listeners
 
@@ -191,25 +191,25 @@ export default (message: Message) => {
 
 Your default export is the equivalent of `client.on('messageCreate', (message) => {})` in Discord.js. The same exact parameters are passed to your event listener function.
 
-<CardRow>
+<CardContainer>
 	<Card href="./events" title="📡 Events" description="Learn more about events." />
-</CardRow>
+</CardContainer>
 
 ## Sage Mode
 
 Sage Mode is a powerful feature in Robo.js that simplifies interaction handling. It operates behind the scenes, automatically simplifying interaction handling and providing smart error replies to make debugging easier.
 
-<CardRow>
+<CardContainer>
 	<Card href="../robojs/sage" title="🔮 Sage" description="Unlock the full power of Sage Mode." />
-</CardRow>
+</CardContainer>
 
 ## Community
 
 Join our server to chat with other developers, ask questions, and share your projects.
 
-<CardRow>
+<CardContainer>
 	<Card href="https://roboplay.dev/discord" title="✨ Discord Server" description="Join our Discord community!" />
-</CardRow>
+</CardContainer>
 
 Our very own Robo, **Sage**, is there to answer any questions about **Robo.js**, Discord, and more.
 
@@ -221,11 +221,11 @@ Sage is powered by **[@robojs/ai](../plugins/ai)**
 
 ## Templates
 
-We have a collection of templates that you can use to kickstart your project or just use as a reference.
+We have a collection of templates that you can use to kickstart your project or reference.
 
 Want to contribute your own? Submit a pull request!
 
-<CardRow>
+<CardContainer>
 	<Card
 		href="https://github.com/Wave-Play/robo.js/tree/main/templates/starter-bot-javascript"
 		title="🔗 Starter (JS)"
@@ -236,8 +236,6 @@ Want to contribute your own? Submit a pull request!
 		title="🔗 Starter (TS)"
 		description="A basic TypeScript bot using Robo.js."
 	/>
-</CardRow>
-<CardRow>
 	<Card
 		href="https://github.com/Wave-Play/robo.js/tree/main/templates/economy-bot"
 		title="🔗 Economy (TS)"
@@ -248,4 +246,4 @@ Want to contribute your own? Submit a pull request!
 		title="📝 Contributing"
 		description="How to contribute to Robo.js"
 	/>
-</CardRow>
+</CardContainer>

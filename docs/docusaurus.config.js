@@ -194,9 +194,9 @@ const config = {
 						}
 
 						// Add copy disclaimer at the end of the content
-						const head = `import { Card } from '@site/src/components/shared/Card'\nimport { CardRow } from '@site/src/components/shared/CardRow'\n\n`
+						const head = `import { Card } from '@site/src/components/shared/Card'\nimport { CardContainer } from '@site/src/components/shared/CardContainer'\n\n`
 						const linkUrl = 'https://github.com/Wave-Play/robo.js/tree/main/' + filename.replace('/README.md', '')
-						const link = `\n\n## More on GitHub\n\n<CardRow><Card href="${linkUrl}" title="🔗 GitHub Repository" description="Explore source code on GitHub."/></CardRow>`
+						const link = `\n\n## More on GitHub\n\n<CardContainer><Card href="${linkUrl}" title="🔗 GitHub Repository" description="Explore source code on GitHub."/></CardContainer>\n`
 						newContent = head + newContent + link
 
 						return {

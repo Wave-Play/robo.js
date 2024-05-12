@@ -47,6 +47,10 @@
 		no-repeat;
 }
 
+.cardContainer {
+	margin-bottom: -16px !important;
+}
+
 .card {
 	background-color: var(--ifm-card-background-color);
 	border-radius: var(--ifm-card-border-radius);
@@ -56,7 +60,7 @@
 	overflow: hidden;
 }
 
-.cardContainer {
+.cardContent {
 	--ifm-link-color: var(--ifm-color-emphasis-800);
 	--ifm-link-hover-color: var(--ifm-color-emphasis-700);
 	--ifm-link-hover-decoration: none;
@@ -66,7 +70,7 @@
 	transition-property: border, box-shadow;
 }
 
-.cardContainer:hover {
+.cardContent:hover {
 	border-color: var(--ifm-color-primary);
 	box-shadow: 0 3px 6px 0 #0003;
 	text-decoration: none;
