@@ -2,7 +2,7 @@
 
 ---
 
-# 🚀 @robojs/sync
+# @robojs/sync
 
 Real-time state sync across clients the simplest way possible. Perfect for multiplayer games and chat apps. It's like magic, but real! 🎩✨
 
@@ -17,8 +17,6 @@ No more manual websocket handling or state synchronization. Just focus on buildi
 ➞ [📚 **Documentation:** Getting started](https://docs.roboplay.dev/docs/getting-started)
 
 ➞ [🚀 **Community:** Join our Discord server](https://roboplay.dev/discord)
-
-> 👩‍💻 **Are you the plugin developer?** Check out the **[Development Guide](DEVELOPMENT.md)** for instructions on how to develop, build, and publish this plugin.
 
 ## Installation 💻
 

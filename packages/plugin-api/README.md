@@ -1,4 +1,4 @@
-# API Plugin Documentation
+# @robojs/server
 
 Elevate your Robo.js project with `@robojs/server`, a powerful plugin that provides an effortless way to create and manage web routes. This guide will walk you through the essentials of setting up and using the API plugin.
 

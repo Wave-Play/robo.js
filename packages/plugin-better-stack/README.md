@@ -1,4 +1,4 @@
-# 🚀 @robojs/better-stack
+# @robojs/better-stack
 
 Welcome to _@robojs/better-stack_! This plugin seamlessly integrates with your existing **[Robo.js](https://github.com/Wave-Play/robo)** project, providing a comprehensive link to Better Stack, a renowned third-party service. With Better Stack, monitor your Robo's uptime and integrate logs in a visually appealing and searchable format.
 

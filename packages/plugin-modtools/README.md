@@ -1,4 +1,4 @@
-# Enhanced Moderation Plugin
+# @robojs/moderation
 
 Tailored for Discord server management, this plugin includes a suite of commands essential for moderation. With enhanced features like anonymous warnings, attachment inclusion in reports, and comprehensive mod channel logs, it takes moderation to the next level.
 

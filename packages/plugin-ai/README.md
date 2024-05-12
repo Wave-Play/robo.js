@@ -1,4 +1,4 @@
-# 🚀 @robojs/ai
+# @robojs/ai
 
 This plugin morphs your **[Robo](https://github.com/Wave-Play/robo.js)** into a sophisticated AI chatbot. By simply mentioning it or replying to its messages on Discord, you initiate a natural conversation - as if you're chatting with a fellow human!
 
