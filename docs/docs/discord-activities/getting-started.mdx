@@ -9,13 +9,13 @@ import { CardContainer } from '@site/src/components/shared/CardContainer'
 
 ## Quick Start
 
-Ready to start your adventure? Try **[create-robo](./create-robo/overview)** in your terminal:
+Ready to start your adventure? Try **[Create Robo](../cli/create-robo)** in your terminal:
 
 ```bash
 npx create-robo <projectName> -k activity
 ```
 
-This will walk you through setting up your project and installing the necessary dependencies. Once selected, you can run and start developing your **Discord Activity** right away!
+This will spawn a new **Robo.js** project ready to use as a **Discord Activity**. We call these **Robos**.
 
 <CardContainer>
 	<Card
@@ -38,11 +38,11 @@ Here's what you can expect:
 
 - **[One Project](../robojs/files)**: Everything is in one place, making it easy to manage. No more separate backend and frontend projects.
 - **[Integrated Database](../robojs/flashcore)**: Robo.js has an built-in KV database that can be pointed to any data source via adapters.
-- **[TypeScript Support](../create-robo/typescript)**: TypeScript works out of the box, so you can use it without any setup.
+- **[TypeScript Support](../robojs/typescript)**: TypeScript works out of the box, so you can use it without any setup.
 - **[Built-in Tunnels](./tunnels)**: The Robo CLI automatically sets up free Cloudflare tunnels for easy testing.
 - **[Plugin System](../plugins/overview)**: Extend your activity's features with plugins that integrate seamlessly.
-- **[Easy Hosting](../hosting/overview)**: Deploy your activity for others to use with just one command, or self-host it on your own.
-- **[Ecosystem](../plugins/overview)**: A growing ecosystem of plugins, templates, and tools to help you build faster with less effort.
+- **[Easy Hosting](./hosting)**: Deploy your activity for others to use with just one command, or self-host it on your own.
+- **[Ecosystem](../plugins/directory)**: A growing ecosystem of plugins, templates, and tools to help you build faster with less effort.
 
 ## Documentation
 
@@ -57,6 +57,20 @@ These docs cover everything you need to know about creating **Discord Activities
 		description="Add multiplayer functionality to your Discord Activity."
 	/>
 	<Card href="../hosting/overview" title="🚀 Hosting" description="Deploy your activity for others to use." />
+
+## Plugin Power Ups
+
+**[Robo Plugins](../plugins/overview)** are special. They let you add features to your **Robo** with one command.
+
+```bash
+npx robo add @robojs/ai @robojs/moderation
+```
+
+Plugins integrate seamlessly thanks to the **[Robo File Structure](../robojs/files)**. What's more, anyone can **[create a plugin](../plugins/create)**.
+
+<CardContainer>
+	<Card href="../plugins/overview" title="🔌 Robo Plugins" description="Add features to your Robo seamlessly." />
+	<Card href="../plugins/directory" title="🗃️ Plugin Directory" description="Browse plugins for your Robo." />
 </CardContainer>
 
 ## Community
@@ -67,7 +81,7 @@ Join our server to chat with other developers, ask questions, and share your pro
 	<Card href="https://roboplay.dev/discord" title="✨ Discord Server" description="Join our Discord community!" />
 </CardContainer>
 
-Our very own Robo, **Sage**, is there to answer any questions about **Robo.js**, Discord, and more.
+Our very own Robo, **Sage**, is there to answer any questions about **Robo.js**, **Discord's SDK**, and more.
 
 :::tip AI Plugin
 
@@ -75,41 +89,17 @@ Sage is powered by **[@robojs/ai](../plugins/ai)**
 
 :::
 
-## Templates
+## Learn More
 
-We have a collection of templates that you can use to kickstart your project or reference.
-
-Want to contribute your own? Submit a pull request!
+**Robo.js** has a lot to offer for such a tiny framework with **[zero dependencies](https://packagephobia.com/result?p=robo.js)**.
 
 <CardContainer>
+	<Card href="../robojs/overview" title="🌟 Core Package" description="See what makes Robo.js awesome." />
 	<Card
-		href="https://github.com/Wave-Play/robo.js/tree/main/templates/starter-app-js-react"
-		title="🔗 Starter React (JS)"
-		description="A basic JavaScript project using React."
+		href="../templates/overview#discord-activities"
+		title="🔗 Templates"
+		description="Kickstart your project with a template."
 	/>
-	<Card
-		href="https://github.com/Wave-Play/robo.js/tree/main/templates/starter-app-ts-react"
-		title="🔗 Starter React (TS)"
-		description="A basic TypeScript project using React."
-	/>
-	<Card
-		href="https://github.com/Wave-Play/robo.js/tree/main/templates/starter-activity-javascript"
-		title="🔗 Starter Vanilla (JS)"
-		description="A basic JavaScript project without any frameworks."
-	/>
-	<Card
-		href="https://github.com/Wave-Play/robo.js/tree/main/templates/starter-activity-typescript"
-		title="🔗 Starter Vanilla (TS)"
-		description="A basic TypeScript project without any frameworks."
-	/>
-	<Card
-		href="https://github.com/Wave-Play/robo.js/tree/main/templates/activity-ts-colyseus-react"
-		title="🔗 Multiplayer Colyseus (TS)"
-		description="A simplified TypeScript project using Colyseus."
-	/>
-	<Card
-		href="https://github.com/Wave-Play/robo.js/blob/main/CONTRIBUTING.md"
-		title="📝 Contributing"
-		description="How to contribute to Robo.js"
-	/>
+	<Card href="../robojs/linting" title="💅 Linting" description="Check your code for errors and style." />
+	<Card href="../robojs/typescript" title="📘 TypeScript" description="Write better code with type safety." />
 </CardContainer>

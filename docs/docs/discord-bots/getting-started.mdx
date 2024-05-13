@@ -17,13 +17,13 @@ Instead, it simplifies coding by handling boilerplate. You still have all of **D
 
 ## Quick Start
 
-Ready to start your adventure? Try **[create-robo](./create-robo/overview)** in your terminal:
+Ready to start your adventure? Try **[Create Robo](../cli/create-robo)** in your terminal:
 
 ```bash
 npx create-robo <projectName> -k bot
 ```
 
-This will walk you through setting up your project and installing the necessary dependencies. Once selected, you can run and start developing your Discord bot right away!
+This will spawn a new **Robo.js** project ready to use as a **Discord Bot**. We call these **Robos**.
 
 <CardContainer>
 	<Card
@@ -208,6 +208,21 @@ Sage Mode is a powerful feature in Robo.js that simplifies interaction handling.
 	<Card href="../robojs/sage" title="🔮 Sage" description="Unlock the full power of Sage Mode." />
 </CardContainer>
 
+## Plugin Power Ups
+
+**[Robo Plugins](../plugins/overview)** are special. They let you add features to your **Robo** with one command.
+
+```bash
+npx robo add @robojs/ai @robojs/moderation
+```
+
+Plugins integrate seamlessly thanks to the **[Robo File Structure](../robojs/files)**. What's more, anyone can **[create a plugin](../plugins/create)**.
+
+<CardContainer>
+	<Card href="../plugins/overview" title="🔌 Robo Plugins" description="Add features to your Robo seamlessly." />
+	<Card href="../plugins/directory" title="🗃️ Plugin Directory" description="Browse plugins for your Robo." />
+</CardContainer>
+
 ## Community
 
 Join our server to chat with other developers, ask questions, and share your projects.
@@ -216,7 +231,7 @@ Join our server to chat with other developers, ask questions, and share your pro
 	<Card href="https://roboplay.dev/discord" title="✨ Discord Server" description="Join our Discord community!" />
 </CardContainer>
 
-Our very own Robo, **Sage**, is there to answer any questions about **Robo.js**, Discord, and more.
+Our very own Robo, **Sage**, is there to answer any questions about **Robo.js**, **Discord.js**, and more.
 
 :::tip AI Plugin
 
@@ -224,31 +239,17 @@ Sage is powered by **[@robojs/ai](../plugins/ai)**
 
 :::
 
-## Templates
+## Learn More
 
-We have a collection of templates that you can use to kickstart your project or reference.
-
-Want to contribute your own? Submit a pull request!
+**Robo.js** has a lot to offer for such a tiny framework with **[zero dependencies](https://packagephobia.com/result?p=robo.js)**.
 
 <CardContainer>
+	<Card href="../robojs/overview" title="🌟 Core Package" description="See what makes Robo.js awesome." />
 	<Card
-		href="https://github.com/Wave-Play/robo.js/tree/main/templates/starter-bot-javascript"
-		title="🔗 Starter (JS)"
-		description="A basic JavaScript bot using Robo.js."
+		href="../templates/overview#discord-apps"
+		title="🔗 Templates"
+		description="Kickstart your project with a template."
 	/>
-	<Card
-		href="https://github.com/Wave-Play/robo.js/tree/main/templates/starter-bot-typescript"
-		title="🔗 Starter (TS)"
-		description="A basic TypeScript bot using Robo.js."
-	/>
-	<Card
-		href="https://github.com/Wave-Play/robo.js/tree/main/templates/economy-bot"
-		title="🔗 Economy (TS)"
-		description="An economy bot using Robo.js."
-	/>
-	<Card
-		href="https://github.com/Wave-Play/robo.js/blob/main/CONTRIBUTING.md"
-		title="📝 Contributing"
-		description="How to contribute to Robo.js"
-	/>
+	<Card href="../robojs/linting" title="💅 Linting" description="Check your code for errors and style." />
+	<Card href="../robojs/typescript" title="📘 TypeScript" description="Write better code with type safety." />
 </CardContainer>

@@ -1,4 +1,4 @@
-# Linting
+# 💅 Linting
 
 Linting is like having a tiny coding assistant who keeps your code neat and tidy. It's super useful for catching and fixing annoying syntax and style issues before they become major headaches.
 
@@ -33,7 +33,7 @@ node_modules
 .robo
 ```
 
-## Prettier 💅
+## Prettier
 
 Prettier is the icing on your code cake! It takes care of all those fiddly formatting bits that can lead to arguments among devs. With Prettier, you'll have a consistent code style across your entire project, making your code a total dream to read and maintain.
 

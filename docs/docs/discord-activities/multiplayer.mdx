@@ -3,15 +3,15 @@ import { CardContainer } from '@site/src/components/shared/CardContainer'
 
 # ⚔️ Multiplayer
 
-Discord Activities are a great way to create multiplayer games and experiences. Even if you're not building a game, you can still use multiplayer features to create collaborative activities or experiences.
+**Discord Activities** are a great way to create multiplayer games and experiences. Even if you're not building a game, you can still use multiplayer features to create collaborative activities or experiences.
 
 Multiplayer features often involve websockets for real-time communication between clients. There are many ways to implement features like this. Depending on what you're building, we recommend either using our **[@robojs/sync](#sync-plugin)** plugin or a more powerful solution like **[Colyseus](https://colyseus.io/)**.
 
 ## Sync Plugin
 
-If you're building a **[React](https://react.dev)** app, you can use the **[@robojs/sync](../plugins/sync)** plugin to sync state across clients in real-time. This is the easiest way to add multiplayer functionality to your Discord Activity.
+If you're building a **[React](https://react.dev)** app, you can use the **@robojs/sync** plugin to sync state across clients in real-time. This is the easiest way to add multiplayer functionality to your Discord Activity.
 
-Websocket features can be complex to set up, but **[@robojs/sync](../plugins/sync)** handles all of that for you. Robo.js plugins are designed to work out of the box, no matter how powerful, so you can focus on features!
+Websocket features can be complex to set up, but **@robojs/sync** handles all of that for you. **Robo.js** plugins are designed to work out of the box, no matter how powerful, so you can focus on features!
 
 ### Setup
 
@@ -110,8 +110,8 @@ If the above sounds complicated, don't worry! We've created a template to help y
 <CardContainer>
 	<Card
 		href="https://github.com/Wave-Play/robo.js/tree/main/templates/activity-ts-colyseus-react"
-		title="📚 Template"
-		description="A template to help you get started with Colyseus and Robo.js."
+		title="🔗 Multiplayer Colyseus (TS)"
+		description="A simplified TypeScript template using Colyseus."
 	/>
 </CardContainer>
 
@@ -132,12 +132,12 @@ room.onStateChange((state) => {
 
 We recommend creating a **[Context Provider](https://react.dev/learn/passing-data-deeply-with-context)** to manage the Colyseus client and room. This will allow you to access the client and room from anywhere in your activity.
 
-### Learn More
+### More About Colyseus
 
 <CardContainer>
 	<Card
 		href="https://docs.colyseus.io/"
-		title="⚔️ Colyseus Docs"
+		title="🔗 Colyseus Docs"
 		description="Learn more about Colyseus and its features."
 	/>
 </CardContainer>

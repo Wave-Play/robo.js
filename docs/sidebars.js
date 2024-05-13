@@ -25,6 +25,19 @@ const sidebars = {
 		},
 		{
 			type: 'category',
+			label: 'CLI Tools',
+			items: [
+				{
+					id: 'cli/overview',
+					label: '✨ Overview',
+					type: 'doc'
+				},
+				'cli/create-robo',
+				'cli/robo'
+			]
+		},
+		{
+			type: 'category',
 			label: 'Core Package',
 			items: [
 				{
@@ -32,7 +45,6 @@ const sidebars = {
 					label: '✨ Overview',
 					type: 'doc'
 				},
-				'robojs/cli',
 				'robojs/config',
 				'robojs/flashcore',
 				{
@@ -40,29 +52,13 @@ const sidebars = {
 					label: '👀 Internals',
 					type: 'doc'
 				},
+				'robojs/linting',
 				'robojs/logger',
 				'robojs/modules',
-				{
-					id: 'robojs/plugins',
-					label: '🔌 Plugins',
-					type: 'doc'
-				},
 				'robojs/portal',
 				'robojs/files',
-				'robojs/state'
-			]
-		},
-		{
-			type: 'category',
-			label: 'Creating Projects',
-			items: [
-				{
-					id: 'create-robo/overview',
-					label: '✨ Overview',
-					type: 'doc'
-				},
-				'create-robo/linting',
-				'create-robo/typescript'
+				'robojs/state',
+				'robojs/typescript'
 			]
 		},
 		{
@@ -76,6 +72,19 @@ const sidebars = {
 				},
 				'hosting/roboplay',
 				'hosting/self-host'
+			]
+		},
+		{
+			type: 'category',
+			label: 'Plugins',
+			items: [
+				{
+					id: 'plugins/overview',
+					label: '✨ Overview',
+					type: 'doc'
+				},
+				'plugins/create',
+				'plugins/install'
 			]
 		},
 		{
@@ -126,15 +135,20 @@ const sidebars = {
 		},
 		{
 			type: 'link',
+			label: 'Contributing',
+			href: 'https://github.com/Wave-Play/robo.js/blob/main/CONTRIBUTING.md'
+		},
+		{
+			type: 'link',
 			label: 'Discord Community',
 			href: 'https://roboplay.dev/discord'
 		},
 		{
 			type: 'category',
-			label: 'Plugins',
+			label: 'Plugin Directory',
 			items: [
 				{
-					id: 'plugins/overview',
+					id: 'plugins/directory',
 					label: '✨ Overview',
 					type: 'doc'
 				},

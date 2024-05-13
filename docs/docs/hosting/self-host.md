@@ -1,4 +1,4 @@
-# Self-hosting
+# 🔨 Self-hosting
 
 Robo.js can be self-hosted, meaning you can run your own instance of Robo.js on your own server.
 

@@ -46,11 +46,11 @@ const config = {
 					},
 					{
 						from: '/docs/advanced/linting',
-						to: '/create-robo/linting'
+						to: '/robojs/linting'
 					},
 					{
 						from: '/docs/advanced/typescript',
-						to: '/create-robo/typescript'
+						to: '/robojs/typescript'
 					},
 					{
 						from: '/discord-activities/overview',
@@ -106,7 +106,7 @@ const config = {
 					},
 					{
 						from: '/docs/advanced/command-line',
-						to: '/robojs/cli'
+						to: '/cli/robo'
 					},
 					{
 						from: '/docs/advanced/logger',
@@ -130,7 +130,7 @@ const config = {
 					},
 					{
 						from: '/docs/advanced/plugins',
-						to: '/robojs/plugins'
+						to: '/plugins/overview'
 					},
 					{
 						from: '/docs/advanced/portal',
@@ -139,6 +139,14 @@ const config = {
 					{
 						from: '/docs/basics/states',
 						to: '/robojs/state'
+					},
+					{
+						from: '/robojs/cli',
+						to: '/cli/overview'
+					},
+					{
+						from: '/robojs/plugins',
+						to: '/plugins/overview'
 					}
 				]
 			}
@@ -253,9 +261,11 @@ const config = {
 						type: 'docSidebar',
 						sidebarId: 'tutorialSidebar',
 						position: 'left',
-						label: 'Docs'
+						label: 'Getting Started'
 					},
-					{ to: '/plugins', label: 'Plugins', position: 'left' },
+					{ to: '/hosting/overview', label: 'Hosting', position: 'left' },
+					{ to: '/plugins/directory', label: 'Plugin Directory', position: 'left' },
+					{ to: '/templates/overview', label: 'Templates', position: 'left' },
 					{
 						href: 'https://github.com/Wave-Play/robo.js',
 						position: 'right',
