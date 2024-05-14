@@ -2,7 +2,7 @@
 
 ---
 
-# Hiya, starter-server-typescript 🌈
+# Hiya, starter-webapp-typescript 🌈
 
 Welcome to your fresh **[Robo.js](https://github.com/Wave-Play/robo)** project!
 

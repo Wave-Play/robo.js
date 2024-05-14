@@ -4,7 +4,7 @@ import { Flashcore } from 'robo.js'
 // https://docs.roboplay.dev/robojs/flashcore
 export default async () => {
 	await Flashcore.set('counter', (count = 0) => count + 1)
-	const count = await Flashcore.get('counter')
+	const count = await Flashcore.get<number>('counter')
 
 	return { count }
 }

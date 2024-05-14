@@ -23,16 +23,14 @@ function useCounter() {
 
 	useEffect(() => {
 		const run = async () => {
-			const response = await fetch('/api/get-count')
-			const data = await response.json()
+			const data = await fetch('/api/get-count').then((res) => res.json())
 			setCount(data.count)
 		}
 		run()
 	}, [])
 
 	const increment = async () => {
-		const response = await fetch('/api/set-count')
-		const data = await response.json()
+		const data = await fetch('/api/set-count').then((res) => res.json())
 		setCount(data.count)
 	}
 
