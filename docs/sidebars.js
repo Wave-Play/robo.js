@@ -227,6 +227,22 @@ const sidebars = {
 							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/starter-bot-typescript'
 						}
 					]
+				},
+				{
+					type: 'category',
+					label: 'Web Apps',
+					items: [
+						{
+							type: 'link',
+							label: 'Starter JS',
+							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/starter-webapp-javascript'
+						},
+						{
+							type: 'link',
+							label: 'Starter TS',
+							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/starter-webapp-typescript'
+						}
+					]
 				}
 			]
 		}
