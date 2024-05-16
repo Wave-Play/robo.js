@@ -1,5 +1,13 @@
 # @roboplay/plugin-api
 
+## 0.5.0
+
+### Minor Changes
+
+- 890b71d: refactor!: renamed `.req` and `.res` accessors to `.raw`
+- eb3867a: refactor!: RoboResponse now extends Response instead of Error
+- 890b71d: refactor!: RoboRequest now extends Request
+
 ## 0.4.5
 
 ### Patch Changes
