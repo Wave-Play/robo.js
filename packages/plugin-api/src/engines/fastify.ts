@@ -1,11 +1,11 @@
 import { handlePublicFile } from '~/core/handler.js'
 import { logger } from '../core/logger.js'
+import { RoboRequest } from '~/core/robo-request.js'
 import { BaseEngine } from './base.js'
-import { RoboResponse } from '~/core/robo-response.js'
 import { createReadStream } from 'node:fs'
 import url from 'node:url'
 import { color, composeColors } from 'robo.js'
-import type { HttpMethod, RoboReply, RoboRequest, RouteHandler } from '../core/types.js'
+import type { RoboReply, RouteHandler } from '../core/types.js'
 import type { InitOptions, StartOptions } from './base.js'
 import type { FastifyInstance } from 'fastify'
 import type { ViteDevServer } from 'vite'
@@ -49,15 +49,12 @@ export class FastifyEngine extends BaseEngine {
 						return
 					}
 				} catch (error) {
-					if (error instanceof RoboResponse) {
-						if (error?.status >= 400) {
-							logger.error(error)
-						}
-
-						Object.entries(error.headers ?? {}).forEach(([key, value]) => {
-							reply.header(key, value)
-						})
-						reply.code(error.status ?? 500).send(error.data ?? error.message)
+					if (error instanceof Response) {
+						reply.send(error)
+						return
+					} else if (error instanceof Error) {
+						logger.error(error)
+						reply.code(500).send(error.message ?? 'Server encountered an error.')
 						return
 					} else {
 						logger.error(error)
@@ -83,16 +80,9 @@ export class FastifyEngine extends BaseEngine {
 	public registerRoute(path: string, handler: RouteHandler): void {
 		this._server.all(path, async (request, reply) => {
 			// Prepare request and reply wrappers for easier usage
-			const requestWrapper: RoboRequest = {
-				req: request.raw,
-				body: request.body as Record<string, unknown>,
-				method: request.method as HttpMethod,
-				query: request.query as Record<string, string>,
-				params: request.params as Record<string, string>
-			}
-
+			const requestWrapper = await RoboRequest.from(request.raw)
 			const replyWrapper: RoboReply = {
-				res: reply.raw,
+				raw: reply.raw,
 				hasSent: false,
 				code: function (statusCode: number) {
 					reply.code(statusCode)

@@ -1,22 +1,15 @@
+import type { RoboRequest } from './robo-request.js'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Duplex } from 'node:stream'
 import type { BaseConfig } from 'robo.js'
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'OPTIONS' | 'HEAD'
 
-export interface RoboRequest<T = Record<string, unknown>> {
-	req: IncomingMessage
-	body: T
-	method: HttpMethod
-	query: Record<string, string | string[]>
-	params: Record<string, unknown>
-}
-
 export interface RoboReply {
-	res: ServerResponse
+	raw: ServerResponse
 	code: (statusCode: number) => RoboReply
 	json: (data: unknown) => RoboReply
-	send: (data: string) => RoboReply
+	send: (response: Response | string) => RoboReply
 	header: (name: string, value: string) => RoboReply
 	hasSent: boolean
 }
