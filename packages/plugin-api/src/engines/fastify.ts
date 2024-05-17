@@ -1,6 +1,6 @@
 import { handlePublicFile } from '~/core/handler.js'
 import { logger } from '../core/logger.js'
-import { RoboRequest } from '~/core/robo-request.js'
+import { RoboRequest, applyParams } from '~/core/robo-request.js'
 import { BaseEngine } from './base.js'
 import { createReadStream } from 'node:fs'
 import url from 'node:url'
@@ -95,6 +95,7 @@ export class FastifyEngine extends BaseEngine {
 			handler: async (request, reply) => {
 				// Prepare request and reply wrappers for easier usage
 				const requestWrapper = await RoboRequest.from(request.raw, { body: request.body as Buffer })
+				applyParams(requestWrapper, request.params as Record<string, string>)
 				const replyWrapper: RoboReply = {
 					raw: reply.raw,
 					hasSent: false,
