@@ -1,5 +1,12 @@
 # @roboplay/plugin-api
 
+## 0.5.1
+
+### Patch Changes
+
+- a1fbe72: patch: updated fastify engine to support new robo response
+- 9821ac4: fix: robo request params
+
 ## 0.5.0
 
 ### Minor Changes
