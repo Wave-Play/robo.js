@@ -7,6 +7,7 @@ const INTERNALS = Symbol('internal request')
  */
 export class RoboRequest extends Request {
 	[INTERNALS]: {
+		params: Record<string, string>
 		raw: IncomingMessage
 	}
 
@@ -21,19 +22,13 @@ export class RoboRequest extends Request {
 		}
 
 		this[INTERNALS] = {
+			params: {},
 			raw: {} as IncomingMessage
 		}
 	}
 
 	public get params(): Record<string, string> {
-		const url = new URL(this.url)
-		const params = Object.fromEntries(
-			url.pathname
-				.split('/')
-				.filter(Boolean)
-				.map((part) => part.split('='))
-		)
-		return params
+		return this[INTERNALS].params
 	}
 
 	public get query(): Record<string, string | string[]> {
@@ -66,6 +61,10 @@ export class RoboRequest extends Request {
 
 		return request
 	}
+}
+
+export function applyParams(request: RoboRequest, params: Record<string, string>) {
+	request[INTERNALS].params = params
 }
 
 export function validateURL(url: string | URL): string {
