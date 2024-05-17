@@ -13,7 +13,6 @@ const PATH_REGEX = new RegExp(/\[(.+?)\]/g)
 interface PluginOptions {
 	cors?: boolean
 	engine?: BaseEngine
-	parseBody?: boolean
 	port?: number
 	prefix?: string | null | false
 	vite?: ViteDevServer
