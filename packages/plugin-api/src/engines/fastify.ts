@@ -20,6 +20,17 @@ export class FastifyEngine extends BaseEngine {
 		this._server = fastify()
 		this._vite = options.vite
 
+		this._server.removeAllContentTypeParsers()
+		this._server.addContentTypeParser('*', (_req, payload, done) => {
+			const chunks: Buffer[] = []
+			payload.on('data', (chunk) => {
+				chunks.push(chunk)
+			})
+			payload.on('end', () => {
+				done(null, Buffer.concat(chunks))
+			})
+		})
+
 		this._server.setErrorHandler((error, _request, reply) => {
 			logger.error(error)
 			reply.status(500).send({ ok: false })
@@ -78,51 +89,84 @@ export class FastifyEngine extends BaseEngine {
 	}
 
 	public registerRoute(path: string, handler: RouteHandler): void {
-		this._server.all(path, async (request, reply) => {
-			// Prepare request and reply wrappers for easier usage
-			const requestWrapper = await RoboRequest.from(request.raw)
-			const replyWrapper: RoboReply = {
-				raw: reply.raw,
-				hasSent: false,
-				code: function (statusCode: number) {
-					reply.code(statusCode)
-					return this
-				},
-				json: function (data: unknown) {
-					reply.header('Content-Type', 'application/json').send(JSON.stringify(data))
-					this.hasSent = true
-					return this
-				},
-				send: function (data: string) {
-					reply.send(data)
-					this.hasSent = true
-					return this
-				},
-				header: function (name: string, value: string) {
-					reply.header(name, value)
-					return this
-				}
-			}
+		this._server.route({
+			method: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'],
+			url: path,
+			handler: async (request, reply) => {
+				// Prepare request and reply wrappers for easier usage
+				const requestWrapper = await RoboRequest.from(request.raw, { body: request.body as Buffer })
+				const replyWrapper: RoboReply = {
+					raw: reply.raw,
+					hasSent: false,
+					code: function (statusCode: number) {
+						reply.code(statusCode)
+						return this
+					},
+					json: function (data: unknown) {
+						reply.header('Content-Type', 'application/json').send(JSON.stringify(data))
+						this.hasSent = true
+						return this
+					},
+					send: function (data: Response | string) {
+						if (data instanceof Response) {
+							reply.hijack()
 
-			try {
-				logger.debug(color.bold(request.method), request.raw.url)
-				const result = await handler(requestWrapper, replyWrapper)
+							if (data.status >= 400) {
+								logger.error(data)
+							}
 
-				if (!replyWrapper.hasSent && result) {
-					replyWrapper.code(200).json(result)
+							data.headers.forEach(([key, value]) => {
+								reply.header(key, value)
+							})
+
+							this.raw.statusCode = data.status
+							data.text().then((text) => {
+								reply.raw.end(text)
+							})
+						} else {
+							reply.send(data)
+						}
+						this.hasSent = true
+						return this
+					},
+					header: function (name: string, value: string) {
+						reply.header(name, value)
+						return this
+					}
 				}
-			} catch (error) {
-				logger.error(error)
-				replyWrapper.code(500).json({
-					ok: false,
-					errors: Array.isArray(error) ? error.map((e) => e.message) : [error.message]
-				})
+
+				try {
+					logger.debug(color.bold(request.method), request.raw.url)
+					const result = await handler(requestWrapper, replyWrapper)
+
+					if (!replyWrapper.hasSent && result instanceof Response) {
+						replyWrapper.send(result)
+					} else if (!replyWrapper.hasSent && result) {
+						replyWrapper.code(200).json(result)
+					}
+				} catch (error) {
+					if (error instanceof Response) {
+						replyWrapper.send(error)
+					} else if (error instanceof Error) {
+						logger.error(error)
+						replyWrapper.code(500).json({
+							ok: false,
+							errors: Array.isArray(error) ? error.map((e) => e.message) : [error.message]
+						})
+					} else {
+						logger.error(error)
+						replyWrapper.code(500).json({
+							ok: false,
+							errors: ['Server encountered an error.']
+						})
+					}
+				}
 			}
 		})
 	}
 
 	public registerWebsocket(): void {
-		logger.error(`Websockets are not supported in Fastify engine yet.`)
+		logger.warn(`Websockets are not supported in Fastify engine yet.`)
 	}
 
 	public setupVite(vite: ViteDevServer) {

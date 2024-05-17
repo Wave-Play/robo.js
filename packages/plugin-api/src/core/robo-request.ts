@@ -2,6 +2,10 @@ import type { IncomingMessage } from 'node:http'
 
 const INTERNALS = Symbol('internal request')
 
+interface FromOptions {
+	body?: Buffer
+}
+
 /**
  * Extends the [Web Request API](https://developer.mozilla.org/docs/Web/API/Request) with additional convenience methods.
  */
@@ -41,13 +45,13 @@ export class RoboRequest extends Request {
 		return this[INTERNALS].raw
 	}
 
-	public static async from(req: IncomingMessage): Promise<RoboRequest> {
+	public static async from(req: IncomingMessage, options?: FromOptions): Promise<RoboRequest> {
 		const url = `${req.headers['x-forwarded-proto'] || 'http'}://${req.headers.host}${req.url}`
 		const method = req.method || 'GET'
 		const headers = new Headers(req.headers as HeadersInit)
-		let body: BodyInit | null = null
+		let body: BodyInit | null = options?.body
 
-		if (!['GET', 'HEAD'].includes(method)) {
+		if (!options?.body && !['GET', 'HEAD'].includes(method)) {
 			body = await new Promise<Buffer>((resolve, reject) => {
 				const chunks: Buffer[] = []
 				req.on('data', (chunk) => chunks.push(chunk))
