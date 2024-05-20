@@ -82,7 +82,9 @@ export function createServerHandler(router: Router, vite?: ViteDevServer): Serve
 		// Find matching route and execute handler
 		logger.debug(color.bold(req.method), req.url)
 		const route = router.find(parsedUrl.pathname)
-		applyParams(requestWrapper, route.params)
+		if (route) {
+			applyParams(requestWrapper, route.params)
+		}
 
 		// If Vite is available, forward the request to Vite
 		if (!route?.handler && vite) {
