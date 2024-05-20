@@ -27,7 +27,7 @@
 		"build": "turbo run build --force",
 		"build:robo": "turbo run build --filter=robo.js --force",
 		"lint": "pnpm lint:eslint && pnpm lint:style",
-		"lint:eslint": "eslint . --ext js,jsx,ts,tsx --max-warnings=0",
+		"lint:eslint": "eslint . --max-warnings=0",
 		"lint:style": "prettier --write .",
 		"publish:canary": "pnpm lint && pnpm build:robo && pnpm build && changeset publish --tag canary",
 		"publish:next": "pnpm lint && pnpm build:robo && pnpm build && changeset publish --tag next",
