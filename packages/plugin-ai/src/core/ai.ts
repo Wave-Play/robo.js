@@ -95,7 +95,6 @@ async function chat(messages: ChatMessage[], options: ChatOptions): Promise<void
 
 	let iteration = 0
 
-	// eslint-disable-next-line no-constant-condition
 	while (true) {
 		aiMessages = await _engine.callHooks(
 			'chat',

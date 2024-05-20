@@ -1,8 +1,0 @@
-node_modules
-docs
-**/codemod/**
-**/dist/**
-**/tsup.config.ts
-**/tsup-cli.config.ts
-packages/create-robo/templates/**
-templates/**
