@@ -1,5 +1,11 @@
 # @roboplay/plugin-api
 
+## 0.5.2
+
+### Patch Changes
+
+- 3db1f28: patch: fixed 404 params
+
 ## 0.5.1
 
 ### Patch Changes
