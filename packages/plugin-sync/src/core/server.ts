@@ -36,39 +36,39 @@ function start() {
 	})
 	syncLogger.debug('WebSocket server created successfully.')
 
+	// Keep track of the connection liveness
+	setInterval(() => {
+		if (_connections.length === 0) {
+			return
+		}
+
+		syncLogger.debug(`Pinging ${_connections.length} connections...`)
+		const deadIndices: number[] = []
+		_connections.forEach((conn, index) => {
+			if (!conn.isAlive) {
+				syncLogger.warn(`Connection ${conn.id} is dead. Terminating...`)
+				conn.ws.terminate()
+				deadIndices.push(index)
+				return
+			}
+
+			conn.isAlive = false
+			const ping: MessagePayload = { data: undefined, type: 'ping' }
+			conn.ws.send(JSON.stringify(ping))
+		})
+
+		// Remove dead connections
+		deadIndices.forEach((index) => {
+			_connections.splice(index, 1)
+		})
+	}, 30_000)
+
 	// Handle incoming connections
 	_wss.on('connection', (ws) => {
 		// Register the connection
 		const connection: Connection = { id: nanoid(), isAlive: true, watch: [], ws }
 		_connections.push(connection)
 		syncLogger.debug('New connection established! Registered as', connection.id)
-
-		// Keep track of the connection liveness
-		setInterval(() => {
-			if (_connections.length === 0) {
-				return
-			}
-
-			syncLogger.debug(`Pinging ${_connections.length} connections...`)
-			const deadIndices: number[] = []
-			_connections.forEach((conn, index) => {
-				if (!conn.isAlive) {
-					syncLogger.warn(`Connection ${conn.id} is dead. Terminating...`)
-					conn.ws.terminate()
-					deadIndices.push(index)
-					return
-				}
-
-				conn.isAlive = false
-				const ping: MessagePayload = { data: undefined, type: 'ping' }
-				conn.ws.send(JSON.stringify(ping))
-			})
-
-			// Remove dead connections
-			deadIndices.forEach((index) => {
-				_connections.splice(index, 1)
-			})
-		}, 30_000)
 
 		// Detect disconnections
 		ws.on('close', () => {
