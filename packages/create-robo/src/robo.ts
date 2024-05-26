@@ -19,7 +19,6 @@ import {
 	Indent,
 	ExecOptions,
 	Space,
-	COLYSEUS_CONFIG
 } from './utils.js'
 import { RepoInfo, downloadAndExtractRepo, getRepoInfo, hasRepo } from './templates.js'
 import retry from 'async-retry'
@@ -66,12 +65,6 @@ const optionalFeatures = [
 		short: 'Prettier',
 		value: 'prettier',
 		checked: true
-	},
-	{
-		name: `${chalk.bold('Colyseus')} - Multiplayer Framework for Node.js.`,
-		short: 'Colyseus',
-		value: 'colyseus',
-		checked: false
 	},
 	{
 		name: `${chalk.bold('ESLint')} ${Recommended} - Keeps your code clean and consistent.`,
@@ -376,12 +369,6 @@ export default class Robo {
 			this._spinner.stop(false)
 			logger.log(Indent, chalk.red(`   Could not install plugins!`))
 		}
-
-		// If Colyseus is selected, override the /config/plugins/robojs/server.mjs file
-		if (this._selectedFeatures.includes('colyseus')) {
-			logger.debug(`Overriding Colyseus server config file...`)
-			await fs.writeFile(path.join(this._workingDir, 'config', 'plugins', 'robojs', 'server.mjs'), COLYSEUS_CONFIG)
-		}
 	}
 
 	async downloadTemplate(url: string) {
@@ -448,15 +435,6 @@ export default class Robo {
 		// Only App developers get the option to use React
 		if (!this._isApp) {
 			const index = features.findIndex((f) => f.value === 'react')
-
-			if (index >= 0) {
-				features.splice(index, 1)
-			}
-		}
-
-		// Colyseus is only available for activities
-		if (!this._isApp) {
-			const index = features.findIndex((f) => f.value === 'colyseus')
 
 			if (index >= 0) {
 				features.splice(index, 1)
@@ -599,18 +577,6 @@ export default class Robo {
 			dependencies.push('react-dom')
 			devDependencies.push('@vitejs/plugin-react-swc')
 			devDependencies.push('eslint-plugin-react-hooks')
-		}
-
-		// Colyseus requires more dependencies
-		if (features.includes('colyseus')) {
-			dependencies.push('@colyseus/core')
-			dependencies.push('@colyseus/monitor')
-			dependencies.push('@colyseus/schema')
-			dependencies.push('@colyseus/ws-transport')
-			dependencies.push('@robojs/server')
-			dependencies.push('colyseus.js')
-			dependencies.push('express')
-			devDependencies.push('@types/express')
 		}
 
 		// Generate customized documentation
@@ -837,9 +803,7 @@ export default class Robo {
 	}
 
 	private getTemplate(): string {
-		if (this._isApp && this._selectedFeatures.includes('react') && this._selectedFeatures.includes('colyseus')) {
-			return this._useTypeScript ? '../templates/activity-ts-colyseus-react' : '../templates/activity-ts-colyseus-react'
-		} else if (this._isApp && this._selectedFeatures.includes('react')) {
+		if (this._isApp && this._selectedFeatures.includes('react')) {
 			return this._useTypeScript ? '../templates/app-ts-react' : '../templates/app-js-react'
 		} else if (this._isApp) {
 			return this._useTypeScript ? '../templates/app-ts' : '../templates/app-js'
