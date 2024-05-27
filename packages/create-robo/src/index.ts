@@ -16,7 +16,7 @@ export interface CommandOptions {
 	features?: string
 	install?: boolean
 	javascript?: boolean
-	kit?: 'activity' | 'app' | 'bot'
+	kit?: 'activity' | 'app' | 'bot' | 'web'
 	plugin?: boolean
 	plugins?: string[]
 	template?: string
@@ -33,13 +33,13 @@ new Command('create-robo <projectName>')
 	.option('-js --javascript', 'create a Robo using JavaScript')
 	.option('-p --plugins <plugins...>', 'pre-install plugins along with the project')
 	.option('-P --plugin', 'create a Robo plugin instead of a bot')
-	.option('-ni --no-install', 'skip installing dependencies')
-	.option('-nu --no-update', 'skip checking for updates')
+	.option('-ni --no-install', 'skips the installation of dependencies')
+	.option('-nu --no-update', 'skips the update check')
 	.option('-t --template <templateUrl>', 'create a Robo from an online template')
 	.option('-ts --typescript', 'create a Robo using TypeScript')
 	.option('-v --verbose', 'print more information for debugging')
-	.option('-rv, --robo-version <value>', 'choose which version of robo your project will use')
-	.option('-k, --kit <value>', 'choose a kit to start off with your robo')
+	.option('-rv, --robo-version <value>', 'specify a Robo.js version to use')
+	.option('-k, --kit <value>', 'choose a kit to start off with your Robo')
 	.action(async (options: CommandOptions, { args }) => {
 		logger({
 			level: options.verbose ? 'debug' : 'info'
@@ -55,8 +55,8 @@ new Command('create-robo <projectName>')
 		}
 
 		// Ensure correct kit is selected (bot or app)
-		if (options.kit && !['bot', 'app'].includes(options.kit)) {
-			logger.error('Only bot (default) and app kits are available at the moment.')
+		if (options.kit && !['bot', 'app', 'web'].includes(options.kit)) {
+			logger.error('Only bot (default) and activity kits are available at the moment.')
 			return
 		}
 

@@ -254,7 +254,7 @@ export default class Robo {
 
 	constructor(name: string, cliOptions: CommandOptions, useSameDirectory: boolean) {
 		this._cliOptions = cliOptions
-		this._isApp = cliOptions.kit === 'app'
+		this._isApp = cliOptions.kit === 'app' || cliOptions.kit === 'web'
 		this._isPlugin = cliOptions.plugin
 		this._name = name
 		this._useTypeScript = cliOptions.typescript
@@ -520,6 +520,8 @@ export default class Robo {
 		// Good SEO is important :3
 		if (kit === 'app') {
 			this._packageJson.keywords.push('activity', 'discord', 'sdk', 'embed', 'embedded app')
+		} else if (kit === 'web') {
+			this._packageJson.keywords.push('web', 'server', 'http', 'vite')
 		} else {
 			this._packageJson.keywords.push('bot', 'discord', 'discord.js')
 		}
@@ -797,7 +799,9 @@ export default class Robo {
 	}
 
 	private getTemplate(): string {
-		if (this._isApp && this._selectedFeatures.includes('react')) {
+		if (this._cliOptions.kit === 'web') {
+			return this._useTypeScript ? '../templates/webapp-ts-react' : '../templates/webapp-js-react'
+		} else if (this._isApp && this._selectedFeatures.includes('react')) {
 			return this._useTypeScript ? '../templates/app-ts-react' : '../templates/app-js-react'
 		} else if (this._isApp) {
 			return this._useTypeScript ? '../templates/app-ts' : '../templates/app-js'
