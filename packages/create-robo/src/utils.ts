@@ -6,9 +6,41 @@ import type { Logger } from 'robo.js'
 
 type PackageManager = 'npm' | 'bun' | 'pnpm' | 'yarn'
 
-export const ESLINT_IGNORE = `node_modules
-.config
-.robo\n`
+export const EslintConfig = `import globals from 'globals'
+import eslint from '@eslint/js'
+
+export default [
+	{ ignores: ['.robo/', 'config/'] },
+	{
+		files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'],
+		languageOptions: {
+			globals: {
+				...globals.node
+			}
+		}
+	},
+	eslint.configs.recommended
+]
+`
+
+export const EslintConfigTypescript = `import globals from 'globals'
+import eslint from '@eslint/js'
+import tseslint from 'typescript-eslint'
+
+export default tseslint.config(
+	{ ignores: ['.robo/', 'config/'] },
+	{
+		files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'],
+		languageOptions: {
+			globals: {
+				...globals.node
+			}
+		}
+	},
+	eslint.configs.recommended,
+	...tseslint.configs.recommended
+)
+`
 
 export const Indent = ' '.repeat(3)
 

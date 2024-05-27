@@ -4,7 +4,6 @@ import { checkbox, input, select, Separator } from '@inquirer/prompts'
 import chalk from 'chalk'
 import { fileURLToPath } from 'node:url'
 import {
-	ESLINT_IGNORE,
 	PRETTIER_CONFIG,
 	ROBO_CONFIG,
 	cmd,
@@ -19,11 +18,12 @@ import {
 	Indent,
 	ExecOptions,
 	Space,
+	EslintConfig,
+	EslintConfigTypescript
 } from './utils.js'
 import { RepoInfo, downloadAndExtractRepo, getRepoInfo, hasRepo } from './templates.js'
 import retry from 'async-retry'
 import { logger } from 'robo.js'
-// @ts-expect-error - Internal
 import { Spinner } from 'robo.js/dist/cli/utils/spinner.js'
 import type { CommandOptions } from './index.js'
 
@@ -529,6 +529,9 @@ export default class Robo {
 			this._packageJson.scripts['dev'] += ' --tunnel'
 		}
 
+		// Prepare config directory
+		await fs.mkdir(path.join(this._workingDir, 'config', 'plugins'), { recursive: true })
+
 		// Robo.js and Discord.js are normal dependencies, unless this is a plugin
 		const roboPkg = 'robo.js'
 		const roboDep = roboPkg + (roboVersion ? `@${roboVersion}` : '')
@@ -630,30 +633,18 @@ export default class Robo {
 		}
 
 		if (features.includes('eslint')) {
-			devDependencies.push('eslint')
+			devDependencies.push('eslint@9')
+			devDependencies.push('@eslint/js')
+			devDependencies.push('globals')
 			this._packageJson.scripts['lint'] = runPrefix + 'lint:eslint'
-			this._packageJson.scripts['lint:eslint'] = 'eslint . --ext js,jsx,ts,tsx'
+			this._packageJson.scripts['lint:eslint'] = 'eslint -c config/eslint.mjs .'
+			let eslintConfig = EslintConfig
 
-			const eslintConfig = {
-				extends: ['eslint:recommended'],
-				env: {
-					node: true
-				},
-				parser: undefined as string | undefined,
-				plugins: [] as string[],
-				root: true,
-				rules: {}
-			}
 			if (this._useTypeScript) {
-				eslintConfig.extends.push('plugin:@typescript-eslint/recommended')
-				eslintConfig.parser = '@typescript-eslint/parser'
-				eslintConfig.plugins.push('@typescript-eslint')
-
-				devDependencies.push('@typescript-eslint/eslint-plugin')
-				devDependencies.push('@typescript-eslint/parser')
+				eslintConfig = EslintConfigTypescript
+				devDependencies.push('typescript-eslint')
 			}
-			await fs.writeFile(path.join(this._workingDir, '.eslintignore'), ESLINT_IGNORE)
-			await fs.writeFile(path.join(this._workingDir, '.eslintrc.json'), JSON.stringify(eslintConfig, null, 2))
+			await fs.writeFile(path.join(this._workingDir, 'config', 'eslint.mjs'), eslintConfig)
 		}
 
 		if (features.includes('prettier')) {
@@ -687,7 +678,6 @@ export default class Robo {
 		}
 
 		logger.debug(`Writing Robo config file...`)
-		await fs.mkdir(path.join(this._workingDir, 'config', 'plugins'), { recursive: true })
 		await fs.writeFile(path.join(this._workingDir, 'config', 'robo.mjs'), roboConfig)
 		logger.debug(`Finished writing Robo config file:\n`, roboConfig)
 
@@ -755,6 +745,10 @@ export default class Robo {
 				await exec(baseCommand + ' ' + dependencies.join(' '), execOptions)
 				this._spinner.setText(Indent + '    {{spinner}} Installing dev dependencies...\n')
 				baseCommand += packageManager === 'yarn' ? ' --dev' : ' --save-dev'
+				if (features.includes('eslint') && this._useTypeScript) {
+					// TODO: Remove once merged: https://github.com/typescript-eslint/typescript-eslint/pull/9119
+					await fs.writeFile(path.join(this._workingDir, '.npmrc'), 'legacy-peer-deps=true\n')
+				}
 				await exec(baseCommand + ' ' + devDependencies.join(' '), execOptions)
 
 				// Read updated package.json file
