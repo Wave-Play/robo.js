@@ -12,6 +12,9 @@ importers:
         specifier: 2.27.1
         version: 2.27.1
     devDependencies:
+      '@eslint/js':
+        specifier: ^9.3.0
+        version: 9.3.0
       all-contributors-cli:
         specifier: ^6.26.1
         version: 6.26.1
@@ -96,8 +99,8 @@ importers:
         specifier: ^18.14.6
         version: 18.19.31
       discord.js:
-        specifier: ^14.7.1
-        version: 14.14.1
+        specifier: 14.11.0
+        version: 14.11.0
       robo.js:
         specifier: workspace:*
         version: link:../robo
