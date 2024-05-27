@@ -64,11 +64,7 @@ export const ROBO_CONFIG = `// @ts-check
  **/
 export default {
 	clientOptions: {
-		intents: [
-			'Guilds',
-			'GuildMessages',
-			'MessageContent'
-		]
+		intents: ['Guilds', 'GuildMessages']
 	},
 	plugins: [],
 	type: 'robo'
