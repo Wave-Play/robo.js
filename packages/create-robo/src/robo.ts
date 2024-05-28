@@ -23,7 +23,7 @@ import {
 } from './utils.js'
 import { RepoInfo, downloadAndExtractRepo, getRepoInfo, hasRepo } from './templates.js'
 import retry from 'async-retry'
-import { logger } from 'robo.js'
+import { color, logger } from 'robo.js'
 import { Spinner } from 'robo.js/dist/cli/utils/spinner.js'
 import type { CommandOptions } from './index.js'
 
@@ -823,10 +823,12 @@ export default class Robo {
 			const stat = await fs.stat(itemSourcePath)
 
 			if (stat.isDirectory()) {
+				logger.debug(`Creating directory`, color.bold(itemTargetPath))
 				await fs.mkdir(itemTargetPath, { recursive: true })
 				await this.copyTemplateFiles(path.join(sourceDir, item))
 			} else {
-				await fs.copyFile(itemSourcePath, itemTargetPath)
+				logger.debug(`Copying`, color.bold(item), `to`, color.bold(itemTargetPath))
+				await fs.copyFile(itemSourcePath, itemTargetPath, fs.constants.COPYFILE_FICLONE)
 			}
 		}
 	}
