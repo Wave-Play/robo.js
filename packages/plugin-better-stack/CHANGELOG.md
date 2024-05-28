@@ -1,5 +1,11 @@
 # @roboplay/plugin-better-stack
 
+## 0.2.2
+
+### Patch Changes
+
+- a3f75b2: patch: clear heartbeat intervals on stop/restart
+
 ## 0.2.1
 
 ### Patch Changes

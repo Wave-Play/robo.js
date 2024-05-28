@@ -1,5 +1,19 @@
 # create-robo
 
+## 0.12.0
+
+### Minor Changes
+
+- 9b7c3c6: refactor: use simpler executor commands for pnpm and yarn
+- 02431a6: feat: support for webapp creation
+- aeed55e: chore: removed built-in colyseus template
+
+### Patch Changes
+
+- 5c62661: refactor: no longer encourage MessageContent for bots by default
+- ed2731f: chore: debug logs for template copy process
+- bb43519: refactor: updated eslint usage for v9
+
 ## 0.11.14
 
 ### Patch Changes
