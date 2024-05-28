@@ -109,6 +109,7 @@ export function exec(command: string, options?: ExecOptions) {
 		const args = command.split(' ')
 		const childProcess = spawn(args.shift(), args, {
 			env: { ...process.env, FORCE_COLOR: '1' },
+			shell: IS_WINDOWS,
 			stdio: verbose ? 'pipe' : 'inherit',
 			...(spawnOptions ?? {})
 		})
