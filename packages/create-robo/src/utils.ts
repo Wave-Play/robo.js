@@ -148,9 +148,9 @@ export function getPackageManager(): PackageManager {
 export function getPackageExecutor(): string {
 	const packageManager = getPackageManager()
 	if (packageManager === 'yarn') {
-		return 'yarn dlx'
+		return 'yarn'
 	} else if (packageManager === 'pnpm') {
-		return 'pnpx'
+		return 'pnpm'
 	} else if (packageManager === 'bun') {
 		return 'bunx'
 	} else {
