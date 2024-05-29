@@ -6,7 +6,6 @@ import { fileURLToPath } from 'node:url'
 import {
 	PRETTIER_CONFIG,
 	ROBO_CONFIG,
-	cmd,
 	exec,
 	getPackageManager,
 	hasProperties,
@@ -333,7 +332,7 @@ export default class Robo {
 
 		try {
 			logger.debug(`Installing plugins:`, packages)
-			await exec(`${cmd(executor)} robo add ${packages.join(' ')}`, execOptions)
+			await exec(`${executor} robo add ${packages.join(' ')}`, execOptions)
 
 			// Update config files for each plugin with the provided configuration
 			const pendingConfigs = plugins
@@ -736,7 +735,7 @@ export default class Robo {
 			}
 
 			try {
-				let baseCommand = cmd(packageManager) + ' ' + (packageManager === 'npm' ? 'install' : 'add')
+				let baseCommand = packageManager + ' ' + (packageManager === 'npm' ? 'install' : 'add')
 				this._spinner.setText(Indent + '    {{spinner}} Installing dependencies...\n')
 				const execOptions: ExecOptions = {
 					cwd: this._workingDir,
@@ -790,7 +789,7 @@ export default class Robo {
 			const executor = getPackageExecutor()
 
 			try {
-				await exec(`${cmd(executor)} robo add ${plugins.join(' ')}`, { cwd: this._workingDir })
+				await exec(`${executor} robo add ${plugins.join(' ')}`, { cwd: this._workingDir })
 			} catch (error) {
 				logger.error(`Failed to install plugins:`, error)
 				logger.warn(`Please add the plugins manually using ${chalk.bold(executor + ' robo add')}`)

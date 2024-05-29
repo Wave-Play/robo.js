@@ -88,10 +88,6 @@ export default {
 	}
 }\n`
 
-export function cmd(packageManager: string): string {
-	return IS_WINDOWS && !['pnpm', 'pnpx'].includes(packageManager) ? `${packageManager}.cmd` : packageManager
-}
-
 export interface ExecOptions extends SpawnOptions {
 	logger?: Logger | typeof logger
 	resolveOnEvent?: 'close' | 'exit'

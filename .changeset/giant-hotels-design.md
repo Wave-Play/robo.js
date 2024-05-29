@@ -2,4 +2,4 @@
 'create-robo': patch
 ---
 
-Fix NPM and PNPM
+fix: spawn commands in shell on Windows (CVE-2024-27980)
