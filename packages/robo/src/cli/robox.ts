@@ -2,7 +2,7 @@
 import { spawn } from 'child_process'
 import { loadEnv } from '../core/dotenv.js'
 import { Command } from './utils/cli-handler.js'
-import { cmd, packageJson } from './utils/utils.js'
+import { IS_WINDOWS, packageJson } from './utils/utils.js'
 import { logger as defaultLogger } from '../core/logger.js'
 import { color } from '../core/color.js'
 
@@ -37,9 +37,9 @@ async function handler() {
 
 	// Execute the command
 	logger.debug(color.bold('> ' + args.join(' ')))
-	const child = spawn(cmd(args[0]), args.slice(1), {
+	const child = spawn(args[0], args.slice(1), {
 		stdio: 'inherit',
-		shell: false
+		shell: IS_WINDOWS
 	})
 
 	process.on('SIGINT', () => child.kill('SIGINT'))

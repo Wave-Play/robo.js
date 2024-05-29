@@ -4,7 +4,7 @@ import { logger } from '../../core/logger.js'
 import { DEFAULT_CONFIG, FLASHCORE_KEYS, Indent, cloudflareLogger } from '../../core/constants.js'
 import { getConfigPaths, loadConfig, loadConfigPath } from '../../core/config.js'
 import { installCloudflared, isCloudflaredInstalled, startCloudflared, stopCloudflared } from '../utils/cloudflared.js'
-import { IS_WINDOWS, cmd, filterExistingPaths, getWatchedPlugins, packageJson, timeout } from '../utils/utils.js'
+import { IS_WINDOWS, filterExistingPaths, getWatchedPlugins, packageJson, timeout } from '../utils/utils.js'
 import path from 'node:path'
 import Watcher, { Change } from '../utils/watcher.js'
 import { loadManifest } from '../utils/manifest.js'
@@ -273,7 +273,7 @@ export async function buildAsync(command: string | null, config: Config, verbose
 			// If you're reading this and know how to fix it, please open a PR!
 			if (pkgManager === 'pnpm' && IS_WINDOWS) {
 				logger.debug(
-					`Detected Windows. Using ${color.bold(cmd('npm'))} instead of ${color.bold(cmd('pnpm'))} to build.`
+					`Detected Windows. Using ${color.bold('npm')} instead of ${color.bold('pnpm')} to build.`
 				)
 				pkgManager = 'npm'
 			}
@@ -291,9 +291,10 @@ export async function buildAsync(command: string | null, config: Config, verbose
 				}
 			}
 
-			logger.debug(`> ${cmd(pkgManager)} ${args.join(' ')}`)
-			const childProcess = spawn(cmd(pkgManager), args, {
+			logger.debug(`> ${pkgManager} ${args.join(' ')}`)
+			const childProcess = spawn(pkgManager, args, {
 				env: { ...process.env, FORCE_COLOR: '1' },
+				shell: IS_WINDOWS,
 				stdio: 'inherit'
 			})
 

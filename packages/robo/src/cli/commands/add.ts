@@ -5,7 +5,7 @@ import { loadConfig } from '../../core/config.js'
 import { logger } from '../../core/logger.js'
 import { Command } from '../utils/cli-handler.js'
 import { createRequire } from 'node:module'
-import { cmd, exec } from '../utils/utils.js'
+import { exec } from '../utils/utils.js'
 import { getPackageManager } from '../utils/runtime-utils.js'
 
 const require = createRequire(import.meta.url)
@@ -86,7 +86,7 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
 
 		// Install dependencies using the package manager that triggered the command
 		try {
-			await exec(`${cmd(packageManager)} ${command} ${pendingInstall.join(' ')}`, {
+			await exec(`${packageManager} ${command} ${pendingInstall.join(' ')}`, {
 				stdio: options.force ? 'inherit' : 'ignore'
 			})
 			logger.debug(`Successfully installed packages!`)

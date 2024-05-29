@@ -2,7 +2,7 @@ import { PackageJson } from './../core/types.js'
 import { findPackagePath } from 'robo.js/dist/cli/utils/utils.js'
 import { Command } from 'commander'
 import { logger } from '../core/logger.js'
-import { checkSageUpdates, checkUpdates, cmd, exec, getPackageManager } from '../core/utils.js'
+import { checkSageUpdates, checkUpdates, exec, getPackageManager } from '../core/utils.js'
 import { loadConfig } from 'robo.js/dist/core/config.js'
 import { prepareFlashcore } from 'robo.js/dist/core/flashcore.js'
 import { color, composeColors } from '../core/color.js'
@@ -114,7 +114,7 @@ async function upgradeAction(options: UpgradeOptions) {
 	const command = packageManager === 'npm' ? 'install' : 'add'
 	logger.debug(`Package manager:`, packageManager)
 
-	await exec(`${cmd(packageManager)} ${command} robo.js@${update.latestVersion}`)
+	await exec(`${packageManager} ${command} robo.js@${update.latestVersion}`)
 
 	// Check what needs to be changed
 	const data = await check(update.latestVersion)

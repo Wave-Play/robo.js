@@ -76,7 +76,10 @@ export function isCloudflaredInstalled(to = DEFAULT_BIN_PATH): boolean {
 export function startCloudflared(url: string) {
 	cloudflareLogger.event(`Starting tunnel...`)
 	cloudflareLogger.debug(DEFAULT_BIN_PATH + ' tunnel --url ' + url)
-	const childProcess = spawn(DEFAULT_BIN_PATH, ['tunnel', '--url', url, '--no-autoupdate'], { stdio: 'pipe' })
+	const childProcess = spawn(DEFAULT_BIN_PATH, ['tunnel', '--url', url, '--no-autoupdate'], {
+		shell: IS_WINDOWS,
+		stdio: 'pipe'
+	})
 	let lastMessage = ''
 
 	const onData = (data: Buffer) => {

@@ -66,6 +66,7 @@ export function exec(command: string, options?: SpawnOptions) {
 		const args = command.split(' ')
 		const childProcess = spawn(args.shift(), args, {
 			env: { ...process.env, FORCE_COLOR: '1' },
+			shell: IS_WINDOWS,
 			stdio: 'inherit',
 			...(options ?? {})
 		})
@@ -316,10 +317,6 @@ export function sleep(ms: number) {
 }
 
 export const IS_WINDOWS = /^win/.test(process.platform)
-
-export function cmd(packageManager: string): string {
-	return IS_WINDOWS && !['pnpm', 'pnpx'].includes(packageManager) ? `${packageManager}.cmd` : packageManager
-}
 
 export function timeout<T = void>(callback: () => T, ms: number): Promise<T> {
 	return new Promise<T>((resolve) =>

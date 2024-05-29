@@ -47,9 +47,7 @@ export async function checkSageUpdates() {
 				cliPackage = path.basename(cliPackage)
 			}
 
-			await exec(
-				`${cmd(packageExecutor)} ${cliPackage}@${packageJson.version} ${process.argv.slice(2).join(' ')}`.trim()
-			)
+			await exec(`${packageExecutor} ${cliPackage}@${packageJson.version} ${process.argv.slice(2).join(' ')}`.trim())
 			process.exit(0)
 		}
 	}
@@ -118,10 +116,6 @@ export async function checkUpdates(packageJson: PackageJson, config: Config, for
 	return update
 }
 
-export function cmd(packageManager: string): string {
-	return IS_WINDOWS && !['pnpm', 'pnpx'].includes(packageManager) ? `${packageManager}.cmd` : packageManager
-}
-
 export function createNodeReadable(webReadable: ReadableStream<Uint8Array>): NodeJS.ReadableStream {
 	const reader = webReadable.getReader()
 	return new Readable({
@@ -157,6 +151,7 @@ export function exec(command: string, options?: SpawnOptions) {
 		const args = command.split(' ')
 		const childProcess = spawn(args.shift(), args, {
 			env: { ...process.env, FORCE_COLOR: '1' },
+			shell: IS_WINDOWS,
 			stdio: 'inherit',
 			...(options ?? {})
 		})
