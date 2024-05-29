@@ -1,5 +1,13 @@
 # @roboplay/sage
 
+## 0.5.6
+
+### Patch Changes
+
+- c43ff79: fix: spawn commands in shell on Windows (CVE-2024-27980)
+- Updated dependencies [c43ff79]
+  - robo.js@0.10.9
+
 ## 0.5.5
 
 ### Patch Changes

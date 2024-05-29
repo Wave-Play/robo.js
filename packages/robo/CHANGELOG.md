@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.10.9
+
+### Patch Changes
+
+- c43ff79: fix: spawn commands in shell on Windows (CVE-2024-27980)
+
 ## 0.10.8
 
 ### Patch Changes
