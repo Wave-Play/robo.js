@@ -1,5 +1,11 @@
 # create-robo
 
+## 0.12.1
+
+### Patch Changes
+
+- 8139a1b: fix: spawn commands in shell on Windows (CVE-2024-27980)
+
 ## 0.12.0
 
 ### Minor Changes
