@@ -159,7 +159,7 @@ new Command('create-robo <projectName>')
 
 		// Want some plugins?
 		// if there are plugins specified with the command we skip asking for more.
-		if (options.plugins === undefined && options.plugins.length <= 0) {
+		if (options.plugins === undefined || options.plugins.length <= 0) {
 			await robo.plugins()
 		}
 
