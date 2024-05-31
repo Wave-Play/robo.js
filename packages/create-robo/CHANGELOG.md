@@ -1,5 +1,11 @@
 # create-robo
 
+## 0.12.3
+
+### Patch Changes
+
+- d9419e3: feat(create-robo): `--no-creds` option
+
 ## 0.12.2
 
 ### Patch Changes
