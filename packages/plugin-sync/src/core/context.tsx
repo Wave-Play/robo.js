@@ -46,7 +46,8 @@ function setupSyncState() {
 		}
 
 		isRunning.current = true
-		const websocket = new WebSocket(`wss://${location.host}/sync`)
+		const wsProtocol = location.protocol === 'http:' ? 'ws' : 'wss'
+		const websocket = new WebSocket(`${wsProtocol}://${location.host}/sync`)
 
 		websocket.onopen = () => {
 			console.log('Connection established at', new Date().toISOString())
