@@ -24,7 +24,7 @@ export interface CommandOptions {
 	verbose?: boolean
 	roboVersion?: string
 	update?: boolean
-	noCreds?: boolean
+	creds?: boolean
 }
 
 new Command('create-robo <projectName>')
@@ -41,7 +41,7 @@ new Command('create-robo <projectName>')
 	.option('-v --verbose', 'print more information for debugging')
 	.option('-rv, --robo-version <value>', 'specify a Robo.js version to use')
 	.option('-k, --kit <value>', 'choose a kit to start off with your Robo')
-	.option('-nc, --no-creds', 'Skips asking for the credentials')
+	.option('-nc, --no-creds <boolean>', 'Skips asking for the credentials', false)
 	.action(async (options: CommandOptions, { args }) => {
 		logger({
 			level: options.verbose ? 'debug' : 'info'
@@ -166,7 +166,8 @@ new Command('create-robo <projectName>')
 		// Ask the user for their Discord credentials (token and client ID) and store them for later use
 		// Skip this step if the user is creating a plugin
 		//
-		if (!robo.isPlugin && options.noCreds) {
+
+		if (!robo.isPlugin && !options.creds) {
 			logger.debug(`Asking for Discord credentials...`)
 			await robo.askForDiscordCredentials()
 		}
