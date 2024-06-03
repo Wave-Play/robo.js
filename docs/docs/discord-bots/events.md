@@ -48,7 +48,7 @@ Code for `playStatus.js`:
 <TabItem value="js" label="Javascript">
 
 ```javascript title="src/events/ready/playStatus.js"
-export default (_, _, client) => {
+export default (client) => {
 	client.user.setActivity('with code')
 }
 ```
@@ -59,7 +59,7 @@ export default (_, _, client) => {
 ```typescript title="src/events/ready/playStatus.ts"
 import type { Client } from 'discord.js'
 
-export default (_, _, client: Client) => {
+export default (client: Client) => {
 	client.user.setActivity('with code')
 }
 ```
