@@ -31,10 +31,10 @@
 	},
 	"dependencies": {
 		"@discord/embedded-app-sdk": "^1.1.2",
-		"@robojs/server": "^0.4.2",
+		"@robojs/server": "^0.5.2",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
-		"robo.js": "^0.10.4"
+		"robo.js": "^0.10.9"
 	},
 	"devDependencies": {
 		"@vitejs/plugin-react-swc": "^3.6.0",

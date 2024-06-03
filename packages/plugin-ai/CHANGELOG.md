@@ -1,5 +1,11 @@
 # @roboplay/plugin-ai
 
+## 0.5.4
+
+### Patch Changes
+
+- 99eb54a: patch: support for newer server plugin versions
+
 ## 0.5.3
 
 ### Patch Changes
