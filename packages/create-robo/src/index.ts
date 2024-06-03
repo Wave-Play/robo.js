@@ -41,7 +41,7 @@ new Command('create-robo <projectName>')
 	.option('-v --verbose', 'print more information for debugging')
 	.option('-rv, --robo-version <value>', 'specify a Robo.js version to use')
 	.option('-k, --kit <value>', 'choose a kit to start off with your Robo')
-	.option('-nc, --no-creds <boolean>', 'Skips asking for the credentials', false)
+	.option('-nc, --no-creds', 'Skips asking for the credentials')
 	.action(async (options: CommandOptions, { args }) => {
 		logger({
 			level: options.verbose ? 'debug' : 'info'
