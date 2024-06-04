@@ -7,10 +7,8 @@ import './App.css'
  * You can also set the `scope` prop to request additional permissions
  *
  * Example:
- * ```
+ * ```tsx
  * <DiscordContextProvider authenticate scope={['identify', 'guilds']}>
- *  <Activity />
- * </DiscordContextProvider>
  * ```
  */
 export default function App() {
