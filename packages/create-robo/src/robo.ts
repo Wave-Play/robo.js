@@ -837,20 +837,25 @@ export default class Robo {
 		const discordPortalUrl = chalk.bold.blue('https://discord.com/developers/applications')
 		const officialGuide = 'Guide:'
 		const officialGuideUrl = chalk.bold.blue('https://roboplay.dev/' + (this._isApp ? 'appkey' : 'botkey'))
+
+		let discordClientId = ''
+		let discordToken = ''
 		logger.log('')
 		logger.log(Indent, chalk.bold('🔑 Setting up credentials'))
 		logger.log(Indent, '   Get your credentials from the Discord Developer portal.\n')
 		logger.log(Indent, `   ${discordPortal} ${discordPortalUrl}`)
 		logger.log(Indent, `   ${officialGuide} ${officialGuideUrl}\n`)
 
-		const discordClientId = await input({
-			message: 'Enter your Discord Client ID (press Enter to skip):'
-		})
-		const discordToken = await input({
-			message: this._isApp
-				? 'Enter your Discord Client Secret (press enter to skip)'
-				: 'Enter your Discord Token (press Enter to skip):'
-		})
+		if (this._cliOptions.creds) {
+			discordClientId = await input({
+				message: 'Enter your Discord Client ID (press Enter to skip):'
+			})
+			discordToken = await input({
+				message: this._isApp
+					? 'Enter your Discord Client Secret (press enter to skip)'
+					: 'Enter your Discord Token (press Enter to skip):'
+			})
+		}
 
 		if (!discordClientId || !discordToken) {
 			this._missingEnv = true
