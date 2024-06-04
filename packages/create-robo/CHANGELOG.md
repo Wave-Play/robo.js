@@ -1,5 +1,13 @@
 # create-robo
 
+## 0.12.4
+
+### Patch Changes
+
+- d48323e: fix(create-robo): no creds flag.
+- d48323e: feat(create-robo): `--no-creds` option
+- 01a5388: chore: updated activity templates for new server plugin versions
+
 ## 0.12.3
 
 ### Patch Changes

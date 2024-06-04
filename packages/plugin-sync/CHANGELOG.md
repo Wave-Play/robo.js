@@ -1,5 +1,11 @@
 # @robojs/sync
 
+## 0.1.2
+
+### Patch Changes
+
+- b8395b7: patch: better support for non-tunneled localhost
+
 ## 0.1.1
 
 ### Patch Changes
