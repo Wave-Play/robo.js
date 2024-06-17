@@ -1,5 +1,12 @@
 # @roboplay/plugin-api
 
+## 0.5.3
+
+### Patch Changes
+
+- 694a680: fix: copy custom headers correctly in node engine
+- dfc4180: refactor: stream binary data into raw response
+
 ## 0.5.2
 
 ### Patch Changes
