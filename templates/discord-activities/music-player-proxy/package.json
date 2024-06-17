@@ -1,0 +1,51 @@
+{
+	"name": "discord-activity-proxy",
+	"description": "",
+	"version": "1.0.0",
+	"type": "module",
+	"private": true,
+	"keywords": [
+		"activity",
+		"api",
+		"discord",
+		"embed",
+		"embedded app",
+		"http",
+		"robo",
+		"robo.js",
+		"sdk",
+		"server",
+		"typescript",
+		"vite",
+		"web"
+	],
+	"scripts": {
+		"build": "robo build",
+		"deploy": "robo deploy",
+		"dev": "robox dev --tunnel",
+		"doctor": "sage doctor",
+		"invite": "robo invite",
+		"lint:style": "prettier --write .",
+		"start": "robo start",
+		"upgrade": "sage upgrade"
+	},
+	"dependencies": {
+		"@discord/embedded-app-sdk": "^1.2.0",
+		"@robojs/server": "^0.5.3",
+		"react": "^18.3.1",
+		"react-dom": "^18.3.1",
+		"robo.js": "^0.10.9"
+	},
+	"devDependencies": {
+		"@swc/core": "^1.6.1",
+		"@types/node": "^20.14.2",
+		"@types/react": "^18.3.3",
+		"@types/react-dom": "^18.3.0",
+		"@vitejs/plugin-react-swc": "^3.7.0",
+		"discord.js": "^14.15.3",
+		"eslint-plugin-react-hooks": "^4.6.2",
+		"prettier": "^3.3.2",
+		"typescript": "^5.4.5",
+		"vite": "^5.3.1"
+	}
+}
