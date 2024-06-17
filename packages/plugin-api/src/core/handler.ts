@@ -60,7 +60,7 @@ export function createServerHandler(router: Router, vite?: ViteDevServer): Serve
 						logger.error(data)
 					}
 
-					data.headers.forEach(([key, value]) => {
+					data.headers.forEach((value, key) => {
 						this.raw.setHeader(key, value)
 					})
 					this.raw.statusCode = data.status
