@@ -64,8 +64,23 @@ export function createServerHandler(router: Router, vite?: ViteDevServer): Serve
 						this.raw.setHeader(key, value)
 					})
 					this.raw.statusCode = data.status
-					data.text().then((text) => {
-						this.raw.end(text)
+
+					// Stream the response body
+					const reader = data.body.getReader()
+					const read = async () => {
+						while (true) {
+							const { done, value } = await reader.read()
+
+							if (done) {
+								break
+							} else {
+								this.raw.write(value)
+							}
+						}
+					}
+
+					read().then(() => {
+						this.raw.end()
 					})
 				} else {
 					this.raw.end(data)
