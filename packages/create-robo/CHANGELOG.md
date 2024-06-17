@@ -1,5 +1,11 @@
 # create-robo
 
+## 0.12.5
+
+### Patch Changes
+
+- 4f89a53: chore: explicitly use utf-8 encoding
+
 ## 0.12.4
 
 ### Patch Changes
