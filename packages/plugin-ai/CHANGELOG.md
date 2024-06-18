@@ -1,5 +1,12 @@
 # @roboplay/plugin-ai
 
+## 0.5.5
+
+### Patch Changes
+
+- 1520b9f: refactor: use gpt-4-turbo as default model
+- 15fb940: patch: use correct response field in /chat command
+
 ## 0.5.4
 
 ### Patch Changes
