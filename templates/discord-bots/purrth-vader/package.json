@@ -1,0 +1,36 @@
+{
+	"name": "purrth-vader",
+	"description": "",
+	"version": "1.0.0",
+	"type": "module",
+	"private": true,
+	"keywords": [
+		"bot",
+		"discord",
+		"discord.js",
+		"robo",
+		"robo.js",
+		"typescript"
+	],
+	"scripts": {
+		"build": "robo build",
+		"deploy": "robo deploy",
+		"dev": "robox dev",
+		"doctor": "sage doctor",
+		"invite": "robo invite",
+		"lint:style": "prettier --write .",
+		"start": "robo start",
+		"upgrade": "sage upgrade"
+	},
+	"dependencies": {
+		"@robojs/ai": "^0.5.5",
+		"discord.js": "^14.15.3",
+		"robo.js": "^0.10.9"
+	},
+	"devDependencies": {
+		"@swc/core": "^1.6.1",
+		"@types/node": "^20.14.4",
+		"prettier": "^3.3.2",
+		"typescript": "^5.4.5"
+	}
+}
