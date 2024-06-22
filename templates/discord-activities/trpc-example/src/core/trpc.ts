@@ -1,6 +1,5 @@
 import { z } from 'zod'
 import { initTRPC } from '@trpc/server'
-import { registerRouter } from '@robojs/trpc'
 
 const t = initTRPC.create()
 
@@ -22,4 +21,3 @@ export const appRouter = router({
 })
 
 export type AppRouter = typeof appRouter
-registerRouter(appRouter)

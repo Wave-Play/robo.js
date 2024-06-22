@@ -9,7 +9,7 @@ export const Activity = () => {
 
 	useEffect(() => {
 		const run = async () => {
-			const data = trpcClient.hello.query({ text: 'hai' })
+			const data = await trpcClient.hello.query({ text: 'hai' })
 			console.log(data)
 		}
 		run()

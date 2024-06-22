@@ -33,7 +33,6 @@
 		"prepublishOnly": "robo build plugin"
 	},
 	"dependencies": {
-		"@tanstack/react-query": "^5.45.1",
 		"@trpc/client": "^10.45.2",
 		"@trpc/react-query": "^10.45.2",
 		"@trpc/server": "^10.45.2"
