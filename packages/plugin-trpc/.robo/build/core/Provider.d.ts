@@ -1,6 +1,7 @@
-import type { ReactNode } from 'react';
+import React from 'react';
 interface TRPCProviderProps {
-    children: ReactNode;
+    children: React.ReactNode;
+    queryClient: any;
     trpc: any;
     trpcClient: any;
 }
