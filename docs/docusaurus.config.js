@@ -147,6 +147,10 @@ const config = {
 					{
 						from: '/robojs/plugins',
 						to: '/plugins/overview'
+					},
+					{
+						from: '/discord-activities/hosting',
+						to: '/discord-activities/publishing'
 					}
 				]
 			}
@@ -225,10 +229,11 @@ const config = {
 			/** @type {import('@docusaurus/preset-classic').Options} */
 			({
 				docs: {
+					editUrl: 'https://github.com/Wave-Play/robo.js/edit/main/docs/',
 					routeBasePath: '/',
+					showLastUpdateAuthor: true,
+					showLastUpdateTime: true,
 					sidebarPath: require.resolve('./sidebars.js')
-					// Please change this to your repo.
-					// Remove this to remove the "edit this page" links.
 				},
 				theme: {
 					customCss: require.resolve('./src/css/custom.css')
