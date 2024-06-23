@@ -101,7 +101,8 @@ const sidebars = {
 					label: '✨ Getting Started',
 					type: 'doc'
 				},
-				'discord-activities/multiplayer'
+				'discord-activities/proxy',
+				'discord-activities/multiplayer',
 			]
 		},
 		{
