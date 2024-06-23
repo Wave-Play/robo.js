@@ -1,9 +1,10 @@
+import { BeforeAfter } from '@site/src/components/shared/BeforeAfter'
 import { Card } from '@site/src/components/shared/Card'
 import { CardContainer } from '@site/src/components/shared/CardContainer'
 
 # 🛡️ Discord Proxy
 
-Client network requests made by your **Discord Activity** are "sandboxed" through **[Discord's Proxy](https://discord.com/developers/docs/activities/development-guides#activity-proxy-considerations)**.
+**[Client](./client)** network requests made by your **Discord Activity** are "sandboxed" through **[Discord's Proxy](https://discord.com/developers/docs/activities/development-guides#activity-proxy-considerations)**.
 
 That means you cannot directly make network requests to **[external URLs](#external-resources)** from it for security reasons. You may have seen this if you've tried using iframes. There are also **[limitations](#network-limitations)** to what network protocols you can use.
 
@@ -21,14 +22,15 @@ Mapping URLs is a way to tell the **Discord Proxy** to allow certain external re
 
 Let's say you need to load something from **[GitHub](https://github.com)**. You can map it to a path like `/github` and `/assets`.
 
-<center>`/github` -> `https://github.com`</center>
-<center>`/assets` -> `https://raw.githubusercontent.com/Wave-Play/robo.js/main`</center>
-<p></p>
+<BeforeAfter from={'/github'} to={'https://github.com'}/>
+
+<BeforeAfter from={'/assets'} to={'https://raw.githubusercontent.com/Wave-Play/robo.js/main'}/>
 
 This configuration maps URLs you can use in your activity like so:
 
-<center>`/github/Wave-Play/robo.js` -> `https://github.com/Wave-Play/robo.js`</center>
-<center>`/assets/README.md` -> `https://raw.githubusercontent.com/Wave-Play/robo.js/main/README.md`</center>
+<BeforeAfter from={'/github/Wave-Play/robo.js'} to={'https://github.com/Wave-Play/robo.js'}/>
+
+<BeforeAfter from={'/assets/README.md'} to={'https://raw.githubusercontent.com/Wave-Play/robo.js/main/README.md'}/>
 <p></p>
 
 And voila, you can now load those URLs in your **Discord Activity** using the mapped paths.
@@ -73,7 +75,7 @@ Alternatively, you can use a post-install utility like **[patch-package](https:/
 
 The **Discord Proxy** hides the user's IP address and blocks URLs from known **[malicious endpoints](https://www.youtube.com/watch?v=dQw4w9WgXcQ)**. This ensures the safety of the user's data and privacy. However, it also means that you need to be careful when handling external resources.
 
-Don't trust info coming from the Discord client as absolute truth. There could be an impostor among us. Call the Discord API directly from your app's **[Web Server](./server)** with the OAuth2 token you received during **[Authentication](./auth)** if you need information that's not sus.
+Don't trust info coming from the **Embedded App SDK** as truth. There could be an impostor among us. Call the Discord API directly from your app's **[Web Server](./server)** with the **OAuth2** token you received during **[Authentication](./auth)** if you need information that's not sus.
 
 :::warning Sanitize Your Inputs
 
@@ -108,7 +110,7 @@ export default async (request) => {
 }
 ```
 
-You can use it like so inside your **Activity Client**:
+Modify as you see fit to validate requests. You can use it like so inside your **Activity Client**:
 
 ```jsx
 <Player url={'/api/proxy?url=' + ExternalUrl} />
