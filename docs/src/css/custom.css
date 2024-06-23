@@ -179,22 +179,3 @@
 .terminal-header button:hover {
 	opacity: 0.6;
 }
-
-.spacer {
-	flex: 1;
-}
-
-.docsearch-btn {
-	width: 240px;
-	height: 40px !important;
-	background-color: rgba(37, 39, 44, 1) !important;
-	border-color: rgba(49, 54, 60, 1) !important;
-	border-radius: 0px !important;
-	border-style: solid !important;
-	border-width: 2px !important;
-}
-
-.docsearch-btn-placeholder {
-	display: flex;
-	flex: 1;
-}
