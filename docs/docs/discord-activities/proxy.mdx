@@ -10,7 +10,7 @@ That means you cannot directly make network requests to **[external URLs](#exter
 
 ## Content Security Policy (CSP)
 
-So you tried to load a URL from an external resource and got a `blocked:csp` error? That's the **Discord Proxy** doing its job.
+Ever tried to load a URL from an external resource and got a `blocked:csp` error? That's the **Discord Proxy** doing its job.
 
 **[Content Security Policy (CSP)](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP)** is a security feature that helps prevent **[cross-site scripting (XSS)](https://owasp.org/www-community/attacks/xss/)** attacks. It restricts what can load, such as scripts, styles, and images. **Discord** trusts only you **[and itself](https://discord.com/developers/docs/activities/development-guides#exceptions)**. It will throw **CSP** errors at everyone else.
 
@@ -43,7 +43,7 @@ And voila, you can now load those URLs in your **Discord Activity** using the ma
 fetch('/assets/docs/static/img/logo.png')
 ```
 
-You can reference it as a path or a full URL. **[Construct a full URL](https://discord.com/developers/docs/activities/development-guides#construct-a-full-url)** if you need to.
+You can reference it as a path or **[construct a full URL](https://discord.com/developers/docs/activities/development-guides#construct-a-full-url)**.
 
 <CardContainer>
 	<Card
@@ -61,7 +61,7 @@ GitHub is not a CDN. Connect **[your host](https://roboplay.dev)** to a CDN like
 
 ## URL Patching
 
-Mapping is great if you have control over the paths used, _but what if you don't?_ You know, like when using third-party libraries with hardcoded URLs. You can use the **[Embedded App SDK](https://github.com/discord/embedded-app-sdk/)** to for that!
+Mapping is great if you have control over the paths used, _but what if you don't?_ You know, like when using third-party libraries with hardcoded URLs. You can use the **[Embedded App SDK](https://github.com/discord/embedded-app-sdk/)** for that!
 
 ```js
 import { patchUrlMappings } from '@discord/embedded-app-sdk'
@@ -87,16 +87,16 @@ Always sanitize user inputs such as usernames and channel names. You never know 
 
 Want to use **[WebRTC](https://webrtc.org/)** or **[WebTransport](https://w3c.github.io/webrtc-quic/)**? Sorry, you can't. **[Not yet](https://discord.com/developers/docs/activities/development-guides#activity-proxy-considerations)**, at least.
 
-The **Discord Proxy** does _not_ support the following for now:
+The **Discord Proxy** does _not_ support the following:
 
 - **[Some iframe ports](https://developers.cloudflare.com/fundamentals/reference/network-ports/#network-ports-compatible-with-cloudflares-proxy)**
 - **[URL Mapping external ports](https://developers.cloudflare.com/workers/platform/known-issues/#custom-ports)**
-- **[WebRTC](https://webrtc.org/)**
-- **[WebTransport](https://w3c.github.io/webrtc-quic/)**
+- **[WebRTC](https://webrtc.org)**
+- **[WebTransport](https://web.dev/webtransport)**
 
-You'll be fine if you stick to **[WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)** or **[HTTPS](https://developer.mozilla.org/en-US/docs/Glossary/HTTPS)**, as well as some protocols built on them like **[DASH](https://developer.mozilla.org/en-US/docs/Web/Media/Audio_and_video_delivery/Setting_up_adaptive_streaming_media_sources#mpeg-dash_encoding)** or **[HLS](https://developer.mozilla.org/en-US/docs/Web/Guide/Audio_and_video_delivery/Setting_up_adaptive_streaming_media_sources#hls_encoding)** for streaming.
+You'll be fine if you stick to **[WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)** or **[HTTPS](https://developer.mozilla.org/en-US/docs/Glossary/HTTPS)**, as well as some protocols built on them like **[DASH](https://developer.mozilla.org/en-US/docs/Web/Media/Audio_and_video_delivery/Setting_up_adaptive_streaming_media_sources#mpeg-dash_encoding)** or **[HLS](https://developer.mozilla.org/en-US/docs/Web/Media/Audio_and_video_delivery/Setting_up_adaptive_streaming_media_sources#hls_encoding)** for streaming.
 
-Need to make a request to a specific port? Have your **Web Server** handle it by **[proxying the request](#proxying-requests)**. This won't always work on iframes, though. You may need to virtualize the source and livestream it from your server but that has its own limitations.
+Need to make a request to a specific port? Have your **Web Server** handle it by **[proxying the request](#proxying-requests)**. That won't always work on iframes, though. You may need to virtualize the source and livestream it from your server but that has its own limitations.
 
 ## Proxying Requests
 

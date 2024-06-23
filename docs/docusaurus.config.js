@@ -147,10 +147,6 @@ const config = {
 					{
 						from: '/robojs/plugins',
 						to: '/plugins/overview'
-					},
-					{
-						from: '/discord-activities/hosting',
-						to: '/discord-activities/publishing'
 					}
 				]
 			}
