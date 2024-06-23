@@ -75,7 +75,11 @@ The **Discord Proxy** hides the user's IP address and blocks URLs from known **[
 
 Don't trust info coming from the Discord client as absolute truth. There could be an impostor among us. Call the Discord API directly from your app's **[Web Server](./server)** with the OAuth2 token you received during **[Authentication](./auth)** if you need information that's not sus.
 
-As always with usernames and channel names: _sanitize before using them_. You never know what might try to sneak in.
+:::warning Sanitize Your Inputs
+
+Always sanitize user inputs such as usernames and channel names. You never know what might try to sneak in.
+
+:::
 
 ## Network Limitations
 
@@ -88,9 +92,9 @@ The **Discord Proxy** does _not_ support the following for now:
 - **[WebRTC](https://webrtc.org/)**
 - **[WebTransport](https://w3c.github.io/webrtc-quic/)**
 
-You'll be fine if you stick to **[WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)** or **[HTTPS](https://developer.mozilla.org/en-US/docs/Glossary/HTTPS)**, as well as some protocols built upon them like **[DASH](https://developer.mozilla.org/en-US/docs/Web/Media/Audio_and_video_delivery/Setting_up_adaptive_streaming_media_sources#mpeg-dash_encoding)** or **[HLS](https://developer.mozilla.org/en-US/docs/Web/Guide/Audio_and_video_delivery/Setting_up_adaptive_streaming_media_sources#hls_encoding)** for streaming.
+You'll be fine if you stick to **[WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)** or **[HTTPS](https://developer.mozilla.org/en-US/docs/Glossary/HTTPS)**, as well as some protocols built on them like **[DASH](https://developer.mozilla.org/en-US/docs/Web/Media/Audio_and_video_delivery/Setting_up_adaptive_streaming_media_sources#mpeg-dash_encoding)** or **[HLS](https://developer.mozilla.org/en-US/docs/Web/Guide/Audio_and_video_delivery/Setting_up_adaptive_streaming_media_sources#hls_encoding)** for streaming.
 
-Need to make a request to a specific port? Have your **Web Server** handle it by **[proxying the request](#proxying-requests)**. This won't always work on iframes, though. You may need to virtualize the source and livestream it from your server. That has its own set of limitations.
+Need to make a request to a specific port? Have your **Web Server** handle it by **[proxying the request](#proxying-requests)**. This won't always work on iframes, though. You may need to virtualize the source and livestream it from your server but that has its own limitations.
 
 ## Proxying Requests
 
