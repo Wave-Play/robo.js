@@ -1,3 +1,5 @@
+import { Terminal } from '@site/src/components/shared/Terminal'
+
 # 🔨 Self-hosting
 
 Robo.js can be self-hosted, meaning you can run your own instance of Robo.js on your own server.
@@ -12,17 +14,13 @@ Feeling overwhelmed? **[Deploy with one command on RoboPlay](./roboplay)**, a ho
 
 Make sure you have all the necessary dependencies installed.
 
-```bash
-npm install
-```
+<Terminal install/>
 
 ### Build for production
 
 Some hosts might need you to run `robo build` before or after uploading your code. This step compiles your source code into an optimized production format, especially important for TypeScript users.
 
-```bash
-npx robo build
-```
+<Terminal execute>robo build</Terminal>
 
 This command will compile your Robo.js project into a production-ready format, making it easier to run on your server.
 
@@ -34,9 +32,7 @@ Before starting your Robo, make sure you have all the necessary environment vari
 
 Once you've built your project, you can start your Robo.js server with the following command:
 
-```bash
-npx robo start
-```
+<Terminal execute>robo start</Terminal>
 
 This will start your Robo.js server, making it accessible to the world.
 

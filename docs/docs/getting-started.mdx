@@ -1,5 +1,6 @@
 import { Card } from '@site/src/components/shared/Card'
 import { CardContainer } from '@site/src/components/shared/CardContainer'
+import { Terminal } from '@site/src/components/shared/Terminal'
 
 # ✨ Getting Started
 
@@ -13,9 +14,7 @@ Best of all, **[it works with your existing code](./discord-bots/migrate)**. You
 
 Ready to start your adventure? Try **[Create Robo](./cli/create-robo)** in your terminal:
 
-```bash
-npx create-robo <projectName>
-```
+<Terminal create>{'<projectName>'}</Terminal>
 
 This will spawn a new **Robo.js** project ready to use. We call these **Robos**.
 
@@ -29,16 +28,18 @@ You can use **Robo.js** for many types of projects. Let the **stars guide you**:
 		title="✨ Discord Activities"
 		description="Getting Started with Discord Activities."
 	/>
-	<Card href="./discord-bots/getting-started" title="✨ Discord Bots" description="Getting Started with Discord Bots." />
+	<Card
+		href="./discord-bots/getting-started"
+		title="✨ Discord Bots"
+		description="Getting Started with Discord Bots."
+	/>
 </CardContainer>
 
 ## Plugin Power Ups
 
 **[Robo Plugins](./plugins/overview)** are special. They let you add features to your **Robo** with one command.
 
-```bash
-npx robo add @robojs/ai @robojs/moderation
-```
+<Terminal execute>robo add @robojs/ai @robojs/server</Terminal>
 
 Plugins integrate seamlessly thanks to the **[Robo File Structure](./robojs/files)**. What's more, anyone can **[create a plugin](./plugins/create)**.
 
@@ -69,7 +70,11 @@ Sage is powered by **[@robojs/ai](./plugins/ai)**
 
 <CardContainer>
 	<Card href="./robojs/overview" title="🌟 Core Package" description="See what makes Robo.js awesome." />
+	<Card href="./hosting/overview" title="🚀 Hosting" description="Deploy your project to stay online 24/7." />
 	<Card href="./templates/overview" title="🔗 Templates" description="Kickstart your project with a template." />
-	<Card href="./robojs/linting" title="💅 Linting" description="Check your code for errors and style." />
-	<Card href="./robojs/typescript" title="📘 TypeScript" description="Write better code with type safety." />
+	<Card
+		href="https://dev.to/waveplay"
+		title="🔗 Tutorials"
+		description="Learn how to build awesome stuff with Robo.js."
+	/>
 </CardContainer>

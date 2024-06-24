@@ -225,10 +225,11 @@ const config = {
 			/** @type {import('@docusaurus/preset-classic').Options} */
 			({
 				docs: {
+					editUrl: 'https://github.com/Wave-Play/robo.js/edit/main/docs/',
 					routeBasePath: '/',
+					showLastUpdateAuthor: true,
+					showLastUpdateTime: true,
 					sidebarPath: require.resolve('./sidebars.js')
-					// Please change this to your repo.
-					// Remove this to remove the "edit this page" links.
 				},
 				theme: {
 					customCss: require.resolve('./src/css/custom.css')
@@ -250,6 +251,9 @@ const config = {
 		({
 			// Replace with your project's social card
 			image: 'img/logo.png',
+			colorMode: {
+				defaultMode: 'dark'
+			},
 			navbar: {
 				title: 'Robo.js',
 				logo: {
@@ -261,11 +265,22 @@ const config = {
 						type: 'docSidebar',
 						sidebarId: 'tutorialSidebar',
 						position: 'left',
-						label: 'Getting Started'
+						label: 'Docs'
 					},
 					{ to: '/hosting/overview', label: 'Hosting', position: 'left' },
-					{ to: '/plugins/directory', label: 'Plugin Directory', position: 'left' },
+					{ to: '/plugins/directory', label: 'Plugins', position: 'left' },
 					{ to: '/templates/overview', label: 'Templates', position: 'left' },
+					{
+						href: 'https://dev.to/waveplay',
+						label: 'Tutorials',
+						position: 'left'
+					},
+					{
+						href: 'https://roboplay.dev/discord',
+						position: 'right',
+						className: 'header-discord-link',
+						'aria-label': 'Discord'
+					},
 					{
 						href: 'https://github.com/Wave-Play/robo.js',
 						position: 'right',

@@ -1,5 +1,6 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import { Terminal } from '@site/src/components/shared/Terminal'
 
 # 📜 Commands
 
@@ -328,9 +329,7 @@ Note: the type of the Interaction is: `AutocompleteInteraction`
 
 The cherry on top? You don't need to manually register your commands. Robo.js handles it for you when you run `robo dev` or `robo build`, automatically! However, if things go sideways for some reason, you can use the `--force` flag to force registration.
 
-```bash
-robo build --force
-```
+<Terminal execute>robo build --force</Terminal>
 
 This will also clean up any commands that are no longer in your `commands` directory. Pretty neat, right?
 

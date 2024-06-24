@@ -2,6 +2,7 @@ import { Card } from '@site/src/components/shared/Card'
 import { CardContainer } from '@site/src/components/shared/CardContainer'
 import Tabs from '@theme/Tabs'
 import TabItem from '@theme/TabItem'
+import { Terminal } from '@site/src/components/shared/Terminal'
 
 # ✨ Getting Started with Discord Bots
 
@@ -19,9 +20,7 @@ Instead, it simplifies coding by handling boilerplate. You still have all of **D
 
 Ready to start your adventure? Try **[Create Robo](../cli/create-robo)** in your terminal:
 
-```bash
-npx create-robo <projectName> -k bot
-```
+<Terminal create>{'<projectName> -k bot'}</Terminal>
 
 This will spawn a new **Robo.js** project ready to use as a **Discord Bot**. We call these **Robos**.
 
@@ -212,9 +211,7 @@ Sage Mode is a powerful feature in Robo.js that simplifies interaction handling.
 
 **[Robo Plugins](../plugins/overview)** are special. They let you add features to your **Robo** with one command.
 
-```bash
-npx robo add @robojs/ai @robojs/moderation
-```
+<Terminal execute>robo add @robojs/ai @robojs/moderation</Terminal>
 
 Plugins integrate seamlessly thanks to the **[Robo File Structure](../robojs/files)**. What's more, anyone can **[create a plugin](../plugins/create)**.
 
