@@ -1,5 +1,6 @@
 import { Card } from '@site/src/components/shared/Card'
 import { CardContainer } from '@site/src/components/shared/CardContainer'
+import { Terminal } from '@site/src/components/shared/Terminal'
 
 # ⚔️ Multiplayer
 
@@ -27,9 +28,7 @@ Websocket features can be complex to set up, but **@robojs/sync** handles all of
 
 To install, run the following command:
 
-```bash
-npx robo add @robojs/sync
-```
+<Terminal execute>robo add @robojs/sync</Terminal>
 
 You will need to wrap your app with the `<SyncProvider>` component. This will handle state synchronization for you.
 
@@ -104,9 +103,7 @@ Colyseus is a powerful multiplayer game server that handles real-time communicat
 
 Unlike Robo plugins, Colyseus requires a bit more setup. Let's start by installing dependencies:
 
-```bash
-npm install @colyseus/core @colyseus/schema @colyseus/ws-transport colyseus.js
-```
+<Terminal install>@colyseus/core @colyseus/schema @colyseus/ws-transport colyseus.js</Terminal>
 
 From here on, you'll need to:
 

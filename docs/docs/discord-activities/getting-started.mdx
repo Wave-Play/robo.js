@@ -1,5 +1,6 @@
 import { Card } from '@site/src/components/shared/Card'
 import { CardContainer } from '@site/src/components/shared/CardContainer'
+import { Terminal } from '@site/src/components/shared/Terminal'
 
 # ✨ Getting Started with Discord Activities
 
@@ -11,9 +12,7 @@ import { CardContainer } from '@site/src/components/shared/CardContainer'
 
 Ready to start your adventure? Try **[Create Robo](../cli/create-robo)** in your terminal:
 
-```bash
-npx create-robo <projectName> -k activity
-```
+<Terminal create>{'<projectName> -k activity'}</Terminal>
 
 This will spawn a new **Robo.js** project ready to use as a **Discord Activity**. We call these **Robos**.
 
@@ -41,7 +40,7 @@ Here's what you can expect:
 - **[TypeScript Support](../robojs/typescript)**: TypeScript works out of the box, so you can use it without any setup.
 - **[Built-in Tunnels](./tunnels)**: The Robo CLI automatically sets up free Cloudflare tunnels for easy testing.
 - **[Plugin System](../plugins/overview)**: Extend your activity's features with plugins that integrate seamlessly.
-- **[Easy Hosting](./hosting)**: Deploy your activity for others to use with just one command, or self-host it on your own.
+- **[Easy Hosting](./hosting)**: Deploy your activity with just one command for others to use, or self-host it on your own.
 - **[Ecosystem](../plugins/directory)**: A growing ecosystem of plugins, templates, and tools to help you build faster with less effort.
 
 ## Documentation
@@ -101,9 +100,7 @@ Creating **Discord Activities** is easy to learn, but we also have tutorials to 
 
 **[Robo Plugins](../plugins/overview)** are special. They let you add features to your **Robo** with one command.
 
-```bash
-npx robo add @robojs/ai @robojs/sync
-```
+<Terminal execute>robo add @robojs/ai @robojs/sync</Terminal>
 
 Plugins integrate seamlessly thanks to the **[Robo File Structure](../robojs/files)**. What's more, anyone can **[create a plugin](../plugins/create)**.
 
