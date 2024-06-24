@@ -262,11 +262,22 @@ const config = {
 						type: 'docSidebar',
 						sidebarId: 'tutorialSidebar',
 						position: 'left',
-						label: 'Getting Started'
+						label: 'Docs'
 					},
 					{ to: '/hosting/overview', label: 'Hosting', position: 'left' },
-					{ to: '/plugins/directory', label: 'Plugin Directory', position: 'left' },
+					{ to: '/plugins/directory', label: 'Plugins', position: 'left' },
 					{ to: '/templates/overview', label: 'Templates', position: 'left' },
+					{
+						href: 'https://dev.to/waveplay',
+						label: 'Tutorials',
+						position: 'left'
+					},
+					{
+						href: 'https://roboplay.dev/discord',
+						position: 'right',
+						className: 'header-discord-link',
+						'aria-label': 'Discord'
+					},
 					{
 						href: 'https://github.com/Wave-Play/robo.js',
 						position: 'right',
