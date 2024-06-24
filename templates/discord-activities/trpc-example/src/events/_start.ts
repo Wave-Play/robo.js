@@ -1,6 +1,3 @@
-import { appRouter } from '../core/trpc.js'
-import { registerRouter } from '@robojs/trpc'
+import '../core/trpc.js'
 
-export default () => {
-	registerRouter(appRouter)
-}
+export default () => {}
