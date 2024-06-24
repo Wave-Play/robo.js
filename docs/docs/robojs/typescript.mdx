@@ -1,3 +1,5 @@
+import { Terminal } from '@site/src/components/shared/Terminal'
+
 # 📘 TypeScript
 
 TypeScript is like JavaScript's cooler cousin, ready to swoop in and save the day by catching those sneaky typos and helping you figure out what code exists. And guess what? It's super easy to learn, too! If you're already buds with JavaScript, hop on over to the [W3Schools TypeScript Tutorial](https://www.w3schools.com/typescript/) to kick things off!
@@ -8,15 +10,11 @@ Robo.js and TypeScript? They're BFFs. With first-class TypeScript support, you c
 
 Ready to roll? The `create-robo` CLI is here to kickstart your TypeScript projects without breaking a sweat:
 
-```bash
-npx create-robo my-awesome-robo --ts
-```
+<Terminal create>my-awesome-robo --ts</Terminal>
 
 For existing projects, just install `@swc/core` and `typescript` as dev dependencies, whip up a `tsconfig.json` file, and swap out those `.js` files for `.ts`:
 
-```bash
-npm install --save-dev @swc/core typescript
-```
+<Terminal install>--save-dev @swc/core typescript</Terminal>
 
 Here's an example `tsconfig.json` file to get you started:
 
@@ -73,9 +71,7 @@ export default (interaction: CommandInteraction) => {
 
 Why not build plugins with TypeScript? It's a match made in heaven for better type-safety and an awesome development experience. And the best part? The `robo build plugin` command already takes care of building plugins with TypeScript for you:
 
-```bash
-robo build plugin
-```
+<Terminal execute>robo build plugin</Terminal>
 
 ## TypeScript in Config Files
 

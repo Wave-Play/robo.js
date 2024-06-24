@@ -1,5 +1,6 @@
 import { Card } from '@site/src/components/shared/Card'
 import { CardContainer } from '@site/src/components/shared/CardContainer'
+import { Terminal } from '@site/src/components/shared/Terminal'
 
 # 🔌 Installing Plugins
 
@@ -24,29 +25,21 @@ When dealing with NPM packages, **Robo CLI** will use the executor command's pac
 
 Run in your terminal, replacing `<package>` with the name of the plugin you want to install (e.g. **[@robojs/ai](./ai)**):
 
-```bash
-npx robo add <package>
-```
+<Terminal execute>robo add {'package'}</Terminal>
 
 This will install the package and register it in your Robo's **[configuration](../robojs/config)**. To install many at once:
 
-```bash
-npx robo add @robojs/ai @robojs/moderation @robojs/server
-```
+<Terminal execute>robo add @robojs/ai @robojs/server</Terminal>
 
 You can also create a new Robo project with plugins pre-installed:
 
-```bash
-npx create-robo <projectName> --plugins @robojs/ai @robojs/moderation
-```
+<Terminal create>{'<projectName>'} --plugins @robojs/ai @robojs/server</Terminal>
 
 ### Uninstall
 
 To remove a plugin:
 
-```bash
-npx robo remove <package>
-```
+<Terminal execute>robo remove {'<package>'}</Terminal>
 
 This will uninstall the package and remove it from your Robo's **[configuration](../robojs/config)**.
 
@@ -54,9 +47,7 @@ This will uninstall the package and remove it from your Robo's **[configuration]
 
 You can use `robo upgrade` to not only update **Robo.js** itself, but also all installed plugins.
 
-```bash
-npx robo upgrade
-```
+<Terminal execute>robo upgrade</Terminal>
 
 This will show you a list of updates and changelogs for you to select.
 
@@ -64,17 +55,13 @@ This will show you a list of updates and changelogs for you to select.
 
 Don't want to use the **Robo CLI**? You can still install plugins manually. It's not as convenient as using the **Robo CLI**, but it's still a straightforward process.
 
-Here's how you can do it:
+Here's how you can do it.
 
 ### Package Manager
 
 Use the package manager of your choice to install the plugin:
 
-```bash
-npm install <package>
-```
-
-The same goes for `bun`, `pnpm`, and `yarn`.
+<Terminal install>{'<package>'}</Terminal>
 
 ### Register Plugin
 

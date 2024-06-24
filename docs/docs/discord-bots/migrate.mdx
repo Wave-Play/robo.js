@@ -1,3 +1,5 @@
+import { Terminal } from '@site/src/components/shared/Terminal'
+
 # ⭐ Migrating existing bots
 
 Robo.js is a rad framework built on top of Discord.js. It's got a simple but powerful file structure, a better development experience, and loads of extra features, all while being 100% compatible with Discord.js code.
@@ -16,9 +18,7 @@ Robo.js spices up Discord.js with some awesome features like:
 
 First things first, install the Robo.js package:
 
-```bash
-npm install robo.js
-```
+<Terminal install>robo.js</Terminal>
 
 Next up, choose a migration option based on your existing bot's complexity.
 
@@ -42,9 +42,7 @@ export default {
 
 3. Use `robo dev` to run your bot during development.
 
-```bash
-npx robo dev
-```
+<Terminal execute>robo dev</Terminal>
 
 ## Option 2: Classic Handlers 🎛️
 
@@ -76,9 +74,7 @@ export default {
 
 3. Use `robo dev` to run your bot during development.
 
-```bash
-npx robo dev
-```
+<Terminal execute>robo dev</Terminal>
 
 By doing this, you'll enjoy most of Robo.js features while gradually migrating your handlers (events/commands) to the **[Robo.js File Structure](/docs/basics/overview#the-robojs-file-structure)**.
 
@@ -109,9 +105,7 @@ With this setup, you can start migrating your existing commands into the [Robo.j
 
 Start by moving your `clientOptions` into a`config/robo.mjs` file instead of creating your own custom client. Once you're done migrating, you can kick off your projects using `robo dev` instead of your own entry file.
 
-```bash
-npx robo dev
-```
+<Terminal execute>robo dev</Terminal>
 
 ## Why We're All About the Robo.js File Structure 🏗️
 

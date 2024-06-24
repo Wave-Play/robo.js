@@ -23,8 +23,10 @@ export const Terminal = (props) => {
 		prefix = getCreateCommand(selectedManager.value) + ' '
 	} else if (execute) {
 		prefix = getExecuteCommand(selectedManager.value) + ' '
-	} else if (install) {
+	} else if (install && command) {
 		prefix = getInstallCommand(selectedManager.value) + ' '
+	} else if (install) {
+		prefix = selectedManager.value + ' install'
 	}
 
 	const onClickCopy = () => {
