@@ -251,6 +251,9 @@ const config = {
 		({
 			// Replace with your project's social card
 			image: 'img/logo.png',
+			colorMode: {
+				defaultMode: 'dark'
+			},
 			navbar: {
 				title: 'Robo.js',
 				logo: {
