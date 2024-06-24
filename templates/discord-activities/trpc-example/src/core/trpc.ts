@@ -1,7 +1,7 @@
+import { init } from '@robojs/trpc'
 import { z } from 'zod'
-import { initTRPC } from '@trpc/server'
 
-const t = initTRPC.create()
+const t = init.create()
 
 export const router = t.router
 export const procedure = t.procedure
