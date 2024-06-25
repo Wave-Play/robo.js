@@ -2,7 +2,9 @@ import { initTRPC } from '@trpc/server'
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch'
 import { createTRPCClient as _createTRPCClient, createTRPCReact as _createTRPCReact } from '@trpc/react-query'
 import type { RoboRequest } from '@robojs/server'
-import type { CreateTRPCClientOptions } from '@trpc/react-query'
+import type { CreateTRPCClientOptions, CreateTRPCReact } from '@trpc/react-query'
+import type { AnyRouter } from '@trpc/server/unstable-core-do-not-import'
+import type { CreateTRPCReactOptions } from '@trpc/react-query/dist/shared'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export let appRouter: any | null = null
@@ -33,8 +35,11 @@ export const init = {
 const createRouter = () => init.create().router({})
 export type Router = ReturnType<typeof createRouter>
 
-export function createTRPCReact<AppRouter extends Router>() {
-	return _createTRPCReact<AppRouter>() as ReturnType<typeof _createTRPCReact<AppRouter>>
+export function createTRPCReact<TRouter extends AnyRouter, TSSRContext = unknown>(options?: CreateTRPCReactOptions<TRouter>): CreateTRPCReact<
+	TRouter,
+	TSSRContext
+> {
+	return _createTRPCReact<TRouter, TSSRContext>(options)
 }
 
 export function createTRPCClient<AppRouter extends Router>(opts: CreateTRPCClientOptions<AppRouter>) {
@@ -49,7 +54,7 @@ export default (req: RoboRequest) => {
 	}
 
 	return fetchRequestHandler({
-		endpoint: '/api/trpc',
+		endpoint: '/trpc',
 		req: req,
 		router: appRouter
 	})

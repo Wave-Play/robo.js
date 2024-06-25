@@ -5,6 +5,7 @@ import { trpc, trpcClient } from '../core/trpc-client'
 export const Activity = () => {
 	const { authenticated, discordSdk } = useDiscordSdk()
 	const hello = trpc.hello.useQuery({ text: 'hai' })
+	trpc.test.useQuery() 
 	console.log(hello)
 
 	useEffect(() => {

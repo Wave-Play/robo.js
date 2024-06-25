@@ -1,3 +1,4 @@
 export default {
-	cors: true
+	cors: true,
+	prefix: null
 }
