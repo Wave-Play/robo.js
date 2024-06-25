@@ -8,7 +8,7 @@ export default (req: RoboRequest) => {
 	}
 
 	return fetchRequestHandler({
-		endpoint: '/api/trpc',
+		endpoint: '/trpc',
 		req: req,
 		router: appRouter
 	})

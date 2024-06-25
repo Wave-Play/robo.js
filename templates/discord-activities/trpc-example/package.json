@@ -22,7 +22,7 @@
 	"scripts": {
 		"build": "robo build",
 		"deploy": "robo deploy",
-		"dev": "robox dev --tunnel",
+		"dev": "robox dev",
 		"doctor": "sage doctor",
 		"invite": "robo invite",
 		"lint:style": "prettier --write .",
@@ -33,7 +33,6 @@
 		"@discord/embedded-app-sdk": "^1.2.0",
 		"@robojs/server": "^0.5.3",
 		"@robojs/trpc": "file:../../../packages/plugin-trpc",
-		"@tanstack/react-query": "^5.40.0",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
 		"robo.js": "^0.10.9"

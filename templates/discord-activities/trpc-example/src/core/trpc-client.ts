@@ -5,11 +5,14 @@ import type { AppRouter } from './trpc'
 export const trpc = createTRPCReact<AppRouter>()
 export const trpcClient = createTRPCClient<AppRouter>({
 	links: [
-		httpBatchLink({
-			url: '/api/trpc',
-			async headers() {
-				return {}
-			}
-		})
-	]
-})
+			httpBatchLink({
+					url: `http://localhost:3036/trpc`,
+					async headers() {
+							return {
+									'Content-Type': 'application/json',
+							};
+					},
+			}),
+	],
+});
+
