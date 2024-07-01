@@ -2,7 +2,7 @@ import { color } from './color.js'
 import { registerProcessEvents } from './process.js'
 import { Client, Collection, Events } from 'discord.js'
 import { getConfig, loadConfig } from './config.js'
-import { discordLogger } from './constants.js'
+import { FLASHCORE_KEYS, discordLogger } from './constants.js'
 import { logger } from './logger.js'
 import { loadManifest } from '../cli/utils/manifest.js'
 import { env } from './env.js'
@@ -12,9 +12,11 @@ import {
 	executeContextHandler,
 	executeEventHandler
 } from './handlers.js'
-import { hasProperties } from '../cli/utils/utils.js'
-import { prepareFlashcore } from './flashcore.js'
+import { hasProperties, PackageDir } from '../cli/utils/utils.js'
+import { Flashcore, prepareFlashcore } from './flashcore.js'
+import { loadState } from './state.js'
 import Portal from './portal.js'
+import path from 'node:path'
 import { isMainThread, parentPort } from 'node:worker_threads'
 import type { PluginData } from '../types/index.js'
 import type { AutocompleteInteraction, CommandInteraction } from 'discord.js'
@@ -32,11 +34,12 @@ let plugins: Collection<string, PluginData>
 
 interface StartOptions {
 	client?: Client
+	shard?: string | boolean
 	stateLoad?: Promise<void>
 }
 
 async function start(options?: StartOptions) {
-	const { client: optionsClient, stateLoad } = options ?? {}
+	const { client: optionsClient, shard, stateLoad } = options ?? {}
 
 	// Important! Register process events before doing anything else
 	// This ensures the "ready" signal is sent to the parent process
@@ -51,15 +54,41 @@ async function start(options?: StartOptions) {
 		level: config?.logger?.level
 	}).debug('Starting Robo...')
 
-	// Wait for states to be loaded
-	if (stateLoad) {
-		logger.debug('Waiting for state...')
-		await stateLoad
+	// Wanna shard? Delegate to the shard manager and await recursive call
+	if (shard && config.experimental?.disableBot !== true) {
+		discordLogger.debug('Sharding is enabled. Delegating start to shard manager...')
+		const { ShardingManager } = await import('discord.js')
+		const shardPath = typeof shard === 'string' ? shard : path.join(PackageDir, 'dist', 'cli', 'shard.js')
+		const options = typeof config.experimental?.shard === 'object' ? config.experimental.shard : {}
+		const manager = new ShardingManager(shardPath, { ...options, token: env.discord.token })
+
+		manager.on('shardCreate', (shard) => discordLogger.debug(`Launched shard`, shard.id))
+		const result = await manager.spawn()
+		discordLogger.debug('Spawned', result.size, 'shard(s)')
+		return
 	}
 
-	// Load plugin options and start up Flashcore
-	const plugins = loadPluginData()
+	// Get ready for persistent data requests
 	await prepareFlashcore()
+
+	// Wait for states to be loaded
+	if (stateLoad) {
+		// Await external state promise if provided
+		logger.debug('Waiting for state...')
+		await stateLoad
+	} else {
+		// Load state directly otherwise
+		const stateStart = Date.now()
+		const state = await Flashcore.get<Record<string, unknown>>(FLASHCORE_KEYS.state)
+
+		if (state) {
+			loadState(state)
+		}
+		logger.debug(`State loaded in ${Date.now() - stateStart}ms`)
+	}
+
+	// Load plugin options
+	const plugins = loadPluginData()
 
 	// Create the new client instance (unless disabled)
 	if (config.experimental?.disableBot !== true) {
