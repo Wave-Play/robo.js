@@ -1,6 +1,6 @@
 import { color } from './color.js'
 import { registerProcessEvents } from './process.js'
-import { Client, Collection, Events } from 'discord.js'
+import { Client, Events } from 'discord.js'
 import { getConfig, loadConfig } from './config.js'
 import { discordLogger } from './constants.js'
 import { logger } from './logger.js'
@@ -21,14 +21,14 @@ import type { AutocompleteInteraction, CommandInteraction } from 'discord.js'
 
 export const Robo = { restart, start, stop }
 
-// Each Robo instance has its own client, exported for convenience
+// Each Robo instance has its own client and SDK, exported for convenience
 export let client: Client
 
 // A Portal is exported with each Robo to allow for dynamic controls
 export let portal: Portal
 
 // Be careful, plugins may contain sensitive data in their config
-let plugins: Collection<string, PluginData>
+let plugins: Record<string, PluginData>
 
 interface StartOptions {
 	client?: Client
@@ -76,8 +76,8 @@ async function start(options?: StartOptions) {
 
 	if (config.experimental?.disableBot !== true) {
 		// Define event handlers
-		for (const key of portal.events.keys()) {
-			const onlyAuto = portal.events.get(key).every((event) => event.auto)
+		for (const key of Object.keys(portal.events)) {
+			const onlyAuto = portal.events[key].every((event) => event.auto)
 			client.on(key, async (...args) => {
 				if (!onlyAuto) {
 					discordLogger.event(`Event received: ${color.bold(key)}`)
@@ -170,17 +170,17 @@ function getCommandKey(interaction: AutocompleteInteraction | CommandInteraction
 
 function loadPluginData() {
 	const config = getConfig()
-	const collection = new Collection<string, PluginData>()
+	const collection: Record<string, PluginData> = {}
 	if (!config.plugins) {
 		return collection
 	}
 
 	for (const plugin of config.plugins) {
 		if (typeof plugin === 'string') {
-			collection.set(plugin, { name: plugin })
+			collection[plugin] = { name: plugin }
 		} else if (Array.isArray(plugin)) {
 			const [name, options, metaOptions] = plugin
-			collection.set(name, { name, options, metaOptions })
+			collection[name] = { name, options, metaOptions }
 		}
 	}
 

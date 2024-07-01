@@ -1,4 +1,3 @@
-import { Collection } from 'discord.js'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { getManifest } from '../cli/utils/manifest.js'
@@ -9,10 +8,10 @@ import { getConfig } from './config.js'
 import type { Api, BaseConfig, Command, Context, Event, HandlerRecord, Middleware } from '../types/index.js'
 
 export default class Portal {
-	public apis: Collection<string, HandlerRecord<Api>>
-	public commands: Collection<string, HandlerRecord<Command>>
-	public context: Collection<string, HandlerRecord<Context>>
-	public events: Collection<string, HandlerRecord<Event>[]>
+	public apis: Record<string, HandlerRecord<Api>>
+	public commands: Record<string, HandlerRecord<Command>>
+	public context: Record<string, HandlerRecord<Context>>
+	public events: Record<string, HandlerRecord<Event>[]>
 	public middleware: HandlerRecord<Middleware>[] = []
 	public moduleKeys = new Set<string>()
 
@@ -20,10 +19,10 @@ export default class Portal {
 	private _modules: Record<string, Module> = {}
 
 	constructor(
-		apis: Collection<string, HandlerRecord<Api>>,
-		commands: Collection<string, HandlerRecord<Command>>,
-		context: Collection<string, HandlerRecord<Context>>,
-		events: Collection<string, HandlerRecord<Event>[]>,
+		apis: Record<string, HandlerRecord<Api>>,
+		commands: Record<string, HandlerRecord<Command>>,
+		context: Record<string, HandlerRecord<Context>>,
+		events: Record<string, HandlerRecord<Event>[]>,
 		middleware: HandlerRecord<Middleware>[]
 	) {
 		this.apis = apis
@@ -33,29 +32,29 @@ export default class Portal {
 		this.middleware = middleware
 
 		// Generate module keys based off of entries then sort alphabetically
-		apis.forEach((api) => {
+		Object.values(apis).forEach((api) => {
 			if (api.module) {
 				this.moduleKeys.add(api.module)
 			}
 		})
-		commands.forEach((command) => {
+		Object.values(commands).forEach((command) => {
 			if (command.module) {
 				this.moduleKeys.add(command.module)
 			}
 		})
-		context.forEach((context) => {
+		Object.values(context).forEach((context) => {
 			if (context.module) {
 				this.moduleKeys.add(context.module)
 			}
 		})
-		events.forEach((event) => {
+		Object.values(events).forEach((event) => {
 			event.forEach((handler) => {
 				if (handler.module) {
 					this.moduleKeys.add(handler.module)
 				}
 			})
 		})
-		middleware.forEach((middleware) => {
+		Object.values(middleware).forEach((middleware) => {
 			if (middleware.module) {
 				this.moduleKeys.add(middleware.module)
 			}
@@ -82,7 +81,7 @@ export default class Portal {
 		const commands = await loadHandlerRecords<HandlerRecord<Command>>('commands')
 		const context = await loadHandlerRecords<HandlerRecord<Context>>('context')
 		const events = await loadHandlerRecords<HandlerRecord<Event>[]>('events')
-		const middleware = [...(await loadHandlerRecords<HandlerRecord<Middleware>>('middleware')).values()]
+		const middleware = [...Object.values(await loadHandlerRecords<HandlerRecord<Middleware>>('middleware'))]
 
 		return new Portal(apis, commands, context, events, middleware)
 	}
@@ -166,7 +165,7 @@ async function scanEntries<T>(predicate: ScanPredicate, options: ScanOptions<T>)
 async function loadHandlerRecords<T extends HandlerRecord | HandlerRecord[]>(
 	type: 'api' | 'commands' | 'context' | 'events' | 'middleware'
 ) {
-	const collection = new Collection<string, T>()
+	const records = {} as Record<string, T>
 	const manifest = getManifest()
 
 	// Log manifest objects as debug info
@@ -220,21 +219,22 @@ async function loadHandlerRecords<T extends HandlerRecord | HandlerRecord[]>(
 		// Assign the handler to the collection, handling difference between types
 		if (type === 'events') {
 			const eventKey = entryKeys[0]
-			if (!collection.has(eventKey)) {
-				collection.set(eventKey, [] as T)
+			const has = Object.keys(records).some((key) => key.startsWith(eventKey))
+			if (!has) {
+				records[eventKey] = [] as T
 			}
-			const handlers = collection.get(eventKey) as HandlerRecord[]
+			const handlers = records[eventKey] as HandlerRecord[]
 			handlers.push(handler)
 		} else if (type === 'commands') {
 			const commandKey = entryKeys.join(' ')
-			collection.set(commandKey, handler as T)
+			records[commandKey] = handler as T
 		} else if (type === 'context') {
 			const contextKey = entryKeys[0]
-			collection.set(contextKey, handler as T)
+			records[contextKey] = handler as T
 		} else if (type === 'middleware') {
-			collection.set(entryKeys[0], handler as T)
+			records[entryKeys[0]] = handler as T
 		} else if (type === 'api') {
-			collection.set(entryKeys.join('/'), handler as T)
+			records[entryKeys[0]] = handler as T
 		}
 	}
 
@@ -246,5 +246,5 @@ async function loadHandlerRecords<T extends HandlerRecord | HandlerRecord[]>(
 		await scanEntries(scanPredicate, { manifestEntries: manifest[type], type })
 	}
 
-	return collection
+	return records
 }

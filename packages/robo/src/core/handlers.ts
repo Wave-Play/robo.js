@@ -8,12 +8,11 @@ import { color } from './color.js'
 import path from 'node:path'
 import type { AutocompleteInteraction } from 'discord.js'
 import type { CommandConfig, ContextConfig, PluginData } from '../types/index.js'
-import type { Collection } from 'discord.js'
 
 const optionPrimitives = ['boolean', 'integer', 'number', 'string']
 
 export async function executeAutocompleteHandler(interaction: AutocompleteInteraction, commandKey: string) {
-	const command = portal.commands.get(commandKey)
+	const command = portal.commands[commandKey]
 	if (!command) {
 		discordLogger.error(`No command matching ${commandKey} was found.`)
 		return
@@ -74,7 +73,7 @@ export async function executeAutocompleteHandler(interaction: AutocompleteIntera
 
 export async function executeCommandHandler(interaction: CommandInteraction, commandKey: string) {
 	// Find command handler
-	const command = portal.commands.get(commandKey)
+	const command = portal.commands[commandKey]
 	if (!command) {
 		discordLogger.error(`No command matching "${commandKey}" was found.`)
 		return
@@ -190,7 +189,7 @@ export async function executeCommandHandler(interaction: CommandInteraction, com
 
 export async function executeContextHandler(interaction: ContextMenuCommandInteraction, commandKey: string) {
 	// Find command handler
-	const command = portal.context.get(commandKey)
+	const command = portal.context[commandKey]
 	if (!command) {
 		discordLogger.error(`No context menu command matching "${commandKey}" was found.`)
 		return
@@ -300,11 +299,11 @@ export async function executeContextHandler(interaction: ContextMenuCommandInter
 }
 
 export async function executeEventHandler(
-	plugins: Collection<string, PluginData> | null,
+	plugins: Record<string, PluginData> | null,
 	eventName: string,
 	...eventData: unknown[]
 ) {
-	const callbacks = portal.events.get(eventName)
+	const callbacks = portal.events[eventName]
 	if (!callbacks?.length) {
 		return Promise.resolve()
 	}
@@ -349,7 +348,7 @@ export async function executeEventHandler(
 				}
 
 				// Execute handler without timeout if not a lifecycle event
-				const handlerPromise = callback.handler.default(...eventData, plugins?.get(callback.plugin?.name)?.options)
+				const handlerPromise = callback.handler.default(...eventData, plugins?.[callback.plugin?.name]?.options)
 				if (!isLifecycleEvent) {
 					return await handlerPromise
 				}
@@ -359,7 +358,7 @@ export async function executeEventHandler(
 				return await Promise.race([handlerPromise, timeoutPromise])
 			} catch (error) {
 				try {
-					const metaOptions = plugins?.get(callback.plugin?.name)?.metaOptions ?? {}
+					const metaOptions = plugins?.[callback.plugin?.name]?.metaOptions ?? {}
 					let message
 
 					if (error === TIMEOUT) {

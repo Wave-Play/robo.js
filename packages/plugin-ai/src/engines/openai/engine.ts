@@ -519,8 +519,7 @@ async function loadFunctions() {
 		return key
 	})
 
-	portal?.commands
-		.filter((command) => {
+	Object.values(portal?.commands ?? {}).filter((command) => {
 			// Only allow commands enabled in the plugin options
 			if (Array.isArray(pluginOptions.commands)) {
 				return whitelistedCommands.includes(command.key.replaceAll('/', ' '))

@@ -73,7 +73,7 @@ export default async (_client: Client, options: PluginOptions) => {
 	const prefix = pluginOptions.prefix ?? ''
 	const paths: string[] = []
 
-	portal.apis.forEach((api) => {
+	Object.values(portal.apis).forEach((api) => {
 		const key = prefix + '/' + api.key.replace(PATH_REGEX, ':$1')
 		paths.push(key)
 		// @ts-expect-error - Outdated Robo API typings
