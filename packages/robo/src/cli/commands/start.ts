@@ -75,5 +75,7 @@ async function startAction(_args: string[], options: StartCommandOptions) {
 
 	// Start Roboooooooo!! :D (dynamic to avoid premature process hooks)
 	const { Robo } = await import('../../core/robo.js')
-	Robo.start()
+	Robo.start({
+		shard: !!config.experimental?.shard
+	})
 }

@@ -12,10 +12,11 @@ import {
 	executeContextHandler,
 	executeEventHandler
 } from './handlers.js'
-import { hasProperties } from '../cli/utils/utils.js'
+import { hasProperties, PackageDir } from '../cli/utils/utils.js'
 import { Flashcore, prepareFlashcore } from './flashcore.js'
 import { loadState } from './state.js'
 import Portal from './portal.js'
+import path from 'node:path'
 import { isMainThread, parentPort } from 'node:worker_threads'
 import type { PluginData } from '../types/index.js'
 import type { AutocompleteInteraction, CommandInteraction } from 'discord.js'
@@ -33,11 +34,12 @@ let plugins: Collection<string, PluginData>
 
 interface StartOptions {
 	client?: Client
+	shard?: string | boolean
 	stateLoad?: Promise<void>
 }
 
 async function start(options?: StartOptions) {
-	const { client: optionsClient, stateLoad } = options ?? {}
+	const { client: optionsClient, shard, stateLoad } = options ?? {}
 
 	// Important! Register process events before doing anything else
 	// This ensures the "ready" signal is sent to the parent process
@@ -51,6 +53,20 @@ async function start(options?: StartOptions) {
 		enabled: config?.logger?.enabled,
 		level: config?.logger?.level
 	}).debug('Starting Robo...')
+
+	// Wanna shard? Delegate to the shard manager and await recursive call
+	if (shard && config.experimental?.disableBot !== true) {
+		discordLogger.debug('Sharding is enabled. Delegating start to shard manager...')
+		const { ShardingManager } = await import('discord.js')
+		const shardPath = typeof shard === 'string' ? shard : path.join(PackageDir, 'dist', 'cli', 'shard.js')
+		const options = typeof config.experimental?.shard === 'object' ? config.experimental.shard : {}
+		const manager = new ShardingManager(shardPath, { ...options, token: env.discord.token })
+
+		manager.on('shardCreate', (shard) => discordLogger.debug(`Launched shard`, shard.id))
+		const result = await manager.spawn()
+		discordLogger.debug('Spawned', result.size, 'shard(s)')
+		return
+	}
 
 	// Get ready for persistent data requests
 	await prepareFlashcore()

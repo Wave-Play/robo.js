@@ -14,6 +14,7 @@ import { IS_BUN } from './runtime-utils.js'
 import type { Pod } from '../../roboplay/types.js'
 
 export const __DIRNAME = path.dirname(fileURLToPath(import.meta.url))
+export const PackageDir = path.resolve(__DIRNAME, '..', '..', '..')
 
 const execAsync = promisify(nodeExec)
 
