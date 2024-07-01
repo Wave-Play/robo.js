@@ -1,5 +1,12 @@
 # robo.js
 
+## 0.10.10
+
+### Patch Changes
+
+- ca8ddd7: refactor(core): moved data loading into robo.start() in production mode
+- 7093bf4: feat: experimental sharding support
+
 ## 0.10.9
 
 ### Patch Changes
