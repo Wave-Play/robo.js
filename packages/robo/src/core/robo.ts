@@ -2,7 +2,7 @@ import { color } from './color.js'
 import { registerProcessEvents } from './process.js'
 import { Client, Collection, Events } from 'discord.js'
 import { getConfig, loadConfig } from './config.js'
-import { discordLogger } from './constants.js'
+import { FLASHCORE_KEYS, discordLogger } from './constants.js'
 import { logger } from './logger.js'
 import { loadManifest } from '../cli/utils/manifest.js'
 import { env } from './env.js'
@@ -13,7 +13,8 @@ import {
 	executeEventHandler
 } from './handlers.js'
 import { hasProperties } from '../cli/utils/utils.js'
-import { prepareFlashcore } from './flashcore.js'
+import { Flashcore, prepareFlashcore } from './flashcore.js'
+import { loadState } from './state.js'
 import Portal from './portal.js'
 import { isMainThread, parentPort } from 'node:worker_threads'
 import type { PluginData } from '../types/index.js'
@@ -51,15 +52,27 @@ async function start(options?: StartOptions) {
 		level: config?.logger?.level
 	}).debug('Starting Robo...')
 
+	// Get ready for persistent data requests
+	await prepareFlashcore()
+
 	// Wait for states to be loaded
 	if (stateLoad) {
+		// Await external state promise if provided
 		logger.debug('Waiting for state...')
 		await stateLoad
+	} else {
+		// Load state directly otherwise
+		const stateStart = Date.now()
+		const state = await Flashcore.get<Record<string, unknown>>(FLASHCORE_KEYS.state)
+
+		if (state) {
+			loadState(state)
+		}
+		logger.debug(`State loaded in ${Date.now() - stateStart}ms`)
 	}
 
-	// Load plugin options and start up Flashcore
+	// Load plugin options
 	const plugins = loadPluginData()
-	await prepareFlashcore()
 
 	// Create the new client instance (unless disabled)
 	if (config.experimental?.disableBot !== true) {

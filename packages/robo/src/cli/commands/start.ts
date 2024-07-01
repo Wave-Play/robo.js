@@ -5,9 +5,7 @@ import { logger } from '../../core/logger.js'
 import { hasFilesRecursively } from '../utils/fs-helper.js'
 import { color, composeColors } from '../../core/color.js'
 import { loadConfig } from '../../core/config.js'
-import { Flashcore, prepareFlashcore } from '../../core/flashcore.js'
-import { FLASHCORE_KEYS, Indent } from '../../core/constants.js'
-import { loadState } from '../../core/state.js'
+import { Indent } from '../../core/constants.js'
 
 const command = new Command('start')
 	.description('Starts your bot in production mode.')
@@ -57,12 +55,10 @@ async function startAction(_args: string[], options: StartCommandOptions) {
 		await fs.access(path.join('.robo', 'manifest.json'))
 	} catch (err) {
 		logger.error(
-			`The ${color.bold(
-				'.robo/manifest.json'
-			)} file is missing. Make sure your project structure is correct and run ${composeColors(
+			`The manifest file is missing. Make sure your project structure is correct and run ${composeColors(
 				color.bold,
-				color.blue
-			)('"robo build"')} again.`
+				color.cyan
+			)('robo build')} again.`
 		)
 		process.exit(1)
 	}
@@ -77,27 +73,7 @@ async function startAction(_args: string[], options: StartCommandOptions) {
 		logger.warn(`Experimental flags enabled: ${features}.`)
 	}
 
-	// Load state from Flashcore
-	const stateStart = Date.now()
-	const stateLoadPromise = new Promise<void>((resolve) => {
-		async function load() {
-			await prepareFlashcore()
-			const state = await Flashcore.get<Record<string, unknown>>(FLASHCORE_KEYS.state)
-			if (state) {
-				loadState(state)
-			}
-
-			logger.debug(`State loaded in ${Date.now() - stateStart}ms`)
-			resolve()
-		}
-		load()
-	})
-
-	// Imported dynamically to prevent multiple process hooks
+	// Start Roboooooooo!! :D (dynamic to avoid premature process hooks)
 	const { Robo } = await import('../../core/robo.js')
-
-	// Start Roboooooooo!! :D
-	Robo.start({
-		stateLoad: stateLoadPromise
-	})
+	Robo.start()
 }
