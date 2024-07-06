@@ -246,6 +246,21 @@ const config = {
 		}
 	],
 
+	markdown: {
+		parseFrontMatter: async (params) => {
+			const result = await params.defaultParseFrontMatter(params)
+			const path = params.filePath.replace(process.cwd(), '')
+
+			// Dynamically generate social card image for docs
+			if (path.startsWith('/docs')) {
+				const cleanPath = path.replace('/docs', '').replace('.mdx', '').replace('.md', '')
+				result.frontMatter.image = 'https://preview.robojs.dev?path=' + cleanPath
+			}
+
+			return result
+		}
+	},
+
 	themeConfig:
 		/** @type {import('@docusaurus/preset-classic').ThemeConfig} */
 		({
