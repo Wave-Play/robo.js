@@ -357,3 +357,8 @@ article .clean-btn {
 		border-color: transparent !important;
 	}
 }
+
+#embed {
+	width: 100%;
+	height: 100%;
+}

@@ -268,6 +268,7 @@ const config = {
 						label: 'Docs'
 					},
 					{ to: '/hosting/overview', label: 'Hosting', position: 'left' },
+					{ to: '/playground', label: 'Playground', position: 'left' },
 					{ to: '/plugins/directory', label: 'Plugins', position: 'left' },
 					{ to: '/templates/overview', label: 'Templates', position: 'left' },
 					{
