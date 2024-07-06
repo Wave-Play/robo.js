@@ -19,7 +19,7 @@ function Playground() {
 
 export default function Home() {
 	return (
-		<Layout title={`Playground | Robo.js`} description="Try out Robo.js in your browser!">
+		<Layout title={`Playground`} description="Try out Robo.js in your browser!">
 			<main
 				style={{
 					width: '100%',
