@@ -13,12 +13,13 @@ import { Spirits } from '../utils/spirits.js'
 import { buildAction } from './build/index.js'
 import { Flashcore, prepareFlashcore } from '../../core/flashcore.js'
 import { getPackageExecutor, getPackageManager } from '../utils/runtime-utils.js'
-// import { setMode } from '../../core/mode.js'
+import { Mode, setMode } from '../../core/mode.js'
 import type { Config, SpiritMessage } from '../../types/index.js'
 
 const command = new Command('dev')
 	.description('Ready, set, code your bot to life! Starts development mode.')
 	.option('-h', '--help', 'Shows the available command options')
+	.option('-m', '--mode', 'specify the mode(s) to run in (dev, beta, prod, etc...)')
 	.option('-s', '--silent', 'do not print anything')
 	.option('-t', '--tunnel', 'expose your local server to the internet')
 	.option('-v', '--verbose', 'print more information for debugging')
@@ -26,6 +27,7 @@ const command = new Command('dev')
 export default command
 
 interface DevCommandOptions {
+	mode?: string
 	silent?: boolean
 	tunnel?: boolean
 	verbose?: boolean
@@ -42,6 +44,7 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 	logger.debug(`Package manager:`, getPackageManager())
 	logger.debug(`Robo.js version:`, packageJson.version)
 	logger.debug(`Current working directory:`, process.cwd())
+	setMode(options.mode, { cliCommand: 'dev' })
 
 	// Set NODE_ENV to development if not already set
 	if (!process.env.NODE_ENV) {
@@ -51,7 +54,7 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 	// Welcomeee
 	const projectName = path.basename(process.cwd()).toLowerCase()
 	logger.log('')
-	logger.log(Indent, color.bold(`🚀 Starting ${color.cyan(projectName)} in ${color.cyan('development')} mode`))
+	logger.log(Indent, color.bold(`🚀 Starting ${color.cyan(projectName)} in ${color.cyan(Mode.get())} mode`))
 	logger.log(Indent, '   Beep boop... Code your Robo to life! Got feedback? Tell us on Discord.')
 	logger.log('')
 
