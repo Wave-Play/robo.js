@@ -178,7 +178,7 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 	// Watch for changes in the "src" directory alongside special files
 	const watchedPaths = ['src']
 	const ignoredPaths = ['node_modules', '.git', ...(config.watcher?.ignore ?? [])]
-	const additionalFiles = await filterExistingPaths(['.env', 'tsconfig.json', configRelative])
+	const additionalFiles = await filterExistingPaths(['.env', 'tsconfig.json'])
 	watchedPaths.push(...additionalFiles)
 
 	// Watch all plugins that are also currently in development mode, along with their config files
