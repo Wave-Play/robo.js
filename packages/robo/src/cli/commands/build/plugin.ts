@@ -33,6 +33,7 @@ async function pluginAction(_args: string[], options: PluginCommandOptions) {
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : options.dev ? 'warn' : 'info'
 	}).info(`Building Robo plugin...`)
+	logger.debug('CLI options:', options)
 	logger.debug(`Current working directory:`, process.cwd())
 	const startTime = Date.now()
 	const config = await loadConfig()

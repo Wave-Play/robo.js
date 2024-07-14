@@ -29,6 +29,7 @@ async function startAction(_args: string[], options: StartCommandOptions) {
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : 'info'
 	})
+	logger.debug('CLI options:', options)
 	setMode(options.mode, { cliCommand: 'start' })
 
 	// Set NODE_ENV to production if not already set

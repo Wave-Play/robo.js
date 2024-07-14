@@ -41,6 +41,7 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : 'info'
 	})
+	logger.debug('CLI options:', options)
 	logger.debug(`Package manager:`, getPackageManager())
 	logger.debug(`Robo.js version:`, packageJson.version)
 	logger.debug(`Current working directory:`, process.cwd())

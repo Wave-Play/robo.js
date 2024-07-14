@@ -43,6 +43,8 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 	}
 	const logger = options.dev ? new Logger(loggerOptions) : defaultLogger(loggerOptions)
 	logger.info(`Building Robo...`)
+	logger.debug('CLI parameters:', files)
+	logger.debug('CLI options:', options)
 	logger.debug(`Current working directory:`, process.cwd())
 	const startTime = Date.now()
 
