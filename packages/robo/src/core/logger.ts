@@ -1,17 +1,16 @@
 import { inspect } from 'node:util'
 import { color } from './color.js'
 import { env } from './env.js'
+import { getModeColor } from './mode.js'
 
 // Compute mode label color
 let ModeLabel: string
 
 if (process.env.ROBO_SHARD_MODE) {
-	const Colors = [color.blue, color.cyan, color.red, color.yellow, color.green, color.magenta]
 	const mode = process.env.ROBO_SHARD_MODE
 	const longestMode = process.env.ROBO_SHARD_LONGEST_MODE
-	const hash = mode.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+	const modeColor = getModeColor(mode)
 
-	const modeColor = Colors[hash % Colors.length]
 	ModeLabel = color.bold(color.dim(modeColor(mode.padEnd(longestMode.length))))
 }
 

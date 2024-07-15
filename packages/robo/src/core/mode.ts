@@ -1,10 +1,22 @@
+import { color } from './color.js'
 import { logger } from './logger.js'
 import { fork } from 'node:child_process'
 
 let _mode = 'production'
+let _modeColor: (typeof color)['black']
 
 interface SetModeOptions {
 	cliCommand?: 'dev' | 'start'
+}
+
+/**
+ * Internal
+ */
+export function getModeColor(mode: string) {
+	const Colors = [color.blue, color.cyan, color.red, color.yellow, color.green, color.magenta]
+	const hash = mode.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+
+	return Colors[hash % Colors.length]
 }
 
 /**
@@ -14,7 +26,9 @@ export function setMode(mode: string, options?: SetModeOptions) {
 	const { cliCommand } = options ?? {}
 	_mode = mode
 
-	if (!mode && cliCommand === 'dev') {
+	if (!mode && process.env.NODE_ENV) {
+		_mode = process.env.NODE_ENV
+	} else if (!mode && cliCommand === 'dev') {
 		_mode = 'development'
 	} else if (!mode && cliCommand === 'start') {
 		_mode = 'production'
@@ -77,7 +91,19 @@ export function setMode(mode: string, options?: SetModeOptions) {
 	return { shardModes }
 }
 
-export const Mode = Object.freeze({ get })
+export const Mode = Object.freeze({ color: colorMode, get })
+
+/**
+ * Returns the color function for the current mode.
+ * This is used to colorize logs based on the mode when multiple exist.
+ */
+export function colorMode(text: string) {
+	if (!_modeColor) {
+		_modeColor = getModeColor(_mode)
+	}
+
+	return _modeColor(text)
+}
 
 /**
  * The current mode this Robo instance is running in.

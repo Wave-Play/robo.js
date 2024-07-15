@@ -55,7 +55,7 @@ async function startAction(_args: string[], options: StartCommandOptions) {
 	// Welcomeee
 	const projectName = path.basename(process.cwd()).toLowerCase()
 	logger.log('')
-	logger.log(Indent, color.bold(`🚀 Starting ${color.cyan(projectName)} in ${color.cyan(Mode.get())} mode`))
+	logger.log(Indent, color.bold(`🚀 Starting ${color.cyan(projectName)} in ${Mode.color(Mode.get())} mode`))
 	logger.log(Indent, '   Boop beep... Powering on your Robo creation! Need hosting? Check out RoboPlay!')
 	logger.log('')
 
