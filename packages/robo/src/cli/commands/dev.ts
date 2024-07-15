@@ -14,6 +14,7 @@ import { buildAction } from './build/index.js'
 import { Flashcore, prepareFlashcore } from '../../core/flashcore.js'
 import { getPackageExecutor, getPackageManager } from '../utils/runtime-utils.js'
 import { Mode, setMode } from '../../core/mode.js'
+import { loadEnv } from '../../core/dotenv.js'
 import type { Config, SpiritMessage } from '../../types/index.js'
 
 const command = new Command('dev')
@@ -46,9 +47,17 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 	logger.debug(`Robo.js version:`, packageJson.version)
 	logger.debug(`Current working directory:`, process.cwd())
 
+	// Make sure environment variables are loaded
+	await loadEnv()
+
 	// Handle mode(s)
+	const defaultMode = Mode.get()
 	const { shardModes } = setMode(options.mode, { cliCommand: 'dev' })
 
+	if (defaultMode !== Mode.get()) {
+		logger.debug(`Refreshing environment variables for mode`, Mode.get())
+		await loadEnv()
+	}
 	if (shardModes) {
 		return shardModes()
 	}
@@ -282,9 +291,7 @@ export async function buildAsync(command: string | null, config: Config, verbose
 			// Unfortunately, Windows has issues recursively spawning processes via PNPM
 			// If you're reading this and know how to fix it, please open a PR!
 			if (pkgManager === 'pnpm' && IS_WINDOWS) {
-				logger.debug(
-					`Detected Windows. Using ${color.bold('npm')} instead of ${color.bold('pnpm')} to build.`
-				)
+				logger.debug(`Detected Windows. Using ${color.bold('npm')} instead of ${color.bold('pnpm')} to build.`)
 				pkgManager = 'npm'
 			}
 
