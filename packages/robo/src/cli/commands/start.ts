@@ -5,6 +5,7 @@ import { logger } from '../../core/logger.js'
 import { hasFilesRecursively } from '../utils/fs-helper.js'
 import { color, composeColors } from '../../core/color.js'
 import { loadConfig } from '../../core/config.js'
+import { loadEnv } from '../../core/dotenv.js'
 import { Mode, setMode } from '../../core/mode.js'
 import { Indent } from '../../core/constants.js'
 
@@ -31,9 +32,17 @@ async function startAction(_args: string[], options: StartCommandOptions) {
 	})
 	logger.debug('CLI options:', options)
 
+	// Make sure environment variables are loaded
+	await loadEnv()
+
 	// Handle mode(s)
+	const defaultMode = Mode.get()
 	const { shardModes } = setMode(options.mode, { cliCommand: 'start' })
 
+	if (defaultMode !== Mode.get()) {
+		logger.debug(`Refreshing environment variables for mode`, Mode.get())
+		await loadEnv()
+	}
 	if (shardModes) {
 		return shardModes()
 	}
