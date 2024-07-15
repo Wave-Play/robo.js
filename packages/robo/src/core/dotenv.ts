@@ -53,6 +53,7 @@ function parseEnvFile(envFileContent: string): { [key: string]: string } {
 
 interface LoadEnvOptions {
 	filePath?: string
+	overwrite?: boolean
 	sync?: boolean
 }
 
@@ -63,6 +64,7 @@ export async function loadEnv(options: LoadEnvOptions = {}): Promise<void> {
 	}
 
 	// Look for .env.{mode} file first, then fallback to standard .env
+	const { overwrite } = options
 	let { filePath = path.join(process.cwd(), '.env') } = options
 
 	if (existsSync(filePath + '.' + Mode.get())) {
@@ -83,7 +85,10 @@ export async function loadEnv(options: LoadEnvOptions = {}): Promise<void> {
 
 	try {
 		for (const key in newEnvVars) {
-			if (key in envClone) continue // Don't overwrite existing values
+			// Don't overwrite existing values unless specified
+			if (!overwrite && key in envClone) {
+				continue
+			}
 
 			const visited = new Set<string>()
 			let value = newEnvVars[key]

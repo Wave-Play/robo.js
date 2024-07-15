@@ -56,7 +56,7 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 
 	if (defaultMode !== Mode.get()) {
 		logger.debug(`Refreshing environment variables for mode`, Mode.get())
-		await loadEnv()
+		await loadEnv({ overwrite: true })
 	}
 	if (shardModes) {
 		return shardModes()
