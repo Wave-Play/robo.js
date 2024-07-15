@@ -30,7 +30,13 @@ async function startAction(_args: string[], options: StartCommandOptions) {
 		level: options.verbose ? 'debug' : 'info'
 	})
 	logger.debug('CLI options:', options)
-	setMode(options.mode, { cliCommand: 'start' })
+
+	// Handle mode(s)
+	const { shardModes } = setMode(options.mode, { cliCommand: 'start' })
+
+	if (shardModes) {
+		return shardModes()
+	}
 
 	// Set NODE_ENV to production if not already set
 	if (!process.env.NODE_ENV) {

@@ -45,7 +45,13 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 	logger.debug(`Package manager:`, getPackageManager())
 	logger.debug(`Robo.js version:`, packageJson.version)
 	logger.debug(`Current working directory:`, process.cwd())
-	setMode(options.mode, { cliCommand: 'dev' })
+
+	// Handle mode(s)
+	const { shardModes } = setMode(options.mode, { cliCommand: 'dev' })
+
+	if (shardModes) {
+		return shardModes()
+	}
 
 	// Set NODE_ENV to development if not already set
 	if (!process.env.NODE_ENV) {
