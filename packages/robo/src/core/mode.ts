@@ -3,7 +3,7 @@ import { logger } from './logger.js'
 import { fork } from 'node:child_process'
 
 let _mode = 'production'
-let _modeColor: (typeof color)['black']
+let _modeColor: (typeof color)[0]
 
 interface SetModeOptions {
 	cliCommand?: 'dev' | 'start'
@@ -91,7 +91,7 @@ export function setMode(mode: string, options?: SetModeOptions) {
 	return { shardModes }
 }
 
-export const Mode = Object.freeze({ color: colorMode, get })
+export const Mode = Object.freeze({ color: colorMode, get, is })
 
 /**
  * Returns the color function for the current mode.
@@ -113,4 +113,14 @@ export function colorMode(text: string) {
  */
 function get() {
 	return _mode
+}
+
+/**
+ * Checks if the current mode matches the provided mode.
+ * 
+ * @param mode The mode to check against.
+ * @returns `true` if the current mode matches the provided mode.
+ */
+function is(mode: string) {
+	return _mode === mode
 }
