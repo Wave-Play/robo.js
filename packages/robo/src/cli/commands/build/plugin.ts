@@ -6,6 +6,8 @@ import { getProjectSize, printBuildSummary } from '../../utils/build-summary.js'
 import { buildAsync } from '../dev.js'
 import fs from 'node:fs/promises'
 import path from 'node:path'
+import { loadEnv } from '../../../core/dotenv.js'
+import { Mode, setMode } from '../../../core/mode.js'
 import { loadConfig, loadConfigPath } from '../../../core/config.js'
 import { hasProperties } from '../../utils/utils.js'
 import Watcher from '../../utils/watcher.js'
@@ -14,6 +16,7 @@ import { buildPublicDirectory } from '../../utils/public.js'
 const command = new Command('plugin')
 	.description('Builds your plugin for distribution.')
 	.option('-d', '--dev', 'build for development')
+	.option('-m', '--mode', 'specify the mode(s) to run in (dev, beta, prod, etc...)')
 	.option('-s', '--silent', 'do not print anything')
 	.option('-v', '--verbose', 'print more information for debugging')
 	.option('-w', '--watch', 'watch for changes and rebuild')
@@ -23,6 +26,7 @@ export default command
 
 interface PluginCommandOptions {
 	dev?: boolean
+	mode?: string
 	silent?: boolean
 	verbose?: boolean
 	watch?: boolean
@@ -35,6 +39,30 @@ async function pluginAction(_args: string[], options: PluginCommandOptions) {
 	}).info(`Building Robo plugin...`)
 	logger.debug('CLI options:', options)
 	logger.debug(`Current working directory:`, process.cwd())
+
+	// Make sure environment variables are loaded
+	await loadEnv()
+
+	// Set NODE_ENV if not already set
+	if (!process.env.NODE_ENV) {
+		// TODO: Generate different .manifest files for each mode, always keeping the default one
+		// TODO: Also update `deploy` command for plugins to use correct manifest and update package.json files
+		process.env.NODE_ENV = options.dev ? 'development' : 'production'
+	}
+
+	// Handle mode(s)
+	const defaultMode = Mode.get()
+	const { shardModes } = setMode(options.mode, { cliCommand: 'dev' })
+
+	if (defaultMode !== Mode.get()) {
+		logger.debug(`Refreshing environment variables for mode`, Mode.get())
+		await loadEnv({ overwrite: true })
+	}
+	if (shardModes) {
+		logger.error(`Mode sharding is not available for builds.`)
+		process.exit(1)
+	}
+
 	const startTime = Date.now()
 	const config = await loadConfig()
 

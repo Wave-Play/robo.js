@@ -25,6 +25,7 @@ const stateLoad = new Promise<void>((resolve) => {
 
 interface BuildPayload {
 	files: string[]
+	mode?: string
 }
 
 /**
@@ -37,6 +38,7 @@ async function run(message: SpiritMessage): Promise<unknown> {
 		const payload = message.payload as BuildPayload
 		await buildAction(payload.files, {
 			dev: true,
+			mode: payload.mode,
 			verbose: message.verbose
 		})
 		return 'exit'

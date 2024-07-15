@@ -50,6 +50,11 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 	// Make sure environment variables are loaded
 	await loadEnv()
 
+	// Set NODE_ENV to development if not already set
+	if (!process.env.NODE_ENV) {
+		process.env.NODE_ENV = 'development'
+	}
+
 	// Handle mode(s)
 	const defaultMode = Mode.get()
 	const { shardModes } = setMode(options.mode, { cliCommand: 'dev' })
@@ -60,11 +65,6 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 	}
 	if (shardModes) {
 		return shardModes()
-	}
-
-	// Set NODE_ENV to development if not already set
-	if (!process.env.NODE_ENV) {
-		process.env.NODE_ENV = 'development'
 	}
 
 	// Welcomeee
@@ -275,7 +275,8 @@ export async function buildAsync(command: string | null, config: Config, verbose
 				.newTask({
 					event: 'build',
 					payload: {
-						files: changes.map((change) => change.filePath)
+						files: changes.map((change) => change.filePath),
+						mode: Mode.get()
 					},
 					verbose: verbose
 				})

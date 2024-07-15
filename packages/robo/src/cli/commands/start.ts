@@ -35,6 +35,11 @@ async function startAction(_args: string[], options: StartCommandOptions) {
 	// Make sure environment variables are loaded
 	await loadEnv()
 
+	// Set NODE_ENV to production if not already set
+	if (!process.env.NODE_ENV) {
+		process.env.NODE_ENV = 'production'
+	}
+
 	// Handle mode(s)
 	const defaultMode = Mode.get()
 	const { shardModes } = setMode(options.mode, { cliCommand: 'start' })
@@ -45,11 +50,6 @@ async function startAction(_args: string[], options: StartCommandOptions) {
 	}
 	if (shardModes) {
 		return shardModes()
-	}
-
-	// Set NODE_ENV to production if not already set
-	if (!process.env.NODE_ENV) {
-		process.env.NODE_ENV = 'production'
 	}
 
 	// Welcomeee
