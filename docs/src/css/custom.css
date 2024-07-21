@@ -74,6 +74,10 @@ html {
 		no-repeat;
 }
 
+.theme-admonition {
+	border-radius: 0px;
+}
+
 article .clean-btn {
 	height: 48px;
 	background-color: var(--robo-background-color);
