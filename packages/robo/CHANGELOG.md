@@ -1,5 +1,12 @@
 # robo.js
 
+## 0.10.11
+
+### Patch Changes
+
+- 2f939d5: patch(cli): support for spaces in options
+- 61b98a2: feat: modes
+
 ## 0.10.10
 
 ### Patch Changes
