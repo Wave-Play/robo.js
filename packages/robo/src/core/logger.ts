@@ -1,6 +1,5 @@
 import { inspect } from 'node:util'
 import { color } from './color.js'
-import { env } from './env.js'
 import { getModeColor } from './mode.js'
 
 // Compute mode label color
@@ -130,7 +129,7 @@ export class Logger {
 		this._parent = parent
 		this._prefix = prefix
 
-		if (env('roboplay.env')) {
+		if (process.env.ROBOPLAY_ENV) {
 			// This allows developers to have better control over the logs when hosted
 			this._level = 'trace'
 		} else {
