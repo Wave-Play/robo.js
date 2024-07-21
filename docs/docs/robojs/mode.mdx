@@ -74,23 +74,29 @@ In this use case, you can have a `.env.staging` file pointing to different datab
 
 ## File Conventions
 
+The following **Robo.js** features support modes:
+
+- Environment variable files (`.env.<mode>`)
+- Robo config files (`robo.<mode>.js`)
+- Plugin config files (`pluginname.<mode>.js`)
+- Module folders (`module.<mode>`)
+
 When running a mode, **Robo.js** will prioritize files in the following order:
 
-<center>`.env.<mode>` > `.env`</center>
-<center>`robo.<mode>.js` > `robo.js`</center>
-<br/>
+| Mode-based        | Default    |
+| ----------------- | ---------- |
+| `.env.<mode>`     | `.env`     |
+| `robo.<mode>.js`  | `robo.js`  |
+| `ai.<mode>.mjs`   | `ai.mjs`   |
+| `security.<mode>` | `security` |
 
 This means that if you have a `.env.beta` file, it will be used over the default `.env` file. If it doesn't exist, the default `.env` file will be used just like before.
 
-Plugin config files are also affected by modes the same way!
-
 ## Modules
 
-You can also create mode-specific modules by adding a `.<mode>` suffix to the module folder name.
+You can also create mode-specific modules by adding a `.<mode>` suffix to the module folder name. This lets you write code that is only loaded when a specific mode is active.
 
-This lets you write code that is only loaded when a specific mode is active.
-
-```plaintext
+```plaintext title="File Structure"
 /src/modules
 └── security.production
     └── /middleware
@@ -127,7 +133,7 @@ Because a mode is always set, that means you can use files like `.env.developmen
 
 You can run multiple **Robo** instances with different modes at the same time! This can be useful for testing or running multiple chatbots with different personalities.
 
-<Terminal execute>robo dev --mode {'<mode1>'} {'<mode2>'} {'<mode3>'}</Terminal>
+<Terminal execute>{'robo dev --mode <mode1> <mode2> <mode3>'}</Terminal>
 
 This will run **Robo** with each mode in a separate process as if you ran them individually in separate terminals. Logs will be prefixed with the mode name for easy debugging.
 
@@ -143,19 +149,30 @@ You can run multiple bots in a single **RoboPlay** Pod by running multiple modes
 
 Need even more granular control? You can import `Mode` from `robo.js` and use it in your code.
 
-```js
-import { Mode } from 'robo.js'
+```js title="src/commands/what-mode.js"
+import { logger, Mode } from 'robo.js'
 
 export default () => {
+	if (Mode.is('development')) {
+		logger.info('This mode is being', Mode.color('tested'))
+	}
+
 	return `Running in ${Mode.get()} mode!`
 }
 ```
 
-The `Mode` class has the following methods:
+The `Mode` object has the following methods:
 
-- `Mode.get()`: Returns the current mode.
-- `Mode.is(mode: string)`: Returns `true` if the current mode is the specified mode.
+| Method        | Description                                               |
+| ------------- | --------------------------------------------------------- |
+| `color(text)` | Returns a string colored with the current mode's color.   |
+| `get()`       | Returns the current mode.                                 |
+| `is(mode)`    | Returns `true` if the current mode is the specified mode. |
 
 This can be useful for conditionally loading features, or even for debugging purposes!
 
-You cannot change the mode at runtime, but you can use the `--mode` flag to run a different mode from the command line.
+:::info
+
+You cannot change modes during runtime. Use the `--mode` flag from the **[command line](../cli/robo)** instead.
+
+:::
