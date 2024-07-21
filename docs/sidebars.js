@@ -61,6 +61,7 @@ const sidebars = {
 				},
 				'robojs/linting',
 				'robojs/logger',
+				'robojs/mode',
 				'robojs/modules',
 				'robojs/portal',
 				'robojs/files',

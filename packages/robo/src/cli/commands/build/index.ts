@@ -5,6 +5,8 @@ import { loadConfig, loadConfigPath } from '../../../core/config.js'
 import { getProjectSize, printBuildSummary } from '../../utils/build-summary.js'
 import plugin from './plugin.js'
 import path from 'node:path'
+import { loadEnv } from '../../../core/dotenv.js'
+import { Mode, setMode } from '../../../core/mode.js'
 import { findCommandDifferences, registerCommands } from '../../utils/commands.js'
 import { generateDefaults } from '../../utils/generate-defaults.js'
 import { compile } from '../../utils/compiler.js'
@@ -18,6 +20,7 @@ const command = new Command('build')
 	.description('Builds your bot for production.')
 	.option('-d', '--dev', 'build for development')
 	.option('-f', '--force', 'force register commands')
+	.option('-m', '--mode', 'specify the mode(s) to run in (dev, beta, prod, etc...)')
 	.option('-s', '--silent', 'do not print anything')
 	.option('-v', '--verbose', 'print more information for debugging')
 	.option('-w', '--watch', 'watch for changes and rebuild')
@@ -31,6 +34,7 @@ interface BuildCommandOptions {
 	dev?: boolean
 	files?: string[]
 	force?: boolean
+	mode?: string
 	silent?: boolean
 	verbose?: boolean
 	watch?: boolean
@@ -43,6 +47,8 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 	}
 	const logger = options.dev ? new Logger(loggerOptions) : defaultLogger(loggerOptions)
 	logger.info(`Building Robo...`)
+	logger.debug('CLI parameters:', files)
+	logger.debug('CLI options:', options)
 	logger.debug(`Current working directory:`, process.cwd())
 	const startTime = Date.now()
 
@@ -50,6 +56,28 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 	// This only makes sense for plugins anyway
 	if (options.watch) {
 		logger.error(`Watch mode is only available for building plugins.`)
+		process.exit(1)
+	}
+
+	// Make sure environment variables are loaded
+	await loadEnv()
+
+	// Set NODE_ENV if not already set
+	if (!process.env.NODE_ENV) {
+		process.env.NODE_ENV = options.dev ? 'development' : 'production'
+	}
+
+	// Handle mode(s)
+	const defaultMode = Mode.get()
+	const { shardModes } = setMode(options.mode, { cliCommand: 'dev' })
+
+	if (defaultMode !== Mode.get()) {
+		logger.debug(`Refreshing environment variables for mode`, Mode.get())
+		await loadEnv({ overwrite: true })
+	}
+	if (shardModes) {
+		// TODO: Generate different .manifest files for each mode, always keeping the default one
+		logger.error(`Mode sharding is not available for builds.`)
 		process.exit(1)
 	}
 

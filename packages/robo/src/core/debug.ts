@@ -204,8 +204,8 @@ export async function sendDebugError(error: unknown) {
 	try {
 		// Find the guild by its ID
 		const { errorChannelId } = getSage()
-		const guild = client.guilds.cache.get(env.discord.guildId)
-		const channel = guild?.channels?.cache?.get(env.discord.debugChannelId ?? errorChannelId)
+		const guild = client.guilds.cache.get(env('discord.guildId'))
+		const channel = guild?.channels?.cache?.get(env('discord.debugChannelId') ?? errorChannelId)
 		if (!guild || !channel) {
 			discordLogger.warn(
 				`Fix the error or set ${color.bold('DISCORD_GUILD_ID')} and ${color.bold(
@@ -224,7 +224,7 @@ export async function sendDebugError(error: unknown) {
 		// Send the message to the channel
 		const { message } = await formatError({ error })
 		await channel.send(message)
-		discordLogger.debug(`Message sent to channel ${env.discord.debugChannelId} in guild ${env.discord.guildId}.`)
+		discordLogger.debug(`Message sent to channel ${env('discord.debugChannelId')} in guild ${env('discord.guildId')}.`)
 		return true
 	} catch (error) {
 		discordLogger.error('Error sending message:', error)

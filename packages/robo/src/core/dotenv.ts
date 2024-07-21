@@ -2,6 +2,8 @@ import { existsSync, readFileSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { IS_BUN } from '../cli/utils/runtime-utils.js'
+import { logger } from './logger.js'
+import { Mode } from './mode.js'
 
 function parseEnvFile(envFileContent: string): { [key: string]: string } {
 	const lines = envFileContent.split('\n')
@@ -49,14 +51,28 @@ function parseEnvFile(envFileContent: string): { [key: string]: string } {
 	return newEnvVars
 }
 
-export async function loadEnv(options: { filePath?: string; sync?: boolean } = {}): Promise<void> {
+interface LoadEnvOptions {
+	filePath?: string
+	overwrite?: boolean
+	sync?: boolean
+}
+
+export async function loadEnv(options: LoadEnvOptions = {}): Promise<void> {
 	// No need to load .env file if using Bun (it's already loaded)
 	if (IS_BUN) {
 		return
 	}
 
-	const { filePath = path.join(process.cwd(), '.env') } = options
+	// Look for .env.{mode} file first, then fallback to standard .env
+	const { overwrite } = options
+	let { filePath = path.join(process.cwd(), '.env') } = options
+
+	if (existsSync(filePath + '.' + Mode.get())) {
+		logger.debug('Found .env file for mode:', Mode.get(), ':', filePath + '.' + Mode.get())
+		filePath = path.join(process.cwd(), '.env' + '.' + Mode.get())
+	}
 	if (!existsSync(filePath)) {
+		logger.debug(`No .env file found at "${filePath}"`)
 		return
 	}
 
@@ -69,7 +85,10 @@ export async function loadEnv(options: { filePath?: string; sync?: boolean } = {
 
 	try {
 		for (const key in newEnvVars) {
-			if (key in envClone) continue // Don't overwrite existing values
+			// Don't overwrite existing values unless specified
+			if (!overwrite && key in envClone) {
+				continue
+			}
 
 			const visited = new Set<string>()
 			let value = newEnvVars[key]

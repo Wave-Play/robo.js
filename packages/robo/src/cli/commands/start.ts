@@ -5,10 +5,13 @@ import { logger } from '../../core/logger.js'
 import { hasFilesRecursively } from '../utils/fs-helper.js'
 import { color, composeColors } from '../../core/color.js'
 import { loadConfig } from '../../core/config.js'
+import { loadEnv } from '../../core/dotenv.js'
+import { Mode, setMode } from '../../core/mode.js'
 import { Indent } from '../../core/constants.js'
 
 const command = new Command('start')
 	.description('Starts your bot in production mode.')
+	.option('-m', '--mode', 'specify the mode(s) to run in (dev, beta, prod, etc...)')
 	.option('-h', '--help', 'Shows the available command options')
 	.option('-s', '--silent', 'do not print anything')
 	.option('-v', '--verbose', 'print more information for debugging')
@@ -16,6 +19,7 @@ const command = new Command('start')
 export default command
 
 interface StartCommandOptions {
+	mode?: string
 	silent?: boolean
 	verbose?: boolean
 }
@@ -26,16 +30,32 @@ async function startAction(_args: string[], options: StartCommandOptions) {
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : 'info'
 	})
+	logger.debug('CLI options:', options)
+
+	// Make sure environment variables are loaded
+	await loadEnv()
 
 	// Set NODE_ENV to production if not already set
 	if (!process.env.NODE_ENV) {
 		process.env.NODE_ENV = 'production'
 	}
 
+	// Handle mode(s)
+	const defaultMode = Mode.get()
+	const { shardModes } = setMode(options.mode, { cliCommand: 'start' })
+
+	if (defaultMode !== Mode.get()) {
+		logger.debug(`Refreshing environment variables for mode`, Mode.get())
+		await loadEnv({ overwrite: true })
+	}
+	if (shardModes) {
+		return shardModes()
+	}
+
 	// Welcomeee
 	const projectName = path.basename(process.cwd()).toLowerCase()
 	logger.log('')
-	logger.log(Indent, color.bold(`🚀 Starting ${color.cyan(projectName)} in ${color.cyan('production')} mode`))
+	logger.log(Indent, color.bold(`🚀 Starting ${color.cyan(projectName)} in ${Mode.color(Mode.get())} mode`))
 	logger.log(Indent, '   Boop beep... Powering on your Robo creation! Need hosting? Check out RoboPlay!')
 	logger.log('')
 

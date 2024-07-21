@@ -33,7 +33,7 @@ async function loginAction(_args: string[], options: LoginCommandOptions) {
 
 	// Prepare OAuth session
 	const oauthSession = await RoboPlay.OAuth.create()
-	const url = env.roboplay.frontend + `/auth/cli?token=${oauthSession.token}`
+	const url = env('roboplay.frontend') + `/auth/cli?token=${oauthSession.token}`
 	let sessionStatus = oauthSession.status
 
 	if (!oauthSession.success) {

@@ -60,7 +60,7 @@ async function start(options?: StartOptions) {
 		const { ShardingManager } = await import('discord.js')
 		const shardPath = typeof shard === 'string' ? shard : path.join(PackageDir, 'dist', 'cli', 'shard.js')
 		const options = typeof config.experimental?.shard === 'object' ? config.experimental.shard : {}
-		const manager = new ShardingManager(shardPath, { ...options, token: env.discord.token })
+		const manager = new ShardingManager(shardPath, { ...options, token: env('discord.token') })
 
 		manager.on('shardCreate', (shard) => discordLogger.debug(`Launched shard`, shard.id))
 		const result = await manager.spawn()
@@ -138,7 +138,7 @@ async function start(options?: StartOptions) {
 		})
 
 		// Log in to Discord with your client's token
-		await client.login(env.discord.token)
+		await client.login(env('discord.token'))
 	}
 }
 

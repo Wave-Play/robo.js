@@ -45,7 +45,7 @@ export function registerProcessEvents() {
 		}
 
 		// Log error and ignore it in production
-		if (env.nodeEnv === 'production') {
+		if (env('nodeEnv') === 'production') {
 			return
 		}
 
