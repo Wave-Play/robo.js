@@ -56,7 +56,7 @@ export function setMode(mode: string) {
 					}
 
 					newArgs.push(arg)
-					if (arg === '--mode') {
+					if (arg === '--mode' || arg === '-m') {
 						newArgs.push(arg, mode)
 						ignoreArgs = true
 					}
