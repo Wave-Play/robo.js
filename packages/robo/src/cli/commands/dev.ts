@@ -47,22 +47,23 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 	logger.debug(`Robo.js version:`, packageJson.version)
 	logger.debug(`Current working directory:`, process.cwd())
 
-	// Make sure environment variables are loaded
-	await loadEnv()
-
-	// Set NODE_ENV to development if not already set
+	// Set NODE_ENV if not already set
 	if (!process.env.NODE_ENV) {
 		process.env.NODE_ENV = 'development'
 	}
 
-	// Handle mode(s)
+	// Make sure environment variables are loaded
 	const defaultMode = Mode.get()
-	const { shardModes } = setMode(options.mode, { cliCommand: 'dev' })
+	await loadEnv({ mode: defaultMode, overwrite: true })
+
+	// Handle mode(s)
+	const { shardModes } = setMode(options.mode)
 
 	if (defaultMode !== Mode.get()) {
 		logger.debug(`Refreshing environment variables for mode`, Mode.get())
-		await loadEnv({ overwrite: true })
+		await loadEnv({ mode: Mode.get(), overwrite: true })
 	}
+
 	if (shardModes) {
 		return shardModes()
 	}

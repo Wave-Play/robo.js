@@ -59,21 +59,23 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 		process.exit(1)
 	}
 
-	// Make sure environment variables are loaded
-	await loadEnv()
-
 	// Set NODE_ENV if not already set
 	if (!process.env.NODE_ENV) {
+		// TODO: Generate different .manifest files for each mode, always keeping the default one
+		// TODO: Also update `deploy` command for plugins to use correct manifest and update package.json files
 		process.env.NODE_ENV = options.dev ? 'development' : 'production'
 	}
 
-	// Handle mode(s)
+	// Make sure environment variables are loaded
 	const defaultMode = Mode.get()
-	const { shardModes } = setMode(options.mode, { cliCommand: 'dev' })
+	await loadEnv({ mode: defaultMode, overwrite: true })
+
+	// Handle mode(s)
+	const { shardModes } = setMode(options.mode)
 
 	if (defaultMode !== Mode.get()) {
 		logger.debug(`Refreshing environment variables for mode`, Mode.get())
-		await loadEnv({ overwrite: true })
+		await loadEnv({ mode: Mode.get(), overwrite: true })
 	}
 	if (shardModes) {
 		// TODO: Generate different .manifest files for each mode, always keeping the default one

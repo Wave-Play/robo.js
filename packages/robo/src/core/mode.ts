@@ -2,12 +2,8 @@ import { color } from './color.js'
 import { logger } from './logger.js'
 import { fork } from 'node:child_process'
 
-let _mode = 'production'
+let _mode: string | null = null
 let _modeColor: (typeof color)[0]
-
-interface SetModeOptions {
-	cliCommand?: 'dev' | 'start'
-}
 
 /**
  * Internal
@@ -22,16 +18,12 @@ export function getModeColor(mode: string) {
 /**
  * Internal
  */
-export function setMode(mode: string, options?: SetModeOptions) {
-	const { cliCommand } = options ?? {}
+export function setMode(mode: string) {
 	_mode = mode
 
+	// Use the NODE_ENV if no mode is provided
 	if (!mode && process.env.NODE_ENV) {
 		_mode = process.env.NODE_ENV
-	} else if (!mode && cliCommand === 'dev') {
-		_mode = 'development'
-	} else if (!mode && cliCommand === 'start') {
-		_mode = 'production'
 	}
 
 	// See if there's multiple modes in this (e.g. "dev, beta")
@@ -51,9 +43,8 @@ export function setMode(mode: string, options?: SetModeOptions) {
 		shardModes = () => {
 			// When multiple modes are provided, we need to shard the process
 			modes.forEach((mode) => {
-				const args = process.argv.slice(2)
 				// Update args to remove all other mode flags
-				// e.g. `[ 'start', '--mode', 'sexy,', 'catgirl', '-v' ]` => `[ 'start', '--mode', 'sexy', '-v' ]`
+				const args = process.argv.slice(2)
 				const newArgs: string[] = []
 				let ignoreArgs = false
 
@@ -86,6 +77,9 @@ export function setMode(mode: string, options?: SetModeOptions) {
 				})
 			})
 		}
+	} else {
+		// Update mode color
+		_modeColor = getModeColor(_mode)
 	}
 
 	return { shardModes }
@@ -111,16 +105,21 @@ export function colorMode(text: string) {
  *
  * Defaults to `production` for `robo start` and `development` for `robo dev`.
  */
-function get() {
+function get(): string {
+	// Default to NODE_ENV
+	if (!_mode && process.env.NODE_ENV) {
+		_mode = process.env.NODE_ENV
+	}
+
 	return _mode
 }
 
 /**
  * Checks if the current mode matches the provided mode.
- * 
+ *
  * @param mode The mode to check against.
  * @returns `true` if the current mode matches the provided mode.
  */
 function is(mode: string) {
-	return _mode === mode
+	return get() === mode
 }

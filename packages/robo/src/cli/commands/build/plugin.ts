@@ -40,9 +40,6 @@ async function pluginAction(_args: string[], options: PluginCommandOptions) {
 	logger.debug('CLI options:', options)
 	logger.debug(`Current working directory:`, process.cwd())
 
-	// Make sure environment variables are loaded
-	await loadEnv()
-
 	// Set NODE_ENV if not already set
 	if (!process.env.NODE_ENV) {
 		// TODO: Generate different .manifest files for each mode, always keeping the default one
@@ -50,13 +47,16 @@ async function pluginAction(_args: string[], options: PluginCommandOptions) {
 		process.env.NODE_ENV = options.dev ? 'development' : 'production'
 	}
 
-	// Handle mode(s)
+	// Make sure environment variables are loaded
 	const defaultMode = Mode.get()
-	const { shardModes } = setMode(options.mode, { cliCommand: 'dev' })
+	await loadEnv({ mode: defaultMode, overwrite: true })
+
+	// Handle mode(s)
+	const { shardModes } = setMode(options.mode)
 
 	if (defaultMode !== Mode.get()) {
 		logger.debug(`Refreshing environment variables for mode`, Mode.get())
-		await loadEnv({ overwrite: true })
+		await loadEnv({ mode: Mode.get(), overwrite: true })
 	}
 	if (shardModes) {
 		logger.error(`Mode sharding is not available for builds.`)
