@@ -123,6 +123,22 @@ Here's how it works:
 
 Because a mode is always set, that means you can use files like `.env.development` to set different tokens or configurations for your development environment by default, or vice versa!
 
+## Multiple Modes
+
+You can run multiple **Robo** instances with different modes at the same time! This can be useful for testing or running multiple chatbots with different personalities.
+
+<Terminal execute>robo dev --mode {'<mode1>'} {'<mode2>'} {'<mode3>'}</Terminal>
+
+This will run **Robo** with each mode in a separate process as if you ran them individually in separate terminals. Logs will be prefixed with the mode name for easy debugging.
+
+You can run as many modes as you want, but keep in mind that each mode will run in a separate process and use additional resources.
+
+:::tip
+
+You can run multiple bots in a single **RoboPlay** Pod by running multiple modes!
+
+:::
+
 ## JavaScript API
 
 Need even more granular control? You can import `Mode` from `robo.js` and use it in your code.
