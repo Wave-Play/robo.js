@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.10.12
+
+### Patch Changes
+
+- 361e3d8: patch(cli): avoid circular dependency imports
+
 ## 0.10.11
 
 ### Patch Changes
