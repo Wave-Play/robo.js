@@ -2,7 +2,6 @@ import { existsSync, readFileSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { IS_BUN } from '../cli/utils/runtime-utils.js'
-import { logger } from './logger.js'
 import { Mode } from './mode.js'
 
 function parseEnvFile(envFileContent: string): { [key: string]: string } {
@@ -57,6 +56,7 @@ interface LoadEnvOptions {
 	sync?: boolean
 }
 
+// TODO: Fix logger usage (this gets called before logger is initialized)
 export async function loadEnv(options: LoadEnvOptions = {}): Promise<void> {
 	// No need to load .env file if using Bun (it's already loaded)
 	if (IS_BUN) {
@@ -68,11 +68,11 @@ export async function loadEnv(options: LoadEnvOptions = {}): Promise<void> {
 	let { filePath = path.join(process.cwd(), '.env') } = options
 
 	if (existsSync(filePath + '.' + Mode.get())) {
-		logger.debug('Found .env file for mode:', Mode.get(), ':', filePath + '.' + Mode.get())
+		//logger.debug('Found .env file for mode:', Mode.get(), ':', filePath + '.' + Mode.get())
 		filePath = path.join(process.cwd(), '.env' + '.' + Mode.get())
 	}
 	if (!existsSync(filePath)) {
-		logger.debug(`No .env file found at "${filePath}"`)
+		//logger.debug(`No .env file found at "${filePath}"`)
 		return
 	}
 
