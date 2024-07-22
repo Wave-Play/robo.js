@@ -74,6 +74,9 @@ async function pluginAction(_args: string[], options: PluginCommandOptions) {
 	})
 	logger.debug(`Compiled in ${compileTime}ms`)
 
+	// Bundle files to seed (if available)
+	await Compiler.buildSeed()
+
 	// Generate manifest.json
 	const manifestTime = Date.now()
 	const manifest = await generateManifest({ commands: {}, context: {}, events: {} }, 'plugin')

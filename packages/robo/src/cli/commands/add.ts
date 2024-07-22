@@ -7,6 +7,7 @@ import { Command } from '../utils/cli-handler.js'
 import { createRequire } from 'node:module'
 import { exec } from '../utils/utils.js'
 import { getPackageManager } from '../utils/runtime-utils.js'
+import { Compiler } from '../utils/compiler.js'
 
 const require = createRequire(import.meta.url)
 
@@ -100,6 +101,20 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
 
 	// Register plugins by adding them to the config
 	await Promise.all(pendingRegistration.map((pkg) => createPluginConfig(pkg, {})))
+
+	// Automatically copy files meant to be seeded by the plugin
+	// TODO: Consent
+	await Promise.all(
+		packages.map(async (pkg) => {
+			try {
+				await Compiler.useSeed(pkg)
+			} catch (error) {
+				logger.error(`Failed to copy seed files for plugin ${color.bold(pkg)}:`, error)
+			}
+		})
+	)
+
+	// Ta-dah!
 	logger.info(`Successfully completed in ${Date.now() - startTime}ms`)
 }
 

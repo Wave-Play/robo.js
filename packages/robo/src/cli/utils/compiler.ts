@@ -4,6 +4,7 @@ import { copyDir, hasProperties, replaceSrcWithBuildInRecord } from './utils.js'
 import { logger } from '../../core/logger.js'
 import { env } from '../../core/env.js'
 import { IS_BUN } from './runtime-utils.js'
+import { buildSeed, useSeed } from '../compiler/seed.js'
 import { buildDeclarationFiles, getTypeScriptCompilerOptions, isTypescriptProject } from '../compiler/typescript.js'
 import type { default as Typescript, CompilerOptions } from 'typescript'
 import type { transform as SwcTransform } from '@swc/core'
@@ -26,7 +27,9 @@ export let transform: typeof SwcTransform
 export const Compiler = {
 	buildCode,
 	buildDeclarationFiles,
+	buildSeed,
 	isTypescriptProject,
+	useSeed
 }
 
 /**
