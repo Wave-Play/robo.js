@@ -109,6 +109,29 @@ export async function filterExistingPaths(paths: string[], basePath = process.cw
 	return result
 }
 
+export async function copyDir(src: string, dest: string, excludeExtensions: string[], excludePaths: string[]) {
+	await fs.mkdir(dest, { recursive: true })
+	const entries = await fs.readdir(src)
+
+	for (const entry of entries) {
+		const srcPath = path.join(src, entry)
+		const destPath = path.join(dest, entry)
+
+		const entryStat = await fs.stat(srcPath)
+		const entryExt = path.extname(srcPath)
+		const resolvedPath = path.resolve(process.cwd(), srcPath)
+		const isIgnored = excludePaths.some((p) => resolvedPath.startsWith(p))
+
+		if (isIgnored || excludeExtensions.includes(entryExt)) {
+			continue
+		} else if (entryStat.isDirectory()) {
+			await copyDir(srcPath, destPath, excludeExtensions, excludePaths)
+		} else {
+			await fs.copyFile(srcPath, destPath)
+		}
+	}
+}
+
 export function copyToClipboard(text: string) {
 	const platform = os.platform()
 

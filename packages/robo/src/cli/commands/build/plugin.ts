@@ -66,9 +66,9 @@ async function pluginAction(_args: string[], options: PluginCommandOptions) {
 	const startTime = Date.now()
 	const config = await loadConfig()
 
-	// Use SWC to compile into .robo/build
-	const { compile } = await import('../../utils/compiler.js')
-	const compileTime = await compile({
+	// Run the Robo Compiler
+	const { Compiler } = await import('../../utils/compiler.js')
+	const compileTime = await Compiler.buildCode({
 		excludePaths: config.excludePaths?.map((p) => p.replaceAll('/', path.sep)),
 		plugin: true
 	})
