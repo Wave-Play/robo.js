@@ -1,5 +1,5 @@
 import { Command } from '../../utils/cli-handler.js'
-import { generateManifest, loadManifest } from '../../utils/manifest.js'
+import { generateManifest } from '../../utils/manifest.js'
 import { logger as defaultLogger, Logger } from '../../../core/logger.js'
 import { loadConfig, loadConfigPath } from '../../../core/config.js'
 import { getProjectSize, printBuildSummary } from '../../utils/build-summary.js'
@@ -111,7 +111,7 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 	const generatedFiles = await generateDefaults(config.experimental?.buildDirectory)
 
 	// Generate manifest.json
-	const oldManifest = await loadManifest()
+	const oldManifest = await Compiler.useManifest()
 	const manifestTime = Date.now()
 	const manifest = await generateManifest(generatedFiles, 'robo')
 	logger.debug(`Generated manifest in ${Date.now() - manifestTime}ms`)

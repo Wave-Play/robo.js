@@ -1,8 +1,8 @@
 import { Command } from '../utils/cli-handler.js'
 import { logger } from '../../core/logger.js'
-import { loadManifest } from '../utils/manifest.js'
 import { Manifest } from '../../types/index.js'
 import { env } from '../../core/env.js'
+import { Compiler } from '../utils/compiler.js'
 import { PermissionFlagsBits } from 'discord.js'
 import { color, composeColors } from '../../core/color.js'
 
@@ -27,7 +27,7 @@ async function inviteAction() {
 	}
 
 	// Compute permissions based on the manifest
-	const manifest = await loadManifest()
+	const manifest = await Compiler.useManifest()
 	const permissions = getPermissionsFromManifest(manifest)
 
 	// Generate the invite link

@@ -1,10 +1,10 @@
 import { color } from './color.js'
 import { registerProcessEvents } from './process.js'
+import { Compiler } from './../cli/utils/compiler.js'
 import { Client, Collection, Events } from 'discord.js'
 import { getConfig, loadConfig } from './config.js'
 import { FLASHCORE_KEYS, discordLogger } from './constants.js'
 import { logger } from './logger.js'
-import { loadManifest } from '../cli/utils/manifest.js'
 import { env } from './env.js'
 import {
 	executeAutocompleteHandler,
@@ -47,7 +47,7 @@ async function start(options?: StartOptions) {
 
 	// Load config and manifest up next!
 	// This makes them available globally via getConfig() and getManifest()
-	const [config] = await Promise.all([loadConfig(), loadManifest()])
+	const [config] = await Promise.all([loadConfig(), Compiler.useManifest()])
 	logger({
 		drain: config?.logger?.drain,
 		enabled: config?.logger?.enabled,

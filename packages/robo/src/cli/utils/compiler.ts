@@ -4,6 +4,7 @@ import { copyDir, hasProperties, replaceSrcWithBuildInRecord } from './utils.js'
 import { logger } from '../../core/logger.js'
 import { env } from '../../core/env.js'
 import { IS_BUN } from './runtime-utils.js'
+import { getManifest, useManifest } from '../compiler/manifest.js'
 import { buildSeed, useSeed } from '../compiler/seed.js'
 import { buildDeclarationFiles, getTypeScriptCompilerOptions, isTypescriptProject } from '../compiler/typescript.js'
 import type { default as Typescript, CompilerOptions } from 'typescript'
@@ -28,7 +29,9 @@ export const Compiler = {
 	buildCode,
 	buildDeclarationFiles,
 	buildSeed,
+	getManifest,
 	isTypescriptProject,
+	useManifest,
 	useSeed
 }
 

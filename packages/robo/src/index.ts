@@ -1,6 +1,6 @@
 export { color, composeColors } from './core/color.js'
 export { getConfig } from './core/config.js'
-export { getManifest } from './cli/utils/manifest.js'
+export { getManifest } from './cli/compiler/manifest.js'
 export { Flashcore } from './core/flashcore.js'
 export { createCommandConfig } from './core/handlers.js'
 export { logger, Logger } from './core/logger.js'

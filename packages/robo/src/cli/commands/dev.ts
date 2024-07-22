@@ -7,13 +7,13 @@ import { installCloudflared, isCloudflaredInstalled, startCloudflared, stopCloud
 import { IS_WINDOWS, filterExistingPaths, getWatchedPlugins, packageJson, timeout } from '../utils/utils.js'
 import path from 'node:path'
 import Watcher, { Change } from '../utils/watcher.js'
-import { loadManifest } from '../utils/manifest.js'
 import { color, composeColors } from '../../core/color.js'
 import { Spirits } from '../utils/spirits.js'
 import { buildAction } from './build/index.js'
 import { Flashcore, prepareFlashcore } from '../../core/flashcore.js'
 import { getPackageExecutor, getPackageManager } from '../utils/runtime-utils.js'
 import { Mode, setMode } from '../../core/mode.js'
+import { Compiler } from '../utils/compiler.js'
 import { loadEnv } from '../../core/dotenv.js'
 import type { Config, SpiritMessage } from '../../types/index.js'
 
@@ -189,7 +189,7 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 	}
 
 	// Load manifest to compare later
-	let manifest = await loadManifest()
+	let manifest = await Compiler.useManifest()
 
 	// Watch for changes in the "src" directory alongside special files
 	const watchedPaths = ['src']
@@ -234,7 +234,7 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 
 			// Compare manifest to warn about permission changes
 			if (config.experimental?.disableBot !== true) {
-				const newManifest = await loadManifest()
+				const newManifest = await Compiler.useManifest()
 				const oldPermissions = manifest.permissions ?? []
 				const newPermissions = newManifest.permissions ?? []
 				manifest = newManifest
