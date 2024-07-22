@@ -45,6 +45,8 @@ export async function buildSeed() {
 
 		await traverse(SeedDir, SeedBuildDir, compileOptions, tsOptions, transform)
 		await rm(path.join(process.cwd(), '.swc'), { recursive: true, force: true })
+	} else {
+		compilerLogger.warn('We recommend using TypeScript for your seed files.')
 	}
 
 	// Copy the reat of files from /seed into /.robo/seed
