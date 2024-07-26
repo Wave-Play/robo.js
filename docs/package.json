@@ -30,12 +30,12 @@
 	},
 	"devDependencies": {
 		"@docusaurus/module-type-aliases": "^3.4.0",
-		"@docusaurus/tsconfig": "^3.3.2",
-		"@docusaurus/types": "^3.3.2",
+		"@docusaurus/tsconfig": "^3.4.0",
+		"@docusaurus/types": "^3.4.0",
 		"@mdi/js": "^7.4.47",
 		"@mdi/react": "^1.6.1",
 		"@types/react": "^18.2.29",
-		"typescript": "^5.2.2"
+		"typescript": "^5.5.4"
 	},
 	"browserslist": {
 		"production": [

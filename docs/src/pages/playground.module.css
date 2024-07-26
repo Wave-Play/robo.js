@@ -1,0 +1,101 @@
+/* main[data-theme='dark'] {
+    --bgSearchBar: rgb(60, 60, 60);
+    --bgInputSearchBar:  #464747;
+    --searchBarBorder: #5b5a5b;
+    --TextColor: #a2a3a2;
+    --ContainerFocused: rgb(37, 37, 38);
+    --ElementContainerHover: rgb(43, 45, 46);
+}
+
+main[data-theme='light'] {
+    --bgSearchBar: rgb(234, 234, 234);
+    --bgInputSearchBar:  #d2d3d3;
+    --searchBarBorder: #bbbbba;
+    --TextColor: #c0b5b5;
+    --ContainerFocused: rgb(243, 243, 243);
+    --ElementContainerHover: rgb(232, 232, 232);
+} */
+
+.main{
+    background-color: var(--bgSearchBar);
+}
+
+.searchBar {
+    width: 50%;
+    padding: 5px;
+    border-radius: 5px;
+    border: solid 1px var(--searchBarBorder);
+    background-color: var(--bgInputSearchBar);
+    color: white;
+    text-align: center;
+}
+
+.searchBarContainer {
+    display: flex;
+    padding: 5px;
+    width: 100%;
+    justify-content: center;
+}
+
+.searchBarFocus {
+    width: 100%;
+    padding: 5px;
+    border-radius: 5px;
+    border: solid 1px var(--searchBarBorder);
+    background-color: var(--bgInputSearchBar);
+    color: white;
+    text-align: center;
+}
+
+
+.searchBarFocusContainer {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--ContainerFocused);
+    position: absolute;
+    top: 5px;
+    padding: 10px;
+    border-radius: 5px;
+    gap: 10px;
+    width: calc(100vw - 50%);
+    > p {
+        margin: 0;
+        padding-left: 10px;
+        &:hover {
+            background-color: var(--ElementContainerHover);;
+            border-radius: 5px;
+        }
+    }
+}
+
+input[type="text"] {
+    background-color: #464747;
+}
+
+input::placeholder{
+    color: #a2a3a2;
+}
+
+
+/**
+dark:
+
+bg : #3c3c3c
+bg input:  #464747
+border input: #5b5a5b
+text color input: #a2a3a2
+
+hover element : 43 45 46
+*/
+
+
+/**
+light:
+
+bg : #dddcdc
+bg input: #d2d3d3
+border input:#bbbbba
+text color input: #c0b5b5
+
+
+*/
