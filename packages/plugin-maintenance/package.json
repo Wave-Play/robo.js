@@ -36,7 +36,7 @@
 		"typescript": "^5.0.0"
 	},
 	"peerDependencies": {
-		"robo.js": "^0.10.12"
+		"robo.js": "^0.10.13"
 	},
 	"peerDependenciesMeta": {
 		"robo.js": {

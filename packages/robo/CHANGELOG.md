@@ -1,5 +1,17 @@
 # robo.js
 
+## 0.10.13
+
+### Patch Changes
+
+- fa321f6: feat(compiler): plugins can now provide seed descriptions
+- a5ae699: feat(cli): show seed descriptions and request consent upon install
+- ed2734b: refactor(compiler): dedicated logger for compiler
+- 70b477e: refactor(compiler): encapsulated compiler object
+- 65809a6: feat(compiler): plugin seeds
+- d22fbfa: fix(cli): patched roboplay api url references
+- 0cae688: refactor(compiler): include project language in manifest
+
 ## 0.10.12
 
 ### Patch Changes
