@@ -4,6 +4,13 @@ import sdk from '@stackblitz/sdk'
 import styles from './playground.module.css'
 import {useColorMode} from '@docusaurus/theme-common';
 
+interface Project {
+	name: string,
+	link: string,
+	openFile: string | undefined
+}
+
+
 function Playground() {
 	const [projectIdx, setProjectIdx] = useState(0)
 	const [dropdown, setDropdown] = useState(false)
@@ -13,7 +20,7 @@ function Playground() {
 	const embedDiv = useRef(null);
 	const editor = useRef(null);
 
-	const projects = [{
+	const projects: Project[] = [{
 		name: 'starter bot ts',
 		link: 'Wave-Play/robo.js/tree/main/templates/starter-bot-typescript',
 		openFile: ''
@@ -89,7 +96,7 @@ function SearchbarFocused(props){
 			</input>
 
 			{
-				data.map((project, idx) => {
+				data.map((project: Project, idx: number) => {
 					if(project.name.includes(searchTemplate)){
 						return (<p onClick={() => {
 							setProjectIdx(idx);
