@@ -2,7 +2,6 @@
 	"name": "robo.js-docs",
 	"description": "",
 	"version": "0.0.0",
-	"type": "module",
 	"private": true,
 	"keywords": [
 		"api",
