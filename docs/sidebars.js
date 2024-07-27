@@ -100,7 +100,8 @@ const sidebars = {
 					type: 'doc'
 				},
 				'plugins/create',
-				'plugins/install'
+				'plugins/install',
+				'plugins/seed'
 			]
 		},
 		{
