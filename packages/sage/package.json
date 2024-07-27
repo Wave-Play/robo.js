@@ -1,6 +1,6 @@
 {
 	"name": "@roboplay/sage",
-	"version": "0.5.9",
+	"version": "0.5.10",
 	"private": false,
 	"description": "Codemod for Robo.js",
 	"engines": {

@@ -1,5 +1,11 @@
 # @roboplay/plugin-api
 
+## 0.5.4
+
+### Patch Changes
+
+- 3dfc67e: feat: seed boilerplate files
+
 ## 0.5.3
 
 ### Patch Changes
