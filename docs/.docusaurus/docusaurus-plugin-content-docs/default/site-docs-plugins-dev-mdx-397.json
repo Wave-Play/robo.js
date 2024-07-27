@@ -1,0 +1,28 @@
+{
+  "id": "plugins/dev",
+  "title": "@robojs/dev",
+  "description": "Welcome to @robojs/dev! For developers fine-tuning their Robo.js projects, this plugin is a must-have. Seamlessly test Robo APIs, monitor resources, and emulate specific Robo behaviors, all in one package. Just install, and you're ready to go!",
+  "source": "@site/docs/plugins/dev.mdx",
+  "sourceDirName": "plugins",
+  "slug": "/plugins/dev",
+  "permalink": "/plugins/dev",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/plugins/dev.mdx",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/plugins/dev"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "@robojs/better-stack",
+    "permalink": "/plugins/better-stack"
+  },
+  "next": {
+    "title": "@robojs/maintenance",
+    "permalink": "/plugins/maintenance"
+  }
+}

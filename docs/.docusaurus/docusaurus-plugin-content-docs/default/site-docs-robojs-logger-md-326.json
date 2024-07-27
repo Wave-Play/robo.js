@@ -1,0 +1,28 @@
+{
+  "id": "robojs/logger",
+  "title": "📝 Logger",
+  "description": "Effective logging is key to understanding and debugging your Robo.js projects. While you can use JavaScript's native console.log, Robo.js offers a more advanced logger object for enhanced logging capabilities.",
+  "source": "@site/docs/robojs/logger.md",
+  "sourceDirName": "robojs",
+  "slug": "/robojs/logger",
+  "permalink": "/robojs/logger",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/robojs/logger.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/robojs/logger"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "💅 Linting",
+    "permalink": "/robojs/linting"
+  },
+  "next": {
+    "title": "🎭 Mode",
+    "permalink": "/robojs/mode"
+  }
+}

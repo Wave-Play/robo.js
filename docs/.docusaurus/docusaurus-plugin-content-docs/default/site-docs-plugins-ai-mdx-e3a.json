@@ -1,0 +1,28 @@
+{
+  "id": "plugins/ai",
+  "title": "@robojs/ai",
+  "description": "This plugin morphs your Robo into a sophisticated AI chatbot. By simply mentioning it or replying to its messages on Discord, you initiate a natural conversation - as if you're chatting with a fellow human!",
+  "source": "@site/docs/plugins/ai.mdx",
+  "sourceDirName": "plugins",
+  "slug": "/plugins/ai",
+  "permalink": "/plugins/ai",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/plugins/ai.mdx",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/plugins/ai"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "✨ Overview",
+    "permalink": "/plugins/directory"
+  },
+  "next": {
+    "title": "@robojs/ai-voice",
+    "permalink": "/plugins/ai-voice"
+  }
+}

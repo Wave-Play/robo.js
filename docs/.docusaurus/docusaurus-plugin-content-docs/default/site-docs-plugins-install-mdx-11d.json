@@ -1,0 +1,28 @@
+{
+  "id": "plugins/install",
+  "title": "🔌 Installing Plugins",
+  "description": "Robo.js plugins are NPM packages at heart, but also need to be registered in your Robo's configuration.",
+  "source": "@site/docs/plugins/install.mdx",
+  "sourceDirName": "plugins",
+  "slug": "/plugins/install",
+  "permalink": "/plugins/install",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/plugins/install.mdx",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/plugins/install"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "🌟 Creating Plugins",
+    "permalink": "/plugins/create"
+  },
+  "next": {
+    "title": "✨ Getting Started with Discord Activities",
+    "permalink": "/discord-activities/getting-started"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "id": "robojs/state",
+  "title": "💾 State Management",
+  "description": "States are your Robo's personal memory bank. They store data, allowing your bot to remember information across its lifespan. However, states are ephemeral; they clear out when your Robo powers off.",
+  "source": "@site/docs/robojs/state.md",
+  "sourceDirName": "robojs",
+  "slug": "/robojs/state",
+  "permalink": "/robojs/state",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/robojs/state.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/robojs/state"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "📂 Robo File Structure",
+    "permalink": "/robojs/files"
+  },
+  "next": {
+    "title": "📘 TypeScript",
+    "permalink": "/robojs/typescript"
+  }
+}

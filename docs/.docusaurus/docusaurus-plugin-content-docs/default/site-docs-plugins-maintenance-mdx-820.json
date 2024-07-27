@@ -1,0 +1,28 @@
+{
+  "id": "plugins/maintenance",
+  "title": "@robojs/maintenance",
+  "description": "Welcome to @robojs/maintenance! This plugin is designed to seamlessly integrate with your existing Robo.js project and provide new features and enhancements to your robo. The best part? Everything automatically works once you install this plugin!",
+  "source": "@site/docs/plugins/maintenance.mdx",
+  "sourceDirName": "plugins",
+  "slug": "/plugins/maintenance",
+  "permalink": "/plugins/maintenance",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/plugins/maintenance.mdx",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/plugins/maintenance"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "@robojs/dev",
+    "permalink": "/plugins/dev"
+  },
+  "next": {
+    "title": "@robojs/moderation",
+    "permalink": "/plugins/moderation"
+  }
+}

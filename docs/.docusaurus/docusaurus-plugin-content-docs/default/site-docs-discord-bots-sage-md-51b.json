@@ -1,0 +1,28 @@
+{
+  "id": "discord-bots/sage",
+  "title": "🔮 Sage Mode",
+  "description": "Your Robo is more than just a bot; it's got its very own spirit guide: Sage.",
+  "source": "@site/docs/discord-bots/sage.md",
+  "sourceDirName": "discord-bots",
+  "slug": "/discord-bots/sage",
+  "permalink": "/discord-bots/sage",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/discord-bots/sage.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/discord-bots/sage"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "⭐ Migrating",
+    "permalink": "/discord-bots/migrate"
+  },
+  "next": {
+    "title": "🔑 Secrets",
+    "permalink": "/discord-bots/secrets"
+  }
+}

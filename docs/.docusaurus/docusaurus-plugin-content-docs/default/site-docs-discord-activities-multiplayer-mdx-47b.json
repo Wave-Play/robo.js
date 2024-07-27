@@ -1,0 +1,29 @@
+{
+  "id": "discord-activities/multiplayer",
+  "title": "⚔️ Multiplayer",
+  "description": "Learn how to add multiplayer features to your Discord Activity using Robo.js for real-time communication between clients.",
+  "source": "@site/docs/discord-activities/multiplayer.mdx",
+  "sourceDirName": "discord-activities",
+  "slug": "/discord-activities/multiplayer",
+  "permalink": "/discord-activities/multiplayer",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/discord-activities/multiplayer.mdx",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "description": "Learn how to add multiplayer features to your Discord Activity using Robo.js for real-time communication between clients.",
+    "image": "https://preview.robojs.dev?path=/discord-activities/multiplayer"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "🛡️ Discord Proxy",
+    "permalink": "/discord-activities/proxy"
+  },
+  "next": {
+    "title": "✨ Getting Started with Discord Bots",
+    "permalink": "/discord-bots/getting-started"
+  }
+}

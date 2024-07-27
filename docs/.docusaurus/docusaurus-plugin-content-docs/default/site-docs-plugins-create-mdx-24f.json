@@ -1,0 +1,28 @@
+{
+  "id": "plugins/create",
+  "title": "🌟 Creating Plugins",
+  "description": "Developing a Robo plugin works in the same way as developing features for a Robo. Check out the overview section for more details on how to develop a plugin.",
+  "source": "@site/docs/plugins/create.mdx",
+  "sourceDirName": "plugins",
+  "slug": "/plugins/create",
+  "permalink": "/plugins/create",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/plugins/create.mdx",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/plugins/create"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "✨ Overview",
+    "permalink": "/plugins/overview"
+  },
+  "next": {
+    "title": "🔌 Installing Plugins",
+    "permalink": "/plugins/install"
+  }
+}

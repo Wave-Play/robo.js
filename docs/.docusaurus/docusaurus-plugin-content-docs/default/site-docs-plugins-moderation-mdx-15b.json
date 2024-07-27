@@ -1,0 +1,28 @@
+{
+  "id": "plugins/moderation",
+  "title": "@robojs/moderation",
+  "description": "Tailored for Discord server management, this plugin includes a suite of commands essential for moderation. With enhanced features like anonymous warnings, attachment inclusion in reports, and comprehensive mod channel logs, it takes moderation to the next level.",
+  "source": "@site/docs/plugins/moderation.mdx",
+  "sourceDirName": "plugins",
+  "slug": "/plugins/moderation",
+  "permalink": "/plugins/moderation",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/plugins/moderation.mdx",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/plugins/moderation"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "@robojs/maintenance",
+    "permalink": "/plugins/maintenance"
+  },
+  "next": {
+    "title": "@robojs/server",
+    "permalink": "/plugins/server"
+  }
+}

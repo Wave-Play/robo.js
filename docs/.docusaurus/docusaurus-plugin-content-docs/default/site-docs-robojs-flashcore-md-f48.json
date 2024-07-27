@@ -1,0 +1,28 @@
+{
+  "id": "robojs/flashcore",
+  "title": "⚡ Flashcore Database",
+  "description": "Flashcore is your Robo's built-in database—ready to hold onto all the key-value pairs your Robo needs for the long haul. Trust us, it's a breeze to use!",
+  "source": "@site/docs/robojs/flashcore.md",
+  "sourceDirName": "robojs",
+  "slug": "/robojs/flashcore",
+  "permalink": "/robojs/flashcore",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/robojs/flashcore.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/robojs/flashcore"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "🛠️ Configuration",
+    "permalink": "/robojs/config"
+  },
+  "next": {
+    "title": "👀 Internals",
+    "permalink": "/robojs/internals"
+  }
+}

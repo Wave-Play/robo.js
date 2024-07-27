@@ -1,0 +1,28 @@
+{
+  "id": "discord-bots/commands",
+  "title": "📜 Commands",
+  "description": "Slash commands have changed the game in Discord, making it a breeze for users to interact with bots (or as we like to call them, Robos). And with Robo.js, weaving your own slash commands is as easy as pie. Let's unravel this together!",
+  "source": "@site/docs/discord-bots/commands.mdx",
+  "sourceDirName": "discord-bots",
+  "slug": "/discord-bots/commands",
+  "permalink": "/discord-bots/commands",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/discord-bots/commands.mdx",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/discord-bots/commands"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "✨ Getting Started",
+    "permalink": "/discord-bots/getting-started"
+  },
+  "next": {
+    "title": "🖱️ Context Menu",
+    "permalink": "/discord-bots/context-menu"
+  }
+}

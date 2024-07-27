@@ -1,0 +1,28 @@
+{
+  "id": "hosting/overview",
+  "title": "Hosting Overview",
+  "description": "Hosting your Robo.js project allows you to keep it running 24/7, so you can access it from anywhere at any time. No need to keep your computer on at all times, or worry about your internet connection.",
+  "source": "@site/docs/hosting/overview.mdx",
+  "sourceDirName": "hosting",
+  "slug": "/hosting/overview",
+  "permalink": "/hosting/overview",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/hosting/overview.mdx",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/hosting/overview"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "📘 TypeScript",
+    "permalink": "/robojs/typescript"
+  },
+  "next": {
+    "title": "✨ Overview",
+    "permalink": "/hosting/overview"
+  }
+}

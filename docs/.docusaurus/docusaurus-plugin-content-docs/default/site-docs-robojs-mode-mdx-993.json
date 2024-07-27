@@ -1,0 +1,28 @@
+{
+  "id": "robojs/mode",
+  "title": "🎭 Mode",
+  "description": "Modes are a way to define \"profiles\" for your Robo session. Each with its own config(s), envionment variables, and code.",
+  "source": "@site/docs/robojs/mode.mdx",
+  "sourceDirName": "robojs",
+  "slug": "/robojs/mode",
+  "permalink": "/robojs/mode",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/robojs/mode.mdx",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/robojs/mode"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "📝 Logger",
+    "permalink": "/robojs/logger"
+  },
+  "next": {
+    "title": "📦 Modules",
+    "permalink": "/robojs/modules"
+  }
+}

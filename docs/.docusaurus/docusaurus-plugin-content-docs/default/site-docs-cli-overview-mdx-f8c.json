@@ -1,0 +1,28 @@
+{
+  "id": "cli/overview",
+  "title": "✨ CLI Tools",
+  "description": "Robo.js provides a suite of CLI tools to help you build and manage your projects.",
+  "source": "@site/docs/cli/overview.mdx",
+  "sourceDirName": "cli",
+  "slug": "/cli/overview",
+  "permalink": "/cli/overview",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/cli/overview.mdx",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/cli/overview"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "✨ Getting Started",
+    "permalink": "/getting-started"
+  },
+  "next": {
+    "title": "✨ Overview",
+    "permalink": "/cli/overview"
+  }
+}

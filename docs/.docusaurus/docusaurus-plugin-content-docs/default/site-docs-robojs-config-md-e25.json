@@ -1,0 +1,28 @@
+{
+  "id": "robojs/config",
+  "title": "🛠️ Configuration",
+  "description": "Customizing Robo.js to fit your needs is a piece of cake! 🍰 This guide will walk you through tweaking defaults, adding new intents, specifying permissions, changing sage mode behavior, and more.",
+  "source": "@site/docs/robojs/config.md",
+  "sourceDirName": "robojs",
+  "slug": "/robojs/config",
+  "permalink": "/robojs/config",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/robojs/config.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/robojs/config"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "✨ Overview",
+    "permalink": "/robojs/overview"
+  },
+  "next": {
+    "title": "⚡ Flashcore Database",
+    "permalink": "/robojs/flashcore"
+  }
+}

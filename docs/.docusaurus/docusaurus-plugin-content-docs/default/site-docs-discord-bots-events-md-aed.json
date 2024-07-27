@@ -1,0 +1,28 @@
+{
+  "id": "discord-bots/events",
+  "title": "📡 Events",
+  "description": "Events are the real MVPs in bot development! They're the magical building blocks that make your bot come alive—everything, including commands, are built on top of events!",
+  "source": "@site/docs/discord-bots/events.md",
+  "sourceDirName": "discord-bots",
+  "slug": "/discord-bots/events",
+  "permalink": "/discord-bots/events",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/discord-bots/events.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/discord-bots/events"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "🐛 Debugging",
+    "permalink": "/discord-bots/debug"
+  },
+  "next": {
+    "title": "🏠 Inviting to Servers",
+    "permalink": "/discord-bots/invite"
+  }
+}

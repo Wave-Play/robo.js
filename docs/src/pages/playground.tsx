@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import Layout from '@theme/Layout'
-import sdk from '@stackblitz/sdk'
+import sdk, { VM } from '@stackblitz/sdk'
 import styles from './playground.module.css'
 import {useColorMode} from '@docusaurus/theme-common';
 
@@ -18,7 +18,7 @@ function Playground() {
 	const { colorMode } = useColorMode();
 
 	const embedDiv = useRef(null);
-	const editor = useRef(null);
+	const editor = useRef<VM["editor"] | null>(null);
 
 	const projects: Project[] = [{
 		name: 'starter bot ts',
@@ -94,7 +94,7 @@ function SearchbarFocused(props){
 			value={searchTemplate} 
 			placeholder='Search for a Robo template'>
 			</input>
-
+q
 			{
 				data.map((project: Project, idx: number) => {
 					if(project.name.includes(searchTemplate)){

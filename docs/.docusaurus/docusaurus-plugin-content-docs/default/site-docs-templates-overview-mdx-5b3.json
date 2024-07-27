@@ -1,0 +1,28 @@
+{
+  "id": "templates/overview",
+  "title": "✨ Robo Templates",
+  "description": "We have a collection of templates that you can use to kickstart your project or just use as a reference. Each one is designed to help you get started with Robo.js quickly and show what's possible.",
+  "source": "@site/docs/templates/overview.mdx",
+  "sourceDirName": "templates",
+  "slug": "/templates/overview",
+  "permalink": "/templates/overview",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/templates/overview.mdx",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/templates/overview"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "@robojs/sync",
+    "permalink": "/plugins/sync"
+  },
+  "next": {
+    "title": "✨ Overview",
+    "permalink": "/templates/overview"
+  }
+}

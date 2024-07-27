@@ -1,0 +1,253 @@
+{
+  "docusaurus-plugin-content-docs": {
+    "default": {
+      "path": "/",
+      "versions": [
+        {
+          "name": "current",
+          "label": "Next",
+          "isLast": true,
+          "path": "/",
+          "mainDocId": "getting-started",
+          "docs": [
+            {
+              "id": "cli/create-robo",
+              "path": "/cli/create-robo",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "cli/overview",
+              "path": "/cli/overview",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "cli/robo",
+              "path": "/cli/robo",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "discord-activities/getting-started",
+              "path": "/discord-activities/getting-started",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "discord-activities/multiplayer",
+              "path": "/discord-activities/multiplayer",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "discord-activities/proxy",
+              "path": "/discord-activities/proxy",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "discord-bots/commands",
+              "path": "/discord-bots/commands",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "discord-bots/context-menu",
+              "path": "/discord-bots/context-menu",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "discord-bots/debug",
+              "path": "/discord-bots/debug",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "discord-bots/events",
+              "path": "/discord-bots/events",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "discord-bots/getting-started",
+              "path": "/discord-bots/getting-started",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "discord-bots/invite",
+              "path": "/discord-bots/invite",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "discord-bots/middleware",
+              "path": "/discord-bots/middleware",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "discord-bots/migrate",
+              "path": "/discord-bots/migrate",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "discord-bots/sage",
+              "path": "/discord-bots/sage",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "discord-bots/secrets",
+              "path": "/discord-bots/secrets",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "getting-started",
+              "path": "/getting-started",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "hosting/overview",
+              "path": "/hosting/overview",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "hosting/roboplay",
+              "path": "/hosting/roboplay",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "hosting/self-host",
+              "path": "/hosting/self-host",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "plugins/ai",
+              "path": "/plugins/ai",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "plugins/ai-voice",
+              "path": "/plugins/ai-voice",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "plugins/better-stack",
+              "path": "/plugins/better-stack",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "plugins/create",
+              "path": "/plugins/create",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "plugins/dev",
+              "path": "/plugins/dev",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "plugins/directory",
+              "path": "/plugins/directory",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "plugins/install",
+              "path": "/plugins/install",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "plugins/maintenance",
+              "path": "/plugins/maintenance",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "plugins/moderation",
+              "path": "/plugins/moderation",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "plugins/overview",
+              "path": "/plugins/overview",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "plugins/server",
+              "path": "/plugins/server",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "plugins/sync",
+              "path": "/plugins/sync",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "robojs/config",
+              "path": "/robojs/config",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "robojs/files",
+              "path": "/robojs/files",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "robojs/flashcore",
+              "path": "/robojs/flashcore",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "robojs/internals",
+              "path": "/robojs/internals",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "robojs/linting",
+              "path": "/robojs/linting",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "robojs/logger",
+              "path": "/robojs/logger",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "robojs/mode",
+              "path": "/robojs/mode",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "robojs/modules",
+              "path": "/robojs/modules",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "robojs/overview",
+              "path": "/robojs/overview",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "robojs/portal",
+              "path": "/robojs/portal",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "robojs/state",
+              "path": "/robojs/state",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "robojs/typescript",
+              "path": "/robojs/typescript",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "templates/overview",
+              "path": "/templates/overview",
+              "sidebar": "tutorialSidebar"
+            }
+          ],
+          "draftIds": [],
+          "sidebars": {
+            "tutorialSidebar": {
+              "link": {
+                "path": "/getting-started",
+                "label": "✨ Getting Started"
+              }
+            }
+          }
+        }
+      ],
+      "breadcrumbs": true
+    }
+  }
+}

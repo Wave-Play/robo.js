@@ -3,8 +3,8 @@ import clsx from 'clsx'
 import Link from '@docusaurus/Link'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
-import HomepageFeatures from '@site/src/components/HomepageFeatures'
-import Footer from '@site/src/components/Footer/index.js'
+import HomepageFeatures from '@site/src/components/HomepageFeatures/index'
+import Footer from '@site/src/components/Footer/index'
 
 import styles from './index.module.css'
 
@@ -18,10 +18,10 @@ function HomepageHeader() {
 				<div className={styles.buttons}>
 					<div>
 						<Link className="button button--secondary button--lg" to="/getting-started">
-							Get Started
+							Get Startedq
 						</Link>
 					</div>
-					<div lassName={styles.ghbtn}>
+					<div className={styles.ghbtn}>
 						<iframe
 							className={styles.indexCtasGitHubButton}
 							src="https://ghbtns.com/github-btn.html?user=Wave-play&amp;repo=robo.js&amp;type=star&amp;count=true&amp;size=large"

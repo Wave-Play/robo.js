@@ -1,0 +1,28 @@
+{
+  "id": "robojs/files",
+  "title": "📂 Robo File Structure",
+  "description": "The primary way to create with Robo.js is through the file structure. This is the foundation of Robo.js and is used to determine your project's functionality.",
+  "source": "@site/docs/robojs/files.md",
+  "sourceDirName": "robojs",
+  "slug": "/robojs/files",
+  "permalink": "/robojs/files",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/robojs/files.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/robojs/files"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "🚪 Portal",
+    "permalink": "/robojs/portal"
+  },
+  "next": {
+    "title": "💾 State Management",
+    "permalink": "/robojs/state"
+  }
+}

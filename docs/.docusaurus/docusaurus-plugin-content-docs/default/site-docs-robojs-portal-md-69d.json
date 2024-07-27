@@ -1,0 +1,28 @@
+{
+  "id": "robojs/portal",
+  "title": "🚪 Portal",
+  "description": "What if we told you there was a gateway to your Robo's brain? One that lets you tinker with the bits and bobs that make your bot tick? Well, get ready to step into the Portal. This API lets you access your Robo's inner workings and even tweak 'em without messing around with files. Now, that's power at your fingertips!",
+  "source": "@site/docs/robojs/portal.md",
+  "sourceDirName": "robojs",
+  "slug": "/robojs/portal",
+  "permalink": "/robojs/portal",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/robojs/portal.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/robojs/portal"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "📦 Modules",
+    "permalink": "/robojs/modules"
+  },
+  "next": {
+    "title": "📂 Robo File Structure",
+    "permalink": "/robojs/files"
+  }
+}

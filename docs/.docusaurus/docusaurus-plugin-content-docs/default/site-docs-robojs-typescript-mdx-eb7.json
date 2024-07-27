@@ -1,0 +1,28 @@
+{
+  "id": "robojs/typescript",
+  "title": "📘 TypeScript",
+  "description": "TypeScript is like JavaScript's cooler cousin, ready to swoop in and save the day by catching those sneaky typos and helping you figure out what code exists. And guess what? It's super easy to learn, too! If you're already buds with JavaScript, hop on over to the W3Schools TypeScript Tutorial to kick things off!",
+  "source": "@site/docs/robojs/typescript.mdx",
+  "sourceDirName": "robojs",
+  "slug": "/robojs/typescript",
+  "permalink": "/robojs/typescript",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/robojs/typescript.mdx",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/robojs/typescript"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "💾 State Management",
+    "permalink": "/robojs/state"
+  },
+  "next": {
+    "title": "Hosting Overview",
+    "permalink": "/hosting/overview"
+  }
+}

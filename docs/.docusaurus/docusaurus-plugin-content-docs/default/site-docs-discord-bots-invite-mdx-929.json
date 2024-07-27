@@ -1,0 +1,28 @@
+{
+  "id": "discord-bots/invite",
+  "title": "🏠 Inviting to Servers",
+  "description": "You've crafted an amazing Robo, and now it's time to bring it to life on your Discord Servers! To add your Robo, you'll need special invite links with the necessary permissions and scopes.",
+  "source": "@site/docs/discord-bots/invite.mdx",
+  "sourceDirName": "discord-bots",
+  "slug": "/discord-bots/invite",
+  "permalink": "/discord-bots/invite",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/discord-bots/invite.mdx",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/discord-bots/invite"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "📡 Events",
+    "permalink": "/discord-bots/events"
+  },
+  "next": {
+    "title": "🌙 Middleware",
+    "permalink": "/discord-bots/middleware"
+  }
+}

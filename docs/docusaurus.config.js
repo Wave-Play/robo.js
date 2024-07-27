@@ -3,7 +3,7 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 // import React from 'react'
 // import Footer from './src/components/Footer';
-const { themes } = require('prism-react-renderer')
+import { themes } from 'prism-react-renderer'
 const lightCodeTheme = themes.github
 const darkCodeTheme = themes.dracula
 
@@ -167,7 +167,7 @@ const config = {
 					'packages/plugin-modtools/README.md',
 					'packages/plugin-sync/README.md'
 				],
-				modifyContent: (filename, content) => {
+				modifyContent: (/** @type {string} */ filename, /** @type {string} */ content) => {
 					/*if (['CONTRIBUTING.md'].includes(filename)) {
 						// Return up to the "## Contributors" section
 						let newContent = content.split('## Contributors')[0]
@@ -229,10 +229,10 @@ const config = {
 					routeBasePath: '/',
 					showLastUpdateAuthor: true,
 					showLastUpdateTime: true,
-					sidebarPath: require.resolve('./sidebars.js')
+					sidebarPath: './sidebars.js'
 				},
 				theme: {
-					customCss: require.resolve('./src/css/custom.css')
+					customCss: './src/css/custom.css'
 				}
 			})
 		]
@@ -321,4 +321,4 @@ const config = {
 		})
 }
 
-module.exports = config
+export default config

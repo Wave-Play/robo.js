@@ -1,0 +1,28 @@
+{
+  "id": "plugins/directory",
+  "title": "✨ Plugin Directory",
+  "description": "Robo.js plugins are special. They let you add features to your Robo with one command and integrate seamlessly thanks to the Robo File Structure. What's more, anyone can create a plugin.",
+  "source": "@site/docs/plugins/directory.mdx",
+  "sourceDirName": "plugins",
+  "slug": "/plugins/directory",
+  "permalink": "/plugins/directory",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/plugins/directory.mdx",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/plugins/directory"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "🔑 Secrets",
+    "permalink": "/discord-bots/secrets"
+  },
+  "next": {
+    "title": "✨ Overview",
+    "permalink": "/plugins/directory"
+  }
+}

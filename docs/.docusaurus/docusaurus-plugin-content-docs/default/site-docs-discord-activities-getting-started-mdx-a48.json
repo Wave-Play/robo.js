@@ -1,0 +1,29 @@
+{
+  "id": "discord-activities/getting-started",
+  "title": "✨ Getting Started with Discord Activities",
+  "description": "Create a Discord Activity in seconds with Robo.js - a tiny framework that simplifies development of Discord Activities.",
+  "source": "@site/docs/discord-activities/getting-started.mdx",
+  "sourceDirName": "discord-activities",
+  "slug": "/discord-activities/getting-started",
+  "permalink": "/discord-activities/getting-started",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/discord-activities/getting-started.mdx",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "description": "Create a Discord Activity in seconds with Robo.js - a tiny framework that simplifies development of Discord Activities.",
+    "image": "https://preview.robojs.dev?path=/discord-activities/getting-started"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "🔌 Installing Plugins",
+    "permalink": "/plugins/install"
+  },
+  "next": {
+    "title": "✨ Getting Started",
+    "permalink": "/discord-activities/getting-started"
+  }
+}

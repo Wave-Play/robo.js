@@ -1,0 +1,28 @@
+{
+  "id": "robojs/linting",
+  "title": "💅 Linting",
+  "description": "Linting is like having a tiny coding assistant who keeps your code neat and tidy. It's super useful for catching and fixing annoying syntax and style issues before they become major headaches.",
+  "source": "@site/docs/robojs/linting.mdx",
+  "sourceDirName": "robojs",
+  "slug": "/robojs/linting",
+  "permalink": "/robojs/linting",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/robojs/linting.mdx",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/robojs/linting"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "👀 Internals",
+    "permalink": "/robojs/internals"
+  },
+  "next": {
+    "title": "📝 Logger",
+    "permalink": "/robojs/logger"
+  }
+}

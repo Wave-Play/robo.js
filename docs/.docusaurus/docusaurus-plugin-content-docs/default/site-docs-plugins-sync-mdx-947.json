@@ -1,0 +1,28 @@
+{
+  "id": "plugins/sync",
+  "title": "@robojs/sync",
+  "description": "Real-time state sync across clients the simplest way possible. Perfect for multiplayer games and chat apps. It's like magic, but real! 🎩✨",
+  "source": "@site/docs/plugins/sync.mdx",
+  "sourceDirName": "plugins",
+  "slug": "/plugins/sync",
+  "permalink": "/plugins/sync",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/plugins/sync.mdx",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/plugins/sync"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "@robojs/server",
+    "permalink": "/plugins/server"
+  },
+  "next": {
+    "title": "✨ Robo Templates",
+    "permalink": "/templates/overview"
+  }
+}

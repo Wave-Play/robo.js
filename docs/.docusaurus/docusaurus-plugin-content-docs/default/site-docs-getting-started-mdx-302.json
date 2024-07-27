@@ -1,0 +1,24 @@
+{
+  "id": "getting-started",
+  "title": "✨ Getting Started",
+  "description": "Robo.js is a powerful framework for building epic Discord experiences.",
+  "source": "@site/docs/getting-started.mdx",
+  "sourceDirName": ".",
+  "slug": "/getting-started",
+  "permalink": "/getting-started",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/getting-started.mdx",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/getting-started"
+  },
+  "sidebar": "tutorialSidebar",
+  "next": {
+    "title": "✨ CLI Tools",
+    "permalink": "/cli/overview"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "type": "mdx",
+  "permalink": "/plugins",
+  "source": "@site/src/pages/plugins.mdx",
+  "title": "Plugin Directory 🤖🔌",
+  "description": "Robo.js provides an extensive set of plugins to supercharge your bots, each aiming to extend the functionalities of Robo.js to its maximum. To install any plugin, simply use the command:",
+  "frontMatter": {},
+  "unlisted": false
+}

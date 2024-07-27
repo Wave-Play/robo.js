@@ -1,0 +1,28 @@
+{
+  "id": "plugins/server",
+  "title": "@robojs/server",
+  "description": "Elevate your Robo.js project with @robojs/server, a powerful plugin that provides an effortless way to create and manage web routes. This guide will walk you through the essentials of setting up and using the API plugin.",
+  "source": "@site/docs/plugins/server.mdx",
+  "sourceDirName": "plugins",
+  "slug": "/plugins/server",
+  "permalink": "/plugins/server",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/plugins/server.mdx",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/plugins/server"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "@robojs/moderation",
+    "permalink": "/plugins/moderation"
+  },
+  "next": {
+    "title": "@robojs/sync",
+    "permalink": "/plugins/sync"
+  }
+}

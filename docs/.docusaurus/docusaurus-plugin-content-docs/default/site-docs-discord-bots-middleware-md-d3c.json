@@ -1,0 +1,28 @@
+{
+  "id": "discord-bots/middleware",
+  "title": "🌙 Middleware",
+  "description": "In the heart of your Robo, there lies a potent feature known as Middleware. These are functions that are executed before each and every command or event, granting you the ability to manipulate data, introduce conditional flows, and even halt execution of events or commands based on custom criteria.",
+  "source": "@site/docs/discord-bots/middleware.md",
+  "sourceDirName": "discord-bots",
+  "slug": "/discord-bots/middleware",
+  "permalink": "/discord-bots/middleware",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/discord-bots/middleware.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/discord-bots/middleware"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "🏠 Inviting to Servers",
+    "permalink": "/discord-bots/invite"
+  },
+  "next": {
+    "title": "⭐ Migrating",
+    "permalink": "/discord-bots/migrate"
+  }
+}

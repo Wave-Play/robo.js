@@ -1,0 +1,28 @@
+{
+  "id": "discord-bots/context-menu",
+  "title": "🖱️ Context Menu",
+  "description": "These are your quick, right-click interactions that swoop in when users right-click a message or a user. They may not boast options, descriptions, or command stacking like slash commands, but they shine in simplicity and context awareness. Choose between \"Message\" and \"User\" to suit the situation.",
+  "source": "@site/docs/discord-bots/context-menu.md",
+  "sourceDirName": "discord-bots",
+  "slug": "/discord-bots/context-menu",
+  "permalink": "/discord-bots/context-menu",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/discord-bots/context-menu.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/discord-bots/context-menu"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "📜 Commands",
+    "permalink": "/discord-bots/commands"
+  },
+  "next": {
+    "title": "🐛 Debugging",
+    "permalink": "/discord-bots/debug"
+  }
+}

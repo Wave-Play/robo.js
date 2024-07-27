@@ -1,0 +1,29 @@
+{
+  "id": "discord-bots/getting-started",
+  "title": "✨ Getting Started with Discord Bots",
+  "description": "Create a powerful Discord Bot in seconds with Robo.js - a tiny framework that simplifies Discord.js.",
+  "source": "@site/docs/discord-bots/getting-started.mdx",
+  "sourceDirName": "discord-bots",
+  "slug": "/discord-bots/getting-started",
+  "permalink": "/discord-bots/getting-started",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/discord-bots/getting-started.mdx",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "description": "Create a powerful Discord Bot in seconds with Robo.js - a tiny framework that simplifies Discord.js.",
+    "image": "https://preview.robojs.dev?path=/discord-bots/getting-started"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "⚔️ Multiplayer",
+    "permalink": "/discord-activities/multiplayer"
+  },
+  "next": {
+    "title": "✨ Getting Started",
+    "permalink": "/discord-bots/getting-started"
+  }
+}

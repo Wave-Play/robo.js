@@ -1,0 +1,28 @@
+{
+  "id": "plugins/better-stack",
+  "title": "@robojs/better-stack",
+  "description": "Welcome to @robojs/better-stack! This plugin seamlessly integrates with your existing Robo.js project, providing a comprehensive link to Better Stack, a renowned third-party service. With Better Stack, monitor your Robo's uptime and integrate logs in a visually appealing and searchable format.",
+  "source": "@site/docs/plugins/better-stack.mdx",
+  "sourceDirName": "plugins",
+  "slug": "/plugins/better-stack",
+  "permalink": "/plugins/better-stack",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/plugins/better-stack.mdx",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/plugins/better-stack"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "@robojs/ai-voice",
+    "permalink": "/plugins/ai-voice"
+  },
+  "next": {
+    "title": "@robojs/dev",
+    "permalink": "/plugins/dev"
+  }
+}

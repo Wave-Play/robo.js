@@ -1,0 +1,28 @@
+{
+  "id": "plugins/ai-voice",
+  "title": "@robojs/ai-voice",
+  "description": "Welcome to @robojs/ai-voice! This plugin is designed to seamlessly integrate with your existing Robo.js project and provide new features and enhancements to your robo. The best part? Everything automatically works once you install this plugin!",
+  "source": "@site/docs/plugins/ai-voice.mdx",
+  "sourceDirName": "plugins",
+  "slug": "/plugins/ai-voice",
+  "permalink": "/plugins/ai-voice",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/plugins/ai-voice.mdx",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/plugins/ai-voice"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "@robojs/ai",
+    "permalink": "/plugins/ai"
+  },
+  "next": {
+    "title": "@robojs/better-stack",
+    "permalink": "/plugins/better-stack"
+  }
+}

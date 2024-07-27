@@ -1,0 +1,28 @@
+{
+  "id": "hosting/self-host",
+  "title": "🔨 Self-hosting",
+  "description": "Robo.js can be self-hosted, meaning you can run your own instance of Robo.js on your own server.",
+  "source": "@site/docs/hosting/self-host.mdx",
+  "sourceDirName": "hosting",
+  "slug": "/hosting/self-host",
+  "permalink": "/hosting/self-host",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/hosting/self-host.mdx",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/hosting/self-host"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "🚀 RoboPlay",
+    "permalink": "/hosting/roboplay"
+  },
+  "next": {
+    "title": "✨ Robo Plugins",
+    "permalink": "/plugins/overview"
+  }
+}

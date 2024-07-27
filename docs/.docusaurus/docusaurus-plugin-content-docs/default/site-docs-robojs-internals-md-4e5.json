@@ -1,0 +1,28 @@
+{
+  "id": "robojs/internals",
+  "title": "👀 Understanding Internals",
+  "description": "Ready to understand how it comes alive? Here's a simplified overview of Robo.js's internals so you can get started with confidence.",
+  "source": "@site/docs/robojs/internals.md",
+  "sourceDirName": "robojs",
+  "slug": "/robojs/internals",
+  "permalink": "/robojs/internals",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/robojs/internals.md",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/robojs/internals"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "⚡ Flashcore Database",
+    "permalink": "/robojs/flashcore"
+  },
+  "next": {
+    "title": "💅 Linting",
+    "permalink": "/robojs/linting"
+  }
+}

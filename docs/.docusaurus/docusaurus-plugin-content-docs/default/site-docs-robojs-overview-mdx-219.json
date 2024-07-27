@@ -1,0 +1,28 @@
+{
+  "id": "robojs/overview",
+  "title": "✨ Robo.js Overview",
+  "description": "Documentation",
+  "source": "@site/docs/robojs/overview.mdx",
+  "sourceDirName": "robojs",
+  "slug": "/robojs/overview",
+  "permalink": "/robojs/overview",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/robojs/overview.mdx",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/robojs/overview"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "⚙️ Robo CLI",
+    "permalink": "/cli/robo"
+  },
+  "next": {
+    "title": "✨ Overview",
+    "permalink": "/robojs/overview"
+  }
+}

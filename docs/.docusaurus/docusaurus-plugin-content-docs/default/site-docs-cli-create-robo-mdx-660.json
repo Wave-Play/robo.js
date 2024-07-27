@@ -1,0 +1,28 @@
+{
+  "id": "cli/create-robo",
+  "title": "⚡ Create Robo",
+  "description": "The create-robo interactive CLI is your go-to for kickstarting fresh Robo.js projects and plugins! It's a nifty standalone tool that won't bloat your project, and it'll hold your hand through the setup process like a pro.",
+  "source": "@site/docs/cli/create-robo.mdx",
+  "sourceDirName": "cli",
+  "slug": "/cli/create-robo",
+  "permalink": "/cli/create-robo",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/cli/create-robo.mdx",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/cli/create-robo"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "✨ Overview",
+    "permalink": "/cli/overview"
+  },
+  "next": {
+    "title": "⚙️ Robo CLI",
+    "permalink": "/cli/robo"
+  }
+}

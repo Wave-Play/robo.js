@@ -1,0 +1,28 @@
+{
+  "id": "plugins/overview",
+  "title": "✨ Robo Plugins",
+  "description": "Robo Plugins are special. They let you add features to your Robo with one command and integrate seamlessly thanks to the Robo File Structure. What's more, anyone can create a plugin.",
+  "source": "@site/docs/plugins/overview.mdx",
+  "sourceDirName": "plugins",
+  "slug": "/plugins/overview",
+  "permalink": "/plugins/overview",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/plugins/overview.mdx",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/plugins/overview"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "🔨 Self-hosting",
+    "permalink": "/hosting/self-host"
+  },
+  "next": {
+    "title": "✨ Overview",
+    "permalink": "/plugins/overview"
+  }
+}

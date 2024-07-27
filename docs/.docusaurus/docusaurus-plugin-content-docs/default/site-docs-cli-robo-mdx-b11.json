@@ -1,0 +1,28 @@
+{
+  "id": "cli/robo",
+  "title": "⚙️ Robo CLI",
+  "description": "The Robo.js CLI helps you manage your bot project like a boss. Here's a quick overview of the available commands and options, grouped by their purpose:",
+  "source": "@site/docs/cli/robo.mdx",
+  "sourceDirName": "cli",
+  "slug": "/cli/robo",
+  "permalink": "/cli/robo",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/cli/robo.mdx",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/cli/robo"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "⚡ Create Robo",
+    "permalink": "/cli/create-robo"
+  },
+  "next": {
+    "title": "✨ Robo.js Overview",
+    "permalink": "/robojs/overview"
+  }
+}

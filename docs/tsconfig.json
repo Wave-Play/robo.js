@@ -1,6 +1,33 @@
 {
-    "extends": "@docusaurus/tsconfig",
+    //"extends": "@docusaurus/tsconfig",
     "compilerOptions": {
-      "baseUrl": "."
-    }
-  }
+        "baseUrl": ".",
+        "target": "ESNext",
+        "lib": [
+            "ES2020",
+            "DOM"
+        ],
+        "allowJs": true,
+        "skipLibCheck": true,
+        "strict": true,
+        "jsx": "preserve",
+        "forceConsistentCasingInFileNames": true,
+        "esModuleInterop": true,
+        "module": "esnext",
+        "moduleResolution": "bundler",
+        "noEmit": true,
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "incremental": true,
+        "types": [
+            "node",
+            "@docusaurus/module-type-aliases",
+            "@docusaurus/theme-classic"
+          ],
+        "paths": {
+        "@site/*": ["./*"]
+        },
+    },
+    "exclude": [
+        "node_modules"]
+}

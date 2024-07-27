@@ -1,0 +1,28 @@
+{
+  "id": "discord-bots/migrate",
+  "title": "⭐ Migrating existing bots",
+  "description": "Robo.js is a rad framework built on top of Discord.js. It's got a simple but powerful file structure, a better development experience, and loads of extra features, all while being 100% compatible with Discord.js code.",
+  "source": "@site/docs/discord-bots/migrate.mdx",
+  "sourceDirName": "discord-bots",
+  "slug": "/discord-bots/migrate",
+  "permalink": "/discord-bots/migrate",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/discord-bots/migrate.mdx",
+  "tags": [],
+  "version": "current",
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
+  "frontMatter": {
+    "image": "https://preview.robojs.dev?path=/discord-bots/migrate"
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "🌙 Middleware",
+    "permalink": "/discord-bots/middleware"
+  },
+  "next": {
+    "title": "🔮 Sage Mode",
+    "permalink": "/discord-bots/sage"
+  }
+}
