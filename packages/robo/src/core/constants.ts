@@ -5,6 +5,7 @@ import type { Config } from '../types/index.js'
 // TODO: Restore support for ['.js', '.jsx', '.ts', '.tsx']
 export const ALLOWED_EXTENSIONS = ['.js']
 export const Highlight = composeColors(color.bold, color.cyan)
+export const HighlightGreen = composeColors(color.bold, color.green)
 export const Indent = ' '.repeat(3)
 export const Space = ' '.repeat(8)
 

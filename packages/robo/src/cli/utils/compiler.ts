@@ -5,7 +5,7 @@ import { logger } from '../../core/logger.js'
 import { env } from '../../core/env.js'
 import { IS_BUN } from './runtime-utils.js'
 import { getManifest, useManifest } from '../compiler/manifest.js'
-import { buildSeed, useSeed } from '../compiler/seed.js'
+import { buildSeed, hasSeed, useSeed } from '../compiler/seed.js'
 import { buildDeclarationFiles, getTypeScriptCompilerOptions, isTypescriptProject } from '../compiler/typescript.js'
 import type { default as Typescript, CompilerOptions } from 'typescript'
 import type { transform as SwcTransform } from '@swc/core'
@@ -14,16 +14,18 @@ const SrcDir = path.join(process.cwd(), 'src')
 
 // Load Typescript compiler in a try/catch block
 // This is to maintain compatibility with JS-only projects
+export let ts: typeof Typescript
+export let transform: typeof SwcTransform
+
 try {
 	if (!IS_BUN) {
 		const [typescript, swc] = await Promise.all([import('typescript'), import('@swc/core')])
 		ts = typescript.default
 		transform = swc.transform
-export let ts: typeof Typescript
-export let transform: typeof SwcTransform
 	}
 } catch {
 	// Ignore
+}
 
 export const Compiler = {
 	buildCode,
@@ -149,7 +151,7 @@ async function buildCode(options?: BuildCodeOptions) {
 
 	// Force load compilers for Bun in plugin builds
 	if (IS_BUN && options?.plugin) {
-		await preloadTypescript()
+		// await preloadTypescript()
 	}
 
 	// Just copy the source directory if not a Typescript project
