@@ -32,6 +32,7 @@ export const Compiler = {
 	buildDeclarationFiles,
 	buildSeed,
 	getManifest,
+	hasSeed,
 	isTypescriptProject,
 	useManifest,
 	useSeed
