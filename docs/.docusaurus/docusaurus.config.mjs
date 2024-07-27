@@ -165,10 +165,10 @@ export default {
           "routeBasePath": "/",
           "showLastUpdateAuthor": true,
           "showLastUpdateTime": true,
-          "sidebarPath": "./sidebars.js"
+          "sidebarPath": "/Users/sushi/Documents/dev/robo.js/docs/sidebars.js"
         },
         "theme": {
-          "customCss": "./src/css/custom.css"
+          "customCss": "/Users/sushi/Documents/dev/robo.js/docs/src/css/custom.css"
         }
       }
     ]

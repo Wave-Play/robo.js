@@ -167,7 +167,7 @@ const config = {
 					'packages/plugin-modtools/README.md',
 					'packages/plugin-sync/README.md'
 				],
-				modifyContent: (/** @type {string} */ filename, /** @type {string} */ content) => {
+				modifyContent: (filename, content) => {
 					/*if (['CONTRIBUTING.md'].includes(filename)) {
 						// Return up to the "## Contributors" section
 						let newContent = content.split('## Contributors')[0]
@@ -229,10 +229,10 @@ const config = {
 					routeBasePath: '/',
 					showLastUpdateAuthor: true,
 					showLastUpdateTime: true,
-					sidebarPath: './sidebars.js'
+					sidebarPath: require.resolve('./sidebars.js')
 				},
 				theme: {
-					customCss: './src/css/custom.css'
+					customCss: require.resolve('./src/css/custom.css')
 				}
 			})
 		]

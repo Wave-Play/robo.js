@@ -28,7 +28,7 @@
 		"upgrade": "sage upgrade",
 		"docusaurus": "docusaurus",
 		"doco-start": "docusaurus start",
-		"doco-build": "docusaurus build",
+		"doco-build": "docusaurus build --out-dir ./public/",
 		"swizzle": "docusaurus swizzle",
 		"doco-deploy": "docusaurus deploy",
 		"clear": "docusaurus clear",

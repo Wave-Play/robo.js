@@ -2,21 +2,19 @@
 import React from 'react'
 import clsx from 'clsx'
 import styles from './styles.module.css'
-import easy from '@site/static/img/undraw_docusaurus_mountain.svg'
-import focus from '@site/static/img/undraw_docusaurus_tree.svg';
-import powered from '@site/static/img/undraw_docusaurus_react.svg'
+
 const FeatureList = [
 	{
 		title: 'Easy to Use',
-		Svg: easy
+		Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default
 	},
 	{
 		title: 'Focus on What Matters',
-		Svg: focus
+		Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default
 	},
 	{
 		title: 'Powered by Discord.JS',
-		Svg: powered
+		Svg: require('@site/static/img/undraw_docusaurus_react.svg').default
 	}
 ]
 
