@@ -1,273 +1,230 @@
 {
-  "/__docusaurus/debug-5ff": {
-    "__comp": "__comp---theme-debug-config-23-a-2ff",
-    "__context": {
-      "plugin": "plugin---docusaurus-debugb-38-ad3"
-    }
-  },
-  "/__docusaurus/debug/config-5ba": {
-    "__comp": "__comp---theme-debug-config-23-a-2ff",
-    "__context": {
-      "plugin": "plugin---docusaurus-debugb-38-ad3"
-    }
-  },
-  "/__docusaurus/debug/content-a2b": {
-    "__comp": "__comp---theme-debug-contentba-8-ce7",
-    "__context": {
-      "plugin": "plugin---docusaurus-debugb-38-ad3"
-    },
-    "__props": "__props---docusaurus-debug-content-3-c-0-be2"
-  },
-  "/__docusaurus/debug/globalData-c3c": {
-    "__comp": "__comp---theme-debug-global-dataede-0fa",
-    "__context": {
-      "plugin": "plugin---docusaurus-debugb-38-ad3"
-    }
-  },
-  "/__docusaurus/debug/metadata-156": {
-    "__comp": "__comp---theme-debug-site-metadata-68-e-3d4",
-    "__context": {
-      "plugin": "plugin---docusaurus-debugb-38-ad3"
-    }
-  },
-  "/__docusaurus/debug/registry-88c": {
-    "__comp": "__comp---theme-debug-registry-679-501",
-    "__context": {
-      "plugin": "plugin---docusaurus-debugb-38-ad3"
-    }
-  },
-  "/__docusaurus/debug/routes-000": {
-    "__comp": "__comp---theme-debug-routes-946-699",
-    "__context": {
-      "plugin": "plugin---docusaurus-debugb-38-ad3"
-    }
-  },
   "/lumina-9b3": {
-    "__comp": "__comp---theme-mdx-page-1-f-3-b90",
+    "__comp": "1f391b9e",
     "__context": {
-      "plugin": "plugin---luminaa-74-4e3"
+      "plugin": "a7456010"
     },
-    "content": "content---lumina-360-667"
+    "content": "36009dc2"
   },
   "/playground-859": {
-    "__comp": "__comp---site-src-pages-playground-tsx-0-ce-144",
+    "__comp": "0ce74438",
     "__context": {
-      "plugin": "plugin---luminaa-74-4e3"
+      "plugin": "a7456010"
     },
-    "config": "config---playground-5-e-9-7f7"
+    "config": "5e9f5e1a"
   },
   "/plugins-50a": {
-    "__comp": "__comp---theme-mdx-page-1-f-3-b90",
+    "__comp": "1f391b9e",
     "__context": {
-      "plugin": "plugin---luminaa-74-4e3"
+      "plugin": "a7456010"
     },
-    "content": "content---pluginsb-63-806"
+    "content": "b636e706"
   },
   "/robokit-570": {
-    "__comp": "__comp---theme-mdx-page-1-f-3-b90",
+    "__comp": "1f391b9e",
     "__context": {
-      "plugin": "plugin---luminaa-74-4e3"
+      "plugin": "a7456010"
     },
-    "content": "content---robokit-7-b-0-ac4"
+    "content": "7b0c42bd"
   },
   "/-e5f": {
-    "__comp": "__comp---site-src-pages-index-tsx-1-df-d3e",
+    "__comp": "1df93b7f",
     "__context": {
-      "plugin": "plugin---luminaa-74-4e3"
+      "plugin": "a7456010"
     },
-    "config": "config---playground-5-e-9-7f7"
+    "config": "5e9f5e1a"
   },
-  "/-29c": {
-    "__comp": "__comp---theme-docs-root-5-e-9-0b6",
+  "/-46d": {
+    "__comp": "5e95c892",
     "__context": {
-      "plugin": "plugin---aba-d70"
+      "plugin": "aba21aa0"
     }
   },
-  "/-a6f": {
-    "__comp": "__comp---theme-doc-version-roota-7-b-5de",
-    "__props": "__props---22-d-307"
+  "/-058": {
+    "__comp": "a7bd4aaa",
+    "__props": "22dd74f7"
   },
-  "/-d59": {
-    "__comp": "__comp---theme-doc-roota-94-67a"
+  "/-148": {
+    "__comp": "a94703ab"
   },
-  "/cli/create-robo-fc6": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---cli-create-robo-660-963"
+  "/cli/create-robo-202": {
+    "__comp": "17896441",
+    "content": "66038f61"
   },
-  "/cli/overview-fe6": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---cli-overviewf-8-c-12d"
+  "/cli/overview-34d": {
+    "__comp": "17896441",
+    "content": "f8c1e3d4"
   },
-  "/cli/robo-285": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---cli-robob-11-d1e"
+  "/cli/robo-4c8": {
+    "__comp": "17896441",
+    "content": "b11c23ff"
   },
-  "/discord-activities/getting-started-c7e": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---discord-activities-getting-starteda-48-d8d"
+  "/discord-activities/getting-started-d6c": {
+    "__comp": "17896441",
+    "content": "a486ed51"
   },
-  "/discord-activities/multiplayer-a66": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---discord-activities-multiplayer-47-b-3f7"
+  "/discord-activities/multiplayer-d30": {
+    "__comp": "17896441",
+    "content": "47b1a3df"
   },
-  "/discord-activities/proxy-38e": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---discord-activities-proxycc-0-1e8"
+  "/discord-activities/proxy-129": {
+    "__comp": "17896441",
+    "content": "cc05c86c"
   },
-  "/discord-bots/commands-222": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---discord-bots-commands-27-b-25d"
+  "/discord-bots/commands-1f3": {
+    "__comp": "17896441",
+    "content": "27b9741a"
   },
-  "/discord-bots/context-menu-114": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---discord-bots-context-menudda-d04"
+  "/discord-bots/context-menu-cee": {
+    "__comp": "17896441",
+    "content": "dda6e511"
   },
-  "/discord-bots/debug-fc3": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---discord-bots-debug-469-bfa"
+  "/discord-bots/debug-2dc": {
+    "__comp": "17896441",
+    "content": "469dd090"
   },
-  "/discord-bots/events-b68": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---discord-bots-eventsaed-2af"
+  "/discord-bots/events-8f6": {
+    "__comp": "17896441",
+    "content": "aede887b"
   },
-  "/discord-bots/getting-started-fa0": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---discord-bots-getting-started-05-e-f88"
+  "/discord-bots/getting-started-68c": {
+    "__comp": "17896441",
+    "content": "05e8b9ba"
   },
-  "/discord-bots/invite-692": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---discord-bots-invite-929-9af"
+  "/discord-bots/invite-7a2": {
+    "__comp": "17896441",
+    "content": "929998ab"
   },
-  "/discord-bots/middleware-308": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---discord-bots-middlewared-3-c-c94"
+  "/discord-bots/middleware-dfa": {
+    "__comp": "17896441",
+    "content": "d3c3ca18"
   },
-  "/discord-bots/migrate-a54": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---discord-bots-migrate-0-eb-413"
+  "/discord-bots/migrate-56b": {
+    "__comp": "17896441",
+    "content": "0eb9e824"
   },
-  "/discord-bots/sage-db2": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---discord-bots-sage-51-b-922"
+  "/discord-bots/sage-591": {
+    "__comp": "17896441",
+    "content": "51b447f5"
   },
-  "/discord-bots/secrets-6f0": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---discord-bots-secrets-207-30a"
+  "/discord-bots/secrets-eb7": {
+    "__comp": "17896441",
+    "content": "207614b3"
   },
-  "/getting-started-b49": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---getting-started-302-3d2"
+  "/getting-started-9b5": {
+    "__comp": "17896441",
+    "content": "3021cf83"
   },
-  "/hosting/overview-bf7": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---hosting-overviewefc-de2"
+  "/hosting/overview-631": {
+    "__comp": "17896441",
+    "content": "efca0bb6"
   },
-  "/hosting/roboplay-8d9": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---hosting-roboplay-641-7e6"
+  "/hosting/roboplay-d4e": {
+    "__comp": "17896441",
+    "content": "641b70ff"
   },
-  "/hosting/self-host-a3e": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---hosting-self-hostc-7-a-96e"
+  "/hosting/self-host-8a5": {
+    "__comp": "17896441",
+    "content": "c7ad9d20"
   },
-  "/plugins/ai-b98": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---plugins-aie-3-a-c62"
+  "/plugins/ai-0eb": {
+    "__comp": "17896441",
+    "content": "e3aa8df8"
   },
-  "/plugins/ai-voice-b76": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---plugins-ai-voice-755-0a4"
+  "/plugins/ai-voice-9da": {
+    "__comp": "17896441",
+    "content": "755aca34"
   },
-  "/plugins/better-stack-96d": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---plugins-better-stack-862-506"
+  "/plugins/better-stack-790": {
+    "__comp": "17896441",
+    "content": "8626c322"
   },
-  "/plugins/create-6f6": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---plugins-create-24-f-d9f"
+  "/plugins/create-b65": {
+    "__comp": "17896441",
+    "content": "24f9ccf4"
   },
-  "/plugins/dev-b9a": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---plugins-dev-397-1a7"
+  "/plugins/dev-ff1": {
+    "__comp": "17896441",
+    "content": "397244cb"
   },
-  "/plugins/directory-c8b": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---plugins-directorycda-2a4"
+  "/plugins/directory-c9d": {
+    "__comp": "17896441",
+    "content": "cdacdca8"
   },
-  "/plugins/install-df0": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---plugins-install-11-d-619"
+  "/plugins/install-4c7": {
+    "__comp": "17896441",
+    "content": "11d63dd5"
   },
-  "/plugins/maintenance-944": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---plugins-maintenance-820-77d"
+  "/plugins/maintenance-eb4": {
+    "__comp": "17896441",
+    "content": "820429c2"
   },
-  "/plugins/moderation-c63": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---plugins-moderation-15-b-5f8"
+  "/plugins/moderation-59f": {
+    "__comp": "17896441",
+    "content": "15bf0b1e"
   },
-  "/plugins/overview-69b": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---plugins-overview-270-f4e"
+  "/plugins/overview-145": {
+    "__comp": "17896441",
+    "content": "270c6556"
   },
-  "/plugins/server-911": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---plugins-server-331-2f0"
+  "/plugins/server-322": {
+    "__comp": "17896441",
+    "content": "33178141"
   },
-  "/plugins/sync-d6d": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---plugins-sync-947-1be"
+  "/plugins/sync-7e0": {
+    "__comp": "17896441",
+    "content": "9472c2ac"
   },
-  "/robojs/config-5fa": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---robojs-confige-25-3bb"
+  "/robojs/config-e0d": {
+    "__comp": "17896441",
+    "content": "e25ec799"
   },
-  "/robojs/files-265": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---robojs-filesd-2-d-ce8"
+  "/robojs/files-2da": {
+    "__comp": "17896441",
+    "content": "d2d284ac"
   },
-  "/robojs/flashcore-9ce": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---robojs-flashcoref-48-6fb"
+  "/robojs/flashcore-86c": {
+    "__comp": "17896441",
+    "content": "f480c67b"
   },
-  "/robojs/internals-c9b": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---robojs-internals-4-e-5-2c8"
+  "/robojs/internals-105": {
+    "__comp": "17896441",
+    "content": "4e5e73e9"
   },
-  "/robojs/linting-6c7": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---robojs-lintingbb-5-850"
+  "/robojs/linting-361": {
+    "__comp": "17896441",
+    "content": "bb56318f"
   },
-  "/robojs/logger-49c": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---robojs-logger-326-835"
+  "/robojs/logger-6ed": {
+    "__comp": "17896441",
+    "content": "3269a7d6"
   },
-  "/robojs/mode-e4e": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---robojs-mode-993-081"
+  "/robojs/mode-74c": {
+    "__comp": "17896441",
+    "content": "9937d0f4"
   },
-  "/robojs/modules-3ae": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---robojs-modules-7-be-71d"
+  "/robojs/modules-a90": {
+    "__comp": "17896441",
+    "content": "7be55031"
   },
-  "/robojs/overview-d33": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---robojs-overview-219-d4b"
+  "/robojs/overview-1ed": {
+    "__comp": "17896441",
+    "content": "219f48e0"
   },
-  "/robojs/portal-312": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---robojs-portal-69-d-3a9"
+  "/robojs/portal-be3": {
+    "__comp": "17896441",
+    "content": "69d1c199"
   },
-  "/robojs/state-9a2": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---robojs-state-126-64c"
+  "/robojs/state-940": {
+    "__comp": "17896441",
+    "content": "126a650c"
   },
-  "/robojs/typescript-50a": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---robojs-typescripteb-7-a71"
+  "/robojs/typescript-5ab": {
+    "__comp": "17896441",
+    "content": "eb7371d5"
   },
-  "/templates/overview-8b0": {
-    "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---templates-overview-5-b-3-154"
+  "/templates/overview-ad0": {
+    "__comp": "17896441",
+    "content": "5b3aa12b"
   }
 }

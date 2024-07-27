@@ -1,4 +1,3 @@
-
 function lol(){
     return 'templates';
 }

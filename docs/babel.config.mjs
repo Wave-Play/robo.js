@@ -1,3 +1,3 @@
-export default {
-	presets: ['@docusaurus/core/lib/babel/preset', '@babel/preset-react']
+module.exports = {
+	presets: [require.resolve('@docusaurus/core/lib/babel/preset'), require.resolve('@babel/preset-react')]
 }
