@@ -19,12 +19,11 @@
 	"scripts": {
 		"build": "robo build",
 		"deploy": "robo deploy",
-		"dev": "robox dev",
+		"dev": "docusaurus serve --dir ./public/ && robox dev",
 		"doctor": "sage doctor",
 		"invite": "robo invite",
 		"lint:style": "prettier --write .",
-		"robo-start": "robo start",
-		"start": "robo build && robo start",
+		"start": "docusaurus build --out-dir ./public/ && robo build && robo start",
 		"upgrade": "sage upgrade",
 		"docusaurus": "docusaurus",
 		"doco-start": "docusaurus start",
@@ -32,7 +31,7 @@
 		"swizzle": "docusaurus swizzle",
 		"doco-deploy": "docusaurus deploy",
 		"clear": "docusaurus clear",
-		"serve": "docusaurus serve",
+		"doco-serve": "docusaurus serve",
 		"write-translations": "docusaurus write-translations",
 		"write-heading-ids": "docusaurus write-heading-ids"
 	},
@@ -45,15 +44,13 @@
 		"@stackblitz/sdk": "^1.10.0",
 		"clsx": "^1.2.1",
 		"copy-to-clipboard": "^3.3.3",
-		"discord.js": "^14.15.3",
 		"docusaurus-plugin-remote-content": "^4.0.0",
 		"jotai": "^2.8.3",
 		"meilisearch-docsearch": "^0.6.0",
 		"prism-react-renderer": "^2.1.0",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
-		"robo.js": "^0.10.13",
-		"webpack": "^5.93.0"
+		"robo.js": "^0.10.13"
 	},
 	"devDependencies": {
 		"@docusaurus/module-type-aliases": "^3.4.0",
