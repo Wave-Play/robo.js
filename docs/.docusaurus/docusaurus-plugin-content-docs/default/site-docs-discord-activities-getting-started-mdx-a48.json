@@ -11,8 +11,8 @@
   "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/discord-activities/getting-started.mdx",
   "tags": [],
   "version": "current",
-  "lastUpdatedBy": "Pkmmte Xeleon",
-  "lastUpdatedAt": 1720235282000,
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
   "frontMatter": {
     "description": "Create a Discord Activity in seconds with Robo.js - a tiny framework that simplifies development of Discord Activities.",
     "image": "https://preview.robojs.dev?path=/discord-activities/getting-started"

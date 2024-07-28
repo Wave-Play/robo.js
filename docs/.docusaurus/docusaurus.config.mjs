@@ -137,6 +137,7 @@ export default {
         ]
       }
     ],
+    "/Users/sushi/Documents/dev/robo.js/docs/plugins/RoboDoc/index.js",
     [
       "docusaurus-plugin-remote-content",
       {

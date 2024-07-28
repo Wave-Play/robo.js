@@ -11,8 +11,8 @@
   "editUrl": "https://github.com/Wave-Play/robo.js/edit/main/docs/docs/discord-activities/proxy.mdx",
   "tags": [],
   "version": "current",
-  "lastUpdatedBy": "Pkmmte Xeleon",
-  "lastUpdatedAt": 1720235282000,
+  "lastUpdatedBy": "Author",
+  "lastUpdatedAt": 1539502055000,
   "frontMatter": {
     "description": "Learn how to make external network requests in your Discord Activity in a way compatible with the Discord Proxy.",
     "image": "https://preview.robojs.dev?path=/discord-activities/proxy"

@@ -6,6 +6,7 @@
 import { themes } from 'prism-react-renderer'
 const lightCodeTheme = themes.github
 const darkCodeTheme = themes.dracula
+import x from './plugins/RoboDoc'
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -151,6 +152,8 @@ const config = {
 				]
 			}
 		],
+
+		require.resolve('./plugins/RoboDoc/'),
 		[
 			'docusaurus-plugin-remote-content',
 			{
@@ -260,6 +263,8 @@ const config = {
 			return result
 		}
 	},
+
+	
 
 	themeConfig:
 		/** @type {import('@docusaurus/preset-classic').ThemeConfig} */
