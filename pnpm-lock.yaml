@@ -51,6 +51,9 @@ importers:
       commander:
         specifier: 10.0.0
         version: 10.0.0
+      discord.js:
+        specifier: 14.10.2
+        version: 14.10.2
       got:
         specifier: ^13.0.0
         version: 13.0.0
@@ -73,9 +76,6 @@ importers:
       chokidar-cli:
         specifier: ^3.0.0
         version: 3.0.0
-      discord.js:
-        specifier: ^14.10.2
-        version: 14.14.1
       tsup:
         specifier: 6.7.0
         version: 6.7.0(typescript@5.0.2)
