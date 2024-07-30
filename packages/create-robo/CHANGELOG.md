@@ -1,5 +1,11 @@
 # create-robo
 
+## 0.12.10
+
+### Patch Changes
+
+- 5766124: patch: discord.js now normal dependency to appease yarn
+
 ## 0.12.9
 
 ### Patch Changes
