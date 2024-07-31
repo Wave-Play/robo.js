@@ -7,6 +7,7 @@ export interface InitOptions {
 }
 
 export interface StartOptions {
+	hostname?: string
 	port: number
 }
 

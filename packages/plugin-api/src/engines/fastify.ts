@@ -175,7 +175,7 @@ export class FastifyEngine extends BaseEngine {
 	}
 
 	public async start(options: StartOptions): Promise<void> {
-		const { port } = options
+		const { hostname, port } = options
 
 		return new Promise((resolve) => {
 			const run = async () => {
@@ -187,8 +187,8 @@ export class FastifyEngine extends BaseEngine {
 
 				// Start server
 				this._isRunning = true
-				this._server.listen({ port }, () => {
-					logger.ready(`Fastify server is live at`, composeColors(color.bold, color.blue)(`http://localhost:${port}`))
+				this._server.listen({ host: hostname, port }, () => {
+					logger.ready(`Fastify server is live at`, composeColors(color.bold, color.blue)(`http://${hostname ?? 'localhost'}:${port}`))
 					resolve()
 				})
 			}

@@ -13,6 +13,7 @@ const PATH_REGEX = new RegExp(/\[(.+?)\]/g)
 interface PluginOptions {
 	cors?: boolean
 	engine?: BaseEngine
+	hostname?: string
 	port?: number
 	prefix?: string | null | false
 	vite?: ViteDevServer
@@ -32,7 +33,7 @@ export default async (_client: Client, options: PluginOptions) => {
 	}
 
 	// Start HTTP server only if API Routes are defined
-	const { engine, port = parseInt(process.env.PORT ?? '3000') } = pluginOptions
+	const { engine, hostname, port = parseInt(process.env.PORT ?? '3000') } = pluginOptions
 	let vite: ViteDevServer | undefined = pluginOptions.vite
 
 	logger.debug(`Preparing server with ${portal.apis.size} API routes...`)
@@ -81,7 +82,7 @@ export default async (_client: Client, options: PluginOptions) => {
 	})
 
 	logger.debug(`Starting server...`)
-	await engine.start({ port })
+	await engine.start({ hostname, port })
 	_readyPromiseResolve()
 }
 
