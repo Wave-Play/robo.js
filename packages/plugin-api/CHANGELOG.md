@@ -1,5 +1,11 @@
 # @roboplay/plugin-api
 
+## 0.5.5
+
+### Patch Changes
+
+- 3ee7a85: feat: customizable hostname
+
 ## 0.5.4
 
 ### Patch Changes
