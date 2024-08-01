@@ -5,36 +5,51 @@ import styles from './playground.module.css'
 import {useColorMode} from '@docusaurus/theme-common';
 
 interface Project {
-	name: string,
-	link: string,
-	openFile: string | undefined
+	categoryTitle: string,
+	subCategory: Array<CategoryItems>,
 }
 
+interface CategoryItems {
+	name: string,
+	templates: Array<Templates>
+	
+}
+
+interface Templates {
+	title: string,
+	desc: string,
+	link: string
+}
 
 function Playground() {
-	const [projectIdx, setProjectIdx] = useState(0)
+	const [projectLink, setProjectLink] = useState('Wave-Play/robo.js/tree/main/templates/starter-app-js-react')
 	const [dropdown, setDropdown] = useState(false)
 	const [embedLoading, setEmbedLoading] = useState(true);
 	const { colorMode } = useColorMode();
+	const [fetchError, setFetchError] = useState<null | string>(null)
+	const [templates, setTemplates] = useState<Project[] | null>(null);
 
 	const embedDiv = useRef(null);
 	const editor = useRef(null);
 
-	const projects: Project[] = [{
-		name: 'starter bot ts',
-		link: 'Wave-Play/robo.js/tree/main/templates/starter-bot-typescript',
-		openFile: ''
-	},
-	{
-		name: 'starter bot js',
-		link: 'Wave-Play/robo.js/tree/main/templates/starter-bot-javascript',
-		openFile: ''
-	},
-	{
-		name: 'starter bot ts',
-		link: 'Wave-Play/robo.js/tree/main/templates/starter-bot-typescript',
-		openFile: ''
-	}]
+	useEffect(() => {
+
+		const fetchTemplates = async () => {
+			const res = await fetch('http://localhost:3001/api/templates');
+
+			if(res.status !== 20){
+				setFetchError(res.statusText);
+			}
+
+			if(res.ok && res.status === 200){
+				const json = await res.json();
+				setTemplates(json)	
+			}
+
+
+		}
+		fetchTemplates();
+	}, [])
 	
 
 	useEffect(() => {
@@ -46,9 +61,8 @@ function Playground() {
 	useEffect(() => {
 		if(embedDiv && embedDiv.current){
 			setEmbedLoading(true);
-			sdk.embedGithubProject('embed', projects[projectIdx].link, {
+			sdk.embedGithubProject('embed', projectLink, {
 				devToolsHeight: 40,
-				openFile: projects[projectIdx].openFile ? [projects[projectIdx].openFile] : undefined,
 				showSidebar: true,
 				terminalHeight: 40,
 				theme: colorMode,
@@ -58,15 +72,19 @@ function Playground() {
 				editor.current = v.editor
 			});
 		}
-	}, [projectIdx])
+	}, [projectLink])
 
 
 	function renderSearchBar(){
 		if(!embedLoading){
 			if(dropdown){
-				return <SearchbarFocused data={projects} setProjectIdx={setProjectIdx} setDropdown={setDropdown} /> ;
+				return <SearchbarFocused data={templates} setProjectLink={setProjectLink} setDropdown={setDropdown} /> ;
 			} else {
-				return (<input className={styles.searchBar}onFocus={() => setDropdown(true)} placeholder='Search for a Robo template'></input>)
+			return (<input className={styles.searchBar} onFocus={() => {
+				if(fetchError !== null){
+					setDropdown(true)
+				}
+		}} placeholder={fetchError !== null ? 'Search for a Robo template' : fetchError}></input>)
 			}
 		}
 	}
@@ -82,10 +100,34 @@ function Playground() {
 }
 
 
-function SearchbarFocused(props){
-	const { data, setProjectIdx, setDropdown } = props;
+interface SearchBarProps {
+	data: Project[] | null;
+	setProjectLink: React.Dispatch<React.SetStateAction<string>>,
+	setDropdown: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+function SearchbarFocused(props: SearchBarProps){
+	const { data, setProjectLink, setDropdown } = props;
 	const [searchTemplate, setSearchTemplate] = useState('')
 
+	const ResultsRender = () => {
+		if(data !== null){
+			return data.map((project: Project, idx: number) => {
+				return project.subCategory.map((category: CategoryItems, idx: number) => {
+					return category.templates.map((template: Templates) => {
+						if(template.title.includes(searchTemplate)){
+							return (<p onClick={() => {
+								setProjectLink(template.link);
+								setDropdown(false);
+							}}>{template.title}</p>)
+						}
+						return <p>No results were found.</p>
+					})
+				})
+			})
+		}
+		return 'An error happened while rendering the results.'
+	}
 	return (
 		<div className={styles.searchBarFocusContainer}>
 			<input 
@@ -94,17 +136,11 @@ function SearchbarFocused(props){
 			value={searchTemplate} 
 			placeholder='Search for a Robo template'>
 			</input>
-
-			{
-				data.map((project: Project, idx: number) => {
-					if(project.name.includes(searchTemplate)){
-						return (<p onClick={() => {
-							setProjectIdx(idx);
-							setDropdown(false);
-						}}>{project.name}</p>)
-					}
-				})
-			}
+			<div style={{overflowY: 'scroll'}}>
+				{
+					ResultsRender()
+				}
+			</div>
 		</div>
 	)
 }

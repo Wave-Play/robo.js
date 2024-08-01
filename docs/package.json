@@ -3,13 +3,21 @@
 	"version": "0.0.0",
 	"private": true,
 	"scripts": {
+		"build": "robo build",
+		"deploy": "robo deploy",
+		"dev": "docusaurus serve --dir ./public/ && robox dev",
+		"doctor": "sage doctor",
+		"invite": "robo invite",
+		"lint:style": "prettier --write .",
+		"start": "docusaurus build --out-dir ./public/ && robo build && robo start",
+		"upgrade": "sage upgrade",
 		"docusaurus": "docusaurus",
-		"start": "docusaurus start",
-		"build": "docusaurus build",
+		"doco-start": "docusaurus start",
+		"doco-build": "docusaurus build --out-dir ./public/",
 		"swizzle": "docusaurus swizzle",
-		"deploy": "docusaurus deploy",
+		"doco-deploy": "docusaurus deploy",
 		"clear": "docusaurus clear",
-		"serve": "docusaurus serve",
+		"doco-serve": "docusaurus serve",
 		"write-translations": "docusaurus write-translations",
 		"write-heading-ids": "docusaurus write-heading-ids"
 	},
@@ -18,7 +26,9 @@
 		"@docusaurus/plugin-client-redirects": "^3.4.0",
 		"@docusaurus/preset-classic": "^3.4.0",
 		"@mdx-js/react": "^3.0.0",
+		"@robojs/server": "^0.5.5",
 		"@stackblitz/sdk": "^1.10.0",
+		"cheerio": "^1.0.0-rc.12",
 		"clsx": "^1.2.1",
 		"copy-to-clipboard": "^3.3.3",
 		"docusaurus-plugin-remote-content": "^4.0.0",
@@ -26,7 +36,8 @@
 		"meilisearch-docsearch": "^0.6.0",
 		"prism-react-renderer": "^2.1.0",
 		"react": "^18.2.0",
-		"react-dom": "^18.2.0"
+		"react-dom": "^18.2.0",
+		"robo.js": "^0.10.13"
 	},
 	"devDependencies": {
 		"@docusaurus/module-type-aliases": "^3.4.0",
@@ -34,7 +45,10 @@
 		"@docusaurus/types": "^3.4.0",
 		"@mdi/js": "^7.4.47",
 		"@mdi/react": "^1.6.1",
+		"@swc/core": "^1.7.2",
+		"@types/node": "^20.14.12",
 		"@types/react": "^18.2.29",
+		"prettier": "^3.3.3",
 		"typescript": "^5.5.4"
 	},
 	"browserslist": {
@@ -50,6 +64,6 @@
 		]
 	},
 	"engines": {
-		"node": ">=16.14"
+		"node": ">=18.0"
 	}
 }
