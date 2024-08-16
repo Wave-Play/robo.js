@@ -1,17 +1,27 @@
-import { DiscordAnalytics } from './discordAnalytics'
-
-export abstract class BaseAnalytics {
-	abstract event(...args: any): Promise<void>
+export interface EventOptions {
+	category?: string
+	label?: string
+	numberOfExecution?: number
+	user?: userData
+	id?: number | string
 }
 
-type Analytics = BaseAnalytics | undefined | DiscordAnalytics
+interface userData {
+	name?: string
+	id?: string | number
+	email?: string
+}
 
-let _analytics: Analytics
+export abstract class BaseAnalytics {
+	abstract event(options: EventOptions): Promise<void>
+}
 
-export function setAnalytics(analytics: Analytics) {
+let _analytics: BaseAnalytics
+
+export function setAnalytics(analytics: BaseAnalytics) {
 	_analytics = Object.freeze(analytics)
 }
 
 export const Analytics = {
-	event: (...args: any) => _analytics?.event(args)
+	event: (options: EventOptions) => _analytics?.event(options)
 }

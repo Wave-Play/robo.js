@@ -1,19 +1,20 @@
 import { HandlerRecord } from 'robo.js'
 import { Analytics } from '../utils/analytics'
-import { ChatInputCommandInteraction, Client, CommandInteraction, InteractionType } from 'discord.js'
-import { RawInteractionData } from 'discord.js/typings/rawDataTypes'
+import { ChatInputCommandInteraction, Client, CommandInteraction, InteractionResponse } from 'discord.js'
 
 export default function (data: { payload: unknown[]; record: HandlerRecord }) {
 	const payload = data.payload[0]
 	const record = data.record
 
-	//console.log(payload)
-	if (payload instanceof CommandInteraction) {
-		console.log(payload.commandName)
+	if (record.type === 'command') {
+		const command = payload as ChatInputCommandInteraction
+		Analytics.event({
+			category: 'slash-command',
+			label: command.commandName,
+			id: command.guildId ? command.guildId : '',
+			user: {
+				id: command.user.id
+			}
+		})
 	}
-	// const slashCommand = x.data
-	// Analytics.event('slash-commands', {
-	// 	name: slashCommand.name,
-	// 	pluginName: record.plugin ? record.plugin.name : ''
-	// })
 }
