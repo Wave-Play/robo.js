@@ -1,5 +1,11 @@
 # @roboplay/sage
 
+## 0.5.11
+
+### Patch Changes
+
+- 4e4ba3e: fix: internal manifest usage
+
 ## 0.5.10
 
 ### Patch Changes
