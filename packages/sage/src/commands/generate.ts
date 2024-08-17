@@ -3,8 +3,7 @@ import { writeFile } from 'node:fs/promises'
 import { logger } from '../core/logger.js'
 import type { Manifest, CommandEntry, ContextEntry, EventConfig, CommandOption } from 'robo.js'
 import path from 'node:path'
-// @ts-expect-error - Internal module
-import { getManifest } from 'robo.js/dist/cli/compiler/manifest.js'
+import { Compiler } from 'robo.js/dist/cli/utils/compiler.js'
 
 const command = new Command('generate')
 command.command('docs').description('generates a basic doc file for the project').action(generateDocAction)
@@ -12,8 +11,7 @@ export default command
 
 async function generateDocAction() {
 	try {
-		const manifest: Manifest = await getManifest()
-
+		const manifest: Manifest = await Compiler.useManifest()
 		const manifestCommands: CommandEntry = manifest.commands
 		const manifestEvents: EventConfig = manifest.events
 		const manifestContextCommands: Record<string, ContextEntry> = manifest.context
