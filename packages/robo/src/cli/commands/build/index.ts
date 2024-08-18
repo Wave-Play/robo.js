@@ -121,7 +121,7 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 	const generatedFiles = await generateDefaults(config.experimental?.buildDirectory)
 
 	// Generate manifest.json
-	const oldManifest = await Compiler.useManifest()
+	const oldManifest = await Compiler.useManifest({ safe: true })
 	const manifestTime = Date.now()
 	const manifest = await generateManifest(generatedFiles, 'robo')
 	logger.debug(`Generated manifest in ${Date.now() - manifestTime}ms`)
