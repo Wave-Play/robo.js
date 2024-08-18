@@ -17,15 +17,21 @@ const SrcDir = path.join(process.cwd(), 'src')
 export let ts: typeof Typescript
 export let transform: typeof SwcTransform
 
-try {
-	if (!IS_BUN) {
-		const [typescript, swc] = await Promise.all([import('typescript'), import('@swc/core')])
-		ts = typescript.default
-		transform = swc.transform
+async function preloadTypescript() {
+	try {
+		// Disable Typescript compiler(s) if using Bun, unless for plugin builds
+		// This is because plugins may be used in any runtime environment (not just Bun)
+		if (!IS_BUN) {
+			logger.debug(`Preloading Typescript compilers...`)
+			const [typescript, swc] = await Promise.all([import('typescript'), import('@swc/core')])
+			ts = typescript.default
+			transform = swc.transform
+		}
+	} catch {
+		// Ignore
 	}
-} catch {
-	// Ignore
 }
+await preloadTypescript()
 
 export const Compiler = {
 	buildCode,
@@ -152,7 +158,7 @@ async function buildCode(options?: BuildCodeOptions) {
 
 	// Force load compilers for Bun in plugin builds
 	if (IS_BUN && options?.plugin) {
-		// await preloadTypescript()
+		await preloadTypescript()
 	}
 
 	// Just copy the source directory if not a Typescript project
