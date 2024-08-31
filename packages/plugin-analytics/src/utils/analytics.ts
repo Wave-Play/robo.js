@@ -1,27 +1,36 @@
-export interface EventOptions {
-	category?: string
-	label?: string
-	numberOfExecution?: number
-	user?: userData
-	id?: number | string
+interface CommonOptions {
+	action?: string
+	url?: string
+	domain?: string
+	userID?: number | string
+	actionType?: string
+	type?: string
+	name: string
+	data?: unknown
 }
 
-interface userData {
-	name?: string
-	id?: string | number
-	email?: string
+export interface EventOptions extends CommonOptions {}
+
+export interface ViewOptions extends CommonOptions {
+	element?: string
+	elementIdentifier?: string
 }
 
-export abstract class BaseAnalytics {
-	abstract event(options: EventOptions): Promise<void>
+export abstract class BaseEngine {
+	public abstract event(options: EventOptions): Promise<void> | void
+	public abstract view(page: string, options: ViewOptions): Promise<void> | void
 }
 
-let _analytics: BaseAnalytics
+let _analytics: BaseEngine
 
-export function setAnalytics(analytics: BaseAnalytics) {
+export function setAnalytics(analytics: BaseEngine) {
 	_analytics = Object.freeze(analytics)
 }
 
-export const Analytics = {
-	event: (options: EventOptions) => _analytics?.event(options)
-}
+export const Analytics = Object.freeze({
+	event: (options: EventOptions) => _analytics.event(options),
+	view: (page: string, options: ViewOptions) => _analytics.view(page, options),
+	isReady: () => {
+		return _analytics !== undefined ? true : false
+	}
+})

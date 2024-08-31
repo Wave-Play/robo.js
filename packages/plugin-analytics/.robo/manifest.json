@@ -12,16 +12,11 @@
       "type": "plugin"
     },
     "type": "plugin",
-    "updatedAt": "2024-07-14T19:00:44.307Z",
+    "updatedAt": "2024-08-31T10:56:11.341Z",
     "version": "0.10.10"
   },
   "api": {},
-  "commands": {
-    "ping": {
-      "__path": "\\.robo\\build\\commands\\ping.js",
-      "description": "Replies with Pong!"
-    }
-  },
+  "commands": {},
   "context": {
     "message": {},
     "user": {}
@@ -38,13 +33,8 @@
     "SendMessages",
     "ViewChannel"
   ],
-  "middleware": [
-    {
-      "__path": "\\.robo\\build\\middleware\\analytics.js"
-    }
-  ],
+  "middleware": [],
   "scopes": [
-    "applications.commands",
     "bot"
   ]
 }

@@ -1,20 +1,27 @@
-export interface EventOptions {
-    category?: string;
-    label?: string;
-    numberOfExecution?: number;
-    user?: userData;
-    id?: number | string;
+interface CommonOptions {
+    action?: string;
+    url?: string;
+    domain?: string;
+    userID?: number | string;
+    actionType?: string;
+    type?: string;
+    name: string;
+    data?: unknown;
 }
-interface userData {
-    name?: string;
-    id?: string | number;
-    email?: string;
+export interface EventOptions extends CommonOptions {
 }
-export declare abstract class BaseAnalytics {
-    abstract event(options: EventOptions): Promise<void>;
+export interface ViewOptions extends CommonOptions {
+    element?: string;
+    elementIdentifier?: string;
 }
-export declare function setAnalytics(analytics: BaseAnalytics): void;
-export declare const Analytics: {
-    event: (options: EventOptions) => Promise<void>;
-};
+export declare abstract class BaseEngine {
+    abstract event(options: EventOptions): Promise<void> | void;
+    abstract view(page: string, options: ViewOptions): Promise<void> | void;
+}
+export declare function setAnalytics(analytics: BaseEngine): void;
+export declare const Analytics: Readonly<{
+    event: (options: EventOptions) => void | Promise<void>;
+    view: (page: string, options: ViewOptions) => void | Promise<void>;
+    isReady: () => boolean;
+}>;
 export {};
