@@ -7,6 +7,10 @@ interface CommonOptions {
     type?: string;
     name: string;
     data?: unknown;
+    revenue?: {
+        currency: string;
+        amount: number | string;
+    };
 }
 export interface EventOptions extends CommonOptions {
 }

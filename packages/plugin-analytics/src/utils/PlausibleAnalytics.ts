@@ -5,18 +5,20 @@ export class PlausibleAnalytics extends BaseEngine {
 	private _PLAUSIBLE_DOMAIN = process.env.PLAUSIBLE_DOMAIN
 
 	public async view(page: string, options: ViewOptions): Promise<void> {
-		if (options.name === 'revenue' && typeof options.data === 'object') {
-			Object.assign(options, { revenue: { ...options.data } })
+		const temp = {
+			name: 'pageview',
+			url: options?.url ?? `https://${this._PLAUSIBLE_DOMAIN}${page}`,
+			domain: options?.domain ?? this._PLAUSIBLE_DOMAIN
 		}
 
-		if (options.name === 'props' && typeof options.data === 'object') {
-			Object.assign(options, { props: { ...options.data } })
-		}
-		const temp = {
-			...options,
-			name: 'pageview',
-			url: page,
-			domain: options?.domain ?? this._PLAUSIBLE_DOMAIN
+		if (typeof options.data === 'object') {
+			if (options.data !== null) {
+				if (Object.entries(options.data).length > 30) {
+					throw new Error('[Plausible] Cannot send an object with more than 30 fields.')
+				} else {
+					Object.assign(temp, { props: { ...options.data } })
+				}
+			}
 		}
 
 		const res = await fetch('https://plausible.io/api/event', {
@@ -38,31 +40,41 @@ export class PlausibleAnalytics extends BaseEngine {
 		if (!options) return
 
 		if (options.name === 'pageview') {
-			return logger.error(`Please use Analytics.view(${options.name}, ${options}).`)
+			return logger.error(`[Plausible]  Please use Analytics.view(${options.name}, ${options}).`)
 		}
 
-		if (!options.domain) {
-			return logger.error("Specify a domain to use Plausible's event.")
+		if (!options.domain && !this._PLAUSIBLE_DOMAIN) {
+			return logger.error("[Plausible]  Specify a domain to use Plausible's event.")
 		}
 		if (!options.url) {
-			return logger.error("Specify a URL to use Plausible's event.")
+			return logger.error("[Plausible]  Specify a URL to use Plausible's event.")
 		}
 		if (!options.name) {
-			return logger.error("Specify a name to use Plausible's event.")
-		}
-
-		if (options.name === 'revenue' && typeof options.data === 'object') {
-			Object.assign(options, { revenue: { ...options.data } })
-		}
-
-		if (options.name === 'props' && typeof options.data === 'object') {
-			Object.assign(options, { props: { ...options.data } })
+			return logger.error("[Plausible]  Specify a name to use Plausible's event.")
 		}
 
 		const temp = {
-			...options,
-			domain: options?.domain ?? process.env.PLAUSIBLE_DOMAIN
+			name: options.name,
+			url: options?.url ?? `https://${this._PLAUSIBLE_DOMAIN}/`,
+			domain: options?.domain ?? this._PLAUSIBLE_DOMAIN
 		}
+
+		if (options.revenue) {
+			const revenue = options.revenue
+			Object.assign(temp, { revenue })
+		}
+
+		if (typeof options.data === 'object') {
+			if (options.data !== null) {
+				if (Object.entries(options.data).length > 30) {
+					throw new Error('[Plausible] Cannot send an object with more than 30 fields.')
+				} else {
+					Object.assign(temp, { props: { ...options.data } })
+				}
+			}
+		}
+
+		logger.error(temp)
 
 		const res = await fetch('https://plausible.io/api/event', {
 			method: 'POST',
