@@ -62,7 +62,7 @@ export class PlausibleAnalytics extends BaseEngine {
 
 		if (options.revenue) {
 			const revenue = options.revenue
-			// we need the validAmount function to make sure the amount includes decimal points ! or it wont work.
+			// we need the validAmount function to make sure the amount includes decimal points or it wont work.
 			Object.assign(temp, { revenue: { currency: revenue.currency, amount: validAmount(revenue.amount) } })
 		}
 
@@ -75,8 +75,6 @@ export class PlausibleAnalytics extends BaseEngine {
 				}
 			}
 		}
-
-		logger.error(temp)
 
 		const res = await fetch('https://plausible.io/api/event', {
 			method: 'POST',
@@ -98,8 +96,7 @@ export class PlausibleAnalytics extends BaseEngine {
 function validAmount(amount: string | number) {
 	if (typeof amount === 'string') {
 		const decimal = amount.indexOf('.')
-		if (decimal !== -1) return amount
-		return amount + '.00'
+		return decimal !== -1 ? amount + '.00' : amount
 	}
-	return amount.toFixed(2)
+	return Number.isInteger(amount) ? amount.toFixed(2) : amount
 }

@@ -30,7 +30,10 @@ export class GoogleAnalytics extends BaseEngine {
 	}
 	public async event(options: EventOptions): Promise<void> {
 		if (isRequestValid(this._MEASURE_ID, this._TOKEN, options)) {
-			if (typeof options.data === 'object' && options.name !== 'pageview') {
+			if (options.name !== 'pageview') {
+				throw new Error(`[GoogleAnalytics] Please use pageview event with the Analytics.view() method`)
+			}
+			if (typeof options.data === 'object') {
 				const res = await fetch(
 					`https://www.google-analytics.com/mp/collect?measurement_id=${this._MEASURE_ID}&api_secret=${this._TOKEN}`,
 					{
@@ -86,10 +89,6 @@ function isRequestValid(
 
 	return true
 }
-
-// function isGoogleParam(option: unknown): option is { name: string; params: Record<string, unknown> } {
-// 	return option.name !== undefined && option.params !== undefined
-// }
 
 /**
  * 
