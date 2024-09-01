@@ -2,7 +2,7 @@ import { Command } from 'commander'
 import { Dirent } from 'node:fs'
 import { access, readFile, readdir, rename, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import { cmd, exec, getPackageManager } from '../core/utils.js'
+import { exec, getPackageManager } from '../core/utils.js'
 import { logger } from '../core/logger.js'
 import { select } from '@inquirer/prompts'
 import type { PackageJson } from '../core/types.js'
@@ -51,7 +51,7 @@ async function codemodAction() {
 
 	try {
 		if (!projectInfo.hasSWC) {
-			await exec(`${cmd(packageManager)} ${command} --save-dev @swc/core typescript`)
+			await exec(`${packageManager} ${command} --save-dev @swc/core typescript`)
 		}
 		const tsFileExist = await access(tsconfigPath)
 			.then(() => true)

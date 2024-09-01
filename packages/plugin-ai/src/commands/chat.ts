@@ -26,5 +26,10 @@ export default async (interaction: ChatInputCommandInteraction) => {
 		showTyping: false
 	})
 
-	return reply
+	return {
+		components: reply.components,
+		content: reply.text,
+		embeds: reply.embeds,
+		files: reply.files
+	}
 }

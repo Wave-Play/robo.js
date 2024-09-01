@@ -23,7 +23,7 @@ import type { AssistantData } from '@/engines/openai/assistant.js'
 import type { File, Message } from '@/engines/openai/types.js'
 import type { Command } from 'robo.js'
 
-const DEFAULT_MODEL = 'gpt-3.5-turbo'
+const DEFAULT_MODEL = 'gpt-4-turbo'
 
 /**
  * AI engine powered by OpenAI.
@@ -48,9 +48,11 @@ export class OpenAiEngine extends BaseEngine {
 		const {
 			functions = this._gptFunctions,
 			model = pluginOptions?.model ?? DEFAULT_MODEL,
+			temperature = pluginOptions?.temperature,
 			threadId,
 			userId
 		} = options ?? {}
+		const { pollDelay = 1_000 } = pluginOptions
 
 		// Use the assistant if it's available
 		if (this._assistant && threadId) {
@@ -134,7 +136,7 @@ export class OpenAiEngine extends BaseEngine {
 			// Wait for the run to complete
 			try {
 				while (['queued', 'in_progress'].includes(run.status)) {
-					await new Promise((resolve) => setTimeout(resolve, 400))
+					await new Promise((resolve) => setTimeout(resolve, pollDelay))
 					run = await openai.getRun({
 						run_id: run.id,
 						thread_id: thread.id
@@ -158,6 +160,7 @@ export class OpenAiEngine extends BaseEngine {
 							}
 						}
 					} else if (run.status === 'failed') {
+						logger.error(`Run failed:`, run)
 						throw new Error(`Run failed: ${run}`)
 					} else if (run.status === 'requires_action') {
 						const functionCall = run.required_action?.submit_tool_outputs.tool_calls[0]
@@ -191,7 +194,8 @@ export class OpenAiEngine extends BaseEngine {
 			max_tokens: pluginOptions?.maxTokens,
 			model: model,
 			messages: messages,
-			functions: functions
+			functions: functions,
+			temperature: temperature
 		})
 		logger.debug(`GPT Response:`, response)
 
@@ -265,6 +269,12 @@ async function loadAssistant(functions?: ChatFunction[]): Promise<Assistant | nu
 		model: pluginOptions?.model ?? DEFAULT_MODEL,
 		name: roboPackageJson?.name ?? path.basename(process.cwd()),
 		tools: []
+	}
+
+	// TODO: Add support for Assistants v2
+	if (assistantData.model === 'gpt-4o') {
+		assistantData.model = DEFAULT_MODEL
+		logger.debug('Model', color.bold('gpt-4o'), 'is not supported yet. Using', color.bold(DEFAULT_MODEL), 'instead.')
 	}
 
 	// See if we've already created an assistant for this Robo

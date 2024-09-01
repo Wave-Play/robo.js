@@ -1,11 +1,11 @@
 import { handlePublicFile } from '~/core/handler.js'
 import { logger } from '../core/logger.js'
+import { RoboRequest, applyParams } from '~/core/robo-request.js'
 import { BaseEngine } from './base.js'
-import { RoboResponse } from '~/core/robo-response.js'
 import { createReadStream } from 'node:fs'
 import url from 'node:url'
 import { color, composeColors } from 'robo.js'
-import type { HttpMethod, RoboReply, RoboRequest, RouteHandler } from '../core/types.js'
+import type { RoboReply, RouteHandler } from '../core/types.js'
 import type { InitOptions, StartOptions } from './base.js'
 import type { FastifyInstance } from 'fastify'
 import type { ViteDevServer } from 'vite'
@@ -19,6 +19,17 @@ export class FastifyEngine extends BaseEngine {
 		const { fastify } = await import('fastify')
 		this._server = fastify()
 		this._vite = options.vite
+
+		this._server.removeAllContentTypeParsers()
+		this._server.addContentTypeParser('*', (_req, payload, done) => {
+			const chunks: Buffer[] = []
+			payload.on('data', (chunk) => {
+				chunks.push(chunk)
+			})
+			payload.on('end', () => {
+				done(null, Buffer.concat(chunks))
+			})
+		})
 
 		this._server.setErrorHandler((error, _request, reply) => {
 			logger.error(error)
@@ -49,15 +60,12 @@ export class FastifyEngine extends BaseEngine {
 						return
 					}
 				} catch (error) {
-					if (error instanceof RoboResponse) {
-						if (error?.status >= 400) {
-							logger.error(error)
-						}
-
-						Object.entries(error.headers ?? {}).forEach(([key, value]) => {
-							reply.header(key, value)
-						})
-						reply.code(error.status ?? 500).send(error.data ?? error.message)
+					if (error instanceof Response) {
+						reply.send(error)
+						return
+					} else if (error instanceof Error) {
+						logger.error(error)
+						reply.code(500).send(error.message ?? 'Server encountered an error.')
 						return
 					} else {
 						logger.error(error)
@@ -81,54 +89,85 @@ export class FastifyEngine extends BaseEngine {
 	}
 
 	public registerRoute(path: string, handler: RouteHandler): void {
-		this._server.all(path, async (request, reply) => {
-			// Prepare request and reply wrappers for easier usage
-			const requestWrapper: RoboRequest = {
-				req: request.raw,
-				body: request.body as Record<string, unknown>,
-				method: request.method as HttpMethod,
-				query: request.query as Record<string, string>,
-				params: request.params as Record<string, string>
-			}
+		this._server.route({
+			method: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'],
+			url: path,
+			handler: async (request, reply) => {
+				// Prepare request and reply wrappers for easier usage
+				const requestWrapper = await RoboRequest.from(request.raw, { body: request.body as Buffer })
+				applyParams(requestWrapper, request.params as Record<string, string>)
+				const replyWrapper: RoboReply = {
+					raw: reply.raw,
+					hasSent: false,
+					code: function (statusCode: number) {
+						reply.code(statusCode)
+						return this
+					},
+					json: function (data: unknown) {
+						reply.header('Content-Type', 'application/json').send(JSON.stringify(data))
+						this.hasSent = true
+						return this
+					},
+					send: function (data: Response | string) {
+						if (data instanceof Response) {
+							reply.hijack()
 
-			const replyWrapper: RoboReply = {
-				res: reply.raw,
-				hasSent: false,
-				code: function (statusCode: number) {
-					reply.code(statusCode)
-					return this
-				},
-				json: function (data: unknown) {
-					reply.header('Content-Type', 'application/json').send(JSON.stringify(data))
-					this.hasSent = true
-					return this
-				},
-				send: function (data: string) {
-					reply.send(data)
-					this.hasSent = true
-					return this
-				},
-				header: function (name: string, value: string) {
-					reply.header(name, value)
-					return this
+							if (data.status >= 400) {
+								logger.error(data)
+							}
+
+							data.headers.forEach(([key, value]) => {
+								reply.header(key, value)
+							})
+
+							this.raw.statusCode = data.status
+							data.text().then((text) => {
+								reply.raw.end(text)
+							})
+						} else {
+							reply.send(data)
+						}
+						this.hasSent = true
+						return this
+					},
+					header: function (name: string, value: string) {
+						reply.header(name, value)
+						return this
+					}
 				}
-			}
 
-			try {
-				logger.debug(color.bold(request.method), request.raw.url)
-				const result = await handler(requestWrapper, replyWrapper)
+				try {
+					logger.debug(color.bold(request.method), request.raw.url)
+					const result = await handler(requestWrapper, replyWrapper)
 
-				if (!replyWrapper.hasSent && result) {
-					replyWrapper.code(200).json(result)
+					if (!replyWrapper.hasSent && result instanceof Response) {
+						replyWrapper.send(result)
+					} else if (!replyWrapper.hasSent && result) {
+						replyWrapper.code(200).json(result)
+					}
+				} catch (error) {
+					if (error instanceof Response) {
+						replyWrapper.send(error)
+					} else if (error instanceof Error) {
+						logger.error(error)
+						replyWrapper.code(500).json({
+							ok: false,
+							errors: Array.isArray(error) ? error.map((e) => e.message) : [error.message]
+						})
+					} else {
+						logger.error(error)
+						replyWrapper.code(500).json({
+							ok: false,
+							errors: ['Server encountered an error.']
+						})
+					}
 				}
-			} catch (error) {
-				logger.error(error)
-				replyWrapper.code(500).json({
-					ok: false,
-					errors: Array.isArray(error) ? error.map((e) => e.message) : [error.message]
-				})
 			}
 		})
+	}
+
+	public registerWebsocket(): void {
+		logger.warn(`Websockets are not supported in Fastify engine yet.`)
 	}
 
 	public setupVite(vite: ViteDevServer) {
@@ -136,7 +175,7 @@ export class FastifyEngine extends BaseEngine {
 	}
 
 	public async start(options: StartOptions): Promise<void> {
-		const { port } = options
+		const { hostname, port } = options
 
 		return new Promise((resolve) => {
 			const run = async () => {
@@ -148,8 +187,8 @@ export class FastifyEngine extends BaseEngine {
 
 				// Start server
 				this._isRunning = true
-				this._server.listen({ port }, () => {
-					logger.ready(`Fastify server is live at`, composeColors(color.bold, color.blue)(`http://localhost:${port}`))
+				this._server.listen({ host: hostname, port }, () => {
+					logger.ready(`Fastify server is live at`, composeColors(color.bold, color.blue)(`http://${hostname ?? 'localhost'}:${port}`))
 					resolve()
 				})
 			}

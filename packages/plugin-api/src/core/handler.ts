@@ -1,3 +1,4 @@
+import { RoboRequest, applyParams } from './robo-request.js'
 import { RoboResponse } from './robo-response.js'
 import { logger } from './logger.js'
 import { pluginOptions } from '../events/_start.js'
@@ -8,23 +9,18 @@ import { IncomingMessage, ServerResponse } from 'node:http'
 import path from 'node:path'
 import { pipeline } from 'node:stream/promises'
 import url from 'node:url'
-import { parse } from 'node:querystring'
 import { color } from 'robo.js'
 import type { Router } from './router.js'
-import type { HttpMethod, RoboReply, RoboRequest } from './types.js'
+import type { RoboReply } from './types.js'
 import type { UrlWithParsedQuery } from 'node:url'
 import type { ViteDevServer } from 'vite'
 
-const MAX_BODY_SIZE = 5 * 1024 * 1024 // 5MB
-const BodyMethods = ['PATCH', 'POST', 'PUT']
 const PublicPath = path.join(process.cwd(), 'public')
 const PublicBuildPath = path.join(process.cwd(), '.robo', 'public')
 
 export type ServerHandler = (req: IncomingMessage, res: ServerResponse<IncomingMessage>) => Promise<void> | void
 
 export function createServerHandler(router: Router, vite?: ViteDevServer): ServerHandler {
-	const { parseBody = true } = pluginOptions
-
 	return async (req: IncomingMessage, res: ServerResponse<IncomingMessage>) => {
 		const parsedUrl = url.parse(req.url, true)
 
@@ -42,55 +38,58 @@ export function createServerHandler(router: Router, vite?: ViteDevServer): Serve
 			}
 		}
 
-		// Parse request body if applicable
-		let body: Record<string, unknown>
-
-		if (parseBody && BodyMethods.includes(req.method)) {
-			try {
-				body = await getRequestBody(req)
-			} catch (err) {
-				logger.error(`Error in parsing request body: ${err}`)
-				res.statusCode = 400
-				res.end('Invalid request body.')
-				return
-			}
-		}
-
 		// Prepare request and reply wrappers for easier usage
-		const requestWrapper: RoboRequest = {
-			req,
-			body: body,
-			method: req.method as HttpMethod,
-			query: {},
-			params: {} // to be filled by the route handler
-		}
-
-		// Parse query string if applicable
-		const queryIndex = req.url?.indexOf('?') ?? -1
-		if (queryIndex !== -1) {
-			requestWrapper.query = parse(req.url.substring(queryIndex + 1))
-		}
+		const requestWrapper = await RoboRequest.from(req)
 
 		const replyWrapper: RoboReply = {
-			res,
+			raw: res,
 			hasSent: false,
 			code: function (statusCode: number) {
-				this.res.statusCode = statusCode
+				this.raw.statusCode = statusCode
 				return this
 			},
 			json: function (data: unknown) {
-				this.res.setHeader('Content-Type', 'application/json')
-				this.res.end(JSON.stringify(data))
+				this.raw.setHeader('Content-Type', 'application/json')
+				this.raw.end(JSON.stringify(data))
 				this.hasSent = true
 				return this
 			},
-			send: function (data: string) {
-				this.res.end(data)
+			send: function (data: Response | string) {
+				if (data instanceof Response) {
+					if (data.status >= 400) {
+						logger.error(data)
+					}
+
+					data.headers.forEach((value, key) => {
+						this.raw.setHeader(key, value)
+					})
+					this.raw.statusCode = data.status
+
+					// Stream the response body
+					const reader = data.body.getReader()
+					const read = async () => {
+						while (true) {
+							const { done, value } = await reader.read()
+
+							if (done) {
+								break
+							} else {
+								this.raw.write(value)
+							}
+						}
+					}
+
+					read().then(() => {
+						this.raw.end()
+					})
+				} else {
+					this.raw.end(data)
+				}
 				this.hasSent = true
 				return this
 			},
 			header: function (name: string, value: string) {
-				this.res.setHeader(name, value)
+				this.raw.setHeader(name, value)
 				return this
 			}
 		}
@@ -98,7 +97,9 @@ export function createServerHandler(router: Router, vite?: ViteDevServer): Serve
 		// Find matching route and execute handler
 		logger.debug(color.bold(req.method), req.url)
 		const route = router.find(parsedUrl.pathname)
-		requestWrapper.params = route?.params ?? {}
+		if (route) {
+			applyParams(requestWrapper, route.params)
+		}
 
 		// If Vite is available, forward the request to Vite
 		if (!route?.handler && vite) {
@@ -121,15 +122,8 @@ export function createServerHandler(router: Router, vite?: ViteDevServer): Serve
 					return
 				}
 			} catch (error) {
-				if (error instanceof RoboResponse) {
-					if (error?.status >= 400) {
-						logger.error(error)
-					}
-	
-					Object.entries(error.headers ?? {}).forEach(([key, value]) => {
-						replyWrapper.header(key, value)
-					})
-					replyWrapper.code(error.status ?? 500).json(error.data ?? error.message)
+				if (error instanceof Response) {
+					replyWrapper.send(error)
 				} else {
 					logger.error(error)
 				}
@@ -144,19 +138,14 @@ export function createServerHandler(router: Router, vite?: ViteDevServer): Serve
 		try {
 			const result = await route.handler(requestWrapper, replyWrapper)
 
-			if (!replyWrapper.hasSent && result) {
+			if (!replyWrapper.hasSent && result instanceof Response) {
+				replyWrapper.send(result)
+			} else if (!replyWrapper.hasSent && result) {
 				replyWrapper.code(200).json(result)
 			}
 		} catch (error) {
-			if (error instanceof RoboResponse) {
-				if (error?.status >= 400) {
-					logger.error(error)
-				}
-
-				Object.entries(error.headers ?? {}).forEach(([key, value]) => {
-					replyWrapper.header(key, value)
-				})
-				replyWrapper.code(error.status ?? 500).json(error.data ?? error.message)
+			if (error instanceof Response) {
+				replyWrapper.send(error)
 			} else if (error instanceof Error) {
 				logger.error(error)
 				replyWrapper.code(500).json(error.message ?? 'Server encountered an error.')
@@ -166,35 +155,6 @@ export function createServerHandler(router: Router, vite?: ViteDevServer): Serve
 			}
 		}
 	}
-}
-
-export async function getRequestBody(req: IncomingMessage): Promise<Record<string, unknown>> {
-	return new Promise((resolve, reject) => {
-		let body = ''
-		let size = 0
-		req.on('data', (chunk) => {
-			size += chunk.length
-			if (size > MAX_BODY_SIZE) {
-				reject(new Error('Request body is too large'))
-				return
-			}
-			body += chunk
-		})
-		req.on('end', () => {
-			// It's okay to have empty body <3
-			if (!body) {
-				resolve({})
-				return
-			}
-
-			try {
-				const parsedBody = JSON.parse(body)
-				resolve(parsedBody)
-			} catch (err) {
-				reject(new Error('Invalid JSON data'))
-			}
-		})
-	})
 }
 
 export async function handlePublicFile(
@@ -208,10 +168,14 @@ export async function handlePublicFile(
 	// Check if the requested path is within the public folder to guard against directory traversal
 	if (!filePath.startsWith(publicPath)) {
 		logger.warn(`Requested path is outside the public folder. Denying access...`)
-		throw new RoboResponse({
-			status: 403,
-			message: 'Access Denied'
-		})
+		throw RoboResponse.json(
+			{
+				message: 'Access Denied'
+			},
+			{
+				status: 403
+			}
+		)
 	}
 
 	// See if the file exists

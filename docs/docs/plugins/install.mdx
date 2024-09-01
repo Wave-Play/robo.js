@@ -1,0 +1,85 @@
+import { Card } from '@site/src/components/shared/Card'
+import { CardContainer } from '@site/src/components/shared/CardContainer'
+import { Terminal } from '@site/src/components/shared/Terminal'
+
+# 🔌 Installing Plugins
+
+**Robo.js** plugins are NPM packages at heart, but also need to be registered in your Robo's **[configuration](../robojs/config)**.
+
+You can install and manage plugins in **Robo.js** either using the **[Robo CLI](../cli/robo)** or manually.
+
+## Using Robo CLI
+
+The **Robo CLI** has its own commands install the plugin's **NPM package** and **register it** in your Robo's **[configuration](../robojs/config)**.
+
+When dealing with NPM packages, **Robo CLI** will use the executor command's package manager.
+
+| Command         | Package Manager |
+| --------------- | --------------- |
+| `npx robo add`  | `npm install`   |
+| `pnpm robo add` | `pnpm add`      |
+| `yarn robo add` | `yarn add`      |
+| `bun robo add`  | `bun add`       |
+
+### Install
+
+Run in your terminal, replacing `<package>` with the name of the plugin you want to install (e.g. **[@robojs/ai](./ai)**):
+
+<Terminal execute>robo add {'package'}</Terminal>
+
+This will install the package and register it in your Robo's **[configuration](../robojs/config)**. To install many at once:
+
+<Terminal execute>robo add @robojs/ai @robojs/server</Terminal>
+
+You can also create a new Robo project with plugins pre-installed:
+
+<Terminal create>{'<projectName>'} --plugins @robojs/ai @robojs/server</Terminal>
+
+### Uninstall
+
+To remove a plugin:
+
+<Terminal execute>robo remove {'<package>'}</Terminal>
+
+This will uninstall the package and remove it from your Robo's **[configuration](../robojs/config)**.
+
+### Updates
+
+You can use `robo upgrade` to not only update **Robo.js** itself, but also all installed plugins.
+
+<Terminal execute>robo upgrade</Terminal>
+
+This will show you a list of updates and changelogs for you to select.
+
+## Manually
+
+Don't want to use the **Robo CLI**? You can still install plugins manually. It's not as convenient as using the **Robo CLI**, but it's still a straightforward process.
+
+Here's how you can do it.
+
+### Package Manager
+
+Use the package manager of your choice to install the plugin:
+
+<Terminal install>{'<package>'}</Terminal>
+
+### Register Plugin
+
+**Robo.js** knows which plugins to use by looking the `/config/plugins` directory. 
+
+For each plugin you want, create an `.mjs` file in `/config/plugins` with the same name as the plugin's package. The file should export the plugin's configuration.
+
+```javascript title="config/plugins/<package>.mjs"
+export default {
+	// ... plugin configuration
+}
+```
+
+Remember to delete the file if you uninstall the plugin.
+
+## Learn More
+
+<CardContainer>
+	<Card href="./create" title="🔌 Creating Plugins" description="Make your own plugins for Robo.js." />
+	<Card href="./directory" title="🗃️ Plugin Directory" description="Browse plugins for your Robo." />
+</CardContainer>

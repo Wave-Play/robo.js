@@ -2,7 +2,7 @@ import { PackageJson } from './../core/types.js'
 import { findPackagePath } from 'robo.js/dist/cli/utils/utils.js'
 import { Command } from 'commander'
 import { logger } from '../core/logger.js'
-import { checkSageUpdates, checkUpdates, cmd, exec, getPackageManager } from '../core/utils.js'
+import { checkSageUpdates, checkUpdates, exec, getPackageManager } from '../core/utils.js'
 import { loadConfig } from 'robo.js/dist/core/config.js'
 import { prepareFlashcore } from 'robo.js/dist/core/flashcore.js'
 import { color, composeColors } from '../core/color.js'
@@ -56,9 +56,91 @@ async function upgradeAction(options: UpgradeOptions) {
 	const packageJson: PackageJson = JSON.parse(await readFile(packageJsonPath, 'utf-8'))
 	logger.debug(`Package JSON:`, packageJson)
 	const update = await checkUpdates(packageJson, config, true)
-	logger.debug(`Update payload:`, update)*/
+	logger.debug(`Update payload:`, update)
 
-	await updateRobo(plugins, config);
+	// Exit if there are no updates
+	if (!update.hasUpdate) {
+		logger.ready(`Your Robo is up to date! 🎉`)
+		return
+	}
+
+	// Let user choose whether to upgrade or show changelog
+	const upgradeOptions = [
+		{ name: 'Yes, upgrade!', value: 'upgrade' },
+		{ name: 'Cancel', value: 'cancel' }
+	]
+	if (update.changelogUrl) {
+		upgradeOptions.splice(1, 0, { name: 'Read changelog', value: 'changelog' })
+	}
+
+	logger.info(
+		composeColors(color.green, color.bold)(`A new version of Robo.js is available!`),
+		color.dim(`(v${update.currentVersion} -> v${update.latestVersion})`)
+	)
+	logger.log('')
+	const upgradeChoice = await select({
+		message: 'Would you like to upgrade?',
+		choices: upgradeOptions
+	})
+	logger.log('')
+	logger.debug(`Upgrade choice:`, upgradeChoice)
+
+	// Exit if user cancels
+	if (upgradeChoice === 'cancel') {
+		logger.info(`Cancelled upgrade.`)
+		return
+	}
+
+	// Show changelog
+	if (upgradeChoice === 'changelog') {
+		const changelog = await getChangelog(update.changelogUrl)
+		printChangelog(changelog)
+
+		// Let user choose whether to upgrade or not
+		const upgrade = await select({
+			message: 'So, would you like to upgrade?',
+			choices: [
+				{ name: 'Yes, upgrade!', value: true },
+				{ name: 'Cancel', value: false }
+			]
+		})
+		logger.log('')
+
+		// Exit if user cancels
+		if (!upgrade) {
+			logger.info(`Cancelled upgrade.`)
+			return
+		}
+	}
+
+	// Update with the same package manager
+	const packageManager = getPackageManager()
+	const command = packageManager === 'npm' ? 'install' : 'add'
+	logger.debug(`Package manager:`, packageManager)
+
+	await exec(`${packageManager} ${command} robo.js@${update.latestVersion}`)
+
+	// Check what needs to be changed
+	const data = await check(update.latestVersion)
+	logger.debug(`Check data:`, data)
+
+	if (data.breaking.length === 0 && data.suggestions.length === 0) {
+		logger.info(`No changes to apply.`)
+	} else {
+		// Let user choose which changes to apply
+		const changes = await checkbox({
+			message: 'Which changes would you like to apply?',
+			choices: [
+				...data.breaking.map((change) => ({ name: change.name, value: change })),
+				new Separator(),
+				...data.suggestions.map((change) => ({ name: change.name, value: change }))
+			]
+		})
+		logger.log('')
+		await execute(changes)
+	}
+
+	logger.ready(`Successfully upgraded to v${update.latestVersion}! 🎉`)
 }
 
 interface Changelog {

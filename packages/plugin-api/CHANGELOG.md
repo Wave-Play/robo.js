@@ -1,5 +1,66 @@
 # @roboplay/plugin-api
 
+## 0.5.5
+
+### Patch Changes
+
+- 3ee7a85: feat: customizable hostname
+
+## 0.5.4
+
+### Patch Changes
+
+- 3dfc67e: feat: seed boilerplate files
+
+## 0.5.3
+
+### Patch Changes
+
+- 694a680: fix: copy custom headers correctly in node engine
+- dfc4180: refactor: stream binary data into raw response
+
+## 0.5.2
+
+### Patch Changes
+
+- 3db1f28: patch: fixed 404 params
+
+## 0.5.1
+
+### Patch Changes
+
+- a1fbe72: patch: updated fastify engine to support new robo response
+- 9821ac4: fix: robo request params
+
+## 0.5.0
+
+### Minor Changes
+
+- 890b71d: refactor!: renamed `.req` and `.res` accessors to `.raw`
+- eb3867a: refactor!: RoboResponse now extends Response instead of Error
+- 890b71d: refactor!: RoboRequest now extends Request
+
+## 0.4.5
+
+### Patch Changes
+
+- 0113987: feat: prevent vite hmr from being hijacked by default
+- 0748de7: feat: `registerWebsocket` engine function
+
+## 0.4.4
+
+### Patch Changes
+
+- 7490206: feat: `ready` utility function
+- 2bf83fe: feat: `getServerEngine` utility function
+
+## 0.4.3
+
+### Patch Changes
+
+- a73732e: refactor: use /hmr path for vite by default
+- 5db2da4: patch: export correct paths in `engines.js` module
+
 ## 0.4.2
 
 ### Patch Changes

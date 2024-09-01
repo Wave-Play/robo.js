@@ -1,5 +1,137 @@
 # create-robo
 
+## 0.12.10
+
+### Patch Changes
+
+- 5766124: patch: discord.js now normal dependency to appease yarn
+
+## 0.12.9
+
+### Patch Changes
+
+- Updated dependencies [fa321f6]
+- Updated dependencies [a5ae699]
+- Updated dependencies [ed2734b]
+- Updated dependencies [70b477e]
+- Updated dependencies [65809a6]
+- Updated dependencies [d22fbfa]
+- Updated dependencies [0cae688]
+  - robo.js@0.10.13
+
+## 0.12.8
+
+### Patch Changes
+
+- Updated dependencies [361e3d8]
+  - robo.js@0.10.12
+
+## 0.12.7
+
+### Patch Changes
+
+- Updated dependencies [2f939d5]
+- Updated dependencies [61b98a2]
+  - robo.js@0.10.11
+
+## 0.12.6
+
+### Patch Changes
+
+- Updated dependencies [ca8ddd7]
+- Updated dependencies [7093bf4]
+  - robo.js@0.10.10
+
+## 0.12.5
+
+### Patch Changes
+
+- 4f89a53: chore: explicitly use utf-8 encoding
+
+## 0.12.4
+
+### Patch Changes
+
+- d48323e: fix(create-robo): no creds flag.
+- d48323e: feat(create-robo): `--no-creds` option
+- 01a5388: chore: updated activity templates for new server plugin versions
+
+## 0.12.3
+
+### Patch Changes
+
+- d9419e3: feat(create-robo): `--no-creds` option
+
+## 0.12.2
+
+### Patch Changes
+
+- Updated dependencies [c43ff79]
+  - robo.js@0.10.9
+
+## 0.12.1
+
+### Patch Changes
+
+- 8139a1b: fix: spawn commands in shell on Windows (CVE-2024-27980)
+
+## 0.12.0
+
+### Minor Changes
+
+- 9b7c3c6: refactor: use simpler executor commands for pnpm and yarn
+- 02431a6: feat: support for webapp creation
+- aeed55e: chore: removed built-in colyseus template
+
+### Patch Changes
+
+- 5c62661: refactor: no longer encourage MessageContent for bots by default
+- ed2731f: chore: debug logs for template copy process
+- bb43519: refactor: updated eslint usage for v9
+
+## 0.11.14
+
+### Patch Changes
+
+- Updated dependencies [bf6db2e]
+  - robo.js@0.10.8
+
+## 0.11.13
+
+### Patch Changes
+
+- c120a28: chore: updated default plugin readme
+- Updated dependencies [d6138ef]
+  - robo.js@0.10.7
+
+## 0.11.12
+
+### Patch Changes
+
+- 275daff: chore: added new `@robojs/sync` plugin option for activities
+
+## 0.11.11
+
+### Patch Changes
+
+- 1251a1d: patch: don't show `colyseus` preset for normal bots
+- f09e986: chore: renamed default openai .env variable
+- Updated dependencies [838ed5d]
+- Updated dependencies [6a4473d]
+  - robo.js@0.10.6
+
+## 0.11.10
+
+### Patch Changes
+
+- 4bd78da: feat: added colyseus as an optional feature for apps
+- 9d3ff73: chore: include additional paths in watcher ignore for apps by default
+- ddf6792: chore: added link to tutorial for discord activities
+- 8da6b26: feat: `activity` alias for `app`
+- Updated dependencies [7450631]
+- Updated dependencies [7159c94]
+  - robo.js@0.10.5
+
 ## 0.11.9
 
 ### Patch Changes

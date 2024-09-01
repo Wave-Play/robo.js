@@ -1,7 +1,6 @@
 import { color } from '../../core/color.js'
 import { logger } from '../../core/logger.js'
 
-
 export interface Option {
 	alias: string
 	name: string
@@ -16,6 +15,7 @@ export class Command {
 	private _commands: Command[] = []
 	private _version?: string
 	private _positionalArgs?: boolean
+	private _allowSpacesInOptions: boolean = true
 	protected _parent?: Command
 
 	constructor(name: string) {
@@ -34,6 +34,17 @@ export class Command {
 	public addCommand(command: Command): this {
 		this._commands.push(command)
 		command._parent = this
+		return this
+	}
+
+	/**
+	 * Enable or disable spaces in options.
+	 *
+	 * @param {boolean} allow - Boolean to allow or disallow spaces in option values.
+	 * @returns {Command} - Returns the current Command object for chaining.
+	 */
+	public allowSpacesInOptions(allow: boolean): this {
+		this._allowSpacesInOptions = allow
 		return this
 	}
 
@@ -63,8 +74,8 @@ export class Command {
 	 * @param {boolean} positionalArg - positionalArgs boolean.
 	 * @returns {Command} - Returns the current Command object for chaining.
 	 */
-	public positionalArgs(positionalArg: boolean): this{
-		this._positionalArgs = positionalArg;
+	public positionalArgs(positionalArg: boolean): this {
+		this._positionalArgs = positionalArg
 		return this
 	}
 
@@ -180,33 +191,49 @@ export class Command {
 	 */
 	private parseOptions(args: string[]): Record<string, unknown> {
 		const options: Record<string, unknown> = {}
+		let i = 0
 
-		for (let i = 0; i < args.length; i++) {
+		while (i < args.length) {
 			const arg = args[i]
-			const nextArg = args[i + 1]
 
 			if (arg.startsWith('--')) {
 				const option = this._options.find((opt) => opt.name === arg)
-
 				if (option) {
-					if (nextArg && !nextArg.startsWith('-')) {
-						options[arg.slice(2)] = nextArg
-						i++ // Skip value since we used it
+					if (this._allowSpacesInOptions && i + 1 < args.length && !args[i + 1].startsWith('-')) {
+						let value = args[i + 1]
+						i += 2 // Move past the option and its value
+						while (i < args.length && !args[i].startsWith('-')) {
+							value += ` ${args[i]}`
+							i++
+						}
+						options[arg.slice(2)] = value
 					} else {
 						options[arg.slice(2)] = true
+						i++
 					}
+				} else {
+					i++
 				}
 			} else if (arg.startsWith('-')) {
 				const option = this._options.find((opt) => opt.alias === arg)
-
 				if (option) {
-					if (nextArg && !nextArg.startsWith('-')) {
-						options[option.name.slice(2)] = nextArg
-						i++ // Skip value since we used it
+					if (this._allowSpacesInOptions && i + 1 < args.length && !args[i + 1].startsWith('-')) {
+						let value = args[i + 1]
+						i += 2 // Move past the option and its value
+						while (i < args.length && !args[i].startsWith('-')) {
+							value += ` ${args[i]}`
+							i++
+						}
+						options[option.name.slice(2)] = value
 					} else {
 						options[option.name.slice(2)] = true
+						i++
 					}
+				} else {
+					i++
 				}
+			} else {
+				i++
 			}
 		}
 

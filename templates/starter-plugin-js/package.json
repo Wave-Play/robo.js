@@ -1,0 +1,48 @@
+{
+	"name": "starter-plugin-js",
+	"description": "",
+	"version": "1.0.0",
+	"type": "module",
+	"private": false,
+	"keywords": [
+		"bot",
+		"discord",
+		"discord.js",
+		"javascript",
+		"robo",
+		"robo.js"
+	],
+	"main": ".robo/build/index.js",
+	"license": "MIT",
+	"author": "Your Name <email>",
+	"contributors": [
+		"Your Name <email>"
+	],
+	"files": [
+		".robo/",
+		"src/",
+		"LICENSE",
+		"README.md"
+	],
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://registry.npmjs.org/"
+	},
+	"scripts": {
+		"build": "robo build plugin",
+		"dev": "robo build plugin --watch",
+		"prepublishOnly": "robo build plugin"
+	},
+	"devDependencies": {
+		"discord.js": "^14.15.3",
+		"robo.js": "^0.10.9"
+	},
+	"peerDependencies": {
+		"robo.js": "^0.10.1"
+	},
+	"peerDependenciesMeta": {
+		"robo.js": {
+			"optional": false
+		}
+	}
+}

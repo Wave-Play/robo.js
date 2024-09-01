@@ -1,20 +1,13 @@
-interface RoboResponseOptions {
-	data?: unknown
-	headers?: Record<string, string>
-	message: string
-	status?: number
-}
+/**
+ * Extends the [Web Response API](https://developer.mozilla.org/docs/Web/API/Response) with additional convenience methods.
+ */
+export class RoboResponse extends Response {
+	constructor(body?: BodyInit, init?: ResponseInit) {
+		super(body, init)
+	}
 
-export class RoboResponse extends Error {
-	public readonly data: unknown | undefined
-	public readonly headers: Record<string, string> | undefined
-	public readonly status: number | undefined
-
-	constructor(options: RoboResponseOptions) {
-		super()
-		this.data = options.data
-		this.headers = options.headers
-		this.message = options.message
-		this.status = options.status
+	public static json<JsonBody>(body: JsonBody, init?: ResponseInit): RoboResponse {
+		const response: Response = Response.json(body, init)
+		return new RoboResponse(response.body, response)
 	}
 }

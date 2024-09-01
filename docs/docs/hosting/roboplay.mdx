@@ -1,0 +1,80 @@
+import { Card } from '@site/src/components/shared/Card'
+import { CardContainer } from '@site/src/components/shared/CardContainer'
+
+# 🚀 RoboPlay
+
+Robo.js is built to work seamlessly with **[RoboPlay](https://roboplay.dev)**, a **[WavePlay](https://waveplay.com)** service. They were built for each other from the ground up to make deploying and managing your Robo.js projects as easy as possible.
+
+Looking to self-host? Check out the **[Self-Hosting](./self-host)** section!
+
+## Deploying
+
+Just run this one command:
+
+```bash
+npx robo deploy
+```
+
+This command will optimize your project and host it on RoboPlay. First-time deployers will be guided through a quick setup process, and you'll be up and running in no time!
+
+The same command can be used to update your Robo. Feel free to run this command anytime you want to push new updates.
+
+## Features
+
+RoboPlay offers **Pods**, which are like virtual private servers (VPS) for your Robo. Currently, each RoboPlay account comes with 1 free Beta Pod. Want more? We'll be offering additional Pods for a small fee in the future.
+
+### Checking Status
+
+To check the status of RoboPlay and your deployed Robos, run:
+
+```bash
+npx robo cloud status
+```
+
+This will let you know if your Robos are up and running, or if there are any issues. You can also check our **[status page](https://status.roboplay.dev)** for updates.
+
+> **Note:** Pods live independently from our main RoboPlay infrastructure, so rest assured that your Robos will stay up and running even if RoboPlay itself experiences downtime.
+
+### Managing Pods
+
+You can manage your pods with the command:
+
+```bash
+npx robo cloud stop
+```
+
+This will stop your selected pod and bring your Robo offline. Stopping your pod will _not_ delete any data, so you can start it back up whenever you're ready.
+
+To start it back up, run:
+
+```bash
+npx robo cloud start
+```
+
+And that's it! Your Robo will be back online and ready to serve. Keep in mind that deploying again will automatically start your Robo.
+
+### Checking Logs
+
+To check the logs of your Robo, run:
+
+```bash
+npx robo cloud logs
+```
+
+This will show you the logs of your Robo, helping you debug any issues that may arise during runtime.
+
+## Waitlist
+
+RoboPlay is currently in beta, so we're rolling out access slowly. If you're interested in trying it out, you can sign up for the waitlist at **[roboplay.dev](https://roboplay.dev)**. We'll let you know as soon as your invite is ready!
+
+You can also join our Discord server to chat with the community and get the latest updates on RoboPlay. Who knows? You might even get bumped up the list!
+
+<CardContainer>
+	<Card href="https://roboplay.dev/discord" title="✨ Discord Server" description="Join our Discord community!" />
+</CardContainer>
+
+:::tip Sage AI
+
+You can also chat with Sage, our AI Robo, on Discord! Sage is powered by **[@robojs/ai](../plugins/ai)** and can answer your questions about Robo.js, Discord Activities, and more.
+
+:::

@@ -67,7 +67,7 @@ export default async (interaction: ModalSubmitInteraction) => {
 			ephemeral: true
 		}
 	}
-	
+
 	// Submit report to modmail channel
 	await mailChannel.send({
 		embeds: [

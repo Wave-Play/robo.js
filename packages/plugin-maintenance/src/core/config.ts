@@ -12,7 +12,7 @@ export const FLASHCORE_KEY = '__plugin_maintenance_enabled'
 export const DEFAULT_EXCLUDE_COMMANDS = env.excludeCommands ? env.excludeCommands.split(',').map((x) => x.trim()) : []
 export const DEFAULT_EXCLUDE_CONTEXTS = env.excludeEvents ? env.excludeEvents.split(',').map((x) => x.trim()) : []
 export const DEFAULT_EXCLUDE_EVENTS = env.excludeEvents ? env.excludeEvents.split(',').map((x) => x.trim()) : ['_start']
-export const DEFAULT_MAINTENANCE_ENABLED = env.maintenanceEnabled === 'true' ?? false
+export const DEFAULT_MAINTENANCE_ENABLED = env.maintenanceEnabled === 'true'
 export const DEFAULT_MAINTENANCE_MESSAGE = 'The bot is currently undergoing maintenance. Please try again later.'
 
 export let excludeCommands: string[] = DEFAULT_EXCLUDE_COMMANDS

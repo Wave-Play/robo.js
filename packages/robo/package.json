@@ -1,6 +1,6 @@
 {
 	"name": "robo.js",
-	"version": "0.10.4",
+	"version": "0.10.13",
 	"private": false,
 	"description": "Power up Discord with effortless activities, bots, web servers, and more!",
 	"keywords": [
@@ -70,7 +70,7 @@
 		"keyv": "^4.5.2",
 		"ts-jest": "^29.1.1",
 		"tsup": "6.7.0",
-		"typescript": "5.0.2",
+		"typescript": "5.4.5",
 		"vite": "^5.2.0"
 	},
 	"peerDependencies": {

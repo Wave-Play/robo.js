@@ -1,0 +1,79 @@
+{
+	"name": "@robojs/sync",
+	"description": "",
+	"version": "0.1.2",
+	"type": "module",
+	"private": false,
+	"keywords": [
+		"api",
+		"bot",
+		"discord",
+		"discord.js",
+		"http",
+		"robo",
+		"robo.js",
+		"server",
+		"typescript",
+		"vite",
+		"web"
+	],
+	"main": ".robo/build/index.js",
+	"license": "MIT",
+	"author": "WavePlay <dev@waveplay.com> (waveplay.com)",
+	"contributors": [
+		"Pkmmte Xeleon <pk@waveplay.com>"
+	],
+	"files": [
+		".robo/",
+		"src/",
+		"client.d.ts",
+		"client.js",
+		"LICENSE",
+		"README.md",
+		"server.d.ts",
+		"server.js"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Wave-Play/robo.git",
+		"directory": "packages/plugin-sync"
+	},
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://registry.npmjs.org/"
+	},
+	"scripts": {
+		"build": "robo build plugin",
+		"dev": "robo build plugin --watch",
+		"lint:style": "prettier --write .",
+		"prepublishOnly": "robo build plugin"
+	},
+	"dependencies": {
+		"nanoid": "^5.0.7",
+		"ws": "^8.16.0"
+	},
+	"devDependencies": {
+		"@robojs/server": "workspace:*",
+		"@swc/core": "^1.4.17",
+		"@types/node": "^20.12.7",
+		"@types/react": "^18.3.1",
+		"@types/ws": "^8.5.10",
+		"discord.js": "^14.14.1",
+		"prettier": "^3.2.5",
+		"react": "^18.3.1",
+		"robo.js": "workspace:*",
+		"typescript": "^5.4.5"
+	},
+	"peerDependencies": {
+		"react": "^18.0.0",
+		"robo.js": "^0.10.13"
+	},
+	"peerDependenciesMeta": {
+		"react": {
+			"optional": true
+		},
+		"robo.js": {
+			"optional": false
+		}
+	}
+}

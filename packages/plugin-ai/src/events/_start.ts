@@ -10,10 +10,12 @@ export interface PluginOptions {
 	insight?: boolean
 	maxTokens?: number
 	model?: string
+	pollDelay?: number
 	restrict?: {
 		channelIds: string[]
 	}
 	systemMessage?: string
+	temperature?: number
 	whitelist?: {
 		channelIds: string[]
 	}

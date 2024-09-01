@@ -22,7 +22,6 @@
 
 [![GitHub license](https://img.shields.io/github/license/Wave-Play/robo)](https://github.com/Wave-Play/robo/blob/main/LICENSE) [![npm](https://img.shields.io/npm/v/robo.js)](https://www.npmjs.com/package/robo.js) [![install size](https://packagephobia.com/badge?p=robo.js@latest)](https://packagephobia.com/result?p=robo.js@latest) [![Discord](https://img.shields.io/discord/1087134933908193330?color=7289da)](https://roboplay.dev/discord) [![All Contributors](https://img.shields.io/github/all-contributors/Wave-Play/robo.js?color=cf7cfc)](#contributors)
 
-
 **Power up Discord with effortless activities, bots, web servers, and more!** ⚡
 
 Upgrade your Discord projects with effortless integration, dynamic plugins, and advanced debugging—unlocking the full potential of Discord.js and beyond. 🚀✨
@@ -89,9 +88,9 @@ For events, say you want to listen to `messageCreate` events. Create a `messageC
 
 ```javascript
 export default (message) => {
-    if (message.content.includes('hello')) {
-        message.channel.send('Hello there!');
-    }
+	if (message.content.includes('hello')) {
+		message.channel.send('Hello there!')
+	}
 }
 ```
 
@@ -128,10 +127,11 @@ We're all about freedom, so we've got you covered with the permissive **[MIT Lic
   <tbody>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="http://pkmmte.com"><img src="https://avatars.githubusercontent.com/u/3953360?v=4?s=100" width="100px;" alt="Pkmmte Xeleon"/><br /><sub><b>Pkmmte Xeleon</b></sub></a><br /><a href="[✨]("WavePlay Staff")," title="WavePlay Staff">✨</a> <a href="https://github.com/Wave-Play/robo.js/commits?author=Pkmmte" title="Code">💻</a> <a href="#maintenance-Pkmmte" title="Maintenance">🚧</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Nazeofel"><img src="https://avatars.githubusercontent.com/u/96749659?v=4?s=100" width="100px;" alt="Alexander"/><br /><sub><b>Alexander</b></sub></a><br /><a href="https://github.com/Wave-Play/robo.js/commits?author=Nazeofel" title="Code">💻</a> <a href="#maintenance-Nazeofel" title="Maintenance">🚧</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Nazeofel"><img src="https://avatars.githubusercontent.com/u/96749659?v=4?s=100" width="100px;" alt="Alexander"/><br /><sub><b>Alexander</b></sub></a><br /><a href="[✨]("WavePlay Staff")," title="WavePlay Staff">✨</a> <a href="https://github.com/Wave-Play/robo.js/commits?author=Nazeofel" title="Code">💻</a> <a href="#maintenance-Nazeofel" title="Maintenance">🚧</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/0xMouiz"><img src="https://avatars.githubusercontent.com/u/96005374?v=4?s=100" width="100px;" alt="Mouiz"/><br /><sub><b>Mouiz</b></sub></a><br /><a href="https://github.com/Wave-Play/robo.js/commits?author=0xMouiz" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/mbos2"><img src="https://avatars.githubusercontent.com/u/56090587?v=4?s=100" width="100px;" alt="Matej Bošnjak"/><br /><sub><b>Matej Bošnjak</b></sub></a><br /><a href="https://github.com/Wave-Play/robo.js/commits?author=mbos2" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/ArnavK-09"><img src="https://avatars.githubusercontent.com/u/69188140?v=4?s=100" width="100px;" alt="Arnav K"/><br /><sub><b>Arnav K</b></sub></a><br /><a href="#example-ArnavK-09" title="Examples">💡</a> <a href="#plugin-ArnavK-09" title="Plugin/utility libraries">🔌</a> <a href="https://github.com/Wave-Play/robo.js/commits?author=ArnavK-09" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/waruhachi"><img src="https://avatars.githubusercontent.com/u/156133757?v=4?s=100" width="100px;" alt="waru"/><br /><sub><b>waru</b></sub></a><br /><a href="https://github.com/Wave-Play/robo.js/commits?author=waruhachi" title="Code">💻</a></td>
     </tr>
   </tbody>
   <tfoot>

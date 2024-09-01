@@ -1,60 +1,80 @@
-# Getting Started
+import { Card } from '@site/src/components/shared/Card'
+import { CardContainer } from '@site/src/components/shared/CardContainer'
+import { Terminal } from '@site/src/components/shared/Terminal'
 
-Dive into the world of Robo.js, where developing Discord bots is more fun, easier, and seamlessly integrates with plugins. 🎉
+# ✨ Getting Started
 
-## Quickstart 🚀
+**Robo.js** is a powerful framework for building epic **Discord** experiences.
 
-The easiest way to get started with Robo.js is to use the interactive CLI. Run the following command in your terminal:
+It lets you **[reduce boilerplate](./robojs/files)**, **[add features instantly](./plugins/overview)**, **[follow best practices](./robojs/sage)**, **[deploy with ease](./hosting/overview)**, **[automate tasks](./discord-activities/tunnels)**, **[persist data](./robojs/flashcore)**, **[debug inline](./discord-bots/debug)**, **[share features](./plugins/create)**, **[manage state](./robojs/state)**, **[stay organized](./robojs/modules)**, **[join an ecosystem](./plugins/directory)**, and **[so much more](./robojs/overview)**. All for **[less than 700kB](https://packagephobia.com/result?p=robo.js)**.
 
-```bash
-npx create-robo <projectName>
-```
+Best of all, **[it works with your existing code](./discord-bots/migrate)**. You may even find it **[fun](./discord-activities/games)**!
 
-This command guides you through setting up a project tailored to your preferences, including TypeScript, linting, styling, and plugins.
+## Quick Start
 
-:::tip
+Ready to start your adventure? Try **[Create Robo](./cli/create-robo)** in your terminal:
 
-Don't forget to replace `<projectName>` with the desired name for your new Robo.
+<Terminal create>{'<projectName>'}</Terminal>
+
+This will spawn a new **Robo.js** project ready to use. We call these **Robos**.
+
+## Choose Your Adventure
+
+You can use **Robo.js** for many types of projects. Let the **stars guide you**:
+
+<CardContainer>
+	<Card
+		href="./discord-activities/getting-started"
+		title="✨ Discord Activities"
+		description="Getting Started with Discord Activities."
+	/>
+	<Card
+		href="./discord-bots/getting-started"
+		title="✨ Discord Bots"
+		description="Getting Started with Discord Bots."
+	/>
+</CardContainer>
+
+## Plugin Power Ups
+
+**[Robo Plugins](./plugins/overview)** are special. They let you add features to your **Robo** with one command.
+
+<Terminal execute>robo add @robojs/ai @robojs/server</Terminal>
+
+Plugins integrate seamlessly thanks to the **[Robo File Structure](./robojs/files)**. What's more, anyone can **[create a plugin](./plugins/create)**.
+
+<CardContainer>
+	<Card href="./plugins/overview" title="🔌 Robo Plugins" description="Add features to your Robo seamlessly." />
+	<Card href="./plugins/directory" title="🗃️ Plugin Directory" description="Browse plugins for your Robo." />
+</CardContainer>
+
+## Community
+
+Join our server to chat with other developers, ask questions, and share your projects.
+
+<CardContainer>
+	<Card href="https://roboplay.dev/discord" title="✨ Discord Server" description="Join our Discord community!" />
+</CardContainer>
+
+Our very own Robo, **Sage**, is there to answer any questions about **Robo.js**, Discord, and more.
+
+:::tip AI Plugin
+
+Sage is powered by **[@robojs/ai](./plugins/ai)**
 
 :::
 
-## Upgrading Existing Project ⏫
+## Learn More
 
-Depending on your bot's complexity, there are 3 smooth migration paths to choose from. Each tailored to make your bot's transition as seamless as possible.
+**Robo.js** has a lot to offer for such a tiny framework with **[zero dependencies](https://packagephobia.com/result?p=robo.js)**.
 
-Check out our migration guide for a detailed breakdown of the 3 migration options, and pick the one that suits your bot best. Get ready to level up your bot development experience!
-
-**➞ [📚 See the full migration guide](/docs/migrating)**
-
-## Robo.js CLI Commands & Benefits ⌨️
-
-Boost your bot development with Robo.js' nifty CLI commands. Use `robo dev` to run your project, automatically watch for changes, and restart. Plus, Robo.js takes care of those tricky lifecycle events to dodge common bot bugs. When you're set to deploy, just hit `robo build` to compile and `robo start` to launch production mode.
-
-```bash
-npx robo dev
-```
-
-Wanna know more? Check out the [Command Line Interface](/docs/advanced/command-line) documentation.
-
-:::info Relax
-
-With Robo.js, there's no need for a separate script to register command updates. Sit back and relax—Robo.js has got you covered!
-
-:::
-
-## Troubleshooting 🛠️
-
-If you run into issues, execute `robo doctor` to automatically detect common problems and offer fixes. This command can also identify issues with Robo.js plugins. Check out the [Debugging Docs](/docs/advanced/debugging) and feel free to ask **Sage** for help.
-
-<!--
-> **Note:** You can summon **Sage** in the documentation site at any time by pressing *Command + K* or *Control + K*.
--->
-
-## Next Steps 🧭
-
-Now that you're all set up, explore these sections to level up your Robo.js skills:
-
-1. [Developing your Robo](/docs/basics/overview) - Learn how to develop your Robo, create commands and events, and interact with the Discord API.
-2. [Adding to Discord server](/docs/adding-to-server) - Discover how to add your Robo to a Discord server and set up permissions.
-3. [Creating Plugins](/docs/advanced/plugins) - Discover how to create plugins that extend the functionality of Robo.js and share them with the community.
-4. [Hosting your Robo](/docs/hosting) - Get your Robo up and running on a hosting service to ensure it's always online and ready to serve your Discord server.
+<CardContainer>
+	<Card href="./robojs/overview" title="🌟 Core Package" description="See what makes Robo.js awesome." />
+	<Card href="./hosting/overview" title="🚀 Hosting" description="Deploy your project to stay online 24/7." />
+	<Card href="./templates/overview" title="🔗 Templates" description="Kickstart your project with a template." />
+	<Card
+		href="https://dev.to/waveplay"
+		title="🔗 Tutorials"
+		description="Learn how to build awesome stuff with Robo.js."
+	/>
+</CardContainer>

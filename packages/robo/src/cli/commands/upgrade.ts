@@ -1,6 +1,6 @@
 import { logger } from '../../core/logger.js'
 import { Command } from '../utils/cli-handler.js'
-import { cmd, exec } from '../utils/utils.js'
+import { exec } from '../utils/utils.js'
 import { getPackageExecutor } from '../utils/runtime-utils.js'
 
 const command = new Command('upgrade')
@@ -31,5 +31,5 @@ export async function upgradeAction(_files: string[], options: UpgradeCommandOpt
 	logger.debug(`Package executor:`, packageExecutor)
 	logger.debug(`Arguments:`, args)
 
-	await exec(`${cmd(packageExecutor)} @roboplay/sage upgrade ${args.join(' ')}`)
+	await exec(`${packageExecutor} @roboplay/sage upgrade ${args.join(' ')}`)
 }

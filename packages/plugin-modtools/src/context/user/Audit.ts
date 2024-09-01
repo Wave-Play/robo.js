@@ -31,7 +31,7 @@ export default async (interaction: UserContextMenuCommandInteraction, user: User
 	const isUserBanned = await isBanned(interaction.guild as Guild, user.id)
 
 	if (isUserBanned) {
-		status = 'Banned for: ' + banData?.reason ?? 'Unknown'
+		status = 'Banned for: ' + (banData?.reason ?? 'Unknown')
 	}
 	const infractions =
 		(await Flashcore.get<number>('infractions', {

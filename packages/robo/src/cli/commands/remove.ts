@@ -5,7 +5,7 @@ import { loadConfig } from '../../core/config.js'
 import { logger } from '../../core/logger.js'
 import { Command } from '../utils/cli-handler.js'
 import { createRequire } from 'node:module'
-import { cmd, exec } from '../utils/utils.js'
+import { exec } from '../utils/utils.js'
 import { getPackageManager } from '../utils/runtime-utils.js'
 
 const require = createRequire(import.meta.url)
@@ -43,7 +43,9 @@ export async function removeAction(packages: string[], options: RemoveCommandOpt
 	// Check which plugin packages are already registered
 	const config = await loadConfig()
 	const pendingRegistration = packages.filter((pkg) => {
-		return options.force || config.plugins?.includes(pkg) || config.plugins?.find((p) => Array.isArray(p) && p[0] === pkg)
+		return (
+			options.force || config.plugins?.includes(pkg) || config.plugins?.find((p) => Array.isArray(p) && p[0] === pkg)
+		)
 	})
 	logger.debug(`Pending registration remove:`, pendingRegistration)
 
@@ -63,7 +65,7 @@ export async function removeAction(packages: string[], options: RemoveCommandOpt
 
 		// Uninstall dependencies using the package manager that triggered the command
 		try {
-			await exec(`${cmd(packageManager)} ${command} ${pendingUninstall.join(' ')}`, {
+			await exec(`${packageManager} ${command} ${pendingUninstall.join(' ')}`, {
 				stdio: options.force ? 'inherit' : 'ignore'
 			})
 			logger.debug(`Successfully uninstalled packages!`)

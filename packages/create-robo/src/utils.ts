@@ -6,9 +6,41 @@ import type { Logger } from 'robo.js'
 
 type PackageManager = 'npm' | 'bun' | 'pnpm' | 'yarn'
 
-export const ESLINT_IGNORE = `node_modules
-.config
-.robo\n`
+export const EslintConfig = `import globals from 'globals'
+import eslint from '@eslint/js'
+
+export default [
+	{ ignores: ['.robo/', 'config/'] },
+	{
+		files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'],
+		languageOptions: {
+			globals: {
+				...globals.node
+			}
+		}
+	},
+	eslint.configs.recommended
+]
+`
+
+export const EslintConfigTypescript = `import globals from 'globals'
+import eslint from '@eslint/js'
+import tseslint from 'typescript-eslint'
+
+export default tseslint.config(
+	{ ignores: ['.robo/', 'config/'] },
+	{
+		files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'],
+		languageOptions: {
+			globals: {
+				...globals.node
+			}
+		}
+	},
+	eslint.configs.recommended,
+	...tseslint.configs.recommended
+)
+`
 
 export const Indent = ' '.repeat(3)
 
@@ -32,11 +64,7 @@ export const ROBO_CONFIG = `// @ts-check
  **/
 export default {
 	clientOptions: {
-		intents: [
-			'Guilds',
-			'GuildMessages',
-			'MessageContent'
-		]
+		intents: ['Guilds', 'GuildMessages']
 	},
 	plugins: [],
 	type: 'robo'
@@ -54,13 +82,11 @@ export default {
 	plugins: [],
 	type: 'robo',
 	watcher: {
-		ignore: ['src${IS_WINDOWS ? '\\\\' : '/'}app']
+		ignore: ['src${IS_WINDOWS ? '\\\\' : '/'}app', 'src${IS_WINDOWS ? '\\\\' : '/'}components', 'src${
+	IS_WINDOWS ? '\\\\' : '/'
+}hooks']
 	}
 }\n`
-
-export function cmd(packageManager: string): string {
-	return IS_WINDOWS && !['pnpm', 'pnpx'].includes(packageManager) ? `${packageManager}.cmd` : packageManager
-}
 
 export interface ExecOptions extends SpawnOptions {
 	logger?: Logger | typeof logger
@@ -79,6 +105,7 @@ export function exec(command: string, options?: ExecOptions) {
 		const args = command.split(' ')
 		const childProcess = spawn(args.shift(), args, {
 			env: { ...process.env, FORCE_COLOR: '1' },
+			shell: IS_WINDOWS,
 			stdio: verbose ? 'pipe' : 'inherit',
 			...(spawnOptions ?? {})
 		})
@@ -118,9 +145,9 @@ export function getPackageManager(): PackageManager {
 export function getPackageExecutor(): string {
 	const packageManager = getPackageManager()
 	if (packageManager === 'yarn') {
-		return 'yarn dlx'
+		return 'yarn'
 	} else if (packageManager === 'pnpm') {
-		return 'pnpx'
+		return 'pnpm'
 	} else if (packageManager === 'bun') {
 		return 'bunx'
 	} else {

@@ -126,7 +126,7 @@ export async function authenticateSdk(options) {
 		scope: scope
 	})
 
-	const response = await fetch('/api/token', {
+	const response = await fetch('/.proxy/api/token', {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json'
@@ -146,11 +146,11 @@ export async function authenticateSdk(options) {
 }
 
 export function useDiscordSdkSetup(options) {
-	const { authenticate } = options ?? {}
-	const [accessToken, setAccessToken] = useState<string | null>(null)
-	const [session, setSession] = useState<DiscordSession | null>(null)
-	const [error, setError] = useState<string | null>(null)
-	const [status, setStatus] = useState<'authenticating' | 'error' | 'loading' | 'pending' | 'ready'>('pending')
+	const { authenticate, scope } = options ?? {}
+	const [accessToken, setAccessToken] = useState(null)
+	const [session, setSession] = useState(null)
+	const [error, setError] = useState(null)
+	const [status, setStatus] = useState('pending')
 
 	const setupDiscordSdk = useCallback(async () => {
 		try {
@@ -159,7 +159,7 @@ export function useDiscordSdkSetup(options) {
 
 			if (authenticate) {
 				setStatus('authenticating')
-				const { accessToken, auth } = await authenticateSdk()
+				const { accessToken, auth } = await authenticateSdk({ scope })
 				setAccessToken(accessToken)
 				setSession(auth)
 			}

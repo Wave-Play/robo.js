@@ -14,7 +14,21 @@
 	--ifm-color-primary-lighter: #359962;
 	--ifm-color-primary-lightest: #3cad6e;
 	--ifm-code-font-size: 95%;
+	--robo-background-color: white;
+	--robo-border-color: rgb(235, 235, 235);
+	--card-background-color: white;
+	--code-background-color: white;
 	--docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+	--terminal-background-color: white;
+	--terminal-border-color: rgb(235, 235, 235);
+	--terminal-font-color: rgb(102, 102, 102);
+	--terminal-header-background-color: rgb(250, 250, 250);
+	--docsearch-primary-color: var(--ifm-color-primary) !important;
+	--ifm-menu-link-padding-vertical: 10px !important;
+	--discord-icon: url("data:image/svg+xml,%3Csvg width='24px' height='24px' viewBox='0 -28.5 256 256' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' preserveAspectRatio='xMidYMid'%3E%3Cg%3E%3Cpath d='M216.856339,16.5966031 C200.285002,8.84328665 182.566144,3.2084988 164.041564,0 C161.766523,4.11318106 159.108624,9.64549908 157.276099,14.0464379 C137.583995,11.0849896 118.072967,11.0849896 98.7430163,14.0464379 C96.9108417,9.64549908 94.1925838,4.11318106 91.8971895,0 C73.3526068,3.2084988 55.6133949,8.86399117 39.0420583,16.6376612 C5.61752293,67.146514 -3.4433191,116.400813 1.08711069,164.955721 C23.2560196,181.510915 44.7403634,191.567697 65.8621325,198.148576 C71.0772151,190.971126 75.7283628,183.341335 79.7352139,175.300261 C72.104019,172.400575 64.7949724,168.822202 57.8887866,164.667963 C59.7209612,163.310589 61.5131304,161.891452 63.2445898,160.431257 C105.36741,180.133187 151.134928,180.133187 192.754523,160.431257 C194.506336,161.891452 196.298154,163.310589 198.110326,164.667963 C191.183787,168.842556 183.854737,172.420929 176.223542,175.320965 C180.230393,183.341335 184.861538,190.991831 190.096624,198.16893 C211.238746,191.588051 232.743023,181.531619 254.911949,164.955721 C260.227747,108.668201 245.831087,59.8662432 216.856339,16.5966031 Z M85.4738752,135.09489 C72.8290281,135.09489 62.4592217,123.290155 62.4592217,108.914901 C62.4592217,94.5396472 72.607595,82.7145587 85.4738752,82.7145587 C98.3405064,82.7145587 108.709962,94.5189427 108.488529,108.914901 C108.508531,123.290155 98.3405064,135.09489 85.4738752,135.09489 Z M170.525237,135.09489 C157.88039,135.09489 147.510584,123.290155 147.510584,108.914901 C147.510584,94.5396472 157.658606,82.7145587 170.525237,82.7145587 C183.391518,82.7145587 193.761324,94.5189427 193.539891,108.914901 C193.539891,123.290155 183.391518,135.09489 170.525237,135.09489 Z' fill='black' fill-rule='nonzero'%3E%3C/path%3E%3C/g%3E%3C/svg%3E")
+		no-repeat;
+	--ifm-navbar-height: 64px;
+	--ifm-h3-font-size: 1.3rem !important;
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -26,7 +40,26 @@
 	--ifm-color-primary-light: #29d5b0;
 	--ifm-color-primary-lighter: #32d8b4;
 	--ifm-color-primary-lightest: #4fddbf;
+	--card-background-color: #171b21;
+	--code-background-color: #171b21;
+	--robo-background-color: #0e1116;
+	--robo-border-color: #31363c;
 	--docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+	--terminal-background-color: #0e1116;
+	--terminal-border-color: #31363c;
+	--terminal-font-color: #c9d1d9;
+	--terminal-header-background-color: #0e1116;
+	--discord-icon: url("data:image/svg+xml,%3Csvg width='24px' height='24px' viewBox='0 -28.5 256 256' version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' preserveAspectRatio='xMidYMid'%3E%3Cg%3E%3Cpath d='M216.856339,16.5966031 C200.285002,8.84328665 182.566144,3.2084988 164.041564,0 C161.766523,4.11318106 159.108624,9.64549908 157.276099,14.0464379 C137.583995,11.0849896 118.072967,11.0849896 98.7430163,14.0464379 C96.9108417,9.64549908 94.1925838,4.11318106 91.8971895,0 C73.3526068,3.2084988 55.6133949,8.86399117 39.0420583,16.6376612 C5.61752293,67.146514 -3.4433191,116.400813 1.08711069,164.955721 C23.2560196,181.510915 44.7403634,191.567697 65.8621325,198.148576 C71.0772151,190.971126 75.7283628,183.341335 79.7352139,175.300261 C72.104019,172.400575 64.7949724,168.822202 57.8887866,164.667963 C59.7209612,163.310589 61.5131304,161.891452 63.2445898,160.431257 C105.36741,180.133187 151.134928,180.133187 192.754523,160.431257 C194.506336,161.891452 196.298154,163.310589 198.110326,164.667963 C191.183787,168.842556 183.854737,172.420929 176.223542,175.320965 C180.230393,183.341335 184.861538,190.991831 190.096624,198.16893 C211.238746,191.588051 232.743023,181.531619 254.911949,164.955721 C260.227747,108.668201 245.831087,59.8662432 216.856339,16.5966031 Z M85.4738752,135.09489 C72.8290281,135.09489 62.4592217,123.290155 62.4592217,108.914901 C62.4592217,94.5396472 72.607595,82.7145587 85.4738752,82.7145587 C98.3405064,82.7145587 108.709962,94.5189427 108.488529,108.914901 C108.508531,123.290155 98.3405064,135.09489 85.4738752,135.09489 Z M170.525237,135.09489 C157.88039,135.09489 147.510584,123.290155 147.510584,108.914901 C147.510584,94.5396472 157.658606,82.7145587 170.525237,82.7145587 C183.391518,82.7145587 193.761324,94.5189427 193.539891,108.914901 C193.539891,123.290155 183.391518,135.09489 170.525237,135.09489 Z' fill='white' fill-rule='nonzero'%3E%3C/path%3E%3C/g%3E%3C/svg%3E")
+		no-repeat;
+		--ifm-h3-font-size: 1.3rem !important;
+}
+
+html {
+	background-color: var(--robo-background-color);
+}
+
+h3 {
+	font-size: 1.3rem;
 }
 
 .header-github-link:hover {
@@ -45,4 +78,297 @@
 [data-theme='dark'] .header-github-link::before {
 	background: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='white' d='M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12'/%3E%3C/svg%3E")
 		no-repeat;
+}
+
+.theme-admonition {
+	border-radius: 0px;
+}
+
+article .clean-btn {
+	height: 48px;
+	background-color: var(--robo-background-color);
+	border-color: var(--robo-border-color);
+	border-radius: 0px;
+	border-style: solid;
+	border-width: 2px;
+}
+
+@media (max-width: 996px) {
+	.table-of-contents__link {
+		height: 32px;
+		display: flex;
+		align-items: center;
+	}
+}
+
+.beforeAfter {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 20px;
+}
+
+.beforeAfterArrow {
+	width: 16px;
+	height: 16px;
+	fill: var(--ifm-font-color-base) !important;
+}
+
+.beforeAfterContent {
+	width: fit-content;
+	max-width: 100%;
+	background-color: var(--ifm-card-background-color);
+	border-radius: 8px;
+	overflow: hidden;
+	font-family: 'Fira Code', monospace;
+	font-size: 14px;
+	padding: 8px 24px;
+	margin: 0px;
+	text-align: center;
+	border: 1px solid var(--ifm-color-emphasis-200);
+	box-shadow: 0 1.5px 3px 0 #00000026;
+	transition: all var(--ifm-transition-fast) ease;
+	transition-property: border, box-shadow;
+}
+
+.menu__list-item {
+	margin: 0px !important;
+}
+
+.theme-code-block {
+	background-color: var(--terminal-header-background-color) !important;
+	border-radius: 0px !important;
+	border: 2px solid var(--robo-border-color) !important;
+	box-shadow: none !important;
+}
+
+.theme-code-block pre {
+	background-color: var(--code-background-color) !important;
+	border-radius: 0px !important;
+}
+
+.cardContainer {
+	margin-bottom: -16px !important;
+}
+
+.card {
+	background-color: var(--card-background-color);
+	border-radius: var(--ifm-card-border-radius);
+	box-shadow: var(--ifm-global-shadow-lw);
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+.cardContent {
+	--ifm-link-color: var(--ifm-color-emphasis-800);
+	--ifm-link-hover-color: var(--ifm-color-emphasis-700);
+	--ifm-link-hover-decoration: none;
+	border: 1px solid var(--ifm-color-emphasis-200);
+	box-shadow: 0 1.5px 3px 0 #00000026;
+	transition: all var(--ifm-transition-fast) ease;
+	transition-property: border, box-shadow;
+}
+
+.cardContent:hover {
+	border-color: var(--ifm-color-primary);
+	box-shadow: 0 3px 6px 0 #0003;
+	text-decoration: none;
+}
+
+.cardTitle {
+	color: var(--ifm-font-color-base);
+	font-size: 20px;
+	margin: 0px;
+	margin-bottom: 16px;
+}
+
+.cardDescription {
+	color: var(--ifm-font-color-base);
+	text-decoration: none;
+	font-size: 14px;
+	margin: 0px;
+}
+
+.navbar {
+	background-color: var(--robo-background-color);
+	border-bottom: 1px solid var(--robo-border-color);
+}
+
+.navbar-sidebar {
+	background-color: var(--robo-background-color);
+	border-bottom: 1px solid var(--robo-border-color);
+}
+
+.nodecor:hover {
+	text-decoration: none;
+}
+
+.sidebar-title {
+	color: var(--ifm-font-color-base);
+	font-size: 12px;
+	font-weight: 700;
+	opacity: 0.54;
+	padding-left: 12px;
+	margin-top: 16px;
+	cursor: default;
+	text-transform: uppercase;
+}
+
+.terminal {
+	background-color: var(--terminal-background-color);
+	border-color: var(--terminal-border-color);
+	border-radius: 0px;
+	border-style: solid;
+	border-width: 2px;
+	color: var(--ifm-code-font-color);
+}
+
+.terminal-header {
+	background-color: var(--terminal-header-background-color);
+	border-bottom-color: var(--terminal-border-color);
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	color: var(--terminal-font-color);
+	display: flex;
+	align-items: center;
+	flex-direction: row;
+	height: 48px;
+	padding-left: 16px;
+	padding-right: 8px;
+}
+
+.terminal-header-text {
+	color: rgb(161, 161, 161);
+	font-size: 13px;
+	margin-left: 8px;
+	margin-right: 8px;
+}
+
+.terminal-header button {
+	background-color: transparent;
+	border: none;
+	color: #c9d1d9;
+	cursor: pointer;
+	height: 48px;
+	padding: 0;
+	transition: opacity 0.25s;
+	width: 48px;
+}
+
+.terminal-header button:hover {
+	opacity: 0.6;
+}
+
+.terminal-row {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+}
+
+.terminal-bg {
+	background-color: var(--code-background-color);
+	border-radius: 0px;
+	margin: 0px;
+}
+
+.select-container {
+	width: auto;
+	display: flex;
+	flex-direction: column;
+	position: relative;
+}
+
+.select-row {
+	width: auto !important;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	padding-left: 16px !important;
+}
+
+.select-text {
+	color: var(--terminal-font-color);
+	font-size: 13px;
+}
+
+.select-menu {
+	background-color: var(--terminal-background-color);
+	border-color: var(--terminal-border-color);
+	border-radius: 0px;
+	border-style: solid;
+	border-width: 2px;
+	color: var(--ifm-code-font-color);
+	display: flex;
+	flex-direction: column;
+	margin-top: 0px;
+	padding: 0px;
+	position: absolute;
+	top: 100%;
+	right: 0;
+	z-index: 10;
+}
+
+.select-menu-active {
+	font-weight: 600;
+}
+
+.select-menu button {
+	background-color: transparent;
+	border: none;
+	color: var(--ifm-font-color-base);
+	cursor: pointer;
+	height: 48px;
+	padding: 0;
+	text-align: end;
+	transition: opacity 0.25s;
+	width: 100%;
+	min-width: 96px;
+	padding: 0px 16px;
+	padding-left: 0px;
+}
+
+.no-margin {
+	margin: 0;
+}
+
+.header-discord-link {
+	width: 24px;
+	height: 24px;
+	background: var(--discord-icon);
+	margin-left: 12px;
+	margin-right: 8px;
+}
+
+.spacer {
+	flex: 1;
+}
+
+.docsearch-btn {
+	width: 240px;
+	height: 40px !important;
+	background-color: var(--code-background-color) !important;
+	border-color: var(--terminal-border-color) !important;
+	border-radius: 0px !important;
+	border-style: solid !important;
+	border-width: 2px !important;
+}
+
+.docsearch-btn-placeholder {
+	display: flex;
+	flex: 1;
+}
+
+@media (max-width: 768px) {
+	.docsearch-btn {
+		width: auto;
+		background-color: transparent !important;
+		border-color: transparent !important;
+	}
+}
+
+#embed {
+	width: 100%;
+	height: 100%;
 }

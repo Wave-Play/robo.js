@@ -9,7 +9,7 @@ interface LockdownData {
 }
 
 export default async (data: MiddlewareData): Promise<MiddlewareResult | void> => {
-	const {  key, plugin, type } = data.record
+	const { key, plugin, type } = data.record
 	const isSelfPlugin = plugin?.name === '@robojs/moderation'
 
 	// Only lock down commands
@@ -40,7 +40,6 @@ export default async (data: MiddlewareData): Promise<MiddlewareResult | void> =>
 		return { abort: true }
 	}
 }
-
 
 export function getLockdown(guildId: string): LockdownData {
 	const settings = getSettings(guildId)

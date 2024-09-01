@@ -1,5 +1,69 @@
 # robo.js
 
+## 0.10.13
+
+### Patch Changes
+
+- fa321f6: feat(compiler): plugins can now provide seed descriptions
+- a5ae699: feat(cli): show seed descriptions and request consent upon install
+- ed2734b: refactor(compiler): dedicated logger for compiler
+- 70b477e: refactor(compiler): encapsulated compiler object
+- 65809a6: feat(compiler): plugin seeds
+- d22fbfa: fix(cli): patched roboplay api url references
+- 0cae688: refactor(compiler): include project language in manifest
+
+## 0.10.12
+
+### Patch Changes
+
+- 361e3d8: patch(cli): avoid circular dependency imports
+
+## 0.10.11
+
+### Patch Changes
+
+- 2f939d5: patch(cli): support for spaces in options
+- 61b98a2: feat: modes
+
+## 0.10.10
+
+### Patch Changes
+
+- ca8ddd7: refactor(core): moved data loading into robo.start() in production mode
+- 7093bf4: feat: experimental sharding support
+
+## 0.10.9
+
+### Patch Changes
+
+- c43ff79: fix: spawn commands in shell on Windows (CVE-2024-27980)
+
+## 0.10.8
+
+### Patch Changes
+
+- bf6db2e: fix: context commands not adding to manifest properly
+
+## 0.10.7
+
+### Patch Changes
+
+- d6138ef: feat: experimental support for user installs
+
+## 0.10.6
+
+### Patch Changes
+
+- 838ed5d: feat: `extractCommandOptions` utility function
+- 6a4473d: patch: auto delete outdated slash commands
+
+## 0.10.5
+
+### Patch Changes
+
+- 7450631: patch(compiler): updated defaults to better work with decorators and colyseus
+- 7159c94: patch: guard against duplicate cloudflare tunnel logs
+
 ## 0.10.4
 
 ### Patch Changes

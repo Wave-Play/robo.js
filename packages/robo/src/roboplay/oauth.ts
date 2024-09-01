@@ -50,4 +50,3 @@ export async function verifyOAuth(options: VerifyOAuthOptions) {
 		body: { pairingCode, secret }
 	})
 }
-

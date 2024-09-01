@@ -82,5 +82,7 @@ export default (interaction: CommandInteraction): CommandResult => {
 
 export function autocomplete(interaction: AutocompleteInteraction) {
 	const value = interaction.options.getFocused().trim().toLowerCase()
-	return State.listForks().filter((fork) => fork.includes(value)).map((fork) => ({ name: fork, value: fork }))
+	return State.listForks()
+		.filter((fork) => fork.includes(value))
+		.map((fork) => ({ name: fork, value: fork }))
 }

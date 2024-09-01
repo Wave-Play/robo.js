@@ -76,7 +76,7 @@ export async function request<T = unknown>(urlPath: string, options?: RequestOpt
 	}
 
 	// Only include OS metadata if opted in to debug mode
-	if (env.roboplay.debug) {
+	if (env('roboplay.debug')) {
 		extraHeaders['X-Robo-OS-Arch'] = os.arch()
 		extraHeaders['X-Robo-OS-Hostname'] = sanitizeForAscii(os.hostname())
 		extraHeaders['X-Robo-OS-Platform'] = os.platform()
@@ -96,7 +96,7 @@ export async function request<T = unknown>(urlPath: string, options?: RequestOpt
 
 	while (retryCount <= retries) {
 		try {
-			const response = await fetch(env.roboplay.api + urlPath + queryString, {
+			const response = await fetch(env('roboplay.api') + urlPath + queryString, {
 				method: method,
 				headers: {
 					...extraHeaders,
@@ -145,7 +145,7 @@ export async function requestStream<T = unknown>(
 	urlPath: string,
 	callback: (error: Error | Event, data: T) => void | Promise<void>
 ) {
-	const response = await fetch(env.roboplay.api + urlPath, {
+	const response = await fetch(env('roboplay.api') + urlPath, {
 		headers: {
 			'Content-Type': 'text/event-stream'
 		}
@@ -160,7 +160,6 @@ export async function requestStream<T = unknown>(
 
 	let buffer = ''
 
-	// eslint-disable-next-line no-constant-condition
 	while (true) {
 		const { done, value } = await reader.read()
 

@@ -1,0 +1,47 @@
+# ⚙️ Robo CLI
+
+The Robo.js CLI helps you manage your bot project like a boss. Here's a quick overview of the available commands and options, grouped by their purpose:
+
+```sh
+Options:
+  -V, --version         output the version number
+  -h, --help            display help for command
+
+Commands:
+  dev [options]         Ready, set, code your bot to life! Starts development mode.
+  start [options]       Starts your bot in production mode.
+
+  build [options]       Builds your bot for production.
+  build plugin          Optimizes your source files to be published as a plugin via npm.
+
+  help [command]        Display help for command
+  upgrade               Updates Robo.js and all installed plugins.
+
+  deploy [options]      Deploys your bot to RoboPlay!
+  invite                Generates a link for servers to add your Robo.
+```
+
+### Running
+
+- **`dev`**: The primary way to run your Robo during development. It behaves similarly to `nodemon` or `ts-node-dev`, restarting your project when changes are detected. This command runs `build` behind the scenes, automatically updating bot commands.
+- **`start`**: Used for running your Robo in production after running `build`. This is only necessary if you're self-hosting instead of using RoboPlay to host your Robo for free.
+
+### Building
+
+- **`build`**: Prepares your project for production by compiling your source files, generating a manifest file, and registering any command updates. You need to run this command before using `start`.
+- **`build plugin`**: Works similarly to `build`, but optimizes your source files to be published as a plugin via npm.
+
+### Plugins
+
+- **`add`**: Installs a plugin from npm and registers it with your Robo. You can also use this command to install plugins from a local directory!
+- **`remove`**: Uninstalls a plugin from your Robo and removes its config file.
+
+### Other
+
+- **`help`**: Displays help for this CLI or a specific command. Can be used like this: `robo help` or also as a command option `robo build --help`
+- **`upgrade`**: Updates Robo.js and all installed plugins.
+
+### Distributing
+
+- **`deploy`**: Bundles your Robo's source files and hosts it on RoboPlay for free (currently invite-only).
+- **`invite`**: Generates an invite link to add your Robo onto Discord servers with permissions and all. For more information on adding your bot, refer to the **[Adding to Discord Servers](/docs/adding-to-server)** docs.

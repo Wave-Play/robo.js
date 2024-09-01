@@ -15,6 +15,7 @@
 			"packages/plugin-maintenance",
 			"packages/plugin-modtools",
 			"packages/plugin-poll",
+			"packages/plugin-sync",
 			"packages/robo",
 			"packages/sage"
 		]
@@ -23,12 +24,14 @@
 		"node": ">=18.0.0"
 	},
 	"scripts": {
+		"build": "turbo run build --force",
+		"build:robo": "turbo run build --filter=robo.js --force",
 		"lint": "pnpm lint:eslint && pnpm lint:style",
-		"lint:eslint": "eslint . --ext js,jsx,ts,tsx --max-warnings=0",
+		"lint:eslint": "eslint . --max-warnings=0",
 		"lint:style": "prettier --write .",
-		"publish:canary": "pnpm lint && turbo run build --filter=robo.js --force && turbo run build --force && changeset publish --tag canary",
-		"publish:next": "pnpm lint && turbo run build --filter=robo.js --force && turbo run build --force && changeset publish --tag next",
-		"publish:release": "pnpm lint && turbo run build --filter=robo.js --force && turbo run build --force && changeset publish",
+		"publish:canary": "pnpm lint && pnpm build:robo && pnpm build && changeset publish --tag canary",
+		"publish:next": "pnpm lint && pnpm build:robo && pnpm build && changeset publish --tag next",
+		"publish:release": "pnpm lint && pnpm build:robo && pnpm build && changeset publish",
 		"test": "turbo run test"
 	},
 	"repository": {
@@ -44,16 +47,17 @@
 	"contributors": [
 		"Pkmmte Xeleon <pk@waveplay.com>"
 	],
+	"dependencies": {
+		"@changesets/cli": "2.27.1"
+	},
 	"devDependencies": {
-		"@typescript-eslint/eslint-plugin": "5.56.0",
-		"@typescript-eslint/parser": "5.56.0",
+		"@eslint/js": "^9.3.0",
 		"all-contributors-cli": "^6.26.1",
-		"eslint": "8.36.0",
+		"eslint": "9.3.0",
+		"globals": "^15.3.0",
 		"prettier": "2.8.5",
 		"turbo": "1.8.4",
-		"typescript": "5.0.2"
-	},
-	"dependencies": {
-		"@changesets/cli": "2.26.0"
+		"typescript": "5.0.2",
+		"typescript-eslint": "^7.9.0"
 	}
 }

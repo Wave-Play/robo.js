@@ -1,0 +1,256 @@
+---
+description: Create a powerful Discord Bot in seconds with Robo.js - a tiny framework that simplifies Discord.js.
+---
+
+import { Card } from '@site/src/components/shared/Card'
+import { CardContainer } from '@site/src/components/shared/CardContainer'
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+import { Terminal } from '@site/src/components/shared/Terminal'
+
+# ✨ Getting Started with Discord Bots
+
+**Robo.js** makes building **[Discord.js](https://discord.js.org)** bots as easy as putting certain files in the right place. Want to create a command? Just make a file in the `/src/commands` directory. Events? Create files in `/src/events`. It's that simple!
+
+:::tip Robo.js does _not_ replace Discord.js!
+
+Instead, it simplifies coding by handling boilerplate. You still have all of **Discord.js**!
+
+**Got an existing bot?** Check out the **[Migration Guide](./migrate)** for how to use existing code with **Robo.js**.
+
+:::
+
+## Quick Start
+
+Ready to start your adventure? Try **[Create Robo](../cli/create-robo)** in your terminal:
+
+<Terminal create>{'<projectName> -k bot'}</Terminal>
+
+This will spawn a new **Robo.js** project ready to use as a **Discord Bot**. We call these **Robos**.
+
+<CardContainer>
+	<Card
+		href="../templates/overview#discord-apps"
+		title="🔗 Templates"
+		description="Kickstart your project with a template."
+	/>
+	<Card
+		href="https://blog.waveplay.com/how-to-make-a-discord-robo/"
+		title="📚 Tutorial"
+		description="How to create a to-do Discord bot."
+	/>
+</CardContainer>
+
+## File Structure
+
+Discord bots built with Robo.js follow the following file structure:
+
+- `/src/commands`: Slash commands. Can be nested for subcommands or subcommand groups.
+- `/src/context`: Context commands for either `/user` or `/message`.
+- `/src/events`: Discord events. Can be nested for grouped events.
+
+### Basic Example
+
+```
+/src
+├── /commands
+│   └── ping.js
+└── /events
+    └── messageCreate.js
+```
+
+The above is used to create:
+
+- `/ping` command.
+- `messageCreate` event.
+
+### Advanced Example
+
+```
+/src
+├── /commands
+│   ├── ping.js
+│   ├── /ban
+│   │   └── user.js
+│   └── /settings
+│       └── /update
+│           └── something.js
+├── /context
+│   ├── /user
+│   │   └── Audit.js
+│   └── /message
+│       └── Report.js
+└── /events
+    ├── ready.js
+    └── /messageCreate
+        ├── dm.js
+        └── hello.js
+```
+
+The above is used to create:
+
+- `/ping` command.
+- `/ban user` subcommand.
+- `/settings update something` subcommand group.
+- `Audit` user context command.
+- `Report` message context command.
+- `ready` event.
+- `dm` and `hello` grouped `messageCreate` events.
+
+<CardContainer>
+	<Card href="../robojs/files" title="📂 Robo File Structure" description="Learn about standard Robo files." />
+</CardContainer>
+
+### Modules
+
+For larger projects, you can use modules to group similar functionality together as if they were mini-projects within your main project. Each module follows the same file structure.
+
+<CardContainer>
+	<Card href="../robojs/modules" title="📦 Modules" description="Stay organized with modules." />
+</CardContainer>
+
+## Slash Commands
+
+Slash commands in Robo.js are straightforward. Just create a file in the `commands` directory, and the name of the file becomes the name of the command. Easy peasy, right? You can even nest commands for those extra spicy subcommands!
+
+### Example Usage
+
+Creating a command is as easy as exporting a default function from a file in the `/src/commands` directory.
+
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
+
+```javascript title="/src/commands/ping.js"
+export default () => {
+	return 'Pong!'
+}
+```
+
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```typescript title="/src/commands/ping.ts"
+import type { CommandConfig } from 'robo.js'
+
+export default (): CommandResult => {
+	return 'Pong!'
+}
+```
+
+</TabItem>
+</Tabs>
+
+To learn more about commands and their full potential, head over to the **[Commands Section](./commands)**.
+
+### Registration
+
+It's automatic! Robo.js will register command changes for you whenever you `build` or `dev` your project. So just sit back, relax, and code away!
+
+If you run into any issues or don't see your changes, you can always run `build` with the `--force` flag. This will force Robo.js to clean up and re-register all commands.
+
+<CardContainer>
+	<Card href="./commands" title="📜 Commands" description="Learn more about slash commands." />
+</CardContainer>
+
+## Context Commands
+
+Ever right clicked on someone's profile or a message and seen an "Apps" section? Those are context commands!
+
+Creating and registering context commands in Robo.js is no different from regular commands. The `/context` directory can have two subdirectories: `/user` and `/message`. Just like commands, the name of the file becomes the name of the context command.
+
+<CardContainer>
+	<Card href="./context-menu" title="🖱️ Context Commands" description="Learn more about context commands." />
+</CardContainer>
+
+## Event Listeners
+
+Listening to events using Robo.js again follows the same file structure. Create a file in the `events` directory, and the name of the file becomes the Discord event you're listening to. Noticing a pattern here?
+
+### Example Usage
+
+Registering an event listener is as simple as creating a file in the `/src/events` directory.
+
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
+
+```javascript showLineNumbers title="/src/events/messageCreate.js"
+export default (message) => {
+	if (message.content.includes('hello')) {
+		message.channel.send('Hello there!')
+	}
+}
+```
+
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```typescript showLineNumbers title="/src/events/messageCreate.ts"
+import type { Message } from 'discord.js'
+
+export default (message: Message) => {
+	if (message.content.includes('hello')) {
+		message.channel.send('Hello there!')
+	}
+}
+```
+
+</TabItem>
+</Tabs>
+
+Your default export is the equivalent of `client.on('messageCreate', (message) => {})` in Discord.js. The same exact parameters are passed to your event listener function.
+
+<CardContainer>
+	<Card href="./events" title="📡 Events" description="Learn more about events." />
+</CardContainer>
+
+## Sage Mode
+
+Sage Mode is a powerful feature in Robo.js that simplifies interaction handling. It operates behind the scenes, automatically simplifying interaction handling and providing smart error replies to make debugging easier.
+
+<CardContainer>
+	<Card href="../robojs/sage" title="🔮 Sage" description="Unlock the full power of Sage Mode." />
+</CardContainer>
+
+## Plugin Power Ups
+
+**[Robo Plugins](../plugins/overview)** are special. They let you add features to your **Robo** with one command.
+
+<Terminal execute>robo add @robojs/ai @robojs/moderation</Terminal>
+
+Plugins integrate seamlessly thanks to the **[Robo File Structure](../robojs/files)**. What's more, anyone can **[create a plugin](../plugins/create)**.
+
+<CardContainer>
+	<Card href="../plugins/overview" title="🔌 Robo Plugins" description="Add features to your Robo seamlessly." />
+	<Card href="../plugins/directory" title="🗃️ Plugin Directory" description="Browse plugins for your Robo." />
+</CardContainer>
+
+## Community
+
+Join our server to chat with other developers, ask questions, and share your projects.
+
+<CardContainer>
+	<Card href="https://roboplay.dev/discord" title="✨ Discord Server" description="Join our Discord community!" />
+</CardContainer>
+
+Our very own Robo, **Sage**, is there to answer any questions about **Robo.js**, **Discord.js**, and more.
+
+:::tip AI Plugin
+
+Sage is powered by **[@robojs/ai](../plugins/ai)**
+
+:::
+
+## Learn More
+
+**Robo.js** has a lot to offer for such a tiny framework with **[zero dependencies](https://packagephobia.com/result?p=robo.js)**.
+
+<CardContainer>
+	<Card href="../robojs/overview" title="🌟 Core Package" description="See what makes Robo.js awesome." />
+	<Card
+		href="../templates/overview#discord-apps"
+		title="🔗 Templates"
+		description="Kickstart your project with a template."
+	/>
+	<Card href="../robojs/linting" title="💅 Linting" description="Check your code for errors and style." />
+	<Card href="../robojs/typescript" title="📘 TypeScript" description="Write better code with type safety." />
+</CardContainer>

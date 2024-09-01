@@ -1,5 +1,5 @@
 import type { LogDrain, LogLevel } from '../core/logger.js'
-import type { ClientOptions, PermissionsString } from 'discord.js'
+import type { ClientOptions, PermissionsString, ShardingManagerOptions } from 'discord.js'
 import type { Plugin, SageOptions } from './index.js'
 
 export interface Config {
@@ -13,6 +13,8 @@ export interface Config {
 		buildDirectory?: string
 		disableBot?: boolean
 		incrementalBuilds?: boolean
+		shard?: boolean | ShardingManagerOptions
+		userInstall?: boolean
 	}
 	flashcore?: {
 		keyv?: unknown
@@ -32,6 +34,9 @@ export interface Config {
 		node?: '18' | '20' | 'latest'
 	}
 	sage?: false | SageOptions
+	seed?: {
+		description?: string
+	}
 	timeouts?: {
 		autocomplete?: number
 		commandDeferral?: number

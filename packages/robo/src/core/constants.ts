@@ -1,16 +1,18 @@
 import { color, composeColors } from './color.js'
 import { logger } from './logger.js'
+import { IS_BUN } from '../cli/utils/runtime-utils.js'
 import type { Config } from '../types/index.js'
 
-// TODO: Restore support for ['.js', '.jsx', '.ts', '.tsx']
-export const ALLOWED_EXTENSIONS = ['.js']
 export const Highlight = composeColors(color.bold, color.cyan)
+export const HighlightGreen = composeColors(color.bold, color.green)
 export const Indent = ' '.repeat(3)
 export const Space = ' '.repeat(8)
 
 export const cloudflareLogger = logger.fork('cloudflare')
 export const discordLogger = logger.fork('discord')
 
+// TODO: Test support for ['.js', '.jsx', '.ts', '.tsx'] in Bun
+export const ALLOWED_EXTENSIONS = IS_BUN ? ['.js', '.jsx', '.ts', '.tsx'] : ['.js', '.jsx']
 
 export const DEFAULT_CONFIG: Config = {
 	clientOptions: null,

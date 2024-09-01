@@ -61,7 +61,6 @@ export default async (interaction: CommandInteraction) => {
 		}
 	}
 
-
 	// Reply using the AI engine
 	let result: ChatReply | undefined = undefined
 	try {

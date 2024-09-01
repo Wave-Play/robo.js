@@ -1,6 +1,7 @@
 import { isMainThread, parentPort, workerData } from 'node:worker_threads'
 import { color, composeColors } from '../core/color.js'
 import { logger } from '../core/logger.js'
+import { setMode } from '../core/mode.js'
 import { removeInstances } from '../core/state.js'
 import type { SpiritMessage } from '../types/index.js'
 
@@ -8,6 +9,11 @@ import type { SpiritMessage } from '../types/index.js'
 if (isMainThread) {
 	logger.error('Spirit file should never be imported from the main thread!')
 	process.exit(1)
+}
+
+// Inherit mode for this thread
+if (workerData.mode) {
+	setMode(workerData.mode)
 }
 
 // This is used to wait for the state to be loaded before continuing
@@ -19,6 +25,7 @@ const stateLoad = new Promise<void>((resolve) => {
 
 interface BuildPayload {
 	files: string[]
+	mode?: string
 }
 
 /**
@@ -31,6 +38,7 @@ async function run(message: SpiritMessage): Promise<unknown> {
 		const payload = message.payload as BuildPayload
 		await buildAction(payload.files, {
 			dev: true,
+			mode: payload.mode,
 			verbose: message.verbose
 		})
 		return 'exit'
@@ -54,7 +62,9 @@ async function run(message: SpiritMessage): Promise<unknown> {
 		const { Robo } = await import('../core/robo.js')
 		Robo.start({ stateLoad }).catch((error) => {
 			logger.error(error)
-			logger.wait(`Robo failed to start, please check the logs for more information. Waiting for changes before retrying...`)
+			logger.wait(
+				`Robo failed to start, please check the logs for more information. Waiting for changes before retrying...`
+			)
 			process.exit(1)
 		})
 		isRobo = true

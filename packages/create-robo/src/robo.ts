@@ -4,10 +4,8 @@ import { checkbox, input, select, Separator } from '@inquirer/prompts'
 import chalk from 'chalk'
 import { fileURLToPath } from 'node:url'
 import {
-	ESLINT_IGNORE,
 	PRETTIER_CONFIG,
 	ROBO_CONFIG,
-	cmd,
 	exec,
 	getPackageManager,
 	hasProperties,
@@ -18,12 +16,13 @@ import {
 	ROBO_CONFIG_APP,
 	Indent,
 	ExecOptions,
-	Space
+	Space,
+	EslintConfig,
+	EslintConfigTypescript
 } from './utils.js'
 import { RepoInfo, downloadAndExtractRepo, getRepoInfo, hasRepo } from './templates.js'
 import retry from 'async-retry'
-import { logger } from 'robo.js'
-// @ts-expect-error - Internal
+import { color, logger } from 'robo.js'
 import { Spinner } from 'robo.js/dist/cli/utils/spinner.js'
 import type { CommandOptions } from './index.js'
 
@@ -88,6 +87,11 @@ const appPlugins = [
 		short: 'AI',
 		value: 'ai'
 	},
+	{
+		name: `${chalk.bold('Sync')} - Real-time state sync across clients. Perfect for multiplayer games and chat apps!`,
+		short: 'Sync',
+		value: 'sync'
+	},
 	new Separator('\nRequired for apps:'),
 	{
 		checked: true,
@@ -108,9 +112,7 @@ const botPlugins = [
 		value: 'ai'
 	},
 	{
-		name: `${chalk.bold(
-			'AI Voice'
-		)} - Give your Robo a voice! Command and converse with it in voice channels.`,
+		name: `${chalk.bold('AI Voice')} - Give your Robo a voice! Command and converse with it in voice channels.`,
 		short: 'AI Voice',
 		value: 'ai-voice'
 	},
@@ -167,6 +169,10 @@ const PluginDb: Record<string, PluginData> = {
 		},
 		keywords: ['api', 'http', 'server', 'vite', 'web'],
 		package: '@robojs/server'
+	},
+	sync: {
+		keywords: ['multiplayer', 'real-time', 'sync', 'websocket'],
+		package: '@robojs/sync'
 	},
 	maintenance: {
 		keywords: ['maintenance'],
@@ -247,7 +253,7 @@ export default class Robo {
 
 	constructor(name: string, cliOptions: CommandOptions, useSameDirectory: boolean) {
 		this._cliOptions = cliOptions
-		this._isApp = cliOptions.kit === 'app'
+		this._isApp = cliOptions.kit === 'app' || cliOptions.kit === 'web'
 		this._isPlugin = cliOptions.plugin
 		this._name = name
 		this._useTypeScript = cliOptions.typescript
@@ -314,7 +320,7 @@ export default class Robo {
 		this._packageJson.keywords.sort()
 
 		logger.debug(`Updating package.json file...`)
-		await fs.writeFile(path.join(this._workingDir, 'package.json'), JSON.stringify(this._packageJson, null, '\t'))
+		await fs.writeFile(path.join(this._workingDir, 'package.json'), JSON.stringify(this._packageJson, null, '\t'), 'utf-8')
 
 		// Install the selected plugin packages
 		const executor = getPackageExecutor()
@@ -326,7 +332,7 @@ export default class Robo {
 
 		try {
 			logger.debug(`Installing plugins:`, packages)
-			await exec(`${cmd(executor)} robo add ${packages.join(' ')}`, execOptions)
+			await exec(`${executor} robo add ${packages.join(' ')}`, execOptions)
 
 			// Update config files for each plugin with the provided configuration
 			const pendingConfigs = plugins
@@ -476,7 +482,11 @@ export default class Robo {
 		logger.debug('\n')
 		logger.log(
 			Indent,
-			chalk.bold(`📦 Creating ${chalk.cyan(this._useTypeScript ? 'TypeScript' : 'JavaScript')} ${this._isPlugin ? 'plugin' : 'project'}`)
+			chalk.bold(
+				`📦 Creating ${chalk.cyan(this._useTypeScript ? 'TypeScript' : 'JavaScript')} ${
+					this._isPlugin ? 'plugin' : 'project'
+				}`
+			)
 		)
 		this._spinner.setText(Indent + '    {{spinner}} Generating files...\n')
 		this._spinner.start()
@@ -509,6 +519,8 @@ export default class Robo {
 		// Good SEO is important :3
 		if (kit === 'app') {
 			this._packageJson.keywords.push('activity', 'discord', 'sdk', 'embed', 'embedded app')
+		} else if (kit === 'web') {
+			this._packageJson.keywords.push('web', 'server', 'http', 'vite')
 		} else {
 			this._packageJson.keywords.push('bot', 'discord', 'discord.js')
 		}
@@ -517,6 +529,9 @@ export default class Robo {
 		if (this._isApp) {
 			this._packageJson.scripts['dev'] += ' --tunnel'
 		}
+
+		// Prepare config directory
+		await fs.mkdir(path.join(this._workingDir, 'config', 'plugins'), { recursive: true })
 
 		// Robo.js and Discord.js are normal dependencies, unless this is a plugin
 		const roboPkg = 'robo.js'
@@ -585,17 +600,17 @@ export default class Robo {
 			const customReadme = readme
 				.replaceAll('{{projectName}}', this._name)
 				.replaceAll('{{pluginVariableName}}', pluginName)
-			await fs.writeFile(path.join(this._workingDir, 'README.md'), customReadme)
+			await fs.writeFile(path.join(this._workingDir, 'README.md'), customReadme, 'utf-8')
 
 			const development = await fs.readFile(path.join(__dirname, '../docs/plugin-development.md'), 'utf-8')
 			const customDevelopment = development.replaceAll('{{projectName}}', this._name)
-			await fs.writeFile(path.join(this._workingDir, 'DEVELOPMENT.md'), customDevelopment)
+			await fs.writeFile(path.join(this._workingDir, 'DEVELOPMENT.md'), customDevelopment, 'utf-8')
 		} else {
 			logger.debug(`Generating Robo documentation...`)
 			const fileName = this._isApp ? 'robo-readme-app.md' : 'robo-readme.md'
 			const readme = await fs.readFile(path.join(__dirname, '../docs/' + fileName), 'utf-8')
 			const customReadme = readme.replaceAll('{{projectName}}', this._name)
-			await fs.writeFile(path.join(this._workingDir, 'README.md'), customReadme)
+			await fs.writeFile(path.join(this._workingDir, 'README.md'), customReadme, 'utf-8')
 		}
 
 		const runPrefix = packageManager === 'npm' ? 'npm run ' : packageManager + ' '
@@ -619,30 +634,18 @@ export default class Robo {
 		}
 
 		if (features.includes('eslint')) {
-			devDependencies.push('eslint')
+			devDependencies.push('eslint@9')
+			devDependencies.push('@eslint/js')
+			devDependencies.push('globals')
 			this._packageJson.scripts['lint'] = runPrefix + 'lint:eslint'
-			this._packageJson.scripts['lint:eslint'] = 'eslint . --ext js,jsx,ts,tsx'
+			this._packageJson.scripts['lint:eslint'] = 'eslint -c config/eslint.mjs .'
+			let eslintConfig = EslintConfig
 
-			const eslintConfig = {
-				extends: ['eslint:recommended'],
-				env: {
-					node: true
-				},
-				parser: undefined as string | undefined,
-				plugins: [] as string[],
-				root: true,
-				rules: {}
-			}
 			if (this._useTypeScript) {
-				eslintConfig.extends.push('plugin:@typescript-eslint/recommended')
-				eslintConfig.parser = '@typescript-eslint/parser'
-				eslintConfig.plugins.push('@typescript-eslint')
-
-				devDependencies.push('@typescript-eslint/eslint-plugin')
-				devDependencies.push('@typescript-eslint/parser')
+				eslintConfig = EslintConfigTypescript
+				devDependencies.push('typescript-eslint')
 			}
-			await fs.writeFile(path.join(this._workingDir, '.eslintignore'), ESLINT_IGNORE)
-			await fs.writeFile(path.join(this._workingDir, '.eslintrc.json'), JSON.stringify(eslintConfig, null, 2))
+			await fs.writeFile(path.join(this._workingDir, 'config', 'eslint.mjs'), eslintConfig, 'utf-8')
 		}
 
 		if (features.includes('prettier')) {
@@ -655,7 +658,7 @@ export default class Robo {
 			}
 
 			// Create the .prettierrc.mjs file
-			await fs.writeFile(path.join(this._workingDir, '.prettierrc.mjs'), PRETTIER_CONFIG)
+			await fs.writeFile(path.join(this._workingDir, '.prettierrc.mjs'), PRETTIER_CONFIG, 'utf-8')
 		}
 
 		if (features.includes('extensionless')) {
@@ -676,8 +679,7 @@ export default class Robo {
 		}
 
 		logger.debug(`Writing Robo config file...`)
-		await fs.mkdir(path.join(this._workingDir, 'config', 'plugins'), { recursive: true })
-		await fs.writeFile(path.join(this._workingDir, 'config', 'robo.mjs'), roboConfig)
+		await fs.writeFile(path.join(this._workingDir, 'config', 'robo.mjs'), roboConfig, 'utf-8')
 		logger.debug(`Finished writing Robo config file:\n`, roboConfig)
 
 		// Sort keywords, scripts, dependencies, and devDependencies alphabetically (this is important to me)
@@ -724,7 +726,7 @@ export default class Robo {
 
 		// Write the package.json file
 		logger.debug(`Writing package.json file...`)
-		await fs.writeFile(path.join(this._workingDir, 'package.json'), JSON.stringify(this._packageJson, null, '\t'))
+		await fs.writeFile(path.join(this._workingDir, 'package.json'), JSON.stringify(this._packageJson, null, '\t'), 'utf-8')
 
 		// Install dependencies using the package manager that triggered the command
 		if (install) {
@@ -733,7 +735,7 @@ export default class Robo {
 			}
 
 			try {
-				let baseCommand = cmd(packageManager) + ' ' + (packageManager === 'npm' ? 'install' : 'add')
+				let baseCommand = packageManager + ' ' + (packageManager === 'npm' ? 'install' : 'add')
 				this._spinner.setText(Indent + '    {{spinner}} Installing dependencies...\n')
 				const execOptions: ExecOptions = {
 					cwd: this._workingDir,
@@ -744,6 +746,10 @@ export default class Robo {
 				await exec(baseCommand + ' ' + dependencies.join(' '), execOptions)
 				this._spinner.setText(Indent + '    {{spinner}} Installing dev dependencies...\n')
 				baseCommand += packageManager === 'yarn' ? ' --dev' : ' --save-dev'
+				if (features.includes('eslint') && this._useTypeScript) {
+					// TODO: Remove once merged: https://github.com/typescript-eslint/typescript-eslint/pull/9119
+					await fs.writeFile(path.join(this._workingDir, '.npmrc'), 'legacy-peer-deps=true\n', 'utf-8')
+				}
 				await exec(baseCommand + ' ' + devDependencies.join(' '), execOptions)
 
 				// Read updated package.json file
@@ -774,7 +780,7 @@ export default class Robo {
 
 				writeDependencies()
 				logger.debug(`Updating package.json file...`)
-				await fs.writeFile(path.join(this._workingDir, 'package.json'), JSON.stringify(this._packageJson, null, '\t'))
+				await fs.writeFile(path.join(this._workingDir, 'package.json'), JSON.stringify(this._packageJson, null, '\t'), 'utf-8')
 			}
 		}
 
@@ -783,7 +789,7 @@ export default class Robo {
 			const executor = getPackageExecutor()
 
 			try {
-				await exec(`${cmd(executor)} robo add ${plugins.join(' ')}`, { cwd: this._workingDir })
+				await exec(`${executor} robo add ${plugins.join(' ')}`, { cwd: this._workingDir })
 			} catch (error) {
 				logger.error(`Failed to install plugins:`, error)
 				logger.warn(`Please add the plugins manually using ${chalk.bold(executor + ' robo add')}`)
@@ -792,7 +798,9 @@ export default class Robo {
 	}
 
 	private getTemplate(): string {
-		if (this._isApp && this._selectedFeatures.includes('react')) {
+		if (this._cliOptions.kit === 'web') {
+			return this._useTypeScript ? '../templates/webapp-ts-react' : '../templates/webapp-js-react'
+		} else if (this._isApp && this._selectedFeatures.includes('react')) {
 			return this._useTypeScript ? '../templates/app-ts-react' : '../templates/app-js-react'
 		} else if (this._isApp) {
 			return this._useTypeScript ? '../templates/app-ts' : '../templates/app-js'
@@ -814,10 +822,12 @@ export default class Robo {
 			const stat = await fs.stat(itemSourcePath)
 
 			if (stat.isDirectory()) {
+				logger.debug(`Creating directory`, color.bold(itemTargetPath))
 				await fs.mkdir(itemTargetPath, { recursive: true })
 				await this.copyTemplateFiles(path.join(sourceDir, item))
 			} else {
-				await fs.copyFile(itemSourcePath, itemTargetPath)
+				logger.debug(`Copying`, color.bold(item), `to`, color.bold(itemTargetPath))
+				await fs.copyFile(itemSourcePath, itemTargetPath, fs.constants.COPYFILE_FICLONE)
 			}
 		}
 	}
@@ -827,20 +837,25 @@ export default class Robo {
 		const discordPortalUrl = chalk.bold.blue('https://discord.com/developers/applications')
 		const officialGuide = 'Guide:'
 		const officialGuideUrl = chalk.bold.blue('https://roboplay.dev/' + (this._isApp ? 'appkey' : 'botkey'))
+
+		let discordClientId = ''
+		let discordToken = ''
 		logger.log('')
 		logger.log(Indent, chalk.bold('🔑 Setting up credentials'))
 		logger.log(Indent, '   Get your credentials from the Discord Developer portal.\n')
 		logger.log(Indent, `   ${discordPortal} ${discordPortalUrl}`)
 		logger.log(Indent, `   ${officialGuide} ${officialGuideUrl}\n`)
 
-		const discordClientId = await input({
-			message: 'Enter your Discord Client ID (press Enter to skip):'
-		})
-		const discordToken = await input({
-			message: this._isApp
-				? 'Enter your Discord Client Secret (press enter to skip)'
-				: 'Enter your Discord Token (press Enter to skip):'
-		})
+		if (this._cliOptions.creds) {
+			discordClientId = await input({
+				message: 'Enter your Discord Client ID (press Enter to skip):'
+			})
+			discordToken = await input({
+				message: this._isApp
+					? 'Enter your Discord Client Secret (press enter to skip)'
+					: 'Enter your Discord Token (press Enter to skip):'
+			})
+		}
 
 		if (!discordClientId || !discordToken) {
 			this._missingEnv = true
@@ -875,7 +890,7 @@ export default class Robo {
 		envContent = updateOrAddVariable(envContent, 'NODE_OPTIONS', this._nodeOptions.join(' '))
 
 		if (this._selectedPlugins.includes('ai')) {
-			envContent = updateOrAddVariable(envContent, 'OPENAI_KEY', '')
+			envContent = updateOrAddVariable(envContent, 'OPENAI_API_KEY', '')
 		}
 		if (this._selectedPlugins.includes('ai-voice')) {
 			envContent = updateOrAddVariable(envContent, 'AZURE_SUBSCRIPTION_KEY', '')
@@ -885,7 +900,7 @@ export default class Robo {
 			envContent = updateOrAddVariable(envContent, 'PORT', '3000')
 		}
 
-		await fs.writeFile(envFilePath, envContent)
+		await fs.writeFile(envFilePath, envContent, 'utf-8')
 		await this.createEnvTsFile()
 		this._spinner.stop()
 		logger.log(Indent, '   Manage your credentials in the', chalk.bold.cyan('.env'), 'file.')
@@ -912,7 +927,7 @@ export default class Robo {
 		const pluginConfig = prettyStringify(config) + '\n'
 
 		logger.debug(`Writing ${pluginName} config to ${pluginPath}...`)
-		await fs.writeFile(pluginPath, `export default ${pluginConfig}`)
+		await fs.writeFile(pluginPath, `export default ${pluginConfig}`, 'utf-8')
 	}
 
 	/**
@@ -934,12 +949,12 @@ export default class Robo {
 				.catch(() => false)
 
 			if (tsconfig) {
-				await fs.writeFile(path.join(this._workingDir, 'env.d.ts'), autoCompletionEnvVar)
+				await fs.writeFile(path.join(this._workingDir, 'env.d.ts'), autoCompletionEnvVar, 'utf-8')
 				const parsedTSConfig = JSON.parse(await fs.readFile(tsconfigPath, 'utf-8'))
 				const compilerOptions = parsedTSConfig['compilerOptions']
 				compilerOptions['typeRoots'] = ['./env.d.ts']
 
-				await fs.writeFile(tsconfigPath, JSON.stringify(parsedTSConfig, null, '\t'))
+				await fs.writeFile(tsconfigPath, JSON.stringify(parsedTSConfig, null, '\t'), 'utf-8')
 			}
 		}
 	}

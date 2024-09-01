@@ -1,4 +1,4 @@
-# 🚀 @robojs/dev
+# @robojs/dev
 
 Welcome to _@robojs/dev_! For developers fine-tuning their **[Robo.js](https://github.com/Wave-Play/robo)** projects, this plugin is a must-have. Seamlessly test Robo APIs, monitor resources, and emulate specific Robo behaviors, all in one package. Just install, and you're ready to go!
 
@@ -13,6 +13,7 @@ npx robo add @robojs/dev
 Voilà! Your Robo is now supercharged with development tools.
 
 ## ⚠️ Important Note
+
 This plugin is crafted explicitly for development environments. Before deploying your Robo, ensure you uninstall this plugin to prevent users from directly manipulating your server or database.
 
 Execute the following to safely remove:

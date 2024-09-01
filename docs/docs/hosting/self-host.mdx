@@ -1,0 +1,61 @@
+import { Terminal } from '@site/src/components/shared/Terminal'
+
+# 🔨 Self-hosting
+
+Robo.js can be self-hosted, meaning you can run your own instance of Robo.js on your own server.
+
+This is great for those who want to have full control over their projects, or for those who want to run Robo.js in a private environment isolated from civilization. Before you can self-host Robo.js, you'll need **[Node.js](https://nodejs.org)** v20 or newer installed on your server.
+
+Feeling overwhelmed? **[Deploy with one command on RoboPlay](./roboplay)**, a hosting service made for Robo.js projects!
+
+## Running
+
+### Install dependencies
+
+Make sure you have all the necessary dependencies installed.
+
+<Terminal install/>
+
+### Build for production
+
+Some hosts might need you to run `robo build` before or after uploading your code. This step compiles your source code into an optimized production format, especially important for TypeScript users.
+
+<Terminal execute>robo build</Terminal>
+
+This command will compile your Robo.js project into a production-ready format, making it easier to run on your server.
+
+### Set environment variables
+
+Before starting your Robo, make sure you have all the necessary environment variables set up on your server. Check out the **[Secrets](/docs/basics/secrets)** page for more info. You'll need to set `NODE_ENV` to `"production"` to run your Robo in production mode.
+
+### Start in production mode
+
+Once you've built your project, you can start your Robo.js server with the following command:
+
+<Terminal execute>robo start</Terminal>
+
+This will start your Robo.js server, making it accessible to the world.
+
+## Extra tidbits
+
+Unlike **[Hosting on RoboPlay](./roboplay)**, self-hosting your Robo.js project means you're responsible for keeping your server up and running. Make sure you have the necessary resources and knowledge to maintain your server before self-hosting your Robo.js project.
+
+The following are things that are already set up for you when you host on RoboPlay, but good to know when self-hosting.
+
+### CDN
+
+We recommend using a CDN like **[Cloudflare](https://www.cloudflare.com/)** to cache your assets. This will help speed up and reduce the load on your server.
+
+### Logs
+
+Logs are essential for debugging issues in production. The Robo.js **[Logger](/docs/advanced/logger)** will write logs to stdout by default, but you can configure it to write to a file or a logging service via custom drains.
+
+We recommend using a service like **[Better Stack](https://betterstack.com/logs)** to collect and analyze your logs. We even have the **[`@robojs/better-stack`](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-better-stack)** plugin to make it easier to integrate.
+
+### Recovery
+
+Unlike `robo dev`, `robo start` will not automatically restart your Robo if it crashes. You'll need to set up a process manager like **[PM2](https://pm2.keymetrics.io/)** to keep your Robo running in the background.
+
+### TLS
+
+Don't forget to create and **[set up a TLS certificate](https://letsencrypt.org/)** if you plan to serve your Robo over HTTPS. This is especially important if you're using a custom domain.

@@ -1,5 +1,85 @@
 # @roboplay/sage
 
+## 0.5.11
+
+### Patch Changes
+
+- 4e4ba3e: fix: internal manifest usage
+
+## 0.5.10
+
+### Patch Changes
+
+- Updated dependencies [fa321f6]
+- Updated dependencies [a5ae699]
+- Updated dependencies [ed2734b]
+- Updated dependencies [70b477e]
+- Updated dependencies [65809a6]
+- Updated dependencies [d22fbfa]
+- Updated dependencies [0cae688]
+  - robo.js@0.10.13
+
+## 0.5.9
+
+### Patch Changes
+
+- Updated dependencies [361e3d8]
+  - robo.js@0.10.12
+
+## 0.5.8
+
+### Patch Changes
+
+- Updated dependencies [2f939d5]
+- Updated dependencies [61b98a2]
+  - robo.js@0.10.11
+
+## 0.5.7
+
+### Patch Changes
+
+- Updated dependencies [ca8ddd7]
+- Updated dependencies [7093bf4]
+  - robo.js@0.10.10
+
+## 0.5.6
+
+### Patch Changes
+
+- c43ff79: fix: spawn commands in shell on Windows (CVE-2024-27980)
+- Updated dependencies [c43ff79]
+  - robo.js@0.10.9
+
+## 0.5.5
+
+### Patch Changes
+
+- Updated dependencies [bf6db2e]
+  - robo.js@0.10.8
+
+## 0.5.4
+
+### Patch Changes
+
+- Updated dependencies [d6138ef]
+  - robo.js@0.10.7
+
+## 0.5.3
+
+### Patch Changes
+
+- Updated dependencies [838ed5d]
+- Updated dependencies [6a4473d]
+  - robo.js@0.10.6
+
+## 0.5.2
+
+### Patch Changes
+
+- Updated dependencies [7450631]
+- Updated dependencies [7159c94]
+  - robo.js@0.10.5
+
 ## 0.5.1
 
 ### Patch Changes

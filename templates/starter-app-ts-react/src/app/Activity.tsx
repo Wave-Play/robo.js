@@ -25,10 +25,7 @@ export const Activity = () => {
 		<div>
 			<img src="/rocket.png" className="logo" alt="Discord" />
 			<h1>Hello, World</h1>
-			{ channelName
-				? <h3>#{channelName}</h3>
-				: <h3>{status}</h3>
-			}
+			{channelName ? <h3>#{channelName}</h3> : <h3>{status}</h3>}
 			<small>
 				Powered by <strong>Robo.js</strong>
 			</small>

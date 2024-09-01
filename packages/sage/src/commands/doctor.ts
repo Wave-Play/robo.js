@@ -31,7 +31,7 @@ async function doctorAction(options: DoctorOptions) {
 	if (options.selfCheck) {
 		await checkSageUpdates()
 	}
-	
+
 	loadEnv({ sync: true })
 	const config = await loadConfig()
 

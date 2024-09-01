@@ -1,5 +1,6 @@
 import { logger } from '../core/logger.js'
 import { hasDependency } from '../core/runtime-utils.js'
+import { _readyPromiseResolve } from '~/core/plugin-utils.js'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { portal } from 'robo.js'
@@ -12,7 +13,7 @@ const PATH_REGEX = new RegExp(/\[(.+?)\]/g)
 interface PluginOptions {
 	cors?: boolean
 	engine?: BaseEngine
-	parseBody?: boolean
+	hostname?: string
 	port?: number
 	prefix?: string | null | false
 	vite?: ViteDevServer
@@ -32,7 +33,7 @@ export default async (_client: Client, options: PluginOptions) => {
 	}
 
 	// Start HTTP server only if API Routes are defined
-	const { engine, port = parseInt(process.env.PORT ?? '3000') } = pluginOptions
+	const { engine, hostname, port = parseInt(process.env.PORT ?? '3000') } = pluginOptions
 	let vite: ViteDevServer | undefined = pluginOptions.vite
 
 	logger.debug(`Preparing server with ${portal.apis.size} API routes...`)
@@ -49,7 +50,7 @@ export default async (_client: Client, options: PluginOptions) => {
 			vite = await createViteServer({
 				configFile: existsSync(viteConfigPath) ? viteConfigPath : undefined,
 				server: {
-					hmr: { server: engine.getHttpServer() },
+					hmr: { path: '/hmr', server: engine.getHttpServer() },
 					middlewareMode: { server: engine.getHttpServer() }
 				}
 			})
@@ -59,9 +60,14 @@ export default async (_client: Client, options: PluginOptions) => {
 		}
 	}
 
-	// Setup Vite if available
+	// Setup Vite if available and register socket bypass
 	if (vite) {
 		await engine.setupVite(vite)
+
+		// Prevent other plugins from registering the HMR route
+		engine.registerWebsocket('/hmr', () => {
+			logger.debug('Vite HMR connection detected. Skipping registration...')
+		})
 	}
 
 	// Add loaded API modules onto new router instance
@@ -71,11 +77,13 @@ export default async (_client: Client, options: PluginOptions) => {
 	portal.apis.forEach((api) => {
 		const key = prefix + '/' + api.key.replace(PATH_REGEX, ':$1')
 		paths.push(key)
+		// @ts-expect-error - Outdated Robo API typings
 		engine.registerRoute(key, api.handler.default)
 	})
 
 	logger.debug(`Starting server...`)
-	await engine.start({ port })
+	await engine.start({ hostname, port })
+	_readyPromiseResolve()
 }
 
 async function getDefaultEngine() {

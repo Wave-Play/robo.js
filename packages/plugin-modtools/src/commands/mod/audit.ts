@@ -31,7 +31,7 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 	const isUserBanned = await isBanned(interaction.guild as Guild, user.id)
 
 	if (isUserBanned) {
-		status = 'Banned for: ' + banData?.reason ?? 'Unknown'
+		status = 'Banned for: ' + (banData?.reason ?? 'Unknown')
 	}
 	const infractions =
 		(await Flashcore.get<number>('infractions', {
@@ -48,7 +48,7 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 						type: ComponentType.Button,
 						style: ButtonStyle.Danger,
 						label: isUserBanned ? 'Unban' : 'Ban',
-						customId: (isUserBanned ? Buttons.Unban.id : Buttons.Ban.id ) + '/' + user.id
+						customId: (isUserBanned ? Buttons.Unban.id : Buttons.Ban.id) + '/' + user.id
 					}
 				]
 			}

@@ -2,7 +2,7 @@ import { Command } from 'commander'
 import tar from 'tar'
 import { color, composeColors } from '../core/color.js'
 import { logger } from '../core/logger.js'
-import { checkSageUpdates, cmd, downloadFile, exec, getPackageManager, isRoboProject } from '../core/utils.js'
+import { checkSageUpdates, downloadFile, exec, getPackageManager, isRoboProject } from '../core/utils.js'
 import path from 'node:path'
 import { mkdirSync } from 'node:fs'
 import { access, cp, readFile, writeFile } from 'node:fs/promises'
@@ -184,7 +184,7 @@ async function importPlugin(plugin: string, packageJson: PackageJson) {
 		logger.info(prefix, `Installing dependencies...`)
 		const packageManager = getPackageManager()
 		const command = packageManager === 'npm' ? 'install' : 'add'
-		await exec(`${cmd(packageManager)} ${command} ${depsToInstall.join(' ')}`)
+		await exec(`${packageManager} ${command} ${depsToInstall.join(' ')}`)
 	}
 
 	if (devDepsToInstall.length > 0) {
@@ -192,7 +192,7 @@ async function importPlugin(plugin: string, packageJson: PackageJson) {
 		const packageManager = getPackageManager()
 		const command = packageManager === 'npm' ? 'install' : 'add'
 		const commandOption = packageManager === 'npm' ? '--save-dev' : '--dev'
-		await exec(`${cmd(packageManager)} ${command} ${commandOption} ${devDepsToInstall.join(' ')}`)
+		await exec(`${packageManager} ${command} ${commandOption} ${devDepsToInstall.join(' ')}`)
 	}
 
 	logger.info(prefix, `Successfully imported!`)
