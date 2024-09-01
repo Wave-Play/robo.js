@@ -37,9 +37,7 @@ export class PlausibleAnalytics extends BaseEngine {
 		}
 	}
 
-	public async event(options?: EventOptions): Promise<void> {
-		if (!options) return
-
+	public async event(options: EventOptions): Promise<void> {
 		if (options.name === 'pageview') {
 			return logger.error(`[Plausible]  Please use Analytics.view(${options.name}, ${options}).`)
 		}

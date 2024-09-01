@@ -7,7 +7,15 @@ export class GoogleAnalytics extends BaseEngine {
 
 	public async view(page: string, options: ViewOptions): Promise<void> {
 		if (isRequestValid(this._MEASURE_ID, this._TOKEN, options)) {
-			if (typeof options.data === 'object' && options.name === 'pageview') {
+			if (typeof options.data === 'object') {
+				const params = {}
+
+				if (options.data) {
+					Object.assign(params, options.data)
+				}
+				if (options.revenue) {
+					Object.assign(params, options.revenue)
+				}
 				const res = await fetch(
 					`https://www.google-analytics.com/mp/collect?measurement_id=${this._MEASURE_ID}&api_secret=${this._TOKEN}`,
 					{
@@ -17,7 +25,7 @@ export class GoogleAnalytics extends BaseEngine {
 						},
 						body: JSON.stringify({
 							client_id: options.userID, // Unique user identifier
-							events: [{ name: options.name, params: options.data }]
+							events: [{ name: options.name, params }]
 						})
 					}
 				)
@@ -30,10 +38,19 @@ export class GoogleAnalytics extends BaseEngine {
 	}
 	public async event(options: EventOptions): Promise<void> {
 		if (isRequestValid(this._MEASURE_ID, this._TOKEN, options)) {
-			if (options.name !== 'pageview') {
+			if (options.name === 'pageview') {
 				throw new Error(`[GoogleAnalytics] Please use pageview event with the Analytics.view() method`)
 			}
 			if (typeof options.data === 'object') {
+				const params = {}
+
+				if (options.data) {
+					Object.assign(params, options.data)
+				}
+				if (options.revenue) {
+					Object.assign(params, options.revenue)
+				}
+
 				const res = await fetch(
 					`https://www.google-analytics.com/mp/collect?measurement_id=${this._MEASURE_ID}&api_secret=${this._TOKEN}`,
 					{
@@ -43,7 +60,7 @@ export class GoogleAnalytics extends BaseEngine {
 						},
 						body: JSON.stringify({
 							client_id: options.userID,
-							events: [{ name: options.name, params: options.data }]
+							events: [{ name: options.name, params }]
 						})
 					}
 				)
@@ -60,22 +77,12 @@ function isRequestValid(
 	token: string | undefined,
 	options: EventOptions | ViewOptions
 ): boolean {
-	if (!options?.action) {
-		logger.error('[GoogleAnalytics] please set an Event : ')
-		logger.debug('pageview, event, transaction, item, social, timing, exception')
-		return false
-	}
-
-	if (!options?.type) {
-		logger.error('[GoogleAnalytics] please set the type of interaction, ex: button')
-		return false
-	}
-	if (!options?.actionType) {
-		logger.error('[GoogleAnalytics] please set an action Type, ex: click')
+	if (!options.name) {
+		logger.error('[GoogleAnalytics] Please set a name for your event.')
 		return false
 	}
 	if (!options.userID) {
-		logger.error('[GoogleAnalytics] Please set the user ID.')
+		logger.error('[GoogleAnalytics] Please set a user ID.')
 		return false
 	}
 	if (!id) {
