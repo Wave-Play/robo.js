@@ -7,6 +7,7 @@ interface CommonOptions {
 	type?: string
 	name: string
 	data?: unknown
+	referrer?: string
 	revenue?: { currency: string; amount: number | string }
 }
 

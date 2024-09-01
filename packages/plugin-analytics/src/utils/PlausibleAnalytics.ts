@@ -28,6 +28,7 @@ export class PlausibleAnalytics extends BaseEngine {
 				'User-Agent':
 					'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'
 			},
+			referrer: options.referrer ?? '',
 			body: JSON.stringify(temp)
 		})
 
@@ -61,7 +62,8 @@ export class PlausibleAnalytics extends BaseEngine {
 
 		if (options.revenue) {
 			const revenue = options.revenue
-			Object.assign(temp, { revenue })
+			// we need the validAmount function to make sure the amount includes decimal points ! or it wont work.
+			Object.assign(temp, { revenue: { currency: revenue.currency, amount: validAmount(revenue.amount) } })
 		}
 
 		if (typeof options.data === 'object') {
@@ -83,6 +85,7 @@ export class PlausibleAnalytics extends BaseEngine {
 				'User-Agent':
 					'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'
 			},
+			referrer: options.referrer ?? '',
 			body: JSON.stringify(temp)
 		})
 
@@ -90,4 +93,13 @@ export class PlausibleAnalytics extends BaseEngine {
 			throw new Error(`[Plausible] ${res.statusText} ${res.status}`)
 		}
 	}
+}
+
+function validAmount(amount: string | number) {
+	if (typeof amount === 'string') {
+		const decimal = amount.indexOf('.')
+		if (decimal !== -1) return amount
+		return amount + '.00'
+	}
+	return amount.toFixed(2)
 }
