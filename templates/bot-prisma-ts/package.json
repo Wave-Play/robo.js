@@ -1,5 +1,5 @@
 {
-	"name": "bot-postgres-ts",
+	"name": "bot-prisma-ts",
 	"description": "",
 	"version": "1.0.0",
 	"type": "module",
