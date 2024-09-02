@@ -10,6 +10,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { checkbox, select, Separator } from '@inquirer/prompts'
 import { readFile } from 'node:fs/promises'
+import { Config, Plugin } from 'robo.js'
 
 const command = new Command('upgrade')
 	.description('Upgrades your Robo to the latest version')
@@ -46,6 +47,8 @@ async function upgradeAction(options: UpgradeOptions) {
 	const config = await loadConfig()
 	await prepareFlashcore()
 
+	const plugins = config.plugins
+	plugins.push(['robo.js', {}])
 	// Check NPM registry for updates
 	const packageJsonPath = path.join(await findPackagePath('robo.js', process.cwd()), 'package.json')
 	logger.debug(`Package JSON path:`, packageJsonPath)
@@ -54,89 +57,7 @@ async function upgradeAction(options: UpgradeOptions) {
 	const update = await checkUpdates(packageJson, config, true)
 	logger.debug(`Update payload:`, update)
 
-	// Exit if there are no updates
-	if (!update.hasUpdate) {
-		logger.ready(`Your Robo is up to date! 🎉`)
-		return
-	}
-
-	// Let user choose whether to upgrade or show changelog
-	const upgradeOptions = [
-		{ name: 'Yes, upgrade!', value: 'upgrade' },
-		{ name: 'Cancel', value: 'cancel' }
-	]
-	if (update.changelogUrl) {
-		upgradeOptions.splice(1, 0, { name: 'Read changelog', value: 'changelog' })
-	}
-
-	logger.info(
-		composeColors(color.green, color.bold)(`A new version of Robo.js is available!`),
-		color.dim(`(v${update.currentVersion} -> v${update.latestVersion})`)
-	)
-	logger.log('')
-	const upgradeChoice = await select({
-		message: 'Would you like to upgrade?',
-		choices: upgradeOptions
-	})
-	logger.log('')
-	logger.debug(`Upgrade choice:`, upgradeChoice)
-
-	// Exit if user cancels
-	if (upgradeChoice === 'cancel') {
-		logger.info(`Cancelled upgrade.`)
-		return
-	}
-
-	// Show changelog
-	if (upgradeChoice === 'changelog') {
-		const changelog = await getChangelog(update.changelogUrl)
-		printChangelog(changelog)
-
-		// Let user choose whether to upgrade or not
-		const upgrade = await select({
-			message: 'So, would you like to upgrade?',
-			choices: [
-				{ name: 'Yes, upgrade!', value: true },
-				{ name: 'Cancel', value: false }
-			]
-		})
-		logger.log('')
-
-		// Exit if user cancels
-		if (!upgrade) {
-			logger.info(`Cancelled upgrade.`)
-			return
-		}
-	}
-
-	// Update with the same package manager
-	const packageManager = getPackageManager()
-	const command = packageManager === 'npm' ? 'install' : 'add'
-	logger.debug(`Package manager:`, packageManager)
-
-	await exec(`${packageManager} ${command} robo.js@${update.latestVersion}`)
-
-	// Check what needs to be changed
-	const data = await check(update.latestVersion)
-	logger.debug(`Check data:`, data)
-
-	if (data.breaking.length === 0 && data.suggestions.length === 0) {
-		logger.info(`No changes to apply.`)
-	} else {
-		// Let user choose which changes to apply
-		const changes = await checkbox({
-			message: 'Which changes would you like to apply?',
-			choices: [
-				...data.breaking.map((change) => ({ name: change.name, value: change })),
-				new Separator(),
-				...data.suggestions.map((change) => ({ name: change.name, value: change }))
-			]
-		})
-		logger.log('')
-		await execute(changes)
-	}
-
-	logger.ready(`Successfully upgraded to v${update.latestVersion}! 🎉`)
+	await updateRobo(plugins, config)
 }
 
 interface Changelog {
@@ -271,4 +192,239 @@ async function execute(changes: Change[]) {
 	}
 
 	logger.info(`Successfully applied changes!`)
+}
+
+type Choice<Value> = {
+	value: Value
+	name?: string
+	description?: string
+	disabled?: boolean | string
+	short?: string
+	type?: never
+}
+
+type ChangelogUpdate = {
+	changelogUrl: string
+	currentVersion: string
+	hasUpdate: boolean
+	latestVersion: string
+	name: string
+}
+
+type PluginToUpdate = { data: { name: string; extra: ChangelogUpdate } }
+
+enum customSeparator {
+	sep = '-----🎉-----'
+}
+
+async function updateRobo(plugins: Plugin[], config: Config) {
+	const u_options: Array<Separator | Choice<string>> = []
+	const hasUpdate: string[] = []
+
+	for (const plugin of plugins) {
+		const plugingName = plugin[0]
+		const packagePath = await findPackagePath(plugingName, process.cwd())
+		logger.debug('Checking updates for', color.bold(plugingName), 'at path', color.bold(packagePath))
+
+		// Check this package for updates
+		const packageJsonPath = path.join(packagePath, 'package.json')
+		const packageJson: PackageJson = JSON.parse(await readFile(packageJsonPath, 'utf-8'))
+		const update = await checkUpdates(packageJson, config, true)
+		logger.debug(`Update payload for ${plugingName}:`, update)
+
+		// Skip if no updates
+		if (!update.hasUpdate) {
+			logger.info(composeColors(color.green, color.bold)(`${plugingName} is up to date!`))
+			continue
+		}
+
+		// Show changelog if available
+		const upgradeOptions = [
+			{ name: plugingName, value: JSON.stringify({ data: { name: plugingName, extra: update } }), short: 'pl' }
+		]
+
+		if (update.changelogUrl) {
+			upgradeOptions.splice(1, 0, {
+				name: 'Read changelog',
+				value: JSON.stringify({
+					...update,
+					name: plugingName
+				}),
+				short: 'cl'
+			})
+			hasUpdate.push(
+				JSON.stringify({
+					...update,
+					name: plugingName
+				})
+			)
+		}
+
+		u_options.push(new Separator(plugingName))
+		u_options.push(...upgradeOptions)
+
+		logger.info(
+			composeColors(color.green, color.bold)(`A new version of ${plugingName} is available!`),
+			color.dim(`(v${update.currentVersion} -> v${update.latestVersion})`)
+		)
+		logger.log('')
+	}
+
+	const showChangelogList = async (pluginData: string[]) => {
+		console.clear()
+		const pluginNames = (pluginData as string[]).map((plugin: string) => {
+			const parsed = JSON.parse(plugin)
+			if (isValidPlugin(parsed)) {
+				return parsed.data.name
+			}
+		})
+
+		const selectedChangelog = await select(
+			{
+				message: 'See the change logs for the plug-ins you selected or proceed with the upgrade',
+				choices: u_options.filter((option) => {
+					if (option instanceof Separator) {
+						if (option.separator === customSeparator.sep) {
+							return option
+						}
+						if (pluginNames.includes(option.separator)) {
+							return {
+								...option,
+								separate: option.separator + ':'
+							}
+						}
+					}
+					if (option instanceof Separator === false) {
+						if (option.value === 'abort' || option.value === 'update') {
+							return option
+						}
+						if (option.short === 'cl') {
+							const value = JSON.parse(option.value as string)
+							if (pluginNames.includes(value.name)) {
+								return option
+							}
+						}
+					}
+				}),
+				loop: false
+			},
+			{
+				clearPromptOnDone: false
+			}
+		)
+
+		if (typeof selectedChangelog === 'string' && hasUpdate.includes(selectedChangelog)) {
+			const JSONParseChangeLog = JSON.parse(selectedChangelog) as ChangelogUpdate
+			const changelog = await getChangelog(JSONParseChangeLog.changelogUrl)
+			printChangelog(changelog)
+
+			// Let user choose whether to upgrade or not
+			const upgrade = await select(
+				{
+					message: ``,
+					choices: [{ name: 'back', value: false }],
+					loop: false
+				},
+				{
+					clearPromptOnDone: true
+				}
+			)
+
+			logger.log('')
+			// Exit if user cancels
+			if (!upgrade) {
+				await showChangelogList(pluginData)
+				return
+			}
+		}
+
+		if (selectedChangelog === 'update') {
+			if (Array.isArray(pluginData)) {
+				const map = pluginData.map((plugin) => {
+					if (typeof plugin === 'string') {
+						const parsed = JSON.parse(plugin)
+						if (isValidPlugin(parsed)) return parsed
+					}
+				})
+				await upgradeSelectedPlugins(map)
+				return
+			}
+			logger.error('An error happened while treating the data...')
+			return
+		}
+
+		if (selectedChangelog === 'abort') {
+			logger.info('Aborting plugin upgrade!')
+			return
+		}
+	}
+
+	const showListOfPlugins = async () => {
+		const selectedPlugins = await checkbox(
+			{
+				message: 'Select plugins that you want to update:',
+				choices: u_options.filter((option) => option instanceof Separator === false && option.short !== 'cl'),
+				loop: false
+			},
+			{
+				clearPromptOnDone: false
+			}
+		)
+
+		if (selectedPlugins.length > 0) {
+			u_options.push(new Separator('-----🎉-----'))
+			u_options.push({ name: 'Proceed update', value: 'update' })
+			u_options.push({ name: 'cancel', value: 'abort' })
+			await showChangelogList(selectedPlugins)
+		}
+	}
+
+	const upgradeSelectedPlugins = async (selectedPlugins: Array<PluginToUpdate>) => {
+		const packageManager = getPackageManager()
+		const command = packageManager === 'npm' ? 'install' : 'add'
+		logger.debug(`Package manager:`, packageManager)
+
+		const pluginStringFromArray = selectedPlugins
+			.map((plugin) => `${plugin.data.name}@${plugin.data.extra.latestVersion}`)
+			.join(' ')
+
+		await exec(`${packageManager} ${command} ${pluginStringFromArray}`)
+
+		// Check what needs to be changed
+
+		for (const plugin of selectedPlugins) {
+			const data = await check(plugin.data.extra.latestVersion)
+			logger.debug(`Check data:`, data)
+
+			if (data.breaking.length === 0 && data.suggestions.length === 0) {
+				logger.info(`No changes to apply.`)
+			} else {
+				// Let user choose which changes to apply
+				const changes = await checkbox({
+					message: 'Which changes would you like to apply?',
+					choices: [
+						...data.breaking.map((change) => ({ name: change.name, value: change })),
+						new Separator(),
+						...data.suggestions.map((change) => ({ name: change.name, value: change }))
+					]
+				})
+				logger.log('')
+
+				await execute(changes)
+			}
+			logger.ready(`Successfully upgraded ${plugin.data.name} to v${plugin.data.extra.latestVersion}! 🎉`)
+		}
+	}
+
+	if (u_options.length > 0) {
+		await showListOfPlugins()
+	} else {
+		logger.info(composeColors(color.green, color.bold)(`Your Robo is up to date!`))
+	}
+}
+
+function isValidPlugin(plugin: PluginToUpdate): plugin is PluginToUpdate {
+	if (plugin?.data !== undefined) {
+		return true
+	}
 }
