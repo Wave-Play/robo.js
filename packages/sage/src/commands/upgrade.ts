@@ -371,7 +371,7 @@ async function updateRobo(plugins: Plugin[], config: Config) {
 			}
 		)
 
-		if (selectedPlugins) {
+		if (selectedPlugins.length > 0) {
 			u_options.push(new Separator('-----🎉-----'))
 			u_options.push({ name: 'Proceed update', value: 'update' })
 			u_options.push({ name: 'cancel', value: 'abort' })
