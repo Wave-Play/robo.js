@@ -2,7 +2,7 @@
 
 ---
 
-# Hiya, bot-postgres-ts 🌈
+# Hiya, bot-prisma-ts 🌈
 
 Welcome to your fresh **[Robo.js](https://github.com/Wave-Play/robo)** project!
 
