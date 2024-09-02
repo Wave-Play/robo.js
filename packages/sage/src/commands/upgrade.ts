@@ -48,7 +48,7 @@ async function upgradeAction(options: UpgradeOptions) {
 	await prepareFlashcore()
 
 	const plugins = config.plugins
-	plugins.push('robo.js')
+	plugins.push(['robo.js', {}])
 	// Check NPM registry for updates
 	const packageJsonPath = path.join(await findPackagePath('robo.js', process.cwd()), 'package.json')
 	logger.debug(`Package JSON path:`, packageJsonPath)
@@ -223,10 +223,22 @@ async function updateRobo(plugins: Plugin[], config: Config) {
 
 	for (const plugin of plugins) {
 		const plugingName = plugin[0]
-		const pluginPackageJSON = path.join(await findPackagePath(plugingName, process.cwd()), 'package.json')
-		const packageJson: PackageJson = JSON.parse(await readFile(pluginPackageJSON, 'utf-8'))
-		const update = await checkUpdates(packageJson, config, true)
+		const packagePath = await findPackagePath(plugingName, process.cwd())
+		logger.debug('Checking updates for', color.bold(plugingName), 'at path', color.bold(packagePath))
 
+		// Check this package for updates
+		const packageJsonPath = path.join(packagePath, 'package.json')
+		const packageJson: PackageJson = JSON.parse(await readFile(packageJsonPath, 'utf-8'))
+		const update = await checkUpdates(packageJson, config, true)
+		logger.debug(`Update payload for ${plugingName}:`, update)
+
+		// Skip if no updates
+		if (!update.hasUpdate) {
+			logger.info(composeColors(color.green, color.bold)(`${plugingName} is up to date!`))
+			continue
+		}
+
+		// Show changelog if available
 		const upgradeOptions = [
 			{ name: plugingName, value: JSON.stringify({ data: { name: plugingName, extra: update } }), short: 'pl' }
 		]
@@ -404,7 +416,11 @@ async function updateRobo(plugins: Plugin[], config: Config) {
 		}
 	}
 
-	await showListOfPlugins()
+	if (u_options.length > 0) {
+		await showListOfPlugins()
+	} else {
+		logger.info(composeColors(color.green, color.bold)(`Your Robo is up to date!`))
+	}
 }
 
 function isValidPlugin(plugin: PluginToUpdate): plugin is PluginToUpdate {
