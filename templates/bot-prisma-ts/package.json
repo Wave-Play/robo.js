@@ -1,0 +1,39 @@
+{
+	"name": "bot-postgres-ts",
+	"description": "",
+	"version": "1.0.0",
+	"type": "module",
+	"private": true,
+	"keywords": [
+		"bot",
+		"discord",
+		"discord.js",
+		"robo",
+		"robo.js",
+		"typescript"
+	],
+	"scripts": {
+		"build": "robo build",
+		"deploy": "robo deploy",
+		"dev": "robox dev",
+		"doctor": "sage doctor",
+		"invite": "robo invite",
+		"lint:style": "prettier --write .",
+		"start": "robo start",
+		"upgrade": "sage upgrade",
+		"db:pull": "prisma db pull",
+		"db:generate": "prisma generate"
+	},
+	"dependencies": {
+		"@prisma/client": "^5.19.0",
+		"discord.js": "^14.15.3",
+		"robo.js": "^0.10.13"
+	},
+	"devDependencies": {
+		"@swc/core": "^1.7.22",
+		"@types/node": "^22.5.2",
+		"prettier": "^3.3.3",
+		"prisma": "^5.19.0",
+		"typescript": "^5.5.4"
+	}
+}
