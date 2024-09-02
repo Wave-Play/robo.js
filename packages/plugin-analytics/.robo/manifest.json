@@ -3,16 +3,13 @@
   "__robo": {
     "config": {
       "clientOptions": {
-        "intents": [
-          "Guilds",
-          "GuildMessages"
-        ]
+        "intents": []
       },
       "plugins": [],
       "type": "plugin"
     },
     "type": "plugin",
-    "updatedAt": "2024-09-01T07:45:35.148Z",
+    "updatedAt": "2024-09-02T08:10:28.364Z",
     "version": "0.10.10"
   },
   "api": {},
@@ -28,11 +25,7 @@
       }
     ]
   },
-  "permissions": [
-    "ReadMessageHistory",
-    "SendMessages",
-    "ViewChannel"
-  ],
+  "permissions": [],
   "middleware": [],
   "scopes": [
     "bot"

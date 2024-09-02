@@ -1,8 +1,7 @@
-import { logger } from 'robo.js'
-import { BaseEngine, setAnalytics } from '../utils/analytics'
-import { GoogleAnalytics } from '../utils/GoogleAnalytics'
-import { ManyEngines } from '../utils/ManyEngines'
-import { PlausibleAnalytics } from '../utils/PlausibleAnalytics'
+import { BaseEngine, setAnalytics } from '../core/analytics.js'
+import { GoogleAnalytics } from '../engines/GoogleAnalytics.js'
+import { ManyEngines } from '../engines/ManyEngines.js'
+import { PlausibleAnalytics } from '../engines/PlausibleAnalytics.js'
 
 interface PluginOptions {
 	engine?: BaseEngine
@@ -22,18 +21,11 @@ export default (_client: unknown, options: PluginOptions) => {
 
 	if (GAnalytics && PAnalytics) {
 		setAnalytics(new ManyEngines(new GoogleAnalytics(), new PlausibleAnalytics()))
-		return
-	}
-
-	if (GAnalytics) {
+	} else if (GAnalytics) {
 		setAnalytics(new GoogleAnalytics())
-		return
-	}
-
-	if (PAnalytics) {
+	} else if (PAnalytics) {
 		setAnalytics(new PlausibleAnalytics())
-		return
+	} else {
+		throw new Error('No Analytics Engine, please provide one, see https://robojs.dev/plugins/analytics to learn how.')
 	}
-
-	return logger.warn('No Analytics Engine, please provide one, see https://robojs.dev/plugins/analytics to learn how.')
 }

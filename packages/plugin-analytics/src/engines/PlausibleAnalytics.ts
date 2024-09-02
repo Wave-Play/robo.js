@@ -1,14 +1,18 @@
-import { logger } from 'robo.js'
-import { BaseEngine, EventOptions, ViewOptions } from './analytics'
+import { analyticsLogger, BaseEngine } from '../core/analytics.js'
+
+import type { EventOptions, ViewOptions } from '../core/analytics.js'
 
 export class PlausibleAnalytics extends BaseEngine {
-	private _PLAUSIBLE_DOMAIN = process.env.PLAUSIBLE_DOMAIN
+	private _domain = process.env.PLAUSIBLE_DOMAIN
+	private _PlausibleAPI = 'https://plausible.io/'
 
 	public async view(page: string, options: ViewOptions): Promise<void> {
+		const { domain = this._domain, url = `https://${this._domain}${page}` } = options ?? {}
+
 		const temp = {
 			name: 'pageview',
-			url: options?.url ?? `https://${this._PLAUSIBLE_DOMAIN}${page}`,
-			domain: options?.domain ?? this._PLAUSIBLE_DOMAIN
+			url: url,
+			domain: domain
 		}
 
 		if (typeof options.data === 'object') {
@@ -21,7 +25,7 @@ export class PlausibleAnalytics extends BaseEngine {
 			}
 		}
 
-		const res = await fetch('https://plausible.io/api/event', {
+		const res = await fetch(this._PlausibleAPI + '/api/event', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -39,23 +43,25 @@ export class PlausibleAnalytics extends BaseEngine {
 
 	public async event(options: EventOptions): Promise<void> {
 		if (options.name === 'pageview') {
-			return logger.error(`[Plausible]  Please use Analytics.view(${options.name}, ${options}).`)
+			return analyticsLogger.error(`[Plausible]  Please use Analytics.view(${options.name}, ${options}).`)
 		}
 
-		if (!options.domain && !this._PLAUSIBLE_DOMAIN) {
-			return logger.error("[Plausible]  Specify a domain to use Plausible's event.")
+		if (!options.domain && !this._domain) {
+			return analyticsLogger.error("[Plausible]  Specify a domain to use Plausible's event.")
 		}
 		if (!options.url) {
-			return logger.error("[Plausible]  Specify a URL to use Plausible's event.")
+			return analyticsLogger.error("[Plausible]  Specify a URL to use Plausible's event.")
 		}
 		if (!options.name) {
-			return logger.error("[Plausible]  Specify a name to use Plausible's event.")
+			return analyticsLogger.error("[Plausible]  Specify a name to use Plausible's event.")
 		}
+
+		const { domain = this._domain, url = `https://${this._domain}/` } = options ?? {}
 
 		const temp = {
 			name: options.name,
-			url: options?.url ?? `https://${this._PLAUSIBLE_DOMAIN}/`,
-			domain: options?.domain ?? this._PLAUSIBLE_DOMAIN
+			url: url,
+			domain: domain
 		}
 
 		if (options.revenue) {
@@ -74,7 +80,7 @@ export class PlausibleAnalytics extends BaseEngine {
 			}
 		}
 
-		const res = await fetch('https://plausible.io/api/event', {
+		const res = await fetch(this._PlausibleAPI + '/api/event', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',

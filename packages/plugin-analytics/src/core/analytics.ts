@@ -1,8 +1,10 @@
+import { logger } from 'robo.js'
+
 interface CommonOptions {
 	action?: string
 	url?: string
 	domain?: string
-	userID?: number | string
+	userId?: number | string
 	actionType?: string
 	type?: string
 	name: string
@@ -15,8 +17,10 @@ export interface EventOptions extends CommonOptions {}
 
 export interface ViewOptions extends CommonOptions {
 	element?: string
-	elementIdentifier?: string
+	elementId?: string
 }
+
+export const analyticsLogger = logger.fork('analytics')
 
 export abstract class BaseEngine {
 	public abstract event(options: EventOptions): Promise<void> | void

@@ -1,12 +1,12 @@
-import { BaseEngine, EventOptions, ViewOptions } from './analytics'
-import { logger } from 'robo.js'
+import { analyticsLogger, BaseEngine } from '../core/analytics.js'
+import type { EventOptions, ViewOptions } from '../core/analytics.js'
 
 export class GoogleAnalytics extends BaseEngine {
-	private _MEASURE_ID = process.env.GOOGLE_ANALYTICS_MEASURE_ID
-	private _TOKEN = process.env.GOOGLE_ANALYTICS_SECRET
+	private _measureId = process.env.GOOGLE_ANALYTICS_measureId
+	private _token = process.env.GOOGLE_ANALYTICS_SECRET
 
 	public async view(page: string, options: ViewOptions): Promise<void> {
-		if (isRequestValid(this._MEASURE_ID, this._TOKEN, options)) {
+		if (isRequestValid(this._measureId, this._token, options)) {
 			if (typeof options.data === 'object') {
 				const params = {}
 
@@ -17,14 +17,14 @@ export class GoogleAnalytics extends BaseEngine {
 					Object.assign(params, options.revenue)
 				}
 				const res = await fetch(
-					`https://www.google-analytics.com/mp/collect?measurement_id=${this._MEASURE_ID}&api_secret=${this._TOKEN}`,
+					`https://www.google-analytics.com/mp/collect?measurement_id=${this._measureId}&api_secret=${this._token}`,
 					{
 						method: 'POST',
 						headers: {
 							'Content-Type': 'application/json'
 						},
 						body: JSON.stringify({
-							client_id: options.userID, // Unique user identifier
+							client_id: options.userId, // Unique user identifier
 							events: [{ name: options.name, params }]
 						})
 					}
@@ -37,7 +37,7 @@ export class GoogleAnalytics extends BaseEngine {
 		}
 	}
 	public async event(options: EventOptions): Promise<void> {
-		if (isRequestValid(this._MEASURE_ID, this._TOKEN, options)) {
+		if (isRequestValid(this._measureId, this._token, options)) {
 			if (options.name === 'pageview') {
 				throw new Error(`[GoogleAnalytics] Please use pageview event with the Analytics.view() method`)
 			}
@@ -52,14 +52,14 @@ export class GoogleAnalytics extends BaseEngine {
 				}
 
 				const res = await fetch(
-					`https://www.google-analytics.com/mp/collect?measurement_id=${this._MEASURE_ID}&api_secret=${this._TOKEN}`,
+					`https://www.google-analytics.com/mp/collect?measurement_id=${this._measureId}&api_secret=${this._token}`,
 					{
 						method: 'POST',
 						headers: {
 							'Content-Type': 'application/json'
 						},
 						body: JSON.stringify({
-							client_id: options.userID,
+							client_id: options.userId,
 							events: [{ name: options.name, params }]
 						})
 					}
@@ -78,19 +78,23 @@ function isRequestValid(
 	options: EventOptions | ViewOptions
 ): boolean {
 	if (!options.name) {
-		logger.error('[GoogleAnalytics] Please set a name for your event.')
+		analyticsLogger.error('[GoogleAnalytics] Please set a name for your event.')
 		return false
 	}
-	if (!options.userID) {
-		logger.error('[GoogleAnalytics] Please set a user ID.')
+	if (!options.userId) {
+		analyticsLogger.error('[GoogleAnalytics] Please set a user ID.')
 		return false
 	}
 	if (!id) {
-		logger.error("[GoogleAnalytics please set the 'process.env.GOOGLE_ANALYTICS_MEASURE_ID' enviromnent variable. ")
+		analyticsLogger.error(
+			"[GoogleAnalytics please set the 'process.env.GOOGLE_ANALYTICS_measureId' enviromnent variable. "
+		)
 		return false
 	}
 	if (!token) {
-		logger.error("[GoogleAnalytics please set the 'process.env.GOOGLE_ANALYTICS_SECRET' enviromnent variable. ")
+		analyticsLogger.error(
+			"[GoogleAnalytics please set the 'process.env.GOOGLE_ANALYTICS_SECRET' enviromnent variable. "
+		)
 		return false
 	}
 
