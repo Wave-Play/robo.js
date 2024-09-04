@@ -1,5 +1,21 @@
 # create-robo
 
+## 0.12.12
+
+### Patch Changes
+
+- 31ba79b: patch: recommend patch by default to discord activities
+
+## 0.12.11
+
+### Patch Changes
+
+- 78b5530: patch: updated discord activity templates to have /.proxy prefix
+- Updated dependencies [0a6958e]
+- Updated dependencies [d5b273b]
+- Updated dependencies [e76bc62]
+  - robo.js@0.10.14
+
 ## 0.12.10
 
 ### Patch Changes

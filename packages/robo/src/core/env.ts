@@ -1,5 +1,5 @@
-import { loadEnv } from './dotenv.js'
-loadEnv({ sync: true })
+//import { loadEnv } from './dotenv.js'
+//loadEnv({ sync: true })
 
 const Keys = {
 	discord: {

@@ -1,5 +1,13 @@
 # robo.js
 
+## 0.10.14
+
+### Patch Changes
+
+- 0a6958e: feat: bun support
+- d5b273b: fix(cli): do not refresh .env a second time upon mode mismatch
+- e76bc62: patch(cli): safely handle corrupted manifest files
+
 ## 0.10.13
 
 ### Patch Changes

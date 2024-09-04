@@ -165,6 +165,7 @@ const config = {
 					'packages/plugin-devtools/README.md',
 					'packages/plugin-maintenance/README.md',
 					'packages/plugin-modtools/README.md',
+					'packages/@robojs/patch/README.md',
 					'packages/plugin-sync/README.md'
 				],
 				modifyContent: (filename, content) => {
@@ -195,6 +196,29 @@ const config = {
 						// Remove content above # pluginName
 						const pluginName = newFilename.replace('plugins/', '@robojs/').replace('.mdx', '')
 						const token = `# ${pluginName}`
+						let newContent = content
+
+						if (content.includes(token)) {
+							newContent = token + content.split(token)[1]
+						}
+
+						// Add copy disclaimer at the end of the content
+						const head = `import { Card } from '@site/src/components/shared/Card'\nimport { CardContainer } from '@site/src/components/shared/CardContainer'\n\n`
+						const linkUrl = 'https://github.com/Wave-Play/robo.js/tree/main/' + filename.replace('/README.md', '')
+						const link = `\n\n## More on GitHub\n\n<CardContainer><Card href="${linkUrl}" title="🔗 GitHub Repository" description="Explore source code on GitHub."/></CardContainer>\n`
+						newContent = head + newContent + link
+
+						return {
+							content: newContent,
+							filename: newFilename
+						}
+					} else if (filename.includes('packages/@robojs/')) {
+						// Normalize filename
+						let newFilename = 'plugins/' + filename.replace('packages/@robojs/', '').replace('/README.md', '.mdx')
+
+						// Remove content above # pluginName
+						const pluginName = newFilename.replace('plugins/', '').replace('.mdx', '')
+						const token = `# @robojs/${pluginName}`
 						let newContent = content
 
 						if (content.includes(token)) {

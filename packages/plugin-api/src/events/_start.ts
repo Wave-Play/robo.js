@@ -33,7 +33,7 @@ export default async (_client: Client, options: PluginOptions) => {
 	}
 
 	// Start HTTP server only if API Routes are defined
-	const { engine, hostname, port = parseInt(process.env.PORT ?? '3000') } = pluginOptions
+	const { engine, hostname = process.env.HOSTNAME, port = parseInt(process.env.PORT ?? '3000') } = pluginOptions
 	let vite: ViteDevServer | undefined = pluginOptions.vite
 
 	logger.debug(`Preparing server with ${portal.apis.size} API routes...`)
@@ -50,7 +50,10 @@ export default async (_client: Client, options: PluginOptions) => {
 			vite = await createViteServer({
 				configFile: existsSync(viteConfigPath) ? viteConfigPath : undefined,
 				server: {
-					hmr: { path: '/hmr', server: engine.getHttpServer() },
+					hmr: {
+						path: '/hmr',
+						server: engine.getHttpServer()
+					},
 					middlewareMode: { server: engine.getHttpServer() }
 				}
 			})

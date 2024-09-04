@@ -123,7 +123,7 @@ const sidebars = {
 					type: 'doc'
 				},
 				'discord-activities/proxy',
-				'discord-activities/multiplayer',
+				'discord-activities/multiplayer'
 			]
 		},
 		{
@@ -188,6 +188,7 @@ const sidebars = {
 				'plugins/dev',
 				'plugins/maintenance',
 				'plugins/moderation',
+				'plugins/patch',
 				'plugins/server',
 				'plugins/sync'
 			]
@@ -211,33 +212,43 @@ const sidebars = {
 					items: [
 						{
 							type: 'link',
-							label: 'Starter Vanilla, JS',
+							label: 'Starter Vanilla (JS)',
 							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/starter-activity-javascript'
 						},
 						{
 							type: 'link',
-							label: 'Starter Vanilla, TS',
+							label: 'Starter Vanilla (TS)',
 							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/starter-activity-typescript'
 						},
 						{
 							type: 'link',
-							label: 'Starter React, JS',
+							label: 'Starter React (JS)',
 							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/starter-app-js-react'
 						},
 						{
 							type: 'link',
-							label: 'Starter React, TS',
+							label: 'Starter React (TS)',
 							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/starter-app-ts-react'
 						},
 						{
 							type: 'link',
-							label: 'Starter Colyseus, React, JS',
-							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/activity-js-colyseus-react'
+							label: 'Music Player Proxy (TS)',
+							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/discord-activities/music-player-proxy'
 						},
 						{
 							type: 'link',
-							label: 'Starter Colyseus, React, TS',
+							label: 'Multiplayer Colyseus (TS)',
 							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/activity-ts-colyseus-react'
+						},
+						{
+							type: 'link',
+							label: 'TailwindCSS (JS)',
+							href: 'https://github.com/waruhachi/robo.js/blob/main/templates/starter-activity-typescript-tailwind'
+						},
+						{
+							type: 'link',
+							label: 'TailwindCSS + shadcn/ui (TS)',
+							href: 'https://github.com/waruhachi/robo.js/blob/main/templates/starter-activity-typescript-tailwind-shadcn'
 						}
 					]
 				},
@@ -247,18 +258,38 @@ const sidebars = {
 					items: [
 						{
 							type: 'link',
-							label: 'Economy TS',
-							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/economy-bot'
-						},
-						{
-							type: 'link',
-							label: 'Starter JS',
+							label: 'Starter (JS)',
 							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/starter-bot-javascript'
 						},
 						{
 							type: 'link',
-							label: 'Starter TS',
+							label: 'Starter (TS)',
 							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/starter-bot-typescript'
+						},
+						{
+							type: 'link',
+							label: 'MongoDB (TS)',
+							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/bot-mongodb-ts'
+						},
+						{
+							type: 'link',
+							label: 'PostgreSQL (TS)',
+							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/bot-postgres-ts'
+						},
+						{
+							type: 'link',
+							label: 'Prisma (TS)',
+							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/bot-prisma-ts'
+						},
+						{
+							type: 'link',
+							label: 'Purrth Vader (TS)',
+							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/discord-bots/purrth-vader'
+						},
+						{
+							type: 'link',
+							label: 'Economy (TS)',
+							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/economy-bot'
 						}
 					]
 				},
@@ -268,12 +299,12 @@ const sidebars = {
 					items: [
 						{
 							type: 'link',
-							label: 'Starter JS',
+							label: 'Starter (JS)',
 							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/starter-webapp-javascript'
 						},
 						{
 							type: 'link',
-							label: 'Starter TS',
+							label: 'Starter (TS)',
 							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/starter-webapp-typescript'
 						}
 					]
