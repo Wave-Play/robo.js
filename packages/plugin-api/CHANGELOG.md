@@ -1,5 +1,11 @@
 # @roboplay/plugin-api
 
+## 0.5.6
+
+### Patch Changes
+
+- d268c7d: refactor: default hostname to HOSTNAME environment variable
+
 ## 0.5.5
 
 ### Patch Changes
