@@ -68,7 +68,7 @@ Be sure to call this at the very beginning of your project, before other scripts
 
 #### How it works
 
-This patch works by updating the **[`fetch`]()** and **[`WebSocket`]()** globals.
+This patch works by updating the **[`fetch`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)** and **[`WebSocket`](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)** globals.
 
 Each time a request is made, it makes sure that `/.proxy` is always included at the beginning of the URL's path. This comforms to the **CSP** policy set by the **Discord Proxy**.
 
