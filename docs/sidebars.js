@@ -188,6 +188,7 @@ const sidebars = {
 				'plugins/dev',
 				'plugins/maintenance',
 				'plugins/moderation',
+				'plugins/patch',
 				'plugins/server',
 				'plugins/sync'
 			]
