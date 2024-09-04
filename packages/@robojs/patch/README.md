@@ -2,7 +2,7 @@
 
 ---
 
-# 🚀 @robojs/patch
+# @robojs/patch
 
 Tired of platform-specific bugs? Was your project working fine until recently? **[@robojs/patch](https://robojs.dev/plugins/patch)** is here to save the day! 🎩✨
 
