@@ -41,8 +41,8 @@
 		"formdata-node": "^6.0.3"
 	},
 	"peerDependencies": {
-		"@robojs/server": "^0.5.5",
-		"robo.js": "^0.10.13"
+		"@robojs/server": "^0.5.6",
+		"robo.js": "^0.10.14"
 	},
 	"peerDependenciesMeta": {
 		"@robojs/server": {
