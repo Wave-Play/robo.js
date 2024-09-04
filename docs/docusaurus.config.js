@@ -217,7 +217,7 @@ const config = {
 						let newFilename = 'plugins/' + filename.replace('packages/@robojs/', '').replace('/README.md', '.mdx')
 
 						// Remove content above # pluginName
-						const pluginName = newFilename.replace('.mdx', '')
+						const pluginName = newFilename.replace('plugins/', '').replace('.mdx', '')
 						const token = `# @robojs/${pluginName}`
 						let newContent = content
 
