@@ -1,0 +1,56 @@
+{
+	"name": "@robojs/patch",
+	"description": "A collection of patches optimized for Robo.js projects.",
+	"version": "0.0.0",
+	"type": "module",
+	"private": false,
+	"keywords": [
+		"discord",
+		"discord-activities",
+		"patch",
+		"robo",
+		"robo.js",
+		"rollup-plugin",
+		"typescript",
+		"vite-plugin"
+	],
+	"main": ".robo/build/index.js",
+	"license": "MIT",
+	"author": "WavePlay <dev@waveplay.com> (waveplay.com)",
+	"contributors": [
+		"Pkmmte Xeleon <pk@waveplay.com>"
+	],
+	"files": [
+		".robo/",
+		"src/",
+		"LICENSE",
+		"README.md"
+	],
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://registry.npmjs.org/"
+	},
+	"scripts": {
+		"build": "robo build plugin",
+		"dev": "robo build plugin --watch",
+		"lint:style": "prettier --write .",
+		"prepublishOnly": "robo build plugin"
+	},
+	"devDependencies": {
+		"@swc/core": "^1.7.23",
+		"@types/node": "^22.5.2",
+		"discord.js": "^14.16.1",
+		"prettier": "^3.3.3",
+		"robo.js": "workspace:*",
+		"typescript": "^5.5.4",
+		"vite": "^5.2.0"
+	},
+	"peerDependencies": {
+		"robo.js": "^0.10.1"
+	},
+	"peerDependenciesMeta": {
+		"robo.js": {
+			"optional": true
+		}
+	}
+}
