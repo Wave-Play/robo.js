@@ -1,5 +1,11 @@
 # @roboplay/sage
 
+## 0.6.1
+
+### Patch Changes
+
+- 4cfdde2: Added discord.js to dependency list.
+
 ## 0.6.0
 
 ### Minor Changes
