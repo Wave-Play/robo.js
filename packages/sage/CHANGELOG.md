@@ -1,5 +1,18 @@
 # @roboplay/sage
 
+## 0.6.0
+
+### Minor Changes
+
+- 756f732: feat: upgrade command now supports plugins
+
+### Patch Changes
+
+- Updated dependencies [0a6958e]
+- Updated dependencies [d5b273b]
+- Updated dependencies [e76bc62]
+  - robo.js@0.10.14
+
 ## 0.5.11
 
 ### Patch Changes
