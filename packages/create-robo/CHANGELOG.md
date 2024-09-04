@@ -1,5 +1,11 @@
 # create-robo
 
+## 0.12.12
+
+### Patch Changes
+
+- 31ba79b: patch: recommend patch by default to discord activities
+
 ## 0.12.11
 
 ### Patch Changes
