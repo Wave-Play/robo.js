@@ -99,8 +99,8 @@ importers:
         specifier: ^18.14.6
         version: 18.19.31
       discord.js:
-        specifier: ^14.7.1
-        version: 14.14.1
+        specifier: 14.11.0
+        version: 14.11.0
       robo.js:
         specifier: workspace:*
         version: link:../robo
@@ -6984,7 +6984,7 @@ snapshots:
 
   discord.js@14.11.0:
     dependencies:
-      '@discordjs/builders': 1.7.0
+      '@discordjs/builders': 1.8.2
       '@discordjs/collection': 1.5.3
       '@discordjs/formatters': 0.3.3
       '@discordjs/rest': 1.7.1
