@@ -1,72 +1,66 @@
-.main{
-    background-color: var(--bgSearchBar);
+.main {
+	background-color: var(--bgSearchBar);
 }
 
 .searchBar {
-    width: 50%;
-    padding: 5px;
-    border-radius: 5px;
-    border: solid 1px var(--searchBarBorder);
-    background-color: var(--bgInputSearchBar);
-    color: white;
-    text-align: center;
+	width: 50%;
+	padding: 5px;
+	border-radius: 5px;
+	border: solid 1px var(--searchBarBorder);
+	background-color: var(--bgInputSearchBar);
+	color: white;
+	text-align: center;
 }
 
 .searchBarContainer {
-    display: flex;
-    padding: 5px;
-    width: 100%;
-    justify-content: center;
+	display: flex;
+	padding: 5px;
+	width: 100%;
+	justify-content: center;
 }
 
 .searchBarFocus {
-    width: 100%;
-    padding: 5px;
-    border-radius: 5px;
-    border: solid 1px var(--searchBarBorder);
-    background-color: var(--bgInputSearchBar);
-    color: white;
-    text-align: center;
+	width: 100%;
+	padding: 5px;
+	border-radius: 5px;
+	border: solid 1px var(--searchBarBorder);
+	background-color: var(--bgInputSearchBar);
+	color: white;
+	text-align: center;
 }
 
-
 .searchBarFocusContainer {
-    display: flex;
-    flex-direction: column;
-    background-color: var(--ContainerFocused);
-    position: absolute;
-    top: 5px;
-    padding: 10px;
-    border-radius: 5px;
-    gap: 10px;
-    width: calc(100vw - 50%);
-    max-height: 500px;
-    > p {
-        margin: 0;
-        padding-left: 10px;
-        &:hover {
-            background-color: var(--ElementContainerHover);;
-            border-radius: 5px;
-        }
-    }
+	display: flex;
+	flex-direction: column;
+	background-color: var(--ContainerFocused);
+	position: absolute;
+	top: 5px;
+	padding: 10px;
+	border-radius: 5px;
+	gap: 10px;
+	width: calc(100vw - 50%);
+	max-height: 500px;
+}
+
+.searchBarFocusContainer > div > p:hover {
+	background-color: var(--ElementContainerHover);
+	border-radius: 5px;
 }
 
 .templatesContainer {
-    overflow-y: scroll;
+	overflow-y: scroll;
 }
 .templatesContainer::-webkit-scrollbar {
-    display: none;
+	display: none;
 }
 
-
-input[type="text"] {
-    background-color: #464747;
+input[type='text'] {
+	background-color: #464747;
 }
 
-input::placeholder{
-    color: #a2a3a2;
+input::placeholder {
+	color: #a2a3a2;
 }
-
 
 /**
 dark:
@@ -78,7 +72,6 @@ text color input: #a2a3a2
 
 hover element : 43 45 46
 */
-
 
 /**
 light:
