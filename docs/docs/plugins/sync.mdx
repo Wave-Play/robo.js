@@ -27,16 +27,16 @@ npx robo add @robojs/sync
 
 > **Note:** You will also need to install the `@robojs/server`.
 
-That's it! You can now start using `useSyncState` in your project. Just wrap your App component with the `SyncProvider` and you're good to go!
+That's it! You can now start using `useSyncState` in your project. Just wrap your App component with the `SyncContextProvider` and you're good to go!
 
 ```tsx
-import { SyncProvider } from '@robojs/sync'
+import { SyncContextProvider } from '@robojs/sync'
 
 export function App() {
 	return (
-		<SyncProvider>
+		<SyncContextProvider>
 			<Activity />
-		</SyncProvider>
+		</SyncContextProvider>
 	)
 }
 ```
@@ -75,9 +75,9 @@ export function Player() {
 The provider accepts an optional `loadingScreen` prop, which is a component to display while the websocket connection is being established.
 
 ```tsx
-<SyncProvider loadingScreen={<LoadingScreen />}>
+<SyncContextProvider loadingScreen={<LoadingScreen />}>
 	<Activity />
-</SyncProvider>
+</SyncContextProvider>
 ```
 
 We also expose a way to manually start and get the websocket connection:
