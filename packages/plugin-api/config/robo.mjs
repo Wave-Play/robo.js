@@ -7,5 +7,8 @@ export default {
 	clientOptions: {
 		intents: []
 	},
-	plugins: []
+	plugins: [],
+	seed: {
+		description: 'Example API route and index page'
+	}
 }

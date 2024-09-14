@@ -1,5 +1,5 @@
-import { loadEnv } from './dotenv.js'
-loadEnv({ sync: true })
+//import { loadEnv } from './dotenv.js'
+//loadEnv({ sync: true })
 
 const Keys = {
 	discord: {
@@ -30,8 +30,8 @@ export const env = (key: string): string => {
 		// @ts-expect-error - ...
 		const value = acc[k]
 
-		if (typeof value === 'object' && value.key && value.default) {
-			return process.env[value.key]
+		if (typeof value === 'object' && value.key) {
+			return process.env[value.key] || value.default
 		} else if (typeof value === 'object') {
 			return value
 		} else if (typeof value === 'string') {

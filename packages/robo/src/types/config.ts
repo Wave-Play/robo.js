@@ -34,6 +34,9 @@ export interface Config {
 		node?: '18' | '20' | 'latest'
 	}
 	sage?: false | SageOptions
+	seed?: {
+		description?: string
+	}
 	timeouts?: {
 		autocomplete?: number
 		commandDeferral?: number

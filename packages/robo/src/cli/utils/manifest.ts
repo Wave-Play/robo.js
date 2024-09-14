@@ -99,6 +99,11 @@ export async function generateManifest(generatedDefaults: DefaultGen, type: 'plu
 			config: redactPluginOptions(config),
 			language: Compiler.isTypescriptProject() ? 'typescript' : 'javascript',
 			mode: Mode.get(),
+			seed: config.seed
+				? {
+						description: config.seed.description
+				  }
+				: undefined,
 			type: type,
 			updatedAt: new Date().toISOString(),
 			version: packageJson.version

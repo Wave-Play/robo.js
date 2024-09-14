@@ -19,10 +19,13 @@ export function getModeColor(mode: string) {
  * Internal
  */
 export function setMode(mode: string) {
-	_mode = mode
+	// Only set mode to valid value, otherwise keep it as is
+	if (mode) {
+		_mode = mode
+	}
 
 	// Use the NODE_ENV if no mode is provided
-	if (!mode && process.env.NODE_ENV) {
+	if (!_mode && process.env.NODE_ENV) {
 		_mode = process.env.NODE_ENV
 	}
 

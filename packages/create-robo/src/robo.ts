@@ -96,6 +96,14 @@ const appPlugins = [
 	{
 		checked: true,
 		name: `${chalk.bold(
+			'Patches'
+		)} - A collection of patches optimized for Robo.js projects.`,
+		short: 'Patches',
+		value: 'patch'
+	},
+	{
+		checked: true,
+		name: `${chalk.bold(
 			'Web Server'
 		)} - Turn your Robo into a web server! Create and manage web pages, APIs, and more.`,
 		short: 'Web Server',
@@ -181,6 +189,10 @@ const PluginDb: Record<string, PluginData> = {
 	modtools: {
 		keywords: ['moderation', 'moderator'],
 		package: '@robojs/moderation'
+	},
+	patch: {
+		keywords: [],
+		package: '@robojs/patch'
 	}
 }
 

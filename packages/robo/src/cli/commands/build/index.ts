@@ -13,7 +13,8 @@ import { Compiler } from '../../utils/compiler.js'
 import { Flashcore, prepareFlashcore } from '../../../core/flashcore.js'
 import { bold, color } from '../../../core/color.js'
 import { buildPublicDirectory } from '../../utils/public.js'
-import { FLASHCORE_KEYS } from '../../../core/constants.js'
+import { FLASHCORE_KEYS, Highlight } from '../../../core/constants.js'
+import { IS_BUN } from '../../utils/runtime-utils.js'
 import type { LoggerOptions } from '../../../core/logger.js'
 
 const command = new Command('build')
@@ -52,6 +53,15 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 	logger.debug(`Current working directory:`, process.cwd())
 	const startTime = Date.now()
 
+	// Check for `bunx --bun` to ensure Bun is being used correctly
+	// @ts-expect-error - Bun is a global variable
+	if (IS_BUN && typeof Bun === "undefined") {
+		const command = '> bunx --bun robo ' + process.argv.slice(2).join(' ')
+		logger.error(`Please use "bunx --bun" to use Bun.`)
+		logger.error(Highlight(command), '\n')
+		process.exit(1)
+	}
+
 	// Make sure the user isn't trying to watch builds
 	// This only makes sense for plugins anyway
 	if (options.watch) {
@@ -68,15 +78,11 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 
 	// Make sure environment variables are loaded
 	const defaultMode = Mode.get()
-	await loadEnv({ mode: defaultMode, overwrite: true })
+	await loadEnv({ mode: defaultMode })
 
 	// Handle mode(s)
 	const { shardModes } = setMode(options.mode)
 
-	if (defaultMode !== Mode.get()) {
-		logger.debug(`Refreshing environment variables for mode`, Mode.get())
-		await loadEnv({ mode: Mode.get(), overwrite: true })
-	}
 	if (shardModes) {
 		// TODO: Generate different .manifest files for each mode, always keeping the default one
 		logger.error(`Mode sharding is not available for builds.`)
@@ -111,7 +117,7 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 	const generatedFiles = await generateDefaults(config.experimental?.buildDirectory)
 
 	// Generate manifest.json
-	const oldManifest = await Compiler.useManifest()
+	const oldManifest = await Compiler.useManifest({ safe: true })
 	const manifestTime = Date.now()
 	const manifest = await generateManifest(generatedFiles, 'robo')
 	logger.debug(`Generated manifest in ${Date.now() - manifestTime}ms`)

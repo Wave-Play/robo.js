@@ -148,7 +148,7 @@ export async function authenticateSdk(options?: AuthenticateSdkOptions) {
 		scope: scope
 	})
 
-	const response = await fetch('/api/token', {
+	const response = await fetch('/.proxy/api/token', {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json'

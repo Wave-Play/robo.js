@@ -5,7 +5,7 @@ import { logger } from '../../core/logger.js'
 import { env } from '../../core/env.js'
 import { IS_BUN } from './runtime-utils.js'
 import { getManifest, useManifest } from '../compiler/manifest.js'
-import { buildSeed, useSeed } from '../compiler/seed.js'
+import { buildSeed, hasSeed, useSeed } from '../compiler/seed.js'
 import { buildDeclarationFiles, getTypeScriptCompilerOptions, isTypescriptProject } from '../compiler/typescript.js'
 import type { default as Typescript, CompilerOptions } from 'typescript'
 import type { transform as SwcTransform } from '@swc/core'
@@ -14,22 +14,31 @@ const SrcDir = path.join(process.cwd(), 'src')
 
 // Load Typescript compiler in a try/catch block
 // This is to maintain compatibility with JS-only projects
-try {
-	if (!IS_BUN) {
-		const [typescript, swc] = await Promise.all([import('typescript'), import('@swc/core')])
-		ts = typescript.default
-		transform = swc.transform
 export let ts: typeof Typescript
 export let transform: typeof SwcTransform
+
+async function preloadTypescript() {
+	try {
+		// Disable Typescript compiler(s) if using Bun, unless for plugin builds
+		// This is because plugins may be used in any runtime environment (not just Bun)
+		if (!IS_BUN) {
+			logger.debug(`Preloading Typescript compilers...`)
+			const [typescript, swc] = await Promise.all([import('typescript'), import('@swc/core')])
+			ts = typescript.default
+			transform = swc.transform
+		}
+	} catch {
+		// Ignore
 	}
-} catch {
-	// Ignore
+}
+await preloadTypescript()
 
 export const Compiler = {
 	buildCode,
 	buildDeclarationFiles,
 	buildSeed,
 	getManifest,
+	hasSeed,
 	isTypescriptProject,
 	useManifest,
 	useSeed

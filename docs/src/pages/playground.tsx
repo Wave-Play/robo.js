@@ -3,6 +3,7 @@ import Layout from '@theme/Layout'
 import sdk from '@stackblitz/sdk'
 import styles from './playground.module.css'
 import { useColorMode } from '@docusaurus/theme-common'
+import { usePluginData } from '@docusaurus/useGlobalData'
 
 interface Project {
 	categoryTitle: string
@@ -21,6 +22,14 @@ interface Templates {
 	idx: number
 }
 
+const useRoboData = () => {
+	const { env } = usePluginData('@robojs/docusaurus') as { env: { port: string } }
+
+	return {
+		hostRelative: process.env.NODE_ENV === 'development' ? 'http://localhost:' + env.port : ''
+	}
+}
+
 function Playground() {
 	const [projectLink, setProjectLink] = useState('Wave-Play/robo.js/tree/main/templates/starter-app-js-react')
 	const [dropdown, setDropdown] = useState(false)
@@ -29,13 +38,14 @@ function Playground() {
 	const [fetchError, setFetchError] = useState<null | string>(null)
 	const [templates, setTemplates] = useState<Project[] | null>(null)
 	const [selectedTemplateIndex, setSelectedTemplateIndex] = useState(0)
+	const { hostRelative } = useRoboData()
 
 	const embedDiv = useRef<HTMLIFrameElement | null>(null)
 	const editor = useRef(null)
 
 	useEffect(() => {
 		const fetchTemplates = async () => {
-			const res = await fetch('/api/templates')
+			const res = await fetch(hostRelative + '/api/templates')
 
 			if (res.status !== 20) {
 				setFetchError(res.statusText)

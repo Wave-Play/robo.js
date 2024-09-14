@@ -10,6 +10,9 @@ export interface Manifest {
 		config: Config | null
 		language: 'javascript' | 'typescript'
 		mode: string
+		seed?: {
+			description?: string
+		}
 		type: 'plugin' | 'robo'
 		updatedAt?: string
 		version?: string
