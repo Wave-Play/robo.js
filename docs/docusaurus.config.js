@@ -36,6 +36,16 @@ const config = {
 	},
 
 	plugins: [
+		() => ({
+			name: '@robojs/docusaurus',
+			async contentLoaded({ actions }) {
+				actions.setGlobalData({
+					env: {
+						port: process.env.ROBO_PUBLIC_PORT
+					}
+				})
+			}
+		}),
 		[
 			'@docusaurus/plugin-client-redirects',
 			{
