@@ -1,5 +1,5 @@
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
 import { Terminal } from '@site/src/components/shared/Terminal'
 
 # 📜 Commands
@@ -44,6 +44,7 @@ export default (): CommandResult => {
 </Tabs>
 
 To use the interaction object directly:
+
 <Tabs groupId="examples-script">
 <TabItem value="js" label="Javascript">
 
@@ -114,7 +115,7 @@ export default (): CommandResult => {
 }
 ```
 
-The `config` object also lets you customize stuff like locale translations, Sage options, and command timeouts. To understand more about the available configuration options, check out the [configuration section](/docs/advanced/configuration).
+The `` object also lets you customize stuff like locale translations, Sage options, and command timeouts. To understand more about the available uration options, check out the [configuration section](/robojs/config).
 
 ## Command Options 🎚️
 
@@ -219,7 +220,7 @@ export default (interaction: CommandInteraction, options: CommandOptions<typeof 
 </TabItem>
 </Tabs>
 
-Want to explore more options? Check the [configuration section](/docs/advanced/configuration).
+Want to explore more options? Check the [configuration section](/robojs/config).
 
 ### DM Permission
 
@@ -275,14 +276,14 @@ export const config = {
 
 const colors = ['red', 'green', 'blue', 'yellow', 'black', 'white', 'pink', 'purple', 'brown']
 
+export default (interaction) => {
+	return `You chose ${interaction.options.get('color')?.value}`
+}
+
 export const autocomplete = (interaction) => {
 	const colorQuery = interaction.options.get('color')?.value
 	const filtered = colors.filter((color) => color.startsWith(colorQuery))
-	return interaction.respond(filtered.map((colors) => ({ name: colors, value: colors })))
-}
-
-export default (interaction) => {
-	return `You chose ${interaction.options.get('color')?.value}`
+	return filtered.map((colors) => ({ name: colors, value: colors }))
 }
 ```
 
@@ -307,15 +308,16 @@ export const config: CommandConfig = {
 
 const colors: Array<string> = ['red', 'green', 'blue', 'yellow', 'black', 'white', 'pink', 'purple', 'brown']
 
-export const autocomplete = (interaction: AutocompleteInteraction) => {
-  const colorQuery = interaction.options.get("color")?.value as string;
-  const filtered = colors.filter((color) => color.startsWith(colorQuery));
-  return interaction.respond(filtered.map((colors) => ({ name: colors, value: colors })));
-};
-
 export default (interaction: CommandInteraction): CommandResult => {
   return `You chose ${interaction.options.get('color')?.value}`
 }
+
+export const autocomplete = (interaction: AutocompleteInteraction) => {
+  const colorQuery = interaction.options.get('color')?.value as string
+  const filtered = colors.filter((color) => color.startsWith(colorQuery))
+  return filtered.map((colors) => ({ name: colors, value: colors }))
+};
+
 ```
 
 </TabItem>

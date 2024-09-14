@@ -65,13 +65,13 @@ export default (request, reply) => {
 Example 2: POST request with body parsing
 
 ```javascript
-export default (request, reply) => {
+export default async (request, reply) => {
 	if (request.method !== 'POST') {
 		reply.status(405).send('Method not allowed')
 		return
 	}
 
-	const userData = request.body
+	const userData = await request.json()
 
 	// ... interact with database, e.g., Prisma
 
@@ -101,7 +101,7 @@ export default (request, reply) => {
 }
 ```
 
-What's more, you can customize the response by throwing a `RoboResponse` object. This object allows you to set the status code, headers, and body of the response.
+What's more, you can customize the response by throwing a `RoboResponse` object. This object allows you to set the status code, headers, and body of the response. It has the same effect as returning it.
 
 ```javascript
 export default (request, reply) => {
@@ -115,7 +115,7 @@ export default (request, reply) => {
 
 	// ... perform some action with the key
 
-	return { message: 'Success!' }
+	return RoboResponse.json({ message: 'Success!' })
 }
 ```
 
@@ -123,15 +123,17 @@ export default (request, reply) => {
 
 Here's a detailed breakdown of the methods and properties available in the `request` and `reply` objects, along with their TypeScript types:
 
-### Request
+### RoboRequest
 
-| **Method/Property** | **Type**                                          | **Description**          |
-| ------------------- | ------------------------------------------------- | ------------------------ |
-| `req`               | `IncomingMessage`                                 | Raw request object.      |
-| `body`              | `T` (generic, default: `Record<string, unknown>`) | Access the request body. |
-| `method`            | `HttpMethod`                                      | Get the HTTP method.     |
-| `query`             | `Record<string, string \| string[]>`              | Access query parameters. |
-| `params`            | `Record<string, unknown>`                         | Get URL parameters.      |
+**RoboRequest** extends the **[Web Request API](https://developer.mozilla.org/en-US/docs/Web/API/Request)** and provides additional properties and methods for handling requests.
+
+| **Method/Property** | **Type**                             | **Description**                 |
+| ------------------- | ------------------------------------ | ------------------------------- |
+| `req`               | `IncomingMessage`                    | Raw request object.             |
+| `json`              | `unknown`                            | Parse the request body as JSON. |
+| `method`            | `HttpMethod`                         | Get the HTTP method.            |
+| `query`             | `Record<string, string \| string[]>` | Access query parameters.        |
+| `params`            | `Record<string, unknown>`            | Get URL parameters.             |
 
 ### Reply
 
@@ -155,6 +157,7 @@ Customize your API plugin using these config fields:
 
 | **Config Field** | **Type**       | **Description**                             |
 | ---------------- | -------------- | ------------------------------------------- |
+| `hostname`       | `string`       | The hostname on which the server will run.  |
 | `port`           | `number`       | The port on which the server will listen.   |
 | `prefix`         | `string/false` | Custom URL prefix for routes or disable it. |
 | `engine`         | `BaseServer`   | Custom server engine implementation.        |
@@ -162,7 +165,9 @@ Customize your API plugin using these config fields:
 Example:
 
 ```typescript title="config/plugins/robojs/server.mjs"
+// File: /config/plugins/robojs/server.mjs
 export default {
+	hostname: '0.0.0.0', // Defaults to 'localhost'
 	port: 5000, // Custom port
 	prefix: false, // Disable the '/api' prefix
 	engine: CustomServer // Custom server engine

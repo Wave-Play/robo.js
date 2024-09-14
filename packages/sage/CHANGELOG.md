@@ -1,5 +1,43 @@
 # @roboplay/sage
 
+## 0.6.1
+
+### Patch Changes
+
+- 4cfdde2: Added discord.js to dependency list.
+
+## 0.6.0
+
+### Minor Changes
+
+- 756f732: feat: upgrade command now supports plugins
+
+### Patch Changes
+
+- Updated dependencies [0a6958e]
+- Updated dependencies [d5b273b]
+- Updated dependencies [e76bc62]
+  - robo.js@0.10.14
+
+## 0.5.11
+
+### Patch Changes
+
+- 4e4ba3e: fix: internal manifest usage
+
+## 0.5.10
+
+### Patch Changes
+
+- Updated dependencies [fa321f6]
+- Updated dependencies [a5ae699]
+- Updated dependencies [ed2734b]
+- Updated dependencies [70b477e]
+- Updated dependencies [65809a6]
+- Updated dependencies [d22fbfa]
+- Updated dependencies [0cae688]
+  - robo.js@0.10.13
+
 ## 0.5.9
 
 ### Patch Changes

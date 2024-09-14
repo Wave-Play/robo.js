@@ -213,6 +213,14 @@ sage: {
 }
 ```
 
+### `seed`
+
+For plugins only. Provide additional information about the files that can be optionally included in the user's project when installing the plugin.
+
+Options:
+
+- `description`: (string) A brief description of the seed files. This helps users make an informed decision.
+
 ### `timeouts`
 
 Set custom timeout values for various operations in your Robo. This is useful for enforcing stricter limits than the default.

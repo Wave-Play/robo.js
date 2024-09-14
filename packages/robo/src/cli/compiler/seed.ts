@@ -60,6 +60,15 @@ export async function buildSeed() {
 }
 
 /**
+ * Check if a plugin has a /seed directory.
+ * This is used to determine whether or not to copy files from the plugin onto the project.
+ */
+export function hasSeed(packageName: string) {
+	const seedPath = path.resolve(PackageDir, '..', 'node_modules', packageName, '.robo', 'seed')
+	return existsSync(seedPath)
+}
+
+/**
  * Copy files meant to be inherited from the plugin onto the project's /src directory.
  * Does nothing if the plugin doesn't have any files to seed from.
  *
@@ -74,7 +83,10 @@ export async function useSeed(packageName: string) {
 	// See if the plugin has an inherits directory
 	if (existsSync(seedPath)) {
 		compilerLogger.debug('Seed folder exists! Verifying manifest...')
-		const manifest = await Compiler.useManifest({ name: packageName })
+		const manifest = await Compiler.useManifest({
+			basePath: path.resolve(seedPath, '..', '..'),
+			name: packageName
+		})
 		const isTypeScript = manifest.__robo.language === 'typescript'
 
 		// Copy the files recursively

@@ -15,6 +15,7 @@ interface UseManifestOptions {
 	basePath?: string
 	cache?: boolean
 	name?: string
+	safe?: boolean
 }
 
 /**
@@ -30,9 +31,10 @@ export function getManifest(options?: GetManifestOptions): Manifest | null {
  * If the manifest file does not exist, a base manifest is returned.
  *
  * Results are cached in memory unless the `cache` option is set to `false`.
+ * When `safe` is set to `true`, errors are suppressed and the base manifest is returned.
  */
 export async function useManifest(options?: UseManifestOptions): Promise<Manifest> {
-	const { cache = true, name = '', basePath = '' } = options ?? {}
+	const { cache = true, name = '', basePath = '', safe } = options ?? {}
 
 	// Check if manifest is already cached
 	let manifest = ManifestCache[name]
@@ -112,7 +114,7 @@ export async function useManifest(options?: UseManifestOptions): Promise<Manifes
 
 		return manifest
 	} catch (e) {
-		if (hasProperties<{ code: unknown }>(e, ['code']) && e.code === 'ENOENT') {
+		if (safe || hasProperties<{ code: unknown }>(e, ['code']) && e.code === 'ENOENT') {
 			compilerLogger.debug(`No manifest found${name ? ` for ${name}` : ''}, using base manifest...`)
 			manifest = BASE_MANIFEST
 			return manifest
