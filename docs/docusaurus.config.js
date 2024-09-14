@@ -3,7 +3,7 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 // import React from 'react'
 // import Footer from './src/components/Footer';
-const { themes } = require('prism-react-renderer')
+import { themes } from 'prism-react-renderer'
 const lightCodeTheme = themes.github
 const darkCodeTheme = themes.dracula
 
@@ -355,4 +355,4 @@ const config = {
 		})
 }
 
-module.exports = config
+export default config

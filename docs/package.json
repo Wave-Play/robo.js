@@ -19,9 +19,9 @@
 		"docusaurus:swizzle": "docusaurus swizzle"
 	},
 	"dependencies": {
-		"@docusaurus/core": "^3.4.0",
-		"@docusaurus/plugin-client-redirects": "^3.4.0",
-		"@docusaurus/preset-classic": "^3.4.0",
+		"@docusaurus/core": "3.4.0",
+		"@docusaurus/plugin-client-redirects": "3.4.0",
+		"@docusaurus/preset-classic": "3.4.0",
 		"@mdx-js/react": "^3.0.0",
 		"@robojs/server": "^0.5.5",
 		"@stackblitz/sdk": "^1.10.0",
@@ -34,15 +34,15 @@
 		"prism-react-renderer": "^2.1.0",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
-		"robo.js": "^0.10.13"
+		"robo.js": "^0.10.14"
 	},
 	"devDependencies": {
-		"@docusaurus/module-type-aliases": "^3.4.0",
-		"@docusaurus/tsconfig": "^3.4.0",
-		"@docusaurus/types": "^3.4.0",
+		"@docusaurus/module-type-aliases": "3.4.0",
+		"@docusaurus/tsconfig": "3.4.0",
+		"@docusaurus/types": "3.4.0",
 		"@mdi/js": "^7.4.47",
 		"@mdi/react": "^1.6.1",
-		"@swc/core": "^1.7.2",
+		"@swc/core": "^1.7.26",
 		"@types/node": "^20.14.12",
 		"@types/react": "^18.2.29",
 		"prettier": "^3.3.3",
