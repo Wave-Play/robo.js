@@ -35,7 +35,7 @@ function Playground() {
 
 	useEffect(() => {
 		const fetchTemplates = async () => {
-			const res = await fetch('http://localhost:3000/api/templates')
+			const res = await fetch('/api/templates')
 
 			if (res.status !== 20) {
 				setFetchError(res.statusText)
@@ -55,21 +55,21 @@ function Playground() {
 		}
 	}, [colorMode])
 
-	const clickHandler = () => {
+	const onClickDropdown = () => {
 		if (dropdown) {
 			setDropdown(false)
 		}
 	}
 	useEffect(() => {
-		document.addEventListener('click', clickHandler)
+		document.addEventListener('click', onClickDropdown)
 
 		return () => {
-			document.removeEventListener('click', clickHandler)
+			document.removeEventListener('click', onClickDropdown)
 		}
 	}, [])
 
 	useEffect(() => {
-		if (embedDiv && embedDiv.current) {
+		if (embedDiv?.current) {
 			sdk
 				.embedGithubProject('embed', projectLink, {
 					devToolsHeight: 40,
@@ -106,7 +106,7 @@ function Playground() {
 								setDropdown(true)
 							}
 						}}
-						placeholder={fetchError !== null ? 'Search for a Robo template' : fetchError}
+						placeholder={fetchError ?? 'Search for a Robo template'}
 					></input>
 				)
 			}
@@ -118,7 +118,7 @@ function Playground() {
 			<div className={styles.searchBarContainer} style={{ height: dropdown ? '27px' : 'unset' }}>
 				{renderSearchBar()}
 			</div>
-			<div ref={embedDiv} id="embed" onClick={clickHandler} />
+			<div ref={embedDiv} id="embed" onClick={onClickDropdown} />
 		</>
 	)
 }
@@ -135,44 +135,43 @@ function SearchbarFocused(props: SearchBarProps) {
 	const { data, setProjectLink, setDropdown, setSelectedTemplateIndex, selectedTemplateIndex } = props
 	const { colorMode } = useColorMode()
 	const [searchTemplate, setSearchTemplate] = useState('')
+	const templates = data
+		.map((project: Project) => project.subCategory)
+		.flatMap((categories) => categories.flatMap((category) => category.templates))
 
 	const ResultsRender = () => {
 		if (data !== null) {
-			return data.map((project: Project, _: number) => {
-				return project.subCategory.map((category: CategoryItems, _: number) => {
-					return category.templates.map((template: Templates, idx: number) => {
-						if (template.title.includes(searchTemplate)) {
-							if (template.idx === selectedTemplateIndex) {
-								return (
-									<p
-										onClick={() => {
-											setProjectLink(template.link)
-											setDropdown(false)
-										}}
-										style={{
-											backgroundColor: colorMode === 'dark' ? 'rgb(4, 57, 94)' : 'rgba(0,96,192,255)'
-										}}
-									>
-										{template.title}
-									</p>
-								)
-							} else {
-								return (
-									<p
-										onClick={() => {
-											setProjectLink(template.link)
-											setDropdown(false)
-											setSelectedTemplateIndex(template.idx)
-										}}
-									>
-										{template.title}
-									</p>
-								)
-							}
-						}
-						return <p>No results were found.</p>
-					})
-				})
+			return templates.map((template: Templates, idx: number) => {
+				if (template.title.includes(searchTemplate)) {
+					if (template.idx === selectedTemplateIndex) {
+						return (
+							<p
+								onClick={() => {
+									setProjectLink(template.link)
+									setDropdown(false)
+								}}
+								style={{
+									backgroundColor: colorMode === 'dark' ? 'rgb(4, 57, 94)' : 'rgba(0,96,192,255)'
+								}}
+							>
+								{template.title}
+							</p>
+						)
+					} else {
+						return (
+							<p
+								onClick={() => {
+									setProjectLink(template.link)
+									setDropdown(false)
+									setSelectedTemplateIndex(template.idx)
+								}}
+							>
+								{template.title}
+							</p>
+						)
+					}
+				}
+				return <p>No results were found.</p>
 			})
 		}
 		return 'An error happened while rendering the results.'
