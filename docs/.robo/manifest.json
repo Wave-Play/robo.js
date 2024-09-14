@@ -22,10 +22,10 @@
       "type": "robo"
     },
     "language": "typescript",
-    "mode": "production",
+    "mode": "development",
     "type": "robo",
-    "updatedAt": "2024-08-01T19:47:01.842Z",
-    "version": "0.10.13"
+    "updatedAt": "2024-09-14T23:35:29.961Z",
+    "version": "0.10.14"
   },
   "api": {
     "templates": {

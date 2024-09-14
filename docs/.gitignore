@@ -1,7 +1,7 @@
 # Dependencies
 node_modules
 # robo
-.robo/*
+.robo
 
 public
 
