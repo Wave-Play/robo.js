@@ -137,7 +137,7 @@ function SearchBar(props: SearchBarProps) {
 	const templates = data
 		.map((project: Project) => project.subCategory)
 		.flatMap((categories) => categories.flatMap((category) => category.templates))
-		.filter((template) => template.title.includes(searchTemplate))
+		.filter((template) => template.title.toLowerCase().includes(searchTemplate.toLowerCase()))
 
 	return (
 		<div className={focus ? styles.searchBarFocusContainer : styles.searchBarContainer}>
