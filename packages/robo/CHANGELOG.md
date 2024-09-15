@@ -1,5 +1,45 @@
 # robo.js
 
+## 0.10.14
+
+### Patch Changes
+
+- 0a6958e: feat: bun support
+- d5b273b: fix(cli): do not refresh .env a second time upon mode mismatch
+- e76bc62: patch(cli): safely handle corrupted manifest files
+
+## 0.10.13
+
+### Patch Changes
+
+- fa321f6: feat(compiler): plugins can now provide seed descriptions
+- a5ae699: feat(cli): show seed descriptions and request consent upon install
+- ed2734b: refactor(compiler): dedicated logger for compiler
+- 70b477e: refactor(compiler): encapsulated compiler object
+- 65809a6: feat(compiler): plugin seeds
+- d22fbfa: fix(cli): patched roboplay api url references
+- 0cae688: refactor(compiler): include project language in manifest
+
+## 0.10.12
+
+### Patch Changes
+
+- 361e3d8: patch(cli): avoid circular dependency imports
+
+## 0.10.11
+
+### Patch Changes
+
+- 2f939d5: patch(cli): support for spaces in options
+- 61b98a2: feat: modes
+
+## 0.10.10
+
+### Patch Changes
+
+- ca8ddd7: refactor(core): moved data loading into robo.start() in production mode
+- 7093bf4: feat: experimental sharding support
+
 ## 0.10.9
 
 ### Patch Changes

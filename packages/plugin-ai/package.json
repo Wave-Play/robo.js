@@ -33,7 +33,7 @@
 		"@robojs/server": "workspace:*",
 		"@swc/core": "^1.3.44",
 		"@types/node": "^18.14.6",
-		"discord.js": "^14.7.1",
+		"discord.js": "14.11.0",
 		"robo.js": "workspace:*",
 		"typescript": "^5.0.0"
 	},
@@ -41,8 +41,8 @@
 		"formdata-node": "^6.0.3"
 	},
 	"peerDependencies": {
-		"@robojs/server": "^0.5.3",
-		"robo.js": "^0.10.9"
+		"@robojs/server": "^0.5.6",
+		"robo.js": "^0.10.14"
 	},
 	"peerDependenciesMeta": {
 		"@robojs/server": {

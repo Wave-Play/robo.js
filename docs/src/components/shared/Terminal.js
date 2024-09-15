@@ -12,11 +12,14 @@ const PackageManagers = [
 ]
 
 export const Terminal = (props) => {
-	const { children, create, execute, install } = props
+	const { children, create, execute, install, title = 'Terminal' } = props
 	const [copy] = useClipboard()
 	const [packageManager, setPackageManager] = usePackageManager()
 	const selectedManager = PackageManagers.find((item) => item.value === packageManager)
-	const command = children
+	let command = children
+	if (typeof command === 'string') {
+		command = command.trim()
+	}
 
 	let prefix = ''
 	if (create) {
@@ -42,7 +45,7 @@ export const Terminal = (props) => {
 		<div className={'margin-bottom--lg terminal'}>
 			<div className="terminal-header">
 				<Icon path={mdiConsoleLine} size={'16px'} color={'rgb(161, 161, 161)'} />
-				<span className="terminal-header-text">Terminal</span>
+				<span className="terminal-header-text">{title}</span>
 				<div className="spacer" />
 				<Select defaultValue={selectedManager} onSelect={onSelect} options={PackageManagers} />
 				<button onClick={onClickCopy}>

@@ -1,0 +1,100 @@
+import { Card } from '@site/src/components/shared/Card'
+import { CardContainer } from '@site/src/components/shared/CardContainer'
+import { Terminal } from '@site/src/components/shared/Terminal'
+
+# 🌱 Seeding
+
+Sometimes plugins recommend or require certain files to be present in your project. **Seeding** is a way to automate this process.
+
+## Seed on Install
+
+When you install a plugin with the **[Robo CLI](../cli/robo)**, you may be asked if you want files included and a description of them.
+
+<Terminal execute>robo add @robojs/server</Terminal>
+
+For example, the **[@robojs/server](./server)** plugin may seed optional files in `/src/api` that shows how to use it. They are optional and can be deleted if you don't want them.
+
+You can also deny **seeding** by using the `--no-seed` flag or by entering `n` when prompted.
+
+```
+📦 Installing plugin
+   ✔ @robojs/server
+
+🌱 Seed files detected
+   - @robojs/server: Example API route and index page
+
+   Would you like to include these files? [Y/n]: n
+
+✨ Plugin successfully installed and ready to use.
+```
+
+If you opted out of **seeding**, you can always add them later by running `robo add` again.
+
+<CardContainer>
+	<Card href="./plugins/install" title="🔌 Robo Plugins" description="Add features to your Robo seamlessly." />
+</CardContainer>
+
+## TypeScript
+
+Seeds are smart enough to detect if you're using **[TypeScript](../robojs/typescript)** and seed `.ts` files instead of `.js`.
+
+However, this is only true if the plugin developer provided **TypeScript** files in the seed. If they didn't, you'll get **JavaScript** files instead even if you're using **TypeScript**.
+
+If you're a plugin developer, we highly recommend providing `.ts` files in the seed, even if your plugin wasn't written in **TypeScript**. This way, users can benefit from type safety right away. The **Robo Compiler** will automatically compile them to **JavaScript** for those who don't use **TypeScript**.
+
+You can also provide both `.ts` and `.js` files if you want finer control over the output instead of relying on the compiler.
+
+<CardContainer>
+	<Card href="../robojs/typescript" title="📘 TypeScript" description="Write better code with type safety." />
+</CardContainer>
+
+## Use Cases
+
+**Seeding** is useful for all kind of things, such as examples, databases, configurations, and more. Here's a list:
+
+- Example files to get you started
+- Configuration files
+- Database files
+- Complex setups
+- Boilerplates
+
+Plugins can seed anything they want, and it's up to you to decide if you want them or not.
+
+## Plugin Developers
+
+If you're developing a plugin and want users to have certain files in their project, you can seed them by creating a `/seed` folder in your plugin's root directory.
+
+Anything you put in `/seed` gets copied to the user's `/src` directory. If you want to copy files into the root directory, you can use the `/seed/_root` folder.
+
+```
+/seed
+├── /_root
+│   └── index.html
+└── /api
+    └── hello.ts
+```
+
+When the user **[installs your plugin](./install)**, these files are copied to their project if they approve.
+
+While optional, a description of the files is recommended to help users understand what they are getting. You can provide a description in your plugin's **[Robo Config](../robojs/config)** file:
+
+```js title="robo.mjs"
+export default {
+	// ... rest of config
+	seed: {
+		description: 'Example API route and index page'
+	}
+}
+```
+
+Now when users install your plugin with `robo add`, they will see a description of the files being seeded before they decide to include them. This helps them make an informed decision.
+
+<CardContainer>
+	<Card href="./create" title="🔌 Creating Plugins" description="Make your own plugins for Robo.js." />
+</CardContainer>
+
+## Limitations
+
+Seeds cannot be used to modify existing files in the project for security reasons. They can only add new files.
+
+Similarly, seeds can only affect the **Robo** project they are installed in. They cannot modify other projects or files outside of the project's directory.

@@ -5,12 +5,13 @@ import { logger } from '../../core/logger.js'
 import { hasFilesRecursively } from '../utils/fs-helper.js'
 import { color, composeColors } from '../../core/color.js'
 import { loadConfig } from '../../core/config.js'
-import { Flashcore, prepareFlashcore } from '../../core/flashcore.js'
-import { FLASHCORE_KEYS, Indent } from '../../core/constants.js'
-import { loadState } from '../../core/state.js'
+import { loadEnv } from '../../core/dotenv.js'
+import { Mode, setMode } from '../../core/mode.js'
+import { Indent } from '../../core/constants.js'
 
 const command = new Command('start')
 	.description('Starts your bot in production mode.')
+	.option('-m', '--mode', 'specify the mode(s) to run in (dev, beta, prod, etc...)')
 	.option('-h', '--help', 'Shows the available command options')
 	.option('-s', '--silent', 'do not print anything')
 	.option('-v', '--verbose', 'print more information for debugging')
@@ -18,6 +19,7 @@ const command = new Command('start')
 export default command
 
 interface StartCommandOptions {
+	mode?: string
 	silent?: boolean
 	verbose?: boolean
 }
@@ -28,16 +30,28 @@ async function startAction(_args: string[], options: StartCommandOptions) {
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : 'info'
 	})
+	logger.debug('CLI options:', options)
 
-	// Set NODE_ENV to production if not already set
+	// Set NODE_ENV if not already set
 	if (!process.env.NODE_ENV) {
 		process.env.NODE_ENV = 'production'
+	}
+
+	// Make sure environment variables are loaded
+	const defaultMode = Mode.get()
+	await loadEnv({ mode: defaultMode })
+
+	// Handle mode(s)
+	const { shardModes } = setMode(options.mode)
+
+	if (shardModes) {
+		return shardModes()
 	}
 
 	// Welcomeee
 	const projectName = path.basename(process.cwd()).toLowerCase()
 	logger.log('')
-	logger.log(Indent, color.bold(`🚀 Starting ${color.cyan(projectName)} in ${color.cyan('production')} mode`))
+	logger.log(Indent, color.bold(`🚀 Starting ${color.cyan(projectName)} in ${Mode.color(Mode.get())} mode`))
 	logger.log(Indent, '   Boop beep... Powering on your Robo creation! Need hosting? Check out RoboPlay!')
 	logger.log('')
 
@@ -57,12 +71,10 @@ async function startAction(_args: string[], options: StartCommandOptions) {
 		await fs.access(path.join('.robo', 'manifest.json'))
 	} catch (err) {
 		logger.error(
-			`The ${color.bold(
-				'.robo/manifest.json'
-			)} file is missing. Make sure your project structure is correct and run ${composeColors(
+			`The manifest file is missing. Make sure your project structure is correct and run ${composeColors(
 				color.bold,
-				color.blue
-			)('"robo build"')} again.`
+				color.cyan
+			)('robo build')} again.`
 		)
 		process.exit(1)
 	}
@@ -77,27 +89,9 @@ async function startAction(_args: string[], options: StartCommandOptions) {
 		logger.warn(`Experimental flags enabled: ${features}.`)
 	}
 
-	// Load state from Flashcore
-	const stateStart = Date.now()
-	const stateLoadPromise = new Promise<void>((resolve) => {
-		async function load() {
-			await prepareFlashcore()
-			const state = await Flashcore.get<Record<string, unknown>>(FLASHCORE_KEYS.state)
-			if (state) {
-				loadState(state)
-			}
-
-			logger.debug(`State loaded in ${Date.now() - stateStart}ms`)
-			resolve()
-		}
-		load()
-	})
-
-	// Imported dynamically to prevent multiple process hooks
+	// Start Roboooooooo!! :D (dynamic to avoid premature process hooks)
 	const { Robo } = await import('../../core/robo.js')
-
-	// Start Roboooooooo!! :D
 	Robo.start({
-		stateLoad: stateLoadPromise
+		shard: !!config.experimental?.shard
 	})
 }

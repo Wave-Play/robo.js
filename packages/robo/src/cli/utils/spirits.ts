@@ -5,6 +5,7 @@ import { logger } from '../../core/logger.js'
 import { SpiritMessage } from 'src/types/index.js'
 import { nameGenerator } from './name-generator.js'
 import { color, composeColors } from '../../core/color.js'
+import { Mode } from '../../core/mode.js'
 
 interface Task<T = unknown> extends SpiritMessage {
 	onExit?: (exitCode: number) => boolean | void
@@ -40,8 +41,9 @@ export class Spirits {
 	public newSpirit(oldSpirit?: Spirit) {
 		const index = oldSpirit ? this.activeSpirits.indexOf(oldSpirit) : this.activeSpirits.length
 		const spiritId = `${this.spiritIndex++}-${nameGenerator()}-${['a', 'b', 'c'][index]}`
+		const mode = Mode.get()
 		const worker = new Worker(path.join(__DIRNAME, '..', 'spirit.js'), {
-			workerData: { spiritId }
+			workerData: { mode, spiritId }
 		})
 		const newSpirit: Spirit = { id: spiritId, task: null, worker }
 		this.spirits[newSpirit.id] = newSpirit

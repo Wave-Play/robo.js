@@ -1,7 +1,7 @@
+import { Compiler } from './../cli/utils/compiler.js'
 import { Collection } from 'discord.js'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { getManifest } from '../cli/utils/manifest.js'
 import { hasProperties } from '../cli/utils/utils.js'
 import { logger } from './logger.js'
 import { color, composeColors, hex } from './color.js'
@@ -167,7 +167,7 @@ async function loadHandlerRecords<T extends HandlerRecord | HandlerRecord[]>(
 	type: 'api' | 'commands' | 'context' | 'events' | 'middleware'
 ) {
 	const collection = new Collection<string, T>()
-	const manifest = getManifest()
+	const manifest = Compiler.getManifest()
 
 	// Log manifest objects as debug info
 	const pcolor =

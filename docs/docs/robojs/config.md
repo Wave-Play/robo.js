@@ -101,6 +101,7 @@ Activate experimental features or revert to older behaviors for compatibility. T
 - `buildDirectory`: Determine where to compile your code. The default is `.robo/build`, but you can specify another location.
 - `disableBot`: Turn off bot features, allowing you to run Robo.js without a bot.
 - `incrementalBuilds`: Enable incremental builds to improve build performance by only recompiling changed files.
+- `shard`: Enable sharding support. Can be `true` or a `ShardingManagerOptions` object.
 - `userInstall`: Optimize command registration for user-installed apps.
 
 ```js
@@ -108,6 +109,7 @@ experimental: {
 	buildDirectory: 'dist',
 	disableBot: true,
 	incrementalBuilds: true,
+	shard: true,
 	userInstall: true
 }
 ```
@@ -210,6 +212,14 @@ sage: {
   errorReplies: false,
 }
 ```
+
+### `seed`
+
+For plugins only. Provide additional information about the files that can be optionally included in the user's project when installing the plugin.
+
+Options:
+
+- `description`: (string) A brief description of the seed files. This helps users make an informed decision.
 
 ### `timeouts`
 

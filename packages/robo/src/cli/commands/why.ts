@@ -1,7 +1,7 @@
 import { Command } from '../utils/cli-handler.js'
 import { logger } from '../../core/logger.js'
-import { loadManifest } from '../utils/manifest.js'
 import { color } from '../../core/color.js'
+import { Compiler } from '../utils/compiler.js'
 
 const command = new Command('why')
 	.description(
@@ -68,7 +68,7 @@ async function whyAction(args: string[], options: WhyCommandOptions) {
 	logger.debug(`Searching for ${prefixType.full.replace(':', '')} ${color.blue(entity)}...`)
 
 	// Look for the entity in the manifest
-	const manifest = await loadManifest()
+	const manifest = await Compiler.useManifest()
 	logger.debug(`Manifest: ${JSON.stringify(manifest, null, 2)}`)
 
 	if (prefixType.full === 'command:') {

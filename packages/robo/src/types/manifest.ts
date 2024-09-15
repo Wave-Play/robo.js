@@ -8,6 +8,11 @@ export interface Manifest {
 	__README: string
 	__robo: {
 		config: Config | null
+		language: 'javascript' | 'typescript'
+		mode: string
+		seed?: {
+			description?: string
+		}
 		type: 'plugin' | 'robo'
 		updatedAt?: string
 		version?: string

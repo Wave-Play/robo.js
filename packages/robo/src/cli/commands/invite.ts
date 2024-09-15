@@ -1,8 +1,8 @@
 import { Command } from '../utils/cli-handler.js'
 import { logger } from '../../core/logger.js'
-import { loadManifest } from '../utils/manifest.js'
 import { Manifest } from '../../types/index.js'
 import { env } from '../../core/env.js'
+import { Compiler } from '../utils/compiler.js'
 import { PermissionFlagsBits } from 'discord.js'
 import { color, composeColors } from '../../core/color.js'
 
@@ -20,14 +20,14 @@ async function inviteAction() {
 	)
 
 	// Throw error if no client ID is set
-	const { clientId } = env.discord
+	const clientId = env('discord.clientId')
 	if (!clientId) {
 		logger.error(`No client ID set. Please set the ${color.bold('DISCORD_CLIENT_ID')} environment variable.`)
 		return
 	}
 
 	// Compute permissions based on the manifest
-	const manifest = await loadManifest()
+	const manifest = await Compiler.useManifest()
 	const permissions = getPermissionsFromManifest(manifest)
 
 	// Generate the invite link

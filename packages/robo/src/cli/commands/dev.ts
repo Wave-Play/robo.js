@@ -7,18 +7,20 @@ import { installCloudflared, isCloudflaredInstalled, startCloudflared, stopCloud
 import { IS_WINDOWS, filterExistingPaths, getWatchedPlugins, packageJson, timeout } from '../utils/utils.js'
 import path from 'node:path'
 import Watcher, { Change } from '../utils/watcher.js'
-import { loadManifest } from '../utils/manifest.js'
 import { color, composeColors } from '../../core/color.js'
 import { Spirits } from '../utils/spirits.js'
 import { buildAction } from './build/index.js'
 import { Flashcore, prepareFlashcore } from '../../core/flashcore.js'
 import { getPackageExecutor, getPackageManager } from '../utils/runtime-utils.js'
-// import { setMode } from '../../core/mode.js'
+import { Mode, setMode } from '../../core/mode.js'
+import { Compiler } from '../utils/compiler.js'
+import { loadEnv } from '../../core/dotenv.js'
 import type { Config, SpiritMessage } from '../../types/index.js'
 
 const command = new Command('dev')
 	.description('Ready, set, code your bot to life! Starts development mode.')
 	.option('-h', '--help', 'Shows the available command options')
+	.option('-m', '--mode', 'specify the mode(s) to run in (dev, beta, prod, etc...)')
 	.option('-s', '--silent', 'do not print anything')
 	.option('-t', '--tunnel', 'expose your local server to the internet')
 	.option('-v', '--verbose', 'print more information for debugging')
@@ -26,6 +28,7 @@ const command = new Command('dev')
 export default command
 
 interface DevCommandOptions {
+	mode?: string
 	silent?: boolean
 	tunnel?: boolean
 	verbose?: boolean
@@ -39,19 +42,31 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : 'info'
 	})
+	logger.debug('CLI options:', options)
 	logger.debug(`Package manager:`, getPackageManager())
 	logger.debug(`Robo.js version:`, packageJson.version)
 	logger.debug(`Current working directory:`, process.cwd())
 
-	// Set NODE_ENV to development if not already set
+	// Set NODE_ENV if not already set
 	if (!process.env.NODE_ENV) {
 		process.env.NODE_ENV = 'development'
+	}
+
+	// Make sure environment variables are loaded
+	const defaultMode = Mode.get()
+	await loadEnv({ mode: defaultMode })
+
+	// Handle mode(s)
+	const { shardModes } = setMode(options.mode)
+
+	if (shardModes) {
+		return shardModes()
 	}
 
 	// Welcomeee
 	const projectName = path.basename(process.cwd()).toLowerCase()
 	logger.log('')
-	logger.log(Indent, color.bold(`🚀 Starting ${color.cyan(projectName)} in ${color.cyan('development')} mode`))
+	logger.log(Indent, color.bold(`🚀 Starting ${color.cyan(projectName)} in ${Mode.color(Mode.get())} mode`))
 	logger.log(Indent, '   Beep boop... Code your Robo to life! Got feedback? Tell us on Discord.')
 	logger.log('')
 
@@ -169,12 +184,12 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 	}
 
 	// Load manifest to compare later
-	let manifest = await loadManifest()
+	let manifest = await Compiler.useManifest()
 
 	// Watch for changes in the "src" directory alongside special files
 	const watchedPaths = ['src']
 	const ignoredPaths = ['node_modules', '.git', ...(config.watcher?.ignore ?? [])]
-	const additionalFiles = await filterExistingPaths(['.env', 'tsconfig.json', configRelative])
+	const additionalFiles = await filterExistingPaths(['.env', 'tsconfig.json'])
 	watchedPaths.push(...additionalFiles)
 
 	// Watch all plugins that are also currently in development mode, along with their config files
@@ -214,7 +229,7 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 
 			// Compare manifest to warn about permission changes
 			if (config.experimental?.disableBot !== true) {
-				const newManifest = await loadManifest()
+				const newManifest = await Compiler.useManifest()
 				const oldPermissions = manifest.permissions ?? []
 				const newPermissions = newManifest.permissions ?? []
 				manifest = newManifest
@@ -256,7 +271,8 @@ export async function buildAsync(command: string | null, config: Config, verbose
 				.newTask({
 					event: 'build',
 					payload: {
-						files: changes.map((change) => change.filePath)
+						files: changes.map((change) => change.filePath),
+						mode: Mode.get()
 					},
 					verbose: verbose
 				})
@@ -272,9 +288,7 @@ export async function buildAsync(command: string | null, config: Config, verbose
 			// Unfortunately, Windows has issues recursively spawning processes via PNPM
 			// If you're reading this and know how to fix it, please open a PR!
 			if (pkgManager === 'pnpm' && IS_WINDOWS) {
-				logger.debug(
-					`Detected Windows. Using ${color.bold('npm')} instead of ${color.bold('pnpm')} to build.`
-				)
+				logger.debug(`Detected Windows. Using ${color.bold('npm')} instead of ${color.bold('pnpm')} to build.`)
 				pkgManager = 'npm'
 			}
 
