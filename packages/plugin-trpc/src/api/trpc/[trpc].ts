@@ -2,6 +2,7 @@ import { initTRPC } from '@trpc/server'
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch'
 import { createTRPCClient as _createTRPCClient, createTRPCReact as _createTRPCReact } from '@trpc/react-query'
 import { serverPrefix } from '../../events/_start.js'
+import { trpcLogger } from '../../core/loggers.js'
 import type { RoboRequest } from '@robojs/server'
 import type { CreateTRPCClientOptions, CreateTRPCReact } from '@trpc/react-query'
 import type { AnyRouter } from '@trpc/server/unstable-core-do-not-import'
@@ -28,6 +29,7 @@ export const init = {
 		const t = initTRPC.create()
 		const originalRouter = t.router
 		t.router = createWrapper(originalRouter) as typeof t.router
+		trpcLogger.ready('tRPC router registered successfully')
 
 		return t
 	}
