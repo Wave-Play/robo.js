@@ -1,9 +1,5 @@
 # Dependencies
 node_modules
-# robo
-.robo
-
-public
 
 # Production
 build
