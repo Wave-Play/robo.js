@@ -1,6 +1,7 @@
 import { initTRPC } from '@trpc/server'
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch'
 import { createTRPCClient as _createTRPCClient, createTRPCReact as _createTRPCReact } from '@trpc/react-query'
+import { serverPrefix } from '../../events/_start.js'
 import type { RoboRequest } from '@robojs/server'
 import type { CreateTRPCClientOptions, CreateTRPCReact } from '@trpc/react-query'
 import type { AnyRouter } from '@trpc/server/unstable-core-do-not-import'
@@ -53,7 +54,7 @@ export default (req: RoboRequest) => {
 	}
 
 	return fetchRequestHandler({
-		endpoint: '/trpc',
+		endpoint: serverPrefix + '/trpc',
 		req: req,
 		router: appRouter
 	})

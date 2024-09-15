@@ -1,4 +1,5 @@
 import { appRouter } from './trpc/[trpc].js'
+import { serverPrefix } from '../events/_start.js'
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch'
 import type { RoboRequest } from '@robojs/server'
 
@@ -8,7 +9,7 @@ export default (req: RoboRequest) => {
 	}
 
 	return fetchRequestHandler({
-		endpoint: '/trpc',
+		endpoint: serverPrefix + '/trpc',
 		req: req,
 		router: appRouter
 	})
