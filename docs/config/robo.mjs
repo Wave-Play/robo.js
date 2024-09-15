@@ -11,5 +11,8 @@ export default {
 		disableBot: true,
 	},
 	plugins: [],
-	type: 'robo'
+	type: 'robo',
+	watcher: {
+		ignore: ['src/components', 'src/css', 'src/hooks', 'src/pages']
+	}
 }
