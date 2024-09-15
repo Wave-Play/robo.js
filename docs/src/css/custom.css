@@ -59,6 +59,7 @@
 	--searchBarInput: rgb(204, 204, 204);
 	--searchBarItemHover: #5c63701a;
 	--searchBarOutline: #3d4352;
+	--searchOverlay: rgba(0, 0, 0, 0.38);
 	--TextColor: #a2a3a2;
 	--searchContainerFocused: #212227;
 	--searchContainerShadow: 0 0 8px 0 rgba(0, 0, 0, 0.38);
@@ -72,6 +73,7 @@
 	--searchBarInput: rgb(82, 82, 82);
 	--searchBarItemHover: #e8e8e8;
 	--searchBarOutline: #e4e6f0;
+	--searchOverlay: rgba(255, 255, 255, 0.38);
 	--TextColor: #c0b5b5;
 	--searchContainerFocused: rgb(243, 243, 243);
 	--searchContainerShadow: 0 0 8px 0 rgba(0, 0, 0, 0.12);

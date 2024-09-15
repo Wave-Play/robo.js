@@ -39,7 +39,7 @@ function Playground() {
 	const [templates, setTemplates] = useState<Project[] | null>(null)
 	const [selectedTemplateIndex, setSelectedTemplateIndex] = useState(0)
 	const { hostRelative } = useRoboData()
-
+	const searchRef = useRef<HTMLDivElement | null>(null)
 	const embedDiv = useRef<HTMLIFrameElement | null>(null)
 	const editor = useRef(null)
 
@@ -65,17 +65,19 @@ function Playground() {
 		}
 	}, [colorMode])
 
-	const onClickDropdown = () => {
-		if (dropdown) {
-			setDropdown(false)
+	const onClickDropdown = (event) => {
+		if (searchRef?.current?.contains(event.target)) {
+			return
 		}
+
+		setDropdown(false)
 	}
 
 	useEffect(() => {
-		document.addEventListener('click', onClickDropdown)
+		document.addEventListener('mousedown', onClickDropdown)
 
 		return () => {
-			document.removeEventListener('click', onClickDropdown)
+			document.removeEventListener('mousedown', onClickDropdown)
 		}
 	}, [])
 
@@ -98,7 +100,8 @@ function Playground() {
 
 	return (
 		<>
-			<div className={styles.searchBarContainer} style={{ height: dropdown ? '47.5px' : 'unset' }}>
+			{dropdown ? <div className={styles.searchBackgroundOverlay} onClick={() => setDropdown(false)}></div> : null}
+			<div ref={searchRef} className={dropdown ? styles.searchBarWrapper : styles.searchBarContainer}>
 				{!embedLoading ? (
 					<SearchBar
 						data={templates}
@@ -137,7 +140,7 @@ function SearchBar(props: SearchBarProps) {
 	const templates = data
 		.map((project: Project) => project.subCategory)
 		.flatMap((categories) => categories.flatMap((category) => category.templates))
-		.filter((template) => template.title.toLowerCase().includes(searchTemplate.toLowerCase()))
+		.filter((template) => template.title.toLowerCase().trim().includes(searchTemplate.toLowerCase().trim()))
 
 	return (
 		<div className={focus ? styles.searchBarFocusContainer : styles.searchBarContainer}>
@@ -150,8 +153,8 @@ function SearchBar(props: SearchBarProps) {
 			></input>
 			{focus ? (
 				<div style={{ overflowY: 'scroll' }}>
-					{ searchTemplate.length > 0 && templates.length === 0 ? <ul>No results found</ul> : null }
-					{ templates.map((template) => {
+					{searchTemplate.length > 0 && templates.length === 0 ? <ul>No results found</ul> : null}
+					{templates.map((template) => {
 						const isSelected = template.idx === selectedTemplateIndex
 						const title = template.title.replace('🔗', '').trim()
 
