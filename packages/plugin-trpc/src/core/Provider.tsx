@@ -3,8 +3,11 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 interface TRPCProviderProps {
 	children: React.ReactNode
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	queryClient?: any
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	trpc: any
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	trpcClient: any
 }
 export function TRPCProvider(props: TRPCProviderProps) {

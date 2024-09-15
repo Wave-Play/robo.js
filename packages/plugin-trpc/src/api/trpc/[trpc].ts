@@ -35,10 +35,9 @@ export const init = {
 const createRouter = () => init.create().router({})
 export type Router = ReturnType<typeof createRouter>
 
-export function createTRPCReact<TRouter extends AnyRouter, TSSRContext = unknown>(options?: CreateTRPCReactOptions<TRouter>): CreateTRPCReact<
-	TRouter,
-	TSSRContext
-> {
+export function createTRPCReact<TRouter extends AnyRouter, TSSRContext = unknown>(
+	options?: CreateTRPCReactOptions<TRouter>
+): CreateTRPCReact<TRouter, TSSRContext> {
 	return _createTRPCReact<TRouter, TSSRContext>(options)
 }
 
