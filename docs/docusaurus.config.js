@@ -3,7 +3,7 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 // import React from 'react'
 // import Footer from './src/components/Footer';
-import { themes } from 'prism-react-renderer'
+const { themes } = require('prism-react-renderer')
 const lightCodeTheme = themes.github
 const darkCodeTheme = themes.dracula
 
@@ -36,16 +36,6 @@ const config = {
 	},
 
 	plugins: [
-		() => ({
-			name: '@robojs/docusaurus',
-			async contentLoaded({ actions }) {
-				actions.setGlobalData({
-					env: {
-						port: process.env.ROBO_PUBLIC_PORT
-					}
-				})
-			}
-		}),
 		[
 			'@docusaurus/plugin-client-redirects',
 			{
@@ -355,4 +345,4 @@ const config = {
 		})
 }
 
-export default config
+module.exports = config
