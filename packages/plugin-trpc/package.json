@@ -33,26 +33,34 @@
 		"prepublishOnly": "robo build plugin"
 	},
 	"dependencies": {
-		"@tanstack/react-query": "5.45.1",
-		"@trpc/client": "11.0.0-rc.403",
-		"@trpc/react-query": "11.0.0-rc.403",
-		"@trpc/server": "11.0.0-rc.403"
+		"@tanstack/react-query": "5.49.2",
+		"@trpc/client": "11.0.0-rc.502",
+		"@trpc/react-query": "11.0.0-rc.502",
+		"@trpc/server": "11.0.0-rc.502"
 	},
 	"devDependencies": {
 		"@robojs/server": "workspace:*",
 		"@swc/core": "^1.6.3",
 		"@types/node": "^20.14.6",
-		"@types/react": "^18.3.1",
+		"@types/react": "18.3.1",
 		"discord.js": "^14.15.3",
 		"prettier": "^3.3.2",
-		"react": "^18.3.1",
+		"react": "18.3.1",
 		"robo.js": "^0.10.9",
 		"typescript": "^5.4.5"
 	},
 	"peerDependencies": {
+		"@robojs/server": "^0.5.6",
+		"react": "^18.3.1",
 		"robo.js": "^0.10.1"
 	},
 	"peerDependenciesMeta": {
+		"@robojs/server": {
+			"optional": false
+		},
+		"react": {
+			"optional": true
+		},
 		"robo.js": {
 			"optional": false
 		}
