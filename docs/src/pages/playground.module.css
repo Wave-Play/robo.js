@@ -8,6 +8,7 @@
 	border-radius: 5px;
 	border: solid 1px var(--searchBarBorder);
 	background-color: var(--bgInputSearchBar);
+	outline-color: var(--searchBarOutline);
 	color: white;
 	text-align: center;
 }
@@ -25,14 +26,17 @@
 	border-radius: 5px;
 	border: solid 1px var(--searchBarBorder);
 	background-color: var(--bgInputSearchBar);
-	color: white;
-	text-align: center;
+	outline-color: var(--searchBarOutline);
+	color: var(--searchBarInput);
+	text-align: start;
 }
 
 .searchBarFocusContainer {
 	display: flex;
+	min-height: 48px;
 	flex-direction: column;
-	background-color: var(--ContainerFocused);
+	background-color: var(--searchContainerFocused);
+	box-shadow: var(--searchContainerShadow);
 	position: absolute;
 	top: 5px;
 	padding: 10px;
@@ -43,7 +47,23 @@
 }
 
 .searchBarFocusContainer > div > p:hover {
-	background-color: var(--ElementContainerHover);
+	background-color: green;
+	border-radius: 5px;
+}
+
+.searchBarFocusContainer ul {
+	border-radius: 4px;
+	font-size: 12px;
+	margin-bottom: 0px;
+	padding-top: 4px;
+	padding-bottom: 4px;
+	padding-left: 8px;
+	padding-right: 8px;
+	cursor: pointer;
+}
+
+.searchBarFocusContainer ul:hover {
+	background-color: var(--searchBarItemHover);
 	border-radius: 5px;
 }
 

@@ -12,10 +12,10 @@ interface Project {
 
 interface CategoryItems {
 	name: string
-	templates: Array<Templates>
+	templates: Template[]
 }
 
-interface Templates {
+interface Template {
 	title: string
 	desc: string
 	link: string
@@ -70,6 +70,7 @@ function Playground() {
 			setDropdown(false)
 		}
 	}
+
 	useEffect(() => {
 		document.addEventListener('click', onClickDropdown)
 
@@ -95,38 +96,24 @@ function Playground() {
 		}
 	}, [projectLink])
 
-	function renderSearchBar() {
-		if (!embedLoading) {
-			if (dropdown) {
-				return (
-					<SearchbarFocused
+	return (
+		<>
+			<div className={styles.searchBarContainer} style={{ height: dropdown ? '47.5px' : 'unset' }}>
+				{!embedLoading ? (
+					<SearchBar
 						data={templates}
-						setProjectLink={setProjectLink}
-						setDropdown={setDropdown}
-						setSelectedTemplateIndex={setSelectedTemplateIndex}
-						selectedTemplateIndex={selectedTemplateIndex}
-					/>
-				)
-			} else {
-				return (
-					<input
-						className={styles.searchBar}
+						focus={dropdown}
 						onFocus={() => {
 							if (fetchError !== null) {
 								setDropdown(true)
 							}
 						}}
-						placeholder={fetchError ?? 'Search for a Robo template'}
-					></input>
-				)
-			}
-		}
-	}
-
-	return (
-		<>
-			<div className={styles.searchBarContainer} style={{ height: dropdown ? '27px' : 'unset' }}>
-				{renderSearchBar()}
+						setProjectLink={setProjectLink}
+						setDropdown={setDropdown}
+						setSelectedTemplateIndex={setSelectedTemplateIndex}
+						selectedTemplateIndex={selectedTemplateIndex}
+					/>
+				) : null}
 			</div>
 			<div ref={embedDiv} id="embed" onClick={onClickDropdown} />
 		</>
@@ -135,66 +122,56 @@ function Playground() {
 
 interface SearchBarProps {
 	data: Project[] | null
+	focus?: boolean
+	onFocus?: () => void
 	setProjectLink: React.Dispatch<React.SetStateAction<string>>
 	setDropdown: React.Dispatch<React.SetStateAction<boolean>>
 	selectedTemplateIndex: number
 	setSelectedTemplateIndex: React.Dispatch<React.SetStateAction<number>>
 }
 
-function SearchbarFocused(props: SearchBarProps) {
-	const { data, setProjectLink, setDropdown, setSelectedTemplateIndex, selectedTemplateIndex } = props
+function SearchBar(props: SearchBarProps) {
+	const { data, focus, onFocus, setProjectLink, setDropdown, setSelectedTemplateIndex, selectedTemplateIndex } = props
 	const { colorMode } = useColorMode()
 	const [searchTemplate, setSearchTemplate] = useState('')
 	const templates = data
 		.map((project: Project) => project.subCategory)
 		.flatMap((categories) => categories.flatMap((category) => category.templates))
+		.filter((template) => template.title.includes(searchTemplate))
 
-	const ResultsRender = () => {
-		if (data !== null) {
-			return templates.map((template: Templates, idx: number) => {
-				if (template.title.includes(searchTemplate)) {
-					if (template.idx === selectedTemplateIndex) {
+	return (
+		<div className={focus ? styles.searchBarFocusContainer : styles.searchBarContainer}>
+			<input
+				className={focus ? styles.searchBarFocus : styles.searchBar}
+				onChange={(event) => setSearchTemplate(event.target.value)}
+				onFocus={onFocus}
+				value={searchTemplate}
+				placeholder={focus ? null : 'Search for a Robo template'}
+			></input>
+			{focus ? (
+				<div style={{ overflowY: 'scroll' }}>
+					{ searchTemplate.length > 0 && templates.length === 0 ? <ul>No results found</ul> : null }
+					{ templates.map((template) => {
+						const isSelected = template.idx === selectedTemplateIndex
+						const title = template.title.replace('🔗', '').trim()
+
 						return (
-							<p
-								onClick={() => {
-									setProjectLink(template.link)
-									setDropdown(false)
-								}}
-								style={{
-									backgroundColor: colorMode === 'dark' ? 'rgb(4, 57, 94)' : 'rgba(0,96,192,255)'
-								}}
-							>
-								{template.title}
-							</p>
-						)
-					} else {
-						return (
-							<p
+							<ul
 								onClick={() => {
 									setProjectLink(template.link)
 									setDropdown(false)
 									setSelectedTemplateIndex(template.idx)
 								}}
+								style={{
+									backgroundColor: !isSelected ? null : colorMode === 'dark' ? '#3d4352' : '#e4e6f0'
+								}}
 							>
-								{template.title}
-							</p>
+								{title}
+							</ul>
 						)
-					}
-				}
-				return <p>No results were found.</p>
-			})
-		}
-		return 'An error happened while rendering the results.'
-	}
-	return (
-		<div className={styles.searchBarFocusContainer}>
-			<input
-				className={styles.searchBarFocus}
-				onChange={(event) => setSearchTemplate(event.target.value)}
-				value={searchTemplate}
-				placeholder="Search for a Robo template"
-			></input>
-			<div style={{ overflowY: 'scroll' }}>{ResultsRender()}</div>
+					})}
+				</div>
+			) : null}
 		</div>
 	)
 }
