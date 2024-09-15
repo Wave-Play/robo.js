@@ -1,0 +1,123 @@
+.main {
+	background-color: var(--bgSearchBar);
+}
+
+.searchBar {
+	width: 50%;
+	padding: 5px;
+	border-radius: 5px;
+	border: solid 1px var(--searchBarBorder);
+	background-color: var(--bgInputSearchBar);
+	outline-color: var(--searchBarOutline);
+	color: white;
+	text-align: center;
+}
+
+.searchBarContainer {
+	display: flex;
+	padding: 5px;
+	width: 100%;
+	justify-content: center;
+}
+
+.searchBarWrapper {
+	display: flex;
+	padding: 5px;
+	width: 100%;
+	height: 47.5px;
+	margin-bottom: 1px;
+	justify-content: center;
+}
+
+.searchBarFocus {
+	width: 100%;
+	padding: 5px;
+	border-radius: 5px;
+	border: solid 1px var(--searchBarBorder);
+	background-color: var(--bgInputSearchBar);
+	outline-color: var(--searchBarOutline);
+	color: var(--searchBarInput);
+	text-align: start;
+}
+
+.searchBarFocusContainer {
+	display: flex;
+	min-height: 48px;
+	flex-direction: column;
+	background-color: var(--searchContainerFocused);
+	box-shadow: var(--searchContainerShadow);
+	position: absolute;
+	top: 5px;
+	padding: 10px;
+	border-radius: 5px;
+	gap: 10px;
+	width: calc(100vw - 50%);
+	max-height: 500px;
+}
+
+.searchBarFocusContainer > div > p:hover {
+	background-color: green;
+	border-radius: 5px;
+}
+
+.searchBarFocusContainer ul {
+	border-radius: 4px;
+	font-size: 12px;
+	margin-bottom: 0px;
+	padding-top: 4px;
+	padding-bottom: 4px;
+	padding-left: 8px;
+	padding-right: 8px;
+	cursor: pointer;
+}
+
+.searchBarFocusContainer ul:hover {
+	background-color: var(--searchBarItemHover);
+	border-radius: 5px;
+}
+
+.searchBackgroundOverlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	background-color: var(--searchOverlay);
+}
+
+.templatesContainer {
+	overflow-y: scroll;
+}
+.templatesContainer::-webkit-scrollbar {
+	display: none;
+}
+
+input[type='text'] {
+	background-color: #464747;
+}
+
+input::placeholder {
+	color: #a2a3a2;
+}
+
+/**
+dark:
+
+bg : #3c3c3c
+bg input:  #464747
+border input: #5b5a5b
+text color input: #a2a3a2
+
+hover element : 43 45 46
+*/
+
+/**
+light:
+
+bg : #dddcdc
+bg input: #d2d3d3
+border input:#bbbbba
+text color input: #c0b5b5
+
+
+*/
