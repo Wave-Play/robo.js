@@ -49,7 +49,7 @@ export function createTRPCClient<AppRouter extends Router>(opts: CreateTRPCClien
 export default (req: RoboRequest) => {
 	if (!appRouter) {
 		throw new Error(
-			'Router is not registered. Use `init` from `@robojs/trpc` instead of `@trpc/server` to create the router.'
+			'Router is not registered. Use `initTRPC` from `@robojs/trpc` instead of `@trpc/server` to create the router.'
 		)
 	}
 
