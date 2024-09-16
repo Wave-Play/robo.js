@@ -8,12 +8,15 @@
       "plugins": [],
       "type": "plugin"
     },
+    "language": "typescript",
+    "mode": "production",
     "type": "plugin",
-    "updatedAt": "2024-06-20T06:17:10.026Z",
-    "version": "0.10.9"
+    "updatedAt": "2024-09-16T04:28:04.131Z",
+    "version": "0.10.14"
   },
   "api": {
     "trpc": {
+      "__path": "/.robo/build/api/trpc.js",
       "subroutes": {
         "[trpc]": {
           "__path": "/.robo/build/api/trpc/[trpc].js"
@@ -26,7 +29,13 @@
     "message": {},
     "user": {}
   },
-  "events": {},
+  "events": {
+    "_start": [
+      {
+        "__path": "/.robo/build/events/_start.js"
+      }
+    ]
+  },
   "permissions": [],
   "middleware": [],
   "scopes": [
