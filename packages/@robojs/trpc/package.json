@@ -18,6 +18,7 @@
 	],
 	"files": [
 		".robo/",
+		"seed/",
 		"src/",
 		"LICENSE",
 		"README.md"

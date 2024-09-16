@@ -12,6 +12,7 @@
 	],
 	"files": [
 		".robo/",
+		"seed/",
 		"src/",
 		"engines.d.ts",
 		"engines.js",
