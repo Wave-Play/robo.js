@@ -1,5 +1,11 @@
 # @roboplay/plugin-api
 
+## 0.5.7
+
+### Patch Changes
+
+- 8c8cbc8: patch: resolved npm missing seed
+
 ## 0.5.6
 
 ### Patch Changes
