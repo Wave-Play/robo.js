@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.10.15
+
+### Patch Changes
+
+- 4fb9298: patch(cli): fixed plugin seeding paths being sourced from
+
 ## 0.10.14
 
 ### Patch Changes
