@@ -37,6 +37,6 @@ export const Analytics = Object.freeze({
 	event: (options: EventOptions) => _analytics.event(options),
 	view: (page: string, options: ViewOptions) => _analytics.view(page, options),
 	isReady: () => {
-		return _analytics !== undefined ? true : false
+		return _analytics !== undefined
 	}
 })
