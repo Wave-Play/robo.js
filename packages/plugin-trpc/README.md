@@ -4,31 +4,138 @@
 
 # 🚀 @robojs/trpc
 
-Welcome to _@robojs/trpc_! This plugin is designed to seamlessly integrate with your existing **[Robo.js](https://github.com/Wave-Play/robo)** project and provide new features and enhancements to your robo. The best part? Everything automatically works once you install this plugin!
+Add a **[tRPC](https://trpc.io)** server and client to your Robo automatically. **tRPC** is a modern **[TypeScript](https://robojs.dev/robojs/typescript)**-first RPC framework for building web services. This plugin sets up a tRPC router and client in your project, allowing you to easily create and consume APIs.
+
+You must already have **[@robojs/server](https://robojs.dev/plugins/server)** installed.
 
 ➞ [📚 **Documentation:** Getting started](https://docs.roboplay.dev/docs/getting-started)
 
 ➞ [🚀 **Community:** Join our Discord server](https://roboplay.dev/discord)
 
-> 👩‍💻 **Are you the plugin developer?** Check out the **[Development Guide](DEVELOPMENT.md)** for instructions on how to develop, build, and publish this plugin.
-
 ## Installation 💻
 
-To add this plugin to your Robo.js project:
+To add this plugin to your **[Robo.js](https://robojs.dev/getting-started)** project:
 
 ```bash
-npx robo add @robojs/trpc
+npx robo add @robojs/server @robojs/trpc
 ```
 
-New to Robo.js? Start your project with this plugin pre-installed:
+New to **Robo.js**? Start your project with this plugin pre-installed:
 
 ```bash
-npx create-robo <project-name> -p @robojs/trpc
+npx create-robo <project-name> -p @robojs/server @robojs/trpc
 ```
 
-<!-- Replace the following with your plugin's usage instructions. -->
-<!--
-## Usage 🎨
+We also recommend you `npm install zod` for schema validation. If you want to use **[React Query](https://tanstack.com/query/latest/docs/framework/react/overview)** capabilities, you will also need to wrap your app in a `TRPCProvider`.
 
-This plugin provides awesome new features to your Robo.js project. Here's an example of how you can use them in your project:
--->
+```tsx
+import { TRPCProvider } from '@robojs/trpc'
+import { trpc, trpcQueryClient } from '../trpc/client'
+
+function App() {
+	return (
+		<TRPCProvider trpc={trpc} trpcClient={trpcQueryClient}>
+			<Activity />
+		</TRPCProvider>
+	)
+}
+```
+
+The `trpc` and `trpcQueryClient` objects can be **[seeded](https://robojs.dev/plugins/seed)** for you during installation.
+
+## Usage 🌐
+
+If you allowed the plugin to **seed** your project, you can start using **tRPC** right away. The plugin sets up a `/trpc` folder in your project with `client.ts` and `server.ts` files. A start event is also added to ensure the router is registered.
+
+### Server
+
+The server file is where you define your **tRPC** router. You can add your **procedures** here for the client to consume.
+
+```ts
+import { initTRPC } from '@robojs/trpc'
+import { z } from 'zod'
+
+const t = initTRPC.create()
+export const router = t.router
+export const procedure = t.procedure
+
+export const appRouter = router({
+	// Query example: returns a greeting message based on the input text
+	hello: procedure
+		.input(
+			z.object({
+				text: z.string()
+			})
+		)
+		.query((opts) => {
+			const { text } = opts.input
+
+			return {
+				message: `Hello ${text}!`
+			}
+		}),
+
+	// Mutation example: performs an action with an optional details parameter
+	performAction: procedure
+		.input(
+			z.object({
+				actionId: z.number(),
+				details: z.string().optional()
+			})
+		)
+		.mutation((opts) => {
+			const { actionId, details } = opts.input
+
+			return {
+				actionId: actionId,
+				details: details,
+				message: `Action ${actionId} performed with details: ${details || 'None'}.`
+			}
+		})
+})
+
+export type AppRouter = typeof appRouter
+```
+
+As your project grows and you write more **procedures**, you can split this into multiple files and merge them together into the `appRouter`.
+
+> [!IMPORTANT]
+> Notice how `initTRPC` is imported from `@robojs/trpc`.
+
+### Client
+
+The client file initializes the **tRPC** clients and exports them for use in your app. For example, you can use the `trpcClient` to directly call queries when the user interacts with your app.
+
+```tsx
+import { trpcClient } from '../trpc/client'
+import { useState } from 'react'
+
+export const MyComponent = () => {
+	const [data, setData] = useState(null)
+
+	const onClick = async () => {
+		const data = await trpcClient.hello.query({ text: 'World' })
+		setData(data)
+	}
+
+	return <button onClick={onClick}>{data?.message}</button>
+}
+```
+
+Preferring to use **React Query**? You can use the `trpc` object to create hooks for your queries.
+
+```tsx
+import { trpc } from '../trpc/client'
+
+export const MyComponent = () => {
+	const { data } = trpc.hello.useQuery({ text: 'World' })
+
+	return <span>{data?.message}</span>
+}
+```
+
+## Got questions? 🤔
+
+If you have any questions or need help with this plugin, feel free to join our Discord Server. We're a friendly bunch and always happy to help! Plus, our very own AI Robo, Sage, is there to assist you with any questions you may have.
+
+➞ [🚀 **Community:** Join our Discord server](https://roboplay.dev/discord)
