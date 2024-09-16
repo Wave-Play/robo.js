@@ -40,6 +40,7 @@ export async function useManifest(options?: UseManifestOptions): Promise<Manifes
 	let manifest = ManifestCache[name]
 
 	if (manifest && cache) {
+		compilerLogger.debug(`Using cached manifest`, name ? `for plugin ${name}` : '')
 		return manifest
 	}
 

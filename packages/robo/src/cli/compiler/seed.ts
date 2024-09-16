@@ -64,7 +64,8 @@ export async function buildSeed() {
  * This is used to determine whether or not to copy files from the plugin onto the project.
  */
 export function hasSeed(packageName: string) {
-	const seedPath = path.resolve(PackageDir, '..', 'node_modules', packageName, '.robo', 'seed')
+	const seedPath = path.resolve(PackageDir, '..', packageName, '.robo', 'seed')
+	compilerLogger.debug(`Checking for ${packageName} seed files:`, seedPath)
 	return existsSync(seedPath)
 }
 
@@ -76,11 +77,11 @@ export function hasSeed(packageName: string) {
  */
 export async function useSeed(packageName: string) {
 	compilerLogger.debug(`Looking for seed files in plugin ${color.bold(packageName)}...`)
-	const seedPath = path.resolve(PackageDir, '..', 'node_modules', packageName, '.robo', 'seed')
+	const seedPath = path.resolve(PackageDir, '..', packageName, '.robo', 'seed')
 	const projectSrc = path.join(process.cwd(), 'src')
 	compilerLogger.debug('Looking in seed path:', seedPath)
 
-	// See if the plugin has an inherits directory
+	// See if the plugin has a seed directory
 	if (existsSync(seedPath)) {
 		compilerLogger.debug('Seed folder exists! Verifying manifest...')
 		const manifest = await Compiler.useManifest({

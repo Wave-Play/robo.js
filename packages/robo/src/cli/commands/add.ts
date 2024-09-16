@@ -129,13 +129,14 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
 
 	// See which plugins have seeds
 	const pluginsWithSeeds = packages.filter((pkg) => Compiler.hasSeed(pkg))
+	logger.debug(`Plugins with seeds:`, pluginsWithSeeds)
 
 	// Automatically copy files meant to be seeded by the plugin
 	if (seed && pluginsWithSeeds.length > 0) {
 		const pluginSeeds = await Promise.all(
 			packages.map(async (pkg) => {
 				const manifest = await Compiler.useManifest({
-					basePath: path.resolve(PackageDir, '..', 'node_modules', pkg)
+					basePath: path.resolve(PackageDir, '..', pkg)
 				})
 				const description = manifest.__robo?.seed?.description
 
