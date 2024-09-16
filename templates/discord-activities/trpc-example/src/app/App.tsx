@@ -2,7 +2,7 @@ import { DiscordContextProvider } from '../hooks/useDiscordSdk'
 import { Activity } from './Activity'
 import { TRPCProvider } from '@robojs/trpc'
 import './App.css'
-import { trpc, trpcClient } from '../core/trpc-client'
+import { trpc, trpcQueryClient } from '../trpc/client'
 
 /**
  * 🔒 Set `authenticate` to true to enable Discord authentication
@@ -16,7 +16,7 @@ import { trpc, trpcClient } from '../core/trpc-client'
 export default function App() {
 	return (
 		<DiscordContextProvider>
-				<TRPCProvider trpc={trpc} trpcClient={trpcClient}>
+				<TRPCProvider trpc={trpc} trpcClient={trpcQueryClient}>
 					<Activity />
 				</TRPCProvider>
 		</DiscordContextProvider>

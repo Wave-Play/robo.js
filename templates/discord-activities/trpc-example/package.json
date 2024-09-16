@@ -31,14 +31,15 @@
 	},
 	"dependencies": {
 		"@discord/embedded-app-sdk": "^1.2.0",
+		"@robojs/patch": "^0.1.0",
 		"@robojs/server": "^0.5.3",
-		"@robojs/trpc": "file:../../../packages/plugin-trpc",
+		"@robojs/trpc": "^0.1.4",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
-		"robo.js": "^0.10.9"
+		"robo.js": "^0.10.15"
 	},
 	"devDependencies": {
-		"@swc/core": "^1.6.3",
+		"@swc/core": "^1.5.3",
 		"@types/node": "^20.14.6",
 		"@types/react": "^18.3.3",
 		"@types/react-dom": "^18.3.0",
