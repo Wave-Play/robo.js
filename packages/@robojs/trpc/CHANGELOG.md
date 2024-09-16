@@ -1,5 +1,11 @@
 # @robojs/trpc
 
+## 0.1.2
+
+### Patch Changes
+
+- 34bb4cc: patch: resolved npm missing seed
+
 ## 0.1.1
 
 ### Patch Changes
