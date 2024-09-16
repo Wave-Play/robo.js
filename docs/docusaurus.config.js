@@ -166,7 +166,8 @@ const config = {
 					'packages/plugin-maintenance/README.md',
 					'packages/plugin-modtools/README.md',
 					'packages/@robojs/patch/README.md',
-					'packages/plugin-sync/README.md'
+					'packages/plugin-sync/README.md',
+					'packages/@robojs/trpc/README.md'
 				],
 				modifyContent: (filename, content) => {
 					/*if (['CONTRIBUTING.md'].includes(filename)) {

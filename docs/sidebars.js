@@ -190,7 +190,8 @@ const sidebars = {
 				'plugins/moderation',
 				'plugins/patch',
 				'plugins/server',
-				'plugins/sync'
+				'plugins/sync',
+				'plugins/trpc'
 			]
 		},
 		{
