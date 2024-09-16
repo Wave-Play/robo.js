@@ -8,5 +8,8 @@ export default {
 		intents: []
 	},
 	plugins: [],
-	type: 'plugin'
+	type: 'plugin',
+	seed: {
+		description: 'Boilerplate tRPC server and client files'
+	}
 }
