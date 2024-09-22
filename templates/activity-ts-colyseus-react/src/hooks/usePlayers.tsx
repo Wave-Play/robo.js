@@ -53,7 +53,7 @@ function useGameContextSetup() {
 		// Done with discord-specific setup
 
 		// Now we create a colyseus client
-		const wsUrl = `wss://${location.host}/colyseus`
+		const wsUrl = `wss://${location.host}/.proxy/colyseus`
 		const client = new Client(wsUrl)
 
 		let roomName = 'Channel'

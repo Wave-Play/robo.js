@@ -198,7 +198,7 @@ export function useDiscordSdkSetup(options?: UseDiscordSdkSetupOptions) {
 
 			if (authenticate) {
 				setStatus('authenticating')
-				const { accessToken, auth } = await authenticateSdk()
+				const { accessToken, auth } = await authenticateSdk({ scope: options?.scope })
 				setAccessToken(accessToken)
 				setSession(auth)
 			}

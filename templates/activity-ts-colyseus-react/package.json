@@ -34,13 +34,14 @@
 		"@colyseus/monitor": "^0.15.6",
 		"@colyseus/schema": "^2.0.30",
 		"@colyseus/ws-transport": "^0.15.1",
-		"@discord/embedded-app-sdk": "^1.2.0",
-		"@robojs/server": "^0.4.3",
+		"@discord/embedded-app-sdk": "^1.4.2",
+		"@robojs/patch": "^0.1.1",
+		"@robojs/server": "^0.5.7",
 		"colyseus.js": "^0.15.18",
 		"express": "^4.19.2",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
-		"robo.js": "^0.10.5"
+		"robo.js": "^0.10.15"
 	},
 	"devDependencies": {
 		"@swc/core": "^1.5.0",
