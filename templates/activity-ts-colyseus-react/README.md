@@ -2,37 +2,49 @@
 
 ---
 
-# Hiya, activity-ts-colyseus-react 🌈
+# Discord Activity - React, Colyseus, TypeScript
 
-Welcome to your fresh **[Robo.js](https://github.com/Wave-Play/robo)** project, empowered by [**Colyseus**](https://colyseus.io) for seamless, real-time state management in your Discord activities!
+Welcome to your fresh **[Robo.js](https://robojs.dev/)** project, empowered by [**Colyseus**](https://colyseus.io) for seamless, real-time state management in your Discord activities!
 
-Colyseus is a robust multiplayer game server for Node.js. It handles complex and demanding real-time data synchronization tasks, making it an ideal choice for developing interactive, multiplayer Discord activities. With its lightweight and scalable architecture, Colyseus facilitates the development of distributed systems and real-time applications, providing a powerful solution for managing state synchronization across multiple clients efficiently.
+**Colyseus** is a powerful **Node.js** multiplayer game server optimized for real-time data synchronization, making it perfect for interactive, **[multiplayer Discord Activities](https://robojs.dev/discord-activities/multiplayer)**. Its scalable architecture allows efficient state management across multiple clients.
 
-With Robo.js as your guide, you'll experience a seamless, [file-based setup](https://docs.roboplay.dev/docs/basics/overview#the-robojs-file-structure), an [integrated database](https://docs.roboplay.dev/docs/basics/flashcore), [TypeScript support](https://docs.roboplay.dev/docs/advanced/typescript), and a multitude of [plugin-powered skills](https://docs.roboplay.dev/docs/advanced/plugins) to unlock along the way.
-
-Ready to embark on this adventure?
-
-➞ [📖 **Tutorial:** Creating a Discord Activity in seconds](https://dev.to/waveplay/how-to-build-a-discord-activity-easily-with-robojs-5bng)
-
-➞ [📚 **Documentation:** Getting started with Robo](https://docs.roboplay.dev/docs/getting-started)
-
-➞ [📚 **Documentation:** Best practices for Colyseus](https://docs.colyseus.io/best-practices/)
+With **Robo.js** as your framework, you benefit from a **[file-based setup](https://robojs.dev/robojs/files)**, an **[integrated database](https://robojs.dev/robojs/flashcore)**, **[TypeScript support](https://robojs.dev/robojs/typescript)**, and flexible **[plugin-powered features](https://robojs.dev/plugins/overview)**, streamlining your development process.
 
 ➞ [🚀 **Community:** Join our Discord server](https://roboplay.dev/discord)
 
-## Running 🏃‍♂️
+➞ [📚 **Documentation:** Getting started with Robo](https://robojs.dev/discord-activities/getting-started)
 
-Run development mode with:
+➞ [📚 **Documentation:** Best practices for Colyseus](https://docs.colyseus.io/best-practices/)
+
+➞ [📖 **Tutorial:** Creating a Discord Activity in seconds](https://dev.to/waveplay/how-to-build-a-discord-activity-easily-with-robojs-5bng)
+
+Ready to embark on this adventure?
+
+## Getting Started 💻
+
+Create a project with this template, replacing `<project-name>` with your desired name:
+
+```bash
+npx create-robo <project-name> --template discord-activities/react-colyseus-ts
+```
+
+Then navigate into your project directory:
+
+```bash
+cd <project-name>
+```
+
+Run development mode:
 
 ```bash
 npm run dev
 ```
 
-Your Robo refreshes with every change. 🔄
+> **Notes:** A free Cloudflare tunnel is included for easy testing. You can copy and paste it into activity's **[URL mapping](https://robojs.dev/discord-activities/proxy#url-mapping)** to test things out.
 
-A free Cloudflare tunnel is included for easy testing. You can copy and paste it into activity's URL mapping to test things out.
+➞ [📚 **Documentation:** Exploring Different Run Modes](https://robojs.dev/robojs/mode#default-modes)
 
-> **Psst...** Check out the [deployment instructions](#deployment) to keep your Robo online 24/7.
+➞ [🚀 **Documentation:** Deploying for Free with 24/7 Uptime](https://robojs.dev/hosting/overview)
 
 ## App Development 🛠️
 
@@ -42,7 +54,7 @@ Things are powered by Vite under the hood, so you get the latest ES modules, hot
 
 Try editing the `main` file to get started! (`Activity.tsx` if you're using React)
 
-**➞** [📚 **Documentation:** App development](https://docs.roboplay.dev/docs/app/overview)
+**➞** [📚 **Documentation:** App development](https://robojs.dev/discord-activities/getting-started)
 
 #### Authenticating
 
@@ -60,7 +72,7 @@ You can then get the SDK and other goodies from the `useDiscordSdk` hook!
 
 Your server-side code is located in the `/src/api` folder. This is where you can build your API, webhooks, and other fancy server-side features.
 
-This backend is powered by the [**Server Plugin**](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-api) - a powerful Robo plugin that creates an manages a Node `http` server for you. If you install Fastify, the server will automatically switch to it for better performance!
+This backend is powered by the [**Server Plugin**](https://robojs.dev/plugins/server) - a powerful Robo plugin that creates an manages a Node `http` server for you. If you install Fastify, the server will automatically switch to it for better performance!
 
 Everything Robo is file-based, so you can create new routes by making new files in the `/src/api` directory. The file's name becomes the route's path. For example, let's try making a new route at `/health` by creating a new file named `health.js`:
 
@@ -70,7 +82,9 @@ export default () => {
 }
 ```
 
-Easy, right? Check out the [**Server Plugin documentation**](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-api) for more info!
+Easy, right?
+
+➞ [🚀 **Documentation:** @robojs/server](https://robojs.dev/plugins/server)
 
 ## Folder Structure 📁
 
@@ -247,15 +261,15 @@ This Robo boasts an intuitive plugin system that grants new capabilities instant
 npx robo add @robojs/ai
 ```
 
-> Swap out [`@robojs/ai`](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-ai) with your chosen plugin's package name
+> Swap out [`@robojs/ai`](https://robojs.dev/plugins/ai) with your chosen plugin's package name
 
-With that, your Robo automatically equips itself with all the features the plugin offers. Want to revert? Simply use [`robo remove`](https://docs.roboplay.dev/docs/advanced/command-line#plugins) to uninstall any plugin.
+With that, your Robo automatically equips itself with all the features the plugin offers. Want to revert? Simply use [`robo remove`](https://robojs.dev/cli/robo#plugins) to uninstall any plugin.
 
-**➞** [📚 **Documentation:** Installing plugins](https://docs.roboplay.dev/docs/advanced/plugins#installing-plugins)
+**➞** [📚 **Documentation:** Installing plugins](https://robojs.dev/plugins/install)
 
 Crafting something unique in your Robo project? You can turn your innovations into plugins, be it specific functionalities or your entire Robo. Share your genius with the world!
 
-**➞** [📚 **Documentation:** Creating plugins](https://docs.roboplay.dev/docs/advanced/plugins#creating-plugins)
+**➞** [📚 **Documentation:** Creating plugins](https://robojs.dev/plugins/create)
 
 ## Deployment 🚀
 
@@ -265,7 +279,7 @@ Run the `deploy` command to automatically deploy to **[RoboPlay](https://robopla
 npm run deploy
 ```
 
-**➞** [🚀 **RoboPlay:** Hosting your Robo](https://docs.roboplay.dev/docs/hosting)
+**➞** [🚀 **RoboPlay:** Hosting your Robo](https://robojs.dev/hosting/overview)
 
 You can also self-host your robo anywhere that supports Node. Just make sure to run `build` followed by `start`:
 
