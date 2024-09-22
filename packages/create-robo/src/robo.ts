@@ -95,9 +95,7 @@ const appPlugins = [
 	new Separator('\nRequired for apps:'),
 	{
 		checked: true,
-		name: `${chalk.bold(
-			'Patches'
-		)} - A collection of patches optimized for Robo.js projects.`,
+		name: `${chalk.bold('Patches')} - A collection of patches optimized for Robo.js projects.`,
 		short: 'Patches',
 		value: 'patch'
 	},
@@ -332,7 +330,11 @@ export default class Robo {
 		this._packageJson.keywords.sort()
 
 		logger.debug(`Updating package.json file...`)
-		await fs.writeFile(path.join(this._workingDir, 'package.json'), JSON.stringify(this._packageJson, null, '\t'), 'utf-8')
+		await fs.writeFile(
+			path.join(this._workingDir, 'package.json'),
+			JSON.stringify(this._packageJson, null, '\t'),
+			'utf-8'
+		)
 
 		// Install the selected plugin packages
 		const executor = getPackageExecutor()
@@ -383,9 +385,17 @@ export default class Robo {
 	}
 
 	async downloadTemplate(url: string) {
-		logger.debug(`Using template: ${url}`)
 		let repoUrl: URL | undefined
 		let repoInfo: RepoInfo | undefined
+		logger.debug(`Using template: ${url}`)
+
+		// Adjust to be relative to main monorepo if not a URL
+		if (!url.toLowerCase().startsWith('https://')) {
+			url = `https://github.com/Wave-Play/robo.js/tree/main/templates/${url}`
+			logger.debug(`Adjusted template URL: ${url}`)
+		}
+
+		// Print new section
 		logger.debug('\n')
 		logger.log('\x1B[1A\x1B[K\x1B[1A\x1B[K')
 		logger.log(Indent, chalk.bold('🌐 Creating from template'))
@@ -738,7 +748,11 @@ export default class Robo {
 
 		// Write the package.json file
 		logger.debug(`Writing package.json file...`)
-		await fs.writeFile(path.join(this._workingDir, 'package.json'), JSON.stringify(this._packageJson, null, '\t'), 'utf-8')
+		await fs.writeFile(
+			path.join(this._workingDir, 'package.json'),
+			JSON.stringify(this._packageJson, null, '\t'),
+			'utf-8'
+		)
 
 		// Install dependencies using the package manager that triggered the command
 		if (install) {
@@ -792,7 +806,11 @@ export default class Robo {
 
 				writeDependencies()
 				logger.debug(`Updating package.json file...`)
-				await fs.writeFile(path.join(this._workingDir, 'package.json'), JSON.stringify(this._packageJson, null, '\t'), 'utf-8')
+				await fs.writeFile(
+					path.join(this._workingDir, 'package.json'),
+					JSON.stringify(this._packageJson, null, '\t'),
+					'utf-8'
+				)
 			}
 		}
 
