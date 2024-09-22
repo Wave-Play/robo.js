@@ -34,6 +34,12 @@ Then navigate into your project directory:
 cd <project-name>
 ```
 
+Install the dependencies:
+
+```bash
+npm install
+```
+
 Run development mode:
 
 ```bash
