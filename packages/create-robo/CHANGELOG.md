@@ -1,5 +1,11 @@
 # create-robo
 
+## 0.12.14
+
+### Patch Changes
+
+- 361ba6f: feat: allow short-form template paths
+
 ## 0.12.13
 
 ### Patch Changes
