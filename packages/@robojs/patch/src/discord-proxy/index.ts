@@ -11,15 +11,15 @@ export const DiscordProxy = {
 /**
  * Automatically patches all internal requests when in a Discord Activity.
  * This updates the `fetch` and `WebSocket` APIs to always include the `/.proxy` prefix.
- * 
+ *
  * Run this at the very beginning of your app to ensure all requests are proxied.
  */
 function patch() {
 	if (isDiscordActivity()) {
-		console.log('Applying patch for Discord Proxy')
+		console.log('@robojs/patch: Applying patch for Discord Proxy')
 		patchFetch()
 		patchWebSocket()
 	} else {
-		console.log('Not in Discord activity, skipping patch')
+		console.log('@robojs/patch: Not in Discord Activity, skipping patch')
 	}
 }
