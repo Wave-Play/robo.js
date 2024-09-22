@@ -239,7 +239,7 @@ const sidebars = {
 						{
 							type: 'link',
 							label: 'Multiplayer Colyseus (TS)',
-							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/activity-ts-colyseus-react'
+							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/discord-activities/react-colyseus-ts'
 						},
 						{
 							type: 'link',

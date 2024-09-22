@@ -1,6 +1,6 @@
 {
-	"name": "activity-ts-colyseus-react",
-	"description": "",
+	"name": "react-colyseus-ts",
+	"description": "A simplified TypeScript template using Colyseus and React",
 	"version": "1.0.0",
 	"type": "module",
 	"private": true,
