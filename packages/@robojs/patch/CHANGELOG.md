@@ -1,5 +1,11 @@
 # @robojs/patch
 
+## 0.1.1
+
+### Patch Changes
+
+- 0f0bd3e: patch: avoid patching external requests
+
 ## 0.1.0
 
 ### Minor Changes
