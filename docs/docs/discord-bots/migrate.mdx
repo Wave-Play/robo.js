@@ -26,7 +26,7 @@ Next up, choose a migration option based on your existing bot's complexity.
 
 For simple bots, we recommend diving headfirst into the Robo.js File Structure. You'll get automatic command registration, plugins, and more. Say goodbye to managing the Discord.js client object manually when you migrate your handlers (events/commands) to the Robo.js File Structure.
 
-1. Migrate your bot to the **[Robo.js File Structure](/docs/basics/overview#the-robojs-file-structure)**.
+1. Migrate your bot to the **[Robo.js File Structure](https://robojs.dev/robojs/internals#robo-file-structure)**.
 
 2. Update your `config/robo.mjs` file with any client options you used with the Discord.js client. For example:
 
@@ -101,7 +101,7 @@ client.on('messageCreate', (message) => {
 Robo.start({ client })
 ```
 
-With this setup, you can start migrating your existing commands into the [Robo.js File Structure](/docs/basics/overview) or create new ones this way while you work your way there.
+With this setup, you can start migrating your existing commands into the [Robo.js File Structure](https://robojs.dev/robojs/internals#robo-file-structure) or create new ones this way while you work your way there.
 
 Start by moving your `clientOptions` into a`config/robo.mjs` file instead of creating your own custom client. Once you're done migrating, you can kick off your projects using `robo dev` instead of your own entry file.
 
