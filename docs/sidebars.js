@@ -243,6 +243,11 @@ const sidebars = {
 						},
 						{
 							type: 'link',
+							label: 'Multiplayer Video (TS)',
+							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/discord-activities/react-multiplayer-video-ts'
+						},
+						{
+							type: 'link',
 							label: 'TailwindCSS (JS)',
 							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/discord-activities/react-tailwind-ts'
 						},
