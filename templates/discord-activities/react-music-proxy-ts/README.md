@@ -2,7 +2,7 @@
 
 ---
 
-# Discord Activity - React, Music Proxy, TypeScript
+# Discord Activity - React, Music Proxy (TS)
 
 Welcome to your fresh **[Robo.js](https://github.com/Wave-Play/robo)** project!
 

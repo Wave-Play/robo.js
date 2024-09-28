@@ -2,7 +2,7 @@
 
 ---
 
-# Discord Activity - React, tRPC, TypeScript
+# Discord Activity - React, tRPC (TS)
 
 Welcome to your fresh **[Robo.js](https://github.com/Wave-Play/robo)** project!
 

@@ -2,7 +2,7 @@
 
 ---
 
-# Discord Activity - Vanilla JavaScript
+# Discord Activity - Vanilla (JS)
 
 Welcome to your fresh **[Robo.js](https://github.com/Wave-Play/robo)** project!
 

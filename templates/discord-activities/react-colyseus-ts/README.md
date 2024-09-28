@@ -2,7 +2,7 @@
 
 ---
 
-# Discord Activity - React, Colyseus, TypeScript
+# Discord Activity - React, Colyseus (TS)
 
 Welcome to your fresh **[Robo.js](https://robojs.dev/)** project, empowered by [**Colyseus**](https://colyseus.io) for seamless, real-time state management in your Discord activities!
 

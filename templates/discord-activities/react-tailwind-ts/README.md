@@ -2,7 +2,7 @@
 
 ---
 
-# Discord Activity - React, Tailwind, TypeScript
+# Discord Activity - React, Tailwind (TS)
 
 Welcome to your fresh **[Robo.js](https://github.com/Wave-Play/robo)** project!
 

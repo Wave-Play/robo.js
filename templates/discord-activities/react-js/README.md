@@ -2,7 +2,7 @@
 
 ---
 
-# Discord Activity - React, JavaScript
+# Discord Activity - React (JS)
 
 Welcome to your fresh **[Robo.js](https://github.com/Wave-Play/robo)** project!
 
