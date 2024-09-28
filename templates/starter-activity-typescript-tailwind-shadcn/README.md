@@ -2,35 +2,58 @@
 
 ---
 
-# Hiya, starter-react-ts-tailwind 🌈
+# Discord Activity - React, shadcn, Tailwind, TypeScript
 
 Welcome to your fresh **[Robo.js](https://github.com/Wave-Play/robo)** project!
 
 Build, deploy, and maintain your Discord activities with ease. With Robo.js as your guide, you'll experience a seamless, [file-based setup](https://docs.roboplay.dev/docs/basics/overview#the-robojs-file-structure), an [integrated database](https://docs.roboplay.dev/docs/basics/flashcore), [TypeScript support](https://docs.roboplay.dev/docs/advanced/typescript), and a multitude of [plugin-powered skills](https://docs.roboplay.dev/docs/advanced/plugins) to unlock along the way.
 
-Ready to embark on this adventure?
+_Ready to embark on this adventure?_
 
-➞ [📖 **Tutorial:** Creating a Discord Activity in seconds](https://dev.to/waveplay/how-to-build-a-discord-activity-easily-with-robojs-5bng)
+## Table of Contents
 
-➞ [📚 **Documentation:** Getting started](https://docs.roboplay.dev/docs/getting-started)
+- [🔗 Quick Links](#🔗-quick-links)
+- [✨ Getting Started](#✨-getting-started)
+- [🛠️ App Development](#️🛠️-app-development)
+- [🔒 Authentication](#🔒-authentication)
+- [🛠️ Backend Development](#️🛠️-backend-development)
+- [📁 Folder Structure](#📁-folder-structure)
+- [🔌 Plugins](#🔌-plugins)
+- [🚀 Deployment](#🚀-deployment)
 
-➞ [🚀 **Community:** Join our Discord server](https://roboplay.dev/discord)
+## 🔗 Quick Links
 
-## Running 🏃‍♂️
+- [🚀 **Community:** Join our Discord server](https://roboplay.dev/discord)
+- [📚 **Documentation:** Getting started with Robo](https://robojs.dev/discord-activities/getting-started)
+- [📖 **Tutorial:** Creating a Discord Activity in seconds](https://dev.to/waveplay/how-to-build-a-discord-activity-easily-with-robojs-5bng)
 
-Run development mode with:
+## ✨ Getting Started
+
+Create a project with this template, replacing `<project-name>` with your desired name:
+
+```bash
+npx create-robo <project-name> --template discord-activities/react-tailwind-shadcn-ts
+```
+
+Then navigate into your project directory:
+
+```bash
+cd <project-name>
+```
+
+Run development mode:
 
 ```bash
 npm run dev
 ```
 
-Your Robo refreshes with every change. 🔄
+> **Notes:** A free Cloudflare tunnel is included for easy testing. You can copy and paste it into activity's **[URL mapping](https://robojs.dev/discord-activities/proxy#url-mapping)** to test things out.
 
-A free Cloudflare tunnel is included for easy testing. You can copy and paste it into activity's URL mapping to test things out.
+➞ [📚 **Documentation:** Exploring Different Run Modes](https://robojs.dev/robojs/mode#default-modes)
 
-> **Psst...** Check out the [deployment instructions](#deployment) to keep your Robo online 24/7.
+➞ [🚀 **Documentation:** Deploying for Free with 24/7 Uptime](https://robojs.dev/hosting/overview)
 
-## App Development 🛠️
+## 🛠️ App Development
 
 You can find your client-side code in the `/src/app` folder. This is where you can build your web app using React, Vue, or any other front-end framework.
 
@@ -40,7 +63,7 @@ Try editing the `main` file to get started! (`Activity.tsx` if you're using Reac
 
 **➞** [📚 **Documentation:** App development](https://docs.roboplay.dev/docs/app/overview)
 
-#### Authenticating
+## 🔒 Authentication
 
 The React template makes it easy to authenticate your activity with Discord. The `<DiscordProvider>` components in `App.tsx` accepts `authenticate` and `scope` props.
 
@@ -52,7 +75,7 @@ The React template makes it easy to authenticate your activity with Discord. The
 
 You can then get the SDK and other goodies from the `useDiscordSdk` hook!
 
-## Backend Development 🛠️
+## 🛠️ Backend Development
 
 Your server-side code is located in the `/src/api` folder. This is where you can build your API, webhooks, and other fancy server-side features.
 
@@ -68,13 +91,13 @@ export default () => {
 
 Easy, right? Check out the [**Server Plugin documentation**](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-api) for more info!
 
-## Folder Structure 📁
+## 📁 Folder Structure
 
 While the `api` and `app` folders are reserved for your server and client-side code, you are free to create anything else in the `/src` directory!
 
 Folders only become reserved when you install a plugin that uses them. For example, bot functionality uses the `commands` and `events` folders.
 
-## Plugins 🔌
+## 🔌 Plugins
 
 This Robo boasts an intuitive plugin system that grants new capabilities instantly!
 
@@ -92,7 +115,7 @@ Crafting something unique in your Robo project? You can turn your innovations in
 
 **➞** [📚 **Documentation:** Creating plugins](https://docs.roboplay.dev/docs/advanced/plugins#creating-plugins)
 
-## Deployment 🚀
+## 🚀 Deployment
 
 Run the `deploy` command to automatically deploy to **[RoboPlay](https://roboplay.dev)** once you're ready to keep your robo online 24/7.
 

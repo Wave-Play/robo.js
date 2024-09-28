@@ -10,17 +10,29 @@ Welcome to your fresh **[Robo.js](https://robojs.dev/)** project, empowered by [
 
 With **Robo.js** as your framework, you benefit from a **[file-based setup](https://robojs.dev/robojs/files)**, an **[integrated database](https://robojs.dev/robojs/flashcore)**, **[TypeScript support](https://robojs.dev/robojs/typescript)**, and flexible **[plugin-powered features](https://robojs.dev/plugins/overview)**, streamlining your development process.
 
-➞ [🚀 **Community:** Join our Discord server](https://roboplay.dev/discord)
+_Ready to embark on this adventure?_
 
-➞ [📚 **Documentation:** Getting started with Robo](https://robojs.dev/discord-activities/getting-started)
+## Table of Contents
 
-➞ [📚 **Documentation:** Best practices for Colyseus](https://docs.colyseus.io/best-practices/)
+- [🔗 Quick Links](#🔗-quick-links)
+- [✨ Getting Started](#✨-getting-started)
+- [🛠️ App Development](#️🛠️-app-development)
+- [🔒 Authentication](#🔒-authentication)
+- [🛠️ Backend Development](#️🛠️-backend-development)
+- [📁 Folder Structure](#📁-folder-structure)
+- [👀 Why Colyseus?](#👀-why-colyseus)
+- [🎮 Expanding Your Game Logic](#🎮-expanding-your-game-logic)
+- [🔌 Plugins](#🔌-plugins)
+- [🚀 Deployment](#🚀-deployment)
 
-➞ [📖 **Tutorial:** Creating a Discord Activity in seconds](https://dev.to/waveplay/how-to-build-a-discord-activity-easily-with-robojs-5bng)
+## 🔗 Quick Links
 
-Ready to embark on this adventure?
+- [🚀 **Community:** Join our Discord server](https://roboplay.dev/discord)
+- [📚 **Documentation:** Getting started with Robo](https://robojs.dev/discord-activities/getting-started)
+- [📚 **Documentation:** Best practices for Colyseus](https://docs.colyseus.io/best-practices/)
+- [📖 **Tutorial:** Creating a Discord Activity in seconds](https://dev.to/waveplay/how-to-build-a-discord-activity-easily-with-robojs-5bng)
 
-## Getting Started 💻
+## ✨ Getting Started
 
 Create a project with this template, replacing `<project-name>` with your desired name:
 
@@ -32,12 +44,6 @@ Then navigate into your project directory:
 
 ```bash
 cd <project-name>
-```
-
-Install the dependencies:
-
-```bash
-npm install
 ```
 
 Run development mode:
@@ -52,7 +58,7 @@ npm run dev
 
 ➞ [🚀 **Documentation:** Deploying for Free with 24/7 Uptime](https://robojs.dev/hosting/overview)
 
-## App Development 🛠️
+## 🛠️ App Development
 
 You can find your client-side code in the `/src/app` folder. This is where you can build your web app using React, Vue, or any other front-end framework.
 
@@ -62,7 +68,7 @@ Try editing the `main` file to get started! (`Activity.tsx` if you're using Reac
 
 **➞** [📚 **Documentation:** App development](https://robojs.dev/discord-activities/getting-started)
 
-#### Authenticating
+## 🔒 Authentication
 
 The React template makes it easy to authenticate your activity with Discord. The `<DiscordProvider>` components in `App.tsx` accepts `authenticate` and `scope` props.
 
@@ -74,7 +80,7 @@ The React template makes it easy to authenticate your activity with Discord. The
 
 You can then get the SDK and other goodies from the `useDiscordSdk` hook!
 
-## Backend Development 🛠️
+## 🛠️ Backend Development
 
 Your server-side code is located in the `/src/api` folder. This is where you can build your API, webhooks, and other fancy server-side features.
 
@@ -92,13 +98,13 @@ Easy, right?
 
 ➞ [🚀 **Documentation:** @robojs/server](https://robojs.dev/plugins/server)
 
-## Folder Structure 📁
+## 📁 Folder Structure
 
 While the `api` and `app` folders are reserved for your server and client-side code, you are free to create anything else in the `/src` directory!
 
 Folders only become reserved when you install a plugin that uses them. For example, bot functionality uses the `commands` and `events` folders.
 
-## Why Colyseus? 👀
+## 👀 Why Colyseus?
 
 Colyseus simplifies the development of your Discord activity by managing and synchronizing state across clients in real time. This allows you to focus on creating engaging content rather than the complexities of network management.
 
@@ -106,7 +112,7 @@ Rendering users' avatars and showing a green circle those talking is cool and al
 
 **➞** [⚔ **Colyseus:** Official client integrations](https://github.com/colyseus/colyseus#%EF%B8%8F-official-client-integration)
 
-## Expanding Your Game Logic 🎮
+## 🎮 Expanding Your Game Logic
 
 Want to add position (x, y) to each player and allow them to move? Piece of cake for Colyseus! Here's how you can do it:
 
@@ -259,7 +265,7 @@ Want to add position (x, y) to each player and allow them to move? Piece of cake
  }
 ```
 
-## Plugins 🔌
+## 🔌 Plugins
 
 This Robo boasts an intuitive plugin system that grants new capabilities instantly!
 
@@ -277,7 +283,7 @@ Crafting something unique in your Robo project? You can turn your innovations in
 
 **➞** [📚 **Documentation:** Creating plugins](https://robojs.dev/plugins/create)
 
-## Deployment 🚀
+## 🚀 Deployment
 
 Run the `deploy` command to automatically deploy to **[RoboPlay](https://roboplay.dev)** once you're ready to keep your robo online 24/7.
 

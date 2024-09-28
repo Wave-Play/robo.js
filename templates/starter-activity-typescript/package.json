@@ -1,5 +1,5 @@
 {
-	"name": "starter-activity-typescript",
+	"name": "vanilla-ts",
 	"description": "",
 	"version": "1.0.0",
 	"type": "module",
@@ -27,19 +27,21 @@
 		"invite": "robo invite",
 		"lint:style": "prettier --write .",
 		"start": "robo start",
+		"tunnel": ".robo/bin/cloudflared tunnel --url http://localhost:3000",
 		"upgrade": "sage upgrade"
 	},
 	"dependencies": {
-		"@discord/embedded-app-sdk": "^1.1.2",
-		"@robojs/server": "^0.4.2",
-		"robo.js": "^0.10.4"
+		"@discord/embedded-app-sdk": "^1.4.3",
+		"@robojs/patch": "^0.1.1",
+		"@robojs/server": "^0.5.7",
+		"discord.js": "^14.16.2",
+		"robo.js": "^0.10.15"
 	},
 	"devDependencies": {
-		"@swc/core": "^1.4.15",
-		"@types/node": "^20.12.7",
-		"discord.js": "^14.14.1",
-		"prettier": "^3.2.5",
-		"typescript": "^5.4.5",
-		"vite": "^5.2.9"
+		"@swc/core": "^1.7.26",
+		"@types/node": "^22.7.4",
+		"prettier": "^3.3.3",
+		"typescript": "^5.6.2",
+		"vite": "^5.4.8"
 	}
 }
