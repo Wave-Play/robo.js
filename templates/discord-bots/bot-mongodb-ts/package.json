@@ -28,15 +28,15 @@
 		"upgrade": "sage upgrade"
 	},
 	"dependencies": {
-		"@robojs/server": "^0.5.2",
-		"discord.js": "^14.15.2",
-		"mongoose": "^8.4.0",
-		"robo.js": "^0.10.8"
+		"@robojs/server": "^0.5.7",
+		"discord.js": "^14.16.2",
+		"mongoose": "^8.7.0",
+		"robo.js": "^0.10.15"
 	},
 	"devDependencies": {
-		"@swc/core": "^1.5.7",
-		"@types/node": "^20.12.12",
-		"prettier": "^3.2.5",
-		"typescript": "^5.4.5"
+		"@swc/core": "^1.7.26",
+		"@types/node": "^22.7.4",
+		"prettier": "^3.3.3",
+		"typescript": "^5.6.2"
 	}
 }

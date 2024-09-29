@@ -22,7 +22,7 @@
 		"upgrade": "sage upgrade"
 	},
 	"dependencies": {
-		"discord.js": "^14.14.1",
-		"robo.js": "^0.10.4"
+		"discord.js": "^14.16.2",
+		"robo.js": "^0.10.15"
 	}
 }
