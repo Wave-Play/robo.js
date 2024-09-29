@@ -6,13 +6,26 @@
 
 Welcome to your fresh **[Robo.js](https://github.com/Wave-Play/robo)** project!
 
-Embark on a journey where your Discord projects transcend the ordinary. With Robo.js as your guide, you'll experience a seamless, [file-based setup](https://docs.roboplay.dev/docs/basics/overview#the-robojs-file-structure), an [integrated database](https://docs.roboplay.dev/docs/basics/flashcore), [TypeScript support](https://docs.roboplay.dev/docs/advanced/typescript), and a multitude of [plugin-powered skills](https://docs.roboplay.dev/docs/advanced/plugins) to unlock along the way.
+Build, deploy, and maintain your Discord activities with ease. With Robo.js as your guide, you'll experience a seamless, [file-based setup](https://docs.roboplay.dev/docs/basics/overview#the-robojs-file-structure), an [integrated database](https://docs.roboplay.dev/docs/basics/flashcore), [TypeScript support](https://docs.roboplay.dev/docs/advanced/typescript), and a multitude of [plugin-powered skills](https://docs.roboplay.dev/docs/advanced/plugins) to unlock along the way.
 
-Ready to embark on this adventure?
+_Ready to embark on this adventure?_
 
-➞ [📚 **Documentation:** Getting started](https://docs.roboplay.dev/docs/getting-started)
+## Table of Contents
 
-➞ [🚀 **Community:** Join our Discord server](https://roboplay.dev/discord)
+- [🔗 Quick Links](#🔗-quick-links)
+- [✨ Getting Started](#✨-getting-started)
+- [🛠️ App Development](#️🛠️-app-development)
+- [🔒 Authentication](#🔒-authentication)
+- [🛠️ Backend Development](#️🛠️-backend-development)
+- [📁 Folder Structure](#📁-folder-structure)
+- [🔌 Plugins](#🔌-plugins)
+- [🚀 Deployment](#🚀-deployment)
+
+## 🔗 Quick Links
+
+- [🚀 **Community:** Join our Discord server](https://roboplay.dev/discord)
+- [📚 **Documentation:** Getting started with Robo](https://robojs.dev/discord-activities/getting-started)
+- [📖 **Tutorial:** Creating a Discord Activity in seconds](https://dev.to/waveplay/how-to-build-a-discord-activity-easily-with-robojs-5bng)
 
 ## Running 🏃‍♂️
 

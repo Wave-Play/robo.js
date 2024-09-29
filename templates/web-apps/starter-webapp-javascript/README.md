@@ -6,15 +6,27 @@
 
 Welcome to your fresh **[Robo.js](https://github.com/Wave-Play/robo)** project!
 
-Build, deploy, and maintain your **Discord Activities** with ease. With Robo.js as your guide, you'll experience a seamless, **[file-based setup](https://docs.roboplay.dev/robojs/files)**, an **[integrated database](https://docs.roboplay.dev/robojs/flashcore)**, **[TypeScript support](https://docs.roboplay.dev/robojs/typescript)**, and a multitude of **[plugin power ups](https://docs.roboplay.dev/plugins/overview)** to unlock along the way.
+Build, deploy, and maintain your Discord activities with ease. With Robo.js as your guide, you'll experience a seamless, [file-based setup](https://docs.roboplay.dev/docs/basics/overview#the-robojs-file-structure), an [integrated database](https://docs.roboplay.dev/docs/basics/flashcore), [TypeScript support](https://docs.roboplay.dev/docs/advanced/typescript), and a multitude of [plugin-powered skills](https://docs.roboplay.dev/docs/advanced/plugins) to unlock along the way.
 
-Ready to embark on this adventure?
+_Ready to embark on this adventure?_
 
-➞ [📖 **Tutorial:** Creating a Discord Activity in seconds](https://dev.to/waveplay/how-to-build-a-discord-activity-easily-with-robojs-5bng)
+## Table of Contents
 
-➞ [📚 **Documentation:** Getting started](https://roboplay.dev/docs)
+- [Hiya, starter-webapp-javascript 🌈](#hiya-starter-webapp-javascript-)
+  - [Table of Contents](#table-of-contents)
+  - [🔗 Quick Links](#-quick-links)
+  - [Running 🏃‍♂️](#running-️)
+  - [App Development 🛠️](#app-development-️)
+  - [Backend Development 🛠️](#backend-development-️)
+  - [Folder Structure 📁](#folder-structure-)
+  - [Plugins 🔌](#plugins-)
+  - [Deployment 🚀](#deployment-)
 
-➞ [🚀 **Community:** Join our Discord server](https://roboplay.dev/discord)
+## 🔗 Quick Links
+
+- [🚀 **Community:** Join our Discord server](https://roboplay.dev/discord)
+- [📚 **Documentation:** Getting started with Robo](https://robojs.dev/discord-activities/getting-started)
+- [📖 **Tutorial:** Creating a Discord Activity in seconds](https://dev.to/waveplay/how-to-build-a-discord-activity-easily-with-robojs-5bng)
 
 ## Running 🏃‍♂️
 

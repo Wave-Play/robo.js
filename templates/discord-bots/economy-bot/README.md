@@ -1,8 +1,31 @@
+<p align="center">✨ <strong>Generated with <a href="https://roboplay.dev/create-robo">create-robo</a> magic!</strong> ✨</p>
+
+---
+
 # Hiya, economy-bot ✨
 
-Welcome to your fresh **[Robo.js](https://github.com/Wave-Play/robo)** project! A Node framework for Discord.js bots, Robo.js handles boilerplate, automates command registration, simplifies Typescript support, and boasts "Sage" for easy interactions. Empowered by a dynamic plugin system, your robo thrives on RoboPlay or any Node-supporting host.
+Welcome to your fresh **[Robo.js](https://github.com/Wave-Play/robo)** project!
 
-Let's get started on your journey to create the perfect Discord bot!
+Build, deploy, and maintain your Discord activities with ease. With Robo.js as your guide, you'll experience a seamless, [file-based setup](https://docs.roboplay.dev/docs/basics/overview#the-robojs-file-structure), an [integrated database](https://docs.roboplay.dev/docs/basics/flashcore), [TypeScript support](https://docs.roboplay.dev/docs/advanced/typescript), and a multitude of [plugin-powered skills](https://docs.roboplay.dev/docs/advanced/plugins) to unlock along the way.
+
+_Ready to embark on this adventure?_
+
+## Table of Contents
+
+- [🔗 Quick Links](#🔗-quick-links)
+- [✨ Getting Started](#✨-getting-started)
+- [🛠️ App Development](#️🛠️-app-development)
+- [🔒 Authentication](#🔒-authentication)
+- [🛠️ Backend Development](#️🛠️-backend-development)
+- [📁 Folder Structure](#📁-folder-structure)
+- [🔌 Plugins](#🔌-plugins)
+- [🚀 Deployment](#🚀-deployment)
+
+## 🔗 Quick Links
+
+- [🚀 **Community:** Join our Discord server](https://roboplay.dev/discord)
+- [📚 **Documentation:** Getting started with Robo](https://robojs.dev/discord-activities/getting-started)
+- [📖 **Tutorial:** Creating a Discord Activity in seconds](https://dev.to/waveplay/how-to-build-a-discord-activity-easily-with-robojs-5bng)
 
 ## Running 🏃‍♂️
 
