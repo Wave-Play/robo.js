@@ -13,14 +13,14 @@ _Ready to embark on this adventure?_
 ## Table of Contents
 
 - [Hiya, starter-webapp-javascript 🌈](#hiya-starter-webapp-javascript-)
-  - [Table of Contents](#table-of-contents)
-  - [🔗 Quick Links](#-quick-links)
-  - [Running 🏃‍♂️](#running-️)
-  - [App Development 🛠️](#app-development-️)
-  - [Backend Development 🛠️](#backend-development-️)
-  - [Folder Structure 📁](#folder-structure-)
-  - [Plugins 🔌](#plugins-)
-  - [Deployment 🚀](#deployment-)
+- [Table of Contents](#table-of-contents)
+- [🔗 Quick Links](#-quick-links)
+- [Running 🏃‍♂️](#running-️)
+- [App Development 🛠️](#app-development-️)
+- [Backend Development 🛠️](#backend-development-️)
+- [Folder Structure 📁](#folder-structure-)
+- [Plugins 🔌](#plugins-)
+- [Deployment 🚀](#deployment-)
 
 ## 🔗 Quick Links
 
