@@ -1,5 +1,11 @@
 # @robojs/patch
 
+## 0.2.0
+
+### Minor Changes
+
+- 3815af6: feat: auto fix discord entry point commands
+
 ## 0.1.1
 
 ### Patch Changes
