@@ -1,15 +1,4 @@
-<!--<div align="center">
-
-| ✨🎃 **Hacktoberfest Event** 🎃✨ |
-|:-----------------------------------:|
-| Build something with Robo.js to win prizes! |
-| **[Details & Prizes](https://blog.waveplay.com/hacktoberfest-with-robo-js-build-bots-or-plugins-win-cool-prizes)** |
-
-</div>
-
-&nbsp;-->
-
-<p align="center">✨ <strong>New:</strong> <a href="https://dev.to/waveplay/how-to-build-a-discord-activity-easily-with-robojs-5bng">Create Discord Activities with Robo.js</a> ✨</p>
+<p align="center">✨🎃 <strong><a href="https://roboplay.dev/hacktoberfest">Hacktoberfest 2024</a> - Build stuff, win free swag</strong> 🎃✨</p>
 
 ---
 
