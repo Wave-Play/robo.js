@@ -1,3 +1,4 @@
+import { RoboResponse } from '@robojs/server'
 import type { RoboRequest } from '@robojs/server'
 
 interface RequestBody {
@@ -20,7 +21,9 @@ export default async (req: RoboRequest) => {
 			code: code
 		})
 	})
-	const { access_token } = await response.json()
+	const data = await response.json()
 
-	return { access_token }
+	return RoboResponse.json(data, {
+		status: response.status
+	})
 }
