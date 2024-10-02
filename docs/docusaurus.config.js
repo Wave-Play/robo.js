@@ -294,6 +294,14 @@ const config = {
 			colorMode: {
 				defaultMode: 'dark'
 			},
+			announcementBar: {
+				id: 'hacktoberfest-2024',
+				content:
+					'<a href="https://roboplay.dev/hacktoberfest">✨🎃 <strong>Hacktoberfest 2024 - Build stuff, win free swag</strong> 🎃✨</a>',
+				backgroundColor: 'rgb(0, 49, 0)',
+				isCloseable: false,
+				textColor: 'rgb(230, 246, 230)'
+			},
 			navbar: {
 				title: 'Robo.js',
 				logo: {
@@ -314,6 +322,11 @@ const config = {
 					{
 						href: 'https://dev.to/waveplay',
 						label: 'Tutorials',
+						position: 'left'
+					},
+					{
+						href: 'https://roboplay.dev/hacktoberfest',
+						label: '✨🎃 Hacktoberfest 🎃✨',
 						position: 'left'
 					},
 					{
