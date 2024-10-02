@@ -43,7 +43,7 @@ export function App() {
 
 ## Usage 🎨
 
-Here's a simple example of how you can use `useSyncState` in your project:
+Here's a simple example of how you can use `useSyncState` in your project to share the mouse position across all clients:
 
 ```tsx
 import { useSyncState } from '@robojs/sync'
@@ -51,7 +51,7 @@ import { useDiscordSdk } from '../hooks/useDiscordSdk'
 
 export function Player() {
 	const { session } = useDiscordSdk()
-	const [position, setPosition] = useSyncState({ x: 0, y: 0 }, [session.user.id, 'position'])
+	const [position, setPosition] = useSyncState({ x: 0, y: 0 }, ['position'])
 
 	const handleMouseMove = (event) => {
 		setPosition({ x: event.clientX, y: event.clientY })
@@ -61,12 +61,19 @@ export function Player() {
 		<div
 			onMouseMove={handleMouseMove}
 			style={{
-				position: 'absolute',
-				left: position.x,
-				top: position.y
+				width: '100vw',
+				height: '100vh'
 			}}
 		>
-			Player
+			<div
+				style={{
+					position: 'absolute',
+					left: position.x,
+					top: position.y
+				}}
+			>
+				Player
+			</div>
 		</div>
 	)
 }

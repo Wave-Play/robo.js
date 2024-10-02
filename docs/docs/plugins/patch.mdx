@@ -29,6 +29,14 @@ npm install @robojs/patch
 
 ## Patches 🩹
 
+### Discord Entry Point Command
+
+If your **[Discord Activity](https://robojs.dev/discord-activities/getting-started)** is old or you're using the same **Discord App** for bots and activities, you may encounter issues with the entry point command missing as well as your activity's launch button.
+
+This patch fixes those issues by adding the missing command to your **Discord App** when it goes missing. Automatically. Just by having this patch installed. 🎩✨
+
+Please be sure to have both `DISCORD_CLIENT_ID` and `DISCORD_TOKEN` environment variables set in your `.env` file.
+
 ### Discord Proxy
 
 When running a **[Discord Activity](https://robojs.dev/discord-activities/getting-started)** through Discord, you may encounter **[Content Security Policy (CSP)](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP)** issues. This patch fixes those issues, including **[Hot Module Replacement (HMR)](https://www.sanity.io/glossary/hot-module-replacement)**, by making sure internal requests follow **[Discord Proxy](https://robojs.dev/discord-activities/proxy)** rules.
