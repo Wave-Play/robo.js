@@ -64,13 +64,8 @@ export class ColyseusServerEngine extends NodeEngine {
 
 		const colyseusMonitor = monitor(this._colyseusHttpServer as Partial<MonitorOptions>)
 		expressApp.use('/colyseus', colyseusMonitor)
-
-		this.getHttpServer().on('upgrade', (req, socket, head) => {
-			if (req.url === '/hmr') {
-				logger.debug('HMR connection detected. Skipping upgrade.')
-			} else {
-				this._colyseusHttpServer!.emit('upgrade', req, socket, head)
-			}
+		this.registerWebsocket('default', (req, socket, head) => {
+			this._colyseusHttpServer!.emit('upgrade', req, socket, head)
 		})
 	}
 
