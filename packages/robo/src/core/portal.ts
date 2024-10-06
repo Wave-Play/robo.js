@@ -15,6 +15,10 @@ export default class Portal {
 
 	constructor() {}
 
+	get apis() {
+		return Globals.getPortalValues().apis
+	}
+
 	get commands() {
 		return Globals.getPortalValues().commands
 	}
