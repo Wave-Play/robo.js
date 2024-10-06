@@ -1,12 +1,9 @@
 import { getConfig } from './config.js'
 import { FlashcoreFileAdapter } from './flashcore-fs.js'
+import { Globals } from './globals.js'
 import { logger } from './logger.js'
-import type { FlashcoreAdapter } from '../types/index.js'
 
 type WatcherCallback<V = unknown> = (oldValue: V, newValue: V) => void | Promise<void>
-
-// Store that powers the Flashcore API.
-let _adapter: FlashcoreAdapter | undefined
 
 // Watchers for listening to changes in the store.
 const _watchers = new Map<string, Set<WatcherCallback>>()
@@ -22,7 +19,7 @@ export const Flashcore = {
 	 * @returns {Promise<boolean> | boolean} - Resolves to a boolean indicating whether the operation was successful.
 	 */
 	clear: (): Promise<boolean> | Promise<void> | boolean | void => {
-		return _adapter.clear()
+		return Globals.getFlashcoreAdapter().clear()
 	},
 
 	/**
@@ -38,7 +35,7 @@ export const Flashcore = {
 		}
 
 		if (_watchers.has(key)) {
-			const oldValue = _adapter.get(key)
+			const oldValue = Globals.getFlashcoreAdapter().get(key)
 			if (oldValue instanceof Promise) {
 				// Return as promise to avoid race condition fetching the old value.
 				// I believe this is ideal, as promise-based values are likely to be used with async/await.
@@ -46,14 +43,14 @@ export const Flashcore = {
 					.then((oldValue) => {
 						_watchers.get(key).forEach((callback) => callback(oldValue, undefined))
 					})
-					.then(() => _adapter.delete(key))
-					.catch(() => _adapter.delete(key))
+					.then(() => Globals.getFlashcoreAdapter().delete(key))
+					.catch(() => Globals.getFlashcoreAdapter().delete(key))
 			} else {
 				_watchers.get(key).forEach((callback) => callback(oldValue, undefined))
 			}
 		}
 
-		return _adapter.delete(key)
+		return Globals.getFlashcoreAdapter().delete(key)
 	},
 
 	/**
@@ -69,14 +66,14 @@ export const Flashcore = {
 			key = Array.isArray(options.namespace) ? `${options.namespace.join('/')}__${key}` : `${options.namespace}__${key}`
 		}
 
-		return (_adapter.get(key) ?? options?.default) as V
+		return (Globals.getFlashcoreAdapter().get(key) ?? options?.default) as V
 	},
 
 	has: (key: string, options?: FlashcoreOptions): Promise<boolean> | boolean => {
 		if (options?.namespace) {
 			key = `${options.namespace}__${key}`
 		}
-		return _adapter.has(key)
+		return Globals.getFlashcoreAdapter().has(key)
 	},
 
 	/**
@@ -140,7 +137,7 @@ export const Flashcore = {
 
 		if (_watchers.has(key) || typeof value === 'function') {
 			// Fetch the old value only when necessary for minimal overhead
-			const oldValue: unknown = _adapter.get(key)
+			const oldValue: unknown = Globals.getFlashcoreAdapter().get(key)
 
 			const setValue = async (resolvedOldValue: V) => {
 				let newValue = value
@@ -156,7 +153,7 @@ export const Flashcore = {
 				}
 
 				// Set the new value in the adapter
-				return _adapter.set(key, newValue)
+				return Globals.getFlashcoreAdapter().set(key, newValue)
 			}
 
 			// If the old value is a promise, wait for it to resolve before proceeding
@@ -165,13 +162,13 @@ export const Flashcore = {
 				// I believe this is ideal, as promise-based values are likely to be used with async/await.
 				return oldValue
 					.then(async (resolvedOldValue) => await setValue(resolvedOldValue))
-					.catch(() => _adapter.set(key, value)) // Fallback to set the value directly in case of an error
+					.catch(() => Globals.getFlashcoreAdapter().set(key, value)) // Fallback to set the value directly in case of an error
 			} else {
 				return setValue(oldValue as V)
 			}
 		}
 
-		return _adapter.set(key, value)
+		return Globals.getFlashcoreAdapter().set(key, value)
 	}
 }
 
@@ -184,16 +181,16 @@ export async function prepareFlashcore() {
 			const Keyv = (await import('keyv')).default
 			const keyv = new Keyv(config.flashcore.keyv)
 
-			keyv.on('error', (error) => {
+			keyv.on('error', (error: unknown) => {
 				logger.error(`Keyv error:`, error)
 			})
-			_adapter = keyv
+			Globals.registerFlashcore(keyv)
 		} catch (error) {
 			logger.error(error)
 			throw new Error('Failed to import or setup the adapter with keyv package.')
 		}
 	} else {
-		_adapter = new FlashcoreFileAdapter()
-		await (_adapter as FlashcoreFileAdapter).init()
+		Globals.registerFlashcore(new FlashcoreFileAdapter())
+		await Globals.getFlashcoreAdapter().init()
 	}
 }
