@@ -1,5 +1,15 @@
 # @roboplay/plugin-ai
 
+## 0.5.6
+
+### Patch Changes
+
+- 8b0ce73: refactor: use gpt-4o as the new default
+- Updated dependencies [4f6fdea]
+- Updated dependencies [0770bac]
+  - robo.js@0.10.16
+  - @robojs/server@0.5.7
+
 ## 0.5.5
 
 ### Patch Changes
