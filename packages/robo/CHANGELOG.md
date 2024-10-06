@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.10.17
+
+### Patch Changes
+
+- ca9b21d: patch: fixed portal regression for apis
+
 ## 0.10.16
 
 ### Patch Changes
