@@ -1,5 +1,12 @@
 # robo.js
 
+## 0.10.16
+
+### Patch Changes
+
+- 4f6fdea: patch: unified global instance for flashcore
+- 0770bac: patch: unified global instance for portal
+
 ## 0.10.15
 
 ### Patch Changes
