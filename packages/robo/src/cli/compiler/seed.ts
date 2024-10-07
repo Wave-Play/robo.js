@@ -64,7 +64,8 @@ export async function buildSeed() {
  * This is used to determine whether or not to copy files from the plugin onto the project.
  */
 export function hasSeed(packageName: string) {
-	const seedPath = path.resolve(PackageDir, '..', packageName, '.robo', 'seed')
+	const base = packageName.startsWith('.') ? process.cwd() : path.join(PackageDir, '..')
+	const seedPath = path.resolve(base, packageName, '.robo', 'seed')
 	compilerLogger.debug(`Checking for ${packageName} seed files:`, seedPath)
 	return existsSync(seedPath)
 }
@@ -77,7 +78,8 @@ export function hasSeed(packageName: string) {
  */
 export async function useSeed(packageName: string) {
 	compilerLogger.debug(`Looking for seed files in plugin ${color.bold(packageName)}...`)
-	const seedPath = path.resolve(PackageDir, '..', packageName, '.robo', 'seed')
+	const base = packageName.startsWith('.') ? process.cwd() : path.join(PackageDir, '..')
+	const seedPath = path.resolve(base, packageName, '.robo', 'seed')
 	const projectSrc = path.join(process.cwd(), 'src')
 	compilerLogger.debug('Looking in seed path:', seedPath)
 
