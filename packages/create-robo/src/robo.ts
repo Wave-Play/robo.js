@@ -11,7 +11,6 @@ import {
 	hasProperties,
 	prettyStringify,
 	sortObjectKeys,
-	updateOrAddVariable,
 	getPackageExecutor,
 	ROBO_CONFIG_APP,
 	Indent,
@@ -24,6 +23,8 @@ import { RepoInfo, downloadAndExtractRepo, getRepoInfo, hasRepo } from './templa
 import retry from 'async-retry'
 import { color, logger } from 'robo.js'
 import { Spinner } from 'robo.js/dist/cli/utils/spinner.js'
+import { existsSync } from 'node:fs'
+import { Env } from './env.js'
 import type { CommandOptions } from './index.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -978,39 +979,33 @@ export default class Robo {
 		this._spinner.setText(Indent + '    {{spinner}} Applying credentials...\n')
 		this._spinner.start()
 
-		const envFilePath = path.join(this._workingDir, '.env')
-		let envContent = ''
+		const env = await new Env('.env', this._workingDir).load()
+		env.set(
+			'DISCORD_CLIENT_ID',
+			discordClientId,
+			'Find your credentials in the Discord Developer portal - https://discord.com/developers/applications'
+		)
 
-		try {
-			envContent = await fs.readFile(envFilePath, 'utf8')
-		} catch (error) {
-			if (hasProperties(error, ['code']) && error.code !== 'ENOENT') {
-				throw error
-			}
-		}
-
-		envContent = updateOrAddVariable(envContent, 'DISCORD_CLIENT_ID', discordClientId ?? '')
 		if (this._isApp) {
-			envContent = updateOrAddVariable(envContent, 'VITE_DISCORD_CLIENT_ID', discordClientId ?? '')
-			envContent = updateOrAddVariable(envContent, 'DISCORD_CLIENT_SECRET', discordToken ?? '')
+			env.set('DISCORD_CLIENT_SECRET', discordToken)
+			env.set('VITE_DISCORD_CLIENT_ID', discordClientId)
 		} else {
-			envContent = updateOrAddVariable(envContent, 'DISCORD_TOKEN', discordToken ?? '')
+			env.set('DISCORD_TOKEN', discordToken)
 		}
-		envContent = updateOrAddVariable(envContent, 'NODE_OPTIONS', this._nodeOptions.join(' '))
+		env.set('NODE_OPTIONS', this._nodeOptions.join(' '), 'Enable source maps for easier debugging')
 
 		if (this._selectedPlugins.includes('ai')) {
-			envContent = updateOrAddVariable(envContent, 'OPENAI_API_KEY', '')
+			env.set('OPENAI_API_KEY', '', 'Get your OpenAI API key - https://platform.openai.com/api-keys')
 		}
 		if (this._selectedPlugins.includes('ai-voice')) {
-			envContent = updateOrAddVariable(envContent, 'AZURE_SUBSCRIPTION_KEY', '')
-			envContent = updateOrAddVariable(envContent, 'AZURE_SUBSCRIPTION_REGION', '')
+			env.set('AZURE_SUBSCRIPTION_KEY', '')
+			env.set('AZURE_SUBSCRIPTION_REGION', '')
 		}
 		if (this._selectedPlugins.includes('server')) {
-			envContent = updateOrAddVariable(envContent, 'PORT', '3000')
+			env.set('PORT', '3000', 'Change this port number if needed')
 		}
 
-		await fs.writeFile(envFilePath, envContent, 'utf-8')
-		await this.createEnvTsFile()
+		await env.commit(this._useTypeScript)
 		this._spinner.stop()
 		logger.log(Indent, '   Manage your credentials in the', chalk.bold.cyan('.env'), 'file.')
 	}
@@ -1037,34 +1032,5 @@ export default class Robo {
 
 		logger.debug(`Writing ${pluginName} config to ${pluginPath}...`)
 		await fs.writeFile(pluginPath, `export default ${pluginConfig}`, 'utf-8')
-	}
-
-	/**
-	 * Adds the "env.d.ts" entry to the compilerOptions in the tsconfig.json
-	 *
-	 */
-
-	private async createEnvTsFile() {
-		if (this._useTypeScript) {
-			const autoCompletionEnvVar = `export {}\ndeclare global {\n    namespace NodeJS {\n		interface ProcessEnv {\n			DISCORD_CLIENT_ID: string\n			${
-				this._isApp ? 'DISCORD_CLIENT_SECRET: string' : 'DISCORD_TOKEN: string'
-			}\n		}\n	} \n}`
-
-			const tsconfigPath = path.join(this._workingDir, 'tsconfig.json')
-
-			const tsconfig = await fs
-				.access(tsconfigPath)
-				.then(() => true)
-				.catch(() => false)
-
-			if (tsconfig) {
-				await fs.writeFile(path.join(this._workingDir, 'env.d.ts'), autoCompletionEnvVar, 'utf-8')
-				const parsedTSConfig = JSON.parse(await fs.readFile(tsconfigPath, 'utf-8'))
-				const compilerOptions = parsedTSConfig['compilerOptions']
-				compilerOptions['typeRoots'] = ['./env.d.ts']
-
-				await fs.writeFile(tsconfigPath, JSON.stringify(parsedTSConfig, null, '\t'), 'utf-8')
-			}
-		}
 	}
 }
