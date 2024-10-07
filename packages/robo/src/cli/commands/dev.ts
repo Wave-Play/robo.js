@@ -82,10 +82,11 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 		process.exit(1)
 	}
 
-	// Experimental warning
+	// Experimental warning, except for the disableBot flag which is a special case
 	const experimentalKeys = Object.entries(config.experimental ?? {})
 		.filter(([, value]) => value)
 		.map(([key]) => key)
+		.filter((key) => key !== 'disableBot')
 
 	if (experimentalKeys.length > 0) {
 		const features = experimentalKeys.map((key) => color.bold(key)).join(', ')

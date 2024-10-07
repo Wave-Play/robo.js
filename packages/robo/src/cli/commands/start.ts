@@ -79,11 +79,13 @@ async function startAction(_args: string[], options: StartCommandOptions) {
 		process.exit(1)
 	}
 
-	// Experimental warning
+	// Experimental warning, except for the disableBot flag which is a special case
 	const config = await loadConfig()
 	const experimentalKeys = Object.entries(config.experimental ?? {})
 		.filter(([, value]) => value)
 		.map(([key]) => key)
+		.filter((key) => key !== 'disableBot')
+
 	if (experimentalKeys.length > 0) {
 		const features = experimentalKeys.map((key) => color.bold(key)).join(', ')
 		logger.warn(`Experimental flags enabled: ${features}.`)
