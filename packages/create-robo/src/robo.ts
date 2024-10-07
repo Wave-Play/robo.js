@@ -352,7 +352,8 @@ export default class Robo {
 
 		try {
 			logger.debug(`Installing plugins:`, packages)
-			await exec(`${executor} robo add ${packages.join(' ')}`, execOptions)
+			// TODO: Use `--seed` instead
+			await exec(`${executor} robo add ${packages.join(' ')} --no-seed`, execOptions)
 
 			// Update config files for each plugin with the provided configuration
 			const pendingConfigs = plugins
