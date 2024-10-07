@@ -22,6 +22,7 @@ const command = new Command('add')
 	.option('-ns', '--no-seed', 'skip the seeding of files from the plugin')
 	.option('-s', '--silent', 'do not print anything')
 	.option('-v', '--verbose', 'print more information for debugging')
+	.option('-y', '--yes', 'auto-accept seed files')
 	.positionalArgs(true)
 	.handler(addAction)
 export default command
@@ -31,6 +32,7 @@ interface AddCommandOptions {
 	'no-seed'?: boolean
 	silent?: boolean
 	verbose?: boolean
+	yes?: boolean
 }
 
 export async function addAction(packages: string[], options: AddCommandOptions) {
@@ -160,10 +162,16 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
 				})
 			})
 		}
-		const response = await promptUser(Indent + `    Would you like to include these files? ${color.dim('[Y/n]')}: `)
-		logger.log('')
 
-		if (response.toLowerCase().trim() === 'y') {
+		// Ask for consent
+		let seedConsent = options.yes
+		if (!seedConsent) {
+			const response = await promptUser(Indent + `    Would you like to include these files? ${color.dim('[Y/n]')}: `)
+			seedConsent = response.toLowerCase().trim() === 'y'
+			logger.log('')
+		}
+
+		if (seedConsent) {
 			await Promise.all(
 				packages.map(async (pkg) => {
 					try {
