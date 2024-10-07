@@ -13,7 +13,7 @@ import { Compiler } from '../../utils/compiler.js'
 import { Flashcore, prepareFlashcore } from '../../../core/flashcore.js'
 import { bold, color } from '../../../core/color.js'
 import { buildPublicDirectory } from '../../utils/public.js'
-import { FLASHCORE_KEYS, Highlight } from '../../../core/constants.js'
+import { discordLogger, FLASHCORE_KEYS, Highlight } from '../../../core/constants.js'
 import { IS_BUN } from '../../utils/runtime-utils.js'
 import type { LoggerOptions } from '../../../core/logger.js'
 
@@ -156,7 +156,7 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 	const shouldRegister = options.force || hasCommandChanges || hasContextCommandChanges
 
 	if (config.experimental?.disableBot !== true && options.force) {
-		logger.warn('Forcefully registering commands.')
+		discordLogger.warn('Forcefully registering commands.')
 	}
 
 	if (config.experimental?.disableBot !== true && shouldRegister) {
@@ -176,7 +176,7 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 	} else if (config.experimental?.disableBot !== true) {
 		const hasPreviousError = await Flashcore.get<boolean>(FLASHCORE_KEYS.commandRegisterError)
 		if (hasPreviousError) {
-			logger.warn(`Previous command registration failed. Run ${bold('robo build --force')} to try again.`)
+			discordLogger.warn(`Previous command registration failed. Run ${bold('robo build --force')} to try again.`)
 		}
 	}
 

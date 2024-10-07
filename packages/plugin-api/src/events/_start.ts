@@ -80,7 +80,6 @@ export default async (_client: Client, options: PluginOptions) => {
 	portal.apis.forEach((api) => {
 		const key = prefix + '/' + api.key.replace(PATH_REGEX, ':$1')
 		paths.push(key)
-		// @ts-expect-error - Outdated Robo API typings
 		engine.registerRoute(key, api.handler.default)
 	})
 
