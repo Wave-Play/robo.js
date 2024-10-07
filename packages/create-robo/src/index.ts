@@ -2,7 +2,7 @@
 import Robo from './robo.js'
 import { Indent, getPackageManager } from './utils.js'
 import { Command } from 'commander'
-import { input } from '@inquirer/prompts'
+import { input, select } from '@inquirer/prompts'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import chalk from 'chalk'
@@ -56,6 +56,23 @@ new Command('create-robo <projectName>')
 			options.kit = 'app'
 		}
 
+		// No kit specified, prompt the user to choose an adventure: bot or activity
+		if (!options.kit) {
+			logger.log()
+			options.kit = await select<'app' | 'bot'>(
+				{
+					message: chalk.blue('Choose your adventure:'),
+					choices: [
+						{ name: 'Discord Bot', value: 'bot' as const },
+						{ name: 'Discord Activity', value: 'app' as const }
+					]
+				},
+				{
+					clearPromptOnDone: true
+				}
+			)
+		}
+
 		// Ensure correct kit is selected (bot or app)
 		if (options.kit && !['bot', 'app', 'web'].includes(options.kit)) {
 			logger.error('Only bot (default) and activity kits are available at the moment.')
@@ -100,9 +117,6 @@ new Command('create-robo <projectName>')
 		const metadata: Array<{ key: string; value: string }> = []
 		if (options.plugin) {
 			metadata.push({ key: 'Type', value: 'Plugin' })
-		}
-		if (options.kit) {
-			metadata.push({ key: 'Kit', value: options.kit })
 		}
 		if (options.javascript || options.typescript) {
 			metadata.push({ key: 'Language', value: options.typescript ? 'TypeScript' : 'JavaScript' })
