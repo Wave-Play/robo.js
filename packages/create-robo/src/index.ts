@@ -113,9 +113,6 @@ new Command('create-robo <projectName>')
 		if (options.plugins) {
 			metadata.push({ key: 'Plugins', value: options.plugins.join(', ') })
 		}
-		if (options.template) {
-			metadata.push({ key: 'Template', value: options.template })
-		}
 		if (options.install === false) {
 			metadata.push({ key: 'Install dependencies', value: 'No' })
 		}
@@ -179,7 +176,7 @@ new Command('create-robo <projectName>')
 		if (!useSameDirectory) {
 			logger.log(Indent, '   - Change directory:', chalk.bold.cyan(`cd ${projectName}`))
 		}
-		if (!options.install) {
+		if (!options.install || robo.shouldInstall) {
 			logger.log(Indent, '   - Install dependencies:', chalk.bold.cyan(packageManager + ' install'))
 		}
 		if (robo.missingEnv) {

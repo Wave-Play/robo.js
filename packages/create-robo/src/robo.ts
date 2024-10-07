@@ -1,4 +1,4 @@
-import fs from 'fs/promises'
+import fs, { readFile } from 'node:fs/promises'
 import path from 'path'
 import { checkbox, input, select, Separator } from '@inquirer/prompts'
 import chalk from 'chalk'
@@ -228,17 +228,18 @@ interface PackageJson {
 // TODO: Refactor this mess into a Robo Builder-like circular structure
 export default class Robo {
 	private readonly _cliOptions: CommandOptions
-	private readonly _isApp: boolean
 	private readonly _nodeOptions = ['--enable-source-maps']
 	private readonly _spinner = new Spinner()
 
 	// Custom properties used to build the Robo project
 	private _installFailed: boolean
+	private _isApp: boolean
 	private _missingEnv: boolean
 	private _name: string
 	private _packageJson: PackageJson
 	private _selectedFeatures: string[] = []
 	private _selectedPlugins: string[] = []
+	private _shouldInstall: boolean
 	private _useTypeScript: boolean | undefined
 	private _workingDir: string
 
@@ -259,6 +260,10 @@ export default class Robo {
 
 	public get selectedPlugins(): string[] {
 		return this._selectedPlugins
+	}
+
+	public get shouldInstall(): boolean {
+		return this._shouldInstall
 	}
 
 	constructor(name: string, cliOptions: CommandOptions, useSameDirectory: boolean) {
@@ -385,21 +390,29 @@ export default class Robo {
 	}
 
 	async downloadTemplate(url: string) {
+		const { install, template, verbose } = this._cliOptions
 		let repoUrl: URL | undefined
 		let repoInfo: RepoInfo | undefined
 		logger.debug(`Using template: ${url}`)
 
 		// Adjust to be relative to main monorepo if not a URL
+		let isOfficial = false
+
 		if (!url.toLowerCase().startsWith('https://')) {
+			isOfficial = true
 			url = `https://github.com/Wave-Play/robo.js/tree/main/templates/${url}`
 			logger.debug(`Adjusted template URL: ${url}`)
 		}
 
 		// Print new section
 		logger.debug('\n')
-		logger.log('\x1B[1A\x1B[K\x1B[1A\x1B[K')
 		logger.log(Indent, chalk.bold('🌐 Creating from template'))
 		this._spinner.setText(Indent + '    {{spinner}} Downloading template...\n')
+		this._spinner.start()
+
+		if (verbose) {
+			this._spinner.stop(false)
+		}
 
 		try {
 			repoUrl = new URL(url)
@@ -444,8 +457,73 @@ export default class Robo {
 		const result = await retry(() => downloadAndExtractRepo(this._workingDir, repoInfo), {
 			retries: 3
 		})
+		const name = isOfficial ? template : result?.name
 		this._spinner.stop(false)
-		logger.log(Indent, `   Bootstraped project successfully from ${chalk.bold.cyan(result?.name ?? 'repository')}.`)
+		logger.log(Indent, `   Bootstraped project successfully from ${chalk.bold.cyan(name ?? 'repository')}.`)
+
+		// Read the package.json file
+		const packageJsonPath = path.join(this._workingDir, 'package.json')
+		this._packageJson = JSON.parse(await readFile(packageJsonPath, 'utf-8'))
+		logger.debug(`Found package.json file:`, this._packageJson)
+
+		// Determine if the project is typescript based on the package.json
+		this._useTypeScript = this._packageJson.devDependencies?.typescript !== undefined
+
+		// Determine app kit based on the package.json
+		if (this._packageJson.dependencies['@discord/embedded-app-sdk'] !== undefined) {
+			this._cliOptions.kit = 'app'
+			this._isApp = true
+			logger.debug(`Detected app kit from package.json.`)
+		} else if (this._packageJson.dependencies['discord.js'] !== undefined) {
+			this._cliOptions.kit = 'bot'
+			this._isApp = false
+			logger.debug(`Detected bot kit from package.json.`)
+		}
+
+		// Install dependencies
+		if (install && isOfficial) {
+			logger.debug('\n')
+			logger.log()
+			logger.log(
+				Indent,
+				chalk.bold(
+					`📦 Preparing ${chalk.cyan(this._useTypeScript ? 'TypeScript' : 'JavaScript')} ${
+						this._isPlugin ? 'plugin' : 'project'
+					}`
+				)
+			)
+
+			try {
+				const packageManager = getPackageManager()
+				logger.debug(`Using ${chalk.bold(packageManager)} in ${this._workingDir}...`)
+
+				const command = packageManager + ' ' + (packageManager === 'npm' ? 'install' : 'add')
+				this._spinner.setText(Indent + '    {{spinner}} Installing dependencies...\n')
+				this._spinner.start()
+
+				if (verbose) {
+					this._spinner.stop(false)
+				}
+
+				await exec(command, {
+					cwd: this._workingDir,
+					stdio: verbose ? 'pipe' : 'ignore',
+					verbose: verbose
+				})
+
+				// Stahp it
+				this._spinner.stop(false)
+				logger.log(Indent, `   Successfully installed dependencies.`, Space)
+			} catch {
+				this._spinner.stop(false)
+				this._installFailed = true
+				logger.log(Indent, chalk.red(`   Could not install dependencies!`))
+				logger.debug(`Updating package.json file...`)
+			}
+		} else {
+			logger.debug(`Skipping dependency installation.`)
+			this._shouldInstall = true
+		}
 	}
 
 	async getUserInput(): Promise<string[]> {
