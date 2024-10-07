@@ -1,5 +1,14 @@
 # robo.js
 
+## 0.10.18
+
+### Patch Changes
+
+- 8198201: feat(cli): new `-y --yes` option in `robo add`
+- 40c77aa: refactor(cli): use discord logger more consistently
+- 8a477bc: refactor(cli): exclude `disableBot` from experimental warnings
+- 457f1d5: patch: account for relative paths in seed lookups
+
 ## 0.10.17
 
 ### Patch Changes
