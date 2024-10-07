@@ -1,4 +1,4 @@
-import fs, { readFile } from 'node:fs/promises'
+import fs, { readFile, rename } from 'node:fs/promises'
 import path from 'path'
 import { checkbox, input, select, Separator } from '@inquirer/prompts'
 import chalk from 'chalk'
@@ -462,6 +462,19 @@ export default class Robo {
 		const name = isOfficial ? template : result?.name
 		this._spinner.stop(false)
 		logger.log(Indent, `   Bootstraped project successfully from ${chalk.bold.cyan(name ?? 'repository')}.`)
+
+		// If the template includes a `example.env` file, copy it to `.env`
+		const exampleEnvPath = path.join(this._workingDir, 'example.env')
+		const envPath = path.join(this._workingDir, '.env')
+
+		try {
+			if (existsSync(exampleEnvPath)) {
+				await rename(exampleEnvPath, envPath)
+				logger.debug(`Copied example.env to .env`)
+			}
+		} catch {
+			logger.debug(`No example.env file found.`)
+		}
 
 		// Read the package.json file
 		const packageJsonPath = path.join(this._workingDir, 'package.json')
