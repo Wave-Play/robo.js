@@ -550,6 +550,7 @@ export default class Robo {
 		// I heard you like tunnels
 		if (this._isApp) {
 			this._packageJson.scripts['dev'] += ' --tunnel'
+			this._packageJson.scripts['tunnel'] = '.robo/bin/cloudflared tunnel --url http://localhost:3000'
 		}
 
 		// Prepare config directory
