@@ -2,11 +2,13 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { color } from '../../core/color.js'
 import { loadConfig } from '../../core/config.js'
+import { Indent, Highlight, HighlightGreen } from '../../core/constants.js'
 import { logger } from '../../core/logger.js'
 import { Command } from '../utils/cli-handler.js'
 import { createRequire } from 'node:module'
 import { exec } from '../utils/utils.js'
 import { getPackageManager } from '../utils/runtime-utils.js'
+import { Spinner } from '../utils/spinner.js'
 
 const require = createRequire(import.meta.url)
 
@@ -30,10 +32,11 @@ export async function removeAction(packages: string[], options: RemoveCommandOpt
 	logger({
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : 'info'
-	}).info(`Removing ${packages.length} plugin${packages.length === 1 ? '' : 's'}...`)
+	})
 	logger.debug(`Removing plugins:`, packages)
 	logger.debug(`Current working directory:`, process.cwd())
 	const startTime = Date.now()
+	const s = packages.length > 1 ? 's' : ''
 
 	if (packages.length === 0) {
 		logger.error(`No packages specified. Use ${color.bold('robo remove <package>')} to remove a plugin.`)
@@ -56,6 +59,18 @@ export async function removeAction(packages: string[], options: RemoveCommandOpt
 		return options.force || Object.keys(packageJson.dependencies ?? {})?.includes(pkg)
 	})
 	logger.debug(`Pending installation remove:`, pendingUninstall)
+
+	// Exit early if no plugins need to be removed
+	if (pendingRegistration.length === 0 && pendingUninstall.length === 0) {
+		logger.log('\n' + Indent, `🗑️  Plugin${s} already removed.\n`)
+		return
+	}
+
+	// Prepare fancy formatting
+	const spinner = new Spinner()
+	logger.log('\n' + Indent, color.bold(`📦 Removing plugin${s}`))
+	spinner.setText(packages.map((pkg) => `${Indent}    - {{spinner}} ${Highlight(pkg)}`).join('\n') + `\n\n`)
+	spinner.start()
 
 	// Remove plugin packages
 	if (pendingUninstall.length > 0) {
@@ -84,7 +99,16 @@ export async function removeAction(packages: string[], options: RemoveCommandOpt
 		})
 	)
 
-	logger.info(`Successfully completed in ${Date.now() - startTime}ms`)
+	// Update spinner with completion message
+	spinner.setText(
+		pendingRegistration.map((pkg) => `${Indent}    ${HighlightGreen('✔ ' + pkg)}  `).join('\n') + `\n\n`,
+		false
+	)
+	spinner.stop(false, false)
+
+	// Ta-dah!
+	logger.log(Indent, `🗑️  Plugin${s} successfully removed.\n`)
+	logger.debug(`Finished in ${Date.now() - startTime}ms`)
 }
 
 /**
