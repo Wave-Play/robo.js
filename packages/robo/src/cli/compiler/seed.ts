@@ -66,8 +66,10 @@ export async function buildSeed() {
 export function hasSeed(packageName: string) {
 	const base = packageName.startsWith('.') ? process.cwd() : path.join(PackageDir, '..')
 	const seedPath = path.resolve(base, packageName, '.robo', 'seed')
-	compilerLogger.debug(`Checking for ${packageName} seed files:`, seedPath)
-	return existsSync(seedPath)
+	const fallbackPath = path.resolve(process.cwd(), 'node_modules', packageName, '.robo', 'seed')
+
+	compilerLogger.debug(`Checking for ${packageName} seed files:`, seedPath, 'or', fallbackPath)
+	return existsSync(seedPath) || existsSync(fallbackPath)
 }
 
 /**
@@ -79,9 +81,15 @@ export function hasSeed(packageName: string) {
 export async function useSeed(packageName: string) {
 	compilerLogger.debug(`Looking for seed files in plugin ${color.bold(packageName)}...`)
 	const base = packageName.startsWith('.') ? process.cwd() : path.join(PackageDir, '..')
-	const seedPath = path.resolve(base, packageName, '.robo', 'seed')
+	const fallbackPath = path.resolve(process.cwd(), 'node_modules', packageName, '.robo', 'seed')
 	const projectSrc = path.join(process.cwd(), 'src')
-	compilerLogger.debug('Looking in seed path:', seedPath)
+	let seedPath = path.resolve(base, packageName, '.robo', 'seed')
+	compilerLogger.debug('Looking in seed path:', seedPath, 'or', fallbackPath)
+
+	// Use the fallback path if the plugin doesn't have a seed directory
+	if (!existsSync(seedPath)) {
+		seedPath = fallbackPath
+	}
 
 	// See if the plugin has a seed directory
 	if (existsSync(seedPath)) {
