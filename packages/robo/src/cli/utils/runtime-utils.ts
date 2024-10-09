@@ -22,14 +22,17 @@ export function getPackageManager(): PackageManager {
 }
 
 /**
- * Get the "npx" or equivalent for the current package manager
+ * Get the "npx" or equivalent for the current package manager.
+ *
+ * @param external Whether to be used for an external package or local script.
  */
-export function getPackageExecutor(): string {
+export function getPackageExecutor(external = true): string {
 	const packageManager = getPackageManager()
+
 	if (packageManager === 'yarn') {
-		return 'yarn dlx'
+		return external ? 'yarn dlx' : 'yarn'
 	} else if (packageManager === 'pnpm') {
-		return 'pnpx'
+		return external ? 'pnpx' : 'pnpm'
 	} else if (packageManager === 'bun') {
 		return 'bunx'
 	} else {
