@@ -7,7 +7,7 @@ import { logger } from '../../core/logger.js'
 import { Command } from '../utils/cli-handler.js'
 import { createRequire } from 'node:module'
 import { PackageDir, exec } from '../utils/utils.js'
-import { getPackageManager } from '../utils/runtime-utils.js'
+import { getPackageExecutor, getPackageManager } from '../utils/runtime-utils.js'
 import { Compiler } from '../utils/compiler.js'
 import { Spinner } from '../utils/spinner.js'
 import readline from 'node:readline'
@@ -31,6 +31,7 @@ interface AddCommandOptions {
 	force?: boolean
 	'no-seed'?: boolean
 	silent?: boolean
+	sync?: boolean
 	verbose?: boolean
 	yes?: boolean
 }
@@ -126,15 +127,20 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
 		pendingRegistration.map((pkg) => `${Indent}    ${HighlightGreen('✔ ' + pkg)}  `).join('\n') + `\n\n`,
 		false
 	)
-	spinner.stop(false)
-	logger.log('\n')
+	spinner.stop(false, false)
 
 	// See which plugins have seeds
 	const pluginsWithSeeds = packages.filter((pkg) => Compiler.hasSeed(pkg))
 	logger.debug(`Plugins with seeds:`, pluginsWithSeeds)
 
 	// Automatically copy files meant to be seeded by the plugin
-	if (seed && pluginsWithSeeds.length > 0) {
+	if (seed && options.sync && pluginsWithSeeds.length > 0) {
+		const executor = getPackageExecutor(false)
+		const command = executor + ' robo add ' + packages.join(' ')
+		logger.log(Indent, color.bold(`🌱 Seed files detected`))
+		logger.log(Indent, '   Run the following to copy seed files:', '\n   ' + Indent, Highlight(command))
+		logger.log('')
+	} else if (seed && pluginsWithSeeds.length > 0) {
 		const pluginSeeds = await Promise.all(
 			packages.map(async (pkg) => {
 				const manifest = await Compiler.useManifest({
