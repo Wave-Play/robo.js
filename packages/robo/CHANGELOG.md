@@ -1,5 +1,14 @@
 # robo.js
 
+## 0.10.19
+
+### Patch Changes
+
+- 07baafb: refactor(cli): modernized `robo remove` ux
+- c5fbc34: patch(cli): fallback seed lookup path
+- ef51dd9: fix(cli): cloudflared path on windows
+- 4fc64e9: feat(cli): new `robo sync` command
+
 ## 0.10.18
 
 ### Patch Changes
