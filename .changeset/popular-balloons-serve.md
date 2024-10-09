@@ -2,4 +2,4 @@
 'robo.js': patch
 ---
 
-Fixed cloudflared windows path
+fix(cli): cloudflared path on windows
