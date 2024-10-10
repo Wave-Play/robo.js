@@ -2,7 +2,7 @@ import { analyticsLogger, BaseEngine } from '../core/analytics.js'
 import type { EventOptions, ViewOptions } from '../core/analytics.js'
 
 export class GoogleAnalytics extends BaseEngine {
-	private _measureId = process.env.GOOGLE_ANALYTICS_measureId
+	private _measureId = process.env.GOOGLE_ANALYTICS_MEASURE_ID
 	private _token = process.env.GOOGLE_ANALYTICS_SECRET
 
 	public async view(page: string, options: ViewOptions): Promise<void> {
@@ -41,6 +41,7 @@ export class GoogleAnalytics extends BaseEngine {
 			if (options.name === 'pageview') {
 				throw new Error(`[GoogleAnalytics] Please use pageview event with the Analytics.view() method`)
 			}
+
 			if (typeof options.data === 'object') {
 				const params = {}
 
@@ -51,21 +52,25 @@ export class GoogleAnalytics extends BaseEngine {
 					Object.assign(params, options.revenue)
 				}
 
-				const res = await fetch(
-					`https://www.google-analytics.com/mp/collect?measurement_id=${this._measureId}&api_secret=${this._token}`,
-					{
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json'
-						},
-						body: JSON.stringify({
-							client_id: options.userId,
-							events: [{ name: options.name, params }]
-						})
+				try {
+					const res = await fetch(
+						`https://www.google-analytics.com/mp/collect?measurement_id=${this._measureId}&api_secret=${this._token}`,
+						{
+							method: 'POST',
+							headers: {
+								'Content-Type': 'application/json'
+							},
+							body: JSON.stringify({
+								client_id: options.userId,
+								events: [{ name: options.name, params }]
+							})
+						}
+					)
+					if (!res.ok) {
+						throw new Error(`[GoogleAnalytics] ${res.statusText} ${res.status}`)
 					}
-				)
-				if (!res.ok) {
-					throw new Error(`[GoogleAnalytics] ${res.statusText} ${res.status}`)
+				} catch (error) {
+					analyticsLogger.error(`[GoogleAnalytics]`, error)
 				}
 			}
 		}
