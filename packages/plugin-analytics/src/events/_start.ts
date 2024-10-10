@@ -1,4 +1,5 @@
-import { BaseEngine, setAnalytics } from '../core/analytics.js'
+import { color, composeColors } from 'robo.js'
+import { analyticsLogger, BaseEngine, setAnalytics } from '../core/analytics.js'
 import { GoogleAnalytics } from '../engines/GoogleAnalytics.js'
 import { ManyEngines } from '../engines/ManyEngines.js'
 import { PlausibleAnalytics } from '../engines/PlausibleAnalytics.js'
@@ -26,6 +27,9 @@ export default (_client: unknown, options: PluginOptions) => {
 	} else if (PAnalytics) {
 		setAnalytics(new PlausibleAnalytics())
 	} else {
-		throw new Error('No Analytics Engine, please provide one, see https://robojs.dev/plugins/analytics to learn how.')
+		analyticsLogger.warn(
+			'Must have at least one analytics engine enabled. See',
+			composeColors(color.bold, color.cyan)('https://robojs.dev/plugins/analytics.')
+		)
 	}
 }
