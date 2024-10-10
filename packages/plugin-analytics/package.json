@@ -1,7 +1,7 @@
 {
 	"name": "@robojs/analytics",
 	"description": "",
-	"version": "1.0.0",
+	"version": "0.0.0",
 	"type": "module",
 	"private": false,
 	"keywords": [
@@ -14,9 +14,9 @@
 	],
 	"main": ".robo/build/index.js",
 	"license": "MIT",
-	"author": "Your Name <email>",
+	"author": "WavePlay <dev@waveplay.com> (waveplay.com)",
 	"contributors": [
-		"Your Name <email>"
+		"Alexandre <sushi@waveplay.com>"
 	],
 	"files": [
 		".robo/",
