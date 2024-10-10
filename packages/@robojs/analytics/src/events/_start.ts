@@ -1,8 +1,8 @@
 import { color, composeColors } from 'robo.js'
 import { analyticsLogger, BaseEngine, setAnalytics } from '../core/analytics.js'
-import { GoogleAnalytics } from '../engines/GoogleAnalytics.js'
-import { ManyEngines } from '../engines/ManyEngines.js'
-import { PlausibleAnalytics } from '../engines/PlausibleAnalytics.js'
+import { GoogleAnalytics } from '../engines/google-analytics.js'
+import { ManyEngines } from '../engines/many.js'
+import { PlausibleAnalytics } from '../engines/plausible.js'
 
 interface PluginOptions {
 	engine?: BaseEngine

@@ -1,6 +1,5 @@
 import { analyticsLogger, BaseEngine } from '../core/analytics.js'
-
-import type { EventOptions, ViewOptions } from '../core/analytics.js'
+import type { EventOptions, ViewOptions } from '../core/types.js'
 
 export class PlausibleAnalytics extends BaseEngine {
 	private _domain = process.env.PLAUSIBLE_DOMAIN

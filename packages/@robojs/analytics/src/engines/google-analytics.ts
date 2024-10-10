@@ -1,5 +1,5 @@
 import { analyticsLogger, BaseEngine } from '../core/analytics.js'
-import type { EventOptions, ViewOptions } from '../core/analytics.js'
+import type { EventOptions, ViewOptions } from '../core/types.js'
 
 export class GoogleAnalytics extends BaseEngine {
 	private _measureId = process.env.GOOGLE_ANALYTICS_MEASURE_ID

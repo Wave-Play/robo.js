@@ -1,4 +1,5 @@
-import { BaseEngine, EventOptions, ViewOptions } from '../core/analytics'
+import { BaseEngine } from '../core/analytics.js'
+import type { EventOptions, ViewOptions } from '../core/types.js'
 
 export class ManyEngines extends BaseEngine {
 	private _engines: BaseEngine[]

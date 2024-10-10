@@ -7,16 +7,16 @@ export const config: CommandConfig = {
 
 export default () => {
 	Analytics.event({
-		name: 'ping',
+		name: 'pong',
 		userId: '1234',
 		data: {}
 	})
-	Analytics.view('my-test-page', {
+	Analytics.view('my-test-page-2', {
 		userId: '1234',
 		name: 'page_view',
 		data: {
 			page_location: 'https://robojs.dev/test-page',
-			page_title: 'Test Page'
+			page_title: 'Test Page 2'
 		}
 	})
 	return 'Pong!'

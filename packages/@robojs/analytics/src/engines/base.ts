@@ -1,4 +1,4 @@
-import { EventOptions, ViewOptions } from '../core/analytics.js'
+import type { EventOptions, ViewOptions } from '../core/types.js'
 
 export abstract class BaseEngine {
 	private _domain: string | undefined = undefined
