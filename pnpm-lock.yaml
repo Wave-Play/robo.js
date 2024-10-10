@@ -37,6 +37,27 @@ importers:
         specifier: ^7.9.0
         version: 7.9.0(eslint@9.3.0)(typescript@5.0.2)
 
+  packages/@robojs/analytics:
+    devDependencies:
+      '@swc/core':
+        specifier: ^1.6.13
+        version: 1.7.23
+      '@types/node':
+        specifier: ^20.14.10
+        version: 20.16.5
+      discord.js:
+        specifier: ^14.15.3
+        version: 14.16.1
+      prettier:
+        specifier: ^3.3.3
+        version: 3.3.3
+      robo.js:
+        specifier: ^0.10.10
+        version: 0.10.20(@swc/core@1.7.23)(discord.js@14.16.1)(keyv@4.5.4)(typescript@5.5.4)(vite@5.2.10(@types/node@20.16.5))
+      typescript:
+        specifier: ^5.5.3
+        version: 5.5.4
+
   packages/@robojs/patch:
     devDependencies:
       '@swc/core':
@@ -214,27 +235,6 @@ importers:
       typescript:
         specifier: ^5.0.0
         version: 5.4.5
-
-  packages/plugin-analytics:
-    devDependencies:
-      '@swc/core':
-        specifier: ^1.6.13
-        version: 1.7.23
-      '@types/node':
-        specifier: ^20.14.10
-        version: 20.16.5
-      discord.js:
-        specifier: ^14.15.3
-        version: 14.16.1
-      prettier:
-        specifier: ^3.3.3
-        version: 3.3.3
-      robo.js:
-        specifier: ^0.10.10
-        version: 0.10.20(@swc/core@1.7.23)(discord.js@14.16.1)(keyv@4.5.4)(typescript@5.5.4)(vite@5.2.10(@types/node@20.16.5))
-      typescript:
-        specifier: ^5.5.3
-        version: 5.5.4
 
   packages/plugin-api:
     dependencies:
