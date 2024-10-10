@@ -12,6 +12,7 @@ import os from 'node:os'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { IS_BUN } from './runtime-utils.js'
 import type { Pod } from '../../roboplay/types.js'
+import { existsSync } from 'node:fs'
 
 export const __DIRNAME = path.dirname(fileURLToPath(import.meta.url))
 export const PackageDir = path.resolve(__DIRNAME, '..', '..', '..')
@@ -109,7 +110,13 @@ export async function filterExistingPaths(paths: string[], basePath = process.cw
 	return result
 }
 
-export async function copyDir(src: string, dest: string, excludeExtensions: string[], excludePaths: string[]) {
+export async function copyDir(
+	src: string,
+	dest: string,
+	excludeExtensions: string[],
+	excludePaths: string[],
+	overwrite = true
+) {
 	await fs.mkdir(dest, { recursive: true })
 	const entries = await fs.readdir(src)
 
@@ -126,7 +133,7 @@ export async function copyDir(src: string, dest: string, excludeExtensions: stri
 			continue
 		} else if (entryStat.isDirectory()) {
 			await copyDir(srcPath, destPath, excludeExtensions, excludePaths)
-		} else {
+		} else if (overwrite || !existsSync(destPath)) {
 			await fs.copyFile(srcPath, destPath)
 		}
 	}

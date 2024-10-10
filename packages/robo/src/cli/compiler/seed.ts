@@ -102,14 +102,14 @@ export async function useSeed(packageName: string) {
 
 		// Copy the files recursively
 		const excludeExts = Compiler.isTypescriptProject() && isTypeScript ? ['.js', '.jsx'] : ['.ts', '.tsx']
-		await copyDir(seedPath, projectSrc, excludeExts, [path.join(seedPath, '_root')])
+		await copyDir(seedPath, projectSrc, excludeExts, [path.join(seedPath, '_root')], false)
 		compilerLogger.debug(`Successfully copied seed files from`, color.bold(packageName))
 
 		// Copy the root files
 		const rootPath = path.join(seedPath, '_root')
 		if (existsSync(rootPath)) {
 			compilerLogger.debug('Copying root seed files...')
-			await copyDir(rootPath, process.cwd(), [], [])
+			await copyDir(rootPath, process.cwd(), [], [], false)
 			compilerLogger.debug(`Successfully copied root seed files from`, color.bold(packageName))
 		}
 	}
