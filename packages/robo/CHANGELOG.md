@@ -1,5 +1,11 @@
 # robo.js
 
+## 0.10.20
+
+### Patch Changes
+
+- c83cf09: patch(cli): seeding no longer overwrites existing files
+
 ## 0.10.19
 
 ### Patch Changes
