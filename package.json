@@ -9,6 +9,7 @@
 			"packages/create-robo",
 			"packages/plugin-ai",
 			"packages/plugin-ai-voice",
+			"packages/plugin-analytics",
 			"packages/plugin-api",
 			"packages/plugin-better-stack",
 			"packages/plugin-confessions",

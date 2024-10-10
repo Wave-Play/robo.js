@@ -215,6 +215,27 @@ importers:
         specifier: ^5.0.0
         version: 5.4.5
 
+  packages/plugin-analytics:
+    devDependencies:
+      '@swc/core':
+        specifier: ^1.6.13
+        version: 1.7.23
+      '@types/node':
+        specifier: ^20.14.10
+        version: 20.16.5
+      discord.js:
+        specifier: ^14.15.3
+        version: 14.16.1
+      prettier:
+        specifier: ^3.3.3
+        version: 3.3.3
+      robo.js:
+        specifier: ^0.10.10
+        version: 0.10.20(@swc/core@1.7.23)(discord.js@14.16.1)(keyv@4.5.4)(typescript@5.5.4)(vite@5.2.10(@types/node@20.16.5))
+      typescript:
+        specifier: ^5.5.3
+        version: 5.5.4
+
   packages/plugin-api:
     dependencies:
       fastify:
@@ -4146,6 +4167,26 @@ packages:
     resolution: {integrity: sha512-JZkJMZkAGFFPP2YqXZXPbMlMBgsxzE8ILs4lMIX/2o0L9UBw9O/Y3o6wFw/i9YLapcUJWwqbi3kdxIPdC62TIA==}
     deprecated: Rimraf versions prior to v4 are no longer supported
     hasBin: true
+
+  robo.js@0.10.20:
+    resolution: {integrity: sha512-0SYrxmnLWwN6aapyM0v+Iep0yYrITcuVCtfUM135HJM0p0d1Rf7NYstttrqyNCENK+oxtpmIH53vBoT6in4WJg==}
+    engines: {node: '>=18.0.0'}
+    hasBin: true
+    peerDependencies:
+      '@swc/core': ^1.3.41
+      discord.js: ^14.0.0
+      keyv: ^4.5.2
+      typescript: ^5.0.0
+      vite: ^5.0.0
+    peerDependenciesMeta:
+      '@swc/core':
+        optional: true
+      keyv:
+        optional: true
+      typescript:
+        optional: true
+      vite:
+        optional: true
 
   rollup@3.29.4:
     resolution: {integrity: sha512-oWzmBZwvYrU0iJHtDmhsm662rC15FRXmcjCk1xD771dFDx5jJ02ufAQQTn0etB2emNk4J9EZg/yWKpsn9BWGRw==}
@@ -9186,6 +9227,15 @@ snapshots:
     dependencies:
       glob: 7.2.3
 
+  robo.js@0.10.20(@swc/core@1.7.23)(discord.js@14.16.1)(keyv@4.5.4)(typescript@5.5.4)(vite@5.2.10(@types/node@20.16.5)):
+    dependencies:
+      discord.js: 14.16.1
+    optionalDependencies:
+      '@swc/core': 1.7.23
+      keyv: 4.5.4
+      typescript: 5.5.4
+      vite: 5.2.10(@types/node@20.16.5)
+
   rollup@3.29.4:
     optionalDependencies:
       fsevents: 2.3.3
@@ -9788,6 +9838,16 @@ snapshots:
     optionalDependencies:
       '@types/node': 18.19.31
       fsevents: 2.3.3
+
+  vite@5.2.10(@types/node@20.16.5):
+    dependencies:
+      esbuild: 0.20.2
+      postcss: 8.4.38
+      rollup: 4.17.2
+    optionalDependencies:
+      '@types/node': 20.16.5
+      fsevents: 2.3.3
+    optional: true
 
   vite@5.2.10(@types/node@22.5.2):
     dependencies:
