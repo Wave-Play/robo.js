@@ -1,5 +1,120 @@
 # create-robo
 
+## 0.13.2
+
+### Patch Changes
+
+- Updated dependencies [c83cf09]
+  - robo.js@0.10.20
+
+## 0.13.1
+
+### Patch Changes
+
+- Updated dependencies [07baafb]
+- Updated dependencies [c5fbc34]
+- Updated dependencies [ef51dd9]
+- Updated dependencies [4fc64e9]
+  - robo.js@0.10.19
+
+## 0.13.0
+
+### Minor Changes
+
+- 917dec5: refactor: always ask for kit unless specified
+- 0969bd3: refactor: use example.env as baseline for templates
+- 0a4d3f3: refactor: construct .env in memory via fluent helper class
+- 622480d: refactor: skip plugins for templates
+- 06fffe6: feat: auto install dependencies for official templates
+
+### Patch Changes
+
+- 46f8530: feat: include `tunnel` script in apps by default
+- 080f08e: patch: don't seed plugins during creation
+- Updated dependencies [8198201]
+- Updated dependencies [40c77aa]
+- Updated dependencies [8a477bc]
+- Updated dependencies [457f1d5]
+  - robo.js@0.10.18
+
+## 0.12.16
+
+### Patch Changes
+
+- Updated dependencies [ca9b21d]
+  - robo.js@0.10.17
+
+## 0.12.15
+
+### Patch Changes
+
+- Updated dependencies [4f6fdea]
+- Updated dependencies [0770bac]
+  - robo.js@0.10.16
+
+## 0.12.14
+
+### Patch Changes
+
+- 361ba6f: feat: allow short-form template paths
+
+## 0.12.13
+
+### Patch Changes
+
+- Updated dependencies [4fb9298]
+  - robo.js@0.10.15
+
+## 0.12.12
+
+### Patch Changes
+
+- 31ba79b: patch: recommend patch by default to discord activities
+
+## 0.12.11
+
+### Patch Changes
+
+- 78b5530: patch: updated discord activity templates to have /.proxy prefix
+- Updated dependencies [0a6958e]
+- Updated dependencies [d5b273b]
+- Updated dependencies [e76bc62]
+  - robo.js@0.10.14
+
+## 0.12.10
+
+### Patch Changes
+
+- 5766124: patch: discord.js now normal dependency to appease yarn
+
+## 0.12.9
+
+### Patch Changes
+
+- Updated dependencies [fa321f6]
+- Updated dependencies [a5ae699]
+- Updated dependencies [ed2734b]
+- Updated dependencies [70b477e]
+- Updated dependencies [65809a6]
+- Updated dependencies [d22fbfa]
+- Updated dependencies [0cae688]
+  - robo.js@0.10.13
+
+## 0.12.8
+
+### Patch Changes
+
+- Updated dependencies [361e3d8]
+  - robo.js@0.10.12
+
+## 0.12.7
+
+### Patch Changes
+
+- Updated dependencies [2f939d5]
+- Updated dependencies [61b98a2]
+  - robo.js@0.10.11
+
 ## 0.12.6
 
 ### Patch Changes

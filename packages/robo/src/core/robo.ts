@@ -1,10 +1,10 @@
 import { color } from './color.js'
 import { registerProcessEvents } from './process.js'
+import { Compiler } from './../cli/utils/compiler.js'
 import { Client, Collection, Events } from 'discord.js'
 import { getConfig, loadConfig } from './config.js'
 import { FLASHCORE_KEYS, discordLogger } from './constants.js'
 import { logger } from './logger.js'
-import { loadManifest } from '../cli/utils/manifest.js'
 import { env } from './env.js'
 import {
 	executeAutocompleteHandler,
@@ -18,7 +18,7 @@ import { loadState } from './state.js'
 import Portal from './portal.js'
 import path from 'node:path'
 import { isMainThread, parentPort } from 'node:worker_threads'
-import type { PluginData } from '../types/index.js'
+import type { HandlerRecord, PluginData } from '../types/index.js'
 import type { AutocompleteInteraction, CommandInteraction } from 'discord.js'
 
 export const Robo = { restart, start, stop }
@@ -27,7 +27,7 @@ export const Robo = { restart, start, stop }
 export let client: Client
 
 // A Portal is exported with each Robo to allow for dynamic controls
-export let portal: Portal
+export const portal = new Portal()
 
 // Be careful, plugins may contain sensitive data in their config
 let plugins: Collection<string, PluginData>
@@ -47,7 +47,7 @@ async function start(options?: StartOptions) {
 
 	// Load config and manifest up next!
 	// This makes them available globally via getConfig() and getManifest()
-	const [config] = await Promise.all([loadConfig(), loadManifest()])
+	const [config] = await Promise.all([loadConfig(), Compiler.useManifest()])
 	logger({
 		drain: config?.logger?.drain,
 		enabled: config?.logger?.enabled,
@@ -60,7 +60,7 @@ async function start(options?: StartOptions) {
 		const { ShardingManager } = await import('discord.js')
 		const shardPath = typeof shard === 'string' ? shard : path.join(PackageDir, 'dist', 'cli', 'shard.js')
 		const options = typeof config.experimental?.shard === 'object' ? config.experimental.shard : {}
-		const manager = new ShardingManager(shardPath, { ...options, token: env.discord.token })
+		const manager = new ShardingManager(shardPath, { ...options, token: env('discord.token') })
 
 		manager.on('shardCreate', (shard) => discordLogger.debug(`Launched shard`, shard.id))
 		const result = await manager.spawn()
@@ -98,7 +98,7 @@ async function start(options?: StartOptions) {
 	}
 
 	// Load the portal (commands, context, events)
-	portal = await Portal.open()
+	await Portal.open()
 
 	// Notify lifecycle event handlers
 	await executeEventHandler(plugins, '_start', client)
@@ -106,7 +106,7 @@ async function start(options?: StartOptions) {
 	if (config.experimental?.disableBot !== true) {
 		// Define event handlers
 		for (const key of portal.events.keys()) {
-			const onlyAuto = portal.events.get(key).every((event) => event.auto)
+			const onlyAuto = portal.events.get(key).every((event: HandlerRecord<Event>) => event.auto)
 			client.on(key, async (...args) => {
 				if (!onlyAuto) {
 					discordLogger.event(`Event received: ${color.bold(key)}`)
@@ -138,7 +138,7 @@ async function start(options?: StartOptions) {
 		})
 
 		// Log in to Discord with your client's token
-		await client.login(env.discord.token)
+		await client.login(env('discord.token'))
 	}
 }
 

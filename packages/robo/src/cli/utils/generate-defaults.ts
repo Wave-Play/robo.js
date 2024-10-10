@@ -123,11 +123,11 @@ async function generateCommands(distDir: string, config: Config) {
 		logger.debug(
 			`Validating default command "${commandKey}":`,
 			`dev: ${shouldCreateDev}, help: ${shouldCreateHelp}, debug: ${DEBUG_MODE}, guildId: ${
-				env.discord.guildId ? 'exists' : 'none'
+				env('discord.guildId') ? 'exists' : 'none'
 			}`
 		)
 
-		if (devCommands.includes(commandKey) && (!DEBUG_MODE || !env.discord.guildId || !shouldCreateDev)) {
+		if (devCommands.includes(commandKey) && (!DEBUG_MODE || !env('discord.guildId') || !shouldCreateDev)) {
 			logger.debug(`Skipping default command:`, file)
 			return
 		}

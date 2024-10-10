@@ -13,6 +13,7 @@ const PATH_REGEX = new RegExp(/\[(.+?)\]/g)
 interface PluginOptions {
 	cors?: boolean
 	engine?: BaseEngine
+	hostname?: string
 	port?: number
 	prefix?: string | null | false
 	vite?: ViteDevServer
@@ -32,7 +33,7 @@ export default async (_client: Client, options: PluginOptions) => {
 	}
 
 	// Start HTTP server only if API Routes are defined
-	const { engine, port = parseInt(process.env.PORT ?? '3000') } = pluginOptions
+	const { engine, hostname = process.env.HOSTNAME, port = parseInt(process.env.PORT ?? '3000') } = pluginOptions
 	let vite: ViteDevServer | undefined = pluginOptions.vite
 
 	logger.debug(`Preparing server with ${portal.apis.size} API routes...`)
@@ -49,7 +50,10 @@ export default async (_client: Client, options: PluginOptions) => {
 			vite = await createViteServer({
 				configFile: existsSync(viteConfigPath) ? viteConfigPath : undefined,
 				server: {
-					hmr: { path: '/hmr', server: engine.getHttpServer() },
+					hmr: {
+						path: '/hmr',
+						server: engine.getHttpServer()
+					},
 					middlewareMode: { server: engine.getHttpServer() }
 				}
 			})
@@ -76,12 +80,11 @@ export default async (_client: Client, options: PluginOptions) => {
 	portal.apis.forEach((api) => {
 		const key = prefix + '/' + api.key.replace(PATH_REGEX, ':$1')
 		paths.push(key)
-		// @ts-expect-error - Outdated Robo API typings
 		engine.registerRoute(key, api.handler.default)
 	})
 
 	logger.debug(`Starting server...`)
-	await engine.start({ port })
+	await engine.start({ hostname, port })
 	_readyPromiseResolve()
 }
 

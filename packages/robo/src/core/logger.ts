@@ -1,6 +1,17 @@
 import { inspect } from 'node:util'
 import { color } from './color.js'
-import { env } from './env.js'
+import { getModeColor } from './mode.js'
+
+// Compute mode label color
+let ModeLabel: string
+
+if (process.env.ROBO_SHARD_MODE) {
+	const mode = process.env.ROBO_SHARD_MODE
+	const longestMode = process.env.ROBO_SHARD_LONGEST_MODE
+	const modeColor = getModeColor(mode)
+
+	ModeLabel = color.bold(color.dim(modeColor(mode.padEnd(longestMode.length))))
+}
 
 export type LogDrain = (logger: Logger, level: string, ...data: unknown[]) => Promise<void>
 
@@ -30,7 +41,7 @@ const pendingDrains = new Set<Promise<void>>()
 
 type LogStream = typeof process.stderr | typeof process.stdout
 
-function consoleDrain(logger: Logger, level: string, ...data: unknown[]): Promise<void> {
+function consoleDrain(_logger: Logger, level: string, ...data: unknown[]): Promise<void> {
 	switch (level) {
 		case 'trace':
 		case 'debug':
@@ -118,7 +129,7 @@ export class Logger {
 		this._parent = parent
 		this._prefix = prefix
 
-		if (env.roboplay.env) {
+		if (process.env.ROBOPLAY_ENV) {
 			// This allows developers to have better control over the logs when hosted
 			this._level = 'trace'
 		} else {
@@ -163,6 +174,11 @@ export class Logger {
 			}
 
 			data.unshift(levelLabel)
+		}
+
+		// Add the mode label if one exists
+		if (ModeLabel !== undefined && data.length > 1) {
+			data.unshift(ModeLabel)
 		}
 
 		// Persist the log entry in debug mode

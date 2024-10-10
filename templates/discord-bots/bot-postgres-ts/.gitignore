@@ -1,0 +1,6 @@
+// files
+.env
+
+// folders
+.robo
+node_modules

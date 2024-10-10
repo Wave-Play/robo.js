@@ -1,5 +1,29 @@
 # @roboplay/plugin-api
 
+## 0.5.7
+
+### Patch Changes
+
+- 8c8cbc8: patch: resolved npm missing seed
+
+## 0.5.6
+
+### Patch Changes
+
+- d268c7d: refactor: default hostname to HOSTNAME environment variable
+
+## 0.5.5
+
+### Patch Changes
+
+- 3ee7a85: feat: customizable hostname
+
+## 0.5.4
+
+### Patch Changes
+
+- 3dfc67e: feat: seed boilerplate files
+
 ## 0.5.3
 
 ### Patch Changes

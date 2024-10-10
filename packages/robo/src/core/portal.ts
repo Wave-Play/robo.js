@@ -1,66 +1,42 @@
+import { Compiler } from './../cli/utils/compiler.js'
 import { Collection } from 'discord.js'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { getManifest } from '../cli/utils/manifest.js'
 import { hasProperties } from '../cli/utils/utils.js'
 import { logger } from './logger.js'
 import { color, composeColors, hex } from './color.js'
 import { getConfig } from './config.js'
 import type { Api, BaseConfig, Command, Context, Event, HandlerRecord, Middleware } from '../types/index.js'
+import { Globals } from './globals.js'
 
 export default class Portal {
-	public apis: Collection<string, HandlerRecord<Api>>
-	public commands: Collection<string, HandlerRecord<Command>>
-	public context: Collection<string, HandlerRecord<Context>>
-	public events: Collection<string, HandlerRecord<Event>[]>
-	public middleware: HandlerRecord<Middleware>[] = []
-	public moduleKeys = new Set<string>()
-
 	private _enabledModules: Record<string, boolean> = {}
 	private _modules: Record<string, Module> = {}
 
-	constructor(
-		apis: Collection<string, HandlerRecord<Api>>,
-		commands: Collection<string, HandlerRecord<Command>>,
-		context: Collection<string, HandlerRecord<Context>>,
-		events: Collection<string, HandlerRecord<Event>[]>,
-		middleware: HandlerRecord<Middleware>[]
-	) {
-		this.apis = apis
-		this.commands = commands
-		this.context = context
-		this.events = events
-		this.middleware = middleware
+	constructor() {}
 
-		// Generate module keys based off of entries then sort alphabetically
-		apis.forEach((api) => {
-			if (api.module) {
-				this.moduleKeys.add(api.module)
-			}
-		})
-		commands.forEach((command) => {
-			if (command.module) {
-				this.moduleKeys.add(command.module)
-			}
-		})
-		context.forEach((context) => {
-			if (context.module) {
-				this.moduleKeys.add(context.module)
-			}
-		})
-		events.forEach((event) => {
-			event.forEach((handler) => {
-				if (handler.module) {
-					this.moduleKeys.add(handler.module)
-				}
-			})
-		})
-		middleware.forEach((middleware) => {
-			if (middleware.module) {
-				this.moduleKeys.add(middleware.module)
-			}
-		})
-		this.moduleKeys = new Set([...this.moduleKeys].sort())
+	get apis() {
+		return Globals.getPortalValues().apis
+	}
+
+	get commands() {
+		return Globals.getPortalValues().commands
+	}
+
+	get context() {
+		return Globals.getPortalValues().context
+	}
+
+	get events() {
+		return Globals.getPortalValues().events
+	}
+
+	get middleware() {
+		return Globals.getPortalValues().middleware
+	}
+
+	get moduleKeys() {
+		return Globals.getPortalValues().moduleKeys
 	}
 
 	module(moduleName: string) {
@@ -73,18 +49,18 @@ export default class Portal {
 	}
 
 	/**
-	 * Creates a new Portal instance from the manifest file.
+	 * Populates the Portal instance from the manifest file.
 	 *
 	 * Warning: Do not call this method directly. Use the `portal` export instead.
 	 */
-	public static async open(): Promise<Portal> {
+	public static async open() {
 		const apis = await loadHandlerRecords<HandlerRecord<Api>>('api')
 		const commands = await loadHandlerRecords<HandlerRecord<Command>>('commands')
 		const context = await loadHandlerRecords<HandlerRecord<Context>>('context')
 		const events = await loadHandlerRecords<HandlerRecord<Event>[]>('events')
 		const middleware = [...(await loadHandlerRecords<HandlerRecord<Middleware>>('middleware')).values()]
 
-		return new Portal(apis, commands, context, events, middleware)
+		Globals.registerPortal(apis, commands, context, events, middleware)
 	}
 }
 
@@ -167,7 +143,7 @@ async function loadHandlerRecords<T extends HandlerRecord | HandlerRecord[]>(
 	type: 'api' | 'commands' | 'context' | 'events' | 'middleware'
 ) {
 	const collection = new Collection<string, T>()
-	const manifest = getManifest()
+	const manifest = Compiler.getManifest()
 
 	// Log manifest objects as debug info
 	const pcolor =

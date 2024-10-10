@@ -61,6 +61,7 @@ const sidebars = {
 				},
 				'robojs/linting',
 				'robojs/logger',
+				'robojs/mode',
 				'robojs/modules',
 				'robojs/portal',
 				'robojs/files',
@@ -99,7 +100,8 @@ const sidebars = {
 					type: 'doc'
 				},
 				'plugins/create',
-				'plugins/install'
+				'plugins/install',
+				'plugins/seed'
 			]
 		},
 		{
@@ -121,7 +123,7 @@ const sidebars = {
 					type: 'doc'
 				},
 				'discord-activities/proxy',
-				'discord-activities/multiplayer',
+				'discord-activities/multiplayer'
 			]
 		},
 		{
@@ -186,8 +188,10 @@ const sidebars = {
 				'plugins/dev',
 				'plugins/maintenance',
 				'plugins/moderation',
+				'plugins/patch',
 				'plugins/server',
-				'plugins/sync'
+				'plugins/sync',
+				'plugins/trpc'
 			]
 		},
 		{
@@ -209,33 +213,48 @@ const sidebars = {
 					items: [
 						{
 							type: 'link',
-							label: 'Starter Vanilla, JS',
-							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/starter-activity-javascript'
+							label: 'Starter Vanilla (JS)',
+							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/discord-activities/vanilla-js'
 						},
 						{
 							type: 'link',
-							label: 'Starter Vanilla, TS',
-							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/starter-activity-typescript'
+							label: 'Starter Vanilla (TS)',
+							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/discord-activities/vanilla-ts'
 						},
 						{
 							type: 'link',
-							label: 'Starter React, JS',
-							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/starter-app-js-react'
+							label: 'Starter React (JS)',
+							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/discord-activities/react-js'
 						},
 						{
 							type: 'link',
-							label: 'Starter React, TS',
-							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/starter-app-ts-react'
+							label: 'Starter React (TS)',
+							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/discord-activities/react-ts'
 						},
 						{
 							type: 'link',
-							label: 'Starter Colyseus, React, JS',
-							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/activity-js-colyseus-react'
+							label: 'Music Player Proxy (TS)',
+							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/discord-activities/react-music-proxy-ts'
 						},
 						{
 							type: 'link',
-							label: 'Starter Colyseus, React, TS',
-							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/activity-ts-colyseus-react'
+							label: 'Multiplayer Colyseus (TS)',
+							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/discord-activities/react-colyseus-ts'
+						},
+						{
+							type: 'link',
+							label: 'Multiplayer Video (TS)',
+							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/discord-activities/react-multiplayer-video-ts'
+						},
+						{
+							type: 'link',
+							label: 'TailwindCSS (JS)',
+							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/discord-activities/react-tailwind-ts'
+						},
+						{
+							type: 'link',
+							label: 'TailwindCSS + shadcn/ui (TS)',
+							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/discord-activities/react-tailwind-shadcn-ts'
 						}
 					]
 				},
@@ -245,18 +264,49 @@ const sidebars = {
 					items: [
 						{
 							type: 'link',
-							label: 'Economy TS',
-							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/economy-bot'
+							label: 'Starter (JS)',
+							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/discord-bots/starter-bot-javascript'
 						},
 						{
 							type: 'link',
-							label: 'Starter JS',
-							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/starter-bot-javascript'
+							label: 'Starter (TS)',
+							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/discord-bots/starter-bot-typescript'
 						},
 						{
 							type: 'link',
-							label: 'Starter TS',
-							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/starter-bot-typescript'
+							label: 'MongoDB (TS)',
+							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/discord-bots/bot-mongodb-ts'
+						},
+						{
+							type: 'link',
+							label: 'PostgreSQL (TS)',
+							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/discord-bots/bot-postgres-ts'
+						},
+						{
+							type: 'link',
+							label: 'Prisma (TS)',
+							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/discord-bots/bot-prisma-ts'
+						},
+						{
+							type: 'link',
+							label: 'Purrth Vader (TS)',
+							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/discord-bots/purrth-vader'
+						},
+						{
+							type: 'link',
+							label: 'Economy (TS)',
+							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/discord-bots/economy-bot'
+						}
+					]
+				},
+				{
+					type: 'category',
+					label: 'Plugins',
+					items: [
+						{
+							type: 'link',
+							label: 'Starter (JS)',
+							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/plugins/starter-plugin-js'
 						}
 					]
 				},
@@ -266,13 +316,13 @@ const sidebars = {
 					items: [
 						{
 							type: 'link',
-							label: 'Starter JS',
-							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/starter-webapp-javascript'
+							label: 'Starter (JS)',
+							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/web-apps/starter-webapp-javascript'
 						},
 						{
 							type: 'link',
-							label: 'Starter TS',
-							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/starter-webapp-typescript'
+							label: 'Starter (TS)',
+							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/web-apps/starter-webapp-typescript'
 						}
 					]
 				}

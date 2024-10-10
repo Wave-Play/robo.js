@@ -4,6 +4,8 @@
 	"private": true,
 	"workspaces": {
 		"packages": [
+			"packages/@robojs/patch",
+			"packages/@robojs/trpc",
 			"packages/create-robo",
 			"packages/plugin-ai",
 			"packages/plugin-ai-voice",

@@ -7,7 +7,7 @@ import { printErrorResponse } from './debug.js'
 import { color } from './color.js'
 import path from 'node:path'
 import type { AutocompleteInteraction } from 'discord.js'
-import type { CommandConfig, ContextConfig, PluginData } from '../types/index.js'
+import type { CommandConfig, ContextConfig, Event, HandlerRecord, PluginData } from '../types/index.js'
 import type { Collection } from 'discord.js'
 
 const optionPrimitives = ['boolean', 'integer', 'number', 'string']
@@ -312,7 +312,7 @@ export async function executeEventHandler(
 	const config = getConfig()
 	const isLifecycleEvent = eventName.startsWith('_')
 	await Promise.all(
-		callbacks.map(async (callback) => {
+		callbacks.map(async (callback: HandlerRecord<Event>) => {
 			try {
 				discordLogger.debug(
 					`Executing event handler: ${color.bold(path.join(callback.plugin?.path ?? '.', callback.path))}`

@@ -1,0 +1,74 @@
+{
+	"name": "@robojs/trpc",
+	"description": "Fully managed tRPC optimized for Robo.js",
+	"version": "0.1.4",
+	"type": "module",
+	"private": false,
+	"keywords": [
+		"robo",
+		"robo.js",
+		"trpc",
+		"typescript"
+	],
+	"main": ".robo/build/index.js",
+	"license": "MIT",
+	"author": "WavePlay <dev@waveplay.com> (waveplay.com)",
+	"contributors": [
+		"Pkmmte Xeleon <pk@waveplay.com>"
+	],
+	"files": [
+		".robo/",
+		"seed/",
+		"src/",
+		"LICENSE",
+		"README.md"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Wave-Play/robo.git",
+		"directory": "packages/@robojs/trpc"
+	},
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://registry.npmjs.org/"
+	},
+	"scripts": {
+		"build": "robo build plugin",
+		"dev": "robo build plugin --watch",
+		"lint:style": "prettier --write .",
+		"prepublishOnly": "robo build plugin"
+	},
+	"dependencies": {
+		"@tanstack/react-query": "5.49.2",
+		"@trpc/client": "11.0.0-rc.502",
+		"@trpc/react-query": "11.0.0-rc.502",
+		"@trpc/server": "11.0.0-rc.502"
+	},
+	"devDependencies": {
+		"@robojs/server": "workspace:*",
+		"@swc/core": "^1.6.3",
+		"@types/node": "^20.14.6",
+		"@types/react": "18.3.1",
+		"discord.js": "^14.15.3",
+		"prettier": "^3.3.2",
+		"react": "18.3.1",
+		"robo.js": "workspace:*",
+		"typescript": "^5.4.5"
+	},
+	"peerDependencies": {
+		"@robojs/server": "^0.5.7",
+		"react": "^18.3.1",
+		"robo.js": "^0.10.20"
+	},
+	"peerDependenciesMeta": {
+		"@robojs/server": {
+			"optional": false
+		},
+		"react": {
+			"optional": true
+		},
+		"robo.js": {
+			"optional": false
+		}
+	}
+}

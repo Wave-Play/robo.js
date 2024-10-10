@@ -12,6 +12,7 @@ import login from './commands/login.js'
 import logout from './commands/logout.js'
 import remove from './commands/remove.js'
 import start from './commands/start.js'
+import sync from './commands/sync.js'
 import upgrade from './commands/upgrade.js'
 import why from './commands/why.js'
 import help, { helpCommandHandler } from './commands/help.js'
@@ -26,6 +27,7 @@ command.addCommand(start)
 command.addCommand(dev)
 command.addCommand(add)
 command.addCommand(remove)
+command.addCommand(sync)
 command.addCommand(upgrade)
 command.addCommand(deploy)
 command.addCommand(invite)

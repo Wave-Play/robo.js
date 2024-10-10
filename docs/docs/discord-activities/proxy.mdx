@@ -20,6 +20,21 @@ Ever tried to load a URL from an external resource and got a `blocked:csp` error
 
 It may be a pain, but it's for your own good.
 
+## Proxy Rules
+
+The **Discord Proxy** has a few rules you need to follow:
+
+- **[No external URLs](#fetching-external-resources)**: You can't load external resources directly.
+- **[Protocols and Ports](#network-limitations)**: Only **[HTTPS](https://developer.mozilla.org/en-US/docs/Glossary/HTTPS)**, derivatives, and some protocols are allowed.
+- **[Prefix /.proxy for relative paths](https://discord.com/developers/docs/activities/development-guides#construct-a-full-url)**: Requests made within the activity should be prefixed with `/.proxy`.
+- **[Respect CSP directives](#content-security-policy)**: They are unique for each activity, like `https://<CLIENT_ID>.discordsays.com/.proxy/`.
+
+You can automate your **CSP** compliance by using **[@robojs/patch](../plugins/patch)** to patch URLs in your code with zero effort. All **Robo.js** activity projects come with this plugin pre-installed by default.
+
+<CardContainer>
+	<Card href="../plugins/patch" title="🔌 @robojs/patch" description="A collection of patches optimized for Robo.js projects." />
+</CardContainer>
+
 ## Fetching External Resources
 
 You can friend the **Discord Proxy** by using **[URL Mappings](#url-mapping)**, **[patching URLs](https://github.com/discord/embedded-app-sdk/blob/main/patch-url-mappings.md)**, or **[proxying requests](#proxying-requests)**.
@@ -38,15 +53,15 @@ Mapping URLs is a way to tell the **Discord Proxy** to allow certain external re
 
 Let's say you need to load something from **[GitHub](https://github.com)**. You can map it to a path like `/github` and `/assets`.
 
-<BeforeAfter from={'/github'} to={'https://github.com'}/>
+<BeforeAfter from={'/github'} to={'https://github.com'} />
 
-<BeforeAfter from={'/assets'} to={'https://raw.githubusercontent.com/Wave-Play/robo.js/main'}/>
+<BeforeAfter from={'/assets'} to={'https://raw.githubusercontent.com/Wave-Play/robo.js/main'} />
 
 This configuration maps URLs you can use in your activity like so:
 
-<BeforeAfter from={'/github/Wave-Play/robo.js'} to={'https://github.com/Wave-Play/robo.js'}/>
+<BeforeAfter from={'/github/Wave-Play/robo.js'} to={'https://github.com/Wave-Play/robo.js'} />
 
-<BeforeAfter from={'/assets/README.md'} to={'https://raw.githubusercontent.com/Wave-Play/robo.js/main/README.md'}/>
+<BeforeAfter from={'/assets/README.md'} to={'https://raw.githubusercontent.com/Wave-Play/robo.js/main/README.md'} />
 <p></p>
 
 And voila, you can now load those URLs in your **Discord Activity** using the mapped paths.

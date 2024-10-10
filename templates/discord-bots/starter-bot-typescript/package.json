@@ -1,0 +1,33 @@
+{
+	"name": "starter-bot-typescript",
+	"description": "",
+	"version": "1.0.0",
+	"type": "module",
+	"private": true,
+	"keywords": [
+		"bot",
+		"discord",
+		"discord.js",
+		"robo",
+		"robo.js",
+		"typescript"
+	],
+	"scripts": {
+		"build": "robo build",
+		"deploy": "robo deploy",
+		"dev": "robox dev",
+		"doctor": "sage doctor",
+		"invite": "robo invite",
+		"start": "robo start",
+		"upgrade": "sage upgrade"
+	},
+	"dependencies": {
+		"discord.js": "^14.16.2",
+		"robo.js": "^0.10.15"
+	},
+	"devDependencies": {
+		"@swc/core": "^1.7.26",
+		"@types/node": "^22.7.4",
+		"typescript": "^5.6.2"
+	}
+}

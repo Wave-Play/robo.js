@@ -23,7 +23,7 @@ import type { AssistantData } from '@/engines/openai/assistant.js'
 import type { File, Message } from '@/engines/openai/types.js'
 import type { Command } from 'robo.js'
 
-const DEFAULT_MODEL = 'gpt-4-turbo'
+const DEFAULT_MODEL = 'gpt-4o'
 
 /**
  * AI engine powered by OpenAI.
@@ -273,8 +273,8 @@ async function loadAssistant(functions?: ChatFunction[]): Promise<Assistant | nu
 
 	// TODO: Add support for Assistants v2
 	if (assistantData.model === 'gpt-4o') {
-		assistantData.model = DEFAULT_MODEL
-		logger.debug('Model', color.bold('gpt-4o'), 'is not supported yet. Using', color.bold(DEFAULT_MODEL), 'instead.')
+		assistantData.model = 'gpt-4'
+		logger.debug('Model', color.bold('gpt-4o'), 'is not supported yet. Using', color.bold('gpt-4'), 'instead.')
 	}
 
 	// See if we've already created an assistant for this Robo

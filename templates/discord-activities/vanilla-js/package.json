@@ -1,0 +1,44 @@
+{
+	"name": "vanilla-js",
+	"description": "",
+	"version": "1.0.0",
+	"type": "module",
+	"private": true,
+	"keywords": [
+		"activity",
+		"api",
+		"discord",
+		"embed",
+		"embedded app",
+		"http",
+		"javascript",
+		"robo",
+		"robo.js",
+		"sdk",
+		"server",
+		"vite",
+		"web"
+	],
+	"scripts": {
+		"build": "robo build",
+		"deploy": "robo deploy",
+		"dev": "robox dev --tunnel",
+		"doctor": "sage doctor",
+		"invite": "robo invite",
+		"lint:style": "prettier --write .",
+		"start": "robo start",
+		"tunnel": ".robo/bin/cloudflared tunnel --url http://localhost:3000",
+		"upgrade": "sage upgrade"
+	},
+	"dependencies": {
+		"@discord/embedded-app-sdk": "^1.4.3",
+		"@robojs/patch": "^0.1.1",
+		"@robojs/server": "^0.5.7",
+		"discord.js": "^14.16.2",
+		"robo.js": "^0.10.15"
+	},
+	"devDependencies": {
+		"prettier": "^3.3.3",
+		"vite": "^5.4.8"
+	}
+}

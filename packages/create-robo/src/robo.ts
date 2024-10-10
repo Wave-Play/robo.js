@@ -1,4 +1,4 @@
-import fs from 'fs/promises'
+import fs, { readFile, rename } from 'node:fs/promises'
 import path from 'path'
 import { checkbox, input, select, Separator } from '@inquirer/prompts'
 import chalk from 'chalk'
@@ -11,7 +11,6 @@ import {
 	hasProperties,
 	prettyStringify,
 	sortObjectKeys,
-	updateOrAddVariable,
 	getPackageExecutor,
 	ROBO_CONFIG_APP,
 	Indent,
@@ -24,6 +23,8 @@ import { RepoInfo, downloadAndExtractRepo, getRepoInfo, hasRepo } from './templa
 import retry from 'async-retry'
 import { color, logger } from 'robo.js'
 import { Spinner } from 'robo.js/dist/cli/utils/spinner.js'
+import { existsSync } from 'node:fs'
+import { Env } from './env.js'
 import type { CommandOptions } from './index.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -93,6 +94,12 @@ const appPlugins = [
 		value: 'sync'
 	},
 	new Separator('\nRequired for apps:'),
+	{
+		checked: true,
+		name: `${chalk.bold('Patches')} - A collection of patches optimized for Robo.js projects.`,
+		short: 'Patches',
+		value: 'patch'
+	},
 	{
 		checked: true,
 		name: `${chalk.bold(
@@ -181,6 +188,10 @@ const PluginDb: Record<string, PluginData> = {
 	modtools: {
 		keywords: ['moderation', 'moderator'],
 		package: '@robojs/moderation'
+	},
+	patch: {
+		keywords: [],
+		package: '@robojs/patch'
 	}
 }
 
@@ -218,17 +229,18 @@ interface PackageJson {
 // TODO: Refactor this mess into a Robo Builder-like circular structure
 export default class Robo {
 	private readonly _cliOptions: CommandOptions
-	private readonly _isApp: boolean
 	private readonly _nodeOptions = ['--enable-source-maps']
 	private readonly _spinner = new Spinner()
 
 	// Custom properties used to build the Robo project
 	private _installFailed: boolean
+	private _isApp: boolean
 	private _missingEnv: boolean
 	private _name: string
 	private _packageJson: PackageJson
 	private _selectedFeatures: string[] = []
 	private _selectedPlugins: string[] = []
+	private _shouldInstall: boolean
 	private _useTypeScript: boolean | undefined
 	private _workingDir: string
 
@@ -249,6 +261,10 @@ export default class Robo {
 
 	public get selectedPlugins(): string[] {
 		return this._selectedPlugins
+	}
+
+	public get shouldInstall(): boolean {
+		return this._shouldInstall
 	}
 
 	constructor(name: string, cliOptions: CommandOptions, useSameDirectory: boolean) {
@@ -320,7 +336,11 @@ export default class Robo {
 		this._packageJson.keywords.sort()
 
 		logger.debug(`Updating package.json file...`)
-		await fs.writeFile(path.join(this._workingDir, 'package.json'), JSON.stringify(this._packageJson, null, '\t'), 'utf-8')
+		await fs.writeFile(
+			path.join(this._workingDir, 'package.json'),
+			JSON.stringify(this._packageJson, null, '\t'),
+			'utf-8'
+		)
 
 		// Install the selected plugin packages
 		const executor = getPackageExecutor()
@@ -332,7 +352,7 @@ export default class Robo {
 
 		try {
 			logger.debug(`Installing plugins:`, packages)
-			await exec(`${executor} robo add ${packages.join(' ')}`, execOptions)
+			await exec(`${executor} robo add ${packages.join(' ')} -y`, execOptions)
 
 			// Update config files for each plugin with the provided configuration
 			const pendingConfigs = plugins
@@ -371,13 +391,29 @@ export default class Robo {
 	}
 
 	async downloadTemplate(url: string) {
-		logger.debug(`Using template: ${url}`)
+		const { install, template, verbose } = this._cliOptions
 		let repoUrl: URL | undefined
 		let repoInfo: RepoInfo | undefined
+		logger.debug(`Using template: ${url}`)
+
+		// Adjust to be relative to main monorepo if not a URL
+		let isOfficial = false
+
+		if (!url.toLowerCase().startsWith('https://')) {
+			isOfficial = true
+			url = `https://github.com/Wave-Play/robo.js/tree/main/templates/${url}`
+			logger.debug(`Adjusted template URL: ${url}`)
+		}
+
+		// Print new section
 		logger.debug('\n')
-		logger.log('\x1B[1A\x1B[K\x1B[1A\x1B[K')
 		logger.log(Indent, chalk.bold('🌐 Creating from template'))
 		this._spinner.setText(Indent + '    {{spinner}} Downloading template...\n')
+		this._spinner.start()
+
+		if (verbose) {
+			this._spinner.stop(false)
+		}
 
 		try {
 			repoUrl = new URL(url)
@@ -422,8 +458,86 @@ export default class Robo {
 		const result = await retry(() => downloadAndExtractRepo(this._workingDir, repoInfo), {
 			retries: 3
 		})
+		const name = isOfficial ? template : result?.name
 		this._spinner.stop(false)
-		logger.log(Indent, `   Bootstraped project successfully from ${chalk.bold.cyan(result?.name ?? 'repository')}.`)
+		logger.log(Indent, `   Bootstraped project successfully from ${chalk.bold.cyan(name ?? 'repository')}.`)
+
+		// If the template includes a `example.env` file, copy it to `.env`
+		const exampleEnvPath = path.join(this._workingDir, 'example.env')
+		const envPath = path.join(this._workingDir, '.env')
+
+		try {
+			if (existsSync(exampleEnvPath)) {
+				await rename(exampleEnvPath, envPath)
+				logger.debug(`Copied example.env to .env`)
+			}
+		} catch {
+			logger.debug(`No example.env file found.`)
+		}
+
+		// Read the package.json file
+		const packageJsonPath = path.join(this._workingDir, 'package.json')
+		this._packageJson = JSON.parse(await readFile(packageJsonPath, 'utf-8'))
+		logger.debug(`Found package.json file:`, this._packageJson)
+
+		// Determine if the project is typescript based on the package.json
+		this._useTypeScript = this._packageJson.devDependencies?.typescript !== undefined
+
+		// Determine app kit based on the package.json
+		if (this._packageJson.dependencies['@discord/embedded-app-sdk'] !== undefined) {
+			this._cliOptions.kit = 'app'
+			this._isApp = true
+			logger.debug(`Detected app kit from package.json.`)
+		} else if (this._packageJson.dependencies['discord.js'] !== undefined) {
+			this._cliOptions.kit = 'bot'
+			this._isApp = false
+			logger.debug(`Detected bot kit from package.json.`)
+		}
+
+		// Install dependencies
+		if (install && isOfficial) {
+			logger.debug('\n')
+			logger.log()
+			logger.log(
+				Indent,
+				chalk.bold(
+					`📦 Preparing ${chalk.cyan(this._useTypeScript ? 'TypeScript' : 'JavaScript')} ${
+						this._isPlugin ? 'plugin' : 'project'
+					}`
+				)
+			)
+
+			try {
+				const packageManager = getPackageManager()
+				logger.debug(`Using ${chalk.bold(packageManager)} in ${this._workingDir}...`)
+
+				const command = packageManager + ' ' + (packageManager === 'npm' ? 'install' : 'add')
+				this._spinner.setText(Indent + '    {{spinner}} Installing dependencies...\n')
+				this._spinner.start()
+
+				if (verbose) {
+					this._spinner.stop(false)
+				}
+
+				await exec(command, {
+					cwd: this._workingDir,
+					stdio: verbose ? 'pipe' : 'ignore',
+					verbose: verbose
+				})
+
+				// Stahp it
+				this._spinner.stop(false)
+				logger.log(Indent, `   Successfully installed dependencies.`, Space)
+			} catch {
+				this._spinner.stop(false)
+				this._installFailed = true
+				logger.log(Indent, chalk.red(`   Could not install dependencies!`))
+				logger.debug(`Updating package.json file...`)
+			}
+		} else {
+			logger.debug(`Skipping dependency installation.`)
+			this._shouldInstall = true
+		}
 	}
 
 	async getUserInput(): Promise<string[]> {
@@ -528,6 +642,7 @@ export default class Robo {
 		// I heard you like tunnels
 		if (this._isApp) {
 			this._packageJson.scripts['dev'] += ' --tunnel'
+			this._packageJson.scripts['tunnel'] = '.robo/bin/cloudflared tunnel --url http://localhost:3000'
 		}
 
 		// Prepare config directory
@@ -726,7 +841,11 @@ export default class Robo {
 
 		// Write the package.json file
 		logger.debug(`Writing package.json file...`)
-		await fs.writeFile(path.join(this._workingDir, 'package.json'), JSON.stringify(this._packageJson, null, '\t'), 'utf-8')
+		await fs.writeFile(
+			path.join(this._workingDir, 'package.json'),
+			JSON.stringify(this._packageJson, null, '\t'),
+			'utf-8'
+		)
 
 		// Install dependencies using the package manager that triggered the command
 		if (install) {
@@ -780,7 +899,11 @@ export default class Robo {
 
 				writeDependencies()
 				logger.debug(`Updating package.json file...`)
-				await fs.writeFile(path.join(this._workingDir, 'package.json'), JSON.stringify(this._packageJson, null, '\t'), 'utf-8')
+				await fs.writeFile(
+					path.join(this._workingDir, 'package.json'),
+					JSON.stringify(this._packageJson, null, '\t'),
+					'utf-8'
+				)
 			}
 		}
 
@@ -869,39 +992,33 @@ export default class Robo {
 		this._spinner.setText(Indent + '    {{spinner}} Applying credentials...\n')
 		this._spinner.start()
 
-		const envFilePath = path.join(this._workingDir, '.env')
-		let envContent = ''
+		const env = await new Env('.env', this._workingDir).load()
+		env.set(
+			'DISCORD_CLIENT_ID',
+			discordClientId,
+			'Find your credentials in the Discord Developer portal - https://discord.com/developers/applications'
+		)
 
-		try {
-			envContent = await fs.readFile(envFilePath, 'utf8')
-		} catch (error) {
-			if (hasProperties(error, ['code']) && error.code !== 'ENOENT') {
-				throw error
-			}
-		}
-
-		envContent = updateOrAddVariable(envContent, 'DISCORD_CLIENT_ID', discordClientId ?? '')
 		if (this._isApp) {
-			envContent = updateOrAddVariable(envContent, 'VITE_DISCORD_CLIENT_ID', discordClientId ?? '')
-			envContent = updateOrAddVariable(envContent, 'DISCORD_CLIENT_SECRET', discordToken ?? '')
+			env.set('DISCORD_CLIENT_SECRET', discordToken)
+			env.set('VITE_DISCORD_CLIENT_ID', discordClientId)
 		} else {
-			envContent = updateOrAddVariable(envContent, 'DISCORD_TOKEN', discordToken ?? '')
+			env.set('DISCORD_TOKEN', discordToken)
 		}
-		envContent = updateOrAddVariable(envContent, 'NODE_OPTIONS', this._nodeOptions.join(' '))
+		env.set('NODE_OPTIONS', this._nodeOptions.join(' '), 'Enable source maps for easier debugging')
 
 		if (this._selectedPlugins.includes('ai')) {
-			envContent = updateOrAddVariable(envContent, 'OPENAI_API_KEY', '')
+			env.set('OPENAI_API_KEY', '', 'Get your OpenAI API key - https://platform.openai.com/api-keys')
 		}
 		if (this._selectedPlugins.includes('ai-voice')) {
-			envContent = updateOrAddVariable(envContent, 'AZURE_SUBSCRIPTION_KEY', '')
-			envContent = updateOrAddVariable(envContent, 'AZURE_SUBSCRIPTION_REGION', '')
+			env.set('AZURE_SUBSCRIPTION_KEY', '')
+			env.set('AZURE_SUBSCRIPTION_REGION', '')
 		}
 		if (this._selectedPlugins.includes('server')) {
-			envContent = updateOrAddVariable(envContent, 'PORT', '3000')
+			env.set('PORT', '3000', 'Change this port number if needed')
 		}
 
-		await fs.writeFile(envFilePath, envContent, 'utf-8')
-		await this.createEnvTsFile()
+		await env.commit(this._useTypeScript)
 		this._spinner.stop()
 		logger.log(Indent, '   Manage your credentials in the', chalk.bold.cyan('.env'), 'file.')
 	}
@@ -928,34 +1045,5 @@ export default class Robo {
 
 		logger.debug(`Writing ${pluginName} config to ${pluginPath}...`)
 		await fs.writeFile(pluginPath, `export default ${pluginConfig}`, 'utf-8')
-	}
-
-	/**
-	 * Adds the "env.d.ts" entry to the compilerOptions in the tsconfig.json
-	 *
-	 */
-
-	private async createEnvTsFile() {
-		if (this._useTypeScript) {
-			const autoCompletionEnvVar = `export {}\ndeclare global {\n    namespace NodeJS {\n		interface ProcessEnv {\n			DISCORD_CLIENT_ID: string\n			${
-				this._isApp ? 'DISCORD_CLIENT_SECRET: string' : 'DISCORD_TOKEN: string'
-			}\n		}\n	} \n}`
-
-			const tsconfigPath = path.join(this._workingDir, 'tsconfig.json')
-
-			const tsconfig = await fs
-				.access(tsconfigPath)
-				.then(() => true)
-				.catch(() => false)
-
-			if (tsconfig) {
-				await fs.writeFile(path.join(this._workingDir, 'env.d.ts'), autoCompletionEnvVar, 'utf-8')
-				const parsedTSConfig = JSON.parse(await fs.readFile(tsconfigPath, 'utf-8'))
-				const compilerOptions = parsedTSConfig['compilerOptions']
-				compilerOptions['typeRoots'] = ['./env.d.ts']
-
-				await fs.writeFile(tsconfigPath, JSON.stringify(parsedTSConfig, null, '\t'), 'utf-8')
-			}
-		}
 	}
 }

@@ -7,9 +7,9 @@ import {
 	SlashCommandBuilder,
 	SlashCommandSubcommandBuilder
 } from 'discord.js'
-import { logger as globalLogger, Logger } from '../../core/logger.js'
+import { Logger } from '../../core/logger.js'
 import { loadConfig } from '../../core/config.js'
-import { DEFAULT_CONFIG, FLASHCORE_KEYS } from '../../core/constants.js'
+import { DEFAULT_CONFIG, discordLogger, FLASHCORE_KEYS } from '../../core/constants.js'
 import { env } from '../../core/env.js'
 import { timeout } from './utils.js'
 import { bold, color } from '../../core/color.js'
@@ -17,8 +17,7 @@ import { Flashcore } from '../../core/flashcore.js'
 import type { APIApplicationCommand, ApplicationCommandOptionBase } from 'discord.js'
 import type { CommandEntry, CommandOption, ContextEntry } from '../../types/index.js'
 
-// @ts-expect-error - Global logger is overriden by dev mode
-let logger: Logger = globalLogger
+let logger: Logger = discordLogger
 
 export function buildContextCommands(
 	dev: boolean,
@@ -29,7 +28,7 @@ export function buildContextCommands(
 		logger = new Logger({
 			enabled: true,
 			level: 'info'
-		})
+		}).fork('discord')
 	}
 
 	return Object.entries(contextCommands).map(([key, entry]): ContextMenuCommandBuilder => {
@@ -315,7 +314,9 @@ export async function registerCommands(
 	removedContextCommands: string[]
 ) {
 	const config = await loadConfig()
-	const { clientId, guildId, token } = env.discord
+	const clientId = env('discord.clientId')
+	const guildId = env('discord.guildId')
+	const token = env('discord.token')
 
 	if (!token || !clientId) {
 		logger.error(
@@ -420,7 +421,7 @@ export async function registerCommands(
 		}
 
 		logger.info(`Successfully updated ${color.bold(commandType + ' commands')} in ${endTime}ms`)
-		logger.info(color.dim('It may take a while for the changes to reflect in Discord.'))
+		logger.wait(color.dim('It may take a while for the changes to reflect in Discord.'))
 		await Flashcore.delete(FLASHCORE_KEYS.commandRegisterError)
 	} catch (error) {
 		logger.error('Could not register commands!', error)

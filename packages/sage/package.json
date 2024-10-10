@@ -1,6 +1,6 @@
 {
 	"name": "@roboplay/sage",
-	"version": "0.5.7",
+	"version": "0.6.7",
 	"private": false,
 	"description": "Codemod for Robo.js",
 	"engines": {
@@ -50,6 +50,7 @@
 		"@inquirer/prompts": "^4.3.2",
 		"commander": "10.0.0",
 		"depcheck": "^1.4.7",
+		"discord.js": "^14.16.1",
 		"robo.js": "workspace:*",
 		"tar": "^6.1.13"
 	},

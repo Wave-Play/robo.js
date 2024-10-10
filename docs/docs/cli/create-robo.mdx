@@ -10,6 +10,27 @@ Ready to create a project named "my-awesome-robo"? Here's how:
 
 <Terminal create>my-awesome-robo</Terminal>
 
+:::warning
+
+**Yarn** users will need to config your nodeLinker by setting the `YARN_NODE_LINKER` variable to `node-modules`.
+
+**macOS & Linux:**
+```bash
+YARN_NODE_LINKER=node-modules yarn create robo DeepThought -ts
+```
+
+**Windows Command Prompt:**
+```bash
+set YARN_NODE_LINKER=node-modules && yarn create robo DeepThought -ts
+```
+
+**Windows Powershell:**
+```bash
+$env:YARN_NODE_LINKER="node-modules"; yarn create robo DeepThought -ts
+```
+
+:::
+
 Once you're in, the CLI will walk you through three easy-peasy steps:
 
 1. TypeScript or nah? (yes/no)

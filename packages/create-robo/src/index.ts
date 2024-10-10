@@ -2,7 +2,7 @@
 import Robo from './robo.js'
 import { Indent, getPackageManager } from './utils.js'
 import { Command } from 'commander'
-import { input } from '@inquirer/prompts'
+import { input, select } from '@inquirer/prompts'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import chalk from 'chalk'
@@ -56,6 +56,23 @@ new Command('create-robo <projectName>')
 			options.kit = 'app'
 		}
 
+		// No kit specified, prompt the user to choose an adventure: bot or activity
+		if (!options.kit) {
+			logger.log()
+			options.kit = await select<'app' | 'bot'>(
+				{
+					message: chalk.blue('Choose your adventure:'),
+					choices: [
+						{ name: 'Discord Bot', value: 'bot' as const },
+						{ name: 'Discord Activity', value: 'app' as const }
+					]
+				},
+				{
+					clearPromptOnDone: true
+				}
+			)
+		}
+
 		// Ensure correct kit is selected (bot or app)
 		if (options.kit && !['bot', 'app', 'web'].includes(options.kit)) {
 			logger.error('Only bot (default) and activity kits are available at the moment.')
@@ -101,9 +118,6 @@ new Command('create-robo <projectName>')
 		if (options.plugin) {
 			metadata.push({ key: 'Type', value: 'Plugin' })
 		}
-		if (options.kit) {
-			metadata.push({ key: 'Kit', value: options.kit })
-		}
 		if (options.javascript || options.typescript) {
 			metadata.push({ key: 'Language', value: options.typescript ? 'TypeScript' : 'JavaScript' })
 		}
@@ -112,9 +126,6 @@ new Command('create-robo <projectName>')
 		}
 		if (options.plugins) {
 			metadata.push({ key: 'Plugins', value: options.plugins.join(', ') })
-		}
-		if (options.template) {
-			metadata.push({ key: 'Template', value: options.template })
 		}
 		if (options.install === false) {
 			metadata.push({ key: 'Install dependencies', value: 'No' })
@@ -159,7 +170,7 @@ new Command('create-robo <projectName>')
 
 		// Want some plugins?
 		// if there are plugins specified with the command we skip asking for more.
-		if (options.plugins === undefined || options.plugins.length <= 0) {
+		if (!options.template && (options.plugins === undefined || options.plugins.length <= 0)) {
 			await robo.plugins()
 		}
 
@@ -179,7 +190,7 @@ new Command('create-robo <projectName>')
 		if (!useSameDirectory) {
 			logger.log(Indent, '   - Change directory:', chalk.bold.cyan(`cd ${projectName}`))
 		}
-		if (!options.install) {
+		if (!options.install || robo.shouldInstall) {
 			logger.log(Indent, '   - Install dependencies:', chalk.bold.cyan(packageManager + ' install'))
 		}
 		if (robo.missingEnv) {

@@ -84,12 +84,16 @@ export class Spinner {
 		this.intervalId = setInterval(() => this.render(), this.interval)
 	}
 
-	public stop(moveUp = true) {
+	public stop(moveUp = true, clear = true) {
 		if (this.intervalId) {
 			clearInterval(this.intervalId)
 			this.intervalId = null
 			this.render()
-			this.clear(moveUp)
+
+			if (clear) {
+				this.clear(moveUp)
+			}
+
 			this.message = null
 		}
 	}
