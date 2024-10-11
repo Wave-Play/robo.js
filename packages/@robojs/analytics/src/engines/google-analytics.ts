@@ -28,7 +28,7 @@ export class GoogleAnalytics extends BaseEngine {
 	}
 
 	public async event(name: string, options?: EventOptions) {
-		analyticsLogger.warn(Prefix, `Collecting event ${name}${options ? ' with options' : ''}...`, options ?? '')
+		analyticsLogger.debug(Prefix, `Collecting event ${name}${options ? ' with options' : ''}...`, options ?? '')
 
 		// Verify if the request is valid
 		if (!this.verifyRequest()) {
@@ -89,7 +89,7 @@ export class GoogleAnalytics extends BaseEngine {
 		if (!response.ok) {
 			analyticsLogger.error(Prefix, response.statusText, response.status)
 		} else {
-			analyticsLogger.info(Prefix, 'Event collected successfully:', payload)
+			analyticsLogger.debug(Prefix, 'Event collected successfully:', payload)
 		}
 	}
 

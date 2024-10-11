@@ -20,7 +20,7 @@ export default (_client: unknown, options: PluginOptions) => {
 	}
 
 	const GAnalytics = process.env.GOOGLE_ANALYTICS_MEASURE_ID
-	const PAnalytics = process.env.PLAUSIBLE_DOMAIN_NAME
+	const PAnalytics = process.env.PLAUSIBLE_DOMAIN
 
 	if (GAnalytics && PAnalytics) {
 		setAnalytics(new ManyEngines(new GoogleAnalytics(), new PlausibleAnalytics()))

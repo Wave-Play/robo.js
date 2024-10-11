@@ -35,10 +35,11 @@ npx create-robo <project-name> -p @robojs/analytics
 
 How does **@robojs/analytics** know which service to use? Simple! Just add your analytics service key to your `.env` file.
 
-For **[Google Analytics](https://analytics.google.com)**, it's a tracking ID:
+For **[Google Analytics](https://analytics.google.com)**, it's a tracking ID and secret:
 
 ```env
-GOOGLE_ANALYTICS_MEASURE_ID="UA-123456789-1"
+GOOGLE_ANALYTICS_MEASURE_ID="G-123456789"
+GOOGLE_ANALYTICS_SECRET="123456789"
 ```
 
 For **[Plausible](https://plausible.io)**, it's your domain:

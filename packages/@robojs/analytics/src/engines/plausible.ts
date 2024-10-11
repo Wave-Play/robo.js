@@ -1,106 +1,106 @@
 import { BaseEngine } from './base.js'
 import { analyticsLogger } from '../core/loggers.js'
+import { color } from 'robo.js'
 import type { EventOptions, ViewOptions } from './base.js'
 
+// Constants
+const Host = 'https://plausible.io'
+const Prefix = color.dim('[Plausible]')
+
 export class PlausibleAnalytics extends BaseEngine {
-	private _domain = process.env.PLAUSIBLE_DOMAIN
-	private _PlausibleAPI = 'https://plausible.io/'
+	private _domain: string
+
+	constructor(domain?: string) {
+		super()
+		this._domain = domain ?? process.env.PLAUSIBLE_DOMAIN!
+		analyticsLogger.ready(color.bold('Plausible'), 'is ready to collect data.')
+	}
+
+	public async event(name: string, options: EventOptions): Promise<void> {
+		if (!name) {
+			return analyticsLogger.error(Prefix, "Specify a name to use Plausible's event.")
+		}
+
+		const { data, domain = this._domain } = options ?? {}
+		const { url = `https://${domain}/` } = options ?? {}
+
+		// Compose the payload
+		const payload = {
+			domain,
+			name,
+			url
+		}
+
+		if (data && typeof data === 'object') {
+			if (Object.entries(data).length > 30) {
+				throw new Error(Prefix + ' Cannot send an object with more than 30 fields.')
+			} else {
+				Object.assign(payload, { props: { ...data } })
+			}
+		}
+
+		await this.collect(payload)
+	}
 
 	public async view(page: string, options: ViewOptions): Promise<void> {
-		const { domain = this._domain, url = `https://${this._domain}${page}` } = options ?? {}
+		const { data, domain = this._domain, url = `https://${this._domain}/${slugify(page)}` } = options ?? {}
 
-		const temp = {
+		// Compose the payload
+		const payload = {
 			name: 'pageview',
 			url: url,
 			domain: domain
 		}
 
-		if (typeof options.data === 'object') {
-			if (options.data !== null) {
-				if (Object.entries(options.data).length > 30) {
-					throw new Error('[Plausible] Cannot send an object with more than 30 fields.')
-				} else {
-					Object.assign(temp, { props: { ...options.data } })
-				}
+		if (data && typeof data === 'object') {
+			if (Object.entries(data).length > 30) {
+				throw new Error(Prefix + ' Cannot send an object with more than 30 fields.')
+			} else {
+				Object.assign(payload, { props: { ...data } })
 			}
 		}
 
-		const res = await fetch(this._PlausibleAPI + '/api/event', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'User-Agent':
-					'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'
-			},
-			referrer: options.referrer ?? '',
-			body: JSON.stringify(temp)
-		})
-
-		if (res.status !== 202) {
-			throw new Error(`[Plausible] ${res.statusText} ${res.status}`)
-		}
+		await this.collect(payload)
 	}
 
-	public async event(name: string, options: EventOptions): Promise<void> {
-		if (options.name === 'pageview') {
-			return analyticsLogger.error(`[Plausible]  Please use Analytics.view(${options.name}, ${options}).`)
-		}
-
-		if (!options.domain && !this._domain) {
-			return analyticsLogger.error("[Plausible]  Specify a domain to use Plausible's event.")
-		}
-		if (!options.url) {
-			return analyticsLogger.error("[Plausible]  Specify a URL to use Plausible's event.")
-		}
-		if (!options.name) {
-			return analyticsLogger.error("[Plausible]  Specify a name to use Plausible's event.")
-		}
-
-		const { domain = this._domain, url = `https://${this._domain}/` } = options ?? {}
-
-		const temp = {
-			name: options.name,
-			url: url,
-			domain: domain
-		}
-
-		if (options.revenue) {
-			const revenue = options.revenue
-			// we need the validAmount function to make sure the amount includes decimal points or it wont work.
-			Object.assign(temp, { revenue: { currency: revenue.currency, amount: validAmount(revenue.amount) } })
-		}
-
-		if (typeof options.data === 'object') {
-			if (options.data !== null) {
-				if (Object.entries(options.data).length > 30) {
-					throw new Error('[Plausible] Cannot send an object with more than 30 fields.')
-				} else {
-					Object.assign(temp, { props: { ...options.data } })
-				}
-			}
-		}
-
-		const res = await fetch(this._PlausibleAPI + '/api/event', {
+	private async collect(payload: unknown) {
+		const res = await fetch(Host + '/api/event', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
+				'X-Forwarded-For': '127.0.0.1',
 				'User-Agent':
-					'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'
+					'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36 OPR/71.0.3770.284'
 			},
-			referrer: options.referrer ?? '',
-			body: JSON.stringify(temp)
+			body: JSON.stringify(payload)
 		})
 
-		if (res.status !== 202) {
-			throw new Error(`[Plausible] ${res.statusText} ${res.status}`)
+		try {
+			if (!res.ok) {
+				throw new Error(Prefix + ` ${res.statusText} ${res.status}`)
+			} else {
+				analyticsLogger.debug(Prefix, `Event was sent successfully.`)
+			}
+		} catch (error) {
+			analyticsLogger.warn(Prefix, error)
 		}
 	}
 }
 
-function validAmount(amount: string | number) {
+function slugify(value: string): string {
+	return value
+		.normalize('NFKD') // Normalize the string to decompose characters
+		.replace(/[\u0300-\u036f]/g, '') // Remove diacritical marks
+		.replace(/[^a-zA-Z0-9\s-]/g, '') // Remove non-alphanumeric characters except spaces and hyphens
+		.trim() // Trim whitespace from both ends
+		.replace(/[\s-]+/g, '-') // Replace spaces and hyphens with a single hyphen
+		.toLowerCase() // Convert to lowercase
+}
+
+/*function validAmount(amount: string | number) {
 	if (typeof amount === 'string') {
 		const decimal = amount.indexOf('.')
 		return decimal !== -1 ? amount + '.00' : amount
 	}
 	return Number.isInteger(amount) ? amount.toFixed(2) : amount
-}
+}*/
