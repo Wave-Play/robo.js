@@ -184,6 +184,7 @@ const sidebars = {
 				},
 				'plugins/ai',
 				'plugins/ai-voice',
+				'plugins/analytics',
 				'plugins/better-stack',
 				'plugins/dev',
 				'plugins/maintenance',
@@ -271,6 +272,11 @@ const sidebars = {
 							type: 'link',
 							label: 'Starter (TS)',
 							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/discord-bots/starter-bot-typescript'
+						},
+						{
+							type: 'link',
+							label: 'Analytics (TS)',
+							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/discord-bots/analytics-ts'
 						},
 						{
 							type: 'link',

@@ -160,6 +160,7 @@ const config = {
 				documents: [
 					'packages/plugin-ai/README.md',
 					'packages/plugin-ai-voice/README.md',
+					'packages/@robojs/analytics/README.md',
 					'packages/plugin-api/README.md',
 					'packages/plugin-better-stack/README.md',
 					'packages/plugin-devtools/README.md',
