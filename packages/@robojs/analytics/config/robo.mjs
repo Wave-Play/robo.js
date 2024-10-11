@@ -8,5 +8,8 @@ export default {
 		intents: []
 	},
 	plugins: [],
+	seed: {
+		description: 'Sample usage + slash commands and guild join tracking.'
+	},
 	type: 'plugin'
 }
