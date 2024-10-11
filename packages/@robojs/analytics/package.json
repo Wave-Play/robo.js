@@ -1,7 +1,7 @@
 {
 	"name": "@robojs/analytics",
 	"description": "Track user interactions and server activity with ease.",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"private": false,
 	"keywords": [
