@@ -52,25 +52,9 @@ PLAUSIBLE_DOMAIN="example.com"
 
 We recommend **[Plausible](https://plausible.io)** for its simplicity and privacy-focused analytics. If you're looking for more tracking, **[Google Analytics](https://analytics.google.com)** may be a better fit. You can also use both or implement your own!
 
-## Tracking
+### Seed
 
-It happens automatically for **[Discord Bots](https://robojs.dev/discord-bots/getting-started)**! Here's what is tracked by default:
-
-- **Events:** Automatically track when an event is triggered.
-- **Slash Commands:** Automatically track when a slash command is used.
-
-You can disable default tracking by updating the plugin config:
-
-```javascript
-// config/plugins/robojs/analytics.mjs
-export default {
-	track: {
-		default: false
-	}
-}
-```
-
-Got other tracking needs? Use the **JavaScript API** to track custom events.
+This plugin can **[seed](https://robojs.dev/plugins/seed)** your project with a basic tracking setup. This includes tracking **[Slash Commands](https://robojs.dev/discord-bots/commands)** and **[Events](https://robojs.dev/discord-bots/events)**.
 
 ## JavaScript API
 
@@ -78,19 +62,24 @@ An `Analytics` object is available globally in your project.
 
 ```javascript
 import { Analytics } from '@robojs/analytics'
+import type { ChatInputCommandInteraction } from 'discord.js'
 
-export default () => {
-	// Track a custom event
-	Analytics.event({
-		action: 'click', // Describes the action taken
-		name: 'play', // Describes the event (e.g. 'play', 'pause')
-		type: 'video' // Describes the type of event (e.g., video, admin)
-	})
+export default (interaction: ChatInputCommandInteraction) => {
+	// An event can be anything you want to track.
+	Analytics.event('testing_event')
 
-	// Track a page view
-	Analytics.view('/special', {
-		element: 'button',
-		elementId: 'special-button'
+	// A view is a page view or screen view. (not really for discord bots)
+	Analytics.view('Test Page')
+
+	// Use a unique identifier per session if you can.
+	// This may be more difficult for discord bots, but you can use the user id, guild id, etc.
+	const sessionId = interaction.channelId ?? interaction.guildId
+	Analytics.event('something_happened', { sessionId })
+
+	// Also include a user id as well whenever possible for greater accuracy.
+	Analytics.event('test_event', {
+		sessionId: sessionId,
+		userId: interaction.user.id
 	})
 
 	return 'I just tracked something special!'
