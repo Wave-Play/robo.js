@@ -1,5 +1,6 @@
-import { analyticsLogger, BaseEngine } from '../core/analytics.js'
-import type { EventOptions, ViewOptions } from '../core/types.js'
+import { BaseEngine } from './base.js'
+import { analyticsLogger } from '../core/loggers.js'
+import type { EventOptions, ViewOptions } from './base.js'
 
 export class PlausibleAnalytics extends BaseEngine {
 	private _domain = process.env.PLAUSIBLE_DOMAIN
@@ -40,7 +41,7 @@ export class PlausibleAnalytics extends BaseEngine {
 		}
 	}
 
-	public async event(options: EventOptions): Promise<void> {
+	public async event(name: string, options: EventOptions): Promise<void> {
 		if (options.name === 'pageview') {
 			return analyticsLogger.error(`[Plausible]  Please use Analytics.view(${options.name}, ${options}).`)
 		}

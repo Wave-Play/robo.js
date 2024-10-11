@@ -1,120 +1,113 @@
-import { analyticsLogger, BaseEngine } from '../core/analytics.js'
-import type { EventOptions, ViewOptions } from '../core/types.js'
+import { color } from 'robo.js'
+import { analyticsLogger } from '../core/loggers.js'
+import { BaseEngine } from './base.js'
+import type { EventOptions, ViewOptions } from './base.js'
+
+interface GoogleAnalyticsOptions {
+	measureId: string
+	token: string
+}
+
+// Constants
+const Host = 'https://www.google-analytics.com'
+const Prefix = color.dim('[GoogleAnalytics]')
 
 export class GoogleAnalytics extends BaseEngine {
-	private _measureId = process.env.GOOGLE_ANALYTICS_MEASURE_ID
-	private _token = process.env.GOOGLE_ANALYTICS_SECRET
+	private _measureId: string
+	private _token: string
 
-	public async view(page: string, options: ViewOptions): Promise<void> {
-		if (isRequestValid(this._measureId, this._token, options)) {
-			if (typeof options.data === 'object') {
-				const params = {}
+	constructor(options?: GoogleAnalyticsOptions) {
+		super()
 
-				if (options.data) {
-					Object.assign(params, options.data)
-				}
-				if (options.revenue) {
-					Object.assign(params, options.revenue)
-				}
-				const res = await fetch(
-					`https://www.google-analytics.com/mp/collect?measurement_id=${this._measureId}&api_secret=${this._token}`,
-					{
-						method: 'POST',
-						headers: {
-							'Content-Type': 'application/json'
-						},
-						body: JSON.stringify({
-							client_id: options.userId, // Unique user identifier
-							events: [{ name: options.name, params }]
-						})
-					}
-				)
+		this._measureId = options?.measureId ?? process.env.GOOGLE_ANALYTICS_MEASURE_ID!
+		this._token = options?.token ?? process.env.GOOGLE_ANALYTICS_SECRET!
 
-				if (!res.ok) {
-					throw new Error(`[GoogleAnalytics] ${res.statusText} ${res.status}`)
-				}
-			}
+		if (this.verifyRequest()) {
+			analyticsLogger.ready(color.bold('Google Analytics'), 'is ready to collect data.')
 		}
 	}
-	public async event(options: EventOptions): Promise<void> {
-		if (isRequestValid(this._measureId, this._token, options)) {
-			if (options.name === 'pageview') {
-				throw new Error(`[GoogleAnalytics] Please use pageview event with the Analytics.view() method`)
-			}
 
-			if (typeof options.data === 'object') {
-				const params = {}
+	public async event(name: string, options?: EventOptions) {
+		analyticsLogger.warn(Prefix, `Collecting event ${name}${options ? ' with options' : ''}...`, options ?? '')
 
-				if (options.data) {
-					Object.assign(params, options.data)
-				}
-				if (options.revenue) {
-					Object.assign(params, options.revenue)
-				}
+		// Verify if the request is valid
+		if (!this.verifyRequest()) {
+			return
+		}
 
-				try {
-					const res = await fetch(
-						`https://www.google-analytics.com/mp/collect?measurement_id=${this._measureId}&api_secret=${this._token}`,
-						{
-							method: 'POST',
-							headers: {
-								'Content-Type': 'application/json'
-							},
-							body: JSON.stringify({
-								client_id: options.userId,
-								events: [{ name: options.name, params }]
-							})
-						}
-					)
-					if (!res.ok) {
-						throw new Error(`[GoogleAnalytics] ${res.statusText} ${res.status}`)
-					}
-				} catch (error) {
-					analyticsLogger.error(`[GoogleAnalytics]`, error)
-				}
+		// Set the params
+		const params = options?.data ?? {}
+
+		if (options?.revenue) {
+			Object.assign(params, options.revenue)
+		}
+
+		// Collect the event
+		await this.collect({
+			client_id: options?.sessionId ?? randomId(),
+			user_id: options?.userId,
+			events: [{ name, params }]
+		})
+	}
+
+	public async view(page: string, options?: ViewOptions) {
+		analyticsLogger.debug(Prefix, `Collecting page view ${page}${options ? ' with options' : ''}...`, options ?? '')
+
+		// Verify if the request is valid
+		if (!this.verifyRequest()) {
+			return
+		}
+
+		// Set the params
+		const event = {
+			name: 'page_view',
+			params: {
+				page_title: page,
+				...(options?.data ?? {})
 			}
 		}
+
+		// Send the request
+		await this.collect({
+			client_id: options?.sessionId ?? randomId(),
+			user_id: options?.userId,
+			events: [event]
+		})
+	}
+
+	private async collect(payload: unknown) {
+		// Send the request
+		const response = await fetch(Host + `/mp/collect?measurement_id=${this._measureId}&api_secret=${this._token}`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(payload)
+		})
+
+		// Log the error if the request fails
+		if (!response.ok) {
+			analyticsLogger.error(Prefix, response.statusText, response.status)
+		} else {
+			analyticsLogger.info(Prefix, 'Event collected successfully:', payload)
+		}
+	}
+
+	private verifyRequest() {
+		if (!this._measureId) {
+			analyticsLogger.warn(Prefix, 'Missing GOOGLE_ANALYTICS_MEASURE_ID enviromnent variable.')
+			return false
+		}
+
+		if (!this._token) {
+			analyticsLogger.warn(Prefix, 'Missng GOOGLE_ANALYTICS_SECRET enviromnent variable.')
+			return false
+		}
+
+		return true
 	}
 }
 
-function isRequestValid(
-	id: string | undefined,
-	token: string | undefined,
-	options: EventOptions | ViewOptions
-): boolean {
-	if (!options.name) {
-		analyticsLogger.error('[GoogleAnalytics] Please set a name for your event.')
-		return false
-	}
-	if (!options.userId) {
-		analyticsLogger.error('[GoogleAnalytics] Please set a user ID.')
-		return false
-	}
-	if (!id) {
-		analyticsLogger.error(
-			"[GoogleAnalytics please set the 'process.env.GOOGLE_ANALYTICS_measureId' enviromnent variable. "
-		)
-		return false
-	}
-	if (!token) {
-		analyticsLogger.error(
-			"[GoogleAnalytics please set the 'process.env.GOOGLE_ANALYTICS_SECRET' enviromnent variable. "
-		)
-		return false
-	}
-
-	return true
+function randomId() {
+	return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
 }
-
-/**
- * 
- * events: [
-				{
-					name: options.actionType, // Event name
-					params: {
-						button_id: options.name, // Any custom parameters you want to track
-						engagement_time_msec: 100 // Optional: time user engaged with the button
-					}
-				}
-			]
- */

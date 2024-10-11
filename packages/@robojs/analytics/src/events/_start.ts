@@ -1,5 +1,7 @@
 import { color, composeColors } from 'robo.js'
-import { analyticsLogger, BaseEngine, setAnalytics } from '../core/analytics.js'
+import { setAnalytics } from '../core/analytics.js'
+import { BaseEngine } from '../engines/base.js'
+import { analyticsLogger } from '../core/loggers.js'
 import { GoogleAnalytics } from '../engines/google-analytics.js'
 import { ManyEngines } from '../engines/many.js'
 import { PlausibleAnalytics } from '../engines/plausible.js'
