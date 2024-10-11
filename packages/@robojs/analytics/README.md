@@ -4,6 +4,15 @@
 
 # @robojs/analytics
 
+<div align="center">
+	[![GitHub
+	license](https://img.shields.io/github/license/Wave-Play/robo)](https://github.com/Wave-Play/robo/blob/main/LICENSE)
+	[![npm](https://img.shields.io/npm/v/@robojs/analytics)](https://www.npmjs.com/package/@robojs/analytics) [![install
+	size](https://packagephobia.com/badge?p=@robojs/analytics@latest)](https://packagephobia.com/result?p=@robojs/analytics@latest)
+	[![Discord](https://img.shields.io/discord/1087134933908193330?color=7289da)](https://roboplay.dev/discord) [![All
+	Contributors](https://img.shields.io/github/all-contributors/Wave-Play/robo.js?color=cf7cfc)](#contributors)
+</div>
+
 Instant analytics for your **Robo**. This plugin automatically integrates your preferred analytics service into your project, such as **[Google Analytics](https://analytics.google.com)**, **[Plausible](https://plausible.io)**, and **[more](#other-services)**.
 
 **Use cases:**

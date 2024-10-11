@@ -4,6 +4,15 @@
 
 # @robojs/trpc
 
+<div align="center">
+	[![GitHub
+	license](https://img.shields.io/github/license/Wave-Play/robo)](https://github.com/Wave-Play/robo/blob/main/LICENSE)
+	[![npm](https://img.shields.io/npm/v/@robojs/trpc)](https://www.npmjs.com/package/@robojs/trpc) [![install
+	size](https://packagephobia.com/badge?p=@robojs/trpc@latest)](https://packagephobia.com/result?p=@robojs/trpc@latest)
+	[![Discord](https://img.shields.io/discord/1087134933908193330?color=7289da)](https://roboplay.dev/discord) [![All
+	Contributors](https://img.shields.io/github/all-contributors/Wave-Play/robo.js?color=cf7cfc)](#contributors)
+</div>
+
 Add a **[tRPC](https://trpc.io)** server and client to your Robo automatically. **tRPC** is a modern **[TypeScript](https://robojs.dev/robojs/typescript)**-first RPC framework for building web services. This plugin sets up a tRPC router and client in your project, allowing you to easily create and consume APIs.
 
 You must already have **[@robojs/server](https://robojs.dev/plugins/server)** installed.
