@@ -2,29 +2,41 @@
 
 ---
 
-# Hiya, analytics-ts 🌈
+# Discord Bot - Analytics (TS)
 
 Welcome to your fresh **[Robo.js](https://github.com/Wave-Play/robo)** project!
 
 Embark on a journey where your Discord projects transcend the ordinary. With Robo.js as your guide, you'll experience a seamless, [file-based setup](https://docs.roboplay.dev/docs/basics/overview#the-robojs-file-structure), an [integrated database](https://docs.roboplay.dev/docs/basics/flashcore), [TypeScript support](https://docs.roboplay.dev/docs/advanced/typescript), and a multitude of [plugin-powered skills](https://docs.roboplay.dev/docs/advanced/plugins) to unlock along the way.
 
-Ready to embark on this adventure?
+_Ready to embark on this adventure?_
 
 ➞ [📚 **Documentation:** Getting started](https://docs.roboplay.dev/docs/getting-started)
 
 ➞ [🚀 **Community:** Join our Discord server](https://roboplay.dev/discord)
 
-## Running 🏃‍♂️
+## ✨ Getting Started
 
-Run development mode with:
+Create a project with this template, replacing `<project-name>` with your desired name:
+
+```bash
+npx create-robo <project-name> --template discord-activities/analytics-ts
+```
+
+Then navigate into your project directory:
+
+```bash
+cd <project-name>
+```
+
+Run development mode:
 
 ```bash
 npm run dev
 ```
 
-Your Robo refreshes with every change. 🔄
+➞ [📚 **Documentation:** Exploring Different Run Modes](https://robojs.dev/robojs/mode#default-modes)
 
-> **Psst...** Check out the [deployment instructions](#deployment) to keep your Robo online 24/7.
+➞ [🚀 **Documentation:** Deploying for Free with 24/7 Uptime](https://robojs.dev/hosting/overview)
 
 ## Developing 🏗️
 
