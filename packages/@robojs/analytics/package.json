@@ -1,6 +1,6 @@
 {
 	"name": "@robojs/analytics",
-	"description": "",
+	"description": "Track user interactions and server activity with ease.",
 	"version": "0.1.0",
 	"type": "module",
 	"private": false,
@@ -16,7 +16,8 @@
 	"license": "MIT",
 	"author": "WavePlay <dev@waveplay.com> (waveplay.com)",
 	"contributors": [
-		"Alexandre <sushi@waveplay.com>"
+		"Alexandre <sushi@waveplay.com>",
+		"Pkmmte Xeleon <pk@waveplay.com>"
 	],
 	"files": [
 		".robo/",
@@ -39,7 +40,7 @@
 		"@types/node": "^20.14.10",
 		"discord.js": "^14.15.3",
 		"prettier": "^3.3.3",
-		"robo.js": "^0.10.10",
+		"robo.js": "workspace:*",
 		"typescript": "^5.5.3"
 	},
 	"peerDependencies": {

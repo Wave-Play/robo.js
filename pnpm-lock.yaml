@@ -52,8 +52,8 @@ importers:
         specifier: ^3.3.3
         version: 3.3.3
       robo.js:
-        specifier: ^0.10.10
-        version: 0.10.20(@swc/core@1.7.23)(discord.js@14.16.1)(keyv@4.5.4)(typescript@5.5.4)(vite@5.2.10(@types/node@20.16.5))
+        specifier: workspace:*
+        version: link:../../robo
       typescript:
         specifier: ^5.5.3
         version: 5.5.4
@@ -166,7 +166,7 @@ importers:
         version: 3.0.0
       tsup:
         specifier: 6.7.0
-        version: 6.7.0(@swc/core@1.7.23)(postcss@8.4.38)(typescript@5.0.2)
+        version: 6.7.0(@swc/core@1.7.26)(postcss@8.4.38)(typescript@5.0.2)
       typescript:
         specifier: 5.0.2
         version: 5.0.2
@@ -358,7 +358,7 @@ importers:
     devDependencies:
       '@roboplay/robo.js':
         specifier: 0.6.1
-        version: 0.6.1(@swc/core@1.7.23)(discord.js@14.7.1)(typescript@5.5.4)
+        version: 0.6.1(@swc/core@1.7.26)(discord.js@14.7.1)(typescript@5.6.3)
       '@types/node':
         specifier: 18.14.6
         version: 18.14.6
@@ -531,35 +531,10 @@ importers:
         version: 3.0.0
       tsup:
         specifier: 6.7.0
-        version: 6.7.0(@swc/core@1.7.23)(postcss@8.4.38)(typescript@5.0.2)
+        version: 6.7.0(@swc/core@1.7.26)(postcss@8.4.38)(typescript@5.0.2)
       typescript:
         specifier: 5.0.2
         version: 5.0.2
-
-  templates/discord-bots/analytics-ts:
-    dependencies:
-      '@robojs/analytics':
-        specifier: link:/Users/pkmmte/Documents/GitHub/robo/packages/@robojs/analytics
-        version: link:../../../packages/@robojs/analytics
-      discord.js:
-        specifier: ^14.16.3
-        version: 14.16.3
-      robo.js:
-        specifier: ^0.10.20
-        version: 0.10.20(@swc/core@1.7.26)(discord.js@14.16.3)(keyv@4.5.4)(typescript@5.6.3)(vite@5.2.10(@types/node@22.7.5))
-    devDependencies:
-      '@swc/core':
-        specifier: ^1.7.26
-        version: 1.7.26
-      '@types/node':
-        specifier: ^22.7.5
-        version: 22.7.5
-      prettier:
-        specifier: ^3.3.3
-        version: 3.3.3
-      typescript:
-        specifier: ^5.6.3
-        version: 5.6.3
 
 packages:
 
@@ -2662,9 +2637,6 @@ packages:
     resolution: {integrity: sha512-WkrWp9GR4KXfKGYzOLmTuGVi1UWFfws377n9cc55/tb6DuqyF6pcQ5AbiHEshaDpY9v6oaSr2XCDidGmMwdzIA==}
     engines: {node: '>=8'}
 
-  discord-api-types@0.37.100:
-    resolution: {integrity: sha512-a8zvUI0GYYwDtScfRd/TtaNBDTXwP5DiDVX7K5OmE+DRT57gBqKnwtOC5Ol8z0mRW8KQfETIgiB8U0YZ9NXiCA==}
-
   discord-api-types@0.37.61:
     resolution: {integrity: sha512-o/dXNFfhBpYHpQFdT6FWzeO7pKc838QeeZ9d91CfVAtpr5XLK4B/zYxQbYgPdoMiTDvJfzcsLW5naXgmHGDNXw==}
 
@@ -2688,10 +2660,6 @@ packages:
 
   discord.js@14.16.1:
     resolution: {integrity: sha512-/diX4shp3q1F3EySGQbQl10el+KIpffLSOJdtM35gGV7zw2ED7rKbASKJT7UIR9L/lTd0KtNenZ/h739TN7diA==}
-    engines: {node: '>=18'}
-
-  discord.js@14.16.3:
-    resolution: {integrity: sha512-EPCWE9OkA9DnFFNrO7Kl1WHHDYFXu3CNVFJg63bfU7hVtjZGyhShwZtSBImINQRWxWP2tgo2XI+QhdXx28r0aA==}
     engines: {node: '>=18'}
 
   discord.js@14.7.1:
@@ -4271,26 +4239,6 @@ packages:
     resolution: {integrity: sha512-JZkJMZkAGFFPP2YqXZXPbMlMBgsxzE8ILs4lMIX/2o0L9UBw9O/Y3o6wFw/i9YLapcUJWwqbi3kdxIPdC62TIA==}
     deprecated: Rimraf versions prior to v4 are no longer supported
     hasBin: true
-
-  robo.js@0.10.20:
-    resolution: {integrity: sha512-0SYrxmnLWwN6aapyM0v+Iep0yYrITcuVCtfUM135HJM0p0d1Rf7NYstttrqyNCENK+oxtpmIH53vBoT6in4WJg==}
-    engines: {node: '>=18.0.0'}
-    hasBin: true
-    peerDependencies:
-      '@swc/core': ^1.3.41
-      discord.js: ^14.0.0
-      keyv: ^4.5.2
-      typescript: ^5.0.0
-      vite: ^5.0.0
-    peerDependenciesMeta:
-      '@swc/core':
-        optional: true
-      keyv:
-        optional: true
-      typescript:
-        optional: true
-      vite:
-        optional: true
 
   rollup@3.29.4:
     resolution: {integrity: sha512-oWzmBZwvYrU0iJHtDmhsm662rC15FRXmcjCk1xD771dFDx5jJ02ufAQQTn0etB2emNk4J9EZg/yWKpsn9BWGRw==}
@@ -6143,7 +6091,7 @@ snapshots:
       '@swc/core': 1.4.17
       typescript: 5.4.5
 
-  '@roboplay/robo.js@0.6.1(@swc/core@1.7.23)(discord.js@14.7.1)(typescript@5.5.4)':
+  '@roboplay/robo.js@0.6.1(@swc/core@1.7.26)(discord.js@14.7.1)(typescript@5.6.3)':
     dependencies:
       chalk: 5.2.0
       commander: 10.0.1
@@ -6153,8 +6101,8 @@ snapshots:
       p-limit: 4.0.0
       tar: 6.2.1
     optionalDependencies:
-      '@swc/core': 1.7.23
-      typescript: 5.5.4
+      '@swc/core': 1.7.26
+      typescript: 5.6.3
 
   '@roboplay/robo.js@0.9.26(@swc/core@1.4.17)(discord.js@14.14.1)(keyv@4.5.4)(typescript@5.4.5)':
     dependencies:
@@ -6422,6 +6370,7 @@ snapshots:
       '@swc/core-win32-arm64-msvc': 1.7.26
       '@swc/core-win32-ia32-msvc': 1.7.26
       '@swc/core-win32-x64-msvc': 1.7.26
+    optional: true
 
   '@swc/counter@0.1.3': {}
 
@@ -7391,8 +7340,6 @@ snapshots:
     dependencies:
       path-type: 4.0.0
 
-  discord-api-types@0.37.100: {}
-
   discord-api-types@0.37.61: {}
 
   discord-api-types@0.37.83: {}
@@ -7469,24 +7416,6 @@ snapshots:
       '@discordjs/ws': 1.1.1
       '@sapphire/snowflake': 3.5.3
       discord-api-types: 0.37.97
-      fast-deep-equal: 3.1.3
-      lodash.snakecase: 4.1.1
-      tslib: 2.7.0
-      undici: 6.19.8
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-
-  discord.js@14.16.3:
-    dependencies:
-      '@discordjs/builders': 1.9.0
-      '@discordjs/collection': 1.5.3
-      '@discordjs/formatters': 0.5.0
-      '@discordjs/rest': 2.4.0
-      '@discordjs/util': 1.1.1
-      '@discordjs/ws': 1.1.1
-      '@sapphire/snowflake': 3.5.3
-      discord-api-types: 0.37.100
       fast-deep-equal: 3.1.3
       lodash.snakecase: 4.1.1
       tslib: 2.7.0
@@ -9406,24 +9335,6 @@ snapshots:
     dependencies:
       glob: 7.2.3
 
-  robo.js@0.10.20(@swc/core@1.7.23)(discord.js@14.16.1)(keyv@4.5.4)(typescript@5.5.4)(vite@5.2.10(@types/node@20.16.5)):
-    dependencies:
-      discord.js: 14.16.1
-    optionalDependencies:
-      '@swc/core': 1.7.23
-      keyv: 4.5.4
-      typescript: 5.5.4
-      vite: 5.2.10(@types/node@20.16.5)
-
-  robo.js@0.10.20(@swc/core@1.7.26)(discord.js@14.16.3)(keyv@4.5.4)(typescript@5.6.3)(vite@5.2.10(@types/node@22.7.5)):
-    dependencies:
-      discord.js: 14.16.3
-    optionalDependencies:
-      '@swc/core': 1.7.26
-      keyv: 4.5.4
-      typescript: 5.6.3
-      vite: 5.2.10(@types/node@22.7.5)
-
   rollup@3.29.4:
     optionalDependencies:
       fsevents: 2.3.3
@@ -9827,7 +9738,7 @@ snapshots:
       - supports-color
       - ts-node
 
-  tsup@6.7.0(@swc/core@1.7.23)(postcss@8.4.38)(typescript@5.0.2):
+  tsup@6.7.0(@swc/core@1.7.26)(postcss@8.4.38)(typescript@5.0.2):
     dependencies:
       bundle-require: 4.0.3(esbuild@0.17.19)
       cac: 6.7.14
@@ -9844,7 +9755,7 @@ snapshots:
       sucrase: 3.35.0
       tree-kill: 1.2.2
     optionalDependencies:
-      '@swc/core': 1.7.23
+      '@swc/core': 1.7.26
       postcss: 8.4.38
       typescript: 5.0.2
     transitivePeerDependencies:
@@ -9961,7 +9872,8 @@ snapshots:
 
   typescript@5.5.4: {}
 
-  typescript@5.6.3: {}
+  typescript@5.6.3:
+    optional: true
 
   unbox-primitive@1.0.2:
     dependencies:
@@ -10029,16 +9941,6 @@ snapshots:
       '@types/node': 18.19.31
       fsevents: 2.3.3
 
-  vite@5.2.10(@types/node@20.16.5):
-    dependencies:
-      esbuild: 0.20.2
-      postcss: 8.4.38
-      rollup: 4.17.2
-    optionalDependencies:
-      '@types/node': 20.16.5
-      fsevents: 2.3.3
-    optional: true
-
   vite@5.2.10(@types/node@22.5.2):
     dependencies:
       esbuild: 0.20.2
@@ -10047,16 +9949,6 @@ snapshots:
     optionalDependencies:
       '@types/node': 22.5.2
       fsevents: 2.3.3
-
-  vite@5.2.10(@types/node@22.7.5):
-    dependencies:
-      esbuild: 0.20.2
-      postcss: 8.4.38
-      rollup: 4.17.2
-    optionalDependencies:
-      '@types/node': 22.7.5
-      fsevents: 2.3.3
-    optional: true
 
   walker@1.0.8:
     dependencies:
