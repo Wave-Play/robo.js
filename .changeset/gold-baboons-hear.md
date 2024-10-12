@@ -2,4 +2,4 @@
 'create-robo': patch
 ---
 
-Fix bun installation
+fix: bun installation
