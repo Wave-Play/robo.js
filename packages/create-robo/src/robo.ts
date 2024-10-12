@@ -864,7 +864,7 @@ export default class Robo {
 
 				await exec(baseCommand + ' ' + dependencies.join(' '), execOptions)
 				this._spinner.setText(Indent + '    {{spinner}} Installing dev dependencies...\n')
-				baseCommand += packageManager === 'yarn' ? ' --dev' : ' --save-dev'
+				baseCommand += ['bun', 'yarn'].includes(packageManager) ? ' --dev' : ' --save-dev'
 				if (features.includes('eslint') && this._useTypeScript) {
 					// TODO: Remove once merged: https://github.com/typescript-eslint/typescript-eslint/pull/9119
 					await fs.writeFile(path.join(this._workingDir, '.npmrc'), 'legacy-peer-deps=true\n', 'utf-8')
