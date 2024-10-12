@@ -13,7 +13,6 @@ type CommandName =
 	| 'build plugin'
 	| 'dev'
 	| 'deploy'
-	| 'doctor'
 	| 'help'
 	| 'invite'
 	| 'remove'
@@ -45,7 +44,7 @@ export function helpCommandHandler() {
 	const groups = splitCommandsIntoGroups([
 		['dev', 'start', 'build'],
 		['add', 'remove', 'upgrade'],
-		['deploy', 'doctor', 'invite', 'why'],
+		['deploy', 'invite', 'why'],
 		['help']
 	])
 	prettyPrint(formatCommand(groups))
