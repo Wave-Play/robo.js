@@ -4,6 +4,10 @@
 
 # @robojs/patch
 
+Tired of platform-specific bugs? Was your project working fine until recently? **[@robojs/patch](https://robojs.dev/plugins/patch)** is here to save the day! 🎩✨
+
+This package contains a collection of lightweight patches for common issues. We intend on maintaining them for as long as needed.
+
 <div align="center">
 	[![GitHub
 	license](https://img.shields.io/github/license/Wave-Play/robo)](https://github.com/Wave-Play/robo/blob/main/LICENSE)
@@ -12,10 +16,6 @@
 	[![Discord](https://img.shields.io/discord/1087134933908193330?color=7289da)](https://roboplay.dev/discord) [![All
 	Contributors](https://img.shields.io/github/all-contributors/Wave-Play/robo.js?color=cf7cfc)](#contributors)
 </div>
-
-Tired of platform-specific bugs? Was your project working fine until recently? **[@robojs/patch](https://robojs.dev/plugins/patch)** is here to save the day! 🎩✨
-
-This package contains a collection of lightweight patches for common issues. We intend on maintaining them for as long as needed.
 
 **Not using [Robo.js](https://robojs.dev) yet?** That's okay! Most patches work with any **JavaScript** project.
 
