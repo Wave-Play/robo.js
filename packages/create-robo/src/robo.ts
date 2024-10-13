@@ -89,6 +89,11 @@ const appPlugins = [
 		value: 'ai'
 	},
 	{
+		name: `${chalk.bold('Analytics')} - Track user interactions and server activity with ease.`,
+		short: 'Analytics',
+		value: 'analytics'
+	},
+	{
 		name: `${chalk.bold('Sync')} - Real-time state sync across clients. Perfect for multiplayer games and chat apps!`,
 		short: 'Sync',
 		value: 'sync'
@@ -119,9 +124,19 @@ const botPlugins = [
 		value: 'ai'
 	},
 	{
-		name: `${chalk.bold('AI Voice')} - Give your Robo a voice! Command and converse with it in voice channels.`,
-		short: 'AI Voice',
-		value: 'ai-voice'
+		name: `${chalk.bold('Analytics')} - Track user interactions and server activity with ease.`,
+		short: 'Analytics',
+		value: 'analytics'
+	},
+	/*{
+		name: `${chalk.bold('Maintenance')} - Add a maintenance mode to your robo.`,
+		short: 'Maintenance',
+		value: 'maintenance'
+	},*/
+	{
+		name: `${chalk.bold('Moderation')} - Equip your bot with essential tools to manage and maintain your server.`,
+		short: 'Moderation',
+		value: 'modtools'
 	},
 	{
 		name: `${chalk.bold(
@@ -129,16 +144,6 @@ const botPlugins = [
 		)} - Turn your Robo into a web server! Create and manage web pages, APIs, and more.`,
 		short: 'Web Server',
 		value: 'server'
-	},
-	{
-		name: `${chalk.bold('Maintenance')} - Add a maintenance mode to your robo.`,
-		short: 'Maintenance',
-		value: 'maintenance'
-	},
-	{
-		name: `${chalk.bold('Moderation')} - Equip your bot with essential tools to manage and maintain your server.`,
-		short: 'Moderation',
-		value: 'modtools'
 	}
 ]
 
@@ -169,6 +174,10 @@ const PluginDb: Record<string, PluginData> = {
 	'ai-voice': {
 		keywords: ['speech', 'voice'],
 		package: '@robojs/ai-voice'
+	},
+	analytics: {
+		keywords: ['analytics', 'data', 'statistics', 'tracking'],
+		package: '@robojs/analytics'
 	},
 	server: {
 		config: {
@@ -1013,6 +1022,11 @@ export default class Robo {
 		if (this._selectedPlugins.includes('ai-voice')) {
 			env.set('AZURE_SUBSCRIPTION_KEY', '')
 			env.set('AZURE_SUBSCRIPTION_REGION', '')
+		}
+		if (this._selectedPlugins.includes('analytics')) {
+			env.set('GOOGLE_ANALYTICS_MEASURE_ID', '', 'Analytics')
+			env.set('GOOGLE_ANALYTICS_SECRET', '')
+			env.set('PLAUSIBLE_DOMAIN', '')
 		}
 		if (this._selectedPlugins.includes('server')) {
 			env.set('PORT', '3000', 'Change this port number if needed')
