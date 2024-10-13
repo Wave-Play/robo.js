@@ -1,5 +1,12 @@
 # create-robo
 
+## 0.13.5
+
+### Patch Changes
+
+- 9427c38: patch: don't ask for kit in templates
+- c47fe65: patch: template install w/ packagers other than npm
+
 ## 0.13.4
 
 ### Patch Changes
