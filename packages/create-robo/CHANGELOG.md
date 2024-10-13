@@ -1,5 +1,11 @@
 # create-robo
 
+## 0.13.4
+
+### Patch Changes
+
+- b33ab3f: patch: adapt scripts for bun to ensure runtime
+
 ## 0.13.3
 
 ### Patch Changes
