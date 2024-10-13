@@ -166,6 +166,7 @@ const config = {
 				sourceBaseUrl: 'https://raw.githubusercontent.com/Wave-Play/robo.js/main/',
 				outDir: 'docs',
 				documents: [
+					// Plugins
 					'packages/plugin-ai/README.md',
 					'packages/plugin-ai-voice/README.md',
 					'packages/@robojs/analytics/README.md',
@@ -176,7 +177,11 @@ const config = {
 					'packages/plugin-modtools/README.md',
 					'packages/@robojs/patch/README.md',
 					'packages/plugin-sync/README.md',
-					'packages/@robojs/trpc/README.md'
+					'packages/@robojs/trpc/README.md',
+
+					// Templates
+					'templates/web-apps/react-js/README.md',
+					'templates/web-apps/react-ts/README.md'
 				],
 				modifyContent: (filename, content) => {
 					/*if (['CONTRIBUTING.md'].includes(filename)) {
@@ -237,6 +242,56 @@ const config = {
 
 						// Add copy disclaimer at the end of the content
 						const head = `import { Card } from '@site/src/components/shared/Card'\nimport { CardContainer } from '@site/src/components/shared/CardContainer'\n\n`
+						const linkUrl = 'https://github.com/Wave-Play/robo.js/tree/main/' + filename.replace('/README.md', '')
+						const link = `\n\n## More on GitHub\n\n<CardContainer><Card href="${linkUrl}" title="🔗 GitHub Repository" description="Explore source code on GitHub."/></CardContainer>\n`
+						newContent = head + newContent + link
+
+						return {
+							content: newContent,
+							filename: newFilename
+						}
+					} else if (filename.includes('templates/')) {
+						// Normalize filename
+						let newFilename = 'templates/' + filename.split('templates/')[1].replace('/README.md', '.mdx')
+
+						// Remove everything above first heading
+						const token = '#'
+						let newContent = content
+
+						if (content.includes(token)) {
+							newContent = content.substring(content.indexOf(token) + 1)
+							newContent = token + newContent.substring(newContent.indexOf('-') + 1)
+						}
+
+						// Remove emojis from headings (e.g. ## 🚀 Getting Started and ## Documentation 📚)
+						const headerRegex = /^(##\s*[^#\n]*\n)/gm
+
+						// Regex to identify and remove emojis from a string
+						const emojiRegex =
+							/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu
+
+						newContent = newContent.replace(headerRegex, (header) => {
+							return header.replace(emojiRegex, '')
+						})
+
+						// Also remove table of contents altogether (keep before and after)
+						if (newContent.includes('## Table of Contents')) {
+							const before = newContent.substring(0, newContent.indexOf('## Table of Contents'))
+							const after = newContent.substring(newContent.indexOf('## Table of Contents') + 1)
+							newContent = before + after.substring(after.indexOf('##'))
+						}
+
+						// Remove Quick Links
+						newContent = newContent.replace('##  Quick Links', '')
+
+						// Convert markdown links to Card components
+						newContent = convertLinksToCards(newContent)
+
+						// Replace bash code blocks with Terminal components
+						newContent = replaceBashCodeBlocks(newContent)
+
+						// Add copy disclaimer at the end of the content
+						const head = `import { Card } from '@site/src/components/shared/Card'\nimport { CardContainer } from '@site/src/components/shared/CardContainer'\nimport { Terminal } from '@site/src/components/shared/Terminal'\n\n`
 						const linkUrl = 'https://github.com/Wave-Play/robo.js/tree/main/' + filename.replace('/README.md', '')
 						const link = `\n\n## More on GitHub\n\n<CardContainer><Card href="${linkUrl}" title="🔗 GitHub Repository" description="Explore source code on GitHub."/></CardContainer>\n`
 						newContent = head + newContent + link
@@ -369,3 +424,60 @@ const config = {
 }
 
 module.exports = config
+
+/**
+ * Converts markdown links to Card components.
+ */
+function convertLinksToCards(markdown) {
+	const linkRegex = /(?:\*\*➞\*\*|\-\s+)\[([^\]]+)\]\(([^)]+)\)/g
+	const sections = markdown.split(/\n\s*\n/)
+
+	return sections
+		.map((section) => {
+			let cards = []
+
+			// Replace links in the section and collect them in the cards array
+			const newSection = section.replace(linkRegex, (_, title, href) => {
+				// Remove markdown bold from the title and split the emoji from the text
+				const cleanTitle = title.replace(/\*\*(.*?)\*\*/, '$1')
+				const [emoji, ...descriptionParts] = cleanTitle.split(':')
+				const description = descriptionParts.join(':').trim()
+				return `<Card href="${href}" title="${emoji.trim()}" description="${description}"/>`
+			})
+
+			// Aggregate cards into a CardContainer if any replacements were made
+			if (newSection !== section) {
+				cards.push(newSection)
+				return `<CardContainer>${cards.join('')}</CardContainer>`
+			}
+
+			return section
+		})
+		.join('\n\n')
+}
+
+/**
+ * Replaces bash code blocks with Terminal components.
+ */
+function replaceBashCodeBlocks(markdownString) {
+	const codeBlockRegex = /```bash\s*([\s\S]*?)```/g
+
+	const newMarkdown = markdownString.replace(codeBlockRegex, (_match, codeContent) => {
+		let replacement = ''
+		codeContent = codeContent.trim()
+
+		if (codeContent.startsWith('npx create-robo')) {
+			const newCode = codeContent.replace(/^npx create-robo\s*/, '')
+			replacement = `<Terminal create>{\`${newCode}\`}</Terminal>`
+		} else if (codeContent.startsWith('npx')) {
+			const newCode = codeContent.replace(/^npx\s*/, '')
+			replacement = `<Terminal execute>{\`${newCode}\`}</Terminal>`
+		} else {
+			replacement = `<Terminal>{\`${codeContent}\`}</Terminal>`
+		}
+
+		return replacement
+	})
+
+	return newMarkdown
+}
