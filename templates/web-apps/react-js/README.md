@@ -15,7 +15,6 @@ _Ready to embark on this adventure?_
 - [🔗 Quick Links](#🔗-quick-links)
 - [✨ Getting Started](#✨-getting-started)
 - [🛠️ App Development](#️🛠️-app-development)
-- [🔒 Authentication](#🔒-authentication)
 - [🛠️ Backend Development](#️🛠️-backend-development)
 - [📁 Folder Structure](#📁-folder-structure)
 - [🔌 Plugins](#🔌-plugins)
@@ -48,9 +47,8 @@ npm run dev
 
 > **Notes:** A free Cloudflare tunnel is included for easy testing. You can copy and paste it into activity's **[URL mapping](https://robojs.dev/discord-activities/proxy#url-mapping)** to test things out.
 
-➞ [📚 **Documentation:** Exploring Different Run Modes](https://robojs.dev/robojs/mode#default-modes)
-
-➞ [🚀 **Documentation:** Deploying for Free with 24/7 Uptime](https://robojs.dev/hosting/overview)
+- [📚 **Documentation:** Exploring Different Run Modes](https://robojs.dev/robojs/mode#default-modes)
+- [🚀 **Documentation:** Deploying for Free with 24/7 Uptime](https://robojs.dev/hosting/overview)
 
 ## App Development 🛠️
 
@@ -60,7 +58,7 @@ Things are powered by **[Vite](https://vitejs.dev)** under the hood, so you get 
 
 Try editing the `App.jsx` file to get started!
 
-**➞** [📚 **Documentation:** App development](https://roboplay.dev/docs)
+- [📚 **Documentation:** App development](https://robojs.dev/web-apps)
 
 ## Backend Development 🛠️
 
@@ -96,11 +94,10 @@ npx robo add @robojs/ai
 
 With that, your Robo automatically equips itself with all the features the plugin offers. Want to revert? Simply use [`robo remove`](https://docs.roboplay.dev/docs/advanced/command-line#plugins) to uninstall any plugin.
 
-**➞** [📚 **Documentation:** Installing plugins](https://docs.roboplay.dev/docs/advanced/plugins#installing-plugins)
-
 Crafting something unique in your Robo project? You can turn your innovations into plugins, be it specific functionalities or your entire Robo. Share your genius with the world!
 
-**➞** [📚 **Documentation:** Creating plugins](https://docs.roboplay.dev/docs/advanced/plugins#creating-plugins)
+- [📚 **Documentation:** Installing plugins](https://robojs.dev/plugins/install)
+- [📚 **Documentation:** Creating plugins](https://robojs.dev/plugins/create)
 
 ## Deployment 🚀
 
@@ -110,7 +107,7 @@ Run the `deploy` command to automatically deploy to **[RoboPlay](https://robopla
 npm run deploy
 ```
 
-**➞** [🚀 **RoboPlay:** Hosting your Robo](https://docs.roboplay.dev/docs/hosting)
+- [🚀 **RoboPlay:** Hosting your Robo](https://robojs.dev/hosting/overview)
 
 You can also self-host your robo anywhere that supports Node. Just make sure to run `build` followed by `start`:
 
