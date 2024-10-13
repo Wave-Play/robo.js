@@ -212,117 +212,42 @@ const sidebars = {
 					type: 'category',
 					label: 'Discord Activities',
 					items: [
-						{
-							type: 'link',
-							label: 'Starter Vanilla (JS)',
-							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/discord-activities/vanilla-js'
-						},
-						{
-							type: 'link',
-							label: 'Starter Vanilla (TS)',
-							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/discord-activities/vanilla-ts'
-						},
-						{
-							type: 'link',
-							label: 'Starter React (JS)',
-							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/discord-activities/react-js'
-						},
-						{
-							type: 'link',
-							label: 'Starter React (TS)',
-							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/discord-activities/react-ts'
-						},
-						{
-							type: 'link',
-							label: 'Music Player Proxy (TS)',
-							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/discord-activities/react-music-proxy-ts'
-						},
-						{
-							type: 'link',
-							label: 'Multiplayer Colyseus (TS)',
-							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/discord-activities/react-colyseus-ts'
-						},
-						{
-							type: 'link',
-							label: 'Multiplayer Video (TS)',
-							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/discord-activities/react-multiplayer-video-ts'
-						},
-						{
-							type: 'link',
-							label: 'TailwindCSS (JS)',
-							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/discord-activities/react-tailwind-ts'
-						},
-						{
-							type: 'link',
-							label: 'TailwindCSS + shadcn/ui (TS)',
-							href: 'https://github.com/Wave-Play/robo.js/blob/main/templates/discord-activities/react-tailwind-shadcn-ts'
-						}
+						'templates/discord-activities/react-colyseus-ts',
+						'templates/discord-activities/react-js',
+						'templates/discord-activities/react-multiplayer-video-ts',
+						'templates/discord-activities/react-music-proxy-ts',
+						'templates/discord-activities/react-tailwind-shadcn-ts',
+						'templates/discord-activities/react-tailwind-ts',
+						'templates/discord-activities/react-trpc-ts',
+						'templates/discord-activities/react-ts',
+						'templates/discord-activities/vanilla-js',
+						'templates/discord-activities/vanilla-ts'
 					]
 				},
 				{
 					type: 'category',
 					label: 'Discord Bots',
 					items: [
-						{
-							type: 'link',
-							label: 'Starter (JS)',
-							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/discord-bots/starter-bot-javascript'
-						},
-						{
-							type: 'link',
-							label: 'Starter (TS)',
-							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/discord-bots/starter-bot-typescript'
-						},
-						{
-							type: 'link',
-							label: 'Analytics (TS)',
-							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/discord-bots/analytics-ts'
-						},
-						{
-							type: 'link',
-							label: 'MongoDB (TS)',
-							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/discord-bots/bot-mongodb-ts'
-						},
-						{
-							type: 'link',
-							label: 'PostgreSQL (TS)',
-							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/discord-bots/bot-postgres-ts'
-						},
-						{
-							type: 'link',
-							label: 'Prisma (TS)',
-							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/discord-bots/bot-prisma-ts'
-						},
-						{
-							type: 'link',
-							label: 'Purrth Vader (TS)',
-							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/discord-bots/purrth-vader'
-						},
-						{
-							type: 'link',
-							label: 'Economy (TS)',
-							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/discord-bots/economy-bot'
-						}
+						'templates/discord-bots/ai-chatbot-ts',
+						'templates/discord-bots/analytics-ts',
+						'templates/discord-bots/economy-ts',
+						'templates/discord-bots/mongodb-ts',
+						'templates/discord-bots/postgres-ts',
+						'templates/discord-bots/prisma-ts',
+						'templates/discord-bots/purrth-vader-ts',
+						'templates/discord-bots/starter-js',
+						'templates/discord-bots/starter-ts'
 					]
 				},
 				{
 					type: 'category',
 					label: 'Plugins',
-					items: [
-						{
-							type: 'link',
-							label: 'Starter (JS)',
-							href: 'https://github.com/Wave-Play/robo.js/tree/main/templates/plugins/starter-plugin-js'
-						}
-					]
+					items: ['templates/plugins/starter-js']
 				},
 				{
 					type: 'category',
 					label: 'Web Apps',
-					items: [
-						'templates/web-apps/react-js',
-						'templates/web-apps/react-ts'
-					]
+					items: ['templates/web-apps/react-js', 'templates/web-apps/react-ts']
 				}
 			]
 		}
