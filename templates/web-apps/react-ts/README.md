@@ -22,8 +22,8 @@ _Ready to embark on this adventure?_
 
 ## 🔗 Quick Links
 
-- [✨ **Discord Server:** Join our Discord community!](https://roboplay.dev/discord)
-- [✨ **Discord Activities:** Getting Started with Discord Activities](https://robojs.dev/discord-activities)
+- [🌟 **Core Package:** See what makes Robo.js awesome](https://robojs.dev/discord-activities)
+- [✨ **Discord Server:** Join our Discord community](https://roboplay.dev/discord)
 
 ## ✨ Getting Started
 
@@ -45,7 +45,7 @@ Run development mode:
 npm run dev
 ```
 
-> **Notes:** A free Cloudflare tunnel is included for easy testing. You can copy and paste it into activity's **[URL mapping](https://robojs.dev/discord-activities/proxy#url-mapping)** to test things out.
+> **Notes:** A free Cloudflare tunnel is included for easy testing.
 
 - [📚 **Documentation:** Exploring Different Run Modes](https://robojs.dev/robojs/mode#default-modes)
 - [🚀 **Hosting:** Deploy your web app for others to use.](https://robojs.dev/hosting/overview)
