@@ -8,7 +8,8 @@ import React from 'react'
 const PackageManagers = [
 	{ label: 'NPM', value: 'npm' },
 	{ label: 'Yarn', value: 'yarn' },
-	{ label: 'PNPM', value: 'pnpm' }
+	{ label: 'PNPM', value: 'pnpm' },
+	{ label: 'Bun', value: 'bun' }
 ]
 
 export const Terminal = (props) => {
@@ -79,6 +80,8 @@ function getCreateCommand(packageManager) {
 		return `yarn create robo`
 	} else if (packageManager === 'pnpm') {
 		return `pnpm create robo`
+	} else if (packageManager === 'bun') {
+		return `bun create robo`
 	}
 }
 
