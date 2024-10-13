@@ -13,16 +13,16 @@ _Ready to embark on this adventure?_
 ## Table of Contents
 
 - [Discord Activity - Unity](#discord-activity---unity)
-	- [Table of Contents](#table-of-contents)
-	- [🔗 Quick Links](#-quick-links)
-	- [✨ Getting Started](#-getting-started)
-	- [Connecting your Unity game](#connecting-your-unity-game)
-	- [App Development 🛠️](#app-development-️)
-			- [Authenticating](#authenticating)
-	- [Backend Development 🛠️](#backend-development-️)
-	- [Folder Structure 📁](#folder-structure-)
-	- [Plugins 🔌](#plugins-)
-	- [Deployment 🚀](#deployment-)
+- [Table of Contents](#table-of-contents)
+- [🔗 Quick Links](#-quick-links)
+- [✨ Getting Started](#-getting-started)
+- [Connecting your Unity game](#connecting-your-unity-game)
+- [App Development 🛠️](#app-development-️)
+- [Authenticating](#authenticating)
+- [Backend Development 🛠️](#backend-development-️)
+- [Folder Structure 📁](#folder-structure-)
+- [Plugins 🔌](#plugins-)
+- [Deployment 🚀](#deployment-)
 
 ## 🔗 Quick Links
 
