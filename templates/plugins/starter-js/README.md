@@ -2,33 +2,31 @@
 
 ---
 
-# 🚀 starter-plugin-js
+# Starter Plugin (JS)
 
-Welcome to _starter-plugin-js_! This plugin is designed to seamlessly integrate with your existing **[Robo.js](https://github.com/Wave-Play/robo)** project and provide new features and enhancements to your robo. The best part? Everything automatically works once you install this plugin!
+This plugin is designed to seamlessly integrate with your existing **[Robo.js](https://github.com/Wave-Play/robo)** project and provide new features and enhancements to your robo. The best part? Everything automatically works once you install this plugin!
 
-➞ [📚 **Documentation:** Getting started](https://docs.roboplay.dev/docs/getting-started)
+- [🔌 **Robo Plugins:** Add features to your Robo seamlessly.](https://robojs.dev/plugins/overview)
+- [✨ **Discord Server:** Join our Discord community](https://roboplay.dev/discord)
 
-➞ [🚀 **Community:** Join our Discord server](https://roboplay.dev/discord)
+## ✨ Getting Started
 
-> 👩‍💻 **Are you the plugin developer?** Check out the **[Development Guide](DEVELOPMENT.md)** for instructions on how to develop, build, and publish this plugin.
-
-## Installation 💻
-
-To add this plugin to your Robo.js project:
+Create a project with this template, replacing `<project-name>` with your desired name:
 
 ```bash
-npx robo add starter-plugin-js
+npx create-robo <project-name> --template plugins/starter-js
 ```
 
-New to Robo.js? Start your project with this plugin pre-installed:
+Then navigate into your project directory:
 
 ```bash
-npx create-robo <project-name> -p starter-plugin-js
+cd <project-name>
 ```
 
-<!-- Replace the following with your plugin's usage instructions. -->
-<!--
-## Usage 🎨
+Run development mode:
 
-This plugin provides awesome new features to your Robo.js project. Here's an example of how you can use them in your project:
--->
+```bash
+npm run dev
+```
+
+- [🔌 **Creating Plugins:** Make your own plugins for Robo.js.](https://robojs.dev/plugins/create)
