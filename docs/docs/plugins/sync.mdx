@@ -1,5 +1,6 @@
 import { Card } from '@site/src/components/shared/Card'
 import { CardContainer } from '@site/src/components/shared/CardContainer'
+import { Terminal } from '@site/src/components/shared/Terminal'
 
 # @robojs/sync
 
@@ -17,13 +18,11 @@ No more manual websocket handling or state synchronization. Just focus on buildi
 
 ➞ [🚀 **Community:** Join our Discord server](https://roboplay.dev/discord)
 
-## Installation 💻
+## Installation 
 
 To install this plugin, navigate to your existing Robo project's directory and run the following command:
 
-```bash
-npx robo add @robojs/sync
-```
+<Terminal execute>{`robo add @robojs/sync`}</Terminal>
 
 > **Note:** You will also need to install the `@robojs/server`.
 
@@ -41,7 +40,7 @@ export function App() {
 }
 ```
 
-## Usage 🎨
+## Usage 
 
 Here's a simple example of how you can use `useSyncState` in your project to share the mouse position across all clients:
 
@@ -99,7 +98,7 @@ SyncServer.start()
 const wss = SyncServer.getSocketServer()
 ```
 
-## Need more power? ⚡
+## Need more power? 
 
 We highly recommend checking out [**Colyseus**](https://colyseus.io/), a powerful multiplayer game server! It's the perfect companion to `@robojs/sync` for building real-time multiplayer games.
 

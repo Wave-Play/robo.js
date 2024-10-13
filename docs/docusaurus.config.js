@@ -217,8 +217,17 @@ const config = {
 							newContent = token + content.split(token)[1]
 						}
 
+						// Remove emojis from headings
+						newContent = removeEmojisFromHeadings(newContent)
+
+						// Convert markdown links to Card components
+						newContent = convertLinksToCards(newContent)
+
+						// Replace bash code blocks with Terminal components
+						newContent = replaceBashCodeBlocks(newContent)
+
 						// Add copy disclaimer at the end of the content
-						const head = `import { Card } from '@site/src/components/shared/Card'\nimport { CardContainer } from '@site/src/components/shared/CardContainer'\n\n`
+						const head = `import { Card } from '@site/src/components/shared/Card'\nimport { CardContainer } from '@site/src/components/shared/CardContainer'\nimport { Terminal } from '@site/src/components/shared/Terminal'\n\n`
 						const linkUrl = 'https://github.com/Wave-Play/robo.js/tree/main/' + filename.replace('/README.md', '')
 						const link = `\n\n## More on GitHub\n\n<CardContainer><Card href="${linkUrl}" title="🔗 GitHub Repository" description="Explore source code on GitHub."/></CardContainer>\n`
 						newContent = head + newContent + link
@@ -240,8 +249,17 @@ const config = {
 							newContent = token + content.split(token)[1]
 						}
 
+						// Remove emojis from headings
+						newContent = removeEmojisFromHeadings(newContent)
+
+						// Convert markdown links to Card components
+						newContent = convertLinksToCards(newContent)
+
+						// Replace bash code blocks with Terminal components
+						newContent = replaceBashCodeBlocks(newContent)
+
 						// Add copy disclaimer at the end of the content
-						const head = `import { Card } from '@site/src/components/shared/Card'\nimport { CardContainer } from '@site/src/components/shared/CardContainer'\n\n`
+						const head = `import { Card } from '@site/src/components/shared/Card'\nimport { CardContainer } from '@site/src/components/shared/CardContainer'\nimport { Terminal } from '@site/src/components/shared/Terminal'\n\n`
 						const linkUrl = 'https://github.com/Wave-Play/robo.js/tree/main/' + filename.replace('/README.md', '')
 						const link = `\n\n## More on GitHub\n\n<CardContainer><Card href="${linkUrl}" title="🔗 GitHub Repository" description="Explore source code on GitHub."/></CardContainer>\n`
 						newContent = head + newContent + link
@@ -263,16 +281,8 @@ const config = {
 							newContent = token + newContent.substring(newContent.indexOf('-') + 1)
 						}
 
-						// Remove emojis from headings (e.g. ## 🚀 Getting Started and ## Documentation 📚)
-						const headerRegex = /^(##\s*[^#\n]*\n)/gm
-
-						// Regex to identify and remove emojis from a string
-						const emojiRegex =
-							/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu
-
-						newContent = newContent.replace(headerRegex, (header) => {
-							return header.replace(emojiRegex, '')
-						})
+						// Remove emojis from headings
+						newContent = removeEmojisFromHeadings(newContent)
 
 						// Also remove table of contents altogether (keep before and after)
 						if (newContent.includes('## Table of Contents')) {
@@ -293,7 +303,7 @@ const config = {
 						// Add copy disclaimer at the end of the content
 						const head = `import { Card } from '@site/src/components/shared/Card'\nimport { CardContainer } from '@site/src/components/shared/CardContainer'\nimport { Terminal } from '@site/src/components/shared/Terminal'\n\n`
 						const linkUrl = 'https://github.com/Wave-Play/robo.js/tree/main/' + filename.replace('/README.md', '')
-						const link = `\n\n## More on GitHub\n\n<CardContainer><Card href="${linkUrl}" title="🔗 GitHub Repository" description="Explore source code on GitHub."/></CardContainer>\n`
+						const link = `\n\n## Learn More\n\n<CardContainer><Card href="/templates/overview" title="📦 Explore Templates" description="Discover more templates for a quick start."/><Card href="${linkUrl}" title="🔗 GitHub Repository" description="Explore source code on GitHub."/></CardContainer>\n`
 						newContent = head + newContent + link
 
 						return {
@@ -454,6 +464,19 @@ function convertLinksToCards(markdown) {
 			return section
 		})
 		.join('\n\n')
+}
+
+/**
+ * Removes emojis from headings.
+ */
+function removeEmojisFromHeadings(markdownString) {
+	const headerRegex = /^(##\s*[^#\n]*\n)/gm
+	const emojiRegex =
+		/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu
+
+	return markdownString.replace(headerRegex, (header) => {
+		return header.replace(emojiRegex, '')
+	})
 }
 
 /**

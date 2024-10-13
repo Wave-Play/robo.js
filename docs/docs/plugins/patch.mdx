@@ -1,5 +1,6 @@
 import { Card } from '@site/src/components/shared/Card'
 import { CardContainer } from '@site/src/components/shared/CardContainer'
+import { Terminal } from '@site/src/components/shared/Terminal'
 
 # @robojs/patch
 
@@ -7,27 +8,32 @@ Tired of platform-specific bugs? Was your project working fine until recently? *
 
 This package contains a collection of lightweight patches for common issues. We intend on maintaining them for as long as needed.
 
+<div align="center">
+	[![GitHub
+	license](https://img.shields.io/github/license/Wave-Play/robo)](https://github.com/Wave-Play/robo/blob/main/LICENSE)
+	[![npm](https://img.shields.io/npm/v/@robojs/patch)](https://www.npmjs.com/package/@robojs/patch) [![install
+	size](https://packagephobia.com/badge?p=@robojs/patch@latest)](https://packagephobia.com/result?p=@robojs/patch@latest)
+	[![Discord](https://img.shields.io/discord/1087134933908193330?color=7289da)](https://roboplay.dev/discord) [![All
+	Contributors](https://img.shields.io/github/all-contributors/Wave-Play/robo.js?color=cf7cfc)](#contributors)
+</div>
+
 **Not using [Robo.js](https://robojs.dev) yet?** That's okay! Most patches work with any **JavaScript** project.
 
 ➞ [📚 **Documentation:** Getting started](https://docs.roboplay.dev/docs/getting-started)
 
 ➞ [🚀 **Community:** Join our Discord server](https://roboplay.dev/discord)
 
-## Installation 💻
+## Installation 
 
 To add this plugin to your **Robo.js** project:
 
-```bash
-npx robo add @robojs/patch
-```
+<Terminal execute>{`robo add @robojs/patch`}</Terminal>
 
 Or install it as a normal package if you're not using **Robo.js**:
 
-```bash
-npm install @robojs/patch
-```
+<Terminal>{`npm install @robojs/patch`}</Terminal>
 
-## Patches 🩹
+## Patches 
 
 ### Discord Entry Point Command
 
@@ -86,7 +92,6 @@ This patch is extremely lightweight and only runs when needed. Nothing is patche
 This does not affect requests made to external URLs. If you're having **CSP** issues with those, you may be able to fix them by creating your own **Proxy** or mapping them in the **Discord Developer Portal**.
 
 ➞ [📚 **Tutorial:** Resolve CSP Issues with a Proxy](https://dev.to/waveplay/resolve-content-security-policy-csp-issues-in-your-discord-activity-using-a-nodejs-proxy-2634)
-
 
 ## Building Discord Apps?
 
