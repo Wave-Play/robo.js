@@ -22,8 +22,8 @@ _Ready to embark on this adventure?_
 
 ## 🔗 Quick Links
 
-- [🚀 **Community:** Join our Discord server](https://roboplay.dev/discord)
-- [📚 **Documentation:** Getting started with Robo](https://robojs.dev/discord-activities/getting-started)
+- [✨ **Discord Server:** Join our Discord community!](https://roboplay.dev/discord)
+- [✨ **Discord Activities:** Getting Started with Discord Activities](https://robojs.dev/discord-activities)
 
 ## ✨ Getting Started
 
@@ -48,7 +48,7 @@ npm run dev
 > **Notes:** A free Cloudflare tunnel is included for easy testing. You can copy and paste it into activity's **[URL mapping](https://robojs.dev/discord-activities/proxy#url-mapping)** to test things out.
 
 - [📚 **Documentation:** Exploring Different Run Modes](https://robojs.dev/robojs/mode#default-modes)
-- [🚀 **Documentation:** Deploying for Free with 24/7 Uptime](https://robojs.dev/hosting/overview)
+- [🚀 **Hosting:** Deploy your web app for others to use.](https://robojs.dev/hosting/overview)
 
 ## App Development 🛠️
 
@@ -64,7 +64,7 @@ Try editing the `App.jsx` file to get started!
 
 Your server-side code is located in the `/src/api` folder. This is where you can build your API, webhooks, and other fancy server-side features.
 
-This backend is powered by the [**Server Plugin**](https://docs.roboplay.dev/plugins/server) - a powerful Robo plugin that creates an manages a Node `http` server for you. If you install Fastify, the server will automatically switch to it for better performance!
+This backend is powered by the [**Server Plugin**](https://robojs.dev/plugins/server) - a powerful Robo plugin that creates an manages a Node `http` server for you. If you install Fastify, the server will automatically switch to it for better performance!
 
 Everything Robo is file-based, so you can create new routes by making new files in the `/src/api` directory. The file's name becomes the route's path. For example, let's try making a new route at `/health` by creating a new file named `health.js`:
 
@@ -74,7 +74,7 @@ export default () => {
 }
 ```
 
-Easy, right? Check out the [**Server Plugin documentation**](https://docs.roboplay.dev/plugins/server) for more info!
+Easy, right? Check out the [**Server Plugin documentation**](https://robojs.dev/plugins/server) for more info!
 
 ## Folder Structure 📁
 
@@ -90,9 +90,9 @@ This Robo boasts an intuitive plugin system that grants new capabilities instant
 npx robo add @robojs/ai
 ```
 
-> Swap out [`@robojs/ai`](https://docs.roboplay.dev/plugins/ai) with your chosen plugin's package name
+> Swap out [`@robojs/ai`](https://robojs.dev/plugins/ai) with your chosen plugin's package name
 
-With that, your Robo automatically equips itself with all the features the plugin offers. Want to revert? Simply use [`robo remove`](https://docs.roboplay.dev/docs/advanced/command-line#plugins) to uninstall any plugin.
+With that, your Robo automatically equips itself with all the features the plugin offers. Want to revert? Simply use [`robo remove`](https://robojs.dev/cli/robo#plugins) to uninstall any plugin.
 
 Crafting something unique in your Robo project? You can turn your innovations into plugins, be it specific functionalities or your entire Robo. Share your genius with the world!
 
@@ -114,5 +114,5 @@ npm run build
 npm start
 ```
 
-- [🚀 **RoboPlay:** Hosting your Robo](https://robojs.dev/hosting/overview)
+- [🚀 **RoboPlay:** Hosting your Robo](https://robojs.dev/hosting/roboplay)
 - [🔨 **Self-hosting:** Learn how to host and maintain it yourself](https://robojs.dev/hosting/self-host)
