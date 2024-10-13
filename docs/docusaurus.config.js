@@ -53,6 +53,10 @@ const config = {
 						to: '/robojs/typescript'
 					},
 					{
+						from: '/discord-activities',
+						to: '/discord-activities/getting-started'
+					},
+					{
 						from: '/discord-activities/overview',
 						to: '/discord-activities/getting-started'
 					},
@@ -86,6 +90,10 @@ const config = {
 					},
 					{
 						from: '/docs/basics/overview',
+						to: '/discord-bots/getting-started'
+					},
+					{
+						from: '/discord-bots',
 						to: '/discord-bots/getting-started'
 					},
 					{
