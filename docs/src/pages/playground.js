@@ -4,7 +4,7 @@ import sdk from '@stackblitz/sdk'
 
 function Playground() {
 	useEffect(() => {
-		sdk.embedGithubProject('embed', 'Wave-Play/robo.js/tree/main/templates/web-apps/starter-webapp-typescript', {
+		sdk.embedGithubProject('embed', 'Wave-Play/robo.js/tree/main/templates/web-apps/react-ts', {
 			devToolsHeight: 40,
 			openFile: ['src/api/get-count.ts,src/api/set-count.ts,src/app/App.tsx'],
 			showSidebar: true,
