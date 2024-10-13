@@ -2,7 +2,7 @@
 
 ---
 
-# Hiya, purrth-vader 🌈
+# Discord Bot - Purrth Vader (TS)
 
 Welcome to your fresh **[Robo.js](https://github.com/Wave-Play/robo)** project!
 

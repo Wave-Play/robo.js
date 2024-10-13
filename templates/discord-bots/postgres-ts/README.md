@@ -2,7 +2,7 @@
 
 ---
 
-# Hiya, bot-postgres-ts 🌈
+# Discord Bot - Postgres (TS)
 
 Welcome to your fresh **[Robo.js](https://github.com/Wave-Play/robo)** project!
 

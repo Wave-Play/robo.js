@@ -2,7 +2,7 @@
 
 ---
 
-# Hiya, bot-prisma-ts 🌈
+# Discord Bot - Prisma (TS)
 
 Welcome to your fresh **[Robo.js](https://github.com/Wave-Play/robo)** project!
 

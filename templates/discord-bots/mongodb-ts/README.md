@@ -2,7 +2,7 @@
 
 ---
 
-# Hiya, bot-mongodb-ts 🌈
+# Discord Bot - MongoDB (TS)
 
 Welcome to your fresh **[Robo.js](https://github.com/Wave-Play/robo)** project!
 

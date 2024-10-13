@@ -2,7 +2,7 @@
 
 ---
 
-# Hiya, starter-bot-typescript 🌈
+# Discord Bot - Starter (TS)
 
 Welcome to your fresh **[Robo.js](https://github.com/Wave-Play/robo)** project!
 

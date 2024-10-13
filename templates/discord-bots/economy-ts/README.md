@@ -2,7 +2,7 @@
 
 ---
 
-# Hiya, economy-bot ✨
+# Discord Bot - Economy (TS)
 
 Welcome to your fresh **[Robo.js](https://github.com/Wave-Play/robo)** project!
 

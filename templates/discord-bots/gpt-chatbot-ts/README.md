@@ -2,7 +2,7 @@
 
 ---
 
-# Discord Bot - Analytics (TS)
+# Discord Bot - GPT Chatbot (TS)
 
 Welcome to your fresh **[Robo.js](https://github.com/Wave-Play/robo)** project!
 
