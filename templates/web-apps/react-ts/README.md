@@ -2,7 +2,7 @@
 
 ---
 
-# Hiya, starter-webapp-typescript 🌈
+# Web App - React (TS)
 
 Welcome to your fresh **[Robo.js](https://github.com/Wave-Play/robo)** project!
 
@@ -12,35 +12,45 @@ _Ready to embark on this adventure?_
 
 ## Table of Contents
 
-- [Hiya, starter-webapp-typescript 🌈](#hiya-starter-webapp-typescript-)
-- [Table of Contents](#table-of-contents)
-- [🔗 Quick Links](#-quick-links)
-- [Running 🏃‍♂️](#running-️)
-- [App Development 🛠️](#app-development-️)
-- [Backend Development 🛠️](#backend-development-️)
-- [Folder Structure 📁](#folder-structure-)
-- [Plugins 🔌](#plugins-)
-- [Deployment 🚀](#deployment-)
+- [🔗 Quick Links](#🔗-quick-links)
+- [✨ Getting Started](#✨-getting-started)
+- [🛠️ App Development](#️🛠️-app-development)
+- [🔒 Authentication](#🔒-authentication)
+- [🛠️ Backend Development](#️🛠️-backend-development)
+- [📁 Folder Structure](#📁-folder-structure)
+- [🔌 Plugins](#🔌-plugins)
+- [🚀 Deployment](#🚀-deployment)
 
 ## 🔗 Quick Links
 
 - [🚀 **Community:** Join our Discord server](https://roboplay.dev/discord)
 - [📚 **Documentation:** Getting started with Robo](https://robojs.dev/discord-activities/getting-started)
-- [📖 **Tutorial:** Creating a Discord Activity in seconds](https://dev.to/waveplay/how-to-build-a-discord-activity-easily-with-robojs-5bng)
 
-## Running 🏃‍♂️
+## ✨ Getting Started
 
-Run development mode with:
+Create a project with this template, replacing `<project-name>` with your desired name:
+
+```bash
+npx create-robo <project-name> --template web-apps/react-ts
+```
+
+Then navigate into your project directory:
+
+```bash
+cd <project-name>
+```
+
+Run development mode:
 
 ```bash
 npm run dev
 ```
 
-Your Robo refreshes with every change. 🔄
+> **Notes:** A free Cloudflare tunnel is included for easy testing. You can copy and paste it into activity's **[URL mapping](https://robojs.dev/discord-activities/proxy#url-mapping)** to test things out.
 
-A free Cloudflare tunnel is included for easy testing. You can copy and paste it into activity's URL mapping to test things out.
+➞ [📚 **Documentation:** Exploring Different Run Modes](https://robojs.dev/robojs/mode#default-modes)
 
-> **Psst...** Check out the [deployment instructions](#deployment) to keep your Robo online 24/7.
+➞ [🚀 **Documentation:** Deploying for Free with 24/7 Uptime](https://robojs.dev/hosting/overview)
 
 ## App Development 🛠️
 
