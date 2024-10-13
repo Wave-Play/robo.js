@@ -57,7 +57,7 @@ new Command('create-robo <projectName>')
 		}
 
 		// No kit specified, prompt the user to choose an adventure: bot or activity
-		if (!options.kit) {
+		if (!options.kit && !options.template) {
 			logger.log()
 			options.kit = await select<'app' | 'bot'>(
 				{
