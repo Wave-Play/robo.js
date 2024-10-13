@@ -520,7 +520,7 @@ export default class Robo {
 				const packageManager = getPackageManager()
 				logger.debug(`Using ${chalk.bold(packageManager)} in ${this._workingDir}...`)
 
-				const command = packageManager + ' ' + (packageManager === 'npm' ? 'install' : 'add')
+				const command = packageManager + ' install'
 				this._spinner.setText(Indent + '    {{spinner}} Installing dependencies...\n')
 				this._spinner.start()
 
