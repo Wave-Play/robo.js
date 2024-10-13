@@ -2,29 +2,55 @@
 
 ---
 
-# Hiya, lol 🌈
+# Discord Activity - Unity
 
 Welcome to your fresh **[Robo.js](https://github.com/Wave-Play/robo)** project!
 
 Build, deploy, and maintain your Discord activities with ease. With Robo.js as your guide, you'll experience a seamless, [file-based setup](https://docs.roboplay.dev/docs/basics/overview#the-robojs-file-structure), an [integrated database](https://docs.roboplay.dev/docs/basics/flashcore), [TypeScript support](https://docs.roboplay.dev/docs/advanced/typescript), and a multitude of [plugin-powered skills](https://docs.roboplay.dev/docs/advanced/plugins) to unlock along the way.
 
-Ready to embark on this adventure?
+_Ready to embark on this adventure?_
 
-➞ [📖 **Tutorial:** Creating a Discord Activity in seconds](https://dev.to/waveplay/how-to-build-a-discord-activity-easily-with-robojs-5bng)
+## Table of Contents
 
-➞ [📚 **Documentation:** Getting started](https://docs.roboplay.dev/docs/getting-started)
+- [Discord Activity - Unity](#discord-activity---unity)
+	- [Table of Contents](#table-of-contents)
+	- [🔗 Quick Links](#-quick-links)
+	- [✨ Getting Started](#-getting-started)
+	- [Connecting your Unity game](#connecting-your-unity-game)
+	- [App Development 🛠️](#app-development-️)
+			- [Authenticating](#authenticating)
+	- [Backend Development 🛠️](#backend-development-️)
+	- [Folder Structure 📁](#folder-structure-)
+	- [Plugins 🔌](#plugins-)
+	- [Deployment 🚀](#deployment-)
 
-➞ [🚀 **Community:** Join our Discord server](https://roboplay.dev/discord)
+## 🔗 Quick Links
 
-## Running 🏃‍♂️
+- [🚀 **Community:** Join our Discord server](https://roboplay.dev/discord)
+- [📚 **Documentation:** Getting started with Robo](https://robojs.dev/discord-activities/getting-started)
+- [📖 **Tutorial:** Creating a Discord Activity in seconds](https://dev.to/waveplay/how-to-build-a-discord-activity-easily-with-robojs-5bng)
 
-Run development mode with:
+## ✨ Getting Started
+
+Create a project with this template, replacing `<project-name>` with your desired name:
+
+```bash
+npx create-robo <project-name> --template discord-activities/unity
+```
+
+Then navigate into your project directory:
+
+```bash
+cd <project-name>
+```
+
+Run development mode:
 
 ```bash
 npm run dev
 ```
 
-## Importing your Unity game
+## Connecting your Unity game
 
 To import your Unity game inside of your Robo project follow these steps:
 
@@ -44,6 +70,14 @@ Once you have done these steps follow these next ones
 5. Tada ! you have successfully built a Unity Project with Robo all that's left to do is enjoy making your game.
 
 To get the best of Dissonity please refer to their **[docs](https://github.com/Furnyr/Dissonity/blob/main/unity/Documentation~/Dissonity.md)**!
+
+> **Notes:** A free Cloudflare tunnel is included for easy testing. You can copy and paste it into activity's **[URL mapping](https://robojs.dev/discord-activities/proxy#url-mapping)** to test things out.
+
+➞ [📚 **Documentation:** Exploring Different Run Modes](https://robojs.dev/robojs/mode#default-modes)
+
+➞ [🚀 **Documentation:** Deploying for Free with 24/7 Uptime](https://robojs.dev/hosting/overview)
+
+
 Your Robo refreshes with every change. 🔄
 
 A free Cloudflare tunnel is included for easy testing. You can copy and paste it into activity's URL mapping to test things out.
