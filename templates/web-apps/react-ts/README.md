@@ -107,11 +107,12 @@ Run the `deploy` command to automatically deploy to **[RoboPlay](https://robopla
 npm run deploy
 ```
 
-- [🚀 **RoboPlay:** Hosting your Robo](https://robojs.dev/hosting/overview)
-
 You can also self-host your robo anywhere that supports Node. Just make sure to run `build` followed by `start`:
 
 ```bash
 npm run build
 npm start
 ```
+
+- [🚀 **RoboPlay:** Hosting your Robo](https://robojs.dev/hosting/overview)
+- [🔨 **Self-hosting:** Learn how to host and maintain it yourself](https://robojs.dev/hosting/self-host)
