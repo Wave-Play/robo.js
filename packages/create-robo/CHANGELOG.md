@@ -1,5 +1,12 @@
 # create-robo
 
+## 0.13.3
+
+### Patch Changes
+
+- 886ea2c: fix: bun installation
+- b9f9488: refactor: updated optional plugins to include @robojs/analytics
+
 ## 0.13.2
 
 ### Patch Changes
