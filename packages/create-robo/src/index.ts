@@ -181,6 +181,11 @@ new Command('create-robo <projectName>')
 			await robo.askForDiscordCredentials()
 		}
 
+		// Bun is special
+		if (getPackageManager() === 'bun') {
+			await robo.bun()
+		}
+
 		const packageManager = getPackageManager()
 		logger.log(Indent.repeat(15))
 		logger.log(Indent, '🚀', chalk.bold.green('Your Robo is ready!'))
