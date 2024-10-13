@@ -2,7 +2,7 @@
 
 ---
 
-# Discord Bot - GPT Chatbot (TS)
+# Discord Bot - AI Chatbot (TS)
 
 Welcome to your fresh **[Robo.js](https://github.com/Wave-Play/robo)** project!
 
@@ -19,7 +19,7 @@ _Ready to embark on this adventure?_
 Create a project with this template, replacing `<project-name>` with your desired name:
 
 ```bash
-npx create-robo <project-name> --template discord-activities/gpt-chatbot-ts
+npx create-robo <project-name> --template discord-activities/ai-chatbot-ts
 ```
 
 Then navigate into your project directory:
