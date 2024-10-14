@@ -419,11 +419,11 @@ const config = {
 						label: 'Tutorials',
 						position: 'left'
 					},
-					{
+					/*{
 						href: 'https://roboplay.dev/hacktoberfest',
 						label: '✨🎃 Hacktoberfest 🎃✨',
 						position: 'left'
-					},
+					},*/
 					{
 						href: 'https://roboplay.dev/discord',
 						position: 'right',
