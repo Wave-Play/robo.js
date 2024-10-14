@@ -220,6 +220,7 @@ const sidebars = {
 						'templates/discord-activities/react-tailwind-ts',
 						'templates/discord-activities/react-trpc-ts',
 						'templates/discord-activities/react-ts',
+						'templates/discord-activities/unity',
 						'templates/discord-activities/vanilla-js',
 						'templates/discord-activities/vanilla-ts'
 					]

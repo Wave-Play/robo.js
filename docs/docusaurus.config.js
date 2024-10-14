@@ -188,6 +188,7 @@ const config = {
 					'templates/discord-activities/react-tailwind-ts/README.md',
 					'templates/discord-activities/react-trpc-ts/README.md',
 					'templates/discord-activities/react-ts/README.md',
+					'templates/discord-activities/unity/README.md',
 					'templates/discord-activities/vanilla-js/README.md',
 					'templates/discord-activities/vanilla-ts/README.md',
 					'templates/discord-bots/ai-chatbot-ts/README.md',
