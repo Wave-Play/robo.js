@@ -237,6 +237,12 @@ async function updateRobo(plugins: Plugin[], config: Config) {
 		const update = await checkUpdates(packageJson, config, true)
 		logger.debug(`Update payload for ${plugingName}:`, update)
 
+		const pluginOnRegistry = await fetch(`https://registry.npmjs.org/${packageJson.name}/latest`)
+		if (!pluginOnRegistry.ok) {
+			logger.info(composeColors(color.yellowBright, color.bold)(`Skipping ${plugingName}, not found on registry, probably local plugin!`))
+			continue
+		}
+
 		// Skip if no updates
 		if (!update.hasUpdate) {
 			logger.info(composeColors(color.green, color.bold)(`${plugingName} is up to date!`))
