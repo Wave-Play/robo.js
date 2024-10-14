@@ -1,5 +1,12 @@
 # robo.js
 
+## 0.10.21
+
+### Patch Changes
+
+- 1e3dcfa: chore(cli): updated help command
+- ced83f9: patch(cli): properly delegate args with spaces to exec
+
 ## 0.10.20
 
 ### Patch Changes
