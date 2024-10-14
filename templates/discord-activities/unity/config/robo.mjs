@@ -10,6 +10,6 @@ export default {
 	plugins: [],
 	type: 'robo',
 	watcher: {
-		ignore: ['src\\app', 'src\\components', 'src\\hooks']
+		ignore: ['src/app', 'src/components', 'src/hooks', '/public']
 	}
 }
