@@ -21,7 +21,7 @@ const command = new Command('sage')
 		const args = process.argv.slice(2)
 		const packageExecutor = getPackageExecutor()
 
-		await exec(`${packageExecutor} @roboplay/sage@latest ${args.join(' ')}`)
+		await exec([packageExecutor, '@roboplay/sage@latest', ...args])
 	})
 	.parse()
 export default command

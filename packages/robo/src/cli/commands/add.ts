@@ -59,6 +59,10 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
 	spinner.setText(packages.map((pkg) => `${Indent}    - {{spinner}} ${Highlight(pkg)}`).join('\n') + `\n\n`)
 	spinner.start()
 
+	if (options.verbose) {
+		spinner.stop(false, false)
+	}
+
 	// Check which plugin packages are already registered
 	const config = await loadConfig()
 	const nameMap: Record<string, string> = {}
@@ -90,13 +94,14 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
 	// Check which plugins need to be installed
 	const packageJsonPath = path.join(process.cwd(), 'package.json')
 	const packageJson = require(packageJsonPath)
-	const pendingInstall = packages.filter((pkg) => {
-		return (
-			options.force ||
-			(!Object.keys(packageJson.dependencies ?? {})?.includes(pkg) &&
-				!config.plugins?.find((p) => Array.isArray(p) && p[0] === pkg))
-		)
-	})
+	const pendingInstall = packages
+		.filter((pkg) => {
+			return (
+				options.force ||
+				(!Object.keys(packageJson.dependencies ?? {})?.includes(pkg) &&
+					!config.plugins?.find((p) => Array.isArray(p) && p[0] === pkg))
+			)
+		})
 	logger.debug(`Pending installation add:`, pendingInstall)
 
 	// Install plugin packages
@@ -107,7 +112,7 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
 
 		// Install dependencies using the package manager that triggered the command
 		try {
-			await exec(`${packageManager} ${command} ${pendingInstall.join(' ')}`, {
+			await exec([packageManager, command, ...pendingInstall], {
 				stdio: options.force ? 'inherit' : 'ignore'
 			})
 			logger.debug(`Successfully installed packages!`)

@@ -60,18 +60,24 @@ export async function getRoboPackageJson() {
 /**
  * Run a command as a child process
  */
-export function exec(command: string, options?: SpawnOptions) {
+export function exec(command: string | string[], options?: SpawnOptions) {
 	return new Promise<void>((resolve, reject) => {
-		logger.debug(`> ${color.bold(command)}`)
-
-		// Run command as child process
-		const args = command.split(' ')
-		const childProcess = spawn(args.shift(), args, {
+		let childProcess: ChildProcess
+		const spawnOptions: SpawnOptions = {
 			env: { ...process.env, FORCE_COLOR: '1' },
 			shell: IS_WINDOWS,
 			stdio: 'inherit',
 			...(options ?? {})
-		})
+		}
+		logger.debug(`${IS_WINDOWS ? '$' : '>'} ${color.bold(JSON.stringify(command))}`)
+
+		if (IS_WINDOWS) {
+			const str = Array.isArray(command) ? command.map((c) => (c.includes(' ') ? `"${c}"` : c)).join(' ') : command
+			childProcess = spawn(str, spawnOptions)
+		} else {
+			const args = Array.isArray(command) ? command : command.split(' ')
+			childProcess = spawn(args.shift(), args, spawnOptions)
+		}
 
 		// Resolve promise when child process exits
 		childProcess.on('error', reject)

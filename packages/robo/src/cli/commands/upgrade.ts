@@ -31,5 +31,5 @@ export async function upgradeAction(_files: string[], options: UpgradeCommandOpt
 	logger.debug(`Package executor:`, packageExecutor)
 	logger.debug(`Arguments:`, args)
 
-	await exec(`${packageExecutor} @roboplay/sage upgrade ${args.join(' ')}`)
+	await exec([packageExecutor, '@roboplay/sage@latest', 'upgrade', ...args])
 }
