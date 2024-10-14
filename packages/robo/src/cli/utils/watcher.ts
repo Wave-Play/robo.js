@@ -32,7 +32,7 @@ export default class Watcher {
 	private debouncer: Debouncer
 
 	// Initialize with paths to watch and options.
-	constructor(private paths: string[], private options: Options) { }
+	constructor(private paths: string[], private options: Options) {}
 
 	// Start the watcher. Files are read, and callbacks are set up.
 	async start(callback: (changes: Change[]) => Promise<void>) {
@@ -172,15 +172,20 @@ export default class Watcher {
 				}
 			} else if (event === 'change') {
 				// If the file changed, check the modification time and trigger the callback if it's a new change.
-				const stat = await fs.lstat(filePath).catch(e => {
-					if (e.message.startsWith('ENOENT')) {
-						this.watchedFiles.delete(filePath)
+				const stat = await fs.lstat(filePath).catch((e) => {
+					if (hasProperties<{ code: unknown }>(e, ['code']) && e.code === 'ENOENT') {
+						const watcher = this.watchers.get(filePath)
+						if (watcher) {
+							callback('removed', filePath)
+							watcher.close()
+							this.watchers.delete(filePath)
+						}
 						return null;
 					} else {
 						throw e
 					}
 				})
-				if (!stat) return;
+				if (!stat) return
 				if (this.watchedFiles.get(filePath)?.getTime() !== stat.mtime.getTime()) {
 					this.watchedFiles.set(filePath, stat.mtime)
 					if (!this.isFirstTime) {
