@@ -67,7 +67,7 @@ Example 2: POST request with body parsing
 ```javascript
 export default async (request, reply) => {
 	if (request.method !== 'POST') {
-		reply.status(405).send('Method not allowed')
+		reply.code(405).send('Method not allowed')
 		return
 	}
 
@@ -75,7 +75,7 @@ export default async (request, reply) => {
 
 	// ... interact with database, e.g., Prisma
 
-	reply.status(200).send(JSON.stringify({ success: true, userData }))
+	reply.code(200).send(JSON.stringify({ success: true, userData }))
 }
 ```
 
@@ -119,9 +119,28 @@ export default (request, reply) => {
 }
 ```
 
-### API Reference
+## API Reference
 
-Here's a detailed breakdown of the methods and properties available in the `request` and `reply` objects, along with their TypeScript types:
+Here's a detailed breakdown of the methods and properties available in the `request` and `reply` objects, along with their TypeScript types.
+
+### Server
+
+The `Server` object can be used to get the underlying server configuration, engine instance, and wait for it to be ready.
+
+```typescript
+import { Server } from '@robojs/server'
+
+export default async () => {
+	// Get the server configuration
+	console.log('Config:', Server.config())
+
+	// Get the server engine instance
+	console.log('Engine:', Server.get())
+
+	// Wait for the server to be ready
+	await Server.ready()
+}
+```
 
 ### RoboRequest
 
