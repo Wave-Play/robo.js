@@ -1,5 +1,11 @@
 # @roboplay/plugin-api
 
+## 0.6.1
+
+### Patch Changes
+
+- 7b8247d: patch: store instance globally
+
 ## 0.6.0
 
 ### Minor Changes
