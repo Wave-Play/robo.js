@@ -4,6 +4,13 @@ import type { BaseEngine } from '~/engines/base.js'
 export let _readyPromiseResolve: () => void
 
 export const _readyPromise = new Promise<void>((resolve) => {
+	const interval = setInterval(() => {
+		if (globalThis.roboServer?.ready) {
+			clearInterval(interval)
+			_readyPromiseResolve()
+		}
+	}, 400)
+
 	_readyPromiseResolve = resolve
 })
 

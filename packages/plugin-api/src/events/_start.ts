@@ -1,6 +1,5 @@
 import { logger } from '~/core/logger.js'
 import { hasDependency } from '~/core/runtime-utils.js'
-import { _readyPromiseResolve } from '~/core/plugin-utils.js'
 import { setConfig, setEngine } from '~/core/server.js'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
@@ -92,7 +91,9 @@ export default async (_client: Client, options: PluginConfig) => {
 
 	logger.debug(`Starting server...`)
 	await engine.start({ hostname, port })
-	_readyPromiseResolve()
+
+	// Let the rest of the app know that the server is ready
+	globalThis.roboServer = { ready: true }
 }
 
 async function getDefaultEngine() {
