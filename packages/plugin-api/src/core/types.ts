@@ -7,11 +7,11 @@ export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'OPTIONS'
 
 export interface RoboReply {
 	raw: ServerResponse
-	code: (statusCode: number) => RoboReply
-	json: (data: unknown) => RoboReply
-	send: (response: Response | string) => RoboReply
-	header: (name: string, value: string) => RoboReply
 	hasSent: boolean
+	code: (statusCode: number) => RoboReply
+	header: (name: string, value: string) => RoboReply
+	json: (data: unknown) => RoboReply
+	send: (response: BodyInit | Response) => RoboReply
 }
 
 export type RouteHandler = (req: RoboRequest, res: RoboReply) => unknown | Promise<unknown>

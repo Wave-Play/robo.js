@@ -49,42 +49,40 @@ export function createServerHandler(router: Router, vite?: ViteDevServer): Serve
 				return this
 			},
 			json: function (data: unknown) {
-				this.raw.setHeader('Content-Type', 'application/json')
-				this.raw.end(JSON.stringify(data))
-				this.hasSent = true
-				return this
+				return this.send(RoboResponse.json(data))
 			},
-			send: function (data: Response | string) {
-				if (data instanceof Response) {
-					if (data.status >= 400) {
-						logger.error(data)
-					}
+			send: function (data: BodyInit | Response) {
+				const response = data instanceof Response ? data : new Response(data)
 
-					data.headers.forEach((value, key) => {
-						this.raw.setHeader(key, value)
-					})
-					this.raw.statusCode = data.status
+				// Log errors if status code is 4xx or 5xx
+				if (response.status >= 400) {
+					logger.error(data)
+				}
 
-					// Stream the response body
-					const reader = data.body.getReader()
-					const read = async () => {
-						while (true) {
-							const { done, value } = await reader.read()
+				// Copy headers from the response to the raw response
+				response.headers.forEach((value, key) => {
+					this.raw.setHeader(key, value)
+				})
+				this.raw.statusCode = response.status
 
-							if (done) {
-								break
-							} else {
-								this.raw.write(value)
-							}
+				// Stream the response body
+				const reader = response.body.getReader()
+				const read = async () => {
+					while (true) {
+						const { done, value } = await reader.read()
+
+						if (done) {
+							break
+						} else {
+							this.raw.write(value)
 						}
 					}
-
-					read().then(() => {
-						this.raw.end()
-					})
-				} else {
-					this.raw.end(data)
 				}
+
+				read().then(() => {
+					this.raw.end()
+				})
+
 				this.hasSent = true
 				return this
 			},
@@ -138,9 +136,17 @@ export function createServerHandler(router: Router, vite?: ViteDevServer): Serve
 		try {
 			const result = await route.handler(requestWrapper, replyWrapper)
 
-			if (!replyWrapper.hasSent && result instanceof Response) {
+			// Don't do anything if the handler has already sent a response
+			if (replyWrapper.hasSent) {
+				return
+			}
+
+			// Send the result
+			if (result instanceof Response) {
 				replyWrapper.send(result)
-			} else if (!replyWrapper.hasSent && result) {
+			} else if (result && isBodyInit(result)) {
+				replyWrapper.code(200).send(result)
+			} else if (result) {
 				replyWrapper.code(200).json(result)
 			}
 		} catch (error) {
@@ -214,4 +220,19 @@ export async function handlePublicFile(
 	}
 
 	return false
+}
+
+/**
+ * Checks if a value is a valid BodyInit type.
+ */
+function isBodyInit(value: unknown): value is BodyInit {
+	return (
+		typeof value === 'string' ||
+		value instanceof Blob ||
+		value instanceof FormData ||
+		value instanceof URLSearchParams ||
+		value instanceof ArrayBuffer ||
+		ArrayBuffer.isView(value) ||
+		(typeof ReadableStream !== 'undefined' && value instanceof ReadableStream)
+	)
 }
