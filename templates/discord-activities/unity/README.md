@@ -66,7 +66,10 @@ Once you have done these steps follow these next ones
 2. Go to `build settings`
 3. In platform, choose `WebGL`
 4. Click on build and go into your Robo project and select the public folder.
-5. Tada ! you have successfully built a Unity Project with Robo all that's left to do is enjoy making your game.
+5. Once the game has been built head over into the index.html file into your public folder
+6. Go down the file and introduce a new variable called ```unityInstance``` 
+7. Go down again until you see ```createUnityInstance``` in the ```then``` change the paremeter name to ui then in the scope write ```unityInstance = ui```
+8. Tada ! you have successfully built a Unity Project with Robo all that's left to do is enjoy making your game.
 
 > **Notes:** If you decide to make a special folder for your project. ex: public/myfolder/mygamefiles please go to src/app/Activity.tsx and change
 
