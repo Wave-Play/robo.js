@@ -1,5 +1,13 @@
 # @roboplay/plugin-api
 
+## 0.6.0
+
+### Minor Changes
+
+- c5dfaf0: feat: support for `BodyInit` as `.send()` param and returns
+- bf5b0ce: refactor: use global state for ready signal
+- a8b90e4: feat: new `Server` exported interface
+
 ## 0.5.7
 
 ### Patch Changes
