@@ -6,5 +6,5 @@
 	"linked": [],
 	"access": "restricted",
 	"baseBranch": "main",
-	"ignore": ["@robojs/ai-voice"]
+	"ignore": ["@robojs/ai", "@robojs/ai-voice", "@robojs/trpc"]
 }
