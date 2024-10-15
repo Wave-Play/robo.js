@@ -1,6 +1,7 @@
 import { DiscordSDK, DiscordSDKMock } from '@discord/embedded-app-sdk'
 import { useState, useEffect, useCallback, useRef, createContext, useContext } from 'react'
 import type { ReactNode } from 'react'
+import { setupSdk } from 'dissonity'
 
 type UnwrapPromise<T> = T extends Promise<infer U> ? U : T
 type DiscordSession = UnwrapPromise<ReturnType<typeof discordSdk.commands.authenticate>>
@@ -13,7 +14,7 @@ const isEmbedded = queryParams.get('frame_id') != null
 let discordSdk: DiscordSDK | DiscordSDKMock
 
 if (isEmbedded) {
-	discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID)
+	//discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID)
 } else {
 	// We're using session storage for user_id, guild_id, and channel_id
 	// This way the user/guild/channel will be maintained until the tab is closed, even if you refresh
@@ -80,7 +81,7 @@ function getOverrideOrRandomSessionValue(queryParam: `${SessionStorageQueryParam
 const DiscordContext = createContext<SdkSetupResult>({
 	accessToken: null,
 	authenticated: false,
-	discordSdk: discordSdk,
+	discordSdk: null,
 	error: null,
 	session: {
 		user: {
@@ -114,9 +115,11 @@ export function DiscordContextProvider(props: DiscordContextProviderProps) {
 	const { authenticate, children, loadingScreen = null, scope } = props
 	const setupResult = useDiscordSdkSetup({ authenticate, scope })
 
-	if (loadingScreen && !['error', 'ready'].includes(setupResult.status)) {
-		return <>{loadingScreen}</>
-	}
+	// not useful with Unity
+
+	// if (loadingScreen && !['error', 'ready'].includes(setupResult.status)) {
+	// 	return <>{loadingScreen}</>
+	// }
 
 	return <DiscordContext.Provider value={setupResult}>{children}</DiscordContext.Provider>
 }
@@ -151,7 +154,7 @@ export async function authenticateSdk(options?: AuthenticateSdkOptions) {
 	const response = await fetch('/.proxy/api/token', {
 		method: 'POST',
 		headers: {
-			'Content-Type': 'application/json'
+			'Content-Type': ' 	'
 		},
 		body: JSON.stringify({ code })
 	})
@@ -171,44 +174,60 @@ interface UseDiscordSdkSetupOptions {
 	scope?: AuthorizeInput['scope']
 }
 
-export function useDiscordSdkSetup(options?: UseDiscordSdkSetupOptions) {
-	const { authenticate, scope } = options ?? {}
-	const [accessToken, setAccessToken] = useState<string | null>(null)
-	const [session, setSession] = useState<DiscordSession | null>(null)
-	const [error, setError] = useState<string | null>(null)
-	const [status, setStatus] = useState<'authenticating' | 'error' | 'loading' | 'pending' | 'ready'>('pending')
+// export function useDiscordSdkSetup(options?: UseDiscordSdkSetupOptions) {
+// 	const { authenticate, scope } = options ?? {}
+// 	const [accessToken, setAccessToken] = useState<string | null>(null)
+// 	const [session, setSession] = useState<DiscordSession | null>(null)
+// 	const [error, setError] = useState<string | null>(null)
+// 	const [status, setStatus] = useState<'authenticating' | 'error' | 'loading' | 'pending' | 'ready'>('pending')
 
-	const setupDiscordSdk = useCallback(async () => {
-		try {
-			setStatus('loading')
-			await discordSdk.ready()
+// 	const setupDiscordSdk = useCallback(async () => {
+// 		try {
+// 			setStatus('loading')
+// 			await discordSdk.ready()
 
-			if (authenticate) {
-				setStatus('authenticating')
-				const { accessToken, auth } = await authenticateSdk({ scope })
-				setAccessToken(accessToken)
-				setSession(auth)
-			}
+// 			if (authenticate) {
+// 				setStatus('authenticating')
+// 				const { accessToken, auth } = await authenticateSdk({ scope })
+// 				setAccessToken(accessToken)
+// 				setSession(auth)
+// 			}
 
-			setStatus('ready')
-		} catch (e) {
-			console.error(e)
-			if (e instanceof Error) {
-				setError(e.message)
-			} else {
-				setError('An unknown error occurred')
-			}
-			setStatus('error')
-		}
-	}, [authenticate])
+// 			setStatus('ready')
+// 		} catch (e) {
+// 			console.error(e)
+// 			if (e instanceof Error) {
+// 				setError(e.message)
+// 			} else {
+// 				setError('An unknown error occurred')
+// 			}
+// 			setStatus('error')
+// 		}
+// 	}, [authenticate])
 
-	useStableEffect(() => {
-		setupDiscordSdk()
+// 	useStableEffect(() => {
+// 		setupDiscordSdk()
+// 	})
+
+// 	return { accessToken, authenticated: !!accessToken, discordSdk, error, session, status }
+// }
+
+async function setupUnitySdk(scope: any) {
+	await setupSdk({
+		clientId: import.meta.env.VITE_DISCORD_CLIENT_ID,
+		scope: scope,
+		tokenRoute: '/api/token'
 	})
-
-	return { accessToken, authenticated: !!accessToken, discordSdk, error, session, status }
 }
 
+export function useDiscordSdkSetup(options?: UseDiscordSdkSetupOptions) {
+	const { authenticate, scope } = options ?? {}
+
+	useStableEffect(() => {
+		setupUnitySdk(scope)
+	})
+	return {}
+}
 /**
  * React in development mode re-mounts the root component initially.
  * This hook ensures that the callback is only called once, preventing double authentication.
