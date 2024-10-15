@@ -1,16 +1,17 @@
-import { logger } from '../core/logger.js'
-import { hasDependency } from '../core/runtime-utils.js'
+import { logger } from '~/core/logger.js'
+import { hasDependency } from '~/core/runtime-utils.js'
 import { _readyPromiseResolve } from '~/core/plugin-utils.js'
+import { setConfig, setEngine } from '~/core/server.js'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
-import { portal } from 'robo.js'
-import type { BaseEngine } from '../engines/base.js'
+import { color, portal } from 'robo.js'
+import type { BaseEngine } from '~/engines/base.js'
 import type { Client } from 'discord.js'
 import type { ViteDevServer } from 'vite'
 
 const PATH_REGEX = new RegExp(/\[(.+?)\]/g)
 
-interface PluginOptions {
+export interface PluginConfig {
 	cors?: boolean
 	engine?: BaseEngine
 	hostname?: string
@@ -19,9 +20,9 @@ interface PluginOptions {
 	vite?: ViteDevServer
 }
 
-export let pluginOptions: PluginOptions = {}
+export let pluginOptions: PluginConfig = {}
 
-export default async (_client: Client, options: PluginOptions) => {
+export default async (_client: Client, options: PluginConfig) => {
 	pluginOptions = options ?? {}
 
 	// Set default options
@@ -31,6 +32,12 @@ export default async (_client: Client, options: PluginOptions) => {
 	if (!pluginOptions.engine) {
 		pluginOptions.engine = await getDefaultEngine()
 	}
+
+	// Assign config instance for `Server.config()`
+	setConfig(pluginOptions)
+
+	// Assign engine instance for `Server.getEngine()`
+	setEngine(pluginOptions.engine)
 
 	// Start HTTP server only if API Routes are defined
 	const { engine, hostname = process.env.HOSTNAME, port = parseInt(process.env.PORT ?? '3000') } = pluginOptions
@@ -92,13 +99,13 @@ async function getDefaultEngine() {
 	// Return Fastify if available
 	const isFastifyAvailable = await hasDependency('fastify')
 	if (isFastifyAvailable) {
-		logger.debug('Fastify is available. Using it as the server engine.')
+		logger.debug(color.bold('Fastify'), 'is available. Using it as the server engine.')
 		const { FastifyEngine } = await import('../engines/fastify.js')
 		return new FastifyEngine()
 	}
 
 	// Default engine
-	logger.debug('Using Node.js as the server engine.')
+	logger.debug('Using', color.bold('Node.js'), 'as the server engine.')
 	const { NodeEngine } = await import('../engines/node.js')
 	return new NodeEngine()
 }

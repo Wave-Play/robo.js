@@ -3,7 +3,7 @@ import type { BaseEngine } from '~/engines/base.js'
 
 export let _readyPromiseResolve: () => void
 
-const _readyPromise = new Promise<void>((resolve) => {
+export const _readyPromise = new Promise<void>((resolve) => {
 	_readyPromiseResolve = resolve
 })
 
