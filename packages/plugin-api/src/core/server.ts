@@ -12,29 +12,29 @@ export const Server = { config, get, ready }
 let _config: PluginConfig
 
 function config() {
-	return _config ?? getPluginOptions('@robojs/server')
+    return _config ?? getPluginOptions('@robojs/server')
 }
 
 // Reference to internal engine used.
 let _engine: BaseEngine
 
 function get() {
-	return _engine
+    return globalThis.roboServer?.engine ?? _engine
 }
 
 /**
  * Returns a promise that resolves when the server is all set up.
  */
 function ready() {
-	return _readyPromise
+    return _readyPromise
 }
 
 // WARNING: Do not expose to user.
 export function setConfig(config: PluginConfig) {
-	_config = config
+    _config = config
 }
 
 // WARNING: Do not expose to user.
 export function setEngine(engine: BaseEngine) {
-	_engine = engine
+    _engine = engine
 }
