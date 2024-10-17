@@ -1,5 +1,4 @@
 import { loadEnv } from './dotenv.js'
-loadEnv({ sync: true })
 
 const Keys = {
 	discord: {
@@ -24,6 +23,8 @@ const Keys = {
 }
 
 export const env = (key: string): string => {
+	loadEnv({ sync: true })
+
 	const keyParts = key.split('.')
 	
 	return keyParts.reduce((acc, k) => {
