@@ -1,5 +1,12 @@
 # robo.js
 
+## 0.10.22
+
+### Patch Changes
+
+- db93f0a: patch(cli): broken invite command
+- 0c13f23: patch(cli): always ensure entry command is there unless purposefully removed
+
 ## 0.10.21
 
 ### Patch Changes
