@@ -2,4 +2,4 @@
 'robo.js': patch
 ---
 
-patch: Fix broken invite command.
+patch(cli): broken invite command
