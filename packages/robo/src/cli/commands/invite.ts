@@ -5,6 +5,8 @@ import { env } from '../../core/env.js'
 import { Compiler } from '../utils/compiler.js'
 import { PermissionFlagsBits } from 'discord.js'
 import { color, composeColors } from '../../core/color.js'
+import { Mode } from '../../core/mode.js'
+import { loadEnv } from '../../core/dotenv.js'
 
 const command = new Command('invite')
 	.description('Generates a link for servers to add your Robo.')
@@ -18,6 +20,15 @@ async function inviteAction() {
 			'Discord Developer Portal'
 		)} to generate an invite URL manually.`
 	)
+
+	// Set NODE_ENV if not already set
+	if (!process.env.NODE_ENV) {
+		process.env.NODE_ENV = 'development'
+	}
+
+	// Make sure environment variables are loaded
+	const defaultMode = Mode.get()
+	await loadEnv({ mode: defaultMode })
 
 	// Throw error if no client ID is set
 	const clientId = env('discord.clientId')
