@@ -10,6 +10,7 @@ import {
 	Colors,
 	CommandInteraction,
 	Message,
+	PartialGroupDMChannel,
 	TextChannel
 } from 'discord.js'
 import { getSage } from '../cli/utils/utils.js'
@@ -195,7 +196,7 @@ async function sendReply(message: BaseMessageOptions, interaction: unknown) {
 		} else {
 			return interaction.reply(message)
 		}
-	} else if (interaction instanceof Message) {
+	} else if (interaction instanceof Message && !(interaction.channel instanceof PartialGroupDMChannel)) {
 		return interaction.channel.send(message)
 	}
 }

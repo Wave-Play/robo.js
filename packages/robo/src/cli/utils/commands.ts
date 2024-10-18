@@ -1,6 +1,5 @@
 import {
 	APIApplicationCommandOptionChoice,
-	ApplicationCommandType,
 	ContextMenuCommandBuilder,
 	REST,
 	Routes,
@@ -36,7 +35,7 @@ export function buildContextCommands(
 		const commandBuilder = new ContextMenuCommandBuilder()
 			.setName(key)
 			.setNameLocalizations(entry.nameLocalizations || {})
-			.setType(type === 'message' ? ApplicationCommandType.Message : ApplicationCommandType.User)
+			.setType(type === 'message' ? 3 : 2)
 
 		if (entry.defaultMemberPermissions !== undefined) {
 			commandBuilder.setDefaultMemberPermissions(entry.defaultMemberPermissions)
@@ -355,9 +354,7 @@ export async function registerCommands(
 		// Inject user install if enabled
 		if (config.experimental?.userInstall) {
 			commandData.forEach((command) => {
-				// @ts-expect-error - Types outdated
 				command.integration_types = [0, 1]
-				// @ts-expect-error - Types outdated
 				command.contexts = [0, 1, 2]
 			})
 		}
