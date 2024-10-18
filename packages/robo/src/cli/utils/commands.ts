@@ -368,6 +368,10 @@ export async function registerCommands(
 		)) as APIApplicationCommand[]
 		logger.debug(`Found ${existingCommands.length} existing commands:`, existingCommands)
 
+		// See if an entry command already exists
+		let entryCommand: APIApplicationCommand = existingCommands.find((command) => command.type === 4)
+		logger.debug('Entry command:', entryCommand)
+
 		if (force) {
 			// Start clean by forcing a deletion of all existing commands
 			const deletions = existingCommands.map((command) => {
@@ -379,6 +383,17 @@ export async function registerCommands(
 			})
 			await Promise.all(deletions)
 			logger.debug('Successfully cleaned up existing commands')
+
+			// Prepare entry command for re-registration
+			// @ts-expect-error - This is a valid command object
+			entryCommand = {
+				name: 'launch',
+				description: 'Launch an activity',
+				contexts: [0, 1, 2],
+				integration_types: [0, 1],
+				type: 4,
+				handler: 2
+			}
 		} else {
 			// Remove only commands that are no longer in the manifest by default
 			const deletions = removedCommands.map((command) => {
@@ -394,6 +409,12 @@ export async function registerCommands(
 			})
 			await Promise.all(deletions)
 			logger.debug('Successfully removed deleted commands')
+		}
+
+		// Ensure entry command is added if already there (or if reset)
+		if (entryCommand) {
+			// @ts-expect-error - This is a valid command object
+			commandData.push(entryCommand)
 		}
 
 		// Let's register the commands!
