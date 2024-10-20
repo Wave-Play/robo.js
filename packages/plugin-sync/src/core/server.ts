@@ -27,7 +27,7 @@ function getSocketServer() {
 /**
  * Utility function to handle broadcasting updates to connections.
  */
-function broadcastUpdate(cleanKey: string, data: unknown, key: string) {
+function broadcastUpdate(cleanKey: string, data: unknown, key?: string[]) {
 	const broadcastCount = _connections
 		.filter((c) => c.watch.includes(cleanKey))
 		.forEach((c) => {
@@ -57,7 +57,6 @@ function handleMessage(connection: Connection, message: string) {
 	}
 
 	const cleanKey = key ? normalizeKey(key) : ''
-
 	switch (type) {
 		case 'pong':
 			connection.isAlive = true
@@ -140,7 +139,10 @@ function handleConnection(ws: WebSocket) {
 	ws.on('close', () => {
 		syncLogger.debug(`Connection ${connection.id} closed. Removing...`)
 		const index = _connections.findIndex((c) => c.id === connection.id)
-		if (index > -1) _connections.splice(index, 1)
+
+		if (index > -1) {
+			_connections.splice(index, 1)
+		}
 	})
 
 	ws.on('message', (message) => handleMessage(connection, message.toString()))
@@ -160,10 +162,8 @@ function start() {
 	const engine = getServerEngine<NodeEngine>()
 	engine.registerWebsocket('/sync', (req, socket, head) => {
 		const wss = getSocketServer()
-		if (wss) {
-			wss.handleUpgrade(req, socket, head, (ws) => {
-				wss.emit('connection', ws, req)
-			})
-		}
+		wss?.handleUpgrade(req, socket, head, (ws) => {
+			wss?.emit('connection', ws, req)
+		})
 	})
 }
