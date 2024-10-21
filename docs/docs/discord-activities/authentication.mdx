@@ -1,3 +1,7 @@
+import { Card } from '@site/src/components/shared/Card'
+import { CardContainer } from '@site/src/components/shared/CardContainer'
+import { Terminal } from '@site/src/components/shared/Terminal'
+
 # 🔒 Authentication
 
 A **Discord Activity** wouldn't feel complete without authenticating users. This allows you to provide a more personalized experience, such as showing your users' usernames, avatars, and more.
@@ -32,29 +36,20 @@ Once authenticated, you can access the user's information using the `useDiscordS
 import { useDiscordSdk } from '../hooks/useDiscordSdk'
 
 export function Profile() {
-	const {
-		// The user's access token (string)
-		accessToken,
-
-		// Whether the user is authenticated (boolean)
-		authenticated,
-
-		// Discord SDK instance (DiscordSDK)
-		discordSdk,
-
-		// Any errors that occurred during authentication (Error)
-		error,
-
-		// The user's session information (DiscordSession)
-		session,
-
-		// The status will be `authenticating` during prompt (string)
-		status
-	} = useDiscordSdk()
+	const { accessToken, authenticated, discordSdk, error, session, status } = useDiscordSdk()
 
 	// ...
 }
 ```
+
+The object returned from `useDiscordSdk` includes:
+
+- `accessToken`: The user's access token. (string)
+- `authenticated`: Whether the user is authenticated. (boolean)
+- `discordSdk`: The Discord SDK instance. (DiscordSDK)
+- `error`: Any errors that occurred during authentication. (Error)
+- `session`: The user's session information. (DiscordSession)
+- `status`: The status will be `authenticating` during the prompt. (string)
 
 You can use the `session` object to access the user's information, such as their username, avatar, and more.
 
@@ -71,3 +66,15 @@ For convenience, `<DiscordContextProvider>` accepts a `loadingScreen` prop. This
 	<Activity />
 </DiscordContextProvider>
 ```
+
+## Vanilla projects
+
+If you're not using a template based on **React**, you can still authenticate users using the **[Embedded App SDK](https://github.com/discord/embedded-app-sdk/)** directly.
+
+<CardContainer>
+	<Card
+		href="https://github.com/discord/embedded-app-sdk/"
+		title="🔗 Embedded App SDK"
+		description="Learn more about the Embedded App SDK."
+	/>
+</CardContainer>
