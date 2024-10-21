@@ -6,13 +6,19 @@
         "intents": []
       },
       "plugins": [],
-      "type": "plugin"
+      "type": "plugin",
+      "seed": {
+        "description": "Boilerplate tRPC server and client files"
+      }
     },
     "language": "typescript",
     "mode": "production",
+    "seed": {
+      "description": "Boilerplate tRPC server and client files"
+    },
     "type": "plugin",
-    "updatedAt": "2024-09-16T04:28:04.131Z",
-    "version": "0.10.14"
+    "updatedAt": "2024-10-21T00:44:07.021Z",
+    "version": "0.10.22"
   },
   "api": {
     "trpc": {

@@ -6,13 +6,19 @@
         "intents": []
       },
       "plugins": [],
+      "seed": {
+        "description": "Sample usage + slash commands and guild join tracking."
+      },
       "type": "plugin"
     },
     "language": "typescript",
     "mode": "production",
+    "seed": {
+      "description": "Sample usage + slash commands and guild join tracking."
+    },
     "type": "plugin",
-    "updatedAt": "2024-10-10T06:15:49.314Z",
-    "version": "0.10.20"
+    "updatedAt": "2024-10-21T00:44:01.989Z",
+    "version": "0.10.22"
   },
   "api": {},
   "commands": {},
