@@ -1,0 +1,73 @@
+# 🔒 Authentication
+
+A **Discord Activity** wouldn't feel complete without authenticating users. This allows you to provide a more personalized experience, such as showing your users' usernames, avatars, and more.
+
+Lucky for us, **Discord's** **[Embedded App SDK](https://github.com/discord/embedded-app-sdk/)** simplifies the process.
+
+## Prompt Users to Authenticate
+
+Most of our templates and **Create Robo** starters come with a built-in authentication system via `<DiscordContextProvider>`. This component abstracts the authentication process, so you don't have to worry about the small details.
+
+```tsx title="/src/app/App.tsx"
+import { DiscordContextProvider } from '../hooks/useDiscordSdk'
+import { Activity } from './Activity'
+import './App.css'
+
+export default function App() {
+	return (
+		<DiscordContextProvider authenticate scope={['identify', 'guilds']}>
+			<Activity />
+		</DiscordContextProvider>
+	)
+}
+```
+
+Setting `authenticate` to `true` will prompt users to authenticate with Discord when they open your activity. You can adjust the `scope` array to request additional permissions.
+
+## The React Hook
+
+Once authenticated, you can access the user's information using the `useDiscordSdk` hook.
+
+```tsx title="/src/components/Profile.tsx"
+import { useDiscordSdk } from '../hooks/useDiscordSdk'
+
+export function Profile() {
+	const {
+		// The user's access token (string)
+		accessToken,
+
+		// Whether the user is authenticated (boolean)
+		authenticated,
+
+		// Discord SDK instance (DiscordSDK)
+		discordSdk,
+
+		// Any errors that occurred during authentication (Error)
+		error,
+
+		// The user's session information (DiscordSession)
+		session,
+
+		// The status will be `authenticating` during prompt (string)
+		status
+	} = useDiscordSdk()
+
+	// ...
+}
+```
+
+You can use the `session` object to access the user's information, such as their username, avatar, and more.
+
+```ts
+const avatarUri = `https://cdn.discordapp.com/avatars/${session.id}/${session.avatar}.png?size=256`
+```
+
+## Loading State
+
+For convenience, `<DiscordContextProvider>` accepts a `loadingScreen` prop. This component will be displayed while the user is authenticating.
+
+```tsx title="/src/app/App.tsx"
+<DiscordContextProvider loadingScreen={<div>Loading...</div>}>
+	<Activity />
+</DiscordContextProvider>
+```
