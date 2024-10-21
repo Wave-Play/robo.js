@@ -144,14 +144,14 @@ const sidebars = {
 				'discord-bots/debug',
 				'discord-bots/events',
 				'discord-bots/invite',
+				'discord-bots/keys',
 				'discord-bots/middleware',
 				{
 					id: 'discord-bots/migrate',
 					label: '⭐ Migrating',
 					type: 'doc'
 				},
-				'discord-bots/sage',
-				'discord-bots/secrets'
+				'discord-bots/sage'
 			]
 		},
 		{
