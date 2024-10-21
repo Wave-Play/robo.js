@@ -17,7 +17,6 @@ interface Connection {
 }
 
 const _connections: Array<Connection> = []
-const _context: Record<string, unknown> = {} // TODO:
 const _state: Record<string, unknown> = {}
 let _wss: WebSocketServer | undefined
 
