@@ -125,6 +125,28 @@ importers:
         specifier: ^5.4.5
         version: 5.5.4
 
+  packages/create-discord-activity:
+    dependencies:
+      discord.js:
+        specifier: 14.16.3
+        version: 14.16.3
+      robo.js:
+        specifier: workspace:*
+        version: link:../robo
+    devDependencies:
+      '@swc/core':
+        specifier: 1.7.36
+        version: 1.7.36
+      '@types/node':
+        specifier: 22.7.7
+        version: 22.7.7
+      prettier:
+        specifier: 3.3.3
+        version: 3.3.3
+      typescript:
+        specifier: 5.6.3
+        version: 5.6.3
+
   packages/create-robo:
     dependencies:
       '@inquirer/prompts':
@@ -1912,6 +1934,9 @@ packages:
 
   '@types/node@22.5.2':
     resolution: {integrity: sha512-acJsPTEqYqulZS/Yp/S3GgeE6GZ0qYODUR8aVr/DkhHQ8l9nd4j5x1/ZJy9/gHrRlFMqkO6i0I3E27Alu4jjPg==}
+
+  '@types/node@22.7.7':
+    resolution: {integrity: sha512-SRxCrrg9CL/y54aiMCG3edPKdprgMVGDXjA3gB8UmmBW5TcXzRUYAh8EWzTnSJFAd1rgImPELza+A3bJ+qxz8Q==}
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
@@ -6508,6 +6533,10 @@ snapshots:
     dependencies:
       undici-types: 6.19.8
 
+  '@types/node@22.7.7':
+    dependencies:
+      undici-types: 6.19.8
+
   '@types/normalize-package-data@2.4.4': {}
 
   '@types/parse-json@4.0.2': {}
@@ -9898,8 +9927,7 @@ snapshots:
 
   typescript@5.5.4: {}
 
-  typescript@5.6.3:
-    optional: true
+  typescript@5.6.3: {}
 
   unbox-primitive@1.0.2:
     dependencies:
