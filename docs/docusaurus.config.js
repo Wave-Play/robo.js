@@ -157,6 +157,10 @@ const config = {
 						to: '/plugins/overview'
 					},
 					{
+						from: '/templates',
+						to: '/templates/overview'
+					},
+					{
 						from: '/discord-bots/secrets',
 						to: '/discord-bots/keys'
 					}
