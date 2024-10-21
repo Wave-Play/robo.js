@@ -106,7 +106,7 @@ const config = {
 					},
 					{
 						from: '/docs/basics/secrets',
-						to: '/discord-bots/secrets'
+						to: '/discord-bots/credentials'
 					},
 					{
 						from: '/docs/hosting',
