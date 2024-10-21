@@ -162,7 +162,7 @@ const config = {
 					},
 					{
 						from: '/discord-bots/secrets',
-						to: '/discord-bots/keys'
+						to: '/discord-bots/credentials'
 					}
 				]
 			}

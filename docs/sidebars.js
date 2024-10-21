@@ -24,7 +24,7 @@ const sidebars = {
 		},
 		{
 			type: 'category',
-			label: 'CLI Tools',
+			label: 'Command Line',
 			link: {
 				id: 'cli/overview',
 				type: 'doc'
@@ -141,10 +141,14 @@ const sidebars = {
 				},
 				'discord-bots/commands',
 				'discord-bots/context-menu',
+				{
+					id: 'discord-bots/credentials',
+					label: '🔑 Credentials',
+					type: 'doc'
+				},
 				'discord-bots/debug',
 				'discord-bots/events',
 				'discord-bots/invite',
-				'discord-bots/keys',
 				'discord-bots/middleware',
 				{
 					id: 'discord-bots/migrate',

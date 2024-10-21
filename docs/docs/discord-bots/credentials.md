@@ -1,3 +1,52 @@
+import { Card } from '@site/src/components/shared/Card'
+import { CardContainer } from '@site/src/components/shared/CardContainer'
+import { Terminal } from '@site/src/components/shared/Terminal'
+
+# 🔑 Discord Bot Credentials
+
+For your **Discord Activity** to work, you need to set up a few **environment variables** to authenticate with **Discord**.
+
+These are secret values that you should never share with anyone. They're stored in a `.env` file, which is automatically loaded by **Robo.js** when you start your project.
+
+## What You Need
+
+Get the following environment variables from the **[Discord Developer Portal](https://discord.com/developers/applications)**.
+
+<CardContainer>
+	<Card
+		title="🔗 Discord Developer Portal"
+		description="Get your Discord App credentials here."
+		href="https://discord.com/developers/applications"
+	/>
+</CardContainer>
+
+### DISCORD_CLIENT_ID
+
+This is your **Discord Application ID**, found in the **Discord Developer Portal**. Sign in with your **Discord** account, click on your bot application, and find the **Application ID** in the **General Information** tab.
+
+In your `.env` file, add the following line:
+
+```bash title=".env"
+DISCORD_CLIENT_ID="your_application_id"
+```
+
+:::info Reminder
+
+Don't forget to replace `your_application_id` with the value you just obtained!
+
+:::
+
+### DISCORD_TOKEN
+
+This is your **Discord Bot Token**, found in the **Bot** tab of your bot application under the **Token** section near the top. You may need to reveal it by clicking **Reset Token**.
+
+In your `.env` file, add the following line:
+
+```bash title=".env"
+DISCORD_TOKEN="your_bot_token"
+```
+
+
 # 🔑 Keys
 
 Keeping your project's sensitive info under wraps is a top priority. That's why we use a `.env` file to store critical values like API keys and tokens. It helps prevent accidentally sharing these secrets on platforms like GitHub.
