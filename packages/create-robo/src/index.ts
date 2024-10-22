@@ -52,6 +52,20 @@ new Command('create-robo <projectName>')
 		logger.debug(`create-robo version:`, packageJson.version)
 		logger.debug(`Current working directory:`, process.cwd())
 
+		// Just return the version if requested
+		if (options.version) {
+			const version = color.cyan('v' + packageJson.version)
+
+			logger.log()
+			logger.log(Indent, '⚡', color.bold('Create Robo ' + version))
+			logger.log(Indent, '  ', packageJson.description)
+			logger.log()
+			logger.log(Indent, '   Learn more:', HighlightBlue('https://robojs.dev/create-robo'))
+			logger.log()
+
+			return
+		}
+
 		// Verify option types for better Commander API compatibility
 		if (typeof options.plugins === 'string') {
 			// @ts-expect-error - This is a valid check
