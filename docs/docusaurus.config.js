@@ -353,6 +353,10 @@ const config = {
 			/** @type {import('@docusaurus/preset-classic').Options} */
 			({
 				docs: {
+					admonitions: {
+						keywords: ['plugin'],
+						extendDefaults: true
+					},
 					editUrl: 'https://github.com/Wave-Play/robo.js/edit/main/docs/',
 					routeBasePath: '/',
 					showLastUpdateAuthor: true,
