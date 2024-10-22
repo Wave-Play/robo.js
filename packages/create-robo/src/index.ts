@@ -15,6 +15,7 @@ import { Command } from 'robo.js/cli.js'
 export interface CommandOptions {
 	features?: string
 	install?: boolean
+	'no-install'?: boolean
 	javascript?: boolean
 	kit?: 'activity' | 'app' | 'bot' | 'web'
 	plugin?: boolean
@@ -24,7 +25,10 @@ export interface CommandOptions {
 	verbose?: boolean
 	roboVersion?: string
 	update?: boolean
+	'no-update'?: boolean
 	creds?: boolean
+	'no-creds'?: boolean
+	version?: boolean
 }
 
 new Command('create-robo <projectName>')
@@ -48,9 +52,43 @@ new Command('create-robo <projectName>')
 			level: options.verbose ? 'debug' : 'info'
 		}).debug(`Creating new Robo.js ${options.plugin ? 'plugin' : 'project'}...`)
 		logger.debug(`Using options: ${JSON.stringify(options)}`)
+		logger.debug(`Using args: ${JSON.stringify(args)}`)
 		logger.debug(`Package manager:`, getPackageManager())
 		logger.debug(`create-robo version:`, packageJson.version)
 		logger.debug(`Current working directory:`, process.cwd())
+
+		// Verify option types for better Commander API compatibility
+		if (typeof options.plugins === 'string') {
+			// @ts-expect-error - This is a valid check
+			options.plugins = options.plugins.split(' ')
+		} else if (options.kit?.includes(' ')) {
+			// Bypasses current bug in CLi handler causing kit to be read as arg
+			// e.g. `npx create-robo -k activity myProject` reads `activity myProject` as the kit
+			// TODO: https://github.com/Wave-Play/robo.js/issues/331
+			const tokens = options.kit.split(' ')
+			options.kit = tokens.shift() as 'activity' | 'app' | 'bot' | 'web'
+			args.push(...tokens)
+		}
+
+		// Set default values
+		if (options.creds === undefined) {
+			options.creds = true
+		}
+		if (options['no-creds']) {
+			options.creds = false
+		}
+		if (options.install === undefined) {
+			options.install = true
+		}
+		if (options['no-install']) {
+			options.install = false
+		}
+		if (options.update === undefined) {
+			options.update = true
+		}
+		if (options['no-update']) {
+			options.update = false
+		}
 
 		// `activity` is an alias for `app`
 		if (options.kit === 'activity') {
