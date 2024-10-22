@@ -159,9 +159,10 @@ new Command('create-robo <projectName>')
 		}
 
 		// Print introduction section
+		const kitName = ogKit === 'web' ? 'Web App' : options.kit === 'app' ? 'Discord Activity' : 'Discord Bot'
 		logger.log('')
-		logger.log(Indent, `   Spawning ${chalk.bold.cyan(projectName)} into existence...`)
 		logger.log(Indent, color.bold('✨ Welcome to Robo.js!'))
+		logger.log(Indent, `   Spawning ${Highlight(projectName)} as a ${Highlight(kitName)}...`)
 
 		const metadata: Array<{ key: string; value: string }> = []
 		if (options.plugin) {
