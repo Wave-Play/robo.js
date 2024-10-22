@@ -107,7 +107,41 @@ Sage is powered by **[@robojs/ai](../plugins/ai)**
 ## Frequently Asked Questions
 
 <details>
-	<summary>Do I still need to make a client?</summary>
+	<summary>Can I use my existing code?</summary>
+
+Yes! **Robo.js** is built on top of **Discord.js** and is fully compatible with existing bots. Check out the **[Migration Guide](./migrate)** for more info.
+
+</details>
+
+<details>
+	<summary>Can I use any database? Am I forced to use Flashcore?</summary>
+
+**Robo.js** is database agnostic. You can use any database you like, including Flashcore, MongoDB, or even a simple JSON file.
+
+We recommend **Flashcore** for its simplicity, but more mature projects may benefit from a more robust database like MySQL or PostgreSQL. We have **[Templates](/templates/overview)** for those!
+
+</details>
+
+<details>
+	<summary>Do I have to use TypeScript?</summary>
+
+Nope! **Robo.js** supports both JavaScript and TypeScript. You can use either or both in the same project.
+
+When creating a new project, uncheck the TypeScript option if you want to use JavaScript. You can always add it later.
+
+</details>
+
+<details>
+	<summary>How do I register my commands?</summary>
+
+**You don't!**
+
+**Robo.js** automatically registers your commands when you create them in the `/src/commands` directory. It internally uses a manifest to keep track of changes and only register when necessary.
+
+</details>
+
+<details>
+	<summary>Should I still need to make a client?</summary>
 
 Nope, **Robo.js** handles the client for you. Configure it in `/config/robo.mjs` and import it via `import { client } from 'robo.js'`.
 
@@ -119,22 +153,6 @@ Nope, **Robo.js** handles the client for you. Configure it in `/config/robo.mjs`
 ESM (ECMAScript Modules) is the new standard for JavaScript modules. **Robo.js** exclusively uses ESM.
 
 `import` is more powerful than `require` and allows for better tree-shaking and static analysis.
-
-</details>
-
-<details>
-	<summary>Is my existing bot code compatible with Robo.js?</summary>
-
-Yes! **Robo.js** is built on top of **Discord.js** and is fully compatible with existing bots. Check out the **[Migration Guide](./migrate)** for more info.
-
-</details>
-
-<details>
-	<summary>How do I register my commands?</summary>
-
-**You don't!**
-
-**Robo.js** automatically registers your commands when you create them in the `/src/commands` directory. It internally uses a manifest to keep track of changes and only register when necessary.
 
 </details>
 
