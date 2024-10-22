@@ -104,6 +104,31 @@ Sage is powered by **[@robojs/ai](../plugins/ai)**
 
 :::
 
+## Frequently Asked Questions
+
+<details>
+	<summary>Do I still need to make a client?</summary>
+
+Nope, **Robo.js** handles the client for you. Configure it in `/config/robo.mjs` and import it via `import { client } from 'robo.js'`.
+
+</details>
+
+<details>
+	<summary>What is ESM? Why can't I use `require`?</summary>
+
+ESM (ECMAScript Modules) is the new standard for JavaScript modules. **Robo.js** exclusively uses ESM.
+
+`import` is more powerful than `require` and allows for better tree-shaking and static analysis.
+
+</details>
+
+<details>
+	<summary>Is my existing bot code compatible with Robo.js?</summary>
+
+Yes! **Robo.js** is built on top of **Discord.js** and is fully compatible with existing bots. Check out the **[Migration Guide](./migrate)** for more info.
+
+</details>
+
 ## Learn More
 
 **Robo.js** has a lot to offer for such a tiny framework with **[zero dependencies](https://packagephobia.com/result?p=robo.js)**.
