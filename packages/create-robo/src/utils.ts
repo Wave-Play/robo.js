@@ -1,8 +1,13 @@
 import { spawn } from 'node:child_process'
 import chalk from 'chalk'
 import { logger } from 'robo.js'
+import { createRequire } from 'node:module'
 import type { SpawnOptions } from 'node:child_process'
 import type { Logger } from 'robo.js'
+
+// Read the version from the package.json file
+const require = createRequire(import.meta.url)
+export const packageJson = require('../package.json')
 
 type PackageManager = 'npm' | 'bun' | 'pnpm' | 'yarn'
 

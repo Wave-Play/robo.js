@@ -246,11 +246,38 @@ new Command('create-robo <projectName>')
 			logger.log(Indent, '   - Check out or create your own plugins')
 		}
 
+		// Show what failed and how to resolve
 		if (robo.installFailed) {
 			logger.log('')
-			logger.log(Indent, '   ' + chalk.bold.red('Resolve the following issues:'))
-			logger.log(Indent, '   - Install dependencies manually:', chalk.bold.cyan(packageManager + ' install <packages>'))
+			logger.log(Indent, '   ' + HighlightRed('Resolve these issues'))
+			logger.log(Indent, '   - Install dependencies manually:', Highlight(packageManager + ' install <packages>'))
 		}
+
+		// Link to common resources
+		if (options.kit === 'app') {
+			logger.log('')
+			logger.log(Indent, '  ', color.bold('Learn more'))
+			logger.log(Indent, '   - Documentation:', HighlightBlue('https://robojs.dev/discord-activities'))
+			logger.log(
+				Indent,
+				'   - Authenticating users:',
+				HighlightBlue('https://robojs.dev/discord-activities/authentication')
+			)
+			logger.log(
+				Indent,
+				'   - Multiplayer features:',
+				HighlightBlue('https://robojs.dev/discord-activities/multiplayer')
+			)
+			logger.log(Indent, '   - ✨🎃 Hacktoberfest:', HighlightMagenta('https://robojs.dev/hacktoberfest'))
+		} else if (options.kit === 'bot') {
+			logger.log('')
+			logger.log(Indent, '  ', color.bold('Learn more'))
+			logger.log(Indent, '   - Documentation:', HighlightBlue('https://robojs.dev/discord-bots'))
+			logger.log(Indent, '   - Context commands:', HighlightBlue('https://robojs.dev/discord-bots/context-menu'))
+			logger.log(Indent, '   - Slash commands:', HighlightBlue('https://robojs.dev/discord-bots/commands'))
+			logger.log(Indent, '   - ✨🎃 Hacktoberfest:', HighlightMagenta('https://robojs.dev/hacktoberfest'))
+		}
+
 		logger.log('')
 	})
 	.parse()
