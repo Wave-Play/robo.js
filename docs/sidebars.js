@@ -154,11 +154,12 @@ const sidebars = {
 				},
 				'discord-bots/debug',
 				'discord-bots/events',
+				'discord-bots/file-structure',
 				'discord-bots/invite',
 				'discord-bots/middleware',
 				{
 					id: 'discord-bots/migrate',
-					label: '⭐ Migrating',
+					label: '🚚 Migration',
 					type: 'doc'
 				},
 				'discord-bots/sage'

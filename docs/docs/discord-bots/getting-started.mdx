@@ -10,11 +10,15 @@ import { Terminal } from '@site/src/components/shared/Terminal'
 
 # ✨ Getting Started with Discord Bots
 
-**Robo.js** makes building **[Discord.js](https://discord.js.org)** bots as easy as putting certain files in the right place. Want to create a command? Just make a file in the `/src/commands` directory. Events? Create files in `/src/events`. It's that simple!
+**Robo.js** makes building bots with **[Discord.js](https://discord.js.org)** as easy as placing files in the right place.
+
+Create a **[Slash Command](./commands)** by making a file in the `/src/commands` directory. The name of the file becomes the name of the command. **[Context Commands](./context-menu)** and **[Events](./events)**? Just as easy!
+
+This is more than just a command handler - it's a full-fledged **[Framework](/robojs/overview)** and **[Ecosystem](/plugins/directory)**.
 
 :::tip Robo.js does _not_ replace Discord.js!
 
-Instead, it simplifies coding by handling boilerplate. You still have all of **Discord.js**!
+Instead, it simplifies development by managing your project. You still have all of **Discord.js**!
 
 **Got an existing bot?** Check out the **[Migration Guide](./migrate)** for how to use existing code with **Robo.js**.
 
@@ -24,9 +28,9 @@ Instead, it simplifies coding by handling boilerplate. You still have all of **D
 
 Ready to start your adventure? Try **[Create Robo](../cli/create-robo)** in your terminal:
 
-<Terminal create>{'<projectName> -k bot'}</Terminal>
+<Terminal create>{'<projectName>'}</Terminal>
 
-This will spawn a new **Robo.js** project ready to use as a **Discord Bot**. We call these **Robos**.
+This will help spawn a new **Robo.js** project as a **Discord Bot**. We call these **Robos**.
 
 <CardContainer>
 	<Card
@@ -41,72 +45,23 @@ This will spawn a new **Robo.js** project ready to use as a **Discord Bot**. We 
 	/>
 </CardContainer>
 
-## File Structure
+## Documentation
 
-Discord bots built with Robo.js follow the following file structure:
+If you already know **Discord.js**, then you already know **Robo.js**... almost.
 
-- `/src/commands`: Slash commands. Can be nested for subcommands or subcommand groups.
-- `/src/context`: Context commands for either `/user` or `/message`.
-- `/src/events`: Discord events. Can be nested for grouped events.
-
-### Basic Example
-
-```
-/src
-├── /commands
-│   └── ping.js
-└── /events
-    └── messageCreate.js
-```
-
-The above is used to create:
-
-- `/ping` command.
-- `messageCreate` event.
-
-### Advanced Example
-
-```
-/src
-├── /commands
-│   ├── ping.js
-│   ├── /ban
-│   │   └── user.js
-│   └── /settings
-│       └── /update
-│           └── something.js
-├── /context
-│   ├── /user
-│   │   └── Audit.js
-│   └── /message
-│       └── Report.js
-└── /events
-    ├── ready.js
-    └── /messageCreate
-        ├── dm.js
-        └── hello.js
-```
-
-The above is used to create:
-
-- `/ping` command.
-- `/ban user` subcommand.
-- `/settings update something` subcommand group.
-- `Audit` user context command.
-- `Report` message context command.
-- `ready` event.
-- `dm` and `hello` grouped `messageCreate` events.
+You can develop using the same **Discord.js** you know and **[love](https://opencollective.com/discordjs)**, but you also get access to **[unique features](../robojs/overview)**. This documentation covers everything you need to know about creating **Discord Bots** with **Robo.js**.
 
 <CardContainer>
-	<Card href="../robojs/files" title="📂 Robo File Structure" description="Learn about standard Robo files." />
-</CardContainer>
-
-### Modules
-
-For larger projects, you can use modules to group similar functionality together as if they were mini-projects within your main project. Each module follows the same file structure.
-
-<CardContainer>
-	<Card href="../robojs/modules" title="📦 Modules" description="Stay organized with modules." />
+	<Card href="./commands" title="📜 Slash Commands" description="Your bot follows best practices by default." />
+	<Card href="./context-menu" title="🖱️ Context Commands" description="Extend right click and long press behavior." />
+	<Card href="./credentials" title="🔑 Credentials" description="Secure your Discord Bot credentials." />
+	<Card href="./debug" title="🐛 Debugging" description="Troubleshoot right within Discord." />
+	<Card href="./events" title="📡 Events" description="Know and respond to everything that happens." />
+	<Card href="./file-structure" title="📂 File Structure" description="Learn the purpose of each folder." />
+	<Card href="./invite" title="🏠 Invite" description="Add your bot to Discord servers." />
+	<Card href="./middleware" title="🧩 Middleware" description="Run code before other commands and events." />
+	<Card href="./migrate" title="🚚 Migration" description="Move your existing bot to Robo.js." />
+	<Card href="./sage" title="🔮 Sage" description="Unlock the full power of Sage Mode." />
 </CardContainer>
 
 ## Slash Commands
@@ -251,6 +206,6 @@ Sage is powered by **[@robojs/ai](../plugins/ai)**
 		title="🔗 Templates"
 		description="Kickstart your project with a template."
 	/>
-	<Card href="../robojs/linting" title="💅 Linting" description="Check your code for errors and style." />
+	<Card href="../robojs/modules" title="📦 Modules" description="Stay organized with modules." />
 	<Card href="../robojs/typescript" title="📘 TypeScript" description="Write better code with type safety." />
 </CardContainer>
