@@ -145,6 +145,7 @@ const sidebars = {
 					label: '✨ Getting Started',
 					type: 'doc'
 				},
+				'discord-bots/beginner-guide',
 				'discord-bots/commands',
 				'discord-bots/context-menu',
 				{

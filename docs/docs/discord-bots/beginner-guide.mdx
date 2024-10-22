@@ -1,0 +1,145 @@
+import { Card } from '@site/src/components/shared/Card'
+import { CardContainer } from '@site/src/components/shared/CardContainer'
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+import { Terminal } from '@site/src/components/shared/Terminal'
+
+# 🔰 Beginner Guide
+
+Despite how **Robo.js** make things, it can be a bit overwhelming at first. There's a lot to take in, but don't worry! This guide will help you get started with the basics of creating a **Discord Bot**.
+
+Before we get started, make sure you have **[Node.js](https://nodejs.org/en/download)** installed alongside **[VS Code](https://code.visualstudio.com/)** or your favorite code editor.
+
+## Running
+
+Once you've **[created a Robo](/cli/create-robo)**, you can run it in your **Terminal**.
+
+<Terminal>npm run dev</Terminal>
+
+:::tip
+
+Make sure your **[Credentials](/discord-bots/credentials)** are set up correctly first.
+
+:::
+
+## Slash Commands
+
+Creating a **Slash Command** is as easy as creating files.
+
+Let's say you want a new `/hello` command. Just create a file in the `/src/commands` directory named `hello.js` and export a default function that returns something.
+
+<Tabs>
+<TabItem value="js" label="Javascript">
+
+```javascript title="/src/commands/hello.js"
+export default () => {
+	return 'Hello World!'
+}
+```
+
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```typescript title="/src/commands/hello.ts"
+import type { CommandResult } from 'robo.js'
+
+export default (): CommandResult => {
+	return 'Hello World!'
+}
+```
+
+</TabItem>
+</Tabs>
+
+Your `/hello` command is now ready to use! **Robo.js** takes care of registration for you.
+
+Miss your interaction object? Don't worry, it's still there!
+
+<Tabs>
+<TabItem value="js" label="Javascript">
+
+```javascript title="/src/commands/hello.js"
+export default (interaction) => {
+	interaction.reply('Hello World!')
+}
+```
+
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```typescript title="/src/commands/hello.ts"
+import type { ChatInputCommandInteraction } from 'discord.js'
+import type { CommandResult } from 'robo.js'
+
+export default (interaction: ChatInputCommandInteraction): CommandResult => {
+	interaction.reply('Hello World!')
+}
+```
+
+</TabItem>
+</Tabs>
+
+This is just the beginning. Nest folders to create subcommands, make your export async to defer, define options, and more.
+
+<CardContainer>
+	<Card href="./commands" title="📜 Slash Commands" description="Your bot follows best practices by default." />
+</CardContainer>
+
+## Context Commands
+
+Ever right clicked on someone's profile or a message and seen an "Apps" section? Those are context commands!
+
+Creating and registering context commands in Robo.js is no different from regular commands. The `/context` directory can have two subdirectories: `/user` and `/message`. Just like commands, the name of the file becomes the name of the context command.
+
+<CardContainer>
+	<Card href="./context-menu" title="🖱️ Context Commands" description="Learn more about context commands." />
+</CardContainer>
+
+## Event Listeners
+
+Listening to events using Robo.js again follows the same file structure. Create a file in the `events` directory, and the name of the file becomes the Discord event you're listening to. Noticing a pattern here?
+
+### Example Usage
+
+Registering an event listener is as simple as creating a file in the `/src/events` directory.
+
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
+
+```javascript showLineNumbers title="/src/events/messageCreate.js"
+export default (message) => {
+	if (message.content.includes('hello')) {
+		message.channel.send('Hello there!')
+	}
+}
+```
+
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```typescript showLineNumbers title="/src/events/messageCreate.ts"
+import type { Message } from 'discord.js'
+
+export default (message: Message) => {
+	if (message.content.includes('hello')) {
+		message.channel.send('Hello there!')
+	}
+}
+```
+
+</TabItem>
+</Tabs>
+
+Your default export is the equivalent of `client.on('messageCreate', (message) => {})` in Discord.js. The same exact parameters are passed to your event listener function.
+
+<CardContainer>
+	<Card href="./events" title="📡 Events" description="Learn more about events." />
+</CardContainer>
+
+## Sage Mode
+
+Sage Mode is a powerful feature in Robo.js that simplifies interaction handling. It operates behind the scenes, automatically simplifying interaction handling and providing smart error replies to make debugging easier.
+
+<CardContainer>
+	<Card href="../robojs/sage" title="🔮 Sage" description="Unlock the full power of Sage Mode." />
+</CardContainer>
