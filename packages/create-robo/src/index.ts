@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import Robo from './robo.js'
 import { Indent, getPackageManager } from './utils.js'
-import { Command } from 'commander'
 import { input, select } from '@inquirer/prompts'
 import { createRequire } from 'node:module'
 import path from 'node:path'
@@ -11,6 +10,7 @@ import { logger } from 'robo.js'
 // Read the version from the package.json file
 const require = createRequire(import.meta.url)
 const packageJson = require('../package.json')
+import { Command } from 'robo.js/cli.js'
 
 export interface CommandOptions {
 	features?: string
@@ -30,19 +30,20 @@ export interface CommandOptions {
 new Command('create-robo <projectName>')
 	.description('Launch epic projects instantly with Robo.js — effortless, powerful, complete!')
 	.version(packageJson.version)
-	.option('-f --features <features>', 'comma-separated list of features to include')
-	.option('-js --javascript', 'create a Robo using JavaScript')
-	.option('-p --plugins <plugins...>', 'pre-install plugins along with the project')
-	.option('-P --plugin', 'create a Robo plugin instead of a bot')
-	.option('-ni --no-install', 'skips the installation of dependencies')
-	.option('-nu --no-update', 'skips the update check')
-	.option('-t --template <templateUrl>', 'create a Robo from an online template')
-	.option('-ts --typescript', 'create a Robo using TypeScript')
-	.option('-v --verbose', 'print more information for debugging')
-	.option('-rv, --robo-version <value>', 'specify a Robo.js version to use')
-	.option('-k, --kit <value>', 'choose a kit to start off with your Robo')
-	.option('-nc --no-creds', 'Skips asking for the credentials')
-	.action(async (options: CommandOptions, { args }) => {
+	.positionalArgs(true)
+	.option('-f', '--features', 'comma-separated list of features to include')
+	.option('-js', '--javascript', 'create a Robo using JavaScript')
+	.option('-p', '--plugins', 'pre-install plugins along with the project')
+	.option('-P', '--plugin', 'create a Robo plugin instead of a bot')
+	.option('-ni', '--no-install', 'skips the installation of dependencies')
+	.option('-nu', '--no-update', 'skips the update check')
+	.option('-t', '--template', 'create a Robo from an online template')
+	.option('-ts', '--typescript', 'create a Robo using TypeScript')
+	.option('-v', '--verbose', 'print more information for debugging')
+	.option('-rv', '--robo-version', 'specify a Robo.js version to use')
+	.option('-k', '--kit', 'choose a kit to start off with your Robo')
+	.option('-nc', '--no-creds', 'Skips asking for the credentials')
+	.handler(async (args: string[], options: CommandOptions) => {
 		logger({
 			level: options.verbose ? 'debug' : 'info'
 		}).debug(`Creating new Robo.js ${options.plugin ? 'plugin' : 'project'}...`)
@@ -214,7 +215,7 @@ new Command('create-robo <projectName>')
 		}
 		logger.log('')
 	})
-	.parse(process.argv)
+	.parse()
 
 async function checkUpdates() {
 	// Check NPM registry for updates
