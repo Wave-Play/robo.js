@@ -971,9 +971,11 @@ export default class Robo {
 
 	async askForDiscordCredentials(): Promise<void> {
 		const discordPortal = 'Portal:'
-		const discordPortalUrl = chalk.bold.blue('https://discord.com/developers/applications')
-		const officialGuide = 'Guide:'
-		const officialGuideUrl = chalk.bold.blue('https://roboplay.dev/' + (this._isApp ? 'appkey' : 'botkey'))
+		const discordPortalUrl = HighlightBlue('https://discord.com/developers/applications')
+		const officialGuide = 'Docs:'
+		const officialGuideUrl = HighlightBlue(
+			`https://robojs.dev/${this._isApp ? 'discord-activities' : 'discord-bots'}/credentials`
+		)
 
 		let discordClientId = ''
 		let discordToken = ''
