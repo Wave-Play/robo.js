@@ -1,15 +1,10 @@
 #!/usr/bin/env node
+import { Highlight, HighlightBlue, HighlightGreen, HighlightMagenta, HighlightRed, Indent } from './core/constants.js'
 import Robo from './robo.js'
-import { Indent, getPackageManager } from './utils.js'
-import { input, select } from '@inquirer/prompts'
-import { createRequire } from 'node:module'
+import { getPackageManager, packageJson } from './utils.js'
 import path from 'node:path'
-import chalk from 'chalk'
-import { logger } from 'robo.js'
-
-// Read the version from the package.json file
-const require = createRequire(import.meta.url)
-const packageJson = require('../package.json')
+import { input, select } from '@inquirer/prompts'
+import { color, logger } from 'robo.js'
 import { Command } from 'robo.js/cli.js'
 
 export interface CommandOptions {
@@ -91,6 +86,7 @@ new Command('create-robo <projectName>')
 		}
 
 		// `activity` is an alias for `app`
+		const ogKit = options.kit
 		if (options.kit === 'activity') {
 			options.kit = 'app'
 		}
@@ -100,10 +96,10 @@ new Command('create-robo <projectName>')
 			logger.log()
 			options.kit = await select<'app' | 'bot'>(
 				{
-					message: chalk.blue('Choose your adventure:'),
+					message: color.blue('Choose your adventure:'),
 					choices: [
-						{ name: 'Discord Bot', value: 'bot' as const },
-						{ name: 'Discord Activity', value: 'app' as const }
+						{ name: 'Discord Activity', value: 'app' as const },
+						{ name: 'Discord Bot', value: 'bot' as const }
 					]
 				},
 				{
@@ -150,8 +146,8 @@ new Command('create-robo <projectName>')
 
 		// Print introduction section
 		logger.log('')
-		logger.log(Indent, chalk.bold('✨ Welcome to Robo.js!'))
 		logger.log(Indent, `   Spawning ${chalk.bold.cyan(projectName)} into existence...`)
+		logger.log(Indent, color.bold('✨ Welcome to Robo.js!'))
 
 		const metadata: Array<{ key: string; value: string }> = []
 		if (options.plugin) {
@@ -175,9 +171,9 @@ new Command('create-robo <projectName>')
 
 		if (metadata.length > 0) {
 			logger.log('')
-			logger.log(Indent, chalk.bold('   Specs:'))
+			logger.log(Indent, color.bold('   Specs:'))
 			metadata.forEach(({ key, value }) => {
-				logger.log(Indent, `   - ${key}:`, chalk.bold.cyan(value))
+				logger.log(Indent, `   - ${key}:`, Highlight(value))
 			})
 		}
 
@@ -227,24 +223,23 @@ new Command('create-robo <projectName>')
 
 		const packageManager = getPackageManager()
 		logger.log(Indent.repeat(15))
-		logger.log(Indent, '🚀', chalk.bold.green('Your Robo is ready!'))
-		logger.log(Indent, '   Say hello to this world,', chalk.bold(projectName) + '.')
+		logger.log(Indent, '🚀', HighlightGreen('Your Robo is ready!'))
+		logger.log(Indent, '   Say hello to this world,', color.bold(projectName) + '.')
 		logger.log('')
-		logger.log(Indent, '   ' + chalk.bold('Next steps:'))
+
+		// What's next?
+		logger.log(Indent, '   ' + color.bold('Next steps'))
 		if (!useSameDirectory) {
-			logger.log(Indent, '   - Change directory:', chalk.bold.cyan(`cd ${projectName}`))
+			logger.log(Indent, '   - Change directory:', Highlight(`cd ${projectName}`))
 		}
 		if (!options.install || robo.shouldInstall) {
-			logger.log(Indent, '   - Install dependencies:', chalk.bold.cyan(packageManager + ' install'))
+			logger.log(Indent, '   - Install dependencies:', Highlight(packageManager + ' install'))
 		}
 		if (robo.missingEnv) {
-			logger.log(Indent, '   - Add missing variables:', chalk.bold.cyan('.env'))
+			logger.log(Indent, '   - Add missing variables:', Highlight('.env'))
 		}
-		logger.log(Indent, '   - Develop locally:', chalk.bold.cyan(packageManager + ' run dev'))
-		logger.log(Indent, '   - Deploy to the cloud:', chalk.bold.cyan(packageManager + ' run deploy'))
-		if (robo.selectedPlugins.length < 1) {
-			logger.log(Indent, '   - Check out or create your own plugins')
-		}
+		logger.log(Indent, '   - Develop locally:', Highlight(packageManager + ' run dev'))
+		logger.log(Indent, '   - Deploy to the cloud:', Highlight(packageManager + ' run deploy'))
 
 		// Show what failed and how to resolve
 		if (robo.installFailed) {
@@ -308,10 +303,10 @@ async function checkUpdates() {
 		logger.log('')
 		logger.log(
 			Indent,
-			chalk.bold.green(`💡 Update available!`),
-			chalk.dim(`(v${packageJson.version} → v${latestVersion})`)
+			HighlightGreen(`💡 Update available!`),
+			color.dim(`(v${packageJson.version} → v${latestVersion})`)
 		)
 		logger.log(Indent, `   Run this instead to get the latest updates:`)
-		logger.log(Indent, '   ' + chalk.bold.cyan(command + ' ' + args))
+		logger.log(Indent, '   ' + Highlight(command + ' ' + args))
 	}
 }

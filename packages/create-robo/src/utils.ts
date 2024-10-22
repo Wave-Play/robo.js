@@ -1,7 +1,6 @@
 import { spawn } from 'node:child_process'
-import chalk from 'chalk'
-import { logger } from 'robo.js'
 import { createRequire } from 'node:module'
+import { color, logger } from 'robo.js'
 import type { SpawnOptions } from 'node:child_process'
 import type { Logger } from 'robo.js'
 
@@ -104,7 +103,7 @@ export interface ExecOptions extends SpawnOptions {
 export function exec(command: string, options?: ExecOptions) {
 	const { logger: customLogger = logger, resolveOnEvent = 'close', verbose, ...spawnOptions } = options ?? {}
 	return new Promise<void>((resolve, reject) => {
-		customLogger.debug(`> ${chalk.bold(command)}`)
+		customLogger.debug(`> ${color.bold(command)}`)
 
 		// Run command as child process
 		const args = command.split(' ')
@@ -118,7 +117,7 @@ export function exec(command: string, options?: ExecOptions) {
 		if (verbose) {
 			const onData = (data: Buffer) => {
 				const output = data.toString()
-				customLogger.debug(Indent, chalk.dim(output))
+				customLogger.debug(Indent, color.dim(output))
 			}
 			childProcess.stderr?.on('data', onData)
 			childProcess.stdout?.on('data', onData)

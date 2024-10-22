@@ -1,8 +1,8 @@
 import { envLogger } from './core/loggers.js'
+import { hasProperties } from './utils.js'
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import chalk from 'chalk'
-import { hasProperties } from './utils.js'
+import { color } from 'robo.js'
 
 type Entry = VariableEntry | CommentEntry | EmptyEntry
 
@@ -117,7 +117,7 @@ export class Env {
 				})
 				.join('\n') + '\n'
 
-		envLogger.debug(`Writing to .env file:\n${chalk.dim(content)}`)
+		envLogger.debug(`Writing to .env file:\n${color.dim(content)}`)
 		await fs.writeFile(this.filePath, content, { encoding: 'utf8' })
 
 		// Generate env.d.ts
