@@ -6,23 +6,48 @@
 
 This is the go-to if you are new to development here on Discord. Now optimzed for **[Robo.js](https://robojs.dev)**, how awesome is that?
 
-Ready to embark on this adventure?
+_Ready to embark on this adventure?_
+
+## Table of Contents
+
+- [🔗 Quick Links](#quick-links)
+- [✨ Getting Started](#✨-getting-started)
+- [🛠️ Development](#️development)
+- [🔒 Debugging](#debugging)
+- [🛠️ Configuration](#️configuration)
+- [🔌 Plugins](#plugins)
+- [🚀 Deployment](#deployment)
+
+## Quick Links
 
 - [📚 **Documentation:** Getting started](https://robojs.dev/discord-bots)
 - [🚀 **Discord:** MrJAwesome's Coding Lounge](https://discord.gg/codinglounge)
 - [🚀 **Discord:** Robo - Imagine Magic](https://robojs.dev/discord)
 
-## Running
+## ✨ Getting Started
 
-Run development mode with:
+Create a project with this template, replacing `<project-name>` with your desired name:
+
+```bash
+npx create-robo <project-name> --template discord-bots/mrajwesome-slash-commands-js
+```
+
+Then navigate into your project directory:
+
+```bash
+cd <project-name>
+```
+
+Run development mode:
 
 ```bash
 npm run dev
 ```
 
-Your Robo refreshes with every change.
+- [📚 **Documentation:** Exploring Different Run Modes](https://robojs.dev/robojs/mode#default-modes)
+- [🚀 **Documentation:** Deploying with 24/7 Uptime](https://robojs.dev/hosting/overview)
 
-## Developing
+## Development
 
 Create new slash commands by making a new file under the `/src/commands` directory with an exported default function. The file's name becomes the command's name. You can either use the `interaction` parameter or return the result to let Sage handle it for you. For more info on commands, see the **[Discord.js Documentation](https://discord.js.org/#/docs/main/stable/general/welcome)**.
 

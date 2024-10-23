@@ -6,21 +6,49 @@
 
 All new and now optimized for **[Robo.js](https://robojs.dev)**, this package is built to last and comes with everything a starting developer could need, how awesome is that?
 
+_Ready to embark on this adventure?_
+
+## Table of Contents
+
+- [🔗 Quick Links](#quick-links)
+- [✨ Getting Started](#✨-getting-started)
+- [🛠️ Development](#️development)
+- [🔒 Debugging](#debugging)
+- [🛠️ Configuration](#️configuration)
+- [🔌 Plugins](#plugins)
+- [🚀 Deployment](#deployment)
+
+## Quick Links
+
 - [📚 **Documentation:** Getting started](https://robojs.dev/discord-bots)
 - [🚀 **Discord:** MrJAwesome's Coding Lounge](https://discord.gg/codinglounge)
 - [🚀 **Discord:** Robo - Imagine Magic](https://robojs.dev/discord)
 
-## Running
+## ✨ Getting Started
 
-Run development mode with:
+Create a project with this template, replacing `<project-name>` with your desired name:
+
+```bash
+npx create-robo <project-name> --template discord-bots/mrajwesome-dev-toolkit-js
+```
+
+Then navigate into your project directory:
+
+```bash
+cd <project-name>
+```
+
+Run development mode:
 
 ```bash
 npm run dev
 ```
 
-Your Robo refreshes with every change.
+➞ [📚 **Documentation:** Exploring Different Run Modes](https://robojs.dev/robojs/mode#default-modes)
 
-## Developing 🏗️
+➞ [🚀 **Documentation:** Deploying with 24/7 Uptime](https://robojs.dev/hosting/overview)
+
+## Development
 
 Create new slash commands by making a new file under the `/src/commands` directory with an exported default function. The file's name becomes the command's name. You can either use the `interaction` parameter or return the result to let Sage handle it for you. For more info on commands, see the **[Discord.js Documentation](https://discord.js.org/#/docs/main/stable/general/welcome)**.
 
@@ -40,7 +68,7 @@ To listen to new events, create a file named after the event in `/src/events`. F
 - [📚 **Documentation:** Events](https://robojs.dev/discord-bots/events)
 - [📚 **Documentation:** Context Menus](https://robojs.dev/discord-bots/context-menu)
 
-## Debugging 🐞
+## Debugging
 
 Got bugs? No biggie! Robo.js has your back with nifty built-in debugging magic. During dev mode, Robo will provide you with error information, stack traces, interactive logs, and even a sneak peek at the exact code that caused the issue!
 
@@ -48,7 +76,7 @@ To get started, set up a personal Discord server for your Robo to hang out in an
 
 - [📚 **Documentation:** Debugging](https://robojs.dev/discord-bots/debug)
 
-## Configuration ⚙️
+## Configuration
 
 Robo.js automatically handles creating your Discord.js `Client` instance, but you can still configure what gets passed to it using the `config/robo.mjs` file. Use it to add more intents or change the behavior of other Robo.js features such as Sage.
 
@@ -57,7 +85,7 @@ The `.env` file contains your `DISCORD_TOKEN` and `DISCORD_CLIENT_ID`. Keep thes
 - [**Discord Developer Portal:** Manage your Discord Bot](https://discord.com/developers/applications)
 - [📚 **Documentation:** Credentials](https://robojs.dev/discord-bots/credentials)
 
-## Plugins 🔌
+## Plugins
 
 This Robo boasts an intuitive plugin system that grants new capabilities instantly!
 
@@ -74,7 +102,7 @@ Crafting something unique in your Robo project? You can turn your innovations in
 - [📚 **Documentation:** Installing plugins](https://robojs.dev/plugins/install)
 - [📚 **Documentation:** Creating plugins](https://robojs.dev/plugins/create)
 
-## Deployment 🚀
+## Deployment
 
 Run the `deploy` command to automatically deploy to **[RoboPlay](https://roboplay.dev)** once you're ready to keep your robo online 24/7.
 

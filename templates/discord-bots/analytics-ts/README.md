@@ -19,7 +19,7 @@ _Ready to embark on this adventure?_
 Create a project with this template, replacing `<project-name>` with your desired name:
 
 ```bash
-npx create-robo <project-name> --template discord-activities/analytics-ts
+npx create-robo <project-name> --template discord-bots/analytics-ts
 ```
 
 Then navigate into your project directory:
