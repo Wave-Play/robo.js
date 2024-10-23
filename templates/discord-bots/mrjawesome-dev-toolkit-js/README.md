@@ -21,7 +21,7 @@ _Ready to embark on this adventure?_
 ## Quick Links
 
 - [📚 **Documentation:** Getting started with Robo.js](https://robojs.dev/discord-bots)
-- [🚀 **Download:** Download as a zip file](https://github.com/Wave-Play/robo.js/raw/refs/heads/main/templates/.raw/mrjawesome-dev-toolkit-js.zip)
+- [💾 **Download:** Download as a zip file](https://github.com/Wave-Play/robo.js/raw/refs/heads/main/templates/.raw/mrjawesome-dev-toolkit-js.zip)
 - [🚀 **Discord:** MrJAwesome's Coding Lounge](https://discord.gg/codinglounge)
 - [🚀 **Discord:** Robo - Imagine Magic](https://robojs.dev/discord)
 
