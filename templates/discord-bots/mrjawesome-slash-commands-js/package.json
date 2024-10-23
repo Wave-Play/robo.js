@@ -1,6 +1,6 @@
 {
-	"name": "mrajwesome-dev-toolkit-js",
-	"description": "",
+	"name": "mrjawesome-slash-commands-js",
+	"description": "Quickstart for creating slash commands by MrJAwesome.",
 	"version": "1.0.0",
 	"type": "module",
 	"private": true,
@@ -23,7 +23,6 @@
 	},
 	"dependencies": {
 		"discord.js": "^14.16.3",
-		"mongoose": "^8.7.2",
 		"robo.js": "^0.10.22"
 	}
 }

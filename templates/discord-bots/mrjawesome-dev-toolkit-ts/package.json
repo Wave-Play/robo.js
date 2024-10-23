@@ -1,6 +1,6 @@
 {
-	"name": "mrajwesome-slash-commands-js",
-	"description": "Quickstart for creating slash commands by MrJAwesome.",
+	"name": "mrjawesome-dev-toolkit-ts",
+	"description": "An all-in-one toolkit for developers by MrJAwesome.",
 	"version": "1.0.0",
 	"type": "module",
 	"private": true,
@@ -8,9 +8,9 @@
 		"bot",
 		"discord",
 		"discord.js",
-		"javascript",
 		"robo",
-		"robo.js"
+		"robo.js",
+		"typescript"
 	],
 	"scripts": {
 		"build": "robo build",
@@ -23,6 +23,12 @@
 	},
 	"dependencies": {
 		"discord.js": "^14.16.3",
+		"mongoose": "^8.7.2",
 		"robo.js": "^0.10.22"
+	},
+	"devDependencies": {
+		"@swc/core": "^1.7.39",
+		"@types/node": "^22.7.8",
+		"typescript": "^5.6.3"
 	}
 }

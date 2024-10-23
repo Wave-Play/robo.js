@@ -2,9 +2,9 @@
 
 ---
 
-# Slash Command Package (JS)
+# Discord Bot - Dev Toolkit (JS)
 
-This is the go-to if you are new to development here on Discord. Now optimzed for **[Robo.js](https://robojs.dev)**, how awesome is that?
+All new and now optimized for **[Robo.js](https://robojs.dev)**, this package is built to last and comes with everything a starting developer could need, how awesome is that?
 
 _Ready to embark on this adventure?_
 
@@ -29,7 +29,7 @@ _Ready to embark on this adventure?_
 Create a project with this template, replacing `<project-name>` with your desired name:
 
 ```bash
-npx create-robo <project-name> --template discord-bots/mrajwesome-slash-commands-js
+npx create-robo <project-name> --template discord-bots/mrajwesome-dev-toolkit-js
 ```
 
 Then navigate into your project directory:
@@ -44,8 +44,9 @@ Run development mode:
 npm run dev
 ```
 
-- [📚 **Documentation:** Exploring Different Run Modes](https://robojs.dev/robojs/mode#default-modes)
-- [🚀 **Documentation:** Deploying with 24/7 Uptime](https://robojs.dev/hosting/overview)
+➞ [📚 **Documentation:** Exploring Different Run Modes](https://robojs.dev/robojs/mode#default-modes)
+
+➞ [🚀 **Documentation:** Deploying with 24/7 Uptime](https://robojs.dev/hosting/overview)
 
 ## Development
 
