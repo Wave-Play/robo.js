@@ -12,9 +12,7 @@ import { Terminal } from '@site/src/components/shared/Terminal'
 
 **Robo.js** makes building bots with **[Discord.js](https://discord.js.org)** as easy as placing files in the right place.
 
-Create a **[Slash Command](./commands)** by making a file in the `/src/commands` directory. The name of the file becomes the name of the command. **[Context Commands](./context-menu)** and **[Events](./events)**? Just as easy!
-
-This is more than just a command handler - it's a full-fledged **[Framework](/robojs/overview)** and **[Ecosystem](/plugins/directory)**.
+Create a **[Slash Command](./commands)** by making a file in `/src/commands`; the file name becomes the command. **[Context Commands](./context-menu)** and **[Events](./events)**? Just as easy! This is more than just a command handler - it's a full-fledged **[Framework](/robojs/overview)** and **[Ecosystem](/plugins/directory)**.
 
 :::tip Robo.js does _not_ replace Discord.js!
 
@@ -141,7 +139,7 @@ When creating a new project, uncheck the TypeScript option if you want to use Ja
 </details>
 
 <details>
-	<summary>Should I still need to make a client?</summary>
+	<summary>Should I still create my own client?</summary>
 
 Nope, **Robo.js** handles the client for you. Configure it in `/config/robo.mjs` and import it via `import { client } from 'robo.js'`.
 
