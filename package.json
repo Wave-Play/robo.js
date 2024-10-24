@@ -1,6 +1,9 @@
 {
 	"name": "robo",
 	"version": "0.0.0",
+	"bin": {
+		"create-robo": "./bin/create-robo.js"
+	},
 	"private": true,
 	"workspaces": {
 		"packages": [
