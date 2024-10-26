@@ -200,13 +200,8 @@ export class Command {
 				const option = this._options.find((opt) => opt.name === arg)
 				if (option) {
 					if (this._allowSpacesInOptions && i + 1 < args.length && !args[i + 1].startsWith('-')) {
-						let value = args[i + 1]
-						i += 2 // Move past the option and its value
-						while (i < args.length && !args[i].startsWith('-')) {
-							value += ` ${args[i]}`
-							i++
-						}
-						options[arg.slice(2)] = value
+						options[arg.slice(2)] = args[i + 1]
+						i += 2 // Skip over option and its single value
 					} else {
 						options[arg.slice(2)] = true
 						i++
@@ -218,13 +213,8 @@ export class Command {
 				const option = this._options.find((opt) => opt.alias === arg)
 				if (option) {
 					if (this._allowSpacesInOptions && i + 1 < args.length && !args[i + 1].startsWith('-')) {
-						let value = args[i + 1]
-						i += 2 // Move past the option and its value
-						while (i < args.length && !args[i].startsWith('-')) {
-							value += ` ${args[i]}`
-							i++
-						}
-						options[option.name.slice(2)] = value
+						options[option.name.slice(2)] = args[i + 1]
+						i += 2 // Skip over option and its single value
 					} else {
 						options[option.name.slice(2)] = true
 						i++
@@ -233,7 +223,7 @@ export class Command {
 					i++
 				}
 			} else {
-				i++
+				break // Stop capturing once positional arguments start
 			}
 		}
 
