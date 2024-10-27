@@ -20,8 +20,12 @@
 		".robo/",
 		"seed/",
 		"src/",
+		"client.d.ts",
+		"client.js",
 		"LICENSE",
-		"README.md"
+		"README.md",
+		"server.d.ts",
+		"server.js"
 	],
 	"repository": {
 		"type": "git",
