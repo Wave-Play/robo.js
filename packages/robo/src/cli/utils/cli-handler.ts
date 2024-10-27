@@ -26,61 +26,133 @@ export class Command {
 		}
 	}
 
+	/**
+	 * Add a subcommand to the current command.
+	 *
+	 * @param {Command} command - Command object to be added as a subcommand.
+	 * @returns {Command} - Returns the current Command object for chaining.
+	 */
 	public addCommand(command: Command): this {
 		this._commands.push(command)
 		command._parent = this
 		return this
 	}
 
+	/**
+	 * Enable or disable spaces in options.
+	 *
+	 * @param {boolean} allow - Boolean to allow or disallow spaces in option values.
+	 * @returns {Command} - Returns the current Command object for chaining.
+	 */
 	public allowSpacesInOptions(allow: boolean): this {
 		this._allowSpacesInOptions = allow
 		return this
 	}
 
+	/**
+	 * Set the description for the command.
+	 *
+	 * @param {string} desc - Description string.
+	 * @returns {Command} - Returns the current Command object for chaining.
+	 */
 	public description(desc: string): this {
 		this._description = desc
 		return this
 	}
 
+	/**
+	 * Gets the children commands of the current command.
+	 *
+	 * @returns {Command[]} - Get the children commands of the current command.
+	 */
 	public getChildCommands(): Command[] {
 		return this._commands
 	}
 
+	/**
+	 * Set the value for positionalArgs.
+	 *
+	 * @param {boolean} positionalArg - positionalArgs boolean.
+	 * @returns {Command} - Returns the current Command object for chaining.
+	 */
 	public positionalArgs(positionalArg: boolean): this {
 		this._positionalArgs = positionalArg
 		return this
 	}
 
+	/**
+	 * Gets the parent command.
+	 *
+	 * @returns {Command} - Returns the parent command.
+	 */
 	public getParentCommand(): Command {
 		return this._parent
 	}
 
+	/**
+	 * Returns the name of the current command.
+	 *
+	 * @returns {string} - Returns the name of the command.
+	 */
 	public getName(): string {
 		return this._name
 	}
 
+	/**
+	 * Returns the description of the current command.
+	 *
+	 * @returns {string} - Returns the description of the current command.
+	 */
 	public getDescription(): string {
 		return this._description
 	}
 
+	/**
+	 * Returns the options of the current command.
+	 *
+	 * @returns {Option[]} - Returns the options of the current command.
+	 */
 	public getOptions(): Option[] {
 		return this._options
 	}
 
+	/**
+	 * Add an option for the command.
+	 *
+	 * @param {string} alias - Option alias (short form).
+	 * @param {string} name - Option name (long form).
+	 * @param {string} description - Option description.
+	 * @returns {Command} - Returns the current Command object for chaining.
+	 */
 	public option(alias: string, name: string, description: string, acceptsMultipleValues: boolean = false): this {
 		this._options.push({ alias, name, description, acceptsMultipleValues })
 		return this
 	}
 
+	/**
+	 * Assign a handler function for the command.
+	 *
+	 * @param {(args: string[], options: Record<string, unknown>) => void} fn - Function to be executed when the command is called.
+	 * @returns {Command} - Returns the current Command object for chaining.
+	 */
 	public handler(fn: (args: string[], options: Record<string, unknown>) => void): this {
 		this._handler = fn
 		return this
 	}
 
+	/**
+	 * Parse the command line arguments and process the command.
+	 */
 	public parse(): void {
 		this.processSubCommand(this, process.argv.slice(2))
 	}
 
+	/**
+	 * Assign a version string to the command and adds an option to display the version.
+	 *
+	 * @param {string} versionString - Version string.
+	 * @returns {Command} - Returns the current Command object for chaining.
+	 */
 	public version(versionString: string): Command {
 		this._version = versionString
 		this.option('-v', '--version', 'Display the current version')
@@ -112,6 +184,12 @@ export class Command {
 		}
 	}
 
+	/**
+	 * Parses the options from the provided arguments array.
+	 *
+	 * @param {string[]} args - The arguments array.
+	 * @returns {Record<string, unknown>} - Returns an object containing parsed options.
+	 */
 	private parseOptions(args: string[]): { options: Record<string, unknown>; index: number } {
 		const options: Record<string, unknown> = {}
 		let i = 0
@@ -175,6 +253,8 @@ export class Command {
 	}
 
 	private async processSubCommand(command: Command, args: string[]) {
+		// If there are no arguments provided, and the current command does not have a handler,
+		// it means there's nothing to process further. Hence, return early.
 		if (args.length === 0 && !command._handler) {
 			return
 		}
