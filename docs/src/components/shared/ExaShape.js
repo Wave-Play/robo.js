@@ -11,9 +11,7 @@ export const ExaShape = (props) => {
 		innerBorderWidth = 1,
 		innerColor = 'var(--card-background-color)',
 		outerColor = 'var(--ifm-color-emphasis-200)',
-		slope = 24,
-		style,
-		title
+		slope = 24
 	} = props
 	const [dimensions, setDimensions] = useState({
 		width: defaultWidth,
@@ -21,9 +19,10 @@ export const ExaShape = (props) => {
 	})
 	const { width, height } = dimensions
 	const containerRef = useRef(null)
-	
+
 	// Listen for hover events on containerRef
 	const [isHovering, setHovering] = useState(false)
+
 	useEffect(() => {
 		const node = containerRef.current
 		if (node) {
@@ -35,8 +34,8 @@ export const ExaShape = (props) => {
 			}
 		}
 	}, [containerRef.current])
-	console.log('isHovering', isHovering)
 
+	// Highlight the shape when hovering
 	if (isHovering) {
 		outerColor = 'var(--ifm-color-primary)'
 	}
