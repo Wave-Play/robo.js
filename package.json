@@ -60,8 +60,9 @@
 		"eslint": "9.3.0",
 		"globals": "^15.3.0",
 		"prettier": "2.8.5",
-		"turbo": "1.8.4",
+		"turbo": "2.2.3",
 		"typescript": "5.0.2",
 		"typescript-eslint": "^7.9.0"
-	}
+	},
+	"packageManager": "pnpm@9.4.0"
 }
