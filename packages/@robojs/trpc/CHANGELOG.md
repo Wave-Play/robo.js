@@ -1,5 +1,11 @@
 # @robojs/trpc
 
+## 0.2.1
+
+### Patch Changes
+
+- f31c26d: patch: decoupled client imports from server file
+
 ## 0.2.0
 
 ### Minor Changes
