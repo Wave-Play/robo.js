@@ -15,6 +15,7 @@
 	--ifm-color-primary-lightest: #3cad6e;
 	--ifm-code-font-size: 95%;
 	--robo-background-color: #fafafa;
+	--ifm-alert-border-radius: 0px;
 	--robo-border-color: rgb(235, 235, 235);
 	--card-background-color: white;
 	--code-background-color: white;
@@ -206,6 +207,10 @@ article .clean-btn {
 
 .nodecor:hover {
 	text-decoration: none;
+}
+
+.pagination-nav__link {
+	border-radius: 0px;
 }
 
 .sidebar-title {
