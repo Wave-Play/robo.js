@@ -5,6 +5,11 @@
 			"dependsOn": ["^build"],
 			"outputs": [".robo/**", "dist/**"]
 		},
+		"dev": {
+			"cache": false,
+			"outputs": [".robo/**"],
+			"persistent": true
+		},
 		"test": {
 			"dependsOn": ["^test"]
 		}
