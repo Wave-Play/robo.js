@@ -1,5 +1,11 @@
 # @robojs/trpc
 
+## 0.2.2
+
+### Patch Changes
+
+- d2bf907: patch: better support for non-prefixed servers
+
 ## 0.2.1
 
 ### Patch Changes
