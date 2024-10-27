@@ -14,7 +14,7 @@
 	--ifm-color-primary-lighter: #359962;
 	--ifm-color-primary-lightest: #3cad6e;
 	--ifm-code-font-size: 95%;
-	--robo-background-color: white;
+	--robo-background-color: #fafafa;
 	--robo-border-color: rgb(235, 235, 235);
 	--card-background-color: white;
 	--code-background-color: white;
@@ -160,9 +160,8 @@ article .clean-btn {
 }
 
 .card {
-	background-color: var(--card-background-color);
-	border-radius: var(--ifm-card-border-radius);
-	box-shadow: var(--ifm-global-shadow-lw);
+	background-color: transparent;
+	box-shadow: none;
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
@@ -172,15 +171,12 @@ article .clean-btn {
 	--ifm-link-color: var(--ifm-color-emphasis-800);
 	--ifm-link-hover-color: var(--ifm-color-emphasis-700);
 	--ifm-link-hover-decoration: none;
-	border: 1px solid var(--ifm-color-emphasis-200);
-	box-shadow: 0 1.5px 3px 0 #00000026;
 	transition: all var(--ifm-transition-fast) ease;
 	transition-property: border, box-shadow;
 }
 
 .cardContent:hover {
 	border-color: var(--ifm-color-primary);
-	box-shadow: 0 3px 6px 0 #0003;
 	text-decoration: none;
 }
 
