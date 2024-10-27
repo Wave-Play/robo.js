@@ -226,7 +226,7 @@ new Command('create-robo <projectName>')
 
 		// Ask the user for their Discord credentials (token and client ID) and store them for later use
 		// Skip this step if the user is creating a plugin
-		if (!robo.isPlugin && !(options.kit === 'web')) {
+		if (!robo.isPlugin && options.kit !== 'web') {
 			logger.debug(`Asking for Discord credentials...`)
 			await robo.askForDiscordCredentials()
 		}
