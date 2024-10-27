@@ -1,5 +1,11 @@
 # @robojs/trpc
 
+## 0.2.0
+
+### Minor Changes
+
+- 55a0b55: refactor: moved server-side exports to `/server` namespace
+
 ## 0.1.4
 
 ### Patch Changes
