@@ -35,6 +35,7 @@
 		"registry": "https://registry.npmjs.org/"
 	},
 	"dependencies": {
+		"@roboplay/plugin-gpt": "file:",
 		"openai": "^3.2.1"
 	},
 	"devDependencies": {
