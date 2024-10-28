@@ -18,14 +18,15 @@ _Ready to embark on this adventure?_
 - [🔒 Authentication](#🔒-authentication)
 - [🛠️ Backend Development](#️🛠️-backend-development)
 - [📁 Folder Structure](#📁-folder-structure)
-- [🔌 Plugins](#🔌-plugins)
-- [🚀 Deployment](#🚀-deployment)
+- [🔌 Ecosystem](#ecosystem)
+- [🚀 Hosting](#hosting)
 
 ## 🔗 Quick Links
 
-- [🚀 **Community:** Join our Discord server](https://roboplay.dev/discord)
-- [📚 **Documentation:** Getting started with Robo](https://robojs.dev/discord-activities/getting-started)
-- [📖 **Tutorial:** Creating a Discord Activity in seconds](https://dev.to/waveplay/how-to-build-a-discord-activity-easily-with-robojs-5bng)
+- [📚 **Documentation:** Getting started with Robo.js](https://robojs.dev/discord-activities)
+- [✨ **Discord:** Robo - Imagine Magic](https://robojs.dev/discord)
+- [🔗 **Templates:** Kickstart your project with a template.](https://robojs.dev/plugins/create)
+- [📖 **Tutorials:** Learn how to create epic experiences.](https://dev.to/waveplay)
 
 ## ✨ Getting Started
 
@@ -101,7 +102,7 @@ Folders only become reserved when you install a plugin that uses them. For examp
 By building with **Robo.js**, you gain access to a growing ecosystem of **[plugins](https://robojs.dev/plugins/directory)**, **[templates](https://robojs.dev/templates/overview)**, and **[tools](https://robojs.dev/cli/overview)**. **[Robo Plugins](https://robojs.dev/plugins/overview)** are special. They can add features with one command.
 
 ```bash
-npx robo add @robojs/ai @robojs/moderation
+npx robo add @robojs/ai @robojs/sync
 ```
 
 Plugins integrate seamlessly thanks to the **[Robo File Structure](https://robojs.dev/discord-bots/file-structure)**. What's more, anyone can **[create a plugin](https://robojs.dev/plugins/create)**.

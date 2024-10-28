@@ -90,7 +90,7 @@ Folders only become reserved when you install a plugin that uses them. For examp
 By building with **Robo.js**, you gain access to a growing ecosystem of **[plugins](https://robojs.dev/plugins/directory)**, **[templates](https://robojs.dev/templates/overview)**, and **[tools](https://robojs.dev/cli/overview)**. **[Robo Plugins](https://robojs.dev/plugins/overview)** are special. They can add features with one command.
 
 ```bash
-npx robo add @robojs/ai @robojs/moderation
+npx robo add @robojs/ai @robojs/sync
 ```
 
 Plugins integrate seamlessly thanks to the **[Robo File Structure](https://robojs.dev/discord-bots/file-structure)**. What's more, anyone can **[create a plugin](https://robojs.dev/plugins/create)**.
