@@ -3,12 +3,12 @@ import { Command } from '../src/cli/utils/cli-handler'
 describe('CLI Handler Tests', () => {
 	it('should correctly parse options after positional arguments', () => {
 		const command = new Command('test-command')
-		command.option('-v', '--version', 'Version option')
+		command.option('-v', '--verbose', 'Verbose output')
 
 		const args = ['build', 'src/commands/ping.ts', '-v']
 		const { options, positionalArgs } = command['parseOptions'](args)
 
-		expect(options.version).toBe(true)
+		expect(options.verbose).toBe(true)
 		expect(positionalArgs).toEqual(['build', 'src/commands/ping.ts'])
 	})
 

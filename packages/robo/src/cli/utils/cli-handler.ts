@@ -6,7 +6,7 @@ export interface Option {
 	name: string
 	description: string
 	acceptsMultipleValues?: boolean
-	returnArray?: boolean
+	returnArray?: boolean // Should default to false
 }
 
 export class Command {
@@ -198,9 +198,9 @@ export class Command {
 				// Handle options
 				const option = this._options.find((opt) => opt.name === arg || opt.alias === arg)
 				if (option) {
+					i++ // Move past the option
 					if (option.acceptsMultipleValues) {
 						const values: string[] = []
-						i++ // Move past the option
 						while (i < args.length && !args[i].startsWith('-') && args[i] !== '--') {
 							values.push(args[i])
 							i++
@@ -210,12 +210,11 @@ export class Command {
 						} else {
 							options[option.name.slice(2)] = values.join(' ')
 						}
-					} else if (this._allowSpacesInOptions && i + 1 < args.length && !args[i + 1].startsWith('-')) {
-						options[option.name.slice(2)] = args[i + 1]
-						i += 2 // Skip over option and its single value
+					} else if (this._allowSpacesInOptions && i < args.length && !args[i].startsWith('-') && args[i] !== '--') {
+						options[option.name.slice(2)] = args[i]
+						i++ // Move past the value
 					} else {
 						options[option.name.slice(2)] = true
-						i++
 					}
 				} else {
 					// Unrecognized option, skip it or handle as per your requirements
@@ -261,7 +260,7 @@ export class Command {
 			const subCommandName = positionalArgs[0]
 			const subCommand = command._commands.find((cmd) => cmd._name === subCommandName)
 			if (subCommand) {
-				await this.processSubCommand(subCommand, positionalArgs.slice(1))
+				await subCommand.processSubCommand(subCommand, positionalArgs.slice(1))
 				return
 			} else if (!command._positionalArgs) {
 				logger.log('\n')
