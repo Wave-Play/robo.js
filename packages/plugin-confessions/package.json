@@ -33,6 +33,7 @@
 		"lint:style": "prettier --write ."
 	},
 	"dependencies": {
+		"@roboplay/plugin-confessions": "file:",
 		"bad-words": "^3.0.4"
 	},
 	"devDependencies": {

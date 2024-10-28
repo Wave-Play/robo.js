@@ -35,7 +35,8 @@
 		"@robojs/patch": "^0.1.1",
 		"@robojs/server": "^0.5.7",
 		"discord.js": "^14.16.2",
-		"robo.js": "^0.10.15"
+		"robo.js": "^0.10.15",
+		"vanilla-js": "file:"
 	},
 	"devDependencies": {
 		"prettier": "^3.3.3",

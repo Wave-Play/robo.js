@@ -5,7 +5,7 @@ export default async (req) => {
 		// Destructure environment variables
 		const { VITE_DISCORD_CLIENT_ID: clientId, DISCORD_CLIENT_SECRET: clientSecret } = process.env;
 
-		// Exchange the code for an access_token
+		// Exchange the code for an access token
 		const response = await fetch('https://discord.com/api/oauth2/token', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

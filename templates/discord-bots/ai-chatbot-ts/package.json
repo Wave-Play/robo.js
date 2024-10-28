@@ -15,7 +15,8 @@
 	"dependencies": {
 		"@roboplay/plugin-ai": "^0.4.2",
 		"@roboplay/robo.js": "^0.9.26",
-		"discord.js": "^14.16.2"
+		"discord.js": "^14.16.2",
+		"gpt-chatbot": "file:"
 	},
 	"devDependencies": {
 		"@swc/core": "^1.7.26",

@@ -26,6 +26,7 @@
 	},
 	"dependencies": {
 		"@prisma/client": "^5.20.0",
+		"bot-prisma-ts": "file:",
 		"discord.js": "^14.16.2",
 		"robo.js": "^0.10.15"
 	},
