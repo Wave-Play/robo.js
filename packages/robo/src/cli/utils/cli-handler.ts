@@ -6,6 +6,7 @@ export interface Option {
 	name: string
 	description: string
 	acceptsMultipleValues?: boolean
+	returnArray?: boolean
 }
 
 export class Command {
@@ -116,16 +117,14 @@ export class Command {
 		return this._options
 	}
 
-	/**
-	 * Add an option for the command.
-	 *
-	 * @param {string} alias - Option alias (short form).
-	 * @param {string} name - Option name (long form).
-	 * @param {string} description - Option description.
-	 * @returns {Command} - Returns the current Command object for chaining.
-	 */
-	public option(alias: string, name: string, description: string, acceptsMultipleValues: boolean = false): this {
-		this._options.push({ alias, name, description, acceptsMultipleValues })
+	public option(
+		alias: string,
+		name: string,
+		description: string,
+		acceptsMultipleValues: boolean = false,
+		returnArray: boolean = false
+	): this {
+		this._options.push({ alias, name, description, acceptsMultipleValues, returnArray })
 		return this
 	}
 
@@ -184,47 +183,20 @@ export class Command {
 		}
 	}
 
-	/**
-	 * Parses the options from the provided arguments array.
-	 *
-	 * @param {string[]} args - The arguments array.
-	 * @returns {Record<string, unknown>} - Returns an object containing parsed options.
-	 */
-	private parseOptions(args: string[]): { options: Record<string, unknown>; index: number } {
+	private parseOptions(args: string[]): { options: Record<string, unknown>; positionalArgs: string[] } {
 		const options: Record<string, unknown> = {}
+		const positionalArgs: string[] = []
 		let i = 0
 
 		while (i < args.length) {
 			const arg = args[i]
 
 			if (arg === '--') {
-				i++ // Skip '--'
-				break // End of options
-			}
-
-			if (arg.startsWith('--')) {
-				const option = this._options.find((opt) => opt.name === arg)
-				if (option) {
-					if (option.acceptsMultipleValues) {
-						const values: string[] = []
-						i++ // Move past the option
-						while (i < args.length && !args[i].startsWith('-') && args[i] !== '--') {
-							values.push(args[i])
-							i++
-						}
-						options[arg.slice(2)] = values
-					} else if (this._allowSpacesInOptions && i + 1 < args.length && !args[i + 1].startsWith('-')) {
-						options[arg.slice(2)] = args[i + 1]
-						i += 2 // Skip over option and its single value
-					} else {
-						options[arg.slice(2)] = true
-						i++
-					}
-				} else {
-					i++
-				}
+				i++ // Skip the '--' separator
+				break
 			} else if (arg.startsWith('-')) {
-				const option = this._options.find((opt) => opt.alias === arg)
+				// Handle options
+				const option = this._options.find((opt) => opt.name === arg || opt.alias === arg)
 				if (option) {
 					if (option.acceptsMultipleValues) {
 						const values: string[] = []
@@ -233,7 +205,11 @@ export class Command {
 							values.push(args[i])
 							i++
 						}
-						options[option.name.slice(2)] = values
+						if (option.returnArray) {
+							options[option.name.slice(2)] = values
+						} else {
+							options[option.name.slice(2)] = values.join(' ')
+						}
 					} else if (this._allowSpacesInOptions && i + 1 < args.length && !args[i + 1].startsWith('-')) {
 						options[option.name.slice(2)] = args[i + 1]
 						i += 2 // Skip over option and its single value
@@ -242,14 +218,23 @@ export class Command {
 						i++
 					}
 				} else {
+					// Unrecognized option, skip it or handle as per your requirements
 					i++
 				}
 			} else {
-				break // Stop parsing options when encountering positional arguments
+				// Positional argument
+				positionalArgs.push(arg)
+				i++
 			}
 		}
 
-		return { options, index: i }
+		// After '--', treat all remaining arguments as positional
+		while (i < args.length) {
+			positionalArgs.push(args[i])
+			i++
+		}
+
+		return { options, positionalArgs }
 	}
 
 	private async processSubCommand(command: Command, args: string[]) {
@@ -259,8 +244,7 @@ export class Command {
 			return
 		}
 
-		const { options, index } = command.parseOptions(args)
-		const positionalArgs = args.slice(index)
+		const { options, positionalArgs } = command.parseOptions(args)
 
 		if (options.help) {
 			command.showHelp()

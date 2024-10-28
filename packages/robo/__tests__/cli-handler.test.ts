@@ -1,27 +1,34 @@
 import { Command } from '../src/cli/utils/cli-handler'
 
 describe('CLI Handler Tests', () => {
-	it('should assign only a single argument to -k option', () => {
+	it('should correctly parse options after positional arguments', () => {
 		const command = new Command('test-command')
-		command.option('-k', '--kit', 'Test option')
+		command.option('-v', '--version', 'Version option')
 
-		const args = ['-k', 'activity', 'myactivity']
-		const { options, index } = command['parseOptions'](args)
+		const args = ['build', 'src/commands/ping.ts', '-v']
+		const { options, positionalArgs } = command['parseOptions'](args)
 
-		expect(options.kit).toBe('activity')
-		const positionalArgs = args.slice(index)
-		expect(positionalArgs).toEqual(['myactivity'])
+		expect(options.version).toBe(true)
+		expect(positionalArgs).toEqual(['build', 'src/commands/ping.ts'])
 	})
 
-	it('should assign multiple arguments to --plugins option with separator', () => {
+	it('should return single string for options with spaces by default', () => {
 		const command = new Command('test-command')
-		command.option('-p', '--plugins', 'Plugins option', true) // acceptsMultipleValues set to true
+		command.option('-p', '--plugins', 'Plugins option', true)
 
-		const args = ['--plugins', '@robojs/ai', '@robojs/sync', '--', 'myactivity']
-		const { options, index } = command['parseOptions'](args)
+		const args = ['--plugins', 'plugin-one', 'plugin-two']
+		const { options } = command['parseOptions'](args)
 
-		expect(options.plugins).toEqual(['@robojs/ai', '@robojs/sync'])
-		const positionalArgs = args.slice(index)
-		expect(positionalArgs).toEqual(['myactivity'])
+		expect(options.plugins).toBe('plugin-one plugin-two')
+	})
+
+	it('should return array for options when returnArray is true', () => {
+		const command = new Command('test-command')
+		command.option('-p', '--plugins', 'Plugins option', true, true)
+
+		const args = ['--plugins', 'plugin-one', 'plugin-two']
+		const { options } = command['parseOptions'](args)
+
+		expect(options.plugins).toEqual(['plugin-one', 'plugin-two'])
 	})
 })
