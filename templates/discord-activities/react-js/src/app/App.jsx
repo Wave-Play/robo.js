@@ -11,6 +11,9 @@ import './App.css'
  *  <Activity />
  * </DiscordContextProvider>
  * ```
+ * 
+ * Learn more:
+ * https://robojs.dev/discord-activities/authentication
  */
 export default function App() {
 	return (
