@@ -22,8 +22,8 @@ _Ready to embark on this adventure?_
 
 - [📚 **Documentation:** Getting started with Robo.js](https://robojs.dev/discord-bots)
 - [💾 **Download:** Download as a zip file](https://github.com/Wave-Play/robo.js/raw/refs/heads/main/templates/.raw/mrjawesome-dev-toolkit-js.zip)
-- [🚀 **Discord:** MrJAwesome's Coding Lounge](https://discord.gg/codinglounge)
-- [🚀 **Discord:** Robo - Imagine Magic](https://robojs.dev/discord)
+- [✨ **Discord:** MrJAwesome's Coding Lounge](https://discord.gg/codinglounge)
+- [✨ **Discord:** Robo - Imagine Magic](https://robojs.dev/discord)
 
 ## ✨ Getting Started
 
@@ -89,22 +89,20 @@ You can do the same for users under `/src/context/user`.
 
 ## Debugging
 
-**Discord Bots** made with **Robo.js** come with a built-in debugger.
+**Discord Bots** made with **Robo.js** come with a built-in **[Debugger](https://robojs.dev/discord-bots/debug)**.
 
-Whenever your bot crashes in development mode, the built-in **[Debugger](https://robojs.dev/discord-bots/debug)** show an interactive error message - all within **Discord**!
+Whenever your bot crashes in development mode, the debugger shows an interactive error message - all within **Discord**!
 
 ![Built-in debugger showing an error](https://github.com/Wave-Play/robo.js/blob/main/docs/static/readme/debugger.png?raw=true)
 
-You even get a `/dev` subcommand group for quick access to logs, system info, and more. Just set your test server's ID as a `DISCORD_GUILD_ID` environment variable.
+You even get `/dev` **[Subcommands](https://robojs.dev/discord-bots/commands#subcommands)** for quick access to logs, system info, and more. Just set your test server's ID as an **environment variable** called `DISCORD_GUILD_ID`.
 
 - [🐛 **Debugging:** Troubleshoot right within Discord.](https://robojs.dev/discord-bots/debug)
 - [🔑 **Credentials:** Secure your Discord Bot credentials.](https://robojs.dev/discord-bots/credentials#optional-variables)
 
 ## Client Configuration
 
-**Robo.js** manages your **Discord.js** `Client` instance.
-
-You may import it from `robo.js` to access `client` from anywhere in your project.
+**Robo.js** manages your **Discord.js** `Client` instance. You may import `client` anywhere in your project.
 
 ```javascript
 // File: /src/commands/name.js
@@ -131,9 +129,7 @@ export default {
 
 ## Robo Ecosystem
 
-By building with **Robo.js**, you gain access to a growing ecosystem of **[plugins](https://robojs.dev/plugins/directory)**, **[templates](https://robojs.dev/templates/overview)**, and **[tools](https://robojs.dev/cli/overview)**.
-
-**[Robo Plugins](https://robojs.dev/plugins/overview)** are special. They can add features with one command.
+By building with **Robo.js**, you gain access to a growing ecosystem of **[plugins](https://robojs.dev/plugins/directory)**, **[templates](https://robojs.dev/templates/overview)**, and **[tools](https://robojs.dev/cli/overview)**. **[Robo Plugins](https://robojs.dev/plugins/overview)** are special. They can add features with one command.
 
 ```bash
 npx robo add @robojs/ai @robojs/moderation
@@ -148,9 +144,9 @@ Plugins integrate seamlessly thanks to the **[Robo File Structure](https://roboj
 
 ## Hosting
 
-**Hosting** your project keeps it running 24/7, available from anywhere at any time. No need to keep your computer on at all times, or worry about your Internet connection.
+**Hosting** your project keeps it running 24/7. No need to keep your computer on at all times, or worry about your Internet connection.
 
-You can host your **Robo** on any platform that supports **Node.js**, or run `npx robo deploy` to host on **[RoboPlay](https://roboplay.dev)** - a hosting platform optimized for **Robo.js**.
+You can host on any platform that supports **Node.js**, or run [`robo deploy`](https://robojs.dev/cli/robo#distributing) to host on **[RoboPlay](https://roboplay.dev)** - a hosting platform optimized for **Robo.js**.
 
 ```bash
 npm run deploy

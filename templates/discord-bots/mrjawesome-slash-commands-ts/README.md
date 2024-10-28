@@ -14,16 +14,16 @@ _Ready to embark on this adventure?_
 - [✨ Getting Started](#✨-getting-started)
 - [🛠️ Development](#️development)
 - [🔒 Debugging](#debugging)
-- [🛠️ Configuration](#️configuration)
-- [🔌 Plugins](#plugins)
-- [🚀 Deployment](#deployment)
+- [🛠️ Client Configuration](#️client-configuration)
+- [🔌 Ecosystem](#ecosystem)
+- [🚀 Hosting](#hosting)
 
 ## Quick Links
 
 - [📚 **Documentation:** Getting started with Robo.js](https://robojs.dev/discord-bots)
 - [💾 **Download:** Download as a zip file](https://github.com/Wave-Play/robo.js/raw/refs/heads/main/templates/.raw/mrjawesome-slash-commands-ts.zip)
-- [🚀 **Discord:** MrJAwesome's Coding Lounge](https://discord.gg/codinglounge)
-- [🚀 **Discord:** Robo - Imagine Magic](https://robojs.dev/discord)
+- [✨ **Discord:** MrJAwesome's Coding Lounge](https://discord.gg/codinglounge)
+- [✨ **Discord:** Robo - Imagine Magic](https://robojs.dev/discord)
 
 ## ✨ Getting Started
 
@@ -45,84 +45,112 @@ Run development mode:
 npm run dev
 ```
 
-- [📚 **Documentation:** Exploring Different Run Modes](https://robojs.dev/robojs/mode#default-modes)
-- [🚀 **Documentation:** Deploying with 24/7 Uptime](https://robojs.dev/hosting/overview)
+- [🔰 **Beginner Guide:** New to Discord Bots with Robo? Start here!](https://robojs.dev/discord-bots/beginner-guide)
+- [🎭 **Run Modes:** Define profiles for your Robo session.](https://robojs.dev/robojs/mode#default-modes)
 
 ## Development
 
-Create new slash commands by making a new file under the `/src/commands` directory with an exported default function. The file's name becomes the command's name. You can either use the `interaction` parameter or return the result to let Sage handle it for you. For more info on commands, see the **[Discord.js Documentation](https://discord.js.org/#/docs/main/stable/general/welcome)**.
+Creating a **[Slash Command](https://robojs.dev/discord-bots/commands)** is as easy as creating files.
 
-Commands will be automatically registered with Discord when needed, but you can force it by running `npx robo build -f`.
+Let's say you want a new `/hello` command. Just create a file in the `/src/commands` directory named `hello.js` and export a default function that returns something.
 
-To listen to new events, create a file named after the event in `/src/events`. For example, `typingStart.js` will notify you when someone starts typing. You can stack multiple files for the same event by making a directory named after the event. Files inside it can be named whatever you want. For example:
-
-```
-- src
-  - events
-    - typingStart
-      - your-file.js
-      - another.js
+```javascript title="/src/commands/hello.js"
+export default (interaction) => {
+	interaction.reply('Hello World!')
+}
 ```
 
-- [📚 **Documentation:** Slash commands](https://robojs.dev/discord-bots/commands)
-- [📚 **Documentation:** Events](https://robojs.dev/discord-bots/events)
-- [📚 **Documentation:** Context Menus](https://robojs.dev/discord-bots/context-menu)
+![Code for a slash command](https://github.com/Wave-Play/robo.js/blob/main/docs/static/readme/slash-command-code.png?raw=true)
+
+Your `/hello` command is now ready to use! **Robo.js** takes care of registration for you.
+
+![Pk using a slash command](https://raw.githubusercontent.com/Wave-Play/robo.js/refs/heads/main/docs/static/readme/slash-command.png)
+
+Ever clicked on an avatar or message and seen an _Apps_ section? Those are **[Context Commands](https://robojs.dev/discord-bots/context-menu)**!
+
+Create a file file in `/src/context/message` named after the command. For example, `Quote.js`.
+
+```javascript title="/src/context/message/Quote.js"
+export default (interaction, message) => {
+	interaction.reply(`${message.author} said:\n\n> ${message.content}`)
+}
+```
+
+![Code for a context command](https://github.com/Wave-Play/robo.js/blob/main/docs/static/readme/context-message-code.png?raw=true)
+
+You can do the same for users under `/src/context/user`.
+
+![Quoting a message via context command](https://github.com/Wave-Play/robo.js/blob/main/docs/static/readme/context-message.png?raw=true)
+
+- [📜 **Slash Commands:** Your bot follows best practices by default.](https://robojs.dev/discord-bots/commands)
+- [📡 **Events:** Know and respond to everything that happens.](https://robojs.dev/discord-bots/events)
+- [🖱️ **Context Commands:** Extend right click and long press behavior.](https://robojs.dev/discord-bots/context-menu)
+- [⚡ **Flashcore Database:** Persist data in your Robo with ease.](https://robojs.dev/robojs/flashcore)
 
 ## Debugging
 
-Got bugs? No biggie! Robo.js has your back with nifty built-in debugging magic. During dev mode, Robo will provide you with error information, stack traces, interactive logs, and even a sneak peek at the exact code that caused the issue!
+**Discord Bots** made with **Robo.js** come with a built-in **[Debugger](https://robojs.dev/discord-bots/debug)**.
 
-To get started, set up a personal Discord server for your Robo to hang out in and add your server's ID as a `DISCORD_GUILD_ID` env variable. Doing this unlocks the fab debugging features, plus the super-handy `/dev` command that gives you quick access to logs, system info, and more.
+Whenever your bot crashes in development mode, the debugger shows an interactive error message - all within **Discord**!
 
-- [📚 **Documentation:** Debugging](https://robojs.dev/discord-bots/debug)
+![Built-in debugger showing an error](https://github.com/Wave-Play/robo.js/blob/main/docs/static/readme/debugger.png?raw=true)
 
-## Configuration
+You even get `/dev` **[Subcommands](https://robojs.dev/discord-bots/commands#subcommands)** for quick access to logs, system info, and more. Just set your test server's ID as an **environment variable** called `DISCORD_GUILD_ID`.
 
-Robo.js automatically handles creating your Discord.js `Client` instance, but you can still configure what gets passed to it using the `config/robo.mjs` file. Use it to add more intents or change the behavior of other Robo.js features such as Sage.
+- [🐛 **Debugging:** Troubleshoot right within Discord.](https://robojs.dev/discord-bots/debug)
+- [🔑 **Credentials:** Secure your Discord Bot credentials.](https://robojs.dev/discord-bots/credentials#optional-variables)
 
-The `.env` file contains your `DISCORD_TOKEN` and `DISCORD_CLIENT_ID`. Keep these secret. You can get these values from the **[Discord Developer Portal](https://discord.com/developers/applications)**.
+## Client Configuration
 
-- [**Discord Developer Portal:** Manage your Discord Bot](https://discord.com/developers/applications)
-- [📚 **Documentation:** Credentials](https://robojs.dev/discord-bots/credentials)
+**Robo.js** manages your **Discord.js** `Client` instance. You may import `client` anywhere in your project.
 
-## Plugins
+```javascript
+// File: /src/commands/name.js
+import { client } from 'robo.js'
 
-This Robo boasts an intuitive plugin system that grants new capabilities instantly!
-
-```bash
-npx robo add @robojs/ai
+export default () => {
+	return `My name is ${client.user.username}`
+}
 ```
 
-> Swap out [`@robojs/ai`](https://robojs.dev/plugins/ai) with your chosen plugin's package name
+Intents or other configurations can be set in the `config/robo.mjs` file.
 
-With that, your Robo automatically equips itself with all the features the plugin offers. Want to revert? Simply use [`robo remove`](https://robojs.dev/cli/robo#plugins) to uninstall any plugin.
+```javascript
+// File: /config/robo.mjs
+export default {
+	clientOptions: {
+		intents: ['Guilds', 'GuildMessages']
+	}
+	// ... other options
+}
+```
 
-Crafting something unique in your Robo project? You can turn your innovations into plugins, be it specific functionalities or your entire Robo. Share your genius with the world!
+- [🔧 **Configuration:** Customize behavior and features.](https://robojs.dev/robojs/config)
 
-- [📚 **Documentation:** Installing plugins](https://robojs.dev/plugins/install)
-- [📚 **Documentation:** Creating plugins](https://robojs.dev/plugins/create)
+## Robo Ecosystem
 
-## Deployment
+By building with **Robo.js**, you gain access to a growing ecosystem of **[plugins](https://robojs.dev/plugins/directory)**, **[templates](https://robojs.dev/templates/overview)**, and **[tools](https://robojs.dev/cli/overview)**. **[Robo Plugins](https://robojs.dev/plugins/overview)** are special. They can add features with one command.
 
-Run the `deploy` command to automatically deploy to **[RoboPlay](https://roboplay.dev)** once you're ready to keep your robo online 24/7.
+```bash
+npx robo add @robojs/ai @robojs/moderation
+```
+
+Plugins integrate seamlessly thanks to the **[Robo File Structure](https://robojs.dev/discord-bots/file-structure)**. What's more, anyone can **[create a plugin](https://robojs.dev/plugins/create)**.
+
+- [🔌 **Robo Plugins:** Add features to your Robo seamlessly.](https://robojs.dev/plugins/install)
+- [🔌 **Creating Plugins:** Make your own plugins for Robo.js.](https://robojs.dev/plugins/create)
+- [🗃️ **Plugin Directory:** Browse plugins for your Robo.](https://robojs.dev/plugins/create)
+- [🔗 **Templates:** Kickstart your project with a template.](https://robojs.dev/plugins/create)
+
+## Hosting
+
+**Hosting** your project keeps it running 24/7. No need to keep your computer on at all times, or worry about your Internet connection.
+
+You can host on any platform that supports **Node.js**, or run [`robo deploy`](https://robojs.dev/cli/robo#distributing) to host on **[RoboPlay](https://roboplay.dev)** - a hosting platform optimized for **Robo.js**.
 
 ```bash
 npm run deploy
 ```
 
-- [🚀 **RoboPlay:** Hosting your Robo](https://robojs.dev/hosting/overview)
-
-You can also self-host your robo anywhere that supports Node. Just make sure to run `build` followed by `start`:
-
-```bash
-npm run build
-npm start
-```
-
-You can also run `invite` (beta) to automatically generate a server invite to test it yourself or show it off! You can also use the **[Discord Developer Portal](https://discord.com/developers/applications)** to generate an invite as usual.
-
-```bash
-npm run invite
-```
-
-Happy coding! 🎉
+- [🚀 **RoboPlay:** Deploy with as little as one command.](https://robojs.dev/hosting/roboplay)
+- [🛠️ **Self-Hosting:** Learn how to host and maintain it yourself.](https://robojs.dev/hosting/overview)
