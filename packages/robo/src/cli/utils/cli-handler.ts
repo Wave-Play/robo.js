@@ -117,6 +117,14 @@ export class Command {
 		return this._options
 	}
 
+	/**
+	 * Add an option for the command.
+	 *
+	 * @param {string} alias - Option alias (short form).
+	 * @param {string} name - Option name (long form).
+	 * @param {string} description - Option description.
+	 * @returns {Command} - Returns the current Command object for chaining.
+	 */
 	public option(
 		alias: string,
 		name: string,
@@ -183,6 +191,12 @@ export class Command {
 		}
 	}
 
+	/**
+	 * Parses the options from the provided arguments array.
+	 *
+	 * @param {string[]} args - The arguments array.
+	 * @returns {Record<string, unknown>} - Returns an object containing parsed options.
+	 */
 	private parseOptions(args: string[]): { options: Record<string, unknown>; positionalArgs: string[] } {
 		const options: Record<string, unknown> = {}
 		const positionalArgs: string[] = []
