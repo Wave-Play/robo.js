@@ -5,6 +5,7 @@
 	"workspaces": {
 		"packages": [
 			"packages/@robojs/analytics",
+			"packages/@robojs/cron",
 			"packages/@robojs/patch",
 			"packages/@robojs/trpc",
 			"packages/create-discord-activity",

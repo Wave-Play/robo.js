@@ -198,6 +198,7 @@ const sidebars = {
 				'plugins/ai-voice',
 				'plugins/analytics',
 				'plugins/better-stack',
+				'plugins/cron',
 				'plugins/dev',
 				'plugins/maintenance',
 				'plugins/moderation',
