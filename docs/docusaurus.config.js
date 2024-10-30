@@ -180,6 +180,7 @@ const config = {
 					'packages/@robojs/analytics/README.md',
 					'packages/plugin-api/README.md',
 					'packages/plugin-better-stack/README.md',
+					'packages/@robojs/cron/README.md',
 					'packages/plugin-devtools/README.md',
 					'packages/plugin-maintenance/README.md',
 					'packages/plugin-modtools/README.md',
