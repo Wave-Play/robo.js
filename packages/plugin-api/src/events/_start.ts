@@ -41,7 +41,7 @@ export default async (_client: Client, options: PluginConfig) => {
     setEngine(pluginOptions.engine)
 
     // Start HTTP server only if API Routes are defined
-    const { engine, hostname = process.env.HOSTNAME, port = parseInt(process.env.PORT ?? '3000') } = pluginOptions
+    const { engine, hostname = process.env.ROBO_HOSTNAME, port = parseInt(process.env.PORT ?? '3000') } = pluginOptions
     let vite: ViteDevServer | undefined = pluginOptions.vite
     globalThis.roboServer.engine = engine
 
