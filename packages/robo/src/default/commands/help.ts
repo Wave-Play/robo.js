@@ -31,7 +31,7 @@ export default () => {
 	const commands = getInnermostCommands(manifest.commands)
 	const poweredBy = process.env.ROBOPLAY_HOST
 		? 'Powered by [**RoboPlay** ✨](https://roboplay.dev)'
-		: 'Powered by [**Robo.js**](https://roboplay.dev/robo)'
+		: 'Powered by [**Robo.js**](https://robojs.dev)'
 
 	return {
 		embeds: [
