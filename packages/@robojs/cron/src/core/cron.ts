@@ -1,11 +1,11 @@
-import { color, Flashcore } from 'robo.js'
-import { IS_BUN } from './utils.js'
-import { Cron as CronerJob } from 'croner'
-import { v4 as uuidv4 } from 'uuid'
-import fs from 'fs'
-import path from 'path'
-import { pathToFileURL } from 'url'
 import { cronLogger } from './loggers.js'
+import { IS_BUN } from './utils.js'
+import fs from 'node:fs'
+import path from 'node:path'
+import { pathToFileURL } from 'node:url'
+import { Cron as CronerJob } from 'croner'
+import { color, Flashcore } from 'robo.js'
+import { v4 as uuidv4 } from 'uuid'
 
 class CronJob {
 	private cronJob: CronerJob
@@ -29,7 +29,7 @@ class CronJob {
 
 	private executeFileBasedJob(jobPath: string): void {
 		try {
-			let absolutePath = path.resolve(jobPath)
+			let absolutePath = path.resolve(path.join(process.cwd(), '.robo', 'build', jobPath))
 			cronLogger.debug(`Executing cron job handler: ${color.bold(jobPath)}`)
 
 			if (!fs.existsSync(absolutePath) && absolutePath.endsWith('.js') && IS_BUN) {

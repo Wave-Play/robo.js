@@ -4,7 +4,14 @@
 
 # @robojs/cron
 
-A cron plugin for Robo.js that provides scheduling functionality using the croner package and persistence via Flashcore.
+Schedule tasks to run at specific times using cron expressions.
+
+**Features:**
+
+- Run functions on a schedule using cron expressions.
+- Persist file-based jobs to keep them running after a restart.
+- Pause, resume, and stop jobs as needed.
+- Get the next run time for a job.
 
 ## Installation
 
@@ -14,56 +21,93 @@ To add this plugin to your Robo.js project:
 npx robo add @robojs/cron
 ```
 
+New to **[Robo.js](https://robojs.dev)**? Start your project with this plugin pre-installed:
+
+```bash
+npx create-robo <project-name> -p @robojs/cron
+```
+
 ## Usage
 
-This plugin provides a `Cron` class that you can use to create and manage cron jobs in your Robo.js project. Here's an example of how you can use it:
+Use the `Cron` export to run a function on a schedule.
 
 ```javascript
 import { Cron } from '@robojs/cron'
 
-// Create a file-based cron job (can be persisted)
-const job = new Cron('*/5 * * * * *', '/path/to/your/job.js')
-const jobId = await job.save()
+// File: /src/events/_start.js
+export default () => {
+	// Runs a function every 10 seconds
+	const otherJob = Cron('*/10 * * * * *', () => {
+		console.log('@robojs/cron is awesome!')
+	})
 
-// Create a function-based cron job (cannot be persisted)
-const otherJob = new Cron('*/10 * * * * *', () => {
-	console.log('This is another job!')
-})
+	// Pause a job
+	job.pause()
 
-// Pause a job
-job.pause()
+	// Resume a job
+	job.resume()
 
-// Resume a job
-job.resume()
+	// Stop a job
+	job.stop()
 
-// Stop a job
-job.stop()
-
-// Get the next run time
-const nextRun = job.nextRun()
-
-// Remove a persisted job
-await Cron.remove(jobId)
+	// Get the next run time
+	const nextRun = job.nextRun()
+	console.log('Next run:', nextRun)
+}
 ```
 
-### File-based Jobs
-
-For file-based jobs, create a JavaScript file with a default export function:
+You can also point to a file to run as a job:
 
 ```javascript
-// /path/to/your/job.js
+import { Cron } from '@robojs/cron'
+
+// File: /src/events/_start.js
+export default () => {
+	// Runs `/src/cron/job.js` every 5 seconds
+	const job = Cron('*/5 * * * * *', '/cron/job.js')
+}
+```
+
+Your job file should export a default function:
+
+```javascript
+// File: /src/cron/job.js
 export default function () {
-	console.log('This cron job runs every 5 seconds!')
+	console.log('This file runs every 5 seconds!')
 }
 ```
 
 ### Persistence
 
-File-based jobs are automatically persisted and restored when your bot restarts. The plugin uses Flashcore to store job information.
+File-based jobs can be persisted to keep them running after a restart.
+
+Persist a job by calling the `save` method:
+
+```javascript
+import { Cron } from '@robojs/cron'
+
+// File: /src/commands/start-job.js
+export default () => {
+	// Runs `/src/cron/job.js` every 5 seconds
+	const job = Cron('*/5 * * * * *', '/cron/job.js')
+
+	// Only file-based jobs can be persisted
+	const jobId = await job.save()
+
+	// Use the job ID to remove the job later
+	// await Cron.remove(jobId)
+}
+```
+
+This is useful for creating long-running tasks as a result of a command or event. You may pass an ID to the `save` method to prevent duplication.
+
+```javascript
+const jobId = await job.save('my-job')
+```
 
 ## API
 
-### `new Cron(cronExpression: string, jobFunction: string | (() => void))`
+### `Cron(cronExpression: string, jobFunction: string | (() => void))`
 
 Creates a new cron job.
 
@@ -93,7 +137,3 @@ Stops the job.
 ### `job.nextRun(): Date | null`
 
 Returns the next scheduled run time for the job.
-
-## License
-
-MIT
