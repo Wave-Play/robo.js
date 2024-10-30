@@ -1,5 +1,12 @@
 # robo.js
 
+## 0.10.23
+
+### Patch Changes
+
+- 80d0092: refactor(cli): listen to server for auth url instead of creating locally
+- 5b9eae7: chore: updated help link
+
 ## 0.10.22
 
 ### Patch Changes
