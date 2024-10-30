@@ -16,9 +16,9 @@ import { Terminal } from '@site/src/components/shared/Terminal'
 
 Ready to start your adventure? Try **[Create Robo](../cli/create-robo)** in your terminal:
 
-<Terminal create>{'<projectName> -k activity'}</Terminal>
+<Terminal create>{'<projectName>'}</Terminal>
 
-This will spawn a new **Robo.js** project ready to use as a **Discord Activity**. We call these **Robos**.
+This will help spawn a new **Robo.js** project as a **Discord Activity**. We call these **Robos**.
 
 <CardContainer>
 	<Card
@@ -54,13 +54,15 @@ Here's what you can expect:
 These docs cover everything you need to know about creating **Discord Activities** with **Robo.js**, from setting up your project to adding features and deploying it for others to use.
 
 <CardContainer>
+	<Card href="./authentication" title="🔒 Authentication" description="Customize your user experience." />
+	<Card href="./credentials" title="🔑 Credentials" description="Secure your Discord Activity credentials." />
+	<Card href="./proxy" title="🛡️ Discord Proxy" description="Things to know about Discord's Proxy." />
+	<Card href="../hosting/overview" title="🚀 Hosting" description="Deploy your activity for others to use." />
 	<Card
 		href="./multiplayer"
 		title="⚔️ Multiplayer"
 		description="Add multiplayer functionality to your Discord Activity."
 	/>
-	<Card href="../hosting/overview" title="🚀 Hosting" description="Deploy your activity for others to use." />
-	<Card href="./proxy" title="🛡️ Discord Proxy" description="Things to know about Discord's Proxy." />
 </CardContainer>
 
 ## Tutorials
@@ -123,7 +125,7 @@ Join our server to chat with other developers, ask questions, and share your pro
 
 Our very own Robo, **Sage**, is there to answer any questions about **Robo.js**, **Discord's SDK**, and more.
 
-:::tip AI Plugin
+:::plugin
 
 Sage is powered by **[@robojs/ai](../plugins/ai)**
 
@@ -131,33 +133,54 @@ Sage is powered by **[@robojs/ai](../plugins/ai)**
 
 ## Frequently Asked Questions
 
-#### • Do I need to use Robo.js for the bot if I use it for my activity?
+<details>
+	<summary>Do I need to use **Robo.js** for my bot if I use it for my activity?</summary>
 
-No, you can keep your bot and activity separate. **[Robo.js is designed for both](../getting-started#choose-your-adventure)**, but you can use it for either if you prefer.
+Nope, you can keep your bot and activity separate! **[Robo.js is designed for both](../getting-started#choose-your-adventure)**, but you can use it for either if you prefer.
 
-#### • Where can I see my activity in Discord?
+</details>
 
-Join a voice channel and click on the "Activities" button in the bottom left corner of the screen, or on the bottom right in some text channels. You can then select your activity from the list. 
+<details>
+	<summary>Where can I see my activity in Discord?</summary>
 
-#### • How do I add multiplayer functionality to my activity?
+Join a voice channel and click on the "Activities" button in the bottom left corner of the screen, or on the bottom right in some text channels. You can then select your activity from the list.
+
+</details>
+
+<details>
+	<summary>How do I add multiplayer functionality to my activity?</summary>
 
 Use your backend to manage game state and player interactions. Check out our **[multiplayer docs](./multiplayer)**, **[tutorial](https://dev.to/waveplay/how-to-add-multiplayer-to-your-discord-activity-lo1)**, or **[@robojs/sync](../plugins/sync)** for more info.
 
-#### • How do I keep my activity running for others to use?
+</details>
+
+<details>
+	<summary>How do I keep my activity running for others to use?</summary>
 
 You can deploy your activity to **[RoboPlay](https://roboplay.dev)** with the `deploy` command. This will **[keep your activity online](../hosting/overview)** 24/7 for others to use.
 
-#### • I'm getting an entry point command error and can't find a launch button. What should I do?
+</details>
+
+<details>
+	<summary>I'm getting an entry point command error and can't find a launch button. What should I do?</summary>
 
 Discord recently changed the way activities are launched. Activities created before this change may not work as expected. You can try **[creating a new activity](https://dev.to/waveplay/how-to-build-a-discord-activity-easily-with-robojs-5bng)** or **[updating your existing one](https://discord.com/developers/docs/interactions/application-commands#registering-a-command)** to fix this issue.
 
-#### • I'm getting Content Security Policy (CSP) errors. How do I fix them?
+</details>
+
+<details>
+	<summary>I'm getting Content Security Policy (CSP) errors. How do I fix them?</summary>
 
 Follow the **[Discord Proxy](./proxy)** rules to resolve CSP issues. You may need to **[map external URLs](./proxy#url-mapping)** or **[create a proxy](https://dev.to/waveplay/resolve-content-security-policy-csp-issues-in-your-discord-activity-using-a-nodejs-proxy-2634)** to handle requests.
 
-#### • OAUTH2 Error: invalid_request: Missing "redirect_uri" in request
+</details>
+
+<details>
+	<summary>OAUTH2 Error: invalid_request: Missing "redirect_uri" in request</summary>
 
 This error occurs when the redirect URI is, well... missing. Make sure you have the correct redirect URI in your **[Discord Developer Portal](https://discord.com/developers/applications)** OAuth section.
+
+</details>
 
 ## Learn More
 
@@ -170,6 +193,6 @@ This error occurs when the redirect URI is, well... missing. Make sure you have 
 		title="🔗 Templates"
 		description="Kickstart your project with a template."
 	/>
-	<Card href="../robojs/linting" title="💅 Linting" description="Check your code for errors and style." />
+	<Card href="../robojs/modules" title="📦 Modules" description="Stay organized with modules." />
 	<Card href="../robojs/typescript" title="📘 TypeScript" description="Write better code with type safety." />
 </CardContainer>

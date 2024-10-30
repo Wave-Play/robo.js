@@ -1,0 +1,80 @@
+import { Card } from '@site/src/components/shared/Card'
+import { CardContainer } from '@site/src/components/shared/CardContainer'
+import { Terminal } from '@site/src/components/shared/Terminal'
+
+# 🔒 Authentication
+
+A **Discord Activity** wouldn't feel complete without authenticating users. This allows you to provide a more personalized experience, such as showing your users' usernames, avatars, and more.
+
+Lucky for us, **Discord's** **[Embedded App SDK](https://github.com/discord/embedded-app-sdk/)** simplifies the process.
+
+## Prompt Users to Authenticate
+
+Most of our templates and **Create Robo** starters come with a built-in authentication system via `<DiscordContextProvider>`. This component abstracts the authentication process, so you don't have to worry about the small details.
+
+```tsx title="/src/app/App.tsx"
+import { DiscordContextProvider } from '../hooks/useDiscordSdk'
+import { Activity } from './Activity'
+import './App.css'
+
+export default function App() {
+	return (
+		<DiscordContextProvider authenticate scope={['identify', 'guilds']}>
+			<Activity />
+		</DiscordContextProvider>
+	)
+}
+```
+
+Setting `authenticate` to `true` will prompt users to authenticate with Discord when they open your activity. You can adjust the `scope` array to request additional permissions.
+
+## The React Hook
+
+Once authenticated, you can access the user's information using the `useDiscordSdk` hook.
+
+```tsx title="/src/components/Profile.tsx"
+import { useDiscordSdk } from '../hooks/useDiscordSdk'
+
+export function Profile() {
+	const { accessToken, authenticated, discordSdk, error, session, status } = useDiscordSdk()
+
+	// ...
+}
+```
+
+The object returned from `useDiscordSdk` includes:
+
+- `accessToken`: The user's access token. (string)
+- `authenticated`: Whether the user is authenticated. (boolean)
+- `discordSdk`: The Discord SDK instance. (DiscordSDK)
+- `error`: Any errors that occurred during authentication. (Error)
+- `session`: The user's session information. (DiscordSession)
+- `status`: The status will be `authenticating` during the prompt. (string)
+
+You can use the `session` object to access the user's information, such as their username, avatar, and more.
+
+```ts
+const avatarUri = `https://cdn.discordapp.com/avatars/${session.id}/${session.avatar}.png?size=256`
+```
+
+## Loading State
+
+For convenience, `<DiscordContextProvider>` accepts a `loadingScreen` prop. This component will be displayed while the user is authenticating.
+
+```tsx title="/src/app/App.tsx"
+<DiscordContextProvider loadingScreen={<div>Loading...</div>}>
+	<Activity />
+</DiscordContextProvider>
+```
+
+## Vanilla projects
+
+If you're not using a template based on **React**, you can still authenticate users using the **[Embedded App SDK](https://github.com/discord/embedded-app-sdk/)** directly.
+
+<CardContainer>
+	<Card
+		href="https://github.com/discord/embedded-app-sdk/"
+		title="🔗 Embedded App SDK"
+		description="Learn more about the Embedded App SDK."
+	/>
+</CardContainer>

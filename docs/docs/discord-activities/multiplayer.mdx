@@ -10,7 +10,7 @@ import { Terminal } from '@site/src/components/shared/Terminal'
 
 **Discord Activities** are a great way to create multiplayer games and experiences. Even if you're not building a game, you can still use multiplayer features to create collaborative activities or experiences.
 
-Multiplayer features often involve websockets for real-time communication between clients. There are many ways to implement features like this. Depending on what you're building, we recommend either using our **[@robojs/sync](#sync-plugin)** plugin or a more powerful solution like **[Colyseus](https://colyseus.io/)**.
+Multiplayer often involve **[websockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)** for real-time communication between clients. There are different ways to implement such features. Depending on what you're building, we recommend **[@robojs/sync](#sync-plugin)** for simplicity or a more powerful solution like **[Colyseus](https://colyseus.io/)**.
 
 Need a tutorial? We've got you covered!
 
@@ -22,11 +22,11 @@ Need a tutorial? We've got you covered!
 	/>
 </CardContainer>
 
-## Sync Plugin
+## @robojs/sync
 
-If you're building a **[React](https://react.dev)** app, you can use the **@robojs/sync** plugin to sync state across clients in real-time. This is the easiest way to add multiplayer functionality to your Discord Activity.
+If you're building a **[React](https://react.dev)** app, you can use the **@robojs/sync** plugin to sync state across clients in real-time. This is the easiest way to add multiplayer functionality to your **Discord Activity**.
 
-Websocket features can be complex to set up, but **@robojs/sync** handles all of that for you. **Robo.js** plugins are designed to work out of the box, no matter how powerful, so you can focus on features!
+**Websocket** features can be complex to set up, but **@robojs/sync** handles all of that for you. **Robo.js** plugins are designed to work out of the box, no matter how powerful, so you can focus on features!
 
 ### Setup
 
@@ -50,7 +50,7 @@ export function App() {
 
 ### Usage
 
-If you're already familiar with React's `useState` hook, then you'll feel right at home with `useSyncState`. You can use it just like React's `useState` hook, but the state will be synced across all clients in real-time. The only difference is that you need to provide a dependency array as the second argument.
+If you're already familiar with **React's** `useState` hook, then you'll feel right at home with `useSyncState`. You can use it just like **React's** `useState` hook, but the state will be synced across all clients in real-time. The only difference is that you need to provide a dependency array as the second argument.
 
 ```tsx title="/src/components/Player.tsx"
 import { useSyncState } from '@robojs/sync'
@@ -96,7 +96,7 @@ const [position, setPosition] = useSyncState({ x: 0, y: 0 }, [session.user.id, '
 		description="Real-time state synchronization for multiplayer activities."
 	/>
 	<Card
-		href="https://github.com/Wave-Play/robo.js/tree/main/templates/discord-activities/react-multiplayer-video-ts"
+		href="/templates/discord-activities/react-multiplayer-video-ts"
 		title="🔗 Multiplayer Video (TS)"
 		description="Control a video player with friends using React."
 	/>
@@ -106,7 +106,7 @@ const [position, setPosition] = useSyncState({ x: 0, y: 0 }, [session.user.id, '
 
 If you're building a more complex multiplayer game, we recommend using **[Colyseus](https://colyseus.io/)**.
 
-Colyseus is a powerful multiplayer game server that handles real-time communication between clients. It is well tested, scalable, and designed for building real-time multiplayer games. It works great with pretty much any game engine, UI library, or framework. That includes **Robo.js**!
+**Colyseus** is a powerful multiplayer game server that handles real-time communication between clients. It's mature, scalable, and designed for live multiplayer games. It works great with most **game engines**, UI libraries, and frameworks - including **Robo.js**!
 
 ### Setup
 
@@ -129,7 +129,7 @@ Read more about the template:
 
 <CardContainer>
 	<Card
-		href="https://github.com/Wave-Play/robo.js/tree/main/templates/discord-activities/react-colyseus-ts"
+		href="/templates/discord-activities/react-colyseus-ts"
 		title="🔗 Multiplayer Colyseus (TS)"
 		description="A simplified TypeScript template using Colyseus."
 	/>
@@ -137,7 +137,7 @@ Read more about the template:
 
 ### Usage
 
-Once you've set up your server and rooms, you can start using Colyseus to handle real-time communication between clients. You can use Colyseus to handle game logic, state synchronization, and more.
+Once you've set up your server and rooms, you can start using **Colyseus** to handle real-time communication between clients. You can use **Colyseus** to handle game logic, state synchronization, and more.
 
 ```ts title="/src/core/colyseus.ts"
 import { Client } from 'colyseus.js'
@@ -150,7 +150,7 @@ room.onStateChange((state) => {
 })
 ```
 
-We recommend creating a **[Context Provider](https://react.dev/learn/passing-data-deeply-with-context)** to manage the Colyseus client and room. This will allow you to access the client and room from anywhere in your activity.
+We recommend creating a **[Context Provider](https://react.dev/learn/passing-data-deeply-with-context)** to manage the **Colyseus** client and room. This will allow you to access the client and room from anywhere in your **Discord Activity**.
 
 ### More About Colyseus
 

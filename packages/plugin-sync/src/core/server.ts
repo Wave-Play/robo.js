@@ -17,9 +17,7 @@ interface Connection {
 }
 
 const _connections: Array<Connection> = []
-
 const _state: Record<string, unknown> = {}
-
 let _wss: WebSocketServer | undefined
 
 function getSocketServer() {
@@ -27,154 +25,144 @@ function getSocketServer() {
 }
 
 /**
- * Create and start the WebSocket server.
+ * Utility function to handle broadcasting updates to connections.
  */
-function start() {
-	// Create WebSocket server piggybacking on the HTTP server
-	_wss = new WebSocketServer({
-		noServer: true
-	})
-	syncLogger.debug('WebSocket server created successfully.')
+function broadcastUpdate(cleanKey: string, data: unknown, key?: string[]) {
+	const broadcastCount = _connections
+		.filter((c) => c.watch.includes(cleanKey))
+		.forEach((c) => {
+			syncLogger.debug(`Broadcasting ${color.bold(cleanKey)} state update to:`, c.id)
+			const broadcast: MessagePayload = { data, key, type: 'update' }
+			c.ws.send(JSON.stringify(broadcast))
+		})
+	syncLogger.debug(`Broadcasted ${color.bold(cleanKey)} state update to ${broadcastCount} connections.`)
+}
 
-	// Keep track of the connection liveness
-	setInterval(() => {
-		if (_connections.length === 0) {
-			return
+/**
+ * Handle incoming message from a WebSocket connection.
+ */
+function handleMessage(connection: Connection, message: string) {
+	const payload: MessagePayload = JSON.parse(message)
+	const { data, key, type } = payload
+	syncLogger.debug(`Received from ${connection.id}:`, payload)
+
+	if (!type) {
+		syncLogger.error('Payload type is missing!')
+		return
+	}
+
+	if (!['ping', 'pong'].includes(type) && !key) {
+		syncLogger.error('Payload key is missing!')
+		return
+	}
+
+	const cleanKey = key ? normalizeKey(key) : ''
+	switch (type) {
+		case 'pong':
+			connection.isAlive = true
+			break
+
+		case 'get': {
+			// Send the current state to the client
+			const response: MessagePayload = { data: _state[cleanKey], key, type: 'update' }
+			syncLogger.debug(`Sending to ${connection.id}:`, response)
+			connection.ws.send(JSON.stringify(response))
+			break
 		}
 
-		syncLogger.debug(`Pinging ${_connections.length} connections...`)
-		const deadIndices: number[] = []
-		_connections.forEach((conn, index) => {
-			if (!conn.isAlive) {
-				syncLogger.warn(`Connection ${conn.id} is dead. Terminating...`)
-				conn.ws.terminate()
-				deadIndices.push(index)
-				return
+		case 'on': {
+			if (!connection.watch.includes(cleanKey)) {
+				connection.watch.push(cleanKey)
+				syncLogger.debug(`Connection ${connection.id} is now watching:`, connection.watch)
 			}
 
+			// Send the current state to the client if it exists
+			if (_state[cleanKey]) {
+				const response: MessagePayload = { data: _state[cleanKey], key, type: 'update' }
+				syncLogger.debug(`Sending to ${connection.id}:`, response)
+				connection.ws.send(JSON.stringify(response))
+			}
+			break
+		}
+
+		case 'off': {
+			const index = connection.watch.indexOf(cleanKey)
+			if (index > -1) {
+				connection.watch.splice(index, 1)
+				syncLogger.debug(`Connection ${connection.id} stopped watching:`, cleanKey)
+			}
+			break
+		}
+
+		case 'update': {
+			_state[cleanKey] = data
+			syncLogger.debug(`State updated for ${cleanKey}. Broadcasting...`)
+			broadcastUpdate(cleanKey, data, key)
+			break
+		}
+
+		default:
+			syncLogger.warn(`Unsupported message type: ${type}`)
+			break
+	}
+}
+
+/**
+ * Periodically ping connections to check if they are still alive.
+ */
+function monitorConnections() {
+	const deadConnections: number[] = []
+
+	_connections.forEach((conn, index) => {
+		if (!conn.isAlive) {
+			syncLogger.warn(`Connection ${conn.id} is dead. Terminating...`)
+			conn.ws.terminate()
+			deadConnections.push(index)
+		} else {
 			conn.isAlive = false
 			const ping: MessagePayload = { data: undefined, type: 'ping' }
 			conn.ws.send(JSON.stringify(ping))
-		})
-
-		// Remove dead connections
-		deadIndices.forEach((index) => {
-			_connections.splice(index, 1)
-		})
-	}, 30_000)
-
-	// Handle incoming connections
-	_wss.on('connection', (ws) => {
-		// Register the connection
-		const connection: Connection = { id: nanoid(), isAlive: true, watch: [], ws }
-		_connections.push(connection)
-		syncLogger.debug('New connection established! Registered as', connection.id)
-
-		// Detect disconnections
-		ws.on('close', () => {
-			const index = _connections.findIndex((c) => c.id === connection.id)
-			syncLogger.debug(`Connection ${connection.id} closed. Removing...`)
-
-			if (index > -1) {
-				_connections.splice(index, 1)
-			}
-		})
-
-		ws.on('message', (message) => {
-			// Handle incoming messages
-			const payload: MessagePayload = JSON.parse(message.toString())
-			const { data, key, type } = payload
-			syncLogger.debug(`Received from ${connection.id}:`, payload)
-
-			if (!type) {
-				syncLogger.error('Payload type is missing!')
-				return
-			} else if (!['ping', 'pong'].includes(type) && !key) {
-				syncLogger.error('Payload key is missing!')
-				return
-			}
-
-			// Ping responses are... unique
-			if (type === 'pong') {
-				const conn = _connections.find((c) => c.id === connection.id)
-
-				if (conn) {
-					conn.isAlive = true
-				}
-				return
-			}
-
-			// Handle the message based on the type
-			const cleanKey = normalizeKey(key)
-			let response: MessagePayload | undefined
-
-			switch (type) {
-				case 'get':
-					// Send the current state to the client
-					response = {
-						data: _state[cleanKey],
-						key: key,
-						type: 'update'
-					}
-					break
-				case 'off': {
-					// Remove the key from the watch list
-					const index = connection.watch.findIndex((k) => k === cleanKey)
-					if (index > -1) {
-						connection.watch.splice(index, 1)
-					}
-					syncLogger.debug(`Connection ${connection.id} is now watching:`, connection.watch)
-					break
-				}
-				case 'on': {
-					// Add the key to the watch list
-					if (!connection.watch.includes(cleanKey)) {
-						connection.watch.push(cleanKey)
-					}
-					syncLogger.debug(`Connection ${connection.id} is now watching:`, connection.watch)
-
-					// Send the current state to the client (if it exists)
-					if (_state[cleanKey]) {
-						response = {
-							data: _state[cleanKey],
-							key: key,
-							type: 'update'
-						}
-					}
-					break
-				}
-				case 'ping':
-					syncLogger.warn('Should not send pings to the server!')
-					break
-				case 'update': {
-					// Update the state
-					_state[cleanKey] = data
-
-					// Broadcast the new state to all connections watching this key
-					const broadcastResult = _connections
-						.filter((c) => c.watch.includes(cleanKey))
-						.map((c) => {
-							syncLogger.debug(`Broadcasting ${color.bold(cleanKey)} state update to:`, c.id)
-							const broadcast: MessagePayload = { data, key, type: 'update' }
-							c.ws.send(JSON.stringify(broadcast))
-						})
-					syncLogger.debug(`Broadcasted ${color.bold(cleanKey)} state update to ${broadcastResult.length} connections.`)
-					break
-				}
-			}
-
-			if (response) {
-				syncLogger.debug(`Sending to ${connection.id}:`, response)
-				ws.send(JSON.stringify(response))
-			}
-		})
+		}
 	})
 
-	// Handle upgrade requests
+	deadConnections.forEach((index) => _connections.splice(index, 1))
+}
+
+/**
+ * Set up connection event handlers for WebSocket.
+ */
+function handleConnection(ws: WebSocket) {
+	const connection: Connection = { id: nanoid(), isAlive: true, watch: [], ws }
+	_connections.push(connection)
+	syncLogger.debug('New connection established!', connection.id)
+
+	ws.on('close', () => {
+		syncLogger.debug(`Connection ${connection.id} closed. Removing...`)
+		const index = _connections.findIndex((c) => c.id === connection.id)
+
+		if (index > -1) {
+			_connections.splice(index, 1)
+		}
+	})
+
+	ws.on('message', (message) => handleMessage(connection, message.toString()))
+}
+
+/**
+ * Create and start the WebSocket server.
+ */
+function start() {
+	_wss = new WebSocketServer({ noServer: true })
+	syncLogger.debug('WebSocket server created successfully.')
+
+	setInterval(monitorConnections, 30_000)
+
+	_wss.on('connection', handleConnection)
+
 	const engine = getServerEngine<NodeEngine>()
 	engine.registerWebsocket('/sync', (req, socket, head) => {
-		const wss = SyncServer.getSocketServer()
-		wss?.handleUpgrade(req, socket, head, function done(ws) {
+		const wss = getSocketServer()
+		wss?.handleUpgrade(req, socket, head, (ws) => {
 			wss?.emit('connection', ws, req)
 		})
 	})

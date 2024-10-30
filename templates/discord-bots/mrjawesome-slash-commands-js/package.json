@@ -1,0 +1,28 @@
+{
+	"name": "mrjawesome-slash-commands-js",
+	"description": "Quickstart for creating slash commands by MrJAwesome.",
+	"version": "1.0.0",
+	"type": "module",
+	"private": true,
+	"keywords": [
+		"bot",
+		"discord",
+		"discord.js",
+		"javascript",
+		"robo",
+		"robo.js"
+	],
+	"scripts": {
+		"build": "robo build",
+		"deploy": "robo deploy",
+		"dev": "robox dev",
+		"doctor": "sage doctor",
+		"invite": "robo invite",
+		"start": "robo start",
+		"upgrade": "sage upgrade"
+	},
+	"dependencies": {
+		"discord.js": "^14.16.3",
+		"robo.js": "^0.10.22"
+	}
+}

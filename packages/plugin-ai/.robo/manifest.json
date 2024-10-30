@@ -11,9 +11,11 @@
       },
       "plugins": []
     },
+    "language": "typescript",
+    "mode": "production",
     "type": "plugin",
-    "updatedAt": "2024-05-10T05:05:03.941Z",
-    "version": "0.10.6"
+    "updatedAt": "2024-10-21T00:44:07.940Z",
+    "version": "0.10.22"
   },
   "api": {
     "ai": {

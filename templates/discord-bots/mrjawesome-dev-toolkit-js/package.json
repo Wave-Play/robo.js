@@ -1,0 +1,29 @@
+{
+	"name": "mrjawesome-dev-toolkit-js",
+	"description": "",
+	"version": "1.0.0",
+	"type": "module",
+	"private": true,
+	"keywords": [
+		"bot",
+		"discord",
+		"discord.js",
+		"javascript",
+		"robo",
+		"robo.js"
+	],
+	"scripts": {
+		"build": "robo build",
+		"deploy": "robo deploy",
+		"dev": "robox dev",
+		"doctor": "sage doctor",
+		"invite": "robo invite",
+		"start": "robo start",
+		"upgrade": "sage upgrade"
+	},
+	"dependencies": {
+		"discord.js": "^14.16.3",
+		"mongoose": "^8.7.2",
+		"robo.js": "^0.10.22"
+	}
+}

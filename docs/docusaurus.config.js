@@ -106,7 +106,7 @@ const config = {
 					},
 					{
 						from: '/docs/basics/secrets',
-						to: '/discord-bots/secrets'
+						to: '/discord-bots/credentials'
 					},
 					{
 						from: '/docs/hosting',
@@ -155,6 +155,14 @@ const config = {
 					{
 						from: '/robojs/plugins',
 						to: '/plugins/overview'
+					},
+					{
+						from: '/templates',
+						to: '/templates/overview'
+					},
+					{
+						from: '/discord-bots/secrets',
+						to: '/discord-bots/credentials'
 					}
 				]
 			}
@@ -195,6 +203,10 @@ const config = {
 					'templates/discord-bots/analytics-ts/README.md',
 					'templates/discord-bots/economy-ts/README.md',
 					'templates/discord-bots/mongodb-ts/README.md',
+					'templates/discord-bots/mrjawesome-dev-toolkit-js/README.md',
+					'templates/discord-bots/mrjawesome-dev-toolkit-ts/README.md',
+					'templates/discord-bots/mrjawesome-slash-commands-js/README.md',
+					'templates/discord-bots/mrjawesome-slash-commands-ts/README.md',
 					'templates/discord-bots/postgres-ts/README.md',
 					'templates/discord-bots/prisma-ts/README.md',
 					'templates/discord-bots/purrth-vader-ts/README.md',
@@ -345,6 +357,10 @@ const config = {
 			/** @type {import('@docusaurus/preset-classic').Options} */
 			({
 				docs: {
+					admonitions: {
+						keywords: ['plugin'],
+						extendDefaults: true
+					},
 					editUrl: 'https://github.com/Wave-Play/robo.js/edit/main/docs/',
 					routeBasePath: '/',
 					showLastUpdateAuthor: true,

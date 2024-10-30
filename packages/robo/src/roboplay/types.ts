@@ -36,6 +36,7 @@ export interface OAuthSession {
 	secret: string
 	status: OAuthSessionStatus
 	token: string
+	url: string
 }
 
 export interface Pod {

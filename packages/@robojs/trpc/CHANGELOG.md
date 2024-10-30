@@ -1,5 +1,23 @@
 # @robojs/trpc
 
+## 0.2.2
+
+### Patch Changes
+
+- d2bf907: patch: better support for non-prefixed servers
+
+## 0.2.1
+
+### Patch Changes
+
+- f31c26d: patch: decoupled client imports from server file
+
+## 0.2.0
+
+### Minor Changes
+
+- 55a0b55: refactor: moved server-side exports to `/server` namespace
+
 ## 0.1.4
 
 ### Patch Changes

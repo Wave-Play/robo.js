@@ -1,8 +1,8 @@
 import fs, { readFile, rename } from 'node:fs/promises'
 import path from 'path'
 import { checkbox, input, select, Separator } from '@inquirer/prompts'
-import chalk from 'chalk'
 import { fileURLToPath } from 'node:url'
+import { Highlight, HighlightBlue } from './core/constants.js'
 import {
 	PRETTIER_CONFIG,
 	ROBO_CONFIG,
@@ -45,35 +45,35 @@ const pluginScripts = {
 	prepublishOnly: 'robo build plugin'
 }
 
-const Recommended = chalk.dim('(recommended)')
+const Recommended = color.dim('(recommended)')
 
 const optionalFeatures = [
 	{
-		name: `${chalk.bold('TypeScript')} ${Recommended} - A superset of JavaScript that adds static types.`,
+		name: `${color.bold('TypeScript')} ${Recommended} - A superset of JavaScript that adds static types.`,
 		short: 'TypeScript',
 		value: 'typescript',
 		checked: true
 	},
 	{
-		name: `${chalk.bold('React')} ${Recommended} - The library for web and native user interfaces.`,
+		name: `${color.bold('React')} ${Recommended} - The library for web and native user interfaces.`,
 		short: 'React',
 		value: 'react',
 		checked: true
 	},
 	{
-		name: `${chalk.bold('Prettier')} ${Recommended} - Automatically formats your code for readability.`,
+		name: `${color.bold('Prettier')} ${Recommended} - Automatically formats your code for readability.`,
 		short: 'Prettier',
 		value: 'prettier',
 		checked: true
 	},
 	{
-		name: `${chalk.bold('ESLint')} ${Recommended} - Keeps your code clean and consistent.`,
+		name: `${color.bold('ESLint')} ${Recommended} - Keeps your code clean and consistent.`,
 		short: 'ESLint',
 		value: 'eslint',
 		checked: false
 	},
 	{
-		name: `${chalk.bold('Extensionless')} - Removes the need for file extensions in imports.`,
+		name: `${color.bold('Extensionless')} - Removes the need for file extensions in imports.`,
 		short: 'Extensionless',
 		value: 'extensionless',
 		checked: false
@@ -82,34 +82,34 @@ const optionalFeatures = [
 
 const appPlugins = [
 	{
-		name: `${chalk.bold(
+		name: `${color.bold(
 			'AI'
 		)} - Transform your Robo into a personalized AI chatbot! Supports Discord command execution.`,
 		short: 'AI',
 		value: 'ai'
 	},
 	{
-		name: `${chalk.bold('Analytics')} - Track user interactions and server activity with ease.`,
+		name: `${color.bold('Analytics')} - Track user interactions and server activity with ease.`,
 		short: 'Analytics',
 		value: 'analytics'
 	},
 	{
-		name: `${chalk.bold('Sync')} - Real-time state sync across clients. Perfect for multiplayer games and chat apps!`,
+		name: `${color.bold('Sync')} - Real-time state sync across clients. Perfect for multiplayer games and chat apps!`,
 		short: 'Sync',
 		value: 'sync'
 	},
-	new Separator('\nRequired for apps:'),
+	new Separator(color.dim('\nRequired for apps:')),
 	{
 		checked: true,
-		name: `${chalk.bold('Patches')} - A collection of patches optimized for Robo.js projects.`,
+		name: color.dim(`${color.bold('Patches')} - A collection of patches optimized for Robo.js projects.`),
 		short: 'Patches',
 		value: 'patch'
 	},
 	{
 		checked: true,
-		name: `${chalk.bold(
-			'Web Server'
-		)} - Turn your Robo into a web server! Create and manage web pages, APIs, and more.`,
+		name: color.dim(
+			`${color.bold('Web Server')} - Turn your Robo into a web server! Create and manage web pages, APIs, and more.`
+		),
 		short: 'Web Server',
 		value: 'server'
 	}
@@ -117,29 +117,29 @@ const appPlugins = [
 
 const botPlugins = [
 	{
-		name: `${chalk.bold(
+		name: `${color.bold(
 			'AI'
 		)} - Transform your Robo into a personalized AI chatbot! Supports Discord command execution.`,
 		short: 'AI',
 		value: 'ai'
 	},
 	{
-		name: `${chalk.bold('Analytics')} - Track user interactions and server activity with ease.`,
+		name: `${color.bold('Analytics')} - Track user interactions and server activity with ease.`,
 		short: 'Analytics',
 		value: 'analytics'
 	},
 	/*{
-		name: `${chalk.bold('Maintenance')} - Add a maintenance mode to your robo.`,
+		name: `${color.bold('Maintenance')} - Add a maintenance mode to your robo.`,
 		short: 'Maintenance',
 		value: 'maintenance'
 	},*/
 	{
-		name: `${chalk.bold('Moderation')} - Equip your bot with essential tools to manage and maintain your server.`,
+		name: `${color.bold('Moderation')} - Equip your bot with essential tools to manage and maintain your server.`,
 		short: 'Moderation',
 		value: 'modtools'
 	},
 	{
-		name: `${chalk.bold(
+		name: `${color.bold(
 			'Web Server'
 		)} - Turn your Robo into a web server! Create and manage web pages, APIs, and more.`,
 		short: 'Web Server',
@@ -288,7 +288,7 @@ export default class Robo {
 	async askIsPlugin() {
 		const isPlugin = await select(
 			{
-				message: chalk.blue('This sounds like a plugin. Would you like to set it up as one?'),
+				message: color.blue('This sounds like a plugin. Would you like to set it up as one?'),
 				choices: [
 					{ name: 'Yes', value: true },
 					{ name: 'No', value: false }
@@ -319,11 +319,13 @@ export default class Robo {
 
 		// Print new section
 		logger.debug('\n')
-		logger.log(Indent, chalk.bold(`🔌 Plugin Power-Ups`))
+		logger.log(Indent, color.bold(`🔌 Plugin Power-Ups`))
 
 		// Skip if no plugins are selected
 		if (selectedPlugins.length === 0) {
 			logger.log(Indent, `   Traveling light, but the quest for plugins awaits!`)
+			logger.log()
+			logger.log(Indent, `   Find more:`, HighlightBlue('https://robojs.dev/plugins'))
 			return
 		}
 
@@ -379,7 +381,7 @@ export default class Robo {
 			)
 
 			let extra = ''
-			extra = `${pluginNames.map((f: string) => chalk.bold.cyan(f)).join(', ')}`
+			extra = `${pluginNames.map((f: string) => Highlight(f)).join(', ')}`
 
 			// Oxford comma 'cause we fancy uwu
 			if (selectedPlugins.length > 1) {
@@ -395,8 +397,11 @@ export default class Robo {
 			logger.log(Indent, `   Skill${selectedPlugins.length > 1 ? 's' : ''} acquired: ${extra}.`, Space)
 		} catch (error) {
 			this._spinner.stop(false)
-			logger.log(Indent, chalk.red(`   Could not install plugins!`))
+			logger.log(Indent, color.red(`   Could not install plugins!`))
 		}
+
+		logger.log()
+		logger.log(Indent, `   Find more:`, HighlightBlue('https://robojs.dev/plugins'))
 	}
 
 	async downloadTemplate(url: string) {
@@ -416,7 +421,7 @@ export default class Robo {
 
 		// Print new section
 		logger.debug('\n')
-		logger.log(Indent, chalk.bold('🌐 Creating from template'))
+		logger.log(Indent, color.bold('🌐 Creating from template'))
 		this._spinner.setText(Indent + '    {{spinner}} Downloading template...\n')
 		this._spinner.start()
 
@@ -437,7 +442,7 @@ export default class Robo {
 			logger.debug(`Validating template URL:`, repoUrl)
 			if (repoUrl.origin !== 'https://github.com') {
 				logger.error(
-					`Invalid URL: ${chalk.red(
+					`Invalid URL: ${color.red(
 						`"${url}"`
 					)}. Only GitHub repositories are supported. Please use a GitHub URL and try again.`
 				)
@@ -448,7 +453,7 @@ export default class Robo {
 			logger.debug(`Found repo info:`, repoInfo)
 
 			if (!repoInfo) {
-				logger.error(`Found invalid GitHub URL: ${chalk.red(`"${url}"`)}. Please fix the URL and try again.`)
+				logger.error(`Found invalid GitHub URL: ${color.red(`"${url}"`)}. Please fix the URL and try again.`)
 				process.exit(1)
 			}
 
@@ -456,7 +461,7 @@ export default class Robo {
 
 			if (!found) {
 				logger.error(
-					`Could not locate the repository for ${chalk.red(
+					`Could not locate the repository for ${color.red(
 						`"${url}"`
 					)}. Please check that the repository exists and try again.`
 				)
@@ -469,7 +474,7 @@ export default class Robo {
 		})
 		const name = isOfficial ? template : result?.name
 		this._spinner.stop(false)
-		logger.log(Indent, `   Bootstraped project successfully from ${chalk.bold.cyan(name ?? 'repository')}.`)
+		logger.log(Indent, `   Bootstraped project successfully from ${Highlight(name ?? 'repository')}.`)
 
 		// If the template includes a `example.env` file, copy it to `.env`
 		const exampleEnvPath = path.join(this._workingDir, 'example.env')
@@ -509,8 +514,8 @@ export default class Robo {
 			logger.log()
 			logger.log(
 				Indent,
-				chalk.bold(
-					`📦 Preparing ${chalk.cyan(this._useTypeScript ? 'TypeScript' : 'JavaScript')} ${
+				color.bold(
+					`📦 Preparing ${color.cyan(this._useTypeScript ? 'TypeScript' : 'JavaScript')} ${
 						this._isPlugin ? 'plugin' : 'project'
 					}`
 				)
@@ -518,7 +523,7 @@ export default class Robo {
 
 			try {
 				const packageManager = getPackageManager()
-				logger.debug(`Using ${chalk.bold(packageManager)} in ${this._workingDir}...`)
+				logger.debug(`Using ${color.bold(packageManager)} in ${this._workingDir}...`)
 
 				const command = packageManager + ' install'
 				this._spinner.setText(Indent + '    {{spinner}} Installing dependencies...\n')
@@ -540,7 +545,7 @@ export default class Robo {
 			} catch {
 				this._spinner.stop(false)
 				this._installFailed = true
-				logger.log(Indent, chalk.red(`   Could not install dependencies!`))
+				logger.log(Indent, color.red(`   Could not install dependencies!`))
 				logger.debug(`Updating package.json file...`)
 			}
 		} else {
@@ -598,15 +603,15 @@ export default class Robo {
 
 		// Find the package manager that triggered this command
 		const packageManager = getPackageManager()
-		logger.debug(`Using ${chalk.bold(packageManager)} in ${this._workingDir}...`)
+		logger.debug(`Using ${color.bold(packageManager)} in ${this._workingDir}...`)
 		await fs.mkdir(this._workingDir, { recursive: true })
 
 		// Print new section
 		logger.debug('\n')
 		logger.log(
 			Indent,
-			chalk.bold(
-				`📦 Creating ${chalk.cyan(this._useTypeScript ? 'TypeScript' : 'JavaScript')} ${
+			color.bold(
+				`📦 Creating ${color.cyan(this._useTypeScript ? 'TypeScript' : 'JavaScript')} ${
 					this._isPlugin ? 'plugin' : 'project'
 				}`
 			)
@@ -843,7 +848,7 @@ export default class Robo {
 			this._spinner.stop(false)
 			let extra = ''
 			if (pureFeatures.length > 0) {
-				extra = ` with ${pureFeatures.map((f) => chalk.bold.cyan(f)).join(', ')}`
+				extra = ` with ${pureFeatures.map((f) => Highlight(f)).join(', ')}`
 			}
 			logger.log(Indent, `   Project created successfully${extra}.`)
 		}
@@ -888,7 +893,7 @@ export default class Robo {
 				this._spinner.stop(false)
 				let extra = ''
 				if (pureFeatures.length > 0) {
-					extra = ` with ${pureFeatures.map((f) => chalk.bold.cyan(f)).join(', ')}`
+					extra = ` with ${pureFeatures.map((f) => Highlight(f)).join(', ')}`
 				}
 
 				// Oxford comma 'cause we fancy uwu
@@ -904,7 +909,7 @@ export default class Robo {
 			} catch {
 				this._spinner.stop(false)
 				this._installFailed = true
-				logger.log(Indent, chalk.red(`   Could not install dependencies!`))
+				logger.log(Indent, color.red(`   Could not install dependencies!`))
 
 				writeDependencies()
 				logger.debug(`Updating package.json file...`)
@@ -924,7 +929,7 @@ export default class Robo {
 				await exec(`${executor} robo add ${plugins.join(' ')}`, { cwd: this._workingDir })
 			} catch (error) {
 				logger.error(`Failed to install plugins:`, error)
-				logger.warn(`Please add the plugins manually using ${chalk.bold(executor + ' robo add')}`)
+				logger.warn(`Please add the plugins manually using ${color.bold(executor + ' robo add')}`)
 			}
 		}
 	}
@@ -966,14 +971,16 @@ export default class Robo {
 
 	async askForDiscordCredentials(): Promise<void> {
 		const discordPortal = 'Portal:'
-		const discordPortalUrl = chalk.bold.blue('https://discord.com/developers/applications')
-		const officialGuide = 'Guide:'
-		const officialGuideUrl = chalk.bold.blue('https://roboplay.dev/' + (this._isApp ? 'appkey' : 'botkey'))
+		const discordPortalUrl = HighlightBlue('https://discord.com/developers/applications')
+		const officialGuide = 'Docs:'
+		const officialGuideUrl = HighlightBlue(
+			`https://robojs.dev/${this._isApp ? 'discord-activities' : 'discord-bots'}/credentials`
+		)
 
 		let discordClientId = ''
 		let discordToken = ''
 		logger.log('')
-		logger.log(Indent, chalk.bold('🔑 Setting up credentials'))
+		logger.log(Indent, color.bold('🔑 Setting up credentials'))
 		logger.log(Indent, '   Get your credentials from the Discord Developer portal.\n')
 		logger.log(Indent, `   ${discordPortal} ${discordPortalUrl}`)
 		logger.log(Indent, `   ${officialGuide} ${officialGuideUrl}\n`)
@@ -1001,7 +1008,11 @@ export default class Robo {
 		this._spinner.setText(Indent + '    {{spinner}} Applying credentials...\n')
 		this._spinner.start()
 
+		// Construct the .env file, starting with defaults for all Robo projects
 		const env = await new Env('.env', this._workingDir).load()
+		env.set('NODE_OPTIONS', this._nodeOptions.join(' '), 'Enable source maps for easier debugging')
+
+		// Discord-specific credentials
 		env.set(
 			'DISCORD_CLIENT_ID',
 			discordClientId,
@@ -1014,8 +1025,8 @@ export default class Robo {
 		} else {
 			env.set('DISCORD_TOKEN', discordToken)
 		}
-		env.set('NODE_OPTIONS', this._nodeOptions.join(' '), 'Enable source maps for easier debugging')
 
+		// Plugin-specific variables
 		if (this._selectedPlugins.includes('ai')) {
 			env.set('OPENAI_API_KEY', '', 'Get your OpenAI API key - https://platform.openai.com/api-keys')
 		}
@@ -1032,9 +1043,10 @@ export default class Robo {
 			env.set('PORT', '3000', 'Change this port number if needed')
 		}
 
+		// Save the .env file
 		await env.commit(this._useTypeScript)
 		this._spinner.stop()
-		logger.log(Indent, '   Manage your credentials in the', chalk.bold.cyan('.env'), 'file.')
+		logger.log(Indent, '   Manage your credentials in the', Highlight('.env'), 'file.')
 	}
 
 	/**

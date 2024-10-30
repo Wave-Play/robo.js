@@ -7,6 +7,7 @@
 			"packages/@robojs/analytics",
 			"packages/@robojs/patch",
 			"packages/@robojs/trpc",
+			"packages/create-discord-activity",
 			"packages/create-robo",
 			"packages/plugin-ai",
 			"packages/plugin-ai-voice",
@@ -29,6 +30,9 @@
 	"scripts": {
 		"build": "turbo run build --force",
 		"build:robo": "turbo run build --filter=robo.js --force",
+		"dev:core": "turbo run dev --filter=robo.js --force",
+		"dev:docs": "cd docs && npm run dev",
+		"dev:plugins": "pnpm build:robo && turbo run dev --concurrency 50 --filter=!robo.js --force",
 		"lint": "pnpm lint:eslint && pnpm lint:style",
 		"lint:eslint": "eslint . --max-warnings=0",
 		"lint:style": "prettier --write .",
@@ -59,8 +63,9 @@
 		"eslint": "9.3.0",
 		"globals": "^15.3.0",
 		"prettier": "2.8.5",
-		"turbo": "1.8.4",
+		"turbo": "2.2.3",
 		"typescript": "5.0.2",
 		"typescript-eslint": "^7.9.0"
-	}
+	},
+	"packageManager": "pnpm@8.6.11"
 }

@@ -1,5 +1,4 @@
 import { Command } from '../utils/cli-handler.js'
-import { env } from '../../core/env.js'
 import { logger } from '../../core/logger.js'
 import { RoboPlay } from '../../roboplay/client.js'
 import { color, composeColors } from '../../core/color.js'
@@ -33,7 +32,6 @@ async function loginAction(_args: string[], options: LoginCommandOptions) {
 
 	// Prepare OAuth session
 	const oauthSession = await RoboPlay.OAuth.create()
-	const url = env('roboplay.frontend') + `/auth/cli?token=${oauthSession.token}`
 	let sessionStatus = oauthSession.status
 
 	if (!oauthSession.success) {
@@ -53,7 +51,7 @@ async function loginAction(_args: string[], options: LoginCommandOptions) {
 	logger.log(Indent, `${cta} to open your web browser...`)
 
 	logger.log('\n' + Indent, color.bold('🔗 Prefer to navigate manually?'))
-	logger.log(Indent, composeColors(color.underline, color.blue)(url), '\n')
+	logger.log(Indent, composeColors(color.underline, color.blue)(oauthSession.url), '\n')
 
 	const spinner = new Spinner(Indent + ` {{spinner}} Waiting for sign in...`)
 	spinner.start()
@@ -63,7 +61,7 @@ async function loginAction(_args: string[], options: LoginCommandOptions) {
 		spinner.stop()
 		logger.log('\x1b[2A\x1b[J')
 		logger.log('\n' + Indent, color.dim('Opening browser...'), '\n')
-		openBrowser(url)
+		openBrowser(oauthSession.url)
 
 		spinner.start()
 	})

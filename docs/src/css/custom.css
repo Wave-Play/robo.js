@@ -14,10 +14,12 @@
 	--ifm-color-primary-lighter: #359962;
 	--ifm-color-primary-lightest: #3cad6e;
 	--ifm-code-font-size: 95%;
-	--robo-background-color: white;
+	--robo-background-color: #fafafa;
+	--ifm-alert-border-radius: 0px;
 	--robo-border-color: rgb(235, 235, 235);
 	--card-background-color: white;
 	--code-background-color: white;
+	--admonition-plugin-background: #F3E5F5;
 	--docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
 	--terminal-background-color: white;
 	--terminal-border-color: rgb(235, 235, 235);
@@ -42,6 +44,7 @@
 	--ifm-color-primary-lightest: #4fddbf;
 	--card-background-color: #171b21;
 	--code-background-color: #171b21;
+	--admonition-plugin-background: rgba(74, 20, 140, 0.4);
 	--robo-background-color: #0e1116;
 	--robo-border-color: #31363c;
 	--docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
@@ -82,6 +85,11 @@ h3 {
 
 .theme-admonition {
 	border-radius: 0px;
+}
+
+.theme-admonition-plugin {
+	background-color: var(--admonition-plugin-background);
+	border-left-color: #9C27B0;
 }
 
 article .clean-btn {
@@ -153,9 +161,8 @@ article .clean-btn {
 }
 
 .card {
-	background-color: var(--card-background-color);
-	border-radius: var(--ifm-card-border-radius);
-	box-shadow: var(--ifm-global-shadow-lw);
+	background-color: transparent;
+	box-shadow: none;
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
@@ -165,15 +172,12 @@ article .clean-btn {
 	--ifm-link-color: var(--ifm-color-emphasis-800);
 	--ifm-link-hover-color: var(--ifm-color-emphasis-700);
 	--ifm-link-hover-decoration: none;
-	border: 1px solid var(--ifm-color-emphasis-200);
-	box-shadow: 0 1.5px 3px 0 #00000026;
 	transition: all var(--ifm-transition-fast) ease;
 	transition-property: border, box-shadow;
 }
 
 .cardContent:hover {
 	border-color: var(--ifm-color-primary);
-	box-shadow: 0 3px 6px 0 #0003;
 	text-decoration: none;
 }
 
@@ -203,6 +207,10 @@ article .clean-btn {
 
 .nodecor:hover {
 	text-decoration: none;
+}
+
+.pagination-nav__link {
+	border-radius: 0px;
 }
 
 .sidebar-title {

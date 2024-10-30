@@ -27,6 +27,7 @@
 		"invite": "robo invite",
 		"lint:style": "prettier --write .",
 		"start": "robo start",
+		"tunnel": ".robo/bin/cloudflared tunnel --url http://localhost:3000",
 		"upgrade": "sage upgrade"
 	},
 	"dependencies": {

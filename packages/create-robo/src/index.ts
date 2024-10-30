@@ -1,20 +1,16 @@
 #!/usr/bin/env node
+import { Highlight, HighlightBlue, HighlightGreen, HighlightMagenta, HighlightRed, Indent } from './core/constants.js'
 import Robo from './robo.js'
-import { Indent, getPackageManager } from './utils.js'
-import { Command } from 'commander'
-import { input, select } from '@inquirer/prompts'
-import { createRequire } from 'node:module'
+import { getPackageManager, packageJson } from './utils.js'
 import path from 'node:path'
-import chalk from 'chalk'
-import { logger } from 'robo.js'
-
-// Read the version from the package.json file
-const require = createRequire(import.meta.url)
-const packageJson = require('../package.json')
+import { input, select } from '@inquirer/prompts'
+import { color, logger } from 'robo.js'
+import { Command } from 'robo.js/cli.js'
 
 export interface CommandOptions {
 	features?: string
 	install?: boolean
+	'no-install'?: boolean
 	javascript?: boolean
 	kit?: 'activity' | 'app' | 'bot' | 'web'
 	plugin?: boolean
@@ -24,34 +20,87 @@ export interface CommandOptions {
 	verbose?: boolean
 	roboVersion?: string
 	update?: boolean
+	'no-update'?: boolean
 	creds?: boolean
+	'no-creds'?: boolean
+	version?: boolean
 }
 
 new Command('create-robo <projectName>')
 	.description('Launch epic projects instantly with Robo.js — effortless, powerful, complete!')
 	.version(packageJson.version)
-	.option('-f --features <features>', 'comma-separated list of features to include')
-	.option('-js --javascript', 'create a Robo using JavaScript')
-	.option('-p --plugins <plugins...>', 'pre-install plugins along with the project')
-	.option('-P --plugin', 'create a Robo plugin instead of a bot')
-	.option('-ni --no-install', 'skips the installation of dependencies')
-	.option('-nu --no-update', 'skips the update check')
-	.option('-t --template <templateUrl>', 'create a Robo from an online template')
-	.option('-ts --typescript', 'create a Robo using TypeScript')
-	.option('-v --verbose', 'print more information for debugging')
-	.option('-rv, --robo-version <value>', 'specify a Robo.js version to use')
-	.option('-k, --kit <value>', 'choose a kit to start off with your Robo')
-	.option('-nc --no-creds', 'Skips asking for the credentials')
-	.action(async (options: CommandOptions, { args }) => {
+	.positionalArgs(true)
+	.option('-f', '--features', 'comma-separated list of features to include')
+	.option('-js', '--javascript', 'create a Robo using JavaScript')
+	.option('-p', '--plugins', 'pre-install plugins along with the project')
+	.option('-P', '--plugin', 'create a Robo plugin instead of a bot')
+	.option('-ni', '--no-install', 'skips the installation of dependencies')
+	.option('-nu', '--no-update', 'skips the update check')
+	.option('-t', '--template', 'create a Robo from an online template')
+	.option('-ts', '--typescript', 'create a Robo using TypeScript')
+	.option('-v', '--verbose', 'print more information for debugging')
+	.option('-rv', '--robo-version', 'specify a Robo.js version to use')
+	.option('-k', '--kit', 'choose a kit to start off with your Robo')
+	.option('-nc', '--no-creds', 'Skips asking for the credentials')
+	.handler(async (args: string[], options: CommandOptions) => {
 		logger({
 			level: options.verbose ? 'debug' : 'info'
 		}).debug(`Creating new Robo.js ${options.plugin ? 'plugin' : 'project'}...`)
 		logger.debug(`Using options: ${JSON.stringify(options)}`)
+		logger.debug(`Using args: ${JSON.stringify(args)}`)
 		logger.debug(`Package manager:`, getPackageManager())
 		logger.debug(`create-robo version:`, packageJson.version)
 		logger.debug(`Current working directory:`, process.cwd())
 
+		// Just return the version if requested
+		if (options.version) {
+			const version = color.cyan('v' + packageJson.version)
+
+			logger.log()
+			logger.log(Indent, '⚡', color.bold('Create Robo ' + version))
+			logger.log(Indent, '  ', packageJson.description)
+			logger.log()
+			logger.log(Indent, '   Learn more:', HighlightBlue('https://robojs.dev/create-robo'))
+			logger.log()
+
+			return
+		}
+
+		// Verify option types for better Commander API compatibility
+		if (typeof options.plugins === 'string') {
+			// @ts-expect-error - This is a valid check
+			options.plugins = options.plugins.split(' ')
+		} else if (options.kit?.includes(' ')) {
+			// Bypasses current bug in CLi handler causing kit to be read as arg
+			// e.g. `npx create-robo -k activity myProject` reads `activity myProject` as the kit
+			// TODO: https://github.com/Wave-Play/robo.js/issues/331
+			const tokens = options.kit.split(' ')
+			options.kit = tokens.shift() as 'activity' | 'app' | 'bot' | 'web'
+			args.push(...tokens)
+		}
+
+		// Set default values
+		if (options.creds === undefined) {
+			options.creds = true
+		}
+		if (options['no-creds']) {
+			options.creds = false
+		}
+		if (options.install === undefined) {
+			options.install = true
+		}
+		if (options['no-install']) {
+			options.install = false
+		}
+		if (options.update === undefined) {
+			options.update = true
+		}
+		if (options['no-update']) {
+			options.update = false
+		}
+
 		// `activity` is an alias for `app`
+		const ogKit = options.kit
 		if (options.kit === 'activity') {
 			options.kit = 'app'
 		}
@@ -61,10 +110,10 @@ new Command('create-robo <projectName>')
 			logger.log()
 			options.kit = await select<'app' | 'bot'>(
 				{
-					message: chalk.blue('Choose your adventure:'),
+					message: color.blue('Choose your adventure:'),
 					choices: [
-						{ name: 'Discord Bot', value: 'bot' as const },
-						{ name: 'Discord Activity', value: 'app' as const }
+						{ name: 'Discord Activity', value: 'app' as const },
+						{ name: 'Discord Bot', value: 'bot' as const }
 					]
 				},
 				{
@@ -110,9 +159,10 @@ new Command('create-robo <projectName>')
 		}
 
 		// Print introduction section
+		const kitName = ogKit === 'web' ? 'Web App' : options.kit === 'app' ? 'Discord Activity' : 'Discord Bot'
 		logger.log('')
-		logger.log(Indent, chalk.bold('✨ Welcome to Robo.js!'))
-		logger.log(Indent, `   Spawning ${chalk.bold.cyan(projectName)} into existence...`)
+		logger.log(Indent, color.bold('✨ Welcome to Robo.js!'))
+		logger.log(Indent, `   Spawning ${Highlight(projectName)} as a ${Highlight(kitName)}...`)
 
 		const metadata: Array<{ key: string; value: string }> = []
 		if (options.plugin) {
@@ -136,9 +186,9 @@ new Command('create-robo <projectName>')
 
 		if (metadata.length > 0) {
 			logger.log('')
-			logger.log(Indent, chalk.bold('   Specs:'))
+			logger.log(Indent, color.bold('   Specs:'))
 			metadata.forEach(({ key, value }) => {
-				logger.log(Indent, `   - ${key}:`, chalk.bold.cyan(value))
+				logger.log(Indent, `   - ${key}:`, Highlight(value))
 			})
 		}
 
@@ -188,33 +238,59 @@ new Command('create-robo <projectName>')
 
 		const packageManager = getPackageManager()
 		logger.log(Indent.repeat(15))
-		logger.log(Indent, '🚀', chalk.bold.green('Your Robo is ready!'))
-		logger.log(Indent, '   Say hello to this world,', chalk.bold(projectName) + '.')
+		logger.log(Indent, '🚀', HighlightGreen('Your Robo is ready!'))
+		logger.log(Indent, '   Say hello to this world,', color.bold(projectName) + '.')
 		logger.log('')
-		logger.log(Indent, '   ' + chalk.bold('Next steps:'))
+
+		// What's next?
+		logger.log(Indent, '   ' + color.bold('Next steps'))
 		if (!useSameDirectory) {
-			logger.log(Indent, '   - Change directory:', chalk.bold.cyan(`cd ${projectName}`))
+			logger.log(Indent, '   - Change directory:', Highlight(`cd ${projectName}`))
 		}
 		if (!options.install || robo.shouldInstall) {
-			logger.log(Indent, '   - Install dependencies:', chalk.bold.cyan(packageManager + ' install'))
+			logger.log(Indent, '   - Install dependencies:', Highlight(packageManager + ' install'))
 		}
 		if (robo.missingEnv) {
-			logger.log(Indent, '   - Add missing variables:', chalk.bold.cyan('.env'))
+			logger.log(Indent, '   - Add missing variables:', Highlight('.env'))
 		}
-		logger.log(Indent, '   - Develop locally:', chalk.bold.cyan(packageManager + ' run dev'))
-		logger.log(Indent, '   - Deploy to the cloud:', chalk.bold.cyan(packageManager + ' run deploy'))
-		if (robo.selectedPlugins.length < 1) {
-			logger.log(Indent, '   - Check out or create your own plugins')
-		}
+		logger.log(Indent, '   - Develop locally:', Highlight(packageManager + ' run dev'))
+		logger.log(Indent, '   - Deploy to the cloud:', Highlight(packageManager + ' run deploy'))
 
+		// Show what failed and how to resolve
 		if (robo.installFailed) {
 			logger.log('')
-			logger.log(Indent, '   ' + chalk.bold.red('Resolve the following issues:'))
-			logger.log(Indent, '   - Install dependencies manually:', chalk.bold.cyan(packageManager + ' install <packages>'))
+			logger.log(Indent, '   ' + HighlightRed('Resolve these issues'))
+			logger.log(Indent, '   - Install dependencies manually:', Highlight(packageManager + ' install <packages>'))
 		}
+
+		// Link to common resources
+		if (options.kit === 'app') {
+			logger.log('')
+			logger.log(Indent, '  ', color.bold('Learn more'))
+			logger.log(Indent, '   - Documentation:', HighlightBlue('https://robojs.dev/discord-activities'))
+			logger.log(
+				Indent,
+				'   - Authenticating users:',
+				HighlightBlue('https://robojs.dev/discord-activities/authentication')
+			)
+			logger.log(
+				Indent,
+				'   - Multiplayer features:',
+				HighlightBlue('https://robojs.dev/discord-activities/multiplayer')
+			)
+			logger.log(Indent, '   - ✨🎃 Hacktoberfest:', HighlightMagenta('https://robojs.dev/hacktoberfest'))
+		} else if (options.kit === 'bot') {
+			logger.log('')
+			logger.log(Indent, '  ', color.bold('Learn more'))
+			logger.log(Indent, '   - Documentation:', HighlightBlue('https://robojs.dev/discord-bots'))
+			logger.log(Indent, '   - Context commands:', HighlightBlue('https://robojs.dev/discord-bots/context-menu'))
+			logger.log(Indent, '   - Slash commands:', HighlightBlue('https://robojs.dev/discord-bots/commands'))
+			logger.log(Indent, '   - ✨🎃 Hacktoberfest:', HighlightMagenta('https://robojs.dev/hacktoberfest'))
+		}
+
 		logger.log('')
 	})
-	.parse(process.argv)
+	.parse()
 
 async function checkUpdates() {
 	// Check NPM registry for updates
@@ -242,10 +318,10 @@ async function checkUpdates() {
 		logger.log('')
 		logger.log(
 			Indent,
-			chalk.bold.green(`💡 Update available!`),
-			chalk.dim(`(v${packageJson.version} → v${latestVersion})`)
+			HighlightGreen(`💡 Update available!`),
+			color.dim(`(v${packageJson.version} → v${latestVersion})`)
 		)
 		logger.log(Indent, `   Run this instead to get the latest updates:`)
-		logger.log(Indent, '   ' + chalk.bold.cyan(command + ' ' + args))
+		logger.log(Indent, '   ' + Highlight(command + ' ' + args))
 	}
 }

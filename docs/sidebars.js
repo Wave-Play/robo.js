@@ -24,7 +24,7 @@ const sidebars = {
 		},
 		{
 			type: 'category',
-			label: 'CLI Tools',
+			label: 'Command Line',
 			link: {
 				id: 'cli/overview',
 				type: 'doc'
@@ -122,6 +122,12 @@ const sidebars = {
 					label: '✨ Getting Started',
 					type: 'doc'
 				},
+				'discord-activities/authentication',
+				{
+					id: 'discord-activities/credentials',
+					label: '🔑 Credentials',
+					type: 'doc'
+				},
 				'discord-activities/proxy',
 				'discord-activities/multiplayer'
 			]
@@ -139,19 +145,25 @@ const sidebars = {
 					label: '✨ Getting Started',
 					type: 'doc'
 				},
+				'discord-bots/beginner-guide',
 				'discord-bots/commands',
 				'discord-bots/context-menu',
+				{
+					id: 'discord-bots/credentials',
+					label: '🔑 Credentials',
+					type: 'doc'
+				},
 				'discord-bots/debug',
 				'discord-bots/events',
+				'discord-bots/file-structure',
 				'discord-bots/invite',
 				'discord-bots/middleware',
 				{
 					id: 'discord-bots/migrate',
-					label: '⭐ Migrating',
+					label: '🚚 Migration',
 					type: 'doc'
 				},
-				'discord-bots/sage',
-				'discord-bots/secrets'
+				'discord-bots/sage'
 			]
 		},
 		{
@@ -233,6 +245,10 @@ const sidebars = {
 						'templates/discord-bots/analytics-ts',
 						'templates/discord-bots/economy-ts',
 						'templates/discord-bots/mongodb-ts',
+						'templates/discord-bots/mrjawesome-dev-toolkit-js',
+						'templates/discord-bots/mrjawesome-dev-toolkit-ts',
+						'templates/discord-bots/mrjawesome-slash-commands-js',
+						'templates/discord-bots/mrjawesome-slash-commands-ts',
 						'templates/discord-bots/postgres-ts',
 						'templates/discord-bots/prisma-ts',
 						'templates/discord-bots/purrth-vader-ts',
