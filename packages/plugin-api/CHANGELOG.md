@@ -1,5 +1,11 @@
 # @roboplay/plugin-api
 
+## 0.6.2
+
+### Patch Changes
+
+- 34ef0e8: patch: prefixed hostname env with robo\_ to prevent clashes
+
 ## 0.6.1
 
 ### Patch Changes
