@@ -4,8 +4,10 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { Cron as CronerJob } from 'croner'
-import { color, Flashcore } from 'robo.js'
+import { color, Flashcore, getState, setState } from 'robo.js'
 import { v4 as uuidv4 } from 'uuid'
+
+const NAMESPACE = '__plugin_cron_'
 
 class CronJob {
 	private cronJob: CronerJob
@@ -60,13 +62,7 @@ class CronJob {
 
 		const jobId = id || this.id
 
-		await Flashcore.set(
-			jobId,
-			{ cron: this.expression, path: this.path },
-			{
-				namespace: '__plugin_cron_'
-			}
-		)
+		await Flashcore.set(jobId, { cron: this.expression, path: this.path }, { namespace: NAMESPACE })
 
 		await Flashcore.set(
 			'jobs',
@@ -76,8 +72,10 @@ class CronJob {
 				}
 				return jobs
 			},
-			{ namespace: '__plugin_cron_' }
+			{ namespace: NAMESPACE }
 		)
+
+		setState(`${NAMESPACE}${jobId}`, this)
 
 		return jobId
 	}
@@ -103,9 +101,15 @@ export function Cron(cronExpression: string, jobFunction: string | (() => void))
 	return new CronJob(cronExpression, jobFunction)
 }
 
+Cron.get = (id: string): CronJob | null => {
+	return getState(`${NAMESPACE}${id}`)
+}
+
 Cron.remove = async (id: string): Promise<void> => {
-	await Flashcore.delete(id, { namespace: '__plugin_cron_' })
+	await Flashcore.delete(id, { namespace: NAMESPACE })
 	await Flashcore.set('jobs', (jobs: string[] = []) => jobs.filter((jobId) => jobId !== id), {
-		namespace: '__plugin_cron_'
+		namespace: NAMESPACE
 	})
+
+	setState(`${NAMESPACE}${id}`, null)
 }

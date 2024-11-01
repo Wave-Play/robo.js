@@ -88,7 +88,7 @@ export default () => {
 
 ### Persistence
 
-Jobs can be persisted to ensure they continue after a restart.
+Jobs can be persisted to ensure they continue after a restart and can be retrieved later.
 
 ```javascript
 import { Cron } from '@robojs/cron'
@@ -101,15 +101,19 @@ export default () => {
 	// Only file-based jobs can be persisted
 	const jobId = await job.save()
 
+	// Retrieve a saved job using its ID
+	const savedJob = await Cron.get('my-job')
+
 	// Use the job ID to remove the job later
 	await Cron.remove(jobId)
 }
 ```
 
-This is useful for creating long-running tasks as a result of a command or event. You may pass an ID to the `save` method to prevent duplication.
+This is useful for creating long-running tasks as a result of a command or event. You may pass an ID to the `save` method to prevent duplication and make it easier to retrieve the job later.
 
 ```javascript
 const jobId = await job.save('my-job')
+const savedJob = await Cron.get('my-job')
 ```
 
 ## API Overview
@@ -132,7 +136,8 @@ The `jobFunction` parameter can be either a path to a JavaScript file that expor
 
 ### Job Management
 
-- **save()**: Persists the job so that it continues to run even after a system restart. This method returns a Promise that resolves to the unique identifier for the job, which can be used to reference the job later for operations like removal.
+- **save()**: Persists the job so that it continues to run even after a system restart and can be retrieved later. This method returns a Promise that resolves to the unique identifier for the job.
+- **get(id)**: Retrieves a previously saved job using its ID. Returns a Promise that resolves to the job instance if found.
 - **nextRun()**: Returns the next scheduled run time of the job as a `Date` object, or `null` if there is no scheduled run.
 
 ### Removing a Job
