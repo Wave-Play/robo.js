@@ -1,17 +1,10 @@
-<p align="center">✨ <strong>Generated with <a href="https://roboplay.dev/create-robo">create-robo</a> magic!</strong> ✨</p>
+<p align="center">✨ <strong>Generated with <a href="https://robojs.dev/create-robo">create-robo</a> magic!</strong> ✨</p>
 
 ---
 
 # @robojs/cron
 
-Schedule tasks to run at specific times using cron expressions.
-
-**Features:**
-
-- Run functions on a schedule using cron expressions.
-- Persist file-based jobs to keep them running after a restart.
-- Pause, resume, and stop jobs as needed.
-- Get the next run time for a job.
+Effortlessly schedule tasks with cron expressions. This robust plugin allows you to run functions at specified times, manage job persistence, and control tasks dynamically.
 
 ## Installation
 
@@ -32,31 +25,47 @@ npx create-robo <project-name> -p @robojs/cron
 Use the `Cron` export to run a function on a schedule.
 
 ```javascript
+Cron('*/10 * * * * *', () => {
+	console.log('This job runs every 10 seconds!')
+})
+```
+
+You can schedule jobs to run when your **Robo** starts using the `/src/events/_start.js` file.
+
+```javascript
 import { Cron } from '@robojs/cron'
 
-// File: /src/events/_start.js
 export default () => {
-	// Runs a function every 10 seconds
-	const otherJob = Cron('*/10 * * * * *', () => {
-		console.log('@robojs/cron is awesome!')
+	Cron('*/10 * * * * *', () => {
+		console.log('This job runs every 10 seconds!')
 	})
-
-	// Pause a job
-	job.pause()
-
-	// Resume a job
-	job.resume()
-
-	// Stop a job
-	job.stop()
-
-	// Get the next run time
-	const nextRun = job.nextRun()
-	console.log('Next run:', nextRun)
 }
 ```
 
-You can also point to a file to run as a job:
+`Cron` returns a job object that can be controlled dynamically.
+
+```javascript
+const job = Cron('*/10 * * * * *', () => {
+	console.log('This job runs every 10 seconds!')
+})
+
+// Pause a job
+job.pause()
+
+// Resume a job
+job.resume()
+
+// Stop a job
+job.stop()
+
+// Get the next run time
+const nextRun = job.nextRun()
+console.log('Next run in', nextRun)
+```
+
+### Job File
+
+You can also point to a file to run as a job.
 
 ```javascript
 import { Cron } from '@robojs/cron'
@@ -68,20 +77,18 @@ export default () => {
 }
 ```
 
-Your job file should export a default function:
+Your job file should export a default function.
 
 ```javascript
 // File: /src/cron/job.js
-export default function () {
-	console.log('This file runs every 5 seconds!')
+export default () => {
+	console.log('@robojs/cron is awesome!')
 }
 ```
 
 ### Persistence
 
-File-based jobs can be persisted to keep them running after a restart.
-
-Persist a job by calling the `save` method:
+Jobs can be persisted to ensure they continue after a restart.
 
 ```javascript
 import { Cron } from '@robojs/cron'
@@ -95,7 +102,7 @@ export default () => {
 	const jobId = await job.save()
 
 	// Use the job ID to remove the job later
-	// await Cron.remove(jobId)
+	await Cron.remove(jobId)
 }
 ```
 
@@ -105,35 +112,62 @@ This is useful for creating long-running tasks as a result of a command or event
 const jobId = await job.save('my-job')
 ```
 
-## API
+## API Overview
 
-### `Cron(cronExpression: string, jobFunction: string | (() => void))`
+Create and initialize a cron job by calling `Cron(cronExpression, jobFunction)`. The `cronExpression` parameter should be a string that defines when the job will run, such as `'*/5 * * * * *'` for every 5 seconds.
 
-Creates a new cron job.
+```js
+const job = Cron('*/5 * * * * *', () => {
+	console.log('This job runs every 5 seconds!')
+})
+```
 
-- `cronExpression`: A cron expression string (e.g., '_/5 _ \* \* \* \*' for every 5 seconds)
-- `jobFunction`: Either a path to a JavaScript file (for file-based jobs) or a function to execute
+The `jobFunction` parameter can be either a path to a JavaScript file that exports a function or a direct function definition.
 
-### `job.save(): Promise<string>`
+### Job Control
 
-Persists a file-based job to Flashcore. Returns a Promise that resolves to the job ID.
+- **pause()**: Temporarily halts the cron job.
+- **resume()**: Resumes a paused cron job.
+- **stop()**: Permanently stops the cron job from running.
 
-### `Cron.remove(id: string): Promise<void>`
+### Job Management
 
-Removes a persisted job from Flashcore.
+- **save()**: Persists the job so that it continues to run even after a system restart. This method returns a Promise that resolves to the unique identifier for the job, which can be used to reference the job later for operations like removal.
+- **nextRun()**: Returns the next scheduled run time of the job as a `Date` object, or `null` if there is no scheduled run.
 
-### `job.pause(): void`
+### Removing a Job
 
-Pauses the job.
+Remove a persisted job from the system by using `Cron.remove(id)`, where `id` is the unique identifier returned by the `save()` method. This function ensures that the job is no longer scheduled to run and is removed from storage.
 
-### `job.resume(): void`
+## Cron Expressions
 
-Resumes a paused job.
+Cron expressions are used to define the schedule of a job. They consist of six fields separated by spaces:
 
-### `job.stop(): void`
+1. **Seconds**: 0-59
+2. **Minutes**: 0-59
+3. **Hours**: 0-23
+4. **Day of Month**: 1-31
+5. **Month**: 1-12
+6. **Day of Week**: 0-6 (Sunday to Saturday)
 
-Stops the job.
+Each field can be a single value, a range, a list of values, or an increment. For example:
 
-### `job.nextRun(): Date | null`
+- `*` (asterisk): All values
+- `*/5`: Every 5 units
+- `1,2,3`: Specific values
+- `1-5`: Range of values
+- `1-5/2`: Range with increment
 
-Returns the next scheduled run time for the job.
+### Examples
+
+- `* * * * * *`: Every second
+- `*/5 * * * * *`: Every 5 seconds
+- `0 0 * * * *`: Every hour
+- `0 0 0 * * *`: Every day at midnight
+- `0 0 0 1 * *`: First day of every month at midnight
+- `0 0 0 * * 0`: Every Sunday at midnight
+
+Learn more about cron expressions from the **[Cron Expression Generator](https://crontab.guru/)**.
+
+- [🔗 **Crontab Guru:** Tool to generate cron expressions.](https://crontab.guru/)
+- [📚 **Cron Expression Wiki:** Learn more about cron expressions.](https://en.wikipedia.org/wiki/Cron#Cron_expression)
