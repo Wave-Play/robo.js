@@ -9,7 +9,6 @@
 		"module": "esnext",
 		"useDefineForClassFields": false,
 		"incremental": true,
-		"typeRoots": ["./env.d.ts"],
 		"experimentalDecorators": true,
 		"moduleResolution": "bundler",
 		"allowImportingTsExtensions": true,

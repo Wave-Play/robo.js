@@ -130,33 +130,6 @@ export class Env {
 			// Write env.d.ts
 			const envDtsPath = path.join(this.basePath, 'env.d.ts')
 			await fs.writeFile(envDtsPath, autoCompletionEnvVar, 'utf-8')
-
-			// Modify tsconfig.json if it exists
-			const tsconfigPath = path.join(this.basePath, 'tsconfig.json')
-			const tsconfigExists = await fs
-				.access(tsconfigPath)
-				.then(() => true)
-				.catch(() => false)
-
-			if (tsconfigExists) {
-				const tsconfigContent = await fs.readFile(tsconfigPath, 'utf-8')
-				const tsconfig = JSON.parse(tsconfigContent)
-				const compilerOptions = tsconfig.compilerOptions || {}
-
-				// Update typeRoots
-				let typeRoots: string[] = compilerOptions.typeRoots || []
-				if (!Array.isArray(typeRoots)) {
-					typeRoots = [typeRoots]
-				}
-				if (!typeRoots.includes('./env.d.ts')) {
-					typeRoots.push('./env.d.ts')
-				}
-				compilerOptions.typeRoots = typeRoots
-				tsconfig.compilerOptions = compilerOptions
-
-				// Write updated tsconfig.json
-				await fs.writeFile(tsconfigPath, JSON.stringify(tsconfig, null, 2), 'utf-8')
-			}
 		}
 	}
 
