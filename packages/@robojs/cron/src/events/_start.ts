@@ -15,7 +15,7 @@ export default async () => {
 			const { cron, path } = jobData
 			try {
 				const job = Cron(cron, path)
-				setState(`${NAMESPACE}${jobId}`, job)
+				setState(`${jobId}`, job, { namespace: NAMESPACE })
 				cronLogger.debug(`Restored cron job: ${color.bold(jobId)} (${cron}) - ${path}`)
 			} catch (error) {
 				cronLogger.error(`Failed to restore cron job ${color.bold(jobId)}:`, error)

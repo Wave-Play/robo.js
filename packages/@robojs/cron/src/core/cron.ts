@@ -75,7 +75,7 @@ class CronJob {
 			{ namespace: NAMESPACE }
 		)
 
-		setState(`${NAMESPACE}${jobId}`, this)
+		setState(`${jobId}`, this, { namespace: NAMESPACE })
 
 		return jobId
 	}
@@ -102,7 +102,7 @@ export function Cron(cronExpression: string, jobFunction: string | (() => void))
 }
 
 Cron.get = (id: string): CronJob | null => {
-	return getState(`${NAMESPACE}${id}`)
+	return getState(`${id}`, { namespace: NAMESPACE })
 }
 
 Cron.remove = async (id: string): Promise<void> => {
@@ -111,5 +111,5 @@ Cron.remove = async (id: string): Promise<void> => {
 		namespace: NAMESPACE
 	})
 
-	setState(`${NAMESPACE}${id}`, null)
+	setState(`${id}`, null, { namespace: NAMESPACE })
 }
