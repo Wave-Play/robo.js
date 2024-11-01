@@ -56,11 +56,13 @@ class CronJob {
 	}
 
 	async save(id?: string): Promise<string> {
-		if (!this.path) {
-			throw new Error('Only file-based cron jobs can be persisted.')
-		}
-
 		const jobId = id || this.id
+		setState(`${jobId}`, this, { namespace: NAMESPACE })
+
+		if (!this.path) {
+			cronLogger.debug('Only file-based cron jobs can be saved.')
+			return jobId
+		}
 
 		await Flashcore.set(jobId, { cron: this.expression, path: this.path }, { namespace: NAMESPACE })
 
@@ -74,8 +76,6 @@ class CronJob {
 			},
 			{ namespace: NAMESPACE }
 		)
-
-		setState(`${jobId}`, this, { namespace: NAMESPACE })
 
 		return jobId
 	}
