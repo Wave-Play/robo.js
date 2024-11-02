@@ -10,7 +10,7 @@ import type { AutocompleteInteraction } from 'discord.js'
 import type { CommandConfig, ContextConfig, Event, HandlerRecord, PluginData } from '../types/index.js'
 import type { Collection } from 'discord.js'
 
-const optionPrimitives = ['boolean', 'integer', 'number', 'string']
+const optionPrimitives = ['boolean', 'integer', 'number', 'string', undefined]
 
 export async function executeAutocompleteHandler(interaction: AutocompleteInteraction, commandKey: string) {
 	const command = portal.commands.get(commandKey)
