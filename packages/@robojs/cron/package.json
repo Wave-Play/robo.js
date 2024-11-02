@@ -1,7 +1,7 @@
 {
 	"name": "@robojs/cron",
 	"description": "Easily schedule and manage recurring tasks.",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"type": "module",
 	"private": false,
 	"keywords": [
@@ -48,7 +48,7 @@
 		"uuid": "^10.0.0"
 	},
 	"peerDependencies": {
-		"robo.js": "^0.10.1"
+		"robo.js": "^0.10.24"
 	},
 	"peerDependenciesMeta": {
 		"robo.js": {
