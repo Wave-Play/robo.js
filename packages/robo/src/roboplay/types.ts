@@ -32,7 +32,6 @@ export interface ListResult<T = unknown> {
 export type OAuthSessionStatus = 'Authorized' | 'Created' | 'Expired' | 'Invalid' | 'Paired' | 'Used'
 
 export interface OAuthSession {
-	pairingCode: string
 	secret: string
 	status: OAuthSessionStatus
 	token: string

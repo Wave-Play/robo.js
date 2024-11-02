@@ -29,7 +29,6 @@ export async function pollOAuth(options: PollOAuthOptions) {
 }
 
 interface VerifyOAuthOptions {
-	pairingCode: string
 	secret?: string
 	token: string
 }
@@ -43,10 +42,10 @@ interface VerifyOAuthResult {
 }
 
 export async function verifyOAuth(options: VerifyOAuthOptions) {
-	const { pairingCode, secret, token } = options
+	const { secret, token } = options
 
 	return request<VerifyOAuthResult>(`/oauth/${token}/verify`, {
 		method: 'PUT',
-		body: { pairingCode, secret }
+		body: { secret }
 	})
 }
