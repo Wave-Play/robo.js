@@ -2,7 +2,7 @@ import { initTRPC } from '@trpc/server'
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch'
 import { serverPrefix } from '../../events/_start.js'
 import { trpcLogger } from '../../core/loggers.js'
-import type { RoboRequest } from '@robojs/server'
+import type { RoboReply, RoboRequest } from '@robojs/server'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export let appRouter: any | null = null
@@ -16,7 +16,6 @@ function createWrapper<F extends AnyFunction>(fn: F): F {
 		appRouter = result
 		return result
 	}
-
 	return wrapper as F
 }
 
@@ -33,7 +32,7 @@ export const init = {
 
 export const createRouter = () => init.create().router({})
 
-export default (req: RoboRequest) => {
+export default (req: RoboRequest, res: RoboReply) => {
 	if (!appRouter) {
 		throw new Error(
 			'Router is not registered. Use `initTRPC` from `@robojs/trpc` instead of `@trpc/server` to create the router.'
@@ -41,6 +40,7 @@ export default (req: RoboRequest) => {
 	}
 
 	return fetchRequestHandler({
+		createContext: () => ({ req, res }),
 		endpoint: serverPrefix + '/trpc',
 		req: req,
 		router: appRouter
