@@ -1,5 +1,12 @@
 # robo.js
 
+## 0.10.24
+
+### Patch Changes
+
+- 32b172c: fix(commands): account for options without type specified when parsing them
+- fe88aee: fix(sage): await async command handlers even when auto defer is disabled
+
 ## 0.10.23
 
 ### Patch Changes

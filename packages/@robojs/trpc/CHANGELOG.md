@@ -1,5 +1,15 @@
 # @robojs/trpc
 
+## 0.2.3
+
+### Patch Changes
+
+- 44d6755: feat: include `req` and `res` in context by default
+- Updated dependencies [32b172c]
+- Updated dependencies [fe88aee]
+  - robo.js@0.10.24
+  - @robojs/server@0.6.2
+
 ## 0.2.2
 
 ### Patch Changes

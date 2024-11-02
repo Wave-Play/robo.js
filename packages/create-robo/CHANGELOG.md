@@ -1,5 +1,15 @@
 # create-robo
 
+## 0.14.3
+
+### Patch Changes
+
+- 6179012: patch: skip discord credentials when setting up with the web kit
+- 6179012: refactor: remove typeRoots property to prevent interference with default ts behavior
+- Updated dependencies [32b172c]
+- Updated dependencies [fe88aee]
+  - robo.js@0.10.24
+
 ## 0.14.2
 
 ### Patch Changes
