@@ -152,6 +152,8 @@ export async function executeCommandHandler(interaction: CommandInteraction, com
 			} else {
 				response = raceResult
 			}
+		} else if (result instanceof Promise) {
+			promises.push(result)
 		}
 
 		// Enforce timeout only if custom timeout is configured
