@@ -6,7 +6,7 @@ import { Indent, Highlight, HighlightGreen } from '../../core/constants.js'
 import { logger } from '../../core/logger.js'
 import { Command } from '../utils/cli-handler.js'
 import { createRequire } from 'node:module'
-import { exec } from '../utils/utils.js'
+import { exec, isTypescriptEnabled } from '../utils/utils.js'
 import { getPackageManager } from '../utils/runtime-utils.js'
 import { Spinner } from '../utils/spinner.js'
 
@@ -120,7 +120,7 @@ async function removePluginConfig(pluginName: string) {
 	const pluginParts = pluginName.replace(/^@/, '').split('/')
 
 	// Remove plugin config file
-	const pluginPath = path.join(process.cwd(), 'config', 'plugins', ...pluginParts) + '.mjs'
+	const pluginPath = path.join(process.cwd(), 'config', 'plugins', ...pluginParts) + await isTypescriptEnabled() ? '.ts' :  '.mjs'
 	logger.debug(`Deleting ${pluginName} config from ${pluginPath}...`)
 	await fs.rm(pluginPath, {
 		force: true

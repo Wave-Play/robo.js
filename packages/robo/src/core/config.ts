@@ -80,7 +80,7 @@ export async function loadConfig(file = 'robo'): Promise<Config> {
  * @returns The path to the config file, or null if it could not be found.
  */
 export async function loadConfigPath(file = 'robo'): Promise<string> {
-	const extensions = ['.mjs', '.cjs', '.json']
+	const extensions = ['.mjs', '.cjs', '.json', '.ts']
 	const prefixes = ['config', '.config']
 
 	for (const prefix of prefixes) {
