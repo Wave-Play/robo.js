@@ -12,7 +12,7 @@ Doing this means command updates will only show up in this cool server during de
 
 :::info
 
-#### Check out [Secrets](/docs/basics/secrets) for more
+#### Check out [Secrets](/discord-bots/credentials) for more
 
 :::
 
@@ -35,7 +35,7 @@ export default {
 
 :::info
 
-Check out **[Sage Documentation](/docs/basics/sage)** to learn more about the Sage suite and its awesome features
+Check out **[Sage Documentation](/discord-bots/sage)** to learn more about the Sage suite and its awesome features
 
 :::
 
@@ -69,7 +69,7 @@ So, setting `level` to `debug` (priority 1) will show all logs with a greater va
 
 :::tip
 
-Dive into [Advanced Configuration](/docs/advanced/configuration) for more info on the config file and its values
+Dive into [Advanced Configuration](/robojs/config) for more info on the config file and its values
 
 :::
 
