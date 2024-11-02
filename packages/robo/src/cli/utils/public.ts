@@ -52,10 +52,10 @@ export async function buildVite() {
 		mode: 'production'
 	}
 
-	const configPath = path.join(process.cwd(), 'config', `vite.${await isTypescriptEnabled() ? 'ts' : 'mjs'}`)
+	const configPath = path.join(process.cwd(), 'config', `vite.${(await isTypescriptEnabled()) ? 'ts' : 'mjs'}`)
 	if (existsSync(configPath)) {
 		config = (await loadConfigFromFile(configEnv, configPath))?.config
-	} else if (existsSync(path.join(process.cwd(), `vite.config.${await isTypescriptEnabled() ? 'ts' : 'js'}`))) {
+	} else if (existsSync(path.join(process.cwd(), `vite.config.${(await isTypescriptEnabled()) ? 'ts' : 'js'}`))) {
 		config = (await loadConfigFromFile(configEnv))?.config
 	} else {
 		logger.debug('No Vite config found. Skipping...')

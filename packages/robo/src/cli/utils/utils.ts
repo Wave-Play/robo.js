@@ -275,7 +275,7 @@ export async function getWatchedPlugins(config: Config) {
 	for (const name of pluginNames) {
 		try {
 			const packagePath = await findPackagePath(name, process.cwd())
-			const watchFilePath = path.join(packagePath, '.robo', `watch.${await isTypescriptEnabled() ? 'ts' : 'mjs'}`)
+			const watchFilePath = path.join(packagePath, '.robo', `watch.${(await isTypescriptEnabled()) ? 'ts' : 'mjs'}`)
 			const importPath = pathToFileURL(path.join(process.cwd(), watchFilePath)).toString()
 
 			// Ensure the file exists and is valid before adding it to the list
@@ -455,11 +455,10 @@ export default function pLimit<T extends unknown[]>(
 	return generator
 }
 
-
 export const isTypescriptEnabled = async (): Promise<boolean> => {
 	const packageJsonPath = path.join(process.cwd(), 'package.json')
 	const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf-8'))
-	const isTs = packageJson?.keywords?.includes('typescript') ?? false;
-	logger.debug("Is Typescript Enabled:- ", isTs)
-	return isTs;
+	const isTs = packageJson?.keywords?.includes('typescript') ?? false
+	logger.debug('Is Typescript Enabled:- ', isTs)
+	return isTs
 }

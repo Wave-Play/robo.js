@@ -94,14 +94,13 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
 	// Check which plugins need to be installed
 	const packageJsonPath = path.join(process.cwd(), 'package.json')
 	const packageJson = require(packageJsonPath)
-	const pendingInstall = packages
-		.filter((pkg) => {
-			return (
-				options.force ||
-				(!Object.keys(packageJson.dependencies ?? {})?.includes(pkg) &&
-					!config.plugins?.find((p) => Array.isArray(p) && p[0] === pkg))
-			)
-		})
+	const pendingInstall = packages.filter((pkg) => {
+		return (
+			options.force ||
+			(!Object.keys(packageJson.dependencies ?? {})?.includes(pkg) &&
+				!config.plugins?.find((p) => Array.isArray(p) && p[0] === pkg))
+		)
+	})
 	logger.debug(`Pending installation add:`, pendingInstall)
 
 	// Install plugin packages
@@ -223,7 +222,8 @@ async function createPluginConfig(pluginName: string, config: Record<string, unk
 	}
 
 	// Normalize plugin path
-	const pluginPath = path.join(process.cwd(), 'config', 'plugins', ...pluginParts) + (await isTypescriptEnabled() ? '.ts' : '.mjs');
+	const pluginPath =
+		path.join(process.cwd(), 'config', 'plugins', ...pluginParts) + ((await isTypescriptEnabled()) ? '.ts' : '.mjs')
 	const pluginConfig = JSON.stringify(config) + '\n'
 
 	logger.debug(`Writing ${pluginName} config to ${pluginPath}...`)

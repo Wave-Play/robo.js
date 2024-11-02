@@ -94,7 +94,7 @@ async function pluginAction(_args: string[], options: PluginCommandOptions) {
 	// Generate a watch file to indicate that the build was successful
 	// This is used to determine whether or not to restart the Robo
 	if (options.watch || options.dev) {
-		const watchFile = path.join(process.cwd(), '.robo', `watch.${await isTypescriptEnabled() ? 'ts' : 'mjs'}`)
+		const watchFile = path.join(process.cwd(), '.robo', `watch.${(await isTypescriptEnabled()) ? 'ts' : 'mjs'}`)
 		const watchContents = `export default ${JSON.stringify(
 			{
 				updatedAt: Date.now()
@@ -106,7 +106,7 @@ async function pluginAction(_args: string[], options: PluginCommandOptions) {
 		await fs.writeFile(watchFile, watchContents)
 	} else {
 		// Clean up watch file if it exists
-		const watchFile = path.join(process.cwd(), '.robo', `watch.${await isTypescriptEnabled() ? 'ts' : 'mjs'}`)
+		const watchFile = path.join(process.cwd(), '.robo', `watch.${(await isTypescriptEnabled()) ? 'ts' : 'mjs'}`)
 
 		try {
 			const exists = await fs.stat(watchFile)

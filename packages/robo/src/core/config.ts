@@ -4,6 +4,7 @@ import fs, { existsSync } from 'node:fs'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { Mode } from './mode.js'
+import tsup from 'tsup'
 
 // Global config reference
 let _config: Config = null
@@ -200,6 +201,25 @@ async function readConfig<T = unknown>(configPath: string): Promise<T> {
 			const rawData = fs.readFileSync(configPath, 'utf8')
 			const pluginConfig = JSON.parse(rawData)
 			return pluginConfig ?? {}
+		} else if (configPath.endsWith('.ts')) {
+			logger.debug('Found typescript config')
+			const outputDir = configPath.split('/').slice(0, -1).join('/')
+
+			await tsup.build({
+				entry: [configPath],
+				format: ['esm'],
+				outDir: outputDir,
+				outExtension: () => ({ js: '.mjs' }),
+				target: 'node20',
+				silent: true
+			})
+			const jsConfigPath = path.join(outputDir, path.basename(configPath).replace(/\.ts$/, '.mjs'))
+
+			// Import the compiled `.js` file
+			const imported = await import(pathToFileURL(jsConfigPath).toString())
+			const pluginConfig = imported.default ?? imported
+			await fs.promises.rm(jsConfigPath).catch(() => logger.debug('Failed to clear generated config:- ', jsConfigPath))
+			return pluginConfig ?? ({} as T)
 		} else {
 			// Convert to file URL to allow for a seamless dynamic import()
 			const imported = await import(pathToFileURL(configPath).toString())
@@ -207,7 +227,7 @@ async function readConfig<T = unknown>(configPath: string): Promise<T> {
 			return pluginConfig ?? {}
 		}
 	} catch (e) {
-		logger.error('Failed to load configuration file:', e)
+		logger.error('Failed to load configuration file:', e, configPath)
 		return {} as T
 	}
 }

@@ -120,7 +120,8 @@ async function removePluginConfig(pluginName: string) {
 	const pluginParts = pluginName.replace(/^@/, '').split('/')
 
 	// Remove plugin config file
-	const pluginPath = path.join(process.cwd(), 'config', 'plugins', ...pluginParts) + await isTypescriptEnabled() ? '.ts' :  '.mjs'
+	const pluginPath =
+		path.join(process.cwd(), 'config', 'plugins', ...pluginParts) + ((await isTypescriptEnabled()) ? '.ts' : '.mjs')
 	logger.debug(`Deleting ${pluginName} config from ${pluginPath}...`)
 	await fs.rm(pluginPath, {
 		force: true
