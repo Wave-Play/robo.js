@@ -3,7 +3,7 @@ import { logger } from '../../core/logger.js'
 import { RoboPlay } from '../../roboplay/client.js'
 import { color, composeColors } from '../../core/color.js'
 import { Spinner } from '../utils/spinner.js'
-import { copyToClipboard, openBrowser, sleep } from '../utils/utils.js'
+import { openBrowser, sleep } from '../utils/utils.js'
 import { KeyWatcher } from '../utils/key-watcher.js'
 import { RoboPlaySession } from '../../roboplay/session.js'
 
@@ -39,13 +39,12 @@ async function loginAction(_args: string[], options: LoginCommandOptions) {
 		return
 	}
 
-	// Copy pairing code to clipboard and print user instructions
-	copyToClipboard(oauthSession.pairingCode)
+	// Print user instructions
 	const cta = composeColors(color.bold, color.cyan)('Press Enter')
 
 	logger.log('\n' + Indent, `Welcome to ${color.bold('RoboPlay')} ✨`)
-	logger.log('\n' + Indent, color.bold('🔒 For your security, please use an auth code.'))
-	logger.log(Indent, `Your auth code is: ${composeColors(color.bold, color.cyan)(oauthSession.pairingCode)}`)
+	//logger.log('\n' + Indent, color.bold('🔒 For your security, please use an auth code.'))
+	//logger.log(Indent, `Your auth code is: ${composeColors(color.bold, color.cyan)(oauthSession.pairingCode)}`)
 
 	logger.log('\n' + Indent, color.bold('🌐 Ready to start your journey?'))
 	logger.log(Indent, `${cta} to open your web browser...`)
@@ -97,7 +96,6 @@ async function loginAction(_args: string[], options: LoginCommandOptions) {
 
 	// Verify OAuth session
 	const verifyResult = await RoboPlay.OAuth.verify({
-		pairingCode: oauthSession.pairingCode,
 		secret: oauthSession.secret,
 		token: oauthSession.token
 	})
