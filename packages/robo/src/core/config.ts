@@ -202,11 +202,11 @@ async function readConfig<T = unknown>(configPath: string): Promise<T> {
 			const pluginConfig = JSON.parse(rawData)
 			return pluginConfig ?? {}
 		} else if (configPath.endsWith('.ts')) {
-			const outputDir = path.dirname(configPath)
+			const configDir = path.dirname(configPath)
 			logger.debug('Found typescript config')
 			await traverse(
-				outputDir,
-				'dist',
+				configDir,
+				'.robo/config',
 				{
 					files: [configPath.replace(process.cwd(), '')],
 					parallel: 1
@@ -215,7 +215,13 @@ async function readConfig<T = unknown>(configPath: string): Promise<T> {
 				transform,
 				'.mjs'
 			)
-			const jsConfigPath = path.join(outputDir, path.basename(configPath).replace(/\.ts$/, '.mjs'))
+			const jsConfigPath = path.join(
+				process.cwd(),
+				'.robo',
+				configDir.replace(process.cwd(), ''),
+				path.basename(configPath).replace(/\.ts$/, '.mjs')
+			)
+			console.info(69, jsConfigPath, process.cwd())
 			const imported = await import(pathToFileURL(jsConfigPath).toString())
 			const pluginConfig = imported.default ?? imported
 			await fs.promises.rm(jsConfigPath).catch(() => logger.debug('Failed to clear generated config:- ', jsConfigPath))
