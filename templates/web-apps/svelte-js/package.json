@@ -7,7 +7,15 @@
 		"build": "vite build",
 		"preview": "vite preview",
 		"format": "prettier --write .",
-		"lint": "prettier --check ."
+		"lint": "prettier --check .",
+		"robo:build": "robo build",
+		"robo:deploy": "robo deploy",
+		"robo:dev": "robox dev",
+		"robo:doctor": "sage doctor",
+		"robo:invite": "robo invite",
+		"robo:lint:style": "prettier --write .",
+		"robo:start": "robo start",
+		"robo:upgrade": "sage upgrade"
 	},
 	"devDependencies": {
 		"@rollup/plugin-babel": "^6.0.4",
