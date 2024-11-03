@@ -12,4 +12,4 @@ export default {
 	watcher: {
 		ignore: ['src/lib', 'src/routes', 'src/hooks']
 	}
-}
+};

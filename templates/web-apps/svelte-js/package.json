@@ -21,6 +21,7 @@
 	},
 	"dependencies": {
 		"@robojs/server": "^0.6.2",
+		"eslint": "^9.14.0",
 		"robo.js": "^0.10.23"
 	}
 }
