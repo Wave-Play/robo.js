@@ -55,7 +55,8 @@ export async function traverse(
 	distDir: string,
 	options: BuildCodeOptions,
 	compilerOptions: CompilerOptions,
-	transform: typeof SwcTransform
+	transform: typeof SwcTransform,
+	ext: string = '.js'
 ) {
 	const { excludePaths = [], parallel = 20 } = options
 	const isIncremental = options.files?.length > 0
@@ -86,7 +87,7 @@ export async function traverse(
 
 		// Recursively traverse subdirectories, only if no files are specified
 		if (stat.isDirectory() && !isIncremental) {
-			tasks.push(traverse(filePath, distDir, options, compilerOptions, transform))
+			tasks.push(traverse(filePath, distDir, options, compilerOptions, transform, ext))
 		} else if (/\.(js|ts|tsx)$/.test(file) && !excludePaths.some((p) => relativePath.startsWith(p))) {
 			// Queue up a task to transform the file
 			tasks.push(
@@ -123,7 +124,7 @@ export async function traverse(
 					})
 
 					// Write transformed code to destination directory
-					const distPath = path.join(distDir, path.relative(SrcDir, filePath.replace(/\.(js|ts|tsx)$/, '.js')))
+					const distPath = path.join(distDir, path.relative(SrcDir, filePath.replace(/\.(js|ts|tsx)$/, ext)))
 					await fs.mkdir(path.dirname(distPath), { recursive: true })
 					await fs.writeFile(distPath, compileResult.code)
 				})()
