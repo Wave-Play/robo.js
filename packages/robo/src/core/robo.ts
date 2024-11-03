@@ -20,6 +20,8 @@ import path from 'node:path'
 import { isMainThread, parentPort } from 'node:worker_threads'
 import type { HandlerRecord, PluginData } from '../types/index.js'
 import type { AutocompleteInteraction, CommandInteraction } from 'discord.js'
+import { loadEnv } from './dotenv.js'
+import { Mode } from './mode.js'
 
 export const Robo = { restart, start, stop }
 
@@ -68,7 +70,9 @@ async function start(options?: StartOptions) {
 		return
 	}
 
-	// Get ready for persistent data requests
+	const mode = Mode.get()
+	await loadEnv({ mode })
+
 	await prepareFlashcore()
 
 	// Wait for states to be loaded

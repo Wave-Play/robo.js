@@ -52,7 +52,7 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 		process.env.NODE_ENV = 'development'
 	}
 
-	// Make sure environment variables are loaded
+	// Make sure environment variables are loaded for CLI
 	const defaultMode = Mode.get()
 	await loadEnv({ mode: defaultMode })
 
@@ -308,7 +308,12 @@ export async function buildAsync(command: string | null, config: Config, verbose
 
 			logger.debug(`> ${pkgManager} ${args.join(' ')}`)
 			const childProcess = spawn(pkgManager, args, {
-				env: { ...process.env, FORCE_COLOR: '1' },
+				env: {
+					// Only pass through essential vars, not the entire env
+					PATH: process.env.PATH,
+					FORCE_COLOR: '1',
+					NODE_ENV: process.env.NODE_ENV
+				},
 				shell: IS_WINDOWS,
 				stdio: 'inherit'
 			})
