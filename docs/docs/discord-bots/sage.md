@@ -175,7 +175,7 @@ Sage won't just shrug it off. It'll dish up the error info, a stack trace to gui
 
 ## Background Errors 🌌
 
-Sage isn't just there for the obvious fumbles. It's got an eagle eye for the sneaky, behind-the-scenes errors that aren't tied to a command or event. Normally, these culprits could crash your bot, but Sage is on guard. Just remember to set a debug channel in your environment variables ([here's how](/discord-bots/credentials)).
+Sage isn't just there for the obvious fumbles. It's got an eagle eye for the sneaky, behind-the-scenes errors that aren't tied to a command or event. Normally, these culprits could crash your bot, but Sage is on guard. Just remember to set a debug channel in your environment variables ([here's how](/discord-bots/credentials#optional-variables)).
 
 When a rogue error does pop up, Sage will ping it over to your debug channel. This means your bot keeps on trucking, while you're kept in the loop about any under-the-hood hiccups. Just remember, errors are like weeds - best deal with them rather than ignore them.
 
