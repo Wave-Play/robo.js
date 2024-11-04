@@ -34,7 +34,7 @@ You may rarely need to edit these files, if at all. See the **[Configuration](./
 
 The `.env` file is where you store sensitive information, such as API keys, database URLs, or Discord tokens. These variables are loaded into your project when it starts.
 
-See the **[Environment Variables](../discord-bots/secrets)** section for more information.
+See the **[Environment Variables](/discord-bots/credentials)** section for more information.
 
 ### Package File
 
