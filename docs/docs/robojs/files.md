@@ -22,7 +22,7 @@ Depending on what other things you have installed - like ESLint or Prettier - yo
 
 The `/src` directory is where you'll spend most of your time. Depending on what you're building, you'll have to pay attention to different directories in it.
 
-Any type of file is supported as long as Node.js supports it. This includes JavaScript, **[TypeScript](../create-robo/typescript)**, JSON, and more. TypeScript works out of the box, so you can use it without any additional setup.
+Any type of file is supported as long as Node.js supports it. This includes JavaScript, **[TypeScript](./typescript)**, JSON, and more. TypeScript works out of the box, so you can use it without any additional setup.
 
 ### Configuration
 
