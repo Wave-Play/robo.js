@@ -9,6 +9,8 @@ import { cleanTempDir, getPodStatusColor, getRoboPackageJson, openBrowser } from
 import { RoboPlay } from '../../roboplay/client.js'
 import { streamDeployment } from '../../roboplay/deploy.js'
 import { RoboPlaySession } from '../../roboplay/session.js'
+import { Mode } from '../../core/mode.js'
+import { loadEnv } from '../../core/dotenv.js'
 import path from 'node:path'
 import type { DeploymentStep, Pod } from '../../roboplay/types.js'
 
@@ -35,6 +37,15 @@ async function deployAction(_args: string[], options: DeployCommandOptions) {
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : 'info'
 	})
+
+	// Set NODE_ENV if not already set
+	if (!process.env.NODE_ENV) {
+		process.env.NODE_ENV = 'production'
+	}
+
+	// Make sure environment variables are loaded
+	const defaultMode = Mode.get()
+	await loadEnv({ mode: defaultMode })
 
 	// Validate session
 	const session = await RoboPlaySession.get()
