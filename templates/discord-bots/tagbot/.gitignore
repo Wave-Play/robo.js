@@ -2,6 +2,7 @@
   
  # robo.js
  .robo
+.robo/*
   
  # dependencies 
  /node_modules 
