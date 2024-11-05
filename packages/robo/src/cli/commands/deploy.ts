@@ -52,7 +52,7 @@ async function deployAction(_args: string[], options: DeployCommandOptions) {
 	const pod = session?.pods?.[0]
 
 	if (!session || !pod) {
-		logger.error(`You must be logged in to deploy to RoboPlay. Run ${Highlight('robo login')} to get started.`)
+		logger.error(`You must be logged in to deploy to RoboPlay. Run ${Highlight('npx robo login')} to get started.`)
 		return
 	}
 
@@ -84,7 +84,9 @@ async function deployAction(_args: string[], options: DeployCommandOptions) {
 	if (success) {
 		logger.log('\r' + Indent, '   Builder access granted successfully')
 	} else {
-		logger.error(error)
+		logger.log('\r' + Indent, color.red('   ' + error))
+		logger.log('\n' + Indent, '✨ Join the Beta program in our Discord Server.')
+		logger.log(Indent + '   ', Highlight('https://robojs.dev/discord'), '\n')
 		return
 	}
 
