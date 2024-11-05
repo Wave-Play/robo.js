@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files. 
   
- # robo.js 
- .robo/* 
+ # robo.js
+ .robo
   
  # dependencies 
  /node_modules 

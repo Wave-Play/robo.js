@@ -2,7 +2,7 @@
 
 ---
 
-# Hiya, tagbot 🌈
+# Discord Bot - TagBot
 
 Welcome to your fresh **[Robo.js](https://robojs.dev)** project!
 
@@ -28,6 +28,18 @@ _Ready to embark on this adventure?_
 - [📖 **Tutorials:** Learn how to create epic experiences.](https://dev.to/waveplay)
 
 ## ✨ Getting Started
+
+Create a project with this template, replacing `<project-name>` with your desired name:
+
+```bash
+npx create-robo <project-name> --template discord-bots/tagbot
+```
+
+Then navigate into your project directory:
+
+```bash
+cd <project-name>
+```
 
 Run development mode:
 
