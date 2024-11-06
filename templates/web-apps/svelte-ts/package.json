@@ -3,7 +3,6 @@
 	"version": "1.0.0",
 	"type": "module",
 	"scripts": {
-		"dev": "vite dev",
 		"build": "vite build",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
@@ -12,7 +11,7 @@
 		"lint": "prettier --check . && eslint .",
 		"robo:build": "robo build",
 		"robo:deploy": "robo deploy",
-		"robo:dev": "robox dev",
+		"dev": "robox dev",
 		"robo:doctor": "sage doctor",
 		"robo:invite": "robo invite",
 		"robo:lint:style": "prettier --write .",
