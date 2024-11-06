@@ -2,7 +2,7 @@ import { Card } from '@site/src/components/shared/Card'
 import { CardContainer } from '@site/src/components/shared/CardContainer'
 import { Terminal } from '@site/src/components/shared/Terminal'
 
-# React (TS)
+# 2D Game
 
 Welcome to your fresh **[Robo.js](https://robojs.dev)** project!
 
@@ -19,7 +19,7 @@ _Ready to embark on this adventure?_
 
 Create a project with this template, replacing `<project-name>` with your desired name:
 
-<Terminal create>{`<project-name> --template discord-activities/react-ts`}</Terminal>
+<Terminal create>{`<project-name> --template discord-activities/2d-game`}</Terminal>
 
 Then navigate into your project directory:
 
@@ -34,15 +34,15 @@ Run development mode:
 <CardContainer><Card href="https://robojs.dev/discord-activities/beginner-guide" title="🔰 Beginner Guide" description="New to Discord Activities with Robo? Start here!"/>
 <Card href="https://robojs.dev/robojs/mode#default-modes" title="🎭 Run Modes" description="Define profiles for your Robo session."/></CardContainer>
 
-## ️ App Development
+## App Development ️
 
 You can find your client-side code in the `/src/app` folder. This is where you can build your web app using React, Vue, or any other front-end framework.
 
-Things are powered by Vite under the hood, so you get the latest ES modules, hot module reloading, and more! ⚡
+Things are powered by **Vite** under the hood, so you get the latest ES modules, hot module reloading, and more! ⚡
 
 Try editing the `main` file to get started! (`Activity.tsx` if you're using React)
 
-##  Authentication
+#### Authenticating
 
 The React template makes it easy to authenticate your activity with Discord. The `<DiscordProvider>` components in `App.tsx` accepts `authenticate` and `scope` props.
 
@@ -56,7 +56,7 @@ You can then get the SDK and other goodies from the `useDiscordSdk` hook!
 
 <CardContainer><Card href="https://robojs.dev/discord-activities/authentication" title="🔒 Authentication" description="Customize your user experience."/></CardContainer>
 
-## ️ Backend Development
+## Backend Development ️
 
 Your server-side code is located in the `/src/api` folder. This is where you can build your API, webhooks, and other fancy server-side features.
 
@@ -72,7 +72,7 @@ export default () => {
 
 <CardContainer><Card href="https://robojs.dev/plugins/server" title="🔌 @robojs/server" description="Create and manage web pages, APIs, and more."/></CardContainer>
 
-##  Folder Structure
+## Folder Structure 
 
 While the `api` and `app` folders are reserved for your server and client-side code, you are free to create anything else in the `/src` directory!
 
@@ -105,4 +105,4 @@ You can host on any platform that supports **Node.js**, or run [`robo deploy`](h
 
 ## Learn More
 
-<CardContainer><Card href="/templates/overview" title="📦 Explore Templates" description="Discover more templates for a quick start."/><Card href="https://github.com/Wave-Play/robo.js/tree/main/templates/discord-activities/react-ts" title="🔗 GitHub Repository" description="Explore source code on GitHub."/></CardContainer>
+<CardContainer><Card href="/templates/overview" title="📦 Explore Templates" description="Discover more templates for a quick start."/><Card href="https://github.com/Wave-Play/robo.js/tree/main/templates/discord-activities/2d-game" title="🔗 GitHub Repository" description="Explore source code on GitHub."/></CardContainer>

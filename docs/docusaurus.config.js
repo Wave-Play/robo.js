@@ -189,6 +189,7 @@ const config = {
 					'packages/@robojs/trpc/README.md',
 
 					// Templates
+					'templates/discord-activities/2d-game/README.md',
 					'templates/discord-activities/react-colyseus-ts/README.md',
 					'templates/discord-activities/react-js/README.md',
 					'templates/discord-activities/react-multiplayer-video-ts/README.md',
@@ -213,9 +214,12 @@ const config = {
 					'templates/discord-bots/purrth-vader-ts/README.md',
 					'templates/discord-bots/starter-js/README.md',
 					'templates/discord-bots/starter-ts/README.md',
+					'templates/discord-bots/tagbot/README.md',
 					'templates/plugins/starter-js/README.md',
 					'templates/web-apps/react-js/README.md',
-					'templates/web-apps/react-ts/README.md'
+					'templates/web-apps/react-ts/README.md',
+					'templates/web-apps/svelte-js/README.md',
+					'templates/web-apps/svelte-ts/README.md'
 				],
 				modifyContent: (filename, content) => {
 					/*if (['CONTRIBUTING.md'].includes(filename)) {

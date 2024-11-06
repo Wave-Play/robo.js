@@ -3,20 +3,18 @@
 	"version": "1.0.0",
 	"type": "module",
 	"scripts": {
-		"build": "vite build",
+		"build": "robo build",
+		"deploy": "robo deploy",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
-		"robo:build": "robo build",
-		"robo:deploy": "robo deploy",
+		"lint:style": "prettier --write .",
 		"dev": "robox dev",
-		"robo:doctor": "sage doctor",
-		"robo:invite": "robo invite",
-		"robo:lint:style": "prettier --write .",
-		"robo:start": "robo start",
-		"robo:upgrade": "sage upgrade"
+		"doctor": "sage doctor",
+		"start": "robo start",
+		"upgrade": "sage upgrade"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^3.0.0",

@@ -7,7 +7,6 @@
 		"deploy": "robo deploy",
 		"dev": "robox dev",
 		"doctor": "sage doctor",
-		"invite": "robo invite",
 		"lint:style": "prettier --write .",
 		"start": "robo start",
 		"upgrade": "sage upgrade"
