@@ -3,19 +3,14 @@
 	"version": "1.0.0",
 	"type": "module",
 	"scripts": {
-		"dev": "vite dev",
-		"build": "vite build",
-		"preview": "vite preview",
-		"format": "prettier --write .",
-		"lint": "prettier --check .",
-		"robo:build": "robo build",
-		"robo:deploy": "robo deploy",
-		"robo:dev": "robox dev",
-		"robo:doctor": "sage doctor",
-		"robo:invite": "robo invite",
-		"robo:lint:style": "prettier --write .",
-		"robo:start": "robo start",
-		"robo:upgrade": "sage upgrade"
+		"build": "robo build",
+		"deploy": "robo deploy",
+		"dev": "robox dev",
+		"doctor": "sage doctor",
+		"invite": "robo invite",
+		"lint:style": "prettier --write .",
+		"start": "robo start",
+		"upgrade": "sage upgrade"
 	},
 	"devDependencies": {
 		"@rollup/plugin-babel": "^6.0.4",
