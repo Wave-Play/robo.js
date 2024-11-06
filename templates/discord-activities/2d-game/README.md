@@ -2,7 +2,7 @@
 
 ---
 
-# Hiya, 2d-game 🌈
+# Discord Activity - 2D Game
 
 Welcome to your fresh **[Robo.js](https://robojs.dev)** project!
 
@@ -28,9 +28,21 @@ _Ready to embark on this adventure?_
 - [🔗 **Templates:** Kickstart your project with a template.](https://robojs.dev/plugins/create)
 - [📖 **Tutorials:** Learn how to create epic experiences.](https://dev.to/waveplay)
 
-## Running
+## ✨ Getting Started
 
-Run development mode with:
+Create a project with this template, replacing `<project-name>` with your desired name:
+
+```bash
+npx create-robo <project-name> --template discord-activities/2d-game
+```
+
+Then navigate into your project directory:
+
+```bash
+cd <project-name>
+```
+
+Run development mode:
 
 ```bash
 npm run dev
@@ -38,7 +50,7 @@ npm run dev
 
 > **Notes:** A free Cloudflare tunnel is included for easy testing. You can copy and paste it into activity's **[URL mapping](https://robojs.dev/discord-activities/proxy#url-mapping)** to test things out.
 
-- [🔰 **Beginner Guide:** New to Discord Bots with Robo? Start here!](https://robojs.dev/discord-bots/beginner-guide)
+- [🔰 **Beginner Guide:** New to Discord Activities with Robo? Start here!](https://robojs.dev/discord-activities/beginner-guide)
 - [🎭 **Run Modes:** Define profiles for your Robo session.](https://robojs.dev/robojs/mode#default-modes)
 
 ## App Development 🛠️
