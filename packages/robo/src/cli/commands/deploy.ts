@@ -9,6 +9,7 @@ import { cleanTempDir, getPodStatusColor, getRoboPackageJson, openBrowser } from
 import { RoboPlay } from '../../roboplay/client.js'
 import { streamDeployment } from '../../roboplay/deploy.js'
 import { RoboPlaySession } from '../../roboplay/session.js'
+import { loginAction } from './login.js'
 import { Mode } from '../../core/mode.js'
 import { loadEnv } from '../../core/dotenv.js'
 import path from 'node:path'
@@ -48,8 +49,18 @@ async function deployAction(_args: string[], options: DeployCommandOptions) {
 	await loadEnv({ mode: defaultMode })
 
 	// Validate session
-	const session = await RoboPlaySession.get()
-	const pod = session?.pods?.[0]
+	let session = await RoboPlaySession.get()
+	let pod = session?.pods?.[0]
+
+	if (!session || !pod) {
+		await loginAction([], {
+			silent: options.silent,
+			verbose: options.verbose
+		})
+
+		session = await RoboPlaySession.get()
+		pod = session?.pods?.[0]
+	}
 
 	if (!session || !pod) {
 		logger.error(`You must be logged in to deploy to RoboPlay. Run ${Highlight('npx robo login')} to get started.`)
@@ -85,7 +96,7 @@ async function deployAction(_args: string[], options: DeployCommandOptions) {
 		logger.log('\r' + Indent, '   Builder access granted successfully')
 	} else {
 		logger.log('\r' + Indent, color.red('   ' + error))
-		logger.log('\n' + Indent, '✨ Join the Beta program in our Discord Server.')
+		logger.log('\n' + Indent, '✨ Join the Beta program in our Discord Server')
 		logger.log(Indent + '   ', Highlight('https://robojs.dev/discord'), '\n')
 		return
 	}

@@ -25,7 +25,7 @@ interface LoginCommandOptions {
 	verbose?: boolean
 }
 
-async function loginAction(_args: string[], options: LoginCommandOptions) {
+export async function loginAction(_args: string[], options: LoginCommandOptions) {
 	// Create a logger
 	logger({
 		enabled: !options.silent,
@@ -63,7 +63,7 @@ async function loginAction(_args: string[], options: LoginCommandOptions) {
 	logger.log('\n' + Indent, color.bold('🔗 Prefer to navigate manually?'))
 	logger.log(Indent + '   ', color.blue(oauthSession.url), '\n')
 
-	const spinner = new Spinner(Indent + ` {{spinner}} Waiting for sign in...`)
+	const spinner = new Spinner(Indent + ` {{spinner}}  Waiting for sign in...`)
 	spinner.start()
 
 	// Open browser on key press (Enter)
