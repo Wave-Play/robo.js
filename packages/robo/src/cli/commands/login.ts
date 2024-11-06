@@ -6,6 +6,8 @@ import { Spinner } from '../utils/spinner.js'
 import { openBrowser, sleep } from '../utils/utils.js'
 import { KeyWatcher } from '../utils/key-watcher.js'
 import { RoboPlaySession } from '../../roboplay/session.js'
+import { Mode } from '../../core/mode.js'
+import { loadEnv } from '../../core/dotenv.js'
 
 const command = new Command('login')
 	.description('Sign in to your RoboPlay account')
@@ -23,12 +25,21 @@ interface LoginCommandOptions {
 	verbose?: boolean
 }
 
-async function loginAction(_args: string[], options: LoginCommandOptions) {
+export async function loginAction(_args: string[], options: LoginCommandOptions) {
 	// Create a logger
 	logger({
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : 'info'
 	})
+
+	// Set NODE_ENV if not already set
+	if (!process.env.NODE_ENV) {
+		process.env.NODE_ENV = 'production'
+	}
+
+	// Make sure environment variables are loaded
+	const defaultMode = Mode.get()
+	await loadEnv({ mode: defaultMode })
 
 	// Prepare OAuth session
 	const oauthSession = await RoboPlay.OAuth.create()
@@ -42,17 +53,17 @@ async function loginAction(_args: string[], options: LoginCommandOptions) {
 	// Print user instructions
 	const cta = composeColors(color.bold, color.cyan)('Press Enter')
 
-	logger.log('\n' + Indent, `Welcome to ${color.bold('RoboPlay')} ✨`)
+	logger.log('\n' + Indent, color.bold(`✨ Welcome to ${color.yellow('RoboPlay')}`))
 	//logger.log('\n' + Indent, color.bold('🔒 For your security, please use an auth code.'))
 	//logger.log(Indent, `Your auth code is: ${composeColors(color.bold, color.cyan)(oauthSession.pairingCode)}`)
 
 	logger.log('\n' + Indent, color.bold('🌐 Ready to start your journey?'))
-	logger.log(Indent, `${cta} to open your web browser...`)
+	logger.log(Indent + '   ', `${cta} to open your web browser...`)
 
 	logger.log('\n' + Indent, color.bold('🔗 Prefer to navigate manually?'))
-	logger.log(Indent, composeColors(color.underline, color.blue)(oauthSession.url), '\n')
+	logger.log(Indent + '   ', color.blue(oauthSession.url), '\n')
 
-	const spinner = new Spinner(Indent + ` {{spinner}} Waiting for sign in...`)
+	const spinner = new Spinner(Indent + ` {{spinner}}  Waiting for sign in...`)
 	spinner.start()
 
 	// Open browser on key press (Enter)

@@ -1,0 +1,22 @@
+#info {
+	display: grid;
+	overflow-x: hidden;
+	place-items: center;
+	width: 100vw;
+	div {
+		font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+		position: absolute;
+		top: 0;
+		padding-top: 0.8rem;
+		padding-bottom: 0.8rem;
+		padding-left: 2.25rem;
+		padding-right: 2.25rem;
+		text-align: center;
+		user-select: none;
+		border-bottom-right-radius: 1rem;
+		border-bottom-left-radius: 1rem;
+		font-weight: 600;
+		color: rgba(255, 255, 255, 0.87);
+		background-color: #242424;
+	}
+}

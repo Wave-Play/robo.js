@@ -70,7 +70,7 @@ The cherry on top of using modules? They're your first step towards making plugi
 
 If you're thinking about sharing some of your nifty features as plugins later, modules are your best bet. By grouping related commands and events together, you're already halfway to creating a shareable plugin.
 
-Check out the [plugins documentation](./plugins.md) for more.
+Check out the [plugins documentation](/plugins/overview) for more.
 
 ## Wrapping Up 🎁
 

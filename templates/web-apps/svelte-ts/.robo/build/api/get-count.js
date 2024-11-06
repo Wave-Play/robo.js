@@ -1,0 +1,11 @@
+import { Flashcore } from "robo.js";
+// Get count from built-in KV database
+// https://docs.roboplay.dev/robojs/flashcore
+export default (async ()=>{
+    const count = await Flashcore.get('counter') ?? 0;
+    return {
+        count
+    };
+});
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkQ6XFxQcm9qZWt0aVxccm9ib1xccm9iby5qc1xcdGVtcGxhdGVzXFx3ZWItYXBwc1xcc3ZlbHRlLXRzXFxzcmNcXGFwaVxcZ2V0LWNvdW50LnRzIl0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB7IEZsYXNoY29yZSB9IGZyb20gJ3JvYm8uanMnO1xyXG5cclxuLy8gR2V0IGNvdW50IGZyb20gYnVpbHQtaW4gS1YgZGF0YWJhc2VcclxuLy8gaHR0cHM6Ly9kb2NzLnJvYm9wbGF5LmRldi9yb2JvanMvZmxhc2hjb3JlXHJcbmV4cG9ydCBkZWZhdWx0IGFzeW5jICgpID0+IHtcclxuXHRjb25zdCBjb3VudCA9IChhd2FpdCBGbGFzaGNvcmUuZ2V0KCdjb3VudGVyJykpID8/IDA7XHJcblx0cmV0dXJuIHsgY291bnQgfTtcclxufTtcclxuIl0sIm5hbWVzIjpbIkZsYXNoY29yZSIsImNvdW50IiwiZ2V0Il0sIm1hcHBpbmdzIjoiQUFBQSxTQUFTQSxTQUFTLFFBQVEsVUFBVTtBQUVwQyxzQ0FBc0M7QUFDdEMsNkNBQTZDO0FBQzdDLGVBQWUsQ0FBQTtJQUNkLE1BQU1DLFFBQVEsQUFBQyxNQUFNRCxVQUFVRSxHQUFHLENBQUMsY0FBZTtJQUNsRCxPQUFPO1FBQUVEO0lBQU07QUFDaEIsQ0FBQSxFQUFFIn0=

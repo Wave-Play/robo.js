@@ -100,20 +100,20 @@ new Command('create-robo <projectName>')
 		}
 
 		// `activity` is an alias for `app`
-		const ogKit = options.kit
 		if (options.kit === 'activity') {
 			options.kit = 'app'
 		}
 
-		// No kit specified, prompt the user to choose an adventure: bot or activity
+		// No kit specified, prompt the user to choose an adventure: bot or activity or webapp
 		if (!options.kit && !options.template) {
 			logger.log()
-			options.kit = await select<'app' | 'bot'>(
+			options.kit = await select<'app' | 'bot' | 'web'>(
 				{
 					message: color.blue('Choose your adventure:'),
 					choices: [
 						{ name: 'Discord Activity', value: 'app' as const },
-						{ name: 'Discord Bot', value: 'bot' as const }
+						{ name: 'Discord Bot', value: 'bot' as const },
+						{ name: 'Web Application', value: 'web' as const }
 					]
 				},
 				{
@@ -122,9 +122,9 @@ new Command('create-robo <projectName>')
 			)
 		}
 
-		// Ensure correct kit is selected (bot or app)
+		// Ensure correct kit is selected (bot or app or web)
 		if (options.kit && !['bot', 'app', 'web'].includes(options.kit)) {
-			logger.error('Only bot (default) and activity kits are available at the moment.')
+			logger.error('Only bot (default), activity and web kits are available at the moment.')
 			return
 		}
 
@@ -159,7 +159,7 @@ new Command('create-robo <projectName>')
 		}
 
 		// Print introduction section
-		const kitName = ogKit === 'web' ? 'Web App' : options.kit === 'app' ? 'Discord Activity' : 'Discord Bot'
+		const kitName = options.kit === 'web' ? 'Web App' : options.kit === 'app' ? 'Discord Activity' : 'Discord Bot'
 		logger.log('')
 		logger.log(Indent, color.bold('✨ Welcome to Robo.js!'))
 		logger.log(Indent, `   Spawning ${Highlight(projectName)} as a ${Highlight(kitName)}...`)

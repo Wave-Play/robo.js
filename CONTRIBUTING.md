@@ -10,7 +10,7 @@ This document will guide you through the process of contributing to Robo.js.
 
 **Not a coder but got a neat idea?** No worries!
 
-**➞ [📝 Suggest features by creating a GitHub Issue](https://github.com/your-repo-name/issues)**
+**➞ [📝 Suggest features by creating a GitHub Issue](https://github.com/Wave-Play/robo.js/issues)**
 
 **➞ [🚀 Community: Join our Discord server](https://roboplay.dev/discord)**
 

@@ -10,91 +10,131 @@ Build, deploy, and maintain your Discord activities with ease. With Robo.js as y
 
 _Ready to embark on this adventure?_
 
-<CardContainer><Card href="https://roboplay.dev/discord" title="🚀 Community" description="Join our Discord server"/>
-<Card href="https://robojs.dev/discord-activities/getting-started" title="📚 Documentation" description="Getting started with Robo"/>
-<Card href="https://dev.to/waveplay/how-to-build-a-discord-activity-easily-with-robojs-5bng" title="📖 Tutorial" description="Creating a Discord Activity in seconds"/></CardContainer>
+## Quick Links
 
-## Running ‍️
+<CardContainer><Card href="https://robojs.dev/discord-bots" title="📚 Documentation" description="Getting started with Robo.js"/>
+<Card href="https://robojs.dev/discord" title="✨ Discord" description="Robo - Imagine Magic"/></CardContainer>
 
-Run development mode with:
+##  Getting Started
+
+Create a project with this template, replacing `<project-name>` with your desired name:
+
+<Terminal create>{`<project-name> --template discord-bots/starter-js`}</Terminal>
+
+Then navigate into your project directory:
+
+<Terminal>{`cd <project-name>`}</Terminal>
+
+Run development mode:
 
 <Terminal>{`npm run dev`}</Terminal>
 
-Your Robo refreshes with every change. 🔄
+<CardContainer><Card href="https://robojs.dev/discord-bots/beginner-guide" title="🔰 Beginner Guide" description="New to Discord Bots with Robo? Start here!"/>
+<Card href="https://robojs.dev/robojs/mode#default-modes" title="🎭 Run Modes" description="Define profiles for your Robo session."/></CardContainer>
 
-> **Psst...** Check out the [deployment instructions](#deployment) to keep your Robo online 24/7.
+## Development
 
-## Developing ️
+Creating a **[Slash Command](https://robojs.dev/discord-bots/commands)** is as easy as creating files.
 
-Create new slash commands by making a new file under the `/src/commands` directory with an exported default function. The file's name becomes the command's name. You can either use the `interaction` parameter or return the result to let Sage handle it for you. For more info on commands, see the **[Discord.js Documentation](https://discord.js.org/#/docs/main/stable/general/welcome)**.
+Let's say you want a new `/hello` command. Just create a file in the `/src/commands` directory named `hello.js` and export a default function that returns something.
 
-Commands will be automatically registered with Discord when needed, but you can force it by running `npx robo build -f`.
-
-To listen to new events, create a file named after the event in `/src/events`. For example, `typingStart.js` will notify you when someone starts typing. You can stack multiple files for the same event by making a directory named after the event. Files inside it can be named whatever you want. For example:
-
-```
-- src
-  - events
-    - typingStart
-      - your-file.js
-      - another.js
+```javascript title="/src/commands/hello.js"
+export default (interaction) => {
+	interaction.reply('Hello World!')
+}
 ```
 
-**➞** [📚 **Documentation:** Slash commands](https://docs.roboplay.dev/docs/advanced/plugins#creating-plugins)
+![Code for a slash command](https://github.com/Wave-Play/robo.js/blob/main/docs/static/readme/slash-command-code.png?raw=true)
 
-**➞** [📚 **Documentation:** Events](https://docs.roboplay.dev/docs/advanced/events)
+Your `/hello` command is now ready to use! **Robo.js** takes care of registration for you.
 
-**➞** [📚 **Documentation:** Context Menus](https://docs.roboplay.dev/docs/basics/context-menu)
+![Pk using a slash command](https://raw.githubusercontent.com/Wave-Play/robo.js/refs/heads/main/docs/static/readme/slash-command.png)
 
-## Debugging 
+Ever clicked on an avatar or message and seen an _Apps_ section? Those are **[Context Commands](https://robojs.dev/discord-bots/context-menu)**!
 
-Got bugs? No biggie! Robo.js has your back with nifty built-in debugging magic. During dev mode, Robo will provide you with error information, stack traces, interactive logs, and even a sneak peek at the exact code that caused the issue!
+Create a file file in `/src/context/message` named after the command. For example, `Quote.js`.
 
-To get started, set up a personal Discord server for your Robo to hang out in and add your server's ID as a `DISCORD_GUILD_ID` env variable. Doing this unlocks the fab debugging features, plus the super-handy `/dev` command that gives you quick access to logs, system info, and more.
+```javascript title="/src/context/message/Quote.js"
+export default (interaction, message) => {
+	interaction.reply(`${message.author} said:\n\n> ${message.content}`)
+}
+```
 
-**➞** [📚 **Documentation:** Debugging](https://docs.roboplay.dev/docs/advanced/debugging)
+![Code for a context command](https://github.com/Wave-Play/robo.js/blob/main/docs/static/readme/context-message-code.png?raw=true)
 
-## Configuration ️
+You can do the same for users under `/src/context/user`.
 
-Robo.js automatically handles creating your Discord.js `Client` instance, but you can still configure what gets passed to it using the `config/robo.mjs` file. Use it to add more intents or change the behavior of other Robo.js features such as Sage.
+![Quoting a message via context command](https://github.com/Wave-Play/robo.js/blob/main/docs/static/readme/context-message.png?raw=true)
 
-The `.env` file contains your `DISCORD_TOKEN` and `DISCORD_CLIENT_ID`. Keep these secret. You can get these values from the **[Discord Developer Portal](https://discord.com/developers/applications)**.
+<CardContainer><Card href="https://robojs.dev/discord-bots/commands" title="📜 Slash Commands" description="Your bot follows best practices by default."/>
+<Card href="https://robojs.dev/discord-bots/events" title="📡 Events" description="Know and respond to everything that happens."/>
+<Card href="https://robojs.dev/discord-bots/context-menu" title="🖱️ Context Commands" description="Extend right click and long press behavior."/>
+<Card href="https://robojs.dev/robojs/flashcore" title="⚡ Flashcore Database" description="Persist data in your Robo with ease."/></CardContainer>
 
-## Plugins 
+## Debugging
 
-This Robo boasts an intuitive plugin system that grants new capabilities instantly!
+**Discord Bots** made with **Robo.js** come with a built-in **[Debugger](https://robojs.dev/discord-bots/debug)**.
 
-<Terminal execute>{`robo add @robojs/ai`}</Terminal>
+Whenever your bot crashes in development mode, the debugger shows an interactive error message - all within **Discord**!
 
-> Swap out [`@robojs/ai`](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-ai) with your chosen plugin's package name
+![Built-in debugger showing an error](https://github.com/Wave-Play/robo.js/blob/main/docs/static/readme/debugger.png?raw=true)
 
-With that, your Robo automatically equips itself with all the features the plugin offers. Want to revert? Simply use [`robo remove`](https://docs.roboplay.dev/docs/advanced/command-line#plugins) to uninstall any plugin.
+You even get `/dev` **[Subcommands](https://robojs.dev/discord-bots/commands#subcommands)** for quick access to logs, system info, and more. Just set your test server's ID as an **environment variable** called `DISCORD_GUILD_ID`.
 
-**➞** [📚 **Documentation:** Installing plugins](https://docs.roboplay.dev/docs/advanced/plugins#installing-plugins)
+<CardContainer><Card href="https://robojs.dev/discord-bots/debug" title="🐛 Debugging" description="Troubleshoot right within Discord."/>
+<Card href="https://robojs.dev/discord-bots/credentials#optional-variables" title="🔑 Credentials" description="Secure your Discord Bot credentials."/></CardContainer>
 
-Crafting something unique in your Robo project? You can turn your innovations into plugins, be it specific functionalities or your entire Robo. Share your genius with the world!
+## Client Configuration
 
-**➞** [📚 **Documentation:** Creating plugins](https://docs.roboplay.dev/docs/advanced/plugins#creating-plugins)
+**Robo.js** manages your **Discord.js** `Client` instance. You may import `client` anywhere in your project.
 
-## Deployment 
+```javascript
+// File: /src/commands/name.js
+import { client } from 'robo.js'
 
-Run the `deploy` command to automatically deploy to **[RoboPlay](https://roboplay.dev)** once you're ready to keep your robo online 24/7.
+export default () => {
+	return `My name is ${client.user.username}`
+}
+```
+
+Intents or other configurations can be set in the `config/robo.mjs` file.
+
+```javascript
+// File: /config/robo.mjs
+export default {
+	clientOptions: {
+		intents: ['Guilds', 'GuildMessages']
+	}
+	// ... other options
+}
+```
+
+<CardContainer><Card href="https://robojs.dev/robojs/config" title="🔧 Configuration" description="Customize behavior and features."/></CardContainer>
+
+## Robo Ecosystem
+
+By building with **Robo.js**, you gain access to a growing ecosystem of **[plugins](https://robojs.dev/plugins/directory)**, **[templates](https://robojs.dev/templates/overview)**, and **[tools](https://robojs.dev/cli/overview)**. **[Robo Plugins](https://robojs.dev/plugins/overview)** are special. They can add features with one command.
+
+<Terminal execute>{`robo add @robojs/ai @robojs/moderation`}</Terminal>
+
+Plugins integrate seamlessly thanks to the **[Robo File Structure](https://robojs.dev/discord-bots/file-structure)**. What's more, anyone can **[create a plugin](https://robojs.dev/plugins/create)**.
+
+<CardContainer><Card href="https://robojs.dev/plugins/install" title="🔌 Robo Plugins" description="Add features to your Robo seamlessly."/>
+<Card href="https://robojs.dev/plugins/create" title="🔌 Creating Plugins" description="Make your own plugins for Robo.js."/>
+<Card href="https://robojs.dev/plugins/create" title="🗃️ Plugin Directory" description="Browse plugins for your Robo."/>
+<Card href="https://robojs.dev/plugins/create" title="🔗 Templates" description="Kickstart your project with a template."/></CardContainer>
+
+## Hosting
+
+**Hosting** your project keeps it running 24/7. No need to keep your computer on at all times, or worry about your Internet connection.
+
+You can host on any platform that supports **Node.js**, or run [`robo deploy`](https://robojs.dev/cli/robo#distributing) to host on **[RoboPlay](https://roboplay.dev)** - a hosting platform optimized for **Robo.js**.
 
 <Terminal>{`npm run deploy`}</Terminal>
 
-**➞** [🚀 **RoboPlay:** Hosting your Robo](https://docs.roboplay.dev/docs/hosting)
-
-You can also self-host your robo anywhere that supports Node. Just make sure to run `build` followed by `start`:
-
-<Terminal>{`npm run build
-npm start`}</Terminal>
-
-You can also run `invite` (beta) to automatically generate a server invite to test it yourself or show it off! You can also use the **[Discord Developer Portal](https://discord.com/developers/applications)** to generate an invite as usual.
-
-<Terminal>{`npm run invite`}</Terminal>
-
-Happy coding! 🎉
-
+<CardContainer><Card href="https://robojs.dev/hosting/roboplay" title="🚀 RoboPlay" description="Deploy with as little as one command."/>
+<Card href="https://robojs.dev/hosting/overview" title="🛠️ Self-Hosting" description="Learn how to host and maintain it yourself."/>
+</CardContainer>
 
 ## Learn More
 

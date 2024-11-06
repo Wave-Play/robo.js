@@ -225,6 +225,7 @@ const sidebars = {
 					type: 'category',
 					label: 'Discord Activities',
 					items: [
+						'templates/discord-activities/2d-game',
 						'templates/discord-activities/react-colyseus-ts',
 						'templates/discord-activities/react-js',
 						'templates/discord-activities/react-multiplayer-video-ts',
@@ -254,7 +255,8 @@ const sidebars = {
 						'templates/discord-bots/prisma-ts',
 						'templates/discord-bots/purrth-vader-ts',
 						'templates/discord-bots/starter-js',
-						'templates/discord-bots/starter-ts'
+						'templates/discord-bots/starter-ts',
+						'templates/discord-bots/tagbot'
 					]
 				},
 				{
@@ -265,7 +267,7 @@ const sidebars = {
 				{
 					type: 'category',
 					label: 'Web Apps',
-					items: ['templates/web-apps/react-js', 'templates/web-apps/react-ts']
+					items: ['templates/web-apps/react-js', 'templates/web-apps/react-ts', 'templates/web-apps/svelte-js', 'templates/web-apps/svelte-ts']
 				}
 			]
 		}
