@@ -951,19 +951,18 @@ export default class Robo {
 		const sourcePath = path.join(__dirname, templateDir, sourceDir)
 		const targetPath = path.join(this._workingDir, sourceDir)
 
-		const items = await fs.readdir(sourcePath)
+		const items = await fs.readdir(sourcePath, { withFileTypes: true })
 
 		for (const item of items) {
-			const itemSourcePath = path.join(sourcePath, item)
-			const itemTargetPath = path.join(targetPath, item)
-			const stat = await fs.stat(itemSourcePath)
+			const itemSourcePath = path.join(sourcePath, item.name)
+			const itemTargetPath = path.join(targetPath, item.name)
 
-			if (stat.isDirectory()) {
+			if (item.isDirectory()) {
 				logger.debug(`Creating directory`, color.bold(itemTargetPath))
 				await fs.mkdir(itemTargetPath, { recursive: true })
-				await this.copyTemplateFiles(path.join(sourceDir, item))
-			} else {
-				logger.debug(`Copying`, color.bold(item), `to`, color.bold(itemTargetPath))
+				await this.copyTemplateFiles(path.join(sourceDir, item.name))
+			} else if (item.isFile()) {
+				logger.debug(`Copying`, color.bold(item.name), `to`, color.bold(itemTargetPath))
 				await fs.copyFile(itemSourcePath, itemTargetPath, fs.constants.COPYFILE_FICLONE)
 			}
 		}
