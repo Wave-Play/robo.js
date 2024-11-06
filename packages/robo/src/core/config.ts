@@ -221,10 +221,9 @@ async function readConfig<T = unknown>(configPath: string): Promise<T> {
 				configDir.replace(process.cwd(), ''),
 				path.basename(configPath).replace(/\.ts$/, '.mjs')
 			)
-			console.info(69, jsConfigPath, process.cwd())
 			const imported = await import(pathToFileURL(jsConfigPath).toString())
 			const pluginConfig = imported.default ?? imported
-			await fs.promises.rm(jsConfigPath).catch(() => logger.debug('Failed to clear generated config:- ', jsConfigPath))
+			await deleteFileAndEmptyDirs(jsConfigPath).catch(() => logger.debug('Failed to clear generated config:- ', jsConfigPath))
 			return pluginConfig ?? ({} as T)
 		} else {
 			// Convert to file URL to allow for a seamless dynamic import()
@@ -235,5 +234,23 @@ async function readConfig<T = unknown>(configPath: string): Promise<T> {
 	} catch (e) {
 		logger.error('Failed to load configuration file:', e, configPath)
 		return {} as T
+	}
+}
+
+
+async function deleteFileAndEmptyDirs(filePath: string) {
+	await fs.promises.rm(filePath);
+	logger.debug(`Deleted file: ${filePath}`);
+	let dir = path.dirname(filePath);
+
+	while (dir) {
+		const files = await fs.promises.readdir(dir);
+		if (files.length === 0) {
+			await fs.promises.rmdir(dir);
+			logger.debug(`Deleted empty directory: ${dir}`);
+			dir = path.dirname(dir);
+		} else {
+			break;
+		}
 	}
 }
