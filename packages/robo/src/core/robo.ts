@@ -46,6 +46,7 @@ interface StartOptions {
 
 interface BuildOptions {
 	force?: boolean;
+	distDir?: string;
 }
 
 
@@ -61,19 +62,22 @@ export async function build(options: BuildOptions = {}) {
 
 	// Load the configuration file
 	const config = await loadConfig()
+	const distDir = options.distDir
+	? path.join(process.cwd(), options.distDir)
+	: path.join(process.cwd(), '.robo', 'build')
 
 	// Initialize Flashcore to persist build error data
 	await prepareFlashcore()
 
 	// Use the Robo Compiler to generate .robo/build
 	const compileTime = await Compiler.buildCode({
-		distDir: config.experimental?.buildDirectory,
+		distDir: distDir,
 		excludePaths: config.excludePaths?.map((p) => p.replaceAll('/', path.sep)),
 	})
 	logger.debug(`Compiled in ${compileTime}ms`)
 
 	// Assign default commands and events
-	const generatedFiles = await generateDefaults(config.experimental?.buildDirectory)
+	const generatedFiles = await generateDefaults(distDir)
 
 	// Generate manifest.json
 	const oldManifest = await Compiler.useManifest({ safe: true })
@@ -101,7 +105,6 @@ export async function build(options: BuildOptions = {}) {
 	const hasContextCommandChanges =
 		addedContextCommands.length > 0 || removedContextCommands.length > 0 || changedContextCommands.length > 0
 
-	// Register command changes
 	const shouldRegister = options.force || hasCommandChanges || hasContextCommandChanges
 
 	if (config.experimental?.disableBot !== true && options.force) {
