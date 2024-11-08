@@ -67,7 +67,6 @@ async function startAction(_args: string[], options: StartCommandOptions) {
 		)
 		process.exit(1)
 	}
-	
 
 	// Experimental warning, except for the disableBot flag which is a special case
 	const config = await loadConfig()
@@ -83,7 +82,6 @@ async function startAction(_args: string[], options: StartCommandOptions) {
 
 	// Check if the User has a custom build directory else set the default
 	const buildDirectory = config.experimental?.buildDirectory ?? path.join('.robo', 'build')
-
 
 	// Check if .robo/build directory has .js files (recursively)
 	if (!(await hasFilesRecursively(path.join(buildDirectory)))) {
