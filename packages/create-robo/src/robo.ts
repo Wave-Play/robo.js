@@ -762,21 +762,21 @@ export default class Robo {
 			devDependencies.push('eslint-plugin-react-refresh')
 		}
 
-		const extention = this._useTypeScript ? 'ts' : 'mjs'
+		const ext = this._useTypeScript ? 'ts' : 'mjs'
 
 		if (features.includes('eslint')) {
 			devDependencies.push('eslint@9')
 			devDependencies.push('@eslint/js')
 			devDependencies.push('globals')
 			this._packageJson.scripts['lint'] = runPrefix + 'lint:eslint'
-			this._packageJson.scripts['lint:eslint'] = `eslint -c config/eslint.${extention} .`;
+			this._packageJson.scripts['lint:eslint'] = `eslint -c config/eslint.${ext} .`
 			let eslintConfig = EslintConfig
 
 			if (this._useTypeScript) {
 				eslintConfig = EslintConfigTypescript
 				devDependencies.push('typescript-eslint')
 			}
-			await fs.writeFile(path.join(this._workingDir, 'config', `eslint.${extention}`), eslintConfig, 'utf-8')
+			await fs.writeFile(path.join(this._workingDir, 'config', `eslint.${ext}`), eslintConfig, 'utf-8')
 		}
 
 		if (features.includes('prettier')) {
@@ -809,12 +809,13 @@ export default class Robo {
 			roboConfig = roboConfig.replace(`type: 'robo'`, `type: 'plugin'`)
 		}
 
-		if(this._useTypeScript) {
-			roboConfig = `import type { Config } from "robo.js";\n\nconst config: Config = {` + roboConfig.split('export default {')[1] + 'export default config;';
+		if (this._useTypeScript) {
+			const configContent = roboConfig.split('export default {')[1]
+			roboConfig = `import type { Config } from 'robo.js'\n\nexport default <Config>{` + configContent
 		}
 
 		logger.debug(`Writing Robo config file...`)
-		await fs.writeFile(path.join(this._workingDir, 'config', `robo.${extention}`), roboConfig, 'utf-8')
+		await fs.writeFile(path.join(this._workingDir, 'config', `robo.${ext}`), roboConfig, 'utf-8')
 		logger.debug(`Finished writing Robo config file:\n`, roboConfig)
 
 		// Sort keywords, scripts, dependencies, and devDependencies alphabetically (this is important to me)
@@ -1096,7 +1097,8 @@ export default class Robo {
 		}
 
 		// Normalize plugin path
-		const pluginPath = path.join(this._workingDir, 'config', 'plugins', ...pluginParts) + this._useTypeScript ? '.ts' : '.mjs'
+		const pluginPath =
+			path.join(this._workingDir, 'config', 'plugins', ...pluginParts) + this._useTypeScript ? '.ts' : '.mjs'
 		const pluginConfig = prettyStringify(config) + '\n'
 
 		logger.debug(`Writing ${pluginName} config to ${pluginPath}...`)
