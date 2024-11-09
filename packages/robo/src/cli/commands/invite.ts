@@ -31,7 +31,7 @@ async function inviteAction() {
 	await loadEnv({ mode: defaultMode })
 
 	// Throw error if no client ID is set
-	const clientId = env('discord.clientId')
+	const clientId = env.get('discord.clientId')
 	if (!clientId) {
 		logger.error(`No client ID set. Please set the ${color.bold('DISCORD_CLIENT_ID')} environment variable.`)
 		return

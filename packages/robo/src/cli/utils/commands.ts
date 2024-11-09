@@ -313,9 +313,9 @@ export async function registerCommands(
 	removedContextCommands: string[]
 ) {
 	const config = await loadConfig()
-	const clientId = env('discord.clientId')
-	const guildId = env('discord.guildId')
-	const token = env('discord.token')
+	const clientId = env.get('discord.clientId')
+	const guildId = env.get('discord.guildId')
+	const token = env.get('discord.token')
 
 	if (!token || !clientId) {
 		logger.error(
