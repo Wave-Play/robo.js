@@ -275,7 +275,7 @@ export async function getWatchedPlugins(config: Config) {
 	for (const name of pluginNames) {
 		try {
 			const packagePath = await findPackagePath(name, process.cwd())
-			const watchFilePath = path.join(packagePath, '.robo', `watch.${(await isTypescriptEnabled()) ? 'ts' : 'mjs'}`)
+			const watchFilePath = path.join(packagePath, '.robo', 'watch.mjs')
 			const importPath = pathToFileURL(path.join(process.cwd(), watchFilePath)).toString()
 
 			// Ensure the file exists and is valid before adding it to the list
