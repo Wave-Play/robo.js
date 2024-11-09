@@ -11,7 +11,7 @@ import {
 } from "discord.js";
 import type { CommandConfig, CommandEntry } from "../../types/commands.js";
 
-const COMMANDS_PER_PAGE = 25;
+const COMMANDS_PER_PAGE = 20;
 const NAMESPACE = "__robo.js__default__helpmenu";
 
 export const config: CommandConfig = {
@@ -26,7 +26,7 @@ export default async (interaction: CommandInteraction) => {
   const totalPages = Math.ceil(commands.length / COMMANDS_PER_PAGE);
 
   return {
-    embeds: [createEmbed(commands, page)],
+    embeds: [createEmbed(commands, page, totalPages)],
     components: [
       createPaginationButtons(page, totalPages, interaction.user.id),
     ],
@@ -62,6 +62,7 @@ function createEmbed(
     command: CommandEntry;
   }[],
   page: number,
+  totalPages: number,
 ) {
   const poweredBy = process.env.ROBOPLAY_HOST
     ? "Powered by [**RoboPlay** ✨](https://roboplay.dev)"
@@ -81,8 +82,10 @@ function createEmbed(
         inline: false,
       })),
       { name: "\u200b", value: poweredBy, inline: false },
-    );
-
+    )
+    .setFooter({
+      text: `Page:- ${page + 1} / ${totalPages}`,
+    });
   return embed;
 }
 
@@ -119,7 +122,7 @@ export async function handleHelpMenuInteraction(
 
   // Check user
   if (userId.toString() !== interaction.user.id.toString()) {
-    await interaction.reply({
+    return await interaction.reply({
       ephemeral: true,
       content:
         "This isn't the help menu. Use `/help` to access the list of commands.",
@@ -135,7 +138,7 @@ export async function handleHelpMenuInteraction(
   else if (action === "next" && page < totalPages - 1) page++;
 
   await interaction.update({
-    embeds: [createEmbed(commands, page)],
+    embeds: [createEmbed(commands, page, totalPages)],
     components: [
       createPaginationButtons(page, totalPages, interaction.user.id),
     ],
