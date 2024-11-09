@@ -9,7 +9,7 @@ import path from 'node:path'
 import { loadEnv } from '../../../core/dotenv.js'
 import { Mode, setMode } from '../../../core/mode.js'
 import { loadConfig, loadConfigPath } from '../../../core/config.js'
-import { hasProperties, isTypescriptEnabled } from '../../utils/utils.js'
+import { hasProperties } from '../../utils/utils.js'
 import Watcher from '../../utils/watcher.js'
 import { buildPublicDirectory } from '../../utils/public.js'
 
