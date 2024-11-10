@@ -1,9 +1,18 @@
-import { loadEnv } from './dotenv.js'
-import type { LoadEnvOptions } from './dotenv.js'
+import { IS_BUN } from '../cli/utils/runtime-utils.js'
+import { logger } from './logger.js'
+import { existsSync, readFileSync } from 'node:fs'
+import { readFile } from 'node:fs/promises'
+import path from 'node:path'
 
 interface EnvVariable {
 	env: string
 	default?: string
+}
+
+interface LoadOptions {
+	mode?: string
+	path?: string
+	overwrite?: boolean | string[]
 }
 
 type IsLeaf<T> = T extends { env: string } ? true : false
@@ -28,6 +37,12 @@ type ValueAtPath<T, P extends string> = P extends `${infer Key}.${infer Rest}`
 		: never
 	: never
 
+/**
+ * Represents an environment variable schema. Can also be used to load environment variables from a file.
+ *
+ * Learn more:
+ * **[Environment Variables](https://robojs.dev/robojs/environment-variables)**
+ */
 export class Env<T> {
 	private _variables: T
 
@@ -72,8 +87,44 @@ export class Env<T> {
 		throw new Error(`Invalid schema configuration for key: ${key}`)
 	}
 
-	public static async load(options?: Omit<LoadEnvOptions, 'filePath' | 'sync'>) {
-		return loadEnv(options)
+	/**
+	 * Loads environment variables from a file and applies them to the current process.
+	 *
+	 * @param options - Customize where the file path, mode, and overwrite behavior.
+	 * @returns Record object containing loaded environment variables.
+	 */
+	public static async load(options?: LoadOptions) {
+		const filePath = getFilePath(options)
+
+		if (filePath) {
+			const envContent = await readFile(filePath, 'utf-8')
+			const newEnv = parseEnvFile(envContent)
+
+			return applyEnv(options, newEnv)
+		} else {
+			return {}
+		}
+	}
+
+	/**
+	 * Loads environment variables from a file and applies them to the current process.
+	 *
+	 * **This operation is synchronous and will block the event loop.** Use `Env.load` for asynchronous loading.
+	 *
+	 * @param options - Customize where the file path, mode, and overwrite behavior.
+	 * @returns Record object containing loaded environment variables.
+	 */
+	public static loadSync(options?: LoadOptions) {
+		const filePath = getFilePath(options)
+
+		if (filePath) {
+			const envContent = readFileSync(filePath, 'utf-8')
+			const newEnv = parseEnvFile(envContent)
+
+			return applyEnv(options, newEnv)
+		} else {
+			return {}
+		}
 	}
 }
 
@@ -98,3 +149,109 @@ export const env = new Env({
 		}
 	}
 })
+
+function applyEnv(options: LoadOptions, newEnvVars: Record<string, string>) {
+	const { overwrite } = options
+	const varSubstitutionRegex = /\${(.+?)}/g
+
+	// Create a clone of process.env to maintain a consistent state in case of an error
+	const envClone = { ...process.env }
+
+	try {
+		for (const key in newEnvVars) {
+			// Don't overwrite existing values unless specified
+			if (!overwrite && key in envClone) {
+				continue
+			}
+
+			const visited = new Set<string>()
+			let value = newEnvVars[key]
+
+			while (varSubstitutionRegex.test(value)) {
+				value = value.replace(varSubstitutionRegex, (_, varName) => {
+					if (visited.has(varName)) {
+						throw new Error(`Circular reference detected in environment variable "${key}"`)
+					}
+					visited.add(varName)
+					return envClone[varName] || newEnvVars[varName] || ''
+				})
+			}
+
+			envClone[key] = value
+		}
+
+		Object.assign(process.env, envClone)
+	} catch (err) {
+		logger.error(`Could not load environment variables:`, err)
+	}
+
+	return newEnvVars
+}
+
+function getFilePath(options: LoadOptions): string | null {
+	// No need to load .env file if using Bun (it's already loaded)
+	if (IS_BUN) {
+		return null
+	}
+
+	// Look for .env.{mode} file first, then fallback to standard .env
+	const { mode } = options
+	let { path: filePath = path.join(process.cwd(), '.env') } = options
+
+	if (mode && existsSync(filePath + '.' + mode)) {
+		logger.debug('Found .env file for mode:', mode, ':', filePath + '.' + mode)
+		filePath = path.join(process.cwd(), '.env' + '.' + mode)
+	}
+	if (!existsSync(filePath)) {
+		logger.debug(`No .env file found at "${filePath}"`)
+		return
+	}
+
+	return filePath
+}
+
+function parseEnvFile(envFileContent: string): Record<string, string> {
+	const lines = envFileContent.split('\n')
+	const commentRegex = /^\s*#/
+	const quotesRegex = /^['"]/
+	const escapedCharsRegex = /\\(.)/g
+
+	let currentLine = ''
+	const newEnvVars: { [key: string]: string } = {}
+
+	for (let i = 0; i < lines.length; i++) {
+		currentLine += lines[i]
+
+		// Ignore comments
+		if (commentRegex.test(currentLine)) {
+			currentLine = ''
+			continue
+		}
+
+		// Multiline support
+		if (currentLine.endsWith('\\')) {
+			currentLine = currentLine.slice(0, -1)
+			continue
+		}
+
+		// Find first index of '=', and split key/value there
+		const delimiterIndex = currentLine.indexOf('=')
+		if (delimiterIndex === -1) {
+			currentLine = ''
+			continue // Ignore lines that aren't key-value pairs
+		}
+
+		const key = currentLine.substring(0, delimiterIndex).trim()
+		let value = currentLine.substring(delimiterIndex + 1).trim()
+
+		// Remove surrounding quotes and unescape
+		if (quotesRegex.test(value)) {
+			value = value.slice(1, -1).replace(escapedCharsRegex, '$1')
+		}
+
+		newEnvVars[key] = value
+		currentLine = ''
+	}
+
+	return newEnvVars
+}
