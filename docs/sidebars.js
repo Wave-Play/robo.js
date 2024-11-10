@@ -226,6 +226,7 @@ const sidebars = {
 					label: 'Discord Activities',
 					items: [
 						'templates/discord-activities/2d-game',
+						'templates/discord-activities/godot',
 						'templates/discord-activities/react-colyseus-ts',
 						'templates/discord-activities/react-js',
 						'templates/discord-activities/react-multiplayer-video-ts',
