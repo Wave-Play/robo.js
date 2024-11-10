@@ -115,9 +115,9 @@ export async function handleHelpMenuInteraction(
 
   // Parse the page number and direction from the custom ID
   const [prefix, action, pageNo, userId] = interaction.customId.split("@");
-  let page = parseInt(pageNo, 10) ?? 1;
+  let page = parseInt(pageNo, 10) || 1;
 
-  //   Interaction check
+  // Namespace check
   if (prefix !== NAMESPACE) return;
 
   // Check user
