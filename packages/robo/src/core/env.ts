@@ -10,8 +10,20 @@ interface EnvVariable {
 }
 
 interface LoadOptions {
+	/**
+	 * The mode to load environment variables for.
+	 */
 	mode?: string
+
+	/**
+	 * The path to the environment file. Defaults to `.env`.
+	 */
 	path?: string
+
+	/**
+	 * Whether to overwrite existing environment variables.
+	 * Can be a boolean or an array of keys to overwrite.
+	 */
 	overwrite?: boolean | string[]
 }
 
@@ -37,6 +49,9 @@ type ValueAtPath<T, P extends string> = P extends `${infer Key}.${infer Rest}`
 		: never
 	: never
 
+// Variable keys to always overwrite unless specified otherwise
+let _globalOverwrites: string[] = []
+
 /**
  * Represents an environment variable schema. Can also be used to load environment variables from a file.
  *
@@ -45,6 +60,7 @@ type ValueAtPath<T, P extends string> = P extends `${infer Key}.${infer Rest}`
  */
 export class Env<T> {
 	private _variables: T
+	private static _data: Record<string, string>
 
 	constructor(schema: T) {
 		this._variables = schema
@@ -87,18 +103,23 @@ export class Env<T> {
 		throw new Error(`Invalid schema configuration for key: ${key}`)
 	}
 
+	public static data() {
+		return this._data
+	}
+
 	/**
 	 * Loads environment variables from a file and applies them to the current process.
 	 *
 	 * @param options - Customize where the file path, mode, and overwrite behavior.
 	 * @returns Record object containing loaded environment variables.
 	 */
-	public static async load(options?: LoadOptions) {
+	public static async load(options: LoadOptions = {}) {
 		const filePath = getFilePath(options)
 
 		if (filePath) {
 			const envContent = await readFile(filePath, 'utf-8')
 			const newEnv = parseEnvFile(envContent)
+			Env._data = newEnv
 
 			return applyEnv(options, newEnv)
 		} else {
@@ -114,12 +135,13 @@ export class Env<T> {
 	 * @param options - Customize where the file path, mode, and overwrite behavior.
 	 * @returns Record object containing loaded environment variables.
 	 */
-	public static loadSync(options?: LoadOptions) {
+	public static loadSync(options: LoadOptions = {}) {
 		const filePath = getFilePath(options)
 
 		if (filePath) {
 			const envContent = readFileSync(filePath, 'utf-8')
 			const newEnv = parseEnvFile(envContent)
+			Env._data = newEnv
 
 			return applyEnv(options, newEnv)
 		} else {
@@ -151,7 +173,7 @@ export const env = new Env({
 })
 
 function applyEnv(options: LoadOptions, newEnvVars: Record<string, string>) {
-	const { overwrite } = options
+	const { overwrite = _globalOverwrites } = options
 	const varSubstitutionRegex = /\${(.+?)}/g
 
 	// Create a clone of process.env to maintain a consistent state in case of an error
@@ -160,7 +182,9 @@ function applyEnv(options: LoadOptions, newEnvVars: Record<string, string>) {
 	try {
 		for (const key in newEnvVars) {
 			// Don't overwrite existing values unless specified
-			if (!overwrite && key in envClone) {
+			const shouldOverwrite = overwrite === true || (Array.isArray(overwrite) && overwrite.includes(key))
+
+			if (!shouldOverwrite && key in envClone) {
 				continue
 			}
 
@@ -254,4 +278,8 @@ function parseEnvFile(envFileContent: string): Record<string, string> {
 	}
 
 	return newEnvVars
+}
+
+export function setGlobalOverwrites(overwrites: string[]) {
+	_globalOverwrites = overwrites
 }

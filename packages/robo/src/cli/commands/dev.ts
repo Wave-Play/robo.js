@@ -308,12 +308,7 @@ export async function buildAsync(command: string | null, config: Config, verbose
 
 			logger.debug(`> ${pkgManager} ${args.join(' ')}`)
 			const childProcess = spawn(pkgManager, args, {
-				env: {
-					// Only pass through essential vars, not the entire env
-					PATH: process.env.PATH,
-					FORCE_COLOR: '1',
-					NODE_ENV: process.env.NODE_ENV
-				},
+				env: { ...process.env, FORCE_COLOR: '1' },
 				shell: IS_WINDOWS,
 				stdio: 'inherit'
 			})
@@ -448,7 +443,7 @@ async function rebuildRobo(spiritId: string, config: Config, verbose: boolean, c
 		return null
 	}
 
-	// Start bot via spirit if worker threads are enabled
+	// Start bot via spirit
 	const start = Date.now()
 	const newSpiritId = await spirits.newTask<string>({ event: 'start' })
 	logger.debug(`Robo spirit (${composeColors(color.bold, color.cyan)(newSpiritId)}) started in ${Date.now() - start}ms`)
