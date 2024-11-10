@@ -1,4 +1,5 @@
 import { loadEnv } from './dotenv.js'
+import type { LoadEnvOptions } from './dotenv.js'
 
 interface EnvVariable {
 	env: string
@@ -71,8 +72,8 @@ export class Env<T> {
 		throw new Error(`Invalid schema configuration for key: ${key}`)
 	}
 
-	public static async load() {
-		return loadEnv()
+	public static async load(options?: Omit<LoadEnvOptions, 'filePath' | 'sync'>) {
+		return loadEnv(options)
 	}
 }
 

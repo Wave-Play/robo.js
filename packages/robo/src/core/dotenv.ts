@@ -35,8 +35,8 @@ function parseEnvFile(envFileContent: string): { [key: string]: string } {
 			continue // Ignore lines that aren't key-value pairs
 		}
 
-		const key = currentLine.substr(0, delimiterIndex).trim()
-		let value = currentLine.substr(delimiterIndex + 1).trim()
+		const key = currentLine.substring(0, delimiterIndex).trim()
+		let value = currentLine.substring(delimiterIndex + 1).trim()
 
 		// Remove surrounding quotes and unescape
 		if (quotesRegex.test(value)) {
@@ -50,10 +50,10 @@ function parseEnvFile(envFileContent: string): { [key: string]: string } {
 	return newEnvVars
 }
 
-interface LoadEnvOptions {
+export interface LoadEnvOptions {
 	filePath?: string
 	mode?: string
-	overwrite?: boolean
+	overwrite?: boolean | string[]
 	sync?: boolean
 }
 

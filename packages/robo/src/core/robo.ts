@@ -5,7 +5,7 @@ import { Client, Collection, Events } from 'discord.js'
 import { getConfig, loadConfig } from './config.js'
 import { FLASHCORE_KEYS, discordLogger } from './constants.js'
 import { logger } from './logger.js'
-import { env } from './env.js'
+import { env, Env } from './env.js'
 import {
 	executeAutocompleteHandler,
 	executeCommandHandler,
@@ -20,7 +20,6 @@ import path from 'node:path'
 import { isMainThread, parentPort } from 'node:worker_threads'
 import type { HandlerRecord, PluginData } from '../types/index.js'
 import type { AutocompleteInteraction, CommandInteraction } from 'discord.js'
-import { loadEnv } from './dotenv.js'
 import { Mode } from './mode.js'
 
 export const Robo = { restart, start, stop }
@@ -71,7 +70,7 @@ async function start(options?: StartOptions) {
 	}
 
 	const mode = Mode.get()
-	await loadEnv({ mode })
+	await Env.load({ mode })
 
 	await prepareFlashcore()
 

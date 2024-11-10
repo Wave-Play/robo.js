@@ -14,7 +14,7 @@ import { Flashcore, prepareFlashcore } from '../../core/flashcore.js'
 import { getPackageExecutor, getPackageManager } from '../utils/runtime-utils.js'
 import { Mode, setMode } from '../../core/mode.js'
 import { Compiler } from '../utils/compiler.js'
-import { loadEnv } from '../../core/dotenv.js'
+import { Env } from '../../core/env.js'
 import type { Config, SpiritMessage } from '../../types/index.js'
 
 const command = new Command('dev')
@@ -54,7 +54,7 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 
 	// Make sure environment variables are loaded for CLI
 	const defaultMode = Mode.get()
-	await loadEnv({ mode: defaultMode })
+	await Env.load({ mode: defaultMode })
 
 	// Handle mode(s)
 	const { shardModes } = setMode(options.mode)
