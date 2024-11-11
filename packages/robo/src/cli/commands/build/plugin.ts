@@ -6,7 +6,7 @@ import { getProjectSize, printBuildSummary } from '../../utils/build-summary.js'
 import { buildAsync } from '../dev.js'
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { loadEnv } from '../../../core/dotenv.js'
+import { Env } from '../../../core/env.js'
 import { Mode, setMode } from '../../../core/mode.js'
 import { loadConfig, loadConfigPath } from '../../../core/config.js'
 import { hasProperties } from '../../utils/utils.js'
@@ -49,7 +49,7 @@ async function pluginAction(_args: string[], options: PluginCommandOptions) {
 
 	// Make sure environment variables are loaded
 	const defaultMode = Mode.get()
-	await loadEnv({ mode: defaultMode })
+	await Env.load({ mode: defaultMode })
 
 	// Handle mode(s)
 	const { shardModes } = setMode(options.mode)

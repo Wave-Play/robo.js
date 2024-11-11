@@ -10,7 +10,7 @@ import { CardContainer } from '@site/src/components/shared/CardContainer'
 
 **[Client](./client)** network requests made by your **Discord Activity** are "sandboxed" through **[Discord's Proxy](https://discord.com/developers/docs/activities/development-guides#activity-proxy-considerations)**.
 
-That means you cannot directly make network requests to **[external URLs](#external-resources)** from it for security reasons. You may have seen this if you've tried using iframes. There are also **[limitations](#network-limitations)** to what network protocols you can use.
+That means you cannot directly make network requests to **[external URLs](#fetching-external-resources)** from it for security reasons. You may have seen this if you've tried using iframes. There are also **[limitations](#network-limitations)** to what network protocols you can use.
 
 ## Content Security Policy (CSP)
 
@@ -27,7 +27,7 @@ The **Discord Proxy** has a few rules you need to follow:
 - **[No external URLs](#fetching-external-resources)**: You can't load external resources directly.
 - **[Protocols and Ports](#network-limitations)**: Only **[HTTPS](https://developer.mozilla.org/en-US/docs/Glossary/HTTPS)**, derivatives, and some protocols are allowed.
 - **[Prefix /.proxy for relative paths](https://discord.com/developers/docs/activities/development-guides#construct-a-full-url)**: Requests made within the activity should be prefixed with `/.proxy`.
-- **[Respect CSP directives](#content-security-policy)**: They are unique for each activity, like `https://<CLIENT_ID>.discordsays.com/.proxy/`.
+- **[Respect CSP directives](#content-security-policy-csp)**: They are unique for each activity, like `https://<CLIENT_ID>.discordsays.com/.proxy/`.
 
 You can automate your **CSP** compliance by using **[@robojs/patch](../plugins/patch)** to patch URLs in your code with zero effort. All **Robo.js** activity projects come with this plugin pre-installed by default.
 
@@ -122,7 +122,7 @@ Be aware of potential security risks when using a proxy server, such as **[URL I
 
 The **Discord Proxy** hides the user's IP address and blocks URLs from known **[malicious endpoints](https://www.youtube.com/watch?v=dQw4w9WgXcQ)**. This ensures the safety of the user's data and privacy. However, it also means that you need to be careful when handling external resources.
 
-Don't trust info coming from the **Embedded App SDK** as truth. There could be an impostor among us. Call the Discord API directly from your app's **[Web Server](./server)** with the **OAuth2** token you received during **[Authentication](./auth)** if you need information that's not sus.
+Don't trust info coming from the **Embedded App SDK** as truth. There could be an impostor among us. Call the Discord API directly from your app's **[Web Server](./server)** with the **OAuth2** token you received during **[Authentication](./authentication)** if you need information that's not sus.
 
 :::warning Sanitize Your Inputs
 

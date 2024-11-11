@@ -5,7 +5,7 @@ import { Client, Collection, Events } from 'discord.js'
 import { getConfig, loadConfig } from './config.js'
 import { FLASHCORE_KEYS, discordLogger } from './constants.js'
 import { logger } from './logger.js'
-import { env } from './env.js'
+import { env, Env } from './env.js'
 import {
 	executeAutocompleteHandler,
 	executeCommandHandler,
@@ -20,6 +20,7 @@ import path from 'node:path'
 import { isMainThread, parentPort } from 'node:worker_threads'
 import type { HandlerRecord, PluginData } from '../types/index.js'
 import type { AutocompleteInteraction, CommandInteraction } from 'discord.js'
+import { Mode } from './mode.js'
 
 export const Robo = { restart, start, stop }
 
@@ -60,7 +61,7 @@ async function start(options?: StartOptions) {
 		const { ShardingManager } = await import('discord.js')
 		const shardPath = typeof shard === 'string' ? shard : path.join(PackageDir, 'dist', 'cli', 'shard.js')
 		const options = typeof config.experimental?.shard === 'object' ? config.experimental.shard : {}
-		const manager = new ShardingManager(shardPath, { ...options, token: env('discord.token') })
+		const manager = new ShardingManager(shardPath, { ...options, token: env.get('discord.token') })
 
 		manager.on('shardCreate', (shard) => discordLogger.debug(`Launched shard`, shard.id))
 		const result = await manager.spawn()
@@ -68,7 +69,9 @@ async function start(options?: StartOptions) {
 		return
 	}
 
-	// Get ready for persistent data requests
+	const mode = Mode.get()
+	await Env.load({ mode })
+
 	await prepareFlashcore()
 
 	// Wait for states to be loaded
@@ -138,7 +141,7 @@ async function start(options?: StartOptions) {
 		})
 
 		// Log in to Discord with your client's token
-		await client.login(env('discord.token'))
+		await client.login(env.get('discord.token'))
 	}
 }
 

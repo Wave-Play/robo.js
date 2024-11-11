@@ -1,0 +1,36 @@
+name: Preview Any Commit
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 8.6.11
+
+      - run: corepack enable
+      - name: Install required Node.js version
+        uses: actions/setup-node@v4
+        with:
+          cache: 'pnpm'
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build Robo
+        run: pnpm build:robo
+
+      - name: PNPM install 2
+        run: pnpm install
+
+      - name: Build
+        run: pnpm build
+
+      - run: pnpx pkg-pr-new publish './packages/*'

@@ -5,7 +5,7 @@ import { logger } from '../../core/logger.js'
 import { hasFilesRecursively } from '../utils/fs-helper.js'
 import { color, composeColors } from '../../core/color.js'
 import { loadConfig } from '../../core/config.js'
-import { loadEnv } from '../../core/dotenv.js'
+import { Env } from '../../core/env.js'
 import { Mode, setMode } from '../../core/mode.js'
 import { Indent } from '../../core/constants.js'
 
@@ -39,7 +39,7 @@ async function startAction(_args: string[], options: StartCommandOptions) {
 
 	// Make sure environment variables are loaded
 	const defaultMode = Mode.get()
-	await loadEnv({ mode: defaultMode })
+	await Env.load({ mode: defaultMode })
 
 	// Handle mode(s)
 	const { shardModes } = setMode(options.mode)
