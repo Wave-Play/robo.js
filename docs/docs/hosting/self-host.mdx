@@ -26,7 +26,7 @@ This command will compile your Robo.js project into a production-ready format, m
 
 ### Set environment variables
 
-Before starting your Robo, make sure you have all the necessary environment variables set up on your server. Check out the **[Secrets](/docs/basics/secrets)** page for more info. You'll need to set `NODE_ENV` to `"production"` to run your Robo in production mode.
+Before starting your Robo, make sure you have all the necessary environment variables set up on your server. Check out the **[Environment Variables](/robojs/environment-variables)** page for more info. You'll need to set `NODE_ENV` to `"production"` to run your Robo in production mode.
 
 ### Start in production mode
 
@@ -48,7 +48,7 @@ We recommend using a CDN like **[Cloudflare](https://www.cloudflare.com/)** to c
 
 ### Logs
 
-Logs are essential for debugging issues in production. The Robo.js **[Logger](/docs/advanced/logger)** will write logs to stdout by default, but you can configure it to write to a file or a logging service via custom drains.
+Logs are essential for debugging issues in production. The **[Logger](/robojs/logger)** will write logs to stdout by default, but you can configure it to write to a file or a logging service via custom drains.
 
 We recommend using a service like **[Better Stack](https://betterstack.com/logs)** to collect and analyze your logs. We even have the **[`@robojs/better-stack`](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-better-stack)** plugin to make it easier to integrate.
 
