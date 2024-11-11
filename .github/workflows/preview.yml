@@ -27,6 +27,9 @@ jobs:
       - name: Build Robo
         run: pnpm turbo run build --filter=robo.js
 
+      - name: PNPM install 2
+        run: pnpm install
+
       - name: Build
         run: pnpm build
 
