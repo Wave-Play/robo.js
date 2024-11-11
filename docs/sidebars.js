@@ -269,7 +269,81 @@ const sidebars = {
 				{
 					type: 'category',
 					label: 'Web Apps',
-					items: ['templates/web-apps/react-js', 'templates/web-apps/react-ts', 'templates/web-apps/svelte-js', 'templates/web-apps/svelte-ts']
+					items: [
+						'templates/web-apps/react-js',
+						'templates/web-apps/react-ts',
+						'templates/web-apps/svelte-js',
+						'templates/web-apps/svelte-ts'
+					]
+				}
+			]
+		}
+	],
+	typedocSidebar: [
+		{
+			type: 'html',
+			value: 'Framework',
+			className: 'sidebar-title'
+		},
+		{
+			id: 'ref/framework',
+			label: '✨ Overview',
+			type: 'doc'
+		},
+		{
+			type: 'category',
+			label: 'Core APIs',
+			items: [
+				{
+					id: 'ref/framework/Class.Env',
+					label: 'Env',
+					type: 'doc'
+				},
+				{
+					id: 'ref/framework/Variable.Flashcore',
+					label: 'Flashcore',
+					type: 'doc'
+				},
+				{
+					id: 'ref/framework/Class.Logger',
+					label: 'Logger',
+					type: 'doc'
+				},
+				{
+					id: 'ref/framework/Variable.Mode',
+					label: 'Mode',
+					type: 'doc'
+				},
+				{
+					id: 'ref/framework/Variable.Robo',
+					label: 'Robo',
+					type: 'doc'
+				}
+			]
+		},
+		{
+			type: 'category',
+			label: 'Utilities',
+			items: [
+				{
+					id: 'ref/framework/Variable.color',
+					label: 'color',
+					type: 'doc'
+				},
+				{
+					id: 'ref/framework/Function.composeColors',
+					label: 'composeColors',
+					type: 'doc'
+				},
+				{
+					id: 'ref/framework/Function.getConfig',
+					label: 'getConfig',
+					type: 'doc'
+				},
+				{
+					id: 'ref/framework/Function.getPluginOptions',
+					label: 'getPluginOptions',
+					type: 'doc'
 				}
 			]
 		}

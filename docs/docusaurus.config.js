@@ -354,6 +354,25 @@ const config = {
 					return undefined
 				}
 			}
+		],
+		[
+			'docusaurus-plugin-typedoc',
+			{
+				entryPoints: ['../packages/robo/src/index.ts'],
+				out: 'docs/ref/framework',
+				tsconfig: '../packages/robo/tsconfig.json',
+				useCodeBlocks: true,
+				disableSources: true,
+				entryFileName: '_index',
+				flattenOutputFiles: true,
+				readme: 'none',
+				interfacePropertiesFormat: 'table',
+				classPropertiesFormat: 'table',
+				enumMembersFormat: 'table',
+				parametersFormat: 'table',
+				typeDeclarationFormat: 'table',
+				propertyMembersFormat: 'table'
+			}
 		]
 	],
 
