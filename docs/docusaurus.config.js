@@ -371,6 +371,7 @@ const config = {
 				flattenOutputFiles: true,
 				readme: 'none',
 				interfacePropertiesFormat: 'table',
+				skipErrorChecking: true,
 				classPropertiesFormat: 'table',
 				enumMembersFormat: 'table',
 				parametersFormat: 'table',

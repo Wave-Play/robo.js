@@ -10,7 +10,7 @@ Built-in database for storing key-value pairs.
 
 | Name | Type | Description |
 | ------ | ------ | ------ |
-| `clear` | () => `boolean` \| `void` \| `Promise`\<`void`\> \| `Promise`\<`boolean`\> | Clears all key-value pairs from the store. |
+| `clear` | () => `boolean` \| `void` \| `Promise`\<`boolean`\> \| `Promise`\<`void`\> | Clears all key-value pairs from the store. |
 | `delete` | (`key`, `options`?) => `boolean` \| `Promise`\<`boolean`\> | Deletes the value associated with a key from the store. |
 | `get` | \<`V`\>(`key`, `options`?) => `V` \| `Promise`\<`V`\> | Gets the value associated with a key. |
 | `has` | (`key`, `options`?) => `boolean` \| `Promise`\<`boolean`\> | - |

@@ -12,12 +12,12 @@
 ### clear()
 
 ```ts
-clear(): boolean | void | Promise<void> | Promise<boolean>
+clear(): boolean | void | Promise<boolean> | Promise<void>
 ```
 
 #### Returns
 
-`boolean` \| `void` \| `Promise`\<`void`\> \| `Promise`\<`boolean`\>
+`boolean` \| `void` \| `Promise`\<`boolean`\> \| `Promise`\<`void`\>
 
 ***
 
