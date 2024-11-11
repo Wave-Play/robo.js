@@ -41,6 +41,10 @@ const config = {
 			{
 				redirects: [
 					{
+						from: '/',
+						to: '/getting-started'
+					},
+					{
 						from: '/docs/getting-started',
 						to: '/getting-started'
 					},
