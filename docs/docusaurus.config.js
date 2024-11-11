@@ -161,6 +161,10 @@ const config = {
 						to: '/plugins/overview'
 					},
 					{
+						from: '/plugins',
+						to: '/plugins/directory'
+					},
+					{
 						from: '/templates',
 						to: '/templates/overview'
 					},
