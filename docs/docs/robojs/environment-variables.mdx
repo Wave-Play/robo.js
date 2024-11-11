@@ -1,0 +1,187 @@
+import { Card } from '@site/src/components/shared/Card'
+import { CardContainer } from '@site/src/components/shared/CardContainer'
+import { Terminal } from '@site/src/components/shared/Terminal'
+
+# 🔑 Environment Variables
+
+Sometimes you may need to store sensitive information, such as API keys, database URLs, or **[Discord Credentials](#)**. Hardcoding these values in your source code is a bad idea, as they can be easily exposed.
+
+**Environment Variables** provide a way to store these values outside of your codebase. They're loaded into your project when it starts, and are less likely to be exposed accidentally.
+
+## Standard File
+
+**Robo** projects typically use a file called `.env`. This file is in the root of your project and can be used to store sensitive information.
+
+Here's an example of what it might look like:
+
+```bash title=".env"
+# Discord Credentials
+DISCORD_CLIENT_ID="your_application_id"
+DISCORD_TOKEN="your_bot_token"
+
+# My secret stuff
+EXAMPLE_VARIABLE="Sshh, this is a secret!"
+```
+
+Variables are stored as key-value pairs, separated by an equals sign (`=`). The key is the name of the variable, and the value is the sensitive information. You can then access these values in your code using `process.env`.
+
+```javascript title="/src/commands/secret.js"
+export default () => {
+	return process.env.EXAMPLE_VARIABLE ?? 'No secret found!'
+}
+```
+
+:::warning
+
+Be careful where you use `process.env` in your code. Don't expose sensitive information in logs or error messages!
+
+:::
+
+## Security
+
+What's so special about **Environment Variables**, you ask? Well, we didn't invent them, the concept has been around for a while. Smart developers (like you) have built tools and practices around them over the years.
+
+Here's a few reasons why they're a good idea:
+
+- **Access Control**: You can control who has access to your `.env` file, and who can see the values inside.
+- **Audit Trails**: You can track changes to your `.env` file, showing who changed what and when.
+- **Isolation**: Sensitive information is kept separate from your code, reducing the risk of accidental leaks.
+- **Version Control**: You can exclude `.env` from your version control system like **[GitHub](https://github.com)**.
+
+For those using **Git**, rest assured that **Robo** projects follow best practices out of the box with `.gitignore`.
+
+:::tip
+
+**[Doppler](https://www.doppler.com)** is awesome at managing your environment variables. It provides a secure way to store and manage your secrets. It's also great for teams, as it allows you to share secrets securely.
+
+:::
+
+## Modes and Variables
+
+Complex projects may want to use different environment variables for different cases. **Robo** supports this with **[Modes](./mode)**!
+
+Suffix your `.env` file with the mode you want to use, like `.env.production` or `.env.development`. **Robo** will automatically load the correct file based on the mode you're running.
+
+```bash title=".env.production"
+EXAMPLE_VARIABLE="Hello, production!"
+```
+
+```bash title=".env.development"
+EXAMPLE_VARIABLE="Hello, development!"
+```
+
+Depending on if you ran `robo dev` or `robo start`, you'll see different output.
+
+```javascript title="/src/commands/secret.js"
+export default () => {
+	return process.env.EXAMPLE_VARIABLE ?? 'No secret found!'
+}
+```
+
+<CardContainer>
+	<Card href="../robojs/mode" title="🎭 Mode" description="Define profiles for your Robo session." />
+</CardContainer>
+
+## Env API
+
+**Robo.js** manages your **Environment Variables** automatically, but it also exports an API for you to use.
+
+```javascript
+import { Env } from 'robo.js'
+```
+
+### Loading Variables
+
+**Robo.js** automatically loads your `.env` file when your project starts. Access these in your code using `process.env`.
+
+```javascript title="/src/events/_start.js"
+export default () => {
+	// This is EXAMPLE_VARIABLE in your .env file
+	console.log(process.env.EXAMPLE_VARIABLE)
+}
+```
+
+You can load your `.env` file manually using the **Env** API.
+
+```javascript title="/src/events/_start.js"
+import { Env } from 'robo.js'
+
+export default async () => {
+	// Load the .env file
+	await Env.load()
+
+	// Can also be done as a blocking operation
+	Env.loadSync()
+
+	// This is EXAMPLE_VARIABLE in your .env file
+	console.log(process.env.EXAMPLE_VARIABLE)
+
+	// See only your Robo's loaded variables (ignores system ones)
+	console.log(Env.data())
+}
+```
+
+You can change default behavior by passing an options object to `load()` or `loadSync()`.
+
+```javascript title="/src/events/_start.js"
+await Env.load({
+	// The mode to load environment variables for
+	mode: 'production',
+
+	// Whether to overwrite existing environment variables
+	// Can be a boolean or an array of keys to overwrite
+	overwrite: true,
+
+	// The path to the environment file. Defaults to `.env`
+	path: '/path/to/.env'
+})
+```
+
+Both `load()` and `loadSync()` modify `process.env` directly, so you can access the variables anywhere in your project, and they return an object with the loaded variables.
+
+Again, **Robo** already does this for you, so you don't need to worry about it unless you want to customize the behavior.
+
+### Schema Builder
+
+We find keeping track of every time we use `process.env` in our code to be a chore, so we built `Env` to help with that.
+
+```javascript
+import { Env } from 'robo.js'
+
+const env = new Env({
+	discord: {
+		clientId: {
+			env: 'DISCORD_CLIENT_ID'
+		},
+		token: {
+			env: 'DISCORD_TOKEN'
+		}
+	},
+	example: {
+		default: 'Nothing to see here',
+		env: 'EXAMPLE_VARIABLE'
+	}
+})
+```
+
+This creates a schema for the **Environment Variables** you want organized.
+
+```javascript
+// Use `get()` to access your variables
+console.log(env.get('example'))
+
+// Use dot notation for nested variables
+console.log(env.get('discord.clientId'))
+
+// Thanks to defaults, you can safely access variables
+// `env.get('discord.clientId')` is the same as this, just cleaner
+console.log(process.env.DISCORD_CLIENT_ID ?? 'Nothing to see here')
+```
+
+Now you can rename or reorganize your `.env` file without breaking your code as you now update it in one place.
+
+Plus, you get type checking with **[TypeScript](/robojs/typescript)**!
+
+<CardContainer>
+	<Card href="../robojs/typescript" title="📘 TypeScript" description="Write better code with type safety." />
+</CardContainer>

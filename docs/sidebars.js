@@ -53,6 +53,7 @@ const sidebars = {
 					type: 'doc'
 				},
 				'robojs/config',
+				'robojs/environment-variables',
 				'robojs/flashcore',
 				{
 					id: 'robojs/internals',
