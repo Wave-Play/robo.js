@@ -9,6 +9,7 @@ import { loadConfig } from '../../core/config.js'
 import { Flashcore, prepareFlashcore } from '../../core/flashcore.js'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
+import type { PackageJson } from '../../index.js'
 
 const command = new Command('sync')
 	.description('Syncs the Robo with the latest plugins and configurations')
@@ -35,7 +36,7 @@ async function syncAction(_args: string[], options: SyncCommandOptions) {
 	logger.debug(`Current working directory:`, process.cwd())
 
 	// Get project package.json to read dependencies from
-	let roboPackageJson
+	let roboPackageJson: PackageJson
 
 	try {
 		roboPackageJson = await getRoboPackageJson()

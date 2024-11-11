@@ -9,7 +9,7 @@ interface EnvVariable {
 	default?: string
 }
 
-interface LoadOptions {
+export interface LoadOptions {
 	/**
 	 * The mode to load environment variables for.
 	 */
@@ -55,6 +55,13 @@ let _globalOverwrites: string[] = []
 /**
  * Represents an environment variable schema. Can also be used to load environment variables from a file.
  *
+ * ```ts
+ * import { Env } from 'robo'
+ *
+ * Env.loadSync({ mode: 'dev' })
+ * Env.data().NODE_ENV // 'development'
+ * ```
+ *
  * Learn more:
  * **[Environment Variables](https://robojs.dev/robojs/environment-variables)**
  */
@@ -62,6 +69,27 @@ export class Env<T> {
 	private _variables: T
 	private static _data: Record<string, string>
 
+	/**
+	 * Creates a new instance of the Env class with the specified schema with type-checking and default values.
+	 *
+	 * ```ts
+	 * const env = new Env({
+	 * 	discord: {
+	 *  	clientId: { env: 'DISCORD_CLIENT_ID' }
+	 * 	},
+	 * 	example: {
+	 * 		default: 'This is an example',
+	 * 		env: 'EXAMPLE_ENV'
+	 * 	},
+	 * 	nodeEnv: { env: 'NODE_ENV' }
+	 * })
+	 *
+	 * // Returns the value of the DISCORD_CLIENT_ID environment variable
+	 * env.get('discord.clientId')
+	 * ```
+	 *
+	 * @param schema - The schema of environment variables to use for type-checking and default values.
+	 */
 	constructor(schema: T) {
 		this._variables = schema
 	}
@@ -103,6 +131,9 @@ export class Env<T> {
 		throw new Error(`Invalid schema configuration for key: ${key}`)
 	}
 
+	/**
+	 * @returns The environment variables that have been loaded most recently.
+	 */
 	public static data() {
 		return this._data
 	}
@@ -130,7 +161,7 @@ export class Env<T> {
 	/**
 	 * Loads environment variables from a file and applies them to the current process.
 	 *
-	 * **This operation is synchronous and will block the event loop.** Use `Env.load` for asynchronous loading.
+	 * **This operation is synchronous and will block the event loop.** Use {@link load} for asynchronous loading.
 	 *
 	 * @param options - Customize where the file path, mode, and overwrite behavior.
 	 * @returns Record object containing loaded environment variables.
