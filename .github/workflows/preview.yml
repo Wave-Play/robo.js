@@ -33,4 +33,4 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - run: pnpx pkg-pr-new publish --compact './packages/*'
+      - run: pnpx pkg-pr-new publish './packages/*'
