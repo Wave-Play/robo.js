@@ -12,6 +12,9 @@ interface FlashcoreOptions {
 	namespace?: string | Array<string>
 }
 
+/**
+ * Built-in database for storing key-value pairs.
+ */
 export const Flashcore = {
 	/**
 	 * Clears all key-value pairs from the store.

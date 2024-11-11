@@ -2,7 +2,7 @@
 	"name": "robo.js",
 	"version": "0.10.24",
 	"private": false,
-	"description": "Power up Discord with effortless activities, bots, web servers, and more!",
+	"description": "The Discord Framework - activities, bots, web servers, and more!",
 	"keywords": [
 		"discord",
 		"bot",

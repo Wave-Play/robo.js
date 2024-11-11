@@ -104,7 +104,7 @@ export async function traverse(
 							// Necessary to ensure "/index.js" imports compile correctly in Linux
 							resolveFully: true
 						},
-						sourceMaps: env('nodeEnv') === 'production' ? false : 'inline',
+						sourceMaps: env.get('nodeEnv') === 'production' ? false : 'inline',
 						jsc: {
 							target: 'esnext',
 							baseUrl: options.baseUrl,

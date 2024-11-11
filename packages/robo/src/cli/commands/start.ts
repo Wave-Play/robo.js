@@ -5,7 +5,7 @@ import { logger } from '../../core/logger.js'
 import { hasFilesRecursively } from '../utils/fs-helper.js'
 import { color, composeColors } from '../../core/color.js'
 import { loadConfig } from '../../core/config.js'
-import { loadEnv } from '../../core/dotenv.js'
+import { Env } from '../../core/env.js'
 import { Mode, setMode } from '../../core/mode.js'
 import { Indent } from '../../core/constants.js'
 
@@ -39,7 +39,7 @@ async function startAction(_args: string[], options: StartCommandOptions) {
 
 	// Make sure environment variables are loaded
 	const defaultMode = Mode.get()
-	await loadEnv({ mode: defaultMode })
+	await Env.load({ mode: defaultMode })
 
 	// Handle mode(s)
 	const { shardModes } = setMode(options.mode)
@@ -54,17 +54,6 @@ async function startAction(_args: string[], options: StartCommandOptions) {
 	logger.log(Indent, color.bold(`🚀 Starting ${color.cyan(projectName)} in ${Mode.color(Mode.get())} mode`))
 	logger.log(Indent, '   Boop beep... Powering on your Robo creation! Need hosting? Check out RoboPlay!')
 	logger.log('')
-
-	// Check if .robo/build directory has .js files (recursively)
-	if (!(await hasFilesRecursively(path.join('.robo', 'build')))) {
-		logger.error(
-			`No production build found. Make sure to compile your Robo using ${composeColors(
-				color.bold,
-				color.blue
-			)('"robo build"')} first.`
-		)
-		process.exit(1)
-	}
 
 	// Check if .robo/manifest.json is missing
 	try {
@@ -89,6 +78,20 @@ async function startAction(_args: string[], options: StartCommandOptions) {
 	if (experimentalKeys.length > 0) {
 		const features = experimentalKeys.map((key) => color.bold(key)).join(', ')
 		logger.warn(`Experimental flags enabled: ${features}.`)
+	}
+
+	// Check if the User has a custom build directory else set the default
+	const buildDirectory = config.experimental?.buildDirectory ?? path.join('.robo', 'build')
+
+	// Check if .robo/build directory has .js files (recursively)
+	if (!(await hasFilesRecursively(path.join(buildDirectory)))) {
+		logger.error(
+			`No production build found. Make sure to compile your Robo using ${composeColors(
+				color.bold,
+				color.blue
+			)('"robo build"')} first.`
+		)
+		process.exit(1)
 	}
 
 	// Start Roboooooooo!! :D (dynamic to avoid premature process hooks)

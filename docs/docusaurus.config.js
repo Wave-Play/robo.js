@@ -14,7 +14,7 @@ const config = {
 	favicon: 'img/favicon.ico',
 
 	// Set the production url of your site here
-	url: 'https://docs.roboplay.dev',
+	url: 'https://robojs.dev',
 	// Set the /<baseUrl>/ pathname under which your site is served
 	// For GitHub pages deployment, it is often '/<projectName>/'
 	baseUrl: '/',
@@ -40,6 +40,10 @@ const config = {
 			'@docusaurus/plugin-client-redirects',
 			{
 				redirects: [
+					{
+						from: '/',
+						to: '/getting-started'
+					},
 					{
 						from: '/docs/getting-started',
 						to: '/getting-started'
@@ -157,6 +161,10 @@ const config = {
 						to: '/plugins/overview'
 					},
 					{
+						from: '/plugins',
+						to: '/plugins/directory'
+					},
+					{
 						from: '/templates',
 						to: '/templates/overview'
 					},
@@ -190,6 +198,7 @@ const config = {
 
 					// Templates
 					'templates/discord-activities/2d-game/README.md',
+					'templates/discord-activities/godot/README.md',
 					'templates/discord-activities/react-colyseus-ts/README.md',
 					'templates/discord-activities/react-js/README.md',
 					'templates/discord-activities/react-multiplayer-video-ts/README.md',
@@ -352,6 +361,26 @@ const config = {
 
 					return undefined
 				}
+			}
+		],
+		[
+			'docusaurus-plugin-typedoc',
+			{
+				entryPoints: ['../packages/robo/src/index.ts'],
+				out: 'docs/ref/framework',
+				tsconfig: '../packages/robo/tsconfig.json',
+				useCodeBlocks: true,
+				disableSources: true,
+				entryFileName: '_index',
+				flattenOutputFiles: true,
+				readme: 'none',
+				interfacePropertiesFormat: 'table',
+				skipErrorChecking: true,
+				classPropertiesFormat: 'table',
+				enumMembersFormat: 'table',
+				parametersFormat: 'table',
+				typeDeclarationFormat: 'table',
+				propertyMembersFormat: 'table'
 			}
 		]
 	],
