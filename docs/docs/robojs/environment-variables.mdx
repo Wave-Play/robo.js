@@ -4,15 +4,15 @@ import { Terminal } from '@site/src/components/shared/Terminal'
 
 # 🔑 Environment Variables
 
-Sometimes you may need to store sensitive information, such as API keys, database URLs, or **[Discord Credentials](#)**. Hardcoding these values in your source code is a bad idea, as they can be easily exposed.
+Sometimes you need to store sensitive information, like API keys, database URLs, or **[Discord Credentials](#)**.
 
-**Environment Variables** provide a way to store these values outside of your codebase. They're loaded into your project when it starts, and are less likely to be exposed accidentally.
+**Environment Variables** store these values outside of your codebase. They're loaded into your project when it starts, and are less likely to be exposed accidentally. Hardcoding them is a bad idea, as they risk being leaked.
 
 ## Standard File
 
-**Robo** projects typically use a file called `.env`. This file is in the root of your project and can be used to store sensitive information.
+**Robo** projects use a file called `.env`. This file is in the root of your project and can be used to store sensitive information.
 
-Here's an example of what it might look like:
+Here's what it may look like:
 
 ```bash title=".env"
 # Discord Credentials
@@ -23,7 +23,7 @@ DISCORD_TOKEN="your_bot_token"
 EXAMPLE_VARIABLE="Sshh, this is a secret!"
 ```
 
-Variables are stored as key-value pairs, separated by an equals sign (`=`). The key is the name of the variable, and the value is the sensitive information. You can then access these values in your code using `process.env`.
+Variables are stored as key-value pairs, separated by an equals sign (`=`). The key is the name of the variable, and the value is the sensitive information. Access these values in your code using `process.env`.
 
 ```javascript title="/src/commands/secret.js"
 export default () => {
@@ -48,11 +48,11 @@ Here's a few reasons why they're a good idea:
 - **Isolation**: Sensitive information is kept separate from your code, reducing the risk of accidental leaks.
 - **Version Control**: You can exclude `.env` from your version control system like **[GitHub](https://github.com)**.
 
-For those using **Git**, rest assured that **Robo** projects follow best practices out of the box with `.gitignore`.
+For those using **Git**, know that **Robo** comes with an optimized `.gitignore`.
 
 :::tip
 
-**[Doppler](https://www.doppler.com)** is awesome at managing your environment variables. It provides a secure way to store and manage your secrets. It's also great for teams, as it allows you to share secrets securely.
+**[Doppler](https://www.doppler.com)** provides a secure way to store and manage your secrets. It's awesome for sharing with teams.
 
 :::
 
@@ -63,10 +63,12 @@ Complex projects may want to use different environment variables for different c
 Suffix your `.env` file with the mode you want to use, like `.env.production` or `.env.development`. **Robo** will automatically load the correct file based on the mode you're running.
 
 ```bash title=".env.production"
+DEBUG_STUFF="false"
 EXAMPLE_VARIABLE="Hello, production!"
 ```
 
 ```bash title=".env.development"
+DEBUG_STUFF="true"
 EXAMPLE_VARIABLE="Hello, development!"
 ```
 
@@ -84,11 +86,18 @@ export default () => {
 
 ## Env API
 
-**Robo.js** manages your **Environment Variables** automatically, but it also exports an API for you to use.
+Although **Robo.js** manages your **Environment Variables** automatically, it also exports an API for more control.
 
 ```javascript
 import { Env } from 'robo.js'
 ```
+
+| Method       | Description                         |
+| ------------ | ----------------------------------- |
+| Constructor  | Creates a structured schema.         |
+| `load()`     | Load the `.env` file.               |
+| `loadSync()` | Load the `.env` file synchronously. |
+| `data()`     | Get all loaded variables.           |
 
 ### Loading Variables
 
@@ -121,7 +130,7 @@ export default async () => {
 }
 ```
 
-You can change default behavior by passing an options object to `load()` or `loadSync()`.
+Change default behavior by passing an options object.
 
 ```javascript title="/src/events/_start.js"
 await Env.load({
