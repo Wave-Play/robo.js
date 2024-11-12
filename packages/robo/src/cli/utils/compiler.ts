@@ -55,10 +55,9 @@ export async function traverse(
 	distDir: string,
 	options: BuildCodeOptions,
 	compilerOptions: CompilerOptions,
-	transform: typeof SwcTransform,
-	ext: string = '.js'
+	transform: typeof SwcTransform
 ) {
-	const { excludePaths = [], parallel = 20 } = options
+	const { distExt = '.js', excludePaths = [], parallel = 20, srcDir = SrcDir } = options
 	const isIncremental = options.files?.length > 0
 
 	// Read directory contents
@@ -87,7 +86,7 @@ export async function traverse(
 
 		// Recursively traverse subdirectories, only if no files are specified
 		if (stat.isDirectory() && !isIncremental) {
-			tasks.push(traverse(filePath, distDir, options, compilerOptions, transform, ext))
+			tasks.push(traverse(filePath, distDir, options, compilerOptions, transform))
 		} else if (/\.(js|ts|tsx)$/.test(file) && !excludePaths.some((p) => relativePath.startsWith(p))) {
 			// Queue up a task to transform the file
 			tasks.push(
@@ -124,7 +123,7 @@ export async function traverse(
 					})
 
 					// Write transformed code to destination directory
-					const distPath = path.join(distDir, path.relative(SrcDir, filePath.replace(/\.(js|ts|tsx)$/, ext)))
+					const distPath = path.join(distDir, path.relative(srcDir, filePath.replace(/\.(js|ts|tsx)$/, distExt)))
 					await fs.mkdir(path.dirname(distPath), { recursive: true })
 					await fs.writeFile(distPath, compileResult.code)
 				})()
@@ -143,15 +142,19 @@ export async function traverse(
 
 interface BuildCodeOptions {
 	baseUrl?: string
+	clean?: boolean
 	distDir?: string
+	distExt?: string
 	excludePaths?: string[]
 	files?: string[]
 	parallel?: number
 	paths?: Record<string, string[]>
 	plugin?: boolean
+	srcDir?: string
 }
 
 async function buildCode(options?: BuildCodeOptions) {
+	const { clean = true, srcDir = SrcDir } = options ?? {}
 	const startTime = Date.now()
 	const distDir = options.distDir
 		? path.join(process.cwd(), options.distDir)
@@ -164,21 +167,23 @@ async function buildCode(options?: BuildCodeOptions) {
 
 	// Just copy the source directory if not a Typescript project
 	if (!Compiler.isTypescriptProject()) {
-		await fs.rm(distDir, { recursive: true, force: true })
+		if (clean) {
+			await fs.rm(distDir, { recursive: true, force: true })
+		}
 		logger.debug(`Not a TypeScript project. Copying source without compiling...`)
-		await copyDir(SrcDir, distDir, [], options.excludePaths ?? [])
+		await copyDir(srcDir, distDir, [], options.excludePaths ?? [])
 
 		return Date.now() - startTime
 	}
 
 	// Clear the destination directory before compiling if not an incremental build
-	if (!options?.files?.length) {
+	if (clean && !options?.files?.length) {
 		logger.debug(`Cleaning ${distDir}...`)
 		await fs.rm(distDir, { recursive: true, force: true })
 	}
 
 	// Traverse the source directory and transform files
-	logger.debug(`Compiling ${SrcDir} to ${distDir}...`)
+	logger.debug(`Compiling ${srcDir} to ${distDir}...`)
 	const tsOptions = await getTypeScriptCompilerOptions()
 	const baseUrl = tsOptions.baseUrl ?? process.cwd()
 	const compileOptions = {
@@ -188,12 +193,12 @@ async function buildCode(options?: BuildCodeOptions) {
 	}
 	logger.debug(`Compiler options:`, compileOptions)
 
-	await traverse(SrcDir, distDir, compileOptions, tsOptions, transform)
+	await traverse(srcDir, distDir, compileOptions, tsOptions, transform)
 	await fs.rm(path.join(process.cwd(), '.swc'), { recursive: true, force: true })
 
 	// Copy any non-TypeScript files to the destination directory
-	logger.debug(`Copying additional non-TypeScript files from ${SrcDir} to ${distDir}...`)
-	await copyDir(SrcDir, distDir, ['.ts', '.tsx'], options.excludePaths ?? [])
+	logger.debug(`Copying additional non-TypeScript files from ${srcDir} to ${distDir}...`)
+	await copyDir(srcDir, distDir, ['.ts', '.tsx'], options.excludePaths ?? [])
 
 	// Generate declaration files for plugins
 	if (options?.plugin) {

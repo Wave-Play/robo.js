@@ -4,7 +4,7 @@ import fs, { existsSync } from 'node:fs'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { Mode } from './mode.js'
-import { traverse, transform } from '../cli/utils/compiler.js'
+import { Compiler } from '../cli/utils/compiler.js'
 
 // Global config reference
 let _config: Config = null
@@ -65,14 +65,17 @@ export async function loadConfig(file = 'robo'): Promise<Config> {
 /**
  * Looks for the config file in the current project.
  * Will look for the following files in order:
+ * - config/robo.ts
  * - config/robo.mjs
  * - config/robo.cjs
  * - config/robo.json
+ * - .config/robo.ts
  * - .config/robo.mjs
  * - .config/robo.cjs
  * - .config/robo.json
  *
  * If a mode is set, it will prioritize the mode-specific config file.
+ * - config/robo.{mode}.ts
  * - config/robo.{mode}.mjs
  * - config/robo.{mode}.cjs
  * - config/robo.{mode}.json
@@ -81,7 +84,7 @@ export async function loadConfig(file = 'robo'): Promise<Config> {
  * @returns The path to the config file, or null if it could not be found.
  */
 export async function loadConfigPath(file = 'robo'): Promise<string> {
-	const extensions = ['.mjs', '.cjs', '.json', '.ts']
+	const extensions = ['.ts', '.mjs', '.cjs', '.json']
 	const prefixes = ['config', '.config']
 
 	for (const prefix of prefixes) {
@@ -202,19 +205,16 @@ async function readConfig<T = unknown>(configPath: string): Promise<T> {
 			const pluginConfig = JSON.parse(rawData)
 			return pluginConfig ?? {}
 		} else if (configPath.endsWith('.ts')) {
+			logger.debug('Compiling TypeScript config...')
 			const configDir = path.dirname(configPath)
-			logger.debug('Found typescript config')
-			await traverse(
-				configDir,
-				'.robo/config',
-				{
-					files: [configPath.replace(process.cwd(), '')],
-					parallel: 1
-				},
-				{},
-				transform,
-				'.mjs'
-			)
+			await Compiler.buildCode({
+				clean: false,
+				distDir: path.join('.robo', 'config'),
+				distExt: '.mjs',
+				files: [configPath.replace(process.cwd(), '')],
+				parallel: 1,
+				srcDir: configDir
+			})
 			const jsConfigPath = path.join(
 				process.cwd(),
 				'.robo',
