@@ -10,6 +10,7 @@ import { exec } from '../utils/utils.js'
 import { getPackageManager } from '../utils/runtime-utils.js'
 import { Spinner } from '../utils/spinner.js'
 import { Compiler } from '../utils/compiler.js'
+import { existsSync } from 'node:fs'
 
 const require = createRequire(import.meta.url)
 
@@ -115,16 +116,29 @@ export async function removeAction(packages: string[], options: RemoveCommandOpt
 /**
  * Deletes the config file for a plugin in the config/plugins directory.
  *
- * @param pluginName The name of the plugin (e.g. @roboplay/plugin-ai)
+ * @param pluginName The name of the plugin (e.g. @robojs/ai)
  */
 async function removePluginConfig(pluginName: string) {
-	const pluginParts = pluginName.replace(/^@/, '').split('/')
+	try {
+		const pluginParts = pluginName.replace(/^@/, '').split('/')
 
-	// Remove plugin config file
-	const pluginPath =
-		path.join(process.cwd(), 'config', 'plugins', ...pluginParts) + (Compiler.isTypescriptProject() ? '.ts' : '.mjs')
-	logger.debug(`Deleting ${pluginName} config from ${pluginPath}...`)
-	await fs.rm(pluginPath, {
-		force: true
-	})
+		// Remove plugin config file
+		const pluginJs = path.join(process.cwd(), 'config', 'plugins', ...pluginParts) + '.mjs'
+		const pluginTs = path.join(process.cwd(), 'config', 'plugins', ...pluginParts) + '.ts'
+
+		if (existsSync(pluginJs)) {
+			logger.debug(`Deleting ${pluginName} config from ${pluginJs}...`)
+			await fs.rm(pluginJs, {
+				force: true
+			})
+		}
+		if (existsSync(pluginTs)) {
+			logger.debug(`Deleting ${pluginName} config from ${pluginTs}...`)
+			await fs.rm(pluginTs, {
+				force: true
+			})
+		}
+	} catch (error) {
+		logger.error(`Failed to remove plugin config:`, error)
+	}
 }
