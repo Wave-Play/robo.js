@@ -213,6 +213,7 @@ async function readConfig<T = unknown>(configPath: string, compile = false): Pro
 				logger.debug('Compiling TypeScript config...')
 				await Compiler.buildCode({
 					clean: false,
+					copyOther: false,
 					distDir: path.join('.robo', 'config'),
 					distExt: '.mjs',
 					files: [configPath.replace(process.cwd(), '')],

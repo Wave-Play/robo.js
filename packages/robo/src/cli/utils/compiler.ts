@@ -143,6 +143,7 @@ export async function traverse(
 interface BuildCodeOptions {
 	baseUrl?: string
 	clean?: boolean
+	copyOther?: boolean
 	distDir?: string
 	distExt?: string
 	excludePaths?: string[]
@@ -154,7 +155,7 @@ interface BuildCodeOptions {
 }
 
 async function buildCode(options?: BuildCodeOptions) {
-	const { clean = true, srcDir = SrcDir } = options ?? {}
+	const { clean = true, copyOther = true, srcDir = SrcDir } = options ?? {}
 	const startTime = Date.now()
 	const distDir = options.distDir
 		? path.join(process.cwd(), options.distDir)
@@ -197,8 +198,10 @@ async function buildCode(options?: BuildCodeOptions) {
 	await fs.rm(path.join(process.cwd(), '.swc'), { recursive: true, force: true })
 
 	// Copy any non-TypeScript files to the destination directory
-	logger.debug(`Copying additional non-TypeScript files from ${srcDir} to ${distDir}...`)
-	await copyDir(srcDir, distDir, ['.ts', '.tsx'], options.excludePaths ?? [])
+	if (copyOther) {
+		logger.debug(`Copying additional non-TypeScript files from ${srcDir} to ${distDir}...`)
+		await copyDir(srcDir, distDir, ['.ts', '.tsx'], options.excludePaths ?? [])
+	}
 
 	// Generate declaration files for plugins
 	if (options?.plugin) {
