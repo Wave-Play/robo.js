@@ -6,7 +6,7 @@ import { loadConfig } from '../../core/config.js'
 import { logger } from '../../core/logger.js'
 import { Command } from '../utils/cli-handler.js'
 import { createRequire } from 'node:module'
-import { PackageDir, exec, isTypescriptEnabled } from '../utils/utils.js'
+import { PackageDir, exec } from '../utils/utils.js'
 import { getPackageExecutor, getPackageManager } from '../utils/runtime-utils.js'
 import { Compiler } from '../utils/compiler.js'
 import { Spinner } from '../utils/spinner.js'
@@ -223,7 +223,7 @@ async function createPluginConfig(pluginName: string, config: Record<string, unk
 
 	// Normalize plugin path
 	const pluginPath =
-		path.join(process.cwd(), 'config', 'plugins', ...pluginParts) + ((await isTypescriptEnabled()) ? '.ts' : '.mjs')
+		path.join(process.cwd(), 'config', 'plugins', ...pluginParts) + (Compiler.isTypescriptProject() ? '.ts' : '.mjs')
 	const pluginConfig = JSON.stringify(config) + '\n'
 
 	logger.debug(`Writing ${pluginName} config to ${pluginPath}...`)

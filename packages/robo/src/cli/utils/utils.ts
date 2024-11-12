@@ -1,5 +1,5 @@
 import { color } from '../../core/color.js'
-import fs, { readFile } from 'node:fs/promises'
+import fs from 'node:fs/promises'
 import { DEFAULT_CONFIG } from '../../core/constants.js'
 import { CommandConfig, Config, SageOptions } from '../../types/index.js'
 import { getConfig } from '../../core/config.js'
@@ -453,12 +453,4 @@ export default function pLimit<T extends unknown[]>(
 	})
 
 	return generator
-}
-
-export const isTypescriptEnabled = async (): Promise<boolean> => {
-	const packageJsonPath = path.join(process.cwd(), 'package.json')
-	const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf-8'))
-	const isTs = packageJson?.keywords?.includes('typescript') ?? false
-	logger.debug('Is Typescript Enabled:- ', isTs)
-	return isTs
 }

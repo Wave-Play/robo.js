@@ -1,10 +1,10 @@
 import { hasDependency } from './runtime-utils.js'
+import { Compiler } from './compiler.js'
 import { logger } from '../../core/logger.js'
 import { cpSync, existsSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
 import path from 'node:path'
 import type { ConfigEnv, UserConfig } from 'vite'
-import { isTypescriptEnabled } from './utils.js'
 
 const PublicPath = path.join(process.cwd(), 'public')
 const PublicBuildPath = path.join(process.cwd(), '.robo', 'public')
@@ -52,10 +52,10 @@ export async function buildVite() {
 		mode: 'production'
 	}
 
-	const configPath = path.join(process.cwd(), 'config', `vite.${(await isTypescriptEnabled()) ? 'ts' : 'mjs'}`)
+	const configPath = path.join(process.cwd(), 'config', `vite.${Compiler.isTypescriptProject() ? 'ts' : 'mjs'}`)
 	if (existsSync(configPath)) {
 		config = (await loadConfigFromFile(configEnv, configPath))?.config
-	} else if (existsSync(path.join(process.cwd(), `vite.config.${(await isTypescriptEnabled()) ? 'ts' : 'js'}`))) {
+	} else if (existsSync(path.join(process.cwd(), `vite.config.${Compiler.isTypescriptProject() ? 'ts' : 'js'}`))) {
 		config = (await loadConfigFromFile(configEnv))?.config
 	} else {
 		logger.debug('No Vite config found. Skipping...')
