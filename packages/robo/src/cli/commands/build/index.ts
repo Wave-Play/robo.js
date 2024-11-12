@@ -97,7 +97,7 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 			`The ${color.bold('.config')} directory is deprecated. Use ${color.bold('config')} instead. (without the dot)`
 		)
 	}
-	const config = await loadConfig()
+	const config = await loadConfig('robo', true)
 	if (!config) {
 		logger.warn(`Could not find configuration file.`)
 	}

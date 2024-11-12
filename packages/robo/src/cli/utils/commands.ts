@@ -312,7 +312,7 @@ export async function registerCommands(
 	addedContextCommands: string[],
 	removedContextCommands: string[]
 ) {
-	const config = await loadConfig()
+	const config = await loadConfig('robo', true)
 	const clientId = env.get('discord.clientId')
 	const guildId = env.get('discord.guildId')
 	const token = env.get('discord.token')
