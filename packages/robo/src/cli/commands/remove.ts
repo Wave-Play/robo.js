@@ -45,7 +45,7 @@ export async function removeAction(packages: string[], options: RemoveCommandOpt
 	}
 
 	// Check which plugin packages are already registered
-	const config = await loadConfig()
+	const config = await loadConfig('robo', true)
 	const pendingRegistration = packages.filter((pkg) => {
 		return (
 			options.force || config.plugins?.includes(pkg) || config.plugins?.find((p) => Array.isArray(p) && p[0] === pkg)

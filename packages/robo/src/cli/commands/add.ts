@@ -64,7 +64,7 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
 	}
 
 	// Check which plugin packages are already registered
-	const config = await loadConfig()
+	const config = await loadConfig('robo', true)
 	const nameMap: Record<string, string> = {}
 	const pendingRegistration = await Promise.all(
 		packages

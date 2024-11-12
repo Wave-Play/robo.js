@@ -60,7 +60,7 @@ async function pluginAction(_args: string[], options: PluginCommandOptions) {
 	}
 
 	const startTime = Date.now()
-	const config = await loadConfig()
+	const config = await loadConfig('robo', true)
 
 	// Run the Robo Compiler
 	const { Compiler } = await import('../../utils/compiler.js')

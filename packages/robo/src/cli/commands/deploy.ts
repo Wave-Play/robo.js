@@ -68,7 +68,7 @@ async function deployAction(_args: string[], options: DeployCommandOptions) {
 	}
 
 	// Sorry, only bots are supported right now!
-	const config = await loadConfig()
+	const config = await loadConfig('robo', true)
 
 	if (config.experimental?.disableBot) {
 		logger.warn('Sorry, only bots are supported right now!')

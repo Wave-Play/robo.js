@@ -71,7 +71,7 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 	logger.log('')
 
 	// Load the configuration before anything else
-	const config = await loadConfig()
+	const config = await loadConfig('robo', true)
 	const configPath = await loadConfigPath()
 	let configRelative: string
 
