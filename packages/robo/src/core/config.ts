@@ -214,7 +214,7 @@ async function readConfig<T = unknown>(configPath: string, compile = false): Pro
 				await Compiler.buildCode({
 					clean: false,
 					copyOther: false,
-					distDir: path.join('.robo', 'config'),
+					distDir: path.join('.robo', path.relative(process.cwd(), configDir)),
 					distExt: '.mjs',
 					files: [configPath.replace(process.cwd(), '')],
 					parallel: 1,
