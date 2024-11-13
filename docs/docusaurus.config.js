@@ -293,7 +293,8 @@ const config = {
 						// Add copy disclaimer at the end of the content
 						const head = `import { Card } from '@site/src/components/shared/Card'\nimport { CardContainer } from '@site/src/components/shared/CardContainer'\nimport { Terminal } from '@site/src/components/shared/Terminal'\n\n`
 						const linkUrl = 'https://github.com/Wave-Play/robo.js/tree/main/' + filename.replace('/README.md', '')
-						const link = `\n\n## More on GitHub\n\n<CardContainer><Card href="${linkUrl}" title="🔗 GitHub Repository" description="Explore source code on GitHub."/></CardContainer>\n`
+						const refUrl = '/ref/framework'
+						const link = `\n\n## More on GitHub\n\n<CardContainer><Card href="${linkUrl}" title="🔗 GitHub Repository" description="Explore source code on GitHub."/><Card href="${refUrl}" title="🔗 API Reference" description="Check out the entire API."/></CardContainer>\n`
 						newContent = head + newContent + link
 
 						return {
@@ -325,7 +326,8 @@ const config = {
 						// Add copy disclaimer at the end of the content
 						const head = `import { Card } from '@site/src/components/shared/Card'\nimport { CardContainer } from '@site/src/components/shared/CardContainer'\nimport { Terminal } from '@site/src/components/shared/Terminal'\n\n`
 						const linkUrl = 'https://github.com/Wave-Play/robo.js/tree/main/' + filename.replace('/README.md', '')
-						const link = `\n\n## More on GitHub\n\n<CardContainer><Card href="${linkUrl}" title="🔗 GitHub Repository" description="Explore source code on GitHub."/></CardContainer>\n`
+						const refUrl = '/ref/framework'
+						const link = `\n\n## More on GitHub\n\n<CardContainer><Card href="${linkUrl}" title="🔗 GitHub Repository" description="Explore source code on GitHub."/><Card href="${refUrl}" title="🔗 API Reference" description="Check out the entire API."/></CardContainer>\n`
 						newContent = head + newContent + link
 
 						return {
@@ -590,6 +592,7 @@ const config = {
 					{ to: '/hosting/overview', label: 'Hosting', position: 'left' },
 					{ to: '/playground', label: 'Playground', position: 'left' },
 					{ to: '/plugins/directory', label: 'Plugins', position: 'left' },
+					{ to: '/ref/framework', label: 'Reference', position: 'left' },
 					{ to: '/templates/overview', label: 'Templates', position: 'left' },
 					{
 						href: 'https://dev.to/waveplay',
