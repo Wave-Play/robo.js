@@ -1,7 +1,8 @@
-import { ChatInputCommandInteraction, GuildMember, Role } from "discord.js"
-import { Flashcore, } from "robo.js"
+import { ChatInputCommandInteraction, GuildMember } from 'discord.js'
+import { createCommandConfig, Flashcore } from 'robo.js'
+import type { CommandOptions } from 'robo.js'
 
-export const config = {
+export const config = createCommandConfig({
 	description: `set the role members will be given afte accepting the rules`,
 	options: [
 		{
@@ -11,20 +12,22 @@ export const config = {
 			required: true
 		}
 	]
-}
+} as const)
 
-export default async (interaction: ChatInputCommandInteraction) => {
-    if (!interaction.guild) return;
-    
-    const member = interaction.member as GuildMember;
+export default async (interaction: ChatInputCommandInteraction, options: CommandOptions<typeof config>) => {
+	const { role } = options
+	if (!interaction.guild) {
+		return
+	}
 
-    if (!member.permissions.has('Administrator')) {
-        return('You dont have administrator permission');
-    }
+	const member = interaction.member as GuildMember
+	if (!member.permissions.has('Administrator')) {
+		return {
+			content: 'You dont have administrator permission',
+			ephemeral: true
+		}
+	}
 
-    const role = interaction.options.get('role') as Role
-
-    await Flashcore.set(`member-role`, `${role.name}`, {namespace: `${interaction.guild.id}`});
-
-    return ({content: `Member role set to ${role.name}`})
+	await Flashcore.set(`member-role`, role.name, { namespace: interaction.guild.id })
+	return { content: `Member role set to ${role.name}` }
 }
