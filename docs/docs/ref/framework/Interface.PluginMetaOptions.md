@@ -2,6 +2,8 @@
 
 ## Properties
 
-| Property | Type |
-| ------ | ------ |
-| `failSafe?` | `boolean` |
+### failSafe?
+
+```ts
+optional failSafe: boolean;
+```

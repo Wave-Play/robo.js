@@ -13,7 +13,20 @@ interface FlashcoreOptions {
 }
 
 /**
- * Built-in database for storing key-value pairs.
+ * Built-in KV database for long-term storage.
+ *
+ * ```ts
+ * import { Flashcore } from 'robo.js'
+ *
+ * await Flashcore.set('key', 'value')
+ * const value = await Flashcore.get('key')
+ * await Flashcore.delete('key')
+ * ```
+ *
+ * Use this to store and retrieve data across sessions. All APIs are asynchronous.
+ * Defaults to file-based storage, but can be configured to use other engines using Keyv adapters.
+ *
+ * [**Learn more:** Flashcore Database](https://robojs.dev/robojs/flashcore)
  */
 export const Flashcore = {
 	/**
@@ -72,6 +85,13 @@ export const Flashcore = {
 		return (Globals.getFlashcoreAdapter().get(key) ?? options?.default) as V
 	},
 
+	/**
+	 * Checks if a key exists in the store.
+	 *
+	 * @param key - The key to check.
+	 * @param options  - Options for the operation.
+	 * @returns - A boolean indicating whether the key exists.
+	 */
 	has: (key: string, options?: FlashcoreOptions): Promise<boolean> | boolean => {
 		if (options?.namespace) {
 			key = `${options.namespace}__${key}`

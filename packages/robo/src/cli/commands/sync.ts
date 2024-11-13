@@ -47,7 +47,7 @@ async function syncAction(_args: string[], options: SyncCommandOptions) {
 	}
 
 	// Check past runs to see if we've already handled these plugins
-	await loadConfig()
+	await loadConfig('robo', true)
 	await prepareFlashcore()
 	const pluginRecord =
 		(await Flashcore.get<Record<string, boolean>>('plugins', {

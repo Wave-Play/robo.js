@@ -22,6 +22,19 @@ import type { HandlerRecord, PluginData } from '../types/index.js'
 import type { AutocompleteInteraction, CommandInteraction } from 'discord.js'
 import { Mode } from './mode.js'
 
+/**
+ * Robo is the main entry point for your bot. It provides a simple API for starting, stopping, and restarting your Robo.
+ *
+ * ```ts
+ * import { Robo } from 'robo.js'
+ *
+ * Robo.start()
+ * ```
+ *
+ * You do not normally need to use this API directly, as the CLI will handle starting and stopping for you.
+ *
+ * [**Learn more:** Robo](https://robojs.dev/discord-bots/migrate)
+ */
 export const Robo = { restart, start, stop }
 
 // Each Robo instance has its own client, exported for convenience
@@ -39,6 +52,12 @@ interface StartOptions {
 	stateLoad?: Promise<void>
 }
 
+/**
+ * Starts your Robo instance. Similar to running `robo start` from the CLI.
+ *
+ * @param options - Options for starting your Robo instance
+ * @returns A promise that resolves when Robo has started
+ */
 async function start(options?: StartOptions) {
 	const { client: optionsClient, shard, stateLoad } = options ?? {}
 
@@ -145,6 +164,11 @@ async function start(options?: StartOptions) {
 	}
 }
 
+/**
+ * Stops your Robo instance gracefully. Similar to pressing `Ctrl+C` in the terminal.
+ *
+ * @param exitCode - The exit code to use when stopping Robo
+ */
 async function stop(exitCode = 0) {
 	try {
 		// Notify lifecycle handler
@@ -163,6 +187,11 @@ async function stop(exitCode = 0) {
 	}
 }
 
+/**
+ * Restarts your Robo instance gracefully. Similar to making changes with `robo dev` and restarting.
+ *
+ * @returns A promise that resolves when Robo has restarted
+ */
 async function restart() {
 	try {
 		// Notify lifecycle handler

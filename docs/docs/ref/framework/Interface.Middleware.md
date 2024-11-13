@@ -2,6 +2,18 @@
 
 ## Properties
 
-| Property | Type |
+### default()
+
+```ts
+default: (data) => void | MiddlewareResult | Promise<MiddlewareResult>;
+```
+
+#### Parameters
+
+| Parameter | Type |
 | ------ | ------ |
-| `default` | (`data`: [`MiddlewareData`](Interface.MiddlewareData.md)) => `void` \| [`MiddlewareResult`](Interface.MiddlewareResult.md) \| `Promise`\<[`MiddlewareResult`](Interface.MiddlewareResult.md)\> |
+| `data` | [`MiddlewareData`](Interface.MiddlewareData.md) |
+
+#### Returns
+
+`void` \| [`MiddlewareResult`](Interface.MiddlewareResult.md) \| `Promise`\<[`MiddlewareResult`](Interface.MiddlewareResult.md)\>

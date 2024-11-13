@@ -53,7 +53,7 @@ type ValueAtPath<T, P extends string> = P extends `${infer Key}.${infer Rest}`
 let _globalOverwrites: string[] = []
 
 /**
- * Represents an environment variable schema. Can also be used to load environment variables from a file.
+ * Sometimes you need to store sensitive information, like API keys, database URLs, or Discord Credentials.
  *
  * ```ts
  * import { Env } from 'robo'
@@ -62,8 +62,9 @@ let _globalOverwrites: string[] = []
  * Env.data().NODE_ENV // 'development'
  * ```
  *
- * Learn more:
- * **[Environment Variables](https://robojs.dev/robojs/environment-variables)**
+ * Use the `Env` class to load environment variables from a file and access them in a type-safe way.
+ *
+ * [**Learn more:** Environment Variables](https://robojs.dev/robojs/environment-variables)
  */
 export class Env<T> {
 	private _variables: T
@@ -75,7 +76,7 @@ export class Env<T> {
 	 * ```ts
 	 * const env = new Env({
 	 * 	discord: {
-	 *  	clientId: { env: 'DISCORD_CLIENT_ID' }
+	 * 		clientId: { env: 'DISCORD_CLIENT_ID' }
 	 * 	},
 	 * 	example: {
 	 * 		default: 'This is an example',

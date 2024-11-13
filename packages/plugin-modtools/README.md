@@ -34,6 +34,10 @@ Utilize these commands for efficient moderation:
 | `/mod setup`   | Initiate and configure your moderation setup.                 |
 | `/mod timeout` | Impose timeouts on members for cooling-off periods.           |
 | `/mod warn`    | Issue warnings to members, adding to their strike count.      |
+| `/mod rules-msg set-rules`    | brings up a modal to add in the embed title, rules(description) and an image url.      |
+| `/mod rules-msg set-member-role`    | set the role of members in the guild, they cant send messages with out this role but they earn this role from the rules accept button. |
+| `/mod rules-msg send`    | sends the rules message with the i accept button to the channel where used.      |
+
 
 ## Context Commands
 
