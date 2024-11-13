@@ -536,7 +536,7 @@ const sidebars = {
 					type: 'doc'
 				},
 				{
-					id: 'ref/@robojs/trpc/Function.httpBatchLink',
+					id: 'ref/@robojs/trpc/Variable.httpBatchLink',
 					label: 'httpBatchLink',
 					type: 'doc'
 				},
