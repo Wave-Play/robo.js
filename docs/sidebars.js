@@ -318,6 +318,11 @@ const sidebars = {
 					id: 'ref/framework/Variable.Robo',
 					label: 'Robo',
 					type: 'doc'
+				},
+				{
+					id: 'ref/framework/Class.State',
+					label: 'State',
+					type: 'doc'
 				}
 			]
 		},

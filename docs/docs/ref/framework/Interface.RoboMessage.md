@@ -6,6 +6,8 @@
 
 ## Properties
 
-| Property | Type |
-| ------ | ------ |
-| `type` | `"ready"` \| `"restart"` \| `"state-load"` \| `"state-save"` |
+### type
+
+```ts
+type: "ready" | "restart" | "state-load" | "state-save";
+```

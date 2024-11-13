@@ -2,7 +2,26 @@
 
 ## Properties
 
-| Property | Type |
+### config?
+
+```ts
+optional config: ContextConfig;
+```
+
+***
+
+### default()
+
+```ts
+default: (...data) => unknown;
+```
+
+#### Parameters
+
+| Parameter | Type |
 | ------ | ------ |
-| `config?` | [`ContextConfig`](Interface.ContextConfig.md) |
-| `default` | (...`data`: `unknown`[]) => `unknown` |
+| ...`data` | `unknown`[] |
+
+#### Returns
+
+`unknown`

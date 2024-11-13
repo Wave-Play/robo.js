@@ -374,12 +374,14 @@ const config = {
 				entryFileName: '_index',
 				flattenOutputFiles: true,
 				readme: 'none',
-				interfacePropertiesFormat: 'table',
+				interfacePropertiesFormat: 'list',
 				skipErrorChecking: true,
 				classPropertiesFormat: 'table',
 				enumMembersFormat: 'table',
 				parametersFormat: 'table',
-				typeDeclarationFormat: 'table',
+				expandObjects: false,
+				expandParameters: false,
+				typeDeclarationFormat: 'list',
 				propertyMembersFormat: 'table'
 			}
 		]

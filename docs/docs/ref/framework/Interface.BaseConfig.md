@@ -9,13 +9,53 @@
 
 ## Properties
 
-| Property | Type |
+### \_\_auto?
+
+```ts
+optional __auto: true;
+```
+
+***
+
+### \_\_module?
+
+```ts
+optional __module: string;
+```
+
+***
+
+### \_\_path?
+
+```ts
+optional __path: string;
+```
+
+***
+
+### \_\_plugin?
+
+```ts
+optional __plugin: object;
+```
+
+| Name | Type |
 | ------ | ------ |
-| `__auto?` | `true` |
-| `__module?` | `string` |
-| `__path?` | `string` |
-| `__plugin?` | `object` |
-| `__plugin.name` | `string` |
-| `__plugin.path` | `string` |
-| `description?` | `string` |
-| `timeout?` | `number` |
+| `name` | `string` |
+| `path` | `string` |
+
+***
+
+### description?
+
+```ts
+optional description: string;
+```
+
+***
+
+### timeout?
+
+```ts
+optional timeout: number;
+```

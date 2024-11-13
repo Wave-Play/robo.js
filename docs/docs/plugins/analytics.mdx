@@ -12,7 +12,7 @@ Instant analytics for your **Robo**. This plugin automatically integrates your p
 	[![npm](https://img.shields.io/npm/v/@robojs/analytics)](https://www.npmjs.com/package/@robojs/analytics) [![install
 	size](https://packagephobia.com/badge?p=@robojs/analytics@latest)](https://packagephobia.com/result?p=@robojs/analytics@latest)
 	[![Discord](https://img.shields.io/discord/1087134933908193330?color=7289da)](https://roboplay.dev/discord) [![All
-	Contributors](https://img.shields.io/github/all-contributors/Wave-Play/robo.js?color=cf7cfc)](#contributors)
+	Contributors](https://img.shields.io/github/all-contributors/Wave-Play/robo.js?color=cf7cfc)](https://github.com/Wave-Play/robo.js/blob/main/CONTRIBUTING.md#contributors)
 </div>
 
 **Use cases:**

@@ -6,11 +6,38 @@ type SageOptions: object;
 
 ## Type declaration
 
-| Name | Type |
-| ------ | ------ |
-| `defer`? | `boolean` |
-| `deferBuffer`? | `number` |
-| `ephemeral`? | `boolean` |
-| `errorChannelId`? | `string` |
-| `errorMessage`? | `string` |
-| `errorReplies`? | `boolean` |
+### defer?
+
+```ts
+optional defer: boolean;
+```
+
+### deferBuffer?
+
+```ts
+optional deferBuffer: number;
+```
+
+### ephemeral?
+
+```ts
+optional ephemeral: boolean;
+```
+
+### errorChannelId?
+
+```ts
+optional errorChannelId: string;
+```
+
+### errorMessage?
+
+```ts
+optional errorMessage: string;
+```
+
+### errorReplies?
+
+```ts
+optional errorReplies: boolean;
+```

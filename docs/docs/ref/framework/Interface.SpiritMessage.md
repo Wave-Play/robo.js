@@ -2,10 +2,48 @@
 
 ## Properties
 
-| Property | Type |
-| ------ | ------ |
-| `error?` | `unknown` |
-| `event?` | \| `"ready"` \| `"command"` \| `"restart"` \| `"build"` \| `"get-state"` \| `"set-state"` \| `"start"` \| `"stop"` |
-| `payload?` | `unknown` |
-| `state?` | `Record`\<`string`, `unknown`\> |
-| `verbose?` | `boolean` |
+### error?
+
+```ts
+optional error: unknown;
+```
+
+***
+
+### event?
+
+```ts
+optional event: 
+  | "ready"
+  | "command"
+  | "restart"
+  | "build"
+  | "get-state"
+  | "set-state"
+  | "start"
+  | "stop";
+```
+
+***
+
+### payload?
+
+```ts
+optional payload: unknown;
+```
+
+***
+
+### state?
+
+```ts
+optional state: Record<string, unknown>;
+```
+
+***
+
+### verbose?
+
+```ts
+optional verbose: boolean;
+```

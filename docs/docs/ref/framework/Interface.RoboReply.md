@@ -2,10 +2,71 @@
 
 ## Properties
 
-| Property | Type |
+### code()
+
+```ts
+code: (statusCode) => RoboReply;
+```
+
+#### Parameters
+
+| Parameter | Type |
 | ------ | ------ |
-| `code` | (`statusCode`: `number`) => [`RoboReply`](Interface.RoboReply.md) |
-| `hasSent` | `boolean` |
-| `header` | (`name`: `string`, `value`: `string`) => [`RoboReply`](Interface.RoboReply.md) |
-| `res` | `ServerResponse`\<`IncomingMessage`\> |
-| `send` | (`data`: `string`) => [`RoboReply`](Interface.RoboReply.md) |
+| `statusCode` | `number` |
+
+#### Returns
+
+[`RoboReply`](Interface.RoboReply.md)
+
+***
+
+### hasSent
+
+```ts
+hasSent: boolean;
+```
+
+***
+
+### header()
+
+```ts
+header: (name, value) => RoboReply;
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `string` |
+| `value` | `string` |
+
+#### Returns
+
+[`RoboReply`](Interface.RoboReply.md)
+
+***
+
+### res
+
+```ts
+res: ServerResponse<IncomingMessage>;
+```
+
+***
+
+### send()
+
+```ts
+send: (data) => RoboReply;
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `data` | `string` |
+
+#### Returns
+
+[`RoboReply`](Interface.RoboReply.md)

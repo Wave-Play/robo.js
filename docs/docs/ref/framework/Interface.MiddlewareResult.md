@@ -2,6 +2,8 @@
 
 ## Properties
 
-| Property | Type |
-| ------ | ------ |
-| `abort?` | `boolean` |
+### abort?
+
+```ts
+optional abort: boolean;
+```

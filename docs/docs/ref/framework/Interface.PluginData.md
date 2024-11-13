@@ -2,8 +2,24 @@
 
 ## Properties
 
-| Property | Type |
-| ------ | ------ |
-| `metaOptions?` | [`PluginMetaOptions`](Interface.PluginMetaOptions.md) |
-| `name` | `string` |
-| `options?` | `unknown` |
+### metaOptions?
+
+```ts
+optional metaOptions: PluginMetaOptions;
+```
+
+***
+
+### name
+
+```ts
+name: string;
+```
+
+***
+
+### options?
+
+```ts
+optional options: unknown;
+```

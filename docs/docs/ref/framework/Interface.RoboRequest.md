@@ -2,10 +2,40 @@
 
 ## Properties
 
-| Property | Type |
-| ------ | ------ |
-| `body?` | `unknown` |
-| `method` | [`HttpMethod`](TypeAlias.HttpMethod.md) |
-| `params` | `Record`\<`string`, `unknown`\> |
-| `query` | `Record`\<`string`, `unknown`\> |
-| `req` | `IncomingMessage` |
+### body?
+
+```ts
+optional body: unknown;
+```
+
+***
+
+### method
+
+```ts
+method: HttpMethod;
+```
+
+***
+
+### params
+
+```ts
+params: Record<string, unknown>;
+```
+
+***
+
+### query
+
+```ts
+query: Record<string, unknown>;
+```
+
+***
+
+### req
+
+```ts
+req: IncomingMessage;
+```

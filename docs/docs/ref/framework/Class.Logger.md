@@ -1,5 +1,28 @@
 # Class: Logger
 
+The logger class provides a simple and flexible logging system.
+
+```ts
+import { logger } from 'robo.js'
+
+// Can be used instead of console.log
+logger.info('Hello, world!')
+logger.debug('This is a debug message')
+logger.warn('Warning: something is not right')
+logger.error('An error occurred')
+
+// To make your own Logger instance
+import { Logger } from 'robo.js'
+
+const customLogger = new Logger({
+	level: 'debug'
+})
+```
+
+Use logger whenever possible instead of `console.log` to take advantage of Robo drains and log levels.
+
+[**Learn more:** Logger](https://robojs.dev/robojs/logger)
+
 ## Constructors
 
 ### new Logger()

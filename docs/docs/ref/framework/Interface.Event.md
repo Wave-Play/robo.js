@@ -2,6 +2,18 @@
 
 ## Properties
 
-| Property | Type |
+### default()
+
+```ts
+default: (...data) => unknown;
+```
+
+#### Parameters
+
+| Parameter | Type |
 | ------ | ------ |
-| `default` | (...`data`: `unknown`[]) => `unknown` |
+| ...`data` | `unknown`[] |
+
+#### Returns
+
+`unknown`

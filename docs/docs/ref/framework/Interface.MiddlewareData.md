@@ -2,7 +2,16 @@
 
 ## Properties
 
-| Property | Type |
-| ------ | ------ |
-| `payload` | `unknown`[] |
-| `record` | [`HandlerRecord`](Interface.HandlerRecord.md)\<`unknown`\> |
+### payload
+
+```ts
+payload: unknown[];
+```
+
+***
+
+### record
+
+```ts
+record: HandlerRecord<unknown>;
+```

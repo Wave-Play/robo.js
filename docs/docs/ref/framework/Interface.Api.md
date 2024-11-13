@@ -2,6 +2,19 @@
 
 ## Properties
 
-| Property | Type |
+### default()
+
+```ts
+default: (request, reply) => unknown;
+```
+
+#### Parameters
+
+| Parameter | Type |
 | ------ | ------ |
-| `default` | (`request`: [`RoboRequest`](Interface.RoboRequest.md), `reply`: [`RoboReply`](Interface.RoboReply.md)) => `unknown` |
+| `request` | [`RoboRequest`](Interface.RoboRequest.md) |
+| `reply` | [`RoboReply`](Interface.RoboReply.md) |
+
+#### Returns
+
+`unknown`
