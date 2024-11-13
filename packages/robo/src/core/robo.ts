@@ -5,7 +5,7 @@ import { Client, Collection, Events } from 'discord.js'
 import { getConfig, loadConfig } from './config.js'
 import { FLASHCORE_KEYS, discordLogger } from './constants.js'
 import { logger } from './logger.js'
-import { env } from './env.js'
+import { env, Env } from './env.js'
 import {
 	executeAutocompleteHandler,
 	executeCommandHandler,
@@ -27,7 +27,22 @@ import { generateManifest } from '../cli/utils/manifest.js'
 import { buildPublicDirectory } from '../cli/utils/public.js'
 import { findCommandDifferences, registerCommands } from '../cli/utils/commands.js'
 
+
+/**
+ * Robo is the main entry point for your bot. It provides a simple API for starting, stopping, and restarting your Robo.
+ *
+ * ```ts
+ * import { Robo } from 'robo.js'
+ *
+ * Robo.start()
+ * ```
+ *
+ * You do not normally need to use this API directly, as the CLI will handle starting and stopping for you.
+ *
+ * [**Learn more:** Robo](https://robojs.dev/discord-bots/migrate)
+ */
 export const Robo = { restart, start, stop, build }
+
 
 // Each Robo instance has its own client, exported for convenience
 export let client: Client
@@ -128,6 +143,12 @@ export async function build(options: BuildOptions = {}) {
 	}
 }
 
+/**
+ * Starts your Robo instance. Similar to running `robo start` from the CLI.
+ *
+ * @param options - Options for starting your Robo instance
+ * @returns A promise that resolves when Robo has started
+ */
 async function start(options?: StartOptions) {
 	const { client: optionsClient, shard, stateLoad } = options ?? {}
 
@@ -150,7 +171,7 @@ async function start(options?: StartOptions) {
 		const { ShardingManager } = await import('discord.js')
 		const shardPath = typeof shard === 'string' ? shard : path.join(PackageDir, 'dist', 'cli', 'shard.js')
 		const options = typeof config.experimental?.shard === 'object' ? config.experimental.shard : {}
-		const manager = new ShardingManager(shardPath, { ...options, token: env('discord.token') })
+		const manager = new ShardingManager(shardPath, { ...options, token: env.get('discord.token') })
 
 		manager.on('shardCreate', (shard) => discordLogger.debug(`Launched shard`, shard.id))
 		const result = await manager.spawn()
@@ -158,7 +179,9 @@ async function start(options?: StartOptions) {
 		return
 	}
 
-	// Get ready for persistent data requests
+	const mode = Mode.get()
+	await Env.load({ mode })
+
 	await prepareFlashcore()
 
 	// Wait for states to be loaded
@@ -228,10 +251,15 @@ async function start(options?: StartOptions) {
 		})
 
 		// Log in to Discord with your client's token
-		await client.login(env('discord.token'))
+		await client.login(env.get('discord.token'))
 	}
 }
 
+/**
+ * Stops your Robo instance gracefully. Similar to pressing `Ctrl+C` in the terminal.
+ *
+ * @param exitCode - The exit code to use when stopping Robo
+ */
 async function stop(exitCode = 0) {
 	try {
 		// Notify lifecycle handler
@@ -250,6 +278,11 @@ async function stop(exitCode = 0) {
 	}
 }
 
+/**
+ * Restarts your Robo instance gracefully. Similar to making changes with `robo dev` and restarting.
+ *
+ * @returns A promise that resolves when Robo has restarted
+ */
 async function restart() {
 	try {
 		// Notify lifecycle handler

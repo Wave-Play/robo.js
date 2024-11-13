@@ -5,7 +5,7 @@ import { loadConfig, loadConfigPath } from '../../../core/config.js'
 import { getProjectSize, printBuildSummary } from '../../utils/build-summary.js'
 import plugin from './plugin.js'
 import path from 'node:path'
-import { loadEnv } from '../../../core/dotenv.js'
+import { Env } from '../../../core/env.js'
 import { Mode, setMode } from '../../../core/mode.js'
 import { findCommandDifferences, registerCommands } from '../../utils/commands.js'
 import { generateDefaults } from '../../utils/generate-defaults.js'
@@ -78,7 +78,7 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 
 	// Make sure environment variables are loaded
 	const defaultMode = Mode.get()
-	await loadEnv({ mode: defaultMode })
+	await Env.load({ mode: defaultMode })
 
 	// Handle mode(s)
 	const { shardModes } = setMode(options.mode)
@@ -97,7 +97,7 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 			`The ${color.bold('.config')} directory is deprecated. Use ${color.bold('config')} instead. (without the dot)`
 		)
 	}
-	const config = await loadConfig()
+	const config = await loadConfig('robo', true)
 	if (!config) {
 		logger.warn(`Could not find configuration file.`)
 	}

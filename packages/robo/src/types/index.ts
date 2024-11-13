@@ -56,6 +56,25 @@ export interface Middleware {
 
 export type MiddlewareEntry = BaseConfig
 
+export interface PackageJson {
+	name: string
+	version: string
+	description?: string
+	scripts?: Record<string, string>
+	dependencies?: Record<string, string>
+	devDependencies?: Record<string, string>
+	main?: string
+	types?: string
+	engines?: {
+		node?: string
+		npm?: string
+	}
+	repository?: {
+		type: string
+		url: string
+	}
+}
+
 export interface RoboMessage {
 	type: 'ready' | 'restart' | 'state-load' | 'state-save'
 }

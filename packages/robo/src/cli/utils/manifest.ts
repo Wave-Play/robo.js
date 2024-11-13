@@ -84,7 +84,7 @@ const mergeEvents = (baseEvents: Record<string, EventConfig[]>, newEvents: Recor
 }
 
 export async function generateManifest(generatedDefaults: DefaultGen, type: 'plugin' | 'robo'): Promise<Manifest> {
-	const config = await loadConfig()
+	const config = await loadConfig('robo', true)
 	const pluginsManifest = type === 'plugin' ? BASE_MANIFEST : await readPluginManifest(config?.plugins)
 	const api = await generateEntries<ApiEntry>('api', [])
 	const commands = await generateEntries<CommandEntry>('commands', Object.keys(generatedDefaults?.commands ?? {}))

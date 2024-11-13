@@ -18,6 +18,23 @@ export interface StateOptions {
 	persist?: boolean
 }
 
+/**
+ * States are your Robo's personal memory bank.
+ *
+ * ```ts
+ * import { State } from 'robo.js'
+ *
+ * // Set a value in the state
+ * State.set('key', 'value')
+ *
+ * // Get a value from the state
+ * const value = State.get('key')
+ * ```
+ *
+ * States are ephemerally in-memory; data is lost when stopped but not when restarted.
+ * 
+ * [**Learn more:** State Management](https://robojs.dev/robojs/state)
+ */
 export class State {
 	private static readonly _prefixes = new Set<string>()
 
@@ -49,7 +66,37 @@ export class State {
 		return new Array(...State._prefixes)
 	}
 
-	fork(prefix: string, options?: StateOptions) {
+	/**
+	 * Get a value from the forked state.
+	 * If the value does not exist, null is returned.
+	 *
+	 * @param key The key to get the value for.
+	 * @returns The value for the given key, or null if the key does not exist.
+	 */
+	public static get<T = string>(key: string, options?: GetStateOptions) {
+		return getState<T>(key, options)
+	}
+
+	/**
+	 * Set a value in the forked state.
+	 * When the persist option is set to true, the state will be persisted to disk.
+	 *
+	 * @param key The key to set the value for.
+	 * @param value The value to set.
+	 * @param options Options for setting the state. (Persisting to disk)
+	 */
+	public static set<T>(key: string, value: T, options?: SetStateOptions) {
+		setState<T>(key, value, options)
+	}
+
+	/**
+	 * Creates a new state fork.
+	 *
+	 * @param prefix - Fork prefix (e.g. 'polls')
+	 * @param options - Options for the fork (persisting all state by default)
+	 * @returns - A new state fork you can deconstruct (e.g. `const { getState, setState } = State.fork('polls')`
+	 */
+	public fork(prefix: string, options?: StateOptions) {
 		return new State(`${this._prefix}__${prefix}`, options)
 	}
 

@@ -123,11 +123,11 @@ async function generateCommands(distDir: string, config: Config) {
 		logger.debug(
 			`Validating default command "${commandKey}":`,
 			`dev: ${shouldCreateDev}, help: ${shouldCreateHelp}, debug: ${DEBUG_MODE}, guildId: ${
-				env('discord.guildId') ? 'exists' : 'none'
+				env.get('discord.guildId') ? 'exists' : 'none'
 			}`
 		)
 
-		if (devCommands.includes(commandKey) && (!DEBUG_MODE || !env('discord.guildId') || !shouldCreateDev)) {
+		if (devCommands.includes(commandKey) && (!DEBUG_MODE || !env.get('discord.guildId') || !shouldCreateDev)) {
 			logger.debug(`Skipping default command:`, file)
 			return
 		}
@@ -173,8 +173,9 @@ async function generateEvents(distDir: string) {
 
 		// Copy the file to the .robo build directory using a special prefix to prevent collisions
 		const baseFilename = path.basename(file, path.extname(file))
+		const basePath = path.dirname(path.relative(defaultEventsDir, fullPath))
 		const distFile = '__robo_' + file
-		const distPath = path.join(distDir, 'events', baseFilename, distFile)
+		const distPath = path.join(distDir, 'events', basePath === '.' ? baseFilename : basePath, distFile)
 		const extension = path.extname(file)
 		const eventKey = baseFilename + path.sep + distFile.replace(extension, '')
 		await fs.mkdir(path.dirname(distPath), { recursive: true })

@@ -53,6 +53,7 @@ const sidebars = {
 					type: 'doc'
 				},
 				'robojs/config',
+				'robojs/environment-variables',
 				'robojs/flashcore',
 				{
 					id: 'robojs/internals',
@@ -226,6 +227,7 @@ const sidebars = {
 					label: 'Discord Activities',
 					items: [
 						'templates/discord-activities/2d-game',
+						'templates/discord-activities/godot',
 						'templates/discord-activities/react-colyseus-ts',
 						'templates/discord-activities/react-js',
 						'templates/discord-activities/react-multiplayer-video-ts',
@@ -267,7 +269,281 @@ const sidebars = {
 				{
 					type: 'category',
 					label: 'Web Apps',
-					items: ['templates/web-apps/react-js', 'templates/web-apps/react-ts', 'templates/web-apps/svelte-js', 'templates/web-apps/svelte-ts']
+					items: [
+						'templates/web-apps/react-js',
+						'templates/web-apps/react-ts',
+						'templates/web-apps/svelte-js',
+						'templates/web-apps/svelte-ts'
+					]
+				}
+			]
+		}
+	],
+	typedocSidebar: [
+		{
+			type: 'html',
+			value: 'Framework',
+			className: 'sidebar-title'
+		},
+		{
+			id: 'ref/framework',
+			label: '✨ Overview',
+			type: 'doc'
+		},
+		{
+			type: 'category',
+			label: 'Core APIs',
+			items: [
+				{
+					id: 'ref/framework/Class.Env',
+					label: 'Env',
+					type: 'doc'
+				},
+				{
+					id: 'ref/framework/Variable.Flashcore',
+					label: 'Flashcore',
+					type: 'doc'
+				},
+				{
+					id: 'ref/framework/Class.Logger',
+					label: 'Logger',
+					type: 'doc'
+				},
+				{
+					id: 'ref/framework/Variable.Mode',
+					label: 'Mode',
+					type: 'doc'
+				},
+				{
+					id: 'ref/framework/Variable.Robo',
+					label: 'Robo',
+					type: 'doc'
+				},
+				{
+					id: 'ref/framework/Class.State',
+					label: 'State',
+					type: 'doc'
+				}
+			]
+		},
+		{
+			type: 'category',
+			label: 'Utilities',
+			items: [
+				{
+					id: 'ref/framework/Variable.color',
+					label: 'color',
+					type: 'doc'
+				},
+				{
+					id: 'ref/framework/Function.composeColors',
+					label: 'composeColors',
+					type: 'doc'
+				},
+				{
+					id: 'ref/framework/Function.getConfig',
+					label: 'getConfig',
+					type: 'doc'
+				},
+				{
+					id: 'ref/framework/Function.getPluginOptions',
+					label: 'getPluginOptions',
+					type: 'doc'
+				}
+			]
+		},
+		{
+			type: 'html',
+			value: 'Plugins',
+			className: 'sidebar-title'
+		},
+		{
+			type: 'category',
+			label: '@robojs/ai',
+			items: [
+				{
+					id: 'ref/@robojs/ai/Variable.AI',
+					label: 'AI',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/ai/Function.selectOne',
+					label: 'selectOne',
+					type: 'doc'
+				}
+			]
+		},
+		{
+			type: 'category',
+			label: '@robojs/ai-voice',
+			items: [
+				{
+					id: 'ref/@robojs/ai-voice/Function.textToSpeech',
+					label: 'textToSpeech',
+					type: 'doc'
+				}
+			]
+		},
+		{
+			type: 'category',
+			label: '@robojs/analytics',
+			items: [
+				{
+					id: 'ref/@robojs/analytics/Variable.Analytics',
+					label: 'Analytics',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/analytics/Class.GoogleAnalytics',
+					label: 'GoogleAnalytics',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/analytics/Class.ManyEngines',
+					label: 'ManyEngines',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/analytics/Class.PlausibleAnalytics',
+					label: 'PlausibleAnalytics',
+					type: 'doc'
+				}
+			]
+		},
+		{
+			type: 'category',
+			label: '@robojs/better-stack',
+			items: [
+				{
+					id: 'ref/@robojs/better-stack/Function.createLogtailDrain',
+					label: 'createLogtailDrain',
+					type: 'doc'
+				}
+			]
+		},
+		{
+			type: 'category',
+			label: '@robojs/cron',
+			items: [
+				{
+					id: 'ref/@robojs/cron/Function.Cron',
+					label: 'Cron',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/cron/Variable.Patterns',
+					label: 'Patterns',
+					type: 'doc'
+				}
+			]
+		},
+		{
+			type: 'category',
+			label: '@robojs/moderation',
+			items: [
+				{
+					id: 'ref/@robojs/moderation/Function.getLockdown',
+					label: 'getLockdown',
+					type: 'doc'
+				}
+			]
+		},
+		{
+			type: 'category',
+			label: '@robojs/patch',
+			items: [
+				{
+					id: 'ref/@robojs/patch/Variable.DiscordProxy',
+					label: 'DiscordProxy',
+					type: 'doc'
+				}
+			]
+		},
+		{
+			type: 'category',
+			label: '@robojs/server',
+			items: [
+				{
+					id: 'ref/@robojs/server/Function.getServerEngine',
+					label: 'getServerEngine',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/server/Function.ready',
+					label: 'ready',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/server/Interface.RoboReply',
+					label: 'RoboReply',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/server/Class.RoboRequest',
+					label: 'RoboRequest',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/server/Class.RoboResponse',
+					label: 'RoboResponse',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/server/Variable.Server',
+					label: 'Server',
+					type: 'doc'
+				}
+			]
+		},
+		{
+			type: 'category',
+			label: '@robojs/sync',
+			items: [
+				{
+					id: 'ref/@robojs/sync/Interface.MessagePayload',
+					label: 'MessagePayload',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/sync/Function.SyncContextProvider',
+					label: 'SyncContextProvider',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/sync/Function.useSyncState',
+					label: 'useSyncState',
+					type: 'doc'
+				}
+			]
+		},
+		{
+			type: 'category',
+			label: '@robojs/trpc',
+			items: [
+				{
+					id: 'ref/@robojs/trpc/Interface.Context',
+					label: 'Context',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/trpc/Function.createTRPCClient',
+					label: 'createTRPCClient',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/trpc/Function.createTRPCReact',
+					label: 'createTRPCReact',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/trpc/Variable.httpBatchLink',
+					label: 'httpBatchLink',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/trpc/Function.TRPCProvider',
+					label: 'TRPCProvider',
+					type: 'doc'
 				}
 			]
 		}

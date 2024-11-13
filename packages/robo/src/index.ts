@@ -1,5 +1,6 @@
 export { color, composeColors } from './core/color.js'
 export { getConfig } from './core/config.js'
+export { Env } from './core/env.js'
 export { getManifest } from './cli/compiler/manifest.js'
 export { Flashcore } from './core/flashcore.js'
 export { createCommandConfig } from './core/handlers.js'

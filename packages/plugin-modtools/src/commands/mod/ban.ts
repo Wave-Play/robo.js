@@ -170,7 +170,7 @@ export default async (interaction: ChatInputCommandInteraction): Promise<Command
 		}
 
 		interaction.reply({
-			embeds: messagePayload.embeds,
+			embeds: messagePayload.embeds as MessageCreateOptions['embeds'],
 			components: [
 				{
 					type: ComponentType.ActionRow,

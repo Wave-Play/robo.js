@@ -11,7 +11,7 @@ import { streamDeployment } from '../../roboplay/deploy.js'
 import { RoboPlaySession } from '../../roboplay/session.js'
 import { loginAction } from './login.js'
 import { Mode } from '../../core/mode.js'
-import { loadEnv } from '../../core/dotenv.js'
+import { Env } from '../../core/env.js'
 import path from 'node:path'
 import type { DeploymentStep, Pod } from '../../roboplay/types.js'
 
@@ -46,7 +46,7 @@ async function deployAction(_args: string[], options: DeployCommandOptions) {
 
 	// Make sure environment variables are loaded
 	const defaultMode = Mode.get()
-	await loadEnv({ mode: defaultMode })
+	await Env.load({ mode: defaultMode })
 
 	// Validate session
 	let session = await RoboPlaySession.get()
@@ -68,7 +68,7 @@ async function deployAction(_args: string[], options: DeployCommandOptions) {
 	}
 
 	// Sorry, only bots are supported right now!
-	const config = await loadConfig()
+	const config = await loadConfig('robo', true)
 
 	if (config.experimental?.disableBot) {
 		logger.warn('Sorry, only bots are supported right now!')

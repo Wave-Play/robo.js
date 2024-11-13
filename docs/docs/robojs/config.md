@@ -173,7 +173,7 @@ plugins: [gptPlugin, '@roboplay/plugin-poll']
 
 In the example above, `gptPlugin` is an array containing the package name, plugin-specific options, and optional system-wide plugin settings. The `@roboplay/plugin-poll` is added as a string, using the default settings for that plugin.
 
-For more details about plugins and their options, check out the [Plugins](/docs/advanced/plugins) guide.
+For more details about plugins and their options, check out the [Plugins](/plugins/overview) guide.
 
 ### `roboplay`
 
@@ -243,4 +243,4 @@ timeouts: {
 
 ⚠️ **Heads up:** Keep sensitive data like API keys or tokens out of your configuration file. Instead, use a `.env` file to store secrets and refer to them with `process.env`. Configuration files are meant to be pushed to version control (git), while secrets inside `.env` should stay off-limits.
 
-Take a look at the [Secrets guide](/docs/basics/secrets) for more info.
+Take a look at the **[Environment Variables](/robojs/environment-variables)** for more info.

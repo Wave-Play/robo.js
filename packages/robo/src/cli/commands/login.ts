@@ -7,7 +7,7 @@ import { openBrowser, sleep } from '../utils/utils.js'
 import { KeyWatcher } from '../utils/key-watcher.js'
 import { RoboPlaySession } from '../../roboplay/session.js'
 import { Mode } from '../../core/mode.js'
-import { loadEnv } from '../../core/dotenv.js'
+import { Env } from '../../core/env.js'
 
 const command = new Command('login')
 	.description('Sign in to your RoboPlay account')
@@ -39,7 +39,7 @@ export async function loginAction(_args: string[], options: LoginCommandOptions)
 
 	// Make sure environment variables are loaded
 	const defaultMode = Mode.get()
-	await loadEnv({ mode: defaultMode })
+	await Env.load({ mode: defaultMode })
 
 	// Prepare OAuth session
 	const oauthSession = await RoboPlay.OAuth.create()

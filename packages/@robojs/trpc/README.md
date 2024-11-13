@@ -14,7 +14,7 @@ You must already have **[@robojs/server](https://robojs.dev/plugins/server)** in
 	[![npm](https://img.shields.io/npm/v/@robojs/trpc)](https://www.npmjs.com/package/@robojs/trpc) [![install
 	size](https://packagephobia.com/badge?p=@robojs/trpc@latest)](https://packagephobia.com/result?p=@robojs/trpc@latest)
 	[![Discord](https://img.shields.io/discord/1087134933908193330?color=7289da)](https://roboplay.dev/discord) [![All
-	Contributors](https://img.shields.io/github/all-contributors/Wave-Play/robo.js?color=cf7cfc)](#contributors)
+	Contributors](https://img.shields.io/github/all-contributors/Wave-Play/robo.js?color=cf7cfc)](https://github.com/Wave-Play/robo.js/blob/main/CONTRIBUTING.md#contributors)
 </div>
 
 ➞ [📚 **Documentation:** Getting started](https://docs.roboplay.dev/docs/getting-started)

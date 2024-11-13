@@ -64,7 +64,7 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
 	}
 
 	// Check which plugin packages are already registered
-	const config = await loadConfig()
+	const config = await loadConfig('robo', true)
 	const nameMap: Record<string, string> = {}
 	const pendingRegistration = await Promise.all(
 		packages
@@ -94,14 +94,13 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
 	// Check which plugins need to be installed
 	const packageJsonPath = path.join(process.cwd(), 'package.json')
 	const packageJson = require(packageJsonPath)
-	const pendingInstall = packages
-		.filter((pkg) => {
-			return (
-				options.force ||
-				(!Object.keys(packageJson.dependencies ?? {})?.includes(pkg) &&
-					!config.plugins?.find((p) => Array.isArray(p) && p[0] === pkg))
-			)
-		})
+	const pendingInstall = packages.filter((pkg) => {
+		return (
+			options.force ||
+			(!Object.keys(packageJson.dependencies ?? {})?.includes(pkg) &&
+				!config.plugins?.find((p) => Array.isArray(p) && p[0] === pkg))
+		)
+	})
 	logger.debug(`Pending installation add:`, pendingInstall)
 
 	// Install plugin packages
@@ -223,7 +222,8 @@ async function createPluginConfig(pluginName: string, config: Record<string, unk
 	}
 
 	// Normalize plugin path
-	const pluginPath = path.join(process.cwd(), 'config', 'plugins', ...pluginParts) + '.mjs'
+	const pluginPath =
+		path.join(process.cwd(), 'config', 'plugins', ...pluginParts) + (Compiler.isTypescriptProject() ? '.ts' : '.mjs')
 	const pluginConfig = JSON.stringify(config) + '\n'
 
 	logger.debug(`Writing ${pluginName} config to ${pluginPath}...`)
