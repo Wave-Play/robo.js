@@ -1,0 +1,4 @@
+// @ts-check
+/** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
+const typedocSidebar = { items: [{"type":"category","label":"Interfaces","items":[{"type":"doc","id":"ref/@robojs/trpc/Interface.Context","label":"Context"}]},{"type":"category","label":"Functions","items":[{"type":"doc","id":"ref/@robojs/trpc/Function.createTRPCClient","label":"createTRPCClient"},{"type":"doc","id":"ref/@robojs/trpc/Function.createTRPCReact","label":"createTRPCReact"},{"type":"doc","id":"ref/@robojs/trpc/Function.httpBatchLink","label":"httpBatchLink"},{"type":"doc","id":"ref/@robojs/trpc/Function.TRPCProvider","label":"TRPCProvider"}]}]};
+module.exports = typedocSidebar.items;

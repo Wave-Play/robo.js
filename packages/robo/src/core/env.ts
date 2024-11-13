@@ -76,7 +76,7 @@ export class Env<T> {
 	 * ```ts
 	 * const env = new Env({
 	 * 	discord: {
-	 *  	clientId: { env: 'DISCORD_CLIENT_ID' }
+	 * 		clientId: { env: 'DISCORD_CLIENT_ID' }
 	 * 	},
 	 * 	example: {
 	 * 		default: 'This is an example',

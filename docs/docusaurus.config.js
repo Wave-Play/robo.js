@@ -7,6 +7,23 @@ const { themes } = require('prism-react-renderer')
 const lightCodeTheme = themes.github
 const darkCodeTheme = themes.dracula
 
+const typedocConfig = {
+	useCodeBlocks: true,
+	disableSources: true,
+	entryFileName: '_index',
+	flattenOutputFiles: true,
+	readme: 'none',
+	interfacePropertiesFormat: 'list',
+	skipErrorChecking: true,
+	classPropertiesFormat: 'table',
+	enumMembersFormat: 'table',
+	parametersFormat: 'table',
+	expandObjects: false,
+	expandParameters: false,
+	typeDeclarationFormat: 'list',
+	propertyMembersFormat: 'table'
+}
+
 /** @type {import('@docusaurus/types').Config} */
 const config = {
 	title: 'Robo.js',
@@ -366,23 +383,131 @@ const config = {
 		[
 			'docusaurus-plugin-typedoc',
 			{
+				id: 'robo.js',
 				entryPoints: ['../packages/robo/src/index.ts'],
 				out: 'docs/ref/framework',
 				tsconfig: '../packages/robo/tsconfig.json',
-				useCodeBlocks: true,
-				disableSources: true,
-				entryFileName: '_index',
-				flattenOutputFiles: true,
-				readme: 'none',
-				interfacePropertiesFormat: 'list',
-				skipErrorChecking: true,
-				classPropertiesFormat: 'table',
-				enumMembersFormat: 'table',
-				parametersFormat: 'table',
-				expandObjects: false,
-				expandParameters: false,
-				typeDeclarationFormat: 'list',
-				propertyMembersFormat: 'table'
+				...typedocConfig
+			}
+		],
+		[
+			'docusaurus-plugin-typedoc',
+			{
+				id: '@robojs/ai',
+				entryPoints: ['../packages/plugin-ai/src/index.ts'],
+				out: 'docs/ref/@robojs/ai',
+				tsconfig: '../packages/plugin-ai/tsconfig.json',
+				...typedocConfig
+			}
+		],
+		[
+			'docusaurus-plugin-typedoc',
+			{
+				id: '@robojs/ai-voice',
+				entryPoints: ['../packages/plugin-ai-voice/src/index.ts'],
+				out: 'docs/ref/@robojs/ai-voice',
+				tsconfig: '../packages/plugin-ai-voice/tsconfig.json',
+				...typedocConfig
+			}
+		],
+		[
+			'docusaurus-plugin-typedoc',
+			{
+				id: '@robojs/analytics',
+				entryPoints: ['../packages/@robojs/analytics/src/index.ts'],
+				out: 'docs/ref/@robojs/analytics',
+				tsconfig: '../packages/@robojs/analytics/tsconfig.json',
+				...typedocConfig
+			}
+		],
+		[
+			'docusaurus-plugin-typedoc',
+			{
+				id: '@robojs/better-stack',
+				entryPoints: ['../packages/plugin-better-stack/src/index.ts'],
+				out: 'docs/ref/@robojs/better-stack',
+				tsconfig: '../packages/plugin-better-stack/tsconfig.json',
+				...typedocConfig
+			}
+		],
+		[
+			'docusaurus-plugin-typedoc',
+			{
+				id: '@robojs/cron',
+				entryPoints: ['../packages/@robojs/cron/src/index.ts'],
+				out: 'docs/ref/@robojs/cron',
+				tsconfig: '../packages/@robojs/cron/tsconfig.json',
+				...typedocConfig
+			}
+		],
+		[
+			'docusaurus-plugin-typedoc',
+			{
+				id: '@robojs/dev',
+				entryPoints: ['../packages/plugin-devtools/src/index.ts'],
+				out: 'docs/ref/@robojs/dev',
+				tsconfig: '../packages/plugin-devtools/tsconfig.json',
+				...typedocConfig
+			}
+		],
+		[
+			'docusaurus-plugin-typedoc',
+			{
+				id: '@robojs/maintenance',
+				entryPoints: ['../packages/plugin-maintenance/src/index.ts'],
+				out: 'docs/ref/@robojs/maintenance',
+				tsconfig: '../packages/@robojs/analytics/tsconfig.json',
+				...typedocConfig
+			}
+		],
+		[
+			'docusaurus-plugin-typedoc',
+			{
+				id: '@robojs/moderation',
+				entryPoints: ['../packages/plugin-modtools/src/index.ts'],
+				out: 'docs/ref/@robojs/moderation',
+				tsconfig: '../packages/plugin-modtools/tsconfig.json',
+				...typedocConfig
+			}
+		],
+		[
+			'docusaurus-plugin-typedoc',
+			{
+				id: '@robojs/patch',
+				entryPoints: ['../packages/@robojs/patch/src/index.ts'],
+				out: 'docs/ref/@robojs/patch',
+				tsconfig: '../packages/@robojs/patch/tsconfig.json',
+				...typedocConfig
+			}
+		],
+		[
+			'docusaurus-plugin-typedoc',
+			{
+				id: '@robojs/server',
+				entryPoints: ['../packages/plugin-api/src/index.ts'],
+				out: 'docs/ref/@robojs/server',
+				tsconfig: '../packages/plugin-api/tsconfig.json',
+				...typedocConfig
+			}
+		],
+		[
+			'docusaurus-plugin-typedoc',
+			{
+				id: '@robojs/sync',
+				entryPoints: ['../packages/plugin-sync/src/index.ts'],
+				out: 'docs/ref/@robojs/sync',
+				tsconfig: '../packages/plugin-sync/tsconfig.json',
+				...typedocConfig
+			}
+		],
+		[
+			'docusaurus-plugin-typedoc',
+			{
+				id: '@robojs/trpc',
+				entryPoints: ['../packages/@robojs/trpc/src/index.ts'],
+				out: 'docs/ref/@robojs/trpc',
+				tsconfig: '../packages/@robojs/trpc/tsconfig.json',
+				...typedocConfig
 			}
 		]
 	],
