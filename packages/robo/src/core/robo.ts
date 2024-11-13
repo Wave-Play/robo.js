@@ -21,7 +21,6 @@ import { isMainThread, parentPort } from 'node:worker_threads'
 import type { HandlerRecord, PluginData } from '../types/index.js'
 import type { AutocompleteInteraction, CommandInteraction } from 'discord.js'
 import { Mode } from './mode.js'
-import { loadEnv } from './dotenv.js'
 import { generateDefaults } from '../cli/utils/generate-defaults.js'
 import { generateManifest } from '../cli/utils/manifest.js'
 import { buildPublicDirectory } from '../cli/utils/public.js'
@@ -73,7 +72,7 @@ export async function build(options: BuildOptions = {}) {
 
 	// Make sure environment variables are loaded
 	const defaultMode = Mode.get()
-	await loadEnv({ mode: defaultMode })
+	await Env.load({ mode: defaultMode })
 
 	// Load the configuration file
 	const config = await loadConfig()
