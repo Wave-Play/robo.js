@@ -55,10 +55,10 @@ export const autocomplete = (interaction: AutocompleteInteraction) => {
 	const manifest = getManifest()
 	const commands = getInnermostCommands(manifest.commands)
 	if (!query) {
-		return commands.map((cmd) => ({ name: `/${cmd.key}`, value: cmd.key }))
+		return commands.map((cmd) => ({ name: `/${cmd.key}`, value: cmd.key })).slice(0,24)
 	} else {
 		const results = commands.filter((cmd) => cmd.key.toLowerCase().includes(query))
-		return results.map((cmd) => ({ name: `/${cmd.key}`, value: cmd.key }))
+		return results.map((cmd) => ({ name: `/${cmd.key}`, value: cmd.key })).slice(0,24)
 	}
 }
 
