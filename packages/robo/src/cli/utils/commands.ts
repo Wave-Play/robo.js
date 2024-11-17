@@ -316,12 +316,17 @@ export async function registerCommands(
 	const clientId = env.get('discord.clientId')
 	const guildId = env.get('discord.guildId')
 	const token = env.get('discord.token')
+	let commandType = guildId ? 'guild' : 'global'
 
 	if (!token || !clientId) {
 		logger.error(
 			`${color.bold('DISCORD_TOKEN')} or ${color.bold('DISCORD_CLIENT_ID')} not found in environment variables`
 		)
 		return
+	}
+
+	if (config.experimental?.userInstall) {
+		commandType += ' and user install'
 	}
 
 	const startTime = Date.now()
@@ -409,7 +414,7 @@ export async function registerCommands(
 		}
 
 		// Ensure entry command is added if already there (or if reset)
-		if (entryCommand) {
+		if (entryCommand && !guildId) {
 			// @ts-expect-error - This is a valid command object
 			commandData.push(entryCommand)
 		}
@@ -432,11 +437,6 @@ export async function registerCommands(
 		}
 
 		const endTime = Date.now() - startTime
-		let commandType = guildId ? 'guild' : 'global'
-
-		if (config.experimental?.userInstall) {
-			commandType += ' and user install'
-		}
 
 		logger.info(`Successfully updated ${color.bold(commandType + ' commands')} in ${endTime}ms`)
 		logger.wait(color.dim('It may take a while for the changes to reflect in Discord.'))
