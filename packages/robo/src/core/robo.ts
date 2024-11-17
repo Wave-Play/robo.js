@@ -14,13 +14,14 @@ import {
 } from './handlers.js'
 import { hasProperties, PackageDir } from '../cli/utils/utils.js'
 import { Flashcore, prepareFlashcore } from './flashcore.js'
+import { Mode } from './mode.js'
 import { loadState } from './state.js'
 import Portal from './portal.js'
 import path from 'node:path'
 import { isMainThread, parentPort } from 'node:worker_threads'
 import type { HandlerRecord, PluginData } from '../types/index.js'
 import type { AutocompleteInteraction, CommandInteraction } from 'discord.js'
-import { Mode } from './mode.js'
+import type { BuildCommandOptions } from '../cli/commands/build/index.js'
 
 /**
  * Robo is the main entry point for your bot. It provides a simple API for starting, stopping, and restarting your Robo.
@@ -35,7 +36,7 @@ import { Mode } from './mode.js'
  *
  * [**Learn more:** Robo](https://robojs.dev/discord-bots/migrate)
  */
-export const Robo = { restart, start, stop }
+export const Robo = { restart, start, stop, build }
 
 // Each Robo instance has its own client, exported for convenience
 export let client: Client
@@ -50,6 +51,19 @@ interface StartOptions {
 	client?: Client
 	shard?: string | boolean
 	stateLoad?: Promise<void>
+}
+
+type BuildOptions = BuildCommandOptions
+
+/**
+ * Builds your Robo instance. Similar to running `robo build` from the CLI.
+ * 
+ * @param options - Options for building your Robo instance, similar to CLI options
+ * @returns A promise that resolves when Robo has finished building
+ */
+export async function build(options?: BuildOptions) {
+	const { buildAction } = await import('../cli/commands/build/index.js')
+	await buildAction([], options ?? {})
 }
 
 /**
