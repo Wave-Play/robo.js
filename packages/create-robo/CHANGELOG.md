@@ -1,23 +1,5 @@
 # create-robo
 
-## 0.14.4
-
-### Patch Changes
-
-- 43f86f4: fix: no need of double double quotes
-- df69f5c: feat: add "Web App" to initial prompt when no kit is there
-- Updated dependencies [0c513a2]
-- Updated dependencies [8b0a592]
-- Updated dependencies [6b07552]
-- Updated dependencies [ef9d53f]
-- Updated dependencies [0cb149d]
-- Updated dependencies [e8229db]
-- Updated dependencies [3e8a724]
-- Updated dependencies [57ff31b]
-- Updated dependencies [f6ac2da]
-- Updated dependencies [2b94fb0]
-  - robo.js@0.10.25
-
 ## 0.14.3
 
 ### Patch Changes

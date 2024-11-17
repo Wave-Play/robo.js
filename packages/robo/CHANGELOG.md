@@ -1,20 +1,5 @@
 # robo.js
 
-## 0.10.25
-
-### Patch Changes
-
-- 0c513a2: feat: new `build` function in Robo object
-- 8b0a592: refactor(cli): `deploy` now triggers `login` when necessary
-- 6b07552: fix(cli): reload environment variables in dev mode
-- ef9d53f: feat(defaults): help specific to each command available
-- 0cb149d: feat(discord): default help menu with pagination
-- e8229db: patch(cli): load environment variables in `login` and `deploy` commands
-- 3e8a724: feat: support for `.ts` config files
-- 57ff31b: fix(cli): get custom build directory on start command
-- f6ac2da: feat: new `Env` export
-- 2b94fb0: refactor(cli): style updates to `deploy` and `login` commands
-
 ## 0.10.24
 
 ### Patch Changes
