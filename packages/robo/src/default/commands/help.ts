@@ -8,7 +8,8 @@ import {
 	Snowflake,
 	CommandInteraction,
 	ButtonInteraction,
-	Colors
+	Colors,
+	AutocompleteInteraction,
 } from 'discord.js'
 import type { CommandConfig, CommandEntry } from '../../types/commands.js'
 
@@ -16,19 +17,48 @@ const COMMANDS_PER_PAGE = 20
 const NAMESPACE = '__robo.js__default__helpmenu'
 
 export const config: CommandConfig = {
-	description: 'Displays a list of commands.'
+	description: 'Displays a list of commands.',
+	options: [
+		{
+			name: 'command',
+			description: 'Select a command to view details.',
+			type: 'string',
+			autocomplete: true,
+			required: false
+		}
+	]
 }
 
 export default async (interaction: CommandInteraction) => {
 	const manifest = getManifest()
 	const commands = getInnermostCommands(manifest.commands)
+	const query = interaction.options.get('command')?.value as string
+	const queriedCmd = commands.filter((cmd) => cmd.key == query)[0]
 
-	const page = 0
-	const totalPages = Math.ceil(commands.length / COMMANDS_PER_PAGE)
+	if (queriedCmd) {
+		return {
+			embeds: [createCommandEmbed(queriedCmd)]
+		}
+	} else {
+		const page = 0
+		const totalPages = Math.ceil(commands.length / COMMANDS_PER_PAGE)
 
-	return {
-		embeds: [createEmbed(commands, page, totalPages)],
-		components: totalPages > 1 ? [createPaginationButtons(page, totalPages, interaction.user.id)] : []
+		return {
+			embeds: [createEmbed(commands, page, totalPages)],
+			components: totalPages > 1 ? [createPaginationButtons(page, totalPages, interaction.user.id)] : []
+		}
+	}
+}
+
+export const autocomplete = (interaction: AutocompleteInteraction) => {
+	const query = ((interaction.options.get('command')?.value as string) ?? '').replace('/', '').toLowerCase().trim()
+	const manifest = getManifest()
+	const commands = getInnermostCommands(manifest.commands)
+	if (!query) {
+		return commands.map((cmd) => ({ name: `/${cmd.key}`, value: cmd.key })).slice(0,24)
+	} else {
+		const results = commands.filter((cmd) => cmd.key.toLowerCase().includes(query))
+		return results.map((cmd) => ({ name: `/${cmd.key}`, value: cmd.key })).slice(0,24)
 	}
 }
 
@@ -50,6 +80,38 @@ function getInnermostCommands(
 	}
 
 	return innermostCommands
+}
+
+function createCommandEmbed({ key, command }: { key: string; command: CommandEntry }) {
+	const poweredBy = process.env.ROBOPLAY_HOST
+		? 'Powered by [**RoboPlay** ✨](https://roboplay.dev)'
+		: 'Powered by [**Robo.js**](https://robojs.dev)'
+	const embed = new EmbedBuilder()
+		.setTitle(`/${key}`)
+		.setColor(Colors.Blurple)
+		.setDescription(`${command.description || 'No description provided.'}\n\n> ${poweredBy}`)
+
+	if (command.options && command.options.length > 0) {
+		const optionsDescription = command.options
+			.map((option) => {
+				const required = option.required ? 'Required' : 'Optional'
+				const autocomplete = option.autocomplete ? 'Suggested' : ''
+				const choicable = option.choices?.length ? 'Choosable' : ''
+				const type = option.type ? `${option.type.charAt(0).toUpperCase() + option.type.slice(1)}` : ''
+				return `**${option.name}**: ${option.description || 'No description'} (${[
+					autocomplete || choicable,
+					required,
+					type
+				]
+					.join(' ')
+					.trim()})`
+			})
+			.join('\n')
+
+		embed.addFields({ name: '__Options__', value: optionsDescription })
+	}
+
+	return embed
 }
 
 function createEmbed(
