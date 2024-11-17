@@ -1,5 +1,26 @@
 # @roboplay/plugin-modtools
 
+## 0.4.0
+
+### Minor Changes
+
+- b902032: feat: rules
+
+### Patch Changes
+
+- Updated dependencies [b902032]
+- Updated dependencies [b902032]
+- Updated dependencies [b902032]
+- Updated dependencies [b902032]
+- Updated dependencies [b902032]
+- Updated dependencies [b902032]
+- Updated dependencies [b902032]
+- Updated dependencies [b902032]
+- Updated dependencies [d10c770]
+- Updated dependencies [b902032]
+- Updated dependencies [b902032]
+  - robo.js@0.10.25
+
 ## 0.3.1
 
 ### Patch Changes
