@@ -402,6 +402,7 @@ export async function registerCommands(
 				const existingCommand = existingCommands.find((c) => c.name === command)
 
 				if (existingCommand) {
+					logger.debug(`Deleting command /${existingCommand.name}...`)
 					return rest.delete(
 						guildId
 							? Routes.applicationGuildCommand(clientId, guildId, existingCommand.id)
@@ -438,7 +439,7 @@ export async function registerCommands(
 
 		const endTime = Date.now() - startTime
 
-		logger.info(`Successfully updated ${color.bold(commandType + ' commands')} in ${endTime}ms`)
+		logger.info(`Successfully updated ${commandData.length} ${color.bold(commandType + ' commands')} in ${endTime}ms`)
 		logger.wait(color.dim('It may take a while for the changes to reflect in Discord.'))
 		await Flashcore.delete(FLASHCORE_KEYS.commandRegisterError)
 	} catch (error) {
