@@ -31,7 +31,7 @@ const command = new Command('build')
 	.positionalArgs(true)
 export default command
 
-interface BuildCommandOptions {
+export interface BuildCommandOptions {
 	dev?: boolean
 	files?: string[]
 	force?: boolean
