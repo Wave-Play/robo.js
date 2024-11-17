@@ -33,6 +33,7 @@ export default command
 
 export interface BuildCommandOptions {
 	dev?: boolean
+	exit?: boolean
 	files?: string[]
 	force?: boolean
 	mode?: string
@@ -181,7 +182,7 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 	}
 
 	// Gracefully exit
-	if (!options.dev) {
+	if (options.exit ?? !options.dev) {
 		process.exit(0)
 	}
 }

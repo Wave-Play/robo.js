@@ -57,13 +57,16 @@ type BuildOptions = BuildCommandOptions
 
 /**
  * Builds your Robo instance. Similar to running `robo build` from the CLI.
- * 
+ *
  * @param options - Options for building your Robo instance, similar to CLI options
  * @returns A promise that resolves when Robo has finished building
  */
 export async function build(options?: BuildOptions) {
 	const { buildAction } = await import('../cli/commands/build/index.js')
-	await buildAction([], options ?? {})
+	await buildAction([], {
+		exit: false,
+		...(options ?? {})
+	})
 }
 
 /**
