@@ -14,18 +14,14 @@ import {
 } from './handlers.js'
 import { hasProperties, PackageDir } from '../cli/utils/utils.js'
 import { Flashcore, prepareFlashcore } from './flashcore.js'
+import { Mode } from './mode.js'
 import { loadState } from './state.js'
 import Portal from './portal.js'
 import path from 'node:path'
 import { isMainThread, parentPort } from 'node:worker_threads'
 import type { HandlerRecord, PluginData } from '../types/index.js'
 import type { AutocompleteInteraction, CommandInteraction } from 'discord.js'
-import { Mode } from './mode.js'
-import { generateDefaults } from '../cli/utils/generate-defaults.js'
-import { generateManifest } from '../cli/utils/manifest.js'
-import { buildPublicDirectory } from '../cli/utils/public.js'
-import { findCommandDifferences, registerCommands } from '../cli/utils/commands.js'
-
+import type { BuildCommandOptions } from '../cli/commands/build/index.js'
 
 /**
  * Robo is the main entry point for your bot. It provides a simple API for starting, stopping, and restarting your Robo.
@@ -42,7 +38,6 @@ import { findCommandDifferences, registerCommands } from '../cli/utils/commands.
  */
 export const Robo = { restart, start, stop, build }
 
-
 // Each Robo instance has its own client, exported for convenience
 export let client: Client
 
@@ -58,88 +53,17 @@ interface StartOptions {
 	stateLoad?: Promise<void>
 }
 
-interface BuildOptions {
-	force?: boolean;
-	distDir?: string;
-}
+type BuildOptions = BuildCommandOptions
 
-
-export async function build(options: BuildOptions = {}) {
-	// Debugging 
-	logger.debug(`Building Robo...`)
-	logger.debug('Build options:', options)
-	logger.debug(`Current working directory:`, process.cwd())
-
-	// Make sure environment variables are loaded
-	const defaultMode = Mode.get()
-	await Env.load({ mode: defaultMode })
-
-	// Load the configuration file
-	const config = await loadConfig()
-	const distDir = options.distDir
-	? path.join(process.cwd(), options.distDir)
-	: path.join(process.cwd(), '.robo', 'build')
-
-	// Initialize Flashcore to persist build error data
-	await prepareFlashcore()
-
-	// Use the Robo Compiler to generate .robo/build
-	const compileTime = await Compiler.buildCode({
-		distDir: distDir,
-		excludePaths: config.excludePaths?.map((p) => p.replaceAll('/', path.sep)),
-	})
-	logger.debug(`Compiled in ${compileTime}ms`)
-
-	// Assign default commands and events
-	const generatedFiles = await generateDefaults(distDir)
-
-	// Generate manifest.json
-	const oldManifest = await Compiler.useManifest({ safe: true })
-	const manifestTime = Date.now()
-	const manifest = await generateManifest(generatedFiles, 'robo')
-	logger.debug(`Generated manifest in ${Date.now() - manifestTime}ms`)
-
-	// Build /public for production if available
-	await buildPublicDirectory()
-
-	// Compare the old manifest with the new one
-	const oldCommands = oldManifest.commands
-	const newCommands = manifest.commands
-	const addedCommands = findCommandDifferences(oldCommands, newCommands, 'added')
-	const removedCommands = findCommandDifferences(oldCommands, newCommands, 'removed')
-	const changedCommands = findCommandDifferences(oldCommands, newCommands, 'changed')
-	const hasCommandChanges = addedCommands.length > 0 || removedCommands.length > 0 || changedCommands.length > 0
-
-	// Do the same but for context commands
-	const oldContextCommands = { ...(oldManifest.context?.message ?? {}), ...(oldManifest.context?.user ?? {}) }
-	const newContextCommands = { ...manifest.context.message, ...manifest.context.user }
-	const addedContextCommands = findCommandDifferences(oldContextCommands, newContextCommands, 'added')
-	const removedContextCommands = findCommandDifferences(oldContextCommands, newContextCommands, 'removed')
-	const changedContextCommands = findCommandDifferences(oldContextCommands, newContextCommands, 'changed')
-	const hasContextCommandChanges =
-		addedContextCommands.length > 0 || removedContextCommands.length > 0 || changedContextCommands.length > 0
-
-	const shouldRegister = options.force || hasCommandChanges || hasContextCommandChanges
-
-	if (config.experimental?.disableBot !== true && options.force) {
-		discordLogger.warn('Forcefully registering commands.')
-	}
-
-	if (config.experimental?.disableBot !== true && shouldRegister) {
-		await registerCommands(
-			false,
-			options.force,
-			newCommands,
-			manifest.context.message,
-			manifest.context.user,
-			changedCommands,
-			addedCommands,
-			removedCommands,
-			changedContextCommands,
-			addedContextCommands,
-			removedContextCommands
-		)
-	}
+/**
+ * Builds your Robo instance. Similar to running `robo build` from the CLI.
+ * 
+ * @param options - Options for building your Robo instance, similar to CLI options
+ * @returns A promise that resolves when Robo has finished building
+ */
+export async function build(options?: BuildOptions) {
+	const { buildAction } = await import('../cli/commands/build/index.js')
+	await buildAction([], options ?? {})
 }
 
 /**
