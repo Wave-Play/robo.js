@@ -1,0 +1,9 @@
+**/.docusaurus/**
+**/.robo/**
+**/build/**
+**/dist/**
+**/__benchmarks__/**
+.changeset
+.turbo
+temp
+templates/web-apps/**
