@@ -9,7 +9,6 @@ export const packageJson = require('../../package.json')
 
 const IS_WINDOWS = /^win/.test(process.platform)
 
-
 export type PackageManager = 'npm' | 'bun' | 'pnpm' | 'yarn'
 
 /**
