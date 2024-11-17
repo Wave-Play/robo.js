@@ -42,7 +42,7 @@
 	},
 	"peerDependencies": {
 		"@robojs/server": "^0.6.2",
-		"robo.js": "^0.10.24"
+		"robo.js": "^0.10.25"
 	},
 	"peerDependenciesMeta": {
 		"@robojs/server": {
