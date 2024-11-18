@@ -32,7 +32,7 @@ async function doctorAction(options: DoctorOptions) {
 		await checkSageUpdates()
 	}
 
-	await Env.load()
+	Env.loadSync()
 	const config = await loadConfig()
 
 	// Group and run checks
