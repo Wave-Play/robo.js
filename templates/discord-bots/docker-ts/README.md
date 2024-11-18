@@ -2,7 +2,7 @@
 
 ---
 
-# Hiya, docker-ts 🌈
+# Discord Bot - Docker (TS)
 
 **[Robo.js](https://robojs.dev)** project ready for use with **Docker**.
 
