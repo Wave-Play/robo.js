@@ -536,11 +536,11 @@ const sidebars = {
 					label: 'createTRPCReact',
 					type: 'doc'
 				},
-				{
+				/*{
 					id: 'ref/@robojs/trpc/Function.httpBatchLink',
 					label: 'httpBatchLink',
 					type: 'doc'
-				},
+				},*/
 				{
 					id: 'ref/@robojs/trpc/Function.TRPCProvider',
 					label: 'TRPCProvider',
