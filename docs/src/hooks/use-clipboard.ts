@@ -1,5 +1,5 @@
 import copy from 'copy-to-clipboard'
 
 export const useClipboard = () => {
-	return [async (text) => copy(text)]
+	return [async (text: string) => copy(text)]
 }
