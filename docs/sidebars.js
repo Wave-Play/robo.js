@@ -247,6 +247,7 @@ const sidebars = {
 					items: [
 						'templates/discord-bots/ai-chatbot-ts',
 						'templates/discord-bots/analytics-ts',
+						'templates/discord-bots/docker-ts',
 						'templates/discord-bots/economy-ts',
 						'templates/discord-bots/mongodb-ts',
 						'templates/discord-bots/mrjawesome-dev-toolkit-js',

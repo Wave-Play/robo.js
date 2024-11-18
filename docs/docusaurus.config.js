@@ -230,6 +230,7 @@ const config = {
 					'templates/discord-bots/ai-chatbot-ts/README.md',
 					'templates/discord-bots/analytics-ts/README.md',
 					'templates/discord-bots/economy-ts/README.md',
+					'templates/discord-bots/docker-ts/README.md',
 					'templates/discord-bots/mongodb-ts/README.md',
 					'templates/discord-bots/mrjawesome-dev-toolkit-js/README.md',
 					'templates/discord-bots/mrjawesome-dev-toolkit-ts/README.md',
