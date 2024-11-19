@@ -69,7 +69,7 @@ export default (client: Client) => {
 
 Now, when the bot is ready, it will not only log 'Bot is ready!' in the console, but also set its status to 'Playing with code'!
 
-For larger bots with more complex use cases, check out our [Modules Documentation](/docs/advanced/modules) to group your events and commands.
+For larger bots with more complex use cases, check out our [Modules Documentation](/robojs/modules) to group your events and commands.
 
 ## Use Cases 🛠️
 
@@ -108,7 +108,7 @@ export default (oldState: VoiceState, newState: VoiceState) => {
 
 ## Intents & Privileged Intents 🛡️
 
-Depending on the events you're trying to listen to, you might need to add more intents in your bot's [configuration](/docs/advanced/configuration). Note: some events like `messageContent` may require privileged intents to be toggled on in your bot's Discord application settings.
+Depending on the events you're trying to listen to, you might need to add more intents in your bot's [configuration](/robojs/config). Note: some events like `messageContent` may require privileged intents to be toggled on in your bot's Discord application settings.
 
 Privileged intents include `GUILD_PRESENCES` and `GUILD_MEMBERS`, which cover events related to guild members' presence and activities. To enable these, you need to:
 

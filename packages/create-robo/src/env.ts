@@ -135,14 +135,7 @@ export class Env {
 
 	private escapeValue(value: string): string {
 		// Escape backslashes and double quotes
-		const escaped = value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
-
-		// Determine if the value needs to be quoted
-		if (/[\s#=]/.test(value)) {
-			return `"${escaped}"`
-		} else {
-			return escaped
-		}
+		return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
 	}
 
 	/**

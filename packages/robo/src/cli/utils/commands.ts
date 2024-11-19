@@ -312,16 +312,21 @@ export async function registerCommands(
 	addedContextCommands: string[],
 	removedContextCommands: string[]
 ) {
-	const config = await loadConfig()
-	const clientId = env('discord.clientId')
-	const guildId = env('discord.guildId')
-	const token = env('discord.token')
+	const config = await loadConfig('robo', true)
+	const clientId = env.get('discord.clientId')
+	const guildId = env.get('discord.guildId')
+	const token = env.get('discord.token')
+	let commandType = guildId ? 'guild' : 'global'
 
 	if (!token || !clientId) {
 		logger.error(
 			`${color.bold('DISCORD_TOKEN')} or ${color.bold('DISCORD_CLIENT_ID')} not found in environment variables`
 		)
 		return
+	}
+
+	if (config.experimental?.userInstall) {
+		commandType += ' and user install'
 	}
 
 	const startTime = Date.now()
@@ -397,6 +402,7 @@ export async function registerCommands(
 				const existingCommand = existingCommands.find((c) => c.name === command)
 
 				if (existingCommand) {
+					logger.debug(`Deleting command /${existingCommand.name}...`)
 					return rest.delete(
 						guildId
 							? Routes.applicationGuildCommand(clientId, guildId, existingCommand.id)
@@ -409,7 +415,7 @@ export async function registerCommands(
 		}
 
 		// Ensure entry command is added if already there (or if reset)
-		if (entryCommand) {
+		if (entryCommand && !guildId) {
 			// @ts-expect-error - This is a valid command object
 			commandData.push(entryCommand)
 		}
@@ -432,13 +438,8 @@ export async function registerCommands(
 		}
 
 		const endTime = Date.now() - startTime
-		let commandType = guildId ? 'guild' : 'global'
 
-		if (config.experimental?.userInstall) {
-			commandType += ' and user install'
-		}
-
-		logger.info(`Successfully updated ${color.bold(commandType + ' commands')} in ${endTime}ms`)
+		logger.info(`Successfully updated ${commandData.length} ${color.bold(commandType + ' commands')} in ${endTime}ms`)
 		logger.wait(color.dim('It may take a while for the changes to reflect in Discord.'))
 		await Flashcore.delete(FLASHCORE_KEYS.commandRegisterError)
 	} catch (error) {

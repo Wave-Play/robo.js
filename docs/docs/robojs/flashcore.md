@@ -7,7 +7,7 @@ import TabItem from '@theme/TabItem';
 
 ## Saving and Fetching Data
 
-Think of **Flashcore** as **[States](/docs/basics/states)** except permanent. It's in it for the long game, and yes, it's async! Here's how we're handling a user's high score in a game:
+Think of **Flashcore** as **[States](/robojs/state)** except permanent. It's in it for the long game, and yes, it's async! Here's how we're handling a user's high score in a game:
 
 Stashing the high score:
 

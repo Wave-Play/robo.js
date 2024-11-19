@@ -1,5 +1,6 @@
 import { isMainThread, parentPort, workerData } from 'node:worker_threads'
 import { color, composeColors } from '../core/color.js'
+import { setGlobalOverwrites } from '../core/env.js'
 import { logger } from '../core/logger.js'
 import { setMode } from '../core/mode.js'
 import { removeInstances } from '../core/state.js'
@@ -9,6 +10,11 @@ import type { SpiritMessage } from '../types/index.js'
 if (isMainThread) {
 	logger.error('Spirit file should never be imported from the main thread!')
 	process.exit(1)
+}
+
+// Keep track of which environment variables were loaded to overwrite later
+if (workerData.env) {
+	setGlobalOverwrites(Object.keys(workerData.env))
 }
 
 // Inherit mode for this thread

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { spawn } from 'child_process'
-import { loadEnv } from '../core/dotenv.js'
+import { Env } from '../core/env.js'
 import { Command } from './utils/cli-handler.js'
 import { IS_WINDOWS, packageJson } from './utils/utils.js'
 import { logger as defaultLogger } from '../core/logger.js'
@@ -24,7 +24,7 @@ async function handler() {
 
 	// Load environment variables
 	logger.debug('Loading environment variables...')
-	await loadEnv()
+	await Env.load()
 
 	// If "--" isn't present, assume `robo` command
 	// `npx robox build` -> `robox -- npx robo build`

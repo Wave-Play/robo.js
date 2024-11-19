@@ -1,0 +1,4 @@
+// @ts-check
+/** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
+const typedocSidebar = { items: [{"type":"category","label":"Classes","items":[{"type":"doc","id":"ref/@robojs/analytics/Class.GoogleAnalytics","label":"GoogleAnalytics"},{"type":"doc","id":"ref/@robojs/analytics/Class.ManyEngines","label":"ManyEngines"},{"type":"doc","id":"ref/@robojs/analytics/Class.PlausibleAnalytics","label":"PlausibleAnalytics"}]},{"type":"category","label":"Variables","items":[{"type":"doc","id":"ref/@robojs/analytics/Variable.Analytics","label":"Analytics"}]}]};
+module.exports = typedocSidebar.items;

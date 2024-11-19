@@ -6,7 +6,31 @@ let _mode: string | null = null
 let _modeColor: (typeof color)[0]
 
 /**
- * Internal
+ * Modes are a way to define "profiles" for your Robo session. Each with its own config(s), envionment variables, and code.
+ *
+ * ```ts
+ * import { Mode } from 'robo.js'
+ *
+ * // Get the current mode
+ * const mode = Mode.get()
+ *
+ * // Check if the current mode is "dev"
+ * if (Mode.is('dev')) {
+ *  // Do something
+ * }
+ *
+ * // Colorize text based on the current mode
+ * console.log(Mode.color('Hello, world!'))
+ * ```
+ *
+ * Everything is granular. You can even run multiple modes at the same time!
+ *
+ * [**Learn more:** Mode](https://robojs.dev/robojs/mode)
+ */
+export const Mode = Object.freeze({ color: colorMode, get, is })
+
+/**
+ * @internal
  */
 export function getModeColor(mode: string) {
 	const Colors = [color.blue, color.cyan, color.red, color.yellow, color.green, color.magenta]
@@ -16,7 +40,7 @@ export function getModeColor(mode: string) {
 }
 
 /**
- * Internal
+ * @internal
  */
 export function setMode(mode: string) {
 	// Only set mode to valid value, otherwise keep it as is
@@ -87,8 +111,6 @@ export function setMode(mode: string) {
 
 	return { shardModes }
 }
-
-export const Mode = Object.freeze({ color: colorMode, get, is })
 
 /**
  * Returns the color function for the current mode.
