@@ -1,0 +1,45 @@
+# Windows Execution_Policies
+
+:::warning
+
+Just keep in mind PowerShell's execution policy is a safety feature that controls the conditions under which PowerShell loads configuration files and runs scripts. This feature helps prevent the execution of malicious scripts. 
+
+:::
+
+
+## Steps to Change the Execution Policy in PowerShell
+
+Open PowerShell as Administrator
+
+Check Current Execution Policy (optional):
+
+You can check the current execution policy by running:
+
+```bash
+Get-ExecutionPolicy
+```
+
+Change the Execution Policy:
+
+To change the execution policy to allow running scripts, you can set it to RemoteSigned, which allows scripts created locally to run, but requires scripts downloaded from the internet to be signed by a trusted publisher this is the safest option.
+
+Run the following command:
+```bash
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+This command changes the execution policy for the current user only.
+
+Confirm the Change:
+
+If prompted to confirm the change, type Y (Yes) and press Enter.
+
+Verify the Change (optional):
+
+You can verify that the execution policy has been changed by running:
+
+```bash
+Get-ExecutionPolicy -List
+```
+
+This will show you the execution policies for different scopes.
