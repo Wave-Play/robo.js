@@ -18,7 +18,8 @@
 	},
 	"dependencies": {
 		"@roboplay/robo.js": "^0.9.26",
-		"discord.js": "^14.16.2"
+		"discord.js": "^14.16.2",
+		"economy-bot": "file:"
 	},
 	"devDependencies": {
 		"@swc/core": "^1.7.26",

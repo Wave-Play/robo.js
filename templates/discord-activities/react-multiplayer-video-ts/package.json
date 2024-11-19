@@ -37,6 +37,7 @@
 		"@robojs/sync": "^0.1.2",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
+		"react-multiplayer-video-ts": "file:",
 		"robo.js": "^0.10.15"
 	},
 	"devDependencies": {

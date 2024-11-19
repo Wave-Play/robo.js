@@ -23,6 +23,7 @@
 		"upgrade": "sage upgrade"
 	},
 	"dependencies": {
+		"bot-postgres-ts": "file:",
 		"discord.js": "^14.16.2",
 		"postgres": "^3.4.4",
 		"robo.js": "^0.10.15"
