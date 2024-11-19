@@ -1,6 +1,6 @@
 {
 	"name": "bake-n-take-js",
-	"description": "",
+	"description": "Bake 'n take orders with this Discord bot!",
 	"version": "1.0.0",
 	"type": "module",
 	"private": true,

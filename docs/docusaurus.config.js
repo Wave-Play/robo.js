@@ -229,6 +229,8 @@ const config = {
 					'templates/discord-activities/vanilla-ts/README.md',
 					'templates/discord-bots/ai-chatbot-ts/README.md',
 					'templates/discord-bots/analytics-ts/README.md',
+					'templates/discord-bots/bake-n-take-js/README.md',
+					'templates/discord-bots/bake-n-take-ts/README.md',
 					'templates/discord-bots/economy-ts/README.md',
 					'templates/discord-bots/docker-ts/README.md',
 					'templates/discord-bots/mongodb-ts/README.md',
