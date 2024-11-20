@@ -1,0 +1,161 @@
+---
+description: Learn how to make external network requests in your Discord Activity in a way compatible with the Discord Proxy.
+---
+
+import { BeforeAfter } from '@site/src/components/shared/BeforeAfter'
+import { Card } from '@site/src/components/shared/Card'
+import { CardContainer } from '@site/src/components/shared/CardContainer'
+
+# 🛡️ Discord Proxy
+
+**[Client](./client)** network requests made by your **Discord Activity** are "sandboxed" through **[Discord's Proxy](https://discord.com/developers/docs/activities/development-guides#activity-proxy-considerations)**.
+
+That means you cannot directly make network requests to **[external URLs](#fetching-external-resources)** from it for security reasons. You may have seen this if you've tried using iframes. There are also **[limitations](#network-limitations)** to what network protocols you can use.
+
+## Content Security Policy (CSP)
+
+Ever tried to load a URL from an external resource and got a `blocked:csp` error? That's the **Discord Proxy** doing its job.
+
+**[Content Security Policy (CSP)](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP)** is a security feature that helps prevent **[cross-site scripting (XSS)](https://owasp.org/www-community/attacks/xss/)** attacks. It restricts what can load, such as scripts, styles, and images. **Discord** trusts only you **[and itself](https://discord.com/developers/docs/activities/development-guides#exceptions)**. It will throw **CSP** errors at everyone else.
+
+It may be a pain, but it's for your own good.
+
+## Proxy Rules
+
+The **Discord Proxy** has a few rules you need to follow:
+
+- **[No external URLs](#fetching-external-resources)**: You can't load external resources directly.
+- **[Protocols and Ports](#network-limitations)**: Only **[HTTPS](https://developer.mozilla.org/en-US/docs/Glossary/HTTPS)**, derivatives, and some protocols are allowed.
+- **[Prefix /.proxy for relative paths](https://discord.com/developers/docs/activities/development-guides#construct-a-full-url)**: Requests made within the activity should be prefixed with `/.proxy`.
+- **[Respect CSP directives](#content-security-policy-csp)**: They are unique for each activity, like `https://<CLIENT_ID>.discordsays.com/.proxy/`.
+
+You can automate your **CSP** compliance by using **[@robojs/patch](../plugins/patch)** to patch URLs in your code with zero effort. All **Robo.js** activity projects come with this plugin pre-installed by default.
+
+<CardContainer>
+	<Card href="../plugins/patch" title="🔌 @robojs/patch" description="A collection of patches optimized for Robo.js projects." />
+</CardContainer>
+
+## Fetching External Resources
+
+You can friend the **Discord Proxy** by using **[URL Mappings](#url-mapping)**, **[patching URLs](https://github.com/discord/embedded-app-sdk/blob/main/patch-url-mappings.md)**, or **[proxying requests](#proxying-requests)**.
+
+<CardContainer>
+	<Card
+		href="https://discord.com/developers/applications"
+		title="🔗 Discord Developer Portal"
+		description="Find it under your app's URL Mappings."
+	/>
+</CardContainer>
+
+### URL Mapping
+
+Mapping URLs is a way to tell the **Discord Proxy** to allow certain external resources. You can map a URL to a specific path in the **[Discord Developer Portal](https://discord.com/developers/applications)**. This is the recommended way to allow external resources you need in your **Discord Activity**.
+
+Let's say you need to load something from **[GitHub](https://github.com)**. You can map it to a path like `/github` and `/assets`.
+
+<BeforeAfter from={'/github'} to={'https://github.com'} />
+
+<BeforeAfter from={'/assets'} to={'https://raw.githubusercontent.com/Wave-Play/robo.js/main'} />
+
+This configuration maps URLs you can use in your activity like so:
+
+<BeforeAfter from={'/github/Wave-Play/robo.js'} to={'https://github.com/Wave-Play/robo.js'} />
+
+<BeforeAfter from={'/assets/README.md'} to={'https://raw.githubusercontent.com/Wave-Play/robo.js/main/README.md'} />
+<p></p>
+
+And voila, you can now load those URLs in your **Discord Activity** using the mapped paths.
+
+```HTML
+<iframe src="/assets/README.md"></iframe>
+```
+
+```js
+fetch('/assets/docs/static/img/logo.png')
+```
+
+You can reference it as a path or **[construct a full URL](https://discord.com/developers/docs/activities/development-guides#construct-a-full-url)**.
+
+:::tip Don't actually use GitHub as a CDN
+
+GitHub is not a CDN. Connect **[your host](https://roboplay.dev)** to a CDN like **[Cloudflare](https://www.cloudflare.com)** or **[Bunny.net](https://bunny.net/)** for your assets.
+
+:::
+
+### URL Patching
+
+Mapping is great if you have control over the paths used, _but what if you don't?_ You know, like when using third-party libraries with hardcoded URLs. You can use the **[Embedded App SDK](https://github.com/discord/embedded-app-sdk/)** for that!
+
+```js
+import { patchUrlMappings } from '@discord/embedded-app-sdk'
+
+patchUrlMappings([{ prefix: '/foo', target: 'foo.com' }])
+```
+
+Alternatively, you can use a post-install utility like **[patch-package](https://www.npmjs.com/package/patch-package)** or fork the library to use mapped URLs.
+
+### Proxying Requests
+
+As a last resort, you can proxy requests through your **Web Server**. This is useful when you need to make requests to a specific port or handle requests that the **Discord Proxy** can't, but it's not always the best solution.
+
+Creating your own proxy is easy. Just create a file in `/src/api` called `proxy.js` with the following code:
+
+```js
+export default async (request) => {
+	return fetch(request.query.url)
+}
+```
+
+Modify as you see fit to validate requests. You can use it like so inside your **Activity Client**:
+
+```jsx
+<Player url={'/api/proxy?url=' + ExternalUrl} />
+```
+
+This code basically has your **Web Server** to fetch the data and send it back to your **Activity Client**.
+
+While this method is effective for bypassing **CSP** restrictions, it does introduce additional latency because your server has to fetch the resource before serving it back to the activity. This may impact the performance of your activity, especially for large files or high traffic, so make sure your **[Hosting Service](https://docs.roboplay.dev/discord-activities/hosting)** can handle it.
+
+Be aware of potential security risks when using a proxy server, such as **[URL Injections](https://cheatsheetseries.owasp.org/cheatsheets/Unvalidated_Redirects_and_Forwards_Cheat_Sheet.html)** and **[SSRF (Server-Side Request Forgery)](<https://owasp.org/Top10/A10_2021-Server-Side_Request_Forgery_(SSRF)>)** attacks. Always use Discord's **URL Mapping** whenever possible.
+
+## Security Considerations
+
+The **Discord Proxy** hides the user's IP address and blocks URLs from known **[malicious endpoints](https://www.youtube.com/watch?v=dQw4w9WgXcQ)**. This ensures the safety of the user's data and privacy. However, it also means that you need to be careful when handling external resources.
+
+Don't trust info coming from the **Embedded App SDK** as truth. There could be an impostor among us. Call the Discord API directly from your app's **[Web Server](./server)** with the **OAuth2** token you received during **[Authentication](./authentication)** if you need information that's not sus.
+
+:::warning Sanitize Your Inputs
+
+Always sanitize user inputs such as usernames and channel names. You never know what might try to sneak in.
+
+:::
+
+## Network Limitations
+
+Want to use **[WebRTC](https://webrtc.org/)** or **[WebTransport](https://w3c.github.io/webrtc-quic/)**? Sorry, you can't. **[For now](https://discord.com/developers/docs/activities/development-guides#activity-proxy-considerations)**, at least.
+
+The **Discord Proxy** does _not_ support the following:
+
+- **[Some iframe ports](https://developers.cloudflare.com/fundamentals/reference/network-ports/#network-ports-compatible-with-cloudflares-proxy)**
+- **[URL Mapping external ports](https://developers.cloudflare.com/workers/platform/known-issues/#custom-ports)**
+- **[WebRTC](https://webrtc.org)**
+- **[WebTransport](https://web.dev/webtransport)**
+
+You'll be fine if you stick to **[WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)** or **[HTTPS](https://developer.mozilla.org/en-US/docs/Glossary/HTTPS)**, as well as some protocols built on them like **[DASH](https://developer.mozilla.org/en-US/docs/Web/Media/Audio_and_video_delivery/Setting_up_adaptive_streaming_media_sources#mpeg-dash_encoding)** or **[HLS](https://developer.mozilla.org/en-US/docs/Web/Media/Audio_and_video_delivery/Setting_up_adaptive_streaming_media_sources#hls_encoding)** for streaming.
+
+Need to make a request to a specific port? Have your **Web Server** handle it by **[proxying the request](#proxying-requests)**. That won't always work on iframes, though. You may need to virtualize the source and livestream it from your server but that has its own limitations.
+
+## Additional Resources
+
+<CardContainer>
+	<Card
+		href="https://discord.com/developers/docs/activities/development-guides#activity-proxy-considerations"
+		title="🔗 Discord Developer Docs"
+		description="Learn more about the Discord Proxy."
+	/>
+	<Card
+		href="https://dev.to/waveplay/resolve-content-security-policy-csp-issues-in-your-discord-activity-using-a-nodejs-proxy-2634"
+		title="📚 Resolve CSP Issues with a Proxy"
+		description="A guide on how to set up a proxy to bypass CSP issues."
+	/>
+</CardContainer>

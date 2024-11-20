@@ -1,15 +1,22 @@
-import { client } from '@roboplay/robo.js'
+import { AI, isReplyingToUser } from '@/core/ai.js'
+import { chunkMessage, replaceUsernamesWithIds } from '@/utils/discord-utils.js'
+import { addUserFollowUp } from '@/events/typingStart/debounce.js'
+import { logger } from '@/core/logger.js'
+import { options as pluginOptions } from '@/events/_start.js'
 import { Message } from 'discord.js'
-import { AiEngine, isReplyingToUser } from '../../core/engine.js'
-import { chunkMessage, replaceUsernamesWithIds } from '../../utils/discord-utils.js'
-import { addUserFollowUp } from '../typingStart/debounce.js'
-import { logger } from '../../core/logger.js'
-import { options as pluginOptions } from '../_start.js'
-import type { GptChatMessage, GptChatMessageContent } from '../../core/openai.js'
+import { client } from 'robo.js'
+import type { ChatMessage, ChatMessageContent } from '@/engines/base.js'
 
 export default async (message: Message) => {
 	// Make sure the bot isn't responding to itself
 	if (message.author.id === client.user?.id) {
+		return
+	}
+
+	// Restrict to specific channels if specified
+	const isRestricted = pluginOptions.restrict?.channelIds?.length
+	if (isRestricted && !pluginOptions.restrict?.channelIds?.includes(message.channelId)) {
+		logger.debug(`Message received in channel ${message.channelId} but restricted to specific channels`)
 		return
 	}
 
@@ -18,7 +25,7 @@ export default async (message: Message) => {
 	if (!message.mentions.users.has(client.user?.id ?? '') && !isOpenConvo) {
 		if (isReplyingToUser(message.author.id)) {
 			addUserFollowUp(message.author.id, message, message.content)
-			logger.debug(`Added follow up message for ${message.author.username}`)
+			logger.debug(`Added follow up message for ${message.author.username} but not mentioned`)
 		} else {
 			logger.debug(`Message received but not mentioned`)
 		}
@@ -62,7 +69,7 @@ export default async (message: Message) => {
 	// If currently already replying to this user, add as follow up context
 	if (isReplyingToUser(targetMessage.author.id)) {
 		addUserFollowUp(targetMessage.author.id, targetMessage, processedContent)
-		logger.debug(`Added follow up message for ${targetMessage.author.username}`)
+		logger.debug(`Added follow up message for @${targetMessage.author.username} because already replying`)
 		return
 	}
 
@@ -87,28 +94,47 @@ export default async (message: Message) => {
 	}
 
 	// Structure messages for GPT
-	const gptMessages: GptChatMessage[] = messages.map((message) => ({
+	const gptMessages: ChatMessage[] = messages.map((message) => ({
 		role: message.author.id === client.user?.id ? 'assistant' : 'user',
 		content: getMessageContent(message)
 	}))
 
-	await AiEngine.chat(gptMessages, {
+	await AI.chat(gptMessages, {
 		channel: message.channel,
 		member: message.member ?? message.guild?.members.cache.get(message.author.id),
 		onReply: async (reply) => {
-			const chunks = chunkMessage(reply)
+			let { components, embeds, files } = reply
+			const chunks = chunkMessage(reply.text ?? '')
 			let lastMessage = targetMessage
+
+			// If there's no chunks to split, just send special data
+			if (!chunks.length) {
+				await lastMessage.reply({
+					components,
+					embeds,
+					files
+				})
+				return
+			}
 
 			for (const chunk of chunks) {
 				const content = replaceUsernamesWithIds(chunk, userMap)
-				lastMessage = await lastMessage.reply(content)
+				lastMessage = await lastMessage.reply({
+					content,
+					components,
+					embeds,
+					files
+				})
+				components = undefined
+				embeds = undefined
+				files = undefined
 			}
 		}
 	})
 }
 
 // TODO: Handle prefix for answer-other differently! (dedicated processContent function?)
-function getMessageContent(message: Message): GptChatMessageContent {
+function getMessageContent(message: Message): ChatMessageContent {
 	// Prefix who sent the message (who to refer to)
 	const content = message.author.username + ': ' + message.content
 

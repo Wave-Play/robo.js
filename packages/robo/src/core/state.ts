@@ -1,12 +1,16 @@
 import { FLASHCORE_KEYS } from './constants.js'
 import { logger } from './logger.js'
 import { Flashcore } from './flashcore.js'
-import type { RoboMessage, RoboStateMessage } from '../types/index.js'
-import type { ChildProcess } from 'child_process'
 
 export const state: Record<string, unknown> = {}
 
+export interface GetStateOptions {
+	default?: unknown
+	namespace?: string
+}
+
 export interface SetStateOptions {
+	namespace?: string
 	persist?: boolean
 }
 
@@ -14,6 +18,23 @@ export interface StateOptions {
 	persist?: boolean
 }
 
+/**
+ * States are your Robo's personal memory bank.
+ *
+ * ```ts
+ * import { State } from 'robo.js'
+ *
+ * // Set a value in the state
+ * State.set('key', 'value')
+ *
+ * // Get a value from the state
+ * const value = State.get('key')
+ * ```
+ *
+ * States are ephemerally in-memory; data is lost when stopped but not when restarted.
+ * 
+ * [**Learn more:** State Management](https://robojs.dev/robojs/state)
+ */
 export class State {
 	private static readonly _prefixes = new Set<string>()
 
@@ -45,7 +66,37 @@ export class State {
 		return new Array(...State._prefixes)
 	}
 
-	fork(prefix: string, options?: StateOptions) {
+	/**
+	 * Get a value from the forked state.
+	 * If the value does not exist, null is returned.
+	 *
+	 * @param key The key to get the value for.
+	 * @returns The value for the given key, or null if the key does not exist.
+	 */
+	public static get<T = string>(key: string, options?: GetStateOptions) {
+		return getState<T>(key, options)
+	}
+
+	/**
+	 * Set a value in the forked state.
+	 * When the persist option is set to true, the state will be persisted to disk.
+	 *
+	 * @param key The key to set the value for.
+	 * @param value The value to set.
+	 * @param options Options for setting the state. (Persisting to disk)
+	 */
+	public static set<T>(key: string, value: T, options?: SetStateOptions) {
+		setState<T>(key, value, options)
+	}
+
+	/**
+	 * Creates a new state fork.
+	 *
+	 * @param prefix - Fork prefix (e.g. 'polls')
+	 * @param options - Options for the fork (persisting all state by default)
+	 * @returns - A new state fork you can deconstruct (e.g. `const { getState, setState } = State.fork('polls')`
+	 */
+	public fork(prefix: string, options?: StateOptions) {
 		return new State(`${this._prefix}__${prefix}`, options)
 	}
 
@@ -127,37 +178,13 @@ export function clearState(): void {
  * @param key The key to get the value for.
  * @returns The value for the given key, or null if the key does not exist.
  */
-export function getState<T = string>(key: string): T | null {
-	return state[key] as T | null
-}
-
-export function getStateSave(botProcess: ChildProcess | null): Promise<Record<string, unknown>> {
-	if (!botProcess) {
-		return Promise.resolve({})
+export function getState<T = string>(key: string, options?: GetStateOptions): T | null {
+	// If a namespace is provided, prepend it to the key
+	if (options?.namespace) {
+		key = `${options.namespace}__${key}`
 	}
 
-	return new Promise((resolve, reject) => {
-		const messageListener = (message: RoboMessage) => {
-			// Check for the specific type of message we're waiting for
-			if (isStateMessage(message)) {
-				botProcess.off('message', messageListener)
-				resolve(message.state)
-			}
-		}
-
-		botProcess.on('message', messageListener)
-
-		botProcess.once('error', (error) => {
-			botProcess.off('message', messageListener)
-			reject(error)
-		})
-
-		botProcess.send({ type: 'state-save' })
-	})
-}
-
-function isStateMessage(message: RoboMessage): message is RoboStateMessage {
-	return message.type === 'state-load' || message.type === 'state-save'
+	return (state[key] ?? options?.default) as T | null
 }
 
 export function loadState(savedState: Record<string, unknown>) {
@@ -180,17 +207,33 @@ export function saveState() {
  * @param value The value to set.
  * @param options Options for setting the state. (Persisting to disk)
  */
-export function setState<T>(key: string, value: T, options?: SetStateOptions): void {
+export function setState<T>(key: string, value: T | ((oldValue: T) => T), options?: SetStateOptions): T {
 	const { persist } = options ?? {}
-	state[key] = value
+
+	// If a namespace is provided, prepend it to the key
+	if (options?.namespace) {
+		key = `${options.namespace}__${key}`
+	}
+
+	// If value is a function, use it to compute the new value based on the old value
+	let newValue = value
+	if (typeof value === 'function') {
+		const oldValue = state[key] as T
+		newValue = (value as (oldValue: T) => T)(oldValue as T)
+	}
+
+	// Apply the new value to the state
+	state[key] = newValue
 
 	// Persist state to disk if requested
 	if (persist) {
 		const persistState = async () => {
 			const persistedState = (await Flashcore.get<Record<string, unknown>>(FLASHCORE_KEYS.state)) ?? {}
-			persistedState[key] = value
+			persistedState[key] = newValue
 			Flashcore.set(FLASHCORE_KEYS.state, persistedState)
 		}
 		persistState()
 	}
+
+	return newValue as T
 }

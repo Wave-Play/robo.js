@@ -1,7 +1,7 @@
 import { logger } from '../../../core/helpers.js'
-import { getState, State } from '@roboplay/robo.js'
+import { getState, State } from 'robo.js'
 import { Colors } from 'discord.js'
-import type { CommandConfig, CommandResult } from '@roboplay/robo.js'
+import type { CommandConfig, CommandResult } from 'robo.js'
 import type { APIEmbedField, AutocompleteInteraction, CommandInteraction } from 'discord.js'
 
 export const config: CommandConfig = {
@@ -82,5 +82,7 @@ export default (interaction: CommandInteraction): CommandResult => {
 
 export function autocomplete(interaction: AutocompleteInteraction) {
 	const value = interaction.options.getFocused().trim().toLowerCase()
-	return State.listForks().filter((fork) => fork.includes(value)).map((fork) => ({ name: fork, value: fork }))
+	return State.listForks()
+		.filter((fork) => fork.includes(value))
+		.map((fork) => ({ name: fork, value: fork }))
 }

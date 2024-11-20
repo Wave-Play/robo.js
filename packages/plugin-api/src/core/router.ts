@@ -1,4 +1,3 @@
-import { logger } from '@roboplay/robo.js'
 import { createRouter } from './radix3.js'
 import type { RouteHandler } from './types.js'
 
@@ -24,12 +23,9 @@ export class Router {
 	}
 
 	find(path: string): RouteResult {
-		logger.debug(`Router.find(${path})`)
-
 		// Remove query params from the path to avoid param issues.
 		const hasQuery = path.includes('?')
 		const route = this._router.lookup(hasQuery ? path.substring(0, path.indexOf('?')) : path)
-		logger.debug('Found matching API Route...', route)
 
 		if (!route) {
 			return null

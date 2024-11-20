@@ -1,5 +1,336 @@
 # robo.js
 
+## 0.10.25
+
+### Patch Changes
+
+- b902032: feat: new `build` function in Robo object
+- b902032: refactor(cli): `deploy` now triggers `login` when necessary
+- b902032: fix(cli): reload environment variables in dev mode
+- b902032: feat(defaults): help specific to each command available
+- b902032: feat(discord): default help menu with pagination
+- b902032: patch(cli): load environment variables in `login` and `deploy` commands
+- b902032: feat: support for `.ts` config files
+- b902032: fix(cli): get custom build directory on start command
+- d10c770: patch(commands): don't register entry point in guild commands
+- b902032: feat: new `Env` export
+- b902032: refactor(cli): style updates to `deploy` and `login` commands
+
+## 0.10.24
+
+### Patch Changes
+
+- 32b172c: fix(commands): account for options without type specified when parsing them
+- fe88aee: fix(sage): await async command handlers even when auto defer is disabled
+
+## 0.10.23
+
+### Patch Changes
+
+- 80d0092: refactor(cli): listen to server for auth url instead of creating locally
+- 5b9eae7: chore: updated help link
+
+## 0.10.22
+
+### Patch Changes
+
+- db93f0a: patch(cli): broken invite command
+- 0c13f23: patch(cli): always ensure entry command is there unless purposefully removed
+
+## 0.10.21
+
+### Patch Changes
+
+- 1e3dcfa: chore(cli): updated help command
+- ced83f9: patch(cli): properly delegate args with spaces to exec
+
+## 0.10.20
+
+### Patch Changes
+
+- c83cf09: patch(cli): seeding no longer overwrites existing files
+
+## 0.10.19
+
+### Patch Changes
+
+- 07baafb: refactor(cli): modernized `robo remove` ux
+- c5fbc34: patch(cli): fallback seed lookup path
+- ef51dd9: fix(cli): cloudflared path on windows
+- 4fc64e9: feat(cli): new `robo sync` command
+
+## 0.10.18
+
+### Patch Changes
+
+- 8198201: feat(cli): new `-y --yes` option in `robo add`
+- 40c77aa: refactor(cli): use discord logger more consistently
+- 8a477bc: refactor(cli): exclude `disableBot` from experimental warnings
+- 457f1d5: patch: account for relative paths in seed lookups
+
+## 0.10.17
+
+### Patch Changes
+
+- ca9b21d: patch: fixed portal regression for apis
+
+## 0.10.16
+
+### Patch Changes
+
+- 4f6fdea: patch: unified global instance for flashcore
+- 0770bac: patch: unified global instance for portal
+
+## 0.10.15
+
+### Patch Changes
+
+- 4fb9298: patch(cli): fixed plugin seeding paths being sourced from
+
+## 0.10.14
+
+### Patch Changes
+
+- 0a6958e: feat: bun support
+- d5b273b: fix(cli): do not refresh .env a second time upon mode mismatch
+- e76bc62: patch(cli): safely handle corrupted manifest files
+
+## 0.10.13
+
+### Patch Changes
+
+- fa321f6: feat(compiler): plugins can now provide seed descriptions
+- a5ae699: feat(cli): show seed descriptions and request consent upon install
+- ed2734b: refactor(compiler): dedicated logger for compiler
+- 70b477e: refactor(compiler): encapsulated compiler object
+- 65809a6: feat(compiler): plugin seeds
+- d22fbfa: fix(cli): patched roboplay api url references
+- 0cae688: refactor(compiler): include project language in manifest
+
+## 0.10.12
+
+### Patch Changes
+
+- 361e3d8: patch(cli): avoid circular dependency imports
+
+## 0.10.11
+
+### Patch Changes
+
+- 2f939d5: patch(cli): support for spaces in options
+- 61b98a2: feat: modes
+
+## 0.10.10
+
+### Patch Changes
+
+- ca8ddd7: refactor(core): moved data loading into robo.start() in production mode
+- 7093bf4: feat: experimental sharding support
+
+## 0.10.9
+
+### Patch Changes
+
+- c43ff79: fix: spawn commands in shell on Windows (CVE-2024-27980)
+
+## 0.10.8
+
+### Patch Changes
+
+- bf6db2e: fix: context commands not adding to manifest properly
+
+## 0.10.7
+
+### Patch Changes
+
+- d6138ef: feat: experimental support for user installs
+
+## 0.10.6
+
+### Patch Changes
+
+- 838ed5d: feat: `extractCommandOptions` utility function
+- 6a4473d: patch: auto delete outdated slash commands
+
+## 0.10.5
+
+### Patch Changes
+
+- 7450631: patch(compiler): updated defaults to better work with decorators and colyseus
+- 7159c94: patch: guard against duplicate cloudflare tunnel logs
+
+## 0.10.4
+
+### Patch Changes
+
+- 7f73414: patch: fixed `loadEnv` module export
+
+## 0.10.3
+
+### Patch Changes
+
+- ce470a7: patch(cli): use command wrapper on windows `robox`
+- e610a59: patch(cli): watcher should honor excluded paths
+
+## 0.10.2
+
+### Patch Changes
+
+- 2b4fcbb: feat(flashcore): convenience `default` option
+- 6d32a61: patch: avoid faulty plugins from duplicating manifest entries
+- 792658a: feat(state): convenience `default` option
+
+## 0.10.1
+
+### Patch Changes
+
+- 0460b7f: patch: use new robo.js package name
+
+## 0.10.0
+
+### Minor Changes
+
+- a1b7c8c: feat(cli): build vite alongside robo if applicable
+- fe8e6ee: feat(states): support for namespace via options
+- 6c57f69: refactor!: removed legacy process runtime
+- 622e07b: feat(cli): alias sage-cli commands within robo.js
+- b6fdd44: refactor: removed `robo doctor` command
+- e5e6514: feat: dedicated utils module
+- 053b2d7: feat(cli): set NODE_ENV when missing
+- 6397f98: feat(cli): new `robox` command wrapper
+- aa8649f: refactor: deprecate dot-based `.config` & remove `robo.config.*` support
+- 25f4a37: feat: options as second command parameter w/ type safety
+- 1e5273e: refactor(cli): delegate `robo upgrade` to `sage upgrade`
+- 93fdbe8: feat(states): support for updater functions as value
+- 3327196: feat: dedicated cli module
+- e4131d4: feat(cli): new -t --tunnel option w/ automatic cloudflared binary download
+- 18feec7: feat(config): can now exclude additional paths from watcher
+- 73cc21c: refactor: removed heartbeat support
+- c85ed36: feat: exposed logger in new separate module
+
+### Patch Changes
+
+- 98263ee: refactor(cli): new startup message
+- 8fb91f8: patch(cli): account for zero dependency projects when adding/removing plugins
+- 67458e9: fix: file watcher not including plugin config files
+- dbc108e: feat: experimental `disableBot` flag
+- 726c414: patch: better support for pnpm when executing commands on windows
+- 78a1fb2: feat(flashcore): support for namespace arrays
+- d3b5f15: chore(config): clientOptions now optional
+- 572a747: feat: new `.setup()` function in logger
+- d874ddd: patch: truncate stack trace code to fit discord embeds
+- f04375f: patch: don't override default logger instances when changing configuration
+- e50b0ca: chore: dim date time in ready event message
+- d4a1f3a: refactor: use scoped logger for discord-specific events
+
+## 0.9.26
+
+### Patch Changes
+
+- e2031ab: patch(cli): clean up printed urls
+
+## 0.9.25
+
+### Patch Changes
+
+- c8720bf: fix(cli): graceful builds no longer cause dev command to exit prematurely
+
+## 0.9.24
+
+### Patch Changes
+
+- 5331663: feat(cli): new `deploy` experience w/ real-time updates
+- 71a7ec0: patch(cli): gracefully exit build commands
+
+## 0.9.23
+
+### Patch Changes
+
+- 515901e: feat(cli): include link to new deployment page in `robo deploy`
+
+## 0.9.22
+
+### Patch Changes
+
+- 5192bbb: patch(cli): sanitize non-ascii in project metadata when making requests
+
+## 0.9.21
+
+### Patch Changes
+
+- 5f43d35: fix(compiler): specify module settings to fully resolve imports
+
+## 0.9.20
+
+### Patch Changes
+
+- 44017a8: patch(cli): tweaked .robopack compression for better compatibility
+
+## 0.9.19
+
+### Patch Changes
+
+- e007926: patch(cli): windows-related deployment bugs
+
+## 0.9.18
+
+### Patch Changes
+
+- c21467b: chore(cli): auto clear old unsupported RoboPlay session data
+- 21538bc: patch(flashcore): support options in `has()` function
+- f80ce66: patch(cli): updated `robo deploy` to use newer api requirements
+- 5ed24e5: feat(cli): `robo cloud logs` command
+- 7b9e155: feat(cli): `robo cloud start` and `robo cloud stop` commands
+- ab03c32: refactor(cli): connect Robo to RoboPlay Pods after `robo login`
+
+## 0.9.17
+
+### Patch Changes
+
+- faf4ab1: patch: show errors caused by config files
+- 82b1379: feat(cli): logout command
+- 7fb6ea3: feat(cli): cloud status command
+- 86e745d: refactor(logger): updated styling for fork prefix
+- 2439383: feat(cli): `cloud status` now includes status for your robos
+- 177861a: feat(cli): login command
+
+## 0.9.16
+
+### Patch Changes
+
+- 2f7f75e: fix: compare default commands using correct platform separator
+
+## 0.9.15
+
+### Patch Changes
+
+- 0921547: chore: additional logging when generating default commands
+
+## 0.9.14
+
+### Patch Changes
+
+- a58e471: patch: manual opt-out for /dev commands
+
+## 0.9.13
+
+### Patch Changes
+
+- 7a6a53c: fix: respect help command disabling
+
+## 0.9.12
+
+### Patch Changes
+
+- 0502c38: feat(flashcore): new `Flashcore.has()` function to check if a key exists
+
+## 0.9.11
+
+### Patch Changes
+
+- 69e6aa0: feat(states): support for namespace via options
+- 69e6aa0: feat(states): support for updater functions as value
+
 ## 0.9.10
 
 ### Patch Changes

@@ -1,3 +1,3 @@
-import { color, logger as defaultLogger } from '@roboplay/robo.js'
+import { logger as defaultLogger } from 'robo.js'
 
-export const logger = defaultLogger.fork(color.magenta('ai') + ' -')
+export const logger = defaultLogger.fork('ai')

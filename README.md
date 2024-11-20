@@ -1,28 +1,19 @@
-<!--<div align="center">
+<p align="center">✨🎃 <strong><a href="https://roboplay.dev/hacktoberfest">Hacktoberfest 2024</a> - Build stuff, win free swag</strong> 🎃✨</p>
 
-| ✨🎃 **Hacktoberfest Event** 🎃✨ |
-|:-----------------------------------:|
-| Build something with Robo.js to win prizes! |
-| **[Details & Prizes](https://blog.waveplay.com/hacktoberfest-with-robo-js-build-bots-or-plugins-win-cool-prizes)** |
-
-</div>
-
-&nbsp;-->
+---
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Wave-Play/robo/main/docosaurus/static/img/logo.png" height="128">
+  <img src="https://raw.githubusercontent.com/Wave-Play/robo/main/docs/static/img/logo.png" height="128">
   <h1 align="center">Robo.js</h1>
 </p>
 
 <div align="center">
 
-<!-- TODO: Reinstate "@latest" for packagephobia badge - temporarily set to last working version due to misleading size report -->
-[![GitHub license](https://img.shields.io/github/license/Wave-Play/robo)](https://github.com/Wave-Play/robo/blob/main/LICENSE) [![npm](https://img.shields.io/npm/v/@roboplay/robo.js)](https://www.npmjs.com/package/@roboplay/robo.js) [![install size](https://packagephobia.com/badge?p=@roboplay/robo.js@0.9.7)](https://packagephobia.com/result?p=@roboplay/robo.js@latest) [![Discord](https://img.shields.io/discord/1087134933908193330?color=7289da)](https://roboplay.dev/discord) [![All Contributors](https://img.shields.io/github/all-contributors/Wave-Play/robo.js?color=cf7cfc)](#contributors)
+[![GitHub license](https://img.shields.io/github/license/Wave-Play/robo)](https://github.com/Wave-Play/robo/blob/main/LICENSE) [![npm](https://img.shields.io/npm/v/robo.js)](https://www.npmjs.com/package/robo.js) [![install size](https://packagephobia.com/badge?p=robo.js@latest)](https://packagephobia.com/result?p=robo.js@latest) [![Discord](https://img.shields.io/discord/1087134933908193330?color=7289da)](https://roboplay.dev/discord) [![All Contributors](https://img.shields.io/github/all-contributors/Wave-Play/robo.js?color=cf7cfc)](#contributors)
 
+**Power up Discord with effortless activities, bots, web servers, and more!** ⚡
 
-**Turbocharge [Discord.js](https://discord.js.org/) with effortless power!** ⚡
-
-Upgrade your bots with next-gen simplicity, snappy plugin system, epic debugging, and Sage's streamlined interactions, all while keeping Discord.js' power. 🚀✨
+Upgrade your Discord projects with effortless integration, dynamic plugins, and advanced debugging—unlocking the full potential of Discord.js and beyond. 🚀✨
 
 > **Heads up!** This is a pre-release, so brace for some breaking changes before **v1.0**. 🚧
 
@@ -86,9 +77,9 @@ For events, say you want to listen to `messageCreate` events. Create a `messageC
 
 ```javascript
 export default (message) => {
-    if (message.content.includes('hello')) {
-        message.channel.send('Hello there!');
-    }
+	if (message.content.includes('hello')) {
+		message.channel.send('Hello there!')
+	}
 }
 ```
 
@@ -129,6 +120,7 @@ We're all about freedom, so we've got you covered with the permissive **[MIT Lic
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/0xMouiz"><img src="https://avatars.githubusercontent.com/u/96005374?v=4?s=100" width="100px;" alt="Mouiz"/><br /><sub><b>Mouiz</b></sub></a><br /><a href="https://github.com/Wave-Play/robo.js/commits?author=0xMouiz" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/mbos2"><img src="https://avatars.githubusercontent.com/u/56090587?v=4?s=100" width="100px;" alt="Matej Bošnjak"/><br /><sub><b>Matej Bošnjak</b></sub></a><br /><a href="https://github.com/Wave-Play/robo.js/commits?author=mbos2" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/ArnavK-09"><img src="https://avatars.githubusercontent.com/u/69188140?v=4?s=100" width="100px;" alt="Arnav K"/><br /><sub><b>Arnav K</b></sub></a><br /><a href="#example-ArnavK-09" title="Examples">💡</a> <a href="#plugin-ArnavK-09" title="Plugin/utility libraries">🔌</a> <a href="https://github.com/Wave-Play/robo.js/commits?author=ArnavK-09" title="Documentation">📖</a> <a href="https://github.com/Wave-Play/robo.js/commits?author=ArnavK-09" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/waruhachi"><img src="https://avatars.githubusercontent.com/u/156133757?v=4?s=100" width="100px;" alt="waru"/><br /><sub><b>waru</b></sub></a><br /><a href="https://github.com/Wave-Play/robo.js/commits?author=waruhachi" title="Code">💻</a></td>
     </tr>
   </tbody>
   <tfoot>

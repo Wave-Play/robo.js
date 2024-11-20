@@ -1,45 +1,50 @@
 {
-  "name": "@roboplay/plugin-better-stack",
-  "description": "",
-  "version": "0.1.0",
-  "type": "module",
-  "private": false,
-  "main": ".robo/build/index.js",
-  "license": "MIT",
-  "author": "WavePlay <dev@waveplay.com> (waveplay.com)",
-  "contributors": [
-    "Pkmmte Xeleon <pk@waveplay.com>"
-  ],
-  "files": [
-    ".robo/",
-    "src/",
-    "LICENSE",
-    "README.md"
-  ],
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
-  "scripts": {
-    "build": "robo build plugin",
-    "dev": "NODE_OPTIONS=--enable-source-maps robo build plugin --watch"
-  },
-  "dependencies": {
-    "@logtail/node": "^0.4.12"
-  },
-  "devDependencies": {
-    "@roboplay/robo.js": "0.9.6",
-    "@swc/core": "^1.3.44",
-    "@types/node": "^18.14.6",
-    "discord.js": "^14.7.1",
-    "typescript": "^5.0.0"
-  },
-  "peerDependencies": {
-    "@roboplay/robo.js": "^0.9.0"
-  },
-  "peerDependenciesMeta": {
-    "@roboplay/robo.js": {
-      "optional": false
-    }
-  }
+	"name": "@robojs/better-stack",
+	"description": "",
+	"version": "0.2.2",
+	"type": "module",
+	"private": false,
+	"main": ".robo/build/index.js",
+	"license": "MIT",
+	"author": "WavePlay <dev@waveplay.com> (waveplay.com)",
+	"contributors": [
+		"Pkmmte Xeleon <pk@waveplay.com>"
+	],
+	"files": [
+		".robo/",
+		"src/",
+		"LICENSE",
+		"README.md"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Wave-Play/robo.git",
+		"directory": "packages/plugin-better-stack"
+	},
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://registry.npmjs.org/"
+	},
+	"scripts": {
+		"build": "robo build plugin",
+		"dev": "NODE_OPTIONS=--enable-source-maps robo build plugin --watch"
+	},
+	"dependencies": {
+		"@logtail/node": "^0.4.12"
+	},
+	"devDependencies": {
+		"@swc/core": "^1.3.44",
+		"@types/node": "^18.14.6",
+		"discord.js": "^14.7.1",
+		"robo.js": "workspace:*",
+		"typescript": "^5.0.0"
+	},
+	"peerDependencies": {
+		"robo.js": "^0.10.25"
+	},
+	"peerDependenciesMeta": {
+		"robo.js": {
+			"optional": false
+		}
+	}
 }

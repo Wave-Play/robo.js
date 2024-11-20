@@ -4,14 +4,18 @@ import { DEFAULT_CONFIG } from '../../core/constants.js'
 import { CommandConfig, Config, SageOptions } from '../../types/index.js'
 import { getConfig } from '../../core/config.js'
 import { createRequire } from 'node:module'
-import { SpawnOptions, exec as nodeExec, spawn } from 'node:child_process'
+import { ChildProcess, SpawnOptions, execSync, exec as nodeExec, spawn } from 'node:child_process'
 import { promisify } from 'node:util'
 import { logger } from '../../core/logger.js'
 import path from 'node:path'
+import os from 'node:os'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { IS_BUN, PackageManager } from './runtime-utils.js'
+import { IS_BUN_PM } from './runtime-utils.js'
+import type { Pod } from '../../roboplay/types.js'
+import { existsSync } from 'node:fs'
 
 export const __DIRNAME = path.dirname(fileURLToPath(import.meta.url))
+export const PackageDir = path.resolve(__DIRNAME, '..', '..', '..')
 
 const execAsync = promisify(nodeExec)
 
@@ -20,23 +24,60 @@ const require = createRequire(import.meta.url)
 export const packageJson = require('../../../package.json')
 
 export function cleanTempDir() {
-	return fs.rm(path.join(process.cwd(), '.robo', 'temp'), { recursive: true })
+	try {
+		return fs.rm(getTempDir(), { force: true, recursive: true })
+	} catch (error) {
+		// ENOENT is okay
+		if (hasProperties(error, ['code']) && error.code !== 'ENOENT') {
+			throw error
+		}
+	}
+}
+
+export function getPodStatusColor(status: Pod['status']) {
+	if (['Deploying', 'Updating'].includes(status)) {
+		return color.cyan
+	} else if (['Idle', 'Stopped'].includes(status)) {
+		return color.dim
+	} else if (['Online', 'Ready'].includes(status)) {
+		return color.green
+	} else {
+		return color.red
+	}
+}
+
+export function getTempDir() {
+	return path.join(process.cwd(), '.robo', 'temp')
+}
+
+export async function getRoboPackageJson() {
+	const packageJsonPath = path.join(process.cwd(), 'package.json')
+	const packageJson = JSON.parse((await fs.readFile(packageJsonPath, 'utf-8')) ?? '{}')
+
+	return packageJson
 }
 
 /**
  * Run a command as a child process
  */
-export function exec(command: string, options?: SpawnOptions) {
+export function exec(command: string | string[], options?: SpawnOptions) {
 	return new Promise<void>((resolve, reject) => {
-		logger.debug(`> ${color.bold(command)}`)
-
-		// Run command as child process
-		const args = command.split(' ')
-		const childProcess = spawn(args.shift(), args, {
+		let childProcess: ChildProcess
+		const spawnOptions: SpawnOptions = {
 			env: { ...process.env, FORCE_COLOR: '1' },
+			shell: IS_WINDOWS,
 			stdio: 'inherit',
 			...(options ?? {})
-		})
+		}
+		logger.debug(`${IS_WINDOWS ? '$' : '>'} ${color.bold(JSON.stringify(command))}`)
+
+		if (IS_WINDOWS) {
+			const str = Array.isArray(command) ? command.map((c) => (c.includes(' ') ? `"${c}"` : c)).join(' ') : command
+			childProcess = spawn(str, spawnOptions)
+		} else {
+			const args = Array.isArray(command) ? command : command.split(' ')
+			childProcess = spawn(args.shift(), args, spawnOptions)
+		}
 
 		// Resolve promise when child process exits
 		childProcess.on('error', reject)
@@ -75,6 +116,67 @@ export async function filterExistingPaths(paths: string[], basePath = process.cw
 	return result
 }
 
+export async function copyDir(
+	src: string,
+	dest: string,
+	excludeExtensions: string[],
+	excludePaths: string[],
+	overwrite = true
+) {
+	await fs.mkdir(dest, { recursive: true })
+	const entries = await fs.readdir(src)
+
+	for (const entry of entries) {
+		const srcPath = path.join(src, entry)
+		const destPath = path.join(dest, entry)
+
+		const entryStat = await fs.stat(srcPath)
+		const entryExt = path.extname(srcPath)
+		const resolvedPath = path.resolve(process.cwd(), srcPath)
+		const isIgnored = excludePaths.some((p) => resolvedPath.startsWith(p))
+
+		if (isIgnored || excludeExtensions.includes(entryExt)) {
+			continue
+		} else if (entryStat.isDirectory()) {
+			await copyDir(srcPath, destPath, excludeExtensions, excludePaths)
+		} else if (overwrite || !existsSync(destPath)) {
+			await fs.copyFile(srcPath, destPath)
+		}
+	}
+}
+
+export function copyToClipboard(text: string) {
+	const platform = os.platform()
+
+	try {
+		if (platform === 'darwin') {
+			execSync(`echo "${text}" | pbcopy`)
+		} else if (platform === 'win32') {
+			execSync(`echo ${text} | clip`)
+		} else {
+			execSync(`echo "${text}" | xclip -selection clipboard`)
+		}
+	} catch (error) {
+		console.error('Failed to copy to clipboard:', error)
+	}
+}
+
+export function openBrowser(url: string) {
+	const platform = os.platform()
+
+	let command: string
+
+	if (platform === 'win32') {
+		command = `start ${url}`
+	} else if (platform === 'darwin') {
+		command = `open ${url}`
+	} else {
+		command = `xdg-open ${url}`
+	}
+
+	execSync(command)
+}
+
 export async function findNodeModules(basePath: string): Promise<string | null> {
 	const nodeModulesPath = path.join(basePath, 'node_modules')
 	try {
@@ -97,6 +199,8 @@ export async function findPackagePath(packageName: string, currentPath: string):
 		return null
 	}
 
+	packageName = packageName.replaceAll(path.sep, '/')
+
 	// Determine if node_modules folder is managed by pnpm
 	// Note: This does *not* mean that the process was started with pnpm
 	const pnpmNodeModulesPath = path.resolve(nodeModulesPath, '.pnpm')
@@ -107,7 +211,7 @@ export async function findPackagePath(packageName: string, currentPath: string):
 
 	let packagePath: string | null = null
 
-	if (isPnpmModules && !IS_BUN) {
+	if (isPnpmModules && !IS_BUN_PM) {
 		logger.debug(`Found pnpm node_modules folder for ${packageName}`)
 		try {
 			const { stdout } = await execAsync(`pnpm list ${packageName} --json`, { cwd: currentPath })
@@ -251,16 +355,24 @@ export function sleep(ms: number) {
 
 export const IS_WINDOWS = /^win/.test(process.platform)
 
-export function cmd(packageManager: PackageManager): string {
-	return IS_WINDOWS ? `${packageManager}.cmd` : packageManager
-}
-
 export function timeout<T = void>(callback: () => T, ms: number): Promise<T> {
 	return new Promise<T>((resolve) =>
 		setTimeout(() => {
 			resolve(callback())
 		}, ms)
 	)
+}
+
+export function waitForExit(child: ChildProcess) {
+	return new Promise<void>((resolve) => {
+		if (!child) {
+			resolve()
+		} else if (child.exitCode !== null) {
+			resolve()
+		} else {
+			child.on('exit', resolve)
+		}
+	})
 }
 
 type Task<T extends unknown[]> = (...args: T) => Promise<unknown>

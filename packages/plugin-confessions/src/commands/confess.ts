@@ -38,11 +38,10 @@ function parseConfession(text: string): string {
 }
 
 export default async (interaction: CommandInteraction) => {
-	/* eslint-disable  @typescript-eslint/no-non-null-assertion */
 	await interaction.deferReply({
 		ephemeral: true
 	})
-	const confession = interaction.options.get('confession')!.value
+	const confession = interaction.options!.get('confession')!.value
 
 	// get channel
 	const dbConfigChannelID = getState(`${FLASHCORE_KEY}_${interaction.guild!.id}`)

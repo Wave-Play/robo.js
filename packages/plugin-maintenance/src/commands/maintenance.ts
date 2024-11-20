@@ -1,6 +1,6 @@
 import { FLASHCORE_KEY, setMaintenanceEnabled } from '../core/config.js'
-import { Flashcore } from '@roboplay/robo.js'
-import type { CommandConfig } from '@roboplay/robo.js'
+import { Flashcore } from 'robo.js'
+import type { CommandConfig } from 'robo.js'
 import type { CommandInteraction } from 'discord.js'
 
 export const config: CommandConfig = {

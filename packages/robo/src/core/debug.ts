@@ -10,6 +10,7 @@ import {
 	Colors,
 	CommandInteraction,
 	Message,
+	PartialGroupDMChannel,
 	TextChannel
 } from 'discord.js'
 import { getSage } from '../cli/utils/utils.js'
@@ -19,7 +20,7 @@ import { env } from './env.js'
 import { URL } from 'node:url'
 import { getState, setState } from './state.js'
 import { isMainThread, parentPort } from 'node:worker_threads'
-import { STATE_KEYS } from './constants.js'
+import { STATE_KEYS, discordLogger } from './constants.js'
 import path from 'node:path'
 import { color } from './color.js'
 import type { CommandConfig, Event, HandlerRecord } from '../types/index.js'
@@ -143,7 +144,7 @@ export async function printErrorResponse(
 	event?: HandlerRecord<Event>
 ) {
 	const { errorChannelId, errorMessage, errorReplies = true } = getSage()
-	logger.debug('Error response:', error)
+	discordLogger.debug('Error response:', error)
 
 	// Don't print errors in production - they may contain sensitive information
 	if (!DEBUG_MODE || !errorReplies) {
@@ -166,7 +167,7 @@ export async function printErrorResponse(
 			// Send to custom error channel
 			const channel = client.channels.cache.get(errorChannelId) as TextChannel
 			if (!channel) {
-				logger.error('No error channel found with ID:', errorChannelId)
+				discordLogger.error('No error channel found with ID:', errorChannelId)
 				return
 			}
 
@@ -174,14 +175,16 @@ export async function printErrorResponse(
 			if (errorMessage) {
 				await sendReply({ content: errorMessage }, interaction)
 			} else {
-				logger.warn(`Set ${color.bold('errorMessage')} in your Sage config to send a default error reply to the user`)
+				discordLogger.warn(
+					`Set ${color.bold('errorMessage')} in your Sage config to send a default error reply to the user`
+				)
 			}
 		} else {
 			await sendReply(message, interaction)
 		}
 	} catch (error) {
 		// This had one job... and it failed
-		logger.debug('Error printing error response:', error)
+		discordLogger.debug('Error printing error response:', error)
 	}
 }
 
@@ -193,7 +196,7 @@ async function sendReply(message: BaseMessageOptions, interaction: unknown) {
 		} else {
 			return interaction.reply(message)
 		}
-	} else if (interaction instanceof Message) {
+	} else if (interaction instanceof Message && !(interaction.channel instanceof PartialGroupDMChannel)) {
 		return interaction.channel.send(message)
 	}
 }
@@ -202,10 +205,10 @@ export async function sendDebugError(error: unknown) {
 	try {
 		// Find the guild by its ID
 		const { errorChannelId } = getSage()
-		const guild = client.guilds.cache.get(env.discord.guildId)
-		const channel = guild?.channels?.cache?.get(env.discord.debugChannelId ?? errorChannelId)
+		const guild = client.guilds.cache.get(env.get('discord.guildId'))
+		const channel = guild?.channels?.cache?.get(env.get('discord.debugChannelId') ?? errorChannelId)
 		if (!guild || !channel) {
-			logger.warn(
+			discordLogger.warn(
 				`Fix the error or set ${color.bold('DISCORD_GUILD_ID')} and ${color.bold(
 					'DISCORD_DEBUG_CHANNEL_ID'
 				)} environment variables to prevent your Robo from stopping.`
@@ -215,17 +218,17 @@ export async function sendDebugError(error: unknown) {
 
 		// Ensure the channel is a text-based channel
 		if (channel.type !== ChannelType.GuildText) {
-			logger.warn(`Debug channel specified is not a text-based channel.`)
+			discordLogger.warn(`Debug channel specified is not a text-based channel.`)
 			return false
 		}
 
 		// Send the message to the channel
 		const { message } = await formatError({ error })
 		await channel.send(message)
-		logger.debug(`Message sent to channel ${env.discord.debugChannelId} in guild ${env.discord.guildId}.`)
+		discordLogger.debug(`Message sent to channel ${env.get('discord.debugChannelId')} in guild ${env.get('discord.guildId')}.`)
 		return true
 	} catch (error) {
-		logger.error('Error sending message:', error)
+		discordLogger.error('Error sending message:', error)
 		return true
 	}
 }
@@ -244,7 +247,7 @@ async function getCodeCodeAtFault(err: Error, type: 'dependency' | 'source') {
 		// Find first module line, removing if not the first and Robo.js to avoid underlying framework caller
 		const deps = path.sep + 'node_modules' + path.sep
 		const depIndex = stackLines.findIndex((line) => line.includes(deps))
-		if (type === 'dependency' && depIndex > 0 && stackLines[depIndex].includes(deps + '@roboplay/robo.js/')) {
+		if (type === 'dependency' && depIndex > 0 && stackLines[depIndex].includes(deps + 'robo.js/')) {
 			return null
 		}
 
@@ -284,13 +287,20 @@ async function getCodeCodeAtFault(err: Error, type: 'dependency' | 'source') {
 			}
 		}
 
+		// Truncate entire data set presented if too long (includes decorators + safe offset)
+		const extraLength = normalizedPath.length + type.length + 10 + 5
+		const length = result.length + extraLength
+		if (length > 1024) {
+			result = result.slice(0, 1021 - extraLength) + '...'
+		}
+
 		return {
 			code: result,
 			file: normalizedPath,
 			type: file.endsWith('.ts') ? 'ts' : 'js'
 		}
 	} catch (error) {
-		logger.debug('Error getting code at fault:', error)
+		discordLogger.debug('Error getting code at fault:', error)
 		return null
 	}
 }
@@ -515,7 +525,12 @@ export async function handleDebugButton(interaction: ButtonInteraction) {
 	}
 }
 
-async function handleLogs(errorId: number, startIndex: number, interaction: MessageComponentInteraction, type: 'existing' | 'new') {
+async function handleLogs(
+	errorId: number,
+	startIndex: number,
+	interaction: MessageComponentInteraction,
+	type: 'existing' | 'new'
+) {
 	const { logs } = getState<ErrorData>(`${DEBUG_ID_PREFIX}_error_${errorId}`)
 	const filteredLogs = logs.filter(Boolean)
 	const endIndex = startIndex + LOG_INCREMENT

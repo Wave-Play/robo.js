@@ -1,27 +1,32 @@
-# 🚀 @roboplay/plugin-ai
+# @robojs/ai
 
 This plugin morphs your **[Robo](https://github.com/Wave-Play/robo.js)** into a sophisticated AI chatbot. By simply mentioning it or replying to its messages on Discord, you initiate a natural conversation - as if you're chatting with a fellow human!
 
-🔑 To bring this magic to life, secure an **[OpenAI API key](https://openai.com/)**. Once in hand, slide it into the `openaiKey` slot of your plugin config, and your Robo is good to go.
+> 🔑 To bring this magic to life, secure an **[OpenAI API key](https://openai.com/)**. Set it as an environment variable named `OPENAI_API_KEY`, and your Robo is good to go.
 
 ## Installation 💻
 
 To add this amazingness to your Robo, just use this spell (I mean, command):
 
 ```bash
-npx robo add @roboplay/plugin-ai
+npx robo add @robojs/ai
 ```
 
-And there you go! Your Robo, now powered by AI, is ready to have a chat.
+And there you go! Your Robo, now powered by AI, is ready to have a chat!
+
+New to Robo.js? Start your project with this plugin pre-installed:
+
+```bash
+npx create-robo <project-name> -p @robojs/ai
+```
 
 ## Your Robo's Personality 🧬
 
 Desire a Robo with a backstory, specific character traits, or a distinctive personality? Tell it a story with the `systemMessage` config:
 
 ```js
-// config/plugins/roboplay/plugin-ai.mjs
+// config/plugins/robojs/ai.mjs
 export default {
-	openaiKey: process.env.OPENAI_API_KEY, // Your special key here
 	systemMessage: 'You are Batman, protector of the Weeb City Discord server.'
 }
 ```
@@ -47,16 +52,31 @@ export default {
 }
 ```
 
+## Insights
+
+`insights` is a special config that lets you inject your own custom knowledge into your Robo. It's a great way to make your Robo smarter and more capable!
+
+All you have to do is put files in a folder called `documents` in your Robo's root directory, and your Robo will automatically learn from them.
+
+```
+- /robo
+	- /src
+	- /documents
+		- /my-first-document.txt
+		- /my-second-document.txt
+```
+
+What's more, your Robo will remember what it learns, so it can use it in future conversations! It's like long-term memory for your Robo.
+
+> 💡 **By the way...** If you ever want to turn this off, just set the `insights` config field to `false`.
+
 ## Config file 🧠
 
 Here's a quick look at all the settings you can play with:
 
 ```js
-// config/plugins/roboplay/plugin-ai.mjs
+// config/plugins/robojs/ai.mjs
 export default {
-	// Set this with your OpenAI key! (string) (required)
-	openaiKey: 'YOUR_OPENAI_API_KEY',
-
 	// Model for your AI. You might stick with the default. (string)
 	model: 'gpt-3.5-turbo',
 
@@ -65,6 +85,17 @@ export default {
 
 	// Let Robo use or ignore specific commands. true for all commands, false for no commands, array for only specific commands. (boolean or string array)
 	commands: ['ban', 'kick', 'dev logs'],
+
+	// Knowledge injection & long-term memory. (boolean; default: true)
+	insights: true,
+
+	// Assistant API delay for OpenAI rate limiting (number; default: 1_000)
+	pollDelay: 4_000,
+
+	// If specified, your AI will only respond to messages in these channels. (object with array of string IDs)
+	restrict: {
+		channelIds: ['channelID3']
+	},
 
 	// Special channels where Robo talks freely. (object with array of string IDs)
 	whitelist: {
@@ -75,18 +106,84 @@ export default {
 
 ## JavaScript API 🧰
 
-For those who like to tinker and build:
+For those who like to tinker and build, this plugin also exposes a JavaScript API to enhance things even further!
 
-- `AIEngine.chat()`: Prompt a chat query and obtain the AI's response.
-- `AIEngine.on()`: Be the puppeteer! Control AI events or alter certain values.
-- `AIEngine.off()`: Disconnect from an AI event.
+```js
+import { AI } from '@robojs/ai'
+
+// Prompt a chat query and obtain the AI's response.
+AI.chat()
+
+// Be the puppeteer! Control AI events or alter certain values.
+AI.on()
+
+// Disconnect from an AI event.
+AI.off()
+```
+
+We've also got some handy AI tools for you to use:
+
 - `selectOne`: Match strings semantically from a range of choices.
 - `chat`: A low-level variant of `AIEngine.chat()` for direct OpenAI API interactions.
 
-And guess what? With tools like these, other cool plugins like `@roboplay/plugin-ai-voice` let your Robo chat in voice channels too!
+And guess what? With tools like these, other cool plugins like `@robojs/ai-voice` let your Robo chat in voice channels too!
+
+## Voice Capabilities 🎙️
+
+If you've added the `@robojs/ai-voice` to your Robo, you're in for a treat! This AI plugin will let your Robo talk in voice channels!
+
+```bash
+npx robo add @robojs/ai-voice
+```
+
+How cool is that? Your Robo can now talk to you in voice channels, just like a real person!
 
 ## Web API 🌐
 
-Now, if you've added the `@roboplay/plugin-api` to your Robo, there's another treat waiting. This AI plugin will unveil a shiny new `/api/ai/chat` path, letting your Robo have fun chats on websites!
+Now, if you've added the `@robojs/server` to your Robo, there's another treat waiting. This AI plugin will unveil a shiny new `/api/ai/chat` path, letting your Robo have fun chats on websites!
+
+```bash
+npx robo add @robojs/server
+```
 
 Imagine a chat window with your Robo on your favorite webpage. Pretty cool, right?
+
+## Custom Models 🧪
+
+You can also use your own custom AI models with this plugin. Just set the `model` config your custom model instance and you're good to go!
+
+```js
+// config/plugins/robojs/ai.mjs
+import LlamaModel from '../../../llama.js'
+
+export default {
+	// ... other configurations
+	model: new LlamaModel()
+}
+```
+
+Custom models must extend the `BaseEngine` class from `@robojs/ai`. Here's a quick example:
+
+```js
+// llama.js
+import { BaseEngine } from '@robojs/ai'
+
+export default class LlamaModel extends BaseEngine {
+	async chat(query) {
+		return `Llama says: ${query}`
+	}
+}
+```
+
+> **Warning:** The custom model API is still in beta. It may change in the future.
+
+## Troubleshooting 🛠️
+
+If you encounter any issues with this plugin, feel free to reach out to us on **[Discord](https://discord.gg/roboplay)**. We're always here to help you out!
+
+### Common Issues
+
+- **OpenAI API Key**: Ensure you've set your OpenAI API key as an environment variable named `OPENAI_API_KEY` and set up billing on the OpenAI platform.
+- **Permissions**: Make sure your Robo has the necessary permissions to read and send messages in the channels you've configured, including the Message Content intent.
+- **Rate Limiting**: If you're hitting rate limits, try increasing the `pollDelay` config in your `config/plugins/robojs/ai.mjs` file.
+- **Insights**: Ensure your `/documents` folder is correctly set up and contains **[valid text files](https://platform.openai.com/docs/assistants/tools/file-search/supported-files)**. You may need to explicitly tell your Robo to use the uploaded files in your `systemMessage`.

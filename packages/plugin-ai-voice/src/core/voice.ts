@@ -1,4 +1,4 @@
-import { logger } from '@roboplay/robo.js'
+import { logger } from 'robo.js'
 import sdk, { SpeechSynthesizer } from 'microsoft-cognitiveservices-speech-sdk'
 
 // TODO:

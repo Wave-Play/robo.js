@@ -1,0 +1,65 @@
+import { Card } from '@site/src/components/shared/Card'
+import { CardContainer } from '@site/src/components/shared/CardContainer'
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+import { Terminal } from '@site/src/components/shared/Terminal'
+
+# 📂 File Structure
+
+Discord bots built with Robo.js follow the following file structure:
+
+- `/src/commands`: Slash commands. Can be nested for subcommands or subcommand groups.
+- `/src/context`: Context commands for either `/user` or `/message`.
+- `/src/events`: Discord events. Can be nested for grouped events.
+
+### Basic Example
+
+```
+/src
+├── /commands
+│   └── ping.js
+└── /events
+    └── messageCreate.js
+```
+
+The above is used to create:
+
+- `/ping` command.
+- `messageCreate` event.
+
+### Advanced Example
+
+```
+/src
+├── /commands
+│   ├── ping.js
+│   ├── /ban
+│   │   └── user.js
+│   └── /settings
+│       └── /update
+│           └── something.js
+├── /context
+│   ├── /user
+│   │   └── Audit.js
+│   └── /message
+│       └── Report.js
+└── /events
+    ├── ready.js
+    └── /messageCreate
+        ├── dm.js
+        └── hello.js
+```
+
+The above is used to create:
+
+- `/ping` command.
+- `/ban user` subcommand.
+- `/settings update something` subcommand group.
+- `Audit` user context command.
+- `Report` message context command.
+- `ready` event.
+- `dm` and `hello` grouped `messageCreate` events.
+
+<CardContainer>
+	<Card href="../robojs/files" title="📂 Robo File Structure" description="Learn about standard Robo files." />
+</CardContainer>

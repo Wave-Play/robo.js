@@ -42,13 +42,16 @@ const filterEmpty =
 
 const hexToRgb = (hex: string) => {
 	const match = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
-	return match
-		? {
-				r: parseInt(match[1], 16),
-				g: parseInt(match[2], 16),
-				b: parseInt(match[3], 16)
+
+	if (!match) {
+		return null
+	} else {
+		return {
+			r: parseInt(match[1], 16),
+			g: parseInt(match[2], 16),
+			b: parseInt(match[3], 16)
 		}
-		: null
+	}
 }
 
 const init = (
@@ -115,7 +118,7 @@ export const color: ColorFunctions = {
 }
 
 export function composeColors(...fns: ((s: string) => string)[]): (s: string) => string {
-  return s => fns.reduce((acc, fn) => fn(acc), s);
+	return (s) => fns.reduce((acc, fn) => fn(acc), s)
 }
 
 export const hex = (hex: string) => {

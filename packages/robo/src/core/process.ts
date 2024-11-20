@@ -1,11 +1,3 @@
-import type { RoboMessage, RoboStateMessage } from '../types/index.js'
-
-// This is used to wait for the state to be loaded before continuing
-let stateLoadResolve: () => void
-export const stateLoad = new Promise<void>((resolve) => {
-	stateLoadResolve = resolve
-})
-
 /**
  * Registering process events ensure the "ready" signal is sent to the parent process.
  * Not doing this may cause the process to hang if any setup causes an error.
@@ -32,40 +24,28 @@ export function registerProcessEvents() {
 		Robo.stop()
 	})
 
-	process.on('message', async (message: RoboMessage) => {
-		const { logger } = await import('./logger.js')
-		const { Robo } = await import('./robo.js')
-
-		logger.debug('Received message from parent:', message)
-		if (message?.type === 'restart') {
-			Robo.restart()
-		} else if (message?.type === 'state-save') {
-			const { saveState } = await import('./state.js')
-			saveState()
-		} else if (message?.type === 'state-load') {
-			const { loadState } = await import('./state.js')
-			loadState((message as RoboStateMessage).state)
-			stateLoadResolve()
-		} else {
-			logger.debug('Unknown message:', message)
-		}
-	})
-
 	process.on('unhandledRejection', async (reason) => {
+		const { loadConfig } = await import('./config.js')
 		const { env } = await import('./env.js')
 		const { logger } = await import('./logger.js')
 		const { client, Robo } = await import('./robo.js')
+		logger.error(reason)
+
+		// Load config file to see if we need handling
+		const config = await loadConfig()
+
+		if (config.experimental?.disableBot) {
+			return
+		}
 
 		// Exit right away if the client isn't ready yet
 		// We don't want to send a message to Discord nor notify handlers if we can't
 		if (!client?.isReady()) {
-			logger.error(reason)
 			process.exit(1)
 		}
 
 		// Log error and ignore it in production
-		logger.error(reason)
-		if (env.nodeEnv === 'production') {
+		if (env.get('nodeEnv') === 'production') {
 			return
 		}
 
@@ -88,5 +68,5 @@ export function registerProcessEvents() {
 		if (typeof process.send === 'function') {
 			process.send?.({ type: 'ready', delayed: true })
 		}
-	}, 1000)
+	}, 1_000)
 }

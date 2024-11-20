@@ -5,11 +5,11 @@ import { promisify } from 'node:util'
 import { readFile } from 'node:fs/promises'
 import { logger } from './logger.js'
 import { color } from './color.js'
-import { FLASHCORE_KEYS } from '@roboplay/robo.js/dist/core/constants.js'
+import { FLASHCORE_KEYS } from 'robo.js/dist/core/constants.js'
 import { spawn } from 'node:child_process'
-import { Config, Flashcore } from '@roboplay/robo.js'
+import { Config, Flashcore } from 'robo.js'
 import { packageJson } from '../index.js'
-import inquirer from 'inquirer'
+import { select } from '@inquirer/prompts'
 import type { SpawnOptions } from 'node:child_process'
 import type { PackageJson } from './types.js'
 
@@ -30,17 +30,13 @@ export async function checkSageUpdates() {
 	if (packageJson.version !== latestVersion) {
 		// Print update message
 		logger.info(color.green(`A new version of ${color.bold('@roboplay/sage')} is available! (v${latestVersion})\n`))
-		const { useLatest } = await inquirer.prompt<{ useLatest: boolean }>([
-			{
-				type: 'list',
-				name: 'useLatest',
-				message: 'Would you like to use the latest version?',
-				choices: [
-					{ name: 'Yes, use latest', value: true },
-					{ name: 'No, stick with v' + packageJson.version, value: false }
-				]
-			}
-		])
+		const useLatest = await select({
+			message: 'Would you like to use the latest version?',
+			choices: [
+				{ name: 'Yes, use latest', value: true },
+				{ name: 'No, stick with v' + packageJson.version, value: false }
+			]
+		})
 		logger.log('')
 
 		if (useLatest) {
@@ -51,9 +47,7 @@ export async function checkSageUpdates() {
 				cliPackage = path.basename(cliPackage)
 			}
 
-			await exec(
-				`${cmd(packageExecutor)} ${cliPackage}@${packageJson.version} ${process.argv.slice(2).join(' ')}`.trim()
-			)
+			await exec(`${packageExecutor} ${cliPackage}@${packageJson.version} ${process.argv.slice(2).join(' ')}`.trim())
 			process.exit(0)
 		}
 	}
@@ -61,6 +55,7 @@ export async function checkSageUpdates() {
 
 export async function checkUpdates(packageJson: PackageJson, config: Config, forceCheck = false) {
 	const { updateCheckInterval = 60 * 60 } = config
+	logger.debug(`Checking for updates for package.json:`, packageJson)
 
 	const update = {
 		changelogUrl: '',
@@ -71,6 +66,7 @@ export async function checkUpdates(packageJson: PackageJson, config: Config, for
 
 	// Ignore if disabled
 	if (!forceCheck && updateCheckInterval <= 0) {
+		logger.debug(`Update check is disabled.`)
 		return update
 	}
 
@@ -78,6 +74,7 @@ export async function checkUpdates(packageJson: PackageJson, config: Config, for
 	const lastUpdateCheck = (await Flashcore.get<number>(FLASHCORE_KEYS.lastUpdateCheck)) ?? 0
 	const now = Date.now()
 	const isDue = now - lastUpdateCheck > updateCheckInterval * 1000
+	logger.debug(`Update check from ${new Date(lastUpdateCheck).toISOString()} is due:`, isDue)
 
 	if (!forceCheck && !isDue) {
 		return update
@@ -119,10 +116,6 @@ export async function checkUpdates(packageJson: PackageJson, config: Config, for
 	return update
 }
 
-export function cmd(packageManager: string): string {
-	return IS_WINDOWS && packageManager !== 'pnpm' ? `${packageManager}.cmd` : packageManager
-}
-
 export function createNodeReadable(webReadable: ReadableStream<Uint8Array>): NodeJS.ReadableStream {
 	const reader = webReadable.getReader()
 	return new Readable({
@@ -158,6 +151,7 @@ export function exec(command: string, options?: SpawnOptions) {
 		const args = command.split(' ')
 		const childProcess = spawn(args.shift(), args, {
 			env: { ...process.env, FORCE_COLOR: '1' },
+			shell: IS_WINDOWS,
 			stdio: 'inherit',
 			...(options ?? {})
 		})
@@ -206,14 +200,14 @@ export function getPackageExecutor(): string {
 }
 
 /**
- * Make sure that the working directory is a Robo project by checking for @roboplay/robo.js in package.json
+ * Make sure that the working directory is a Robo project by checking for robo.js in package.json
  */
 export async function isRoboProject(project = process.cwd()): Promise<boolean> {
 	try {
 		const packageJsonPath = path.join(project, 'package.json')
 		const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf-8'))
 
-		return packageJson.dependencies['@roboplay/robo.js'] || packageJson.devDependencies['@roboplay/robo.js']
+		return packageJson.dependencies['robo.js'] || packageJson.devDependencies['robo.js']
 	} catch (e) {
 		logger.debug(`Not a Robo project:`, e)
 		return false

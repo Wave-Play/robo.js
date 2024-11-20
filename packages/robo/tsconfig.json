@@ -1,5 +1,5 @@
 {
-	"include": ["__tests__", "src"],
+	"include": ["__tests__", "src", "types/**/*"],
 	"exclude": ["node_modules", "codemod"],
 	"compilerOptions": {
 		"target": "ESNext",

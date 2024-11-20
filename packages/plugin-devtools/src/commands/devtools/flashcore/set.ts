@@ -1,7 +1,7 @@
 import { logger } from '../../../core/helpers.js'
-import { Flashcore } from '@roboplay/robo.js'
 import { Colors } from 'discord.js'
-import type { CommandConfig, CommandResult } from '@roboplay/robo.js'
+import { Flashcore } from 'robo.js'
+import type { CommandConfig, CommandResult } from 'robo.js'
 import type { AutocompleteInteraction, CommandInteraction } from 'discord.js'
 
 export const config: CommandConfig = {
@@ -17,6 +17,10 @@ export const config: CommandConfig = {
 			required: true
 		},
 		{
+			name: 'namespace',
+			description: 'The namespace to set the value in'
+		},
+		{
 			name: 'type',
 			description: 'The type of value to set',
 			autocomplete: true
@@ -27,6 +31,7 @@ export const config: CommandConfig = {
 export default async (interaction: CommandInteraction): Promise<CommandResult> => {
 	const key = interaction.options.get('key')?.value as string
 	const value = interaction.options.get('value')?.value as string
+	const namespace = interaction.options.get('namespace')?.value as string
 	const type = interaction.options.get('type')?.value as string
 
 	// Parse the value based on the type given
@@ -47,14 +52,14 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 
 	// Set the value (and time it)
 	const start = Date.now()
-	const result = await Flashcore.set(key, parsedValue)
+	const result = await Flashcore.set(key, parsedValue, { namespace })
 
 	// Log the result
 	logger.custom(
 		'dev',
 		`Flashcore.set(${key}):`,
 		parsedValue,
-		`- Success: ${result} - Time: ${Date.now() - start}ms - Type: ${typeof parsedValue}`
+		`- Success: ${result} - Time: ${Date.now() - start}ms - Namespace: ${namespace} - Type: ${typeof parsedValue}`
 	)
 
 	// Render as fancy embed
@@ -71,6 +76,10 @@ export default async (interaction: CommandInteraction): Promise<CommandResult> =
 					{
 						name: 'Value',
 						value: '`' + (value ?? 'undefined') + '`'
+					},
+					{
+						name: 'Namespace',
+						value: namespace ?? 'none'
 					},
 					{
 						name: 'Type',

@@ -1,6 +1,8 @@
 import { createLogtailDrain } from '../core/drain.js'
-import { logger } from '@roboplay/robo.js'
+import { logger } from 'robo.js'
 import type { Client } from 'discord.js'
+
+export let heartbeatIntervalId: NodeJS.Timeout | null = null
 
 interface PluginConfig {
 	heartbeat?: {
@@ -23,7 +25,7 @@ export default (_client: Client, config: PluginConfig) => {
 		// Supress Fetch API experimental warning
 		process.removeAllListeners('warning')
 
-		setInterval(() => {
+		heartbeatIntervalId = setInterval(() => {
 			// Bah-dumtz!
 			if (debug) {
 				logger.debug('Sending heartbeat...', new Date().toISOString())

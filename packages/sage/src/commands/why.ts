@@ -1,6 +1,5 @@
-import { color } from '@roboplay/robo.js'
-// @ts-expect-error - Internal module
-import { loadManifest } from '@roboplay/robo.js/dist/cli/utils/manifest.js'
+import { color } from 'robo.js'
+import { Compiler } from 'robo.js/dist/cli/utils/compiler.js'
 import { Command } from 'commander'
 import { logger } from '../core/logger.js'
 import { checkSageUpdates } from '../core/utils.js'
@@ -75,7 +74,7 @@ async function whyAction(entities: string[], options: WhyOptions) {
 	logger.debug(`Searching for ${prefixType.full.replace(':', '')} ${color.blue(entity)}...`)
 
 	// Look for the entity in the manifest
-	const manifest = await loadManifest()
+	const manifest = await Compiler.useManifest()
 	logger.debug(`Manifest: ${JSON.stringify(manifest, null, 2)}`)
 
 	if (prefixType.full === 'command:') {

@@ -1,20 +1,20 @@
-import { EventConfig, client, getState, logger } from '@roboplay/robo.js'
-import { EndBehaviorType, NoSubscriberBehavior, createAudioPlayer, createAudioResource } from '@discordjs/voice'
-import path from 'node:path'
-import OpusScript from 'opusscript'
-import ffmpeg from 'fluent-ffmpeg'
-import { WriteStream, createReadStream, createWriteStream, mkdirSync } from 'node:fs'
-import { ClientUser, Colors, User, VoiceBasedChannel, VoiceState } from 'discord.js'
-import { options as aiOptions } from '@roboplay/plugin-ai/.robo/build/events/_start.js'
-import { AiEngine } from '@roboplay/plugin-ai/.robo/build/core/engine.js'
 import { textToSpeech } from '../../core/voice.js'
-import { GptChatMessage } from '@roboplay/plugin-ai/.robo/build/core/openai.js'
+import { WriteStream, createReadStream, createWriteStream, mkdirSync } from 'node:fs'
+import path from 'node:path'
+import { EndBehaviorType, NoSubscriberBehavior, createAudioPlayer, createAudioResource } from '@discordjs/voice'
+import { AI } from '@robojs/ai'
+import { ChatMessage as GptChatMessage } from '@robojs/ai/.robo/build/engines/base.js'
+import { options as aiOptions } from '@robojs/ai/.robo/build/events/_start.js'
+import { ClientUser, Colors, User, VoiceBasedChannel, VoiceState } from 'discord.js'
+import ffmpeg from 'fluent-ffmpeg'
 import { Configuration, OpenAIApi } from 'openai'
+import OpusScript from 'opusscript'
+import { EventConfig, client, getState, logger } from 'robo.js'
 import type { AudioReceiveStream, VoiceConnection } from '@discordjs/voice'
 
 export const openai = new OpenAIApi(
 	new Configuration({
-		apiKey: process.env.OPENAI_KEY
+		apiKey: process.env.OPENAI_API_KEY
 	})
 )
 
@@ -263,7 +263,7 @@ async function onJoin(channel: VoiceBasedChannel) {
 						]
 					})
 
-					await AiEngine.chat(
+					await AI.chat(
 						[
 							{
 								role: 'system',
@@ -273,12 +273,12 @@ async function onJoin(channel: VoiceBasedChannel) {
 							...conversation.slice(-4)
 						],
 						{
-							channel: channel,
-							member: channel.guild?.members.cache.get(userId),
+							channel: null,
+							member: null,
 							onReply: async (gptReply) => {
 								conversation.push({
 									role: 'assistant',
-									content: gptReply
+									content: gptReply.text ?? ''
 								})
 
 								// TODO: Testing sending to a specific channel
@@ -287,7 +287,7 @@ async function onJoin(channel: VoiceBasedChannel) {
 										embeds: [
 											{
 												color: Colors.Greyple,
-												description: gptReply,
+												description: gptReply.text,
 												author: {
 													name: client.user.username,
 													icon_url: client.user.avatarURL() ?? client.user.avatar ?? undefined
@@ -301,7 +301,7 @@ async function onJoin(channel: VoiceBasedChannel) {
 								}
 
 								// Remove emojis so they're not read out
-								const cleanReply = gptReply
+								const cleanReply = (gptReply.text ?? '')
 									.replace(/<a?:\w+:\d+>/g, '')
 									.replace(
 										/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,

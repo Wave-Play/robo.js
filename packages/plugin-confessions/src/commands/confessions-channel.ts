@@ -17,7 +17,6 @@ export const config: CommandConfig = {
 }
 
 export default async (interaction: CommandInteraction) => {
-	/* eslint-disable  @typescript-eslint/no-non-null-assertion */
 	const channel = interaction.options.get('channel')?.channel as Channel
 
 	// info about current channel

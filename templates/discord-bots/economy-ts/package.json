@@ -1,0 +1,32 @@
+{
+	"name": "economy-bot",
+	"description": "💰 Robo.js Discord economy bot with essential features!",
+	"version": "0.0.0",
+	"type": "module",
+	"private": true,
+	"author": "ArnavK-09 <arnavkaushal09@gmail.com>",
+	"scripts": {
+		"build": "robo build",
+		"deploy": "robo deploy",
+		"dev": "NODE_OPTIONS=--enable-source-maps robo dev",
+		"doctor": "robo doctor",
+		"invite": "robo invite",
+		"lint": "pnpm lint:eslint && pnpm lint:style",
+		"lint:eslint": "eslint . --ext js,jsx,ts,tsx",
+		"lint:style": "prettier --write .",
+		"start": "robo start"
+	},
+	"dependencies": {
+		"@roboplay/robo.js": "^0.9.26",
+		"discord.js": "^14.16.2"
+	},
+	"devDependencies": {
+		"@swc/core": "^1.7.26",
+		"@types/node": "^22.7.4",
+		"@typescript-eslint/eslint-plugin": "^8.7.0",
+		"@typescript-eslint/parser": "^8.7.0",
+		"eslint": "^9.11.1",
+		"prettier": "^3.3.3",
+		"typescript": "^5.6.2"
+	}
+}

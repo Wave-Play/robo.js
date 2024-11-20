@@ -1,22 +1,26 @@
 import { Command } from '../../utils/cli-handler.js'
-import { generateManifest, loadManifest } from '../../utils/manifest.js'
+import { generateManifest } from '../../utils/manifest.js'
 import { logger as defaultLogger, Logger } from '../../../core/logger.js'
-import { loadConfig } from '../../../core/config.js'
+import { loadConfig, loadConfigPath } from '../../../core/config.js'
 import { getProjectSize, printBuildSummary } from '../../utils/build-summary.js'
 import plugin from './plugin.js'
 import path from 'node:path'
+import { Env } from '../../../core/env.js'
+import { Mode, setMode } from '../../../core/mode.js'
 import { findCommandDifferences, registerCommands } from '../../utils/commands.js'
 import { generateDefaults } from '../../utils/generate-defaults.js'
-import { compile } from '../../utils/compiler.js'
+import { Compiler } from '../../utils/compiler.js'
 import { Flashcore, prepareFlashcore } from '../../../core/flashcore.js'
-import { bold } from '../../../core/color.js'
-import { FLASHCORE_KEYS } from '../../../core/constants.js'
+import { bold, color } from '../../../core/color.js'
+import { buildPublicDirectory } from '../../utils/public.js'
+import { discordLogger, FLASHCORE_KEYS } from '../../../core/constants.js'
 import type { LoggerOptions } from '../../../core/logger.js'
 
 const command = new Command('build')
 	.description('Builds your bot for production.')
 	.option('-d', '--dev', 'build for development')
 	.option('-f', '--force', 'force register commands')
+	.option('-m', '--mode', 'specify the mode(s) to run in (dev, beta, prod, etc...)')
 	.option('-s', '--silent', 'do not print anything')
 	.option('-v', '--verbose', 'print more information for debugging')
 	.option('-w', '--watch', 'watch for changes and rebuild')
@@ -26,10 +30,12 @@ const command = new Command('build')
 	.positionalArgs(true)
 export default command
 
-interface BuildCommandOptions {
+export interface BuildCommandOptions {
 	dev?: boolean
+	exit?: boolean
 	files?: string[]
 	force?: boolean
+	mode?: string
 	silent?: boolean
 	verbose?: boolean
 	watch?: boolean
@@ -42,6 +48,8 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 	}
 	const logger = options.dev ? new Logger(loggerOptions) : defaultLogger(loggerOptions)
 	logger.info(`Building Robo...`)
+	logger.debug('CLI parameters:', files)
+	logger.debug('CLI options:', options)
 	logger.debug(`Current working directory:`, process.cwd())
 	const startTime = Date.now()
 
@@ -52,8 +60,35 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 		process.exit(1)
 	}
 
+	// Set NODE_ENV if not already set
+	if (!process.env.NODE_ENV) {
+		// TODO: Generate different .manifest files for each mode, always keeping the default one
+		// TODO: Also update `deploy` command for plugins to use correct manifest and update package.json files
+		process.env.NODE_ENV = options.dev ? 'development' : 'production'
+	}
+
+	// Make sure environment variables are loaded
+	const defaultMode = Mode.get()
+	await Env.load({ mode: defaultMode })
+
+	// Handle mode(s)
+	const { shardModes } = setMode(options.mode)
+
+	if (shardModes) {
+		// TODO: Generate different .manifest files for each mode, always keeping the default one
+		logger.error(`Mode sharding is not available for builds.`)
+		process.exit(1)
+	}
+
 	// Load the configuration file
-	const config = await loadConfig()
+	const configPath = await loadConfigPath()
+	if (configPath?.includes('.config')) {
+		// Include deprecated warning
+		logger.warn(
+			`The ${color.bold('.config')} directory is deprecated. Use ${color.bold('config')} instead. (without the dot)`
+		)
+	}
+	const config = await loadConfig('robo', true)
 	if (!config) {
 		logger.warn(`Could not find configuration file.`)
 	}
@@ -61,8 +96,8 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 	// Initialize Flashcore to persist build error data
 	await prepareFlashcore()
 
-	// Use SWC to compile into .robo/build
-	const compileTime = await compile({
+	// Use the Robo Compiler to generate .robo/build
+	const compileTime = await Compiler.buildCode({
 		distDir: config.experimental?.buildDirectory,
 		excludePaths: config.excludePaths?.map((p) => p.replaceAll('/', path.sep)),
 		files: files
@@ -73,12 +108,15 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 	const generatedFiles = await generateDefaults(config.experimental?.buildDirectory)
 
 	// Generate manifest.json
-	const oldManifest = await loadManifest()
+	const oldManifest = await Compiler.useManifest({ safe: true })
 	const manifestTime = Date.now()
 	const manifest = await generateManifest(generatedFiles, 'robo')
 	logger.debug(`Generated manifest in ${Date.now() - manifestTime}ms`)
 
 	if (!options.dev) {
+		// Build /public for production if available
+		await buildPublicDirectory()
+
 		// Get the size of the entire current working directory
 		const sizeStartTime = Date.now()
 		const totalSize = await getProjectSize(process.cwd())
@@ -106,12 +144,16 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 		addedContextCommands.length > 0 || removedContextCommands.length > 0 || changedContextCommands.length > 0
 
 	// Register command changes
-	if (options.force) {
-		logger.warn('Forcefully registering commands.')
+	const shouldRegister = options.force || hasCommandChanges || hasContextCommandChanges
+
+	if (config.experimental?.disableBot !== true && options.force) {
+		discordLogger.warn('Forcefully registering commands.')
 	}
-	if (options.force || hasCommandChanges || hasContextCommandChanges) {
+
+	if (config.experimental?.disableBot !== true && shouldRegister) {
 		await registerCommands(
 			options.dev,
+			options.force,
 			newCommands,
 			manifest.context.message,
 			manifest.context.user,
@@ -122,10 +164,15 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 			addedContextCommands,
 			removedContextCommands
 		)
-	} else {
+	} else if (config.experimental?.disableBot !== true) {
 		const hasPreviousError = await Flashcore.get<boolean>(FLASHCORE_KEYS.commandRegisterError)
 		if (hasPreviousError) {
-			logger.warn(`Previous command registration failed. Run ${bold('robo build --force')} to try again.`)
+			discordLogger.warn(`Previous command registration failed. Run ${bold('robo build --force')} to try again.`)
 		}
+	}
+
+	// Gracefully exit
+	if (options.exit ?? !options.dev) {
+		process.exit(0)
 	}
 }

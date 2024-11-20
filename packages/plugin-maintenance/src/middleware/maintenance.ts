@@ -1,11 +1,17 @@
-import { excludeCommands, excludeContexts, excludeEvents, maintenanceEnabled, maintenanceMessage } from '../core/config.js'
-import type { MiddlewareData, MiddlewareResult } from '@roboplay/robo.js'
+import {
+	excludeCommands,
+	excludeContexts,
+	excludeEvents,
+	maintenanceEnabled,
+	maintenanceMessage
+} from '../core/config.js'
+import type { MiddlewareData, MiddlewareResult } from 'robo.js'
 import type { CommandInteraction, ContextMenuCommandInteraction } from 'discord.js'
 
 export default async (data: MiddlewareData): Promise<MiddlewareResult | void> => {
 	const { auto, key, plugin, type } = data.record
 	const isRoboDefault = !plugin && auto
-	const isSelfPlugin = plugin?.name === '@roboplay/plugin-maintenance'
+	const isSelfPlugin = plugin?.name === '@robojs/maintenance'
 
 	// Abort if maintenance mode is disabled
 	if (maintenanceEnabled && !isRoboDefault && !isSelfPlugin) {

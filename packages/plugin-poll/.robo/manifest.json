@@ -10,12 +10,12 @@
       "plugins": []
     },
     "type": "plugin",
-    "updatedAt": "2023-05-21T07:13:35.729Z",
-    "version": "0.6.0"
+    "updatedAt": "2024-10-21T00:43:50.902Z",
+    "version": "0.6.1"
   },
   "commands": {
     "poll": {
-      "__path": "poll.js",
+      "__path": "/.robo/build/commands/poll.js",
       "description": "Create a poll",
       "options": [
         {
@@ -39,17 +39,17 @@
   "events": {
     "_restart": [
       {
-        "__path": "_restart.js"
+        "__path": "/.robo/build/events/_restart.js"
       }
     ],
     "_stop": [
       {
-        "__path": "_stop.js"
+        "__path": "/.robo/build/events/_stop.js"
       }
     ],
     "interactionCreate": [
       {
-        "__path": "interactionCreate.js"
+        "__path": "/.robo/build/events/interactionCreate.js"
       }
     ]
   },

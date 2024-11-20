@@ -1,9 +1,9 @@
 import { Command } from 'commander'
 import depcheck from 'depcheck'
-import inquirer from 'inquirer'
+import { select, Separator } from '@inquirer/prompts'
 import { color, composeColors } from '../core/color.js'
 import { logger } from '../core/logger.js'
-import { checkSageUpdates, cmd, exec, getPackageExecutor, getPackageManager, isRoboProject } from '../core/utils.js'
+import { checkSageUpdates, exec, getPackageExecutor, getPackageManager, isRoboProject } from '../core/utils.js'
 import path from 'node:path'
 import { access, cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import type { PackageJson } from '../core/types.js'
@@ -63,7 +63,7 @@ async function exportAction(modules: string[], options: ExportOptions) {
 		hasPrettier: !!packageJson.devDependencies['prettier'],
 		hasTypescript: !!packageJson.devDependencies['typescript'],
 		hasWorkspaces: !!packageJson.workspaces,
-		roboversion: packageJson.dependencies['@roboplay/robo.js']
+		roboversion: packageJson.dependencies['robo.js']
 	}
 
 	const results: unknown[] = []
@@ -123,7 +123,7 @@ async function exportModule(module: string, project: ProjectInfo, commandOptions
 	}
 
 	logger.debug(`Creating plugin project in "${color.bold(exportPath)}"...`)
-	await exec(`${cmd(packageExecutor)} create-robo ${options.join(' ')}`, {
+	await exec(`${packageExecutor} create-robo ${options.join(' ')}`, {
 		cwd: exportPath
 	})
 
@@ -181,12 +181,9 @@ async function exportModule(module: string, project: ProjectInfo, commandOptions
 		logger.debug(`Missing dependencies:`, depResults.missing)
 		logger.info(`Installing missing dependencies...`)
 		try {
-			await exec(
-				`${cmd(command)} ${await usesLocalWorkaround(command, project.hasWorkspaces)} ${missingDeps.join(' ')}`,
-				{
-					cwd: exportPath
-				}
-			)
+			await exec(`${command} ${await usesLocalWorkaround(command, project.hasWorkspaces)} ${missingDeps.join(' ')}`, {
+				cwd: exportPath
+			})
 		} catch (error) {
 			logger.error(`Failed to install missing dependencies:`, error)
 		}
@@ -194,7 +191,7 @@ async function exportModule(module: string, project: ProjectInfo, commandOptions
 		// Install dependencies
 		logger.info(`Installing dependencies...`)
 		await exec(
-			`${cmd(command)} ${await usesLocalWorkaround(command, project.hasWorkspaces)}
+			`${command} ${await usesLocalWorkaround(command, project.hasWorkspaces)}
 			`,
 			{ cwd: exportPath }
 		)
@@ -202,7 +199,7 @@ async function exportModule(module: string, project: ProjectInfo, commandOptions
 
 	// Build the plugin
 	logger.debug(`Building plugin...`)
-	await exec(`${cmd(packageExecutor)} robo build plugin${commandOptions.verbose ? ' --verbose' : ''}`, {
+	await exec(`${packageExecutor} robo build plugin${commandOptions.verbose ? ' --verbose' : ''}`, {
 		cwd: exportPath
 	})
 
@@ -212,26 +209,22 @@ async function exportModule(module: string, project: ProjectInfo, commandOptions
 
 	// Ask if they want to add the new plugin
 	logger.log('')
-	const { addPlugin } = await inquirer.prompt([
-		{
-			type: 'list',
-			name: 'addPlugin',
-			message: color.blue(`Want to add ${packageName} to your Robo?`),
-			choices: [
-				{ name: 'Yes', value: true },
-				{ name: 'No', value: false },
-				new inquirer.Separator(
-					color.reset(`\n${composeColors(color.bold, color.yellow)('Warning:')} this will delete the original module!`)
-				)
-			]
-		}
-	])
+	const addPlugin = await select({
+		message: color.blue(`Want to add ${packageName} to your Robo?`),
+		choices: [
+			{ name: 'Yes', value: true },
+			{ name: 'No', value: false },
+			new Separator(
+				color.reset(`\n${composeColors(color.bold, color.yellow)('Warning:')} this will delete the original module!`)
+			)
+		]
+	})
 
 	// Add plugin to project via `robo add` command
 	if (addPlugin) {
 		logger.debug(`Adding plugin to project...`)
 		const absolutePath = path.join(process.cwd(), '..', packageName)
-		await exec(`${cmd(packageExecutor)} robo add ${absolutePath}${commandOptions.verbose ? ' --verbose' : ''}`, {
+		await exec(`${packageExecutor} robo add ${absolutePath}${commandOptions.verbose ? ' --verbose' : ''}`, {
 			cwd: process.cwd()
 		})
 

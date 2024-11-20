@@ -1,24 +1,22 @@
 import {
 	APIApplicationCommandOptionChoice,
-	ApplicationCommandType,
 	ContextMenuCommandBuilder,
 	REST,
 	Routes,
 	SlashCommandBuilder,
 	SlashCommandSubcommandBuilder
 } from 'discord.js'
-import { logger as globalLogger, Logger } from '../../core/logger.js'
+import { Logger } from '../../core/logger.js'
 import { loadConfig } from '../../core/config.js'
-import { DEFAULT_CONFIG, FLASHCORE_KEYS } from '../../core/constants.js'
+import { DEFAULT_CONFIG, discordLogger, FLASHCORE_KEYS } from '../../core/constants.js'
 import { env } from '../../core/env.js'
 import { timeout } from './utils.js'
 import { bold, color } from '../../core/color.js'
 import { Flashcore } from '../../core/flashcore.js'
-import type { ApplicationCommandOptionBase } from 'discord.js'
+import type { APIApplicationCommand, ApplicationCommandOptionBase } from 'discord.js'
 import type { CommandEntry, CommandOption, ContextEntry } from '../../types/index.js'
 
-// @ts-expect-error - Global logger is overriden by dev mode
-let logger: Logger = globalLogger
+let logger: Logger = discordLogger
 
 export function buildContextCommands(
 	dev: boolean,
@@ -29,7 +27,7 @@ export function buildContextCommands(
 		logger = new Logger({
 			enabled: true,
 			level: 'info'
-		})
+		}).fork('discord')
 	}
 
 	return Object.entries(contextCommands).map(([key, entry]): ContextMenuCommandBuilder => {
@@ -37,7 +35,7 @@ export function buildContextCommands(
 		const commandBuilder = new ContextMenuCommandBuilder()
 			.setName(key)
 			.setNameLocalizations(entry.nameLocalizations || {})
-			.setType(type === 'message' ? ApplicationCommandType.Message : ApplicationCommandType.User)
+			.setType(type === 'message' ? 3 : 2)
 
 		if (entry.defaultMemberPermissions !== undefined) {
 			commandBuilder.setDefaultMemberPermissions(entry.defaultMemberPermissions)
@@ -233,6 +231,7 @@ export function addOptionToCommandBuilder(
 		case 'role':
 			commandBuilder.addRoleOption((builder) => optionPredicate(builder))
 			break
+		case 'member':
 		case 'user':
 			commandBuilder.addUserOption((builder) => optionPredicate(builder))
 			break
@@ -302,6 +301,7 @@ function hasChangedFields(obj1: CommandEntry, obj2: CommandEntry): boolean {
 
 export async function registerCommands(
 	dev: boolean,
+	force: boolean,
 	newCommands: Record<string, CommandEntry>,
 	newMessageContextCommands: Record<string, ContextEntry>,
 	newUserContextCommands: Record<string, ContextEntry>,
@@ -312,14 +312,21 @@ export async function registerCommands(
 	addedContextCommands: string[],
 	removedContextCommands: string[]
 ) {
-	const config = await loadConfig()
-	const { clientId, guildId, token } = env.discord
+	const config = await loadConfig('robo', true)
+	const clientId = env.get('discord.clientId')
+	const guildId = env.get('discord.guildId')
+	const token = env.get('discord.token')
+	let commandType = guildId ? 'guild' : 'global'
 
 	if (!token || !clientId) {
 		logger.error(
 			`${color.bold('DISCORD_TOKEN')} or ${color.bold('DISCORD_CLIENT_ID')} not found in environment variables`
 		)
 		return
+	}
+
+	if (config.experimental?.userInstall) {
+		commandType += ' and user install'
 	}
 
 	const startTime = Date.now()
@@ -335,7 +342,6 @@ export async function registerCommands(
 		const addedContextChanges = addedContextCommands.map((cmd) => color.green(`${color.bold(cmd)} (new)`))
 		const removedContextChanges = removedContextCommands.map((cmd) => color.red(`${color.bold(cmd)} (deleted)`))
 		const updatedContextChanges = changedContextCommands.map((cmd) => color.blue(`${color.bold(cmd)} (updated)`))
-
 		const allChanges = [...addedChanges, ...removedChanges, ...updatedChanges]
 		const allContextChanges = [...addedContextChanges, ...removedContextChanges, ...updatedContextChanges]
 		if (allChanges.length > 0) {
@@ -344,12 +350,77 @@ export async function registerCommands(
 		if (allContextChanges.length > 0) {
 			logger.info('Context menu changes: ' + allContextChanges.join(', '))
 		}
-
 		const commandData = [
 			...slashCommands.map((command) => command.toJSON()),
 			...contextMessageCommands.map((command) => command.toJSON()),
 			...contextUserCommands.map((command) => command.toJSON())
 		]
+
+		// Inject user install if enabled
+		if (config.experimental?.userInstall) {
+			commandData.forEach((command) => {
+				command.integration_types = [0, 1]
+				command.contexts = [0, 1, 2]
+			})
+		}
+
+		// Get existing commands
+		const existingCommands = (await rest.get(
+			guildId ? Routes.applicationGuildCommands(clientId, guildId) : Routes.applicationCommands(clientId)
+		)) as APIApplicationCommand[]
+		logger.debug(`Found ${existingCommands.length} existing commands:`, existingCommands)
+
+		// See if an entry command already exists
+		let entryCommand: APIApplicationCommand = existingCommands.find((command) => command.type === 4)
+		logger.debug('Entry command:', entryCommand)
+
+		if (force) {
+			// Start clean by forcing a deletion of all existing commands
+			const deletions = existingCommands.map((command) => {
+				return rest.delete(
+					guildId
+						? Routes.applicationGuildCommand(clientId, guildId, command.id)
+						: Routes.applicationCommand(clientId, command.id)
+				)
+			})
+			await Promise.all(deletions)
+			logger.debug('Successfully cleaned up existing commands')
+
+			// Prepare entry command for re-registration
+			// @ts-expect-error - This is a valid command object
+			entryCommand = {
+				name: 'launch',
+				description: 'Launch an activity',
+				contexts: [0, 1, 2],
+				integration_types: [0, 1],
+				type: 4,
+				handler: 2
+			}
+		} else {
+			// Remove only commands that are no longer in the manifest by default
+			const deletions = removedCommands.map((command) => {
+				const existingCommand = existingCommands.find((c) => c.name === command)
+
+				if (existingCommand) {
+					logger.debug(`Deleting command /${existingCommand.name}...`)
+					return rest.delete(
+						guildId
+							? Routes.applicationGuildCommand(clientId, guildId, existingCommand.id)
+							: Routes.applicationCommand(clientId, existingCommand.id)
+					)
+				}
+			})
+			await Promise.all(deletions)
+			logger.debug('Successfully removed deleted commands')
+		}
+
+		// Ensure entry command is added if already there (or if reset)
+		if (entryCommand && !guildId) {
+			// @ts-expect-error - This is a valid command object
+			commandData.push(entryCommand)
+		}
+
+		// Let's register the commands!
 		const registerCommandsPromise = (
 			guildId
 				? rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commandData })
@@ -367,8 +438,9 @@ export async function registerCommands(
 		}
 
 		const endTime = Date.now() - startTime
-		const commandType = guildId ? 'guild' : 'global'
-		logger.info(`Successfully updated ${color.bold(commandType + ' commands')} in ${endTime}ms`)
+
+		logger.info(`Successfully updated ${commandData.length} ${color.bold(commandType + ' commands')} in ${endTime}ms`)
+		logger.wait(color.dim('It may take a while for the changes to reflect in Discord.'))
 		await Flashcore.delete(FLASHCORE_KEYS.commandRegisterError)
 	} catch (error) {
 		logger.error('Could not register commands!', error)

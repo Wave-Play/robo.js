@@ -5,6 +5,7 @@ import { promisify } from 'util'
 import { join } from 'path'
 import { tmpdir } from 'os'
 import { createWriteStream, promises as fs } from 'fs'
+import { logger } from 'robo.js'
 
 const pipeline = promisify(Stream.pipeline)
 
@@ -75,6 +76,14 @@ export async function downloadAndExtractRepo(root: string, { username, name, bra
 	})
 
 	await fs.unlink(tempFile)
+
+	// Load package.json from root
+	try {
+		return JSON.parse(await fs.readFile(join(root, 'package.json'), 'utf-8'))
+	} catch (error) {
+		logger.debug(`Failed to read template package.json:`, error)
+		return {}
+	}
 }
 
 export async function downloadAndExtractExample(root: string, name: string) {
@@ -92,4 +101,14 @@ export async function downloadAndExtractExample(root: string, name: string) {
 	})
 
 	await fs.unlink(tempFile)
+
+	// Load package.json from root
+	try {
+		const packageJson = JSON.parse(await fs.readFile(join(root, 'package.json'), 'utf-8'))
+		console.log(packageJson)
+		return packageJson
+	} catch (error) {
+		logger.debug(error)
+		return {}
+	}
 }

@@ -1,24 +1,25 @@
-# 🚀 @roboplay/plugin-devtools
+# @robojs/dev
 
-Welcome to _@roboplay/plugin-devtools_! For developers fine-tuning their **[Robo.js](https://github.com/Wave-Play/robo)** projects, this plugin is a must-have. Seamlessly test Robo APIs, monitor resources, and emulate specific Robo behaviors, all in one package. Just install, and you're ready to go!
+Welcome to _@robojs/dev_! For developers fine-tuning their **[Robo.js](https://github.com/Wave-Play/robo)** projects, this plugin is a must-have. Seamlessly test Robo APIs, monitor resources, and emulate specific Robo behaviors, all in one package. Just install, and you're ready to go!
 
 ## Installation 💻
 
 To integrate this plugin into your project, simply navigate to your Robo directory and input:
 
 ```bash
-npx robo add @roboplay/plugin-devtools
+npx robo add @robojs/dev
 ```
 
 Voilà! Your Robo is now supercharged with development tools.
 
 ## ⚠️ Important Note
+
 This plugin is crafted explicitly for development environments. Before deploying your Robo, ensure you uninstall this plugin to prevent users from directly manipulating your server or database.
 
 Execute the following to safely remove:
 
 ```bash
-npx robo remove @roboplay/plugin-devtools
+npx robo remove @robojs/dev
 ```
 
 ## Commands

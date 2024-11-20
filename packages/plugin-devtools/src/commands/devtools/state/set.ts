@@ -1,7 +1,7 @@
 import { logger } from '../../../core/helpers.js'
-import { setState, State } from '@roboplay/robo.js'
+import { setState, State } from 'robo.js'
 import { Colors } from 'discord.js'
-import type { CommandConfig } from '@roboplay/robo.js'
+import type { CommandConfig } from 'robo.js'
 import type { APIEmbedField, AutocompleteInteraction, CommandInteraction } from 'discord.js'
 
 export const config: CommandConfig = {
@@ -146,7 +146,8 @@ export const autocomplete = (interaction: AutocompleteInteraction) => {
 		}))
 	} else if (focus.name === 'fork') {
 		const focusedValue = focus.value.trim().toLowerCase()
-		return State.listForks().filter((fork) => fork.includes(focusedValue)).map((fork) => ({ name: fork, value: fork }))
+		return State.listForks()
+			.filter((fork) => fork.includes(focusedValue))
+			.map((fork) => ({ name: fork, value: fork }))
 	}
 }
- 

@@ -1,0 +1,12 @@
+body {
+	margin: 0px;
+	background-color: #000000;
+	padding: 0px;
+}
+iframe {
+	display: block;
+	border: 0px;
+	height: 100vh;
+	width: 100vw;
+}
+

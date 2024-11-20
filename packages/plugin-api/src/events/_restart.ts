@@ -1,7 +1,11 @@
-import Server from '../core/server.js'
+import { logger } from '~/core/logger.js'
+import { pluginOptions } from '../events/_start.js'
 
 export default async () => {
-	if (Server.isRunning()) {
-		await Server.stop()
+	const { engine } = pluginOptions
+
+	if (engine.isRunning()) {
+		logger.debug('Draining connections...')
+		await engine.stop()
 	}
 }

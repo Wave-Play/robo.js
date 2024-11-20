@@ -1,17 +1,58 @@
 import { spawn } from 'node:child_process'
-import chalk from 'chalk'
-import { logger } from './logger.js'
+import { createRequire } from 'node:module'
+import { color, logger } from 'robo.js'
 import type { SpawnOptions } from 'node:child_process'
+import type { Logger } from 'robo.js'
+
+// Read the version from the package.json file
+const require = createRequire(import.meta.url)
+export const packageJson = require('../package.json')
 
 type PackageManager = 'npm' | 'bun' | 'pnpm' | 'yarn'
 
-export const ESLINT_IGNORE = `node_modules
-.config
-.robo\n`
+export const EslintConfig = `import globals from 'globals'
+import eslint from '@eslint/js'
+
+export default [
+	{ ignores: ['.robo/', 'config/'] },
+	{
+		files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'],
+		languageOptions: {
+			globals: {
+				...globals.node
+			}
+		}
+	},
+	eslint.configs.recommended
+]
+`
+
+export const EslintConfigTypescript = `import globals from 'globals'
+import eslint from '@eslint/js'
+import tseslint from 'typescript-eslint'
+
+export default tseslint.config(
+	{ ignores: ['.robo/', 'config/'] },
+	{
+		files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'],
+		languageOptions: {
+			globals: {
+				...globals.node
+			}
+		}
+	},
+	eslint.configs.recommended,
+	...tseslint.configs.recommended
+)
+`
+
+export const Indent = ' '.repeat(3)
+
+export const Space = ' '.repeat(8)
 
 export const IS_WINDOWS = /^win/.test(process.platform)
 
-export const PRETTIER_CONFIG = `module.exports = {
+export const PRETTIER_CONFIG = `export default {
 	printWidth: 120,
 	semi: false,
 	singleQuote: true,
@@ -23,60 +64,67 @@ export const PRETTIER_CONFIG = `module.exports = {
 export const ROBO_CONFIG = `// @ts-check
 
 /**
- * @type {import('@roboplay/robo.js').Config}
+ * @type {import('robo.js').Config}
  **/
 export default {
 	clientOptions: {
-		intents: [
-			'Guilds',
-			'GuildMessages',
-			'MessageContent'
-		]
+		intents: ['Guilds', 'GuildMessages']
 	},
 	plugins: [],
 	type: 'robo'
 }\n`
 
+export const ROBO_CONFIG_APP = `// @ts-check
+
 /**
- * Eh, just Windows things
- */
+ * @type {import('robo.js').Config}
+ **/
+export default {
+	experimental: {
+		disableBot: true
+	},
+	plugins: [],
+	type: 'robo',
+	watcher: {
+		ignore: ['src${IS_WINDOWS ? '\\\\' : '/'}app', 'src${IS_WINDOWS ? '\\\\' : '/'}components', 'src${
+	IS_WINDOWS ? '\\\\' : '/'
+}hooks']
+	}
+}\n`
 
-export function getNodeOptions(): string {
-	return IS_WINDOWS ? 'set NODE_OPTIONS=--enable-source-maps &&' : 'NODE_OPTIONS=--enable-source-maps'
+export interface ExecOptions extends SpawnOptions {
+	logger?: Logger | typeof logger
+	resolveOnEvent?: 'close' | 'exit'
+	verbose?: boolean
 }
-
-export function cmd(packageManager: PackageManager): string {
-	return IS_WINDOWS ? `${packageManager}.cmd` : packageManager
-}
-
 /**
  * Run a command as a child process
  */
-export function exec(command: string, options?: SpawnOptions) {
+export function exec(command: string, options?: ExecOptions) {
+	const { logger: customLogger = logger, resolveOnEvent = 'close', verbose, ...spawnOptions } = options ?? {}
 	return new Promise<void>((resolve, reject) => {
-		logger.debug(`> ${chalk.bold(command)}`)
+		customLogger.debug(`> ${color.bold(command)}`)
 
 		// Run command as child process
 		const args = command.split(' ')
 		const childProcess = spawn(args.shift(), args, {
-			...(options ?? {}),
 			env: { ...process.env, FORCE_COLOR: '1' },
-			stdio: 'inherit'
+			shell: IS_WINDOWS,
+			stdio: verbose ? 'pipe' : 'inherit',
+			...(spawnOptions ?? {})
 		})
+
+		if (verbose) {
+			const onData = (data: Buffer) => {
+				const output = data.toString()
+				customLogger.debug(Indent, color.dim(output))
+			}
+			childProcess.stderr?.on('data', onData)
+			childProcess.stdout?.on('data', onData)
+		}
 
 		// Resolve promise when child process exits
-		childProcess.on('close', (code) => {
-			if (code === 0) {
-				resolve()
-			} else {
-				reject(new Error(`Child process exited with code ${code}`))
-			}
-		})
-
-		// Or reject when it errors
-		childProcess.on('error', (error) => {
-			reject(error)
-		})
+		childProcess.on(resolveOnEvent, (code) => (code ? reject(`Command exited with code ${code}`) : resolve()))
 	})
 }
 
@@ -95,6 +143,21 @@ export function getPackageManager(): PackageManager {
 		return 'pnpm'
 	} else {
 		return 'npm'
+	}
+}
+
+export const IS_BUN_RUNTIME = process.versions.bun
+
+export function getPackageExecutor(): string {
+	const packageManager = getPackageManager()
+	if (packageManager === 'yarn') {
+		return 'yarn'
+	} else if (packageManager === 'pnpm') {
+		return 'pnpm'
+	} else if (packageManager === 'bun') {
+		return 'bunx'
+	} else {
+		return 'npx'
 	}
 }
 
@@ -158,15 +221,4 @@ export function sortObjectKeys(obj: Record<string, string>) {
 			acc[key] = obj[key]
 			return acc
 		}, {} as Record<string, string>)
-}
-
-// Helper function to update or add a variable
-export function updateOrAddVariable(content: string, variable: string, value: string): string {
-	const regex = new RegExp(`(${variable}\\s*=)(.*)`, 'i')
-
-	if (regex.test(content)) {
-		return content.replace(regex, `$1${value}`)
-	} else {
-		return `${content}${variable}="${value}"\n`
-	}
 }

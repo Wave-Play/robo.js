@@ -1,6 +1,6 @@
-import { client } from '@roboplay/robo.js'
-import { isReplyingToUser } from '../../core/engine.js'
-import { logger } from '../../core/logger.js'
+import { isReplyingToUser } from '@/core/ai.js'
+import { logger } from '@/core/logger.js'
+import { client } from 'robo.js'
 import type { Message, Typing } from 'discord.js'
 
 // 10 seconds emulates Discord's typing indicator timeout
@@ -117,7 +117,7 @@ export function isUserTyping(userId: string) {
 
 export function waitForTyping(userId: string) {
 	return new Promise<string[]>((resolve) => {
-		(async () => {
+		const run = async () => {
 			// Loop until the user stops typing
 			while (isUserTyping(userId)) {
 				const state = UserStatus[userId]
@@ -137,6 +137,7 @@ export function waitForTyping(userId: string) {
 			}
 			logger.debug(`User @${userId} stopped typing. Context:`, context)
 			resolve(context)
-		})()
+		}
+		run()
 	})
 }

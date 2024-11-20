@@ -48,6 +48,10 @@ export class FlashcoreFileAdapter<K = string, V = unknown> implements FlashcoreA
 		}
 	}
 
+	async has(key: K): Promise<boolean> {
+		return !!(await this.get(key))
+	}
+
 	async init() {
 		try {
 			await fs.mkdir(FlashcoreFileAdapter.DATA_DIR, { recursive: true })

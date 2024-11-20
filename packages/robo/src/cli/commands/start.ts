@@ -5,12 +5,13 @@ import { logger } from '../../core/logger.js'
 import { hasFilesRecursively } from '../utils/fs-helper.js'
 import { color, composeColors } from '../../core/color.js'
 import { loadConfig } from '../../core/config.js'
-import { Flashcore, prepareFlashcore } from '../../core/flashcore.js'
-import { FLASHCORE_KEYS } from '../../core/constants.js'
-import { loadState } from '../../core/state.js'
+import { Env } from '../../core/env.js'
+import { Mode, setMode } from '../../core/mode.js'
+import { Indent } from '../../core/constants.js'
 
 const command = new Command('start')
 	.description('Starts your bot in production mode.')
+	.option('-m', '--mode', 'specify the mode(s) to run in (dev, beta, prod, etc...)')
 	.option('-h', '--help', 'Shows the available command options')
 	.option('-s', '--silent', 'do not print anything')
 	.option('-v', '--verbose', 'print more information for debugging')
@@ -18,6 +19,7 @@ const command = new Command('start')
 export default command
 
 interface StartCommandOptions {
+	mode?: string
 	silent?: boolean
 	verbose?: boolean
 }
@@ -27,11 +29,62 @@ async function startAction(_args: string[], options: StartCommandOptions) {
 	logger({
 		enabled: !options.silent,
 		level: options.verbose ? 'debug' : 'info'
-	}).info(`Starting Robo in ${color.bold('production mode')}...`)
-	logger.warn(`Thank you for trying Robo.js! This is a pre-release version, so please let us know of issues on GitHub.`)
+	})
+	logger.debug('CLI options:', options)
+
+	// Set NODE_ENV if not already set
+	if (!process.env.NODE_ENV) {
+		process.env.NODE_ENV = 'production'
+	}
+
+	// Make sure environment variables are loaded
+	const defaultMode = Mode.get()
+	await Env.load({ mode: defaultMode })
+
+	// Handle mode(s)
+	const { shardModes } = setMode(options.mode)
+
+	if (shardModes) {
+		return shardModes()
+	}
+
+	// Welcomeee
+	const projectName = path.basename(process.cwd()).toLowerCase()
+	logger.log('')
+	logger.log(Indent, color.bold(`🚀 Starting ${color.cyan(projectName)} in ${Mode.color(Mode.get())} mode`))
+	logger.log(Indent, '   Boop beep... Powering on your Robo creation! Need hosting? Check out RoboPlay!')
+	logger.log('')
+
+	// Check if .robo/manifest.json is missing
+	try {
+		await fs.access(path.join('.robo', 'manifest.json'))
+	} catch (err) {
+		logger.error(
+			`The manifest file is missing. Make sure your project structure is correct and run ${composeColors(
+				color.bold,
+				color.cyan
+			)('robo build')} again.`
+		)
+		process.exit(1)
+	}
+
+	// Experimental warning, except for the disableBot flag which is a special case
+	const config = await loadConfig()
+	const experimentalKeys = Object.entries(config.experimental ?? {})
+		.filter(([, value]) => value)
+		.map(([key]) => key)
+		.filter((key) => key !== 'disableBot')
+
+	if (experimentalKeys.length > 0) {
+		const features = experimentalKeys.map((key) => color.bold(key)).join(', ')
+		logger.warn(`Experimental flags enabled: ${features}.`)
+	}
+
+	// Check if the User has a custom build directory else set the default
+	const buildDirectory = config.experimental?.buildDirectory ?? path.join('.robo', 'build')
 
 	// Check if .robo/build directory has .js files (recursively)
-	if (!(await hasFilesRecursively(path.join('.robo', 'build')))) {
+	if (!(await hasFilesRecursively(path.join(buildDirectory)))) {
 		logger.error(
 			`No production build found. Make sure to compile your Robo using ${composeColors(
 				color.bold,
@@ -41,52 +94,9 @@ async function startAction(_args: string[], options: StartCommandOptions) {
 		process.exit(1)
 	}
 
-	// Check if .robo/manifest.json is missing
-	try {
-		await fs.access(path.join('.robo', 'manifest.json'))
-	} catch (err) {
-		logger.error(
-			`The ${color.bold(
-				'.robo/manifest.json'
-			)} file is missing. Make sure your project structure is correct and run ${composeColors(
-				color.bold,
-				color.blue
-			)('"robo build"')} again.`
-		)
-		process.exit(1)
-	}
-
-	// Experimental warning
-	const config = await loadConfig()
-	const experimentalKeys = Object.entries(config.experimental ?? {})
-		.filter(([, value]) => value)
-		.map(([key]) => key)
-	if (experimentalKeys.length > 0) {
-		const features = experimentalKeys.map((key) => color.bold(key)).join(', ')
-		logger.warn(`Experimental flags enabled: ${features}.`)
-	}
-
-	// Load state from Flashcore
-	const stateStart = Date.now()
-	const stateLoadPromise = new Promise<void>((resolve) => {
-		async function load() {
-			await prepareFlashcore()
-			const state = await Flashcore.get<Record<string, unknown>>(FLASHCORE_KEYS.state)
-			if (state) {
-				loadState(state)
-			}
-
-			logger.debug(`State loaded in ${Date.now() - stateStart}ms`)
-			resolve()
-		}
-		load()
-	})
-
-	// Imported dynamically to prevent multiple process hooks
+	// Start Roboooooooo!! :D (dynamic to avoid premature process hooks)
 	const { Robo } = await import('../../core/robo.js')
-
-	// Start Roboooooooo!! :D
 	Robo.start({
-		stateLoad: stateLoadPromise
+		shard: !!config.experimental?.shard
 	})
 }

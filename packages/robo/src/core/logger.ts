@@ -1,6 +1,17 @@
 import { inspect } from 'node:util'
 import { color } from './color.js'
-import { env } from './env.js'
+import { getModeColor } from './mode.js'
+
+// Compute mode label color
+let ModeLabel: string
+
+if (process.env.ROBO_SHARD_MODE) {
+	const mode = process.env.ROBO_SHARD_MODE
+	const longestMode = process.env.ROBO_SHARD_LONGEST_MODE
+	const modeColor = getModeColor(mode)
+
+	ModeLabel = color.bold(color.dim(modeColor(mode.padEnd(longestMode.length))))
+}
 
 export type LogDrain = (logger: Logger, level: string, ...data: unknown[]) => Promise<void>
 
@@ -30,7 +41,7 @@ const pendingDrains = new Set<Promise<void>>()
 
 type LogStream = typeof process.stderr | typeof process.stdout
 
-function consoleDrain(logger: Logger, level: string, ...data: unknown[]): Promise<void> {
+function consoleDrain(_logger: Logger, level: string, ...data: unknown[]): Promise<void> {
 	switch (level) {
 		case 'trace':
 		case 'debug':
@@ -94,6 +105,30 @@ class LogEntry {
 	}
 }
 
+/**
+ * The logger class provides a simple and flexible logging system.
+ *
+ * ```ts
+ * import { logger } from 'robo.js'
+ *
+ * // Can be used instead of console.log
+ * logger.info('Hello, world!')
+ * logger.debug('This is a debug message')
+ * logger.warn('Warning: something is not right')
+ * logger.error('An error occurred')
+ *
+ * // To make your own Logger instance
+ * import { Logger } from 'robo.js'
+ *
+ * const customLogger = new Logger({
+ * 	level: 'debug'
+ * })
+ * ```
+ *
+ * Use logger whenever possible instead of `console.log` to take advantage of Robo drains and log levels.
+ *
+ * [**Learn more:** Logger](https://robojs.dev/robojs/logger)
+ */
 export class Logger {
 	protected _customLevels: Record<string, CustomLevel>
 	protected _enabled: boolean
@@ -106,6 +141,10 @@ export class Logger {
 	private _logBuffer: LogEntry[]
 
 	constructor(options?: LoggerOptions) {
+		this.setup(options)
+	}
+
+	public setup(options?: LoggerOptions) {
 		const { customLevels, drain = consoleDrain, enabled = true, level, parent, prefix } = options ?? {}
 
 		this._customLevels = customLevels
@@ -114,7 +153,7 @@ export class Logger {
 		this._parent = parent
 		this._prefix = prefix
 
-		if (env.roboplay.host) {
+		if (process.env.ROBOPLAY_ENV) {
 			// This allows developers to have better control over the logs when hosted
 			this._level = 'trace'
 		} else {
@@ -132,11 +171,10 @@ export class Logger {
 		this._logBuffer = new Array(options?.maxEntries ?? DEFAULT_MAX_ENTRIES)
 	}
 
-	protected _log(level: string, ...data: unknown[]): void {
+	protected _log(prefix: string | null, level: string, ...data: unknown[]): void {
 		// Delegate to parent if forked
 		if (this._parent) {
-			data.unshift(this._prefix)
-			return this._parent._log(level, ...data)
+			return this._parent._log(this._prefix, level, ...data)
 		}
 
 		// Only log if the level is enabled
@@ -152,7 +190,19 @@ export class Logger {
 		// Format the message all pretty and stuff
 		if (level !== 'other') {
 			const label = this._customLevels ? this._customLevels[level]?.label : colorizedLogLevels[level]
-			data.unshift((label ?? level.padEnd(5)) + ' -')
+			let levelLabel = (label ?? level.padEnd(5)) + ' -'
+
+			// Add the prefix if specified
+			if (prefix) {
+				levelLabel = color.bold(colorMap[level](prefix + ':')) + levelLabel
+			}
+
+			data.unshift(levelLabel)
+		}
+
+		// Add the mode label if one exists
+		if (ModeLabel !== undefined && data.length > 1) {
+			data.unshift(ModeLabel)
 		}
 
 		// Persist the log entry in debug mode
@@ -248,44 +298,44 @@ export class Logger {
 	}
 
 	public trace(...data: unknown[]) {
-		this._log('trace', ...data)
+		this._log(null, 'trace', ...data)
 	}
 
 	public debug(...data: unknown[]) {
-		this._log('debug', ...data)
+		this._log(null, 'debug', ...data)
 	}
 
 	public info(...data: unknown[]) {
-		this._log('info', ...data)
+		this._log(null, 'info', ...data)
 	}
 
 	public wait(...data: unknown[]) {
-		this._log('wait', ...data)
+		this._log(null, 'wait', ...data)
 	}
 
 	public log(...data: unknown[]) {
-		this._log('other', ...data)
+		this._log(null, 'other', ...data)
 	}
 
 	public event(...data: unknown[]) {
-		this._log('event', ...data)
+		this._log(null, 'event', ...data)
 	}
 
 	public ready(...data: unknown[]) {
-		this._log('ready', ...data)
+		this._log(null, 'ready', ...data)
 	}
 
 	public warn(...data: unknown[]) {
-		this._log('warn', ...data)
+		this._log(null, 'warn', ...data)
 	}
 
 	public error(...data: unknown[]) {
-		this._log('error', ...data)
+		this._log(null, 'error', ...data)
 	}
 
 	public custom(level: string, ...data: unknown[]): void {
 		if (this._customLevels?.[level]) {
-			this._log(level, ...data)
+			this._log(null, level, ...data)
 		}
 	}
 }
@@ -302,6 +352,17 @@ const LogLevelValues: Record<string, number> = {
 	error: 8
 }
 
+const colorMap: Record<string, (str: string) => string> = {
+	trace: color.gray,
+	debug: color.cyan,
+	info: color.blue,
+	wait: color.cyan,
+	event: color.magenta,
+	ready: color.green,
+	warn: color.yellow,
+	error: color.red
+}
+
 const colorizedLogLevels: Record<string, string> = {
 	trace: color.gray('trace'.padEnd(5)),
 	debug: color.cyan('debug'.padEnd(5)),
@@ -316,10 +377,12 @@ const colorizedLogLevels: Record<string, string> = {
 let _logger: Logger | null = null
 
 export function logger(options?: LoggerOptions): Logger {
-	if (options) {
+	if (!_logger && options) {
 		_logger = new Logger(options)
 	} else if (!_logger) {
 		_logger = new Logger()
+	} else if (options) {
+		_logger.setup(options)
 	}
 
 	return _logger

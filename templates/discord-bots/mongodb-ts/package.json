@@ -1,0 +1,42 @@
+{
+	"name": "bot-mongodb-ts",
+	"description": "",
+	"version": "1.0.0",
+	"type": "module",
+	"private": true,
+	"keywords": [
+		"api",
+		"bot",
+		"discord",
+		"discord.js",
+		"http",
+		"robo",
+		"robo.js",
+		"server",
+		"typescript",
+		"vite",
+		"web"
+	],
+	"scripts": {
+		"build": "robo build",
+		"deploy": "robo deploy",
+		"dev": "robox dev",
+		"doctor": "sage doctor",
+		"invite": "robo invite",
+		"lint:style": "prettier --write .",
+		"start": "robo start",
+		"upgrade": "sage upgrade"
+	},
+	"dependencies": {
+		"@robojs/server": "^0.5.7",
+		"discord.js": "^14.16.2",
+		"mongoose": "^8.7.0",
+		"robo.js": "^0.10.15"
+	},
+	"devDependencies": {
+		"@swc/core": "^1.7.26",
+		"@types/node": "^22.7.4",
+		"prettier": "^3.3.3",
+		"typescript": "^5.6.2"
+	}
+}

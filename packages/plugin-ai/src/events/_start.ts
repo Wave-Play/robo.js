@@ -1,17 +1,21 @@
-import { Command, portal } from '@roboplay/robo.js'
-import { GptFunction, GptFunctionParameters, GptFunctionProperty } from '../core/openai.js'
+import { setEngine } from '@/core/ai.js'
+import { logger } from '@/core/logger.js'
+import { OpenAiEngine } from '@/engines/openai/engine.js'
 import { Client } from 'discord.js'
-import { logger } from '../core/logger.js'
-
-export const gptFunctions: GptFunction[] = []
-export const gptFunctionHandlers: Record<string, Command> = {}
+import type { BaseEngine } from '@/engines/base.js'
 
 export interface PluginOptions {
 	commands?: boolean | string[]
+	engine?: BaseEngine
+	insight?: boolean
 	maxTokens?: number
 	model?: string
-	openaiKey: string
+	pollDelay?: number
+	restrict?: {
+		channelIds: string[]
+	}
 	systemMessage?: string
+	temperature?: number
 	whitelist?: {
 		channelIds: string[]
 	}
@@ -25,43 +29,20 @@ export let options: PluginOptions
 export default (_client: Client, pluginOptions: PluginOptions) => {
 	options = pluginOptions
 
-	portal.commands
-		.filter((command) => {
-			// Only allow commands enabled in the plugin options
-			if (Array.isArray(options.commands)) {
-				return options.commands.includes(command.key.replaceAll('/', ' '))
-			} else {
-				return options.commands
-			}
-		})
-		.forEach((command) => {
-			const commandParameters: GptFunctionParameters = {
-				type: 'object',
-				required: [],
-				properties: {}
-			}
+	// OpenAI is the default engine for now
+	if (!options.engine) {
+		options.engine = new OpenAiEngine()
+	}
+	setEngine(options.engine)
 
-			// Convert Discord command options to GPT function parameters
-			commandParameters.properties =
-				command.handler.config?.options?.reduce((properties, option) => {
-					properties[option.name] = {
-						type: 'string',
-						description: option.description ?? ''
-					}
-					if (option.required) {
-						commandParameters.required?.push(option.name)
-					}
-					return properties
-				}, {} as Record<string, GptFunctionProperty>) ?? {}
+	// Insights are enabled by default
+	if (options.insight === undefined) {
+		options.insight = true
+	}
 
-			// Add the GPT function to the list
-			const functionName = command.key.replaceAll('/', '_')
-			gptFunctions.push({
-				name: functionName,
-				description: command.description ?? '',
-				parameters: commandParameters
-			})
-			gptFunctionHandlers[functionName] = command.handler
-		})
-	logger.debug(`Loaded ${gptFunctions.length} GPT functions:`, gptFunctions)
+	// Prepare the AI engine in the background
+	logger.debug('Initializing AI engine...')
+	options.engine.init().then(() => {
+		logger.ready('AI is ready!')
+	})
 }

@@ -1,11 +1,14 @@
 import { Config } from '../types/index.js'
 import { logger } from './logger.js'
-import fs from 'node:fs'
+import fs, { existsSync } from 'node:fs'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { Mode } from './mode.js'
+import { Compiler } from '../cli/utils/compiler.js'
 
 // Global config reference
 let _config: Config = null
+const _configPaths: Set<string> = new Set()
 
 /**
  * Returns the currently loaded configuration.
@@ -15,19 +18,27 @@ export function getConfig(): Config | null {
 	return _config
 }
 
-export async function loadConfig(file = 'robo'): Promise<Config> {
+/**
+ * Returns the paths to all loaded configuration files.
+ */
+export function getConfigPaths(): Set<string> {
+	return _configPaths
+}
+
+export async function loadConfig(file = 'robo', compile = false): Promise<Config> {
 	const configPath = await loadConfigPath(file)
 	let config: Config
 
 	if (configPath) {
-		config = await read<Config>(configPath)
+		config = await readConfig<Config>(configPath, compile)
+		_configPaths.add(configPath)
 
 		// Load plugin files when using "/config" directory
 		if (configPath.includes(path.sep + 'config' + path.sep)) {
 			logger.debug('Scanning for plugin files...')
 			config.plugins = config.plugins ?? []
 
-			await scanPlugins(configPath, (plugin, pluginConfig) => {
+			await scanPlugins(configPath, compile, (plugin, pluginConfig, pluginPath) => {
 				// Remove existing plugin config if it exists
 				const existingIndex = config.plugins?.findIndex((p) => p === plugin || p[0] === plugin)
 				if (existingIndex !== -1) {
@@ -35,6 +46,7 @@ export async function loadConfig(file = 'robo'): Promise<Config> {
 				}
 
 				config.plugins?.push([plugin, pluginConfig])
+				_configPaths.add(pluginPath)
 			})
 		}
 	} else {
@@ -50,22 +62,52 @@ export async function loadConfig(file = 'robo'): Promise<Config> {
 	return config
 }
 
+/**
+ * Looks for the config file in the current project.
+ * Will look for the following files in order:
+ * - config/robo.ts
+ * - config/robo.mjs
+ * - config/robo.cjs
+ * - config/robo.json
+ * - .config/robo.ts
+ * - .config/robo.mjs
+ * - .config/robo.cjs
+ * - .config/robo.json
+ *
+ * If a mode is set, it will prioritize the mode-specific config file.
+ * - config/robo.{mode}.ts
+ * - config/robo.{mode}.mjs
+ * - config/robo.{mode}.cjs
+ * - config/robo.{mode}.json
+ *
+ * @param file The name of the config file to look for. Defaults to "robo".
+ * @returns The path to the config file, or null if it could not be found.
+ */
 export async function loadConfigPath(file = 'robo'): Promise<string> {
-	const extensions = ['.mjs', '.cjs', '.json']
-	const prefixes = [
-		file.endsWith('.config') ? '' : 'config' + path.sep,
-		file.endsWith('.config') ? '' : '.config' + path.sep
-	]
+	const extensions = ['.ts', '.mjs', '.cjs', '.json']
+	const prefixes = ['config', '.config']
 
 	for (const prefix of prefixes) {
+		const pathBase = path.join(process.cwd(), prefix)
+
 		for (const ext of extensions) {
-			const fullPath = path.join(process.cwd(), `${prefix}${file}${ext}`)
+			let fullPath = path.join(pathBase, `${file}.${Mode.get()}${ext}`)
 
 			try {
 				if (fs.existsSync(fullPath)) {
-					logger.debug(`Found configuration file at`, fullPath)
-
 					// Convert to file URL to allow for dynamic import()
+					logger.debug(`Found configuration file at`, fullPath)
+					return fullPath
+				}
+			} catch (ignored) {
+				// empty
+			}
+
+			try {
+				fullPath = path.join(pathBase, `${file}${ext}`)
+				if (fs.existsSync(fullPath)) {
+					// Convert to file URL to allow for dynamic import()
+					logger.debug(`Found configuration file at`, fullPath)
 					return fullPath
 				}
 			} catch (ignored) {
@@ -74,12 +116,8 @@ export async function loadConfigPath(file = 'robo'): Promise<string> {
 		}
 	}
 
-	const fileName = path.join(prefixes[1], file)
-	if (fileName.endsWith('.config')) {
-		return null
-	} else {
-		return loadConfigPath(file + '.config')
-	}
+	// If no config file was found, return null
+	return null
 }
 
 /**
@@ -87,7 +125,11 @@ export async function loadConfigPath(file = 'robo'): Promise<string> {
  *
  * @param callback A callback function to be called for each plugin found. The plugin name will be passed as the first argument, including the scoped organization if applicable. Second parameter is the plugin config object.
  */
-async function scanPlugins(configPath: string, callback: (plugin: string, pluginConfig: unknown) => void) {
+async function scanPlugins(
+	configPath: string,
+	compile: boolean,
+	callback: (plugin: string, pluginConfig: unknown, pluginPath: string) => void
+) {
 	// Look for plugins in the same directory as the config file
 	const pluginsPath = path.join(path.dirname(configPath), 'plugins')
 
@@ -97,6 +139,7 @@ async function scanPlugins(configPath: string, callback: (plugin: string, plugin
 
 	// For each file in the plugins directory, import it and add it to the config
 	const plugins = fs.readdirSync(pluginsPath)
+	const pluginData: Array<{ mode: string; name: string; path: string }> = []
 
 	for (const plugin of plugins) {
 		const pluginPath = path.join(pluginsPath, plugin)
@@ -106,56 +149,99 @@ async function scanPlugins(configPath: string, callback: (plugin: string, plugin
 			const scopedPlugins = fs.readdirSync(pluginPath)
 
 			for (const scopedPlugin of scopedPlugins) {
-				const [pluginName, pluginConfig] = await importConfigFile(path.join(pluginPath, scopedPlugin), pluginsPath)
-				callback('@' + pluginName, pluginConfig)
+				// Compute the file name, keeping the base path in mind for scoped config files
+				const scopedPath = path.join(pluginPath, scopedPlugin)
+				const resolvedPath = path.relative(pluginsPath, scopedPath)
+				const parts = resolvedPath.split('.')
+				const pluginName = '@' + parts[0]
+				let mode = undefined
+				if (parts.length > 2) {
+					mode = parts[1]
+				}
+
+				pluginData.push({ mode, name: pluginName, path: scopedPath })
 			}
 		} else {
-			const [pluginName, pluginConfig] = await importConfigFile(pluginPath, pluginsPath)
-			callback(pluginName, pluginConfig)
+			// Compute the file name, keeping the base path in mind for scoped config files
+			const resolvedPath = path.relative(pluginsPath, pluginPath)
+			const parts = resolvedPath.split('.')
+			const pluginName = parts[0]
+			let mode = undefined
+			if (parts.length > 2) {
+				mode = parts[1]
+			}
+
+			pluginData.push({ mode, name: pluginName, path: pluginPath })
 		}
 	}
+
+	// Load all plugins in parallel
+	await Promise.all(
+		pluginData.map(async (plugin) => {
+			// Skip plugins without mode unless mode file is not found
+			if (!plugin.mode) {
+				const modeVariant = pluginData.find((p) => p.mode === Mode.get() && p.name === plugin.name)
+
+				if (existsSync(modeVariant?.path)) {
+					return
+				}
+			}
+
+			// Skip if this plugin's mode is not the current mode
+			if (plugin.mode && plugin.mode !== Mode.get()) {
+				return
+			}
+
+			const pluginConfig = await readConfig(plugin.path, compile)
+			callback(plugin.name, pluginConfig, plugin.path)
+		})
+	)
 }
 
-async function importConfigFile(configPath: string, basePath?: string): Promise<[string, unknown]> {
-	// Compute the file name, keeping the base path in mind for scoped config files
-	let resolvedPath: string
-
-	if (basePath) {
-		resolvedPath = path.relative(basePath, configPath)
-	} else {
-		resolvedPath = path.basename(configPath)
-	}
-
-	// Remove file extension and try to load file contents
-	const pluginName = resolvedPath.split('.')[0]
-
+async function readConfig<T = unknown>(configPath: string, compile = false): Promise<T> {
 	try {
-		const pluginConfig = await read(configPath)
-		return [pluginName, pluginConfig]
-	} catch (e) {
-		logger.debug(`Failed to load plugin configuration file for ${pluginName}:`, e)
-		return [pluginName, {}]
-	}
-}
-
-async function read<T = unknown>(configPath: string): Promise<T> {
-	// If the file is a JSON file, handle it differently
-	if (configPath.endsWith('.json')) {
-		try {
+		if (configPath.endsWith('.json')) {
+			// If the file is a JSON file, handle it differently
 			const rawData = fs.readFileSync(configPath, 'utf8')
 			const pluginConfig = JSON.parse(rawData)
 			return pluginConfig ?? {}
-		} catch (e) {
-			return {} as T
-		}
-	} else {
-		try {
+		} else if (configPath.endsWith('.ts')) {
+			const configDir = path.dirname(configPath)
+
+			if (compile) {
+				// Compile into .robo/config
+				logger.debug('Compiling TypeScript config...')
+				await Compiler.buildCode({
+					clean: false,
+					copyOther: false,
+					distDir: path.join('.robo', path.relative(process.cwd(), configDir)),
+					distExt: '.mjs',
+					files: [configPath.replace(process.cwd(), '')],
+					parallel: 1,
+					srcDir: configDir
+				})
+			} else {
+				// Assume config file is already compiled
+				logger.debug('Loading existing TypeScript config...')
+			}
+			configPath = path.join(
+				process.cwd(),
+				'.robo',
+				configDir.replace(process.cwd(), ''),
+				path.basename(configPath).replace(/\.ts$/, '.mjs')
+			)
+
+			const imported = await import(pathToFileURL(configPath).toString())
+			const pluginConfig = imported.default ?? imported
+			return pluginConfig ?? ({} as T)
+		} else {
 			// Convert to file URL to allow for a seamless dynamic import()
 			const imported = await import(pathToFileURL(configPath).toString())
 			const pluginConfig = imported.default ?? imported
 			return pluginConfig ?? {}
-		} catch (e) {
-			return {} as T
 		}
+	} catch (e) {
+		logger.error('Failed to load configuration file:', e, configPath)
+		return {} as T
 	}
 }

@@ -4,15 +4,23 @@
 	"private": true,
 	"workspaces": {
 		"packages": [
+			"packages/@robojs/analytics",
+			"packages/@robojs/cron",
+			"packages/@robojs/patch",
+			"packages/@robojs/trpc",
+			"packages/create-discord-activity",
 			"packages/create-robo",
 			"packages/plugin-ai",
 			"packages/plugin-ai-voice",
 			"packages/plugin-api",
 			"packages/plugin-better-stack",
 			"packages/plugin-confessions",
+			"packages/plugin-devtools",
 			"packages/plugin-gpt",
 			"packages/plugin-maintenance",
+			"packages/plugin-modtools",
 			"packages/plugin-poll",
+			"packages/plugin-sync",
 			"packages/robo",
 			"packages/sage"
 		]
@@ -21,12 +29,17 @@
 		"node": ">=18.0.0"
 	},
 	"scripts": {
+		"build": "turbo run build --force",
+		"build:robo": "turbo run build --filter=robo.js --force",
+		"dev:core": "turbo run dev --filter=robo.js --force",
+		"dev:docs": "cd docs && npm run dev",
+		"dev:plugins": "pnpm build:robo && turbo run dev --concurrency 50 --filter=!robo.js --force",
 		"lint": "pnpm lint:eslint && pnpm lint:style",
-		"lint:eslint": "eslint . --ext js,jsx,ts,tsx --max-warnings=0",
+		"lint:eslint": "eslint . --max-warnings=0",
 		"lint:style": "prettier --write .",
-		"publish:canary": "pnpm lint && turbo run build --filter=@roboplay/robo.js && turbo run build && changeset publish --tag canary",
-		"publish:next": "pnpm lint && turbo run build --filter=@roboplay/robo.js && turbo run build && changeset publish --tag next",
-		"publish:release": "pnpm lint && turbo run build --filter=@roboplay/robo.js && turbo run build && changeset publish",
+		"publish:canary": "pnpm lint && pnpm build:robo && pnpm build && changeset publish --tag canary",
+		"publish:next": "pnpm lint && pnpm build:robo && pnpm build && changeset publish --tag next",
+		"publish:release": "pnpm lint && pnpm build:robo && pnpm build && changeset publish",
 		"test": "turbo run test"
 	},
 	"repository": {
@@ -42,16 +55,18 @@
 	"contributors": [
 		"Pkmmte Xeleon <pk@waveplay.com>"
 	],
-	"devDependencies": {
-		"@typescript-eslint/eslint-plugin": "5.56.0",
-		"@typescript-eslint/parser": "5.56.0",
-		"all-contributors-cli": "^6.26.1",
-		"eslint": "8.36.0",
-		"prettier": "2.8.5",
-		"turbo": "1.8.4",
-		"typescript": "5.0.2"
-	},
 	"dependencies": {
-		"@changesets/cli": "2.26.0"
-	}
+		"@changesets/cli": "2.27.1"
+	},
+	"devDependencies": {
+		"@eslint/js": "^9.3.0",
+		"all-contributors-cli": "^6.26.1",
+		"eslint": "9.3.0",
+		"globals": "^15.3.0",
+		"prettier": "2.8.5",
+		"turbo": "2.2.3",
+		"typescript": "5.0.2",
+		"typescript-eslint": "^7.9.0"
+	},
+	"packageManager": "pnpm@8.6.11"
 }

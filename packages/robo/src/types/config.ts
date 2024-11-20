@@ -1,25 +1,23 @@
 import type { LogDrain, LogLevel } from '../core/logger.js'
-import type { ClientOptions, PermissionsString } from 'discord.js'
+import type { ClientOptions, PermissionsString, ShardingManagerOptions } from 'discord.js'
 import type { Plugin, SageOptions } from './index.js'
 
 export interface Config {
-	clientOptions: ClientOptions
+	clientOptions?: ClientOptions
 	defaults?: {
+		dev?: boolean
 		help?: boolean
 	}
 	excludePaths?: string[]
 	experimental?: {
 		buildDirectory?: string
+		disableBot?: boolean
 		incrementalBuilds?: boolean
-		legacyProcess?: boolean
+		shard?: boolean | ShardingManagerOptions
+		userInstall?: boolean
 	}
 	flashcore?: {
 		keyv?: unknown
-	}
-	heartbeat?: {
-		debug?: boolean
-		interval?: number
-		url: string
 	}
 	invite?: {
 		autoPermissions?: boolean
@@ -36,6 +34,9 @@ export interface Config {
 		node?: '18' | '20' | 'latest'
 	}
 	sage?: false | SageOptions
+	seed?: {
+		description?: string
+	}
 	timeouts?: {
 		autocomplete?: number
 		commandDeferral?: number
@@ -46,6 +47,10 @@ export interface Config {
 
 	/** How often to check for updates to Robo.js in seconds. Default: 1 hour */
 	updateCheckInterval?: number
+
+	watcher?: {
+		ignore?: string[]
+	}
 }
 
 export type Scope =

@@ -9,9 +9,11 @@
       },
       "plugins": []
     },
+    "language": "typescript",
+    "mode": "production",
     "type": "plugin",
-    "updatedAt": "2023-06-14T06:25:33.737Z",
-    "version": "0.8.1"
+    "updatedAt": "2024-10-21T00:44:02.076Z",
+    "version": "0.10.22"
   },
   "api": {},
   "commands": {

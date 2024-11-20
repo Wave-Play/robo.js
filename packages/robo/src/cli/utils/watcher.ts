@@ -74,6 +74,11 @@ export default class Watcher {
 	private async watchPath(targetPath: string, options: Options, callback: Callback) {
 		const stats = await fs.lstat(targetPath)
 
+		// If the path is excluded, do not watch it.
+		if (options.exclude?.includes(targetPath)) {
+			return
+		}
+
 		if (stats.isFile()) {
 			// If a file, start watching the file.
 			this.watchFile(targetPath, callback)
@@ -81,7 +86,11 @@ export default class Watcher {
 			if (!this.isFirstTime) {
 				callback('added', targetPath)
 			}
-		} else if (stats.isDirectory() && (!options.exclude || !options.exclude.includes(path.basename(targetPath)))) {
+		} else if (
+			stats.isDirectory() &&
+			(!options.exclude ||
+				(!options.exclude.includes(path.basename(targetPath)) && !options.exclude.includes(targetPath)))
+		) {
 			// If a directory, read all the contents and watch them.
 			const files = await this.retry(() => fs.readdir(targetPath, { withFileTypes: true }))
 
@@ -163,7 +172,20 @@ export default class Watcher {
 				}
 			} else if (event === 'change') {
 				// If the file changed, check the modification time and trigger the callback if it's a new change.
-				const stat = await fs.lstat(filePath)
+				const stat = await fs.lstat(filePath).catch((e) => {
+					if (hasProperties<{ code: unknown }>(e, ['code']) && e.code === 'ENOENT') {
+						const watcher = this.watchers.get(filePath)
+						if (watcher) {
+							callback('removed', filePath)
+							watcher.close()
+							this.watchers.delete(filePath)
+						}
+						return null;
+					} else {
+						throw e
+					}
+				})
+				if (!stat) return
 				if (this.watchedFiles.get(filePath)?.getTime() !== stat.mtime.getTime()) {
 					this.watchedFiles.set(filePath, stat.mtime)
 					if (!this.isFirstTime) {

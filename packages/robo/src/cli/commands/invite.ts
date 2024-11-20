@@ -1,12 +1,16 @@
 import { Command } from '../utils/cli-handler.js'
 import { logger } from '../../core/logger.js'
-import { loadManifest } from '../utils/manifest.js'
 import { Manifest } from '../../types/index.js'
 import { env } from '../../core/env.js'
+import { Compiler } from '../utils/compiler.js'
 import { PermissionFlagsBits } from 'discord.js'
 import { color, composeColors } from '../../core/color.js'
+import { Mode } from '../../core/mode.js'
+import { Env } from '../../core/env.js'
 
-const command = new Command('invite').description('Generates a link for servers to add your Robo.').handler(inviteAction)
+const command = new Command('invite')
+	.description('Generates a link for servers to add your Robo.')
+	.handler(inviteAction)
 export default command
 
 async function inviteAction() {
@@ -17,15 +21,24 @@ async function inviteAction() {
 		)} to generate an invite URL manually.`
 	)
 
+	// Set NODE_ENV if not already set
+	if (!process.env.NODE_ENV) {
+		process.env.NODE_ENV = 'development'
+	}
+
+	// Make sure environment variables are loaded
+	const defaultMode = Mode.get()
+	await Env.load({ mode: defaultMode })
+
 	// Throw error if no client ID is set
-	const { clientId } = env.discord
+	const clientId = env.get('discord.clientId')
 	if (!clientId) {
 		logger.error(`No client ID set. Please set the ${color.bold('DISCORD_CLIENT_ID')} environment variable.`)
 		return
 	}
 
 	// Compute permissions based on the manifest
-	const manifest = await loadManifest()
+	const manifest = await Compiler.useManifest()
 	const permissions = getPermissionsFromManifest(manifest)
 
 	// Generate the invite link
@@ -45,17 +58,27 @@ async function inviteAction() {
 		logger.log(composeColors(color.bold, color.blue)(padding + line))
 	})
 
-	logger.log(color.green(inviteLabel) + padding.slice(0, -inviteLabel.length) + composeColors(color.bold, color.blue)('  |__|    |__|  '))
+	logger.log(
+		color.green(inviteLabel) +
+			padding.slice(0, -inviteLabel.length) +
+			composeColors(color.bold, color.blue)('  |__|    |__|  ')
+	)
 	logger.log(color.green(`╒${horizontalLine}╕`))
 	logger.log(color.green(`│${' '.repeat(boxWidth)}│`))
-	logger.log(color.green(`│  `) + composeColors(color.bold, color.underline, color.blue)(inviteLink) + color.green(`  │`))
+	logger.log(
+		color.green(`│  `) + composeColors(color.bold, color.underline, color.blue)(inviteLink) + color.green(`  │`)
+	)
 	logger.log(color.green(`│${' '.repeat(boxWidth)}│`))
 	logger.log(color.green(`╘${horizontalLine}╛\n`))
 
 	// Additional message
 	logger.log(`Share your Robo's invite link with server owners. Remember to keep it running.`)
 	logger.log(
-		`Get free hosting from ${color.bold('RoboPlay')} at ${composeColors(color.bold, color.underline, color.blue)('https://roboplay.dev')}\n`
+		`Get free hosting from ${color.bold('RoboPlay')} at ${composeColors(
+			color.bold,
+			color.underline,
+			color.blue
+		)('https://roboplay.dev')}\n`
 	)
 }
 

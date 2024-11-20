@@ -20,6 +20,7 @@ const PREFIXES = [
 	'vortex',
 	'cyber'
 ]
+
 const SUFFIXES = [
 	'forge',
 	'pulse',

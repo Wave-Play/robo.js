@@ -1,0 +1,58 @@
+{
+	"name": "@robojs/cron",
+	"description": "Easily schedule and manage recurring tasks.",
+	"version": "0.1.1",
+	"type": "module",
+	"private": false,
+	"keywords": [
+		"bot",
+		"discord",
+		"discord.js",
+		"robo",
+		"robo.js",
+		"typescript"
+	],
+	"main": ".robo/build/index.js",
+	"license": "MIT",
+	"author": "icmedev <icmedev@gmail.com>",
+	"contributors": [
+		"icmedev <icmedev@gmail.com>"
+	],
+	"files": [
+		".robo/",
+		"src/",
+		"LICENSE",
+		"README.md"
+	],
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://registry.npmjs.org/"
+	},
+	"scripts": {
+		"build": "robo build plugin",
+		"dev": "robo build plugin --watch",
+		"lint:style": "prettier --write .",
+		"prepublishOnly": "robo build plugin"
+	},
+	"devDependencies": {
+		"@swc/core": "^1.7.36",
+		"@types/node": "^22.7.7",
+		"@types/uuid": "^10.0.0",
+		"discord.js": "^14.16.3",
+		"prettier": "^3.3.3",
+		"robo.js": "workspace:*",
+		"typescript": "^5.6.3"
+	},
+	"dependencies": {
+		"croner": "^9.0.0",
+		"uuid": "^10.0.0"
+	},
+	"peerDependencies": {
+		"robo.js": "^0.10.25"
+	},
+	"peerDependenciesMeta": {
+		"robo.js": {
+			"optional": false
+		}
+	}
+}

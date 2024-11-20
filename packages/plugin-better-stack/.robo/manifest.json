@@ -8,9 +8,11 @@
       "plugins": [],
       "type": "plugin"
     },
+    "language": "typescript",
+    "mode": "production",
     "type": "plugin",
-    "updatedAt": "2023-10-15T20:24:31.749Z",
-    "version": "0.9.4"
+    "updatedAt": "2024-10-21T00:44:02.088Z",
+    "version": "0.10.22"
   },
   "api": {},
   "commands": {},
@@ -19,9 +21,19 @@
     "user": {}
   },
   "events": {
+    "_restart": [
+      {
+        "__path": "/.robo/build/events/_restart.js"
+      }
+    ],
     "_start": [
       {
         "__path": "/.robo/build/events/_start.js"
+      }
+    ],
+    "_stop": [
+      {
+        "__path": "/.robo/build/events/_stop.js"
       }
     ]
   },

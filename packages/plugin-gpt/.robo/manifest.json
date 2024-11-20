@@ -10,12 +10,12 @@
       "plugins": []
     },
     "type": "plugin",
-    "updatedAt": "2023-05-21T07:07:57.155Z",
-    "version": "0.6.0"
+    "updatedAt": "2024-10-21T00:43:50.524Z",
+    "version": "0.6.1"
   },
   "commands": {
     "chat": {
-      "__path": "chat.js",
+      "__path": "/.robo/build/commands/chat.js",
       "description": "Let's chat together!",
       "options": [
         {
@@ -28,7 +28,7 @@
   "events": {
     "_start": [
       {
-        "__path": "_start.js"
+        "__path": "/.robo/build/events/_start.js"
       }
     ]
   },

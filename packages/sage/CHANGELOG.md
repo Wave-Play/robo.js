@@ -1,5 +1,232 @@
 # @roboplay/sage
 
+## 0.6.12
+
+### Patch Changes
+
+- Updated dependencies [b902032]
+- Updated dependencies [b902032]
+- Updated dependencies [b902032]
+- Updated dependencies [b902032]
+- Updated dependencies [b902032]
+- Updated dependencies [b902032]
+- Updated dependencies [b902032]
+- Updated dependencies [b902032]
+- Updated dependencies [d10c770]
+- Updated dependencies [b902032]
+- Updated dependencies [b902032]
+  - robo.js@0.10.25
+
+## 0.6.11
+
+### Patch Changes
+
+- Updated dependencies [32b172c]
+- Updated dependencies [fe88aee]
+  - robo.js@0.10.24
+
+## 0.6.10
+
+### Patch Changes
+
+- Updated dependencies [80d0092]
+- Updated dependencies [5b9eae7]
+  - robo.js@0.10.23
+
+## 0.6.9
+
+### Patch Changes
+
+- Updated dependencies [db93f0a]
+- Updated dependencies [0c13f23]
+  - robo.js@0.10.22
+
+## 0.6.8
+
+### Patch Changes
+
+- Updated dependencies [1e3dcfa]
+- Updated dependencies [ced83f9]
+  - robo.js@0.10.21
+
+## 0.6.7
+
+### Patch Changes
+
+- Updated dependencies [c83cf09]
+  - robo.js@0.10.20
+
+## 0.6.6
+
+### Patch Changes
+
+- Updated dependencies [07baafb]
+- Updated dependencies [c5fbc34]
+- Updated dependencies [ef51dd9]
+- Updated dependencies [4fc64e9]
+  - robo.js@0.10.19
+
+## 0.6.5
+
+### Patch Changes
+
+- Updated dependencies [8198201]
+- Updated dependencies [40c77aa]
+- Updated dependencies [8a477bc]
+- Updated dependencies [457f1d5]
+  - robo.js@0.10.18
+
+## 0.6.4
+
+### Patch Changes
+
+- Updated dependencies [ca9b21d]
+  - robo.js@0.10.17
+
+## 0.6.3
+
+### Patch Changes
+
+- Updated dependencies [4f6fdea]
+- Updated dependencies [0770bac]
+  - robo.js@0.10.16
+
+## 0.6.2
+
+### Patch Changes
+
+- Updated dependencies [4fb9298]
+  - robo.js@0.10.15
+
+## 0.6.1
+
+### Patch Changes
+
+- 4cfdde2: Added discord.js to dependency list.
+
+## 0.6.0
+
+### Minor Changes
+
+- 756f732: feat: upgrade command now supports plugins
+
+### Patch Changes
+
+- Updated dependencies [0a6958e]
+- Updated dependencies [d5b273b]
+- Updated dependencies [e76bc62]
+  - robo.js@0.10.14
+
+## 0.5.11
+
+### Patch Changes
+
+- 4e4ba3e: fix: internal manifest usage
+
+## 0.5.10
+
+### Patch Changes
+
+- Updated dependencies [fa321f6]
+- Updated dependencies [a5ae699]
+- Updated dependencies [ed2734b]
+- Updated dependencies [70b477e]
+- Updated dependencies [65809a6]
+- Updated dependencies [d22fbfa]
+- Updated dependencies [0cae688]
+  - robo.js@0.10.13
+
+## 0.5.9
+
+### Patch Changes
+
+- Updated dependencies [361e3d8]
+  - robo.js@0.10.12
+
+## 0.5.8
+
+### Patch Changes
+
+- Updated dependencies [2f939d5]
+- Updated dependencies [61b98a2]
+  - robo.js@0.10.11
+
+## 0.5.7
+
+### Patch Changes
+
+- Updated dependencies [ca8ddd7]
+- Updated dependencies [7093bf4]
+  - robo.js@0.10.10
+
+## 0.5.6
+
+### Patch Changes
+
+- c43ff79: fix: spawn commands in shell on Windows (CVE-2024-27980)
+- Updated dependencies [c43ff79]
+  - robo.js@0.10.9
+
+## 0.5.5
+
+### Patch Changes
+
+- Updated dependencies [bf6db2e]
+  - robo.js@0.10.8
+
+## 0.5.4
+
+### Patch Changes
+
+- Updated dependencies [d6138ef]
+  - robo.js@0.10.7
+
+## 0.5.3
+
+### Patch Changes
+
+- Updated dependencies [838ed5d]
+- Updated dependencies [6a4473d]
+  - robo.js@0.10.6
+
+## 0.5.2
+
+### Patch Changes
+
+- Updated dependencies [7450631]
+- Updated dependencies [7159c94]
+  - robo.js@0.10.5
+
+## 0.5.1
+
+### Patch Changes
+
+- 9d31b15: fix(upgrade): use correct robo package.json
+
+## 0.5.0
+
+### Minor Changes
+
+- 9cc0489: refactor!: replaced `inquirer` with `@inquirer/prompts`
+- 3940de7: refactor!: use new `robo.js` package name
+
+### Patch Changes
+
+- Updated dependencies [7f73414]
+  - robo.js@0.10.4
+
+## 0.4.1
+
+### Patch Changes
+
+- ef9b283: patch: better support for pnpm when executing commands on windows
+
+## 0.4.0
+
+### Minor Changes
+
+- 01967c4: feat(sage-cli): new `generate docs` subcommand
+
 ## 0.3.1
 
 ### Patch Changes

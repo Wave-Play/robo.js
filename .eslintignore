@@ -1,7 +1,0 @@
-node_modules
-docosaurus
-**/codemod/**
-**/dist/**
-**/tsup.config.ts
-**/tsup-cli.config.ts
-examples/**

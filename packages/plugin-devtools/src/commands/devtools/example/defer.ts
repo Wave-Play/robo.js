@@ -1,4 +1,4 @@
-import { CommandConfig } from '@roboplay/robo.js'
+import { CommandConfig } from 'robo.js'
 import { logger } from '../../../core/helpers.js'
 import type { CommandInteraction } from 'discord.js'
 

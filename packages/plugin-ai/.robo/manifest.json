@@ -11,9 +11,11 @@
       },
       "plugins": []
     },
+    "language": "typescript",
+    "mode": "production",
     "type": "plugin",
-    "updatedAt": "2023-09-27T06:13:36.328Z",
-    "version": "0.9.1"
+    "updatedAt": "2024-10-21T00:44:07.940Z",
+    "version": "0.10.22"
   },
   "api": {
     "ai": {
@@ -24,7 +26,59 @@
       }
     }
   },
-  "commands": {},
+  "commands": {
+    "ai": {
+      "subcommands": {
+        "say": {
+          "__path": "/.robo/build/commands/ai/say.js",
+          "description": "What would you like me to say?",
+          "options": [
+            {
+              "name": "message",
+              "description": "What should I say?",
+              "required": true
+            },
+            {
+              "name": "exact",
+              "description": "Say exactly?",
+              "type": "boolean"
+            },
+            {
+              "name": "channel",
+              "description": "Where should I send the message to?",
+              "type": "channel"
+            },
+            {
+              "name": "mention",
+              "description": "Who should I mention?",
+              "type": "mention"
+            }
+          ]
+        }
+      }
+    },
+    "chat": {
+      "__path": "/.robo/build/commands/chat.js",
+      "description": "Let's chat together!",
+      "options": [
+        {
+          "name": "message",
+          "required": true
+        }
+      ]
+    },
+    "imagine": {
+      "__path": "/.robo/build/commands/imagine.js",
+      "description": "Bring your creative visions to life!",
+      "options": [
+        {
+          "name": "prompt",
+          "description": "Describe your imaginative scene or concept for artistic creation",
+          "required": true
+        }
+      ]
+    }
+  },
   "context": {
     "message": {},
     "user": {}
@@ -53,6 +107,7 @@
   ],
   "middleware": [],
   "scopes": [
+    "applications.commands",
     "bot"
   ]
 }

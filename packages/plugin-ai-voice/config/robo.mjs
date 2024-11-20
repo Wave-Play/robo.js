@@ -1,14 +1,10 @@
 // @ts-check
 
 /**
- * @type {import('@roboplay/robo.js').Config}
+ * @type {import('robo.js').Config}
  **/
 export default {
 	clientOptions: {
-		intents: [
-			'Guilds',
-			'GuildMessages',
-			'MessageContent'
-		]
+		intents: ['Guilds', 'GuildMessages', 'MessageContent']
 	}
 }

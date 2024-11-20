@@ -10,10 +10,9 @@ export default command
 type CommandName =
 	| 'add'
 	| 'build'
-	| 'build plugin'
+	| 'plugin'
 	| 'dev'
 	| 'deploy'
-	| 'doctor'
 	| 'help'
 	| 'invite'
 	| 'remove'
@@ -43,9 +42,9 @@ export function helpCommandHandler() {
 		color.dim('(v' + packageJson.version + ')\n\n')
 	)
 	const groups = splitCommandsIntoGroups([
-		['dev', 'start', 'build'],
+		['dev', 'start', 'build', 'plugin'],
 		['add', 'remove', 'upgrade'],
-		['deploy', 'doctor', 'invite', 'why'],
+		['deploy', 'invite', 'why'],
 		['help']
 	])
 	prettyPrint(formatCommand(groups))
@@ -61,24 +60,25 @@ export function helpCommandHandler() {
 function splitCommandsIntoGroups(commandNames: CommandName[][]): CommandGroup[] {
 	const commands = rootCommand.getChildCommands().map((command: Command) => command)
 
-	let groupId = 0
 	const orderedCommands: CommandGroup[] = []
 
-	for (const commandName of commandNames) {
-		++groupId
-		const commandAndGroupId = commandName.map((commandName: string): CommandGroup => {
-			const command = commands.filter((cmd: Command) => cmd.getName() === commandName)
+	commandNames.forEach((commandsGroup, idx) => {
+		const commandAndGroupId: CommandGroup[] = [];
+		// find a way to get children commands of commands.
+		commandsGroup.forEach((commandName: string): CommandGroup => {
+			const command: Command[] = commands.filter((cmd: Command) => cmd.getName() === commandName)
+
 			if (command.length <= 0) {
 				logger.error(color.red(`The ${commandName} command doesn't exist\n`))
 				return
 			}
-			return {
-				groupId: groupId,
+			commandAndGroupId.push({
+				groupId: idx,
 				command: command[0]
-			}
+			})
 		})
 		orderedCommands.push(...commandAndGroupId)
-	}
+	})
 	return orderedCommands
 }
 

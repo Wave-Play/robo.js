@@ -1,12 +1,12 @@
-import { AiEngine } from '../../core/engine.js'
-import { logger } from '../../core/logger.js'
-import { options as pluginOptions } from '../../events/_start.js'
-import type { GptChatMessage } from '../../core/openai.js'
-import type { RoboRequest } from '@roboplay/plugin-api'
+import { AI } from '@/core/ai.js'
+import { logger } from '@/core/logger.js'
+import { options as pluginOptions } from '@/events/_start.js'
+import type { ChatMessage } from '@/engines/base.js'
+import type { RoboRequest } from '@robojs/server'
 
 interface ApiChatRequest {
 	functionCall?: string
-	messages: GptChatMessage[]
+	messages: ChatMessage[]
 	model?: string
 }
 
@@ -14,10 +14,10 @@ interface ApiChatResponse {
 	message: string
 }
 
-export default (req: RoboRequest<ApiChatRequest>): Promise<ApiChatResponse> => {
+export default (req: RoboRequest): Promise<ApiChatResponse> => {
 	return new Promise((resolve, reject) => {
-		(async () => {
-			const { messages } = req.body
+		const run = async () => {
+			const { messages } = (await req.json()) as ApiChatRequest
 			if (!messages?.length) {
 				return reject('No message provided')
 			}
@@ -33,14 +33,15 @@ export default (req: RoboRequest<ApiChatRequest>): Promise<ApiChatResponse> => {
 				})
 			}
 
-			AiEngine.chat(gptMessages, {
+			AI.chat(gptMessages, {
 				onReply: (message) => {
 					logger.debug('API Chat response:', message)
 					resolve({
-						message: message
+						message: message.text ?? ''
 					})
 				}
 			})
-		})()
+		}
+		run()
 	})
 }

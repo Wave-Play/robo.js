@@ -1,0 +1,54 @@
+{
+	"name": "@robojs/analytics",
+	"description": "Track user interactions and server activity with ease.",
+	"version": "0.1.1",
+	"type": "module",
+	"private": false,
+	"keywords": [
+		"bot",
+		"discord",
+		"discord.js",
+		"robo",
+		"robo.js",
+		"typescript"
+	],
+	"main": ".robo/build/index.js",
+	"license": "MIT",
+	"author": "WavePlay <dev@waveplay.com> (waveplay.com)",
+	"contributors": [
+		"Alexandre <sushi@waveplay.com>",
+		"Pkmmte Xeleon <pk@waveplay.com>"
+	],
+	"files": [
+		".robo/",
+		"src/",
+		"LICENSE",
+		"README.md"
+	],
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://registry.npmjs.org/"
+	},
+	"scripts": {
+		"build": "robo build plugin",
+		"dev": "robo build plugin --watch",
+		"lint:style": "prettier --write .",
+		"prepublishOnly": "robo build plugin"
+	},
+	"devDependencies": {
+		"@swc/core": "^1.6.13",
+		"@types/node": "^20.14.10",
+		"discord.js": "^14.15.3",
+		"prettier": "^3.3.3",
+		"robo.js": "workspace:*",
+		"typescript": "^5.5.3"
+	},
+	"peerDependencies": {
+		"robo.js": "^0.10.25"
+	},
+	"peerDependenciesMeta": {
+		"robo.js": {
+			"optional": false
+		}
+	}
+}

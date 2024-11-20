@@ -1,0 +1,170 @@
+---
+description: Create a powerful Discord Bot in seconds with Robo.js - a tiny framework that simplifies Discord.js.
+---
+
+import { Card } from '@site/src/components/shared/Card'
+import { CardContainer } from '@site/src/components/shared/CardContainer'
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+import { Terminal } from '@site/src/components/shared/Terminal'
+
+# ✨ Getting Started with Discord Bots
+
+**Robo.js** makes building bots with **[Discord.js](https://discord.js.org)** as easy as placing files in the right place.
+
+Create a **[Slash Command](./commands)** by making a file in `/src/commands`; the file name becomes the command. **[Context Commands](./context-menu)** and **[Events](./events)**? Just as easy! This is more than just a command handler - it's a full-fledged **[Framework](/robojs/overview)** and **[Ecosystem](/plugins/directory)**.
+
+**Got an existing bot?** See the **[Migration Guide](./migrate)**.
+
+:::tip Robo.js does _not_ replace Discord.js!
+
+Instead, it simplifies development by managing your project. You still have all of **Discord.js**!
+
+:::
+
+## Quick Start
+
+Ready to start your adventure? Try **[Create Robo](../cli/create-robo)** in your terminal:
+
+<Terminal create>{'<projectName>'}</Terminal>
+
+This will help spawn a new **Robo.js** project as a **Discord Bot**. We call these **Robos**.
+
+<CardContainer>
+	<Card
+		href="../templates/overview#discord-bots"
+		title="🔗 Templates"
+		description="Kickstart your project with a template."
+	/>
+	<Card
+		href="https://blog.waveplay.com/how-to-make-a-discord-robo/"
+		title="📚 Tutorial"
+		description="How to create a to-do Discord bot."
+	/>
+</CardContainer>
+
+## Documentation
+
+If you already know **Discord.js**, then you already know **Robo.js**... almost.
+
+You can develop using the same **Discord.js** you know and **[love](https://opencollective.com/discordjs)**, but you also get access to **[unique features](../robojs/overview)**. This documentation covers everything you need to know about creating **Discord Bots** with **Robo.js**.
+
+<CardContainer>
+	<Card href="./commands" title="📜 Slash Commands" description="Your bot follows best practices by default." />
+	<Card href="./context-menu" title="🖱️ Context Commands" description="Extend right click and long press behavior." />
+	<Card href="./credentials" title="🔑 Credentials" description="Secure your Discord Bot credentials." />
+	<Card href="./debug" title="🐛 Debugging" description="Troubleshoot right within Discord." />
+	<Card href="./events" title="📡 Events" description="Know and respond to everything that happens." />
+	<Card href="./file-structure" title="📂 File Structure" description="Learn the purpose behind each folder." />
+	<Card href="./invite" title="🏠 Invite" description="Add your bot to Discord servers." />
+	<Card href="./middleware" title="🧩 Middleware" description="Run code before other commands and events." />
+	<Card href="./migrate" title="🚚 Migration" description="Move your existing bot to Robo.js." />
+	<Card href="./sage" title="🔮 Sage" description="Unlock the full power of Sage Mode." />
+</CardContainer>
+
+Not sure where to start? See the **[Beginner Guide](./beginner-guide)**.
+
+<CardContainer>
+	<Card
+		href="./beginner-guide"
+		title="🔰 Beginner Guide"
+		description="
+		New to Discord Bots with Robo? Start here!"
+	/>
+</CardContainer>
+
+## Plugin Power Ups
+
+**[Robo Plugins](../plugins/overview)** are special. They let you add features to your **Robo** with one command.
+
+<Terminal execute>robo add @robojs/ai @robojs/moderation</Terminal>
+
+Plugins integrate seamlessly thanks to the **[Robo File Structure](../robojs/files)**. What's more, anyone can **[create a plugin](../plugins/create)**.
+
+<CardContainer>
+	<Card href="../plugins/overview" title="🔌 Robo Plugins" description="Add features to your Robo seamlessly." />
+	<Card href="../plugins/directory" title="🗃️ Plugin Directory" description="Browse plugins for your Robo." />
+</CardContainer>
+
+## Community
+
+Join our server to chat with other developers, ask questions, and share your projects.
+
+<CardContainer>
+	<Card href="https://roboplay.dev/discord" title="✨ Discord Server" description="Join our Discord community!" />
+</CardContainer>
+
+Our very own Robo, **Sage**, is there to answer any questions about **Robo.js**, **Discord.js**, and more.
+
+:::plugin
+
+Sage is powered by **[@robojs/ai](../plugins/ai)**
+
+:::
+
+## Frequently Asked Questions
+
+<details>
+	<summary>Can I use my existing code?</summary>
+
+Yes! **Robo.js** is built on top of **Discord.js** and is fully compatible with existing bots. Check out the **[Migration Guide](./migrate)** for more info.
+
+</details>
+
+<details>
+	<summary>Can I use any database? Am I forced to use Flashcore?</summary>
+
+**Robo.js** is database agnostic. You can use any database you like, including Flashcore, MongoDB, or even a simple JSON file.
+
+We recommend **Flashcore** for its simplicity, but more mature projects may benefit from a more robust database like MySQL or PostgreSQL. We have **[Templates](/templates/overview)** for those!
+
+</details>
+
+<details>
+	<summary>Do I have to use TypeScript?</summary>
+
+Nope! **Robo.js** supports both JavaScript and TypeScript. You can use either or both in the same project.
+
+When creating a new project, uncheck the TypeScript option if you want to use JavaScript. You can always add it later.
+
+</details>
+
+<details>
+	<summary>How do I register my commands?</summary>
+
+**You don't!**
+
+**Robo.js** automatically registers your commands when you create them in the `/src/commands` directory. It internally uses a manifest to keep track of changes and only register when necessary.
+
+</details>
+
+<details>
+	<summary>Should I still create my own client?</summary>
+
+Nope, **Robo.js** handles the client for you. Configure it in `/config/robo.mjs` and import it via `import { client } from 'robo.js'`.
+
+</details>
+
+<details>
+	<summary>What is ESM? Why can't I use `require`?</summary>
+
+ESM (ECMAScript Modules) is the new standard for JavaScript modules. **Robo.js** exclusively uses ESM.
+
+`import` is more powerful than `require` and allows for better tree-shaking and static analysis.
+
+</details>
+
+## Learn More
+
+**Robo.js** has a lot to offer for such a tiny framework with **[zero dependencies](https://packagephobia.com/result?p=robo.js)**.
+
+<CardContainer>
+	<Card href="../robojs/overview" title="🌟 Core Package" description="See what makes Robo.js awesome." />
+	<Card
+		href="../templates/overview#discord-bots"
+		title="🔗 Templates"
+		description="Kickstart your project with a template."
+	/>
+	<Card href="../robojs/modules" title="📦 Modules" description="Stay organized with modules." />
+	<Card href="../robojs/typescript" title="📘 TypeScript" description="Write better code with type safety." />
+</CardContainer>

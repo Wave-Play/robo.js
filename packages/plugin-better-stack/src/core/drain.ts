@@ -1,6 +1,6 @@
 import { inspect } from 'node:util'
 import { Logtail } from '@logtail/node'
-import type { LogDrain, Logger } from '@roboplay/robo.js'
+import type { LogDrain, Logger } from 'robo.js'
 
 const ANSI_REGEX = new RegExp(`(${String.fromCharCode(27)}\\[[0-9;]*m)([^${String.fromCharCode(27)}]+)`, 'g')
 const MAGENTA_REGEX = new RegExp(String.fromCharCode(27) + '\\[35m', 'g')

@@ -1,0 +1,25 @@
+{
+	"name": "gpt-chatbot",
+	"description": "",
+	"version": "1.0.0",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"build": "robo build",
+		"deploy": "robo deploy",
+		"dev": "NODE_OPTIONS=--enable-source-maps robo dev",
+		"doctor": "robo doctor",
+		"invite": "robo invite",
+		"start": "robo start"
+	},
+	"dependencies": {
+		"@roboplay/plugin-ai": "^0.4.2",
+		"@roboplay/robo.js": "^0.9.26",
+		"discord.js": "^14.16.2"
+	},
+	"devDependencies": {
+		"@swc/core": "^1.7.26",
+		"@types/node": "^22.7.4",
+		"typescript": "^5.6.2"
+	}
+}

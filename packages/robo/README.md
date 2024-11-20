@@ -1,16 +1,15 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Wave-Play/robo/main/docosaurus/static/img/logo.png" height="128">
+  <img src="https://raw.githubusercontent.com/Wave-Play/robo/main/docs/static/img/logo.png" height="128">
   <h1 align="center">Robo.js</h1>
 </p>
 
 <div align="center">
 
-[![GitHub license](https://img.shields.io/github/license/Wave-Play/robo)](https://github.com/Wave-Play/robo/blob/main/LICENSE) [![npm](https://img.shields.io/npm/v/@roboplay/robo.js)](https://www.npmjs.com/package/@roboplay/robo.js) [![install size](https://packagephobia.com/badge?p=@roboplay/robo.js@latest)](https://packagephobia.com/result?p=@roboplay/robo.js@latest) [![Discord](https://img.shields.io/discord/1087134933908193330?color=7289da)](https://roboplay.dev/discord) [![All Contributors](https://img.shields.io/github/all-contributors/Wave-Play/robo.js?color=cf7cfc)](#contributors)
+[![GitHub license](https://img.shields.io/github/license/Wave-Play/robo)](https://github.com/Wave-Play/robo/blob/main/LICENSE) [![npm](https://img.shields.io/npm/v/robo.js)](https://www.npmjs.com/package/robo.js) [![install size](https://packagephobia.com/badge?p=robo.js@latest)](https://packagephobia.com/result?p=robo.js@latest) [![Discord](https://img.shields.io/discord/1087134933908193330?color=7289da)](https://roboplay.dev/discord) [![All Contributors](https://img.shields.io/github/all-contributors/Wave-Play/robo.js?color=cf7cfc)](#contributors)
 
+**Power up Discord with effortless activities, bots, web servers, and more!** ⚡
 
-**Turbocharge [Discord.js](https://discord.js.org/) with effortless power!** ⚡
-
-Upgrade your bots with next-gen simplicity, snappy plugin system, epic debugging, and Sage's streamlined interactions, all while keeping Discord.js' power. 🚀✨
+Upgrade your Discord projects with effortless integration, dynamic plugins, and advanced debugging—unlocking the full potential of Discord.js and beyond. 🚀✨
 
 > **Heads up!** This is a pre-release, so brace for some breaking changes before **v1.0**. 🚧
 
@@ -74,9 +73,9 @@ For events, say you want to listen to `messageCreate` events. Create a `messageC
 
 ```javascript
 export default (message) => {
-    if (message.content.includes('hello')) {
-        message.channel.send('Hello there!');
-    }
+	if (message.content.includes('hello')) {
+		message.channel.send('Hello there!')
+	}
 }
 ```
 

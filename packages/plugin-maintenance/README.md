@@ -1,32 +1,30 @@
-# 🚀 @roboplay/plugin-maintenance
+# @robojs/maintenance
 
-Welcome to *@roboplay/plugin-maintenance*! This plugin is designed to seamlessly integrate with your existing **[Robo.js](https://github.com/Wave-Play/robo)** project and provide new features and enhancements to your robo. The best part? Everything automatically works once you install this plugin!
-
-👩‍💻 Are you the plugin developer? Check out the **[Development Guide](DEVELOPMENT.md)** for instructions on how to develop, build, and publish this plugin.
+Welcome to _@robojs/maintenance_! This plugin is designed to seamlessly integrate with your existing **[Robo.js](https://github.com/Wave-Play/robo)** project and provide new features and enhancements to your robo. The best part? Everything automatically works once you install this plugin!
 
 ## Installation 💻
 
 To install this plugin, navigate to your Robo project's directory and run the following command:
 
 ```bash
-npm install @roboplay/plugin-maintenance
+npm install @robojs/maintenance
 ```
 
 Next, add the plugin to your Robo's configuration file, typically located at `.config/robo.mjs`. Add the following lines:
 
 ```javascript
 /**
- * @type {import('@roboplay/robo.js').Plugin}
+ * @type {import('robo.js').Plugin}
  **/
 const roboplayPluginMaintenance = [
-	'@roboplay/plugin-maintenance',
+	'@robojs/maintenance',
 	{
 		// ... optional customization options
 	}
 ]
 
 /**
- * @type {import('@roboplay/robo.js').Config}
+ * @type {import('robo.js').Config}
  **/
 export default {
 	// ... rest of your configuration

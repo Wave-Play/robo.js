@@ -1,7 +1,7 @@
 {
-	"name": "@roboplay/plugin-maintenance",
+	"name": "@robojs/maintenance",
 	"description": "",
-	"version": "0.2.0",
+	"version": "0.3.1",
 	"private": false,
 	"type": "module",
 	"license": "MIT",
@@ -22,17 +22,25 @@
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/Wave-Play/robo.git",
-		"directory": "plugins/poll"
+		"directory": "packages/plugin-maintenance"
 	},
 	"publishConfig": {
 		"access": "public",
 		"registry": "https://registry.npmjs.org/"
 	},
 	"devDependencies": {
-		"@roboplay/robo.js": "0.8.1",
 		"@swc/core": "^1.3.44",
 		"@types/node": "^18.14.6",
 		"discord.js": "^14.7.1",
+		"robo.js": "workspace:*",
 		"typescript": "^5.0.0"
+	},
+	"peerDependencies": {
+		"robo.js": "^0.10.25"
+	},
+	"peerDependenciesMeta": {
+		"robo.js": {
+			"optional": false
+		}
 	}
 }

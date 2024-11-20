@@ -1,6 +1,6 @@
-# 🚀 @roboplay/plugin-better-stack
+# @robojs/better-stack
 
-Welcome to _@roboplay/plugin-better-stack_! This plugin seamlessly integrates with your existing **[Robo.js](https://github.com/Wave-Play/robo)** project, providing a comprehensive link to Better Stack, a renowned third-party service. With Better Stack, monitor your Robo's uptime and integrate logs in a visually appealing and searchable format.
+Welcome to _@robojs/better-stack_! This plugin seamlessly integrates with your existing **[Robo.js](https://github.com/Wave-Play/robo)** project, providing a comprehensive link to Better Stack, a renowned third-party service. With Better Stack, monitor your Robo's uptime and integrate logs in a visually appealing and searchable format.
 
 ## Prerequisites
 
@@ -11,7 +11,7 @@ Before integrating this plugin, ensure you've signed up for an account on [Bette
 To install this plugin, navigate to your existing Robo project's directory and run the following command:
 
 ```bash
-npx robo add @roboplay/plugin-better-stack
+npx robo add @robojs/better-stack
 ```
 
 Once installed, the plugin enhances your Robo with Better Stack's capabilities.
@@ -66,10 +66,10 @@ Create a drain directly within the primary config file, `robo.mjs`. This method 
 
 ```js
 // @ts-check
-import { createLogtailDrain } from '@roboplay/plugin-better-stack'
+import { createLogtailDrain } from '@robojs/better-stack'
 
 /**
- * @type {import('@roboplay/robo.js').Config}
+ * @type {import('robo.js').Config}
  **/
 export default {
 	// ... other configurations

@@ -5,6 +5,8 @@ import { logger } from '../../core/logger.js'
 import { SpiritMessage } from 'src/types/index.js'
 import { nameGenerator } from './name-generator.js'
 import { color, composeColors } from '../../core/color.js'
+import { Mode } from '../../core/mode.js'
+import { Env } from '../../core/env.js'
 
 interface Task<T = unknown> extends SpiritMessage {
 	onExit?: (exitCode: number) => boolean | void
@@ -40,8 +42,10 @@ export class Spirits {
 	public newSpirit(oldSpirit?: Spirit) {
 		const index = oldSpirit ? this.activeSpirits.indexOf(oldSpirit) : this.activeSpirits.length
 		const spiritId = `${this.spiritIndex++}-${nameGenerator()}-${['a', 'b', 'c'][index]}`
+		const mode = Mode.get()
+		const env = Env.data()
 		const worker = new Worker(path.join(__DIRNAME, '..', 'spirit.js'), {
-			workerData: { spiritId }
+			workerData: { env, mode, spiritId }
 		})
 		const newSpirit: Spirit = { id: spiritId, task: null, worker }
 		this.spirits[newSpirit.id] = newSpirit
@@ -49,6 +53,7 @@ export class Spirits {
 		worker.on('message', (message: SpiritMessage) => {
 			const spirit = this.spirits[newSpirit.id]
 			logger.debug(`Spirit (${composeColors(color.bold, color.cyan)(spirit.id)}) sent message:`, message)
+
 			if (message.payload === 'exit') {
 				spirit.task?.resolve(spirit.id)
 				spirit.isTerminated = true

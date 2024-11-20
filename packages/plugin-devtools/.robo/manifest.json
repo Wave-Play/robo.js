@@ -10,9 +10,11 @@
       "plugins": [],
       "type": "plugin"
     },
+    "language": "typescript",
+    "mode": "production",
     "type": "plugin",
-    "updatedAt": "2023-10-23T00:00:28.562Z",
-    "version": "0.9.6"
+    "updatedAt": "2024-10-21T00:44:03.028Z",
+    "version": "0.10.22"
   },
   "api": {},
   "commands": {
@@ -20,6 +22,11 @@
       "subcommands": {
         "example": {
           "subcommands": {
+            "permission-dm": {
+              "__path": "/.robo/build/commands/devtools/example/permission-dm.js",
+              "description": "This is an example command that can't be used in DMs",
+              "dmPermission": false
+            },
             "error": {
               "__path": "/.robo/build/commands/devtools/example/error.js",
               "description": "Throws an error to test the error handler",
@@ -30,11 +37,6 @@
                   "type": "boolean"
                 }
               ]
-            },
-            "permission-dm": {
-              "__path": "/.robo/build/commands/devtools/example/permission-dm.js",
-              "description": "This is an example command that can't be used in DMs",
-              "dmPermission": false
             },
             "defer": {
               "__path": "/.robo/build/commands/devtools/example/defer.js",
@@ -61,17 +63,6 @@
         },
         "module": {
           "subcommands": {
-            "check": {
-              "__path": "/.robo/build/commands/devtools/module/check.js",
-              "description": "Check if a specific module is enabled",
-              "options": [
-                {
-                  "name": "module",
-                  "description": "The module to check",
-                  "required": true
-                }
-              ]
-            },
             "set": {
               "__path": "/.robo/build/commands/devtools/module/set.js",
               "description": "Set a module's enabled state",
@@ -85,6 +76,17 @@
                 {
                   "name": "module",
                   "description": "The module to disable",
+                  "required": true
+                }
+              ]
+            },
+            "check": {
+              "__path": "/.robo/build/commands/devtools/module/check.js",
+              "description": "Check if a specific module is enabled",
+              "options": [
+                {
+                  "name": "module",
+                  "description": "The module to check",
                   "required": true
                 }
               ]
@@ -154,6 +156,10 @@
                   "name": "key",
                   "description": "The key to delete",
                   "required": true
+                },
+                {
+                  "name": "namespace",
+                  "description": "The namespace to delete the value in"
                 }
               ]
             },
@@ -171,9 +177,27 @@
                   "required": true
                 },
                 {
+                  "name": "namespace",
+                  "description": "The namespace to set the value in"
+                },
+                {
                   "name": "type",
                   "autocomplete": true,
                   "description": "The type of value to set"
+                }
+              ]
+            },
+            "get": {
+              "__path": "/.robo/build/commands/devtools/flashcore/get.js",
+              "options": [
+                {
+                  "name": "key",
+                  "description": "The key to get",
+                  "required": true
+                },
+                {
+                  "name": "namespace",
+                  "description": "The namespace to get the value in"
                 }
               ]
             },
@@ -190,16 +214,10 @@
                   "name": "remove",
                   "description": "Whether to remove the watcher",
                   "type": "boolean"
-                }
-              ]
-            },
-            "get": {
-              "__path": "/.robo/build/commands/devtools/flashcore/get.js",
-              "options": [
+                },
                 {
-                  "name": "key",
-                  "description": "The key to get",
-                  "required": true
+                  "name": "namespace",
+                  "description": "The namespace to watch the key in"
                 }
               ]
             }

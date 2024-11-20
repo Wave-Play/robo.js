@@ -5,11 +5,19 @@
       "clientOptions": {
         "intents": []
       },
-      "plugins": []
+      "plugins": [],
+      "seed": {
+        "description": "Example API route and index page"
+      }
+    },
+    "language": "typescript",
+    "mode": "production",
+    "seed": {
+      "description": "Example API route and index page"
     },
     "type": "plugin",
-    "updatedAt": "2023-09-05T05:26:10.220Z",
-    "version": "0.9.0"
+    "updatedAt": "2024-10-21T00:44:03.784Z",
+    "version": "0.10.22"
   },
   "api": {},
   "commands": {},
