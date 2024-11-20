@@ -1,13 +1,28 @@
 import React, { useState, useRef, useEffect } from 'react'
 
-export const ExaShape = (props) => {
+interface ExaShapeProps {
+	accentColor?: string
+	accentLineWidth?: number
+	autoWidth?: boolean
+	children?: React.ReactElement
+	defaultHeight?: number
+	defaultWidth?: number
+	highlight?: boolean
+	innerBorderWidth?: number
+	innerColor?: string
+	outerColor?: string
+	slope?: number
+}
+
+export const ExaShape = (props: ExaShapeProps) => {
 	let {
 		accentColor = '#489178',
-		accentLineWidth = 0, //8,
+		accentLineWidth = 0,
 		autoWidth = true,
 		children,
 		defaultHeight = 48,
 		defaultWidth = 100,
+		highlight = true,
 		innerBorderWidth = 1,
 		innerColor = 'var(--card-background-color)',
 		outerColor = 'var(--ifm-color-emphasis-200)',
@@ -36,7 +51,7 @@ export const ExaShape = (props) => {
 	}, [containerRef.current])
 
 	// Highlight the shape when hovering
-	if (isHovering) {
+	if (isHovering && highlight) {
 		outerColor = 'var(--ifm-color-primary)'
 	}
 
@@ -85,11 +100,7 @@ export const ExaShape = (props) => {
 
 				setDimensions({
 					width: adjustedWidth,
-					height: adjustedHeight,
-					paddingLeft,
-					paddingTop,
-					paddingRight,
-					paddingBottom
+					height: adjustedHeight
 				})
 			}
 		})
