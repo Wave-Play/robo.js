@@ -117,7 +117,7 @@ export function mockInteraction(
 
 				get member() {
 					const result = member?.guild?.members?.cache?.find((member) => {
-						return member.user.username === val
+						return member.user.username === val?.replace('@', '')
 					})
 
 					// logger.debug(`Got member for "${key}" value "${val}"`, result)
@@ -136,7 +136,7 @@ export function mockInteraction(
 
 				get user() {
 					const result = member?.guild?.members?.cache?.find((member) => {
-						return member.user.username === val
+						return member.user.username === val?.replace('@', '')
 					})?.user
 
 					// logger.debug(`Got user for "${key}" value "${val}"`, result)
@@ -148,12 +148,12 @@ export function mockInteraction(
 		},
 
 		getMember: (key: string) => {
-			const userId = args[key].trim().replace(/\D/g, '')
+			const userId = args[key].trim().replace(/\D/g, '').replace('@', '')
 			return member?.guild?.members?.cache?.get(userId) ?? null
 		},
 
 		getUser: (key: string) => {
-			const userId = args[key].trim().replace(/\D/g, '')
+			const userId = args[key].trim().replace(/\D/g, '').replace('@', '')
 			return member?.guild?.members?.cache?.get(userId)?.user as User
 		}
 	}
