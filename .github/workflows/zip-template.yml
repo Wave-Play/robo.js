@@ -1,0 +1,40 @@
+name: 'Zip template'
+on:
+  push:
+    paths:
+      - 'templates/**'
+    branches:
+      - main
+
+jobs:
+  Templates:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Install Zip
+        run: sudo apt-get install zip unzip
+
+      - name: Set up Backblaze B2 CLI
+        run: |
+          # Download Backblaze B2 CLI
+          curl -L -o b2 https://github.com/Backblaze/B2_Command_Line_Tool/releases/download/v4.2.0/b2-linux
+          chmod +x b2
+          sudo mv b2 /usr/local/bin/b2
+
+      - name: Authorize Backblaze B2 Account
+        run: |
+          b2 authorize-account ${{ secrets.B2_ACCOUNT_ID }} ${{ secrets.B2_APPLICATION_KEY }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Zip commit
+        env:
+          GITHUB_PUSH_OBJECT: ${{ toJson(github.event) }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          REPO_DATA: ${{ github.repository }}
+        run: node scripts/zip.js
