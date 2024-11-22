@@ -56,13 +56,14 @@ export function mockInteraction(
 	args: Record<string, string>
 ) {
 	// Create a mock CommandInteraction to pass to the function handler
-	let interationMemberData = undefined
+	let interationMemberData: APIInteraction['member'] = undefined
 	if (member) {
 		interationMemberData = {
 			user: {
 				id: member.user.id,
 				username: member.user.username,
 				discriminator: member.user.discriminator,
+				global_name: member.user.username,
 				avatar: member.user.avatar
 			},
 			flags: (member?.flags ?? 0) as unknown as GuildMemberFlags,
@@ -90,6 +91,7 @@ export function mockInteraction(
 			name: 'mock',
 			id: 'mock'
 		},
+		entitlements: [],
 		guild_id: member?.guild?.id,
 		channel_id: channel?.id ?? '',
 		locale: 'en-US',
@@ -201,6 +203,7 @@ export function mockMessage(
 			id: client.user?.id ?? 'mock',
 			username: client.user?.username ?? 'mock',
 			discriminator: client.user?.discriminator ?? '0',
+			global_name: client.user?.username ?? 'mock',
 			avatar: client.user?.avatar ?? 'mock'
 		}
 	}
