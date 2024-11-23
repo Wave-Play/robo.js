@@ -1,16 +1,16 @@
-const gh = JSON.parse(process.env.GITHUB_PUSH_OBJECT)
+import { execSync } from 'node:child_process'
+import fs from 'node:fs'
+
+const gh = JSON.parse(process.env.GITHUB_PUSH_OBJECT ?? '{}')
 const GH_TOKEN = process.env.GH_TOKEN
 const repoData = process.env.REPO_DATA
-const BUCKET_NAME = 'templates-robo-js'
+const BUCKET_NAME = process.env.B2_BUCKET
 const REPO_OWNER = repoData.split('/')[0]
 const REPO_NAME = repoData.split('/')[1]
 
-const { execSync } = require('child_process')
+start()
 
-const fs = require('fs')
-const path = require('path')
-
-;(async () => {
+async function start() {
 	const commits = gh.commits
 	const templates = await getAllTemplates()
 	if (commits.length > 0) {
@@ -53,7 +53,7 @@ const path = require('path')
 			}
 		})
 	}
-})()
+}
 
 async function getAllTemplates() {
 	const paths = ['discord-activities', 'discord-bots', 'plugins', 'web-apps']
