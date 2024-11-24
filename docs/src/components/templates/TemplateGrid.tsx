@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { ExaShape } from '../shared/ExaShape'
 import styles from '../../pages/templates.module.css'
 import { Template, Templates } from '@site/src/data/templates'
@@ -12,11 +12,34 @@ import {
 	mdiShapePlus,
 	mdiWeb
 } from '@mdi/js'
+import { useTemplateFilters } from '@site/src/hooks/useTemplateFilters'
 
 export const TemplateGrid = () => {
+	const { filter, searchQuery } = useTemplateFilters()
+	const [templates, setTemplates] = useState<Template[]>(Templates)
+
+	useEffect(() => {
+		let templates = Templates
+
+		if (filter.value !== 'all-templates') {
+			templates = Templates.filter((template) => template.tags.includes(filter.value))
+		}
+		if (searchQuery) {
+			const query = searchQuery.toLowerCase().trim()
+			templates = templates.filter((template) => {
+				const title = template.title.toLowerCase().trim()
+				const description = template.description.toLowerCase().trim()
+
+				return title.includes(query) || description.includes(query)
+			})
+		}
+
+		setTemplates(templates)
+	}, [filter, searchQuery])
+
 	return (
 		<div className={styles.grid}>
-			{Templates.map((template) => (
+			{templates.map((template) => (
 				<TemplateGridItem key={template.href} template={template} />
 			))}
 		</div>

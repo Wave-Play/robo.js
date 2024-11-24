@@ -1,3 +1,5 @@
+import { mdiDotsGrid, mdiPowerPlug, mdiRobot, mdiShapePlus, mdiWeb } from '@mdi/js'
+
 export interface Template {
 	author?: string
 	description: string
@@ -5,6 +7,40 @@ export interface Template {
 	tags: string[]
 	title: string
 }
+
+export interface TemplateFilter {
+	icon: string
+	name: string
+	value: string
+}
+
+export const Filters: TemplateFilter[] = [
+	{
+		icon: mdiDotsGrid,
+		name: 'All Templates',
+		value: 'all-templates'
+	},
+	{
+		icon: mdiShapePlus,
+		name: 'Discord Activities',
+		value: 'Discord Activity'
+	},
+	{
+		icon: mdiRobot,
+		name: 'Discord Bots',
+		value: 'Discord Bot'
+	},
+	{
+		icon: mdiPowerPlug,
+		name: 'Plugins',
+		value: 'Plugin'
+	},
+	{
+		icon: mdiWeb,
+		name: 'Web Apps',
+		value: 'Web App'
+	}
+]
 
 export const Templates: Template[] = [
 	{

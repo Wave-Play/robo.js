@@ -1,54 +1,29 @@
-import React, { useState } from 'react'
+import React from 'react'
 import styles from '../../pages/templates.module.css'
-import { mdiDotsGrid, mdiPowerPlug, mdiRobot, mdiShapePlus, mdiWeb } from '@mdi/js'
+import { Filters } from '@site/src/data/templates'
+import { useTemplateFilters } from '@site/src/hooks/useTemplateFilters'
+import { mdiMagnify } from '@mdi/js'
 import Icon from '@mdi/react'
-
-interface Filter {
-	icon: string
-	name: string
-	value: string
-}
-
-const Filters: Filter[] = [
-	{
-		icon: mdiDotsGrid,
-		name: 'All Templates',
-		value: 'all-templates'
-	},
-	{
-		icon: mdiShapePlus,
-		name: 'Discord Activities',
-		value: 'discord-activities'
-	},
-	{
-		icon: mdiRobot,
-		name: 'Discord Bots',
-		value: 'discord-bots'
-	},
-	{
-		icon: mdiPowerPlug,
-		name: 'Plugins',
-		value: 'plugins'
-	},
-	{
-		icon: mdiWeb,
-		name: 'Web Apps',
-		value: 'web-apps'
-	}
-]
+import type { TemplateFilter } from '@site/src/data/templates'
 
 export const TemplateFilters = () => {
-	const [selectedFilter, setSelectedFilter] = useState<Filter | null>(null)
+	const { filter: selectedFilter, setFilter, setSearchQuery } = useTemplateFilters()
 
-	const onClickFilter = (filter: Filter) => {
-		setSelectedFilter(filter)
+	const onClickFilter = (filter: TemplateFilter) => {
+		setFilter(filter)
 	}
 
 	return (
 		<div className={styles.filterBar}>
 			<h3 className={styles.filterTitle}>Filter Templates</h3>
 			<div className={styles.searchContainer}>
-				<input className={styles.searchInput} type="text" placeholder="Search Templates" />
+				<Icon className={styles.searchIcon} path={mdiMagnify} size={'20px'} color="rgb(142, 141, 145)" />
+				<input
+					className={styles.searchInput}
+					onChange={(e) => setSearchQuery(e.target.value)}
+					placeholder="Search..."
+					type="text"
+				/>
 			</div>
 			<div className={styles.filterOptions}>
 				{Filters.map((filter) => (
@@ -56,7 +31,7 @@ export const TemplateFilters = () => {
 						key={filter.value}
 						filter={filter}
 						onClick={onClickFilter}
-						selected={selectedFilter === filter}
+						selected={selectedFilter.value === filter.value}
 					/>
 				))}
 			</div>
@@ -65,8 +40,8 @@ export const TemplateFilters = () => {
 }
 
 interface TemplateFilterItemProps {
-	filter: Filter
-	onClick?: (filter: Filter) => void
+	filter: TemplateFilter
+	onClick?: (filter: TemplateFilter) => void
 	selected?: boolean
 }
 

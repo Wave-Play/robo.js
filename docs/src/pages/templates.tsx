@@ -10,13 +10,19 @@ export default function TemplatesPage() {
 		<Layout title={`Playground`} description="Try out Robo.js in your browser!">
 			<main className={styles.root}>
 				<div className={styles.container}>
-				<h1 className={styles.title}>Built with<br/>Robo.js</h1>
-				<p>Start with pre-built examples from <strong>WavePlay</strong> and our community.</p>
-				<div className={styles.row}>
-					<TemplateFilters />
-					<TemplateGrid />
-				</div>
-				<Footer />
+					<h1 className={styles.title}>
+						Built with
+						<br />
+						Robo.js
+					</h1>
+					<p>
+						Start with pre-built examples from <strong>WavePlay</strong> and our community.
+					</p>
+					<div className={styles.row}>
+						<TemplateFilters />
+						<TemplateGrid />
+					</div>
+					<Footer />
 				</div>
 			</main>
 		</Layout>

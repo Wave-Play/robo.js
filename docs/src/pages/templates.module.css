@@ -60,6 +60,12 @@ body {
 	align-items: center;
 }
 
+.searchIcon {
+	pointer-events: none;
+	position: absolute;
+	left: 12px;
+}
+
 .searchInput {
 	width: 100%;
 	height: 100%;
@@ -68,7 +74,7 @@ body {
 	background-color: transparent;
 	outline-color: var(--ifm-color-primary);
 	color: white;
-	padding-left: 12px;
+	padding-left: 40px;
 	padding-right: 12px;
 }
 
@@ -119,6 +125,7 @@ body {
 	flex: 1;
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(432px, 1fr));
+	grid-auto-rows: max-content;
 	grid-gap: 24px;
 	padding-top: 24px;
 }
