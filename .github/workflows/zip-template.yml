@@ -13,6 +13,10 @@ jobs:
       - name: Check out repo
         uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 8.6.11
+
       - name: Install Zip
         run: sudo apt-get install zip unzip
 
@@ -28,13 +32,20 @@ jobs:
           b2 authorize-account ${{ secrets.B2_ACCOUNT_ID }} ${{ secrets.B2_APPLICATION_KEY }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          cache: 'pnpm'
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        working-directory: scripts
+        run: pnpm install
 
       - name: Zip commit
+        working-directory: scripts
         env:
           GITHUB_PUSH_OBJECT: ${{ toJson(github.event) }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           REPO_DATA: ${{ github.repository }}
-        run: node scripts/zip.js
+        run: pnpm run zip

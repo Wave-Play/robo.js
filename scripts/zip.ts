@@ -1,25 +1,55 @@
 import { execSync } from 'node:child_process'
 import fs from 'node:fs'
+import { Env, logger } from 'robo.js'
 
-const gh = JSON.parse(process.env.GITHUB_PUSH_OBJECT ?? '{}')
-const GH_TOKEN = process.env.GH_TOKEN
-const repoData = process.env.REPO_DATA
-const BUCKET_NAME = process.env.B2_BUCKET
-const REPO_OWNER = repoData.split('/')[0]
-const REPO_NAME = repoData.split('/')[1]
+// Prepare the environment (good for testing)
+Env.loadSync()
+const env = new Env({
+	b2: {
+		bucket: {
+			env: 'B2_BUCKET'
+		}
+	},
+	github: {
+		pushObject: {
+			env: 'GITHUB_PUSH_OBJECT'
+		},
+		repo: {
+			default: 'Wave-Play/robo.js',
+			env: 'REPO_DATA'
+		},
+		token: {
+			env: 'GH_TOKEN'
+		}
+	}
+})
+
+const Repo = {
+	Owner: env.get('github.repo').split('/')[0],
+	Name: env.get('github.repo').split('/')[1]
+}
 
 start()
+	.then(() => logger.ready('Template projects zipped and uploaded to B2'))
+	.catch((error) => {
+		logger.error(error)
+		process.exit(1)
+	})
 
 async function start() {
-	const commits = gh.commits
+	logger.event('Zipping template projects...')
+	const { commits } = JSON.parse(env.get('github.pushObject'))
 	const templates = await getAllTemplates()
+	logger.info('Commits:', commits)
+	logger.info('Templates:', templates)
+
 	if (commits.length > 0) {
 		commits.forEach(async (commit) => {
 			const id = commit.id
 			const committedFiles = await getCommittedFiles(id)
 
 			if (committedFiles.length > 0) {
-				const templatesToZip = []
+				const templatesToZip: string[] = []
 				for (let i = 0; i < committedFiles.length; ++i) {
 					for (let j = 0; j < templates.length; ++j) {
 						if (committedFiles[i].filename.includes(templates[j])) {
@@ -45,11 +75,11 @@ async function start() {
 
 						// sync sends the folder at once
 						// we are using b2 because it is fast and the CLI is just too good.
-						execSync(`b2 sync zips/ b2://${BUCKET_NAME}/`)
+						execSync(`b2 sync zips/ b2://${env.get('b2.bucket')}/`)
 					})
 				}
 			} else {
-				console.log('ERROR: not committed file and Job still ran ?')
+				logger.error('Not committed file and Job still ran?')
 			}
 		})
 	}
@@ -57,12 +87,12 @@ async function start() {
 
 async function getAllTemplates() {
 	const paths = ['discord-activities', 'discord-bots', 'plugins', 'web-apps']
-	const templates = []
+	const templates: string[] = []
 	for (const path of paths) {
-		const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/templates/${path}`
+		const url = `https://api.github.com/repos/${Repo.Owner}/${Repo.Name}/contents/templates/${path}`
 		const response = await fetch(url, {
 			headers: {
-				Authorization: `token ${GH_TOKEN}`
+				Authorization: `token ${env.get('github.token')}`
 			}
 		})
 		const data = await response.json()
@@ -73,10 +103,10 @@ async function getAllTemplates() {
 }
 
 async function getCommittedFiles(id) {
-	const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/commits/${id}`
+	const url = `https://api.github.com/repos/${Repo.Owner}/${Repo.Name}/commits/${id}`
 	const response = await fetch(url, {
 		headers: {
-			Authorization: `token ${GH_TOKEN}`
+			Authorization: `token ${env.get('github.token')}`
 		}
 	})
 
