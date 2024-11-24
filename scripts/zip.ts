@@ -30,7 +30,14 @@ const Repo = {
 }
 
 start()
-	.then(() => logger.ready('Template projects zipped and uploaded to B2'))
+	.then((result) => {
+		const { failed, success, time } = result
+		logger.ready(success.length, `template${success.length === 1 ? '' : 's'} zipped and uploaded to B2 in ${time}ms`)
+
+		if (failed.length > 0) {
+			logger.warn('Failed:', failed)
+		}
+	})
 	.catch((error) => {
 		logger.error(error)
 		process.exit(1)
@@ -38,50 +45,67 @@ start()
 
 async function start() {
 	logger.event('Zipping template projects...')
+	const startTime = Date.now()
 	const { commits } = JSON.parse(env.get('github.pushObject'))
 	const templates = await getAllTemplates()
+	const success: string[] = []
+	const failed: string[] = []
 	logger.info('Commits:', commits)
 	logger.info('Templates:', templates)
 
 	if (commits.length > 0) {
-		commits.forEach(async (commit) => {
-			const id = commit.id
-			const committedFiles = await getCommittedFiles(id)
+		await Promise.all(
+			commits.map(async (commit) => {
+				const id = commit.id
+				const committedFiles = await getCommittedFiles(id)
 
-			if (committedFiles.length > 0) {
-				const templatesToZip: string[] = []
-				for (let i = 0; i < committedFiles.length; ++i) {
-					for (let j = 0; j < templates.length; ++j) {
-						if (committedFiles[i].filename.includes(templates[j])) {
-							templatesToZip.push(templates[j])
+				if (committedFiles.length > 0) {
+					const templatesToZip: string[] = []
+					for (let i = 0; i < committedFiles.length; ++i) {
+						for (let j = 0; j < templates.length; ++j) {
+							if (committedFiles[i].filename.includes(templates[j])) {
+								templatesToZip.push(templates[j])
+							}
 						}
 					}
+
+					if (templatesToZip.length > 0) {
+						templatesToZip.forEach((template) => {
+							try {
+								const templateName = template.split('/')[template.split('/').length - 1]
+								const templatePath = template.slice(10)
+
+								const outputDir = `../temp/zip/${templatePath.replace(`/${templateName}`, '')}`
+								const outputZip = `${outputDir}/${templateName}.zip`
+
+								if (!fs.existsSync(outputDir)) {
+									fs.mkdirSync(outputDir, { recursive: true })
+								}
+
+								// we are using the zip package from ubuntu (easier to deal with)
+								execSync(`zip -r ${outputZip} ../templates/${templatePath}`)
+
+								// sync sends the folder at once
+								// we are using b2 because it is fast and the CLI is just too good.
+								execSync(`b2 sync ../temp/zip b2://${env.get('b2.bucket')}/`)
+								success.push(template)
+							} catch (error) {
+								logger.error(error)
+								failed.push(template)
+							}
+						})
+					}
+				} else {
+					logger.error('Not committed file and Job still ran?')
 				}
+			})
+		)
+	}
 
-				if (templatesToZip.length > 0) {
-					templatesToZip.forEach((template) => {
-						const templateName = template.split('/')[template.split('/').length - 1]
-						const templatePath = template.slice(10)
-
-						const outputDir = `zips/${templatePath.replace(`/${templateName}`, '')}`
-						const outputZip = `${outputDir}/${templateName}`
-
-						if (!fs.existsSync(outputDir)) {
-							fs.mkdirSync(outputDir, { recursive: true })
-						}
-
-						// we are using the zip package from ubuntu (easier to deal with)
-						execSync(`zip -r ${outputZip} templates/${templatePath}`)
-
-						// sync sends the folder at once
-						// we are using b2 because it is fast and the CLI is just too good.
-						execSync(`b2 sync zips/ b2://${env.get('b2.bucket')}/`)
-					})
-				}
-			} else {
-				logger.error('Not committed file and Job still ran?')
-			}
-		})
+	return {
+		failed: failed,
+		success: success,
+		time: Date.now() - startTime
 	}
 }
 
@@ -112,6 +136,7 @@ async function getCommittedFiles(id) {
 
 	const json = await response.json()
 	const files = json.files
+	logger.info('Committed files:', files)
 
 	return files.filter((file) => {
 		return file.filename.startsWith('templates')
