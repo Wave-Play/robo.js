@@ -184,6 +184,27 @@ article .clean-btn {
 	border-radius: 0px !important;
 }
 
+.exaButtonContainer {
+	height: 48px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding-left: 24px;
+	padding-right: 24px;
+}
+
+.exaButtonText {
+	color: white;
+	font-size: 16px;
+	font-weight: 600;
+	text-decoration: none;
+	margin: 0px;
+}
+
+.exaButtonText:hover {
+	text-decoration: none;
+}
+
 .cardContainer {
 	margin-bottom: -16px !important;
 }
