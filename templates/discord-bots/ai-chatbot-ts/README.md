@@ -6,10 +6,6 @@
 
 An intelligent **Discord Bot** using **[Robo.js](https://robojs.dev)** and **[@robojs/ai](https://robojs.dev/plugins/ai)** for AI chatbot capabilities. This template is set up for creating a chatbot that can respond to messages with AI-generated text. All you need is an **OpenAI** API key in your `.env` file.
 
-Welcome to your fresh **[Robo.js](https://github.com/Wave-Play/robo)** project!
-
-Embark on a journey where your Discord projects transcend the ordinary. With Robo.js as your guide, you'll experience a seamless, [file-based setup](https://docs.roboplay.dev/docs/basics/overview#the-robojs-file-structure), an [integrated database](https://docs.roboplay.dev/docs/basics/flashcore), [TypeScript support](https://docs.roboplay.dev/docs/advanced/typescript), and a multitude of [plugin-powered skills](https://docs.roboplay.dev/docs/advanced/plugins) to unlock along the way.
-
 _Ready to embark on this adventure?_
 
 - [📚 **Documentation:** Getting started](https://docs.roboplay.dev/docs/getting-started)
