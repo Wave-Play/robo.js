@@ -5,9 +5,11 @@ declare global {
 			B2_ACCOUNT_ID: string
 			B2_APPLICATION_KEY: string
 			B2_BUCKET: string
+			FORCE_TEMPLATES: string
+			GH_PUSH: string
 			GH_TOKEN: string
-			GITHUB_PUSH_OBJECT: string
 			REPO_DATA: string
+			ROBO_LOG_LEVEL: string
 		}
 	}
 }

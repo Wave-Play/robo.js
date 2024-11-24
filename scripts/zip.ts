@@ -16,9 +16,13 @@ const env = new Env({
 			env: 'B2_BUCKET'
 		}
 	},
+	forceTemplates: {
+		default: 'false',
+		env: 'FORCE_TEMPLATES'
+	},
 	github: {
 		pushObject: {
-			env: 'GITHUB_PUSH_OBJECT'
+			env: 'GH_PUSH'
 		},
 		repo: {
 			default: 'Wave-Play/robo.js',
@@ -68,7 +72,7 @@ async function start() {
 	const failed: string[] = []
 
 	// Get the commits from the push object
-	const { commits } = JSON.parse(env.get('github.pushObject'))
+	const { commits } = JSON.parse(env.get('github.pushObject')) as CommitData
 	const templates = await getAllTemplates()
 	logger.debug('Commits:', commits)
 	logger.debug('Templates:', templates)
@@ -87,7 +91,9 @@ async function start() {
 
 			// Filter the templates to zip
 			const templatesToZip: Set<string> = new Set(
-				committedFiles.flatMap((file) => templates.filter((template) => file.filename.includes(template)))
+				env.get('forceTemplates') === 'true'
+					? templates
+					: committedFiles.flatMap((file) => templates.filter((template) => file.filename.includes(template)))
 			)
 			logger.debug(`Zipping ${templatesToZip.size} templates:`, templatesToZip)
 
@@ -130,11 +136,12 @@ async function start() {
 	if (success.length > 0) {
 		logger.info(`Uploading to B2...`)
 		const { stderr, stdout } = await execAsync(`b2 sync ../temp/zip/templates b2://${env.get('b2.bucket')}/`)
-		logger.info('Successfully uploaded to B2')
 		logger.debug(stdout)
 
 		if (stderr) {
 			logger.error(stderr)
+		} else {
+			logger.info('Successfully uploaded to B2')
 		}
 	}
 
@@ -162,6 +169,27 @@ async function getAllTemplates() {
 	}
 
 	return templates
+}
+
+interface CommitData {
+	commits: Array<{
+		author: {
+			email: string
+			name: string
+			username: string
+		}
+		committer: {
+			email: string
+			name: string
+			username: string
+		}
+		distinct: boolean
+		id: string
+		message: string
+		timestamp: string
+		tree_id: string
+		url: string
+	}>
 }
 
 interface CommittedFile {
