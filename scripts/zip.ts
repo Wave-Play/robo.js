@@ -40,7 +40,7 @@ const env = new Env({
 	}
 })
 
-const Exclude = `'.robo/*' 'node_modules/*' '.DS_Store' '.env'`
+const Exclude = `'.robo/**' 'node_modules/**' '.DS_Store' '.env'`
 const Repo = {
 	Owner: env.get('github.repo').split('/')[0],
 	Name: env.get('github.repo').split('/')[1]
@@ -56,6 +56,9 @@ start()
 		}
 		if (failed.length > 0) {
 			logger.error(`Failed to zip ${failed.length} templates:`, failed)
+		}
+		if (success.length === 0 && failed.length === 0) {
+			logger.warn('No templates zipped')
 		}
 	})
 	.catch((error) => {
