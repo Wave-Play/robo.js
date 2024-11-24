@@ -1,7 +1,9 @@
 import { exec } from 'node:child_process'
-import { existsSync, mkdirSync } from 'node:fs'
+import { existsSync } from 'node:fs'
+import { mkdir } from 'node:fs/promises'
+import path from 'node:path'
 import { promisify } from 'node:util'
-import { Env, logger } from 'robo.js'
+import { color, Env, logger } from 'robo.js'
 
 const execAsync = promisify(exec)
 
@@ -34,20 +36,22 @@ const env = new Env({
 	}
 })
 
-const Exclude = `'*/.robo/*' '*/node_modules/*' '*/.env'`
-
+const Exclude = `'.robo/*' 'node_modules/*' '.DS_Store' '.env'`
 const Repo = {
 	Owner: env.get('github.repo').split('/')[0],
 	Name: env.get('github.repo').split('/')[1]
 }
+const RootDir = path.join(process.cwd(), '..')
 
 start()
 	.then((result) => {
 		const { failed, success, time } = result
-		logger.ready(success.length, `template${success.length === 1 ? '' : 's'} zipped and uploaded to B2 in ${time}ms`)
 
+		if (success.length > 0) {
+			logger.ready(success.length, `template${success.length === 1 ? '' : 's'} zipped and uploaded to B2 in ${time}ms`)
+		}
 		if (failed.length > 0) {
-			logger.warn('Failed:', failed)
+			logger.error(`Failed to zip ${failed.length} templates:`, failed)
 		}
 	})
 	.catch((error) => {
@@ -90,18 +94,27 @@ async function start() {
 			await Promise.all(
 				[...templatesToZip].map(async (template) => {
 					try {
-						const templateName = template.split('/').pop()
-						const templatePath = `../${template}`
-						const outputDir = `../temp/zip/${template.replace(`/${templateName}`, '')}`
-						const outputZip = `${outputDir}/${templateName}.zip`
+						const templateChunks = template.split('/')
+						const templateName = templateChunks.pop()
+						const templatePath = path.join(RootDir, template)
+						const outputDir = path.join(RootDir, 'temp', 'zip', templateChunks.join(path.sep))
+						const outputZip = path.join(outputDir, `${templateName}.zip`)
 
 						if (!existsSync(outputDir)) {
-							mkdirSync(outputDir, { recursive: true })
+							await mkdir(outputDir, { recursive: true })
 						}
 
 						// we are using the zip package from ubuntu (easier to deal with)
 						logger.info(`Zipping ${templatePath} into ${outputZip}`)
-						await execAsync(`zip -r ${outputZip} ${templatePath} -x ${Exclude}`)
+						const command = `zip -r ${outputZip} . -x ${Exclude}`
+						logger.debug(color.bold(`> ${command}`))
+						const { stderr, stdout } = await execAsync(command, { cwd: templatePath })
+
+						if (stderr) {
+							throw new Error(stderr)
+						}
+
+						logger.debug(stdout)
 						success.push(template)
 					} catch (error) {
 						logger.error(error)
@@ -116,8 +129,13 @@ async function start() {
 	// We're using b2 because it is fast and the CLI is just too good
 	if (success.length > 0) {
 		logger.info(`Uploading to B2...`)
-		await execAsync(`b2 sync ../temp/zip b2://${env.get('b2.bucket')}/`)
+		const { stderr, stdout } = await execAsync(`b2 sync ../temp/zip/templates b2://${env.get('b2.bucket')}/`)
 		logger.info('Successfully uploaded to B2')
+		logger.debug(stdout)
+
+		if (stderr) {
+			logger.error(stderr)
+		}
 	}
 
 	return {
