@@ -1,4 +1,4 @@
-import { mdiDotsGrid, mdiPowerPlug, mdiRobot, mdiShapePlus, mdiWeb } from '@mdi/js'
+import { mdiDotsGrid, mdiLightbulb, mdiPowerPlug, mdiRobot, mdiShapePlus, mdiWeb } from '@mdi/js'
 
 export interface Template {
 	author?: string
@@ -11,6 +11,7 @@ export interface Template {
 export interface TemplateFilter {
 	icon: string
 	name: string
+	tags: string[]
 	value: string
 }
 
@@ -18,27 +19,38 @@ export const Filters: TemplateFilter[] = [
 	{
 		icon: mdiDotsGrid,
 		name: 'All Templates',
+		tags: [],
 		value: 'all-templates'
 	},
 	{
 		icon: mdiShapePlus,
 		name: 'Discord Activities',
-		value: 'Discord Activity'
+		tags: ['Discord Activity'],
+		value: 'discord-activities'
 	},
 	{
 		icon: mdiRobot,
 		name: 'Discord Bots',
-		value: 'Discord Bot'
+		tags: ['Discord Bot'],
+		value: 'discord-bots'
+	},
+	{
+		icon: mdiLightbulb,
+		name: 'MrJAwesome',
+		tags: ['MrJAwesome'],
+		value: 'mrjawesome'
 	},
 	{
 		icon: mdiPowerPlug,
 		name: 'Plugins',
-		value: 'Plugin'
+		tags: ['Plugin'],
+		value: 'plugins'
 	},
 	{
 		icon: mdiWeb,
 		name: 'Web Apps',
-		value: 'Web App'
+		tags: ['Web App'],
+		value: 'web-apps'
 	}
 ]
 
@@ -141,28 +153,28 @@ export const Templates: Template[] = [
 		author: 'MrJAwesome',
 		description: 'An all-in-one toolkit for developers by MrJAwesome.',
 		href: './discord-bots/mrjawesome-dev-toolkit-js',
-		tags: ['Discord Bot'],
+		tags: ['Discord Bot', 'MrJAwesome'],
 		title: 'Dev Toolkit (JS)'
 	},
 	{
 		author: 'MrJAwesome',
 		description: 'An all-in-one toolkit for developers by MrJAwesome.',
 		href: './discord-bots/mrjawesome-dev-toolkit-ts',
-		tags: ['Discord Bot'],
+		tags: ['Discord Bot', 'MrJAwesome'],
 		title: 'Dev Toolkit (TS)'
 	},
 	{
 		author: 'MrJAwesome',
 		description: 'Quickstart for creating slash commands by MrJAwesome.',
 		href: './discord-bots/mrjawesome-slash-commands-js',
-		tags: ['Discord Bot'],
+		tags: ['Discord Bot', 'MrJAwesome'],
 		title: 'Slash Command Package (JS)'
 	},
 	{
 		author: 'MrJAwesome',
 		description: 'Quickstart for creating slash commands by MrJAwesome.',
 		href: './discord-bots/mrjawesome-slash-commands-ts',
-		tags: ['Discord Bot'],
+		tags: ['Discord Bot', 'MrJAwesome'],
 		title: 'Slash Command Package (TS)'
 	},
 	{
@@ -260,11 +272,11 @@ export const Templates: Template[] = [
 		href: './web-apps/svelte-ts',
 		tags: ['Web App'],
 		title: 'Svelte (TS)'
-	},
+	}/*,
 	{
 		description: 'How to contribute to Robo.js',
 		href: 'https://github.com/Wave-Play/robo.js/blob/main/CONTRIBUTING.md',
 		tags: ['General'],
 		title: 'Contributing'
-	}
+	}*/
 ]

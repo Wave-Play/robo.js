@@ -7,6 +7,7 @@ import {
 	mdiHelp,
 	mdiLanguageJavascript,
 	mdiLanguageTypescript,
+	mdiLightbulb,
 	mdiPowerPlug,
 	mdiRobot,
 	mdiShapePlus,
@@ -22,7 +23,9 @@ export const TemplateGrid = () => {
 		let templates = Templates
 
 		if (filter.value !== 'all-templates') {
-			templates = Templates.filter((template) => template.tags.includes(filter.value))
+			templates = Templates.filter((template) => {
+				return filter.tags.some((tag) => template.tags.includes(tag))
+			})
 		}
 		if (searchQuery) {
 			const query = searchQuery.toLowerCase().trim()
@@ -89,6 +92,8 @@ function getTagIcon(tag: string) {
 			return <Icon path={mdiRobot} color={'#5865F2'} size={'20px'} />
 		case 'JavaScript':
 			return <Icon path={mdiLanguageJavascript} color={'#F7DF1E'} size={'20px'} />
+		case 'MrJAwesome':
+			return <Icon path={mdiLightbulb} color={'#FFD700'} size={'20px'} />
 		case 'Plugin':
 			return <Icon path={mdiPowerPlug} size={'20px'} />
 		case 'TypeScript':
