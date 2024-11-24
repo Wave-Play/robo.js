@@ -45,6 +45,7 @@ jobs:
       - name: Zip commit
         working-directory: scripts
         env:
+          B2_BUCKET: ${{ secrets.B2_BUCKET }}
           GITHUB_PUSH_OBJECT: ${{ toJson(github.event) }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           REPO_DATA: ${{ github.repository }}

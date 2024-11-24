@@ -7,6 +7,7 @@ Env.loadSync()
 const env = new Env({
 	b2: {
 		bucket: {
+			default: 'robo-templates',
 			env: 'B2_BUCKET'
 		}
 	},
