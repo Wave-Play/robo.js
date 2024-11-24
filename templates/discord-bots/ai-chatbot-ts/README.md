@@ -10,9 +10,8 @@ Embark on a journey where your Discord projects transcend the ordinary. With Rob
 
 _Ready to embark on this adventure?_
 
-➞ [📚 **Documentation:** Getting started](https://docs.roboplay.dev/docs/getting-started)
-
-➞ [🚀 **Community:** Join our Discord server](https://roboplay.dev/discord)
+- [📚 **Documentation:** Getting started](https://docs.roboplay.dev/docs/getting-started)
+- [🚀 **Community:** Join our Discord server](https://roboplay.dev/discord)
 
 ## ✨ Getting Started
 
@@ -34,9 +33,8 @@ Run development mode:
 npm run dev
 ```
 
-➞ [📚 **Documentation:** Exploring Different Run Modes](https://robojs.dev/robojs/mode#default-modes)
-
-➞ [🚀 **Documentation:** Deploying for Free with 24/7 Uptime](https://robojs.dev/hosting/overview)
+- [📚 **Documentation:** Exploring Different Run Modes](https://robojs.dev/robojs/mode#default-modes)
+- [🚀 **Documentation:** Deploying for Free with 24/7 Uptime](https://robojs.dev/hosting/overview)
 
 ## Developing 🏗️
 
