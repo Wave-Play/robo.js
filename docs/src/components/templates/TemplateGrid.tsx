@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { ExaShape } from '../shared/ExaShape'
+import Link from '@docusaurus/Link'
 import styles from '../../pages/templates.module.css'
 import { Template, Templates } from '@site/src/data/templates'
 import Icon from '@mdi/react'
@@ -57,8 +58,8 @@ const TemplateGridItem = (props: TemplateGridItemProps) => {
 	const { template } = props
 
 	return (
-		<div className={styles.templateItem}>
-			<ExaShape defaultHeight={360} defaultWidth={432}>
+		<Link className={styles.templateItem} to={template.href}>
+			<ExaShape defaultHeight={360} defaultWidth={432} innerBorderWidth={2}>
 				<div className={styles.template}>
 					<ExaShape
 						defaultHeight={243}
@@ -80,7 +81,7 @@ const TemplateGridItem = (props: TemplateGridItemProps) => {
 					</div>
 				</div>
 			</ExaShape>
-		</div>
+		</Link>
 	)
 }
 

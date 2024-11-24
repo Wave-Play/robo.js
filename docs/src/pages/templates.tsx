@@ -4,6 +4,7 @@ import Layout from '@theme/Layout'
 import styles from './templates.module.css'
 import { TemplateFilters } from '../components/templates/TemplateFilters'
 import { TemplateGrid } from '../components/templates/TemplateGrid'
+import { TemplateNew } from '../components/templates/TemplateNew'
 
 export default function TemplatesPage() {
 	return (
@@ -22,6 +23,7 @@ export default function TemplatesPage() {
 						<TemplateFilters />
 						<TemplateGrid />
 					</div>
+					<TemplateNew />
 					<Footer />
 				</div>
 			</main>

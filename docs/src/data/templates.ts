@@ -272,11 +272,8 @@ export const Templates: Template[] = [
 		href: './web-apps/svelte-ts',
 		tags: ['Web App'],
 		title: 'Svelte (TS)'
-	}/*,
-	{
-		description: 'How to contribute to Robo.js',
-		href: 'https://github.com/Wave-Play/robo.js/blob/main/CONTRIBUTING.md',
-		tags: ['General'],
-		title: 'Contributing'
-	}*/
-]
+	}
+].map((template) => {
+	// Prefix all template hrefs with /templates
+	return { ...template, href: template.href.replace('./', '/templates/') }
+})

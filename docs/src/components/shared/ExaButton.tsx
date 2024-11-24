@@ -17,7 +17,7 @@ export const ExaButton = (props: ExaButtonProps) => {
 	const { autoWidth, borderColor = '#FFD600', children, defaultHeight, defaultWidth, disabled, href, style } = props
 
 	return (
-		<Link style={{ position: 'relative', ...style }} to={href}>
+		<Link style={{ position: 'relative', textDecoration: 'none', ...style }} to={href}>
 			<ExaShape
 				accentLineWidth={0}
 				autoWidth={autoWidth}
