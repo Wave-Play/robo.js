@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import styles from '../../pages/templates.module.css'
 import { Filters } from '@site/src/data/templates'
 import { useTemplateFilters } from '@site/src/hooks/useTemplateFilters'
@@ -8,6 +8,17 @@ import type { TemplateFilter } from '@site/src/data/templates'
 
 export const TemplateFilters = () => {
 	const { filter: selectedFilter, setFilter, setSearchQuery } = useTemplateFilters()
+
+	// Apply filter from URL if available
+	useEffect(() => {
+		const url = new URL(window.location.href)
+		const filter = url.searchParams.get('filter')
+		const found = Filters.find((f) => f.value === filter)
+
+		if (found) {
+			setFilter(found)
+		}
+	}, [])
 
 	const onClickFilter = (filter: TemplateFilter) => {
 		setFilter(filter)
