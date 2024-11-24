@@ -1,8 +1,10 @@
-<p align="center">✨ <strong>Generated with <a href="https://roboplay.dev/create-robo">create-robo</a> magic!</strong> ✨</p>
+<p align="center">✨ <strong>Generated with <a href="https://robojs.dev/create-robo">create-robo</a> magic!</strong> ✨</p>
 
 ---
 
 # Discord Bot - AI Chatbot (TS)
+
+An intelligent **Discord Bot** using **[Robo.js](https://robojs.dev)** and **[@robojs/ai](https://robojs.dev/plugins/ai)** for AI chatbot capabilities. This template is set up for creating a chatbot that can respond to messages with AI-generated text. All you need is an **OpenAI** API key in your `.env` file.
 
 Welcome to your fresh **[Robo.js](https://github.com/Wave-Play/robo)** project!
 
@@ -18,7 +20,7 @@ _Ready to embark on this adventure?_
 Create a project with this template, replacing `<project-name>` with your desired name:
 
 ```bash
-npx create-robo <project-name> --template discord-activities/ai-chatbot-ts
+npx create-robo <project-name> --template discord-bots/ai-chatbot-ts
 ```
 
 Then navigate into your project directory:
