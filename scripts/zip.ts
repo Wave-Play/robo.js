@@ -1,6 +1,9 @@
-import { execSync } from 'node:child_process'
-import fs from 'node:fs'
+import { exec } from 'node:child_process'
+import { existsSync, mkdirSync } from 'node:fs'
+import { promisify } from 'node:util'
 import { Env, logger } from 'robo.js'
+
+const execAsync = promisify(exec)
 
 // Prepare the environment (good for testing)
 Env.loadSync()
@@ -22,8 +25,16 @@ const env = new Env({
 		token: {
 			env: 'GH_TOKEN'
 		}
+	},
+	robo: {
+		logLevel: {
+			default: 'info',
+			env: 'ROBO_LOG_LEVEL'
+		}
 	}
 })
+
+const Exclude = `'*/.robo/*' '*/node_modules/*' '*/.env'`
 
 const Repo = {
 	Owner: env.get('github.repo').split('/')[0],
@@ -45,62 +56,68 @@ start()
 	})
 
 async function start() {
-	logger.event('Zipping template projects...')
+	logger({
+		level: env.get('robo.logLevel')
+	}).event('Zipping template projects...')
 	const startTime = Date.now()
-	const { commits } = JSON.parse(env.get('github.pushObject'))
-	const templates = await getAllTemplates()
 	const success: string[] = []
 	const failed: string[] = []
-	logger.info('Commits:', commits)
-	logger.info('Templates:', templates)
 
-	if (commits.length > 0) {
-		await Promise.all(
-			commits.map(async (commit) => {
-				const id = commit.id
-				const committedFiles = await getCommittedFiles(id)
+	// Get the commits from the push object
+	const { commits } = JSON.parse(env.get('github.pushObject'))
+	const templates = await getAllTemplates()
+	logger.debug('Commits:', commits)
+	logger.debug('Templates:', templates)
+	logger.info('Checking', commits.length, 'commits...')
 
-				if (committedFiles.length > 0) {
-					const templatesToZip: string[] = []
-					for (let i = 0; i < committedFiles.length; ++i) {
-						for (let j = 0; j < templates.length; ++j) {
-							if (committedFiles[i].filename.includes(templates[j])) {
-								templatesToZip.push(templates[j])
-							}
+	await Promise.all(
+		commits.map(async (commit) => {
+			// Get the committed files and determine which templates to zip
+			const id = commit.id
+			const committedFiles = await getCommittedFiles(id)
+
+			if (committedFiles.length < 1) {
+				logger.warn(`No committed files found for commit ${id}. Skipping...`)
+				return
+			}
+
+			// Filter the templates to zip
+			const templatesToZip: Set<string> = new Set(
+				committedFiles.flatMap((file) => templates.filter((template) => file.filename.includes(template)))
+			)
+			logger.debug(`Zipping ${templatesToZip.size} templates:`, templatesToZip)
+
+			await Promise.all(
+				[...templatesToZip].map(async (template) => {
+					try {
+						const templateName = template.split('/').pop()
+						const templatePath = `../${template}`
+						const outputDir = `../temp/zip/${template.replace(`/${templateName}`, '')}`
+						const outputZip = `${outputDir}/${templateName}.zip`
+
+						if (!existsSync(outputDir)) {
+							mkdirSync(outputDir, { recursive: true })
 						}
+
+						// we are using the zip package from ubuntu (easier to deal with)
+						logger.info(`Zipping ${templatePath} into ${outputZip}`)
+						await execAsync(`zip -r ${outputZip} ${templatePath} -x ${Exclude}`)
+						success.push(template)
+					} catch (error) {
+						logger.error(error)
+						failed.push(template)
 					}
+				})
+			)
+		})
+	)
 
-					if (templatesToZip.length > 0) {
-						templatesToZip.forEach((template) => {
-							try {
-								const templateName = template.split('/')[template.split('/').length - 1]
-								const templatePath = template.slice(10)
-
-								const outputDir = `../temp/zip/${templatePath.replace(`/${templateName}`, '')}`
-								const outputZip = `${outputDir}/${templateName}.zip`
-
-								if (!fs.existsSync(outputDir)) {
-									fs.mkdirSync(outputDir, { recursive: true })
-								}
-
-								// we are using the zip package from ubuntu (easier to deal with)
-								execSync(`zip -r ${outputZip} ../templates/${templatePath}`)
-
-								// sync sends the folder at once
-								// we are using b2 because it is fast and the CLI is just too good.
-								execSync(`b2 sync ../temp/zip b2://${env.get('b2.bucket')}/`)
-								success.push(template)
-							} catch (error) {
-								logger.error(error)
-								failed.push(template)
-							}
-						})
-					}
-				} else {
-					logger.error('Not committed file and Job still ran?')
-				}
-			})
-		)
+	// Upload the zipped templates to B2
+	// We're using b2 because it is fast and the CLI is just too good
+	if (success.length > 0) {
+		logger.info(`Uploading to B2...`)
+		await execAsync(`b2 sync ../temp/zip b2://${env.get('b2.bucket')}/`)
+		logger.info('Successfully uploaded to B2')
 	}
 
 	return {
@@ -113,6 +130,7 @@ async function start() {
 async function getAllTemplates() {
 	const paths = ['discord-activities', 'discord-bots', 'plugins', 'web-apps']
 	const templates: string[] = []
+
 	for (const path of paths) {
 		const url = `https://api.github.com/repos/${Repo.Owner}/${Repo.Name}/contents/templates/${path}`
 		const response = await fetch(url, {
@@ -120,14 +138,45 @@ async function getAllTemplates() {
 				Authorization: `token ${env.get('github.token')}`
 			}
 		})
-		const data = await response.json()
+		const data: Template[] = await response.json()
+		logger.debug('Template path data:', data)
 		templates.push(...data.filter((item) => item.type === 'dir').map((folder) => folder.path))
 	}
 
 	return templates
 }
 
-async function getCommittedFiles(id) {
+interface CommittedFile {
+	additions: number
+	blob_url: string
+	changes: number
+	contents_url: string
+	deletions: number
+	filename: string
+	patch?: string
+	raw_url: string
+	sha: string
+	status: string
+}
+
+interface Template {
+	_links: {
+		git: string
+		html: string
+		self: string
+	}
+	download_url: string | null
+	git_url: string
+	html_url: string
+	name: string
+	path: string
+	sha: string
+	size: number
+	type: string
+	url: string
+}
+
+async function getCommittedFiles(id: string) {
 	const url = `https://api.github.com/repos/${Repo.Owner}/${Repo.Name}/commits/${id}`
 	const response = await fetch(url, {
 		headers: {
@@ -136,8 +185,8 @@ async function getCommittedFiles(id) {
 	})
 
 	const json = await response.json()
-	const files = json.files
-	logger.info('Committed files:', files)
+	const files: CommittedFile[] = json.files
+	logger.debug('Committed files:', files)
 
 	return files.filter((file) => {
 		return file.filename.startsWith('templates')
