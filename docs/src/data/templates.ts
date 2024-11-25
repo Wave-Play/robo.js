@@ -74,14 +74,14 @@ export const Templates: Template[] = [
 		description: 'A basic JavaScript template using React.',
 		href: './discord-activities/react-js',
 		tags: ['Discord Activity', 'JavaScript'],
-		title: 'React'
+		title: 'Starter Activity'
 	},
 	{
 		author: 'WavePlay',
 		description: 'A basic TypeScript template using React.',
 		href: './discord-activities/react-ts',
 		tags: ['Discord Activity', 'TypeScript'],
-		title: 'React'
+		title: 'Starter Activity'
 	},
 	{
 		author: 'Arnav K',
@@ -151,154 +151,154 @@ export const Templates: Template[] = [
 		description: 'A basic JavaScript bot using Robo.js.',
 		href: './discord-bots/starter-js',
 		tags: ['Discord Bot', 'JavaScript'],
-		title: 'Starter (JS)'
+		title: 'Starter Bot'
 	},
 	{
 		author: 'WavePlay',
 		description: 'A basic TypeScript bot using Robo.js.',
 		href: './discord-bots/starter-ts',
 		tags: ['Discord Bot', 'TypeScript'],
-		title: 'Starter (TS)'
+		title: 'Starter Bot'
 	},
 	{
 		author: 'MrJAwesome',
 		description: 'An all-in-one toolkit for developers by MrJAwesome.',
 		href: './discord-bots/mrjawesome-dev-toolkit-js',
 		tags: ['Discord Bot', 'MrJAwesome', 'JavaScript'],
-		title: 'Dev Toolkit (JS)'
+		title: 'Dev Toolkit'
 	},
 	{
 		author: 'MrJAwesome',
 		description: 'An all-in-one toolkit for developers by MrJAwesome.',
 		href: './discord-bots/mrjawesome-dev-toolkit-ts',
 		tags: ['Discord Bot', 'MrJAwesome', 'TypeScript'],
-		title: 'Dev Toolkit (TS)'
+		title: 'Dev Toolkit'
 	},
 	{
 		author: 'MrJAwesome',
 		description: 'Quickstart for creating slash commands by MrJAwesome.',
 		href: './discord-bots/mrjawesome-slash-commands-js',
 		tags: ['Discord Bot', 'MrJAwesome', 'JavaScript'],
-		title: 'Slash Command Package (JS)'
+		title: 'Slash Command Package'
 	},
 	{
 		author: 'MrJAwesome',
 		description: 'Quickstart for creating slash commands by MrJAwesome.',
 		href: './discord-bots/mrjawesome-slash-commands-ts',
 		tags: ['Discord Bot', 'MrJAwesome', 'TypeScript'],
-		title: 'Slash Command Package (TS)'
+		title: 'Slash Command Package'
 	},
 	{
 		author: 'WavePlay',
 		description: 'A bot using MongoDB and TypeScript.',
 		href: './discord-bots/mongodb-ts',
 		tags: ['Discord Bot', 'TypeScript'],
-		title: 'MongoDB (TS)'
+		title: 'MongoDB'
 	},
 	{
 		author: 'waru',
 		description: 'A bot using PostgreSQL and TypeScript.',
 		href: './discord-bots/postgres-ts',
 		tags: ['Discord Bot', 'TypeScript'],
-		title: 'PostgreSQL (TS)'
+		title: 'PostgreSQL'
 	},
 	{
 		author: 'waru',
 		description: 'A bot using Prisma ORM and TypeScript.',
 		href: './discord-bots/prisma-ts',
 		tags: ['Discord Bot', 'TypeScript'],
-		title: 'Prisma (TS)'
+		title: 'Prisma'
 	},
 	{
 		author: 'WavePlay',
 		description: 'A chatbot using @robojs/ai and TypeScript.',
 		href: './discord-bots/ai-chatbot-ts',
 		tags: ['Discord Bot', 'TypeScript'],
-		title: 'AI Chatbot (TS)'
+		title: 'AI Chatbot'
 	},
 	{
 		author: 'WavePlay',
 		description: 'Track bot usage over time. A TypeScript bot.',
 		href: './discord-bots/analytics-ts',
 		tags: ['Discord Bot', 'TypeScript'],
-		title: 'Analytics (TS)'
+		title: 'Analytics'
 	},
 	{
 		author: 'WavePlay',
 		description: "Bake 'n take orders with this Discord bot!",
 		href: './discord-bots/bake-n-take-js',
 		tags: ['Discord Bot', 'JavaScript'],
-		title: "Bake n' Take (JS)"
+		title: "Bake n' Take"
 	},
 	{
 		author: 'WavePlay',
 		description: "Bake 'n take orders with this Discord bot!",
 		href: './discord-bots/bake-n-take-ts',
 		tags: ['Discord Bot', 'TypeScript'],
-		title: "Bake n' Take (TS)"
+		title: "Bake n' Take"
 	},
 	{
 		author: 'WavePlay',
 		description: 'Starter template containerized with Docker.',
 		href: './discord-bots/docker-ts',
 		tags: ['Discord Bot', 'TypeScript'],
-		title: 'Docker (TS)'
+		title: 'Docker'
 	},
 	{
 		author: 'Arnav K',
 		description: 'An economy bot using Robo.js.',
 		href: './discord-bots/economy-ts',
 		tags: ['Discord Bot', 'TypeScript'],
-		title: 'Economy (TS)'
+		title: 'Economy'
 	},
 	{
 		author: 'WavePlay',
 		description: 'A user-installable AI companion.',
 		href: './discord-bots/purrth-vader-ts',
 		tags: ['Discord Bot', 'TypeScript'],
-		title: 'Purrth Vader (TS)'
+		title: 'Purrth Vader'
 	},
 	{
 		author: 'Arnav K',
 		description: 'A tag bot using TagScript and TypeScript.',
 		href: './discord-bots/tagbot',
 		tags: ['Discord Bot', 'TypeScript'],
-		title: 'TagBot (TS)'
+		title: 'TagBot'
 	},
 	{
 		author: 'WavePlay',
 		description: 'A basic JavaScript plugin for Robo.js.',
 		href: './plugins/starter-js',
 		tags: ['Plugin', 'JavaScript'],
-		title: 'Starter (JS)'
+		title: 'Starter Plugin'
 	},
 	{
 		author: 'WavePlay',
 		description: 'A basic JavaScript web app using Robo.js.',
 		href: './web-apps/react-js',
 		tags: ['Web App', 'JavaScript'],
-		title: 'React (JS)'
+		title: 'React'
 	},
 	{
 		author: 'WavePlay',
 		description: 'A basic TypeScript web app using Robo.js.',
 		href: './web-apps/react-ts',
 		tags: ['Web App', 'TypeScript'],
-		title: 'React (TS)'
+		title: 'React'
 	},
 	{
 		author: 'Matej Bošnjak',
 		description: 'Svelte web app using JavaScript.',
 		href: './web-apps/svelte-js',
 		tags: ['Web App', 'JavaScript'],
-		title: 'Svelte (JS)'
+		title: 'Svelte'
 	},
 	{
 		author: 'Matej Bošnjak',
 		description: 'Svelte web app using TypeScript.',
 		href: './web-apps/svelte-ts',
 		tags: ['Web App', 'TypeScript'],
-		title: 'Svelte (TS)'
+		title: 'Svelte'
 	}
 ].map((template) => {
 	// Prefix all template hrefs with /templates
