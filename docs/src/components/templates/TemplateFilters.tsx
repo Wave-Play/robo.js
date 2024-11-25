@@ -4,6 +4,7 @@ import { Filters } from '@site/src/data/templates'
 import { useTemplateFilters } from '@site/src/hooks/useTemplateFilters'
 import { mdiMagnify } from '@mdi/js'
 import Icon from '@mdi/react'
+import { TemplateFiltersItem } from './TemplateFiltersItem'
 import type { TemplateFilter } from '@site/src/data/templates'
 
 export const TemplateFilters = () => {
@@ -38,7 +39,7 @@ export const TemplateFilters = () => {
 			</div>
 			<div className={styles.filterOptions}>
 				{Filters.map((filter) => (
-					<TemplateFilterItem
+					<TemplateFiltersItem
 						key={filter.value}
 						filter={filter}
 						onClick={onClickFilter}
@@ -47,28 +48,5 @@ export const TemplateFilters = () => {
 				))}
 			</div>
 		</div>
-	)
-}
-
-interface TemplateFilterItemProps {
-	filter: TemplateFilter
-	onClick?: (filter: TemplateFilter) => void
-	selected?: boolean
-}
-
-const TemplateFilterItem = (props: TemplateFilterItemProps) => {
-	const { filter, onClick, selected } = props
-
-	return (
-		<button
-			key={filter.value}
-			className={styles.filterOption + (selected ? ' ' + styles.filterOptionSelected : '')}
-			onClick={() => onClick?.(filter)}
-		>
-			<Icon path={filter.icon} size={1} color={selected ? '#00BFA5' : 'rgb(142, 141, 145)'} />
-			<span className={styles.filterOptionLabel + (selected ? ' ' + styles.filterOptionLabelSelected : '')}>
-				{filter.name}
-			</span>
-		</button>
 	)
 }

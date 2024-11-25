@@ -133,7 +133,8 @@ export const ExaShape = (props: ExaShapeProps) => {
 					d={outerD}
 					fill={outerColor}
 					style={{
-						boxShadow: '0 3px 6px 0 #0003'
+						boxShadow: '0 3px 6px 0 #0003',
+						transition: 'fill 0.4s ease-in-out'
 					}}
 				/>
 				<path d={innerD} fill={innerColor} />
