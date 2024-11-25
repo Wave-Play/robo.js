@@ -14,6 +14,7 @@ import {
 	mdiShapePlus,
 	mdiWeb
 } from '@mdi/js'
+import { ExaGrow } from '../shared/ExaGrow'
 
 interface TemplateGridItemProps {
 	template: Template
@@ -23,30 +24,32 @@ export const TemplateGridItem = (props: TemplateGridItemProps) => {
 	const { template } = props
 
 	return (
-		<Link className={styles.templateItem} to={template.href}>
-			<ExaShape defaultHeight={360} defaultWidth={432} innerBorderWidth={2}>
-				<div className={styles.template}>
-					<ExaShape
-						defaultHeight={243}
-						highlight={false}
-						innerColor="rgba(255, 255, 255, .04)"
-						outerColor="transparent"
-					>
-						<div className={styles.templateImage} />
-					</ExaShape>
-					<h3 className={styles.templateTitle}>{template.title}</h3>
-					<p className={styles.templateDescription}>{template.description}</p>
-					<div className={styles.templateFooter}>
-						{template.tags.map((tag) => getTagIcon(tag))}
-						{template.author && (
-							<span className={styles.templateAuthor}>
-								By <strong>{template.author}</strong>
-							</span>
-						)}
+		<ExaGrow scale={1.05}>
+			<Link className={styles.templateItem} to={template.href}>
+				<ExaShape defaultHeight={360} defaultWidth={432} innerBorderWidth={2}>
+					<div className={styles.template}>
+						<ExaShape
+							defaultHeight={243}
+							highlight={false}
+							innerColor="rgba(255, 255, 255, .04)"
+							outerColor="transparent"
+						>
+							<div className={styles.templateImage} />
+						</ExaShape>
+						<h3 className={styles.templateTitle}>{template.title}</h3>
+						<p className={styles.templateDescription}>{template.description}</p>
+						<div className={styles.templateFooter}>
+							{template.tags.map((tag) => getTagIcon(tag))}
+							{template.author && (
+								<span className={styles.templateAuthor}>
+									By <strong>{template.author}</strong>
+								</span>
+							)}
+						</div>
 					</div>
-				</div>
-			</ExaShape>
-		</Link>
+				</ExaShape>
+			</Link>
+		</ExaGrow>
 	)
 }
 
