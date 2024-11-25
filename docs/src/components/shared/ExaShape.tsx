@@ -1,9 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, cloneElement } from 'react'
 
 interface ExaShapeProps {
 	accentColor?: string
 	accentLineWidth?: number
 	autoWidth?: boolean
+	blur?: boolean
 	children?: React.ReactElement
 	defaultHeight?: number
 	defaultWidth?: number
@@ -12,6 +13,7 @@ interface ExaShapeProps {
 	innerColor?: string
 	outerColor?: string
 	slope?: number
+	style?: React.CSSProperties
 }
 
 export const ExaShape = (props: ExaShapeProps) => {
@@ -19,6 +21,7 @@ export const ExaShape = (props: ExaShapeProps) => {
 		accentColor = '#489178',
 		accentLineWidth = 0,
 		autoWidth = true,
+		blur = true,
 		children,
 		defaultHeight = 48,
 		defaultWidth = 100,
@@ -26,14 +29,16 @@ export const ExaShape = (props: ExaShapeProps) => {
 		innerBorderWidth = 1,
 		innerColor = 'var(--card-background-color)',
 		outerColor = 'var(--ifm-color-emphasis-200)',
-		slope = 24
+		slope = 24,
+		style
 	} = props
+
 	const [dimensions, setDimensions] = useState({
 		width: defaultWidth,
 		height: defaultHeight
 	})
 	const { width, height } = dimensions
-	const containerRef = useRef(null)
+	const containerRef = useRef<HTMLDivElement>(null)
 
 	// Listen for hover events on containerRef
 	const [isHovering, setHovering] = useState(false)
@@ -41,32 +46,24 @@ export const ExaShape = (props: ExaShapeProps) => {
 	useEffect(() => {
 		const node = containerRef.current
 		if (node) {
-			node.addEventListener('mouseenter', () => setHovering(true))
-			node.addEventListener('mouseleave', () => setHovering(false))
+			const handleMouseEnter = () => setHovering(true)
+			const handleMouseLeave = () => setHovering(false)
+			node.addEventListener('mouseenter', handleMouseEnter)
+			node.addEventListener('mouseleave', handleMouseLeave)
 			return () => {
-				node.removeEventListener('mouseenter', () => setHovering(true))
-				node.removeEventListener('mouseleave', () => setHovering(false))
+				node.removeEventListener('mouseenter', handleMouseEnter)
+				node.removeEventListener('mouseleave', handleMouseLeave)
 			}
 		}
-	}, [containerRef.current])
+	}, [containerRef])
 
 	// Highlight the shape when hovering
-	if (isHovering && highlight) {
-		outerColor = 'var(--ifm-color-primary)'
-	}
+	const currentOuterColor = isHovering && highlight ? 'var(--ifm-color-primary)' : outerColor
 
-	const outerD = `
-    M 0,${slope}
-    L ${slope},0
-    L ${width - slope},0
-    L ${width},0
-    L ${width},${height - slope}
-    L ${width - slope},${height}
-    L ${slope},${height}
-    L 0,${height}
-    Z
-  `
+	const horizontalTopEdgeD = `M ${slope + accentLineWidth / 4},0 L ${width},0`
+	const slopedTopEdgeD = `M 0,${slope + accentLineWidth / 2} L ${slope + accentLineWidth / 2},0`
 
+	// Use a single path for both border and inner fill
 	const innerD = `
     M ${innerBorderWidth},${slope + innerBorderWidth}
     L ${slope + innerBorderWidth},${innerBorderWidth}
@@ -81,27 +78,11 @@ export const ExaShape = (props: ExaShapeProps) => {
 
 	useEffect(() => {
 		const observer = new ResizeObserver((entries) => {
-			for (let entry of entries) {
-				// Get full size including padding and border
+			for (const entry of entries) {
 				const rect = entry.target.getBoundingClientRect()
 				const width = rect.width
 				const height = rect.height
-
-				// Get computed styles for padding
-				const style = window.getComputedStyle(entry.target)
-				const paddingLeft = parseFloat(style.paddingLeft)
-				const paddingRight = parseFloat(style.paddingRight)
-				const paddingTop = parseFloat(style.paddingTop)
-				const paddingBottom = parseFloat(style.paddingBottom)
-
-				// Adjust dimensions to exclude padding if needed
-				const adjustedWidth = width
-				const adjustedHeight = height
-
-				setDimensions({
-					width: adjustedWidth,
-					height: adjustedHeight
-				})
+				setDimensions({ width, height })
 			}
 		})
 		if (containerRef.current) {
@@ -125,37 +106,29 @@ export const ExaShape = (props: ExaShapeProps) => {
 					position: 'absolute',
 					top: 0,
 					bottom: 0,
-					zIndex: -1
+					zIndex: -1,
+					backdropFilter: blur ? 'blur(8px)' : undefined,
+					WebkitBackdropFilter: blur ? 'blur(8px)' : undefined
 				}}
 				xmlns="http://www.w3.org/2000/svg"
 			>
 				<path
-					d={outerD}
-					fill={outerColor}
-					style={{
-						boxShadow: '0 3px 6px 0 #0003',
-						transition: 'fill 0.4s ease-in-out'
-					}}
+					d={innerD}
+					fill={innerColor}
+					fillOpacity={0.54}
+					stroke={currentOuterColor}
+					strokeWidth={innerBorderWidth}
+					strokeOpacity={0.69}
 				/>
-				<path d={innerD} fill={innerColor} />
-				<path
-					d={`M ${slope + accentLineWidth / 4},0 L ${width},0`}
-					stroke={accentColor}
-					strokeWidth={accentLineWidth}
-					style={{
-						boxShadow: '0 3px 6px 0 #0003'
-					}}
-					fill="none"
-				/>
-				<path
-					d={`M 0,${slope + accentLineWidth / 2} L ${slope + accentLineWidth / 2},0`}
-					stroke={accentColor}
-					strokeWidth={accentLineWidth / 2}
-					fill="none"
-				/>
+				{accentLineWidth > 0 && (
+					<>
+						<path d={horizontalTopEdgeD} stroke={accentColor} strokeWidth={accentLineWidth} fill="none" />
+						<path d={slopedTopEdgeD} stroke={accentColor} strokeWidth={accentLineWidth / 2} fill="none" />
+					</>
+				)}
 			</svg>
 			{children &&
-				React.cloneElement(children, {
+				cloneElement(children, {
 					ref: containerRef
 				})}
 		</>
