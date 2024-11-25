@@ -21,8 +21,9 @@ export const TemplateGrid = () => {
 			templates = templates.filter((template) => {
 				const title = template.title.toLowerCase().trim()
 				const description = template.description.toLowerCase().trim()
+				const author = template.author?.toLowerCase().trim()
 
-				return title.includes(query) || description.includes(query)
+				return title.includes(query) || description.includes(query) || author?.includes(query)
 			})
 		}
 
