@@ -30,6 +30,7 @@ export const TemplateGridItem = (props: TemplateGridItemProps) => {
 					<div className={styles.template}>
 						<ExaShape
 							blur={false}
+							clip={true}
 							defaultHeight={243}
 							highlight={false}
 							innerBorderWidth={2}

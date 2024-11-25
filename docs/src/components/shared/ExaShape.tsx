@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, cloneElement } from 'react'
+import React, { useState, useRef, useEffect, cloneElement, useId } from 'react'
 
 interface ExaShapeProps {
 	accentColor?: string
@@ -6,6 +6,7 @@ interface ExaShapeProps {
 	autoWidth?: boolean
 	blur?: boolean
 	children?: React.ReactElement
+	clip?: boolean
 	defaultHeight?: number
 	defaultWidth?: number
 	highlight?: boolean
@@ -23,6 +24,7 @@ export const ExaShape = (props: ExaShapeProps) => {
 		autoWidth = true,
 		blur = true,
 		children,
+		clip = false,
 		defaultHeight = 48,
 		defaultWidth = 100,
 		highlight = true,
@@ -32,6 +34,7 @@ export const ExaShape = (props: ExaShapeProps) => {
 		slope = 24,
 		style
 	} = props
+	const clipPathId = useId()
 
 	const [dimensions, setDimensions] = useState({
 		width: defaultWidth,
@@ -112,6 +115,13 @@ export const ExaShape = (props: ExaShapeProps) => {
 				}}
 				xmlns="http://www.w3.org/2000/svg"
 			>
+				{clip && (
+					<defs>
+						<clipPath id={clipPathId}>
+							<path d={innerD} />
+						</clipPath>
+					</defs>
+				)}
 				<path
 					d={innerD}
 					fill={innerColor}
@@ -127,10 +137,25 @@ export const ExaShape = (props: ExaShapeProps) => {
 					</>
 				)}
 			</svg>
-			{children &&
+			{children && clip ? (
+				<div
+					ref={containerRef}
+					style={{
+						width: `100%`,
+						height: `100%`,
+						clipPath: `url(#${clipPathId})`
+					}}
+				>
+					{cloneElement(children, {
+						ref: containerRef
+					})}
+				</div>
+			) : (
+				children &&
 				cloneElement(children, {
 					ref: containerRef
-				})}
+				})
+			)}
 		</>
 	)
 }
