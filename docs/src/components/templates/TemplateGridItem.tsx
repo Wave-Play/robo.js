@@ -31,13 +31,16 @@ export const TemplateGridItem = (props: TemplateGridItemProps) => {
 						<ExaShape
 							blur={false}
 							clip={true}
-							defaultHeight={243}
+							defaultHeight={249.75}
 							highlight={false}
 							innerBorderWidth={2}
 							innerColor={'var(--template-item-background)'}
 							outerColor={'transparent'}
 						>
-							<div className={styles.templateImage} />
+							<>
+								<img className={styles.templateImage} src={template.images[0]} alt={template.title} />
+								<div className={styles.templateImageStub} />
+							</>
 						</ExaShape>
 						<h3 className={styles.templateTitle}>{template.title}</h3>
 						<p className={styles.templateDescription}>{template.description}</p>
