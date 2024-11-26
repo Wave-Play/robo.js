@@ -14,7 +14,7 @@ import { Config, Plugin } from 'robo.js'
 
 const command = new Command('upgrade')
 	.description('Upgrades your Robo to the latest version')
-	.option('-y --auto-accept', 'installs updates without showing changelogs')
+	.option('-y --yes', 'installs updates without showing changelogs')
 	.option('-f --force', 'forcefully install')
 	.option('-ns --no-self-check', 'do not check for updates to Sage CLI')
 	.option('-s --silent', 'do not print anything')
@@ -57,7 +57,6 @@ async function upgradeAction(options: UpgradeOptions) {
 	logger.debug(`Package JSON:`, packageJson)
 	const update = await checkUpdates(packageJson, config, true)
 	logger.debug(`Update payload:`, update)
-
 
 	await updateRobo(plugins, config, options.autoAccept)
 }
@@ -230,7 +229,7 @@ async function updateRobo(plugins: Plugin[], config: Config, autoAccept?: boolea
 	const hasUpdate: (string | PluginToUpdate)[] = []
 
 	for (const plugin of plugins) {
-		const plugingName = IS_WINDOWS ? plugin[0].replaceAll('\\', '/') : plugin[0];
+		const plugingName = IS_WINDOWS ? plugin[0].replaceAll('\\', '/') : plugin[0]
 		const packagePath = await findPackagePath(plugingName, process.cwd())
 		logger.debug('Checking updates for', color.bold(plugingName), 'at path', color.bold(packagePath))
 
@@ -242,7 +241,12 @@ async function updateRobo(plugins: Plugin[], config: Config, autoAccept?: boolea
 
 		const pluginOnRegistry = await fetch(`https://registry.npmjs.org/${packageJson.name}/latest`)
 		if (!pluginOnRegistry.ok) {
-			logger.info(composeColors(color.yellowBright, color.bold)(`Skipping ${plugingName}, not found on registry, probably local plugin!`))
+			logger.info(
+				composeColors(
+					color.yellowBright,
+					color.bold
+				)(`Skipping ${plugingName}, not found on registry, probably local plugin!`)
+			)
 			continue
 		}
 
@@ -252,9 +256,9 @@ async function updateRobo(plugins: Plugin[], config: Config, autoAccept?: boolea
 			continue
 		}
 
-		if(autoAccept && update.hasUpdate){
-			hasUpdate.push({ data: { name: plugingName, extra: {...update, name: '' }} })
-			continue;
+		if (autoAccept && update.hasUpdate) {
+			hasUpdate.push({ data: { name: plugingName, extra: { ...update, name: '' } } })
+			continue
 		}
 
 		// Show changelog if available
@@ -289,10 +293,10 @@ async function updateRobo(plugins: Plugin[], config: Config, autoAccept?: boolea
 		logger.log('')
 	}
 
-	if(autoAccept){
+	if (autoAccept) {
 		await upgradeSelectedPlugins(hasUpdate as PluginToUpdate[])
 		logger.info(composeColors(color.green, color.bold)(`Your Robo is up to date!`))
-		return;
+		return
 	}
 
 	if (u_options.length > 0) {
@@ -430,13 +434,13 @@ async function upgradeSelectedPlugins(selectedPlugins: Array<PluginToUpdate>, au
 	await exec(`${packageManager} ${command} ${pluginStringFromArray}`)
 
 	// Check what needs to be changed
-	
+
 	for (const plugin of selectedPlugins) {
 		const { extra, name } = plugin.data
 		const data = await check(name, extra.latestVersion)
 		logger.debug(`Check data:`, data)
 
-		if (data.breaking.length > 0 || data.suggestions.length > 0 && !autoAccept) {
+		if (data.breaking.length > 0 || (data.suggestions.length > 0 && !autoAccept)) {
 			// Let user choose which changes to apply
 			const changes = await checkbox({
 				message: 'Which changes would you like to apply?',
