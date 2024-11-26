@@ -16,7 +16,7 @@ const _configPaths: Set<string> = new Set()
  * May return null if config has yet to load. Use {@link loadConfig} to load it first.
  */
 export function getConfig(): Config | null {
-	return _config
+	return Globals.getConfig() ?? _config
 }
 
 /**
