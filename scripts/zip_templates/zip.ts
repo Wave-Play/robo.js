@@ -3,49 +3,12 @@ import { existsSync } from 'node:fs'
 import { mkdir } from 'node:fs/promises'
 import path from 'node:path'
 import { promisify } from 'node:util'
-import { color, Env, logger } from 'robo.js'
+import { color, logger } from 'robo.js'
+import { CommitData, env, filterCommitedTemplates, getAllTemplates, RootDir } from './utils'
 
 const execAsync = promisify(exec)
 
-// Prepare the environment (good for testing)
-Env.loadSync()
-const env = new Env({
-	b2: {
-		bucket: {
-			default: 'robo-templates',
-			env: 'B2_BUCKET'
-		}
-	},
-	forceTemplates: {
-		default: 'false',
-		env: 'FORCE_TEMPLATES'
-	},
-	github: {
-		pushObject: {
-			env: 'GH_PUSH'
-		},
-		repo: {
-			default: 'Wave-Play/robo.js',
-			env: 'REPO_DATA'
-		},
-		token: {
-			env: 'GH_TOKEN'
-		}
-	},
-	robo: {
-		logLevel: {
-			default: 'info',
-			env: 'ROBO_LOG_LEVEL'
-		}
-	}
-})
-
 const Exclude = `'.robo/**' 'node_modules/**' '.DS_Store' '.env'`
-const Repo = {
-	Owner: env.get('github.repo').split('/')[0],
-	Name: env.get('github.repo').split('/')[1]
-}
-const RootDir = path.join(process.cwd(), '..')
 
 start()
 	.then((result) => {
@@ -84,20 +47,15 @@ async function start() {
 	await Promise.all(
 		commits.map(async (commit) => {
 			// Get the committed files and determine which templates to zip
-			const id = commit.id
-			const committedFiles = await getCommittedFiles(id)
+			const commitId = commit.id
 
-			if (committedFiles.length < 1) {
-				logger.warn(`No committed files found for commit ${id}. Skipping...`)
+			// Filter the templates to zip
+			const templatesToZip = await filterCommitedTemplates(commitId, templates)
+
+			if (!templatesToZip) {
 				return
 			}
 
-			// Filter the templates to zip
-			const templatesToZip: Set<string> = new Set(
-				env.get('forceTemplates') === 'true'
-					? templates
-					: committedFiles.flatMap((file) => templates.filter((template) => file.filename.includes(template)))
-			)
 			logger.debug(`Zipping ${templatesToZip.size} templates:`, templatesToZip)
 
 			await Promise.all(
@@ -153,91 +111,4 @@ async function start() {
 		success: success,
 		time: Date.now() - startTime
 	}
-}
-
-async function getAllTemplates() {
-	const paths = ['discord-activities', 'discord-bots', 'plugins', 'web-apps']
-	const templates: string[] = []
-
-	for (const path of paths) {
-		const url = `https://api.github.com/repos/${Repo.Owner}/${Repo.Name}/contents/templates/${path}`
-		const response = await fetch(url, {
-			headers: {
-				Authorization: `token ${env.get('github.token')}`
-			}
-		})
-		const data: Template[] = await response.json()
-		logger.debug('Template path data:', data)
-		templates.push(...data.filter((item) => item.type === 'dir').map((folder) => folder.path))
-	}
-
-	return templates
-}
-
-interface CommitData {
-	commits: Array<{
-		author: {
-			email: string
-			name: string
-			username: string
-		}
-		committer: {
-			email: string
-			name: string
-			username: string
-		}
-		distinct: boolean
-		id: string
-		message: string
-		timestamp: string
-		tree_id: string
-		url: string
-	}>
-}
-
-interface CommittedFile {
-	additions: number
-	blob_url: string
-	changes: number
-	contents_url: string
-	deletions: number
-	filename: string
-	patch?: string
-	raw_url: string
-	sha: string
-	status: string
-}
-
-interface Template {
-	_links: {
-		git: string
-		html: string
-		self: string
-	}
-	download_url: string | null
-	git_url: string
-	html_url: string
-	name: string
-	path: string
-	sha: string
-	size: number
-	type: string
-	url: string
-}
-
-async function getCommittedFiles(id: string) {
-	const url = `https://api.github.com/repos/${Repo.Owner}/${Repo.Name}/commits/${id}`
-	const response = await fetch(url, {
-		headers: {
-			Authorization: `token ${env.get('github.token')}`
-		}
-	})
-
-	const json = await response.json()
-	const files: CommittedFile[] = json.files
-	logger.debug('Committed files:', files)
-
-	return files.filter((file) => {
-		return file.filename.startsWith('templates')
-	})
 }

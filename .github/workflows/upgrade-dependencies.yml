@@ -1,0 +1,38 @@
+name: 'upgrade-dependencies'
+on:
+  push:
+    paths:
+      - 'templates/**'
+    branches:
+      - main
+
+jobs:
+  Templates:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 8.6.11
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          cache: 'pnpm'
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        working-directory: scripts
+        run: pnpm install
+
+      - name: Dependencies upgrade
+        working-directory: scripts
+        env:
+          GH_PUSH: ${{ toJson(github.event) }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          REPO_DATA: ${{ github.repository }}
+          ROBO_LOG_LEVEL: ${{ secrets.ROBO_LOG_LEVEL }}
+        run: pnpm run upgrade
