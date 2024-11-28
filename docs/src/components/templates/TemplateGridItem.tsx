@@ -2,7 +2,7 @@ import React from 'react'
 import { ExaShape } from '../shared/ExaShape'
 import Link from '@docusaurus/Link'
 import styles from '../../pages/templates.module.css'
-import { Template } from '@site/src/data/templates'
+import { getPreview, Template } from '@site/src/data/templates'
 import Icon from '@mdi/react'
 import {
 	mdiHelp,
@@ -38,7 +38,7 @@ export const TemplateGridItem = (props: TemplateGridItemProps) => {
 							outerColor={'transparent'}
 						>
 							<>
-								<img className={styles.templateImage} src={template.images[0]} alt={template.title} />
+								<img className={styles.templateImage} src={getPreview(template)} alt={template.title} />
 								<div className={styles.templateImageStub} />
 							</>
 						</ExaShape>
@@ -47,8 +47,13 @@ export const TemplateGridItem = (props: TemplateGridItemProps) => {
 						<div className={styles.templateFooter}>
 							{template.tags.map((tag) => getTagIcon(tag))}
 							{template.author && (
-								<span className={styles.templateAuthor}>
-									By <strong>{template.author}</strong>
+								<span className={styles.templateAuthorContainer}>
+									<span className={styles.templateAuthorBy}>By </span>
+									<strong
+										className={template.author === 'WavePlay' ? styles.templateAuthorWavePlay : styles.templateAuthor}
+									>
+										{template.author}
+									</strong>
 								</span>
 							)}
 						</div>

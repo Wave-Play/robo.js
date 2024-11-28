@@ -1,12 +1,12 @@
 :root {
 	--filter-option-label: rgba(0, 0, 0, 0.54);
-	--template-item-background: rgba(0, 0, 0, .06);
+	--template-item-background: rgba(0, 0, 0, 0.06);
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
 [data-theme='dark'] {
 	--filter-option-label: rgb(142, 141, 145);
-	--template-item-background: rgba(255, 255, 255, .04);
+	--template-item-background: rgba(255, 255, 255, 0.04);
 }
 
 .root {
@@ -175,7 +175,6 @@ body {
 	position: absolute;
 	left: 3px;
 	top: 3px;
-	background-color: white;
 	background-size: cover;
 	background-position: center;
 }
@@ -213,11 +212,25 @@ body {
 	margin-bottom: 16px;
 }
 
-.templateAuthor {
+.templateAuthorContainer {
 	flex: 1;
 	font-size: 14px;
-	font-weight: 400;
+}
+
+.templateAuthorBy {
 	opacity: 0.6;
+}
+
+.templateAuthor {
+	font-weight: 700;
+	opacity: 0.8;
+}
+
+.templateAuthorWavePlay {
+	background-image: linear-gradient(to right, #2196f3, #ff4081);
+	background-clip: text;
+	color: transparent;
+	font-weight: 700;
 }
 
 .templateTag {
