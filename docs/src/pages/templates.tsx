@@ -17,7 +17,7 @@ export default function TemplatesPage() {
 						Robo.js
 					</h1>
 					<p className={styles.subtitle}>
-						Start with pre-built examples from <strong>WavePlay</strong> and our community.
+						Start with pre-built examples from <strong className='waveplay'>WavePlay</strong> and our community.
 					</p>
 					<div className={styles.row}>
 						<TemplateFilters />

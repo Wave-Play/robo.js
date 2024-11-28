@@ -19,7 +19,7 @@
 	--robo-border-color: rgb(235, 235, 235);
 	--card-background-color: white;
 	--code-background-color: white;
-	--admonition-plugin-background: #F3E5F5;
+	--admonition-plugin-background: #f3e5f5;
 	--docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
 	--hover-background-color: rgba(0, 0, 0, 0.06);
 	--terminal-background-color: white;
@@ -85,13 +85,20 @@ h3 {
 		no-repeat;
 }
 
+.waveplay {
+	background-image: linear-gradient(to right, #2196f3, #ff4081);
+	background-clip: text;
+	color: transparent;
+	font-weight: 700;
+}
+
 .theme-admonition {
 	border-radius: 0px;
 }
 
 .theme-admonition-plugin {
 	background-color: var(--admonition-plugin-background);
-	border-left-color: #9C27B0;
+	border-left-color: #9c27b0;
 }
 
 article .clean-btn {
