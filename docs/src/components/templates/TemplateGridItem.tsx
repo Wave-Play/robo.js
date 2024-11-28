@@ -24,7 +24,7 @@ export const TemplateGridItem = (props: TemplateGridItemProps) => {
 	const { template } = props
 
 	return (
-		<ExaGrow scale={1.05} style={{ maxWidth: 'min(calc(100vw - 32px), 444px)', width: '100%' }}>
+		<ExaGrow scale={1.05} style={{ display: 'flex', maxWidth: 'min(calc(100vw - 32px), 444px)', width: '100%' }}>
 			<Link className={styles.templateItem} to={template.href}>
 				<ExaShape defaultHeight={360} defaultWidth={432} innerBorderWidth={2}>
 					<div className={styles.template}>
