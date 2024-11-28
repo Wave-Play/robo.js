@@ -59,22 +59,6 @@ export const Filters: TemplateFilter[] = [
 export const Templates: Template[] = [
 	{
 		author: 'WavePlay',
-		description: 'A basic JavaScript template without any UI libraries.',
-		href: './discord-activities/vanilla-js',
-		images: [],
-		tags: ['Discord Activity', 'JavaScript'],
-		title: 'Vanilla Starter'
-	},
-	{
-		author: 'WavePlay',
-		description: 'A basic TypeScript template without any UI libraries.',
-		href: './discord-activities/vanilla-ts',
-		images: [],
-		tags: ['Discord Activity', 'TypeScript'],
-		title: 'Vanilla Starter'
-	},
-	{
-		author: 'WavePlay',
 		description: 'A basic JavaScript template using React.',
 		href: './discord-activities/react-js',
 		images: [],
@@ -90,20 +74,22 @@ export const Templates: Template[] = [
 		title: 'Discord Activity Starter'
 	},
 	{
-		author: 'Arnav K',
-		description: 'A 2D game made with KAPLAY and TypeScript.',
-		href: './discord-activities/2d-game',
+		author: 'WavePlay',
+		decorator: true,
+		description: 'A basic JavaScript bot using Robo.js.',
+		href: './discord-bots/starter-js',
 		images: [],
-		tags: ['Discord Activity', 'TypeScript'],
-		title: '2D Game'
+		tags: ['Discord Bot', 'JavaScript'],
+		title: 'Discord Bot Starter'
 	},
 	{
-		author: 'Sideways-Sky',
-		description: 'Game powered by the Godot Engine and TypeScript.',
-		href: './discord-activities/godot',
+		author: 'WavePlay',
+		decorator: true,
+		description: 'A basic TypeScript bot using Robo.js.',
+		href: './discord-bots/starter-ts',
 		images: [],
-		tags: ['Discord Activity', 'TypeScript'],
-		title: 'Godot'
+		tags: ['Discord Bot', 'TypeScript'],
+		title: 'Discord Bot Starter'
 	},
 	{
 		author: 'WavePlay',
@@ -123,61 +109,11 @@ export const Templates: Template[] = [
 	},
 	{
 		author: 'WavePlay',
-		description: 'Control a video player with friends using React.',
-		href: './discord-activities/react-multiplayer-video-ts',
-		images: [],
-		tags: ['Discord Activity', 'TypeScript'],
-		title: 'Multiplayer Video'
-	},
-	{
-		author: 'WavePlay',
 		description: 'A music player proxying external audio using React.',
 		href: './discord-activities/react-music-proxy-ts',
 		images: [],
 		tags: ['Discord Activity', 'TypeScript'],
 		title: 'Music Player Proxy'
-	},
-	{
-		author: 'waru',
-		description: 'A basic TypeScript template using Tailwind CSS.',
-		href: './discord-activities/react-tailwind-ts',
-		images: [],
-		tags: ['Discord Activity', 'TypeScript'],
-		title: 'TailwindCSS'
-	},
-	{
-		author: 'waru',
-		description: 'A basic TypeScript template using Tailwind and shadcn.',
-		href: './discord-activities/react-tailwind-shadcn-ts',
-		images: [],
-		tags: ['Discord Activity', 'TypeScript'],
-		title: 'TailwindCSS + shadcn/ui'
-	},
-	{
-		author: 'WavePlay',
-		description: 'A basic TypeScript template using tRPC and React.',
-		href: './discord-activities/react-trpc-ts',
-		images: [],
-		tags: ['Discord Activity', 'TypeScript'],
-		title: 'tRPC'
-	},
-	{
-		author: 'WavePlay',
-		decorator: true,
-		description: 'A basic JavaScript bot using Robo.js.',
-		href: './discord-bots/starter-js',
-		images: [],
-		tags: ['Discord Bot', 'JavaScript'],
-		title: 'Discord Bot Starter'
-	},
-	{
-		author: 'WavePlay',
-		decorator: true,
-		description: 'A basic TypeScript bot using Robo.js.',
-		href: './discord-bots/starter-ts',
-		images: [],
-		tags: ['Discord Bot', 'TypeScript'],
-		title: 'Discord Bot Starter'
 	},
 	{
 		author: 'MrJAwesome',
@@ -210,6 +146,70 @@ export const Templates: Template[] = [
 		images: [],
 		tags: ['Discord Bot', 'MrJAwesome', 'TypeScript'],
 		title: 'Slash Command Package'
+	},
+	{
+		author: 'Arnav K',
+		description: 'A 2D game made with KAPLAY and TypeScript.',
+		href: './discord-activities/2d-game',
+		images: [],
+		tags: ['Discord Activity', 'TypeScript'],
+		title: '2D Game'
+	},
+	{
+		author: 'Sideways-Sky',
+		description: 'Game powered by the Godot Engine and TypeScript.',
+		href: './discord-activities/godot',
+		images: [],
+		tags: ['Discord Activity', 'TypeScript'],
+		title: 'Godot'
+	},
+	{
+		author: 'WavePlay',
+		description: "Bake 'n take orders with this Discord bot!",
+		href: './discord-bots/bake-n-take-js',
+		images: [],
+		tags: ['Discord Bot', 'JavaScript'],
+		title: "Bake n' Take"
+	},
+	{
+		author: 'WavePlay',
+		description: "Bake 'n take orders with this Discord bot!",
+		href: './discord-bots/bake-n-take-ts',
+		images: [],
+		tags: ['Discord Bot', 'TypeScript'],
+		title: "Bake n' Take"
+	},
+	{
+		author: 'waru',
+		description: 'A basic TypeScript template using Tailwind CSS.',
+		href: './discord-activities/react-tailwind-ts',
+		images: [],
+		tags: ['Discord Activity', 'TypeScript'],
+		title: 'TailwindCSS'
+	},
+	{
+		author: 'waru',
+		description: 'A basic TypeScript template using Tailwind and shadcn.',
+		href: './discord-activities/react-tailwind-shadcn-ts',
+		images: [],
+		tags: ['Discord Activity', 'TypeScript'],
+		title: 'TailwindCSS + shadcn/ui'
+	},
+	{
+		author: 'WavePlay',
+		description: 'A basic TypeScript template using tRPC and React.',
+		href: './discord-activities/react-trpc-ts',
+		images: [],
+		tags: ['Discord Activity', 'TypeScript'],
+		title: 'tRPC'
+	},
+	{
+		author: 'WavePlay',
+		description: 'Control a video player with friends using React.',
+		href: './discord-activities/react-multiplayer-video-ts',
+		images: [],
+		tags: ['Discord Activity', 'TypeScript'],
+		title: 'Multiplayer Video'
 	},
 	{
 		author: 'WavePlay',
@@ -253,19 +253,19 @@ export const Templates: Template[] = [
 	},
 	{
 		author: 'WavePlay',
-		description: "Bake 'n take orders with this Discord bot!",
-		href: './discord-bots/bake-n-take-js',
+		description: 'A basic JavaScript template without any UI libraries.',
+		href: './discord-activities/vanilla-js',
 		images: [],
-		tags: ['Discord Bot', 'JavaScript'],
-		title: "Bake n' Take"
+		tags: ['Discord Activity', 'JavaScript'],
+		title: 'Vanilla Starter'
 	},
 	{
 		author: 'WavePlay',
-		description: "Bake 'n take orders with this Discord bot!",
-		href: './discord-bots/bake-n-take-ts',
+		description: 'A basic TypeScript template without any UI libraries.',
+		href: './discord-activities/vanilla-ts',
 		images: [],
-		tags: ['Discord Bot', 'TypeScript'],
-		title: "Bake n' Take"
+		tags: ['Discord Activity', 'TypeScript'],
+		title: 'Vanilla Starter'
 	},
 	{
 		author: 'WavePlay',
