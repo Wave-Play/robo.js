@@ -12,7 +12,7 @@ export const ExaGrow = (props: GrowOnHoverProps) => {
 	const [isHovered, setIsHovered] = useState(false)
 
 	const combinedStyle: CSSProperties = {
-		display: 'inline-block',
+		display: 'flex',
 		transition: 'transform 0.3s',
 		transform: isHovered ? `scale(${scale})` : 'scale(1)',
 		...style
