@@ -2,6 +2,7 @@ import { mdiDotsGrid, mdiLightbulb, mdiPowerPlug, mdiRobot, mdiShapePlus, mdiWeb
 
 export interface Template {
 	author?: string
+	decorator?: boolean
 	description: string
 	href: string
 	images: string[]
@@ -60,9 +61,9 @@ export const Templates: Template[] = [
 		author: 'WavePlay',
 		description: 'A basic JavaScript template without any UI libraries.',
 		href: './discord-activities/vanilla-js',
-		images: ['/robojs/preview-template?path=test'],
+		images: [],
 		tags: ['Discord Activity', 'JavaScript'],
-		title: 'Vanilla'
+		title: 'Vanilla Starter'
 	},
 	{
 		author: 'WavePlay',
@@ -70,7 +71,7 @@ export const Templates: Template[] = [
 		href: './discord-activities/vanilla-ts',
 		images: [],
 		tags: ['Discord Activity', 'TypeScript'],
-		title: 'Vanilla'
+		title: 'Vanilla Starter'
 	},
 	{
 		author: 'WavePlay',
@@ -78,7 +79,7 @@ export const Templates: Template[] = [
 		href: './discord-activities/react-js',
 		images: [],
 		tags: ['Discord Activity', 'JavaScript'],
-		title: 'Starter Activity'
+		title: 'Discord Activity Starter'
 	},
 	{
 		author: 'WavePlay',
@@ -86,7 +87,7 @@ export const Templates: Template[] = [
 		href: './discord-activities/react-ts',
 		images: [],
 		tags: ['Discord Activity', 'TypeScript'],
-		title: 'Starter Activity'
+		title: 'Discord Activity Starter'
 	},
 	{
 		author: 'Arnav K',
@@ -162,19 +163,21 @@ export const Templates: Template[] = [
 	},
 	{
 		author: 'WavePlay',
+		decorator: true,
 		description: 'A basic JavaScript bot using Robo.js.',
 		href: './discord-bots/starter-js',
 		images: [],
 		tags: ['Discord Bot', 'JavaScript'],
-		title: 'Starter Bot'
+		title: 'Discord Bot Starter'
 	},
 	{
 		author: 'WavePlay',
+		decorator: true,
 		description: 'A basic TypeScript bot using Robo.js.',
 		href: './discord-bots/starter-ts',
 		images: [],
 		tags: ['Discord Bot', 'TypeScript'],
-		title: 'Starter Bot'
+		title: 'Discord Bot Starter'
 	},
 	{
 		author: 'MrJAwesome',
@@ -302,7 +305,7 @@ export const Templates: Template[] = [
 		href: './plugins/starter-js',
 		images: [],
 		tags: ['Plugin', 'JavaScript'],
-		title: 'Starter Plugin'
+		title: 'Plugin Starter'
 	},
 	{
 		author: 'WavePlay',
@@ -310,7 +313,7 @@ export const Templates: Template[] = [
 		href: './web-apps/react-js',
 		images: [],
 		tags: ['Web App', 'JavaScript'],
-		title: 'React'
+		title: 'React Starter'
 	},
 	{
 		author: 'WavePlay',
@@ -318,7 +321,7 @@ export const Templates: Template[] = [
 		href: './web-apps/react-ts',
 		images: [],
 		tags: ['Web App', 'TypeScript'],
-		title: 'React'
+		title: 'React Starter'
 	},
 	{
 		author: 'Matej Bošnjak',
@@ -326,7 +329,7 @@ export const Templates: Template[] = [
 		href: './web-apps/svelte-js',
 		images: [],
 		tags: ['Web App', 'JavaScript'],
-		title: 'Svelte'
+		title: 'Svelte Starter'
 	},
 	{
 		author: 'Matej Bošnjak',
@@ -334,15 +337,33 @@ export const Templates: Template[] = [
 		href: './web-apps/svelte-ts',
 		images: [],
 		tags: ['Web App', 'TypeScript'],
-		title: 'Svelte'
+		title: 'Svelte Starter'
 	}
 ].map((template) => {
 	// Prefix all template hrefs with /templates
 	return {
 		...template,
-		href: template.href.replace('./', '/templates/'),
-		images: template.images.map((image) => {
-			return image.replace('/', 'http://localhost:7626/') + '&title=' + encodeURIComponent(template.title)
-		})
+		href: template.href.replace('./', '/templates/')
 	}
 })
+
+const Host = 'https://preview.robojs.dev/template'
+
+export function getPreview(template: Template) {
+	if (template.decorator && template.images.length) {
+		return (
+			Host +
+			'?title=' +
+			encodeURIComponent(template.title) +
+			'&tags=' +
+			encodeURIComponent(template.tags.join(',')) +
+			'&image=' +
+			encodeURIComponent(template.images[0])
+		)
+	}
+	if (template.images.length) {
+		return template.images[0]
+	}
+
+	return Host + '?title=' + encodeURIComponent(template.title) + '&tags=' + encodeURIComponent(template.tags.join(','))
+}
