@@ -8,7 +8,7 @@ export const Card = (props) => {
 
 	return (
 		<Link className="col col--6 nodecor margin-bottom--lg" style={{ position: 'relative', ...style }} to={href}>
-			<ExaShape>
+			<ExaShape innerBorderWidth={2}>
 				<div className={'card padding--lg cardContent'}>
 					<Heading as="h4" className="text--truncate cardTitle">
 						{title}
