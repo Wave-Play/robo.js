@@ -1,12 +1,33 @@
 :root {
 	--filter-option-label: rgba(0, 0, 0, 0.54);
 	--template-item-background: rgba(0, 0, 0, 0.06);
+	--spacing-horizontal: 40px;
+	--filter-display: flex;
+	--template-columns: 2;
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
 [data-theme='dark'] {
 	--filter-option-label: rgb(142, 141, 145);
 	--template-item-background: rgba(255, 255, 255, 0.04);
+}
+
+/* Mobile spacing */
+@media (max-width: 768px) {
+	:root {
+		--spacing-horizontal: 16px;
+	}
+}
+@media (max-width: 1000px) {
+	:root {
+		--filter-display: none;
+		--template-columns: 1;
+	}
+}
+@media (max-width: 1280px) {
+	:root {
+		--filter-display: none;
+	}
 }
 
 .root {
@@ -27,13 +48,17 @@ body {
 	flex-direction: column;
 	align-items: center;
 	padding-top: 72px;
-	padding-left: 40px;
-	padding-right: 40px;
+	padding-left: var(--spacing-horizontal);
+	padding-right: var(--spacing-horizontal);
 }
 
 .title {
 	font-size: 64px;
 	font-weight: 700;
+	text-align: center;
+}
+
+.subtitle {
 	text-align: center;
 }
 
@@ -48,7 +73,7 @@ body {
 .filterBar {
 	width: 240px;
 	height: calc(100vh - 64px);
-	display: flex;
+	display: var(--filter-display);
 	flex-direction: column;
 	position: sticky;
 	top: 64px;
@@ -146,17 +171,21 @@ body {
 }
 
 .grid {
+	max-width: calc(100vw - 32px);
 	flex: 1;
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(444px, 1fr));
+	grid-template-columns: repeat(var(--template-columns), minmax(444px, 1fr));
 	grid-auto-rows: max-content;
 	grid-gap: 24px;
+	justify-content: center;
+	justify-items: center;
 	padding-top: 24px;
 }
 
 .templateItem {
 	width: 444px;
 	height: 382px;
+	max-width: calc(100vw - 32px);
 	color: unset;
 	position: relative;
 	text-decoration: none !important;
@@ -175,8 +204,7 @@ body {
 	position: absolute;
 	left: 3px;
 	top: 3px;
-	background-size: cover;
-	background-position: center;
+	object-fit: cover;
 }
 
 .templateImageStub {
