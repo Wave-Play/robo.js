@@ -600,7 +600,7 @@ const config = {
 					{ to: '/hosting/overview', label: 'Hosting', position: 'left' },
 					{ to: '/plugins/directory', label: 'Plugins', position: 'left' },
 					{ to: '/ref/framework', label: 'Reference', position: 'left' },
-					{ to: '/templates/overview', label: 'Templates', position: 'left' },
+					{ to: '/templates', label: 'Templates', position: 'left' },
 					{ to: '/playground', label: 'Try It', position: 'left' },
 					/*{
 						href: 'https://roboplay.dev/hacktoberfest',
