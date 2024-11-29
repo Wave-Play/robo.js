@@ -1,6 +1,6 @@
 import { exec } from 'node:child_process'
 import { promisify } from 'node:util'
-import { logger } from 'robo.js'
+import { logger, Env } from 'robo.js'
 import path from 'node:path'
 import {
 	CommitData,
@@ -13,6 +13,7 @@ import {
 	uploadFileToGitHub
 } from './utils'
 
+Env.loadSync()
 const execAsync = promisify(exec)
 
 start()
@@ -39,13 +40,17 @@ export async function start() {
 		level: env.get('robo.logLevel')
 	}).event('SAGE: Upgrading template dependencies...')
 
+	console.log(env.get('github.token'))
 	const startTime = Date.now()
 	const success: string[] = []
 	const failed: string[] = []
 
 	// Get the commits from the push object
 	const { commits } = JSON.parse(env.get('github.pushObject')) as CommitData
+
+	console.log('GIT PUSH OBJEXCT', env.get('github.pushObject'))
 	const templates = await getAllTemplates()
+
 	logger.debug('Commits:', commits)
 	logger.debug('Templates:', templates)
 	logger.info('Checking', commits.length, 'commits...')
@@ -75,9 +80,34 @@ export async function start() {
 
 						logger.debug(install.stdout)
 
-						const sage = await execAsync('sage upgrade -y', { cwd: templatePath })
+						const roboPath = path.join(process.cwd(), '..', 'packages', 'robo')
+						const robo = await execAsync(`pnpm run build`, { cwd: roboPath })
+
+						if (robo.stderr) {
+							throw new Error(robo.stderr)
+						}
+
+						const sagePath = path.join(process.cwd(), '..', 'packages', 'sage')
+						const sage = await execAsync(`pnpm install && pnpm run build`, { cwd: sagePath })
 
 						if (sage.stderr) {
+							throw new Error(sage.stderr)
+						}
+
+						const installTemplate = await execAsync(`npm install`, {
+							cwd: templatePath
+						})
+
+						if (installTemplate.stderr) {
+							throw new Error(sage.stderr)
+						}
+
+						const sageExecutable = path.join(process.cwd(), '..', 'packages', 'sage', 'dist', 'index.js')
+						const updateTemplate = await execAsync(`node ${sageExecutable} upgrade -y`, {
+							cwd: templatePath
+						})
+
+						if (updateTemplate.stderr) {
 							throw new Error(sage.stderr)
 						}
 

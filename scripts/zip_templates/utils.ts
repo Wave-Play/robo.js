@@ -20,7 +20,7 @@ export const env = new Env({
 			env: 'GH_PUSH'
 		},
 		repo: {
-			default: 'Wave-Play/robo.js',
+			default: 'Nazeofel/robo.js',
 			env: 'REPO_DATA'
 		},
 		token: {

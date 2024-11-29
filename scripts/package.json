@@ -6,7 +6,8 @@
 	"type": "module",
 	"scripts": {
 		"zip": "tsx zip_templates/zip",
-		"upgrade": "tsx zip_templates/sage-upgrade"
+		"upgrade": "tsx zip_templates/sage-upgrade",
+		"act": "tsx act_local.ts"
 	},
 	"author": "WavePlay <dev@waveplay.com> (waveplay.com)",
 	"contributors": [
@@ -16,7 +17,7 @@
 	"license": "MIT",
 	"dependencies": {
 		"robo.js": "^0.10.26",
-		"@roboplay/sage": "latest"
+		"@roboplay/sage": "workspace:*"
 	},
 	"devDependencies": {
 		"tsx": "^4.19.2",

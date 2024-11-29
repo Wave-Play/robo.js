@@ -81,3 +81,5 @@ export type Scope =
 	| 'dm_channels.read'
 	| 'role_connections.write'
 	| 'applications.commands.permissions.update'
+
+export default {}

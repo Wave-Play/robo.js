@@ -5,7 +5,9 @@ import path from 'node:path'
 import { promisify } from 'node:util'
 import { color, logger } from 'robo.js'
 import { CommitData, env, filterCommitedTemplates, getAllTemplates, RootDir } from './utils'
+import { Env } from 'robo.js'
 
+Env.loadSync()
 const execAsync = promisify(exec)
 
 const Exclude = `'.robo/**' 'node_modules/**' '.DS_Store' '.env'`

@@ -7,7 +7,7 @@ on:
       - main
 
 jobs:
-  Templates:
+  Dependencies:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repo
@@ -26,7 +26,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: scripts
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
 
       - name: Dependencies upgrade
         working-directory: scripts
