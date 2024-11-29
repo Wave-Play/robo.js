@@ -92,6 +92,11 @@ interface Template {
 	url: string
 }
 
+/**
+ *
+ * @returns Promise<string[]>
+ */
+
 export async function getAllTemplates() {
 	const paths = ['discord-activities', 'discord-bots', 'plugins', 'web-apps']
 	const templates: string[] = []
@@ -110,6 +115,12 @@ export async function getAllTemplates() {
 
 	return templates
 }
+
+/**
+ *
+ * @param id
+ * @returns Promise<CommittedFile[]>
+ */
 
 export async function getCommittedFiles(id: string) {
 	const url = `https://api.github.com/repos/${Repo.Owner}/${Repo.Name}/commits/${id}`
@@ -146,6 +157,12 @@ export async function filterCommitedTemplates(commitId: string, templates: strin
 	return templatesToZip
 }
 
+/**
+ *
+ * @param branchName
+ * @param commitSha : The commit sha is the sha of the main branch we base ourselves on.
+ * @returns Promise<boolean>
+ */
 export async function createBranch(branchName: string, commitSha: string): Promise<boolean> {
 	const url = `https://api.github.com/repos/${Repo.Owner}/${Repo.Name}/git/refs`
 
@@ -172,6 +189,10 @@ export async function createBranch(branchName: string, commitSha: string): Promi
 	}
 }
 
+/**
+ *
+ * @returns Promise<string | undefined>
+ */
 export async function getBranchSha(): Promise<string | undefined> {
 	const branch = 'main'
 
@@ -193,13 +214,20 @@ export async function getBranchSha(): Promise<string | undefined> {
 	}
 }
 
+/**
+ *
+ * @param branch
+ * @param filePath
+ */
+
 export async function uploadFileToGitHub(branch: string, filePath: string) {
 	try {
 		const fileContent = readFileSync(filePath, 'utf8')
 
 		const encodedContent = btoa(fileContent)
-
-		const response = await fetch(`https://api.github.com/repos/${Repo.Owner}/${Repo.Name}/contents/${filePath}`, {
+		// the lack of / after contents is normal, its because it cannot start with a slash, so we re use the slash
+		// of filePath
+		const response = await fetch(`https://api.github.com/repos/${Repo.Owner}/${Repo.Name}/contents${filePath}`, {
 			method: 'PUT',
 			headers: {
 				Authorization: `Bearer ${env.get('github.token')}`,
@@ -222,5 +250,45 @@ export async function uploadFileToGitHub(branch: string, filePath: string) {
 		}
 	} catch (error) {
 		logger.error(error)
+	}
+}
+
+/**
+ *
+ * @param title : This is the name of the PR
+ * @param head  : The source branch where your changes are located.
+ * @param base  : The target branch (e.g., main) you want to merge into.
+ * @param body  : This is the description of the PR.
+ * @returns Promise<Record<string, string> | undefined>
+ */
+
+export async function createPullRequest(
+	title: string,
+	head: string,
+	base: string,
+	body: string
+): Promise<Record<string, string> | undefined> {
+	const response = await fetch(`https://api.github.com/repos/${Repo.Owner}/${Repo.Name}/pulls`, {
+		method: 'POST',
+		headers: {
+			Authorization: `token ${env.get('github.token')}`,
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({
+			title,
+			head,
+			base,
+			body
+		})
+	})
+
+	if (response.ok) {
+		const data = await response.json()
+		logger.log('Data: ', data)
+		return data // This is the SHA you'll use to create the new branch
+	} else {
+		const error = await response.json()
+		logger.error('Error creating a pull request:', error)
+		return undefined
 	}
 }

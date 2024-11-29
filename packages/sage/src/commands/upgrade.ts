@@ -14,7 +14,7 @@ import { Config, Plugin } from 'robo.js'
 
 const command = new Command('upgrade')
 	.description('Upgrades your Robo to the latest version')
-	.option('-y --auto-accept', 'installs updates without showing changelogs')
+	.option('-y --yes', 'installs updates without showing changelogs')
 	.option('-f --force', 'forcefully install')
 	.option('-ns --no-self-check', 'do not check for updates to Sage CLI')
 	.option('-s --silent', 'do not print anything')
@@ -23,7 +23,7 @@ const command = new Command('upgrade')
 export default command
 
 interface UpgradeOptions {
-	autoAccept?: boolean
+	yes?: boolean
 	force?: boolean
 	selfCheck?: boolean
 	silent?: boolean
@@ -62,7 +62,8 @@ async function upgradeAction(options: UpgradeOptions) {
 	const update = await checkUpdates(packageJson, config, true)
 	logger.debug(`Update payload:`, update)
 
-	await updateRobo(plugins, config, options.autoAccept)
+	const autoAccept = options.yes
+	await updateRobo(plugins, config, autoAccept)
 }
 
 interface Changelog {
