@@ -58,7 +58,8 @@ async function upgradeAction(options: UpgradeOptions) {
 	const update = await checkUpdates(packageJson, config, true)
 	logger.debug(`Update payload:`, update)
 
-	await updateRobo(plugins, config, options.yes)
+	const autoAccept = options.yes
+	await updateRobo(plugins, config, autoAccept)
 }
 
 interface Changelog {
