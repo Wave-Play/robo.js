@@ -1,5 +1,5 @@
 import { Client, GatewayIntentBits } from 'discord.js'
-import { portal } from 'robo.js'
+import { portal } from './robo.js'
 import { discordLogger } from './constants.js'
 import { bold } from './color.js'
 
