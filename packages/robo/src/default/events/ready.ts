@@ -2,10 +2,13 @@
 import { color, getState, setState } from 'robo.js'
 // @ts-expect-error - This is valid once command file is parsed
 import { STATE_KEYS, discordLogger } from 'robo.js/dist/core/constants.js'
+// @ts-expect-error - This is valid once command file is parsed
+import { checkIntents } from 'robo.js/dist/core/intents.js'
 import { ChannelType } from 'discord.js'
 import type { Client } from 'discord.js'
 
 export default async (client: Client) => {
+	checkIntents(client)
 	const readyAt = color.dim(`(${new Date().toLocaleString()})`)
 	discordLogger.ready(`On standby as ${color.bold(client.user.tag)}`, readyAt)
 
