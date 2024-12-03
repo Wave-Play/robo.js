@@ -182,8 +182,8 @@ const config = {
 						to: '/plugins/directory'
 					},
 					{
-						from: '/templates',
-						to: '/templates/overview'
+						from: '/templates/overview',
+						to: '/templates'
 					},
 					{
 						from: '/discord-bots/secrets',
