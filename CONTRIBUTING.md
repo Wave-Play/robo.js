@@ -140,6 +140,11 @@ You can also use these to test your plugins as you're developing them! Just make
 
 These templates are also used by the `create-robo` tool via the `--template` flag.
 
+
+### CI/CD
+
+To contribute to CI/CD we use a local testing tool called **[act](https://github.com/nektos/act)**, it makes it easier to test Github actions locally.
+
 ## Contributors
 
 A round of applause for our amazing contributors! 🎉

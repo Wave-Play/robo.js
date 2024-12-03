@@ -65,7 +65,7 @@ export async function start() {
 			if (!templatesToUpgrade) {
 				return
 			}
-			logger.debug('Building Robo..')
+			logger.info('Building Robo..')
 
 			const roboPath = path.join(process.cwd(), '..', 'packages', 'robo')
 			const robo = await execAsync(`pnpm install && pnpm run build`, { cwd: roboPath })
@@ -73,9 +73,9 @@ export async function start() {
 			if (robo.stderr) {
 				throw new Error(robo.stderr)
 			}
-			logger.debug('Finished building robo...')
+			logger.info('Finished building robo...')
 
-			logger.debug('Building sage...')
+			logger.info('Building sage...')
 
 			const sagePath = path.join(process.cwd(), '..', 'packages', 'sage')
 			const sage = await execAsync(`pnpm install && pnpm run build`, { cwd: sagePath })
@@ -83,14 +83,14 @@ export async function start() {
 			if (sage.stderr) {
 				throw new Error(sage.stderr)
 			}
-			logger.debug('Finished building sage...')
+			logger.info('Finished building sage...')
 
 			await Promise.all(
 				[...templatesToUpgrade].map(async (template) => {
 					try {
 						const templatePath = path.join(RootDir, template)
 
-						logger.debug('Installing... template')
+						logger.info('Installing... template')
 						const installTemplate = await execAsync(`npm install`, {
 							cwd: templatePath
 						})
@@ -98,49 +98,55 @@ export async function start() {
 						if (installTemplate.stderr) {
 							throw new Error(installTemplate.stderr)
 						}
-						logger.debug('Finished installing... template')
+						logger.info('Finished installing... template')
 
-						logger.debug('Running sage upgrade...')
+						logger.info('Running sage upgrade...')
 						const sageExecutable = path.join(process.cwd(), '..', 'packages', 'sage', 'dist', 'index.js')
+
+						// TODO: Once JSON mode is out switch to it
 						const updateTemplate = await execAsync(`node ${sageExecutable} upgrade -y`, {
 							cwd: templatePath
 						})
 
+						if (updateTemplate.stdout.includes('No dependencies')) {
+							return logger.info('There were no updates, aborting...')
+						}
+
 						if (updateTemplate.stderr) {
 							throw new Error(updateTemplate.stderr)
 						}
-						logger.debug('Finished running sage upgrade...')
+						logger.info('Finished running sage upgrade...')
 
 						// we might want to be able to pass the branch we are currently originating from
-						logger.debug('Getting branch sha...')
+						logger.info('Getting branch sha...')
 						const sha = await getBranchSha()
 						if (!sha) {
 							throw new Error('Could not get branch sha .')
 						}
 						const branchName = `chore/${template}`
-						logger.debug('Creating branch...')
+						logger.info('Creating branch...')
 
+						// finish implementation in createBranch.
 						const branch = await createBranch(branchName, sha)
 
-						if (!branch) {
-							throw new Error('Could not create branch')
+						if (branch.status === '422') {
+							logger.warn('Branch already exists no need to re-create <3')
 						}
-						logger.debug('Uploading package.json to github...')
+						logger.info('Uploading package.json to github...')
 
 						await uploadFileToGitHub(branchName, path.join(templatePath, 'package.json'))
 
-						const prBranch = await createPullRequest(
+						// we upload package-lock because david and marc said I need to owo kawaiiiineeee
+						await uploadFileToGitHub(branchName, path.join(templatePath, 'package-lock.json'))
+
+						await createPullRequest(
 							`Branch: ${branchName}`,
 							branchName,
 							'main',
 							`Automated PR for... Branch: ${branchName}`
 						)
 
-						if (!prBranch) {
-							throw new Error('Could not create PR !')
-						}
-
-						logger.debug('All done ! PR created and Ready to be merged UwU ')
+						logger.ready('All done !')
 						success.push(template)
 					} catch (error) {
 						logger.error(error)

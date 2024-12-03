@@ -157,13 +157,26 @@ export async function filterCommitedTemplates(commitId: string, templates: strin
 	return templatesToZip
 }
 
+type APIResponse = {
+	name?: string
+	path?: string
+	sha?: string
+	size?: number
+	url?: string
+	content?: string
+	encoding?: string
+	message?: string
+	status?: string
+	documentation_url?: string
+}
+
 /**
  *
  * @param branchName
  * @param commitSha : The commit sha is the sha of the main branch we base ourselves on.
  * @returns Promise<boolean>
  */
-export async function createBranch(branchName: string, commitSha: string): Promise<boolean> {
+export async function createBranch(branchName: string, commitSha: string): Promise<APIResponse> {
 	const url = `https://api.github.com/repos/${Repo.Owner}/${Repo.Name}/git/refs`
 
 	const response = await fetch(url, {
@@ -178,14 +191,14 @@ export async function createBranch(branchName: string, commitSha: string): Promi
 		})
 	})
 
+	// to do, verify the error, if it is branch already created, then return true.x§x§
+	const data = await response.json()
 	if (response.ok) {
-		const data = await response.json()
-		console.log('Branch created successfully:', data)
-		return true
+		logger.log('Branch created successfully:', data)
+		return data
 	} else {
-		const error = await response.json()
-		console.error('Error creating branch:', error)
-		return false
+		logger.warn(data.message)
+		return data
 	}
 }
 
@@ -203,15 +216,36 @@ export async function getBranchSha(): Promise<string | undefined> {
 		}
 	})
 
+	const data = await response.json()
 	if (response.ok) {
-		const data = await response.json()
 		logger.log('Commit SHA of the base branch:', data.object.sha)
 		return data.object.sha // This is the SHA you'll use to create the new branch
 	} else {
-		const error = await response.json()
-		logger.error('Error fetching branch SHA:', error)
+		logger.warn(data)
 		return undefined
 	}
+}
+
+/**
+ *
+ * @param filePath
+ * @returns Promise<APIResponse>
+ */
+async function checkFileExist(filePath: string, branch: string): Promise<APIResponse> {
+	const response = await fetch(
+		`https://api.github.com/repos/${Repo.Owner}/${Repo.Name}/contents${filePath}?ref=${branch}`,
+		{
+			method: 'GET',
+			headers: {
+				Authorization: `Bearer ${env.get('github.token')}`,
+				Accept: 'application/vnd.github.v3+json'
+			}
+		}
+	)
+
+	const data = await response.json()
+
+	return data
 }
 
 /**
@@ -225,6 +259,14 @@ export async function uploadFileToGitHub(branch: string, filePath: string) {
 		const fileContent = readFileSync(filePath, 'utf8')
 
 		const encodedContent = btoa(fileContent)
+
+		const fileExist = await checkFileExist(filePath, branch)
+
+		const fileSha = fileExist.sha
+
+		if (fileSha) {
+			logger.debug('File already exists... updating it.')
+		}
 		// the lack of / after contents is normal, its because it cannot start with a slash, so we re use the slash
 		// of filePath
 		const response = await fetch(`https://api.github.com/repos/${Repo.Owner}/${Repo.Name}/contents${filePath}`, {
@@ -236,17 +278,17 @@ export async function uploadFileToGitHub(branch: string, filePath: string) {
 			body: JSON.stringify({
 				message: 'Upgraded dependencies', // Commit message
 				content: encodedContent,
-				branch: branch
+				branch: branch,
+				sha: fileExist ? fileExist.sha : null
 			})
 		})
 
 		// Handle the response
+		const data = await response.json()
 		if (response.ok) {
-			const data = await response.json()
-			console.log('File uploaded successfully:', data.content.html_url)
+			logger.log('File uploaded successfully:', data.content.html_url)
 		} else {
-			const error = await response.json()
-			console.error('Error uploading file:', error)
+			logger.error('Error uploading file:', data)
 		}
 	} catch (error) {
 		logger.error(error)
@@ -262,12 +304,7 @@ export async function uploadFileToGitHub(branch: string, filePath: string) {
  * @returns Promise<Record<string, string> | undefined>
  */
 
-export async function createPullRequest(
-	title: string,
-	head: string,
-	base: string,
-	body: string
-): Promise<Record<string, string> | undefined> {
+export async function createPullRequest(title: string, head: string, base: string, body: string): Promise<APIResponse> {
 	const response = await fetch(`https://api.github.com/repos/${Repo.Owner}/${Repo.Name}/pulls`, {
 		method: 'POST',
 		headers: {
@@ -282,13 +319,13 @@ export async function createPullRequest(
 		})
 	})
 
+	const data = await response.json()
+
 	if (response.ok) {
-		const data = await response.json()
 		logger.log('Data: ', data)
-		return data // This is the SHA you'll use to create the new branch
+		return data
 	} else {
-		const error = await response.json()
-		logger.error('Error creating a pull request:', error)
-		return undefined
+		logger.warn(data.errors[0].message)
+		return data
 	}
 }
