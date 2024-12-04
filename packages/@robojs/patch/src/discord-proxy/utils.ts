@@ -9,10 +9,14 @@ export function isDiscordActivity() {
 }
 
 export function patchUrl(url: string | RequestInfo | URL, prefix = ProxyPrefix): URL {
+	// @ts-expect-error - Patch mappings are injected by Vite
+	const mappedPrefixes: string[] = globalThis['@robojs/patch']?.mappings ?? []
 	const base = typeof url === 'string' ? window.location.origin : undefined
 	const newUrl = new URL(url.toString(), base)
+	const isProxied =
+		ProxyHosts.some((host) => newUrl.hostname.endsWith(host)) ||
+		!mappedPrefixes.find((prefix) => newUrl.pathname.startsWith(prefix))
 
-	const isProxied = ProxyHosts.some((host) => newUrl.hostname.endsWith(host))
 	if (isProxied && !newUrl.pathname.startsWith(prefix)) {
 		newUrl.pathname = prefix + newUrl.pathname
 	}

@@ -25,6 +25,32 @@ export function VitePlugin(): Plugin {
 		configResolved(config) {
 			configCommand = config.command
 		},
+		transform(code, id) {
+			if (id.includes('/node_modules/@discord/embedded-app-sdk') || id.includes('/deps/@discord_embedded-app-sdk.js')) {
+				// Modify the module code
+				const modifiedCode = code.replace(
+					/function patchUrlMappings\s*\(/,
+					'function originalPatchUrlMappings('
+				)
+
+				// Append your custom function
+				const trackingCode = `
+				  globalThis['@robojs/patch'] = { mappings: [] }
+          function patchUrlMappings(...args) {
+						if (args.length > 0) {
+							const prefixes = args[0].map(arg => arg.prefix);
+							globalThis['@robojs/patch'].mappings.push(prefixes);
+						}
+
+            // Call the original function
+            return originalPatchUrlMappings.apply(this, args);
+          }
+        `
+
+				// Return the modified code
+				return modifiedCode + '\n' + trackingCode
+			}
+		},
 		transformIndexHtml(html) {
 			const scriptSrc = configCommand === 'build' ? PatchScriptDest : PatchScriptPath
 			const result = html.replace('<head>', `<head>\n\t\t<script src="${scriptSrc}"></script>`)
