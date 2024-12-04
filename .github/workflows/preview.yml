@@ -3,11 +3,13 @@ on:
   push:
     paths:
       - '.changeset/**'
+      - '.github/**'
       - 'packages/**'
       - 'pnpm-lock.yaml'
   pull_request:
     paths:
       - '.changeset/**'
+      - '.github/**'
       - 'packages/**'
       - 'pnpm-lock.yaml'
 
