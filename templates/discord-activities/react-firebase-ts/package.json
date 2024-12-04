@@ -32,7 +32,7 @@
 	},
 	"dependencies": {
 		"@discord/embedded-app-sdk": "^1.7.0",
-		"@robojs/patch": "https://pkg.pr.new/Wave-Play/robo.js/@robojs/patch@4b42aa4",
+		"@robojs/patch": "https://pkg.pr.new/Wave-Play/robo.js/@robojs/patch@43d0664",
 		"@robojs/server": "^0.6.2",
 		"firebase": "^11.0.2",
 		"react": "^18.3.1",
