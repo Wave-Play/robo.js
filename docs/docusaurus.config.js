@@ -217,6 +217,7 @@ const config = {
 					'templates/discord-activities/2d-game/README.md',
 					'templates/discord-activities/godot/README.md',
 					'templates/discord-activities/react-colyseus-ts/README.md',
+					'templates/discord-activities/react-firebase-ts/README.md',
 					'templates/discord-activities/react-js/README.md',
 					'templates/discord-activities/react-multiplayer-video-ts/README.md',
 					'templates/discord-activities/react-music-proxy-ts/README.md',

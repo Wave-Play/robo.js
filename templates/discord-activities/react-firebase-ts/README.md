@@ -4,7 +4,7 @@
 
 # Discord Activity - React w/ Firebase (TS)
 
-Starter **Discord Activity** built with **[Robo.js](https://robojs.dev)** and **React**. Uses **[Firestore](https://firebase.google.com/docs/firestore)** for real-time data storage. Just update the `firebaseConfig` in `src/core/firebase.ts` and you're good to go!
+Starter **Discord Activity** built with **[Robo.js](https://robojs.dev)** and **React**. Uses **[Firestore](https://firebase.google.com/docs/firestore)** for real-time data storage. Just update the `firebaseConfig` in `src/core/firebase.ts` and map `/firestore` to `firestore.googleapis.com` in your **Discord Developer Portal** then you're good to go!
 
 _Ready to embark on this adventure?_
 

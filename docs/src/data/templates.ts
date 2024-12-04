@@ -180,6 +180,14 @@ export const Templates: Template[] = [
 		title: "Bake n' Take"
 	},
 	{
+		author: 'WavePlay',
+		description: 'Starter Discord Activity set up with Firebase Firestore.',
+		href: './discord-activities/react-firebase-ts',
+		images: [],
+		tags: ['Discord Activity', 'TypeScript'],
+		title: 'Discord Activity w/ Firebase'
+	},
+	{
 		author: 'waru',
 		description: 'A basic TypeScript template using Tailwind CSS.',
 		href: './discord-activities/react-tailwind-ts',
