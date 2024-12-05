@@ -1,6 +1,8 @@
 import {
 	APIApplicationCommandOptionChoice,
+	ApplicationIntegrationType,
 	ContextMenuCommandBuilder,
+	InteractionContextType,
 	REST,
 	Routes,
 	SlashCommandBuilder,
@@ -14,7 +16,7 @@ import { timeout } from './utils.js'
 import { bold, color } from '../../core/color.js'
 import { Flashcore } from '../../core/flashcore.js'
 import type { APIApplicationCommand, ApplicationCommandOptionBase } from 'discord.js'
-import type { CommandEntry, CommandOption, ContextEntry } from '../../types/index.js'
+import type { CommandContext, CommandEntry, CommandOption, Config, ContextEntry } from '../../types/index.js'
 
 let logger: Logger = discordLogger
 
@@ -48,13 +50,18 @@ export function buildContextCommands(
 	})
 }
 
-export function buildSlashCommands(dev: boolean, commands: Record<string, CommandEntry>): SlashCommandBuilder[] {
+export function buildSlashCommands(
+	dev: boolean,
+	commands: Record<string, CommandEntry>,
+	config: Config
+): SlashCommandBuilder[] {
 	if (dev) {
 		logger = new Logger({
 			enabled: true,
 			level: 'info'
 		})
 	}
+	const defaultContexts = config.defaults?.contexts ?? DEFAULT_CONFIG.defaults.contexts
 
 	return Object.entries(commands).map(([key, entry]): SlashCommandBuilder => {
 		logger.debug(`Building slash command:`, key)
@@ -63,6 +70,7 @@ export function buildSlashCommands(dev: boolean, commands: Record<string, Comman
 		try {
 			commandBuilder = new SlashCommandBuilder()
 				.setName(key)
+				.setContexts((entry.contexts ?? defaultContexts).map(getContextType))
 				.setNameLocalizations(entry.nameLocalizations || {})
 				.setDescription(entry.description || 'No description provided')
 				.setDescriptionLocalizations(entry.descriptionLocalizations || {})
@@ -333,7 +341,7 @@ export async function registerCommands(
 	const rest = new REST({ version: '9' }).setToken(token)
 
 	try {
-		const slashCommands = buildSlashCommands(dev, newCommands)
+		const slashCommands = buildSlashCommands(dev, newCommands, config)
 		const contextMessageCommands = buildContextCommands(dev, newMessageContextCommands, 'message')
 		const contextUserCommands = buildContextCommands(dev, newUserContextCommands, 'user')
 		const addedChanges = addedCommands.map((cmd) => color.green(`/${color.bold(cmd)} (new)`))
@@ -359,8 +367,7 @@ export async function registerCommands(
 		// Inject user install if enabled
 		if (config.experimental?.userInstall) {
 			commandData.forEach((command) => {
-				command.integration_types = [0, 1]
-				command.contexts = [0, 1, 2]
+				command.integration_types = [ApplicationIntegrationType.GuildInstall, ApplicationIntegrationType.UserInstall]
 			})
 		}
 
@@ -447,4 +454,16 @@ export async function registerCommands(
 		logger.warn(`Run ${color.bold('robo build --force')} to try again.`)
 		await Flashcore.set(FLASHCORE_KEYS.commandRegisterError, true)
 	}
+}
+
+export function getContextType(context: CommandContext): InteractionContextType {
+	if (context === 'BotDM') {
+		return InteractionContextType.BotDM
+	} else if (context === 'Guild') {
+		return InteractionContextType.Guild
+	} else if (context === 'PrivateChannel') {
+		return InteractionContextType.PrivateChannel
+	}
+
+	return context
 }

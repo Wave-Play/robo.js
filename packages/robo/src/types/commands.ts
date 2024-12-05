@@ -5,6 +5,7 @@ import type {
 	CommandInteraction,
 	GuildBasedChannel,
 	GuildMember,
+	InteractionContextType,
 	InteractionReplyOptions,
 	MessagePayload,
 	Role,
@@ -21,6 +22,7 @@ export interface Command {
 }
 
 export interface CommandConfig extends BaseConfig {
+	contexts?: CommandContext[]
 	defaultMemberPermissions?: string | number | bigint
 	dmPermission?: boolean
 	descriptionLocalizations?: Record<string, string>
@@ -29,6 +31,8 @@ export interface CommandConfig extends BaseConfig {
 	sage?: false | SageOptions
 	timeout?: number
 }
+
+export type CommandContext = 'BotDM' | 'Guild' | 'PrivateChannel' | InteractionContextType
 
 export interface CommandEntry extends CommandConfig {
 	subcommands?: Record<string, CommandEntry>

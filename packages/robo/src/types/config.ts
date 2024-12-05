@@ -1,10 +1,11 @@
 import type { LogDrain, LogLevel } from '../core/logger.js'
 import type { ClientOptions, PermissionsString, ShardingManagerOptions } from 'discord.js'
-import type { Plugin, SageOptions } from './index.js'
+import type { CommandContext, Plugin, SageOptions } from './index.js'
 
 export interface Config {
 	clientOptions?: ClientOptions
 	defaults?: {
+		contexts?: CommandContext[]
 		dev?: boolean
 		help?: boolean
 	}

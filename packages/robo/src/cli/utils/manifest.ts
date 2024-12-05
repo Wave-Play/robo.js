@@ -24,7 +24,8 @@ import { ALLOWED_EXTENSIONS } from '../../core/constants.js'
 import { Mode } from '../../core/mode.js'
 import { Compiler } from './compiler.js'
 import { IS_BUN_RUNTIME } from './runtime-utils.js'
-import type { PermissionsString } from 'discord.js'
+import { PermissionsString } from 'discord.js'
+import { getContextType } from './commands.js'
 
 // TODO:
 // - Ensure base manifest is always up to date (function-based instead of default object)
@@ -600,6 +601,9 @@ function getValue<T extends AllConfig>(
 	}
 
 	if (type === 'commands' && config) {
+		if ((config as CommandConfig).contexts !== undefined) {
+			value.contexts = (config as CommandConfig).contexts.map(getContextType)
+		}
 		if ((config as CommandConfig).defaultMemberPermissions !== undefined) {
 			value.defaultMemberPermissions = (config as CommandConfig).defaultMemberPermissions
 		}
