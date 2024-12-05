@@ -24,6 +24,7 @@ export interface Command {
 export interface CommandConfig extends BaseConfig {
 	contexts?: CommandContext[]
 	defaultMemberPermissions?: string | number | bigint
+	/** @deprecated Use `contexts` instead */
 	dmPermission?: boolean
 	descriptionLocalizations?: Record<string, string>
 	nameLocalizations?: Record<string, string>
