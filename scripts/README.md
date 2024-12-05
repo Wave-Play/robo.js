@@ -6,14 +6,14 @@ some setup is required.
 
 At the root of the folder you need two files.
 
-```.env``` and ```.vault```
+```.env``` and ```act.vault```
 
 content of ```.env``` for example:
 
 ```GITHUB_REPOSITORY="Nazeofel/robo"```
 
 
-content of ```.vault``` for example:
+content of ```act.vault``` for example:
 
 ```
 GH_TOKEN=Your Github token
