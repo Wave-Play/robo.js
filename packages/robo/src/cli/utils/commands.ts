@@ -23,7 +23,8 @@ let logger: Logger = discordLogger
 export function buildContextCommands(
 	dev: boolean,
 	contextCommands: Record<string, ContextEntry>,
-	type: 'message' | 'user'
+	type: 'message' | 'user',
+	config: Config
 ): ContextMenuCommandBuilder[] {
 	if (dev) {
 		logger = new Logger({
@@ -31,16 +32,19 @@ export function buildContextCommands(
 			level: 'info'
 		}).fork('discord')
 	}
+	const defaultContexts = config.defaults?.contexts ?? DEFAULT_CONFIG.defaults.contexts
 
 	return Object.entries(contextCommands).map(([key, entry]): ContextMenuCommandBuilder => {
 		logger.debug(`Building context command: ${key}`)
 		const commandBuilder = new ContextMenuCommandBuilder()
+			.setContexts((entry.contexts ?? defaultContexts).map(getContextType))
 			.setName(key)
 			.setNameLocalizations(entry.nameLocalizations || {})
 			.setType(type === 'message' ? 3 : 2)
 
-		if (entry.defaultMemberPermissions !== undefined) {
-			commandBuilder.setDefaultMemberPermissions(entry.defaultMemberPermissions)
+		const defaultMemberPermissions = entry.defaultMemberPermissions ?? config.defaults?.defaultMemberPermissions
+		if (defaultMemberPermissions !== undefined) {
+			commandBuilder.setDefaultMemberPermissions(defaultMemberPermissions)
 		}
 		if (entry.dmPermission !== undefined) {
 			commandBuilder.setDMPermission(entry.dmPermission)
@@ -148,8 +152,9 @@ export function buildSlashCommands(
 				addOptionToCommandBuilder(commandBuilder, option.type, option)
 			})
 
-			if (entry.defaultMemberPermissions !== undefined) {
-				commandBuilder.setDefaultMemberPermissions(entry.defaultMemberPermissions)
+			const defaultMemberPermissions = entry.defaultMemberPermissions ?? config.defaults?.defaultMemberPermissions
+			if (defaultMemberPermissions !== undefined) {
+				commandBuilder.setDefaultMemberPermissions(defaultMemberPermissions)
 			}
 			if (entry.dmPermission !== undefined) {
 				commandBuilder.setDMPermission(entry.dmPermission)
@@ -342,8 +347,8 @@ export async function registerCommands(
 
 	try {
 		const slashCommands = buildSlashCommands(dev, newCommands, config)
-		const contextMessageCommands = buildContextCommands(dev, newMessageContextCommands, 'message')
-		const contextUserCommands = buildContextCommands(dev, newUserContextCommands, 'user')
+		const contextMessageCommands = buildContextCommands(dev, newMessageContextCommands, 'message', config)
+		const contextUserCommands = buildContextCommands(dev, newUserContextCommands, 'user', config)
 		const addedChanges = addedCommands.map((cmd) => color.green(`/${color.bold(cmd)} (new)`))
 		const removedChanges = removedCommands.map((cmd) => color.red(`/${color.bold(cmd)} (deleted)`))
 		const updatedChanges = changedCommands.map((cmd) => color.blue(`/${color.bold(cmd)} (updated)`))

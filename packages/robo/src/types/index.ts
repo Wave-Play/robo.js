@@ -1,3 +1,5 @@
+import type { CommandContext } from './commands.js'
+
 export * from './api.js'
 export * from './commands.js'
 export * from './config.js'
@@ -5,7 +7,9 @@ export * from './events.js'
 export * from './manifest.js'
 
 export interface ContextConfig extends BaseConfig {
+	contexts?: CommandContext[]
 	defaultMemberPermissions?: string | number | bigint
+	/** @deprecated Use `contexts` instead */
 	dmPermission?: boolean
 	nameLocalizations?: Record<string, string>
 	sage?: false | SageOptions

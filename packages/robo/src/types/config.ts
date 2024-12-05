@@ -6,6 +6,7 @@ export interface Config {
 	clientOptions?: ClientOptions
 	defaults?: {
 		contexts?: CommandContext[]
+		defaultMemberPermissions?: string | number | bigint
 		dev?: boolean
 		help?: boolean
 	}
