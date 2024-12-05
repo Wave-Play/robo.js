@@ -59,6 +59,14 @@ optional __plugin: object;
 
 ***
 
+### contexts?
+
+```ts
+optional contexts: CommandContext[];
+```
+
+***
+
 ### defaultMemberPermissions?
 
 ```ts
@@ -79,11 +87,15 @@ optional description: string;
 
 ***
 
-### dmPermission?
+### ~~dmPermission?~~
 
 ```ts
 optional dmPermission: boolean;
 ```
+
+#### Deprecated
+
+Use `contexts` instead
 
 ***
 

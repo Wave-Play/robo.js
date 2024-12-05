@@ -59,6 +59,18 @@ optional __plugin: object;
 
 ***
 
+### contexts?
+
+```ts
+optional contexts: CommandContext[];
+```
+
+#### Inherited from
+
+[`CommandConfig`](Interface.CommandConfig.md).[`contexts`](Interface.CommandConfig.md#contexts)
+
+***
+
 ### defaultMemberPermissions?
 
 ```ts
@@ -95,11 +107,15 @@ optional descriptionLocalizations: Record<string, string>;
 
 ***
 
-### dmPermission?
+### ~~dmPermission?~~
 
 ```ts
 optional dmPermission: boolean;
 ```
+
+#### Deprecated
+
+Use `contexts` instead
 
 #### Inherited from
 

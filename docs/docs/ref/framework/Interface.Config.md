@@ -18,6 +18,8 @@ optional defaults: object;
 
 | Name | Type |
 | ------ | ------ |
+| `contexts`? | [`CommandContext`](TypeAlias.CommandContext.md)[] |
+| `defaultMemberPermissions`? | `string` \| `number` \| `bigint` |
 | `dev`? | `boolean` |
 | `help`? | `boolean` |
 
