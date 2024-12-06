@@ -265,6 +265,7 @@ article .clean-btn {
 }
 
 .navbar-sidebar {
+	height: 100vh;
 	background-color: var(--robo-background-color);
 	border-bottom: 1px solid var(--robo-border-color);
 }
