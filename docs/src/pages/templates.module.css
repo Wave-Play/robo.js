@@ -202,18 +202,15 @@ body {
 }
 
 .templateImage {
-	width: calc(100% - 6px);
+	width: 100%;
 	height: auto;
-	position: absolute;
-	left: 3px;
-	top: 3px;
 	object-fit: cover;
 }
 
 .templateImageStub {
 	width: 100%;
 	height: auto;
-	aspect-ratio: 16 / 9;
+	display: flex;
 	background-color: var(--template-item-background);
 }
 

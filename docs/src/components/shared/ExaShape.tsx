@@ -129,6 +129,7 @@ export const ExaShape = (props: ExaShapeProps) => {
 					stroke={currentOuterColor}
 					strokeWidth={innerBorderWidth}
 					strokeOpacity={0.69}
+					style={{ transition: 'fill 0.3s, stroke 0.3s ease-in-out' }}
 				/>
 				{accentLineWidth > 0 && (
 					<>
@@ -143,7 +144,8 @@ export const ExaShape = (props: ExaShapeProps) => {
 					style={{
 						width: `100%`,
 						height: `100%`,
-						clipPath: `url(#${clipPathId})`
+						clipPath: `url(#${clipPathId})`,
+						...(style ?? {})
 					}}
 				>
 					{cloneElement(children, {

@@ -15,6 +15,7 @@ import {
 	mdiWeb
 } from '@mdi/js'
 import { ExaGrow } from '../shared/ExaGrow'
+import { ExaZoom } from '../shared/ExaZoom'
 
 interface TemplateGridItemProps {
 	template: Template
@@ -24,7 +25,7 @@ export const TemplateGridItem = (props: TemplateGridItemProps) => {
 	const { template } = props
 
 	return (
-		<ExaGrow scale={1.05} style={{ maxWidth: 'min(calc(100vw - 32px), 444px)', width: '100%' }}>
+		<ExaGrow scale={1.04} style={{ maxWidth: 'min(calc(100vw - 32px), 444px)', width: '100%' }}>
 			<Link className={styles.templateItem} to={template.href}>
 				<ExaShape defaultHeight={360} defaultWidth={432} innerBorderWidth={2}>
 					<div className={styles.template}>
@@ -37,14 +38,17 @@ export const TemplateGridItem = (props: TemplateGridItemProps) => {
 							innerColor={'var(--template-item-background)'}
 							outerColor={'transparent'}
 							style={{
-								width: 'calc(100% - 6px)',
+								width: 'calc(100% - 2px)',
 								height: 'auto',
-								aspectRatio: 16 / 9
+								aspectRatio: 16 / 9,
+								marginLeft: 1,
+								marginTop: 1
 							}}
 						>
 							<>
-								<img className={styles.templateImage} src={getPreview(template)} alt={template.title} />
-								<div className={styles.templateImageStub} />
+								<ExaZoom className={styles.templateImageStub}>
+									<img className={styles.templateImage} src={getPreview(template)} alt={template.title} />
+								</ExaZoom>
 							</>
 						</ExaShape>
 						<h3 className={styles.templateTitle}>{template.title}</h3>
