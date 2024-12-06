@@ -36,6 +36,11 @@ export const TemplateGridItem = (props: TemplateGridItemProps) => {
 							innerBorderWidth={2}
 							innerColor={'var(--template-item-background)'}
 							outerColor={'transparent'}
+							style={{
+								width: 'calc(100% - 6px)',
+								height: 'auto',
+								aspectRatio: 16 / 9
+							}}
 						>
 							<>
 								<img className={styles.templateImage} src={getPreview(template)} alt={template.title} />

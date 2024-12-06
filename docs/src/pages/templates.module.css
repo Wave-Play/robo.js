@@ -184,7 +184,7 @@ body {
 
 .templateItem {
 	width: 444px;
-	height: 382px;
+	height: auto;
 	max-width: calc(100vw - 32px);
 	color: unset;
 	position: relative;
@@ -200,7 +200,7 @@ body {
 
 .templateImage {
 	width: calc(100% - 6px);
-	height: calc(249.75px - 5px);
+	height: auto;
 	position: absolute;
 	left: 3px;
 	top: 3px;
@@ -209,7 +209,8 @@ body {
 
 .templateImageStub {
 	width: 100%;
-	height: 249.75px;
+	height: auto;
+	aspect-ratio: 16 / 9;
 	background-color: var(--template-item-background);
 }
 
