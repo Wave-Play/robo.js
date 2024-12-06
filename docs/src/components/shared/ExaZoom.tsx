@@ -1,4 +1,4 @@
-import React, { CSSProperties, MouseEvent, ReactNode } from 'react'
+import React, { CSSProperties, useState, useRef, useEffect, ReactNode } from 'react'
 
 interface ExaZoomProps {
 	children: ReactNode
@@ -10,6 +10,9 @@ interface ExaZoomProps {
 
 export const ExaZoom = (props: ExaZoomProps) => {
 	const { children, className, scale = 1.06, style, transitionDuration = '0.3s' } = props
+	const [isHovered, setIsHovered] = useState(false)
+	const containerRef = useRef<HTMLDivElement>(null)
+
 	const containerStyle: CSSProperties = {
 		display: 'flex',
 		overflow: 'hidden',
@@ -19,19 +22,47 @@ export const ExaZoom = (props: ExaZoomProps) => {
 
 	const innerStyle: CSSProperties = {
 		display: 'flex',
-		transition: `transform ${transitionDuration} ease`
+		transition: `transform ${transitionDuration} ease`,
+		transform: isHovered ? `scale(${scale})` : 'scale(1)'
 	}
 
-	const handleMouseEnter = (e: MouseEvent<HTMLDivElement>) => {
-		;(e.currentTarget.firstChild as HTMLElement).style.transform = `scale(${scale})`
-	}
+	useEffect(() => {
+		const node = containerRef.current
+		if (node) {
+			// Mouse event handlers
+			const handleMouseEnter = () => setIsHovered(true)
+			const handleMouseLeave = () => setIsHovered(false)
 
-	const handleMouseLeave = (e: MouseEvent<HTMLDivElement>) => {
-		;(e.currentTarget.firstChild as HTMLElement).style.transform = 'scale(1)'
-	}
+			// Touch event handlers
+			const handleTouchStart = () => setIsHovered(true)
+			const handleTouchEnd = () => setIsHovered(false)
+			const handleTouchCancel = () => setIsHovered(false)
+			const handleTouchMove = () => setIsHovered(false)
+
+			// Add mouse event listeners
+			node.addEventListener('mouseenter', handleMouseEnter)
+			node.addEventListener('mouseleave', handleMouseLeave)
+
+			// Add touch event listeners
+			node.addEventListener('touchstart', handleTouchStart)
+			node.addEventListener('touchend', handleTouchEnd)
+			node.addEventListener('touchcancel', handleTouchCancel)
+			node.addEventListener('touchmove', handleTouchMove)
+
+			// Cleanup event listeners on unmount
+			return () => {
+				node.removeEventListener('mouseenter', handleMouseEnter)
+				node.removeEventListener('mouseleave', handleMouseLeave)
+				node.removeEventListener('touchstart', handleTouchStart)
+				node.removeEventListener('touchend', handleTouchEnd)
+				node.removeEventListener('touchcancel', handleTouchCancel)
+				node.removeEventListener('touchmove', handleTouchMove)
+			}
+		}
+	}, [])
 
 	return (
-		<div style={containerStyle} className={className} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+		<div ref={containerRef} style={containerStyle} className={className}>
 			<div style={innerStyle}>{children}</div>
 		</div>
 	)

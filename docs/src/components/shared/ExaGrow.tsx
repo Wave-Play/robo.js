@@ -1,4 +1,4 @@
-import React, { CSSProperties, useState } from 'react'
+import React, { CSSProperties, useState, useRef, useEffect } from 'react'
 
 interface GrowOnHoverProps {
 	children: React.ReactNode
@@ -10,6 +10,7 @@ interface GrowOnHoverProps {
 export const ExaGrow = (props: GrowOnHoverProps) => {
 	const { children, className, scale = 1.1, style } = props
 	const [isHovered, setIsHovered] = useState(false)
+	const divRef = useRef<HTMLDivElement>(null)
 
 	const combinedStyle: CSSProperties = {
 		display: 'flex',
@@ -18,13 +19,43 @@ export const ExaGrow = (props: GrowOnHoverProps) => {
 		...style
 	}
 
+	useEffect(() => {
+		const node = divRef.current
+		if (node) {
+			// Mouse event handlers
+			const handleMouseEnter = () => setIsHovered(true)
+			const handleMouseLeave = () => setIsHovered(false)
+
+			// Touch event handlers
+			const handleTouchStart = () => setIsHovered(true)
+			const handleTouchEnd = () => setIsHovered(false)
+			const handleTouchCancel = () => setIsHovered(false)
+			const handleTouchMove = () => setIsHovered(false)
+
+			// Add mouse event listeners
+			node.addEventListener('mouseenter', handleMouseEnter)
+			node.addEventListener('mouseleave', handleMouseLeave)
+
+			// Add touch event listeners
+			node.addEventListener('touchstart', handleTouchStart)
+			node.addEventListener('touchend', handleTouchEnd)
+			node.addEventListener('touchcancel', handleTouchCancel)
+			node.addEventListener('touchmove', handleTouchMove)
+
+			// Cleanup event listeners on unmount
+			return () => {
+				node.removeEventListener('mouseenter', handleMouseEnter)
+				node.removeEventListener('mouseleave', handleMouseLeave)
+				node.removeEventListener('touchstart', handleTouchStart)
+				node.removeEventListener('touchend', handleTouchEnd)
+				node.removeEventListener('touchcancel', handleTouchCancel)
+				node.removeEventListener('touchmove', handleTouchMove)
+			}
+		}
+	}, [])
+
 	return (
-		<div
-			className={className}
-			style={combinedStyle}
-			onMouseEnter={() => setIsHovered(true)}
-			onMouseLeave={() => setIsHovered(false)}
-		>
+		<div ref={divRef} className={className} style={combinedStyle}>
 			{children}
 		</div>
 	)

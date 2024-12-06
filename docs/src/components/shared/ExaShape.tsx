@@ -49,13 +49,32 @@ export const ExaShape = (props: ExaShapeProps) => {
 	useEffect(() => {
 		const node = containerRef.current
 		if (node) {
+			// Mouse event handlers
 			const handleMouseEnter = () => setHovering(true)
 			const handleMouseLeave = () => setHovering(false)
+
+			// Touch event handlers
+			const handleTouchStart = () => setHovering(true)
+			const handleTouchEnd = () => setHovering(false)
+			const handleTouchCancel = () => setHovering(false)
+			const handleTouchMove = () => setHovering(false)
+
+			// Add event listeners
 			node.addEventListener('mouseenter', handleMouseEnter)
 			node.addEventListener('mouseleave', handleMouseLeave)
+			node.addEventListener('touchstart', handleTouchStart)
+			node.addEventListener('touchend', handleTouchEnd)
+			node.addEventListener('touchcancel', handleTouchCancel)
+			node.addEventListener('touchmove', handleTouchMove)
+
+			// Cleanup event listeners on unmount
 			return () => {
 				node.removeEventListener('mouseenter', handleMouseEnter)
 				node.removeEventListener('mouseleave', handleMouseLeave)
+				node.removeEventListener('touchstart', handleTouchStart)
+				node.removeEventListener('touchend', handleTouchEnd)
+				node.removeEventListener('touchcancel', handleTouchCancel)
+				node.removeEventListener('touchmove', handleTouchMove)
 			}
 		}
 	}, [containerRef])
@@ -129,7 +148,9 @@ export const ExaShape = (props: ExaShapeProps) => {
 					stroke={currentOuterColor}
 					strokeWidth={innerBorderWidth}
 					strokeOpacity={0.69}
-					style={{ transition: 'fill 0.3s, stroke 0.3s ease-in-out' }}
+					style={{
+						transition: 'fill 0.3s, stroke 0.3s ease-in-out'
+					}}
 				/>
 				{accentLineWidth > 0 && (
 					<>
