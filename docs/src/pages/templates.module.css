@@ -4,6 +4,7 @@
 	--spacing-horizontal: 40px;
 	--filter-display: flex;
 	--template-columns: 2;
+	--template-page-title-size: 64px;
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -20,14 +21,17 @@
 }
 @media (max-width: 1000px) {
 	:root {
-		--filter-display: none;
 		--template-columns: 1;
 	}
 }
 @media (max-width: 1280px) {
 	:root {
-		--filter-display: none;
+		--template-page-title-size: 48px;
 	}
+}
+
+[class*="fresnel-"] {
+  display: contents;
 }
 
 .root {
@@ -53,7 +57,7 @@ body {
 }
 
 .title {
-	font-size: 64px;
+	font-size: var(--template-page-title-size);
 	font-weight: 700;
 	text-align: center;
 }
@@ -73,7 +77,6 @@ body {
 .filterBar {
 	width: 240px;
 	height: calc(100vh - 64px);
-	display: var(--filter-display);
 	flex-direction: column;
 	position: sticky;
 	top: 64px;

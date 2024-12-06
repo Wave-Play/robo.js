@@ -5,6 +5,7 @@ import styles from './templates.module.css'
 import { TemplateFilters } from '../components/templates/TemplateFilters'
 import { TemplateGrid } from '../components/templates/TemplateGrid'
 import { TemplateNew } from '../components/templates/TemplateNew'
+import { Media } from '../components/shared/Breakpoints'
 
 export default function TemplatesPage() {
 	return (
@@ -17,10 +18,12 @@ export default function TemplatesPage() {
 						Robo.js
 					</h1>
 					<p className={styles.subtitle}>
-						Start with pre-built examples from <strong className='waveplay'>WavePlay</strong> and our community.
+						Start with pre-built examples from <strong className="waveplay">WavePlay</strong> and our community.
 					</p>
 					<div className={styles.row}>
-						<TemplateFilters />
+						<Media greaterThanOrEqual="lg">
+							<TemplateFilters />
+						</Media>
 						<TemplateGrid />
 					</div>
 					<TemplateNew />
