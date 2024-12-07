@@ -17,7 +17,7 @@ export interface TemplateFilter {
 	value: string
 }
 
-const ImageBase = 'https://novels-data-homes-photographs.trycloudflare.com/templates/'
+const ImageBase = 'https://robojs.dev/templates/'
 
 export const Filters: TemplateFilter[] = [
 	{
