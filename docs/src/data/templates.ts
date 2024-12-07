@@ -149,17 +149,19 @@ export const Templates: Template[] = [
 	},
 	{
 		author: 'Arnav K',
+		decorator: false,
 		description: 'A 2D game made with KAPLAY and TypeScript.',
 		href: './discord-activities/2d-game',
-		images: [],
+		images: [ImageBase + '2d-game.png'],
 		tags: ['Discord Activity', 'TypeScript'],
 		title: '2D Game'
 	},
 	{
 		author: 'Sideways-Sky',
+		decorator: false,
 		description: 'Game powered by the Godot Engine and TypeScript.',
 		href: './discord-activities/godot',
-		images: [],
+		images: [ImageBase + 'godot.png'],
 		tags: ['Discord Activity', 'TypeScript'],
 		title: 'Godot'
 	},
@@ -358,7 +360,7 @@ export const Templates: Template[] = [
 const Host = 'https://preview.robojs.dev/template'
 
 export function getPreview(template: Template) {
-	if (!template.decorator && template.images.length) {
+	if (template.decorator !== false && template.images.length) {
 		return (
 			Host +
 			'?title=' +
