@@ -6,6 +6,7 @@
 	--template-columns: 2;
 	--template-page-title-size: 64px;
 	--template-search-height: 40px;
+	--template-search-padding-horizontal: 0px;
 	--templates-container-direction: row;
 	--templates-container-gap: 48px;
 }
@@ -31,13 +32,14 @@
 	:root {
 		--template-page-title-size: 48px;
 		--template-search-height: 48px;
+		--template-search-padding-horizontal: 16px;
 		--templates-container-gap: 16px;
 		--templates-container-direction: column;
 	}
 }
 
-[class*="fresnel-"] {
-  display: contents;
+[class*='fresnel-'] {
+	display: contents;
 }
 
 .root {
@@ -89,6 +91,39 @@ body {
 	padding-top: 24px;
 }
 
+.filterBarMobile {
+	width: 100%;
+	display: flex;
+	gap: 16px;
+	flex-direction: row;
+	overflow-x: scroll;
+	z-index: 4;
+	scrollbar-width: none;
+	padding-top: 8px;
+	padding-bottom: 8px;
+	padding-left: 16px;
+	padding-right: 16px;
+}
+
+.filterContainerMobile {
+	width: 100vw;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	position: sticky;
+	margin-left: -16px;
+	top: calc(var(--ifm-navbar-height) - 1px);
+	background-color: var(--robo-navbar-background-color);
+	-webkit-backdrop-filter: blur(10px);
+	backdrop-filter: blur(10px);
+	z-index: 4;
+}
+
+.filterDivider {
+	border-bottom: 1px solid var(--robo-navbar-border-color);
+}
+
 .filterTitle {
 	font-size: 20px;
 	font-weight: 600;
@@ -96,16 +131,16 @@ body {
 }
 
 .searchContainer {
-	width: 100%;
+	width: calc(100% - var(--template-search-padding-horizontal) * 2);
 	height: var(--template-search-height);
 	display: flex;
-	background: var(--docsearch-searchbox-background);
+	background-color: var(--robo-navbar-background-color);
+	-webkit-backdrop-filter: blur(10px);
+	backdrop-filter: blur(10px);
 	border-color: rgba(255, 255, 255, 0.12);
 	flex-direction: row;
-	position: sticky;
-	top: 80px;
-	z-index: 9;
 	align-items: center;
+	margin-top: 16px;
 }
 
 .searchIcon {
@@ -138,16 +173,16 @@ body {
 }
 
 .filterOption {
-	width: 100%;
 	height: 48px;
 	display: flex;
 	background-color: transparent;
 	flex-direction: row;
 	border-radius: 0px;
 	border-width: 0px;
-	transition: background-color 0.3s ease-in-out;
+	transition: background-color 0.2s ease-in-out;
 	align-items: center;
 	cursor: pointer;
+	white-space: nowrap;
 }
 
 .filterOptionUnselected:hover {
