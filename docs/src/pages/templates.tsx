@@ -6,6 +6,7 @@ import { TemplateFilters } from '../components/templates/TemplateFilters'
 import { TemplateGrid } from '../components/templates/TemplateGrid'
 import { TemplateNew } from '../components/templates/TemplateNew'
 import { Media } from '../components/shared/Breakpoints'
+import { TemplateSearch } from '../components/templates/TemplateSearch'
 
 export default function TemplatesPage() {
 	return (
@@ -20,9 +21,12 @@ export default function TemplatesPage() {
 					<p className={styles.subtitle}>
 						Start with pre-built examples from <strong className="waveplay">WavePlay</strong> and our community.
 					</p>
-					<div className={styles.row}>
+					<div className={styles.templatesContainer}>
 						<Media greaterThanOrEqual="lg">
 							<TemplateFilters />
+						</Media>
+						<Media lessThan="lg">
+							<TemplateSearch />
 						</Media>
 						<TemplateGrid />
 					</div>

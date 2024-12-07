@@ -5,6 +5,9 @@
 	--filter-display: flex;
 	--template-columns: 2;
 	--template-page-title-size: 64px;
+	--template-search-height: 40px;
+	--templates-container-direction: row;
+	--templates-container-gap: 48px;
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -24,9 +27,12 @@
 		--template-columns: 1;
 	}
 }
-@media (max-width: 1280px) {
+@media (max-width: 1279px) {
 	:root {
 		--template-page-title-size: 48px;
+		--template-search-height: 48px;
+		--templates-container-gap: 16px;
+		--templates-container-direction: column;
 	}
 }
 
@@ -66,12 +72,12 @@ body {
 	text-align: center;
 }
 
-.row {
+.templatesContainer {
 	width: 100%;
 	display: flex;
-	flex-direction: row;
+	flex-direction: var(--templates-container-direction);
 	margin-top: 48px;
-	gap: 48px;
+	gap: var(--templates-container-gap);
 }
 
 .filterBar {
@@ -91,18 +97,21 @@ body {
 
 .searchContainer {
 	width: 100%;
-	height: 40px;
+	height: var(--template-search-height);
 	display: flex;
 	background: var(--docsearch-searchbox-background);
 	border-color: rgba(255, 255, 255, 0.12);
 	flex-direction: row;
+	position: sticky;
+	top: 80px;
+	z-index: 9;
 	align-items: center;
 }
 
 .searchIcon {
 	pointer-events: none;
 	position: absolute;
-	left: 12px;
+	margin-left: 12px;
 }
 
 .searchInput {
