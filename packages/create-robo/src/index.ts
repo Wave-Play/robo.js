@@ -287,7 +287,7 @@ new Command('create-robo <projectName>')
 			logger.log(Indent, '   - Documentation:', HighlightBlue('https://robojs.dev/discord-bots'))
 			logger.log(Indent, '   - Context commands:', HighlightBlue('https://robojs.dev/discord-bots/context-menu'))
 			logger.log(Indent, '   - Slash commands:', HighlightBlue('https://robojs.dev/discord-bots/commands'))
-			logger.log(Indent, '   - ✨🎃 Hacktoberfest:', HighlightMagenta('https://robojs.dev/hacktoberfest'))
+			// logger.log(Indent, '   - ✨🎃 Hacktoberfest:', HighlightMagenta('https://robojs.dev/hacktoberfest'))
 		}
 
 		logger.log('')
