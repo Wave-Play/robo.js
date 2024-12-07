@@ -3,13 +3,14 @@ import React, { CSSProperties, useState, useRef, useEffect, ReactNode } from 're
 interface ExaZoomProps {
 	children: ReactNode
 	className?: string
+	origin?: string
 	scale?: number
 	style?: CSSProperties
 	transitionDuration?: string
 }
 
 export const ExaZoom = (props: ExaZoomProps) => {
-	const { children, className, scale = 1.06, style, transitionDuration = '0.3s' } = props
+	const { children, className, origin, scale = 1.06, style, transitionDuration = '0.3s' } = props
 	const [isHovered, setIsHovered] = useState(false)
 	const containerRef = useRef<HTMLDivElement>(null)
 
@@ -23,6 +24,7 @@ export const ExaZoom = (props: ExaZoomProps) => {
 	const innerStyle: CSSProperties = {
 		display: 'flex',
 		transition: `transform ${transitionDuration} ease`,
+		transformOrigin: origin,
 		transform: isHovered ? `scale(${scale})` : 'scale(1)'
 	}
 

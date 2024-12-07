@@ -46,7 +46,11 @@ export const TemplateGridItem = (props: TemplateGridItemProps) => {
 							}}
 						>
 							<>
-								<ExaZoom className={styles.templateImageStub}>
+								<ExaZoom
+									className={styles.templateImageStub}
+									origin={template.decorator === false ? 'center' : 'center right'}
+									scale={template.decorator === false ? 1.06 : 1.25}
+								>
 									<img className={styles.templateImage} src={getPreview(template)} alt={template.title} />
 								</ExaZoom>
 							</>

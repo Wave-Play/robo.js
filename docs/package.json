@@ -11,6 +11,7 @@
 		"deploy": "docusaurus deploy",
 		"clear": "docusaurus clear",
 		"serve": "docusaurus serve",
+		"tunnel": "cloudflared tunnel --url http://localhost:3000",
 		"write-translations": "docusaurus write-translations",
 		"write-heading-ids": "docusaurus write-heading-ids"
 	},

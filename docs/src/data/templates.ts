@@ -17,6 +17,8 @@ export interface TemplateFilter {
 	value: string
 }
 
+const ImageBase = 'https://novels-data-homes-photographs.trycloudflare.com/templates/'
+
 export const Filters: TemplateFilter[] = [
 	{
 		icon: mdiDotsGrid,
@@ -75,7 +77,6 @@ export const Templates: Template[] = [
 	},
 	{
 		author: 'WavePlay',
-		decorator: true,
 		description: 'A basic JavaScript bot using Robo.js.',
 		href: './discord-bots/starter-js',
 		images: [],
@@ -84,7 +85,6 @@ export const Templates: Template[] = [
 	},
 	{
 		author: 'WavePlay',
-		decorator: true,
 		description: 'A basic TypeScript bot using Robo.js.',
 		href: './discord-bots/starter-ts',
 		images: [],
@@ -95,7 +95,7 @@ export const Templates: Template[] = [
 		author: 'WavePlay',
 		description: 'A basic Unity template for Discord Activities.',
 		href: './discord-activities/unity',
-		images: [],
+		images: [ImageBase + 'unity.png'],
 		tags: ['Discord Activity', 'TypeScript'],
 		title: 'Unity'
 	},
@@ -103,7 +103,7 @@ export const Templates: Template[] = [
 		author: 'WavePlay',
 		description: 'A simplified TypeScript template using Colyseus.',
 		href: './discord-activities/react-colyseus-ts',
-		images: [],
+		images: [ImageBase + 'colyseus.png'],
 		tags: ['Discord Activity', 'TypeScript'],
 		title: 'Multiplayer Colyseus'
 	},
@@ -117,7 +117,7 @@ export const Templates: Template[] = [
 	},
 	{
 		author: 'MrJAwesome',
-		description: 'An all-in-one toolkit for developers by MrJAwesome.',
+		description: 'An all-in-one toolkit for developers.',
 		href: './discord-bots/mrjawesome-dev-toolkit-js',
 		images: [],
 		tags: ['Discord Bot', 'MrJAwesome', 'JavaScript'],
@@ -125,7 +125,7 @@ export const Templates: Template[] = [
 	},
 	{
 		author: 'MrJAwesome',
-		description: 'An all-in-one toolkit for developers by MrJAwesome.',
+		description: 'An all-in-one toolkit for developers.',
 		href: './discord-bots/mrjawesome-dev-toolkit-ts',
 		images: [],
 		tags: ['Discord Bot', 'MrJAwesome', 'TypeScript'],
@@ -133,7 +133,7 @@ export const Templates: Template[] = [
 	},
 	{
 		author: 'MrJAwesome',
-		description: 'Quickstart for creating slash commands by MrJAwesome.',
+		description: 'Quickstart for creating slash commands.',
 		href: './discord-bots/mrjawesome-slash-commands-js',
 		images: [],
 		tags: ['Discord Bot', 'MrJAwesome', 'JavaScript'],
@@ -141,7 +141,7 @@ export const Templates: Template[] = [
 	},
 	{
 		author: 'MrJAwesome',
-		description: 'Quickstart for creating slash commands by MrJAwesome.',
+		description: 'Quickstart for creating slash commands.',
 		href: './discord-bots/mrjawesome-slash-commands-ts',
 		images: [],
 		tags: ['Discord Bot', 'MrJAwesome', 'TypeScript'],
@@ -183,7 +183,7 @@ export const Templates: Template[] = [
 		author: 'WavePlay',
 		description: 'Starter Discord Activity set up with Firebase Firestore.',
 		href: './discord-activities/react-firebase-ts',
-		images: [],
+		images: [ImageBase + 'firebase.png'],
 		tags: ['Discord Activity', 'TypeScript'],
 		title: 'Discord Activity w/ Firebase'
 	},
@@ -191,7 +191,7 @@ export const Templates: Template[] = [
 		author: 'waru',
 		description: 'A basic TypeScript template using Tailwind CSS.',
 		href: './discord-activities/react-tailwind-ts',
-		images: [],
+		images: [ImageBase + 'tailwind.png'],
 		tags: ['Discord Activity', 'TypeScript'],
 		title: 'TailwindCSS'
 	},
@@ -199,7 +199,7 @@ export const Templates: Template[] = [
 		author: 'waru',
 		description: 'A basic TypeScript template using Tailwind and shadcn.',
 		href: './discord-activities/react-tailwind-shadcn-ts',
-		images: [],
+		images: [ImageBase + 'shadcn.png'],
 		tags: ['Discord Activity', 'TypeScript'],
 		title: 'TailwindCSS + shadcn/ui'
 	},
@@ -207,7 +207,7 @@ export const Templates: Template[] = [
 		author: 'WavePlay',
 		description: 'A basic TypeScript template using tRPC and React.',
 		href: './discord-activities/react-trpc-ts',
-		images: [],
+		images: [ImageBase + 'trpc.png'],
 		tags: ['Discord Activity', 'TypeScript'],
 		title: 'tRPC'
 	},
@@ -223,7 +223,7 @@ export const Templates: Template[] = [
 		author: 'WavePlay',
 		description: 'A bot using MongoDB and TypeScript.',
 		href: './discord-bots/mongodb-ts',
-		images: [],
+		images: [ImageBase + 'mongodb.png'],
 		tags: ['Discord Bot', 'TypeScript'],
 		title: 'MongoDB'
 	},
@@ -231,7 +231,7 @@ export const Templates: Template[] = [
 		author: 'waru',
 		description: 'A bot using PostgreSQL and TypeScript.',
 		href: './discord-bots/postgres-ts',
-		images: [],
+		images: [ImageBase + 'postgres.png'],
 		tags: ['Discord Bot', 'TypeScript'],
 		title: 'PostgreSQL'
 	},
@@ -239,7 +239,7 @@ export const Templates: Template[] = [
 		author: 'waru',
 		description: 'A bot using Prisma ORM and TypeScript.',
 		href: './discord-bots/prisma-ts',
-		images: [],
+		images: [ImageBase + 'prisma.png'],
 		tags: ['Discord Bot', 'TypeScript'],
 		title: 'Prisma'
 	},
@@ -255,7 +255,7 @@ export const Templates: Template[] = [
 		author: 'WavePlay',
 		description: 'Track bot usage over time. A TypeScript bot.',
 		href: './discord-bots/analytics-ts',
-		images: [],
+		images: [ImageBase + 'analytics.png'],
 		tags: ['Discord Bot', 'TypeScript'],
 		title: 'Analytics'
 	},
@@ -263,7 +263,7 @@ export const Templates: Template[] = [
 		author: 'WavePlay',
 		description: 'A basic JavaScript template without any UI libraries.',
 		href: './discord-activities/vanilla-js',
-		images: [],
+		images: [ImageBase + 'html5.png'],
 		tags: ['Discord Activity', 'JavaScript'],
 		title: 'Vanilla Starter'
 	},
@@ -271,7 +271,7 @@ export const Templates: Template[] = [
 		author: 'WavePlay',
 		description: 'A basic TypeScript template without any UI libraries.',
 		href: './discord-activities/vanilla-ts',
-		images: [],
+		images: [ImageBase + 'html5.png'],
 		tags: ['Discord Activity', 'TypeScript'],
 		title: 'Vanilla Starter'
 	},
@@ -279,7 +279,7 @@ export const Templates: Template[] = [
 		author: 'WavePlay',
 		description: 'Starter template containerized with Docker.',
 		href: './discord-bots/docker-ts',
-		images: [],
+		images: [ImageBase + 'docker.png'],
 		tags: ['Discord Bot', 'TypeScript'],
 		title: 'Docker'
 	},
@@ -319,7 +319,7 @@ export const Templates: Template[] = [
 		author: 'WavePlay',
 		description: 'A basic JavaScript web app using Robo.js.',
 		href: './web-apps/react-js',
-		images: [],
+		images: [ImageBase + 'react.png'],
 		tags: ['Web App', 'JavaScript'],
 		title: 'React Starter'
 	},
@@ -327,7 +327,7 @@ export const Templates: Template[] = [
 		author: 'WavePlay',
 		description: 'A basic TypeScript web app using Robo.js.',
 		href: './web-apps/react-ts',
-		images: [],
+		images: [ImageBase + 'react.png'],
 		tags: ['Web App', 'TypeScript'],
 		title: 'React Starter'
 	},
@@ -335,7 +335,7 @@ export const Templates: Template[] = [
 		author: 'Matej Bošnjak',
 		description: 'Svelte web app using JavaScript.',
 		href: './web-apps/svelte-js',
-		images: [],
+		images: [ImageBase + 'svelte.png'],
 		tags: ['Web App', 'JavaScript'],
 		title: 'Svelte Starter'
 	},
@@ -343,7 +343,7 @@ export const Templates: Template[] = [
 		author: 'Matej Bošnjak',
 		description: 'Svelte web app using TypeScript.',
 		href: './web-apps/svelte-ts',
-		images: [],
+		images: [ImageBase + 'svelte.png'],
 		tags: ['Web App', 'TypeScript'],
 		title: 'Svelte Starter'
 	}
@@ -358,7 +358,7 @@ export const Templates: Template[] = [
 const Host = 'https://preview.robojs.dev/template'
 
 export function getPreview(template: Template) {
-	if (template.decorator && template.images.length) {
+	if (!template.decorator && template.images.length) {
 		return (
 			Host +
 			'?title=' +
