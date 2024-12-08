@@ -1,5 +1,18 @@
 # create-robo
 
+## 0.14.6
+
+### Patch Changes
+
+- 82e3d0d: chore: removed hacktoberfest link
+- b3520ab: refactor: specify version range for vite and latest robo.js
+- Updated dependencies [5166d16]
+- Updated dependencies [777d33d]
+- Updated dependencies [e7807d0]
+- Updated dependencies [dfe4bdd]
+- Updated dependencies [0a670ec]
+  - robo.js@0.10.27
+
 ## 0.14.5
 
 ### Patch Changes

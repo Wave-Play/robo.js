@@ -1,5 +1,15 @@
 # robo.js
 
+## 0.10.27
+
+### Patch Changes
+
+- 5166d16: patch: register loaded config globally
+- 777d33d: patch(cli): escape login URLs on Windows
+- e7807d0: feat: intent management for events
+- dfe4bdd: feat: new `contexts` option for slash commands
+- 0a670ec: feat(config): define default member permissions
+
 ## 0.10.26
 
 ### Patch Changes
