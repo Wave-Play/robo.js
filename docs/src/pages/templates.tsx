@@ -7,10 +7,19 @@ import { TemplateGrid } from '../components/templates/TemplateGrid'
 import { TemplateNew } from '../components/templates/TemplateNew'
 import { Media } from '../components/shared/Breakpoints'
 import { TemplateFiltersMobile } from '../components/templates/TemplateFiltersMobile'
+import Head from '@docusaurus/Head'
+
+const OgImage = 'https://robojs.dev/templates/og-image.png'
 
 export default function TemplatesPage() {
 	return (
-		<Layout title={`Playground`} description="Try out Robo.js in your browser!">
+		<Layout title={`Built with Robo.js`} description="Explore prebuilt templates - Build Discord Apps in seconds">
+			<Head>
+				<meta property="og:image" content={OgImage} />
+				<meta property="og:image:width" content="1200" />
+				<meta property="og:image:height" content="600" />
+				<meta property="twitter:image" content={OgImage} />
+			</Head>
 			<main className={styles.root}>
 				<div className={styles.container}>
 					<h1 className={styles.title}>
