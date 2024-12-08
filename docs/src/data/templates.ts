@@ -117,33 +117,37 @@ export const Templates: Template[] = [
 	},
 	{
 		author: 'MrJAwesome',
+		decorator: false,
 		description: 'An all-in-one toolkit for developers.',
 		href: './discord-bots/mrjawesome-dev-toolkit-js',
-		images: [],
+		images: [ImageBase + 'mrjawesome.png'],
 		tags: ['Discord Bot', 'MrJAwesome', 'JavaScript'],
 		title: 'Dev Toolkit'
 	},
 	{
 		author: 'MrJAwesome',
+		decorator: false,
 		description: 'An all-in-one toolkit for developers.',
 		href: './discord-bots/mrjawesome-dev-toolkit-ts',
-		images: [],
+		images: [ImageBase + 'mrjawesome.png'],
 		tags: ['Discord Bot', 'MrJAwesome', 'TypeScript'],
 		title: 'Dev Toolkit'
 	},
 	{
 		author: 'MrJAwesome',
+		decorator: false,
 		description: 'Quickstart for creating slash commands.',
 		href: './discord-bots/mrjawesome-slash-commands-js',
-		images: [],
+		images: [ImageBase + 'mrjawesome.png'],
 		tags: ['Discord Bot', 'MrJAwesome', 'JavaScript'],
 		title: 'Slash Command Package'
 	},
 	{
 		author: 'MrJAwesome',
+		decorator: false,
 		description: 'Quickstart for creating slash commands.',
 		href: './discord-bots/mrjawesome-slash-commands-ts',
-		images: [],
+		images: [ImageBase + 'mrjawesome.png'],
 		tags: ['Discord Bot', 'MrJAwesome', 'TypeScript'],
 		title: 'Slash Command Package'
 	},
@@ -167,17 +171,19 @@ export const Templates: Template[] = [
 	},
 	{
 		author: 'WavePlay',
+		decorator: false,
 		description: "Bake 'n take orders with this Discord bot!",
 		href: './discord-bots/bake-n-take-js',
-		images: [],
+		images: [ImageBase + 'bake-n-take.png'],
 		tags: ['Discord Bot', 'JavaScript'],
 		title: "Bake n' Take"
 	},
 	{
 		author: 'WavePlay',
+		decorator: false,
 		description: "Bake 'n take orders with this Discord bot!",
 		href: './discord-bots/bake-n-take-ts',
-		images: [],
+		images: [ImageBase + 'bake-n-take.png'],
 		tags: ['Discord Bot', 'TypeScript'],
 		title: "Bake n' Take"
 	},
