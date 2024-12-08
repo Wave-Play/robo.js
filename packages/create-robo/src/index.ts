@@ -280,7 +280,7 @@ new Command('create-robo <projectName>')
 				'   - Multiplayer features:',
 				HighlightBlue('https://robojs.dev/discord-activities/multiplayer')
 			)
-			logger.log(Indent, '   - ✨🎃 Hacktoberfest:', HighlightMagenta('https://robojs.dev/hacktoberfest'))
+			// logger.log(Indent, '   - ✨🎃 Hacktoberfest:', HighlightMagenta('https://robojs.dev/hacktoberfest'))
 		} else if (options.kit === 'bot') {
 			logger.log('')
 			logger.log(Indent, '  ', color.bold('Learn more'))

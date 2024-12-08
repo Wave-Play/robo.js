@@ -664,7 +664,7 @@ export default class Robo {
 
 		// Robo.js and Discord.js are normal dependencies, unless this is a plugin
 		const roboPkg = 'robo.js'
-		const roboDep = roboPkg + (roboVersion ? `@${roboVersion}` : '')
+		const roboDep = roboPkg + (roboVersion ? `@${roboVersion}` : '@latest')
 
 		if (!this._isPlugin) {
 			dependencies.push(roboDep)
@@ -698,7 +698,7 @@ export default class Robo {
 		// App developers always get Vite
 		logger.debug(`Adding features:`, features)
 		if (this._isApp) {
-			devDependencies.push('vite')
+			devDependencies.push('vite@5')
 		}
 		if (this._selectedFeatures.includes('react') && this._isPlugin) {
 			devDependencies.push('react')
