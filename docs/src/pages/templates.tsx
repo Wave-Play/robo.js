@@ -13,7 +13,7 @@ const OgImage = 'https://robojs.dev/templates/og-image.png'
 
 export default function TemplatesPage() {
 	return (
-		<Layout title={`Built with Robo.js`} description="Explore prebuilt templates - Build Discord Apps in seconds">
+		<Layout title={`Built with Robo.js`} description="Explore pre-built examples from WavePlay and our community. Kickstart your Discord Apps in seconds with the perfect template.">
 			<Head>
 				<meta property="og:image" content={OgImage} />
 				<meta property="og:image:width" content="1200" />
