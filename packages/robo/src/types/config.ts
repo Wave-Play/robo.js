@@ -17,6 +17,7 @@ export interface Config {
 		disableBot?: boolean
 		incrementalBuilds?: boolean
 		shard?: boolean | ShardingManagerOptions
+		/** @deprecated Use `integrationTypes` in command config instead */
 		userInstall?: boolean
 	}
 	flashcore?: {

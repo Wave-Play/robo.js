@@ -381,6 +381,7 @@ export async function registerCommands(
 		]
 
 		// Inject user install if enabled
+		// TODO: Remove in v0.11
 		if (config.experimental?.userInstall) {
 			commandData.forEach((command) => {
 				command.integration_types = [ApplicationIntegrationType.GuildInstall, ApplicationIntegrationType.UserInstall]
