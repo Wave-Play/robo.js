@@ -1,5 +1,6 @@
 import type {
 	ApplicationCommandOptionChoiceData,
+	ApplicationIntegrationType,
 	Attachment,
 	AutocompleteInteraction,
 	CommandInteraction,
@@ -27,6 +28,7 @@ export interface CommandConfig extends BaseConfig {
 	/** @deprecated Use `contexts` instead */
 	dmPermission?: boolean
 	descriptionLocalizations?: Record<string, string>
+	integrationTypes?: CommandIntegrationType[]
 	nameLocalizations?: Record<string, string>
 	options?: readonly CommandOption[]
 	sage?: false | SageOptions
@@ -38,6 +40,8 @@ export type CommandContext = 'BotDM' | 'Guild' | 'PrivateChannel' | InteractionC
 export interface CommandEntry extends CommandConfig {
 	subcommands?: Record<string, CommandEntry>
 }
+
+export type CommandIntegrationType = 'GuildInstall' | 'UserInstall' | ApplicationIntegrationType
 
 export interface CommandOption {
 	autocomplete?: boolean

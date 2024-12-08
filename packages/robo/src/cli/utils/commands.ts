@@ -16,7 +16,14 @@ import { timeout } from './utils.js'
 import { bold, color } from '../../core/color.js'
 import { Flashcore } from '../../core/flashcore.js'
 import type { APIApplicationCommand, ApplicationCommandOptionBase } from 'discord.js'
-import type { CommandContext, CommandEntry, CommandOption, Config, ContextEntry } from '../../types/index.js'
+import type {
+	CommandContext,
+	CommandEntry,
+	CommandIntegrationType,
+	CommandOption,
+	Config,
+	ContextEntry
+} from '../../types/index.js'
 
 let logger: Logger = discordLogger
 
@@ -33,11 +40,13 @@ export function buildContextCommands(
 		}).fork('discord')
 	}
 	const defaultContexts = config.defaults?.contexts ?? DEFAULT_CONFIG.defaults.contexts
+	const defaultIntegrationTypes = config.defaults?.integrationTypes ?? DEFAULT_CONFIG.defaults.integrationTypes
 
 	return Object.entries(contextCommands).map(([key, entry]): ContextMenuCommandBuilder => {
 		logger.debug(`Building context command: ${key}`)
 		const commandBuilder = new ContextMenuCommandBuilder()
 			.setContexts((entry.contexts ?? defaultContexts).map(getContextType))
+			.setIntegrationTypes((entry.integrationTypes ?? defaultIntegrationTypes).map(getIntegrationType))
 			.setName(key)
 			.setNameLocalizations(entry.nameLocalizations || {})
 			.setType(type === 'message' ? 3 : 2)
@@ -66,6 +75,7 @@ export function buildSlashCommands(
 		})
 	}
 	const defaultContexts = config.defaults?.contexts ?? DEFAULT_CONFIG.defaults.contexts
+	const defaultIntegrationTypes = config.defaults?.integrationTypes ?? DEFAULT_CONFIG.defaults.integrationTypes
 
 	return Object.entries(commands).map(([key, entry]): SlashCommandBuilder => {
 		logger.debug(`Building slash command:`, key)
@@ -75,6 +85,7 @@ export function buildSlashCommands(
 			commandBuilder = new SlashCommandBuilder()
 				.setName(key)
 				.setContexts((entry.contexts ?? defaultContexts).map(getContextType))
+				.setIntegrationTypes((entry.integrationTypes ?? defaultIntegrationTypes).map(getIntegrationType))
 				.setNameLocalizations(entry.nameLocalizations || {})
 				.setDescription(entry.description || 'No description provided')
 				.setDescriptionLocalizations(entry.descriptionLocalizations || {})
@@ -471,4 +482,14 @@ export function getContextType(context: CommandContext): InteractionContextType 
 	}
 
 	return context
+}
+
+export function getIntegrationType(type: CommandIntegrationType): ApplicationIntegrationType {
+	if (type === 'GuildInstall') {
+		return ApplicationIntegrationType.GuildInstall
+	} else if (type === 'UserInstall') {
+		return ApplicationIntegrationType.UserInstall
+	}
+
+	return type
 }

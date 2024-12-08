@@ -25,7 +25,7 @@ import { Mode } from '../../core/mode.js'
 import { Compiler } from './compiler.js'
 import { IS_BUN_RUNTIME } from './runtime-utils.js'
 import { PermissionsString } from 'discord.js'
-import { getContextType } from './commands.js'
+import { getContextType, getIntegrationType } from './commands.js'
 
 // TODO:
 // - Ensure base manifest is always up to date (function-based instead of default object)
@@ -616,6 +616,9 @@ function getValue<T extends AllConfig>(
 		if ((config as CommandConfig).descriptionLocalizations) {
 			value.descriptionLocalizations = (config as CommandConfig).descriptionLocalizations
 		}
+		if ((config as CommandConfig).integrationTypes) {
+			value.integrationTypes = (config as CommandConfig).integrationTypes.map(getIntegrationType)
+		}
 		if ((config as CommandConfig).options) {
 			value.options = (config as CommandConfig).options.map((option) => {
 				const optionValue: CommandOption = {
@@ -670,11 +673,20 @@ function getValue<T extends AllConfig>(
 	}
 
 	if (type === 'context' && config !== undefined) {
+		if ((config as ContextConfig).contexts) {
+			value.contexts = (config as ContextConfig).contexts.map(getContextType)
+		}
+		if ((config as ContextConfig).nameLocalizations) {
+			value.nameLocalizations = (config as ContextConfig).nameLocalizations
+		}
 		if ((config as ContextConfig).defaultMemberPermissions) {
 			value.defaultMemberPermissions = (config as ContextConfig).defaultMemberPermissions
 		}
 		if ((config as ContextConfig).dmPermission !== undefined) {
 			value.dmPermission = (config as ContextConfig).dmPermission
+		}
+		if ((config as ContextConfig).integrationTypes) {
+			value.integrationTypes = (config as ContextConfig).integrationTypes.map(getIntegrationType)
 		}
 	}
 

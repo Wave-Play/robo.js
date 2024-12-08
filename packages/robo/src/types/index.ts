@@ -1,4 +1,4 @@
-import type { CommandContext } from './commands.js'
+import type { CommandContext, CommandIntegrationType } from './commands.js'
 
 export * from './api.js'
 export * from './commands.js'
@@ -11,6 +11,7 @@ export interface ContextConfig extends BaseConfig {
 	defaultMemberPermissions?: string | number | bigint
 	/** @deprecated Use `contexts` instead */
 	dmPermission?: boolean
+	integrationTypes?: CommandIntegrationType[]
 	nameLocalizations?: Record<string, string>
 	sage?: false | SageOptions
 	timeout?: number
