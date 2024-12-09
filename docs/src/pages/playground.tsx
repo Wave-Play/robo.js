@@ -1,6 +1,9 @@
 import React, { useEffect } from 'react'
 import Layout from '@theme/Layout'
 import sdk from '@stackblitz/sdk'
+import Head from '@docusaurus/Head'
+
+const OgImage = 'https://robojs.dev/playground/og-image.png'
 
 function Playground() {
 	useEffect(() => {
@@ -20,6 +23,12 @@ function Playground() {
 export default function Home() {
 	return (
 		<Layout title={`Playground`} description="Try out Robo.js in your browser!">
+			<Head>
+				<meta property="og:image" content={OgImage} />
+				<meta property="og:image:width" content="1200" />
+				<meta property="og:image:height" content="600" />
+				<meta property="twitter:image" content={OgImage} />
+			</Head>
 			<main
 				style={{
 					width: '100%',
