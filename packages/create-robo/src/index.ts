@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { Highlight, HighlightBlue, HighlightGreen, HighlightMagenta, HighlightRed, Indent } from './core/constants.js'
+import { Highlight, HighlightBlue, HighlightGreen, HighlightRed, Indent } from './core/constants.js'
 import Robo from './robo.js'
 import { IS_BUN_RUNTIME, getPackageManager, packageJson } from './utils.js'
 import path from 'node:path'
