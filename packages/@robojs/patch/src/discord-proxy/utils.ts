@@ -15,7 +15,7 @@ export function patchUrl(url: string | RequestInfo | URL, prefix = ProxyPrefix):
 	const newUrl = new URL(url instanceof Request ? url.url : String(url), base)
 
 	const isProxied =
-		ProxyHosts.some((host) => newUrl.hostname.endsWith(host)) ||
+		ProxyHosts.some((host) => newUrl.hostname.endsWith(host)) &&
 		!mappedPrefixes.find((prefix) => newUrl.pathname.startsWith(prefix))
 
 	if (isProxied && !newUrl.pathname.startsWith(prefix)) {
