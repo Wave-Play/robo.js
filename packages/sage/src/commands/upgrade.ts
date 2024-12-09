@@ -23,7 +23,7 @@ const command = new Command('upgrade')
 export default command
 
 interface UpgradeOptions {
-	autoAccept?: boolean
+	yes?: boolean
 	force?: boolean
 	selfCheck?: boolean
 	silent?: boolean
@@ -58,7 +58,8 @@ async function upgradeAction(options: UpgradeOptions) {
 	const update = await checkUpdates(packageJson, config, true)
 	logger.debug(`Update payload:`, update)
 
-	await updateRobo(plugins, config, options.autoAccept)
+	const autoAccept = options.yes
+	await updateRobo(plugins, config, autoAccept)
 }
 
 interface Changelog {
