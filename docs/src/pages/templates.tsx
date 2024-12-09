@@ -9,7 +9,7 @@ import { Media } from '../components/shared/Breakpoints'
 import { TemplateFiltersMobile } from '../components/templates/TemplateFiltersMobile'
 import Head from '@docusaurus/Head'
 
-const OgImage = 'https://robojs.dev/templates/og-image.png?c=1'
+const OgImage = 'https://robojs.dev/templates/og-image.png?c=2'
 
 export default function TemplatesPage() {
 	return (
