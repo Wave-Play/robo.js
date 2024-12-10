@@ -14,5 +14,5 @@ jobs:
           severity: info
           color: '#651FFF'
           text: '## 🚀 ${{ github.event.release.name }} is now available!'
-          details: '### ${{ github.event.release.body }}'
+          details: '${{ github.event.release.body }}'
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
