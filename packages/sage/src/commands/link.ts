@@ -7,7 +7,7 @@ import { homedir } from 'os'
 
 const command = new Command('link')
 	.description(
-		'Generate a Github action for continuous integration'
+		'Generate a Github action for continuous integrations'
 	)
 	.option('-s --silent', 'do not print anything')
 	.option('-v --verbose', 'print more information for debugging')
