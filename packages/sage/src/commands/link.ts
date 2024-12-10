@@ -1,14 +1,12 @@
 import { Command } from 'commander'
 import { logger } from '../core/logger.js'
 import path from 'path'
-import { existsSync, readFileSync,  writeFileSync } from 'fs'
-
+import { existsSync, writeFileSync } from 'fs'
+import { isRoboProject } from 'src/core/utils.js'
 import { homedir } from 'os'
 
 const command = new Command('link')
-	.description(
-		'Generate a Github action for continuous integrations'
-	)
+	.description('Generate a Github action for continuous integrations')
 	.option('-s --silent', 'do not print anything')
 	.option('-v --verbose', 'print more information for debugging')
 	.action(linkAction)
@@ -27,46 +25,36 @@ async function linkAction(options: LinkOptions) {
 	})
 	logger.debug(`CLI Options:`, options)
 
-    const IS_GITPROJECT = existsSync(path.join(process.cwd(), '.git'));
-
-    if(IS_GITPROJECT){
-        createGitWorkflow()
-    } else {
-        logger.error('Please make sure this is a Github repository before executin this command.')
-    }
-   
+	const isGitProject = existsSync(path.join(process.cwd(), '.git'))
+	const roboProject = isRoboProject()
+	if (isGitProject && roboProject) {
+		createGitWorkflow()
+	} else {
+		logger.error('Please make sure this is a Github and a Robo project  before executing this command.')
+	}
 }
 
+async function createGitWorkflow() {
+	// cannot use RoboPlaySession from Robo.
+	const HOME_DIR = homedir()
+	const ROBOPLAY_PATH = path.join(HOME_DIR, '.robo', 'roboplay', 'session.json')
 
-
-async function createGitWorkflow(){
-    // cannot use RoboPlaySession from Robo.
-    const HOME_DIR = homedir();
-    const ROBOPLAY_PATH = path.join(HOME_DIR, '.robo', 'roboplay', 'session.json');
-    
-    if(existsSync(ROBOPLAY_PATH)){
-        try {
-            const data = JSON.parse(readFileSync(ROBOPLAY_PATH, 'utf-8'))
-            const project = data.linkedProjects[process.cwd()]
-            const userToken = data.userToken;
-            const projectData = {
-                path: project,
-                id: project.podId
-            }
-            const workflowFile = await generateWorkflowFile();
-            writeFileSync(path.join(process.cwd(), '.github', 'workflows', 'ROBOPLAY_CI.yml'), workflowFile);
-        } catch(e){
-            logger.error(e)
-        }
-
-    } else {
-        logger.error('Roboplay folder does not exist, please make sure it exists before running this command.')
-    }
+	if (existsSync(ROBOPLAY_PATH)) {
+		try {
+			//const data = JSON.parse(readFileSync(ROBOPLAY_PATH, 'utf-8'))
+			//	const project = data.linkedProjects[process.cwd()]
+			const workflowFile = await generateWorkflowFile()
+			writeFileSync(path.join(process.cwd(), '.github', 'workflows', 'ROBOPLAY_CI.yml'), workflowFile)
+		} catch (e) {
+			logger.error(e)
+		}
+	} else {
+		logger.error('Roboplay folder does not exist, please make sure it exists before running this command.')
+	}
 }
 
-
-async function generateWorkflowFile(){
-    return `
+async function generateWorkflowFile() {
+	return `
     name: 'ROBOPLAY_CI'
     on:
     push:
@@ -74,7 +62,7 @@ async function generateWorkflowFile(){
         - main
 
     jobs:
-    Templates:
+    GeneratedCIRoboFile:
         runs-on: ubuntu-latest
         steps:
         - name: Check out repo
@@ -93,5 +81,5 @@ async function generateWorkflowFile(){
 
         - name: Deploy bot
             run: npx robo deploy --token \${{ secrets.ROBOPLAY_USER_TOKEN }}
-    `;
+    `
 }
