@@ -2,8 +2,9 @@ import { Command } from 'commander'
 import { logger } from '../core/logger.js'
 import path from 'path'
 import { existsSync, writeFileSync } from 'fs'
-import { isRoboProject } from 'src/core/utils.js'
+import { isRoboProject } from '../core/utils.js'
 import { homedir } from 'os'
+import { mkdirSync } from 'fs'
 
 const command = new Command('link')
 	.description('Generate a Github action for continuous integrations')
@@ -43,8 +44,13 @@ async function createGitWorkflow() {
 		try {
 			//const data = JSON.parse(readFileSync(ROBOPLAY_PATH, 'utf-8'))
 			//	const project = data.linkedProjects[process.cwd()]
+			const workflowPath = path.join(process.cwd(), '.github', 'workflows')
+
+			if (!existsSync(workflowPath)) {
+				mkdirSync(workflowPath, { recursive: true })
+			}
 			const workflowFile = await generateWorkflowFile()
-			writeFileSync(path.join(process.cwd(), '.github', 'workflows', 'ROBOPLAY_CI.yml'), workflowFile)
+			writeFileSync(path.join(workflowPath, 'ROBOPLAY_CI.yml'), workflowFile)
 		} catch (e) {
 			logger.error(e)
 		}
@@ -55,31 +61,33 @@ async function createGitWorkflow() {
 
 async function generateWorkflowFile() {
 	return `
-    name: 'ROBOPLAY_CI'
-    on:
-    push:
-        branches:
-        - main
+name: 'ROBOPLAY_CI'
+on:
+  push:
+    branches:
+    - main
 
-    jobs:
-    GeneratedCIRoboFile:
-        runs-on: ubuntu-latest
-        steps:
-        - name: Check out repo
-            uses: actions/checkout@v4
+jobs:
+  GeneratedCIRoboFile:
+      runs-on: ubuntu-latest
+      steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
 
-        - uses: pnpm/action-setup@v4
-            with:
-            version: 8.6.11
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
 
-        - name: Setup Node.js
-            uses: actions/setup-node@v4
-            with:
-            cache: 'pnpm'
-            node-version: 20
-            registry-url: 'https://registry.npmjs.org'
+      - name: Create session File
+        env:
+          ROBOPLAY_DATA: \${{ secrets.ROBOPLAY_DATA }}
+        run: |
+            ROBO_PATH="$HOME/.robo/roboplay"
+            mkdir -p $ROBO_PATH
+            SESSION="$ROBO_PATH/session.json"
+            DECODED_DATA=$(echo "$POD_DATA" | base64 --decode)
+            echo "$DECODED_DATA" > "$SESSION"
 
-        - name: Deploy bot
-            run: npx robo deploy --token \${{ secrets.ROBOPLAY_USER_TOKEN }}
+      - name: Deploy bot
+        run: npm install && npx robo deploy
     `
 }

@@ -21,7 +21,6 @@ const Space = ' '.repeat(8)
 
 const command = new Command('deploy')
 	.description('Deploys your bot to RoboPlay!')
-	.option('-t', '--token', 'user token')
 	.option('-s', '--silent', 'do not print anything')
 	.option('-v', '--verbose', 'print more information for debugging')
 	.option('-h', '--help', 'Shows the available command options')
@@ -29,7 +28,6 @@ const command = new Command('deploy')
 export default command
 
 interface DeployCommandOptions {
-	token?: string
 	silent?: boolean
 	verbose?: boolean
 }
@@ -67,12 +65,6 @@ async function deployAction(_args: string[], options: DeployCommandOptions) {
 	if (!session || !pod) {
 		logger.error(`You must be logged in to deploy to RoboPlay. Run ${Highlight('npx robo login')} to get started.`)
 		return
-	}
-
-	// if token is specified use token instead.
-	if (options.token) {
-		session.userToken = options.token
-		session.pods = 'Pod name to be determined..'
 	}
 
 	// Sorry, only bots are supported right now!
