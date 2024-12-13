@@ -99,6 +99,14 @@ Use `contexts` instead
 
 ***
 
+### integrationTypes?
+
+```ts
+optional integrationTypes: CommandIntegrationType[];
+```
+
+***
+
 ### nameLocalizations?
 
 ```ts

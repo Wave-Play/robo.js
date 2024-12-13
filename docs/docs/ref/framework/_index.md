@@ -38,6 +38,7 @@
 ## Type Aliases
 
 - [CommandContext](TypeAlias.CommandContext.md)
+- [CommandIntegrationType](TypeAlias.CommandIntegrationType.md)
 - [CommandOptions](TypeAlias.CommandOptions.md)
 - [CommandOptionTypes](TypeAlias.CommandOptionTypes.md)
 - [CommandResult](TypeAlias.CommandResult.md)

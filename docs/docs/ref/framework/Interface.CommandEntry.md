@@ -123,6 +123,18 @@ Use `contexts` instead
 
 ***
 
+### integrationTypes?
+
+```ts
+optional integrationTypes: CommandIntegrationType[];
+```
+
+#### Inherited from
+
+[`CommandConfig`](Interface.CommandConfig.md).[`integrationTypes`](Interface.CommandConfig.md#integrationtypes)
+
+***
+
 ### nameLocalizations?
 
 ```ts

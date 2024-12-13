@@ -22,6 +22,7 @@ optional defaults: object;
 | `defaultMemberPermissions`? | `string` \| `number` \| `bigint` |
 | `dev`? | `boolean` |
 | `help`? | `boolean` |
+| `integrationTypes`? | [`CommandIntegrationType`](TypeAlias.CommandIntegrationType.md)[] |
 
 ***
 
@@ -39,13 +40,13 @@ optional excludePaths: string[];
 optional experimental: object;
 ```
 
-| Name | Type |
-| ------ | ------ |
-| `buildDirectory`? | `string` |
-| `disableBot`? | `boolean` |
-| `incrementalBuilds`? | `boolean` |
-| `shard`? | `boolean` \| `ShardingManagerOptions` |
-| `userInstall`? | `boolean` |
+| Name | Type | Description |
+| ------ | ------ | ------ |
+| `buildDirectory`? | `string` | - |
+| `disableBot`? | `boolean` | - |
+| `incrementalBuilds`? | `boolean` | - |
+| `shard`? | `boolean` \| `ShardingManagerOptions` | - |
+| `userInstall`? | `boolean` | **Deprecated** Use `integrationTypes` in command config instead |
 
 ***
 
