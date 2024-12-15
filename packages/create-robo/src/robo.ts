@@ -14,12 +14,12 @@ import {
 	getPackageExecutor,
 	ROBO_CONFIG_APP,
 	Indent,
-	ExecOptions,
+	type ExecOptions,
 	Space,
 	EslintConfig,
 	EslintConfigTypescript
 } from './utils.js'
-import { RepoInfo, downloadAndExtractRepo, getRepoInfo, hasRepo } from './templates.js'
+import { type RepoInfo, downloadAndExtractRepo, getRepoInfo, hasRepo } from './templates.js'
 import retry from 'async-retry'
 import { color, logger } from 'robo.js'
 import { Spinner } from 'robo.js/dist/cli/utils/spinner.js'
@@ -1098,7 +1098,7 @@ export default class Robo {
 
 		// Normalize plugin path
 		const pluginPath =
-			path.join(this._workingDir, 'config', 'plugins', ...pluginParts) + this._useTypeScript ? '.ts' : '.mjs'
+			`${path.join(this._workingDir, 'config','plugins', ...pluginParts)}${this._useTypeScript ? '.ts' : '.mjs'}`
 		const pluginConfig = prettyStringify(config) + '\n'
 
 		logger.debug(`Writing ${pluginName} config to ${pluginPath}...`)
