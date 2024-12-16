@@ -1,5 +1,12 @@
 # create-robo
 
+## 0.14.7
+
+### Patch Changes
+
+- 3c7f36f: fix: correct file path concatenation for plugin configuration
+- a3eb40a: refactor(templates): removed .proxy prefix in react templates
+
 ## 0.14.6
 
 ### Patch Changes
