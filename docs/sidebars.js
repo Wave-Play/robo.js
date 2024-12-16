@@ -346,6 +346,37 @@ const sidebars = {
 		},
 		{
 			type: 'category',
+			label: 'Types',
+			items: [
+				{
+					id: 'ref/framework/Interface.CommandConfig',
+					label: 'CommandConfig',
+					type: 'doc'
+				},
+				{
+					id: 'ref/framework/TypeAlias.CommandContext',
+					label: 'CommandContext',
+					type: 'doc'
+				},
+				{
+					id: 'ref/framework/TypeAlias.CommandIntegrationType',
+					label: 'CommandIntegrationType',
+					type: 'doc'
+				},
+				{
+					id: 'ref/framework/Interface.CommandOption',
+					label: 'CommandOption',
+					type: 'doc'
+				},
+				{
+					id: 'ref/framework/TypeAlias.CommandOptionTypes',
+					label: 'CommandOptionTypes',
+					type: 'doc'
+				}
+			]
+		},
+		{
+			type: 'category',
 			label: 'Utilities',
 			items: [
 				{
@@ -356,6 +387,11 @@ const sidebars = {
 				{
 					id: 'ref/framework/Function.composeColors',
 					label: 'composeColors',
+					type: 'doc'
+				},
+				{
+					id: 'ref/framework/Function.createCommandConfig',
+					label: 'createCommandConfig',
 					type: 'doc'
 				},
 				{
