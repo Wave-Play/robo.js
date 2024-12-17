@@ -82,7 +82,7 @@ jobs:
             ROBO_PATH="$HOME/.robo/roboplay"
             mkdir -p $ROBO_PATH
             SESSION="$ROBO_PATH/session.json"
-            DECODED_DATA=$(echo "$POD_DATA" | base64 --decode)
+            DECODED_DATA=$(echo "$ROBOPLAY_DATA" | base64 --decode)
             echo "$DECODED_DATA" > "$SESSION"
 
       - name: Deploy bot
