@@ -36,7 +36,6 @@ async function linkAction(options: LinkOptions) {
 }
 
 async function createGitWorkflow() {
-	// cannot use RoboPlaySession from Robo.
 	const HOME_DIR = homedir()
 	const ROBOPLAY_PATH = path.join(HOME_DIR, '.robo', 'roboplay', 'session.json')
 
