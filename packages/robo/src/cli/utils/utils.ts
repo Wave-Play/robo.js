@@ -81,6 +81,7 @@ export function exec(command: string | string[], options?: SpawnOptions) {
 
 		// Resolve promise when child process exits
 		childProcess.on('error', reject)
+
 		childProcess.on('close', (code) => {
 			if (code === 0) {
 				resolve()

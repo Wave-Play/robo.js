@@ -108,7 +108,6 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
 		const packageManager = getPackageManager()
 		const command = packageManager === 'npm' ? 'install' : 'add'
 		logger.debug(`Using package manager:`, packageManager)
-
 		// Install dependencies using the package manager that triggered the command
 		try {
 			await exec([packageManager, command, ...pendingInstall], {
