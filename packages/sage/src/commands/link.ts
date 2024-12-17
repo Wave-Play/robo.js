@@ -42,8 +42,6 @@ async function createGitWorkflow() {
 
 	if (existsSync(ROBOPLAY_PATH)) {
 		try {
-			//const data = JSON.parse(readFileSync(ROBOPLAY_PATH, 'utf-8'))
-			//	const project = data.linkedProjects[process.cwd()]
 			const workflowPath = path.join(process.cwd(), '.github', 'workflows')
 
 			if (!existsSync(workflowPath)) {
