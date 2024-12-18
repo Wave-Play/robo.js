@@ -6,7 +6,7 @@ import { BUFFER, DEFAULT_CONFIG, TIMEOUT, discordLogger } from './constants.js'
 import { printErrorResponse } from './debug.js'
 import { color } from './color.js'
 import path from 'node:path'
-import type { AutocompleteInteraction } from 'discord.js'
+import type { AutocompleteInteraction, InteractionDeferReplyOptions, Message } from 'discord.js'
 import type { CommandConfig, ContextConfig, Event, HandlerRecord, PluginData } from '../types/index.js'
 import type { Collection } from 'discord.js'
 
@@ -57,7 +57,7 @@ export async function executeAutocompleteHandler(interaction: AutocompleteIntera
 
 		// Enforce timeout only if custom timeout is configured
 		if (timeoutDuration) {
-			promises.push(timeout(() => [], timeoutDuration))
+			promises.push(timeout((): unknown[] => [], timeoutDuration))
 		}
 
 		// Wait for response or timeout
@@ -121,6 +121,9 @@ export async function executeCommandHandler(interaction: CommandInteraction, com
 			throw `Missing default export function for command: ${color.bold('/' + commandKey)}`
 		}
 
+		// Patch deferReply to prevent failures due to multiple deferrals
+		patchDeferReply(interaction)
+
 		// Delegate to command handler
 		const options = extractCommandOptions(interaction, commandConfig?.options)
 		const result = command.handler.default(interaction, options)
@@ -134,6 +137,7 @@ export async function executeCommandHandler(interaction: CommandInteraction, com
 			if (raceResult === BUFFER && !interaction.replied) {
 				discordLogger.debug(`Sage is deferring async command...`)
 				promises.push(result)
+
 				if (!interaction.deferred) {
 					try {
 						await interaction.deferReply({ ephemeral: sage.ephemeral })
@@ -431,4 +435,38 @@ export function extractCommandOptions(interaction: CommandInteraction, commandOp
 	})
 
 	return options
+}
+
+function patchDeferReply(interaction: CommandInteraction) {
+	const originalDeferReply = interaction.deferReply.bind(interaction)
+	let deferredPromise: Promise<void> | Promise<Message> | undefined
+	let alreadyDeferredWithMessage = false
+
+	// @ts-expect-error - Patch the deferReply method to prevent multiple deferrals
+	interaction.deferReply = async function (
+		this: CommandInteraction,
+		options?: InteractionDeferReplyOptions
+	): Promise<void | Message> {
+		// If it's already been called, just return the stored promise
+		if (deferredPromise) {
+			// If user requests fetchReply this time but it wasn't fetched previously, just fetch it now.
+			if (options?.fetchReply && !alreadyDeferredWithMessage) {
+				return this.fetchReply()
+			}
+
+			return deferredPromise
+		}
+
+		// If not called yet:
+		if (options?.fetchReply) {
+			// @ts-expect-error - Defer and fetch the message right away
+			deferredPromise = originalDeferReply(options)
+			alreadyDeferredWithMessage = true
+			return deferredPromise
+		} else {
+			// @ts-expect-error - Defer without fetching
+			deferredPromise = originalDeferReply(options)
+			return deferredPromise
+		}
+	}
 }
