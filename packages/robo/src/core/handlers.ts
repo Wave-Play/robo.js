@@ -179,10 +179,15 @@ export async function executeCommandHandler(interaction: CommandInteraction, com
 
 		discordLogger.debug(`Sage is handling reply:`, response)
 		const reply = typeof response === 'string' ? { content: response } : response
-		if (interaction.deferred) {
+		const isValidReply = !reply.id
+		if (isValidReply && interaction.deferred) {
+			// TODO: Fix reply objects themselves being used here
 			await interaction.editReply(reply)
-		} else {
+		} else if (isValidReply) {
 			await interaction.reply(reply)
+		} else {
+			const command = color.bold('/' + commandKey)
+			discordLogger.warn(`Invalid return value for command ${command}. Did you accidentally return a message object?`)
 		}
 	} catch (error) {
 		discordLogger.error(error)
