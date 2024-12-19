@@ -1,5 +1,12 @@
 # robo.js
 
+## 0.10.28
+
+### Patch Changes
+
+- 6f4476c: patch: fixed race condition by patching `interaction.deferReply`
+- 97ae5bd: patch: warn when incorrect data object was returned in slash commands
+
 ## 0.10.27
 
 ### Patch Changes
