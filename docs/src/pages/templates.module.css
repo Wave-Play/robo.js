@@ -17,7 +17,7 @@
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
 [data-theme='dark'] {
-	--filter-option-label: rgb(142, 141, 145);
+	--robo-filter-option-label: rgba(142, 141, 145, 1);
 	--template-item-background: rgba(255, 255, 255, 0.04);
 }
 
@@ -217,7 +217,7 @@ body {
 }
 
 .filterOptionLabel {
-	color: var(--filter-option-label);
+	color: var(--robo-filter-option-label);
 	font-size: 14px;
 	font-weight: 400;
 	margin-left: 8px;
