@@ -9,6 +9,8 @@
 	--template-search-padding-horizontal: 0px;
 	--templates-container-direction: row;
 	--templates-container-gap: 24px;
+	--templates-layout-gap: 48px;
+	--templates-layout-padding: 24px;
 	--templates-container-flex: 1;
 	--template-item-width: calc(50% - (var(--templates-container-gap) / 2));
 }
@@ -36,6 +38,8 @@
 		--template-search-height: 48px;
 		--template-search-padding-horizontal: 16px;
 		--templates-container-gap: 16px;
+		--templates-layout-gap: 48px;
+		--templates-layout-padding: 0px;
 		--templates-container-direction: column;
 		--templates-container-flex: unset;
 		--template-item-width: 100%;
@@ -83,7 +87,8 @@ body {
 	display: flex;
 	flex-direction: var(--templates-container-direction);
 	margin-top: 48px;
-	gap: var(--templates-container-gap);
+	gap: var(--templates-layout-gap);
+	padding-top: var(--templates-layout-padding);
 }
 
 .filterBar {
@@ -92,7 +97,6 @@ body {
 	flex-direction: column;
 	position: sticky;
 	top: 64px;
-	padding-top: 24px;
 }
 
 .filterBarMobile {
