@@ -32,7 +32,7 @@ export const TemplateGridItem = (props: TemplateGridItemProps) => {
 	const preview = getPreview(template)
 
 	return (
-		<ExaGrow scale={1.04} style={{ maxWidth: 'min(calc(100vw - 32px), 444px)', width: '100%' }}>
+		<ExaGrow scale={1.04} style={{}}>
 			<Link className={styles.templateItem} to={template.href}>
 				<ExaShape defaultHeight={360} defaultWidth={432} innerBorderWidth={2}>
 					<div className={styles.template}>
@@ -55,6 +55,9 @@ export const TemplateGridItem = (props: TemplateGridItemProps) => {
 							<>
 								<ExaZoom
 									className={styles.templateImageStub}
+									containerStyle={{
+										width: '100%'
+									}}
 									origin={template.decorator === false ? 'center' : 'center right'}
 									scale={template.decorator === false ? 1.06 : 1.25}
 								>

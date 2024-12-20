@@ -8,7 +8,9 @@
 	--template-search-height: 40px;
 	--template-search-padding-horizontal: 0px;
 	--templates-container-direction: row;
-	--templates-container-gap: 48px;
+	--templates-container-gap: 24px;
+	--templates-container-flex: 1;
+	--template-item-width: calc(50% - (var(--templates-container-gap) / 2));
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -35,6 +37,8 @@
 		--template-search-padding-horizontal: 16px;
 		--templates-container-gap: 16px;
 		--templates-container-direction: column;
+		--templates-container-flex: unset;
+		--template-item-width: 100%;
 	}
 }
 
@@ -130,6 +134,17 @@ body {
 	margin-bottom: 16px;
 }
 
+.footerTitle {
+	font-size: 20px;
+	font-weight: 600;
+	margin-bottom: 16px;
+}
+
+.footerDescription {
+	font-size: 16px;
+	text-align: center;
+}
+
 .searchContainer {
 	width: calc(100% - var(--template-search-padding-horizontal) * 2);
 	height: var(--template-search-height);
@@ -219,20 +234,12 @@ body {
 
 .grid {
 	max-width: calc(100vw - 32px);
-	flex: 1;
-	display: grid;
-	grid-template-columns: repeat(var(--template-columns), minmax(444px, 1fr));
-	grid-auto-rows: max-content;
-	grid-gap: 24px;
-	justify-content: center;
-	justify-items: center;
-	padding-top: 24px;
+	flex: var(--templates-container-flex);
 }
 
 .templateItem {
-	width: 444px;
+	width: 100%;
 	height: auto;
-	max-width: calc(100vw - 32px);
 	color: unset;
 	position: relative;
 	text-decoration: none !important;
@@ -270,6 +277,9 @@ body {
 
 .templateDescription {
 	font-size: 16px;
+	line-height: 24px;
+	max-height: 48px;
+	min-height: 48px;
 	padding-left: 16px;
 	padding-right: 16px;
 }
