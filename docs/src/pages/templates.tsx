@@ -13,7 +13,10 @@ const OgImage = 'https://robojs.dev/templates/og-image.png?c=2'
 
 export default function TemplatesPage() {
 	return (
-		<Layout title={`Built with Robo.js`} description="Explore pre-built examples from WavePlay and our community. Kickstart your Discord Apps in seconds with the perfect template.">
+		<Layout
+			title={`Robo Templates`}
+			description="Explore pre-built examples by WavePlay and our community. Kickstart your Discord Apps in seconds with the perfect template."
+		>
 			<Head>
 				<meta property="og:image" content={OgImage} />
 				<meta property="og:image:width" content="1200" />
@@ -22,13 +25,9 @@ export default function TemplatesPage() {
 			</Head>
 			<main className={styles.root}>
 				<div className={styles.container}>
-					<h1 className={styles.title}>
-						Built with
-						<br />
-						Robo.js
-					</h1>
+					<h1 className={styles.title}>Robo Templates</h1>
 					<p className={styles.subtitle}>
-						Start with pre-built examples from <strong className="waveplay">WavePlay</strong> and our community.
+						Pre-built examples by <strong className="waveplay">WavePlay</strong> and our community
 					</p>
 					<div className={styles.templatesContainer}>
 						<Media lessThan="lg">

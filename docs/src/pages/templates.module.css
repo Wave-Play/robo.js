@@ -10,6 +10,7 @@
 	--templates-container-direction: row;
 	--templates-container-gap: 24px;
 	--templates-layout-gap: 48px;
+	--templates-layout-margin: 48px;
 	--templates-layout-padding: 24px;
 	--templates-container-flex: 1;
 	--template-item-width: calc(50% - (var(--templates-container-gap) / 2));
@@ -34,11 +35,12 @@
 }
 @media (max-width: 1279px) {
 	:root {
-		--template-page-title-size: 48px;
+		--template-page-title-size: 40px;
 		--template-search-height: 48px;
 		--template-search-padding-horizontal: 16px;
 		--templates-container-gap: 16px;
 		--templates-layout-gap: 48px;
+		--templates-layout-margin: 0px;
 		--templates-layout-padding: 0px;
 		--templates-container-direction: column;
 		--templates-container-flex: unset;
@@ -86,7 +88,7 @@ body {
 	width: 100%;
 	display: flex;
 	flex-direction: var(--templates-container-direction);
-	margin-top: 48px;
+	margin-top: var(--templates-layout-margin);
 	gap: var(--templates-layout-gap);
 	padding-top: var(--templates-layout-padding);
 }
