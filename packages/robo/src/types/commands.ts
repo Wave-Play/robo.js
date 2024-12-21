@@ -1,10 +1,12 @@
 import type {
 	ApplicationCommandOptionChoiceData,
+	ApplicationIntegrationType,
 	Attachment,
 	AutocompleteInteraction,
 	CommandInteraction,
 	GuildBasedChannel,
 	GuildMember,
+	InteractionContextType,
 	InteractionReplyOptions,
 	MessagePayload,
 	Role,
@@ -21,18 +23,25 @@ export interface Command {
 }
 
 export interface CommandConfig extends BaseConfig {
+	contexts?: CommandContext[]
 	defaultMemberPermissions?: string | number | bigint
+	/** @deprecated Use `contexts` instead */
 	dmPermission?: boolean
 	descriptionLocalizations?: Record<string, string>
+	integrationTypes?: CommandIntegrationType[]
 	nameLocalizations?: Record<string, string>
 	options?: readonly CommandOption[]
 	sage?: false | SageOptions
 	timeout?: number
 }
 
+export type CommandContext = 'BotDM' | 'Guild' | 'PrivateChannel' | InteractionContextType
+
 export interface CommandEntry extends CommandConfig {
 	subcommands?: Record<string, CommandEntry>
 }
+
+export type CommandIntegrationType = 'GuildInstall' | 'UserInstall' | ApplicationIntegrationType
 
 export interface CommandOption {
 	autocomplete?: boolean

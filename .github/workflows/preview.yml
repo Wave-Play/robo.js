@@ -3,11 +3,13 @@ on:
   push:
     paths:
       - '.changeset/**'
+      - '.github/**'
       - 'packages/**'
       - 'pnpm-lock.yaml'
   pull_request:
     paths:
       - '.changeset/**'
+      - '.github/**'
       - 'packages/**'
       - 'pnpm-lock.yaml'
 
@@ -43,4 +45,4 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - run: pnpx pkg-pr-new publish './packages/*'
+      - run: pnpx pkg-pr-new publish './packages/*' './packages/@robojs/*'

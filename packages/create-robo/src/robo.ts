@@ -14,12 +14,12 @@ import {
 	getPackageExecutor,
 	ROBO_CONFIG_APP,
 	Indent,
-	ExecOptions,
+	type ExecOptions,
 	Space,
 	EslintConfig,
 	EslintConfigTypescript
 } from './utils.js'
-import { RepoInfo, downloadAndExtractRepo, getRepoInfo, hasRepo } from './templates.js'
+import { type RepoInfo, downloadAndExtractRepo, getRepoInfo, hasRepo } from './templates.js'
 import retry from 'async-retry'
 import { color, logger } from 'robo.js'
 import { Spinner } from 'robo.js/dist/cli/utils/spinner.js'
@@ -664,7 +664,7 @@ export default class Robo {
 
 		// Robo.js and Discord.js are normal dependencies, unless this is a plugin
 		const roboPkg = 'robo.js'
-		const roboDep = roboPkg + (roboVersion ? `@${roboVersion}` : '')
+		const roboDep = roboPkg + (roboVersion ? `@${roboVersion}` : '@latest')
 
 		if (!this._isPlugin) {
 			dependencies.push(roboDep)
@@ -698,7 +698,7 @@ export default class Robo {
 		// App developers always get Vite
 		logger.debug(`Adding features:`, features)
 		if (this._isApp) {
-			devDependencies.push('vite')
+			devDependencies.push('vite@5')
 		}
 		if (this._selectedFeatures.includes('react') && this._isPlugin) {
 			devDependencies.push('react')
@@ -1098,7 +1098,7 @@ export default class Robo {
 
 		// Normalize plugin path
 		const pluginPath =
-			path.join(this._workingDir, 'config', 'plugins', ...pluginParts) + this._useTypeScript ? '.ts' : '.mjs'
+			`${path.join(this._workingDir, 'config','plugins', ...pluginParts)}${this._useTypeScript ? '.ts' : '.mjs'}`
 		const pluginConfig = prettyStringify(config) + '\n'
 
 		logger.debug(`Writing ${pluginName} config to ${pluginPath}...`)

@@ -182,8 +182,8 @@ const config = {
 						to: '/plugins/directory'
 					},
 					{
-						from: '/templates',
-						to: '/templates/overview'
+						from: '/templates/overview',
+						to: '/templates'
 					},
 					{
 						from: '/discord-bots/secrets',
@@ -217,6 +217,7 @@ const config = {
 					'templates/discord-activities/2d-game/README.md',
 					'templates/discord-activities/godot/README.md',
 					'templates/discord-activities/react-colyseus-ts/README.md',
+					'templates/discord-activities/react-firebase-ts/README.md',
 					'templates/discord-activities/react-js/README.md',
 					'templates/discord-activities/react-multiplayer-video-ts/README.md',
 					'templates/discord-activities/react-music-proxy-ts/README.md',
@@ -566,18 +567,8 @@ const config = {
 	themeConfig:
 		/** @type {import('@docusaurus/preset-classic').ThemeConfig} */
 		({
-			// Replace with your project's social card
-			image: 'img/logo.png',
 			colorMode: {
 				defaultMode: 'dark'
-			},
-			announcementBar: {
-				id: 'hacktoberfest-2024',
-				content:
-					'<a href="https://roboplay.dev/hacktoberfest">✨🎃 <strong>Hacktoberfest 2024 - Build stuff, win free swag</strong> 🎃✨</a>',
-				backgroundColor: 'rgb(0, 49, 0)',
-				isCloseable: false,
-				textColor: 'rgb(230, 246, 230)'
 			},
 			navbar: {
 				title: 'Robo.js',
@@ -592,16 +583,16 @@ const config = {
 						position: 'left',
 						label: 'Docs'
 					},
-					{ to: '/hosting/overview', label: 'Hosting', position: 'left' },
-					{ to: '/playground', label: 'Playground', position: 'left' },
-					{ to: '/plugins/directory', label: 'Plugins', position: 'left' },
-					{ to: '/ref/framework', label: 'Reference', position: 'left' },
-					{ to: '/templates/overview', label: 'Templates', position: 'left' },
 					{
 						href: 'https://dev.to/waveplay',
-						label: 'Tutorials',
+						label: 'Guides',
 						position: 'left'
 					},
+					{ to: '/hosting/overview', label: 'Hosting', position: 'left' },
+					{ to: '/plugins/directory', label: 'Plugins', position: 'left' },
+					{ to: '/ref/framework', label: 'Reference', position: 'left' },
+					{ to: '/templates', label: 'Templates', position: 'left' },
+					{ to: '/playground', label: 'Try It', position: 'left' },
 					/*{
 						href: 'https://roboplay.dev/hacktoberfest',
 						label: '✨🎃 Hacktoberfest 🎃✨',

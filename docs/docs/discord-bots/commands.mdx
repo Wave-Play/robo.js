@@ -1,54 +1,23 @@
+import { Card } from '@site/src/components/shared/Card'
+import { CardContainer } from '@site/src/components/shared/CardContainer'
 import Tabs from '@theme/Tabs'
 import TabItem from '@theme/TabItem'
 import { Terminal } from '@site/src/components/shared/Terminal'
 
 # 📜 Commands
 
-Slash commands have changed the game in Discord, making it a breeze for users to interact with bots (or as we like to call them, Robos). And with Robo.js, weaving your own slash commands is as easy as pie. Let's unravel this together!
+**Slash Commands** are one of the primary ways to use your **Discord Bot**. They allow users to interact with your bot by typing `/` followed by the command name, maybe some options, and hitting enter.
 
-## Crafting Simple Commands 🛠️
+Building **Slash Commands** is streamlined with **Robo.js**, which also handles **[automatic registration](#)**.
 
-Start off with a simple command. Create a file in the `commands` directory. The file name? That's your command!
+## Creating Slash Commands
 
-For instance, to create a `/ping` command, your file structure would look like this:
-
-```plaintext
-src/
-└── commands/
-    └── ping.js
-```
-
-And inside your `ping` command file? Straightforward:
+Create a file in your project's `src/commands` folder named after your **Slash Command**.
 
 <Tabs groupId="examples-script">
 <TabItem value="js" label="Javascript">
 
-```javascript title="commands/ping.js"
-export default () => {
-	return 'Pong!'
-}
-```
-
-</TabItem>
-<TabItem value="ts" label="Typescript">
-
-```typescript title="commands/ping.ts"
-import type { CommandResult } from 'robo.js'
-
-export default (): CommandResult => {
-	return 'Pong!'
-}
-```
-
-</TabItem>
-</Tabs>
-
-To use the interaction object directly:
-
-<Tabs groupId="examples-script">
-<TabItem value="js" label="Javascript">
-
-```javascript title="commands/ping.js"
+```javascript title="src/commands/ping.js"
 export default (interaction) => {
 	interaction.reply('Pong!')
 }
@@ -57,10 +26,11 @@ export default (interaction) => {
 </TabItem>
 <TabItem value="ts" label="Typescript">
 
-```typescript title="commands/ping.ts"
-import type { CommandInteraction } from 'discord.js'
+```typescript title="src/commands/ping.ts"
+import type { ChatInputCommandInteraction } from 'discord.js'
+import type { CommandResult } from 'robo.js'
 
-export default (interaction: CommandInteraction) => {
+export default (interaction: ChatInputCommandInteraction): CommandResult => {
 	interaction.reply('Pong!')
 }
 ```
@@ -68,30 +38,135 @@ export default (interaction: CommandInteraction) => {
 </TabItem>
 </Tabs>
 
-In this case, Sage steps back, letting you handle the interaction directly.
+That's it! Your `/ping` command is fully set up—give it a try!
 
-## Subcommands and Subcommand Groups 📚
+:::tip
 
-Creating subcommands with Robo.js is as simple as creating new files in a folder. The folder name becomes the parent command, and the file names become the subcommands. But remember, you can't have a parent command file and subcommand files together.
+Don't see your new command? Try restarting your **[Discord Client](https://support.discord.com/hc/en-us/articles/360035675191-Discord-Testing-Clients)** to refresh your cache.
 
-```plaintext
-src/
-└── commands/
-    └── ban/
-        └── user.js
+:::
+
+Alternatively, you can also return your reply directly.
+
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
+
+```javascript title="src/commands/ping.js"
+export default async () => {
+	return 'Pong!'
+}
 ```
 
-And subcommand groups? It's the same concept, but one level deeper. Again, parent commands or subcommands can't live alongside subcommand groups.
+</TabItem>
+<TabItem value="ts" label="Typescript">
 
-```plaintext
-src/
-└── commands/
-    └── settings/
-        └── update/
-            └── something.js
+```typescript title="src/commands/ping.ts"
+import type { CommandResult } from 'robo.js'
+
+export default async (): Promise<CommandResult> => {
+	return 'Pong!'
+}
 ```
 
-## Customizing Commands 🖋️
+</TabItem>
+</Tabs>
+
+This kicks in **[Sage Mode](#)**—a hidden power that handles interactions and defers slow async functions!
+
+<CardContainer>
+	<Card href="./sage" title="🔮 Sage" description="Unlock the full power of Sage Mode." />
+</CardContainer>
+
+## Subcommands and Subcommand Groups
+
+Wanna go deeper? Make a folder inside `src/commands` with the parent command name and its own files.
+
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
+
+```javascript title="src/commands/channel/lock.js"
+export default async (interaction) => {
+	const everyoneRole = interaction.guild.roles.everyone
+	await interaction.channel.permissionOverwrites.edit(everyoneRole, {
+		SendMessages: false,
+		AddReactions: false
+	})
+
+	return 'This channel is now locked!'
+}
+```
+
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```typescript title="src/commands/channel/lock.ts"
+import type { ChatInputCommandInteraction } from 'discord.js'
+import type { CommandResult } from 'robo.js'
+
+export default async (interaction: ChatInputCommandInteraction): Promise<CommandResult> => {
+	const everyoneRole = interaction.guild.roles.everyone
+	await interaction.channel.permissionOverwrites.edit(everyoneRole, {
+		SendMessages: false,
+		AddReactions: false
+	})
+
+	return 'This channel is now locked!'
+}
+```
+
+</TabItem>
+</Tabs>
+
+We can go even deeper with **Subcommand Groups**. Just add another folder inside the parent command folder.
+
+<Tabs groupId="examples-script">
+<TabItem value="js" label="Javascript">
+
+```javascript title="src/commands/bot/status/idle.js"
+import { client } from 'robo.js'
+
+export default async (interaction) => {
+	await client.user.setPresence({
+		status: 'idle'
+	})
+
+	return "I'm now idle!"
+}
+```
+
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```typescript title="src/commands/bot/status/idle.ts"
+import { client } from 'robo.js'
+import type { ChatInputCommandInteraction } from 'discord.js'
+import type { CommandResult } from 'robo.js'
+
+export default async (interaction: ChatInputCommandInteraction): Promise<CommandResult> => {
+	await client.user.setPresence({
+		status: 'idle'
+	})
+
+	return "I'm now idle!"
+}
+```
+
+</TabItem>
+</Tabs>
+
+Pretty cool, right? Literally just folders and files!
+
+```plaintext
+src
+└── commands
+	├── channel
+	│   └── lock.js
+	└── bot
+	    └── status
+	        └── idle.js
+```
+
+## Customizing Commands
 
 Give your commands some context with descriptions. You can do this by exporting a `config` object from your command file.
 
@@ -117,7 +192,7 @@ export default (): CommandResult => {
 
 The `` object also lets you customize stuff like locale translations, Sage options, and command timeouts. To understand more about the available uration options, check out the [configuration section](/robojs/config).
 
-## Command Options 🎚️
+## Command Options
 
 Robo.js allows you to further customize your commands with options. You can define these options in your `config` object and then access their values in your command function.
 
@@ -254,7 +329,7 @@ Remember, server admins can adjust these default permissions for their own serve
 
 <!-- For a more comprehensive overview of command permissions in Discord, check out our [Permissions Guide](/docs/advanced/permissions). -->
 
-## Autocomplete 🧠
+## Autocomplete
 
 Autocomplete can take your commands to the next level by providing suggestions as users type. You can implement autocomplete by exporting an `autocomplete` function in your command file.
 
@@ -327,7 +402,7 @@ In this example, the `autocomplete` function returns an array of colors that sta
 
 Note: the type of the Interaction is: `AutocompleteInteraction`
 
-## Command Registration 📝
+## Command Registration
 
 The cherry on top? You don't need to manually register your commands. Robo.js handles it for you when you run `robo dev` or `robo build`, automatically! However, if things go sideways for some reason, you can use the `--force` flag to force registration.
 

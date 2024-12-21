@@ -1,0 +1,339 @@
+:root {
+	--filter-option-label: rgba(0, 0, 0, 0.54);
+	--template-item-background: rgba(0, 0, 0, 0.06);
+	--spacing-horizontal: 40px;
+	--filter-display: flex;
+	--template-columns: 2;
+	--template-page-title-size: 64px;
+	--template-search-height: 40px;
+	--template-search-padding-horizontal: 0px;
+	--templates-container-direction: row;
+	--templates-container-gap: 24px;
+	--templates-layout-gap: 48px;
+	--templates-layout-margin: 48px;
+	--templates-layout-padding: 24px;
+	--templates-container-flex: 1;
+	--template-item-width: calc(50% - (var(--templates-container-gap) / 2));
+}
+
+/* For readability concerns, you should choose a lighter palette in dark mode. */
+[data-theme='dark'] {
+	--robo-filter-option-label: rgba(142, 141, 145, 1);
+	--template-item-background: rgba(255, 255, 255, 0.04);
+}
+
+/* Mobile spacing */
+@media (max-width: 768px) {
+	:root {
+		--spacing-horizontal: 16px;
+	}
+}
+@media (max-width: 1000px) {
+	:root {
+		--template-columns: 1;
+	}
+}
+@media (max-width: 1279px) {
+	:root {
+		--template-page-title-size: 40px;
+		--template-search-height: 48px;
+		--template-search-padding-horizontal: 16px;
+		--templates-container-gap: 16px;
+		--templates-layout-gap: 48px;
+		--templates-layout-margin: 0px;
+		--templates-layout-padding: 0px;
+		--templates-container-direction: column;
+		--templates-container-flex: unset;
+		--template-item-width: 100%;
+	}
+}
+
+[class*='fresnel-'] {
+	display: contents;
+}
+
+.root {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	min-height: 100vh;
+}
+
+body {
+	font-family: 'Roboto', sans-serif;
+}
+
+.container {
+	width: 100%;
+	max-width: 1280px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding-top: 72px;
+	padding-left: var(--spacing-horizontal);
+	padding-right: var(--spacing-horizontal);
+}
+
+.title {
+	font-size: var(--template-page-title-size);
+	font-weight: 700;
+	text-align: center;
+}
+
+.subtitle {
+	text-align: center;
+}
+
+.templatesContainer {
+	width: 100%;
+	display: flex;
+	flex-direction: var(--templates-container-direction);
+	margin-top: var(--templates-layout-margin);
+	gap: var(--templates-layout-gap);
+	padding-top: var(--templates-layout-padding);
+}
+
+.filterBar {
+	width: 240px;
+	height: calc(100vh - 64px);
+	flex-direction: column;
+	position: sticky;
+	top: 64px;
+}
+
+.filterBarMobile {
+	width: 100%;
+	display: flex;
+	gap: 16px;
+	flex-direction: row;
+	overflow-x: scroll;
+	z-index: 4;
+	scrollbar-width: none;
+	padding-top: 8px;
+	padding-bottom: 8px;
+	padding-left: 16px;
+	padding-right: 16px;
+}
+
+.filterContainerMobile {
+	width: 100vw;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	position: sticky;
+	margin-left: -16px;
+	top: calc(var(--ifm-navbar-height) - 1px);
+	background-color: var(--robo-navbar-background-color);
+	-webkit-backdrop-filter: blur(10px);
+	backdrop-filter: blur(10px);
+	z-index: 4;
+}
+
+.filterDivider {
+	border-bottom: 1px solid var(--robo-navbar-border-color);
+}
+
+.filterTitle {
+	font-size: 20px;
+	font-weight: 600;
+	margin-bottom: 16px;
+}
+
+.footerTitle {
+	font-size: 20px;
+	font-weight: 600;
+	margin-bottom: 16px;
+}
+
+.footerDescription {
+	font-size: 16px;
+	text-align: center;
+}
+
+.searchContainer {
+	width: calc(100% - var(--template-search-padding-horizontal) * 2);
+	height: var(--template-search-height);
+	display: flex;
+	background-color: var(--robo-navbar-background-color);
+	-webkit-backdrop-filter: blur(10px);
+	backdrop-filter: blur(10px);
+	border-color: rgba(255, 255, 255, 0.12);
+	flex-direction: row;
+	align-items: center;
+	margin-top: 16px;
+}
+
+.searchIcon {
+	pointer-events: none;
+	position: absolute;
+	margin-left: 12px;
+}
+
+.searchInput {
+	width: 100%;
+	height: 100%;
+	border-color: rgba(255, 255, 255, 0.12);
+	border-width: 2px;
+	background-color: transparent;
+	outline: 2px solid transparent;
+	transition: outline-color 0.3s ease;
+	padding-left: 40px;
+	padding-right: 12px;
+}
+
+.searchInput:focus {
+	outline-color: var(--ifm-color-primary);
+}
+
+.filterOptions {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	margin-top: 16px;
+}
+
+.filterOption {
+	height: 48px;
+	display: flex;
+	background-color: transparent;
+	flex-direction: row;
+	border-radius: 0px;
+	border-width: 0px;
+	transition: background-color 0.2s ease-in-out;
+	align-items: center;
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+.filterOptionUnselected:hover {
+	background-color: var(--hover-background-color);
+}
+
+.filterOptionSelected {
+	background-color: RGB(0, 121, 107, 0.24);
+}
+
+.filterOptionSelected:hover {
+	background-color: RGB(0, 121, 107, 0.5);
+}
+
+.filterOptionLabel {
+	color: var(--robo-filter-option-label);
+	font-size: 14px;
+	font-weight: 400;
+	margin-left: 8px;
+}
+
+.filterOptionLabelSelected {
+	color: #00bfa5;
+	font-weight: 600;
+}
+
+.filterOptionCheckbox {
+	margin-left: auto;
+}
+
+.filterOptionCheckbox input {
+	margin-right: 8px;
+}
+
+.grid {
+	max-width: calc(100vw - 32px);
+	flex: var(--templates-container-flex);
+}
+
+.templateItem {
+	width: 100%;
+	height: auto;
+	color: unset;
+	position: relative;
+	text-decoration: none !important;
+}
+
+.template {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+.templateImage {
+	width: 100%;
+	height: auto;
+	object-fit: cover;
+}
+
+.templateImageStub {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	background-color: var(--template-item-background);
+}
+
+.templateTitle {
+	color: var(--ifm-heading-color);
+	font-size: 24px;
+	font-weight: 700;
+	margin-top: 16px;
+	margin-bottom: 4px;
+	padding-left: 16px;
+	padding-right: 16px;
+}
+
+.templateDescription {
+	font-size: 16px;
+	line-height: 24px;
+	max-height: 48px;
+	min-height: 48px;
+	padding-left: 16px;
+	padding-right: 16px;
+}
+
+.templateFooter {
+	display: flex;
+	flex-direction: row-reverse;
+	align-items: center;
+	margin-top: auto;
+	gap: 8px;
+	padding-left: 16px;
+	padding-right: 24px;
+	margin-bottom: 16px;
+}
+
+.templateAuthorContainer {
+	flex: 1;
+	font-size: 14px;
+}
+
+.templateAuthorBy {
+	opacity: 0.6;
+}
+
+.templateAuthor {
+	font-weight: 700;
+	opacity: 0.8;
+}
+
+.templateAuthorWavePlay {
+	background-image: linear-gradient(to right, #2196f3, #ff4081);
+	background-clip: text;
+	color: transparent;
+	font-weight: 700;
+}
+
+.templateTag {
+	background-color: var(--ifm-color-primary);
+	color: white;
+	font-size: 12px;
+	font-weight: 500;
+	padding: 2px 6px;
+}
+
+.templateNewContainer {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin-top: 48px;
+}

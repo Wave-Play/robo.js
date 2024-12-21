@@ -1,6 +1,8 @@
 import {
 	APIApplicationCommandOptionChoice,
+	ApplicationIntegrationType,
 	ContextMenuCommandBuilder,
+	InteractionContextType,
 	REST,
 	Routes,
 	SlashCommandBuilder,
@@ -14,14 +16,22 @@ import { timeout } from './utils.js'
 import { bold, color } from '../../core/color.js'
 import { Flashcore } from '../../core/flashcore.js'
 import type { APIApplicationCommand, ApplicationCommandOptionBase } from 'discord.js'
-import type { CommandEntry, CommandOption, ContextEntry } from '../../types/index.js'
+import type {
+	CommandContext,
+	CommandEntry,
+	CommandIntegrationType,
+	CommandOption,
+	Config,
+	ContextEntry
+} from '../../types/index.js'
 
 let logger: Logger = discordLogger
 
 export function buildContextCommands(
 	dev: boolean,
 	contextCommands: Record<string, ContextEntry>,
-	type: 'message' | 'user'
+	type: 'message' | 'user',
+	config: Config
 ): ContextMenuCommandBuilder[] {
 	if (dev) {
 		logger = new Logger({
@@ -29,16 +39,21 @@ export function buildContextCommands(
 			level: 'info'
 		}).fork('discord')
 	}
+	const defaultContexts = config.defaults?.contexts ?? DEFAULT_CONFIG.defaults.contexts
+	const defaultIntegrationTypes = config.defaults?.integrationTypes ?? DEFAULT_CONFIG.defaults.integrationTypes
 
 	return Object.entries(contextCommands).map(([key, entry]): ContextMenuCommandBuilder => {
 		logger.debug(`Building context command: ${key}`)
 		const commandBuilder = new ContextMenuCommandBuilder()
+			.setContexts((entry.contexts ?? defaultContexts).map(getContextType))
+			.setIntegrationTypes((entry.integrationTypes ?? defaultIntegrationTypes).map(getIntegrationType))
 			.setName(key)
 			.setNameLocalizations(entry.nameLocalizations || {})
 			.setType(type === 'message' ? 3 : 2)
 
-		if (entry.defaultMemberPermissions !== undefined) {
-			commandBuilder.setDefaultMemberPermissions(entry.defaultMemberPermissions)
+		const defaultMemberPermissions = entry.defaultMemberPermissions ?? config.defaults?.defaultMemberPermissions
+		if (defaultMemberPermissions !== undefined) {
+			commandBuilder.setDefaultMemberPermissions(defaultMemberPermissions)
 		}
 		if (entry.dmPermission !== undefined) {
 			commandBuilder.setDMPermission(entry.dmPermission)
@@ -48,13 +63,19 @@ export function buildContextCommands(
 	})
 }
 
-export function buildSlashCommands(dev: boolean, commands: Record<string, CommandEntry>): SlashCommandBuilder[] {
+export function buildSlashCommands(
+	dev: boolean,
+	commands: Record<string, CommandEntry>,
+	config: Config
+): SlashCommandBuilder[] {
 	if (dev) {
 		logger = new Logger({
 			enabled: true,
 			level: 'info'
 		})
 	}
+	const defaultContexts = config.defaults?.contexts ?? DEFAULT_CONFIG.defaults.contexts
+	const defaultIntegrationTypes = config.defaults?.integrationTypes ?? DEFAULT_CONFIG.defaults.integrationTypes
 
 	return Object.entries(commands).map(([key, entry]): SlashCommandBuilder => {
 		logger.debug(`Building slash command:`, key)
@@ -63,6 +84,8 @@ export function buildSlashCommands(dev: boolean, commands: Record<string, Comman
 		try {
 			commandBuilder = new SlashCommandBuilder()
 				.setName(key)
+				.setContexts((entry.contexts ?? defaultContexts).map(getContextType))
+				.setIntegrationTypes((entry.integrationTypes ?? defaultIntegrationTypes).map(getIntegrationType))
 				.setNameLocalizations(entry.nameLocalizations || {})
 				.setDescription(entry.description || 'No description provided')
 				.setDescriptionLocalizations(entry.descriptionLocalizations || {})
@@ -140,8 +163,9 @@ export function buildSlashCommands(dev: boolean, commands: Record<string, Comman
 				addOptionToCommandBuilder(commandBuilder, option.type, option)
 			})
 
-			if (entry.defaultMemberPermissions !== undefined) {
-				commandBuilder.setDefaultMemberPermissions(entry.defaultMemberPermissions)
+			const defaultMemberPermissions = entry.defaultMemberPermissions ?? config.defaults?.defaultMemberPermissions
+			if (defaultMemberPermissions !== undefined) {
+				commandBuilder.setDefaultMemberPermissions(defaultMemberPermissions)
 			}
 			if (entry.dmPermission !== undefined) {
 				commandBuilder.setDMPermission(entry.dmPermission)
@@ -333,9 +357,9 @@ export async function registerCommands(
 	const rest = new REST({ version: '9' }).setToken(token)
 
 	try {
-		const slashCommands = buildSlashCommands(dev, newCommands)
-		const contextMessageCommands = buildContextCommands(dev, newMessageContextCommands, 'message')
-		const contextUserCommands = buildContextCommands(dev, newUserContextCommands, 'user')
+		const slashCommands = buildSlashCommands(dev, newCommands, config)
+		const contextMessageCommands = buildContextCommands(dev, newMessageContextCommands, 'message', config)
+		const contextUserCommands = buildContextCommands(dev, newUserContextCommands, 'user', config)
 		const addedChanges = addedCommands.map((cmd) => color.green(`/${color.bold(cmd)} (new)`))
 		const removedChanges = removedCommands.map((cmd) => color.red(`/${color.bold(cmd)} (deleted)`))
 		const updatedChanges = changedCommands.map((cmd) => color.blue(`/${color.bold(cmd)} (updated)`))
@@ -357,10 +381,10 @@ export async function registerCommands(
 		]
 
 		// Inject user install if enabled
+		// TODO: Remove in v0.11
 		if (config.experimental?.userInstall) {
 			commandData.forEach((command) => {
-				command.integration_types = [0, 1]
-				command.contexts = [0, 1, 2]
+				command.integration_types = [ApplicationIntegrationType.GuildInstall, ApplicationIntegrationType.UserInstall]
 			})
 		}
 
@@ -447,4 +471,26 @@ export async function registerCommands(
 		logger.warn(`Run ${color.bold('robo build --force')} to try again.`)
 		await Flashcore.set(FLASHCORE_KEYS.commandRegisterError, true)
 	}
+}
+
+export function getContextType(context: CommandContext): InteractionContextType {
+	if (context === 'BotDM') {
+		return InteractionContextType.BotDM
+	} else if (context === 'Guild') {
+		return InteractionContextType.Guild
+	} else if (context === 'PrivateChannel') {
+		return InteractionContextType.PrivateChannel
+	}
+
+	return context
+}
+
+export function getIntegrationType(type: CommandIntegrationType): ApplicationIntegrationType {
+	if (type === 'GuildInstall') {
+		return ApplicationIntegrationType.GuildInstall
+	} else if (type === 'UserInstall') {
+		return ApplicationIntegrationType.UserInstall
+	}
+
+	return type
 }

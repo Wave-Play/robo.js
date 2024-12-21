@@ -1,12 +1,15 @@
 import type { LogDrain, LogLevel } from '../core/logger.js'
 import type { ClientOptions, PermissionsString, ShardingManagerOptions } from 'discord.js'
-import type { Plugin, SageOptions } from './index.js'
+import type { CommandContext, CommandIntegrationType, Plugin, SageOptions } from './index.js'
 
 export interface Config {
 	clientOptions?: ClientOptions
 	defaults?: {
+		contexts?: CommandContext[]
+		defaultMemberPermissions?: string | number | bigint
 		dev?: boolean
 		help?: boolean
+		integrationTypes?: CommandIntegrationType[]
 	}
 	excludePaths?: string[]
 	experimental?: {
@@ -14,6 +17,7 @@ export interface Config {
 		disableBot?: boolean
 		incrementalBuilds?: boolean
 		shard?: boolean | ShardingManagerOptions
+		/** @deprecated Use `integrationTypes` in command config instead */
 		userInstall?: boolean
 	}
 	flashcore?: {

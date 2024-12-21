@@ -13,5 +13,6 @@ jobs:
         with:
           severity: info
           color: '#651FFF'
-          details: '🚀 A new release has been published!\n**Release Name:** ${{ github.event.release.name }}\n**Version:** ${{ github.event.release.tag_name }}\n**Details:**\n${{ github.event.release.body }}'
+          text: '## 🚀 ${{ github.event.release.name }} is now available!'
+          details: '${{ github.event.release.body }}'
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
