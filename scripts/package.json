@@ -16,7 +16,7 @@
 	],
 	"license": "MIT",
 	"dependencies": {
-		"robo.js": "workspace:*",
+		"robo.js": "^0.10.26",
 		"@roboplay/sage": "workspace:*"
 	},
 	"devDependencies": {
