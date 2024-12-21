@@ -45,16 +45,12 @@ async function upgradeAction(options: UpgradeOptions) {
 		await checkSageUpdates()
 	}
 
-	logger.info('optionssss', options)
-
 	const config = await loadConfig()
 	await prepareFlashcore()
 	const plugins = config.plugins
 	plugins.push(['robo.js', {}])
 
 	// Check NPM registry for updates
-
-	logger.debug(process.cwd())
 	const packageJsonPath = path.join(await findPackagePath('robo.js', process.cwd()), 'package.json')
 	logger.debug(`Package JSON path:`, packageJsonPath)
 	const packageJson: PackageJson = JSON.parse(await readFile(packageJsonPath, 'utf-8'))
