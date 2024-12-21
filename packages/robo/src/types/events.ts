@@ -7,3 +7,5 @@ export interface Event {
 export interface EventConfig extends BaseConfig {
 	frequency?: 'always' | 'once'
 }
+
+export default {}

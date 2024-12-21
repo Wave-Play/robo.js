@@ -10,3 +10,5 @@ export interface PackageJson {
 	}
 	version: string
 }
+
+export default {}

@@ -128,3 +128,5 @@ export interface BaseConfig {
 	description?: string
 	timeout?: number
 }
+
+export default {}
