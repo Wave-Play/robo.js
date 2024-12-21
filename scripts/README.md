@@ -1,8 +1,9 @@
 # Using act to locally test
 
-
 We are using act to locally test CI, it is easier and faster that way though
 some setup is required.
+
+https://nektosact.com/
 
 At the root of the folder you need two files.
 
