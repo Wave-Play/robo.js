@@ -84,3 +84,5 @@ export type CommandOptions<ConfigType extends CommandConfig> = {
 		? string
 		: string | undefined
 }
+
+export default {}

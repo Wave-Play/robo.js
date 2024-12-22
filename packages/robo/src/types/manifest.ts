@@ -28,3 +28,5 @@ export interface Manifest {
 	middleware?: MiddlewareEntry[]
 	scopes?: Scope[]
 }
+
+export default {}

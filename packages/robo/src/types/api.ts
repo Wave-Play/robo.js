@@ -28,3 +28,5 @@ export interface Api {
 export interface ApiEntry extends BaseConfig {
 	subroutes?: Record<string, ApiEntry>
 }
+
+export default {}
