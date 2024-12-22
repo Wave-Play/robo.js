@@ -42,7 +42,7 @@ async function upgradeAction(options: UpgradeOptions) {
 	logger.debug(`Package manager:`, getPackageManager())
 	logger.debug(`Current working directory:`, process.cwd())
 	if (options.selfCheck) {
-		await checkSageUpdates()
+		await checkSageUpdates(options.yes)
 	}
 
 	const config = await loadConfig()
@@ -51,7 +51,7 @@ async function upgradeAction(options: UpgradeOptions) {
 	plugins.push(['robo.js', {}])
 
 	// Check NPM registry for updates
-	const packageJsonPath = path.join(await findPackagePath('robo.js', process.cwd()), 'package.json')
+	const packageJsonPath = path.join(process.cwd(), await findPackagePath('robo.js', process.cwd()), 'package.json')
 	logger.debug(`Package JSON path:`, packageJsonPath)
 	const packageJson: PackageJson = JSON.parse(await readFile(packageJsonPath, 'utf-8'))
 	logger.debug(`Package JSON:`, packageJson)
