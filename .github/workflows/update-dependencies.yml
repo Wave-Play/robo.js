@@ -28,11 +28,11 @@ jobs:
         working-directory: scripts
         run: pnpm install --no-frozen-lockfile
 
-      - name: Dependencies upgrade
+      - name: Dependencies update
         working-directory: scripts
         env:
           GH_PUSH: ${{ toJson(github.event) }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           REPO_DATA: ${{ github.repository }}
           ROBO_LOG_LEVEL: ${{ secrets.ROBO_LOG_LEVEL }}
-        run: pnpm run upgrade
+        run: npm run update

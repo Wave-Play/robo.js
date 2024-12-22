@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process'
 import path from 'node:path'
+import { logger } from 'robo.js'
 
 start(testUpgradeDependencies())
 
@@ -8,30 +9,30 @@ async function start(args: string[]) {
 	const childProcess = spawn(command, args, { cwd: path.join(process.cwd(), '..') })
 
 	childProcess.stdout.on('data', (data) => {
-		console.log(`stdout: ${data}`)
+		logger.log(data?.toString())
 	})
 
 	// Stream the stderr
 	childProcess.stderr.on('data', (data) => {
-		console.error(`stderr: ${data}`)
+		logger.error(data?.toString())
 	})
 
 	// Handle the process exit
 	childProcess.on('close', (code) => {
-		console.log(`Child process exited with code ${code}`)
+		logger.info(`Child process exited with code ${code}`)
 	})
 }
 function testUpgradeDependencies() {
 	return [
 		'-e',
-		'./scripts/zip_templates/push_event.json',
+		'./scripts/src/data/push_event.json',
 		'-W',
-		'.github/workflows/upgrade-dependencies.yml',
+		'.github/workflows/update-dependencies.yml',
 		'--env-file',
 		'./scripts/.env',
 		'--secret-file',
 		'./scripts/act.vault',
 		'--container-architecture',
-		'linux/amd64'
+		'linux/arm64'
 	]
 }

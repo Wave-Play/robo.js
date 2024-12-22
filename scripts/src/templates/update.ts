@@ -1,23 +1,17 @@
-import { exec, spawn } from 'node:child_process'
-import { promisify } from 'node:util'
-import { logger, Env, color } from 'robo.js'
-import path from 'node:path'
+import { env } from '../env.js'
 import {
 	CommitData,
 	createBranch,
 	createPullRequest,
-	env,
 	filterCommitedTemplates,
 	getAllTemplates,
 	getBranchSha,
 	RootDir,
 	uploadFileToGitHub
-} from './utils'
-
-Env.loadSync()
-const execAsync = promisify(exec)
-
-const Debug = false
+} from '../utils.js'
+import { spawn } from 'node:child_process'
+import path from 'node:path'
+import { logger, color } from 'robo.js'
 
 start()
 	.then((result) => {
@@ -66,39 +60,22 @@ export async function start() {
 
 			if (!templatesToUpgrade) {
 				return
-			} else if (Debug) {
-				// Re-create set but with only one template
-				templatesToUpgrade = new Set([templatesToUpgrade.values().next().value])
+			} else if (env.get('debug') === 'true') {
+				// Re-create set with limited templates
+				const templateValues = templatesToUpgrade.values()
+				templatesToUpgrade = new Set([templateValues.next().value, templateValues.next().value])
 				logger.debug('Debug mode enabled, only upgrading one template:', templatesToUpgrade)
 			}
 			logger.wait('Building core Robo.js dependency..')
-
-			const roboPath = path.join(process.cwd(), '..', 'packages', 'robo')
-			const robo = await execAsync(`pnpm install && pnpm run build`, { cwd: roboPath })
-
-			if (robo.stderr) {
-				throw new Error(robo.stderr)
-			}
-			logger.ready('Finished building core Robo dependency')
-
-			logger.wait('Building Sage CLI...')
-			const sagePath = path.join(process.cwd(), '..', 'packages', 'sage')
-			const sage = await execAsync(`pnpm install && pnpm run build`, { cwd: sagePath })
-
-			if (sage.stderr) {
-				throw new Error(sage.stderr)
-			}
-			logger.ready('Finished building sage...')
-
 			await Promise.allSettled(
 				[...templatesToUpgrade].map(async (template) => {
+					const templateLogger = logger.fork(template.replace('templates/', ''))
+
 					try {
 						logger.wait('Installing dependencies for', template)
-						const templateLogger = logger.fork(template.replace('templates/', ''))
 						const templatePath = path.join(RootDir, template)
 						const installTemplate = spawn('npm', ['install'], {
-							cwd: templatePath,
-							// stdio: 'inherit'
+							cwd: templatePath
 						})
 
 						installTemplate.stdout?.on('data', (data) => {
@@ -120,10 +97,11 @@ export async function start() {
 
 						logger.ready('Finished installing dependencies for', template)
 						logger.info('Running sage upgrade...')
-						const sageExecutable = path.join(process.cwd(), '..', 'packages', 'sage', 'dist', 'index.js')
+						//const sageExecutable = path.join(process.cwd(), '..', 'packages', 'sage', 'dist', 'index.js')
 
 						// TODO: Once JSON mode is out switch to it
-						const updateTemplate = spawn('node', [sageExecutable, 'upgrade', '-y', '--verbose'], {
+						templateLogger.debug('> npx -y @roboplay/sage@latest upgrade -y --verbose')
+						const updateTemplate = spawn('npx', ['-y', '@roboplay/sage@latest', 'upgrade', '-y', '--verbose'], {
 							cwd: templatePath
 						})
 
@@ -146,30 +124,30 @@ export async function start() {
 									return reject(new Error(stderrData || `Process exited with code ${code}`))
 								}
 								if (stdoutData.includes('No dependencies')) {
-									logger.info('There were no updates, aborting...')
+									templateLogger.info('There were no updates, aborting...')
 									return resolve()
 								}
 								resolve()
 							})
 						})
-						logger.info('Finished running sage upgrade...')
+						templateLogger.info('Finished running sage upgrade...')
 
 						// we might want to be able to pass the branch we are currently originating from
-						logger.info('Getting branch sha...')
+						templateLogger.info('Getting branch sha...')
 						const sha = await getBranchSha()
 						if (!sha) {
 							throw new Error('Could not get branch sha .')
 						}
-						const branchName = `chore/${template}`
-						logger.info('Creating branch...')
+						const branchName = template
+						templateLogger.info('Creating branch...')
 
 						// finish implementation in createBranch.
 						const branch = await createBranch(branchName, sha)
 
 						if (branch.status === '422') {
-							logger.warn('Branch already exists no need to re-create <3')
+							templateLogger.warn('Branch already exists no need to re-create <3')
 						}
-						logger.info('Uploading package.json to github...')
+						templateLogger.info('Uploading package.json to github...')
 
 						await uploadFileToGitHub(branchName, path.join(templatePath, 'package.json'))
 
@@ -177,16 +155,16 @@ export async function start() {
 						await uploadFileToGitHub(branchName, path.join(templatePath, 'package-lock.json'))
 
 						await createPullRequest(
-							`Branch: ${branchName}`,
+							`templates(${template.replace('templates/', '')}): updated robo dependencies`,
 							branchName,
 							'main',
 							`Automated PR for... Branch: ${branchName}`
 						)
 
-						logger.ready('All done !')
+						templateLogger.ready('All done!')
 						success.push(template)
 					} catch (error) {
-						logger.error(template, error)
+						templateLogger.error(template, error)
 						failed.push(template)
 					}
 				})

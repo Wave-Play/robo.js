@@ -5,9 +5,9 @@
 	"description": "Scripts for the Robo.js monorepo.",
 	"type": "module",
 	"scripts": {
-		"zip": "tsx zip_templates/zip",
-		"upgrade": "tsx zip_templates/sage-upgrade",
-		"act": "tsx act_local.ts"
+		"act": "tsx src/act",
+		"update": "tsx src/templates/update",
+		"zip": "tsx src/templates/zip"
 	},
 	"author": "WavePlay <dev@waveplay.com> (waveplay.com)",
 	"contributors": [
@@ -16,8 +16,8 @@
 	],
 	"license": "MIT",
 	"dependencies": {
-		"robo.js": "^0.10.26",
-		"@roboplay/sage": "workspace:*"
+		"@roboplay/sage": "0.6.15",
+		"robo.js": "^0.10.26"
 	},
 	"devDependencies": {
 		"tsx": "^4.19.2",

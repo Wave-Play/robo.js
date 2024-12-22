@@ -1,13 +1,12 @@
+import { env } from '../env.js'
+import { CommitData, filterCommitedTemplates, getAllTemplates, RootDir } from '../utils.js'
 import { exec } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { mkdir } from 'node:fs/promises'
 import path from 'node:path'
 import { promisify } from 'node:util'
 import { color, logger } from 'robo.js'
-import { CommitData, env, filterCommitedTemplates, getAllTemplates, RootDir } from './utils'
-import { Env } from 'robo.js'
 
-Env.loadSync()
 const execAsync = promisify(exec)
 
 const Exclude = `'.robo/**' 'node_modules/**' '.DS_Store' '.env'`
