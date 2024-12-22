@@ -2,7 +2,7 @@ import fs, { readFile, rename } from 'node:fs/promises'
 import path from 'path'
 import { checkbox, input, select, Separator } from '@inquirer/prompts'
 import { fileURLToPath } from 'node:url'
-import { Highlight, HighlightBlue } from './core/constants.js'
+import { Files, Highlight, HighlightBlue } from './core/constants.js'
 import {
 	PRETTIER_CONFIG,
 	ROBO_CONFIG,
@@ -976,14 +976,10 @@ export default class Robo {
 			}
 		}
 
-		// Copy the .gitignore file separately if it exists
-		const gitignoreSourcePath = path.join(sourcePath, '.gitignore')
+		// Explicitly generate .gitignore file
 		const gitignoreTargetPath = path.join(this._workingDir, '.gitignore')
-
-		if (existsSync(gitignoreSourcePath)) {
-			logger.debug(`Copying`, color.bold('.gitignore'), `to`, color.bold(gitignoreTargetPath))
-			await fs.copyFile(gitignoreSourcePath, gitignoreTargetPath, fs.constants.COPYFILE_FICLONE)
-		}
+		logger.debug(`Generating`, color.bold('.gitignore'), `in`, color.bold(gitignoreTargetPath))
+		await fs.writeFile(gitignoreTargetPath, Files.GitIgnore.Content, 'utf-8')
 	}
 
 	async askForDiscordCredentials(): Promise<void> {
@@ -1107,8 +1103,9 @@ export default class Robo {
 		}
 
 		// Normalize plugin path
-		const pluginPath =
-			`${path.join(this._workingDir, 'config','plugins', ...pluginParts)}${this._useTypeScript ? '.ts' : '.mjs'}`
+		const pluginPath = `${path.join(this._workingDir, 'config', 'plugins', ...pluginParts)}${
+			this._useTypeScript ? '.ts' : '.mjs'
+		}`
 		const pluginConfig = prettyStringify(config) + '\n'
 
 		logger.debug(`Writing ${pluginName} config to ${pluginPath}...`)
