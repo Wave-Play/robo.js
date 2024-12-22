@@ -2,6 +2,10 @@
 	"compilerOptions": {
 		"target": "ESNext",
 		"lib": ["esnext"],
+		"baseUrl": ".",
+		"paths": {
+			"~/*": ["src/*"]
+		},
 		"allowJs": true,
 		"skipLibCheck": true,
 		"strict": true,

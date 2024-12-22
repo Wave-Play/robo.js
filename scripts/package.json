@@ -5,7 +5,9 @@
 	"description": "Scripts for the Robo.js monorepo.",
 	"type": "module",
 	"scripts": {
-		"zip": "tsx zip"
+		"act": "tsx src/act",
+		"update": "tsx src/templates/update",
+		"zip": "tsx src/templates/zip"
 	},
 	"author": "WavePlay <dev@waveplay.com> (waveplay.com)",
 	"contributors": [
@@ -14,6 +16,7 @@
 	],
 	"license": "MIT",
 	"dependencies": {
+		"@roboplay/sage": "0.6.15",
 		"robo.js": "^0.10.26"
 	},
 	"devDependencies": {

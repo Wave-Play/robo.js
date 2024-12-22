@@ -1,5 +1,32 @@
 # @roboplay/sage
 
+## 0.6.16
+
+### Patch Changes
+
+- b1ea9a4: patch(upgrade): use correct robo.js package.json path in monorepos
+
+## 0.6.15
+
+### Patch Changes
+
+- Updated dependencies [6f4476c]
+- Updated dependencies [97ae5bd]
+  - robo.js@0.10.28
+
+## 0.6.14
+
+### Patch Changes
+
+- Updated dependencies [5166d16]
+- Updated dependencies [1dbae32]
+- Updated dependencies [fab10f2]
+- Updated dependencies [777d33d]
+- Updated dependencies [e7807d0]
+- Updated dependencies [dfe4bdd]
+- Updated dependencies [0a670ec]
+  - robo.js@0.10.27
+
 ## 0.6.13
 
 ### Patch Changes

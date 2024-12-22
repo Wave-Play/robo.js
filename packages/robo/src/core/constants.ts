@@ -16,6 +16,10 @@ export const ALLOWED_EXTENSIONS = IS_BUN_RUNTIME ? ['.js', '.jsx', '.ts', '.tsx'
 
 export const DEFAULT_CONFIG: Config = {
 	clientOptions: null,
+	defaults: {
+		contexts: ['Guild', 'BotDM', 'PrivateChannel'],
+		integrationTypes: ['GuildInstall']
+	},
 	sage: {
 		defer: true,
 		deferBuffer: 250,

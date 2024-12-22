@@ -2,7 +2,7 @@ import fs, { readFile, rename } from 'node:fs/promises'
 import path from 'path'
 import { checkbox, input, select, Separator } from '@inquirer/prompts'
 import { fileURLToPath } from 'node:url'
-import { Highlight, HighlightBlue } from './core/constants.js'
+import { Files, Highlight, HighlightBlue } from './core/constants.js'
 import {
 	PRETTIER_CONFIG,
 	ROBO_CONFIG,
@@ -14,12 +14,12 @@ import {
 	getPackageExecutor,
 	ROBO_CONFIG_APP,
 	Indent,
-	ExecOptions,
+	type ExecOptions,
 	Space,
 	EslintConfig,
 	EslintConfigTypescript
 } from './utils.js'
-import { RepoInfo, downloadAndExtractRepo, getRepoInfo, hasRepo } from './templates.js'
+import { type RepoInfo, downloadAndExtractRepo, getRepoInfo, hasRepo } from './templates.js'
 import retry from 'async-retry'
 import { color, logger } from 'robo.js'
 import { Spinner } from 'robo.js/dist/cli/utils/spinner.js'
@@ -664,7 +664,7 @@ export default class Robo {
 
 		// Robo.js and Discord.js are normal dependencies, unless this is a plugin
 		const roboPkg = 'robo.js'
-		const roboDep = roboPkg + (roboVersion ? `@${roboVersion}` : '')
+		const roboDep = roboPkg + (roboVersion ? `@${roboVersion}` : '@latest')
 
 		if (!this._isPlugin) {
 			dependencies.push(roboDep)
@@ -698,7 +698,7 @@ export default class Robo {
 		// App developers always get Vite
 		logger.debug(`Adding features:`, features)
 		if (this._isApp) {
-			devDependencies.push('vite')
+			devDependencies.push('vite@5')
 		}
 		if (this._selectedFeatures.includes('react') && this._isPlugin) {
 			devDependencies.push('react')
@@ -958,22 +958,28 @@ export default class Robo {
 		const sourcePath = path.join(__dirname, templateDir, sourceDir)
 		const targetPath = path.join(this._workingDir, sourceDir)
 
-		const items = await fs.readdir(sourcePath)
+		const items = await fs.readdir(sourcePath, { withFileTypes: true })
 
 		for (const item of items) {
-			const itemSourcePath = path.join(sourcePath, item)
-			const itemTargetPath = path.join(targetPath, item)
-			const stat = await fs.stat(itemSourcePath)
+			const itemSourcePath = path.join(sourcePath, item.name)
+			const itemTargetPath = path.join(targetPath, item.name)
 
-			if (stat.isDirectory()) {
+			if (item.isDirectory()) {
 				logger.debug(`Creating directory`, color.bold(itemTargetPath))
 				await fs.mkdir(itemTargetPath, { recursive: true })
-				await this.copyTemplateFiles(path.join(sourceDir, item))
-			} else {
-				logger.debug(`Copying`, color.bold(item), `to`, color.bold(itemTargetPath))
+				await this.copyTemplateFiles(path.join(sourceDir, item.name))
+			} else if (item.isFile()) {
+				logger.debug(`Copying`, color.bold(item.name), `to`, color.bold(itemTargetPath))
 				await fs.copyFile(itemSourcePath, itemTargetPath, fs.constants.COPYFILE_FICLONE)
+			} else {
+				logger.warn(`Ignoring`, color.bold(item.name))
 			}
 		}
+
+		// Explicitly generate .gitignore file
+		const gitignoreTargetPath = path.join(this._workingDir, '.gitignore')
+		logger.debug(`Generating`, color.bold('.gitignore'), `in`, color.bold(gitignoreTargetPath))
+		await fs.writeFile(gitignoreTargetPath, Files.GitIgnore.Content, 'utf-8')
 	}
 
 	async askForDiscordCredentials(): Promise<void> {
@@ -1097,8 +1103,9 @@ export default class Robo {
 		}
 
 		// Normalize plugin path
-		const pluginPath =
-			path.join(this._workingDir, 'config', 'plugins', ...pluginParts) + this._useTypeScript ? '.ts' : '.mjs'
+		const pluginPath = `${path.join(this._workingDir, 'config', 'plugins', ...pluginParts)}${
+			this._useTypeScript ? '.ts' : '.mjs'
+		}`
 		const pluginConfig = prettyStringify(config) + '\n'
 
 		logger.debug(`Writing ${pluginName} config to ${pluginPath}...`)

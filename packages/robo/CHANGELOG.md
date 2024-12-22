@@ -1,5 +1,24 @@
 # robo.js
 
+## 0.10.28
+
+### Patch Changes
+
+- 6f4476c: patch: fixed race condition by patching `interaction.deferReply`
+- 97ae5bd: patch: warn when incorrect data object was returned in slash commands
+
+## 0.10.27
+
+### Patch Changes
+
+- 5166d16: patch: register loaded config globally
+- 1dbae32: chore: deprecated experimental `userInstall` option
+- fab10f2: feat: ability to define user installs on a per-command basis w/ defaults
+- 777d33d: patch(cli): escape login URLs on Windows
+- e7807d0: feat: intent management for events
+- dfe4bdd: feat: new `contexts` option for slash commands
+- 0a670ec: feat(config): define default member permissions
+
 ## 0.10.26
 
 ### Patch Changes

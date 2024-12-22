@@ -1,7 +1,7 @@
 {
 	"name": "@robojs/sync",
 	"description": "",
-	"version": "0.1.2",
+	"version": "0.1.3",
 	"type": "module",
 	"private": false,
 	"keywords": [
@@ -65,8 +65,8 @@
 		"typescript": "^5.4.5"
 	},
 	"peerDependencies": {
-		"react": "^18.0.0",
-		"robo.js": "^0.10.26"
+		"react": ">=18.0.0",
+		"robo.js": "^0.10.28"
 	},
 	"peerDependenciesMeta": {
 		"react": {
