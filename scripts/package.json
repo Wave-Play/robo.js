@@ -16,7 +16,7 @@
 	],
 	"license": "MIT",
 	"dependencies": {
-		"@roboplay/sage": "0.6.15",
+		"@roboplay/sage": "0.6.16",
 		"robo.js": "^0.10.26"
 	},
 	"devDependencies": {
