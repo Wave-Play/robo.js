@@ -9,7 +9,6 @@ import { createRequire } from 'node:module'
 import { exec } from '../utils/utils.js'
 import { getPackageManager } from '../utils/runtime-utils.js'
 import { Spinner } from '../utils/spinner.js'
-import { Compiler } from '../utils/compiler.js'
 import { existsSync } from 'node:fs'
 
 const require = createRequire(import.meta.url)

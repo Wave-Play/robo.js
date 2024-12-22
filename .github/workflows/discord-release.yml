@@ -1,0 +1,17 @@
+name: 'Discord Notification'
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  NotifyDiscord:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Discord Server
+        uses: rjstone/discord-webhook-notify@v1
+        with:
+          severity: info
+          color: '#651FFF'
+          details: '## 🚀 ${{ github.event.release.name }}\n\n${{ github.event.release.body }}'
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}

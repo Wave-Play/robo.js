@@ -18,6 +18,26 @@ You do not normally need to use this API directly, as the CLI will handle starti
 
 ## Type declaration
 
+### build()
+
+```ts
+build: (options?) => Promise<void>;
+```
+
+Builds your Robo instance. Similar to running `robo build` from the CLI.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options`? | `BuildCommandOptions` | Options for building your Robo instance, similar to CLI options |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+A promise that resolves when Robo has finished building
+
 ### restart()
 
 ```ts

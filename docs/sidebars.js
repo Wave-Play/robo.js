@@ -180,102 +180,120 @@ const sidebars = {
 		{
 			type: 'link',
 			label: 'Discord Community',
-			href: 'https://roboplay.dev/discord'
+			href: '/discord'
+		},
+		{
+			type: 'link',
+			label: 'Plugins',
+			href: '/plugins/directory'
+		},
+		{
+			type: 'link',
+			label: 'Templates',
+			href: '/templates'
+		}
+	],
+	pluginsSidebar: [
+		{
+			type: 'html',
+			value: 'Directory',
+			className: 'sidebar-title'
+		},
+		{
+			id: 'plugins/directory',
+			label: '✨ Overview',
+			type: 'doc'
+		},
+		{
+			type: 'html',
+			value: 'Plugins',
+			className: 'sidebar-title'
+		},
+		'plugins/ai',
+		'plugins/ai-voice',
+		'plugins/analytics',
+		'plugins/better-stack',
+		'plugins/cron',
+		'plugins/dev',
+		'plugins/maintenance',
+		'plugins/moderation',
+		'plugins/patch',
+		'plugins/server',
+		'plugins/sync',
+		'plugins/trpc'
+	],
+	templateSidebar: [
+		{
+			type: 'html',
+			value: 'Directory',
+			className: 'sidebar-title'
+		},
+		{
+			type: 'link',
+			label: '✨ Overview',
+			href: '/templates'
+		},
+		{
+			type: 'html',
+			value: 'Templates',
+			className: 'sidebar-title'
 		},
 		{
 			type: 'category',
-			label: 'Plugin Directory',
-			link: {
-				id: 'plugins/directory',
-				type: 'doc'
-			},
+			label: 'Discord Activities',
 			items: [
-				{
-					id: 'plugins/directory',
-					label: '✨ Overview',
-					type: 'doc'
-				},
-				'plugins/ai',
-				'plugins/ai-voice',
-				'plugins/analytics',
-				'plugins/better-stack',
-				'plugins/cron',
-				'plugins/dev',
-				'plugins/maintenance',
-				'plugins/moderation',
-				'plugins/patch',
-				'plugins/server',
-				'plugins/sync',
-				'plugins/trpc'
+				'templates/discord-activities/2d-game',
+				'templates/discord-activities/godot',
+				'templates/discord-activities/react-colyseus-ts',
+				'templates/discord-activities/react-firebase-ts',
+				'templates/discord-activities/react-js',
+				'templates/discord-activities/react-multiplayer-video-ts',
+				'templates/discord-activities/react-music-proxy-ts',
+				'templates/discord-activities/react-tailwind-shadcn-ts',
+				'templates/discord-activities/react-tailwind-ts',
+				'templates/discord-activities/react-trpc-ts',
+				'templates/discord-activities/react-ts',
+				'templates/discord-activities/unity',
+				'templates/discord-activities/vanilla-js',
+				'templates/discord-activities/vanilla-ts'
 			]
 		},
 		{
 			type: 'category',
-			label: 'Templates',
-			link: {
-				id: 'templates/overview',
-				type: 'doc'
-			},
+			label: 'Discord Bots',
 			items: [
-				{
-					id: 'templates/overview',
-					label: '✨ Overview',
-					type: 'doc'
-				},
-				{
-					type: 'category',
-					label: 'Discord Activities',
-					items: [
-						'templates/discord-activities/2d-game',
-						'templates/discord-activities/godot',
-						'templates/discord-activities/react-colyseus-ts',
-						'templates/discord-activities/react-js',
-						'templates/discord-activities/react-multiplayer-video-ts',
-						'templates/discord-activities/react-music-proxy-ts',
-						'templates/discord-activities/react-tailwind-shadcn-ts',
-						'templates/discord-activities/react-tailwind-ts',
-						'templates/discord-activities/react-trpc-ts',
-						'templates/discord-activities/react-ts',
-						'templates/discord-activities/unity',
-						'templates/discord-activities/vanilla-js',
-						'templates/discord-activities/vanilla-ts'
-					]
-				},
-				{
-					type: 'category',
-					label: 'Discord Bots',
-					items: [
-						'templates/discord-bots/ai-chatbot-ts',
-						'templates/discord-bots/analytics-ts',
-						'templates/discord-bots/economy-ts',
-						'templates/discord-bots/mongodb-ts',
-						'templates/discord-bots/mrjawesome-dev-toolkit-js',
-						'templates/discord-bots/mrjawesome-dev-toolkit-ts',
-						'templates/discord-bots/mrjawesome-slash-commands-js',
-						'templates/discord-bots/mrjawesome-slash-commands-ts',
-						'templates/discord-bots/postgres-ts',
-						'templates/discord-bots/prisma-ts',
-						'templates/discord-bots/purrth-vader-ts',
-						'templates/discord-bots/starter-js',
-						'templates/discord-bots/starter-ts',
-						'templates/discord-bots/tagbot'
-					]
-				},
-				{
-					type: 'category',
-					label: 'Plugins',
-					items: ['templates/plugins/starter-js']
-				},
-				{
-					type: 'category',
-					label: 'Web Apps',
-					items: [
-						'templates/web-apps/react-js',
-						'templates/web-apps/react-ts',
-						'templates/web-apps/svelte-js',
-						'templates/web-apps/svelte-ts'
-					]
-				}
+				'templates/discord-bots/ai-chatbot-ts',
+				'templates/discord-bots/analytics-ts',
+				'templates/discord-bots/bake-n-take-js',
+				'templates/discord-bots/bake-n-take-ts',
+				'templates/discord-bots/docker-ts',
+				'templates/discord-bots/economy-ts',
+				'templates/discord-bots/mongodb-ts',
+				'templates/discord-bots/mrjawesome-dev-toolkit-js',
+				'templates/discord-bots/mrjawesome-dev-toolkit-ts',
+				'templates/discord-bots/mrjawesome-slash-commands-js',
+				'templates/discord-bots/mrjawesome-slash-commands-ts',
+				'templates/discord-bots/postgres-ts',
+				'templates/discord-bots/prisma-ts',
+				'templates/discord-bots/purrth-vader-ts',
+				'templates/discord-bots/starter-js',
+				'templates/discord-bots/starter-ts',
+				'templates/discord-bots/tagbot'
+			]
+		},
+		{
+			type: 'category',
+			label: 'Plugins',
+			items: ['templates/plugins/starter-js']
+		},
+		{
+			type: 'category',
+			label: 'Web Apps',
+			items: [
+				'templates/web-apps/react-js',
+				'templates/web-apps/react-ts',
+				'templates/web-apps/svelte-js',
+				'templates/web-apps/svelte-ts'
 			]
 		}
 	],
@@ -328,6 +346,37 @@ const sidebars = {
 		},
 		{
 			type: 'category',
+			label: 'Types',
+			items: [
+				{
+					id: 'ref/framework/Interface.CommandConfig',
+					label: 'CommandConfig',
+					type: 'doc'
+				},
+				{
+					id: 'ref/framework/TypeAlias.CommandContext',
+					label: 'CommandContext',
+					type: 'doc'
+				},
+				{
+					id: 'ref/framework/TypeAlias.CommandIntegrationType',
+					label: 'CommandIntegrationType',
+					type: 'doc'
+				},
+				{
+					id: 'ref/framework/Interface.CommandOption',
+					label: 'CommandOption',
+					type: 'doc'
+				},
+				{
+					id: 'ref/framework/TypeAlias.CommandOptionTypes',
+					label: 'CommandOptionTypes',
+					type: 'doc'
+				}
+			]
+		},
+		{
+			type: 'category',
 			label: 'Utilities',
 			items: [
 				{
@@ -338,6 +387,11 @@ const sidebars = {
 				{
 					id: 'ref/framework/Function.composeColors',
 					label: 'composeColors',
+					type: 'doc'
+				},
+				{
+					id: 'ref/framework/Function.createCommandConfig',
+					label: 'createCommandConfig',
 					type: 'doc'
 				},
 				{
@@ -535,11 +589,11 @@ const sidebars = {
 					label: 'createTRPCReact',
 					type: 'doc'
 				},
-				{
-					id: 'ref/@robojs/trpc/Variable.httpBatchLink',
+				/*{
+					id: 'ref/@robojs/trpc/Function.httpBatchLink',
 					label: 'httpBatchLink',
 					type: 'doc'
-				},
+				},*/
 				{
 					id: 'ref/@robojs/trpc/Function.TRPCProvider',
 					label: 'TRPCProvider',

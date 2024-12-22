@@ -6,7 +6,7 @@ export function patchWebSocket() {
 			const url = patchUrl(args[0])
 			const protocols = args[1]
 
-			return new WebSocketTarget(url, protocols)
+			return new WebSocketTarget(url as URL, protocols)
 		}
 	})
 

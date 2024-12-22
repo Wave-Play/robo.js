@@ -1,0 +1,14 @@
+**/.docusaurus/**
+**/.robo/**
+**/__benchmarks__/**
+**/build/**
+**/dist/**
+**/signatures/**
+**/package-lock.json
+.changeset
+.github
+.turbo
+.vscode
+pnpm-lock.yaml
+temp
+templates/web-apps/**

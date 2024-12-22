@@ -1,5 +1,63 @@
 # create-robo
 
+## 0.14.8
+
+### Patch Changes
+
+- Updated dependencies [6f4476c]
+- Updated dependencies [97ae5bd]
+  - robo.js@0.10.28
+
+## 0.14.7
+
+### Patch Changes
+
+- 3c7f36f: fix: correct file path concatenation for plugin configuration
+- a3eb40a: refactor(templates): removed .proxy prefix in react templates
+
+## 0.14.6
+
+### Patch Changes
+
+- 82e3d0d: chore: removed hacktoberfest link
+- b3520ab: refactor: specify version range for vite and latest robo.js
+- 48b2857: refactor: better starter templates
+- Updated dependencies [5166d16]
+- Updated dependencies [1dbae32]
+- Updated dependencies [fab10f2]
+- Updated dependencies [777d33d]
+- Updated dependencies [e7807d0]
+- Updated dependencies [dfe4bdd]
+- Updated dependencies [0a670ec]
+  - robo.js@0.10.27
+
+## 0.14.5
+
+### Patch Changes
+
+- 1b04a97: refactor: change how it handles runtime detection + minor stuff
+- Updated dependencies [1b84f8e]
+  - robo.js@0.10.26
+
+## 0.14.4
+
+### Patch Changes
+
+- b902032: fix: no need of double double quotes
+- b902032: feat: add "Web App" to initial prompt when no kit is there
+- Updated dependencies [b902032]
+- Updated dependencies [b902032]
+- Updated dependencies [b902032]
+- Updated dependencies [b902032]
+- Updated dependencies [b902032]
+- Updated dependencies [b902032]
+- Updated dependencies [b902032]
+- Updated dependencies [b902032]
+- Updated dependencies [d10c770]
+- Updated dependencies [b902032]
+- Updated dependencies [b902032]
+  - robo.js@0.10.25
+
 ## 0.14.3
 
 ### Patch Changes

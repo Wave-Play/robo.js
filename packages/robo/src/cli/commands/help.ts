@@ -42,7 +42,7 @@ export function helpCommandHandler() {
 		color.dim('(v' + packageJson.version + ')\n\n')
 	)
 	const groups = splitCommandsIntoGroups([
-		['dev', 'start', 'build', 'plugin'],
+		['dev', 'start', 'build'],
 		['add', 'remove', 'upgrade'],
 		['deploy', 'invite', 'why'],
 		['help']

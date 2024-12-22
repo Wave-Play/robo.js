@@ -1,0 +1,54 @@
+{
+	"name": "react-firebase-ts",
+	"description": "",
+	"version": "1.0.0",
+	"type": "module",
+	"private": true,
+	"keywords": [
+		"activity",
+		"api",
+		"discord",
+		"embed",
+		"embedded app",
+		"http",
+		"robo",
+		"robo.js",
+		"sdk",
+		"server",
+		"typescript",
+		"vite",
+		"web"
+	],
+	"scripts": {
+		"build": "robo build",
+		"deploy": "robo deploy",
+		"dev": "robox dev",
+		"doctor": "sage doctor",
+		"invite": "robo invite",
+		"lint:style": "prettier --write .",
+		"start": "robo start",
+		"tunnel": ".robo/bin/cloudflared tunnel --url http://localhost:3000",
+		"upgrade": "sage upgrade"
+	},
+	"dependencies": {
+		"@discord/embedded-app-sdk": "^1.7.0",
+		"@robojs/patch": "https://pkg.pr.new/Wave-Play/robo.js/@robojs/patch@43d0664",
+		"@robojs/server": "^0.6.2",
+		"firebase": "^11.0.2",
+		"react": "^18.3.1",
+		"react-dom": "^18.3.1",
+		"robo.js": "^0.10.26"
+	},
+	"devDependencies": {
+		"@swc/core": "^1.10.0",
+		"@types/node": "^22.10.1",
+		"@types/react": "^18.3.12",
+		"@types/react-dom": "^18.3.1",
+		"@vitejs/plugin-react-swc": "^3.7.2",
+		"discord.js": "^14.16.3",
+		"eslint-plugin-react-hooks": "^5.0.0",
+		"prettier": "^3.4.1",
+		"typescript": "^5.7.2",
+		"vite": "^5.4.11"
+	}
+}

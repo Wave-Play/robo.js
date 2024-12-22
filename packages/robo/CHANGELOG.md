@@ -1,5 +1,46 @@
 # robo.js
 
+## 0.10.28
+
+### Patch Changes
+
+- 6f4476c: patch: fixed race condition by patching `interaction.deferReply`
+- 97ae5bd: patch: warn when incorrect data object was returned in slash commands
+
+## 0.10.27
+
+### Patch Changes
+
+- 5166d16: patch: register loaded config globally
+- 1dbae32: chore: deprecated experimental `userInstall` option
+- fab10f2: feat: ability to define user installs on a per-command basis w/ defaults
+- 777d33d: patch(cli): escape login URLs on Windows
+- e7807d0: feat: intent management for events
+- dfe4bdd: feat: new `contexts` option for slash commands
+- 0a670ec: feat(config): define default member permissions
+
+## 0.10.26
+
+### Patch Changes
+
+- 1b84f8e: fix(runtime): decouple Bun runtime from PM detection
+
+## 0.10.25
+
+### Patch Changes
+
+- b902032: feat: new `build` function in Robo object
+- b902032: refactor(cli): `deploy` now triggers `login` when necessary
+- b902032: fix(cli): reload environment variables in dev mode
+- b902032: feat(defaults): help specific to each command available
+- b902032: feat(discord): default help menu with pagination
+- b902032: patch(cli): load environment variables in `login` and `deploy` commands
+- b902032: feat: support for `.ts` config files
+- b902032: fix(cli): get custom build directory on start command
+- d10c770: patch(commands): don't register entry point in guild commands
+- b902032: feat: new `Env` export
+- b902032: refactor(cli): style updates to `deploy` and `login` commands
+
 ## 0.10.24
 
 ### Patch Changes

@@ -8,14 +8,18 @@ import {
 	NavbarProvider,
 	PluginHtmlClassNameProvider
 } from '@docusaurus/theme-common/internal'
+import { MediaContextProvider } from '../../../components/shared/Breakpoints'
+
 const Provider = composeProviders([
 	ColorModeProvider,
 	AnnouncementBarProvider,
 	ScrollControllerProvider,
 	DocsPreferredVersionContextProvider,
 	PluginHtmlClassNameProvider,
-	NavbarProvider
+	NavbarProvider,
+	MediaContextProvider
 ])
+
 export default function LayoutProvider({ children }) {
 	return <Provider>{children}</Provider>
 }

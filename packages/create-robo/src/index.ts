@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-import { Highlight, HighlightBlue, HighlightGreen, HighlightMagenta, HighlightRed, Indent } from './core/constants.js'
+import { Highlight, HighlightBlue, HighlightGreen, HighlightRed, Indent } from './core/constants.js'
 import Robo from './robo.js'
-import { getPackageManager, packageJson } from './utils.js'
+import { IS_BUN_RUNTIME, getPackageManager, packageJson } from './utils.js'
 import path from 'node:path'
 import { input, select } from '@inquirer/prompts'
 import { color, logger } from 'robo.js'
@@ -232,7 +232,9 @@ new Command('create-robo <projectName>')
 		}
 
 		// Bun is special
-		if (getPackageManager() === 'bun') {
+		// if executed with with `bunx --bun create-robo`
+		// it will use it as runtime, hence:
+		if (IS_BUN_RUNTIME) {
 			await robo.bun()
 		}
 
@@ -278,14 +280,14 @@ new Command('create-robo <projectName>')
 				'   - Multiplayer features:',
 				HighlightBlue('https://robojs.dev/discord-activities/multiplayer')
 			)
-			logger.log(Indent, '   - ✨🎃 Hacktoberfest:', HighlightMagenta('https://robojs.dev/hacktoberfest'))
+			// logger.log(Indent, '   - ✨🎃 Hacktoberfest:', HighlightMagenta('https://robojs.dev/hacktoberfest'))
 		} else if (options.kit === 'bot') {
 			logger.log('')
 			logger.log(Indent, '  ', color.bold('Learn more'))
 			logger.log(Indent, '   - Documentation:', HighlightBlue('https://robojs.dev/discord-bots'))
 			logger.log(Indent, '   - Context commands:', HighlightBlue('https://robojs.dev/discord-bots/context-menu'))
 			logger.log(Indent, '   - Slash commands:', HighlightBlue('https://robojs.dev/discord-bots/commands'))
-			logger.log(Indent, '   - ✨🎃 Hacktoberfest:', HighlightMagenta('https://robojs.dev/hacktoberfest'))
+			// logger.log(Indent, '   - ✨🎃 Hacktoberfest:', HighlightMagenta('https://robojs.dev/hacktoberfest'))
 		}
 
 		logger.log('')
