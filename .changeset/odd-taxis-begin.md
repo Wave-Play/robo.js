@@ -2,4 +2,4 @@
 '@roboplay/sage': minor
 ---
 
-new link command for automated deploys.
+feat(cli): new `link` command for automated deployments

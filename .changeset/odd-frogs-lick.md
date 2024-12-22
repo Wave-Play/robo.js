@@ -2,4 +2,4 @@
 'robo.js': patch
 ---
 
-feat(cli/robo): retrieves credentials from command line
+feat(cli): retrieves credentials from `robo cloud status` command
