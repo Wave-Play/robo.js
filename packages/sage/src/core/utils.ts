@@ -19,7 +19,7 @@ const pipelineAsync = promisify(pipeline)
 
 export const IS_WINDOWS = /^win/.test(process.platform)
 
-export async function checkSageUpdates() {
+export async function checkSageUpdates(skipPrompt = false) {
 	// Check NPM registry for updates
 	logger.debug(`Checking for updates...`)
 	const response = await fetch(`https://registry.npmjs.org/${packageJson.name}/latest`)
@@ -30,6 +30,12 @@ export async function checkSageUpdates() {
 	if (packageJson.version !== latestVersion) {
 		// Print update message
 		logger.info(color.green(`A new version of ${color.bold('@roboplay/sage')} is available! (v${latestVersion})\n`))
+
+		if (skipPrompt) {
+			logger.debug(`Skipping prompt due to flag...`)
+			return
+		}
+
 		const useLatest = await select({
 			message: 'Would you like to use the latest version?',
 			choices: [
