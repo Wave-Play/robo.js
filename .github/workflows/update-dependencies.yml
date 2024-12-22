@@ -1,4 +1,4 @@
-name: 'upgrade-dependencies'
+name: 'Update Robo dependencies'
 on:
   push:
     paths:
