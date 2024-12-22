@@ -8,6 +8,7 @@ import upgradeCommand from './commands/upgrade.js'
 import whyCommand from './commands/why.js'
 import typescriptCommand from './commands/typescript.js'
 import generateCommand from './commands/generate.js'
+import linkCommand from './commands/link.js'
 
 // Read the version from the package.json file
 const require = createRequire(import.meta.url)
@@ -23,4 +24,5 @@ new Command('@roboplay/sage')
 	.addCommand(whyCommand)
 	.addCommand(typescriptCommand)
 	.addCommand(generateCommand)
+	.addCommand(linkCommand)
 	.parse(process.argv)
