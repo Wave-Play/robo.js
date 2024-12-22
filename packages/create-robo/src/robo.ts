@@ -971,7 +971,18 @@ export default class Robo {
 			} else if (item.isFile()) {
 				logger.debug(`Copying`, color.bold(item.name), `to`, color.bold(itemTargetPath))
 				await fs.copyFile(itemSourcePath, itemTargetPath, fs.constants.COPYFILE_FICLONE)
+			} else {
+				logger.warn(`Ignoring`, color.bold(item.name))
 			}
+		}
+
+		// Copy the .gitignore file separately if it exists
+		const gitignoreSourcePath = path.join(sourcePath, '.gitignore')
+		const gitignoreTargetPath = path.join(this._workingDir, '.gitignore')
+
+		if (existsSync(gitignoreSourcePath)) {
+			logger.debug(`Copying`, color.bold('.gitignore'), `to`, color.bold(gitignoreTargetPath))
+			await fs.copyFile(gitignoreSourcePath, gitignoreTargetPath, fs.constants.COPYFILE_FICLONE)
 		}
 	}
 
