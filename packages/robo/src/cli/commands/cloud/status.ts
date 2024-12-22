@@ -1,5 +1,6 @@
 import { Command } from '../../utils/cli-handler.js'
 import { color, composeColors } from '../../../core/color.js'
+import { Highlight } from '../../../core/constants.js'
 import { logger } from '../../../core/logger.js'
 import { copyToClipboard, getPodStatusColor } from '../../utils/utils.js'
 import { RoboPlaySession } from '../../../roboplay/session.js'
@@ -44,12 +45,10 @@ async function statusAction(_args: string[], options: StatusCommandOptions) {
 
 		copyToClipboard(base64Encode)
 
-		logger.log(color.green('> Credentials have been copied to your clipboard'))
-		logger.log(
-			`> Follow the tutorial here ${composeColors(color.blue)(
-				'https://robojs.dev/setup-ci'
-			)} to know what to do with them.`
-		)
+		logger.log('\n' + Indent, color.bold('✅ Credentials copied to clipboard'))
+		logger.log(Indent + '   ', `Paste them to your GitHub secrets as ${Highlight('ROBOPLAY_SESSION')}.`)
+		logger.log('\n' + Indent + '   ', 'Guide:', color.blue('https://robojs.dev/hosting/roboplay#github-action'))
+		logger.log()
 		return
 	}
 

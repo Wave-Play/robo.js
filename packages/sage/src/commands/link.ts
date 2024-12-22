@@ -1,10 +1,12 @@
-import { Command } from 'commander'
 import { logger } from '../core/logger.js'
-import path from 'path'
-import { existsSync, writeFileSync } from 'fs'
 import { isRoboProject } from '../core/utils.js'
-import { homedir } from 'os'
-import { mkdirSync } from 'fs'
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
+import { homedir } from 'node:os'
+import path from 'node:path'
+import { Command } from 'commander'
+import { color, composeColors } from 'robo.js'
+
+const Highlight = composeColors(color.bold, color.cyan)
 
 const command = new Command('link')
 	.description('Generate a Github action for continuous integrations')
@@ -31,34 +33,34 @@ async function linkAction(options: LinkOptions) {
 	if (isGitProject && roboProject) {
 		createGitWorkflow()
 	} else {
-		logger.error('Please make sure this is a Github and a Robo project  before executing this command.')
+		logger.error('Please make sure this is a Github and a Robo project before executing this command.')
 	}
 }
 
 async function createGitWorkflow() {
 	const HOME_DIR = homedir()
-	const ROBOPLAY_PATH = path.join(HOME_DIR, '.robo', 'roboplay', 'session.json')
 
-	if (existsSync(ROBOPLAY_PATH)) {
-		try {
-			const workflowPath = path.join(process.cwd(), '.github', 'workflows')
+	// Make sure session exists
+	if (!existsSync(path.join(HOME_DIR, '.robo', 'roboplay', 'session.json'))) {
+		logger.error(`Please run ${Highlight('npx robo login')} before running this command.`)
+		return
+	}
 
-			if (!existsSync(workflowPath)) {
-				mkdirSync(workflowPath, { recursive: true })
-			}
-			const workflowFile = await generateWorkflowFile()
-			writeFileSync(path.join(workflowPath, 'ROBOPLAY_CI.yml'), workflowFile)
-		} catch (e) {
-			logger.error(e)
+	try {
+		const workflowPath = path.join(process.cwd(), '.github', 'workflows')
+
+		if (!existsSync(workflowPath)) {
+			mkdirSync(workflowPath, { recursive: true })
 		}
-	} else {
-		logger.error('Roboplay folder does not exist, please make sure it exists before running this command.')
+		const workflowFile = await generateWorkflowFile()
+		writeFileSync(path.join(workflowPath, 'roboplay.yml'), workflowFile)
+	} catch (e) {
+		logger.error(e)
 	}
 }
 
 async function generateWorkflowFile() {
-	return `
-name: 'ROBOPLAY_CI'
+	return `name: 'Deploy to RoboPlay'
 on:
   push:
     branches:
@@ -76,12 +78,12 @@ jobs:
 
       - name: Create session File
         env:
-          ROBOPLAY_DATA: \${{ secrets.ROBOPLAY_DATA }}
+          ROBOPLAY_SESSION: \${{ secrets.ROBOPLAY_SESSION }}
         run: |
             ROBO_PATH="$HOME/.robo/roboplay"
             mkdir -p $ROBO_PATH
             SESSION="$ROBO_PATH/session.json"
-            DECODED_DATA=$(echo "$ROBOPLAY_DATA" | base64 --decode)
+            DECODED_DATA=$(echo "$ROBOPLAY_SESSION" | base64 --decode)
             echo "$DECODED_DATA" > "$SESSION"
 
       - name: Deploy bot
