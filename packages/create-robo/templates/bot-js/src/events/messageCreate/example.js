@@ -1,7 +1,7 @@
 import { logger } from 'robo.js'
 
 /**
- * This `messageCreate` event handler will be called whenever a message is created in a channel or DM.
+ * All files under the `messageCreate` event folder will be called whenever a message is created in a channel or DM.
  * If `message.content` is empty, you may need to enable "Message Content Intent" in the Discord Developer Portal.
  *
  * Learn more about Discord events:
