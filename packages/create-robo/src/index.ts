@@ -13,6 +13,7 @@ export interface CommandOptions {
 	'no-install'?: boolean
 	javascript?: boolean
 	kit?: 'activity' | 'app' | 'bot' | 'web'
+	name?: string
 	plugin?: boolean
 	plugins?: string[]
 	template?: string
@@ -33,7 +34,8 @@ new Command('create-robo <projectName>')
 	.option('-f', '--features', 'comma-separated list of features to include')
 	.option('-js', '--javascript', 'create a Robo using JavaScript')
 	.option('-p', '--plugins', 'pre-install plugins along with the project')
-	.option('-P', '--plugin', 'create a Robo plugin instead of a bot')
+	.option('-P', '--plugin', 'create a Robo plugin instead of a project')
+	.option('-n', '--name', 'specify the name of the Robo project')
 	.option('-ni', '--no-install', 'skips the installation of dependencies')
 	.option('-nu', '--no-update', 'skips the update check')
 	.option('-t', '--template', 'create a Robo from an online template')
@@ -128,13 +130,19 @@ new Command('create-robo <projectName>')
 			return
 		}
 
+		if (options.name && typeof options.name !== 'string') {
+			const example = Highlight('npx create-robo --name epicbot')
+			logger.error(`Please provide a valid name for your Robo project. (e.g. ${example})`)
+			return
+		}
+
 		// Check for updates
 		if (options.update) {
 			await checkUpdates()
 		}
 
 		// Infer project name from current directory if it was not provided
-		let projectName = args[0]
+		let projectName = args[0] ?? options.name
 		let useSameDirectory = false
 
 		if (!projectName) {
