@@ -5,6 +5,8 @@
 	"fixed": [],
 	"linked": [],
 	"access": "restricted",
+	"bumpVersionsWithWorkspaceProtocolOnly": true,
+	"updateInternalDependencies": "minor",
 	"baseBranch": "main",
 	"ignore": ["@robojs/ai-voice", "robo-scripts"]
 }
