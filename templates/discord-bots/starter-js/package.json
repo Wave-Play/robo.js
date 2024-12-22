@@ -23,6 +23,6 @@
 	},
 	"dependencies": {
 		"discord.js": "14.16.2",
-		"robo.js": "0.10.15"
+		"robo.js": "^0.10.28"
 	}
 }
