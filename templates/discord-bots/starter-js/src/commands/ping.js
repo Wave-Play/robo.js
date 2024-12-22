@@ -20,5 +20,5 @@ export const config = createCommandConfig({
 export default (interaction) => {
 	logger.info(`Ping command used by ${interaction.user}`)
 
-	return 'Pong!'
+	interaction.reply('Pong!')
 }
