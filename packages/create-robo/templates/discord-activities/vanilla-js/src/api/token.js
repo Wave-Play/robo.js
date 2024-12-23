@@ -1,4 +1,15 @@
+import { RoboResponse } from '@robojs/server'
+import { logger } from 'robo.js'
+
+/**
+ * This API handler is called when `/api/token` is requested by the client.
+ * Do this on the backend to keep your Discord Client Secret secure.
+ *
+ * Learn more:
+ * https://robojs.dev/discord-activities/authentication
+ */
 export default async (req) => {
+	logger.event('Exchanging Discord code for access token')
 	const { code } = await req.json()
 
 	// Exchange the code for an access_token
@@ -15,6 +26,12 @@ export default async (req) => {
 		})
 	})
 	const { access_token } = await response.json()
+	logger.debug('Access token exchanged', response.ok ? 'successfully ✅' : 'unsuccessfully ❌')
 
-	return { access_token }
+	return RoboResponse.json(
+		{ access_token },
+		{
+			status: response.status
+		}
+	)
 }

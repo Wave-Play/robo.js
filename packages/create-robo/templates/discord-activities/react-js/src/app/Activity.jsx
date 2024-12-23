@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useDiscordSdk } from '../hooks/useDiscordSdk'
 
+/**
+ * This is your Discord Activity's main component. Customize it as you like!
+ * 
+ * Learn more:
+ * https://robojs.dev/discord-activities
+ */
 export const Activity = () => {
 	const { authenticated, discordSdk, status } = useDiscordSdk()
 	const [channelName, setChannelName] = useState()
