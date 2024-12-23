@@ -264,6 +264,10 @@ export default class Robo {
 		return this._isPlugin
 	}
 
+	public get isTypeScript(): boolean {
+		return this._useTypeScript
+	}
+
 	public get missingEnv(): boolean {
 		return this._missingEnv
 	}
@@ -274,6 +278,10 @@ export default class Robo {
 
 	public get shouldInstall(): boolean {
 		return this._shouldInstall
+	}
+
+	public get workingDir(): string {
+		return this._workingDir
 	}
 
 	constructor(name: string, cliOptions: CommandOptions, useSameDirectory: boolean) {
@@ -945,9 +953,13 @@ export default class Robo {
 		if (this._cliOptions.kit === 'web') {
 			return this._useTypeScript ? '../templates/web-apps/react-ts' : '../templates/web-apps/react-js'
 		} else if (this._isApp && this._selectedFeatures.includes('react')) {
-			return this._useTypeScript ? '../templates/discord-activities/react-ts' : '../templates/discord-activities/react-js'
+			return this._useTypeScript
+				? '../templates/discord-activities/react-ts'
+				: '../templates/discord-activities/react-js'
 		} else if (this._isApp) {
-			return this._useTypeScript ? '../templates/discord-activities/vanilla-ts' : '../templates/discord-activities/vanilla-js'
+			return this._useTypeScript
+				? '../templates/discord-activities/vanilla-ts'
+				: '../templates/discord-activities/vanilla-js'
 		} else {
 			return this._useTypeScript ? '../templates/discord-bots/starter-ts' : '../templates/discord-bots/starter-js'
 		}
