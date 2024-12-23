@@ -24,7 +24,7 @@
 	"dependencies": {
 		"discord.js": "^14.16.3",
 		"mongoose": "^8.7.2",
-		"robo.js": "^0.10.22"
+		"robo.js": "^0.10.28"
 	},
 	"devDependencies": {
 		"@swc/core": "^1.7.39",
