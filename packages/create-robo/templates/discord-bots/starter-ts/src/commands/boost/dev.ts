@@ -57,7 +57,7 @@ export default async (
 		embeds: [
 			{
 				color: Colors.Blurple,
-				description: `Boosts **${previousBoost} → ${newBoost}**. Keep it up!`,
+				description: `Boosts **${previousBoost} → ${newBoost}**. Keep it up!\nThis is example code.`,
 				footer: {
 					icon_url: interaction.user.displayAvatarURL(),
 					text: `Boosted by @${interaction.user.tag}`

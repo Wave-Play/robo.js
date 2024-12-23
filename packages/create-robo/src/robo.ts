@@ -943,13 +943,13 @@ export default class Robo {
 
 	private getTemplate(): string {
 		if (this._cliOptions.kit === 'web') {
-			return this._useTypeScript ? '../templates/webapp-ts-react' : '../templates/webapp-js-react'
+			return this._useTypeScript ? '../templates/web-apps/react-ts' : '../templates/web-apps/react-js'
 		} else if (this._isApp && this._selectedFeatures.includes('react')) {
-			return this._useTypeScript ? '../templates/app-ts-react' : '../templates/app-js-react'
+			return this._useTypeScript ? '../templates/discord-activities/react-ts' : '../templates/discord-activities/react-js'
 		} else if (this._isApp) {
-			return this._useTypeScript ? '../templates/app-ts' : '../templates/app-js'
+			return this._useTypeScript ? '../templates/discord-activities/vanilla-ts' : '../templates/discord-activities/vanilla-js'
 		} else {
-			return this._useTypeScript ? '../templates/bot-ts' : '../templates/bot-js'
+			return this._useTypeScript ? '../templates/discord-bots/starter-ts' : '../templates/discord-bots/starter-js'
 		}
 	}
 
