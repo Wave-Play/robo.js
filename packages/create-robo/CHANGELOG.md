@@ -1,5 +1,17 @@
 # create-robo
 
+## 0.14.9
+
+### Patch Changes
+
+- 5d59664: chore(templates): updated starter bot slash commands
+- 144c3eb: chore(templates): better documented activity examples
+- 6a47b52: feat: new `--name` option
+- c5a3a41: patch: generate missing .env for web apps
+- Updated dependencies [d9d171a]
+- Updated dependencies [c3e0a52]
+  - robo.js@0.10.29
+
 ## 0.14.8
 
 ### Patch Changes

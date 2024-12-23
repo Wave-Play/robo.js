@@ -1,5 +1,12 @@
 # robo.js
 
+## 0.10.29
+
+### Patch Changes
+
+- d9d171a: chore: nicer update available message w/ hint to disable
+- c3e0a52: feat(cli): new `--credentials` option in `robo cloud status` for ci setup
+
 ## 0.10.28
 
 ### Patch Changes
