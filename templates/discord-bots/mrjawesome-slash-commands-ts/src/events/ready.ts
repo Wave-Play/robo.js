@@ -1,5 +1,5 @@
 import { ActivityType } from 'discord.js'
-import type { Client } from 'discord.js'
+import { client, logger } from 'robo.js'
 
 const statusArray = [
 	'Coding with MrJAwesome',
@@ -13,7 +13,14 @@ const statusArray = [
 	status: 'dnd' as const
 }))
 
-export default (client: Client) => {
+/**
+ * This event handler will be called when your Robo is logged in and ready.
+ * You can get `client` from `robo.js` directly or as a parameter in `ready` events.
+ *
+ * Learn more about Discord events:
+ * https://robojs.dev/discord-bots/events
+ */
+export default () => {
 	const option = Math.floor(Math.random() * statusArray.length)
 
 	try {
@@ -27,6 +34,6 @@ export default (client: Client) => {
 			status: statusArray[option].status
 		})
 	} catch (error) {
-		console.error(error)
+		logger.error(error)
 	}
 }
