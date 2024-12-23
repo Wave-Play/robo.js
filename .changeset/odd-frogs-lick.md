@@ -2,4 +2,4 @@
 'robo.js': patch
 ---
 
-feat(cli): retrieves credentials from `robo cloud status` command
+feat(cli): new `--credentials` option in `robo cloud status` for ci setup

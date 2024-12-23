@@ -1,7 +1,7 @@
 import { Command } from '../utils/cli-handler.js'
 import { ChildProcess, spawn } from 'child_process'
 import { logger } from '../../core/logger.js'
-import { DEFAULT_CONFIG, FLASHCORE_KEYS, Indent, cloudflareLogger } from '../../core/constants.js'
+import { DEFAULT_CONFIG, FLASHCORE_KEYS, HighlightGreen, Indent, cloudflareLogger } from '../../core/constants.js'
 import { getConfigPaths, loadConfig, loadConfigPath } from '../../core/config.js'
 import { installCloudflared, isCloudflaredInstalled, startCloudflared, stopCloudflared } from '../utils/cloudflared.js'
 import { IS_WINDOWS, filterExistingPaths, getWatchedPlugins, packageJson, timeout } from '../utils/utils.js'
@@ -10,6 +10,7 @@ import Watcher, { Change } from '../utils/watcher.js'
 import { color, composeColors } from '../../core/color.js'
 import { Spirits } from '../utils/spirits.js'
 import { buildAction } from './build/index.js'
+import { Highlight } from '../../core/constants.js'
 import { Flashcore, prepareFlashcore } from '../../core/flashcore.js'
 import { getPackageExecutor, getPackageManager } from '../utils/runtime-utils.js'
 import { Mode, setMode } from '../../core/mode.js'
@@ -366,15 +367,16 @@ export async function checkUpdates(config: Config, forceCheck = false, suggest =
 	if (update.hasUpdate) {
 		// Prepare commands
 		const packageExecutor = getPackageExecutor()
-		const command = `${packageExecutor} sage upgrade`
 
 		// Print update message
-		const highlightColor = composeColors(color.green, color.bold)
-		const highlight = highlightColor(
-			`A new version of Robo.js is available! (v${packageJson.version} -> v${latestVersion})`
-		)
-		const suggestion = suggest ? `Run ${color.bold(command)} to update.` : ''
-		logger.info(highlight, suggestion)
+		const versionDelta = color.dim(`(v${packageJson.version} → v${latestVersion})`)
+		let message = `\n${Indent} 💡 ${HighlightGreen('Update available!')} ${versionDelta}\n`
+
+		if (suggest) {
+			const command = `${packageExecutor} sage upgrade`
+			message += `${Indent}    Run ${Highlight(command)} or disable update checks in config.\n`
+		}
+		logger.log(message)
 	}
 
 	return update
