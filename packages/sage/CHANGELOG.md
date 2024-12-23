@@ -1,5 +1,17 @@
 # @roboplay/sage
 
+## 0.7.0
+
+### Minor Changes
+
+- c3e0a52: feat(cli): new `link` command for automated deployments
+
+### Patch Changes
+
+- Updated dependencies [d9d171a]
+- Updated dependencies [c3e0a52]
+  - robo.js@0.10.29
+
 ## 0.6.16
 
 ### Patch Changes
