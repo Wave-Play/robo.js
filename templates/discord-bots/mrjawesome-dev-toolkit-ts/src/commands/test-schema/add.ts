@@ -17,8 +17,9 @@ export const config = createCommandConfig({
 } as const)
 
 export default async (interaction: ChatInputCommandInteraction, options: CommandOptions<typeof config>) => {
+	await interaction.deferReply()
 	await testschema.create({
 		Content: options['schema-input']
 	})
-	await interaction.reply(`I saved the data`)
+	await interaction.editReply(`I saved the data`)
 }

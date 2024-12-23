@@ -1,7 +1,8 @@
 import testschema from '../../schemas/test.js'
 import { PermissionFlagsBits } from 'discord.js'
+import { createCommandConfig } from 'robo.js'
 
-export const config = {
+export const config = createCommandConfig({
 	description: 'Add data',
 	defaultMemberPermissions: PermissionFlagsBits.Administrator,
 	options: [
@@ -12,11 +13,12 @@ export const config = {
 			required: true
 		}
 	]
-}
+})
 
 export default async (interaction, options) => {
+	await interaction.deferReply()
 	await testschema.create({
 		Content: options['schema-input']
 	})
-	await interaction.reply(`I saved the data`)
+	await interaction.editReply(`I saved the data`)
 }

@@ -8,8 +8,5 @@ export default {
 		intents: ['Guilds', 'GuildMessages']
 	},
 	plugins: [],
-	sage: {
-		defer: false
-	},
 	type: 'robo'
 }

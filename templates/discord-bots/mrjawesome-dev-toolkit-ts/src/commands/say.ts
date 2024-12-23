@@ -6,7 +6,7 @@ export const config = createCommandConfig({
 	description: 'Say something!'
 } as const)
 
-export default async (interaction: ChatInputCommandInteraction) => {
+export default (interaction: ChatInputCommandInteraction) => {
 	const modal = new ModalBuilder().setTitle('Say something!').setCustomId('say')
 
 	const input = new TextInputBuilder()
@@ -18,6 +18,5 @@ export default async (interaction: ChatInputCommandInteraction) => {
 	const question = new ActionRowBuilder<TextInputBuilder>().addComponents(input)
 
 	modal.addComponents(question)
-
-	await interaction.showModal(modal)
+	interaction.showModal(modal)
 }

@@ -9,13 +9,14 @@ export const config = createCommandConfig({
 } as const)
 
 export default async (interaction: ChatInputCommandInteraction) => {
+	await interaction.deferReply()
 	const data = await testschema.find()
 	let values: string[] = []
 	data.forEach(async (d) => {
 		values.push(d.Content!)
 	})
 
-	await interaction.reply({
+	await interaction.editReply({
 		content: `${values.join('\n') || 'No content found'}`
 	})
 }

@@ -9,6 +9,7 @@ export const config = createCommandConfig({
 } as const)
 
 export default async (interaction: ChatInputCommandInteraction) => {
+	await interaction.deferReply()
 	const data = await testschema.find()
 
 	await Promise.all(
@@ -17,5 +18,5 @@ export default async (interaction: ChatInputCommandInteraction) => {
 		})
 	)
 
-	await interaction.reply({ content: `I deleted the values` })
+	await interaction.editReply({ content: `I deleted the values` })
 }

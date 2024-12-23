@@ -7,11 +7,12 @@ export const config = createCommandConfig({
 } as const)
 
 export default async (interaction: ChatInputCommandInteraction) => {
+	await interaction.deferReply()
 	const button = new ButtonBuilder().setCustomId('clicker').setStyle(ButtonStyle.Primary).setLabel('Click me!')
 	const row = new ActionRowBuilder<ButtonBuilder>().addComponents(button)
 
 	let clickCount = 0
-	const message = await interaction.reply({
+	const message = await interaction.editReply({
 		content: 'Click the button!',
 		components: [row]
 	})

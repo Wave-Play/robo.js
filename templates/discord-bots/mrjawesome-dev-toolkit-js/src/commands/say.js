@@ -1,10 +1,11 @@
 import { ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } from 'discord.js'
+import { createCommandConfig } from 'robo.js'
 
-export const config = {
+export const config = createCommandConfig({
 	description: 'Say something!'
-}
+})
 
-export default async (interaction) => {
+export default (interaction) => {
 	const modal = new ModalBuilder().setTitle('Say something!').setCustomId('say')
 
 	const input = new TextInputBuilder()
@@ -17,5 +18,5 @@ export default async (interaction) => {
 
 	modal.addComponents(question)
 
-	await interaction.showModal(modal)
+	interaction.showModal(modal)
 }

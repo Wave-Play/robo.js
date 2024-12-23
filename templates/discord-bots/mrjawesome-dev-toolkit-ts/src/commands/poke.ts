@@ -6,11 +6,11 @@ export const config = createCommandConfig({
 	description: 'Poke the bot!'
 } as const)
 
-export default async (interaction: ChatInputCommandInteraction) => {
+export default (interaction: ChatInputCommandInteraction) => {
 	const button = new ButtonBuilder().setCustomId('poke').setStyle(ButtonStyle.Primary).setLabel('Poke me!')
 	const row = new ActionRowBuilder<ButtonBuilder>().addComponents(button)
 
-	await interaction.reply({
+	interaction.reply({
 		content: 'Poke me!',
 		components: [row]
 	})

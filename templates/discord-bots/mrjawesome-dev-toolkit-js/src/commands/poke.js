@@ -1,14 +1,15 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+import { createCommandConfig } from 'robo.js'
 
-export const config = {
+export const config = createCommandConfig({
 	description: 'Poke the bot!'
-}
+})
 
-export default async (interaction) => {
+export default (interaction) => {
 	const button = new ButtonBuilder().setCustomId('poke').setStyle(ButtonStyle.Primary).setLabel('Poke me!')
 	const row = new ActionRowBuilder().addComponents(button)
 
-	await interaction.reply({
+	interaction.reply({
 		content: 'Poke me!',
 		components: [row]
 	})

@@ -1,15 +1,17 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+import { createCommandConfig } from 'robo.js'
 
-export const config = {
+export const config = createCommandConfig({
 	description: 'haha button go brrr'
-}
+})
 
 export default async (interaction) => {
+	await interaction.deferReply()
 	const button = new ButtonBuilder().setCustomId('clicker').setStyle(ButtonStyle.Primary).setLabel('Click me!')
 	const row = new ActionRowBuilder().addComponents(button)
 
 	let clickCount = 0
-	const message = await interaction.reply({
+	const message = await interaction.editReply({
 		content: 'Click the button!',
 		components: [row]
 	})
