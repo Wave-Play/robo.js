@@ -6,6 +6,7 @@ import path from 'node:path'
 import { input, select } from '@inquirer/prompts'
 import { color, logger } from 'robo.js'
 import { Command } from 'robo.js/cli.js'
+import { Env } from './env.js'
 
 export interface CommandOptions {
 	features?: string
@@ -237,6 +238,13 @@ new Command('create-robo <projectName>')
 		if (!robo.isPlugin && options.kit !== 'web') {
 			logger.debug(`Asking for Discord credentials...`)
 			await robo.askForDiscordCredentials()
+		} else if (!robo.isPlugin && options.kit === 'web') {
+			logger.debug('Generating web .env file...')
+			const env = await new Env('.env', robo.workingDir).load()
+			env.set('NODE_OPTIONS', ['--enable-source-maps'].join(' '), 'Enable source maps for easier debugging')
+			env.set('PORT', '3000', 'Change this port number if needed')
+			await env.commit(robo.isTypeScript)
+			logger.debug('Successfully generated web .env file!')
 		}
 
 		// Bun is special

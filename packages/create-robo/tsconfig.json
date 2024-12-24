@@ -6,6 +6,9 @@
 		"lib": ["dom", "dom.iterable", "esnext"],
 		"types": ["node"],
 		"baseUrl": ".",
+		"paths": {
+			"~/*": ["src/*"]
+		},
 		"allowJs": true,
 		"skipLibCheck": true,
 		"strict": true,
