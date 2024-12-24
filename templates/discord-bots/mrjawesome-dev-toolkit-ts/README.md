@@ -21,7 +21,7 @@ _Ready to embark on this adventure?_
 ## Quick Links
 
 - [📚 **Documentation:** Getting started with Robo.js](https://robojs.dev/discord-bots)
-- [💾 **Download:** Download as a zip file](https://github.com/Wave-Play/robo.js/raw/refs/heads/main/templates/.raw/mrjawesome-dev-toolkit-ts.zip)
+- [💾 **Download:** Download as a zip file](https://f000.backblazeb2.com/file/robo-templates/discord-bots/mrjawesome-dev-toolkit-ts.zip)
 - [✨ **Discord:** MrJAwesome's Coding Lounge](https://discord.gg/codinglounge)
 - [✨ **Discord:** Robo - Imagine Magic](https://robojs.dev/discord)
 
@@ -30,7 +30,7 @@ _Ready to embark on this adventure?_
 Create a project with this template, replacing `<project-name>` with your desired name:
 
 ```bash
-npx create-robo <project-name> --template discord-bots/mrjawesome-dev-toolkit-ts
+npx create-robo --template discord-bots/mrjawesome-dev-toolkit-ts --name <project-name>
 ```
 
 Then navigate into your project directory:

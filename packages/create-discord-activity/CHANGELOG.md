@@ -1,5 +1,13 @@
 # create-discord-activity
 
+## 0.1.7
+
+### Patch Changes
+
+- Updated dependencies [d9d171a]
+- Updated dependencies [c3e0a52]
+  - robo.js@0.10.29
+
 ## 0.1.6
 
 ### Patch Changes
