@@ -1,5 +1,11 @@
 # @roboplay/plugin-ai
 
+## 0.5.8
+
+### Patch Changes
+
+- 1e402bf: patch: exported missing class
+
 ## 0.5.7
 
 ### Patch Changes
