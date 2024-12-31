@@ -14,7 +14,7 @@ This plugin is designed to seamlessly integrate with your existing **[Robo.js](h
 Create a project with this template, replacing `<project-name>` with your desired name:
 
 ```bash
-npx create-robo <project-name> --template plugins/starter-js
+npx create-robo --template plugins/starter-js --name <project-name>
 ```
 
 Then navigate into your project directory:

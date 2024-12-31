@@ -32,7 +32,7 @@ _Ready to embark on this adventure?_
 Create a project with this template, replacing `<project-name>` with your desired name:
 
 ```bash
-npx create-robo <project-name> --template discord-bots/tagbot
+npx create-robo --template discord-bots/tagbot --name <project-name>
 ```
 
 Then navigate into your project directory:

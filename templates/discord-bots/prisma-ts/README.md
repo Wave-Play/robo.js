@@ -25,17 +25,28 @@ _Ready to embark on this adventure?_
 - [📚 **Documentation:** Getting started with Robo](https://robojs.dev/discord-activities/getting-started)
 - [📖 **Tutorial:** Creating a Discord Activity in seconds](https://dev.to/waveplay/how-to-build-a-discord-activity-easily-with-robojs-5bng)
 
-## Running 🏃‍♂️
+## ✨ Getting Started
 
-Run development mode with:
+Create a project with this template, replacing `<project-name>` with your desired name:
+
+```bash
+npx create-robo --template discord-bots/prisma-ts --name <project-name>
+```
+
+Then navigate into your project directory:
+
+```bash
+cd <project-name>
+```
+
+Run development mode:
 
 ```bash
 npm run dev
 ```
 
-Your Robo refreshes with every change. 🔄
-
-> **Psst...** Check out the [deployment instructions](#deployment) to keep your Robo online 24/7.
+- [🔰 **Beginner Guide:** New to Discord Bots with Robo? Start here!](https://robojs.dev/discord-bots/beginner-guide)
+- [🎭 **Run Modes:** Define profiles for your Robo session.](https://robojs.dev/robojs/mode#default-modes)
 
 ## Developing 🏗️
 

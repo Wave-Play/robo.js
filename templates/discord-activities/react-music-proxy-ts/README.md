@@ -32,7 +32,7 @@ _Ready to embark on this adventure?_
 Create a project with this template, replacing `<project-name>` with your desired name:
 
 ```bash
-npx create-robo <project-name> --template discord-activities/react-music-proxy-ts
+npx create-robo --template discord-activities/react-music-proxy-ts --name <project-name>
 ```
 
 Then navigate into your project directory:

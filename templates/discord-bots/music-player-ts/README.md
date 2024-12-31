@@ -29,6 +29,18 @@ _Ready to embark on this adventure?_
 
 ## ✨ Getting Started
 
+Create a project with this template, replacing `<project-name>` with your desired name:
+
+```bash
+npx create-robo --template discord-bots/music-player-ts --name <project-name>
+```
+
+Then navigate into your project directory:
+
+```bash
+cd <project-name>
+```
+
 Run development mode:
 
 ```bash

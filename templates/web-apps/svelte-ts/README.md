@@ -30,7 +30,7 @@ _Ready to embark on this adventure?_
 Create a project with this template, replacing `<project-name>` with your desired name:
 
 ```bash
-npx create-robo <project-name> --template web-apps/svelte-ts
+npx create-robo --template web-apps/svelte-ts --name <project-name>
 ```
 
 Then navigate into your project directory:
