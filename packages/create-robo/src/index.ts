@@ -9,6 +9,7 @@ import { Command } from 'robo.js/cli.js'
 import { Env } from './env.js'
 
 export interface CommandOptions {
+	env?: string
 	features?: string
 	install?: boolean
 	'no-install'?: boolean
@@ -32,6 +33,7 @@ new Command('create-robo <projectName>')
 	.description('Launch epic projects instantly with Robo.js — effortless, powerful, complete!')
 	.version(packageJson.version)
 	.positionalArgs(true)
+	.option('-e', '--env', 'specify environment variables as key-value pairs.')
 	.option('-f', '--features', 'comma-separated list of features to include')
 	.option('-js', '--javascript', 'create a Robo using JavaScript')
 	.option('-p', '--plugins', 'pre-install plugins along with the project')
@@ -46,6 +48,7 @@ new Command('create-robo <projectName>')
 	.option('-k', '--kit', 'choose a kit to start off with your Robo')
 	.option('-nc', '--no-creds', 'Skips asking for the credentials')
 	.handler(async (args: string[], options: CommandOptions) => {
+		const { env } = options
 		logger({
 			level: options.verbose ? 'debug' : 'info'
 		}).debug(`Creating new Robo.js ${options.plugin ? 'plugin' : 'project'}...`)
@@ -240,11 +243,28 @@ new Command('create-robo <projectName>')
 			await robo.askForDiscordCredentials()
 		} else if (!robo.isPlugin && options.kit === 'web') {
 			logger.debug('Generating web .env file...')
-			const env = await new Env('.env', robo.workingDir).load()
-			env.set('NODE_OPTIONS', ['--enable-source-maps'].join(' '), 'Enable source maps for easier debugging')
-			env.set('PORT', '3000', 'Change this port number if needed')
-			await env.commit(robo.isTypeScript)
+			const envFile = await new Env('.env', robo.workingDir).load()
+			envFile.set('NODE_OPTIONS', ['--enable-source-maps'].join(' '), 'Enable source maps for easier debugging')
+			envFile.set('PORT', '3000', 'Change this port number if needed')
+			await envFile.commit(robo.isTypeScript)
 			logger.debug('Successfully generated web .env file!')
+		}
+
+		// Save env options as well
+		const envVars = env?.split(',')
+		logger.debug('Parsed option environment variables:', envVars)
+
+		if (envVars) {
+			logger.debug(`Saving ${envVars.length} environment variables from options...`)
+			const envFile = await new Env('.env', robo.workingDir).load()
+
+			for (const envVar of envVars) {
+				const [key, value] = envVar.split('=')
+				envFile.set(key, value)
+			}
+
+			await envFile.commit(robo.isTypeScript)
+			logger.debug(`Successfully saved environment variables!`)
 		}
 
 		// Bun is special
