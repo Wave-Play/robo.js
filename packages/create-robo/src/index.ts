@@ -12,7 +12,6 @@ export interface CommandOptions {
 	env?: string
 	features?: string
 	install?: boolean
-	'no-install'?: boolean
 	javascript?: boolean
 	kit?: 'activity' | 'app' | 'bot' | 'web'
 	name?: string
@@ -23,9 +22,12 @@ export interface CommandOptions {
 	verbose?: boolean
 	roboVersion?: string
 	update?: boolean
+	'no-creds'?: boolean
+	'no-features'?: boolean
+	'no-install'?: boolean
+	'no-plugins'?: boolean
 	'no-update'?: boolean
 	creds?: boolean
-	'no-creds'?: boolean
 	version?: boolean
 }
 
@@ -39,7 +41,9 @@ new Command('create-robo <projectName>')
 	.option('-p', '--plugins', 'pre-install plugins along with the project')
 	.option('-P', '--plugin', 'create a Robo plugin instead of a project')
 	.option('-n', '--name', 'specify the name of the Robo project')
+	.option('-nf', '--no-features', 'skips the features selection')
 	.option('-ni', '--no-install', 'skips the installation of dependencies')
+	.option('-np', '--no-plugins', 'skips the installation of plugins')
 	.option('-nu', '--no-update', 'skips the update check')
 	.option('-t', '--template', 'create a Robo from an online template')
 	.option('-ts', '--typescript', 'create a Robo using TypeScript')
@@ -97,6 +101,9 @@ new Command('create-robo <projectName>')
 		}
 		if (options['no-install']) {
 			options.install = false
+		}
+		if (options['no-plugins']) {
+			options.plugins = []
 		}
 		if (options.update === undefined) {
 			options.update = true
@@ -186,7 +193,7 @@ new Command('create-robo <projectName>')
 		if (options.features) {
 			metadata.push({ key: 'Features', value: options.features })
 		}
-		if (options.plugins) {
+		if (options.plugins?.length) {
 			metadata.push({ key: 'Plugins', value: options.plugins.join(', ') })
 		}
 		if (options.install === false) {
@@ -221,7 +228,9 @@ new Command('create-robo <projectName>')
 			}
 
 			// Get user input to determine which features to include or use the recommended defaults
-			selectedFeaturesOrDefaults = options.features?.split(',') ?? (await robo.getUserInput())
+			selectedFeaturesOrDefaults = options['no-features']
+				? []
+				: options.features?.split(',') ?? (await robo.getUserInput())
 			await robo.createPackage(selectedFeaturesOrDefaults, plugins)
 
 			// Determine if TypeScript is selected and copy the corresponding template files
@@ -232,7 +241,7 @@ new Command('create-robo <projectName>')
 
 		// Want some plugins?
 		// if there are plugins specified with the command we skip asking for more.
-		if (!options.template && (options.plugins === undefined || options.plugins.length <= 0)) {
+		if (!options.template && !options['no-plugins'] && (options.plugins === undefined || options.plugins.length <= 0)) {
 			await robo.plugins()
 		}
 
