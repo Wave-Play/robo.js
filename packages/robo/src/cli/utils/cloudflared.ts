@@ -7,10 +7,129 @@ import { cloudflareLogger } from '../../core/constants.js'
 import { Nanocore } from '../../internal/nanocore.js'
 import { IS_WINDOWS, waitForExit } from './utils.js'
 import { execSync, spawn } from 'node:child_process'
+import { loadEnv } from '../../core/dotenv.js'
+import { Mode } from '../../core/mode.js'
 import fs from 'node:fs'
 import https from 'node:https'
 import path from 'node:path'
 import type { ChildProcess } from 'node:child_process'
+
+interface OriginRequest { };
+
+interface CreateDNSRecord {
+	name: string;
+	content: string;
+	type: string;
+	proxied: boolean;
+	comment: string;
+};
+
+interface Ingress {
+	hostname?: string;
+	originRequest?: OriginRequest;
+	path?: string;
+	service: string;
+};
+
+interface TunnelConfig {
+	config: {
+		ingress: Ingress[];
+		originRequest?: OriginRequest;
+	};
+};
+
+interface TunnelConnection {
+	client_id: string;
+	client_version: string;
+	colo_name: string;
+	id: string;
+	is_pending_reconnect: boolean;
+	opened_at: string;
+	origin_ip: string;
+	uuid: string;
+};
+
+interface CFDTunnel {
+	account_tag: string;
+	connections: TunnelConnection[];
+	conns_active_at: string | null;
+	conns_inactive_at: string | null;
+	created_at: string;
+	deleted_at: string | null;
+	id: string;
+	metadata: Record<string, unknown>;
+	name: string;
+	remote_config: boolean;
+	status: 'inactive' | 'degraded' | 'healthy' | 'down';
+	tun_type: 'cfd_tunnel';
+	token: string;
+};
+
+interface TunnelIngress {
+	tunnel_id: string;
+	version: number;
+	config: TunnelConfig;
+	"warp-routing": {
+		enabled: boolean;
+	};
+};
+
+interface CloudflareError {
+	code: number;
+	message: string;
+};
+
+interface CloudflareResponse {
+	success: boolean;
+	errors: CloudflareError[];
+	messages: CloudflareError[];
+	result: CFDTunnel | TunnelIngress | string;
+	source?: string;
+	created_at?: string;
+	result_info?: {
+		count: number;
+		page: number;
+		per_page: number;
+		total_count: number;
+	};
+};
+
+interface DNSRecord {
+	id: string;
+	zone_id: string;
+	zone_name: string;
+	name: string;
+	type: string;
+	content: string;
+	proxiable: boolean;
+	proxied: boolean;
+	ttl: number;
+	settings: Record<string, unknown>;
+	meta: {
+		auto_added: boolean;
+		managed_by_apps: boolean;
+		managed_by_argo_tunnel: boolean;
+	};
+	comment: string;
+	tags: string[];
+	created_on: string;
+	modified_on: string;
+	comment_modified_on: string;
+};
+
+interface DNSResponse {
+	result: DNSRecord[];
+	success: boolean;
+	errors: CloudflareError[];
+	messages: CloudflareError[];
+};
+
+interface CloudflareBody {
+	config_src: 'cloudflare';
+	name: string;
+};
+
+const CLOUDFLARE_API = 'https://api.cloudflare.com/client/v4'
 
 const CLOUDFLARED_VERSION = process.env.CLOUDFLARED_VERSION || 'latest'
 
@@ -75,7 +194,7 @@ export function isCloudflaredInstalled(to = DEFAULT_BIN_PATH): boolean {
 }
 
 export function startCloudflared(url: string) {
-	const ESCAPED_BIN_PATH = IS_WINDOWS ? `"${DEFAULT_BIN_PATH}"` : DEFAULT_BIN_PATH
+	const ESCAPED_BIN_PATH = IS_WINDOWS ? `"${DEFAULT_BIN_PATH}"`: DEFAULT_BIN_PATH;
 	cloudflareLogger.event(`Starting tunnel...`)
 	cloudflareLogger.debug(ESCAPED_BIN_PATH + ' tunnel --url ' + url)
 	const childProcess = spawn(ESCAPED_BIN_PATH, ['tunnel', '--url', url, '--no-autoupdate'], {
@@ -203,3 +322,128 @@ function download(url: string, to: string, redirect = 0): Promise<string> {
 		request.end()
 	})
 }
+
+async function cloudflareRequest(endpoint: string, method: 'GET' | 'POST' | 'PUT' = 'GET', body: CloudflareBody | TunnelConfig | CreateDNSRecord | null = null): Promise<CloudflareResponse> {
+	cloudflareLogger.debug(`Cloudflare API request: ${endpoint}`);
+
+	const response = await fetch(`${CLOUDFLARE_API}${endpoint}`, {
+		method,
+		headers: {
+			'Authorization': `Bearer ${process.env.CLOUDFLARE_API_KEY}`,
+			'Content-Type': 'application/json',
+		},
+		body: body ? JSON.stringify(body) : null,
+	});
+
+	const data: CloudflareResponse = await response.json();
+
+	if (!response.ok || !data.success) {
+		cloudflareLogger.error(`Cloudflare API request failed: ${data.errors[0]?.message || 'Unknown error'}`);
+	} else {
+		cloudflareLogger.debug(`Cloudflare API request succeeded: ${endpoint}`)
+	}
+
+	return data;
+}
+
+async function updateTunnelConfig(id: string, accountId: string) {
+	const tunnelConfig: TunnelConfig = {
+		"config": {
+			"ingress": [
+				{
+					"hostname": `robo.${process.env.CLOUDFLARE_DOMAIN}`,
+					"service": `http://localhost:${process.env.PORT || 3000}`
+				},
+				{
+					"service": "http_status:404"
+				}
+			]
+		}
+	};
+
+	const tunnelConfigResponse = await cloudflareRequest(`/accounts/${accountId}/cfd_tunnel/${id}/configurations`, 'PUT', tunnelConfig);
+
+	if (tunnelConfigResponse.success) {
+		cloudflareLogger.debug(`Tunnel config updated: ${JSON.stringify(tunnelConfigResponse.result)}`);
+		return true;
+	} else {
+		cloudflareLogger.error(`Failed to update tunnel config: ${JSON.stringify(tunnelConfigResponse.errors)}`);
+		return false;
+	}
+}
+
+async function createDNSRecord(tunnelID: string) {
+	const dnsRecord: CreateDNSRecord = {
+		"comment": "Robo.js CloudFlare Tunnel Proxy",
+		"name": "robo",
+		"proxied": true,
+		"content": `${tunnelID}.cfargotunnel.com`,
+		"type": "CNAME"
+	};
+
+	const existingRecords = await cloudflareRequest(`/zones/${process.env.CLOUDFLARE_ZONE_ID}/dns_records`, 'GET') as unknown as DNSResponse;
+
+	if (existingRecords.success && existingRecords.result.length > 0) {
+		const existingRecord = existingRecords.result.find(record => record.name === "robo");
+		const updateResponse = await cloudflareRequest(`/zones/${process.env.CLOUDFLARE_ZONE_ID}/dns_records/${existingRecord.id}`, 'PUT', dnsRecord);
+
+		if (updateResponse.success) {
+			cloudflareLogger.debug(`DNS record updated: ${JSON.stringify(updateResponse.result)}`);
+			return true;
+		} else {
+			cloudflareLogger.error(`Failed to update DNS record: ${JSON.stringify(updateResponse.errors)}`);
+			return false;
+		}
+	} else {
+		const createResponse = await cloudflareRequest(`/zones/${process.env.CLOUDFLARE_ZONE_ID}/dns_records`, 'POST', dnsRecord);
+		
+		if (createResponse.success) {
+			cloudflareLogger.debug(`DNS record created: ${JSON.stringify(createResponse.result)}`);
+			return true;
+		} else {
+			cloudflareLogger.error(`Failed to create DNS record: ${JSON.stringify(createResponse.errors)}`);
+			return false;
+		}
+	}
+}
+
+async function updateEnvFile(key: string, value: string) {
+	const regex = new RegExp(`^${key}=.*$`, 'm');
+	let envContent = await fs.promises.readFile(path.join(process.cwd(), '.env'), 'utf8');
+
+	if (regex.test(envContent)) {
+		envContent = envContent.replace(regex, `${key}="${value}"`);
+	} else {
+		envContent += `\n${key}="${value}"`;
+	}
+
+	await fs.promises.writeFile(path.join(process.cwd(), '.env'), envContent, 'utf8');
+	cloudflareLogger.debug(`Updated .env file with ${key}=${value}`);
+}
+
+async function reloadEnv() {
+	cloudflareLogger.debug('Reloading environment variable ...');
+
+	const defaultMode = Mode.get();
+	await loadEnv({ mode: defaultMode, overwrite: true })
+}
+
+// function installService(token: string) {
+// 	cloudflareLogger.debug(`Running command: ${DEFAULT_BIN_PATH} service install ${token}`);
+// 	const childProcess = spawn(DEFAULT_BIN_PATH, ['service', 'install', token], {
+// 		shell: IS_WINDOWS,
+// 		stdio: 'pipe'
+// 	});
+// 	let lastMessage = ''
+// 	const onData = (data: Buffer) => {
+// 		lastMessage = data.toString()?.trim()
+// 		cloudflareLogger.debug(color.dim(lastMessage))
+// 	}
+// 	childProcess.stdout.on('data', onData)
+// 	childProcess.stderr.on('data', onData)
+// 	childProcess.on('exit', (code) => {
+// 		if (code !== 0) {
+// 			cloudflareLogger.error(lastMessage ?? 'Failed to install tunnel.')
+// 		}
+// 	})
+// }

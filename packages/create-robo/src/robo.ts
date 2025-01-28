@@ -264,6 +264,10 @@ export default class Robo {
 		return this._isPlugin
 	}
 
+	public get isApp(): boolean {
+		return this._isApp
+	}
+
 	public get isTypeScript(): boolean {
 		return this._useTypeScript
 	}
@@ -1022,7 +1026,7 @@ export default class Robo {
 			})
 			discordToken = await input({
 				message: this._isApp
-					? 'Enter your Discord Client Secret (press enter to skip)'
+					? 'Enter your Discord Client Secret (press Enter to skip)'
 					: 'Enter your Discord Token (press Enter to skip):'
 			})
 		}
@@ -1077,6 +1081,64 @@ export default class Robo {
 		// Save the .env file
 		await env.commit(this._useTypeScript)
 		this._spinner.stop()
+		logger.log(Indent, '   Manage your credentials in the', Highlight('.env'), 'file.')
+	}
+
+	async askForCloudFlareSetup(): Promise<void> {
+		const cloudflareDashboard = 'Dashboard:'
+		const cloudflareDashboardUrl = HighlightBlue('https://dash.cloudflare.com')
+		const cloudflareOfficialGuide = 'Guide:'
+		const cloudflareOfficialGuideUrl = HighlightBlue('https://developers.cloudflare.com/fundamentals/api/get-started/create-token')
+		
+		let cloudflareAPIKey = ''
+		let cloudflareAccountID = ''
+		let cloudflareDomain = ''
+		
+		logger.log('')
+		logger.log(Indent, color.bold('💈 Setting up CloudFlare Tunnel'))
+		logger.log(Indent, '   Get your credentials from the CloudFlare Dashboard.\n')
+		logger.log(Indent, `   ${cloudflareDashboard} ${cloudflareDashboardUrl}`)
+		logger.log(Indent, `   ${cloudflareOfficialGuide} ${cloudflareOfficialGuideUrl}\n`)
+		
+		if (this._cliOptions.creds) {
+			cloudflareAccountID = await input({
+				message: 'Enter your CloudFlare Account ID (press Enter to skip):'
+			})
+			cloudflareAPIKey = await input({
+				message: 'Enter your CloudFlare API Key (press Enter to skip):'
+			})
+			cloudflareDomain = await input({
+				message: 'Enter your CloudFlare Domain (press Enter to skip):'
+			})
+		}
+
+		if (!cloudflareAPIKey || !cloudflareAccountID || !cloudflareDomain) {
+			this._missingEnv = true
+		}
+
+		if (this._cliOptions.verbose) {
+			logger.log('')
+		} else {
+			logger.log('\x1B[1A\x1B[K\x1B[1A\x1B[K')
+		}
+
+		this._spinner.setText(Indent + '    {{spinner}} Applying credentials...\n')
+		this._spinner.start()
+
+		// Construct the .env file, starting with defaults for all Robo projects
+		const env = await new Env('.env', this._workingDir).load()
+
+		// Cloudflare-specific variables
+		env.set('CLOUDFLARE_API_KEY', cloudflareAPIKey, 'Get your Cloudflare API Key - https://dash.cloudflare.com/profile/api-tokens')
+		env.set('CLOUDFLARE_ACCOUNT_ID', cloudflareAccountID)
+		env.set('CLOUDFLARE_DOMAIN', cloudflareDomain)
+		env.set('CLOUDFLARE_TUNNEL_ID', '')
+		env.set('CLOUDFLARE_TUNNEL_TOKEN', '')
+		
+		// Save the .env file
+		await env.commit(this._useTypeScript)
+		this._spinner.stop()
+		
 		logger.log(Indent, '   Manage your credentials in the', Highlight('.env'), 'file.')
 	}
 

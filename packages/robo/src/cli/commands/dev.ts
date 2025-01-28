@@ -3,7 +3,7 @@ import { ChildProcess, spawn } from 'child_process'
 import { logger, LogLevel } from '../../core/logger.js'
 import { DEFAULT_CONFIG, FLASHCORE_KEYS, HighlightGreen, Indent, cloudflareLogger } from '../../core/constants.js'
 import { getConfigPaths, loadConfig, loadConfigPath } from '../../core/config.js'
-import { installCloudflared, isCloudflaredInstalled, startCloudflared, stopCloudflared } from '../utils/cloudflared.js'
+import { installCloudflared, isCloudflaredInstalled, initializeCloudflareTunnel, startCloudflared, stopCloudflared } from '../utils/cloudflared.js'
 import { IS_WINDOWS, filterExistingPaths, getWatchedPlugins, packageJson, timeout } from '../utils/utils.js'
 import path from 'node:path'
 import Watcher, { Change } from '../utils/watcher.js'
@@ -112,6 +112,13 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 		cloudflareLogger.event(`Installing Cloudflared...`)
 		await installCloudflared()
 		cloudflareLogger.info(`Cloudflared installed successfully!`)
+	}
+
+	// Initialize Cloudflare tunnel
+	if (options.tunnel && isCloudflaredInstalled()) {
+		cloudflareLogger.event(`Initializing Cloudflare tunnel...`)
+		const initialized = await initializeCloudflareTunnel()
+		cloudflareLogger.info(initialized ? `Managed Cloudflare Tunnel initialized successfully!` : `Failed to initialize Managed Cloudflare Tunnel.`)
 	}
 
 	if (options.tunnel && !process.env.PORT) {
