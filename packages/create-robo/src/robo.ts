@@ -287,7 +287,7 @@ export default class Robo {
 	constructor(name: string, cliOptions: CommandOptions, useSameDirectory: boolean) {
 		this._cliOptions = cliOptions
 		this._isApp = cliOptions.kit === 'app' || cliOptions.kit === 'web'
-		this._isPlugin = cliOptions.plugin
+		this._isPlugin = cliOptions.plugin || cliOptions.kit === 'plugin'
 		this._name = name
 		this._useTypeScript = cliOptions.typescript
 		this._workingDir = useSameDirectory ? process.cwd() : path.join(process.cwd(), name)
