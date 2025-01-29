@@ -1026,7 +1026,7 @@ export default class Robo {
 			})
 			discordToken = await input({
 				message: this._isApp
-					? 'Enter your Discord Client Secret (press Enter to skip)'
+					? 'Enter your Discord Client Secret (press Enter to skip):'
 					: 'Enter your Discord Token (press Enter to skip):'
 			})
 		}
@@ -1090,9 +1090,10 @@ export default class Robo {
 		const cloudflareOfficialGuide = 'Guide:'
 		const cloudflareOfficialGuideUrl = HighlightBlue('https://developers.cloudflare.com/fundamentals/api/get-started/create-token')
 		
+		let cloudflareDomain = ''
 		let cloudflareAPIKey = ''
 		let cloudflareAccountID = ''
-		let cloudflareDomain = ''
+		let cloudflareZoneID = ''
 		
 		logger.log('')
 		logger.log(Indent, color.bold('💈 Setting up CloudFlare Tunnel'))
@@ -1101,18 +1102,21 @@ export default class Robo {
 		logger.log(Indent, `   ${cloudflareOfficialGuide} ${cloudflareOfficialGuideUrl}\n`)
 		
 		if (this._cliOptions.creds) {
-			cloudflareAccountID = await input({
-				message: 'Enter your CloudFlare Account ID (press Enter to skip):'
+			cloudflareDomain = await input({
+				message: 'Enter your CloudFlare Domain (press Enter to skip):'
 			})
 			cloudflareAPIKey = await input({
 				message: 'Enter your CloudFlare API Key (press Enter to skip):'
 			})
-			cloudflareDomain = await input({
-				message: 'Enter your CloudFlare Domain (press Enter to skip):'
+			cloudflareZoneID = await input({
+				message: 'Enter your CloudFlare Zone ID (press Enter to skip):'
+			})
+			cloudflareAccountID = await input({
+				message: 'Enter your CloudFlare Account ID (press Enter to skip):'
 			})
 		}
 
-		if (!cloudflareAPIKey || !cloudflareAccountID || !cloudflareDomain) {
+		if (!cloudflareDomain || !cloudflareAPIKey || !cloudflareZoneID || !cloudflareAccountID) {
 			this._missingEnv = true
 		}
 
@@ -1129,16 +1133,16 @@ export default class Robo {
 		const env = await new Env('.env', this._workingDir).load()
 
 		// Cloudflare-specific variables
-		env.set('CLOUDFLARE_API_KEY', cloudflareAPIKey, 'Get your Cloudflare API Key - https://dash.cloudflare.com/profile/api-tokens')
-		env.set('CLOUDFLARE_ACCOUNT_ID', cloudflareAccountID)
-		env.set('CLOUDFLARE_DOMAIN', cloudflareDomain)
-		env.set('CLOUDFLARE_TUNNEL_ID', '')
+		env.set('CLOUDFLARE_TUNNEL_ID', '', 'Get your Cloudflare credentials on the Cloudflare Dashboard - https://dash.cloudflare.com')
 		env.set('CLOUDFLARE_TUNNEL_TOKEN', '')
+		env.set('CLOUDFLARE_DOMAIN', cloudflareDomain)
+		env.set('CLOUDFLARE_API_KEY', cloudflareAPIKey)
+		env.set('CLOUDFLARE_ZONE_ID', cloudflareZoneID)
+		env.set('CLOUDFLARE_ACCOUNT_ID', cloudflareAccountID)
 		
 		// Save the .env file
 		await env.commit(this._useTypeScript)
 		this._spinner.stop()
-		
 		logger.log(Indent, '   Manage your credentials in the', Highlight('.env'), 'file.')
 	}
 

@@ -292,7 +292,7 @@ new Command('create-robo <projectName>')
 
 		// Ask the user for their CloudFlare credentials (API key, Account ID and Domain) and store them for later use
 		// Skip this step if the user is not creating an app
-		if (robo.isApp) {
+		if (robo.isApp && options.kit === 'app') {
 			logger.debug(`Asking for CloudFlare setup...`)
 			await robo.askForCloudFlareSetup()
 		}
