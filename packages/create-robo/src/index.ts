@@ -7,13 +7,17 @@ import { input, select } from '@inquirer/prompts'
 import { color, logger } from 'robo.js'
 import { Command } from 'robo.js/cli.js'
 import { Env } from './env.js'
+import { getKitName } from './utils/kit.js'
+
+export type RoboKit = 'activity' | 'app' | 'bot' | 'plugin' | 'web'
+const RoboKits: RoboKit[] = ['activity', 'app', 'bot', 'plugin', 'web']
 
 export interface CommandOptions {
 	env?: string
 	features?: string
 	install?: boolean
 	javascript?: boolean
-	kit?: 'activity' | 'app' | 'bot' | 'web'
+	kit?: RoboKit
 	name?: string
 	plugin?: boolean
 	plugins?: string[]
@@ -55,7 +59,7 @@ new Command('create-robo <projectName>')
 		const { env } = options
 		logger({
 			level: options.verbose ? 'debug' : 'info'
-		}).debug(`Creating new Robo.js ${options.plugin ? 'plugin' : 'project'}...`)
+		}).debug(`Creating new Robo.js ${options.kit === 'plugin' ? 'plugin' : 'project'}...`)
 		logger.debug(`Using options: ${JSON.stringify(options)}`)
 		logger.debug(`Using args: ${JSON.stringify(args)}`)
 		logger.debug(`Package manager:`, getPackageManager())
@@ -85,7 +89,7 @@ new Command('create-robo <projectName>')
 			// e.g. `npx create-robo -k activity myProject` reads `activity myProject` as the kit
 			// TODO: https://github.com/Wave-Play/robo.js/issues/331
 			const tokens = options.kit.split(' ')
-			options.kit = tokens.shift() as 'activity' | 'app' | 'bot' | 'web'
+			options.kit = tokens.shift() as RoboKit
 			args.push(...tokens)
 		}
 
@@ -117,15 +121,21 @@ new Command('create-robo <projectName>')
 			options.kit = 'app'
 		}
 
+		// Plugin alias yields plugin kit
+		if (options.plugin) {
+			options.kit = 'plugin'
+		}
+
 		// No kit specified, prompt the user to choose an adventure: bot or activity or webapp
 		if (!options.kit && !options.template) {
 			logger.log()
-			options.kit = await select<'app' | 'bot' | 'web'>(
+			options.kit = await select<RoboKit>(
 				{
 					message: color.blue('Choose your adventure:'),
 					choices: [
 						{ name: 'Discord Activity', value: 'app' as const },
 						{ name: 'Discord Bot', value: 'bot' as const },
+						{ name: 'Plugin', value: 'plugin' as const },
 						{ name: 'Web Application', value: 'web' as const }
 					]
 				},
@@ -136,7 +146,7 @@ new Command('create-robo <projectName>')
 		}
 
 		// Ensure correct kit is selected (bot or app or web)
-		if (options.kit && !['bot', 'app', 'web'].includes(options.kit)) {
+		if (options.kit && !RoboKits.includes(options.kit)) {
 			logger.error('Only bot (default), activity and web kits are available at the moment.')
 			return
 		}
@@ -178,13 +188,12 @@ new Command('create-robo <projectName>')
 		}
 
 		// Print introduction section
-		const kitName = options.kit === 'web' ? 'Web App' : options.kit === 'app' ? 'Discord Activity' : 'Discord Bot'
 		logger.log('')
 		logger.log(Indent, color.bold('✨ Welcome to Robo.js!'))
-		logger.log(Indent, `   Spawning ${Highlight(projectName)} as a ${Highlight(kitName)}...`)
+		logger.log(Indent, `   Spawning ${Highlight(projectName)} as a ${Highlight(getKitName(options.kit))}...`)
 
 		const metadata: Array<{ key: string; value: string }> = []
-		if (options.plugin) {
+		if (options.kit === 'plugin') {
 			metadata.push({ key: 'Type', value: 'Plugin' })
 		}
 		if (options.javascript || options.typescript) {
@@ -241,7 +250,7 @@ new Command('create-robo <projectName>')
 
 		// Want some plugins?
 		// if there are plugins specified with the command we skip asking for more.
-		if (!options.template && !options['no-plugins'] && (options.plugins === undefined || options.plugins.length <= 0)) {
+		if (options.kit !== 'plugin' && !options.template && !options['no-plugins'] && (options.plugins === undefined || options.plugins.length <= 0)) {
 			await robo.plugins()
 		}
 
