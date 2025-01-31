@@ -424,7 +424,9 @@ export async function startCloudflared(url: string) {
 	let commandArgs = ['tunnel', '--no-autoupdate', '--url', url]
 
 	if (tunnelId && tunnelToken && tunnelDomain) {
-		commandArgs.concat(['run', '--token', tunnelToken, tunnelId])
+		if (tunnelId && tunnelToken && tunnelDomain) {
+			commandArgs = [...commandArgs, 'run', '--token', tunnelToken, tunnelId]
+		}
 	}
 
 	cloudflareLogger.event(`Starting tunnel...`)
@@ -436,7 +438,7 @@ export async function startCloudflared(url: string) {
 	})
 
 	let lastMessage = ''
-	// let urlLogged = false;
+	let urlLogged = false
 
 	const onData = (data: Buffer) => {
 		lastMessage = data.toString()?.trim()
@@ -446,9 +448,9 @@ export async function startCloudflared(url: string) {
 		const tunnelUrl =
 			tunnelId && tunnelToken && tunnelDomain ? `https://robo.${tunnelDomain}` : extractTunnelUrl(lastMessage)
 
-		if (tunnelUrl && !Ignore.includes(tunnelUrl) && !lastMessage.includes('Request failed')) {
+		if (tunnelUrl && !Ignore.includes(tunnelUrl) && !lastMessage.includes('Request failed') && !urlLogged) {
 			cloudflareLogger.ready(`Tunnel URL:`, composeColors(color.bold, color.blue)(tunnelUrl))
-			// urlLogged = true;
+			urlLogged = true
 		}
 	}
 	childProcess.stdout.on('data', onData)
@@ -596,7 +598,7 @@ async function handleTunnelConfig(id: string, accountId: string) {
 					service: `http://localhost:${process.env.PORT || 3000}`
 				},
 				{
-					"service": "http_status:404"
+					service: 'http_status:404'
 				}
 			]
 		}
