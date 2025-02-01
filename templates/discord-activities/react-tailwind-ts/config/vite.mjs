@@ -8,5 +8,8 @@ export default defineConfig({
 	plugins: [react(), DiscordProxy.Vite()],
 	css: {
 		postcss: 'config/postcss.config.mjs'
+	},
+	server: {
+		allowedHosts: true
 	}
 })
