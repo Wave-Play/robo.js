@@ -188,9 +188,11 @@ new Command('create-robo <projectName>')
 		}
 
 		// Print introduction section
+		const kitName = getKitName(options.kit, options.template)
+		const spawnKit = kitName !== 'Unknown' ? ` as a ${Highlight(kitName)}` : ''
 		logger.log('')
 		logger.log(Indent, color.bold('✨ Welcome to Robo.js!'))
-		logger.log(Indent, `   Spawning ${Highlight(projectName)} as a ${Highlight(getKitName(options.kit))}...`)
+		logger.log(Indent, `   Spawning ${Highlight(projectName)}${spawnKit}...`)
 
 		const metadata: Array<{ key: string; value: string }> = []
 		if (options.kit === 'plugin') {
@@ -250,7 +252,12 @@ new Command('create-robo <projectName>')
 
 		// Want some plugins?
 		// if there are plugins specified with the command we skip asking for more.
-		if (options.kit !== 'plugin' && !options.template && !options['no-plugins'] && (options.plugins === undefined || options.plugins.length <= 0)) {
+		if (
+			options.kit !== 'plugin' &&
+			!options.template &&
+			!options['no-plugins'] &&
+			(options.plugins === undefined || options.plugins.length <= 0)
+		) {
 			await robo.plugins()
 		}
 

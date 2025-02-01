@@ -4,5 +4,8 @@ import { defineConfig } from 'vite'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-	plugins: [react(), DiscordProxy.Vite()]
+	plugins: [react(), DiscordProxy.Vite()],
+	server: {
+		allowedHosts: true
+	}
 })
