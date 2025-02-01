@@ -1,4 +1,4 @@
-import fs, { readFile, rename } from 'node:fs/promises'
+import fs, { readFile, rename, writeFile } from 'node:fs/promises'
 import path from 'path'
 import { checkbox, input, select, Separator } from '@inquirer/prompts'
 import { fileURLToPath } from 'node:url'
@@ -501,6 +501,11 @@ export default class Robo {
 		const packageJsonPath = path.join(this._workingDir, 'package.json')
 		this._packageJson = JSON.parse(await readFile(packageJsonPath, 'utf-8'))
 		logger.debug(`Found package.json file:`, this._packageJson)
+
+		// Update the package.json file with the project name and write it back
+		this._packageJson.name = this._name
+		await writeFile(packageJsonPath, JSON.stringify(this._packageJson, null, '\t'), 'utf-8')
+		logger.debug(`Updated package.json file with project name:`, this._name)
 
 		// Determine if the project is typescript based on the package.json
 		this._useTypeScript = this._packageJson.devDependencies?.typescript !== undefined
