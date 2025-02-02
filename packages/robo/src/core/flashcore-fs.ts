@@ -19,7 +19,7 @@ export class FlashcoreFileAdapter<K = string, V = unknown> implements FlashcoreA
 		this.dataDir = options.dataDir ?? path.join(process.cwd(), '.robo', 'data')
 	}
 
-	async clear(): Promise<boolean> {
+	public async clear(): Promise<boolean> {
 		try {
 			await fs.rm(this.dataDir, { recursive: true, force: true })
 			await fs.mkdir(this.dataDir, { recursive: true })
@@ -29,9 +29,9 @@ export class FlashcoreFileAdapter<K = string, V = unknown> implements FlashcoreA
 		}
 	}
 
-	async delete(key: K): Promise<boolean> {
+	public async delete(key: K): Promise<boolean> {
 		try {
-			const fileName = path.join(this.dataDir, this._getSafeKey(key))
+			const fileName = path.join(this.dataDir, _getSafeKey(key))
 			await fs.unlink(fileName)
 			return true
 		} catch (e) {
@@ -44,9 +44,9 @@ export class FlashcoreFileAdapter<K = string, V = unknown> implements FlashcoreA
 		}
 	}
 
-	async get(key: K): Promise<V | undefined> {
+	public async get(key: K): Promise<V | undefined> {
 		try {
-			const fileName = path.join(this.dataDir, this._getSafeKey(key))
+			const fileName = path.join(this.dataDir, _getSafeKey(key))
 			const gunzip = zlib.createGunzip()
 			await pipeline(createReadStream(fileName), gunzip)
 			const decompressed = gunzip.read()
@@ -56,11 +56,11 @@ export class FlashcoreFileAdapter<K = string, V = unknown> implements FlashcoreA
 		}
 	}
 
-	async has(key: K): Promise<boolean> {
+	public async has(key: K): Promise<boolean> {
 		return !!(await this.get(key))
 	}
 
-	async init() {
+	public async init() {
 		try {
 			await fs.mkdir(this.dataDir, { recursive: true })
 		} catch (e) {
@@ -68,9 +68,9 @@ export class FlashcoreFileAdapter<K = string, V = unknown> implements FlashcoreA
 		}
 	}
 
-	async set(key: K, value: V): Promise<boolean> {
+	public async set(key: K, value: V): Promise<boolean> {
 		try {
-			const fileName = path.join(this.dataDir, this._getSafeKey(key))
+			const fileName = path.join(this.dataDir, _getSafeKey(key))
 			const gzip = zlib.createGzip()
 			gzip.write(JSON.stringify(value))
 			gzip.end()
@@ -80,8 +80,8 @@ export class FlashcoreFileAdapter<K = string, V = unknown> implements FlashcoreA
 			return false
 		}
 	}
+}
 
-	private _getSafeKey(key: K): string {
-		return createHash('sha256').update(key.toString()).digest('hex')
-	}
+function _getSafeKey<K>(key: K): string {
+	return createHash('sha256').update(key.toString()).digest('hex')
 }
