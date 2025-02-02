@@ -6,7 +6,7 @@ import { findPackagePath, getRoboPackageJson, PackageDir, packageJson } from '..
 import { addAction } from './add.js'
 import { removeAction } from './remove.js'
 import { loadConfig } from '../../core/config.js'
-import { Flashcore, prepareFlashcore } from '../../core/flashcore.js'
+import { Flashcore } from '../../core/flashcore.js'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 import type { PackageJson } from '../../index.js'
@@ -47,8 +47,8 @@ async function syncAction(_args: string[], options: SyncCommandOptions) {
 	}
 
 	// Check past runs to see if we've already handled these plugins
-	await loadConfig('robo', true)
-	await prepareFlashcore()
+	const config = await loadConfig('robo', true)
+	await Flashcore.$init({ keyvOptions: config.flashcore?.keyv })
 	const pluginRecord =
 		(await Flashcore.get<Record<string, boolean>>('plugins', {
 			namespace: ['robo', 'sync']

@@ -11,7 +11,7 @@ import { color, composeColors } from '../../core/color.js'
 import { Spirits } from '../utils/spirits.js'
 import { buildAction } from './build/index.js'
 import { Highlight } from '../../core/constants.js'
-import { Flashcore, prepareFlashcore } from '../../core/flashcore.js'
+import { Flashcore } from '../../core/flashcore.js'
 import { getPackageExecutor, getPackageManager } from '../utils/runtime-utils.js'
 import { Mode, setMode } from '../../core/mode.js'
 import { Compiler } from '../utils/compiler.js'
@@ -152,7 +152,7 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 
 	// Get state saved to disk as the default
 	const stateStart = Date.now()
-	await prepareFlashcore()
+	await Flashcore.$init({ keyvOptions: config.flashcore?.keyv })
 	const persistedState = (await Flashcore.get<Record<string, unknown>>(FLASHCORE_KEYS.state)) ?? {}
 	logger.debug(`State loaded in ${Date.now() - stateStart}ms`)
 

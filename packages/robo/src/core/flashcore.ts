@@ -1,16 +1,22 @@
-import { getConfig } from './config.js'
 import { FlashcoreFileAdapter } from './flashcore-fs.js'
 import { Globals } from './globals.js'
 import { logger } from './logger.js'
+import type KeyvType from 'keyv'
 
-type WatcherCallback<V = unknown> = (oldValue: V, newValue: V) => void | Promise<void>
+// Make sure it's initialized just once
+let _initialized = false
 
 // Watchers for listening to changes in the store.
 const _watchers = new Map<string, Set<WatcherCallback>>()
 
+// Type definitions
 interface FlashcoreOptions {
 	namespace?: string | Array<string>
 }
+interface InitFlashcoreOptions {
+	keyvOptions?: unknown
+}
+type WatcherCallback<V = unknown> = (oldValue: V, newValue: V) => void | Promise<void>
 
 /**
  * Built-in KV database for long-term storage.
@@ -192,28 +198,49 @@ export const Flashcore = {
 		}
 
 		return Globals.getFlashcoreAdapter().set(key, value)
-	}
-}
+	},
 
-export async function prepareFlashcore() {
-	const config = getConfig()
+	/**
+	 * Prepares Flashcore for usage.
+	 * This must be called before using any other Flashcore functions.
+	 *
+	 * Can only be called once per process.
+	 *
+	 * @param options - Options for initializing Flashcore, such as custom adapters.
+	 */
+	$init: async (options: InitFlashcoreOptions) => {
+		const { keyvOptions } = options
+		logger.debug('Initializing Flashcore with options:', options)
 
-	if (config.flashcore?.keyv) {
-		try {
-			logger.debug(`Using Keyv Flashcore adapter`)
-			const Keyv = (await import('keyv')).default
-			const keyv = new Keyv(config.flashcore.keyv)
-
-			keyv.on('error', (error: unknown) => {
-				logger.error(`Keyv error:`, error)
-			})
-			Globals.registerFlashcore(keyv)
-		} catch (error) {
-			logger.error(error)
-			throw new Error('Failed to import or setup the adapter with keyv package.')
+		// Prevent multiple initializations
+		if (_initialized) {
+			logger.warn('Flashcore has already been initialized. Ignoring...')
+			return
 		}
-	} else {
-		Globals.registerFlashcore(new FlashcoreFileAdapter())
-		await Globals.getFlashcoreAdapter().init()
+
+		try {
+			if (keyvOptions) {
+				let Keyv: typeof KeyvType
+				try {
+					Keyv = (await import('keyv')).default
+				} catch (error) {
+					throw new Error('Failed to import Keyv. Did you remember to install `keyv`?', { cause: error })
+				}
+				const keyv = new Keyv(keyvOptions)
+
+				keyv.on('error', (error: unknown) => {
+					logger.error(`Keyv error:`, error)
+				})
+				Globals.registerFlashcore(keyv)
+			} else {
+				Globals.registerFlashcore(new FlashcoreFileAdapter())
+				await Globals.getFlashcoreAdapter().init()
+			}
+		} catch (error) {
+			logger.error('Failed to initialize Flashcore:', error)
+			throw new Error('Failed to initialize Flashcore', { cause: error })
+		}
+
+		_initialized = true
 	}
 }
