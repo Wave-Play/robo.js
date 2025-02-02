@@ -4,13 +4,12 @@ import { Command } from 'commander'
 import { logger } from '../core/logger.js'
 import { checkSageUpdates, checkUpdates, exec, getPackageManager, IS_WINDOWS } from '../core/utils.js'
 import { loadConfig } from 'robo.js/dist/core/config.js'
-import { prepareFlashcore } from 'robo.js/dist/core/flashcore.js'
 import { color, composeColors } from '../core/color.js'
 import fs from 'node:fs'
 import path from 'node:path'
 import { checkbox, select, Separator } from '@inquirer/prompts'
 import { readFile } from 'node:fs/promises'
-import { Config, Plugin } from 'robo.js'
+import { Config, Flashcore, Plugin } from 'robo.js'
 
 const command = new Command('upgrade')
 	.description('Upgrades your Robo to the latest version')
@@ -46,7 +45,7 @@ async function upgradeAction(options: UpgradeOptions) {
 	}
 
 	const config = await loadConfig()
-	await prepareFlashcore()
+	await Flashcore.$init({ keyvOptions: config.flashcore?.keyv })
 	const plugins = config.plugins
 	plugins.push(['robo.js', {}])
 
