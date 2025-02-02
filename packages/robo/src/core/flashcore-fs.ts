@@ -8,13 +8,21 @@ import { hasProperties } from '../cli/utils/utils.js'
 import { createHash } from 'node:crypto'
 import type { FlashcoreAdapter } from '../types/index.js'
 
+interface FlashcoreFileAdapterOptions {
+	dataDir?: string
+}
+
 export class FlashcoreFileAdapter<K = string, V = unknown> implements FlashcoreAdapter<K, V> {
-	private static DATA_DIR = path.join(process.cwd(), '.robo', 'data')
+	public readonly dataDir: string
+
+	constructor(options: FlashcoreFileAdapterOptions = {}) {
+		this.dataDir = options.dataDir ?? path.join(process.cwd(), '.robo', 'data')
+	}
 
 	async clear(): Promise<boolean> {
 		try {
-			await fs.rm(FlashcoreFileAdapter.DATA_DIR, { recursive: true, force: true })
-			await fs.mkdir(FlashcoreFileAdapter.DATA_DIR, { recursive: true })
+			await fs.rm(this.dataDir, { recursive: true, force: true })
+			await fs.mkdir(this.dataDir, { recursive: true })
 			return true
 		} catch {
 			return false
@@ -23,7 +31,7 @@ export class FlashcoreFileAdapter<K = string, V = unknown> implements FlashcoreA
 
 	async delete(key: K): Promise<boolean> {
 		try {
-			const fileName = path.join(FlashcoreFileAdapter.DATA_DIR, this._getSafeKey(key))
+			const fileName = path.join(this.dataDir, this._getSafeKey(key))
 			await fs.unlink(fileName)
 			return true
 		} catch (e) {
@@ -38,7 +46,7 @@ export class FlashcoreFileAdapter<K = string, V = unknown> implements FlashcoreA
 
 	async get(key: K): Promise<V | undefined> {
 		try {
-			const fileName = path.join(FlashcoreFileAdapter.DATA_DIR, this._getSafeKey(key))
+			const fileName = path.join(this.dataDir, this._getSafeKey(key))
 			const gunzip = zlib.createGunzip()
 			await pipeline(createReadStream(fileName), gunzip)
 			const decompressed = gunzip.read()
@@ -54,7 +62,7 @@ export class FlashcoreFileAdapter<K = string, V = unknown> implements FlashcoreA
 
 	async init() {
 		try {
-			await fs.mkdir(FlashcoreFileAdapter.DATA_DIR, { recursive: true })
+			await fs.mkdir(this.dataDir, { recursive: true })
 		} catch (e) {
 			logger.error('Failed to create data directory for Flashcore file adapter.', e)
 		}
@@ -62,7 +70,7 @@ export class FlashcoreFileAdapter<K = string, V = unknown> implements FlashcoreA
 
 	async set(key: K, value: V): Promise<boolean> {
 		try {
-			const fileName = path.join(FlashcoreFileAdapter.DATA_DIR, this._getSafeKey(key))
+			const fileName = path.join(this.dataDir, this._getSafeKey(key))
 			const gzip = zlib.createGzip()
 			gzip.write(JSON.stringify(value))
 			gzip.end()
