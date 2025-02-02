@@ -1,6 +1,7 @@
 import { FlashcoreFileAdapter } from './flashcore-fs.js'
 import { Globals } from './globals.js'
 import { logger } from './logger.js'
+import type { FlashcoreAdapter } from '../types/index.js'
 import type KeyvType from 'keyv'
 
 // Make sure it's initialized just once
@@ -14,6 +15,7 @@ interface FlashcoreOptions {
 	namespace?: string | Array<string>
 }
 interface InitFlashcoreOptions {
+	adapter?: FlashcoreAdapter
 	keyvOptions?: unknown
 }
 type WatcherCallback<V = unknown> = (oldValue: V, newValue: V) => void | Promise<void>
@@ -233,8 +235,9 @@ export const Flashcore = {
 				})
 				Globals.registerFlashcore(keyv)
 			} else {
-				Globals.registerFlashcore(new FlashcoreFileAdapter())
-				await Globals.getFlashcoreAdapter().init()
+				const adapter = options.adapter ?? new FlashcoreFileAdapter()
+				await adapter.init()
+				Globals.registerFlashcore(adapter)
 			}
 		} catch (error) {
 			logger.error('Failed to initialize Flashcore:', error)

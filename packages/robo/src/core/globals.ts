@@ -9,6 +9,7 @@ import type {
 	Middleware
 } from '../types/index.js'
 import type { Collection } from 'discord.js'
+import type Keyv from 'keyv'
 
 const instanceId = Math.random().toString(36).slice(2)
 
@@ -65,7 +66,7 @@ export const Globals = {
 
 		globalThis.robo.config = config
 	},
-	registerFlashcore: (adapter: FlashcoreAdapter) => {
+	registerFlashcore: (adapter: FlashcoreAdapter | Keyv<unknown, unknown>) => {
 		if (!globalThis.robo) {
 			Globals.init()
 		}
