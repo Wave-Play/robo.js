@@ -77,6 +77,12 @@ const optionalFeatures = [
 		short: 'Extensionless',
 		value: 'extensionless',
 		checked: false
+	},
+	{
+		name: `${color.bold('Static Cloudflare Tunnels')} - Securely expose your Robo app to the world with minimal config.`,
+		short: 'Static Cloudflare Tunnels',
+		value: 'cloudflare',
+		checked: false
 	}
 ]
 
@@ -251,6 +257,7 @@ export default class Robo {
 	private _selectedPlugins: string[] = []
 	private _shouldInstall: boolean
 	private _useTypeScript: boolean | undefined
+	private _useStaticCloudflareTunnels: boolean | undefined
 	private _workingDir: string
 
 	// Same as above, but exposed as getters
@@ -270,6 +277,10 @@ export default class Robo {
 
 	public get isTypeScript(): boolean {
 		return this._useTypeScript
+	}
+
+	public get useStaticCloudflareTunnels(): boolean {
+		return this._useStaticCloudflareTunnels
 	}
 
 	public get missingEnv(): boolean {
@@ -532,8 +543,7 @@ export default class Robo {
 			logger.log(
 				Indent,
 				color.bold(
-					`📦 Preparing ${color.cyan(this._useTypeScript ? 'TypeScript' : 'JavaScript')} ${
-						this._isPlugin ? 'plugin' : 'project'
+					`📦 Preparing ${color.cyan(this._useTypeScript ? 'TypeScript' : 'JavaScript')} ${this._isPlugin ? 'plugin' : 'project'
 					}`
 				)
 			)
@@ -628,8 +638,7 @@ export default class Robo {
 		logger.log(
 			Indent,
 			color.bold(
-				`📦 Creating ${color.cyan(this._useTypeScript ? 'TypeScript' : 'JavaScript')} ${
-					this._isPlugin ? 'plugin' : 'project'
+				`📦 Creating ${color.cyan(this._useTypeScript ? 'TypeScript' : 'JavaScript')} ${this._isPlugin ? 'plugin' : 'project'
 				}`
 			)
 		)
@@ -817,6 +826,10 @@ export default class Robo {
 			for (const [key, value] of Object.entries(this._packageJson.scripts)) {
 				this._packageJson.scripts[key] = value.replace('robo ', 'robox ')
 			}
+		}
+
+		if (features.includes('cloudflare')) {
+			this._useStaticCloudflareTunnels = true
 		}
 
 		// Create the robo.mjs file
@@ -1089,30 +1102,30 @@ export default class Robo {
 		const cloudflareDashboardUrl = HighlightBlue('https://dash.cloudflare.com')
 		const cloudflareOfficialGuide = 'Guide:'
 		const cloudflareOfficialGuideUrl = HighlightBlue('https://developers.cloudflare.com/fundamentals/api/get-started/create-token')
-		
+
 		let cloudflareDomain = ''
 		let cloudflareAPIKey = ''
 		let cloudflareAccountID = ''
 		let cloudflareZoneID = ''
-		
+
 		logger.log('')
-		logger.log(Indent, color.bold('💈 Setting up CloudFlare Tunnel'))
-		logger.log(Indent, '   Get your credentials from the CloudFlare Dashboard.\n')
+		logger.log(Indent, color.bold('💈 Setting up Cloudflare Tunnel'))
+		logger.log(Indent, '   Get your credentials from the Cloudflare Dashboard.\n')
 		logger.log(Indent, `   ${cloudflareDashboard} ${cloudflareDashboardUrl}`)
 		logger.log(Indent, `   ${cloudflareOfficialGuide} ${cloudflareOfficialGuideUrl}\n`)
-		
+
 		if (this._cliOptions.creds) {
 			cloudflareDomain = await input({
-				message: 'Enter your CloudFlare Domain (press Enter to skip):'
+				message: 'Enter your Cloudflare Domain (press Enter to skip):'
 			})
 			cloudflareAPIKey = await input({
-				message: 'Enter your CloudFlare API Key (press Enter to skip):'
+				message: 'Enter your Cloudflare API Key (press Enter to skip):'
 			})
 			cloudflareZoneID = await input({
-				message: 'Enter your CloudFlare Zone ID (press Enter to skip):'
+				message: 'Enter your Cloudflare Zone ID (press Enter to skip):'
 			})
 			cloudflareAccountID = await input({
-				message: 'Enter your CloudFlare Account ID (press Enter to skip):'
+				message: 'Enter your Cloudflare Account ID (press Enter to skip):'
 			})
 		}
 
@@ -1123,7 +1136,7 @@ export default class Robo {
 		if (this._cliOptions.verbose) {
 			logger.log('')
 		} else {
-			logger.log('\x1B[1A\x1B[K\x1B[1A\x1B[K')
+			logger.log('\x1B[1A\x1B[K\x1B[1A\x1B[K\x1B[1A\x1B[K\x1B[1A\x1B[K')
 		}
 
 		this._spinner.setText(Indent + '    {{spinner}} Applying credentials...\n')
@@ -1139,7 +1152,7 @@ export default class Robo {
 		env.set('CLOUDFLARE_API_KEY', cloudflareAPIKey)
 		env.set('CLOUDFLARE_ZONE_ID', cloudflareZoneID)
 		env.set('CLOUDFLARE_ACCOUNT_ID', cloudflareAccountID)
-		
+
 		// Save the .env file
 		await env.commit(this._useTypeScript)
 		this._spinner.stop()
@@ -1187,9 +1200,8 @@ export default class Robo {
 		}
 
 		// Normalize plugin path
-		const pluginPath = `${path.join(this._workingDir, 'config', 'plugins', ...pluginParts)}${
-			this._useTypeScript ? '.ts' : '.mjs'
-		}`
+		const pluginPath = `${path.join(this._workingDir, 'config', 'plugins', ...pluginParts)}${this._useTypeScript ? '.ts' : '.mjs'
+			}`
 		const pluginConfig = prettyStringify(config) + '\n'
 
 		logger.debug(`Writing ${pluginName} config to ${pluginPath}...`)

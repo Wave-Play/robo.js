@@ -290,10 +290,10 @@ new Command('create-robo <projectName>')
 			logger.debug('Successfully generated web .env file!')
 		}
 
-		// Ask the user for their CloudFlare credentials (API key, Account ID and Domain) and store them for later use
-		// Skip this step if the user is not creating an app
-		if (robo.isApp && options.kit === 'app') {
-			logger.debug(`Asking for CloudFlare setup...`)
+		// Ask the user for their Cloudflare credentials (API key, Account ID, Zone ID and Domain) and store them for later use
+		// Skip this step if the user is not creating an app or user doesn't want to setup Static Cloudflare Tunnels
+		if (robo.isApp && robo.useStaticCloudflareTunnels) {
+			logger.debug(`Asking for Cloudflare setup...`)
 			await robo.askForCloudFlareSetup()
 		}
 

@@ -318,9 +318,14 @@ export function isCloudflaredInstalled(to = DEFAULT_BIN_PATH): boolean {
 }
 
 export async function initializeCloudflareTunnel(): Promise<boolean> {
-	if (!process.env.CLOUDFLARE_DOMAIN || !process.env.CLOUDFLARE_API_KEY || !process.env.CLOUDFLARE_ZONE_ID || !process.env.CLOUDFLARE_ACCOUNT_ID) {
-		cloudflareLogger.warn('Missing required Cloudflare environment variables.');
-		return false;
+	if (
+		!process.env.CLOUDFLARE_DOMAIN ||
+		!process.env.CLOUDFLARE_API_KEY ||
+		!process.env.CLOUDFLARE_ZONE_ID ||
+		!process.env.CLOUDFLARE_ACCOUNT_ID
+	) {
+		cloudflareLogger.error('Missing required Cloudflare environment variables')
+		return false
 	}
 
 	cloudflareLogger.debug('Looking for existing Cloudflare tunnels from .env file')
@@ -403,9 +408,7 @@ export async function startCloudflared(url: string) {
 	let commandArgs = ['tunnel', '--no-autoupdate', '--url', url]
 
 	if (tunnelId && tunnelToken && tunnelDomain) {
-		if (tunnelId && tunnelToken && tunnelDomain) {
-			commandArgs = [...commandArgs, 'run', '--token', tunnelToken, tunnelId]
-		}
+		commandArgs = [...commandArgs, 'run', '--token', tunnelToken, tunnelId]
 	}
 
 	cloudflareLogger.event(`Starting tunnel...`)
@@ -584,7 +587,7 @@ async function handleTunnelConfig(id: string, accountId: string) {
 	}
 
 	const tunnelConfigResponse = await cloudflareRequest<CloudflareTunnelConfigurationResponse>(
-		`/accounts/${accountId}/cfd_tunnel/${id}/configurations`,
+		`/accounts/${accountId}/cfd_tunnel/${id}/configurations/`,
 		'PUT',
 		tunnelConfig
 	)
@@ -665,18 +668,28 @@ async function handleDNSRecord(tunnelID: string) {
 }
 
 async function updateEnvFile(key: string, value: string) {
-	const envFilePath = await getEnvFilePath()
-	const regex = new RegExp(`^${key}=.*$`, 'm')
-	let envContent = await fs.promises.readFile(envFilePath, 'utf8')
+	try {
+		const envFilePath = await getEnvFilePath()
 
-	if (regex.test(envContent)) {
-		envContent = envContent.replace(regex, `${key}="${value}"`)
-	} else {
-		envContent += `\n${key}="${value}"`
+		if (envFilePath) {
+			const regex = new RegExp(`^${key}=.*$`, 'm')
+			let envContent = await fs.promises.readFile(envFilePath, 'utf8')
+
+			if (regex.test(envContent)) {
+				envContent = envContent.replace(regex, `${key}="${value}"`)
+			} else {
+				envContent += `\n${key}="${value}"`
+			}
+
+			await fs.promises.writeFile(envFilePath, envContent, 'utf8')
+			cloudflareLogger.debug(`Updated ${envFilePath} file with ${key}=${value}`)
+		} else {
+			process.env[key] = value
+		}
+	} catch (error) {
+		cloudflareLogger.error(`Failed to update env file: ${error}`)
+		process.env[key] = value
 	}
-
-	await fs.promises.writeFile(envFilePath, envContent, 'utf8')
-	cloudflareLogger.debug(`Updated ${envFilePath} file with ${key}=${value}`)
 }
 
 async function getEnvFilePath() {
@@ -700,5 +713,5 @@ async function reloadEnv() {
 	cloudflareLogger.debug('Reloading environment variable ...')
 
 	const mode = Mode.get()
-	await Env.load({ mode: mode, overwrite: true })
+	await Env.load({ mode: mode })
 }

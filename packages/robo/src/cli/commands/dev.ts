@@ -118,7 +118,7 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 	if (options.tunnel && isCloudflaredInstalled()) {
 		cloudflareLogger.event(`Initializing Cloudflare tunnel...`)
 		const initialized = await initializeCloudflareTunnel()
-		cloudflareLogger.info(initialized ? `Managed Cloudflare Tunnel initialized successfully!` : `Failed to initialize Managed Cloudflare Tunnel.`)
+		cloudflareLogger.debug(initialized ? `Static Cloudflare Tunnel initialized successfully!` : `Failed to initialize Static Cloudflare Tunnel.`)
 	}
 
 	if (options.tunnel && !process.env.PORT) {
@@ -272,7 +272,7 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 
 	// Run the tunnel if requested
 	if (options.tunnel) {
-		tunnelProcess = startCloudflared('http://localhost:' + process.env.PORT)
+		tunnelProcess = await startCloudflared('http://localhost:' + process.env.PORT)
 	}
 
 	// Check for updates
