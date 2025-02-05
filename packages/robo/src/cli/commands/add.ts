@@ -222,8 +222,8 @@ async function createPluginConfig(pluginName: string, config: Record<string, unk
 	}
 
 	// Normalize plugin path
-	const pluginPath =
-		path.join(process.cwd(), 'config', 'plugins', ...pluginParts) + (Compiler.isTypescriptProject() ? '.ts' : '.mjs')
+	const { isTypeScript } = Compiler.isTypescriptProject()
+	const pluginPath = path.join(process.cwd(), 'config', 'plugins', ...pluginParts) + (isTypeScript ? '.ts' : '.mjs')
 	const pluginConfig = JSON.stringify(config) + '\n'
 
 	logger.debug(`Writing ${pluginName} config to ${pluginPath}...`)

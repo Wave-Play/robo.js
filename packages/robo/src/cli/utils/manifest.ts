@@ -92,13 +92,14 @@ export async function generateManifest(generatedDefaults: DefaultGen, type: 'plu
 	const context = await generateEntries<CommandEntry>('context', Object.keys(generatedDefaults?.context ?? {}))
 	const events = await generateEntries<EventConfig>('events', Object.keys(generatedDefaults?.events ?? {}))
 	const middleware = Object.values(await generateEntries<MiddlewareEntry>('middleware', [])).flat()
+	const { isTypeScript } = Compiler.isTypescriptProject()
 
 	const newManifest: Manifest = {
 		...BASE_MANIFEST,
 		...pluginsManifest,
 		__robo: {
 			config: redactPluginOptions(config),
-			language: Compiler.isTypescriptProject() ? 'typescript' : 'javascript',
+			language: isTypeScript ? 'typescript' : 'javascript',
 			mode: Mode.get(),
 			seed: config.seed
 				? {
