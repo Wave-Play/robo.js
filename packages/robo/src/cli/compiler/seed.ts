@@ -1,11 +1,10 @@
 import { rm } from 'fs/promises'
 import { existsSync } from 'node:fs'
 import path from 'path'
-import { copyDir, PackageDir, replaceSrcWithBuildInRecord } from '../utils/utils.js'
+import { copyDir, PackageDir } from '../utils/utils.js'
 import { color } from '../../core/color.js'
 import { compilerLogger } from '../utils/loggers.js'
-import { Compiler, transform, traverse } from '../utils/compiler.js'
-import { getTypeScriptCompilerOptions } from './typescript.js'
+import { Compiler } from '../utils/compiler.js'
 
 const SeedDir = path.join(process.cwd(), 'seed')
 const SeedBuildDir = path.join(process.cwd(), '.robo', 'seed')
@@ -33,17 +32,13 @@ export async function buildSeed() {
 	}
 
 	// Build TypeScript files if this project is a TypeScript project prior to copying
-	if (Compiler.isTypescriptProject()) {
+	const { isTypeScript } = Compiler.isTypescriptProject()
+	if (isTypeScript) {
 		compilerLogger.debug(`Compiling TypeScript files from ${SeedDir} to ${SeedBuildDir}...`)
-		const tsOptions = await getTypeScriptCompilerOptions()
-		const baseUrl = tsOptions.baseUrl ?? process.cwd()
-		const compileOptions = {
-			baseUrl: baseUrl,
-			paths: replaceSrcWithBuildInRecord(tsOptions.paths ?? {})
-		}
-		compilerLogger.debug(`Compiler options:`, compileOptions)
-
-		await traverse(SeedDir, SeedBuildDir, compileOptions, tsOptions, transform)
+		await Compiler.buildCode({
+			distDir: SeedBuildDir,
+			srcDir: SeedDir
+		})
 		await rm(path.join(process.cwd(), '.swc'), { recursive: true, force: true })
 	} else {
 		compilerLogger.warn('We recommend using TypeScript for your seed files.')
@@ -98,10 +93,11 @@ export async function useSeed(packageName: string) {
 			basePath: path.resolve(seedPath, '..', '..'),
 			name: packageName
 		})
-		const isTypeScript = manifest.__robo.language === 'typescript'
+		const identifiesAsTypeScript = manifest.__robo.language === 'typescript'
+		const { isTypeScript } = Compiler.isTypescriptProject()
 
 		// Copy the files recursively
-		const excludeExts = Compiler.isTypescriptProject() && isTypeScript ? ['.js', '.jsx'] : ['.ts', '.tsx']
+		const excludeExts = identifiesAsTypeScript && isTypeScript ? ['.js', '.jsx'] : ['.ts', '.tsx']
 		await copyDir(seedPath, projectSrc, excludeExts, [path.join(seedPath, '_root')], false)
 		compilerLogger.debug(`Successfully copied seed files from`, color.bold(packageName))
 

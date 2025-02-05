@@ -37,6 +37,8 @@
 		"src/",
 		"cli.d.ts",
 		"cli.js",
+		"flashcore.d.ts",
+		"flashcore.js",
 		"LICENSE",
 		"logger.d.ts",
 		"logger.js",

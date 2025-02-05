@@ -10,7 +10,7 @@ import { Mode, setMode } from '../../../core/mode.js'
 import { findCommandDifferences, registerCommands } from '../../utils/commands.js'
 import { generateDefaults } from '../../utils/generate-defaults.js'
 import { Compiler } from '../../utils/compiler.js'
-import { Flashcore, prepareFlashcore } from '../../../core/flashcore.js'
+import { Flashcore } from '../../../core/flashcore.js'
 import { bold, color } from '../../../core/color.js'
 import { buildPublicDirectory } from '../../utils/public.js'
 import { discordLogger, FLASHCORE_KEYS } from '../../../core/constants.js'
@@ -94,7 +94,7 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 	}
 
 	// Initialize Flashcore to persist build error data
-	await prepareFlashcore()
+	await Flashcore.$init({ keyvOptions: config.flashcore?.keyv })
 
 	// Use the Robo Compiler to generate .robo/build
 	const compileTime = await Compiler.buildCode({

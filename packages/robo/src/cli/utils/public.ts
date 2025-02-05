@@ -51,11 +51,12 @@ export async function buildVite() {
 		isSsrBuild: false,
 		mode: 'production'
 	}
+	const { isTypeScript } = Compiler.isTypescriptProject()
 
-	const configPath = path.join(process.cwd(), 'config', `vite.${Compiler.isTypescriptProject() ? 'ts' : 'mjs'}`)
+	const configPath = path.join(process.cwd(), 'config', `vite.${isTypeScript ? 'ts' : 'mjs'}`)
 	if (existsSync(configPath)) {
 		config = (await loadConfigFromFile(configEnv, configPath))?.config
-	} else if (existsSync(path.join(process.cwd(), `vite.config.${Compiler.isTypescriptProject() ? 'ts' : 'js'}`))) {
+	} else if (existsSync(path.join(process.cwd(), `vite.config.${isTypeScript ? 'ts' : 'js'}`))) {
 		config = (await loadConfigFromFile(configEnv))?.config
 	} else {
 		logger.debug('No Vite config found. Skipping...')

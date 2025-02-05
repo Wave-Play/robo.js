@@ -13,7 +13,7 @@ import {
 	executeEventHandler
 } from './handlers.js'
 import { hasProperties, PackageDir } from '../cli/utils/utils.js'
-import { Flashcore, prepareFlashcore } from './flashcore.js'
+import { Flashcore } from './flashcore.js'
 import { Mode } from './mode.js'
 import { loadState } from './state.js'
 import Portal from './portal.js'
@@ -107,8 +107,7 @@ async function start(options?: StartOptions) {
 
 	const mode = Mode.get()
 	await Env.load({ mode })
-
-	await prepareFlashcore()
+	await Flashcore.$init({ keyvOptions: config.flashcore?.keyv })
 
 	// Wait for states to be loaded
 	if (stateLoad) {

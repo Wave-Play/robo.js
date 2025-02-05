@@ -1,9 +1,18 @@
+import { IS_BUN_RUNTIME } from '../utils/runtime-utils.js'
+import { compilerLogger } from '../utils/loggers.js'
 import { existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
-import { transform, ts } from '../utils/compiler.js'
-import { compilerLogger } from '../utils/loggers.js'
 import type { CompilerOptions, Diagnostic } from 'typescript'
+import type { default as Typescript } from 'typescript'
+import type { transform as SwcTransform } from '@swc/core'
+
+// Load Typescript compiler in a try/catch block
+// This is to maintain compatibility with JS-only projects
+export let ts: typeof Typescript
+export let transform: typeof SwcTransform
+
+await preloadTransformers()
 
 export function buildDeclarationFiles(tsOptions?: CompilerOptions) {
 	// Define the compiler options specifically for declaration files
@@ -84,10 +93,38 @@ function formatDiagnostic(diagnostic: Diagnostic): string {
 /**
  * Checks if the current project is a TypeScript project.
  * This is determined by the presence of a tsconfig.json file and the availability of the TypeScript dependencies.
+ *
+ * @returns Outcome and what is missing
  */
 export function isTypescriptProject() {
-	const hasTsConfig = existsSync(path.join(process.cwd(), 'tsconfig.json'))
-	const hasTsDependencies = typeof ts !== 'undefined' && typeof transform !== 'undefined'
+	const missing: string[] = []
+	if (!existsSync(path.join(process.cwd(), 'tsconfig.json'))) {
+		missing.push('tsconfig.json')
+	}
+	if (typeof ts === 'undefined') {
+		missing.push('typescript')
+	}
+	if (typeof transform === 'undefined') {
+		missing.push('@swc/core')
+	}
 
-	return hasTsConfig && hasTsDependencies
+	return {
+		isTypeScript: missing.length === 0,
+		missing
+	}
+}
+
+export async function preloadTransformers() {
+	try {
+		// Disable Typescript compiler(s) if using Bun, unless for plugin builds
+		// This is because plugins may be used in any runtime environment (not just Bun)
+		if (!IS_BUN_RUNTIME) {
+			compilerLogger.debug(`Preloading Typescript transformers...`)
+			const [typescript, swc] = await Promise.all([import('typescript'), import('@swc/core')])
+			ts = typescript.default
+			transform = swc.transform
+		}
+	} catch {
+		// Ignore
+	}
 }
