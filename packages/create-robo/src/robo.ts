@@ -77,6 +77,12 @@ const optionalFeatures = [
 		short: 'Extensionless',
 		value: 'extensionless',
 		checked: false
+	},
+	{
+		name: `${color.bold('Static Cloudflare Tunnels')} - Securely expose your Robo app to the world with minimal config.`,
+		short: 'Static Cloudflare Tunnels',
+		value: 'cloudflare',
+		checked: false
 	}
 ]
 
@@ -251,6 +257,7 @@ export default class Robo {
 	private _selectedPlugins: string[] = []
 	private _shouldInstall: boolean
 	private _useTypeScript: boolean | undefined
+	private _useStaticCloudflareTunnels: boolean | undefined
 	private _workingDir: string
 
 	// Same as above, but exposed as getters
@@ -264,8 +271,16 @@ export default class Robo {
 		return this._isPlugin
 	}
 
+	public get isApp(): boolean {
+		return this._isApp
+	}
+
 	public get isTypeScript(): boolean {
 		return this._useTypeScript
+	}
+
+	public get useStaticCloudflareTunnels(): boolean {
+		return this._useStaticCloudflareTunnels
 	}
 
 	public get missingEnv(): boolean {
@@ -528,8 +543,7 @@ export default class Robo {
 			logger.log(
 				Indent,
 				color.bold(
-					`📦 Preparing ${color.cyan(this._useTypeScript ? 'TypeScript' : 'JavaScript')} ${
-						this._isPlugin ? 'plugin' : 'project'
+					`📦 Preparing ${color.cyan(this._useTypeScript ? 'TypeScript' : 'JavaScript')} ${this._isPlugin ? 'plugin' : 'project'
 					}`
 				)
 			)
@@ -624,8 +638,7 @@ export default class Robo {
 		logger.log(
 			Indent,
 			color.bold(
-				`📦 Creating ${color.cyan(this._useTypeScript ? 'TypeScript' : 'JavaScript')} ${
-					this._isPlugin ? 'plugin' : 'project'
+				`📦 Creating ${color.cyan(this._useTypeScript ? 'TypeScript' : 'JavaScript')} ${this._isPlugin ? 'plugin' : 'project'
 				}`
 			)
 		)
@@ -813,6 +826,10 @@ export default class Robo {
 			for (const [key, value] of Object.entries(this._packageJson.scripts)) {
 				this._packageJson.scripts[key] = value.replace('robo ', 'robox ')
 			}
+		}
+
+		if (features.includes('cloudflare')) {
+			this._useStaticCloudflareTunnels = true
 		}
 
 		// Create the robo.mjs file
@@ -1022,7 +1039,7 @@ export default class Robo {
 			})
 			discordToken = await input({
 				message: this._isApp
-					? 'Enter your Discord Client Secret (press enter to skip)'
+					? 'Enter your Discord Client Secret (press Enter to skip):'
 					: 'Enter your Discord Token (press Enter to skip):'
 			})
 		}
@@ -1080,6 +1097,68 @@ export default class Robo {
 		logger.log(Indent, '   Manage your credentials in the', Highlight('.env'), 'file.')
 	}
 
+	async askForCloudFlareSetup(): Promise<void> {
+		const cloudflareDashboard = 'Dashboard:'
+		const cloudflareDashboardUrl = HighlightBlue('https://dash.cloudflare.com')
+		const cloudflareOfficialGuide = 'Guide:'
+		const cloudflareOfficialGuideUrl = HighlightBlue('https://developers.cloudflare.com/fundamentals/api/get-started/create-token')
+
+		let cloudflareDomain = ''
+		let cloudflareAPIKey = ''
+		let cloudflareAccountID = ''
+		let cloudflareZoneID = ''
+
+		logger.log('')
+		logger.log(Indent, color.bold('💈 Setting up Cloudflare Tunnel'))
+		logger.log(Indent, '   Get your credentials from the Cloudflare Dashboard.\n')
+		logger.log(Indent, `   ${cloudflareDashboard} ${cloudflareDashboardUrl}`)
+		logger.log(Indent, `   ${cloudflareOfficialGuide} ${cloudflareOfficialGuideUrl}\n`)
+
+		if (this._cliOptions.creds) {
+			cloudflareDomain = await input({
+				message: 'Enter your Cloudflare Domain (press Enter to skip):'
+			})
+			cloudflareAPIKey = await input({
+				message: 'Enter your Cloudflare API Key (press Enter to skip):'
+			})
+			cloudflareZoneID = await input({
+				message: 'Enter your Cloudflare Zone ID (press Enter to skip):'
+			})
+			cloudflareAccountID = await input({
+				message: 'Enter your Cloudflare Account ID (press Enter to skip):'
+			})
+		}
+
+		if (!cloudflareDomain || !cloudflareAPIKey || !cloudflareZoneID || !cloudflareAccountID) {
+			this._missingEnv = true
+		}
+
+		if (this._cliOptions.verbose) {
+			logger.log('')
+		} else {
+			logger.log('\x1B[1A\x1B[K\x1B[1A\x1B[K\x1B[1A\x1B[K\x1B[1A\x1B[K')
+		}
+
+		this._spinner.setText(Indent + '    {{spinner}} Applying credentials...\n')
+		this._spinner.start()
+
+		// Construct the .env file, starting with defaults for all Robo projects
+		const env = await new Env('.env', this._workingDir).load()
+
+		// Cloudflare-specific variables
+		env.set('CLOUDFLARE_TUNNEL_ID', '', 'Get your Cloudflare credentials on the Cloudflare Dashboard - https://dash.cloudflare.com')
+		env.set('CLOUDFLARE_TUNNEL_TOKEN', '')
+		env.set('CLOUDFLARE_DOMAIN', cloudflareDomain)
+		env.set('CLOUDFLARE_API_KEY', cloudflareAPIKey)
+		env.set('CLOUDFLARE_ZONE_ID', cloudflareZoneID)
+		env.set('CLOUDFLARE_ACCOUNT_ID', cloudflareAccountID)
+
+		// Save the .env file
+		await env.commit(this._useTypeScript)
+		this._spinner.stop()
+		logger.log(Indent, '   Manage your credentials in the', Highlight('.env'), 'file.')
+	}
+
 	/**
 	 * Bun is special. Bun is love. Bun is life.
 	 * Bun requires `bun --bun` as a prefix before every `robo` and `sage` command.
@@ -1121,9 +1200,8 @@ export default class Robo {
 		}
 
 		// Normalize plugin path
-		const pluginPath = `${path.join(this._workingDir, 'config', 'plugins', ...pluginParts)}${
-			this._useTypeScript ? '.ts' : '.mjs'
-		}`
+		const pluginPath = `${path.join(this._workingDir, 'config', 'plugins', ...pluginParts)}${this._useTypeScript ? '.ts' : '.mjs'
+			}`
 		const pluginConfig = prettyStringify(config) + '\n'
 
 		logger.debug(`Writing ${pluginName} config to ${pluginPath}...`)
