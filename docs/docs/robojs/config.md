@@ -60,16 +60,20 @@ Use this to customize default behavior, like enabling or disabling the help comm
 
 Options:
 
-- `dev`: (boolean) Set to `false` to disable /dev subcommands.
-
-- `help`: (boolean) Set to `false` to disable the help command.
+- `contexts`: Register commands only for specific contexts. (**[CommandContext[]](/ref/framework/TypeAlias.CommandContext)**)
+- `dev`: Set to `false` to disable /dev subcommands. (**boolean**)
+- `help`: Set to `false` to disable the /help command. (**boolean**)
+- `integrationTypes`: Change to allow use outside installed guilds. (**[CommandIntegrationType[]](/ref/framework/TypeAlias.CommandIntegrationType)**)
 
 Example:
 
-```javascript {2}
+```js
 defaults: {
-  dev: false,
-  help: false,
+	// These are the default values
+	contexts: ['Guild', 'BotDM', 'PrivateChannel'],
+	dev: true,
+	help: true,
+	integrationTypes: ['GuildInstall']
 }
 ```
 

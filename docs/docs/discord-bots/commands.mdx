@@ -362,16 +362,20 @@ Make sure each choice has a `name` and `value`. The `name` is what the user sees
 
 To dynamically generate choices instead of hardcoding them in advance, see **[Autocomplete](#autocomplete)**.
 
-### DM Permission
+### Direct Messages
 
-Control whether your command is accessible in direct messages with `dmPermission`. Setting this to `true` allows users to use the command in DMs with the bot, while `false` restricts it.
+Control whether your command is accessible in direct messages with `contexts`.
 
 ```javascript
 export const config = {
-	// ... other configuration options
-	dmPermission: false // Restricts this command in DMs
+	// ... other config
+	contexts: ['Guild', 'BotDM']
 }
 ```
+
+Adding `'BotDM'` alongside `'Guild'` allows the command to be used in direct messages. Remove `'Guild'` if you want to restrict the command to direct messages only.
+
+You can customize defaults in your **[Robo Config](/robojs/config#defaults)**.
 
 ### Default Member Permissions
 
@@ -381,7 +385,7 @@ Use `defaultMemberPermissions` to define server-based permissions for your comma
 import { PermissionFlagsBits } from 'discord.js'
 
 export const config = {
-	// ... other configuration options
+	// ... other config
 	defaultMemberPermissions: PermissionFlagsBits.KickMembers // Only users who can kick members can use this command
 }
 ```
@@ -392,7 +396,28 @@ Remember, server admins can adjust these default permissions for their own serve
 
 :::
 
-<!-- For a more comprehensive overview of command permissions in Discord, check out our [Permissions Guide](/docs/advanced/permissions). -->
+{/* For a more comprehensive overview of command permissions in Discord, check out our [Permissions Guide](/docs/advanced/permissions). */}
+
+### User Installs
+
+By default, commands are only available in guilds where your bot is installed. You can change this behavior with `integrationTypes`.
+
+```javascript
+export const config = {
+	// ... other config
+	integrationTypes: ['GuildInstall', 'UserInstall']
+}
+```
+
+This allows your **Slash Commands** to be used in any server, even if your bot isn't installed there. Remove `'GuildInstall'` if you want to allow commands only for users that have installed your bot.
+
+You can customize defaults in your **[Robo Config](/robojs/config#defaults)**.
+
+:::tip
+
+Make sure you **[update your install settings](https://discord.com/developers/docs/tutorials/developing-a-user-installable-app#configuring-default-install-settings)** in the **[Discord Developer Portal](https://discord.com/developers/applications)** to allow user installs.
+
+:::
 
 ## Autocomplete
 
@@ -477,24 +502,3 @@ The cherry on top? You don't need to manually register your commands. Robo.js ha
 <Terminal execute>robo build --force</Terminal>
 
 This will also clean up any commands that are no longer in your `commands` directory. Pretty neat, right?
-
-## User Installs
-
-Robo.js now supports commands for user-installed apps! You will need to set experimental `userInstall` to `true` in your config file to enable this feature.
-
-```javascript title="/config/robo.mjs"
-export default {
-	// ... other config options
-	experimental: {
-		userInstall: true
-	}
-}
-```
-
-With this enabled, users can install your app and use its commands anywhere!
-
-:::tip
-
-Make sure you **[update your install settings](https://discord.com/developers/docs/tutorials/developing-a-user-installable-app#configuring-default-install-settings)** in the **[Discord Developer Portal](https://discord.com/developers/applications)** to allow user installs.
-
-:::
