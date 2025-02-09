@@ -1,5 +1,14 @@
 # robo.js
 
+## 0.10.30
+
+### Patch Changes
+
+- 3fed7e5: feat(flashcore): customizable data dir in file adapter constructor
+- aab6634: feat(flashcore): expose adapters via separate module
+- 9b045b6: feat(flashcore): now possible to use own non-keyv adapters
+- ae9235b: feat: new `Flashcore.$init` API
+
 ## 0.10.29
 
 ### Patch Changes

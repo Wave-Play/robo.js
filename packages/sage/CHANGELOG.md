@@ -1,5 +1,16 @@
 # @roboplay/sage
 
+## 0.7.1
+
+### Patch Changes
+
+- 59023d3: refactor: use new `Flashcore.$init` API
+- Updated dependencies [3fed7e5]
+- Updated dependencies [aab6634]
+- Updated dependencies [9b045b6]
+- Updated dependencies [ae9235b]
+  - robo.js@0.10.30
+
 ## 0.7.0
 
 ### Minor Changes
