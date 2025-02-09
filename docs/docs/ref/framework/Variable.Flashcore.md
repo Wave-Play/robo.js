@@ -21,6 +21,27 @@ Defaults to file-based storage, but can be configured to use other engines using
 
 ## Type declaration
 
+### $init()
+
+```ts
+$init: (options) => Promise<void>;
+```
+
+Prepares Flashcore for usage.
+This must be called before using any other Flashcore functions.
+
+Can only be called once per process.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options` | `InitFlashcoreOptions` | Options for initializing Flashcore, such as custom adapters. |
+
+#### Returns
+
+`Promise`\<`void`\>
+
 ### clear()
 
 ```ts

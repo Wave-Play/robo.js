@@ -75,6 +75,18 @@ has(key): boolean | Promise<boolean>
 
 ***
 
+### init()
+
+```ts
+init(): void | Promise<void>
+```
+
+#### Returns
+
+`void` \| `Promise`\<`void`\>
+
+***
+
 ### set()
 
 ```ts

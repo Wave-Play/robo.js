@@ -3,7 +3,7 @@
 Sometimes you need to store sensitive information, like API keys, database URLs, or Discord Credentials.
 
 ```ts
-import { Env } from 'robo'
+import { Env } from 'robo.js'
 
 Env.loadSync({ mode: 'dev' })
 Env.data().NODE_ENV // 'development'
