@@ -124,6 +124,7 @@ const sidebars = {
 					type: 'doc'
 				},
 				'discord-activities/authentication',
+				'discord-activities/beginner-guide',
 				{
 					id: 'discord-activities/credentials',
 					label: '🔑 Credentials',

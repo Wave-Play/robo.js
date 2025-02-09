@@ -1,0 +1,220 @@
+---
+description: Despite how simple Robo.js make things, it can be a bit overwhelming at first. This guide will help you with the basics.
+---
+
+import { Card } from '@site/src/components/shared/Card'
+import { CardContainer } from '@site/src/components/shared/CardContainer'
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+import { Terminal } from '@site/src/components/shared/Terminal'
+
+# 🔰 Beginner Guide
+
+This guide will help explain the basics of **[Discord Activities](/discord-activities/getting-started)**. We'll assume you're already familiar with web concepts like **[HTML](https://developer.mozilla.org/en-US/docs/Web/HTTP)**, **[CSS](https://developer.mozilla.org/en-US/docs/Web/CSS)**, and **[JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript)**. Don't worry, you don't need to be an expert as long as you know the basics.
+
+Before we get started, make sure you have **[Node.js](https://nodejs.org/en/download)** installed alongside **[VS Code](https://code.visualstudio.com/)** or your favorite code editor.
+
+## Getting Started
+
+We recommend using **[Create Robo](/cli/create-robo)** or **[RoboKit](/robokit)** to get started. Make sure your **[Discord Activity Credentials](/discord-activities/credentials)** are ready.
+
+<Terminal create>{'<projectName>'}</Terminal>
+
+This will help spawn a new **Robo.js** project as a **Discord Activity**. We call these **Robos**.
+
+Once complete, you can run it in your **Terminal**.
+
+<Terminal>npm run dev</Terminal>
+
+:::tip
+
+Make sure your **[Discord Activity Credentials](/discord-activities/credentials)** are ready.
+
+:::
+
+<CardContainer>
+	<Card
+		href="https://dev.to/waveplay/how-to-build-a-discord-activity-easily-with-robojs-5bng"
+		title="📚 Tutorial"
+		description="How to create a Discord Activity in seconds."
+	/>
+</CardContainer>
+
+## Core Concepts
+
+Everything is in one place in **Robo.js**, making it easy to manage without proxying separate projects.
+
+Unlike normal **Web Apps**, there's a few quirks to **Discord Activities**:
+
+- **Authenticate with Discord**: Use Discord's **[Embedded App SDK](https://github.com/discord/embedded-app-sdk/)** to authenticate your users.
+- **Follow Discord Proxy rules**: Discord has a **[Proxy](/discord-activities/proxy)** that you need to know about.
+- **Tunnels are your friend**: You can't just use `localhost` in Discord, so we provide **[Tunnels](/discord-activities/tunnels)** to help.
+- **Websockets for games**: If you're building a game, you'll want to use **[WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)**.
+
+### Frontend Client
+
+The frontend client is where you build the user interface for your Discord Activity. Even though you can use any UI library, we recommend **[React](https://react.dev)** for best compatibility with **[Robo Plugins](/plugins/directory)**.
+
+You find the frontend code in the `/src/app` folder in our **[Starter Templates](/templates?filter=discord-activities)**.
+
+<Tabs>
+<TabItem value="js" label="Javascript">
+
+```jsx title="src/app/Activity.jsx"
+import { useDiscordSdk } from '../hooks/useDiscordSdk'
+
+export const Activity = () => {
+	const { authenticated, discordSdk } = useDiscordSdk()
+
+	return (
+		<div>
+			<img src="/rocket.png" className="logo" alt="Discord" />
+			<h1>Hello, World</h1>
+		</div>
+	)
+}
+```
+
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```tsx title="src/app/Activity.tsx"
+import { useDiscordSdk } from '../hooks/useDiscordSdk'
+
+export const Activity = () => {
+	const { authenticated, discordSdk } = useDiscordSdk()
+
+	return (
+		<div>
+			<img src="/rocket.png" className="logo" alt="Discord" />
+			<h1>Hello, World</h1>
+		</div>
+	)
+}
+```
+
+</TabItem>
+</Tabs>
+
+Use Discord's **[Embedded App SDK](https://github.com/discord/embedded-app-sdk/)** to interact with Discord APIs.
+
+You can structure frontend code however you like. Just make sure to exclude folders from the watcher in your **[Robo Config](/robojs/config#watcher)**.
+
+:::info
+
+Frontend code is handled by **[Vite](https://vite.dev)**, a fast build tool for modern web development.
+
+:::
+
+{/*<CardContainer>
+	<Card
+		href="./client"
+		title="🖥️ Client Development"
+		description="Build beautiful user interfaces for your Discord Activity."
+	/>
+</CardContainer>*/}
+
+### Backend Server
+
+The backend server is where you handle stuff like **[Authentication](/authentication)** and custom features. You can use any backend library you like, but we recommend **[@robojs/server](/plugins/server)** for its simplicity and best compatibility with **Robo Plugins**.
+
+You can create new **API Routes** in the `/src/api` folder named after the path you desire.
+
+<Tabs>
+<TabItem value="js" label="Javascript">
+
+```javascript title="src/api/hello.js"
+export default () => {
+	return 'Hello, World!'
+}
+```
+
+</TabItem>
+<TabItem value="ts" label="Typescript">
+
+```typescript title="src/api/hello.ts"
+export default () => {
+	return 'Hello, World!'
+}
+```
+
+</TabItem>
+</Tabs>
+
+Nest for subroutes, use async functions, return objects or **[RoboResponse](/ref/@robojs/server/Class.RoboResponse)**, read from **[RoboRequest](/ref/@robojs/server/Class.RoboRequest)**, and more.
+
+<CardContainer>
+{/*	<Card
+		href="./server"
+		title="⚙️ Server Development"
+		description="Handle API requests, webhooks, and other features."
+	/>*/}
+	<Card href="./server" title="🔌 @robojs/server" description="Create and manage web pages, APIs, and more." />
+</CardContainer>
+
+### Tunneling
+
+Discord doesn't allow `localhost` URLs, so you need to use a tunnel to expose your local server to the Internet. **Robo.js** helps you manage a free **[Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/)** to simplify this process.
+
+When you run your **Robo**, you'll see a URL in the terminal. This is your tunnel URL.
+
+![Discord Activity Dev](/img/discord-activity-dev.png)
+
+Copy and paste this URL into your **[Discord Developer Portal](https://discord.com/developers/applications)** as your root mapping and save changes.
+
+![Discord Activity Mapping](/img/discord-activity-mapping.png)
+
+{/*
+
+<CardContainer>
+	<Card href="./tunnels" title="🌐 Tunnels" description="Expose your local server to the internet for Discord." />
+</CardContainer>
+
+## Making Changes
+
+## Hosting
+
+*/}
+
+## Authenticate your Users
+
+To do anything with Discord, you need to authenticate your users. **Robo.js** makes this easy in your `App.tsx` file.
+
+```tsx title="src/app/App.tsx"
+import { DiscordContextProvider } from '../hooks/useDiscordSdk'
+import { Activity } from './Activity'
+import './App.css'
+
+export default function App() {
+	return (
+		<DiscordContextProvider authenticate scope={['identify', 'guilds']}>
+			<Activity />
+		</DiscordContextProvider>
+	)
+}
+```
+
+This will prompt users to grant you access to their **[User Identity](https://discord.com/developers/docs/resources/user)** and **[Guilds](https://discord.com/developers/docs/resources/guild)**. Customize the scope to request more permissions.
+
+```tsx title="src/hooks/Activity.tsx"
+const { accessToken, session } = useDiscordSdk()
+```
+
+## Testing on Discord
+
+Once you're ready to test your **Discord Activity**, you can run it in a **Discord Channel** or **Direct Message**.
+
+![Discord Activity Launch](/img/discord-activity-launch.png)
+
+You may need to download Discord's **[Public Test Build](https://discord.com/download)** or use **[Discord.com](https://discord.com)** to see console logs and debug your activity.
+
+## Next Steps
+
+<CardContainer>
+	<Card
+		href="./multiplayer"
+		title="⚔️ Multiplayer"
+		description="Add multiplayer functionality to your Discord Activity."
+	/>
+	<Card href="../hosting/overview" title="🚀 Hosting" description="Deploy your Discord Activity for others to use." />
+</CardContainer>
