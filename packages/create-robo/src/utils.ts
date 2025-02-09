@@ -8,7 +8,9 @@ import type { Logger } from 'robo.js'
 const require = createRequire(import.meta.url)
 export const packageJson = require('../package.json')
 
-type PackageManager = 'npm' | 'bun' | 'pnpm' | 'yarn'
+export type PackageManager = 'npm' | 'bun' | 'pnpm' | 'yarn'
+
+export const SupportedPackageManagers = ['npm', 'yarn', 'pnpm', 'bun']
 
 export const EslintConfig = `import globals from 'globals'
 import eslint from '@eslint/js'
@@ -148,8 +150,7 @@ export function getPackageManager(): PackageManager {
 
 export const IS_BUN_RUNTIME = process.versions.bun
 
-export function getPackageExecutor(): string {
-	const packageManager = getPackageManager()
+export function getPackageExecutor(packageManager: PackageManager = getPackageManager()): string {
 	if (packageManager === 'yarn') {
 		return 'yarn'
 	} else if (packageManager === 'pnpm') {

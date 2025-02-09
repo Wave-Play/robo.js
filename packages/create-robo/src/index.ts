@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 import { Highlight, HighlightBlue, HighlightGreen, HighlightRed, Indent } from './core/constants.js'
 import Robo from './robo.js'
-import { IS_BUN_RUNTIME, getPackageManager, packageJson } from './utils.js'
+import { IS_BUN_RUNTIME, SupportedPackageManagers, getPackageManager, packageJson } from './utils.js'
 import path from 'node:path'
 import { input, select } from '@inquirer/prompts'
 import { color, logger } from 'robo.js'
 import { Command } from 'robo.js/cli.js'
 import { Env } from './env.js'
 import { getKitName } from './utils/kit.js'
+import type { PackageManager } from './utils.js'
 
 export type RoboKit = 'activity' | 'app' | 'bot' | 'plugin' | 'web'
 const RoboKits: RoboKit[] = ['activity', 'app', 'bot', 'plugin', 'web']
@@ -19,6 +20,7 @@ export interface CommandOptions {
 	javascript?: boolean
 	kit?: RoboKit
 	name?: string
+	['package-manager']?: PackageManager
 	plugin?: boolean
 	plugins?: string[]
 	template?: string
@@ -44,6 +46,7 @@ new Command('create-robo <projectName>')
 	.option('-js', '--javascript', 'create a Robo using JavaScript')
 	.option('-p', '--plugins', 'pre-install plugins along with the project')
 	.option('-P', '--plugin', 'create a Robo plugin instead of a project')
+	.option('-pm', '--package-manager', 'specify the package manager to use')
 	.option('-n', '--name', 'specify the name of the Robo project')
 	.option('-nf', '--no-features', 'skips the features selection')
 	.option('-ni', '--no-install', 'skips the installation of dependencies')
@@ -62,7 +65,7 @@ new Command('create-robo <projectName>')
 		}).debug(`Creating new Robo.js ${options.kit === 'plugin' ? 'plugin' : 'project'}...`)
 		logger.debug(`Using options: ${JSON.stringify(options)}`)
 		logger.debug(`Using args: ${JSON.stringify(args)}`)
-		logger.debug(`Package manager:`, getPackageManager())
+		logger.debug(`System package manager:`, getPackageManager())
 		logger.debug(`create-robo version:`, packageJson.version)
 		logger.debug(`Current working directory:`, process.cwd())
 
@@ -126,6 +129,18 @@ new Command('create-robo <projectName>')
 			options.kit = 'plugin'
 		}
 
+		// Got a custom package manager? Let's use it as long as it's supported
+		const packageManager = options['package-manager'] ?? getPackageManager()
+		logger.debug(`Using package manager:`, packageManager)
+
+		if (!SupportedPackageManagers.includes(packageManager)) {
+			logger.error(
+				`The package manager ${Highlight(packageManager)} is not supported. Please use one of:`,
+				SupportedPackageManagers.map(Highlight).join(', ')
+			)
+			return
+		}
+
 		// No kit specified, prompt the user to choose an adventure: bot or activity or webapp
 		if (!options.kit && !options.template) {
 			logger.log()
@@ -159,7 +174,7 @@ new Command('create-robo <projectName>')
 
 		// Check for updates
 		if (options.update) {
-			await checkUpdates()
+			await checkUpdates(packageManager)
 		}
 
 		// Infer project name from current directory if it was not provided
@@ -299,7 +314,6 @@ new Command('create-robo <projectName>')
 			await robo.bun()
 		}
 
-		const packageManager = getPackageManager()
 		logger.log(Indent.repeat(15))
 		logger.log(Indent, '🚀', HighlightGreen('Your Robo is ready!'))
 		logger.log(Indent, '   Say hello to this world,', color.bold(projectName) + '.')
@@ -355,7 +369,7 @@ new Command('create-robo <projectName>')
 	})
 	.parse()
 
-async function checkUpdates() {
+async function checkUpdates(packageManager: PackageManager) {
 	// Check NPM registry for updates
 	logger.debug(`Checking for updates...`)
 	const response = await fetch(`https://registry.npmjs.org/${packageJson.name}/latest`)
@@ -365,7 +379,6 @@ async function checkUpdates() {
 	// Compare versions
 	if (packageJson.version !== latestVersion) {
 		// Prepare commands
-		const packageManager = getPackageManager()
 		let commandName = 'npx'
 		if (packageManager === 'yarn') {
 			commandName = 'yarn dlx'
