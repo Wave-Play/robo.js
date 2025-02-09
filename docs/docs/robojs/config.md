@@ -239,6 +239,16 @@ timeouts: {
 }
 ```
 
+### `watcher`
+
+Customize the watcher options to suit your needs.
+
+```ts
+watcher: {
+	ignore: ['src/app', 'src/components', 'src/hooks']
+}
+```
+
 ## Sensitive data
 
 ⚠️ **Heads up:** Keep sensitive data like API keys or tokens out of your configuration file. Instead, use a `.env` file to store secrets and refer to them with `process.env`. Configuration files are meant to be pushed to version control (git), while secrets inside `.env` should stay off-limits.
