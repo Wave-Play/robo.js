@@ -1,0 +1,140 @@
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #0D1126;
+    display: grid;
+    place-items: center;
+}
+
+main {
+    display: flex;
+    flex-direction: column
+}
+
+button {
+    display: flex;
+    position: relative;
+    justify-content: center;
+    align-items: center;
+    transition: all 500ms;
+    color: white;
+    border: none;
+        background-color: transparent;
+        transition: all 250ms;
+}
+
+button > svg {
+    z-index: 1;
+    position: absolute;
+}
+
+button {
+     color: white;
+    font-weight: 600;
+    z-index: 2;
+    position: relative;
+    cursor: pointer;
+}
+
+button:hover {
+    transform: scale(1.1)
+}
+
+.svg_text {
+    display: flex;
+    position: relative;
+    justify-content: center;
+    align-items: center;
+    color: white;
+}
+
+.svg_text  > svg {
+    z-index: 1;
+    position: absolute;
+}
+
+.svg_text > span {
+    font-weight: 600;
+    z-index: 2;
+    position: relative;
+    cursor: pointer;
+}
+
+#top {
+display: flex;
+justify-content: space-between;
+}
+
+.prefix {
+ font-weight: bold;
+font-size: 20px;
+color: white;
+}
+
+.commandCount, .status { 
+ font-size: 16px;
+}
+
+#content {
+height: 300px;
+display: flex;
+flex-direction: column;
+justify-content: space-between;
+width: calc(100% - 40px);
+align-self: center;
+justify-content: center;
+}
+
+#middle {
+margin: 0 auto;
+gap: 20px;
+display: flex;
+flex-direction: column;
+}
+
+.memory_container {
+display: flex;
+}
+
+.memory_container > :nth-child(1) {
+font-weight: bold;
+font-size: 18px;
+}
+
+.cpu_container {
+display: flex;
+}
+
+.cpu_container > :nth-child(1) {
+font-weight: bold;
+font-size: 18px;
+}
+
+
+#helpBubble::after {
+content: attr(data-after-content);
+width: 200px;
+display: flex;
+background-color: #3d3a3a85;
+position: absolute;
+}
+
+.bubble {
+display: flex;
+gap: 20px;
+flex-direction: row;
+}
+
+.buttons { 
+
+display: flex;
+flex-direction: column;
+gap: 15px;
+}
+
+.terminal {
+width: 0px;
+height: 0px;
+}

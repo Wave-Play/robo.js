@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+      "target": "ES2022", // Modern JavaScript features
+      "module": "CommonJS", // Node.js uses CommonJS modules
+      "moduleResolution": "node", // Resolve modules in Node.js style
+      "outDir": "./dist/", // Output directory for compiled files
+      "rootDir": "./src/", // Source directory
+      "strict": true, // Enable all strict type-checking options
+      "esModuleInterop": true, // Allow compatibility with CommonJS modules
+      "skipLibCheck": true, // Skip type-checking of declaration files
+      "forceConsistentCasingInFileNames": true // Ensure consistent file naming
+    },
+    "include": ["src/back-end/**/*.ts"], // Include all TypeScript files in src
+    "exclude": ["node_modules", "dist"] // Exclude node_modules and output directories
+  }

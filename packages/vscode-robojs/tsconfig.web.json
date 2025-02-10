@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+      "target": "ESNext", // Use ES6 for broader browser compatibility
+      "module": "CommonJS", // Use ES modules for modern browsers
+      "moduleResolution": "node", // Resolve modules in Node.js style
+      "outDir": "./dist/", // Output directory for compiled files
+      "rootDir": "./src/", // Source directory
+      "strict": true, // Enable all strict type-checking options
+      "esModuleInterop": true, // Allow compatibility with CommonJS modules
+      "skipLibCheck": true, // Skip type-checking of declaration files
+      "forceConsistentCasingInFileNames": true, // Ensure consistent file naming
+      "lib": ["DOM", "ESNext"], // Include DOM and ES6 libraries for web development
+      "typeRoots": []
+    },
+    "include": ["./global.d.ts", "src/front-end/**/*.ts"], // Include all TypeScript files in src
+    "exclude": ["node_modules", "dist"] // Exclude node_modules and output directories
+  }
