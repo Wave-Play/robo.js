@@ -53,9 +53,11 @@ export async function buildVite() {
 	}
 	const { isTypeScript } = Compiler.isTypescriptProject()
 
-	const configPath = path.join(process.cwd(), 'config', `vite.${isTypeScript ? 'ts' : 'mjs'}`)
+	const configPath = path.join(process.cwd(), 'config', 'vite.ts')
 	if (existsSync(configPath)) {
 		config = (await loadConfigFromFile(configEnv, configPath))?.config
+	} else if (existsSync(path.join(process.cwd(), 'config', 'vite.mjs'))) {
+		config = (await loadConfigFromFile(configEnv, path.join(process.cwd(), 'config', 'vite.mjs')))?.config
 	} else if (existsSync(path.join(process.cwd(), `vite.config.${isTypeScript ? 'ts' : 'js'}`))) {
 		config = (await loadConfigFromFile(configEnv))?.config
 	} else {
