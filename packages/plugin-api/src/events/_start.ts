@@ -4,6 +4,7 @@ import { setConfig, setEngine } from '~/core/server.js'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { color, portal } from 'robo.js'
+import { Nanocore } from 'robo.js/unstable.js'
 import type { BaseEngine } from '~/engines/base.js'
 import type { Client } from 'discord.js'
 import type { ViteDevServer } from 'vite'
@@ -97,6 +98,8 @@ export default async (_client: Client, options: PluginConfig) => {
 
     // Let the rest of the app know that the server is ready
     globalThis.roboServer.ready = true
+		const localUrl = `http://${hostname}:${port}`
+		Nanocore.update('watch', { localUrl })
 }
 
 async function getDefaultEngine() {
