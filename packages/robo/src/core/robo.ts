@@ -13,7 +13,7 @@ import {
 	executeEventHandler
 } from './handlers.js'
 import { hasProperties, PackageDir } from '../cli/utils/utils.js'
-import { WatchFile } from '../cli/utils/watch-file.js'
+import { Nanocore } from '../internal/nanocore.js'
 import { Flashcore } from './flashcore.js'
 import { Mode } from './mode.js'
 import { loadState } from './state.js'
@@ -141,10 +141,10 @@ async function start(options?: StartOptions) {
 	await Portal.open()
 
 	// Let external watchers know we're ready to go
-	await WatchFile.set({
+	await Nanocore.set('watch', {
 		id: String(process.env.ROBO_INSTANCE_ID ?? process.pid),
 		startedAt: Date.now(),
-		status: 'online'
+		status: 'running'
 	})
 
 	// Notify lifecycle event handlers

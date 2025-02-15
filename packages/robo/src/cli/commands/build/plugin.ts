@@ -10,7 +10,7 @@ import { Mode, setMode } from '../../../core/mode.js'
 import { loadConfig, loadConfigPath } from '../../../core/config.js'
 import Watcher from '../../utils/watcher.js'
 import { buildPublicDirectory } from '../../utils/public.js'
-import { WatchFile } from '../../utils/watch-file.js'
+import { Nanocore } from '../../../internal/nanocore.js'
 
 const command = new Command('plugin')
 	.description('Builds your plugin for distribution.')
@@ -93,9 +93,9 @@ async function pluginAction(_args: string[], options: PluginCommandOptions) {
 	// Generate a watch file to indicate that the build was successful
 	// This is used to determine whether or not to restart the Robo
 	if (options.watch || options.dev) {
-		await WatchFile.set({ updatedAt: Date.now() })
+		await Nanocore.set('watch', { builtAt: Date.now(), status: 'built' })
 	} else {
-		await WatchFile.clean()
+		await Nanocore.remove('watch')
 	}
 
 	if (options.watch) {

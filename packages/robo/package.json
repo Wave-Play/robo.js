@@ -39,6 +39,8 @@
 		"cli.js",
 		"flashcore.d.ts",
 		"flashcore.js",
+		"unstable.d.ts",
+		"unstable.js",
 		"LICENSE",
 		"logger.d.ts",
 		"logger.js",
