@@ -1,3 +1,4 @@
+import type { LogLevel } from '../core/logger.js'
 import type { CommandContext, CommandIntegrationType } from './commands.js'
 
 export * from './api.js'
@@ -92,6 +93,7 @@ export interface RoboStateMessage extends RoboMessage {
 export interface SpiritMessage {
 	error?: unknown
 	event?: 'build' | 'get-state' | 'command' | 'ready' | 'restart' | 'set-state' | 'start' | 'stop'
+	logLevel?: LogLevel
 	payload?: unknown
 	state?: Record<string, unknown>
 	verbose?: boolean

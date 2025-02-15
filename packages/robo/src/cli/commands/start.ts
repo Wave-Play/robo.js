@@ -1,7 +1,7 @@
 import { Command } from '../utils/cli-handler.js'
-import fs from 'fs/promises'
+import fs from 'node:fs/promises'
 import path from 'node:path'
-import { logger } from '../../core/logger.js'
+import { logger, LogLevel } from '../../core/logger.js'
 import { hasFilesRecursively } from '../utils/fs-helper.js'
 import { color, composeColors } from '../../core/color.js'
 import { loadConfig } from '../../core/config.js'
@@ -11,6 +11,7 @@ import { Indent } from '../../core/constants.js'
 
 const command = new Command('start')
 	.description('Starts your bot in production mode.')
+	.option('-l', '--log-level', 'specify the log level to use (debug, info, warn, error)')
 	.option('-m', '--mode', 'specify the mode(s) to run in (dev, beta, prod, etc...)')
 	.option('-h', '--help', 'Shows the available command options')
 	.option('-s', '--silent', 'do not print anything')
@@ -19,6 +20,7 @@ const command = new Command('start')
 export default command
 
 interface StartCommandOptions {
+	['log-level']?: LogLevel
 	mode?: string
 	silent?: boolean
 	verbose?: boolean
@@ -97,6 +99,7 @@ async function startAction(_args: string[], options: StartCommandOptions) {
 	// Start Roboooooooo!! :D (dynamic to avoid premature process hooks)
 	const { Robo } = await import('../../core/robo.js')
 	Robo.start({
+		logLevel: options['log-level'],
 		shard: !!config.experimental?.shard
 	})
 }

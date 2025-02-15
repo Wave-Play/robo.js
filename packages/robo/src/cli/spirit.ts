@@ -66,7 +66,8 @@ async function run(message: SpiritMessage): Promise<unknown> {
 		return 'ok'
 	} else if (message.event === 'start') {
 		const { Robo } = await import('../core/robo.js')
-		Robo.start({ stateLoad }).catch((error) => {
+		const logLevel = message.logLevel
+		Robo.start({ logLevel, stateLoad }).catch((error) => {
 			logger.error(error)
 			logger.wait(
 				`Robo failed to start, please check the logs for more information. Waiting for changes before retrying...`

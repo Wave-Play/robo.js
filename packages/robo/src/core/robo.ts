@@ -1,10 +1,10 @@
 import { color } from './color.js'
 import { registerProcessEvents } from './process.js'
-import { Compiler } from './../cli/utils/compiler.js'
+import { Compiler } from '../cli/utils/compiler.js'
 import { Client, Collection, Events } from 'discord.js'
 import { getConfig, loadConfig } from './config.js'
 import { FLASHCORE_KEYS, discordLogger } from './constants.js'
-import { logger } from './logger.js'
+import { logger, LogLevel } from './logger.js'
 import { env, Env } from './env.js'
 import {
 	executeAutocompleteHandler,
@@ -49,6 +49,7 @@ let plugins: Collection<string, PluginData>
 
 interface StartOptions {
 	client?: Client
+	logLevel?: LogLevel
 	shard?: string | boolean
 	stateLoad?: Promise<void>
 }
@@ -76,7 +77,7 @@ export async function build(options?: BuildOptions) {
  * @returns A promise that resolves when Robo has started
  */
 async function start(options?: StartOptions) {
-	const { client: optionsClient, shard, stateLoad } = options ?? {}
+	const { client: optionsClient, logLevel, shard, stateLoad } = options ?? {}
 
 	// Important! Register process events before doing anything else
 	// This ensures the "ready" signal is sent to the parent process
@@ -88,7 +89,7 @@ async function start(options?: StartOptions) {
 	logger({
 		drain: config?.logger?.drain,
 		enabled: config?.logger?.enabled,
-		level: config?.logger?.level
+		level: logLevel ?? config?.logger?.level
 	}).debug('Starting Robo...')
 
 	// Wanna shard? Delegate to the shard manager and await recursive call

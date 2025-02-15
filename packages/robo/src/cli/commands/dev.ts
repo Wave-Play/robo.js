@@ -1,6 +1,6 @@
 import { Command } from '../utils/cli-handler.js'
 import { ChildProcess, spawn } from 'child_process'
-import { logger } from '../../core/logger.js'
+import { logger, LogLevel } from '../../core/logger.js'
 import { DEFAULT_CONFIG, FLASHCORE_KEYS, HighlightGreen, Indent, cloudflareLogger } from '../../core/constants.js'
 import { getConfigPaths, loadConfig, loadConfigPath } from '../../core/config.js'
 import { installCloudflared, isCloudflaredInstalled, startCloudflared, stopCloudflared } from '../utils/cloudflared.js'
@@ -21,6 +21,7 @@ import type { Config, SpiritMessage } from '../../types/index.js'
 const command = new Command('dev')
 	.description('Ready, set, code your bot to life! Starts development mode.')
 	.option('-h', '--help', 'Shows the available command options')
+	.option('-l', '--log-level', 'specify the log level to use (debug, info, warn, error)')
 	.option('-m', '--mode', 'specify the mode(s) to run in (dev, beta, prod, etc...)')
 	.option('-s', '--silent', 'do not print anything')
 	.option('-t', '--tunnel', 'expose your local server to the internet')
@@ -29,6 +30,7 @@ const command = new Command('dev')
 export default command
 
 interface DevCommandOptions {
+	['log-level']?: LogLevel
 	mode?: string
 	silent?: boolean
 	tunnel?: boolean
@@ -160,6 +162,7 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 	if (buildSuccess) {
 		roboSpirit = await spirits.newTask<string>({
 			event: 'start',
+			logLevel: options['log-level'],
 			onExit: (exitCode: number) => {
 				if (exitCode !== 0) {
 					logger.error(
