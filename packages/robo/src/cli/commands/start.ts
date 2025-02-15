@@ -11,6 +11,7 @@ import { Indent } from '../../core/constants.js'
 
 const command = new Command('start')
 	.description('Starts your bot in production mode.')
+	.option('-id', '--instance-id', 'specify the instance ID to use')
 	.option('-l', '--log-level', 'specify the log level to use (debug, info, warn, error)')
 	.option('-m', '--mode', 'specify the mode(s) to run in (dev, beta, prod, etc...)')
 	.option('-h', '--help', 'Shows the available command options')
@@ -20,6 +21,7 @@ const command = new Command('start')
 export default command
 
 interface StartCommandOptions {
+	['instance-id']?: string
 	['log-level']?: LogLevel
 	mode?: string
 	silent?: boolean
@@ -37,6 +39,11 @@ async function startAction(_args: string[], options: StartCommandOptions) {
 	// Set NODE_ENV if not already set
 	if (!process.env.NODE_ENV) {
 		process.env.NODE_ENV = 'production'
+	}
+
+	// Got an instance ID? Use it
+	if (options['instance-id']) {
+		process.env.ROBO_INSTANCE_ID = options['instance-id']
 	}
 
 	// Make sure environment variables are loaded

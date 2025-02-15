@@ -21,6 +21,7 @@ import type { Config, SpiritMessage } from '../../types/index.js'
 const command = new Command('dev')
 	.description('Ready, set, code your bot to life! Starts development mode.')
 	.option('-h', '--help', 'Shows the available command options')
+	.option('-id', '--instance-id', 'specify the instance ID to use')
 	.option('-l', '--log-level', 'specify the log level to use (debug, info, warn, error)')
 	.option('-m', '--mode', 'specify the mode(s) to run in (dev, beta, prod, etc...)')
 	.option('-s', '--silent', 'do not print anything')
@@ -30,6 +31,7 @@ const command = new Command('dev')
 export default command
 
 interface DevCommandOptions {
+	['instance-id']?: string
 	['log-level']?: LogLevel
 	mode?: string
 	silent?: boolean
@@ -58,6 +60,12 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 	// Make sure environment variables are loaded for CLI
 	const defaultMode = Mode.get()
 	await Env.load({ mode: defaultMode })
+
+	// Got an instance ID? Use it
+	if (options['instance-id']) {
+		process.env.ROBO_INSTANCE_ID = options['instance-id']
+		Env.data().ROBO_INSTANCE_ID = options['instance-id']
+	}
 
 	// Handle mode(s)
 	const { shardModes } = setMode(options.mode)

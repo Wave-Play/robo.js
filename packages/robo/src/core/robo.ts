@@ -13,6 +13,7 @@ import {
 	executeEventHandler
 } from './handlers.js'
 import { hasProperties, PackageDir } from '../cli/utils/utils.js'
+import { WatchFile } from '../cli/utils/watch-file.js'
 import { Flashcore } from './flashcore.js'
 import { Mode } from './mode.js'
 import { loadState } from './state.js'
@@ -138,6 +139,13 @@ async function start(options?: StartOptions) {
 
 	// Load the portal (commands, context, events)
 	await Portal.open()
+
+	// Let external watchers know we're ready to go
+	await WatchFile.set({
+		id: String(process.env.ROBO_INSTANCE_ID ?? process.pid),
+		startedAt: Date.now(),
+		status: 'online'
+	})
 
 	// Notify lifecycle event handlers
 	await executeEventHandler(plugins, '_start', client)
