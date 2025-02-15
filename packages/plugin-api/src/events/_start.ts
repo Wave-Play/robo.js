@@ -55,10 +55,11 @@ export default async (_client: Client, options: PluginConfig) => {
     } else if (process.env.NODE_ENV !== 'production' && (await hasDependency('vite', true))) {
         try {
             const { createServer: createViteServer } = await import('vite')
+            const viteConfigPathTs = path.join(process.cwd(), 'config', 'vite.ts')
             const viteConfigPath = path.join(process.cwd(), 'config', 'vite.mjs')
 
             vite = await createViteServer({
-                configFile: existsSync(viteConfigPath) ? viteConfigPath : undefined,
+                configFile: existsSync(viteConfigPathTs) ? viteConfigPathTs : existsSync(viteConfigPath) ? viteConfigPath : undefined,
                 server: {
                     hmr: {
                         path: '/hmr',
