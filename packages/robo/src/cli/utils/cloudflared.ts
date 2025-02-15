@@ -4,6 +4,7 @@
  */
 import { color, composeColors } from './../../core/color.js'
 import { cloudflareLogger } from '../../core/constants.js'
+import { Nanocore } from '../../internal/nanocore.js'
 import { IS_WINDOWS, waitForExit } from './utils.js'
 import { execSync, spawn } from 'node:child_process'
 import fs from 'node:fs'
@@ -74,7 +75,7 @@ export function isCloudflaredInstalled(to = DEFAULT_BIN_PATH): boolean {
 }
 
 export function startCloudflared(url: string) {
-	const ESCAPED_BIN_PATH = IS_WINDOWS ? `"${DEFAULT_BIN_PATH}"`: DEFAULT_BIN_PATH;
+	const ESCAPED_BIN_PATH = IS_WINDOWS ? `"${DEFAULT_BIN_PATH}"` : DEFAULT_BIN_PATH
 	cloudflareLogger.event(`Starting tunnel...`)
 	cloudflareLogger.debug(ESCAPED_BIN_PATH + ' tunnel --url ' + url)
 	const childProcess = spawn(ESCAPED_BIN_PATH, ['tunnel', '--url', url, '--no-autoupdate'], {
@@ -90,6 +91,7 @@ export function startCloudflared(url: string) {
 		const tunnelUrl = extractTunnelUrl(lastMessage)
 		if (tunnelUrl && !Ignore.includes(tunnelUrl) && !lastMessage.includes('Request failed')) {
 			cloudflareLogger.ready(`Tunnel URL:`, composeColors(color.bold, color.blue)(tunnelUrl))
+			Nanocore.update('watch', { tunnelUrl })
 		}
 	}
 	childProcess.stdout.on('data', onData)
