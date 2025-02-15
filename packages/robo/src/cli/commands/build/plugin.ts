@@ -4,14 +4,13 @@ import { generateManifest } from '../../utils/manifest.js'
 import { logger } from '../../../core/logger.js'
 import { getProjectSize, printBuildSummary } from '../../utils/build-summary.js'
 import { buildAsync } from '../dev.js'
-import fs from 'node:fs/promises'
 import path from 'node:path'
 import { Env } from '../../../core/env.js'
 import { Mode, setMode } from '../../../core/mode.js'
 import { loadConfig, loadConfigPath } from '../../../core/config.js'
-import { hasProperties } from '../../utils/utils.js'
 import Watcher from '../../utils/watcher.js'
 import { buildPublicDirectory } from '../../utils/public.js'
+import { WatchFile } from '../../utils/watch-file.js'
 
 const command = new Command('plugin')
 	.description('Builds your plugin for distribution.')
@@ -94,30 +93,9 @@ async function pluginAction(_args: string[], options: PluginCommandOptions) {
 	// Generate a watch file to indicate that the build was successful
 	// This is used to determine whether or not to restart the Robo
 	if (options.watch || options.dev) {
-		const watchFile = path.join(process.cwd(), '.robo', 'watch.mjs')
-		const watchContents = `export default ${JSON.stringify(
-			{
-				updatedAt: Date.now()
-			},
-			null,
-			'\t'
-		)}`
-
-		await fs.writeFile(watchFile, watchContents)
+		await WatchFile.set({ updatedAt: Date.now() })
 	} else {
-		// Clean up watch file if it exists
-		const watchFile = path.join(process.cwd(), '.robo', 'watch.mjs')
-
-		try {
-			const exists = await fs.stat(watchFile)
-			if (exists.isFile()) {
-				await fs.rm(watchFile)
-			}
-		} catch (e) {
-			if (hasProperties<{ code: unknown }>(e, ['code']) && e.code !== 'ENOENT') {
-				logger.warn(`Failed to clean up watch file! Please delete it manually at ${watchFile}`)
-			}
-		}
+		await WatchFile.clean()
 	}
 
 	if (options.watch) {

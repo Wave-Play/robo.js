@@ -1,5 +1,6 @@
 import { color } from '../../core/color.js'
-import fs from 'node:fs/promises'
+import fs, { readFile } from 'node:fs/promises'
+import { existsSync } from 'node:fs'
 import { DEFAULT_CONFIG } from '../../core/constants.js'
 import { CommandConfig, Config, SageOptions } from '../../types/index.js'
 import { getConfig } from '../../core/config.js'
@@ -9,10 +10,9 @@ import { promisify } from 'node:util'
 import { logger } from '../../core/logger.js'
 import path from 'node:path'
 import os from 'node:os'
-import { fileURLToPath, pathToFileURL } from 'node:url'
+import { fileURLToPath } from 'node:url'
 import { IS_BUN_PM } from './runtime-utils.js'
 import type { Pod } from '../../roboplay/types.js'
-import { existsSync } from 'node:fs'
 
 export const __DIRNAME = path.dirname(fileURLToPath(import.meta.url))
 export const PackageDir = path.resolve(__DIRNAME, '..', '..', '..')
@@ -263,7 +263,7 @@ export function getSage(commandConfig?: CommandConfig, config?: Config): SageOpt
 }
 
 interface WatchedPlugin {
-	importPath: string
+	data: unknown
 	name: string
 }
 
@@ -275,12 +275,13 @@ export async function getWatchedPlugins(config: Config) {
 	for (const name of pluginNames) {
 		try {
 			const packagePath = await findPackagePath(name, process.cwd())
-			const watchFilePath = path.join(packagePath, '.robo', 'watch.mjs')
-			const importPath = pathToFileURL(path.join(process.cwd(), watchFilePath)).toString()
+			const watchFilePath = path.join(packagePath, '.robo', 'watch.json')
 
-			// Ensure the file exists and is valid before adding it to the list
-			await import(importPath)
-			watchedPlugins[watchFilePath] = { importPath, name }
+			// Watched plugins must have a watch.json file
+			if (existsSync(watchFilePath)) {
+				const data = JSON.parse(await readFile(watchFilePath, 'utf-8'))
+				watchedPlugins[watchFilePath] = { data, name }
+			}
 		} catch (error) {
 			// Do nothing
 		}
