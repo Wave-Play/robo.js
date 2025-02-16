@@ -78,114 +78,117 @@ export async function build(options?: BuildOptions) {
  * @returns A promise that resolves when Robo has started
  */
 async function start(options?: StartOptions) {
-	const { client: optionsClient, logLevel, shard, stateLoad } = options ?? {}
+	const id = String(process.env.ROBO_INSTANCE_ID ?? process.pid)
 
-	// Important! Register process events before doing anything else
-	// This ensures the "ready" signal is sent to the parent process
-	registerProcessEvents()
+	try {
+		const { client: optionsClient, logLevel, shard, stateLoad } = options ?? {}
 
-	// Load config and manifest up next!
-	// This makes them available globally via getConfig() and getManifest()
-	const [config] = await Promise.all([loadConfig(), Compiler.useManifest()])
-	logger({
-		drain: config?.logger?.drain,
-		enabled: config?.logger?.enabled,
-		level: logLevel ?? config?.logger?.level
-	}).debug('Starting Robo...')
+		// Important! Register process events before doing anything else
+		// This ensures the "ready" signal is sent to the parent process
+		registerProcessEvents()
 
-	// Wanna shard? Delegate to the shard manager and await recursive call
-	if (shard && config.experimental?.disableBot !== true) {
-		discordLogger.debug('Sharding is enabled. Delegating start to shard manager...')
-		const { ShardingManager } = await import('discord.js')
-		const shardPath = typeof shard === 'string' ? shard : path.join(PackageDir, 'dist', 'cli', 'shard.js')
-		const options = typeof config.experimental?.shard === 'object' ? config.experimental.shard : {}
-		const manager = new ShardingManager(shardPath, { ...options, token: env.get('discord.token') })
+		// Load config and manifest up next!
+		// This makes them available globally via getConfig() and getManifest()
+		const [config] = await Promise.all([loadConfig(), Compiler.useManifest()])
+		logger({
+			drain: config?.logger?.drain,
+			enabled: config?.logger?.enabled,
+			level: logLevel ?? config?.logger?.level
+		}).debug('Starting Robo...')
 
-		manager.on('shardCreate', (shard) => discordLogger.debug(`Launched shard`, shard.id))
-		const result = await manager.spawn()
-		discordLogger.debug('Spawned', result.size, 'shard(s)')
-		return
-	}
+		// Wanna shard? Delegate to the shard manager and await recursive call
+		if (shard && config.experimental?.disableBot !== true) {
+			discordLogger.debug('Sharding is enabled. Delegating start to shard manager...')
+			const { ShardingManager } = await import('discord.js')
+			const shardPath = typeof shard === 'string' ? shard : path.join(PackageDir, 'dist', 'cli', 'shard.js')
+			const options = typeof config.experimental?.shard === 'object' ? config.experimental.shard : {}
+			const manager = new ShardingManager(shardPath, { ...options, token: env.get('discord.token') })
 
-	const mode = Mode.get()
-	await Env.load({ mode })
-	await Flashcore.$init({ keyvOptions: config.flashcore?.keyv })
-
-	// Wait for states to be loaded
-	if (stateLoad) {
-		// Await external state promise if provided
-		logger.debug('Waiting for state...')
-		await stateLoad
-	} else {
-		// Load state directly otherwise
-		const stateStart = Date.now()
-		const state = await Flashcore.get<Record<string, unknown>>(FLASHCORE_KEYS.state)
-
-		if (state) {
-			loadState(state)
-		}
-		logger.debug(`State loaded in ${Date.now() - stateStart}ms`)
-	}
-
-	// Load plugin options
-	const plugins = loadPluginData()
-
-	// Create the new client instance (unless disabled)
-	if (config.experimental?.disableBot !== true) {
-		client = optionsClient ?? new Client(config.clientOptions)
-	} else {
-		logger.debug(`Bot is disabled, skipping client setup...`)
-	}
-
-	// Load the portal (commands, context, events)
-	await Portal.open()
-
-	// Let external watchers know we're ready to go
-	await Nanocore.set('watch', {
-		id: String(process.env.ROBO_INSTANCE_ID ?? process.pid),
-		startedAt: Date.now(),
-		status: 'running'
-	})
-
-	// Notify lifecycle event handlers
-	await executeEventHandler(plugins, '_start', client)
-
-	if (config.experimental?.disableBot !== true) {
-		// Define event handlers
-		for (const key of portal.events.keys()) {
-			const onlyAuto = portal.events.get(key).every((event: HandlerRecord<Event>) => event.auto)
-			client.on(key, async (...args) => {
-				if (!onlyAuto) {
-					discordLogger.event(`Event received: ${color.bold(key)}`)
-				}
-				discordLogger.trace('Event args:', args)
-
-				// Notify event handler
-				executeEventHandler(plugins, key, ...args)
-			})
+			manager.on('shardCreate', (shard) => discordLogger.debug(`Launched shard`, shard.id))
+			const result = await manager.spawn()
+			discordLogger.debug('Spawned', result.size, 'shard(s)')
+			return
 		}
 
-		// Forward command interactions to our fancy handlers
-		client.on(Events.InteractionCreate, async (interaction) => {
-			if (interaction.isChatInputCommand()) {
-				const commandKey = getCommandKey(interaction)
-				discordLogger.event(`Received slash command interaction: ${color.bold('/' + commandKey)}`)
-				discordLogger.trace('Slash command interaction:', interaction.toJSON())
-				await executeCommandHandler(interaction, commandKey)
-			} else if (interaction.isAutocomplete()) {
-				const commandKey = getCommandKey(interaction)
-				discordLogger.event(`Received autocomplete interaction for: ${color.bold(interaction.commandName)}`)
-				discordLogger.trace('Autocomplete interaction:', interaction.toJSON())
-				await executeAutocompleteHandler(interaction, commandKey)
-			} else if (interaction.isContextMenuCommand()) {
-				discordLogger.event(`Received context menu interaction: ${color.bold(interaction.commandName)}`)
-				discordLogger.trace('Context menu interaction:', interaction.toJSON())
-				await executeContextHandler(interaction, interaction.commandName)
+		const mode = Mode.get()
+		await Env.load({ mode })
+		await Flashcore.$init({ keyvOptions: config.flashcore?.keyv })
+
+		// Wait for states to be loaded
+		if (stateLoad) {
+			// Await external state promise if provided
+			logger.debug('Waiting for state...')
+			await stateLoad
+		} else {
+			// Load state directly otherwise
+			const stateStart = Date.now()
+			const state = await Flashcore.get<Record<string, unknown>>(FLASHCORE_KEYS.state)
+
+			if (state) {
+				loadState(state)
 			}
-		})
+			logger.debug(`State loaded in ${Date.now() - stateStart}ms`)
+		}
 
-		// Log in to Discord with your client's token
-		await client.login(env.get('discord.token'))
+		// Load plugin options
+		const plugins = loadPluginData()
+
+		// Create the new client instance (unless disabled)
+		if (config.experimental?.disableBot !== true) {
+			client = optionsClient ?? new Client(config.clientOptions)
+		} else {
+			logger.debug(`Bot is disabled, skipping client setup...`)
+		}
+
+		// Load the portal (commands, context, events)
+		await Portal.open()
+
+		// Let external watchers know we're ready to go
+		await Nanocore.set('watch', { id, startedAt: Date.now(), status: 'running' })
+
+		// Notify lifecycle event handlers
+		await executeEventHandler(plugins, '_start', client)
+
+		if (config.experimental?.disableBot !== true) {
+			// Define event handlers
+			for (const key of portal.events.keys()) {
+				const onlyAuto = portal.events.get(key).every((event: HandlerRecord<Event>) => event.auto)
+				client.on(key, async (...args) => {
+					if (!onlyAuto) {
+						discordLogger.event(`Event received: ${color.bold(key)}`)
+					}
+					discordLogger.trace('Event args:', args)
+
+					// Notify event handler
+					executeEventHandler(plugins, key, ...args)
+				})
+			}
+
+			// Forward command interactions to our fancy handlers
+			client.on(Events.InteractionCreate, async (interaction) => {
+				if (interaction.isChatInputCommand()) {
+					const commandKey = getCommandKey(interaction)
+					discordLogger.event(`Received slash command interaction: ${color.bold('/' + commandKey)}`)
+					discordLogger.trace('Slash command interaction:', interaction.toJSON())
+					await executeCommandHandler(interaction, commandKey)
+				} else if (interaction.isAutocomplete()) {
+					const commandKey = getCommandKey(interaction)
+					discordLogger.event(`Received autocomplete interaction for: ${color.bold(interaction.commandName)}`)
+					discordLogger.trace('Autocomplete interaction:', interaction.toJSON())
+					await executeAutocompleteHandler(interaction, commandKey)
+				} else if (interaction.isContextMenuCommand()) {
+					discordLogger.event(`Received context menu interaction: ${color.bold(interaction.commandName)}`)
+					discordLogger.trace('Context menu interaction:', interaction.toJSON())
+					await executeContextHandler(interaction, interaction.commandName)
+				}
+			})
+
+			// Log in to Discord with your client's token
+			await client.login(env.get('discord.token'))
+		}
+	} catch (error) {
+		await Nanocore.update('watch', { id, status: 'attention' })
+		throw error
 	}
 }
 
@@ -195,11 +198,17 @@ async function start(options?: StartOptions) {
  * @param exitCode - The exit code to use when stopping Robo
  */
 async function stop(exitCode = 0) {
+	await Nanocore.update('watch', { status: exitCode === 0 ? 'stopping' : 'error' })
+
 	try {
 		// Notify lifecycle handler
 		await executeEventHandler(plugins, '_stop', client)
 		client?.destroy()
 		logger.debug(`Stopped Robo at ` + new Date().toLocaleString())
+
+		if (exitCode === 0) {
+			await Nanocore.update('watch', { status: 'stopped' })
+		}
 	} finally {
 		if (isMainThread) {
 			process.exit(exitCode)
@@ -227,6 +236,7 @@ async function restart() {
 		if (isMainThread) {
 			process.exit(0)
 		} else {
+			await Nanocore.update('watch', { status: 'restarting' })
 			await logger.flush()
 			parentPort?.postMessage({ event: 'stop', payload: 'exit' })
 			parentPort?.close()

@@ -16,6 +16,7 @@ import { getPackageExecutor, getPackageManager } from '../utils/runtime-utils.js
 import { Mode, setMode } from '../../core/mode.js'
 import { Compiler } from '../utils/compiler.js'
 import { Env } from '../../core/env.js'
+import { Nanocore } from '../../internal/nanocore.js'
 import type { Config, SpiritMessage } from '../../types/index.js'
 
 const command = new Command('dev')
@@ -193,6 +194,8 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 		spirits.on(roboSpirit, restartCallback)
 		spirits.send(roboSpirit, { event: 'set-state', state: persistedState })
 	} else {
+		const id = String(process.env.ROBO_INSTANCE_ID ?? process.pid)
+		await Nanocore.update('watch', { id, status: 'attention' })
 		logger.wait(`Build failed! Waiting for changes before retrying...`)
 	}
 
@@ -452,6 +455,8 @@ async function rebuildRobo(spiritId: string, config: Config, verbose: boolean, c
 
 	// Return null for the bot if the build failed so we can retry later
 	if (!success) {
+		const id = String(process.env.ROBO_INSTANCE_ID ?? process.pid)
+		await Nanocore.update('watch', { id, status: 'attention' })
 		logger.wait(`Build failed! Waiting for changes before retrying...`)
 		return null
 	}
