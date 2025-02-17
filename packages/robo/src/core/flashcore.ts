@@ -216,7 +216,7 @@ export const Flashcore = {
 
 		// Prevent multiple initializations
 		if (_initialized) {
-			logger.warn('Flashcore has already been initialized. Ignoring...')
+			logger.debug('Flashcore has already been initialized. Ignoring...')
 			return
 		}
 

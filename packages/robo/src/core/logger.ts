@@ -197,7 +197,7 @@ function updateStyle(style: Record<string, string>, code: string): Record<string
 			newStyle['color'] = '#FF4081'
 			break
 		case '36':
-			newStyle['color'] = '#00BCD4'
+			newStyle['color'] = '#00E5FF'
 			break
 		case '37':
 			newStyle['color'] = 'white'
@@ -249,7 +249,7 @@ function updateStyle(style: Record<string, string>, code: string): Record<string
 			newStyle['background-color'] = '#E91E63'
 			break
 		case '46':
-			newStyle['background-color'] = '#00BCD4'
+			newStyle['background-color'] = '#00E5FF'
 			break
 		case '47':
 			newStyle['background-color'] = 'white'
