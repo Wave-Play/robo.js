@@ -78,7 +78,8 @@ export async function build(options?: BuildOptions) {
  * @returns A promise that resolves when Robo has started
  */
 async function start(options?: StartOptions) {
-	const id = String(process.env.ROBO_INSTANCE_ID ?? process.pid)
+	const pid = process.pid
+	const id = String(process.env.ROBO_INSTANCE_ID ?? pid)
 
 	try {
 		const { client: optionsClient, logLevel, shard, stateLoad } = options ?? {}
@@ -144,7 +145,7 @@ async function start(options?: StartOptions) {
 		await Portal.open()
 
 		// Let external watchers know we're ready to go
-		await Nanocore.set('watch', { id, startedAt: Date.now(), status: 'running' })
+		await Nanocore.set('watch', { id, pid, startedAt: Date.now(), status: 'running' })
 
 		// Notify lifecycle event handlers
 		await executeEventHandler(plugins, '_start', client)
