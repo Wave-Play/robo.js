@@ -1,4 +1,3 @@
-import { inspect } from 'node:util'
 import { color } from './color.js'
 import { getModeColor } from './mode.js'
 
@@ -41,7 +40,131 @@ const pendingDrains = new Set<Promise<void>>()
 
 type LogStream = typeof process.stderr | typeof process.stdout
 
+const AnsiCss: Record<string, string> = {
+	'1': 'font-weight: bold',
+	'22': 'font-weight: normal',
+	'30': 'color: black',
+	'31': 'color: #F44336',
+	'32': 'color: #4CAF50',
+	'33': 'color: #FFEB3B',
+	'34': 'color: #2196F3',
+	'35': 'color: #E91E63',
+	'36': 'color: #00BCD4',
+	'37': 'color: white',
+	'90': 'color: #9E9E9E',
+	'39': 'color: inherit'
+}
+
+function isBrowser(): boolean {
+	return typeof window !== 'undefined' && typeof document !== 'undefined'
+}
+
+/**
+ * Dynamically imports and caches the Node.js `inspect` function.
+ * This function is concurrency safe and always returns the same singleton.
+ */
+let cachedInspect: typeof import('node:util').inspect | null = null
+let cachedInspectPromise: Promise<typeof import('node:util').inspect> | null = null
+
+function getInspect(): Promise<typeof import('node:util').inspect> {
+	if (cachedInspect) {
+		return Promise.resolve(cachedInspect)
+	}
+	if (cachedInspectPromise) {
+		return cachedInspectPromise
+	}
+	cachedInspectPromise = import('node:util').then((module) => {
+		cachedInspect = module.inspect
+		return cachedInspect
+	})
+	return cachedInspectPromise
+}
+
+/**
+ * A minimal parser that looks for a few ANSI color codes
+ * and converts them into `%c` placeholders plus a corresponding CSS string.
+ */
+function ansiToBrowserFormat(text: string): { fmt: string; css: string[] } {
+	// We'll build a single string with `%c` placeholders plus an array of CSS styles
+	let fmt = ''
+	const css: string[] = []
+
+	// Regex to match something like "\x1b[34m" or "\u001b[34m"
+	// eslint-disable-next-line no-control-regex
+	const pattern = /\x1b\[(\d+)m/g
+	let lastIndex = 0
+	let match: RegExpExecArray | null
+
+	while ((match = pattern.exec(text)) !== null) {
+		// Everything before this match is plain text
+		const chunk = text.slice(lastIndex, match.index)
+		if (chunk) {
+			// Escape % so it doesn't mess up placeholders
+			fmt += chunk.replace(/%/g, '%%')
+		}
+
+		// Apply the ANSI code to the next placeholder
+		fmt += '%c'
+		const code = match[1]
+		css.push(AnsiCss[code] ?? 'color: inherit')
+		lastIndex = pattern.lastIndex
+	}
+
+	// Add any trailing text after the last ANSI code
+	if (lastIndex < text.length) {
+		fmt += text.slice(lastIndex).replace(/%/g, '%%')
+	}
+
+	// If there are no ANSI codes at all, return the original text as plain
+	if (css.length === 0) {
+		return { fmt: text, css: [] }
+	}
+
+	return { fmt, css }
+}
+
+/**
+ * Writes log data. Do not call this in browser environments.
+ * This uses the dynamically imported `inspect` function and writes to the provided stream.
+ */
+async function writeLog(stream: LogStream, ...data: unknown[]): Promise<void> {
+	const inspect = await getInspect()
+	const parts = data.map((item) => {
+		if (typeof item === 'object' || item instanceof Error || Array.isArray(item)) {
+			return inspect(item, { colors: true, depth: null })
+		}
+
+		return item
+	})
+
+	return new Promise<void>((resolve, reject) => {
+		stream.write(parts.join(' ') + '\n', 'utf8', (error) => {
+			if (error) {
+				reject(error)
+			} else {
+				resolve()
+			}
+		})
+	})
+}
+
+/**
+ * A drain function that writes logs either to stdout/stderr (in Node.js) or uses console.log/error (in browsers).
+ */
 function consoleDrain(_logger: Logger, level: string, ...data: unknown[]): Promise<void> {
+	if (isBrowser()) {
+		const text = data.join(' ')
+		const { fmt, css } = ansiToBrowserFormat(text)
+
+		if (level === 'warn' || level === 'error') {
+			console.error(fmt, ...css)
+		} else {
+			console.log(fmt, ...css)
+		}
+
+		return Promise.resolve()
+	}
+
 	switch (level) {
 		case 'trace':
 		case 'debug':
@@ -55,22 +178,6 @@ function consoleDrain(_logger: Logger, level: string, ...data: unknown[]): Promi
 		default:
 			return writeLog(process.stdout, ...data)
 	}
-}
-
-function writeLog(stream: LogStream, ...data: unknown[]) {
-	return new Promise<void>((resolve, reject) => {
-		const parts = data?.map((item) => {
-			if (typeof item === 'object' || item instanceof Error || Array.isArray(item)) {
-				return inspect(item, { colors: true, depth: null })
-			}
-			return item
-		})
-
-		stream.write(parts?.join(' ') + '\n', 'utf8', (error) => {
-			if (error) reject(error)
-			else resolve()
-		})
-	})
 }
 
 const DEFAULT_MAX_ENTRIES = 100
