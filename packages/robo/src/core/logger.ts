@@ -40,21 +40,6 @@ const pendingDrains = new Set<Promise<void>>()
 
 type LogStream = typeof process.stderr | typeof process.stdout
 
-const AnsiCss: Record<string, string> = {
-	'1': 'font-weight: bold',
-	'22': 'font-weight: normal',
-	'30': 'color: black',
-	'31': 'color: #F44336',
-	'32': 'color: #4CAF50',
-	'33': 'color: #FFEB3B',
-	'34': 'color: #2196F3',
-	'35': 'color: #E91E63',
-	'36': 'color: #00BCD4',
-	'37': 'color: white',
-	'90': 'color: #9E9E9E',
-	'39': 'color: inherit'
-}
-
 function isBrowser(): boolean {
 	return typeof window !== 'undefined' && typeof document !== 'undefined'
 }
@@ -81,46 +66,284 @@ function getInspect(): Promise<typeof import('node:util').inspect> {
 }
 
 /**
- * A minimal parser that looks for a few ANSI color codes
- * and converts them into `%c` placeholders plus a corresponding CSS string.
+ * Given a hex color (e.g. "#F44336"), returns a dimmed version by multiplying its
+ * RGB components by the given factor (default 0.6). If the input isn't in hex form,
+ * the original string is returned.
+ */
+function dimColor(col: string, factor: number = 0.6): string {
+	if (col.startsWith('#') && (col.length === 7 || col.length === 4)) {
+		if (col.length === 7) {
+			const r = parseInt(col.slice(1, 3), 16)
+			const g = parseInt(col.slice(3, 5), 16)
+			const b = parseInt(col.slice(5, 7), 16)
+			const nr = Math.round(r * factor)
+			const ng = Math.round(g * factor)
+			const nb = Math.round(b * factor)
+
+			return '#' + [nr, ng, nb].map((x) => x.toString(16).padStart(2, '0')).join('')
+		} else if (col.length === 4) {
+			// Expand short hex notation (#rgb)
+			const r = parseInt(col.charAt(1) + col.charAt(1), 16)
+			const g = parseInt(col.charAt(2) + col.charAt(2), 16)
+			const b = parseInt(col.charAt(3) + col.charAt(3), 16)
+			const nr = Math.round(r * factor)
+			const ng = Math.round(g * factor)
+			const nb = Math.round(b * factor)
+
+			return '#' + [nr, ng, nb].map((x) => x.toString(16).padStart(2, '0')).join('')
+		}
+	}
+
+	return col
+}
+
+/**
+ * Merges a new text-decoration value into an existing one.
+ * (If the existing decoration is empty or "none", returns the new one.)
+ */
+function mergeTextDecoration(current: string | undefined, addition: string): string {
+	if (!current || current === 'none') {
+		return addition
+	}
+	const parts = current.split(/\s+/)
+	if (parts.includes(addition)) return current
+	return parts.concat(addition).join(' ')
+}
+
+/**
+ * Removes a specific text-decoration from the current decoration.
+ */
+function removeTextDecoration(current: string | undefined, removal: string): string {
+	if (!current) return ''
+	const parts = current.split(/\s+/).filter((p) => p !== removal)
+	return parts.join(' ')
+}
+
+/**
+ * Updates the given style object based on a single ANSI code.
+ * This switch–case implementation supports merging of effects such as bold and underline.
+ */
+function updateStyle(style: Record<string, string>, code: string): Record<string, string> {
+	// Clone the current style.
+	const newStyle = { ...style }
+
+	switch (code) {
+		case '0':
+			// Reset all styles.
+			return {}
+		case '1':
+			newStyle['font-weight'] = 'bold'
+			break
+		case '2':
+			// If a color is already set, adjust it; otherwise, use a default dim gray.
+			if (newStyle['color']) {
+				newStyle['color'] = dimColor(newStyle['color'], 0.6)
+			} else {
+				newStyle['color'] = '#999999'
+			}
+			break
+		case '3':
+			newStyle['font-style'] = 'italic'
+			break
+		case '4':
+			newStyle['text-decoration'] = mergeTextDecoration(newStyle['text-decoration'], 'underline')
+			break
+		case '7':
+			newStyle['filter'] = 'invert(100%)'
+			break
+		case '8':
+			newStyle['visibility'] = 'hidden'
+			break
+		case '9':
+			newStyle['text-decoration'] = mergeTextDecoration(newStyle['text-decoration'], 'line-through')
+			break
+		case '22':
+			// Reset bold/dim.
+			delete newStyle['font-weight']
+			// Remove any dimmed color by leaving the color untouched (or you could reset to original if needed)
+			break
+		case '23':
+			delete newStyle['font-style']
+			break
+		case '24':
+			newStyle['text-decoration'] = removeTextDecoration(newStyle['text-decoration'], 'underline')
+			break
+		case '27':
+			delete newStyle['filter']
+			break
+		case '28':
+			newStyle['visibility'] = 'visible'
+			break
+		case '29':
+			newStyle['text-decoration'] = removeTextDecoration(newStyle['text-decoration'], 'line-through')
+			break
+		// Foreground colors
+		case '30':
+			newStyle['color'] = 'black'
+			break
+		case '31':
+			newStyle['color'] = '#F44336'
+			break
+		case '32':
+			newStyle['color'] = '#4CAF50'
+			break
+		case '33':
+			newStyle['color'] = '#FFEB3B'
+			break
+		case '34':
+			newStyle['color'] = '#2196F3'
+			break
+		case '35':
+			newStyle['color'] = '#FF4081'
+			break
+		case '36':
+			newStyle['color'] = '#00BCD4'
+			break
+		case '37':
+			newStyle['color'] = 'white'
+			break
+		case '39':
+			newStyle['color'] = 'inherit'
+			break
+		case '90':
+			newStyle['color'] = '#9E9E9E'
+			break
+		case '91':
+			newStyle['color'] = '#FF5252'
+			break
+		case '92':
+			newStyle['color'] = '#69F0AE'
+			break
+		case '93':
+			newStyle['color'] = '#FFD700'
+			break
+		case '94':
+			newStyle['color'] = '#448AFF'
+			break
+		case '95':
+			newStyle['color'] = '#EA80FC'
+			break
+		case '96':
+			newStyle['color'] = '#18FFFF'
+			break
+		case '97':
+			newStyle['color'] = '#FFFFFF'
+			break
+		// Background colors
+		case '40':
+			newStyle['background-color'] = 'black'
+			break
+		case '41':
+			newStyle['background-color'] = '#F44336'
+			break
+		case '42':
+			newStyle['background-color'] = '#4CAF50'
+			break
+		case '43':
+			newStyle['background-color'] = '#FFEB3B'
+			break
+		case '44':
+			newStyle['background-color'] = '#2196F3'
+			break
+		case '45':
+			newStyle['background-color'] = '#E91E63'
+			break
+		case '46':
+			newStyle['background-color'] = '#00BCD4'
+			break
+		case '47':
+			newStyle['background-color'] = 'white'
+			break
+		case '49':
+			newStyle['background-color'] = 'inherit'
+			break
+		case '100':
+			newStyle['background-color'] = '#9E9E9E'
+			break
+		case '101':
+			newStyle['background-color'] = '#FF5252'
+			break
+		case '102':
+			newStyle['background-color'] = '#69F0AE'
+			break
+		case '103':
+			newStyle['background-color'] = '#FFD700'
+			break
+		case '104':
+			newStyle['background-color'] = '#448AFF'
+			break
+		case '105':
+			newStyle['background-color'] = '#EA80FC'
+			break
+		case '106':
+			newStyle['background-color'] = '#18FFFF'
+			break
+		case '107':
+			newStyle['background-color'] = '#FFFFFF'
+			break
+		default:
+			// For unrecognized codes, do nothing.
+			break
+	}
+
+	return newStyle
+}
+
+/**
+ * Converts an ANSI-coded string into a format string and a corresponding CSS array
+ * for use with browser console methods. This parser is stateful and will merge consecutive
+ * ANSI codes into a single CSS style.
  */
 function ansiToBrowserFormat(text: string): { fmt: string; css: string[] } {
-	// We'll build a single string with `%c` placeholders plus an array of CSS styles
 	let fmt = ''
-	const css: string[] = []
-
-	// Regex to match something like "\x1b[34m" or "\u001b[34m"
-	// eslint-disable-next-line no-control-regex
-	const pattern = /\x1b\[(\d+)m/g
+	const cssArr: string[] = []
 	let lastIndex = 0
+	let currentStyle: Record<string, string> = {}
+
+	// Match one or more codes at a time (e.g. "\x1b[1;36m")
+	// eslint-disable-next-line no-control-regex
+	const pattern = /\x1b\[([0-9;]+)m/g
 	let match: RegExpExecArray | null
 
 	while ((match = pattern.exec(text)) !== null) {
-		// Everything before this match is plain text
-		const chunk = text.slice(lastIndex, match.index)
-		if (chunk) {
-			// Escape % so it doesn't mess up placeholders
-			fmt += chunk.replace(/%/g, '%%')
+		// Append any plain text preceding the ANSI sequence.
+		if (match.index > lastIndex) {
+			const segment = text.slice(lastIndex, match.index).replace(/%/g, '%%')
+			fmt += '%c' + segment
+			cssArr.push(objectToCssString(currentStyle))
 		}
 
-		// Apply the ANSI code to the next placeholder
-		fmt += '%c'
-		const code = match[1]
-		css.push(AnsiCss[code] ?? 'color: inherit')
+		// Process the ANSI sequence.
+		const codes = match[1].split(';')
+		for (const code of codes) {
+			currentStyle = updateStyle(currentStyle, code)
+		}
+
 		lastIndex = pattern.lastIndex
 	}
 
-	// Add any trailing text after the last ANSI code
+	// Append any trailing text.
 	if (lastIndex < text.length) {
-		fmt += text.slice(lastIndex).replace(/%/g, '%%')
+		const segment = text.slice(lastIndex).replace(/%/g, '%%')
+		fmt += '%c' + segment
+		cssArr.push(objectToCssString(currentStyle))
 	}
 
-	// If there are no ANSI codes at all, return the original text as plain
-	if (css.length === 0) {
+	// If no ANSI codes were found, return the text as-is.
+	if (cssArr.length === 0) {
 		return { fmt: text, css: [] }
 	}
 
-	return { fmt, css }
+	return { fmt, css: cssArr }
+}
+
+/**
+ * Converts a style object into a CSS string.
+ */
+function objectToCssString(style: Record<string, string>): string {
+	return Object.entries(style)
+		.map(([key, value]) => `${key}: ${value}`)
+		.join('; ')
 }
 
 /**
@@ -149,7 +372,9 @@ async function writeLog(stream: LogStream, ...data: unknown[]): Promise<void> {
 }
 
 /**
- * A drain function that writes logs either to stdout/stderr (in Node.js) or uses console.log/error (in browsers).
+ * A drain function that writes logs either to stdout/stderr (in Node.js)
+ * or uses console.log/error (in browsers). In browsers, it uses ansiToBrowserFormat()
+ * to convert ANSI codes into %c format with merged CSS.
  */
 function consoleDrain(_logger: Logger, level: string, ...data: unknown[]): Promise<void> {
 	if (isBrowser()) {
