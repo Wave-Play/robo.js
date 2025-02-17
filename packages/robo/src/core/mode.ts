@@ -1,6 +1,5 @@
 import { color } from './color.js'
 import { logger } from './logger.js'
-import { fork } from 'node:child_process'
 
 let _mode: string | null = null
 let _modeColor: (typeof color)[0]
@@ -67,7 +66,9 @@ export function setMode(mode: string) {
 	if (modes.length > 1) {
 		const longestMode = modes.reduce((a, b) => (a.length > b.length ? a : b))
 
-		shardModes = () => {
+		shardModes = async () => {
+			const { fork } = await import('node:child_process')
+
 			// When multiple modes are provided, we need to shard the process
 			modes.forEach((mode) => {
 				// Update args to remove all other mode flags
