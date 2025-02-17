@@ -376,7 +376,7 @@ async function writeLog(stream: LogStream, ...data: unknown[]): Promise<void> {
  * or uses console.log/error (in browsers). In browsers, it uses ansiToBrowserFormat()
  * to convert ANSI codes into %c format with merged CSS.
  */
-function consoleDrain(_logger: Logger, level: string, ...data: unknown[]): Promise<void> {
+export function consoleDrain(_logger: Logger, level: string, ...data: unknown[]): Promise<void> {
 	if (isBrowser()) {
 		const text = data.join(' ')
 		const { fmt, css } = ansiToBrowserFormat(text)
