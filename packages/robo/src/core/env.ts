@@ -183,6 +183,9 @@ export class Env<T> {
 }
 
 export const env = new Env({
+	boot: {
+		disableCheck: { env: 'DISABLE_BOOT_CHECK' }
+	},
 	discord: {
 		clientId: { env: 'DISCORD_CLIENT_ID' },
 		debugChannelId: { env: 'DISCORD_DEBUG_CHANNEL_ID' },

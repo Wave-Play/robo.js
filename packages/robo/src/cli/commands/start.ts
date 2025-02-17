@@ -8,6 +8,7 @@ import { loadConfig } from '../../core/config.js'
 import { Env } from '../../core/env.js'
 import { Mode, setMode } from '../../core/mode.js'
 import { Indent } from '../../core/constants.js'
+import { Boot } from '../../internal/boot.js'
 
 const command = new Command('start')
 	.description('Starts your bot in production mode.')
@@ -59,9 +60,10 @@ async function startAction(_args: string[], options: StartCommandOptions) {
 
 	// Welcomeee
 	const projectName = path.basename(process.cwd()).toLowerCase()
+	const bootMessage = await Boot.getRandom('start')
 	logger.log('')
 	logger.log(Indent, color.bold(`🚀 Starting ${color.cyan(projectName)} in ${Mode.color(Mode.get())} mode`))
-	logger.log(Indent, '   Boop beep... Powering on your Robo creation! Need hosting? Check out RoboPlay!')
+	logger.log(Indent, '  ', bootMessage.content)
 	logger.log('')
 
 	// Check if .robo/manifest.json is missing

@@ -16,6 +16,7 @@ import { getPackageExecutor, getPackageManager } from '../utils/runtime-utils.js
 import { Mode, setMode } from '../../core/mode.js'
 import { Compiler } from '../utils/compiler.js'
 import { Env } from '../../core/env.js'
+import { Boot } from '../../internal/boot.js'
 import { Nanocore } from '../../internal/nanocore.js'
 import type { Config, SpiritMessage } from '../../types/index.js'
 
@@ -77,9 +78,10 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 
 	// Welcomeee
 	const projectName = path.basename(process.cwd()).toLowerCase()
+	const bootMessage = await Boot.getRandom('dev')
 	logger.log('')
 	logger.log(Indent, color.bold(`🚀 Starting ${color.cyan(projectName)} in ${Mode.color(Mode.get())} mode`))
-	logger.log(Indent, '   Beep boop... Code your Robo to life! Got feedback? Tell us on Discord.')
+	logger.log(Indent, '  ', bootMessage.content)
 	logger.log('')
 
 	// Load the configuration before anything else
@@ -269,6 +271,7 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 	// Check for updates
 	try {
 		await checkUpdates(config)
+		await Boot.check()
 	} catch (error) {
 		logger.warn(error)
 	}
