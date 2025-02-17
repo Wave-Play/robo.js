@@ -4,16 +4,14 @@
  *
  * It was done to minimize size and remove unnecessary features.
  */
-import tty from 'node:tty'
-
-const { env = {}, argv = [], platform = '' } = typeof process === 'undefined' ? {} : process
+const { env = {}, argv = [], platform = '', stdout = {} } = typeof process === 'undefined' ? {} : process
 
 const isDisabled: boolean = 'NO_COLOR' in env || argv.includes('--no-color')
 const isForced: boolean = 'FORCE_COLOR' in env || argv.includes('--color')
 const isWindows: boolean = platform === 'win32'
 const isDumbTerminal: boolean = env.TERM === 'dumb'
 
-const isCompatibleTerminal: boolean = tty && tty.isatty && tty.isatty(1) && env.TERM && !isDumbTerminal
+const isCompatibleTerminal: boolean = Boolean('isTTY' in stdout && stdout.isTTY && env.TERM && !isDumbTerminal)
 
 const isCI: boolean = 'CI' in env && ('GITHUB_ACTIONS' in env || 'GITLAB_CI' in env || 'CIRCLECI' in env)
 
