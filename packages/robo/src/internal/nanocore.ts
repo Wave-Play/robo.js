@@ -1,6 +1,6 @@
 import { logger } from '../core/logger.js'
 import { hasProperties } from '../cli/utils/utils.js'
-import { readFile, rm, stat, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
 /**
@@ -47,6 +47,7 @@ async function set(key: string, data: unknown) {
 	const nanoFile = path.join(process.cwd(), '.robo', key + '.json')
 
 	try {
+		await mkdir(path.dirname(nanoFile), { recursive: true })
 		await writeFile(nanoFile, JSON.stringify(data, null, '\t'))
 	} catch (e) {
 		logger.debug(`Failed to set Nanocore key "${key}".`)
