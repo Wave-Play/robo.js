@@ -394,6 +394,14 @@ export async function checkUpdates(config: Config, forceCheck = false, suggest =
 			message += `${Indent}    Run ${Highlight(command)} or disable update checks in config.\n`
 		}
 		logger.log(message)
+		await Boot.notification({
+			action: {
+				command: 'npx sage upgrade',
+				label: 'Update'
+			},
+			message: 'An update is ready!',
+			type: 'update'
+		})
 	}
 
 	return update

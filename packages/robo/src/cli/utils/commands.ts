@@ -9,6 +9,7 @@ import {
 	SlashCommandSubcommandBuilder
 } from 'discord.js'
 import { Logger } from '../../core/logger.js'
+import { Boot } from '../../internal/boot.js'
 import { loadConfig } from '../../core/config.js'
 import { DEFAULT_CONFIG, discordLogger, FLASHCORE_KEYS } from '../../core/constants.js'
 import { env } from '../../core/env.js'
@@ -469,6 +470,14 @@ export async function registerCommands(
 	} catch (error) {
 		logger.error('Could not register commands!', error)
 		logger.warn(`Run ${color.bold('robo build --force')} to try again.`)
+		await Boot.notification({
+			action: {
+				command: 'npx robo build --force',
+				label: 'Fix'
+			},
+			message: 'Command registration failed.',
+			type: 'warning'
+		})
 		await Flashcore.set(FLASHCORE_KEYS.commandRegisterError, true)
 	}
 }

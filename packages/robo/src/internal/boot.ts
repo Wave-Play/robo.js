@@ -2,7 +2,7 @@ import { env } from '../core/env.js'
 import { logger } from '../core/logger.js'
 import { Nanocore } from './nanocore.js'
 
-export const Boot = { check, get, getRandom }
+export const Boot = { check, get, getRandom, notification }
 
 const DefaultCheckFrequency = 24 * 60 * 60 * 1_000
 
@@ -128,5 +128,24 @@ async function check() {
 		await Nanocore.update('boot/check', { frequency: DefaultCheckFrequency })
 	} finally {
 		await Nanocore.update('boot/check', { lastCheck: Date.now() })
+	}
+}
+
+interface Notification {
+	action: {
+		command: string
+		label: string
+	}
+	message: string
+	type: 'error' | 'info' | 'update' | 'warning'
+}
+
+async function notification(notification: Notification) {
+	const notifications = (await Nanocore.get('notifications')) ?? []
+	const existing = notifications.find((n: Notification) => n.message === notification.message)
+
+	if (!existing) {
+		notifications.push(notification)
+		await Nanocore.set('notifications', notifications)
 	}
 }
