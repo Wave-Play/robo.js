@@ -1,5 +1,29 @@
 # create-robo
 
+## 0.14.10
+
+### Patch Changes
+
+- d2fa38a: feat: plugins now count as kits
+- ace7bbb: feat: skippable features and plugins
+- 47b6a90: patch: update package.json name in templates
+- d2fa38a: feat: new -e --env option to specify environment variables
+- 79556d7: patch: all templates w/ vite now set `allowedHosts: true`
+- 2c24e13: feat: new `-pm --package-manager` option flag
+- Updated dependencies [ad25a02]
+- Updated dependencies [da98ac3]
+- Updated dependencies [55c3ed6]
+- Updated dependencies [b6ecdec]
+- Updated dependencies [3fed7e5]
+- Updated dependencies [7eba84c]
+- Updated dependencies [0e7c892]
+- Updated dependencies [2b0bbf8]
+- Updated dependencies [aab6634]
+- Updated dependencies [9b045b6]
+- Updated dependencies [ae9235b]
+- Updated dependencies [404ec55]
+  - robo.js@0.10.30
+
 ## 0.14.9
 
 ### Patch Changes

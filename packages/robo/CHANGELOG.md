@@ -1,5 +1,22 @@
 # robo.js
 
+## 0.10.30
+
+### Patch Changes
+
+- ad25a02: patch(cli): check more vite file variations when building for production
+- da98ac3: feat: `mode` api browser compatibility
+- 55c3ed6: feat: `logger` api browser compatibility
+- b6ecdec: feat(cli): new `-id --instance-id` option
+- 3fed7e5: feat(flashcore): customizable data dir in file adapter constructor
+- 7eba84c: feat: `color` api now compatible with browsers
+- 0e7c892: feat(cli): new `-l --log-level` option
+- 2b0bbf8: feat: tiny new `Nanocore` API (unstable)
+- aab6634: feat(flashcore): expose adapters via separate module
+- 9b045b6: feat(flashcore): now possible to use own non-keyv adapters
+- ae9235b: feat: new `Flashcore.$init` API
+- 404ec55: feat: `color`, `composeColors`, and `consoleDrain` in logger module
+
 ## 0.10.29
 
 ### Patch Changes
