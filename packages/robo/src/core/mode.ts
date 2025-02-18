@@ -32,7 +32,7 @@ export const Mode = Object.freeze({ color: colorMode, get, is })
  * @internal
  */
 export function getModeColor(mode: string) {
-	const Colors = [color.blue, color.cyan, color.red, color.yellow, color.green, color.magenta]
+	const Colors = [color.cyan, color.yellow, color.red, color.blue, color.green, color.magenta]
 	const hash = mode.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
 
 	return Colors[hash % Colors.length]
