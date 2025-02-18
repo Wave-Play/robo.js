@@ -1,5 +1,12 @@
 # @roboplay/plugin-api
 
+## 0.6.4
+
+### Patch Changes
+
+- 03e5963: fix: support both `vite.mjs` and `vite.ts` in dev mode
+- 010cb1e: chore: include `localUrl` in watch file
+
 ## 0.6.3
 
 ### Patch Changes
