@@ -324,30 +324,39 @@ export async function initializeCloudflareTunnel(): Promise<boolean> {
 		!process.env.CLOUDFLARE_ZONE_ID ||
 		!process.env.CLOUDFLARE_ACCOUNT_ID
 	) {
-		cloudflareLogger.error('Missing required Cloudflare environment variables')
 		return false
 	}
 
 	cloudflareLogger.debug('Looking for existing Cloudflare tunnels from .env file')
 	if (process.env.CLOUDFLARE_TUNNEL_ID && process.env.CLOUDFLARE_TUNNEL_TOKEN) {
-		cloudflareLogger.info('Using existing tunnel: ' + process.env.CLOUDFLARE_TUNNEL_ID);
-		return true;
+		cloudflareLogger.info('Using existing tunnel from .env file: ' + process.env.CLOUDFLARE_TUNNEL_ID)
+		return true
 	}
+	cloudflareLogger.debug('No existing tunnel found in .env file')
 
 	try {
-		const oldRoboTunnels = await cloudflareRequest(`/accounts/${process.env.CLOUDFLARE_ACCOUNT_ID}/cfd_tunnel?name=robo`);
-		const oldRoboTunnel = (oldRoboTunnels.result as unknown as CFDTunnel[]).filter(tunnel => tunnel.deleted_at === null)[0];
-		const tunnelID = process.env.CLOUDFLARE_TUNNEL_ID || oldRoboTunnel?.id;
+		cloudflareLogger.debug('Looking for existing tunnels from Cloudflare account')
 
-		if (tunnelID) {
-			const roboTunnel = await cloudflareRequest(`/accounts/${process.env.CLOUDFLARE_ACCOUNT_ID}/cfd_tunnel/${tunnelID}/token`);
-			
-			if (roboTunnel.success) {				
-				await updateEnvFile('CLOUDFLARE_TUNNEL_ID', tunnelID);
-				await updateEnvFile('CLOUDFLARE_TUNNEL_TOKEN', roboTunnel.result as string);
-			} else {
-				cloudflareLogger.error(`Failed to get tunnel: ${JSON.stringify(roboTunnel)}`);
-				return false;
+		const oldRoboTunnels = await cloudflareRequest<Array<CloudflareTunnelResponse>>(
+			`/accounts/${process.env.CLOUDFLARE_ACCOUNT_ID}/cfd_tunnel?name=robo`
+		)
+
+		let oldRoboTunnelExists
+		if (oldRoboTunnels.success && oldRoboTunnels.result.length > 0) {
+			oldRoboTunnelExists = oldRoboTunnels.result.filter((tunnel) => tunnel.deleted_at === null)[0]
+		}
+
+		if (oldRoboTunnelExists) {
+			const oldRoboTunnel = oldRoboTunnelExists
+
+			if (oldRoboTunnel.id) {
+				const oldRoboTunnelToken = await cloudflareRequest<string>(
+					`/accounts/${process.env.CLOUDFLARE_ACCOUNT_ID}/cfd_tunnel/${oldRoboTunnel.id}/token`
+				)
+
+				cloudflareLogger.info('Using existing tunnel from Cloudflare account: ' + oldRoboTunnel.id)
+				await updateEnvFile('CLOUDFLARE_TUNNEL_ID', oldRoboTunnel.id)
+				await updateEnvFile('CLOUDFLARE_TUNNEL_TOKEN', oldRoboTunnelToken.result)
 			}
 		} else {
 			cloudflareLogger.debug('Creating new tunnel for Cloudflare account')
@@ -358,14 +367,10 @@ export async function initializeCloudflareTunnel(): Promise<boolean> {
 			const newTunnel = await cloudflareRequest<CloudflareTunnelResponse>(
 				`/accounts/${process.env.CLOUDFLARE_ACCOUNT_ID}/cfd_tunnel`,
 				'POST',
-				{
-					config_src: "cloudflare",
-					name: "robo"
-				}
-			);
-			const { id, token } = newTunnel.result as CFDTunnel;
-
-			cloudflareLogger.debug(`Created new tunnel: robo (${id})`);
+				newCloudflareTunnel
+			)
+			const { id } = newTunnel.result
+			cloudflareLogger.debug(`Created new tunnel: robo (${id})`)
 
 			if (id) {
 				const newRoboTunnelToken = await cloudflareRequest<string>(
@@ -380,19 +385,30 @@ export async function initializeCloudflareTunnel(): Promise<boolean> {
 
 		await reloadEnv()
 
-		const handeledTunnelConfig = await handleTunnelConfig(process.env.CLOUDFLARE_TUNNEL_ID, process.env.CLOUDFLARE_ACCOUNT_ID)
-		cloudflareLogger.debug(`Updated tunnel config for ${process.env.CLOUDFLARE_TUNNEL_ID} with account ${process.env.CLOUDFLARE_ACCOUNT_ID}`)
+		const handeledTunnelConfig = await handleTunnelConfig(
+			process.env.CLOUDFLARE_TUNNEL_ID,
+			process.env.CLOUDFLARE_ACCOUNT_ID
+		)
+		cloudflareLogger.debug(
+			`Updated tunnel config for ${process.env.CLOUDFLARE_TUNNEL_ID} with account ${process.env.CLOUDFLARE_ACCOUNT_ID}`
+		)
 
-		const handeledDNSRecord = await handleDNSRecord(process.env.CLOUDFLARE_TUNNEL_ID)
-		cloudflareLogger.debug(`Updated DNS records for ${process.env.CLOUDFLARE_DOMAIN} with account ${process.env.CLOUDFLARE_ACCOUNT_ID}`)
-
-		if (handeledTunnelConfig && handeledDNSRecord) {
-			return true
-		} else {
+		if (!handeledTunnelConfig) {
 			return false
 		}
+
+		const handeledDNSRecord = await handleDNSRecord(process.env.CLOUDFLARE_TUNNEL_ID)
+		cloudflareLogger.debug(
+			`Updated DNS records for ${process.env.CLOUDFLARE_DOMAIN} with account ${process.env.CLOUDFLARE_ACCOUNT_ID}`
+		)
+
+		if (!handeledDNSRecord) {
+			return false
+		}
+
+		return true
 	} catch (error) {
-		cloudflareLogger.error('Failed to initialize Cloudflare tunnel:', error)
+		cloudflareLogger.error('Failed to initialize Cloudflare tunnel: ', error)
 		return false
 	}
 }
@@ -420,7 +436,6 @@ export async function startCloudflared(url: string) {
 	})
 
 	let lastMessage = ''
-	let urlLogged = false
 
 	const onData = (data: Buffer) => {
 		lastMessage = data.toString()?.trim()
@@ -430,9 +445,9 @@ export async function startCloudflared(url: string) {
 		const tunnelUrl =
 			tunnelId && tunnelToken && tunnelDomain ? `https://robo.${tunnelDomain}` : extractTunnelUrl(lastMessage)
 
-		if (tunnelUrl && !Ignore.includes(tunnelUrl) && !lastMessage.includes('Request failed') && !urlLogged) {
+		if (tunnelUrl && !Ignore.includes(tunnelUrl) && !lastMessage.includes('Request failed')) {
 			cloudflareLogger.ready(`Tunnel URL:`, composeColors(color.bold, color.blue)(tunnelUrl))
-			// urlLogged = true;
+			Nanocore.update('watch', { tunnelUrl })
 		}
 	}
 	childProcess.stdout.on('data', onData)
