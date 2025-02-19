@@ -1,7 +1,16 @@
-import { getTSFiles, frontendDir, backendDir, compileBackFile, compileFrontFile } from './compilation-utils.mjs';
+import {  frontendDir, backendDir, compileBackFile, compileFrontFile, getFiles, frontOutput, backOutput } from './compilation-utils.mjs';
+import fs from 'fs';
 
-const frontendFiles = getTSFiles(frontendDir)
-const backendFiles = getTSFiles(backendDir)
+const frontendFiles = getFiles(frontendDir)
+const backendFiles = getFiles(backendDir)
+
+if(fs.existsSync(frontOutput)){
+  fs.rmSync(frontOutput, { recursive: true, force: true });
+}
+
+if(fs.existsSync(backOutput)){
+  fs.rmSync(backOutput, { recursive: true, force: true });
+}
 
 frontendFiles.forEach((file) => {
   compileFrontFile(file).catch(() => process.exit(1)); // Exit on error

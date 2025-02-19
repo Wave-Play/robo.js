@@ -1,18 +1,40 @@
 import fs from 'fs';
-import path from 'path';
+import { getFiles, frontendDir, backendDir, compileBackFile, compileFrontFile, frontOutput, backOutput} from './compilation-utils.mjs';
 
-import { frontendDir, backendDir, compileBackFile, compileFrontFile } from './compilation-utils.mjs';
+
 
 const watchDirectory = (dir) => {
   fs.watch(dir, { recursive: true }, (eventType, filename) => {
     if (dir.includes("front-end")) {
-      console.log('Compiling Front end File ->', filename)
-      compileFrontFile(path.join(dir, filename));
-      console.log('Compiled Front end File ->', filename)
+      console.log('Recompiling Front-end...')
+
+
+      if(fs.existsSync(frontOutput)){
+        fs.rmSync(frontOutput, { recursive: true, force: true });
+      }
+
+      const frontendFiles = getFiles(frontendDir)
+      frontendFiles.forEach((file) => {
+        compileFrontFile(file).catch(() => {
+          
+        }); // Exit on error
+      })
+      console.log('Front-end compiled')
     } else if(dir.includes('back-end')){
-      console.log('Compiling Back end File ->', filename)
-      compileBackFile(path.join(dir, filename))
-      console.log('Compiled Back end File ->', filename)
+      console.log('Recompiling Back-end')
+
+
+      if(fs.existsSync(backOutput)){
+        fs.rmSync(backOutput, { recursive: true, force: true });
+      }
+
+      const backendFiles = getFiles(backendDir)
+      backendFiles.forEach(file => {
+        compileBackFile(file).catch(() => {
+          
+        }); // Exit on error
+      });
+      console.log('Back-end recompiled', filename)
     }
   });
 };

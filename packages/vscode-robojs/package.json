@@ -1,50 +1,52 @@
-  {
-    "name": "robojs",
-    "displayName": "Robo.js",
-    "description": "Scalfold robo.js projects in just a few clicks",
-    "version": "0.0.1",
-    "publisher": "WavePlay LLC.",
-    "engines": {
-      "vscode": "^1.95.0"
+{
+  "name": "robojs",
+  "displayName": "Robo.js",
+  "description": "Scalfold robo.js projects in just a few clicks",
+  "version": "0.0.1",
+  "publisher": "WavePlay LLC.",
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./dist/back-end/entry.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "robojs-container",
+          "title": "Robo JS Creation",
+          "icon": "./assets/waveplaylogo.webp"
+        }
+      ]
     },
-    "categories": [
-      "Other"
-    ],
-    "activationEvents": [],
-    "main": "./dist/back-end/entry.js",
-    "contributes": {
-      "viewsContainers": {
-        "activitybar": [
-          {
-            "id": "robojs-container",
-            "title": "Robo JS Creation",
-            "icon": "./assets/waveplaylogo.webp"
-          }
-        ]
-      },
-      "views": {
-        "robojs-container": [
-          {
-            "type": "webview",
-            "id": "robojsCreationView",
-            "name": "Robo JS Creation View"
-          }
-        ]
-      }
-    },
-    "scripts": {
-      "vscode:prepublish": "npm run compile",
-      "compile": "node esbuild.mjs",
-      "watch": "node esbuild.dev.mjs",
-      "pretest": "npm run compile",
-      "test": "node ./out/test/runTest.js"
-    },
-    "devDependencies": {
-      "@types/node": "20.x",
-      "@types/vscode": "^1.95.0",
-      "@xterm/xterm": "^5.5.0",
-      "esbuild": "^0.25.0",
-      "typescript": "^5.7.2",
-      "vscode-test": "^1.5.0"
+    "views": {
+      "robojs-container": [
+        {
+          "type": "webview",
+          "id": "robojsCreationView",
+          "name": "Robo JS Creation View"
+        }
+      ]
     }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "dev": "node esbuild.mjs && node esbuild-dev.mjs",
+    "pretest": "npm run compile",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/node": "20.x",
+    "@types/vscode": "^1.95.0",
+    "@xterm/xterm": "^5.5.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.7.2",
+    "vscode-test": "^1.5.0"
+  },
+  "dependencies": {
+    "@xterm/addon-fit": "^0.10.0"
   }
+}

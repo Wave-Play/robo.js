@@ -1,23 +1,39 @@
 import * as vscode from 'vscode';
-import { getRoboPlaySession, isRoboProject, IS_WINDOWS } from './back-utils'
-import { boxSvgBottom, exaButton, boxSvgTop, informationComponent } from '../front-end/front-utils'
+import { getRoboPlaySession, isRoboProject, IS_WINDOWS, getPackageExecutor } from './back-utils'
+import { exaButton} from '../front-end/front-utils'
 import { ChildProcessWithoutNullStreams, spawn, spawnSync } from 'child_process';
 import path from 'path';
+import createDashBoardView from '../front-end/views/dashboardView';
+import loginView from '../front-end/views/loginView';
+import createRoboWebView from '../front-end/views/createRoboView';
+import terminalView from '../front-end/views/terminalView';
+import fs from 'node:fs'
+import deploymentView from '../front-end/views/deploymentView';
+let terminalPanel: vscode.WebviewPanel | null = null
+let dashboardPanel: vscode.WebviewPanel | null = null;
+let terminalLogs = '';
+let roboProcess: ChildProcessWithoutNullStreams | null;
+let loginProcess: ChildProcessWithoutNullStreams | null;
+const cwd = '/Users/alexanderrobelin/Documents/GitHub/robos/';
+// const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || process.cwd();
 
 export function activate(context: vscode.ExtensionContext) {
 	const provider = new CustomWebviewViewProvider(context);
-	context.subscriptions.push(
+
+	  context.subscriptions.push(
 		vscode.window.registerWebviewViewProvider(
 			'robojsCreationView',
 			provider
 		)
 	);
+
 }
 
 export function deactivate() {
-	console.log('Extension deactivated');
+	if(roboProcess) {
+		roboProcess.kill();
+	}
 } 
-
 
 class CustomWebviewViewProvider implements vscode.WebviewViewProvider {
   private _view?: vscode.WebviewView;
@@ -37,44 +53,13 @@ class CustomWebviewViewProvider implements vscode.WebviewViewProvider {
 	
 		console.log("✅ Webview HTML assigned successfully");
 		webviewView.webview.onDidReceiveMessage(async (message) => {
-		// const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || process.cwd();
-		const cwd = '/Users/sushi/Documents/dev/robos/bots/w3sbot';
-			switch (message.command) {
-			case 'login': {
-				const childProcess =  spawn('npx', ['robo','login'], {
-					cwd
-				});
-
-
-				childProcess.stdout.on("data", (data) => {
-					const beginning = 'https';
-					const end = '=robo';
-					const sliced = data.slice(data.indexOf(beginning), data.indexOf(end) + end.length);
-
-					if(sliced){
-						//loginTab(this.context, sliced.toString());
-		
-					}
-				});
-
-				childProcess.stderr.on("data", (data) => {
-					console.log(data.toString());
-				});
+		switch (message.command) {
+			case 'terminal': 
+				terminalTab(this.context);
 				
-
-				childProcess.on('exit', (code, signal) => {
-					console.log(`Child process exited with code ${code} and signal ${signal}`);
-				});
-				
-				// Detect when process is completely closed
-				childProcess.on('close', () => {
-					//creationTab(this.context);
-				});
-
-				break;
-			}
+			     break;
 			case 'openRoboTab':
-				//creationTab(this.context);
+				creationTab(this.context);
 				break;
 				
 			case 'start': {
@@ -91,41 +76,9 @@ class CustomWebviewViewProvider implements vscode.WebviewViewProvider {
 			}
 
 			case 'dashboard': {
-				dashboardTab(this.context);
+					dashboardTab(this.context);
 				break;
 			};
-
-			case 'deploy':{
-				const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || process.cwd();
-				const childProcess =  spawn('npx', ['robo','deploy'], {
-					cwd,
-					shell: IS_WINDOWS ? true : false
-				});
-
-				childProcess.stdout.on("data", (data) => {
-					const beginning = 'https';
-					const end = '=robo';
-					const sliced = data.slice(data.indexOf(beginning), data.indexOf(end) + end.length);
-					if(sliced){
-						deployTab(this.context, sliced.toString());
-					}
-				});
-
-				childProcess.stderr.on("data", (data) => {
-					console.log(data.toString());
-				});
-				
-
-				childProcess.on('exit', (code, signal) => {
-					console.log(`Child process exited with code ${code} and signal ${signal}`);
-				});
-				
-				// Detect when process is completely closed
-				childProcess.on('close', () => {
-					creationTab(this.context);
-				});
-				break;
-				}
 				default: break;
 			}
 
@@ -140,7 +93,7 @@ class CustomWebviewViewProvider implements vscode.WebviewViewProvider {
 
 		html += exaButton('Create Robo', 200, 50, 20, 'createRoboTab', '#F0B90B', '')
 		html += exaButton('dashboard', 200, 50, 20, 'dashboard', '#97E5DA', '#00BFA5');
-
+		html += exaButton('Terminal', 200, 50, 20, 'terminal', '#F0B90B', '');
 
 		if(getRoboPlaySession() && isRoboProject()) {
 			html += exaButton('Start', 200, 50, 20, 'start', '#97E5DA', '#00BFA5')
@@ -226,10 +179,11 @@ class CustomWebviewViewProvider implements vscode.WebviewViewProvider {
 				const dashboard = document.getElementById('dashboard');	
 				const deploy = document.getElementById('deploy');	
 				const stop = document.getElementById('stop');
+				const terminal = document.getElementById('terminal');
 
-				if(login) {
-					login.addEventListener('click', () => {
-						vscode.postMessage({ command: 'login', text: 'Login to WavePlay...' });
+				if(terminal) {
+					terminal.addEventListener('click', () => {
+						vscode.postMessage({ command: 'terminal', text: 'Opening up terminal...' });
 					});
 				}
 
@@ -275,7 +229,6 @@ class CustomWebviewViewProvider implements vscode.WebviewViewProvider {
   }
 }
 
-
 function creationTab(context: vscode.ExtensionContext){
 	const panel = vscode.window.createWebviewPanel(
 		'creationRobo',
@@ -283,20 +236,28 @@ function creationTab(context: vscode.ExtensionContext){
 		vscode.ViewColumn.One, 
 		{
 		  localResourceRoots: [
-			vscode.Uri.joinPath(context.extensionUri, "sounds"),
 			vscode.Uri.joinPath(context.extensionUri, "dist")], 
 		  enableScripts: true, 
 		}
 	  );
 
 	   const scriptPath = vscode.Uri.file(
-	 	path.join(context.extensionPath, 'dist', 'renders.js')
+	 	path.join(context.extensionPath, 'dist', 'front-end', 'createRobo', 'createRobo.js')
 	   );
 
-	  const scriptUri = panel.webview.asWebviewUri(scriptPath);
+	   const cssPath = vscode.Uri.file(
+		path.join(context.extensionPath, 'dist', 'front-end', 'createRobo', 'styles.css')
+	  );
 
-  
-	  panel.webview.html = createRoboWebView(scriptUri);
+	  const xtermCSSPath = vscode.Uri.file(
+		path.join(context.extensionPath, 'dist', 'front-end', 'xterm.css')
+	  );
+
+
+	  const scriptUri = panel.webview.asWebviewUri(scriptPath);
+	  const cssUri = panel.webview.asWebviewUri(cssPath);
+	  const xtermUri = panel.webview.asWebviewUri(xtermCSSPath);
+	  panel.webview.html = createRoboWebView(scriptUri, cssUri, xtermUri);
   
 	  let selectedFolder: string  = "";
 	  panel.webview.onDidReceiveMessage( async (message) => {
@@ -325,16 +286,17 @@ function creationTab(context: vscode.ExtensionContext){
 			case "createRoboApplication": {
 				const data = message.data as { 
 					name: string,
-					kind: string,
+					appKind: string,
 					pckgManager: string,
                     selectedPlugins: Array<string>,
                     selectedFeatures: Array<string>,
                     token?: string,
-                    id?: string
+                    clientId?: string
 				};
 
+				const isTypescript = data.selectedFeatures.includes('ts');
 				const plugins = data.selectedPlugins.join(' ');
-				const features = data.selectedFeatures.join(',');
+				const features = data.selectedFeatures.filter((feature) => feature !== 'ts').join(',');
 
 				/**
 				 * TODO: VERIFY TOKEN INPUT
@@ -343,9 +305,12 @@ function creationTab(context: vscode.ExtensionContext){
 				const args: Array<string> = [];
 
 				args.push('create-robo');
-				args.push(data.name);
+				args.push(data.name ?? '');
 				args.push('-k');
-				args.push(data.kind);
+				args.push(data.appKind);
+				if(isTypescript){
+					args.push('-ts')
+				}
 				if(plugins.length > 0) {
 					args.push('-p');
 					args.push(plugins);
@@ -359,9 +324,9 @@ function creationTab(context: vscode.ExtensionContext){
 					args.push('-nf');
 				}
 				args.push('-nu');
-				if(['bot', 'app'].includes(data.kind)){
+				if(['bot', 'app'].includes(data.appKind)){
 					args.push('--env');
-					args.push(`"DISCORD_ID=${data.id},DISCORD_TOKEN=${data.token}"`);
+					args.push(`"DISCORD_ID=${data.clientId},DISCORD_TOKEN=${data.token}"`);
 				}
 				args.push('-nc');
 				
@@ -369,7 +334,7 @@ function creationTab(context: vscode.ExtensionContext){
 					return;
 				}
 
-				const packageExe = 'npx' // getPackageExecutor(data.pckgManager);
+				const packageExe = getPackageExecutor(data.pckgManager);
 				const childProcess = spawn(packageExe, args, {
 					cwd: selectedFolder,
 					shell: IS_WINDOWS ? true : false,
@@ -377,7 +342,7 @@ function creationTab(context: vscode.ExtensionContext){
 
 				childProcess.stdout.on("data", (data) => {
 					panel.webview.postMessage({ command: "output", text: data.toString() });
-				  });
+				});
 
 				childProcess.stderr.on("data", (data) => {
 					panel.webview.postMessage({ command: "output", text: data.toString() });
@@ -399,437 +364,314 @@ function creationTab(context: vscode.ExtensionContext){
   
 }
 
-// function loginTab(context: vscode.ExtensionContext, embed: string){
-// 	const panel = vscode.window.createWebviewPanel(
-// 		'creationRobo', // ID for the panel
-// 		'login', // Title of the panel (shown as the tab name)
-// 		vscode.ViewColumn.One, // Where to display the Webview (in this case, in the first column)
-// 		{
-// 		  enableScripts: true, // Allows JavaScript execution in the Webview
-// 		}
-// 	  );
-// 	 // panel.webview.html = createLoginWebView(embed);
+function dashboardTab(context: vscode.ExtensionContext){
 
 
-// }
 
-function deployTab(context: vscode.ExtensionContext, embed: string){
-	const panel = vscode.window.createWebviewPanel(
-		'creationRobo', // ID for the panel
-		'deploy', // Title of the panel (shown as the tab name)
-		vscode.ViewColumn.One, // Where to display the Webview (in this case, in the first column)
+	if(dashboardPanel){
+		dashboardPanel.dispose()
+	}
+	dashboardPanel =  vscode.window.createWebviewPanel(
+		'webview',
+		'Dashboard',
+		vscode.ViewColumn.One, 
 		{
-		  enableScripts: true, // Allows JavaScript execution in the Webview
+		  localResourceRoots: [
+			vscode.Uri.joinPath(context.extensionUri, "dist")], 
+		  enableScripts: true, 
+		  retainContextWhenHidden: true,
+		  
 		}
 	  );
 
 
-	  panel.webview.html = createDeployView(embed);
 
-}
+	  if(loginProcess){
+		loginProcess.kill()
+	  }
 
-function dashboardTab(context: vscode.ExtensionContext){
-	const panel = vscode.window.createWebviewPanel(
-		'creationRobo', 
-		'deploy',
-		vscode.ViewColumn.One,
-		{
-		localResourceRoots: [
-			vscode.Uri.joinPath(context.extensionUri, "dist", 'front-end')],
-		enableScripts: true, 
-		}
-	);
+		const session = getRoboPlaySession();
 
-	const cssPath = panel.webview.asWebviewUri(vscode.Uri.file(
-		path.join(context.extensionPath, 'dist', 'front-end', 'dashboard.css')
-	));
-	  
-	const scriptPath = panel.webview.asWebviewUri(vscode.Uri.file(
-		path.join(context.extensionPath, 'dist', 'front-end', 'dashboard.js')
-	));
+		const cssPath = dashboardPanel.webview.asWebviewUri(vscode.Uri.file(
+			path.join(context.extensionPath, 'dist', 'front-end', 'dashboard', 'styles.css')
+		));
+		  
+		const scriptPath = dashboardPanel.webview.asWebviewUri(vscode.Uri.file(
+			path.join(context.extensionPath, 'dist', 'front-end', 'dashboard', 'dashboard.js')
+		));
 
-	  panel.webview.html = createDashBoardView(scriptPath, cssPath);
+		dashboardPanel.webview.html = createDashBoardView(scriptPath, cssPath);
+		const cmdCount = getFiles(path.join(cwd, 'src', 'commands'));
+		dashboardPanel?.webview.postMessage({command: 'commandCount', text: cmdCount.length});
 
-	  panel.webview.onDidReceiveMessage( async (message) => {
-		const cwd = '/Users/sushi/Documents/dev/robos/bots/w3sbot';
-		let localRoboProcess: ChildProcessWithoutNullStreams | undefined = undefined;
-		switch(message.command){
-
-			case 'startButtonHosting': {
-				spawnSync('npx', ['robo','cloud', 'start'], {
-					cwd
-			   });
-				break;
-			}
-
-			case 'stopButtonHosting': {
-				spawnSync('npx', ['robo','cloud', 'stop'], {
-					cwd
-			   });
-				break;
-			}
-
-			case 'deploy': {
-				spawnSync('npx', ['robo','deploy'], {
-					cwd
-			   });
-				break;
-			}
-
-			case 'startButtonLocal': {
-				localRoboProcess = spawn('npm ', ['run','dev'], {
-					cwd
-			   });
-
-			   localRoboProcess.stdout.on("data", (data) => {
-				panel.webview.postMessage({ command: "output", text: data.toString() });
-			  });
-
-
-
-				break;
-			}
-
-			case 'stopButtonLocal': {
-				if(localRoboProcess) {
-					//process.kill(localRoboProcess.pid);
+		dashboardPanel.webview.onDidReceiveMessage( async (message) => {
+			
+			switch(message.command){
+				case 'startButtonHosting': {
+					spawnSync('npx', ['robo','cloud', 'start'], {
+						cwd
+				   });
+					break;
 				}
+	
+				case 'stopButtonHosting': {
+					spawnSync('npx', ['robo','cloud', 'stop'], {
+						cwd
+				   });
+					break;
+				}
+	
+				case 'deploy': {
+				const childProcess =  spawn('npx', ['robo','deploy'], {
+					cwd,
+					shell: IS_WINDOWS ? true : false
+				});
+
+				let s = false;
+
+				childProcess.stdout.on("data", (data) => {
+					const idx = data.toString().indexOf('https');
+					
+					// if(idx !== -1){
+					// 	console.log(data.toString())
+					// console.log(idx)
+					// 	if(s === false){
+					// 		const link =  extractDeployLink(data.toString());
+					// 		deploymentTab(context, link);
+					// 		s = true;
+					// 	}
+					// }
+
+					childProcess.stdin.write('\r')
+				});
+
+				childProcess.stderr.on("data", (data) => {
+					console.log(data.toString());
+				});
+				
+
+				childProcess.on('exit', (code, signal) => {
+					console.log(`Child process exited with code ${code} and signal ${signal}`);
+				});
+				
+				// Detect when process is completely closed
+				childProcess.on('close', () => {
+					
+				});
+					break;
+				}
+	
+				case 'startButtonLocal': {
+					roboProcess = spawn('npm', ['run','dev'], {
+						cwd
+				   });
+
+				   terminalTab(context)
+
+				   roboProcess.on('error', (err) => {
+						terminalLogs += err.toString();
+						terminalPanel.webview.postMessage({ command: "output", text: err });
+						console.error('Failed to start subprocess.', err);
+				  });
+				   
+				   roboProcess.stdout.on("data", (data) => {
+						terminalLogs += data.toString();
+
+
+						if(data.toString().includes('standby')){
+							const cmdCount = getFiles(path.join(cwd, 'src', 'commands'));
+							dashboardPanel?.webview.postMessage({command: 'online'});
+							dashboardPanel?.webview.postMessage({command: 'commandCount', text: cmdCount.length});
+						}
+						
+
+					    terminalPanel.webview.postMessage({ command: "output", text: data.toString() });
+				  });
+
+				  roboProcess.stderr.on("data", (data) => {
+						terminalLogs += data.toString();
+						terminalPanel.webview.postMessage({ command: "output", text: data.toString() });
+			  	   });
+
+					roboProcess.on('exit', (code, signal) => {
+						terminalLogs += `Child process exited with code ${code} and signal ${signal}`
+						terminalPanel.webview.postMessage({ command: "output", text: `Child process exited with code ${code} and signal ${signal}` });
+					});
+					
+					// Detect when process is completely closed
+					roboProcess.on('close', () => {
+						dashboardPanel?.webview.postMessage({command: 'offline'});
+						console.log('lmao process closed ?')
+						terminalPanel?.dispose();
+						terminalLogs = '';
+
+					});
+					break;
+				}
+	
+				case 'stopButtonLocal': {
+					if(roboProcess) {
+						roboProcess.kill();
+					}
+					break;
+				}
+
+				case 'isLoggedIn': {
+					dashboardPanel?.webview.postMessage({command: 'isLoggedIn', text: session})
+					break;
+				}
+
+
+				case 'login': {
+					let s = false;
+
+					loginProcess =  spawn('npx', ['robo','login'], {
+						cwd,
+						shell: IS_WINDOWS ? true : false
+					});
+			
+					loginProcess.stdout.on("data", (data) => {
+						const beginning = 'https';
+						const end = '=robo';
+
+						if(data.indexOf(beginning) !== -1 && data.indexOf(end) !== -1){
+							const sliced = data.slice(data.indexOf(beginning), data.indexOf(end) + end.length);
+							if(!s){
+								s = true;
+								if(dashboardPanel){
+									dashboardPanel.webview.postMessage({command: 'loginLink', text: sliced.toString()})
+								}
+							}
+						}
+					});
+			
+					loginProcess.stderr.on("data", (data) => {
+						console.log(data.toString());
+					});
+					
+			
+					loginProcess.on('exit', (code, signal) => {
+						console.log(`Child process exited with code ${code} and signal ${signal}`);
+					});
+					
+					// Detect when process is completely closed
+					loginProcess.on('close', () => {
+						dashboardPanel.webview.postMessage({command: 'loggedIn'})
+						console.log('lmao process closed ?')
+					});
+					break;
+				}
+	
+				default: break;
+			}
+		});
+
+		return;
+
+}
+
+function terminalTab(context: vscode.ExtensionContext){
+
+	terminalPanel =  vscode.window.createWebviewPanel(
+		'webview',
+		'Robo Terminal',
+		vscode.ViewColumn.One, 
+		{
+		  localResourceRoots: [
+			vscode.Uri.joinPath(context.extensionUri, "dist")], 
+			  enableScripts: true,
+			  retainContextWhenHidden: true
+			
+		},
+	  );
+
+	   const scriptPath = vscode.Uri.file(
+	 	path.join(context.extensionPath, 'dist', 'front-end', 'terminal', 'terminal.js')
+	   );
+
+	   const cssPath = vscode.Uri.file(
+		path.join(context.extensionPath, 'dist', 'front-end', 'terminal', 'styles.css')
+	  );
+
+	  const xtermCSS = terminalPanel.webview.asWebviewUri(vscode.Uri.file(
+		path.join(context.extensionPath, 'dist', 'front-end', 'xterm.css')
+	  ));
+
+
+	  const scriptUri = terminalPanel.webview.asWebviewUri(scriptPath);
+	  const cssUri = terminalPanel.webview.asWebviewUri(cssPath);
+  
+	  terminalPanel.webview.html = terminalView(scriptUri, cssUri, xtermCSS);
+  
+	  terminalPanel.webview.onDidReceiveMessage( async (message) => {
+		switch(message.command){
+			case 'terminalLoaded': {
+				terminalPanel.webview.postMessage({command: 'output', text: terminalLogs})
+			break;
+			}
+			case 'output': {
+				terminalPanel.webview.postMessage({command: 'output', text: message.text})
 				break;
 			}
-
-			default: break;
+		 default: 
+			break;
 		}
-	});
-}
-
-function createDeployView(embed: string){
-	return `<!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>WavePlay Login</title>
-
-	  <style>
-
-	  html, body {
-		width: 100%;
-		height: 100%;
-		margin: 0;
-		padding: 0;
-	  }
-
-	  iframe {
-
-		width: 100%;
-		height: 100%;
-		border: none;
-	  }
-	  </style>
-    </head>
-    <body>
-
-	<iframe src="${embed}"></iframe>
-    </body>
-    </html>`;
-}
-
-function createRoboWebView(scriptUri: vscode.Uri){
-	return `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Webview Example</title>
-
-	  <style>
-
-	  	*,
-		*::before,
-		*::after {
-			box-sizing: border-box;
-		}
-
-		html, body {
-			height: 100%;
-			width: 100%;
-		}
-
-		body {
-			margin: 0;
-			background-color: #0D1126;
-			display: grid;
-			place-items: center;
-			position: relative;
-		}
-
-		canvas {
-    		position: absolute;
-			z-index: 0;
-		}
-
-		.text_input_container {
-    		border: 2px solid #424141;
-		}
-
-		.text_input {
-		    width: 100%;
-			height: 100%;
-			border: none;
-			background: none;
-			color: white;
-			font-size: 1.2em;
-			padding: 1em;
-		}
-
-		.container {
-			display: flex;
-			flex-direction: column;
-			justify-content: center;
-			gap: 25px;
-			width: 30%;
-			position: relative;
-			z-index: 3;
-		}
-
-		.section-title {
-			font-size: 2rem;
-			font-weight: bold;
-			color: #FFFFFF;
-		}
-
-		select {
-			background-color: transparent;
-			border: none;
-			padding: 0 1em 0 0;
-			margin: 0;
-			width: 100%;
-			font-family: inherit;
-			font-size: inherit;
-			cursor: inherit;
-			line-height: inherit;
-		}
-
-		#helpBubble::after {
-			content: attr(data-after-content);
-			width: 200px;
-			display: flex;
-			background-color: #3d3a3a85;
-			position: absolute;
-    		left: -100px;
-		}
-
-		select::-ms-expand {
-			display: none;
-		}	
-
-		.select {
-			padding: 1em;
-			border: 2px solid #424141;
-			color: #FFFFFF;
-			font-weight: bold;
-			text-align: center;
-			cursor: pointer;
-			line-height: 1.1;
-			font-size: 1rem;
-		}
-
-		#createBot{
-			width: fit-content;
-			padding: 1rem;
-			border: none;
-			background-color: #F0B90B;
-			color: #000000;
-			font-weight: 600;
-    		align-self: center;
-			cursor: pointer;
-		}
-
-		#projectName {
-			width: 100%;
-			background: transparent;
-		}
-
-		#content {
-			display: flex;
-			flex-direction: column;
-			gap: 25px;
-		}
-
-		.error {
-			color: #FA4154;
-			font-weight: bold;
-		}
-
-
-		.robo_upgrades {
-			font-weight: bold;
-			font-size: 1em;s
-			width: 90%;
-			padding: 1rem;
-			border: 2px solid #424141;
-			cursor: pointer;
-		}
-
-		input[type="checkbox"]  {
-			display: none;
-		}
-
-		input[type=file]{
-		 	display: none;
-		}
-
-		    button { background-color: transparent };
-
-		#robo_location_data{
-		 display: flex;
-		 flex-direction: column;
-		 gap: 10px;
-		}
-
-		#robo_location_data > #top-row, #bottom-row {
-			display: flex;
-    		justify-content: space-between;
-			width: 90%;
-		}
-
-		.location_input {
-			display: flex;
-			flex-direction: column;
-   			width: fit-content;
-		}
-
-		#bottom-row > .location_input > input {
-    		width: 90%;
-		}
-
-		#helpBubble {
-		
-			transition: all 500ms
-			}
-
-		.svg_text {
-			display: flex;
-			position: relative;
-			justify-content: center;
-			align-items: center;
-			color: white;
-		}
-
-		.svg_text  > svg {
-			z-index: 1;
-			position: absolute;
-		}
-
-		.svg_text > span {
-			font-weight: 600;
-			z-index: 2;
-			position: relative;
-			cursor: pointer;
-		}
-
-		.helpBubble {
-			display: flex;
-			align-items: center;
-			gap: 20px;
-		}
-
-		#button_svg {
-			display: flex;
-			position: relative;
-			justify-content: center;
-			align-items: center;
-			transition: all 500ms;
-			color: black;
-		}
-
-		#button_svg > svg {
-			z-index: 1;
-			position: absolute;
-		}
-
-		#button_svg > span {
-			font-weight: 600;
-			z-index: 2;
-			position: relative;
-			cursor: pointer;
-		}
-
-		#button_svg:hover {
-			transform: scale(1.1)
-		}
-	  </style>
-    </head>
-    <body>
-		<canvas id="stars"></canvas>
-	  	<div class="container">
-		    <div class='steps'>
-				<span id="steps_no"></span>
-				<span id="steps_title"><span> 
-			</div>
-			<span class="section-title"></span>
-			<div id='content'>
-			</div>
-			<div id="button_svg">
-			</div>
-		</div>
-		<script>
-            const vscode = acquireVsCodeApi();
-        </script>
-	<script src="${scriptUri}"></script>
-    </body>
-    </html>
-  `;
+ 	});
+  
 }
 
 
-function terminalView(){
+function deploymentTab(context: vscode.ExtensionContext, embed: string){
 
-	return ``;
+	const deployPanel =  vscode.window.createWebviewPanel(
+		'webview',
+		'RoboPlay Deploy',
+		vscode.ViewColumn.One, 
+		{
+		  localResourceRoots: [
+			vscode.Uri.joinPath(context.extensionUri, "dist")], 
+			  enableScripts: true,
+			  retainContextWhenHidden: true
+			
+		},
+	  );
+
+  
+	  deployPanel.webview.html = deploymentView(embed);
+  
+}
+function getFiles(dir) {
+  const files = fs.readdirSync(dir);
+  let tsFiles: string[] = [];
+
+  files.forEach(file => {
+	const filePath = path.resolve(dir, file);
+	const stat = fs.statSync(filePath);
+
+	if (stat.isDirectory()) {
+	  tsFiles = tsFiles.concat(getFiles(filePath));
+	} else {
+	  tsFiles.push(filePath);
+	}
+  });
+
+  return tsFiles;
 }
 
-function createDashBoardView(scriptPath: vscode.Uri, cssPath: vscode.Uri){
+function extractDeployLink(str: string){
+    let httpsIndex = str.indexOf('https');
+    let buffer = '';
 
-	return `<!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>WavePlay Login</title>
-	  <link rel="stylesheet" href="${cssPath}" />
-    </head>
-    <body>
- 
-	
-	<main>
-	<div class="bubble">
-		<span id="switch">RoboPlay</span>
-		<span id="helpBubble">${informationComponent('?', 25, 25)}</span>
-	</div>
-		${boxSvgTop(600, 100, 10)}
- 		 <div id="content">
-			<div id="middle">
-				<div class="infos">
-					<div class="cpu_container">
-						<span>CPU usage:</span>
-						<span class="cpu"></span>
-					</div>
-					<div class="memory_container">
-						<span class="ram">Ramusage:</span>
-						<span class="memory"></span>
-					</div>
-				</div>
-				<div class="buttons"></div>
-			</div>
-		 </div>
+    
+    while(httpsIndex < str.length){
+        const char = str[httpsIndex];
+        if(char === '\n' || char === '\r' || char === " " || char === '\r\n'){
+            break;
+        }
 
-		 ${boxSvgBottom(600, 100, 10, 180)}
-	</main>
+        buffer += char;
+        httpsIndex++;
+    }
 
-	<script>const vscode = acquireVsCodeApi();</script>
-	<script src=${scriptPath}></script>
-    </body>
-    </html>`;
-
+     return buffer;
 }

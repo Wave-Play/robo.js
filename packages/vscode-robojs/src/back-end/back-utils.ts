@@ -5,7 +5,6 @@ import * as vscode from 'vscode';
 
 export const IS_WINDOWS = /^win/.test(process.platform)
 
-
 export function getRoboPlaySession() {
 	return existsSync(path.join(os.homedir(), '.robo', 'roboplay', 'session.json'));
 }

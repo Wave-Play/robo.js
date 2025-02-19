@@ -1,7 +1,7 @@
 export function buttonComponent(text: string, width: number = 219, height: number = 43, slope: number = 16, id: string, fill: string, stroke: string) {
     return `
 
-	 <button class="svg_text" id=${id} style="height: ${height}px; width: ${width}px;">
+	 <button class="svg_text" id=${id} style="height: ${height}px; width: ${width}px; border: none;">
         <svg
         width="${width}"
         height="${height}"
@@ -108,7 +108,7 @@ export function informationComponent(text: string, width: number, height: number
 export const boxSvgTop = (width: number, height: number, slope: number, degree: number = 0) => {
     return `
 
-    <div class="svg_container" style="width: ${width}px; ${height}px">
+    <div class="svg_container" style="width: ${width}px; height: ${height}px">
             <svg
 
                 width="${width}"
@@ -132,9 +132,9 @@ export const boxSvgTop = (width: number, height: number, slope: number, degree: 
                 transform="rotate(${degree}, ${width / 2}, ${height / 2})"
                 />
             </svg>
-            <section id="top" style="padding: 10px; width: calc(${width}px - ${(width / slope) * 2}px); margin: auto">
-                <span class="prefix">Command Count: <span class="commandCount">150</span></span>
-                <span class="prefix">Status: <span class="status">online</span></span>
+            <section id="top" style="padding: 10px; width: calc(${width}px - ${(width / slope) * 2}px); margin: auto;">
+                <span class="prefix">Command Count: <span class="commandCount">loading..</span></span>
+                <span class="prefix">Status: <span class="status">loading..</span></span>
             </section>
         </div>
     `;
@@ -239,3 +239,5 @@ export function exaButton(text: string, width: number, height: number, slope: nu
             </button>
         `;
 }
+
+

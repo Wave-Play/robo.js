@@ -1,0 +1,220 @@
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    width: 100%;
+}
+
+body {
+    margin: 0;
+    background-color: #0D1126;
+    display: grid;
+    place-items: center;
+    position: relative;
+}
+
+canvas {
+    position: absolute;
+    z-index: 0;
+}
+
+.text_input_container {
+    border: 2px solid #424141;
+}
+
+.text_input {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: none;
+    color: white;
+    font-size: 1.2em;
+    padding: 1em;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+    width: 30%;
+    position: relative;
+    z-index: 3;
+}
+
+.section-title {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #FFFFFF;
+}
+
+select {
+    background-color: transparent;
+    border: none;
+    padding: 0 1em 0 0;
+    margin: 0;
+    width: 100%;
+    font-family: inherit;
+    font-size: inherit;
+    cursor: inherit;
+    line-height: inherit;
+}
+
+#helpBubble::after {
+    content: attr(data-after-content);
+    width: 200px;
+    display: flex;
+    background-color: #3d3a3a85;
+    position: absolute;
+    left: -100px;
+}
+
+select::-ms-expand {
+    display: none;
+}	
+
+.select {
+    padding: 1em;
+    border: 2px solid #424141;
+    color: #FFFFFF;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    line-height: 1.1;
+    font-size: 1rem;
+}
+
+#createBot{
+    width: fit-content;
+    padding: 1rem;
+    border: none;
+    background-color: #F0B90B;
+    color: #000000;
+    font-weight: 600;
+    align-self: center;
+    cursor: pointer;
+}
+
+#projectName {
+    width: 100%;
+    background: transparent;
+}
+
+#content {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+
+}
+
+.error {
+    color: #FA4154;
+    font-weight: bold;
+}
+
+
+.robo_upgrades {
+    font-weight: bold;
+    font-size: 1em;
+    padding: 1rem;
+    border: 2px solid #424141;
+    cursor: pointer;
+}
+
+input[type="checkbox"]  {
+    display: none;
+}
+
+input[type=file]{
+     display: none;
+}
+
+button { background-color: transparent }
+
+#robo_location_data{
+ display: flex;
+ flex-direction: column;
+ gap: 10px;
+}
+
+#robo_location_data > #top-row, #bottom-row {
+    display: flex;
+    justify-content: space-between;
+    width: 90%;
+}
+
+.location_input {
+    display: flex;
+    flex-direction: column;
+       width: fit-content;
+}
+
+#bottom-row > .location_input > input {
+    width: 90%;
+}
+
+#helpBubble {
+
+    transition: all 500ms
+    }
+
+.svg_text {
+    display: flex;
+    position: relative;
+    justify-content: center;
+    align-items: center;
+    color: white;
+}
+
+.svg_text  > svg {
+    z-index: 1;
+    position: absolute;
+}
+
+.svg_text > span {
+    font-weight: 600;
+    z-index: 2;
+    position: relative;
+    cursor: pointer;
+}
+
+.helpBubble {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.button_svg {
+    display: flex;
+    position: relative;
+    justify-content: center;
+    align-items: center;
+    transition: all 500ms;
+    color: black;
+}
+
+.button_svg > svg {
+    z-index: 1;
+    position: absolute;
+}
+
+.button_svg > span {
+    font-weight: 600;
+    z-index: 2;
+    position: relative;
+    cursor: pointer;
+}
+
+.button_svg:hover {
+    transform: scale(1.1)
+}
+
+.action_buttons {
+    display: flex;
+    justify-content: center;
+}
