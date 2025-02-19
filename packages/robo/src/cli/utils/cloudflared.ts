@@ -35,8 +35,7 @@ const LINUX_URL: Partial<Record<typeof process.arch, string>> = {
 }
 
 const MACOS_URL: Partial<Record<typeof process.arch, string>> = {
-	// Yeah, still no Apple Silicon support... https://github.com/cloudflare/cloudflared/issues/389
-	arm64: 'cloudflared-darwin-amd64.tgz',
+	arm64: 'cloudflared-darwin-arm64.tgz',
 	x64: 'cloudflared-darwin-amd64.tgz'
 }
 
