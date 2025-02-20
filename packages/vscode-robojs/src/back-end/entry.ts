@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { getRoboPlaySession, isRoboProject, IS_WINDOWS, getPackageExecutor } from './back-utils'
+import { getRoboPlaySession, isRoboProject, IS_WINDOWS, getPackageExecutor, getRoboPlaySessionJSON } from './back-utils'
 import { exaButton} from '../front-end/front-utils'
 import { ChildProcessWithoutNullStreams, spawn, spawnSync } from 'child_process';
 import path from 'path';
@@ -407,6 +407,23 @@ function dashboardTab(context: vscode.ExtensionContext){
 		dashboardPanel.webview.onDidReceiveMessage( async (message) => {
 			
 			switch(message.command){
+
+				case 'hostingInfos': {
+					const json = getRoboPlaySessionJSON();
+
+					if(json){
+						
+						console.log(json)
+						const podId = json["linkedProjects"]["/Users/alexanderrobelin/Documents/GitHub/robos"].podId;
+						console.log(podId)
+						const podData = json.pods.filter((pod) => pod.id === podId)
+						console.log(podData)
+
+						dashboardPanel?.webview.postMessage({command: 'hostingInfos', data: JSON.stringify(podData)})
+					}
+					break;
+				}
+
 				case 'startButtonHosting': {
 					spawnSync('npx', ['robo','cloud', 'start'], {
 						cwd

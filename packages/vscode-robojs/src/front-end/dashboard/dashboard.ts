@@ -28,12 +28,25 @@ window.addEventListener('DOMContentLoaded', () => {
         const message = event.data;
 
 
-        if(message.command === "loggedIn"){
-            if(iframes !== null){
-                iframes.style.display = 'none'
+        if(message.command === 'hostingInfos'){
+            if(status){
+                const project = message.data;
+
+                status.textContent = project.status;
+                
             }
+
+            return;
+        }
+        if(message.command === "loggedIn"){
             hostingDash = true;
+            isLoggedIn = true;
             loadButtons()
+            if(iframes !== null && main){
+                slideContent(iframes, main, 'right')
+                iframes.src = "";
+
+            }
             return;
         }
         if(message.command === 'loginLink'){
@@ -41,7 +54,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 iframes.src = message.text;
 
                 if(main){
-                    slideContent(main, iframes)
+                    slideContent(main, iframes, 'left')
                 }
 
             }
@@ -125,7 +138,9 @@ window.addEventListener('DOMContentLoaded', () => {
             } else {
                 switchHosting.textContent = 'RoboPlay';
                 hostingDash = true;
+                
                 if(isLoggedIn){
+                    vscode.postMessage({command: 'hostingInfos'});
                     loadButtons();
                     return;
                 }
@@ -159,25 +174,45 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    function slideContent(element1: HTMLElement, element2: HTMLElement){
-        element1.animate([
-            {transform: "translateX(-100vw)"}
-        ],
-        {
-            fill: 'forwards',
-            easing: 'ease-out',
-
-            duration: 500,
-        })
-
-        element2.animate([
-            {transform: "translateX(0)"}
-        ],
-        {
-            fill: 'forwards',
-            easing: 'ease-in',
-            duration: 500,
-        })
+    function slideContent(element1: HTMLElement, element2: HTMLElement, direction: string){
+        if(direction === 'right'){
+            element2.animate([
+                {transform: "translateX(0)"}
+            ],
+            {
+                fill: 'forwards',
+                easing: 'ease-in',
+                duration: 500,
+            })
+            element1.animate([
+                {transform: "translateX(100vw)"}
+            ],
+            {
+                fill: 'forwards',
+                easing: 'ease-out',
+                duration: 500,
+            })
+        } else {
+            element1.animate([
+                {transform: "translateX(-100vw)"}
+            ],
+            {
+                fill: 'forwards',
+                easing: 'ease-out',
+    
+                duration: 500,
+            })
+    
+            element2.animate([
+                {transform: "translateX(0)"}
+            ],
+            {
+                fill: 'forwards',
+                easing: 'ease-in',
+                duration: 500,
+            })
+        }
+        
     }
 
 });

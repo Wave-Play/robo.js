@@ -2,8 +2,20 @@ import { closeSync, existsSync, openSync, readFileSync } from "node:fs";
 import * as path from "node:path";
 import * as os from 'node:os';
 import * as vscode from 'vscode';
+import * as fs from 'node:fs';
 
 export const IS_WINDOWS = /^win/.test(process.platform)
+
+export function getRoboPlaySessionJSON(){
+	const session = getRoboPlaySession();
+	if(session){
+		const file = fs.readFileSync(path.join(os.homedir(), '.robo', 'roboplay', 'session.json'), 'utf8');
+		const parsedJSON = JSON.parse(file)
+		return parsedJSON;
+	} else {
+		return false;
+	}
+}
 
 export function getRoboPlaySession() {
 	return existsSync(path.join(os.homedir(), '.robo', 'roboplay', 'session.json'));

@@ -1,5 +1,5 @@
 import path from 'path';
-import fs from 'fs';
+import fs, { existsSync } from 'fs';
 import esbuild from 'esbuild';
 
 export function getFiles(dir) {
@@ -28,17 +28,15 @@ export const frontOutput = path.join(process.cwd(), 'dist', 'front-end');
 
 export function compileFrontFile(file){
 
-   const splitPath = file.split(path.sep);
-   const fidx = splitPath.indexOf('front-end');
+    const splitPath = file.split(path.sep);
+    const fidx = splitPath.indexOf('front-end');
+    const outdir = path.join(frontOutput, ...splitPath.slice(fidx + 1, splitPath.length - 1));
 
-    let outdir = path.join(frontOutput, ...splitPath.slice(fidx + 1, splitPath.length - 1));
+    //const distFile = path.join(outdir, splitPath[splitPath.length - 1].replace('.ts', '.js'))
+    
     if(!fs.existsSync(outdir)){
       fs.mkdirSync(outdir, { recursive: true });
     }
-
-    // if(fs.existsSync(file)){
-    //   fs.rmSync(file)
-    // }
 
     return esbuild.build({
       outdir,
