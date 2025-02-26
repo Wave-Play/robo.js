@@ -188,6 +188,7 @@ export async function executeCommandHandler(interaction: CommandInteraction, com
 			// TODO: Fix reply objects themselves being used here
 			await interaction.editReply(reply)
 		} else if (isValidReply) {
+			reply.ephemeral = sage.ephemeral
 			await interaction.reply(reply)
 		} else {
 			const command = color.bold('/' + commandKey)
