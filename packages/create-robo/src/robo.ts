@@ -79,7 +79,9 @@ const optionalFeatures = [
 		checked: false
 	},
 	{
-		name: `${color.bold('Static Cloudflare Tunnels')} - Securely expose your Robo app to the world with minimal config.`,
+		name: `${color.bold(
+			'Static Cloudflare Tunnels'
+		)} - Securely expose your Robo app to the world with minimal config.`,
 		short: 'Static Cloudflare Tunnels',
 		value: 'cloudflare',
 		checked: false
@@ -543,7 +545,8 @@ export default class Robo {
 			logger.log(
 				Indent,
 				color.bold(
-					`📦 Preparing ${color.cyan(this._useTypeScript ? 'TypeScript' : 'JavaScript')} ${this._isPlugin ? 'plugin' : 'project'
+					`📦 Preparing ${color.cyan(this._useTypeScript ? 'TypeScript' : 'JavaScript')} ${
+						this._isPlugin ? 'plugin' : 'project'
 					}`
 				)
 			)
@@ -638,7 +641,8 @@ export default class Robo {
 		logger.log(
 			Indent,
 			color.bold(
-				`📦 Creating ${color.cyan(this._useTypeScript ? 'TypeScript' : 'JavaScript')} ${this._isPlugin ? 'plugin' : 'project'
+				`📦 Creating ${color.cyan(this._useTypeScript ? 'TypeScript' : 'JavaScript')} ${
+					this._isPlugin ? 'plugin' : 'project'
 				}`
 			)
 		)
@@ -1068,18 +1072,30 @@ export default class Robo {
 		)
 
 		if (this._isApp) {
-			env.set('DISCORD_CLIENT_SECRET', discordToken)
-			env.set('VITE_DISCORD_CLIENT_ID', discordClientId)
+			env.set(
+				'DISCORD_CLIENT_SECRET',
+				discordToken,
+				'Sensitive! Find your credentials in the Discord Developer portal - https://discord.com/developers/applications'
+			)
+			env.set(
+				'VITE_DISCORD_CLIENT_ID',
+				discordClientId,
+				'Find your credentials in the Discord Developer portal - https://discord.com/developers/applications'
+			)
 		} else {
-			env.set('DISCORD_TOKEN', discordToken)
+			env.set(
+				'DISCORD_TOKEN',
+				discordToken,
+				'Sensitive! Find your credentials in the Discord Developer portal - https://discord.com/developers/applications'
+			)
 		}
 
 		// Plugin-specific variables
 		if (this._selectedPlugins.includes('ai')) {
-			env.set('OPENAI_API_KEY', '', 'Get your OpenAI API key - https://platform.openai.com/api-keys')
+			env.set('OPENAI_API_KEY', '', 'Sensitive! Get your OpenAI API key - https://platform.openai.com/api-keys')
 		}
 		if (this._selectedPlugins.includes('ai-voice')) {
-			env.set('AZURE_SUBSCRIPTION_KEY', '')
+			env.set('AZURE_SUBSCRIPTION_KEY', 'Sensitive!')
 			env.set('AZURE_SUBSCRIPTION_REGION', '')
 		}
 		if (this._selectedPlugins.includes('analytics')) {
@@ -1088,7 +1104,7 @@ export default class Robo {
 			env.set('PLAUSIBLE_DOMAIN', '')
 		}
 		if (this._selectedPlugins.includes('server')) {
-			env.set('PORT', '3000', 'Change this port number if needed')
+			env.set('PORT', '3000', 'The port the server will listen on')
 		}
 
 		// Save the .env file
@@ -1101,7 +1117,9 @@ export default class Robo {
 		const cloudflareDashboard = 'Dashboard:'
 		const cloudflareDashboardUrl = HighlightBlue('https://dash.cloudflare.com')
 		const cloudflareOfficialGuide = 'Guide:'
-		const cloudflareOfficialGuideUrl = HighlightBlue('https://developers.cloudflare.com/fundamentals/api/get-started/create-token')
+		const cloudflareOfficialGuideUrl = HighlightBlue(
+			'https://developers.cloudflare.com/fundamentals/api/get-started/create-token'
+		)
 
 		let cloudflareDomain = ''
 		let cloudflareAPIKey = ''
@@ -1146,10 +1164,14 @@ export default class Robo {
 		const env = await new Env('.env', this._workingDir).load()
 
 		// Cloudflare-specific variables
-		env.set('CLOUDFLARE_TUNNEL_ID', '', 'Get your Cloudflare credentials on the Cloudflare Dashboard - https://dash.cloudflare.com')
-		env.set('CLOUDFLARE_TUNNEL_TOKEN', '')
+		env.set(
+			'CLOUDFLARE_TUNNEL_ID',
+			'',
+			'Get your Cloudflare credentials on the Cloudflare Dashboard - https://dash.cloudflare.com'
+		)
+		env.set('CLOUDFLARE_TUNNEL_TOKEN', '', 'Sensitive!')
 		env.set('CLOUDFLARE_DOMAIN', cloudflareDomain)
-		env.set('CLOUDFLARE_API_KEY', cloudflareAPIKey)
+		env.set('CLOUDFLARE_API_KEY', cloudflareAPIKey, 'Sensitive!')
 		env.set('CLOUDFLARE_ZONE_ID', cloudflareZoneID)
 		env.set('CLOUDFLARE_ACCOUNT_ID', cloudflareAccountID)
 
@@ -1200,8 +1222,9 @@ export default class Robo {
 		}
 
 		// Normalize plugin path
-		const pluginPath = `${path.join(this._workingDir, 'config', 'plugins', ...pluginParts)}${this._useTypeScript ? '.ts' : '.mjs'
-			}`
+		const pluginPath = `${path.join(this._workingDir, 'config', 'plugins', ...pluginParts)}${
+			this._useTypeScript ? '.ts' : '.mjs'
+		}`
 		const pluginConfig = prettyStringify(config) + '\n'
 
 		logger.debug(`Writing ${pluginName} config to ${pluginPath}...`)
