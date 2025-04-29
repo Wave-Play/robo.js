@@ -3,7 +3,7 @@
   "displayName": "Robo.js",
   "description": "Scalfold robo.js projects in just a few clicks",
   "version": "0.0.1",
-  "publisher": "WavePlay LLC.",
+  "publisher": "WavePlay",
   "engines": {
     "vscode": "^1.95.0"
   },
@@ -33,20 +33,17 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "dev": "node esbuild.mjs && node esbuild-dev.mjs",
-    "pretest": "npm run compile",
-    "test": "node ./out/test/runTest.js"
+    "vscode:prepublish": "node ./esbuild-prod.mjs",
+    "dev": "node esbuild.mjs && node esbuild-dev.mjs"
   },
   "devDependencies": {
     "@types/node": "20.x",
     "@types/vscode": "^1.95.0",
+    "@vscode/vsce": "^3.2.2",
     "@xterm/xterm": "^5.5.0",
     "esbuild": "^0.25.0",
     "typescript": "^5.7.2",
-    "vscode-test": "^1.5.0"
-  },
-  "dependencies": {
+    "vscode-test": "^1.5.0",
     "@xterm/addon-fit": "^0.10.0"
   }
 }

@@ -21,6 +21,11 @@ export default function createDashBoardView(scriptPath: vscode.Uri, cssPath: vsc
             </div>
             ${boxSvgTop(boxWidth, 100, slope)}
             <div id="content">
+                <div class="computerUsage">
+                    <div id="botName"></div>
+                    <span class="infoSpan">Memory usage: <span class="memoryValue"></span></span>
+                    <span class="infoSpan">CPU usage: <span class="cpuValue"></span></span>
+                </div>
                 <div id="middle">
                 </div>
             </div>
@@ -38,10 +43,5 @@ export default function createDashBoardView(scriptPath: vscode.Uri, cssPath: vsc
 /**
  * 
  * 
-                    <div class="infos">
-                    </div>
-                        <div class="cpu_container">
-                            <span>CPU usage:</span>
-                            <span class="cpu"></span>
-                        </div>
+                    
  */

@@ -1,5 +1,5 @@
 import path from 'path';
-import fs, { existsSync } from 'fs';
+import fs from 'fs';
 import esbuild from 'esbuild';
 
 export function getFiles(dir) {
@@ -59,11 +59,6 @@ export function compileBackFile(file){
     if(!fs.existsSync(outdir)){
       fs.mkdirSync(outdir, { recursive: true});
     }
-
-
-    // if(fs.existsSync(file)){
-    //   fs.rmSync(file)
-    // }
 
     return esbuild.build({
       allowOverwrite: true,

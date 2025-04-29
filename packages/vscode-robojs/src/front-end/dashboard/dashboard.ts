@@ -13,6 +13,9 @@ window.addEventListener('DOMContentLoaded', () => {
     const commandCount: HTMLSpanElement | null = document.querySelector('.commandCount');
     const middleDiv: HTMLSpanElement | null = document.querySelector('#middle');
     const iframes: HTMLIFrameElement | null = document.querySelector('#loginFrame');
+    const memory: HTMLSpanElement | null = document.querySelector(".memoryValue")
+    const cpu: HTMLSpanElement | null = document.querySelector(".cpuValue")
+    const nameDiv = document.querySelector('#botName')
 
     vscode.postMessage({ command: 'isLoggedIn' })
 
@@ -28,12 +31,32 @@ window.addEventListener('DOMContentLoaded', () => {
         const message = event.data;
 
 
+        // include pod type ? 
+
         if(message.command === 'hostingInfos'){
             if(status){
-                const project = message.data;
+                const project = JSON.parse(message.data)[0];
+                const name = project.robo.name;
 
+                if(nameDiv){
+                    nameDiv.innerHTML = name
+                }
+                if(project.status === 'Online'){
+                    status.style.color = '#00BFA5';
+                }else if(project.status === 'Offline'){
+                    status.style.color = '#E33042';
+                }
                 status.textContent = project.status;
-                
+
+            }
+
+            return;
+        }
+
+        if(message.command === 'localRes'){
+            if(memory && cpu && !hostingDash){
+                memory.textContent = message.data.memory;
+                cpu.textContent = message.data.cpu;
             }
 
             return;
@@ -65,23 +88,35 @@ window.addEventListener('DOMContentLoaded', () => {
             isLoggedIn = message.text;
             return;
         }
-        if(message.command === "online"){
-            if(status){
-                status.textContent = 'online';
-                status.style.color = '#00BFA5';
-            }
-        }
+        
         if(message.command === "offline"){
             if(status){
                 status.textContent = 'offline';
                 status.style.color = '#E33042';
             }
+
+            return;
         }
 
-        if(message.command === "commandCount"){
-            if(commandCount){
-                commandCount.textContent = message.text;
+        if(message.command === "localRoboData"){
+            vscode.postMessage({command: 'localRes'});
+
+            if(commandCount && nameDiv && status){
+                nameDiv.textContent = message.data.name;
+                if(!message.data.commandCount){  
+                    commandCount.textContent = '0';
+                    commandCount.style.fontWeight = 'lighter';
+                }
+                commandCount.textContent = message.data.commandCount;
                 commandCount.style.fontWeight = 'lighter';
+                if(message.data.isRunning){
+                    status.textContent = 'online';
+                    status.style.color = '#00BFA5';
+                } else {
+                    status.textContent = 'offline';
+                    status.style.color = '#E33042';
+                }
+                
             }
         }
     });
@@ -90,12 +125,14 @@ window.addEventListener('DOMContentLoaded', () => {
         if(middleDiv){
             if(hostingDash && isLoggedIn){
                 middleDiv.innerHTML = `
-                <div class="buttons">
-                    ${buttonComponent('start', 150, 43, 16, 'startButtonHosting', "#F0B90B", '')}
-                    ${buttonComponent('stop', 150, 43, 16, 'stopButtonHosting', "#E33042", '')}
-                    ${buttonComponent('deploy', 150, 43, 16, 'deploy', "#F0B90B", '')}
-                    
-                </div>`;
+                <div class="buttons" style="align-items: center;">
+                    <div style="display: flex; gap: 10px;">
+                        ${buttonComponent('start', 150, 43, 16, 'startButtonHosting', "#F0B90B", '')}
+                        ${buttonComponent('stop', 150, 43, 16, 'stopButtonHosting', "#E33042", '')}\
+                    </div>
+                     ${buttonComponent('deploy', 150, 43, 16, 'deploy', "#F0B90B", '')}
+                </div>
+                `;
 
                     document.querySelector("#startButtonHosting")?.addEventListener('click', () => {
                         vscode.postMessage({ command: 'startHosting' });
@@ -134,6 +171,14 @@ window.addEventListener('DOMContentLoaded', () => {
                 
                 switchHosting.textContent = 'Local';
                 hostingDash = false;
+
+                vscode.postMessage({command: 'localRoboData'});
+
+                if(memory && cpu){
+                    vscode.postMessage({command: 'localRes'});
+                    memory.textContent = 'Loading...'
+                    cpu.textContent = 'Loading...'
+                }
                 loadButtons();
             } else {
                 switchHosting.textContent = 'RoboPlay';
@@ -141,6 +186,11 @@ window.addEventListener('DOMContentLoaded', () => {
                 
                 if(isLoggedIn){
                     vscode.postMessage({command: 'hostingInfos'});
+
+                    if(memory && cpu){
+                        memory.textContent = 'Unavailable for the moment...'
+                        cpu.textContent = 'Unavailable for the moment...'
+                    }
                     loadButtons();
                     return;
                 }

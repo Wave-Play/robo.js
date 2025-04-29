@@ -6,6 +6,52 @@ import * as fs from 'node:fs';
 
 export const IS_WINDOWS = /^win/.test(process.platform)
 
+export function getFiles(dir): false | string[] {
+	const dirExist = fs.existsSync(dir);
+	let tsFiles: string[] = [];
+	if(!dirExist){
+		return false
+	}
+	if(dirExist){
+		const files = fs.readdirSync(dir);
+	
+		files.forEach(file => {
+		const filePath = path.resolve(dir, file);
+		const stat = fs.statSync(filePath);
+	
+		if (stat.isDirectory()) {
+			tsFiles = tsFiles.concat(getFiles(filePath) as string[]);
+		} else {
+			tsFiles.push(filePath);
+		}
+	});
+}
+	return tsFiles;
+  }
+
+export function getLocalRoboData(cwd, roboProcess){
+	const cmdCount = getFiles(path.join(cwd, 'src', 'commands'));
+	const pckJSON  = getRoboPackageJSON(path.join(cwd, 'package.json'));
+	const localRoboData = {
+		commandCount: cmdCount ? cmdCount.length : false,
+		name: pckJSON ? pckJSON.name : 'Unknown',
+		isRunning: roboProcess
+	}
+
+	return localRoboData
+}
+
+export function getRoboPackageJSON(cwd: string){
+	const session = getRoboPlaySession();
+	if(session){
+		const file = fs.readFileSync(path.join(cwd), 'utf8');
+		const parsedJSON = JSON.parse(file)
+		return parsedJSON;
+	} else {
+		return false;
+	}
+}
+
 export function getRoboPlaySessionJSON(){
 	const session = getRoboPlaySession();
 	if(session){

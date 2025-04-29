@@ -1,21 +1,20 @@
 import * as vscode from 'vscode';
-import { getRoboPlaySession, isRoboProject, IS_WINDOWS, getPackageExecutor, getRoboPlaySessionJSON } from './back-utils'
+import { getRoboPlaySession, isRoboProject, IS_WINDOWS, getPackageExecutor, getRoboPlaySessionJSON, getRoboPackageJSON, getLocalRoboData } from './back-utils'
 import { exaButton} from '../front-end/front-utils'
 import { ChildProcessWithoutNullStreams, spawn, spawnSync } from 'child_process';
 import path from 'path';
 import createDashBoardView from '../front-end/views/dashboardView';
-import loginView from '../front-end/views/loginView';
 import createRoboWebView from '../front-end/views/createRoboView';
 import terminalView from '../front-end/views/terminalView';
-import fs from 'node:fs'
 import deploymentView from '../front-end/views/deploymentView';
+import { availableMemory } from 'node:process';
+import { execSync } from 'node:child_process';
 let terminalPanel: vscode.WebviewPanel | null = null
 let dashboardPanel: vscode.WebviewPanel | null = null;
 let terminalLogs = '';
 let roboProcess: ChildProcessWithoutNullStreams | null;
 let loginProcess: ChildProcessWithoutNullStreams | null;
-const cwd = '/Users/alexanderrobelin/Documents/GitHub/robos/';
-// const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || process.cwd();
+const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || process.cwd();
 
 export function activate(context: vscode.ExtensionContext) {
 	const provider = new CustomWebviewViewProvider(context);
@@ -198,19 +197,6 @@ class CustomWebviewViewProvider implements vscode.WebviewViewProvider {
 						vscode.postMessage({ command: 'dashboard', text: 'Login to WavePlay...' });
 					});
 				}
-
-				if(deploy) {
-					deploy.addEventListener('click', () => {
-						vscode.postMessage({ command: 'deploy', text: 'Login to WavePlay...' });
-					});
-				}
-					
-				if(stop) {
-					stop.addEventListener('click', () => {
-						vscode.postMessage({ command: 'stop', text: 'Login to WavePlay...' });
-					});
-				}
-
 
 				// Listen for messages from the extension
 				window.addEventListener('message', (event) => {
@@ -401,12 +387,52 @@ function dashboardTab(context: vscode.ExtensionContext){
 		));
 
 		dashboardPanel.webview.html = createDashBoardView(scriptPath, cssPath);
-		const cmdCount = getFiles(path.join(cwd, 'src', 'commands'));
-		dashboardPanel?.webview.postMessage({command: 'commandCount', text: cmdCount.length});
+		const localRoboData = getLocalRoboData(cwd, roboProcess)
+		dashboardPanel?.webview.postMessage({command: 'localRoboData', data: localRoboData});
 
 		dashboardPanel.webview.onDidReceiveMessage( async (message) => {
 			
+/**
+ * 
+ * Maybe refactor the code so localRoboData contains even the ressources used. ex: Ram, CPU and what not.
+ */
+
 			switch(message.command){
+
+				case 'localRoboData': {
+					const localRoboData = getLocalRoboData(cwd, roboProcess)
+					dashboardPanel?.webview.postMessage({command: 'localRoboData', data: localRoboData});
+					break;
+				}
+
+				case 'localRes': {
+					let id: NodeJS.Timeout | null= null;
+
+					if(roboProcess){
+						id = setInterval(() => {
+							if(!roboProcess && id){
+								clearInterval(id)
+							}
+							const computerData = {
+								cpu: roboProcess ? getCpuUsage() : 'Bot is offline',
+								memory: roboProcess ? `${getMemoryUsage().toFixed(2)} Mb / ${(availableMemory() / 1024 / 1024 / 1024 * 100).toFixed(2)} Gb` : 'Bot is offline'
+							}
+	
+							dashboardPanel?.webview.postMessage({command: 'localRes', data: computerData })
+	
+						}, 1500)
+					} else {
+						const computerData = {
+							cpu: 'Bot is offline',
+							memory: 'Bot is offline'
+						}
+
+						dashboardPanel?.webview.postMessage({command: 'localRes', data: computerData })
+					}
+
+					break;
+
+				}
 
 				case 'hostingInfos': {
 					const json = getRoboPlaySessionJSON();
@@ -496,9 +522,8 @@ function dashboardTab(context: vscode.ExtensionContext){
 
 
 						if(data.toString().includes('standby')){
-							const cmdCount = getFiles(path.join(cwd, 'src', 'commands'));
-							dashboardPanel?.webview.postMessage({command: 'online'});
-							dashboardPanel?.webview.postMessage({command: 'commandCount', text: cmdCount.length});
+							const localRoboData = getLocalRoboData(cwd, roboProcess)
+							dashboardPanel?.webview.postMessage({command: 'localRoboData', data: localRoboData});
 						}
 						
 
@@ -529,6 +554,7 @@ function dashboardTab(context: vscode.ExtensionContext){
 				case 'stopButtonLocal': {
 					if(roboProcess) {
 						roboProcess.kill();
+						roboProcess = null;
 					}
 					break;
 				}
@@ -657,23 +683,7 @@ function deploymentTab(context: vscode.ExtensionContext, embed: string){
 	  deployPanel.webview.html = deploymentView(embed);
   
 }
-function getFiles(dir) {
-  const files = fs.readdirSync(dir);
-  let tsFiles: string[] = [];
 
-  files.forEach(file => {
-	const filePath = path.resolve(dir, file);
-	const stat = fs.statSync(filePath);
-
-	if (stat.isDirectory()) {
-	  tsFiles = tsFiles.concat(getFiles(filePath));
-	} else {
-	  tsFiles.push(filePath);
-	}
-  });
-
-  return tsFiles;
-}
 
 function extractDeployLink(str: string){
     let httpsIndex = str.indexOf('https');
@@ -691,4 +701,30 @@ function extractDeployLink(str: string){
     }
 
      return buffer;
+}
+
+
+function getCpuUsage() {
+
+	if(roboProcess){
+		if(process.platform === 'darwin'){
+			const cmd = `ps up "${roboProcess.pid}" | tail -n1 | tr -s ' ' | cut -f3 -d' '`;
+			const val = execSync(cmd);
+			return `${val}%`;
+		} else if (process.platform === 'win32'){
+			return;
+		}
+
+	}
+}
+
+
+function getMemoryUsage() {
+	const memoryUsage = process.memoryUsage();
+	const rss = memoryUsage.rss / (1024 * 1024);  // Resident Set Size (in MB)
+	// const heapTotal = memoryUsage.heapTotal / (1024 * 1024);  // Total heap size (in MB)
+	// const heapUsed = memoryUsage.heapUsed / (1024 * 1024);  // Used heap size (in MB)
+	// const external = memoryUsage.external / (1024 * 1024);  // External memory (in MB)
+
+	return rss;
 }

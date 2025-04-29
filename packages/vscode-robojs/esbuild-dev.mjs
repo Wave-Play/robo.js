@@ -9,7 +9,10 @@ const watchDirectory = (dir) => {
       console.log('Recompiling Front-end...')
 
 
+
+
       if(fs.existsSync(frontOutput)){
+        console.log('deleting directory..', frontOutput)
         fs.rmSync(frontOutput, { recursive: true, force: true });
       }
 
@@ -17,7 +20,7 @@ const watchDirectory = (dir) => {
       frontendFiles.forEach((file) => {
         compileFrontFile(file).catch(() => {
           
-        }); // Exit on error
+        });
       })
       console.log('Front-end compiled')
     } else if(dir.includes('back-end')){
@@ -25,6 +28,7 @@ const watchDirectory = (dir) => {
 
 
       if(fs.existsSync(backOutput)){
+        console.log('deleting directory..', backOutput)
         fs.rmSync(backOutput, { recursive: true, force: true });
       }
 
