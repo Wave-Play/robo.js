@@ -9,6 +9,7 @@ import {
 	ChannelType,
 	Colors,
 	CommandInteraction,
+	ComponentType,
 	Message,
 	PartialGroupDMChannel,
 	TextChannel
@@ -225,7 +226,9 @@ export async function sendDebugError(error: unknown) {
 		// Send the message to the channel
 		const { message } = await formatError({ error })
 		await channel.send(message)
-		discordLogger.debug(`Message sent to channel ${env.get('discord.debugChannelId')} in guild ${env.get('discord.guildId')}.`)
+		discordLogger.debug(
+			`Message sent to channel ${env.get('discord.debugChannelId')} in guild ${env.get('discord.guildId')}.`
+		)
 		return true
 	} catch (error) {
 		discordLogger.error('Error sending message:', error)
@@ -456,8 +459,14 @@ export async function handleDebugButton(interaction: ButtonInteraction) {
 
 	// Parse button ID alongside existing disabled states
 	const id = interaction.customId.replace(DEBUG_ID_PREFIX, '')
-	const stackButtonDisabled = interaction.message.components[0].components[0].disabled
-	const logsButtonDisabled = interaction.message.components[0].components[1].disabled
+	const topComponent = interaction.message.components[0]
+	let stackButtonDisabled = false
+	let logsButtonDisabled = false
+
+	if (topComponent.type === ComponentType.ActionRow) {
+		stackButtonDisabled = topComponent.components[0].disabled
+		logsButtonDisabled = topComponent.components[1].disabled
+	}
 
 	if (id.startsWith('stack_trace')) {
 		const errorId = id.replace('stack_trace_', '')
