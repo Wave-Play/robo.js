@@ -1,6 +1,8 @@
+<!--
 <p align="center">✨🎃 <strong><a href="https://roboplay.dev/hacktoberfest">Hacktoberfest 2024</a> - Build stuff, win free swag</strong> 🎃✨</p>
 
 ---
+-->
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/Wave-Play/robo/main/docs/static/img/logo.png" height="128">
