@@ -646,6 +646,15 @@ importers:
         specifier: ^5.8.3
         version: 5.8.3
 
+  templates/discord-bots/bake-n-take-js:
+    dependencies:
+      discord.js:
+        specifier: ^14.19.3
+        version: 14.19.3
+      robo.js:
+        specifier: ^0.10.30
+        version: 0.10.30(discord.js@14.19.3)
+
 packages:
 
   /@ampproject/remapping@2.3.0:
@@ -8022,6 +8031,29 @@ packages:
       '@swc/core': 1.11.29
       discord.js: 14.19.3
       typescript: 5.8.3
+    dev: false
+
+  /robo.js@0.10.30(discord.js@14.19.3):
+    resolution: {integrity: sha512-+8FxwO77PY32/qSvk0Mv72CTulgxB2HPRgQ7sJXE4AXuovupq1G8hybJumV1feKxXz8Bw3K7HttguB23S1O8rg==}
+    engines: {node: '>=18.0.0'}
+    hasBin: true
+    peerDependencies:
+      '@swc/core': ^1.3.41
+      discord.js: ^14.0.0
+      keyv: ^4.5.2
+      typescript: ^5.0.0
+      vite: ^5.0.0
+    peerDependenciesMeta:
+      '@swc/core':
+        optional: true
+      keyv:
+        optional: true
+      typescript:
+        optional: true
+      vite:
+        optional: true
+    dependencies:
+      discord.js: 14.19.3
     dev: false
 
   /rollup@3.29.5:
