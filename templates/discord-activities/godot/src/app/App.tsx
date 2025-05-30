@@ -14,7 +14,7 @@ import './App.css'
  */
 export default function App() {
 	return (
-		<DiscordContextProvider>
+		<DiscordContextProvider authenticate>
 			<Activity />
 		</DiscordContextProvider>
 	)
