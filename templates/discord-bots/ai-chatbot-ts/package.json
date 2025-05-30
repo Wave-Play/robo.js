@@ -7,19 +7,19 @@
 	"scripts": {
 		"build": "robo build",
 		"deploy": "robo deploy",
-		"dev": "NODE_OPTIONS=--enable-source-maps robo dev",
+		"dev": "robo dev",
 		"doctor": "robo doctor",
 		"invite": "robo invite",
 		"start": "robo start"
 	},
 	"dependencies": {
-		"@robojs/ai": "^0.5.7",
-		"discord.js": "^14.16.2",
-		"robo.js": "^0.10.26"
+		"@robojs/ai": "^0.5.8",
+		"discord.js": "^14.19.3",
+		"robo.js": "^0.10.30"
 	},
 	"devDependencies": {
-		"@swc/core": "^1.7.26",
-		"@types/node": "^22.7.4",
-		"typescript": "^5.6.2"
+		"@swc/core": "^1.11.29",
+		"@types/node": "^22.15.27",
+		"typescript": "^5.8.3"
 	}
 }
