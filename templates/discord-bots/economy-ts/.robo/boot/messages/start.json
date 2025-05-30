@@ -1,0 +1,18 @@
+[
+	{
+		"content": "Boop beep... Powering on Robo! Need hosting? Check out RoboPlay.dev!",
+		"type": "start"
+	},
+	{
+		"content": "System go... Show the world your Robo! Need hosting? We’re here!",
+		"type": "start"
+	},
+	{
+		"content": "Robo ready... Show it off to the world! (Psst, RoboPlay.dev awaits)",
+		"type": "start"
+	},
+	{
+		"content": "Ready for the spotlight? Make your move. RoboPlay.dev stands ready!",
+		"type": "start"
+	}
+]

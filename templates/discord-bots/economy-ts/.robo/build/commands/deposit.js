@@ -1,0 +1,22 @@
+// imports
+import { depositPlayerMoney } from "../utils.js";
+/**
+ * @name /deposit
+ * @description Deposit credits from your wallet into your bank.
+ */ export const config = {
+    description: 'Deposit credits from your wallet into your bank.',
+    options: [
+        {
+            name: 'amount',
+            description: 'Amount to be deposited',
+            type: 'number',
+            required: true
+        }
+    ]
+};
+export default (async (interaction)=>{
+    const amount = interaction.options.get('amount')?.value;
+    return await depositPlayerMoney(amount ?? 0, interaction.user.id, interaction.guild.id);
+});
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIkM6XFxVc2Vyc1xcc3VzaGlcXERvY3VtZW50c1xcR2l0SHViXFxyb2JvLmpzXFx0ZW1wbGF0ZXNcXGRpc2NvcmQtYm90c1xcZWNvbm9teS10c1xcc3JjXFxjb21tYW5kc1xcZGVwb3NpdC50cyJdLCJzb3VyY2VzQ29udGVudCI6WyIvLyBpbXBvcnRzXHJcbmltcG9ydCB0eXBlIHsgQ29tbWFuZENvbmZpZyB9IGZyb20gJ3JvYm8uanMnXHJcbmltcG9ydCB7IENvbW1hbmRJbnRlcmFjdGlvbiB9IGZyb20gJ2Rpc2NvcmQuanMnXHJcbmltcG9ydCB7IGRlcG9zaXRQbGF5ZXJNb25leSB9IGZyb20gJy4uL3V0aWxzLmpzJ1xyXG5cclxuLyoqXHJcbiAqIEBuYW1lIC9kZXBvc2l0XHJcbiAqIEBkZXNjcmlwdGlvbiBEZXBvc2l0IGNyZWRpdHMgZnJvbSB5b3VyIHdhbGxldCBpbnRvIHlvdXIgYmFuay5cclxuICovXHJcbmV4cG9ydCBjb25zdCBjb25maWc6IENvbW1hbmRDb25maWcgPSB7XHJcblx0ZGVzY3JpcHRpb246ICdEZXBvc2l0IGNyZWRpdHMgZnJvbSB5b3VyIHdhbGxldCBpbnRvIHlvdXIgYmFuay4nLFxyXG5cdG9wdGlvbnM6IFtcclxuXHRcdHtcclxuXHRcdFx0bmFtZTogJ2Ftb3VudCcsXHJcblx0XHRcdGRlc2NyaXB0aW9uOiAnQW1vdW50IHRvIGJlIGRlcG9zaXRlZCcsXHJcblx0XHRcdHR5cGU6ICdudW1iZXInLFxyXG5cdFx0XHRyZXF1aXJlZDogdHJ1ZVxyXG5cdFx0fVxyXG5cdF1cclxufVxyXG5cclxuZXhwb3J0IGRlZmF1bHQgYXN5bmMgKGludGVyYWN0aW9uOiBDb21tYW5kSW50ZXJhY3Rpb24pID0+IHtcclxuXHRjb25zdCBhbW91bnQgPSBpbnRlcmFjdGlvbi5vcHRpb25zLmdldCgnYW1vdW50Jyk/LnZhbHVlIGFzIG51bWJlclxyXG5cdHJldHVybiBhd2FpdCBkZXBvc2l0UGxheWVyTW9uZXkoYW1vdW50ID8/IDAsIGludGVyYWN0aW9uLnVzZXIuaWQsIGludGVyYWN0aW9uLmd1aWxkIS5pZClcclxufVxyXG4iXSwibmFtZXMiOlsiZGVwb3NpdFBsYXllck1vbmV5IiwiY29uZmlnIiwiZGVzY3JpcHRpb24iLCJvcHRpb25zIiwibmFtZSIsInR5cGUiLCJyZXF1aXJlZCIsImludGVyYWN0aW9uIiwiYW1vdW50IiwiZ2V0IiwidmFsdWUiLCJ1c2VyIiwiaWQiLCJndWlsZCJdLCJtYXBwaW5ncyI6IkFBQUEsVUFBVTtBQUdWLFNBQVNBLGtCQUFrQixRQUFRLGNBQWE7QUFFaEQ7OztDQUdDLEdBQ0QsT0FBTyxNQUFNQyxTQUF3QjtJQUNwQ0MsYUFBYTtJQUNiQyxTQUFTO1FBQ1I7WUFDQ0MsTUFBTTtZQUNORixhQUFhO1lBQ2JHLE1BQU07WUFDTkMsVUFBVTtRQUNYO0tBQ0E7QUFDRixFQUFDO0FBRUQsZUFBZSxDQUFBLE9BQU9DO0lBQ3JCLE1BQU1DLFNBQVNELFlBQVlKLE9BQU8sQ0FBQ00sR0FBRyxDQUFDLFdBQVdDO0lBQ2xELE9BQU8sTUFBTVYsbUJBQW1CUSxVQUFVLEdBQUdELFlBQVlJLElBQUksQ0FBQ0MsRUFBRSxFQUFFTCxZQUFZTSxLQUFLLENBQUVELEVBQUU7QUFDeEYsQ0FBQSxFQUFDIn0=
