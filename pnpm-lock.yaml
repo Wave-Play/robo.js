@@ -677,6 +677,28 @@ importers:
         specifier: ^5.8.3
         version: 5.8.3
 
+  templates/discord-bots/docker-ts:
+    dependencies:
+      discord.js:
+        specifier: ^14.19.3
+        version: 14.19.3
+      robo.js:
+        specifier: ^0.10.30
+        version: 0.10.30(@swc/core@1.11.29)(discord.js@14.19.3)(typescript@5.8.3)
+    devDependencies:
+      '@swc/core':
+        specifier: ^1.11.29
+        version: 1.11.29
+      '@types/node':
+        specifier: ^22.15.27
+        version: 22.15.27
+      prettier:
+        specifier: ^3.5.3
+        version: 3.5.3
+      typescript:
+        specifier: ^5.8.3
+        version: 5.8.3
+
 packages:
 
   /@ampproject/remapping@2.3.0:
