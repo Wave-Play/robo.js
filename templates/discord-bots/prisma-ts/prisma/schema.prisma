@@ -13,4 +13,4 @@ model users {
     email String?
     age   Int?
 }
-cd .\starter-js\; pnpm update;  cd .\starter-ts\; pnpm update;  cd .\tagbot\; pnpm update
+
