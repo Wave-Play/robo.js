@@ -23,11 +23,11 @@
 	},
 	"dependencies": {
 		"discord.js": "14.16.2",
-		"robo.js": "^0.10.28"
+		"robo.js": "^0.10.30"
 	},
 	"devDependencies": {
-		"@swc/core": "^1.7.26",
-		"@types/node": "^22.7.4",
-		"typescript": "^5.6.2"
+		"@swc/core": "^1.11.29",
+		"@types/node": "^22.15.28",
+		"typescript": "^5.8.3"
 	}
 }

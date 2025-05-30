@@ -813,6 +813,50 @@ importers:
         specifier: ^0.10.30
         version: 0.10.30(discord.js@14.16.2)
 
+  templates/discord-bots/starter-ts:
+    dependencies:
+      discord.js:
+        specifier: 14.16.2
+        version: 14.16.2
+      robo.js:
+        specifier: ^0.10.30
+        version: 0.10.30(@swc/core@1.11.29)(discord.js@14.16.2)(typescript@5.8.3)
+    devDependencies:
+      '@swc/core':
+        specifier: ^1.11.29
+        version: 1.11.29
+      '@types/node':
+        specifier: ^22.15.28
+        version: 22.15.28
+      typescript:
+        specifier: ^5.8.3
+        version: 5.8.3
+
+  templates/discord-bots/tagbot:
+    dependencies:
+      '@tagscript/plugin-discord':
+        specifier: ^3.1.0
+        version: 3.1.0(discord.js@14.19.3)(tagscript@1.4.0)
+      discord.js:
+        specifier: ^14.19.3
+        version: 14.19.3
+      robo.js:
+        specifier: ^0.10.30
+        version: 0.10.30(@swc/core@1.11.29)(discord.js@14.19.3)(typescript@5.8.3)
+      tagscript:
+        specifier: ^1.4.0
+        version: 1.4.0
+    devDependencies:
+      '@swc/core':
+        specifier: ^1.11.29
+        version: 1.11.29
+      '@types/node':
+        specifier: ^22.15.28
+        version: 22.15.28
+      typescript:
+        specifier: ^5.8.3
+        version: 5.8.3
+
 packages:
 
   /@ampproject/remapping@2.3.0:
@@ -3477,6 +3521,17 @@ packages:
     engines: {node: '>=14.16'}
     dependencies:
       defer-to-connect: 2.0.1
+    dev: false
+
+  /@tagscript/plugin-discord@3.1.0(discord.js@14.19.3)(tagscript@1.4.0):
+    resolution: {integrity: sha512-AlWBWfG+cSne0ZksEJRTUQrh/NourtX6ug0+GAodJUOfsbTRXi52ZnmIudhkcngGEDMofXfvil1sbkKB+r947g==}
+    engines: {node: '>=v16.9.0'}
+    peerDependencies:
+      discord.js: ^14.0.0
+      tagscript: '*'
+    dependencies:
+      discord.js: 14.19.3
+      tagscript: 1.4.0
     dev: false
 
   /@tanstack/query-core@5.49.1:
@@ -8776,6 +8831,31 @@ packages:
       typescript: 5.7.2
     dev: false
 
+  /robo.js@0.10.30(@swc/core@1.11.29)(discord.js@14.16.2)(typescript@5.8.3):
+    resolution: {integrity: sha512-+8FxwO77PY32/qSvk0Mv72CTulgxB2HPRgQ7sJXE4AXuovupq1G8hybJumV1feKxXz8Bw3K7HttguB23S1O8rg==}
+    engines: {node: '>=18.0.0'}
+    hasBin: true
+    peerDependencies:
+      '@swc/core': ^1.3.41
+      discord.js: ^14.0.0
+      keyv: ^4.5.2
+      typescript: ^5.0.0
+      vite: ^5.0.0
+    peerDependenciesMeta:
+      '@swc/core':
+        optional: true
+      keyv:
+        optional: true
+      typescript:
+        optional: true
+      vite:
+        optional: true
+    dependencies:
+      '@swc/core': 1.11.29
+      discord.js: 14.16.2
+      typescript: 5.8.3
+    dev: false
+
   /robo.js@0.10.30(@swc/core@1.11.29)(discord.js@14.19.3)(typescript@5.8.3):
     resolution: {integrity: sha512-+8FxwO77PY32/qSvk0Mv72CTulgxB2HPRgQ7sJXE4AXuovupq1G8hybJumV1feKxXz8Bw3K7HttguB23S1O8rg==}
     engines: {node: '>=18.0.0'}
@@ -9406,6 +9486,11 @@ packages:
   /supports-preserve-symlinks-flag@1.0.0:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
+
+  /tagscript@1.4.0:
+    resolution: {integrity: sha512-3Xe22VwHxfdRzvBQqWYB8Fz38wlEdrYFsQuykBaY+/bs+XwXoKoLWY3lsIb4qYTj8Sax9H31j4B+McjwSBrVYQ==}
+    engines: {node: '>=v14.0.0'}
+    dev: false
 
   /tapable@2.2.2:
     resolution: {integrity: sha512-Re10+NauLTMCudc7T5WLFLAwDhQ0JWdrMK+9B2M8zR5hRExKmsRDCBA7/aV/pNJFltmBFO5BAMlQFi/vq3nKOg==}
