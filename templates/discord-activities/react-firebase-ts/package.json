@@ -22,7 +22,7 @@
 	"scripts": {
 		"build": "robo build",
 		"deploy": "robo deploy",
-		"dev": "robox dev",
+		"dev": "robox dev --tunnel",
 		"doctor": "sage doctor",
 		"invite": "robo invite",
 		"lint:style": "prettier --write .",
@@ -31,24 +31,24 @@
 		"upgrade": "sage upgrade"
 	},
 	"dependencies": {
-		"@discord/embedded-app-sdk": "^1.7.0",
+		"@discord/embedded-app-sdk": "^1.9.0",
 		"@robojs/patch": "https://pkg.pr.new/Wave-Play/robo.js/@robojs/patch@43d0664",
-		"@robojs/server": "^0.6.2",
-		"firebase": "^11.0.2",
+		"@robojs/server": "^0.6.4",
+		"firebase": "^11.8.1",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
-		"robo.js": "^0.10.26"
+		"robo.js": "^0.10.30"
 	},
 	"devDependencies": {
-		"@swc/core": "^1.10.0",
-		"@types/node": "^22.10.1",
-		"@types/react": "^18.3.12",
-		"@types/react-dom": "^18.3.1",
-		"@vitejs/plugin-react-swc": "^3.7.2",
-		"discord.js": "^14.16.3",
-		"eslint-plugin-react-hooks": "^5.0.0",
-		"prettier": "^3.4.1",
-		"typescript": "^5.7.2",
-		"vite": "^5.4.11"
+		"@swc/core": "^1.11.29",
+		"@types/node": "^22.15.28",
+		"@types/react": "^18.3.23",
+		"@types/react-dom": "^18.3.7",
+		"@vitejs/plugin-react-swc": "^3.10.0",
+		"discord.js": "^14.19.3",
+		"eslint-plugin-react-hooks": "^5.2.0",
+		"prettier": "^3.5.3",
+		"typescript": "^5.8.3",
+		"vite": "^5.4.19"
 	}
 }
