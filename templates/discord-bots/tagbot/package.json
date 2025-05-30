@@ -24,13 +24,13 @@
 	},
 	"dependencies": {
 		"@tagscript/plugin-discord": "^3.1.0",
-		"discord.js": "^14.16.3",
-		"robo.js": "^0.10.24",
+		"discord.js": "^14.19.3",
+		"robo.js": "^0.10.30",
 		"tagscript": "^1.4.0"
 	},
 	"devDependencies": {
-		"@swc/core": "^1.8.0",
-		"@types/node": "^22.8.7",
-		"typescript": "^5.6.3"
+		"@swc/core": "^1.11.29",
+		"@types/node": "^22.15.28",
+		"typescript": "^5.8.3"
 	}
 }
