@@ -31,14 +31,14 @@
 		"upgrade": "sage upgrade"
 	},
 	"dependencies": {
-		"@discord/embedded-app-sdk": "^1.4.3",
+		"@discord/embedded-app-sdk": "^1.9.0",
 		"@robojs/patch": "^0.1.1",
 		"@robojs/server": "^0.5.7",
-		"discord.js": "^14.16.2",
-		"robo.js": "^0.10.15"
+		"discord.js": "^14.19.3",
+		"robo.js": "^0.10.30"
 	},
 	"devDependencies": {
-		"prettier": "^3.3.3",
-		"vite": "^5.4.8"
+		"prettier": "^3.5.3",
+		"vite": "^5.4.19"
 	}
 }
