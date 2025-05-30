@@ -726,6 +726,31 @@ importers:
         specifier: ^5.8.3
         version: 5.8.3
 
+  templates/discord-bots/postgres-ts:
+    dependencies:
+      discord.js:
+        specifier: ^14.19.3
+        version: 14.19.3
+      postgres:
+        specifier: ^3.4.7
+        version: 3.4.7
+      robo.js:
+        specifier: ^0.10.30
+        version: 0.10.30(@swc/core@1.11.29)(discord.js@14.19.3)(typescript@5.8.3)
+    devDependencies:
+      '@swc/core':
+        specifier: ^1.11.29
+        version: 1.11.29
+      '@types/node':
+        specifier: ^22.15.28
+        version: 22.15.28
+      prettier:
+        specifier: ^3.5.3
+        version: 3.5.3
+      typescript:
+        specifier: ^5.8.3
+        version: 5.8.3
+
 packages:
 
   /@ampproject/remapping@2.3.0:
@@ -8181,6 +8206,11 @@ packages:
       nanoid: 3.3.11
       picocolors: 1.1.1
       source-map-js: 1.2.1
+
+  /postgres@3.4.7:
+    resolution: {integrity: sha512-Jtc2612XINuBjIl/QTWsV5UvE8UHuNblcO3vVADSrKsrc6RqGX6lOW1cEo3CM2v0XG4Nat8nI+YM7/f26VxXLw==}
+    engines: {node: '>=12'}
+    dev: false
 
   /preferred-pm@3.1.4:
     resolution: {integrity: sha512-lEHd+yEm22jXdCphDrkvIJQU66EuLojPPtvZkpKIkiD+l0DMThF/niqZKJSoU8Vl7iuvtmzyMhir9LdVy5WMnA==}
