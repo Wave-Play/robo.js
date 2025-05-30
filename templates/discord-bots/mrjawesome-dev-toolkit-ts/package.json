@@ -22,13 +22,13 @@
 		"upgrade": "sage upgrade"
 	},
 	"dependencies": {
-		"discord.js": "^14.16.3",
-		"mongoose": "^8.9.2",
-		"robo.js": "^0.10.29"
+		"discord.js": "^14.19.3",
+		"mongoose": "^8.15.1",
+		"robo.js": "^0.10.30"
 	},
 	"devDependencies": {
-		"@swc/core": "^1.7.39",
-		"@types/node": "^22.7.8",
-		"typescript": "^5.6.3"
+		"@swc/core": "^1.11.29",
+		"@types/node": "^22.15.28",
+		"typescript": "^5.8.3"
 	}
 }

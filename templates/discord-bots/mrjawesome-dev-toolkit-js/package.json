@@ -22,8 +22,8 @@
 		"upgrade": "sage upgrade"
 	},
 	"dependencies": {
-		"discord.js": "^14.16.3",
-		"mongoose": "^8.9.2",
-		"robo.js": "^0.10.29"
+		"discord.js": "^14.19.3",
+		"mongoose": "^8.15.1",
+		"robo.js": "^0.10.30"
 	}
 }
