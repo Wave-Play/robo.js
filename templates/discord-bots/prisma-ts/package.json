@@ -25,15 +25,15 @@
 		"db:generate": "prisma generate"
 	},
 	"dependencies": {
-		"@prisma/client": "^5.20.0",
-		"discord.js": "^14.16.2",
-		"robo.js": "^0.10.15"
+		"@prisma/client": "^5.22.0",
+		"discord.js": "^14.19.3",
+		"robo.js": "^0.10.30"
 	},
 	"devDependencies": {
-		"@swc/core": "^1.7.26",
-		"@types/node": "^22.7.4",
-		"prettier": "^3.3.3",
-		"prisma": "^5.20.0",
-		"typescript": "^5.6.2"
+		"@swc/core": "^1.11.29",
+		"@types/node": "^22.15.28",
+		"prettier": "^3.5.3",
+		"prisma": "^5.22.0",
+		"typescript": "^5.8.3"
 	}
 }
