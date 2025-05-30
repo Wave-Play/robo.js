@@ -621,6 +621,31 @@ importers:
         specifier: ^5.8.3
         version: 5.8.3
 
+  templates/discord-bots/analytics-ts:
+    dependencies:
+      '@robojs/analytics':
+        specifier: ^0.1.1
+        version: 0.1.1(robo.js@0.10.30)
+      discord.js:
+        specifier: ^14.19.3
+        version: 14.19.3
+      robo.js:
+        specifier: ^0.10.30
+        version: 0.10.30(@swc/core@1.11.29)(discord.js@14.19.3)(typescript@5.8.3)
+    devDependencies:
+      '@swc/core':
+        specifier: ^1.11.29
+        version: 1.11.29
+      '@types/node':
+        specifier: ^22.15.27
+        version: 22.15.27
+      prettier:
+        specifier: ^3.5.3
+        version: 3.5.3
+      typescript:
+        specifier: ^5.8.3
+        version: 5.8.3
+
 packages:
 
   /@ampproject/remapping@2.3.0:
@@ -2550,6 +2575,14 @@ packages:
         optional: true
     dependencies:
       formdata-node: 6.0.3
+      robo.js: 0.10.30(@swc/core@1.11.29)(discord.js@14.19.3)(typescript@5.8.3)
+    dev: false
+
+  /@robojs/analytics@0.1.1(robo.js@0.10.30):
+    resolution: {integrity: sha512-e1rOKh3stMklFg1waNx8++KOPxfzHRruxo7eZR1pGfjd1clp+nyy/yfqdQ216zX1k3U/5hg2Bb+hzdJ9Cj5U3A==}
+    peerDependencies:
+      robo.js: ^0.10.1
+    dependencies:
       robo.js: 0.10.30(@swc/core@1.11.29)(discord.js@14.19.3)(typescript@5.8.3)
     dev: false
 
@@ -7610,6 +7643,12 @@ packages:
 
   /prettier@3.3.3:
     resolution: {integrity: sha512-i2tDNA0O5IrMO757lfrdQZCc2jPNDVntV0m/+4whiDfWaTKfMNgR7Qz0NAeGz/nRqF4m5/6CLzbP4/liHt12Ew==}
+    engines: {node: '>=14'}
+    hasBin: true
+    dev: true
+
+  /prettier@3.5.3:
+    resolution: {integrity: sha512-QQtaxnoDJeAkDvDKWCLiwIXkTgRhwYDEQCghU9Z6q03iyek/rxRh/2lC3HB7P8sWT2xC/y5JDctPLBIGzHKbhw==}
     engines: {node: '>=14'}
     hasBin: true
     dev: true
