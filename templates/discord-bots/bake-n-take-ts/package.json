@@ -23,13 +23,13 @@
 		"upgrade": "sage upgrade"
 	},
 	"dependencies": {
-		"discord.js": "^14.16.3",
-		"robo.js": "^0.10.25"
+		"discord.js": "^14.19.3",
+		"robo.js": "^0.10.30"
 	},
 	"devDependencies": {
-		"@swc/core": "^1.9.2",
-		"@types/node": "^22.9.0",
-		"prettier": "^3.3.3",
-		"typescript": "^5.6.3"
+		"@swc/core": "^1.11.29",
+		"@types/node": "^22.15.27",
+		"prettier": "^3.5.3",
+		"typescript": "^5.8.3"
 	}
 }
