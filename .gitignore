@@ -73,3 +73,6 @@ temp
 
 # Steve Jobs' legacy
 .DS_Store
+
+#ide
+.idea
