@@ -164,17 +164,18 @@ export function copyToClipboard(text: string) {
 export function openBrowser(url: string) {
 	const platform = os.platform()
 
+
 	let command: string
 
 	if (platform === 'win32') {
-		command = `start "${url}"`
+		command = `start ${url}`
 	} else if (platform === 'darwin') {
 		command = `open ${url}`
 	} else {
 		command = `xdg-open ${url}`
 	}
 
-	execSync(command)
+	execSync(command, {windowsHide: true})
 }
 
 export async function findNodeModules(basePath: string): Promise<string | null> {
