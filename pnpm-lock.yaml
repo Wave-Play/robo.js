@@ -654,6 +654,58 @@ importers:
         specifier: ^5.4.19
         version: 5.4.19(@types/node@22.15.28)
 
+  templates/discord-activities/godot:
+    dependencies:
+      '@discord/embedded-app-sdk':
+        specifier: ^1.9.0
+        version: 1.9.0
+      '@robojs/patch':
+        specifier: ^0.1.1
+        version: 0.1.1(robo.js@0.10.30)
+      '@robojs/server':
+        specifier: ^0.5.7
+        version: 0.5.7(vite@5.4.19)
+      discord.js:
+        specifier: ^14.19.3
+        version: 14.19.3
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+      robo.js:
+        specifier: ^0.10.30
+        version: 0.10.30(@swc/core@1.11.29)(discord.js@14.19.3)(typescript@5.8.3)(vite@5.4.19)
+    devDependencies:
+      '@swc/core':
+        specifier: ^1.11.29
+        version: 1.11.29
+      '@types/node':
+        specifier: ^22.15.28
+        version: 22.15.28
+      '@types/react':
+        specifier: ^18.3.23
+        version: 18.3.23
+      '@types/react-dom':
+        specifier: ^18.3.7
+        version: 18.3.7(@types/react@18.3.23)
+      '@vitejs/plugin-react-swc':
+        specifier: ^3.10.0
+        version: 3.10.0(vite@5.4.19)
+      eslint-plugin-react-hooks:
+        specifier: ^4.6.2
+        version: 4.6.2(eslint@8.57.1)
+      prettier:
+        specifier: ^3.5.3
+        version: 3.5.3
+      typescript:
+        specifier: ^5.8.3
+        version: 5.8.3
+      vite:
+        specifier: ^5.4.19
+        version: 5.4.19(@types/node@22.15.28)
+
 packages:
 
   /@ampproject/remapping@2.3.0:
@@ -2135,6 +2187,16 @@ packages:
       eslint-visitor-keys: 3.4.3
     dev: true
 
+  /@eslint-community/eslint-utils@4.7.0(eslint@8.57.1):
+    resolution: {integrity: sha512-dyybb3AcajC7uha6CvhdVRJqaKyn7w2YKqKyAN37NKYgZT36w+iRb0Dymmc5qEJ549c/S31cMMSFd75bteCpCw==}
+    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+    peerDependencies:
+      eslint: ^6.0.0 || ^7.0.0 || >=8.0.0
+    dependencies:
+      eslint: 8.57.1
+      eslint-visitor-keys: 3.4.3
+    dev: true
+
   /@eslint-community/eslint-utils@4.7.0(eslint@9.27.0):
     resolution: {integrity: sha512-dyybb3AcajC7uha6CvhdVRJqaKyn7w2YKqKyAN37NKYgZT36w+iRb0Dymmc5qEJ549c/S31cMMSFd75bteCpCw==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
@@ -2219,6 +2281,11 @@ packages:
 
   /@eslint/js@8.36.0:
     resolution: {integrity: sha512-lxJ9R5ygVm8ZWgYdUweoq5ownDlJ4upvoWmO4eLxBYHdMo+vZ/Rx0EN6MbKWDJOSUGrqJy2Gt+Dyv/VKml0fjg==}
+    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+    dev: true
+
+  /@eslint/js@8.57.1:
+    resolution: {integrity: sha512-d9zaMRSTIKDLhctzH12MtXvJKSSUhaHcjV+2Z+GK+EEY7XKpP5yR4x+N3TAcHTcu963nIr+TMcCb4DBCYX1z6Q==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dev: true
 
@@ -2839,6 +2906,17 @@ packages:
     dev: true
     optional: true
 
+  /@robojs/patch@0.1.1(robo.js@0.10.30):
+    resolution: {integrity: sha512-WSM7iRO4wNIIUUiUF0nBiYpqeMTvTGVAa0z2md308zA0zx4CcgcWqnCkwSokk2tEnVxRS+cPlCjp8KGMwo4WwQ==}
+    peerDependencies:
+      robo.js: ^0.10.15
+    peerDependenciesMeta:
+      robo.js:
+        optional: true
+    dependencies:
+      robo.js: 0.10.30(@swc/core@1.11.29)(discord.js@14.19.3)(typescript@5.8.3)(vite@5.4.19)
+    dev: false
+
   /@robojs/patch@0.2.1(robo.js@0.10.30):
     resolution: {integrity: sha512-gCNMabWkzbzu4+NjQzBoL80JsMzSkVJgYBJHZkMM6HDxNeRJk8mSW7/Em84lqijfQgM6rwZVL/umR9051P+Kcw==}
     peerDependencies:
@@ -2848,6 +2926,20 @@ packages:
         optional: true
     dependencies:
       robo.js: 0.10.30(@swc/core@1.11.29)(discord.js@14.19.3)(typescript@5.8.3)(vite@5.4.19)
+    dev: false
+
+  /@robojs/server@0.5.7(vite@5.4.19):
+    resolution: {integrity: sha512-zDTWVeKydtgaQzgoQ+kVGz7Fy5N0f8t+xDkl1/F0WFwiX7GPdFNyu0odcyUdivyjtuWxxpr7qWTjusKJW8g1gw==}
+    peerDependencies:
+      fastify: ^4.15.0
+      vite: ^5.2.0
+    peerDependenciesMeta:
+      fastify:
+        optional: true
+      vite:
+        optional: true
+    dependencies:
+      vite: 5.4.19(@types/node@22.15.28)
     dev: false
 
   /@robojs/server@0.6.4(vite@5.4.19):
@@ -4010,6 +4102,10 @@ packages:
     dependencies:
       '@typescript-eslint/types': 7.9.0
       eslint-visitor-keys: 3.4.3
+    dev: true
+
+  /@ungap/structured-clone@1.3.0:
+    resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
     dev: true
 
   /@vitejs/plugin-react-swc@3.10.0(vite@5.4.19):
@@ -5471,6 +5567,15 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
+  /eslint-plugin-react-hooks@4.6.2(eslint@8.57.1):
+    resolution: {integrity: sha512-QzliNJq4GinDBcD8gPB5v0wh6g8q3SUi6EFF0x8N/BL9PoVs0atuGc47ozMRyOWAKdwaZ5OnbOEa3WR+dSGKuQ==}
+    engines: {node: '>=10'}
+    peerDependencies:
+      eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0
+    dependencies:
+      eslint: 8.57.1
+    dev: true
+
   /eslint-plugin-react-hooks@5.2.0(eslint@9.27.0):
     resolution: {integrity: sha512-+f15FfK64YQwZdJNELETdn5ibXEUQmW1DZL6KXhNnc2heoy/sg9VJJeT7n8TlMWouzWqSWavFkIhHyIbIAEapg==}
     engines: {node: '>=10'}
@@ -5559,6 +5664,54 @@ packages:
       optionator: 0.9.4
       strip-ansi: 6.0.1
       strip-json-comments: 3.1.1
+      text-table: 0.2.0
+    transitivePeerDependencies:
+      - supports-color
+    dev: true
+
+  /eslint@8.57.1:
+    resolution: {integrity: sha512-ypowyDxpVSYpkXr9WPv2PAZCtNip1Mv5KTW0SCurXv/9iOpcrH9PaqUElksqEB6pChqHGDRCFTyrZlGhnLNGiA==}
+    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+    hasBin: true
+    dependencies:
+      '@eslint-community/eslint-utils': 4.7.0(eslint@8.57.1)
+      '@eslint-community/regexpp': 4.12.1
+      '@eslint/eslintrc': 2.1.4
+      '@eslint/js': 8.57.1
+      '@humanwhocodes/config-array': 0.13.0
+      '@humanwhocodes/module-importer': 1.0.1
+      '@nodelib/fs.walk': 1.2.8
+      '@ungap/structured-clone': 1.3.0
+      ajv: 6.12.6
+      chalk: 4.1.2
+      cross-spawn: 7.0.6
+      debug: 4.4.1
+      doctrine: 3.0.0
+      escape-string-regexp: 4.0.0
+      eslint-scope: 7.2.2
+      eslint-visitor-keys: 3.4.3
+      espree: 9.6.1
+      esquery: 1.6.0
+      esutils: 2.0.3
+      fast-deep-equal: 3.1.3
+      file-entry-cache: 6.0.1
+      find-up: 5.0.0
+      glob-parent: 6.0.2
+      globals: 13.24.0
+      graphemer: 1.4.0
+      ignore: 5.3.2
+      imurmurhash: 0.1.4
+      is-glob: 4.0.3
+      is-path-inside: 3.0.3
+      js-yaml: 4.1.0
+      json-stable-stringify-without-jsonify: 1.0.1
+      levn: 0.4.1
+      lodash.merge: 4.6.2
+      minimatch: 3.1.2
+      natural-compare: 1.4.0
+      optionator: 0.9.4
+      strip-ansi: 6.0.1
       text-table: 0.2.0
     transitivePeerDependencies:
       - supports-color
