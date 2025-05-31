@@ -31,23 +31,23 @@
 		"upgrade": "sage upgrade"
 	},
 	"dependencies": {
-		"@discord/embedded-app-sdk": "^1.9.0",
-		"@robojs/patch": "^0.1.1",
-		"@robojs/server": "^0.5.7",
+		"@discord/embedded-app-sdk": "^2.0.0",
+		"@robojs/patch": "^0.2.1",
+		"@robojs/server": "^0.6.4",
 		"discord.js": "^14.19.3",
-		"react": "^18.3.1",
-		"react-dom": "^18.3.1",
+		"react": "^19.1.0",
+		"react-dom": "^19.1.0",
 		"robo.js": "^0.10.30"
 	},
 	"devDependencies": {
 		"@swc/core": "^1.11.29",
-		"@types/node": "^22.15.28",
-		"@types/react": "^18.3.23",
-		"@types/react-dom": "^18.3.7",
+		"@types/node": "^22.15.29",
+		"@types/react": "^19.1.6",
+		"@types/react-dom": "^19.1.5",
 		"@vitejs/plugin-react-swc": "^3.10.0",
-		"eslint-plugin-react-hooks": "^4.6.2",
+		"eslint-plugin-react-hooks": "^5.2.0",
 		"prettier": "^3.5.3",
 		"typescript": "^5.8.3",
-		"vite": "^5.4.19"
+		"vite": "^6.3.5"
 	}
 }
