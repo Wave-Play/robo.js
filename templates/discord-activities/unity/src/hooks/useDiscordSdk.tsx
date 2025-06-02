@@ -26,7 +26,7 @@ if (isEmbedded) {
 	const mockGuildId = getOverrideOrRandomSessionValue('guild_id')
 	const mockChannelId = getOverrideOrRandomSessionValue('channel_id')
 
-	discordSdk = new DiscordSDKMock(import.meta.env.VITE_DISCORD_CLIENT_ID, mockGuildId, mockChannelId)
+	discordSdk = new DiscordSDKMock(import.meta.env.VITE_DISCORD_CLIENT_ID, mockGuildId, mockChannelId, null)
 	const discriminator = String(mockUserId.charCodeAt(0) % 5)
 
 	discordSdk._updateCommandMocks({
