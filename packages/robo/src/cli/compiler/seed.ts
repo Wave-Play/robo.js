@@ -7,7 +7,7 @@ import { compilerLogger } from '../utils/loggers.js'
 import { Compiler } from '../utils/compiler.js'
 
 const SeedDir = path.join(process.cwd(), 'seed')
-const SeedBuildDir = path.join(process.cwd(), '.robo', 'seed')
+const SeedBuildDir = path.join('.robo', 'seed')
 
 /**
  * Compile and copy /seed directly from plugin onto /.robo/seed.
