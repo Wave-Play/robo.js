@@ -46,18 +46,18 @@ export class RoboRequest extends Request {
 	}
 
 	public static async from(req: IncomingMessage, options?: FromOptions): Promise<RoboRequest> {
-		const rawProtoHeader = req.headers['x-forwarded-proto'];// may return "https, http"
-		const rawProto = Array.isArray(rawProtoHeader) ? rawProtoHeader[0] : rawProtoHeader || 'http';
-		const protocol = rawProto.split(',')[0].trim();
-	
-		const host = req.headers.host;
-		const path = (req as any).originalUrl || req.url;
-		const url = `${protocol}://${host}${path}`;
-	
-		const method = req.method || 'GET';
-		const headers = new Headers(req.headers as HeadersInit);
-	
-		let body: BodyInit | null = options?.body ?? null;
+		const rawProtoHeader = req.headers['x-forwarded-proto'] // may return "https, http"
+		const rawProto = Array.isArray(rawProtoHeader) ? rawProtoHeader[0] : rawProtoHeader || 'http'
+		const protocol = rawProto.split(',')[0].trim()
+		const host = req.headers.host
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const path = (req as any).originalUrl || req.url
+		const url = `${protocol}://${host}${path}`
+
+		const method = req.method || 'GET'
+		const headers = new Headers(req.headers as HeadersInit)
+
+		let body: BodyInit | null = options?.body ?? null
 		if (!options?.body && !['GET', 'HEAD'].includes(method)) {
 			body = await new Promise<Buffer>((resolve, reject) => {
 				const chunks: Buffer[] = []
