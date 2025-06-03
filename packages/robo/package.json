@@ -100,8 +100,5 @@
 		"vite": {
 			"optional": true
 		}
-	},
-	"dependencies": {
-		"robo.js": "link:"
 	}
 }
