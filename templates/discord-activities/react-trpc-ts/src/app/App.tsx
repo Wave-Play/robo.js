@@ -15,7 +15,7 @@ import { trpc, trpcQueryClient } from '../trpc/client'
  */
 export default function App() {
 	return (
-		<DiscordContextProvider>
+		<DiscordContextProvider authenticate>
 				<TRPCProvider trpc={trpc} trpcClient={trpcQueryClient}>
 					<Activity />
 				</TRPCProvider>
