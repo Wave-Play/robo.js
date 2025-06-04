@@ -339,7 +339,7 @@ export function replaceSrcWithBuildInRecord(record: Record<string, string[]>, ba
 			const relativePath = path.relative(basePath, value)
 
 			// Replace 'src/' with the correct build path
-			if (relativePath.startsWith('src/')) {
+			if (relativePath.startsWith('src' + path.sep)) {
 				return relativePath.replace('src/', '../.robo/build/')
 			}
 
