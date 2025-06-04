@@ -1,5 +1,12 @@
 # @roboplay/plugin-api
 
+## 0.6.5
+
+### Patch Changes
+
+- bf52fae: fix: reconstruct request URL using x-forwarded-proto and originalUrl
+- 4ef73c6: patch: ignore query params when routing websocket handlers
+
 ## 0.6.4
 
 ### Patch Changes
