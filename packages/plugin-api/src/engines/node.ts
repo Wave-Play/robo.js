@@ -23,7 +23,10 @@ export class NodeEngine extends BaseEngine {
 
 		this._server.on('error', (error: Error) => logger.error(`Server error:`, error))
 		this._server.on('upgrade', (req, socket, head) => {
-			const handler = this._websocketHandlers[req.url ?? '']
+			// Remove query parameters prior to matching WebSocket handlers
+			const path = (req.url ?? '').split('?')[0]
+			const handler = this._websocketHandlers[path]
+			logger.debug('Handling WebSocket upgrade for path:', path)
 
 			if (handler) {
 				handler(req, socket, head)
@@ -52,6 +55,7 @@ export class NodeEngine extends BaseEngine {
 	}
 
 	public registerWebsocket(path: string, handler: WebSocketHandler) {
+		logger.debug('Registering WebSocket handler for path:', path)
 		this._websocketHandlers[path] = handler
 	}
 
