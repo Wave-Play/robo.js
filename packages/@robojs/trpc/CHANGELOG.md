@@ -1,5 +1,17 @@
 # @robojs/trpc
 
+## 0.2.4
+
+### Patch Changes
+
+- 35b56cd: fix: resolving package on windows.
+- Updated dependencies [d71c670]
+- Updated dependencies [bf52fae]
+- Updated dependencies [4ef73c6]
+- Updated dependencies [60ce5c4]
+  - robo.js@0.10.31
+  - @robojs/server@0.6.5
+
 ## 0.2.3
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # robo.js
 
+## 0.10.31
+
+### Patch Changes
+
+- d71c670: windows fixes and swc/core update
+- 60ce5c4: fix(sage): missing ephemeral state when not deferred
+
 ## 0.10.30
 
 ### Patch Changes
