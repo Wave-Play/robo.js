@@ -1,4 +1,5 @@
 packages:
   - 'packages/*'
   - 'packages/@robojs/*'
+  - '!packages/@robojs/tauri'
   - 'scripts'
