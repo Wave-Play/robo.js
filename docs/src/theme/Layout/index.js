@@ -47,13 +47,11 @@ export default function Layout(props) {
 			}
 
 			window.addEventListener("message", (event) => {
-				// Always validate the origin for security
-				if (event.origin !== "http://localhost:1420") return;
+				if (event.origin !== process.env.DOCUSAURUS_ROBOKIT_URL) return;
 
 				// Access the data sent
 				const data = event.data;
 
-				// Example: look for a platform key
 				if (data.action) {
 					const action = data.action;
 					const navbarToggle = document.querySelector('.navbar__toggle');
