@@ -21,6 +21,8 @@ export default function Layout(props) {
 	} = props
 
 	useEffect(() => {
+		
+				//console.log(process.env)
 		if(window){
 
 			const parsedUrl = new URL(window.location.href);
@@ -47,7 +49,6 @@ export default function Layout(props) {
 			}
 
 			window.addEventListener("message", (event) => {
-				if (event.origin !== process.env.DOCUSAURUS_ROBOKIT_URL) return;
 
 				// Access the data sent
 				const data = event.data;
