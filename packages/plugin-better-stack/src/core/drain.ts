@@ -6,8 +6,8 @@ const ANSI_REGEX = new RegExp(`(${String.fromCharCode(27)}\\[[0-9;]*m)([^${Strin
 const MAGENTA_REGEX = new RegExp(String.fromCharCode(27) + '\\[35m', 'g')
 const RESET_SEQUENCE = '\x1b[0m'
 
-export function createLogtailDrain(sourceToken: string): LogDrain {
-	const logtail = new Logtail(sourceToken)
+export function createLogtailDrain(sourceToken: string, options?: ConstructorParameters<typeof Logtail>[1]): LogDrain {
+	const logtail = new Logtail(sourceToken, options)
 
 	return (logger: Logger, level: string, ...data: unknown[]): Promise<void> => {
 		// Parse data into a string

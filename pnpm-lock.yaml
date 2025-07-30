@@ -326,8 +326,8 @@ importers:
   packages/plugin-better-stack:
     dependencies:
       '@logtail/node':
-        specifier: ^0.4.12
-        version: 0.4.12
+        specifier: ^0.5.5
+        version: 0.5.5
     devDependencies:
       '@swc/core':
         specifier: ^1.3.44
@@ -1523,17 +1523,17 @@ packages:
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
 
-  '@logtail/core@0.4.21':
-    resolution: {integrity: sha512-QDq194+24bwi4e+a/pxyf4X67NewhTvBmh9iwM2NhbSVSQz4Fo8xQn1Ul8zuUrXETycu/Od2D8wT2tZFNFx/7A==}
+  '@logtail/core@0.5.4':
+    resolution: {integrity: sha512-UlbxvUg5MDroqk6gEhtfKuuBShrvD/VaXl3T3jGU1U6I19Y1OwfB7e681LvH7RbsCAnOJFziM/7rMQib/CJTdg==}
 
-  '@logtail/node@0.4.12':
-    resolution: {integrity: sha512-yRdunGeYzug2o6tWVQBy826J167gbWROvjijlW+bVn4bH94JqVjXX7Jt0bi2nOEfWuPcZW9GyD6DKNGi5+y4jw==}
+  '@logtail/node@0.5.5':
+    resolution: {integrity: sha512-hSZDjl2wFRxe/+pxSlYNSpm0V3a2ZsiWqBifvtCBHTriwrNkd0LjQtedRlrjoBBumVxIMGdDOCPayAIbcux5YQ==}
 
-  '@logtail/tools@0.4.21':
-    resolution: {integrity: sha512-xIaolScUwJEikllopGphxBX0lVlN/rA8pLAZiNCMNJXpPbwitoFKLW3w4qRuYdKoFCCJZKwOdwEqU2Fv0i9Cuw==}
+  '@logtail/tools@0.5.4':
+    resolution: {integrity: sha512-S0PtfWOVVgvb36q8mLksMw910mO2TahDaqIYnUM/ZEYX+AwqKRGov4zt/X33zHRzCFVpSKoZFv7bFs8TBie/pQ==}
 
-  '@logtail/types@0.4.20':
-    resolution: {integrity: sha512-nYsum10eJMTo+ySBlYXvSrvgD1NDCVUeOlxLBbelq3XUmHu9L48VNR3P0BOmhLamYCTEgjatTj0PyPLfjL1W9g==}
+  '@logtail/types@0.5.3':
+    resolution: {integrity: sha512-5uKf1xQ7wRqSW0lYIwDpXdXcFHxPKH5EM22MoEjwTpd8suymOYuEdx9qCCHCYey4uOhPq7x6OkZf86bTO83JsA==}
 
   '@manypkg/find-root@1.1.0':
     resolution: {integrity: sha512-mki5uBvhHzO8kYYix/WRy2WX8S3B5wdVSc9D6KcU5lQNglP2yt58/VfLuAK49glRXChosY8ap2oJ1qgma3GUVA==}
@@ -1998,8 +1998,8 @@ packages:
   '@types/semver@7.7.0':
     resolution: {integrity: sha512-k107IF4+Xr7UHjwDc7Cfd6PRQfbdkiRabXGRjo07b4WyPahFBZCZ1sE+BNxYIJPPg73UkfOsVOLwqVc/6ETrIA==}
 
-  '@types/stack-trace@0.0.29':
-    resolution: {integrity: sha512-TgfOX+mGY/NyNxJLIbDWrO9DjGoVSW9+aB8H2yy1fy32jsvxijhmyJI9fDFgvz3YP4lvJaq9DzdR/M1bOgVc9g==}
+  '@types/stack-trace@0.0.33':
+    resolution: {integrity: sha512-O7in6531Bbvlb2KEsJ0dq0CHZvc3iWSR5ZYMtvGgnHA56VgriAN/AU2LorfmcvAl2xc9N5fbCTRyMRRl8nd74g==}
 
   '@types/stack-utils@2.0.3':
     resolution: {integrity: sha512-9aEbYZ3TbYMznPdcdr3SmIrLXwC/AKZXQeCf9Pgao5CKb8CyHuEX5jzWPTkvregvhRJHcpRO6BFoGW9ycaOkYw==}
@@ -2588,9 +2588,6 @@ packages:
   croner@9.0.0:
     resolution: {integrity: sha512-onMB0OkDjkXunhdW9htFjEhqrD54+M94i6ackoUkjHKbRnXdyEyKRelp4nJ1kAz32+s27jP1FsebpJCVl0BsvA==}
     engines: {node: '>=18.0'}
-
-  cross-fetch@3.2.0:
-    resolution: {integrity: sha512-Q+xVJLoGOeIMXZmbUK4HYk+69cQH6LudR0Vu/pRm2YlU/hDV9CiS0gKUMaWY5f2NeUH9C1nV3bsTlCo0FsTV1Q==}
 
   cross-spawn@5.1.0:
     resolution: {integrity: sha512-pTgQJ5KC0d2hcY8eyL1IzlBPYjTkyH72XRZPnLyKus2mBfNjQs3klqbJU2VILqZryAZUt9JOb3h/mWMy23/f5A==}
@@ -6275,29 +6272,26 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
 
-  '@logtail/core@0.4.21':
+  '@logtail/core@0.5.4':
     dependencies:
-      '@logtail/tools': 0.4.21
-      '@logtail/types': 0.4.20
+      '@logtail/tools': 0.5.4
+      '@logtail/types': 0.5.3
       serialize-error: 8.1.0
 
-  '@logtail/node@0.4.12':
+  '@logtail/node@0.5.5':
     dependencies:
-      '@logtail/core': 0.4.21
-      '@logtail/types': 0.4.20
+      '@logtail/core': 0.5.4
+      '@logtail/types': 0.5.3
       '@msgpack/msgpack': 2.8.0
-      '@types/stack-trace': 0.0.29
-      cross-fetch: 3.2.0
-      minimatch: 3.1.2
+      '@types/stack-trace': 0.0.33
+      minimatch: 9.0.5
       stack-trace: 0.0.10
-    transitivePeerDependencies:
-      - encoding
 
-  '@logtail/tools@0.4.21':
+  '@logtail/tools@0.5.4':
     dependencies:
-      '@logtail/types': 0.4.20
+      '@logtail/types': 0.5.3
 
-  '@logtail/types@0.4.20': {}
+  '@logtail/types@0.5.3': {}
 
   '@manypkg/find-root@1.1.0':
     dependencies:
@@ -6695,7 +6689,7 @@ snapshots:
 
   '@types/semver@7.7.0': {}
 
-  '@types/stack-trace@0.0.29': {}
+  '@types/stack-trace@0.0.33': {}
 
   '@types/stack-utils@2.0.3': {}
 
@@ -7384,12 +7378,6 @@ snapshots:
       - ts-node
 
   croner@9.0.0: {}
-
-  cross-fetch@3.2.0:
-    dependencies:
-      node-fetch: 2.7.0
-    transitivePeerDependencies:
-      - encoding
 
   cross-spawn@5.1.0:
     dependencies:

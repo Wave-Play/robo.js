@@ -10,13 +10,20 @@ interface PluginConfig {
 		interval?: number
 		url: string
 	}
+	ingestingHost?: string
 	sourceToken?: string
 }
 
 export default (_client: Client, config: PluginConfig) => {
+	const ingestingHost = config.ingestingHost ?? process.env.BETTER_STACK_INGESTING_HOST
 	const sourceToken = config.sourceToken ?? process.env.BETTER_STACK_SOURCE_TOKEN
+
 	if (sourceToken) {
-		logger().setDrain(createLogtailDrain(sourceToken))
+		logger().setDrain(
+			createLogtailDrain(sourceToken, {
+				endpoint: ingestingHost ? `https://${ingestingHost}` : undefined
+			})
+		)
 	}
 
 	// Ping heartbeat monitor if configured

@@ -44,10 +44,11 @@ Firstly, set up your source in Better Stack to receive a unique `sourceToken`.
 
 **Method 1: Using Config File**
 
-In the plugin config file, pass your `sourceToken`:
+In the plugin config file, pass your `sourceToken` and `ingestingHost`:
 
 ```js
 export default {
+	ingestingHost: 'YOUR_INGESTING_HOST',
 	sourceToken: 'YOUR_UNIQUE_SOURCE_TOKEN'
 }
 ```
@@ -57,6 +58,7 @@ export default {
 Use an environment variable in your `.env` file:
 
 ```
+BETTER_STACK_INGESTING_HOST="YOUR_INGESTING_HOST"
 BETTER_STACK_SOURCE_TOKEN="YOUR_UNIQUE_SOURCE_TOKEN"
 ```
 
@@ -74,7 +76,9 @@ import { createLogtailDrain } from '@robojs/better-stack'
 export default {
 	// ... other configurations
 	logger: {
-		drain: createLogtailDrain(process.env.LOGTAIL_TOKEN)
+		drain: createLogtailDrain(process.env.BETTER_STACK_SOURCE_TOKEN, {
+			endpoint: 'YOUR_INGESTING_HOST'
+		})
 	}
 }
 ```
