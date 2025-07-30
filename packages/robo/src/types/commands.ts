@@ -65,7 +65,7 @@ export type CommandOptionTypes = {
 	boolean: boolean
 	user: User
 	channel: GuildBasedChannel
-	member: GuildMember
+	member: GuildMember | null
 	role: Role
 	attachment: Attachment
 	mention: GuildMember | Role
