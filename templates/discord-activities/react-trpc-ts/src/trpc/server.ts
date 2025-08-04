@@ -1,4 +1,4 @@
-import { initTRPC } from '@robojs/trpc'
+import { initTRPC } from '@robojs/trpc/server.js'
 import { z } from 'zod'
 
 const t = initTRPC.create()

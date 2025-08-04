@@ -3,7 +3,7 @@ import type { AppRouter } from './server'
 
 // Change "/api" if you have a different server prefix
 const batchLink = httpBatchLink({
-	url: '/api/trpc',
+	url: '/trpc',
 	async headers() {
 		return {}
 	}
