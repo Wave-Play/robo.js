@@ -1,7 +1,7 @@
 {
 	"name": "@robojs/server",
 	"description": "Turn your Robo into a web server! Create and manage web pages, APIs, and more.",
-	"version": "0.6.4",
+	"version": "0.6.5",
 	"private": false,
 	"type": "module",
 	"main": ".robo/build/index.js",
