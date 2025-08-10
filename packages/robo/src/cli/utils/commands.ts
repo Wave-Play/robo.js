@@ -248,7 +248,15 @@ export function addOptionToCommandBuilder(
 			commandBuilder.addAttachmentOption((builder) => optionPredicate(builder))
 			break
 		case 'channel':
-			commandBuilder.addChannelOption((builder) => optionPredicate(builder))
+			commandBuilder.addChannelOption((builder) => {
+				optionPredicate(builder)
+
+				if (option.type === 'channel' && option.channelTypes) {
+					builder.addChannelTypes(...option.channelTypes)
+				}
+
+				return builder
+			})
 			break
 		case 'mention':
 			commandBuilder.addMentionableOption((builder) => optionPredicate(builder))

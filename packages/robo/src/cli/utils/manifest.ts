@@ -6,6 +6,7 @@ import {
 	CommandConfig,
 	CommandEntry,
 	CommandOption,
+	CommandOptionTypes,
 	Config,
 	ContextConfig,
 	EventConfig,
@@ -649,9 +650,20 @@ function getValue<T extends AllConfig>(
 				if (option.required) {
 					optionValue.required = option.required
 				}
-				if (option.type) {
-					optionValue.type = option.type
+				if (option.type === 'channel') {
+					const o = optionValue as unknown as Extract<CommandOption, { type: 'channel' }>
+					o.type = 'channel'
+
+					if (option.channelTypes) {
+						o.channelTypes = option.channelTypes
+					}
+				} else {
+					;(optionValue as Extract<CommandOption, { type?: unknown }>).type = (option.type ?? 'string') as Exclude<
+						keyof CommandOptionTypes,
+						'channel'
+					>
 				}
+
 				return optionValue
 			})
 

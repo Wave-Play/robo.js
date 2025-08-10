@@ -1,4 +1,5 @@
 import type {
+	ApplicationCommandOptionAllowedChannelTypes,
 	ApplicationCommandOptionChoiceData,
 	ApplicationIntegrationType,
 	Attachment,
@@ -9,6 +10,7 @@ import type {
 	InteractionContextType,
 	InteractionReplyOptions,
 	MessagePayload,
+	RestOrArray,
 	Role,
 	User
 } from 'discord.js'
@@ -43,7 +45,10 @@ export interface CommandEntry extends CommandConfig {
 
 export type CommandIntegrationType = 'GuildInstall' | 'UserInstall' | ApplicationIntegrationType
 
-export interface CommandOption {
+/**
+ * Base fields shared by all options.
+ */
+interface CommandOptionCommon {
 	autocomplete?: boolean
 	choices?: ApplicationCommandOptionChoiceData<string | number>[]
 	description?: string
@@ -53,8 +58,21 @@ export interface CommandOption {
 	name: string
 	nameLocalizations?: Record<string, string>
 	required?: boolean
-	type?: keyof CommandOptionTypes
 }
+
+/**
+ * Discriminated union:
+ * - If type is 'channel', allow optional channelTypes: ChannelType[]
+ * - Otherwise (or if type omitted), forbid channelTypes.
+ */
+export type CommandOption =
+	| (CommandOptionCommon & {
+			type: 'channel'
+			channelTypes?: RestOrArray<ApplicationCommandOptionAllowedChannelTypes>
+	  })
+	| (CommandOptionCommon & {
+			type?: Exclude<keyof CommandOptionTypes, 'channel'>
+	  })
 
 export type CommandResult = string | InteractionReplyOptions | MessagePayload | void
 
