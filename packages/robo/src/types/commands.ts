@@ -15,6 +15,7 @@ import type {
 	User
 } from 'discord.js'
 import type { BaseConfig, SageOptions } from './index.js'
+import type { ValueOfOption } from './helpers.js'
 
 export interface Command {
 	autocomplete?: (
@@ -50,7 +51,7 @@ export type CommandIntegrationType = 'GuildInstall' | 'UserInstall' | Applicatio
  */
 interface CommandOptionCommon {
 	autocomplete?: boolean
-	choices?: ApplicationCommandOptionChoiceData<string | number>[]
+	choices?: readonly ApplicationCommandOptionChoiceData<string | number>[]
 	description?: string
 	descriptionLocalizations?: Record<string, string>
 	max?: number
@@ -90,17 +91,9 @@ export type CommandOptionTypes = {
 }
 
 export type CommandOptions<ConfigType extends CommandConfig> = {
-	[K in NonNullable<ConfigType['options']>[number] as K['name']]: K extends { required: true; type: infer TypeName }
-		? TypeName extends keyof CommandOptionTypes
-			? CommandOptionTypes[TypeName]
-			: string
-		: K extends { type: infer TypeName }
-		? TypeName extends keyof CommandOptionTypes
-			? CommandOptionTypes[TypeName] | undefined
-			: string | undefined
-		: K extends { required: true }
-		? string
-		: string | undefined
+	[K in NonNullable<ConfigType['options']>[number] as K['name']]: K extends { required: true }
+		? ValueOfOption<K>
+		: ValueOfOption<K> | undefined
 }
 
 export default {}
