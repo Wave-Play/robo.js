@@ -1,5 +1,21 @@
 # @roboplay/plugin-better-stack
 
+## 0.3.0
+
+### Minor Changes
+
+- b89b216: feat: support newer sources
+
+### Patch Changes
+
+- Updated dependencies [b2bb7bb]
+- Updated dependencies [d71c670]
+- Updated dependencies [90b49e1]
+- Updated dependencies [0c1f970]
+- Updated dependencies [60ce5c4]
+- Updated dependencies [82e3e34]
+  - robo.js@0.10.31
+
 ## 0.2.2
 
 ### Patch Changes

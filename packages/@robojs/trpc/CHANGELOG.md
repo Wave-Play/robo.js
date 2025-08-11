@@ -1,5 +1,27 @@
 # @robojs/trpc
 
+## 0.3.0
+
+### Minor Changes
+
+- abe1b25: refactor: re-export all @trpc/react-query modules
+
+### Patch Changes
+
+- a2f59bf: chore: updated trpc to 11.4.3
+- 263b4c5: chore: support for react 19
+- 35b56cd: fix: resolving package on windows.
+- Updated dependencies [b2bb7bb]
+- Updated dependencies [d71c670]
+- Updated dependencies [bf52fae]
+- Updated dependencies [4ef73c6]
+- Updated dependencies [90b49e1]
+- Updated dependencies [0c1f970]
+- Updated dependencies [60ce5c4]
+- Updated dependencies [82e3e34]
+  - robo.js@0.10.31
+  - @robojs/server@0.6.5
+
 ## 0.2.3
 
 ### Patch Changes

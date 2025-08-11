@@ -1,5 +1,16 @@
 # robo.js
 
+## 0.10.31
+
+### Patch Changes
+
+- b2bb7bb: feat(types): string literals now used for options with choices
+- d71c670: windows fixes and swc/core update
+- 90b49e1: patch(types): always assume nullable member option
+- 0c1f970: feat: support for channelTypes command option
+- 60ce5c4: fix(sage): missing ephemeral state when not deferred
+- 82e3e34: chore: support for .config no longer deprecated
+
 ## 0.10.30
 
 ### Patch Changes
