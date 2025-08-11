@@ -81,14 +81,8 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 	}
 
 	// Load the configuration file
-	const configPath = await loadConfigPath()
-	if (configPath?.includes('.config')) {
-		// Include deprecated warning
-		logger.warn(
-			`The ${color.bold('.config')} directory is deprecated. Use ${color.bold('config')} instead. (without the dot)`
-		)
-	}
 	const config = await loadConfig('robo', true)
+
 	if (!config) {
 		logger.warn(`Could not find configuration file.`)
 	}
