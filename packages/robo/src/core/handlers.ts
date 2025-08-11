@@ -6,11 +6,14 @@ import { BUFFER, DEFAULT_CONFIG, TIMEOUT, discordLogger } from './constants.js'
 import { printErrorResponse } from './debug.js'
 import { color } from './color.js'
 import path from 'node:path'
-import type { AutocompleteInteraction, InteractionDeferReplyOptions, Message } from 'discord.js'
+import type {
+	AutocompleteInteraction,
+	ChatInputCommandInteraction,
+	InteractionDeferReplyOptions,
+	Message
+} from 'discord.js'
 import type { CommandConfig, ContextConfig, Event, HandlerRecord, PluginData } from '../types/index.js'
 import type { Collection } from 'discord.js'
-
-const optionPrimitives = ['boolean', 'integer', 'number', 'string', undefined]
 
 export async function executeAutocompleteHandler(interaction: AutocompleteInteraction, commandKey: string) {
 	const command = portal.commands.get(commandKey)
@@ -72,7 +75,7 @@ export async function executeAutocompleteHandler(interaction: AutocompleteIntera
 	}
 }
 
-export async function executeCommandHandler(interaction: CommandInteraction, commandKey: string) {
+export async function executeCommandHandler(interaction: ChatInputCommandInteraction, commandKey: string) {
 	// Find command handler
 	const command = portal.commands.get(commandKey)
 	if (!command) {
@@ -410,28 +413,37 @@ export function createCommandConfig<C extends CommandConfig>(config: ExactConfig
 	return config as C
 }
 
+// TODO: Consider using `null` instead of `undefined` for more explicit absence of value and DJS consistency
 /**
  * Extracts command options from a Discord interaction
  */
-export function extractCommandOptions(interaction: CommandInteraction, commandOptions: CommandConfig['options']) {
+export function extractCommandOptions(
+	interaction: ChatInputCommandInteraction,
+	commandOptions: CommandConfig['options']
+) {
 	const options: Record<string, unknown> = {}
 
 	commandOptions?.forEach((option) => {
-		if (optionPrimitives.includes(option.type)) {
-			options[option.name] = interaction.options.get(option.name)?.value
-		} else if (option.type === 'attachment') {
-			options[option.name] = interaction.options.get(option.name)?.attachment
+		if (option.type === 'attachment') {
+			options[option.name] = interaction.options.getAttachment(option.name, option.required) ?? undefined
+		} else if (option.type === 'boolean') {
+			options[option.name] = interaction.options.getBoolean(option.name, option.required) ?? undefined
 		} else if (option.type === 'channel') {
-			options[option.name] = interaction.options.get(option.name)?.channel
-		} else if (option.type === 'mention') {
-			const optionValue = interaction.options.get(option.name)
-			options[option.name] = optionValue?.member ?? optionValue?.role
-		} else if (option.type === 'role') {
-			options[option.name] = interaction.options.get(option.name)?.role
-		} else if (option.type === 'user') {
-			options[option.name] = interaction.options.get(option.name)?.user
+			options[option.name] = interaction.options.getChannel(option.name, option.required) ?? undefined
+		} else if (option.type === 'integer') {
+			options[option.name] = interaction.options.getInteger(option.name, option.required) ?? undefined
 		} else if (option.type === 'member') {
-			options[option.name] = interaction.options.get(option.name)?.member
+			options[option.name] = interaction.options.getMember(option.name) ?? undefined
+		} else if (option.type === 'mention') {
+			options[option.name] = interaction.options.getMentionable(option.name, option.required) ?? undefined
+		} else if (option.type === 'number') {
+			options[option.name] = interaction.options.getNumber(option.name, option.required) ?? undefined
+		} else if (option.type === 'role') {
+			options[option.name] = interaction.options.getRole(option.name, option.required) ?? undefined
+		} else if (option.type === 'string') {
+			options[option.name] = interaction.options.getString(option.name, option.required) ?? undefined
+		} else if (option.type === 'user') {
+			options[option.name] = interaction.options.getUser(option.name, option.required) ?? undefined
 		}
 	})
 
