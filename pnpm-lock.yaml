@@ -623,31 +623,6 @@ importers:
         specifier: ^5.7.2
         version: 5.7.2
 
-  temp/i18n-test:
-    dependencies:
-      '@robojs/i18n':
-        specifier: link:/Users/pkmmte/Documents/GitHub/robo.js/packages/@robojs/i18n
-        version: link:../../packages/@robojs/i18n
-      discord.js:
-        specifier: ^14.21.0
-        version: 14.21.0
-      robo.js:
-        specifier: link:/Users/pkmmte/Documents/GitHub/robo.js/packages/robo
-        version: link:../../packages/robo
-    devDependencies:
-      '@swc/core':
-        specifier: ^1.13.3
-        version: 1.13.3
-      '@types/node':
-        specifier: ^24.2.1
-        version: 24.2.1
-      prettier:
-        specifier: ^3.6.2
-        version: 3.6.2
-      typescript:
-        specifier: ^5.9.2
-        version: 5.9.2
-
 packages:
 
   /@ampproject/remapping@2.3.0:
