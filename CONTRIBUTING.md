@@ -163,6 +163,9 @@ A round of applause for our amazing contributors! 🎉
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/waruhachi"><img src="https://avatars.githubusercontent.com/u/156133757?v=4?s=100" width="100px;" alt="waru"/><br /><sub><b>waru</b></sub></a><br /><a href="https://github.com/Wave-Play/robo.js/commits?author=waruhachi" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/renejfc"><img src="https://avatars.githubusercontent.com/u/60465053?v=4?s=100" width="100px;" alt="René"/><br /><sub><b>René</b></sub></a><br /><a href="https://github.com/Wave-Play/robo.js/commits?author=renejfc" title="Code">💻</a></td>
     </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://iakzs.dev"><img src="https://avatars.githubusercontent.com/u/105176207?v=4?s=100" width="100px;" alt="Benjamín"/><br /><sub><b>Benjamín</b></sub></a><br /><a href="https://github.com/Wave-Play/robo.js/commits?author=iakzs" title="Code">💻</a></td>
+    </tr>
   </tbody>
   <tfoot>
     <tr>
