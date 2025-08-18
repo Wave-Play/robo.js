@@ -1,7 +1,7 @@
 # Type Alias: CommandOptions\<ConfigType\>
 
 ```ts
-type CommandOptions<ConfigType>: { [K in NonNullable<ConfigType["options"]>[number] as K["name"]]: K extends Object ? TypeName extends keyof CommandOptionTypes ? CommandOptionTypes[TypeName] : string : K extends Object ? TypeName extends keyof CommandOptionTypes ? CommandOptionTypes[TypeName] | undefined : string | undefined : K extends Object ? string : string | undefined };
+type CommandOptions<ConfigType>: { [K in NonNullable<ConfigType["options"]>[number] as K["name"]]: K extends Object ? ValueOfOption<K> : ValueOfOption<K> | undefined };
 ```
 
 ## Type Parameters
