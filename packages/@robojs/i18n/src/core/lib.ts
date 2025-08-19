@@ -8,11 +8,11 @@ type LocaleStr = Extract<Locale, string>
 export type LocaleLike =
 	| Locale
 	| {
-			locale: Autocomplete<LocaleStr>
-	  }
+		locale: Autocomplete<LocaleStr>
+	}
 	| {
-			guildLocale: Autocomplete<LocaleStr>
-	  }
+		guildLocale: Autocomplete<LocaleStr>
+	}
 
 export function t(locale: LocaleLike, key: LocaleKey) {
 	const localeValues = State.get<Map<string, Record<string, string>>>('localeValues', {
@@ -42,4 +42,10 @@ function getLocale(input: LocaleLike): string {
 		return input.guildLocale
 	}
 	throw new TypeError('Invalid LocaleLike')
+}
+
+export function withLocale(local: LocaleLike) {
+	return (key: LocaleKey) => {
+		return t(local, key);
+	};
 }
