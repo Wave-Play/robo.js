@@ -42,9 +42,6 @@
 		"robo.js": "workspace:*",
 		"typescript": "^5.9.2"
 	},
-	"peerDependencies": {
-		"robo.js": "^0.10.1"
-	},
 	"peerDependenciesMeta": {
 		"robo.js": {
 			"optional": false
