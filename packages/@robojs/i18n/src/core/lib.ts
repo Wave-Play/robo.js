@@ -1,7 +1,10 @@
 // @ts-expect-error - This is a generated file
 import type { Locale, LocaleKey } from '../../generated/types'
 import { IntlMessageFormat } from 'intl-messageformat'
-import { State } from 'robo.js'
+import { CommandConfig, CommandOption, getPluginOptions, State } from 'robo.js'
+import { i18nLogger } from './loggers'
+import { loadLocales, loadLocalNames } from './utils'
+import { join } from 'path'
 
 type Autocomplete<T extends string> = T | (string & NonNullable<unknown>)
 type LocaleStr = Extract<Locale, string>
@@ -57,4 +60,72 @@ export function withLocale(local: LocaleLike) {
 	return (key: LocaleKey, params?: Record<string, unknown>) => {
 		return t(local, key, params);
 	};
+}
+
+// This function is used to create a command config with localized names and descriptions
+interface O extends Omit<CommandOption, | 'name'> {
+	name?: string,
+	nameKey: LocaleKey,
+	descriptionKey?: LocaleKey,
+}
+
+interface C extends Omit<CommandConfig, | 'options'> {
+	descriptionKey?: LocaleKey,
+	options?: readonly O[],
+
+}
+
+interface pluginConfig {
+	defaultLocale?: string
+}
+
+export function localeCreateCommandConfig(config: C) {
+	loadLocales();
+	const localNames = loadLocalNames();
+	const descriptionKey = config.descriptionKey
+
+	const pluginConfig = getPluginOptions(join('@robojs', 'i18n')) as pluginConfig;
+	const defaultLocale = pluginConfig?.defaultLocale || 'en-US';
+
+	config.description = t(defaultLocale, config.descriptionKey)
+
+	localNames.forEach((locale: string) => {
+		if (descriptionKey) {
+			const description = t(locale, descriptionKey)
+			config.descriptionLocalizations = config.descriptionLocalizations || {}
+			config.descriptionLocalizations[locale] = description
+		}
+		delete config.descriptionKey
+	});
+
+
+	if (config && config.options) {
+		config.options.forEach((option) => {
+			localNames.forEach((locale: string) => {
+				const nameKey = option.nameKey;
+				const descriptionKey = option.descriptionKey;
+
+				const name = t(locale, nameKey);
+				const description = t(locale, descriptionKey);
+				option.nameLocalizations = option.nameLocalizations || {}
+				option.nameLocalizations[locale] = name
+				option.descriptionLocalizations = option.descriptionLocalizations || {}
+				option.descriptionLocalizations[locale] = description
+			});
+
+			option.description = t(defaultLocale, option.descriptionKey)
+			option.name = t(defaultLocale, option.nameKey)
+
+			delete option.nameKey
+			delete option.descriptionKey
+		});
+
+	}
+
+	i18nLogger.error('Creating command config with localized names and descriptions', {
+		config
+	});
+
+	return config as CommandConfig;
+
 }
