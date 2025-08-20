@@ -62,9 +62,9 @@ export default async (interaction: CommandInteraction) => {
 			embeds: [createCommandEmbed(queriedCmd)]
 		}
 	} else {
-		const categorizedCommands = categorizeCommands(commands)
+		const categorizedCommands = categorizeCommands(filteredByAvailability)
 		const categories = Object.keys(categorizedCommands)
-		const filteredCommands = category ? categorizedCommands[category] || [] : commands
+		const filteredCommands = category ? categorizedCommands[category] || [] : filteredByAvailability
 
 		const page = 0
 		const totalPages = Math.ceil(filteredCommands.length / COMMANDS_PER_PAGE)
