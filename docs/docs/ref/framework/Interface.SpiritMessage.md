@@ -26,6 +26,14 @@ optional event:
 
 ***
 
+### logLevel?
+
+```ts
+optional logLevel: LogLevel;
+```
+
+***
+
 ### payload?
 
 ```ts

@@ -33,7 +33,7 @@ integer: number;
 ### member
 
 ```ts
-member: GuildMember;
+member: GuildMember | null;
 ```
 
 ### mention

@@ -14,7 +14,6 @@
 - [Command](Interface.Command.md)
 - [CommandConfig](Interface.CommandConfig.md)
 - [CommandEntry](Interface.CommandEntry.md)
-- [CommandOption](Interface.CommandOption.md)
 - [Config](Interface.Config.md)
 - [Context](Interface.Context.md)
 - [ContextConfig](Interface.ContextConfig.md)
@@ -39,6 +38,7 @@
 
 - [CommandContext](TypeAlias.CommandContext.md)
 - [CommandIntegrationType](TypeAlias.CommandIntegrationType.md)
+- [CommandOption](TypeAlias.CommandOption.md)
 - [CommandOptions](TypeAlias.CommandOptions.md)
 - [CommandOptionTypes](TypeAlias.CommandOptionTypes.md)
 - [CommandResult](TypeAlias.CommandResult.md)
