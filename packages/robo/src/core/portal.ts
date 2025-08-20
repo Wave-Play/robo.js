@@ -17,6 +17,7 @@ export default class Portal {
 	private _enabledContexts: Record<string, boolean> = {}
 	private _serverRestrictions: Record<string, string[]> = {}
 	private _modules: Record<string, Module> = {}
+	private _keepRegistered: boolean = false
 
 	constructor() {}
 
@@ -58,6 +59,14 @@ export default class Portal {
 		}
 	}
 
+	setKeepRegistered(keepRegistered: boolean): void {
+		this._keepRegistered = keepRegistered;
+	}
+
+	get keepRegistered(): boolean {
+		return this._keepRegistered;
+	}
+
 	module(moduleName: string) {
 		let moduleInstance = this._modules[moduleName]
 		if (!moduleInstance) {
@@ -68,7 +77,8 @@ export default class Portal {
 				this._enabledEvents,
 				this._enabledMiddleware,
 				this._enabledContexts,
-				this._serverRestrictions
+				this._serverRestrictions,
+				() => this._keepRegistered
 			)
 			this._modules[moduleName] = moduleInstance
 		}
@@ -112,6 +122,13 @@ export default class Portal {
 		const middleware = [...(await loadHandlerRecords<HandlerRecord<Middleware>>('middleware')).values()]
 
 		Globals.registerPortal(apis, commands, context, events, middleware)
+
+		const config = getConfig()
+		if (config?.portal?.keepRegistered) {
+			if (globalThis.robo?.portal) {
+				(globalThis.robo.portal as Portal).setKeepRegistered(true)
+			}
+		}
 	}
 }
 
@@ -123,7 +140,8 @@ class Module {
 		private _enabledEvents: Record<string, boolean>,
 		private _enabledMiddleware: Record<string, boolean>,
 		private _enabledContexts: Record<string, boolean>,
-		private _serverRestrictions: Record<string, string[]>
+		private _serverRestrictions: Record<string, string[]>,
+		private _getKeepRegistered: () => boolean
 	) {}
 
 	get isEnabled(): boolean {
@@ -133,7 +151,7 @@ class Module {
 	setEnabled(value: boolean): void {
 		this._enabledModules[this._moduleName] = value
 
-		if (!value) {
+		if (!value && !this._getKeepRegistered()) {
 			this._unregisterModuleCommands()
 			this._unregisterModuleEvents()
 			this._unregisterModuleMiddleware()
