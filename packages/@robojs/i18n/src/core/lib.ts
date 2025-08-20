@@ -1,7 +1,7 @@
 // @ts-expect-error - This is a generated file
 import type { Locale, LocaleKey } from '../../generated/types'
+import { IntlMessageFormat } from 'intl-messageformat'
 import { State } from 'robo.js'
-import { i18nLogger } from './loggers'
 
 type Autocomplete<T extends string> = T | (string & NonNullable<unknown>)
 type LocaleStr = Extract<Locale, string>
@@ -15,10 +15,11 @@ export type LocaleLike =
 		guildLocale: Autocomplete<LocaleStr>
 	}
 
-export function t(locale: LocaleLike, key: LocaleKey) {
+export function t(locale: LocaleLike, key: LocaleKey, params?: Record<string, unknown>): string {
 	const localeValues = State.get<Map<string, Record<string, string>>>('localeValues', {
 		namespace: '@robojs/i18n'
 	})
+
 	// This function should return the translation for the given locale and key.
 	// For now, we will just return a placeholder string.
 	const localeStr = getLocale(locale)
@@ -30,6 +31,13 @@ export function t(locale: LocaleLike, key: LocaleKey) {
 	if (!translation) {
 		throw new Error(`Translation for key "${key}" not found in locale "${localeStr}"`)
 	}
+
+
+	if (params) {
+		const formatter = new IntlMessageFormat(translation, localeStr).format(params);
+		return formatter as string
+	}
+
 	return translation
 }
 
@@ -46,7 +54,7 @@ function getLocale(input: LocaleLike): string {
 }
 
 export function withLocale(local: LocaleLike) {
-	return (key: LocaleKey) => {
-		return t(local, key);
+	return (key: LocaleKey, params?: Record<string, unknown>) => {
+		return t(local, key, params);
 	};
 }

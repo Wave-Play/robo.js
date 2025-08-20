@@ -46,5 +46,8 @@
 		"robo.js": {
 			"optional": false
 		}
+	},
+	"dependencies": {
+		"intl-messageformat": "^10.7.16"
 	}
 }
