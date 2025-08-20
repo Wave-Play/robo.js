@@ -62,9 +62,9 @@ export default async (interaction: CommandInteraction) => {
 			embeds: [createCommandEmbed(queriedCmd)]
 		}
 	} else {
-		const categorizedCommands = categorizeCommands(filteredByAvailability)
+		const categorizedCommands = categorizeCommands(commands)
 		const categories = Object.keys(categorizedCommands)
-		const filteredCommands = category ? categorizedCommands[category] || [] : filteredByAvailability
+		const filteredCommands = category ? categorizedCommands[category] || [] : commands
 
 		const page = 0
 		const totalPages = Math.ceil(filteredCommands.length / COMMANDS_PER_PAGE)
@@ -83,7 +83,6 @@ export const autocomplete = (interaction: AutocompleteInteraction) => {
 	const focusedOption = interaction.options.getFocused(true)
 	const manifest = getManifest()
 	const commands = getInnermostCommands(manifest.commands)
-
 	const serverId = interaction.guildId
 	const filteredByAvailability = commands.filter(cmd => {
 		if (cmd.key && portal.command(cmd.key) && !portal.command(cmd.key).isEnabled) return false
