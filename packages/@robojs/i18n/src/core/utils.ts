@@ -2,7 +2,7 @@ import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, extname, join, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { State } from 'robo.js'
-import { i18nLogger } from './loggers'
+import { i18nLogger } from './loggers.js'
 
 /**
  * Recursively gets all file paths from the given directory.

@@ -1,10 +1,10 @@
 // @ts-expect-error - This is a generated file
 import type { Locale, LocaleKey } from '../../generated/types'
+import { i18nLogger } from './loggers.js'
+import { loadLocales, loadLocalNames } from './utils.js'
+import { join } from 'node:path'
 import { IntlMessageFormat } from 'intl-messageformat'
 import { CommandConfig, CommandOption, getPluginOptions, State } from 'robo.js'
-import { i18nLogger } from './loggers'
-import { loadLocales, loadLocalNames } from './utils'
-import { join } from 'path'
 
 type Autocomplete<T extends string> = T | (string & NonNullable<unknown>)
 type LocaleStr = Extract<Locale, string>

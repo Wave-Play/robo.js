@@ -1,5 +1,5 @@
-import { loadLocales } from "~/core/utils";
+import { loadLocales } from '~/core/utils.js'
 
 export default () => {
-	loadLocales();
+	loadLocales()
 }
