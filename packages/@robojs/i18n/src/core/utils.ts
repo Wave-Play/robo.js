@@ -60,10 +60,10 @@ export function loadLocales() {
 	)
 
 	// Create a map to hold locale values
-	const localeValues = new Map<string, Record<string, string>>()
+	const localeValues: Record<string, Record<string, string>> = {}
 
 	localeNames.forEach((locale) => {
-		localeValues.set(locale, {})
+		localeValues[locale] = {}
 	})
 
 	// Assuming all locale files are JSON key-value pairs, extract all keys and values
@@ -82,7 +82,7 @@ export function loadLocales() {
 			}
 
 			localeKeys.push(key)
-			localeValues.get(localeName)![key] = value
+			localeValues[localeName]![key] = value
 			i18nLogger.debug(`Added key "${key}" with value "${value}" for locale "${localeName}"`)
 		}
 	}
@@ -101,14 +101,9 @@ export function loadLocales() {
 	const __dirname = dirname(join(__filename, '..', '..'))
 	const typesFilePath = join(__dirname, 'generated', 'types.d.ts')
 	mkdirSync(dirname(typesFilePath), { recursive: true })
-	i18nLogger.warn(`Writing types to ${typesFilePath}`)
+	i18nLogger.debug(`Writing types to ${typesFilePath}`)
 	writeFileSync(typesFilePath, types, 'utf-8')
 
-	i18nLogger.info(`Found ${localeFiles.length} locale files.`, localeFiles)
-	i18nLogger.info(`Extracted ${localeKeys.length} locale keys.`, localeKeys)
-	i18nLogger.info(`Available locales:`, localeNames)
-	i18nLogger.info(`Locale values:`, localeValues)
-	i18nLogger.warn('Types:', types)
 	i18nLogger.ready(`Locales loaded in ${Date.now() - time}ms`)
 }
 
