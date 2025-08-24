@@ -1,4 +1,4 @@
-import type { CommandOptionTypes } from './commands'
+import type { CommandConfig, CommandOptionTypes } from './commands'
 
 /**
  * Extracts the literal `value` type from a single choice entry.
@@ -40,3 +40,11 @@ export type ValueOfOption<K> = TypeNameOfOption<K> extends 'string' | 'number' |
 		? BaseValueOfOption<K>
 		: ChoiceUnionOfOption<K>
 	: BaseValueOfOption<K>
+
+export type ExactConfig<C extends CommandConfig> = {
+	[K in keyof C]: K extends keyof CommandConfig ? C[K] : never
+}
+
+export type EnforceConfig<C extends CommandConfig> = Exclude<keyof C, keyof CommandConfig> extends never
+	? C
+	: 'Extra properties are not allowed in CommandConfig'
