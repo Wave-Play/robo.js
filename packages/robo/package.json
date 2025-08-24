@@ -20,6 +20,16 @@
 	"engines": {
 		"node": ">=18.0.0"
 	},
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		},
+		"./*": {
+			"types": "./*",
+			"import": "./*"
+		}
+	},
 	"scripts": {
 		"build": "tsup && tsup --config tsup-cli.config.ts",
 		"dev": "chokidar \"src/**/*.ts\" \"codemod/**/*.ts\" -d 1000 -c \"pnpm build\" --initial",

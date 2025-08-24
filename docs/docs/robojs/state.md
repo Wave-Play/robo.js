@@ -32,7 +32,7 @@ import { setState, getState } from 'robo.js'
 import type { CommandResult } from 'robo.js'
 
 export default (): CommandResult => {
-	let currentPoints = getState('currentPoints') ?? 0
+	let currentPoints = getState<number>('currentPoints') ?? 0
 	setState('currentPoints', currentPoints + 10)
 	return `You've gained 10 points! Your current total is ${currentPoints + 10} points.`
 }
@@ -63,7 +63,7 @@ import { getState } from 'robo.js'
 import type { CommandResult } from 'robo.js'
 
 export default (): CommandResult => {
-	let currentPoints = getState('currentPoints') ?? 0
+	let currentPoints = getState<number>('currentPoints') ?? 0
 	return `You currently have ${currentPoints} points.`
 }
 ```
@@ -96,7 +96,7 @@ import { setState, getState } from 'robo.js'
 import type { CommandResult } from 'robo.js'
 
 export default (): CommandResult => {
-	let counter = getState('counter') ?? 0
+	let counter = getState<number>('counter') ?? 0
 	setState('counter', counter + 1)
 	return `Counter in Foo module is now ${counter + 1}.`
 }
@@ -126,7 +126,7 @@ import { setState, getState } from 'robo.js'
 import type { CommandResult } from 'robo.js'
 
 export default (): CommandResult => {
-	let counter = getState('counter') ?? 0
+	let counter = getState<number>('counter') ?? 0
 	setState('counter', counter + 5)
 	return `Counter in Bar module is now ${counter + 5}.`
 }
@@ -168,7 +168,7 @@ import { setState, getState } from '../state.js'
 import type { CommandResult } from 'robo.js'
 
 export default (): CommandResult => {
-	let counter = getState('counter') ?? 0
+	let counter = getState<number>('counter') ?? 0
 	setState('counter', counter + 1)
 	return `Counter in Foo module is now ${counter + 1}.`
 }
