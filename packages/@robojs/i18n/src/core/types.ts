@@ -22,9 +22,28 @@ export interface LocaleCommandOption extends Omit<CommandOption, 'description'> 
 
 export interface LocaleCommandConfig extends Omit<CommandConfig, 'options'> {
 	descriptionKey?: LocaleKey
+	nameKey?: LocaleKey
 	options?: readonly LocaleCommandOption[]
 }
 
 export interface PluginConfig {
 	defaultLocale?: string
 }
+
+type ToCommandOption<O> = O extends LocaleCommandOption
+	? Omit<O, 'nameKey' | 'descriptionKey'> & { description?: string }
+	: O
+
+/** Map over a (possibly tuple) options array, preserving its indices/literals */
+type MapOptions<Opts> = Opts extends readonly unknown[]
+	? { readonly [I in keyof Opts]: ToCommandOption<Opts[I]> }
+	: never
+
+/** Strip locale-only keys but KEEP the options tuple shape and literals */
+export type BaseFromLocale<C extends LocaleCommandConfig> = Omit<C, 'nameKey' | 'descriptionKey' | 'options'> &
+	(undefined extends C['options']
+		? { options?: MapOptions<Exclude<C['options'], undefined>> }
+		: { options: MapOptions<C['options']> })
+
+/** enforce at the callsite that the stripped type is a valid CommandConfig */
+export type ValidatedCommandConfig<C extends LocaleCommandConfig> = BaseFromLocale<C> extends CommandConfig ? C : never

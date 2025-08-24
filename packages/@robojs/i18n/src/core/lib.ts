@@ -5,12 +5,12 @@ import { getLocale, loadLocales, loadLocalNames } from './utils.js'
 import { join } from 'node:path'
 import { IntlMessageFormat } from 'intl-messageformat'
 import { createCommandConfig as _createCommandConfig, getPluginOptions, State } from 'robo.js'
-import type { LocaleCommandConfig, LocaleLike, PluginConfig } from './types'
+import type { BaseFromLocale, LocaleCommandConfig, LocaleLike, PluginConfig, ValidatedCommandConfig } from './types'
 import type { SmartCommandConfig } from 'robo.js'
 
 let _isLoaded = false
 
-export function createCommandConfig<const C extends LocaleCommandConfig>(config: SmartCommandConfig<C>) {
+export function createCommandConfig<const C extends LocaleCommandConfig>(config: ValidatedCommandConfig<C>) {
 	// Load locales only once
 	if (!_isLoaded) {
 		loadLocales()
@@ -30,6 +30,7 @@ export function createCommandConfig<const C extends LocaleCommandConfig>(config:
 			config.descriptionLocalizations = config.descriptionLocalizations || {}
 			config.descriptionLocalizations[locale] = description
 		}
+
 		delete config.descriptionKey
 	})
 
@@ -38,9 +39,9 @@ export function createCommandConfig<const C extends LocaleCommandConfig>(config:
 			localNames.forEach((locale: string) => {
 				const nameKey = option.nameKey
 				const descriptionKey = option.descriptionKey
-
 				const name = t(locale, nameKey)
 				const description = t(locale, descriptionKey)
+
 				option.nameLocalizations = option.nameLocalizations || {}
 				option.nameLocalizations[locale] = name
 				option.descriptionLocalizations = option.descriptionLocalizations || {}
@@ -60,18 +61,18 @@ export function createCommandConfig<const C extends LocaleCommandConfig>(config:
 		config
 	})
 
-	return _createCommandConfig(config as SmartCommandConfig<C>)
+	return _createCommandConfig(config as unknown as SmartCommandConfig<BaseFromLocale<C>>)
 }
 
 export function t(locale: LocaleLike, key: LocaleKey, params?: Record<string, unknown>): string {
-	const localeValues = State.get<Map<string, Record<string, string>>>('localeValues', {
+	const localeValues = State.get<Record<string, Record<string, string>>>('localeValues', {
 		namespace: '@robojs/i18n'
 	})
 
 	// This function should return the translation for the given locale and key.
 	// For now, we will just return a placeholder string.
 	const localeStr = getLocale(locale)
-	const values = localeValues.get(localeStr)
+	const values = localeValues[localeStr]
 	if (!values) {
 		throw new Error(`Locale "${localeStr}" not found`)
 	}
