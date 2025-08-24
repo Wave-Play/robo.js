@@ -5,19 +5,8 @@ import { loadLocales, loadLocalNames } from './utils.js'
 import { join } from 'node:path'
 import { IntlMessageFormat } from 'intl-messageformat'
 import { createCommandConfig as _createCommandConfig, getPluginOptions, State } from 'robo.js'
-import type { CommandConfig, CommandOption, SmartCommandConfig } from 'robo.js'
-
-type Autocomplete<T extends string> = T | (string & NonNullable<unknown>)
-type LocaleStr = Extract<Locale, string>
-
-export type LocaleLike =
-	| Locale
-	| {
-			locale: Autocomplete<LocaleStr>
-	  }
-	| {
-			guildLocale: Autocomplete<LocaleStr>
-	  }
+import type { LocaleCommandConfig, LocaleLike, PluginConfig } from './types'
+import type { SmartCommandConfig } from 'robo.js'
 
 export function t(locale: LocaleLike, key: LocaleKey, params?: Record<string, unknown>): string {
 	const localeValues = State.get<Map<string, Record<string, string>>>('localeValues', {
@@ -62,27 +51,11 @@ export function withLocale(local: LocaleLike) {
 	}
 }
 
-// This function is used to create a command config with localized names and descriptions
-interface LocaleCommandOption extends Omit<CommandOption, 'description'> {
-	nameKey: LocaleKey
-	descriptionKey?: LocaleKey
-}
-
-interface LocaleCommandConfig extends Omit<CommandConfig, 'options'> {
-	descriptionKey?: LocaleKey
-	options?: readonly LocaleCommandOption[]
-}
-
-interface pluginConfig {
-	defaultLocale?: string
-}
-
 export function createCommandConfig<const C extends LocaleCommandConfig>(config: SmartCommandConfig<C>) {
 	loadLocales()
 	const localNames = loadLocalNames()
 	const descriptionKey = config.descriptionKey
-
-	const pluginConfig = getPluginOptions(join('@robojs', 'i18n')) as pluginConfig
+	const pluginConfig = getPluginOptions(join('@robojs', 'i18n')) as PluginConfig
 	const defaultLocale = pluginConfig?.defaultLocale || 'en-US'
 
 	config.description = t(defaultLocale, config.descriptionKey)

@@ -27,10 +27,7 @@ export function getAllFilePaths(dirPath: string, fileList: string[] = []): strin
 	return fileList
 }
 
-
-
 export function loadLocales() {
-
 	const LocalesDir = join(process.cwd(), 'locales')
 
 	i18nLogger.debug('Loading locales...')
@@ -101,7 +98,6 @@ export function loadLocales() {
 	i18nLogger.ready(`Locales loaded in ${Date.now() - time}ms`)
 }
 
-
 function generateTypes(locales: string[], keys: string[]): string {
 	let buffer = `// This file is auto-generated. Do not edit manually.\n\n`
 	buffer += `export type Locale = ${locales.map((locale) => `'${locale}'`).join(' | ')}\n\n`
@@ -110,12 +106,9 @@ function generateTypes(locales: string[], keys: string[]): string {
 	return buffer
 }
 
-
-
-
 export function loadLocalNames() {
 	const localeNames = State.get<string[]>('localeNames', {
 		namespace: '@robojs/i18n'
 	})
-	return localeNames;
+	return localeNames
 }
