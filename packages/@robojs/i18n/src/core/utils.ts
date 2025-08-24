@@ -1,8 +1,10 @@
+import { i18nLogger } from './loggers.js'
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, extname, join, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { State } from 'robo.js'
-import { i18nLogger } from './loggers.js'
+import type { Locale } from '../index.js'
+import type { LocaleLike } from './types.js'
 
 /**
  * Recursively gets all file paths from the given directory.
@@ -25,6 +27,18 @@ export function getAllFilePaths(dirPath: string, fileList: string[] = []): strin
 	}
 
 	return fileList
+}
+
+export function getLocale(input: Locale): Locale
+export function getLocale(input: { locale: string } | { guildLocale: string }): string
+export function getLocale(input: LocaleLike): string
+export function getLocale(input: LocaleLike): string {
+	if (typeof input === 'string') return input
+	if ('locale' in input && typeof input.locale === 'string') return input.locale
+	if ('guildLocale' in input && typeof input.guildLocale === 'string') {
+		return input.guildLocale
+	}
+	throw new TypeError('Invalid LocaleLike')
 }
 
 export function loadLocales() {

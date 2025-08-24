@@ -1,63 +1,27 @@
 // @ts-expect-error - This is a generated file
-import type { Locale, LocaleKey } from '../../generated/types'
+import type { LocaleKey } from '../../generated/types'
 import { i18nLogger } from './loggers.js'
-import { loadLocales, loadLocalNames } from './utils.js'
+import { getLocale, loadLocales, loadLocalNames } from './utils.js'
 import { join } from 'node:path'
 import { IntlMessageFormat } from 'intl-messageformat'
 import { createCommandConfig as _createCommandConfig, getPluginOptions, State } from 'robo.js'
 import type { LocaleCommandConfig, LocaleLike, PluginConfig } from './types'
 import type { SmartCommandConfig } from 'robo.js'
 
-export function t(locale: LocaleLike, key: LocaleKey, params?: Record<string, unknown>): string {
-	const localeValues = State.get<Map<string, Record<string, string>>>('localeValues', {
-		namespace: '@robojs/i18n'
-	})
-
-	// This function should return the translation for the given locale and key.
-	// For now, we will just return a placeholder string.
-	const localeStr = getLocale(locale)
-	const values = localeValues.get(localeStr)
-	if (!values) {
-		throw new Error(`Locale "${localeStr}" not found`)
-	}
-	const translation = values[key]
-	if (!translation) {
-		throw new Error(`Translation for key "${key}" not found in locale "${localeStr}"`)
-	}
-
-	if (params) {
-		const formatter = new IntlMessageFormat(translation, localeStr)
-		return formatter.format(params) as string
-	}
-
-	return translation
-}
-
-function getLocale(input: Locale): Locale
-function getLocale(input: { locale: string } | { guildLocale: string }): string
-function getLocale(input: LocaleLike): string
-function getLocale(input: LocaleLike): string {
-	if (typeof input === 'string') return input
-	if ('locale' in input && typeof input.locale === 'string') return input.locale
-	if ('guildLocale' in input && typeof input.guildLocale === 'string') {
-		return input.guildLocale
-	}
-	throw new TypeError('Invalid LocaleLike')
-}
-
-export function withLocale(local: LocaleLike) {
-	return (key: LocaleKey, params?: Record<string, unknown>) => {
-		return t(local, key, params)
-	}
-}
+let _isLoaded = false
 
 export function createCommandConfig<const C extends LocaleCommandConfig>(config: SmartCommandConfig<C>) {
-	loadLocales()
+	// Load locales only once
+	if (!_isLoaded) {
+		loadLocales()
+		_isLoaded = true
+	}
+
+	// Validate config
 	const localNames = loadLocalNames()
 	const descriptionKey = config.descriptionKey
 	const pluginConfig = getPluginOptions(join('@robojs', 'i18n')) as PluginConfig
 	const defaultLocale = pluginConfig?.defaultLocale || 'en-US'
-
 	config.description = t(defaultLocale, config.descriptionKey)
 
 	localNames.forEach((locale: string) => {
@@ -97,4 +61,35 @@ export function createCommandConfig<const C extends LocaleCommandConfig>(config:
 	})
 
 	return _createCommandConfig(config as SmartCommandConfig<C>)
+}
+
+export function t(locale: LocaleLike, key: LocaleKey, params?: Record<string, unknown>): string {
+	const localeValues = State.get<Map<string, Record<string, string>>>('localeValues', {
+		namespace: '@robojs/i18n'
+	})
+
+	// This function should return the translation for the given locale and key.
+	// For now, we will just return a placeholder string.
+	const localeStr = getLocale(locale)
+	const values = localeValues.get(localeStr)
+	if (!values) {
+		throw new Error(`Locale "${localeStr}" not found`)
+	}
+	const translation = values[key]
+	if (!translation) {
+		throw new Error(`Translation for key "${key}" not found in locale "${localeStr}"`)
+	}
+
+	if (params) {
+		const formatter = new IntlMessageFormat(translation, localeStr)
+		return formatter.format(params) as string
+	}
+
+	return translation
+}
+
+export function withLocale(local: LocaleLike) {
+	return (key: LocaleKey, params?: Record<string, unknown>) => {
+		return t(local, key, params)
+	}
 }
