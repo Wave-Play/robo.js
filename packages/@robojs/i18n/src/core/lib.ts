@@ -1,7 +1,14 @@
 // @ts-expect-error - This is a generated file
 import type { LocaleKey, ParamsFor } from '../../generated/types'
 import { i18nLogger } from './loggers.js'
-import { getLocale, loadLocales, loadLocalNames } from './utils.js'
+import {
+	flattenParams,
+	getLocale,
+	loadLocales,
+	loadLocalNames,
+	mapKeysToSanitized,
+	sanitizeDottedArgs
+} from './utils.js'
 import { join } from 'node:path'
 import { IntlMessageFormat } from 'intl-messageformat'
 import { createCommandConfig as _createCommandConfig, getPluginOptions, State } from 'robo.js'
@@ -79,8 +86,12 @@ export function t<K extends LocaleKey>(locale: LocaleLike, key: K, params?: Para
 	}
 
 	if (params) {
-		const formatter = new IntlMessageFormat(translation, localeStr)
-		return formatter.format(params) as string
+		const flat = flattenParams(params as Record<string, unknown>)
+		const safeMsg = sanitizeDottedArgs(translation)
+		const safeValues = mapKeysToSanitized(flat)
+		const formatter = new IntlMessageFormat(safeMsg, localeStr)
+
+		return formatter.format(safeValues) as string
 	}
 
 	return translation
