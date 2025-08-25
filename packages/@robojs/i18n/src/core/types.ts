@@ -3,6 +3,7 @@ import type { Locale, LocaleKey } from '../../generated/types'
 import type { CommandConfig, CommandOption } from 'robo.js'
 
 type Autocomplete<T extends string> = T | (string & NonNullable<unknown>)
+
 type LocaleStr = Extract<Locale, string>
 
 export type LocaleLike =
@@ -47,3 +48,14 @@ export type BaseFromLocale<C extends LocaleCommandConfig> = Omit<C, 'nameKey' | 
 
 /** enforce at the callsite that the stripped type is a valid CommandConfig */
 export type ValidatedCommandConfig<C extends LocaleCommandConfig> = BaseFromLocale<C> extends CommandConfig ? C : never
+
+// Build a per-key param map by parsing ICU messages across all locales,
+// then unioning param types if they differ between locales.
+export type TsKind = 'number' | 'string' | 'dateOrNumber'
+
+export type Node = {
+	// If this node is ever used as a scalar directly (e.g., {user}), we record its scalar kind
+	kind?: TsKind
+	// Children mean dotted sub-keys exist (e.g., user.name)
+	children?: Record<string, Node>
+}
