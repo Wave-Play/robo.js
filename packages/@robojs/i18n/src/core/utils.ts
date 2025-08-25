@@ -2,6 +2,16 @@ import { i18nLogger } from './loggers.js'
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, extname, join, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import {
+	parse,
+	isPluralElement,
+	isSelectElement,
+	isArgumentElement,
+	isNumberElement,
+	isDateElement,
+	isTimeElement,
+	MessageFormatElement
+} from '@formatjs/icu-messageformat-parser'
 import { State } from 'robo.js'
 import type { Locale } from '../index.js'
 import type { LocaleLike } from './types.js'
@@ -93,8 +103,8 @@ export function loadLocales() {
 	State.set('localeNames', localeNames, { namespace })
 	State.set('localeValues', localeValues, { namespace })
 
-	// Generate types for type safety
-	const types = generateTypes(localeNames, localeKeys)
+	// Generate types based on loaded locales and keys, including param extraction
+	const types = generateTypes(localeNames, Array.from(new Set(localeKeys)), localeValues)
 
 	// Save into package directory
 	const __filename = fileURLToPath(import.meta.url)
@@ -106,10 +116,95 @@ export function loadLocales() {
 	return Date.now() - time
 }
 
-function generateTypes(locales: string[], keys: string[]): string {
+function generateTypes(
+	locales: string[],
+	keys: string[],
+	localeValues: Record<string, Record<string, string>>
+): string {
+	// Build a per-key param map by parsing ICU messages across all locales,
+	// then unioning param types if they differ between locales.
+	type TsKind = 'number' | 'string' | 'dateOrNumber'
+	const paramsByKey: Record<string, Record<string, TsKind>> = {}
+
+	const mergeParam = (k: string, name: string, kind: TsKind) => {
+		paramsByKey[k] ||= {}
+		const prev = paramsByKey[k][name]
+
+		if (!prev) {
+			paramsByKey[k][name] = kind
+			return
+		}
+
+		// widen to a safe union if types disagree (e.g., string vs number across locales)
+		if (prev !== kind) {
+			// If either is dateOrNumber, keep dateOrNumber
+			if (prev === 'dateOrNumber' || kind === 'dateOrNumber') {
+				paramsByKey[k][name] = 'dateOrNumber'
+			} else {
+				// string vs number -> we can't know; prefer string (most permissive for formatting)
+				paramsByKey[k][name] = 'string'
+			}
+		}
+	}
+
+	const visit = (els: MessageFormatElement[], key: string) => {
+		for (const el of els) {
+			if (isPluralElement(el)) {
+				mergeParam(key, el.value, 'number')
+				for (const opt of Object.values(el.options)) visit(opt.value, key)
+			} else if (isSelectElement(el)) {
+				mergeParam(key, el.value, 'string')
+				for (const opt of Object.values(el.options)) visit(opt.value, key)
+			} else if (isNumberElement(el)) {
+				mergeParam(key, el.value, 'number')
+			} else if (isDateElement(el) || isTimeElement(el)) {
+				mergeParam(key, el.value, 'dateOrNumber')
+			} else if (isArgumentElement(el)) {
+				mergeParam(key, el.value, 'string')
+			} else {
+				// Some nodes (e.g., literals) may have nested values — defensive traversal
+				// @ts-expect-error - different element shapes
+				if (Array.isArray(el.value)) visit(el.value, key)
+			}
+		}
+	}
+
+	for (const locale of Object.keys(localeValues)) {
+		const map = localeValues[locale]
+		for (const key of Object.keys(map)) {
+			try {
+				const ast = parse(map[key], { captureLocation: false })
+				visit(ast, key)
+			} catch (err) {
+				// If a message fails to parse, fall back to no params for that key in this locale
+				i18nLogger.warn?.(`Failed to parse ICU for key "${key}" in locale "${locale}": ${String(err)}`)
+			}
+		}
+	}
+
+	// Helpers to emit TS
+	const tsFor = (k: TsKind): string => (k === 'number' ? 'number' : k === 'dateOrNumber' ? 'Date | number' : 'string')
+
+	// Compose the .d.ts content
 	let buffer = `// This file is auto-generated. Do not edit manually.\n\n`
 	buffer += `export type Locale = ${locales.map((locale) => `'${locale}'`).join(' | ')}\n\n`
 	buffer += `export type LocaleKey = ${keys.map((key) => `'${key}'`).join(' | ')}\n\n`
+
+	// Params map
+	buffer += `export type LocaleParamsMap = {\n`
+	for (const key of keys) {
+		const params = paramsByKey[key] ?? {}
+		const entries = Object.entries(params)
+
+		if (entries.length === 0) {
+			buffer += `  '${key}': {},\n`
+		} else {
+			const fields = entries.map(([name, kind]) => `    ${name}?: ${tsFor(kind)}`).join(';\n')
+			buffer += `  '${key}': {\n${fields}\n  },\n`
+		}
+	}
+	buffer += `}\n\n`
+	buffer += `export type ParamsFor<K extends LocaleKey> = LocaleParamsMap[K]\n\n`
 
 	return buffer
 }

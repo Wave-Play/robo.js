@@ -91,6 +91,9 @@ importers:
 
   packages/@robojs/i18n:
     dependencies:
+      '@formatjs/icu-messageformat-parser':
+        specifier: ^2.11.2
+        version: 2.11.2
       intl-messageformat:
         specifier: ^10.7.16
         version: 10.7.16

@@ -1,5 +1,5 @@
 // @ts-expect-error - This is a generated file
-import type { LocaleKey } from '../../generated/types'
+import type { LocaleKey, ParamsFor } from '../../generated/types'
 import { i18nLogger } from './loggers.js'
 import { getLocale, loadLocales, loadLocalNames } from './utils.js'
 import { join } from 'node:path'
@@ -61,7 +61,7 @@ export function createCommandConfig<const C extends LocaleCommandConfig>(config:
 	return _createCommandConfig(config as unknown as SmartCommandConfig<BaseFromLocale<C>>)
 }
 
-export function t(locale: LocaleLike, key: LocaleKey, params?: Record<string, unknown>): string {
+export function t<K extends LocaleKey>(locale: LocaleLike, key: K, params?: ParamsFor<K>): string {
 	const localeValues = State.get<Record<string, Record<string, string>>>('localeValues', {
 		namespace: '@robojs/i18n'
 	})
@@ -87,7 +87,5 @@ export function t(locale: LocaleLike, key: LocaleKey, params?: Record<string, un
 }
 
 export function withLocale(local: LocaleLike) {
-	return (key: LocaleKey, params?: Record<string, unknown>) => {
-		return t(local, key, params)
-	}
+	return <K extends LocaleKey>(key: K, params?: ParamsFor<K>) => t(local, key, params)
 }
