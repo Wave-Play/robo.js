@@ -8,6 +8,7 @@ import { color, composeColors, hex } from './color.js'
 import { getConfig } from './config.js'
 import type { Api, BaseConfig, Command, Context, Event, HandlerRecord, Middleware } from '../types/index.js'
 import { Globals } from './globals.js'
+import { portalUtils } from './portal-utils.js'
 
 export default class Portal {
 	private _enabledModules: Record<string, boolean> = {}
@@ -66,6 +67,24 @@ export default class Portal {
 	get keepRegistered(): boolean {
 		return this._keepRegistered;
 	}
+	
+	/**
+	 * Disables a module. This prevents all of its commands, contexts, events and middleware from being registered.
+	 * @param {string | symbol} id The ID of the module to disable.
+	 * @returns {void}
+	 */
+	disableModule(id: string | symbol): void {
+		portalUtils.setEnabled(this._enabledModules, id.toString(), false);
+	}
+
+	/**
+	 * Enables a module. This allows all of its commands, contexts, events and middleware to be registered.
+	 * @param {string | symbol} id The ID of the module to enable.
+	 * @returns {void}
+	 */
+	enableModule(id: string | symbol): void {
+		portalUtils.setEnabled(this._enabledModules, id.toString(), true);
+	}
 
 	module(moduleName: string) {
 		let moduleInstance = this._modules[moduleName]
@@ -102,11 +121,7 @@ export default class Portal {
 	}
 
 	isEnabledForServer(key: string, serverId: Snowflake): boolean {
-		const serverRestrictions = this._serverRestrictions[key]
-		if (!serverRestrictions || serverRestrictions.length === 0) {
-			return true
-		}
-		return serverRestrictions.includes(serverId)
+		return portalUtils.isEnabledForServer(this._serverRestrictions, key, serverId);
 	}
 
 	/**
@@ -145,112 +160,23 @@ class Module {
 	) {}
 
 	get isEnabled(): boolean {
-		return this._enabledModules[this._moduleName] ?? true
+		return portalUtils.isEnabled(this._enabledModules, this._moduleName);
 	}
 
 	setEnabled(value: boolean): void {
-		this._enabledModules[this._moduleName] = value
+		portalUtils.setEnabled(this._enabledModules, this._moduleName, value);
 
 		if (!value && !this._getKeepRegistered()) {
-			this._unregisterModuleCommands()
-			this._unregisterModuleEvents()
-			this._unregisterModuleMiddleware()
-			this._unregisterModuleContexts()
+			portalUtils.unregisterModuleCommands(this._enabledCommands, this._moduleName);
+			portalUtils.unregisterModuleEvents(this._enabledEvents, this._moduleName);
+			portalUtils.unregisterModuleMiddleware(this._enabledMiddleware, this._moduleName);
+			portalUtils.unregisterModuleContexts(this._enabledContexts, this._moduleName);
 		}
 	}
 
 	setServerOnly(serverIds: string[] | string): void {
-		const servers = Array.isArray(serverIds) ? serverIds : [serverIds]
-		this._serverRestrictions[this._moduleName] = servers
-
-		this._applyServerRestrictionsToComponents()
-	}
-
-	private _unregisterModuleCommands(): void {
-		const commands = Globals.getPortalValues().commands
-		if (!commands) return
-
-		commands.forEach((command, key) => {
-			if (command.module === this._moduleName) {
-				this._enabledCommands[key] = false
-			}
-		})
-	}
-
-	private _unregisterModuleEvents(): void {
-		const events = Globals.getPortalValues().events
-		if (!events) return
-
-		events.forEach((eventHandlers, eventName) => {
-			eventHandlers.forEach((handler, index) => {
-				if (handler.module === this._moduleName) {
-					const key = `${eventName}:${index}`
-					this._enabledEvents[key] = false
-				}
-			})
-		})
-	}
-
-	private _unregisterModuleMiddleware(): void {
-		const middleware = Globals.getPortalValues().middleware
-		middleware.forEach((mw, index) => {
-			if (mw.module === this._moduleName) {
-				this._enabledMiddleware[index.toString()] = false
-			}
-		})
-	}
-
-	private _unregisterModuleContexts(): void {
-		const contexts = Globals.getPortalValues().context
-		if (!contexts) return
-
-		contexts.forEach((context, key) => {
-			if (context.module === this._moduleName) {
-				this._enabledContexts[key] = false
-			}
-		})
-	}
-
-	private _applyServerRestrictionsToComponents(): void {
-		const servers = this._serverRestrictions[this._moduleName]
-		if (!servers || servers.length === 0) return
-
-		const commands = Globals.getPortalValues().commands
-		if (commands) {
-			commands.forEach((command, key) => {
-				if (command.module === this._moduleName) {
-					this._serverRestrictions[key] = servers
-				}
-			})
-		}
-
-		const events = Globals.getPortalValues().events
-		if (events) {
-			events.forEach((eventHandlers, eventName) => {
-				eventHandlers.forEach((handler, index) => {
-					if (handler.module === this._moduleName) {
-						const key = `${eventName}:${index}`
-						this._serverRestrictions[key] = servers
-					}
-				})
-			})
-		}
-
-		const middleware = Globals.getPortalValues().middleware
-		middleware.forEach((mw, index) => {
-			if (mw.module === this._moduleName) {
-				this._serverRestrictions[index.toString()] = servers
-			}
-		})
-
-		const contexts = Globals.getPortalValues().context
-		if (contexts) {
-			contexts.forEach((context, key) => {
-				if (context.module === this._moduleName) {
-					this._serverRestrictions[key] = servers
-				}
-			})
-		}
+		portalUtils.setServerOnly(this._serverRestrictions, this._moduleName, serverIds)
+		portalUtils.applyModuleServerRestrictions(this._serverRestrictions, this._moduleName)
 	}
 }
 
@@ -262,16 +188,15 @@ class CommandController {
 	) {}
 
 	get isEnabled(): boolean {
-		return this._enabledCommands[this._commandName] ?? true
+		return portalUtils.isEnabled(this._enabledCommands, this._commandName);
 	}
 
 	setEnabled(value: boolean): void {
-		this._enabledCommands[this._commandName] = value
+		portalUtils.setEnabled(this._enabledCommands, this._commandName, value);
 	}
 
 	setServerOnly(serverIds: string[] | string): void {
-		const servers = Array.isArray(serverIds) ? serverIds : [serverIds]
-		this._serverRestrictions[this._commandName] = servers
+		portalUtils.setServerOnly(this._serverRestrictions, this._commandName, serverIds);
 	}
 }
 
@@ -283,16 +208,15 @@ class EventController {
 	) {}
 
 	get isEnabled(): boolean {
-		return this._enabledEvents[this._eventKey] ?? true
+		return portalUtils.isEnabled(this._enabledEvents, this._eventKey);
 	}
 
 	setEnabled(value: boolean): void {
-		this._enabledEvents[this._eventKey] = value
+		portalUtils.setEnabled(this._enabledEvents, this._eventKey, value);
 	}
 
 	setServerOnly(serverIds: string[] | string): void {
-		const servers = Array.isArray(serverIds) ? serverIds : [serverIds]
-		this._serverRestrictions[this._eventKey] = servers
+		portalUtils.setServerOnly(this._serverRestrictions, this._eventKey, serverIds);
 	}
 }
 
@@ -304,16 +228,15 @@ class MiddlewareController {
 	) {}
 
 	get isEnabled(): boolean {
-		return this._enabledMiddleware[this._middlewareName] ?? true
+		return portalUtils.isEnabled(this._enabledMiddleware, this._middlewareName);
 	}
 
 	setEnabled(value: boolean): void {
-		this._enabledMiddleware[this._middlewareName] = value
+		portalUtils.setEnabled(this._enabledMiddleware, this._middlewareName, value);
 	}
 
 	setServerOnly(serverIds: string[] | string): void {
-		const servers = Array.isArray(serverIds) ? serverIds : [serverIds]
-		this._serverRestrictions[this._middlewareName] = servers
+		portalUtils.setServerOnly(this._serverRestrictions, this._middlewareName, serverIds);
 	}
 }
 
@@ -325,16 +248,15 @@ class ContextController {
 	) {}
 
 	get isEnabled(): boolean {
-		return this._enabledContexts[this._contextName] ?? true
+		return portalUtils.isEnabled(this._enabledContexts, this._contextName);
 	}
 
 	setEnabled(value: boolean): void {
-		this._enabledContexts[this._contextName] = value
+		portalUtils.setEnabled(this._enabledContexts, this._contextName, value);
 	}
 
 	setServerOnly(serverIds: string[] | string): void {
-		const servers = Array.isArray(serverIds) ? serverIds : [serverIds]
-		this._serverRestrictions[this._contextName] = servers
+		portalUtils.setServerOnly(this._serverRestrictions, this._contextName, serverIds);
 	}
 }
 
@@ -463,10 +385,10 @@ async function loadHandlerRecords<T extends HandlerRecord | HandlerRecord[]>(
 				Globals.init()
 			}
 
-			// type assertion yay
+			// yay
 			const portalAny = globalThis.robo.portal as any
 			if (portalAny && typeof portalAny.serverRestrictions === 'object') {
-				portalAny.serverRestrictions[handlerKey] = servers
+				portalUtils.setServerOnly(portalAny.serverRestrictions, handlerKey, servers);
 			}
 		}
 
@@ -480,14 +402,14 @@ async function loadHandlerRecords<T extends HandlerRecord | HandlerRecord[]>(
 			const portalAny = globalThis.robo.portal as any
 			if (portalAny && portalAny.enabledState) {
 				if (type === 'commands') {
-					portalAny.enabledState.commands[handlerKey] = false
+					portalUtils.setEnabled(portalAny.enabledState.commands, handlerKey, false);
 				} else if (type === 'context') {
-					portalAny.enabledState.contexts[handlerKey] = false
+					portalUtils.setEnabled(portalAny.enabledState.contexts, handlerKey, false);
 				} else if (type === 'events') {
 					const eventKey = `${handlerKey}:${portalAny.enabledState.events[handlerKey] || 0}`
-					portalAny.enabledState.events[eventKey] = false
+					portalUtils.setEnabled(portalAny.enabledState.events, eventKey, false);
 				} else if (type === 'middleware') {
-					portalAny.enabledState.middleware[handlerKey] = false
+					portalUtils.setEnabled(portalAny.enabledState.middleware, handlerKey, false);
 				}
 			}
 		}
