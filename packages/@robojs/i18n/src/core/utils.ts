@@ -103,8 +103,7 @@ export function loadLocales() {
 	mkdirSync(dirname(typesFilePath), { recursive: true })
 	i18nLogger.debug(`Writing types to ${typesFilePath}`)
 	writeFileSync(typesFilePath, types, 'utf-8')
-
-	i18nLogger.ready(`Locales loaded in ${Date.now() - time}ms`)
+	return Date.now() - time
 }
 
 function generateTypes(locales: string[], keys: string[]): string {

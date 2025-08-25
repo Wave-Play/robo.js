@@ -57,10 +57,7 @@ export function createCommandConfig<const C extends LocaleCommandConfig>(config:
 		})
 	}
 
-	i18nLogger.error('Creating command config with localized names and descriptions', {
-		config
-	})
-
+	i18nLogger.debug('Creating localized command config:', { config })
 	return _createCommandConfig(config as unknown as SmartCommandConfig<BaseFromLocale<C>>)
 }
 
