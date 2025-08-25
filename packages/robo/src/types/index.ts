@@ -130,6 +130,8 @@ export interface BaseConfig {
 	}
 	description?: string
 	timeout?: number
+	serverOnly?: string[] | string
+	disabled?: boolean
 }
 
 export default {}
