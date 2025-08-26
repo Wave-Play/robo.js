@@ -1,6 +1,6 @@
-<p align="center">✨ <strong>Generated with <a href="https://robojs.dev/create-robo">create-robo</a> magic!</strong> ✨</p>
-
----
+import { Card } from '@site/src/components/shared/Card'
+import { CardContainer } from '@site/src/components/shared/CardContainer'
+import { Terminal } from '@site/src/components/shared/Terminal'
 
 # @robojs/i18n
 
@@ -29,19 +29,15 @@ Drop JSON files in `/locales`, get strongly-typed **namespaced keys** & paramete
 
 ➞ [🚀 **Community:** Join our Discord server](https://robojs.dev/discord)
 
-## Installation 💻
+## Installation 
 
 Add the plugin to an existing Robo:
 
-```bash
-npx robo add @robojs/i18n
-```
+<Terminal execute>{`robo add @robojs/i18n`}</Terminal>
 
 Or start a new project with it preinstalled:
 
-```bash
-npx create-robo <project-name> -p @robojs/i18n
-```
+<Terminal create>{`<project-name> -p @robojs/i18n`}</Terminal>
 
 ## Folder structure
 
@@ -60,6 +56,8 @@ Example tree:
 /locales
   /en-US
     app.json
+    /shared
+      common.json
   /es-ES
     app.json
 ```
@@ -84,7 +82,7 @@ Example tree:
 
 > Only string values are used. Non-JSON files are ignored. The plugin loads everything once, keeps it in state, and generates types from what it finds.
 
-## Runtime usage (`t`) 🌐
+## Runtime usage (`t`) 
 
 `t(localeLike, key, params?)` formats a message right now. The `params` type is **inferred** from `key`.
 
@@ -104,7 +102,7 @@ t(locale, 'app:pets.count', { count: 3 }) // "3 pets"
 - `{ locale: 'en-US' }`
 - `{ guildLocale: 'en-US' }`
 
-## Strict runtime usage (`tr`) 🔒
+## Strict runtime usage (`tr`) 
 
 `tr(localeLike, key, ...args)` is a **strict** variant of `t`:
 
@@ -122,7 +120,7 @@ tr(locale, 'app:hello', { name: 'Robo' }) // ✅ required
 tr(locale, 'app:ping') // ✅ key with no params
 ```
 
-## Cleaner calls with `withLocale` 🧼
+## Cleaner calls with `withLocale` 
 
 Avoid threading `locale` around:
 
@@ -150,7 +148,7 @@ tr$('app:hello', { name: 'Robo' }) // ✅ required
 tr$('app:ping') // ✅ key with no params
 ```
 
-## Nesting 🧩
+## Nesting 
 
 You can nest **keys inside JSON** and provide **nested objects for params**.
 
@@ -238,7 +236,7 @@ export default (interaction: ChatInputCommandInteraction, options: CommandOption
 
 > For options, `name` **is still required** (helps TS inference) and should be provided alongside `nameKey`.
 
-## Performance ⚡
+## Performance 
 
 We keep a small in-memory **cache of compiled `IntlMessageFormat` instances**, keyed by `(locale, key, message)`. This avoids reparsing strings on repeated calls and fits apps with **a few hundred keys per locale**. You can clear it during tests or hot-reload:
 
@@ -281,8 +279,13 @@ Formatting is done by `intl-messageformat` at runtime, with a small cache of com
 - **No manual type imports needed** — `t()`/`tr()` infer `ParamsFor<K>` from your keys.
 - **Namespaced keys are required** — always use the `<folders>.<file>:` prefix (e.g., `app:hello`, `shared.common:greet`).
 
-## Got questions? 🤔
+## Got questions? 
 
 If you have any questions or need help with this plugin, join our Discord — we’re friendly and happy to help!
 
 ➞ [🚀 ](https://robojs.dev/discord)**[Community: Join our Discord server](https://robojs.dev/discord)**
+
+
+## More on GitHub
+
+<CardContainer><Card href="https://github.com/Wave-Play/robo.js/tree/main/packages/@robojs/i18n" title="🔗 GitHub Repository" description="Explore source code on GitHub."/><Card href="/ref/framework" title="🔗 API Reference" description="Check out the entire API."/></CardContainer>
