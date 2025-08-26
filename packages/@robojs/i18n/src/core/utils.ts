@@ -1,7 +1,7 @@
 import { generateTypes } from './codegen.js'
 import { i18nLogger } from './loggers.js'
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { dirname, extname, join, relative, sep } from 'node:path'
+import { basename, dirname, extname, join, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { State } from 'robo.js'
 import type { Locale } from '../index.js'
@@ -80,24 +80,24 @@ export function loadLocales() {
 	i18nLogger.debug('Loading locales...')
 	const time = Date.now()
 
-	// Loop through locales folder recursively and add all .json files to array
+	// Recursively collect all files under /locales
 	const localeFiles = getAllFilePaths(LocalesDir)
-	const localeKeys: string[] = []
+
+	// Derive the list of available locales from the first path segment after /locales
 	const localeNames = Array.from(
 		new Set(
 			localeFiles.map((filePath) => {
-				const relativePath = relative(LocalesDir, filePath)
-				return relativePath.split(sep)[0]
+				const rel = relative(LocalesDir, filePath)
+				return rel.split(sep)[0]
 			})
 		)
 	)
 
-	// Create a map to hold locale values
 	const localeValues: Record<string, Record<string, string>> = {}
+	localeNames.forEach((locale) => (localeValues[locale] = {}))
 
-	localeNames.forEach((locale) => {
-		localeValues[locale] = {}
-	})
+	// We also collect all discovered **namespaced** keys for typegen
+	const localeKeys: string[] = []
 
 	// Assuming all locale files are JSON key-value pairs, extract all keys and values
 	for (const localeFile of localeFiles) {
@@ -105,28 +105,46 @@ export function loadLocales() {
 			i18nLogger.debug(`Skipping non-JSON file: ${localeFile}`)
 			continue
 		}
-		const localeName = relative(LocalesDir, localeFile).split(sep)[0]
 
-		const localeData = JSON.parse(readFileSync(localeFile, 'utf-8'))
-		for (const [key, value] of Object.entries(localeData)) {
-			if (typeof value !== 'string') {
-				i18nLogger.warn(`Skipping non-string value for key "${key}" in file ${localeFile}`)
+		const rel = relative(LocalesDir, localeFile) // e.g. "en/shared/common.json"
+		const parts = rel.split(sep)
+		if (parts.length < 2) {
+			// Should always have at least <locale>/<file>
+			i18nLogger.warn?.(`Unexpected locale file path: ${rel}`)
+			continue
+		}
+
+		const localeName = parts.shift()! // "en"
+		const fileAndDirs = parts // e.g. ["shared","common.json"] or ["common.json"]
+
+		// Build namespace: dot-join of intermediate folders + filename (no .json), then colon
+		const last = fileAndDirs[fileAndDirs.length - 1]!
+		const fileBase = basename(last, '.json') // "common"
+		const dirSegments = fileAndDirs.slice(0, -1) // ["shared"]
+		const namespace = [...dirSegments, fileBase].join('.') // "shared.common" or "common"
+		const prefix = `${namespace}:`
+
+		const json = JSON.parse(readFileSync(localeFile, 'utf-8')) as Record<string, unknown>
+		for (const [rawKey, rawVal] of Object.entries(json)) {
+			if (typeof rawVal !== 'string') {
+				i18nLogger.warn(`Skipping non-string value for key "${rawKey}" in file ${rel}`)
 				continue
 			}
 
-			localeKeys.push(key)
-			localeValues[localeName]![key] = value
-			i18nLogger.debug(`Added key "${key}" with value "${value}" for locale "${localeName}"`)
+			const namespacedKey = `${prefix}${rawKey}` // e.g. "shared.common:hello"
+			localeKeys.push(namespacedKey)
+			localeValues[localeName]![namespacedKey] = rawVal
+			i18nLogger.debug(`Added key "${namespacedKey}" for locale "${localeName}"`)
 		}
 	}
 
-	// Save state for later use
+	// Save state for runtime
 	const namespace = '@robojs/i18n'
 	State.set('localeKeys', localeKeys, { namespace })
 	State.set('localeNames', localeNames, { namespace })
 	State.set('localeValues', localeValues, { namespace })
 
-	// Generate types based on loaded locales and keys, including param extraction
+	// Generate types from **namespaced** keys
 	const types = generateTypes(localeNames, Array.from(new Set(localeKeys)), localeValues)
 
 	// Save into package directory
