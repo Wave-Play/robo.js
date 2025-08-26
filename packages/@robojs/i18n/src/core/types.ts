@@ -1,5 +1,5 @@
 // @ts-expect-error - This is a generated file
-import type { Locale, LocaleKey } from '../../generated/types'
+import type { Locale, LocaleKey, ParamsFor } from '../../generated/types'
 import type { CommandConfig, CommandOption } from 'robo.js'
 
 type Autocomplete<T extends string> = T | (string & NonNullable<unknown>)
@@ -59,3 +59,15 @@ export type Node = {
 	// Children mean dotted sub-keys exist (e.g., user.name)
 	children?: Record<string, Node>
 }
+
+type DeepRequired<T> = T extends Date
+	? Date
+	: T extends Array<infer U>
+		? Array<DeepRequired<U>>
+		: T extends object
+			? { [P in keyof T]-?: NonNullable<DeepRequired<T[P]>> }
+			: NonNullable<T>
+
+export type StrictParamsFor<K extends LocaleKey> = DeepRequired<ParamsFor<K>>
+
+export type MaybeArgs<K extends LocaleKey> = keyof ParamsFor<K> extends never ? [] : [StrictParamsFor<K>]

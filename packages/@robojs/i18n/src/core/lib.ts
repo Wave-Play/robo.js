@@ -12,10 +12,18 @@ import {
 } from './utils.js'
 import { join } from 'node:path'
 import { createCommandConfig as _createCommandConfig, getPluginOptions, State } from 'robo.js'
-import type { BaseFromLocale, LocaleCommandConfig, LocaleLike, PluginConfig, ValidatedCommandConfig } from './types'
+import type {
+	BaseFromLocale,
+	LocaleCommandConfig,
+	LocaleLike,
+	MaybeArgs,
+	PluginConfig,
+	ValidatedCommandConfig
+} from './types'
 import type { SmartCommandConfig } from 'robo.js'
 
 let _isLoaded = false
+
 /**
  * Creates a **localized** command configuration for Robo.js projects.
  *
@@ -177,6 +185,55 @@ export function t<K extends LocaleKey>(locale: LocaleLike, key: K, params?: Para
 	}
 
 	return translation
+}
+
+/**
+ * `tr` — a **strict** version of `t`:
+ * - Works the same as {@link t} but **requires** that all message parameters are provided and non-undefined.
+ * - If the target key has **no parameters**, `tr` does **not** require a params object.
+ * - Supports nested objects (auto-flattened), dotted placeholders, and uses the same formatter cache.
+ *
+ * @typeParam K - A key from your generated `LocaleKey` union.
+ * @param locale - A `LocaleLike` (`'en-US'`, `{ locale: 'en-US' }`, or a Discord Interaction/guild context).
+ * @param key - A key present in your locales.
+ * @param args - If the key expects params, pass a single object whose type is {@link StrictParamsFor} of `K`;
+ *               otherwise omit this argument entirely.
+ * @returns The formatted string for the given locale and key.
+ *
+ * @example
+ * ```ts
+ * // /locales/en-US/common.json:
+ * // { "hello.user": "Hello {user.name}!" }
+ *
+ * import { tr } from '@robojs/i18n'
+ * tr('en-US', 'hello.user', { user: { name: 'Robo' } }) // OK
+ *
+ * // ❌ Compile-time error: 'user.name' is required via StrictParamsFor
+ * // tr('en-US', 'hello.user', { user: {} })
+ * ```
+ *
+ * @example
+ * ```ts
+ * // /locales/en-US/common.json:
+ * // { "ping": "Pong!" }   // no params
+ *
+ * tr('en-US', 'ping')            // OK: no params required
+ * // tr('en-US', 'ping', {})     // Also OK, but unnecessary
+ * ```
+ *
+ * @example
+ * ```ts
+ * // Plural example:
+ * // { "pets.count": "{count, plural, one {# pet} other {# pets}}" }
+ *
+ * tr('en-US', 'pets.count', { count: 3 }) // OK
+ *
+ * // ❌ Compile-time error: 'count' required in StrictParamsFor<'pets.count'>
+ * // tr('en-US', 'pets.count')
+ * ```
+ */
+export function tr<K extends LocaleKey>(locale: LocaleLike, key: K, ...args: MaybeArgs<K>): string {
+	return t(locale, key, args[0] as ParamsFor<K>)
 }
 
 /**
