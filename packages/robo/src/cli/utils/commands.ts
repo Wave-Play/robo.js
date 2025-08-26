@@ -13,7 +13,7 @@ import { Boot } from '../../internal/boot.js'
 import { loadConfig } from '../../core/config.js'
 import { DEFAULT_CONFIG, discordLogger, FLASHCORE_KEYS } from '../../core/constants.js'
 import { env } from '../../core/env.js'
-import { timeout } from './utils.js'
+import { hasProjectPackage, timeout } from './utils.js'
 import { bold, color } from '../../core/color.js'
 import { Flashcore } from '../../core/flashcore.js'
 import type { APIApplicationCommand, ApplicationCommandOptionBase } from 'discord.js'
@@ -448,9 +448,18 @@ export async function registerCommands(
 		}
 
 		// Ensure entry command is added if already there (or if reset)
-		if (entryCommand && !guildId) {
-			// @ts-expect-error - This is a valid command object
-			commandData.push(entryCommand)
+		try {
+			const hasEmbeddedSdk = hasProjectPackage('@discord/embedded-app-sdk')
+
+			if (entryCommand && !guildId && hasEmbeddedSdk) {
+				// @ts-expect-error - This is a valid command object
+				commandData.push(entryCommand)
+				logger.debug('Added entry command to registration batch as @discord/embedded-app-sdk is installed')
+			} else if (entryCommand && !guildId && !hasEmbeddedSdk) {
+				logger.debug('Skipping entry command registration as @discord/embedded-app-sdk is not installed')
+			}
+		} catch (e) {
+			logger.debug('Error checking for @discord/embedded-app-sdk package:', e)
 		}
 
 		// Let's register the commands!
