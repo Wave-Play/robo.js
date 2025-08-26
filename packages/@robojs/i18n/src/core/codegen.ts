@@ -117,7 +117,7 @@ function emitNode(node: Node, indent = 2): string {
 	// build object type from children
 	let objectFields = ''
 	for (const [k, child] of Object.entries(node.children!)) {
-		objectFields += `${' '.repeat(indent + 2)}${safeIdent(k)}?: ${emitNode(child, indent + 2)};\n`
+		objectFields += `${' '.repeat(indent + 2)}${safeIdent(k)}?: ${emitNode(child, indent + 2)}\n`
 	}
 	const obj = `{\n${objectFields}${' '.repeat(indent)}}`
 

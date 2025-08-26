@@ -9,6 +9,27 @@ import type { LocaleLike } from './types.js'
 
 export const DOT_TOKEN = '__RJSI18N_DOT__'
 
+/** Visit every **string** leaf under `obj`, emitting a dot-joined path for nested keys. */
+function forEachStringLeaf(obj: unknown, visit: (flatKey: string, value: string) => void, path: string[] = []): void {
+	if (typeof obj === 'string') {
+		visit(path.join('.'), obj)
+		return
+	}
+	if (isPlainObject(obj)) {
+		for (const [k, v] of Object.entries(obj)) {
+			forEachStringLeaf(v, visit, [...path, k])
+		}
+		return
+	}
+	if (Array.isArray(obj)) {
+		i18nLogger.warn?.('Skipping array in locale JSON at path: ' + path.join('.'))
+		return
+	}
+	if (obj != null) {
+		i18nLogger.warn?.(`Skipping non-string value in locale JSON at "${path.join('.')}" (type: ${typeof obj})`)
+	}
+}
+
 export function flattenParams(
 	input: Record<string, unknown>,
 	prefix = '',
@@ -37,10 +58,6 @@ export function flattenParams(
 
 /**
  * Recursively gets all file paths from the given directory.
- *
- * @param dirPath The starting directory path
- * @param fileList Internal use: the array of collected file paths
- * @returns Array of absolute file paths
  */
 export function getAllFilePaths(dirPath: string, fileList: string[] = []): string[] {
 	const entries = readdirSync(dirPath, { withFileTypes: true })
@@ -96,7 +113,7 @@ export function loadLocales() {
 	const localeValues: Record<string, Record<string, string>> = {}
 	localeNames.forEach((locale) => (localeValues[locale] = {}))
 
-	// We also collect all discovered **namespaced** keys for typegen
+	// Collect all discovered **namespaced** keys for typegen
 	const localeKeys: string[] = []
 
 	// Assuming all locale files are JSON key-value pairs, extract all keys and values
@@ -125,17 +142,27 @@ export function loadLocales() {
 		const prefix = `${namespace}:`
 
 		const json = JSON.parse(readFileSync(localeFile, 'utf-8')) as Record<string, unknown>
-		for (const [rawKey, rawVal] of Object.entries(json)) {
-			if (typeof rawVal !== 'string') {
-				i18nLogger.warn(`Skipping non-string value for key "${rawKey}" in file ${rel}`)
-				continue
-			}
 
-			const namespacedKey = `${prefix}${rawKey}` // e.g. "shared.common:hello"
+		// Track per-file flattened keys to detect collisions between dotted keys and nested objects
+		const seenFlat = new Set<string>()
+
+		forEachStringLeaf(json, (flatKey, value) => {
+			// Collision check (e.g., both "hello.user" and { hello: { user: … } })
+			if (seenFlat.has(flatKey)) {
+				const msg =
+					`[i18n] Duplicate key after flattening in "${rel}": "${flatKey}". ` +
+					'This likely happens because a literal dotted key and a nested object ' +
+					'flatten to the same path. Please choose only one representation.'
+				i18nLogger.error?.(msg)
+				throw new Error(msg)
+			}
+			seenFlat.add(flatKey)
+
+			const namespacedKey = `${prefix}${flatKey}` // e.g. "shared.common:hello.user"
 			localeKeys.push(namespacedKey)
-			localeValues[localeName]![namespacedKey] = rawVal
+			localeValues[localeName]![namespacedKey] = value
 			i18nLogger.debug(`Added key "${namespacedKey}" for locale "${localeName}"`)
-		}
+		})
 	}
 
 	// Save state for runtime
