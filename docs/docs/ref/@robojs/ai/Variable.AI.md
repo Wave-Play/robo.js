@@ -19,7 +19,7 @@ chat: (messages, options) => Promise<void>;
 
 | Parameter | Type |
 | ------ | ------ |
-| `messages` | `ChatMessage`[] |
+| `messages` | [`ChatMessage`](Interface.ChatMessage.md)[] |
 | `options` | `ChatOptions` |
 
 #### Returns
@@ -36,7 +36,7 @@ chatSync: (messages, options) => Promise<ChatReply>;
 
 | Parameter | Type |
 | ------ | ------ |
-| `messages` | `ChatMessage`[] |
+| `messages` | [`ChatMessage`](Interface.ChatMessage.md)[] |
 | `options` | `Omit`\<`ChatOptions`, `"onReply"`\> |
 
 #### Returns
@@ -53,11 +53,11 @@ generateImage: (options) => Promise<GenerateImageResult>;
 
 | Parameter | Type |
 | ------ | ------ |
-| `options` | `GenerateImageOptions` |
+| `options` | [`GenerateImageOptions`](Interface.GenerateImageOptions.md) |
 
 #### Returns
 
-`Promise`\<`GenerateImageResult`\>
+`Promise`\<[`GenerateImageResult`](Interface.GenerateImageResult.md)\>
 
 ### isReady()
 

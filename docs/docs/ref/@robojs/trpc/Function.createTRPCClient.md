@@ -1,21 +1,21 @@
 # Function: createTRPCClient()
 
 ```ts
-function createTRPCClient<AppRouter>(opts): CreateTRPCClient<AppRouter>
+function createTRPCClient<TRouter>(opts): TRPCClient<TRouter>
 ```
 
 ## Type Parameters
 
 | Type Parameter |
 | ------ |
-| `AppRouter` *extends* `Router`\<`object`, `object`\> |
+| `TRouter` *extends* `AnyRouter` |
 
 ## Parameters
 
 | Parameter | Type |
 | ------ | ------ |
-| `opts` | `CreateTRPCClientOptions`\<`AppRouter`\> |
+| `opts` | `CreateTRPCClientOptions`\<`TRouter`\> |
 
 ## Returns
 
-`CreateTRPCClient`\<`AppRouter`\>
+`TRPCClient`\<`TRouter`\>

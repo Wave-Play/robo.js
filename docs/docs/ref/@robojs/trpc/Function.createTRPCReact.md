@@ -1,8 +1,10 @@
 # Function: createTRPCReact()
 
 ```ts
-function createTRPCReact<TRouter, TSSRContext>(options?): CreateTRPCReact<TRouter, TSSRContext>
+function createTRPCReact<TRouter, TSSRContext>(opts?): CreateTRPCReact<TRouter, TSSRContext>
 ```
+
+**`Internal`**
 
 ## Type Parameters
 
@@ -15,7 +17,7 @@ function createTRPCReact<TRouter, TSSRContext>(options?): CreateTRPCReact<TRoute
 
 | Parameter | Type |
 | ------ | ------ |
-| `options`? | `CreateTRPCReactOptions`\<`TRouter`\> |
+| `opts`? | `CreateTRPCReactOptions`\<`TRouter`\> |
 
 ## Returns
 

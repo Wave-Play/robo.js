@@ -4,6 +4,8 @@ import { Terminal } from '@site/src/components/shared/Terminal'
 
 # Unity
 
+> **_NOTE:_**  This uses Dissonity V1.
+
 Welcome to your fresh **[Robo.js](https://github.com/Wave-Play/robo)** project!
 
 Build, deploy, and maintain your Discord activities with ease. With Robo.js as your guide, you'll experience a seamless, [file-based setup](https://docs.roboplay.dev/docs/basics/overview#the-robojs-file-structure), an [integrated database](https://docs.roboplay.dev/docs/basics/flashcore), [TypeScript support](https://docs.roboplay.dev/docs/advanced/typescript), and a multitude of [plugin-powered skills](https://docs.roboplay.dev/docs/advanced/plugins) to unlock along the way.
@@ -18,7 +20,7 @@ _Ready to embark on this adventure?_
 
 Create a project with this template, replacing `<project-name>` with your desired name:
 
-<Terminal create>{`<project-name> --template discord-activities/unity`}</Terminal>
+<Terminal create>{`--template discord-activities/unity --name <project-name>`}</Terminal>
 
 Then navigate into your project directory:
 
@@ -35,7 +37,7 @@ To import your Unity game inside of your Robo project follow these steps:
 In your Unity project install dissonity:
 
 1. Go to `Window` > `Package Manager` > `Add package from git URL`
-2. Install the package from https://github.com/Furnyr/Dissonity.git?path=/unity
+2. Install the package from https://github.com/Furnyr/Dissonity/tree/v1/unity
 3. Right click in the hierarchy, Dissonity > Discord Bridge
 
 Once you have done these steps follow these next ones
