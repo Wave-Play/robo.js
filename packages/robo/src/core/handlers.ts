@@ -12,7 +12,14 @@ import type {
 	InteractionDeferReplyOptions,
 	Message
 } from 'discord.js'
-import type { CommandConfig, ContextConfig, Event, HandlerRecord, PluginData } from '../types/index.js'
+import type {
+	CommandConfig,
+	ContextConfig,
+	Event,
+	HandlerRecord,
+	PluginData,
+	SmartCommandConfig
+} from '../types/index.js'
 import type { Collection } from 'discord.js'
 
 export async function executeAutocompleteHandler(interaction: AutocompleteInteraction, commandKey: string) {
@@ -401,15 +408,7 @@ export async function executeEventHandler(
 	)
 }
 
-type ExactConfig<C extends CommandConfig> = {
-	[K in keyof C]: K extends keyof CommandConfig ? C[K] : never
-}
-
-type EnforceConfig<C extends CommandConfig> = Exclude<keyof C, keyof CommandConfig> extends never
-	? C
-	: 'Extra properties are not allowed in CommandConfig'
-
-export function createCommandConfig<C extends CommandConfig>(config: ExactConfig<C> & EnforceConfig<C>): C {
+export function createCommandConfig<C extends CommandConfig>(config: SmartCommandConfig<C>): C {
 	return config as C
 }
 

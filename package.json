@@ -6,6 +6,7 @@
 		"packages": [
 			"packages/@robojs/analytics",
 			"packages/@robojs/cron",
+			"packages/@robojs/i18n",
 			"packages/@robojs/patch",
 			"packages/@robojs/trpc",
 			"packages/create-discord-activity",

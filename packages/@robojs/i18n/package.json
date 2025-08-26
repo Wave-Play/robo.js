@@ -1,0 +1,54 @@
+{
+	"name": "@robojs/i18n",
+	"description": "",
+	"version": "1.0.0",
+	"type": "module",
+	"private": false,
+	"keywords": [
+		"bot",
+		"discord",
+		"discord.js",
+		"robo",
+		"robo.js",
+		"typescript"
+	],
+	"main": ".robo/build/index.js",
+	"license": "MIT",
+	"author": "Your Name <email>",
+	"contributors": [
+		"Your Name <email>"
+	],
+	"files": [
+		".robo/",
+		"src/",
+		"LICENSE",
+		"README.md"
+	],
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://registry.npmjs.org/"
+	},
+	"scripts": {
+		"build": "robo build plugin",
+		"dev": "robo build plugin --watch",
+		"lint:style": "prettier --write .",
+		"prepublishOnly": "robo build plugin"
+	},
+	"devDependencies": {
+		"@swc/core": "^1.13.3",
+		"@types/node": "^24.2.1",
+		"discord.js": "^14.21.0",
+		"prettier": "^3.6.2",
+		"robo.js": "workspace:*",
+		"typescript": "^5.9.2"
+	},
+	"peerDependenciesMeta": {
+		"robo.js": {
+			"optional": false
+		}
+	},
+	"dependencies": {
+		"@formatjs/icu-messageformat-parser": "^2.11.2",
+		"intl-messageformat": "^10.7.16"
+	}
+}
