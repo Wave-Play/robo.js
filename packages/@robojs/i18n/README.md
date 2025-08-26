@@ -14,7 +14,7 @@ Drop JSON files in `/locales`, get strongly-typed **namespaced keys** & paramete
 - **Zero friction** — just add `/locales/**.json`; the plugin loads once and generates types.
 - **Nested parameters** — pass objects (e.g., `{ user: { name: 'Robo' } }`) and we flatten them automatically.
 - **Discord-ready** — optional helper to localize slash command metadata.
-- **Fast** — uses a tiny in-memory cache of compiled formatters to minimize parse overhead.
+- **Fast** — tiny in-memory cache of compiled formatters to minimize parse overhead.
 
 <div align="center">
 	[![GitHub
@@ -49,46 +49,42 @@ npx create-robo <project-name> -p @robojs/i18n
 
 ## Folder structure
 
-Place your messages under `/locales/<locale>/**/*.json`.
+Put message files under `/locales/<locale>/**/*.json`.
 
 **Keys are automatically namespaced from the file path**:
 
-- `/locales/<locale>/common.json` → prefix `common:`
-  e.g. `common:hello.user`
-- `/locales/<locale>/shared/common.json` → prefix `shared.common:`
-  e.g. `shared.common:hello`
-- Deeper paths keep dot-separated folders + filename (without `.json`), then `:`
-  e.g. `/locales/en-US/marketing/home/hero.json` → `marketing.home.hero:`
+- `/locales/<locale>/app.json` ⇒ prefix `app:`
+- `/locales/<locale>/shared/common.json` ⇒ prefix `shared.common:`
+- Deeper paths keep dot-separated folders + filename (no `.json`), then `:`
+  - e.g. `/locales/en-US/marketing/home/hero.json` ⇒ `marketing.home.hero:`
 
 Example tree:
 
 ```
 /locales
   /en-US
-    common.json
+    app.json
     /shared
       common.json
   /es-ES
-    common.json
+    app.json
 ```
 
-**en-US/common.json**
+**en-US/app.json**
 
 ```json
 {
-	"hello.user": "Hello {user.name}!",
-	"pets.count": "{count, plural, one {# pet} other {# pets}}",
-	"when.run": "Ran at {ts, time, short} on {ts, date, medium}"
+	"hello": "Hello {name}!",
+	"pets.count": "{count, plural, one {# pet} other {# pets}}"
 }
 ```
 
-**es-ES/common.json**
+**es-ES/app.json**
 
 ```json
 {
-	"hello.user": "¡Hola {user.name}!",
-	"pets.count": "{count, plural, one {# mascota} other {# mascotas}}",
-	"when.run": "Ejecutado a las {ts, time, short} el {ts, date, medium}"
+	"hello": "¡Hola {name}!",
+	"pets.count": "{count, plural, one {# mascota} other {# mascotas}}"
 }
 ```
 
@@ -104,7 +100,7 @@ On first load, the plugin:
 2. Parses **ICU messages** to detect parameter kinds (plural/number/date/time/select/argument).
 3. Emits `generated/types.d.ts` with:
    - `type Locale = 'en-US' | 'es-ES' | ...`
-   - `type LocaleKey = 'common:hello.user' | 'common:pets.count' | ...` ← **namespaced**
+   - `type LocaleKey = 'app:hello' | 'app:pets.count' | 'shared.common:...' | ...` ← **namespaced**
    - `type LocaleParamsMap` and `type ParamsFor<K>`
 
 Formatting is done by `intl-messageformat` at runtime, with a small cache of compiled formatters to reduce CPU work across calls.
@@ -114,7 +110,6 @@ Formatting is done by `intl-messageformat` at runtime, with a small cache of com
 ## Runtime usage (`t`) 🌐
 
 `t(localeLike, key, params?)` formats a message right now. The `params` type is **inferred** from `key`.
-Keys must use the **namespaced** form.
 
 ```ts
 import { t } from '@robojs/i18n'
@@ -122,15 +117,8 @@ import { t } from '@robojs/i18n'
 // Accepts a string, a Discord Interaction, or any { locale } / { guildLocale } object
 const locale = 'en-US' as const
 
-// ✅ Nested objects: {user.name} is inferred from "common:hello.user"
-t(locale, 'common:hello.user', { user: { name: 'Robo' } })
-
-// ❌ Type error: `count` must be a number
-// @ts-expect-error
-t(locale, 'common:pets.count', { count: 'three' })
-
-// ✅ Date | number accepted for {ts, date/time}
-t(locale, 'common:when.run', { ts: Date.now() })
+t(locale, 'app:hello', { name: 'Robo' }) // "Hello Robo!"
+t(locale, 'app:pets.count', { count: 3 }) // "3 pets"
 ```
 
 `localeLike` can be:
@@ -147,18 +135,14 @@ t(locale, 'common:when.run', { ts: Date.now() })
 
 - If the message has parameters, they are **required** and **non-undefined**.
 - If the message has no parameters, you can omit the params object.
-- Works with the same namespaced keys and nested param objects.
 
 ```ts
 import { tr } from '@robojs/i18n'
 
-// ✅ Requires { user.name }
-tr('en-US', 'common:hello.user', { user: { name: 'Robo' } })
+tr('en-US', 'app:hello', { name: 'Robo' }) // ✅ required
+// tr('en-US', 'app:hello')                // ❌ compile-time error
 
-// ❌ Compile-time error: missing params
-// tr('en-US', 'common:hello.user')
-
-tr('en-US', 'common:ping') // OK — key with no params
+tr('en-US', 'app:ping') // ✅ key with no params
 ```
 
 ---
@@ -173,9 +157,7 @@ import type { ChatInputCommandInteraction } from 'discord.js'
 
 export default (interaction: ChatInputCommandInteraction) => {
 	const t$ = withLocale(interaction)
-
-	// Types still infer from the key:
-	return t$('common:hello.user', { user: { name: 'Robo' } })
+	return t$('app:hello', { name: 'Robo' })
 }
 ```
 
@@ -187,36 +169,56 @@ Pass `{ strict: true }` to get a curried **strict** translator (`tr$`) that enfo
 import { withLocale } from '@robojs/i18n'
 
 const tr$ = withLocale('en-US', { strict: true })
-tr$('common:hello.user', { user: { name: 'Robo' } }) // ✅ required
-// tr$('common:hello.user')                           // ❌ compile-time error
+tr$('app:hello', { name: 'Robo' }) // ✅ required
+// tr$('app:hello')                 // ❌ compile-time error
 
-tr$('common:ping') // ✅ key with no params
+tr$('app:ping') // ✅ key with no params
 ```
 
 ---
 
-## Nested parameter objects 🧩
+## Nesting (keys **and** params) 🧩
 
-Although ICU placeholders look flat (e.g., `{user.name}`), you can pass **nested objects** and we’ll **flatten** them for you:
+You can nest **keys inside JSON** and provide **nested objects for params**.
+
+### Nested keys
+
+Instead of writing flat keys, you may structure your locale file:
 
 ```json
-// /locales/en-US/common.json
+// /locales/en-US/app.json
 {
-	"greet": "Hi {user.name}! You have {stats.count, number} points."
+	"greetings": {
+		"hello": "Hello {name}!"
+	}
+}
+```
+
+The key becomes `app:greetings.hello`.
+
+> ⚠️ **Collision rule:** a file cannot contain both a literal dotted key and a nested object that flatten to the same key (e.g., `"greetings.hello": "…"` and `{ "greetings": { "hello": "…" } }`). The build will **error** with a clear message.
+
+### Nested parameter objects
+
+Although ICU placeholders look flat (`{user.name}`), you can pass nested objects and we’ll flatten them for you:
+
+```json
+// /locales/en-US/app.json
+{
+	"profile": "Hi {user.name}! You have {stats.count, number} points."
 }
 ```
 
 ```ts
-t('en-US', 'common:greet', {
+t('en-US', 'app:profile', {
 	user: { name: 'Robo' },
 	stats: { count: 42 }
 })
 // -> "Hi Robo! You have 42 points."
 ```
 
-Arrays are also supported via dotted indices, e.g. an ICU `{items.0}` can be satisfied with `{ items: ['a', 'b'] }`.
-
-> If you prefer, you can pass dotted keys directly: `{ 'user.name': 'Robo' }`. Both forms work.
+Arrays are supported via dotted indices (ICU `{items.0}` ← `{ items: ['a', 'b'] }`).
+Prefer objects for readability; dotted param keys like `{ 'user.name': 'Robo' }` also work if you need them.
 
 ---
 
@@ -224,13 +226,7 @@ Arrays are also supported via dotted indices, e.g. an ICU `{items.0}` can be sat
 
 ### `createCommandConfig` 🎮
 
-If your **Robo** uses **Discord Slash Commands**, import **our** `createCommandConfig` (drop-in replacement for Robo’s), then write **namespaced keys** instead of raw strings. The plugin will:
-
-- Fill the **default** name/description from your configured `defaultLocale`.
-- Generate `nameLocalizations` / `descriptionLocalizations` for **every** locale it finds.
-- Do the same for each **option** (`nameKey`, `descriptionKey`).
-
-> **Note:** For options, `name` \*\*is still required\*\* and should be provided **alongside** `nameKey` for best TypeScript inference.
+Use **namespaced keys** instead of raw strings. We’ll fill defaults from your configured `defaultLocale` and generate localizations for all discovered locales.
 
 ```ts
 import { createCommandConfig, t } from '@robojs/i18n'
@@ -252,7 +248,7 @@ export const config = createCommandConfig({
 } as const)
 
 export default (interaction: ChatInputCommandInteraction, options: CommandOptions<typeof config>) => {
-	return t(interaction, 'common:hello.user', { user: { name: options.text ?? 'Robo' } })
+	return t(interaction, 'app:hello', { name: options.text ?? 'Robo' })
 }
 ```
 
@@ -267,45 +263,22 @@ export default (interaction: ChatInputCommandInteraction, options: CommandOption
 }
 ```
 
-> Any Robo.js project can use this plugin. `createCommandConfig` is a convenience specifically for Discord-style slash commands.
-
----
-
-## End-to-end example
-
-```ts
-import { withLocale } from '@robojs/i18n'
-import type { ChatInputCommandInteraction } from 'discord.js'
-
-export default (interaction: ChatInputCommandInteraction) => {
-	const t$ = withLocale(interaction)
-	const tr$ = withLocale(interaction, { strict: true })
-
-	const welcome = tr$('common:hello.user', { user: { name: 'Traveler' } })
-	const summary = t$('common:pets.count', { count: 2 }) // optional in loose mode
-	const when = t$('common:when.run', { ts: new Date() })
-
-	return `${welcome}\n${summary}\n${when}`
-}
-```
+> For options, `name` **is still required** (helps TS inference) and should be provided alongside `nameKey`.
 
 ---
 
 ## Performance ⚡
 
-We keep a small in-memory **cache of compiled `IntlMessageFormat` instances**, keyed by `(locale, key, message)`. This avoids reparsing strings on repeated calls and is a good fit for typical projects with **a few hundred keys per locale**. If you hot-reload or want to clear the cache (e.g., during tests), call the exposed helper.
+We keep a small in-memory **cache of compiled `IntlMessageFormat` instances**, keyed by `(locale, key, message)`. This avoids reparsing strings on repeated calls and fits apps with **a few hundred keys per locale**. You can clear it during tests or hot-reload:
 
 ```ts
 import { clearFormatterCache } from '@robojs/i18n'
-
 clearFormatterCache()
 ```
 
 ---
 
 ## Supported ICU pieces (what’s parsed)
-
-The plugin recognizes these ICU elements and maps them to param types:
 
 | ICU element | Example snippet                                    | Param type inferred |
 | ----------- | -------------------------------------------------- | ------------------- |
@@ -326,7 +299,7 @@ The plugin recognizes these ICU elements and maps them to param types:
 - **Missing locale or key** → throws an error (fast fail).
 - **Nested ICU** (e.g., plurals inside options) is traversed correctly.
 - **No manual type imports needed** — `t()`/`tr()` infer `ParamsFor<K>` from your keys.
-- **Namespaced keys are required** — use the `<folders>.<file>:` prefix for every key.
+- **Namespaced keys are required** — always use the `<folders>.<file>:` prefix (e.g., `app:hello`, `shared.common:greet`).
 
 ---
 
