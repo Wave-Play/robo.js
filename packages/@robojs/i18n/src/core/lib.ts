@@ -237,33 +237,46 @@ export function tr<K extends LocaleKey>(locale: LocaleLike, key: K, ...args: May
 }
 
 /**
- * Binds a `LocaleLike` to produce a **curried translator** (`t$`) that only needs a key and params.
+ * Binds a `LocaleLike` to produce a curried translator.
  *
- * Useful in frameworks where a locale/interaction object is already available,
- * so you don’t have to thread it through every call site.
+ * - **Loose mode (default):** returns a `t$` that accepts optional params based on `ParamsFor<K>`.
+ * - **Strict mode:** pass `{ strict: true }` to return a `tr$` that **requires** all params
+ *   for keys that have any (using your `MaybeArgs<K>` tuple).
  *
- * @param local - A `LocaleLike` (string, `{ locale }`, `{ guildLocale }`, or a Discord Interaction).
- * @returns A function `<K extends LocaleKey>(key: K, params?: ParamsFor<K>) => string`
- *          that formats messages using the bound locale.
+ * Overloads:
+ * - `withLocale(local)` → `<K>(key: K, params?: ParamsFor<K>) => string`
+ * - `withLocale(local, { strict: true })` → `<K>(key: K, ...args: MaybeArgs<K>) => string`
+ *
+ * @param local A `LocaleLike` (string, `{ locale }`, `{ guildLocale }`, or a Discord Interaction).
+ * @param options Optional `{ strict: true }` to get the strict variant.
  *
  * @example
  * ```ts
- * import { withLocale } from '@robojs/i18n'
+ * // Loose (default): params optional when message has params
  * const t$ = withLocale('en-US')
  * t$('hello.user', { user: { name: 'Robo' } })
+ * t$('ping') // key with no params
  * ```
  *
  * @example
  * ```ts
- * // Discord slash command handler
- * import type { ChatInputCommandInteraction } from 'discord.js'
- *
- * export default (interaction: ChatInputCommandInteraction) => {
- *   const t$ = withLocale(interaction)
- *   return t$('pets.count', { count: 2 })
- * }
+ * // Strict: params required when message has params
+ * const tr$ = withLocale('en-US', { strict: true })
+ * tr$('hello.user', { user: { name: 'Robo' } })  // ✅ required
+ * // tr$('hello.user')                           // ❌ compile-time error
+ * tr$('ping')                                    // ✅ key with no params
  * ```
  */
-export function withLocale(local: LocaleLike) {
+export function withLocale(local: LocaleLike): <K extends LocaleKey>(key: K, params?: ParamsFor<K>) => string
+export function withLocale(
+	local: LocaleLike,
+	opts: { strict: true }
+): <K extends LocaleKey>(key: K, ...args: MaybeArgs<K>) => string
+export function withLocale(local: LocaleLike, opts?: { strict?: boolean }) {
+	if (opts?.strict) {
+		// strict delegate (uses `tr`)
+		return <K extends LocaleKey>(key: K, ...args: MaybeArgs<K>) => tr(local, key, ...args)
+	}
+	// loose delegate (uses `t`)
 	return <K extends LocaleKey>(key: K, params?: ParamsFor<K>) => t(local, key, params)
 }
