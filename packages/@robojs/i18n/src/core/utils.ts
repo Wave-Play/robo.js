@@ -92,7 +92,7 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
 	return Object.prototype.toString.call(v) === '[object Object]'
 }
 
-/** Loads locale JSONs, builds namespaced & flattened keys, stores values in State, and writes generated types. */
+/** Loads locale JSONs, builds **slash-namespaced** & flattened keys, stores values in State, and writes generated types. */
 export function loadLocales() {
 	const LocalesDir = join(process.cwd(), 'locales')
 
@@ -136,11 +136,11 @@ export function loadLocales() {
 		const localeName = parts.shift()! // "en"
 		const fileAndDirs = parts // e.g. ["shared","common.json"] or ["common.json"]
 
-		// Build namespace: dot-join of intermediate folders + filename (no .json), then colon
+		// Build namespace: **slash-join** of intermediate folders + filename (no .json), then colon
 		const last = fileAndDirs[fileAndDirs.length - 1]!
 		const fileBase = basename(last, '.json') // "common"
 		const dirSegments = fileAndDirs.slice(0, -1) // ["shared"]
-		const namespace = [...dirSegments, fileBase].join('.') // "shared.common" or "common"
+		const namespace = [...dirSegments, fileBase].join('/') // "shared/common" or "common"
 		const prefix = `${namespace}:`
 
 		const json = JSON.parse(readFileSync(localeFile, 'utf-8')) as Record<string, unknown>
@@ -160,7 +160,7 @@ export function loadLocales() {
 			}
 			seenFlat.add(flatKey)
 
-			const namespacedKey = `${prefix}${flatKey}` // e.g. "shared.common:hello.user"
+			const namespacedKey = `${prefix}${flatKey}` // e.g. "shared/common:hello.user"
 			localeKeys.push(namespacedKey)
 			localeValues[localeName]![namespacedKey] = value
 			i18nLogger.debug(`Added key "${namespacedKey}" for locale "${localeName}"`)

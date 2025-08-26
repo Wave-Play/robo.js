@@ -79,7 +79,7 @@ let _isLoaded = false
  * - Locales and message files are loaded once (on first call). You can call this
  *   multiple times for different commands; it will reuse the loaded state.
  * - If a `descriptionKey` is omitted, only names/localizations for options are generated.
- * - All keys must use the **namespaced** form (`<folders>.<file>:` + `<json-key>`).
+ * - All keys must use the **namespaced** form (`<folders>/<file>:` + `<json-key>`).
  */
 export function createCommandConfig<const C extends LocaleCommandConfig>(config: ValidatedCommandConfig<C>) {
 	// Load locales only once
@@ -142,8 +142,8 @@ export function createCommandConfig<const C extends LocaleCommandConfig>(config:
  * ### 🔑 About namespaced keys
  * Keys are **namespaced by file path**:
  * - `/locales/<locale>/common.json` ⇒ `common:<json-key>`
- * - `/locales/<locale>/shared/common.json` ⇒ `shared.common:<json-key>`
- * - Deeper folders keep dot-separated segments (e.g., `shared.common.example:<json-key>`).
+ * - `/locales/<locale>/shared/common.json` ⇒ `shared/common:<json-key>`
+ * - Deeper folders keep slash-separated segments (e.g., `shared/common/example:<json-key>`).
  * The `key` argument must be the **full namespaced key** and is type-safe via `LocaleKey`.
  *
  * @typeParam K - A key from your generated `LocaleKey` union (namespaced).

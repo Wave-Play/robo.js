@@ -50,9 +50,9 @@ Put message files under `/locales/<locale>/**/*.json`.
 **Keys are automatically namespaced from the file path**:
 
 - `/locales/<locale>/app.json` ⇒ prefix `app:`
-- `/locales/<locale>/shared/common.json` ⇒ prefix `shared.common:`
-- Deeper paths keep dot-separated folders + filename (no `.json`), then `:`
-  - e.g. `/locales/en-US/marketing/home/hero.json` ⇒ `marketing.home.hero:`
+- `/locales/<locale>/shared/common.json` ⇒ prefix `shared/common:`
+- Deeper paths keep slash-separated folders + filename (no `.json`), then `:`
+  - e.g. `/locales/en-US/marketing/home/hero.json` ⇒ `marketing/home/hero:`
 
 Example tree:
 
@@ -217,7 +217,7 @@ export const config = createCommandConfig({
 } as const)
 
 export default (interaction: ChatInputCommandInteraction, options: CommandOptions<typeof config>) => {
-    const user = { name: options.text ?? 'Robo' }
+	const user = { name: options.text ?? 'Robo' }
 	return t(interaction, 'commands:hey', { user })
 }
 ```
@@ -226,15 +226,15 @@ export default (interaction: ChatInputCommandInteraction, options: CommandOption
 
 ```json
 {
-    "hey": "Hey there, {user.name}!",
-    "ping": {
-        "name": "ping",
-        "desc": "Measure latency",
-        "arg": {
-            "name": "text",
-            "desc": "Optional text to include"
-        }
-    }
+	"hey": "Hey there, {user.name}!",
+	"ping": {
+		"name": "ping",
+		"desc": "Measure latency",
+		"arg": {
+			"name": "text",
+			"desc": "Optional text to include"
+		}
+	}
 }
 ```
 
@@ -270,7 +270,7 @@ On first load, the plugin:
 2. Parses **ICU messages** to detect parameter kinds (plural/number/date/time/select/argument).
 3. Emits `generated/types.d.ts` with:
    - `type Locale = 'en-US' | 'es-ES' | ...`
-   - `type LocaleKey = 'app:hello' | 'app:pets.count' | 'shared.common:...' | ...` ← **namespaced**
+   - `type LocaleKey = 'app:hello' | 'app:pets.count' | 'shared/common:...' | ...` ← **namespaced**
    - `type LocaleParamsMap` and `type ParamsFor<K>`
 
 Formatting is done by `intl-messageformat` at runtime, with a small cache of compiled formatters to reduce CPU work across calls.
@@ -281,7 +281,7 @@ Formatting is done by `intl-messageformat` at runtime, with a small cache of com
 - **Missing locale or key** → throws an error (fast fail).
 - **Nested ICU** (e.g., plurals inside options) is traversed correctly.
 - **No manual type imports needed** — `t()`/`tr()` infer `ParamsFor<K>` from your keys.
-- **Namespaced keys are required** — always use the `<folders>.<file>:` prefix (e.g., `app:hello`, `shared.common:greet`).
+- **Namespaced keys are required** — always use the `<folders>/<file>:` prefix (e.g., `app:hello`, `shared/common:greet`).
 
 ## Got questions? 🤔
 
