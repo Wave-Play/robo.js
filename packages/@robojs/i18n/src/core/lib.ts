@@ -16,7 +16,39 @@ import type { BaseFromLocale, LocaleCommandConfig, LocaleLike, PluginConfig, Val
 import type { SmartCommandConfig } from 'robo.js'
 
 let _isLoaded = false
-
+/**
+ * Creates a **localized** command configuration for Robo.js projects.
+ *
+ * This is a drop-in replacement for `robo.js`’s `createCommandConfig` that:
+ * - Accepts **key-based** fields (`nameKey`, `descriptionKey`, and per-option keys).
+ * - Resolves the default strings from the configured `defaultLocale` (plugin option).
+ * - Auto-populates `nameLocalizations` and `descriptionLocalizations` for **all** discovered locales.
+ *
+ * @param config - A command config that uses locale keys instead of raw strings.
+ * @returns A standard `SmartCommandConfig` ready for Robo.js to register.
+ *
+ * @example
+ * ```ts
+ * import { createCommandConfig } from '@robojs/i18n'
+ *
+ * export const config = createCommandConfig({
+ *   nameKey: 'cmd.ping.name',
+ *   descriptionKey: 'cmd.ping.desc',
+ *   options: [{
+ *     type: 'string',
+ *     name: 'text',                  // keep a raw name to help TS narrow option types
+ *     nameKey: 'cmd.ping.arg',
+ *     descriptionKey: 'cmd.ping.arg.desc',
+ *     required: false
+ *   }]
+ * } as const)
+ * ```
+ *
+ * @remarks
+ * - Locales and message files are loaded once (on first call). You can call this
+ *   multiple times for different commands; it will reuse the loaded state.
+ * - If a `descriptionKey` is omitted, only names/localizations for options are generated.
+ */
 export function createCommandConfig<const C extends LocaleCommandConfig>(config: ValidatedCommandConfig<C>) {
 	// Load locales only once
 	if (!_isLoaded) {
@@ -68,6 +100,56 @@ export function createCommandConfig<const C extends LocaleCommandConfig>(config:
 	return _createCommandConfig(config as unknown as SmartCommandConfig<BaseFromLocale<C>>)
 }
 
+/**
+ * Formats a localized message by key with **strongly-typed params** inferred from your ICU message.
+ *
+ * - Supports `LocaleLike`: pass a locale string (`'en-US'`) or any object with `{ locale }` or `{ guildLocale }`.
+ * - Accepts **nested params** (e.g., `{ user: { name: 'Robo' } }`) which are auto-flattened to dotted paths.
+ * - Handles ICU numbers/plurals/select/date/time; for `{ts, date/time}` the param can be `Date | number`.
+ *
+ * @typeParam K - A key from your generated `LocaleKey` union.
+ * @param locale - A `LocaleLike` (`'en-US'`, `{ locale: 'en-US' }`, or a Discord Interaction/guild context).
+ * @param key - A key present in your `/locales` folder (type-safe via `LocaleKey`).
+ * @param params - Parameters inferred from the ICU message (`ParamsFor<K>`). Nested objects are allowed.
+ * @returns The formatted string for the given locale and key.
+ *
+ * @example
+ * ```ts
+ * // /locales/en-US/common.json:
+ * // { "hello.user": "Hello {user.name}!" }
+ *
+ * import { t } from '@robojs/i18n'
+ * t('en-US', 'hello.user', { user: { name: 'Robo' } }) // "Hello Robo!"
+ * ```
+ *
+ * @example
+ * ```ts
+ * // ICU plural:
+ * // { "pets.count": "{count, plural, one {# pet} other {# pets}}" }
+ * t('en-US', 'pets.count', { count: 1 }) // "1 pet"
+ * t('en-US', 'pets.count', { count: 3 }) // "3 pets"
+ * ```
+ *
+ * @example
+ * ```ts
+ * // Date/time:
+ * // { "when.run": "Ran at {ts, time, short} on {ts, date, medium}" }
+ * t('en-US', 'when.run', { ts: Date.now() })
+ * ```
+ *
+ * @example
+ * ```ts
+ * // Using a Discord interaction object (has {locale} or {guildLocale}):
+ * export default (interaction: ChatInputCommandInteraction) => {
+ *   return t(interaction, 'hello.user', { user: { name: interaction.user.username } })
+ * }
+ * ```
+ *
+ * @throws If the locale is unknown (no `/locales/<locale>` loaded) or the key is missing in that locale.
+ * @remarks
+ * - You can also pass dotted keys directly: `t('en-US', 'hello.user', { 'user.name': 'Robo' })`.
+ * - If different locales disagree on a param’s kind, the generator safely widens the param type.
+ */
 export function t<K extends LocaleKey>(locale: LocaleLike, key: K, params?: ParamsFor<K>): string {
 	const localeValues = State.get<Record<string, Record<string, string>>>('localeValues', {
 		namespace: '@robojs/i18n'
@@ -97,6 +179,34 @@ export function t<K extends LocaleKey>(locale: LocaleLike, key: K, params?: Para
 	return translation
 }
 
+/**
+ * Binds a `LocaleLike` to produce a **curried translator** (`t$`) that only needs a key and params.
+ *
+ * Useful in frameworks where a locale/interaction object is already available,
+ * so you don’t have to thread it through every call site.
+ *
+ * @param local - A `LocaleLike` (string, `{ locale }`, `{ guildLocale }`, or a Discord Interaction).
+ * @returns A function `<K extends LocaleKey>(key: K, params?: ParamsFor<K>) => string`
+ *          that formats messages using the bound locale.
+ *
+ * @example
+ * ```ts
+ * import { withLocale } from '@robojs/i18n'
+ * const t$ = withLocale('en-US')
+ * t$('hello.user', { user: { name: 'Robo' } })
+ * ```
+ *
+ * @example
+ * ```ts
+ * // Discord slash command handler
+ * import type { ChatInputCommandInteraction } from 'discord.js'
+ *
+ * export default (interaction: ChatInputCommandInteraction) => {
+ *   const t$ = withLocale(interaction)
+ *   return t$('pets.count', { count: 2 })
+ * }
+ * ```
+ */
 export function withLocale(local: LocaleLike) {
 	return <K extends LocaleKey>(key: K, params?: ParamsFor<K>) => t(local, key, params)
 }
