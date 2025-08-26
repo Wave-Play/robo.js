@@ -7,6 +7,7 @@ import { State } from 'robo.js'
 import type { Locale } from '../index.js'
 import type { LocaleLike } from './types.js'
 
+/** Token used to escape dots in ICU argument names during parsing/sanitization. */
 export const DOT_TOKEN = '__RJSI18N_DOT__'
 
 /** Visit every **string** leaf under `obj`, emitting a dot-joined path for nested keys. */
@@ -30,6 +31,7 @@ function forEachStringLeaf(obj: unknown, visit: (flatKey: string, value: string)
 	}
 }
 
+/** Flattens nested objects/arrays (and Dates) into a dotted-key map for ICU formatter input. */
 export function flattenParams(
 	input: Record<string, unknown>,
 	prefix = '',
@@ -56,9 +58,7 @@ export function flattenParams(
 	return out
 }
 
-/**
- * Recursively gets all file paths from the given directory.
- */
+/** Recursively collects absolute file paths under a directory. */
 export function getAllFilePaths(dirPath: string, fileList: string[] = []): string[] {
 	const entries = readdirSync(dirPath, { withFileTypes: true })
 
@@ -75,6 +75,7 @@ export function getAllFilePaths(dirPath: string, fileList: string[] = []): strin
 	return fileList
 }
 
+/** Extracts a locale string from a `LocaleLike` value (string or object with `locale`/`guildLocale`). */
 export function getLocale(input: Locale): Locale
 export function getLocale(input: { locale: string } | { guildLocale: string }): string
 export function getLocale(input: LocaleLike): string
@@ -91,6 +92,7 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
 	return Object.prototype.toString.call(v) === '[object Object]'
 }
 
+/** Loads locale JSONs, builds namespaced & flattened keys, stores values in State, and writes generated types. */
 export function loadLocales() {
 	const LocalesDir = join(process.cwd(), 'locales')
 
@@ -184,16 +186,17 @@ export function loadLocales() {
 	return Date.now() - time
 }
 
+/** Returns the list of discovered locale names from State. */
 export function loadLocalNames() {
 	const localeNames = State.get<string[]>('localeNames', {
 		namespace: '@robojs/i18n'
 	})
+
 	return localeNames
 }
 
-// Replace dots ONLY in the argument name portion between '{' and the first ',' or '}'
+/** Escapes dots in ICU argument names (e.g., `{user.name}`) using DOT_TOKEN to avoid nested param collisions. */
 export function sanitizeDottedArgs(msg: string) {
-	// {   user.name   , number}  or {user.name}
 	const ARG_NAME_RE = /\{(\s*[^,\s}]+)(?=[,}])/g
 	const sanitized = msg.replace(ARG_NAME_RE, (_m, nameWithWs: string) => {
 		const leadingWs = nameWithWs.match(/^\s*/)?.[0] ?? ''
@@ -206,6 +209,7 @@ export function sanitizeDottedArgs(msg: string) {
 	return sanitized
 }
 
+/** Rewrites dotted param keys using DOT_TOKEN so they align with `sanitizeDottedArgs` replacements. */
 export function mapKeysToSanitized(values: Record<string, unknown>) {
 	const out: Record<string, unknown> = {}
 	for (const [k, v] of Object.entries(values)) {

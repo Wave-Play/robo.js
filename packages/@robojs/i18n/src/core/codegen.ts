@@ -12,6 +12,7 @@ import {
 } from '@formatjs/icu-messageformat-parser'
 import type { Node, TsKind } from './types.js'
 
+/** Produces the TypeScript declaration text for Locale/LocaleKey/LocaleParamsMap from parsed locales. */
 export function generateTypes(
 	locales: string[],
 	keys: string[],
