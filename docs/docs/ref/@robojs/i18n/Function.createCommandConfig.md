@@ -32,27 +32,41 @@ A standard `SmartCommandConfig` ready for Robo.js to register.
 ## Example
 
 ```ts
-// /locales/en-US/commands.json
-// {
-//   "cmd.ping.name": "Ping",
-//   "cmd.ping.desc": "Measure latency",
-//   "cmd.ping.arg": "Text",
-//   "cmd.ping.arg.desc": "Optional text to include"
-// }
-// Use the namespaced form: "commands:<json-key>"
-import { createCommandConfig } from '@robojs/i18n'
+import { createCommandConfig, t } from '@robojs/i18n'
+import type { ChatInputCommandInteraction } from 'discord.js'
+import type { CommandOptions } from 'robo.js'
 
 export const config = createCommandConfig({
-  nameKey: 'commands:cmd.ping.name',
-  descriptionKey: 'commands:cmd.ping.desc',
-  options: [{
-    type: 'string',
-    name: 'text', // keep a raw name to help TS narrow option types
-    nameKey: 'commands:cmd.ping.arg',
-    descriptionKey: 'commands:cmd.ping.arg.desc',
-    required: false
-  }]
+  nameKey: 'commands:ping.name',
+  descriptionKey: 'commands:ping.desc',
+  options: [
+    {
+      type: 'string',
+      name: 'text',
+      nameKey: 'commands:ping.arg.name',
+      descriptionKey: 'commands:ping.arg.desc'
+    }
+  ]
 } as const)
+
+export default (interaction: ChatInputCommandInteraction, options: CommandOptions<typeof config>) => {
+  const user = { name: options.text ?? 'Robo' }
+  return t(interaction, 'commands:hey', { user })
+}
+```
+
+```json
+{
+  "hey": "Hey there, {user.name}!",
+  "ping": {
+    "name": "ping",
+    "desc": "Measure latency",
+    "arg": {
+      "name": "text",
+      "desc": "Optional text to include"
+    }
+  }
+}
 ```
 
 ## Remarks

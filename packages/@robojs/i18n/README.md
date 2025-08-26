@@ -217,7 +217,8 @@ export const config = createCommandConfig({
 } as const)
 
 export default (interaction: ChatInputCommandInteraction, options: CommandOptions<typeof config>) => {
-	return t(interaction, 'app:hello', { name: options.text ?? 'Robo' })
+    const user = { name: options.text ?? 'Robo' }
+	return t(interaction, 'commands:hey', { user })
 }
 ```
 
@@ -225,11 +226,12 @@ export default (interaction: ChatInputCommandInteraction, options: CommandOption
 
 ```json
 {
+    "hey": "Hey there, {user.name}!",
     "ping": {
         "name": "ping",
         "desc": "Measure latency",
         "arg": {
-            "name": "Text",
+            "name": "text",
             "desc": "Optional text to include"
         }
     }
