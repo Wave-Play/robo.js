@@ -48,7 +48,6 @@
 		}
 	},
 	"dependencies": {
-		"@formatjs/icu-messageformat-parser": "^2.11.2",
-		"intl-messageformat": "^10.7.16"
+		"messageformat": "4.0.0-12"
 	}
 }

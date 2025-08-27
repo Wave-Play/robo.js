@@ -4,11 +4,11 @@
 
 # @robojs/i18n
 
-Type-safe **i18n** for **Robo.js** with **ICU MessageFormat**.
+Type-safe **i18n** for **Robo.js** with **MessageFormat 2 (MF2)**.
 
 Drop JSON files in `/locales`, get strongly-typed **namespaced keys** & parameters, and format messages at runtime with `t()` or the strict `tr()`—no custom build steps required.
 
-- **Strong types** from your JSON — keys & params are inferred from ICU messages.
+- **Strong types** from your JSON — keys & params are inferred from MF2 messages.
 - **Runtime formatting** with `t(localeLike, key, params?)` anywhere in your app.
 - **Strict mode** with `tr(localeLike, key, ...args)` and `withLocale(locale, { strict: true })`.
 - **Zero friction** — just add `/locales/**.json`; the plugin loads once and generates types.
@@ -68,8 +68,8 @@ Example tree:
 
 ```json
 {
-	"hello": "Hello {name}!",
-	"pets.count": "{count, plural, one {# pet} other {# pets}}"
+	"hello": "Hello {$name}!",
+	"pets.count": ".input {$count :number}\n.match $count\n  one {{You have {$count} pet}}\n  *   {{You have {$count} pets}}"
 }
 ```
 
@@ -77,8 +77,8 @@ Example tree:
 
 ```json
 {
-	"hello": "¡Hola {name}!",
-	"pets.count": "{count, plural, one {# mascota} other {# mascotas}}"
+	"hello": "¡Hola {$name}!",
+	"pets.count": ".input {$count :number}\n.match $count\n  one {{Tienes {$count} mascota}}\n  *   {{Tienes {$count} mascotas}}"
 }
 ```
 
@@ -95,7 +95,7 @@ import { t } from '@robojs/i18n'
 const locale = 'en-US' as const
 
 t(locale, 'app:hello', { name: 'Robo' }) // "Hello Robo!"
-t(locale, 'app:pets.count', { count: 3 }) // "3 pets"
+t(locale, 'app:pets.count', { count: 3 }) // "You have 3 pets"
 ```
 
 `locale` can be:
@@ -162,7 +162,7 @@ Instead of writing flat keys, you may structure your locale file:
 // /locales/en-US/app.json
 {
 	"greetings": {
-		"hello": "Hello {name}!"
+		"hello": "Hello {$name}!"
 	}
 }
 ```
@@ -173,12 +173,12 @@ The key becomes `app:greetings.hello`.
 
 ### Nested parameter objects
 
-Although ICU placeholders look flat (`{user.name}`), you can pass nested objects and they’ll be flattened for you.
+Although MF2 placeholders look flat (`{$user.name}`), you can pass nested objects and they’ll be flattened for you.
 
 ```json
 // /locales/en-US/app.json
 {
-	"profile": "Hi {user.name}! You have {stats.count, number} points."
+	"profile": "Hi {$user.name}! You have {$stats.count :number} points."
 }
 ```
 
@@ -226,7 +226,7 @@ export default (interaction: ChatInputCommandInteraction, options: CommandOption
 
 ```json
 {
-	"hey": "Hey there, {user.name}!",
+	"hey": "Hey there, {$user.name}!",
 	"ping": {
 		"name": "ping",
 		"desc": "Measure latency",
@@ -242,23 +242,23 @@ export default (interaction: ChatInputCommandInteraction, options: CommandOption
 
 ## Performance ⚡
 
-We keep a small in-memory **cache of compiled `IntlMessageFormat` instances**, keyed by `(locale, key, message)`. This avoids reparsing strings on repeated calls and fits apps with **a few hundred keys per locale**. You can clear it during tests or hot-reload:
+We keep a small in-memory **cache of compiled `MessageFormat` instances**, keyed by `(locale, key, message)`. This avoids reparsing strings on repeated calls and fits apps with **a few hundred keys per locale**. You can clear it during tests or hot-reload:
 
 ```ts
 import { clearFormatterCache } from '@robojs/i18n'
 clearFormatterCache()
 ```
 
-## Supported ICU pieces (what’s parsed)
+## Supported MF2 pieces (what’s parsed)
 
-| ICU element | Example snippet                                    | Param type inferred |
-| ----------- | -------------------------------------------------- | ------------------- |
-| argument    | `{name}`                                           | `string`            |
-| number      | `{count, number}` / `{count, plural, ...}`         | `number`            |
-| plural      | `{count, plural, one {...} other {...}}`           | `number`            |
-| select      | `{kind, select, user {...} bot {...} other {...}}` | `string`            |
-| date        | `{ts, date, medium}`                               | `Date \| number`    |
-| time        | `{ts, time, short}`                                | `Date \| number`    |
+| MF2 element | Example snippet                                                  | Param type inferred |
+| ----------- | ---------------------------------------------------------------- | ------------------- |
+| variable    | `{$name}`                                                        | `string`            |
+| number      | `{$count :number}`                                               | `number`            |
+| match (num) | `.input {$count :number}\n.match $count\n  one {{…}}\n  * {{…}}` | `number`            |
+| date        | `{$ts :date}`                                                    | `Date \| number`    |
+| time        | `{$ts :time}`                                                    | `Date \| number`    |
+| datetime    | `{$ts :datetime}`                                                | `Date \| number`    |
 
 > If different locales disagree on a param’s kind, the type safely widens (e.g., `number` vs `string` → `string`; any date/time → `Date \| number`).
 
@@ -267,19 +267,19 @@ clearFormatterCache()
 On first load, the plugin:
 
 1. Scans `/locales/**.json`.
-2. Parses **ICU messages** to detect parameter kinds (plural/number/date/time/select/argument).
+2. Parses **MessageFormat 2** messages to detect parameter kinds (number/date/time/variable usage).
 3. Emits `generated/types.d.ts` with:
    - `type Locale = 'en-US' | 'es-ES' | ...`
    - `type LocaleKey = 'app:hello' | 'app:pets.count' | 'shared/common:...' | ...` ← **namespaced**
    - `type LocaleParamsMap` and `type ParamsFor<K>`
 
-Formatting is done by `intl-messageformat` at runtime, with a small cache of compiled formatters to reduce CPU work across calls.
+Formatting is done by `messageformat` at runtime, with a small cache of compiled formatters to reduce CPU work across calls.
 
 ## Notes & FAQs
 
 - **Works outside Discord** — `t()`/`tr()` are plain functions. Use them anywhere you can pass a locale string or object.
 - **Missing locale or key** → throws an error (fast fail).
-- **Nested ICU** (e.g., plurals inside options) is traversed correctly.
+- **Nested MF2** (e.g., `.match` blocks) is traversed correctly.
 - **No manual type imports needed** — `t()`/`tr()` infer `ParamsFor<K>` from your keys.
 - **Namespaced keys are required** — always use the `<folders>/<file>:` prefix (e.g., `app:hello`, `shared/common:greet`).
 

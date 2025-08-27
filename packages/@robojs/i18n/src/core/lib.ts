@@ -63,7 +63,7 @@ let _isLoaded = false
  * @example
  * ```json
  * {
- *   "hey": "Hey there, {user.name}!",
+ *   "hey": "Hey there, {$user.name}!",
  *   "ping": {
  *     "name": "ping",
  *     "desc": "Measure latency",
@@ -133,11 +133,11 @@ export function createCommandConfig<const C extends LocaleCommandConfig>(config:
 }
 
 /**
- * Formats a localized message by key with **strongly-typed params** inferred from your ICU message.
+ * Formats a localized message by key with **strongly-typed params** inferred from your MF2 message.
  *
  * - Supports `LocaleLike`: pass a locale string (`'en-US'`) or any object with `{ locale }` or `{ guildLocale }`.
  * - Accepts **nested params** (e.g., `{ user: { name: 'Robo' } }`) which are auto-flattened to dotted paths.
- * - Handles ICU numbers/plurals/select/date/time; for `{ts, date/time}` the param can be `Date | number`.
+ * - Handles MF2 number/date/time (e.g., `{$n :number}`, `{$ts :time}`, `{$ts :date}`); for date/time the param can be `Date | number`.
  *
  * ### 🔑 About namespaced keys
  * Keys are **namespaced by file path**:
@@ -149,13 +149,13 @@ export function createCommandConfig<const C extends LocaleCommandConfig>(config:
  * @typeParam K - A key from your generated `LocaleKey` union (namespaced).
  * @param locale - A `LocaleLike` (`'en-US'`, `{ locale: 'en-US' }`, or a Discord Interaction/guild context).
  * @param key - A **namespaced** key present in your `/locales` folder (e.g., `common:hello.user`).
- * @param params - Parameters inferred from the ICU message (`ParamsFor<K>`). Nested objects are allowed.
+ * @param params - Parameters inferred from the MF2 message (`ParamsFor<K>`). Nested objects are allowed.
  * @returns The formatted string for the given locale and key.
  *
  * @example
  * ```ts
  * // /locales/en-US/common.json:
- * // { "hello.user": "Hello {user.name}!" }
+ * // { "hello.user": "Hello {$user.name}!" }
  * // Namespaced key becomes: "common:hello.user"
  *
  * import { t } from '@robojs/i18n'
@@ -164,16 +164,16 @@ export function createCommandConfig<const C extends LocaleCommandConfig>(config:
  *
  * @example
  * ```ts
- * // ICU plural (file: /locales/en-US/stats.json):
- * // { "pets.count": "{count, plural, one {# pet} other {# pets}}" }
- * t('en-US', 'stats:pets.count', { count: 1 }) // "1 pet"
- * t('en-US', 'stats:pets.count', { count: 3 }) // "3 pets"
+ * // MF2 plural-style match (file: /locales/en-US/stats.json):
+ * // { "pets.count": ".input {$count :number}\n.match $count\n  one {{You have {$count} pet}}\n  *   {{You have {$count} pets}}" }
+ * t('en-US', 'stats:pets.count', { count: 1 }) // "You have 1 pet"
+ * t('en-US', 'stats:pets.count', { count: 3 }) // "You have 3 pets"
  * ```
  *
  * @example
  * ```ts
  * // Date/time (file: /locales/en-US/common.json):
- * // { "when.run": "Ran at {ts, time, short} on {ts, date, medium}" }
+ * // { "when.run": "Ran at {$ts :time style=short} on {$ts :date style=medium}" }
  * t('en-US', 'common:when.run', { ts: Date.now() })
  * ```
  *
@@ -235,7 +235,7 @@ export function t<K extends LocaleKey>(locale: LocaleLike, key: K, params?: Para
  * @example
  * ```ts
  * // /locales/en-US/common.json:
- * // { "hello.user": "Hello {user.name}!" } → "common:hello.user"
+ * // { "hello.user": "Hello {$user.name}!" } → "common:hello.user"
  * import { tr } from '@robojs/i18n'
  * tr('en-US', 'common:hello.user', { user: { name: 'Robo' } }) // OK
  * // tr('en-US', 'common:hello.user', { user: {} })            // ❌ compile-time error

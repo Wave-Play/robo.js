@@ -1,15 +1,6 @@
 import { i18nLogger } from './loggers.js'
 import { DOT_TOKEN, sanitizeDottedArgs } from './utils.js'
-import {
-	parse,
-	isPluralElement,
-	isSelectElement,
-	isArgumentElement,
-	isNumberElement,
-	isDateElement,
-	isTimeElement,
-	MessageFormatElement
-} from '@formatjs/icu-messageformat-parser'
+import { parseMessage } from 'messageformat'
 import type { Node, TsKind } from './types.js'
 
 /** Produces the TypeScript declaration text for Locale/LocaleKey/LocaleParamsMap from parsed locales. */
@@ -36,24 +27,32 @@ export function generateTypes(
 		}
 	}
 
-	const visit = (els: MessageFormatElement[], key: string) => {
-		for (const el of els) {
-			if (isPluralElement(el)) {
-				addPath(key, undot(el.value), 'number')
-				for (const opt of Object.values(el.options)) visit(opt.value, key)
-			} else if (isSelectElement(el)) {
-				addPath(key, undot(el.value), 'string')
-				for (const opt of Object.values(el.options)) visit(opt.value, key)
-			} else if (isNumberElement(el)) {
-				addPath(key, undot(el.value), 'number')
-			} else if (isDateElement(el) || isTimeElement(el)) {
-				addPath(key, undot(el.value), 'dateOrNumber')
-			} else if (isArgumentElement(el)) {
-				addPath(key, undot(el.value), 'string')
-			} else {
-				// @ts-expect-error defensive traversal
-				if (Array.isArray(el.value)) visit(el.value, key)
-			}
+	const noteVarName = (key: string, name: string, kind: TsKind) => {
+		// strip an accidental leading '$' if present (regex pass captures without it already)
+		const clean = name.startsWith('$') ? name.slice(1) : name
+		addPath(key, undot(clean), kind)
+	}
+
+	// MF2 regex helpers on the *sanitized* message
+	const ANY_VAR_RE = /\{\s*\$([^\s:}]+)\s*(?:[:}])/g // captures both typed & untyped variables
+	const NUMERIC_RE = /\{\s*\$([^\s:}]+)\s*:(?:number|integer|decimal|cardinal|ordinal)\b/g
+	const DATETIME_RE = /\{\s*\$([^\s:}]+)\s*:(?:datetime|date|time)\b/g
+
+	const analyze = (msg: string, key: string) => {
+		// Validate MF2 syntax (throws on invalid); result AST not needed further
+		parseMessage(msg)
+
+		// 1) Default: record every variable as string (covers untyped placeholders)
+		for (const m of msg.matchAll(ANY_VAR_RE)) {
+			noteVarName(key, m[1]!, 'string')
+		}
+
+		// 2) Upgrades: apply stronger types when explicitly typed
+		for (const m of msg.matchAll(NUMERIC_RE)) {
+			noteVarName(key, m[1]!, 'number')
+		}
+		for (const m of msg.matchAll(DATETIME_RE)) {
+			noteVarName(key, m[1]!, 'dateOrNumber')
 		}
 	}
 
@@ -62,11 +61,9 @@ export function generateTypes(
 		for (const key of Object.keys(map)) {
 			try {
 				const msg = sanitizeDottedArgs(map[key])
-				const ast = parse(msg, { captureLocation: false })
-				visit(ast, key)
+				analyze(msg, key)
 			} catch (err) {
-				// If a message fails to parse, fall back to no params for that key in this locale
-				i18nLogger.warn?.(`Failed to parse ICU for key "${key}" in locale "${locale}": ${String(err)}`)
+				i18nLogger.warn?.(`Failed to parse MF2 for key "${key}" in locale "${locale}": ${String(err)}`)
 			}
 		}
 	}
@@ -92,18 +89,18 @@ export function generateTypes(
 	return buffer
 }
 
+const undot = (s: string) => s.replaceAll(DOT_TOKEN, '.')
+
 const tsFor = (k: TsKind): string => (k === 'number' ? 'number' : k === 'dateOrNumber' ? 'Date | number' : 'string')
 
 const safeIdent = (s: string) => (/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(s) ? s : JSON.stringify(s))
 
-const undot = (s: string) => s.replaceAll(DOT_TOKEN, '.')
-
+// Prefer numeric when combined with string; any date/time widens to dateOrNumber
 const widen = (a: TsKind | undefined, b: TsKind): TsKind => {
 	if (!a) return b
 	if (a === b) return a
-	// date/time vs number → dateOrNumber
 	if (a === 'dateOrNumber' || b === 'dateOrNumber') return 'dateOrNumber'
-	// string vs number → string (most permissive & still safe for formatting)
+	if ((a === 'number' && b === 'string') || (a === 'string' && b === 'number')) return 'number'
 	return 'string'
 }
 
@@ -121,11 +118,5 @@ function emitNode(node: Node, indent = 2): string {
 		objectFields += `${' '.repeat(indent + 2)}${safeIdent(k)}?: ${emitNode(child, indent + 2)}\n`
 	}
 	const obj = `{\n${objectFields}${' '.repeat(indent)}}`
-
-	// If this node was also used as a scalar (e.g., {user}) AND has children (e.g., {user.name}),
-	// produce a union: scalar | { ... }
-	if (node.kind) {
-		return `${tsFor(node.kind)} | ${obj}`
-	}
-	return obj
+	return node.kind ? `${tsFor(node.kind)} | ${obj}` : obj
 }
