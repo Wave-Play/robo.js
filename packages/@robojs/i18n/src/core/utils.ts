@@ -197,10 +197,12 @@ export function loadLocalNames() {
 
 /** Escapes dots in ICU argument names (e.g., `{user.name}`) using DOT_TOKEN to avoid nested param collisions. */
 export function sanitizeDottedArgs(msg: string) {
-	const ARG_NAME_RE = /\{(\s*[^,\s}]+)(?=[,}])/g
+	// Match the variable name right after `{`, stopping at `,`, `}`, or optional whitespace before `:`
+	// Examples matched: `{$user.name}`, `{$stats.count :number}`, `{$ts:time}`
+	const ARG_NAME_RE = /\{(\s*[^,}\s:]+)(?=\s*:|[,}])/g
 	const sanitized = msg.replace(ARG_NAME_RE, (_m, nameWithWs: string) => {
 		const leadingWs = nameWithWs.match(/^\s*/)?.[0] ?? ''
-		const name = nameWithWs.trim()
+		const name = nameWithWs.trim() // may start with `$`
 		const safe = name.replace(/\./g, DOT_TOKEN)
 
 		return `{${leadingWs}${safe}`
