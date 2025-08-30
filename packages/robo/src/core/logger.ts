@@ -473,6 +473,25 @@ export class Logger {
 	private _logBuffer: LogEntry[]
 
 	constructor(options?: LoggerOptions) {
+		// Bind all public methods
+		this.setup = this.setup.bind(this)
+		this.flush = this.flush.bind(this)
+		this.fork = this.fork.bind(this)
+		this.getLevel = this.getLevel.bind(this)
+		this.getLevelValues = this.getLevelValues.bind(this)
+		this.getRecentLogs = this.getRecentLogs.bind(this)
+		this.setDrain = this.setDrain.bind(this)
+		this.trace = this.trace.bind(this)
+		this.debug = this.debug.bind(this)
+		this.info = this.info.bind(this)
+		this.wait = this.wait.bind(this)
+		this.log = this.log.bind(this)
+		this.event = this.event.bind(this)
+		this.ready = this.ready.bind(this)
+		this.warn = this.warn.bind(this)
+		this.error = this.error.bind(this)
+		this.custom = this.custom.bind(this)
+
 		this.setup(options)
 	}
 
