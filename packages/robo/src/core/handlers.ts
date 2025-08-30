@@ -67,6 +67,7 @@ export async function executeAutocompleteHandler(interaction: AutocompleteIntera
 
 		// Enforce timeout only if custom timeout is configured
 		if (timeoutDuration) {
+			// @ts-expect-error - Timeout callback can return anything
 			promises.push(timeout((): unknown[] => [], timeoutDuration))
 		}
 

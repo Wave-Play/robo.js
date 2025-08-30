@@ -25,6 +25,7 @@ export async function uploadToBackblazeB2(uploadUrl: string, authToken: string, 
 	for (let attempt = 0; attempt <= maxRetries - 1; attempt++) {
 		try {
 			const startTime = Date.now()
+			const u8 = new Uint8Array(fileBuffer)
 			const response = await fetch(uploadUrl, {
 				method: 'POST',
 				headers: {
@@ -33,7 +34,7 @@ export async function uploadToBackblazeB2(uploadUrl: string, authToken: string, 
 					'X-Bz-File-Name': fileName,
 					'X-Bz-Content-Sha1': sha1
 				},
-				body: fileBuffer
+				body: u8.buffer
 			})
 
 			// If successful, break out of the loop
