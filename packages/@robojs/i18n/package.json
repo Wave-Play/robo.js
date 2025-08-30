@@ -13,10 +13,17 @@
 		"typescript"
 	],
 	"main": ".robo/build/index.js",
+	"types": ".robo/build/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./.robo/build/index.d.ts",
+			"default": "./.robo/build/index.js"
+		}
+	},
 	"license": "MIT",
-	"author": "Your Name <email>",
+	"author": "WavePlay <dev@waveplay.com> (waveplay.com)",
 	"contributors": [
-		"Your Name <email>"
+		"Pkmmte Xeleon <pk@waveplay.com>"
 	],
 	"files": [
 		".robo/",
@@ -34,7 +41,7 @@
 		"lint:style": "prettier --write .",
 		"prepublishOnly": "robo build plugin",
 		"pretest": "pnpm run build",
-		"test": "NODE_OPTIONS=--experimental-vm-modules jest"
+		"test": "NODE_OPTIONS=--experimental-vm-modules jest && tstyche"
 	},
 	"dependencies": {
 		"messageformat": "4.0.0-12"
@@ -50,6 +57,7 @@
 		"robo.js": "workspace:*",
 		"ts-jest": "^29.1.1",
 		"ts-node": "^10.9.2",
+		"tstyche": "^4.3.0",
 		"typescript": "^5.9.2"
 	},
 	"peerDependenciesMeta": {
