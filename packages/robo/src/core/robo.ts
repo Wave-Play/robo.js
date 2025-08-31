@@ -1,7 +1,7 @@
 import { color } from './color.js'
 import { registerProcessEvents } from './process.js'
 import { Compiler } from '../cli/utils/compiler.js'
-import { Client, Collection, Events } from 'discord.js'
+import { Client, Events } from 'discord.js'
 import { getConfig, loadConfig } from './config.js'
 import { FLASHCORE_KEYS, discordLogger } from './constants.js'
 import { logger, LogLevel } from './logger.js'
@@ -46,7 +46,7 @@ export let client: Client
 export const portal = new Portal()
 
 // Be careful, plugins may contain sensitive data in their config
-let plugins: Collection<string, PluginData>
+let plugins: Map<string, PluginData>
 
 interface StartOptions {
 	client?: Client
@@ -267,7 +267,7 @@ function getCommandKey(interaction: AutocompleteInteraction | CommandInteraction
 
 function loadPluginData() {
 	const config = getConfig()
-	const collection = new Collection<string, PluginData>()
+	const collection = new Map<string, PluginData>()
 	if (!config.plugins) {
 		return collection
 	}

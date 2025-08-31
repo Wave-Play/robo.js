@@ -20,7 +20,6 @@ import type {
 	PluginData,
 	SmartCommandConfig
 } from '../types/index.js'
-import type { Collection } from 'discord.js'
 
 export async function executeAutocompleteHandler(interaction: AutocompleteInteraction, commandKey: string) {
 	const command = portal.commands.get(commandKey)
@@ -323,7 +322,7 @@ export async function executeContextHandler(interaction: ContextMenuCommandInter
 }
 
 export async function executeEventHandler(
-	plugins: Collection<string, PluginData> | null,
+	plugins: Map<string, PluginData> | null,
 	eventName: string,
 	...eventData: unknown[]
 ) {
