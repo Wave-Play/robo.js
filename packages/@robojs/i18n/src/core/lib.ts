@@ -223,6 +223,7 @@ export function t<K extends LocaleKey>(locale: LocaleLike, key: K, params?: Para
 			// Matches: {$foo :date style=full}, {$ts :time style=short}, {$ts :datetime dateStyle=medium timeStyle=short}
 			const RE = /\{\s*\$([^\s:}]+)\s*:(date|time|datetime)\b([^}]*)\}/g
 			let did = false
+			const countByVar: Record<string, number> = {}
 			const msg = safeMsg.replace(RE, (_m, varName: string, kind: string, optStr: string) => {
 				did = true
 				// parse simple key=value tokens (whitespace separated)
@@ -258,11 +259,14 @@ export function t<K extends LocaleKey>(locale: LocaleLike, key: K, params?: Para
 					...(timeStyle ? { timeStyle } : {})
 				}).format(d)
 
-				valuesForMF2[varName] = fmt
-				valuesForMF2[`$${varName}`] = fmt
+				// unique synthetic variable per occurrence so multiple typed uses of the same var don't clobber each other
+				const idx = (countByVar[varName] = (countByVar[varName] ?? 0) + 1)
+				const synth = `__RJSI18N_DT__${varName}_${idx}`
+				valuesForMF2[synth] = fmt
+				valuesForMF2[`$${synth}`] = fmt
 
-				// Return untyped placeholder so runtime just interpolates our preformatted string
-				return `{$${varName}}`
+				// Return untyped placeholder bound to the synthetic variable
+				return `{$${synth}}`
 			})
 
 			return { msg: did ? msg : safeMsg }

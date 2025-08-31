@@ -101,17 +101,33 @@ describe('@robojs/i18n – README usage', () => {
 		const en = deBidi(t('en-US', 'app:when.run' as any, { ts: TS }))
 		const es = deBidi(t('es-ES', 'app:when.run' as any, { ts: TS }))
 
-		// English message framing
 		expect(en).toMatch(/^Ran at /i)
 		expect(en).toMatch(/ on /)
-		// Year appears
 		expect(en).toMatch(/2020/)
 
-		// Spanish message framing
 		expect(es).toMatch(/^Ejecutado a las /i)
 		expect(es).toMatch(/ el /)
-		// Year appears
 		expect(es).toMatch(/2020/)
+	})
+
+	// Ensures :time and :date for the same variable are formatted independently (no clobbering)
+	test('t(): :time and :date use distinct values when same var is reused', () => {
+		const en = deBidi(t('en-US', 'app:when.run' as any, { ts: TS }))
+		const es = deBidi(t('es-ES', 'app:when.run' as any, { ts: TS }))
+
+		// Compute expected strings using the same environment + Intl options our polyfill uses
+		const enTime = new Intl.DateTimeFormat('en-US', { timeStyle: 'short' }).format(TS)
+		const enDate = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(TS)
+		const esTime = new Intl.DateTimeFormat('es-ES', { timeStyle: 'short' }).format(TS)
+		const esDate = new Intl.DateTimeFormat('es-ES', { dateStyle: 'medium' }).format(TS)
+
+		const [enLeft, enRight] = en.split(' on ')
+		expect(enLeft).toContain(enTime) // time-only on the left
+		expect(enRight).toContain(enDate) // date-only on the right
+
+		const [esLeft, esRight] = es.split(' el ')
+		expect(esLeft).toContain(esTime)
+		expect(esRight).toContain(esDate)
 	})
 
 	test('t(): formats :datetime with Date and with numeric epoch', () => {
