@@ -67,7 +67,7 @@ export function getAllFilePaths(dirPath: string, fileList: string[] = []): strin
 
 		if (entry.isDirectory()) {
 			getAllFilePaths(fullPath, fileList)
-		} else {
+		} else if (extname(fullPath) === '.json') {
 			fileList.push(fullPath)
 		}
 	}
@@ -111,6 +111,7 @@ export function loadLocales() {
 			})
 		)
 	)
+	i18nLogger.debug(`Discovered locales: ${localeNames.join(', ')} from:`, localeFiles)
 
 	const localeValues: Record<string, Record<string, string>> = {}
 	localeNames.forEach((locale) => (localeValues[locale] = {}))
