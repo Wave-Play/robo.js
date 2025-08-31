@@ -1,5 +1,5 @@
 // @ts-expect-error - This is a generated file
-import type { LocaleKey, ParamsFor } from '../../generated/types'
+import type { LocaleKey, ParamsFor, ReturnOf } from '../../generated/types'
 import { getFormatter } from './formatter.js'
 import { i18nLogger } from './loggers.js'
 import {
@@ -93,11 +93,11 @@ export function createCommandConfig<const C extends LocaleCommandConfig>(config:
 	const descriptionKey = config.descriptionKey
 	const pluginConfig = getPluginOptions(join('@robojs', 'i18n')) as PluginConfig
 	const defaultLocale = pluginConfig?.defaultLocale || 'en-US'
-	config.description = t(defaultLocale, config.descriptionKey)
+	config.description = t(defaultLocale, config.descriptionKey) as unknown as string
 
 	localNames.forEach((locale: string) => {
 		if (descriptionKey) {
-			const description = t(locale, descriptionKey)
+			const description = t(locale, descriptionKey) as unknown as string
 			config.descriptionLocalizations = config.descriptionLocalizations || {}
 			config.descriptionLocalizations[locale] = description
 		}
@@ -110,8 +110,8 @@ export function createCommandConfig<const C extends LocaleCommandConfig>(config:
 			localNames.forEach((locale: string) => {
 				const nameKey = option.nameKey
 				const descriptionKey = option.descriptionKey
-				const name = t(locale, nameKey)
-				const description = t(locale, descriptionKey)
+				const name = t(locale, nameKey) as unknown as string
+				const description = t(locale, descriptionKey) as unknown as string
 
 				option.nameLocalizations = option.nameLocalizations || {}
 				option.nameLocalizations[locale] = name
@@ -120,8 +120,8 @@ export function createCommandConfig<const C extends LocaleCommandConfig>(config:
 			})
 
 			// @ts-expect-error - We know these keys exist
-			option.description = t(defaultLocale, option.descriptionKey)
-			option.name = t(defaultLocale, option.nameKey)
+			option.description = t(defaultLocale, option.descriptionKey) as unknown as string
+			option.name = t(defaultLocale, option.nameKey) as unknown as string
 
 			delete option.nameKey
 			delete option.descriptionKey
@@ -190,8 +190,8 @@ export function createCommandConfig<const C extends LocaleCommandConfig>(config:
  * - You can also pass dotted params directly: `t('en-US', 'common:hello.user', { 'user.name': 'Robo' })`.
  * - If different locales disagree on a param’s kind, the generator safely widens the param type.
  */
-export function t<K extends LocaleKey>(locale: LocaleLike, key: K, params?: ParamsFor<K>): string {
-	const localeValues = State.get<Record<string, Record<string, string>>>('localeValues', {
+export function t<K extends LocaleKey>(locale: LocaleLike, key: K, params?: ParamsFor<K>): ReturnOf<K> {
+	const localeValues = State.get<Record<string, Record<string, string | string[]>>>('localeValues', {
 		namespace: '@robojs/i18n'
 	})
 
@@ -202,21 +202,91 @@ export function t<K extends LocaleKey>(locale: LocaleLike, key: K, params?: Para
 	if (!values) {
 		throw new Error(`Locale "${localeStr}" not found`)
 	}
-	const translation = values[key]
+	const translation = values[key as unknown as string]
 	if (!translation) {
-		throw new Error(`Translation for key "${key}" not found in locale "${localeStr}"`)
+		throw new Error(`Translation for key "${String(key)}" not found in locale "${localeStr}"`)
 	}
 
 	if (params) {
 		const flat = flattenParams(params as Record<string, unknown>)
-		const safeMsg = sanitizeDottedArgs(translation)
 		const safeValues = mapKeysToSanitized(flat)
-		const formatter = getFormatter(localeStr, String(key), safeMsg)
 
-		return formatter.format(safeValues) as string
+		// Provide both bare and "$"-prefixed keys to satisfy MF2 runtimes that look up either form.
+		const valuesForMF2: Record<string, unknown> = { ...safeValues }
+		for (const k of Object.keys(safeValues)) valuesForMF2[`$${k}`] = safeValues[k]
+
+		// snapshot original values so multiple typed uses of the same var (e.g., {$ts :time} & {$ts :date}) work
+		const origValues: Record<string, unknown> = { ...valuesForMF2 }
+
+		// Polyfill :date / :time / :datetime by pre-formatting and stripping the type annotation
+		const polyfillDateTime = (safeMsg: string) => {
+			// Matches: {$foo :date style=full}, {$ts :time style=short}, {$ts :datetime dateStyle=medium timeStyle=short}
+			const RE = /\{\s*\$([^\s:}]+)\s*:(date|time|datetime)\b([^}]*)\}/g
+			let did = false
+			const msg = safeMsg.replace(RE, (_m, varName: string, kind: string, optStr: string) => {
+				did = true
+				// parse simple key=value tokens (whitespace separated)
+				const opts: Record<string, string> = {}
+				for (const tok of optStr.trim().split(/\s+/).filter(Boolean)) {
+					const eq = tok.indexOf('=')
+					if (eq > 0) opts[tok.slice(0, eq)] = tok.slice(eq + 1)
+				}
+				let dateStyle: Intl.DateTimeFormatOptions['dateStyle']
+				let timeStyle: Intl.DateTimeFormatOptions['timeStyle']
+
+				if (kind === 'date') dateStyle = (opts.style as Intl.DateTimeFormatOptions['dateStyle']) || 'medium'
+				else if (kind === 'time') timeStyle = (opts.style as Intl.DateTimeFormatOptions['timeStyle']) || 'medium'
+				else {
+					dateStyle = (opts.dateStyle as Intl.DateTimeFormatOptions['dateStyle']) || 'medium'
+					timeStyle = (opts.timeStyle as Intl.DateTimeFormatOptions['timeStyle']) || 'medium'
+				}
+
+				const vRaw: unknown = origValues[varName] ?? origValues[`$${varName}`]
+
+				let d: Date
+				if (vRaw instanceof Date) d = vRaw
+				else if (typeof vRaw === 'number') d = new Date(vRaw)
+				else if (typeof vRaw === 'string') {
+					const asNum = Number(vRaw)
+					d = Number.isFinite(asNum) ? new Date(asNum) : new Date(vRaw)
+				} else {
+					d = new Date(NaN)
+				}
+
+				const fmt = new Intl.DateTimeFormat(localeStr, {
+					...(dateStyle ? { dateStyle } : {}),
+					...(timeStyle ? { timeStyle } : {})
+				}).format(d)
+
+				valuesForMF2[varName] = fmt
+				valuesForMF2[`$${varName}`] = fmt
+
+				// Return untyped placeholder so runtime just interpolates our preformatted string
+				return `{$${varName}}`
+			})
+
+			return { msg: did ? msg : safeMsg }
+		}
+
+		if (Array.isArray(translation)) {
+			const out = translation.map((part, i) => {
+				const safeMsg = sanitizeDottedArgs(part)
+				const { msg } = polyfillDateTime(safeMsg)
+				const cacheKey = `${String(key)}[${i}]::${msg}`
+				const formatter = getFormatter(localeStr, cacheKey, msg)
+				return formatter.format(valuesForMF2) as string
+			})
+			return out as ReturnOf<K>
+		}
+
+		const safeMsg = sanitizeDottedArgs(translation)
+		const { msg } = polyfillDateTime(safeMsg)
+		const formatter = getFormatter(localeStr, String(key), msg)
+
+		return formatter.format(valuesForMF2) as ReturnOf<K>
 	}
 
-	return translation
+	return translation as ReturnOf<K>
 }
 
 /**
@@ -248,7 +318,7 @@ export function t<K extends LocaleKey>(locale: LocaleLike, key: K, params?: Para
  * tr('en-US', 'common:ping') // OK: no params required
  * ```
  */
-export function tr<K extends LocaleKey>(locale: LocaleLike, key: K, ...args: MaybeArgs<K>): string {
+export function tr<K extends LocaleKey>(locale: LocaleLike, key: K, ...args: MaybeArgs<K>): ReturnOf<K> {
 	return t(locale, key, args[0] as ParamsFor<K>)
 }
 
@@ -260,8 +330,8 @@ export function tr<K extends LocaleKey>(locale: LocaleLike, key: K, ...args: May
  *   for keys that have any (using your `MaybeArgs<K>` tuple).
  *
  * Overloads:
- * - `withLocale(local)` → `<K>(key: K, params?: ParamsFor<K>) => string`
- * - `withLocale(local, { strict: true })` → `<K>(key: K, ...args: MaybeArgs<K>) => string`
+ * - `withLocale(local)` → `<K>(key: K, params?: ParamsFor<K>) => ReturnOf<K>`
+ * - `withLocale(local, { strict: true })` → `<K>(key: K, ...args: MaybeArgs<K>) => ReturnOf<K>`
  *
  * @param local A `LocaleLike` (string, `{ locale }`, `{ guildLocale }`, or a Discord Interaction).
  * @param options Optional `{ strict: true }` to get the strict variant.
@@ -284,11 +354,11 @@ export function tr<K extends LocaleKey>(locale: LocaleLike, key: K, ...args: May
  * tr$('common:ping')                                    // ✅ key with no params
  * ```
  */
-export function withLocale(local: LocaleLike): <K extends LocaleKey>(key: K, params?: ParamsFor<K>) => string
+export function withLocale(local: LocaleLike): <K extends LocaleKey>(key: K, params?: ParamsFor<K>) => ReturnOf<K>
 export function withLocale(
 	local: LocaleLike,
 	opts: { strict: true }
-): <K extends LocaleKey>(key: K, ...args: MaybeArgs<K>) => string
+): <K extends LocaleKey>(key: K, ...args: MaybeArgs<K>) => ReturnOf<K>
 export function withLocale(local: LocaleLike, opts?: { strict?: boolean }) {
 	if (opts?.strict) {
 		return <K extends LocaleKey>(key: K, ...args: MaybeArgs<K>) => tr(local, key, ...args)

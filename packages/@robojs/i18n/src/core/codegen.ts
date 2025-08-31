@@ -7,9 +7,10 @@ import type { Node, TsKind } from './types.js'
 export function generateTypes(
 	locales: string[],
 	keys: string[],
-	localeValues: Record<string, Record<string, string>>
+	localeValues: Record<string, Record<string, string | string[]>>
 ): string {
 	const paramsByKey: Record<string, Node> = {}
+	const shapeByKey: Record<string, 'string' | 'array' | 'mixed'> = {}
 
 	function addPath(key: string, dotted: string, kind: TsKind) {
 		const root = (paramsByKey[key] ||= {})
@@ -60,8 +61,18 @@ export function generateTypes(
 		const map = localeValues[locale]
 		for (const key of Object.keys(map)) {
 			try {
-				const msg = sanitizeDottedArgs(map[key])
-				analyze(msg, key)
+				const val = map[key]
+				if (Array.isArray(val)) {
+					shapeByKey[key] = shapeByKey[key] ? (shapeByKey[key] === 'string' ? 'mixed' : shapeByKey[key]) : 'array'
+					for (const msg of val) {
+						const sanitized = sanitizeDottedArgs(msg)
+						analyze(sanitized, key)
+					}
+				} else {
+					shapeByKey[key] = shapeByKey[key] ? (shapeByKey[key] === 'array' ? 'mixed' : shapeByKey[key]) : 'string'
+					const msg = sanitizeDottedArgs(val)
+					analyze(msg, key)
+				}
 			} catch (err) {
 				i18nLogger.warn?.(`Failed to parse MF2 for key "${key}" in locale "${locale}": ${String(err)}`)
 			}
@@ -73,6 +84,16 @@ export function generateTypes(
 	buffer += '// DO NOT EDIT — generated from /locales/**/*.json. Run `robo build` to update.\n\n'
 	buffer += `export type Locale = ${locales.map((locale) => `'${locale}'`).join(' | ')}\n\n`
 	buffer += `export type LocaleKey = ${keys.map((key) => `'${key}'`).join(' | ')}\n\n`
+
+	// Array shape map and conditional return type
+	buffer += `export type LocaleIsArrayMap = {\n`
+	for (const key of keys) {
+		const s = shapeByKey[key] ?? 'string'
+		const t = s === 'array' ? 'true' : s === 'string' ? 'false' : 'boolean'
+		buffer += `  '${key}': ${t},\n`
+	}
+	buffer += `}\n\n`
+
 	buffer += `export type LocaleParamsMap = {\n`
 
 	for (const key of keys) {
@@ -85,6 +106,7 @@ export function generateTypes(
 	}
 	buffer += `}\n\n`
 	buffer += `export type ParamsFor<K extends LocaleKey> = LocaleParamsMap[K]\n\n`
+	buffer += `export type ReturnOf<K extends LocaleKey> = LocaleIsArrayMap[K] extends true ? string[] : string\n\n`
 
 	return buffer
 }
