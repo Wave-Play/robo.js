@@ -84,7 +84,7 @@ class Module {
  */
 export function getPluginOptions(packageName: string): unknown | null {
 	const config = getConfig()
-	const pluginOptions = config.plugins?.find((plugin) => {
+	const pluginOptions = config?.plugins?.find((plugin) => {
 		return (typeof plugin === 'string' ? plugin : plugin[0]) === packageName
 	})
 	const options = typeof pluginOptions === 'string' ? null : pluginOptions?.[1]
