@@ -20,6 +20,9 @@
 			"default": "./.robo/build/index.js"
 		}
 	},
+	"bin": {
+		"i18n": ".robo/build/cli/index.js"
+	},
 	"license": "MIT",
 	"author": "WavePlay <dev@waveplay.com> (waveplay.com)",
 	"contributors": [
@@ -38,6 +41,7 @@
 	"scripts": {
 		"build": "robo build plugin",
 		"dev": "robo build plugin --watch",
+		"fix:permission": "chmod +x .robo/build/cli/index.js",
 		"lint:style": "prettier --write .",
 		"prepublishOnly": "robo build plugin",
 		"pretest": "pnpm run build",
