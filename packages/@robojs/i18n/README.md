@@ -8,13 +8,10 @@ Type-safe **i18n** for **Robo.js** with **MessageFormat 2 (MF2)**.
 
 Drop JSON files in `/locales`, get strongly-typed **namespaced keys** & parameters, and format messages at runtime with `t()` or the strict `tr()`—no custom build steps required.
 
-- **Strong types** from your JSON — keys & params are inferred from MF2 messages.
-- **Runtime formatting** with `t(localeLike, key, params?)` anywhere in your app.
-- **Strict mode** with `tr(localeLike, key, ...args)` and `withLocale(locale, { strict: true })`.
-- **Zero friction** — just add `/locales/**.json`; the plugin loads once and generates types.
-- **Nested parameters** — pass objects (e.g., `{ user: { name: 'Robo' } }`) and we flatten them automatically.
-- **Discord-ready** — optional helper to localize slash command metadata.
-- **Fast** — tiny in-memory cache of compiled formatters to minimize parse overhead.
+- **Strong types** from your JSON — MF2 infers keys & param types.
+- **Runtime formatting anywhere** (Discord & beyond) with `t()`, **strict** `tr()`, and `withLocale`.
+- **Arrays supported** — string-array messages return a fully formatted `string[]`.
+- **Zero-friction & fast** — drop `/locales/**.json`; loads once with a tiny formatter cache.
 
 <div align="center">
 	[![GitHub
@@ -192,6 +189,33 @@ t('en-US', 'app:profile', {
 
 > Prefer objects for readability; dotted param keys like `{ 'user.name': 'Robo' }` also work if you need them.
 
+## Arrays
+
+Locale values can be **arrays of strings**. Each element is formatted with MF2, and `t()`/`tr()` return a **`string[]`** for that key.
+
+**/locales/en-US/shared/common.json**
+
+```json
+{
+	"arr": ["One {$n :number}", "Two"]
+}
+```
+
+**/locales/es-ES/shared/common.json**
+
+```json
+{
+	"arr": ["Uno {$n :number}", "Dos"]
+}
+```
+
+```ts
+t('en-US', 'shared/common:arr', { n: 7 }) // ["One 7", "Two"]
+t('es-ES', 'shared/common:arr', { n: 3 }) // ["Uno 3", "Dos"]
+```
+
+> Arrays support MF2 placeholders per element, including `:number`, `:date`, `:time`, and `:datetime`. Non-string arrays are ignored.
+
 ## Discord slash commands
 
 ### `createCommandConfig` 🎮
@@ -248,6 +272,32 @@ We keep a small in-memory **cache of compiled `MessageFormat` instances**, keyed
 import { clearFormatterCache } from '@robojs/i18n'
 clearFormatterCache()
 ```
+
+## CLI (i18n) 🧰
+
+This package ships a tiny CLI to build & refresh locale types and caches.
+
+- **Run once** (auto-detects your `/locales` and generates types):
+
+```bash
+npx i18n
+```
+
+Example output:
+
+```
+i18n:ready - Locales built in 3ms
+```
+
+- **Project binary:** after install, you can also call:
+
+```bash
+pnpm i18n
+# or
+npm run i18n
+```
+
+> The CLI is published under the `i18n` binary (see `bin` in `package.json`). It’s safe to run in CI before builds.
 
 ## Supported MF2 pieces (what’s parsed)
 
