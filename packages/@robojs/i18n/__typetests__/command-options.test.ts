@@ -25,7 +25,7 @@ describe('createCommandConfig — option name infers key', () => {
 		// has the property
 		expect<OptsOk>().type.toHaveProperty('text')
 		// property type is string | undefined
-		expect<OptsOk['text']>().type.toBe<string | undefined>()
+		expect<Pick<OptsOk, 'text'>>().type.toBe<{ text: string | undefined }>()
 		// should NOT have an unrelated property
 		expect<OptsOk>().type.not.toHaveProperty('missing')
 	})
