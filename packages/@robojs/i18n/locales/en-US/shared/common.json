@@ -1,0 +1,10 @@
+{
+  "hello": "Hello {$name}, your number is {$randomNumber :integer}!",
+  "pets.count": ".input {$count :number}\n.match $count\n  one {{You have {$count} pet}}\n  *   {{You have {$count} pets}}",
+  "when.run": "Ran at {$ts :time style=short} on {$ts :date style=medium}",
+  "array": [
+    "First item",
+    "Second item with a number: {$num :number}",
+    "Third item with a date: {$date :date style=full}"
+  ]
+}

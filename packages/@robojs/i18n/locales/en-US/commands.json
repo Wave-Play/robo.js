@@ -1,0 +1,11 @@
+{
+    "hey": "Hey there, {$user.name :string}!",
+    "ping": {
+        "name": "ping",
+        "desc": "Measure latency",
+        "arg": {
+            "name": "text",
+            "desc": "Optional text to include"
+        }
+    }
+}

@@ -1,0 +1,10 @@
+{
+  "hello": "¡Hola {$name}, tu número es {$randomNumber :number}!",
+  "pets.count": ".input {$count :number}\n.match $count\n  one {{Tienes {$count} mascota}}\n  *   {{Tienes {$count} mascotas}}",
+  "when.run": "Ejecutado a las {$ts :time style=short} el {$ts :date style=medium}",
+  "array": [
+    "Primer elemento",
+    "Segundo elemento con un número: {$num :number}",
+    "Tercer elemento con una fecha: {$date :date style=full}"
+  ]
+}
