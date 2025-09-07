@@ -31,6 +31,7 @@
 		}
 	},
 	"scripts": {
+		"benchmark": "NODE_OPTIONS=\"--expose-gc\" tsx __benchmarks__/*.bench.ts",
 		"build": "tsup && tsup --config tsup-cli.config.ts",
 		"dev": "chokidar \"src/**/*.ts\" \"codemod/**/*.ts\" -d 1000 -c \"pnpm build\" --initial",
 		"test": "NODE_OPTIONS=--experimental-vm-modules jest"

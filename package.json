@@ -68,8 +68,10 @@
 		"eslint": "9.3.0",
 		"globals": "^15.3.0",
 		"jest": "^29.7.0",
+		"mitata": "^1.0.34",
 		"prettier": "2.8.5",
 		"ts-jest": "^29.1.1",
+		"tsx": "^4.19.2",
 		"turbo": "2.2.3",
 		"typescript": "5.0.2",
 		"typescript-eslint": "^7.9.0"
