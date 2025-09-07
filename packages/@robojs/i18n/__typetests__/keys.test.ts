@@ -3,19 +3,19 @@ import type { LocaleKey } from '../.robo/generated/types'
 
 describe('LocaleKey coverage', () => {
 	test('Known keys exist', () => {
-		expect<'shared/common:hello'>().type.toBeAssignableTo<LocaleKey>()
-		expect<'shared/common:pets.count'>().type.toBeAssignableTo<LocaleKey>()
-		expect<'shared/common:when.run'>().type.toBeAssignableTo<LocaleKey>()
-		expect<'shared/common:array'>().type.toBeAssignableTo<LocaleKey>()
-		expect<'commands:hey'>().type.toBeAssignableTo<LocaleKey>()
-		expect<'commands:ping.name'>().type.toBeAssignableTo<LocaleKey>()
-		expect<'commands:ping.desc'>().type.toBeAssignableTo<LocaleKey>()
-		expect<'commands:ping.arg.name'>().type.toBeAssignableTo<LocaleKey>()
-		expect<'commands:ping.arg.desc'>().type.toBeAssignableTo<LocaleKey>()
+		expect<LocaleKey>().type.toBeAssignableWith<'shared/common:hello'>()
+		expect<LocaleKey>().type.toBeAssignableWith<'shared/common:pets.count'>()
+		expect<LocaleKey>().type.toBeAssignableWith<'shared/common:when.run'>()
+		expect<LocaleKey>().type.toBeAssignableWith<'shared/common:array'>()
+		expect<LocaleKey>().type.toBeAssignableWith<'commands:hey'>()
+		expect<LocaleKey>().type.toBeAssignableWith<'commands:ping.name'>()
+		expect<LocaleKey>().type.toBeAssignableWith<'commands:ping.desc'>()
+		expect<LocaleKey>().type.toBeAssignableWith<'commands:ping.arg.name'>()
+		expect<LocaleKey>().type.toBeAssignableWith<'commands:ping.arg.desc'>()
 	})
 
 	test('Unknown keys are not present', () => {
-		expect<'shared/common:missing'>().type.not.toBeAssignableTo<LocaleKey>()
-		expect<'foo:bar'>().type.not.toBeAssignableTo<LocaleKey>()
+		expect<LocaleKey>().type.not.toBeAssignableWith<'shared/common:missing'>()
+		expect<LocaleKey>().type.not.toBeAssignableWith<'foo:bar'>()
 	})
 })

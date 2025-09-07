@@ -18,7 +18,7 @@ describe('createCommandConfig — CommandOptions typing from options', () => {
 		} as const)
 
 		type Opts = CommandOptions<typeof cfg>
-        expect<Opts>().type.toHaveProperty('text')
+		expect<Opts>().type.toHaveProperty('text')
 		expect<Pick<Opts, 'text'>>().type.toBe<{ text: string | undefined }>()
 	})
 
@@ -41,7 +41,7 @@ describe('createCommandConfig — CommandOptions typing from options', () => {
 		expect<Opts>().type.toHaveProperty('text')
 		type TextVal = Pick<Opts, 'text'>
 		expect<TextVal>().type.toBe<{ text: string }>()
-		expect<undefined>().type.not.toBeAssignableTo<TextVal>()
+		expect<TextVal>().type.not.toBeAssignableWith<undefined>()
 		expect<Opts>().type.not.toHaveProperty('missing')
 	})
 

@@ -4,22 +4,22 @@ import type { LocaleLike } from '../.robo/build/core/types'
 
 describe('Locales & LocaleLike', () => {
 	test('Locale includes shipped tags', () => {
-		expect<'en-US'>().type.toBeAssignableTo<Locale>()
-		expect<'es-ES'>().type.toBeAssignableTo<Locale>()
-		expect<'fr'>().type.toBeAssignableTo<Locale>()
+		expect<Locale>().type.toBeAssignableWith<'en-US'>()
+		expect<Locale>().type.toBeAssignableWith<'es-ES'>()
+		expect<Locale>().type.toBeAssignableWith<'fr'>()
 	})
 
 	test('Unknown plain string is not a Locale', () => {
-		expect<'de-DE'>().type.not.toBeAssignableTo<Locale>()
+		expect<Locale>().type.not.toBeAssignableWith<'de-DE'>()
 	})
 
 	test('LocaleLike accepts string or objects with locale/guildLocale', () => {
-		expect<'en-US'>().type.toBeAssignableTo<LocaleLike>()
-		expect<{ locale: 'en-US' }>().type.toBeAssignableTo<LocaleLike>()
-		expect<{ guildLocale: 'fr' }>().type.toBeAssignableTo<LocaleLike>()
+		expect<LocaleLike>().type.toBeAssignableWith<'en-US'>()
+		expect<LocaleLike>().type.toBeAssignableWith<{ locale: 'en-US' }>()
+		expect<LocaleLike>().type.toBeAssignableWith<{ guildLocale: 'fr' }>()
 	})
 
 	test('LocaleLike intentionally allows dynamic strings inside objects', () => {
-		expect<{ locale: 'de-DE' }>().type.toBeAssignableTo<LocaleLike>()
+		expect<LocaleLike>().type.toBeAssignableWith<{ locale: 'de-DE' }>()
 	})
 })
