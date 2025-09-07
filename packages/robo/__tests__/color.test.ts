@@ -1,5 +1,21 @@
 import { describe, expect, jest, test } from '@jest/globals'
 
+const NEUTRAL_COLOR_ENV: Record<string, string | undefined> = {
+	NO_COLOR: undefined,
+	FORCE_COLOR: undefined,
+	CI: undefined,
+	GITHUB_ACTIONS: undefined,
+	TF_BUILD: undefined,
+	TEAMCITY_VERSION: undefined,
+	npm_config_color: undefined,
+	npm_config_colors: undefined,
+	TERM_PROGRAM: undefined,
+	COLORTERM: undefined,
+	ConEmuANSI: undefined,
+	ANSICON: undefined,
+	WT_SESSION: undefined
+}
+
 async function withFreshModule<T>(
 	opts: {
 		env?: Record<string, string | undefined>
@@ -84,13 +100,13 @@ describe('isColorSupported (detection)', () => {
 	})
 
 	test("Windows enables colors when TERM is not 'dumb' (stdout TTY not required)", async () => {
-		await withFreshModule({ env: { TERM: 'xterm-256color', NO_COLOR: undefined }, platform: 'win32' }, (mod) => {
+		await withFreshModule({ env: { TERM: 'xterm-256color', ...NEUTRAL_COLOR_ENV }, platform: 'win32' }, (mod) => {
 			expect(mod.isColorSupported).toBe(true)
 		})
 	})
 
 	test('Windows + dumb terminal does not enable colors', async () => {
-		await withFreshModule({ env: { TERM: 'dumb' }, platform: 'win32' }, (mod) => {
+		await withFreshModule({ env: { TERM: 'dumb', ...NEUTRAL_COLOR_ENV }, platform: 'win32' }, (mod) => {
 			expect(mod.isColorSupported).toBe(false)
 		})
 	})

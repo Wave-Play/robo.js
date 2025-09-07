@@ -34,7 +34,7 @@
 		"benchmark": "NODE_OPTIONS=\"--expose-gc\" tsx __benchmarks__/*.bench.ts",
 		"build": "tsup && tsup --config tsup-cli.config.ts",
 		"dev": "chokidar \"src/**/*.ts\" \"codemod/**/*.ts\" -d 1000 -c \"pnpm build\" --initial",
-		"test": "NODE_OPTIONS=--experimental-vm-modules jest"
+		"test": "NODE_OPTIONS=\"--experimental-vm-modules --disable-warning=ExperimentalWarning\" jest"
 	},
 	"bin": {
 		"robo": "dist/cli/index.js",
