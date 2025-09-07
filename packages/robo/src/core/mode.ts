@@ -1,8 +1,8 @@
-import { color } from './color.js'
+import { color, type Styler } from './color.js'
 import { logger } from './logger.js'
 
 let _mode: string | null = null
-let _modeColor: (typeof color)[0]
+let _modeColor: Styler | undefined
 
 /**
  * Modes are a way to define "profiles" for your Robo session. Each with its own config(s), envionment variables, and code.
