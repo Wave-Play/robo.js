@@ -63,43 +63,43 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
 		spinner.stop(false, false)
 	}
 
-	// Check which plugin packages are already registered
+	// Load config once; registration resolved after install
 	const config = await loadConfig('robo', true)
 	const nameMap: Record<string, string> = {}
-	const pendingRegistration = await Promise.all(
-		packages
-			.filter((pkg) => {
-				return options.force || !config.plugins?.includes(pkg)
-			})
-			.map(async (pkg) => {
-				// Extract real package name from local paths
-				const isLocal = localPrefixes.some((prefix) => {
-					return prefix === ':' ? pkg.indexOf(prefix) === 1 : pkg.startsWith(prefix)
-				})
+	const isLocalSpec = (spec: string) =>
+		localPrefixes.some((prefix) => (prefix === ':' ? spec.indexOf(prefix) === 1 : spec.startsWith(prefix)))
 
-				if (isLocal) {
-					const packageJsonPath = path.join(pkg, 'package.json')
-					const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'))
-					nameMap[pkg] = packageJson.name
-					return packageJson.name
+	// Pre-resolve local specs to package names
+	await Promise.all(
+		packages.map(async (spec) => {
+			if (isLocalSpec(spec)) {
+				try {
+					const packageJsonPath = path.join(spec, 'package.json')
+					const pkgJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'))
+					if (pkgJson?.name) nameMap[spec] = pkgJson.name
+				} catch {
+					// ignore; will try later
 				}
-
-				nameMap[pkg] = pkg
-				return pkg
-			})
+			} else if (!isUrlSpec(spec)) {
+				nameMap[spec] = spec
+			}
+		})
 	)
-	spinner.setText(pendingRegistration.map((pkg) => `${Indent}    - {{spinner}} ${Highlight(pkg)}`).join('\n') + `\n\n`)
-	logger.debug('Pending registration add:', pendingRegistration)
 
 	// Check which plugins need to be installed
 	const packageJsonPath = path.join(process.cwd(), 'package.json')
 	const packageJson = require(packageJsonPath)
-	const pendingInstall = packages.filter((pkg) => {
-		return (
-			options.force ||
-			(!Object.keys(packageJson.dependencies ?? {})?.includes(pkg) &&
-				!config.plugins?.find((p) => Array.isArray(p) && p[0] === pkg))
-		)
+	const pendingInstall = packages.filter((spec) => {
+		if (options.force) return true
+		const deps = packageJson.dependencies ?? {}
+		// If spec is a URL, consider it installed when any dep value equals the URL
+		if (isUrlSpec(spec)) {
+			return !Object.values(deps).some((v) => typeof v === 'string' && v === spec)
+		}
+		// Otherwise, treat as normal package name
+		const alreadyInDeps = Object.keys(deps).includes(spec)
+		const alreadyInConfig = config.plugins?.some((p) => (Array.isArray(p) ? p[0] === spec : p === spec))
+		return !(alreadyInDeps || alreadyInConfig)
 	})
 	logger.debug(`Pending installation add:`, pendingInstall)
 
@@ -123,6 +123,45 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
 		}
 	}
 
+	// Reload deps after installation to resolve URL specs to real package names
+	const packageJsonAfter = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'))
+
+	// Resolve each input spec to a canonical package name for registration and seeds
+	const resolvedNames: string[] = []
+	for (const spec of packages) {
+		if (nameMap[spec]) {
+			resolvedNames.push(nameMap[spec])
+			continue
+		}
+
+		// Try to infer name from local path
+		if (isUrlSpec(spec)) {
+			const deps = packageJsonAfter.dependencies ?? {}
+			let foundName = Object.entries(deps).find(([_, v]) => typeof v === 'string' && v === spec)?.[0]
+
+			if (!foundName) {
+				foundName = inferNameFromUrl(spec) ?? undefined
+			}
+
+			if (foundName) {
+				nameMap[spec] = foundName
+				resolvedNames.push(foundName)
+				continue
+			}
+		}
+
+		nameMap[spec] = spec
+		resolvedNames.push(spec)
+	}
+
+	// Determine which resolved names still need registration
+	const pendingRegistration = resolvedNames.filter((pkg) => {
+		return options.force || !config.plugins?.some((p) => (Array.isArray(p) ? p[0] === pkg : p === pkg))
+	})
+
+	spinner.setText(pendingRegistration.map((pkg) => `${Indent}    - {{spinner}} ${Highlight(pkg)}`).join('\n') + `\n\n`)
+	logger.debug('Pending registration add:', pendingRegistration)
+
 	// Register plugins by adding them to the config
 	await Promise.all(pendingRegistration.map((pkg) => createPluginConfig(pkg, {})))
 
@@ -134,7 +173,7 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
 	spinner.stop(false, false)
 
 	// See which plugins have seeds
-	const pluginsWithSeeds = packages.filter((pkg) => Compiler.hasSeed(pkg))
+	const pluginsWithSeeds = resolvedNames.filter((pkg) => Compiler.hasSeed(pkg))
 	logger.debug(`Plugins with seeds:`, pluginsWithSeeds)
 
 	// Automatically copy files meant to be seeded by the plugin
@@ -146,13 +185,14 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
 		logger.log('')
 	} else if (seed && pluginsWithSeeds.length > 0) {
 		const pluginSeeds = await Promise.all(
-			packages.map(async (pkg) => {
+			resolvedNames.map(async (pkg) => {
 				const manifest = await Compiler.useManifest({
 					basePath: path.resolve(PackageDir, '..', pkg)
 				})
 				const description = manifest.__robo?.seed?.description
 
-				return `${Indent}    - ${Highlight(nameMap[pkg])}${description ? ': ' + description : ''}`
+				const display = nameMap[pkg] ?? pkg
+				return `${Indent}    - ${Highlight(display)}${description ? ': ' + description : ''}`
 			})
 		)
 		logger.log(Indent, color.bold(`🌱 Seed files detected`))
@@ -183,7 +223,7 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
 
 		if (seedConsent) {
 			await Promise.all(
-				packages.map(async (pkg) => {
+				resolvedNames.map(async (pkg) => {
 					try {
 						await Compiler.useSeed(pkg)
 					} catch (error) {
@@ -228,4 +268,28 @@ async function createPluginConfig(pluginName: string, config: Record<string, unk
 
 	logger.debug(`Writing ${pluginName} config to ${pluginPath}...`)
 	await fs.writeFile(pluginPath, `export default ${pluginConfig}`)
+}
+
+function isUrlSpec(input: string) {
+	return /^https?:\/\//i.test(input) || /^git\+https?:\/\//i.test(input)
+}
+
+function inferNameFromUrl(spec: string): string | null {
+	try {
+		const u = new URL(spec)
+		const last = decodeURIComponent(u.pathname.split('/').filter(Boolean).pop() || '')
+		if (!last) return null
+		if (last.startsWith('@')) {
+			// Pattern: @scope/name or @scope/name@version
+			const at = last.lastIndexOf('@')
+			if (at > 0) return last.slice(0, at)
+			return last
+		} else {
+			// Pattern: name or name@version
+			const at = last.lastIndexOf('@')
+			return at > 0 ? last.slice(0, at) : last
+		}
+	} catch {
+		return null
+	}
 }
