@@ -1,5 +1,24 @@
 # robo.js
 
+## 0.10.31
+
+### Patch Changes
+
+- 012151e: patch: use ephemeral flags when available
+- b2bb7bb: feat(types): string literals now used for options with choices
+- 747f9ec: fix(cli): robo add now works with url package names
+- d71c670: windows fixes and swc/core update
+- 158067c: fix(logger): bind all public methods
+- 8a50e0b: fix(logger): object interpolation in browser environments
+- 57fcca0: feat: chainable color api
+- 55ea1f3: patch(cli): don't register /launch unless its a discord activity
+- 52212bc: chore(types): new SmartCommandConfig export
+- 90b49e1: patch(types): always assume nullable member option
+- 0c1f970: feat: support for channelTypes command option
+- 60ce5c4: fix(sage): missing ephemeral state when not deferred
+- 82e3e34: chore: support for .config no longer deprecated
+- 6e5a01c: feat: added categories of commands to the default help.ts
+
 ## 0.10.30
 
 ### Patch Changes
