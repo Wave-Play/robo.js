@@ -137,7 +137,7 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
 		// Try to infer name from local path
 		if (isUrlSpec(spec)) {
 			const deps = packageJsonAfter.dependencies ?? {}
-			let foundName = Object.entries(deps).find(([_, v]) => typeof v === 'string' && v === spec)?.[0]
+			let foundName = Object.entries(deps).find(([, v]) => typeof v === 'string' && v === spec)?.[0]
 
 			if (!foundName) {
 				foundName = inferNameFromUrl(spec) ?? undefined
