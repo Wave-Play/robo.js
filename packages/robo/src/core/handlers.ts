@@ -1,6 +1,6 @@
 import { portal } from './robo.js'
 import { CommandInteraction, ContextMenuCommandInteraction } from 'discord.js'
-import { getSage, timeout } from '../cli/utils/utils.js'
+import { getSage, timeout, withEphemeralDefer, withEphemeralReply } from '../cli/utils/utils.js'
 import { getConfig } from './config.js'
 import { BUFFER, DEFAULT_CONFIG, TIMEOUT, discordLogger } from './constants.js'
 import { printErrorResponse } from './debug.js'
@@ -150,7 +150,7 @@ export async function executeCommandHandler(interaction: ChatInputCommandInterac
 
 				if (!interaction.deferred) {
 					try {
-						await interaction.deferReply({ ephemeral: sage.ephemeral })
+						await interaction.deferReply(withEphemeralDefer({}, sage.ephemeral))
 					} catch (error) {
 						const message = error instanceof Error ? error.message : (error as string)
 						if (
@@ -198,8 +198,7 @@ export async function executeCommandHandler(interaction: ChatInputCommandInterac
 			// TODO: Fix reply objects themselves being used here
 			await interaction.editReply(reply)
 		} else if (isValidReply) {
-			reply.ephemeral = sage.ephemeral
-			await interaction.reply(reply)
+			await interaction.reply(withEphemeralReply(reply, sage.ephemeral))
 		} else {
 			const command = color.bold('/' + commandKey)
 			discordLogger.warn(`Invalid return value for command ${command}. Did you accidentally return a message object?`)
@@ -280,7 +279,7 @@ export async function executeContextHandler(interaction: ContextMenuCommandInter
 				discordLogger.debug(`Sage is deferring async command...`)
 				promises.push(result)
 				if (!interaction.deferred) {
-					await interaction.deferReply({ ephemeral: sage.ephemeral })
+					await interaction.deferReply(withEphemeralReply({}, sage.ephemeral))
 				}
 			} else {
 				response = raceResult

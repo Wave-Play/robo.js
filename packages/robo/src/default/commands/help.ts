@@ -9,6 +9,8 @@ import {
 	Colors,
 	CommandInteraction,
 	EmbedBuilder,
+	InteractionReplyOptions,
+	MessageFlags,
 	Snowflake,
 	StringSelectMenuBuilder,
 	StringSelectMenuInteraction
@@ -267,10 +269,14 @@ export async function handleHelpMenuInteraction(interaction: ButtonInteraction |
 	// Check user
 	const userId = parts[3]
 	if (userId.toString() !== interaction.user.id.toString()) {
-		return await interaction.reply({
-			ephemeral: true,
-			content: "This isn't the help menu. Use `/help` to access the list of commands."
-		})
+		return await interaction.reply(
+			withEphemeralReply(
+				{
+					content: "This isn't the help menu. Use `/help` to access the list of commands."
+				},
+				true
+			)
+		)
 	}
 
 	const manifest = getManifest()
@@ -332,4 +338,13 @@ export async function handleHelpMenuInteraction(interaction: ButtonInteraction |
 			]
 		})
 	}
+}
+
+const supportsEphemeralFlag = typeof MessageFlags !== 'undefined' && MessageFlags?.Ephemeral != null
+
+export function withEphemeralReply<T extends InteractionReplyOptions>(opts: T, on = true): T {
+	if (!on) return opts
+	if (supportsEphemeralFlag) opts.flags = MessageFlags.Ephemeral
+	else opts.ephemeral = true
+	return opts
 }

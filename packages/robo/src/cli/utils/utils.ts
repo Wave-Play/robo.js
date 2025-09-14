@@ -12,6 +12,7 @@ import path from 'node:path'
 import os from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { IS_BUN_PM } from './runtime-utils.js'
+import { InteractionDeferReplyOptions, InteractionReplyOptions, MessageFlags } from 'discord.js'
 import type { Pod } from '../../roboplay/types.js'
 
 export const __DIRNAME = path.dirname(fileURLToPath(import.meta.url))
@@ -34,6 +35,22 @@ export function cleanTempDir() {
 			throw error
 		}
 	}
+}
+
+const supportsEphemeralFlag = typeof MessageFlags !== 'undefined' && MessageFlags?.Ephemeral != null
+
+export function withEphemeralDefer<T extends InteractionDeferReplyOptions>(opts: T, on = true): T {
+	if (!on) return opts
+	if (supportsEphemeralFlag) opts.flags = MessageFlags.Ephemeral
+	else opts.ephemeral = true
+	return opts
+}
+
+export function withEphemeralReply<T extends InteractionReplyOptions>(opts: T, on = true): T {
+	if (!on) return opts
+	if (supportsEphemeralFlag) opts.flags = MessageFlags.Ephemeral
+	else opts.ephemeral = true
+	return opts
 }
 
 export function getPodStatusColor(status: Pod['status']) {
