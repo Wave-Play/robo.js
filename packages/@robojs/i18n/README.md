@@ -1,0 +1,340 @@
+<p align="center">✨ <strong>Generated with <a href="https://robojs.dev/create-robo">create-robo</a> magic!</strong> ✨</p>
+
+---
+
+# @robojs/i18n
+
+Type-safe **i18n** for **Robo.js** with **MessageFormat 2 (MF2)**.
+
+Drop JSON files in `/locales`, get strongly-typed **namespaced keys** & parameters, and format messages at runtime with `t()` or the strict `tr()`—no custom build steps required.
+
+- **Strong types** from your JSON — MF2 infers keys & param types.
+- **Runtime formatting anywhere** (Discord & beyond) with `t()`, **strict** `tr()`, and `withLocale`.
+- **Arrays supported** — string-array messages return a fully formatted `string[]`.
+- **Zero-friction & fast** — drop `/locales/**.json`; loads once with a tiny formatter cache.
+
+<div align="center">
+	[![GitHub
+	license](https://img.shields.io/github/license/Wave-Play/robo)](https://github.com/Wave-Play/robo/blob/main/LICENSE)
+	[![npm](https://img.shields.io/npm/v/@robojs/i18n)](https://www.npmjs.com/package/@robojs/i18n) [![install
+	size](https://packagephobia.com/badge?p=@robojs/i18n@latest)](https://packagephobia.com/result?p=@robojs/i18n@latest)
+	[![Discord](https://img.shields.io/discord/1087134933908193330?color=7289da)](https://robojs.dev/discord) [![All
+	Contributors](https://img.shields.io/github/all-contributors/Wave-Play/robo.js?color=cf7cfc)](https://github.com/Wave-Play/robo.js/blob/main/CONTRIBUTING.md#contributors)
+</div>
+
+➞ [📚 **Documentation:** Getting started](https://robojs.dev/docs/getting-started)
+
+➞ [🚀 **Community:** Join our Discord server](https://robojs.dev/discord)
+
+## Installation 💻
+
+Add the plugin to an existing Robo:
+
+```bash
+npx robo add @robojs/i18n
+```
+
+Or start a new project with it preinstalled:
+
+```bash
+npx create-robo <project-name> -p @robojs/i18n
+```
+
+## Folder structure
+
+Put message files under `/locales/<locale>/**/*.json`.
+
+**Keys are automatically namespaced from the file path**:
+
+- `/locales/<locale>/app.json` ⇒ prefix `app:`
+- `/locales/<locale>/shared/common.json` ⇒ prefix `shared/common:`
+- Deeper paths keep slash-separated folders + filename (no `.json`), then `:`
+  - e.g. `/locales/en-US/marketing/home/hero.json` ⇒ `marketing/home/hero:`
+
+Example tree:
+
+```
+/locales
+  /en-US
+    app.json
+  /es-ES
+    app.json
+```
+
+**en-US/app.json**
+
+```json
+{
+	"hello": "Hello {$name}!",
+	"pets.count": ".input {$count :number}\n.match $count\n  one {{You have {$count} pet}}\n  *   {{You have {$count} pets}}"
+}
+```
+
+**es-ES/app.json**
+
+```json
+{
+	"hello": "¡Hola {$name}!",
+	"pets.count": ".input {$count :number}\n.match $count\n  one {{Tienes {$count} mascota}}\n  *   {{Tienes {$count} mascotas}}"
+}
+```
+
+> Only string values are used. Non-JSON files are ignored. The plugin loads everything once, keeps it in state, and generates types from what it finds.
+
+## Runtime usage (`t`) 🌐
+
+`t(localeLike, key, params?)` formats a message right now. The `params` type is **inferred** from `key`.
+
+```ts
+import { t } from '@robojs/i18n'
+
+// Accepts a string, a Discord Interaction, or any { locale } / { guildLocale } object
+const locale = 'en-US' as const
+
+t(locale, 'app:hello', { name: 'Robo' }) // "Hello Robo!"
+t(locale, 'app:pets.count', { count: 3 }) // "You have 3 pets"
+```
+
+`locale` can be:
+
+- `'en-US'` (string)
+- `{ locale: 'en-US' }`
+- `{ guildLocale: 'en-US' }`
+
+## Strict runtime usage (`tr`) 🔒
+
+`tr(localeLike, key, ...args)` is a **strict** variant of `t`:
+
+- If the message has parameters, they are **required** and **non-undefined**.
+- If the message has no parameters, you can omit the params object.
+
+```ts
+import { tr } from '@robojs/i18n'
+
+const locale = 'en-US' as const
+
+tr(locale, 'app:hello', { name: 'Robo' }) // ✅ required
+// tr(locale, 'app:hello')                // ❌ compile-time error
+
+tr(locale, 'app:ping') // ✅ key with no params
+```
+
+## Cleaner calls with `withLocale` 🧼
+
+Avoid threading `locale` around:
+
+```ts
+import { withLocale } from '@robojs/i18n'
+import type { ChatInputCommandInteraction } from 'discord.js'
+
+export default (interaction: ChatInputCommandInteraction) => {
+	const t$ = withLocale(interaction)
+	return t$('app:hello', { name: 'Robo' })
+}
+```
+
+### Strict variant
+
+Pass `{ strict: true }` to get a curried **strict** translator (`tr$`) that enforces required params like `tr`:
+
+```ts
+import { withLocale } from '@robojs/i18n'
+
+const tr$ = withLocale('en-US', { strict: true })
+tr$('app:hello', { name: 'Robo' }) // ✅ required
+// tr$('app:hello')                 // ❌ compile-time error
+
+tr$('app:ping') // ✅ key with no params
+```
+
+## Nesting 🧩
+
+You can nest **keys inside JSON** and provide **nested objects for params**.
+
+### Nested keys
+
+Instead of writing flat keys, you may structure your locale file:
+
+```json
+// /locales/en-US/app.json
+{
+	"greetings": {
+		"hello": "Hello {$name}!"
+	}
+}
+```
+
+The key becomes `app:greetings.hello`.
+
+> ⚠️ **Collision rule:** a file cannot contain both a literal dotted key and a nested object that flatten to the same key (e.g., `"greetings.hello": "…"` and `{ "greetings": { "hello": "…" } }`). The build will **error** with a clear message.
+
+### Nested parameter objects
+
+Although MF2 placeholders look flat (`{$user.name}`), you can pass nested objects and they’ll be flattened for you.
+
+```json
+// /locales/en-US/app.json
+{
+	"profile": "Hi {$user.name}! You have {$stats.count :number} points."
+}
+```
+
+```ts
+t('en-US', 'app:profile', {
+	user: { name: 'Robo' },
+	stats: { count: 42 }
+})
+// -> "Hi Robo! You have 42 points."
+```
+
+> Prefer objects for readability; dotted param keys like `{ 'user.name': 'Robo' }` also work if you need them.
+
+## Arrays
+
+Locale values can be **arrays of strings**. Each element is formatted with MF2, and `t()`/`tr()` return a **`string[]`** for that key.
+
+**/locales/en-US/shared/common.json**
+
+```json
+{
+	"arr": ["One {$n :number}", "Two"]
+}
+```
+
+**/locales/es-ES/shared/common.json**
+
+```json
+{
+	"arr": ["Uno {$n :number}", "Dos"]
+}
+```
+
+```ts
+t('en-US', 'shared/common:arr', { n: 7 }) // ["One 7", "Two"]
+t('es-ES', 'shared/common:arr', { n: 3 }) // ["Uno 3", "Dos"]
+```
+
+> Arrays support MF2 placeholders per element, including `:number`, `:date`, `:time`, and `:datetime`. Non-string arrays are ignored.
+
+## Discord slash commands
+
+### `createCommandConfig` 🎮
+
+Import `createCommandConfig` from `@robojs/i18n` instead of `robo.js` to define slash command metadata with **i18n** keys. The plugin will fill in names and descriptions for all locales at runtime.
+
+```ts
+import { createCommandConfig, t } from '@robojs/i18n'
+import type { ChatInputCommandInteraction } from 'discord.js'
+import type { CommandOptions } from 'robo.js'
+
+export const config = createCommandConfig({
+	nameKey: 'commands:ping.name',
+	descriptionKey: 'commands:ping.desc',
+	options: [
+		{
+			type: 'string',
+			name: 'text',
+			nameKey: 'commands:ping.arg.name',
+			descriptionKey: 'commands:ping.arg.desc'
+		}
+	]
+} as const)
+
+export default (interaction: ChatInputCommandInteraction, options: CommandOptions<typeof config>) => {
+	const user = { name: options.text ?? 'Robo' }
+	return t(interaction, 'commands:hey', { user })
+}
+```
+
+**/locales/en-US/commands.json**
+
+```json
+{
+	"hey": "Hey there, {$user.name}!",
+	"ping": {
+		"name": "ping",
+		"desc": "Measure latency",
+		"arg": {
+			"name": "text",
+			"desc": "Optional text to include"
+		}
+	}
+}
+```
+
+> For options, `name` **is still required** (helps TS inference) and should be provided alongside `nameKey`.
+
+## Performance ⚡
+
+We keep a small in-memory **cache of compiled `MessageFormat` instances**, keyed by `(locale, key, message)`. This avoids reparsing strings on repeated calls and fits apps with **a few hundred keys per locale**. You can clear it during tests or hot-reload:
+
+```ts
+import { clearFormatterCache } from '@robojs/i18n'
+clearFormatterCache()
+```
+
+## CLI (i18n) 🧰
+
+This package ships a tiny CLI to build & refresh locale types and caches.
+
+- **Run once** (auto-detects your `/locales` and generates types):
+
+```bash
+npx i18n
+```
+
+Example output:
+
+```
+i18n:ready - Locales built in 3ms
+```
+
+- **Project binary:** after install, you can also call:
+
+```bash
+pnpm i18n
+# or
+npm run i18n
+```
+
+> The CLI is published under the `i18n` binary (see `bin` in `package.json`). It’s safe to run in CI before builds.
+
+## Supported MF2 pieces (what’s parsed)
+
+| MF2 element | Example snippet                                                  | Param type inferred |
+| ----------- | ---------------------------------------------------------------- | ------------------- |
+| variable    | `{$name}`                                                        | `string`            |
+| number      | `{$count :number}`                                               | `number`            |
+| match (num) | `.input {$count :number}\n.match $count\n  one {{…}}\n  * {{…}}` | `number`            |
+| date        | `{$ts :date}`                                                    | `Date \| number`    |
+| time        | `{$ts :time}`                                                    | `Date \| number`    |
+| datetime    | `{$ts :datetime}`                                                | `Date \| number`    |
+
+> If different locales disagree on a param’s kind, the type safely widens (e.g., `number` vs `string` → `string`; any date/time → `Date \| number`).
+
+## How type-safety works
+
+On first load, the plugin:
+
+1. Scans `/locales/**.json`.
+2. Parses **MessageFormat 2** messages to detect parameter kinds (number/date/time/variable usage).
+3. Emits `generated/types.d.ts` with:
+   - `type Locale = 'en-US' | 'es-ES' | ...`
+   - `type LocaleKey = 'app:hello' | 'app:pets.count' | 'shared/common:...' | ...` ← **namespaced**
+   - `type LocaleParamsMap` and `type ParamsFor<K>`
+
+Formatting is done by `messageformat` at runtime, with a small cache of compiled formatters to reduce CPU work across calls.
+
+## Notes & FAQs
+
+- **Works outside Discord** — `t()`/`tr()` are plain functions. Use them anywhere you can pass a locale string or object.
+- **Missing locale or key** → throws an error (fast fail).
+- **Nested MF2** (e.g., `.match` blocks) is traversed correctly.
+- **No manual type imports needed** — `t()`/`tr()` infer `ParamsFor<K>` from your keys.
+- **Namespaced keys are required** — always use the `<folders>/<file>:` prefix (e.g., `app:hello`, `shared/common:greet`).
+
+## Got questions? 🤔
+
+If you have any questions or need help with this plugin, join our Discord — we’re friendly and happy to help!
+
+➞ [🚀 ](https://robojs.dev/discord)**[Community: Join our Discord server](https://robojs.dev/discord)**

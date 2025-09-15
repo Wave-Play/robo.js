@@ -3,10 +3,12 @@ import { getModeColor } from './mode.js'
 
 // Compute mode label color
 let ModeLabel: string
+const hasProcess = typeof process !== 'undefined'
+const env = hasProcess ? process.env : undefined
 
-if (process.env.ROBO_SHARD_MODE) {
-	const mode = process.env.ROBO_SHARD_MODE
-	const longestMode = process.env.ROBO_SHARD_LONGEST_MODE
+if (env?.ROBO_SHARD_MODE) {
+	const mode = env.ROBO_SHARD_MODE
+	const longestMode = env?.ROBO_SHARD_LONGEST_MODE
 	const modeColor = getModeColor(mode)
 
 	ModeLabel = color.bold(color.dim(modeColor(mode.padEnd(longestMode.length))))
@@ -31,7 +33,7 @@ export interface LoggerOptions {
 	prefix?: string
 }
 
-export const DEBUG_MODE = process.env.NODE_ENV !== 'production'
+export const DEBUG_MODE = env?.NODE_ENV !== 'production'
 
 // eslint-disable-next-line no-control-regex
 export const ANSI_REGEX = /\x1b\[.*?m/g
@@ -378,13 +380,37 @@ async function writeLog(stream: LogStream, ...data: unknown[]): Promise<void> {
  */
 export function consoleDrain(_logger: Logger, level: string, ...data: unknown[]): Promise<void> {
 	if (isBrowser()) {
-		const text = data.join(' ')
-		const { fmt, css } = ansiToBrowserFormat(text)
+		let fmt = ''
+		const args: unknown[] = []
 
-		if (level === 'warn' || level === 'error') {
-			console.error(fmt, ...css)
+		const addSpace = () => {
+			if (fmt && !fmt.endsWith(' ')) fmt += ' '
+		}
+
+		for (const item of data) {
+			if (typeof item === 'string') {
+				const { fmt: f, css } = ansiToBrowserFormat(item)
+				if (f) {
+					if (fmt) fmt += ' '
+					fmt += f
+					// Each %c in `f` consumes one CSS arg in order:
+					for (const c of css) args.push(c)
+				}
+			} else {
+				// Preserve objects/arrays/errors as interactive values:
+				addSpace()
+				fmt += '%o'
+				args.push(item)
+			}
+		}
+
+		const fn = level === 'warn' || level === 'error' ? console.error : console.log
+
+		// If there were no string parts at all, just log the raw args
+		if (!fmt) {
+			fn(...args)
 		} else {
-			console.log(fmt, ...css)
+			fn(fmt, ...args)
 		}
 
 		return Promise.resolve()
@@ -473,6 +499,25 @@ export class Logger {
 	private _logBuffer: LogEntry[]
 
 	constructor(options?: LoggerOptions) {
+		// Bind all public methods
+		this.setup = this.setup.bind(this)
+		this.flush = this.flush.bind(this)
+		this.fork = this.fork.bind(this)
+		this.getLevel = this.getLevel.bind(this)
+		this.getLevelValues = this.getLevelValues.bind(this)
+		this.getRecentLogs = this.getRecentLogs.bind(this)
+		this.setDrain = this.setDrain.bind(this)
+		this.trace = this.trace.bind(this)
+		this.debug = this.debug.bind(this)
+		this.info = this.info.bind(this)
+		this.wait = this.wait.bind(this)
+		this.log = this.log.bind(this)
+		this.event = this.event.bind(this)
+		this.ready = this.ready.bind(this)
+		this.warn = this.warn.bind(this)
+		this.error = this.error.bind(this)
+		this.custom = this.custom.bind(this)
+
 		this.setup(options)
 	}
 
@@ -485,7 +530,7 @@ export class Logger {
 		this._parent = parent
 		this._prefix = prefix
 
-		if (process.env.ROBOPLAY_ENV) {
+		if (env?.ROBOPLAY_ENV) {
 			// This allows developers to have better control over the logs when hosted
 			this._level = 'trace'
 		} else {

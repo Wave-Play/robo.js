@@ -1,7 +1,7 @@
 # Function: createLogtailDrain()
 
 ```ts
-function createLogtailDrain(sourceToken): LogDrain
+function createLogtailDrain(sourceToken, options?): LogDrain
 ```
 
 ## Parameters
@@ -9,6 +9,7 @@ function createLogtailDrain(sourceToken): LogDrain
 | Parameter | Type |
 | ------ | ------ |
 | `sourceToken` | `string` |
+| `options`? | `Partial`\<`ILogtailNodeOptions`\> |
 
 ## Returns
 

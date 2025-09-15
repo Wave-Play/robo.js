@@ -1,0 +1,4 @@
+// @ts-check
+/** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
+const typedocSidebar = { items: [{"type":"category","label":"Interfaces","items":[{"type":"doc","id":"ref/@robojs/i18n/Interface.PluginConfig","label":"PluginConfig"}]},{"type":"category","label":"Type Aliases","items":[{"type":"doc","id":"ref/@robojs/i18n/TypeAlias.LocaleLike","label":"LocaleLike"}]},{"type":"category","label":"Variables","items":[{"type":"doc","id":"ref/@robojs/i18n/Variable.Locale","label":"Locale"}]},{"type":"category","label":"Functions","items":[{"type":"doc","id":"ref/@robojs/i18n/Function.createCommandConfig","label":"createCommandConfig"},{"type":"doc","id":"ref/@robojs/i18n/Function.t","label":"t"},{"type":"doc","id":"ref/@robojs/i18n/Function.tr","label":"tr"},{"type":"doc","id":"ref/@robojs/i18n/Function.withLocale","label":"withLocale"}]}]};
+module.exports = typedocSidebar.items;

@@ -6,8 +6,8 @@ import { hasProperties } from '../cli/utils/utils.js'
 import { logger } from './logger.js'
 import { color, composeColors, hex } from './color.js'
 import { getConfig } from './config.js'
-import type { Api, BaseConfig, Command, Context, Event, HandlerRecord, Middleware } from '../types/index.js'
 import { Globals } from './globals.js'
+import type { Api, BaseConfig, Command, Context, Event, HandlerRecord, Middleware } from '../types/index.js'
 import { portalUtils } from './portal-utils.js'
 
 export default class Portal {
@@ -22,23 +22,23 @@ export default class Portal {
 
 	constructor() {}
 
-	get apis() {
+	get apis(): Collection<string, HandlerRecord<Api>> {
 		return Globals.getPortalValues().apis
 	}
 
-	get commands() {
+	get commands(): Collection<string, HandlerRecord<Command>> {
 		return Globals.getPortalValues().commands
 	}
 
-	get context() {
+	get context(): Collection<string, HandlerRecord<Context>> {
 		return Globals.getPortalValues().context
 	}
 
-	get events() {
+	get events(): Collection<string, HandlerRecord<Event>[]> {
 		return Globals.getPortalValues().events
 	}
 
-	get middleware() {
+	get middleware(): HandlerRecord<Middleware>[] {
 		return Globals.getPortalValues().middleware
 	}
 
@@ -268,7 +268,7 @@ class ContextController {
  */
 export function getPluginOptions(packageName: string): unknown | null {
 	const config = getConfig()
-	const pluginOptions = config.plugins?.find((plugin) => {
+	const pluginOptions = config?.plugins?.find((plugin) => {
 		return (typeof plugin === 'string' ? plugin : plugin[0]) === packageName
 	})
 	const options = typeof pluginOptions === 'string' ? null : pluginOptions?.[1]

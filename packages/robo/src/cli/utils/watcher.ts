@@ -172,7 +172,7 @@ export default class Watcher {
 				}
 			} else if (event === 'change') {
 				// If the file changed, check the modification time and trigger the callback if it's a new change.
-				const stat = await fs.lstat(filePath).catch((e) => {
+				const stat = await fs.lstat(filePath).catch((e: unknown): null => {
 					if (hasProperties<{ code: unknown }>(e, ['code']) && e.code === 'ENOENT') {
 						const watcher = this.watchers.get(filePath)
 						if (watcher) {

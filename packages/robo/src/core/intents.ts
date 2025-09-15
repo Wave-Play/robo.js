@@ -90,7 +90,7 @@ export const REQUIRED_INTENTS: Record<string, GatewayIntentBits | GatewayIntentB
 
 export function checkIntents(client: Client): void {
 	const missingIntents = new Set<GatewayIntentBits>()
-	const events = portal.events.keys() as string[]
+	const events = portal.events.keys() as unknown as string[]
 	const intents = Number(client.options.intents.bitfield)
 
 	for (const eventName of events) {

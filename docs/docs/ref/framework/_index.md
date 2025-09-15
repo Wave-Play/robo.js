@@ -50,6 +50,7 @@
 - [RouteHandler](TypeAlias.RouteHandler.md)
 - [SageOptions](TypeAlias.SageOptions.md)
 - [Scope](TypeAlias.Scope.md)
+- [SmartCommandConfig](TypeAlias.SmartCommandConfig.md)
 
 ## Variables
 

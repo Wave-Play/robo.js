@@ -216,6 +216,7 @@ const sidebars = {
 		'plugins/better-stack',
 		'plugins/cron',
 		'plugins/dev',
+		'plugins/i18n',
 		'plugins/maintenance',
 		'plugins/moderation',
 		'plugins/patch',
@@ -365,7 +366,7 @@ const sidebars = {
 					type: 'doc'
 				},
 				{
-					id: 'ref/framework/Interface.CommandOption',
+					id: 'ref/framework/TypeAlias.CommandOption',
 					label: 'CommandOption',
 					type: 'doc'
 				},
@@ -494,6 +495,47 @@ const sidebars = {
 		},
 		{
 			type: 'category',
+			label: '@robojs/i18n',
+			items: [
+				{
+					id: 'ref/@robojs/i18n/Function.createCommandConfig',
+					label: 'createCommandConfig',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/i18n/Variable.Locale',
+					label: 'Locale',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/i18n/TypeAlias.LocaleLike',
+					label: 'LocaleLike',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/i18n/Interface.PluginConfig',
+					label: 'PluginConfig',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/i18n/Function.t',
+					label: 't',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/i18n/Function.tr',
+					label: 'tr',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/i18n/Function.withLocale',
+					label: 'withLocale',
+					type: 'doc'
+				}
+			]
+		},
+		{
+			type: 'category',
 			label: '@robojs/moderation',
 			items: [
 				{
@@ -580,7 +622,7 @@ const sidebars = {
 					label: 'Context',
 					type: 'doc'
 				},
-				{
+				/*{
 					id: 'ref/@robojs/trpc/Function.createTRPCClient',
 					label: 'createTRPCClient',
 					type: 'doc'
@@ -590,7 +632,7 @@ const sidebars = {
 					label: 'createTRPCReact',
 					type: 'doc'
 				},
-				/*{
+				{
 					id: 'ref/@robojs/trpc/Function.httpBatchLink',
 					label: 'httpBatchLink',
 					type: 'doc'

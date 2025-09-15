@@ -14,7 +14,7 @@ function createCommandConfig<C>(config): C
 
 | Parameter | Type |
 | ------ | ------ |
-| `config` | `ExactConfig`\<`C`\> & `EnforceConfig`\<`C`\> |
+| `config` | [`SmartCommandConfig`](TypeAlias.SmartCommandConfig.md)\<`C`\> |
 
 ## Returns
 

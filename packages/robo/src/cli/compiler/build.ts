@@ -144,7 +144,6 @@ async function traverse(
 							strictMode: true,
 							lazy: false,
 							noInterop: false,
-							// @ts-expect-error - works but not in SWC types
 							// Necessary to ensure "/index.js" imports compile correctly in Linux
 							resolveFully: true
 						},

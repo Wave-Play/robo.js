@@ -15,7 +15,7 @@ import type {
 	User
 } from 'discord.js'
 import type { BaseConfig, SageOptions } from './index.js'
-import type { ValueOfOption } from './helpers.js'
+import type { EnforceConfig, ExactConfig, ValueOfOption } from './helpers.js'
 
 export interface Command {
 	autocomplete?: (
@@ -37,6 +37,8 @@ export interface CommandConfig extends BaseConfig {
 	sage?: false | SageOptions
 	timeout?: number
 }
+
+export type SmartCommandConfig<C extends CommandConfig> = ExactConfig<C> & EnforceConfig<C>
 
 export type CommandContext = 'BotDM' | 'Guild' | 'PrivateChannel' | InteractionContextType
 

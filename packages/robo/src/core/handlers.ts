@@ -1,6 +1,6 @@
 import { portal } from './robo.js'
 import { CommandInteraction, ContextMenuCommandInteraction } from 'discord.js'
-import { getSage, timeout } from '../cli/utils/utils.js'
+import { getSage, timeout, withEphemeralDefer, withEphemeralReply } from '../cli/utils/utils.js'
 import { getConfig } from './config.js'
 import { BUFFER, DEFAULT_CONFIG, TIMEOUT, discordLogger } from './constants.js'
 import { printErrorResponse } from './debug.js'
@@ -12,8 +12,14 @@ import type {
 	InteractionDeferReplyOptions,
 	Message
 } from 'discord.js'
-import type { CommandConfig, ContextConfig, Event, HandlerRecord, PluginData } from '../types/index.js'
-import type { Collection } from 'discord.js'
+import type {
+	CommandConfig,
+	ContextConfig,
+	Event,
+	HandlerRecord,
+	PluginData,
+	SmartCommandConfig
+} from '../types/index.js'
 
 export async function executeAutocompleteHandler(interaction: AutocompleteInteraction, commandKey: string) {
 	const command = portal.commands.get(commandKey)
@@ -188,7 +194,7 @@ export async function executeCommandHandler(interaction: ChatInputCommandInterac
 
 				if (!interaction.deferred) {
 					try {
-						await interaction.deferReply({ ephemeral: sage.ephemeral })
+						await interaction.deferReply(withEphemeralDefer({}, sage.ephemeral))
 					} catch (error) {
 						const message = error instanceof Error ? error.message : (error as string)
 						if (
@@ -236,8 +242,7 @@ export async function executeCommandHandler(interaction: ChatInputCommandInterac
 			// TODO: Fix reply objects themselves being used here
 			await interaction.editReply(reply)
 		} else if (isValidReply) {
-			reply.ephemeral = sage.ephemeral
-			await interaction.reply(reply)
+			await interaction.reply(withEphemeralReply(reply, sage.ephemeral))
 		} else {
 			const command = color.bold('/' + commandKey)
 			discordLogger.warn(`Invalid return value for command ${command}. Did you accidentally return a message object?`)
@@ -336,7 +341,7 @@ export async function executeContextHandler(interaction: ContextMenuCommandInter
 				discordLogger.debug(`Sage is deferring async command...`)
 				promises.push(result)
 				if (!interaction.deferred) {
-					await interaction.deferReply({ ephemeral: sage.ephemeral })
+					await interaction.deferReply(withEphemeralReply({}, sage.ephemeral))
 				}
 			} else {
 				response = raceResult
@@ -378,7 +383,7 @@ export async function executeContextHandler(interaction: ContextMenuCommandInter
 }
 
 export async function executeEventHandler(
-	plugins: Collection<string, PluginData> | null,
+	plugins: Map<string, PluginData> | null,
 	eventName: string,
 	...eventData: unknown[]
 ) {
@@ -485,15 +490,7 @@ export async function executeEventHandler(
 	)
 }
 
-type ExactConfig<C extends CommandConfig> = {
-	[K in keyof C]: K extends keyof CommandConfig ? C[K] : never
-}
-
-type EnforceConfig<C extends CommandConfig> = Exclude<keyof C, keyof CommandConfig> extends never
-	? C
-	: 'Extra properties are not allowed in CommandConfig'
-
-export function createCommandConfig<C extends CommandConfig>(config: ExactConfig<C> & EnforceConfig<C>): C {
+export function createCommandConfig<C extends CommandConfig>(config: SmartCommandConfig<C>): C {
 	return config as C
 }
 
