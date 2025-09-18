@@ -27,6 +27,7 @@ Robo.js powers Discord with activities, bots, web servers, and more. It emphasiz
 ## Plugin Packages
 
 - `packages/@robojs/analytics` – Tracks usage through services like Google Analytics or Plausible and exposes an `Analytics` API.
+- `packages/@robojs/auth` – Handles user authentication and authorization, including OAuth2 support.
 - `packages/@robojs/cron` – Schedules tasks with cron expressions and supports persisted jobs.
 - `packages/@robojs/i18n` – Internationalization support with locale management and translation utilities.
 - `packages/@robojs/patch` – Collection of patches for Discord activities such as entry point commands and proxy fixes.
