@@ -15,6 +15,7 @@
 		"moduleResolution": "node",
 		"resolveJsonModule": true,
 		"isolatedModules": true,
+		"importsNotUsedAsValues": "remove",
 		"incremental": true
 	},
 	"include": ["**/*.ts"],

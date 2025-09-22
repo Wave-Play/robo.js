@@ -4,6 +4,15 @@ export default <Config>{
 	clientOptions: {
 		intents: ['Guilds', 'GuildMessages']
 	},
-	plugins: [],
+	plugins: [
+		['@robojs/server', {}],
+		[
+			'@robojs/auth',
+			{
+				basePath: '/api/auth',
+				providers: []
+			}
+		]
+	],
 	type: 'plugin'
 }

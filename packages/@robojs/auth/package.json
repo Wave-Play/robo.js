@@ -1,13 +1,14 @@
 {
 	"name": "@robojs/auth",
-	"description": "",
+	"description": "Authentication plugin for Robo.js powered by Auth.js",
 	"version": "0.0.0",
 	"type": "module",
 	"private": false,
 	"keywords": [
-		"bot",
-		"discord",
-		"discord.js",
+		"auth",
+		"authentication",
+		"oauth",
+		"nextauth",
 		"robo",
 		"robo.js",
 		"typescript"
@@ -16,6 +17,18 @@
 		".": {
 			"types": "./.robo/build/index.d.ts",
 			"default": "./.robo/build/index.js"
+		},
+		"./providers": {
+			"types": "./.robo/build/providers/index.d.ts",
+			"default": "./.robo/build/providers/index.js"
+		},
+		"./providers/email-password": {
+			"types": "./.robo/build/credentials/password.d.ts",
+			"default": "./.robo/build/credentials/password.js"
+		},
+		"./providers/*": {
+			"types": "./.robo/build/providers/*.d.ts",
+			"default": "./.robo/build/providers/*.js"
 		}
 	},
 	"main": ".robo/build/index.js",
@@ -41,8 +54,14 @@
 		"lint:style": "prettier --write .",
 		"prepublishOnly": "robo build plugin"
 	},
-	"dependencies": {},
+	"dependencies": {
+		"@auth/core": "^0.32.0",
+		"argon2": "^0.41.1",
+		"nanoid": "^5.0.7",
+		"zod": "^3.22.4"
+	},
 	"devDependencies": {
+		"@robojs/server": "workspace:*",
 		"@swc/core": "^1.13.3",
 		"@types/node": "^24.2.1",
 		"discord.js": "^14.21.0",
@@ -51,9 +70,13 @@
 		"typescript": "^5.9.2"
 	},
 	"peerDependencies": {
+		"@robojs/server": ">=0.6.5",
 		"robo.js": "^0.10.1"
 	},
 	"peerDependenciesMeta": {
+		"@robojs/server": {
+			"optional": false
+		},
 		"robo.js": {
 			"optional": false
 		}
