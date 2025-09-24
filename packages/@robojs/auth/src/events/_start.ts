@@ -14,6 +14,8 @@ import { configureAuthRuntime } from '../runtime/server-helpers.js'
 import { createSignupHandler } from '../runtime/signup.js'
 import { authLogger } from '../utils/logger.js'
 import type { HttpMethod } from '../runtime/route-map.js'
+import { findUserIdByEmail } from '../credentials/password.js'
+import { attachDbSessionCookie, isSuccessRedirect } from '../runtime/session-helpers.js'
 
 type MethodMap = Map<string, Set<HttpMethod>>
 
@@ -178,6 +180,7 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 		cookies,
 		defaultRedirectPath: options.pages?.newUser ?? '/dashboard',
 		secret,
+		sessionStrategy: options.session.strategy ?? 'jwt',
 		events: options.events
 	})
 
@@ -213,6 +216,62 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 		return response
 	})
 	const methods = collectMethods(basePath)
+
+	// Detect presence of Credentials provider to minimize overhead
+	const hasCredentialsProvider = providers.some((p) => {
+		return typeof p === 'object' && p && (p as { id?: string }).id === 'credentials'
+	})
+
+	// Intercept credentials callback (POST) to create DB session + cookie when using database strategy
+	if ((options.session.strategy ?? 'jwt') === 'database' && hasCredentialsProvider) {
+		authLogger.debug('Enabling credentials callback interception for DB session cookie issuance.')
+		const credentialsCallbackPath = joinPath(basePath, '/callback/credentials')
+		Server.registerRoute(credentialsCallbackPath, async (request: RoboRequest, reply: RoboReply) => {
+			const method = request.method?.toUpperCase() ?? 'GET'
+
+			// Delegate non-POST to default handler
+			if (method !== 'POST') {
+				return handler(request, reply)
+			}
+
+			// Capture email from request before passing to Auth()
+			let emailFromBody: string | null = null
+			try {
+				const clone = request.clone?.() ?? request
+				const form = await clone.formData()
+				const rawEmail = form.get('email')
+				if (typeof rawEmail === 'string') emailFromBody = rawEmail.toLowerCase()
+			} catch (e) {
+				authLogger.warn('Failed to parse email from credentials sign-in request', e)
+			}
+
+			const response = await handler(request, reply)
+
+			// Determine if sign-in succeeded (redirect without error)
+			if (!isSuccessRedirect(response)) {
+				return response
+			}
+
+			// Resolve user id via email mapping
+			const userId = emailFromBody ? await findUserIdByEmail(emailFromBody) : null
+			if (!userId) {
+				return response
+			}
+
+			try {
+				return await attachDbSessionCookie({
+					response,
+					adapter,
+					cookies,
+					config: authConfig,
+					userId
+				})
+			} catch (e) {
+				authLogger.warn('Failed to create DB session for credentials login', { error: (e as Error)?.message })
+				return response
+			}
+		})
+	}
 
 	for (const [path, allowedMethods] of methods.entries()) {
 		Server.registerRoute(path, async (request: RoboRequest, reply: RoboReply) => {

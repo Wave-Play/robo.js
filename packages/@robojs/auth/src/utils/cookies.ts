@@ -119,3 +119,34 @@ export function unchunkCookieValue(name: string, values: Record<string, string>)
 
 	return index === 0 ? null : buffer
 }
+
+/**
+ * Serializes a cookie header string following Auth.js expectations.
+ */
+export function serializeCookie(
+	name: string,
+	value: string,
+	options?: {
+		path?: string
+		domain?: string
+		httpOnly?: boolean
+		secure?: boolean
+		sameSite?: 'lax' | 'strict' | 'none'
+		expires?: Date
+		maxAge?: number
+	}
+): string {
+	const parts = [`${name}=${encodeURIComponent(value)}`]
+	if (options?.path) parts.push(`Path=${options.path}`)
+	if (options?.domain) parts.push(`Domain=${options.domain}`)
+	if (options?.httpOnly !== false) parts.push('HttpOnly')
+	if (options?.secure) parts.push('Secure')
+	if (options?.sameSite) {
+		const s = options.sameSite
+		const mapped = s === 'lax' ? 'Lax' : s === 'strict' ? 'Strict' : 'None'
+		parts.push(`SameSite=${mapped}`)
+	}
+	if (options?.expires) parts.push(`Expires=${options.expires.toUTCString()}`)
+	if (typeof options?.maxAge === 'number') parts.push(`Max-Age=${Math.max(0, Math.floor(options.maxAge))}`)
+	return parts.join('; ')
+}

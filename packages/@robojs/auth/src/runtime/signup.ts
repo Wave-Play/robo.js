@@ -3,6 +3,7 @@ import { Auth } from '@auth/core'
 import type { AuthConfig } from '@auth/core'
 import type { Adapter, AdapterUser } from '@auth/core/adapters'
 import type { CookiesOptions } from '@auth/core/types'
+import { attachDbSessionCookie, isSuccessRedirect } from './session-helpers.js'
 import type { RoboRequest } from '@robojs/server'
 import { nanoid } from 'nanoid'
 import { findUserIdByEmail, removePassword, storePassword } from '../credentials/password.js'
@@ -17,6 +18,7 @@ interface SignupHandlerOptions {
 	defaultRedirectPath?: string
 	secret: string
 	events?: AuthConfig['events']
+	sessionStrategy?: 'jwt' | 'database'
 }
 
 interface SignupPayload {
@@ -273,7 +275,8 @@ export function createSignupHandler(options: SignupHandlerOptions) {
 		cookies,
 		defaultRedirectPath = DEFAULT_REDIRECT_PATH,
 		secret,
-		events
+		events,
+		sessionStrategy = 'jwt'
 	} = options
 
 	return async function handleSignup(request: RoboRequest): Promise<Response> {
@@ -283,6 +286,7 @@ export function createSignupHandler(options: SignupHandlerOptions) {
 		try {
 			const payload = await parsePayload(request)
 			attemptedPayload = payload
+			authLogger.debug('Signup attempt:', { email: payload.email })
 
 			ensureEmailValid(payload.email)
 			ensurePasswordValid(payload.password, payload.passwordConfirm)
@@ -291,6 +295,7 @@ export function createSignupHandler(options: SignupHandlerOptions) {
 
 			const normalizedEmail = payload.email.toLowerCase()
 			const user = await createUserWithPassword(adapter, normalizedEmail, payload.password, events)
+			authLogger.debug('User signed up successfully.', { email: normalizedEmail, userId: user.id })
 
 			const callbackUrl = resolveDefaultRedirect(baseUrl, payload.callbackUrl ?? defaultRedirectPath)
 			try {
@@ -304,6 +309,25 @@ export function createSignupHandler(options: SignupHandlerOptions) {
 					payload.password,
 					request
 				)
+
+				// For database strategy, ensure a DB session + cookie exists (parity with OAuth providers)
+				if (sessionStrategy === 'database' && isSuccessRedirect(response)) {
+					try {
+						return await attachDbSessionCookie({
+							response,
+							adapter,
+							cookies,
+							config: authConfig,
+							userId: user.id
+						})
+					} catch (e) {
+						authLogger.warn('Failed to create DB session after signup credentials login', {
+							email: normalizedEmail,
+							error: (e as Error)?.message
+						})
+						return response
+					}
+				}
 
 				return response
 			} catch (signInError) {

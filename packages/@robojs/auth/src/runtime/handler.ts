@@ -19,15 +19,15 @@ export function createAuthRequestHandler(config: AuthConfig): AuthRequestHandler
 		try {
 			authLogger.debug('Handling auth request', { method: request.method, url: request.url })
 			return await Auth(request, config)
-		} catch (err: any) {
-			authLogger.warn('Error in Auth.js request handler', { error: err?.message, stack: err?.stack })
-			const rawCode = err?.cause?.code ?? err?.cause?.err?.code ?? err?.code ?? err?.name
+		} catch (err: unknown) {
+			authLogger.warn('Error in Auth.js request handler', { error: getString(err, 'message'), stack: getString(err, 'stack') })
+			const rawCode = extractErrorCode(err)
 			const normalizedCode = typeof rawCode === 'string' ? rawCode.toLowerCase() : undefined
 			const isCredsError =
 				normalizedCode === 'credentials' ||
 				normalizedCode === 'credentialssignin' ||
-				err?.type === 'CredentialsSignin' ||
-				err?.name === 'CredentialsSignin'
+				getString(err, 'type') === 'CredentialsSignin' ||
+				getString(err, 'name') === 'CredentialsSignin'
 			if (isCredsError) {
 				const wantsJson = request.headers.get('accept')?.includes('application/json')
 				const codeParam = typeof rawCode === 'string' && rawCode ? rawCode : 'credentials'
@@ -50,4 +50,34 @@ export function createAuthRequestHandler(config: AuthConfig): AuthRequestHandler
 			throw err
 		}
 	}
+}
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function getString(obj: unknown, key: string): string | undefined {
+  if (!isObject(obj)) return undefined
+  const val = obj[key]
+  return typeof val === 'string' ? val : undefined
+}
+
+function getObject(obj: unknown, key: string): Record<string, unknown> | undefined {
+  if (!isObject(obj)) return undefined
+  const val = obj[key]
+  return isObject(val) ? val : undefined
+}
+
+function extractErrorCode(err: unknown): string | undefined {
+  const direct = getString(err, 'code') ?? getString(err, 'name')
+  if (direct) return direct
+  const cause = getObject(err, 'cause')
+  if (cause) {
+    const fromCause = getString(cause, 'code') ?? getString(cause, 'name')
+    if (fromCause) return fromCause
+    const nested = getObject(cause, 'err')
+    const fromNested = getString(nested, 'code') ?? getString(nested, 'name') ?? getString(nested, 'message')
+    if (fromNested) return fromNested
+  }
+  return getString(err, 'message')
 }
