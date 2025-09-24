@@ -55,9 +55,9 @@
 		"prepublishOnly": "robo build plugin"
 	},
 	"dependencies": {
-		"@auth/core": "^0.32.0",
-		"argon2": "^0.41.1",
-		"nanoid": "^5.0.7",
+		"@auth/core": "^0.40.0",
+		"argon2": "^0.44.0",
+		"nanoid": "^5.1.6",
 		"zod": "^3.22.4"
 	},
 	"devDependencies": {
