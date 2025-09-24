@@ -1,6 +1,6 @@
 import argon2 from 'argon2'
 import CredentialsProvider from '@auth/core/providers/credentials'
-import type { Adapter, AdapterUser } from '@auth/core/adapters'
+import type { Adapter } from '@auth/core/adapters'
 import { nanoid } from 'nanoid'
 import { Flashcore } from 'robo.js'
 import { authLogger } from '../utils/logger.js'
@@ -151,7 +151,6 @@ export async function resetPassword(userId: string, password: string): Promise<P
 
 export interface PasswordCredentialsProviderOptions {
 	adapter: Adapter
-	allowRegistration?: boolean
 	name?: string
 }
 
@@ -165,7 +164,7 @@ export interface PasswordCredentialsProviderOptions {
  * ```
  */
 export function passwordCredentialsProvider(options: PasswordCredentialsProviderOptions): ProviderLike {
-	const { adapter, allowRegistration = false, name = 'Email & Password' } = options
+	const { adapter, name = 'Email & Password' } = options
 	return CredentialsProvider({
 		name,
 		credentials: {
@@ -173,7 +172,10 @@ export function passwordCredentialsProvider(options: PasswordCredentialsProvider
 			password: { label: 'Password', type: 'password' }
 		},
 		authorize: async (credentials: Record<string, unknown> | undefined) => {
-			authLogger.debug('Authorizing credentials login', { email: credentials?.email, password: credentials?.password ? '****' : undefined })
+			authLogger.debug('Authorizing credentials login', {
+				email: credentials?.email,
+				password: credentials?.password ? '****' : undefined
+			})
 			const email = String(credentials?.email ?? '').toLowerCase()
 			const password = String(credentials?.password ?? '')
 			if (!email || !password) {
@@ -182,22 +184,6 @@ export function passwordCredentialsProvider(options: PasswordCredentialsProvider
 			}
 
 			const userId = await findUserIdByEmail(email)
-
-			if (!userId && allowRegistration) {
-				authLogger.debug('Registering new user', { email })
-				if (!adapter.createUser) {
-					throw new Error('Adapter.createUser is required when allowRegistration is enabled.')
-				}
-				const newUser: AdapterUser = {
-					email,
-					emailVerified: null,
-					id: nanoid(21),
-					name: email
-				}
-				const user = await adapter.createUser(newUser)
-				await storePassword(user.id, email, password)
-				return user
-			}
 
 			if (!userId) {
 				authLogger.debug(`No user found for email ${email}`)
