@@ -7,6 +7,7 @@ import { createAuthRequestHandler } from '../runtime/handler.js'
 import { AUTH_ROUTES } from '../runtime/route-map.js'
 import { configureAuthRuntime } from '../runtime/server-helpers.js'
 import { createSignupHandler } from '../runtime/signup.js'
+import { nanoid } from 'nanoid'
 import { authLogger } from '../utils/logger.js'
 import { findUserIdByEmail } from '../builtins/email-password/store.js'
 import { attachDbSessionCookie, isSuccessRedirect } from '../runtime/session-helpers.js'
@@ -165,12 +166,30 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 			await userEvents?.createUser?.(message)
 
 			try {
+				// Create verification token and link
+				const identifier = message.user.email ?? undefined
+				let verifyToken: string | undefined
+				let verifyUrl: string | undefined
+				if (identifier && adapter.createVerificationToken) {
+					const token = nanoid(32)
+					const expires = new Date(Date.now() + (options.email?.expiresInMinutes ?? 60) * 60 * 1000)
+					await adapter.createVerificationToken({ identifier, token, expires })
+					verifyToken = token
+					const url = new URL(joinPath(basePath, '/verify-email/confirm'), baseUrl)
+					url.searchParams.set('token', token)
+					url.searchParams.set('identifier', identifier)
+					verifyUrl = url.toString()
+				}
+
 				await notifyEmail('user:created', {
 					user: {
 						id: String((message as { user?: { id?: string } })?.user?.id ?? ''),
 						email: message.user.email ?? null,
 						name: message.user.name ?? null
-					}
+					},
+					tokens: { verifyEmail: verifyToken },
+					links: { verifyEmail: verifyUrl },
+					request: { origin: baseUrl }
 				})
 				const uid = String((message as { user?: { id?: string } })?.user?.id ?? '')
 				if (uid) recentNewUsers.add(uid)
@@ -213,10 +232,32 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 		authLogger.debug('No custom mailer configured; auth emails disabled')
 	}
 
+	const userCallbacks = options.callbacks ?? {}
+	const composedCallbacks: AuthConfig['callbacks'] = {
+		...userCallbacks,
+		async session(params) {
+			const { session, token, user } = params ?? {}
+			const working = session
+
+			try {
+				const uid = (user as { id?: string } | undefined)?.id ?? (token as { sub?: string } | undefined)?.sub
+				if (uid && adapter.getUser) {
+					const dbUser = await adapter.getUser(uid)
+					if (dbUser && working?.user) {
+						working.user.emailVerified = dbUser.emailVerified ?? null
+					}
+				}
+			} catch (e) {
+				authLogger.warn('Failed to enhance session callback with email verification status', e)
+			}
+			return userCallbacks?.session ? userCallbacks.session({ ...params, session: working }) : working
+		}
+	}
+
 	const authConfig: AuthConfig = {
 		adapter,
 		basePath,
-		callbacks: options.callbacks,
+		callbacks: composedCallbacks,
 		cookies,
 		events: composedEvents,
 		pages: options.pages,
@@ -279,6 +320,65 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 	const hasCredentialsProvider = providers.some((p) => {
 		return typeof p === 'object' && p && (p as { id?: string }).id === 'credentials'
 	})
+
+	// Email verification endpoints (only when Credentials provider is in use)
+	if (hasCredentialsProvider) {
+		const verifyConfirmPath = joinPath(basePath, '/verify-email/confirm')
+		Server.registerRoute(verifyConfirmPath, async (request: RoboRequest) => {
+			const url = new URL(request.url)
+			const token = url.searchParams.get('token') ?? undefined
+			const identifier = url.searchParams.get('identifier') ?? undefined
+			if (!token || !identifier) {
+				const fallbackPath = options.pages?.verifyRequest ?? '/verify-email'
+				return Response.redirect(new URL(fallbackPath + '?error=MissingParams', baseUrl).toString(), 303)
+			}
+			try {
+				const used = await adapter.useVerificationToken?.({ identifier, token })
+				if (!used) {
+					const fallbackPath = options.pages?.verifyRequest ?? '/verify-email'
+					return Response.redirect(new URL(fallbackPath + '?error=InvalidOrExpired', baseUrl).toString(), 303)
+				}
+				const user = await adapter.getUserByEmail?.(identifier)
+				if (!user) {
+					const fallbackPath = options.pages?.verifyRequest ?? '/verify-email'
+					return Response.redirect(new URL(fallbackPath + '?error=UserNotFound', baseUrl).toString(), 303)
+				}
+				await adapter.updateUser?.({ ...user, emailVerified: new Date() })
+				{
+					const fallbackPath = options.pages?.verifyRequest ?? '/verify-email'
+					return Response.redirect(new URL(fallbackPath + '?status=ok', baseUrl).toString(), 303)
+				}
+			} catch (e) {
+				authLogger.warn('Email verification failed', { error: (e as Error)?.message })
+				const fallbackPath = options.pages?.verifyRequest ?? '/verify-email'
+				return Response.redirect(new URL(fallbackPath + '?error=ServerError', baseUrl).toString(), 303)
+			}
+		})
+
+		// Email verification: default built-in page (simple HTML)
+		const verifyPagePath = joinPath(basePath, '/verify-email')
+		Server.registerRoute(verifyPagePath, async (request: RoboRequest) => {
+			const url = new URL(request.url)
+			const status = url.searchParams.get('status')
+			const error = url.searchParams.get('error')
+			const wantsJson = request.headers.get('accept')?.includes('application/json')
+			if (wantsJson) {
+				return new Response(JSON.stringify({ status: status ?? (error ? 'error' : 'pending'), error }), {
+					headers: { 'content-type': 'application/json' },
+					status: 200
+				})
+			}
+			const title = status === 'ok' ? 'Email Confirmed' : error ? 'Verification Failed' : 'Verify Your Email'
+			const body =
+				status === 'ok'
+					? '<p>Your email has been confirmed. You can close this window.</p>'
+					: error
+						? `<p>We could not confirm your email. (${error})</p>`
+						: '<p>Follow the link we sent to your email to confirm your account.</p>'
+			const html = `<!doctype html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width"/><title>${title}</title><style>body{font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Arial,sans-serif;padding:32px;background:#0b0d12;color:#e5e7eb} .card{max-width:560px;margin:0 auto;background:#131722;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.3)} h1{margin:0 0 12px;font-size:22px}</style></head><body><div class="card"><h1>${title}</h1>${body}</div></body></html>`
+			return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8' } })
+		})
+	}
 
 	// Intercept credentials callback (POST) to create DB session + cookie when using database strategy
 	if ((options.session.strategy ?? 'jwt') === 'database' && hasCredentialsProvider) {

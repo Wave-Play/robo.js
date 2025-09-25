@@ -210,7 +210,7 @@ async function createUserWithPassword(
 		created = await adapter.createUser(baseUser)
 		await storePassword(created.id, email, password)
 		await events?.createUser?.({ user: created })
-		authLogger.info('Created new credentials user.', { email, userId: created.id })
+		authLogger.debug('Created new credentials user.', { email, userId: created.id })
 		return created
 	} catch (error) {
 		authLogger.error('Failed to create credentials user.', { email, error })

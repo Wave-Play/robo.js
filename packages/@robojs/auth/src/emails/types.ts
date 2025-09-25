@@ -13,6 +13,7 @@ export type EmailContext = {
   session?: { id?: string | null; ip?: string | null; userAgent?: string | null }
   tokens?: { verifyEmail?: string; resetPassword?: string }
   request?: { origin?: string | null }
+  links?: { verifyEmail?: string; resetPassword?: string }
 }
 
 export type MailAttachment = {
@@ -50,4 +51,3 @@ export type TemplateConfig =
     }
 
 export type EmailBuilder = (ctx: EmailContext) => MailMessage | null | Promise<MailMessage | null>
-

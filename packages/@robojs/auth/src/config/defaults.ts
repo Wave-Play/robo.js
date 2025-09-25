@@ -2,7 +2,7 @@ import type { Adapter } from '@auth/core/adapters'
 import type { AuthConfig } from '@auth/core'
 import type { CookiesOptions } from '@auth/core/types'
 import type { Provider } from '@auth/core/providers'
-import { authPluginOptionsSchema, type AuthPluginOptions } from './schema.js'
+import { authPluginOptionsSchema, type AuthPluginOptions, type EmailsOptions } from './schema.js'
 import { applyCookieOverrides, buildDefaultCookies } from '../utils/cookies.js'
 
 const DEFAULT_SESSION_MAX_AGE = 60 * 60 * 24 * 30 // 30 days
@@ -19,7 +19,7 @@ export interface NormalizedAuthPluginOptions {
 	debug?: boolean
 	events?: AuthConfig['events']
 	email?: AuthPluginOptions['email']
-	emails?: AuthPluginOptions['emails']
+	emails?: EmailsOptions
 	pages?: AuthPluginOptions['pages']
 	providers: Provider[]
 	redirectProxyUrl?: string
