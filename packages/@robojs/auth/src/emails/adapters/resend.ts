@@ -20,6 +20,8 @@ type ResendSendInput = {
   text?: string
   attachments?: Array<{ filename: string; content: string | Buffer; contentType?: string }>
   headers?: Record<string, string>
+  templateId?: string
+  variables?: Record<string, unknown>
 }
 
 type ResendClient = {
@@ -64,7 +66,7 @@ export function createResendMailer(opts: ResendMailerOptions): AuthMailer {
 
       const headers = message.headers
 
-      const result = await resend.emails.send({
+      let payload: ResendSendInput = {
         from,
         to,
         subject: message.subject,
@@ -72,7 +74,16 @@ export function createResendMailer(opts: ResendMailerOptions): AuthMailer {
         text: message.text,
         attachments: attachments.length ? attachments : undefined,
         headers
-      })
+      }
+      if (message.templateId) {
+        payload = {
+          ...payload,
+          templateId: message.templateId,
+          variables: message.variables
+        }
+      }
+
+      const result = await resend.emails.send(payload)
       // Try to derive a useful id or error from the provider response
       const maybeObj = result as unknown as { id?: string; data?: { id?: string }; error?: { message?: string; name?: string; statusCode?: number }; message?: string }
       if (maybeObj?.error) {

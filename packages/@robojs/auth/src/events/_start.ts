@@ -159,6 +159,7 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 
 	// Compose Auth.js events so we can trigger optional emails without stealing user hooks
 	const recentNewUsers = new Set<string>()
+	const recentSigninNotified = new Set<string>()
 	const userEvents = options.events ?? {}
 	const composedEvents: AuthConfig['events'] = {
 		...userEvents,
@@ -191,6 +192,21 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 					links: { verifyEmail: verifyUrl },
 					request: { origin: baseUrl }
 				})
+				// Secondary event for dedicated verification emails (no default template)
+				try {
+					await notifyEmail('email:verification-requested', {
+						user: {
+							id: String((message as { user?: { id?: string } })?.user?.id ?? ''),
+							email: message.user.email ?? null,
+							name: message.user.name ?? null
+						},
+						tokens: { verifyEmail: verifyToken },
+						links: { verifyEmail: verifyUrl },
+						request: { origin: baseUrl }
+					})
+				} catch (e) {
+					authLogger.warn('Failed to send email verification request email', e)
+				}
 				const uid = String((message as { user?: { id?: string } })?.user?.id ?? '')
 				if (uid) recentNewUsers.add(uid)
 			} catch (e) {
@@ -203,8 +219,9 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 			// Only emit login alert for existing users; skip new users
 			const isNewUser = (message as { isNewUser?: boolean }).isNewUser
 			const uid = String(message.user?.id ?? message.account?.providerAccountId ?? '')
-			if (isNewUser || (uid && recentNewUsers.has(uid))) {
+			if (isNewUser || (uid && recentNewUsers.has(uid)) || (uid && recentSigninNotified.has(uid))) {
 				recentNewUsers.delete(uid)
+				recentSigninNotified.delete(uid)
 				return
 			}
 			try {
@@ -344,10 +361,17 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 					return Response.redirect(new URL(fallbackPath + '?error=UserNotFound', baseUrl).toString(), 303)
 				}
 				await adapter.updateUser?.({ ...user, emailVerified: new Date() })
-				{
-					const fallbackPath = options.pages?.verifyRequest ?? '/verify-email'
-					return Response.redirect(new URL(fallbackPath + '?status=ok', baseUrl).toString(), 303)
+				try {
+					await notifyEmail('email:verified', {
+						user: { id: user.id, email: user.email ?? null, name: user.name ?? null },
+						request: { origin: baseUrl }
+					})
+				} catch (e) {
+					authLogger.warn('Failed to send email verified confirmation email', e)
 				}
+
+				const fallbackPath = options.pages?.verifyRequest ?? '/verify-email'
+				return Response.redirect(new URL(fallbackPath + '?status=ok', baseUrl).toString(), 303)
 			} catch (e) {
 				authLogger.warn('Email verification failed', { error: (e as Error)?.message })
 				const fallbackPath = options.pages?.verifyRequest ?? '/verify-email'
@@ -378,11 +402,142 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 			const html = `<!doctype html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width"/><title>${title}</title><style>body{font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Arial,sans-serif;padding:32px;background:#0b0d12;color:#e5e7eb} .card{max-width:560px;margin:0 auto;background:#131722;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.3)} h1{margin:0 0 12px;font-size:22px}</style></head><body><div class="card"><h1>${title}</h1>${body}</div></body></html>`
 			return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8' } })
 		})
+
+		// Resend verification email on demand (by email)
+		const verifyRequestPath = joinPath(basePath, '/verify-email/request')
+		Server.registerRoute(verifyRequestPath, async (request: RoboRequest) => {
+			const method = request.method?.toUpperCase() ?? 'GET'
+			if (method !== 'POST') return new Response(null, { status: 405, headers: { Allow: 'POST' } })
+			try {
+				let email: string | null = null
+				const contentType = request.headers.get('content-type') ?? ''
+				if (contentType.includes('application/json')) {
+					const body = (await request.json()) as Record<string, unknown>
+					const raw = body['email']
+					if (typeof raw === 'string') email = raw.toLowerCase()
+				} else {
+					const form = await request.formData()
+					const raw = form.get('email')
+					if (typeof raw === 'string') email = raw.toLowerCase()
+				}
+				if (email) {
+					const user = await adapter.getUserByEmail?.(email)
+					if (user) {
+						const token = nanoid(32)
+						const expires = new Date(Date.now() + (options.email?.expiresInMinutes ?? 60) * 60 * 1000)
+						await adapter.createVerificationToken?.({ identifier: email, token, expires })
+						const url = new URL(joinPath(basePath, '/verify-email/confirm'), baseUrl)
+						url.searchParams.set('token', token)
+						url.searchParams.set('identifier', email)
+						try {
+							await notifyEmail('email:verification-requested', {
+								user: { id: user.id, email: user.email ?? null, name: user.name ?? null },
+								links: { verifyEmail: url.toString() },
+								request: { origin: baseUrl }
+							})
+						} catch (e) {
+							authLogger.warn('Failed to send email verification request email', e)
+						}
+					}
+				}
+				return new Response(null, { status: 204 })
+			} catch {
+				return new Response(null, { status: 204 })
+			}
+		})
+
+		// Password reset endpoints
+		const resetRequestPath = joinPath(basePath, '/password/reset/request')
+		Server.registerRoute(resetRequestPath, async (request: RoboRequest) => {
+			const method = request.method?.toUpperCase() ?? 'GET'
+			if (method !== 'POST') return new Response(null, { status: 405, headers: { Allow: 'POST' } })
+			try {
+				let email: string | null = null
+				const contentType = request.headers.get('content-type') ?? ''
+				if (contentType.includes('application/json')) {
+					const body = (await request.json()) as Record<string, unknown>
+					const raw = body['email']
+					if (typeof raw === 'string') email = raw.toLowerCase()
+				} else {
+					const form = await request.formData()
+					const raw = form.get('email')
+					if (typeof raw === 'string') email = raw.toLowerCase()
+				}
+				if (email) {
+					const user = await adapter.getUserByEmail?.(email)
+					if (user) {
+						const token = nanoid(32)
+						const expires = new Date(Date.now() + (options.email?.expiresInMinutes ?? 60) * 60 * 1000)
+						await adapter.createVerificationToken?.({ identifier: email, token, expires })
+						const url = new URL(joinPath(basePath, '/password/reset/confirm'), baseUrl)
+						url.searchParams.set('token', token)
+						url.searchParams.set('identifier', email)
+						try {
+							await notifyEmail('password:reset-requested', {
+								user: { id: user.id, email: user.email ?? null, name: user.name ?? null },
+								links: { resetPassword: url.toString() },
+								request: { origin: baseUrl }
+							})
+						} catch (e) {
+							authLogger.warn('Failed to send password reset request email', e)
+						}
+					}
+				}
+				return new Response(null, { status: 204 })
+			} catch {
+				return new Response(null, { status: 204 })
+			}
+		})
+
+		const resetConfirmPath = joinPath(basePath, '/password/reset/confirm')
+		Server.registerRoute(resetConfirmPath, async (request: RoboRequest) => {
+			const method = request.method?.toUpperCase() ?? 'GET'
+			if (method !== 'POST') return new Response(null, { status: 405, headers: { Allow: 'POST' } })
+			try {
+				const contentType = request.headers.get('content-type') ?? ''
+				let token: string | undefined
+				let identifier: string | undefined
+				let newPassword: string | undefined
+				if (contentType.includes('application/json')) {
+					const body = (await request.json()) as Record<string, unknown>
+					token = typeof body['token'] === 'string' ? (body['token'] as string) : undefined
+					identifier = typeof body['identifier'] === 'string' ? (body['identifier'] as string).toLowerCase() : undefined
+					newPassword = typeof body['password'] === 'string' ? (body['password'] as string) : undefined
+				} else {
+					const form = await request.formData()
+					token = typeof form.get('token') === 'string' ? (form.get('token') as string) : undefined
+					identifier =
+						typeof form.get('identifier') === 'string' ? (form.get('identifier') as string).toLowerCase() : undefined
+					newPassword = typeof form.get('password') === 'string' ? (form.get('password') as string) : undefined
+				}
+				if (!token || !identifier || !newPassword) return new Response(null, { status: 400 })
+				const used = await adapter.useVerificationToken?.({ identifier, token })
+				if (!used) return new Response(null, { status: 400 })
+				const user = await adapter.getUserByEmail?.(identifier)
+				if (!user) return new Response(null, { status: 400 })
+				try {
+					const { resetPassword, findUserIdByEmail } = await import('../builtins/email-password/store.js')
+					const uid = await findUserIdByEmail(identifier)
+					if (uid) await resetPassword(uid, newPassword)
+					await notifyEmail('password:reset-completed', {
+						user: { id: user.id, email: user.email ?? null, name: user.name ?? null },
+						request: { origin: baseUrl }
+					})
+				} catch (e) {
+					authLogger.warn('Failed to send password reset confirmation email', e)
+				}
+				return new Response(null, { status: 204 })
+			} catch {
+				return new Response(null, { status: 400 })
+			}
+		})
 	}
 
-	// Intercept credentials callback (POST) to create DB session + cookie when using database strategy
-	if ((options.session.strategy ?? 'jwt') === 'database' && hasCredentialsProvider) {
-		authLogger.debug('Enabling credentials callback interception for DB session cookie issuance.')
+	// Intercept credentials callback to enrich email context and (for DB strategy) create session cookie
+	if (hasCredentialsProvider) {
+		if ((options.session.strategy ?? 'jwt') === 'database') {
+			authLogger.debug('Enabling credentials callback interception for DB session cookie issuance.')
+		}
 		const credentialsCallbackPath = joinPath(basePath, '/callback/credentials')
 		Server.registerRoute(credentialsCallbackPath, async (request: RoboRequest, reply: RoboReply) => {
 			const method = request.method?.toUpperCase() ?? 'GET'
@@ -412,22 +567,40 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 
 			// Resolve user id via email mapping
 			const userId = emailFromBody ? await findUserIdByEmail(emailFromBody) : null
-			if (!userId) {
-				return response
+			if (userId) {
+				// Fire sign-in email with request metadata (IP/UA)
+				const ip =
+					request.headers.get('cf-connecting-ip') ??
+					(request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+						request.headers.get('x-real-ip') ||
+						undefined)
+				const userAgent = request.headers.get('user-agent') ?? undefined
+				try {
+					await notifyEmail('session:created', {
+						user: { id: userId, email: emailFromBody ?? undefined, name: emailFromBody?.split('@')[0] },
+						session: { ip: ip ?? null, userAgent: userAgent ?? null }
+					})
+					recentSigninNotified.add(userId)
+				} catch (e) {
+					authLogger.warn('Failed to send sign-in email', e)
+				}
 			}
 
-			try {
-				return await attachDbSessionCookie({
-					response,
-					adapter,
-					cookies,
-					config: authConfig,
-					userId
-				})
-			} catch (e) {
-				authLogger.warn('Failed to create DB session for credentials login', { error: (e as Error)?.message })
-				return response
+			if ((options.session.strategy ?? 'jwt') === 'database' && userId) {
+				try {
+					return await attachDbSessionCookie({
+						response,
+						adapter,
+						cookies,
+						config: authConfig,
+						userId
+					})
+				} catch (e) {
+					authLogger.warn('Failed to create DB session for credentials login', { error: (e as Error)?.message })
+					return response
+				}
 			}
+			return response
 		})
 	}
 

@@ -107,17 +107,21 @@ export class EmailManager {
 	private templateBuilderIfAny(event: AuthEmailEvent): EmailBuilder[] {
 		const userT = this.templates[event]
 		const defaultT = this.getDefaultTemplate(event)
-		let t: TemplateConfig | undefined = undefined
+		let t: TemplateConfig | undefined
 		if (userT) {
-			// If user provided a provider-native template, use it as-is
 			if ('templateId' in userT) {
 				t = userT
-			} else if (defaultT && !('templateId' in defaultT)) {
+			} else if (defaultT && 'subject' in defaultT) {
 				// Merge inline template parts with defaults (subject/html/text)
+				const base = defaultT as {
+					subject: TemplateConfig extends { subject: infer S } ? S : never
+					html?: ((ctx: EmailContext) => string) | string
+					text?: ((ctx: EmailContext) => string) | string
+				}
 				t = {
-					subject: (userT.subject ?? defaultT.subject) as TemplateConfig extends { subject: infer S } ? S : never,
-					html: userT.html ?? defaultT.html,
-					text: userT.text ?? defaultT.text
+					subject: userT.subject ?? base.subject,
+					html: userT.html ?? base.html,
+					text: userT.text ?? base.text
 				}
 			} else {
 				t = userT
@@ -132,8 +136,9 @@ export class EmailManager {
 				if (!to) return null
 
 				if ('templateId' in t) {
-					// Provider-native template; leave subject mostly to provider config
-					return { to, subject: ' ', headers: { 'X-Template-Id': (t as { templateId: string }).templateId } }
+					const varFn = (t as { variables?: (c: EmailContext) => Record<string, unknown> }).variables
+					const vars = typeof varFn === 'function' ? varFn(ctx) : undefined
+					return { to, subject: ' ', templateId: (t as { templateId: string }).templateId, variables: vars }
 				}
 				const subject = typeof t.subject === 'function' ? t.subject(ctx) : t.subject
 				const html = typeof t.html === 'function' ? t.html(ctx) : t.html
