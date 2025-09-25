@@ -18,6 +18,10 @@
 			"types": "./.robo/build/index.d.ts",
 			"default": "./.robo/build/index.js"
 		},
+		"./client": {
+			"types": "./.robo/build/client.d.ts",
+			"default": "./.robo/build/client.js"
+		},
 		"./providers": {
 			"types": "./.robo/build/providers/index.d.ts",
 			"default": "./.robo/build/providers/index.js"
@@ -25,6 +29,10 @@
 		"./providers/*": {
 			"types": "./.robo/build/providers/*.d.ts",
 			"default": "./.robo/build/providers/*.js"
+		},
+		"./server": {
+			"types": "./.robo/build/server.d.ts",
+			"default": "./.robo/build/server.js"
 		}
 	},
 	"main": ".robo/build/index.js",

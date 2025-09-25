@@ -2,13 +2,7 @@ import { Flashcore } from 'robo.js'
 import { nanoid } from 'nanoid'
 import { hashToken } from '../utils/tokens.js'
 import { authLogger } from '../utils/logger.js'
-import type {
-	Adapter,
-	AdapterAccount,
-	AdapterSession,
-	AdapterUser,
-	VerificationToken
-} from '@auth/core/adapters'
+import type { Adapter, AdapterAccount, AdapterSession, AdapterUser, VerificationToken } from '@auth/core/adapters'
 
 interface FlashcoreAdapterOptions {
 	secret: string
@@ -20,13 +14,14 @@ const NS_ACCOUNTS_ROOT = ['auth', 'accounts']
 const NS_USER_ACCOUNTS = ['auth', 'userAccounts']
 const NS_SESSIONS = ['auth', 'sessions']
 const NS_VERIFICATION = ['auth', 'verification']
+const NS_USERS_INDEX = ['auth', 'usersIndex']
 
 const userKey = (id: string) => id
 const userEmailKey = (email: string) => email.toLowerCase()
 const accountNamespace = (provider: string) => [...NS_ACCOUNTS_ROOT, provider]
 const accountKey = (provider: string, providerAccountId: string) => ({
-  ns: accountNamespace(provider),
-  key: providerAccountId,
+	ns: accountNamespace(provider),
+	key: providerAccountId
 })
 const userAccountsKey = (userId: string) => userId
 const sessionKey = (token: string) => token
@@ -74,6 +69,102 @@ function normalizeVerificationRecord(record: { identifier: string; expires: unkn
 	return { identifier: record.identifier, expires: reviveDate(record.expires) }
 }
 
+interface UsersIndexMeta {
+	pageSize: number
+	pageCount: number
+	total: number
+}
+
+const DEFAULT_INDEX_PAGE_SIZE = 500
+
+async function loadUsersIndexMeta(): Promise<UsersIndexMeta> {
+	const meta = await Flashcore.get<UsersIndexMeta | null>('meta', { namespace: NS_USERS_INDEX })
+	if (meta && typeof meta.pageSize === 'number') return meta
+	const initial: UsersIndexMeta = { pageSize: DEFAULT_INDEX_PAGE_SIZE, pageCount: 0, total: 0 }
+	await Flashcore.set('meta', initial, { namespace: NS_USERS_INDEX })
+	return initial
+}
+
+async function saveUsersIndexMeta(meta: UsersIndexMeta): Promise<void> {
+	await Flashcore.set('meta', meta, { namespace: NS_USERS_INDEX })
+}
+
+function pageKey(n: number): string {
+	return `page:${n}`
+}
+
+async function readUsersIndexPage(n: number): Promise<string[]> {
+	return (await Flashcore.get<string[] | null>(pageKey(n), { namespace: NS_USERS_INDEX })) ?? []
+}
+
+async function writeUsersIndexPage(n: number, ids: string[]): Promise<void> {
+	await Flashcore.set(pageKey(n), ids, { namespace: NS_USERS_INDEX })
+}
+
+async function deleteUsersIndexPage(n: number): Promise<void> {
+	await Flashcore.delete(pageKey(n), { namespace: NS_USERS_INDEX })
+}
+
+async function addUserToIndex(userId: string): Promise<void> {
+	const meta = await loadUsersIndexMeta()
+	// Ensure at least one page exists
+	if (meta.pageCount === 0) meta.pageCount = 1
+	const lastPage = meta.pageCount - 1
+	let ids = await readUsersIndexPage(lastPage)
+	if (ids.length >= meta.pageSize) {
+		// Start a new page
+		await writeUsersIndexPage(lastPage, ids)
+		meta.pageCount += 1
+		ids = []
+	}
+	if (!ids.includes(userId)) ids.push(userId)
+	await writeUsersIndexPage(meta.pageCount - 1, ids)
+	meta.total += 1
+	await saveUsersIndexMeta(meta)
+}
+
+async function removeUserFromIndex(userId: string): Promise<void> {
+	const meta = await loadUsersIndexMeta()
+	if (meta.pageCount === 0 || meta.total === 0) return
+	for (let i = 0; i < meta.pageCount; i++) {
+		const ids = await readUsersIndexPage(i)
+		const idx = ids.indexOf(userId)
+		if (idx !== -1) {
+			ids.splice(idx, 1)
+			if (ids.length === 0 && i === meta.pageCount - 1) {
+				await deleteUsersIndexPage(i)
+				meta.pageCount = Math.max(0, meta.pageCount - 1)
+			} else {
+				await writeUsersIndexPage(i, ids)
+			}
+			meta.total = Math.max(0, meta.total - 1)
+			await saveUsersIndexMeta(meta)
+			return
+		}
+	}
+}
+
+export async function listUserIds(
+	page = 0
+): Promise<{ ids: string[]; page: number; pageCount: number; total: number }> {
+	const meta = await loadUsersIndexMeta()
+	if (page < 0 || page >= meta.pageCount) {
+		return { ids: [], page, pageCount: meta.pageCount, total: meta.total }
+	}
+	const ids = await readUsersIndexPage(page)
+	return { ids, page, pageCount: meta.pageCount, total: meta.total }
+}
+
+export async function listUsers(
+	page = 0
+): Promise<{ users: AdapterUser[]; page: number; pageCount: number; total: number }> {
+	const { ids, page: p, pageCount, total } = await listUserIds(page)
+	const users = await Promise.all(
+		ids.map((id) => Flashcore.get<AdapterUser | null>(userKey(id), { namespace: NS_USERS }))
+	)
+	return { users: users.filter(Boolean) as AdapterUser[], page: p, pageCount, total }
+}
+
 /**
  * Creates an Auth.js adapter backed by Flashcore storage.
  *
@@ -106,6 +197,7 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Adapte
 			if (record.email) {
 				await Flashcore.set(userEmailKey(record.email), record.id, { namespace: NS_USERS_BY_EMAIL })
 			}
+			await addUserToIndex(record.id)
 			return record
 		},
 
@@ -155,12 +247,11 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Adapte
 
 			const accountRefs = await loadUserAccounts(id)
 			await Promise.all(
-				accountRefs.map((ref) =>
-					Flashcore.delete(ref.id, { namespace: accountNamespace(ref.provider) })
-				)
+				accountRefs.map((ref) => Flashcore.delete(ref.id, { namespace: accountNamespace(ref.provider) }))
 			)
 			await Flashcore.delete(userAccountsKey(id), { namespace: NS_USER_ACCOUNTS })
 			await Flashcore.delete(userKey(id), { namespace: NS_USERS })
+			await removeUserFromIndex(id)
 		},
 
 		async linkAccount(account) {
@@ -209,7 +300,9 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Adapte
 		},
 
 		async updateSession(session) {
-			const existing = await Flashcore.get<AdapterSession | null>(sessionKey(session.sessionToken), { namespace: NS_SESSIONS })
+			const existing = await Flashcore.get<AdapterSession | null>(sessionKey(session.sessionToken), {
+				namespace: NS_SESSIONS
+			})
 			if (!existing) return null
 			const merged = normalizeSession({ ...existing, ...session })
 			await Flashcore.set(sessionKey(merged.sessionToken), merged, { namespace: NS_SESSIONS })
@@ -225,16 +318,22 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Adapte
 
 		async createVerificationToken(token) {
 			const hashed = hashToken(token.token, secret)
-			await Flashcore.set(verificationKey(hashed), {
-				identifier: token.identifier,
-				expires: token.expires
-			}, { namespace: NS_VERIFICATION })
+			await Flashcore.set(
+				verificationKey(hashed),
+				{
+					identifier: token.identifier,
+					expires: token.expires
+				},
+				{ namespace: NS_VERIFICATION }
+			)
 			return token
 		},
 
 		async useVerificationToken(params) {
 			const hashed = hashToken(params.token, secret)
-			const stored = await Flashcore.get<{ identifier: string; expires: unknown } | null>(verificationKey(hashed), { namespace: NS_VERIFICATION })
+			const stored = await Flashcore.get<{ identifier: string; expires: unknown } | null>(verificationKey(hashed), {
+				namespace: NS_VERIFICATION
+			})
 			if (!stored) {
 				return null
 			}
@@ -252,8 +351,7 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Adapte
 				expires: normalized.expires,
 				token: params.token
 			} satisfies VerificationToken
-		},
-
+		}
 	}
 
 	return adapter

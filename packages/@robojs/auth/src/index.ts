@@ -1,5 +1,3 @@
-export { createFlashcoreAdapter } from './adapters/flashcore.js'
-export type { Adapter, AdapterAccount, AdapterSession, AdapterUser, VerificationToken } from '@auth/core/adapters'
 export { DEFAULT_BASE_PATH, normalizeAuthOptions } from './config/defaults.js'
 export { authPluginOptionsSchema } from './config/schema.js'
 export type { AuthPluginOptions } from './config/schema.js'
