@@ -2,6 +2,7 @@ import { Auth } from '@auth/core'
 import { getToken as coreGetToken, type JWT } from '@auth/core/jwt'
 import type { AuthConfig } from '@auth/core'
 import type { Session } from '@auth/core/types'
+import { ensureCredentialsDbCompatibility } from './credentials-compat.js'
 
 type HeadersInput = Record<string, string> | Array<[string, string]> | undefined
 
@@ -48,7 +49,8 @@ export interface ConfigureAuthRuntimeOptions {
  * ```
  */
 export function configureAuthRuntime(config: AuthConfig, options: ConfigureAuthRuntimeOptions): void {
-	runtime.authHandler = (request: Request) => Auth(request, config)
+	const preparedConfig = ensureCredentialsDbCompatibility(config)
+	runtime.authHandler = (request: Request) => Auth(request, preparedConfig)
 	runtime.basePath = options.basePath
 	runtime.baseUrl = options.baseUrl
 	runtime.cookieName = options.cookieName

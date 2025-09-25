@@ -2,6 +2,7 @@ import { Auth } from '@auth/core'
 import type { AuthConfig } from '@auth/core'
 import type { RoboRequest, RoboReply } from '@robojs/server'
 import { authLogger } from '../utils/logger.js'
+import { ensureCredentialsDbCompatibility } from './credentials-compat.js'
 
 export type AuthRequestHandler = (req: RoboRequest, res: RoboReply) => Promise<Response>
 
@@ -18,7 +19,8 @@ export function createAuthRequestHandler(config: AuthConfig): AuthRequestHandler
 	return async function authRequestHandler(request: RoboRequest): Promise<Response> {
 		try {
 			authLogger.debug('Handling auth request', { method: request.method, url: request.url })
-			return await Auth(request, config)
+			const preparedConfig = ensureCredentialsDbCompatibility(config)
+			return await Auth(request, preparedConfig)
 		} catch (err: unknown) {
 			authLogger.warn('Error in Auth.js request handler', { error: getString(err, 'message'), stack: getString(err, 'stack') })
 			const rawCode = extractErrorCode(err)
@@ -69,15 +71,15 @@ function getObject(obj: unknown, key: string): Record<string, unknown> | undefin
 }
 
 function extractErrorCode(err: unknown): string | undefined {
-  const direct = getString(err, 'code') ?? getString(err, 'name')
-  if (direct) return direct
-  const cause = getObject(err, 'cause')
-  if (cause) {
-    const fromCause = getString(cause, 'code') ?? getString(cause, 'name')
-    if (fromCause) return fromCause
-    const nested = getObject(cause, 'err')
-    const fromNested = getString(nested, 'code') ?? getString(nested, 'name') ?? getString(nested, 'message')
-    if (fromNested) return fromNested
-  }
-  return getString(err, 'message')
+	const direct = getString(err, 'code') ?? getString(err, 'name')
+	if (direct) return direct
+	const cause = getObject(err, 'cause')
+	if (cause) {
+		const fromCause = getString(cause, 'code') ?? getString(cause, 'name')
+		if (fromCause) return fromCause
+		const nested = getObject(cause, 'err')
+		const fromNested = getString(nested, 'code') ?? getString(nested, 'name') ?? getString(nested, 'message')
+		if (fromNested) return fromNested
+	}
+	return getString(err, 'message')
 }
