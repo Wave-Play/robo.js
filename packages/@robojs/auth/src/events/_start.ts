@@ -6,11 +6,10 @@ import { normalizeAuthOptions, type NormalizedAuthPluginOptions } from '../confi
 import { createAuthRequestHandler } from '../runtime/handler.js'
 import { AUTH_ROUTES } from '../runtime/route-map.js'
 import { configureAuthRuntime } from '../runtime/server-helpers.js'
-import { createSignupHandler } from '../runtime/signup.js'
 import { nanoid } from 'nanoid'
 import { authLogger } from '../utils/logger.js'
-import { findUserIdByEmail } from '../builtins/email-password/store.js'
-import { attachDbSessionCookie, isSuccessRedirect } from '../runtime/session-helpers.js'
+import { registerEmailPasswordRuntime } from '../builtins/email-password/runtime.js'
+import { ensureLeadingSlash, joinPath, stripTrailingSlash } from '../utils/path.js'
 import { EmailManager, setEmailManager, notifyEmail } from '../emails/manager.js'
 import type { RoboReply, RoboRequest } from '@robojs/server'
 import type { Client } from 'discord.js'
@@ -25,106 +24,6 @@ const authLoggerInstance: Partial<LoggerInstance> = {
 	debug: (...data) => authLogger.debug(...data),
 	error: (...data) => authLogger.error(...data),
 	warn: (...data) => authLogger.warn(...data)
-}
-
-function ensureLeadingSlash(path: string): string {
-	if (!path.startsWith('/')) {
-		return '/' + path
-	}
-	return path
-}
-
-function stripTrailingSlash(path: string): string {
-	if (path.length > 1 && path.endsWith('/')) {
-		return path.slice(0, -1)
-	}
-	return path
-}
-
-function joinPath(base: string, suffix: string): string {
-	const normalizedBase = stripTrailingSlash(ensureLeadingSlash(base))
-	const normalizedSuffix = ensureLeadingSlash(suffix)
-	return normalizedBase === '/' ? normalizedSuffix : normalizedBase + normalizedSuffix
-}
-
-function escapeHtml(value: string): string {
-	return value
-		.replace(/&/g, '&amp;')
-		.replace(/</g, '&lt;')
-		.replace(/>/g, '&gt;')
-		.replace(/"/g, '&quot;')
-		.replace(/'/g, '&#39;')
-}
-
-type PasswordResetMessage = { text: string; variant: 'success' | 'error' }
-
-function renderPasswordResetPage(params: {
-	actionUrl: string
-	token: string | null
-	identifier: string | null
-	signInUrl: string
-	message?: PasswordResetMessage
-}): string {
-	const { actionUrl, token, identifier, signInUrl, message } = params
-	const hasToken = Boolean(token && identifier)
-	const title = hasToken ? 'Set a new password' : 'Reset link invalid'
-	const bodyCopy = hasToken
-		? 'Choose a new password for your account.'
-		: 'This reset link is missing required details or may have expired.'
-	const safeAction = escapeHtml(actionUrl)
-	const safeSignInUrl = escapeHtml(signInUrl)
-	const safeToken = token ? escapeHtml(token) : ''
-	const safeIdentifier = identifier ? escapeHtml(identifier) : ''
-	const banner = message
-		? `<div class="banner banner--${message.variant}">${escapeHtml(message.text)}</div>`
-		: ''
-	const content = hasToken
-		? `<form method="POST" action="${safeAction}">
-			<input type="hidden" name="token" value="${safeToken}" />
-			<input type="hidden" name="identifier" value="${safeIdentifier}" />
-			<h1>${title}</h1>
-			<p>${bodyCopy}</p>
-			<label>New password
-				<input type="password" name="password" minlength="8" required autocomplete="new-password" autofocus />
-			</label>
-			<button type="submit">Save password</button>
-			<p class="muted"><a href="${safeSignInUrl}">Back to sign in</a></p>
-		</form>`
-		: `<div class="card">
-			<h1>${title}</h1>
-			<p>${bodyCopy}</p>
-			<p class="muted"><a href="${safeSignInUrl}">Return to sign in</a></p>
-		</div>`
-		return `<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>${title}</title>
-    <style>
-      :root { color-scheme: light dark; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-      body { margin:0; padding:32px 16px; background:#0b0d12; color:#e5e7eb; }
-      .viewport { max-width:520px; margin:0 auto; }
-      form, .card { background:#131722; border-radius:14px; padding:28px; box-shadow:0 2px 8px rgba(0,0,0,0.3); display:flex; flex-direction:column; gap:16px; }
-      h1 { margin:0 0 4px; font-size:22px; }
-      p { margin:0; line-height:1.6; }
-      label { display:flex; flex-direction:column; gap:8px; font-weight:600; }
-      input[type='password'] { border-radius:10px; border:1px solid rgba(148,163,184,0.35); padding:12px; font-size:15px; background:rgba(15,23,42,0.75); color:inherit; }
-      button { border:none; border-radius:10px; padding:12px 18px; background:#6366f1; color:#fff; font-weight:600; cursor:pointer; }
-      button:hover { background:#4f46e5; }
-      .muted { color:rgba(148,163,184,0.85); font-size:14px; }
-      a { color:#818cf8; }
-      .banner { border-radius:12px; padding:14px 18px; margin-bottom:12px; font-weight:600; }
-      .banner--success { background:rgba(34,197,94,0.12); color:#4ade80; border:1px solid rgba(34,197,94,0.35); }
-      .banner--error { background:rgba(248,113,113,0.12); color:#fca5a5; border:1px solid rgba(248,113,113,0.35); }
-    </style>
-  </head>
-  <body>
-    <div class="viewport">
-      ${banner}${content}
-    </div>
-  </body>
-</html>`
 }
 
 function adjustCookieSecurity(cookies: CookiesOptions, baseUrl: string): CookiesOptions {
@@ -299,21 +198,26 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 			// Only emit login alert for existing users; skip new users
 			const isNewUser = (message as { isNewUser?: boolean }).isNewUser
 			const uid = String(message.user?.id ?? message.account?.providerAccountId ?? '')
+			const providerId = (message.account as { provider?: string } | undefined)?.provider ?? null
 			if (isNewUser || (uid && recentNewUsers.has(uid)) || (uid && recentSigninNotified.has(uid))) {
 				recentNewUsers.delete(uid)
 				recentSigninNotified.delete(uid)
 				return
 			}
-			try {
-				await notifyEmail('session:created', {
-					user: {
-						id: uid,
-						email: message.user?.email ?? null,
-						name: message.user?.name ?? null
-					}
-				})
-			} catch (e) {
-				authLogger.warn('Failed to send new sign-in email', e)
+
+			// Credentials logins are handled by the email-password runtime to enrich context.
+			if (providerId !== 'credentials') {
+				try {
+					await notifyEmail('session:created', {
+						user: {
+							id: uid,
+							email: message.user?.email ?? null,
+							name: message.user?.name ?? null
+						}
+					})
+				} catch (e) {
+					authLogger.warn('Failed to send new sign-in email', e)
+				}
 			}
 		}
 	}
@@ -368,400 +272,28 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 	}
 
 	const handler = createAuthRequestHandler(authConfig)
-	const signupHandler = createSignupHandler({
-		authConfig,
-		adapter,
-		basePath,
-		baseUrl,
-		cookies,
-		defaultRedirectPath: options.pages?.newUser ?? '/dashboard',
-		secret,
-		sessionStrategy: options.session.strategy ?? 'jwt',
-		events: composedEvents
+
+	const hasCredentialsProvider = providers.some((provider) => {
+		return typeof provider === 'object' && provider && (provider as { id?: string }).id === 'credentials'
 	})
 
-	const signupPath = joinPath(basePath, '/signup')
-	Server.registerRoute(signupPath, async (request: RoboRequest) => {
-		const method = request.method?.toUpperCase() ?? 'GET'
-		if (method === 'OPTIONS') {
-			return new Response(null, {
-				headers: {
-					Allow: 'POST, OPTIONS'
-				},
-				status: 204
-			})
-		}
-
-		if (method !== 'POST') {
-			authLogger.warn('Rejected credentials signup with disallowed method.', {
-				method,
-				path: signupPath
-			})
-			return new Response(null, {
-				headers: { Allow: 'POST, OPTIONS' },
-				status: 405
-			})
-		}
-
-		const response = await signupHandler(request)
-		authLogger.debug('Handled credentials signup request.', {
-			method,
-			path: signupPath,
-			status: response.status
+	if (hasCredentialsProvider) {
+		registerEmailPasswordRuntime({
+			adapter,
+			authConfig,
+			basePath,
+			baseUrl,
+			cookies,
+			events: composedEvents,
+			handler,
+			options,
+			recentSigninNotified,
+			secret,
+			sessionStrategy: options.session.strategy ?? 'jwt'
 		})
-		return response
-	})
+	}
+
 	const methods = collectMethods(basePath)
-
-	// Detect presence of Credentials provider to minimize overhead
-	const hasCredentialsProvider = providers.some((p) => {
-		return typeof p === 'object' && p && (p as { id?: string }).id === 'credentials'
-	})
-
-	// Email verification endpoints (only when Credentials provider is in use)
-	if (hasCredentialsProvider) {
-		const verifyConfirmPath = joinPath(basePath, '/verify-email/confirm')
-		Server.registerRoute(verifyConfirmPath, async (request: RoboRequest) => {
-			const url = new URL(request.url)
-			const token = url.searchParams.get('token') ?? undefined
-			const identifier = url.searchParams.get('identifier') ?? undefined
-			if (!token || !identifier) {
-				const fallbackPath = options.pages?.verifyRequest ?? '/verify-email'
-				return Response.redirect(new URL(fallbackPath + '?error=MissingParams', baseUrl).toString(), 303)
-			}
-			try {
-				const used = await adapter.useVerificationToken?.({ identifier, token })
-				if (!used) {
-					const fallbackPath = options.pages?.verifyRequest ?? '/verify-email'
-					return Response.redirect(new URL(fallbackPath + '?error=InvalidOrExpired', baseUrl).toString(), 303)
-				}
-				const user = await adapter.getUserByEmail?.(identifier)
-				if (!user) {
-					const fallbackPath = options.pages?.verifyRequest ?? '/verify-email'
-					return Response.redirect(new URL(fallbackPath + '?error=UserNotFound', baseUrl).toString(), 303)
-				}
-				await adapter.updateUser?.({ ...user, emailVerified: new Date() })
-				try {
-					await notifyEmail('email:verified', {
-						user: { id: user.id, email: user.email ?? null, name: user.name ?? null },
-						request: { origin: baseUrl }
-					})
-				} catch (e) {
-					authLogger.warn('Failed to send email verified confirmation email', e)
-				}
-
-				const fallbackPath = options.pages?.verifyRequest ?? '/verify-email'
-				return Response.redirect(new URL(fallbackPath + '?status=ok', baseUrl).toString(), 303)
-			} catch (e) {
-				authLogger.warn('Email verification failed', { error: (e as Error)?.message })
-				const fallbackPath = options.pages?.verifyRequest ?? '/verify-email'
-				return Response.redirect(new URL(fallbackPath + '?error=ServerError', baseUrl).toString(), 303)
-			}
-		})
-
-		// Email verification: default built-in page (simple HTML)
-		const verifyPagePath = joinPath(basePath, '/verify-email')
-		Server.registerRoute(verifyPagePath, async (request: RoboRequest) => {
-			const url = new URL(request.url)
-			const status = url.searchParams.get('status')
-			const error = url.searchParams.get('error')
-			const wantsJson = request.headers.get('accept')?.includes('application/json')
-			if (wantsJson) {
-				return new Response(JSON.stringify({ status: status ?? (error ? 'error' : 'pending'), error }), {
-					headers: { 'content-type': 'application/json' },
-					status: 200
-				})
-			}
-			const title = status === 'ok' ? 'Email Confirmed' : error ? 'Verification Failed' : 'Verify Your Email'
-			const body =
-				status === 'ok'
-					? '<p>Your email has been confirmed. You can close this window.</p>'
-					: error
-						? `<p>We could not confirm your email. (${error})</p>`
-						: '<p>Follow the link we sent to your email to confirm your account.</p>'
-			const html = `<!doctype html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width"/><title>${title}</title><style>body{font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Arial,sans-serif;padding:32px;background:#0b0d12;color:#e5e7eb} .card{max-width:560px;margin:0 auto;background:#131722;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.3)} h1{margin:0 0 12px;font-size:22px}</style></head><body><div class="card"><h1>${title}</h1>${body}</div></body></html>`
-			return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8' } })
-		})
-
-		// Resend verification email on demand (by email)
-		const verifyRequestPath = joinPath(basePath, '/verify-email/request')
-		Server.registerRoute(verifyRequestPath, async (request: RoboRequest) => {
-			const method = request.method?.toUpperCase() ?? 'GET'
-			if (method !== 'POST') return new Response(null, { status: 405, headers: { Allow: 'POST' } })
-			try {
-				let email: string | null = null
-				const contentType = request.headers.get('content-type') ?? ''
-				if (contentType.includes('application/json')) {
-					const body = (await request.json()) as Record<string, unknown>
-					const raw = body['email']
-					if (typeof raw === 'string') email = raw.toLowerCase()
-				} else {
-					const form = await request.formData()
-					const raw = form.get('email')
-					if (typeof raw === 'string') email = raw.toLowerCase()
-				}
-				if (email) {
-					const user = await adapter.getUserByEmail?.(email)
-					if (user) {
-						const token = nanoid(32)
-						const expires = new Date(Date.now() + (options.email?.expiresInMinutes ?? 60) * 60 * 1000)
-						await adapter.createVerificationToken?.({ identifier: email, token, expires })
-						const url = new URL(joinPath(basePath, '/verify-email/confirm'), baseUrl)
-						url.searchParams.set('token', token)
-						url.searchParams.set('identifier', email)
-						try {
-							await notifyEmail('email:verification-requested', {
-								user: { id: user.id, email: user.email ?? null, name: user.name ?? null },
-								links: { verifyEmail: url.toString() },
-								request: { origin: baseUrl }
-							})
-						} catch (e) {
-							authLogger.warn('Failed to send email verification request email', e)
-						}
-					}
-				}
-				return new Response(null, { status: 204 })
-			} catch {
-				return new Response(null, { status: 204 })
-			}
-		})
-
-		// Password reset endpoints
-		const resetRequestPath = joinPath(basePath, '/password/reset/request')
-		Server.registerRoute(resetRequestPath, async (request: RoboRequest) => {
-			const method = request.method?.toUpperCase() ?? 'GET'
-			if (method !== 'POST') return new Response(null, { status: 405, headers: { Allow: 'POST' } })
-			try {
-				let email: string | null = null
-				const contentType = request.headers.get('content-type') ?? ''
-				if (contentType.includes('application/json')) {
-					const body = (await request.json()) as Record<string, unknown>
-					const raw = body['email']
-					if (typeof raw === 'string') email = raw.toLowerCase()
-				} else {
-					const form = await request.formData()
-					const raw = form.get('email')
-					if (typeof raw === 'string') email = raw.toLowerCase()
-				}
-				if (email) {
-					const user = await adapter.getUserByEmail?.(email)
-					if (user) {
-						const token = nanoid(32)
-						const expires = new Date(Date.now() + (options.email?.expiresInMinutes ?? 60) * 60 * 1000)
-						await adapter.createVerificationToken?.({ identifier: email, token, expires })
-						const url = new URL(joinPath(basePath, '/password/reset/confirm'), baseUrl)
-						url.searchParams.set('token', token)
-						url.searchParams.set('identifier', email)
-						try {
-							await notifyEmail('password:reset-requested', {
-								user: { id: user.id, email: user.email ?? null, name: user.name ?? null },
-								links: { resetPassword: url.toString() },
-								request: { origin: baseUrl }
-							})
-						} catch (e) {
-							authLogger.warn('Failed to send password reset request email', e)
-						}
-					}
-				}
-				return new Response(null, { status: 204 })
-			} catch {
-				return new Response(null, { status: 204 })
-			}
-		})
-
-		const resetConfirmPath = joinPath(basePath, '/password/reset/confirm')
-		Server.registerRoute(resetConfirmPath, async (request: RoboRequest) => {
-			const method = request.method?.toUpperCase() ?? 'GET'
-			if (method === 'GET') {
-				const url = new URL(request.url, baseUrl)
-				const token = url.searchParams.get('token')
-				const identifier = url.searchParams.get('identifier')
-				const hasToken = Boolean(token && identifier)
-				const html = renderPasswordResetPage({
-					actionUrl: new URL(joinPath(basePath, '/password/reset/confirm'), baseUrl).toString(),
-					token,
-					identifier,
-					signInUrl: new URL(options.pages?.signIn ?? '/signin', baseUrl).toString(),
-					message: hasToken
-						? undefined
-						: { text: 'This reset link is missing required details or may have expired. Request a new email.', variant: 'error' }
-				})
-				return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8' } })
-			}
-				if (method !== 'POST') return new Response(null, { status: 405, headers: { Allow: 'POST' } })
-			const accept = request.headers.get('accept')?.toLowerCase() ?? ''
-			const wantsJson = accept.includes('application/json')
-			const htmlHeaders = { 'content-type': 'text/html; charset=utf-8' }
-			const jsonHeaders = { 'content-type': 'application/json' }
-			const actionUrl = new URL(joinPath(basePath, '/password/reset/confirm'), baseUrl).toString()
-			const signInUrl = new URL(options.pages?.signIn ?? '/signin', baseUrl)
-
-			const respondJson = (status: number, body?: Record<string, unknown>) =>
-				new Response(body ? JSON.stringify(body) : null, { status, headers: jsonHeaders })
-
-			const respondHtml = (status: number, message: PasswordResetMessage, fields?: { token?: string | null; identifier?: string | null }) =>
-				new Response(
-					renderPasswordResetPage({
-						actionUrl,
-						token: fields?.token ?? null,
-						identifier: fields?.identifier ?? null,
-						signInUrl: signInUrl.toString(),
-						message
-					}),
-					{ status, headers: htmlHeaders }
-				)
-
-			const invalidLink = () =>
-				wantsJson
-					? respondJson(400, { error: 'invalid_reset_link' })
-					: respondHtml(400, {
-						text: 'This reset link is invalid or has expired. Request a new email.',
-						variant: 'error'
-					})
-
-			try {
-				const contentType = request.headers.get('content-type') ?? ''
-				let token: string | undefined
-				let identifier: string | undefined
-				let newPassword: string | undefined
-				if (contentType.includes('application/json')) {
-					const body = (await request.json()) as Record<string, unknown>
-					token = typeof body['token'] === 'string' ? (body['token'] as string) : undefined
-					identifier = typeof body['identifier'] === 'string' ? (body['identifier'] as string).toLowerCase() : undefined
-					newPassword = typeof body['password'] === 'string' ? (body['password'] as string) : undefined
-				} else {
-					const form = await request.formData()
-					token = typeof form.get('token') === 'string' ? (form.get('token') as string) : undefined
-					identifier =
-						typeof form.get('identifier') === 'string' ? (form.get('identifier') as string).toLowerCase() : undefined
-					newPassword = typeof form.get('password') === 'string' ? (form.get('password') as string) : undefined
-				}
-
-				token = token?.trim()
-				identifier = identifier?.trim()
-				newPassword = newPassword?.trim()
-
-				if (!token || !identifier) return invalidLink()
-				if (!newPassword) {
-					return wantsJson
-						? respondJson(400, { error: 'missing_password' })
-						: respondHtml(
-							400,
-							{ text: 'Enter a new password to continue.', variant: 'error' },
-							{ token, identifier }
-						)
-				}
-				if (newPassword.length < 8) {
-					return wantsJson
-						? respondJson(400, { error: 'password_too_short', minLength: 8 })
-						: respondHtml(
-							400,
-							{ text: 'Passwords must be at least 8 characters long.', variant: 'error' },
-							{ token, identifier }
-						)
-				}
-
-				const used = await adapter.useVerificationToken?.({ identifier, token })
-				if (!used) return invalidLink()
-				const user = await adapter.getUserByEmail?.(identifier)
-				if (!user) return invalidLink()
-				try {
-					const { resetPassword, findUserIdByEmail } = await import('../builtins/email-password/store.js')
-					const uid = await findUserIdByEmail(identifier)
-					if (uid) await resetPassword(uid, newPassword)
-					await notifyEmail('password:reset-completed', {
-						user: { id: user.id, email: user.email ?? null, name: user.name ?? null },
-						request: { origin: baseUrl }
-					})
-				} catch (e) {
-					authLogger.warn('Failed to send password reset confirmation email', e)
-				}
-
-				if (wantsJson) {
-					return respondJson(200, { status: 'ok' })
-				}
-				const redirectUrl = new URL(signInUrl)
-				redirectUrl.searchParams.set('passwordReset', 'success')
-				return Response.redirect(redirectUrl.toString(), 303)
-			} catch (error) {
-				authLogger.warn('Password reset confirmation failed', { error: (error as Error)?.message })
-				return wantsJson
-					? respondJson(400, { error: 'invalid_request' })
-					: respondHtml(400, { text: 'We could not update your password. Try again from the reset email.', variant: 'error' })
-			}
-		})
-	}
-
-	// Intercept credentials callback to enrich email context and (for DB strategy) create session cookie
-	if (hasCredentialsProvider) {
-		if ((options.session.strategy ?? 'jwt') === 'database') {
-			authLogger.debug('Enabling credentials callback interception for DB session cookie issuance.')
-		}
-		const credentialsCallbackPath = joinPath(basePath, '/callback/credentials')
-		Server.registerRoute(credentialsCallbackPath, async (request: RoboRequest, reply: RoboReply) => {
-			const method = request.method?.toUpperCase() ?? 'GET'
-
-			// Delegate non-POST to default handler
-			if (method !== 'POST') {
-				return handler(request, reply)
-			}
-
-			// Capture email from request before passing to Auth()
-			let emailFromBody: string | null = null
-			try {
-				const clone = request.clone?.() ?? request
-				const form = await clone.formData()
-				const rawEmail = form.get('email')
-				if (typeof rawEmail === 'string') emailFromBody = rawEmail.toLowerCase()
-			} catch (e) {
-				authLogger.warn('Failed to parse email from credentials sign-in request', e)
-			}
-
-			const response = await handler(request, reply)
-
-			// Determine if sign-in succeeded (redirect without error)
-			if (!isSuccessRedirect(response)) {
-				return response
-			}
-
-			// Resolve user id via email mapping
-			const userId = emailFromBody ? await findUserIdByEmail(emailFromBody) : null
-			if (userId) {
-				// Fire sign-in email with request metadata (IP/UA)
-				const ip =
-					request.headers.get('cf-connecting-ip') ??
-					(request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-						request.headers.get('x-real-ip') ||
-						undefined)
-				const userAgent = request.headers.get('user-agent') ?? undefined
-				try {
-					await notifyEmail('session:created', {
-						user: { id: userId, email: emailFromBody ?? undefined, name: emailFromBody?.split('@')[0] },
-						session: { ip: ip ?? null, userAgent: userAgent ?? null }
-					})
-					recentSigninNotified.add(userId)
-				} catch (e) {
-					authLogger.warn('Failed to send sign-in email', e)
-				}
-			}
-
-			if ((options.session.strategy ?? 'jwt') === 'database' && userId) {
-				try {
-					return await attachDbSessionCookie({
-						response,
-						adapter,
-						cookies,
-						config: authConfig,
-						userId
-					})
-				} catch (e) {
-					authLogger.warn('Failed to create DB session for credentials login', { error: (e as Error)?.message })
-					return response
-				}
-			}
-			return response
-		})
-	}
 
 	for (const [path, allowedMethods] of methods.entries()) {
 		Server.registerRoute(path, async (request: RoboRequest, reply: RoboReply) => {

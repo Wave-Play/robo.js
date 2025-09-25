@@ -3,11 +3,11 @@ import { Auth } from '@auth/core'
 import type { AuthConfig } from '@auth/core'
 import type { Adapter, AdapterUser } from '@auth/core/adapters'
 import type { CookiesOptions } from '@auth/core/types'
-import { attachDbSessionCookie, isSuccessRedirect } from './session-helpers.js'
+import { attachDbSessionCookie, isSuccessRedirect } from '../../runtime/session-helpers.js'
 import type { RoboRequest } from '@robojs/server'
 import { nanoid } from 'nanoid'
-import { findUserIdByEmail, removePassword, storePassword } from '../builtins/email-password/store.js'
-import { authLogger } from '../utils/logger.js'
+import { findUserIdByEmail, removePassword, storePassword } from './store.js'
+import { authLogger } from '../../utils/logger.js'
 
 interface SignupHandlerOptions {
 	authConfig: AuthConfig
