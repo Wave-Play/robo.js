@@ -2,6 +2,10 @@ import { authLogger as baseLogger } from '../utils/logger.js'
 import type { AuthEmailEvent, AuthMailer, EmailBuilder, EmailContext, MailParty, TemplateConfig } from './types.js'
 import { DefaultWelcomeTemplate } from './templates/welcome.js'
 import { DefaultSignInTemplate } from './templates/signin.js'
+import {
+	DefaultPasswordResetCompletedTemplate,
+	DefaultPasswordResetRequestTemplate
+} from './templates/password-reset.js'
 
 type ModuleMailerSpec = { module: string; export?: string }
 
@@ -151,6 +155,8 @@ export class EmailManager {
 	private getDefaultTemplate(event: AuthEmailEvent): TemplateConfig | undefined {
 		if (event === 'user:created') return DefaultWelcomeTemplate
 		if (event === 'session:created') return DefaultSignInTemplate
+		if (event === 'password:reset-requested') return DefaultPasswordResetRequestTemplate
+		if (event === 'password:reset-completed') return DefaultPasswordResetCompletedTemplate
 		return undefined
 	}
 }

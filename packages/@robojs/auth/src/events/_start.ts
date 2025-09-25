@@ -47,6 +47,86 @@ function joinPath(base: string, suffix: string): string {
 	return normalizedBase === '/' ? normalizedSuffix : normalizedBase + normalizedSuffix
 }
 
+function escapeHtml(value: string): string {
+	return value
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&#39;')
+}
+
+type PasswordResetMessage = { text: string; variant: 'success' | 'error' }
+
+function renderPasswordResetPage(params: {
+	actionUrl: string
+	token: string | null
+	identifier: string | null
+	signInUrl: string
+	message?: PasswordResetMessage
+}): string {
+	const { actionUrl, token, identifier, signInUrl, message } = params
+	const hasToken = Boolean(token && identifier)
+	const title = hasToken ? 'Set a new password' : 'Reset link invalid'
+	const bodyCopy = hasToken
+		? 'Choose a new password for your account.'
+		: 'This reset link is missing required details or may have expired.'
+	const safeAction = escapeHtml(actionUrl)
+	const safeSignInUrl = escapeHtml(signInUrl)
+	const safeToken = token ? escapeHtml(token) : ''
+	const safeIdentifier = identifier ? escapeHtml(identifier) : ''
+	const banner = message
+		? `<div class="banner banner--${message.variant}">${escapeHtml(message.text)}</div>`
+		: ''
+	const content = hasToken
+		? `<form method="POST" action="${safeAction}">
+			<input type="hidden" name="token" value="${safeToken}" />
+			<input type="hidden" name="identifier" value="${safeIdentifier}" />
+			<h1>${title}</h1>
+			<p>${bodyCopy}</p>
+			<label>New password
+				<input type="password" name="password" minlength="8" required autocomplete="new-password" autofocus />
+			</label>
+			<button type="submit">Save password</button>
+			<p class="muted"><a href="${safeSignInUrl}">Back to sign in</a></p>
+		</form>`
+		: `<div class="card">
+			<h1>${title}</h1>
+			<p>${bodyCopy}</p>
+			<p class="muted"><a href="${safeSignInUrl}">Return to sign in</a></p>
+		</div>`
+		return `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${title}</title>
+    <style>
+      :root { color-scheme: light dark; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+      body { margin:0; padding:32px 16px; background:#0b0d12; color:#e5e7eb; }
+      .viewport { max-width:520px; margin:0 auto; }
+      form, .card { background:#131722; border-radius:14px; padding:28px; box-shadow:0 2px 8px rgba(0,0,0,0.3); display:flex; flex-direction:column; gap:16px; }
+      h1 { margin:0 0 4px; font-size:22px; }
+      p { margin:0; line-height:1.6; }
+      label { display:flex; flex-direction:column; gap:8px; font-weight:600; }
+      input[type='password'] { border-radius:10px; border:1px solid rgba(148,163,184,0.35); padding:12px; font-size:15px; background:rgba(15,23,42,0.75); color:inherit; }
+      button { border:none; border-radius:10px; padding:12px 18px; background:#6366f1; color:#fff; font-weight:600; cursor:pointer; }
+      button:hover { background:#4f46e5; }
+      .muted { color:rgba(148,163,184,0.85); font-size:14px; }
+      a { color:#818cf8; }
+      .banner { border-radius:12px; padding:14px 18px; margin-bottom:12px; font-weight:600; }
+      .banner--success { background:rgba(34,197,94,0.12); color:#4ade80; border:1px solid rgba(34,197,94,0.35); }
+      .banner--error { background:rgba(248,113,113,0.12); color:#fca5a5; border:1px solid rgba(248,113,113,0.35); }
+    </style>
+  </head>
+  <body>
+    <div class="viewport">
+      ${banner}${content}
+    </div>
+  </body>
+</html>`
+}
+
 function adjustCookieSecurity(cookies: CookiesOptions, baseUrl: string): CookiesOptions {
 	const isSecure = baseUrl.startsWith('https://')
 	if (isSecure) return cookies
@@ -492,7 +572,53 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 		const resetConfirmPath = joinPath(basePath, '/password/reset/confirm')
 		Server.registerRoute(resetConfirmPath, async (request: RoboRequest) => {
 			const method = request.method?.toUpperCase() ?? 'GET'
-			if (method !== 'POST') return new Response(null, { status: 405, headers: { Allow: 'POST' } })
+			if (method === 'GET') {
+				const url = new URL(request.url, baseUrl)
+				const token = url.searchParams.get('token')
+				const identifier = url.searchParams.get('identifier')
+				const hasToken = Boolean(token && identifier)
+				const html = renderPasswordResetPage({
+					actionUrl: new URL(joinPath(basePath, '/password/reset/confirm'), baseUrl).toString(),
+					token,
+					identifier,
+					signInUrl: new URL(options.pages?.signIn ?? '/signin', baseUrl).toString(),
+					message: hasToken
+						? undefined
+						: { text: 'This reset link is missing required details or may have expired. Request a new email.', variant: 'error' }
+				})
+				return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8' } })
+			}
+				if (method !== 'POST') return new Response(null, { status: 405, headers: { Allow: 'POST' } })
+			const accept = request.headers.get('accept')?.toLowerCase() ?? ''
+			const wantsJson = accept.includes('application/json')
+			const htmlHeaders = { 'content-type': 'text/html; charset=utf-8' }
+			const jsonHeaders = { 'content-type': 'application/json' }
+			const actionUrl = new URL(joinPath(basePath, '/password/reset/confirm'), baseUrl).toString()
+			const signInUrl = new URL(options.pages?.signIn ?? '/signin', baseUrl)
+
+			const respondJson = (status: number, body?: Record<string, unknown>) =>
+				new Response(body ? JSON.stringify(body) : null, { status, headers: jsonHeaders })
+
+			const respondHtml = (status: number, message: PasswordResetMessage, fields?: { token?: string | null; identifier?: string | null }) =>
+				new Response(
+					renderPasswordResetPage({
+						actionUrl,
+						token: fields?.token ?? null,
+						identifier: fields?.identifier ?? null,
+						signInUrl: signInUrl.toString(),
+						message
+					}),
+					{ status, headers: htmlHeaders }
+				)
+
+			const invalidLink = () =>
+				wantsJson
+					? respondJson(400, { error: 'invalid_reset_link' })
+					: respondHtml(400, {
+						text: 'This reset link is invalid or has expired. Request a new email.',
+						variant: 'error'
+					})
+
 			try {
 				const contentType = request.headers.get('content-type') ?? ''
 				let token: string | undefined
@@ -510,11 +636,35 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 						typeof form.get('identifier') === 'string' ? (form.get('identifier') as string).toLowerCase() : undefined
 					newPassword = typeof form.get('password') === 'string' ? (form.get('password') as string) : undefined
 				}
-				if (!token || !identifier || !newPassword) return new Response(null, { status: 400 })
+
+				token = token?.trim()
+				identifier = identifier?.trim()
+				newPassword = newPassword?.trim()
+
+				if (!token || !identifier) return invalidLink()
+				if (!newPassword) {
+					return wantsJson
+						? respondJson(400, { error: 'missing_password' })
+						: respondHtml(
+							400,
+							{ text: 'Enter a new password to continue.', variant: 'error' },
+							{ token, identifier }
+						)
+				}
+				if (newPassword.length < 8) {
+					return wantsJson
+						? respondJson(400, { error: 'password_too_short', minLength: 8 })
+						: respondHtml(
+							400,
+							{ text: 'Passwords must be at least 8 characters long.', variant: 'error' },
+							{ token, identifier }
+						)
+				}
+
 				const used = await adapter.useVerificationToken?.({ identifier, token })
-				if (!used) return new Response(null, { status: 400 })
+				if (!used) return invalidLink()
 				const user = await adapter.getUserByEmail?.(identifier)
-				if (!user) return new Response(null, { status: 400 })
+				if (!user) return invalidLink()
 				try {
 					const { resetPassword, findUserIdByEmail } = await import('../builtins/email-password/store.js')
 					const uid = await findUserIdByEmail(identifier)
@@ -526,9 +676,18 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 				} catch (e) {
 					authLogger.warn('Failed to send password reset confirmation email', e)
 				}
-				return new Response(null, { status: 204 })
-			} catch {
-				return new Response(null, { status: 400 })
+
+				if (wantsJson) {
+					return respondJson(200, { status: 'ok' })
+				}
+				const redirectUrl = new URL(signInUrl)
+				redirectUrl.searchParams.set('passwordReset', 'success')
+				return Response.redirect(redirectUrl.toString(), 303)
+			} catch (error) {
+				authLogger.warn('Password reset confirmation failed', { error: (error as Error)?.message })
+				return wantsJson
+					? respondJson(400, { error: 'invalid_request' })
+					: respondHtml(400, { text: 'We could not update your password. Try again from the reset email.', variant: 'error' })
 			}
 		})
 	}
