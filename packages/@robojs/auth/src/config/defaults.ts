@@ -19,6 +19,7 @@ export interface NormalizedAuthPluginOptions {
 	debug?: boolean
 	events?: AuthConfig['events']
 	email?: AuthPluginOptions['email']
+	emails?: AuthPluginOptions['emails']
 	pages?: AuthPluginOptions['pages']
 	providers: Provider[]
 	redirectProxyUrl?: string
@@ -52,6 +53,7 @@ export function normalizeAuthOptions(options: unknown): NormalizedAuthPluginOpti
 		debug: parsed.debug,
 		events: parsed.events as AuthConfig['events'],
 		email: parsed.email,
+		emails: parsed.emails,
 		pages: parsed.pages,
 		providers: (parsed.providers ?? []) as Provider[],
 		redirectProxyUrl: parsed.redirectProxyUrl,

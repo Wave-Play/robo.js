@@ -2,6 +2,16 @@ import { z } from 'zod'
 
 const functionSchema = z.function().args(z.any()).returns(z.any())
 
+const mailPartySchema = z.union([
+    z.string(),
+    z
+        .object({
+            name: z.string().optional(),
+            address: z.string()
+        })
+        .strict()
+])
+
 const partialCookieSchema = z
 	.object({
 		name: z.string().optional(),
@@ -64,35 +74,46 @@ const eventsSchema = z
 	.optional()
 
 const emailSchema = z
-	.object({
-		from: z.string().optional(),
-		template: z.union([z.string(), functionSchema]).optional(),
-		subject: z.union([z.string(), functionSchema]).optional(),
-		text: z.union([z.string(), functionSchema]).optional(),
-		deliver: functionSchema.optional(),
-		sendVerificationRequest: functionSchema.optional(),
-		expiresInMinutes: z.number().int().positive().optional()
-	})
-	.partial()
-	.optional()
+    .object({
+        from: z.string().optional(),
+        template: z.union([z.string(), functionSchema]).optional(),
+        subject: z.union([z.string(), functionSchema]).optional(),
+        text: z.union([z.string(), functionSchema]).optional(),
+        deliver: functionSchema.optional(),
+        sendVerificationRequest: functionSchema.optional(),
+        expiresInMinutes: z.number().int().positive().optional()
+    })
+    .partial()
+    .optional()
+
+const emailsSchema = z
+    .object({
+        from: mailPartySchema.optional(),
+        mailer: z.unknown().optional(),
+        templates: z.record(z.any()).optional(),
+        triggers: z.record(z.any()).optional()
+    })
+    .partial()
+    .optional()
 
 export const authPluginOptionsSchema = z
-	.object({
-		adapter: z.unknown().optional(),
-		allowDangerousEmailAccountLinking: z.boolean().optional(),
-		basePath: z.string().optional(),
-		callbacks: callbacksSchema,
-		cookies: cookiesSchema,
-		debug: z.boolean().optional(),
-		events: eventsSchema,
-		email: emailSchema,
-		pages: pagesSchema,
-		providers: z.array(z.any()).optional(),
-		redirectProxyUrl: z.string().url().optional(),
-		secret: z.string().min(1).optional(),
-		session: sessionSchema,
-		url: z.string().url().optional()
-	})
-	.strict()
+    .object({
+        adapter: z.unknown().optional(),
+        allowDangerousEmailAccountLinking: z.boolean().optional(),
+        basePath: z.string().optional(),
+        callbacks: callbacksSchema,
+        cookies: cookiesSchema,
+        debug: z.boolean().optional(),
+        events: eventsSchema,
+        email: emailSchema,
+        emails: emailsSchema,
+        pages: pagesSchema,
+        providers: z.array(z.any()).optional(),
+        redirectProxyUrl: z.string().url().optional(),
+        secret: z.string().min(1).optional(),
+        session: sessionSchema,
+        url: z.string().url().optional()
+    })
+    .strict()
 
 export type AuthPluginOptions = z.infer<typeof authPluginOptionsSchema>

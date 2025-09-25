@@ -22,6 +22,14 @@
 			"types": "./.robo/build/client.d.ts",
 			"default": "./.robo/build/client.js"
 		},
+		"./emails": {
+			"types": "./.robo/build/emails/index.d.ts",
+			"default": "./.robo/build/emails/index.js"
+		},
+		"./emails/*": {
+			"types": "./.robo/build/emails/*.d.ts",
+			"default": "./.robo/build/emails/*.js"
+		},
 		"./providers": {
 			"types": "./.robo/build/providers/index.d.ts",
 			"default": "./.robo/build/providers/index.js"
@@ -70,6 +78,7 @@
 		"@types/node": "^24.2.1",
 		"discord.js": "^14.21.0",
 		"prettier": "^3.6.2",
+		"resend": "^6.1.0",
 		"robo.js": "workspace:*",
 		"typescript": "^5.9.2"
 	},

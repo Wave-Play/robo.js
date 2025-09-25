@@ -1,11 +1,6 @@
 import { randomBytes } from 'node:crypto'
 import { getPluginOptions } from 'robo.js'
 import { Server } from '@robojs/server'
-import type { RoboReply, RoboRequest } from '@robojs/server'
-import type { Client } from 'discord.js'
-import type { AuthConfig } from '@auth/core'
-import type { CookiesOptions, LoggerInstance } from '@auth/core/types'
-import type { Provider } from '@auth/core/providers'
 import { createFlashcoreAdapter } from '../adapters/flashcore.js'
 import { normalizeAuthOptions, type NormalizedAuthPluginOptions } from '../config/defaults.js'
 import { createAuthRequestHandler } from '../runtime/handler.js'
@@ -13,9 +8,15 @@ import { AUTH_ROUTES } from '../runtime/route-map.js'
 import { configureAuthRuntime } from '../runtime/server-helpers.js'
 import { createSignupHandler } from '../runtime/signup.js'
 import { authLogger } from '../utils/logger.js'
-import type { HttpMethod } from '../runtime/route-map.js'
 import { findUserIdByEmail } from '../builtins/email-password/store.js'
 import { attachDbSessionCookie, isSuccessRedirect } from '../runtime/session-helpers.js'
+import { EmailManager, setEmailManager, notifyEmail } from '../emails/manager.js'
+import type { RoboReply, RoboRequest } from '@robojs/server'
+import type { Client } from 'discord.js'
+import type { AuthConfig } from '@auth/core'
+import type { CookiesOptions, LoggerInstance } from '@auth/core/types'
+import type { Provider } from '@auth/core/providers'
+import type { HttpMethod } from '../runtime/route-map.js'
 
 type MethodMap = Map<string, Set<HttpMethod>>
 
@@ -155,12 +156,69 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 	const adapter = options.adapter ?? createFlashcoreAdapter({ secret })
 	const cookies = adjustCookieSecurity(options.cookies, baseUrl)
 
+	// Compose Auth.js events so we can trigger optional emails without stealing user hooks
+	const recentNewUsers = new Set<string>()
+	const userEvents = options.events ?? {}
+	const composedEvents: AuthConfig['events'] = {
+		...userEvents,
+		async createUser(message) {
+			await userEvents?.createUser?.(message)
+
+			try {
+				await notifyEmail('user:created', {
+					user: {
+						id: String((message as { user?: { id?: string } })?.user?.id ?? ''),
+						email: message.user.email ?? null,
+						name: message.user.name ?? null
+					}
+				})
+				const uid = String((message as { user?: { id?: string } })?.user?.id ?? '')
+				if (uid) recentNewUsers.add(uid)
+			} catch (e) {
+				authLogger.warn('Failed to send user creation email', e)
+			}
+		},
+		async signIn(message) {
+			await userEvents?.signIn?.(message)
+
+			// Only emit login alert for existing users; skip new users
+			const isNewUser = (message as { isNewUser?: boolean }).isNewUser
+			const uid = String(message.user?.id ?? message.account?.providerAccountId ?? '')
+			if (isNewUser || (uid && recentNewUsers.has(uid))) {
+				recentNewUsers.delete(uid)
+				return
+			}
+			try {
+				await notifyEmail('session:created', {
+					user: {
+						id: uid,
+						email: message.user?.email ?? null,
+						name: message.user?.name ?? null
+					}
+				})
+			} catch (e) {
+				authLogger.warn('Failed to send new sign-in email', e)
+			}
+		}
+	}
+
+	// Initialize EmailManager only if a mailer is provided
+	const emailOptions = options.emails
+	if (emailOptions?.mailer) {
+		authLogger.debug('Initializing emails with custom mailer')
+		const mgr = new EmailManager(emailOptions as ConstructorParameters<typeof EmailManager>[0])
+		await mgr.init()
+		setEmailManager(mgr)
+	} else {
+		authLogger.debug('No custom mailer configured; auth emails disabled')
+	}
+
 	const authConfig: AuthConfig = {
 		adapter,
 		basePath,
 		callbacks: options.callbacks,
 		cookies,
-		events: options.events,
+		events: composedEvents,
 		pages: options.pages,
 		providers,
 		redirectProxyUrl: redirectProxyUrl ?? undefined,
@@ -181,7 +239,7 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 		defaultRedirectPath: options.pages?.newUser ?? '/dashboard',
 		secret,
 		sessionStrategy: options.session.strategy ?? 'jwt',
-		events: options.events
+		events: composedEvents
 	})
 
 	const signupPath = joinPath(basePath, '/signup')
