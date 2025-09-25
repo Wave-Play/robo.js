@@ -113,7 +113,7 @@ async function start(options?: StartOptions) {
 
 		const mode = Mode.get()
 		await Env.load({ mode })
-		await Flashcore.$init({ keyvOptions: config.flashcore?.keyv })
+		await Flashcore.$init({ keyvOptions: config.flashcore?.keyv, namespaceSeparator: config.flashcore?.namespaceSeparator })
 
 		// Wait for states to be loaded
 		if (stateLoad) {

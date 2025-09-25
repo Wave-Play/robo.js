@@ -88,7 +88,7 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 	}
 
 	// Initialize Flashcore to persist build error data
-	await Flashcore.$init({ keyvOptions: config.flashcore?.keyv })
+	await Flashcore.$init({ keyvOptions: config.flashcore?.keyv, namespaceSeparator: config.flashcore?.namespaceSeparator })
 
 	// Use the Robo Compiler to generate .robo/build
 	const compileTime = await Compiler.buildCode({

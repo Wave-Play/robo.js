@@ -22,6 +22,11 @@ export interface Config {
 	}
 	flashcore?: {
 		keyv?: unknown
+		/**
+		 * Separator placed between namespace and key when composing Flashcore keys.
+		 * Defaults to "/".
+		 */
+		namespaceSeparator?: string
 	}
 	invite?: {
 		autoPermissions?: boolean

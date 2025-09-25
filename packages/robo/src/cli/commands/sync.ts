@@ -48,7 +48,7 @@ async function syncAction(_args: string[], options: SyncCommandOptions) {
 
 	// Check past runs to see if we've already handled these plugins
 	const config = await loadConfig('robo', true)
-	await Flashcore.$init({ keyvOptions: config.flashcore?.keyv })
+	await Flashcore.$init({ keyvOptions: config.flashcore?.keyv, namespaceSeparator: config.flashcore?.namespaceSeparator })
 	const pluginRecord =
 		(await Flashcore.get<Record<string, boolean>>('plugins', {
 			namespace: ['robo', 'sync']
