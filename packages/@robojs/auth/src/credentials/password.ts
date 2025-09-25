@@ -7,9 +7,12 @@ import { authLogger } from '../utils/logger.js'
 
 type ProviderLike = ReturnType<typeof CredentialsProvider>
 
-const PASSWORD_KEY = (userId: string) => `auth:password:${userId}`
-const PASSWORD_EMAIL_KEY = (email: string) => `auth:passwordUserByEmail:${email.toLowerCase()}`
-const RESET_TOKEN_KEY = (token: string) => `auth:passwordReset:${token}`
+const NS_PASSWORD = ['auth', 'password']
+const NS_PASSWORD_EMAIL = ['auth', 'passwordUserByEmail']
+const NS_PASSWORD_RESET = ['auth', 'passwordReset']
+const PASSWORD_KEY = (userId: string) => userId
+const PASSWORD_EMAIL_KEY = (email: string) => email.toLowerCase()
+const RESET_TOKEN_KEY = (token: string) => token
 
 export interface PasswordRecord {
 	id: string
@@ -45,8 +48,8 @@ export async function storePassword(userId: string, email: string, password: str
 		createdAt: now,
 		updatedAt: now
 	}
-	await Flashcore.set(PASSWORD_KEY(userId), record)
-	await Flashcore.set(PASSWORD_EMAIL_KEY(record.email), userId)
+    await Flashcore.set(PASSWORD_KEY(userId), record, { namespace: NS_PASSWORD })
+    await Flashcore.set(PASSWORD_EMAIL_KEY(record.email), userId, { namespace: NS_PASSWORD_EMAIL })
 	return record
 }
 
@@ -59,7 +62,7 @@ export async function storePassword(userId: string, email: string, password: str
  * ```
  */
 export async function verifyPassword(userId: string, password: string): Promise<boolean> {
-	const record = await Flashcore.get<PasswordRecord | null>(PASSWORD_KEY(userId))
+    const record = await Flashcore.get<PasswordRecord | null>(PASSWORD_KEY(userId), { namespace: NS_PASSWORD })
 	if (!record) return false
 	return argon2.verify(record.hash, password)
 }
@@ -73,7 +76,7 @@ export async function verifyPassword(userId: string, password: string): Promise<
  * ```
  */
 export async function findUserIdByEmail(email: string): Promise<string | null> {
-	const id = await Flashcore.get<string | null>(PASSWORD_EMAIL_KEY(email))
+    const id = await Flashcore.get<string | null>(PASSWORD_EMAIL_KEY(email), { namespace: NS_PASSWORD_EMAIL })
 	return id ?? null
 }
 
@@ -86,11 +89,11 @@ export async function findUserIdByEmail(email: string): Promise<string | null> {
  * ```
  */
 export async function removePassword(userId: string): Promise<void> {
-	const record = await Flashcore.get<PasswordRecord | null>(PASSWORD_KEY(userId))
-	if (record?.email) {
-		await Flashcore.delete(PASSWORD_EMAIL_KEY(record.email))
-	}
-	await Flashcore.delete(PASSWORD_KEY(userId))
+    const record = await Flashcore.get<PasswordRecord | null>(PASSWORD_KEY(userId), { namespace: NS_PASSWORD })
+    if (record?.email) {
+        await Flashcore.delete(PASSWORD_EMAIL_KEY(record.email), { namespace: NS_PASSWORD_EMAIL })
+    }
+    await Flashcore.delete(PASSWORD_KEY(userId), { namespace: NS_PASSWORD })
 }
 
 /**
@@ -102,10 +105,10 @@ export async function removePassword(userId: string): Promise<void> {
  * ```
  */
 export async function createResetToken(userId: string, ttlMinutes = 30): Promise<PasswordResetToken> {
-	const token = nanoid(32)
-	const expires = new Date(Date.now() + ttlMinutes * 60 * 1000)
-	await Flashcore.set(RESET_TOKEN_KEY(token), { userId, expires })
-	return { token, userId, expires }
+    const token = nanoid(32)
+    const expires = new Date(Date.now() + ttlMinutes * 60 * 1000)
+    await Flashcore.set(RESET_TOKEN_KEY(token), { userId, expires }, { namespace: NS_PASSWORD_RESET })
+    return { token, userId, expires }
 }
 
 /**
@@ -117,9 +120,11 @@ export async function createResetToken(userId: string, ttlMinutes = 30): Promise
  * ```
  */
 export async function useResetToken(token: string): Promise<PasswordResetToken | null> {
-	const record = await Flashcore.get<{ userId: string; expires: string | Date } | null>(RESET_TOKEN_KEY(token))
-	if (!record) return null
-	await Flashcore.delete(RESET_TOKEN_KEY(token))
+    const record = await Flashcore.get<{ userId: string; expires: string | Date } | null>(RESET_TOKEN_KEY(token), {
+        namespace: NS_PASSWORD_RESET,
+    })
+    if (!record) return null
+    await Flashcore.delete(RESET_TOKEN_KEY(token), { namespace: NS_PASSWORD_RESET })
 	const expires = record.expires instanceof Date ? record.expires : new Date(record.expires)
 	if (expires < new Date()) {
 		authLogger.debug('Ignoring expired password reset token')
@@ -137,16 +142,16 @@ export async function useResetToken(token: string): Promise<PasswordResetToken |
  * ```
  */
 export async function resetPassword(userId: string, password: string): Promise<PasswordRecord | null> {
-	const existing = await Flashcore.get<PasswordRecord | null>(PASSWORD_KEY(userId))
-	if (!existing) return null
+    const existing = await Flashcore.get<PasswordRecord | null>(PASSWORD_KEY(userId), { namespace: NS_PASSWORD })
+    if (!existing) return null
 	const hash = await argon2.hash(password, { type: argon2.argon2id })
 	const updated: PasswordRecord = {
 		...existing,
 		hash,
 		updatedAt: new Date().toISOString()
 	}
-	await Flashcore.set(PASSWORD_KEY(userId), updated)
-	return updated
+    await Flashcore.set(PASSWORD_KEY(userId), updated, { namespace: NS_PASSWORD })
+    return updated
 }
 
 export interface PasswordCredentialsProviderOptions {
