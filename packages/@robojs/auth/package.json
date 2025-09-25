@@ -22,10 +22,6 @@
 			"types": "./.robo/build/providers/index.d.ts",
 			"default": "./.robo/build/providers/index.js"
 		},
-		"./providers/email-password": {
-			"types": "./.robo/build/credentials/password.d.ts",
-			"default": "./.robo/build/credentials/password.js"
-		},
 		"./providers/*": {
 			"types": "./.robo/build/providers/*.d.ts",
 			"default": "./.robo/build/providers/*.js"

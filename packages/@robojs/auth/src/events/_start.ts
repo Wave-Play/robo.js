@@ -14,7 +14,7 @@ import { configureAuthRuntime } from '../runtime/server-helpers.js'
 import { createSignupHandler } from '../runtime/signup.js'
 import { authLogger } from '../utils/logger.js'
 import type { HttpMethod } from '../runtime/route-map.js'
-import { findUserIdByEmail } from '../credentials/password.js'
+import { findUserIdByEmail } from '../builtins/email-password/store.js'
 import { attachDbSessionCookie, isSuccessRedirect } from '../runtime/session-helpers.js'
 
 type MethodMap = Map<string, Set<HttpMethod>>

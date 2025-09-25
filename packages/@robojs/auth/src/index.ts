@@ -4,15 +4,14 @@ export { DEFAULT_BASE_PATH, normalizeAuthOptions } from './config/defaults.js'
 export { authPluginOptionsSchema } from './config/schema.js'
 export type { AuthPluginOptions } from './config/schema.js'
 export {
-	createResetToken,
-	findUserIdByEmail,
-	passwordCredentialsProvider,
-	removePassword,
-	resetPassword,
-	storePassword,
-	useResetToken,
-	verifyPassword
-} from './credentials/password.js'
+  findUserIdByEmail,
+  removePassword,
+  resetPassword,
+  storePassword,
+  verifyPassword,
+} from './builtins/email-password/store.js'
+export { createResetToken, useResetToken } from './builtins/email-password/reset.js'
+export { default as EmailPasswordProvider } from './builtins/email-password/index.js'
 export { createAuthRequestHandler } from './runtime/handler.js'
 export { AUTH_ROUTES } from './runtime/route-map.js'
 export {

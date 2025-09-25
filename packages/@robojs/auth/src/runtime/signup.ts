@@ -6,7 +6,7 @@ import type { CookiesOptions } from '@auth/core/types'
 import { attachDbSessionCookie, isSuccessRedirect } from './session-helpers.js'
 import type { RoboRequest } from '@robojs/server'
 import { nanoid } from 'nanoid'
-import { findUserIdByEmail, removePassword, storePassword } from '../credentials/password.js'
+import { findUserIdByEmail, removePassword, storePassword } from '../builtins/email-password/store.js'
 import { authLogger } from '../utils/logger.js'
 
 interface SignupHandlerOptions {
