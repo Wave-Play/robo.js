@@ -73,16 +73,19 @@
 		"zod": "^3.22.4"
 	},
 	"devDependencies": {
+		"@react-email/components": "^0.5.5",
 		"@robojs/server": "workspace:*",
 		"@swc/core": "^1.13.3",
 		"@types/node": "^24.2.1",
 		"discord.js": "^14.21.0",
 		"prettier": "^3.6.2",
+		"react-dom": "^19.1.1",
 		"resend": "^6.1.0",
 		"robo.js": "workspace:*",
 		"typescript": "^5.9.2"
 	},
 	"peerDependencies": {
+		"@react-email/components": "*",
 		"@robojs/server": ">=0.6.5",
 		"robo.js": "^0.10.1"
 	},
@@ -92,6 +95,9 @@
 		},
 		"robo.js": {
 			"optional": false
+		},
+		"@react-email/components": {
+			"optional": true
 		}
 	}
 }

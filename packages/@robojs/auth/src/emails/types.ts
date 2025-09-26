@@ -41,11 +41,21 @@ export interface AuthMailer {
 	shutdown?(): Promise<void>
 }
 
+export type ReactEmailRenderable = unknown
+
+export type ReactTemplateValue =
+	| ReactEmailRenderable
+	| null
+	| undefined
+	| Promise<ReactEmailRenderable | null | undefined>
+	| ((ctx: EmailContext) => ReactEmailRenderable | null | undefined | Promise<ReactEmailRenderable | null | undefined>)
+
 export type TemplateConfig =
 	| {
 			subject: string | ((ctx: EmailContext) => string)
 			html?: string | ((ctx: EmailContext) => string)
 			text?: string | ((ctx: EmailContext) => string)
+			react?: ReactTemplateValue
 	  }
 	| {
 			templateId: string

@@ -9,6 +9,8 @@ type ProviderArray = (AuthConfig['providers'] & { [CREDENTIALS_COMPAT_FLAG]?: bo
 
 type CompatConfig = AuthConfig & { [PATCHED_CONFIG_FLAG]?: AuthConfig }
 
+type ResolvedProvider = Extract<Provider, { type: string }>
+
 /**
  * Auth.js 0.40 asserts that database sessions cannot be used when the only
  * provider is `credentials`. Robo.js augments credentials with additional
@@ -23,7 +25,9 @@ export function ensureCredentialsDbCompatibility(config: AuthConfig): AuthConfig
 	if (strategy !== 'database') return config
 	const providers = config.providers as ProviderArray
 	if (!providers?.length) return config
-	const resolvedProviders: Provider[] = providers.map((entry) => (typeof entry === 'function' ? entry() : entry))
+	const resolvedProviders = providers.map((entry) =>
+		typeof entry === 'function' ? entry() : entry
+	) as ResolvedProvider[]
 	const providerTypes = resolvedProviders.map((provider) => provider?.type ?? 'unknown')
 	const hasOnlyCredentials = resolvedProviders.every((provider) => provider?.type === 'credentials')
 	if (!hasOnlyCredentials) return config

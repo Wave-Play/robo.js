@@ -2,6 +2,7 @@ import { authLogger as baseLogger } from '../utils/logger.js'
 import type { AuthEmailEvent, AuthMailer, EmailBuilder, EmailContext, MailParty, TemplateConfig } from './types.js'
 import { DefaultWelcomeTemplate } from './templates/welcome.js'
 import { DefaultSignInTemplate } from './templates/signin.js'
+import { renderReactTemplate } from './react-renderer.js'
 import {
 	DefaultPasswordResetCompletedTemplate,
 	DefaultPasswordResetRequestTemplate
@@ -116,16 +117,12 @@ export class EmailManager {
 			if ('templateId' in userT) {
 				t = userT
 			} else if (defaultT && 'subject' in defaultT) {
-				// Merge inline template parts with defaults (subject/html/text)
-				const base = defaultT as {
-					subject: TemplateConfig extends { subject: infer S } ? S : never
-					html?: ((ctx: EmailContext) => string) | string
-					text?: ((ctx: EmailContext) => string) | string
-				}
+				// Merge inline template parts with defaults (subject/html/text/react)
 				t = {
-					subject: userT.subject ?? base.subject,
-					html: userT.html ?? base.html,
-					text: userT.text ?? base.text
+					subject: userT.subject ?? defaultT.subject,
+					html: userT.html ?? defaultT.html,
+					text: userT.text ?? defaultT.text,
+					react: userT.react ?? defaultT.react
 				}
 			} else {
 				t = userT
@@ -144,10 +141,16 @@ export class EmailManager {
 					const vars = typeof varFn === 'function' ? varFn(ctx) : undefined
 					return { to, subject: ' ', templateId: (t as { templateId: string }).templateId, variables: vars }
 				}
-				const subject = typeof t.subject === 'function' ? t.subject(ctx) : t.subject
-				const html = typeof t.html === 'function' ? t.html(ctx) : t.html
-				const text = typeof t.text === 'function' ? t.text(ctx) : t.text
-				return { to, subject, html, text }
+				const subject = await resolveValue(t.subject, ctx)
+				if (subject == null) {
+					throw new Error(`Email template for "${event}" must return a subject string.`)
+				}
+				const [reactHtml, html] = await Promise.all([
+					'react' in t ? renderReactTemplate(t.react, ctx) : Promise.resolve(undefined),
+					resolveValue(t.html, ctx)
+				])
+				const text = await resolveValue(t.text, ctx)
+				return { to, subject, html: reactHtml ?? html, text }
 			}
 		]
 	}
@@ -159,4 +162,23 @@ export class EmailManager {
 		if (event === 'password:reset-completed') return DefaultPasswordResetCompletedTemplate
 		return undefined
 	}
+}
+
+type MaybePromise<T> = T | Promise<T>
+
+async function resolveValue<T>(
+	value:
+		| T
+		| ((ctx: EmailContext) => MaybePromise<T>)
+		| Promise<T>
+		| undefined,
+	ctx: EmailContext
+): Promise<T | undefined> {
+	if (typeof value === 'function') {
+		return await (value as (ctx: EmailContext) => MaybePromise<T>)(ctx)
+	}
+	if (value && typeof value === 'object' && 'then' in (value as Record<string, unknown>)) {
+		return await (value as Promise<T>)
+	}
+	return value
 }
