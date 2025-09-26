@@ -1,4 +1,4 @@
-import type { EmailContext, ReactTemplateValue } from './types.js'
+import type { EmailContext, ReactTemplateRenderer } from './types.js'
 
 let componentsCheck: Promise<void> | undefined
 let reactDomServerModule: Promise<{ renderToStaticMarkup: (element: unknown) => string }> | undefined
@@ -41,29 +41,14 @@ async function getReactDomServer() {
 	return reactDomServerModule
 }
 
-async function resolveReactValue(
-	value: ReactTemplateValue | undefined,
-	ctx: EmailContext
-): Promise<unknown | null | undefined> {
-	if (typeof value === 'function') {
-		return await (value as (ctx: EmailContext) => unknown | null | undefined | Promise<unknown | null | undefined>)(
-			ctx
-		)
-	}
-	if (value && typeof value === 'object' && 'then' in (value as Record<string, unknown>)) {
-		return await (value as Promise<unknown | null | undefined>)
-	}
-	return value
-}
-
 export async function renderReactTemplate(
-	value: ReactTemplateValue | undefined,
+	value: ReactTemplateRenderer | undefined,
 	ctx: EmailContext
 ): Promise<string | undefined> {
-	if (value == null) return undefined
+	if (!value) return undefined
 
 	await ensureReactEmailComponentsAvailable()
-	const element = await resolveReactValue(value, ctx)
+	const element = await value(ctx)
 	if (element == null) return undefined
 
 	const { renderToStaticMarkup } = await getReactDomServer()

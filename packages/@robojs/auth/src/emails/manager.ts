@@ -1,5 +1,13 @@
 import { authLogger as baseLogger } from '../utils/logger.js'
-import type { AuthEmailEvent, AuthMailer, EmailBuilder, EmailContext, MailParty, TemplateConfig } from './types.js'
+import type {
+	AuthEmailEvent,
+	AuthMailer,
+	EmailBuilder,
+	EmailContext,
+	MailParty,
+	TemplateConfig,
+	TemplateValue
+} from './types.js'
 import { DefaultWelcomeTemplate } from './templates/welcome.js'
 import { DefaultSignInTemplate } from './templates/signin.js'
 import { renderReactTemplate } from './react-renderer.js'
@@ -164,18 +172,12 @@ export class EmailManager {
 	}
 }
 
-type MaybePromise<T> = T | Promise<T>
-
 async function resolveValue<T>(
-	value:
-		| T
-		| ((ctx: EmailContext) => MaybePromise<T>)
-		| Promise<T>
-		| undefined,
+	value: TemplateValue<T> | undefined,
 	ctx: EmailContext
 ): Promise<T | undefined> {
 	if (typeof value === 'function') {
-		return await (value as (ctx: EmailContext) => MaybePromise<T>)(ctx)
+		return await (value as (ctx: EmailContext) => Promise<T> | T)(ctx)
 	}
 	if (value && typeof value === 'object' && 'then' in (value as Record<string, unknown>)) {
 		return await (value as Promise<T>)

@@ -41,21 +41,22 @@ export interface AuthMailer {
 	shutdown?(): Promise<void>
 }
 
+export type MaybePromise<T> = T | Promise<T>
+
+export type TemplateValue<T> = MaybePromise<T> | ((ctx: EmailContext) => MaybePromise<T>)
+
 export type ReactEmailRenderable = unknown
 
-export type ReactTemplateValue =
-	| ReactEmailRenderable
-	| null
-	| undefined
-	| Promise<ReactEmailRenderable | null | undefined>
-	| ((ctx: EmailContext) => ReactEmailRenderable | null | undefined | Promise<ReactEmailRenderable | null | undefined>)
+export type ReactTemplateResult = ReactEmailRenderable | null | undefined
+
+export type ReactTemplateRenderer = (ctx: EmailContext) => MaybePromise<ReactTemplateResult>
 
 export type TemplateConfig =
 	| {
-			subject: string | ((ctx: EmailContext) => string)
-			html?: string | ((ctx: EmailContext) => string)
-			text?: string | ((ctx: EmailContext) => string)
-			react?: ReactTemplateValue
+			subject: TemplateValue<string>
+			html?: TemplateValue<string | undefined>
+			text?: TemplateValue<string | undefined>
+			react?: ReactTemplateRenderer
 	  }
 	| {
 			templateId: string
