@@ -1,22 +1,21 @@
 import { Server, type RoboReply, type RoboRequest } from '@robojs/server'
 import { nanoid } from 'nanoid'
-import type { Adapter } from '@auth/core/adapters'
 import type { AuthConfig } from '@auth/core'
 import type { CookiesOptions } from '@auth/core/types'
 import { authLogger } from '../../utils/logger.js'
 import { joinPath } from '../../utils/path.js'
 import { notifyEmail } from '../../emails/manager.js'
 import { attachDbSessionCookie, isSuccessRedirect } from '../../runtime/session-helpers.js'
-import { findUserIdByEmail, resetPassword } from './store.js'
 import { createSignupHandler } from './signup.js'
 import type { NormalizedAuthPluginOptions } from '../../config/defaults.js'
+import type { PasswordAdapter } from './types.js'
 
 type AuthHandler = (request: RoboRequest, reply: RoboReply) => Promise<Response>
 
 type PasswordResetMessage = { text: string; variant: 'success' | 'error' }
 
 interface EmailPasswordRuntimeOptions {
-	adapter: Adapter
+	adapter: PasswordAdapter
 	authConfig: AuthConfig
 	basePath: string
 	baseUrl: string
@@ -410,8 +409,8 @@ function registerPasswordResetRoutes(options: EmailPasswordRuntimeOptions): void
 			const user = await adapter.getUserByEmail?.(identifier)
 			if (!user) return invalidLink()
 			try {
-				const uid = await findUserIdByEmail(identifier)
-				if (uid) await resetPassword(uid, newPassword)
+				const uid = await adapter.findUserIdByEmail(identifier)
+				if (uid) await adapter.resetUserPassword({ userId: uid, password: newPassword })
 				await notifyEmail('password:reset-completed', {
 					user: { id: user.id, email: user.email ?? null, name: user.name ?? null },
 					request: { origin: baseUrl }
@@ -467,7 +466,7 @@ function registerCredentialsInterceptor(options: EmailPasswordRuntimeOptions): v
 			return response
 		}
 
-		const userId = emailFromBody ? await findUserIdByEmail(emailFromBody) : null
+		const userId = emailFromBody ? await adapter.findUserIdByEmail(emailFromBody) : null
 		if (userId) {
 			const ip =
 				request.headers.get('cf-connecting-ip') ??

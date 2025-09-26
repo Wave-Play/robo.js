@@ -9,6 +9,7 @@ import { configureAuthRuntime } from '../runtime/server-helpers.js'
 import { nanoid } from 'nanoid'
 import { authLogger } from '../utils/logger.js'
 import { registerEmailPasswordRuntime } from '../builtins/email-password/runtime.js'
+import { assertPasswordAdapter } from '../builtins/email-password/types.js'
 import { ensureLeadingSlash, joinPath, stripTrailingSlash } from '../utils/path.js'
 import { EmailManager, setEmailManager, notifyEmail } from '../emails/manager.js'
 import type { RoboReply, RoboRequest } from '@robojs/server'
@@ -278,6 +279,7 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 	})
 
 	if (hasCredentialsProvider) {
+		assertPasswordAdapter(adapter)
 		registerEmailPasswordRuntime({
 			adapter,
 			authConfig,

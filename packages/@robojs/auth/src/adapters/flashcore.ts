@@ -1,8 +1,10 @@
 import { Flashcore } from 'robo.js'
 import { nanoid } from 'nanoid'
+import argon2 from 'argon2'
 import { hashToken } from '../utils/tokens.js'
 import { authLogger } from '../utils/logger.js'
-import type { Adapter, AdapterAccount, AdapterSession, AdapterUser, VerificationToken } from '@auth/core/adapters'
+import type { AdapterAccount, AdapterSession, AdapterUser, VerificationToken } from '@auth/core/adapters'
+import type { PasswordAdapter, PasswordRecord, PasswordResetToken } from '../builtins/email-password/types.js'
 
 interface FlashcoreAdapterOptions {
 	secret: string
@@ -15,6 +17,9 @@ const NS_USER_ACCOUNTS = ['auth', 'userAccounts']
 const NS_SESSIONS = ['auth', 'sessions']
 const NS_VERIFICATION = ['auth', 'verification']
 const NS_USERS_INDEX = ['auth', 'usersIndex']
+const NS_PASSWORD = ['auth', 'password']
+const NS_PASSWORD_EMAIL = ['auth', 'passwordUserByEmail']
+const NS_PASSWORD_RESET = ['auth', 'passwordReset']
 
 const userKey = (id: string) => id
 const userEmailKey = (email: string) => email.toLowerCase()
@@ -26,6 +31,11 @@ const accountKey = (provider: string, providerAccountId: string) => ({
 const userAccountsKey = (userId: string) => userId
 const sessionKey = (token: string) => token
 const verificationKey = (hashedToken: string) => hashedToken
+const passwordKey = (userId: string) => userId
+const passwordEmailKey = (email: string) => email.toLowerCase()
+const passwordResetKey = (token: string) => token
+
+const DEFAULT_RESET_TOKEN_TTL_MINUTES = 30
 
 function reviveDate(value: unknown): Date {
 	if (value instanceof Date) return value
@@ -56,6 +66,48 @@ async function storeUserAccounts(userId: string, accounts: AccountRef[]): Promis
 		}
 	}
 	await Flashcore.set(userAccountsKey(userId), unique, { namespace: NS_USER_ACCOUNTS })
+}
+
+async function readPasswordRecord(userId: string): Promise<PasswordRecord | null> {
+	return Flashcore.get<PasswordRecord | null>(passwordKey(userId), { namespace: NS_PASSWORD })
+}
+
+async function writePasswordRecord(record: PasswordRecord): Promise<void> {
+	await Flashcore.set(passwordKey(record.userId), record, { namespace: NS_PASSWORD })
+	await Flashcore.set(passwordEmailKey(record.email), record.userId, { namespace: NS_PASSWORD_EMAIL })
+}
+
+async function deletePasswordRecord(userId: string): Promise<void> {
+	const existing = await readPasswordRecord(userId)
+	if (existing?.email) {
+		await Flashcore.delete(passwordEmailKey(existing.email), { namespace: NS_PASSWORD_EMAIL })
+	}
+	await Flashcore.delete(passwordKey(userId), { namespace: NS_PASSWORD })
+}
+
+async function findPasswordUserIdByEmail(email: string): Promise<string | null> {
+	const normalized = email.toLowerCase()
+	const idFromUsers = await Flashcore.get<string | null>(userEmailKey(normalized), { namespace: NS_USERS_BY_EMAIL })
+	if (idFromUsers) return idFromUsers
+	const legacy = await Flashcore.get<string | null>(passwordEmailKey(normalized), { namespace: NS_PASSWORD_EMAIL })
+	return legacy ?? null
+}
+
+interface RawPasswordResetToken {
+	userId: string
+	expires: string | Date
+}
+
+async function readPasswordResetToken(token: string): Promise<RawPasswordResetToken | null> {
+	return Flashcore.get<RawPasswordResetToken | null>(passwordResetKey(token), { namespace: NS_PASSWORD_RESET })
+}
+
+async function writePasswordResetToken(token: string, data: RawPasswordResetToken): Promise<void> {
+	await Flashcore.set(passwordResetKey(token), data, { namespace: NS_PASSWORD_RESET })
+}
+
+async function deletePasswordResetToken(token: string): Promise<void> {
+	await Flashcore.delete(passwordResetKey(token), { namespace: NS_PASSWORD_RESET })
 }
 
 function normalizeSession(session: AdapterSession): AdapterSession {
@@ -175,14 +227,14 @@ export async function listUsers(
  * const adapter = createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })
  * ```
  */
-export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Adapter {
+export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): PasswordAdapter {
 	const { secret } = options
 
 	if (!secret) {
 		throw new Error('Flashcore adapter requires a secret to hash tokens. Provide AUTH_SECRET in your config.')
 	}
 
-	const adapter: Adapter = {
+	const adapter: PasswordAdapter = {
 		async createUser(user) {
 			if (!user.email) {
 				throw new Error('AdapterUser.email is required when creating a user')
@@ -211,6 +263,10 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Adapte
 			if (!id) return null
 			const user = await Flashcore.get<AdapterUser | null>(userKey(id), { namespace: NS_USERS })
 			return user ?? null
+		},
+
+		async findUserIdByEmail(email) {
+			return findPasswordUserIdByEmail(email)
 		},
 
 		async getUserByAccount(identifier) {
@@ -250,6 +306,7 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Adapte
 				accountRefs.map((ref) => Flashcore.delete(ref.id, { namespace: accountNamespace(ref.provider) }))
 			)
 			await Flashcore.delete(userAccountsKey(id), { namespace: NS_USER_ACCOUNTS })
+			await deletePasswordRecord(id)
 			await Flashcore.delete(userKey(id), { namespace: NS_USERS })
 			await removeUserFromIndex(id)
 		},
@@ -351,6 +408,66 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Adapte
 				expires: normalized.expires,
 				token: params.token
 			} satisfies VerificationToken
+		},
+
+		async createUserPassword({ userId, email, password }) {
+			const normalizedEmail = email.toLowerCase()
+			const existing = await readPasswordRecord(userId)
+			const now = new Date().toISOString()
+			const hash = await argon2.hash(password, { type: argon2.argon2id })
+			const record: PasswordRecord = existing
+				? { ...existing, email: normalizedEmail, hash, updatedAt: now }
+				: {
+					id: nanoid(16),
+					email: normalizedEmail,
+					hash,
+					userId,
+					createdAt: now,
+					updatedAt: now
+				}
+			if (existing?.email && existing.email !== normalizedEmail) {
+				await Flashcore.delete(passwordEmailKey(existing.email), { namespace: NS_PASSWORD_EMAIL })
+			}
+			await writePasswordRecord(record)
+			return record
+		},
+
+		async verifyUserPassword({ userId, password }) {
+			const record = await readPasswordRecord(userId)
+			if (!record) return false
+			return argon2.verify(record.hash, password)
+		},
+
+		async deleteUserPassword(userId) {
+			await deletePasswordRecord(userId)
+		},
+
+		async resetUserPassword({ userId, password }) {
+			const existing = await readPasswordRecord(userId)
+			if (!existing) return null
+			const hash = await argon2.hash(password, { type: argon2.argon2id })
+			const updated: PasswordRecord = { ...existing, hash, updatedAt: new Date().toISOString() }
+			await writePasswordRecord(updated)
+			return updated
+		},
+
+		async createPasswordResetToken(userId, ttlMinutes = DEFAULT_RESET_TOKEN_TTL_MINUTES) {
+			const token = nanoid(32)
+			const expires = new Date(Date.now() + ttlMinutes * 60 * 1000)
+			await writePasswordResetToken(token, { userId, expires })
+			return { token, userId, expires }
+		},
+
+		async usePasswordResetToken(token) {
+			const stored = await readPasswordResetToken(token)
+			if (!stored) return null
+			await deletePasswordResetToken(token)
+			const expires = stored.expires instanceof Date ? stored.expires : new Date(stored.expires)
+			if (expires <= new Date()) {
+				authLogger.debug('Ignoring expired password reset token')
+				return null
+			}
+			return { token, userId: stored.userId, expires } satisfies PasswordResetToken
 		}
 	}
 

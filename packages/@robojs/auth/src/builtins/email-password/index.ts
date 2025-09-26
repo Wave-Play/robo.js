@@ -1,6 +1,5 @@
 import CredentialsProvider from '@auth/core/providers/credentials'
 import { authLogger } from '../../utils/logger.js'
-import { findUserIdByEmail, verifyPassword } from './store.js'
 import type { EmailPasswordProviderOptions } from './types.js'
 
 type ProviderLike = ReturnType<typeof CredentialsProvider>
@@ -25,13 +24,13 @@ function createProvider(options: EmailPasswordProviderOptions): ProviderLike {
         return null
       }
 
-      const userId = await findUserIdByEmail(email)
+      const userId = await adapter.findUserIdByEmail(email)
       if (!userId) {
         authLogger.debug(`No user found for email ${email}`)
         return null
       }
 
-      const isValid = await verifyPassword(userId, password)
+      const isValid = await adapter.verifyUserPassword({ userId, password })
       if (!isValid) {
         authLogger.debug(`Invalid password attempt for ${email}`)
         return null
@@ -46,6 +45,5 @@ export default function EmailPasswordProvider(options: EmailPasswordProviderOpti
   return createProvider(options)
 }
 
-export { storePassword, verifyPassword, findUserIdByEmail } from './store.js'
 export { createResetToken, useResetToken } from './reset.js'
 export type { PasswordRecord, PasswordResetToken } from './types.js'

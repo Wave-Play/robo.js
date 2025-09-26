@@ -1,17 +1,17 @@
 import { createHash } from 'node:crypto'
 import { Auth } from '@auth/core'
 import type { AuthConfig } from '@auth/core'
-import type { Adapter, AdapterUser } from '@auth/core/adapters'
+import type { AdapterUser } from '@auth/core/adapters'
 import type { CookiesOptions } from '@auth/core/types'
 import { attachDbSessionCookie, isSuccessRedirect } from '../../runtime/session-helpers.js'
 import type { RoboRequest } from '@robojs/server'
 import { nanoid } from 'nanoid'
-import { findUserIdByEmail, removePassword, storePassword } from './store.js'
 import { authLogger } from '../../utils/logger.js'
+import type { PasswordAdapter } from './types.js'
 
 interface SignupHandlerOptions {
 	authConfig: AuthConfig
-	adapter: Adapter
+	adapter: PasswordAdapter
 	basePath: string
 	baseUrl: string
 	cookies: CookiesOptions
@@ -179,7 +179,7 @@ function resolveDefaultRedirect(baseUrl: string, redirectPath?: string | null): 
 }
 
 async function createUserWithPassword(
-	adapter: Adapter,
+	adapter: PasswordAdapter,
 	email: string,
 	password: string,
 	events?: AuthConfig['events']
@@ -188,13 +188,8 @@ async function createUserWithPassword(
 		throw new SignupError('Unsupported', 'The configured adapter does not support user creation.', 500)
 	}
 
-	const userId = await findUserIdByEmail(email)
+	const userId = await adapter.findUserIdByEmail(email)
 	if (userId) {
-		throw new SignupError('EmailTaken', 'An account with this email already exists.')
-	}
-
-	const existingUser = adapter.getUserByEmail ? await adapter.getUserByEmail(email) : null
-	if (existingUser) {
 		throw new SignupError('EmailTaken', 'An account with this email already exists.')
 	}
 
@@ -208,7 +203,7 @@ async function createUserWithPassword(
 	let created: AdapterUser | null = null
 	try {
 		created = await adapter.createUser(baseUser)
-		await storePassword(created.id, email, password)
+		await adapter.createUserPassword({ userId: created.id, email, password })
 		await events?.createUser?.({ user: created })
 		authLogger.debug('Created new credentials user.', { email, userId: created.id })
 		return created
@@ -335,8 +330,8 @@ export function createSignupHandler(options: SignupHandlerOptions) {
 					email: normalizedEmail,
 					error: (signInError as Error)?.message
 				})
-				try {
-					await removePassword(user.id)
+			try {
+				await adapter.deleteUserPassword(user.id)
 					await adapter.deleteUser?.(user.id)
 				} catch (rollbackError) {
 					authLogger.warn('Failed to rollback user after sign-in failure.', {

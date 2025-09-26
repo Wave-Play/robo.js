@@ -9,3 +9,7 @@ export { authLogger } from './utils/logger.js'
 export type { AuthEmailEvent, AuthMailer, MailMessage, EmailContext, TemplateConfig } from './emails/types.js'
 export type { AuthPluginOptions } from './config/schema.js'
 export type { Adapter, AdapterAccount, AdapterSession, AdapterUser, VerificationToken } from '@auth/core/adapters'
+export {
+	assertPasswordAdapter
+} from './builtins/email-password/types.js'
+export type { PasswordAdapter, PasswordRecord, PasswordResetToken } from './builtins/email-password/types.js'
