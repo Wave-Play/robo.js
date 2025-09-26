@@ -68,7 +68,7 @@
 	},
 	"dependencies": {
 		"@auth/core": "^0.40.0",
-		"argon2": "^0.44.0",
+		"argon2id": "^1.0.1",
 		"nanoid": "^5.1.6",
 		"zod": "^3.22.4"
 	},

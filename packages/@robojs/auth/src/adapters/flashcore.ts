@@ -1,10 +1,16 @@
 import { Flashcore } from 'robo.js'
 import { nanoid } from 'nanoid'
-import argon2 from 'argon2'
+import { randomBytes, timingSafeEqual } from 'node:crypto'
+import { readFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
+import setupWasm from 'argon2id/lib/setup.js'
 import { hashToken } from '../utils/tokens.js'
 import { authLogger } from '../utils/logger.js'
 import type { AdapterAccount, AdapterSession, AdapterUser, VerificationToken } from '@auth/core/adapters'
+import type { computeHash as Argon2ComputeHash } from 'argon2id'
 import type { PasswordAdapter, PasswordRecord, PasswordResetToken } from '../builtins/email-password/types.js'
+
+const require = createRequire(import.meta.url)
 
 interface FlashcoreAdapterOptions {
 	secret: string
@@ -91,6 +97,116 @@ async function findPasswordUserIdByEmail(email: string): Promise<string | null> 
 	if (idFromUsers) return idFromUsers
 	const legacy = await Flashcore.get<string | null>(passwordEmailKey(normalized), { namespace: NS_PASSWORD_EMAIL })
 	return legacy ?? null
+}
+
+const ARGON2_VERSION = 19
+const ARGON2_MEMORY_KIB = 4096
+const ARGON2_TIME_COST = 3
+const ARGON2_PARALLELISM = 1
+const ARGON2_TAG_LENGTH = 32
+const ARGON2_SALT_LENGTH = 16
+
+interface Argon2Params {
+	memorySize: number
+	passes: number
+	parallelism: number
+	tagLength: number
+}
+
+const DEFAULT_ARGON2_PARAMS: Argon2Params = {
+	memorySize: ARGON2_MEMORY_KIB,
+	passes: ARGON2_TIME_COST,
+	parallelism: ARGON2_PARALLELISM,
+	tagLength: ARGON2_TAG_LENGTH
+}
+
+let argon2InstancePromise: Promise<Argon2ComputeHash> | null = null
+
+function getArgon2Instance() {
+	if (!argon2InstancePromise) {
+		argon2InstancePromise = setupWasm(
+			(importObject) => WebAssembly.instantiate(readFileSync(require.resolve('argon2id/dist/simd.wasm')), importObject),
+			(importObject) =>
+				WebAssembly.instantiate(readFileSync(require.resolve('argon2id/dist/no-simd.wasm')), importObject)
+		)
+	}
+	return argon2InstancePromise
+}
+
+function passwordToBytes(password: string): Uint8Array {
+	return new TextEncoder().encode(password.normalize('NFKC'))
+}
+
+async function computeArgon2id(password: string, salt: Uint8Array, params: Argon2Params): Promise<Buffer> {
+	const argon2 = await getArgon2Instance()
+	const digest = argon2({
+		password: passwordToBytes(password),
+		salt,
+		parallelism: params.parallelism,
+		passes: params.passes,
+		memorySize: params.memorySize,
+		tagLength: params.tagLength
+	})
+	return Buffer.from(digest)
+}
+
+function formatArgon2idHash(salt: Uint8Array, hash: Uint8Array, params: Argon2Params): string {
+	const saltB64 = Buffer.from(salt).toString('base64')
+	const hashB64 = Buffer.from(hash).toString('base64')
+	return `$argon2id$v=${ARGON2_VERSION}$m=${params.memorySize},t=${params.passes},p=${params.parallelism}$${saltB64}$${hashB64}`
+}
+
+interface ParsedArgon2Hash {
+	params: Argon2Params
+	salt: Uint8Array
+	hash: Uint8Array
+}
+
+function parseArgon2idHash(hash: string): ParsedArgon2Hash | null {
+	if (!hash.startsWith('$argon2')) return null
+	const parts = hash.split('$')
+	if (parts.length < 6) return null
+	const algorithm = parts[1]
+	if (algorithm !== 'argon2id') return null
+	const paramSection = parts[3] ?? ''
+	const paramPairs = paramSection.split(',').map((entry) => entry.split('='))
+	const resolved: Partial<Argon2Params> = {}
+	for (const [key, value] of paramPairs) {
+		const numeric = Number(value)
+		if (!Number.isFinite(numeric)) continue
+		if (key === 'm') resolved.memorySize = numeric
+		if (key === 't') resolved.passes = numeric
+		if (key === 'p') resolved.parallelism = numeric
+	}
+	const saltB64 = parts[4]
+	const hashB64 = parts[5]
+	if (!saltB64 || !hashB64) return null
+	const salt = Buffer.from(saltB64, 'base64')
+	const digest = Buffer.from(hashB64, 'base64')
+	if (salt.length === 0 || digest.length === 0) return null
+	const params: Argon2Params = {
+		memorySize: resolved.memorySize ?? ARGON2_MEMORY_KIB,
+		passes: resolved.passes ?? ARGON2_TIME_COST,
+		parallelism: resolved.parallelism ?? ARGON2_PARALLELISM,
+		tagLength: digest.length
+	}
+	return { params, salt, hash: digest }
+}
+
+async function hashPassword(password: string): Promise<string> {
+	const salt = randomBytes(ARGON2_SALT_LENGTH)
+	const digest = await computeArgon2id(password, salt, DEFAULT_ARGON2_PARAMS)
+	return formatArgon2idHash(salt, digest, DEFAULT_ARGON2_PARAMS)
+}
+
+async function verifyPasswordHash(password: string, storedHash: string): Promise<boolean> {
+	const parsed = parseArgon2idHash(storedHash)
+	if (!parsed) {
+		return false
+	}
+	const digest = await computeArgon2id(password, parsed.salt, parsed.params)
+	if (digest.length !== parsed.hash.length) return false
+	return timingSafeEqual(digest, parsed.hash)
 }
 
 function normalizeSession(session: AdapterSession): AdapterSession {
@@ -393,17 +509,17 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Passwo
 			const normalizedEmail = email.toLowerCase()
 			const existing = await readPasswordRecord(userId)
 			const now = new Date().toISOString()
-			const hash = await argon2.hash(password, { type: argon2.argon2id })
+			const hash = await hashPassword(password)
 			const record: PasswordRecord = existing
 				? { ...existing, email: normalizedEmail, hash, updatedAt: now }
 				: {
-					id: nanoid(16),
-					email: normalizedEmail,
-					hash,
-					userId,
-					createdAt: now,
-					updatedAt: now
-				}
+						id: nanoid(16),
+						email: normalizedEmail,
+						hash,
+						userId,
+						createdAt: now,
+						updatedAt: now
+					}
 			if (existing?.email && existing.email !== normalizedEmail) {
 				await Flashcore.delete(passwordEmailKey(existing.email), { namespace: NS_PASSWORD_EMAIL })
 			}
@@ -414,7 +530,7 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Passwo
 		async verifyUserPassword({ userId, password }) {
 			const record = await readPasswordRecord(userId)
 			if (!record) return false
-			return argon2.verify(record.hash, password)
+			return verifyPasswordHash(password, record.hash)
 		},
 
 		async deleteUserPassword(userId) {
@@ -424,7 +540,7 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Passwo
 		async resetUserPassword({ userId, password }) {
 			const existing = await readPasswordRecord(userId)
 			if (!existing) return null
-			const hash = await argon2.hash(password, { type: argon2.argon2id })
+			const hash = await hashPassword(password)
 			const updated: PasswordRecord = { ...existing, hash, updatedAt: new Date().toISOString() }
 			await writePasswordRecord(updated)
 			return updated
