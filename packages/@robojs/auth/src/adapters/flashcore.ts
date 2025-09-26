@@ -93,23 +93,6 @@ async function findPasswordUserIdByEmail(email: string): Promise<string | null> 
 	return legacy ?? null
 }
 
-interface RawPasswordResetToken {
-	userId: string
-	expires: string | Date
-}
-
-async function readPasswordResetToken(token: string): Promise<RawPasswordResetToken | null> {
-	return Flashcore.get<RawPasswordResetToken | null>(passwordResetKey(token), { namespace: NS_PASSWORD_RESET })
-}
-
-async function writePasswordResetToken(token: string, data: RawPasswordResetToken): Promise<void> {
-	await Flashcore.set(passwordResetKey(token), data, { namespace: NS_PASSWORD_RESET })
-}
-
-async function deletePasswordResetToken(token: string): Promise<void> {
-	await Flashcore.delete(passwordResetKey(token), { namespace: NS_PASSWORD_RESET })
-}
-
 function normalizeSession(session: AdapterSession): AdapterSession {
 	return { ...session, expires: reviveDate(session.expires) }
 }
@@ -153,10 +136,6 @@ async function writeUsersIndexPage(n: number, ids: string[]): Promise<void> {
 	await Flashcore.set(pageKey(n), ids, { namespace: NS_USERS_INDEX })
 }
 
-async function deleteUsersIndexPage(n: number): Promise<void> {
-	await Flashcore.delete(pageKey(n), { namespace: NS_USERS_INDEX })
-}
-
 async function addUserToIndex(userId: string): Promise<void> {
 	const meta = await loadUsersIndexMeta()
 	// Ensure at least one page exists
@@ -184,7 +163,7 @@ async function removeUserFromIndex(userId: string): Promise<void> {
 		if (idx !== -1) {
 			ids.splice(idx, 1)
 			if (ids.length === 0 && i === meta.pageCount - 1) {
-				await deleteUsersIndexPage(i)
+				await Flashcore.delete(pageKey(i), { namespace: NS_USERS_INDEX })
 				meta.pageCount = Math.max(0, meta.pageCount - 1)
 			} else {
 				await writeUsersIndexPage(i, ids)
@@ -454,14 +433,16 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Passwo
 		async createPasswordResetToken(userId, ttlMinutes = DEFAULT_RESET_TOKEN_TTL_MINUTES) {
 			const token = nanoid(32)
 			const expires = new Date(Date.now() + ttlMinutes * 60 * 1000)
-			await writePasswordResetToken(token, { userId, expires })
+			await Flashcore.set(passwordResetKey(token), { userId, expires }, { namespace: NS_PASSWORD_RESET })
 			return { token, userId, expires }
 		},
 
 		async usePasswordResetToken(token) {
-			const stored = await readPasswordResetToken(token)
+			const stored = await Flashcore.get<{ userId: string; expires: string | Date } | null>(passwordResetKey(token), {
+				namespace: NS_PASSWORD_RESET
+			})
 			if (!stored) return null
-			await deletePasswordResetToken(token)
+			await Flashcore.delete(passwordResetKey(token), { namespace: NS_PASSWORD_RESET })
 			const expires = stored.expires instanceof Date ? stored.expires : new Date(stored.expires)
 			if (expires <= new Date()) {
 				authLogger.debug('Ignoring expired password reset token')

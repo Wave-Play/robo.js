@@ -45,5 +45,4 @@ export default function EmailPasswordProvider(options: EmailPasswordProviderOpti
   return createProvider(options)
 }
 
-export { createResetToken, useResetToken } from './reset.js'
 export type { PasswordRecord, PasswordResetToken } from './types.js'

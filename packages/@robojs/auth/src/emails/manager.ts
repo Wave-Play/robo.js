@@ -15,6 +15,7 @@ import {
 	DefaultPasswordResetCompletedTemplate,
 	DefaultPasswordResetRequestTemplate
 } from './templates/password-reset.js'
+import { DefaultEmailVerificationTemplate } from './templates/verification.js'
 
 type ModuleMailerSpec = { module: string; export?: string }
 
@@ -166,6 +167,7 @@ export class EmailManager {
 	private getDefaultTemplate(event: AuthEmailEvent): TemplateConfig | undefined {
 		if (event === 'user:created') return DefaultWelcomeTemplate
 		if (event === 'session:created') return DefaultSignInTemplate
+		if (event === 'email:verification-requested') return DefaultEmailVerificationTemplate
 		if (event === 'password:reset-requested') return DefaultPasswordResetRequestTemplate
 		if (event === 'password:reset-completed') return DefaultPasswordResetCompletedTemplate
 		return undefined
