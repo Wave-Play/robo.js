@@ -4,7 +4,7 @@ import { hashToken } from '../utils/tokens.js'
 import { authLogger } from '../utils/logger.js'
 import { hashPassword, verifyPasswordHash } from '../utils/password-hash.js'
 import type { AdapterAccount, AdapterSession, AdapterUser, VerificationToken } from '@auth/core/adapters'
-import type { PasswordAdapter, PasswordRecord, PasswordResetToken } from '../builtins/email-password/types.js'
+import type { PasswordAdapter, PasswordRecord } from '../builtins/email-password/types.js'
 
 /** Options required to initialize the Flashcore-backed Auth adapter. */
 interface FlashcoreAdapterOptions {
@@ -20,7 +20,6 @@ const NS_VERIFICATION = ['auth', 'verification']
 const NS_USERS_INDEX = ['auth', 'usersIndex']
 const NS_PASSWORD = ['auth', 'password']
 const NS_PASSWORD_EMAIL = ['auth', 'passwordUserByEmail']
-const NS_PASSWORD_RESET = ['auth', 'passwordReset']
 
 const userKey = (id: string) => id
 const userEmailKey = (email: string) => email.toLowerCase()
@@ -34,9 +33,6 @@ const sessionKey = (token: string) => token
 const verificationKey = (hashedToken: string) => hashedToken
 const passwordKey = (userId: string) => userId
 const passwordEmailKey = (email: string) => email.toLowerCase()
-const passwordResetKey = (token: string) => token
-
-const DEFAULT_RESET_TOKEN_TTL_MINUTES = 30
 
 function reviveDate(value: unknown): Date {
 	if (value instanceof Date) return value
@@ -488,27 +484,6 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Passwo
 			const updated: PasswordRecord = { ...existing, hash, updatedAt: new Date().toISOString() }
 			await writePasswordRecord(updated)
 			return updated
-		},
-
-		async createPasswordResetToken(userId, ttlMinutes = DEFAULT_RESET_TOKEN_TTL_MINUTES) {
-			const token = nanoid(32)
-			const expires = new Date(Date.now() + ttlMinutes * 60 * 1000)
-			await Flashcore.set(passwordResetKey(token), { userId, expires }, { namespace: NS_PASSWORD_RESET })
-			return { token, userId, expires }
-		},
-
-		async usePasswordResetToken(token) {
-			const stored = await Flashcore.get<{ userId: string; expires: string | Date } | null>(passwordResetKey(token), {
-				namespace: NS_PASSWORD_RESET
-			})
-			if (!stored) return null
-			await Flashcore.delete(passwordResetKey(token), { namespace: NS_PASSWORD_RESET })
-			const expires = stored.expires instanceof Date ? stored.expires : new Date(stored.expires)
-			if (expires <= new Date()) {
-				authLogger.debug('Ignoring expired password reset token')
-				return null
-			}
-			return { token, userId: stored.userId, expires } satisfies PasswordResetToken
 		}
 	}
 

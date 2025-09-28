@@ -120,7 +120,7 @@ Already using Auth.js with Prisma? `createPrismaAdapter` layers Robo's password 
 
 ### Schema Additions
 
-Add two models alongside the standard Auth.js schema. They extend the user relation with argon2id hashes and hashed reset tokens while keeping pagination fast:
+Add a single model alongside the standard Auth.js schema. It extends the user relation with argon2id hashes while keeping pagination fast:
 
 ```prisma
 model Password {
@@ -135,30 +135,18 @@ model Password {
 
 	@@index([email])
 }
-
-model PasswordResetToken {
-	id        String   @id @default(cuid())
-	userId    String
-	tokenHash String   @unique
-	expiresAt DateTime
-
-	user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-	@@index([userId])
-	@@index([expiresAt])
-}
 ```
 
-PostgreSQL users can swap `String` for `@db.Citext` on `email` to keep lookups case-insensitive; other drivers can rely on the adapter's lower-cased mirror. Run `npx prisma migrate dev --name add-auth-passwords` (or your preferred command) after updating the schema.
+PostgreSQL users can swap `String` for `@db.Citext` on `email` to keep lookups case-insensitive; other drivers can rely on the adapter's lower-cased mirror. Password reset links continue to use Auth.js' built-in verification token table, so no additional schema is required. Run `npx prisma migrate dev --name add-auth-passwords` (or your preferred command) after updating the schema.
 
 ### Adapter Options
 
 `createPrismaAdapter` accepts the following options (after installing `@auth/prisma-adapter`):
 
 - `client` – your `PrismaClient` instance.
-- `secret` – used to hash password reset tokens (typically `AUTH_SECRET`).
+- `secret` – standard Auth.js secret for session/token helpers (typically `AUTH_SECRET`).
 - `hashParameters` – optional argon2id tuning; pass overrides to rehash on verify when params change.
-- `models.password` / `models.passwordResetToken` – override model names if you already migrated with different identifiers.
+- `models.password` – override the password model name if you already migrated with different identifiers.
 
 The adapter returns the same extended `PasswordAdapter` contract as the Flashcore version, so the built-in EmailPassword provider works without changes.
 
@@ -233,7 +221,7 @@ Server helpers live under `@robojs/auth/server` (also re-exported from the root 
 | `getRequestPayload(request)` | Parse (and cache) JSON/form bodies when writing custom route overrides or middleware. |
 | `AuthPluginOptions` | TypeScript type mirroring the plugin config shape. |
 | `AuthEmailEvent`, `AuthMailer`, `MailMessage`, `EmailContext`, `TemplateConfig` | Email-related types for advanced templating or mailer overrides. |
-| `PasswordAdapter`, `PasswordRecord`, `PasswordResetToken`, `assertPasswordAdapter` | Contracts for credential-enabled adapters. |
+| `PasswordAdapter`, `PasswordRecord`, `assertPasswordAdapter` | Contracts for credential-enabled adapters. |
 | `PrismaAdapterOptions`, `PrismaAdapterModelOptions`, `PrismaClientLike` | Types for wiring the Prisma adapter with custom model names or clients. |
 | `Adapter`, `AdapterAccount`, `AdapterSession`, `AdapterUser`, `VerificationToken` | Re-exported Auth.js adapter types for convenience. |
 

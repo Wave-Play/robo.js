@@ -14,13 +14,6 @@ export interface PasswordRecord {
 	updatedAt: string
 }
 
-/** Password reset token persisted for single-use verification. */
-export interface PasswordResetToken {
-	token: string
-	userId: string
-	expires: Date
-}
-
 /** Auth.js adapter contract extended with password management helpers. */
 export interface PasswordAdapter extends Adapter {
 	/** Persists a hashed password for the given user and returns the storage record. */
@@ -33,10 +26,6 @@ export interface PasswordAdapter extends Adapter {
 	deleteUserPassword(userId: string): Promise<void>
 	/** Replaces the existing password hash and returns the updated record. */
 	resetUserPassword(params: { userId: string; password: string }): Promise<PasswordRecord | null>
-	/** Creates a time-limited token that allows the user to reset their password. */
-	createPasswordResetToken(userId: string, ttlMinutes?: number): Promise<PasswordResetToken>
-	/** Consumes a previously issued password reset token, if still valid. */
-	usePasswordResetToken(token: string): Promise<PasswordResetToken | null>
 }
 
 /** Options accepted by the Email/Password provider factory. */
@@ -112,8 +101,6 @@ export function assertPasswordAdapter(adapter: Adapter | undefined): asserts ada
 	if (typeof candidate.findUserIdByEmail !== 'function') missing.push('findUserIdByEmail')
 	if (typeof (adapter as Partial<PasswordAdapter>).deleteUserPassword !== 'function') missing.push('deleteUserPassword')
 	if (typeof candidate.resetUserPassword !== 'function') missing.push('resetUserPassword')
-	if (typeof candidate.createPasswordResetToken !== 'function') missing.push('createPasswordResetToken')
-	if (typeof candidate.usePasswordResetToken !== 'function') missing.push('usePasswordResetToken')
 	if (missing.length) {
 		throw new Error(
 			`Adapter ${

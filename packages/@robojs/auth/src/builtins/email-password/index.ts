@@ -81,7 +81,6 @@ export type {
 	EmailPasswordRouteContext,
 	EmailPasswordRouteHandler,
 	EmailPasswordRouteOverrides,
-	PasswordRecord,
-	PasswordResetToken
+	PasswordRecord
 } from './types.js'
 export type { RequestPayloadHandle } from '../../utils/request-payload.js'

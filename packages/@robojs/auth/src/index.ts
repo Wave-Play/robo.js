@@ -12,5 +12,5 @@ export type { AuthEmailEvent, AuthMailer, MailMessage, EmailContext, TemplateCon
 export type { AuthPluginOptions } from './config/schema.js'
 export type { Adapter, AdapterAccount, AdapterSession, AdapterUser, VerificationToken } from '@auth/core/adapters'
 export { assertPasswordAdapter } from './builtins/email-password/types.js'
-export type { PasswordAdapter, PasswordRecord, PasswordResetToken } from './builtins/email-password/types.js'
+export type { PasswordAdapter, PasswordRecord } from './builtins/email-password/types.js'
 export type { PrismaAdapterOptions, PrismaAdapterModelOptions, PrismaClientLike } from './adapters/prisma.js'

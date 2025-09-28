@@ -1,15 +1,11 @@
-import { nanoid } from 'nanoid'
 import { createRequire } from 'node:module'
-import { hashToken } from '../utils/tokens.js'
 import { hashPassword, needsRehash, verifyPasswordHash } from '../utils/password-hash.js'
 import type { PasswordHashParams } from '../utils/password-hash.js'
 import type { Adapter, AdapterUser } from '@auth/core/adapters'
-import type { PasswordAdapter, PasswordRecord, PasswordResetToken } from '../builtins/email-password/types.js'
+import type { PasswordAdapter, PasswordRecord } from '../builtins/email-password/types.js'
 
-const DEFAULT_RESET_TOKEN_TTL_MINUTES = 30
 const DEFAULT_LIST_PAGE_SIZE = 500
 const DEFAULT_PASSWORD_MODEL = 'password'
-const DEFAULT_RESET_MODEL = 'passwordResetToken'
 
 interface PrismaDelegate {
 	findUnique?(args: unknown): Promise<unknown>
@@ -47,13 +43,12 @@ export interface PrismaClientLike {
 	const adapter = createPrismaAdapter({
 		client: prisma,
 		secret: process.env.AUTH_SECRET!,
-		models: { password: 'userPassword', passwordResetToken: 'userPasswordReset' }
+		models: { password: 'userPassword' }
 	})
 	```
 */
 export interface PrismaAdapterModelOptions {
 	password?: string
-	passwordResetToken?: string
 }
 
 /**
@@ -82,13 +77,6 @@ interface PrismaPasswordRow {
 	hash: string
 	createdAt: Date
 	updatedAt: Date
-}
-
-interface PrismaPasswordResetRow {
-	id: string
-	userId: string
-	tokenHash: string
-	expiresAt: Date
 }
 
 interface ListUsersOptions {
@@ -168,17 +156,6 @@ function isPasswordRow(value: unknown): value is PrismaPasswordRow {
 	)
 }
 
-function isResetRow(value: unknown): value is PrismaPasswordResetRow {
-	return (
-		!!value &&
-		typeof value === 'object' &&
-		'id' in value &&
-		'userId' in value &&
-		'tokenHash' in value &&
-		'expiresAt' in value
-	)
-}
-
 function normalizeEmail(email: string): string {
 	return email.toLowerCase()
 }
@@ -193,13 +170,10 @@ function normalizeEmail(email: string): string {
 	```
 */
 export function createPrismaAdapter(options: PrismaAdapterOptions): PasswordAdapter {
-	const { client, secret, hashParameters, models } = options
+	const { client, hashParameters, models } = options
 	// Fail fast when required primitives are missing so configuration bugs surface early.
 	if (!client) {
 		throw new Error('Prisma adapter requires a Prisma client instance.')
-	}
-	if (!secret) {
-		throw new Error('Prisma adapter requires a secret to hash password reset tokens.')
 	}
 
 	const base = loadAuthPrismaAdapter()(client) as Adapter
@@ -207,10 +181,6 @@ export function createPrismaAdapter(options: PrismaAdapterOptions): PasswordAdap
 	const passwordDelegate = assertDelegate(
 		client[models?.password ?? DEFAULT_PASSWORD_MODEL] as PrismaDelegate | undefined,
 		models?.password ?? DEFAULT_PASSWORD_MODEL
-	)
-	const resetDelegate = assertDelegate(
-		client[models?.passwordResetToken ?? DEFAULT_RESET_MODEL] as PrismaDelegate | undefined,
-		models?.passwordResetToken ?? DEFAULT_RESET_MODEL
 	)
 
 	const adapter: PasswordAdapter = {
@@ -225,8 +195,7 @@ export function createPrismaAdapter(options: PrismaAdapterOptions): PasswordAdap
 				? await delegate.findFirst({
 						where: {
 							email: {
-								equals: email,
-								mode: 'insensitive'
+								equals: email
 							}
 						},
 						select: { id: true }
@@ -322,41 +291,6 @@ export function createPrismaAdapter(options: PrismaAdapterOptions): PasswordAdap
 			}
 
 			return normalizePasswordRecord(updated)
-		},
-
-		async createPasswordResetToken(userId, ttlMinutes = DEFAULT_RESET_TOKEN_TTL_MINUTES) {
-			const token = nanoid(32)
-			const expires = new Date(Date.now() + ttlMinutes * 60 * 1000)
-			const tokenHash = hashToken(token, secret)
-
-			// Allow only one active reset token per user to avoid ambiguity.
-			await resetDelegate.deleteMany?.({ where: { userId } })
-			const created = await resetDelegate.create?.({
-				data: {
-					userId,
-					tokenHash,
-					expiresAt: expires
-				}
-			})
-			if (!created || !isResetRow(created)) {
-				throw new Error('Failed to create password reset token via Prisma adapter.')
-			}
-
-			return { token, userId, expires }
-		},
-
-		async usePasswordResetToken(token) {
-			const tokenHash = hashToken(token, secret)
-			const record = resetDelegate.findUnique ? await resetDelegate.findUnique({ where: { tokenHash } }) : null
-			if (!record || !isResetRow(record)) return null
-
-			// Reset tokens are single-use; remove them immediately after reading.
-			await resetDelegate.delete?.({ where: { id: record.id } })
-			if (record.expiresAt <= new Date()) {
-				return null
-			}
-
-			return { token, userId: record.userId, expires: record.expiresAt } satisfies PasswordResetToken
 		}
 	}
 
@@ -364,7 +298,6 @@ export function createPrismaAdapter(options: PrismaAdapterOptions): PasswordAdap
 		const originalDeleteUser = base.deleteUser.bind(base)
 		adapter.deleteUser = async (id): Promise<AdapterUser | null | undefined> => {
 			// Ensure password artifacts are purged alongside the Auth.js delete lifecycle.
-			await resetDelegate.deleteMany?.({ where: { userId: id } })
 			await passwordDelegate.deleteMany?.({ where: { userId: id } })
 			const user = await originalDeleteUser(id)
 			return user ?? null
