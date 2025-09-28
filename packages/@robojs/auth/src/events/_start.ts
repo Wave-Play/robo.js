@@ -9,7 +9,11 @@ import { configureAuthRuntime } from '../runtime/server-helpers.js'
 import { nanoid } from 'nanoid'
 import { authLogger } from '../utils/logger.js'
 import { registerEmailPasswordRuntime } from '../builtins/email-password/runtime.js'
-import { assertPasswordAdapter } from '../builtins/email-password/types.js'
+import {
+	assertPasswordAdapter,
+	EmailPasswordProviderMetadata,
+	EmailPasswordRouteOverrides
+} from '../builtins/email-password/types.js'
 import { ensureLeadingSlash, joinPath, stripTrailingSlash } from '../utils/path.js'
 import { EmailManager, setEmailManager, notifyEmail } from '../emails/manager.js'
 import type { RoboReply, RoboRequest } from '@robojs/server'
@@ -20,6 +24,10 @@ import type { Provider } from '@auth/core/providers'
 import type { HttpMethod } from '../runtime/route-map.js'
 
 type MethodMap = Map<string, Set<HttpMethod>>
+
+type ProviderWithEmailPasswordMeta = Provider & {
+	__roboEmailPassword?: EmailPasswordProviderMetadata
+}
 
 const authLoggerInstance: Partial<LoggerInstance> = {
 	debug: (...data) => authLogger.debug(...data),
@@ -80,6 +88,17 @@ function resolveSecret(options: NormalizedAuthPluginOptions): string {
 
 	process.env.AUTH_SECRET = secret
 	return secret
+}
+
+function extractEmailPasswordOverrides(providers: Provider[]): EmailPasswordRouteOverrides | undefined {
+	for (const provider of providers) {
+		if (!provider || typeof provider !== 'object') continue
+		const metadata = (provider as ProviderWithEmailPasswordMeta).__roboEmailPassword
+		if (metadata) {
+			return metadata.routes
+		}
+	}
+	return undefined
 }
 
 function resolveBaseUrl(options: NormalizedAuthPluginOptions): string {
@@ -274,6 +293,8 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 
 	const handler = createAuthRequestHandler(authConfig)
 
+	const emailPasswordOverrides = extractEmailPasswordOverrides(providers)
+
 	const hasCredentialsProvider = providers.some((provider) => {
 		return typeof provider === 'object' && provider && (provider as { id?: string }).id === 'credentials'
 	})
@@ -289,6 +310,7 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 			events: composedEvents,
 			handler,
 			options,
+			overrides: emailPasswordOverrides,
 			recentSigninNotified,
 			secret,
 			sessionStrategy: options.session.strategy ?? 'jwt'

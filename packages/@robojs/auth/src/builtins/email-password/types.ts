@@ -1,4 +1,8 @@
-import type { Adapter } from '@auth/core/adapters'
+import type { AuthConfig } from '@auth/core'
+import type { Adapter, AdapterUser } from '@auth/core/adapters'
+import type { CookiesOptions } from '@auth/core/types'
+import type { RoboRequest } from '@robojs/server'
+import type { RequestPayloadHandle } from '../../utils/request-payload.js'
 
 export interface PasswordRecord {
 	id: string
@@ -28,6 +32,45 @@ export interface PasswordAdapter extends Adapter {
 export interface EmailPasswordProviderOptions {
 	adapter: PasswordAdapter
 	name?: string
+	authorize?: EmailPasswordAuthorize
+	routes?: EmailPasswordRouteOverrides
+}
+
+export interface EmailPasswordAuthorizeContext {
+	adapter: PasswordAdapter
+	defaultAuthorize: () => Promise<AdapterUser | null>
+	request: Request | undefined
+}
+
+export type EmailPasswordAuthorize = (
+	credentials: Record<string, unknown> | undefined,
+	context: EmailPasswordAuthorizeContext
+) => Promise<AdapterUser | null>
+
+export interface EmailPasswordRouteContext {
+	adapter: PasswordAdapter
+	authConfig: AuthConfig
+	basePath: string
+	baseUrl: string
+	cookies: CookiesOptions
+	defaultHandler: () => Promise<Response>
+	events?: AuthConfig['events']
+	request: RoboRequest
+	payload: RequestPayloadHandle
+	secret: string
+	sessionStrategy: 'jwt' | 'database'
+}
+
+export type EmailPasswordRouteHandler = (context: EmailPasswordRouteContext) => Promise<Response>
+
+export interface EmailPasswordRouteOverrides {
+	signup?: EmailPasswordRouteHandler
+	passwordResetRequest?: EmailPasswordRouteHandler
+	passwordResetConfirm?: EmailPasswordRouteHandler
+}
+
+export interface EmailPasswordProviderMetadata {
+	routes?: EmailPasswordRouteOverrides
 }
 
 export function assertPasswordAdapter(

@@ -1,0 +1,98 @@
+import type { RoboRequest } from '@robojs/server'
+
+type PayloadSource = 'json' | 'form' | 'empty'
+
+interface PayloadState {
+	data: Record<string, unknown>
+	source: PayloadSource
+}
+
+export interface RequestPayloadHandle {
+	readonly source: PayloadSource
+	get<T extends Record<string, unknown> = Record<string, unknown>>(): T
+	replace(data: Record<string, unknown>): void
+	assign(partial: Record<string, unknown>): void
+}
+
+const EMAIL_PASSWORD_PAYLOAD_SYMBOL = Symbol.for('robojs.auth.emailPasswordPayload')
+
+function getCarrier(request: RoboRequest): Record<symbol, unknown> {
+	return request as unknown as Record<symbol, unknown>
+}
+
+function ensureState(request: RoboRequest): PayloadState | undefined {
+	return getCarrier(request)[EMAIL_PASSWORD_PAYLOAD_SYMBOL] as PayloadState | undefined
+}
+
+function storeState(request: RoboRequest, state: PayloadState): void {
+	getCarrier(request)[EMAIL_PASSWORD_PAYLOAD_SYMBOL] = state
+}
+
+async function parseBody(request: RoboRequest): Promise<PayloadState> {
+	const header = request.headers.get('content-type')?.toLowerCase() ?? ''
+	const source = typeof request.clone === 'function' ? (request.clone() as RoboRequest) : request
+	if (header.includes('application/json')) {
+		try {
+			const json = (await source.json()) as unknown
+			if (json && typeof json === 'object' && !Array.isArray(json)) {
+				return { data: json as Record<string, unknown>, source: 'json' }
+			}
+			return { data: {}, source: 'json' }
+		} catch {
+			return { data: {}, source: 'json' }
+		}
+	}
+
+	if (header.includes('application/x-www-form-urlencoded') || header.includes('multipart/form-data')) {
+		try {
+			const form = await source.formData()
+			const map: Record<string, unknown> = {}
+			form.forEach((value, key) => {
+				if (map[key] === undefined) {
+					map[key] = value
+					return
+				}
+				const existing = map[key]
+				if (Array.isArray(existing)) {
+					existing.push(value)
+				} else {
+					map[key] = [existing, value]
+				}
+			})
+			return { data: map, source: 'form' }
+		} catch {
+			return { data: {}, source: 'form' }
+		}
+	}
+
+	return { data: {}, source: 'empty' }
+}
+
+function createHandle(request: RoboRequest, state: PayloadState): RequestPayloadHandle {
+	return {
+		get<T extends Record<string, unknown>>() {
+			return state.data as T
+		},
+		replace(data) {
+			state.data = data
+			storeState(request, state)
+		},
+		assign(partial) {
+			Object.assign(state.data, partial)
+			storeState(request, state)
+		},
+		get source() {
+			return state.source
+		}
+	}
+}
+
+export async function getRequestPayload(request: RoboRequest): Promise<RequestPayloadHandle> {
+	const existing = ensureState(request)
+	if (existing) {
+		return createHandle(request, existing)
+	}
+	const parsed = await parseBody(request)
+	storeState(request, parsed)
+	return createHandle(request, parsed)
+}

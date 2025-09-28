@@ -7,6 +7,7 @@ import { attachDbSessionCookie, isSuccessRedirect } from '../../runtime/session-
 import type { RoboRequest } from '@robojs/server'
 import { nanoid } from 'nanoid'
 import { authLogger } from '../../utils/logger.js'
+import { getRequestPayload } from '../../utils/request-payload.js'
 import type { PasswordAdapter } from './types.js'
 
 interface SignupHandlerOptions {
@@ -74,20 +75,17 @@ function normalizeBoolean(value: unknown): boolean {
 }
 
 async function parsePayload(request: RoboRequest): Promise<SignupPayload> {
-	const contentType = request.headers.get('content-type') ?? ''
-
-	if (contentType.includes('application/json')) {
-		const body = (await request.json()) as Record<string, unknown>
-		return normalizePayload(body)
-	}
-
-	const form = await request.formData()
-	const body: Record<string, unknown> = {}
-	form.forEach((value, key) => {
-		body[key] = value as unknown
+	const payload = await getRequestPayload(request)
+	const normalized = normalizePayload(payload.get())
+	payload.assign({
+		email: normalized.email,
+		password: normalized.password,
+		passwordConfirm: normalized.passwordConfirm,
+		csrfToken: normalized.csrfToken,
+		callbackUrl: normalized.callbackUrl,
+		termsAccepted: normalized.termsAccepted
 	})
-
-	return normalizePayload(body)
+	return normalized
 }
 
 function normalizePayload(body: Record<string, unknown>): SignupPayload {

@@ -7,8 +7,9 @@ import { joinPath } from '../../utils/path.js'
 import { notifyEmail } from '../../emails/manager.js'
 import { attachDbSessionCookie, isSuccessRedirect } from '../../runtime/session-helpers.js'
 import { createSignupHandler } from './signup.js'
+import { getRequestPayload } from '../../utils/request-payload.js'
 import type { NormalizedAuthPluginOptions } from '../../config/defaults.js'
-import type { PasswordAdapter } from './types.js'
+import type { EmailPasswordRouteOverrides, PasswordAdapter } from './types.js'
 
 type AuthHandler = (request: RoboRequest, reply: RoboReply) => Promise<Response>
 
@@ -23,6 +24,7 @@ interface EmailPasswordRuntimeOptions {
 	events?: AuthConfig['events']
 	handler: AuthHandler
 	options: NormalizedAuthPluginOptions
+	overrides?: EmailPasswordRouteOverrides
 	recentSigninNotified: Set<string>
 	secret: string
 	sessionStrategy: 'jwt' | 'database'
@@ -54,9 +56,7 @@ function renderPasswordResetPage(params: {
 	const safeSignInUrl = escapeHtml(signInUrl)
 	const safeToken = token ? escapeHtml(token) : ''
 	const safeIdentifier = identifier ? escapeHtml(identifier) : ''
-	const banner = message
-		? `<div class="banner banner--${message.variant}">${escapeHtml(message.text)}</div>`
-		: ''
+	const banner = message ? `<div class="banner banner--${message.variant}">${escapeHtml(message.text)}</div>` : ''
 	const content = hasToken
 		? `<form method="POST" action="${safeAction}">
 			<input type="hidden" name="token" value="${safeToken}" />
@@ -115,6 +115,7 @@ function registerSignupRoute(options: EmailPasswordRuntimeOptions): void {
 		cookies,
 		events,
 		options: pluginOptions,
+		overrides,
 		secret,
 		sessionStrategy
 	} = options
@@ -148,7 +149,23 @@ function registerSignupRoute(options: EmailPasswordRuntimeOptions): void {
 			return new Response(null, { headers: { Allow: 'POST, OPTIONS' }, status: 405 })
 		}
 
-		const response = await signupHandler(request)
+		const payload = await getRequestPayload(request)
+		const runDefault = () => signupHandler(request)
+		const response = overrides?.signup
+			? await overrides.signup({
+					adapter,
+					authConfig,
+					basePath,
+					baseUrl,
+					cookies,
+					defaultHandler: runDefault,
+					events,
+					payload,
+					request,
+					secret,
+					sessionStrategy
+				})
+			: await runDefault()
 		authLogger.debug('Handled credentials signup request.', {
 			method,
 			path: signupPath,
@@ -223,18 +240,17 @@ function registerVerifyEmailRoutes(options: EmailPasswordRuntimeOptions): void {
 		const method = request.method?.toUpperCase() ?? 'GET'
 		if (method !== 'POST') return new Response(null, { status: 405, headers: { Allow: 'POST' } })
 		try {
+			const payload = await getRequestPayload(request)
+			const record = payload.get()
 			let email: string | null = null
-			const contentType = request.headers.get('content-type') ?? ''
-			if (contentType.includes('application/json')) {
-				const body = (await request.json()) as Record<string, unknown>
-				const raw = body['email']
-				if (typeof raw === 'string') email = raw.toLowerCase()
-			} else {
-				const form = await request.formData()
-				const raw = form.get('email')
-				if (typeof raw === 'string') email = raw.toLowerCase()
+			const raw = record['email']
+			if (typeof raw === 'string') {
+				email = raw.toLowerCase()
+			} else if (Array.isArray(raw) && typeof raw[0] === 'string') {
+				email = raw[0].toLowerCase()
 			}
 			if (email) {
+				payload.assign({ email })
 				const user = await adapter.getUserByEmail?.(email)
 				if (user) {
 					const token = nanoid(32)
@@ -262,178 +278,213 @@ function registerVerifyEmailRoutes(options: EmailPasswordRuntimeOptions): void {
 }
 
 function registerPasswordResetRoutes(options: EmailPasswordRuntimeOptions): void {
-	const { adapter, basePath, baseUrl, options: pluginOptions } = options
+	const {
+		adapter,
+		basePath,
+		baseUrl,
+		options: pluginOptions,
+		overrides,
+		authConfig,
+		cookies,
+		events,
+		secret,
+		sessionStrategy
+	} = options
 
 	const resetRequestPath = joinPath(basePath, '/password/reset/request')
 	Server.registerRoute(resetRequestPath, async (request: RoboRequest) => {
 		const method = request.method?.toUpperCase() ?? 'GET'
 		if (method !== 'POST') return new Response(null, { status: 405, headers: { Allow: 'POST' } })
-		try {
-			let email: string | null = null
-			const contentType = request.headers.get('content-type') ?? ''
-			if (contentType.includes('application/json')) {
-				const body = (await request.json()) as Record<string, unknown>
-				const raw = body['email']
-				if (typeof raw === 'string') email = raw.toLowerCase()
-			} else {
-				const form = await request.formData()
-				const raw = form.get('email')
-				if (typeof raw === 'string') email = raw.toLowerCase()
-			}
-			if (email) {
-				const user = await adapter.getUserByEmail?.(email)
-				if (user) {
-					const token = nanoid(32)
-					const expires = new Date(Date.now() + (pluginOptions.email?.expiresInMinutes ?? 60) * 60 * 1000)
-					await adapter.createVerificationToken?.({ identifier: email, token, expires })
-					const url = new URL(joinPath(basePath, '/password/reset/confirm'), baseUrl)
-					url.searchParams.set('token', token)
-					url.searchParams.set('identifier', email)
-					try {
-						await notifyEmail('password:reset-requested', {
-							user: { id: user.id, email: user.email ?? null, name: user.name ?? null },
-							links: { resetPassword: url.toString() },
-							request: { origin: baseUrl }
-						})
-					} catch (error) {
-						authLogger.warn('Failed to send password reset request email', error)
+		const payload = await getRequestPayload(request)
+		const runDefault = async () => {
+			try {
+				const record = payload.get()
+				let email: string | null = null
+				const raw = record['email']
+				if (typeof raw === 'string') {
+					email = raw.toLowerCase()
+				} else if (Array.isArray(raw) && typeof raw[0] === 'string') {
+					email = raw[0].toLowerCase()
+				}
+				if (email) {
+					payload.assign({ email })
+					const user = await adapter.getUserByEmail?.(email)
+					if (user) {
+						const token = nanoid(32)
+						const expires = new Date(Date.now() + (pluginOptions.email?.expiresInMinutes ?? 60) * 60 * 1000)
+						await adapter.createVerificationToken?.({ identifier: email, token, expires })
+						const url = new URL(joinPath(basePath, '/password/reset/confirm'), baseUrl)
+						url.searchParams.set('token', token)
+						url.searchParams.set('identifier', email)
+						try {
+							await notifyEmail('password:reset-requested', {
+								user: { id: user.id, email: user.email ?? null, name: user.name ?? null },
+								links: { resetPassword: url.toString() },
+								request: { origin: baseUrl }
+							})
+						} catch (error) {
+							authLogger.warn('Failed to send password reset request email', error)
+						}
 					}
 				}
+				return new Response(null, { status: 204 })
+			} catch {
+				return new Response(null, { status: 204 })
 			}
-			return new Response(null, { status: 204 })
-		} catch {
-			return new Response(null, { status: 204 })
 		}
+		if (overrides?.passwordResetRequest) {
+			return overrides.passwordResetRequest({
+				adapter,
+				authConfig,
+				basePath,
+				baseUrl,
+				cookies,
+				defaultHandler: runDefault,
+				events,
+				payload,
+				request,
+				secret,
+				sessionStrategy
+			})
+		}
+		return runDefault()
 	})
 
 	const resetConfirmPath = joinPath(basePath, '/password/reset/confirm')
 	Server.registerRoute(resetConfirmPath, async (request: RoboRequest) => {
 		const method = request.method?.toUpperCase() ?? 'GET'
-		if (method === 'GET') {
-			const url = new URL(request.url, baseUrl)
-			const token = url.searchParams.get('token')
-			const identifier = url.searchParams.get('identifier')
-			const hasToken = Boolean(token && identifier)
-			const html = renderPasswordResetPage({
-				actionUrl: new URL(joinPath(basePath, '/password/reset/confirm'), baseUrl).toString(),
-				token,
-				identifier,
-				signInUrl: new URL(pluginOptions.pages?.signIn ?? '/signin', baseUrl).toString(),
-				message: hasToken
-					? undefined
-					: {
-						text: 'This reset link is missing required details or may have expired. Request a new email.',
-						variant: 'error'
-					}
-			})
-			return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8' } })
-		}
-		if (method !== 'POST') return new Response(null, { status: 405, headers: { Allow: 'POST' } })
-		const wantsJson = (request.headers.get('accept') ?? '').toLowerCase().includes('application/json')
-		const htmlHeaders = { 'content-type': 'text/html; charset=utf-8' }
-		const jsonHeaders = { 'content-type': 'application/json' }
-		const actionUrl = new URL(joinPath(basePath, '/password/reset/confirm'), baseUrl).toString()
-		const signInUrl = new URL(pluginOptions.pages?.signIn ?? '/signin', baseUrl)
-
-		const respondJson = (status: number, body?: Record<string, unknown>) =>
-			new Response(body ? JSON.stringify(body) : null, { status, headers: jsonHeaders })
-
-		const respondHtml = (
-			status: number,
-			message: PasswordResetMessage,
-			fields?: { token?: string | null; identifier?: string | null }
-		) =>
-			new Response(
-				renderPasswordResetPage({
-					actionUrl,
-					token: fields?.token ?? null,
-					identifier: fields?.identifier ?? null,
-					signInUrl: signInUrl.toString(),
-					message
-				}),
-				{ status, headers: htmlHeaders }
-			)
-
-		const invalidLink = () =>
-			wantsJson
-				? respondJson(400, { error: 'invalid_reset_link' })
-				: respondHtml(400, {
-					text: 'This reset link is invalid or has expired. Request a new email.',
-					variant: 'error'
+		const payload = await getRequestPayload(request)
+		const runDefault = async () => {
+			if (method === 'GET') {
+				const url = new URL(request.url, baseUrl)
+				const token = url.searchParams.get('token')
+				const identifier = url.searchParams.get('identifier')
+				const hasToken = Boolean(token && identifier)
+				const html = renderPasswordResetPage({
+					actionUrl: new URL(joinPath(basePath, '/password/reset/confirm'), baseUrl).toString(),
+					token,
+					identifier,
+					signInUrl: new URL(pluginOptions.pages?.signIn ?? '/signin', baseUrl).toString(),
+					message: hasToken
+						? undefined
+						: {
+								text: 'This reset link is missing required details or may have expired. Request a new email.',
+								variant: 'error'
+							}
 				})
+				return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8' } })
+			}
+			if (method !== 'POST') return new Response(null, { status: 405, headers: { Allow: 'POST' } })
+			const wantsJson = (request.headers.get('accept') ?? '').toLowerCase().includes('application/json')
+			const htmlHeaders = { 'content-type': 'text/html; charset=utf-8' }
+			const jsonHeaders = { 'content-type': 'application/json' }
+			const actionUrl = new URL(joinPath(basePath, '/password/reset/confirm'), baseUrl).toString()
+			const signInUrl = new URL(pluginOptions.pages?.signIn ?? '/signin', baseUrl)
 
-		try {
-			const contentType = request.headers.get('content-type') ?? ''
-			let token: string | undefined
-			let identifier: string | undefined
-			let newPassword: string | undefined
-			if (contentType.includes('application/json')) {
-				const body = (await request.json()) as Record<string, unknown>
-				token = typeof body['token'] === 'string' ? (body['token'] as string) : undefined
-				identifier = typeof body['identifier'] === 'string' ? (body['identifier'] as string).toLowerCase() : undefined
-				newPassword = typeof body['password'] === 'string' ? (body['password'] as string) : undefined
-			} else {
-				const form = await request.formData()
-				token = typeof form.get('token') === 'string' ? (form.get('token') as string) : undefined
-				identifier =
-					typeof form.get('identifier') === 'string' ? (form.get('identifier') as string).toLowerCase() : undefined
-				newPassword = typeof form.get('password') === 'string' ? (form.get('password') as string) : undefined
+			const respondJson = (status: number, body?: Record<string, unknown>) =>
+				new Response(body ? JSON.stringify(body) : null, { status, headers: jsonHeaders })
+
+			const respondHtml = (
+				status: number,
+				message: PasswordResetMessage,
+				fields?: { token?: string | null; identifier?: string | null }
+			) =>
+				new Response(
+					renderPasswordResetPage({
+						actionUrl,
+						token: fields?.token ?? null,
+						identifier: fields?.identifier ?? null,
+						signInUrl: signInUrl.toString(),
+						message
+					}),
+					{ status, headers: htmlHeaders }
+				)
+
+			const invalidLink = () =>
+				wantsJson
+					? respondJson(400, { error: 'invalid_reset_link' })
+					: respondHtml(400, {
+							text: 'This reset link is invalid or has expired. Request a new email.',
+							variant: 'error'
+						})
+
+			const extractString = (value: unknown): string | undefined => {
+				if (typeof value === 'string') return value
+				if (Array.isArray(value) && typeof value[0] === 'string') return value[0]
+				return undefined
 			}
 
-			token = token?.trim()
-			identifier = identifier?.trim()
-			newPassword = newPassword?.trim()
-
-			if (!token || !identifier) return invalidLink()
-			if (!newPassword) {
-				return wantsJson
-					? respondJson(400, { error: 'missing_password' })
-					: respondHtml(
-						400,
-						{ text: 'Enter a new password to continue.', variant: 'error' },
-						{ token, identifier }
-					)
-			}
-			if (newPassword.length < 8) {
-				return wantsJson
-					? respondJson(400, { error: 'password_too_short', minLength: 8 })
-					: respondHtml(
-						400,
-						{ text: 'Passwords must be at least 8 characters long.', variant: 'error' },
-						{ token, identifier }
-					)
-			}
-
-			const used = await adapter.useVerificationToken?.({ identifier, token })
-			if (!used) return invalidLink()
-			const user = await adapter.getUserByEmail?.(identifier)
-			if (!user) return invalidLink()
 			try {
-				const uid = await adapter.findUserIdByEmail(identifier)
-				if (uid) await adapter.resetUserPassword({ userId: uid, password: newPassword })
-				await notifyEmail('password:reset-completed', {
-					user: { id: user.id, email: user.email ?? null, name: user.name ?? null },
-					request: { origin: baseUrl }
-				})
-			} catch (error) {
-				authLogger.warn('Failed to send password reset confirmation email', error)
-			}
+				const record = payload.get()
+				const token = extractString(record['token'])?.trim()
+				const identifier = extractString(record['identifier'])?.trim().toLowerCase()
+				const newPassword = extractString(record['password'])?.trim()
 
-			if (wantsJson) {
-				return respondJson(200, { status: 'ok' })
+				payload.assign({ token, identifier, password: newPassword })
+
+				if (!token || !identifier) return invalidLink()
+				if (!newPassword) {
+					return wantsJson
+						? respondJson(400, { error: 'missing_password' })
+						: respondHtml(400, { text: 'Enter a new password to continue.', variant: 'error' }, { token, identifier })
+				}
+				if (newPassword.length < 8) {
+					return wantsJson
+						? respondJson(400, { error: 'password_too_short', minLength: 8 })
+						: respondHtml(
+								400,
+								{ text: 'Passwords must be at least 8 characters long.', variant: 'error' },
+								{ token, identifier }
+							)
+				}
+
+				const used = await adapter.useVerificationToken?.({ identifier, token })
+				if (!used) return invalidLink()
+				const user = await adapter.getUserByEmail?.(identifier)
+				if (!user) return invalidLink()
+				try {
+					const uid = await adapter.findUserIdByEmail(identifier)
+					if (uid) await adapter.resetUserPassword({ userId: uid, password: newPassword })
+					await notifyEmail('password:reset-completed', {
+						user: { id: user.id, email: user.email ?? null, name: user.name ?? null },
+						request: { origin: baseUrl }
+					})
+				} catch (error) {
+					authLogger.warn('Failed to send password reset confirmation email', error)
+				}
+
+				if (wantsJson) {
+					return respondJson(200, { status: 'ok' })
+				}
+				const redirectUrl = new URL(signInUrl)
+				redirectUrl.searchParams.set('passwordReset', 'success')
+				return Response.redirect(redirectUrl.toString(), 303)
+			} catch (error) {
+				authLogger.warn('Password reset confirmation failed', { error: (error as Error)?.message })
+				return wantsJson
+					? respondJson(400, { error: 'invalid_request' })
+					: respondHtml(400, {
+							text: 'We could not update your password. Try again from the reset email.',
+							variant: 'error'
+						})
 			}
-			const redirectUrl = new URL(signInUrl)
-			redirectUrl.searchParams.set('passwordReset', 'success')
-			return Response.redirect(redirectUrl.toString(), 303)
-		} catch (error) {
-			authLogger.warn('Password reset confirmation failed', { error: (error as Error)?.message })
-			return wantsJson
-				? respondJson(400, { error: 'invalid_request' })
-				: respondHtml(400, {
-					text: 'We could not update your password. Try again from the reset email.',
-					variant: 'error'
-				})
 		}
+		if (overrides?.passwordResetConfirm) {
+			return overrides.passwordResetConfirm({
+				adapter,
+				authConfig,
+				basePath,
+				baseUrl,
+				cookies,
+				defaultHandler: runDefault,
+				events,
+				payload,
+				request,
+				secret,
+				sessionStrategy
+			})
+		}
+		return runDefault()
 	})
 }
 
@@ -453,10 +504,17 @@ function registerCredentialsInterceptor(options: EmailPasswordRuntimeOptions): v
 
 		let emailFromBody: string | null = null
 		try {
-			const clone = request.clone?.() ?? request
-			const form = await clone.formData()
-			const rawEmail = form.get('email')
-			if (typeof rawEmail === 'string') emailFromBody = rawEmail.toLowerCase()
+			const payload = await getRequestPayload(request)
+			const record = payload.get()
+			const raw = record['email']
+			if (typeof raw === 'string') {
+				emailFromBody = raw.toLowerCase()
+			} else if (Array.isArray(raw) && typeof raw[0] === 'string') {
+				emailFromBody = raw[0].toLowerCase()
+			}
+			if (emailFromBody) {
+				payload.assign({ email: emailFromBody })
+			}
 		} catch (error) {
 			authLogger.warn('Failed to parse email from credentials sign-in request', error)
 		}
@@ -470,9 +528,7 @@ function registerCredentialsInterceptor(options: EmailPasswordRuntimeOptions): v
 		if (userId) {
 			const ip =
 				request.headers.get('cf-connecting-ip') ??
-				(request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-					request.headers.get('x-real-ip') ||
-					undefined)
+				(request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || undefined)
 			const userAgent = request.headers.get('user-agent') ?? undefined
 			try {
 				await notifyEmail('session:created', {
