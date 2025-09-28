@@ -17,6 +17,14 @@ type ResolvedProvider = Extract<Provider, { type: string }>
  * runtime hooks so this restriction does not apply. To keep compatibility we
  * spoof the relevant `Array.prototype.some` check once and mark the provider
  * array as patched.
+ *
+ * @param config - Auth.js configuration object possibly containing only the credentials provider.
+ * @returns Either the original config (when no patch is needed) or a cached, patched instance.
+ *
+ * @example
+ * ```ts
+ * const config = ensureCredentialsDbCompatibility(authConfig)
+ * ```
  */
 export function ensureCredentialsDbCompatibility(config: AuthConfig): AuthConfig {
 	const cached = (config as CompatConfig)[PATCHED_CONFIG_FLAG]

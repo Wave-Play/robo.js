@@ -259,6 +259,17 @@ async function signInWithCredentials(
 	return Auth(authRequest, authConfig)
 }
 
+/**
+ * Factory that builds the email/password signup route handler.
+ *
+ * @param options - Runtime wiring for Auth.js, Flashcore adapter, and redirect behavior.
+ * @returns A Robo-compatible request handler that processes signup submissions.
+ *
+ * @example
+ * ```ts
+ * const handleSignup = createSignupHandler({ adapter, authConfig, basePath, baseUrl, cookies, secret })
+ * ```
+ */
 export function createSignupHandler(options: SignupHandlerOptions) {
 	const {
 		authConfig,

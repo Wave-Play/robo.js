@@ -12,6 +12,7 @@ import type { PasswordAdapter, PasswordRecord, PasswordResetToken } from '../bui
 
 const require = createRequire(import.meta.url)
 
+/** Options required to initialize the Flashcore-backed Auth adapter. */
 interface FlashcoreAdapterOptions {
 	secret: string
 }
@@ -291,6 +292,23 @@ async function removeUserFromIndex(userId: string): Promise<void> {
 	}
 }
 
+/**
+ * Returns a paginated list of Auth.js user identifiers stored in Flashcore.
+ *
+ * @param page - Zero-based page index; defaults to the first page.
+ * @returns Summary object containing IDs plus paging metadata.
+ *
+ * @example
+ * ```ts
+ * const { ids } = await listUserIds()
+ * ```
+ *
+ * @example
+ * ```ts
+ * const page = await listUserIds(1)
+ * console.log(page.total)
+ * ```
+ */
 export async function listUserIds(
 	page = 0
 ): Promise<{ ids: string[]; page: number; pageCount: number; total: number }> {
@@ -302,6 +320,23 @@ export async function listUserIds(
 	return { ids, page, pageCount: meta.pageCount, total: meta.total }
 }
 
+/**
+ * Reads full Auth.js user records backed by Flashcore.
+ *
+ * @param page - Zero-based page index; defaults to the first page.
+ * @returns List of users alongside pagination metadata.
+ *
+ * @example
+ * ```ts
+ * const { users } = await listUsers(2)
+ * ```
+ *
+ * @example
+ * ```ts
+ * const { users, pageCount } = await listUsers()
+ * if (pageCount > 1) console.log('paginate')
+ * ```
+ */
 export async function listUsers(
 	page = 0
 ): Promise<{ users: AdapterUser[]; page: number; pageCount: number; total: number }> {
@@ -315,10 +350,11 @@ export async function listUsers(
 /**
  * Creates an Auth.js adapter backed by Flashcore storage.
  *
+ * @param options - Requires a `secret` used for hashing tokens and verification records.
+ * @returns A password-aware Auth.js adapter instance.
+ *
  * @example
  * ```ts
- * import { createFlashcoreAdapter } from '@robojs/auth'
- *
  * const adapter = createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })
  * ```
  */

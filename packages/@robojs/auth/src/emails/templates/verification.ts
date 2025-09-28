@@ -17,6 +17,7 @@ const cardStyles = [
   "line-height:1.6"
 ].join(';')
 
+/** Default template for verification emails triggered by Auth.js flows. */
 export const DefaultEmailVerificationTemplate: TemplateConfig = {
   subject: () => 'Confirm your email address',
   html: (ctx) => {

@@ -23,11 +23,21 @@ function resolveBasePath(options?: ClientOptions): string {
 }
 
 /**
- * Posts to the plugin's `/signin` endpoint with the chosen provider.
+ * Initiates the Auth.js sign-in flow for the provided provider identifier.
+ *
+ * @param providerId - Provider configured in your Auth.js options, such as `google` or `discord`.
+ * @param body - Additional payload merged into the sign-in request body; defaults to an empty object.
+ * @param options - Overrides for base path, headers, or a custom fetch implementation.
+ * @returns A `Response` representing the Auth.js `/signin` endpoint result.
  *
  * @example
  * ```ts
  * await signIn('google')
+ * ```
+ *
+ * @example
+ * ```ts
+ * await signIn('email', { email: 'user@example.com' }, { basePath: '/custom-auth' })
  * ```
  */
 export async function signIn(
@@ -51,11 +61,19 @@ export async function signIn(
 }
 
 /**
- * Posts to the plugin's `/signout` endpoint and clears session cookies.
+ * Calls the Auth.js sign-out route to remove the active session.
+ *
+ * @param options - Overrides for base path, headers, or a custom fetch implementation.
+ * @returns A `Response` emitted by the `/signout` endpoint.
  *
  * @example
  * ```ts
  * await signOut()
+ * ```
+ *
+ * @example
+ * ```ts
+ * await signOut({ fetch: myEdgeSafeFetch })
  * ```
  */
 export async function signOut(options?: ClientOptions): Promise<Response> {
@@ -74,11 +92,19 @@ export async function signOut(options?: ClientOptions): Promise<Response> {
 }
 
 /**
- * Fetches the active session JSON from `/session`.
+ * Retrieves the current Auth.js session object, if one exists.
+ *
+ * @param options - Overrides for base path, headers, or a custom fetch implementation.
+ * @returns The active session payload or `null` when the user is not authenticated.
  *
  * @example
  * ```ts
  * const session = await getSession()
+ * ```
+ *
+ * @example
+ * ```ts
+ * const session = await getSession({ headers: { cookie: context.cookie } })
  * ```
  */
 export async function getSession<T extends Session = Session>(options?: ClientOptions): Promise<T | null> {
@@ -97,11 +123,19 @@ export async function getSession<T extends Session = Session>(options?: ClientOp
 }
 
 /**
- * Lists providers exposed by Auth.js at runtime.
+ * Lists OAuth, Email, and custom providers configured in Auth.js at runtime.
+ *
+ * @param options - Overrides for base path, headers, or a custom fetch implementation.
+ * @returns A list of available providers or `null` if the response is not successful.
  *
  * @example
  * ```ts
  * const providers = await getProviders()
+ * ```
+ *
+ * @example
+ * ```ts
+ * const providers = await getProviders({ headers: { cookie: request.headers.get('cookie') ?? '' } })
  * ```
  */
 export async function getProviders(options?: ClientOptions): Promise<PublicProvider[] | null> {
@@ -117,11 +151,19 @@ export async function getProviders(options?: ClientOptions): Promise<PublicProvi
 }
 
 /**
- * Retrieves the CSRF token required for form-based POSTs to `/signin` or `/signout`.
+ * Fetches the CSRF token used by Auth.js form submissions.
+ *
+ * @param options - Overrides for base path, headers, or a custom fetch implementation.
+ * @returns A string token or `null` if the request fails.
  *
  * @example
  * ```ts
  * const csrf = await getCsrfToken()
+ * ```
+ *
+ * @example
+ * ```ts
+ * const csrf = await getCsrfToken({ basePath: '/auth' })
  * ```
  */
 export async function getCsrfToken(options?: ClientOptions): Promise<string | null> {

@@ -4,15 +4,24 @@ import type { RoboRequest, RoboReply } from '@robojs/server'
 import { authLogger } from '../utils/logger.js'
 import { ensureCredentialsDbCompatibility } from './credentials-compat.js'
 
+/** Auth.js-compatible request handler signature tailored for Robo server requests. */
 export type AuthRequestHandler = (req: RoboRequest, res: RoboReply) => Promise<Response>
 
 /**
- * Bridges Robo.js `RoboRequest` objects to Auth.js' `Auth` handler.
+ * Bridges Robo.js requests to Auth.js so plugin routes can reuse the official handler.
+ *
+ * @param config - Fully prepared Auth.js configuration used to initialize the handler.
+ * @returns An async function accepting Robo.js request/response objects and returning the Auth.js response.
  *
  * @example
  * ```ts
  * const handler = createAuthRequestHandler(authConfig)
  * const response = await handler(roboRequest)
+ * ```
+ *
+ * @example
+ * ```ts
+ * export default createAuthRequestHandler(buildAuthConfig({ adapter }))
  * ```
  */
 export function createAuthRequestHandler(config: AuthConfig): AuthRequestHandler {

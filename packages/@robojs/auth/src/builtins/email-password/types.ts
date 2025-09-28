@@ -4,6 +4,7 @@ import type { CookiesOptions } from '@auth/core/types'
 import type { RoboRequest } from '@robojs/server'
 import type { RequestPayloadHandle } from '../../utils/request-payload.js'
 
+/** Persistent password metadata stored by the email-password provider. */
 export interface PasswordRecord {
 	id: string
 	userId: string
@@ -13,12 +14,14 @@ export interface PasswordRecord {
 	updatedAt: string
 }
 
+/** Password reset token persisted for single-use verification. */
 export interface PasswordResetToken {
 	token: string
 	userId: string
 	expires: Date
 }
 
+/** Auth.js adapter contract extended with password management helpers. */
 export interface PasswordAdapter extends Adapter {
 	createUserPassword(params: { userId: string; email: string; password: string }): Promise<PasswordRecord>
 	verifyUserPassword(params: { userId: string; password: string }): Promise<boolean>
@@ -29,6 +32,7 @@ export interface PasswordAdapter extends Adapter {
 	usePasswordResetToken(token: string): Promise<PasswordResetToken | null>
 }
 
+/** Options accepted by the Email/Password provider factory. */
 export interface EmailPasswordProviderOptions {
 	adapter: PasswordAdapter
 	name?: string
@@ -36,6 +40,7 @@ export interface EmailPasswordProviderOptions {
 	routes?: EmailPasswordRouteOverrides
 }
 
+/** Context object passed to custom `authorize` implementations. */
 export interface EmailPasswordAuthorizeContext {
 	adapter: PasswordAdapter
 	defaultAuthorize: () => Promise<AdapterUser | null>
@@ -47,6 +52,7 @@ export type EmailPasswordAuthorize = (
 	context: EmailPasswordAuthorizeContext
 ) => Promise<AdapterUser | null>
 
+/** Arguments provided to Email/Password route overrides while processing a request. */
 export interface EmailPasswordRouteContext {
 	adapter: PasswordAdapter
 	authConfig: AuthConfig
@@ -63,16 +69,29 @@ export interface EmailPasswordRouteContext {
 
 export type EmailPasswordRouteHandler = (context: EmailPasswordRouteContext) => Promise<Response>
 
+/** Optional handlers that replace built-in Email/Password routes. */
 export interface EmailPasswordRouteOverrides {
 	signup?: EmailPasswordRouteHandler
 	passwordResetRequest?: EmailPasswordRouteHandler
 	passwordResetConfirm?: EmailPasswordRouteHandler
 }
 
+/** Metadata returned from the Email/Password provider factory. */
 export interface EmailPasswordProviderMetadata {
 	routes?: EmailPasswordRouteOverrides
 }
 
+/**
+ * Validates that a supplied Auth.js adapter implements password helper methods.
+ *
+ * @param adapter - Adapter instance provided by the user or plugin configuration.
+ * @throws When required password helper functions are missing.
+ *
+ * @example
+ * ```ts
+ * assertPasswordAdapter(createFlashcoreAdapter({ secret }))
+ * ```
+ */
 export function assertPasswordAdapter(
 	adapter: Adapter | undefined
 ): asserts adapter is PasswordAdapter {

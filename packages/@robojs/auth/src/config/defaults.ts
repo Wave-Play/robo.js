@@ -8,8 +8,10 @@ import { applyCookieOverrides, buildDefaultCookies } from '../utils/cookies.js'
 const DEFAULT_SESSION_MAX_AGE = 60 * 60 * 24 * 30 // 30 days
 const DEFAULT_SESSION_UPDATE_AGE = 60 * 60 * 24 // 24 hours
 
+/** Default route prefix used by the Auth plugin REST handlers. */
 export const DEFAULT_BASE_PATH = '/api/auth'
 
+/** Normalized, runtime-ready view of the Auth plugin options. */
 export interface NormalizedAuthPluginOptions {
 	adapter?: Adapter
 	allowDangerousEmailAccountLinking: boolean
@@ -29,14 +31,21 @@ export interface NormalizedAuthPluginOptions {
 }
 
 /**
- * Parses plugin configuration, applies defaults, and returns an Auth.js ready option set.
+ * Parses plugin configuration, applies defaults, and returns an Auth.js-ready option set.
+ *
+ * @param options - Raw value supplied by the Robo config or CLI scaffolder.
+ * @returns A normalized configuration consumable by Auth.js and runtime helpers.
  *
  * @example
  * ```ts
- * import { normalizeAuthOptions } from '@robojs/auth'
- *
  * const resolved = normalizeAuthOptions({ basePath: '/api/auth' })
  * console.log(resolved.basePath) // "/api/auth"
+ * ```
+ *
+ * @example
+ * ```ts
+ * const resolved = normalizeAuthOptions({ providers: [GitHubProvider({ clientId, clientSecret })] })
+ * console.log(resolved.session.strategy) // "jwt"
  * ```
  */
 export function normalizeAuthOptions(options: unknown): NormalizedAuthPluginOptions {

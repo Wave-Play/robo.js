@@ -4,6 +4,7 @@ import type { CookiesOptions } from '@auth/core/types'
 import { serializeCookie } from '../utils/cookies.js'
 import { nanoid } from 'nanoid'
 
+/** Detects whether an Auth.js response redirects to a success destination. */
 export function isSuccessRedirect(response: Response): boolean {
 	const status = response.status
 	if (status < 300 || status >= 400) return false
@@ -11,6 +12,7 @@ export function isSuccessRedirect(response: Response): boolean {
 	return !/[?&]error=/.test(location)
 }
 
+/** Checks if the supplied response contains a Set-Cookie header for the session token. */
 export function hasSessionCookie(response: Response, cookieName: string): boolean {
 	// Headers may contain multiple Set-Cookie values; get() returns a comma-joined list in some runtimes.
 	const header = response.headers.get('set-cookie')
@@ -24,6 +26,7 @@ function normalizeSameSite(input: unknown): SameSite {
 	return input === 'strict' || input === 'none' ? input : 'lax'
 }
 
+/** Appends a database session cookie to the response so credentials providers stay logged in. */
 export async function attachDbSessionCookie(params: {
 	response: Response
 	adapter: Adapter

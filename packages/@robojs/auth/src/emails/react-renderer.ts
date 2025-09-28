@@ -41,6 +41,7 @@ async function getReactDomServer() {
 	return reactDomServerModule
 }
 
+/** Converts a React email template into an HTML string at runtime. */
 export async function renderReactTemplate(
 	value: ReactTemplateRenderer | undefined,
 	ctx: EmailContext

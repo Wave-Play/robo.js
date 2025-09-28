@@ -1,9 +1,11 @@
 import type { EmailContext, TemplateConfig } from '../types.js'
 
+/** Default subject line used for sign-in notification emails. */
 function buildSignInSubject(_ctx: EmailContext): string {
   return 'New sign-in to your account'
 }
 
+/** HTML renderer for sign-in notifications summarizing request metadata. */
 function buildSignInHtml(ctx: EmailContext): string {
   const title = 'New sign-in to your account'
   const ip = ctx.session?.ip || ''
@@ -43,6 +45,7 @@ function buildSignInHtml(ctx: EmailContext): string {
  </html>`
 }
 
+/** Plain-text fallback for sign-in notifications. */
 function buildSignInText(ctx: EmailContext): string {
   const ip = ctx.session?.ip
   const ua = ctx.session?.userAgent
@@ -56,6 +59,7 @@ function buildSignInText(ctx: EmailContext): string {
   return lines.join('\n')
 }
 
+/** Bundled sign-in template wiring subject, HTML, and text variants. */
 export const DefaultSignInTemplate: TemplateConfig = {
   subject: (ctx) => buildSignInSubject(ctx),
   html: (ctx) => buildSignInHtml(ctx),

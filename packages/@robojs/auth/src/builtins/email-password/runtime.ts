@@ -560,6 +560,11 @@ function registerCredentialsInterceptor(options: EmailPasswordRuntimeOptions): v
 	})
 }
 
+/**
+ * Registers all email/password runtime routes, interceptors, and hooks with Robo.
+ *
+ * @param options - Collected dependencies such as adapter, config, router, and logger.
+ */
 export function registerEmailPasswordRuntime(options: EmailPasswordRuntimeOptions): void {
 	registerSignupRoute(options)
 	registerVerifyEmailRoutes(options)

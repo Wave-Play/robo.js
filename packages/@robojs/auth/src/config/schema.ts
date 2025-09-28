@@ -97,6 +97,14 @@ const emailsSchema = z
     .partial()
     .optional()
 
+/**
+ * Zod schema enforcing the structure of `@robojs/auth` plugin configuration.
+ *
+ * @example
+ * ```ts
+ * const config = authPluginOptionsSchema.parse({ basePath: '/api/auth' })
+ * ```
+ */
 export const authPluginOptionsSchema = z
     .object({
         adapter: z.unknown().optional(),
@@ -117,7 +125,7 @@ export const authPluginOptionsSchema = z
     })
     .strict()
 
-// Strongly-typed EmailsOptions for authoring convenience
+/** Strongly-typed `emails` configuration used to wire custom mailers and templates. */
 export interface EmailsOptions {
     from?: MailParty
     mailer?: AuthMailer | (() => Promise<AuthMailer> | AuthMailer) | { module: string; export?: string }
@@ -125,6 +133,7 @@ export interface EmailsOptions {
     triggers?: Partial<Record<AuthEmailEvent, EmailBuilder | EmailBuilder[]>>
 }
 
+/** Convenience type mirroring the schema with improved autocomplete for the `emails` block. */
 export type AuthPluginOptions = Omit<z.infer<typeof authPluginOptionsSchema>, 'emails'> & {
     emails?: EmailsOptions
 }

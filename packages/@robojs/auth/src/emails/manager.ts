@@ -28,19 +28,23 @@ type EmailsConfig = {
 
 let instance: EmailManager | undefined
 
+/** Registers a singleton email manager used by runtime triggers. */
 export function setEmailManager(mgr: EmailManager | undefined) {
 	instance = mgr
 }
 
+/** Retrieves the active email manager instance, if configured. */
 export function getEmailManager() {
 	return instance
 }
 
+/** Dispatches an email event through configured builders and mailers. */
 export async function notifyEmail(event: AuthEmailEvent, ctx: EmailContext) {
 	if (!instance) return
 	await instance.notify(event, ctx)
 }
 
+/** Coordinates mailer lifecycle, template resolution, and trigger execution. */
 export class EmailManager {
 	private mailer?: AuthMailer
 	private from?: MailParty

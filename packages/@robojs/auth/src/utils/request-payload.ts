@@ -7,6 +7,7 @@ interface PayloadState {
 	source: PayloadSource
 }
 
+/** Utility handle for inspecting and mutating a parsed request payload. */
 export interface RequestPayloadHandle {
 	readonly source: PayloadSource
 	get<T extends Record<string, unknown> = Record<string, unknown>>(): T
@@ -87,6 +88,18 @@ function createHandle(request: RoboRequest, state: PayloadState): RequestPayload
 	}
 }
 
+/**
+ * Parses the Robo request body once and exposes a reusable payload helper.
+ *
+ * @param request - Incoming Robo request whose body should be cached and inspected.
+ * @returns A payload handle that exposes `get`, `replace`, and `assign` helpers.
+ *
+ * @example
+ * ```ts
+ * const payload = await getRequestPayload(request)
+ * const { email } = payload.get<{ email: string }>()
+ * ```
+ */
 export async function getRequestPayload(request: RoboRequest): Promise<RequestPayloadHandle> {
 	const existing = ensureState(request)
 	if (existing) {

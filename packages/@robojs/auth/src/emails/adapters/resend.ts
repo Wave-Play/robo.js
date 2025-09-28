@@ -1,6 +1,7 @@
 import type { AuthMailer, MailMessage, MailParty } from '../types.js'
 import { authLogger } from '../../utils/logger.js'
 
+/** Wire-up options passed to the Resend-backed mailer. */
 export type ResendMailerOptions = {
   apiKey: string
   from?: MailParty
@@ -30,6 +31,17 @@ type ResendClient = {
 
 type ResendCtor = new (apiKey: string) => ResendClient
 
+/**
+ * Builds an `AuthMailer` implementation backed by the Resend email API.
+ *
+ * @param opts - Includes the Resend API key and optional default `from` address.
+ * @returns An `AuthMailer` that lazily imports the Resend SDK.
+ *
+ * @example
+ * ```ts
+ * const mailer = createResendMailer({ apiKey: process.env.RESEND_API_KEY!, from: 'Robo <noreply@example.com>' })
+ * ```
+ */
 export function createResendMailer(opts: ResendMailerOptions): AuthMailer {
   let client: ResendClient | undefined
 

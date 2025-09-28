@@ -1,9 +1,11 @@
 import type { EmailContext, TemplateConfig } from '../types.js'
 
+/** Subject used when prompting a user to reset their password. */
 function buildResetRequestSubject(): string {
 	return 'Reset your password'
 }
 
+/** HTML body encouraging a user to choose a new password. */
 function buildResetRequestHtml(ctx: EmailContext): string {
 	const title = 'Reset your password'
 	const resetLink = ctx.links?.resetPassword ?? null
@@ -47,6 +49,7 @@ function buildResetRequestHtml(ctx: EmailContext): string {
 </html>`
 }
 
+/** Plain-text variant for the password reset request email. */
 function buildResetRequestText(ctx: EmailContext): string {
 	const link = ctx.links?.resetPassword ?? ''
 	const lines = [
@@ -58,16 +61,19 @@ function buildResetRequestText(ctx: EmailContext): string {
 	return lines.join('\n')
 }
 
+/** Template bundle powering password reset request notifications. */
 export const DefaultPasswordResetRequestTemplate: TemplateConfig = {
 	subject: () => buildResetRequestSubject(),
 	html: (ctx) => buildResetRequestHtml(ctx),
 	text: (ctx) => buildResetRequestText(ctx)
 }
 
+/** Subject sent once a user successfully changes their password. */
 function buildResetCompletedSubject(): string {
 	return 'Your password was changed'
 }
 
+/** HTML copy used for password reset completion emails. */
 function buildResetCompletedHtml(): string {
 	const title = 'Your password was changed'
 	return `<!doctype html>
@@ -102,6 +108,7 @@ function buildResetCompletedHtml(): string {
 </html>`
 }
 
+/** Plain-text fallback for password reset completion notifications. */
 function buildResetCompletedText(): string {
 	return [
 		'Your password was just changed.',
@@ -110,9 +117,9 @@ function buildResetCompletedText(): string {
 	].join('\n')
 }
 
+/** Template pack acknowledging password reset completion. */
 export const DefaultPasswordResetCompletedTemplate: TemplateConfig = {
 	subject: () => buildResetCompletedSubject(),
 	html: () => buildResetCompletedHtml(),
 	text: () => buildResetCompletedText()
 }
-

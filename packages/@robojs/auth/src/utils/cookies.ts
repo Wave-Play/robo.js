@@ -1,5 +1,6 @@
 import type { CookieOption, CookiesOptions } from '@auth/core/types'
 
+/** Individual chunk produced while splitting large cookie values. */
 export interface ChunkedCookieValue {
 	name: string
 	value: string
@@ -30,6 +31,7 @@ function createCookieOption({
 	}
 }
 
+/** Builds Auth.js default cookie configuration, including names and flags. */
 export function buildDefaultCookies(): CookiesOptions {
 	return {
 		callbackUrl: createCookieOption({ name: 'authjs.callback-url', httpOnly: false }),
@@ -42,8 +44,10 @@ export function buildDefaultCookies(): CookiesOptions {
 	}
 }
 
+/** Lazily-evaluated default cookie set shared across runtime helpers. */
 export const defaultCookies = buildDefaultCookies()
 
+/** Applies `__Secure-` or `__Host-` prefixes required by certain cookie policies. */
 export function applyCookiePrefix(name: string, secure = true, hostOnly = false): string {
 	if (hostOnly) {
 		return `__Host-${name}`
@@ -51,6 +55,7 @@ export function applyCookiePrefix(name: string, secure = true, hostOnly = false)
 	return secure ? `__Secure-${name}` : name
 }
 
+/** Deep merges cookie definitions, preserving nested option objects. */
 export function mergeCookieOption(
 	defaultOption: Partial<CookieOption>,
 	override?: Partial<CookieOption>
@@ -65,6 +70,7 @@ export function mergeCookieOption(
 	}
 }
 
+/** Combines user-provided cookie overrides with the plugin defaults. */
 export function applyCookieOverrides(
 	defaults: CookiesOptions,
 	overrides?: Partial<CookiesOptions>
@@ -82,6 +88,7 @@ export function applyCookieOverrides(
 
 const DEFAULT_CHUNK_SIZE = 3800
 
+/** Splits oversized cookie payloads into smaller chunks for transmission. */
 export function chunkCookieValue(
 	name: string,
 	value: string,
@@ -102,6 +109,7 @@ export function chunkCookieValue(
 	return chunks
 }
 
+/** Reassembles a cookie value previously split with `chunkCookieValue`. */
 export function unchunkCookieValue(name: string, values: Record<string, string>): string | null {
 	if (values[name]) return values[name]
 
@@ -120,9 +128,7 @@ export function unchunkCookieValue(name: string, values: Record<string, string>)
 	return index === 0 ? null : buffer
 }
 
-/**
- * Serializes a cookie header string following Auth.js expectations.
- */
+/** Serializes a cookie header string following Auth.js expectations. */
 export function serializeCookie(
 	name: string,
 	value: string,

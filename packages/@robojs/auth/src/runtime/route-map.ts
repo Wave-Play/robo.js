@@ -1,10 +1,21 @@
 export type HttpMethod = 'GET' | 'POST'
 
+/** Declarative mapping of HTTP verb and path handled by the Auth plugin. */
 export interface RouteConfig {
 	method: HttpMethod
 	path: string
 }
 
+/**
+ * Robo-authenticated routes mounted under the configured `basePath`.
+ *
+ * @example
+ * ```ts
+ * for (const route of AUTH_ROUTES) {
+ *   router.register(route.method, `${basePath}${route.path}`, handler)
+ * }
+ * ```
+ */
 export const AUTH_ROUTES: RouteConfig[] = [
 	{ method: 'GET', path: '/providers' },
 	{ method: 'GET', path: '/session' },
