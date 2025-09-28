@@ -63,5 +63,6 @@ export async function attachDbSessionCookie(params: {
 	// If Auth.js also set a session cookie (e.g., JWT), the browser will honor the last one.
 	headers.append('set-cookie', headerValue)
 	// Respond with the original status code while guaranteeing the cookie is delivered.
+
 	return new Response(null, { status: response.status, headers })
 }

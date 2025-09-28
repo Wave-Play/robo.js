@@ -4,13 +4,13 @@ import type { AuthMailer, MailParty, AuthEmailEvent, EmailBuilder, TemplateConfi
 const functionSchema = z.function().args(z.any()).returns(z.any())
 
 const mailPartySchema = z.union([
-    z.string(),
-    z
-        .object({
-            name: z.string().optional(),
-            address: z.string()
-        })
-        .strict()
+	z.string(),
+	z
+		.object({
+			name: z.string().optional(),
+			address: z.string()
+		})
+		.strict()
 ])
 
 const partialCookieSchema = z
@@ -75,27 +75,27 @@ const eventsSchema = z
 	.optional()
 
 const emailSchema = z
-    .object({
-        from: z.string().optional(),
-        template: z.union([z.string(), functionSchema]).optional(),
-        subject: z.union([z.string(), functionSchema]).optional(),
-        text: z.union([z.string(), functionSchema]).optional(),
-        deliver: functionSchema.optional(),
-        sendVerificationRequest: functionSchema.optional(),
-        expiresInMinutes: z.number().int().positive().optional()
-    })
-    .partial()
-    .optional()
+	.object({
+		from: z.string().optional(),
+		template: z.union([z.string(), functionSchema]).optional(),
+		subject: z.union([z.string(), functionSchema]).optional(),
+		text: z.union([z.string(), functionSchema]).optional(),
+		deliver: functionSchema.optional(),
+		sendVerificationRequest: functionSchema.optional(),
+		expiresInMinutes: z.number().int().positive().optional()
+	})
+	.partial()
+	.optional()
 
 const emailsSchema = z
-    .object({
-        from: mailPartySchema.optional(),
-        mailer: z.unknown().optional(),
-        templates: z.record(z.any()).optional(),
-        triggers: z.record(z.any()).optional()
-    })
-    .partial()
-    .optional()
+	.object({
+		from: mailPartySchema.optional(),
+		mailer: z.unknown().optional(),
+		templates: z.record(z.any()).optional(),
+		triggers: z.record(z.any()).optional()
+	})
+	.partial()
+	.optional()
 
 /**
  * Zod schema enforcing the structure of `@robojs/auth` plugin configuration.
@@ -106,34 +106,34 @@ const emailsSchema = z
  * ```
  */
 export const authPluginOptionsSchema = z
-    .object({
-        adapter: z.unknown().optional(),
-        allowDangerousEmailAccountLinking: z.boolean().optional(),
-        basePath: z.string().optional(),
-        callbacks: callbacksSchema,
-        cookies: cookiesSchema,
-        debug: z.boolean().optional(),
-        events: eventsSchema,
-        email: emailSchema,
-        emails: emailsSchema,
-        pages: pagesSchema,
-        providers: z.array(z.any()).optional(),
-        redirectProxyUrl: z.string().url().optional(),
-        secret: z.string().min(1).optional(),
-        session: sessionSchema,
-        url: z.string().url().optional()
-    })
-    .strict()
+	.object({
+		adapter: z.unknown().optional(),
+		allowDangerousEmailAccountLinking: z.boolean().optional(),
+		basePath: z.string().optional(),
+		callbacks: callbacksSchema,
+		cookies: cookiesSchema,
+		debug: z.boolean().optional(),
+		events: eventsSchema,
+		email: emailSchema,
+		emails: emailsSchema,
+		pages: pagesSchema,
+		providers: z.array(z.any()).optional(),
+		redirectProxyUrl: z.string().url().optional(),
+		secret: z.string().min(1).optional(),
+		session: sessionSchema,
+		url: z.string().url().optional()
+	})
+	.strict()
 
 /** Strongly-typed `emails` configuration used to wire custom mailers and templates. */
 export interface EmailsOptions {
-    from?: MailParty
-    mailer?: AuthMailer | (() => Promise<AuthMailer> | AuthMailer) | { module: string; export?: string }
-    templates?: Partial<Record<AuthEmailEvent, TemplateConfig>>
-    triggers?: Partial<Record<AuthEmailEvent, EmailBuilder | EmailBuilder[]>>
+	from?: MailParty
+	mailer?: AuthMailer | (() => Promise<AuthMailer> | AuthMailer) | { module: string; export?: string }
+	templates?: Partial<Record<AuthEmailEvent, TemplateConfig>>
+	triggers?: Partial<Record<AuthEmailEvent, EmailBuilder | EmailBuilder[]>>
 }
 
 /** Convenience type mirroring the schema with improved autocomplete for the `emails` block. */
 export type AuthPluginOptions = Omit<z.infer<typeof authPluginOptionsSchema>, 'emails'> & {
-    emails?: EmailsOptions
+	emails?: EmailsOptions
 }

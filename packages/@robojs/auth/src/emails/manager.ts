@@ -41,6 +41,7 @@ export function getEmailManager() {
 /** Dispatches an email event through configured builders and mailers. */
 export async function notifyEmail(event: AuthEmailEvent, ctx: EmailContext) {
 	if (!instance) return
+
 	await instance.notify(event, ctx)
 }
 
@@ -170,6 +171,7 @@ export class EmailManager {
 					resolveValue(t.html, ctx)
 				])
 				const text = await resolveValue(t.text, ctx)
+
 				return { to, subject, html: reactHtml ?? html, text }
 			}
 		]
@@ -185,15 +187,13 @@ export class EmailManager {
 	}
 }
 
-async function resolveValue<T>(
-	value: TemplateValue<T> | undefined,
-	ctx: EmailContext
-): Promise<T | undefined> {
+async function resolveValue<T>(value: TemplateValue<T> | undefined, ctx: EmailContext): Promise<T | undefined> {
 	if (typeof value === 'function') {
 		return await (value as (ctx: EmailContext) => Promise<T> | T)(ctx)
 	}
 	if (value && typeof value === 'object' && 'then' in (value as Record<string, unknown>)) {
 		return await (value as Promise<T>)
 	}
+
 	return value
 }

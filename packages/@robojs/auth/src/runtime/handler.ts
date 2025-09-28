@@ -30,10 +30,14 @@ export function createAuthRequestHandler(config: AuthConfig): AuthRequestHandler
 			// Log routing and normalize the Auth.js configuration before delegation.
 			authLogger.debug('Handling auth request', { method: request.method, url: request.url })
 			const preparedConfig = ensureCredentialsDbCompatibility(config)
+
 			return await Auth(request, preparedConfig)
 		} catch (err: unknown) {
 			// Auth.js errors are normalized so we can return JSON or redirect with useful clues.
-			authLogger.warn('Error in Auth.js request handler', { error: getString(err, 'message'), stack: getString(err, 'stack') })
+			authLogger.warn('Error in Auth.js request handler', {
+				error: getString(err, 'message'),
+				stack: getString(err, 'stack')
+			})
 			const rawCode = extractErrorCode(err)
 			const normalizedCode = typeof rawCode === 'string' ? rawCode.toLowerCase() : undefined
 			const isCredsError =
@@ -67,19 +71,21 @@ export function createAuthRequestHandler(config: AuthConfig): AuthRequestHandler
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
+	return typeof value === 'object' && value !== null
 }
 
 function getString(obj: unknown, key: string): string | undefined {
-  if (!isObject(obj)) return undefined
-  const val = obj[key]
-  return typeof val === 'string' ? val : undefined
+	if (!isObject(obj)) return undefined
+	const val = obj[key]
+
+	return typeof val === 'string' ? val : undefined
 }
 
 function getObject(obj: unknown, key: string): Record<string, unknown> | undefined {
-  if (!isObject(obj)) return undefined
-  const val = obj[key]
-  return isObject(val) ? val : undefined
+	if (!isObject(obj)) return undefined
+	const val = obj[key]
+
+	return isObject(val) ? val : undefined
 }
 
 function extractErrorCode(err: unknown): string | undefined {

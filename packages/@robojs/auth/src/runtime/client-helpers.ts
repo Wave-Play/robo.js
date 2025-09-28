@@ -120,8 +120,10 @@ export async function getSession<T extends Session = Session>(options?: ClientOp
 		},
 		credentials: 'include'
 	}
+
 	const response = await request(`${basePath}/session`, init)
 	if (!response.ok) return null
+
 	return (await response.json()) as T
 }
 
@@ -149,8 +151,10 @@ export async function getProviders(options?: ClientOptions): Promise<PublicProvi
 		headers: options?.headers,
 		credentials: 'include'
 	}
+
 	const response = await request(`${basePath}/providers`, init)
 	if (!response.ok) return null
+
 	return (await response.json()) as PublicProvider[]
 }
 
@@ -178,8 +182,10 @@ export async function getCsrfToken(options?: ClientOptions): Promise<string | nu
 		headers: options?.headers,
 		credentials: 'include'
 	}
+
 	const response = await request(`${basePath}/csrf`, init)
 	if (!response.ok) return null
+
 	const data = (await response.json()) as { csrfToken?: string }
 	return data?.csrfToken ?? null
 }

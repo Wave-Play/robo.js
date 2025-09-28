@@ -62,6 +62,7 @@ async function parseBody(request: RoboRequest): Promise<PayloadState> {
 					map[key] = [existing, value]
 				}
 			})
+
 			return { data: map, source: 'form' }
 		} catch {
 			return { data: {}, source: 'form' }
@@ -108,7 +109,9 @@ export async function getRequestPayload(request: RoboRequest): Promise<RequestPa
 		// Return the cached payload so multiple consumers share the same mutation surface.
 		return createHandle(request, existing)
 	}
+
 	const parsed = await parseBody(request)
 	storeState(request, parsed)
+
 	return createHandle(request, parsed)
 }

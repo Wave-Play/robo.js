@@ -164,7 +164,7 @@ function registerSignupRoute(options: EmailPasswordRuntimeOptions): void {
 					request,
 					secret,
 					sessionStrategy
-				})
+			  })
 			: await runDefault()
 		authLogger.debug('Handled credentials signup request.', {
 			method,
@@ -229,8 +229,8 @@ function registerVerifyEmailRoutes(options: EmailPasswordRuntimeOptions): void {
 			status === 'ok'
 				? '<p>Your email has been confirmed. You can close this window.</p>'
 				: error
-					? `<p>We could not confirm your email. (${error})</p>`
-					: '<p>Follow the link we sent to your email to confirm your account.</p>'
+				? `<p>We could not confirm your email. (${error})</p>`
+				: '<p>Follow the link we sent to your email to confirm your account.</p>'
 		const html = `<!doctype html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width"/><title>${title}</title><style>body{font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Arial,sans-serif;padding:32px;background:#0b0d12;color:#e5e7eb} .card{max-width:560px;margin:0 auto;background:#131722;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.3)} h1{margin:0 0 12px;font-size:22px}</style></head><body><div class="card"><h1>${title}</h1>${body}</div></body></html>`
 		return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8' } })
 	})
@@ -370,7 +370,7 @@ function registerPasswordResetRoutes(options: EmailPasswordRuntimeOptions): void
 						: {
 								text: 'This reset link is missing required details or may have expired. Request a new email.',
 								variant: 'error'
-							}
+						  }
 				})
 				return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8' } })
 			}
@@ -406,7 +406,7 @@ function registerPasswordResetRoutes(options: EmailPasswordRuntimeOptions): void
 					: respondHtml(400, {
 							text: 'This reset link is invalid or has expired. Request a new email.',
 							variant: 'error'
-						})
+					  })
 
 			const extractString = (value: unknown): string | undefined => {
 				if (typeof value === 'string') return value
@@ -435,7 +435,7 @@ function registerPasswordResetRoutes(options: EmailPasswordRuntimeOptions): void
 								400,
 								{ text: 'Passwords must be at least 8 characters long.', variant: 'error' },
 								{ token, identifier }
-							)
+						  )
 				}
 
 				const used = await adapter.useVerificationToken?.({ identifier, token })
@@ -466,7 +466,7 @@ function registerPasswordResetRoutes(options: EmailPasswordRuntimeOptions): void
 					: respondHtml(400, {
 							text: 'We could not update your password. Try again from the reset email.',
 							variant: 'error'
-						})
+					  })
 			}
 		}
 		if (overrides?.passwordResetConfirm) {

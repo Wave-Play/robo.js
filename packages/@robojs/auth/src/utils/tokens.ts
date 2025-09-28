@@ -17,6 +17,7 @@ export function isAccessTokenExpired(account: Pick<Account, 'expires_at' | 'expi
 	const expiresAt = account.expires_at ?? (account.expires_in ? Date.now() / 1000 + account.expires_in : undefined)
 	// Some providers only return relative expiry; calculate an absolute timestamp on the fly.
 	if (!expiresAt) return false
+
 	return expiresAt < Date.now() / 1000
 }
 
@@ -29,5 +30,6 @@ export function shouldRefreshAccessToken(
 	const expiresAt = account.expires_at ?? (account.expires_in ? Date.now() / 1000 + account.expires_in : undefined)
 	// Initiate refresh slightly early so API calls avoid authorization race conditions.
 	if (!expiresAt) return false
+
 	return expiresAt - bufferSeconds < Date.now() / 1000
 }

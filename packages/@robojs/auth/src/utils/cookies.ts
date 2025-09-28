@@ -73,10 +73,7 @@ export function mergeCookieOption(
 }
 
 /** Combines user-provided cookie overrides with the plugin defaults. */
-export function applyCookieOverrides(
-	defaults: CookiesOptions,
-	overrides?: Partial<CookiesOptions>
-): CookiesOptions {
+export function applyCookieOverrides(defaults: CookiesOptions, overrides?: Partial<CookiesOptions>): CookiesOptions {
 	return {
 		sessionToken: mergeCookieOption(defaults.sessionToken, overrides?.sessionToken),
 		callbackUrl: mergeCookieOption(defaults.callbackUrl, overrides?.callbackUrl),
@@ -157,5 +154,6 @@ export function serializeCookie(
 	}
 	if (options?.expires) parts.push(`Expires=${options.expires.toUTCString()}`)
 	if (typeof options?.maxAge === 'number') parts.push(`Max-Age=${Math.max(0, Math.floor(options.maxAge))}`)
+
 	return parts.join('; ')
 }

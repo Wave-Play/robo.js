@@ -132,6 +132,7 @@ function getArgon2Instance() {
 				WebAssembly.instantiate(readFileSync(require.resolve('argon2id/dist/no-simd.wasm')), importObject)
 		)
 	}
+
 	return argon2InstancePromise
 }
 
@@ -150,12 +151,14 @@ async function computeArgon2id(password: string, salt: Uint8Array, params: Argon
 		memorySize: params.memorySize,
 		tagLength: params.tagLength
 	})
+
 	return Buffer.from(digest)
 }
 
 function formatArgon2idHash(salt: Uint8Array, hash: Uint8Array, params: Argon2Params): string {
 	const saltB64 = Buffer.from(salt).toString('base64')
 	const hashB64 = Buffer.from(hash).toString('base64')
+
 	return `$argon2id$v=${ARGON2_VERSION}$m=${params.memorySize},t=${params.passes},p=${params.parallelism}$${saltB64}$${hashB64}`
 }
 
@@ -193,6 +196,7 @@ function parseArgon2idHash(hash: string): ParsedArgon2Hash | null {
 		parallelism: resolved.parallelism ?? ARGON2_PARALLELISM,
 		tagLength: digest.length
 	}
+
 	return { params, salt, hash: digest }
 }
 
@@ -200,6 +204,7 @@ async function hashPassword(password: string): Promise<string> {
 	const salt = randomBytes(ARGON2_SALT_LENGTH)
 	// Format matches argon2id encoded hash string so we can verify later on.
 	const digest = await computeArgon2id(password, salt, DEFAULT_ARGON2_PARAMS)
+
 	return formatArgon2idHash(salt, digest, DEFAULT_ARGON2_PARAMS)
 }
 
@@ -210,6 +215,7 @@ async function verifyPasswordHash(password: string, storedHash: string): Promise
 	}
 	const digest = await computeArgon2id(password, parsed.salt, parsed.params)
 	if (digest.length !== parsed.hash.length) return false
+
 	return timingSafeEqual(digest, parsed.hash)
 }
 
@@ -321,7 +327,9 @@ export async function listUserIds(
 		// Out-of-range pages return metadata so callers can clamp gracefully.
 		return { ids: [], page, pageCount: meta.pageCount, total: meta.total }
 	}
+
 	const ids = await readUsersIndexPage(page)
+
 	return { ids, page, pageCount: meta.pageCount, total: meta.total }
 }
 
@@ -350,6 +358,7 @@ export async function listUsers(
 		// Fetch each user lazily; gaps may occur if records were deleted mid-query.
 		ids.map((id) => Flashcore.get<AdapterUser | null>(userKey(id), { namespace: NS_USERS }))
 	)
+
 	return { users: users.filter(Boolean) as AdapterUser[], page: p, pageCount, total }
 }
 
@@ -388,11 +397,13 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Passwo
 				await Flashcore.set(userEmailKey(record.email), record.id, { namespace: NS_USERS_BY_EMAIL })
 			}
 			await addUserToIndex(record.id)
+
 			return record
 		},
 
 		async getUser(id) {
 			const user = await Flashcore.get<AdapterUser | null>(userKey(id), { namespace: NS_USERS })
+
 			return user ?? null
 		},
 
@@ -400,6 +411,7 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Passwo
 			const id = await Flashcore.get<string | null>(userEmailKey(email), { namespace: NS_USERS_BY_EMAIL })
 			if (!id) return null
 			const user = await Flashcore.get<AdapterUser | null>(userKey(id), { namespace: NS_USERS })
+
 			return user ?? null
 		},
 
@@ -413,6 +425,7 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Passwo
 			const account = await Flashcore.get<AdapterAccount | null>(key.key, { namespace: key.ns })
 			if (!account) return null
 			const user = await Flashcore.get<AdapterUser | null>(userKey(account.userId), { namespace: NS_USERS })
+
 			return user ?? null
 		},
 
@@ -430,6 +443,7 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Passwo
 			if (updated.email) {
 				await Flashcore.set(userEmailKey(updated.email), updated.id, { namespace: NS_USERS_BY_EMAIL })
 			}
+
 			return updated
 		},
 
@@ -462,6 +476,7 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Passwo
 			const exists = accounts.some((a) => a.provider === ref.provider && a.id === ref.id)
 			if (!exists) accounts.push(ref)
 			await storeUserAccounts(account.userId, accounts)
+
 			return account
 		},
 
@@ -475,6 +490,7 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Passwo
 				account.userId,
 				accounts.filter((a) => !(a.provider === identifier.provider && a.id === identifier.providerAccountId))
 			)
+
 			return account
 		},
 
@@ -497,6 +513,7 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Passwo
 				await Flashcore.delete(sessionKey(sessionToken), { namespace: NS_SESSIONS })
 				return null
 			}
+
 			return { session: normalized, user }
 		},
 
@@ -508,6 +525,7 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Passwo
 			if (!existing) return null
 			const merged = normalizeSession({ ...existing, ...session })
 			await Flashcore.set(sessionKey(merged.sessionToken), merged, { namespace: NS_SESSIONS })
+
 			return merged
 		},
 
@@ -570,7 +588,7 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Passwo
 						userId,
 						createdAt: now,
 						updatedAt: now
-					}
+				  }
 			if (existing?.email && existing.email !== normalizedEmail) {
 				await Flashcore.delete(passwordEmailKey(existing.email), { namespace: NS_PASSWORD_EMAIL })
 			}

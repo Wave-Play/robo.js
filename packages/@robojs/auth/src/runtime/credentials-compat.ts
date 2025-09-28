@@ -33,6 +33,7 @@ export function ensureCredentialsDbCompatibility(config: AuthConfig): AuthConfig
 	if (strategy !== 'database') return config
 	const providers = config.providers as ProviderArray
 	if (!providers?.length) return config
+
 	// Resolve lazy provider factories before inspecting their type metadata.
 	const resolvedProviders = providers.map((entry) =>
 		typeof entry === 'function' ? entry() : entry
@@ -58,6 +59,7 @@ export function ensureCredentialsDbCompatibility(config: AuthConfig): AuthConfig
 		} catch (error) {
 			authLogger.debug('Failed to spoof credentials provider check', { error })
 		}
+
 		return true
 	}
 	Object.defineProperty(patchedProviders, 'some', {
@@ -80,11 +82,13 @@ export function ensureCredentialsDbCompatibility(config: AuthConfig): AuthConfig
 		value: patchedConfig,
 		writable: false
 	})
+
 	return patchedConfig
 }
 
 function isOnlyCredentialsPredicate(callback: Parameters<Array<Provider>['some']>[0]): boolean {
 	if (typeof callback !== 'function') return false
 	const source = Function.prototype.toString.call(callback)
+
 	return source.includes('!==') && source.includes('credentials') && !source.includes('!provider.authorize')
 }

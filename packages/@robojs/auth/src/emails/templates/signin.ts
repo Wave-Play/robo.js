@@ -2,16 +2,16 @@ import type { EmailContext, TemplateConfig } from '../types.js'
 
 /** Default subject line used for sign-in notification emails. */
 function buildSignInSubject(_ctx: EmailContext): string {
-  return 'New sign-in to your account'
+	return 'New sign-in to your account'
 }
 
 /** HTML renderer for sign-in notifications summarizing request metadata. */
 function buildSignInHtml(ctx: EmailContext): string {
-  const title = 'New sign-in to your account'
-  const ip = ctx.session?.ip || ''
-  const ua = ctx.session?.userAgent || ''
-  const details = [ip && `IP: ${ip}`, ua && `Device: ${ua}`].filter(Boolean).join(' · ')
-  return `<!doctype html>
+	const title = 'New sign-in to your account'
+	const ip = ctx.session?.ip || ''
+	const ua = ctx.session?.userAgent || ''
+	const details = [ip && `IP: ${ip}`, ua && `Device: ${ua}`].filter(Boolean).join(' · ')
+	return `<!doctype html>
 <html>
   <head>
     <meta charset="utf-8" />
@@ -47,21 +47,21 @@ function buildSignInHtml(ctx: EmailContext): string {
 
 /** Plain-text fallback for sign-in notifications. */
 function buildSignInText(ctx: EmailContext): string {
-  const ip = ctx.session?.ip
-  const ua = ctx.session?.userAgent
-  const lines = [
-    'New sign-in to your account.',
-    ip ? `IP: ${ip}` : undefined,
-    ua ? `Device: ${ua}` : undefined,
-    '',
-    'If this was you, you can ignore this email. If not, please secure your account.'
-  ].filter(Boolean)
-  return lines.join('\n')
+	const ip = ctx.session?.ip
+	const ua = ctx.session?.userAgent
+	const lines = [
+		'New sign-in to your account.',
+		ip ? `IP: ${ip}` : undefined,
+		ua ? `Device: ${ua}` : undefined,
+		'',
+		'If this was you, you can ignore this email. If not, please secure your account.'
+	].filter(Boolean)
+	return lines.join('\n')
 }
 
 /** Bundled sign-in template wiring subject, HTML, and text variants. */
 export const DefaultSignInTemplate: TemplateConfig = {
-  subject: (ctx) => buildSignInSubject(ctx),
-  html: (ctx) => buildSignInHtml(ctx),
-  text: (ctx) => buildSignInText(ctx)
+	subject: (ctx) => buildSignInSubject(ctx),
+	html: (ctx) => buildSignInHtml(ctx),
+	text: (ctx) => buildSignInText(ctx)
 }

@@ -9,6 +9,7 @@ export interface CsrfTokenPair {
 /** Generates a random CSRF token and its hashed cookie counterpart. */
 export function createCsrfToken(secret: string, length = 32): CsrfTokenPair {
 	const token = randomBytes(length).toString('hex')
+
 	return { token, cookie: hashCsrfToken(token, secret) }
 }
 
@@ -23,5 +24,6 @@ export function verifyCsrfToken(token: string, cookie: string, secret: string): 
 	const a = Buffer.from(expected, 'hex')
 	const b = Buffer.from(cookie, 'hex')
 	// Timing-safe comparison prevents leaking how many hex characters matched.
+
 	return a.length === b.length && timingSafeEqual(a, b)
 }

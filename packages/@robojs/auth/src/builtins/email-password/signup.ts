@@ -291,6 +291,7 @@ export function createSignupHandler(options: SignupHandlerOptions) {
 			// Parse and validate the signup form before mutating persistent state.
 			const payload = await parsePayload(request)
 			attemptedPayload = payload
+
 			authLogger.debug('Signup attempt:', { email: payload.email })
 
 			ensureEmailValid(payload.email)
@@ -343,8 +344,8 @@ export function createSignupHandler(options: SignupHandlerOptions) {
 					email: normalizedEmail,
 					error: (signInError as Error)?.message
 				})
-			try {
-				await adapter.deleteUserPassword(user.id)
+				try {
+					await adapter.deleteUserPassword(user.id)
 					await adapter.deleteUser?.(user.id)
 				} catch (rollbackError) {
 					authLogger.warn('Failed to rollback user after sign-in failure.', {
@@ -352,6 +353,7 @@ export function createSignupHandler(options: SignupHandlerOptions) {
 						error: (rollbackError as Error)?.message
 					})
 				}
+
 				throw signInError
 			}
 		} catch (error) {
@@ -370,6 +372,7 @@ export function createSignupHandler(options: SignupHandlerOptions) {
 					redirectUrl.searchParams.set('callbackUrl', attemptedPayload.callbackUrl)
 				}
 				redirectUrl.searchParams.set('error', error.code)
+
 				return Response.redirect(redirectUrl.toString(), 303)
 			}
 
@@ -389,6 +392,7 @@ export function createSignupHandler(options: SignupHandlerOptions) {
 				redirectUrl.searchParams.set('callbackUrl', attemptedPayload.callbackUrl)
 			}
 			redirectUrl.searchParams.set('error', 'SignupFailed')
+
 			return Response.redirect(redirectUrl.toString(), 303)
 		}
 	}

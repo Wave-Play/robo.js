@@ -67,6 +67,7 @@ export interface ConfigureAuthRuntimeOptions {
 export function configureAuthRuntime(config: AuthConfig, options: ConfigureAuthRuntimeOptions): void {
 	// Normalize the config so Auth.js treats Robo-specific credentials setups correctly.
 	const preparedConfig = ensureCredentialsDbCompatibility(config)
+
 	// Store a ready-to-go handler plus supporting metadata for helper calls.
 	runtime.authHandler = (request: Request) => Auth(request, preparedConfig)
 	runtime.basePath = options.basePath
@@ -116,8 +117,10 @@ export async function getServerSession(input?: Request | Headers | HeadersInput 
 		headers,
 		method: 'GET'
 	})
+
 	const response = await runtime.authHandler(sessionRequest)
 	if (!response.ok) return null
+
 	return (await response.json()) as Session
 }
 
@@ -151,11 +154,9 @@ export async function getToken(
 	// Collapse headers to a plain object so Auth.js can parse cookies without a Request instance.
 	const headers = resolveHeaders(input)
 	const headerRecord: Record<string, string> = {}
-	;(headers as unknown as { forEach?: (cb: (value: string, key: string) => void) => void }).forEach?.(
-		(value, key) => {
-			headerRecord[key] = value
-		}
-	)
+	;(headers as unknown as { forEach?: (cb: (value: string, key: string) => void) => void }).forEach?.((value, key) => {
+		headerRecord[key] = value
+	})
 
 	return coreGetToken({
 		req: { headers: headerRecord },

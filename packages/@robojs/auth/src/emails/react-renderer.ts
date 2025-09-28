@@ -6,7 +6,7 @@ let reactDomServerModule: Promise<{ renderToStaticMarkup: (element: unknown) => 
 function missingDependencyError(pkg: string, cause: unknown): Error {
 	return new Error(
 		`@robojs/auth: using the emails.react field requires ${pkg} to be installed in your project. ` +
-		`Run your package manager's install command (for example, npm install ${pkg}) and try again.`,
+			`Run your package manager's install command (for example, npm install ${pkg}) and try again.`,
 		{ cause }
 	)
 }
@@ -27,7 +27,9 @@ async function getReactDomServer() {
 	if (!reactDomServerModule) {
 		reactDomServerModule = import('react-dom/server')
 			.then((mod) => {
-				const render = mod.renderToStaticMarkup ?? (mod as { default?: { renderToStaticMarkup?: (element: unknown) => string } }).default?.renderToStaticMarkup
+				const render =
+					mod.renderToStaticMarkup ??
+					(mod as { default?: { renderToStaticMarkup?: (element: unknown) => string } }).default?.renderToStaticMarkup
 				if (typeof render !== 'function') {
 					throw new Error(
 						'@robojs/auth: react-dom/server does not expose renderToStaticMarkup. Ensure you are using a compatible react-dom version.'

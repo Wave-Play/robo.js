@@ -2,17 +2,17 @@ import type { EmailContext, TemplateConfig } from '../types.js'
 
 /** Renders the default welcome email subject line. */
 export function buildWelcomeSubject(ctx: EmailContext): string {
-  const name = ctx.user.name?.trim()
-  return name ? `Welcome, ${name}!` : 'Welcome to our app!'
+	const name = ctx.user.name?.trim()
+	return name ? `Welcome, ${name}!` : 'Welcome to our app!'
 }
 
 /** Produces HTML markup for the default welcome email. */
 export function buildWelcomeHtml(ctx: EmailContext): string {
-  const name = ctx.user.name?.trim() || 'there'
-  const title = `Welcome, ${name}!`
-  const intro = 'Thanks for joining — we’re excited to have you on board.'
-  const verifyUrl = ctx.links?.verifyEmail ?? '#'
-  return `<!doctype html>
+	const name = ctx.user.name?.trim() || 'there'
+	const title = `Welcome, ${name}!`
+	const intro = 'Thanks for joining — we’re excited to have you on board.'
+	const verifyUrl = ctx.links?.verifyEmail ?? '#'
+	return `<!doctype html>
 <html>
   <head>
     <meta charset="utf-8" />
@@ -56,13 +56,13 @@ export function buildWelcomeHtml(ctx: EmailContext): string {
 
 /** Plain-text fallback for the default welcome email. */
 export function buildWelcomeText(ctx: EmailContext): string {
-  const name = ctx.user.name?.trim() || 'there'
-  return `Welcome, ${name}!\n\nThanks for joining — we’re excited to have you on board.\nYou can start exploring right away.`
+	const name = ctx.user.name?.trim() || 'there'
+	return `Welcome, ${name}!\n\nThanks for joining — we’re excited to have you on board.\nYou can start exploring right away.`
 }
 
 /** Composed welcome template wiring default subject, HTML, and text variants. */
 export const DefaultWelcomeTemplate: TemplateConfig = {
-  subject: (ctx) => buildWelcomeSubject(ctx),
-  html: (ctx) => buildWelcomeHtml(ctx),
-  text: (ctx) => buildWelcomeText(ctx)
+	subject: (ctx) => buildWelcomeSubject(ctx),
+	html: (ctx) => buildWelcomeHtml(ctx),
+	text: (ctx) => buildWelcomeText(ctx)
 }

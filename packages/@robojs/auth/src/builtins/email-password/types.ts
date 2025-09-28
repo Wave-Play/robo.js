@@ -99,11 +99,11 @@ export interface EmailPasswordProviderMetadata {
  * assertPasswordAdapter(createFlashcoreAdapter({ secret }))
  * ```
  */
-export function assertPasswordAdapter(
-	adapter: Adapter | undefined
-): asserts adapter is PasswordAdapter {
+export function assertPasswordAdapter(adapter: Adapter | undefined): asserts adapter is PasswordAdapter {
 	if (!adapter) {
-		throw new Error('Email-password provider requires an adapter. Provide one via plugin options or the Flashcore adapter.')
+		throw new Error(
+			'Email-password provider requires an adapter. Provide one via plugin options or the Flashcore adapter.'
+		)
 	}
 	const missing: string[] = []
 	const candidate = adapter as Partial<PasswordAdapter>
@@ -116,9 +116,9 @@ export function assertPasswordAdapter(
 	if (typeof candidate.usePasswordResetToken !== 'function') missing.push('usePasswordResetToken')
 	if (missing.length) {
 		throw new Error(
-			`Adapter ${adapter.constructor?.name ?? 'instance'} is missing password helpers required by the email-password provider: ${missing.join(
-				', '
-			)}.`
+			`Adapter ${
+				adapter.constructor?.name ?? 'instance'
+			} is missing password helpers required by the email-password provider: ${missing.join(', ')}.`
 		)
 	}
 }

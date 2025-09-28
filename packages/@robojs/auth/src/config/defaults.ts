@@ -50,6 +50,7 @@ export interface NormalizedAuthPluginOptions {
  */
 export function normalizeAuthOptions(options: unknown): NormalizedAuthPluginOptions {
 	const parsed = authPluginOptionsSchema.parse(options ?? {}) as AuthPluginOptions
+
 	// Merge user overrides with opinionated defaults to keep Auth.js cookies predictable.
 	const cookies = applyCookieOverrides(buildDefaultCookies(), parsed.cookies)
 	const sessionStrategy = parsed.session?.strategy ?? (parsed.adapter ? 'database' : 'jwt')
