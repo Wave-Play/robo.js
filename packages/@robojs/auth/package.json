@@ -73,6 +73,7 @@
 		"zod": "^3.22.4"
 	},
 	"devDependencies": {
+		"@auth/prisma-adapter": "^2.10.0",
 		"@react-email/components": "^0.5.5",
 		"@robojs/server": "workspace:*",
 		"@swc/core": "^1.13.3",
@@ -85,6 +86,7 @@
 		"typescript": "^5.9.2"
 	},
 	"peerDependencies": {
+		"@prisma/client": "*",
 		"@react-email/components": "*",
 		"@robojs/server": ">=0.6.5",
 		"robo.js": "^0.10.1"
@@ -97,6 +99,12 @@
 			"optional": false
 		},
 		"@react-email/components": {
+			"optional": true
+		},
+		"@prisma/client": {
+			"optional": true
+		},
+		"@auth/prisma-adapter": {
 			"optional": true
 		}
 	}
