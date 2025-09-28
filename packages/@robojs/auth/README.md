@@ -1,155 +1,187 @@
+<p align="center">✨ <strong>Generated with <a href="https://robojs.dev/create-robo">create-robo</a> magic!</strong> ✨</p>
+
+---
+
 # @robojs/auth
 
-Authentication for Robo.js powered by [Auth.js](https://authjs.dev). This plugin wires up OAuth (Google, Discord, Apple), passwordless email, optional credentials, sessions, and REST endpoints that mirror NextAuth (`/api/auth/*`). It ships with a Flashcore-backed adapter so you get persistent storage with zero setup, and you can swap to any Auth.js adapter when you need to scale.
+Modern authentication for Robo.js projects powered by [Auth.js](https://authjs.dev). This plugin drops the familiar `/api/auth/*` surface into your bot or activity, wires up OAuth and email/password flows, and exposes helper APIs for both server runtimes and client-facing experiences.
 
-## Features
+<div align="center">
+	[![GitHub
+	license](https://img.shields.io/github/license/Wave-Play/robo)](https://github.com/Wave-Play/robo/blob/main/LICENSE)
+	[![npm](https://img.shields.io/npm/v/@robojs/auth)](https://www.npmjs.com/package/@robojs/auth) [![install
+	size](https://packagephobia.com/badge?p=@robojs/auth@latest)](https://packagephobia.com/result?p=@robojs/auth@latest)
+	[![Discord](https://img.shields.io/discord/1087134933908193330?color=7289da)](https://robojs.dev/discord) [![All
+	Contributors](https://img.shields.io/github/all-contributors/Wave-Play/robo.js?color=cf7cfc)](https://github.com/Wave-Play/robo.js/blob/main/CONTRIBUTING.md#contributors)
+</div>
 
-- 🔐 OAuth providers (Google, Discord, Apple) plus email magic links.
-- 🔑 Optional credential helper with hashed passwords, reset tokens, and rate-limited flows.
-- 🧩 Email/password provider hooks for custom `authorize` logic and pluggable signup/reset handlers.
-- 📦 Shared request-payload helpers so route overrides and Auth.js defaults read the same parsed body.
-- 🍪 Secure cookies, CSRF protection, JWT or database sessions (Flashcore by default).
-- 🛣 Matches Auth.js REST routes: `/providers`, `/signin`, `/session`, `/csrf`, `/callback/:provider`, and more.
-- 🧱 Callbacks & events (`signIn`, `jwt`, `session`, `createUser`, ...).
-- 📨 Default magic-link template with automatic piggybacking onto third-party email transports.
-- 🔌 Client/server helpers (`signIn`, `signOut`, `getSession`, `getServerSession`, `getToken`).
+➞ [📚 **Documentation:** Getting started](https://robojs.dev/docs/getting-started)
 
-## Getting Started
+➞ [🚀 **Community:** Join our Discord server](https://robojs.dev/discord)
 
-Install the plugin in your Robo.js project:
+## Installation 💡
+
+Install and register the plugin:
 
 ```bash
 npx robo add @robojs/auth
 ```
 
-Then add the plugin to your `config/plugins` (or inline in `config/robo.ts`):
-
 ```ts
-// config/plugins/@robojs/auth.ts
-import { google, discord, email } from '@robojs/auth/providers'
-import Resend from '@robojs/auth/providers/resend'
+// config/plugins/robojs/auth.ts
+import { discord, google } from '@robojs/auth/providers'
+import { EmailPassword, createFlashcoreAdapter } from '@robojs/auth'
 import type { AuthPluginOptions } from '@robojs/auth'
 
 export default <AuthPluginOptions>{
-	secret: process.env.AUTH_SECRET,
-	providers: [
-		google({ clientId: process.env.AUTH_GOOGLE_ID!, clientSecret: process.env.AUTH_GOOGLE_SECRET! }),
-		discord({ clientId: process.env.AUTH_DISCORD_ID!, clientSecret: process.env.AUTH_DISCORD_SECRET! }),
-		// Robo's email helper handles templating + lifecycle.
-	email({ from: 'login@example.com' }),
-		// Any Auth.js email provider can piggyback the Robo template.
-		Resend({ apiKey: process.env.RESEND_API_KEY!, from: 'login@example.com' })
-	]
+  secret: process.env.AUTH_SECRET,
+  adapter: createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! }),
+  providers: [
+    google({ clientId: process.env.GOOGLE_ID!, clientSecret: process.env.GOOGLE_SECRET! }),
+    discord({ clientId: process.env.DISCORD_ID!, clientSecret: process.env.DISCORD_SECRET! }),
+    EmailPassword()
+  ]
 }
 ```
 
-Robo.js will auto-register the REST endpoints when the bot boots. Point your UI or activity client at `/api/auth` (or your custom `basePath`). Email will only send when you provide either a `deliver` handler or add a supported Auth.js email provider (Resend, SendGrid, Postmark, Nodemailer). When a third-party email provider is present, Robo automatically routes its magic-link template through that transport.
+Boot Robo.js and point your UI at `/api/auth` (customise via `basePath`). Robo will index the plugin, scaffold the REST routes, enable the built-in email/password flow, and keep Auth.js callbacks/event hooks in sync with your configuration.
 
-## Configuration
+## What You Get
 
-| Option | Default | Description |
-| --- | --- | --- |
-| `basePath` | `/api/auth` | Root for all REST endpoints. |
-| `secret` | _generated in dev_ | Secret used for JWT encryption and token hashing. Required in production. |
-| `url` | `AUTH_URL` env or `http://localhost:3000` | Canonical application URL used by providers. |
-| `redirectProxyUrl` | `AUTH_REDIRECT_PROXY_URL` env | Proxy domain for preview deployments. |
-| `session.strategy` | `jwt` (or `database` when adapter present) | Session persistence mode. Supports `maxAge` and `updateAge`. |
-| `adapter` | Flashcore adapter | Any Auth.js adapter instance. Provide to use your own database. |
-| `providers` | `[]` | Array of Auth.js providers (see below). |
-| `pages` | `{}` | Override default Auth.js page routes. |
-| `callbacks` / `events` | `{}` | Hook into Auth.js lifecycle. |
-| `cookies` | Secure defaults | Modify cookie names/flags (chunking handled automatically). |
-| `email` | `{}` | Email provider overrides (template, sender, third-party piggyback). |
+- **Drop-in Auth.js REST endpoints** mirroring `/api/auth/*` (providers, sign-in/out, callback, session, csrf).
+- **Flashcore storage adapter** with zero configuration plus helpers to paginate users or swap to any Auth.js adapter.
+- **Email + password support** on by default with hashed storage, password reset tokens, and opt-in authorisation hooks.
+- **Templated email flows** that plug into Auth.js providers (Resend, Postmark, SendGrid, Nodemailer, …) or your own deliver function, including fully rendered HTML/text templates.
+- **Typed client helpers** for UI surfaces to sign in, sign out, fetch providers, sessions, and CSRF tokens.
+- **Server utilities** for grabbing sessions/tokens, configuring runtime state, and bridging Robo requests into Auth.js handlers.
 
-All options accept the same shapes as Auth.js. The Zod schema is exported as `authPluginOptionsSchema` if you want extra validation.
+## Configuration Overview
 
-## Providers
+`AuthPluginOptions` extends the Auth.js config you already know:
+
+| Option | Default | Notes |
+| ------ | ------- | ----- |
+| `basePath` | `/api/auth` | Prefix for generated routes. |
+| `secret` | _required in prod_ | Used for JWT + token hashing. Reads `AUTH_SECRET`/`NEXTAUTH_SECRET`. |
+| `url` | env (`AUTH_URL`/`NEXTAUTH_URL`) or `http://localhost:3000` | Canonical URL for Auth.js callbacks. |
+| `redirectProxyUrl` | `AUTH_REDIRECT_PROXY_URL` | Useful for preview deployments. |
+| `providers` | `[]` | Array of Auth.js providers. Helpers live under `@robojs/auth/providers`. |
+| `adapter` | Flashcore | Swap for any Auth.js adapter when you outgrow the default storage. |
+| `session.strategy` | `jwt` (or `database` when adapter present) | Supports `maxAge` & `updateAge`. |
+| `cookies`, `callbacks`, `events`, `pages` | Auth.js defaults | Use the same shapes as upstream Auth.js. |
+| `email` / `emails` | `{}` | Override templates, configure mailers, or bind to third-party transports. |
+
+Need validation? Use the exported `authPluginOptionsSchema` or call `normalizeAuthOptions(options)` to apply defaults before passing into other tooling.
+
+### Built-in Email + Password Storage
+
+When no custom adapter is supplied, Robo stores hashed passwords, reset tokens, and user metadata in Flashcore. The bundled email/password provider (documented later) is turned on by default so your UI can immediately present email + password fields without extra wiring. Swap the adapter whenever you introduce your own persistence layer.
+
+## Flashcore Adapter Cheatsheet
+
+Out of the box the plugin persists everything to Flashcore namespaces. Swap to your own adapter by exporting it from `AuthPluginOptions`. When you enable (or customise) the credentials flow, make sure your adapter satisfies the extended `PasswordAdapter` contract—use `assertPasswordAdapter(adapter)` in development to catch missing methods early.
+
+### Listing Users
 
 ```ts
-import { google, discord, apple, email } from '@robojs/auth/providers'
+import { listUsers, listUserIds } from '@robojs/auth'
+
+const page = await listUsers()             // { users, page, pageCount, total }
+const ids = await listUserIds(2)           // { ids, page, pageCount, total }
 ```
 
-Each helper re-exports the corresponding Auth.js provider, so the options are identical to Auth.js documentation. You can still pass custom providers by pushing them into `providers`.
+## Client API
 
-> 💡 Every provider that ships with Auth.js is available via `@robojs/auth/providers/*` (e.g. `import Resend from '@robojs/auth/providers/resend'`). Types are re-exported as well, mirroring the upstream modules.
+All client helpers are exported via `@robojs/auth/client` (and re-exported from the package root). Each function accepts optional overrides for `basePath`, headers, or a custom `fetch` implementation—ideal for activities or external UIs.
 
-### Email Delivery
-
-The Robo email helper focuses on templating, logging, and lifecycle wiring. You can either:
-
-- Provide a custom `deliver` function (Resend SDK, AWS SES client, etc.).
-- Add any Auth.js email provider (`resend`, `sendgrid`, `postmark`, or `nodemailer`). When these providers are present alongside Robo's email helper, Robo automatically piggybacks your magic-link template onto the provider's delivery channel—no additional wiring required.
-
-If you already have a bespoke Auth.js handler, you can continue passing `sendVerificationRequest` and Robo will defer entirely to it. When neither `deliver` nor a compatible provider is present the plugin logs a warning and prints the magic link instead of attempting to send email.
-
-## Flashcore Adapter
-
-If you do not supply an adapter, the plugin boots with a Flashcore-backed adapter that persists users, accounts, sessions, verification tokens, and credential hashes. Keys live under:
-
-- `auth:users:<id>`
-- `auth:accounts:<provider>:<id>`
-- `auth:sessions:<token>`
-- `auth:verification:<hash>`
-- `auth_password:<userId>`
-- `auth_passwordUserByEmail:<email>`
-
-You can swap to your own adapter by returning any Auth.js adapter instance from `adapter`. If you enable the credentials helper, your adapter must also implement the password helpers exposed in `PasswordAdapter`:
+| Function | Description |
+| -------- | ----------- |
+| `signIn(providerId, body?, options?)` | POST to `/signin` (or a provider-specific route) to begin the Auth.js flow. Pass extra form fields via `body`. |
+| `signOut(options?)` | POST to `/signout` and clear the active session cookie. |
+| `getSession(options?)` | GET `/session` and return the current `Session` object (or `null`). |
+| `getProviders(options?)` | GET `/providers` for a runtime list of configured Auth.js providers. |
+| `getCsrfToken(options?)` | GET `/csrf` to retrieve the token required for form POSTs. |
 
 ```ts
-import type { PasswordAdapter, PasswordRecord, PasswordResetToken } from '@robojs/auth'
+import { signIn, getSession, getProviders } from '@robojs/auth/client'
 
-const adapter: PasswordAdapter = {
-  async createUserPassword({ userId, email, password }): Promise<PasswordRecord> {
-    /* hash and persist the password for this user */
-    return {
-      id: crypto.randomUUID(),
-      userId,
-      email,
-      hash: '<argon2id-hash>',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+await signIn('google')
+
+const session = await getSession({ headers: { cookie: request.headers.get('cookie') ?? '' } })
+const providers = await getProviders()
+```
+
+## Server API
+
+Server helpers live under `@robojs/auth/server` (also re-exported from the root package). They let you normalise config, bridge Robo requests into Auth.js, and interact with storage/state.
+
+### Runtime + Routing
+
+| Export | Description |
+| ------ | ----------- |
+| `createAuthRequestHandler(config)` | Wrap a prepared Auth.js config in a Robo-compatible handler. Perfect for custom HTTP routers or activities. |
+| `configureAuthRuntime(config, options)` | Warm a singleton Auth.js handler with explicit base path, cookie name, and secret—required before calling `getServerSession` or `getToken`. |
+| `AUTH_ROUTES` | Reference list of the REST routes the plugin wires up. Great for routing tables or documentation generators. |
+| `DEFAULT_BASE_PATH` | Literal `/api/auth`. Use when syncing config across services. |
+
+### Session Helpers
+
+| Export | Description |
+| ------ | ----------- |
+| `getServerSession(input?)` | Invoke the Auth.js session route with the headers you provide and return the parsed `Session` (or `null`). Works with `Request`, `Headers`, or plain header records. |
+| `getToken(input?, options?)` | Extract the session token/JWT in the same way `authjs/jwt` does. Supports `{ raw: true }` to return the cookie value instead of decoding. |
+
+### Configuration + Storage
+
+| Export | Description |
+| ------ | ----------- |
+| `normalizeAuthOptions(options)` | Run your raw plugin config through the same defaults the CLI uses. Returns a `NormalizedAuthPluginOptions` object ready for Auth.js. |
+| `authPluginOptionsSchema` | Zod schema backing the plugin configuration. Useful for validation in external tooling. |
+| `createFlashcoreAdapter(options)` | Construct the built-in Flashcore adapter (requires `secret`). |
+| `listUsers(page?)` / `listUserIds(page?)` | Paginate users or IDs stored through the Flashcore adapter. |
+| `authLogger` | Namespaced logger instance (`auth`). |
+
+### Types & Utilities
+
+| Export | Purpose |
+| ------ | ------- |
+| `getRequestPayload(request)` | Parse (and cache) JSON/form bodies when writing custom route overrides or middleware. |
+| `AuthPluginOptions` | TypeScript type mirroring the plugin config shape. |
+| `AuthEmailEvent`, `AuthMailer`, `MailMessage`, `EmailContext`, `TemplateConfig` | Email-related types for advanced templating or mailer overrides. |
+| `PasswordAdapter`, `PasswordRecord`, `PasswordResetToken`, `assertPasswordAdapter` | Contracts for credential-enabled adapters. |
+| `Adapter`, `AdapterAccount`, `AdapterSession`, `AdapterUser`, `VerificationToken` | Re-exported Auth.js adapter types for convenience. |
+
+## Email Delivery Options
+
+You control how verification and transactional emails go out:
+
+- **Custom mailer** – provide `emails.mailer` or `emails.triggers` entries that call straight into your favorite SDK (Resend, SES, SendGrid, etc.).
+- **Auth.js mailer modules** – point `emails.mailer` to a module export `{ module: 'resend', export: 'Resend' }` so the plugin loads it for you at runtime.
+- **React templates** – attach `emails.templates['password:reset-request'] = { react: (ctx) => <MyEmail ctx={ctx} /> }` and Robo will render it with `@react-email/components` + `react-dom/server` on demand.
+
+```ts
+export default {
+  secret: process.env.AUTH_SECRET,
+  emails: {
+    mailer: { module: 'resend', export: 'Resend' },
+    triggers: {
+      'password:reset-request': (ctx) => ({
+        to: ctx.user.email!,
+        subject: 'Reset your password',
+        html: `<p>Hi ${ctx.user.name ?? 'friend'}, reset your password <a href="${ctx.links?.resetPassword}">here</a>.</p>`
+      })
+    },
+    templates: {
+      'user:created': {
+        subject: 'Welcome aboard!',
+        text: ({ user }) => `Hi ${user.name ?? 'there'}, thanks for joining Robo.`
+      }
     }
-  },
-  async verifyUserPassword({ userId, password }) {
-    /* look up and verify the password */
-    return true
-  },
-  async findUserIdByEmail(email) {
-    /* return the user id or null */
-    return null
-  },
-  async deleteUserPassword(userId) {
-    /* remove hash for this user */
-  },
-  async resetUserPassword({ userId, password }) {
-    /* replace the existing hash */
-    return null
-  },
-  async createPasswordResetToken(userId, ttlMinutes): Promise<PasswordResetToken> {
-    /* persist a reset token */
-    return { token: 'reset-token', userId, expires: new Date(Date.now() + ttlMinutes! * 60_000) }
-  },
-  async usePasswordResetToken(token) {
-    /* consume and validate a reset token */
-    return null
-  },
-  // ...plus the normal Auth.js adapter methods
+  }
 }
 ```
 
-Use `assertPasswordAdapter(adapter)` to fail fast when a supplied adapter is missing password capabilities.
-
-## Credentials Helper (opt-in)
-
-The plugin provides helpers to back an Auth.js Credentials provider with Flashcore:
-
-```ts
-import { passwordCredentialsProvider } from '@robojs/auth'
-
-providers: [passwordCredentialsProvider({ adapter, allowRegistration: true })]
-```
-
-Use the adapter's password helpers to build onboarding, password reset, and enforcement flows. Everything is disabled by default—only add the provider if you explicitly want credential logins.
+If you provide both `emails.mailer` and a `deliver` function inside a trigger, the trigger’s `deliver` takes precedence for that event.
 
 ## Request Payload Utilities
 
@@ -203,8 +235,8 @@ async function verifyInvite(code?: string) {
 
 | Method | Description |
 | --- | --- |
-| `get<T>()` | Returns the cached record. You can provide a type argument for convenience. |
-| `assign(partial)` | Shallow-merges new fields into the cached payload (handy for normalizing values). |
+| `get<T>()` | Returns the cached record. Provide a type argument for convenience. |
+| `assign(partial)` | Shallow-merges new fields into the cached payload (handy for normalising values). |
 | `replace(data)` | Overwrites the cached payload entirely. |
 | `source` | Reports where the data came from: `'json'`, `'form'`, or `'empty'`. |
 
@@ -212,7 +244,7 @@ All email/password routes use this helper under the hood, so your overrides, the
 
 ## Email & Password Provider Extensions
 
-`EmailPassword(options)` now exposes the same override surface you may know from Auth.js' Credentials provider, but with Robo-specific helpers baked in.
+`EmailPassword(options)` is enabled by default and powers the classic email **and** password form flows (sign-in, sign-up, reset). It builds on Auth.js' Credentials provider but adds Robo niceties: shared payload parsing, CSRF checks, database session cookies, auto sign-in after signup, and configurable email templates.
 
 ### Custom `authorize`
 
@@ -224,10 +256,9 @@ EmailPassword({
     const record = payload.get<{ email?: string; cliCode?: string }>()
 
     if (!isCliCodeValid(record.cliCode)) {
-      return null // Abort login without touching the adapter
+      return null
     }
 
-    // Optionally persist normalized data for downstream handlers
     payload.assign({ cliCode: record.cliCode?.trim() })
 
     const user = await ctx.defaultAuthorize()
@@ -236,19 +267,17 @@ EmailPassword({
 })
 ```
 
-The `authorize` callback receives a `EmailPasswordAuthorizeContext`:
+`authorize` receives an `EmailPasswordAuthorizeContext`:
 
 | Property | Description |
 | --- | --- |
 | `adapter` | The active `PasswordAdapter`. |
-| `request` | The `RoboRequest` so you can inspect headers or IPs. |
-| `defaultAuthorize()` | Runs the built-in credentials flow (`findUserIdByEmail` → `verifyUserPassword`). |
+| `request` | The `RoboRequest` so you can inspect headers, IPs, or cookies. |
+| `defaultAuthorize()` | Runs the bundled credentials logic (`findUserIdByEmail` → `verifyUserPassword`). |
 
-Return `null` to reject the login, or return an `AdapterUser` (optionally augmented with extra fields). Any extra data you attach can be forwarded through Auth.js callbacks, as shown in the sample above.
+Return `null` to reject the login or an `AdapterUser` (optionally augmented with extra fields) to continue. Any additional fields you add can flow through JWT/session callbacks.
 
 ### Route overrides
-
-You can replace or wrap the built-in signup and password-reset routes without forking the plugin:
 
 ```ts
 EmailPassword({
@@ -263,45 +292,46 @@ EmailPassword({
     passwordResetRequest: async ({ payload, defaultHandler }) => {
       auditResetAttempt(payload.get())
       return defaultHandler()
+    },
+    passwordResetConfirm: async ({ request, defaultHandler }) => {
+      await enforcePasswordRules(await request.json())
+      return defaultHandler()
     }
   }
 })
+
+function auditResetAttempt(payload: Record<string, unknown>) {
+  console.log('password reset requested', payload.email)
+}
+
+async function enforcePasswordRules(body: Record<string, unknown>) {
+  if (typeof body.newPassword !== 'string' || body.newPassword.length < 12) {
+    throw new Error('Password must be at least 12 characters long')
+  }
+}
 ```
 
-Each route handler receives an `EmailPasswordRouteContext` with:
+Each override receives an `EmailPasswordRouteContext` with:
 
 | Property | Description |
 | --- | --- |
-| `payload` | The shared `RequestPayloadHandle` described above. |
-| `defaultHandler()` | Invokes Robo's built-in behaviour (CSRF checks, token creation, auto sign-in, etc.). |
-| `adapter`, `authConfig`, `cookies`, `events`, `basePath`, `baseUrl`, `secret`, `sessionStrategy` | Matching values from the running instance. |
+| `payload` | Shared `RequestPayloadHandle` (see above). |
+| `defaultHandler()` | Invokes Robo's stock behaviour (CSRF checks, hashing, session cookies, email dispatch). |
+| `adapter`, `authConfig`, `cookies`, `events`, `basePath`, `baseUrl`, `secret`, `sessionStrategy` | Context from the running plugin instance. |
 | `request` | The raw `RoboRequest`. |
 
-Available route hooks:
+Available hooks:
 
 | Hook | Triggered on | Typical use |
 | --- | --- | --- |
-| `signup` | `POST /signup` | Custom validation, user provisioning, analytics, alternate redirects. |
-| `passwordResetRequest` | `POST /password/reset/request` | Throttling, captcha checks, SMS/Slack notifications. |
-| `passwordResetConfirm` | `POST /password/reset/confirm` (and assisting GET) | Extra password rules, audit logging, alternative success responses. |
+| `signup` | `POST /signup` | Invite-code gating, analytics, custom redirects. |
+| `passwordResetRequest` | `POST /password/reset/request` | Captcha, throttling, SMS notifications. |
+| `passwordResetConfirm` | `POST /password/reset/confirm` / helper GET | Extra password policy, audit logging. |
 
-Handlers can return their own `Response` to short-circuit the plugin’s behaviour, or call `defaultHandler()` to keep the stock flow provided by @robojs/auth (CSRF checks, password hashing, session cookies, emails, etc.). Because the shared payload is cached, any `assign()` calls you make before invoking `defaultHandler()` are visible to the built-in logic and to downstream Auth.js events.
+Handlers can return their own `Response` to short-circuit the plugin or call `defaultHandler()` to inherit the stock flow. Because the payload is shared, any `assign()` calls you make persist through the rest of the lifecycle, including Auth.js callbacks and events.
 
-## Client & Server Helpers
+## Got questions? 🤔
 
-```ts
-import { signIn, signOut, getSession, getProviders, getCsrfToken } from '@robojs/auth'
-import { getServerSession, getToken } from '@robojs/auth'
-```
+If you have any questions or need help with this plugin, join our Discord — we’re friendly and happy to help!
 
-These helpers wrap the registered endpoints so you can call them from Robo.js commands, web handlers, or activities without re-implementing the HTTP contract.
-
-## Runtime Notes
-
-- `Server.registerRoute` from `@robojs/server` is used to mount the REST handlers; ensure `@robojs/server` is also installed.
-- Cookies automatically downgrade `Secure` when the configured `url` uses HTTP (development mode).
-- If you rely on preview deployments, set `AUTH_REDIRECT_PROXY_URL` so OAuth callbacks work from ephemeral hosts.
-
-## License
-
-MIT © WavePlay
+➞ [🚀 ](https://robojs.dev/discord)**[Community: Join our Discord server](https://robojs.dev/discord)**
