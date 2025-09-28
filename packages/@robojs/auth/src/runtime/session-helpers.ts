@@ -8,6 +8,7 @@ import { nanoid } from 'nanoid'
 export function isSuccessRedirect(response: Response): boolean {
 	const status = response.status
 	if (status < 300 || status >= 400) return false
+	// Auth.js encodes failures as error query params on the redirect target.
 	const location = response.headers.get('location') ?? ''
 	return !/[?&]error=/.test(location)
 }
@@ -17,6 +18,7 @@ export function hasSessionCookie(response: Response, cookieName: string): boolea
 	// Headers may contain multiple Set-Cookie values; get() returns a comma-joined list in some runtimes.
 	const header = response.headers.get('set-cookie')
 	if (!header) return false
+	// Quick substring match avoids needing a cookie parser for this helper.
 	return header.includes(`${cookieName}=`)
 }
 
@@ -42,6 +44,7 @@ export async function attachDbSessionCookie(params: {
 	const maxAge = config.session?.maxAge ?? 60 * 60 * 24 * 30
 	const expires = new Date(Date.now() + maxAge * 1000)
 
+	// Ensure downstream requests can map the cookie back to a persisted session immediately.
 	await adapter.createSession?.({ sessionToken: token, userId, expires })
 
 	const opts = cookies.sessionToken?.options ?? { path: '/', sameSite: 'lax' as const, secure: true, httpOnly: true }
@@ -59,5 +62,6 @@ export async function attachDbSessionCookie(params: {
 	// Always append our cookie so the database strategy has a matching token.
 	// If Auth.js also set a session cookie (e.g., JWT), the browser will honor the last one.
 	headers.append('set-cookie', headerValue)
+	// Respond with the original status code while guaranteeing the cookie is delivered.
 	return new Response(null, { status: response.status, headers })
 }

@@ -21,6 +21,7 @@ function createCookieOption({
 	secure?: boolean
 	httpOnly?: boolean
 }): Partial<CookieOption> {
+	// Provide sensible defaults mirroring Auth.js expectations.
 	return {
 		name,
 		options: {
@@ -60,6 +61,7 @@ export function mergeCookieOption(
 	defaultOption: Partial<CookieOption>,
 	override?: Partial<CookieOption>
 ): Partial<CookieOption> {
+	// Merge nested option objects without mutating the original references.
 	return {
 		...defaultOption,
 		...override,
@@ -102,6 +104,7 @@ export function chunkCookieValue(
 	let index = 0
 
 	for (let i = 0; i < value.length; i += chunkSize) {
+		// Emit deterministic chunk names so we can reassemble the value later on.
 		const chunk = value.slice(i, i + chunkSize)
 		chunks.push({ name: `${name}.${index++}`, value: chunk })
 	}

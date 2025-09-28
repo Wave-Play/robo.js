@@ -48,6 +48,7 @@ export function createResendMailer(opts: ResendMailerOptions): AuthMailer {
   async function getClient(): Promise<ResendClient> {
     if (client) return client
     try {
+      // Dynamically import the SDK so consumers aren't forced to bundle it unless used.
       const mod: unknown = await import('resend')
       const maybe = mod as { Resend?: ResendCtor; default?: ResendCtor | { Resend?: ResendCtor } }
       const Ctor: ResendCtor | undefined = maybe.Resend ?? (typeof maybe.default === 'function' ? (maybe.default as ResendCtor) : (maybe.default as { Resend?: ResendCtor })?.Resend)
@@ -88,6 +89,7 @@ export function createResendMailer(opts: ResendMailerOptions): AuthMailer {
         headers
       }
       if (message.templateId) {
+        // Template sends substitute HTML/text with a template reference and variables.
         payload = {
           ...payload,
           templateId: message.templateId,

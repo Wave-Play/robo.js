@@ -288,6 +288,7 @@ export function createSignupHandler(options: SignupHandlerOptions) {
 		let attemptedPayload: SignupPayload | null = null
 
 		try {
+			// Parse and validate the signup form before mutating persistent state.
 			const payload = await parsePayload(request)
 			attemptedPayload = payload
 			authLogger.debug('Signup attempt:', { email: payload.email })
@@ -303,6 +304,7 @@ export function createSignupHandler(options: SignupHandlerOptions) {
 
 			const callbackUrl = resolveDefaultRedirect(baseUrl, payload.callbackUrl ?? defaultRedirectPath)
 			try {
+				// Reuse the credentials provider to immediately sign the user in after signup.
 				const response = await signInWithCredentials(
 					authConfig,
 					basePath,
@@ -317,6 +319,7 @@ export function createSignupHandler(options: SignupHandlerOptions) {
 				// For database strategy, ensure a DB session + cookie exists (parity with OAuth providers)
 				if (sessionStrategy === 'database' && isSuccessRedirect(response)) {
 					try {
+						// Mirror Auth.js behaviour by creating a database-backed session cookie.
 						return await attachDbSessionCookie({
 							response,
 							adapter,
@@ -335,6 +338,7 @@ export function createSignupHandler(options: SignupHandlerOptions) {
 
 				return response
 			} catch (signInError) {
+				// Cleanup the newly created user if we fail to issue their initial session.
 				authLogger.error('Auto sign-in after signup failed, rolling back user.', {
 					email: normalizedEmail,
 					error: (signInError as Error)?.message
@@ -353,6 +357,7 @@ export function createSignupHandler(options: SignupHandlerOptions) {
 		} catch (error) {
 			if (error instanceof SignupError) {
 				if (wantsJsonResponse) {
+					// Surface structured errors back to API clients.
 					return new Response(JSON.stringify({ error: error.code, message: error.message }), {
 						headers: { 'content-type': 'application/json' },
 						status: error.status
@@ -361,6 +366,7 @@ export function createSignupHandler(options: SignupHandlerOptions) {
 
 				const redirectUrl = new URL('/signup', baseUrl)
 				if (attemptedPayload?.callbackUrl) {
+					// Preserve the original redirect target so the retry form stays contextual.
 					redirectUrl.searchParams.set('callbackUrl', attemptedPayload.callbackUrl)
 				}
 				redirectUrl.searchParams.set('error', error.code)

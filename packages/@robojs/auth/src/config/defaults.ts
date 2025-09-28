@@ -50,6 +50,7 @@ export interface NormalizedAuthPluginOptions {
  */
 export function normalizeAuthOptions(options: unknown): NormalizedAuthPluginOptions {
 	const parsed = authPluginOptionsSchema.parse(options ?? {}) as AuthPluginOptions
+	// Merge user overrides with opinionated defaults to keep Auth.js cookies predictable.
 	const cookies = applyCookieOverrides(buildDefaultCookies(), parsed.cookies)
 	const sessionStrategy = parsed.session?.strategy ?? (parsed.adapter ? 'database' : 'jwt')
 
@@ -68,6 +69,7 @@ export function normalizeAuthOptions(options: unknown): NormalizedAuthPluginOpti
 		redirectProxyUrl: parsed.redirectProxyUrl,
 		secret: parsed.secret,
 		session: {
+			// Pick a session strategy based on adapter availability unless explicitly provided.
 			strategy: sessionStrategy,
 			maxAge: parsed.session?.maxAge ?? DEFAULT_SESSION_MAX_AGE,
 			updateAge: parsed.session?.updateAge ?? DEFAULT_SESSION_UPDATE_AGE

@@ -65,7 +65,9 @@ export interface ConfigureAuthRuntimeOptions {
  * ```
  */
 export function configureAuthRuntime(config: AuthConfig, options: ConfigureAuthRuntimeOptions): void {
+	// Normalize the config so Auth.js treats Robo-specific credentials setups correctly.
 	const preparedConfig = ensureCredentialsDbCompatibility(config)
+	// Store a ready-to-go handler plus supporting metadata for helper calls.
 	runtime.authHandler = (request: Request) => Auth(request, preparedConfig)
 	runtime.basePath = options.basePath
 	runtime.baseUrl = options.baseUrl
@@ -105,6 +107,7 @@ export async function getServerSession(input?: Request | Headers | HeadersInput 
 		throw new Error('Auth runtime has not been configured. Did you call configureAuthRuntime inside the start hook?')
 	}
 
+	// Build an internal request to the Auth.js session route using caller headers.
 	const headers = resolveHeaders(input)
 	const sessionUrl = runtime.basePath.endsWith('/session')
 		? `${runtime.baseUrl}${runtime.basePath}`
@@ -140,10 +143,12 @@ export async function getToken(
 	options?: { raw?: boolean }
 ): Promise<JWT | string | null> {
 	if (runtime.sessionStrategy === 'database') {
+		// Database strategy stores session state server-side, so reuse the session fetch above.
 		const session = await getServerSession(input)
 		return (session as unknown as JWT) ?? null
 	}
 
+	// Collapse headers to a plain object so Auth.js can parse cookies without a Request instance.
 	const headers = resolveHeaders(input)
 	const headerRecord: Record<string, string> = {}
 	;(headers as unknown as { forEach?: (cb: (value: string, key: string) => void) => void }).forEach?.(

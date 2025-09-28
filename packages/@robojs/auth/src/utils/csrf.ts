@@ -22,5 +22,6 @@ export function verifyCsrfToken(token: string, cookie: string, secret: string): 
 	const expected = hashCsrfToken(token, secret)
 	const a = Buffer.from(expected, 'hex')
 	const b = Buffer.from(cookie, 'hex')
+	// Timing-safe comparison prevents leaking how many hex characters matched.
 	return a.length === b.length && timingSafeEqual(a, b)
 }

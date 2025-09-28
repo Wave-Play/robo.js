@@ -23,12 +23,19 @@ export interface PasswordResetToken {
 
 /** Auth.js adapter contract extended with password management helpers. */
 export interface PasswordAdapter extends Adapter {
+	/** Persists a hashed password for the given user and returns the storage record. */
 	createUserPassword(params: { userId: string; email: string; password: string }): Promise<PasswordRecord>
+	/** Compares a plaintext password against the stored hash for the user. */
 	verifyUserPassword(params: { userId: string; password: string }): Promise<boolean>
+	/** Looks up the internal user id associated with an email address. */
 	findUserIdByEmail(email: string): Promise<string | null>
+	/** Removes any stored password material for a user. */
 	deleteUserPassword(userId: string): Promise<void>
+	/** Replaces the existing password hash and returns the updated record. */
 	resetUserPassword(params: { userId: string; password: string }): Promise<PasswordRecord | null>
+	/** Creates a time-limited token that allows the user to reset their password. */
 	createPasswordResetToken(userId: string, ttlMinutes?: number): Promise<PasswordResetToken>
+	/** Consumes a previously issued password reset token, if still valid. */
 	usePasswordResetToken(token: string): Promise<PasswordResetToken | null>
 }
 

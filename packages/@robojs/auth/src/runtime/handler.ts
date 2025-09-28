@@ -27,10 +27,12 @@ export type AuthRequestHandler = (req: RoboRequest, res: RoboReply) => Promise<R
 export function createAuthRequestHandler(config: AuthConfig): AuthRequestHandler {
 	return async function authRequestHandler(request: RoboRequest): Promise<Response> {
 		try {
+			// Log routing and normalize the Auth.js configuration before delegation.
 			authLogger.debug('Handling auth request', { method: request.method, url: request.url })
 			const preparedConfig = ensureCredentialsDbCompatibility(config)
 			return await Auth(request, preparedConfig)
 		} catch (err: unknown) {
+			// Auth.js errors are normalized so we can return JSON or redirect with useful clues.
 			authLogger.warn('Error in Auth.js request handler', { error: getString(err, 'message'), stack: getString(err, 'stack') })
 			const rawCode = extractErrorCode(err)
 			const normalizedCode = typeof rawCode === 'string' ? rawCode.toLowerCase() : undefined
@@ -40,6 +42,7 @@ export function createAuthRequestHandler(config: AuthConfig): AuthRequestHandler
 				getString(err, 'type') === 'CredentialsSignin' ||
 				getString(err, 'name') === 'CredentialsSignin'
 			if (isCredsError) {
+				// Credentials errors should return JSON for API clients or redirect to sign-in screens.
 				const wantsJson = request.headers.get('accept')?.includes('application/json')
 				const codeParam = typeof rawCode === 'string' && rawCode ? rawCode : 'credentials'
 

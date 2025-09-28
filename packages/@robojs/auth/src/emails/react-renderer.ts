@@ -13,6 +13,7 @@ function missingDependencyError(pkg: string, cause: unknown): Error {
 
 async function ensureReactEmailComponentsAvailable() {
 	if (!componentsCheck) {
+		// Fail fast with a helpful message if optional React Email deps are missing.
 		componentsCheck = import('@react-email/components')
 			.then(() => undefined)
 			.catch((error: unknown) => {

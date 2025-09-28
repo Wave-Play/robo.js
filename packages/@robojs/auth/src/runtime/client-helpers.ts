@@ -45,6 +45,7 @@ export async function signIn(
 	body: Record<string, unknown> = {},
 	options?: ClientOptions
 ): Promise<Response> {
+	// Resolve the runtime environment before composing the Auth.js request.
 	const basePath = resolveBasePath(options)
 	const request = resolveFetch(options?.fetch)
 	const init: Record<string, unknown> = {
@@ -77,6 +78,7 @@ export async function signIn(
  * ```
  */
 export async function signOut(options?: ClientOptions): Promise<Response> {
+	// Always speak to the same base path the plugin configured.
 	const basePath = resolveBasePath(options)
 	const request = resolveFetch(options?.fetch)
 	const init: Record<string, unknown> = {
@@ -108,6 +110,7 @@ export async function signOut(options?: ClientOptions): Promise<Response> {
  * ```
  */
 export async function getSession<T extends Session = Session>(options?: ClientOptions): Promise<T | null> {
+	// Pull the session JSON from Auth.js while preserving caller-provided headers.
 	const basePath = resolveBasePath(options)
 	const request = resolveFetch(options?.fetch)
 	const init: Record<string, unknown> = {
@@ -139,6 +142,7 @@ export async function getSession<T extends Session = Session>(options?: ClientOp
  * ```
  */
 export async function getProviders(options?: ClientOptions): Promise<PublicProvider[] | null> {
+	// Providers response is public, but we still honor caller header overrides.
 	const basePath = resolveBasePath(options)
 	const request = resolveFetch(options?.fetch)
 	const init: Record<string, unknown> = {
@@ -167,6 +171,7 @@ export async function getProviders(options?: ClientOptions): Promise<PublicProvi
  * ```
  */
 export async function getCsrfToken(options?: ClientOptions): Promise<string | null> {
+	// Token fetch mirrors the Auth.js REST endpoint and returns null when unavailable.
 	const basePath = resolveBasePath(options)
 	const request = resolveFetch(options?.fetch)
 	const init: Record<string, unknown> = {

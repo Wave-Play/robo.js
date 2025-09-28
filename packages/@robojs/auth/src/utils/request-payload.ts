@@ -34,6 +34,7 @@ async function parseBody(request: RoboRequest): Promise<PayloadState> {
 	const source = typeof request.clone === 'function' ? (request.clone() as RoboRequest) : request
 	if (header.includes('application/json')) {
 		try {
+			// Parse JSON payloads but coerce non-object bodies to an empty object for safety.
 			const json = (await source.json()) as unknown
 			if (json && typeof json === 'object' && !Array.isArray(json)) {
 				return { data: json as Record<string, unknown>, source: 'json' }
@@ -49,6 +50,7 @@ async function parseBody(request: RoboRequest): Promise<PayloadState> {
 			const form = await source.formData()
 			const map: Record<string, unknown> = {}
 			form.forEach((value, key) => {
+				// Preserve repeated keys by collapsing values into arrays as they appear.
 				if (map[key] === undefined) {
 					map[key] = value
 					return
@@ -103,6 +105,7 @@ function createHandle(request: RoboRequest, state: PayloadState): RequestPayload
 export async function getRequestPayload(request: RoboRequest): Promise<RequestPayloadHandle> {
 	const existing = ensureState(request)
 	if (existing) {
+		// Return the cached payload so multiple consumers share the same mutation surface.
 		return createHandle(request, existing)
 	}
 	const parsed = await parseBody(request)

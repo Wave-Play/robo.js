@@ -33,6 +33,7 @@ export function ensureCredentialsDbCompatibility(config: AuthConfig): AuthConfig
 	if (strategy !== 'database') return config
 	const providers = config.providers as ProviderArray
 	if (!providers?.length) return config
+	// Resolve lazy provider factories before inspecting their type metadata.
 	const resolvedProviders = providers.map((entry) =>
 		typeof entry === 'function' ? entry() : entry
 	) as ResolvedProvider[]
@@ -49,6 +50,7 @@ export function ensureCredentialsDbCompatibility(config: AuthConfig): AuthConfig
 		if (result) return result
 		if (!isOnlyCredentialsPredicate(callback)) return result
 		try {
+			// Invoke the guard with a fake OAuth provider so the Auth.js assertion passes.
 			const fakeProvider = { type: 'oauth' } as Provider
 			if (callback.call(thisArg, fakeProvider, patchedProviders.length, patchedProviders)) {
 				return true
@@ -70,6 +72,7 @@ export function ensureCredentialsDbCompatibility(config: AuthConfig): AuthConfig
 		value: true,
 		writable: false
 	})
+	// Cache the patched config on the original object so repeated calls are cheap.
 	const patchedConfig: AuthConfig = { ...config, providers: patchedProviders }
 	Object.defineProperty(config as CompatConfig, PATCHED_CONFIG_FLAG, {
 		configurable: false,

@@ -125,6 +125,7 @@ let argon2InstancePromise: Promise<Argon2ComputeHash> | null = null
 
 function getArgon2Instance() {
 	if (!argon2InstancePromise) {
+		// Lazily load the WASM variant best suited for the current runtime.
 		argon2InstancePromise = setupWasm(
 			(importObject) => WebAssembly.instantiate(readFileSync(require.resolve('argon2id/dist/simd.wasm')), importObject),
 			(importObject) =>
@@ -140,6 +141,7 @@ function passwordToBytes(password: string): Uint8Array {
 
 async function computeArgon2id(password: string, salt: Uint8Array, params: Argon2Params): Promise<Buffer> {
 	const argon2 = await getArgon2Instance()
+	// Delegates hashing to the compiled argon2id WASM runtime for consistent results.
 	const digest = argon2({
 		password: passwordToBytes(password),
 		salt,
@@ -196,6 +198,7 @@ function parseArgon2idHash(hash: string): ParsedArgon2Hash | null {
 
 async function hashPassword(password: string): Promise<string> {
 	const salt = randomBytes(ARGON2_SALT_LENGTH)
+	// Format matches argon2id encoded hash string so we can verify later on.
 	const digest = await computeArgon2id(password, salt, DEFAULT_ARGON2_PARAMS)
 	return formatArgon2idHash(salt, digest, DEFAULT_ARGON2_PARAMS)
 }
@@ -265,6 +268,7 @@ async function addUserToIndex(userId: string): Promise<void> {
 		meta.pageCount += 1
 		ids = []
 	}
+	// Avoid duplicates when reindexing from multiple call sites.
 	if (!ids.includes(userId)) ids.push(userId)
 	await writeUsersIndexPage(meta.pageCount - 1, ids)
 	meta.total += 1
@@ -314,6 +318,7 @@ export async function listUserIds(
 ): Promise<{ ids: string[]; page: number; pageCount: number; total: number }> {
 	const meta = await loadUsersIndexMeta()
 	if (page < 0 || page >= meta.pageCount) {
+		// Out-of-range pages return metadata so callers can clamp gracefully.
 		return { ids: [], page, pageCount: meta.pageCount, total: meta.total }
 	}
 	const ids = await readUsersIndexPage(page)
@@ -342,6 +347,7 @@ export async function listUsers(
 ): Promise<{ users: AdapterUser[]; page: number; pageCount: number; total: number }> {
 	const { ids, page: p, pageCount, total } = await listUserIds(page)
 	const users = await Promise.all(
+		// Fetch each user lazily; gaps may occur if records were deleted mid-query.
 		ids.map((id) => Flashcore.get<AdapterUser | null>(userKey(id), { namespace: NS_USERS }))
 	)
 	return { users: users.filter(Boolean) as AdapterUser[], page: p, pageCount, total }
@@ -367,6 +373,7 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Passwo
 
 	const adapter: PasswordAdapter = {
 		async createUser(user) {
+			// Persist the user and maintain secondary indexes for email and pagination.
 			if (!user.email) {
 				throw new Error('AdapterUser.email is required when creating a user')
 			}
@@ -401,6 +408,7 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Passwo
 		},
 
 		async getUserByAccount(identifier) {
+			// Accounts are namespaced by provider so we can look up the owning user id quickly.
 			const key = accountKey(identifier.provider, identifier.providerAccountId)
 			const account = await Flashcore.get<AdapterAccount | null>(key.key, { namespace: key.ns })
 			if (!account) return null
@@ -409,6 +417,7 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Passwo
 		},
 
 		async updateUser(user) {
+			// Keep the user record canonical and repair email indexes when addresses change.
 			const existing = await Flashcore.get<AdapterUser | null>(userKey(user.id), { namespace: NS_USERS })
 			if (!existing) {
 				throw new Error(`User ${user.id} does not exist`)
@@ -429,11 +438,13 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Passwo
 			if (!user) return
 
 			if (user.email) {
+				// Remove reverse email lookup so future sign-ins do not resolve to stale ids.
 				await Flashcore.delete(userEmailKey(user.email), { namespace: NS_USERS_BY_EMAIL })
 			}
 
 			const accountRefs = await loadUserAccounts(id)
 			await Promise.all(
+				// Tear down provider account pointers for every linked provider.
 				accountRefs.map((ref) => Flashcore.delete(ref.id, { namespace: accountNamespace(ref.provider) }))
 			)
 			await Flashcore.delete(userAccountsKey(id), { namespace: NS_USER_ACCOUNTS })
@@ -443,6 +454,7 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Passwo
 		},
 
 		async linkAccount(account) {
+			// Record the provider account and update the per-user account index.
 			const key = accountKey(account.provider, account.providerAccountId)
 			await Flashcore.set<AdapterAccount>(key.key, account, { namespace: key.ns })
 			const accounts = await loadUserAccounts(account.userId)
@@ -467,6 +479,7 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Passwo
 		},
 
 		async createSession(session) {
+			// Sessions are keyed by token so Auth.js can fetch them on every request.
 			await Flashcore.set(sessionKey(session.sessionToken), session, { namespace: NS_SESSIONS })
 			return session
 		},
@@ -488,6 +501,7 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Passwo
 		},
 
 		async updateSession(session) {
+			// Merge with the existing record before writing to preserve expires timestamps.
 			const existing = await Flashcore.get<AdapterSession | null>(sessionKey(session.sessionToken), {
 				namespace: NS_SESSIONS
 			})
@@ -505,6 +519,7 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Passwo
 		},
 
 		async createVerificationToken(token) {
+			// Store hashed tokens to avoid leaking the raw value at rest.
 			const hashed = hashToken(token.token, secret)
 			await Flashcore.set(
 				verificationKey(hashed),

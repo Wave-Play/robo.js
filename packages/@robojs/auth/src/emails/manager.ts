@@ -62,6 +62,7 @@ export class EmailManager {
 			hasTemplates: Object.keys(this.templates).length > 0,
 			hasTriggers: Boolean(this.opts.triggers)
 		})
+		// Canonicalize trigger definitions to arrays for easier iteration later on.
 		if (this.opts.triggers) {
 			for (const [event, t] of Object.entries(this.opts.triggers) as [
 				AuthEmailEvent,
@@ -75,8 +76,10 @@ export class EmailManager {
 		if (!m) return
 
 		if (typeof m === 'function') {
+			// Support lazy mailer factories to defer heavy imports until startup.
 			this.mailer = await Promise.resolve(m())
 		} else if (typeof (m as ModuleMailerSpec).module === 'string') {
+			// Dynamic import allows referencing remote mailers without bundler tricks.
 			const spec = m as ModuleMailerSpec
 			const mod: Record<string, unknown> = await import(spec.module)
 			const resolved = (spec.export ? mod[spec.export] : (mod as { default?: unknown }).default) ?? mod
@@ -105,8 +108,10 @@ export class EmailManager {
 		this.logger.debug('Dispatching email builders', { event, count: builders.length })
 		for (const build of builders) {
 			try {
+				// Allow builders to bail out by returning null (e.g., missing recipient).
 				const msg = await Promise.resolve(build(ctx))
 				if (!msg) continue
+				// Merge template output with configured defaults before sending.
 				const finalMsg = { from: this.from, ...msg }
 				this.logger.debug('Sending message', {
 					event,
@@ -128,6 +133,7 @@ export class EmailManager {
 		let t: TemplateConfig | undefined
 		if (userT) {
 			if ('templateId' in userT) {
+				// Provider-driven templates are forwarded as-is to the mailer.
 				t = userT
 			} else if (defaultT && 'subject' in defaultT) {
 				// Merge inline template parts with defaults (subject/html/text/react)
@@ -150,6 +156,7 @@ export class EmailManager {
 				if (!to) return null
 
 				if ('templateId' in t) {
+					// Hand off template IDs directly; React/email builders are bypassed entirely.
 					const varFn = (t as { variables?: (c: EmailContext) => Record<string, unknown> }).variables
 					const vars = typeof varFn === 'function' ? varFn(ctx) : undefined
 					return { to, subject: ' ', templateId: (t as { templateId: string }).templateId, variables: vars }
