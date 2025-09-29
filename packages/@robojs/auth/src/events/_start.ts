@@ -5,7 +5,7 @@ import { createFlashcoreAdapter } from '../adapters/flashcore.js'
 import { normalizeAuthOptions, type NormalizedAuthPluginOptions } from '../config/defaults.js'
 import { createAuthRequestHandler } from '../runtime/handler.js'
 import { AUTH_ROUTES } from '../runtime/route-map.js'
-import { configureAuthRuntime } from '../runtime/server-helpers.js'
+import { configureAuthRuntime, configureAuthProxyRuntime } from '../runtime/server-helpers.js'
 import { nanoid } from 'nanoid'
 import { authLogger } from '../utils/logger.js'
 import { registerEmailPasswordRuntime } from '../builtins/email-password/runtime.js'
@@ -34,6 +34,8 @@ const authLoggerInstance: Partial<LoggerInstance> = {
 	error: (...data) => authLogger.error(...data),
 	warn: (...data) => authLogger.warn(...data)
 }
+
+type FetchLike = (input: string, init?: unknown) => Promise<Response>
 
 function adjustCookieSecurity(cookies: CookiesOptions, baseUrl: string): CookiesOptions {
 	const isSecure = baseUrl.startsWith('https://')
@@ -68,6 +70,70 @@ function collectMethods(basePath: string): MethodMap {
 	}
 
 	return map
+}
+
+function resolveProxyFetch(fetcher?: FetchLike): FetchLike {
+	if (fetcher) return fetcher
+	if (typeof fetch === 'function') {
+		return (input: string, init?: unknown) => fetch(input, init as RequestInit)
+	}
+	throw new Error('Global fetch is not available. Provide an upstream.fetch implementation for proxy mode.')
+}
+
+function createProxyUrl(
+	localBasePath: string,
+	targetBasePath: string,
+	targetBaseUrl: string,
+	requestUrl: string
+): string {
+	const url = new URL(requestUrl)
+	const suffix = url.pathname.startsWith(localBasePath) ? url.pathname.slice(localBasePath.length) : url.pathname
+	const targetPath = joinPath(targetBasePath, suffix)
+	const targetUrl = new URL(targetPath, targetBaseUrl)
+	if (url.search) {
+		targetUrl.search = url.search
+	}
+	return targetUrl.toString()
+}
+
+function shouldIncludeBody(method: string): boolean {
+	return method !== 'GET' && method !== 'HEAD'
+}
+
+async function forwardToUpstream(
+	request: RoboRequest,
+	method: string,
+	localBasePath: string,
+	targetBasePath: string,
+	targetBaseUrl: string,
+	fetcher: FetchLike,
+	headersOverride?: Record<string, string>
+): Promise<Response> {
+	const targetUrl = createProxyUrl(localBasePath, targetBasePath, targetBaseUrl, request.url)
+	const headers = new Headers(request.headers)
+	headers.delete('host')
+	headers.delete('content-length')
+	headers.delete('connection')
+	headers.delete('accept-encoding')
+	if (headersOverride) {
+		for (const [key, value] of Object.entries(headersOverride)) {
+			headers.set(key, value)
+		}
+	}
+
+	const init: RequestInit = {
+		headers,
+		method,
+		redirect: 'manual',
+		signal: request.signal
+	}
+
+	if (shouldIncludeBody(method)) {
+		const body = await request.arrayBuffer()
+		init.body = body
+	}
+
+	return fetcher(targetUrl, init)
 }
 
 function resolveSecret(options: NormalizedAuthPluginOptions): string {
@@ -123,8 +189,81 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 	const options = normalizeAuthOptions(rawOptions)
 	await Server.ready()
 
-	const secret = resolveSecret(options)
 	const basePath = stripTrailingSlash(ensureLeadingSlash(options.basePath ?? '/api/auth'))
+
+	if (options.upstream) {
+		const upstreamBasePath = stripTrailingSlash(
+			ensureLeadingSlash(options.upstream.basePath ?? options.basePath ?? '/api/auth')
+		)
+		const fetcher = resolveProxyFetch(options.upstream.fetch as FetchLike | undefined)
+		const methods = collectMethods(basePath)
+
+		for (const [path, allowedMethods] of methods.entries()) {
+			Server.registerRoute(path, async (request: RoboRequest, reply: RoboReply) => {
+				const method = (request.method?.toUpperCase() ?? 'GET') as HttpMethod | 'HEAD'
+				if (method === 'HEAD' && allowedMethods.has('GET')) {
+					const response = await forwardToUpstream(
+						request,
+						'HEAD',
+						basePath,
+						upstreamBasePath,
+						options.upstream!.baseUrl,
+						fetcher,
+						options.upstream!.headers
+					)
+					authLogger.debug('Proxied Auth.js request (HEAD).', {
+						path,
+						target: options.upstream!.baseUrl
+					})
+					return response
+				}
+
+				if (!allowedMethods.has(method as HttpMethod)) {
+					authLogger.warn('Rejected Auth.js proxy request with disallowed method.', {
+						method,
+						path,
+						allowed: Array.from(allowedMethods)
+					})
+					reply.code(405).header('Allow', Array.from(allowedMethods).join(', '))
+					return reply.send(new Response(null, { status: 405 }))
+				}
+
+				const response = await forwardToUpstream(
+					request,
+					method,
+					basePath,
+					upstreamBasePath,
+					options.upstream!.baseUrl,
+					fetcher,
+					options.upstream!.headers
+				)
+				authLogger.debug('Proxied Auth.js request.', {
+					method,
+					path,
+					target: options.upstream!.baseUrl,
+					status: response.status
+				})
+				return response
+			})
+		}
+
+		configureAuthProxyRuntime({
+			localBasePath: basePath,
+			targetBasePath: upstreamBasePath,
+			baseUrl: options.upstream.baseUrl,
+			cookieName:
+				options.upstream.cookieName ?? options.cookies.sessionToken?.name ?? 'authjs.session-token',
+			secret: options.upstream.secret ?? options.secret,
+			sessionStrategy: options.upstream.sessionStrategy,
+			headers: options.upstream.headers,
+			fetch: fetcher
+		})
+
+		authLogger.ready(`@robojs/auth proxying ${basePath} -> ${options.upstream.baseUrl}${upstreamBasePath}`)
+		return
+	}
+
+	const secret = resolveSecret(options)
 	const baseUrl = resolveBaseUrl(options)
 	const redirectProxyUrl = options.redirectProxyUrl ?? process.env.AUTH_REDIRECT_PROXY_URL
 	if (redirectProxyUrl) {
@@ -266,7 +405,7 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 		callbacks: composedCallbacks,
 		cookies,
 		events: composedEvents,
-		pages: options.pages,
+		pages: options.pages ?? {},
 		providers,
 		redirectProxyUrl: redirectProxyUrl ?? undefined,
 		secret,

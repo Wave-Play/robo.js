@@ -3,27 +3,38 @@ import { getToken as coreGetToken, type JWT } from '@auth/core/jwt'
 import type { AuthConfig } from '@auth/core'
 import type { Session } from '@auth/core/types'
 import { ensureCredentialsDbCompatibility } from './credentials-compat.js'
+import { ensureLeadingSlash, joinPath, stripTrailingSlash } from '../utils/path.js'
 
 type HeadersInput = Record<string, string> | Array<[string, string]> | undefined
+
+type FetchLike = (input: string, init?: RequestInit) => Promise<Response>
 
 type AuthHandler = (request: Request) => Promise<Response>
 
 interface RuntimeState {
+	mode: 'unconfigured' | 'local' | 'proxy'
 	authHandler: AuthHandler | null
-	basePath: string
+	localBasePath: string
+	targetBasePath: string
 	baseUrl: string
 	cookieName: string
-	secret: string
+	secret: string | null
 	sessionStrategy: 'jwt' | 'database'
+	fetch: FetchLike | null
+	headers?: Record<string, string>
 }
 
 const runtime: RuntimeState = {
+	mode: 'unconfigured',
 	authHandler: null,
-	basePath: '/api/auth',
+	localBasePath: '/api/auth',
+	targetBasePath: '/api/auth',
 	baseUrl: process.env.NEXTAUTH_URL ?? process.env.AUTH_URL ?? 'http://localhost:3000',
 	cookieName: 'authjs.session-token',
 	secret: process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET ?? '',
-	sessionStrategy: 'jwt'
+	sessionStrategy: 'jwt',
+	fetch: null,
+	headers: undefined
 }
 
 /** Describes the runtime parameters Robo uses to emulate the Auth.js handler environment. */
@@ -33,6 +44,17 @@ export interface ConfigureAuthRuntimeOptions {
 	cookieName: string
 	secret: string
 	sessionStrategy: 'jwt' | 'database'
+}
+
+export interface ConfigureAuthProxyRuntimeOptions {
+	localBasePath: string
+	targetBasePath?: string
+	baseUrl: string
+	cookieName?: string
+	secret?: string
+	sessionStrategy: 'jwt' | 'database'
+	headers?: Record<string, string>
+	fetch?: FetchLike
 }
 
 /**
@@ -64,17 +86,35 @@ export interface ConfigureAuthRuntimeOptions {
  * })
  * ```
  */
-export function configureAuthRuntime(config: AuthConfig, options: ConfigureAuthRuntimeOptions): void {
-	// Normalize the config so Auth.js treats Robo-specific credentials setups correctly.
-	const preparedConfig = ensureCredentialsDbCompatibility(config)
 
-	// Store a ready-to-go handler plus supporting metadata for helper calls.
+export function configureAuthRuntime(config: AuthConfig, options: ConfigureAuthRuntimeOptions): void {
+	const preparedConfig = ensureCredentialsDbCompatibility(config)
+	runtime.mode = 'local'
 	runtime.authHandler = (request: Request) => Auth(request, preparedConfig)
-	runtime.basePath = options.basePath
+	runtime.localBasePath = options.basePath
+	runtime.targetBasePath = options.basePath
 	runtime.baseUrl = options.baseUrl
 	runtime.cookieName = options.cookieName
 	runtime.secret = options.secret
 	runtime.sessionStrategy = options.sessionStrategy
+	runtime.fetch = null
+	runtime.headers = undefined
+}
+
+export function configureAuthProxyRuntime(options: ConfigureAuthProxyRuntimeOptions): void {
+	const fetcher = resolveFetch(options.fetch)
+	const localBasePath = normalizePath(options.localBasePath)
+	const targetBasePath = normalizePath(options.targetBasePath ?? options.localBasePath)
+	runtime.mode = 'proxy'
+	runtime.authHandler = null
+	runtime.localBasePath = localBasePath
+	runtime.targetBasePath = targetBasePath
+	runtime.baseUrl = options.baseUrl
+	runtime.cookieName = options.cookieName ?? 'authjs.session-token'
+	runtime.secret = options.secret ?? null
+	runtime.sessionStrategy = options.sessionStrategy
+	runtime.fetch = fetcher
+	runtime.headers = options.headers ? { ...options.headers } : undefined
 }
 
 function cloneHeaders(input?: Headers | HeadersInput | null): Headers {
@@ -85,6 +125,54 @@ function resolveHeaders(input?: Request | Headers | HeadersInput | null): Header
 	if (!input) return new Headers()
 	if (input instanceof Request) return new Headers(input.headers)
 	return cloneHeaders(input as HeadersInput)
+}
+
+function resolveFetch(fetcher?: FetchLike | null): FetchLike {
+	if (fetcher) return fetcher
+	if (typeof fetch === 'function') {
+		return (input: string, init?: RequestInit) => fetch(input, init)
+	}
+	throw new Error('Global fetch is not available. Provide a custom fetch implementation via upstream.fetch.')
+}
+
+function normalizePath(path: string): string {
+	return stripTrailingSlash(ensureLeadingSlash(path))
+}
+
+function mergeStaticHeaders(source: Headers): Headers {
+	if (!runtime.headers) return source
+	const merged = new Headers(source)
+	for (const [key, value] of Object.entries(runtime.headers)) {
+		merged.set(key, value)
+	}
+	return merged
+}
+
+function buildTargetUrl(route: string): string {
+	const path = joinPath(runtime.targetBasePath, route)
+	return new URL(path, runtime.baseUrl).toString()
+}
+
+function headersToRecord(headers: Headers): Record<string, string> {
+	const record: Record<string, string> = {}
+	headers.forEach((value, key) => {
+		record[key] = value
+	})
+	return record
+}
+
+function extractCookie(headers: Headers, cookieName: string): string | null {
+	const cookieHeader = headers.get('cookie')
+	if (!cookieHeader) return null
+	const cookies = cookieHeader.split(';').map((chunk) => chunk.trim())
+	for (const entry of cookies) {
+		if (!entry) continue
+		const [name, ...rest] = entry.split('=')
+		if (name === cookieName) {
+			return rest.join('=') || ''
+		}
+	}
+	return null
 }
 
 /**
@@ -104,23 +192,33 @@ function resolveHeaders(input?: Request | Headers | HeadersInput | null): Header
  * ```
  */
 export async function getServerSession(input?: Request | Headers | HeadersInput | null): Promise<Session | null> {
-	if (!runtime.authHandler) {
+	if (runtime.mode === 'unconfigured') {
 		throw new Error('Auth runtime has not been configured. Did you call configureAuthRuntime inside the start hook?')
 	}
 
-	// Build an internal request to the Auth.js session route using caller headers.
-	const headers = resolveHeaders(input)
-	const sessionUrl = runtime.basePath.endsWith('/session')
-		? `${runtime.baseUrl}${runtime.basePath}`
-		: `${runtime.baseUrl}${runtime.basePath}/session`
-	const sessionRequest = new Request(sessionUrl, {
+	const headers = mergeStaticHeaders(resolveHeaders(input))
+
+	if (runtime.mode === 'local') {
+		const sessionUrl = runtime.targetBasePath.endsWith('/session')
+			? `${runtime.baseUrl}${runtime.targetBasePath}`
+			: `${runtime.baseUrl}${runtime.targetBasePath}/session`
+		const sessionRequest = new Request(sessionUrl, {
+			headers,
+			method: 'GET'
+		})
+
+		const response = await runtime.authHandler!(sessionRequest)
+		if (!response.ok) return null
+		return (await response.json()) as Session
+	}
+
+	const fetcher = runtime.fetch ?? resolveFetch(null)
+	const response = await fetcher(buildTargetUrl('/session'), {
 		headers,
-		method: 'GET'
+		method: 'GET',
+		redirect: 'manual'
 	})
-
-	const response = await runtime.authHandler(sessionRequest)
 	if (!response.ok) return null
-
 	return (await response.json()) as Session
 }
 
@@ -146,23 +244,26 @@ export async function getToken(
 	options?: { raw?: boolean }
 ): Promise<JWT | string | null> {
 	if (runtime.sessionStrategy === 'database') {
-		// Database strategy stores session state server-side, so reuse the session fetch above.
 		const session = await getServerSession(input)
 		return (session as unknown as JWT) ?? null
 	}
 
-	// Collapse headers to a plain object so Auth.js can parse cookies without a Request instance.
-	const headers = resolveHeaders(input)
-	const headerRecord: Record<string, string> = {}
-	;(headers as unknown as { forEach?: (cb: (value: string, key: string) => void) => void }).forEach?.((value, key) => {
-		headerRecord[key] = value
-	})
+	const headers = mergeStaticHeaders(resolveHeaders(input))
+	if (options?.raw) {
+		return extractCookie(headers, runtime.cookieName)
+	}
+
+	if (!runtime.secret) {
+		throw new Error(
+			'Auth runtime was configured without a secret. Provide the session secret or call getToken with { raw: true }.'
+		)
+	}
 
 	return coreGetToken({
-		req: { headers: headerRecord },
+		req: { headers: headersToRecord(headers) },
 		secureCookie: runtime.baseUrl.startsWith('https://'),
 		cookieName: runtime.cookieName,
-		raw: options?.raw ?? false,
+		raw: false,
 		secret: runtime.secret,
 		salt: runtime.cookieName
 	})

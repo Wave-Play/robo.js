@@ -1,4 +1,5 @@
 import type { PublicProvider, Session } from '@auth/core/types'
+import { ensureLeadingSlash, joinPath, stripTrailingSlash } from '../utils/path.js'
 
 type HeadersInput = Record<string, string> | Array<[string, string]> | undefined
 
@@ -6,6 +7,7 @@ type FetchLike = (input: string, init?: Record<string, unknown>) => Promise<Resp
 
 interface ClientOptions {
 	basePath?: string
+	baseUrl?: string
 	fetch?: FetchLike
 	headers?: HeadersInput
 }
@@ -19,7 +21,15 @@ function resolveFetch(input?: FetchLike): FetchLike {
 }
 
 function resolveBasePath(options?: ClientOptions): string {
-	return options?.basePath ?? DEFAULT_BASE_PATH
+	return stripTrailingSlash(ensureLeadingSlash(options?.basePath ?? DEFAULT_BASE_PATH))
+}
+
+function resolveEndpoint(options: ClientOptions | undefined, route: string): string {
+	const basePath = resolveBasePath(options)
+	if (options?.baseUrl) {
+		return new URL(joinPath(basePath, route), options.baseUrl).toString()
+	}
+	return joinPath(basePath, route)
 }
 
 /**
@@ -46,7 +56,7 @@ export async function signIn(
 	options?: ClientOptions
 ): Promise<Response> {
 	// Resolve the runtime environment before composing the Auth.js request.
-	const basePath = resolveBasePath(options)
+	const target = resolveEndpoint(options, '/signin')
 	const request = resolveFetch(options?.fetch)
 	const init: Record<string, unknown> = {
 		method: 'POST',
@@ -58,7 +68,7 @@ export async function signIn(
 		body: JSON.stringify({ ...body, provider: providerId })
 	}
 
-	return request(`${basePath}/signin`, init)
+	return request(target, init)
 }
 
 /**
@@ -79,18 +89,28 @@ export async function signIn(
  */
 export async function signOut(options?: ClientOptions): Promise<Response> {
 	// Always speak to the same base path the plugin configured.
-	const basePath = resolveBasePath(options)
+	const target = resolveEndpoint(options, '/signout')
 	const request = resolveFetch(options?.fetch)
+	const csrfToken = await getCsrfToken({
+		...options,
+		fetch: request
+	})
+	const headers = new Headers(options?.headers as HeadersInit | undefined)
 	const init: Record<string, unknown> = {
 		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			...(options?.headers ?? {})
-		},
+		headers,
 		credentials: 'include'
 	}
 
-	return request(`${basePath}/signout`, init)
+	if (csrfToken) {
+		headers.set('Content-Type', 'application/json')
+		init.body = JSON.stringify({ csrfToken })
+	} else {
+		headers.set('Content-Type', 'application/json')
+		init.body = JSON.stringify({})
+	}
+
+	return request(target, init)
 }
 
 /**
@@ -111,7 +131,7 @@ export async function signOut(options?: ClientOptions): Promise<Response> {
  */
 export async function getSession<T extends Session = Session>(options?: ClientOptions): Promise<T | null> {
 	// Pull the session JSON from Auth.js while preserving caller-provided headers.
-	const basePath = resolveBasePath(options)
+	const target = resolveEndpoint(options, '/session')
 	const request = resolveFetch(options?.fetch)
 	const init: Record<string, unknown> = {
 		headers: {
@@ -121,7 +141,7 @@ export async function getSession<T extends Session = Session>(options?: ClientOp
 		credentials: 'include'
 	}
 
-	const response = await request(`${basePath}/session`, init)
+	const response = await request(target, init)
 	if (!response.ok) return null
 
 	return (await response.json()) as T
@@ -145,14 +165,14 @@ export async function getSession<T extends Session = Session>(options?: ClientOp
  */
 export async function getProviders(options?: ClientOptions): Promise<PublicProvider[] | null> {
 	// Providers response is public, but we still honor caller header overrides.
-	const basePath = resolveBasePath(options)
+	const target = resolveEndpoint(options, '/providers')
 	const request = resolveFetch(options?.fetch)
 	const init: Record<string, unknown> = {
 		headers: options?.headers,
 		credentials: 'include'
 	}
 
-	const response = await request(`${basePath}/providers`, init)
+	const response = await request(target, init)
 	if (!response.ok) return null
 
 	return (await response.json()) as PublicProvider[]
@@ -176,14 +196,14 @@ export async function getProviders(options?: ClientOptions): Promise<PublicProvi
  */
 export async function getCsrfToken(options?: ClientOptions): Promise<string | null> {
 	// Token fetch mirrors the Auth.js REST endpoint and returns null when unavailable.
-	const basePath = resolveBasePath(options)
+	const target = resolveEndpoint(options, '/csrf')
 	const request = resolveFetch(options?.fetch)
 	const init: Record<string, unknown> = {
 		headers: options?.headers,
 		credentials: 'include'
 	}
 
-	const response = await request(`${basePath}/csrf`, init)
+	const response = await request(target, init)
 	if (!response.ok) return null
 
 	const data = (await response.json()) as { csrfToken?: string }

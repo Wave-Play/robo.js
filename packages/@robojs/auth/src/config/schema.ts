@@ -97,6 +97,20 @@ const emailsSchema = z
 	.partial()
 	.optional()
 
+const fetchLikeSchema = z.function().args(z.any()).returns(z.any())
+
+const upstreamSchema = z
+	.object({
+		baseUrl: z.string().url(),
+		basePath: z.string().optional(),
+		headers: z.record(z.string()).optional(),
+		cookieName: z.string().optional(),
+		secret: z.string().optional(),
+		sessionStrategy: z.enum(['jwt', 'database']).optional(),
+		fetch: fetchLikeSchema.optional()
+	})
+	.strict()
+
 /**
  * Zod schema enforcing the structure of `@robojs/auth` plugin configuration.
  *
@@ -121,6 +135,7 @@ export const authPluginOptionsSchema = z
 		redirectProxyUrl: z.string().url().optional(),
 		secret: z.string().min(1).optional(),
 		session: sessionSchema,
+		upstream: upstreamSchema.optional(),
 		url: z.string().url().optional()
 	})
 	.strict()

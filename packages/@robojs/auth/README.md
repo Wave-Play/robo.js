@@ -94,12 +94,32 @@ The Prisma adapter stays compatible with Auth.js' recommended schema while layer
 | `session.strategy` | `jwt` (or `database` when adapter present) | Supports `maxAge` & `updateAge`. |
 | `cookies`, `callbacks`, `events`, `pages` | Auth.js defaults | Use the same shapes as upstream Auth.js. |
 | `email` / `emails` | `{}` | Override templates, configure mailers, or bind to third-party transports. |
+| `upstream` | _unset_ | Forward all Auth.js routes to another Robo instance with `{ baseUrl, basePath?, headers?, cookieName?, secret?, sessionStrategy?, fetch? }`. |
 
 Need validation? Use the exported `authPluginOptionsSchema` or call `normalizeAuthOptions(options)` to apply defaults before passing into other tooling.
 
 ### Built-in Email + Password Storage
 
 When no custom adapter is supplied, Robo stores hashed passwords, reset tokens, and user metadata in Flashcore. The bundled email/password provider (documented later) is turned on by default so your UI can immediately present email + password fields without extra wiring. Swap the adapter whenever you introduce your own persistence layer.
+
+### Proxying Another Robo Project
+
+Need the same Auth.js instance across multiple Robo apps? Set `upstream.baseUrl` to the canonical deployment and the plugin will proxy every `/api/auth/*` route (plus `getServerSession`/`getToken`) to that remote service.
+
+```ts
+// config/plugins/robojs/auth.ts
+import type { AuthPluginOptions } from '@robojs/auth'
+
+export default <AuthPluginOptions>{
+	basePath: '/api/auth',
+	upstream: {
+		baseUrl: process.env.AUTH_UPSTREAM_URL!,
+		headers: { 'x-api-key': process.env.AUTH_PROXY_KEY! }
+	}
+}
+```
+
+Provide `upstream.secret` if you want `getToken()` to decode JWT payloads locally; otherwise call it with `{ raw: true }` or use `getServerSession()` which always consults the upstream service.
 
 ## Flashcore Adapter Cheatsheet
 
@@ -163,7 +183,7 @@ Both helpers accept optional `{ page, pageSize, orderBy, where }` parameters and
 
 ## Client API
 
-All client helpers are exported via `@robojs/auth/client` (and re-exported from the package root). Each function accepts optional overrides for `basePath`, headers, or a custom `fetch` implementation—ideal for activities or external UIs.
+All client helpers are exported via `@robojs/auth/client` (and re-exported from the package root). Each function accepts optional overrides for `basePath`, `baseUrl`, headers, or a custom `fetch` implementation—ideal for activities or external UIs.
 
 | Function | Description |
 | -------- | ----------- |
@@ -182,6 +202,8 @@ const session = await getSession({ headers: { cookie: request.headers.get('cooki
 const providers = await getProviders()
 ```
 
+Set `baseUrl` when calling these helpers to speak to a different origin—ideal when a frontend Robo app proxies to a backend deployment that owns the Auth.js adapter.
+
 ## Server API
 
 Server helpers live under `@robojs/auth/server` (also re-exported from the root package). They let you normalise config, bridge Robo requests into Auth.js, and interact with storage/state.
@@ -192,6 +214,7 @@ Server helpers live under `@robojs/auth/server` (also re-exported from the root 
 | ------ | ----------- |
 | `createAuthRequestHandler(config)` | Wrap a prepared Auth.js config in a Robo-compatible handler. Perfect for custom HTTP routers or activities. |
 | `configureAuthRuntime(config, options)` | Warm a singleton Auth.js handler with explicit base path, cookie name, and secret—required before calling `getServerSession` or `getToken`. |
+| `configureAuthProxyRuntime(options)` | Point the helpers at a remote Auth.js deployment while keeping your local Robo routes. |
 | `AUTH_ROUTES` | Reference list of the REST routes the plugin wires up. Great for routing tables or documentation generators. |
 | `DEFAULT_BASE_PATH` | Literal `/api/auth`. Use when syncing config across services. |
 
