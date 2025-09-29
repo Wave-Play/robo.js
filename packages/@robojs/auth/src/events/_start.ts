@@ -191,21 +191,6 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 					links: { verifyEmail: verifyUrl },
 					request: { origin: baseUrl }
 				})
-				// Secondary event for dedicated verification emails (no default template)
-				try {
-					await notifyEmail('email:verification-requested', {
-						user: {
-							id: String((message as { user?: { id?: string } })?.user?.id ?? ''),
-							email: message.user.email ?? null,
-							name: message.user.name ?? null
-						},
-						tokens: { verifyEmail: verifyToken },
-						links: { verifyEmail: verifyUrl },
-						request: { origin: baseUrl }
-					})
-				} catch (e) {
-					authLogger.warn('Failed to send email verification request email', e)
-				}
 				const uid = String((message as { user?: { id?: string } })?.user?.id ?? '')
 				if (uid) recentNewUsers.add(uid)
 			} catch (e) {
