@@ -199,7 +199,7 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 		const methods = collectMethods(basePath)
 
 		for (const [path, allowedMethods] of methods.entries()) {
-			Server.registerRoute(path, async (request: RoboRequest, reply: RoboReply) => {
+			Server.get()?.registerRoute(path, async (request: RoboRequest, reply: RoboReply) => {
 				const method = (request.method?.toUpperCase() ?? 'GET') as HttpMethod | 'HEAD'
 				if (method === 'HEAD' && allowedMethods.has('GET')) {
 					const response = await forwardToUpstream(
@@ -444,7 +444,7 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 	const methods = collectMethods(basePath)
 
 	for (const [path, allowedMethods] of methods.entries()) {
-		Server.registerRoute(path, async (request: RoboRequest, reply: RoboReply) => {
+		Server.get()?.registerRoute(path, async (request: RoboRequest, reply: RoboReply) => {
 			const method = request.method?.toUpperCase() ?? 'GET'
 			if (method === 'HEAD' && allowedMethods.has('GET')) {
 				const response = await handler(request, reply)

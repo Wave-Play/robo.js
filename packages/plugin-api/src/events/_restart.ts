@@ -1,4 +1,4 @@
-import { logger } from '~/core/logger.js'
+import { logger } from '../core/logger.js'
 import { pluginOptions } from '../events/_start.js'
 
 export default async () => {

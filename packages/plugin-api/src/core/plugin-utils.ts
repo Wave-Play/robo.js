@@ -1,5 +1,5 @@
-import { pluginOptions } from '~/events/_start.js'
-import type { BaseEngine } from '~/engines/base.js'
+import { pluginOptions } from '../events/_start.js'
+import type { BaseEngine } from '../engines/base.js'
 
 export let _readyPromiseResolve: () => void
 
