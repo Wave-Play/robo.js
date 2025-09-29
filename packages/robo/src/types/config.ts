@@ -2,6 +2,44 @@ import type { LogDrain, LogLevel } from '../core/logger.js'
 import type { ClientOptions, PermissionsString, ShardingManagerOptions } from 'discord.js'
 import type { CommandContext, CommandIntegrationType, Plugin, SageOptions } from './index.js'
 
+export interface SeedHookGenerators {
+	randomBase64: (bytes?: number) => string
+	randomHex: (bytes?: number) => string
+	randomUUID: () => string
+}
+
+export interface SeedHookHelpers {
+	generators: SeedHookGenerators
+	log: (...args: unknown[]) => void
+}
+
+export type SeedHookHandler = (helpers: SeedHookHelpers) => unknown | Promise<unknown>
+
+export interface SeedEnvVariableConfig {
+	/** Explanation shown to users when prompting for this variable. */
+	description?: string
+	/** Allow overwriting pre-existing keys when seeding. */
+	overwrite?: boolean
+	/** Default value assigned when writing to env files. */
+	value?: string
+}
+
+export interface SeedEnvConfig {
+	/** Summary displayed before prompting for environment values. */
+	description?: string
+	/** Map of variables to seed into detected env files. */
+	variables?: Record<string, SeedEnvVariableConfig | string>
+}
+
+export interface SeedHookConfig {
+	/** Short description of what seeding provides. */
+	description?: string
+	/** Environment variable seeding options for this plugin/project. */
+	env?: SeedEnvConfig
+	/** Custom seeding logic executed prior to file generation. */
+	hook?: SeedHookHandler
+}
+
 export interface Config {
 	clientOptions?: ClientOptions
 	defaults?: {
@@ -22,6 +60,11 @@ export interface Config {
 	}
 	flashcore?: {
 		keyv?: unknown
+		/**
+		 * Separator placed between namespace and key when composing Flashcore keys.
+		 * Defaults to "/".
+		 */
+		namespaceSeparator?: string
 	}
 	invite?: {
 		autoPermissions?: boolean
@@ -38,9 +81,8 @@ export interface Config {
 		node?: '18' | '20' | 'latest'
 	}
 	sage?: false | SageOptions
-	seed?: {
-		description?: string
-	}
+	/** Configure seed helpers that generate starter files and environment values. */
+	seed?: SeedHookConfig
 	timeouts?: {
 		autocomplete?: number
 		commandDeferral?: number

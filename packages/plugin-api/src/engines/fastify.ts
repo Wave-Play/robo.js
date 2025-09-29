@@ -1,6 +1,6 @@
-import { handlePublicFile } from '~/core/handler.js'
+import { handlePublicFile } from '../core/handler.js'
 import { logger } from '../core/logger.js'
-import { RoboRequest, applyParams } from '~/core/robo-request.js'
+import { RoboRequest, applyParams } from '../core/robo-request.js'
 import { BaseEngine } from './base.js'
 import { createReadStream } from 'node:fs'
 import url from 'node:url'

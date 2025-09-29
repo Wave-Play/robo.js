@@ -7,6 +7,9 @@ import type KeyvType from 'keyv'
 // Make sure it's initialized just once
 let _initialized = false
 
+// Separator used between segments when namespace is an array (default '/')
+let _namespaceSeparator = '/'
+
 // Watchers for listening to changes in the store.
 const _watchers = new Map<string, Set<WatcherCallback>>()
 
@@ -17,6 +20,7 @@ interface FlashcoreOptions {
 interface InitFlashcoreOptions {
 	adapter?: FlashcoreAdapter
 	keyvOptions?: unknown
+	namespaceSeparator?: string
 }
 type WatcherCallback<V = unknown> = (oldValue: V, newValue: V) => void | Promise<void>
 
@@ -53,10 +57,7 @@ export const Flashcore = {
 	 * @returns {Promise<boolean> | boolean} - Resolves to a boolean indicating whether the operation was successful.
 	 */
 	delete: (key: string, options?: FlashcoreOptions): Promise<boolean> | boolean => {
-		// If a namespace is provided, prepend it to the key
-		if (options?.namespace) {
-			key = Array.isArray(options.namespace) ? `${options.namespace.join('/')}__${key}` : `${options.namespace}__${key}`
-		}
+		key = _composeKey(key, options?.namespace)
 
 		if (_watchers.has(key)) {
 			const oldValue = Globals.getFlashcoreAdapter().get(key)
@@ -85,11 +86,7 @@ export const Flashcore = {
 	 * @returns {Promise<V> | V} - May return a promise you can await or the value directly.
 	 */
 	get: <V>(key: string, options?: FlashcoreOptions & { default?: unknown }): Promise<V> | V => {
-		// If a namespace is provided, prepend it to the key
-		if (options?.namespace) {
-			key = Array.isArray(options.namespace) ? `${options.namespace.join('/')}__${key}` : `${options.namespace}__${key}`
-		}
-
+		key = _composeKey(key, options?.namespace)
 		return (Globals.getFlashcoreAdapter().get(key) ?? options?.default) as V
 	},
 
@@ -101,9 +98,7 @@ export const Flashcore = {
 	 * @returns - A boolean indicating whether the key exists.
 	 */
 	has: (key: string, options?: FlashcoreOptions): Promise<boolean> | boolean => {
-		if (options?.namespace) {
-			key = `${options.namespace}__${key}`
-		}
+		key = _composeKey(key, options?.namespace)
 		return Globals.getFlashcoreAdapter().has(key)
 	},
 
@@ -115,10 +110,7 @@ export const Flashcore = {
 	 * If no callback is provided, all callbacks associated with the key are removed.
 	 */
 	off: (key: string, callback?: WatcherCallback, options?: FlashcoreOptions) => {
-		// If a namespace is provided, prepend it to the key
-		if (options?.namespace) {
-			key = Array.isArray(options.namespace) ? `${options.namespace.join('/')}__${key}` : `${options.namespace}__${key}`
-		}
+		key = _composeKey(key, options?.namespace)
 
 		if (_watchers.has(key) && callback) {
 			_watchers.get(key)?.delete(callback)
@@ -140,10 +132,7 @@ export const Flashcore = {
 	 * The callback receives the new and old values as arguments.
 	 */
 	on: (key: string, callback: WatcherCallback, options?: FlashcoreOptions) => {
-		// If a namespace is provided, prepend it to the key
-		if (options?.namespace) {
-			key = Array.isArray(options.namespace) ? `${options.namespace.join('/')}__${key}` : `${options.namespace}__${key}`
-		}
+		key = _composeKey(key, options?.namespace)
 
 		if (!_watchers.has(key)) {
 			_watchers.set(key, new Set())
@@ -161,10 +150,7 @@ export const Flashcore = {
 	 * @returns {Promise<boolean> | boolean} - Resolves to a boolean indicating whether the operation was successful.
 	 */
 	set: <V>(key: string, value: V, options?: FlashcoreOptions): Promise<boolean> | boolean => {
-		// If a namespace is provided, prepend it to the key
-		if (options?.namespace) {
-			key = Array.isArray(options.namespace) ? `${options.namespace.join('/')}__${key}` : `${options.namespace}__${key}`
-		}
+		key = _composeKey(key, options?.namespace)
 
 		if (_watchers.has(key) || typeof value === 'function') {
 			// Fetch the old value only when necessary for minimal overhead
@@ -211,13 +197,18 @@ export const Flashcore = {
 	 * @param options - Options for initializing Flashcore, such as custom adapters.
 	 */
 	$init: async (options: InitFlashcoreOptions) => {
-		const { keyvOptions } = options
+		const { keyvOptions, namespaceSeparator } = options
 		logger.debug('Initializing Flashcore with options:', options)
 
 		// Prevent multiple initializations
 		if (_initialized) {
 			logger.debug('Flashcore has already been initialized. Ignoring...')
 			return
+		}
+
+		// Configure separators when provided
+		if (namespaceSeparator && typeof namespaceSeparator === 'string') {
+			_namespaceSeparator = namespaceSeparator
 		}
 
 		try {
@@ -246,4 +237,13 @@ export const Flashcore = {
 
 		_initialized = true
 	}
+}
+
+function _composeKey(key: string, namespace?: string | Array<string>) {
+	if (!namespace) {
+		return key
+	}
+
+	const ns = Array.isArray(namespace) ? namespace.join(_namespaceSeparator) : namespace
+	return `${ns}__${key}`
 }

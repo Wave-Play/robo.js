@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
+import crypto from 'node:crypto'
 import {
 	ApiEntry,
 	BaseConfig,
@@ -8,6 +9,8 @@ import {
 	CommandOption,
 	CommandOptionTypes,
 	Config,
+	SeedEnvVariableConfig,
+	SeedHookHandler,
 	ContextConfig,
 	EventConfig,
 	Manifest,
@@ -85,6 +88,111 @@ const mergeEvents = (baseEvents: Record<string, EventConfig[]>, newEvents: Recor
 	return mergedEvents
 }
 
+
+// Normalize manifest/env hook variable formats into a consistent shape for serialization.
+function normalizeSeedEnvVariables(
+	variables: Record<string, SeedEnvVariableConfig | string> | undefined
+): Record<string, SeedEnvVariableConfig> {
+	const normalized: Record<string, SeedEnvVariableConfig> = {}
+
+	if (!variables) {
+		return normalized
+	}
+
+	for (const [key, value] of Object.entries(variables)) {
+		if (!value && value !== '') {
+			continue
+		}
+
+		if (typeof value === 'string') {
+			normalized[key] = { value }
+		} else if (typeof value === 'object') {
+			normalized[key] = { ...value }
+		}
+	}
+
+	return normalized
+}
+
+/**
+ * Emits an inline seed handler when provided and returns the manifest-safe path.
+ */
+async function resolveSeedHookReference(
+	hook: SeedHookHandler | undefined
+): Promise<string | undefined> {
+	if (!hook) {
+		return undefined
+	}
+
+	return emitInlineSeedHook(hook, 'seed')
+}
+
+/**
+ * Writes the inline handler into the generated seed directory and returns its virtual path.
+ */
+async function emitInlineSeedHook(handler: SeedHookHandler, scope: 'seed' | 'env'): Promise<string> {
+	const inlineDir = path.join('.robo', 'seed', '__inline__')
+	await fs.mkdir(inlineDir, { recursive: true })
+
+	const handlerSource = handler.toString()
+	const hash = crypto.createHash('sha1').update(handlerSource).digest('hex').slice(0, 16)
+	const fileName = `${scope}-${hash}.js`
+	const absolutePath = path.join(inlineDir, fileName)
+	const moduleSource = `const handler = ${handlerSource};\nexport default handler;\n`
+	try {
+		const existing = await fs.readFile(absolutePath, 'utf-8')
+		if (existing === moduleSource) {
+			return path.posix.join('/.robo/seed/__inline__', fileName)
+		}
+	} catch {
+		// ignore
+	}
+
+	await fs.writeFile(absolutePath, moduleSource)
+
+	return path.posix.join('/.robo/seed/__inline__', fileName)
+}
+
+/**
+ * Converts the user config seed definition into the manifest-friendly structure.
+ */
+async function serializeSeedConfig(
+	seed: Config['seed']
+): Promise<Manifest['__robo']['seed'] | undefined> {
+	if (!seed) {
+		return undefined
+	}
+
+	const manifestSeed: Manifest['__robo']['seed'] = {}
+
+	if (seed.description) {
+		manifestSeed.description = seed.description
+	}
+	const hookPath = await resolveSeedHookReference(seed.hook)
+	if (hookPath) {
+		manifestSeed.hook = hookPath
+	}
+
+	if (seed.env) {
+		const env: Manifest['__robo']['seed']['env'] = {}
+
+		if (seed.env.description) {
+			env.description = seed.env.description
+		}
+
+		const variables = normalizeSeedEnvVariables(seed.env.variables)
+		if (Object.keys(variables).length > 0) {
+			env.variables = variables
+		}
+
+		if (Object.keys(env).length > 0) {
+			manifestSeed.env = env
+		}
+	}
+
+	return Object.keys(manifestSeed).length > 0 ? manifestSeed : undefined
+}
+
 export async function generateManifest(generatedDefaults: DefaultGen, type: 'plugin' | 'robo'): Promise<Manifest> {
 	const config = await loadConfig('robo', true)
 	const pluginsManifest = type === 'plugin' ? BASE_MANIFEST : await readPluginManifest(config?.plugins)
@@ -102,14 +210,10 @@ export async function generateManifest(generatedDefaults: DefaultGen, type: 'plu
 			config: redactPluginOptions(config),
 			language: isTypeScript ? 'typescript' : 'javascript',
 			mode: Mode.get(),
-			seed: config.seed
-				? {
-						description: config.seed.description
-				  }
-				: undefined,
-			type: type,
-			updatedAt: new Date().toISOString(),
-			version: packageJson.version
+			seed: await serializeSeedConfig(config.seed),
+		type: type,
+		updatedAt: new Date().toISOString(),
+		version: packageJson.version
 		},
 		api: {
 			...pluginsManifest.api,

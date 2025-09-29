@@ -1,0 +1,111 @@
+{
+	"name": "@robojs/auth",
+	"description": "Authentication plugin for Robo.js powered by Auth.js",
+	"version": "0.0.0",
+	"type": "module",
+	"private": false,
+	"keywords": [
+		"auth",
+		"authentication",
+		"oauth",
+		"nextauth",
+		"robo",
+		"robo.js",
+		"typescript"
+	],
+	"exports": {
+		".": {
+			"types": "./.robo/build/index.d.ts",
+			"default": "./.robo/build/index.js"
+		},
+		"./client": {
+			"types": "./.robo/build/client.d.ts",
+			"default": "./.robo/build/client.js"
+		},
+		"./emails": {
+			"types": "./.robo/build/emails/index.d.ts",
+			"default": "./.robo/build/emails/index.js"
+		},
+		"./emails/*": {
+			"types": "./.robo/build/emails/*.d.ts",
+			"default": "./.robo/build/emails/*.js"
+		},
+		"./providers": {
+			"types": "./.robo/build/providers/index.d.ts",
+			"default": "./.robo/build/providers/index.js"
+		},
+		"./providers/*": {
+			"types": "./.robo/build/providers/*.d.ts",
+			"default": "./.robo/build/providers/*.js"
+		},
+		"./server": {
+			"types": "./.robo/build/server.d.ts",
+			"default": "./.robo/build/server.js"
+		}
+	},
+	"main": ".robo/build/index.js",
+	"types": ".robo/build/index.d.ts",
+	"license": "MIT",
+	"author": "WavePlay <dev@waveplay.com> (waveplay.com)",
+	"contributors": [
+		"Pkmmte Xeleon <pk@waveplay.com>"
+	],
+	"files": [
+		".robo/",
+		"src/",
+		"LICENSE",
+		"README.md"
+	],
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://registry.npmjs.org/"
+	},
+	"scripts": {
+		"build": "robo build plugin",
+		"dev": "robo build plugin --watch",
+		"lint:style": "prettier --write .",
+		"prepublishOnly": "robo build plugin"
+	},
+	"dependencies": {
+		"@auth/core": "^0.40.0",
+		"argon2id": "^1.0.1",
+		"nanoid": "^5.1.6",
+		"zod": "^3.22.4"
+	},
+	"devDependencies": {
+		"@auth/prisma-adapter": "^2.10.0",
+		"@react-email/components": "^0.5.5",
+		"@robojs/server": "workspace:*",
+		"@swc/core": "^1.13.3",
+		"@types/node": "^24.2.1",
+		"discord.js": "^14.21.0",
+		"prettier": "^3.6.2",
+		"react-dom": "^19.1.1",
+		"resend": "^6.1.0",
+		"robo.js": "workspace:*",
+		"typescript": "^5.9.2"
+	},
+	"peerDependencies": {
+		"@prisma/client": "*",
+		"@react-email/components": "*",
+		"@robojs/server": ">=0.6.5",
+		"robo.js": "^0.10.1"
+	},
+	"peerDependenciesMeta": {
+		"@robojs/server": {
+			"optional": false
+		},
+		"robo.js": {
+			"optional": false
+		},
+		"@react-email/components": {
+			"optional": true
+		},
+		"@prisma/client": {
+			"optional": true
+		},
+		"@auth/prisma-adapter": {
+			"optional": true
+		}
+	}
+}

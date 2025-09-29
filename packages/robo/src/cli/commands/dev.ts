@@ -172,7 +172,7 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 
 	// Get state saved to disk as the default
 	const stateStart = Date.now()
-	await Flashcore.$init({ keyvOptions: config.flashcore?.keyv })
+	await Flashcore.$init({ keyvOptions: config.flashcore?.keyv, namespaceSeparator: config.flashcore?.namespaceSeparator })
 	const persistedState = (await Flashcore.get<Record<string, unknown>>(FLASHCORE_KEYS.state)) ?? {}
 	logger.debug(`State loaded in ${Date.now() - stateStart}ms`)
 

@@ -111,6 +111,11 @@ export async function useManifest(options?: UseManifestOptions): Promise<Manifes
 				...middleware,
 				__path: middleware.__path?.replaceAll('\\', path.sep)
 			}))
+
+			if (manifest.__robo?.seed?.hook) {
+				manifest.__robo.seed.hook = manifest.__robo.seed.hook.replaceAll('\\', path.sep)
+			}
+
 		}
 
 		return manifest

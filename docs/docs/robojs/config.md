@@ -124,6 +124,34 @@ Features toggled through the **experimental field** may be unstable and are subj
 
 :::
 
+### `flashcore`
+
+Configure the built-in Flashcore key-value store behavior.
+
+Options:
+
+- `keyv` (unknown): Pass options directly to the underlying Keyv instance when you want to use a Keyv adapter (e.g., SQLite, Postgres) instead of the default file-based adapter.
+- `namespaceSeparator` (string): Separator used to join array-based namespaces into a single path. Defaults to `/`. This does not affect the `__` boundary between the namespace path and the final key.
+
+Example:
+
+```js title="config/robo.mjs"
+import { SQLite } from '@keyv/sqlite'
+
+export default {
+  flashcore: {
+    // Use SQLite via Keyv
+    keyv: {
+      store: new SQLite('sqlite://robo.db')
+    },
+    // Join ['guild123', 'user456'] as 'guild123:user456'
+    namespaceSeparator: ':'
+  }
+}
+```
+
+Note: Changing `namespaceSeparator` after you’ve already written data will not rewrite existing keys. This option is best set for new projects or fresh datasets.
+
 ### `invite`
 
 Configure your Robo's invite options.

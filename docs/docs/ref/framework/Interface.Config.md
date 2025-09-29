@@ -59,6 +59,9 @@ optional flashcore: object;
 | Name | Type |
 | ------ | ------ |
 | `keyv`? | `unknown` |
+| `namespaceSeparator`? | `string` |
+
+Separator used to join array-based Flashcore namespaces. Defaults to `/`. This does not affect the `__` boundary between a namespace and its key.
 
 ***
 
