@@ -141,6 +141,10 @@ export function createServerHandler(router: Router, vite?: ViteDevServer): Serve
 		}
 
 		if (!route?.handler) {
+			if (await tryServeSpaFallback(req, res, parsedUrl.pathname)) {
+				return
+			}
+
 			replyWrapper.code(404).json('API Route not found.')
 			return
 		}
@@ -232,6 +236,65 @@ export async function handlePublicFile(
 	}
 
 	return false
+}
+
+/**
+ * Streams the SPA entry point when a request looks like a client-routed URL.
+ * Only kicks in for GET HTML requests outside the API namespace so real API
+ * calls or static assets still flow through their normal handlers.
+ */
+async function tryServeSpaFallback(
+	req: IncomingMessage,
+	res: ServerResponse<IncomingMessage>,
+	pathname: string | null | undefined
+): Promise<boolean> {
+	if (req.method && req.method !== 'GET') {
+		return false
+	}
+	if (pathname && path.extname(pathname)) {
+		return false
+	}
+	if (!acceptsHtml(req)) {
+		return false
+	}
+	if (isApiPath(pathname)) {
+		return false
+	}
+
+	const publicPath = process.env.NODE_ENV === 'production' ? PublicBuildPath : PublicPath
+	const indexFilePath = path.join(publicPath, 'index.html')
+
+	try {
+		const stats = await stat(indexFilePath)
+		if (!stats.isFile()) {
+			return false
+		}
+	} catch {
+		return false
+	}
+
+	res.setHeader('Content-Type', 'text/html; charset=utf-8')
+	res.setHeader('X-Content-Type-Options', 'nosniff')
+	res.writeHead(200)
+	await pipeline(createReadStream(indexFilePath), res)
+	return true
+}
+
+function acceptsHtml(req: IncomingMessage): boolean {
+	const accept = req.headers?.accept
+	return !accept || accept.includes('text/html')
+}
+
+function isApiPath(pathname: string | null | undefined): boolean {
+	if (!pathname) return false
+	const prefix = pluginOptions.prefix
+	if (prefix === false || prefix === null) {
+		return false
+	}
+	if (!prefix || prefix === '/') {
+		return false
+	}
+	return pathname.startsWith(prefix)
 }
 
 /**
