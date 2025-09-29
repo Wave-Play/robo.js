@@ -13,7 +13,7 @@ import { buildAction } from './build/index.js'
 import { Highlight } from '../../core/constants.js'
 import { Flashcore } from '../../core/flashcore.js'
 import { getPackageExecutor, getPackageManager } from '../utils/runtime-utils.js'
-import { Mode, setMode } from '../../core/mode.js'
+import { Mode, resolveCliMode, setMode } from '../../core/mode.js'
 import { Compiler } from '../utils/compiler.js'
 import { Env } from '../../core/env.js'
 import { Boot } from '../../internal/boot.js'
@@ -61,7 +61,8 @@ async function devAction(_args: string[], options: DevCommandOptions) {
 
 	// Make sure environment variables are loaded for CLI
 	const defaultMode = Mode.get()
-	await Env.load({ mode: defaultMode })
+	const envMode = resolveCliMode(options.mode) ?? defaultMode
+	await Env.load({ mode: envMode })
 
 	// Got an instance ID? Use it
 	if (options['instance-id']) {

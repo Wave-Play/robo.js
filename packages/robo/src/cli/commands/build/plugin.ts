@@ -6,7 +6,7 @@ import { getProjectSize, printBuildSummary } from '../../utils/build-summary.js'
 import { buildAsync } from '../dev.js'
 import path from 'node:path'
 import { Env } from '../../../core/env.js'
-import { Mode, setMode } from '../../../core/mode.js'
+import { Mode, resolveCliMode, setMode } from '../../../core/mode.js'
 import { loadConfig, loadConfigPath } from '../../../core/config.js'
 import Watcher from '../../utils/watcher.js'
 import { buildPublicDirectory } from '../../utils/public.js'
@@ -48,7 +48,8 @@ async function pluginAction(_args: string[], options: PluginCommandOptions) {
 
 	// Make sure environment variables are loaded
 	const defaultMode = Mode.get()
-	await Env.load({ mode: defaultMode })
+	const envMode = resolveCliMode(options.mode) ?? defaultMode
+	await Env.load({ mode: envMode })
 
 	// Handle mode(s)
 	const { shardModes } = setMode(options.mode)
