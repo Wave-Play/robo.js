@@ -4,12 +4,17 @@ import path from 'node:path'
 import { color } from '../../core/color.js'
 import { loadConfig } from '../../core/config.js'
 import { logger } from '../../core/logger.js'
+import type { Manifest } from '../../types/index.js'
 import { Command } from '../utils/cli-handler.js'
 import { createRequire } from 'node:module'
 import { PackageDir, exec } from '../utils/utils.js'
 import { getPackageExecutor, getPackageManager } from '../utils/runtime-utils.js'
 import { Compiler } from '../utils/compiler.js'
 import { Spinner } from '../utils/spinner.js'
+import { applyEnvVariables, detectEnvFiles } from '../utils/env-editor.js'
+import type { EnvApplyResult, EnvFileDescriptor, EnvVariableAssignment } from '../utils/env-editor.js'
+import { runSeedHook } from '../utils/seed-hook.js'
+import type { NormalizedSeedHookResult } from '../utils/seed-hook.js'
 import readline from 'node:readline'
 
 const require = createRequire(import.meta.url)
@@ -172,9 +177,25 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
 	)
 	spinner.stop(false, false)
 
-	// See which plugins have seeds
-	const pluginsWithSeeds = resolvedNames.filter((pkg) => Compiler.hasSeed(pkg))
+	const manifestEntries = await Promise.all(
+		resolvedNames.map(async (pkg) => {
+			const manifestRecord = await loadPluginManifest(pkg)
+			return [pkg, manifestRecord] as const
+		})
+	)
+	const manifestMap: Record<string, ManifestRecord | null> = Object.fromEntries(manifestEntries)
+
+	const seedCandidates = await Promise.all(
+		resolvedNames.map(async (pkg) => ((await pluginHasCopyableSeed(pkg, manifestMap[pkg])) ? pkg : null))
+	)
+	const pluginsWithSeeds = seedCandidates.filter((pkg): pkg is string => pkg !== null)
 	logger.debug(`Plugins with seeds:`, pluginsWithSeeds)
+
+	const { plans: envPlans, duplicates: duplicateEnvKeys } = await buildEnvPlans(
+		resolvedNames,
+		manifestMap,
+		nameMap
+	)
 
 	// Automatically copy files meant to be seeded by the plugin
 	if (seed && options.sync && pluginsWithSeeds.length > 0) {
@@ -184,46 +205,28 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
 		logger.log(Indent, '   Run the following to copy seed files:', '\n   ' + Indent, Highlight(command))
 		logger.log('')
 	} else if (seed && pluginsWithSeeds.length > 0) {
-		const pluginSeeds = await Promise.all(
-			resolvedNames.map(async (pkg) => {
-				const manifest = await Compiler.useManifest({
-					basePath: path.resolve(PackageDir, '..', pkg)
-				})
-				const description = manifest.__robo?.seed?.description
-
-				const display = nameMap[pkg] ?? pkg
-				return `${Indent}    - ${Highlight(display)}${description ? ': ' + description : ''}`
-			})
-		)
+		const pluginSeeds = pluginsWithSeeds.map((pkg) => {
+			const manifestRecord = manifestMap[pkg]
+			const description = manifestRecord?.manifest.__robo?.seed?.description
+			const display = nameMap[pkg] ?? pkg
+			return `${Indent}    - ${Highlight(display)}${description ? ': ' + description : ''}`
+		})
 		logger.log(Indent, color.bold(`🌱 Seed files detected`))
 		logger.log(pluginSeeds.join('\n'), '\n')
-
-		// Consent
-		const promptUser = (question: string): Promise<string> => {
-			const rl = readline.createInterface({
-				input: process.stdin,
-				output: process.stdout
-			})
-
-			return new Promise((resolve) => {
-				rl.question(question, (input) => {
-					rl.close()
-					resolve(input)
-				})
-			})
-		}
 
 		// Ask for consent
 		let seedConsent = options.yes
 		if (!seedConsent) {
-			const response = await promptUser(Indent + `    Would you like to include these files? ${color.dim('[Y/n]')}: `)
+			// Ensure preceding log entries render before the interactive prompt.
+			await logger.flush()
+			const response = await prompt(Indent + `    Would you like to include these files? ${color.dim('[Y/n]')}: `)
 			seedConsent = response.toLowerCase().trim() === 'y'
 			logger.log('')
 		}
 
 		if (seedConsent) {
 			await Promise.all(
-				resolvedNames.map(async (pkg) => {
+				pluginsWithSeeds.map(async (pkg) => {
 					try {
 						await Compiler.useSeed(pkg)
 					} catch (error) {
@@ -231,6 +234,111 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
 					}
 				})
 			)
+		}
+	}
+
+	// Allow plugins to seed environment variables dynamically
+	const envAssignments = envPlans.flatMap((plan) => plan.variables)
+	if (envAssignments.length > 0) {
+		const envFiles = await detectEnvFiles()
+		const envFileSummary = envFiles.map(formatEnvFileTarget).join(', ')
+		logger.log(Indent, color.bold(`🔑 Environment additions detected`))
+		for (const plan of envPlans) {
+			const heading = `${Indent}    - ${Highlight(plan.displayName)}${plan.description ? ': ' + plan.description : ''}`
+			logger.log(heading)
+			for (const variable of plan.variables) {
+				const detail = `${Indent}        ${color.cyan(variable.key)}${variable.description ? color.dim(' – ' + variable.description) : ''}`
+				logger.log(detail)
+			}
+		}
+		logger.log(Indent, color.dim(`    Target files: ${envFileSummary}\n`))
+
+		if (duplicateEnvKeys.length > 0) {
+			for (const duplicate of duplicateEnvKeys) {
+				logger.warn(
+					`Skipping environment variable ${color.bold(duplicate.key)} from ${duplicate.incoming.displayName} because ${duplicate.existing.displayName} already requested it.`
+				)
+			}
+		}
+
+		let envConsent = options.yes
+		if (!envConsent) {
+			const questionTarget = envFiles.length > 1 ? `${envFiles.length} files (${envFileSummary})` : envFileSummary
+			// Flush buffered log output so additions appear before the question.
+			await logger.flush()
+			const response = await prompt(
+				Indent + `    Add these variables to ${questionTarget}? ${color.dim('[Y/n]')}: `
+			)
+			envConsent = response.toLowerCase().trim() === 'y'
+			logger.log('')
+		}
+
+		if (envConsent) {
+			const applyResults = await applyEnvVariables(envFiles, envAssignments)
+			const keyStatus = buildKeyStatus(applyResults)
+			const pluginSummaries = new Map<string, { added: string[]; displayName: string; merged: string[]; skipped: string[] }>()
+
+			for (const plan of envPlans) {
+				pluginSummaries.set(plan.plugin, {
+					added: [],
+					displayName: plan.displayName,
+					merged: [],
+					skipped: []
+				})
+			}
+
+			for (const plan of envPlans) {
+				const summary = pluginSummaries.get(plan.plugin)
+				if (!summary) {
+					continue
+				}
+				for (const variable of plan.variables) {
+					const status = keyStatus.get(variable.key)
+					if (!status) {
+						continue
+					}
+					if (status.updated && status.skipped) {
+						summary.merged.push(variable.key)
+					} else if (status.updated) {
+						summary.added.push(variable.key)
+					} else if (status.skipped) {
+						summary.skipped.push(variable.key)
+					}
+				}
+			}
+
+			logger.log(Indent, color.bold(`🔑 Environment variables applied`))
+			for (const summary of pluginSummaries.values()) {
+				const hasChanges = summary.added.length > 0 || summary.merged.length > 0
+				const heading = hasChanges
+					? HighlightGreen('✔ ' + summary.displayName)
+					: color.dim('- ' + summary.displayName)
+				const details: string[] = []
+				if (summary.added.length > 0) {
+					details.push(`added ${summary.added.join(', ')}`)
+				}
+				if (summary.merged.length > 0) {
+					details.push(`merged ${summary.merged.join(', ')} (kept existing where present)`)
+				}
+				if (summary.skipped.length > 0 && !hasChanges) {
+					details.push(`kept existing ${summary.skipped.join(', ')}`)
+				} else if (summary.skipped.length > 0 && hasChanges) {
+					details.push(`kept existing ${summary.skipped.join(', ')}`)
+				}
+				const detailText = details.length > 0 ? ' ' + details.join('; ') : ''
+				logger.log(`${Indent}    ${heading}${detailText}`)
+			}
+			logger.log('')
+
+			const createdFiles = applyResults.filter((result) => result.created)
+			if (createdFiles.length > 0) {
+				const createdSummary = createdFiles
+					.map((result) => formatRelativeEnvPath(result.file))
+					.join(', ')
+				logger.log(Indent, color.dim(`    Created new files: ${createdSummary}`))
+			}
+		} else {
+			logger.log(Indent, color.dim('Skipping environment variable additions.'))
 		}
 	}
 
@@ -292,4 +400,340 @@ function inferNameFromUrl(spec: string): string | null {
 	} catch {
 		return null
 	}
+}
+
+interface EnvPlan {
+	description?: string
+	displayName: string
+	plugin: string
+	variables: EnvVariableAssignment[]
+}
+
+interface EnvDuplicateNotice {
+	existing: {
+		displayName: string
+		plugin: string
+	}
+	incoming: {
+		displayName: string
+		plugin: string
+	}
+	key: string
+}
+
+interface ManifestRecord {
+	basePath: string
+	manifest: Manifest
+}
+
+interface KeyStatus {
+	skipped: boolean
+	updated: boolean
+}
+
+async function buildEnvPlans(
+	packages: string[],
+	manifestMap: Record<string, ManifestRecord | null>,
+	displayNames: Record<string, string>
+): Promise<{
+		duplicates: EnvDuplicateNotice[]
+		keyOwnership: Map<string, { displayName: string; plugin: string }>
+		plans: EnvPlan[]
+	}> {
+	const plans: EnvPlan[] = []
+	const keyOwnership = new Map<string, { displayName: string; plugin: string }>()
+	const duplicates: EnvDuplicateNotice[] = []
+
+	for (const pkg of packages) {
+		const manifestRecord = manifestMap[pkg]
+		if (!manifestRecord) {
+			continue
+		}
+
+		const { manifest, basePath } = manifestRecord
+
+		let hookResult: NormalizedSeedHookResult | null = null
+		try {
+			hookResult = await runSeedHook(pkg, manifest, basePath)
+		} catch (error) {
+			logger.warn(`Seed hook for ${pkg} failed:`, error)
+		}
+
+		const assignments = collectEnvAssignments(manifest, hookResult)
+		if (assignments.length === 0) {
+			continue
+		}
+
+		const displayName = displayNames[pkg] ?? pkg
+		const planVariables: EnvVariableAssignment[] = []
+
+		for (const assignment of assignments) {
+			const existing = keyOwnership.get(assignment.key)
+			if (existing) {
+				duplicates.push({
+					existing,
+					incoming: { displayName, plugin: pkg },
+					key: assignment.key
+				})
+				continue
+			}
+
+			keyOwnership.set(assignment.key, { displayName, plugin: pkg })
+			planVariables.push(assignment)
+		}
+
+		if (planVariables.length > 0) {
+			plans.push({
+				description: hookResult?.env?.description ?? manifest.__robo?.seed?.env?.description,
+				displayName,
+				plugin: pkg,
+				variables: planVariables
+			})
+		}
+	}
+
+	return { duplicates, keyOwnership, plans }
+}
+
+async function pluginHasCopyableSeed(
+	packageName: string,
+	manifestRecord: ManifestRecord | null
+): Promise<boolean> {
+	if (!manifestRecord) {
+		return false
+	}
+
+	const seedDir = path.join(manifestRecord.basePath, '.robo', 'seed')
+
+	try {
+		const stats = await fs.stat(seedDir)
+		if (!stats.isDirectory()) {
+			return false
+		}
+	} catch {
+		return false
+	}
+
+	const hookPath = manifestRecord.manifest.__robo?.seed?.env?.hook ?? manifestRecord.manifest.__robo?.seed?.hook
+	const excludePaths = new Set(resolveHookAbsolutePaths(manifestRecord.basePath, hookPath))
+	const identifiesAsTypeScript = manifestRecord.manifest.__robo?.language === 'typescript'
+	const { isTypeScript } = Compiler.isTypescriptProject()
+	const excludeExts = identifiesAsTypeScript && isTypeScript ? ['.js', '.jsx'] : ['.ts', '.tsx']
+
+	const skipDirs = new Set([path.join(seedDir, '_root'), path.join(seedDir, '__inline__')])
+	const mainDirHasFiles = await directoryHasCopyableFiles(seedDir, excludeExts, excludePaths, skipDirs)
+	if (mainDirHasFiles) {
+		return true
+	}
+
+	const rootHasFiles = await directoryHasCopyableFiles(path.join(seedDir, '_root'), [], excludePaths)
+	return rootHasFiles
+}
+
+async function directoryHasCopyableFiles(
+	dir: string,
+	excludeExts: string[],
+	excludePaths: Set<string>,
+	skipDirs?: Set<string>
+): Promise<boolean> {
+	if (!dir) {
+		return false
+	}
+
+	let entries
+	try {
+		entries = await fs.readdir(dir, { withFileTypes: true })
+	} catch {
+		return false
+	}
+
+	for (const entry of entries) {
+		const fullPath = path.join(dir, entry.name)
+
+		if (excludePaths.has(fullPath)) {
+			continue
+		}
+
+		if (entry.isDirectory()) {
+			if (skipDirs?.has(fullPath)) {
+				continue
+			}
+
+			if (await directoryHasCopyableFiles(fullPath, excludeExts, excludePaths)) {
+				return true
+			}
+		} else {
+			if (excludeExts.includes(path.extname(entry.name))) {
+				continue
+			}
+
+			return true
+		}
+	}
+
+	return false
+}
+
+function resolveHookAbsolutePaths(basePath: string, hookPath?: string): string[] {
+	if (!hookPath) {
+		return []
+	}
+
+	let normalized = hookPath.startsWith('/') ? hookPath.slice(1) : hookPath
+	normalized = normalized.replace(/^\.\/+/, '')
+	normalized = normalized.replace(/\\/g, '/')
+	const absolute = path.resolve(basePath, normalized)
+	const results = new Set<string>([absolute])
+
+	const jsMatch = absolute.match(/\.(m|c)?js$/)
+	if (jsMatch) {
+		const prefix = absolute.slice(0, -jsMatch[0].length)
+		results.add(prefix + '.ts')
+		results.add(prefix + '.tsx')
+	}
+
+	return Array.from(results)
+}
+
+
+function collectEnvAssignments(
+	manifest: Manifest,
+	hookResult: NormalizedSeedHookResult | null
+): EnvVariableAssignment[] {
+	const manifestVariables = manifest.__robo?.seed?.env?.variables ?? {}
+	const hookVariables = hookResult?.env?.variables ?? {}
+	const keys = new Set<string>([...Object.keys(manifestVariables), ...Object.keys(hookVariables)])
+	const assignments: EnvVariableAssignment[] = []
+
+	for (const key of keys) {
+		const manifestValue = manifestVariables[key]
+		const hookValue = hookVariables[key]
+		let value: string | undefined
+		let description: string | undefined
+		let overwrite: boolean | undefined
+
+		if (hookValue && typeof hookValue === 'object') {
+			value = hookValue.value
+			description = hookValue.description ?? description
+			overwrite = hookValue.overwrite
+		}
+
+		if (value === undefined) {
+			if (typeof manifestValue === 'string') {
+				value = manifestValue
+			} else if (manifestValue && typeof manifestValue === 'object') {
+				value = manifestValue.value
+				description = manifestValue.description ?? description
+				overwrite = manifestValue.overwrite ?? overwrite
+			}
+		}
+
+		if (manifestValue && typeof manifestValue === 'object') {
+			if (!description && manifestValue.description) {
+				description = manifestValue.description
+			}
+			if (overwrite === undefined && typeof manifestValue.overwrite === 'boolean') {
+				overwrite = manifestValue.overwrite
+			}
+		}
+
+		if (typeof value !== 'string') {
+			continue
+		}
+
+		if (hookValue && typeof hookValue === 'object' && hookValue.description && !description) {
+			description = hookValue.description
+		}
+
+		assignments.push({
+			description,
+			key,
+			overwrite,
+			value
+		})
+	}
+
+	assignments.sort((a, b) => a.key.localeCompare(b.key))
+	return assignments
+}
+
+async function loadPluginManifest(pkg: string): Promise<ManifestRecord | null> {
+	const candidates = getPluginBasePathCandidates(pkg)
+	for (const basePath of candidates) {
+		const manifestPath = path.join(basePath, '.robo', 'manifest.json')
+		if (!(await fileExists(manifestPath))) {
+			continue
+		}
+		try {
+			const manifest = await Compiler.useManifest({ basePath, name: pkg, safe: true })
+			return { basePath, manifest }
+		} catch (error) {
+			logger.debug(`Failed to load manifest for ${pkg} at ${manifestPath}:`, error)
+		}
+	}
+
+	return null
+}
+
+function getPluginBasePathCandidates(pkg: string): string[] {
+	const candidates = new Set<string>()
+	if (pkg.startsWith('.') || pkg.startsWith('/')) {
+		candidates.add(path.resolve(process.cwd(), pkg))
+	} else {
+		candidates.add(path.resolve(PackageDir, '..', pkg))
+		candidates.add(path.resolve(process.cwd(), 'node_modules', pkg))
+	}
+	return Array.from(candidates)
+}
+
+async function fileExists(filePath: string): Promise<boolean> {
+	try {
+		const stat = await fs.stat(filePath)
+		return stat.isFile()
+	} catch {
+		return false
+	}
+}
+
+function formatEnvFileTarget(file: EnvFileDescriptor): string {
+	const relative = formatRelativeEnvPath(file.path)
+	return file.exists ? relative : `${relative} (new)`
+}
+
+function formatRelativeEnvPath(filePath: string): string {
+	const relative = path.relative(process.cwd(), filePath)
+	return relative === '' ? '.env' : relative
+}
+
+function buildKeyStatus(results: EnvApplyResult[]): Map<string, KeyStatus> {
+	const statusMap = new Map<string, KeyStatus>()
+
+	for (const result of results) {
+		for (const key of result.updated) {
+			const entry = statusMap.get(key) ?? { skipped: false, updated: false }
+			entry.updated = true
+			statusMap.set(key, entry)
+		}
+		for (const key of result.skipped) {
+			const entry = statusMap.get(key) ?? { skipped: false, updated: false }
+			entry.skipped = true
+			statusMap.set(key, entry)
+		}
+	}
+
+	return statusMap
+}
+
+function prompt(question: string): Promise<string> {
+	const rl = readline.createInterface({
+		input: process.stdin,
+		output: process.stdout
+	})
+
+	return new Promise((resolve) => {
+		rl.question(question, (input) => {
+			rl.close()
+			resolve(input)
+		})
+	})
 }

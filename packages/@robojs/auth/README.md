@@ -44,6 +44,8 @@ export default <AuthPluginOptions>{
 }
 ```
 
+Running `npx robo add @robojs/auth` now offers to add an `AUTH_SECRET` entry to every `.env`/`.env.*` mode in your project. Accepting the prompt generates a fresh 64-character secret so you start with secure defaults instead of the sample token from the docs.
+
 Boot Robo.js and point your UI at `/api/auth` (customise via `basePath`). Robo will index the plugin, scaffold the REST routes, enable the built-in email/password flow, and keep Auth.js callbacks/event hooks in sync with your configuration.
 
 Prefer Prisma over Flashcore? Swap the adapter and keep the rest of your config untouched by exporting from the same `config/plugins/robojs/auth.ts` entry point:
