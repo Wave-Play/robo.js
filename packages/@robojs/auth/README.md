@@ -232,6 +232,7 @@ You control how verification and transactional emails go out:
 - **Custom mailer** – provide `emails.mailer` or `emails.triggers` entries that call straight into your favorite SDK (Resend, SES, SendGrid, etc.).
 - **Auth.js mailer modules** – point `emails.mailer` to a module export `{ module: 'resend', export: 'Resend' }` so the plugin loads it for you at runtime.
 - **React templates** – attach `emails.templates['password:reset-request'] = { react: (ctx) => <MyEmail ctx={ctx} /> }` and Robo will render it with `@react-email/components` + `react-dom/server` on demand.
+- **Disable defaults** – set `emails.templates['user:created'] = false` (or any other event) to suppress that automatic email without affecting the rest.
 
 ```ts
 export default {

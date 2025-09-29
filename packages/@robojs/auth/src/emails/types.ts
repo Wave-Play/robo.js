@@ -75,5 +75,8 @@ export type TemplateConfig =
 			variables?: (ctx: EmailContext) => Record<string, unknown>
 	  }
 
+/** User-supplied override that can disable a template entirely when set to `false`. */
+export type TemplateOverride = TemplateConfig | false
+
 /** Builder used to assemble a message on-demand. */
 export type EmailBuilder = (ctx: EmailContext) => MailMessage | null | Promise<MailMessage | null>

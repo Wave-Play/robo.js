@@ -6,6 +6,7 @@ import type {
 	EmailContext,
 	MailParty,
 	TemplateConfig,
+	TemplateOverride,
 	TemplateValue
 } from './types.js'
 import { DefaultWelcomeTemplate } from './templates/welcome.js'
@@ -22,7 +23,7 @@ type ModuleMailerSpec = { module: string; export?: string }
 type EmailsConfig = {
 	from?: MailParty
 	mailer?: AuthMailer | (() => Promise<AuthMailer> | AuthMailer) | ModuleMailerSpec
-	templates?: Partial<Record<AuthEmailEvent, TemplateConfig>>
+	templates?: Partial<Record<AuthEmailEvent, TemplateOverride>>
 	triggers?: Partial<Record<AuthEmailEvent, EmailBuilder | EmailBuilder[]>>
 }
 
@@ -129,7 +130,12 @@ export class EmailManager {
 	}
 
 	private templateBuilderIfAny(event: AuthEmailEvent): EmailBuilder[] {
-		const userT = this.templates[event]
+		const override = this.templates[event]
+		if (override === false) {
+			this.logger.debug('Email template disabled; skipping default builder', { event })
+			return []
+		}
+		const userT = override
 		const defaultT = this.getDefaultTemplate(event)
 		let t: TemplateConfig | undefined
 		if (userT) {

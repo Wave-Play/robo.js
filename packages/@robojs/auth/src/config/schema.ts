@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import type { AuthMailer, MailParty, AuthEmailEvent, EmailBuilder, TemplateConfig } from '../emails/types.js'
+import type { AuthMailer, MailParty, AuthEmailEvent, EmailBuilder, TemplateOverride } from '../emails/types.js'
 
 const functionSchema = z.function().args(z.any()).returns(z.any())
 
@@ -129,7 +129,7 @@ export const authPluginOptionsSchema = z
 export interface EmailsOptions {
 	from?: MailParty
 	mailer?: AuthMailer | (() => Promise<AuthMailer> | AuthMailer) | { module: string; export?: string }
-	templates?: Partial<Record<AuthEmailEvent, TemplateConfig>>
+	templates?: Partial<Record<AuthEmailEvent, TemplateOverride>>
 	triggers?: Partial<Record<AuthEmailEvent, EmailBuilder | EmailBuilder[]>>
 }
 
