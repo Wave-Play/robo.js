@@ -715,28 +715,6 @@ importers:
         specifier: ^5.7.2
         version: 5.7.2
 
-  temp/register-1:
-    dependencies:
-      discord.js:
-        specifier: ^14.22.1
-        version: 14.22.1
-      robo.js:
-        specifier: link:/Users/pkmmte/Documents/GitHub/robo.js/packages/robo
-        version: link:../../packages/robo
-    devDependencies:
-      '@swc/core':
-        specifier: ^1.13.5
-        version: 1.13.5
-      '@types/node':
-        specifier: ^24.5.2
-        version: 24.5.2
-      prettier:
-        specifier: ^3.6.2
-        version: 3.6.2
-      typescript:
-        specifier: ^5.9.2
-        version: 5.9.2
-
 packages:
 
   /@ampproject/remapping@2.3.0:

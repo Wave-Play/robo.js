@@ -32,6 +32,8 @@ export async function buildCode(options?: BuildCodeOptions) {
 		? path.join(process.cwd(), options.distDir)
 		: path.join(process.cwd(), '.robo', 'build')
 
+	options.excludePaths = options.excludePaths?.map((p) => path.normalize(p)) ?? []
+
 	// Force load compilers for Bun in plugin builds
 	if (IS_BUN_RUNTIME && options?.plugin) {
 		await preloadTransformers()
