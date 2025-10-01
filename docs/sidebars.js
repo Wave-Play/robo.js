@@ -295,6 +295,7 @@ const sidebars = {
 			items: [
 				'templates/web-apps/discord-auth-ts',
 				'templates/web-apps/react-js',
+				'templates/web-apps/next-ts',
 				'templates/web-apps/react-ts',
 				'templates/web-apps/svelte-js',
 				'templates/web-apps/svelte-ts'

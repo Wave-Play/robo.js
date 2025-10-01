@@ -249,6 +249,7 @@ const config = {
 					'templates/discord-bots/tagbot/README.md',
 					'templates/plugins/starter-js/README.md',
 					'templates/web-apps/discord-auth-ts/README.md',
+					'templates/web-apps/next-ts/README.md',
 					'templates/web-apps/react-js/README.md',
 					'templates/web-apps/react-ts/README.md',
 					'templates/web-apps/svelte-js/README.md',

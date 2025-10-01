@@ -14,6 +14,7 @@
 ## Type Aliases
 
 - [HttpMethod](TypeAlias.HttpMethod.md)
+- [NotFoundHandler](TypeAlias.NotFoundHandler.md)
 - [RouteHandler](TypeAlias.RouteHandler.md)
 - [WebSocketHandler](TypeAlias.WebSocketHandler.md)
 

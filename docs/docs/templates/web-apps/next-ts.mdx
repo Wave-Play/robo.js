@@ -1,8 +1,8 @@
-<p align="center">✨ <strong>Generated with <a href="https://robojs.dev/create-robo">create-robo</a> magic!</strong> ✨</p>
+import { Card } from '@site/src/components/shared/Card'
+import { CardContainer } from '@site/src/components/shared/CardContainer'
+import { Terminal } from '@site/src/components/shared/Terminal'
 
----
-
-# Web App - Next (TS)
+# Next (TS)
 
 Meet the **Next.js edition** of our web-app template! If you’ve used the
 [`react-ts`](https://robojs.dev/templates/web-apps/react-ts) starter before, this
@@ -13,50 +13,23 @@ Components, and production tooling.
 
 _Ready to embark on this adventure?_
 
-## Table of Contents
+<CardContainer><Card href="https://robojs.dev/discord-activities" title="📚 Documentation" description="Getting started with Robo.js"/>
+<Card href="https://robojs.dev/discord" title="✨ Discord" description="Robo - Imagine Magic"/>
+<Card href="https://robojs.dev/plugins/create" title="🔗 Templates" description="Kickstart your project with a template."/>
+<Card href="https://dev.to/waveplay" title="📖 Tutorials" description="Learn how to create epic experiences."/></CardContainer>
 
-- [🔗 Quick Links](#🔗-quick-links)
-- [✨ Getting Started](#✨-getting-started)
-- [🛠️ App Development](#️🛠️-app-development)
-- [🔒 Authentication](#🔒-authentication)
-- [🛠️ Backend Development](#️🛠️-backend-development)
-- [📁 Folder Structure](#📁-folder-structure)
-- [🔌 Ecosystem](#ecosystem)
-- [🚀 Building & Hosting](#building--hosting)
+## Running
 
-## 🔗 Quick Links
+Run development mode with:
 
-- [📚 **Documentation:** Getting started with Robo.js](https://robojs.dev/discord-activities)
-- [✨ **Discord:** Robo - Imagine Magic](https://robojs.dev/discord)
-- [🔗 **Templates:** Kickstart your project with a template.](https://robojs.dev/plugins/create)
-- [📖 **Tutorials:** Learn how to create epic experiences.](https://dev.to/waveplay)
+<Terminal>{`npm run dev`}</Terminal>
 
-## ✨ Getting Started
+> **Notes:** A free Cloudflare tunnel is included for easy testing. You can copy and paste it into activity's **[URL mapping](https://robojs.dev/discord-activities/proxy#url-mapping)** to test things out.
 
-Create a project with this template, replacing `<project-name>` with your desired name:
+<CardContainer><Card href="https://robojs.dev/discord-bots/beginner-guide" title="🔰 Beginner Guide" description="New to Discord Bots with Robo? Start here!"/>
+<Card href="https://robojs.dev/robojs/mode#default-modes" title="🎭 Run Modes" description="Define profiles for your Robo session."/></CardContainer>
 
-```bash
-npx create-robo --template web-apps/next-ts --name <project-name>
-```
-
-Then navigate into your project directory:
-
-```bash
-cd <project-name>
-```
-
-Run development mode:
-
-```bash
-npm run dev
-```
-
-> **Notes:** A free Cloudflare tunnel is included for easy testing.
-
-- [📚 **Documentation:** Exploring Different Run Modes](https://robojs.dev/robojs/mode#default-modes)
-- [🚀 **Hosting:** Deploy your web app for others to use.](https://robojs.dev/hosting/overview)
-
-## App Development 🛠️
+## App Development ️
 
 You can find your client-side code in the `/src/app` folder. This is where you can build your web app using React, Vue, or any other front-end framework.
 
@@ -82,9 +55,9 @@ The React template makes it easy to authenticate your activity with Discord. The
 
 You can then get the SDK and other goodies from the `useDiscordSdk` hook!
 
-- [🔒 **Authentication:** Customize your user experience.](https://robojs.dev/discord-activities/authentication)
+<CardContainer><Card href="https://robojs.dev/discord-activities/authentication" title="🔒 Authentication" description="Customize your user experience."/></CardContainer>
 
-## Backend Development 🛠️
+## Backend Development ️
 
 Your server-side code is located in the `/src/api` folder. This is where you can build your API, webhooks, and other fancy server-side features.
 
@@ -101,9 +74,9 @@ export default () => {
 }
 ```
 
-- [🔌 **@robojs/server:** Create and manage web pages, APIs, and more.](https://robojs.dev/plugins/server)
+<CardContainer><Card href="https://robojs.dev/plugins/server" title="🔌 @robojs/server" description="Create and manage web pages, APIs, and more."/></CardContainer>
 
-## Folder Structure 📁
+## Folder Structure 
 
 While the `api` and `app` folders are reserved for your server and client-side code, you are free to create anything else in the `/src` directory!
 
@@ -113,26 +86,22 @@ Folders only become reserved when you install a plugin that uses them. For examp
 
 By building with **Robo.js**, you gain access to a growing ecosystem of **[plugins](https://robojs.dev/plugins/directory)**, **[templates](https://robojs.dev/templates/overview)**, and **[tools](https://robojs.dev/cli/overview)**. **[Robo Plugins](https://robojs.dev/plugins/overview)** are special. They can add features with one command.
 
-```bash
-npx robo add @robojs/ai @robojs/sync
-```
+<Terminal execute>{`robo add @robojs/ai @robojs/sync`}</Terminal>
 
 Plugins integrate seamlessly thanks to the **[Robo File Structure](https://robojs.dev/discord-bots/file-structure)**. What's more, anyone can **[create a plugin](https://robojs.dev/plugins/create)**.
 
-- [🔌 **Robo Plugins:** Add features to your Robo seamlessly.](https://robojs.dev/plugins/install)
-- [🔌 **Creating Plugins:** Make your own plugins for Robo.js.](https://robojs.dev/plugins/create)
-- [🗃️ **Plugin Directory:** Browse plugins for your Robo.](https://robojs.dev/plugins/create)
-- [🔗 **Templates:** Kickstart your project with a template.](https://robojs.dev/plugins/create)
+<CardContainer><Card href="https://robojs.dev/plugins/install" title="🔌 Robo Plugins" description="Add features to your Robo seamlessly."/>
+<Card href="https://robojs.dev/plugins/create" title="🔌 Creating Plugins" description="Make your own plugins for Robo.js."/>
+<Card href="https://robojs.dev/plugins/create" title="🗃️ Plugin Directory" description="Browse plugins for your Robo."/>
+<Card href="https://robojs.dev/plugins/create" title="🔗 Templates" description="Kickstart your project with a template."/></CardContainer>
 
 ## Building & Hosting
 
 When you’re ready for production you’ll want both halves of the project
 compiled:
 
-```bash
-npx next build
-npx robo build
-```
+<Terminal execute>{`next build
+npx robo build`}</Terminal>
 
 `next build` generates the optimized React output while `robo build` packages
 your Robo server, commands, and plugins. Run both before deploying to your
@@ -144,9 +113,12 @@ preferred platform.
 
 You can host on any platform that supports **Node.js**, or run [`robo deploy`](https://robojs.dev/cli/robo#distributing) to host on **[RoboPlay](https://roboplay.dev)** - a hosting platform optimized for **Robo.js**.
 
-```bash
-npm run deploy
-```
+<Terminal>{`npm run deploy`}</Terminal>
 
-- [🚀 **RoboPlay:** Deploy with as little as one command.](https://robojs.dev/hosting/roboplay)
-- [🛠️ **Self-Hosting:** Learn how to host and maintain it yourself.](https://robojs.dev/hosting/overview)
+<CardContainer><Card href="https://robojs.dev/hosting/roboplay" title="🚀 RoboPlay" description="Deploy with as little as one command."/>
+<Card href="https://robojs.dev/hosting/overview" title="🛠️ Self-Hosting" description="Learn how to host and maintain it yourself."/>
+</CardContainer>
+
+## Learn More
+
+<CardContainer><Card href="/templates/overview" title="📦 Explore Templates" description="Discover more templates for a quick start."/><Card href="https://github.com/Wave-Play/robo.js/tree/main/templates/web-apps/next-ts" title="🔗 GitHub Repository" description="Explore source code on GitHub."/></CardContainer>
