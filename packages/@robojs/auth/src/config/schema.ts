@@ -121,6 +121,7 @@ const upstreamSchema = z
  */
 export const authPluginOptionsSchema = z
 	.object({
+		appName: z.string().optional(),
 		adapter: z.unknown().optional(),
 		allowDangerousEmailAccountLinking: z.boolean().optional(),
 		basePath: z.string().optional(),

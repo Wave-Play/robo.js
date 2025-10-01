@@ -35,6 +35,7 @@ import type { AuthPluginOptions } from '@robojs/auth'
 
 export default <AuthPluginOptions>{
   secret: process.env.AUTH_SECRET,
+  appName: 'Acme Dashboard',
   adapter: createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! }),
   providers: [
     google({ clientId: process.env.GOOGLE_ID!, clientSecret: process.env.GOOGLE_SECRET! }),
@@ -60,6 +61,7 @@ const prisma = new PrismaClient()
 
 export default <AuthPluginOptions>{
 	secret: process.env.AUTH_SECRET,
+	appName: 'Acme Dashboard',
 	adapter: createPrismaAdapter({
 		client: prisma,
 		secret: process.env.AUTH_SECRET!
@@ -88,6 +90,7 @@ The Prisma adapter stays compatible with Auth.js' recommended schema while layer
 | Option | Default | Notes |
 | ------ | ------- | ----- |
 | `basePath` | `/api/auth` | Prefix for generated routes. |
+| `appName` | `'Robo.js'` | Display name injected into default emails and available as `ctx.appName`. |
 | `secret` | _required in prod_ | Used for JWT + token hashing. Reads `AUTH_SECRET`/`NEXTAUTH_SECRET`. |
 | `url` | env (`AUTH_URL`/`NEXTAUTH_URL`) or `http://localhost:3000` | Canonical URL for Auth.js callbacks. |
 | `redirectProxyUrl` | `AUTH_REDIRECT_PROXY_URL` | Useful for preview deployments. |

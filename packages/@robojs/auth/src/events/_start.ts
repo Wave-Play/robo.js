@@ -321,6 +321,7 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 				}
 
 				await notifyEmail('user:created', {
+					appName: options.appName,
 					user: {
 						id: String((message as { user?: { id?: string } })?.user?.id ?? ''),
 						email: message.user.email ?? null,
@@ -353,6 +354,7 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 			if (providerId !== 'credentials') {
 				try {
 					await notifyEmail('session:created', {
+						appName: options.appName,
 						user: {
 							id: uid,
 							email: message.user?.email ?? null,

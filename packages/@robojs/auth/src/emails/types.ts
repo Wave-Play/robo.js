@@ -12,6 +12,7 @@ export type MailParty = string | { name?: string; address: string }
 
 /** Data passed to email templates and builders. */
 export type EmailContext = {
+	appName: string
 	user: { id: string; email?: string | null; name?: string | null }
 	session?: { id?: string | null; ip?: string | null; userAgent?: string | null }
 	tokens?: { verifyEmail?: string; resetPassword?: string }

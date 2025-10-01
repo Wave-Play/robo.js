@@ -44,14 +44,15 @@ function renderPasswordResetPage(params: {
 	token: string | null
 	identifier: string | null
 	signInUrl: string
+	appName: string
 	message?: PasswordResetMessage
 }): string {
-	const { actionUrl, token, identifier, signInUrl, message } = params
+	const { actionUrl, token, identifier, signInUrl, message, appName } = params
 	const hasToken = Boolean(token && identifier)
-	const title = hasToken ? 'Set a new password' : 'Reset link invalid'
+	const title = hasToken ? `Set a new ${appName} password` : `${appName} reset link invalid`
 	const bodyCopy = hasToken
-		? 'Choose a new password for your account.'
-		: 'This reset link is missing required details or may have expired.'
+		? `Choose a new password for your ${appName} account.`
+		: `This ${appName} reset link is missing required details or may have expired.`
 	const safeAction = escapeHtml(actionUrl)
 	const safeSignInUrl = escapeHtml(signInUrl)
 	const safeToken = token ? escapeHtml(token) : ''
@@ -133,7 +134,7 @@ function registerSignupRoute(options: EmailPasswordRuntimeOptions): void {
 	})
 
 	const signupPath = joinPath(basePath, '/signup')
-	Server.registerRoute(signupPath, async (request: RoboRequest) => {
+	Server.get()?.registerRoute(signupPath, async (request: RoboRequest) => {
 		const method = request.method?.toUpperCase() ?? 'GET'
 		if (method === 'OPTIONS') {
 			return new Response(null, {
@@ -179,7 +180,7 @@ function registerVerifyEmailRoutes(options: EmailPasswordRuntimeOptions): void {
 	const { adapter, basePath, baseUrl, options: pluginOptions } = options
 
 	const verifyConfirmPath = joinPath(basePath, '/verify-email/confirm')
-	Server.registerRoute(verifyConfirmPath, async (request: RoboRequest) => {
+	Server.get()?.registerRoute(verifyConfirmPath, async (request: RoboRequest) => {
 		const url = new URL(request.url)
 		const token = url.searchParams.get('token') ?? undefined
 		const identifier = url.searchParams.get('identifier') ?? undefined
@@ -199,6 +200,7 @@ function registerVerifyEmailRoutes(options: EmailPasswordRuntimeOptions): void {
 			await adapter.updateUser?.({ ...user, emailVerified: new Date() })
 			try {
 				await notifyEmail('email:verified', {
+					appName: pluginOptions.appName,
 					user: { id: user.id, email: user.email ?? null, name: user.name ?? null },
 					request: { origin: baseUrl }
 				})
@@ -213,7 +215,7 @@ function registerVerifyEmailRoutes(options: EmailPasswordRuntimeOptions): void {
 	})
 
 	const verifyPagePath = joinPath(basePath, '/verify-email')
-	Server.registerRoute(verifyPagePath, async (request: RoboRequest) => {
+	Server.get()?.registerRoute(verifyPagePath, async (request: RoboRequest) => {
 		const url = new URL(request.url)
 		const status = url.searchParams.get('status')
 		const error = url.searchParams.get('error')
@@ -236,7 +238,7 @@ function registerVerifyEmailRoutes(options: EmailPasswordRuntimeOptions): void {
 	})
 
 	const verifyRequestPath = joinPath(basePath, '/verify-email/request')
-	Server.registerRoute(verifyRequestPath, async (request: RoboRequest) => {
+	Server.get()?.registerRoute(verifyRequestPath, async (request: RoboRequest) => {
 		const method = request.method?.toUpperCase() ?? 'GET'
 		if (method !== 'POST') return new Response(null, { status: 405, headers: { Allow: 'POST' } })
 		try {
@@ -261,6 +263,7 @@ function registerVerifyEmailRoutes(options: EmailPasswordRuntimeOptions): void {
 					url.searchParams.set('identifier', email)
 					try {
 						await notifyEmail('email:verification-requested', {
+							appName: pluginOptions.appName,
 							user: { id: user.id, email: user.email ?? null, name: user.name ?? null },
 							links: { verifyEmail: url.toString() },
 							request: { origin: baseUrl }
@@ -292,7 +295,7 @@ function registerPasswordResetRoutes(options: EmailPasswordRuntimeOptions): void
 	} = options
 
 	const resetRequestPath = joinPath(basePath, '/password/reset/request')
-	Server.registerRoute(resetRequestPath, async (request: RoboRequest) => {
+	Server.get()?.registerRoute(resetRequestPath, async (request: RoboRequest) => {
 		const method = request.method?.toUpperCase() ?? 'GET'
 		if (method !== 'POST') return new Response(null, { status: 405, headers: { Allow: 'POST' } })
 		const payload = await getRequestPayload(request)
@@ -318,6 +321,7 @@ function registerPasswordResetRoutes(options: EmailPasswordRuntimeOptions): void
 						url.searchParams.set('identifier', email)
 						try {
 							await notifyEmail('password:reset-requested', {
+								appName: pluginOptions.appName,
 								user: { id: user.id, email: user.email ?? null, name: user.name ?? null },
 								links: { resetPassword: url.toString() },
 								request: { origin: baseUrl }
@@ -351,7 +355,7 @@ function registerPasswordResetRoutes(options: EmailPasswordRuntimeOptions): void
 	})
 
 	const resetConfirmPath = joinPath(basePath, '/password/reset/confirm')
-	Server.registerRoute(resetConfirmPath, async (request: RoboRequest) => {
+	Server.get()?.registerRoute(resetConfirmPath, async (request: RoboRequest) => {
 		const method = request.method?.toUpperCase() ?? 'GET'
 		const payload = await getRequestPayload(request)
 		const runDefault = async () => {
@@ -365,6 +369,7 @@ function registerPasswordResetRoutes(options: EmailPasswordRuntimeOptions): void
 					token,
 					identifier,
 					signInUrl: new URL(pluginOptions.pages?.signIn ?? '/signin', baseUrl).toString(),
+					appName: pluginOptions.appName,
 					message: hasToken
 						? undefined
 						: {
@@ -395,6 +400,7 @@ function registerPasswordResetRoutes(options: EmailPasswordRuntimeOptions): void
 						token: fields?.token ?? null,
 						identifier: fields?.identifier ?? null,
 						signInUrl: signInUrl.toString(),
+						appName: pluginOptions.appName,
 						message
 					}),
 					{ status, headers: htmlHeaders }
@@ -446,6 +452,7 @@ function registerPasswordResetRoutes(options: EmailPasswordRuntimeOptions): void
 					const uid = await adapter.findUserIdByEmail(identifier)
 					if (uid) await adapter.resetUserPassword({ userId: uid, password: newPassword })
 					await notifyEmail('password:reset-completed', {
+						appName: pluginOptions.appName,
 						user: { id: user.id, email: user.email ?? null, name: user.name ?? null },
 						request: { origin: baseUrl }
 					})
@@ -496,7 +503,7 @@ function registerCredentialsInterceptor(options: EmailPasswordRuntimeOptions): v
 	}
 
 	const credentialsCallbackPath = joinPath(basePath, '/callback/credentials')
-	Server.registerRoute(credentialsCallbackPath, async (request: RoboRequest, reply: RoboReply) => {
+	Server.get()?.registerRoute(credentialsCallbackPath, async (request: RoboRequest, reply: RoboReply) => {
 		const method = request.method?.toUpperCase() ?? 'GET'
 		if (method !== 'POST') {
 			return handler(request, reply)
@@ -532,6 +539,7 @@ function registerCredentialsInterceptor(options: EmailPasswordRuntimeOptions): v
 			const userAgent = request.headers.get('user-agent') ?? undefined
 			try {
 				await notifyEmail('session:created', {
+					appName: options?.options?.appName,
 					user: { id: userId, email: emailFromBody ?? undefined, name: emailFromBody?.split('@')[0] },
 					session: { ip: ip ?? null, userAgent: userAgent ?? null }
 				})

@@ -17,6 +17,7 @@ type FetchLike = (input: string, init?: unknown) => Promise<Response>
 export interface NormalizedAuthPluginOptions {
 	adapter?: Adapter
 	allowDangerousEmailAccountLinking: boolean
+	appName: string
 	basePath: string
 	callbacks?: AuthConfig['callbacks']
 	cookies: CookiesOptions
@@ -61,6 +62,7 @@ export interface NormalizedAuthPluginOptions {
  */
 export function normalizeAuthOptions(options: unknown): NormalizedAuthPluginOptions {
 	const parsed = authPluginOptionsSchema.parse(options ?? {}) as AuthPluginOptions
+	const appName = (parsed.appName?.trim() ?? '') || 'Robo.js'
 
 	// Merge user overrides with opinionated defaults to keep Auth.js cookies predictable.
 	const cookies = applyCookieOverrides(buildDefaultCookies(), parsed.cookies)
@@ -82,6 +84,7 @@ export function normalizeAuthOptions(options: unknown): NormalizedAuthPluginOpti
 	return {
 		adapter: parsed.adapter as Adapter | undefined,
 		allowDangerousEmailAccountLinking: parsed.allowDangerousEmailAccountLinking ?? false,
+		appName,
 		basePath: parsed.basePath ?? DEFAULT_BASE_PATH,
 		callbacks: parsed.callbacks as AuthConfig['callbacks'],
 		cookies,
