@@ -19,9 +19,6 @@ export default function HomePage() {
 					<Link href="/example" className="link-button">
 						Explore /example
 					</Link>
-					<a className="link-ghost" href="https://roboplay.dev/templates/web-apps/react-ts" target="_blank" rel="noreferrer">
-						Compare with react-ts
-					</a>
 				</div>
 			</header>
 

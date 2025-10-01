@@ -32,7 +32,7 @@
 	"dependencies": {
 		"@discord/embedded-app-sdk": "^2.4.0",
 		"@robojs/patch": "^0.2.1",
-		"@robojs/server": "link:/Users/pkmmte/Documents/GitHub/robo.js/packages/plugin-api",
+		"@robojs/server": "https://pkg.pr.new/Wave-Play/robo.js/@robojs/server@6348fe5",
 		"next": "^15.5.4",
 		"react": "^19.1.1",
 		"react-dom": "^19.1.1",
