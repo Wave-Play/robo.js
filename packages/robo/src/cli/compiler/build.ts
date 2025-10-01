@@ -1,4 +1,4 @@
-import { copyDir, hasProperties, replaceSrcWithBuildInRecord } from '../utils/utils.js'
+import { copyDir, hasProperties, IS_WINDOWS, replaceSrcWithBuildInRecord } from '../utils/utils.js'
 import { logger } from '../../core/logger.js'
 import { env } from '../../core/env.js'
 import { Compiler } from '../utils/compiler.js'
@@ -32,7 +32,11 @@ export async function buildCode(options?: BuildCodeOptions) {
 		? path.join(process.cwd(), options.distDir)
 		: path.join(process.cwd(), '.robo', 'build')
 
-	options.excludePaths = options.excludePaths?.map((p) => path.normalize(p)) ?? []
+		if(options.excludePaths && IS_WINDOWS){
+			options.excludePaths = options.excludePaths.map((p) => {
+				return p.replaceAll("/", path.sep);
+			})
+		}
 
 	// Force load compilers for Bun in plugin builds
 	if (IS_BUN_RUNTIME && options?.plugin) {

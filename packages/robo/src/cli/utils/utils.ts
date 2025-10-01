@@ -8,7 +8,7 @@ import { createRequire } from 'node:module'
 import { ChildProcess, SpawnOptions, execSync, exec as nodeExec, spawn } from 'node:child_process'
 import { promisify } from 'node:util'
 import { logger } from '../../core/logger.js'
-import path from 'node:path'
+import path, { normalize, resolve } from 'node:path'
 import os from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { IS_BUN_PM } from './runtime-utils.js'
@@ -152,7 +152,17 @@ export async function copyDir(
 		const entryStat = await fs.stat(srcPath)
 		const entryExt = path.extname(srcPath)
 		const resolvedPath = path.resolve(process.cwd(), srcPath)
-		const isIgnored = excludePaths.some((p) => resolvedPath.startsWith(p))
+		const isIgnored = excludePaths.some((p) => {
+			if(IS_WINDOWS){
+				// target path is same as resolved but constructed with p
+				const resolvedPathNormalized = normalize(resolvedPath);
+				const targetPath = normalize(path.resolve(path.join(process.cwd(), p)))
+				logger.debug(resolvedPathNormalized, targetPath)
+				logger.debug("Truthfullness =", resolvedPathNormalized === targetPath)
+				return resolvedPathNormalized === targetPath ? true : false;
+			}
+			return resolvedPath.startsWith(p)
+		})
 
 		if (isIgnored || excludeExtensions.includes(entryExt)) {
 			continue
@@ -163,6 +173,7 @@ export async function copyDir(
 		}
 	}
 }
+
 
 export function copyToClipboard(text: string) {
 	const platform = os.platform()
