@@ -4,7 +4,7 @@ import { Router } from '../core/router.js'
 import { BaseEngine } from '../engines/base.js'
 import http from 'node:http'
 import { color, composeColors } from 'robo.js'
-import type { RouteHandler, WebSocketHandler } from '../core/types.js'
+import type { NotFoundHandler, RouteHandler, WebSocketHandler } from '../core/types.js'
 import type { InitOptions, StartOptions } from '../engines/base.js'
 import type { ViteDevServer } from 'vite'
 
@@ -14,11 +14,13 @@ export class NodeEngine extends BaseEngine {
 	private _server: http.Server | null = null
 	private _vite: ViteDevServer | null = null
 	private _websocketHandlers: Record<string, WebSocketHandler> = {}
+	private _notFound: NotFoundHandler | null = null
 	protected _serverHandler: ServerHandler | null = null
 
 	public async init(options: InitOptions): Promise<void> {
 		this._router = new Router()
-		this._serverHandler = createServerHandler(this._router, options?.vite)
+		this._vite = options?.vite ?? null
+		this._rebuildServerHandler()
 		this._server = http.createServer((req, res) => this._serverHandler?.(req, res))
 
 		this._server.on('error', (error: Error) => logger.error(`Server error:`, error))
@@ -51,18 +53,24 @@ export class NodeEngine extends BaseEngine {
 	}
 
 	public registerRoute(path: string, handler: RouteHandler) {
-		this._router.addRoute({ handler, path })
-	}
+		this._router?.addRoute({ handler, path })
+}
 
 	public registerWebsocket(path: string, handler: WebSocketHandler) {
 		logger.debug('Registering WebSocket handler for path:', path)
 		this._websocketHandlers[path] = handler
 	}
 
+	public registerNotFound(handler: NotFoundHandler) {
+		logger.debug('Registering custom 404 handler')
+		this._notFound = handler
+		this._rebuildServerHandler()
+	}
+
 	public setupVite(vite: ViteDevServer) {
 		this._vite = vite
-		this._serverHandler = createServerHandler(this._router, vite)
-	}
+		this._rebuildServerHandler()
+}
 
 	public async start(options: StartOptions): Promise<void> {
 		const { hostname = 'localhost', port } = options
@@ -105,5 +113,12 @@ export class NodeEngine extends BaseEngine {
 		const vitePromise = this._vite?.close()
 
 		await Promise.allSettled([serverPromise, vitePromise])
+	}
+
+	private _rebuildServerHandler() {
+		if (!this._router) {
+			return
+		}
+		this._serverHandler = createServerHandler(this._router, this._vite ?? undefined, this._notFound ?? undefined)
 	}
 }
