@@ -21,8 +21,7 @@ __robo: object;
 | `config` | [`Config`](Interface.Config.md) |
 | `language` | `"javascript"` \| `"typescript"` |
 | `mode` | `string` |
-| `seed`? | `object` |
-| `seed.description`? | `string` |
+| `seed`? | [`ManifestSeed`](Interface.ManifestSeed.md) |
 | `type` | `"plugin"` \| `"robo"` |
 | `updatedAt`? | `string` |
 | `version`? | `string` |

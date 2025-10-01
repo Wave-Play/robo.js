@@ -2,9 +2,9 @@
 
 ---
 
-# Web App – Robo.js + Auth
+# Web App - Discord Authentication (TS)
 
-Welcome to the **Robo.js Auth Starter** – a production-minded web app scaffold that pairs the Robo.js core with **[@robojs/auth](https://docs.roboplay.dev/plugins/auth)**. It gives you:
+Welcome to the **Robo.js Auth Starter**, a production-minded web app scaffold that pairs the Robo.js core with **[@robojs/auth](https://docs.roboplay.dev/plugins/auth)**. It gives you:
 
 - A polished React frontend with sign-in, dashboard, and verification flows ready to restyle.
 - Auth.js endpoints exposed at `/api/auth/*`, already wired to Discord and email/password flows.
@@ -33,7 +33,7 @@ Welcome to the **Robo.js Auth Starter** – a production-minded web app scaffold
 Scaffold a project with this template (replace `<project-name>` with yours):
 
 ```bash
-npx create-robo --template web-apps/discord-auth --name <project-name>
+npx create-robo --template web-apps/discord-auth-ts --name <project-name>
 cd <project-name>
 ```
 
@@ -59,10 +59,10 @@ npm run dev
 Copy `.env.example` to `.env` (already done in the template) and set the following environment variables before running locally or deploying:
 
 ```bash
-AUTH_SECRET=replace-with-long-random-string
-DISCORD_CLIENT_ID=
-DISCORD_CLIENT_SECRET=
-RESEND_API_KEY=
+AUTH_SECRET="replace-with-long-random-string"
+DISCORD_CLIENT_ID=""
+DISCORD_CLIENT_SECRET=""
+RESEND_API_KEY=""
 ```
 
 Optional overrides live in `config/plugins/robojs/auth.ts`:

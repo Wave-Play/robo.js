@@ -333,6 +333,14 @@ export const Templates: Template[] = [
 	},
 	{
 		author: 'WavePlay',
+		description: 'React + @robojs/auth starter with a session-aware dashboard.',
+		href: './web-apps/discord-auth-ts',
+		images: [ImageBase + 'react.png'],
+		tags: ['Web App', 'TypeScript', 'Auth'],
+		title: 'Discord Auth Starter'
+	},
+	{
+		author: 'WavePlay',
 		description: 'A basic TypeScript web app using Robo.js.',
 		href: './web-apps/react-ts',
 		images: [ImageBase + 'react.png'],

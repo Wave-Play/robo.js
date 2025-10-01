@@ -56,12 +56,10 @@ optional experimental: object;
 optional flashcore: object;
 ```
 
-| Name | Type |
-| ------ | ------ |
-| `keyv`? | `unknown` |
-| `namespaceSeparator`? | `string` |
-
-Separator used to join array-based Flashcore namespaces. Defaults to `/`. This does not affect the `__` boundary between a namespace and its key.
+| Name | Type | Description |
+| ------ | ------ | ------ |
+| `keyv`? | `unknown` | - |
+| `namespaceSeparator`? | `string` | Separator placed between namespace and key when composing Flashcore keys. Defaults to "/". |
 
 ***
 
@@ -124,12 +122,10 @@ optional sage: false | SageOptions;
 ### seed?
 
 ```ts
-optional seed: object;
+optional seed: SeedHookConfig;
 ```
 
-| Name | Type |
-| ------ | ------ |
-| `description`? | `string` |
+Configure seed helpers that generate starter files and environment values.
 
 ***
 

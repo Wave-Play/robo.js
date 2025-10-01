@@ -3,7 +3,7 @@
 ## withLocale(local)
 
 ```ts
-function withLocale(local): <K>(key, params?) => string
+function withLocale(local): <K>(key, params?) => Locale<K>
 ```
 
 Binds a `LocaleLike` to produce a curried translator.
@@ -13,8 +13,8 @@ Binds a `LocaleLike` to produce a curried translator.
   for keys that have any (using your `MaybeArgs<K>` tuple).
 
 Overloads:
-- `withLocale(local)` → `<K>(key: K, params?: ParamsFor<K>) => string`
-- `withLocale(local, { strict: true })` → `<K>(key: K, ...args: MaybeArgs<K>) => string`
+- `withLocale(local)` → `<K>(key: K, params?: ParamsFor<K>) => ReturnOf<K>`
+- `withLocale(local, { strict: true })` → `<K>(key: K, ...args: MaybeArgs<K>) => ReturnOf<K>`
 
 ### Parameters
 
@@ -41,7 +41,7 @@ Overloads:
 
 #### Returns
 
-`string`
+[`Locale`](Variable.Locale.md)\<`K`\>
 
 ### Examples
 
@@ -64,7 +64,7 @@ tr$('common:ping')                                    // ✅ key with no params
 ## withLocale(local, opts)
 
 ```ts
-function withLocale(local, opts): <K>(key, ...args) => string
+function withLocale(local, opts): <K>(key, ...args) => Locale<K>
 ```
 
 ### Parameters
@@ -94,4 +94,4 @@ function withLocale(local, opts): <K>(key, ...args) => string
 
 #### Returns
 
-`string`
+[`Locale`](Variable.Locale.md)\<`K`\>

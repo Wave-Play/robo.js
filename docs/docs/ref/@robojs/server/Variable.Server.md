@@ -21,12 +21,12 @@ config: () => unknown;
 ### get()
 
 ```ts
-get: () => any;
+get: () => BaseEngine | undefined;
 ```
 
 #### Returns
 
-`any`
+`BaseEngine` \| `undefined`
 
 ### ready()
 

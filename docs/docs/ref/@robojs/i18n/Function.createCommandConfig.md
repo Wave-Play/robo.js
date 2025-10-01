@@ -29,7 +29,7 @@ This is a drop-in replacement for `robo.js`’s `createCommandConfig` that:
 
 A standard `SmartCommandConfig` ready for Robo.js to register.
 
-## Example
+## Examples
 
 ```ts
 import { createCommandConfig, t } from '@robojs/i18n'
@@ -57,7 +57,7 @@ export default (interaction: ChatInputCommandInteraction, options: CommandOption
 
 ```json
 {
-  "hey": "Hey there, {user.name}!",
+  "hey": "Hey there, {$user.name}!",
   "ping": {
     "name": "ping",
     "desc": "Measure latency",
@@ -74,4 +74,4 @@ export default (interaction: ChatInputCommandInteraction, options: CommandOption
 - Locales and message files are loaded once (on first call). You can call this
   multiple times for different commands; it will reuse the loaded state.
 - If a `descriptionKey` is omitted, only names/localizations for options are generated.
-- All keys must use the **namespaced** form (`<folders>.<file>:` + `<json-key>`).
+- All keys must use the **namespaced** form (`<folders>/<file>:` + `<json-key>`).
