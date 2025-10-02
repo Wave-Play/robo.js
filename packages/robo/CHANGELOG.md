@@ -1,5 +1,16 @@
 # robo.js
 
+## 0.10.32
+
+### Patch Changes
+
+- 6a97a61: feat(config): support for .tsx config files
+- 528fd9f: feat(config): improved support for in-project imports + compilation
+- 2c12d82: feat(flashcore): customizable namespace separator
+- 51433db: fix(cli): load mode-specific env before build/dev/start
+- 495bb08: patch(cli): respect project language when seeding plugin root files
+- ec2589f: feat(cli): seed hooks and environment variable updates
+
 ## 0.10.31
 
 ### Patch Changes
