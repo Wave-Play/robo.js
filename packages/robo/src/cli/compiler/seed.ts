@@ -127,7 +127,7 @@ export async function useSeed(packageName: string) {
 		const rootPath = path.join(seedPath, '_root')
 		if (existsSync(rootPath)) {
 			compilerLogger.debug('Copying root seed files...')
-			await copyDir(rootPath, process.cwd(), [], [], false)
+			await copyDir(rootPath, process.cwd(), excludeExts, [], false)
 			compilerLogger.debug(`Successfully copied root seed files from`, color.bold(packageName))
 		}
 	}
