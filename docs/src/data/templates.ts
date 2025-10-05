@@ -325,11 +325,27 @@ export const Templates: Template[] = [
 	},
 	{
 		author: 'WavePlay',
+		description: 'React + @robojs/auth starter with a session-aware dashboard.',
+		href: './web-apps/discord-auth-ts',
+		images: [ImageBase + 'react.png'],
+		tags: ['Web App', 'TypeScript', 'Auth'],
+		title: 'Discord Auth Starter'
+	},
+	{
+		author: 'WavePlay',
 		description: 'A basic JavaScript web app using Robo.js.',
 		href: './web-apps/react-js',
 		images: [ImageBase + 'react.png'],
 		tags: ['Web App', 'JavaScript'],
 		title: 'React Starter'
+	},
+	{
+		author: 'WavePlay',
+		description: 'A basic TypeScript web app using Next.js and Robo.js.',
+		href: './web-apps/next-ts',
+		images: [ImageBase + 'react.png'],
+		tags: ['Web App', 'TypeScript'],
+		title: 'Next Starter'
 	},
 	{
 		author: 'WavePlay',

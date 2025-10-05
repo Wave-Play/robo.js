@@ -1,25 +1,15 @@
 # Function: composeColors()
 
 ```ts
-function composeColors(...fns): (s) => string
+function composeColors(...fns): Wrapper
 ```
 
 ## Parameters
 
 | Parameter | Type |
 | ------ | ------ |
-| ...`fns` | (`s`) => `string`[] |
+| ...`fns` | readonly `Wrapper`[] |
 
 ## Returns
 
-`Function`
-
-### Parameters
-
-| Parameter | Type |
-| ------ | ------ |
-| `s` | `string` |
-
-### Returns
-
-`string`
+`Wrapper`

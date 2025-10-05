@@ -1,5 +1,5 @@
 # Variable: color
 
 ```ts
-const color: ColorFunctions;
+const color: ChainablePalette;
 ```

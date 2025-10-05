@@ -350,13 +350,29 @@ await Flashcore.get(userId, {
 
 With namespacing, you efficiently manage data for different groups or contexts without any overlap or confusion!
 
-<!-- You can also use arrays to create multi-layered namespaces. This is useful when you want to categorize data by multiple criteria. For instance, to store data for a user within a specific server, you can do something like this:
+### Multi‑segment namespaces and custom separators
 
-```javascript
-await Flashcore.set('someKey', someData, { namespace: ['server123', 'user456'] });
+Namespaces can be a string (e.g. a guild ID) or an array of segments for deeper scoping. When you pass an array, Flashcore joins the segments using a configurable separator to form the namespace path. By default this separator is `/`.
+
+```ts
+// Stores under namespace path "server123/user456"
+await Flashcore.set('someKey', someData, { namespace: ['server123', 'user456'] })
 ```
 
-Here, the data is categorized under both the server and user IDs, ensuring unique and organized storage. -->
+You can change the separator via your config file. This only affects how array namespaces are joined; the boundary between the namespace and the key remains `__`.
+
+```ts title="/config/robo.mjs"
+export default {
+  flashcore: {
+    // Use a different separator for array namespaces
+    namespaceSeparator: ':'
+  }
+}
+```
+
+With the above config, the previous example stores under `server123:user456__someKey` (persisted through your chosen Flashcore adapter). This feature is intended for new projects or fresh datasets.
+
+<!-- Note: Changing the separator on an existing dataset will not rewrite old keys. -->
 
 ## Using Keyv Adapters
 

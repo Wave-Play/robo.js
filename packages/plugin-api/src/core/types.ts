@@ -16,6 +16,8 @@ export interface RoboReply {
 
 export type RouteHandler = (req: RoboRequest, res: RoboReply) => unknown | Promise<unknown>
 
+export type NotFoundHandler = (req: RoboRequest, res: RoboReply) => unknown | Promise<unknown>
+
 export type WebSocketHandler = (req: IncomingMessage, socket: Duplex, head: Buffer) => void
 
 export interface Api {

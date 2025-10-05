@@ -2,9 +2,9 @@
 
 ## Extended by
 
-- [`ContextConfig`](Interface.ContextConfig.md)
 - [`ApiEntry`](Interface.ApiEntry.md)
 - [`CommandConfig`](Interface.CommandConfig.md)
+- [`ContextConfig`](Interface.ContextConfig.md)
 - [`EventConfig`](Interface.EventConfig.md)
 
 ## Properties

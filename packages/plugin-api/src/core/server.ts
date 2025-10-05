@@ -1,7 +1,8 @@
 import { _readyPromise } from './plugin-utils.js'
 import { getPluginOptions } from 'robo.js'
-import type { BaseEngine } from '~/engines/base.js'
-import type { PluginConfig } from '~/events/_start.js'
+import type { BaseEngine } from '../engines/base.js'
+import type { PluginConfig } from '../events/_start.js'
+import type { RouteHandler } from './types.js'
 
 /**
  * Use this to interact with the server.
@@ -18,7 +19,7 @@ function config() {
 // Reference to internal engine used.
 let _engine: BaseEngine
 
-function get() {
+function get(): BaseEngine | undefined {
 	return globalThis.roboServer?.engine ?? _engine
 }
 

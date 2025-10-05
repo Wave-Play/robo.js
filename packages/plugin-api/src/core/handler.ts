@@ -11,7 +11,7 @@ import { pipeline } from 'node:stream/promises'
 import url from 'node:url'
 import { color } from 'robo.js'
 import type { Router } from './router.js'
-import type { RoboReply } from './types.js'
+import type { NotFoundHandler, RoboReply } from './types.js'
 import type { UrlWithParsedQuery } from 'node:url'
 import type { ViteDevServer } from 'vite'
 
@@ -20,7 +20,7 @@ const PublicBuildPath = path.join(process.cwd(), '.robo', 'public')
 
 export type ServerHandler = (req: IncomingMessage, res: ServerResponse<IncomingMessage>) => Promise<void> | void
 
-export function createServerHandler(router: Router, vite?: ViteDevServer): ServerHandler {
+export function createServerHandler(router: Router, vite?: ViteDevServer, onNotFound?: NotFoundHandler): ServerHandler {
 	return async (req: IncomingMessage, res: ServerResponse<IncomingMessage>) => {
 		const parsedUrl = url.parse(req.url, true)
 
@@ -59,9 +59,19 @@ export function createServerHandler(router: Router, vite?: ViteDevServer): Serve
 					logger.error(data)
 				}
 
-				// Copy headers from the response to the raw response
+				// Copy headers from the response to the raw response, taking care to merge set-cookie headers
+				const h = response.headers
+				const setCookies: string[] | undefined = typeof h.getSetCookie === 'function' ? h.getSetCookie() : undefined
+
+				if (setCookies && setCookies.length) {
+					appendHeader(this.raw, 'Set-Cookie', setCookies)
+				}
+
 				response.headers.forEach((value, key) => {
-					this.raw.setHeader(key, value)
+					if (key.toLowerCase() === 'set-cookie') {
+						return
+					}
+					appendHeader(this.raw, key, value)
 				})
 				this.raw.statusCode = response.status
 
@@ -82,7 +92,7 @@ export function createServerHandler(router: Router, vite?: ViteDevServer): Serve
 						this.raw.end()
 					})
 				} else {
-					this.raw.end();
+					this.raw.end()
 				}
 
 				this.hasSent = true
@@ -110,6 +120,7 @@ export function createServerHandler(router: Router, vite?: ViteDevServer): Serve
 
 		// If route missing, check if we can return something from the public folder
 		if (!route?.handler) {
+			logger.debug(`No route found for ${req.method} ${req.url}, checking public folder...`)
 			try {
 				const callback = async (filePath: string, mimeType: string) => {
 					res.setHeader('Content-Type', mimeType)
@@ -131,6 +142,59 @@ export function createServerHandler(router: Router, vite?: ViteDevServer): Serve
 		}
 
 		if (!route?.handler) {
+			if (onNotFound && !res.writableEnded && !res.headersSent) {
+				try {
+					logger.debug('Running custom 404 handler for', req.url)
+					const result = await onNotFound(requestWrapper, replyWrapper)
+
+					if (result === false) {
+						// Continue with Robo's built-in fallbacks
+					} else {
+						if (replyWrapper.hasSent || res.writableEnded || res.headersSent) {
+							return
+						}
+
+						if (result instanceof Response) {
+							replyWrapper.send(result)
+							return
+						}
+						if (result && isBodyInit(result)) {
+							replyWrapper.code(200).send(result)
+							return
+						}
+						if (typeof result !== 'undefined') {
+							replyWrapper.code(200).json(result)
+							return
+						}
+
+						// Handler handled the response (likely via raw), so stop here.
+						return
+					}
+				} catch (error) {
+					if (error instanceof Response) {
+						replyWrapper.send(error)
+						return
+					}
+					logger.error(error)
+					replyWrapper.code(500).send('Server encountered an error.')
+					return
+				}
+			} else {
+				logger.warn(`No route nor 404 handler found for ${req.method} ${req.url}`)
+			}
+
+			if (res.writableEnded || res.headersSent) {
+				return
+			}
+
+			if (await tryServeSpaFallback(req, res, parsedUrl.pathname)) {
+				return
+			}
+
+			if (res.writableEnded || res.headersSent) {
+				return
+			}
+
 			replyWrapper.code(404).json('API Route not found.')
 			return
 		}
@@ -225,6 +289,65 @@ export async function handlePublicFile(
 }
 
 /**
+ * Streams the SPA entry point when a request looks like a client-routed URL.
+ * Only kicks in for GET HTML requests outside the API namespace so real API
+ * calls or static assets still flow through their normal handlers.
+ */
+async function tryServeSpaFallback(
+	req: IncomingMessage,
+	res: ServerResponse<IncomingMessage>,
+	pathname: string | null | undefined
+): Promise<boolean> {
+	if (req.method && req.method !== 'GET') {
+		return false
+	}
+	if (pathname && path.extname(pathname)) {
+		return false
+	}
+	if (!acceptsHtml(req)) {
+		return false
+	}
+	if (isApiPath(pathname)) {
+		return false
+	}
+
+	const publicPath = process.env.NODE_ENV === 'production' ? PublicBuildPath : PublicPath
+	const indexFilePath = path.join(publicPath, 'index.html')
+
+	try {
+		const stats = await stat(indexFilePath)
+		if (!stats.isFile()) {
+			return false
+		}
+	} catch {
+		return false
+	}
+
+	res.setHeader('Content-Type', 'text/html; charset=utf-8')
+	res.setHeader('X-Content-Type-Options', 'nosniff')
+	res.writeHead(200)
+	await pipeline(createReadStream(indexFilePath), res)
+	return true
+}
+
+function acceptsHtml(req: IncomingMessage): boolean {
+	const accept = req.headers?.accept
+	return !accept || accept.includes('text/html')
+}
+
+function isApiPath(pathname: string | null | undefined): boolean {
+	if (!pathname) return false
+	const prefix = pluginOptions.prefix
+	if (prefix === false || prefix === null) {
+		return false
+	}
+	if (!prefix || prefix === '/') {
+		return false
+	}
+	return pathname.startsWith(prefix)
+}
+
+/**
  * Checks if a value is a valid BodyInit type.
  */
 function isBodyInit(value: unknown): value is BodyInit {
@@ -237,4 +360,17 @@ function isBodyInit(value: unknown): value is BodyInit {
 		ArrayBuffer.isView(value) ||
 		(typeof ReadableStream !== 'undefined' && value instanceof ReadableStream)
 	)
+}
+
+function appendHeader(res: ServerResponse, name: string, value: string | string[]) {
+	const lower = name.toLowerCase()
+	if (lower === 'set-cookie') {
+		const prev = res.getHeader('set-cookie')
+		const prevArr = Array.isArray(prev) ? (prev as string[]) : prev ? [String(prev)] : []
+		const nextArr = Array.isArray(value) ? value : [value]
+		res.setHeader('Set-Cookie', [...prevArr, ...nextArr])
+	} else {
+		// For non-mergeable headers, last write wins (that’s fine)
+		res.setHeader(name, value as any)
+	}
 }

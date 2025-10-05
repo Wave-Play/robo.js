@@ -5,6 +5,7 @@
 	"workspaces": {
 		"packages": [
 			"packages/@robojs/analytics",
+			"packages/@robojs/auth",
 			"packages/@robojs/cron",
 			"packages/@robojs/i18n",
 			"packages/@robojs/patch",

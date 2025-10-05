@@ -31,6 +31,23 @@ export const Mode = Object.freeze({ color: colorMode, get, is })
 /**
  * @internal
  */
+export function resolveCliMode(mode?: string | null): string | undefined {
+	if (!mode) {
+		return
+	}
+
+	const modes = mode
+		.split(',')
+		.flatMap((m) => m.split(' '))
+		.map((m) => m.trim())
+		.filter(Boolean)
+
+	return modes[0]
+}
+
+/**
+ * @internal
+ */
 export function getModeColor(mode: string) {
 	const Colors = [color.cyan, color.yellow, color.red, color.blue, color.green, color.magenta]
 	const hash = mode.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)

@@ -1,19 +1,20 @@
-import { handlePublicFile } from '~/core/handler.js'
+import { handlePublicFile } from '../core/handler.js'
 import { logger } from '../core/logger.js'
-import { RoboRequest, applyParams } from '~/core/robo-request.js'
+import { RoboRequest, applyParams } from '../core/robo-request.js'
 import { BaseEngine } from './base.js'
 import { createReadStream } from 'node:fs'
 import url from 'node:url'
 import { color, composeColors } from 'robo.js'
-import type { RoboReply, RouteHandler } from '../core/types.js'
+import type { NotFoundHandler, RoboReply, RouteHandler } from '../core/types.js'
 import type { InitOptions, StartOptions } from './base.js'
-import type { FastifyInstance } from 'fastify'
+import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import type { ViteDevServer } from 'vite'
 
 export class FastifyEngine extends BaseEngine {
 	private _isRunning = false
 	private _server: FastifyInstance | null = null
 	private _vite: ViteDevServer | null = null
+	private _notFound: NotFoundHandler | null = null
 
 	public async init(options: InitOptions): Promise<void> {
 		const { fastify } = await import('fastify')
@@ -57,6 +58,10 @@ export class FastifyEngine extends BaseEngine {
 
 					const parsedUrl = url.parse(request.url, true)
 					if (await handlePublicFile(parsedUrl, callback)) {
+						return
+					}
+
+					if (await this._runNotFoundHandler(request, reply)) {
 						return
 					}
 				} catch (error) {
@@ -170,6 +175,10 @@ export class FastifyEngine extends BaseEngine {
 		logger.warn(`Websockets are not supported in Fastify engine yet.`)
 	}
 
+	public registerNotFound(handler: NotFoundHandler): void {
+		this._notFound = handler
+	}
+
 	public setupVite(vite: ViteDevServer) {
 		this._vite = vite
 	}
@@ -218,5 +227,75 @@ export class FastifyEngine extends BaseEngine {
 		const vitePromise = this._vite?.close()
 
 		await Promise.allSettled([serverPromise, vitePromise])
+	}
+
+	private async _runNotFoundHandler(request: FastifyRequest, reply: FastifyReply): Promise<boolean> {
+		if (!this._notFound || reply.raw.writableEnded) {
+			return false
+		}
+
+		const requestWrapper = await RoboRequest.from(request.raw, { body: request.body as Buffer })
+		applyParams(requestWrapper, request.params as Record<string, string>)
+
+		const replyWrapper: RoboReply = {
+			raw: reply.raw,
+			hasSent: false,
+			code: function (statusCode: number) {
+				reply.code(statusCode)
+				return this
+			},
+			json: function (data: unknown) {
+				reply.header('Content-Type', 'application/json').send(JSON.stringify(data))
+				this.hasSent = true
+				return this
+			},
+			send: function (data: Response | string) {
+				if (data instanceof Response) {
+					reply.hijack()
+					data.headers.forEach(([key, value]) => {
+						reply.header(key, value)
+					})
+					this.raw.statusCode = data.status
+					data.text().then((text) => {
+						reply.raw.end(text)
+					})
+				} else {
+					reply.send(data)
+				}
+				this.hasSent = true
+				return this
+			},
+			header: function (name: string, value: string) {
+				reply.header(name, value)
+				return this
+			}
+		}
+
+		try {
+			const result = await this._notFound(requestWrapper, replyWrapper)
+
+			if (replyWrapper.hasSent || reply.raw.writableEnded) {
+				return true
+			}
+
+			if (result instanceof Response) {
+				replyWrapper.send(result)
+				return true
+			}
+			if (result) {
+				replyWrapper.code(200).json(result)
+				return true
+			}
+		} catch (error) {
+			logger.error(error)
+			reply.code(500).send({ message: error instanceof Error ? error.message : 'Server encountered an error.' })
+			return true
+		}
+
+		if (reply.raw.writableEnded || replyWrapper.hasSent) {
+			return true
+		}
+
+		return false
 	}
 }

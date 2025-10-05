@@ -4,7 +4,7 @@
 function tr<K>(
    locale, 
    key, ...
-   args): string
+args): Locale<K>
 ```
 
 `tr` — a **strict** version of `t`:
@@ -28,7 +28,7 @@ function tr<K>(
 
 ## Returns
 
-`string`
+[`Locale`](Variable.Locale.md)\<`K`\>
 
 The formatted string for the given locale and key.
 
@@ -36,7 +36,7 @@ The formatted string for the given locale and key.
 
 ```ts
 // /locales/en-US/common.json:
-// { "hello.user": "Hello {user.name}!" } → "common:hello.user"
+// { "hello.user": "Hello {$user.name}!" } → "common:hello.user"
 import { tr } from '@robojs/i18n'
 tr('en-US', 'common:hello.user', { user: { name: 'Robo' } }) // OK
 // tr('en-US', 'common:hello.user', { user: {} })            // ❌ compile-time error

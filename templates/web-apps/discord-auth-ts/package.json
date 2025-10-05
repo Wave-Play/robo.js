@@ -1,0 +1,57 @@
+{
+	"name": "discord-auth-ts",
+	"description": "",
+	"version": "1.0.0",
+	"type": "module",
+	"private": true,
+	"keywords": [
+		"api",
+		"http",
+		"http",
+		"robo",
+		"robo.js",
+		"server",
+		"server",
+		"typescript",
+		"vite",
+		"vite",
+		"web",
+		"web"
+	],
+	"scripts": {
+		"build": "robo build",
+		"deploy": "robo deploy",
+		"dev": "robox dev --tunnel",
+		"doctor": "sage doctor",
+		"invite": "robo invite",
+		"lint:style": "prettier --write .",
+		"start": "robo start",
+		"tunnel": ".robo/bin/cloudflared tunnel --url http://localhost:3000",
+		"upgrade": "sage upgrade"
+	},
+	"dependencies": {
+		"@discord/embedded-app-sdk": "^2.4.0",
+		"@robojs/auth": "https://pkg.pr.new/Wave-Play/robo.js/@robojs/auth@aeeb23d",
+		"@robojs/patch": "^0.2.1",
+		"@robojs/server": "^0.6.5",
+		"@tanstack/react-router": "^1.132.27",
+		"@tanstack/router-plugin": "^1.132.27",
+		"@vitejs/plugin-react": "^5.0.4",
+		"isbot": "^5",
+		"react": "^19.1.1",
+		"react-dom": "^19.1.1",
+		"robo.js": "^0.10.31"
+	},
+	"devDependencies": {
+		"@swc/core": "^1.13.5",
+		"@types/node": "^24.6.0",
+		"@types/react": "^19.1.16",
+		"@types/react-dom": "^19.1.9",
+		"@vitejs/plugin-react-swc": "^4.1.0",
+		"discord.js": "^14.22.1",
+		"eslint-plugin-react-hooks": "^5.2.0",
+		"prettier": "^3.6.2",
+		"typescript": "^5.9.3",
+		"vite": "5"
+	}
+}

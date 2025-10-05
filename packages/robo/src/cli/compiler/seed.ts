@@ -1,6 +1,7 @@
 import { rm } from 'fs/promises'
 import { existsSync } from 'node:fs'
 import path from 'path'
+import type { Manifest } from '../../types/index.js'
 import { copyDir, PackageDir } from '../utils/utils.js'
 import { color } from '../../core/color.js'
 import { compilerLogger } from '../utils/loggers.js'
@@ -73,6 +74,26 @@ export function hasSeed(packageName: string) {
  *
  * Use this after installing a plugin.
  */
+function buildSeedExcludePaths(seedPath: string, manifest: Manifest) {
+	const exclude = [path.join(seedPath, '_root')]
+	const hookPath = manifest.__robo?.seed?.env?.hook ?? manifest.__robo?.seed?.hook
+
+	if (hookPath) {
+		const pluginRoot = path.resolve(seedPath, '..', '..')
+		const normalized = hookPath.startsWith('/') ? hookPath.slice(1) : hookPath
+		const hookAbsolute = path.resolve(pluginRoot, normalized)
+		exclude.push(hookAbsolute)
+
+		if (hookAbsolute.endsWith('.js')) {
+			const tsCandidate = hookAbsolute.slice(0, -3) + '.ts'
+			const tsxCandidate = hookAbsolute.slice(0, -3) + '.tsx'
+			exclude.push(tsCandidate, tsxCandidate)
+		}
+	}
+
+	return Array.from(new Set(exclude))
+}
+
 export async function useSeed(packageName: string) {
 	compilerLogger.debug(`Looking for seed files in plugin ${color.bold(packageName)}...`)
 	const base = packageName.startsWith('.') ? process.cwd() : path.join(PackageDir, '..')
@@ -98,14 +119,15 @@ export async function useSeed(packageName: string) {
 
 		// Copy the files recursively
 		const excludeExts = identifiesAsTypeScript && isTypeScript ? ['.js', '.jsx'] : ['.ts', '.tsx']
-		await copyDir(seedPath, projectSrc, excludeExts, [path.join(seedPath, '_root')], false)
+		const excludePaths = buildSeedExcludePaths(seedPath, manifest)
+		await copyDir(seedPath, projectSrc, excludeExts, excludePaths, false)
 		compilerLogger.debug(`Successfully copied seed files from`, color.bold(packageName))
 
 		// Copy the root files
 		const rootPath = path.join(seedPath, '_root')
 		if (existsSync(rootPath)) {
 			compilerLogger.debug('Copying root seed files...')
-			await copyDir(rootPath, process.cwd(), [], [], false)
+			await copyDir(rootPath, process.cwd(), excludeExts, [], false)
 			compilerLogger.debug(`Successfully copied root seed files from`, color.bold(packageName))
 		}
 	}

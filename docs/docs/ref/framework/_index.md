@@ -22,6 +22,8 @@
 - [FlashcoreAdapter](Interface.FlashcoreAdapter.md)
 - [HandlerRecord](Interface.HandlerRecord.md)
 - [Manifest](Interface.Manifest.md)
+- [ManifestSeed](Interface.ManifestSeed.md)
+- [ManifestSeedEnv](Interface.ManifestSeedEnv.md)
 - [Middleware](Interface.Middleware.md)
 - [MiddlewareData](Interface.MiddlewareData.md)
 - [MiddlewareResult](Interface.MiddlewareResult.md)
@@ -32,6 +34,11 @@
 - [RoboReply](Interface.RoboReply.md)
 - [RoboRequest](Interface.RoboRequest.md)
 - [RoboStateMessage](Interface.RoboStateMessage.md)
+- [SeedEnvConfig](Interface.SeedEnvConfig.md)
+- [SeedEnvVariableConfig](Interface.SeedEnvVariableConfig.md)
+- [SeedHookConfig](Interface.SeedHookConfig.md)
+- [SeedHookGenerators](Interface.SeedHookGenerators.md)
+- [SeedHookHelpers](Interface.SeedHookHelpers.md)
 - [SpiritMessage](Interface.SpiritMessage.md)
 
 ## Type Aliases
@@ -45,11 +52,13 @@
 - [ContextEntry](TypeAlias.ContextEntry.md)
 - [HttpMethod](TypeAlias.HttpMethod.md)
 - [LogDrain](TypeAlias.LogDrain.md)
+- [ManifestSeedEnvVariables](TypeAlias.ManifestSeedEnvVariables.md)
 - [MiddlewareEntry](TypeAlias.MiddlewareEntry.md)
 - [Plugin](TypeAlias.Plugin.md)
 - [RouteHandler](TypeAlias.RouteHandler.md)
 - [SageOptions](TypeAlias.SageOptions.md)
 - [Scope](TypeAlias.Scope.md)
+- [SeedHookHandler](TypeAlias.SeedHookHandler.md)
 - [SmartCommandConfig](TypeAlias.SmartCommandConfig.md)
 
 ## Variables

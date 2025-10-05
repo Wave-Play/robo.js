@@ -93,6 +93,92 @@ Now when users install your plugin with `robo add`, they will see a description 
 	<Card href="./create" title="🔌 Creating Plugins" description="Make your own plugins for Robo.js." />
 </CardContainer>
 
+## Environment Variable Seeding
+
+In addition to copying files, plugins can seed environment variables. Robo surfaces the additions before asking for confirmation so users understand exactly what will be written.
+
+```
+🔑 Environment additions detected
+   - @robojs/auth: Adds secure defaults for authentication flows.
+        AUTH_SECRET – Secret used to sign and verify authentication payloads.
+    Target files: .env
+
+    Add these variables to .env? [Y/n]: Y
+
+🔑 Environment variables applied
+   ✔ @robojs/auth added AUTH_SECRET
+```
+
+### Declaring Static Keys
+
+Add static values under `seed.env.variables`. Robo merges these into any detected `.env*` files without overwriting existing keys unless you explicitly opt in.
+
+```ts title="robo.config.ts"
+import type { Config } from 'robo.js'
+
+const config: Config = {
+	seed: {
+		description: 'Adds environment defaults for Auth.',
+		env: {
+			description: 'Secures authentication payloads.',
+			variables: {
+				AUTH_SECRET: {
+					description: 'Secret used to sign and verify authentication payloads.',
+					overwrite: false,
+					value: 'replace-me'
+				}
+			}
+		}
+	}
+}
+
+export default config
+```
+
+### Generating Values with Hooks
+
+Use `seed.hook` when you need to compute values on the fly or tweak the seeding experience. The hook runs before Robo shows the prompt, and anything you return is merged into the `seed` config—perfect for populating environment variables without shipping a separate file.
+
+```ts title="robo.config.ts"
+import type { Config } from 'robo.js'
+
+export default <Config>{
+	seed: {
+		description: 'Initializes Auth secrets.',
+		hook: async ({ generators }) => {
+			const secret = generators.randomHex(32)
+
+			return {
+				env: {
+					description: 'Generates a unique AUTH_SECRET.',
+					variables: {
+						AUTH_SECRET: {
+							description: 'Secret used to sign and verify authentication payloads.',
+							overwrite: false,
+							value: secret
+						}
+					}
+				}
+			}
+		}
+	}
+}
+```
+
+Hooks run before Robo asks the user to confirm the changes. The inline function return value mirrors the `seed` config, so you can mix static `variables` with computed ones or leave the hook to handle everything dynamically.
+
+### Helpful Utilities
+
+Within hooks, the `helpers.generators` bundle exposes:
+
+- `randomHex(bytes?: number)` – cryptographically strong hex strings.
+- `randomBase64(bytes?: number)` – base64 strings without padding.
+- `randomUUID()` – UUID v4 values.
+
+The `helpers.log` method prints to the installer's console with the plugin prefix, useful when debugging seeding logic.
+
+> Hooks are inline only—there's no need to manage separate files. Robo compiles the function into the manifest automatically.
+
 ## Limitations
 
 Seeds cannot be used to modify existing files in the project for security reasons. They can only add new files.

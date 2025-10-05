@@ -203,6 +203,21 @@ The API plugin uses Node's `http` module by default. If you have Fastify install
 
 You can create your own server engine by extending the `BaseServer` class and implementing its abstract methods. Then, specify your custom server engine in the plugin's config file.
 
+Custom engines (or consumers that access the active engine via `Server.get()`) can also register a fallback handler. Call `engine.registerNotFound` with a `(request, reply)` function whenever you want to intercept unmatched requests—for example, to hand off to a framework router before Robo emits a 404.
+
+```ts
+import { Server } from '@robojs/server'
+
+const engine = Server.get()
+
+engine?.registerNotFound(async (request, reply) => {
+	// Delegate to another handler when Robo didn't match anything.
+	await nextAppHandler(request.raw, reply.raw)
+
+	// If that handler didn't write a response, fall through and Robo will still send a 404.
+})
+```
+
 
 ## More on GitHub
 

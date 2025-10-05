@@ -203,6 +203,7 @@ const config = {
 					'packages/plugin-ai/README.md',
 					'packages/plugin-ai-voice/README.md',
 					'packages/@robojs/analytics/README.md',
+					'packages/@robojs/auth/README.md',
 					'packages/plugin-api/README.md',
 					'packages/plugin-better-stack/README.md',
 					'packages/@robojs/cron/README.md',
@@ -247,6 +248,8 @@ const config = {
 					'templates/discord-bots/starter-ts/README.md',
 					'templates/discord-bots/tagbot/README.md',
 					'templates/plugins/starter-js/README.md',
+					'templates/web-apps/discord-auth-ts/README.md',
+					'templates/web-apps/next-ts/README.md',
 					'templates/web-apps/react-js/README.md',
 					'templates/web-apps/react-ts/README.md',
 					'templates/web-apps/svelte-js/README.md',
@@ -414,6 +417,16 @@ const config = {
 				entryPoints: ['../packages/plugin-ai-voice/src/index.ts'],
 				out: 'docs/ref/@robojs/ai-voice',
 				tsconfig: '../packages/plugin-ai-voice/tsconfig.json',
+				...typedocConfig
+			}
+		],
+		[
+			'docusaurus-plugin-typedoc',
+			{
+				id: '@robojs/auth',
+				entryPoints: ['../packages/@robojs/auth/src/index.ts'],
+				out: 'docs/ref/@robojs/auth',
+				tsconfig: '../packages/@robojs/auth/tsconfig.json',
 				...typedocConfig
 			}
 		],

@@ -1,0 +1,51 @@
+{
+	"name": "next-ts",
+	"description": "",
+	"version": "1.0.0",
+	"type": "module",
+	"private": true,
+	"keywords": [
+		"api",
+		"http",
+		"http",
+		"robo",
+		"robo.js",
+		"server",
+		"server",
+		"typescript",
+		"vite",
+		"vite",
+		"web",
+		"web"
+	],
+	"scripts": {
+		"build": "robo build",
+		"deploy": "robo deploy",
+		"dev": "robox dev --tunnel",
+		"doctor": "sage doctor",
+		"invite": "robo invite",
+		"lint:style": "prettier --write .",
+		"start": "robo start",
+		"tunnel": ".robo/bin/cloudflared tunnel --url http://localhost:3000",
+		"upgrade": "sage upgrade"
+	},
+	"dependencies": {
+		"@discord/embedded-app-sdk": "^2.4.0",
+		"@robojs/patch": "^0.2.1",
+		"@robojs/server": "https://pkg.pr.new/Wave-Play/robo.js/@robojs/server@6348fe5",
+		"next": "^15.5.4",
+		"react": "^19.1.1",
+		"react-dom": "^19.1.1",
+		"robo.js": "https://pkg.pr.new/Wave-Play/robo.js@e862e28"
+	},
+	"devDependencies": {
+		"@swc/core": "^1.13.5",
+		"@types/node": "^24.6.1",
+		"@types/react": "^19.1.17",
+		"@types/react-dom": "^19.1.11",
+		"discord.js": "^14.22.1",
+		"eslint-plugin-react-hooks": "^5.2.0",
+		"prettier": "^3.6.2",
+		"typescript": "^5.9.3"
+	}
+}
