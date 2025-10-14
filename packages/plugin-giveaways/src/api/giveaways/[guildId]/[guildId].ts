@@ -1,13 +1,12 @@
 import { Flashcore } from 'robo.js'
-import type { Giveaway } from '../../../types/giveaway.js'
+import type { Giveaway } from '../../../types/giveaway'
 
-interface RequestParams {
-  params: {
-    guildId: string
+export default async (request: any, reply: any) => {
+  // Only allow GET requests
+  if (request.method !== 'GET') {
+    throw new Error('Method not allowed')
   }
-}
 
-export default async (request: RequestParams) => {
   const { guildId } = request.params
 
   const activeIds = (await Flashcore.get<string[]>(`guild:${guildId}:active`)) || []
