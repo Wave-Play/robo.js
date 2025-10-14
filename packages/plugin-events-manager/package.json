@@ -1,5 +1,5 @@
 {
-	"name": "@robojs/discord-events",
+	"name": "@robojs/events-manager",
 	"description": "A comprehensive Discord events management plugin for Robo.js that helps communities organize events with RSVP tracking, automated reminders, and seamless Discord integration.",
 	"version": "0.0.0",
 	"private": false,
@@ -20,7 +20,7 @@
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/Wave-Play/robo.git",
-		"directory": "packages/plugin-discord-events"
+		"directory": "packages/plugin-events-manager"
 	},
 	"publishConfig": {
 		"access": "public",

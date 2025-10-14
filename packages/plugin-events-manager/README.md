@@ -26,13 +26,13 @@
 To add this plugin to your **Robo.js** project:
 
 ```bash
-npx robo add discord-events-manager
+npx robo add events-manager
 ```
 
 New to **Robo.js**? Start your project with this plugin pre-installed:
 
 ```bash
-npx create-robo <project-name> -p discord-events-manager
+npx create-robo <project-name> -p events-manager
 ```
 
 ## 🎮 Commands
@@ -154,10 +154,10 @@ Supported formats:
 To contribute to this plugin:
 
 ```bash
-git clone https://github.com/DevArqf/discord-events-manager
-cd discord-events-manager
-npm install
-npm run dev
+git clone https://github.com/Wave-Play/robo.js
+cd robo.js/packages/plugin-events-manager
+pnpm install
+pnpm dev
 ```
 
 ## 🤝 Contributing

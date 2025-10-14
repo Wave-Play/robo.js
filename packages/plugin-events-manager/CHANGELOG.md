@@ -1,4 +1,4 @@
-# @robojs/discord-events
+# @robojs/events-manager
 
 ## 0.0.0
 
