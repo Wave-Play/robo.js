@@ -22,12 +22,12 @@ New to Robo.js? Start your project with this plugin pre-installed:
 
 ## Your Robo's Personality 
 
-Desire a Robo with a backstory, specific character traits, or a distinctive personality? Tell it a story with the `systemMessage` config:
+Desire a Robo with a backstory, specific character traits, or a distinctive personality? Tell it a story with the `instructions` config:
 
 ```js
 // config/plugins/robojs/ai.mjs
 export default {
-	systemMessage: 'You are Batman, protector of the Weeb City Discord server.'
+	instructions: 'You are Batman, protector of the Weeb City Discord server.'
 }
 ```
 
@@ -81,7 +81,7 @@ export default {
 	model: 'gpt-3.5-turbo',
 
 	// Tell your Robo a backstory or role. (string)
-	systemMessage: 'You are a wise wizard of Webland!',
+	instructions: 'You are a wise wizard of Webland!',
 
 	// Let Robo use or ignore specific commands. true for all commands, false for no commands, array for only specific commands. (boolean or string array)
 	commands: ['ban', 'kick', 'dev logs'],
@@ -136,6 +136,24 @@ If you've added the `@robojs/ai-voice` to your Robo, you're in for a treat! This
 
 How cool is that? Your Robo can now talk to you in voice channels, just like a real person!
 
+Need a different spoken persona or transcript language? Configure it right from your plugin file:
+
+```js title="config/plugins/robojs/ai.mjs"
+export default {
+	engine: new OpenAiEngine({
+		voice: {
+			transcription: {
+				language: 'en',
+				model: 'gpt-4o-transcribe-latest'
+			}
+		}
+	}),
+	voice: {
+		instructions: 'Keep replies short and friendly when speaking aloud.'
+	}
+}
+```
+
 ## Web API 
 
 Now, if you've added the `@robojs/server` to your Robo, there's another treat waiting. This AI plugin will unveil a shiny new `/api/ai/chat` path, letting your Robo have fun chats on websites!
@@ -182,7 +200,7 @@ If you encounter any issues with this plugin, feel free to reach out to us on **
 - **OpenAI API Key**: Ensure you've set your OpenAI API key as an environment variable named `OPENAI_API_KEY` and set up billing on the OpenAI platform.
 - **Permissions**: Make sure your Robo has the necessary permissions to read and send messages in the channels you've configured, including the Message Content intent.
 - **Rate Limiting**: If you're hitting rate limits, try increasing the `pollDelay` config in your `config/plugins/robojs/ai.mjs` file.
-- **Insights**: Ensure your `/documents` folder is correctly set up and contains **[valid text files](https://platform.openai.com/docs/assistants/tools/file-search/supported-files)**. You may need to explicitly tell your Robo to use the uploaded files in your `systemMessage`.
+- **Insights**: Ensure your `/documents` folder is correctly set up and contains **[valid text files](https://platform.openai.com/docs/assistants/tools/file-search/supported-files)**. You may need to explicitly tell your Robo to use the uploaded files in your `instructions`.
 
 
 ## More on GitHub

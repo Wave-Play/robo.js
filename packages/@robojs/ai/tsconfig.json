@@ -1,0 +1,28 @@
+{
+	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+			"@robojs/ai": ["src/index.ts"],
+			"@/api/*": ["src/api/*"],
+			"@/commands/*": ["src/commands/*"],
+			"@/core/*": ["src/core/*"],
+			"@/engines/*": ["src/engines/*"],
+			"@/events/*": ["src/events/*"],
+			"@/utils/*": ["src/utils/*"]
+		},
+		"target": "ES2021",
+		"lib": ["es2021", "DOM"],
+		"allowJs": true,
+		"skipLibCheck": true,
+		"strict": true,
+		"forceConsistentCasingInFileNames": true,
+		"esModuleInterop": true,
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"incremental": true
+	},
+	"include": ["**/*.ts"],
+	"exclude": ["node_modules"]
+}

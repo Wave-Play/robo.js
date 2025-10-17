@@ -1,0 +1,77 @@
+{
+	"name": "@robojs/ai",
+	"description": "Transform your Robo into a personalized AI chatbot! Supports Discord command execution.",
+	"version": "0.5.8",
+	"private": false,
+	"type": "module",
+	"main": ".robo/build/index.js",
+	"license": "MIT",
+	"author": "WavePlay <dev@waveplay.com> (waveplay.com)",
+	"contributors": [
+		"Pkmmte Xeleon <pk@waveplay.com>"
+	],
+	"files": [
+		".robo/",
+		"src/",
+		"LICENSE",
+		"README.md"
+	],
+	"exports": {
+		".": {
+			"types": "./.robo/build/index.d.ts",
+			"default": "./.robo/build/index.js"
+		},
+		"./types": {
+			"types": "./.robo/build/types.d.ts",
+			"default": "./.robo/build/types.js"
+		},
+		"./engines/openai": {
+			"types": "./.robo/build/engines/openai/index.d.ts",
+			"default": "./.robo/build/engines/openai/index.js"
+		}
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Wave-Play/robo.git",
+		"directory": "packages/plugin-ai"
+	},
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://registry.npmjs.org/"
+	},
+	"scripts": {
+		"build": "robo build plugin",
+		"dev": "NODE_OPTIONS=--enable-source-maps robo build plugin --watch",
+		"test": "tsx --test __tests__/**/*.test.ts"
+	},
+	"devDependencies": {
+		"@discordjs/voice": "^0.16.0",
+		"@robojs/server": "workspace:*",
+		"@swc/core": "^1.3.44",
+		"@types/node": "^18.14.6",
+		"@types/ws": "^8.5.10",
+		"discord.js": "14.22.1",
+		"opusscript": "^0.1.0",
+		"prism-media": "^1.3.5",
+		"resolve-tspaths": "^0.8.23",
+		"robo.js": "workspace:*",
+		"tsx": "^4.7.0",
+		"typescript": "^5.0.0",
+		"ws": "^8.16.0"
+	},
+	"dependencies": {
+		"openai": "^6.0.1"
+	},
+	"peerDependencies": {
+		"@robojs/server": "^0.6.2",
+		"robo.js": "^0.10.28"
+	},
+	"peerDependenciesMeta": {
+		"@robojs/server": {
+			"optional": true
+		},
+		"robo.js": {
+			"optional": false
+		}
+	}
+}
