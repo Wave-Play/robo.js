@@ -13,7 +13,6 @@
 			"packages/@robojs/trpc",
 			"packages/create-discord-activity",
 			"packages/create-robo",
-			"packages/plugin-ai-voice",
 			"packages/plugin-api",
 			"packages/plugin-better-stack",
 			"packages/plugin-confessions",
