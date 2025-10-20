@@ -71,7 +71,7 @@
         "@types/node": "^24.7.0",
         "discord.js": "^14.22.1",
         "prettier": "^3.6.2",
-        "robo.js": "^0.10.31",
+        "robo.js": "workspace:*",
         "typescript": "^5.9.3"
     },
     "peerDependencies": {
