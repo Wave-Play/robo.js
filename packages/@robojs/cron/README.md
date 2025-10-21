@@ -86,6 +86,26 @@ export default () => {
 }
 ```
 
+### Absolute Paths for Plugins
+
+Plugin authors can use absolute paths to reference cron handlers bundled with their plugin. This is particularly useful when your plugin needs to schedule cron jobs using handlers that are distributed as part of the plugin package.
+
+```javascript
+import { Cron } from '@robojs/cron'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+// Resolve the plugin's compiled cron handler to an absolute path
+const here = path.dirname(fileURLToPath(import.meta.url))
+const cronJobPath = path.resolve(here, '../cron/my-handler.js')
+
+// Create cron job with absolute path
+const job = Cron('*/5 * * * * *', cronJobPath)
+await job.save('my-plugin-job')
+```
+
+Using absolute paths allows your plugin to reference its own handlers without requiring consumers to copy files into their project. The cron plugin will automatically detect absolute paths and use them directly, while relative paths (like `/cron/job.js`) continue to be resolved from the consumer's `.robo/build` directory.
+
 ### Persistence
 
 Jobs can be persisted to ensure they continue after a restart and can be retrieved later.
