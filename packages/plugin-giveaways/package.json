@@ -1,96 +1,101 @@
 {
-    "name": "@robojs/plugin-giveaways",
-    "version": "1.0.0",
-    "description": "One-click Discord giveaways plugin for Robo.js - Makes running giveaways effortless with automatic winner selection, persistent storage, and rich moderation tools",
-    "type": "module",
-    "private": false,
-    "keywords": [
-        "robo",
-        "robojs",
-        "robo.js",
-        "discord",
-        "discord.js",
-        "bot",
-        "plugin",
-        "giveaway",
-        "giveaways",
-        "contest",
-        "raffle",
-        "typescript"
-    ],
-    "main": ".robo/build/index.js",
-    "types": ".robo/build/index.d.ts",
-    "license": "MIT",
-    "author": "Aditya Telsinge adityatelsinge89@gmail.com",
-    "contributors": [
-        "Aditya Telsinge adityatelsinge89@gmail.com"
-    ],
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/AdityaTel89/robo.js.git"
+  "name": "@robojs/giveaways",
+  "version": "1.0.0",
+  "description": "One-click Discord giveaways plugin for Robo.js - Makes running giveaways effortless with automatic winner selection, persistent storage, and rich moderation tools",
+  "type": "module",
+  "private": false,
+  "keywords": [
+    "robo",
+    "robojs",
+    "robo.js",
+    "discord",
+    "discord.js",
+    "bot",
+    "plugin",
+    "giveaway",
+    "giveaways",
+    "contest",
+    "raffle",
+    "typescript"
+  ],
+  "main": ".robo/build/index.js",
+  "types": ".robo/build/index.d.ts",
+  "license": "MIT",
+  "author": "Aditya Telsinge adityatelsinge89@gmail.com",
+  "contributors": [
+    "Aditya Telsinge adityatelsinge89@gmail.com"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AdityaTel89/robo.js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AdityaTel89/robojs-giveaways/issues"
+  },
+  "homepage": "https://github.com/AdityaTel89/robojs-giveaways#readme",
+  "files": [
+    ".robo/",
+    "src/",
+    "config/",
+    "LICENSE",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./.robo/build/index.d.ts",
+      "import": "./.robo/build/index.js",
+      "require": "./.robo/build/index.js"
     },
-    "bugs": {
-        "url": "https://github.com/AdityaTel89/robojs-giveaways/issues"
-    },
-    "homepage": "https://github.com/AdityaTel89/robojs-giveaways#readme",
-    "files": [
-        ".robo/",
-        "src/",
-        "config/",
-        "LICENSE",
-        "README.md"
-    ],
-    "exports": {
-        ".": {
-            "types": "./.robo/build/index.d.ts",
-            "import": "./.robo/build/index.js",
-            "require": "./.robo/build/index.js"
-        },
-        "./types": {
-            "types": "./.robo/build/types/giveaway.d.ts",
-            "import": "./.robo/build/types/giveaway.js"
-        }
-    },
-    "publishConfig": {
-        "access": "public",
-        "registry": "https://registry.npmjs.org/"
-    },
-    "scripts": {
-        "build": "robo build plugin",
-        "dev": "robo build plugin --watch",
-        "lint": "prettier --check .",
-        "lint:fix": "prettier --write .",
-        "prepublishOnly": "npm run build",
-        "test": "echo \"Tests coming soon\" && exit 0"
-    },
-    "dependencies": {
-        "ulid": "^2.3.0"
-    },
-    "devDependencies": {
-        "@swc/core": "^1.13.5",
-        "@types/node": "^24.7.0",
-        "discord.js": "^14.22.1",
-        "prettier": "^3.6.2",
-        "robo.js": "workspace:*",
-        "typescript": "^5.9.3"
-    },
-    "peerDependencies": {
-        "discord.js": ">=14.22.0",
-        "robo.js": ">=0.10.1"
-    },
-    "peerDependenciesMeta": {
-        "robo.js": {
-            "optional": false
-        },
-        "discord.js": {
-            "optional": false
-        }
-    },
-    "optionalDependencies": {
-        "@robojs/cron": ">=1.0.0",
-        "@robojs/server": ">=1.0.0"
-    },
-    "engines": {
-        "node": ">=18.0.0"
+    "./types": {
+      "types": "./.robo/build/types/giveaway.d.ts",
+      "import": "./.robo/build/types/giveaway.js"
     }
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "build": "robo build plugin",
+    "dev": "robo build plugin --watch",
+    "lint": "prettier --check .",
+    "lint:fix": "prettier --write .",
+    "prepublishOnly": "npm run build",
+    "pretest": "pnpm run build",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest"
+  },
+  "dependencies": {
+    "ulid": "^2.3.0"
+  },
+  "devDependencies": {
+    "@robojs/cron": "workspace:*",
+    "@robojs/server": "workspace:*",
+    "@swc/core": "^1.13.5",
+    "@types/node": "^24.7.0",
+    "discord.js": "^14.22.1",
+    "prettier": "^3.6.2",
+    "robo.js": "workspace:*",
+    "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+    "discord.js": ">=14.22.0",
+    "robo.js": ">=0.10.1"
+  },
+  "peerDependenciesMeta": {
+    "@robojs/cron": {
+      "optional": true
+    },
+    "@robojs/server": {
+      "optional": true
+    },
+    "discord.js": {
+      "optional": false
+    },
+    "robo.js": {
+      "optional": false
+    }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
 }

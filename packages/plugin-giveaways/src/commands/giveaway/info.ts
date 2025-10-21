@@ -3,6 +3,9 @@ import type { CommandOptions, CommandResult } from 'robo.js'
 import type { CommandInteraction } from 'discord.js'
 import { EmbedBuilder } from 'discord.js'
 import type { Giveaway } from '../../types/giveaway.js'
+import { MESSAGES_NAMESPACE } from '../../core/namespaces.js'
+
+const GIVEAWAY_DATA_NAMESPACE: string[] = ['giveaways', 'data']
 
 export const config = createCommandConfig({
   description: 'Get details about a giveaway',
@@ -22,12 +25,12 @@ export default async (
 ): Promise<CommandResult> => {
   const { message_id } = options
 
-  const giveawayId = await Flashcore.get<string>(`message:${message_id}`)
+  const giveawayId = await Flashcore.get<string>(message_id, { namespace: MESSAGES_NAMESPACE })
   if (!giveawayId) {
     return { content: 'Giveaway not found', ephemeral: true }
   }
 
-  const giveaway = await Flashcore.get<Giveaway>(`giveaway:${giveawayId}`)
+  const giveaway = await Flashcore.get<Giveaway>(giveawayId, { namespace: GIVEAWAY_DATA_NAMESPACE })
   if (!giveaway) {
     return { content: 'Giveaway not found', ephemeral: true }
   }
