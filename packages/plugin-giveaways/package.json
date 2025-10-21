@@ -1,6 +1,6 @@
 {
   "name": "@robojs/giveaways",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "One-click Discord giveaways plugin for Robo.js - Makes running giveaways effortless with automatic winner selection, persistent storage, and rich moderation tools",
   "type": "module",
   "private": false,
@@ -23,7 +23,8 @@
   "license": "MIT",
   "author": "Aditya Telsinge adityatelsinge89@gmail.com",
   "contributors": [
-    "Aditya Telsinge adityatelsinge89@gmail.com"
+    "Aditya Telsinge adityatelsinge89@gmail.com",
+    "Pkmmte Xeleon <pk@waveplay.com>"
   ],
   "repository": {
     "type": "git",
