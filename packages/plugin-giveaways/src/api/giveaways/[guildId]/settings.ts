@@ -1,7 +1,7 @@
 import { Flashcore } from 'robo.js'
 import type { RoboRequest } from '@robojs/server'
-import type { GuildSettings } from '../../../types/giveaway'
-import { DEFAULT_SETTINGS } from '../../../types/giveaway'
+import type { GuildSettings } from '../../../types/giveaway.js'
+import { DEFAULT_SETTINGS } from '../../../types/giveaway.js'
 
 const guildSettingsNamespace = (guildId: string): string[] => [
   'giveaways',

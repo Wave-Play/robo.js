@@ -1,32 +1,26 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["ES2022"],
-    "module": "ESNext",
-    "moduleResolution": "bundler",
     "baseUrl": ".",
     "paths": {
-      "~/*": ["src/*"]
+      "~/*": ["src/*"],
+      "core/*": [".robo/build/core/*"],
+      "utils/*": [".robo/build/utils/*"],
+      "types/*": [".robo/build/types/*"],
+      "index.js": [".robo/build/index.js"]
     },
-    "outDir": "./dist",
-    "rootDir": "./src",
+    "target": "ES2021",
+    "lib": ["es2021", "DOM"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
-    "noEmit": false,
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "incremental": true,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "removeComments": false,
-    "importHelpers": true,
-    "typeRoots": ["./node_modules/@types", "./node_modules/@discordjs"]
+    "incremental": true
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx"],
-  "exclude": ["node_modules", "dist", ".robo"]
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules"]
 }

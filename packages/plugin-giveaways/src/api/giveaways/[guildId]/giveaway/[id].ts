@@ -1,6 +1,6 @@
 import { Flashcore } from 'robo.js'
 import type { RoboRequest } from '@robojs/server'
-import type { Giveaway } from '../../../../types/giveaway'
+import type { Giveaway } from '../../../../types/giveaway.js'
 
 const GIVEAWAY_DATA_NAMESPACE: string[] = ['giveaways', 'data']
 const guildActiveNamespace = (guildId: string): string[] => [
