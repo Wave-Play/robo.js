@@ -1,5 +1,13 @@
 # @roboplay/plugin-api
 
+## 0.6.6
+
+### Patch Changes
+
+- 6348fe5: feat: not found handlers
+- 032d328: patch: special cookie header handling
+- 53c122f: feat: add SPA fallback for client-side routes
+
 ## 0.6.5
 
 ### Patch Changes
