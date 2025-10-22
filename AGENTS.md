@@ -32,7 +32,6 @@ Robo.js powers Discord with activities, bots, web servers, and more. It emphasiz
 - `packages/@robojs/i18n` – Internationalization support with locale management and translation utilities.
 - `packages/@robojs/patch` – Collection of patches for Discord activities such as entry point commands and proxy fixes.
 - `packages/@robojs/trpc` – Sets up a tRPC server and client; requires `@robojs/server`.
-- `packages/plugin-ai-voice` – Extends the AI plugin with voice-channel conversations.
 - `packages/plugin-ai` – AI chatbot with native voice support, vision capabilities, web search with citations, natural language command routing, token usage tracking with configurable limits, and extensible engine architecture. Uses OpenAI's Responses + Conversations APIs by default with support for custom providers. Includes vector store sync for knowledge injection, background task management, image generation, and optional seed commands.
 - `packages/plugin-api` – File-based web server (`@robojs/server`) that maps `/src/api` to HTTP routes.
 - `packages/plugin-better-stack` – Integrates Better Stack for heartbeat monitoring and log ingestion.

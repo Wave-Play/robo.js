@@ -212,7 +212,6 @@ const sidebars = {
 			className: 'sidebar-title'
 		},
 		'plugins/ai',
-		'plugins/ai-voice',
 		'plugins/analytics',
 		'plugins/auth',
 		'plugins/better-stack',
@@ -429,17 +428,6 @@ const sidebars = {
 				{
 					id: 'ref/@robojs/ai/Function.selectOne',
 					label: 'selectOne',
-					type: 'doc'
-				}
-			]
-		},
-		{
-			type: 'category',
-			label: '@robojs/ai-voice',
-			items: [
-				{
-					id: 'ref/@robojs/ai-voice/Function.textToSpeech',
-					label: 'textToSpeech',
 					type: 'doc'
 				}
 			]

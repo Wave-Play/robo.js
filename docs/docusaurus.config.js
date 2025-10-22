@@ -201,7 +201,6 @@ const config = {
 				documents: [
 					// Plugins
 					'packages/plugin-ai/README.md',
-					'packages/plugin-ai-voice/README.md',
 					'packages/@robojs/analytics/README.md',
 					'packages/@robojs/auth/README.md',
 					'packages/plugin-api/README.md',
@@ -407,16 +406,6 @@ const config = {
 				entryPoints: ['../packages/plugin-ai/src/index.ts'],
 				out: 'docs/ref/@robojs/ai',
 				tsconfig: '../packages/plugin-ai/tsconfig.json',
-				...typedocConfig
-			}
-		],
-		[
-			'docusaurus-plugin-typedoc',
-			{
-				id: '@robojs/ai-voice',
-				entryPoints: ['../packages/plugin-ai-voice/src/index.ts'],
-				out: 'docs/ref/@robojs/ai-voice',
-				tsconfig: '../packages/plugin-ai-voice/tsconfig.json',
 				...typedocConfig
 			}
 		],

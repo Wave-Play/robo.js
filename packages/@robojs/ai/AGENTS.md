@@ -4,7 +4,7 @@
 
 ## Mission & Scope
 - Ships the AI chatbot experience for Robo. Handles Discord conversations, slash-command bridging, background tool execution, and (optionally) web/voice front ends.
-- Voice is now native: realtime capture/transcription/playback lives in this package. The legacy `plugin-ai-voice` package is deprecated.
+- Voice is native: realtime capture/transcription/playback lives in this package.
 - Default engine is OpenAI Responses + Conversations; engine contract allows custom providers.
 - Integrates with the broader Robo ecosystem (Flashcore, portal commands, Sage deferral, @robojs/server).
 
@@ -16,7 +16,7 @@
 
 ## Public Surface (`src/index.ts`)
 - Re-exports the `AI` singleton, all `BaseEngine` types, and the `PluginOptions` interface.
-- Downstream consumers: other plugins (e.g. `@robojs/ai-voice`), web API handlers, internal commands.
+- Downstream consumers: other plugins, web API handlers, internal commands.
 
 ## AI Singleton (`src/core/ai.ts`)
 - `AI.chat` – streaming reply flow; enriches messages with system persona, active task context, drained tool digests. Handles typing indicators, command routing, background tasks.
