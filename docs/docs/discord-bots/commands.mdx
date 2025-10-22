@@ -495,10 +495,23 @@ In this example, the `autocomplete` function returns an array of colors that sta
 
 Note: the type of the Interaction is: `AutocompleteInteraction`
 
-## Command Registration
+## Automatic Registration
 
 The cherry on top? You don't need to manually register your commands. Robo.js handles it for you when you run `robo dev` or `robo build`, automatically! However, if things go sideways for some reason, you can use the `--force` flag to force registration.
 
 <Terminal execute>robo build --force</Terminal>
 
+:::tip
+
+You can disable automatic registration by setting `autoRegisterCommands: false` in your config or using the `--no-register` flag. See the **[Command Registration Guide](./command-registration)** for details.
+
+:::
+
 This will also clean up any commands that are no longer in your `commands` directory. Pretty neat, right?
+
+For more control over when and how commands are registered, Robo.js provides a manual registration API. This is especially useful for testing commands in specific guilds before deploying them globally, or for custom deployment workflows.
+
+<CardContainer>
+  <Card href="./command-registration" title="🎯 Command Registration" description="Learn how to manually register commands with full control." />
+  
+</CardContainer>

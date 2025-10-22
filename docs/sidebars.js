@@ -149,6 +149,7 @@ const sidebars = {
 				},
 				'discord-bots/beginner-guide',
 				'discord-bots/commands',
+				'discord-bots/command-registration',
 				'discord-bots/context-menu',
 				{
 					id: 'discord-bots/credentials',
