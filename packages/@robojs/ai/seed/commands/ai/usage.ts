@@ -15,9 +15,22 @@ const TOKEN_FORMAT = new Intl.NumberFormat('en-US')
 const DEFAULT_LIMIT = 5
 const MAX_LIMIT = 20
 
-/**
- * Command config for inspecting how many tokens your community has spent talking to the AI.
- */
+/*
+	AI Usage Command
+
+	This command displays AI token usage statistics for server administrators.
+	Options:
+	- window: choose how to group usage (day, week, month, lifetime)
+	- model: filter results by model identifier
+	- limit: number of entries to show (1-20)
+
+	Requires Manage Server permission and is restricted to servers. You can adjust
+	permissions, add filters, or restyle the embed to fit your community.
+
+	Learn more:
+	- Commands guide: https://robojs.dev/discord-bots/commands
+	- AI plugin docs: https://robojs.dev/plugins/ai
+*/
 export const config = createCommandConfig({
 	defaultMemberPermissions: String(PermissionFlagsBits.ManageGuild),
 	description: 'Inspect AI token usage and enforce spend discipline.',
@@ -47,6 +60,11 @@ export const config = createCommandConfig({
 	]
 } as const)
 
+/**
+ * Retrieves token usage from the AI plugin's ledger, formats an embed with
+ * totals per model/time window, and displays any configured token limits.
+ * Reply is ephemeral to keep usage data private.
+ */
 export default async (
 	interaction: CommandInteraction,
 	options: CommandOptions<typeof config>
@@ -55,6 +73,7 @@ export default async (
 		return { content: 'This command can only be used in servers.', ephemeral: true }
 	}
 
+	// Double-check Manage Server permission at runtime for security.
 	const hasPermission = interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild)
 	if (!hasPermission) {
 		return {
@@ -63,6 +82,7 @@ export default async (
 		}
 	}
 
+	// Defer ephemerally: fetching and aggregating usage data may take time and should remain private.
 	await interaction.deferReply({ ephemeral: true })
 
 	const window = (options.window as WindowValue | undefined) ?? 'day'
@@ -70,6 +90,7 @@ export default async (
 	const model = options.model?.trim() || undefined
 
 	const limits = tokenLedger.getLimits()
+	// Aggregate token usage data based on selected window and optional model filter.
 	const fields = await buildUsageFields({ window, limit, model })
 
 	if (!fields.length) {
@@ -88,6 +109,7 @@ export default async (
 
 async function buildUsageFields(params: { window: WindowValue; limit: number; model?: string }) {
 	if (params.window === 'lifetime') {
+		// Lifetime totals aggregate all usage across all time periods without windowing.
 		const lifetimeTotals = await AI.getLifetimeUsage(params.model)
 		const entries = Object.entries(lifetimeTotals)
 		if (!entries.length) {
@@ -112,6 +134,7 @@ async function buildUsageFields(params: { window: WindowValue; limit: number; mo
 		return []
 	}
 
+	// Windowed summaries group usage by day/week/month for trend analysis.
 	return summary.results.map((item) => ({
 		name: `${item.model} · ${formatWindowLabel(params.window, item.windowKey)}`,
 		value: formatTotals(item.totals)
@@ -119,6 +142,7 @@ async function buildUsageFields(params: { window: WindowValue; limit: number; mo
 }
 
 function formatTotals(totals: { tokensIn: number; tokensOut: number; total: number }): string {
+	// Format numbers with thousands separators and split into prompt (input) and completion (output) tokens.
 	const total = TOKEN_FORMAT.format(totals.total)
 	const inTokens = TOKEN_FORMAT.format(totals.tokensIn)
 	const outTokens = TOKEN_FORMAT.format(totals.tokensOut)
@@ -151,6 +175,7 @@ function buildSummaryDescription(
 	limit: number,
 	limits: ReturnType<typeof tokenLedger.getLimits>
 ): string {
+	// Build the embed description with current filters and any configured token limits for context.
 	const parts: string[] = []
 	const label = WINDOW_CHOICES.find((choice) => choice.value === window)?.name ?? 'Usage'
 	parts.push(`Window: **${label}**`)
