@@ -43,6 +43,60 @@ Robo.js powers Discord with activities, bots, web servers, and more. It emphasiz
 - `packages/plugin-poll` – Adds poll creation and management commands.
 - `packages/plugin-sync` – Real-time state synchronization via `useSyncState`; pairs with `@robojs/server`.
 
+## Plugin Development Standards
+
+This section documents standards that apply to all plugins in the Robo.js ecosystem.
+
+### Logging Standards
+
+**Each plugin must use exactly ONE forked logger named after the plugin.**
+
+All files within a plugin must import and use this shared logger instance - do not create additional scoped loggers.
+
+**Example:**
+- `@robojs/roadmap` uses `logger.fork('roadmap')`
+- `@robojs/analytics` uses `logger.fork('analytics')`
+- Do NOT create multiple forks like `logger.fork('roadmap:sync-engine')` or `logger.fork('date-helpers')`
+
+**Rationale:**
+- Easier log filtering by plugin name
+- Consistent log namespacing across the plugin
+- Simpler log level configuration per plugin
+- Avoids logger proliferation and namespace conflicts
+
+**Recommended pattern:**
+
+```typescript
+// Create shared logger in a central location (e.g., src/core/logger.ts)
+import { logger } from 'robo.js/logger.js';
+export const roadmapLogger = logger.fork('roadmap');
+
+// All other files import and use the shared logger
+// src/core/sync-engine.ts
+import { roadmapLogger } from './logger.js';
+roadmapLogger.info('Starting sync operation');
+
+// src/providers/jira.ts
+import { roadmapLogger } from '../core/logger.js';
+roadmapLogger.debug('Fetching Jira issues');
+```
+
+**What NOT to do:**
+
+```typescript
+// ❌ DON'T: Creating multiple logger forks within a plugin
+
+// src/core/sync-engine.ts
+const syncLogger = logger.fork('roadmap:sync'); // ❌ Wrong
+
+// src/providers/jira.ts
+const jiraLogger = logger.fork('roadmap:jira'); // ❌ Wrong
+```
+
+**Note:** Plugin-specific AGENTS.md files should document their logger instance name and location.
+
+Individual plugins may have additional documentation standards in their own AGENTS.md files (e.g., `packages/@robojs/roadmap/AGENTS.md`).
+
 ## CLI Tools
 
 ### create-robo & create-discord-activity
