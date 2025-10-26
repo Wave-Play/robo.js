@@ -88,7 +88,6 @@ const mergeEvents = (baseEvents: Record<string, EventConfig[]>, newEvents: Recor
 	return mergedEvents
 }
 
-
 // Normalize manifest/env hook variable formats into a consistent shape for serialization.
 function normalizeSeedEnvVariables(
 	variables: Record<string, SeedEnvVariableConfig | string> | undefined
@@ -117,9 +116,7 @@ function normalizeSeedEnvVariables(
 /**
  * Emits an inline seed handler when provided and returns the manifest-safe path.
  */
-async function resolveSeedHookReference(
-	hook: SeedHookHandler | undefined
-): Promise<string | undefined> {
+async function resolveSeedHookReference(hook: SeedHookHandler | undefined): Promise<string | undefined> {
 	if (!hook) {
 		return undefined
 	}
@@ -156,9 +153,7 @@ async function emitInlineSeedHook(handler: SeedHookHandler, scope: 'seed' | 'env
 /**
  * Converts the user config seed definition into the manifest-friendly structure.
  */
-async function serializeSeedConfig(
-	seed: Config['seed']
-): Promise<Manifest['__robo']['seed'] | undefined> {
+async function serializeSeedConfig(seed: Config['seed']): Promise<Manifest['__robo']['seed'] | undefined> {
 	if (!seed) {
 		return undefined
 	}
@@ -211,9 +206,9 @@ export async function generateManifest(generatedDefaults: DefaultGen, type: 'plu
 			language: isTypeScript ? 'typescript' : 'javascript',
 			mode: Mode.get(),
 			seed: await serializeSeedConfig(config.seed),
-		type: type,
-		updatedAt: new Date().toISOString(),
-		version: packageJson.version
+			type: type,
+			updatedAt: new Date().toISOString(),
+			version: packageJson.version
 		},
 		api: {
 			...pluginsManifest.api,
@@ -660,19 +655,20 @@ async function generateEntries<T>(
 							parent = { subroutes: {} }
 							entries[fileKeys[0]] = parent as T
 						}
-						if (!parent.subroutes) {
-							parent.subroutes = {}
-						}
+						parent.subroutes = parent.subroutes ?? {}
 
 						for (let i = 1; i < fileKeys.length - 1; i++) {
 							const key = fileKeys[i]
 							if (!parent.subroutes[key]) {
 								parent.subroutes[key] = { subroutes: {} }
+							} else if (!parent.subroutes[key].subroutes) {
+								parent.subroutes[key].subroutes = {}
 							}
 							parent = parent.subroutes[key]
 						}
 
 						// Add the entry to the parent object
+						parent.subroutes = parent.subroutes ?? {}
 						parent.subroutes[fileKeys[fileKeys.length - 1]] = entry
 					} else {
 						entries[fileKeys[0]] = entry
