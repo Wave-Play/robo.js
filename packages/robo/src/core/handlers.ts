@@ -422,25 +422,27 @@ export function extractCommandOptions(
 	const options: Record<string, unknown> = {}
 
 	commandOptions?.forEach((option) => {
-		if (option.type === 'attachment') {
+		const type = option.type ?? 'string'
+
+		if (type === 'attachment') {
 			options[option.name] = interaction.options.getAttachment(option.name, option.required) ?? undefined
-		} else if (option.type === 'boolean') {
+		} else if (type === 'boolean') {
 			options[option.name] = interaction.options.getBoolean(option.name, option.required) ?? undefined
-		} else if (option.type === 'channel') {
+		} else if (type === 'channel') {
 			options[option.name] = interaction.options.getChannel(option.name, option.required) ?? undefined
-		} else if (option.type === 'integer') {
+		} else if (type === 'integer') {
 			options[option.name] = interaction.options.getInteger(option.name, option.required) ?? undefined
-		} else if (option.type === 'member') {
+		} else if (type === 'member') {
 			options[option.name] = interaction.options.getMember(option.name) ?? undefined
-		} else if (option.type === 'mention') {
+		} else if (type === 'mention') {
 			options[option.name] = interaction.options.getMentionable(option.name, option.required) ?? undefined
-		} else if (option.type === 'number') {
+		} else if (type === 'number') {
 			options[option.name] = interaction.options.getNumber(option.name, option.required) ?? undefined
-		} else if (option.type === 'role') {
+		} else if (type === 'role') {
 			options[option.name] = interaction.options.getRole(option.name, option.required) ?? undefined
-		} else if (option.type === 'string') {
+		} else if (type === 'string') {
 			options[option.name] = interaction.options.getString(option.name, option.required) ?? undefined
-		} else if (option.type === 'user') {
+		} else if (type === 'user') {
 			options[option.name] = interaction.options.getUser(option.name, option.required) ?? undefined
 		}
 	})

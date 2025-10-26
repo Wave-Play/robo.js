@@ -9,6 +9,7 @@ export type ManifestSeedEnvVariables = Record<string, SeedEnvVariableConfig | st
 export interface ManifestSeedEnv {
 	description?: string
 	variables?: ManifestSeedEnvVariables
+	hook?: string
 }
 
 export interface ManifestSeed {
