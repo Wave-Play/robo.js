@@ -149,11 +149,11 @@ function createReminderConfirmationEmbed(event, reminder, channel) {
 				value: `<t:${Math.floor(event.dateTime.getTime() / 1000)}:F>`,
 				inline: true
 			},
-			{
-				name: '📍 Location',
-				value: event.location,
-				inline: true
-			},
+		{
+			name: '📍 Location',
+			value: event.location || 'Not specified',
+			inline: true
+		},
 		{
 			name: '🔔 Reminder Time',
 			value: `<t:${Math.floor(reminder.reminderTime / 1000)}:F>`,
