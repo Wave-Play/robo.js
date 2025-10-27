@@ -1219,7 +1219,7 @@ import {
  * - `add()` and `remove()` create user records if they don't exist
  * - `recalc()` is idempotent - safe to call multiple times
  */
-export const xp = {
+export const XP = {
 	/** Add XP to a user (emits events, triggers role reconciliation) */
 	add: addXPCore,
 
@@ -1253,6 +1253,7 @@ export const xp = {
 	/** Get full user XP record (returns null if not found) */
 	getUser: getUserDataCore
 }
+export const xp = XP
 
 // ============================================================================
 // Leaderboard API
@@ -1268,7 +1269,7 @@ import {
  * Leaderboard API for ranking and leaderboard operations
  *
  * High-performance leaderboard system with intelligent caching for fast queries
- * on large servers. Designed to handle 10k+ users with <200ms response times.
+ * on large servers. Designed to handle 10k+ users with under 200ms response times.
  *
  * **Features:**
  * - In-memory caching of top 100 users per guild

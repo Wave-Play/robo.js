@@ -18,12 +18,35 @@
 - 💬 **MEE6-parity XP mechanics** - Awards 15-25 XP per message with 60-second cooldown
 - 🎯 **Role rewards** - Automatic role assignment with stack or replace modes
 - 🚀 **Multipliers** - Server, role, and user XP boosts (MEE6 Pro parity)
-- 📊 **Cached leaderboards** - Optimized for 10k+ users with <200ms refresh
+- 📊 **Cached leaderboards** - Optimized for 10k+ users with under 200ms refresh
 - 🛡️ **No-XP roles/channels** - Granular control over where XP is earned
 - 🔧 **Admin commands** - Complete control via `/xp` command suite
 - 📈 **Event system** - Real-time hooks for level changes and XP updates
 - 🌐 **REST API** - Optional HTTP endpoints (requires @robojs/server)
 - 💾 **Flashcore persistence** - Guild-scoped data storage with automatic caching
+
+> 🚀 **Build Custom Features in Minutes**
+>
+> The plugin exposes a powerful event-driven API that makes building custom features incredibly easy. No need to fork the plugin or write complex integrations—just listen to events and call imperative functions.
+>
+> Here's a complete level-up announcement system in ~10 lines:
+>
+> ```typescript
+> import { events } from '@robojs/xp'
+> import { client } from 'robo.js'
+>
+> events.onLevelUp(async ({ guildId, userId, newLevel }) => {
+>   const guild = await client.guilds.fetch(guildId)
+>   const channel = guild.channels.cache.find(c => c.name === 'level-ups')
+>   if (!channel?.isTextBased()) return
+>
+>   await channel.send(`🎉 <@${userId}> just reached Level ${newLevel}!`)
+> })
+> ```
+>
+> Use the same pattern to award contest bonuses, apply moderation penalties, enable premium XP boosts, track analytics, or build any custom XP-based feature you can imagine.
+>
+> Check out `seed/events/_start/level-announcements.ts` for a production-ready example with rich embeds and customization options, or explore the [Integration Recipes](#integration-recipes) section below for more patterns.
 
 ## Installation
 
@@ -147,17 +170,17 @@ interface GuildConfig {
 Global defaults apply to all guilds unless overridden. They're stored at `['xp', 'global', 'config']`.
 
 ```ts
-import { XP } from '@robojs/xp'
+import { config } from '@robojs/xp'
 
 // Set global defaults
-await XP.config.setGlobal({
+await config.setGlobal({
   cooldownSeconds: 45,
   xpRate: 1.5,
   leaderboard: { public: true }
 })
 
 // Guild-specific overrides
-await XP.config.set(guildId, {
+await config.set(guildId, {
   cooldownSeconds: 30  // This guild gets 30s cooldown
 })
 ```
@@ -200,6 +223,10 @@ console.log(result.reconciled) // true if level was corrected
 const user = await XP.getUser(guildId, userId)
 const xp = await XP.getXP(guildId, userId)
 const level = await XP.getLevel(guildId, userId)
+
+// User object includes both message counters
+console.log(user.messages)     // Total messages sent: 423
+console.log(user.xpMessages)   // Messages that awarded XP: 156
 ```
 
 **Result Types:**
@@ -239,107 +266,108 @@ interface RecalcResult {
 ### Configuration Management
 
 ```ts
-import { XP } from '@robojs/xp'
+import { config } from '@robojs/xp'
 
 // Get guild configuration
-const config = await XP.config.get(guildId)
+const guildConfig = await config.get(guildId)
 
 // Update guild configuration (partial updates supported)
-await XP.config.set(guildId, {
+await config.set(guildId, {
   cooldownSeconds: 45,
   noXpChannelIds: ['123456789012345678']
 })
 
 // Validate configuration
-const isValid = XP.config.validate(configObject)
+const isValid = config.validate(configObject)
 
 // Global configuration
-const globalConfig = XP.config.getGlobal()
-XP.config.setGlobal({ xpRate: 1.5 })
+const globalConfig = config.getGlobal()
+config.setGlobal({ xpRate: 1.5 })
 ```
 
 ### Leaderboard Queries
 
 ```ts
-import { XP } from '@robojs/xp'
+import { leaderboard } from '@robojs/xp'
 
 // Get top 10 users (offset 0, limit 10)
-const result = await XP.leaderboard.get(guildId, 0, 10)
+const result = await leaderboard.get(guildId, 0, 10)
 // Returns: { entries: Array<{ userId: string; xp: number; level: number; rank: number }>, total: number }
 
 // Get next 10 users (offset 10, limit 10)
-const page2 = await XP.leaderboard.get(guildId, 10, 10)
+const page2 = await leaderboard.get(guildId, 10, 10)
 
 // Get user's rank
-const rankInfo = await XP.leaderboard.getRank(guildId, userId)
+const rankInfo = await leaderboard.getRank(guildId, userId)
 // Returns: { rank: number; total: number } or null if not found
 
 // Manually invalidate cache
-await XP.leaderboard.invalidateCache(guildId)
+await leaderboard.invalidateCache(guildId)
 ```
 
 ### Role Rewards
 
 ```ts
-import { XP } from '@robojs/xp'
+import { reconcileRewards } from '@robojs/xp'
 
 // Manually reconcile role rewards for a user
-await XP.reconcileRewards(guildId, userId)
+await reconcileRewards(guildId, userId)
 // Automatically called on level changes
+// Note: this is also available as rewards.reconcile(guildId, userId)
 ```
 
 ### Math Utilities
 
 ```ts
-import { XP } from '@robojs/xp'
+import { math } from '@robojs/xp'
 
 // XP needed to reach a specific level
-const xpNeeded = XP.math.xpNeededForLevel(10) // 1100
+const xpNeeded = math.xpNeededForLevel(10) // 1100
 
 // Total XP accumulated up to a level
-const totalXp = XP.math.totalXpForLevel(10) // 5005
+const totalXp = math.totalXpForLevel(10) // 5675
 
 // Compute level from total XP
-const progress = XP.math.computeLevelFromTotalXp(5500)
-// { level: 10, inLevel: 495, toNext: 1155 }
+const progress = math.computeLevelFromTotalXp(5500)
+// { level: 9, inLevel: 925, toNext: 175 }
 
 // Progress within current level
-const percent = XP.math.progressInLevel(5500) // 42.86%
+const { percentage } = math.progressInLevel(5500) // ~84.1%
 
 // Validate level or XP
-const isValidLevel = XP.math.isValidLevel(50) // true
-const isValidXp = XP.math.isValidXp(10000) // true
+const isValidLevel = math.isValidLevel(50) // true
+const isValidXp = math.isValidXp(10000) // true
 ```
 
 ### Event System
 
 ```ts
-import { XP } from '@robojs/xp'
+import { events } from '@robojs/xp'
 
 // Listen for level-up events
-XP.events.onLevelUp(async ({ guildId, userId, oldLevel, newLevel, totalXp }) => {
+events.onLevelUp(async ({ guildId, userId, oldLevel, newLevel, totalXp }) => {
   console.log(`User ${userId} leveled up from ${oldLevel} to ${newLevel}!`)
 })
 
 // Listen for level-down events
-XP.events.onLevelDown(async ({ guildId, userId, oldLevel, newLevel, totalXp }) => {
+events.onLevelDown(async ({ guildId, userId, oldLevel, newLevel, totalXp }) => {
   console.log(`User ${userId} lost a level: ${oldLevel} → ${newLevel}`)
 })
 
 // Listen for XP changes
-XP.events.onXPChange(async ({ guildId, userId, oldXp, newXp, delta, reason }) => {
+events.onXPChange(async ({ guildId, userId, oldXp, newXp, delta, reason }) => {
   console.log(`User ${userId} XP changed by ${delta} (reason: ${reason})`)
 })
 
-// One-time listeners
-XP.events.onceLevelUp(handler)
-XP.events.onceLevelDown(handler)
-XP.events.onceXPChange(handler)
+// One-time listeners (generic API)
+events.once('levelUp', handler)
+events.once('levelDown', handler)
+events.once('xpChange', handler)
 
-// Remove listeners
-XP.events.offLevelUp(handler)
-XP.events.offLevelDown(handler)
-XP.events.offXPChange(handler)
+// Remove listeners (generic API)
+events.off('levelUp', handler)
+events.off('levelDown', handler)
+events.off('xpChange', handler)
 ```
 
 **Event Payloads:**
@@ -374,21 +402,63 @@ interface XPChangeEvent {
 ### Constants
 
 ```ts
-import { XP } from '@robojs/xp'
+import { constants } from '@robojs/xp'
 
 // Default configuration values
-XP.constants.DEFAULT_COOLDOWN // 60
-XP.constants.DEFAULT_XP_RATE // 1.0
-XP.constants.MIN_XP_AWARD // 15
-XP.constants.MAX_XP_AWARD // 25
+constants.DEFAULT_COOLDOWN // 60
+constants.DEFAULT_XP_RATE // 1.0
 
 // Level curve formula coefficients
-XP.constants.FORMULA_A // 5
-XP.constants.FORMULA_B // 50
-XP.constants.FORMULA_C // 100
+constants.CURVE_A // 5
+constants.CURVE_B // 50
+constants.CURVE_C // 100
+```
+
+### Additional APIs
+
+#### config.getDefault()
+
+Returns the default MEE6-compatible configuration before applying any global or guild overrides.
+
+```ts
+import { config } from '@robojs/xp'
+
+const defaults = config.getDefault()
+// Useful for building UIs or generating initial configs
+```
+
+#### math.xpDeltaForLevelRange()
+
+Computes the XP difference needed to move between two levels (inclusive of starting point), useful for multi-level jumps and grants.
+
+```ts
+import { math } from '@robojs/xp'
+
+// XP needed to go from level 5 to level 10
+const delta = math.xpDeltaForLevelRange(5, 10)
+```
+
+#### rewards object
+
+The rewards module is also available as an object if you prefer a namespaced import.
+
+```ts
+import { rewards } from '@robojs/xp'
+
+// Reconcile a user's roles based on their current level
+await rewards.reconcile(guildId, userId)
+
+// Alias of reconcile for clarity
+await rewards.reconcileRewards(guildId, userId)
 ```
 
 ## Integration Recipes
+
+The @robojs/xp plugin is designed to be extended. These recipes demonstrate common integration patterns using the event system and imperative API.
+
+For a complete, production-ready example, see `seed/events/_start/level-announcements.ts` which demonstrates MEE6-style level-up announcements with rich embeds, progress bars, and extensive customization options.
+
+Below are additional recipes for common use cases:
 
 ### Contest Plugin: Award Bonus XP
 
@@ -440,17 +510,17 @@ export default async ({ userId, guildId, severity }) => {
 
 ```ts
 // src/events/premium-activated.ts
-import { XP } from '@robojs/xp'
+import { config } from '@robojs/xp'
 
 export default async ({ userId, guildId }) => {
   // Set 1.5x multiplier for premium user
-  const config = await XP.config.get(guildId)
-
-  await XP.config.set(guildId, {
+  const guildConfig = await config.get(guildId)
+  
+  await config.set(guildId, {
     multipliers: {
-      ...config.multipliers,
+      ...guildConfig.multipliers,
       user: {
-        ...(config.multipliers?.user || {}),
+        ...(guildConfig.multipliers?.user || {}),
         [userId]: 1.5
       }
     }
@@ -462,11 +532,11 @@ export default async ({ userId, guildId }) => {
 
 ```ts
 // src/listeners/xp-analytics.ts
-import { XP } from '@robojs/xp'
+import { events, XP } from '@robojs/xp'
 import { logger } from 'robo.js'
 
 // Track all XP changes
-XP.events.onXPChange(async ({ guildId, userId, delta, reason }) => {
+events.onXPChange(async ({ guildId, userId, delta, reason }) => {
   logger.info(`XP Analytics: ${userId} ${delta > 0 ? 'gained' : 'lost'} ${Math.abs(delta)} XP`, {
     guildId,
     userId,
@@ -482,17 +552,34 @@ XP.events.onXPChange(async ({ guildId, userId, delta, reason }) => {
     reason
   })
 })
+
+// Also track message activity
+events.onXPChange(async ({ guildId, userId }) => {
+  const user = await XP.getUser(guildId, userId)
+
+  // Calculate XP efficiency (what % of messages award XP)
+  const efficiency = user.messages > 0
+    ? (user.xpMessages / user.messages * 100).toFixed(1)
+    : 0
+
+  logger.info(`User ${userId} XP efficiency: ${efficiency}%`, {
+    totalMessages: user.messages,
+    xpMessages: user.xpMessages
+  })
+})
 ```
+
+**Note:** Track message efficiency to identify users affected by cooldowns or No-XP restrictions.
 
 ### Announcement Plugin: Send Level-Up Messages
 
 ```ts
 // src/listeners/level-announcements.ts
-import { XP } from '@robojs/xp'
+import { events } from '@robojs/xp'
 import { client } from 'robo.js'
 import { EmbedBuilder } from 'discord.js'
 
-XP.events.onLevelUp(async ({ guildId, userId, newLevel, totalXp }) => {
+events.onLevelUp(async ({ guildId, userId, newLevel, totalXp }) => {
   const guild = await client.guilds.fetch(guildId)
   const user = await guild.members.fetch(userId)
 
@@ -515,10 +602,10 @@ XP.events.onLevelUp(async ({ guildId, userId, newLevel, totalXp }) => {
 
 ```ts
 // src/listeners/custom-rewards.ts
-import { XP } from '@robojs/xp'
+import { events } from '@robojs/xp'
 import { client } from 'robo.js'
 
-XP.events.onLevelUp(async ({ guildId, userId, newLevel }) => {
+events.onLevelUp(async ({ guildId, userId, newLevel }) => {
   const guild = await client.guilds.fetch(guildId)
   const member = await guild.members.fetch(userId)
 
@@ -605,7 +692,8 @@ Response:
     "user": {
       "xp": 5500,
       "level": 10,
-      "messages": 250,
+      "messages": 423,
+      "xpMessages": 156,
       "lastAwardedAt": 1234567890000
     },
     "progress": {
@@ -758,7 +846,7 @@ Flashcore keys live under `['xp', guildId]`:
 | Key | Contents | Example |
 | --- | --- | --- |
 | `config` | Guild config merged with global defaults | `{ cooldownSeconds: 60, xpRate: 1.0, ... }` |
-| `user:{userId}` | UserXP record | `{ xp: 5500, level: 10, messages: 250, lastAwardedAt: 1234567890000 }` |
+| `user:{userId}` | UserXP record | `{ xp: 5500, level: 10, messages: 423, xpMessages: 156, lastAwardedAt: 1234567890000 }` |
 | `members` | Set of tracked member IDs | `['user1', 'user2', ...]` |
 | `lb:{perPage}:{page}` | Leaderboard cache | `[{ userId, xp, level, rank }, ...]` |
 | `schema` | Schema version for future migrations | `1` |
@@ -767,14 +855,28 @@ Global defaults live at `['xp', 'global', 'config']`.
 
 ### UserXP Structure
 
-```ts
+```typescript
 interface UserXP {
-  xp: number           // Total XP accumulated
-  level: number        // Current level (computed from xp)
-  messages: number     // Total messages sent
-  lastAwardedAt: number // Timestamp of last XP award
+  xp: number            // Total XP accumulated
+  level: number         // Current level (computed from xp)
+  messages: number      // Total messages sent in guild text channels
+  xpMessages: number    // Messages that awarded XP (subset of messages)
+  lastAwardedAt: number // Timestamp of last XP award (Unix ms)
 }
 ```
+
+**Message Counter Distinction:**
+
+- `messages` tracks **all** messages sent in guild text channels (increments after basic validation: bot check, guild check, text channel check)
+- `xpMessages` tracks **only** messages that actually awarded XP (increments after all checks pass: No-XP channels, No-XP roles, cooldown)
+
+These counters will differ when:
+- User sends messages within cooldown period (default 60s)
+- User has a No-XP role
+- User sends messages in No-XP channels
+- User is a bot (neither counter increments)
+
+Example: A user sends 100 messages in 5 minutes. With a 60s cooldown, only ~5 messages award XP. Result: `messages: 100`, `xpMessages: 5`.
 
 ### GuildConfig Structure
 
@@ -798,9 +900,9 @@ This plugin provides feature parity with MEE6's XP system:
 ### Configuration for MEE6-like Behavior
 
 ```ts
-import { XP } from '@robojs/xp'
+import { config } from '@robojs/xp'
 
-await XP.config.set(guildId, {
+await config.set(guildId, {
   cooldownSeconds: 60,
   xpRate: 1.0,
   rewardsMode: 'stack',
@@ -823,11 +925,55 @@ await XP.config.set(guildId, {
 
 **Debug:**
 ```ts
-const config = await XP.config.get(guildId)
-console.log('No-XP roles:', config.noXpRoleIds)
-console.log('No-XP channels:', config.noXpChannelIds)
-console.log('Cooldown:', config.cooldownSeconds)
+import { config } from '@robojs/xp'
+const guildConfig = await config.get(guildId)
+console.log('No-XP roles:', guildConfig.noXpRoleIds)
+console.log('No-XP channels:', guildConfig.noXpChannelIds)
+console.log('Cooldown:', guildConfig.cooldownSeconds)
 ```
+
+### Message Counter Discrepancy
+
+**Issue:** The `messages` count is much higher than `xpMessages` count.
+
+**This is expected behavior.** The two counters track different metrics:
+
+- **`messages`**: Total messages sent in guild text channels (after basic validation)
+- **`xpMessages`**: Messages that actually awarded XP (after all checks)
+
+**Common reasons for discrepancy:**
+
+1. **Cooldown blocking XP**: With default 60s cooldown, rapid messages don't award XP
+   - Example: 10 messages in 1 minute → `messages: 10`, `xpMessages: 1`
+
+2. **No-XP channels**: Messages in excluded channels increment `messages` but not `xpMessages`
+   - Check: `config.noXpChannelIds`
+
+3. **No-XP roles**: Users with excluded roles increment `messages` but not `xpMessages`
+   - Check: `config.noXpRoleIds`
+
+4. **Temporary restrictions**: User had No-XP role or was in No-XP channel for a period
+
+**Debug:**
+```typescript
+import { XP, config } from '@robojs/xp'
+const user = await XP.getUser(guildId, userId)
+const guildConfig = await config.get(guildId)
+
+console.log('Total messages:', user.messages)
+console.log('XP messages:', user.xpMessages)
+console.log('Ratio:', (user.xpMessages / user.messages * 100).toFixed(1) + '%')
+console.log('Cooldown:', guildConfig.cooldownSeconds + 's')
+console.log('No-XP channels:', guildConfig.noXpChannelIds)
+console.log('No-XP roles:', guildConfig.noXpRoleIds)
+```
+
+**Expected ratios:**
+- Active chatters with 60s cooldown: 10-30% (depends on chat frequency)
+- Users in No-XP channels frequently: 5-15%
+- Users with temporary No-XP role: varies widely
+
+**This is not a bug** - it's intentional design to track both total activity and XP-eligible activity.
 
 ### Roles Not Being Granted
 
@@ -840,13 +986,15 @@ console.log('Cooldown:', config.cooldownSeconds)
 
 **Fix:**
 ```ts
+import { reconcileRewards, config } from '@robojs/xp'
+
 // Recalculate roles for a user
-await XP.reconcileRewards(guildId, userId)
+await reconcileRewards(guildId, userId)
 
 // Remove deleted roles from config
-const config = await XP.config.get(guildId)
-const validRewards = config.roleRewards.filter(r => guild.roles.cache.has(r.roleId))
-await XP.config.set(guildId, { roleRewards: validRewards })
+const guildConfig = await config.get(guildId)
+const validRewards = guildConfig.roleRewards.filter(r => guild.roles.cache.has(r.roleId))
+await config.set(guildId, { roleRewards: validRewards })
 ```
 
 ### Leaderboard Showing Stale Data
@@ -855,8 +1003,9 @@ await XP.config.set(guildId, { roleRewards: validRewards })
 
 **Solution:**
 ```ts
+import { leaderboard } from '@robojs/xp'
 // Manually invalidate cache
-await XP.leaderboard.invalidateCache(guildId)
+await leaderboard.invalidateCache(guildId)
 
 // Or wait for TTL to expire (auto-refreshes on next query)
 ```
@@ -871,9 +1020,10 @@ await XP.leaderboard.invalidateCache(guildId)
 
 **Cache warming:**
 ```ts
+import { leaderboard } from '@robojs/xp'
 // Warm cache for all guilds (top 100 users)
 for (const guildId of guildIds) {
-  await XP.leaderboard.get(guildId, 0, 100)
+  await leaderboard.get(guildId, 0, 100)
 }
 ```
 
