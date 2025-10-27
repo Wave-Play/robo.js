@@ -17,9 +17,9 @@ export const config = createCommandConfig({
 export default async (interaction) => {
 	logger.info(`Event create command used by ${interaction.user.tag}`)
 
-	if (!interaction.member.permissions.has('ManageEvents') && !interaction.member.permissions.has('Administrator')) {
+	if (!interaction.member.permissions.has('ManageGuild') && !interaction.member.permissions.has('Administrator')) {
 		return interaction.reply({
-			content: '❌ You need the "Manage Events" permission to create events.',
+			content: '❌ You need the "Manage Guild" permission to create events.',
 			ephemeral: true
 		})
 	}

@@ -122,7 +122,7 @@ Users can interact with event posts using buttons:
 ### Required Permissions
 
 **For Event Creators:**
-- `Manage Events` permission OR `Administrator`
+- `Manage Guild` permission OR `Administrator`
 
 **For All Users:**
 - `Use Application Commands`

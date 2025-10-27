@@ -36,9 +36,9 @@ export const config = createCommandConfig({
 export default async (interaction) => {
 	logger.info(`Event remind command used by ${interaction.user.tag}`)
 
-	if (!interaction.member.permissions.has('ManageEvents') && !interaction.member.permissions.has('Administrator')) {
+	if (!interaction.member.permissions.has('ManageGuild') && !interaction.member.permissions.has('Administrator')) {
 		return interaction.reply({
-			content: '❌ You need the "Manage Events" permission to set up reminders.',
+			content: '❌ You need the "Manage Guild" permission to set up reminders.',
 			ephemeral: true
 		})
 	}
