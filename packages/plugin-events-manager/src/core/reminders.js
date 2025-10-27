@@ -24,18 +24,31 @@ export async function processReminders(client) {
  */
 async function processGuildReminders(client, guildId, guild) {
 	const reminders = await getAllReminders(guildId)
-	const now = new Date()
+	const nowMs = Date.now()
+	const MAX_BACKLOG_MS = 7 * 24 * 60 * 60 * 1000 // Process overdue reminders up to 7 days
+
+	// Sort reminders in deterministic order (oldest first)
+	reminders.sort((a, b) => {
+		const aMs = new Date(a.reminderTime).getTime()
+		const bMs = new Date(b.reminderTime).getTime()
+		return aMs - bMs
+	})
 
 	for (const reminder of reminders) {
 		try {
-			// Convert reminderTime to Date if it's not already
-			const reminderTime = reminder.reminderTime instanceof Date 
-				? reminder.reminderTime 
+			// Normalize and validate date
+			const reminderTime = reminder.reminderTime instanceof Date
+				? reminder.reminderTime
 				: new Date(reminder.reminderTime)
+			const rMs = reminderTime.getTime()
+			
+			if (Number.isNaN(rMs)) {
+				logger.warn(`Invalid reminderTime for reminder ${reminder.id}; skipping`)
+				continue
+			}
 
-			// Check if reminder is due (within the last minute to avoid missing)
-			const timeDiff = now - reminderTime
-			const isDue = timeDiff >= 0 && timeDiff < 120000 // Within last 2 minutes
+			// Send if due; allow backlog up to MAX_BACKLOG_MS
+			const isDue = nowMs >= rMs && (nowMs - rMs) <= MAX_BACKLOG_MS
 
 			if (isDue) {
 				await sendReminder(client, reminder, guildId, guild)
