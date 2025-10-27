@@ -1,9 +1,21 @@
+<p align="center">✨ <strong>Generated with <a href="https://robojs.dev/create-robo">create-robo</a> magic!</strong> ✨</p>
+
+---
+
 # @robojs/giveaways
 
 🎉 One-click Discord giveaways plugin for Robo.js - Makes running giveaways effortless with automatic winner selection, persistent storage, and rich moderation tools.
 
-[![npm version](https://badge.fury.io/js/%40robojs%2Fgiveaways.svg)](https://www.npmjs.com/package/@robojs/giveaways)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<div align="center">
+  <a href="https://github.com/Wave-Play/robo/blob/main/LICENSE"><img alt="GitHub license" src="https://img.shields.io/github/license/Wave-Play/robo" /></a>
+  <a href="https://www.npmjs.com/package/@robojs/giveaways"><img alt="npm" src="https://img.shields.io/npm/v/@robojs/giveaways" /></a>
+  <a href="https://packagephobia.com/result?p=@robojs/giveaways@latest"><img alt="install size" src="https://packagephobia.com/badge?p=@robojs/giveaways@latest" /></a>
+  <a href="https://roboplay.dev/discord"><img alt="Discord" src="https://img.shields.io/discord/1087134933908193330?color=7289da" /></a>
+</div>
+
+➞ [📚 **Documentation:** Getting started](https://robojs.dev/docs/getting-started)
+
+➞ [🚀 **Community:** Join our Discord server](https://roboplay.dev/discord)
 
 ## Features
 
@@ -18,9 +30,17 @@
 🌐 **Optional Web API** - REST endpoints for dashboards (requires @robojs/server)  
 🛡️ **Permission Checks** - Manage Server permission for admin commands
 
-## Installation
+## 💻 Getting Started
 
+```bash
 npx robo add @robojs/giveaways
+```
+
+New to **[Robo.js](https://robojs.dev)**? Start your project with this plugin pre-installed:
+
+```bash
+npx create-robo <project-name> -p @robojs/giveaways
+```
 
 ## Quick Start
 
