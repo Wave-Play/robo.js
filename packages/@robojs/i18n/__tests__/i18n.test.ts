@@ -270,4 +270,25 @@ describe('@robojs/i18n – README usage', () => {
 		expect('nameKey' in (cfg.options?.[0] as any)).toBe(false)
 		expect('descriptionKey' in (cfg.options?.[0] as any)).toBe(false)
 	})
+
+		test('createCommandConfig(): tolerates missing description keys', () => {
+			const cfg = createCommandConfig({
+				nameKey: 'commands:ping.name',
+				description: 'Manual description',
+				options: [
+					{
+						type: 'string',
+						name: 'text',
+						nameKey: 'commands:ping.arg.name'
+					}
+				]
+			} as const) as CommandConfig
+
+			expect(cfg.description).toBe('Manual description')
+			expect(cfg.descriptionLocalizations).toBeUndefined()
+
+			const option = cfg.options?.[0]
+			expect(option?.description).toBeUndefined()
+			expect(option?.descriptionLocalizations).toBeUndefined()
+		})
 })
