@@ -136,6 +136,10 @@ function calculateReminderTime(eventDateTime, reminderTimeString) {
 
 
 function createReminderConfirmationEmbed(event, reminder, channel, eventDateTime) {
+	const reminderTime = typeof reminder.reminderTime === 'number' 
+		? reminder.reminderTime 
+		: new Date(reminder.reminderTime).getTime()
+	
 	const embed = new EmbedBuilder()
 		.setTitle('⏰ Reminder Set Successfully')
 		.setDescription(`A reminder has been scheduled for **${event.title}**`)
@@ -158,7 +162,7 @@ function createReminderConfirmationEmbed(event, reminder, channel, eventDateTime
 		},
 		{
 			name: '🔔 Reminder Time',
-			value: `<t:${Math.floor(reminder.reminderTime / 1000)}:F>`,
+			value: `<t:${Math.floor(reminderTime / 1000)}:F>`,
 			inline: false
 		},
 			{
