@@ -53,7 +53,7 @@ export default async (interaction) => {
 
 		await interaction.reply({
 			embeds: [embed],
-			components: buttons.length > 0 ? [buttons] : []
+			components: [buttons]
 		})
 
 	} catch (error) {
