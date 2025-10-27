@@ -1,6 +1,7 @@
 import { createCommandConfig, logger } from 'robo.js'
 import { EmbedBuilder } from 'discord.js'
 import { searchEvents, saveReminder } from '../core/storage.js'
+import { generateReminderId } from '../core/utils.js'
 
 export const config = createCommandConfig({
 	description: 'Set up automatic reminders for events',
@@ -131,9 +132,6 @@ function calculateReminderTime(eventDateTime, reminderTimeString) {
 	return new Date(eventTime - offsetMs)
 }
 
-function generateReminderId() {
-	return 'rem_' + Math.random().toString(36).substr(2, 9)
-}
 
 function createReminderConfirmationEmbed(event, reminder, channel) {
 	const embed = new EmbedBuilder()

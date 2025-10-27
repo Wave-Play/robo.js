@@ -1,6 +1,7 @@
 import { logger } from 'robo.js'
 import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
 import { saveEvent } from '../../core/storage.js'
+import { generateEventId } from '../../core/utils.js'
 
 export default async (interaction) => {
 	if (!interaction.isModalSubmit()) return
@@ -110,9 +111,6 @@ function parseDateTime(dateTimeString) {
 	return null
 }
 
-function generateEventId() {
-	return Math.random().toString(36).substr(2, 9)
-}
 
 function createEventEmbed(eventData) {
 	const embed = new EmbedBuilder()
