@@ -24,26 +24,44 @@ async function handleRSVPButton(interaction) {
 			})
 		}
 		
-		const [, rsvpType, eventId] = match
-		const userId = interaction.user.id
-		const userName = interaction.user.displayName
+	const [, rsvpType, eventId] = match
+	const userId = interaction.user.id
+	const userName = interaction.user.displayName
+
+	const event = await getEvent(interaction.guild.id, eventId)
+	
+	if (!event) {
+			return interaction.reply({
+				content: '❌ Event not found.',
+				ephemeral: true
+			})
+		}
+
+		if (rsvpType === 'yes' && event.maxAttendees) {
+			const currentGoing = event.attendees.going.filter(id => id !== userId).length
+			
+			if (currentGoing >= event.maxAttendees) {
+				const updatedEvent = await updateRSVP(interaction.guild.id, eventId, userId, 'maybe')
+				
+				if (!updatedEvent) {
+					return interaction.reply({
+						content: '❌ Error updating RSVP.',
+						ephemeral: true
+					})
+				}
+				
+				return interaction.reply({
+					content: `❌ This event is at capacity (${event.maxAttendees}/${event.maxAttendees} attendees). You've been added to the maybe list instead.`,
+					ephemeral: true
+				})
+			}
+		}
 
 		const updatedEvent = await updateRSVP(interaction.guild.id, eventId, userId, rsvpType)
 		
 		if (!updatedEvent) {
 			return interaction.reply({
-				content: '❌ Event not found or error updating RSVP.',
-				ephemeral: true
-			})
-		}
-
-		if (rsvpType === 'yes' && updatedEvent.maxAttendees && updatedEvent.currentAttendees > updatedEvent.maxAttendees) {
-			updatedEvent.attendees.going = updatedEvent.attendees.going.filter(id => id !== userId)
-			updatedEvent.currentAttendees = updatedEvent.attendees.going.length
-			await updateRSVP(interaction.guild.id, eventId, userId, 'maybe')
-			
-			return interaction.reply({
-				content: `❌ This event is at capacity (${updatedEvent.maxAttendees} attendees). You've been added to the maybe list instead.`,
+				content: '❌ Error updating RSVP.',
 				ephemeral: true
 			})
 		}
