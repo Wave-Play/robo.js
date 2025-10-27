@@ -1,6 +1,5 @@
 import { createCommandConfig, logger } from 'robo.js'
 import { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } from 'discord.js'
-import { saveEvent } from '../core/storage.js'
 
 export const config = createCommandConfig({
 	description: 'Create a new community event'
