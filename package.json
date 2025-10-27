@@ -12,6 +12,7 @@
 			"packages/@robojs/patch",
 			"packages/@robojs/roadmap",
 			"packages/@robojs/trpc",
+			"packages/@robojs/xp",
 			"packages/create-discord-activity",
 			"packages/create-robo",
 			"packages/plugin-api",

@@ -1,0 +1,62 @@
+{
+	"name": "@robojs/xp",
+	"description": "Experience points and leveling plugin for Robo.js",
+	"version": "0.0.0",
+	"type": "module",
+	"private": false,
+	"keywords": [
+		"bot",
+		"discord",
+		"discord.js",
+		"robo",
+		"robo.js",
+		"typescript"
+	],
+	"main": ".robo/build/index.js",
+	"license": "MIT",
+	"author": "WavePlay <dev@waveplay.com> (waveplay.com)",
+	"contributors": [
+		"Pkmmte Xeleon <pk@waveplay.com>"
+	],
+	"files": [
+		".robo/",
+		"src/",
+		"LICENSE",
+		"README.md"
+	],
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://registry.npmjs.org/"
+	},
+	"scripts": {
+		"build": "robo build plugin",
+		"dev": "robo build plugin --watch",
+		"lint": "eslint src --ext .ts",
+		"lint:style": "prettier --write .",
+		"prepublishOnly": "robo build plugin",
+		"test": "tsx --test __tests__/**/*.test.ts",
+		"test:coverage": "tsx --test --experimental-test-coverage __tests__/**/*.test.ts"
+	},
+	"devDependencies": {
+		"@robojs/server": "workspace:*",
+		"@swc/core": "^1.13.5",
+		"@types/node": "^24.6.2",
+		"discord.js": "^14.22.1",
+		"prettier": "^3.6.2",
+		"robo.js": "workspace:*",
+		"tsx": "^4.17.0",
+		"typescript": "^5.9.3"
+	},
+	"peerDependencies": {
+		"@robojs/server": "^0.6.0",
+		"robo.js": "^0.10.1"
+	},
+	"peerDependenciesMeta": {
+		"@robojs/server": {
+			"optional": true
+		},
+		"robo.js": {
+			"optional": false
+		}
+	}
+}

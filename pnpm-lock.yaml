@@ -339,6 +339,33 @@ importers:
         specifier: ^5.4.5
         version: 5.6.3
 
+  packages/@robojs/xp:
+    devDependencies:
+      '@robojs/server':
+        specifier: workspace:*
+        version: link:../../plugin-api
+      '@swc/core':
+        specifier: ^1.13.5
+        version: 1.13.5
+      '@types/node':
+        specifier: ^24.6.2
+        version: 24.9.1
+      discord.js:
+        specifier: ^14.22.1
+        version: 14.22.1
+      prettier:
+        specifier: ^3.6.2
+        version: 3.6.2
+      robo.js:
+        specifier: workspace:*
+        version: link:../../robo
+      tsx:
+        specifier: ^4.17.0
+        version: 4.19.2
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   packages/create-discord-activity:
     dependencies:
       discord.js:
@@ -747,6 +774,37 @@ importers:
       typescript:
         specifier: ^5.7.2
         version: 5.7.2
+
+  temp/roadmap-1:
+    dependencies:
+      '@robojs/ai':
+        specifier: workspace:*
+        version: link:../../packages/@robojs/ai
+      '@robojs/roadmap':
+        specifier: workspace:*
+        version: link:../../packages/@robojs/roadmap
+      '@robojs/xp':
+        specifier: link:/Users/pkmmte/Documents/GitHub/robo.js/packages/@robojs/xp
+        version: link:../../packages/@robojs/xp
+      discord.js:
+        specifier: ^14.23.2
+        version: 14.24.0
+      robo.js:
+        specifier: workspace:*
+        version: link:../../packages/robo
+    devDependencies:
+      '@swc/core':
+        specifier: ^1.13.5
+        version: 1.13.5
+      '@types/node':
+        specifier: ^24.8.1
+        version: 24.9.1
+      prettier:
+        specifier: ^3.6.2
+        version: 3.6.2
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
 
 packages:
 
