@@ -1,6 +1,10 @@
-<p align="center"><strong>@robojs/xp</strong> • MEE6-style chat XP for Robo.js</p>
+<p align="center">✨ <strong>Generated with <a href="https://robojs.dev/create-robo">create-robo</a> magic!</strong> ✨</p>
 
 ---
+
+# @robojs/xp
+
+MEE6-style chat XP system that exposes a powerful event-driven API that makes building custom features incredibly easy. No need to fork the plugin or write complex integrations—just listen to events and call imperative functions.
 
 <div align="center">
   <a href="https://github.com/Wave-Play/robo/blob/main/LICENSE"><img alt="GitHub license" src="https://img.shields.io/github/license/Wave-Play/robo" /></a>
@@ -25,39 +29,37 @@
 - 🌐 **REST API** - Optional HTTP endpoints (requires @robojs/server)
 - 💾 **Flashcore persistence** - Guild-scoped data storage with automatic caching
 
-> 🚀 **Build Custom Features in Minutes**
->
-> The plugin exposes a powerful event-driven API that makes building custom features incredibly easy. No need to fork the plugin or write complex integrations—just listen to events and call imperative functions.
->
-> Here's a complete level-up announcement system in ~10 lines:
->
-> ```typescript
-> import { events } from '@robojs/xp'
-> import { client } from 'robo.js'
->
-> events.onLevelUp(async ({ guildId, userId, newLevel }) => {
->   const guild = await client.guilds.fetch(guildId)
->   const channel = guild.channels.cache.find(c => c.name === 'level-ups')
->   if (!channel?.isTextBased()) return
->
->   await channel.send(`🎉 <@${userId}> just reached Level ${newLevel}!`)
-> })
-> ```
->
-> Use the same pattern to award contest bonuses, apply moderation penalties, enable premium XP boosts, track analytics, or build any custom XP-based feature you can imagine.
->
-> Check out `seed/events/_start/level-announcements.ts` for a production-ready example with rich embeds and customization options, or explore the [Integration Recipes](#integration-recipes) section below for more patterns.
+## 🚀 **Build Custom Features in Minutes**
 
-## Installation
+Here's a complete level-up announcement system in ~10 lines:
+
+```typescript
+import { events } from '@robojs/xp'
+import { client } from 'robo.js'
+
+events.onLevelUp(async ({ guildId, userId, newLevel }) => {
+	const guild = await client.guilds.fetch(guildId)
+	const channel = guild.channels.cache.find((c) => c.name === 'level-ups')
+	if (!channel?.isTextBased()) return
+
+	await channel.send(`🎉 <@${userId}> just reached Level ${newLevel}!`)
+})
+```
+
+Use the same pattern to award contest bonuses, apply moderation penalties, enable premium XP boosts, track analytics, or build any custom XP-based feature you can imagine.
+
+Check out `seed/events/_start/level-announcements.ts` for a production-ready example with rich embeds and customization options, or explore the [Integration Recipes](#integration-recipes) section below for more patterns.
+
+## 💻 Getting Started
 
 ```bash
 npx robo add @robojs/xp
 ```
 
-Or scaffold a new Robo preloaded with XP:
+New to **[Robo.js](https://robojs.dev)**? Start your project with this plugin pre-installed:
 
 ```bash
-npx create-robo my-robo -p @robojs/xp
+npx create-robo <project-name> -p @robojs/xp
 ```
 
 ### Optional: REST API
@@ -74,55 +76,55 @@ npx robo add @robojs/server
 
 #### XP Manipulation
 
-| Command | Description | Options |
-| --- | --- | --- |
-| `/xp give <user> <amount> [reason]` | Award XP to a user | `user` (required), `amount` (1-1,000,000), `reason` (optional) |
-| `/xp remove <user> <amount> [reason]` | Remove XP from a user | `user` (required), `amount` (1-1,000,000), `reason` (optional) |
-| `/xp set <user> <amount> [reason]` | Set exact XP value | `user` (required), `amount` (0-1,000,000), `reason` (optional) |
-| `/xp recalc <user>` | Recalculate level and reconcile roles | `user` (required) |
+| Command                               | Description                           | Options                                                        |
+| ------------------------------------- | ------------------------------------- | -------------------------------------------------------------- |
+| `/xp give <user> <amount> [reason]`   | Award XP to a user                    | `user` (required), `amount` (1-1,000,000), `reason` (optional) |
+| `/xp remove <user> <amount> [reason]` | Remove XP from a user                 | `user` (required), `amount` (1-1,000,000), `reason` (optional) |
+| `/xp set <user> <amount> [reason]`    | Set exact XP value                    | `user` (required), `amount` (0-1,000,000), `reason` (optional) |
+| `/xp recalc <user>`                   | Recalculate level and reconcile roles | `user` (required)                                              |
 
 #### Role Rewards
 
-| Command | Description | Options |
-| --- | --- | --- |
-| `/xp rewards add <level> <role>` | Add role reward at level | `level` (1-1000), `role` (required) |
-| `/xp rewards remove <level>` | Remove role reward | `level` (required) |
-| `/xp rewards list` | List all role rewards | None |
-| `/xp rewards mode <mode>` | Set stack or replace mode | `mode` (`stack` or `replace`) |
-| `/xp rewards remove-on-loss <enabled>` | Toggle reward removal on XP loss | `enabled` (boolean) |
+| Command                                | Description                      | Options                             |
+| -------------------------------------- | -------------------------------- | ----------------------------------- |
+| `/xp rewards add <level> <role>`       | Add role reward at level         | `level` (1-1000), `role` (required) |
+| `/xp rewards remove <level>`           | Remove role reward               | `level` (required)                  |
+| `/xp rewards list`                     | List all role rewards            | None                                |
+| `/xp rewards mode <mode>`              | Set stack or replace mode        | `mode` (`stack` or `replace`)       |
+| `/xp rewards remove-on-loss <enabled>` | Toggle reward removal on XP loss | `enabled` (boolean)                 |
 
 **Stack Mode:** Users keep all role rewards from previous levels
 **Replace Mode:** Users only get the highest level role reward
 
 #### Configuration
 
-| Command | Description | Options |
-| --- | --- | --- |
-| `/xp config get` | View current configuration | None |
-| `/xp config set-cooldown <seconds>` | Set XP award cooldown | `seconds` (0-3600) |
-| `/xp config set-xp-rate <rate>` | Set XP rate multiplier | `rate` (0.1-10.0) |
-| `/xp config add-no-xp-role <role>` | Add No-XP role | `role` (required) |
-| `/xp config remove-no-xp-role <role>` | Remove No-XP role | `role` (required) |
-| `/xp config add-no-xp-channel <channel>` | Add No-XP channel | `channel` (required) |
-| `/xp config remove-no-xp-channel <channel>` | Remove No-XP channel | `channel` (required) |
-| `/xp config set-leaderboard-public <enabled>` | Toggle public leaderboard | `enabled` (boolean) |
+| Command                                       | Description                | Options              |
+| --------------------------------------------- | -------------------------- | -------------------- |
+| `/xp config get`                              | View current configuration | None                 |
+| `/xp config set-cooldown <seconds>`           | Set XP award cooldown      | `seconds` (0-3600)   |
+| `/xp config set-xp-rate <rate>`               | Set XP rate multiplier     | `rate` (0.1-10.0)    |
+| `/xp config add-no-xp-role <role>`            | Add No-XP role             | `role` (required)    |
+| `/xp config remove-no-xp-role <role>`         | Remove No-XP role          | `role` (required)    |
+| `/xp config add-no-xp-channel <channel>`      | Add No-XP channel          | `channel` (required) |
+| `/xp config remove-no-xp-channel <channel>`   | Remove No-XP channel       | `channel` (required) |
+| `/xp config set-leaderboard-public <enabled>` | Toggle public leaderboard  | `enabled` (boolean)  |
 
 #### Multipliers
 
-| Command | Description | Options |
-| --- | --- | --- |
-| `/xp multiplier server <multiplier>` | Set server-wide XP multiplier | `multiplier` (0.1-10.0) |
-| `/xp multiplier role <role> <multiplier>` | Set role XP multiplier | `role`, `multiplier` (0.1-10.0) |
-| `/xp multiplier user <user> <multiplier>` | Set user XP multiplier | `user`, `multiplier` (0.1-10.0) |
-| `/xp multiplier remove-role <role>` | Remove role multiplier | `role` (required) |
-| `/xp multiplier remove-user <user>` | Remove user multiplier | `user` (required) |
+| Command                                   | Description                   | Options                         |
+| ----------------------------------------- | ----------------------------- | ------------------------------- |
+| `/xp multiplier server <multiplier>`      | Set server-wide XP multiplier | `multiplier` (0.1-10.0)         |
+| `/xp multiplier role <role> <multiplier>` | Set role XP multiplier        | `role`, `multiplier` (0.1-10.0) |
+| `/xp multiplier user <user> <multiplier>` | Set user XP multiplier        | `user`, `multiplier` (0.1-10.0) |
+| `/xp multiplier remove-role <role>`       | Remove role multiplier        | `role` (required)               |
+| `/xp multiplier remove-user <user>`       | Remove user multiplier        | `user` (required)               |
 
 ### User Commands (No Permission Required)
 
-| Command | Description | Options |
-| --- | --- | --- |
-| `/rank [user]` | View rank card with progress | `user` (optional, defaults to self) |
-| `/leaderboard [page]` | View server leaderboard | `page` (optional, default: 1) |
+| Command               | Description                  | Options                             |
+| --------------------- | ---------------------------- | ----------------------------------- |
+| `/rank [user]`        | View rank card with progress | `user` (optional, defaults to self) |
+| `/leaderboard [page]` | View server leaderboard      | `page` (optional, default: 1)       |
 
 > **Note:** `/leaderboard` requires admin permission when `leaderboard.public` is `false`
 
@@ -132,36 +134,36 @@ npx robo add @robojs/server
 
 ```ts
 interface GuildConfig {
-  // Basic settings
-  cooldownSeconds: number          // Per-user message cooldown (default: 60)
-  xpRate: number                   // XP rate multiplier (default: 1.0)
+	// Basic settings
+	cooldownSeconds: number // Per-user message cooldown (default: 60)
+	xpRate: number // XP rate multiplier (default: 1.0)
 
-  // Exclusions
-  noXpRoleIds: string[]            // Roles that don't earn XP
-  noXpChannelIds: string[]         // Channels that don't award XP
+	// Exclusions
+	noXpRoleIds: string[] // Roles that don't earn XP
+	noXpChannelIds: string[] // Channels that don't award XP
 
-  // Role rewards
-  roleRewards: RoleReward[]        // Level → Role mappings
-  rewardsMode: 'stack' | 'replace' // Stack (keep all) or replace (highest only)
-  removeRewardOnXpLoss: boolean    // Remove roles when XP drops below level
+	// Role rewards
+	roleRewards: RoleReward[] // Level → Role mappings
+	rewardsMode: 'stack' | 'replace' // Stack (keep all) or replace (highest only)
+	removeRewardOnXpLoss: boolean // Remove roles when XP drops below level
 
-  // Multipliers (MEE6 Pro parity)
-  multipliers: {
-    server?: number                // Server-wide multiplier
-    role?: Record<string, number>  // Per-role multipliers
-    user?: Record<string, number>  // Per-user multipliers
-  }
+	// Multipliers (MEE6 Pro parity)
+	multipliers: {
+		server?: number // Server-wide multiplier
+		role?: Record<string, number> // Per-role multipliers
+		user?: Record<string, number> // Per-user multipliers
+	}
 
-  // Leaderboard
-  leaderboard: {
-    public: boolean                // Allow non-admins to view
-  }
+	// Leaderboard
+	leaderboard: {
+		public: boolean // Allow non-admins to view
+	}
 
-  // Theme (future use)
-  theme: {
-    embedColor?: string            // Hex color for embeds
-    backgroundUrl?: string         // Custom rank card background
-  }
+	// Theme (future use)
+	theme: {
+		embedColor?: string // Hex color for embeds
+		backgroundUrl?: string // Custom rank card background
+	}
 }
 ```
 
@@ -174,14 +176,14 @@ import { config } from '@robojs/xp'
 
 // Set global defaults
 await config.setGlobal({
-  cooldownSeconds: 45,
-  xpRate: 1.5,
-  leaderboard: { public: true }
+	cooldownSeconds: 45,
+	xpRate: 1.5,
+	leaderboard: { public: true }
 })
 
 // Guild-specific overrides
 await config.set(guildId, {
-  cooldownSeconds: 30  // This guild gets 30s cooldown
+	cooldownSeconds: 30 // This guild gets 30s cooldown
 })
 ```
 
@@ -225,41 +227,41 @@ const xp = await XP.getXP(guildId, userId)
 const level = await XP.getLevel(guildId, userId)
 
 // User object includes both message counters
-console.log(user.messages)     // Total messages sent: 423
-console.log(user.xpMessages)   // Messages that awarded XP: 156
+console.log(user.messages) // Total messages sent: 423
+console.log(user.xpMessages) // Messages that awarded XP: 156
 ```
 
 **Result Types:**
 
 ```ts
 interface XPChangeResult {
-  oldXp: number
-  newXp: number
-  oldLevel: number
-  newLevel: number
-  leveledUp: boolean
+	oldXp: number
+	newXp: number
+	oldLevel: number
+	newLevel: number
+	leveledUp: boolean
 }
 
 interface XPRemoveResult {
-  oldXp: number
-  newXp: number
-  oldLevel: number
-  newLevel: number
-  leveledDown: boolean
+	oldXp: number
+	newXp: number
+	oldLevel: number
+	newLevel: number
+	leveledDown: boolean
 }
 
 interface XPSetResult {
-  oldXp: number
-  newXp: number
-  oldLevel: number
-  newLevel: number
+	oldXp: number
+	newXp: number
+	oldLevel: number
+	newLevel: number
 }
 
 interface RecalcResult {
-  oldLevel: number
-  newLevel: number
-  totalXp: number
-  reconciled: boolean
+	oldLevel: number
+	newLevel: number
+	totalXp: number
+	reconciled: boolean
 }
 ```
 
@@ -273,8 +275,8 @@ const guildConfig = await config.get(guildId)
 
 // Update guild configuration (partial updates supported)
 await config.set(guildId, {
-  cooldownSeconds: 45,
-  noXpChannelIds: ['123456789012345678']
+	cooldownSeconds: 45,
+	noXpChannelIds: ['123456789012345678']
 })
 
 // Validate configuration
@@ -346,17 +348,17 @@ import { events } from '@robojs/xp'
 
 // Listen for level-up events
 events.onLevelUp(async ({ guildId, userId, oldLevel, newLevel, totalXp }) => {
-  console.log(`User ${userId} leveled up from ${oldLevel} to ${newLevel}!`)
+	console.log(`User ${userId} leveled up from ${oldLevel} to ${newLevel}!`)
 })
 
 // Listen for level-down events
 events.onLevelDown(async ({ guildId, userId, oldLevel, newLevel, totalXp }) => {
-  console.log(`User ${userId} lost a level: ${oldLevel} → ${newLevel}`)
+	console.log(`User ${userId} lost a level: ${oldLevel} → ${newLevel}`)
 })
 
 // Listen for XP changes
 events.onXPChange(async ({ guildId, userId, oldXp, newXp, delta, reason }) => {
-  console.log(`User ${userId} XP changed by ${delta} (reason: ${reason})`)
+	console.log(`User ${userId} XP changed by ${delta} (reason: ${reason})`)
 })
 
 // One-time listeners (generic API)
@@ -374,28 +376,28 @@ events.off('xpChange', handler)
 
 ```ts
 interface LevelUpEvent {
-  guildId: string
-  userId: string
-  oldLevel: number
-  newLevel: number
-  totalXp: number
+	guildId: string
+	userId: string
+	oldLevel: number
+	newLevel: number
+	totalXp: number
 }
 
 interface LevelDownEvent {
-  guildId: string
-  userId: string
-  oldLevel: number
-  newLevel: number
-  totalXp: number
+	guildId: string
+	userId: string
+	oldLevel: number
+	newLevel: number
+	totalXp: number
 }
 
 interface XPChangeEvent {
-  guildId: string
-  userId: string
-  oldXp: number
-  newXp: number
-  delta: number
-  reason?: string
+	guildId: string
+	userId: string
+	oldXp: number
+	newXp: number
+	delta: number
+	reason?: string
 }
 ```
 
@@ -467,23 +469,23 @@ Below are additional recipes for common use cases:
 import { XP } from '@robojs/xp'
 
 export default async (interaction) => {
-  const winnerId = interaction.user.id
-  const guildId = interaction.guildId
+	const winnerId = interaction.user.id
+	const guildId = interaction.guildId
 
-  // Award 500 bonus XP
-  const result = await XP.addXP(guildId, winnerId, 500, { reason: 'contest_winner' })
+	// Award 500 bonus XP
+	const result = await XP.addXP(guildId, winnerId, 500, { reason: 'contest_winner' })
 
-  if (result.leveledUp) {
-    await interaction.reply({
-      content: `🎉 You won the contest and leveled up to ${result.newLevel}!`,
-      ephemeral: true
-    })
-  } else {
-    await interaction.reply({
-      content: '🎉 You won the contest and earned 500 XP!',
-      ephemeral: true
-    })
-  }
+	if (result.leveledUp) {
+		await interaction.reply({
+			content: `🎉 You won the contest and leveled up to ${result.newLevel}!`,
+			ephemeral: true
+		})
+	} else {
+		await interaction.reply({
+			content: '🎉 You won the contest and earned 500 XP!',
+			ephemeral: true
+		})
+	}
 }
 ```
 
@@ -494,15 +496,15 @@ export default async (interaction) => {
 import { XP } from '@robojs/xp'
 
 export default async ({ userId, guildId, severity }) => {
-  const penalties = {
-    minor: 50,
-    moderate: 200,
-    severe: 500
-  }
+	const penalties = {
+		minor: 50,
+		moderate: 200,
+		severe: 500
+	}
 
-  const amount = penalties[severity] || 100
+	const amount = penalties[severity] || 100
 
-  await XP.removeXP(guildId, userId, amount, { reason: `moderation_${severity}` })
+	await XP.removeXP(guildId, userId, amount, { reason: `moderation_${severity}` })
 }
 ```
 
@@ -513,18 +515,18 @@ export default async ({ userId, guildId, severity }) => {
 import { config } from '@robojs/xp'
 
 export default async ({ userId, guildId }) => {
-  // Set 1.5x multiplier for premium user
-  const guildConfig = await config.get(guildId)
-  
-  await config.set(guildId, {
-    multipliers: {
-      ...guildConfig.multipliers,
-      user: {
-        ...(guildConfig.multipliers?.user || {}),
-        [userId]: 1.5
-      }
-    }
-  })
+	// Set 1.5x multiplier for premium user
+	const guildConfig = await config.get(guildId)
+
+	await config.set(guildId, {
+		multipliers: {
+			...guildConfig.multipliers,
+			user: {
+				...(guildConfig.multipliers?.user || {}),
+				[userId]: 1.5
+			}
+		}
+	})
 }
 ```
 
@@ -537,35 +539,33 @@ import { logger } from 'robo.js'
 
 // Track all XP changes
 events.onXPChange(async ({ guildId, userId, delta, reason }) => {
-  logger.info(`XP Analytics: ${userId} ${delta > 0 ? 'gained' : 'lost'} ${Math.abs(delta)} XP`, {
-    guildId,
-    userId,
-    delta,
-    reason
-  })
+	logger.info(`XP Analytics: ${userId} ${delta > 0 ? 'gained' : 'lost'} ${Math.abs(delta)} XP`, {
+		guildId,
+		userId,
+		delta,
+		reason
+	})
 
-  // Send to analytics service
-  await analytics.track('xp_change', {
-    guild: guildId,
-    user: userId,
-    amount: delta,
-    reason
-  })
+	// Send to analytics service
+	await analytics.track('xp_change', {
+		guild: guildId,
+		user: userId,
+		amount: delta,
+		reason
+	})
 })
 
 // Also track message activity
 events.onXPChange(async ({ guildId, userId }) => {
-  const user = await XP.getUser(guildId, userId)
+	const user = await XP.getUser(guildId, userId)
 
-  // Calculate XP efficiency (what % of messages award XP)
-  const efficiency = user.messages > 0
-    ? (user.xpMessages / user.messages * 100).toFixed(1)
-    : 0
+	// Calculate XP efficiency (what % of messages award XP)
+	const efficiency = user.messages > 0 ? ((user.xpMessages / user.messages) * 100).toFixed(1) : 0
 
-  logger.info(`User ${userId} XP efficiency: ${efficiency}%`, {
-    totalMessages: user.messages,
-    xpMessages: user.xpMessages
-  })
+	logger.info(`User ${userId} XP efficiency: ${efficiency}%`, {
+		totalMessages: user.messages,
+		xpMessages: user.xpMessages
+	})
 })
 ```
 
@@ -580,21 +580,21 @@ import { client } from 'robo.js'
 import { EmbedBuilder } from 'discord.js'
 
 events.onLevelUp(async ({ guildId, userId, newLevel, totalXp }) => {
-  const guild = await client.guilds.fetch(guildId)
-  const user = await guild.members.fetch(userId)
+	const guild = await client.guilds.fetch(guildId)
+	const user = await guild.members.fetch(userId)
 
-  // Find announcement channel
-  const channel = guild.channels.cache.find(c => c.name === 'level-ups')
-  if (!channel?.isTextBased()) return
+	// Find announcement channel
+	const channel = guild.channels.cache.find((c) => c.name === 'level-ups')
+	if (!channel?.isTextBased()) return
 
-  const embed = new EmbedBuilder()
-    .setTitle('🎉 Level Up!')
-    .setDescription(`${user} reached **Level ${newLevel}**!`)
-    .addFields({ name: 'Total XP', value: totalXp.toString(), inline: true })
-    .setColor('#00ff00')
-    .setThumbnail(user.displayAvatarURL())
+	const embed = new EmbedBuilder()
+		.setTitle('🎉 Level Up!')
+		.setDescription(`${user} reached **Level ${newLevel}**!`)
+		.addFields({ name: 'Total XP', value: totalXp.toString(), inline: true })
+		.setColor('#00ff00')
+		.setThumbnail(user.displayAvatarURL())
 
-  await channel.send({ embeds: [embed] })
+	await channel.send({ embeds: [embed] })
 })
 ```
 
@@ -606,24 +606,24 @@ import { events } from '@robojs/xp'
 import { client } from 'robo.js'
 
 events.onLevelUp(async ({ guildId, userId, newLevel }) => {
-  const guild = await client.guilds.fetch(guildId)
-  const member = await guild.members.fetch(userId)
+	const guild = await client.guilds.fetch(guildId)
+	const member = await guild.members.fetch(userId)
 
-  // Custom reward logic
-  switch (newLevel) {
-    case 10:
-      // Award custom badge
-      await giveCustomBadge(member, 'veteran')
-      break
-    case 25:
-      // Unlock special channel
-      await unlockChannel(member, 'vip-lounge')
-      break
-    case 50:
-      // Grant special permissions
-      await grantPermission(member, 'create_events')
-      break
-  }
+	// Custom reward logic
+	switch (newLevel) {
+		case 10:
+			// Award custom badge
+			await giveCustomBadge(member, 'veteran')
+			break
+		case 25:
+			// Unlock special channel
+			await unlockChannel(member, 'vip-lounge')
+			break
+		case 50:
+			// Grant special permissions
+			await grantPermission(member, 'create_events')
+			break
+	}
 })
 ```
 
@@ -636,6 +636,7 @@ events.onLevelUp(async ({ guildId, userId, newLevel }) => {
 All endpoints return JSON with the following structure:
 
 **Success:**
+
 ```json
 {
   "success": true,
@@ -644,34 +645,35 @@ All endpoints return JSON with the following structure:
 ```
 
 **Error:**
+
 ```json
 {
-  "success": false,
-  "error": {
-    "code": "ERROR_CODE",
-    "message": "Human-readable error message"
-  }
+	"success": false,
+	"error": {
+		"code": "ERROR_CODE",
+		"message": "Human-readable error message"
+	}
 }
 ```
 
 ### Error Codes
 
-| Code | HTTP Status | Description |
-| --- | --- | --- |
-| `MISSING_GUILD_ID` | 400 | Guild ID parameter missing |
-| `GUILD_NOT_FOUND` | 404 | Guild not found or bot not member |
-| `MISSING_USER_ID` | 400 | User ID parameter missing |
-| `USER_NOT_FOUND` | 404 | User has no XP record |
-| `METHOD_NOT_ALLOWED` | 405 | HTTP method not allowed |
-| `INVALID_REQUEST` | 400 | Invalid request body or parameters |
-| `INVALID_AMOUNT` | 400 | Invalid XP amount |
-| `INVALID_CONFIG` | 400 | Invalid configuration |
-| `INVALID_LEVEL` | 400 | Invalid level value |
-| `INVALID_ROLE_ID` | 400 | Invalid Discord role ID |
-| `INVALID_MULTIPLIER` | 400 | Invalid multiplier value |
-| `DUPLICATE_REWARD` | 400 | Role reward already exists at level |
-| `REWARD_NOT_FOUND` | 404 | Role reward not found |
-| `INTERNAL_ERROR` | 500 | Unexpected server error |
+| Code                 | HTTP Status | Description                         |
+| -------------------- | ----------- | ----------------------------------- |
+| `MISSING_GUILD_ID`   | 400         | Guild ID parameter missing          |
+| `GUILD_NOT_FOUND`    | 404         | Guild not found or bot not member   |
+| `MISSING_USER_ID`    | 400         | User ID parameter missing           |
+| `USER_NOT_FOUND`     | 404         | User has no XP record               |
+| `METHOD_NOT_ALLOWED` | 405         | HTTP method not allowed             |
+| `INVALID_REQUEST`    | 400         | Invalid request body or parameters  |
+| `INVALID_AMOUNT`     | 400         | Invalid XP amount                   |
+| `INVALID_CONFIG`     | 400         | Invalid configuration               |
+| `INVALID_LEVEL`      | 400         | Invalid level value                 |
+| `INVALID_ROLE_ID`    | 400         | Invalid Discord role ID             |
+| `INVALID_MULTIPLIER` | 400         | Invalid multiplier value            |
+| `DUPLICATE_REWARD`   | 400         | Role reward already exists at level |
+| `REWARD_NOT_FOUND`   | 404         | Role reward not found               |
+| `INTERNAL_ERROR`     | 500         | Unexpected server error             |
 
 ### Endpoints
 
@@ -685,24 +687,25 @@ curl http://localhost:3000/api/xp/users/123456789012345678/987654321098765432
 ```
 
 Response:
+
 ```json
 {
-  "success": true,
-  "data": {
-    "user": {
-      "xp": 5500,
-      "level": 10,
-      "messages": 423,
-      "xpMessages": 156,
-      "lastAwardedAt": 1234567890000
-    },
-    "progress": {
-      "level": 10,
-      "inLevel": 495,
-      "toNext": 1155
-    },
-    "percentage": 42.86
-  }
+	"success": true,
+	"data": {
+		"user": {
+			"xp": 5500,
+			"level": 10,
+			"messages": 423,
+			"xpMessages": 156,
+			"lastAwardedAt": 1234567890000
+		},
+		"progress": {
+			"level": 10,
+			"inLevel": 495,
+			"toNext": 1155
+		},
+		"percentage": 42.86
+	}
 }
 ```
 
@@ -836,13 +839,13 @@ See [PERFORMANCE.md](./PERFORMANCE.md) for detailed benchmarks and optimization 
 
 Flashcore keys live under `['xp', guildId]`:
 
-| Key | Contents | Example |
-| --- | --- | --- |
-| `config` | Guild config merged with global defaults | `{ cooldownSeconds: 60, xpRate: 1.0, ... }` |
-| `user:{userId}` | UserXP record | `{ xp: 5500, level: 10, messages: 423, xpMessages: 156, lastAwardedAt: 1234567890000 }` |
-| `members` | Set of tracked member IDs | `['user1', 'user2', ...]` |
-| `lb:{perPage}:{page}` | Leaderboard cache | `[{ userId, xp, level, rank }, ...]` |
-| `schema` | Schema version for future migrations | `1` |
+| Key                   | Contents                                 | Example                                                                                 |
+| --------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------- |
+| `config`              | Guild config merged with global defaults | `{ cooldownSeconds: 60, xpRate: 1.0, ... }`                                             |
+| `user:{userId}`       | UserXP record                            | `{ xp: 5500, level: 10, messages: 423, xpMessages: 156, lastAwardedAt: 1234567890000 }` |
+| `members`             | Set of tracked member IDs                | `['user1', 'user2', ...]`                                                               |
+| `lb:{perPage}:{page}` | Leaderboard cache                        | `[{ userId, xp, level, rank }, ...]`                                                    |
+| `schema`              | Schema version for future migrations     | `1`                                                                                     |
 
 Global defaults live at `['xp', 'global', 'config']`.
 
@@ -850,11 +853,11 @@ Global defaults live at `['xp', 'global', 'config']`.
 
 ```typescript
 interface UserXP {
-  xp: number            // Total XP accumulated
-  level: number         // Current level (computed from xp)
-  messages: number      // Total messages sent in guild text channels
-  xpMessages: number    // Messages that awarded XP (subset of messages)
-  lastAwardedAt: number // Timestamp of last XP award (Unix ms)
+	xp: number // Total XP accumulated
+	level: number // Current level (computed from xp)
+	messages: number // Total messages sent in guild text channels
+	xpMessages: number // Messages that awarded XP (subset of messages)
+	lastAwardedAt: number // Timestamp of last XP award (Unix ms)
 }
 ```
 
@@ -864,6 +867,7 @@ interface UserXP {
 - `xpMessages` tracks **only** messages that actually awarded XP (increments after all checks pass: No-XP channels, No-XP roles, cooldown)
 
 These counters will differ when:
+
 - User sends messages within cooldown period (default 60s)
 - User has a No-XP role
 - User sends messages in No-XP channels
@@ -896,11 +900,11 @@ This plugin provides feature parity with MEE6's XP system:
 import { config } from '@robojs/xp'
 
 await config.set(guildId, {
-  cooldownSeconds: 60,
-  xpRate: 1.0,
-  rewardsMode: 'stack',
-  removeRewardOnXpLoss: false,
-  leaderboard: { public: true }
+	cooldownSeconds: 60,
+	xpRate: 1.0,
+	rewardsMode: 'stack',
+	removeRewardOnXpLoss: false,
+	leaderboard: { public: true }
 })
 ```
 
@@ -917,6 +921,7 @@ await config.set(guildId, {
 5. **Bot messages:** Bots don't earn XP
 
 **Debug:**
+
 ```ts
 import { config } from '@robojs/xp'
 const guildConfig = await config.get(guildId)
@@ -948,6 +953,7 @@ console.log('Cooldown:', guildConfig.cooldownSeconds)
 4. **Temporary restrictions**: User had No-XP role or was in No-XP channel for a period
 
 **Debug:**
+
 ```typescript
 import { XP, config } from '@robojs/xp'
 const user = await XP.getUser(guildId, userId)
@@ -955,13 +961,14 @@ const guildConfig = await config.get(guildId)
 
 console.log('Total messages:', user.messages)
 console.log('XP messages:', user.xpMessages)
-console.log('Ratio:', (user.xpMessages / user.messages * 100).toFixed(1) + '%')
+console.log('Ratio:', ((user.xpMessages / user.messages) * 100).toFixed(1) + '%')
 console.log('Cooldown:', guildConfig.cooldownSeconds + 's')
 console.log('No-XP channels:', guildConfig.noXpChannelIds)
 console.log('No-XP roles:', guildConfig.noXpRoleIds)
 ```
 
 **Expected ratios:**
+
 - Active chatters with 60s cooldown: 10-30% (depends on chat frequency)
 - Users in No-XP channels frequently: 5-15%
 - Users with temporary No-XP role: varies widely
@@ -978,6 +985,7 @@ console.log('No-XP roles:', guildConfig.noXpRoleIds)
 4. **Missing role:** Role was deleted but still in `roleRewards`
 
 **Fix:**
+
 ```ts
 import { reconcileRewards, config } from '@robojs/xp'
 
@@ -986,7 +994,7 @@ await reconcileRewards(guildId, userId)
 
 // Remove deleted roles from config
 const guildConfig = await config.get(guildId)
-const validRewards = guildConfig.roleRewards.filter(r => guild.roles.cache.has(r.roleId))
+const validRewards = guildConfig.roleRewards.filter((r) => guild.roles.cache.has(r.roleId))
 await config.set(guildId, { roleRewards: validRewards })
 ```
 
@@ -995,6 +1003,7 @@ await config.set(guildId, { roleRewards: validRewards })
 **Cause:** Cache TTL (60 seconds)
 
 **Solution:**
+
 ```ts
 import { leaderboard } from '@robojs/xp'
 // Manually invalidate cache
@@ -1012,11 +1021,12 @@ await leaderboard.invalidateCache(guildId)
 - Consider warming cache during off-peak hours
 
 **Cache warming:**
+
 ```ts
 import { leaderboard } from '@robojs/xp'
 // Warm cache for all guilds (top 100 users)
 for (const guildId of guildIds) {
-  await leaderboard.get(guildId, 0, 100)
+	await leaderboard.get(guildId, 0, 100)
 }
 ```
 
