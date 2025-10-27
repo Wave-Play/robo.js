@@ -1,5 +1,5 @@
 import { createCommandConfig, logger } from 'robo.js'
-import { EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle } from 'discord.js'
+import { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } from 'discord.js'
 import { saveEvent } from '../core/storage.js'
 
 export const config = createCommandConfig({
@@ -71,59 +71,4 @@ function createEventModal() {
 
 	modal.addComponents(...rows)
 	return modal
-}
-
-function createEventEmbed(eventData, creator) {
-	const embed = new EmbedBuilder()
-		.setTitle(`📅 ${eventData.title}`)
-		.setDescription(eventData.description)
-		.setColor(0x5865F2)
-		.addFields(
-			{ 
-				name: '⏰ Date & Time', 
-				value: `<t:${Math.floor(eventData.dateTime.getTime() / 1000)}:F>`, 
-				inline: true 
-			},
-			{ 
-				name: '📍 Location', 
-				value: eventData.location || 'Not specified', 
-				inline: true 
-			},
-			{ 
-				name: '👥 Attendees', 
-				value: `0${eventData.maxAttendees ? `/${eventData.maxAttendees}` : ''}`, 
-				inline: true 
-			}
-		)
-		.setFooter({ 
-			text: `Created by ${creator.displayName}`, 
-			iconURL: creator.displayAvatarURL() 
-		})
-		.setTimestamp()
-
-	return embed
-}
-
-function createEventButtons(eventId) {
-	const rsvpYes = new ButtonBuilder()
-		.setCustomId(`event-rsvp-yes:${eventId}`)
-		.setLabel('✅ Going')
-		.setStyle(ButtonStyle.Success)
-
-	const rsvpMaybe = new ButtonBuilder()
-		.setCustomId(`event-rsvp-maybe:${eventId}`)
-		.setLabel('❓ Maybe')
-		.setStyle(ButtonStyle.Secondary)
-
-	const rsvpNo = new ButtonBuilder()
-		.setCustomId(`event-rsvp-no:${eventId}`)
-		.setLabel('❌ Can\'t Go')
-		.setStyle(ButtonStyle.Danger)
-
-	const viewAttendees = new ButtonBuilder()
-		.setCustomId(`event-view-attendees:${eventId}`)
-		.setLabel('👥 View Attendees')
-		.setStyle(ButtonStyle.Primary)
-
-	return new ActionRowBuilder().addComponents(rsvpYes, rsvpMaybe, rsvpNo, viewAttendees)
 }

@@ -1,7 +1,6 @@
 import { logger } from 'robo.js'
-import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
 import { saveEvent } from '../../core/storage.js'
-import { generateEventId } from '../../core/utils.js'
+import { generateEventId, createEventEmbed, createEventButtons } from '../../core/utils.js'
 
 export default async (interaction) => {
 	if (!interaction.isModalSubmit()) return
@@ -109,70 +108,4 @@ function parseDateTime(dateTimeString) {
 	}
 
 	return null
-}
-
-
-function createEventEmbed(eventData) {
-	const embed = new EmbedBuilder()
-		.setTitle(`📅 ${eventData.title}`)
-		.setDescription(eventData.description)
-		.setColor(0x5865F2)
-		.addFields(
-			{
-				name: '⏰ Date & Time',
-				value: `<t:${Math.floor(eventData.dateTime.getTime() / 1000)}:F>`,
-				inline: true
-			},
-			{
-				name: '📍 Location',
-				value: eventData.location,
-				inline: true
-			},
-			{
-				name: '👥 Attendees',
-				value: `${eventData.currentAttendees}${eventData.maxAttendees ? `/${eventData.maxAttendees}` : ''}`,
-				inline: true
-			}
-		)
-		.setFooter({
-			text: `Created by ${eventData.creatorName}`,
-		})
-	.setTimestamp()
-
-	const timeDiff = eventData.dateTime.getTime() - Date.now()
-	const hoursDiff = Math.floor(timeDiff / (1000 * 60 * 60))
-	
-	if (hoursDiff <= 24 && hoursDiff > 0) {
-		embed.addFields({
-			name: '⚡ Starting Soon',
-			value: `<t:${Math.floor(eventData.dateTime.getTime() / 1000)}:R>`,
-			inline: false
-		})
-	}
-
-	return embed
-}
-
-function createEventButtons(eventId) {
-	const rsvpYes = new ButtonBuilder()
-		.setCustomId(`event-rsvp-yes:${eventId}`)
-		.setLabel('✅ Going')
-		.setStyle(ButtonStyle.Success)
-
-	const rsvpMaybe = new ButtonBuilder()
-		.setCustomId(`event-rsvp-maybe:${eventId}`)
-		.setLabel('❓ Maybe')
-		.setStyle(ButtonStyle.Secondary)
-
-	const rsvpNo = new ButtonBuilder()
-		.setCustomId(`event-rsvp-no:${eventId}`)
-		.setLabel('❌ Can\'t Go')
-		.setStyle(ButtonStyle.Danger)
-
-	const viewAttendees = new ButtonBuilder()
-		.setCustomId(`event-view-attendees:${eventId}`)
-		.setLabel('👥 View Attendees')
-		.setStyle(ButtonStyle.Primary)
-
-	return new ActionRowBuilder().addComponents(rsvpYes, rsvpMaybe, rsvpNo, viewAttendees)
 }
