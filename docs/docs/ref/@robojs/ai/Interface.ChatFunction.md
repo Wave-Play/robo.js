@@ -1,5 +1,7 @@
 # Interface: ChatFunction
 
+Definition describing an available tool or function call that an engine may invoke.
+
 ## Properties
 
 ### description
@@ -7,6 +9,8 @@
 ```ts
 description: string;
 ```
+
+Human-readable description surfaced to the model.
 
 ***
 
@@ -16,6 +20,8 @@ description: string;
 name: string;
 ```
 
+Programmatic identifier for the function.
+
 ***
 
 ### parameters
@@ -23,3 +29,5 @@ name: string;
 ```ts
 parameters: ChatFunctionParameters;
 ```
+
+JSON schema describing the function arguments.

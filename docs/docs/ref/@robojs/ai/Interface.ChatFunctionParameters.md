@@ -1,5 +1,7 @@
 # Interface: ChatFunctionParameters
 
+JSON schema snippet describing function parameters accepted by a chat tool.
+
 ## Properties
 
 ### properties
@@ -7,6 +9,8 @@
 ```ts
 properties: Record<string, ChatFunctionProperty>;
 ```
+
+Dictionary of property names to schema definitions.
 
 ***
 
@@ -16,6 +20,8 @@ properties: Record<string, ChatFunctionProperty>;
 optional required: string[];
 ```
 
+Required property names that must be supplied.
+
 ***
 
 ### type?
@@ -23,3 +29,5 @@ optional required: string[];
 ```ts
 optional type: "object" | "array";
 ```
+
+Top-level schema type, defaults to `object`.

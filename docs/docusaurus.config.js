@@ -200,7 +200,7 @@ const config = {
 				outDir: 'docs',
 				documents: [
 					// Plugins
-					'packages/plugin-ai/README.md',
+					'packages/@robojs/ai/README.md',
 					'packages/@robojs/analytics/README.md',
 					'packages/@robojs/auth/README.md',
 					'packages/plugin-api/README.md',
@@ -211,6 +211,8 @@ const config = {
 					'packages/plugin-maintenance/README.md',
 					'packages/plugin-modtools/README.md',
 					'packages/@robojs/patch/README.md',
+					'packages/@robojs/roadmap/README.md',
+					'packages/@robojs/xp/README.md',
 					'packages/plugin-sync/README.md',
 					'packages/@robojs/trpc/README.md',
 
@@ -403,9 +405,9 @@ const config = {
 			'docusaurus-plugin-typedoc',
 			{
 				id: '@robojs/ai',
-				entryPoints: ['../packages/plugin-ai/src/index.ts'],
+				entryPoints: ['../packages/@robojs/ai/src/index.ts'],
 				out: 'docs/ref/@robojs/ai',
-				tsconfig: '../packages/plugin-ai/tsconfig.json',
+				tsconfig: '../packages/@robojs/ai/tsconfig.json',
 				...typedocConfig
 			}
 		],
@@ -526,6 +528,26 @@ const config = {
 				entryPoints: ['../packages/@robojs/trpc/src/index.ts'],
 				out: 'docs/ref/@robojs/trpc',
 				tsconfig: '../packages/@robojs/trpc/tsconfig.json',
+				...typedocConfig
+			}
+		],
+		[
+			'docusaurus-plugin-typedoc',
+			{
+				id: '@robojs/roadmap',
+				entryPoints: ['../packages/@robojs/roadmap/src/index.ts'],
+				out: 'docs/ref/@robojs/roadmap',
+				tsconfig: '../packages/@robojs/roadmap/tsconfig.json',
+				...typedocConfig
+			}
+		],
+		[
+			'docusaurus-plugin-typedoc',
+			{
+				id: '@robojs/xp',
+				entryPoints: ['../packages/@robojs/xp/src/index.ts'],
+				out: 'docs/ref/@robojs/xp',
+				tsconfig: '../packages/@robojs/xp/tsconfig.json',
 				...typedocConfig
 			}
 		]

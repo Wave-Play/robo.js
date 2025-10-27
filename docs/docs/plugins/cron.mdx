@@ -69,7 +69,8 @@ import { Cron } from '@robojs/cron'
 // File: /src/events/_start.js
 export default () => {
 	// Runs `/src/cron/job.js` every 5 seconds
-	const job = Cron('*/5 * * * * *', '/cron/job.js')
+	// IMPORTANT: pass a relative path (no leading slash)
+	const job = Cron('*/5 * * * * *', 'cron/job.js')
 }
 ```
 
@@ -112,7 +113,8 @@ import { Cron } from '@robojs/cron'
 // File: /src/commands/start-job.js
 export default () => {
 	// Runs `/src/cron/job.js` every 5 seconds
-	const job = Cron('*/5 * * * * *', '/cron/job.js')
+	// Use a relative path (no leading slash)
+	const job = Cron('*/5 * * * * *', 'cron/job.js')
 
 	// Only file-based jobs can be persisted
 	const jobId = await job.save()
@@ -158,7 +160,14 @@ The `jobFunction` parameter can be either a path to a JavaScript file that expor
 
 ### Removing a Job
 
-Remove a persisted job from the system by using `Cron.remove(id)`, where `id` is the unique identifier returned by the `save()` method. This function ensures that the job is no longer scheduled to run and is removed from storage.
+Remove a persisted job by using `Cron.remove(id)`, where `id` is the unique identifier returned by the `save()` method. This removes the job from persistence (Flashcore) and clears it from in-memory State, but does not stop a running job. To fully clean up, stop the job first, then remove it:
+
+```ts
+const id = 'my-job'
+const job = Cron.get(id)
+job?.stop()         // halts execution
+await Cron.remove(id) // deletes persistence + clears State
+```
 
 ## Cron Expressions
 

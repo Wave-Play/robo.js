@@ -10,6 +10,14 @@ optional description: string;
 
 ***
 
+### hook?
+
+```ts
+optional hook: string;
+```
+
+***
+
 ### variables?
 
 ```ts
