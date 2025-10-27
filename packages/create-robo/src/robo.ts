@@ -171,17 +171,13 @@ const PluginDb: Record<string, PluginData> = {
 		config: {
 			commands: false,
 			openaiKey: 'process.env.OPENAI_API_KEY',
-			systemMessage: `You are a helpful Robo named {{name}}.`,
+			instructions: `You are a helpful Robo named {{name}}.`,
 			whitelist: {
 				channelIds: []
 			}
 		},
 		keywords: ['ai', 'gpt', 'openai'],
 		package: '@robojs/ai'
-	},
-	'ai-voice': {
-		keywords: ['speech', 'voice'],
-		package: '@robojs/ai-voice'
 	},
 	analytics: {
 		keywords: ['analytics', 'data', 'statistics', 'tracking'],
@@ -1093,10 +1089,6 @@ export default class Robo {
 		// Plugin-specific variables
 		if (this._selectedPlugins.includes('ai')) {
 			env.set('OPENAI_API_KEY', '', 'Sensitive! Get your OpenAI API key - https://platform.openai.com/api-keys')
-		}
-		if (this._selectedPlugins.includes('ai-voice')) {
-			env.set('AZURE_SUBSCRIPTION_KEY', 'Sensitive!')
-			env.set('AZURE_SUBSCRIPTION_REGION', '')
 		}
 		if (this._selectedPlugins.includes('analytics')) {
 			env.set('GOOGLE_ANALYTICS_MEASURE_ID', '', 'Analytics')
