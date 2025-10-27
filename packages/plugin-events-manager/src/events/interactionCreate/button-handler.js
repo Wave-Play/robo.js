@@ -94,11 +94,12 @@ async function handleRSVPButton(interaction) {
 
 async function handleViewAttendeesButton(interaction) {
 	try {
-		const eventId = interaction.customId.split(':')[1]
+		const parts = interaction.customId.split(':')
+		const eventId = parts[1]
 		
-		if (!eventId) {
+		if (!eventId || parts.length !== 2) {
 			return interaction.reply({
-				content: '❌ Unable to identify event.',
+				content: '❌ Invalid button interaction.',
 				ephemeral: true
 			})
 		}
