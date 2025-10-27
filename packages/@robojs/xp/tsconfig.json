@@ -1,6 +1,6 @@
 {
 	"compilerOptions": {
-		"target": "ES2022",
+		"target": "esnext",
 		"lib": ["ES2022"],
 		"baseUrl": ".",
 		"paths": {

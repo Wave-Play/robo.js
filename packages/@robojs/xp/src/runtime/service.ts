@@ -223,6 +223,12 @@ export async function getUserRank(
 		// Always fetch total users from getAllUsers to get accurate count
 		const users = await getAllUsers(guildId)
 
+		// Check if user exists and has XP > 0 FIRST
+		const userData = users.get(userId)
+		if (!userData || userData.xp === 0) {
+			return null
+		}
+
 		// Check if user is in cache
 		const cache = leaderboardCache.get(guildId) ?? []
 		const cachedEntry = cache.find((entry) => entry.userId === userId)
@@ -235,12 +241,6 @@ export async function getUserRank(
 		}
 
 		// User not in cache - need to calculate position from all users
-		const userData = users.get(userId)
-
-		if (!userData || userData.xp === 0) {
-			return null // User has no XP record
-		}
-
 		// Count users with more XP (or equal XP but lower userId)
 		let rank = 1
 		for (const [otherUserId, otherUserData] of users.entries()) {

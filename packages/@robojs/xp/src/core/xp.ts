@@ -85,7 +85,8 @@ export async function addXP(
 				xp: 0,
 				level: 0,
 				lastAwardedAt: 0,
-				messages: 0
+				messages: 0,
+				xpMessages: 0
 			}
 		}
 
@@ -276,7 +277,8 @@ export async function setXP(
 				xp: 0,
 				level: 0,
 				lastAwardedAt: 0,
-				messages: 0
+				messages: 0,
+				xpMessages: 0
 			}
 		}
 

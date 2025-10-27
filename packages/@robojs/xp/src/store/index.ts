@@ -335,6 +335,21 @@ export function getDefaultConfig(): GuildConfig {
 	}
 }
 
+/**
+ * Returns default user XP data
+ *
+ * @returns UserXP with all fields initialized to 0
+ */
+export function getDefaultUser(): UserXP {
+	return {
+		xp: 0,
+		level: 0,
+		lastAwardedAt: 0,
+		messages: 0,
+		xpMessages: 0
+	}
+}
+
 // ============================================================================
 // Global Config CRUD
 // ============================================================================

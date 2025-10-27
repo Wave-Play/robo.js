@@ -121,12 +121,14 @@ export function validateMethod(request: RoboRequest, allowedMethods: string[]): 
  * Validate XP amount
  */
 export function validateAmount(amount: unknown): { valid: boolean; error?: string } {
-	if (typeof amount !== 'number' || isNaN(amount)) {
+	if (typeof amount !== 'number' || Number.isNaN(amount)) {
 		return { valid: false, error: 'Amount must be a number' }
 	}
-	if (amount <= 0) {
+
+	if (!Number.isFinite(amount) || amount <= 0) {
 		return { valid: false, error: 'Amount must be positive' }
 	}
+
 	return { valid: true }
 }
 

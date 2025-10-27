@@ -147,8 +147,13 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 				inline: false
 			},
 			{
-				name: 'Messages',
+				name: 'Total Messages',
 				value: userData.messages.toLocaleString('en-US'),
+				inline: true
+			},
+			{
+				name: 'XP Messages',
+				value: userData.xpMessages.toLocaleString('en-US'),
 				inline: true
 			}
 		]

@@ -51,15 +51,17 @@ export function getMaxRoleMultiplier(config: GuildConfig, roleIds: string[]): nu
 		return 1.0
 	}
 
-	let maxMultiplier = 1.0
+	let maxMultiplier: number | undefined
 	for (const roleId of roleIds) {
 		const roleMultiplier = config.multipliers.role[roleId]
-		if (roleMultiplier !== undefined && roleMultiplier > maxMultiplier) {
-			maxMultiplier = roleMultiplier
+		if (roleMultiplier !== undefined) {
+			if (maxMultiplier === undefined || roleMultiplier > maxMultiplier) {
+				maxMultiplier = roleMultiplier
+			}
 		}
 	}
 
-	return maxMultiplier
+	return maxMultiplier ?? 1.0
 }
 
 /**
@@ -138,5 +140,5 @@ export function resolveMultiplier(config: GuildConfig, userRoleIds: string[], us
 	// Apply user-specific multiplier
 	multiplier *= getUserMultiplier(config, userId)
 
-	return multiplier
+	return Math.round(multiplier * 1000) / 1000
 }

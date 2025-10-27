@@ -11,14 +11,16 @@
  * @property xp - Total XP accumulated (determines level)
  * @property level - Current level (derived from XP using MEE6 curve)
  * @property lastAwardedAt - Unix timestamp (ms) of last XP award for cooldown tracking
- * @property messages - Total message count for this user in the guild
+ * @property messages - Total messages sent in guild text channels (increments after basic validation, before No-XP/cooldown checks)
+ * @property xpMessages - Messages that awarded XP (increments only when XP is actually granted, after all checks pass)
  *
  * @example
  * {
  *   xp: 1500,
  *   level: 5,
  *   lastAwardedAt: 1704067200000,
- *   messages: 423
+ *   messages: 423,
+ *   xpMessages: 156
  * }
  */
 export interface UserXP {
@@ -26,6 +28,7 @@ export interface UserXP {
 	level: number
 	lastAwardedAt: number
 	messages: number
+	xpMessages: number
 }
 
 /**
