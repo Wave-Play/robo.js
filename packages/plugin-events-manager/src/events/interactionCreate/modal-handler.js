@@ -1,5 +1,6 @@
 import { logger } from 'robo.js'
 import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+import { saveEvent } from '../../core/storage.js'
 
 export default async (interaction) => {
 	if (!interaction.isModalSubmit()) return
@@ -61,8 +62,16 @@ async function handleEventCreationModal(interaction) {
 			})
 		}
 
+		const saved = await saveEvent(interaction.guild.id, eventData)
+		if (!saved) {
+			return interaction.reply({
+				content: '❌ Failed to save event. Please try again.',
+				ephemeral: true
+			})
+		}
+		
 		const embed = createEventEmbed(eventData)
-		const buttons = createEventButtons()
+		const buttons = createEventButtons(eventData.id)
 
 		logger.info(`Event created: ${eventData.title} by ${interaction.user.tag}`)
 
@@ -196,24 +205,24 @@ function createEventEmbed(eventData) {
 	return embed
 }
 
-function createEventButtons() {
+function createEventButtons(eventId) {
 	const rsvpYes = new ButtonBuilder()
-		.setCustomId('event-rsvp-yes')
+		.setCustomId(`event-rsvp-yes:${eventId}`)
 		.setLabel('✅ Going')
 		.setStyle(ButtonStyle.Success)
 
 	const rsvpMaybe = new ButtonBuilder()
-		.setCustomId('event-rsvp-maybe')
+		.setCustomId(`event-rsvp-maybe:${eventId}`)
 		.setLabel('❓ Maybe')
 		.setStyle(ButtonStyle.Secondary)
 
 	const rsvpNo = new ButtonBuilder()
-		.setCustomId('event-rsvp-no')
+		.setCustomId(`event-rsvp-no:${eventId}`)
 		.setLabel('❌ Can\'t Go')
 		.setStyle(ButtonStyle.Danger)
 
 	const viewAttendees = new ButtonBuilder()
-		.setCustomId('event-view-attendees')
+		.setCustomId(`event-view-attendees:${eventId}`)
 		.setLabel('👥 View Attendees')
 		.setStyle(ButtonStyle.Primary)
 

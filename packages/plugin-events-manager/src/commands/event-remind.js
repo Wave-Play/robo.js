@@ -1,5 +1,6 @@
 import { createCommandConfig, logger } from 'robo.js'
 import { EmbedBuilder } from 'discord.js'
+import { searchEvents, saveReminder } from '../core/storage.js'
 
 export const config = createCommandConfig({
 	description: 'Set up automatic reminders for events',
@@ -47,16 +48,18 @@ export default async (interaction) => {
 	const targetChannel = interaction.options.getChannel('channel') || interaction.channel
 
 	try {
-		const mockEvent = findMockEvent(eventQuery)
+		const events = await searchEvents(interaction.guild.id, eventQuery)
 		
-		if (!mockEvent) {
+		if (events.length === 0) {
 			return interaction.reply({
 				content: `❌ Could not find an event matching "${eventQuery}". Use \`/event-list\` to see available events.`,
 				ephemeral: true
 			})
 		}
+		
+		const event = events[0]
 
-		const reminderDateTime = calculateReminderTime(mockEvent.dateTime, reminderTime)
+		const reminderDateTime = calculateReminderTime(event.dateTime, reminderTime)
 		
 		if (reminderDateTime <= new Date()) {
 			return interaction.reply({
@@ -67,17 +70,25 @@ export default async (interaction) => {
 
 		const reminder = {
 			id: generateReminderId(),
-			eventId: mockEvent.id,
-			eventTitle: mockEvent.title,
+			eventId: event.id,
+			eventTitle: event.title,
 			reminderTime: reminderDateTime,
 			channelId: targetChannel.id,
 			createdBy: interaction.user.id,
 			guildId: interaction.guild.id
 		}
+		
+		const saved = await saveReminder(interaction.guild.id, reminder)
+		if (!saved) {
+			return interaction.reply({
+				content: '❌ Failed to save reminder. Please try again.',
+				ephemeral: true
+			})
+		}
 
-		logger.info(`Reminder created: ${reminder.id} for event ${mockEvent.title}`)
+		logger.info(`Reminder created: ${reminder.id} for event ${event.title}`)
 
-		const embed = createReminderConfirmationEmbed(mockEvent, reminder, targetChannel)
+		const embed = createReminderConfirmationEmbed(event, reminder, targetChannel)
 
 		await interaction.reply({
 			embeds: [embed]
@@ -92,33 +103,6 @@ export default async (interaction) => {
 	}
 }
 
-function findMockEvent(query) {
-	const mockEvents = [
-		{
-			id: '1',
-			title: 'Weekly Gaming Session',
-			description: 'Join us for our weekly gaming night!',
-			dateTime: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
-			location: 'Gaming Voice Channel',
-			creatorName: 'GameMaster'
-		},
-		{
-			id: '2',
-			title: 'Community Meeting',
-			description: 'Monthly community meeting to discuss server updates.',
-			dateTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Next week
-			location: 'General Voice Channel',
-			creatorName: 'ServerAdmin'
-		}
-	]
-
-	const lowerQuery = query.toLowerCase()
-	return mockEvents.find(event => 
-		event.id === query ||
-		event.title.toLowerCase().includes(lowerQuery) ||
-		event.description.toLowerCase().includes(lowerQuery)
-	)
-}
 
 function calculateReminderTime(eventDateTime, reminderTimeString) {
 	const eventTime = eventDateTime.getTime()

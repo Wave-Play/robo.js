@@ -1,5 +1,6 @@
 import { createCommandConfig, logger } from 'robo.js'
 import { EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle } from 'discord.js'
+import { saveEvent } from '../core/storage.js'
 
 export const config = createCommandConfig({
 	description: 'Create a new community event',
@@ -27,11 +28,21 @@ export default async (interaction) => {
 
 	if (quickEvent) {
 		try {
-			const eventData = parseQuickEvent(quickEvent)
+			const eventData = parseQuickEvent(quickEvent, interaction.user.id, interaction.user.displayName, interaction.guild.id)
+			
+			const saved = await saveEvent(interaction.guild.id, eventData)
+			if (!saved) {
+				return interaction.reply({
+					content: '❌ Failed to save event. Please try again.',
+					ephemeral: true
+				})
+			}
+			
 			const embed = createEventEmbed(eventData, interaction.user)
-			const buttons = createEventButtons()
+			const buttons = createEventButtons(eventData.id)
 
 			await interaction.reply({
+				content: '✅ Event created successfully!',
 				embeds: [embed],
 				components: [buttons]
 			})
@@ -48,7 +59,7 @@ export default async (interaction) => {
 	}
 }
 
-function parseQuickEvent(quickEventString) {
+function parseQuickEvent(quickEventString, creatorId, creatorName, guildId) {
 	const parts = quickEventString.split(' - ')
 	if (parts.length < 2) {
 		throw new Error('Invalid format')
@@ -77,12 +88,26 @@ function parseQuickEvent(quickEventString) {
 	}
 
 	return {
+		id: generateEventId(),
 		title,
 		description,
 		dateTime: parsedDate,
 		location: 'Discord Server',
-		maxAttendees: null
+		maxAttendees: null,
+		currentAttendees: 0,
+		creatorId,
+		creatorName,
+		guildId,
+		attendees: {
+			going: [],
+			maybe: [],
+			notGoing: []
+		}
 	}
+}
+
+function generateEventId() {
+	return 'evt_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36)
 }
 
 function createEventModal() {
@@ -168,24 +193,24 @@ function createEventEmbed(eventData, creator) {
 	return embed
 }
 
-function createEventButtons() {
+function createEventButtons(eventId) {
 	const rsvpYes = new ButtonBuilder()
-		.setCustomId('event-rsvp-yes')
+		.setCustomId(`event-rsvp-yes:${eventId}`)
 		.setLabel('✅ Going')
 		.setStyle(ButtonStyle.Success)
 
 	const rsvpMaybe = new ButtonBuilder()
-		.setCustomId('event-rsvp-maybe')
+		.setCustomId(`event-rsvp-maybe:${eventId}`)
 		.setLabel('❓ Maybe')
 		.setStyle(ButtonStyle.Secondary)
 
 	const rsvpNo = new ButtonBuilder()
-		.setCustomId('event-rsvp-no')
+		.setCustomId(`event-rsvp-no:${eventId}`)
 		.setLabel('❌ Can\'t Go')
 		.setStyle(ButtonStyle.Danger)
 
 	const viewAttendees = new ButtonBuilder()
-		.setCustomId('event-view-attendees')
+		.setCustomId(`event-view-attendees:${eventId}`)
 		.setLabel('👥 View Attendees')
 		.setStyle(ButtonStyle.Primary)
 

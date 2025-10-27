@@ -1,5 +1,6 @@
 import { logger } from 'robo.js'
 import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+import { getEvent, updateRSVP } from '../../core/storage.js'
 
 export default async (interaction) => {
 	if (!interaction.isButton()) return
@@ -15,32 +16,39 @@ export default async (interaction) => {
 
 async function handleRSVPButton(interaction) {
 	try {
-		const rsvpType = interaction.customId.replace('event-rsvp-', '')
+		const [, rsvpType, eventId] = interaction.customId.match(/event-rsvp-(\w+):(\S+)/)
 		const userId = interaction.user.id
 		const userName = interaction.user.displayName
 
-		const embed = interaction.message.embeds[0]
-		if (!embed) {
+		if (!eventId) {
 			return interaction.reply({
-				content: '❌ Unable to find event information.',
+				content: '❌ Unable to identify event. Please try creating the event again.',
 				ephemeral: true
 			})
 		}
 
-		const mockEventData = {
-			id: 'demo-event',
-			title: embed.title.replace('📅 ', ''),
-			description: embed.description,
-			attendees: {
-				going: rsvpType === 'yes' ? [userId] : [],
-				maybe: rsvpType === 'maybe' ? [userId] : [],
-				notGoing: rsvpType === 'no' ? [userId] : []
-			},
-			maxAttendees: null,
-			currentAttendees: rsvpType === 'yes' ? 1 : 0
+		const updatedEvent = await updateRSVP(interaction.guild.id, eventId, userId, rsvpType)
+		
+		if (!updatedEvent) {
+			return interaction.reply({
+				content: '❌ Event not found or error updating RSVP.',
+				ephemeral: true
+			})
 		}
 
-		const updatedEmbed = updateEventEmbedWithRSVP(embed, mockEventData, rsvpType)
+		if (rsvpType === 'yes' && updatedEvent.maxAttendees && updatedEvent.currentAttendees > updatedEvent.maxAttendees) {
+			updatedEvent.attendees.going = updatedEvent.attendees.going.filter(id => id !== userId)
+			updatedEvent.currentAttendees = updatedEvent.attendees.going.length
+			await updateRSVP(interaction.guild.id, eventId, userId, 'maybe')
+			
+			return interaction.reply({
+				content: `❌ This event is at capacity (${updatedEvent.maxAttendees} attendees). You've been added to the maybe list instead.`,
+				ephemeral: true
+			})
+		}
+
+		const embed = interaction.message.embeds[0]
+		const updatedEmbed = updateEventEmbedWithRSVP(embed, updatedEvent, rsvpType)
 		const buttons = interaction.message.components[0]
 
 		await interaction.update({
@@ -54,7 +62,7 @@ async function handleRSVPButton(interaction) {
 			ephemeral: true
 		})
 
-		logger.info(`User ${interaction.user.tag} RSVP'd "${rsvpType}" to event: ${mockEventData.title}`)
+		logger.info(`User ${interaction.user.tag} RSVP'd "${rsvpType}" to event: ${updatedEvent.title}`)
 
 	} catch (error) {
 		logger.error('Error handling RSVP button:', error)
@@ -67,32 +75,58 @@ async function handleRSVPButton(interaction) {
 
 async function handleViewAttendeesButton(interaction) {
 	try {
-		const embed = interaction.message.embeds[0]
-		if (!embed) {
+		const eventId = interaction.customId.split(':')[1]
+		
+		if (!eventId) {
 			return interaction.reply({
-				content: '❌ Unable to find event information.',
+				content: '❌ Unable to identify event.',
 				ephemeral: true
 			})
 		}
-
-		const mockAttendees = {
-			going: [
-				{ id: '123456789', name: 'Alice' },
-				{ id: '987654321', name: 'Bob' },
-				{ id: '456789123', name: 'Charlie' },
-				{ id: '789123456', name: 'Diana' },
-				{ id: '321654987', name: 'Eve' }
-			],
-			maybe: [
-				{ id: '147258369', name: 'Frank' },
-				{ id: '369258147', name: 'Grace' }
-			],
-			notGoing: [
-				{ id: '258147369', name: 'Henry' }
-			]
+		
+		const event = await getEvent(interaction.guild.id, eventId)
+		
+		if (!event) {
+			return interaction.reply({
+				content: '❌ Event not found.',
+				ephemeral: true
+			})
+		}
+		
+		const attendeeDetails = {
+			going: [],
+			maybe: [],
+			notGoing: []
+		}
+		
+		for (const userId of event.attendees.going || []) {
+			try {
+				const user = await interaction.client.users.fetch(userId)
+				attendeeDetails.going.push({ id: userId, name: user.displayName || user.username })
+			} catch {
+				attendeeDetails.going.push({ id: userId, name: 'Unknown User' })
+			}
+		}
+		
+		for (const userId of event.attendees.maybe || []) {
+			try {
+				const user = await interaction.client.users.fetch(userId)
+				attendeeDetails.maybe.push({ id: userId, name: user.displayName || user.username })
+			} catch {
+				attendeeDetails.maybe.push({ id: userId, name: 'Unknown User' })
+			}
+		}
+		
+		for (const userId of event.attendees.notGoing || []) {
+			try {
+				const user = await interaction.client.users.fetch(userId)
+				attendeeDetails.notGoing.push({ id: userId, name: user.displayName || user.username })
+			} catch {
+				attendeeDetails.notGoing.push({ id: userId, name: 'Unknown User' })
+			}
 		}
 
-		const attendeeEmbed = createAttendeesEmbed(embed.title.replace('📅 ', ''), mockAttendees)
+		const attendeeEmbed = createAttendeesEmbed(event.title, attendeeDetails)
 
 		await interaction.reply({
 			embeds: [attendeeEmbed],

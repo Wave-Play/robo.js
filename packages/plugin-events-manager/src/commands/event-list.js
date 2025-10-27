@@ -1,5 +1,6 @@
 import { createCommandConfig, logger } from 'robo.js'
 import { EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle } from 'discord.js'
+import { getAllEvents } from '../core/storage.js'
 
 export const config = createCommandConfig({
 	description: 'View upcoming and past events',
@@ -31,7 +32,7 @@ export default async (interaction) => {
 	const targetUser = interaction.options.getUser('user')
 
 	try {
-		const events = getSampleEvents(interaction.guild.id)
+		const events = await getAllEvents(interaction.guild.id)
 		
 		let filteredEvents = filterEvents(events, filter)
 		
@@ -64,66 +65,6 @@ export default async (interaction) => {
 	}
 }
 
-function getSampleEvents(guildId) {
-	const now = new Date()
-	const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000)
-	const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-	const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000)
-
-	return [
-		{
-			id: '1',
-			title: 'Weekly Gaming Session',
-			description: 'Join us for our weekly gaming night! We\'ll be playing various multiplayer games.',
-			dateTime: tomorrow,
-			location: 'Gaming Voice Channel',
-			maxAttendees: 12,
-			currentAttendees: 7,
-			creatorId: '123456789',
-			creatorName: 'GameMaster',
-			guildId,
-			attendees: {
-				going: ['user1', 'user2', 'user3', 'user4', 'user5', 'user6', 'user7'],
-				maybe: ['user8', 'user9'],
-				notGoing: ['user10']
-			}
-		},
-		{
-			id: '2',
-			title: 'Community Meeting',
-			description: 'Monthly community meeting to discuss server updates and gather feedback.',
-			dateTime: nextWeek,
-			location: 'General Voice Channel',
-			maxAttendees: null,
-			currentAttendees: 15,
-			creatorId: '987654321',
-			creatorName: 'ServerAdmin',
-			guildId,
-			attendees: {
-				going: Array.from({ length: 15 }, (_, i) => `user${i + 1}`),
-				maybe: ['user16', 'user17', 'user18'],
-				notGoing: ['user19']
-			}
-		},
-		{
-			id: '3',
-			title: 'Movie Night',
-			description: 'We watched "The Matrix" together using Discord\'s Watch Together feature.',
-			dateTime: yesterday,
-			location: 'Movie Theater Voice Channel',
-			maxAttendees: 20,
-			currentAttendees: 18,
-			creatorId: '456789123',
-			creatorName: 'MovieBuff',
-			guildId,
-			attendees: {
-				going: Array.from({ length: 18 }, (_, i) => `user${i + 1}`),
-				maybe: [],
-				notGoing: ['user19', 'user20']
-			}
-		}
-	]
-}
 
 function filterEvents(events, filter) {
 	const now = new Date()

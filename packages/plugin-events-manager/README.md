@@ -13,11 +13,11 @@
 ## ✨ Features
 
 - **🎯 Event Creation**: Create detailed events with dates, descriptions, locations, and attendance limits
-- **📝 RSVP System**: Track who's going, maybe attending, or can't attend
-- **⏰ Smart Reminders**: Automated event reminders (1 hour to 1 week before)
+- **📝 RSVP System**: Track who's going, maybe attending, or can't attend (persisted in Flashcore)
+- **⏰ Smart Reminders**: Automated event reminders (1 hour to 1 week before, stored in Flashcore)
 - **📊 Attendee Management**: View and manage event participants
 - **🔍 Event Discovery**: List and filter events by date, creator, or status
-- **🚀 Quick Events**: Create simple events with natural language parsing
+- **🚀 Quick Events**: Create simple events with basic time parsing (Tomorrow 8PM format)
 - **🎨 Rich Embeds**: Beautiful Discord embeds with interactive buttons
 - **🔒 Permissions**: Role-based event management with proper permissions
 
@@ -53,8 +53,9 @@ Or create quick events with natural language:
 
 **Supported Quick Event Formats:**
 - `"Title - Tomorrow 8PM - Description"`
-- `"Title - Next Friday 7:30 PM - Description"`
-- `"Title - 2025-10-20 19:00 - Description"`
+- Simple time formats (8PM, 8:30 PM, etc.)
+
+**Note:** Advanced date parsing like "Next Friday" is not fully implemented yet.
 
 ### `/event-list` - Browse Events
 
@@ -103,16 +104,18 @@ Schedule automatic event reminders:
 ### Managing RSVPs
 
 Users can interact with event posts using buttons:
-- **✅ Going** - Confirm attendance
-- **❓ Maybe** - Tentative attendance  
+- **✅ Going** - Confirm attendance (automatically tracked in Flashcore)
+- **❓ Maybe** - Tentative attendance (with capacity overflow protection)
 - **❌ Can't Go** - Decline attendance
-- **👥 View Attendees** - See who's attending
+- **👥 View Attendees** - See actual user names and attendance counts
 
 ### Setting Reminders
 
 ```bash
 /event-remind event:"Community Meeting" time:"1 day before" channel:#announcements
 ```
+
+**Note:** Reminders are scheduled and stored in Flashcore, persisting across bot restarts.
 
 ## 🔧 Configuration
 
@@ -149,6 +152,15 @@ Supported formats:
 - `"Next Friday 7:30 PM"`
 - `"Today 3:00 PM"`
 
+## 💾 Data Storage
+
+This plugin uses **Flashcore**, Robo.js's built-in key-value storage system, to persist:
+- Event details (title, description, date/time, location, attendees)
+- RSVP responses (going, maybe, not going)
+- Event reminders with scheduling information
+
+All data is automatically saved and persists across bot restarts. No additional database setup required!
+
 ## 🛠️ Development
 
 To contribute to this plugin:
@@ -172,14 +184,18 @@ Contributions are welcome! This plugin was created for **Hacktoberfest 2025**. P
 
 ## 📋 Roadmap
 
-- [x] **Database Integration** - Persistent event storage
-- [x] **Recurring Events** - Weekly/monthly event templates
-- [x] **Event Categories** - Gaming, Social, Educational, etc.
-- [x] **Calendar Integration** - Export to Google Calendar/Outlook
-- [x] **Event Analytics** - Attendance statistics and insights
-- [x] **Custom RSVP Options** - More than just Yes/No/Maybe
-- [x] **Event Templates** - Quick event creation from templates
-- [x] **Time Zone Support** - Automatic time zone conversion
+- [x] **Database Integration** - Persistent event storage using Flashcore
+- [x] **RSVP Tracking** - Full Yes/Maybe/No response tracking with user data
+- [x] **Event Reminders** - Scheduled reminders with Flashcore persistence
+- [x] **Event Listing** - Filter events by date, creator, or status
+- [ ] **Recurring Events** - Weekly/monthly event templates
+- [ ] **Event Categories** - Gaming, Social, Educational, etc.
+- [ ] **Calendar Integration** - Export to Google Calendar/Outlook
+- [ ] **Event Analytics** - Attendance statistics and insights
+- [ ] **Custom RSVP Options** - More than just Yes/No/Maybe
+- [ ] **Event Templates** - Quick event creation from templates
+- [ ] **Advanced Time Zone Support** - Automatic time zone conversion
+- [ ] **Advanced Natural Language Processing** - Enhanced date parsing
 
 ## 📞 Support
 
