@@ -13,6 +13,13 @@
 		"typescript"
 	],
 	"main": ".robo/build/index.js",
+	"types": ".robo/build/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./.robo/build/index.d.ts",
+			"default": "./.robo/build/index.js"
+		}
+	},
 	"license": "MIT",
 	"author": "WavePlay <dev@waveplay.com> (waveplay.com)",
 	"contributors": [
