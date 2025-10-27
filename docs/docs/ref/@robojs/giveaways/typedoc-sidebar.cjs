@@ -1,0 +1,4 @@
+// @ts-check
+/** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
+const typedocSidebar = { items: [{"type":"category","label":"Interfaces","items":[{"type":"doc","id":"ref/@robojs/giveaways/Interface.Giveaway","label":"Giveaway"},{"type":"doc","id":"ref/@robojs/giveaways/Interface.GuildSettings","label":"GuildSettings"}]},{"type":"category","label":"Functions","items":[{"type":"doc","id":"ref/@robojs/giveaways/Function.getGuildSettings","label":"getGuildSettings"},{"type":"doc","id":"ref/@robojs/giveaways/Function.setGuildSettings","label":"setGuildSettings"}]}]};
+module.exports = typedocSidebar.items;

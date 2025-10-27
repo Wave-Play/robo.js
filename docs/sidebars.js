@@ -217,6 +217,7 @@ const sidebars = {
 		'plugins/better-stack',
 		'plugins/cron',
 		'plugins/dev',
+		'plugins/giveaways',
 		'plugins/i18n',
 		'plugins/maintenance',
 		'plugins/moderation',
@@ -478,6 +479,32 @@ const sidebars = {
 				{
 					id: 'ref/@robojs/cron/Variable.Patterns',
 					label: 'Patterns',
+					type: 'doc'
+				}
+			]
+		},
+		{
+			type: 'category',
+			label: '@robojs/giveaways',
+			items: [
+				{
+					id: 'ref/@robojs/giveaways/Function.getGuildSettings',
+					label: 'getGuildSettings',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/giveaways/Function.setGuildSettings',
+					label: 'setGuildSettings',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/giveaways/Interface.Giveaway',
+					label: 'Giveaway',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/giveaways/Interface.GuildSettings',
+					label: 'GuildSettings',
 					type: 'doc'
 				}
 			]

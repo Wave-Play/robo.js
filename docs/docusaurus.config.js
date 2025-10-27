@@ -207,6 +207,7 @@ const config = {
 					'packages/plugin-better-stack/README.md',
 					'packages/@robojs/cron/README.md',
 					'packages/plugin-devtools/README.md',
+					'packages/@robojs/giveaways/README.md',
 					'packages/@robojs/i18n/README.md',
 					'packages/plugin-maintenance/README.md',
 					'packages/plugin-modtools/README.md',
@@ -458,6 +459,16 @@ const config = {
 				entryPoints: ['../packages/plugin-devtools/src/index.ts'],
 				out: 'docs/ref/@robojs/dev',
 				tsconfig: '../packages/plugin-devtools/tsconfig.json',
+				...typedocConfig
+			}
+		],
+		[
+			'docusaurus-plugin-typedoc',
+			{
+				id: '@robojs/giveaways',
+				entryPoints: ['../packages/@robojs/giveaways/src/index.ts'],
+				out: 'docs/ref/@robojs/giveaways',
+				tsconfig: '../packages/@robojs/giveaways/tsconfig.json',
 				...typedocConfig
 			}
 		],
