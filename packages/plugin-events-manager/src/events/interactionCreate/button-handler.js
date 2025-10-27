@@ -16,16 +16,17 @@ export default async (interaction) => {
 
 async function handleRSVPButton(interaction) {
 	try {
-		const [, rsvpType, eventId] = interaction.customId.match(/event-rsvp-(\w+):(\S+)/)
-		const userId = interaction.user.id
-		const userName = interaction.user.displayName
-
-		if (!eventId) {
+		const match = interaction.customId.match(/event-rsvp-(\w+):(\S+)/)
+		if (!match) {
 			return interaction.reply({
-				content: '❌ Unable to identify event. Please try creating the event again.',
+				content: '❌ Invalid button interaction.',
 				ephemeral: true
 			})
 		}
+		
+		const [, rsvpType, eventId] = match
+		const userId = interaction.user.id
+		const userName = interaction.user.displayName
 
 		const updatedEvent = await updateRSVP(interaction.guild.id, eventId, userId, rsvpType)
 		
