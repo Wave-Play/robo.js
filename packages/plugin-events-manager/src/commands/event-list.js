@@ -1,5 +1,5 @@
 import { createCommandConfig, logger } from 'robo.js'
-import { EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle } from 'discord.js'
+import { EmbedBuilder } from 'discord.js'
 import { getAllEvents } from '../core/storage.js'
 
 export const config = createCommandConfig({
@@ -49,11 +49,9 @@ export default async (interaction) => {
 		}
 
 		const embed = createEventListEmbed(filteredEvents, filter, targetUser)
-		const buttons = createNavigationButtons()
 
 		await interaction.reply({
-			embeds: [embed],
-			components: [buttons]
+			embeds: [embed]
 		})
 
 	} catch (error) {
@@ -149,11 +147,3 @@ function createEventListEmbed(events, filter, targetUser) {
 	return embed
 }
 
-function createNavigationButtons() {
-	const refreshButton = new ButtonBuilder()
-		.setCustomId('event-list-refresh')
-		.setLabel('🔄 Refresh')
-		.setStyle(ButtonStyle.Primary)
-
-	return new ActionRowBuilder().addComponents(refreshButton)
-}

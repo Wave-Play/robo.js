@@ -9,8 +9,6 @@ export default async (interaction) => {
 		await handleRSVPButton(interaction)
 	} else if (interaction.customId === 'event-view-attendees') {
 		await handleViewAttendeesButton(interaction)
-	} else if (interaction.customId === 'event-list-refresh') {
-		await handleListRefreshButton(interaction)
 	}
 }
 
@@ -157,22 +155,6 @@ async function handleViewAttendeesButton(interaction) {
 		logger.error('Error showing attendees:', error)
 		await interaction.reply({
 			content: '❌ An error occurred while fetching attendees. Please try again.',
-			ephemeral: true
-		})
-	}
-}
-
-async function handleListRefreshButton(interaction) {
-	try {
-		await interaction.reply({
-			content: '🔄 Events list refreshed!',
-			ephemeral: true
-		})
-
-	} catch (error) {
-		logger.error('Error refreshing event list:', error)
-		await interaction.reply({
-			content: '❌ An error occurred while refreshing the event list.',
 			ephemeral: true
 		})
 	}
