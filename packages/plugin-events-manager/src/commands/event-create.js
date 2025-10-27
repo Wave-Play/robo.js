@@ -3,15 +3,7 @@ import { EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle, ModalBuilde
 import { saveEvent } from '../core/storage.js'
 
 export const config = createCommandConfig({
-	description: 'Create a new community event',
-	options: [
-		{
-			name: 'quick-event',
-			description: 'Quickly create a simple event',
-			type: 'String',
-			required: false
-		}
-	]
+	description: 'Create a new community event'
 })
 
 export default async (interaction) => {
@@ -24,91 +16,10 @@ export default async (interaction) => {
 		})
 	}
 
-	const quickEvent = interaction.options.getString('quick-event')
-
-	if (quickEvent) {
-		try {
-			const eventData = parseQuickEvent(quickEvent, interaction.user.id, interaction.user.displayName, interaction.guild.id)
-			
-			const saved = await saveEvent(interaction.guild.id, eventData)
-			if (!saved) {
-				return interaction.reply({
-					content: '❌ Failed to save event. Please try again.',
-					ephemeral: true
-				})
-			}
-			
-			const embed = createEventEmbed(eventData, interaction.user)
-			const buttons = createEventButtons(eventData.id)
-
-			await interaction.reply({
-				content: '✅ Event created successfully!',
-				embeds: [embed],
-				components: [buttons]
-			})
-		} catch (error) {
-			logger.error('Error creating quick event:', error)
-			return interaction.reply({
-				content: '❌ Invalid quick event format. Example: `"Gaming Night - Tomorrow 8PM - Fun gaming session"`',
-				ephemeral: true
-			})
-		}
-	} else {
-		const modal = createEventModal()
-		await interaction.showModal(modal)
-	}
+	const modal = createEventModal()
+	await interaction.showModal(modal)
 }
 
-function parseQuickEvent(quickEventString, creatorId, creatorName, guildId) {
-	const parts = quickEventString.split(' - ')
-	if (parts.length < 2) {
-		throw new Error('Invalid format')
-	}
-
-	const title = parts[0].trim()
-	const dateTime = parts[1].trim()
-	const description = parts.slice(2).join(' - ').trim() || 'No description provided'
-
-	let parsedDate = new Date()
-	const now = new Date()
-	
-	if (dateTime.toLowerCase().includes('tomorrow')) {
-		parsedDate.setDate(now.getDate() + 1)
-		const timeMatch = dateTime.match(/(\d{1,2})(:\d{2})?\s*(am|pm)?/i)
-		if (timeMatch) {
-			let hour = parseInt(timeMatch[1])
-			const minute = timeMatch[2] ? parseInt(timeMatch[2].substring(1)) : 0
-			const ampm = timeMatch[3]
-			
-			if (ampm && ampm.toLowerCase() === 'pm' && hour !== 12) hour += 12
-			if (ampm && ampm.toLowerCase() === 'am' && hour === 12) hour = 0
-			
-			parsedDate.setHours(hour, minute, 0, 0)
-		}
-	}
-
-	return {
-		id: generateEventId(),
-		title,
-		description,
-		dateTime: parsedDate,
-		location: 'Discord Server',
-		maxAttendees: null,
-		currentAttendees: 0,
-		creatorId,
-		creatorName,
-		guildId,
-		attendees: {
-			going: [],
-			maybe: [],
-			notGoing: []
-		}
-	}
-}
-
-function generateEventId() {
-	return 'evt_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36)
-}
 
 function createEventModal() {
 	const modal = new ModalBuilder()
@@ -131,7 +42,7 @@ function createEventModal() {
 
 	const dateTimeInput = new TextInputBuilder()
 		.setCustomId('event-datetime')
-		.setLabel('Date & Time (e.g., "2025-10-15 20:00" or "Tomorrow 8PM")')
+		.setLabel('Date & Time (format: YYYY-MM-DD HH:MM)')
 		.setStyle(TextInputStyle.Short)
 		.setRequired(true)
 

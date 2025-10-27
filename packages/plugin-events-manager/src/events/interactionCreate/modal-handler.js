@@ -21,7 +21,7 @@ async function handleEventCreationModal(interaction) {
 		const parsedDateTime = parseDateTime(dateTimeInput)
 		if (!parsedDateTime) {
 			return interaction.reply({
-				content: '❌ Invalid date/time format. Please use formats like:\n• `2025-10-15 20:00`\n• `Tomorrow 8PM`\n• `Next Friday 7:30 PM`\n• `2025-12-25 14:30`',
+				content: '❌ Invalid date/time format. Please use ISO format: `YYYY-MM-DD HH:MM`\nExample: `2025-12-25 14:30`',
 				ephemeral: true
 			})
 		}
@@ -91,10 +91,10 @@ async function handleEventCreationModal(interaction) {
 }
 
 function parseDateTime(dateTimeString) {
-	const input = dateTimeString.trim().toLowerCase()
-	const now = new Date()
+	const input = dateTimeString.trim()
 
-	const isoMatch = input.match(/^(\d{4})-(\d{1,2})-(\d{1,2})\s+(\d{1,2}):(\d{2})$/i)
+	// Only accept ISO format: YYYY-MM-DD HH:MM
+	const isoMatch = input.match(/^(\d{4})-(\d{1,2})-(\d{1,2})\s+(\d{1,2}):(\d{2})$/)
 	if (isoMatch) {
 		const [, year, month, day, hour, minute] = isoMatch
 		const date = new Date(
@@ -107,57 +107,7 @@ function parseDateTime(dateTimeString) {
 		return date.getTime() > 0 ? date : null
 	}
 
-	let targetDate = new Date(now)
-	
-	if (input.includes('tomorrow')) {
-		targetDate.setDate(now.getDate() + 1)
-	} else if (input.includes('today')) {
-		
-	} else if (input.includes('next')) {
-		if (input.includes('week')) {
-			targetDate.setDate(now.getDate() + 7)
-		} else if (input.includes('monday')) {
-			targetDate = getNextWeekday(now, 1)
-		} else if (input.includes('tuesday')) {
-			targetDate = getNextWeekday(now, 2)
-		} else if (input.includes('wednesday')) {
-			targetDate = getNextWeekday(now, 3)
-		} else if (input.includes('thursday')) {
-			targetDate = getNextWeekday(now, 4)
-		} else if (input.includes('friday')) {
-			targetDate = getNextWeekday(now, 5)
-		} else if (input.includes('saturday')) {
-			targetDate = getNextWeekday(now, 6)
-		} else if (input.includes('sunday')) {
-			targetDate = getNextWeekday(now, 0)
-		}
-	}
-
-	const timeMatch = input.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/)
-	if (timeMatch) {
-		let hour = parseInt(timeMatch[1])
-		const minute = timeMatch[2] ? parseInt(timeMatch[2]) : 0
-		const ampm = timeMatch[3]
-
-		if (ampm) {
-			if (ampm === 'pm' && hour !== 12) hour += 12
-			if (ampm === 'am' && hour === 12) hour = 0
-		}
-
-		targetDate.setHours(hour, minute, 0, 0)
-	} else {
-		targetDate.setHours(now.getHours(), now.getMinutes(), 0, 0)
-	}
-
-	return targetDate
-}
-
-function getNextWeekday(date, targetDay) {
-	const currentDay = date.getDay()
-	const daysUntil = (targetDay + 7 - currentDay) % 7
-	const nextDate = new Date(date)
-	nextDate.setDate(date.getDate() + (daysUntil === 0 ? 7 : daysUntil))
-	return nextDate
+	return null
 }
 
 function generateEventId() {

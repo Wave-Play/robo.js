@@ -17,7 +17,7 @@
 - **⏰ Smart Reminders**: Automated event reminders (1 hour to 1 week before, stored in Flashcore)
 - **📊 Attendee Management**: View and manage event participants
 - **🔍 Event Discovery**: List and filter events by date, creator, or status
-- **🚀 Quick Events**: Create simple events with basic time parsing (Tomorrow 8PM format)
+- **👥 Interactive UI**: Easy event creation through Discord modals
 - **🎨 Rich Embeds**: Beautiful Discord embeds with interactive buttons
 - **🔒 Permissions**: Role-based event management with proper permissions
 
@@ -45,17 +45,12 @@ Create detailed events with full customization:
 /event-create
 ```
 
-Or create quick events with natural language:
-
-```bash
-/event-create quick-event:"Gaming Night - Tomorrow 8PM - Fun multiplayer games!"
-```
-
-**Supported Quick Event Formats:**
-- `"Title - Tomorrow 8PM - Description"`
-- Simple time formats (8PM, 8:30 PM, etc.)
-
-**Note:** Advanced date parsing like "Next Friday" is not fully implemented yet.
+This opens a modal where you can specify:
+- Event title
+- Description
+- Date & Time (format: `YYYY-MM-DD HH:MM`)
+- Location (optional)
+- Max attendees (optional)
 
 ### `/event-list` - Browse Events
 
@@ -88,8 +83,15 @@ Schedule automatic event reminders:
 ### Creating a Gaming Event
 
 ```bash
-/event-create quick-event:"Weekly Gaming Session - Tomorrow 8PM - Join us for multiplayer fun!"
+/event-create
 ```
+
+Then fill in the modal with:
+- **Title**: "Weekly Gaming Session"
+- **Description**: "Join us for multiplayer fun!"
+- **Date & Time**: "2025-12-01 20:00"
+- **Location**: "Gaming Voice Channel"
+- **Max Attendees**: "12"
 
 ### Setting Up a Community Meeting
 
@@ -144,13 +146,12 @@ Recommended channel setup:
 - **Reminders**: Orange (`#FFAA00`)
 - **Confirmations**: Green (`#00FF00`)
 
-### Date/Time Parsing
+### Date/Time Format
 
-Supported formats:
-- `"2025-10-15 20:00"` (ISO format)
-- `"Tomorrow 8PM"`
-- `"Next Friday 7:30 PM"`
-- `"Today 3:00 PM"`
+Events use ISO 8601 date format:
+- Format: `YYYY-MM-DD HH:MM`
+- Example: `2025-12-25 14:30`
+- Uses 24-hour time format
 
 ## 💾 Data Storage
 
