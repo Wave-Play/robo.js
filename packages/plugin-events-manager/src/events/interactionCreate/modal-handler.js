@@ -37,25 +37,25 @@ async function handleEventCreationModal(interaction) {
 			}
 			maxAttendees = parsed
 		}
-		const eventData = {
-			id: generateEventId(),
-			title: title.trim(),
-			description: description.trim(),
-			dateTime: parsedDateTime,
-			location: location.trim(),
-			maxAttendees,
-			currentAttendees: 0,
-			creatorId: interaction.user.id,
-			creatorName: interaction.user.displayName,
-			guildId: interaction.guild.id,
-			attendees: {
-				going: [],
-				maybe: [],
-				notGoing: []
-			}
+	const eventData = {
+		id: generateEventId(),
+		title: title.trim(),
+		description: description.trim(),
+		dateTime: parsedDateTime.getTime(),
+		location: location.trim(),
+		maxAttendees,
+		currentAttendees: 0,
+		creatorId: interaction.user.id,
+		creatorName: interaction.user.displayName,
+		guildId: interaction.guild.id,
+		attendees: {
+			going: [],
+			maybe: [],
+			notGoing: []
 		}
+	}
 
-		if (eventData.dateTime <= new Date()) {
+	if (eventData.dateTime <= Date.now()) {
 			return interaction.reply({
 				content: '❌ Event date/time must be in the future.',
 				ephemeral: true

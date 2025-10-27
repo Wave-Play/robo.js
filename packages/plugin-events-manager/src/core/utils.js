@@ -28,6 +28,10 @@ export function generateReminderId() {
 export function createEventEmbed(eventData, creatorName = null) {
 	const creator = creatorName || eventData.creatorName || 'Unknown'
 	
+	const timestamp = eventData.dateTime instanceof Date 
+		? eventData.dateTime.getTime() 
+		: eventData.dateTime
+	
 	const embed = new EmbedBuilder()
 		.setTitle(`📅 ${eventData.title}`)
 		.setDescription(eventData.description)
@@ -35,7 +39,7 @@ export function createEventEmbed(eventData, creatorName = null) {
 		.addFields(
 			{
 				name: '⏰ Date & Time',
-				value: `<t:${Math.floor(eventData.dateTime.getTime() / 1000)}:F>`,
+				value: `<t:${Math.floor(timestamp / 1000)}:F>`,
 				inline: true
 			},
 			{
@@ -54,14 +58,13 @@ export function createEventEmbed(eventData, creatorName = null) {
 		})
 		.setTimestamp()
 
-	// Add "Starting Soon" indicator if event is within 24 hours
-	const timeDiff = eventData.dateTime.getTime() - Date.now()
+	const timeDiff = timestamp - Date.now()
 	const hoursDiff = Math.floor(timeDiff / (1000 * 60 * 60))
 	
 	if (hoursDiff <= 24 && hoursDiff > 0) {
 		embed.addFields({
 			name: '⚡ Starting Soon',
-			value: `<t:${Math.floor(eventData.dateTime.getTime() / 1000)}:R>`,
+			value: `<t:${Math.floor(timestamp / 1000)}:R>`,
 			inline: false
 		})
 	}

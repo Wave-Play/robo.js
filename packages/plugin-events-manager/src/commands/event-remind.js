@@ -69,15 +69,15 @@ export default async (interaction) => {
 			})
 		}
 
-		const reminder = {
-			id: generateReminderId(),
-			eventId: event.id,
-			eventTitle: event.title,
-			reminderTime: reminderDateTime,
-			channelId: targetChannel.id,
-			createdBy: interaction.user.id,
-			guildId: interaction.guild.id
-		}
+	const reminder = {
+		id: generateReminderId(),
+		eventId: event.id,
+		eventTitle: event.title,
+		reminderTime: reminderDateTime.getTime(),
+		channelId: targetChannel.id,
+		createdBy: interaction.user.id,
+		guildId: interaction.guild.id
+	}
 		
 		const saved = await saveReminder(interaction.guild.id, reminder)
 		if (!saved) {
@@ -154,11 +154,11 @@ function createReminderConfirmationEmbed(event, reminder, channel) {
 				value: event.location,
 				inline: true
 			},
-			{
-				name: '🔔 Reminder Time',
-				value: `<t:${Math.floor(reminder.reminderTime.getTime() / 1000)}:F>`,
-				inline: false
-			},
+		{
+			name: '🔔 Reminder Time',
+			value: `<t:${Math.floor(reminder.reminderTime / 1000)}:F>`,
+			inline: false
+		},
 			{
 				name: '📢 Reminder Channel',
 				value: `<#${channel.id}>`,
