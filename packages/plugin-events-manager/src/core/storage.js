@@ -30,9 +30,15 @@ export async function saveEvent(guildId, eventData) {
 
 export async function getEvent(guildId, eventId) {
 	try {
-		return await Flashcore.get(`event:${eventId}`, {
+		const event = await Flashcore.get(`event:${eventId}`, {
 			namespace: guildId
 		})
+		
+		if (event && event.dateTime && !(event.dateTime instanceof Date)) {
+			event.dateTime = new Date(event.dateTime)
+		}
+		
+		return event
 	} catch (error) {
 		logger.error('Error getting event:', error)
 		return null
