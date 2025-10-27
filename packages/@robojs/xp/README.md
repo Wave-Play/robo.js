@@ -1008,7 +1008,7 @@ await leaderboard.invalidateCache(guildId)
 **Large guilds (10k+ users):**
 
 - First leaderboard query after cache expiry may take 200-500ms
-- Subsequent queries are <10ms (cached)
+- Subsequent queries are under 10ms (cached)
 - Consider warming cache during off-peak hours
 
 **Cache warming:**
