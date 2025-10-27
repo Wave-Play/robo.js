@@ -68,7 +68,8 @@
 		"build": "robo build plugin",
 		"dev": "robo build plugin --watch",
 		"lint:style": "prettier --write .",
-		"prepublishOnly": "robo build plugin"
+		"prepublishOnly": "robo build plugin",
+		"test": "NODE_OPTIONS=--experimental-vm-modules jest"
 	},
 	"dependencies": {
 		"@auth/core": "^0.40.0",

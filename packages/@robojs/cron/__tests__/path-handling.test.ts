@@ -3,7 +3,6 @@ import { Cron } from '../src/core/cron.js'
 import fs from 'node:fs'
 import path from 'node:path'
 import os from 'node:os'
-import { pathToFileURL } from 'node:url'
 
 // Extend global type
 declare global {

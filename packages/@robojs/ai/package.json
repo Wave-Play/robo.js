@@ -42,7 +42,7 @@
 	"scripts": {
 		"build": "robo build plugin",
 		"dev": "NODE_OPTIONS=--enable-source-maps robo build plugin --watch",
-		"test": "tsx --test __tests__/**/*.test.ts"
+		"test": "NODE_OPTIONS=--experimental-vm-modules jest"
 	},
 	"devDependencies": {
 		"@discordjs/voice": "^0.16.0",
