@@ -61,6 +61,9 @@ export async function getAllEvents(guildId) {
 				if (event.dateTime && !(event.dateTime instanceof Date)) {
 					event.dateTime = new Date(event.dateTime)
 				}
+				if (typeof event.currentAttendees !== 'number') {
+					event.currentAttendees = event.attendees?.going?.length || 0
+				}
 				events.push(event)
 			}
 		}
