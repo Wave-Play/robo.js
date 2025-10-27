@@ -824,13 +824,6 @@ curl -X PUT http://localhost:3000/api/xp/config/global \
 - **Config cache:** In-memory with event-driven invalidation
 - **Complexity:** O(1) cached reads, O(n log n) refresh for n users
 
-### Performance Targets
-
-- **Message award:** <50ms per message (including Flashcore write)
-- **Leaderboard refresh (10k users):** ≤200ms (warm cache)
-- **Cached leaderboard query:** <10ms
-- **Config read (cached):** <5ms
-
 ### Scalability
 
 - **Memory per guild:** ~10KB for 100 cached leaderboard entries

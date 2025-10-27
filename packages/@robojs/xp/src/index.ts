@@ -10,7 +10,6 @@
  * - **MEE6 Parity**: Formula `XP = 5 * level^2 + 50 * level + 100` with default settings matching MEE6
  * - **Role Rewards**: Automatic role assignment on level-up with stack/replace modes
  * - **XP Multipliers**: Per-user and per-role multipliers (MEE6 Pro parity)
- * - **Performance**: Cached leaderboards (<200ms for 10k users), O(1) math operations
  * - **Event-Driven**: Type-safe events for levelUp, levelDown, xpChange
  * - **No-XP Zones**: Configure channels/roles to exclude from XP gains
  * - **Fully Typed**: Comprehensive TypeScript support with result types
@@ -179,7 +178,6 @@
  *
  * - **Leaderboard caching**: Top 100 users per guild, 60s TTL
  * - **Automatic cache invalidation**: On XP changes
- * - **Target performance**: <200ms leaderboard queries on 10k user servers
  * - **Math operations**: All O(1) or O(log n)
  *
  * ### Persistence & Consistency
@@ -1286,13 +1284,6 @@ import {
  * - **Cold start**: First query builds cache (O(n log n))
  * - **Warm cache**: Subsequent queries are O(1)
  *
- * **Performance Characteristics:**
- * - **Cached reads**: O(1) for top 100 users
- * - **Cache refresh**: O(n log n) where n = total users in guild
- * - **Rank lookup (cached)**: O(100) worst case (linear scan of top 100)
- * - **Rank lookup (uncached)**: O(n) where n = total users in guild
- * - **Target**: <200ms for 10k users (warm cache)
- *
  * @example
  * ### Get Top Users (Paginated)
  *
@@ -1402,24 +1393,6 @@ import {
  *
  * // Next leaderboard.get() call will rebuild cache from Flashcore
  * const fresh = await leaderboard.get('guildId', 0, 10)
- * ```
- *
- * @example
- * ### Performance Monitoring
- *
- * ```typescript
- * import { leaderboard } from '@robojs/xp'
- *
- * // Measure leaderboard query performance
- * const start = Date.now()
- * const top100 = await leaderboard.get('guildId', 0, 100)
- * const duration = Date.now() - start
- *
- * console.log(`Leaderboard query took ${duration}ms`)
- * console.log(`Returned ${top100.length} users`)
- *
- * // Expect <200ms for 10k users (warm cache)
- * // Expect <500ms for 10k users (cold start)
  * ```
  *
  * @remarks
