@@ -200,18 +200,20 @@ const config = {
 				outDir: 'docs',
 				documents: [
 					// Plugins
-					'packages/plugin-ai/README.md',
-					'packages/plugin-ai-voice/README.md',
+					'packages/@robojs/ai/README.md',
 					'packages/@robojs/analytics/README.md',
 					'packages/@robojs/auth/README.md',
 					'packages/plugin-api/README.md',
 					'packages/plugin-better-stack/README.md',
 					'packages/@robojs/cron/README.md',
 					'packages/plugin-devtools/README.md',
+					'packages/@robojs/giveaways/README.md',
 					'packages/@robojs/i18n/README.md',
 					'packages/plugin-maintenance/README.md',
 					'packages/plugin-modtools/README.md',
 					'packages/@robojs/patch/README.md',
+					'packages/@robojs/roadmap/README.md',
+					'packages/@robojs/xp/README.md',
 					'packages/plugin-sync/README.md',
 					'packages/@robojs/trpc/README.md',
 
@@ -404,19 +406,9 @@ const config = {
 			'docusaurus-plugin-typedoc',
 			{
 				id: '@robojs/ai',
-				entryPoints: ['../packages/plugin-ai/src/index.ts'],
+				entryPoints: ['../packages/@robojs/ai/src/index.ts'],
 				out: 'docs/ref/@robojs/ai',
-				tsconfig: '../packages/plugin-ai/tsconfig.json',
-				...typedocConfig
-			}
-		],
-		[
-			'docusaurus-plugin-typedoc',
-			{
-				id: '@robojs/ai-voice',
-				entryPoints: ['../packages/plugin-ai-voice/src/index.ts'],
-				out: 'docs/ref/@robojs/ai-voice',
-				tsconfig: '../packages/plugin-ai-voice/tsconfig.json',
+				tsconfig: '../packages/@robojs/ai/tsconfig.json',
 				...typedocConfig
 			}
 		],
@@ -467,6 +459,16 @@ const config = {
 				entryPoints: ['../packages/plugin-devtools/src/index.ts'],
 				out: 'docs/ref/@robojs/dev',
 				tsconfig: '../packages/plugin-devtools/tsconfig.json',
+				...typedocConfig
+			}
+		],
+		[
+			'docusaurus-plugin-typedoc',
+			{
+				id: '@robojs/giveaways',
+				entryPoints: ['../packages/@robojs/giveaways/src/index.ts'],
+				out: 'docs/ref/@robojs/giveaways',
+				tsconfig: '../packages/@robojs/giveaways/tsconfig.json',
 				...typedocConfig
 			}
 		],
@@ -537,6 +539,26 @@ const config = {
 				entryPoints: ['../packages/@robojs/trpc/src/index.ts'],
 				out: 'docs/ref/@robojs/trpc',
 				tsconfig: '../packages/@robojs/trpc/tsconfig.json',
+				...typedocConfig
+			}
+		],
+		[
+			'docusaurus-plugin-typedoc',
+			{
+				id: '@robojs/roadmap',
+				entryPoints: ['../packages/@robojs/roadmap/src/index.ts'],
+				out: 'docs/ref/@robojs/roadmap',
+				tsconfig: '../packages/@robojs/roadmap/tsconfig.json',
+				...typedocConfig
+			}
+		],
+		[
+			'docusaurus-plugin-typedoc',
+			{
+				id: '@robojs/xp',
+				entryPoints: ['../packages/@robojs/xp/src/index.ts'],
+				out: 'docs/ref/@robojs/xp',
+				tsconfig: '../packages/@robojs/xp/tsconfig.json',
 				...typedocConfig
 			}
 		]

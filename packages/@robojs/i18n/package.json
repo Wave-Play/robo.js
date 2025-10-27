@@ -46,7 +46,7 @@
 		"lint:style": "prettier --write .",
 		"prepublishOnly": "robo build plugin",
 		"pretest": "pnpm run build",
-		"test": "NODE_OPTIONS=--experimental-vm-modules jest && tstyche"
+		"test": "NODE_OPTIONS=--experimental-vm-modules jest && pnpm build:test && tstyche"
 	},
 	"dependencies": {
 		"messageformat": "4.0.0-12"

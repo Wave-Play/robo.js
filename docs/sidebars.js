@@ -149,6 +149,7 @@ const sidebars = {
 				},
 				'discord-bots/beginner-guide',
 				'discord-bots/commands',
+				'discord-bots/command-registration',
 				'discord-bots/context-menu',
 				{
 					id: 'discord-bots/credentials',
@@ -211,19 +212,21 @@ const sidebars = {
 			className: 'sidebar-title'
 		},
 		'plugins/ai',
-		'plugins/ai-voice',
 		'plugins/analytics',
 		'plugins/auth',
 		'plugins/better-stack',
 		'plugins/cron',
 		'plugins/dev',
+		'plugins/giveaways',
 		'plugins/i18n',
 		'plugins/maintenance',
 		'plugins/moderation',
 		'plugins/patch',
+		'plugins/roadmap',
 		'plugins/server',
 		'plugins/sync',
-		'plugins/trpc'
+		'plugins/trpc',
+		'plugins/xp'
 	],
 	templateSidebar: [
 		{
@@ -424,22 +427,6 @@ const sidebars = {
 					id: 'ref/@robojs/ai/Variable.AI',
 					label: 'AI',
 					type: 'doc'
-				},
-				{
-					id: 'ref/@robojs/ai/Function.selectOne',
-					label: 'selectOne',
-					type: 'doc'
-				}
-			]
-		},
-		{
-			type: 'category',
-			label: '@robojs/ai-voice',
-			items: [
-				{
-					id: 'ref/@robojs/ai-voice/Function.textToSpeech',
-					label: 'textToSpeech',
-					type: 'doc'
 				}
 			]
 		},
@@ -492,6 +479,32 @@ const sidebars = {
 				{
 					id: 'ref/@robojs/cron/Variable.Patterns',
 					label: 'Patterns',
+					type: 'doc'
+				}
+			]
+		},
+		{
+			type: 'category',
+			label: '@robojs/giveaways',
+			items: [
+				{
+					id: 'ref/@robojs/giveaways/Function.getGuildSettings',
+					label: 'getGuildSettings',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/giveaways/Function.setGuildSettings',
+					label: 'setGuildSettings',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/giveaways/Interface.Giveaway',
+					label: 'Giveaway',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/giveaways/Interface.GuildSettings',
+					label: 'GuildSettings',
 					type: 'doc'
 				}
 			]
@@ -555,6 +568,252 @@ const sidebars = {
 				{
 					id: 'ref/@robojs/patch/Variable.DiscordProxy',
 					label: 'DiscordProxy',
+					type: 'doc'
+				}
+			]
+		},
+		{
+			type: 'category',
+			label: '@robojs/roadmap',
+			items: [
+				{
+					id: 'ref/@robojs/roadmap/Class.JiraProvider',
+					label: 'JiraProvider',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Class.RoadmapProvider',
+					label: 'RoadmapProvider',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Function.canUserCreateCards',
+					label: 'canUserCreateCards',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Function.createOrGetRoadmapCategory',
+					label: 'createOrGetRoadmapCategory',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Function.formatCardContent',
+					label: 'formatCardContent',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Function.getAllForumChannels',
+					label: 'getAllForumChannels',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Function.getAuthorizedCreatorRoles',
+					label: 'getAuthorizedCreatorRoles',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Function.getCardsFromDateRange',
+					label: 'getCardsFromDateRange',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Function.getCardsFromLastDays',
+					label: 'getCardsFromLastDays',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Function.getCardsFromLastMonth',
+					label: 'getCardsFromLastMonth',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Function.getCardsFromLastWeek',
+					label: 'getCardsFromLastWeek',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Function.getCategoryId',
+					label: 'getCategoryId',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Function.getForumChannelForColumn',
+					label: 'getForumChannelForColumn',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Function.getForumChannelIdForColumn',
+					label: 'getForumChannelIdForColumn',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Function.getProvider',
+					label: 'getProvider',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Function.getRoadmapCategory',
+					label: 'getRoadmapCategory',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Function.getSettings',
+					label: 'getSettings',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Function.getSyncedPostId',
+					label: 'getSyncedPostId',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Function.isForumPublic',
+					label: 'isForumPublic',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Function.isProviderReady',
+					label: 'isProviderReady',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Function.setAuthorizedCreatorRoles',
+					label: 'setAuthorizedCreatorRoles',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Function.setSyncedPost',
+					label: 'setSyncedPost',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Function.syncRoadmap',
+					label: 'syncRoadmap',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Function.syncSingleCard',
+					label: 'syncSingleCard',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Function.toggleForumAccess',
+					label: 'toggleForumAccess',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Function.updateForumTagsForColumn',
+					label: 'updateForumTagsForColumn',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Function.updateSettings',
+					label: 'updateSettings',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Interface.CreateRoadmapForumsOptions',
+					label: 'CreateRoadmapForumsOptions',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Interface.JiraProviderConfig',
+					label: 'JiraProviderConfig',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Interface.RoadmapPluginOptions',
+					label: 'RoadmapPluginOptions',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Interface.RoadmapSettings',
+					label: 'RoadmapSettings',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Interface.SyncOptions',
+					label: 'SyncOptions',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/TypeAlias.CreateCardInput',
+					label: 'CreateCardInput',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/TypeAlias.CreateCardResult',
+					label: 'CreateCardResult',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/TypeAlias.DateRangeFilter',
+					label: 'DateRangeFilter',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/TypeAlias.ForumPermissionMode',
+					label: 'ForumPermissionMode',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/TypeAlias.ProviderConfig',
+					label: 'ProviderConfig',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/TypeAlias.ProviderInfo',
+					label: 'ProviderInfo',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/TypeAlias.RoadmapCard',
+					label: 'RoadmapCard',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/TypeAlias.RoadmapColumn',
+					label: 'RoadmapColumn',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/TypeAlias.SyncResult',
+					label: 'SyncResult',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/TypeAlias.ThreadOperation',
+					label: 'ThreadOperation',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/TypeAlias.UpdateCardInput',
+					label: 'UpdateCardInput',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/TypeAlias.UpdateCardResult',
+					label: 'UpdateCardResult',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Variable.Buttons',
+					label: 'Buttons',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Variable.ID_NAMESPACE',
+					label: 'ID_NAMESPACE',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Variable.Selects',
+					label: 'Selects',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/roadmap/Variable.options',
+					label: 'options',
 					type: 'doc'
 				}
 			]
@@ -643,6 +902,47 @@ const sidebars = {
 				{
 					id: 'ref/@robojs/trpc/Function.TRPCProvider',
 					label: 'TRPCProvider',
+					type: 'doc'
+				}
+			]
+		},
+		{
+			type: 'category',
+			label: '@robojs/xp',
+			items: [
+				{
+					id: 'ref/@robojs/xp/Variable.config',
+					label: 'config',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/xp/Variable.constants',
+					label: 'constants',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/xp/Variable.events',
+					label: 'events',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/xp/Variable.leaderboard',
+					label: 'leaderboard',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/xp/Variable.math',
+					label: 'math',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/xp/Variable.rewards',
+					label: 'rewards',
+					type: 'doc'
+				},
+				{
+					id: 'ref/@robojs/xp/Variable.xp',
+					label: 'xp',
 					type: 'doc'
 				}
 			]

@@ -1,5 +1,7 @@
 # Interface: GenerateImageOptions
 
+Parameters accepted by [BaseEngine.generateImage](Class.BaseEngine.md#generateimage) requests.
+
 ## Properties
 
 ### model?
@@ -8,6 +10,8 @@
 optional model: string;
 ```
 
+Image-capable model identifier.
+
 ***
 
 ### prompt
@@ -15,3 +19,5 @@ optional model: string;
 ```ts
 prompt: string;
 ```
+
+Text prompt describing the desired image.

@@ -21,7 +21,7 @@ import Portal from './portal.js'
 import path from 'node:path'
 import { isMainThread, parentPort } from 'node:worker_threads'
 import type { Event, HandlerRecord, PluginData } from '../types/index.js'
-import type { AutocompleteInteraction, CommandInteraction } from 'discord.js'
+import type { AutocompleteInteraction, ChatInputCommandInteraction } from 'discord.js'
 import type { BuildCommandOptions } from '../cli/commands/build/index.js'
 
 /**
@@ -246,7 +246,7 @@ async function restart() {
 	}
 }
 
-function getCommandKey(interaction: AutocompleteInteraction | CommandInteraction) {
+function getCommandKey(interaction: AutocompleteInteraction | ChatInputCommandInteraction) {
 	const commandKeys = [interaction.commandName]
 	if (hasProperties<{ getSubcommandGroup: () => string }>(interaction.options, ['getSubcommandGroup'])) {
 		try {

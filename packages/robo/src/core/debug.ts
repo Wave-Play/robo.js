@@ -7,6 +7,7 @@ import {
 	ButtonInteraction,
 	ButtonStyle,
 	ChannelType,
+	ChatInputCommandInteraction,
 	Colors,
 	CommandInteraction,
 	ComponentType,
@@ -345,7 +346,7 @@ async function formatError(options: FormatErrorOptions): Promise<FormatErrorResu
 	const fields: APIEmbedField[] = []
 
 	// Include additional details available
-	if (interaction instanceof CommandInteraction) {
+	if (interaction instanceof ChatInputCommandInteraction) {
 		const commandKeys = [interaction.commandName]
 		if (hasProperties<{ getSubcommandGroup: () => string }>(interaction.options, ['getSubcommandGroup'])) {
 			try {

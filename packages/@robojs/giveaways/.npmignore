@@ -1,0 +1,35 @@
+# Source files (only ship compiled code)
+src/
+tsconfig.json
+
+# Development files
+.robo/cache/
+.robo/manifest.json
+*.test.ts
+*.test.js
+*.spec.ts
+*.spec.js
+
+# Documentation source
+docs/
+
+# Environment files
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
+
+# Tests
+coverage/
+test/
+tests/
+__tests__/

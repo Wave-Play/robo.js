@@ -1,0 +1,13 @@
+{
+	"extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+	"env": {
+		"node": true
+	},
+	"parser": "@typescript-eslint/parser",
+	"plugins": ["@typescript-eslint"],
+	"root": true,
+	"ignorePatterns": ["__tests__/", ".robo/", "node_modules/"],
+	"rules": {
+		"@typescript-eslint/no-explicit-any": "error"
+	}
+}

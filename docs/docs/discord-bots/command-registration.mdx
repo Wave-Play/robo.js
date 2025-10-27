@@ -1,0 +1,579 @@
+import { Card } from '@site/src/components/shared/Card'
+import { CardContainer } from '@site/src/components/shared/CardContainer'
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+import { Terminal } from '@site/src/components/shared/Terminal'
+
+# 🎯 Command Registration
+
+Robo.js automatically keeps your Slash and Context commands in sync with Discord during `robo dev` and `robo build`. For teams that need finer control, Robo now ships an imperative API to register commands on demand. This unlocks workflows like:
+
+- Testing command changes in specific guilds before global rollout
+- Registering different command subsets to different servers
+- Custom deployment steps in CI/CD pipelines
+- Conditional registration based on environment or configuration
+
+## Automatic Registration
+
+By default, Robo handles command registration for you during `robo dev` and `robo build`. This is the recommended path for most projects and requires no extra setup. Learn how commands work in the main guide: **[Slash Commands](/discord-bots/commands)**.
+
+## Manual Registration
+
+For advanced control, use the `registerSlashCommands()` API. You decide what to register, where to register it (global vs specific guilds), and when to run it. The most common use case is registering to a test guild first, then promoting globally once verified.
+
+### API Reference
+
+`registerSlashCommands(entries, options)`
+
+- Entries parameter
+  - `commands?: Record<string, CommandEntry>` – Slash commands from the manifest
+  - `messageContext?: Record<string, ContextEntry>` – Message context commands
+  - `userContext?: Record<string, ContextEntry>` – User context commands
+- Options parameter
+  - `guildIds?: string[]` – Target guild IDs for scoped registration (omit for global)
+  - `force?: boolean` – Force clean re-registration (default: `false`)
+  - `clientId?: string` – Discord client ID override (falls back to env)
+  - `token?: string` – Discord bot token override (falls back to env)
+- Return value
+  - `success: boolean` – Overall success indicator
+  - `registered: number` – Count of successfully registered commands
+  - `errors: RegisterCommandsError[]` – Array of errors `{ command, error, type }` where `type` is `validation | api | timeout`
+  - `retries?: RegisterCommandsRetry[]` – Optional retry info for rate-limited requests
+
+### Basic Usage
+
+Use the manifest plus the registration API for full control. The following examples use the Compiler API to load the manifest.
+
+<Tabs groupId="register-examples">
+<TabItem value="js" label="JavaScript">
+
+```js title="scripts/register-all-global.js" showLineNumbers
+import 'dotenv/config'
+import { registerSlashCommands, logger } from 'robo.js'
+import { Compiler } from 'robo.js/unstable.js'
+
+async function main() {
+  const manifest = await Compiler.useManifest()
+  const hasEntries =
+    Object.keys(manifest?.commands ?? {}).length > 0 ||
+    Object.keys(manifest?.context?.message ?? {}).length > 0 ||
+    Object.keys(manifest?.context?.user ?? {}).length > 0
+  if (!hasEntries) {
+    logger.error('Manifest appears empty. Run `robo build` or `robo dev` to generate .robo/manifest.json')
+    await logger.flush()
+    process.exit(1)
+  }
+
+  const result = await registerSlashCommands(
+    {
+      commands: manifest.commands,
+      messageContext: manifest.context.message,
+      userContext: manifest.context.user
+    },
+    {
+      // Global registration: omit guildIds
+    }
+  )
+
+  logger.info('Registration result:', result)
+  logger.info(`Registered: ${result.registered}`)
+  if (!result.success) {
+    logger.warn('Some commands failed to register', { errors: result.errors })
+    await logger.flush()
+    process.exit(1)
+  }
+  await logger.flush()
+}
+
+main().catch(async (err) => {
+  logger.error(err)
+  await logger.flush()
+  process.exit(1)
+})
+```
+
+```js title="scripts/register-to-guilds.js" showLineNumbers
+import 'dotenv/config'
+import { registerSlashCommands, logger } from 'robo.js'
+import { Compiler } from 'robo.js/unstable.js'
+
+async function main() {
+  const TEST_GUILDS = [process.env.DISCORD_TEST_GUILD_ID, process.env.DISCORD_BACKUP_GUILD_ID].filter(Boolean)
+  const manifest = await Compiler.useManifest()
+  const hasEntries =
+    Object.keys(manifest?.commands ?? {}).length > 0 ||
+    Object.keys(manifest?.context?.message ?? {}).length > 0 ||
+    Object.keys(manifest?.context?.user ?? {}).length > 0
+  if (!hasEntries) {
+    logger.error('Manifest appears empty. Run `robo build` or `robo dev` to generate .robo/manifest.json')
+    await logger.flush()
+    process.exit(1)
+  }
+
+  const result = await registerSlashCommands(
+    {
+      commands: manifest.commands,
+      messageContext: manifest.context.message,
+      userContext: manifest.context.user
+    },
+    {
+      guildIds: TEST_GUILDS
+    }
+  )
+
+  logger.info('Registered to guilds:', TEST_GUILDS)
+  logger.info('Registration result:', result)
+  logger.info(`Registered count: ${result.registered}`)
+  await logger.flush()
+}
+
+main().catch(async (err) => {
+  logger.error(err)
+  await logger.flush()
+  process.exit(1)
+})
+```
+
+```js title="scripts/register-different-subsets.js" showLineNumbers
+import 'dotenv/config'
+import { registerSlashCommands, logger } from 'robo.js'
+import { Compiler } from 'robo.js/unstable.js'
+
+async function main() {
+  const manifest = await Compiler.useManifest()
+  const hasEntries =
+    Object.keys(manifest?.commands ?? {}).length > 0 ||
+    Object.keys(manifest?.context?.message ?? {}).length > 0 ||
+    Object.keys(manifest?.context?.user ?? {}).length > 0
+  if (!hasEntries) {
+    logger.error('Manifest appears empty. Run `robo build` or `robo dev` to generate .robo/manifest.json')
+    await logger.flush()
+    process.exit(1)
+  }
+
+  const isAdmin = (entry) => entry.meta?.roles?.includes?.('admin')
+
+  const adminCommands = Object.fromEntries(
+    Object.entries(manifest.commands).filter(([_, entry]) => isAdmin(entry))
+  )
+  const publicCommands = Object.fromEntries(
+    Object.entries(manifest.commands).filter(([_, entry]) => !isAdmin(entry))
+  )
+
+  // 1) Register admin-only commands to a test guild
+  await registerSlashCommands({ commands: adminCommands }, { guildIds: [process.env.DISCORD_TEST_GUILD_ID] })
+
+  // 2) Register all public commands globally
+  await registerSlashCommands({ commands: publicCommands }, {})
+
+  logger.info('Admin/public registration completed')
+  await logger.flush()
+}
+
+main().catch(async (err) => {
+  logger.error(err)
+  await logger.flush()
+  process.exit(1)
+})
+```
+
+</TabItem>
+<TabItem value="ts" label="TypeScript">
+
+```ts title="scripts/register-all-global.ts" showLineNumbers
+import 'dotenv/config'
+import type { RegisterCommandsResult } from 'robo.js'
+import { registerSlashCommands, logger } from 'robo.js'
+import { Compiler } from 'robo.js/unstable.js'
+
+async function main() {
+  const manifest = await Compiler.useManifest()
+  const hasEntries =
+    Object.keys(manifest?.commands ?? {}).length > 0 ||
+    Object.keys(manifest?.context?.message ?? {}).length > 0 ||
+    Object.keys(manifest?.context?.user ?? {}).length > 0
+  if (!hasEntries) {
+    logger.error('Manifest appears empty. Run `robo build` or `robo dev` to generate .robo/manifest.json')
+    await logger.flush()
+    process.exit(1)
+  }
+
+  const result: RegisterCommandsResult = await registerSlashCommands(
+    {
+      commands: manifest.commands,
+      messageContext: manifest.context.message,
+      userContext: manifest.context.user
+    },
+    {}
+  )
+
+  logger.info('Registration result:', result)
+  if (!result.success) {
+    for (const err of result.errors) {
+      logger.warn(`[${err.type}] ${err.command}: ${err.error}`)
+    }
+    await logger.flush()
+    process.exit(1)
+  }
+  await logger.flush()
+}
+
+main()
+```
+
+```ts title="scripts/register-to-guilds.ts" showLineNumbers
+import 'dotenv/config'
+import { registerSlashCommands, logger } from 'robo.js'
+import { Compiler } from 'robo.js/unstable.js'
+
+async function main() {
+  const manifest = await Compiler.useManifest()
+  const hasEntries =
+    Object.keys(manifest?.commands ?? {}).length > 0 ||
+    Object.keys(manifest?.context?.message ?? {}).length > 0 ||
+    Object.keys(manifest?.context?.user ?? {}).length > 0
+  if (!hasEntries) {
+    logger.error('Manifest appears empty. Run `robo build` or `robo dev` to generate .robo/manifest.json')
+    await logger.flush()
+    process.exit(1)
+  }
+
+  const result = await registerSlashCommands(
+    { commands: manifest.commands, messageContext: manifest.context.message, userContext: manifest.context.user },
+    { guildIds: ['123456789012345678', '234567890123456789'] }
+  )
+  logger.info('Registration result:', result)
+}
+
+main()
+```
+
+```ts title="scripts/register-different-subsets.ts" showLineNumbers
+import 'dotenv/config'
+import { registerSlashCommands, logger } from 'robo.js'
+import { Compiler } from 'robo.js/unstable.js'
+
+async function main() {
+  const manifest = await Compiler.useManifest()
+  const hasEntries =
+    Object.keys(manifest?.commands ?? {}).length > 0 ||
+    Object.keys(manifest?.context?.message ?? {}).length > 0 ||
+    Object.keys(manifest?.context?.user ?? {}).length > 0
+  if (!hasEntries) {
+    logger.error('Manifest appears empty. Run `robo build` or `robo dev` to generate .robo/manifest.json')
+    await logger.flush()
+    process.exit(1)
+  }
+
+  const startsWith = (prefix: string) => (name: string) => name.startsWith(prefix)
+  const pick = (pred: (k: string) => boolean) => (obj: Record<string, any>) =>
+    Object.fromEntries(Object.entries(obj).filter(([k]) => pred(k)))
+
+  const admin = pick(startsWith('admin.'))(manifest.commands)
+  const publicCommands = pick((k) => !k.startsWith('admin.'))(manifest.commands)
+
+  await registerSlashCommands({ commands: admin }, { guildIds: ['123456789012345678'] })
+  await registerSlashCommands({ commands: publicCommands }, {})
+  logger.info('Admin/public registration completed')
+  await logger.flush()
+}
+
+main()
+```
+
+</TabItem>
+</Tabs>
+
+## Lifecycle Integration
+
+You can call `registerSlashCommands()` inside the Robo lifecycle to keep your flow automated.
+
+### Using the `_start` Event
+
+The `_start` event runs before the bot logs in, making it ideal for setup like command registration. Keep in mind lifecycle events have a soft 5-second timeout, so keep work concise or spawn background tasks if needed.
+
+<Tabs groupId="lifecycle">
+<TabItem value="js" label="JavaScript">
+
+```js title="src/events/_start.js" showLineNumbers
+import { registerSlashCommands, logger } from 'robo.js'
+import { Compiler } from 'robo.js/unstable.js'
+
+export default async function _start() {
+  try {
+    const manifest = await Compiler.useManifest()
+    const hasEntries =
+      Object.keys(manifest?.commands ?? {}).length > 0 ||
+      Object.keys(manifest?.context?.message ?? {}).length > 0 ||
+      Object.keys(manifest?.context?.user ?? {}).length > 0
+    if (!hasEntries) {
+      logger.warn('Manifest appears empty. Run `robo build` or `robo dev` to generate .robo/manifest.json')
+      return
+    }
+    const testGuilds = process.env.DISCORD_TEST_GUILD_ID ? [process.env.DISCORD_TEST_GUILD_ID] : undefined
+    const res = await registerSlashCommands(
+      { commands: manifest.commands, messageContext: manifest.context.message, userContext: manifest.context.user },
+      { guildIds: testGuilds }
+    )
+    logger.info('Registration result:', res)
+    logger.info(`Slash commands registered: ${res.registered}`)
+    if (!res.success) {
+      logger.warn('Some commands failed to register', { errors: res.errors })
+    }
+  } catch (err) {
+    logger.error('Command registration failed', { err })
+  }
+}
+```
+
+</TabItem>
+<TabItem value="ts" label="TypeScript">
+
+```ts title="src/events/_start.ts" showLineNumbers
+import type { RegisterCommandsResult } from 'robo.js'
+import { registerSlashCommands, logger } from 'robo.js'
+import { Compiler } from 'robo.js/unstable.js'
+
+export default async function _start(): Promise<void> {
+  const manifest = await Compiler.useManifest()
+  const hasEntries =
+    Object.keys(manifest?.commands ?? {}).length > 0 ||
+    Object.keys(manifest?.context?.message ?? {}).length > 0 ||
+    Object.keys(manifest?.context?.user ?? {}).length > 0
+  if (!hasEntries) {
+    logger.warn('Manifest appears empty. Run `robo build` or `robo dev` to generate .robo/manifest.json')
+    return
+  }
+  const result: RegisterCommandsResult = await registerSlashCommands(
+    {
+      commands: manifest.commands,
+      messageContext: manifest.context.message,
+      userContext: manifest.context.user
+    },
+    {
+      guildIds: process.env.DISCORD_TEST_GUILD_ID ? [process.env.DISCORD_TEST_GUILD_ID] : undefined
+    }
+  )
+
+  logger.info('Registration result:', result)
+  logger.info(`Registered ${result.registered} commands`)
+  if (!result.success) {
+    logger.warn('Some commands failed', { errors: result.errors })
+  }
+}
+```
+
+</TabItem>
+</Tabs>
+
+### Timing Considerations
+
+- The manifest must be built before calling the API. `Compiler.useManifest()` reads from the compiled manifest file produced by `robo build`/`robo dev`.
+- Commands, context menus, and related metadata are indexed at build time.
+- For standalone scripts, ensure environment variables are loaded (e.g., via `dotenv`) and that a build has produced `.robo/manifest.json` before calling `Compiler.useManifest()`.
+
+## Disabling Auto-Registration
+
+There are two ways to turn off automatic registration if you want full manual control.
+
+### Using Config
+
+Add `autoRegisterCommands: false` to your Robo config.
+
+```js title="config/robo.mjs" showLineNumbers
+export default {
+  // ...other options
+  autoRegisterCommands: false
+}
+```
+
+### Using CLI Flag
+
+Skip registration for a single build using the CLI flag.
+
+<Terminal execute>robo build --no-register</Terminal>
+
+This is useful for temporary tests or one-off deployments without changing config. The CLI flag takes precedence over the config option; when neither is specified, auto-registration is enabled by default.
+
+## Standalone Scripts
+
+You can also run registration as a standalone script outside the lifecycle. This is perfect for CI/CD.
+
+```js title="scripts/register-commands.js" showLineNumbers
+import 'dotenv/config'
+import { registerSlashCommands, logger } from 'robo.js'
+import { Compiler } from 'robo.js/unstable.js'
+
+async function run() {
+  const manifest = await Compiler.useManifest()
+  const hasEntries =
+    Object.keys(manifest?.commands ?? {}).length > 0 ||
+    Object.keys(manifest?.context?.message ?? {}).length > 0 ||
+    Object.keys(manifest?.context?.user ?? {}).length > 0
+  if (!hasEntries) {
+    logger.error('Manifest appears empty. Run `robo build` or `robo dev` to generate .robo/manifest.json')
+    await logger.flush()
+    process.exit(1)
+  }
+  const result = await registerSlashCommands(
+    {
+      commands: manifest.commands,
+      messageContext: manifest.context.message,
+      userContext: manifest.context.user
+    },
+    {
+      guildIds: process.argv.includes('--test') && process.env.DISCORD_TEST_GUILD_ID
+        ? [process.env.DISCORD_TEST_GUILD_ID]
+        : undefined,
+      force: process.argv.includes('--force')
+    }
+  )
+
+  logger.info('Registration result:', result)
+  await logger.flush()
+  process.exit(result.success ? 0 : 1)
+}
+
+run().catch(async (e) => {
+  logger.error(e)
+  await logger.flush()
+  process.exit(1)
+})
+```
+
+Run with:
+
+<Terminal execute>node scripts/register-commands.js --test</Terminal>
+
+### Example: Test Guild First, Then Global
+
+```js title="scripts/register-commands.js" showLineNumbers
+import 'dotenv/config'
+import { registerSlashCommands, logger } from 'robo.js'
+import { Compiler } from 'robo.js/unstable.js'
+
+async function stagedRegister() {
+  const manifest = await Compiler.useManifest()
+  const hasEntries =
+    Object.keys(manifest?.commands ?? {}).length > 0 ||
+    Object.keys(manifest?.context?.message ?? {}).length > 0 ||
+    Object.keys(manifest?.context?.user ?? {}).length > 0
+  if (!hasEntries) {
+    logger.error('Manifest appears empty. Run `robo build` or `robo dev` to generate .robo/manifest.json')
+    await logger.flush()
+    process.exit(1)
+  }
+
+  // 1) Test guild
+  const testGuild = process.env.DISCORD_TEST_GUILD_ID
+  if (testGuild) {
+    const res = await registerSlashCommands({ commands: manifest.commands }, { guildIds: [testGuild] })
+    logger.info('Test guild registration result:', res)
+    logger.info(`Test guild registered: ${res.registered}`)
+    if (!res.success) {
+      throw new Error('Test guild registration failed')
+    }
+  }
+
+  // 2) Global
+  const res = await registerSlashCommands(
+    { commands: manifest.commands, messageContext: manifest.context.message, userContext: manifest.context.user },
+    {
+      force: true
+    }
+  )
+  logger.info('Global registration result:', res)
+  logger.info(`Global registered: ${res.registered}`)
+}
+
+stagedRegister().catch(async (e) => {
+  logger.error(e)
+  await logger.flush()
+  process.exit(1)
+})
+```
+
+## Error Handling
+
+Errors are returned in a structured format so you can react programmatically.
+
+```ts title="handle-errors.ts" showLineNumbers
+import type { RegisterCommandsError } from 'robo.js'
+import { logger } from 'robo.js'
+
+function handleErrors(errors: RegisterCommandsError[]) {
+  for (const err of errors) {
+    switch (err.type) {
+      case 'validation': {
+        logger.error(`Validation failed for ${err.command}: ${err.error}`)
+        break
+      }
+      case 'api': {
+        logger.error(`Discord API error for ${err.command}: ${err.error}`)
+        break
+      }
+      case 'timeout': {
+        logger.error(`Timeout registering ${err.command}: ${err.error}`)
+        break
+      }
+    }
+  }
+}
+```
+
+## Rate Limiting
+
+Discord enforces rate limits on registration. The API automatically retries with exponential backoff. You can inspect the `retries` array in the result for details like scope, attempt number, reason, and delay.
+
+```ts title="inspect-retries.ts" showLineNumbers
+import type { RegisterCommandsRetry } from 'robo.js'
+import { logger } from 'robo.js'
+
+function logRetries(retries?: RegisterCommandsRetry[]) {
+  for (const r of retries ?? []) {
+    logger.info(`[retry] scope=${r.scope} attempt=${r.attempt} delay=${r.delay} reason=${r.reason}`)
+  }
+}
+```
+
+## Migration Guide
+
+### For Projects Using Auto-Registration
+
+If auto-registration works for you, keep it! To gradually adopt manual registration:
+
+1. Set `autoRegisterCommands: false` in your config.
+2. Add an `_start` event handler that calls `registerSlashCommands()`.
+3. Test with `robo dev` on a test guild.
+4. Deploy to production when ready.
+
+### For Projects With Custom Registration
+
+Replace ad-hoc Discord.js REST calls with `registerSlashCommands()` for built-in validation, rate-limit handling, and clear results.
+
+## Best Practices
+
+- Always check `result.success` and log `result.errors`.
+- Prefer guild-specific registration for testing before global.
+- Use `force` sparingly; it fully refreshes registrations.
+- Keep registration in lifecycle events for automation.
+- Use standalone scripts for CI/CD and staged rollouts.
+- Test subsets in a test guild before promoting globally.
+
+## Troubleshooting
+
+- Commands not appearing: Try refreshing Discord or relaunching the client.
+- Validation errors: Review command structure and required fields.
+- Authentication errors: Verify `DISCORD_CLIENT_ID` and `DISCORD_TOKEN`.
+- Timeout errors: Check your network and Discord API status.
+- Rate limits: Observe retry delays; avoid frequent re-registration.
+
+## See Also
+
+<CardContainer>
+  <Card href="./commands" title="📜 Slash Commands" description="Author, test, and organize your commands." />
+  <Card href="./events" title="📡 Events" description="Run setup tasks in lifecycle hooks like _start." />
+  <Card href="/robojs/config" title="⚙️ Config" description="Project configuration including autoRegisterCommands." />
+  <Card href="/cli/robo" title="⚙️ Robo CLI" description="Build flags including --no-register and --force." />
+  
+</CardContainer>

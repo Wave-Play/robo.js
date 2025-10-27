@@ -332,6 +332,140 @@ function hasChangedFields(obj1: CommandEntry, obj2: CommandEntry): boolean {
 	return false
 }
 
+/**
+ * Internal helper function that handles the core Discord API registration logic.
+ * This function can be reused by both the CLI build command and the public API.
+ *
+ * @internal
+ */
+export async function registerCommandsToDiscord(
+	rest: REST,
+	clientId: string,
+	guildId: string | undefined,
+	commandData: unknown[],
+	force: boolean,
+	config: Config,
+	retries?: Array<{ scope: string; attempt: number; reason: string; delay: number }>
+): Promise<void> {
+	// Get existing commands
+	const existingCommands = (await rest.get(
+		guildId ? Routes.applicationGuildCommands(clientId, guildId) : Routes.applicationCommands(clientId)
+	)) as APIApplicationCommand[]
+	logger.debug(`Found ${existingCommands.length} existing commands:`, existingCommands)
+
+	// See if an entry command already exists
+	let entryCommand: APIApplicationCommand = existingCommands.find((command) => command.type === 4)
+	logger.debug('Entry command:', entryCommand)
+
+	if (force) {
+		// Start clean by forcing a deletion of all existing commands
+		const deletions = existingCommands.map((command) => {
+			return rest.delete(
+				guildId
+					? Routes.applicationGuildCommand(clientId, guildId, command.id)
+					: Routes.applicationCommand(clientId, command.id)
+			)
+		})
+		await Promise.all(deletions)
+		logger.debug('Successfully cleaned up existing commands')
+
+		// Prepare entry command for re-registration
+		// @ts-expect-error - This is a valid command object
+		entryCommand = {
+			name: 'launch',
+			description: 'Launch an activity',
+			contexts: [0, 1, 2],
+			integration_types: [0, 1],
+			type: 4,
+			handler: 2
+		}
+	}
+
+	// Ensure entry command is added if already there (or if reset)
+	try {
+		const hasEmbeddedSdk = hasProjectPackage('@discord/embedded-app-sdk')
+
+		if (entryCommand && !guildId && hasEmbeddedSdk) {
+			// @ts-expect-error - This is a valid command object
+			commandData.push(entryCommand)
+			logger.debug('Added entry command to registration batch as @discord/embedded-app-sdk is installed')
+		} else if (entryCommand && !guildId && !hasEmbeddedSdk) {
+			logger.debug('Skipping entry command registration as @discord/embedded-app-sdk is not installed')
+		}
+	} catch (e) {
+		logger.debug('Error checking for @discord/embedded-app-sdk package:', e)
+	}
+
+	// Register commands with retry and timeout handling
+	const maxRetries = 3
+	const baseDelay = 1000
+	const maxDelay = 10000
+	let attempt = 0
+
+	while (attempt <= maxRetries) {
+		try {
+			const registerCommandsPromise = (
+				guildId
+					? rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commandData })
+					: rest.put(Routes.applicationCommands(clientId), { body: commandData })
+			)
+				.then(() => ({ type: 'registerCommands' as const }))
+				.catch(async (error) => {
+					// Check for rate limit (429)
+					if (error.status === 429) {
+						const retryAfter = error.headers?.['retry-after']
+						const rateLimitReset = error.headers?.['x-ratelimit-reset-after']
+						const delay = retryAfter || rateLimitReset || Math.min(baseDelay * Math.pow(2, attempt), maxDelay)
+
+						// Track retry if array provided
+						if (retries) {
+							retries.push({
+								scope: guildId ? `guild:${guildId}` : 'global',
+								attempt: attempt + 1,
+								reason: 'rate_limit',
+								delay: typeof delay === 'string' ? parseFloat(delay) * 1000 : delay
+							})
+						}
+
+						throw { type: 'rate_limit' as const, delay, error }
+					}
+					throw error
+				})
+
+			const timeoutPromise = timeout(
+				() => ({ type: 'timeout' as const }),
+				config.timeouts?.commandRegistration || DEFAULT_CONFIG.timeouts.commandRegistration
+			)
+
+			const result = await Promise.race([registerCommandsPromise, timeoutPromise])
+
+			if (result.type === 'timeout') {
+				throw { type: 'timeout' as const }
+			}
+
+			// Success - exit retry loop
+			return
+		} catch (error: any) {
+			if (error.type === 'rate_limit' && attempt < maxRetries) {
+				// Wait and retry
+				const delay = error.delay || Math.min(baseDelay * Math.pow(2, attempt), maxDelay)
+				logger.debug(`Rate limited, waiting ${delay}ms before retry ${attempt + 1}/${maxRetries}`)
+				await new Promise(resolve => setTimeout(resolve, delay))
+				attempt++
+				continue
+			}
+
+			// Max retries exceeded or other error
+			if (error.type === 'timeout') {
+				throw new Error('Command registration timed out')
+			}
+			throw error.error || error
+		}
+	}
+
+	throw new Error('Max retries exceeded for rate limiting')
+}
+
 export async function registerCommands(
 	dev: boolean,
 	force: boolean,
@@ -397,40 +531,12 @@ export async function registerCommands(
 			})
 		}
 
-		// Get existing commands
-		const existingCommands = (await rest.get(
-			guildId ? Routes.applicationGuildCommands(clientId, guildId) : Routes.applicationCommands(clientId)
-		)) as APIApplicationCommand[]
-		logger.debug(`Found ${existingCommands.length} existing commands:`, existingCommands)
+		// Handle command deletions for removed commands
+		if (!force && removedCommands.length > 0) {
+			const existingCommands = (await rest.get(
+				guildId ? Routes.applicationGuildCommands(clientId, guildId) : Routes.applicationCommands(clientId)
+			)) as APIApplicationCommand[]
 
-		// See if an entry command already exists
-		let entryCommand: APIApplicationCommand = existingCommands.find((command) => command.type === 4)
-		logger.debug('Entry command:', entryCommand)
-
-		if (force) {
-			// Start clean by forcing a deletion of all existing commands
-			const deletions = existingCommands.map((command) => {
-				return rest.delete(
-					guildId
-						? Routes.applicationGuildCommand(clientId, guildId, command.id)
-						: Routes.applicationCommand(clientId, command.id)
-				)
-			})
-			await Promise.all(deletions)
-			logger.debug('Successfully cleaned up existing commands')
-
-			// Prepare entry command for re-registration
-			// @ts-expect-error - This is a valid command object
-			entryCommand = {
-				name: 'launch',
-				description: 'Launch an activity',
-				contexts: [0, 1, 2],
-				integration_types: [0, 1],
-				type: 4,
-				handler: 2
-			}
-		} else {
-			// Remove only commands that are no longer in the manifest by default
 			const deletions = removedCommands.map((command) => {
 				const existingCommand = existingCommands.find((c) => c.name === command)
 
@@ -447,37 +553,8 @@ export async function registerCommands(
 			logger.debug('Successfully removed deleted commands')
 		}
 
-		// Ensure entry command is added if already there (or if reset)
-		try {
-			const hasEmbeddedSdk = hasProjectPackage('@discord/embedded-app-sdk')
-
-			if (entryCommand && !guildId && hasEmbeddedSdk) {
-				// @ts-expect-error - This is a valid command object
-				commandData.push(entryCommand)
-				logger.debug('Added entry command to registration batch as @discord/embedded-app-sdk is installed')
-			} else if (entryCommand && !guildId && !hasEmbeddedSdk) {
-				logger.debug('Skipping entry command registration as @discord/embedded-app-sdk is not installed')
-			}
-		} catch (e) {
-			logger.debug('Error checking for @discord/embedded-app-sdk package:', e)
-		}
-
-		// Let's register the commands!
-		const registerCommandsPromise = (
-			guildId
-				? rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commandData })
-				: rest.put(Routes.applicationCommands(clientId), { body: commandData })
-		).then(() => ({ type: 'registerCommands' }))
-		const timeoutPromise = timeout(
-			() => ({ type: 'timeout' }),
-			config.timeouts?.commandRegistration || DEFAULT_CONFIG.timeouts.commandRegistration
-		)
-
-		const result = await Promise.race([registerCommandsPromise, timeoutPromise])
-		if (result.type === 'timeout') {
-			logger.warn(`Command registration timed out. Run ${color.bold('robo build --force')} later to try again.`)
-			return
-		}
+		// Use the extracted registration logic
+		await registerCommandsToDiscord(rest, clientId, guildId, commandData, force, config)
 
 		const endTime = Date.now() - startTime
 

@@ -20,6 +20,7 @@ const command = new Command('build')
 	.description('Builds your bot for production.')
 	.option('-d', '--dev', 'build for development')
 	.option('-f', '--force', 'force register commands')
+	.option('-nr', '--no-register', 'skip automatic command registration')
 	.option('-m', '--mode', 'specify the mode(s) to run in (dev, beta, prod, etc...)')
 	.option('-s', '--silent', 'do not print anything')
 	.option('-v', '--verbose', 'print more information for debugging')
@@ -35,6 +36,7 @@ export interface BuildCommandOptions {
 	exit?: boolean
 	files?: string[]
 	force?: boolean
+	'no-register'?: boolean
 	mode?: string
 	silent?: boolean
 	verbose?: boolean
@@ -52,6 +54,9 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 	logger.debug('CLI options:', options)
 	logger.debug(`Current working directory:`, process.cwd())
 	const startTime = Date.now()
+
+	// Normalize the --no-register flag to a boolean registerFlag
+	const registerFlag = !options['no-register']
 
 	// Make sure the user isn't trying to watch builds
 	// This only makes sense for plugins anyway
@@ -138,14 +143,32 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 	const hasContextCommandChanges =
 		addedContextCommands.length > 0 || removedContextCommands.length > 0 || changedContextCommands.length > 0
 
-	// Register command changes
-	const shouldRegister = options.force || hasCommandChanges || hasContextCommandChanges
+	// Determine if auto-registration is enabled
+	const autoRegisterEnabled =
+		registerFlag === false
+			? false
+			: config?.autoRegisterCommands === false
+				? false
+				: true
 
-	if (config.experimental?.disableBot !== true && options.force) {
+	// Register command changes
+	const shouldRegister = autoRegisterEnabled && (options.force || hasCommandChanges || hasContextCommandChanges)
+
+	// Provide feedback when auto-registration is disabled
+	if (!autoRegisterEnabled && config.experimental?.disableBot !== true) {
+		if (registerFlag === false) {
+			logger.debug(`Command registration skipped due to ${bold('--no-register')} flag.`)
+		} else {
+			logger.debug(`Command registration skipped due to ${bold('autoRegisterCommands: false')} in config.`)
+		}
+		logger.debug(`Use the ${bold('registerSlashCommands()')} API for manual command registration.`)
+	}
+
+	if (config.experimental?.disableBot !== true && autoRegisterEnabled && options.force) {
 		discordLogger.warn('Forcefully registering commands.')
 	}
 
-	if (config.experimental?.disableBot !== true && shouldRegister) {
+	if (config.experimental?.disableBot !== true && autoRegisterEnabled && shouldRegister) {
 		await registerCommands(
 			options.dev,
 			options.force,
@@ -159,7 +182,7 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 			addedContextCommands,
 			removedContextCommands
 		)
-	} else if (config.experimental?.disableBot !== true) {
+	} else if (config.experimental?.disableBot !== true && autoRegisterEnabled) {
 		const hasPreviousError = await Flashcore.get<boolean>(FLASHCORE_KEYS.commandRegisterError)
 		if (hasPreviousError) {
 			discordLogger.warn(`Previous command registration failed. Run ${bold('robo build --force')} to try again.`)

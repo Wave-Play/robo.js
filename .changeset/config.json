@@ -8,5 +8,5 @@
 	"bumpVersionsWithWorkspaceProtocolOnly": true,
 	"updateInternalDependencies": "minor",
 	"baseBranch": "main",
-	"ignore": ["@robojs/ai-voice", "robo-scripts"]
+	"ignore": ["robo-scripts"]
 }

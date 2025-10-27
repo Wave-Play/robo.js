@@ -1,0 +1,172 @@
+{
+  "defaultSettings": {
+    "defaults": {
+      "winners": 1,
+      "duration": "1h",
+      "buttonLabel": "Enter Giveaway",
+      "dmWinners": true
+    },
+    "limits": {
+      "maxWinners": 20,
+      "maxDurationDays": 30
+    },
+    "restrictions": {
+      "allowRoleIds": [],
+      "denyRoleIds": [],
+      "minAccountAgeDays": null
+    }
+  },
+  "customDefaults": {
+    "defaults": {
+      "winners": 2,
+      "duration": "2h",
+      "buttonLabel": "\ud83c\udf81 Join Giveaway",
+      "dmWinners": true
+    },
+    "limits": {
+      "maxWinners": 100,
+      "maxDurationDays": 30
+    },
+    "restrictions": {
+      "allowRoleIds": [],
+      "denyRoleIds": [],
+      "minAccountAgeDays": null
+    }
+  },
+  "restrictiveSettings": {
+    "defaults": {
+      "winners": 1,
+      "duration": "30m",
+      "buttonLabel": "\ud83c\udf89 Enter Giveaway",
+      "dmWinners": true
+    },
+    "limits": {
+      "maxWinners": 10,
+      "maxDurationDays": 7
+    },
+    "restrictions": {
+      "allowRoleIds": [],
+      "denyRoleIds": [],
+      "minAccountAgeDays": 30
+    }
+  },
+  "permissiveSettings": {
+    "defaults": {
+      "winners": 5,
+      "duration": "7d",
+      "buttonLabel": "\ud83c\udf89 Enter Giveaway",
+      "dmWinners": true
+    },
+    "limits": {
+      "maxWinners": 500,
+      "maxDurationDays": 90
+    },
+    "restrictions": {
+      "allowRoleIds": [],
+      "denyRoleIds": [],
+      "minAccountAgeDays": null
+    }
+  },
+  "withAllowedRoles": {
+    "defaults": {
+      "winners": 1,
+      "duration": "1h",
+      "buttonLabel": "\ud83c\udf89 Enter Giveaway",
+      "dmWinners": true
+    },
+    "limits": {
+      "maxWinners": 100,
+      "maxDurationDays": 30
+    },
+    "restrictions": {
+      "allowRoleIds": ["777777777777777777", "888888888888888888", "999999999999999999"],
+      "denyRoleIds": [],
+      "minAccountAgeDays": null
+    }
+  },
+  "withDeniedRoles": {
+    "defaults": {
+      "winners": 1,
+      "duration": "1h",
+      "buttonLabel": "\ud83c\udf89 Enter Giveaway",
+      "dmWinners": true
+    },
+    "limits": {
+      "maxWinners": 100,
+      "maxDurationDays": 30
+    },
+    "restrictions": {
+      "allowRoleIds": [],
+      "denyRoleIds": ["111111111111111111", "222222222222222222"],
+      "minAccountAgeDays": null
+    }
+  },
+  "withMinAccountAge": {
+    "defaults": {
+      "winners": 1,
+      "duration": "1h",
+      "buttonLabel": "\ud83c\udf89 Enter Giveaway",
+      "dmWinners": true
+    },
+    "limits": {
+      "maxWinners": 100,
+      "maxDurationDays": 30
+    },
+    "restrictions": {
+      "allowRoleIds": [],
+      "denyRoleIds": [],
+      "minAccountAgeDays": 7
+    }
+  },
+  "noDmWinners": {
+    "defaults": {
+      "winners": 1,
+      "duration": "1h",
+      "buttonLabel": "\ud83c\udf89 Enter Giveaway",
+      "dmWinners": false
+    },
+    "limits": {
+      "maxWinners": 100,
+      "maxDurationDays": 30
+    },
+    "restrictions": {
+      "allowRoleIds": [],
+      "denyRoleIds": [],
+      "minAccountAgeDays": null
+    }
+  },
+  "strictRestrictions": {
+    "defaults": {
+      "winners": 1,
+      "duration": "1h",
+      "buttonLabel": "\u2b50 VIP Entry",
+      "dmWinners": true
+    },
+    "limits": {
+      "maxWinners": 5,
+      "maxDurationDays": 3
+    },
+    "restrictions": {
+      "allowRoleIds": ["555555555555555555"],
+      "denyRoleIds": ["666666666666666666", "777777777777777777"],
+      "minAccountAgeDays": 60
+    }
+  },
+  "communityGiveaway": {
+    "defaults": {
+      "winners": 10,
+      "duration": "3d",
+      "buttonLabel": "\ud83c\udf8a Community Giveaway",
+      "dmWinners": true
+    },
+    "limits": {
+      "maxWinners": 50,
+      "maxDurationDays": 14
+    },
+    "restrictions": {
+      "allowRoleIds": [],
+      "denyRoleIds": ["123456789012345678"],
+      "minAccountAgeDays": 14
+    }
+  }
+}

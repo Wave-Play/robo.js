@@ -22,16 +22,28 @@ class CronJob {
 		if (typeof jobFunction === 'string') {
 			this.path = jobFunction
 			this.cronJob = new CronerJob(cronExpression, () => {
-				this.executeFileBasedJob(jobFunction)
+				const jobId = this.id
+				this.executeFileBasedJob(jobFunction, jobId)
 			})
 		} else {
 			this.cronJob = new CronerJob(cronExpression, jobFunction)
 		}
 	}
 
-	private executeFileBasedJob(jobPath: string): void {
+	private executeFileBasedJob(jobPath: string, jobId: string): void {
 		try {
-			let absolutePath = path.resolve(path.join(process.cwd(), '.robo', 'build', jobPath))
+			// Normalize the relative job path by removing leading slashes
+			const relativeJobPath = jobPath.replace(/^\/+/, '')
+
+			// Determine the absolute path
+			let absolutePath: string
+			if (path.isAbsolute(jobPath) && fs.existsSync(jobPath)) {
+				// Use the absolute path directly if it exists
+				absolutePath = jobPath
+			} else {
+				// Resolve relative to .robo/build directory
+				absolutePath = path.resolve(process.cwd(), '.robo', 'build', relativeJobPath)
+			}
 			cronLogger.debug(`Executing cron job handler: ${color.bold(jobPath)}`)
 
 			if (!fs.existsSync(absolutePath) && absolutePath.endsWith('.js') && IS_BUN_RUNTIME) {
@@ -42,7 +54,7 @@ class CronJob {
 				const fileUrl = pathToFileURL(absolutePath).href
 				import(fileUrl).then((module) => {
 					if (typeof module.default === 'function') {
-						module.default()
+						module.default(jobId)
 					} else {
 						throw new Error(`Missing default export for job: ${color.bold(jobPath)}`)
 					}
@@ -57,6 +69,7 @@ class CronJob {
 
 	async save(id?: string): Promise<string> {
 		const jobId = id || this.id
+		this.id = jobId
 		setState(`${jobId}`, this, { namespace: NAMESPACE })
 
 		if (!this.path) {

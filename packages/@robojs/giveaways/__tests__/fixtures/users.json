@@ -1,0 +1,182 @@
+[
+  {
+    "id": "222333444555666777",
+    "username": "AliceGamer",
+    "createdTimestamp": 1577836800000,
+    "roles": ["777777777777777777", "888888888888888888"]
+  },
+  {
+    "id": "333444555666777888",
+    "username": "BobBuilder",
+    "createdTimestamp": 1609459200000,
+    "roles": ["777777777777777777"]
+  },
+  {
+    "id": "444555666777888999",
+    "username": "CharlieChamp",
+    "createdTimestamp": 1640995200000,
+    "roles": ["888888888888888888", "999999999999999999"]
+  },
+  {
+    "id": "555666777888999000",
+    "username": "DianaDev",
+    "createdTimestamp": 1672531200000,
+    "roles": []
+  },
+  {
+    "id": "666777888999000111",
+    "username": "EthanElite",
+    "createdTimestamp": 1704067200000,
+    "roles": ["777777777777777777", "555555555555555555"]
+  },
+  {
+    "id": "777888999000111222",
+    "username": "FionaFrost",
+    "createdTimestamp": 1514764800000,
+    "roles": ["888888888888888888"]
+  },
+  {
+    "id": "888999000111222333",
+    "username": "GeorgeGaming",
+    "createdTimestamp": 1546300800000,
+    "roles": ["555555555555555555"]
+  },
+  {
+    "id": "999000111222333444",
+    "username": "HannahHero",
+    "createdTimestamp": 1609372800000,
+    "roles": []
+  },
+  {
+    "id": "101010101010101010",
+    "username": "IanIdle",
+    "createdTimestamp": 1735084800000,
+    "roles": ["999999999999999999"]
+  },
+  {
+    "id": "202020202020202020",
+    "username": "JuliaJoker",
+    "createdTimestamp": 1735516800000,
+    "roles": []
+  },
+  {
+    "id": "303030303030303030",
+    "username": "KevinKnight",
+    "createdTimestamp": 1672444800000,
+    "roles": ["777777777777777777", "888888888888888888", "999999999999999999"]
+  },
+  {
+    "id": "404040404040404040",
+    "username": "LilyLegend",
+    "createdTimestamp": 1735603200000,
+    "roles": []
+  },
+  {
+    "id": "505050505050505050",
+    "username": "MasonMage",
+    "createdTimestamp": 1640908800000,
+    "roles": ["555555555555555555", "666666666666666666"]
+  },
+  {
+    "id": "606060606060606060",
+    "username": "NoraNinja",
+    "createdTimestamp": 1704153600000,
+    "roles": ["777777777777777777"]
+  },
+  {
+    "id": "707070707070707070",
+    "username": "OscarOlympic",
+    "createdTimestamp": 1577750400000,
+    "roles": []
+  },
+  {
+    "id": "808080808080808080",
+    "username": "PenelopePro",
+    "createdTimestamp": 1609286400000,
+    "roles": ["888888888888888888"]
+  },
+  {
+    "id": "909090909090909090",
+    "username": "QuinnQuest",
+    "createdTimestamp": 1672358400000,
+    "roles": ["666666666666666666"]
+  },
+  {
+    "id": "121212121212121212",
+    "username": "RachelRogue",
+    "createdTimestamp": 1704240000000,
+    "roles": ["123456789012345678"]
+  },
+  {
+    "id": "131313131313131313",
+    "username": "SamSage",
+    "createdTimestamp": 1735689600000,
+    "roles": []
+  },
+  {
+    "id": "141414141414141414",
+    "username": "TinaTitan",
+    "createdTimestamp": 1735689600000,
+    "roles": ["777777777777777777"]
+  },
+  {
+    "id": "151515151515151515",
+    "username": "UlyssesUber",
+    "createdTimestamp": 1704326400000,
+    "roles": ["999999999999999999", "666666666666666666"]
+  },
+  {
+    "id": "161616161616161616",
+    "username": "VioletVanguard",
+    "createdTimestamp": 1640822400000,
+    "roles": ["555555555555555555"]
+  },
+  {
+    "id": "171717171717171717",
+    "username": "WalterWarrior",
+    "createdTimestamp": 1609200000000,
+    "roles": []
+  },
+  {
+    "id": "181818181818181818",
+    "username": "XenaXenith",
+    "createdTimestamp": 1577664000000,
+    "roles": ["777777777777777777", "888888888888888888"]
+  },
+  {
+    "id": "191919191919191919",
+    "username": "YarrowYoung",
+    "createdTimestamp": 1735776000000,
+    "roles": []
+  },
+  {
+    "id": "212121212121212121",
+    "username": "ZaraZealot",
+    "createdTimestamp": 1735775400000,
+    "roles": ["777777777777777777"]
+  },
+  {
+    "id": "111222333444555666",
+    "username": "AdminModerator",
+    "createdTimestamp": 1514678400000,
+    "roles": ["555555555555555555", "777777777777777777", "888888888888888888"]
+  },
+  {
+    "id": "232323232323232323",
+    "username": "NewUser7Days",
+    "createdTimestamp": 1735084800000,
+    "roles": []
+  },
+  {
+    "id": "242424242424242424",
+    "username": "NewUser30Days",
+    "createdTimestamp": 1733097600000,
+    "roles": []
+  },
+  {
+    "id": "252525252525252525",
+    "username": "OldUser2Years",
+    "createdTimestamp": 1640995200000,
+    "roles": ["777777777777777777"]
+  }
+]

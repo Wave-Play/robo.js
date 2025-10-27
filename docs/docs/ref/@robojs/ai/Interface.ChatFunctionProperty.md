@@ -1,5 +1,7 @@
 # Interface: ChatFunctionProperty
 
+Schema fragment representing a property definition within [ChatFunctionParameters](Interface.ChatFunctionParameters.md).
+
 ## Properties
 
 ### description?
@@ -8,13 +10,17 @@
 optional description: string;
 ```
 
+Human-readable description exposed to the model.
+
 ***
 
 ### enum?
 
 ```ts
-optional enum: string[];
+optional enum: (string | number | boolean)[];
 ```
+
+Enumerated accepted values, if applicable.
 
 ***
 
@@ -24,10 +30,39 @@ optional enum: string[];
 optional items: ChatFunctionProperty;
 ```
 
+Nested schema for array item validation.
+
+***
+
+### maximum?
+
+```ts
+optional maximum: number;
+```
+
+Maximum numeric value when `type` is numeric.
+
+***
+
+### minimum?
+
+```ts
+optional minimum: number;
+```
+
+Minimum numeric value when `type` is numeric.
+
 ***
 
 ### type
 
 ```ts
-type: "string" | "array";
+type: 
+  | "string"
+  | "number"
+  | "boolean"
+  | "array"
+  | "integer";
 ```
+
+Primitive JSON schema type.

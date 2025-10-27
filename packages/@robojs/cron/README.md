@@ -73,7 +73,8 @@ import { Cron } from '@robojs/cron'
 // File: /src/events/_start.js
 export default () => {
 	// Runs `/src/cron/job.js` every 5 seconds
-	const job = Cron('*/5 * * * * *', '/cron/job.js')
+	// IMPORTANT: pass a relative path (no leading slash)
+	const job = Cron('*/5 * * * * *', 'cron/job.js')
 }
 ```
 
@@ -86,6 +87,26 @@ export default () => {
 }
 ```
 
+### Absolute Paths for Plugins
+
+Plugin authors can use absolute paths to reference cron handlers bundled with their plugin. This is particularly useful when your plugin needs to schedule cron jobs using handlers that are distributed as part of the plugin package.
+
+```javascript
+import { Cron } from '@robojs/cron'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+// Resolve the plugin's compiled cron handler to an absolute path
+const here = path.dirname(fileURLToPath(import.meta.url))
+const cronJobPath = path.resolve(here, '../cron/my-handler.js')
+
+// Create cron job with absolute path
+const job = Cron('*/5 * * * * *', cronJobPath)
+await job.save('my-plugin-job')
+```
+
+Using absolute paths allows your plugin to reference its own handlers without requiring consumers to copy files into their project. The cron plugin will automatically detect absolute paths and use them directly, while relative paths (like `/cron/job.js`) continue to be resolved from the consumer's `.robo/build` directory.
+
 ### Persistence
 
 Jobs can be persisted to ensure they continue after a restart and can be retrieved later.
@@ -96,7 +117,8 @@ import { Cron } from '@robojs/cron'
 // File: /src/commands/start-job.js
 export default () => {
 	// Runs `/src/cron/job.js` every 5 seconds
-	const job = Cron('*/5 * * * * *', '/cron/job.js')
+	// Use a relative path (no leading slash)
+	const job = Cron('*/5 * * * * *', 'cron/job.js')
 
 	// Only file-based jobs can be persisted
 	const jobId = await job.save()
@@ -142,7 +164,14 @@ The `jobFunction` parameter can be either a path to a JavaScript file that expor
 
 ### Removing a Job
 
-Remove a persisted job from the system by using `Cron.remove(id)`, where `id` is the unique identifier returned by the `save()` method. This function ensures that the job is no longer scheduled to run and is removed from storage.
+Remove a persisted job by using `Cron.remove(id)`, where `id` is the unique identifier returned by the `save()` method. This removes the job from persistence (Flashcore) and clears it from in-memory State, but does not stop a running job. To fully clean up, stop the job first, then remove it:
+
+```ts
+const id = 'my-job'
+const job = Cron.get(id)
+job?.stop()         // halts execution
+await Cron.remove(id) // deletes persistence + clears State
+```
 
 ## Cron Expressions
 

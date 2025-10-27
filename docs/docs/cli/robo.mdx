@@ -28,8 +28,23 @@ Commands:
 
 ### Building
 
-- **`build`**: Prepares your project for production by compiling your source files, generating a manifest file, and registering any command updates. You need to run this command before using `start`.
+- **`build`**: Prepares your project for production by compiling your source files, generating a manifest file, and registering any command updates. Use `--no-register` to skip automatic command registration. You need to run this command before using `start`.
 - **`build plugin`**: Works similarly to `build`, but optimizes your source files to be published as a plugin via npm.
+
+### Build Options
+
+- `--force`
+  - Forces re-registration of all commands, even if unchanged.
+  - Usage: `robo build --force`
+  - Use when commands aren’t updating properly or Discord cache issues arise.
+
+- `--no-register`
+  - Skips automatic command registration during build.
+  - Usage: `robo build --no-register`
+  - Use when handling registration manually via the `registerSlashCommands()` API.
+  - Can be combined with other flags, e.g., `robo build --no-register --verbose`.
+
+For more control over command registration, see the **[Command Registration Guide](/discord-bots/command-registration)**.
 
 ### Plugins
 

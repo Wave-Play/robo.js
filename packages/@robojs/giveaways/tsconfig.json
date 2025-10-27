@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["src/*"],
+      "core/*": [".robo/build/core/*"],
+      "utils/*": [".robo/build/utils/*"],
+      "types/*": [".robo/build/types/*"],
+      "index.js": [".robo/build/index.js"]
+    },
+    "target": "ES2021",
+    "lib": ["es2021", "DOM"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "incremental": true
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules"]
+}

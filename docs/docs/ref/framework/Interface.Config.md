@@ -2,6 +2,19 @@
 
 ## Properties
 
+### autoRegisterCommands?
+
+```ts
+optional autoRegisterCommands: boolean;
+```
+
+Controls whether commands are automatically registered during build.
+When set to false, commands will not be registered unless the `registerSlashCommands()` API is called explicitly.
+Defaults to true for backward compatibility.
+Can be overridden using the `--no-register` CLI flag.
+
+***
+
 ### clientOptions?
 
 ```ts

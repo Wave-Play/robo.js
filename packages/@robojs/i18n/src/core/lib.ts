@@ -93,7 +93,14 @@ export function createCommandConfig<const C extends LocaleCommandConfig>(config:
 	const descriptionKey = config.descriptionKey
 	const pluginConfig = getPluginOptions(join('@robojs', 'i18n')) as PluginConfig
 	const defaultLocale = pluginConfig?.defaultLocale || 'en-US'
-	config.description = t(defaultLocale, config.descriptionKey) as unknown as string
+
+	if (descriptionKey) {
+		config.description = t(defaultLocale, descriptionKey) as unknown as string
+	}
+
+	if (!localNames) {
+		throw new Error('No locales found. Make sure to create locale files in the /locales directory.')
+	}
 
 	localNames.forEach((locale: string) => {
 		if (descriptionKey) {
@@ -101,9 +108,9 @@ export function createCommandConfig<const C extends LocaleCommandConfig>(config:
 			config.descriptionLocalizations = config.descriptionLocalizations || {}
 			config.descriptionLocalizations[locale] = description
 		}
-
-		delete config.descriptionKey
 	})
+
+	delete config.descriptionKey
 
 	if (config && config.options) {
 		config.options.forEach((option) => {
@@ -111,17 +118,22 @@ export function createCommandConfig<const C extends LocaleCommandConfig>(config:
 				const nameKey = option.nameKey
 				const descriptionKey = option.descriptionKey
 				const name = t(locale, nameKey) as unknown as string
-				const description = t(locale, descriptionKey) as unknown as string
 
 				option.nameLocalizations = option.nameLocalizations || {}
 				option.nameLocalizations[locale] = name
-				option.descriptionLocalizations = option.descriptionLocalizations || {}
-				option.descriptionLocalizations[locale] = description
+
+				if (descriptionKey) {
+					const description = t(locale, descriptionKey) as unknown as string
+					option.descriptionLocalizations = option.descriptionLocalizations || {}
+					option.descriptionLocalizations[locale] = description
+				}
 			})
 
-			// @ts-expect-error - We know these keys exist
-			option.description = t(defaultLocale, option.descriptionKey) as unknown as string
 			option.name = t(defaultLocale, option.nameKey) as unknown as string
+			if (option.descriptionKey) {
+				// @ts-expect-error - LocaleCommandOption omits description, we add it dynamically
+				option.description = t(defaultLocale, option.descriptionKey) as unknown as string
+			}
 
 			delete option.nameKey
 			delete option.descriptionKey
@@ -194,6 +206,10 @@ export function t<K extends LocaleKey>(locale: LocaleLike, key: K, params?: Para
 	const localeValues = State.get<Record<string, Record<string, string | string[]>>>('localeValues', {
 		namespace: '@robojs/i18n'
 	})
+
+	if (!localeValues) {
+		throw new Error('Locales not loaded. Call loadLocales() first or ensure locale files exist in /locales.')
+	}
 
 	// This function should return the translation for the given locale and key.
 	// For now, we will just return a placeholder string.

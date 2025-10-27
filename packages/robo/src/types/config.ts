@@ -58,6 +58,13 @@ export interface Config {
 		/** @deprecated Use `integrationTypes` in command config instead */
 		userInstall?: boolean
 	}
+	/**
+	 * Controls whether commands are automatically registered during build.
+	 * When set to false, commands will not be registered unless the `registerSlashCommands()` API is called explicitly.
+	 * Defaults to true for backward compatibility.
+	 * Can be overridden using the `--no-register` CLI flag.
+	 */
+	autoRegisterCommands?: boolean
 	flashcore?: {
 		keyv?: unknown
 		/**

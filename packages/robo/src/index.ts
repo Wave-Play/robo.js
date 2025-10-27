@@ -1,4 +1,5 @@
 export { color, composeColors } from './core/color.js'
+export { registerSlashCommands } from './core/commands.js'
 export { getConfig } from './core/config.js'
 export { Env } from './core/env.js'
 export { getManifest } from './cli/compiler/manifest.js'
