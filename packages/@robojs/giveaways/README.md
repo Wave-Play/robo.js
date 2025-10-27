@@ -140,28 +140,31 @@ Reset all settings to defaults.
 
 Create `config/plugins/robojs/giveaways.mjs`:
 
+```js title="config/plugins/robojs/giveaways.mjs"
 export default {
-defaults: {
-winners: 1,
-duration: '1h',
-buttonLabel: 'Enter Giveaway',
-dmWinners: true
-},
-limits: {
-maxWinners: 20,
-maxDurationDays: 30
-},
-restrictions: {
-allowRoleIds: [],
-denyRoleIds: [],
-minAccountAgeDays: null
+  defaults: {
+    winners: 1,
+    duration: '1h',
+    buttonLabel: 'Enter Giveaway',
+    dmWinners: true
+  },
+  limits: {
+    maxWinners: 20,
+    maxDurationDays: 30
+  },
+  restrictions: {
+    allowRoleIds: [],
+    denyRoleIds: [],
+    minAccountAgeDays: null
+  }
 }
-}
+```
 
 ### Imperative API (Optional)
 
 For dashboard integrations:
 
+```ts
 import { getGuildSettings, setGuildSettings } from '@robojs/giveaways'
 import type { GuildSettings } from '@robojs/giveaways/types'
 
@@ -170,22 +173,23 @@ const settings = await getGuildSettings('guild_id_here')
 
 // Update settings
 await setGuildSettings('guild_id_here', {
-defaults: {
-winners: 2,
-duration: '2h',
-buttonLabel: 'Join Now!',
-dmWinners: true
-},
-limits: {
-maxWinners: 10,
-maxDurationDays: 7
-},
-restrictions: {
-allowRoleIds: [],
-denyRoleIds: [],
-minAccountAgeDays: 7
-}
+  defaults: {
+    winners: 2,
+    duration: '2h',
+    buttonLabel: 'Join Now!',
+    dmWinners: true
+  },
+  limits: {
+    maxWinners: 10,
+    maxDurationDays: 7
+  },
+  restrictions: {
+    allowRoleIds: [],
+    denyRoleIds: [],
+    minAccountAgeDays: 7
+  }
 })
+```
 
 ## Optional Integrations
 
