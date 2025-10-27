@@ -10,6 +10,7 @@
 			"packages/@robojs/cron",
 			"packages/@robojs/i18n",
 			"packages/@robojs/patch",
+			"packages/@robojs/roadmap",
 			"packages/@robojs/trpc",
 			"packages/create-discord-activity",
 			"packages/create-robo",

@@ -1,0 +1,757 @@
+<p align="center">✨ <strong>Generated with <a href="https://robojs.dev/create-robo">create-robo</a> magic!</strong> ✨</p>
+
+---
+
+# @robojs/roadmap
+
+Sync project roadmaps from Jira (or custom providers) to organized Discord forum channels, automatically creating and updating forum threads for each card while providing slash commands for seamless team collaboration.
+
+<div align="center">
+
+[![GitHub license](https://img.shields.io/github/license/Wave-Play/robo)](https://github.com/Wave-Play/robo/blob/main/LICENSE)
+[![npm](https://img.shields.io/npm/v/@robojs/roadmap)](https://www.npmjs.com/package/@robojs/roadmap)
+[![install size](https://packagephobia.com/badge?p=@robojs/roadmap@latest)](https://packagephobia.com/result?p=@robojs/roadmap@latest)
+[![Discord](https://img.shields.io/discord/1087134933908193330?color=7289da)](https://robojs.dev/discord)
+[![All Contributors](https://img.shields.io/github/all-contributors/Wave-Play/robo.js?color=cf7cfc)](https://github.com/Wave-Play/robo.js/blob/main/CONTRIBUTING.md#contributors)
+
+</div>
+
+➞ [📚 **Documentation:** Getting started](https://robojs.dev/docs/getting-started)
+
+➞ [🚀 **Community:** Join our Discord server](https://robojs.dev/discord)
+
+## ✨ Features
+
+- 🔄 **Automatic bidirectional sync** between provider and Discord
+- 📋 **Forum channels organized by workflow columns**
+- 🏷️ **Smart label tagging** with autocomplete (up to 5 tags per thread)
+- 👥 **Role-based authorization** for card creation
+- 🔒 **Public/private forum access modes**
+- 🔍 **Autocomplete** for cards, columns, labels, and issue types
+- 📅 **Date range filtering** for programmatic queries
+- 🌐 **Optional REST API** for external integrations
+- 🔌 **Extensible provider architecture** (Jira, GitHub, Linear, custom)
+- ⚡ **Idempotent sync** with automatic error recovery
+
+## 💻 Getting Started
+
+```bash
+npx robo add @robojs/roadmap
+```
+
+New to **[Robo.js](https://robojs.dev)**? Start your project with this plugin pre-installed:
+
+```bash
+npx create-robo <project-name> -p @robojs/roadmap
+```
+
+> Set Jira environment variables (`JIRA_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`, `JIRA_PROJECT_KEY`) for the plugin to function. See [Provider Setup](#-provider-setup) for details.
+
+> 💡 Install `@robojs/server` to enable REST API features for external integrations.
+
+## 🚀 Quick Start
+
+1. **Configure Jira credentials** in your `.env` file:
+
+   ```env
+   JIRA_URL="https://company.atlassian.net"
+   JIRA_EMAIL="your-email@example.com"
+   JIRA_API_TOKEN="your-api-token"
+   JIRA_PROJECT_KEY="PROJ"
+   ```
+
+2. **Start your Robo:**
+
+   ```bash
+   npx robo dev
+   ```
+
+3. **Run `/roadmap setup`** in Discord to create forum channels
+
+4. **Run `/roadmap sync`** to sync your cards from Jira
+
+5. **Cards appear as forum threads** organized by column (Backlog, In Progress, Done, etc.)
+
+During setup, the plugin creates a dedicated category with forum channels for each workflow column. Each card becomes a forum thread in its respective column channel, complete with labels, descriptions, and automatic updates.
+
+## 💬 Discord Commands
+
+The plugin provides four slash commands for managing your roadmap:
+
+### `/roadmap setup`
+
+Creates the roadmap forum structure. **Admin only.**
+
+- Creates a category with forum channels for each workflow column
+- Shows interactive setup message with access toggle and role selector
+- Configures authorized creator roles
+
+**Example:**
+
+```
+/roadmap setup
+```
+
+### `/roadmap sync`
+
+Manually syncs cards from provider to Discord. **Admin only.**
+
+- **Options:**
+  - `dry-run` (boolean) - Preview sync without making changes
+
+- Shows sync statistics (created, updated, archived)
+- Idempotent: safe to run multiple times
+
+**Example:**
+
+```
+/roadmap sync dry-run:true
+```
+
+### `/roadmap add`
+
+Creates a new card. **Authorized users.**
+
+- **Options:**
+  - `title` (required) - Card title
+  - `description` - Card description
+  - `column` (autocomplete) - Target column
+  - `labels` (autocomplete, comma-separated) - Card labels
+  - `issue-type` (autocomplete) - Issue type (Task, Bug, etc.)
+
+- Automatically syncs to Discord after creation
+- Supports autocomplete for columns, labels, and issue types
+
+**Example:**
+
+```
+/roadmap add title:"Add dark mode" column:"Backlog" labels:"feature,ui"
+```
+
+### `/roadmap edit`
+
+Updates an existing card. **Authorized users.**
+
+- **Options:**
+  - `card` (autocomplete, required) - Card to edit
+  - `title` - New title
+  - `description` - New description
+  - `column` (autocomplete) - Move to column
+  - `labels` (autocomplete, comma-separated) - Update labels
+
+- Updates both provider and Discord thread
+- Autocomplete searches cards by title and key
+
+**Example:**
+
+```
+/roadmap edit card:"PROJ-123" column:"In Progress"
+```
+
+> 💡 All autocomplete fields update every 5 minutes (configurable via `autocompleteCacheTtl`). Labels support comma-separated values for multi-selection.
+
+## 🔧 Provider Setup
+
+### Jira Provider
+
+Jira is the built-in provider for syncing roadmaps from Jira Cloud.
+
+**Required Environment Variables:**
+
+- `JIRA_URL` - Your Jira instance URL (e.g., `https://company.atlassian.net`)
+- `JIRA_EMAIL` - Email address for authentication
+- `JIRA_API_TOKEN` - API token for authentication ([create one here](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/))
+- `JIRA_PROJECT_KEY` - Project key to sync (e.g., `PROJ`)
+
+**Optional Environment Variables:**
+
+- `JIRA_JQL` - Custom JQL query to filter issues
+- `JIRA_MAX_RESULTS` - Max results per page (1-1000, default 100)
+- `JIRA_DEFAULT_ISSUE_TYPE` - Default issue type for new cards (default 'Task')
+
+**Example `.env` file:**
+
+```env
+JIRA_URL="https://company.atlassian.net"
+JIRA_EMAIL="team@example.com"
+JIRA_API_TOKEN="ATATT3xFfGF0..."
+JIRA_PROJECT_KEY="PROJ"
+JIRA_JQL="labels = public"
+JIRA_MAX_RESULTS="50"
+JIRA_DEFAULT_ISSUE_TYPE="Story"
+```
+
+**Configuration File Example:**
+
+```typescript
+// config/plugins/robojs/roadmap.mjs
+export default {
+	provider: {
+		type: 'jira',
+		options: {
+			url: process.env.JIRA_URL,
+			email: process.env.JIRA_EMAIL,
+			apiToken: process.env.JIRA_API_TOKEN,
+			projectKey: process.env.JIRA_PROJECT_KEY,
+			jql: 'labels = public',
+			maxResults: 50
+		}
+	}
+}
+```
+
+**JQL Filtering Examples:**
+
+```typescript
+// Public cards only
+jql: 'project = PROJ AND labels = public'
+
+// Exclude private cards
+jql: 'project = PROJ AND labels != private'
+
+// Active cards only (not resolved)
+jql: 'project = PROJ AND resolution = Unresolved'
+
+// Cards updated in last 30 days
+jql: 'project = PROJ AND updated >= -30d'
+```
+
+> 💡 JQL (Jira Query Language) allows powerful filtering. See [Atlassian JQL documentation](https://support.atlassian.com/jira-service-management-cloud/docs/use-advanced-search-with-jira-query-language-jql/) for advanced queries.
+
+> [!NOTE]
+> Configuration precedence: explicit config file > plugin options > environment variables. Environment variables provide the simplest setup for most use cases.
+
+## ⚙️ Configuration
+
+### Plugin Options
+
+Configure the plugin in `config/plugins/robojs/roadmap.mjs` (or `.ts`):
+
+```typescript
+import { JiraProvider } from '@robojs/roadmap'
+
+export default {
+	// Provider instance or config object (required)
+	provider: new JiraProvider({
+		type: 'jira',
+		options: {
+			url: process.env.JIRA_URL,
+			email: process.env.JIRA_EMAIL,
+			apiToken: process.env.JIRA_API_TOKEN,
+			projectKey: process.env.JIRA_PROJECT_KEY,
+			jql: 'labels = public',
+			maxResults: 100,
+			defaultIssueType: 'Task'
+		}
+	}),
+
+	// Cache duration for autocomplete suggestions (default: 300000 = 5 minutes)
+	autocompleteCacheTtl: 300000,
+
+	// Reserved for future automatic sync feature
+	autoSync: false,
+
+	// Reserved for future sync interval configuration
+	syncInterval: null
+}
+```
+
+**Available Options:**
+
+| Option                 | Type                                | Default  | Description                                     |
+| ---------------------- | ----------------------------------- | -------- | ----------------------------------------------- |
+| `provider`             | `RoadmapProvider \| ProviderConfig` | required | Provider instance or config object              |
+| `autocompleteCacheTtl` | `number`                            | `300000` | Cache duration in milliseconds for autocomplete |
+| `autoSync`             | `boolean`                           | `false`  | Reserved for future automatic sync              |
+| `syncInterval`         | `number \| null`                    | `null`   | Reserved for future sync interval               |
+
+### Jira Configuration
+
+**Jira-Specific Options:**
+
+| Option             | Type     | Required | Description                                |
+| ------------------ | -------- | -------- | ------------------------------------------ |
+| `url`              | `string` | yes      | Jira instance URL                          |
+| `email`            | `string` | yes      | Email for authentication                   |
+| `apiToken`         | `string` | yes      | API token for authentication               |
+| `projectKey`       | `string` | yes      | Project key to sync                        |
+| `jql`              | `string` | no       | Custom JQL query to filter issues          |
+| `maxResults`       | `number` | no       | Max results per page (1-1000, default 100) |
+| `defaultIssueType` | `string` | no       | Default issue type (default 'Task')        |
+
+**Example with JQL Filtering:**
+
+```typescript
+export default {
+	provider: {
+		type: 'jira',
+		options: {
+			url: 'https://company.atlassian.net',
+			email: 'team@example.com',
+			apiToken: process.env.JIRA_API_TOKEN,
+			projectKey: 'PROJ',
+			jql: 'project = PROJ AND labels = public AND resolution = Unresolved',
+			maxResults: 50,
+			defaultIssueType: 'Story'
+		}
+	}
+}
+```
+
+## 🔐 Authorization & Permissions
+
+### Permission Levels
+
+**Admin Commands** (`/roadmap setup`, `/roadmap sync`):
+
+- Require **Administrator** permission in Discord
+
+**Authorized User Commands** (`/roadmap add`, `/roadmap edit`):
+
+- Require admin **OR** authorized creator role
+- Configure authorized roles via `/roadmap setup` interactive message or settings API
+
+### Required Discord Bot Permissions
+
+| Permission               | Required For                 |
+| ------------------------ | ---------------------------- |
+| View Channels            | See forum channels           |
+| Create Public Threads    | Create card threads          |
+| Send Messages in Threads | Post card content            |
+| Manage Threads           | Update and archive threads   |
+| Manage Messages          | Edit thread starter messages |
+
+> 💡 Permissions inherit from category to forum channels. Set permissions on the roadmap category for easiest management.
+
+### Public vs Private Forums
+
+- **Public mode**: `@everyone` can view forum channels
+- **Private mode**: Only authorized roles can view forum channels
+
+Configure access mode via `/roadmap setup` or the settings API.
+
+## 🧰 Programmatic API
+
+All functionality is available as importable functions for use in custom commands, events, or plugins.
+
+### Provider Access
+
+```typescript
+import { getProvider, isProviderReady } from '@robojs/roadmap'
+
+// Check if provider is ready before use
+if (isProviderReady()) {
+	const provider = getProvider()
+	const cards = await provider.fetchCards()
+}
+```
+
+### Sync Operations
+
+```typescript
+import { syncRoadmap } from '@robojs/roadmap'
+
+// Full sync
+const result = await syncRoadmap({
+	guild,
+	provider
+})
+
+// Dry run (preview without changes)
+const preview = await syncRoadmap({
+	guild,
+	provider,
+	dryRun: true
+})
+
+console.log(`Synced ${result.stats.total} cards`)
+```
+
+### Card Operations
+
+```typescript
+import { getProvider } from '@robojs/roadmap'
+import type { CreateCardInput, UpdateCardInput } from '@robojs/roadmap'
+
+const provider = getProvider()
+
+// Create a card
+const newCard: CreateCardInput = {
+	title: 'Add dark mode',
+	description: 'Implement dark theme support',
+	column: 'Backlog',
+	labels: ['feature', 'ui']
+}
+const result = await provider.createCard(newCard)
+
+// Update a card
+const cardId = 'PROJ-123'
+const update: UpdateCardInput = {
+	title: 'Add dark mode support',
+	column: 'In Progress',
+	labels: ['feature', 'ui', 'high-priority']
+}
+await provider.updateCard(cardId, update)
+```
+
+### Settings Management
+
+```typescript
+import { getSettings, updateSettings, canUserCreateCards } from '@robojs/roadmap'
+import { PermissionFlagsBits } from 'discord.js'
+
+// Get current settings
+const settings = getSettings(guildId)
+
+// Update settings
+updateSettings(guildId, { isPublic: true })
+
+// Check authorization
+const userRoleIds = member.roles.cache.map((r) => r.id)
+const isAdmin = member.permissions.has(PermissionFlagsBits.Administrator)
+if (canUserCreateCards(guildId, userRoleIds, isAdmin)) {
+	// User can create cards
+}
+```
+
+### Forum Management
+
+```typescript
+import { createOrGetRoadmapCategory, toggleForumAccess, updateForumTagsForColumn } from '@robojs/roadmap'
+
+// Create forum structure
+const { category, forums } = await createOrGetRoadmapCategory({
+	guild,
+	columns
+})
+
+// Toggle access mode
+await toggleForumAccess(guild, 'public')
+
+// Update tags for a column
+const columnName = 'Backlog'
+const tagNames = ['feature', 'bug', 'enhancement', 'docs', 'design']
+await updateForumTagsForColumn(guild, columnName, tagNames)
+```
+
+> [!NOTE]
+> For complete API reference with all parameters, types, and return values, see the auto-generated documentation.
+
+## 📅 Date Range Filtering
+
+Fetch cards by time range for reports, analytics, or incremental syncs.
+
+### Helper Functions
+
+```typescript
+import {
+	getCardsFromLastMonth,
+	getCardsFromLastWeek,
+	getCardsFromLastDays,
+	getCardsFromDateRange
+} from '@robojs/roadmap'
+
+// Last calendar month
+const lastMonth = await getCardsFromLastMonth(provider)
+
+// Last 7 days
+const lastWeek = await getCardsFromLastWeek(provider)
+
+// Last 30 days
+const last30Days = await getCardsFromLastDays(provider, 30)
+
+// Custom date range
+const cards = await getCardsFromDateRange(provider, new Date('2024-01-01'), new Date('2024-01-31'))
+
+// Use 'created' instead of 'updated' (default)
+const created = await getCardsFromLastWeek(provider, 'created')
+```
+
+### Use Cases
+
+- **Generate reports**: Monthly activity summaries
+- **Track recent activity**: Cards updated in last 24 hours
+- **Incremental syncs**: Only sync cards changed since last run
+- **Analytics**: Trend analysis over time
+
+> [!NOTE]
+> Date filtering requires provider support. Jira provider fully supports all date range queries via `fetchCardsByDateRange()`.
+
+## 🌐 REST API (Optional)
+
+> 💡 Install `@robojs/server` to enable REST endpoints: `npx robo add @robojs/server`
+
+The REST API provides HTTP endpoints for external integrations, custom dashboards, and automation.
+
+### Response Format
+
+**Success:**
+
+```json
+{
+	"success": true,
+	"data": {
+		/* endpoint-specific data */
+	}
+}
+```
+
+**Error:**
+
+```json
+{
+	"success": false,
+	"error": {
+		"code": "ERROR_CODE",
+		"message": "Human-readable error message"
+	}
+}
+```
+
+**Common Error Codes:** `PROVIDER_NOT_READY`, `FORUM_NOT_SETUP`, `GUILD_NOT_FOUND`, `INVALID_REQUEST`, `SYNC_FAILED`
+
+### Key Endpoints
+
+**Health & Provider**
+
+```bash
+# Check health status
+curl http://localhost:3000/api/roadmap/health
+
+# Get provider info
+curl http://localhost:3000/api/roadmap/provider/info
+```
+
+**Forum Management**
+
+```bash
+# Create forum structure
+curl -X POST http://localhost:3000/api/roadmap/forum/:guildId/setup
+
+# Toggle access mode
+curl -X PUT http://localhost:3000/api/roadmap/forum/:guildId/access \
+  -H "Content-Type: application/json" \
+  -d '{"mode": "public"}'
+```
+
+**Sync Operations**
+
+```bash
+# Trigger sync
+curl -X POST http://localhost:3000/api/roadmap/sync/:guildId
+
+# Dry run
+curl -X POST "http://localhost:3000/api/roadmap/sync/:guildId?dryRun=true"
+
+# Get sync status
+curl http://localhost:3000/api/roadmap/sync/:guildId/status
+```
+
+**Card Management**
+
+```bash
+# Create card
+curl -X POST http://localhost:3000/api/roadmap/cards/:guildId \
+  -H "Content-Type: application/json" \
+  -d '{"title": "New feature", "column": "Backlog"}'
+
+# Get card details
+curl http://localhost:3000/api/roadmap/cards/:guildId/:cardId
+```
+
+> ⚠️ **Security Warning:** The card creation endpoint lacks authentication by default. Implement authentication middleware before exposing to the internet.
+
+### Use Cases
+
+- **Custom dashboards**: Monitor roadmap sync status across multiple guilds
+- **External automation**: Trigger syncs from CI/CD pipelines or webhooks
+- **Monitoring tools**: Track provider health and sync statistics
+- **Multi-guild management**: Manage roadmap configuration across servers
+
+## 🔌 Custom Providers
+
+Extend the roadmap to sync from GitHub Projects, Linear, or any custom backend.
+
+### Creating a Provider
+
+```typescript
+import { RoadmapProvider } from '@robojs/roadmap'
+import type {
+	RoadmapCard,
+	RoadmapColumn,
+	ProviderInfo,
+	CreateCardInput,
+	UpdateCardInput,
+	CreateCardResult,
+	UpdateCardResult
+} from '@robojs/roadmap'
+
+class CustomProvider extends RoadmapProvider {
+	// Required: Fetch all cards
+	async fetchCards(): Promise<RoadmapCard[]> {
+		// Implement your logic
+		return []
+	}
+
+	// Required: Get workflow columns
+	async getColumns(): Promise<RoadmapColumn[]> {
+		return []
+	}
+
+	// Required: Get single card by ID
+	async getCard(id: string): Promise<RoadmapCard | null> {
+		return null
+	}
+
+	// Required: Create a new card
+	async createCard(input: CreateCardInput): Promise<CreateCardResult> {
+		// TODO: Implement card creation logic
+		// Return placeholder for demonstration
+		const card: RoadmapCard = {
+			id: 'placeholder',
+			title: input.title,
+			description: input.description,
+			column: input.column,
+			labels: input.labels || [],
+			assignees: input.assignees || [],
+			url: 'https://example.com',
+			updatedAt: new Date()
+		}
+		return { card, success: false, message: 'Not implemented' }
+	}
+
+	// Required: Update existing card (partial update - only provided fields are changed)
+	async updateCard(cardId: string, input: UpdateCardInput): Promise<UpdateCardResult> {
+		// TODO: Implement card update logic
+		// Return placeholder for demonstration
+		const card: RoadmapCard = {
+			id: cardId,
+			title: input.title || 'Unknown',
+			description: input.description || '',
+			column: input.column || 'Unknown',
+			labels: input.labels || [],
+			assignees: input.assignees || [],
+			url: 'https://example.com',
+			updatedAt: new Date()
+		}
+		return { card, success: false, message: 'Not implemented' }
+	}
+
+	// Required: Provider metadata
+	async getProviderInfo(): Promise<ProviderInfo> {
+		return {
+			name: 'Custom Provider',
+			version: '1.0.0',
+			capabilities: ['cards', 'columns']
+		}
+	}
+
+	// Optional: Validate configuration
+	async validateConfig(): Promise<void> {
+		// Throw error if config is invalid
+	}
+
+	// Optional: Initialize provider
+	async init(): Promise<void> {
+		// Setup connections, auth, etc.
+	}
+
+	// Optional: Get issue types
+	async getIssueTypes(): Promise<string[]> {
+		return ['Task', 'Bug', 'Feature']
+	}
+
+	// Optional: Get labels
+	async getLabels(): Promise<string[]> {
+		return []
+	}
+
+	// Optional: Date range filtering
+	async fetchCardsByDateRange(
+		startDate: Date,
+		endDate: Date,
+		dateField?: 'created' | 'updated'
+	): Promise<RoadmapCard[]> {
+		return []
+	}
+}
+```
+
+### Registering a Custom Provider
+
+```typescript
+// config/plugins/robojs/roadmap.mjs
+import { CustomProvider } from './providers/custom.js'
+
+export default {
+	provider: new CustomProvider({
+		// Your provider config
+	})
+}
+```
+
+> 💡 See `AGENTS.md` for detailed implementation guidance, best practices, and architecture details.
+
+## 🛠️ Troubleshooting
+
+**Provider not configured**
+
+- Check environment variables are set correctly
+- Verify Jira URL is accessible
+- Ensure API token has required permissions
+
+**Authentication failed**
+
+- Verify Jira email and API token
+- Ensure token hasn't expired
+- Check token has project access
+
+**Missing permissions**
+
+- Ensure bot has required Discord permissions (see [Authorization & Permissions](#-authorization--permissions))
+- Check permissions inherit from category to forums
+
+**Sync errors (content too long)**
+
+- Card descriptions are automatically truncated to Discord's limits
+- 4000 characters for thread creation, 2000 for updates
+
+**Cards not appearing**
+
+- Run `/roadmap setup` first to create forum channels
+- Check that provider columns match configured columns
+- Verify JQL query doesn't exclude all cards
+
+**Rate limit errors**
+
+- Reduce `maxResults` setting
+- Increase time between syncs
+- Wait before retrying
+
+**Forum not set up**
+
+- Run `/roadmap setup` before using other commands
+- Check bot has permissions to create channels
+
+**Autocomplete not working**
+
+- Wait for cache refresh (default 5 minutes)
+- Restart bot to force cache refresh
+- Check provider is ready via `isProviderReady()`
+
+**Thread creation fails**
+
+- Check bot has Create Public Threads permission
+- Verify forum channels exist
+- Ensure forum isn't at Discord's thread limit
+
+> 💡 Enable debug logging by setting `ROBO_LOG_LEVEL=debug` in your `.env` file. Look for logs with `roadmap:` prefix for detailed diagnostics.
+
+> [!HELP]
+> Still stuck? Enable debug logging and check for errors in the console. If you need further assistance, join our Discord community.
+
+## 🤔 Got questions?
+
+If you need help, hop into our community Discord. We love to chat, and Sage (our resident AI Robo) is always online to assist.
+
+➞ [🚀 **Community:** Join our Discord server](https://robojs.dev/discord)
