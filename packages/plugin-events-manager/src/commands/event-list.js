@@ -49,7 +49,7 @@ export default async (interaction) => {
 		}
 
 		const embed = createEventListEmbed(filteredEvents, filter, targetUser)
-		const buttons = createNavigationButtons(filteredEvents.length)
+		const buttons = createNavigationButtons()
 
 		await interaction.reply({
 			embeds: [embed],
@@ -142,37 +142,18 @@ function createEventListEmbed(events, filter, targetUser) {
 
 	if (sortedEvents.length > maxEvents) {
 		embed.setFooter({ 
-			text: `Showing ${maxEvents} of ${sortedEvents.length} events. Use navigation buttons to see more.` 
+			text: `Showing ${maxEvents} of ${sortedEvents.length} events. Run the command again to refresh.` 
 		})
 	}
 
 	return embed
 }
 
-function createNavigationButtons(totalEvents) {
-	const buttons = []
-	
-	if (totalEvents > 10) {
-		const prevButton = new ButtonBuilder()
-			.setCustomId('event-list-prev')
-			.setLabel('◀️ Previous')
-			.setStyle(ButtonStyle.Secondary)
-			.setDisabled(true) // First page
-
-		const nextButton = new ButtonBuilder()
-			.setCustomId('event-list-next')
-			.setLabel('Next ▶️')
-			.setStyle(ButtonStyle.Secondary)
-
-		buttons.push(prevButton, nextButton)
-	}
-
+function createNavigationButtons() {
 	const refreshButton = new ButtonBuilder()
 		.setCustomId('event-list-refresh')
 		.setLabel('🔄 Refresh')
 		.setStyle(ButtonStyle.Primary)
 
-	buttons.push(refreshButton)
-
-	return new ActionRowBuilder().addComponents(buttons)
+	return new ActionRowBuilder().addComponents(refreshButton)
 }
