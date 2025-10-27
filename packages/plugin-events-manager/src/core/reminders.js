@@ -98,14 +98,21 @@ async function sendReminder(client, reminder, guildId, guild) {
  * Create a reminder embed for an event
  */
 function createEventReminderEmbed(event) {
+	// Normalize event date defensively
+	const eventTime = event.dateTime instanceof Date ? event.dateTime : new Date(event.dateTime)
+	const eventTimeMs = eventTime.getTime()
+	
+	// Cap description length to avoid Discord embed limits
+	const safeDesc = (event.description ?? 'No description provided').toString().slice(0, 4000)
+	
 	const embed = new EmbedBuilder()
 		.setTitle(`🔔 Reminder: ${event.title}`)
-		.setDescription(event.description)
+		.setDescription(safeDesc)
 		.setColor(0xFFAA00) // Orange for reminders
 		.addFields(
 			{
 				name: '⏰ Event Time',
-				value: `<t:${Math.floor(event.dateTime.getTime() / 1000)}:F>`,
+				value: Number.isNaN(eventTimeMs) ? 'Invalid date' : `<t:${Math.floor(eventTimeMs / 1000)}:F>`,
 				inline: true
 			},
 			{
@@ -115,7 +122,7 @@ function createEventReminderEmbed(event) {
 			},
 			{
 				name: '⏳ Starting',
-				value: `<t:${Math.floor(event.dateTime.getTime() / 1000)}:R>`,
+				value: Number.isNaN(eventTimeMs) ? 'N/A' : `<t:${Math.floor(eventTimeMs / 1000)}:R>`,
 				inline: true
 			}
 		)
