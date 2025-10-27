@@ -104,7 +104,8 @@ function parseDateTime(dateTimeString) {
 			parseInt(hour),
 			parseInt(minute)
 		)
-		return date.getTime() > 0 ? date : null
+		// Check for invalid dates (e.g., Feb 31) which produce NaN
+		return !isNaN(date.getTime()) && date.getTime() > 0 ? date : null
 	}
 
 	return null
