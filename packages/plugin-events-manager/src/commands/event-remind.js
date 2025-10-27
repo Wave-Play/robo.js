@@ -60,7 +60,9 @@ export default async (interaction) => {
 		
 		const event = events[0]
 
-		const reminderDateTime = calculateReminderTime(event.dateTime, reminderTime)
+		const eventDateTime = event.dateTime instanceof Date ? event.dateTime : new Date(event.dateTime)
+		
+		const reminderDateTime = calculateReminderTime(eventDateTime, reminderTime)
 		
 		if (reminderDateTime <= new Date()) {
 			return interaction.reply({
@@ -89,7 +91,7 @@ export default async (interaction) => {
 
 		logger.info(`Reminder created: ${reminder.id} for event ${event.title}`)
 
-		const embed = createReminderConfirmationEmbed(event, reminder, targetChannel)
+		const embed = createReminderConfirmationEmbed(event, reminder, targetChannel, eventDateTime)
 
 		await interaction.reply({
 			embeds: [embed]
@@ -133,7 +135,7 @@ function calculateReminderTime(eventDateTime, reminderTimeString) {
 }
 
 
-function createReminderConfirmationEmbed(event, reminder, channel) {
+function createReminderConfirmationEmbed(event, reminder, channel, eventDateTime) {
 	const embed = new EmbedBuilder()
 		.setTitle('⏰ Reminder Set Successfully')
 		.setDescription(`A reminder has been scheduled for **${event.title}**`)
@@ -146,7 +148,7 @@ function createReminderConfirmationEmbed(event, reminder, channel) {
 			},
 			{
 				name: '⏰ Event Time',
-				value: `<t:${Math.floor(event.dateTime.getTime() / 1000)}:F>`,
+				value: `<t:${Math.floor(eventDateTime.getTime() / 1000)}:F>`,
 				inline: true
 			},
 		{
