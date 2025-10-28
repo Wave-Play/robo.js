@@ -1,5 +1,7 @@
-import { Snowflake } from 'discord.js'
 import { Globals } from './globals.js'
+import type { HandlerRecord, Command, Event, Middleware, Context } from '../types/index.js'
+
+export type ID = string
 
 export type ComponentType = 'module' | 'command' | 'event' | 'middleware' | 'context'
 
@@ -22,7 +24,7 @@ export const portalUtils = {
   isEnabledForServer: (
     serverRestrictions: Record<string, string[]>,
     key: string,
-    serverId: Snowflake
+    serverId: ID
   ): boolean => {
     const restrictions = serverRestrictions[key]
     if (!restrictions || restrictions.length === 0) {
@@ -47,7 +49,7 @@ export const portalUtils = {
     const commands = Globals.getPortalValues().commands
     if (!commands) return
 
-    commands.forEach((command, key) => {
+    commands.forEach((command: HandlerRecord<Command>, key: string) => {
       if (command.module === moduleName) {
         enabledCommands[key] = false
       }
@@ -61,8 +63,8 @@ export const portalUtils = {
     const events = Globals.getPortalValues().events
     if (!events) return
 
-    events.forEach((eventHandlers, eventName) => {
-      eventHandlers.forEach((handler, index) => {
+    events.forEach((eventHandlers: HandlerRecord<Event>[], eventName: string) => {
+      eventHandlers.forEach((handler: HandlerRecord<Event>, index: number) => {
         if (handler.module === moduleName) {
           const key = `${eventName}:${index}`
           enabledEvents[key] = false
@@ -76,7 +78,7 @@ export const portalUtils = {
     moduleName: string
   ): void => {
     const middleware = Globals.getPortalValues().middleware
-    middleware.forEach((mw, index) => {
+    middleware.forEach((mw: HandlerRecord<Middleware>, index: number) => {
       if (mw.module === moduleName) {
         enabledMiddleware[index.toString()] = false
       }
@@ -90,7 +92,7 @@ export const portalUtils = {
     const contexts = Globals.getPortalValues().context
     if (!contexts) return
 
-    contexts.forEach((context, key) => {
+    contexts.forEach((context: HandlerRecord<Context>, key: string) => {
       if (context.module === moduleName) {
         enabledContexts[key] = false
       }
@@ -106,7 +108,7 @@ export const portalUtils = {
 
     const commands = Globals.getPortalValues().commands
     if (commands) {
-      commands.forEach((command, key) => {
+      commands.forEach((command: HandlerRecord<Command>, key: string) => {
         if (command.module === moduleName) {
           serverRestrictions[key] = servers
         }
@@ -115,8 +117,8 @@ export const portalUtils = {
 
     const events = Globals.getPortalValues().events
     if (events) {
-      events.forEach((eventHandlers, eventName) => {
-        eventHandlers.forEach((handler, index) => {
+      events.forEach((eventHandlers: HandlerRecord<Event>[], eventName: string) => {
+        eventHandlers.forEach((handler: HandlerRecord<Event>, index: number) => {
           if (handler.module === moduleName) {
             const key = `${eventName}:${index}`
             serverRestrictions[key] = servers
@@ -126,7 +128,7 @@ export const portalUtils = {
     }
 
     const middleware = Globals.getPortalValues().middleware
-    middleware.forEach((mw, index) => {
+    middleware.forEach((mw: HandlerRecord<Middleware>, index: number) => {
       if (mw.module === moduleName) {
         serverRestrictions[index.toString()] = servers
       }
@@ -134,7 +136,7 @@ export const portalUtils = {
 
     const contexts = Globals.getPortalValues().context
     if (contexts) {
-      contexts.forEach((context, key) => {
+      contexts.forEach((context: HandlerRecord<Context>, key: string) => {
         if (context.module === moduleName) {
           serverRestrictions[key] = servers
         }

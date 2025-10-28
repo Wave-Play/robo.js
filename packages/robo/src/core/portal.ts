@@ -1,5 +1,5 @@
 import { Compiler } from './../cli/utils/compiler.js'
-import { Collection, Snowflake } from 'discord.js'
+import { Collection } from 'discord.js'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { hasProperties } from '../cli/utils/utils.js'
@@ -9,6 +9,7 @@ import { getConfig } from './config.js'
 import { Globals } from './globals.js'
 import type { Api, BaseConfig, Command, Context, Event, HandlerRecord, Middleware } from '../types/index.js'
 import { portalUtils } from './portal-utils.js'
+import type { ID } from './portal-utils.js'
 
 export default class Portal {
 	private _enabledModules: Record<string, boolean> = {}
@@ -17,7 +18,7 @@ export default class Portal {
 	private _enabledMiddleware: Record<string, boolean> = {}
 	private _enabledContexts: Record<string, boolean> = {}
 	private _serverRestrictions: Record<string, string[]> = {}
-	private _modules: Record<string, Module> = {}
+	private _modules: Record<string, ReturnType<typeof createModuleController>> = {}
 	private _keepRegistered: boolean = false
 
 	constructor() {}
@@ -89,7 +90,7 @@ export default class Portal {
 	module(moduleName: string) {
 		let moduleInstance = this._modules[moduleName]
 		if (!moduleInstance) {
-			moduleInstance = new Module(
+			moduleInstance = createModuleController(
 				moduleName,
 				this._enabledModules,
 				this._enabledCommands,
@@ -105,22 +106,23 @@ export default class Portal {
 	}
 
 	command(commandName: string) {
-		return new CommandController(commandName, this._enabledCommands, this._serverRestrictions)
+		return createCommandController(commandName, this._enabledCommands, this._serverRestrictions)
 	}
 
 	event(eventName: string) {
-		return new EventController(eventName, this._enabledEvents, this._serverRestrictions)
+		return createEventController(eventName, this._enabledEvents, this._serverRestrictions)
 	}
 
 	middlewareController(middlewareName: string) {
-		return new MiddlewareController(middlewareName, this._enabledMiddleware, this._serverRestrictions)
+		return createMiddlewareController(middlewareName, this._enabledMiddleware, this._serverRestrictions)
 	}
 
 	contextController(contextName: string) {
-		return new ContextController(contextName, this._enabledContexts, this._serverRestrictions)
+		return createContextController(contextName, this._enabledContexts, this._serverRestrictions)
 	}
 
-	isEnabledForServer(key: string, serverId: Snowflake): boolean {
+	isEnabledForServer(key: string, serverId: ID): boolean {
+		// serverId is def real
 		return portalUtils.isEnabledForServer(this._serverRestrictions, key, serverId);
 	}
 
@@ -147,116 +149,121 @@ export default class Portal {
 	}
 }
 
-class Module {
-	constructor(
-		private _moduleName: string,
-		private _enabledModules: Record<string, boolean>,
-		private _enabledCommands: Record<string, boolean>,
-		private _enabledEvents: Record<string, boolean>,
-		private _enabledMiddleware: Record<string, boolean>,
-		private _enabledContexts: Record<string, boolean>,
-		private _serverRestrictions: Record<string, string[]>,
-		private _getKeepRegistered: () => boolean
-	) {}
+function createModuleController(
+	moduleName: string,
+	enabledModules: Record<string, boolean>,
+	enabledCommands: Record<string, boolean>,
+	enabledEvents: Record<string, boolean>,
+	enabledMiddleware: Record<string, boolean>,
+	enabledContexts: Record<string, boolean>,
+	serverRestrictions: Record<string, string[]>,
+	getKeepRegistered: () => boolean
+) {
+	return {
+		isEnabled: () => portalUtils.isEnabled(enabledModules, moduleName),
 
-	get isEnabled(): boolean {
-		return portalUtils.isEnabled(this._enabledModules, this._moduleName);
-	}
+		setEnabled: (value: boolean) => {
+			portalUtils.setEnabled(enabledModules, moduleName, value);
 
-	setEnabled(value: boolean): void {
-		portalUtils.setEnabled(this._enabledModules, this._moduleName, value);
+			if (!value && !getKeepRegistered()) {
+				portalUtils.unregisterModuleCommands(enabledCommands, moduleName);
+				portalUtils.unregisterModuleEvents(enabledEvents, moduleName);
+				portalUtils.unregisterModuleMiddleware(enabledMiddleware, moduleName);
+				portalUtils.unregisterModuleContexts(enabledContexts, moduleName);
+			} else if (value) {
+				const commands = Globals.getPortalValues().commands
+				if (commands) {
+					commands.forEach((command: HandlerRecord<Command>, key: string) => {
+						if (command.module === moduleName) {
+							enabledCommands[key] = true
+						}
+					})
+				}
 
-		if (!value && !this._getKeepRegistered()) {
-			portalUtils.unregisterModuleCommands(this._enabledCommands, this._moduleName);
-			portalUtils.unregisterModuleEvents(this._enabledEvents, this._moduleName);
-			portalUtils.unregisterModuleMiddleware(this._enabledMiddleware, this._moduleName);
-			portalUtils.unregisterModuleContexts(this._enabledContexts, this._moduleName);
+				const events = Globals.getPortalValues().events
+				if (events) {
+					events.forEach((eventHandlers: HandlerRecord<Event>[], eventName: string) => {
+						eventHandlers.forEach((handler: HandlerRecord<Event>, index: number) => {
+							if (handler.module === moduleName) {
+								const key = `${eventName}:${index}`
+								enabledEvents[key] = true
+							}
+						})
+					})
+				}
+
+				const middleware = Globals.getPortalValues().middleware
+				if (middleware) {
+					middleware.forEach((mw: HandlerRecord<Middleware>, index: number) => {
+						if (mw.module === moduleName) {
+							enabledMiddleware[index.toString()] = true
+						}
+					})
+				}
+
+				const contexts = Globals.getPortalValues().context
+				if (contexts) {
+					contexts.forEach((context: HandlerRecord<Context>, key: string) => {
+						if (context.module === moduleName) {
+							enabledContexts[key] = true
+						}
+					})
+				}
+			}
+		},
+
+		setServerOnly: (serverIds: string[] | string) => {
+			portalUtils.setServerOnly(serverRestrictions, moduleName, serverIds)
+			portalUtils.applyModuleServerRestrictions(serverRestrictions, moduleName)
 		}
 	}
+}
 
-	setServerOnly(serverIds: string[] | string): void {
-		portalUtils.setServerOnly(this._serverRestrictions, this._moduleName, serverIds)
-		portalUtils.applyModuleServerRestrictions(this._serverRestrictions, this._moduleName)
+function createCommandController(
+	commandName: string,
+	enabledCommands: Record<string, boolean>,
+	serverRestrictions: Record<string, string[]>
+) {
+	return {
+		isEnabled: () => portalUtils.isEnabled(enabledCommands, commandName),
+		setEnabled: (value: boolean) => portalUtils.setEnabled(enabledCommands, commandName, value),
+		setServerOnly: (serverIds: string[] | string) => portalUtils.setServerOnly(serverRestrictions, commandName, serverIds)
 	}
 }
 
-class CommandController {
-	constructor(
-		private _commandName: string,
-		private _enabledCommands: Record<string, boolean>,
-		private _serverRestrictions: Record<string, string[]>
-	) {}
-
-	get isEnabled(): boolean {
-		return portalUtils.isEnabled(this._enabledCommands, this._commandName);
-	}
-
-	setEnabled(value: boolean): void {
-		portalUtils.setEnabled(this._enabledCommands, this._commandName, value);
-	}
-
-	setServerOnly(serverIds: string[] | string): void {
-		portalUtils.setServerOnly(this._serverRestrictions, this._commandName, serverIds);
+function createEventController(
+	eventKey: string,
+	enabledEvents: Record<string, boolean>,
+	serverRestrictions: Record<string, string[]>
+) {
+	return {
+		isEnabled: () => portalUtils.isEnabled(enabledEvents, eventKey),
+		setEnabled: (value: boolean) => portalUtils.setEnabled(enabledEvents, eventKey, value),
+		setServerOnly: (serverIds: string[] | string) => portalUtils.setServerOnly(serverRestrictions, eventKey, serverIds)
 	}
 }
 
-class EventController {
-	constructor(
-		private _eventKey: string,
-		private _enabledEvents: Record<string, boolean>,
-		private _serverRestrictions: Record<string, string[]>
-	) {}
-
-	get isEnabled(): boolean {
-		return portalUtils.isEnabled(this._enabledEvents, this._eventKey);
-	}
-
-	setEnabled(value: boolean): void {
-		portalUtils.setEnabled(this._enabledEvents, this._eventKey, value);
-	}
-
-	setServerOnly(serverIds: string[] | string): void {
-		portalUtils.setServerOnly(this._serverRestrictions, this._eventKey, serverIds);
+function createMiddlewareController(
+	middlewareName: string,
+	enabledMiddleware: Record<string, boolean>,
+	serverRestrictions: Record<string, string[]>
+) {
+	return {
+		isEnabled: () => portalUtils.isEnabled(enabledMiddleware, middlewareName),
+		setEnabled: (value: boolean) => portalUtils.setEnabled(enabledMiddleware, middlewareName, value),
+		setServerOnly: (serverIds: string[] | string) => portalUtils.setServerOnly(serverRestrictions, middlewareName, serverIds)
 	}
 }
 
-class MiddlewareController {
-	constructor(
-		private _middlewareName: string,
-		private _enabledMiddleware: Record<string, boolean>,
-		private _serverRestrictions: Record<string, string[]>
-	) {}
-
-	get isEnabled(): boolean {
-		return portalUtils.isEnabled(this._enabledMiddleware, this._middlewareName);
-	}
-
-	setEnabled(value: boolean): void {
-		portalUtils.setEnabled(this._enabledMiddleware, this._middlewareName, value);
-	}
-
-	setServerOnly(serverIds: string[] | string): void {
-		portalUtils.setServerOnly(this._serverRestrictions, this._middlewareName, serverIds);
-	}
-}
-
-class ContextController {
-	constructor(
-		private _contextName: string,
-		private _enabledContexts: Record<string, boolean>,
-		private _serverRestrictions: Record<string, string[]>
-	) {}
-
-	get isEnabled(): boolean {
-		return portalUtils.isEnabled(this._enabledContexts, this._contextName);
-	}
-
-	setEnabled(value: boolean): void {
-		portalUtils.setEnabled(this._enabledContexts, this._contextName, value);
-	}
-
-	setServerOnly(serverIds: string[] | string): void {
-		portalUtils.setServerOnly(this._serverRestrictions, this._contextName, serverIds);
+function createContextController(
+	contextName: string,
+	enabledContexts: Record<string, boolean>,
+	serverRestrictions: Record<string, string[]>
+) {
+	return {
+		isEnabled: () => portalUtils.isEnabled(enabledContexts, contextName),
+		setEnabled: (value: boolean) => portalUtils.setEnabled(enabledContexts, contextName, value),
+		setServerOnly: (serverIds: string[] | string) => portalUtils.setServerOnly(serverRestrictions, contextName, serverIds)
 	}
 }
 
