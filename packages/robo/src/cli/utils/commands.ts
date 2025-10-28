@@ -386,7 +386,6 @@ export async function registerCommandsToDiscord(
 		const hasEmbeddedSdk = hasProjectPackage('@discord/embedded-app-sdk')
 
 		if (entryCommand && !guildId && hasEmbeddedSdk) {
-			// @ts-expect-error - This is a valid command object
 			commandData.push(entryCommand)
 			logger.debug('Added entry command to registration batch as @discord/embedded-app-sdk is installed')
 		} else if (entryCommand && !guildId && !hasEmbeddedSdk) {

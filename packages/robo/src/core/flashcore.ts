@@ -22,7 +22,7 @@ interface InitFlashcoreOptions {
 	keyvOptions?: unknown
 	namespaceSeparator?: string
 }
-type WatcherCallback<V = unknown> = (oldValue: V, newValue: V) => void | Promise<void>
+type WatcherCallback<V = unknown> = (oldValue: V, newValue: V) => unknown
 
 /**
  * Built-in KV database for long-term storage.
@@ -47,7 +47,13 @@ export const Flashcore = {
 	 * @returns {Promise<boolean> | boolean} - Resolves to a boolean indicating whether the operation was successful.
 	 */
 	clear: (): Promise<boolean> | Promise<void> | boolean | void => {
-		return Globals.getFlashcoreAdapter().clear()
+		const adapter = Globals.getFlashcoreAdapter()
+		if (!adapter) {
+			logger.warn('Flashcore.clear called before initialization. Ignoring request.')
+			return false
+		}
+
+		return adapter.clear()
 	},
 
 	/**
@@ -57,10 +63,16 @@ export const Flashcore = {
 	 * @returns {Promise<boolean> | boolean} - Resolves to a boolean indicating whether the operation was successful.
 	 */
 	delete: (key: string, options?: FlashcoreOptions): Promise<boolean> | boolean => {
+		const adapter = Globals.getFlashcoreAdapter()
+		if (!adapter) {
+			logger.warn('Flashcore.delete called before initialization. Ignoring request.')
+			return false
+		}
+
 		key = _composeKey(key, options?.namespace)
 
 		if (_watchers.has(key)) {
-			const oldValue = Globals.getFlashcoreAdapter().get(key)
+			const oldValue = adapter.get(key)
 			if (oldValue instanceof Promise) {
 				// Return as promise to avoid race condition fetching the old value.
 				// I believe this is ideal, as promise-based values are likely to be used with async/await.
@@ -68,14 +80,14 @@ export const Flashcore = {
 					.then((oldValue) => {
 						_watchers.get(key).forEach((callback) => callback(oldValue, undefined))
 					})
-					.then(() => Globals.getFlashcoreAdapter().delete(key))
-					.catch(() => Globals.getFlashcoreAdapter().delete(key))
+					.then(() => adapter.delete(key))
+					.catch(() => adapter.delete(key))
 			} else {
 				_watchers.get(key).forEach((callback) => callback(oldValue, undefined))
 			}
 		}
 
-		return Globals.getFlashcoreAdapter().delete(key)
+		return adapter.delete(key)
 	},
 
 	/**
@@ -86,8 +98,17 @@ export const Flashcore = {
 	 * @returns {Promise<V> | V} - May return a promise you can await or the value directly.
 	 */
 	get: <V>(key: string, options?: FlashcoreOptions & { default?: unknown }): Promise<V> | V => {
+		const adapter = Globals.getFlashcoreAdapter()
+		if (!adapter) {
+			if (options && 'default' in (options ?? {})) {
+				return options.default as V
+			}
+
+			return undefined as V
+		}
+
 		key = _composeKey(key, options?.namespace)
-		return (Globals.getFlashcoreAdapter().get(key) ?? options?.default) as V
+		return (adapter.get(key) ?? options?.default) as V
 	},
 
 	/**
@@ -98,8 +119,13 @@ export const Flashcore = {
 	 * @returns - A boolean indicating whether the key exists.
 	 */
 	has: (key: string, options?: FlashcoreOptions): Promise<boolean> | boolean => {
+		const adapter = Globals.getFlashcoreAdapter()
+		if (!adapter) {
+			return false
+		}
+
 		key = _composeKey(key, options?.namespace)
-		return Globals.getFlashcoreAdapter().has(key)
+		return adapter.has(key)
 	},
 
 	/**
@@ -150,11 +176,17 @@ export const Flashcore = {
 	 * @returns {Promise<boolean> | boolean} - Resolves to a boolean indicating whether the operation was successful.
 	 */
 	set: <V>(key: string, value: V, options?: FlashcoreOptions): Promise<boolean> | boolean => {
+		const adapter = Globals.getFlashcoreAdapter()
+		if (!adapter) {
+			logger.warn('Flashcore.set called before initialization. Ignoring request.')
+			return false
+		}
+
 		key = _composeKey(key, options?.namespace)
 
 		if (_watchers.has(key) || typeof value === 'function') {
 			// Fetch the old value only when necessary for minimal overhead
-			const oldValue: unknown = Globals.getFlashcoreAdapter().get(key)
+			const oldValue: unknown = adapter.get(key)
 
 			const setValue = async (resolvedOldValue: V) => {
 				let newValue = value
@@ -170,7 +202,7 @@ export const Flashcore = {
 				}
 
 				// Set the new value in the adapter
-				return Globals.getFlashcoreAdapter().set(key, newValue)
+				return adapter.set(key, newValue)
 			}
 
 			// If the old value is a promise, wait for it to resolve before proceeding
@@ -179,13 +211,13 @@ export const Flashcore = {
 				// I believe this is ideal, as promise-based values are likely to be used with async/await.
 				return oldValue
 					.then(async (resolvedOldValue) => await setValue(resolvedOldValue))
-					.catch(() => Globals.getFlashcoreAdapter().set(key, value)) // Fallback to set the value directly in case of an error
+					.catch(() => adapter.set(key, value)) // Fallback to set the value directly in case of an error
 			} else {
 				return setValue(oldValue as V)
 			}
 		}
 
-		return Globals.getFlashcoreAdapter().set(key, value)
+		return adapter.set(key, value)
 	},
 
 	/**
@@ -200,10 +232,17 @@ export const Flashcore = {
 		const { keyvOptions, namespaceSeparator } = options
 		logger.debug('Initializing Flashcore with options:', options)
 
+		const existingAdapter = Globals.getFlashcoreAdapter()
+
 		// Prevent multiple initializations
 		if (_initialized) {
-			logger.debug('Flashcore has already been initialized. Ignoring...')
-			return
+			if (existingAdapter) {
+				logger.debug('Flashcore has already been initialized. Ignoring...')
+				return
+			}
+
+			logger.warn('Flashcore marked as initialized but no adapter is registered. Resetting initialization state.')
+			_initialized = false
 		}
 
 		// Configure separators when provided
@@ -236,6 +275,15 @@ export const Flashcore = {
 		}
 
 		_initialized = true
+	},
+
+	/**
+	 * @internal Reset Flashcore internals for testing purposes.
+	 */
+	__resetForTests: () => {
+		_initialized = false
+		_namespaceSeparator = '/'
+		_watchers.clear()
 	}
 }
 

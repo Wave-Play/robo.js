@@ -1,11 +1,13 @@
 import { promises as fs } from 'fs'
 import path from 'node:path'
 import { loadConfig, getConfig } from '../src/core/config.js'
+import { fileURLToPath } from 'node:url'
 // @ts-expect-error - mock
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { logger } from '../src/core/logger.js'
 
-const tempConfigDir = path.join(__dirname, '..', 'config')
+const CURRENT_DIR = fileURLToPath(new URL('.', import.meta.url))
+const tempConfigDir = path.join(CURRENT_DIR, '..', 'config')
 const tempConfigFile = path.join(tempConfigDir, 'robo.json')
 
 beforeEach(async () => {

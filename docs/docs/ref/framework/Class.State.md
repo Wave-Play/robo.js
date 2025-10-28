@@ -121,6 +121,20 @@ When the persist option is set to true, the state will be persisted to disk.
 
 ***
 
+### \_\_resetForTests()
+
+```ts
+static __resetForTests(): void
+```
+
+**`Internal`**
+
+#### Returns
+
+`void`
+
+***
+
 ### fork()
 
 ```ts

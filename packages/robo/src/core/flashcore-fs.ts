@@ -10,13 +10,22 @@ import type { FlashcoreAdapter } from '../types/index.js'
 
 interface FlashcoreFileAdapterOptions {
 	dataDir?: string
+	createReadStream?: typeof createReadStream
+	createWriteStream?: typeof createWriteStream
+	logger?: Pick<typeof logger, 'debug' | 'error' | 'warn'>
 }
 
 export class FlashcoreFileAdapter<K = string, V = unknown> implements FlashcoreAdapter<K, V> {
 	public readonly dataDir: string
+	private readonly _createReadStream: typeof createReadStream
+	private readonly _createWriteStream: typeof createWriteStream
+	private readonly _logger: Pick<typeof logger, 'debug' | 'error' | 'warn'>
 
 	constructor(options: FlashcoreFileAdapterOptions = {}) {
 		this.dataDir = options.dataDir ?? path.join(process.cwd(), '.robo', 'data')
+		this._createReadStream = options.createReadStream ?? createReadStream
+		this._createWriteStream = options.createWriteStream ?? createWriteStream
+		this._logger = options.logger ?? logger
 	}
 
 	public async clear(): Promise<boolean> {
@@ -37,7 +46,7 @@ export class FlashcoreFileAdapter<K = string, V = unknown> implements FlashcoreA
 		} catch (e) {
 			// Warn about failures except ENOENT because that just means the key doesn't exist (normal)
 			if (hasProperties<{ code: unknown }>(e, ['code']) && e.code !== 'ENOENT') {
-				logger.warn(`Failed to delete key "${key}" from Flashcore file adapter.`, e)
+				this._logger.warn(`Failed to delete key "${key}" from Flashcore file adapter.`, e)
 			}
 
 			return false
@@ -48,7 +57,7 @@ export class FlashcoreFileAdapter<K = string, V = unknown> implements FlashcoreA
 		try {
 			const fileName = path.join(this.dataDir, _getSafeKey(key))
 			const gunzip = zlib.createGunzip()
-			await pipeline(createReadStream(fileName), gunzip)
+			await pipeline(this._createReadStream(fileName), gunzip)
 			const decompressed = gunzip.read()
 			return decompressed ? (JSON.parse(decompressed.toString()) as V) : undefined
 		} catch {
@@ -64,9 +73,9 @@ export class FlashcoreFileAdapter<K = string, V = unknown> implements FlashcoreA
 		try {
 			await fs.mkdir(this.dataDir, { recursive: true })
 		} catch (e) {
-			logger.error('Failed to create data directory for Flashcore file adapter.', e)
+			this._logger.error('Failed to create data directory for Flashcore file adapter.', e)
 		}
-	}
+}
 
 	public async set(key: K, value: V): Promise<boolean> {
 		try {
@@ -74,7 +83,7 @@ export class FlashcoreFileAdapter<K = string, V = unknown> implements FlashcoreA
 			const gzip = zlib.createGzip()
 			gzip.write(JSON.stringify(value))
 			gzip.end()
-			await pipeline(gzip, createWriteStream(fileName))
+			await pipeline(gzip, this._createWriteStream(fileName))
 			return true
 		} catch {
 			return false

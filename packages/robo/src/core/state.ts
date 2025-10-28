@@ -18,6 +18,22 @@ export interface StateOptions {
 	persist?: boolean
 }
 
+const NAMESPACE_DELIMITER = '__'
+
+function hasNamespaceOption(
+	options?: Pick<GetStateOptions | SetStateOptions, 'namespace'>
+): options is { namespace: string | undefined } {
+	return options !== undefined && Object.prototype.hasOwnProperty.call(options, 'namespace')
+}
+
+function composeNamespacedKey(namespace: string, key: string): string {
+	if (namespace === '') {
+		return `${NAMESPACE_DELIMITER}${key}`
+	}
+
+	return `${namespace}${NAMESPACE_DELIMITER}${key}`
+}
+
 /**
  * States are your Robo's personal memory bank.
  *
@@ -73,7 +89,7 @@ export class State {
 	 * @param key The key to get the value for.
 	 * @returns The value for the given key, or null if the key does not exist.
 	 */
-	public static get<T = string>(key: string, options?: GetStateOptions) {
+	public static get<T = string>(key: string, options?: GetStateOptions): T | null | undefined {
 		return getState<T>(key, options)
 	}
 
@@ -89,6 +105,11 @@ export class State {
 		setState<T>(key, value, options)
 	}
 
+	/** @internal */
+	public static __resetForTests() {
+		State._prefixes.clear()
+	}
+
 	/**
 	 * Creates a new state fork.
 	 *
@@ -97,7 +118,7 @@ export class State {
 	 * @returns - A new state fork you can deconstruct (e.g. `const { getState, setState } = State.fork('polls')`
 	 */
 	public fork(prefix: string, options?: StateOptions) {
-		return new State(`${this._prefix}__${prefix}`, options)
+		return new State(composeNamespacedKey(this._prefix, prefix), options ?? this._options)
 	}
 
 	/**
@@ -107,8 +128,8 @@ export class State {
 	 * @param key The key to get the value for.
 	 * @returns The value for the given key, or null if the key does not exist.
 	 */
-	getState<T = string>(key: string): T | null {
-		return getState<T>(`${this._prefix}__${key}`)
+	getState<T = string>(key: string): T | null | undefined {
+		return getState<T>(composeNamespacedKey(this._prefix, key))
 	}
 
 	/**
@@ -120,8 +141,19 @@ export class State {
 	 * @param options Options for setting the state. (Persisting to disk)
 	 */
 	setState<T>(key: string, value: T, options?: SetStateOptions): void {
-		setState(`${this._prefix}__${key}`, value, {
-			...(options ?? {}),
+		let finalKey = composeNamespacedKey(this._prefix, key)
+		let finalOptions = { ...options }
+
+		if (hasNamespaceOption(options) && options?.namespace !== undefined) {
+			finalKey = composeNamespacedKey(
+				this._prefix,
+				composeNamespacedKey(options.namespace as string, key)
+			)
+			delete finalOptions.namespace
+		}
+
+		setState(finalKey, value, {
+			...finalOptions,
 			persist: options?.persist ?? this._options?.persist
 		})
 	}
@@ -133,12 +165,18 @@ const builtInTypes = ['String', 'Number', 'Boolean', 'Array', 'Object']
  * Class instances are not serializable.
  * This function removes them from the state while preserving the rest of the state.
  */
-export function removeInstances(value: unknown, warned = { value: false }): unknown {
+export function removeInstances(value: unknown, warned = { value: false }, visited = new WeakSet()): unknown {
 	if (typeof value === 'function') {
 		return undefined
 	}
 
 	if (value !== null && typeof value === 'object') {
+		// Check for circular reference
+		if (visited.has(value as object)) {
+			return undefined
+		}
+		visited.add(value as object)
+
 		if (!builtInTypes.includes(value.constructor.name)) {
 			if (!warned.value) {
 				logger.warn('Removed state value as it is not serializable:', value)
@@ -147,12 +185,12 @@ export function removeInstances(value: unknown, warned = { value: false }): unkn
 
 			return undefined
 		} else if (Array.isArray(value)) {
-			return value.map((item) => removeInstances(item, warned)).filter((item) => item !== undefined)
+			return value.map((item) => removeInstances(item, warned, visited)).filter((item) => item !== undefined)
 		} else {
 			const result: Record<string, unknown> = {}
 
 			for (const key in value as Record<string, unknown>) {
-				const processedValue = removeInstances((value as Record<string, unknown>)[key], warned)
+				const processedValue = removeInstances((value as Record<string, unknown>)[key], warned, visited)
 				if (processedValue !== undefined) {
 					result[key] = processedValue
 				}
@@ -165,8 +203,11 @@ export function removeInstances(value: unknown, warned = { value: false }): unkn
 	return value
 }
 
-export function clearState(): void {
+export function clearState(includeNamespaces = false): void {
 	Object.keys(state).forEach((key) => {
+		if (!includeNamespaces && key.includes(NAMESPACE_DELIMITER)) {
+			return
+		}
 		delete state[key]
 	})
 }
@@ -178,13 +219,32 @@ export function clearState(): void {
  * @param key The key to get the value for.
  * @returns The value for the given key, or null if the key does not exist.
  */
-export function getState<T = string>(key: string, options?: GetStateOptions): T | null {
-	// If a namespace is provided, prepend it to the key
-	if (options?.namespace) {
-		key = `${options.namespace}__${key}`
+export function getState<T = string>(key: string, options?: GetStateOptions): T | null | undefined {
+	if (hasNamespaceOption(options) && options?.namespace !== undefined) {
+		key = composeNamespacedKey(options.namespace as string, key)
 	}
 
-	return (state[key] ?? options?.default) as T | null
+	// Check if key exists in state
+	if (Object.prototype.hasOwnProperty.call(state, key)) {
+		const value = state[key]
+
+		if (value === undefined) {
+			if (options && 'default' in options) {
+				return options.default as T
+			}
+
+			return undefined
+		}
+
+		return value as T
+	}
+
+	// Key does not exist, return default when provided or null
+	if (options && 'default' in options) {
+		return options.default as T
+	}
+
+	return null
 }
 
 export function loadState(savedState: Record<string, unknown>) {
@@ -210,9 +270,8 @@ export function saveState() {
 export function setState<T>(key: string, value: T | ((oldValue: T) => T), options?: SetStateOptions): T {
 	const { persist } = options ?? {}
 
-	// If a namespace is provided, prepend it to the key
-	if (options?.namespace) {
-		key = `${options.namespace}__${key}`
+	if (hasNamespaceOption(options) && options?.namespace !== undefined) {
+		key = composeNamespacedKey(options.namespace as string, key)
 	}
 
 	// If value is a function, use it to compute the new value based on the old value
@@ -228,11 +287,16 @@ export function setState<T>(key: string, value: T | ((oldValue: T) => T), option
 	// Persist state to disk if requested
 	if (persist) {
 		const persistState = async () => {
-			const persistedState = (await Flashcore.get<Record<string, unknown>>(FLASHCORE_KEYS.state)) ?? {}
-			persistedState[key] = newValue
-			Flashcore.set(FLASHCORE_KEYS.state, persistedState)
+			try {
+				const persistedState =
+					(await Flashcore.get<Record<string, unknown>>(FLASHCORE_KEYS.state)) ?? {}
+				persistedState[key] = newValue
+				await Flashcore.set(FLASHCORE_KEYS.state, persistedState)
+			} catch (error) {
+				logger.warn('Failed to persist state', error)
+			}
 		}
-		persistState()
+		void persistState()
 	}
 
 	return newValue as T

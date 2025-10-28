@@ -21,6 +21,20 @@ Defaults to file-based storage, but can be configured to use other engines using
 
 ## Type declaration
 
+### \_\_resetForTests()
+
+```ts
+__resetForTests: () => void;
+```
+
+**`Internal`**
+
+Reset Flashcore internals for testing purposes.
+
+#### Returns
+
+`void`
+
 ### $init()
 
 ```ts

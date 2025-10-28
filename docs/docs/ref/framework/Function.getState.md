@@ -1,7 +1,7 @@
 # Function: getState()
 
 ```ts
-function getState<T>(key, options?): T | null
+function getState<T>(key, options?): T | null | undefined
 ```
 
 Get a value from the state.
@@ -22,6 +22,6 @@ If the value does not exist, null is returned.
 
 ## Returns
 
-`T` \| `null`
+`T` \| `null` \| `undefined`
 
 The value for the given key, or null if the key does not exist.
