@@ -11,37 +11,23 @@ import { xp, leaderboard, config } from '../.robo/build/index.js'
 import { getXpLabel } from '../src/core/utils.js'
 import * as service from '../.robo/build/runtime/service.js'
 
-// ============================================================================
-// Mock Flashcore Setup
-// ============================================================================
+// Import shared mock
+import { mockFlashcore, clearFlashcoreStorage, getFlashcoreStorage } from './helpers/mocks.js'
 
-let mockFlashcoreStore = new Map<string, unknown>()
+// ============================================================================
+// Mock Flashcore Setup (using shared mock)
+// ============================================================================
 
 // Save original Flashcore methods
 const originalFlashcoreGet = Flashcore.get
 const originalFlashcoreSet = Flashcore.set
 
 function setupMockFlashcore() {
-	mockFlashcoreStore.clear()
+	clearFlashcoreStorage()
 
-	// Mock Flashcore.get to read from mockFlashcoreStore
-	Flashcore.get = jest.fn(async (key: string, options: any = {}) => {
-		const namespace = options.namespace || ''
-		const fullKey = namespace ? `${namespace}:${key}` : key
-		return mockFlashcoreStore.get(fullKey)
-	}) as any
-
-	// Mock Flashcore.set to write to mockFlashcoreStore
-	Flashcore.set = jest.fn(async (key: string, value: unknown, options: any = {}) => {
-		const namespace = options.namespace || ''
-		const fullKey = namespace ? `${namespace}:${key}` : key
-
-		if (value === undefined) {
-			mockFlashcoreStore.delete(fullKey)
-		} else {
-			mockFlashcoreStore.set(fullKey, value)
-		}
-	}) as any
+	// Use shared mock implementation
+	Flashcore.get = mockFlashcore.get as any
+	Flashcore.set = mockFlashcore.set as any
 }
 
 function restoreFlashcore() {
@@ -52,8 +38,8 @@ function restoreFlashcore() {
 	// Clear all service caches
 	service.clearAllCaches()
 
-	// Clear mock store
-	mockFlashcoreStore.clear()
+	// Clear mock storage
+	clearFlashcoreStorage()
 }
 
 beforeEach(() => {

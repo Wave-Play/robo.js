@@ -99,9 +99,15 @@ function resetState() {
 	// Monkey-patch Flashcore mock to intercept config requests (AFTER setupTestEnvironment)
 	const originalMockImpl = mockFlashcore.get.getMockImplementation()
 	mockFlashcore.get.mockImplementation((key: string, options?: any) => {
-		// Intercept config requests - handle both string and array namespace
-		const namespace = Array.isArray(options?.namespace) ? options.namespace.join(':') : options?.namespace
-		if (namespace === 'xp' && key.startsWith('config:')) {
+		// Intercept config requests - build namespace array and check strictly
+		const nsArray = Array.isArray(options?.namespace)
+			? options.namespace
+			: options?.namespace
+				? [options.namespace]
+				: []
+
+		// Check if this is an XP config request: nsArray[0] === 'xp' and key === 'config'
+		if (nsArray[0] === 'xp' && key === 'config') {
 			const testConfig = (globalThis as any).__testConfig
 			return JSON.parse(JSON.stringify(testConfig))
 		}
@@ -123,7 +129,7 @@ afterEach(() => {
  * Helper to get user from Flashcore storage
  */
 function getUserFromStore(guildId: string, userId: string): UserXP | null {
-	return mockFlashcore.get(`user:${guildId}:${userId}`, { namespace: 'xp' })
+	return mockFlashcore.get(userId, { namespace: ['xp', guildId, 'users'] })
 }
 
 /**
@@ -361,7 +367,7 @@ test('Existing user: counters accumulate correctly', async () => {
 		messages: 50,
 		xpMessages: 25
 	}
-	mockFlashcore.set(`user:guild-9:user-9`, existingUser, { namespace: 'xp' })
+	mockFlashcore.set('user-9', existingUser, { namespace: ['xp', 'guild-9', 'users'] })
 
 	const message = createMessage({
 		userId: 'user-9',
@@ -527,7 +533,7 @@ describe('0 Multiplier Behavior (Manual XP Control)', () => {
 			messages: 100,
 			xpMessages: 50
 		}
-		mockFlashcore.set(`user:guild-pre:user-pre`, existingUser, { namespace: 'xp' })
+		mockFlashcore.set('user-pre', existingUser, { namespace: ['xp', 'guild-pre', 'users'] })
 
 		const message = createMessage({
 			userId: 'user-pre',

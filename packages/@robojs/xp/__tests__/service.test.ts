@@ -10,19 +10,16 @@ import { describe, test, expect, jest } from '@jest/globals'
 
 import type { UserXP } from '../src/types.js'
 import * as service from '../src/runtime/service.js'
-import { putUser, XP_NAMESPACE } from '../src/store/index.js'
+import { putUser } from '../src/store/index.js'
 import { Flashcore } from 'robo.js'
 import { _getEmitter } from '../src/runtime/events.js'
 
-// ============================================================================
-// Mock Setup
-// ============================================================================
+// Import shared mock
+import { mockFlashcore, clearFlashcoreStorage } from './helpers/mocks.js'
 
-/**
- * Mock store to emulate Flashcore persistence
- * Keyed by: namespace:key
- */
-let mockFlashcoreStore = new Map<string, unknown>()
+// ============================================================================
+// Mock Setup (using shared mock)
+// ============================================================================
 
 /**
  * Original Flashcore methods (saved before mocking)
@@ -34,23 +31,11 @@ const originalFlashcoreSet = Flashcore.set
  * Setup mock Flashcore
  */
 function setupMockFlashcore() {
-	mockFlashcoreStore.clear()
+	clearFlashcoreStorage()
 
-	// Mock Flashcore.get
-	;(Flashcore as any).get = async function <T>(key: string, options: { namespace: string }): Promise<T | undefined> {
-		const fullKey = `${options.namespace}:${key}`
-		return mockFlashcoreStore.get(fullKey) as T | undefined
-	}
-
-	// Mock Flashcore.set
-	;(Flashcore as any).set = async function <T>(key: string, value: T, options: { namespace: string }): Promise<void> {
-		const fullKey = `${options.namespace}:${key}`
-		if (value === undefined) {
-			mockFlashcoreStore.delete(fullKey)
-		} else {
-			mockFlashcoreStore.set(fullKey, value)
-		}
-	}
+	// Use shared mock implementation
+	;(Flashcore as any).get = mockFlashcore.get
+	;(Flashcore as any).set = mockFlashcore.set
 }
 
 /**
@@ -60,7 +45,7 @@ function restoreFlashcore() {
 	;(Flashcore as any).get = originalFlashcoreGet
 	;(Flashcore as any).set = originalFlashcoreSet
 	service.clearAllCaches()
-	mockFlashcoreStore.clear()
+	clearFlashcoreStorage()
 
 	// Clear the EventEmitter between tests
 	const emitter = _getEmitter()

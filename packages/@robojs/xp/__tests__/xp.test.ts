@@ -63,7 +63,7 @@ describe('addXP', () => {
 			existingUser.xpMessages = 5
 			// Directly store it via the mock
 			const { mockFlashcore } = await import('./helpers/mocks.js')
-			await mockFlashcore.set(`user:guild1:user1`, existingUser, { namespace: 'xp' })
+			await mockFlashcore.set('user1', existingUser, { namespace: ['xp', 'guild1', 'users'] })
 		}
 
 		const result = await xpCore.addXP('guild1', 'user1', 50)
@@ -90,7 +90,7 @@ describe('addXP', () => {
 			existingUser.messages = 15
 			existingUser.xpMessages = 8
 			const { mockFlashcore } = await import('./helpers/mocks.js')
-			await mockFlashcore.set(`user:guild1:user1`, existingUser, { namespace: 'xp' })
+			await mockFlashcore.set('user1', existingUser, { namespace: ['xp', 'guild1', 'users'] })
 		}
 
 		// Adding 100 XP gives 200 total, which should reach level 1 (155 XP needed)
@@ -341,7 +341,7 @@ describe('recalcLevel', () => {
 		if (user) {
 			user.level = 5 // Wrong level for 200 XP
 			const { mockFlashcore } = await import('./helpers/mocks.js')
-			await mockFlashcore.set(`user:guild1:user1`, user, { namespace: 'xp' })
+			await mockFlashcore.set('user1', user, { namespace: ['xp', 'guild1', 'users'] })
 		}
 
 		const result = await xpCore.recalcLevel('guild1', 'user1')
@@ -357,7 +357,7 @@ describe('recalcLevel', () => {
 		if (user) {
 			user.level = 0 // Too low
 			const { mockFlashcore } = await import('./helpers/mocks.js')
-			await mockFlashcore.set(`user:guild1:user1`, user, { namespace: 'xp' })
+			await mockFlashcore.set('user1', user, { namespace: ['xp', 'guild1', 'users'] })
 		}
 
 		const result = await xpCore.recalcLevel('guild1', 'user1')
@@ -373,7 +373,7 @@ describe('recalcLevel', () => {
 		if (user) {
 			user.level = 5 // Too high
 			const { mockFlashcore } = await import('./helpers/mocks.js')
-			await mockFlashcore.set(`user:guild1:user1`, user, { namespace: 'xp' })
+			await mockFlashcore.set('user1', user, { namespace: ['xp', 'guild1', 'users'] })
 		}
 
 		const result = await xpCore.recalcLevel('guild1', 'user1')
@@ -394,7 +394,7 @@ describe('recalcLevel', () => {
 		if (user) {
 			user.xp = 500
 			const { mockFlashcore } = await import('./helpers/mocks.js')
-			await mockFlashcore.set(`user:guild1:user1`, user, { namespace: 'xp' })
+			await mockFlashcore.set('user1', user, { namespace: ['xp', 'guild1', 'users'] })
 		}
 
 		const result = await xpCore.recalcLevel('guild1', 'user1')
@@ -517,7 +517,7 @@ describe('Message Counter Behavior', () => {
 			user1.messages = 25
 			user1.xpMessages = 10
 			const { mockFlashcore } = await import('./helpers/mocks.js')
-			await mockFlashcore.set(`user:guild1:user1`, user1, { namespace: 'xp' })
+			await mockFlashcore.set('user1', user1, { namespace: ['xp', 'guild1', 'users'] })
 		}
 
 		await xpCore.addXP('guild1', 'user1', 50)
@@ -535,7 +535,7 @@ describe('Message Counter Behavior', () => {
 			user1.messages = 50
 			user1.xpMessages = 20
 			const { mockFlashcore } = await import('./helpers/mocks.js')
-			await mockFlashcore.set(`user:guild1:user1`, user1, { namespace: 'xp' })
+			await mockFlashcore.set('user1', user1, { namespace: ['xp', 'guild1', 'users'] })
 		}
 
 		await xpCore.removeXP('guild1', 'user1', 50)
@@ -553,7 +553,7 @@ describe('Message Counter Behavior', () => {
 			user1.messages = 30
 			user1.xpMessages = 15
 			const { mockFlashcore } = await import('./helpers/mocks.js')
-			await mockFlashcore.set(`user:guild1:user1`, user1, { namespace: 'xp' })
+			await mockFlashcore.set('user1', user1, { namespace: ['xp', 'guild1', 'users'] })
 		}
 
 		await xpCore.setXP('guild1', 'user1', 500)
@@ -573,7 +573,7 @@ describe('Message Counter Behavior', () => {
 			user1.xpMessages = 18
 			user1.level = 5 // Wrong level
 			const { mockFlashcore } = await import('./helpers/mocks.js')
-			await mockFlashcore.set(`user:guild1:user1`, user1, { namespace: 'xp' })
+			await mockFlashcore.set('user1', user1, { namespace: ['xp', 'guild1', 'users'] })
 		}
 
 		await xpCore.recalcLevel('guild1', 'user1')
