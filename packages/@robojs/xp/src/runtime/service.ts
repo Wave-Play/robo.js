@@ -179,7 +179,9 @@ export async function refreshLeaderboard(guildId: string): Promise<void> {
 		leaderboardCache.set(guildId, topEntries)
 		cacheTimestamps.set(guildId, Date.now())
 
-		logger.debug(`Refreshed leaderboard cache for guild ${guildId}: ${entries.length} users, cached top ${topEntries.length}`)
+		logger.debug(
+			`Refreshed leaderboard cache for guild ${guildId}: ${entries.length} users, cached top ${topEntries.length}`
+		)
 	} catch (error) {
 		logger.error(`Failed to refresh leaderboard cache for guild ${guildId}:`, error)
 		throw error
@@ -206,10 +208,7 @@ export async function refreshLeaderboard(guildId: string): Promise<void> {
  * }
  * ```
  */
-export async function getUserRank(
-	guildId: string,
-	userId: string
-): Promise<{ rank: number; total: number } | null> {
+export async function getUserRank(guildId: string, userId: string): Promise<{ rank: number; total: number } | null> {
 	try {
 		// Ensure cache is fresh
 		const cached = leaderboardCache.get(guildId)

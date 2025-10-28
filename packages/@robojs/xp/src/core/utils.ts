@@ -279,10 +279,34 @@ export function createInfoEmbed(
 }
 
 /**
- * Formats XP with commas (e.g., '1,500 XP').
+ * Formats XP with commas and custom label.
+ *
+ * @param xp - XP amount to format
+ * @param label - Custom label for XP (defaults to 'XP')
+ * @returns Formatted string with thousands separators
+ *
+ * @example
+ * formatXP(1500) // Returns '1,500 XP'
+ * formatXP(1500, 'Reputation') // Returns '1,500 Reputation'
+ * formatXP(1500, 'Points') // Returns '1,500 Points'
  */
-export function formatXP(xp: number): string {
-	return `${xp.toLocaleString('en-US')} XP`
+export function formatXP(xp: number, label?: string): string {
+	return `${xp.toLocaleString('en-US')} ${label ?? 'XP'}`
+}
+
+/**
+ * Extracts custom XP label from guild config with fallback to 'XP'.
+ *
+ * @param config - Guild configuration
+ * @returns Custom XP display name or 'XP' if not configured
+ *
+ * @example
+ * const label = getXpLabel(config)
+ * // Returns 'Reputation' if config.labels.xpDisplayName is set
+ * // Returns 'XP' if labels is undefined or xpDisplayName is undefined
+ */
+export function getXpLabel(config: GuildConfig): string {
+	return config.labels?.xpDisplayName ?? 'XP'
 }
 
 /**

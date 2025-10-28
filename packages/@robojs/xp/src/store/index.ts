@@ -159,7 +159,7 @@ export async function getAllUsers(guildId: string): Promise<Map<string, UserXP>>
  */
 export async function addMember(guildId: string, userId: string): Promise<void> {
 	const key = `members:${guildId}`
-	const arr = await Flashcore.get<string[]>(key, { namespace: XP_NAMESPACE }) ?? []
+	const arr = (await Flashcore.get<string[]>(key, { namespace: XP_NAMESPACE })) ?? []
 	const members = new Set(arr)
 	members.add(userId)
 	await Flashcore.set(key, Array.from(members), { namespace: XP_NAMESPACE })
@@ -190,7 +190,7 @@ export async function removeMember(guildId: string, userId: string): Promise<voi
  */
 export async function getMembers(guildId: string): Promise<Set<string>> {
 	const key = `members:${guildId}`
-	const arr = await Flashcore.get<string[]>(key, { namespace: XP_NAMESPACE }) ?? []
+	const arr = (await Flashcore.get<string[]>(key, { namespace: XP_NAMESPACE })) ?? []
 	return new Set(arr)
 }
 
@@ -453,6 +453,11 @@ export function normalizeConfig(raw: unknown, defaults: GuildConfig): GuildConfi
 					role: config.multipliers.role ?? {},
 					user: config.multipliers.user ?? {}
 				}
+			: undefined,
+		labels: config.labels
+			? {
+					xpDisplayName: config.labels.xpDisplayName
+				}
 			: undefined
 	}
 }
@@ -477,11 +482,20 @@ export function mergeConfigs(base: GuildConfig, override: Partial<GuildConfig>):
 	// Deep merge multipliers object
 	let mergedMultipliers = base.multipliers ? { ...base.multipliers } : undefined
 
+	// Deep merge labels object
+	let mergedLabels = base.labels ? { ...base.labels } : undefined
+
 	if (override.multipliers) {
 		mergedMultipliers = {
 			server: override.multipliers.server ?? mergedMultipliers?.server,
 			role: { ...mergedMultipliers?.role, ...override.multipliers.role },
 			user: { ...mergedMultipliers?.user, ...override.multipliers.user }
+		}
+	}
+
+	if (override.labels) {
+		mergedLabels = {
+			xpDisplayName: override.labels.xpDisplayName ?? mergedLabels?.xpDisplayName
 		}
 	}
 
@@ -496,6 +510,7 @@ export function mergeConfigs(base: GuildConfig, override: Partial<GuildConfig>):
 		leaderboard: {
 			public: override.leaderboard?.public ?? base.leaderboard.public
 		},
-		multipliers: mergedMultipliers
+		multipliers: mergedMultipliers,
+		labels: mergedLabels
 	}
 }

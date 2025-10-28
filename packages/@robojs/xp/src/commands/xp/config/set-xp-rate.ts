@@ -63,7 +63,11 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 
 		// Determine effect description
 		const effectDesc =
-			rate < 1 ? 'Users will earn less XP per message' : rate > 1 ? 'Users will earn more XP per message' : 'Users will earn the same XP per message'
+			rate < 1
+				? 'Users will earn less XP per message'
+				: rate > 1
+					? 'Users will earn more XP per message'
+					: 'Users will earn the same XP per message'
 
 		// Create success embed
 		const fields = [
@@ -83,9 +87,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 		}
 
 		return {
-			embeds: [
-				createSuccessEmbed('XP Rate Updated', `XP rate multiplier changed to **${rate}x**`, fields)
-			]
+			embeds: [createSuccessEmbed('XP Rate Updated', `XP rate multiplier changed to **${rate}x**`, fields)]
 		}
 	} catch (error) {
 		logger.error('Error in /xp config set-xp-rate command:', error)

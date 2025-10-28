@@ -90,6 +90,13 @@ export default async function (message: Message) {
 			// Calculate effective multiplier
 			const multiplier = resolveMultiplier(guildConfig, userRoleIds, userId)
 
+			// Early exit if multiplier is 0 (manual XP control mode)
+			if (multiplier === 0) {
+				// Persist messages count without awarding XP
+				await store.putUser(guildId, userId, updatedUser)
+				return
+			}
+
 			// Apply rate and multiplier
 			const finalXp = Math.floor(baseXp * guildConfig.xpRate * multiplier)
 

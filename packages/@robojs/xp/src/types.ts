@@ -74,6 +74,8 @@ export interface RoleReward {
  * @property theme - Optional theme customization for rank and leaderboard embeds
  * @property theme.embedColor - Custom embed color in hex (e.g., 0x5865F2 for Discord Blurple)
  * @property theme.backgroundUrl - Reserved for future web-based rank card renderer
+ * @property labels - Optional custom terminology for XP system branding
+ * @property labels.xpDisplayName - Custom display name for XP (default: 'XP', max 20 chars)
  *
  * @example
  * {
@@ -96,8 +98,18 @@ export interface RoleReward {
  *   theme: {
  *     embedColor: 0x5865F2,
  *     backgroundUrl: 'https://example.com/background.png'
+ *   },
+ *   labels: {
+ *     xpDisplayName: 'Reputation'
  *   }
  * }
+ *
+ * @example Common terminology alternatives:
+ * - 'Reputation' - For community reputation systems
+ * - 'Points' - For point-based reward systems
+ * - 'Karma' - For Reddit-style karma systems
+ * - 'Credits' - For economy/currency systems
+ * - 'Stars' - For achievement/rating systems
  */
 export interface GuildConfig {
 	cooldownSeconds: number
@@ -118,6 +130,9 @@ export interface GuildConfig {
 	theme?: {
 		embedColor?: number
 		backgroundUrl?: string
+	}
+	labels?: {
+		xpDisplayName?: string
 	}
 }
 

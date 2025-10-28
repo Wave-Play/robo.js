@@ -105,11 +105,11 @@ User data shape (`src/types.ts`):
 
 ```ts
 interface UserXP {
-  xp: number
-  level: number
-  lastAwardedAt: number
-  messages: number
-  xpMessages: number
+	xp: number
+	level: number
+	lastAwardedAt: number
+	messages: number
+	xpMessages: number
 }
 ```
 
@@ -130,9 +130,28 @@ Warning: Do not assume a universal ordering between level and XP events across a
 Event payloads:
 
 ```ts
-interface LevelUpEvent { guildId: string; userId: string; oldLevel: number; newLevel: number; totalXp: number }
-interface LevelDownEvent { guildId: string; userId: string; oldLevel: number; newLevel: number; totalXp: number }
-interface XPChangeEvent { guildId: string; userId: string; oldXp: number; newXp: number; delta: number; reason?: string }
+interface LevelUpEvent {
+	guildId: string
+	userId: string
+	oldLevel: number
+	newLevel: number
+	totalXp: number
+}
+interface LevelDownEvent {
+	guildId: string
+	userId: string
+	oldLevel: number
+	newLevel: number
+	totalXp: number
+}
+interface XPChangeEvent {
+	guildId: string
+	userId: string
+	oldXp: number
+	newXp: number
+	delta: number
+	reason?: string
+}
 ```
 
 Built‑in listeners register at module load:
@@ -147,22 +166,22 @@ TODO: If we decide to unify ordering across pathways in the future, target a sin
 
 Hierarchy (highest precedence first):
 
-1) Guild config in Flashcore → 2) Global defaults in Flashcore → 3) System defaults (MEE6 parity).
+1. Guild config in Flashcore → 2) Global defaults in Flashcore → 3) System defaults (MEE6 parity).
 
 Guild config shape:
 
 ```ts
 interface GuildConfig {
-  cooldownSeconds: number
-  xpRate: number
-  noXpRoleIds: string[]
-  noXpChannelIds: string[]
-  roleRewards: { level: number; roleId: string }[]
-  rewardsMode: 'stack' | 'replace'
-  removeRewardOnXpLoss: boolean
-  leaderboard: { public: boolean }
-  multipliers?: { server?: number; role?: Record<string, number>; user?: Record<string, number> }
-  theme?: { embedColor?: number; backgroundUrl?: string }
+	cooldownSeconds: number
+	xpRate: number
+	noXpRoleIds: string[]
+	noXpChannelIds: string[]
+	roleRewards: { level: number; roleId: string }[]
+	rewardsMode: 'stack' | 'replace'
+	removeRewardOnXpLoss: boolean
+	leaderboard: { public: boolean }
+	multipliers?: { server?: number; role?: Record<string, number>; user?: Record<string, number> }
+	theme?: { embedColor?: number; backgroundUrl?: string }
 }
 ```
 
@@ -202,7 +221,10 @@ Gotcha: Requests with offset ≥ 100 bypass cache and scan/sort the full dataset
 Reward definition:
 
 ```ts
-interface RoleReward { level: number; roleId: string }
+interface RoleReward {
+	level: number
+	roleId: string
+}
 ```
 
 Modes:
@@ -220,7 +242,7 @@ Safety checks: Manage Roles permission; bot highest role above target role; skip
 
 Types:
 
-1) Server multiplier (all users). 2) Role multipliers (take MAX among user roles). 3) User multiplier (per user).
+1. Server multiplier (all users). 2) Role multipliers (take MAX among user roles). 3) User multiplier (per user).
 
 Resolution: `effective = server × max(role) × user` (multiplicative). Rounds to 3 decimals to avoid FP artifacts.
 
@@ -337,45 +359,45 @@ Listener best practices: register in `src/events/_start/`; use async/await; neve
 
 ## 17. Hidden Gotchas & Edge Cases
 
-1) Two counters: `messages` vs `xpMessages` — discrepancy expected (no‑XP/cooldown).
+1. Two counters: `messages` vs `xpMessages` — discrepancy expected (no‑XP/cooldown).
 
-2) Cooldown per user (global across channels), tracked with `lastAwardedAt`.
+2. Cooldown per user (global across channels), tracked with `lastAwardedAt`.
 
-3) Multipliers multiply; they never add. `server × max(role) × user`.
+3. Multipliers multiply; they never add. `server × max(role) × user`.
 
-4) Role multiplier is MAX across user roles, not sum.
+4. Role multiplier is MAX across user roles, not sum.
 
-5) Rewards deduped by `roleId` — highest `level` wins.
+5. Rewards deduped by `roleId` — highest `level` wins.
 
-6) Bot role hierarchy: bot top role must be higher than reward roles; Manage Roles permission required.
+6. Bot role hierarchy: bot top role must be higher than reward roles; Manage Roles permission required.
 
-7) Managed roles skipped (integration‑managed).
+7. Managed roles skipped (integration‑managed).
 
-8) Cache invalidated on every XP event — tune TTL if thrashing.
+8. Cache invalidated on every XP event — tune TTL if thrashing.
 
-9) Deep pagination (offset ≥ 100) triggers full scan.
+9. Deep pagination (offset ≥ 100) triggers full scan.
 
-10) Global config updates clear all guild config caches.
+10. Global config updates clear all guild config caches.
 
-11) Level calculation deterministic; `recalcLevel` is idempotent fixer.
+11. Level calculation deterministic; `recalcLevel` is idempotent fixer.
 
-12) Events emitted after persistence; listeners must tolerate failures gracefully.
+12. Events emitted after persistence; listeners must tolerate failures gracefully.
 
-13) Role ops are async and can rate limit; failures logged, not thrown.
+13. Role ops are async and can rate limit; failures logged, not thrown.
 
-14) No‑XP roles: ANY matching role blocks XP.
+14. No‑XP roles: ANY matching role blocks XP.
 
-15) Formula application: `finalXP = base × xpRate × multiplier`.
+15. Formula application: `finalXP = base × xpRate × multiplier`.
 
-16) Level down does not remove roles unless configured; replace mode always reconciles to one role.
+16. Level down does not remove roles unless configured; replace mode always reconciles to one role.
 
-17) Flashcore keys isolated under `xp` namespace.
+17. Flashcore keys isolated under `xp` namespace.
 
-18) Schema version stored for future migrations (current: 1).
+18. Schema version stored for future migrations (current: 1).
 
-19) `getAllUsers` fetches in parallel; be mindful of very large guilds.
+19. `getAllUsers` fetches in parallel; be mindful of very large guilds.
 
-20) Stable sort with secondary key userId to avoid rank flicker on ties.
+20. Stable sort with secondary key userId to avoid rank flicker on ties.
 
 ## 18. File Structure Reference
 
@@ -459,11 +481,11 @@ Update triggers:
 
 How to update:
 
-1) Review the relevant section(s) here with your code changes in mind.
-2) Update signatures, behavior notes, file references (e.g., mention function location).
-3) Document new gotchas, edge cases, and any breaking changes.
-4) Adjust performance notes and cache tuning guidance if applicable.
-5) Keep the File Structure Reference accurate when files are added/removed.
+1. Review the relevant section(s) here with your code changes in mind.
+2. Update signatures, behavior notes, file references (e.g., mention function location).
+3. Document new gotchas, edge cases, and any breaking changes.
+4. Adjust performance notes and cache tuning guidance if applicable.
+5. Keep the File Structure Reference accurate when files are added/removed.
 
 Verification checklist:
 

@@ -213,8 +213,8 @@ test('Awarded XP path: both counters increment when XP is awarded', async () => 
 	expect(user).not.toBeNull()
 	expect(user?.messages).toBe(1) // messages should increment to 1
 	expect(user?.xpMessages).toBe(1) // xpMessages should increment to 1 (XP awarded)
-	expect((user?.xp ?? 0)).toBeGreaterThan(0) // XP should be greater than 0
-	expect((user?.lastAwardedAt ?? 0)).toBeGreaterThan(0) // lastAwardedAt should be updated
+	expect(user?.xp ?? 0).toBeGreaterThan(0) // XP should be greater than 0
+	expect(user?.lastAwardedAt ?? 0).toBeGreaterThan(0) // lastAwardedAt should be updated
 })
 
 test('Cooldown block: messages increments but xpMessages does not on cooldown', async () => {
@@ -346,7 +346,7 @@ test('XP with multipliers: counters still work correctly', async () => {
 	expect(user?.messages).toBe(1) // messages should increment to 1
 	expect(user?.xpMessages).toBe(1) // xpMessages should increment to 1
 	// baseXp = 20 (from mockRandomValue = 0.5), xpRate = 1.5, server = 2.0 => finalXp = floor(20 * 1.5 * 2.0) = 60
-	expect((user?.xp ?? 0)).toBeGreaterThan(0) // XP should be awarded with multipliers applied
+	expect(user?.xp ?? 0).toBeGreaterThan(0) // XP should be awarded with multipliers applied
 })
 
 test('Existing user: counters accumulate correctly', async () => {
@@ -374,7 +374,7 @@ test('Existing user: counters accumulate correctly', async () => {
 	const user = getUserFromStore('guild-9', 'user-9')
 	expect(user?.messages).toBe(51) // messages should increment from 50 to 51
 	expect(user?.xpMessages).toBe(26) // xpMessages should increment from 25 to 26
-	expect((user?.xp ?? 0)).toBeGreaterThan(100) // XP should increase from 100
+	expect(user?.xp ?? 0).toBeGreaterThan(100) // XP should increase from 100
 })
 
 test('Combined gating: No-XP channel AND No-XP role', async () => {
@@ -396,4 +396,152 @@ test('Combined gating: No-XP channel AND No-XP role', async () => {
 	expect(user?.messages).toBe(1) // messages should increment even with both gates
 	expect(user?.xpMessages).toBe(0) // xpMessages should remain 0 (both gates active)
 	expect(user?.xp).toBe(0) // XP should remain 0 (both gates active)
+})
+
+// ============================================================================
+// Test Suite: 0 Multiplier Behavior (Manual XP Control)
+// ============================================================================
+
+describe('0 Multiplier Behavior (Manual XP Control)', () => {
+	test('0 server multiplier blocks XP but increments messages counter', async () => {
+		// Disable cooldown and set server multiplier to 0
+		currentConfig.cooldownSeconds = 0
+		currentConfig.multipliers = { server: 0 }
+		;(globalThis as any).__testConfig = JSON.parse(JSON.stringify(currentConfig))
+
+		const message = createMessage({
+			userId: 'user-zero-server',
+			guildId: 'guild-zero-server',
+			channelId: 'channel-zero-server'
+		})
+
+		await award(message)
+
+		const user = getUserFromStore('guild-zero-server', 'user-zero-server')
+		expect(user).not.toBeNull()
+		expect(user?.messages).toBe(1)
+		expect(user?.xpMessages).toBe(0)
+		expect(user?.xp).toBe(0)
+		expect(user?.lastAwardedAt).toBe(0)
+		// Server multiplier 0 disables automatic XP for entire guild
+	})
+
+	test('0 role multiplier blocks XP but increments messages counter', async () => {
+		currentConfig.cooldownSeconds = 0
+		currentConfig.multipliers = { role: { 'zero-role': 0, 'normal-role': 1.5 } }
+		;(globalThis as any).__testConfig = JSON.parse(JSON.stringify(currentConfig))
+
+		// User only has the zero-role (so max([0]) = 0)
+		const message = createMessage({
+			userId: 'user-zero-role',
+			guildId: 'guild-zero-role',
+			channelId: 'channel-zero-role',
+			roleIds: ['zero-role']
+		})
+
+		await award(message)
+
+		const user = getUserFromStore('guild-zero-role', 'user-zero-role')
+		expect(user).not.toBeNull()
+		expect(user?.messages).toBe(1)
+		expect(user?.xpMessages).toBe(0)
+		expect(user?.xp).toBe(0)
+		// User only has zero-role with 0 multiplier, so max([0]) = 0
+	})
+
+	test('0 user multiplier blocks XP but increments messages counter', async () => {
+		currentConfig.cooldownSeconds = 0
+		currentConfig.multipliers = { user: { 'user-zero': 0 } }
+		;(globalThis as any).__testConfig = JSON.parse(JSON.stringify(currentConfig))
+
+		const message = createMessage({
+			userId: 'user-zero',
+			guildId: 'guild-zero-user',
+			channelId: 'channel-zero-user'
+		})
+
+		await award(message)
+
+		const user = getUserFromStore('guild-zero-user', 'user-zero')
+		expect(user).not.toBeNull()
+		expect(user?.messages).toBe(1)
+		expect(user?.xpMessages).toBe(0)
+		expect(user?.xp).toBe(0)
+		// User multiplier 0 disables automatic XP for specific user
+	})
+
+	test('0 server multiplier with positive role/user multipliers still blocks XP', async () => {
+		currentConfig.cooldownSeconds = 0
+		currentConfig.multipliers = { server: 0, role: { role1: 2.0 }, user: { 'user-test': 3.0 } }
+		;(globalThis as any).__testConfig = JSON.parse(JSON.stringify(currentConfig))
+
+		const message = createMessage({
+			userId: 'user-test',
+			guildId: 'guild-mixed-zero',
+			channelId: 'channel-mixed-zero',
+			roleIds: ['role1']
+		})
+
+		await award(message)
+
+		const user = getUserFromStore('guild-mixed-zero', 'user-test')
+		expect(user).not.toBeNull()
+		expect(user?.messages).toBe(1)
+		expect(user?.xpMessages).toBe(0)
+		expect(user?.xp).toBe(0)
+		// 0 × 2.0 × 3.0 = 0 (any 0 in chain blocks XP)
+	})
+
+	test('Multiple messages with 0 multiplier: messages accumulates, xpMessages stays 0', async () => {
+		currentConfig.cooldownSeconds = 0
+		currentConfig.multipliers = { server: 0 }
+		;(globalThis as any).__testConfig = JSON.parse(JSON.stringify(currentConfig))
+
+		const message = createMessage({
+			userId: 'user-loop',
+			guildId: 'guild-loop',
+			channelId: 'channel-loop'
+		})
+
+		for (let i = 0; i < 5; i++) {
+			await award(message)
+		}
+
+		const user = getUserFromStore('guild-loop', 'user-loop')
+		expect(user).not.toBeNull()
+		expect(user?.messages).toBe(5)
+		expect(user?.xpMessages).toBe(0)
+		expect(user?.xp).toBe(0)
+		// Messages counter tracks activity even when XP is disabled
+	})
+
+	test('Existing user with 0 multiplier: messages increments, xpMessages and XP unchanged', async () => {
+		currentConfig.cooldownSeconds = 0
+		currentConfig.multipliers = { server: 0 }
+		;(globalThis as any).__testConfig = JSON.parse(JSON.stringify(currentConfig))
+
+		const existingUser: UserXP = {
+			xp: 500,
+			level: 2,
+			lastAwardedAt: Date.now() - 120000,
+			messages: 100,
+			xpMessages: 50
+		}
+		mockFlashcore.set(`user:guild-pre:user-pre`, existingUser, { namespace: 'xp' })
+
+		const message = createMessage({
+			userId: 'user-pre',
+			guildId: 'guild-pre',
+			channelId: 'channel-pre'
+		})
+
+		await award(message)
+
+		const user = getUserFromStore('guild-pre', 'user-pre')
+		expect(user).not.toBeNull()
+		expect(user?.messages).toBe(101)
+		expect(user?.xpMessages).toBe(50)
+		expect(user?.xp).toBe(500)
+		// Existing counters preserved, only messages increments
+	})
 })

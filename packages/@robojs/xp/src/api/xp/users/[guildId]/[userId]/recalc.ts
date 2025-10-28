@@ -1,6 +1,13 @@
 import type { RoboRequest } from '@robojs/server'
 import { xp } from '@robojs/xp'
-import { wrapHandler, success, getGuildFromRequest, validateUserId, validateMethod, ERROR_CODES } from '../../../utils.js'
+import {
+	wrapHandler,
+	success,
+	getGuildFromRequest,
+	validateUserId,
+	validateMethod,
+	ERROR_CODES
+} from '../../../utils.js'
 
 /**
  * User Level Recalculation Endpoint

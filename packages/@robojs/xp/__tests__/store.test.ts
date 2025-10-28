@@ -113,7 +113,11 @@ test('User CRUD: getUser on miss returns null', async () => {
 
 	expect(user).toBe(null)
 	// Verify correct key and namespace
-	expect(flashcoreCalls.some(c => c.method === 'get' && c.key === `user:${guildId}:${userId}` && c.options.namespace === XP_NAMESPACE)).toBeTruthy()
+	expect(
+		flashcoreCalls.some(
+			(c) => c.method === 'get' && c.key === `user:${guildId}:${userId}` && c.options.namespace === XP_NAMESPACE
+		)
+	).toBeTruthy()
 
 	restoreMockFlashcore()
 })
@@ -134,7 +138,11 @@ test('User CRUD: putUser persists and getUser retrieves', async () => {
 	await putUser(guildId, userId, userData)
 
 	// Verify data was stored with correct key/namespace
-	expect(flashcoreCalls.some(c => c.method === 'set' && c.key === `user:${guildId}:${userId}` && c.options.namespace === XP_NAMESPACE)).toBeTruthy()
+	expect(
+		flashcoreCalls.some(
+			(c) => c.method === 'set' && c.key === `user:${guildId}:${userId}` && c.options.namespace === XP_NAMESPACE
+		)
+	).toBeTruthy()
 
 	// getUser retrieves it
 	const retrieved = await getUser(guildId, userId)
@@ -552,7 +560,7 @@ test('Config CRUD: getOrInitConfig persists merged defaults for new guild', asyn
 	expect(config.xpRate).toBe(1.0)
 
 	// Verify persisted to Flashcore
-	expect(flashcoreCalls.some(c => c.method === 'set' && c.key === `config:${guildId}`)).toBeTruthy()
+	expect(flashcoreCalls.some((c) => c.method === 'set' && c.key === `config:${guildId}`)).toBeTruthy()
 
 	restoreMockFlashcore()
 })
@@ -680,7 +688,11 @@ test('Schema: setSchemaVersion persists and getSchemaVersion retrieves', async (
 	expect(version).toBe(2)
 
 	// Verify correct key and namespace
-	expect(flashcoreCalls.some(c => c.method === 'set' && c.key === `schema:${guildId}` && c.options.namespace === XP_NAMESPACE)).toBeTruthy()
+	expect(
+		flashcoreCalls.some(
+			(c) => c.method === 'set' && c.key === `schema:${guildId}` && c.options.namespace === XP_NAMESPACE
+		)
+	).toBeTruthy()
 
 	restoreMockFlashcore()
 })
@@ -693,7 +705,7 @@ test('Schema: all calls use correct namespace', async () => {
 	await getSchemaVersion(guildId)
 
 	// All calls should have XP_NAMESPACE
-	expect(flashcoreCalls.every(c => c.options.namespace === XP_NAMESPACE)).toBeTruthy()
+	expect(flashcoreCalls.every((c) => c.options.namespace === XP_NAMESPACE)).toBeTruthy()
 
 	restoreMockFlashcore()
 })
@@ -715,7 +727,7 @@ test('Flashcore calls: all operations use XP_NAMESPACE', async () => {
 	await setSchemaVersion(guildId, 1)
 
 	// All calls should use XP_NAMESPACE
-	expect(flashcoreCalls.every(c => c.options.namespace === XP_NAMESPACE)).toBeTruthy()
+	expect(flashcoreCalls.every((c) => c.options.namespace === XP_NAMESPACE)).toBeTruthy()
 	expect(flashcoreCalls.length).toBeGreaterThan(0)
 
 	restoreMockFlashcore()
@@ -729,7 +741,7 @@ test('Flashcore keys: user key format is "user:guildId:userId"', async () => {
 	await putUser(guildId, userId, { xp: 100, level: 1, lastAwardedAt: Date.now(), messages: 10, xpMessages: 5 })
 
 	const userKey = `user:${guildId}:${userId}`
-	expect(flashcoreCalls.some(c => c.method === 'set' && c.key === userKey)).toBeTruthy()
+	expect(flashcoreCalls.some((c) => c.method === 'set' && c.key === userKey)).toBeTruthy()
 
 	restoreMockFlashcore()
 })
@@ -742,7 +754,7 @@ test('Flashcore keys: members key format is "members:guildId"', async () => {
 	await addMember(guildId, userId)
 
 	const membersKey = `members:${guildId}`
-	expect(flashcoreCalls.some(c => c.method === 'set' && c.key === membersKey)).toBeTruthy()
+	expect(flashcoreCalls.some((c) => c.method === 'set' && c.key === membersKey)).toBeTruthy()
 
 	restoreMockFlashcore()
 })
@@ -754,7 +766,7 @@ test('Flashcore keys: config key format is "config:guildId"', async () => {
 	await getOrInitConfig(guildId)
 
 	const configKey = `config:${guildId}`
-	expect(flashcoreCalls.some(c => c.method === 'set' && c.key === configKey)).toBeTruthy()
+	expect(flashcoreCalls.some((c) => c.method === 'set' && c.key === configKey)).toBeTruthy()
 
 	restoreMockFlashcore()
 })
@@ -766,7 +778,7 @@ test('Flashcore keys: schema key format is "schema:guildId"', async () => {
 	await setSchemaVersion(guildId, 1)
 
 	const schemaKey = `schema:${guildId}`
-	expect(flashcoreCalls.some(c => c.method === 'set' && c.key === schemaKey)).toBeTruthy()
+	expect(flashcoreCalls.some((c) => c.method === 'set' && c.key === schemaKey)).toBeTruthy()
 
 	restoreMockFlashcore()
 })
@@ -778,8 +790,8 @@ test('Flashcore keys: global config key is "config:global"', async () => {
 	await getGlobalConfig()
 
 	const globalKey = 'config:global'
-	expect(flashcoreCalls.some(c => c.method === 'set' && c.key === globalKey)).toBeTruthy()
-	expect(flashcoreCalls.some(c => c.method === 'get' && c.key === globalKey)).toBeTruthy()
+	expect(flashcoreCalls.some((c) => c.method === 'set' && c.key === globalKey)).toBeTruthy()
+	expect(flashcoreCalls.some((c) => c.method === 'get' && c.key === globalKey)).toBeTruthy()
 
 	restoreMockFlashcore()
 })
@@ -1332,7 +1344,9 @@ test('getAllUsers: parallel fetch structure (simulation)', () => {
 
 	// Simulate creating promises for parallel fetch
 	const userIds = Array.from(members)
-	const promises = userIds.map(() => Promise.resolve({ xp: 100, level: 1, lastAwardedAt: Date.now(), messages: 10, xpMessages: 5 }))
+	const promises = userIds.map(() =>
+		Promise.resolve({ xp: 100, level: 1, lastAwardedAt: Date.now(), messages: 10, xpMessages: 5 })
+	)
 
 	expect(promises.length).toBe(3)
 
@@ -1367,4 +1381,74 @@ test('Config merge with multipliers: deep merge preserves all nested data', () =
 	expect(merged.multipliers?.role?.['111111111111111111']).toBe(2.0)
 	expect(merged.multipliers?.role?.['333333333333333333']).toBe(1.8)
 	expect(merged.multipliers?.user?.['222222222222222222']).toBe(0.5)
+})
+
+// ============================================================================
+// Test Suite: Labels Configuration Handling
+// ============================================================================
+
+test('normalizeConfig preserves labels object', () => {
+	const defaults = getDefaultConfig()
+	const raw = {
+		cooldownSeconds: 60,
+		labels: { xpDisplayName: 'Reputation' }
+	}
+
+	const normalized = normalizeConfig(raw as any, defaults)
+
+	expect(normalized.labels).toBeDefined()
+	expect(normalized.labels?.xpDisplayName).toBe('Reputation')
+})
+
+test('normalizeConfig handles undefined labels', () => {
+	const defaults = getDefaultConfig()
+	const raw = { cooldownSeconds: 60 }
+
+	const normalized = normalizeConfig(raw as any, defaults)
+
+	expect(normalized.labels).toBeUndefined()
+})
+
+test('mergeConfigs deep merges labels (override wins)', () => {
+	const base: GuildConfig = {
+		...getDefaultConfig(),
+		labels: { xpDisplayName: 'Points' }
+	} as any
+	const override: Partial<GuildConfig> = {
+		labels: { xpDisplayName: 'Reputation' }
+	}
+
+	const merged = mergeConfigs(base, override)
+
+	expect(merged.labels?.xpDisplayName).toBe('Reputation')
+	expect(merged.cooldownSeconds).toBe(base.cooldownSeconds)
+})
+
+test('mergeConfigs preserves base labels when override has none', () => {
+	const base: GuildConfig = {
+		...getDefaultConfig(),
+		labels: { xpDisplayName: 'Karma' }
+	} as any
+	const override: Partial<GuildConfig> = { cooldownSeconds: 90 }
+
+	const merged = mergeConfigs(base, override)
+
+	expect(merged.labels?.xpDisplayName).toBe('Karma')
+	expect(merged.cooldownSeconds).toBe(90)
+})
+
+test('mergeConfigs applies override labels when base has none', () => {
+	const base: GuildConfig = getDefaultConfig()
+	const override: Partial<GuildConfig> = {
+		labels: { xpDisplayName: 'Stars' }
+	}
+
+	const merged = mergeConfigs(base, override)
+
+	expect(merged.labels?.xpDisplayName).toBe('Stars')
+})
+
+test('labels undefined by default in getDefaultConfig', () => {
+	const defaults = getDefaultConfig()
+	expect(defaults.labels).toBeUndefined()
 })

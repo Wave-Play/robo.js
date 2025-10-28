@@ -1566,3 +1566,24 @@ export const rewards = {
  * ```
  */
 export { reconcileRoleRewards as reconcileRewards }
+
+// ============================================================================
+// Formatting Utilities (Public Helpers)
+// ============================================================================
+
+/**
+ * Public formatting helpers.
+ *
+ * These utilities are safe to import from the package root and are used in
+ * README/API examples. They allow consumers to format XP values with a custom
+ * label and extract the label from a guild config.
+ *
+ * @example
+ * ```ts
+ * import { config, formatXP, getXpLabel } from '@robojs/xp'
+ * const cfg = await config.get(guildId)
+ * const label = getXpLabel(cfg)
+ * console.log(formatXP(1500, label)) // "1,500 Reputation"
+ * ```
+ */
+export { formatXP, getXpLabel } from './core/utils.js'

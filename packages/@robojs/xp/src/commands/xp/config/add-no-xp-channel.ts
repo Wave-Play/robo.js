@@ -90,9 +90,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 			embeds: [
 				createErrorEmbed(
 					'Error',
-					error instanceof Error
-						? error.message
-						: 'An unexpected error occurred while adding No-XP channel'
+					error instanceof Error ? error.message : 'An unexpected error occurred while adding No-XP channel'
 				)
 			],
 			ephemeral: true

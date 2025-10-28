@@ -74,9 +74,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 		}
 
 		return {
-			embeds: [
-				createSuccessEmbed('Cooldown Updated', `XP award cooldown changed to **${seconds} seconds**`, fields)
-			]
+			embeds: [createSuccessEmbed('Cooldown Updated', `XP award cooldown changed to **${seconds} seconds**`, fields)]
 		}
 	} catch (error) {
 		logger.error('Error in /xp config set-cooldown command:', error)
@@ -84,9 +82,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 			embeds: [
 				createErrorEmbed(
 					'Error',
-					error instanceof Error
-						? error.message
-						: 'An unexpected error occurred while updating cooldown'
+					error instanceof Error ? error.message : 'An unexpected error occurred while updating cooldown'
 				)
 			],
 			ephemeral: true

@@ -226,7 +226,12 @@ export async function reconcileRoleRewards(
 /**
  * Handles level down events, removing roles if configured
  */
-async function handleLevelDown(guildId: string, userId: string, newLevel: number, guildConfig: GuildConfig): Promise<void> {
+async function handleLevelDown(
+	guildId: string,
+	userId: string,
+	newLevel: number,
+	guildConfig: GuildConfig
+): Promise<void> {
 	// Only process if removeRewardOnXpLoss is enabled
 	if (!guildConfig.removeRewardOnXpLoss) {
 		logger.debug('Skipping level down role reconciliation (removeRewardOnXpLoss is false)', {
