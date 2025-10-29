@@ -223,7 +223,8 @@ export type {
 	XPChangeEvent,
 	LevelProgress,
 	AddXPOptions,
-	LeaderboardEntry
+	LeaderboardEntry,
+	PluginOptions
 } from './types.js'
 
 import type { LevelUpEvent, LevelDownEvent, XPChangeEvent } from './types.js'

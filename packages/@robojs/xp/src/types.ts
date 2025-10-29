@@ -112,26 +112,104 @@ export interface RoleReward {
  * - 'Stars' - For achievement/rating systems
  */
 export interface GuildConfig {
+	/**
+	 * Minimum seconds between XP awards for the same user
+	 * @default 60
+	 */
 	cooldownSeconds: number
+
+	/**
+	 * Global XP multiplier applied to all XP gains
+	 * @default 1.0
+	 */
 	xpRate: number
+
+	/**
+	 * Users with these roles don't gain XP
+	 * @default []
+	 */
 	noXpRoleIds: string[]
+
+	/**
+	 * Messages in these channels don't award XP
+	 * @default []
+	 */
 	noXpChannelIds: string[]
+
+	/**
+	 * Roles awarded at specific levels
+	 * @default []
+	 */
 	roleRewards: RoleReward[]
+
+	/**
+	 * How role rewards stack when users level up
+	 * - 'stack': Users keep all role rewards from previous levels
+	 * - 'replace': Users only get the role for their current level
+	 * @default 'stack'
+	 */
 	rewardsMode: RewardsMode
+
+	/**
+	 * Remove role rewards when users lose levels from XP loss
+	 * @default false
+	 */
 	removeRewardOnXpLoss: boolean
+
+	/**
+	 * Leaderboard visibility settings
+	 */
 	leaderboard: {
+		/**
+		 * Whether the leaderboard is publicly visible
+		 * @default false
+		 */
 		public: boolean
 	}
+
+	/**
+	 * Server-wide and per-role/user XP multipliers
+	 */
 	multipliers?: {
+		/**
+		 * Server-wide multiplier applied to all users (stacks with xpRate)
+		 */
 		server?: number
+
+		/**
+		 * Per-role multipliers (roleId → multiplier)
+		 */
 		role?: Record<string, number>
+
+		/**
+		 * Per-user multipliers (userId → multiplier)
+		 */
 		user?: Record<string, number>
 	}
+
+	/**
+	 * Custom theme for rank cards and leaderboard embeds
+	 */
 	theme?: {
+		/**
+		 * Custom embed color in hex (e.g., 0x5865F2 for Discord Blurple)
+		 */
 		embedColor?: number
+
+		/**
+		 * Reserved for future web-based rank card renderer
+		 */
 		backgroundUrl?: string
 	}
+
+	/**
+	 * Custom terminology for XP system branding
+	 */
 	labels?: {
+		/**
+		 * Custom display name for XP (e.g., 'Reputation', 'Karma', 'Points')
+		 * @default 'XP'
+		 */
 		xpDisplayName?: string
 	}
 }
@@ -290,4 +368,37 @@ export interface LeaderboardEntry {
 	xp: number
 	level: number
 	rank: number
+}
+
+/**
+ * Plugin configuration options for @robojs/xp
+ *
+ * Configure global defaults that apply to all guilds.
+ * Individual guilds can override these via /xp config commands or the XP.config.set() API.
+ *
+ * @property defaults - Global XP configuration defaults (optional)
+ *
+ * @example
+ * // config/plugins/robojs/xp.ts
+ * import type { PluginOptions } from '@robojs/xp'
+ *
+ * export default {
+ *   defaults: {
+ *     cooldownSeconds: 90,
+ *     xpRate: 1.5,
+ *     labels: { xpDisplayName: 'Reputation' },
+ *     multipliers: { server: 2.0 },
+ *     roleRewards: [
+ *       { level: 5, roleId: 'ROLE_ID_HERE' },
+ *       { level: 10, roleId: 'ROLE_ID_HERE' }
+ *     ]
+ *   }
+ * } satisfies PluginOptions
+ */
+export interface PluginOptions {
+	/**
+	 * Global defaults applied to all guilds
+	 * Can be overridden per-guild via XP.config.set() or /xp config commands
+	 */
+	defaults?: Partial<GuildConfig>
 }
