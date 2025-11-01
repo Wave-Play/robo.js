@@ -84,6 +84,10 @@ export interface Config {
 		level?: LogLevel
 	}
 	plugins?: Plugin[]
+	portal?: {
+		/** When true, disabling a module or component won't unregister commands, events, etc. */
+		keepRegistered?: boolean
+	}
 	roboplay?: {
 		node?: '18' | '20' | 'latest'
 	}
