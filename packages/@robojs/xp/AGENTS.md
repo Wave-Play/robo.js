@@ -86,20 +86,38 @@ Exported primitives and expectations:
   - Adds XP (amount ≥ 0). Emits `xpChange` then `levelUp` if level increases.
   - Returns `{ oldXp, newXp, oldLevel, newLevel, leveledUp }`.
   - Persists before emitting events.
+  - Options: `{ reason?: string, storeId?: string }` (defaults to 'default' store).
 
 - `removeXP(guildId, userId, amount, options?)`
   - Removes XP (clamped at 0). Emits `xpChange` then `levelDown` if level decreases.
   - Returns `{ oldXp, newXp, oldLevel, newLevel, leveledDown }`.
+  - Options: `{ reason?: string, storeId?: string }` (defaults to 'default' store).
 
 - `setXP(guildId, userId, totalXp, options?)`
   - Sets absolute XP (≥ 0). Emits `xpChange`, may emit levelUp/levelDown.
   - Returns `{ oldXp, newXp, oldLevel, newLevel }`.
+  - Options: `{ reason?: string, storeId?: string }` (defaults to 'default' store).
 
-- `recalcLevel(guildId, userId)`
+- `recalcLevel(guildId, userId, options?)`
   - Recomputes level from stored total XP and reconciles roles if changed.
   - Returns `{ oldLevel, newLevel, totalXp, reconciled }` and emits events on change.
+  - Options: `{ storeId?: string }` (defaults to 'default' store).
 
-- `getXP(guildId, userId)` → number; `getLevel(guildId, userId)` → number; `getUserData(guildId, userId)` → `UserXP | null`.
+- `getXP(guildId, userId, options?)` → number; `getLevel(guildId, userId, options?)` → number; `getUserData(guildId, userId, options?)` → `UserXP | null`.
+  - Options: `{ storeId?: string }` (defaults to 'default' store).
+
+Examples:
+
+```ts
+// Default store (used by commands)
+await addXP('guildId', 'userId', 100)
+
+// Custom reputation store
+await addXP('guildId', 'userId', 50, { reason: 'helped_user', storeId: 'reputation' })
+
+// Get data from custom store
+const credits = await getXP('guildId', 'userId', { storeId: 'credits' })
+```
 
 User data shape (`src/types.ts`):
 
@@ -133,6 +151,7 @@ Event payloads:
 interface LevelUpEvent {
 	guildId: string
 	userId: string
+  storeId: string
 	oldLevel: number
 	newLevel: number
 	totalXp: number
@@ -140,6 +159,7 @@ interface LevelUpEvent {
 interface LevelDownEvent {
 	guildId: string
 	userId: string
+  storeId: string
 	oldLevel: number
 	newLevel: number
 	totalXp: number
@@ -147,6 +167,7 @@ interface LevelDownEvent {
 interface XPChangeEvent {
 	guildId: string
 	userId: string
+  storeId: string
 	oldXp: number
 	newXp: number
 	delta: number
@@ -156,17 +177,17 @@ interface XPChangeEvent {
 
 Built‑in listeners register at module load:
 
-- `levelUp` → role rewards reconciliation.
-- `levelDown` → optional reward removal, then reconciliation.
-- All three events → leaderboard cache invalidation.
-
-TODO: If we decide to unify ordering across pathways in the future, target a single contract (likely persist → `xpChange` → level events) and provide a migration guide for listener authors.
+- `levelUp` → role rewards reconciliation (default store only).
+- `levelDown` → optional reward removal, then reconciliation (default store only).
+- All three events → leaderboard cache invalidation (per-store based on `event.storeId`).
 
 ## 6. Configuration Management (`src/config.ts`, `src/store/index.ts`)
 
 Hierarchy (highest precedence first):
 
 1. Guild config in Flashcore → 2) Global defaults in Flashcore → 3) System defaults (MEE6 parity).
+
+Note: Each store has independent configuration. Changing config for one store doesn't affect others.
 
 Guild config shape:
 
@@ -294,26 +315,119 @@ Conventions: JSON success payloads with metadata; consistent error `{ error, cod
 
 ## 13. Flashcore Persistence & Data Model (`src/store/index.ts`)
 
-Namespace: `xp`.
+Namespace structure with multi-store support:
 
-Keys:
+- Array namespaces: `['xp', storeId, guildId, ...]`
+- Default store: `['xp', 'default', guildId, 'users']`
+- Custom store: `['xp', 'reputation', guildId, 'users']`
 
-- `user:{guildId}:{userId}` → `UserXP`.
-- `members:{guildId}` → string[] of tracked userIds.
-- `config:{guildId}` → `GuildConfig`.
-- `config:global` → Global defaults.
-- `schema:{guildId}` → numeric schema version (current: 1).
+Internal Flashcore keys (colon-separated):
 
-Functions:
+- `xp:default:{guildId}:users:{userId}` → `UserXP` (default store)
+- `xp:reputation:{guildId}:users:{userId}` → `UserXP` (custom store)
+- `xp:default:{guildId}:members` → string[] of tracked userIds
+- `xp:default:{guildId}:config` → `GuildConfig`
+- `xp:global:config` → Global defaults (shared across all stores)
+- `xp:default:{guildId}:schema` → numeric schema version (current: 1)
+
+Each store has independent: user data, config, members list, schema version.
+
+Functions (all accept optional `options?: { storeId?: string }` parameter):
 
 - Users: `getUser`, `putUser`, `deleteUser`, `getAllUsers` (parallelized), members set helpers.
-- Guild config: `getOrInitConfig`, `getConfig`, `putConfig`, `updateConfig`, `invalidateConfigCache`.
+- Guild config: `getOrInitConfig`, `getConfig`, `putConfig`, `updateConfig`.
+- Cache management: `invalidateConfigCache(guildId, options?)` — invalidate specific store; `invalidateConfigCache(guildId, { all: true })` — clear all stores for guild; `clearConfigCache()` — clear entire cache.
 - Global config: `getGlobalConfig`, `setGlobalConfig`, `clearConfigCache`.
 - Schema: `getSchemaVersion`, `setSchemaVersion`.
 
+Config cache structure: `Map<string, GuildConfig>` keyed by composite `'guildId:storeId'` (flat map for simplicity and speed).
+
 Merging and normalization helpers ensure complete configs with defaults and proper deep merges for multipliers.
 
-## 14. Math Utilities & Level Calculations (`src/math/curve.ts`)
+Schema migrations run automatically when data is accessed. See section 14 for details.
+
+## 14. Schema Migrations & Data Versioning
+
+The XP plugin includes a schema migration system for handling data structure changes across versions.
+
+### Migration Architecture
+
+- **Schema Version Tracking:** Each `(guildId, storeId)` pair has an independent schema version stored in Flashcore
+- **Current Version:** `SCHEMA_VERSION = 1` (defined in `src/store/index.ts`)
+- **Migration Location:** `src/store/migrations.ts`
+- **Execution Strategy:** On-demand (lazy) migrations triggered by data access
+- **Isolation:** Migrations are per-guild, per-store (multi-store architecture preserved)
+
+### How Migrations Work
+
+1. **Automatic Trigger:** When `getUser()` or `getConfig()` is called, the system checks if migration is needed
+2. **Version Check:** Compares stored schema version with `SCHEMA_VERSION` constant
+3. **Sequential Execution:** If outdated, runs migrations sequentially (e.g., v1→v2→v3)
+4. **Version Update:** After successful migration, updates schema version in Flashcore
+5. **Cache Invalidation:** Config cache is invalidated after migrations to ensure fresh data
+
+### Migration Entry Points
+
+- `getUser(guildId, userId, options?)` - Checks and migrates user data before returning
+- `getConfig(guildId, options?)` - Checks and migrates config before caching/returning
+- `getOrInitConfig(guildId, options?)` - Alternative config entry point with same migration logic
+- `getAllUsers(guildId, options?)` - No migration check needed (calls `getUser()` internally)
+
+### Adding New Migrations
+
+When incrementing `SCHEMA_VERSION`, add a migration function to `src/store/migrations.ts`:
+
+```typescript
+// Example: v2 → v3 migration
+async function migrateV2ToV3(guildId: string, options?: FlashcoreOptions): Promise<void> {
+  const storeId = resolveStoreId(options)
+  logger.info(`Migrating guild ${guildId} store ${storeId} from v2 to v3`)
+
+  // 1. Load all users
+  const members = await getMembers(guildId, options)
+
+  // 2. Modify data structure
+  for (const userId of members) {
+    const user = await getUser(guildId, userId, options)
+    if (user) {
+      // Add new field or transform existing data
+      const updated = { ...user, newField: defaultValue }
+      await putUser(guildId, userId, updated, options)
+    }
+  }
+
+  // 3. Schema version is updated automatically by migrateGuildData()
+}
+
+// Register migration
+migrations.set(3, migrateV2ToV3)
+```
+
+### Migration Best Practices
+
+1. **Idempotency:** Migrations should be safe to run multiple times (check before modifying)
+2. **Error Handling:** Wrap Flashcore operations in try-catch, log errors with context
+3. **Backward Compatibility:** Consider users who skip versions (support v1→v3 directly)
+4. **Performance:** For large guilds, use rate limiting (see `getAllUsers()` implementation)
+5. **Testing:** Add tests in `__tests__/store.test.ts` for each migration
+6. **Documentation:** Update AGENTS.md and DEVELOPMENT.md when adding migrations
+
+### Migration Gotchas
+
+- **Per-Store Isolation:** Each store migrates independently; don't assume shared state
+- **Cache Invalidation:** Config cache is cleared after migrations; leaderboard cache is not (rebuilds on next access)
+- **No Rollback:** Migrations are forward-only; test thoroughly before deploying
+- **Partial Failures:** If migration fails mid-execution, schema version is NOT updated (safe to retry)
+- **Concurrent Access:** A per‑guild/store migration lock coalesces simultaneous `getUser()`/`getConfig()` triggers, preventing duplicate concurrent runs.
+
+### Performance Impact
+
+- **Migration Check:** Adds one Flashcore read per `getUser()`/`getConfig()` call (schema version lookup)
+- **First Access:** Migration runs once per `(guildId, storeId)` pair on first data access after upgrade
+- **Subsequent Access:** Schema version matches `SCHEMA_VERSION`, migration skipped (O(1) check)
+- **Large Guilds:** Migrations that modify all users should use rate limiting (see `getAllUsers()` with `p-limit`)
+
+## 15. Math Utilities & Level Calculations (`src/math/curve.ts`)
 
 Curve: `XP = 5 * L² + 50 * L + 100`.
 
@@ -399,6 +513,107 @@ Listener best practices: register in `src/events/_start/`; use async/await; neve
 
 20. Stable sort with secondary key userId to avoid rank flicker on ties.
 
+21. Built-in commands (`/rank`, `/leaderboard`, `/xp`) only interact with the default store. Custom stores require building custom commands.
+
+22. Each store has independent config — changing config for one store doesn't affect others.
+
+23. Leaderboard cache is per-store — each store maintains its own top 100 cache.
+
+24. Events include `storeId` field — listeners can filter by store. Role rewards only process default store events.
+
+25. Role rewards only trigger for the default store to avoid conflicts. Custom stores (reputation, credits, etc.) never grant Discord roles, preventing scenarios where multiple progression systems would compete for the same roles.
+
+## 21. Multi-Store Architecture
+
+The XP plugin supports multiple isolated data stores for parallel progression systems.
+
+Purpose and capabilities:
+
+- Each store has independent: user XP data, levels, guild configuration, leaderboard cache, event streams.
+- Default store (`'default'`) is used by all built-in commands (`/rank`, `/leaderboard`, `/xp`).
+- Custom stores accessed imperatively via the API for building parallel systems.
+
+Flashcore namespace structure:
+
+- Default store: `['xp', 'default', guildId, 'users']`
+- Custom store: `['xp', 'reputation', guildId, 'users']`
+- Config: `['xp', storeId, guildId]` → stores config, members, schema
+
+Use case examples:
+
+1. Leveling + multiple currencies (e.g., `'default'`, `'gold'`, `'gems'`)
+2. Multi-dimensional reputation (e.g., `'combat'`, `'crafting'`, `'trading'`)
+3. Seasonal systems (e.g., `'season1'`, `'season2'`, `'season3'`)
+
+Cache structure: `Map<guildId, Map<storeId, GuildConfig>>` (nested maps for isolation).
+
+Important constraints:
+- Role rewards only trigger for the `'default'` store. This is enforced by early returns in `src/runtime/rewards.ts` event listeners.
+- Built-in commands cannot access custom stores — only imperative API calls.
+- Each store requires independent configuration (no config inheritance between stores).
+
+**Implementation Details:**
+
+- Event payloads include `storeId` field (implemented in phase 3).
+- Role rewards listeners filter events: `if (storeId !== 'default') return`.
+- Leaderboard cache invalidation uses `event.storeId` for per-store invalidation.
+- Each store's cache is independent: `Map<guildId, Map<storeId, data>>`.
+- Config cache structure: `Map<string, GuildConfig>` keyed by `'guildId:storeId'`.
+- Leaderboard cache structure: `Map<guildId, Map<storeId, LeaderboardEntry[]>>`.
+
+**Event Filtering Pattern:**
+
+Listeners can filter events by store:
+
+```typescript
+events.on('levelUp', (event) => {
+  if (event.storeId === 'reputation') {
+    // Handle reputation level-up
+  } else if (event.storeId === 'default') {
+    // Handle default store level-up (role rewards handled automatically)
+  }
+})
+```
+
+Role rewards listeners use early return:
+
+```typescript
+events.on('levelUp', async (event) => {
+  if (event.storeId !== 'default') {
+    logger.debug('Skipping role rewards for non-default store')
+    return
+  }
+  // ... role reconciliation logic
+})
+```
+
+## 22. API Design Standards: Options Objects Pattern
+
+**CRITICAL STANDARD:** All new parameters must be added via options objects, never as standalone parameters.
+
+Rationale: Future-proofing for additional options (e.g., remote sources, caching hints, transaction IDs, audit metadata).
+
+Pattern: Functions without existing options should have options objects created:
+
+```ts
+// ✅ CORRECT: New parameter in options object
+getUser(guildId, userId, options?: { storeId?: string })
+addXP(guildId, userId, amount, options?: { reason?: string, storeId?: string })
+
+// ❌ WRONG: New parameter as standalone
+getUser(guildId, userId, storeId?: string)
+addXP(guildId, userId, amount, options?, storeId?: string)
+```
+
+Requirements:
+
+1. All options should have sensible defaults (e.g., `storeId` defaults to `'default'`).
+2. Options must be optional (backward compatibility).
+3. Never add new parameters after options — always extend the options object.
+4. This pattern maintains backward compatibility while enabling extensibility.
+
+This standard applies to all future API additions across the plugin.
+
 ## 18. File Structure Reference
 
 Core exports and types:
@@ -418,6 +633,7 @@ Runtime:
 Storage:
 
 - `src/store/index.ts`.
+- `src/store/migrations.ts` — Schema migration system with version-specific migration functions.
 
 Math:
 
@@ -474,10 +690,13 @@ Update triggers:
 - Core: XP primitives (add/remove/set/recalc), event payloads or order, rewards reconciliation, leaderboard cache strategy, storage schema, curve math.
 - Config: new fields, validation rules, defaults, multiplier shapes.
 - API: new endpoints, request/response changes, slash commands or permissions.
+- API design: new options objects, parameter patterns, extensibility changes.
+- Multi-store: new store-related options, namespace changes, cache structure updates.
 - Performance: cache sizes/TTLs, complexity shifts, targets/benchmarks.
 - Features: new listeners/hooks, integration patterns.
 - Gotchas: new edge cases, behavior changes, workarounds.
 - Docs: README/PERFORMANCE/DEVELOPMENT updates, new examples, changed types.
+- Schema: new migrations, SCHEMA_VERSION increments, migration patterns, data structure changes.
 
 How to update:
 
@@ -496,5 +715,10 @@ Verification checklist:
 - [ ] File references correct
 - [ ] Integration recipes accurate
 - [ ] Breaking changes and migrations noted
+- [ ] Multi-store documentation updated (README.md)
+- [ ] Event payloads include storeId field
+- [ ] Role rewards filtering documented (default-store-only)
+- [ ] Per-store caching documented
+- [ ] Schema migrations documented with examples
 
 This is a living document. Keep it current so humans and AI agents can maintain high velocity without regressions.

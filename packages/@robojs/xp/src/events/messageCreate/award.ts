@@ -121,6 +121,7 @@ export default async function (message: Message) {
 				events.emitLevelUp({
 					guildId,
 					userId,
+					storeId: 'default',
 					oldLevel,
 					newLevel,
 					totalXp: newXp
@@ -129,6 +130,7 @@ export default async function (message: Message) {
 				events.emitLevelDown({
 					guildId,
 					userId,
+					storeId: 'default',
 					oldLevel,
 					newLevel,
 					totalXp: newXp
@@ -139,6 +141,7 @@ export default async function (message: Message) {
 			events.emitXPChange({
 				guildId,
 				userId,
+				storeId: 'default',
 				oldXp,
 				newXp,
 				delta: finalXp,

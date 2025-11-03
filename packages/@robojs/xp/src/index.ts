@@ -103,6 +103,34 @@
  * }
  * ```
  *
+ * ### Multi-Store Usage
+ *
+ * ```typescript
+ * import { xp, leaderboard } from '@robojs/xp'
+ *
+ * // Default store (implicit - used by built-in commands)
+ * await xp.add('guildId', 'userId', 100)
+ * const defaultXP = await xp.get('guildId', 'userId')
+ * const defaultLeaderboard = await leaderboard.get('guildId', 0, 10)
+ *
+ * // Custom reputation store
+ * await xp.add('guildId', 'userId', 50, { storeId: 'reputation' })
+ * const repXP = await xp.get('guildId', 'userId', { storeId: 'reputation' })
+ * const repLeaderboard = await leaderboard.get('guildId', 0, 10, { storeId: 'reputation' })
+ *
+ * // Custom credits store
+ * await xp.add('guildId', 'userId', 200, { storeId: 'credits' })
+ * const creditsXP = await xp.get('guildId', 'userId', { storeId: 'credits' })
+ *
+ * // Built-in commands only use default store
+ * // Custom stores require imperative API calls
+ * ```
+ *
+ * **Use Cases:**
+ * - **Leveling + Currencies**: Default store for XP/levels, custom stores for 'coins', 'gems', 'tokens'
+ * - **Multi-Dimensional Reputation**: Separate stores for 'helpfulness', 'creativity', 'activity'
+ * - **Seasonal Systems**: Isolated stores for 'season1', 'season2', 'season3'
+ *
  * ## Integration Examples
  *
  * ### Contest Plugin Integration
@@ -158,13 +186,97 @@
  * })
  * ```
  *
+ * ### Multi-Currency Economy Integration
+ *
+ * ```typescript
+ * import { xp } from '@robojs/xp'
+ *
+ * // Default store for XP/leveling (includes role rewards)
+ * await xp.add(guildId, userId, 20, { reason: 'message', storeId: 'default' })
+ *
+ * // Custom coins store for server currency
+ * await xp.add(guildId, userId, 10, { reason: 'daily_bonus', storeId: 'coins' })
+ *
+ * // Custom tokens store for premium currency
+ * await xp.add(guildId, userId, 5, { reason: 'purchase', storeId: 'tokens' })
+ *
+ * // Build custom commands for each store
+ * // /balance - Show coins and tokens
+ * // /rank - Show XP and level (default store)
+ * ```
+ *
+ * ### Reputation System Integration
+ *
+ * ```typescript
+ * import { xp, events } from '@robojs/xp'
+ *
+ * // Track different types of reputation
+ * async function awardHelpfulnessRep(guildId: string, userId: string) {
+ *   await xp.add(guildId, userId, 25, { reason: 'helped_member', storeId: 'helpfulness' })
+ * }
+ *
+ * async function awardCreativityRep(guildId: string, userId: string) {
+ *   await xp.add(guildId, userId, 50, { reason: 'created_content', storeId: 'creativity' })
+ * }
+ *
+ * // Event listener filtering by store
+ * events.on('levelUp', (event) => {
+ *   if (event.storeId === 'helpfulness') {
+ *     console.log(`${event.userId} leveled up in helpfulness!`)
+ *   } else if (event.storeId === 'creativity') {
+ *     console.log(`${event.userId} leveled up in creativity!`)
+ *   }
+ * })
+ * ```
+ *
  * ## Remarks
+ *
+ * ### Multi-Store Architecture
+ *
+ * The XP plugin supports multiple isolated data stores. Each store has:
+ * - Independent user XP data and levels
+ * - Independent guild configuration
+ * - Independent leaderboard rankings and cache
+ * - Independent event stream (events include `storeId` field)
+ *
+ * **Default Store ('default'):**
+ * - Used by all built-in commands (/rank, /leaderboard, /xp)
+ * - Role rewards only trigger for this store
+ * - Automatic event processing
+ *
+ * **Custom Stores:**
+ * - Accessed imperatively via API
+ * - No automatic role rewards (prevents conflicts)
+ * - Events include `storeId` for filtering
+ *
+ * **Flashcore Namespace Structure:**
+ * - Default store: `['xp', 'default', guildId, 'users', userId]`
+ * - Custom store: `['xp', 'reputation', guildId, 'users', userId]`
+ * - Config: `['xp', storeId, guildId]` → `{ config, members, schema }`
+ *
+ * **Performance:**
+ * - Each store maintains independent leaderboard cache (top 100, 60s TTL)
+ * - Cache invalidation is per-store (XP changes in one store don't affect others)
  *
  * ### Event-Driven Architecture
  *
  * All XP mutations emit events after Flashcore persistence. Role rewards reconcile
  * automatically via event listeners. Events guarantee consistency (emitted only after
  * successful persistence).
+ *
+ * **Events include `storeId` field:**
+ * - Allows event listeners to filter by store
+ * - Role rewards only process default store events
+ * - Leaderboard cache invalidation is per-store
+ *
+ * **Example:**
+ * ```typescript
+ * events.on('levelUp', (event) => {
+ *   if (event.storeId === 'reputation') {
+ *     // Handle reputation level-up
+ *   }
+ * })
+ * ```
  *
  * ### MEE6 Parity
  *
@@ -183,7 +295,10 @@
  * ### Persistence & Consistency
  *
  * - **Storage**: All data in Flashcore under 'xp' namespace
- * - **Guild-scoped data**: `['xp', guildId, ...]`
+ * - **Guild-scoped data with stores**: `['xp', storeId, guildId, ...]`
+ * - **Default store example**: `['xp', 'default', guildId, 'users', userId]`
+ * - **Custom store example**: `['xp', 'reputation', guildId, 'users', userId]`
+ * - **Config per store**: `['xp', storeId, guildId]` → `{ config, members, schema }`
  * - **Global config**: `['xp', 'global', 'config']`
  * - **Event timing**: Emitted only after successful persistence
  *
@@ -224,7 +339,11 @@ export type {
 	LevelProgress,
 	AddXPOptions,
 	LeaderboardEntry,
-	PluginOptions
+	PluginOptions,
+	StoreOptions,
+	GetXPOptions,
+	RecalcOptions,
+	FlashcoreOptions
 } from './types.js'
 
 import type { LevelUpEvent, LevelDownEvent, XPChangeEvent } from './types.js'
@@ -730,6 +849,12 @@ import './runtime/rewards.js'
  * - `'levelDown'`: Emitted when a user loses a level (typed as `LevelDownEvent`)
  * - `'xpChange'`: Emitted on any XP change (typed as `XPChangeEvent`)
  *
+ * **All events include `storeId` field:**
+ * - Identifies which data store triggered the event
+ * - Allows event listeners to filter events by store
+ * - Role rewards only process default store events
+ * - Leaderboard cache invalidation uses this for per-store invalidation
+ *
  * **Convenience Methods** (delegates to `on()`):
  * - `onLevelUp(handler)`: Shorthand for `on('levelUp', handler)`
  * - `onLevelDown(handler)`: Shorthand for `on('levelDown', handler)`
@@ -789,15 +914,15 @@ import './runtime/rewards.js'
  *
  * // Using convenience method
  * events.onXPChange((event: XPChangeEvent) => {
- *   console.log(`User ${event.userId} XP changed by ${event.delta}`)
+ *   console.log(`Store ${event.storeId}: User ${event.userId} XP changed by ${event.delta}`)
  * })
  *
  * // Or using generic on() method
  * events.on('xpChange', (event: XPChangeEvent) => {
  *   console.log(`User ${event.userId} XP changed by ${event.delta}`)
+ *   console.log(`Store: ${event.storeId}`)
  *   console.log(`Reason: ${event.reason || 'message'}`)
  *   console.log(`Old XP: ${event.oldXp}, New XP: ${event.newXp}`)
- *   console.log(`Old Level: ${event.oldLevel}, New Level: ${event.newLevel}`)
  * })
  * ```
  *
@@ -889,7 +1014,7 @@ import './runtime/rewards.js'
  * ```
  *
  * @example
- * ### Track XP for Analytics
+ * ### Track XP for Analytics (with multi-store support)
  *
  * ```typescript
  * import { events } from '@robojs/xp'
@@ -899,11 +1024,22 @@ import './runtime/rewards.js'
  *   analytics.track('xp_change', {
  *     guildId: event.guildId,
  *     userId: event.userId,
+ *     storeId: event.storeId,
  *     delta: event.delta,
  *     reason: event.reason,
- *     levelChanged: event.oldLevel !== event.newLevel,
  *     timestamp: Date.now()
  *   })
+ * })
+ *
+ * // Filter by store for specific tracking
+ * events.on('levelUp', (event) => {
+ *   if (event.storeId === 'reputation') {
+ *     analytics.track('reputation_level_up', {
+ *       guildId: event.guildId,
+ *       userId: event.userId,
+ *       newLevel: event.newLevel
+ *     })
+ *   }
  * })
  * ```
  *
@@ -984,7 +1120,7 @@ import {
  * import { xp } from '@robojs/xp'
  * import type { XPChangeResult } from '@robojs/xp'
  *
- * // Award XP to a user - using addXP alias
+ * // Award XP to a user (default store)
  * const result: XPChangeResult = await xp.addXP('guildId', 'userId', 100, {
  *   reason: 'contest_winner'
  * })
@@ -997,8 +1133,8 @@ import {
  *   // Role rewards already applied automatically via event listeners
  * }
  *
- * // Or use the shorthand add() method (equivalent)
- * const result2 = await xp.add('guildId', 'userId', 100, { reason: 'contest_winner' })
+ * // Award XP to custom store (parallel progression)
+ * await xp.add('guildId', 'userId', 50, { reason: 'helped_user', storeId: 'reputation' })
  * ```
  *
  * @example
@@ -1291,14 +1427,17 @@ import {
  * ```typescript
  * import { leaderboard } from '@robojs/xp'
  *
- * // Get top 10 users (first page)
+ * // Get top 10 users from default store
  * const top10 = await leaderboard.get('guildId', 0, 10)
- * top10.forEach(entry => {
+ * top10.entries.forEach(entry => {
  *   console.log(`#${entry.rank}: ${entry.userId} - Level ${entry.level} (${entry.xp} XP)`)
  * })
  *
- * // Get next 10 users (second page)
- * const next10 = await leaderboard.get('guildId', 10, 10)
+ * // Get top 10 users from custom reputation store
+ * const repTop10 = await leaderboard.get('guildId', 0, 10, { storeId: 'reputation' })
+ * repTop10.entries.forEach(entry => {
+ *   console.log(`#${entry.rank}: ${entry.userId} - Rep Level ${entry.level}`)
+ * })
  * ```
  *
  * @example
@@ -1336,19 +1475,21 @@ import {
  * ```
  *
  * @example
- * ### Get User's Rank Position
+ * ### Get User's Rank Position (multi-store)
  *
  * ```typescript
  * import { leaderboard } from '@robojs/xp'
  *
- * // Get user's rank position
- * const rankInfo = await leaderboard.getRank('guildId', 'userId')
+ * // Get user's rank in default store
+ * const defaultRank = await leaderboard.getRank('guildId', 'userId')
+ * if (defaultRank) {
+ *   console.log(`Default rank: #${defaultRank.rank} out of ${defaultRank.total}`)
+ * }
  *
- * if (rankInfo) {
- *   console.log(`User is rank #${rankInfo.rank} out of ${rankInfo.total} users`)
- *   console.log(`Level: ${rankInfo.level}, XP: ${rankInfo.xp}`)
- * } else {
- *   console.log('User has no XP record')
+ * // Get user's rank in custom reputation store
+ * const repRank = await leaderboard.getRank('guildId', 'userId', { storeId: 'reputation' })
+ * if (repRank) {
+ *   console.log(`Reputation rank: #${repRank.rank} out of ${repRank.total}`)
  * }
  * ```
  *

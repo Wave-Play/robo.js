@@ -20,6 +20,9 @@
 			"default": "./.robo/build/index.js"
 		}
 	},
+	"dependencies": {
+		"p-limit": "^7.2.0"
+	},
 	"license": "MIT",
 	"author": "WavePlay <dev@waveplay.com> (waveplay.com)",
 	"contributors": [

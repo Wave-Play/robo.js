@@ -1,3 +1,12 @@
+/**
+ * Role rewards system for XP leveling
+ *
+ * Role rewards only process events from the default store to avoid conflicts.
+ * Custom stores (e.g., reputation, credits) do not trigger role assignments.
+ *
+ * This design prevents situations where parallel progression systems would
+ * grant Discord roles, which should only come from the primary leveling system.
+ */
 import { client, logger } from 'robo.js'
 import { PermissionFlagsBits } from 'discord.js'
 import type { Guild, GuildMember, Role } from 'discord.js'
@@ -158,6 +167,12 @@ async function applyReplaceMode(
 
 /**
  * Main reconciliation function for role rewards
+ *
+ * This function is only called for default store events by the event listeners.
+ * Manual calls to this function should typically use the default store to avoid
+ * unexpected role assignments from custom stores.
+ *
+ * @warning Calling this for custom stores may cause unexpected role assignments
  */
 export async function reconcileRoleRewards(
 	guildId: string,
@@ -225,6 +240,9 @@ export async function reconcileRoleRewards(
 
 /**
  * Handles level down events, removing roles if configured
+ *
+ * This function is only called for default store events.
+ * Role removal only applies to the default store.
  */
 async function handleLevelDown(
 	guildId: string,
@@ -341,7 +359,13 @@ async function handleLevelDown(
 // Register event listeners
 events.on('levelUp', async (event: LevelUpEvent) => {
 	try {
-		const { guildId, userId, newLevel } = event
+		const { guildId, userId, newLevel, storeId } = event
+
+		// Role rewards only apply to default store
+		if (storeId !== 'default') {
+			logger.debug('Skipping role rewards for non-default store', { guildId, userId, storeId })
+			return
+		}
 
 		// Load guild config
 		const guildConfig = await getConfig(guildId)
@@ -360,7 +384,13 @@ events.on('levelUp', async (event: LevelUpEvent) => {
 
 events.on('levelDown', async (event: LevelDownEvent) => {
 	try {
-		const { guildId, userId, newLevel } = event
+		const { guildId, userId, newLevel, storeId } = event
+
+		// Role removal only applies to default store
+		if (storeId !== 'default') {
+			logger.debug('Skipping role removal for non-default store', { guildId, userId, storeId })
+			return
+		}
 
 		// Load guild config
 		const guildConfig = await getConfig(guildId)

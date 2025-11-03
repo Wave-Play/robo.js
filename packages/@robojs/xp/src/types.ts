@@ -3,6 +3,45 @@
  *
  * This module defines all core types for the XP system including user data,
  * configuration, events, and math results. Follows MEE6 parity standards.
+ *
+ * ## Multi-Store Architecture
+ *
+ * The XP plugin supports multiple isolated data stores, each with independent:
+ * - User XP data and levels
+ * - Guild configuration
+ * - Leaderboard rankings
+ * - Event streams
+ *
+ * The default store ('default') is used by all built-in commands.
+ * Custom stores are accessed imperatively via the API.
+ *
+ * Flashcore namespace structure with stores:
+ * - Default store: ['xp', 'default', guildId, 'users']
+ * - Custom store: ['xp', 'reputation', guildId, 'users']
+ * - Config: ['xp', storeId, guildId] → { config, members, schema }
+ *
+ * Events include storeId field to identify which store triggered the event.
+ * Event listeners can filter by storeId for store-specific processing.
+ *
+ * @example
+ * // Default store (used by commands)
+ * await XP.addXP(guildId, userId, 100)
+ *
+ * @example
+ * // Custom reputation store
+ * await XP.addXP(guildId, userId, 50, { storeId: 'reputation' })
+ *
+ * @example
+ * // Custom currency store
+ * await XP.getUserData(guildId, userId, { storeId: 'credits' })
+ *
+ * @example
+ * // Event listener filtering by store
+ * events.on('levelUp', (event) => {
+ *   if (event.storeId === 'reputation') {
+ *     // Handle reputation level-up
+ *   }
+ * })
  */
 
 /**
@@ -234,14 +273,21 @@ export type GlobalConfig = Partial<GuildConfig>
  * @readonly All fields are read-only event data
  * @property guildId - Guild where level up occurred
  * @property userId - User who leveled up
+ * @property storeId - Store identifier that triggered this event
  * @property oldLevel - Previous level
  * @property newLevel - New level (always > oldLevel)
  * @property totalXp - Total XP after level up
+ *
+ * @remarks
+ * The storeId field identifies which data store triggered this event. Role rewards
+ * only process events from the default store to avoid conflicts (e.g., reputation
+ * store shouldn't grant Discord roles).
  *
  * @example
  * {
  *   guildId: '123456789012345678',
  *   userId: '234567890123456789',
+ *   storeId: 'default',
  *   oldLevel: 4,
  *   newLevel: 5,
  *   totalXp: 1550
@@ -250,6 +296,7 @@ export type GlobalConfig = Partial<GuildConfig>
 export interface LevelUpEvent {
 	readonly guildId: string
 	readonly userId: string
+	readonly storeId: string
 	readonly oldLevel: number
 	readonly newLevel: number
 	readonly totalXp: number
@@ -261,14 +308,21 @@ export interface LevelUpEvent {
  * @readonly All fields are read-only event data
  * @property guildId - Guild where level down occurred
  * @property userId - User who leveled down
+ * @property storeId - Store identifier that triggered this event
  * @property oldLevel - Previous level
  * @property newLevel - New level (always < oldLevel)
  * @property totalXp - Total XP after level down
+ *
+ * @remarks
+ * The storeId field identifies which data store triggered this event. Role removal
+ * (when removeRewardOnXpLoss is enabled) only processes events from the default store
+ * to avoid conflicts.
  *
  * @example
  * {
  *   guildId: '123456789012345678',
  *   userId: '234567890123456789',
+ *   storeId: 'default',
  *   oldLevel: 5,
  *   newLevel: 4,
  *   totalXp: 1200
@@ -277,6 +331,7 @@ export interface LevelUpEvent {
 export interface LevelDownEvent {
 	readonly guildId: string
 	readonly userId: string
+	readonly storeId: string
 	readonly oldLevel: number
 	readonly newLevel: number
 	readonly totalXp: number
@@ -288,15 +343,21 @@ export interface LevelDownEvent {
  * @readonly All fields are read-only event data
  * @property guildId - Guild where XP change occurred
  * @property userId - User whose XP changed
+ * @property storeId - Store identifier that triggered this event
  * @property oldXp - Previous XP amount
  * @property newXp - New XP amount
  * @property delta - Change in XP (newXp - oldXp, can be negative)
  * @property reason - Optional reason for XP change (e.g., 'manual_adjustment', 'message')
  *
+ * @remarks
+ * The storeId field identifies which data store triggered this event. Leaderboard
+ * cache invalidation uses this field to invalidate only the affected store.
+ *
  * @example
  * {
  *   guildId: '123456789012345678',
  *   userId: '234567890123456789',
+ *   storeId: 'default',
  *   oldXp: 1500,
  *   newXp: 1550,
  *   delta: 50,
@@ -306,6 +367,7 @@ export interface LevelDownEvent {
 export interface XPChangeEvent {
 	readonly guildId: string
 	readonly userId: string
+	readonly storeId: string
 	readonly oldXp: number
 	readonly newXp: number
 	readonly delta: number
@@ -334,14 +396,99 @@ export interface LevelProgress {
 }
 
 /**
+ * Options for specifying which data store to use
+ *
+ * The XP plugin supports multiple isolated data stores, each with independent:
+ * - User XP data and levels
+ * - Guild configuration
+ * - Leaderboard rankings
+ * - Event streams
+ *
+ * The default store ('default') is used by all built-in commands (/rank, /leaderboard, etc.)
+ * Custom stores are accessed imperatively for building parallel systems.
+ *
+ * @property storeId - Store identifier (defaults to 'default')
+ *
+ * @example
+ * // Default store (used by commands)
+ * await XP.addXP(guildId, userId, 100) // Uses 'default'
+ *
+ * @example
+ * // Custom reputation store
+ * await XP.addXP(guildId, userId, 50, { storeId: 'reputation' })
+ *
+ * @example
+ * // Custom currency store
+ * await XP.addXP(guildId, userId, 200, { reason: 'quest', storeId: 'credits' })
+ *
+ * @example Use cases:
+ * - Leveling + multiple currencies (e.g., 'default', 'gold', 'gems')
+ * - Multi-dimensional reputation (e.g., 'combat', 'crafting', 'trading')
+ * - Seasonal systems (e.g., 'season1', 'season2', 'season3')
+ */
+export interface StoreOptions {
+	/**
+	 * Store identifier for isolating XP data
+	 * @default 'default'
+	 */
+	storeId?: string
+}
+
+/**
+ * Options for Flashcore storage layer operations
+ *
+ * Used by low-level storage functions to specify which store to operate on.
+ *
+ * @example
+ * // Default store
+ * await store.getUser(guildId, userId) // Uses 'default'
+ *
+ * @example
+ * // Custom store
+ * await store.getUser(guildId, userId, { storeId: 'reputation' })
+ */
+export interface FlashcoreOptions extends StoreOptions {}
+
+/**
+ * Options for retrieving XP data
+ *
+ * @example
+ * // Default store
+ * await XP.getXP(guildId, userId) // Uses 'default'
+ *
+ * @example
+ * // Custom store
+ * await XP.getXP(guildId, userId, { storeId: 'reputation' })
+ */
+export interface GetXPOptions extends StoreOptions {}
+
+/**
+ * Options for recalculating user levels
+ *
+ * @example
+ * // Default store
+ * await XP.recalcLevel(guildId, userId) // Uses 'default'
+ *
+ * @example
+ * // Custom store
+ * await XP.recalcLevel(guildId, userId, { storeId: 'reputation' })
+ */
+export interface RecalcOptions extends StoreOptions {}
+
+/**
  * Options for adding XP to a user
  *
  * @property reason - Optional audit trail reason for XP change
+ * @property storeId - Store identifier (defaults to 'default')
  *
  * @example
  * { reason: 'admin_bonus' }
+ *
+ * @example
+ * // Custom store with reason
+ * { reason: 'quest', storeId: 'reputation' }
  */
-export interface AddXPOptions {
+export interface AddXPOptions extends StoreOptions {
 	reason?: string
 }
 
@@ -401,4 +548,20 @@ export interface PluginOptions {
 	 * Can be overridden per-guild via XP.config.set() or /xp config commands
 	 */
 	defaults?: Partial<GuildConfig>
+}
+
+/**
+ * Resolves the store ID from options, defaulting to 'default' if not provided
+ *
+ * @param options - Store options (optional)
+ * @returns Store ID string
+ *
+ * @example
+ * const storeId = resolveStoreId() // 'default'
+ *
+ * @example
+ * const storeId = resolveStoreId({ storeId: 'reputation' }) // 'reputation'
+ */
+export function resolveStoreId(options?: StoreOptions): string {
+	return options?.storeId ?? 'default'
 }

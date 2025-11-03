@@ -28,6 +28,7 @@ MEE6-style chat XP system that exposes a powerful event-driven API that makes bu
 - 📈 **Event system** - Real-time hooks for level changes and XP updates
 - 🌐 **REST API** - Optional HTTP endpoints (requires @robojs/server)
 - 💾 **Flashcore persistence** - Guild-scoped data storage with automatic caching
+- 🗄️ **Multi-store architecture** - Run parallel progression systems (leveling + currencies, multi-dimensional reputation)
 
 ## 🚀 **Build Custom Features in Minutes**
 
@@ -334,6 +335,81 @@ await XP.config.set(guildId, {
 })
 ````
 
+
+## Multi-Store Architecture
+
+The XP plugin supports multiple isolated data stores so you can run parallel progression systems side-by-side. Each store has independent user data, configuration, leaderboard cache, and event stream. The default store is used by built-in commands; custom stores are accessed imperatively via the API.
+
+### Basic Usage
+
+```typescript
+import { XP, leaderboard, config } from '@robojs/xp'
+
+// Default store (implicit)
+await XP.addXP(guildId, userId, 100)
+const defaultXP = await XP.getXP(guildId, userId)
+
+// Custom reputation store
+await XP.addXP(guildId, userId, 50, { storeId: 'reputation' })
+const repXP = await XP.getXP(guildId, userId, { storeId: 'reputation' })
+
+// Custom credits store
+await XP.addXP(guildId, userId, 200, { storeId: 'credits' })
+const creditsXP = await XP.getXP(guildId, userId, { storeId: 'credits' })
+```
+
+### Use Cases
+
+| Use Case | Default Store | Custom Stores | Example |
+|----------|---------------|---------------|---------|
+| Leveling + Currencies | XP/Levels with role rewards | 'coins', 'gems', 'tokens' | Traditional leveling + economy |
+| Multi-Dimensional Reputation | Overall activity | 'helpfulness', 'creativity', 'trading' | Community reputation systems |
+| Seasonal Systems | Permanent progression | 'season1', 'season2', 'event_halloween' | Battle passes, events |
+
+### Store Isolation
+
+- Each store has its own configuration. Changing one store’s config doesn’t affect others.
+- Leaderboards are per store. Caches and invalidation are independent per store.
+- All emitted events include a `storeId` field so listeners can filter by store.
+
+Different cooldowns per store:
+
+```typescript
+// Default store
+await config.set(guildId, { cooldownSeconds: 60 })
+
+// Reputation store
+await config.set(guildId, { cooldownSeconds: 120 }, { storeId: 'reputation' })
+```
+
+### Built-in Commands vs Custom Stores
+
+- Built-in commands (`/rank`, `/leaderboard`, `/xp`) only use the default store.
+- Custom stores require building your own commands or integrations.
+- Role rewards only trigger for the default store to avoid conflicts where multiple stores would grant/remove the same roles.
+
+### Configuration Per Store
+
+```typescript
+import { config } from '@robojs/xp'
+
+// Configure default store
+await config.set(guildId, {
+	cooldownSeconds: 60,
+	labels: { xpDisplayName: 'XP' }
+})
+
+// Configure reputation store with different settings
+await config.set(
+	guildId,
+	{
+		cooldownSeconds: 120,
+		labels: { xpDisplayName: 'Reputation' }
+	},
+	{ storeId: 'reputation' }
+)
+```
+
 ### Global Configuration Defaults
 
 Global defaults apply to all guilds unless overridden. They're stored at `['xp', 'global', 'config']`.
@@ -384,11 +460,11 @@ console.log(result.leveledDown) // true if user leveled down
 // Set exact XP value
 const result = await XP.setXP(guildId, userId, 5000, { reason: 'admin_adjustment' })
 
-// Recalculate level and reconcile roles
+// Recalculate level and reconcile roles (supports storeId option)
 const result = await XP.recalc(guildId, userId)
 console.log(result.reconciled) // true if level was corrected
 
-// Query user data
+// Query user data (supports storeId option)
 const user = await XP.getUser(guildId, userId)
 const xp = await XP.getXP(guildId, userId)
 const level = await XP.getLevel(guildId, userId)
@@ -396,6 +472,25 @@ const level = await XP.getLevel(guildId, userId)
 // User object includes both message counters
 console.log(user.messages) // Total messages sent: 423
 console.log(user.xpMessages) // Messages that awarded XP: 156
+```
+
+Supported signatures (multi-store):
+
+- `addXP(guildId, userId, amount, { reason?, storeId? })`
+- `removeXP(guildId, userId, amount, { reason?, storeId? })`
+- `setXP(guildId, userId, totalXp, { reason?, storeId? })`
+- `recalc(guildId, userId, { storeId? })`
+- `getUser(guildId, userId, { storeId? })`
+- `getXP(guildId, userId, { storeId? })`
+- `getLevel(guildId, userId, { storeId? })`
+
+Multi-store query example:
+
+```typescript
+// Query different stores
+const defaultXP = await XP.getXP(guildId, userId) // Default store
+const repXP = await XP.getXP(guildId, userId, { storeId: 'reputation' })
+const coins = await XP.getXP(guildId, userId, { storeId: 'coins' })
 ```
 
 **Result Types:**
@@ -454,6 +549,21 @@ const globalConfig = config.getGlobal()
 config.setGlobal({ xpRate: 1.5 })
 ```
 
+Supported signatures (multi-store):
+
+- `config.get(guildId, { storeId? })`
+- `config.set(guildId, partial, { storeId? })`
+
+Multi-store configuration example:
+
+```typescript
+// Configure default store
+await config.set(guildId, { cooldownSeconds: 60 })
+
+// Configure custom store
+await config.set(guildId, { cooldownSeconds: 120 }, { storeId: 'reputation' })
+```
+
 **Multipliers (0 for manual control):**
 
 ```ts
@@ -500,6 +610,22 @@ const rankInfo = await leaderboard.getRank(guildId, userId)
 
 // Manually invalidate cache
 await leaderboard.invalidateCache(guildId)
+```
+
+Supported signatures (multi-store):
+
+- `leaderboard.get(guildId, offset, limit, { storeId? })`
+- `leaderboard.getRank(guildId, userId, { storeId? })`
+- `leaderboard.invalidateCache(guildId, { storeId? })`
+
+Multi-store example:
+
+```typescript
+// Default store leaderboard
+const defaultTop = await leaderboard.get(guildId, 0, 10)
+
+// Custom store leaderboard
+const repTop = await leaderboard.get(guildId, 0, 10, { storeId: 'reputation' })
 ```
 
 ### Role Rewards
@@ -573,6 +699,7 @@ events.off('xpChange', handler)
 interface LevelUpEvent {
 	guildId: string
 	userId: string
+	storeId: string
 	oldLevel: number
 	newLevel: number
 	totalXp: number
@@ -581,6 +708,7 @@ interface LevelUpEvent {
 interface LevelDownEvent {
 	guildId: string
 	userId: string
+	storeId: string
 	oldLevel: number
 	newLevel: number
 	totalXp: number
@@ -589,11 +717,26 @@ interface LevelDownEvent {
 interface XPChangeEvent {
 	guildId: string
 	userId: string
+	storeId: string
 	oldXp: number
 	newXp: number
 	delta: number
 	reason?: string
 }
+```
+
+Filter events by store:
+
+```typescript
+import { events } from '@robojs/xp'
+
+events.onLevelUp(({ guildId, userId, newLevel, storeId }) => {
+  if (storeId === 'reputation') {
+    console.log(`Reputation level up: ${newLevel}`)
+  } else if (storeId === 'default') {
+    console.log(`XP level up: ${newLevel}`)
+  }
+})
 ```
 
 ### Constants
@@ -852,6 +995,90 @@ events.onLevelUp(async ({ guildId, userId, newLevel }) => {
 })
 ```
 
+### Multi-Currency Economy System
+
+```typescript
+// Award XP to multiple stores simultaneously
+import { XP } from '@robojs/xp'
+
+export default async (message) => {
+	const guildId = message.guildId
+	const userId = message.author.id
+
+	// Award to default store (leveling with role rewards)
+	await XP.addXP(guildId, userId, 20, { reason: 'message' })
+
+	// Award coins (server currency)
+	await XP.addXP(guildId, userId, 10, { reason: 'message', storeId: 'coins' })
+
+	// Award tokens (premium currency) if user has premium role
+	if (message.member.roles.cache.has(premiumRoleId)) {
+		await XP.addXP(guildId, userId, 5, { reason: 'premium_message', storeId: 'tokens' })
+	}
+}
+```
+
+### Reputation System with Multiple Dimensions
+
+```typescript
+// Track different types of reputation
+import { XP, events } from '@robojs/xp'
+
+// Award helpfulness reputation
+export async function awardHelpfulness(guildId: string, userId: string) {
+	await XP.addXP(guildId, userId, 25, {
+		reason: 'helped_member',
+		storeId: 'helpfulness'
+	})
+}
+
+// Award creativity reputation
+export async function awardCreativity(guildId: string, userId: string) {
+	await XP.addXP(guildId, userId, 50, {
+		reason: 'created_content',
+		storeId: 'creativity'
+	})
+}
+
+// Listen for reputation level-ups
+events.onLevelUp(({ userId, newLevel, storeId }) => {
+	if (storeId === 'helpfulness') {
+		console.log(`${userId} reached helpfulness level ${newLevel}!`)
+	}
+})
+```
+
+### Seasonal Battle Pass System
+
+```typescript
+// Seasonal progression with store isolation
+import { XP, config } from '@robojs/xp'
+
+const CURRENT_SEASON = 'season3'
+
+// Award seasonal XP
+export async function awardSeasonalXP(guildId: string, userId: string, amount: number) {
+	await XP.addXP(guildId, userId, amount, {
+		reason: 'seasonal_activity',
+		storeId: CURRENT_SEASON
+	})
+}
+
+// Get user's seasonal progress
+export async function getSeasonalProgress(guildId: string, userId: string) {
+	const xp = await XP.getXP(guildId, userId, { storeId: CURRENT_SEASON })
+	const level = await XP.getLevel(guildId, userId, { storeId: CURRENT_SEASON })
+	return { xp, level, season: CURRENT_SEASON }
+}
+
+// Reset season (start new season without affecting default store)
+export async function startNewSeason(guildId: string) {
+	// Old season data remains in 'season3' store
+	// New season starts fresh in 'season4' store
+	// Default store (permanent progression) is unaffected
+}
+```
+
 ## REST API Documentation
 
 > **Prerequisite:** Install `@robojs/server` to enable HTTP endpoints
@@ -1048,13 +1275,20 @@ curl -X PUT http://localhost:3000/api/xp/config/global \
 
 ### Caching Strategy
 
-- **Leaderboard cache:** Top 100 users per guild, 60-second TTL
+- **Leaderboard cache:** Top 100 users per guild per store, 60-second TTL
 - **Config cache:** In-memory with event-driven invalidation
 - **Complexity:** O(1) cached reads, O(n log n) refresh for n users
 
+### Multi-Store Performance
+
+- Each store maintains an independent cache (e.g., default store cache, reputation store cache).
+- XP changes in one store do not invalidate caches for other stores.
+- Approximate memory: ~10KB per store per guild for 100 cached entries.
+- Example: A guild with 3 stores (default, reputation, coins) ≈ ~30KB cache.
+
 ### Scalability
 
-- **Memory per guild:** ~10KB for 100 cached leaderboard entries
+- **Memory per guild:** ~10KB × number of stores for 100 cached leaderboard entries per store
 - **Recommended limits:** 100k users per guild max
 - **Cache eviction:** TTL-based, auto-refreshes on query after expiry
 
@@ -1062,17 +1296,33 @@ See [PERFORMANCE.md](./PERFORMANCE.md) for detailed benchmarks and optimization 
 
 ## Data Model
 
-Flashcore keys live under `['xp', guildId]`:
+Flashcore keys live under `['xp', storeId, guildId]`:
 
-| Key                   | Contents                                 | Example                                                                                 |
-| --------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------- |
-| `config`              | Guild config merged with global defaults | `{ cooldownSeconds: 60, xpRate: 1.0, ... }`                                             |
-| `user:{userId}`       | UserXP record                            | `{ xp: 5500, level: 10, messages: 423, xpMessages: 156, lastAwardedAt: 1234567890000 }` |
-| `members`             | Set of tracked member IDs                | `['user1', 'user2', ...]`                                                               |
-| `lb:{perPage}:{page}` | Leaderboard cache                        | `[{ userId, xp, level, rank }, ...]`                                                    |
-| `schema`              | Schema version for future migrations     | `1`                                                                                     |
+| Key                                 | Contents                                 | Example                                                                                 |
+| ----------------------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------- |
+| `['xp', 'default', guildId]`        | Guild config merged with global defaults | `{ cooldownSeconds: 60, xpRate: 1.0, ... }`                                             |
+| `['xp', 'default', guildId, 'users', userId]` | UserXP record (default store)            | `{ xp: 5500, level: 10, messages: 423, xpMessages: 156, lastAwardedAt: 1234567890000 }` |
+| `['xp', 'reputation', guildId, 'users', userId]` | UserXP record (custom store example)   | `{ xp: 250, level: 2 }`                                                                  |
+| `['xp', 'default', guildId, 'members']` | Set of tracked member IDs                | `['user1', 'user2', ...]`                                                               |
+| `['xp', 'default', guildId, 'lb:{perPage}:{page}']` | Leaderboard cache (per store)      | `[{ userId, xp, level, rank }, ...]`                                                    |
+| `['xp', 'default', guildId, 'schema']` | Schema version for future migrations     | `1`                                                                                     |
 
-Global defaults live at `['xp', 'global', 'config']`.
+Global defaults live at `['xp', 'global', 'config']` and apply to all stores as base defaults.
+
+### Multi-Store Namespace Structure
+
+Each store has independent data under its own namespace:
+
+- Default store: `['xp', 'default', guildId, ...]`
+- Reputation store: `['xp', 'reputation', guildId, ...]`
+- Coins store: `['xp', 'coins', guildId, ...]`
+
+This ensures complete isolation between stores:
+
+- Independent user data
+- Independent configuration
+- Independent members tracking
+- Independent schema versions
 
 ### UserXP Structure
 
@@ -1328,6 +1578,55 @@ import { leaderboard } from '@robojs/xp'
 for (const guildId of guildIds) {
 	await leaderboard.get(guildId, 0, 100)
 }
+```
+
+### Multi-Store Issues
+
+#### Custom Store Not Working
+
+- Symptom: Custom store operations fail or return null
+- Cause: Forgetting to pass `storeId` in options
+- Solution: Always include `{ storeId: 'storeName' }` for custom stores
+
+```typescript
+// ❌ Wrong - uses default store
+await XP.getXP(guildId, userId)
+
+// ✅ Correct - uses reputation store
+await XP.getXP(guildId, userId, { storeId: 'reputation' })
+```
+
+#### Role Rewards Not Working for Custom Store
+
+- Symptom: Leveling up in custom store doesn't grant roles
+- This is expected: Role rewards only trigger for default store
+- Rationale: Prevents conflicts where multiple stores would grant/remove the same roles
+- Solution: Use default store for leveling with role rewards; use custom stores for parallel progression without roles
+
+#### Leaderboard Showing Wrong Data
+
+- Symptom: Leaderboard shows data from different store
+- Cause: Not passing `storeId` to leaderboard query
+- Solution:
+
+```typescript
+// Default store leaderboard
+const defaultTop = await leaderboard.get(guildId, 0, 10)
+
+// Reputation store leaderboard
+const repTop = await leaderboard.get(guildId, 0, 10, { storeId: 'reputation' })
+```
+
+#### Events Firing for All Stores
+
+- Symptom: Event listener triggers for all stores, not just one
+- Solution: Filter events by `storeId` field
+
+```typescript
+events.onLevelUp((event) => {
+	if (event.storeId !== 'reputation') return // Skip non-reputation events
+	console.log('Reputation level up!')
+})
 ```
 
 ## Development

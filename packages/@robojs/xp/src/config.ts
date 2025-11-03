@@ -6,14 +6,24 @@
  * - Per-guild overrides with validation
  * - Deep merging of nested configuration objects
  * - Cache invalidation when global config changes
+ * - Multi-store support: Each store has independent config with shared global defaults
  *
  * Config precedence (highest to lowest):
- * 1. Guild-specific config
- * 2. Global config defaults
+ * 1. Guild-specific config (per store)
+ * 2. Global config defaults (shared across all stores)
  * 3. System defaults (MEE6 parity)
+ *
+ * @example
+ * ```typescript
+ * // Default store
+ * const config = await getConfig('123456789012345678')
+ *
+ * // Custom store (e.g., reputation system)
+ * const repConfig = await getConfig('123456789012345678', { storeId: 'reputation' })
+ * ```
  */
 
-import type { GuildConfig, GlobalConfig, RoleReward } from './types.js'
+import type { GuildConfig, GlobalConfig, RoleReward, FlashcoreOptions } from './types.js'
 import {
 	updateConfig as storeUpdateConfig,
 	getOrInitConfig as storeGetOrInitConfig,
@@ -37,16 +47,21 @@ export const DEFAULT_LEADERBOARD_PUBLIC = false // Leaderboard restricted by def
  * Primary entry point for reading guild configuration
  *
  * @param guildId - Guild ID
+ * @param options - Optional Flashcore options (e.g., storeId for multi-store support)
  * @returns Complete GuildConfig (never null, uses defaults if needed)
  *
  * @example
+ * // Default store
  * const config = await getConfig('123456789012345678')
  * if (config.cooldownSeconds > 0) {
  *   // Check cooldown before awarding XP
  * }
+ *
+ * // Custom store (e.g., reputation system)
+ * const repConfig = await getConfig('123456789012345678', { storeId: 'reputation' })
  */
-export async function getConfig(guildId: string): Promise<GuildConfig> {
-	return storeGetOrInitConfig(guildId)
+export async function getConfig(guildId: string, options?: FlashcoreOptions): Promise<GuildConfig> {
+	return storeGetOrInitConfig(guildId, options)
 }
 
 /**
@@ -55,18 +70,25 @@ export async function getConfig(guildId: string): Promise<GuildConfig> {
  *
  * @param guildId - Guild ID
  * @param partial - Partial config to merge
+ * @param options - Optional Flashcore options (e.g., storeId for multi-store support)
  * @returns Complete merged GuildConfig
  * @throws Error if validation fails
  *
  * @example
+ * // Default store
  * const updated = await setConfig('123...', {
  *   cooldownSeconds: 90,
  *   roleRewards: [
  *     { level: 5, roleId: '345678901234567890' }
  *   ]
  * })
+ *
+ * // Custom store (e.g., reputation system)
+ * const repUpdated = await setConfig('123...', {
+ *   cooldownSeconds: 120
+ * }, { storeId: 'reputation' })
  */
-export async function setConfig(guildId: string, partial: Partial<GuildConfig>): Promise<GuildConfig> {
+export async function setConfig(guildId: string, partial: Partial<GuildConfig>, options?: FlashcoreOptions): Promise<GuildConfig> {
 	// Validate input
 	const validation = validateConfig(partial)
 	if (!validation.valid) {
@@ -74,12 +96,15 @@ export async function setConfig(guildId: string, partial: Partial<GuildConfig>):
 	}
 
 	// Merge and persist
-	return storeUpdateConfig(guildId, partial)
+	return storeUpdateConfig(guildId, partial, options)
 }
 
 /**
  * Updates global configuration defaults
  * Clears all guild config caches to force re-merge on next access
+ *
+ * Global config is shared across all stores as base defaults.
+ * Each store can then apply its own guild-specific overrides on top.
  *
  * @param config - Partial config to use as global defaults
  * @throws Error if validation fails
@@ -102,6 +127,8 @@ export async function setGlobalConfig(config: GlobalConfig): Promise<void> {
 
 /**
  * Retrieves current global configuration defaults
+ *
+ * Global config is shared across all stores as base defaults.
  *
  * @returns GlobalConfig (empty object if not set)
  *

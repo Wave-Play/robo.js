@@ -1,18 +1,40 @@
 /**
  * Core XP manipulation functions that integrate with store, math, and events.
  *
+ * ## Multi-Store Support
+ *
+ * All functions accept an optional `storeId` field within their options objects to target
+ * specific data stores. The default store ('default') is used by built-in commands.
+ *
+ * Events emitted by these functions include the `storeId` field, allowing event listeners
+ * to filter events by store. Role rewards only process default store events to avoid
+ * conflicts (e.g., reputation store shouldn't grant Discord roles).
+ *
  * @example
  * ```typescript
  * import { addXP, removeXP, setXP, recalcLevel } from './core/xp.js'
  *
- * // Award XP to a user
+ * // Award XP to a user (default store)
  * const result = await addXP('guildId', 'userId', 100, { reason: 'contest_winner' })
  * if (result.leveledUp) {
  *   console.log(`User leveled up to ${result.newLevel}!`)
  * }
  *
+ * // Award XP to custom reputation store
+ * await addXP('guildId', 'userId', 50, { reason: 'helped_user', storeId: 'reputation' })
+ *
+ * // Get XP from custom credits store
+ * const credits = await getXP('guildId', 'userId', { storeId: 'credits' })
+ *
  * // Recalculate level from total XP
  * await recalcLevel('guildId', 'userId')
+ *
+ * // Event listeners can filter by storeId
+ * events.on('levelUp', (event) => {
+ *   if (event.storeId === 'reputation') {
+ *     console.log('Reputation level up!')
+ *   }
+ * })
  * ```
  */
 
@@ -20,7 +42,8 @@ import { logger } from 'robo.js'
 import * as store from '../store/index.js'
 import * as math from '../math/curve.js'
 import * as events from '../runtime/events.js'
-import type { UserXP, AddXPOptions } from '../types.js'
+import type { UserXP, AddXPOptions, GetXPOptions, RecalcOptions } from '../types.js'
+import { resolveStoreId } from '../types.js'
 
 export interface XPChangeResult {
 	oldXp: number
@@ -60,8 +83,16 @@ export interface RecalcResult {
  * @param guildId - Guild snowflake ID
  * @param userId - User snowflake ID
  * @param amount - Amount of XP to add (must be positive)
- * @param options - Optional settings like reason
+ * @param options - Optional settings like reason and storeId
  * @returns Result object with old/new XP, levels, and leveledUp flag
+ *
+ * @example
+ * // Default store
+ * await addXP('guildId', 'userId', 100, { reason: 'message' })
+ *
+ * @example
+ * // Custom store
+ * await addXP('guildId', 'userId', 50, { reason: 'quest', storeId: 'reputation' })
  */
 export async function addXP(
 	guildId: string,
@@ -78,8 +109,10 @@ export async function addXP(
 			throw new Error('Invalid guildId or userId')
 		}
 
+		const storeId = resolveStoreId(options)
+
 		// Load or create user record
-		let user = await store.getUser(guildId, userId)
+		let user = await store.getUser(guildId, userId, { storeId })
 		if (!user) {
 			user = {
 				xp: 0,
@@ -108,23 +141,14 @@ export async function addXP(
 		}
 
 		// Persist changes
-		await store.putUser(guildId, userId, updatedUser)
-
-		// Emit events after persistence
-		events.emitXPChange({
-			guildId,
-			userId,
-			oldXp,
-			newXp,
-			delta: amount,
-			reason: options?.reason
-		})
+		await store.putUser(guildId, userId, updatedUser, { storeId })
 
 		// Emit level change events if needed
 		if (newLevel > oldLevel) {
 			events.emitLevelUp({
 				guildId,
 				userId,
+				storeId,
 				oldLevel,
 				newLevel,
 				totalXp: newXp
@@ -133,11 +157,23 @@ export async function addXP(
 			events.emitLevelDown({
 				guildId,
 				userId,
+				storeId,
 				oldLevel,
 				newLevel,
 				totalXp: newXp
 			})
 		}
+
+		// Emit events after persistence
+		events.emitXPChange({
+			guildId,
+			userId,
+			storeId,
+			oldXp,
+			newXp,
+			delta: amount,
+			reason: options?.reason
+		})
 
 		return {
 			oldXp,
@@ -159,7 +195,7 @@ export async function addXP(
  * @param guildId - Guild snowflake ID
  * @param userId - User snowflake ID
  * @param amount - Amount of XP to remove (must be positive)
- * @param options - Optional settings like reason
+ * @param options - Optional settings like reason and storeId
  * @returns Result object with old/new XP, levels, and leveledDown flag
  */
 export async function removeXP(
@@ -177,8 +213,10 @@ export async function removeXP(
 			throw new Error('Invalid guildId or userId')
 		}
 
+		const storeId = resolveStoreId(options)
+
 		// Validate user exists
-		const user = await store.getUser(guildId, userId)
+		const user = await store.getUser(guildId, userId, { storeId })
 		if (!user) {
 			throw new Error('User not found')
 		}
@@ -202,36 +240,30 @@ export async function removeXP(
 		}
 
 		// Persist changes
-		await store.putUser(guildId, userId, updatedUser)
-
-		// Emit events after persistence
-		events.emitXPChange({
-			guildId,
-			userId,
-			oldXp,
-			newXp,
-			delta: -actualRemoved,
-			reason: options?.reason
-		})
+		await store.putUser(guildId, userId, updatedUser, { storeId })
 
 		// Emit level change events if needed
 		if (newLevel < oldLevel) {
 			events.emitLevelDown({
 				guildId,
 				userId,
-				oldLevel,
-				newLevel,
-				totalXp: newXp
-			})
-		} else if (newLevel > oldLevel) {
-			events.emitLevelUp({
-				guildId,
-				userId,
+				storeId,
 				oldLevel,
 				newLevel,
 				totalXp: newXp
 			})
 		}
+
+		// Emit events after persistence
+		events.emitXPChange({
+			guildId,
+			userId,
+			storeId,
+			oldXp,
+			newXp,
+			delta: -actualRemoved,
+			reason: options?.reason
+		})
 
 		return {
 			oldXp,
@@ -252,7 +284,7 @@ export async function removeXP(
  * @param guildId - Guild snowflake ID
  * @param userId - User snowflake ID
  * @param totalXp - New total XP (must be non-negative)
- * @param options - Optional settings like reason
+ * @param options - Optional settings like reason and storeId
  * @returns Result object with old/new XP and levels
  */
 export async function setXP(
@@ -270,8 +302,10 @@ export async function setXP(
 			throw new Error('Invalid guildId or userId')
 		}
 
+		const storeId = resolveStoreId(options)
+
 		// Load or create user record
-		let user = await store.getUser(guildId, userId)
+		let user = await store.getUser(guildId, userId, { storeId })
 		if (!user) {
 			user = {
 				xp: 0,
@@ -300,23 +334,14 @@ export async function setXP(
 		}
 
 		// Persist changes
-		await store.putUser(guildId, userId, updatedUser)
-
-		// Emit events after persistence
-		events.emitXPChange({
-			guildId,
-			userId,
-			oldXp,
-			newXp: totalXp,
-			delta,
-			reason: options?.reason
-		})
+		await store.putUser(guildId, userId, updatedUser, { storeId })
 
 		// Emit level change events if needed
 		if (newLevel > oldLevel) {
 			events.emitLevelUp({
 				guildId,
 				userId,
+				storeId,
 				oldLevel,
 				newLevel,
 				totalXp
@@ -325,11 +350,23 @@ export async function setXP(
 			events.emitLevelDown({
 				guildId,
 				userId,
+				storeId,
 				oldLevel,
 				newLevel,
 				totalXp
 			})
 		}
+
+		// Emit events after persistence
+		events.emitXPChange({
+			guildId,
+			userId,
+			storeId,
+			oldXp,
+			newXp: totalXp,
+			delta,
+			reason: options?.reason
+		})
 
 		return {
 			oldXp,
@@ -349,17 +386,28 @@ export async function setXP(
  *
  * @param guildId - Guild snowflake ID
  * @param userId - User snowflake ID
+ * @param options - Optional settings like storeId
  * @returns Result object with old/new levels and reconciliation status
+ *
+ * @example
+ * // Default store
+ * await recalcLevel('guildId', 'userId')
+ *
+ * @example
+ * // Custom store
+ * await recalcLevel('guildId', 'userId', { storeId: 'reputation' })
  */
-export async function recalcLevel(guildId: string, userId: string): Promise<RecalcResult> {
+export async function recalcLevel(guildId: string, userId: string, options?: RecalcOptions): Promise<RecalcResult> {
 	try {
 		// Validate inputs
 		if (!guildId || !userId) {
 			throw new Error('Invalid guildId or userId')
 		}
 
+		const storeId = resolveStoreId(options)
+
 		// Load user record
-		const user = await store.getUser(guildId, userId)
+		const user = await store.getUser(guildId, userId, { storeId })
 		if (!user) {
 			throw new Error('User not found')
 		}
@@ -380,13 +428,14 @@ export async function recalcLevel(guildId: string, userId: string): Promise<Reca
 			}
 
 			// Persist changes
-			await store.putUser(guildId, userId, updatedUser)
+			await store.putUser(guildId, userId, updatedUser, { storeId })
 
 			// Emit level change event
 			if (newLevel > oldLevel) {
 				events.emitLevelUp({
 					guildId,
 					userId,
+					storeId,
 					oldLevel,
 					newLevel,
 					totalXp
@@ -395,6 +444,7 @@ export async function recalcLevel(guildId: string, userId: string): Promise<Reca
 				events.emitLevelDown({
 					guildId,
 					userId,
+					storeId,
 					oldLevel,
 					newLevel,
 					totalXp
@@ -426,11 +476,21 @@ export async function recalcLevel(guildId: string, userId: string): Promise<Reca
  *
  * @param guildId - Guild snowflake ID
  * @param userId - User snowflake ID
+ * @param options - Optional settings like storeId
  * @returns Total XP
+ *
+ * @example
+ * // Default store
+ * const xp = await getXP('guildId', 'userId')
+ *
+ * @example
+ * // Custom store
+ * const reputation = await getXP('guildId', 'userId', { storeId: 'reputation' })
  */
-export async function getXP(guildId: string, userId: string): Promise<number> {
+export async function getXP(guildId: string, userId: string, options?: GetXPOptions): Promise<number> {
 	try {
-		const user = await store.getUser(guildId, userId)
+		const storeId = resolveStoreId(options)
+		const user = await store.getUser(guildId, userId, { storeId })
 		return user?.xp ?? 0
 	} catch (error) {
 		logger.error('Error getting XP:', error)
@@ -443,11 +503,21 @@ export async function getXP(guildId: string, userId: string): Promise<number> {
  *
  * @param guildId - Guild snowflake ID
  * @param userId - User snowflake ID
+ * @param options - Optional settings like storeId
  * @returns User level
+ *
+ * @example
+ * // Default store
+ * const level = await getLevel('guildId', 'userId')
+ *
+ * @example
+ * // Custom store
+ * const repLevel = await getLevel('guildId', 'userId', { storeId: 'reputation' })
  */
-export async function getLevel(guildId: string, userId: string): Promise<number> {
+export async function getLevel(guildId: string, userId: string, options?: GetXPOptions): Promise<number> {
 	try {
-		const user = await store.getUser(guildId, userId)
+		const storeId = resolveStoreId(options)
+		const user = await store.getUser(guildId, userId, { storeId })
 		return user?.level ?? 0
 	} catch (error) {
 		logger.error('Error getting level:', error)
@@ -460,11 +530,21 @@ export async function getLevel(guildId: string, userId: string): Promise<number>
  *
  * @param guildId - Guild snowflake ID
  * @param userId - User snowflake ID
+ * @param options - Optional settings like storeId
  * @returns User XP record or null if not found
+ *
+ * @example
+ * // Default store
+ * const userData = await getUserData('guildId', 'userId')
+ *
+ * @example
+ * // Custom store
+ * const repData = await getUserData('guildId', 'userId', { storeId: 'reputation' })
  */
-export async function getUserData(guildId: string, userId: string): Promise<UserXP | null> {
+export async function getUserData(guildId: string, userId: string, options?: GetXPOptions): Promise<UserXP | null> {
 	try {
-		return await store.getUser(guildId, userId)
+		const storeId = resolveStoreId(options)
+		return await store.getUser(guildId, userId, { storeId })
 	} catch (error) {
 		logger.error('Error getting user data:', error)
 		return null
