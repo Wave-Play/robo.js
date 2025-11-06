@@ -19,7 +19,8 @@ import {
 	formatLevel,
 	formatRank,
 	formatUser,
-	getEmbedColor
+	getEmbedColor,
+	getXpLabel
 } from '../core/utils.js'
 
 /**
@@ -65,6 +66,9 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 
 		// Load guild configuration
 		const guildConfig = await getConfig(guildId)
+
+		// Determine custom XP label
+		const xpLabel = getXpLabel(guildConfig)
 
 		// Check access control
 		if (!guildConfig.leaderboard.public && !hasAdminPermission(interaction)) {
@@ -116,8 +120,8 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 
 			// No users have earned XP yet
 			const embed = createInfoEmbed(
-				'🏆 XP Leaderboard',
-				'No users have earned XP yet',
+				`🏆 ${xpLabel} Leaderboard`,
+				`No users have earned ${xpLabel} yet`,
 				undefined,
 				getEmbedColor(guildConfig)
 			)
@@ -130,7 +134,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 		const leaderboardLines = entries.map((entry) => {
 			const userMention = formatUser(entry.userId)
 			const levelStr = formatLevel(entry.level)
-			const xpStr = formatXP(entry.xp)
+			const xpStr = formatXP(entry.xp, xpLabel)
 			const rankStr = formatRank(entry.rank)
 
 			// Highlight current user (bold)
@@ -145,7 +149,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 
 		// Build embed
 		const embedColor = getEmbedColor(guildConfig)
-		const embed = createInfoEmbed(`🏆 XP Leaderboard - Page ${page}`, description, undefined, embedColor)
+		const embed = createInfoEmbed(`🏆 ${xpLabel} Leaderboard - Page ${page}`, description, undefined, embedColor)
 
 		// Add footer with pagination info
 		let footerText = `Page ${page} of ${totalPages} • ${totalUsers.toLocaleString('en-US')} users tracked`

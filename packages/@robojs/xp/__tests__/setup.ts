@@ -13,38 +13,42 @@ import { mockFlashcore, mockClient } from './helpers/mocks.js'
  */
 
 // Mock robo.js module completely
-jest.mock('robo.js', () => {
-	// Bridge robo.js Flashcore to the shared test mock so call assertions work
-	const Flashcore = {
-		get: (key: string, options?: { namespace?: string | string[]; default?: any }) => mockFlashcore.get(key, options),
-		set: (key: string, value: any, options?: { namespace?: string | string[] }) =>
-			mockFlashcore.set(key, value, options),
-		delete: (key: string, options?: { namespace?: string | string[] }) => mockFlashcore.delete(key, options)
-	}
+jest.mock(
+	'robo.js',
+	() => {
+		// Bridge robo.js Flashcore to the shared test mock so call assertions work
+		const Flashcore = {
+			get: (key: string, options?: { namespace?: string | string[]; default?: any }) => mockFlashcore.get(key, options),
+			set: (key: string, value: any, options?: { namespace?: string | string[] }) =>
+				mockFlashcore.set(key, value, options),
+			delete: (key: string, options?: { namespace?: string | string[] }) => mockFlashcore.delete(key, options)
+		}
 
-	// Minimal logger stub used by compiled files (logger.fork(...).debug/error...)
-	const baseLogger = {
-		debug: jest.fn(),
-		info: jest.fn(),
-		warn: jest.fn(),
-		error: jest.fn(),
-		trace: jest.fn(),
-		wait: jest.fn(),
-		log: jest.fn(),
-		event: jest.fn(),
-		ready: jest.fn()
-	}
-	const logger = {
-		...baseLogger,
-		fork: jest.fn(() => ({ ...baseLogger }))
-	}
+		// Minimal logger stub used by compiled files (logger.fork(...).debug/error...)
+		const baseLogger = {
+			debug: jest.fn(),
+			info: jest.fn(),
+			warn: jest.fn(),
+			error: jest.fn(),
+			trace: jest.fn(),
+			wait: jest.fn(),
+			log: jest.fn(),
+			event: jest.fn(),
+			ready: jest.fn()
+		}
+		const logger = {
+			...baseLogger,
+			fork: jest.fn(() => ({ ...baseLogger }))
+		}
 
-	return {
-		Flashcore,
-		client: mockClient,
-		logger
-	}
-}, { virtual: true })
+		return {
+			Flashcore,
+			client: mockClient,
+			logger
+		}
+	},
+	{ virtual: true }
+)
 
 /**
  * ====================
@@ -120,7 +124,7 @@ afterEach(() => {
 	jest.clearAllMocks()
 	// Clear Flashcore storage
 	if ((global as any).__flashcoreStorage__) {
-		(global as any).__flashcoreStorage__.clear()
+		;(global as any).__flashcoreStorage__.clear()
 	}
 })
 

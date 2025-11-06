@@ -71,13 +71,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 		]
 
 		return {
-			embeds: [
-				createSuccessEmbed(
-					'No-XP Role Removed',
-					`Users with ${formatRole(role.id)} can now gain XP`,
-					fields
-				)
-			]
+			embeds: [createSuccessEmbed('No-XP Role Removed', `Users with ${formatRole(role.id)} can now gain XP`, fields)]
 		}
 	} catch (error) {
 		logger.error('Error in /xp config remove-no-xp-role command:', error)
@@ -85,9 +79,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 			embeds: [
 				createErrorEmbed(
 					'Error',
-					error instanceof Error
-						? error.message
-						: 'An unexpected error occurred while removing No-XP role'
+					error instanceof Error ? error.message : 'An unexpected error occurred while removing No-XP role'
 				)
 			],
 			ephemeral: true

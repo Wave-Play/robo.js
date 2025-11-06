@@ -7,5 +7,8 @@ export default {
 	clientOptions: {
 		intents: ['Guilds', 'GuildMessages', 'MessageContent']
 	},
-	plugins: []
+	plugins: [],
+	seed: {
+		description: 'Standard AI slash commands you can customize'
+	}
 }

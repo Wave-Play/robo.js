@@ -78,7 +78,11 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 
 		return {
 			embeds: [
-				createSuccessEmbed('Leaderboard Visibility Updated', `Leaderboard is now **${enabled ? 'public' : 'private'}**`, fields)
+				createSuccessEmbed(
+					'Leaderboard Visibility Updated',
+					`Leaderboard is now **${enabled ? 'public' : 'private'}**`,
+					fields
+				)
 			]
 		}
 	} catch (error) {
@@ -87,9 +91,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 			embeds: [
 				createErrorEmbed(
 					'Error',
-					error instanceof Error
-						? error.message
-						: 'An unexpected error occurred while updating leaderboard visibility'
+					error instanceof Error ? error.message : 'An unexpected error occurred while updating leaderboard visibility'
 				)
 			],
 			ephemeral: true

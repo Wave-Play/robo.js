@@ -77,11 +77,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 
 		return {
 			embeds: [
-				createSuccessEmbed(
-					'No-XP Channel Removed',
-					`Messages in ${formatChannel(channel.id)} can now award XP`,
-					fields
-				)
+				createSuccessEmbed('No-XP Channel Removed', `Messages in ${formatChannel(channel.id)} can now award XP`, fields)
 			]
 		}
 	} catch (error) {
@@ -90,9 +86,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 			embeds: [
 				createErrorEmbed(
 					'Error',
-					error instanceof Error
-						? error.message
-						: 'An unexpected error occurred while removing No-XP channel'
+					error instanceof Error ? error.message : 'An unexpected error occurred while removing No-XP channel'
 				)
 			],
 			ephemeral: true

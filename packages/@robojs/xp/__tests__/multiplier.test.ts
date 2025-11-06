@@ -1,6 +1,11 @@
 import { test, expect } from '@jest/globals'
 
-import { resolveMultiplier, getServerMultiplier, getMaxRoleMultiplier, getUserMultiplier } from '../.robo/build/math/multiplier.js'
+import {
+	resolveMultiplier,
+	getServerMultiplier,
+	getMaxRoleMultiplier,
+	getUserMultiplier
+} from '../.robo/build/math/multiplier.js'
 import type { GuildConfig } from '../src/types.js'
 
 // Helper to create test configs
@@ -114,6 +119,82 @@ test('resolveMultiplier - Handles multipliers < 1.0 (penalties)', () => {
 	const result = resolveMultiplier(config, ['role1'], 'user123')
 	// 0.5 * 0.8 * 0.9 = 0.36
 	expect(result).toBeCloseTo(0.36, 2)
+})
+
+test('resolveMultiplier - Returns 0 when server multiplier is 0', () => {
+	const config = createTestConfig({ server: 0 })
+	const result = resolveMultiplier(config, [], 'user123')
+	expect(result).toBe(0)
+})
+
+test('resolveMultiplier - Returns 0 when role multiplier is 0', () => {
+	const config = createTestConfig({ role: { role1: 0 } })
+	const result = resolveMultiplier(config, ['role1'], 'user123')
+	expect(result).toBe(0)
+})
+
+test('resolveMultiplier - Returns 0 when user multiplier is 0', () => {
+	const config = createTestConfig({ user: { user123: 0 } })
+	const result = resolveMultiplier(config, [], 'user123')
+	expect(result).toBe(0)
+})
+
+test('resolveMultiplier - 0 server multiplier overrides positive role and user multipliers', () => {
+	const config = createTestConfig({
+		server: 0,
+		role: { role1: 2.0 },
+		user: { user123: 3.0 }
+	})
+	const result = resolveMultiplier(config, ['role1'], 'user123')
+	// 0 × 2.0 × 3.0 = 0 (any 0 in chain results in 0)
+	expect(result).toBe(0)
+})
+
+test('resolveMultiplier - 0 role multiplier overrides positive server and user multipliers', () => {
+	const config = createTestConfig({
+		server: 2.0,
+		role: { role1: 0 },
+		user: { user123: 1.5 }
+	})
+	const result = resolveMultiplier(config, ['role1'], 'user123')
+	// 2.0 × 0 × 1.5 = 0
+	expect(result).toBe(0)
+})
+
+test('resolveMultiplier - 0 user multiplier overrides positive server and role multipliers', () => {
+	const config = createTestConfig({
+		server: 1.5,
+		role: { role1: 2.0 },
+		user: { user123: 0 }
+	})
+	const result = resolveMultiplier(config, ['role1'], 'user123')
+	// 1.5 × 2.0 × 0 = 0
+	expect(result).toBe(0)
+})
+
+test('resolveMultiplier - Multiple roles with one 0 multiplier results in max positive (not 0)', () => {
+	const config = createTestConfig({
+		role: {
+			role1: 1.5,
+			role2: 0,
+			role3: 2.0
+		}
+	})
+	const result = resolveMultiplier(config, ['role1', 'role2', 'role3'], 'user123')
+	// Max role multiplier is 2.0 (0 is not the max, so it doesn't block XP)
+	expect(result).toBe(2.0)
+})
+
+test('resolveMultiplier - User with ONLY 0 role multiplier gets 0', () => {
+	const config = createTestConfig({
+		role: {
+			role1: 1.5,
+			role2: 0
+		}
+	})
+	const result = resolveMultiplier(config, ['role2'], 'user123')
+	// User only has role2 which has 0 multiplier, so max([0]) = 0
+	expect(result).toBe(0)
 })
 
 // ============================================================================

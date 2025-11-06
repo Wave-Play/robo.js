@@ -165,18 +165,16 @@ export function resetAllMocks(): void {
 
 	jest.clearAllMocks()
 
-	mockFlashcore.get.mockImplementation(
-		(key: string, options?: { namespace?: string | string[]; default?: any }) => {
-			const namespace = Array.isArray(options?.namespace)
-				? options.namespace
-				: options?.namespace
-					? [options.namespace]
-					: []
-			const fullKey = [...namespace, key].join(':')
-			const value = flashcoreStorage.get(fullKey)
-			return value !== undefined ? value : options?.default
-		}
-	)
+	mockFlashcore.get.mockImplementation((key: string, options?: { namespace?: string | string[]; default?: any }) => {
+		const namespace = Array.isArray(options?.namespace)
+			? options.namespace
+			: options?.namespace
+				? [options.namespace]
+				: []
+		const fullKey = [...namespace, key].join(':')
+		const value = flashcoreStorage.get(fullKey)
+		return value !== undefined ? value : options?.default
+	})
 
 	mockFlashcore.set.mockImplementation((key: string, value: any, options?: { namespace?: string | string[] }) => {
 		const namespace = Array.isArray(options?.namespace)

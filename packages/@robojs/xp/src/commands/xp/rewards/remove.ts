@@ -56,9 +56,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 		const removedReward = guildConfig.roleRewards.find((r) => r.level === level)
 		if (!removedReward) {
 			return {
-				embeds: [
-					createErrorEmbed('Reward Not Found', `No role reward found at ${formatLevel(level)}`)
-				],
+				embeds: [createErrorEmbed('Reward Not Found', `No role reward found at ${formatLevel(level)}`)],
 				ephemeral: true
 			}
 		}
@@ -77,13 +75,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 		]
 
 		return {
-			embeds: [
-				createSuccessEmbed(
-					'Role Reward Removed',
-					`Removed role reward from ${formatLevel(level)}`,
-					fields
-				)
-			]
+			embeds: [createSuccessEmbed('Role Reward Removed', `Removed role reward from ${formatLevel(level)}`, fields)]
 		}
 	} catch (error) {
 		logger.error('Error in /xp rewards remove command:', error)
@@ -91,9 +83,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 			embeds: [
 				createErrorEmbed(
 					'Error',
-					error instanceof Error
-						? error.message
-						: 'An unexpected error occurred while removing role reward'
+					error instanceof Error ? error.message : 'An unexpected error occurred while removing role reward'
 				)
 			],
 			ephemeral: true

@@ -292,10 +292,50 @@ test('validateMultipliers accepts valid user multipliers', () => {
 	expect(errors.length).toBe(0)
 })
 
-test('validateMultipliers rejects zero server multiplier', () => {
+test('validateMultipliers rejects negative server multiplier', () => {
+	const multipliers = { server: -1.0 }
+	const errors = validateMultipliers(multipliers)
+	expect(errors.some((e) => e.includes('non-negative'))).toBeTruthy()
+})
+
+test('validateMultipliers accepts 0 server multiplier', () => {
 	const multipliers = { server: 0 }
 	const errors = validateMultipliers(multipliers)
-	expect(errors.some((e) => e.includes('server'))).toBeTruthy()
+	expect(errors.length).toBe(0)
+})
+
+test('validateMultipliers accepts 0 role multipliers', () => {
+	const multipliers = {
+		role: {
+			'123456789012345678': 0,
+			'234567890123456789': 1.5,
+			'345678901234567890': 0
+		}
+	}
+	const errors = validateMultipliers(multipliers)
+	expect(errors.length).toBe(0)
+})
+
+test('validateMultipliers accepts 0 user multipliers', () => {
+	const multipliers = {
+		user: {
+			'123456789012345678': 0,
+			'234567890123456789': 2.0,
+			'345678901234567890': 0
+		}
+	}
+	const errors = validateMultipliers(multipliers)
+	expect(errors.length).toBe(0)
+})
+
+test('validateMultipliers accepts mixed 0 and positive multipliers', () => {
+	const multipliers = {
+		server: 0,
+		role: { '123456789012345678': 1.5 },
+		user: { '234567890123456789': 2.0 }
+	}
+	const errors = validateMultipliers(multipliers)
+	expect(errors.length).toBe(0)
 })
 
 test('validateMultipliers rejects negative multipliers', () => {
@@ -330,6 +370,62 @@ test('validateMultipliers accepts multipliers < 1 (penalties)', () => {
 test('validateMultipliers rejects non-object input', () => {
 	const errors = validateMultipliers('invalid' as unknown as GuildConfig['multipliers'])
 	expect(errors.some((e) => e.includes('must be object'))).toBeTruthy()
+})
+
+// ============================================================================
+// Test Suite: Labels Validation
+// ============================================================================
+
+test('validateConfig accepts valid labels object', () => {
+	const config: Partial<GuildConfig> = {
+		labels: { xpDisplayName: 'Reputation' }
+	}
+	const result = validateConfig(config)
+	expect(result.valid).toBeTruthy()
+	expect(result.errors.length).toBe(0)
+})
+
+test('validateConfig accepts custom xpDisplayName', () => {
+	const values = ['Points', 'Karma', 'Credits', 'A', 'Reputation Points!']
+	for (const val of values) {
+		const result = validateConfig({ labels: { xpDisplayName: val } })
+		expect(result.valid).toBeTruthy()
+		expect(result.errors.length).toBe(0)
+	}
+})
+
+test('validateConfig rejects empty xpDisplayName', () => {
+	const result = validateConfig({ labels: { xpDisplayName: '' as unknown as string } })
+	expect(result.valid).toBeFalsy()
+	expect(result.errors.some((e) => e.toLowerCase().includes('empty'))).toBeTruthy()
+})
+
+test('validateConfig rejects xpDisplayName > 20 chars', () => {
+	const tooLong = 'Very Long Reputation Points System' // > 20 chars
+	const result = validateConfig({ labels: { xpDisplayName: tooLong as unknown as string } })
+	expect(result.valid).toBeFalsy()
+	expect(result.errors.some((e) => e.includes('20'))).toBeTruthy()
+})
+
+test('validateConfig rejects non-string xpDisplayName', () => {
+	const invalids: any[] = [123, null, true, ['Reputation']]
+	for (const v of invalids) {
+		const result = validateConfig({ labels: { xpDisplayName: v } as any })
+		expect(result.valid).toBeFalsy()
+		expect(result.errors.some((e) => e.toLowerCase().includes('string'))).toBeTruthy()
+	}
+})
+
+test('validateConfig accepts labels object with undefined xpDisplayName', () => {
+	const result = validateConfig({ labels: {} })
+	expect(result.valid).toBeTruthy()
+	expect(result.errors.length).toBe(0)
+})
+
+test('validateConfig rejects null labels object', () => {
+	const result = validateConfig({ labels: null as unknown as any })
+	expect(result.valid).toBeFalsy()
+	expect(result.errors.some((e) => e.includes('labels') && e.includes('object'))).toBeTruthy()
 })
 
 // ============================================================================

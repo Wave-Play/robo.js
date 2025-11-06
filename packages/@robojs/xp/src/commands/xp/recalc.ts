@@ -2,6 +2,7 @@ import { type ChatInputCommandInteraction } from 'discord.js'
 import type { CommandConfig, CommandResult } from 'robo.js'
 import { logger } from 'robo.js'
 import { recalcLevel, getUserData } from '../../core/xp.js'
+import { getConfig } from '../../config.js'
 import {
 	hasAdminPermission,
 	getRequiredPermissionBit,
@@ -11,7 +12,8 @@ import {
 	createPermissionError,
 	formatXP,
 	formatLevel,
-	formatUser
+	formatUser,
+	getXpLabel
 } from '../../core/utils.js'
 
 export const config: CommandConfig = {
@@ -45,6 +47,10 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 			return createPermissionError()
 		}
 
+		// Load guild config and determine custom XP label
+		const guildConfig = await getConfig(guildId)
+		const xpLabel = getXpLabel(guildConfig)
+
 		// Get option
 		const user = interaction.options.getUser('user', true)
 
@@ -60,12 +66,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 		const userData = await getUserData(guildId, user.id)
 		if (!userData) {
 			return {
-				embeds: [
-					createErrorEmbed(
-						'User Not Found',
-						`${formatUser(user.id)} has no XP record to recalculate`
-					)
-				],
+				embeds: [createErrorEmbed('User Not Found', `${formatUser(user.id)} has no XP record to recalculate`)],
 				ephemeral: true
 			}
 		}
@@ -77,7 +78,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 		if (result.reconciled) {
 			// Level was corrected
 			const fields = [
-				{ name: 'Total XP', value: formatXP(result.totalXp), inline: false },
+				{ name: `Total ${xpLabel}`, value: formatXP(result.totalXp, xpLabel), inline: false },
 				{ name: 'Previous Level', value: formatLevel(result.oldLevel), inline: true },
 				{ name: 'Corrected Level', value: formatLevel(result.newLevel), inline: true },
 				{ name: 'Status', value: '✅ Level corrected and roles reconciled', inline: false }
@@ -95,19 +96,13 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 		} else {
 			// Level was already correct
 			const fields = [
-				{ name: 'Total XP', value: formatXP(result.totalXp), inline: false },
+				{ name: `Total ${xpLabel}`, value: formatXP(result.totalXp, xpLabel), inline: false },
 				{ name: 'Current Level', value: formatLevel(result.newLevel), inline: true },
 				{ name: 'Status', value: '✅ No changes needed', inline: false }
 			]
 
 			return {
-				embeds: [
-					createSuccessEmbed(
-						'Level Verified',
-						`Level for ${formatUser(user.id)} is already correct`,
-						fields
-					)
-				]
+				embeds: [createSuccessEmbed('Level Verified', `Level for ${formatUser(user.id)} is already correct`, fields)]
 			}
 		}
 	} catch (error) {

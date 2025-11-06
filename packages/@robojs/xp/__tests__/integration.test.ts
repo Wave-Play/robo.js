@@ -7,40 +7,27 @@ import { test, expect, beforeEach, afterEach, jest } from '@jest/globals'
 import { Flashcore } from 'robo.js'
 
 // Import functions from the package
-import { xp, leaderboard } from '../.robo/build/index.js'
+import { xp, leaderboard, config } from '../.robo/build/index.js'
+import { getXpLabel } from '../src/core/utils.js'
 import * as service from '../.robo/build/runtime/service.js'
 
-// ============================================================================
-// Mock Flashcore Setup
-// ============================================================================
+// Import shared mock
+import { mockFlashcore, clearFlashcoreStorage, getFlashcoreStorage } from './helpers/mocks.js'
 
-let mockFlashcoreStore = new Map<string, unknown>()
+// ============================================================================
+// Mock Flashcore Setup (using shared mock)
+// ============================================================================
 
 // Save original Flashcore methods
 const originalFlashcoreGet = Flashcore.get
 const originalFlashcoreSet = Flashcore.set
 
 function setupMockFlashcore() {
-	mockFlashcoreStore.clear()
+	clearFlashcoreStorage()
 
-	// Mock Flashcore.get to read from mockFlashcoreStore
-	Flashcore.get = jest.fn(async (key: string, options: any = {}) => {
-		const namespace = options.namespace || ''
-		const fullKey = namespace ? `${namespace}:${key}` : key
-		return mockFlashcoreStore.get(fullKey)
-	}) as any
-
-	// Mock Flashcore.set to write to mockFlashcoreStore
-	Flashcore.set = jest.fn(async (key: string, value: unknown, options: any = {}) => {
-		const namespace = options.namespace || ''
-		const fullKey = namespace ? `${namespace}:${key}` : key
-
-		if (value === undefined) {
-			mockFlashcoreStore.delete(fullKey)
-		} else {
-			mockFlashcoreStore.set(fullKey, value)
-		}
-	}) as any
+	// Use shared mock implementation
+	Flashcore.get = mockFlashcore.get as any
+	Flashcore.set = mockFlashcore.set as any
 }
 
 function restoreFlashcore() {
@@ -51,8 +38,8 @@ function restoreFlashcore() {
 	// Clear all service caches
 	service.clearAllCaches()
 
-	// Clear mock store
-	mockFlashcoreStore.clear()
+	// Clear mock storage
+	clearFlashcoreStorage()
 }
 
 beforeEach(() => {
@@ -289,3 +276,94 @@ test('Leaderboard entries include message data', async () => {
 // 1. Unit tests in xp.test.ts (verify message counters are preserved)
 // 2. Message handler tests (would test the actual increment logic)
 // 3. Type system validation (UserXP includes messages and xpMessages fields)
+
+// ============================================================================
+// Test Suite: Manual XP Control with 0 Multiplier
+// ============================================================================
+
+test('Manual XP control: 0 multiplier disables message XP, admin commands still work', async () => {
+	const guildId = 'test-guild-manual-control'
+	const userId = 'test-user-manual'
+
+	// Setup guild with 0 server multiplier
+	await config.set(guildId, {
+		multipliers: { server: 0 }
+	})
+
+	// With server multiplier 0, message handler would:
+	// - Increment messages counter
+	// - NOT increment xpMessages counter
+	// - NOT award any XP
+	// This is tested in message-award.test.ts
+
+	// Manual XP grant via addXP bypasses message handler
+	const addResult = await xp.add(guildId, userId, 500, { reason: 'manual_grant' })
+	expect(addResult.oldXp).toBe(0)
+	expect(addResult.newXp).toBe(500)
+	expect(addResult.oldLevel).toBe(0)
+	expect(addResult.newLevel).toBeGreaterThanOrEqual(1) // Level should increase
+	expect(addResult.leveledUp).toBe(true)
+
+	// Manual XP set via setXP
+	const setResult = await xp.set(guildId, userId, 1000, { reason: 'manual_set' })
+	expect(setResult.oldXp).toBe(500)
+	expect(setResult.newXp).toBe(1000)
+	expect(setResult.newLevel).toBeGreaterThanOrEqual(setResult.oldLevel)
+
+	// Manual XP removal via removeXP
+	const removeResult = await xp.remove(guildId, userId, 200, { reason: 'manual_remove' })
+	expect(removeResult.oldXp).toBe(1000)
+	expect(removeResult.newXp).toBe(800)
+
+	// Verify final state
+	const user = await xp.getUser(guildId, userId)
+	expect(user).not.toBeNull()
+	expect(user!.xp).toBe(800)
+	expect(user!.messages).toBe(0) // No messages sent
+	expect(user!.xpMessages).toBe(0) // No automatic XP awarded
+
+	// Verify config is still set to 0
+	const cfg = await config.get(guildId)
+	expect(cfg.multipliers?.server).toBe(0)
+})
+
+// ============================================================================
+// Test Suite: Custom Branding Integration
+// ============================================================================
+
+test('Custom branding appears in rank command output (integration chain)', async () => {
+	const guildId = 'test-guild-branding'
+	const userId = 'test-user-branding'
+
+	// Setup guild with custom branding
+	await config.set(guildId, {
+		labels: { xpDisplayName: 'Reputation' }
+	} as any)
+
+	// Add XP to user
+	await xp.add(guildId, userId, 1500)
+
+	// Verify config was set correctly
+	const cfg = await config.get(guildId)
+	expect(cfg.labels?.xpDisplayName).toBe('Reputation')
+
+	// Verify user data exists
+	const user = await xp.getUser(guildId, userId)
+	expect(user).not.toBeNull()
+	expect(user!.xp).toBe(1500)
+
+	// Verify helper extracts label
+	const label = getXpLabel(cfg)
+	expect(label).toBe('Reputation')
+
+	// Change label and verify update
+	await config.set(guildId, { labels: { xpDisplayName: 'Points' } } as any)
+	const cfg2 = await config.get(guildId)
+	expect(getXpLabel(cfg2)).toBe('Points')
+
+	// Note: We can't directly test command embed output in these integration tests
+	// (requires Discord.js interaction mocking), but we validated the integration chain:
+	// 1) Config with custom label is stored/retrieved
+	// 2) getXpLabel extracts the custom label
+	// 3) Commands use getXpLabel + formatXP to render displays (verified in unit tests)
+})

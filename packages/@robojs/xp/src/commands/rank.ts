@@ -23,7 +23,8 @@ import {
 	formatMultiplier,
 	formatPercentage,
 	createProgressBar,
-	getEmbedColor
+	getEmbedColor,
+	getXpLabel
 } from '../core/utils.js'
 
 /**
@@ -71,11 +72,14 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 		// Load guild configuration
 		const guildConfig = await getConfig(guildId)
 
+		// Determine custom XP label
+		const xpLabel = getXpLabel(guildConfig)
+
 		// Get user XP data
 		const userData = await getUserData(guildId, targetUser.id)
 		if (!userData || userData.xp === 0) {
 			return {
-				embeds: [createErrorEmbed('No Data', `${targetUser.username} has no XP in this server`)],
+				embeds: [createErrorEmbed('No Data', `${targetUser.username} has no ${xpLabel} in this server`)],
 				ephemeral: true
 			}
 		}
@@ -98,8 +102,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 		try {
 			// Fetch guild member to get roles
 			const member =
-				interaction.guild?.members.cache.get(targetUser.id) ??
-				(await interaction.guild?.members.fetch(targetUser.id))
+				interaction.guild?.members.cache.get(targetUser.id) ?? (await interaction.guild?.members.fetch(targetUser.id))
 
 			if (member) {
 				const roleIds = Array.from(member.roles.cache.keys())
@@ -127,8 +130,8 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 				inline: true
 			},
 			{
-				name: 'XP',
-				value: formatXP(userData.xp),
+				name: xpLabel,
+				value: formatXP(userData.xp, xpLabel),
 				inline: true
 			},
 			{
@@ -137,13 +140,13 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 				inline: false
 			},
 			{
-				name: 'XP in Level',
-				value: `${progress.inLevel.toLocaleString('en-US')} / ${(progress.inLevel + progress.toNext).toLocaleString('en-US')} XP`,
+				name: `${xpLabel} in Level`,
+				value: `${progress.inLevel.toLocaleString('en-US')} / ${(progress.inLevel + progress.toNext).toLocaleString('en-US')} ${xpLabel}`,
 				inline: false
 			},
 			{
 				name: 'Next Level',
-				value: `${formatXP(progress.toNext)} remaining`,
+				value: `${formatXP(progress.toNext, xpLabel)} remaining`,
 				inline: false
 			},
 			{

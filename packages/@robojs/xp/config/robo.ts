@@ -6,5 +6,8 @@ export default <Config>{
 		intents: ['Guilds', 'GuildMessages']
 	},
 	plugins: [],
-	type: 'plugin'
+	type: 'plugin',
+	seed: {
+		description: 'Announcements for user level-ups + usage examples'
+	}
 }

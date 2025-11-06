@@ -132,7 +132,7 @@ npx robo add @robojs/server
 
 ### Guild Configuration Structure
 
-```ts
+````ts
 interface GuildConfig {
 	// Basic settings
 	cooldownSeconds: number // Per-user message cooldown (default: 60)
@@ -149,9 +149,9 @@ interface GuildConfig {
 
 	// Multipliers (MEE6 Pro parity)
 	multipliers: {
-		server?: number // Server-wide multiplier
-		role?: Record<string, number> // Per-role multipliers
-		user?: Record<string, number> // Per-user multipliers
+		server?: number // Server-wide multiplier (set to 0 to disable automatic XP)
+		role?: Record<string, number> // Per-role multipliers (set to 0 to disable for role)
+		user?: Record<string, number> // Per-user multipliers (set to 0 to disable for user)
 	}
 
 	// Leaderboard
@@ -164,8 +164,175 @@ interface GuildConfig {
 		embedColor?: string // Hex color for embeds
 		backgroundUrl?: string // Custom rank card background
 	}
+
+	// Custom branding
+	labels?: {
+		xpDisplayName?: string // Custom terminology (default: 'XP', max 20 chars)
+	}
 }
+**Custom Branding:**
+
+Customize XP terminology to match your server's theme. The `labels.xpDisplayName` field changes how XP is displayed in all user-facing commands (`/rank`, `/leaderboard`, `/xp give`, etc.) while keeping command names unchanged.
+
+**Example:**
+```typescript
+await config.set(guildId, {
+	labels: { xpDisplayName: 'Reputation' }
+})
+
+// Now /rank shows "Reputation" instead of "XP":
+// - Field: "Reputation: 1,500"
+// - Field: "Reputation in Level: 450 / 750"
+// - Field: "Next Level: 300 Reputation remaining"
+````
+
+**Common alternatives:**
+
+- 'Reputation' - Community reputation systems
+- 'Points' - Point-based reward systems
+- 'Karma' - Reddit-style karma systems
+- 'Credits' - Economy/currency systems
+- 'Stars' - Achievement/rating systems
+
+### Custom Branding (Reputation System)
+
+Customize XP terminology to match your server's theme. Perfect for community reputation systems, point-based rewards, or any custom terminology.
+
+```typescript
+import { config } from '@robojs/xp'
+
+// Set custom branding for the guild
+await config.set(guildId, {
+	labels: { xpDisplayName: 'Reputation' }
+})
+
+// All user-facing displays now use "Reputation" instead of "XP":
+// - /rank shows "Reputation: 1,500" and "Reputation in Level: 450 / 750"
+// - /leaderboard shows "1,500 Reputation" for each user
+// - /xp give shows "Successfully gave 100 Reputation to @User"
+// - /xp remove shows "Previous Reputation: 1,500, New Reputation: 1,450"
+
+// Command names stay as /xp (only displays change)
 ```
+
+**Popular terminology options:**
+
+| Label        | Use Case             | Example Display    |
+| ------------ | -------------------- | ------------------ |
+| 'Reputation' | Community reputation | "1,500 Reputation" |
+| 'Points'     | Point-based rewards  | "1,500 Points"     |
+| 'Karma'      | Reddit-style systems | "1,500 Karma"      |
+| 'Credits'    | Economy/currency     | "1,500 Credits"    |
+| 'Stars'      | Achievement/rating   | "1,500 Stars"      |
+| 'Exp'        | Gaming experience    | "1,500 Exp"        |
+
+**Note:** Command names (`/xp`, `/rank`, `/leaderboard`) remain unchanged. Only the visual display of XP values and field names use custom terminology.
+**Custom Branding (labels):**
+
+```ts
+import { config } from '@robojs/xp'
+
+// Set custom XP terminology
+await config.set(guildId, {
+	labels: { xpDisplayName: 'Reputation' }
+})
+
+// Get config and extract label
+const guildConfig = await config.get(guildId)
+const label = guildConfig.labels?.xpDisplayName ?? 'XP'
+console.log(label) // 'Reputation'
+
+// Use in custom displays
+import { formatXP, getXpLabel } from '@robojs/xp'
+const formattedXp = formatXP(1500, getXpLabel(guildConfig))
+console.log(formattedXp) // '1,500 Reputation'
+```
+
+**Validation rules:**
+
+- Must be a string (max 20 characters)
+- Cannot be empty string
+- Defaults to 'XP' if not configured
+- Applies to all user-facing displays (commands, embeds)
+
+### How to Customize XP Terminology
+
+**Goal:** Change "XP" to custom terminology like "Reputation", "Points", or "Karma" throughout all displays.
+
+**Solution:**
+
+```typescript
+import { config } from '@robojs/xp'
+
+// Set custom label for the guild
+await config.set(guildId, {
+	labels: { xpDisplayName: 'Reputation' }
+})
+```
+
+**What changes:**
+
+- ✅ `/rank` command: "Reputation: 1,500" instead of "XP: 1,500"
+- ✅ `/leaderboard` command: "1,500 Reputation" for each entry
+- ✅ `/xp give/remove/set` commands: "Previous Reputation", "New Reputation"
+- ✅ All embed field names: "Reputation in Level" instead of "XP in Level"
+
+**What stays the same:**
+
+- ❌ Command names: `/xp`, `/rank`, `/leaderboard` (unchanged)
+- ❌ API function names: `addXP()`, `getXP()` (unchanged)
+- ❌ Internal logic: Only visual display changes
+
+**Validation:**
+
+- Label must be 1-20 characters
+- Cannot be empty string
+- Can include spaces, emojis, Unicode
+
+**Examples:**
+
+```typescript
+// Reputation system
+await config.set(guildId, { labels: { xpDisplayName: 'Reputation' } })
+
+// Point-based rewards
+await config.set(guildId, { labels: { xpDisplayName: 'Points' } })
+
+// Gaming experience
+await config.set(guildId, { labels: { xpDisplayName: 'Exp' } })
+
+// Reset to default
+await config.set(guildId, { labels: undefined })
+// Or simply don't set labels field
+```
+
+**Note:** The custom label applies guild-wide. All users in the guild see the same terminology.
+
+````
+
+**Special value:** Set any multiplier to `0` to disable automatic XP earning at that level (server-wide, per-role, or per-user). This enables manual XP control where only admin commands (`/xp give`, `/xp set`) can grant XP. The `messages` counter will still increment to track activity, but `xpMessages` will remain 0.
+
+**Example:**
+```typescript
+// Disable automatic XP earning for entire guild
+await XP.config.set(guildId, {
+	multipliers: { server: 0 }
+})
+
+// Disable automatic XP for specific role (e.g., new members)
+await XP.config.set(guildId, {
+	multipliers: {
+		role: { 'newMemberRoleId': 0 }
+	}
+})
+
+// Disable automatic XP for specific user
+await XP.config.set(guildId, {
+	multipliers: {
+		user: { 'userId': 0 }
+	}
+})
+````
 
 ### Global Configuration Defaults
 
@@ -285,6 +452,34 @@ const isValid = config.validate(configObject)
 // Global configuration
 const globalConfig = config.getGlobal()
 config.setGlobal({ xpRate: 1.5 })
+```
+
+**Multipliers (0 for manual control):**
+
+```ts
+import { config } from '@robojs/xp'
+
+// Disable automatic XP for entire guild
+await config.set(guildId, {
+	multipliers: { server: 0 }
+})
+
+// Disable automatic XP for specific role
+await config.set(guildId, {
+	multipliers: {
+		role: { roleId: 0 }
+	}
+})
+
+// Disable automatic XP for specific user
+await config.set(guildId, {
+	multipliers: {
+		user: { userId: 0 }
+	}
+})
+
+// Admin commands still work regardless of multiplier settings
+await XP.addXP(guildId, userId, 500, { reason: 'manual_grant' })
 ```
 
 ### Leaderboard Queries
@@ -598,6 +793,36 @@ events.onLevelUp(async ({ guildId, userId, newLevel, totalXp }) => {
 })
 ```
 
+### Manual XP Control (Disable Automatic Earning)
+
+Disable automatic message-based XP earning while retaining full control via admin commands. Perfect for contest-only XP systems, event-based rewards, or manual moderation.
+
+```typescript
+import { XP } from '@robojs/xp'
+
+// Disable automatic XP earning for entire guild
+await XP.config.set(guildId, {
+	multipliers: { server: 0 }
+})
+
+// Now only admin commands can grant XP
+await XP.addXP(guildId, contestWinnerId, 1000, { reason: 'contest_winner' })
+await XP.addXP(guildId, eventParticipantId, 500, { reason: 'event_participation' })
+
+// Users can still send messages (messages counter increments)
+// But xpMessages stays 0 (no automatic XP)
+```
+
+**Use cases:**
+
+- **Contest-only XP:** Award XP only to contest winners, not for chatting
+- **Event-based rewards:** Grant XP for specific achievements (reactions, voice time, etc.)
+- **Manual moderation:** Admins review and approve all XP grants
+- **Temporary freeze:** Disable XP during maintenance or special events
+- **Hybrid systems:** Disable for new members (role multiplier 0), enable after verification
+
+**Note:** Admin commands (`/xp give`, `/xp set`, `/xp remove`) bypass the message handler and work regardless of multiplier settings.
+
 ### Custom Rewards: Build Custom Logic
 
 ```ts
@@ -909,6 +1134,81 @@ await config.set(guildId, {
 ```
 
 ## Troubleshooting
+
+### Users Not Earning XP from Messages
+
+**Symptom:** Users send messages but their XP doesn't increase. The `messages` counter increments but `xpMessages` stays at 0.
+
+**Possible causes:**
+
+1. **Multiplier set to 0 (manual control mode):**
+
+   ```typescript
+   const config = await XP.config.get(guildId)
+   console.log('Server multiplier:', config.multipliers?.server ?? 1.0)
+   console.log('Role multipliers:', config.multipliers?.role)
+   console.log('User multipliers:', config.multipliers?.user)
+   ```
+
+   - If any multiplier in the chain is 0, no XP is awarded
+   - Check: `server: 0` disables for everyone
+   - Check: `role: { 'roleId': 0 }` disables for users with that role
+   - Check: `user: { 'userId': 0 }` disables for specific user
+   - **Solution:** Set multipliers to non-zero values to re-enable automatic XP
+
+2. **No-XP channels:**
+
+   ```typescript
+   const config = await XP.config.get(guildId)
+   console.log('No-XP channels:', config.noXpChannelIds)
+   ```
+
+   - Messages in these channels don't award XP
+   - **Solution:** Remove channel from `noXpChannelIds` list
+
+3. **No-XP roles:**
+
+   ```typescript
+   const config = await XP.config.get(guildId)
+   console.log('No-XP roles:', config.noXpRoleIds)
+   ```
+
+   - Users with these roles don't earn XP
+   - **Solution:** Remove role from `noXpRoleIds` list
+
+4. **Cooldown blocking rapid messages:**
+   - Default 60s cooldown means only 1 message per minute awards XP
+   - Check: `messages` much higher than `xpMessages` indicates cooldown blocking
+   - **Solution:** This is expected behavior; reduce `cooldownSeconds` if needed
+
+**Difference between 0 multiplier and No-XP zones:**
+
+| Feature                 | 0 Multiplier                       | No-XP Channels/Roles            |
+| ----------------------- | ---------------------------------- | ------------------------------- |
+| **Scope**               | Server/role/user level             | Channel or role level           |
+| **messages counter**    | ✅ Increments                      | ✅ Increments                   |
+| **xpMessages counter**  | ❌ Stays 0                         | ❌ Stays 0                      |
+| **Admin commands work** | ✅ Yes                             | ✅ Yes                          |
+| **Use case**            | Manual XP control                  | Exclude specific areas          |
+| **Flexibility**         | Can combine (server × role × user) | All-or-nothing per channel/role |
+
+**Debug checklist:**
+
+```typescript
+const user = await XP.getUser(guildId, userId)
+const config = await XP.config.get(guildId)
+
+console.log('User XP:', user.xp)
+console.log('Total messages:', user.messages)
+console.log('XP messages:', user.xpMessages)
+console.log('Ratio:', ((user.xpMessages / user.messages) * 100).toFixed(1) + '%')
+console.log('\nConfig:')
+console.log('- Cooldown:', config.cooldownSeconds + 's')
+console.log('- XP Rate:', config.xpRate)
+console.log('- Server multiplier:', config.multipliers?.server ?? 1.0)
+console.log('- No-XP channels:', config.noXpChannelIds)
+console.log('- No-XP roles:', config.noXpRoleIds)
+```
 
 ### XP Not Being Awarded
 

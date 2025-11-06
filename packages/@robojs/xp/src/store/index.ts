@@ -1,24 +1,25 @@
 /**
  * Flashcore CRUD operations for XP data persistence
  *
- * Uses Flashcore key-value store with namespace 'xp' and the following key structure:
- * - `user:{guildId}:{userId}` -> UserXP data
- * - `members:{guildId}` -> string[] of tracked user IDs
- * - `config:{guildId}` -> GuildConfig
- * - `config:global` -> GlobalConfig
- * - `schema:{guildId}` -> number (schema version)
+ * Uses Flashcore key-value store with array namespaces for hierarchical organization:
+ * - Flashcore.get(userId, { namespace: ['xp', guildId, 'users'] }) -> UserXP data
+ * - Flashcore.get('members', { namespace: ['xp', guildId] }) -> string[] of tracked user IDs
+ * - Flashcore.get('config', { namespace: ['xp', guildId] }) -> GuildConfig
+ * - Flashcore.get('config', { namespace: ['xp', 'global'] }) -> GlobalConfig
+ * - Flashcore.get('schema', { namespace: ['xp', guildId] }) -> number (schema version)
  *
- * All keys use namespace: XP_NAMESPACE ('xp')
+ * Internal Flashcore keys (colon-separated):
+ * - 'xp:guild123:users:user456' (user data)
+ * - 'xp:guild123:members' (members list)
+ * - 'xp:guild123:config' (guild config)
+ * - 'xp:global:config' (global defaults)
+ * - 'xp:guild123:schema' (schema version)
+ *
  * Implements caching for guild configs to reduce Flashcore reads.
  */
 
 import { Flashcore } from 'robo.js'
 import type { UserXP, GuildConfig, GlobalConfig } from '../types.js'
-
-/**
- * Namespace for all XP-related Flashcore keys
- */
-export const XP_NAMESPACE = 'xp'
 
 /**
  * Current schema version for future migrations
@@ -72,8 +73,7 @@ export function clearConfigCache(): void {
  * }
  */
 export async function getUser(guildId: string, userId: string): Promise<UserXP | null> {
-	const key = `user:${guildId}:${userId}`
-	const data = await Flashcore.get<UserXP>(key, { namespace: XP_NAMESPACE })
+	const data = await Flashcore.get<UserXP>(userId, { namespace: ['xp', guildId, 'users'] })
 	return data ?? null
 }
 
@@ -93,8 +93,7 @@ export async function getUser(guildId: string, userId: string): Promise<UserXP |
  * })
  */
 export async function putUser(guildId: string, userId: string, data: UserXP): Promise<void> {
-	const key = `user:${guildId}:${userId}`
-	await Flashcore.set(key, data, { namespace: XP_NAMESPACE })
+	await Flashcore.set(userId, data, { namespace: ['xp', guildId, 'users'] })
 	await addMember(guildId, userId)
 }
 
@@ -108,8 +107,7 @@ export async function putUser(guildId: string, userId: string, data: UserXP): Pr
  * await deleteUser('123...', '456...') // Resets user's XP progress
  */
 export async function deleteUser(guildId: string, userId: string): Promise<void> {
-	const key = `user:${guildId}:${userId}`
-	await Flashcore.set(key, undefined, { namespace: XP_NAMESPACE })
+	await Flashcore.set(userId, undefined, { namespace: ['xp', guildId, 'users'] })
 	await removeMember(guildId, userId)
 }
 
@@ -158,11 +156,10 @@ export async function getAllUsers(guildId: string): Promise<Map<string, UserXP>>
  * @param userId - User ID to add
  */
 export async function addMember(guildId: string, userId: string): Promise<void> {
-	const key = `members:${guildId}`
-	const arr = await Flashcore.get<string[]>(key, { namespace: XP_NAMESPACE }) ?? []
+	const arr = (await Flashcore.get<string[]>('members', { namespace: ['xp', guildId] })) ?? []
 	const members = new Set(arr)
 	members.add(userId)
-	await Flashcore.set(key, Array.from(members), { namespace: XP_NAMESPACE })
+	await Flashcore.set('members', Array.from(members), { namespace: ['xp', guildId] })
 }
 
 /**
@@ -173,12 +170,11 @@ export async function addMember(guildId: string, userId: string): Promise<void> 
  * @param userId - User ID to remove
  */
 export async function removeMember(guildId: string, userId: string): Promise<void> {
-	const key = `members:${guildId}`
-	const arr = await Flashcore.get<string[]>(key, { namespace: XP_NAMESPACE })
+	const arr = await Flashcore.get<string[]>('members', { namespace: ['xp', guildId] })
 	if (arr) {
 		const members = new Set(arr)
 		members.delete(userId)
-		await Flashcore.set(key, Array.from(members), { namespace: XP_NAMESPACE })
+		await Flashcore.set('members', Array.from(members), { namespace: ['xp', guildId] })
 	}
 }
 
@@ -189,8 +185,7 @@ export async function removeMember(guildId: string, userId: string): Promise<voi
  * @returns Set of user IDs (empty if no members tracked)
  */
 export async function getMembers(guildId: string): Promise<Set<string>> {
-	const key = `members:${guildId}`
-	const arr = await Flashcore.get<string[]>(key, { namespace: XP_NAMESPACE }) ?? []
+	const arr = (await Flashcore.get<string[]>('members', { namespace: ['xp', guildId] })) ?? []
 	return new Set(arr)
 }
 
@@ -216,8 +211,7 @@ export async function getConfig(guildId: string): Promise<GuildConfig> {
 	}
 
 	// Load from Flashcore
-	const key = `config:${guildId}`
-	const stored = await Flashcore.get<GuildConfig>(key, { namespace: XP_NAMESPACE })
+	const stored = await Flashcore.get<GuildConfig>('config', { namespace: ['xp', guildId] })
 
 	// Get global config
 	const globalConfig = await getGlobalConfig()
@@ -249,8 +243,7 @@ export async function getConfig(guildId: string): Promise<GuildConfig> {
  * })
  */
 export async function putConfig(guildId: string, config: GuildConfig): Promise<void> {
-	const key = `config:${guildId}`
-	await Flashcore.set(key, config, { namespace: XP_NAMESPACE })
+	await Flashcore.set('config', config, { namespace: ['xp', guildId] })
 	configCache.set(guildId, config)
 }
 
@@ -290,8 +283,7 @@ export async function getOrInitConfig(guildId: string): Promise<GuildConfig> {
 		return configCache.get(guildId)!
 	}
 
-	const key = `config:${guildId}`
-	const existing = await Flashcore.get<GuildConfig>(key, { namespace: XP_NAMESPACE })
+	const existing = await Flashcore.get<GuildConfig>('config', { namespace: ['xp', guildId] })
 
 	// Get global config
 	const globalConfig = await getGlobalConfig()
@@ -309,7 +301,7 @@ export async function getOrInitConfig(guildId: string): Promise<GuildConfig> {
 
 	// If no existing config, persist the merged result
 	if (!existing) {
-		await Flashcore.set(key, normalized, { namespace: XP_NAMESPACE })
+		await Flashcore.set('config', normalized, { namespace: ['xp', guildId] })
 	}
 
 	return normalized
@@ -366,8 +358,7 @@ export function getDefaultUser(): UserXP {
  * }
  */
 export async function getGlobalConfig(): Promise<GlobalConfig> {
-	const key = 'config:global'
-	const config = await Flashcore.get<GlobalConfig>(key, { namespace: XP_NAMESPACE })
+	const config = await Flashcore.get<GlobalConfig>('config', { namespace: ['xp', 'global'] })
 	return config ?? {}
 }
 
@@ -384,8 +375,7 @@ export async function getGlobalConfig(): Promise<GlobalConfig> {
  * })
  */
 export async function setGlobalConfig(config: GlobalConfig): Promise<void> {
-	const key = 'config:global'
-	await Flashcore.set(key, config, { namespace: XP_NAMESPACE })
+	await Flashcore.set('config', config, { namespace: ['xp', 'global'] })
 	clearConfigCache() // Force re-merge for all guilds
 }
 
@@ -400,8 +390,7 @@ export async function setGlobalConfig(config: GlobalConfig): Promise<void> {
  * @returns Schema version number (defaults to 1)
  */
 export async function getSchemaVersion(guildId: string): Promise<number> {
-	const key = `schema:${guildId}`
-	const version = await Flashcore.get<number>(key, { namespace: XP_NAMESPACE })
+	const version = await Flashcore.get<number>('schema', { namespace: ['xp', guildId] })
 	return version ?? SCHEMA_VERSION
 }
 
@@ -413,8 +402,7 @@ export async function getSchemaVersion(guildId: string): Promise<number> {
  * @param version - Schema version number
  */
 export async function setSchemaVersion(guildId: string, version: number): Promise<void> {
-	const key = `schema:${guildId}`
-	await Flashcore.set(key, version, { namespace: XP_NAMESPACE })
+	await Flashcore.set('schema', version, { namespace: ['xp', guildId] })
 }
 
 // ============================================================================
@@ -453,6 +441,11 @@ export function normalizeConfig(raw: unknown, defaults: GuildConfig): GuildConfi
 					role: config.multipliers.role ?? {},
 					user: config.multipliers.user ?? {}
 				}
+			: undefined,
+		labels: config.labels
+			? {
+					xpDisplayName: config.labels.xpDisplayName
+				}
 			: undefined
 	}
 }
@@ -477,11 +470,20 @@ export function mergeConfigs(base: GuildConfig, override: Partial<GuildConfig>):
 	// Deep merge multipliers object
 	let mergedMultipliers = base.multipliers ? { ...base.multipliers } : undefined
 
+	// Deep merge labels object
+	let mergedLabels = base.labels ? { ...base.labels } : undefined
+
 	if (override.multipliers) {
 		mergedMultipliers = {
 			server: override.multipliers.server ?? mergedMultipliers?.server,
 			role: { ...mergedMultipliers?.role, ...override.multipliers.role },
 			user: { ...mergedMultipliers?.user, ...override.multipliers.user }
+		}
+	}
+
+	if (override.labels) {
+		mergedLabels = {
+			xpDisplayName: override.labels.xpDisplayName ?? mergedLabels?.xpDisplayName
 		}
 	}
 
@@ -496,6 +498,7 @@ export function mergeConfigs(base: GuildConfig, override: Partial<GuildConfig>):
 		leaderboard: {
 			public: override.leaderboard?.public ?? base.leaderboard.public
 		},
-		multipliers: mergedMultipliers
+		multipliers: mergedMultipliers,
+		labels: mergedLabels
 	}
 }

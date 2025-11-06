@@ -10,19 +10,16 @@ import { describe, test, expect, jest } from '@jest/globals'
 
 import type { UserXP } from '../src/types.js'
 import * as service from '../src/runtime/service.js'
-import { putUser, XP_NAMESPACE } from '../src/store/index.js'
+import { putUser } from '../src/store/index.js'
 import { Flashcore } from 'robo.js'
 import { _getEmitter } from '../src/runtime/events.js'
 
-// ============================================================================
-// Mock Setup
-// ============================================================================
+// Import shared mock
+import { mockFlashcore, clearFlashcoreStorage } from './helpers/mocks.js'
 
-/**
- * Mock store to emulate Flashcore persistence
- * Keyed by: namespace:key
- */
-let mockFlashcoreStore = new Map<string, unknown>()
+// ============================================================================
+// Mock Setup (using shared mock)
+// ============================================================================
 
 /**
  * Original Flashcore methods (saved before mocking)
@@ -34,23 +31,11 @@ const originalFlashcoreSet = Flashcore.set
  * Setup mock Flashcore
  */
 function setupMockFlashcore() {
-	mockFlashcoreStore.clear()
+	clearFlashcoreStorage()
 
-	// Mock Flashcore.get
-	;(Flashcore as any).get = async function <T>(key: string, options: { namespace: string }): Promise<T | undefined> {
-		const fullKey = `${options.namespace}:${key}`
-		return mockFlashcoreStore.get(fullKey) as T | undefined
-	}
-
-	// Mock Flashcore.set
-	;(Flashcore as any).set = async function <T>(key: string, value: T, options: { namespace: string }): Promise<void> {
-		const fullKey = `${options.namespace}:${key}`
-		if (value === undefined) {
-			mockFlashcoreStore.delete(fullKey)
-		} else {
-			mockFlashcoreStore.set(fullKey, value)
-		}
-	}
+	// Use shared mock implementation
+	;(Flashcore as any).get = mockFlashcore.get
+	;(Flashcore as any).set = mockFlashcore.set
 }
 
 /**
@@ -60,7 +45,7 @@ function restoreFlashcore() {
 	;(Flashcore as any).get = originalFlashcoreGet
 	;(Flashcore as any).set = originalFlashcoreSet
 	service.clearAllCaches()
-	mockFlashcoreStore.clear()
+	clearFlashcoreStorage()
 
 	// Clear the EventEmitter between tests
 	const emitter = _getEmitter()
@@ -172,13 +157,16 @@ test('Cache: totalUsers is stored and returned', async () => {
 
 test('Sort: users are sorted by XP descending', async () => {
 	setupMockFlashcore()
-	await createUsersWithXP({
-		user1: 500,
-		user2: 1000,
-		user3: 750,
-		user4: 250,
-		user5: 1500
-	}, 'guild1')
+	await createUsersWithXP(
+		{
+			user1: 500,
+			user2: 1000,
+			user3: 750,
+			user4: 250,
+			user5: 1500
+		},
+		'guild1'
+	)
 
 	const { entries } = await service.getLeaderboard('guild1', 0, 10)
 
@@ -193,11 +181,14 @@ test('Sort: users are sorted by XP descending', async () => {
 
 test('Sort: equal XP sorted by userId ascending (tiebreaker)', async () => {
 	setupMockFlashcore()
-	await createUsersWithXP({
-		userC: 1000,
-		userA: 1000,
-		userB: 1000
-	}, 'guild1')
+	await createUsersWithXP(
+		{
+			userC: 1000,
+			userA: 1000,
+			userB: 1000
+		},
+		'guild1'
+	)
 
 	const { entries } = await service.getLeaderboard('guild1', 0, 10)
 
@@ -335,10 +326,13 @@ test('Rank: getUserRank returns correct rank for user beyond top 100 (non-cached
 
 test('Rank: getUserRank returns null for user with 0 XP', async () => {
 	setupMockFlashcore()
-	await createUsersWithXP({
-		user1: 100,
-		user2: 0
-	}, 'guild1')
+	await createUsersWithXP(
+		{
+			user1: 100,
+			user2: 0
+		},
+		'guild1'
+	)
 
 	const rankInfo = await service.getUserRank('guild1', 'user2')
 
@@ -360,11 +354,14 @@ test('Rank: getUserRank returns null for non-existent user', async () => {
 
 test('Rank: getUserRank respects stable sort tiebreaker', async () => {
 	setupMockFlashcore()
-	await createUsersWithXP({
-		userA: 1000,
-		userB: 1000,
-		userC: 1000
-	}, 'guild1')
+	await createUsersWithXP(
+		{
+			userA: 1000,
+			userB: 1000,
+			userC: 1000
+		},
+		'guild1'
+	)
 
 	const rankA = await service.getUserRank('guild1', 'userA')
 	const rankB = await service.getUserRank('guild1', 'userB')
@@ -595,11 +592,14 @@ test('Edge case: single user guild works correctly', async () => {
 
 test('Edge case: users with 0 XP are sorted by userId', async () => {
 	setupMockFlashcore()
-	await createUsersWithXP({
-		userC: 0,
-		userA: 0,
-		userB: 0
-	}, 'guild1')
+	await createUsersWithXP(
+		{
+			userC: 0,
+			userA: 0,
+			userB: 0
+		},
+		'guild1'
+	)
 
 	const { entries } = await service.getLeaderboard('guild1', 0, 10)
 

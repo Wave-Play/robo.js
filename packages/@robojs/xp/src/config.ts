@@ -15,15 +15,12 @@
 
 import type { GuildConfig, GlobalConfig, RoleReward } from './types.js'
 import {
-	getConfig as storeGetConfig,
-	putConfig as storePutConfig,
 	updateConfig as storeUpdateConfig,
 	getOrInitConfig as storeGetOrInitConfig,
 	getDefaultConfig as storeGetDefaultConfig,
 	getGlobalConfig as storeGetGlobalConfig,
 	setGlobalConfig as storeSetGlobalConfig,
-	mergeConfigs as storeMergeConfigs,
-	clearConfigCache
+	mergeConfigs as storeMergeConfigs
 } from './store/index.js'
 
 /**
@@ -237,13 +234,34 @@ export function validateConfig(config: Partial<GuildConfig>): { valid: boolean; 
 			errors.push('theme must be object')
 		} else {
 			if (config.theme.embedColor !== undefined) {
-				if (typeof config.theme.embedColor !== 'number' || config.theme.embedColor < 0 || config.theme.embedColor > 0xffffff) {
+				if (
+					typeof config.theme.embedColor !== 'number' ||
+					config.theme.embedColor < 0 ||
+					config.theme.embedColor > 0xffffff
+				) {
 					errors.push('theme.embedColor must be number between 0 and 0xFFFFFF (valid hex color)')
 				}
 			}
 			if (config.theme.backgroundUrl !== undefined) {
 				if (typeof config.theme.backgroundUrl !== 'string') {
 					errors.push('theme.backgroundUrl must be string')
+				}
+			}
+		}
+	}
+
+	// Validate labels
+	if (config.labels !== undefined) {
+		if (typeof config.labels !== 'object' || config.labels === null) {
+			errors.push('labels must be object')
+		} else {
+			if (config.labels.xpDisplayName !== undefined) {
+				if (typeof config.labels.xpDisplayName !== 'string') {
+					errors.push('labels.xpDisplayName must be string')
+				} else if (config.labels.xpDisplayName.length === 0) {
+					errors.push('labels.xpDisplayName cannot be empty string')
+				} else if (config.labels.xpDisplayName.length > 20) {
+					errors.push('labels.xpDisplayName must be 20 characters or less')
 				}
 			}
 		}
@@ -317,8 +335,8 @@ export function validateMultipliers(multipliers: GuildConfig['multipliers']): st
 
 	// Validate server multiplier
 	if (multipliers.server !== undefined) {
-		if (typeof multipliers.server !== 'number' || multipliers.server <= 0) {
-			errors.push('multipliers.server must be positive number')
+		if (typeof multipliers.server !== 'number' || multipliers.server < 0) {
+			errors.push('multipliers.server must be non-negative number')
 		}
 	}
 
@@ -328,8 +346,8 @@ export function validateMultipliers(multipliers: GuildConfig['multipliers']): st
 			errors.push('multipliers.role must be object')
 		} else {
 			for (const [roleId, multiplier] of Object.entries(multipliers.role)) {
-				if (typeof multiplier !== 'number' || multiplier <= 0) {
-					errors.push(`multipliers.role[${roleId}] must be positive number`)
+				if (typeof multiplier !== 'number' || multiplier < 0) {
+					errors.push(`multipliers.role[${roleId}] must be non-negative number`)
 				}
 			}
 		}
@@ -341,8 +359,8 @@ export function validateMultipliers(multipliers: GuildConfig['multipliers']): st
 			errors.push('multipliers.user must be object')
 		} else {
 			for (const [userId, multiplier] of Object.entries(multipliers.user)) {
-				if (typeof multiplier !== 'number' || multiplier <= 0) {
-					errors.push(`multipliers.user[${userId}] must be positive number`)
+				if (typeof multiplier !== 'number' || multiplier < 0) {
+					errors.push(`multipliers.user[${userId}] must be non-negative number`)
 				}
 			}
 		}

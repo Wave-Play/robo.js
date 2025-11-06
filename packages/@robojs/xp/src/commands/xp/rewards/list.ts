@@ -45,10 +45,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 		if (rewards.length === 0) {
 			return {
 				embeds: [
-					createInfoEmbed(
-						'No Role Rewards',
-						'No role rewards configured. Use `/xp rewards add` to create rewards.'
-					)
+					createInfoEmbed('No Role Rewards', 'No role rewards configured. Use `/xp rewards add` to create rewards.')
 				]
 			}
 		}
@@ -91,9 +88,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 			embeds: [
 				createErrorEmbed(
 					'Error',
-					error instanceof Error
-						? error.message
-						: 'An unexpected error occurred while listing role rewards'
+					error instanceof Error ? error.message : 'An unexpected error occurred while listing role rewards'
 				)
 			],
 			ephemeral: true

@@ -82,9 +82,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 		]
 
 		return {
-			embeds: [
-				createSuccessEmbed('Rewards Mode Updated', `Role rewards mode changed to **${mode}**`, fields)
-			]
+			embeds: [createSuccessEmbed('Rewards Mode Updated', `Role rewards mode changed to **${mode}**`, fields)]
 		}
 	} catch (error) {
 		logger.error('Error in /xp rewards mode command:', error)
@@ -92,9 +90,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 			embeds: [
 				createErrorEmbed(
 					'Error',
-					error instanceof Error
-						? error.message
-						: 'An unexpected error occurred while updating rewards mode'
+					error instanceof Error ? error.message : 'An unexpected error occurred while updating rewards mode'
 				)
 			],
 			ephemeral: true

@@ -106,9 +106,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 			embeds: [
 				createErrorEmbed(
 					'Error',
-					error instanceof Error
-						? error.message
-						: 'An unexpected error occurred while fetching configuration'
+					error instanceof Error ? error.message : 'An unexpected error occurred while fetching configuration'
 				)
 			],
 			ephemeral: true

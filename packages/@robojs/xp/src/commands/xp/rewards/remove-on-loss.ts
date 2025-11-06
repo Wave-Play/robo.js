@@ -52,12 +52,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 		// Check if setting is same as current
 		if (guildConfig.removeRewardOnXpLoss === enabled) {
 			return {
-				embeds: [
-					createInfoEmbed(
-						'No Change',
-						`Remove-on-loss is already ${enabled ? 'enabled' : 'disabled'}`
-					)
-				]
+				embeds: [createInfoEmbed('No Change', `Remove-on-loss is already ${enabled ? 'enabled' : 'disabled'}`)]
 			}
 		}
 
@@ -96,9 +91,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 			embeds: [
 				createErrorEmbed(
 					'Error',
-					error instanceof Error
-						? error.message
-						: 'An unexpected error occurred while updating remove-on-loss setting'
+					error instanceof Error ? error.message : 'An unexpected error occurred while updating remove-on-loss setting'
 				)
 			],
 			ephemeral: true

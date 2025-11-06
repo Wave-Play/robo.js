@@ -2,6 +2,7 @@ import { type ChatInputCommandInteraction } from 'discord.js'
 import type { CommandConfig, CommandResult } from 'robo.js'
 import { logger } from 'robo.js'
 import { setXP } from '../../core/xp.js'
+import { getConfig } from '../../config.js'
 import {
 	hasAdminPermission,
 	getRequiredPermissionBit,
@@ -11,7 +12,8 @@ import {
 	createPermissionError,
 	formatXP,
 	formatLevel,
-	formatUser
+	formatUser,
+	getXpLabel
 } from '../../core/utils.js'
 
 export const config: CommandConfig = {
@@ -59,6 +61,10 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 			return createPermissionError()
 		}
 
+		// Load guild config and determine custom XP label
+		const guildConfig = await getConfig(guildId)
+		const xpLabel = getXpLabel(guildConfig)
+
 		// Get options
 		const user = interaction.options.getUser('user', true)
 		const amount = interaction.options.getInteger('amount', true)
@@ -80,9 +86,9 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 
 		// Create success embed
 		const fields = [
-			{ name: 'Previous XP', value: formatXP(result.oldXp), inline: true },
-			{ name: 'New XP', value: formatXP(result.newXp), inline: true },
-			{ name: 'Change', value: delta >= 0 ? `+${formatXP(delta)}` : formatXP(delta), inline: true },
+			{ name: `Previous ${xpLabel}`, value: formatXP(result.oldXp, xpLabel), inline: true },
+			{ name: `New ${xpLabel}`, value: formatXP(result.newXp, xpLabel), inline: true },
+			{ name: 'Change', value: delta >= 0 ? `+${formatXP(delta, xpLabel)}` : formatXP(delta, xpLabel), inline: true },
 			{ name: 'Previous Level', value: formatLevel(result.oldLevel), inline: true },
 			{ name: 'New Level', value: formatLevel(result.newLevel), inline: true }
 		]
@@ -103,7 +109,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 			embeds: [
 				createSuccessEmbed(
 					'XP Set',
-					`Successfully set XP for ${formatUser(user.id)} to ${formatXP(amount)}`,
+					`Successfully set ${xpLabel} for ${formatUser(user.id)} to ${formatXP(amount, xpLabel)}`,
 					fields
 				)
 			]

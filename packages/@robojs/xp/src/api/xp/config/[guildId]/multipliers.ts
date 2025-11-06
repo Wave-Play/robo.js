@@ -1,6 +1,13 @@
 import type { RoboRequest } from '@robojs/server'
 import { config } from '@robojs/xp'
-import { wrapHandler, success, getGuildFromRequest, validateSnowflake, validateMethod, ERROR_CODES } from '../../utils.js'
+import {
+	wrapHandler,
+	success,
+	getGuildFromRequest,
+	validateSnowflake,
+	validateMethod,
+	ERROR_CODES
+} from '../../utils.js'
 
 /**
  * Multipliers Configuration Endpoint

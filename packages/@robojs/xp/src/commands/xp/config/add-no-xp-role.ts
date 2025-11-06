@@ -80,11 +80,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 
 		return {
 			embeds: [
-				createSuccessEmbed(
-					'No-XP Role Added',
-					`Users with ${formatRole(role.id)} will no longer gain XP`,
-					fields
-				)
+				createSuccessEmbed('No-XP Role Added', `Users with ${formatRole(role.id)} will no longer gain XP`, fields)
 			]
 		}
 	} catch (error) {
@@ -93,9 +89,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 			embeds: [
 				createErrorEmbed(
 					'Error',
-					error instanceof Error
-						? error.message
-						: 'An unexpected error occurred while adding No-XP role'
+					error instanceof Error ? error.message : 'An unexpected error occurred while adding No-XP role'
 				)
 			],
 			ephemeral: true

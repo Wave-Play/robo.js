@@ -5,7 +5,7 @@
 		"baseUrl": ".",
 		"paths": {
 			"~/*": ["src/*"],
-			"@robojs/xp": ["src/index.ts"],
+			"@robojs/xp": ["src/index.ts"]
 		},
 		"allowJs": true,
 		"skipLibCheck": true,
