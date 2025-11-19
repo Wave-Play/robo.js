@@ -174,7 +174,8 @@ function resolveBaseUrl(options: NormalizedAuthPluginOptions): string {
 		return explicit
 	}
 
-	const fallback = 'http://localhost:3000'
+	const port = process.env.PORT ?? '3000'
+	const fallback = `http://localhost:${port}`
 	if (process.env.NODE_ENV === 'production') {
 		authLogger.warn(
 			`Using fallback AUTH_URL (${fallback}). Configure auth.url in your plugin config or set AUTH_URL in your environment.`

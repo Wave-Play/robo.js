@@ -57,7 +57,7 @@ export function createAuthRequestHandler(config: AuthConfig): AuthRequestHandler
 					})
 				}
 
-				const baseUrl = process.env.AUTH_URL ?? 'http://localhost:3000'
+				const baseUrl = process.env.AUTH_URL ?? `http://localhost:${process.env.PORT ?? 3000}`
 				const signInPath = (config.pages && config.pages.signIn) || '/signin'
 				const url = new URL(signInPath, baseUrl)
 				url.searchParams.set('error', 'CredentialsSignin')
