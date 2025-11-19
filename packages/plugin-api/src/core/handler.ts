@@ -50,7 +50,7 @@ export function createServerHandler(router: Router, vite?: ViteDevServer, onNotF
 		}
 
 		// Prepare request and reply wrappers for easier usage
-		const requestWrapper = await RoboRequest.from(req)
+		const requestWrapper = await RoboRequest.from(req, { skipBody: !route })
 
 		const replyWrapper: RoboReply = {
 			raw: res,
