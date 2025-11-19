@@ -32,7 +32,15 @@ interface SignupPayload {
 }
 
 const EMAIL_REGEX = /^(?:[^\s@]+)@(?:[^\s@.]+\.)+[^\s@.]{2,}$/i
-const DEFAULT_REDIRECT_PATH = '/dashboard'
+
+/**
+ * Default redirect path after a successful signup.
+ *
+ * This can be overridden by:
+ * 1. Providing a `callbackUrl` in the signup request body.
+ * 2. Setting `pages.newUser` in the Auth plugin configuration.
+ */
+const DEFAULT_REDIRECT_PATH = '/'
 
 class SignupError extends Error {
 	public readonly code: string

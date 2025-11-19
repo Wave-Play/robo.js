@@ -127,7 +127,7 @@ function registerSignupRoute(options: EmailPasswordRuntimeOptions): void {
 		basePath,
 		baseUrl,
 		cookies,
-		defaultRedirectPath: pluginOptions.pages?.newUser ?? '/dashboard',
+		defaultRedirectPath: pluginOptions.pages?.newUser ?? '/',
 		secret,
 		sessionStrategy,
 		events
