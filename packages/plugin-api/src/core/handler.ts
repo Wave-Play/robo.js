@@ -38,6 +38,17 @@ export function createServerHandler(router: Router, vite?: ViteDevServer, onNotF
 			}
 		}
 
+		// Find matching route and execute handler
+		logger.debug(color.bold(req.method), req.url)
+		const route = router.find(parsedUrl.pathname)
+
+		// If Vite is available, forward the request to Vite
+		if (!route?.handler && vite) {
+			logger.debug(`Forwarding to Vite:`, req.url)
+			vite.middlewares(req, res)
+			return
+		}
+
 		// Prepare request and reply wrappers for easier usage
 		const requestWrapper = await RoboRequest.from(req)
 
@@ -104,18 +115,8 @@ export function createServerHandler(router: Router, vite?: ViteDevServer, onNotF
 			}
 		}
 
-		// Find matching route and execute handler
-		logger.debug(color.bold(req.method), req.url)
-		const route = router.find(parsedUrl.pathname)
 		if (route) {
 			applyParams(requestWrapper, route.params)
-		}
-
-		// If Vite is available, forward the request to Vite
-		if (!route?.handler && vite) {
-			logger.debug(`Forwarding to Vite:`, req.url)
-			vite.middlewares(req, res)
-			return
 		}
 
 		// If route missing, check if we can return something from the public folder
