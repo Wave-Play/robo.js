@@ -41,7 +41,7 @@ interface PrismaDelegate {
  *
  * @example Prisma client with extensions
  * ```ts
- * const prisma = new PrismaClient().$extends({ /* features */ })
+ * const prisma = new PrismaClient().$extends({ ...features })
  * const adapter = createPrismaAdapter({
  * 	client: prisma as PrismaClientLike,
  * 	secret: process.env.AUTH_SECRET!
