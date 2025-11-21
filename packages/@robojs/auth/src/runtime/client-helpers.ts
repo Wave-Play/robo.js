@@ -104,7 +104,7 @@ export async function signIn(
 
 	if (legacyMode) {
 		// Resolve the runtime environment before composing the Auth.js request.
-		const target = resolveEndpoint(client, providerId === 'credentials' ? '/callback/credentials' : '/signin')
+		const target = resolveEndpoint(client, providerId === 'credentials' ? '/callback/credentials' : joinPath('/signin', providerId))
 		const request = resolveFetch(client?.fetch)
 		const init: Record<string, unknown> = {
 			method: 'POST',
@@ -129,7 +129,7 @@ export async function signIn(
 
 	const callbackUrl = resolveCallbackUrl(typeof body?.callbackUrl === 'string' ? (body.callbackUrl as string) : undefined)
 	const query = toQuery({ callbackUrl: callbackUrl, csrfToken: csrfToken ?? undefined })
-	const startPath = providerId === 'credentials' ? '/callback/credentials' : joinPath('/signin', `/${providerId}`)
+	const startPath = joinPath('/signin', `/${providerId}`)
 	const startUrl = buildAbsoluteUrl(basePath, `${startPath}${query ? `?${query}` : ''}`, baseUrl)
 
 	if (redirect === 'manual') {
@@ -140,22 +140,44 @@ export async function signIn(
 		if (!hasWindow()) {
 			throw new Error('Cannot perform top-level navigation during SSR. Use signIn(..., "manual") to obtain a redirect URL and issue it from your framework.')
 		}
-		// Top-level navigation
-		window.location.assign(startUrl)
+		
+		const form = document.createElement('form')
+		form.method = 'POST'
+		form.action = startUrl
+		document.body.appendChild(form)
+
+		if (csrfToken) {
+			const input = document.createElement('input')
+			input.type = 'hidden'
+			input.name = 'csrfToken'
+			input.value = csrfToken
+			form.appendChild(input)
+		}
+
+		if (callbackUrl) {
+			const input = document.createElement('input')
+			input.type = 'hidden'
+			input.name = 'callbackUrl'
+			input.value = callbackUrl
+			form.appendChild(input)
+		}
+
+		form.submit()
 		return { ok: true, redirected: true }
 	}
 
 	// redirect === false: keep fetch-based flow but normalize return shape
-	const target = resolveEndpoint(client, providerId === 'credentials' ? '/callback/credentials' : '/signin')
+	const target = resolveEndpoint(client, providerId === 'credentials' ? '/callback/credentials' : joinPath('/signin', providerId))
 	const request = resolveFetch(client?.fetch)
 	const init: Record<string, unknown> = {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
+			'Accept': 'application/json',
 			...(client?.headers ?? {})
 		},
 		credentials: 'include',
-		body: JSON.stringify({ ...body, provider: providerId, csrfToken: csrfToken ?? undefined })
+		body: JSON.stringify({ ...body, provider: providerId, csrfToken: csrfToken ?? undefined, json: true, redirect: false })
 	}
 
 	const response = await request(target, init)
@@ -166,7 +188,20 @@ export async function signIn(
 		url = typeof data?.url === 'string' ? data.url : undefined
 		error = typeof data?.error === 'string' ? data.error : undefined
 	} catch {}
-	return { ok: response.ok, url, error }
+
+	if (!error && response.url) {
+		try {
+			const urlObj = new URL(response.url)
+			const errorParam = urlObj.searchParams.get('error')
+			if (errorParam) {
+				error = errorParam
+				const code = urlObj.searchParams.get('code')
+				if (code) error = `${error} (${code})`
+			}
+		} catch {}
+	}
+
+	return { ok: response.ok && !error, url, error }
 }
 
 /**
