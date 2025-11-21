@@ -141,7 +141,7 @@ export default function DashboardPage() {
 				</span>
 				<a
 					className="button button--subtle"
-					href="https://roboplay.dev/docs/plugins/auth"
+					href="https://roboplay.dev/plugins/auth"
 					target="_blank"
 					rel="noreferrer"
 					style={{ alignSelf: 'flex-start' }}

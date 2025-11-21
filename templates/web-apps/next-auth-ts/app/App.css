@@ -30,21 +30,27 @@ a {
 }
 
 a:hover,
-	button:hover {
+button:hover {
 	color: #bfdbfe;
 }
 
+.button,
 button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 	border: 1px solid rgba(96, 165, 250, 0.5);
 	background: rgba(15, 23, 42, 0.85);
 	color: #f8fafc;
-	padding: 0.65rem 1.75rem;
-	font-size: 0.95rem;
+	padding: 0.85rem 2rem;
+	font-size: 1rem;
 	font-weight: 600;
 	cursor: pointer;
-	border-radius: 4px;
+	border-radius: 6px;
 	text-transform: none;
-	transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+	transition: all 0.2s ease;
+	text-decoration: none;
+	line-height: 1.5;
 }
 
 button:hover {
@@ -68,22 +74,51 @@ a:focus-visible {
 	gap: clamp(40px, 6vw, 72px);
 }
 
-.masthead {
-	display: grid;
-	gap: 16px;
+.hero-card {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 24px;
+	padding: 40px 0;
 }
 
-.masthead h1 {
+.hero-eyebrow {
+	color: #60a5fa;
+	font-weight: 600;
+	font-size: 0.9rem;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
 	margin: 0;
-	font-size: clamp(2.5rem, 4.8vw, 3.6rem);
+}
+
+.hero-title {
+	font-size: clamp(3rem, 6vw, 4.5rem);
+	line-height: 1.1;
+	font-weight: 800;
+	margin: 0;
 	color: #f1f5ff;
+	letter-spacing: -0.02em;
 }
 
-.masthead p {
-	margin: 0;
-	max-width: 560px;
+.hero-copy {
+	font-size: 1.25rem;
 	line-height: 1.6;
-	color: rgba(202, 211, 238, 0.86);
+	color: rgba(203, 213, 225, 0.8);
+	max-width: 640px;
+	margin: 0;
+}
+
+.hero-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 16px;
+	margin-top: 8px;
+}
+
+.hero-hint {
+	font-size: 0.9rem;
+	color: rgba(148, 163, 184, 0.6);
+	margin-top: 16px;
 }
 
 .cta-row {
@@ -261,7 +296,7 @@ a:focus-visible {
 	opacity: 0.45;
 }
 
-.card--hover-accent > * {
+.card--hover-accent>* {
 	position: relative;
 	z-index: 1;
 }
@@ -423,11 +458,13 @@ a:focus-visible {
 }
 
 @keyframes pulse {
+
 	0%,
 	100% {
 		opacity: 0.25;
 		transform: translateY(0px);
 	}
+
 	50% {
 		opacity: 1;
 		transform: translateY(-3px);

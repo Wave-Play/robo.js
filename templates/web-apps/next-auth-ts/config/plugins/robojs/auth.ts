@@ -10,7 +10,8 @@ const config: AuthPluginOptions = {
   adapter: adapter,
   appName: 'Robo App',
   pages: {
-    newUser: '/dashboard'
+    newUser: '/dashboard',
+    signIn: '/login'
   },
   /*
   Uncomment to enable email sending via Resend.com
@@ -24,7 +25,18 @@ const config: AuthPluginOptions = {
     Discord({ clientId: process.env.DISCORD_CLIENT_ID, clientSecret: process.env.DISCORD_CLIENT_SECRET }),
     EmailPassword({ adapter })
   ],
-  secret: process.env.AUTH_SECRET
+  secret: process.env.AUTH_SECRET,
+  cookies: {
+    sessionToken: {
+      name: `authjs.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: false
+      }
+    }
+  }
 }
 
 export default config

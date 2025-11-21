@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { getCsrfToken, signIn } from '@robojs/auth/client'
 import Link from 'next/link'
+import styles from './signup.module.css'
 
 export default function SignupPage() {
 	const [csrfToken, setCsrfToken] = useState<string>('')
@@ -60,7 +61,7 @@ export default function SignupPage() {
 				callbackUrl: '/dashboard'
 			})
 
-			if (result?.error) {
+			if (result && 'error' in result && typeof result.error === 'string') {
 				throw new Error(result.error)
 			}
 			
@@ -72,88 +73,69 @@ export default function SignupPage() {
 	}
 
 	return (
-		<div className="page">
-			<div className="card" style={{ maxWidth: '400px', margin: '0 auto' }}>
-				<h1 className="card-title">Create an account</h1>
+		<div className={styles.container}>
+			<div className={styles.card}>
+				<Link href="/" className={styles.backLink}>
+					Back to Home
+				</Link>
+				<h1 className={styles.title}>Create an account</h1>
 				
 				{error && (
-					<div className="callout callout--warning" style={{ marginBottom: '1rem' }}>
+					<div className={styles.error}>
 						{error}
 					</div>
 				)}
 
-				<form onSubmit={handleSubmit} className="stacked">
+				<form onSubmit={handleSubmit} className={styles.form}>
 					<input type="hidden" name="csrfToken" value={csrfToken} />
 					
-					<div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-						<label htmlFor="email" className="label-muted">Email</label>
+					<div className={styles.inputGroup}>
+						<label htmlFor="email" className={styles.label}>Email</label>
 						<input 
 							id="email"
 							name="email" 
 							type="email" 
 							required 
-							className="input"
-							style={{
-								background: 'rgba(15, 23, 42, 0.75)',
-								border: '1px solid rgba(148, 163, 184, 0.35)',
-								padding: '10px',
-								borderRadius: '4px',
-								color: 'white'
-							}}
+							className={styles.input}
 						/>
 					</div>
 
-					<div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-						<label htmlFor="password" className="label-muted">Password</label>
+					<div className={styles.inputGroup}>
+						<label htmlFor="password" className={styles.label}>Password</label>
 						<input 
 							id="password"
 							name="password" 
 							type="password" 
 							required 
 							minLength={8}
-							className="input"
-							style={{
-								background: 'rgba(15, 23, 42, 0.75)',
-								border: '1px solid rgba(148, 163, 184, 0.35)',
-								padding: '10px',
-								borderRadius: '4px',
-								color: 'white'
-							}}
+							className={styles.input}
 						/>
 					</div>
 
-					<div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-						<label htmlFor="confirmPassword" className="label-muted">Confirm Password</label>
+					<div className={styles.inputGroup}>
+						<label htmlFor="confirmPassword" className={styles.label}>Confirm Password</label>
 						<input 
 							id="confirmPassword"
 							name="confirmPassword" 
 							type="password" 
 							required 
 							minLength={8}
-							className="input"
-							style={{
-								background: 'rgba(15, 23, 42, 0.75)',
-								border: '1px solid rgba(148, 163, 184, 0.35)',
-								padding: '10px',
-								borderRadius: '4px',
-								color: 'white'
-							}}
+							className={styles.input}
 						/>
 					</div>
 
 					<button 
 						type="submit" 
-						className="button button--primary"
+						className={styles.button}
 						disabled={loading}
-						style={{ marginTop: '1rem', width: '100%' }}
 					>
 						{loading ? 'Creating account...' : 'Sign up'}
 					</button>
 				</form>
 
-				<p className="text-muted" style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.9rem' }}>
-					Already have an account? <Link href="/api/auth/signin">Sign in</Link>
-				</p>
+				<div className={styles.loginContainer}>
+					Already have an account? <Link href="/login" className={styles.link}>Sign in</Link>
+				</div>
 			</div>
 		</div>
 	)
