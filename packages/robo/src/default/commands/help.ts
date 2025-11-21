@@ -1,5 +1,5 @@
 // @ts-expect-error - This is valid once command file is parsed
-import { getManifest } from 'robo.js'
+import { getManifest, portal } from 'robo.js'
 import {
 	ActionRowBuilder,
 	AutocompleteInteraction,
@@ -43,18 +43,30 @@ export const config: CommandConfig = {
 export default async (interaction: CommandInteraction) => {
 	const manifest = getManifest()
 	const commands = getInnermostCommands(manifest.commands)
+
+	const serverId = interaction.guildId
+	const filteredByAvailability = commands.filter(cmd => {
+		if (cmd.key && portal.command(cmd.key) && !portal.command(cmd.key).isEnabled) return false
+
+		if (cmd.command.__module && portal.module(cmd.command.__module) && !portal.module(cmd.command.__module).isEnabled) return false
+
+		if (serverId && cmd.key && !portal.isEnabledForServer(cmd.key, serverId)) return false
+
+		return true
+	})
+
 	const query = interaction.options.get('command')?.value as string
 	const category = interaction.options.get('category')?.value as string
-	const queriedCmd = commands.filter((cmd) => cmd.key == query)[0]
+	const queriedCmd = filteredByAvailability.filter((cmd) => cmd.key == query)[0]
 
 	if (queriedCmd) {
 		return {
 			embeds: [createCommandEmbed(queriedCmd)]
 		}
 	} else {
-		const categorizedCommands = categorizeCommands(commands)
+		const categorizedCommands = categorizeCommands(filteredByAvailability)
 		const categories = Object.keys(categorizedCommands)
-		const filteredCommands = category ? categorizedCommands[category] || [] : commands
+		const filteredCommands = category ? categorizedCommands[category] || [] : filteredByAvailability
 
 		const page = 0
 		const totalPages = Math.ceil(filteredCommands.length / COMMANDS_PER_PAGE)
@@ -73,10 +85,20 @@ export const autocomplete = (interaction: AutocompleteInteraction) => {
 	const focusedOption = interaction.options.getFocused(true)
 	const manifest = getManifest()
 	const commands = getInnermostCommands(manifest.commands)
+	const serverId = interaction.guildId
+	const filteredByAvailability = commands.filter(cmd => {
+		if (cmd.key && portal.command(cmd.key) && !portal.command(cmd.key).isEnabled) return false
+
+		if (cmd.command.__module && portal.module(cmd.command.__module) && !portal.module(cmd.command.__module).isEnabled) return false
+
+		if (serverId && cmd.key && !portal.isEnabledForServer(cmd.key, serverId)) return false
+
+		return true
+	})
 
 	if (focusedOption.name === 'category') {
 		const query = (focusedOption.value || '').toLowerCase().trim()
-		const categories = getCategoryList(commands)
+		const categories = getCategoryList(filteredByAvailability)
 
 		if (!query) {
 			return categories.map((cat) => ({ name: cat, value: cat })).slice(0, 24)
@@ -87,9 +109,9 @@ export const autocomplete = (interaction: AutocompleteInteraction) => {
 	} else {
 		const query = ((focusedOption.value as string) ?? '').replace('/', '').toLowerCase().trim()
 		if (!query) {
-			return commands.map((cmd) => ({ name: `/${cmd.key}`, value: cmd.key })).slice(0, 24)
+			return filteredByAvailability.map((cmd) => ({ name: `/${cmd.key}`, value: cmd.key })).slice(0, 24)
 		} else {
-			const results = commands.filter((cmd) => cmd.key.toLowerCase().includes(query))
+			const results = filteredByAvailability.filter((cmd) => cmd.key.toLowerCase().includes(query))
 			return results.map((cmd) => ({ name: `/${cmd.key}`, value: cmd.key })).slice(0, 24)
 		}
 	}
