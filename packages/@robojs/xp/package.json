@@ -1,7 +1,7 @@
 {
 	"name": "@robojs/xp",
 	"description": "Experience points and leveling plugin for Robo.js",
-	"version": "0.0.0",
+	"version": "0.1.0",
 	"type": "module",
 	"private": false,
 	"keywords": [
