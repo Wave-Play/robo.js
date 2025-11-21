@@ -1,0 +1,42 @@
+{
+  "name": "@robojs/cooldown",
+  "version": "0.1.0",
+  "description": "Add cooldown functionality to your Robo.js commands",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "robo",
+    "robojs",
+    "plugin",
+    "cooldown",
+    "rate-limit",
+    "discord"
+  ],
+  "author": "WavePlay",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Wave-Play/robo.js.git",
+    "directory": "packages/@robojs/cooldown"
+  },
+  "dependencies": {
+    "robo.js": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "robo.js": ">=0.10.0"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ]
+}
