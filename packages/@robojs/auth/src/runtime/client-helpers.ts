@@ -104,7 +104,7 @@ export async function signIn(
 
 	if (legacyMode) {
 		// Resolve the runtime environment before composing the Auth.js request.
-		const target = resolveEndpoint(client, '/signin')
+		const target = resolveEndpoint(client, providerId === 'credentials' ? '/callback/credentials' : '/signin')
 		const request = resolveFetch(client?.fetch)
 		const init: Record<string, unknown> = {
 			method: 'POST',
@@ -129,7 +129,7 @@ export async function signIn(
 
 	const callbackUrl = resolveCallbackUrl(typeof body?.callbackUrl === 'string' ? (body.callbackUrl as string) : undefined)
 	const query = toQuery({ callbackUrl: callbackUrl, csrfToken: csrfToken ?? undefined })
-	const startPath = joinPath('/signin', `/${providerId}`)
+	const startPath = providerId === 'credentials' ? '/callback/credentials' : joinPath('/signin', `/${providerId}`)
 	const startUrl = buildAbsoluteUrl(basePath, `${startPath}${query ? `?${query}` : ''}`, baseUrl)
 
 	if (redirect === 'manual') {
@@ -146,7 +146,7 @@ export async function signIn(
 	}
 
 	// redirect === false: keep fetch-based flow but normalize return shape
-	const target = resolveEndpoint(client, '/signin')
+	const target = resolveEndpoint(client, providerId === 'credentials' ? '/callback/credentials' : '/signin')
 	const request = resolveFetch(client?.fetch)
 	const init: Record<string, unknown> = {
 		method: 'POST',
