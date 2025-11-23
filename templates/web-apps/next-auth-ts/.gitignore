@@ -31,3 +31,8 @@ yarn-error.log*
 
 # next
 .next
+
+# prisma
+*.db
+*.db-journal
+prisma/dev.db*
