@@ -9,6 +9,7 @@ import type WebSocket from 'ws'
 import type { RawData } from 'ws'
 import { logger } from '@/core/logger.js'
 import type {
+	MCPTool,
 	VoiceEndpointingStrategy,
 	VoiceInputFrame,
 	VoicePlaybackDelta,
@@ -23,6 +24,8 @@ export interface RealtimeToolCall {
 	callId: string
 	name: string
 	responseId?: string | null
+	isMcp?: boolean
+	serverLabel?: string | null
 }
 
 interface ToolCallBufferEntry {
@@ -31,6 +34,8 @@ interface ToolCallBufferEntry {
 	name?: string
 	responseId?: string
 	emitted?: boolean
+	isMcp?: boolean
+	serverLabel?: string | null
 }
 
 type ConversationRole = 'user' | 'assistant'
@@ -73,6 +78,7 @@ interface SessionConfig {
 	tools?: Array<Record<string, unknown>>
 	playbackVoice?: string | null
 	transcription?: AudioTranscription | null
+	mcpTools?: MCPTool[]
 }
 
 interface RealtimeEnvelope {
@@ -156,11 +162,18 @@ export class OpenAiRealtimeSession extends EventEmitter {
 	private readonly _usageResponses = new Set<string>()
 	private readonly _toolCallBuffers = new Map<string, ToolCallBufferEntry>()
 	private readonly _outputFnBuffers = new Map<string, OutputFunctionBuffer>()
+	private readonly _mcpToolLookup: Map<string, string>
+	private readonly _mcpServerLabels: Set<string>
+	private readonly _mcpWildcardServers: Set<string>
 
 	public constructor(config: SessionConfig, callbacks: SessionCallbacks) {
 		super()
 		this._config = config
 		this._callbacks = callbacks
+		this._mcpToolLookup = new Map()
+		this._mcpServerLabels = new Set()
+		this._mcpWildcardServers = new Set()
+		this.registerMcpServers(config.mcpTools)
 	}
 
 	/**
@@ -403,7 +416,21 @@ export class OpenAiRealtimeSession extends EventEmitter {
 				this.handleFunctionCallCompleted(envelope)
 				break
 			}
+			case 'response.mcp_call.delta':
+			case 'response.mcp_call.done':
+			case 'response.mcp_call.arguments.delta':
+			case 'response.mcp_call.arguments.done':
+			case 'response.output_item.mcp_call.delta':
+			case 'response.output_item.mcp_call.completed':
+			case 'response.output_item.mcp_call.done': {
+				this.handleMcpCallEnvelope(envelope)
+				break
+			}
 			case 'response.required_action': {
+				this.handleRequiredAction(envelope)
+				break
+			}
+			case 'response.required_action.mcp_submit_tool_outputs': {
 				this.handleRequiredAction(envelope)
 				break
 			}
@@ -509,6 +536,10 @@ export class OpenAiRealtimeSession extends EventEmitter {
 						buffer.responseId = responseId
 					}
 				}
+				const item = (envelope as { item?: Record<string, unknown> }).item
+				if (item && typeof item === 'object' && item.type === 'mcp_call') {
+					this.handleMcpCallEnvelope(envelope)
+				}
 				break
 			}
 			case 'response.output_item.delta': {
@@ -527,6 +558,10 @@ export class OpenAiRealtimeSession extends EventEmitter {
 					if (delta && typeof delta.arguments === 'string') {
 						buffer.argsChunks.push(delta.arguments)
 					}
+				}
+				const item = (envelope as { item?: Record<string, unknown> }).item
+				if (item && typeof item === 'object' && item.type === 'mcp_call') {
+					this.handleMcpCallEnvelope(envelope)
 				}
 				break
 			}
@@ -551,6 +586,10 @@ export class OpenAiRealtimeSession extends EventEmitter {
 						buffer.responseId = responseId
 					}
 					this.tryEmitOutputFnBuf(buffer)
+				}
+				const item = (envelope as { item?: Record<string, unknown> }).item
+				if (item && typeof item === 'object' && item.type === 'mcp_call') {
+					this.handleMcpCallEnvelope(envelope)
 				}
 				break
 			}
@@ -609,6 +648,8 @@ export class OpenAiRealtimeSession extends EventEmitter {
 			}
 		}
 
+		this.tagMcpMetadata(entry, envelope as Record<string, unknown>, fn as Record<string, unknown> | undefined)
+
 		if (entry.name) {
 			this.emitBufferedToolCall(entry)
 		}
@@ -642,6 +683,8 @@ export class OpenAiRealtimeSession extends EventEmitter {
 		if (args) {
 			entry.argumentsChunks.push(args)
 		}
+
+		this.tagMcpMetadata(entry, envelope as Record<string, unknown>, delta)
 	}
 
 	/**
@@ -675,7 +718,53 @@ export class OpenAiRealtimeSession extends EventEmitter {
 			entry.argumentsChunks.push(argsText)
 		}
 
+		this.tagMcpMetadata(entry, envelope as Record<string, unknown>, functionCall)
+
 		this.emitBufferedToolCall(entry)
+	}
+
+	private handleMcpCallEnvelope(envelope: RealtimeEnvelope) {
+		const record = envelope as Record<string, unknown>
+		const item = (record as { item?: Record<string, unknown> }).item
+		const delta = (record as { delta?: Record<string, unknown> }).delta
+		const mcpCall = (record as { mcp_call?: Record<string, unknown> }).mcp_call
+		const callId =
+			this.extractCallId(record) ??
+			(item ? this.extractCallId(item) : null) ??
+			(delta ? this.extractCallId(delta) : null)
+		if (!callId) {
+			return
+		}
+		const entry = this.ensureToolBuffer(callId)
+		entry.isMcp = true
+		const response = (record as { response?: Record<string, unknown> }).response
+		if (response && typeof response === 'object' && typeof response.id === 'string') {
+			entry.responseId = response.id
+		}
+		const candidateSources = [record, item, delta, mcpCall].filter(
+			(source): source is Record<string, unknown> => Boolean(source && typeof source === 'object')
+		)
+		for (const source of candidateSources) {
+			const name = typeof (source as { name?: unknown }).name === 'string' ? ((source as { name: string }).name as string) : undefined
+			if (name) {
+				entry.name = name
+			}
+			const argsText = this.extractMcpArguments(source)
+			if (argsText) {
+				entry.argumentsChunks.push(argsText)
+			}
+		}
+		this.tagMcpMetadata(entry, ...candidateSources)
+		const status = this.extractMcpStatus(candidateSources)
+		const eventType = typeof envelope.type === 'string' ? envelope.type : ''
+		const shouldEmit =
+			eventType.endsWith('.done') ||
+			eventType.endsWith('.completed') ||
+			eventType === 'response.required_action.mcp_submit_tool_outputs' ||
+			(Boolean(status) && status !== 'in_progress')
+		if (shouldEmit && entry.name) {
+			this.emitBufferedToolCall(entry)
+		}
 	}
 
 	/**
@@ -690,10 +779,12 @@ export class OpenAiRealtimeSession extends EventEmitter {
 			return
 		}
 		const type = typeof required.type === 'string' ? (required.type as string) : undefined
-		if (type !== 'submit_tool_outputs') {
+		if (type !== 'submit_tool_outputs' && type !== 'mcp_submit_tool_outputs') {
 			return
 		}
-		const payload = (required as { submit_tool_outputs?: Record<string, unknown> }).submit_tool_outputs
+		const payload =
+			(required as { submit_tool_outputs?: Record<string, unknown> }).submit_tool_outputs ??
+			(required as { mcp_submit_tool_outputs?: Record<string, unknown> }).mcp_submit_tool_outputs
 		const toolCalls = payload && typeof payload === 'object' ? (payload.tool_calls as unknown) : undefined
 		if (!Array.isArray(toolCalls)) {
 			return
@@ -717,10 +808,11 @@ export class OpenAiRealtimeSession extends EventEmitter {
 			if (name) {
 				entry.name = name
 			}
-			const argumentsText = this.readArguments(callRecord)
+			const argumentsText = this.extractMcpArguments(callRecord)
 			if (argumentsText) {
 				entry.argumentsChunks.push(argumentsText)
 			}
+			this.tagMcpMetadata(entry, callRecord)
 			this.emitBufferedToolCall(entry)
 		}
 	}
@@ -752,6 +844,7 @@ export class OpenAiRealtimeSession extends EventEmitter {
 		if (tokensIn === 0 && tokensOut === 0) {
 			return
 		}
+		const metadata = this.enrichUsageMetadataWithMcp(envelope, usage.metadata)
 		logger.debug('realtime usage', {
 			responseId,
 			tokensIn,
@@ -765,7 +858,7 @@ export class OpenAiRealtimeSession extends EventEmitter {
 				tokensIn,
 				tokensOut,
 				responseId,
-				metadata: usage.metadata,
+				metadata: metadata ?? usage.metadata,
 				raw: usage.raw
 			})
 		} catch (error) {
@@ -828,6 +921,50 @@ export class OpenAiRealtimeSession extends EventEmitter {
 		}
 	}
 
+	private enrichUsageMetadataWithMcp(
+		envelope: RealtimeEnvelope,
+		existing?: Record<string, unknown>
+	): Record<string, unknown> | undefined {
+		const record = envelope as Record<string, unknown>
+		const response = (record as { response?: Record<string, unknown> }).response
+		const item = (record as { item?: Record<string, unknown> }).item
+		const delta = (record as { delta?: Record<string, unknown> }).delta
+		const sources = [record, response, item, delta].filter(
+			(source): source is Record<string, unknown> => Boolean(source && typeof source === 'object')
+		)
+		let serverLabel: string | null = null
+		for (const source of sources) {
+			serverLabel = this.extractMcpServerLabel(source)
+			if (serverLabel) {
+				break
+			}
+		}
+		if (!serverLabel && existing && typeof (existing as { mcpServerLabel?: unknown }).mcpServerLabel === 'string') {
+			serverLabel = (existing as { mcpServerLabel: string }).mcpServerLabel
+		}
+		if (!serverLabel && existing && typeof (existing as { server_label?: unknown }).server_label === 'string') {
+			serverLabel = (existing as { server_label: string }).server_label
+		}
+		const envelopeType = typeof envelope.type === 'string' ? envelope.type : ''
+		const typeHint = this.extractMcpTypeFromSources(...sources)
+		const hasIndicator = Boolean(serverLabel) || Boolean(typeHint && typeHint.toLowerCase().includes('mcp')) || envelopeType.includes('mcp')
+		if (!hasIndicator) {
+			return existing
+		}
+		const metadata = { ...(existing ?? {}) }
+		if (serverLabel) {
+			metadata.mcpServerLabel = serverLabel
+		}
+		if (typeHint) {
+			metadata.mcpToolType = typeHint
+		}
+		if (envelopeType.includes('mcp')) {
+			metadata.mcpEnvelopeType = envelopeType
+		}
+		metadata.isMcp = true
+		return metadata
+	}
+
 	private ensureToolBuffer(callId: string): ToolCallBufferEntry {
 		let entry = this._toolCallBuffers.get(callId)
 		if (!entry) {
@@ -852,15 +989,165 @@ export class OpenAiRealtimeSession extends EventEmitter {
 			})
 			return
 		}
+		this.tagMcpMetadata(entry)
 		const payload: RealtimeToolCall = {
 			arguments: parsedArguments,
 			argumentsText,
 			callId: entry.callId,
 			name: entry.name,
-			responseId: entry.responseId ?? null
+			responseId: entry.responseId ?? null,
+			isMcp: Boolean(entry.isMcp),
+			serverLabel: entry.serverLabel ?? null
+		}
+		if (payload.isMcp) {
+			logger.debug('realtime MCP tool call detected', {
+				callId: payload.callId,
+				name: payload.name,
+				serverLabel: payload.serverLabel
+			})
 		}
 		entry.emitted = true
 		this.emit('toolCall', payload)
+	}
+
+	private tagMcpMetadata(entry: ToolCallBufferEntry, ...sources: Array<Record<string, unknown> | undefined>): void {
+		for (const source of sources) {
+			if (!source || typeof source !== 'object') {
+				continue
+			}
+			const serverLabel = this.extractMcpServerLabel(source as Record<string, unknown>)
+			if (serverLabel) {
+				entry.serverLabel = serverLabel
+				entry.isMcp = true
+			}
+			const typeHint = typeof (source as { type?: unknown }).type === 'string' ? ((source as { type: string }).type as string) : undefined
+			if (typeHint && typeHint.includes('mcp')) {
+				entry.isMcp = true
+			}
+			const toolType =
+				typeof (source as { tool_type?: unknown }).tool_type === 'string'
+					? ((source as { tool_type: string }).tool_type as string)
+					: undefined
+			if (toolType && toolType.includes('mcp')) {
+				entry.isMcp = true
+			}
+			const metadataRaw = (source as { metadata?: Record<string, unknown> }).metadata
+			if (metadataRaw && typeof metadataRaw === 'object') {
+				const nestedLabel = this.extractMcpServerLabel(metadataRaw)
+				if (nestedLabel && !entry.serverLabel) {
+					entry.serverLabel = nestedLabel
+				}
+			}
+		}
+		if (!entry.isMcp && entry.name) {
+			const inferred = this.resolveMcpLabelFromName(entry.name)
+			if (inferred) {
+				entry.isMcp = true
+				if (!entry.serverLabel) {
+					entry.serverLabel = inferred
+				}
+			}
+		}
+	}
+
+	private extractMcpServerLabel(source: Record<string, unknown>): string | null {
+		const candidates = [source['server_label'], source['serverLabel'], source['server']]
+		for (const candidate of candidates) {
+			if (typeof candidate === 'string' && candidate.trim()) {
+				return candidate.trim()
+			}
+		}
+		return null
+	}
+
+	private resolveMcpLabelFromName(name: string): string | null {
+		const normalized = name.trim()
+		if (!normalized) {
+			return null
+		}
+		const direct = this._mcpToolLookup.get(normalized)
+		if (direct) {
+			return direct
+		}
+		if (this._mcpWildcardServers.size === 1) {
+			return Array.from(this._mcpWildcardServers)[0] ?? null
+		}
+		if (this._mcpWildcardServers.size > 1) {
+			logger.debug('ambiguous MCP wildcard servers; unable to infer label', {
+				name: normalized,
+				serverLabels: Array.from(this._mcpWildcardServers)
+			})
+		}
+		return null
+	}
+
+	private extractMcpStatus(sources: Array<Record<string, unknown>>): string | null {
+		for (const source of sources) {
+			const status = this.readMcpStatusValue(source)
+			if (status) {
+				return status
+			}
+		}
+		return null
+	}
+
+	private readMcpStatusValue(source: Record<string, unknown>): string | null {
+		const candidates = [source['status'], source['state']]
+		for (const candidate of candidates) {
+			if (typeof candidate === 'string' && candidate.trim()) {
+				return candidate.trim().toLowerCase()
+			}
+		}
+		return null
+	}
+
+	private extractMcpTypeFromSources(
+		...sources: Array<Record<string, unknown> | undefined>
+	): string | null {
+		for (const source of sources) {
+			if (!source) {
+				continue
+			}
+			const candidates = [source['tool_type'], source['type'], source['call_type']]
+			for (const candidate of candidates) {
+				if (typeof candidate === 'string' && candidate.toLowerCase().includes('mcp')) {
+					return candidate
+				}
+			}
+		}
+		return null
+	}
+
+	private registerMcpServers(mcpTools?: MCPTool[]): void {
+		if (!Array.isArray(mcpTools) || mcpTools.length === 0) {
+			return
+		}
+		for (const tool of mcpTools) {
+			if (!tool || tool.type !== 'mcp' || typeof tool.server_label !== 'string') {
+				continue
+			}
+			const label = tool.server_label
+			this._mcpServerLabels.add(label)
+			if (Array.isArray(tool.allowed_tools) && tool.allowed_tools.length > 0) {
+				for (const rawName of tool.allowed_tools) {
+					if (typeof rawName !== 'string' || !rawName.trim()) {
+						continue
+					}
+					const normalized = rawName.trim()
+					const previous = this._mcpToolLookup.get(normalized)
+					if (previous && previous !== label) {
+						logger.warn('MCP tool name configured on multiple servers for realtime session', {
+							name: normalized,
+							conflict: label,
+							existing: previous
+						})
+					}
+					this._mcpToolLookup.set(normalized, label)
+				}
+			} else if (tool.allowed_tools === undefined) {
+				this._mcpWildcardServers.add(label)
+			}
+		}
 	}
 
 	private parseArguments(text: string): Record<string, unknown> {
@@ -927,7 +1214,31 @@ export class OpenAiRealtimeSession extends EventEmitter {
 				})
 			}
 		}
+		const altKeys = ['arguments_text', 'arguments_delta', 'arguments_chunk', 'arguments_json', 'args', 'params', 'parameters']
+		for (const key of altKeys) {
+			const candidate = source[key]
+			if (typeof candidate === 'string') {
+				return candidate
+			}
+			if (candidate && typeof candidate === 'object') {
+				try {
+					return JSON.stringify(candidate)
+				} catch (error) {
+					logger.debug('failed to stringify alternate tool arguments source', {
+						error,
+						key
+					})
+				}
+			}
+		}
 		return ''
+	}
+
+	private extractMcpArguments(source?: Record<string, unknown>): string {
+		if (!source || typeof source !== 'object') {
+			return ''
+		}
+		return this.readArguments(source)
 	}
 
 	/**

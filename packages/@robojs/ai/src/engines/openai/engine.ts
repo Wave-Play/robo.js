@@ -6,7 +6,7 @@
  */
 import { _PREFIX, packageJson } from '@/core/constants.js'
 import { logger } from '@/core/logger.js'
-import { BaseEngine, type EngineSupportedFeatures } from '@/engines/base.js'
+import { BaseEngine, type EngineSupportedFeatures, type MCPTool } from '@/engines/base.js'
 import { options as pluginOptions } from '@/events/_start.js'
 import fs from 'node:fs/promises'
 import type { Stats } from 'node:fs'
@@ -189,6 +189,7 @@ export class OpenAiEngine extends BaseEngine {
 	private _functionHandlers: Record<string, Command> = {}
 	private _vectorStoreId: string | null = null
 	private _voiceSessions = new Map<string, VoiceSessionState>()
+	private _mcpServers: MCPTool[] = []
 
 	public constructor(options: OpenAiEngineOptions = {}) {
 		const clientOptions = { ...(options.clientOptions ?? {}) }
@@ -227,6 +228,74 @@ export class OpenAiEngine extends BaseEngine {
 		const { functions, handlers } = await loadFunctions()
 		this._functions = functions
 		this._functionHandlers = handlers
+
+		// Validate and load MCP servers
+		const rawMcpServers = pluginOptions.mcpServers ?? []
+		const validatedServers: MCPTool[] = []
+		const seenLabels = new Set<string>()
+
+		for (let i = 0; i < rawMcpServers.length; i++) {
+			const server = rawMcpServers[i]
+			const errors: string[] = []
+
+			// Check required fields
+			if (!server.type || server.type !== 'mcp') {
+				errors.push('missing or invalid type (must be "mcp")')
+			}
+			if (!server.server_label || typeof server.server_label !== 'string') {
+				errors.push('missing or invalid server_label')
+			}
+			if (!server.server_url || typeof server.server_url !== 'string') {
+				errors.push('missing or invalid server_url')
+			}
+
+			// Check for duplicate labels
+			if (server.server_label && seenLabels.has(server.server_label)) {
+				errors.push(`duplicate server_label: "${server.server_label}"`)
+			}
+
+			if (errors.length > 0) {
+				logger.warn(`Skipping invalid MCP server configuration at index ${i}: ${errors.join(', ')}`)
+				continue
+			}
+
+			// Validate optional fields
+			if (server.headers !== undefined && (typeof server.headers !== 'object' || Array.isArray(server.headers))) {
+				logger.warn(
+					`MCP server "${server.server_label}" has invalid headers (expected object), ignoring headers`
+				)
+				server.headers = undefined
+			}
+			if (
+				server.allowed_tools !== undefined &&
+				(!Array.isArray(server.allowed_tools) || !server.allowed_tools.every((tool) => typeof tool === 'string'))
+			) {
+				logger.warn(
+					`MCP server "${server.server_label}" has invalid allowed_tools (expected string array), ignoring allowed_tools`
+				)
+				server.allowed_tools = undefined
+			}
+			if (
+				server.require_approval !== undefined &&
+				server.require_approval !== 'never' &&
+				server.require_approval !== 'always'
+			) {
+				logger.warn(
+					`MCP server "${server.server_label}" has invalid require_approval value "${server.require_approval}", defaulting to "never"`
+				)
+				server.require_approval = 'never'
+			}
+
+			validatedServers.push(server)
+			seenLabels.add(server.server_label)
+		}
+
+		this._mcpServers = validatedServers
+		if (this._mcpServers.length > 0) {
+			logger.debug(`Loaded ${this._mcpServers.length} MCP servers for OpenAI engine`)
+		} else if (rawMcpServers.length > 0) {
+			logger.warn(`No valid MCP servers found after validation (${rawMcpServers.length} configured)`)
+		}
 
 		try {
 			this._vectorStoreId = await this.ensureKnowledgeVectorStore()
@@ -361,6 +430,7 @@ export class OpenAiEngine extends BaseEngine {
 				model,
 				strategy: options.configuration.endpointing,
 				tools: realtimeTools,
+				mcpTools: this.getMCPTools(),
 				playbackVoice: options.configuration.playbackVoice ?? null,
 				transcription: configuredTranscription
 			},
@@ -484,6 +554,58 @@ export class OpenAiEngine extends BaseEngine {
 		}
 	}
 
+	public getMCPTools(): MCPTool[] {
+		return this._mcpServers
+	}
+
+	private resolveMcpServerLabel(toolName: string): string | null {
+		if (!toolName || this._mcpServers.length === 0) {
+			return null
+		}
+		const normalized = toolName.trim()
+		if (!normalized) {
+			return null
+		}
+		let directMatch: string | null = null
+		const wildcardLabels: string[] = []
+		for (const server of this._mcpServers) {
+			if (!server || server.type !== 'mcp') {
+				continue
+			}
+			const allowed = server.allowed_tools
+			if (Array.isArray(allowed) && allowed.length > 0) {
+				if (allowed.includes(normalized)) {
+					if (!directMatch) {
+						directMatch = server.server_label
+					} else if (directMatch !== server.server_label) {
+						logger.warn('tool name matches multiple MCP servers (voice)', {
+							name: normalized,
+							previous: directMatch,
+							conflict: server.server_label
+						})
+					}
+				}
+				continue
+			}
+			if (allowed === undefined) {
+				wildcardLabels.push(server.server_label)
+			}
+		}
+		if (directMatch) {
+			return directMatch
+		}
+		if (wildcardLabels.length === 1) {
+			return wildcardLabels[0]
+		}
+		if (wildcardLabels.length > 1) {
+			logger.debug('multiple wildcard MCP servers configured; unable to infer realtime match', {
+				name: normalized,
+				serverLabels: wildcardLabels
+			})
+		}
+		return null
+	}
+
 	private buildToolset(context: 'worker' | 'chat' | 'realtime' = 'worker'): Array<Record<string, unknown>> {
 		if (context === 'chat') {
 			return []
@@ -530,6 +652,12 @@ export class OpenAiEngine extends BaseEngine {
 
 		if (this._webSearchEnabled && context === 'worker') {
 			tools.push({ type: 'web_search' })
+		}
+
+		if (context === 'worker') {
+			for (const mcp of this._mcpServers) {
+				tools.push(mcp)
+			}
 		}
 
 		return tools
@@ -818,6 +946,23 @@ export class OpenAiEngine extends BaseEngine {
 			return
 		}
 
+		if (toolCall.isMcp) {
+			await this.handleRealtimeMcpToolCall(state, toolCall)
+			return
+		}
+
+		const inferredServerLabel = this.resolveMcpServerLabel(toolCall.name)
+		if (inferredServerLabel) {
+			if (!toolCall.serverLabel) {
+				toolCall.serverLabel = inferredServerLabel
+			}
+			logger.warn('MCP tool call not flagged; executing as function call', {
+				callId: toolCall.callId,
+				name: toolCall.name,
+				serverLabel: inferredServerLabel
+			})
+		}
+
 		const call: ChatFunctionCall = {
 			id: toolCall.callId,
 			name: toolCall.name,
@@ -863,6 +1008,8 @@ export class OpenAiEngine extends BaseEngine {
 		scheduleToolRun({
 			call,
 			channelKey,
+			isMcp: Boolean(toolCall.isMcp),
+			serverLabel: toolCall.serverLabel ?? null,
 			execute: async () => {
 				const collectedReplies: ChatReply[] = []
 				let commandResult: Awaited<ReturnType<typeof executeFunctionCall>>
@@ -932,6 +1079,58 @@ export class OpenAiEngine extends BaseEngine {
 					interruptResponseId: startAnnouncementId
 				})
 			}
+		})
+	}
+
+	private async handleRealtimeMcpToolCall(state: VoiceSessionState, toolCall: RealtimeToolCall): Promise<void> {
+		const resolvedLabel = toolCall.serverLabel ?? this.resolveMcpServerLabel(toolCall.name)
+		logger.debug('realtime MCP tool call received (server-side execution)', {
+			callId: toolCall.callId,
+			conversationKey: state.conversationKey,
+			name: toolCall.name,
+			serverLabel: resolvedLabel ?? null,
+			sessionId: state.options.sessionId
+		})
+
+		let acknowledgementResponseId: string | null = null
+		try {
+			await state.realtime.submitToolOutputs(
+				[
+					{
+						toolCallId: toolCall.callId,
+						output: JSON.stringify({
+							note: 'MCP tool executed server-side by OpenAI',
+							status: 'completed'
+						})
+					}
+				],
+				toolCall.responseId ?? undefined
+			)
+			acknowledgementResponseId = toolCall.responseId ?? null
+		} catch (error) {
+			logger.warn('failed to acknowledge realtime MCP tool call', {
+				callId: toolCall.callId,
+				error,
+				name: toolCall.name,
+				sessionId: state.options.sessionId
+			})
+		}
+
+		const digest: ToolDigest = {
+			callId: toolCall.callId,
+			createdAt: Date.now(),
+			detail: null,
+			isMcp: true,
+			name: toolCall.name,
+			success: true,
+			summary: resolvedLabel
+				? `MCP tool executed server-side via ${resolvedLabel}`
+				: 'MCP tool executed server-side',
+			serverLabel: resolvedLabel ?? null
+		}
+
+		await this.announceVoiceToolCompletion(state, toolCall, digest, true, {
+			interruptResponseId: acknowledgementResponseId
 		})
 	}
 
@@ -1799,22 +1998,54 @@ export class OpenAiEngine extends BaseEngine {
 		const toolCalls: ChatFunctionCall[] = []
 		const citationContext = createCitationContext()
 		const messageFragments: string[] = []
-		if (Array.isArray(response.output)) {
-			for (const item of response.output) {
-				if (isOutputMessage(item)) {
-					const text = collectMessageText(item, citationContext)
-					if (text) {
-						messageFragments.push(text)
-					}
-				} else if (isFunctionCall(item)) {
-					toolCalls.push({
-						id: item.call_id ?? item.id,
-						name: item.name,
-						arguments: safeParseArguments(item.arguments)
+	if (Array.isArray(response.output)) {
+		for (const item of response.output) {
+			if (isOutputMessage(item)) {
+				const text = collectMessageText(item, citationContext)
+				if (text) {
+					messageFragments.push(text)
+				}
+			} else if (isFunctionCall(item)) {
+				toolCalls.push({
+					id: item.call_id ?? item.id,
+					name: item.name,
+					arguments: safeParseArguments(item.arguments)
+				})
+			} else if (isMcpCall(item)) {
+				const status = item.status ?? 'completed'
+				const hasError = item.error !== undefined && item.error !== null
+				const isFailed = status === 'failed' || hasError
+				const basePayload = {
+					conversationId,
+					serverLabel: item.server_label ?? null,
+					toolName: item.name ?? null,
+					status,
+					resultPreview: summarizeMcpResult(item.result),
+					result: item.result,
+					arguments: item.arguments
+				}
+				if (isFailed) {
+					logger.warn('MCP tool call failed', {
+						...basePayload,
+						error: item.error ?? null
+					})
+				} else {
+					logger.debug('MCP tool call completed', basePayload)
+					// Log full result separately for detailed inspection
+					logger.debug('MCP tool call full result', {
+						conversationId,
+						serverLabel: item.server_label ?? null,
+						toolName: item.name ?? null,
+						arguments: item.arguments,
+						result: item.result
 					})
 				}
+				// MCP tools are executed server-side by OpenAI; results already
+				// influence the assistant message, so we only log them instead of
+				// scheduling local execution.
 			}
 		}
+	}
 
 		let messageText = normalizeInlineCitations(messageFragments.join('\n').trim())
 		if (!messageText && response.output_text) {
@@ -2000,6 +2231,20 @@ function isFunctionCall(item: ResponseOutputItem): item is ResponseFunctionToolC
 	return item?.type === 'function_call'
 }
 
+type McpCallItem = ResponseOutputItem & {
+	type: 'mcp_call'
+	server_label?: string
+	name?: string
+	arguments?: unknown
+	status?: string
+	result?: unknown
+	error?: unknown
+}
+
+function isMcpCall(item: ResponseOutputItem): item is McpCallItem {
+	return item?.type === 'mcp_call'
+}
+
 type CitationEntry = {
 	index: number
 	label: string
@@ -2154,4 +2399,19 @@ function summarizeOutput(output: unknown) {
 		return `array(${output.length})`
 	}
 	return typeof output
+}
+
+function summarizeMcpResult(result: unknown): string | null {
+	if (result === null || typeof result === 'undefined') {
+		return null
+	}
+	if (typeof result === 'string') {
+		return result.slice(0, 200)
+	}
+	try {
+		return JSON.stringify(result).slice(0, 200)
+	} catch (error) {
+		logger.debug('Failed to serialize MCP result for preview', { error })
+		return '[unserializable result]'
+	}
 }

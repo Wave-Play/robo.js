@@ -19,7 +19,8 @@ import type {
 	ChatMessage,
 	ChatMessageContent,
 	GenerateImageOptions,
-	GenerateImageResult
+	GenerateImageResult,
+	MCPTool
 } from '@/engines/base.js'
 import type { TextBasedChannel, VoiceBasedChannel, Guild } from 'discord.js'
 import type {
@@ -106,7 +107,8 @@ export const AI = {
 	getLifetimeUsage,
 	onUsageEvent,
 	onceUsageEvent,
-	offUsageEvent
+	offUsageEvent,
+	getMCPServers
 }
 
 /** Tracks active reply handles for each user to enforce concurrency safeguards. */
@@ -359,6 +361,20 @@ function onceUsageEvent<T extends UsageEventName>(event: T, listener: UsageEvent
  */
 function offUsageEvent<T extends UsageEventName>(event: T, listener: UsageEventListener<T>) {
 	tokenLedger.off(event, listener)
+}
+
+/**
+ * Retrieves configured MCP servers from plugin options, optionally delegating to the engine's
+ * getMCPTools() method if available. Returns an empty array if no MCP servers are configured.
+ *
+ * @returns Array of MCP tool configurations.
+ */
+function getMCPServers(): MCPTool[] {
+	// Prefer engine's getMCPTools() if available, otherwise fall back to plugin options
+	if (_engine && typeof _engine.getMCPTools === 'function') {
+		return _engine.getMCPTools()
+	}
+	return pluginOptions.mcpServers ?? []
 }
 
 /**

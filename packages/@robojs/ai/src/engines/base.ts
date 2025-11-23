@@ -117,6 +117,25 @@ export interface ChatFunction {
 }
 
 /**
+ * Configuration for an MCP (Model Context Protocol) server tool.
+ * MCP tools are server-side proxied by OpenAI, requiring no local execution logic.
+ */
+export interface MCPTool extends Record<string, unknown> {
+	/** Tool type discriminator, must be 'mcp'. */
+	type: 'mcp'
+	/** Human-readable label identifying the MCP server. */
+	server_label: string
+	/** Base URL of the MCP server endpoint. */
+	server_url: string
+	/** Optional HTTP headers to include in MCP requests (e.g., API keys). */
+	headers?: Record<string, string>
+	/** Optional whitelist of tool names allowed from this server. */
+	allowed_tools?: string[]
+	/** Approval requirement for tool calls: 'never' (auto-approve) or 'always' (require approval). */
+	require_approval?: 'never' | 'always'
+}
+
+/**
  * JSON schema snippet describing function parameters accepted by a chat tool.
  */
 export interface ChatFunctionParameters {
@@ -558,6 +577,16 @@ export abstract class BaseEngine {
 	 * Provides descriptive information about the engine for diagnostics or inspection tooling.
 	 */
 	public abstract getInfo(): Record<string, unknown>
+
+	/**
+	 * Optionally returns MCP (Model Context Protocol) tool configurations for this engine.
+	 * Engines that support MCP should override this method to return their configured MCP servers.
+	 *
+	 * @returns Array of MCP tool configurations, or empty array if MCP is not supported.
+	 */
+	public getMCPTools?(): MCPTool[] {
+		return []
+	}
 
 	/**
 	 * Optionally summarize tool execution results for provider-specific follow-up prompts.

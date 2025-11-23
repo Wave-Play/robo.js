@@ -4,7 +4,7 @@
  * context re-ingestion.
  */
 import { logger } from '@/core/logger.js'
-import { scheduleToolRun, type ToolDigest } from '@/core/tool-runner.js'
+import { enqueueDigest, scheduleToolRun, type ToolDigest } from '@/core/tool-runner.js'
 import {
 	buildDeferredNotice,
 	completeBackgroundTask,
@@ -61,11 +61,32 @@ interface ToolExecutionParams {
 export function scheduleToolExecution(engine: BaseEngine, params: ToolExecutionParams) {
 	const { call, channel, member, onReply, user } = params
 	const channelKey = getChannelKey(channel)
+	const mcpMeta = resolveMcpCall(engine, call)
+	if (mcpMeta) {
+		logger.warn('MCP tool call reached scheduleToolExecution; skipping local execution', {
+			callId: call.id ?? call.name,
+			name: call.name,
+			serverLabel: mcpMeta.serverLabel ?? null
+		})
+		enqueueDigest(channelKey, {
+			callId: call.id ?? call.name,
+			createdAt: Date.now(),
+			detail: null,
+			name: call.name,
+			success: true,
+			summary: 'MCP tool executed server-side',
+			shadowResponseId: null,
+			isMcp: true,
+			serverLabel: mcpMeta.serverLabel ?? null
+		})
+		return
+	}
 
 	// Queue tool execution with digest generation
 	scheduleToolRun({
 		call,
 		channelKey,
+		isMcp: false,
 		execute: async () => {
 			const result = await executeFunctionCall(engine, call, channel, member, user, onReply)
 			if (result.reply?.components?.length || result.reply?.files?.length || result.reply?.embeds?.length) {
@@ -162,6 +183,35 @@ export async function executeFunctionCall(
 	// Resolve function name to command handler
 	const gptFunctionHandler = engine.getFunctionHandlers()[call.name]
 	logger.debug(`Executing function call:`, call.name, call.arguments)
+	const mcpMeta = resolveMcpCall(engine, call)
+	if (mcpMeta) {
+		if (gptFunctionHandler) {
+			logger.warn('tool name matches both Discord command and MCP tool', {
+				name: call.name,
+				serverLabel: mcpMeta.serverLabel ?? null
+			})
+		}
+		logger.debug('MCP tool call detected in executor; skipping Discord execution', {
+			callId: call.id ?? call.name,
+			name: call.name,
+			serverLabel: mcpMeta.serverLabel ?? null
+		})
+		const contextHint = mcpMeta.serverLabel ? ` via ${mcpMeta.serverLabel}` : ''
+		const summary = `The MCP tool "${call.name}" was executed server-side${contextHint}. Summarize any visible results for the user.`
+		const placeholderReply: CommandReply = {
+			components: [],
+			deferred: false,
+			embeds: [],
+			ephemeral: true,
+			files: [],
+			message: summary,
+			text: summary
+		}
+		return {
+			success: true,
+			reply: placeholderReply
+		}
+	}
 
 	if (!gptFunctionHandler) {
 		return {
@@ -660,4 +710,57 @@ function describeComponent(component: Record<string, unknown>): string {
 	}
 
 	return [typeName, ...details].join(' ')
+}
+
+interface McpMatchMetadata {
+	serverLabel?: string | null
+}
+
+function resolveMcpCall(engine: BaseEngine | null | undefined, call: ChatFunctionCall): McpMatchMetadata | null {
+	if (!engine || typeof engine.getMCPTools !== 'function') {
+		return null
+	}
+	const mcpServers = engine.getMCPTools()
+	if (!Array.isArray(mcpServers) || mcpServers.length === 0) {
+		return null
+	}
+	const toolName = call.name?.trim()
+	if (!toolName) {
+		return null
+	}
+	let match: McpMatchMetadata | null = null
+	const wildcardServers: string[] = []
+	for (const server of mcpServers) {
+		if (!server || server.type !== 'mcp') {
+			continue
+		}
+		const allowed = server.allowed_tools
+		if (Array.isArray(allowed) && allowed.length > 0) {
+			if (allowed.includes(toolName)) {
+				match = match ?? { serverLabel: server.server_label }
+				if (match.serverLabel && match.serverLabel !== server.server_label) {
+					logger.warn('tool name matches multiple MCP servers', {
+						name: toolName,
+						existing: match.serverLabel,
+						conflict: server.server_label
+					})
+				}
+			}
+			continue
+		}
+		if (allowed === undefined) {
+			wildcardServers.push(server.server_label)
+		}
+	}
+	if (!match) {
+		if (wildcardServers.length === 1) {
+			match = { serverLabel: wildcardServers[0] ?? null }
+		} else if (wildcardServers.length > 1) {
+			logger.warn('MCP wildcard server ambiguity detected', {
+				name: toolName,
+				serverLabels: wildcardServers
+			})
+		}
+	}
+	return match
 }

@@ -126,6 +126,27 @@
 - Web search is optional and can be enabled/disabled per engine configuration
 - Tool is included in toolset via `buildToolset()` when `this._webSearch` flag is true
 
+## MCP (Model Context Protocol) Support
+- **Configuration**: Users can define MCP servers in plugin options via `mcpServers` array in `config/plugins/robojs/ai.ts`:
+  ```typescript
+  export default {
+    mcpServers: [
+      {
+        type: 'mcp',
+        server_label: 'context7',
+        server_url: 'https://mcp.context7.com/mcp',
+        headers: { CONTEXT7_API_KEY: process.env.CONTEXT7_API_KEY ?? '' },
+        allowed_tools: ['resolve-library-id', 'get-library-docs'],
+        require_approval: 'never'
+      }
+    ]
+  }
+  ```
+- **How it works**: MCP tools are server-side proxied by OpenAI—the engine passes MCP configs in the tools array, OpenAI executes them remotely, and results are incorporated into responses automatically. No local execution or special handling needed.
+- **Engine support**: MCP is currently implemented in `OpenAiEngine` via `buildToolset()` and can be extended to custom engines by implementing the optional `getMCPTools()` method from `BaseEngine`.
+- **Limitations**: MCP tools are only available in 'worker' context (standard chat), not in 'realtime' (voice) or 'chat' (legacy) contexts, matching the pattern of web_search.
+- **Integration points**: Reference `_start.ts` for plugin options loading, `base.ts` for type definitions (`MCPTool` interface), and `openai/engine.ts` for tool injection logic.
+
 ## Token Usage & Limits
 - **Token Ledger Subsystem** (`core/token-ledger.ts`) provides comprehensive usage tracking:
   - Automatic recording from all AI operations (chat, voice, image generation)
@@ -325,7 +346,7 @@
 - `discord-utils.ts` – Chunking, mention replacement, and the mock interaction adapter for tool execution.
 
 ## Configuration Touchpoints
-- Plugin options (config file `config/plugins/robojs/ai.*`): `instructions`, `commands` allow/deny, `restrict`, `whitelist`, `insight`, `engine`, optional `voice` overrides (`voice.instructions`, realtime config, etc.).
+- Plugin options (config file `config/plugins/robojs/ai.*`): `instructions`, `commands` allow/deny, `restrict`, `whitelist`, `insight`, `engine`, `mcpServers`, optional `voice` overrides (`voice.instructions`, realtime config, etc.).
 - Default chat behavior (model, temperature, max output tokens) now comes from the engine constructor. The bundled `OpenAiEngine` accepts `new OpenAiEngine({ chat: { model, temperature, maxOutputTokens } })`.
 - Sage options (global or per-command) influence auto-deferral (`defer`, `deferBuffer`, `ephemeral`). `getCommandReply` reads them via `resolveSageOptions`.
 - Env requirements: `OPENAI_API_KEY` (default engine); vector store files under `/documents`.
@@ -359,4 +380,5 @@
 - **Token limits are enforced:** Configure via `tokenLedger.configure()` with `mode: 'block'` to throw `TokenLimitError` or `mode: 'warn'` to emit events. Monitor usage via `/ai usage` seed command or `tokenLedger.getSummary()`
 - **Voice audio processing:** PCM16 format, 48kHz→24kHz downsampling, mono conversion, VAD threshold application. Adjust `capture.vadThreshold` if voice detection is too sensitive/insensitive
 - **Realtime session retry:** Exponential backoff with transcript tail restoration. Failed reconnections increment `realtimeReconnectAttempts` metric
-- Always adjust this AGENTS file if you change flows, options, or storage so future work isn’t guessing
+- **MCP servers require valid credentials:** Ensure environment variables for MCP API keys (e.g., `CONTEXT7_API_KEY`) are set. Invalid configs are logged during engine initialization.
+- Always adjust this AGENTS file if you change flows, options, or storage so future work isn't guessing

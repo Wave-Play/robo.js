@@ -8,7 +8,7 @@ import { voiceManager } from '@/core/voice/index.js'
 import { tokenLedger, type TokenLimitConfig, type TokenLedgerHooks } from '../core/token-ledger.js'
 import { Client } from 'discord.js'
 import type { VoiceConfigPatch } from '../core/voice/config.js'
-import type { BaseEngine } from '@/engines/base.js'
+import type { BaseEngine, MCPTool } from '@/engines/base.js'
 
 /** Voice configuration with optional per-guild overrides and instructions. */
 interface VoicePluginVoiceOptions extends VoiceConfigPatch {
@@ -40,6 +40,8 @@ export interface PluginOptions {
 	voice?: VoicePluginVoiceOptions
 	/** Token usage tracking configuration. */
 	usage?: PluginUsageOptions
+	/** MCP (Model Context Protocol) server configurations for tool integration. */
+	mcpServers?: MCPTool[]
 }
 
 /** Token usage configuration including limit rules and hooks. */
