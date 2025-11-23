@@ -325,7 +325,16 @@ async function buildTypescriptConfig(configPath: string, force: boolean): Promis
 		paths: pathMappings,
 		srcDir: projectRoot
 	})
-	await rewriteConfigImports(compiledPath)
+
+	// Rewrite imports for all compiled files to ensure they point to the correct .mjs files
+	await Promise.all(
+		projectRelativeFiles.map(async (file) => {
+			const compiledDependencyPath = path.join(distRoot, file).replace(/\.(ts|tsx)$/, '.mjs')
+			if (existsSync(compiledDependencyPath)) {
+				await rewriteConfigImports(compiledDependencyPath)
+			}
+		})
+	)
 
 	logger.debug(`Compiled config ${relativeConfigPath} in ${Date.now() - compileStart}ms.`)
 	return compiledPath
@@ -436,8 +445,8 @@ async function rewriteConfigImports(compiledPath: string) {
 		const compiledDir = path.dirname(compiledPath)
 		const code = await fsPromises.readFile(compiledPath, 'utf8')
 		const rewritten = code.replace(
-			/(['"])([^'"\n]*\.robo\/config\/[^'"\n]+?)(\.(?:ts|tsx|js|mjs))?\1/g,
-			(match, quote: string, specifier: string, ext: string | undefined) => {
+			/(import\s+|from\s+|import\s*\(\s*)(['"])((?:[^'"\n]*\.robo\/config\/[^'"\n]+?)|(?:\.{1,2}\/[^'"\n]+?))(\.(?:ts|tsx|js|mjs))?\2/g,
+			(match, context: string, quote: string, specifier: string, ext: string | undefined) => {
 				try {
 					const withExt = specifier + (ext ?? '')
 					let absoluteTarget = path.resolve(compiledDir, withExt)
@@ -461,7 +470,7 @@ async function rewriteConfigImports(compiledPath: string) {
 						relative = './' + relative
 					}
 					relative = ensurePosix(relative)
-					return `${quote}${relative}${quote}`
+					return `${context}${quote}${relative}${quote}`
 				} catch (rewriteError) {
 					logger.warn('Failed to normalize config import:', rewriteError)
 					return match
