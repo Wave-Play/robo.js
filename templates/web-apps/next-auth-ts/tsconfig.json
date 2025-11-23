@@ -19,6 +19,9 @@
     "paths": {
       "@/*": [
         "src/*"
+      ],
+      "@prisma-generated/*": [
+        ".robo/prisma/*"
       ]
     },
     "resolveJsonModule": true,

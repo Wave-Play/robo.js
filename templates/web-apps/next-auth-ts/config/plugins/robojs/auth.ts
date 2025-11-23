@@ -1,10 +1,14 @@
 import Discord from '@robojs/auth/providers/discord'
 import EmailPassword from '@robojs/auth/providers/email-password'
 // import ResendMailer from '@robojs/auth/emails/resend'
-import { createFlashcoreAdapter } from '@robojs/auth'
+import { createPrismaAdapter } from '@robojs/auth'
+import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
+import { PrismaClient } from '@prisma-generated/client'
 import type { AuthPluginOptions } from '@robojs/auth'
 
-const adapter = createFlashcoreAdapter({ secret: process.env.AUTH_SECRET! })
+export const prisma = new PrismaClient({ adapter: new PrismaBetterSqlite3({ url: process.env.DATABASE_URL }) });
+
+const adapter = createPrismaAdapter({ client: prisma, secret: process.env.AUTH_SECRET })
 
 const config: AuthPluginOptions = {
   adapter: adapter,
