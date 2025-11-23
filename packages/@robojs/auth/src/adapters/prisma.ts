@@ -361,16 +361,9 @@ export function createPrismaAdapter(options: PrismaAdapterOptions): PasswordAdap
 			const normalized = normalizeEmail(email)
 
 			// Prefer the primary user model for a case-insensitive lookup.
-			// Prisma's `mode: 'insensitive'` works on PostgreSQL, MySQL 8.0+, and SQLite.
-			// For other databases, this falls back to exact match; consider using a lowercased indexed column.
 			const byUser = delegate.findFirst
 				? await delegate.findFirst({
-						where: {
-							email: {
-								equals: email,
-								mode: 'insensitive'
-							}
-						},
+						where: { email },
 						select: { id: true }
 					})
 				: null
