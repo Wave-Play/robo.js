@@ -26,7 +26,6 @@ interface PrismaDelegate {
  * Fields:
  * - `user`: Required delegate exposing `findUnique/findFirst/findMany/create/update/delete/count`.
  * - `$transaction?`: Optional transaction helper for future use.
- * - `[key: string]`: Additional delegates (account/session/password) accessed dynamically.
  *
  * Edge cases:
  * - If your client removes or renames CRUD helpers, the adapter will throw at runtime.
@@ -43,7 +42,7 @@ interface PrismaDelegate {
  * ```ts
  * const prisma = new PrismaClient().$extends({ ...features })
  * const adapter = createPrismaAdapter({
- * 	client: prisma as PrismaClientLike,
+ * 	client: prisma,
  * 	secret: process.env.AUTH_SECRET!
  * })
  * ```
@@ -51,9 +50,8 @@ interface PrismaDelegate {
  * @see PrismaDelegate for expected delegate shape.
  */
 export interface PrismaClientLike {
-	[key: string]: PrismaDelegate | unknown
 	user: PrismaDelegate
-	$transaction?: (...operations: unknown[]) => Promise<unknown>
+	$transaction?: ((...operations: unknown[]) => Promise<unknown>) | unknown
 }
 
 /**
@@ -267,7 +265,7 @@ function normalizeEmail(email: string): string {
  * - Email lookups are case-insensitive; prefer Postgres `@db.Citext` or database collations for enforcement.
  *
  * Performance:
- * - Auto-rehashing adds ~50–100 ms to the first login after parameter changes. Consider background migrations for huge user bases.
+ * - Auto-rehashing adds ~50–100 ms to the first login after parameter changes. Consider background migrations for huge user bases.
  * - Each password operation performs 1–2 queries; ensure `userId` and `email` columns are indexed.
  * - `findUserIdByEmail` performs two lookups (user + password models). Optimize with database indexes.
  *
@@ -347,10 +345,9 @@ export function createPrismaAdapter(options: PrismaAdapterOptions): PasswordAdap
 
 	const base = loadAuthPrismaAdapter()(client) as Adapter
 	// Use configured model names when available, otherwise fall back to opinionated defaults.
-	const passwordDelegate = assertDelegate(
-		client[models?.password ?? DEFAULT_PASSWORD_MODEL] as PrismaDelegate | undefined,
-		models?.password ?? DEFAULT_PASSWORD_MODEL
-	)
+	const passwordKey = (models?.password ?? DEFAULT_PASSWORD_MODEL) as string
+	const delegates = client as unknown as Record<string, PrismaDelegate | undefined>
+	const passwordDelegate = assertDelegate(delegates[passwordKey], passwordKey)
 
 	const adapter: PasswordAdapter = {
 		...base,
