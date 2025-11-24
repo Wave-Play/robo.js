@@ -30,6 +30,7 @@
 import type { LeaderboardEntry, FlashcoreOptions } from '../types.js'
 import { getAllUsers } from '../store/index.js'
 import { computeLevelFromTotalXp } from '../math/curve.js'
+import { getResolvedCurve } from '../math/curves.js'
 import { on as onEvent } from './events.js'
 import { logger } from 'robo.js'
 import { resolveStoreId } from '../types.js'
@@ -129,10 +130,13 @@ export async function getLeaderboard(
 	// Requested window exceeds cached coverage - full-range fallback
 	const users = await getAllUsers(guildId, options)
 
+	// Resolve curve once for this guild/store to ensure correct level computation
+	const curve = await getResolvedCurve(guildId, storeId)
+
 	// Map users to entries with rank assignment
 	const entries: LeaderboardEntry[] = Array.from(users.entries())
 		.map(([userId, userData]) => {
-			const levelInfo = computeLevelFromTotalXp(userData.xp)
+			const levelInfo = computeLevelFromTotalXp(userData.xp, curve)
 			return {
 				userId,
 				xp: userData.xp,
@@ -189,6 +193,9 @@ export async function refreshLeaderboard(guildId: string, options?: FlashcoreOpt
 		// Fetch all users from Flashcore
 		const users = await getAllUsers(guildId, options)
 
+		// Resolve curve once for this guild/store to compute levels consistently
+		const curve = await getResolvedCurve(guildId, storeId)
+
 		// Ensure outer map exists for this guild
 		if (!totalUsersCache.has(guildId)) {
 			totalUsersCache.set(guildId, new Map())
@@ -199,7 +206,7 @@ export async function refreshLeaderboard(guildId: string, options?: FlashcoreOpt
 		// Convert to array and sort
 		const entries: LeaderboardEntry[] = Array.from(users.entries())
 			.map(([userId, userData]) => {
-				const levelInfo = computeLevelFromTotalXp(userData.xp)
+				const levelInfo = computeLevelFromTotalXp(userData.xp, curve)
 				return {
 					userId,
 					xp: userData.xp,

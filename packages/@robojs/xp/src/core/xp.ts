@@ -10,6 +10,17 @@
  * to filter events by store. Role rewards only process default store events to avoid
  * conflicts (e.g., reputation store shouldn't grant Discord roles).
  *
+ * ## Custom Level Curves
+ *
+ * All XP manipulation functions automatically resolve and use the configured level curve
+ * for the guild and store. Curves are resolved using three-tier precedence:
+ * 1. Plugin getCurve callback (code-based, dynamic)
+ * 2. Guild preset configuration (stored in Flashcore)
+ * 3. Default quadratic curve (standard formula)
+ *
+ * If a curve defines a maxLevel, users cannot exceed it through any XP operation.
+ * XP values are automatically capped at the maxLevel threshold.
+ *
  * @example
  * ```typescript
  * import { addXP, removeXP, setXP, recalcLevel } from './core/xp.js'
@@ -42,6 +53,7 @@ import { logger } from 'robo.js'
 import * as store from '../store/index.js'
 import * as math from '../math/curve.js'
 import * as events from '../runtime/events.js'
+import { getResolvedCurve } from '../math/curves.js'
 import type { UserXP, AddXPOptions, GetXPOptions, RecalcOptions } from '../types.js'
 import { resolveStoreId } from '../types.js'
 
@@ -79,6 +91,7 @@ export interface RecalcResult {
  * Adds XP to a user, computes level changes, and emits events.
  * Events are emitted after persistence for consistency.
  * Role reconciliation happens automatically via event listeners.
+ * If the guild's level curve defines a maxLevel, users cannot exceed it.
  *
  * @param guildId - Guild snowflake ID
  * @param userId - User snowflake ID
@@ -126,12 +139,29 @@ export async function addXP(
 		const oldXp = user.xp
 		const oldLevel = user.level
 
-		// Calculate new XP
-		const newXp = oldXp + amount
+		// Resolve level curve for this guild/store
+		const curve = await getResolvedCurve(guildId, storeId)
 
-		// Compute new level
-		const levelData = math.computeLevelFromTotalXp(newXp)
-		const newLevel = levelData.level
+		// Calculate new XP and cap if maxLevel defined
+		let newXp = oldXp + amount
+		const cap = curve.maxLevel !== undefined ? curve.xpForLevel(curve.maxLevel) : undefined
+		
+		if (cap !== undefined && newXp > cap) {
+			// Cap XP at maxLevel threshold (don't decrease existing XP)
+			newXp = Math.max(oldXp, cap)
+		}
+
+		// Compute new level from capped XP
+		const levelData = math.computeLevelFromTotalXp(newXp, curve)
+		let newLevel = levelData.level
+
+		// Ensure level doesn't exceed maxLevel (double-check after capping)
+		if (curve.maxLevel !== undefined && newLevel > curve.maxLevel) {
+			newLevel = curve.maxLevel
+		}
+
+		// Recalculate delta based on actual XP change
+		const delta = newXp - oldXp
 
 		// Update user record
 		const updatedUser: UserXP = {
@@ -171,7 +201,7 @@ export async function addXP(
 			storeId,
 			oldXp,
 			newXp,
-			delta: amount,
+			delta,
 			reason: options?.reason
 		})
 
@@ -224,12 +254,15 @@ export async function removeXP(
 		const oldXp = user.xp
 		const oldLevel = user.level
 
+		// Resolve level curve for this guild/store
+		const curve = await getResolvedCurve(guildId, storeId)
+
 		// Ensure XP doesn't go below 0
 		const newXp = Math.max(0, oldXp - amount)
 		const actualRemoved = oldXp - newXp
 
 		// Compute new level
-		const levelData = math.computeLevelFromTotalXp(newXp)
+		const levelData = math.computeLevelFromTotalXp(newXp, curve)
 		const newLevel = levelData.level
 
 		// Update user record
@@ -280,6 +313,7 @@ export async function removeXP(
 
 /**
  * Sets absolute XP value for a user.
+ * If the guild's level curve defines a maxLevel, users cannot exceed it.
  *
  * @param guildId - Guild snowflake ID
  * @param userId - User snowflake ID
@@ -319,17 +353,33 @@ export async function setXP(
 		const oldXp = user.xp
 		const oldLevel = user.level
 
-		// Calculate delta
-		const delta = totalXp - oldXp
+		// Resolve level curve for this guild/store
+		const curve = await getResolvedCurve(guildId, storeId)
 
-		// Compute new level
-		const levelData = math.computeLevelFromTotalXp(totalXp)
-		const newLevel = levelData.level
+		// Cap totalXp if maxLevel defined
+		let finalXp = totalXp
+		const cap = curve.maxLevel !== undefined ? curve.xpForLevel(curve.maxLevel) : undefined
+		
+		if (cap !== undefined && finalXp > cap) {
+			finalXp = cap
+		}
+
+		// Compute new level from capped XP
+		const levelData = math.computeLevelFromTotalXp(finalXp, curve)
+		let newLevel = levelData.level
+
+		// Ensure level doesn't exceed maxLevel (double-check after capping)
+		if (curve.maxLevel !== undefined && newLevel > curve.maxLevel) {
+			newLevel = curve.maxLevel
+		}
+
+		// Recalculate delta based on actual XP change
+		const delta = finalXp - oldXp
 
 		// Update user record
 		const updatedUser: UserXP = {
 			...user,
-			xp: totalXp,
+			xp: finalXp,
 			level: newLevel
 		}
 
@@ -344,7 +394,7 @@ export async function setXP(
 				storeId,
 				oldLevel,
 				newLevel,
-				totalXp
+				totalXp: finalXp
 			})
 		} else if (newLevel < oldLevel) {
 			events.emitLevelDown({
@@ -353,7 +403,7 @@ export async function setXP(
 				storeId,
 				oldLevel,
 				newLevel,
-				totalXp
+				totalXp: finalXp
 			})
 		}
 
@@ -363,14 +413,14 @@ export async function setXP(
 			userId,
 			storeId,
 			oldXp,
-			newXp: totalXp,
+			newXp: finalXp,
 			delta,
 			reason: options?.reason
 		})
 
 		return {
 			oldXp,
-			newXp: totalXp,
+			newXp: finalXp,
 			oldLevel,
 			newLevel
 		}
@@ -383,6 +433,8 @@ export async function setXP(
 /**
  * Recalculates level from total XP and reconciles roles.
  * Useful for fixing inconsistencies after config changes or manual database edits.
+ * Recalculation uses the current level curve configuration, which may differ from
+ * when XP was originally awarded.
  *
  * @param guildId - Guild snowflake ID
  * @param userId - User snowflake ID
@@ -415,9 +467,17 @@ export async function recalcLevel(guildId: string, userId: string, options?: Rec
 		const oldLevel = user.level
 		const totalXp = user.xp
 
+		// Resolve level curve for this guild/store
+		const curve = await getResolvedCurve(guildId, storeId)
+
 		// Compute correct level
-		const levelData = math.computeLevelFromTotalXp(totalXp)
-		const newLevel = levelData.level
+		const levelData = math.computeLevelFromTotalXp(totalXp, curve)
+		let newLevel = levelData.level
+
+		// Enforce maxLevel cap if curve defines one
+		if (curve.maxLevel !== undefined && newLevel > curve.maxLevel) {
+			newLevel = curve.maxLevel
+		}
 
 		// Check if reconciliation needed
 		if (newLevel !== oldLevel) {

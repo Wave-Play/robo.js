@@ -35,6 +35,7 @@ import type { UserXP, GuildConfig, GlobalConfig, FlashcoreOptions } from '../typ
 import { resolveStoreId } from '../types.js'
 import * as migrations from './migrations.js'
 import { SCHEMA_VERSION as _SCHEMA_VERSION } from './migrations.js'
+import { invalidateCurveCache } from '../math/curves.js'
 
 // Re-export schema version for external use
 export const SCHEMA_VERSION = _SCHEMA_VERSION
@@ -393,6 +394,8 @@ export async function putConfig(guildId: string, config: GuildConfig, options?: 
 	await Flashcore.set('config', config, { namespace: ['xp', storeId, guildId] })
 	// Invalidate cache so next getConfig() recomputes and caches normalized config
 	invalidateConfigCache(guildId, { storeId })
+	// Invalidate curve cache so next getResolvedCurve() re-resolves with new config
+	invalidateCurveCache(guildId, storeId)
 }
 
 /**
@@ -619,6 +622,7 @@ export function normalizeConfig(raw: unknown, defaults: GuildConfig): GuildConfi
 		leaderboard: {
 			public: config.leaderboard?.public ?? defaults.leaderboard.public
 		},
+		levels: config.levels ?? defaults.levels,
 		multipliers: config.multipliers
 			? {
 					server: config.multipliers.server,
@@ -682,6 +686,7 @@ export function mergeConfigs(base: GuildConfig, override: Partial<GuildConfig>):
 		leaderboard: {
 			public: override.leaderboard?.public ?? base.leaderboard.public
 		},
+		levels: override.levels ?? base.levels,
 		multipliers: mergedMultipliers,
 		labels: mergedLabels
 	}

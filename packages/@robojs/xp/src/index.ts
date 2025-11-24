@@ -384,9 +384,9 @@ import {
 	xpDeltaForLevelRange,
 	isValidLevel,
 	isValidXp,
-	CURVE_A,
-	CURVE_B,
-	CURVE_C
+	DEFAULT_CURVE_A,
+	DEFAULT_CURVE_B,
+	DEFAULT_CURVE_C
 } from './math/curve.js'
 
 /**
@@ -405,9 +405,9 @@ import {
  * **Performance:** All operations are O(1) or O(log n) - suitable for real-time use.
  *
  * **Formula Coefficients:**
- * - CURVE_A (5): Quadratic coefficient - controls exponential growth
- * - CURVE_B (50): Linear coefficient - controls linear growth
- * - CURVE_C (100): Constant - base XP for level 1
+ * - DEFAULT_CURVE_A (5): Quadratic coefficient - controls exponential growth
+ * - DEFAULT_CURVE_B (50): Linear coefficient - controls linear growth
+ * - DEFAULT_CURVE_C (100): Constant - base XP for level 1
  *
  * @example
  * ### Basic Level Calculations
@@ -486,8 +486,8 @@ import {
  * console.log(`Reward for level 100: ${reward} XP`)
  *
  * // Use formula coefficients for custom calculations
- * const { CURVE_A, CURVE_B, CURVE_C } = constants
- * const customXp = (level: number) => CURVE_A * level ** 2 + CURVE_B * level + CURVE_C
+ * const { DEFAULT_CURVE_A, DEFAULT_CURVE_B, DEFAULT_CURVE_C } = constants
+ * const customXp = (level: number) => DEFAULT_CURVE_A * level ** 2 + DEFAULT_CURVE_B * level + DEFAULT_CURVE_C
  * ```
  *
  * @remarks
@@ -739,9 +739,9 @@ export const config = {
  * - Creating custom configurations that extend defaults
  *
  * **MEE6 Formula Coefficients:**
- * - **CURVE_A (5)**: Quadratic coefficient - controls exponential growth rate
- * - **CURVE_B (50)**: Linear coefficient - controls linear growth component
- * - **CURVE_C (100)**: Constant term - base XP requirement for level 1
+ * - **DEFAULT_CURVE_A (5)**: Quadratic coefficient - controls exponential growth rate
+ * - **DEFAULT_CURVE_B (50)**: Linear coefficient - controls linear growth component
+ * - **DEFAULT_CURVE_C (100)**: Constant term - base XP requirement for level 1
  * - **Formula**: `XP = 5*level² + 50*level + 100`
  *
  * @example
@@ -761,11 +761,11 @@ export const config = {
  * ```typescript
  * import { constants } from '@robojs/xp'
  *
- * const { CURVE_A, CURVE_B, CURVE_C } = constants
+ * const { DEFAULT_CURVE_A, DEFAULT_CURVE_B, DEFAULT_CURVE_C } = constants
  *
  * // Implement custom XP calculation
  * function calculateXpForLevel(level: number): number {
- *   return CURVE_A * level ** 2 + CURVE_B * level + CURVE_C
+ *   return DEFAULT_CURVE_A * level ** 2 + DEFAULT_CURVE_B * level + DEFAULT_CURVE_C
  * }
  *
  * // Calculate XP needed for level 50
@@ -820,14 +820,17 @@ export const constants = {
 	DEFAULT_LEADERBOARD_PUBLIC,
 
 	/** MEE6 level curve formula coefficient A (quadratic term: 5) */
-	CURVE_A,
+	DEFAULT_CURVE_A,
 
 	/** MEE6 level curve formula coefficient B (linear term: 50) */
-	CURVE_B,
+	DEFAULT_CURVE_B,
 
 	/** MEE6 level curve formula coefficient C (constant term: 100) */
-	CURVE_C
+	DEFAULT_CURVE_C
 }
+
+// Export curve constants as named exports
+export { DEFAULT_CURVE_A, DEFAULT_CURVE_B, DEFAULT_CURVE_C }
 
 // ============================================================================
 // Event System
