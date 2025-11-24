@@ -39,6 +39,7 @@ const result: SyncResult = {
 
 - [JiraProvider](Class.JiraProvider.md)
 - [RoadmapProvider](Class.RoadmapProvider.md)
+- [SyncCanceledError](Class.SyncCanceledError.md)
 
 ## Interfaces
 
@@ -47,6 +48,7 @@ const result: SyncResult = {
 - [RoadmapPluginOptions](Interface.RoadmapPluginOptions.md)
 - [RoadmapSettings](Interface.RoadmapSettings.md)
 - [SyncOptions](Interface.SyncOptions.md)
+- [SyncProgressUpdate](Interface.SyncProgressUpdate.md)
 
 ## Type Aliases
 
@@ -72,6 +74,7 @@ const result: SyncResult = {
 
 ## Functions
 
+- [addThreadToHistory](Function.addThreadToHistory.md)
 - [canUserCreateCards](Function.canUserCreateCards.md)
 - [createOrGetRoadmapCategory](Function.createOrGetRoadmapCategory.md)
 - [formatCardContent](Function.formatCardContent.md)
@@ -82,14 +85,18 @@ const result: SyncResult = {
 - [getCardsFromLastMonth](Function.getCardsFromLastMonth.md)
 - [getCardsFromLastWeek](Function.getCardsFromLastWeek.md)
 - [getCategoryId](Function.getCategoryId.md)
+- [getCurrentThreadInfo](Function.getCurrentThreadInfo.md)
 - [getForumChannelForColumn](Function.getForumChannelForColumn.md)
 - [getForumChannelIdForColumn](Function.getForumChannelIdForColumn.md)
 - [getProvider](Function.getProvider.md)
 - [getRoadmapCategory](Function.getRoadmapCategory.md)
 - [getSettings](Function.getSettings.md)
 - [getSyncedPostId](Function.getSyncedPostId.md)
+- [getThreadForColumn](Function.getThreadForColumn.md)
+- [getThreadHistory](Function.getThreadHistory.md)
 - [isForumPublic](Function.isForumPublic.md)
 - [isProviderReady](Function.isProviderReady.md)
+- [moveThreadToNewForum](Function.moveThreadToNewForum.md)
 - [setAuthorizedCreatorRoles](Function.setAuthorizedCreatorRoles.md)
 - [setSyncedPost](Function.setSyncedPost.md)
 - [syncRoadmap](Function.syncRoadmap.md)

@@ -126,7 +126,9 @@ optional permissions: number | (
   | "UseExternalSounds"
   | "SendVoiceMessages"
   | "SendPolls"
-  | "UseExternalApps")[];
+  | "UseExternalApps"
+  | "PinMessages"
+  | "BypassSlowmode")[];
 ```
 
 ***

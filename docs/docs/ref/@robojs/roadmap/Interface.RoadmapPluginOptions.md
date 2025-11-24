@@ -97,6 +97,33 @@ Currently not implemented - reserved for future enhancement
 
 ***
 
+### ephemeralCommands?
+
+```ts
+optional ephemeralCommands: boolean;
+```
+
+Whether roadmap command responses (e.g., /roadmap add, /roadmap edit) should be ephemeral.
+
+When true, command replies are only visible to the invoking user. When false, results are
+posted visibly in the channel so project teams can see card creation and edit activity.
+
+#### Default Value
+
+```ts
+true
+```
+
+#### Example
+
+```ts
+export default {
+  ephemeralCommands: false // share add/edit results with the whole channel
+}
+```
+
+***
+
 ### provider?
 
 ```ts

@@ -37,6 +37,10 @@ modes, and respects role position hierarchy.
 
 Main reconciliation function for role rewards
 
+This function is only called for default store events by the event listeners.
+Manual calls to this function should typically use the default store to avoid
+unexpected role assignments from custom stores.
+
 #### Parameters
 
 | Parameter | Type |
@@ -49,6 +53,10 @@ Main reconciliation function for role rewards
 #### Returns
 
 `Promise`\<`void`\>
+
+#### Warning
+
+Calling this for custom stores may cause unexpected role assignments
 
 #### Param
 
@@ -86,6 +94,10 @@ Alias for reconcile() - manually reconcile role rewards for a user.
 
 Main reconciliation function for role rewards
 
+This function is only called for default store events by the event listeners.
+Manual calls to this function should typically use the default store to avoid
+unexpected role assignments from custom stores.
+
 #### Parameters
 
 | Parameter | Type |
@@ -98,6 +110,10 @@ Main reconciliation function for role rewards
 #### Returns
 
 `Promise`\<`void`\>
+
+#### Warning
+
+Calling this for custom stores may cause unexpected role assignments
 
 #### Param
 

@@ -11,6 +11,24 @@ across all plugins and prevent conflicts with other components.
 
 ## Type declaration
 
+### CancelSync
+
+```ts
+readonly CancelSync: object;
+```
+
+Base ID for the cancel sync button.
+
+The full custom ID is constructed as `${id}-${syncId}` so each active sync can be
+uniquely identified. Clicking this button aborts the sync loop and shows partial
+results. Only administrators or the user who started the sync may cancel.
+
+### CancelSync.id
+
+```ts
+readonly id: string;
+```
+
 ### TogglePublic
 
 ```ts

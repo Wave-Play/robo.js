@@ -112,3 +112,44 @@ Threads can be in any of the column-specific forum channels.
   "PROJ-456": "9876543210987654321"
 }
 ```
+
+***
+
+### threadHistory?
+
+```ts
+optional threadHistory: Record<string, ThreadHistoryEntry[]>;
+```
+
+Map of provider card IDs to arrays of historical thread entries.
+
+This tracks the history of threads for cards that have moved between columns,
+enabling linking to previous discussions. Each entry captures the thread's
+state (ID, column, forum, message count) at the time it was moved to a new forum.
+
+The message count is used to determine if linking is worthwhile (threads with
+only the starter message are typically not linked) and to provide informative
+link text like "View 52 messages from In Progress".
+
+#### Example
+
+```ts
+{
+  "PROJ-123": [
+    {
+      threadId: "1234567890123456789",
+      column: "Backlog",
+      forumId: "9876543210987654321",
+      movedAt: 1704067200000,
+      messageCount: 3
+    },
+    {
+      threadId: "1111222233334444555",
+      column: "In Progress",
+      forumId: "5555666677778888999",
+      movedAt: 1704153600000,
+      messageCount: 52
+    }
+  ]
+}
+```

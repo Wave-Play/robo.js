@@ -4,7 +4,8 @@
 type EmailContext: object;
 ```
 
-Data passed to email templates and builders.
+Contextual data passed to every email template or builder, enabling
+personalized content and conditional workflows.
 
 ## Type declaration
 
@@ -14,11 +15,15 @@ Data passed to email templates and builders.
 appName: string;
 ```
 
+Application display name from config (defaults to "Robo.js").
+
 ### links?
 
 ```ts
 optional links: object;
 ```
+
+Pre-built absolute URLs for verification or password reset actions.
 
 ### links.resetPassword?
 
@@ -38,6 +43,9 @@ optional verifyEmail: string;
 optional request: object;
 ```
 
+Request metadata such as origin/base URL used to build links. May be
+undefined when the request context is not available (e.g. background jobs).
+
 ### request.origin?
 
 ```ts
@@ -49,6 +57,8 @@ optional origin: string | null;
 ```ts
 optional session: object;
 ```
+
+Session metadata present for the `session:created` event.
 
 ### session.id?
 
@@ -74,6 +84,8 @@ optional userAgent: string | null;
 optional tokens: object;
 ```
 
+Raw tokens for verification/reset flows (use links for user-facing URLs).
+
 ### tokens.resetPassword?
 
 ```ts
@@ -92,6 +104,8 @@ optional verifyEmail: string;
 user: object;
 ```
 
+Adapter user record (email/name may be null for certain providers).
+
 ### user.email?
 
 ```ts
@@ -108,4 +122,11 @@ id: string;
 
 ```ts
 optional name: string | null;
+```
+
+## Example
+
+```ts
+const greeting = `Hi ${ctx.user.name ?? 'there'}`
+const auditNote = ctx.session?.ip ? `IP ${ctx.session.ip}` : 'No session data'
 ```

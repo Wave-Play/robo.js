@@ -2,15 +2,15 @@
 
 @robojs/xp - XP and Leveling System for Discord Bots
 
-A comprehensive XP and leveling system plugin for Robo.js with MEE6 parity.
+A comprehensive XP and leveling system plugin for Robo.js with standard defaults.
 Provides XP manipulation APIs, configuration management, level curve mathematics,
 role rewards, event system, and admin commands for Discord servers.
 
 ## Features
 
-- **MEE6 Parity**: Formula `XP = 5 * level^2 + 50 * level + 100` with default settings matching MEE6
+- **Default Configuration**: Formula `XP = 5 * level^2 + 50 * level + 100` with standard settings
 - **Role Rewards**: Automatic role assignment on level-up with stack/replace modes
-- **XP Multipliers**: Per-user and per-role multipliers (MEE6 Pro parity)
+- **XP Multipliers**: Per-user and per-role multipliers (premium features)
 - **Event-Driven**: Type-safe events for levelUp, levelDown, xpChange
 - **No-XP Zones**: Configure channels/roles to exclude from XP gains
 - **Fully Typed**: Comprehensive TypeScript support with result types
@@ -76,7 +76,7 @@ await config.set('123456789012345678', {
   rewardsMode: 'stack' // Users keep all qualifying roles
 })
 
-// Set up XP multipliers (MEE6 Pro parity)
+// Set up XP multipliers (premium features)
 await config.set('123456789012345678', {
   multipliers: {
     user: {
@@ -103,6 +103,34 @@ if (rankInfo) {
   console.log(`You are rank ${rankInfo.rank} out of ${rankInfo.total}`)
 }
 ```
+
+### Multi-Store Usage
+
+```typescript
+import { xp, leaderboard } from '@robojs/xp'
+
+// Default store (implicit - used by built-in commands)
+await xp.add('guildId', 'userId', 100)
+const defaultXP = await xp.get('guildId', 'userId')
+const defaultLeaderboard = await leaderboard.get('guildId', 0, 10)
+
+// Custom reputation store
+await xp.add('guildId', 'userId', 50, { storeId: 'reputation' })
+const repXP = await xp.get('guildId', 'userId', { storeId: 'reputation' })
+const repLeaderboard = await leaderboard.get('guildId', 0, 10, { storeId: 'reputation' })
+
+// Custom credits store
+await xp.add('guildId', 'userId', 200, { storeId: 'credits' })
+const creditsXP = await xp.get('guildId', 'userId', { storeId: 'credits' })
+
+// Built-in commands only use default store
+// Custom stores require imperative API calls
+```
+
+**Use Cases:**
+- **Leveling + Currencies**: Default store for XP/levels, custom stores for 'coins', 'gems', 'tokens'
+- **Multi-Dimensional Reputation**: Separate stores for 'helpfulness', 'creativity', 'activity'
+- **Seasonal Systems**: Isolated stores for 'season1', 'season2', 'season3'
 
 ## Integration Examples
 
@@ -159,7 +187,77 @@ events.on('levelUp', async (event) => {
 })
 ```
 
+### Multi-Currency Economy Integration
+
+```typescript
+import { xp } from '@robojs/xp'
+
+// Default store for XP/leveling (includes role rewards)
+await xp.add(guildId, userId, 20, { reason: 'message', storeId: 'default' })
+
+// Custom coins store for server currency
+await xp.add(guildId, userId, 10, { reason: 'daily_bonus', storeId: 'coins' })
+
+// Custom tokens store for premium currency
+await xp.add(guildId, userId, 5, { reason: 'purchase', storeId: 'tokens' })
+
+// Build custom commands for each store
+// /balance - Show coins and tokens
+// /rank - Show XP and level (default store)
+```
+
+### Reputation System Integration
+
+```typescript
+import { xp, events } from '@robojs/xp'
+
+// Track different types of reputation
+async function awardHelpfulnessRep(guildId: string, userId: string) {
+  await xp.add(guildId, userId, 25, { reason: 'helped_member', storeId: 'helpfulness' })
+}
+
+async function awardCreativityRep(guildId: string, userId: string) {
+  await xp.add(guildId, userId, 50, { reason: 'created_content', storeId: 'creativity' })
+}
+
+// Event listener filtering by store
+events.on('levelUp', (event) => {
+  if (event.storeId === 'helpfulness') {
+    console.log(`${event.userId} leveled up in helpfulness!`)
+  } else if (event.storeId === 'creativity') {
+    console.log(`${event.userId} leveled up in creativity!`)
+  }
+})
+```
+
 ## Remarks
+
+### Multi-Store Architecture
+
+The XP plugin supports multiple isolated data stores. Each store has:
+- Independent user XP data and levels
+- Independent guild configuration
+- Independent leaderboard rankings and cache
+- Independent event stream (events include `storeId` field)
+
+**Default Store ('default'):**
+- Used by all built-in commands (/rank, /leaderboard, /xp)
+- Role rewards only trigger for this store
+- Automatic event processing
+
+**Custom Stores:**
+- Accessed imperatively via API
+- No automatic role rewards (prevents conflicts)
+- Events include `storeId` for filtering
+
+**Flashcore Namespace Structure:**
+- Default store: `['xp', 'default', guildId, 'users', userId]`
+- Custom store: `['xp', 'reputation', guildId, 'users', userId]`
+- Config: `['xp', storeId, guildId]` → `{ config, members, schema }`
+
+**Performance:**
+- Each store maintains independent leaderboard cache (top 100, 60s TTL)
+- Cache invalidation is per-store (XP changes in one store don't affect others)
 
 ### Event-Driven Architecture
 
@@ -167,13 +265,27 @@ All XP mutations emit events after Flashcore persistence. Role rewards reconcile
 automatically via event listeners. Events guarantee consistency (emitted only after
 successful persistence).
 
-### MEE6 Parity
+**Events include `storeId` field:**
+- Allows event listeners to filter by store
+- Role rewards only process default store events
+- Leaderboard cache invalidation is per-store
+
+**Example:**
+```typescript
+events.on('levelUp', (event) => {
+  if (event.storeId === 'reputation') {
+    // Handle reputation level-up
+  }
+})
+```
+
+### Default Configuration
 
 - **Level curve formula**: `5*l² + 50*l + 100`
-- **Default settings**: Match MEE6 for seamless migration
+- **Default settings**: Standard XP system configuration
 - **XP per message**: 15-25 XP with 60s cooldown
 - **Role rewards**: Stack vs replace modes
-- **Multipliers**: Equivalent to MEE6 Pro features
+- **Multipliers**: Premium features for advanced customization
 
 ### Performance Characteristics
 
@@ -184,7 +296,10 @@ successful persistence).
 ### Persistence & Consistency
 
 - **Storage**: All data in Flashcore under 'xp' namespace
-- **Guild-scoped data**: `['xp', guildId, ...]`
+- **Guild-scoped data with stores**: `['xp', storeId, guildId, ...]`
+- **Default store example**: `['xp', 'default', guildId, 'users', userId]`
+- **Custom store example**: `['xp', 'reputation', guildId, 'users', userId]`
+- **Config per store**: `['xp', storeId, guildId]` → `{ config, members, schema }`
 - **Global config**: `['xp', 'global', 'config']`
 - **Event timing**: Emitted only after successful persistence
 
@@ -215,13 +330,18 @@ Re-exports reconcile
 ## Interfaces
 
 - [AddXPOptions](Interface.AddXPOptions.md)
+- [FlashcoreOptions](Interface.FlashcoreOptions.md)
+- [GetXPOptions](Interface.GetXPOptions.md)
 - [GuildConfig](Interface.GuildConfig.md)
 - [LeaderboardEntry](Interface.LeaderboardEntry.md)
 - [LevelDownEvent](Interface.LevelDownEvent.md)
 - [LevelProgress](Interface.LevelProgress.md)
 - [LevelUpEvent](Interface.LevelUpEvent.md)
+- [PluginOptions](Interface.PluginOptions.md)
+- [RecalcOptions](Interface.RecalcOptions.md)
 - [RecalcResult](Interface.RecalcResult.md)
 - [RoleReward](Interface.RoleReward.md)
+- [StoreOptions](Interface.StoreOptions.md)
 - [UserXP](Interface.UserXP.md)
 - [XPChangeEvent](Interface.XPChangeEvent.md)
 - [XPChangeResult](Interface.XPChangeResult.md)
@@ -237,9 +357,17 @@ Re-exports reconcile
 
 - [config](Variable.config.md)
 - [constants](Variable.constants.md)
+- [DEFAULT\_CURVE\_A](Variable.DEFAULT_CURVE_A.md)
+- [DEFAULT\_CURVE\_B](Variable.DEFAULT_CURVE_B.md)
+- [DEFAULT\_CURVE\_C](Variable.DEFAULT_CURVE_C.md)
 - [events](Variable.events.md)
 - [leaderboard](Variable.leaderboard.md)
 - [math](Variable.math.md)
 - [rewards](Variable.rewards.md)
 - [xp](Variable.xp.md)
 - [XP](Variable.XP.md)
+
+## Functions
+
+- [formatXP](Function.formatXP.md)
+- [getXpLabel](Function.getXpLabel.md)

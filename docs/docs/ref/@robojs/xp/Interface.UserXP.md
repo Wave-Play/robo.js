@@ -32,7 +32,7 @@ Unix timestamp (ms) of last XP award for cooldown tracking
 level: number;
 ```
 
-Current level (derived from XP using MEE6 curve)
+Current level (derived from XP using default curve)
 
 ***
 

@@ -11,7 +11,7 @@ are transactional and automatically trigger events and role reconciliation.
 
 **Features:**
 - Add/remove/set XP values with type-safe result objects
-- Automatic level calculation based on MEE6 curve
+- Automatic level calculation based on default curve
 - Event emission (levelUp, levelDown, xpChange) after persistence
 - Automatic role reward reconciliation via event listeners
 - Flashcore persistence with consistency guarantees
@@ -26,7 +26,7 @@ are transactional and automatically trigger events and role reconciliation.
 **All XP Mutations Automatically:**
 1. Validate inputs (non-negative amounts, valid IDs)
 2. Load or create user record
-3. Calculate new level using MEE6 formula
+3. Calculate new level using default formula
 4. Persist to Flashcore
 5. Emit events (after successful persistence)
 6. Trigger role reconciliation (via event listeners)
@@ -44,6 +44,7 @@ Add XP to a user (emits events, triggers role reconciliation)
 Adds XP to a user, computes level changes, and emits events.
 Events are emitted after persistence for consistency.
 Role reconciliation happens automatically via event listeners.
+If the guild's level curve defines a maxLevel, users cannot exceed it.
 
 #### Parameters
 
@@ -52,13 +53,25 @@ Role reconciliation happens automatically via event listeners.
 | `guildId` | `string` | Guild snowflake ID |
 | `userId` | `string` | User snowflake ID |
 | `amount` | `number` | Amount of XP to add (must be positive) |
-| `options`? | [`AddXPOptions`](Interface.AddXPOptions.md) | Optional settings like reason |
+| `options`? | [`AddXPOptions`](Interface.AddXPOptions.md) | Optional settings like reason and storeId |
 
 #### Returns
 
 `Promise`\<[`XPChangeResult`](Interface.XPChangeResult.md)\>
 
 Result object with old/new XP, levels, and leveledUp flag
+
+#### Examples
+
+```ts
+// Default store
+await addXP('guildId', 'userId', 100, { reason: 'message' })
+```
+
+```ts
+// Custom store
+await addXP('guildId', 'userId', 50, { reason: 'quest', storeId: 'reputation' })
+```
 
 ### addXP()
 
@@ -71,6 +84,7 @@ Add XP to a user - alias for add()
 Adds XP to a user, computes level changes, and emits events.
 Events are emitted after persistence for consistency.
 Role reconciliation happens automatically via event listeners.
+If the guild's level curve defines a maxLevel, users cannot exceed it.
 
 #### Parameters
 
@@ -79,7 +93,7 @@ Role reconciliation happens automatically via event listeners.
 | `guildId` | `string` | Guild snowflake ID |
 | `userId` | `string` | User snowflake ID |
 | `amount` | `number` | Amount of XP to add (must be positive) |
-| `options`? | [`AddXPOptions`](Interface.AddXPOptions.md) | Optional settings like reason |
+| `options`? | [`AddXPOptions`](Interface.AddXPOptions.md) | Optional settings like reason and storeId |
 
 #### Returns
 
@@ -87,10 +101,22 @@ Role reconciliation happens automatically via event listeners.
 
 Result object with old/new XP, levels, and leveledUp flag
 
+#### Examples
+
+```ts
+// Default store
+await addXP('guildId', 'userId', 100, { reason: 'message' })
+```
+
+```ts
+// Custom store
+await addXP('guildId', 'userId', 50, { reason: 'quest', storeId: 'reputation' })
+```
+
 ### get()
 
 ```ts
-get: (guildId, userId) => Promise<number> = getXPCore;
+get: (guildId, userId, options?) => Promise<number> = getXPCore;
 ```
 
 Get user's total XP (returns 0 if not found)
@@ -103,6 +129,7 @@ Returns user's total XP (0 if not found).
 | ------ | ------ | ------ |
 | `guildId` | `string` | Guild snowflake ID |
 | `userId` | `string` | User snowflake ID |
+| `options`? | [`GetXPOptions`](Interface.GetXPOptions.md) | Optional settings like storeId |
 
 #### Returns
 
@@ -110,10 +137,22 @@ Returns user's total XP (0 if not found).
 
 Total XP
 
+#### Examples
+
+```ts
+// Default store
+const xp = await getXP('guildId', 'userId')
+```
+
+```ts
+// Custom store
+const reputation = await getXP('guildId', 'userId', { storeId: 'reputation' })
+```
+
 ### getLevel()
 
 ```ts
-getLevel: (guildId, userId) => Promise<number> = getLevelCore;
+getLevel: (guildId, userId, options?) => Promise<number> = getLevelCore;
 ```
 
 Get user's level (returns 0 if not found)
@@ -126,6 +165,7 @@ Returns user's level (0 if not found).
 | ------ | ------ | ------ |
 | `guildId` | `string` | Guild snowflake ID |
 | `userId` | `string` | User snowflake ID |
+| `options`? | [`GetXPOptions`](Interface.GetXPOptions.md) | Optional settings like storeId |
 
 #### Returns
 
@@ -133,10 +173,22 @@ Returns user's level (0 if not found).
 
 User level
 
+#### Examples
+
+```ts
+// Default store
+const level = await getLevel('guildId', 'userId')
+```
+
+```ts
+// Custom store
+const repLevel = await getLevel('guildId', 'userId', { storeId: 'reputation' })
+```
+
 ### getUser()
 
 ```ts
-getUser: (guildId, userId) => Promise<UserXP | null> = getUserDataCore;
+getUser: (guildId, userId, options?) => Promise<UserXP | null> = getUserDataCore;
 ```
 
 Get full user XP record (returns null if not found)
@@ -149,6 +201,7 @@ Returns full user XP record.
 | ------ | ------ | ------ |
 | `guildId` | `string` | Guild snowflake ID |
 | `userId` | `string` | User snowflake ID |
+| `options`? | [`GetXPOptions`](Interface.GetXPOptions.md) | Optional settings like storeId |
 
 #### Returns
 
@@ -156,10 +209,22 @@ Returns full user XP record.
 
 User XP record or null if not found
 
+#### Examples
+
+```ts
+// Default store
+const userData = await getUserData('guildId', 'userId')
+```
+
+```ts
+// Custom store
+const repData = await getUserData('guildId', 'userId', { storeId: 'reputation' })
+```
+
 ### getXP()
 
 ```ts
-getXP: (guildId, userId) => Promise<number> = getXPCore;
+getXP: (guildId, userId, options?) => Promise<number> = getXPCore;
 ```
 
 Get user's total XP - alias for get()
@@ -172,6 +237,7 @@ Returns user's total XP (0 if not found).
 | ------ | ------ | ------ |
 | `guildId` | `string` | Guild snowflake ID |
 | `userId` | `string` | User snowflake ID |
+| `options`? | [`GetXPOptions`](Interface.GetXPOptions.md) | Optional settings like storeId |
 
 #### Returns
 
@@ -179,16 +245,30 @@ Returns user's total XP (0 if not found).
 
 Total XP
 
+#### Examples
+
+```ts
+// Default store
+const xp = await getXP('guildId', 'userId')
+```
+
+```ts
+// Custom store
+const reputation = await getXP('guildId', 'userId', { storeId: 'reputation' })
+```
+
 ### recalc()
 
 ```ts
-recalc: (guildId, userId) => Promise<RecalcResult> = recalcLevelCore;
+recalc: (guildId, userId, options?) => Promise<RecalcResult> = recalcLevelCore;
 ```
 
 Recalculate level from total XP and reconcile roles
 
 Recalculates level from total XP and reconciles roles.
 Useful for fixing inconsistencies after config changes or manual database edits.
+Recalculation uses the current level curve configuration, which may differ from
+when XP was originally awarded.
 
 #### Parameters
 
@@ -196,12 +276,25 @@ Useful for fixing inconsistencies after config changes or manual database edits.
 | ------ | ------ | ------ |
 | `guildId` | `string` | Guild snowflake ID |
 | `userId` | `string` | User snowflake ID |
+| `options`? | [`RecalcOptions`](Interface.RecalcOptions.md) | Optional settings like storeId |
 
 #### Returns
 
 `Promise`\<[`RecalcResult`](Interface.RecalcResult.md)\>
 
 Result object with old/new levels and reconciliation status
+
+#### Examples
+
+```ts
+// Default store
+await recalcLevel('guildId', 'userId')
+```
+
+```ts
+// Custom store
+await recalcLevel('guildId', 'userId', { storeId: 'reputation' })
+```
 
 ### remove()
 
@@ -221,7 +314,7 @@ Ensures XP doesn't go below 0.
 | `guildId` | `string` | Guild snowflake ID |
 | `userId` | `string` | User snowflake ID |
 | `amount` | `number` | Amount of XP to remove (must be positive) |
-| `options`? | [`AddXPOptions`](Interface.AddXPOptions.md) | Optional settings like reason |
+| `options`? | [`AddXPOptions`](Interface.AddXPOptions.md) | Optional settings like reason and storeId |
 
 #### Returns
 
@@ -247,7 +340,7 @@ Ensures XP doesn't go below 0.
 | `guildId` | `string` | Guild snowflake ID |
 | `userId` | `string` | User snowflake ID |
 | `amount` | `number` | Amount of XP to remove (must be positive) |
-| `options`? | [`AddXPOptions`](Interface.AddXPOptions.md) | Optional settings like reason |
+| `options`? | [`AddXPOptions`](Interface.AddXPOptions.md) | Optional settings like reason and storeId |
 
 #### Returns
 
@@ -264,6 +357,7 @@ set: (guildId, userId, totalXp, options?) => Promise<XPSetResult> = setXPCore;
 Set absolute XP value for a user (emits events, triggers role reconciliation)
 
 Sets absolute XP value for a user.
+If the guild's level curve defines a maxLevel, users cannot exceed it.
 
 #### Parameters
 
@@ -272,7 +366,7 @@ Sets absolute XP value for a user.
 | `guildId` | `string` | Guild snowflake ID |
 | `userId` | `string` | User snowflake ID |
 | `totalXp` | `number` | New total XP (must be non-negative) |
-| `options`? | [`AddXPOptions`](Interface.AddXPOptions.md) | Optional settings like reason |
+| `options`? | [`AddXPOptions`](Interface.AddXPOptions.md) | Optional settings like reason and storeId |
 
 #### Returns
 
@@ -289,6 +383,7 @@ setXP: (guildId, userId, totalXp, options?) => Promise<XPSetResult> = setXPCore;
 Set absolute XP value for a user - alias for set()
 
 Sets absolute XP value for a user.
+If the guild's level curve defines a maxLevel, users cannot exceed it.
 
 #### Parameters
 
@@ -297,7 +392,7 @@ Sets absolute XP value for a user.
 | `guildId` | `string` | Guild snowflake ID |
 | `userId` | `string` | User snowflake ID |
 | `totalXp` | `number` | New total XP (must be non-negative) |
-| `options`? | [`AddXPOptions`](Interface.AddXPOptions.md) | Optional settings like reason |
+| `options`? | [`AddXPOptions`](Interface.AddXPOptions.md) | Optional settings like reason and storeId |
 
 #### Returns
 
@@ -313,7 +408,7 @@ Result object with old/new XP and levels
 import { xp } from '@robojs/xp'
 import type { XPChangeResult } from '@robojs/xp'
 
-// Award XP to a user - using addXP alias
+// Award XP to a user (default store)
 const result: XPChangeResult = await xp.addXP('guildId', 'userId', 100, {
   reason: 'contest_winner'
 })
@@ -326,8 +421,8 @@ if (result.leveledUp) {
   // Role rewards already applied automatically via event listeners
 }
 
-// Or use the shorthand add() method (equivalent)
-const result2 = await xp.add('guildId', 'userId', 100, { reason: 'contest_winner' })
+// Award XP to custom store (parallel progression)
+await xp.add('guildId', 'userId', 50, { reason: 'helped_user', storeId: 'reputation' })
 ```
 
 ### Remove XP with Error Handling (using removeXP)

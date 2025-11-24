@@ -14,6 +14,12 @@ emitted **after** Flashcore persistence, guaranteeing consistency.
 - `'levelDown'`: Emitted when a user loses a level (typed as `LevelDownEvent`)
 - `'xpChange'`: Emitted on any XP change (typed as `XPChangeEvent`)
 
+**All events include `storeId` field:**
+- Identifies which data store triggered the event
+- Allows event listeners to filter events by store
+- Role rewards only process default store events
+- Leaderboard cache invalidation uses this for per-store invalidation
+
 **Convenience Methods** (delegates to `on()`):
 - `onLevelUp(handler)`: Shorthand for `on('levelUp', handler)`
 - `onLevelDown(handler)`: Shorthand for `on('levelDown', handler)`
@@ -258,15 +264,15 @@ import type { XPChangeEvent } from '@robojs/xp'
 
 // Using convenience method
 events.onXPChange((event: XPChangeEvent) => {
-  console.log(`User ${event.userId} XP changed by ${event.delta}`)
+  console.log(`Store ${event.storeId}: User ${event.userId} XP changed by ${event.delta}`)
 })
 
 // Or using generic on() method
 events.on('xpChange', (event: XPChangeEvent) => {
   console.log(`User ${event.userId} XP changed by ${event.delta}`)
+  console.log(`Store: ${event.storeId}`)
   console.log(`Reason: ${event.reason || 'message'}`)
   console.log(`Old XP: ${event.oldXp}, New XP: ${event.newXp}`)
-  console.log(`Old Level: ${event.oldLevel}, New Level: ${event.newLevel}`)
 })
 ```
 
@@ -352,7 +358,7 @@ events.on('levelUp', async (event) => {
 })
 ```
 
-### Track XP for Analytics
+### Track XP for Analytics (with multi-store support)
 
 ```typescript
 import { events } from '@robojs/xp'
@@ -362,11 +368,22 @@ events.on('xpChange', (event) => {
   analytics.track('xp_change', {
     guildId: event.guildId,
     userId: event.userId,
+    storeId: event.storeId,
     delta: event.delta,
     reason: event.reason,
-    levelChanged: event.oldLevel !== event.newLevel,
     timestamp: Date.now()
   })
+})
+
+// Filter by store for specific tracking
+events.on('levelUp', (event) => {
+  if (event.storeId === 'reputation') {
+    analytics.track('reputation_level_up', {
+      guildId: event.guildId,
+      userId: event.userId,
+      newLevel: event.newLevel
+    })
+  }
 })
 ```
 

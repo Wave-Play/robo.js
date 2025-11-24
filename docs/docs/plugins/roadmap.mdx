@@ -33,6 +33,17 @@ Sync project roadmaps from Jira (or custom providers) to organized Discord forum
 - 🔌 **Extensible provider architecture** (Jira, GitHub, Linear, custom)
 - ⚡ **Idempotent sync** with automatic error recovery
 
+##  Quick Happy Path
+
+1. `npx robo add @robojs/roadmap` in an existing Robo project.
+2. Set Jira env vars (`JIRA_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`, `JIRA_PROJECT_KEY`) in your `.env`.
+3. Start Robo with `npx robo dev`.
+4. In Discord, run `/roadmap setup` to create roadmap forums.
+5. Run `/roadmap sync` to import cards.
+6. Click into the generated roadmap forums to collaborate on cards.
+
+For a full walkthrough, see [Getting Started](#-getting-started) and [Provider Setup](#-provider-setup).
+
 ##  Getting Started
 
 <Terminal execute>{`robo add @robojs/roadmap`}</Terminal>
@@ -94,7 +105,9 @@ Manually syncs cards from provider to Discord. **Admin only.**
   - `dry-run` (boolean) - Preview sync without making changes
 
 - Shows sync statistics (created, updated, archived)
+- Cancellation: A cancel button appears during sync, allowing you to stop the operation. Only administrators or the user who started the sync can cancel. Partial results are preserved and shown (e.g., "Partial sync: 15/42 cards processed").
 - Idempotent: safe to run multiple times
+- When a card's column changes, the thread is moved to the new forum channel. The old thread is locked and archived to preserve discussion history, and the new thread links to it if there were user messages.
 
 **Example:**
 
@@ -135,6 +148,7 @@ Updates an existing card. **Authorized users.**
 
 - Updates both provider and Discord thread
 - Autocomplete searches cards by title and key
+- When changing a card's column, the Discord thread is moved to the new forum channel. The previous thread is locked and archived, and the new thread includes a link to the old discussion if it had user activity.
 
 **Example:**
 
@@ -142,7 +156,7 @@ Updates an existing card. **Authorized users.**
 /roadmap edit card:"PROJ-123" column:"In Progress"
 ```
 
-> 💡 All autocomplete fields update every 5 minutes (configurable via `autocompleteCacheTtl`). Labels support comma-separated values for multi-selection.
+> 💡 All autocomplete fields are cached for performance and refresh every 5 minutes by default. You can change this by setting `autocompleteCacheTtl` (in milliseconds) in your roadmap plugin options; lower values refresh suggestions more often at the cost of more provider API calls. Labels support comma-separated values for multi-selection.
 
 ##  Provider Setup
 
@@ -242,6 +256,9 @@ export default {
 	// Cache duration for autocomplete suggestions (default: 300000 = 5 minutes)
 	autocompleteCacheTtl: 300000,
 
+	// Whether /roadmap add and /roadmap edit replies are ephemeral (true) or visible in-channel (false)
+	ephemeralCommands: true,
+
 	// Reserved for future automatic sync feature
 	autoSync: false,
 
@@ -252,12 +269,13 @@ export default {
 
 **Available Options:**
 
-| Option                 | Type                                | Default  | Description                                     |
-| ---------------------- | ----------------------------------- | -------- | ----------------------------------------------- |
-| `provider`             | `RoadmapProvider \| ProviderConfig` | required | Provider instance or config object              |
-| `autocompleteCacheTtl` | `number`                            | `300000` | Cache duration in milliseconds for autocomplete |
-| `autoSync`             | `boolean`                           | `false`  | Reserved for future automatic sync              |
-| `syncInterval`         | `number \| null`                    | `null`   | Reserved for future sync interval               |
+| Option                 | Type                                | Default  | Description                                                                 |
+| ---------------------- | ----------------------------------- | -------- | --------------------------------------------------------------------------- |
+| `provider`             | `RoadmapProvider \| ProviderConfig` | required | Provider instance or config object                                          |
+| `autocompleteCacheTtl` | `number`                            | `300000` | Cache duration in milliseconds for autocomplete                             |
+| `ephemeralCommands`    | `boolean`                           | `true`   | Controls whether `/roadmap add` and `/roadmap edit` replies are ephemeral   |
+| `autoSync`             | `boolean`                           | `false`  | Reserved for future automatic sync                                          |
+| `syncInterval`         | `number \| null`                    | `null`   | Reserved for future sync interval                                           |
 
 ### Jira Configuration
 
@@ -359,6 +377,31 @@ const preview = await syncRoadmap({
 })
 
 console.log(`Synced ${result.stats.total} cards`)
+```
+
+### Thread Movement on Column Changes
+
+When a card moves to a different column (e.g., from "Backlog" to "In Progress"), the sync engine automatically moves the Discord thread to the corresponding forum channel:
+
+- **New thread created** in the target forum with the same name, tags, and content
+- **Old thread locked and archived** to preserve discussion history
+- **Conditional linking**: If the old thread had user messages (more than just the starter message), the new thread includes a link at the top: "📜 See X messages in previous discussion: [link]"
+- **Thread history tracked** in settings for audit trail
+
+This behavior applies to:
+- `/roadmap sync` operations
+- `/roadmap edit` command when changing the column
+- REST API `PUT /api/roadmap/cards/:guildId/:cardId` when updating the column
+
+**Example:**
+```typescript
+import { syncRoadmap } from '@robojs/roadmap'
+
+// When a card moves from "Backlog" to "In Progress"
+// The thread will be moved to the In Progress forum
+const result = await syncRoadmap({ guild, provider })
+// Old thread: locked and archived in Backlog forum
+// New thread: active in In Progress forum with link to old thread
 ```
 
 ### Card Operations
@@ -497,7 +540,8 @@ The REST API provides HTTP endpoints for external integrations, custom dashboard
 	"success": false,
 	"error": {
 		"code": "ERROR_CODE",
-		"message": "Human-readable error message"
+		"message": "Human-readable error message",
+		"hint": "Optional operator-friendly hint with a suggested fix"
 	}
 }
 ```
@@ -557,6 +601,13 @@ curl http://localhost:3000/api/roadmap/cards/:guildId/:cardId`}</Terminal>
 ##  Custom Providers
 
 Extend the roadmap to sync from GitHub Projects, Linear, or any custom backend.
+
+**Minimal implementation checklist**
+
+- Extend `RoadmapProvider` with your own provider class.
+- Implement the required methods: `fetchCards`, `getColumns`, `getCard`, `createCard`, `updateCard`, and `getProviderInfo`.
+- Optionally implement helpers like `getIssueTypes`, `getLabels`, `fetchCardsByDateRange`, `validateConfig`, and `init` if your backend supports them.
+- Register your provider in `config/plugins/robojs/roadmap.(mjs\|ts)` via the plugin options.
 
 ### Creating a Provider
 
@@ -700,7 +751,7 @@ export default {
 **Sync errors (content too long)**
 
 - Card descriptions are automatically truncated to Discord's limits
-- 4000 characters for thread creation, 2000 for updates
+- 2000 characters for forum thread starter messages and message edits
 
 **Cards not appearing**
 
@@ -724,6 +775,51 @@ export default {
 - Wait for cache refresh (default 5 minutes)
 - Restart bot to force cache refresh
 - Check provider is ready via `isProviderReady()`
+
+**How to cancel a running sync**
+
+- Click the "Cancel Sync" button that appears during the sync progress.
+- Only administrators or the user who started the sync can cancel.
+- The sync stops after finishing the current card (typically < 1 second).
+- Partial results are preserved and shown in the cancellation message.
+- Stats reflect cards successfully processed before cancellation.
+
+**Sync canceled but shows partial results**
+
+- This is expected behavior — cancellation preserves completed work.
+- The cancellation message shows "Partial sync: X/Y cards processed".
+- Stats (created, updated, archived, errors) reflect processed cards before cancellation.
+- Cards synced before cancellation remain in Discord.
+- Run `/roadmap sync` again to complete the sync.
+
+**Cancel button not working**
+
+- Verify you are an administrator or the user who started the sync.
+- If the sync already completed, the cancel button won't work (sync already ended).
+- If you see a "Not authorized" message, you don't have permission to cancel this sync.
+- If the button appears disabled, the sync may have already finished.
+- Check bot logs for any errors related to cancellation.
+
+**Threads moved to different forums**
+
+- This is expected behavior when a card's column changes
+- Old threads are locked and archived to preserve history
+- New threads link to old discussions if they had user activity
+- Thread history is tracked in settings
+
+**Old threads are locked**
+
+- Threads are automatically locked when a card moves to a new column
+- This prevents confusion from discussions in multiple places
+- Users can still view locked threads and their history
+- The new thread includes a link to the old discussion
+
+**Thread links show "See X messages"**
+
+- Links only appear when the old thread had user messages (not just the starter message)
+- Message count excludes the starter message (e.g., "See 5 messages" means 5 user replies)
+- This helps users find valuable prior discussions
+- Threads with only the starter message are not linked
 
 **Thread creation fails**
 
