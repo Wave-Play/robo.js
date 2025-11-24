@@ -57,12 +57,6 @@ npm install
 
 ### 1. Environment Setup
 
-Copy the example environment file:
-
-```bash
-cp example.env .env
-```
-
 Fill in your secrets in `.env`:
 - `AUTH_SECRET`: A long random string for session security.
 - `DISCORD_CLIENT_ID` & `DISCORD_CLIENT_SECRET`: From your [Discord Developer Portal](https://discord.com/developers/applications).
@@ -125,6 +119,26 @@ We use **Prisma** as the ORM to interact with the SQLite database.
 2. Run `npx prisma migrate dev --name <migration-name>` to apply changes and generate the client.
 
 The default schema includes models for `User`, `Account`, `Session`, and `Password` to support the auth system.
+
+### Alternative: Flashcore
+
+Don't need a full SQL database? You can use **Flashcore**, the built-in key-value store powered by Robo.js. It's zero-config and perfect for simple apps or prototyping.
+
+To switch to Flashcore, update `config/plugins/robojs/auth.ts`:
+
+```typescript
+import { createFlashcoreAdapter } from '@robojs/auth'
+
+// ...
+
+// Replace the Prisma adapter with Flashcore
+const adapter = createFlashcoreAdapter()
+
+const config: AuthPluginOptions = {
+  adapter,
+  // ...
+}
+```
 
 ## 🛠️ App Development
 
@@ -191,7 +205,3 @@ Robo.js powers the backend server. You can create API routes in `src/api` that r
    ```
 
 You can deploy this to any host that supports Node.js (VPS, Railway, Render, etc.) or use **[RoboPlay](https://roboplay.dev)** for an optimized experience.
-
----
-
-<p align="center">Built with ❤️ by the <a href="https://robojs.dev">Robo.js</a> team.</p>
