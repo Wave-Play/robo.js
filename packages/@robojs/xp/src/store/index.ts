@@ -486,7 +486,7 @@ export async function getOrInitConfig(guildId: string, options?: FlashcoreOption
 }
 
 /**
- * Returns default guild configuration (MEE6 parity)
+ * Returns default guild configuration
  *
  * @returns GuildConfig with all default values
  */

@@ -2,7 +2,7 @@
  * TypeScript type definitions for @robojs/xp
  *
  * This module defines all core types for the XP system including user data,
- * configuration, events, and math results. Follows MEE6 parity standards.
+ * configuration, events, and math results. Follows standard XP system conventions.
  *
  * ## Multi-Store Architecture
  *
@@ -48,7 +48,7 @@
  * User XP data stored per guild member
  *
  * @property xp - Total XP accumulated (determines level)
- * @property level - Current level (derived from XP using MEE6 curve)
+ * @property level - Current level (derived from XP using default curve)
  * @property lastAwardedAt - Unix timestamp (ms) of last XP award for cooldown tracking
  * @property messages - Total messages sent in guild text channels (increments after basic validation, before No-XP/cooldown checks)
  * @property xpMessages - Messages that awarded XP (increments only when XP is actually granted, after all checks pass)
@@ -73,7 +73,7 @@ export interface UserXP {
 /**
  * Role reward mode - determines how multiple role rewards are applied
  *
- * - 'stack': User keeps all role rewards from previous levels (MEE6 default)
+ * - 'stack': User keeps all role rewards from previous levels (default)
  * - 'replace': User only gets role for their current level, previous roles removed
  */
 export type RewardsMode = 'stack' | 'replace'
@@ -95,7 +95,7 @@ export interface RoleReward {
 /**
  * Per-guild XP system configuration
  *
- * All fields have sensible defaults matching MEE6 behavior.
+ * All fields have sensible defaults matching standard behavior.
  *
  * @property cooldownSeconds - Minimum seconds between XP awards for same user (default: 60)
  * @property xpRate - Global XP multiplier for this guild (default: 1.0)
@@ -256,7 +256,7 @@ export interface GuildConfig {
 	 * Level curve configuration defining how XP maps to levels
 	 *
 	 * Controls the progression curve for this guild/store. Supports four preset types:
-	 * - 'quadratic': Smooth, accelerating growth (default, matches MEE6)
+	 * - 'quadratic': Smooth, accelerating growth (default)
 	 * - 'linear': Constant XP per level
 	 * - 'exponential': Rapid, accelerating growth (requires level cap)
 	 * - 'lookup': Hand-tuned thresholds from array
@@ -265,7 +265,7 @@ export interface GuildConfig {
 	 * reputation store uses linear). Configuration is stored in Flashcore and can
 	 * be set via XP.config.set() or /xp config commands.
 	 *
-	 * @default Quadratic curve with MEE6 values (a=5, b=50, c=100)
+	 * @default Quadratic curve with default values (a=5, b=50, c=100)
 	 *
 	 * @example Linear curve with 100 XP per level
 	 * {
@@ -455,18 +455,18 @@ export interface LevelProgress {
  *
  * Uses the formula: XP = a*level² + b*level + c
  *
- * This is the default curve type, matching the standard MEE6 progression curve.
+ * This is the default curve type, providing standard progression.
  * Provides smooth, accelerating growth that rewards consistent engagement.
  *
  * @property type - Discriminator field for type safety
- * @property params - Quadratic coefficients (optional, defaults to MEE6 values)
+ * @property params - Quadratic coefficients (optional, defaults to standard values)
  * @property params.a - Coefficient for level² term (default: 5)
  * @property params.b - Coefficient for level term (default: 50)
  * @property params.c - Constant term (default: 100)
  * @property maxLevel - Optional level cap (users cannot exceed this level)
  *
  * @remarks
- * Default values (a=5, b=50, c=100) produce the MEE6 curve:
+ * Default values (a=5, b=50, c=100) produce the standard curve:
  * - Level 1: 155 XP
  * - Level 5: 600 XP
  * - Level 10: 1655 XP
@@ -475,7 +475,7 @@ export interface LevelProgress {
  * For typical use cases, all coefficients should be positive. Negative values
  * may produce unexpected behavior (e.g., decreasing XP requirements).
  *
- * @example Default MEE6 curve (params can be omitted)
+ * @example Default curve (params can be omitted)
  * const curve: QuadraticCurve = {
  *   type: 'quadratic'
  * }
@@ -599,7 +599,7 @@ export interface ExponentialCurve {
  * Uses explicit XP thresholds for each level from a predefined array.
  *
  * Provides complete control over progression with arbitrary, hand-tuned
- * values. Ideal for unique progression patterns or imported MEE6 curves.
+ * values. Ideal for unique progression patterns or custom curves.
  *
  * @property type - Discriminator field for type safety
  * @property params - Lookup table parameters (required)
@@ -629,7 +629,7 @@ export interface ExponentialCurve {
  * }
  * // Level 0: 0 XP, Level 1: 100 XP, Level 2: 250 XP, etc.
  *
- * @example Imported MEE6 curve
+ * @example Custom lookup curve
  * const curve: LookupCurve = {
  *   type: 'lookup',
  *   params: {
@@ -1041,7 +1041,7 @@ export interface PluginOptions {
  		 * export default {
  		 *   levels: {
  		 *     getCurve: (guildId, storeId) => {
- 		 *       // Default store: MEE6 parity via fallback
+ 		 *       // Default store: standard curve via fallback
  		 *       if (storeId === 'default') {
  		 *         return null // Use default quadratic curve
  		 *       }

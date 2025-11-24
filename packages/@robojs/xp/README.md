@@ -4,7 +4,7 @@
 
 # @robojs/xp
 
-MEE6-style chat XP system that exposes a powerful event-driven API that makes building custom features incredibly easy. No need to fork the plugin or write complex integrations—just listen to events and call imperative functions.
+Standard chat XP system that exposes a powerful event-driven API that makes building custom features incredibly easy. No need to fork the plugin or write complex integrations—just listen to events and call imperative functions.
 
 <div align="center">
   <a href="https://github.com/Wave-Play/robo/blob/main/LICENSE"><img alt="GitHub license" src="https://img.shields.io/github/license/Wave-Play/robo" /></a>
@@ -19,9 +19,9 @@ MEE6-style chat XP system that exposes a powerful event-driven API that makes bu
 
 ## Features
 
-- 💬 **MEE6-parity XP mechanics** - Awards 15-25 XP per message with 60-second cooldown
+- 💬 **Standard XP mechanics** - Awards 15-25 XP per message with 60-second cooldown
 - 🎯 **Role rewards** - Automatic role assignment with stack or replace modes
-- 🚀 **Multipliers** - Server, role, and user XP boosts (MEE6 Pro parity)
+- 🚀 **Multipliers** - Server, role, and user XP boosts (premium features)
 - 📊 **Cached leaderboards** - Optimized for 10k+ users with under 200ms refresh
 - 🛡️ **No-XP roles/channels** - Granular control over where XP is earned
 - 🔧 **Admin commands** - Complete control via `/xp` command suite
@@ -162,7 +162,7 @@ interface GuildConfig {
 	rewardsMode: 'stack' | 'replace' // Stack (keep all) or replace (highest only)
 	removeRewardOnXpLoss: boolean // Remove roles when XP drops below level
 
-	// Multipliers (MEE6 Pro parity)
+	// Multipliers (premium features)
 	multipliers: {
 		server?: number // Server-wide multiplier (set to 0 to disable automatic XP)
 		role?: Record<string, number> // Per-role multipliers (set to 0 to disable for role)
@@ -446,21 +446,21 @@ await config.set(guildId, {
 
 **Config Precedence:** Guild config > Global config > System defaults
 
-### MEE6 Parity Notes
+### Default Behavior Notes
 
-This plugin matches MEE6's core mechanics:
+This plugin provides standard XP mechanics:
 
 - **XP per message:** 15-25 XP (random, configurable via `xpRate`)
 - **Cooldown:** 60 seconds (configurable)
 - **Level curve:** `XP = 5 * level² + 50 * level + 100`
 - **Role rewards:** Stack or replace modes
-- **Multipliers:** Server, role, and user multipliers (MEE6 Pro feature)
+- **Multipliers:** Server, role, and user multipliers (premium features)
 
 ## Custom Level Curves
 
-Robo XP supports fully customizable level progression curves. By default, the plugin matches MEE6 parity using a quadratic formula, but you can override the curve per guild and per store (multi-store aware). You can choose from presets (quadratic, linear, exponential, lookup) or supply code via the `getCurve` callback in your plugin config for dynamic logic.
+Robo XP supports fully customizable level progression curves. By default, the plugin uses a standard quadratic formula, but you can override the curve per guild and per store (multi-store aware). You can choose from presets (quadratic, linear, exponential, lookup) or supply code via the `getCurve` callback in your plugin config for dynamic logic.
 
-Note: Unless you customize it, the default store uses the MEE6‑compatible quadratic curve defined as:
+Note: Unless you customize it, the default store uses the default quadratic curve defined as:
 
 XP(level) = 5 × level² + 50 × level + 100
 
@@ -687,9 +687,9 @@ Common use cases
 - Seasonal systems: lookup tables with strict level caps.
 - Multi‑currency: different curves per store (linear for coins, exponential for gems).
 
-### MEE6 Parity and Default Behavior
+### Default Behavior
 
-Default quadratic curve (MEE6 parity):
+Default quadratic curve:
 
 XP(level) = 5 × level² + 50 × level + 100
 
@@ -1028,7 +1028,7 @@ constants.DEFAULT_CURVE_C // 100
 
 #### config.getDefault()
 
-Returns the default MEE6-compatible configuration before applying any global or guild overrides.
+Returns the default configuration before applying any global or guild overrides.
 
 ```ts
 import { config } from '@robojs/xp'
@@ -1066,7 +1066,7 @@ await rewards.reconcileRewards(guildId, userId)
 
 The @robojs/xp plugin is designed to be extended. These recipes demonstrate common integration patterns using the event system and imperative API.
 
-For a complete, production-ready example, see `seed/events/_start/level-announcements.ts` which demonstrates MEE6-style level-up announcements with rich embeds, progress bars, and extensive customization options.
+For a complete, production-ready example, see `seed/events/_start/level-announcements.ts` which demonstrates standard level-up announcements with rich embeds, progress bars, and extensive customization options.
 
 Below are additional recipes for common use cases:
 
@@ -1677,22 +1677,22 @@ Example: A user sends 100 messages in 5 minutes. With a 60s cooldown, only ~5 me
 
 See [Configuration Guide](#configuration-guide) above for complete structure.
 
-## MEE6 Parity
+## Default Configuration
 
-This plugin provides feature parity with MEE6's XP system:
+This plugin provides standard XP system features:
 
-### Parity Features
+### Standard Features
 
 - ✅ **XP per message:** 15-25 XP (configurable)
 - ✅ **Cooldown:** 60 seconds (configurable)
-- ✅ **Level curve:** Same quadratic formula
+- ✅ **Level curve:** Standard quadratic formula
 - ✅ **Role rewards:** Stack or replace modes
-- ✅ **Multipliers:** Server, role, user (MEE6 Pro)
+- ✅ **Multipliers:** Server, role, user (premium features)
 - ✅ **No-XP roles/channels**
 - ✅ **Leaderboard pagination**
 - ✅ **Admin commands**
 
-### Configuration for MEE6-like Behavior
+### Configuration for Standard Behavior
 
 ```ts
 import { config } from '@robojs/xp'
@@ -1971,9 +1971,9 @@ pnpm build plugin
 - [GitHub Repository](https://github.com/Wave-Play/robo.js)
 - [npm Package](https://www.npmjs.com/package/@robojs/xp)
 
-Robo XP supports fully customizable level progression curves. By default, the plugin matches MEE6 parity using a quadratic formula, but you can override the curve per guild and per store (multi-store aware). You can choose from presets (quadratic, linear, exponential, lookup) or supply code via the `getCurve` callback in your plugin config for dynamic logic.
+Robo XP supports fully customizable level progression curves. By default, the plugin uses a standard quadratic formula, but you can override the curve per guild and per store (multi-store aware). You can choose from presets (quadratic, linear, exponential, lookup) or supply code via the `getCurve` callback in your plugin config for dynamic logic.
 
-Note: Unless you customize it, the default store uses the MEE6‑compatible quadratic curve defined as:
+Note: Unless you customize it, the default store uses the default quadratic curve defined as:
 
 XP(level) = 5 × level² + 50 × level + 100
 
@@ -2200,9 +2200,9 @@ Common use cases
 - Seasonal systems: lookup tables with strict level caps.
 - Multi‑currency: different curves per store (linear for coins, exponential for gems).
 
-### MEE6 Parity and Default Behavior
+### Default Behavior
 
-Default quadratic curve (MEE6 parity):
+Default quadratic curve:
 
 XP(level) = 5 × level² + 50 × level + 100
 

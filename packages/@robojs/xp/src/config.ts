@@ -12,7 +12,7 @@
  * Config precedence (highest to lowest):
  * 1. Guild-specific config (per store)
  * 2. Global config defaults (shared across all stores)
- * 3. System defaults (MEE6 parity)
+ * 3. System defaults
  *
  * @example
  * ```typescript
@@ -35,7 +35,7 @@ import {
 } from './store/index.js'
 
 /**
- * Default configuration constants (MEE6 parity)
+ * Default configuration constants
  */
 export const DEFAULT_COOLDOWN = 60 // 1 minute between XP awards
 export const DEFAULT_XP_RATE = 1.0 // No rate modification
@@ -142,7 +142,7 @@ export async function getGlobalConfig(): Promise<GlobalConfig> {
 }
 
 /**
- * Returns default guild configuration (MEE6 parity)
+ * Returns default guild configuration
  *
  * @returns GuildConfig with all default values
  *

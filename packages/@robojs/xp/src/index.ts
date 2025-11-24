@@ -1,15 +1,15 @@
 /**
  * @robojs/xp - XP and Leveling System for Discord Bots
  *
- * A comprehensive XP and leveling system plugin for Robo.js with MEE6 parity.
+ * A comprehensive XP and leveling system plugin for Robo.js with standard defaults.
  * Provides XP manipulation APIs, configuration management, level curve mathematics,
  * role rewards, event system, and admin commands for Discord servers.
  *
  * ## Features
  *
- * - **MEE6 Parity**: Formula `XP = 5 * level^2 + 50 * level + 100` with default settings matching MEE6
+ * - **Default Configuration**: Formula `XP = 5 * level^2 + 50 * level + 100` with standard settings
  * - **Role Rewards**: Automatic role assignment on level-up with stack/replace modes
- * - **XP Multipliers**: Per-user and per-role multipliers (MEE6 Pro parity)
+ * - **XP Multipliers**: Per-user and per-role multipliers (premium features)
  * - **Event-Driven**: Type-safe events for levelUp, levelDown, xpChange
  * - **No-XP Zones**: Configure channels/roles to exclude from XP gains
  * - **Fully Typed**: Comprehensive TypeScript support with result types
@@ -75,7 +75,7 @@
  *   rewardsMode: 'stack' // Users keep all qualifying roles
  * })
  *
- * // Set up XP multipliers (MEE6 Pro parity)
+ * // Set up XP multipliers (premium features)
  * await config.set('123456789012345678', {
  *   multipliers: {
  *     user: {
@@ -278,13 +278,13 @@
  * })
  * ```
  *
- * ### MEE6 Parity
+ * ### Default Configuration
  *
  * - **Level curve formula**: `5*l² + 50*l + 100`
- * - **Default settings**: Match MEE6 for seamless migration
+ * - **Default settings**: Standard XP system configuration
  * - **XP per message**: 15-25 XP with 60s cooldown
  * - **Role rewards**: Stack vs replace modes
- * - **Multipliers**: Equivalent to MEE6 Pro features
+ * - **Multipliers**: Premium features for advanced customization
  *
  * ### Performance Characteristics
  *
@@ -390,9 +390,9 @@ import {
 } from './math/curve.js'
 
 /**
- * MEE6-style level curve mathematics
+ * Standard level curve mathematics
  *
- * Provides pure, deterministic functions for XP calculations using the MEE6
+ * Provides pure, deterministic functions for XP calculations using the default
  * formula: `XP = 5 * level² + 50 * level + 100`
  *
  * **Features:**
@@ -545,14 +545,14 @@ import {
  * **Features:**
  * - Guild-specific and global configuration
  * - Automatic validation with detailed error messages
- * - MEE6-compatible defaults for seamless migration
+ * - Standard defaults for easy setup
  * - Role rewards, multipliers, and No-XP zones
  * - Cache invalidation when using setGlobal
  *
  * **Config Precedence** (highest to lowest):
  * 1. Guild-specific config (via `config.set()`)
  * 2. Global config defaults (via `config.setGlobal()`)
- * 3. System defaults (MEE6 parity)
+ * 3. System defaults
  *
  * @example
  * ### Basic Configuration
@@ -595,7 +595,7 @@ import {
  * ```
  *
  * @example
- * ### XP Multipliers (MEE6 Pro Parity)
+ * ### XP Multipliers (Premium Features)
  *
  * ```typescript
  * import { config } from '@robojs/xp'
@@ -677,12 +677,12 @@ import {
  * ```
  *
  * @example
- * ### MEE6 Migration Setup
+ * ### Default Configuration Setup
  *
  * ```typescript
  * import { config } from '@robojs/xp'
  *
- * // Default config already matches MEE6 - no setup needed!
+ * // Default config uses standard settings - no setup needed!
  * const defaultConfig = config.getDefault()
  * console.log(defaultConfig)
  * // {
@@ -693,15 +693,15 @@ import {
  * //   ...
  * // }
  *
- * // Or explicitly get MEE6-compatible config
+ * // Get guild config with defaults applied
  * const guildConfig = await config.get('123456789012345678')
- * // Returns MEE6-compatible defaults if not customized
+ * // Returns default configuration if not customized
  * ```
  *
  * @remarks
  * - Config changes are validated before persistence
  * - Global config updates invalidate caches for consistency
- * - Default MEE6 settings: 60s cooldown, 15-25 XP/msg, stack mode
+ * - Default settings: 60s cooldown, 15-25 XP/msg, stack mode
  * - Multipliers stack multiplicatively (user * role * guild)
  */
 export const config = {
@@ -720,7 +720,7 @@ export const config = {
 	/** Validate configuration object */
 	validate: validateConfig,
 
-	/** Get default configuration (MEE6 parity) */
+	/** Get default configuration */
 	getDefault: getDefaultConfig
 }
 
@@ -731,14 +731,14 @@ export const config = {
 /**
  * Default configuration constants
  *
- * These values match MEE6 behavior for seamless migration. Reference these
+ * These values represent the standard default configuration. Reference these
  * constants when:
  * - Building documentation or UI that references defaults
- * - Implementing custom XP calculations using the MEE6 formula
+ * - Implementing custom XP calculations using the default formula
  * - Validating user input against default values
  * - Creating custom configurations that extend defaults
  *
- * **MEE6 Formula Coefficients:**
+ * **Default Formula Coefficients:**
  * - **DEFAULT_CURVE_A (5)**: Quadratic coefficient - controls exponential growth rate
  * - **DEFAULT_CURVE_B (50)**: Linear coefficient - controls linear growth component
  * - **DEFAULT_CURVE_C (100)**: Constant term - base XP requirement for level 1
@@ -750,7 +750,7 @@ export const config = {
  * ```typescript
  * import { constants } from '@robojs/xp'
  *
- * console.log(`Default cooldown: ${constants.DEFAULT_COOLDOWN}s (MEE6 parity)`)
+ * console.log(`Default cooldown: ${constants.DEFAULT_COOLDOWN}s`)
  * console.log(`Default XP rate: ${constants.DEFAULT_XP_RATE}x`)
  * console.log(`Default rewards mode: ${constants.DEFAULT_REWARDS_MODE}`)
  * ```
@@ -778,9 +778,9 @@ export const config = {
  * ```typescript
  * import { constants } from '@robojs/xp'
  *
- * // Check if user config matches MEE6 defaults
+ * // Check if user config matches defaults
  * if (userConfig.cooldownSeconds === constants.DEFAULT_COOLDOWN) {
- *   console.log('Using MEE6 default cooldown (60s)')
+ *   console.log('Using default cooldown (60s)')
  * }
  *
  * // Determine if custom XP rate is applied
@@ -794,7 +794,7 @@ export const config = {
  * ```typescript
  * import { constants } from '@robojs/xp'
  *
- * // Start with MEE6 defaults, override specific values
+ * // Start with defaults, override specific values
  * const customConfig = {
  *   cooldownSeconds: constants.DEFAULT_COOLDOWN, // Keep default 60s
  *   xpRate: 1.5, // Override: +50% XP boost
@@ -804,28 +804,28 @@ export const config = {
  * ```
  */
 export const constants = {
-	/** Default cooldown between XP awards (60 seconds) - MEE6 parity */
+	/** Default cooldown between XP awards (60 seconds) */
 	DEFAULT_COOLDOWN,
 
-	/** Default XP rate multiplier (1.0 = no modification) - MEE6 parity */
+	/** Default XP rate multiplier (1.0 = no modification) */
 	DEFAULT_XP_RATE,
 
-	/** Default rewards mode ('stack' = keep all role rewards) - MEE6 parity */
+	/** Default rewards mode ('stack' = keep all role rewards) */
 	DEFAULT_REWARDS_MODE,
 
-	/** Default remove rewards on XP loss (false = keep rewards) - MEE6 parity */
+	/** Default remove rewards on XP loss (false = keep rewards) */
 	DEFAULT_REMOVE_ON_LOSS,
 
-	/** Default leaderboard visibility (false = restricted) - MEE6 parity */
+	/** Default leaderboard visibility (false = restricted) */
 	DEFAULT_LEADERBOARD_PUBLIC,
 
-	/** MEE6 level curve formula coefficient A (quadratic term: 5) */
+	/** Default level curve formula coefficient A (quadratic term: 5) */
 	DEFAULT_CURVE_A,
 
-	/** MEE6 level curve formula coefficient B (linear term: 50) */
+	/** Default level curve formula coefficient B (linear term: 50) */
 	DEFAULT_CURVE_B,
 
-	/** MEE6 level curve formula coefficient C (constant term: 100) */
+	/** Default level curve formula coefficient C (constant term: 100) */
 	DEFAULT_CURVE_C
 }
 
@@ -1096,7 +1096,7 @@ import {
  *
  * **Features:**
  * - Add/remove/set XP values with type-safe result objects
- * - Automatic level calculation based on MEE6 curve
+ * - Automatic level calculation based on default curve
  * - Event emission (levelUp, levelDown, xpChange) after persistence
  * - Automatic role reward reconciliation via event listeners
  * - Flashcore persistence with consistency guarantees
@@ -1111,7 +1111,7 @@ import {
  * **All XP Mutations Automatically:**
  * 1. Validate inputs (non-negative amounts, valid IDs)
  * 2. Load or create user record
- * 3. Calculate new level using MEE6 formula
+ * 3. Calculate new level using default formula
  * 4. Persist to Flashcore
  * 5. Emit events (after successful persistence)
  * 6. Trigger role reconciliation (via event listeners)

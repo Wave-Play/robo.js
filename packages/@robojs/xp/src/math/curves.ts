@@ -136,7 +136,7 @@ function getCurveKey(guildId: string, storeId: string): string {
  * maxLevel capping: If specified, xpForLevel returns Infinity for levels exceeding the cap,
  * and levelFromXp never returns levels higher than maxLevel.
  *
- * @example Default MEE6 curve (params can be omitted)
+ * @example Default curve (params can be omitted)
  * const curve = buildQuadraticCurve({ type: 'quadratic' })
  * curve.xpForLevel(1) // 155
  * curve.levelFromXp(155) // 1
@@ -423,7 +423,7 @@ export function buildExponentialCurve(config: ExponentialCurve): LevelCurve {
  * Uses explicit XP thresholds for each level from a predefined array.
  *
  * Provides complete control over progression with arbitrary, hand-tuned
- * values. Ideal for unique progression patterns or imported MEE6 curves.
+ * values. Ideal for unique progression patterns or custom curves.
  *
  * @param config - Lookup curve configuration
  * @returns Runtime LevelCurve with xpForLevel and levelFromXp functions
@@ -459,7 +459,7 @@ export function buildExponentialCurve(config: ExponentialCurve): LevelCurve {
  * curve.levelFromXp(250) // 2
  * curve.maxLevel // 5 (thresholds.length - 1)
  *
- * @example Imported MEE6 curve with explicit maxLevel
+ * @example Custom lookup curve with explicit maxLevel
  * const curve = buildLookupCurve({
  *   type: 'lookup',
  *   params: {

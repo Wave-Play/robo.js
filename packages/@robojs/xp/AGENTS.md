@@ -6,13 +6,13 @@ Scope: Applies to the entire `packages/@robojs/xp` directory and any code that i
 
 ## 1. Overview & Purpose
 
-- MEE6‑compatible XP/leveling system for Discord bots built on Robo.js.
+- Standard XP/leveling system for Discord bots built on Robo.js.
 - Capabilities: message‑based XP awards, level curve math, role rewards, multipliers, leaderboard with caching, REST API, slash commands, events for automation.
 - Install: `npx robo add @robojs/xp`.
 - Peer deps: `robo.js` (required). `@robojs/server` is optional for REST API endpoints.
 - Package location: `packages/@robojs/xp`.
 
-## 2. MEE6 Parity Features
+## 2. Standard Features
 
 - XP per message: random 15–25 base XP (scaled by `xpRate`).
 - Cooldown: 60 seconds default (per‑user, configurable per guild).
@@ -21,7 +21,7 @@ Scope: Applies to the entire `packages/@robojs/xp` directory and any code that i
 - Multipliers: server × max(role) × user. Multiplicative, not additive.
 - No‑XP zones: exclude roles and channels.
 - Leaderboard: cached (top 100), paginated, rank lookup.
-- Reference parity: MEE6 docs and public formula (see README notes).
+- Reference: Standard XP formula (see README notes).
 
 ## 3. Architecture Overview
 
@@ -185,7 +185,7 @@ Built‑in listeners register at module load:
 
 Hierarchy (highest precedence first):
 
-1. Guild config in Flashcore → 2) Global defaults in Flashcore → 3) System defaults (MEE6 parity).
+1. Guild config in Flashcore → 2) Global defaults in Flashcore → 3) System defaults.
 
 Note: Each store has independent configuration. Changing config for one store doesn't affect others.
 
@@ -526,7 +526,7 @@ This section documents the customizable level progression curves supported by `@
 
 ### Overview
 
-- Default curve: quadratic with MEE6 parity (a=5, b=50, c=100). Formula: `XP = 5*level² + 50*level + 100`.
+- Default curve: quadratic (a=5, b=50, c=100). Formula: `XP = 5*level² + 50*level + 100`.
 - Preset types: `quadratic`, `linear`, `exponential`, `lookup` (all serializable, persisted via Flashcore).
 - Advanced dynamic logic: `PluginOptions.levels.getCurve(guildId, storeId)` may return a runtime `LevelCurve` (sync/async).
 - Scope: per‑guild and per‑store (multi‑store preserved).
@@ -551,7 +551,7 @@ This section documents the customizable level progression curves supported by `@
 3) Default quadratic (lowest)
 
 - Definition: constants in `src/math/curve.ts` used when no other curve applies.
-- Formula: `XP = 5*level² + 50*level + 100` (MEE6 parity).
+- Formula: `XP = 5*level² + 50*level + 100` (default).
 - Always available as fallback.
 
 ### Resolution Flow

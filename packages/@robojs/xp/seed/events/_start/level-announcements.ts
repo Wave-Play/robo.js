@@ -6,7 +6,7 @@ import { client } from 'robo.js'
  * Level-Up Announcements
  *
  * This seed file demonstrates the @robojs/xp plugin's event-driven API by creating
- * a MEE6-style level-up announcement system. When users gain enough XP to level up,
+ * a standard level-up announcement system. When users gain enough XP to level up,
  * a rich embed is automatically sent to announce their achievement.
  *
  * Key Features:
@@ -72,7 +72,7 @@ export default async () => {
 			const filledBlocks = Math.floor((progress.percentage / 100) * 15)
 			const progressBar = '█'.repeat(filledBlocks) + '░'.repeat(15 - filledBlocks)
 
-			// ===== Build MEE6-Style Embed =====
+			// ===== Build Level-Up Embed =====
 			const embed = new EmbedBuilder()
 				.setTitle('🎉 Level Up!')
 				.setDescription(`${member} just reached **Level ${newLevel}**!`)

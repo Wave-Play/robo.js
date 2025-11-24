@@ -20,7 +20,7 @@ export function getServerMultiplier(config: GuildConfig): number {
  * Finds the maximum role multiplier among a user's roles.
  *
  * When a user has multiple roles with different multipliers,
- * the highest multiplier is selected. This follows MEE6 Pro parity
+ * the highest multiplier is selected. This follows standard multiplier behavior
  * where role multipliers don't stack additively.
  *
  * @param config - The guild configuration
@@ -67,7 +67,7 @@ export function getMaxRoleMultiplier(config: GuildConfig, roleIds: string[]): nu
 /**
  * Extracts the user-specific XP multiplier from the guild configuration.
  *
- * This is equivalent to MEE6 Pro's +50% personal XP boost feature.
+ * This provides a personal XP boost feature (e.g., +50% with multiplier 1.5).
  * For example, a multiplier of 1.5 represents a +50% boost.
  *
  * @param config - The guild configuration
@@ -87,7 +87,7 @@ export function getUserMultiplier(config: GuildConfig, userId: string): number {
 /**
  * Resolves the effective XP multiplier for a user based on server, role, and user multipliers.
  *
- * **Resolution Order (MEE6 Pro parity):**
+ * **Resolution Order:**
  * 1. Server multiplier (applies to everyone)
  * 2. Maximum role multiplier (highest among user's roles)
  * 3. User multiplier (personal boost)
