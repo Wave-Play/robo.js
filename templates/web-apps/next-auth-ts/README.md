@@ -2,113 +2,196 @@
 
 ---
 
-# Hiya, next-auth-ts 🌈
+# Web App - Next.js + Auth (TS)
 
-Welcome to your fresh **[Robo.js](https://robojs.dev)** project!
+Welcome to the **Next.js + Auth** starter for **[Robo.js](https://robojs.dev)**! 🚀
 
-Build, deploy, and maintain your **Discord Activities** with ease. With **Robo.js** as your guide, you'll experience a seamless, **[file-based setup](https://robojs.dev/discord-activities/file-structure)**, an **[integrated database](https://robojs.dev/robojs/flashcore)**, **[TypeScript support](https://robojs.dev/robojs/typescript)**, and a **[rich ecosystem](https://robojs.dev/plugins/overview)**.
+This template combines the power of **Next.js (App Router)**, **Prisma**, and **[@robojs/auth](https://robojs.dev/plugins/auth)** to give you a full-stack web application with authentication, database, and server-side logic ready to go.
 
-_Ready to embark on this adventure?_
+It comes pre-configured with:
+- **🔐 Authentication**: Discord OAuth and Email/Password login via `@robojs/auth`.
+- **🗄️ Database**: SQLite database with **Prisma** ORM.
+- **⚛️ Frontend**: Next.js 15+ (App Router) with React Server Components.
+- **🛠️ Backend**: Robo.js server for API routes and plugin management.
+
+_Ready to build something amazing?_
 
 ## Table of Contents
 
-- [🔗 Quick Links](#🔗-quick-links)
-- [✨ Getting Started](#✨-getting-started)
-- [🛠️ App Development](#️🛠️-app-development)
-- [🔒 Authentication](#🔒-authentication)
-- [🛠️ Backend Development](#️🛠️-backend-development)
-- [📁 Folder Structure](#📁-folder-structure)
-- [🔌 Ecosystem](#ecosystem)
-- [🚀 Hosting](#hosting)
+- [🔗 Quick Links](#-quick-links)
+- [✨ Getting Started](#-getting-started)
+- [🔐 Authentication](#-authentication)
+- [🗄️ Database (Prisma)](#️-database-prisma)
+- [🛠️ App Development](#️-app-development)
+- [⚙️ Configuration](#️-configuration)
+- [📁 Folder Structure](#-folder-structure)
+- [🚀 Deployment](#-deployment)
 
 ## 🔗 Quick Links
 
-- [📚 **Documentation:** Getting started with Robo.js](https://robojs.dev/discord-activities)
-- [✨ **Discord:** Robo - Imagine Magic](https://robojs.dev/discord)
-- [🔗 **Templates:** Kickstart your project with a template.](https://robojs.dev/plugins/create)
-- [📖 **Tutorials:** Learn how to create epic experiences.](https://dev.to/waveplay)
+- [📚 **Robo.js Documentation**](https://robojs.dev)
+- [🔐 **@robojs/auth Docs**](https://github.com/Wave-Play/robo.js/tree/main/packages/%40robojs/auth)
+- [📘 **Next.js Documentation**](https://nextjs.org/docs)
+- [🗃️ **Prisma Documentation**](https://www.prisma.io/docs)
+- [✨ **Discord Community**](https://robojs.dev/discord)
 
-## Running
+## ✨ Getting Started
 
-Run development mode with:
+Create a new project with this template:
+
+```bash
+npx create-robo --template web-apps/next-auth-ts --name my-awesome-app
+```
+
+Navigate to your project:
+
+```bash
+cd my-awesome-app
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+### 1. Environment Setup
+
+Copy the example environment file:
+
+```bash
+cp example.env .env
+```
+
+Fill in your secrets in `.env`:
+- `AUTH_SECRET`: A long random string for session security.
+- `DISCORD_CLIENT_ID` & `DISCORD_CLIENT_SECRET`: From your [Discord Developer Portal](https://discord.com/developers/applications).
+- `RESEND_API_KEY`: (Optional) For sending emails via Resend.
+
+### 2. Database Setup
+
+Initialize your SQLite database:
+
+```bash
+npx prisma migrate dev --name init
+```
+
+### 3. Run It!
+
+Start the development server:
 
 ```bash
 npm run dev
 ```
 
-> **Notes:** A free Cloudflare tunnel is included for easy testing. You can copy and paste it into activity's **[URL mapping](https://robojs.dev/discord-activities/proxy#url-mapping)** to test things out.
+Visit `http://localhost:3000` to see your app in action!
 
-- [🔰 **Beginner Guide:** New to Discord Bots with Robo? Start here!](https://robojs.dev/discord-bots/beginner-guide)
-- [🎭 **Run Modes:** Define profiles for your Robo session.](https://robojs.dev/robojs/mode#default-modes)
+## 🔐 Authentication
 
-## App Development 🛠️
+This template uses **[@robojs/auth](https://robojs.dev/plugins/auth)** to handle user authentication. It's fully integrated with the Next.js frontend and the Prisma database.
 
-You can find your client-side code in the `/src/app` folder. This is where you can build your web app using React, Vue, or any other front-end framework.
+### Features
+- **Sign In/Up**: Pre-built pages at `/login` and `/signup`.
+- **Providers**: Discord (OAuth) and Email/Password configured by default.
+- **Session Management**: `useSession` hook for client components and `getServerSession` for server components.
+- **Protected Routes**: Example dashboard at `/dashboard`.
 
-Things are powered by **Vite** under the hood, so you get the latest ES modules, hot module reloading, and more! ⚡
+### Configuration
+Auth configuration lives in `config/plugins/robojs/auth.ts`. You can add more providers (Google, GitHub, etc.) or customize pages here.
 
-Try editing the `main` file to get started! (`Activity.tsx` if you're using React)
+```typescript
+// config/plugins/robojs/auth.ts
+import Discord from '@robojs/auth/providers/discord'
+// ...
 
-#### Authenticating
-
-The React template makes it easy to authenticate your activity with Discord. The `<DiscordProvider>` components in `App.tsx` accepts `authenticate` and `scope` props.
-
-```tsx
-<DiscordContextProvider authenticate scope={['identify', 'guilds']}>
-	<Activity />
-</DiscordContextProvider>
-```
-
-You can then get the SDK and other goodies from the `useDiscordSdk` hook!
-
-- [🔒 **Authentication:** Customize your user experience.](https://robojs.dev/discord-activities/authentication)
-
-## Backend Development 🛠️
-
-Your server-side code is located in the `/src/api` folder. This is where you can build your API, webhooks, and other fancy server-side features.
-
-This backend is powered by [**@robojs/server**](https://robojs.dev/plugins/server) - a powerful Robo plugin that creates an manages a Node `http` server for you. If you install Fastify, the server will automatically switch to it for better performance!
-
-Everything Robo is file-based, so you can create new routes by making new files in the `/src/api` directory. The file's name becomes the route's path. For example, let's try making a new route at `/health` by creating a new file named `health.js`:
-
-```js
-export default () => {
-	return { status: 'ok' }
+const config: AuthPluginOptions = {
+  // ...
+  providers: [
+    Discord({ clientId: process.env.DISCORD_CLIENT_ID, clientSecret: process.env.DISCORD_CLIENT_SECRET }),
+    // Add more providers here!
+  ],
 }
 ```
 
-- [🔌 **@robojs/server:** Create and manage web pages, APIs, and more.](https://robojs.dev/plugins/server)
+## 🗄️ Database (Prisma)
 
-## Folder Structure 📁
+We use **Prisma** as the ORM to interact with the SQLite database.
 
-While the `api` and `app` folders are reserved for your server and client-side code, you are free to create anything else in the `/src` directory!
+- **Schema**: Defined in `prisma/schema.prisma`.
+- **Client**: Access the database via the global `prisma` instance (exported in `config/plugins/robojs/auth.ts` or similar).
 
-Folders only become reserved when you install a plugin that uses them. For example, bot functionality uses the `commands` and `events` folders.
+### Modifying the Schema
+1. Edit `prisma/schema.prisma`.
+2. Run `npx prisma migrate dev --name <migration-name>` to apply changes and generate the client.
 
-## Robo Ecosystem
+The default schema includes models for `User`, `Account`, `Session`, and `Password` to support the auth system.
 
-By building with **Robo.js**, you gain access to a growing ecosystem of **[plugins](https://robojs.dev/plugins/directory)**, **[templates](https://robojs.dev/templates/overview)**, and **[tools](https://robojs.dev/cli/overview)**. **[Robo Plugins](https://robojs.dev/plugins/overview)** are special. They can add features with one command.
+## 🛠️ App Development
 
-```bash
-npx robo add @robojs/ai @robojs/sync
+### Frontend (`/app`)
+The `app` directory contains your Next.js App Router code.
+- `page.tsx`: The landing page.
+- `layout.tsx`: Root layout with `SessionProvider`.
+- `dashboard/`: Protected route example.
+- `api/`: Next.js API routes (if needed).
+
+### Backend (`/src/api`)
+Robo.js powers the backend server. You can create API routes in `src/api` that run alongside Next.js.
+- **File-based routing**: `src/api/health.ts` -> `/api/health`.
+- **Robo Plugins**: Easily add features like AI, Sync, or Triggers.
+
+## ⚙️ Configuration
+
+### Environment Variables
+| Variable | Description |
+| --- | --- |
+| `DATABASE_URL` | Connection string for Prisma (default: `file:./dev.db`) |
+| `AUTH_SECRET` | Secret used to sign session tokens |
+| `DISCORD_CLIENT_ID` | Discord App Client ID |
+| `DISCORD_CLIENT_SECRET` | Discord App Client Secret |
+| `RESEND_API_KEY` | API Key for Resend (email provider) |
+
+### Robo Config
+- `config/robo.ts`: Main Robo.js configuration.
+- `config/plugins/`: Plugin-specific configurations.
+
+## 📁 Folder Structure
+
+```
+.
+├── app/                  # Next.js App Router (Frontend)
+│   ├── api/              # Next.js API routes
+│   ├── dashboard/        # Protected dashboard page
+│   ├── login/            # Login page
+│   ├── signup/           # Signup page
+│   └── ...
+├── config/               # Configuration files
+│   ├── plugins/          # Plugin configs (@robojs/auth, etc.)
+│   └── robo.ts           # Main Robo config
+├── prisma/               # Prisma schema and migrations
+├── public/               # Static assets
+├── src/                  # Robo.js Backend Source
+│   ├── api/              # Robo.js API routes
+│   └── ...
+├── .env                  # Environment variables
+└── package.json
 ```
 
-Plugins integrate seamlessly thanks to the **[Robo File Structure](https://robojs.dev/discord-bots/file-structure)**. What's more, anyone can **[create a plugin](https://robojs.dev/plugins/create)**.
+## 🚀 Deployment
 
-- [🔌 **Robo Plugins:** Add features to your Robo seamlessly.](https://robojs.dev/plugins/install)
-- [🔌 **Creating Plugins:** Make your own plugins for Robo.js.](https://robojs.dev/plugins/create)
-- [🗃️ **Plugin Directory:** Browse plugins for your Robo.](https://robojs.dev/plugins/create)
-- [🔗 **Templates:** Kickstart your project with a template.](https://robojs.dev/plugins/create)
+1. **Build the project**:
+   ```bash
+   npm run build
+   ```
+   This builds both the Next.js app and the Robo.js server.
 
-## Hosting
+2. **Start the server**:
+   ```bash
+   npm start
+   ```
 
-**Hosting** your project keeps it running 24/7. No need to keep your computer on at all times, or worry about your Internet connection.
+You can deploy this to any host that supports Node.js (VPS, Railway, Render, etc.) or use **[RoboPlay](https://roboplay.dev)** for an optimized experience.
 
-You can host on any platform that supports **Node.js**, or run [`robo deploy`](https://robojs.dev/cli/robo#distributing) to host on **[RoboPlay](https://roboplay.dev)** - a hosting platform optimized for **Robo.js**.
+---
 
-```bash
-npm run deploy
-```
-
-- [🚀 **RoboPlay:** Deploy with as little as one command.](https://robojs.dev/hosting/roboplay)
-- [🛠️ **Self-Hosting:** Learn how to host and maintain it yourself.](https://robojs.dev/hosting/overview)
+<p align="center">Built with ❤️ by the <a href="https://robojs.dev">Robo.js</a> team.</p>
