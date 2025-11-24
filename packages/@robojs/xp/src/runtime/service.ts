@@ -349,11 +349,11 @@ export async function getUserRank(guildId: string, userId: string, options?: Fla
  * Called automatically when XP changes via event listeners.
  *
  * Supports two modes:
- * - Specific store: Pass { storeId: 'name' } to invalidate only that store
- * - All stores: Pass { all: true } to invalidate all stores for the guild
+ * - Specific store: Pass `{ storeId: 'name' }` to invalidate only that store
+ * - All stores: Pass `{ all: true }` to invalidate all stores for the guild
  *
  * @param guildId - Guild ID
- * @param options - Optional Flashcore options or { all: true } to invalidate all stores
+ * @param options - Optional Flashcore options or `{ all: true }` to invalidate all stores
  *
  * @example
  * ```typescript

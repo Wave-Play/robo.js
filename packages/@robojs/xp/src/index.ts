@@ -1557,7 +1557,16 @@ export const leaderboard = {
 	/** Get user's rank position (1-indexed) */
 	getRank: getUserRankCore,
 
-	/** Manually invalidate cache for a guild (usually automatic) */
+	/**
+	 * Manually invalidate cache for a guild (usually automatic)
+	 *
+	 * Supports two modes:
+	 * - Specific store: Pass `{ storeId: 'name' }` to invalidate only that store
+	 * - All stores: Pass `{ all: true }` to invalidate all stores for the guild
+	 *
+	 * @param guildId - Guild ID
+	 * @param options - Optional Flashcore options or `{ all: true }` to invalidate all stores
+	 */
 	invalidateCache: invalidateCacheCore
 }
 
