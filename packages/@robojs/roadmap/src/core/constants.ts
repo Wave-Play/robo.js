@@ -52,6 +52,16 @@ export const Buttons = {
 	 */
 	TogglePublic: {
 		id: ID_NAMESPACE + 'button-toggle-public'
+	},
+	/**
+	 * Base ID for the cancel sync button.
+	 *
+	 * The full custom ID is constructed as `${id}-${syncId}` so each active sync can be
+	 * uniquely identified. Clicking this button aborts the sync loop and shows partial
+	 * results. Only administrators or the user who started the sync may cancel.
+	 */
+	CancelSync: {
+		id: ID_NAMESPACE + 'button-cancel-sync'
 	}
 } as const
 

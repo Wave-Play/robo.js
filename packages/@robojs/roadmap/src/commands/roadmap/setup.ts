@@ -120,18 +120,24 @@ export function createSetupMessage(
 	// Determine current access mode
 	const isPublic = settings.isPublic ?? false
 
-	// Build status information section
-	let content = `**Roadmap Category:** ${category.toString()}\n`
-	content += `**Access Mode:** ${isPublic ? 'Public (read-only with comments)' : 'Private (admin/mod only)'}\n\n`
+	// Build status information section (optimized for quick scanning)
+	let content = '✅ **Roadmap forums are ready.**\n'
+	content += `**Access Mode:** ${isPublic ? 'Public (read-only with comments)' : 'Private (admin/mod only)'}\n`
+	content += '**Next step:** Run `/roadmap sync` to pull cards.\n'
 
-	// List all forum channels
+	// Brief roles explanation near the top
+	const authorizedRoles = getAuthorizedCreatorRoles(interaction.guildId!)
+	content +=
+		'**Who can create cards:** Administrators and the authorized roles listed below.\n\n'
+
+	// Category and forums
+	content += `**Roadmap Category:** ${category.toString()}\n`
 	content += '**Forum Channels:**\n'
 	for (const [columnName, forum] of forums.entries()) {
 		content += `  • ${forum.toString()} (${columnName})\n`
 	}
 
-	// Add authorized roles section
-	const authorizedRoles = getAuthorizedCreatorRoles(interaction.guildId!)
+	// Authorized roles list
 	content += '\n**Authorized Creator Roles:**'
 	if (authorizedRoles.length > 0) {
 		content += '\n'
@@ -147,10 +153,11 @@ export function createSetupMessage(
 		content += `\n**Last Synced:** ${new Date(settings.lastSyncTimestamp).toLocaleString()}\n`
 	}
 
+	// Short, scannable guidance lines
+	content += '\n• Toggle public/private access with the button below.'
+	content += '\n• Use the role selector to choose who can create roadmap cards.'
 	content +=
-		'\n\nUse the button to toggle public access. Select roles below to authorize them to create roadmap cards. Run /roadmap sync to update the forums with latest cards.'
-	content +=
-		'\n\n*Public mode allows everyone to view and comment on threads, but only admins/mods can create new threads.*'
+		'\n• Public mode: everyone can view and comment; only admins and authorized roles can create cards.'
 
 	// Build toggle button with state-based styling
 	const toggleButton = {

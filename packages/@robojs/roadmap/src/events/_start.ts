@@ -109,6 +109,23 @@ export interface RoadmapPluginOptions {
 	 * ```
 	 */
 	autocompleteCacheTtl?: number
+
+	/**
+	 * Whether roadmap command responses (e.g., /roadmap add, /roadmap edit) should be ephemeral.
+	 *
+	 * When true, command replies are only visible to the invoking user. When false, results are
+	 * posted visibly in the channel so project teams can see card creation and edit activity.
+	 *
+	 * @defaultValue true
+	 *
+	 * @example
+	 * ```ts
+	 * export default {
+	 *   ephemeralCommands: false // share add/edit results with the whole channel
+	 * }
+	 * ```
+	 */
+	ephemeralCommands?: boolean
 }
 
 // Create namespaced logger for initialization
