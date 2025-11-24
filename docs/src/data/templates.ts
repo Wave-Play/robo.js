@@ -349,6 +349,14 @@ export const Templates: Template[] = [
 	},
 	{
 		author: 'WavePlay',
+		description: 'Next.js + @robojs/auth starter with Prisma and authentication.',
+		href: './web-apps/next-auth-ts',
+		images: [ImageBase + 'react.png'],
+		tags: ['Web App', 'TypeScript', 'Auth'],
+		title: 'Next.js + Auth'
+	},
+	{
+		author: 'WavePlay',
 		description: 'A basic TypeScript web app using Robo.js.',
 		href: './web-apps/react-ts',
 		images: [ImageBase + 'react.png'],
