@@ -51,7 +51,7 @@
 		"@robojs/server": "workspace:*",
 		"@swc/core": "^1.13.5",
 		"@types/node": "^24.6.2",
-		"discord.js": "^14.22.1",
+		"discord.js": "14.22.1",
 		"prettier": "^3.6.2",
 		"robo.js": "workspace:*",
 		"tsx": "^4.17.0",
