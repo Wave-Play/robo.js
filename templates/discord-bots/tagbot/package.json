@@ -24,7 +24,7 @@
 	},
 	"dependencies": {
 		"@tagscript/plugin-discord": "^3.1.0",
-		"discord.js": "^14.16.3",
+		"discord.js": "14.22.1",
 		"robo.js": "^0.10.24",
 		"tagscript": "^1.4.0"
 	},

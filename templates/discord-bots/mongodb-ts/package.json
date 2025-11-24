@@ -29,7 +29,7 @@
 	},
 	"dependencies": {
 		"@robojs/server": "^0.5.7",
-		"discord.js": "^14.16.2",
+		"discord.js": "14.22.1",
 		"mongoose": "^8.7.0",
 		"robo.js": "^0.10.15"
 	},

@@ -34,7 +34,7 @@
 		"@discord/embedded-app-sdk": "^1.4.3",
 		"@robojs/patch": "^0.1.1",
 		"@robojs/server": "^0.5.7",
-		"discord.js": "^14.16.2",
+		"discord.js": "14.22.1",
 		"robo.js": "^0.10.15"
 	},
 	"devDependencies": {

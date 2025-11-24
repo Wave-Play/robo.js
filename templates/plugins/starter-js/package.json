@@ -34,7 +34,7 @@
 		"prepublishOnly": "robo build plugin"
 	},
 	"devDependencies": {
-		"discord.js": "^14.15.3",
+		"discord.js": "14.22.1",
 		"robo.js": "^0.10.9"
 	},
 	"peerDependencies": {
