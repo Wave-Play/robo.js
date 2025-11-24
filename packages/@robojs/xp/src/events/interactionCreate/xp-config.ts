@@ -1,4 +1,4 @@
-import { MessageFlags } from 'discord.js'
+import { ChannelType, MessageFlags } from 'discord.js'
 import type {
 	ButtonInteraction,
 	ChannelSelectMenuInteraction,
@@ -412,7 +412,10 @@ async function handleNoXpChannelSelect(interaction: ChannelSelectMenuInteraction
 
 	for (const channelId of selectedChannels) {
 		const channel = guild.channels.cache.get(channelId) ?? (await guild.channels.fetch(channelId).catch(() => null))
-		if (!channel || !channel.isTextBased()) {
+		const isTextBasedGuildChannel = channel && 'isTextBased' in channel && channel.isTextBased()
+		const isGuildForum = channel?.type === ChannelType.GuildForum
+
+		if (!channel || (!isTextBasedGuildChannel && !isGuildForum)) {
 			await safeReply(interaction, {
 				embeds: [createErrorEmbed('Invalid Channel', 'Please choose a text-based channel in this server.')],
 				flags: MessageFlags.Ephemeral

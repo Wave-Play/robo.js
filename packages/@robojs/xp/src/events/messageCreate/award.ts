@@ -55,7 +55,12 @@ export default async function (message: Message) {
 		const guildConfig = await config.getConfig(guildId)
 
 		// Check No-XP channels
-		const isNoXpChannel = guildConfig.noXpChannelIds.includes(channelId)
+		// - Direct match: the current channel is explicitly blocked
+		// - Forum parent match: any thread whose parent forum is blocked is also treated as No-XP
+		const parentId = 'parentId' in message.channel ? message.channel.parentId : null
+		const isNoXpChannel =
+			guildConfig.noXpChannelIds.includes(channelId) ||
+			(parentId !== null && guildConfig.noXpChannelIds.includes(parentId))
 
 		// Check No-XP roles
 		const userRoleIds = Array.from(message.member.roles.cache.keys())
