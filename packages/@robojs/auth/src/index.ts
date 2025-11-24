@@ -9,4 +9,5 @@ export { signIn, signOut, getSession, getProviders, getCsrfToken } from './runti
 export { authLogger } from './utils/logger.js'
 export { getRequestPayload } from './utils/request-payload.js'
 export { assertPasswordAdapter } from './builtins/email-password/types.js'
+export { Argon2Hasher, hashPassword, verifyPasswordHash, needsRehash } from './utils/password-hash.js'
 export type * from './types.js'

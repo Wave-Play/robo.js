@@ -497,6 +497,46 @@ Available hooks:
 
 Handlers can return their own `Response` to short-circuit the plugin or call `defaultHandler()` to inherit the stock flow. Because the payload is shared, any `assign()` calls you make persist through the rest of the lifecycle, including Auth.js callbacks and events.
 
+### Custom Password Hashing
+
+By default, Robo.js uses `argon2id` for secure password hashing. You can swap this for your own algorithm (e.g. `bcrypt`, `scrypt`, or a legacy hash migration) by implementing the `PasswordHasher` interface.
+
+```ts
+import { EmailPassword } from '@robojs/auth'
+import { compare, hash } from 'bcrypt'
+import type { PasswordHasher } from '@robojs/auth/utils/password-hash'
+
+class BcryptHasher implements PasswordHasher {
+  async hash(password: string): Promise<string> {
+    return hash(password, 10)
+  }
+
+  async verify(password: string, storedHash: string): Promise<boolean> {
+    return compare(password, storedHash)
+  }
+
+  needsRehash(storedHash: string): boolean {
+    // Optional: return true if you want to migrate legacy hashes on login
+    return false
+  }
+}
+
+export default <AuthPluginOptions>{
+  // ...
+  providers: [
+    EmailPassword({
+      hasher: new BcryptHasher()
+    })
+  ]
+}
+```
+
+The `hasher` is used for:
+- **Sign up**: Hashing the password before storage.
+- **Sign in**: Verifying the password against the stored hash.
+- **Password Reset**: Hashing the new password.
+- **Rehashing**: Automatically updating hashes if `needsRehash` returns true (e.g. upgrading parameters or algorithms).
+
 ## Got questions? 🤔
 
 If you have any questions or need help with this plugin, join our Discord — we’re friendly and happy to help!

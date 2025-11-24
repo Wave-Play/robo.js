@@ -2,7 +2,6 @@ import { Flashcore } from 'robo.js'
 import { nanoid } from 'nanoid'
 import { hashToken } from '../utils/tokens.js'
 import { authLogger } from '../utils/logger.js'
-import { hashPassword, verifyPasswordHash } from '../utils/password-hash.js'
 import type { AdapterAccount, AdapterSession, AdapterUser, VerificationToken } from '@auth/core/adapters'
 import type { PasswordAdapter, PasswordRecord } from '../builtins/email-password/types.js'
 
@@ -405,9 +404,8 @@ export async function listUsers(
  * Security:
  * - ⚠️ Verification tokens are hashed with SHA-256 via {@link hashToken} before
  *   storage to prevent leakage if Flashcore is compromised.
- * - ⚠️ Passwords are hashed with {@link hashPassword} using Argon2id (4096 KiB
- *   memory, 3 passes) and verified via {@link verifyPasswordHash}. Plaintext
- *   passwords are never stored.
+ * - ⚠️ Passwords are hashed by the configured `PasswordHasher` (default Argon2id)
+ *   before reaching the adapter. Plaintext passwords are never stored.
  * - ⚠️ Email addresses are normalized to lowercase before indexing to ensure
  *   case-insensitive lookups. Keep your application-side normalization in sync.
  *
@@ -452,7 +450,6 @@ export async function listUsers(
  * ```
  *
  * @see PasswordAdapter in `src/builtins/email-password/types.ts`
- * @see hashPassword and verifyPasswordHash in `src/utils/password-hash.ts`
  */
 export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): PasswordAdapter {
 	const { secret } = options
@@ -534,7 +531,6 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Passwo
 			// ⚠️ Security: ensure proper authorization before invoking; this cannot be undone.
 			const user = await Flashcore.get<AdapterUser | null>(userKey(id), { namespace: NS_USERS })
 			if (!user) return
-
 			if (user.email) {
 				// Remove reverse email lookup so future sign-ins do not resolve to stale ids.
 				await Flashcore.delete(userEmailKey(user.email), { namespace: NS_USERS_BY_EMAIL })
@@ -663,13 +659,12 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Passwo
 			} satisfies VerificationToken
 		},
 
-		async createUserPassword({ userId, email, password }) {
-			// Creates or replaces a password record using Argon2id with default parameters.
-			// ⚠️ Security: plaintext passwords are never stored; hashes use 4096 KiB / 3 passes.
+		async createUserPassword({ userId, email, hash }) {
+			// Creates or replaces a password record using the provided hash.
+			// ⚠️ Security: plaintext passwords are never stored; they are hashed by the provider.
 			const normalizedEmail = email.toLowerCase()
 			const existing = await readPasswordRecord(userId)
 			const now = new Date().toISOString()
-			const hash = await hashPassword(password)
 			const record: PasswordRecord = existing
 				? { ...existing, email: normalizedEmail, hash, updatedAt: now }
 				: {
@@ -687,24 +682,19 @@ export function createFlashcoreAdapter(options: FlashcoreAdapterOptions): Passwo
 			return record
 		},
 
-		async verifyUserPassword({ userId, password }) {
-			// Verifies a password using timing-safe comparison. Returns false for OAuth-only users.
-			// ⚠️ Security: relies on verifyPasswordHash which uses constant-time comparison.
-			const record = await readPasswordRecord(userId)
-			if (!record) return false
-			return verifyPasswordHash(password, record.hash)
+		async getUserPassword(userId) {
+			return readPasswordRecord(userId)
 		},
 
 		async deleteUserPassword(userId) {
 			await deletePasswordRecord(userId)
 		},
 
-		async resetUserPassword({ userId, password }) {
-			// Replaces the stored hash with a new Argon2id hash and updates timestamps for auditing.
+		async resetUserPassword({ userId, hash }) {
+			// Replaces the stored hash with a new one and updates timestamps for auditing.
 			// Edge case: returns null for OAuth-only users without password records.
 			const existing = await readPasswordRecord(userId)
 			if (!existing) return null
-			const hash = await hashPassword(password)
 			const updated: PasswordRecord = { ...existing, hash, updatedAt: new Date().toISOString() }
 			await writePasswordRecord(updated)
 			return updated

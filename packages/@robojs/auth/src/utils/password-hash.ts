@@ -1,8 +1,5 @@
 import { randomBytes, timingSafeEqual } from 'node:crypto'
-import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
-import setupWasm from 'argon2id/lib/setup.js'
-import type { computeHash as Argon2ComputeHash } from 'argon2id'
 
 const require = createRequire(import.meta.url)
 
@@ -12,6 +9,31 @@ const ARGON2_TIME_COST = 3
 const ARGON2_PARALLELISM = 1
 const ARGON2_TAG_LENGTH = 32
 const ARGON2_SALT_LENGTH = 16
+
+/**
+ * Interface for password hashing implementations.
+ * Allows swapping the default Argon2id hasher with custom logic (e.g. bcrypt, scrypt).
+ */
+export interface PasswordHasher {
+	/**
+	 * Hashes a plaintext password.
+	 * @param password - The plaintext password to hash.
+	 */
+	hash(password: string): Promise<string>
+
+	/**
+	 * Verifies a plaintext password against a stored hash.
+	 * @param password - The plaintext password to verify.
+	 * @param storedHash - The stored hash to compare against.
+	 */
+	verify(password: string, storedHash: string): Promise<boolean>
+
+	/**
+	 * Checks if a stored hash needs to be rehashed (e.g. due to parameter upgrades).
+	 * @param storedHash - The stored hash to check.
+	 */
+	needsRehash(storedHash: string): boolean
+}
 
 /**
  * Argon2id default constants used across the auth package.
@@ -152,25 +174,6 @@ const DEFAULT_ARGON2_PARAMS: Argon2Params = {
 	tagLength: ARGON2_TAG_LENGTH
 }
 
-let argon2InstancePromise: Promise<Argon2ComputeHash> | null = null
-
-/**
- * Lazily loads the WebAssembly-backed Argon2id implementation, preferring the
- * SIMD build and falling back to the no-SIMD variant. The resulting promise is
- * cached so subsequent hashes reuse the same instance (~2x faster after warmup).
- */
-function getArgon2Instance() {
-	if (!argon2InstancePromise) {
-		argon2InstancePromise = setupWasm(
-			(importObject) => WebAssembly.instantiate(readFileSync(require.resolve('argon2id/dist/simd.wasm')), importObject),
-			(importObject) =>
-				WebAssembly.instantiate(readFileSync(require.resolve('argon2id/dist/no-simd.wasm')), importObject)
-		)
-	}
-
-	return argon2InstancePromise
-}
-
 /** Merges user-provided Argon2 param overrides with {@link DEFAULT_ARGON2_PARAMS}. */
 function resolveParams(params: Partial<Argon2Params> | undefined): Argon2Params {
 	return {
@@ -186,22 +189,9 @@ function passwordToBytes(password: string): Uint8Array {
 	return new TextEncoder().encode(password.normalize('NFKC'))
 }
 
-/** Executes Argon2id with the provided parameters, returning raw digest bytes. */
-async function computeHash(password: string, salt: Uint8Array, params: Argon2Params): Promise<Uint8Array> {
-	const argon2 = await getArgon2Instance()
-	const digest = argon2({
-		password: passwordToBytes(password),
-		salt,
-		parallelism: params.parallelism,
-		passes: params.passes,
-		memorySize: params.memorySize,
-		tagLength: params.tagLength
-	})
-
-	return Uint8Array.from(digest)
-}
-
-/** Formats salt, digest, and params into a PHC-compliant Argon2id hash string. */
+/**
+ * Formats salt, digest, and params into a PHC-compliant Argon2id hash string.
+ */
 function formatArgon2idHash(salt: Uint8Array, hash: Uint8Array, params: Argon2Params): string {
 	const saltB64 = Buffer.from(salt).toString('base64')
 	const hashB64 = Buffer.from(hash).toString('base64')
@@ -214,23 +204,8 @@ function formatArgon2idHash(salt: Uint8Array, hash: Uint8Array, params: Argon2Pa
  * parameters, salt, and digest bytes. Returns `null` for invalid inputs or
  * other Argon2 variants (`argon2i`, `argon2d`).
  *
- * Edge cases:
- * - Non-argon2id hashes return `null` (use this to detect legacy bcrypt/scrypt hashes).
- * - Missing/invalid base64 segments return `null`.
- * - Tag length is inferred from the digest length and may not match the
- *   originally declared parameter if the string was tampered with.
- *
  * @param hash - Argon2id hash string in `$argon2id$v=19$...` format.
  * @returns {@link PasswordHashMetadata} or `null`.
- *
- * @example Inspect stored parameters
- * ```ts
- * const metadata = parseArgon2idHash(hashString)
- * console.log(metadata?.params)
- * ```
- *
- * @see PasswordHashMetadata
- * @see needsRehash
  */
 export function parseArgon2idHash(hash: string): PasswordHashMetadata | null {
 	if (!hash.startsWith('$argon2')) return null
@@ -267,192 +242,118 @@ export function parseArgon2idHash(hash: string): PasswordHashMetadata | null {
 }
 
 /**
+ * Default implementation of {@link PasswordHasher} using Argon2id.
+ * Lazily loads the WebAssembly backend only when needed.
+ */
+export class Argon2Hasher implements PasswordHasher {
+	private _instancePromise: Promise<import('argon2id').computeHash> | null = null
+	private _options: HashPasswordOptions
+
+	constructor(options: HashPasswordOptions = {}) {
+		this._options = options
+	}
+
+	/**
+	 * Lazily loads the WebAssembly-backed Argon2id implementation, preferring the
+	 * SIMD build and falling back to the no-SIMD variant. The resulting promise is
+	 * cached so subsequent hashes reuse the same instance.
+	 */
+	private async _getInstance() {
+		if (!this._instancePromise) {
+			const { readFileSync } = await import('node:fs')
+			const setupWasm = (await import('argon2id/lib/setup.js')).default
+
+			this._instancePromise = setupWasm(
+				(importObject) =>
+					WebAssembly.instantiate(readFileSync(require.resolve('argon2id/dist/simd.wasm')), importObject),
+				(importObject) =>
+					WebAssembly.instantiate(readFileSync(require.resolve('argon2id/dist/no-simd.wasm')), importObject)
+			)
+		}
+		return this._instancePromise
+	}
+
+	private async _computeHash(password: string, salt: Uint8Array, params: Argon2Params): Promise<Uint8Array> {
+		const argon2 = await this._getInstance()
+		const digest = argon2({
+			password: passwordToBytes(password),
+			salt,
+			parallelism: params.parallelism,
+			passes: params.passes,
+			memorySize: params.memorySize,
+			tagLength: params.tagLength
+		})
+
+		return Uint8Array.from(digest)
+	}
+
+	async hash(password: string): Promise<string> {
+		const params = resolveParams(this._options.parameters)
+		const salt = this._options.salt ?? randomBytes(ARGON2_SALT_LENGTH)
+		const digest = await this._computeHash(password, salt, params)
+
+		return formatArgon2idHash(salt, digest, params)
+	}
+
+	async verify(password: string, storedHash: string): Promise<boolean> {
+		const parsed = parseArgon2idHash(storedHash)
+		if (!parsed) return false
+		// Recompute the digest with the original salt and parameters.
+		const digest = await this._computeHash(password, parsed.salt, parsed.params)
+		if (digest.length !== parsed.hash.length) return false
+
+		return timingSafeEqual(Buffer.from(digest), Buffer.from(parsed.hash))
+	}
+
+	needsRehash(storedHash: string): boolean {
+		const parsed = parseArgon2idHash(storedHash)
+		if (!parsed) return true
+		const params = resolveParams(this._options.parameters)
+
+		// Compare stored tuning knobs against the desired reference configuration.
+		return (
+			parsed.params.memorySize !== params.memorySize ||
+			parsed.params.passes !== params.passes ||
+			parsed.params.parallelism !== params.parallelism ||
+			parsed.hash.length !== params.tagLength
+		)
+	}
+}
+
+// Shared instance for backward compatibility
+let defaultHasher: Argon2Hasher | null = null
+
+function getDefaultHasher() {
+	if (!defaultHasher) {
+		defaultHasher = new Argon2Hasher()
+	}
+	return defaultHasher
+}
+
+/**
  * Generates a PHC-formatted Argon2id hash string for a plaintext password.
- * Uses secure defaults ({@link DEFAULT_ARGON2_PARAMS}) and embeds all metadata
- * (algorithm, version, parameters, salt, digest) in the result.
- *
- * ⚠️ Security:
- * - Never store plaintext passwords; always hash server-side over HTTPS.
- * - Hash string contains salt/parameters but not the password—safe to store in DB.
- * - Use high-entropy secrets; consider rate limiting signup/reset endpoints.
- *
- * Performance:
- * - First call initializes the WASM module (~10 ms). Subsequent calls take
- *   ~50 ms with default parameters, longer if you raise costs.
- * - Hashing is CPU/RAM intensive and blocks the event loop; use worker threads
- *   if performing many parallel operations.
- *
- * Edge cases:
- * - Accepts any string (including empty), but you should enforce password policies upstream.
- * - Unicode is normalized via NFKC, so visually identical strings hash equally.
- * - Extremely long passwords (>1 kB) increase hashing time; consider capping length.
- *
- * @param password - Plaintext password (will be normalized to NFKC).
- * @param options - Optional {@link HashPasswordOptions} (custom parameters/salt).
- * @returns Argon2id hash string (`$argon2id$...`).
- *
- * @example Basic usage
- * ```ts
- * const hash = await hashPassword('super_secret_password')
- * await prisma.user.update({ where: { id }, data: { passwordHash: hash } })
- * ```
- *
- * @example Increase security parameters
- * ```ts
- * const hash = await hashPassword('password', { parameters: { memorySize: 8192, passes: 4 } })
- * ```
- *
- * @example Signup flow helper
- * ```ts
- * async function signup(email: string, password: string) {
- * 	const hash = await hashPassword(password)
- * 	return prisma.user.create({ data: { email, passwordHash: hash } })
- * }
- * ```
- *
- * @example Password change
- * ```ts
- * await prisma.user.update({
- * 	where: { id: userId },
- * 	data: { passwordHash: await hashPassword(newPassword) }
- * })
- * ```
- *
- * @see verifyPasswordHash
- * @see needsRehash
- * @see Argon2Params
+ * @deprecated Use `Argon2Hasher` or a custom `PasswordHasher` instead.
  */
 export async function hashPassword(password: string, options?: HashPasswordOptions): Promise<string> {
-	// Resolve the effective cost parameters before hashing.
-	const params = resolveParams(options?.parameters)
-	const salt = options?.salt ?? randomBytes(ARGON2_SALT_LENGTH)
-	const digest = await computeHash(password, salt, params)
-
-	return formatArgon2idHash(salt, digest, params)
+	const hasher = options ? new Argon2Hasher(options) : getDefaultHasher()
+	return hasher.hash(password)
 }
 
 /**
- * Validates a password against a stored Argon2id hash using timing-safe
- * comparison. Supports hashes generated by {@link hashPassword} (or any PHC
- * compliant Argon2id implementation).
- *
- * ⚠️ Security:
- * - Uses {@link timingSafeEqual}; never compare hashes with `===`.
- * - Returns `false` for invalid hashes to avoid leaking details; map all
- *   failures to a generic "invalid credentials" response.
- * - Combine with rate limiting (e.g., 5 attempts/min) to mitigate brute-force attacks.
- *
- * Performance:
- * - Verification time roughly matches hashing time (~50 ms with defaults).
- * - First call pays the WASM warmup cost just like {@link hashPassword}.
- *
- * Edge cases:
- * - Returns `false` for corrupted hashes or other algorithms (bcrypt, scrypt);
- *   provide a password reset path for impacted users.
- * - Unicode passwords are normalized via NFKC before hashing/verification.
- * - Pair with {@link needsRehash} to upgrade weak hashes after successful login.
- *
- * @param password - Plaintext password supplied by the user.
- * @param storedHash - Argon2id hash string from your database.
- * @returns `true` if the password matches, otherwise `false`.
- *
- * @example Basic login check
- * ```ts
- * if (!user || !(await verifyPasswordHash(inputPassword, user.passwordHash))) {
- * 	throw new Error('Invalid credentials')
- * }
- * ```
- *
- * @example Auto-rehash on login
- * ```ts
- * if (await verifyPasswordHash(password, user.hash) && needsRehash(user.hash, newParams)) {
- * 	await prisma.user.update({ id: user.id, data: { hash: await hashPassword(password, { parameters: newParams }) } })
- * }
- * ```
- *
- * @example Rate limiting stub
- * ```ts
- * const attempts = await redis.incr(`login:${email}`)
- * if (attempts > 5) throw new Error('Too many attempts')
- * const ok = await verifyPasswordHash(password, user.passwordHash)
- * if (ok) await redis.del(`login:${email}`)
- * ```
- *
- * @see hashPassword
- * @see needsRehash
- * @see parseArgon2idHash
+ * Validates a password against a stored Argon2id hash.
+ * @deprecated Use `Argon2Hasher` or a custom `PasswordHasher` instead.
  */
 export async function verifyPasswordHash(password: string, storedHash: string): Promise<boolean> {
-	const parsed = parseArgon2idHash(storedHash)
-	if (!parsed) return false
-	// Recompute the digest with the original salt and parameters.
-	const digest = await computeHash(password, parsed.salt, parsed.params)
-	if (digest.length !== parsed.hash.length) return false
-
-	return timingSafeEqual(Buffer.from(digest), Buffer.from(parsed.hash))
+	return getDefaultHasher().verify(password, storedHash)
 }
 
 /**
- * Determines whether a stored Argon2id hash needs to be regenerated to meet
- * newer parameter requirements. Useful when raising security settings without
- * forcing global password resets.
- *
- * ⚠️ Security:
- * - Only rehash after successfully verifying the user's password.
- * - Treat `true` results for invalid hashes as a signal to force password reset.
- *
- * Performance:
- * - Rehashing adds extra latency (~50–100 ms) during the first login after a
- *   parameter change. For huge user bases consider a background migration job.
- *
- * Edge cases:
- * - Returns `true` for malformed/non-argon2id hashes so you can migrate them.
- * - `reference` is merged with {@link DEFAULT_ARGON2_PARAMS}; omit fields that
- *   you don't care about.
- * - Tag length comparisons use the stored digest length; tampered hashes may
- *   trigger false positives.
- *
- * @param hash - Stored Argon2id hash string.
- * @param reference - Desired Argon2 params (partial allowed). Defaults to {@link DEFAULT_ARGON2_PARAMS}.
- * @returns `true` if the hash should be regenerated, else `false`.
- *
- * @example On-demand upgrades during login
- * ```ts
- * if (await verifyPasswordHash(password, user.hash) && needsRehash(user.hash, { memorySize: 8192 })) {
- * 	await prisma.user.update({ id: user.id, data: { hash: await hashPassword(password, { parameters: { memorySize: 8192 } }) } })
- * }
- * ```
- *
- * @example Audit tool
- * ```ts
- * const weak = users.filter((user) => needsRehash(user.passwordHash, { passes: 4 }))
- * ```
- *
- * @example Background migration planning
- * ```ts
- * for (const user of users) {
- * 	if (needsRehash(user.passwordHash, { memorySize: 8192 })) {
- * 		console.log(`User ${user.id} will be upgraded on next login`)
- * 	}
- * }
- * ```
- *
- * @see hashPassword
- * @see verifyPasswordHash
- * @see parseArgon2idHash
+ * Determines whether a stored Argon2id hash needs to be regenerated.
+ * @deprecated Use `Argon2Hasher` or a custom `PasswordHasher` instead.
  */
 export function needsRehash(hash: string, reference: Partial<Argon2Params> = {}): boolean {
-	const parsed = parseArgon2idHash(hash)
-	if (!parsed) return true
-	const params = resolveParams(reference)
-
-	// Compare stored tuning knobs against the desired reference configuration.
-	return (
-		parsed.params.memorySize !== params.memorySize ||
-		parsed.params.passes !== params.passes ||
-		parsed.params.parallelism !== params.parallelism ||
-		parsed.hash.length !== params.tagLength
-	)
+	const hasher = new Argon2Hasher({ parameters: reference })
+	return hasher.needsRehash(hash)
 }
 
 /** Re-exported primitives for advanced tuning of the password hashing pipeline. */

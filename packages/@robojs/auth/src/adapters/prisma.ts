@@ -1,6 +1,4 @@
 import { createRequire } from 'node:module'
-import { hashPassword, needsRehash, verifyPasswordHash } from '../utils/password-hash.js'
-import type { PasswordHashParams } from '../utils/password-hash.js'
 import type { Adapter, AdapterUser } from '@auth/core/adapters'
 import type { PasswordAdapter, PasswordRecord } from '../builtins/email-password/types.js'
 
@@ -92,35 +90,20 @@ export interface PrismaAdapterModelOptions {
  * Fields:
  * - `client`: Required {@link PrismaClientLike} instance with user + password models.
  * - `secret`: Required token hashing secret. Minimum 32 characters recommended.
- * - `hashParameters?`: Optional {@link PasswordHashParams} overrides for Argon2id
- *   (defaults to `DEFAULT_ARGON2_PARAMS` from `src/utils/password-hash.ts`).
  * - `models?`: Optional {@link PrismaAdapterModelOptions} for custom model names.
  *
  * ⚠️ Security:
  * - Never commit secrets; load them from environment variables or secret stores.
- * - Increasing `hashParameters` strengthens security but may slow down hashing on low-memory hosts.
- * - Changing `hashParameters` requires rehashing existing passwords. The adapter handles this lazily on verify.
  *
  * Performance notes:
  * - Each adapter method runs 1–3 database queries. Enable Prisma connection pooling for high throughput.
- * - Auto-rehashing adds latency to the first login after parameters change.
  *
  * Edge cases:
  * - Call `await prisma.$connect()` before passing the client if your environment requires manual connections.
- * - Keep `hashParameters` consistent across all adapter instances (workers). Use shared env vars.
  *
  * @example Basic setup
  * ```ts
  * createPrismaAdapter({ client: prisma, secret: process.env.AUTH_SECRET! })
- * ```
- *
- * @example Custom Argon2id params
- * ```ts
- * createPrismaAdapter({
- * 	client: prisma,
- * 	secret: process.env.AUTH_SECRET!,
- * 	hashParameters: { memorySize: 8192, passes: 4 }
- * })
  * ```
  *
  * @example Custom password model
@@ -135,7 +118,6 @@ export interface PrismaAdapterModelOptions {
 export interface PrismaAdapterOptions {
 	client: PrismaClientLike
 	secret: string
-	hashParameters?: Partial<PasswordHashParams>
 	models?: PrismaAdapterModelOptions
 }
 
@@ -255,17 +237,14 @@ function normalizeEmail(email: string): string {
 
 /**
  * Creates a password-capable Auth.js adapter backed by Prisma. Wraps the
- * official `@auth/prisma-adapter` and layers on password helpers powered by
- * {@link hashPassword}, {@link verifyPasswordHash}, and {@link needsRehash}.
- * Supports automatic password upgrades when Argon2id parameters change.
+ * official `@auth/prisma-adapter` and layers on password helpers.
  *
  * ⚠️ Security:
- * - Passwords are hashed with Argon2id before storage; plaintext never touches the DB.
+ * - Passwords are hashed by the provider before storage; plaintext never touches the DB.
  * - Verification tokens (handled by the base adapter) are hashed with SHA-256.
  * - Email lookups are case-insensitive; prefer Postgres `@db.Citext` or database collations for enforcement.
  *
  * Performance:
- * - Auto-rehashing adds ~50–100 ms to the first login after parameter changes. Consider background migrations for huge user bases.
  * - Each password operation performs 1–2 queries; ensure `userId` and `email` columns are indexed.
  * - `findUserIdByEmail` performs two lookups (user + password models). Optimize with database indexes.
  *
@@ -276,15 +255,10 @@ function normalizeEmail(email: string): string {
  * - `deleteUser` is overridden to remove password rows; omitting this would leave orphaned sensitive data.
  * - `findUserIdByEmail` falls back to password rows for legacy schemas without `user.email`.
  *
- * Migration tips:
- * - Increasing Argon2id parameters triggers on-demand rehashing the next time a user logs in.
- * - To force migration proactively, iterate through users and call `verifyUserPassword` with a known password (e.g., via user reauthentication flows).
- *
  * @param options.client - Initialized Prisma client with user/password models.
  * @param options.secret - Secret for hashing verification tokens; must match Auth.js config.
- * @param options.hashParameters - Optional Argon2id overrides applied to password hashing + rehashing.
  * @param options.models - Optional Prisma model name overrides (currently `password`).
- * @returns {@link PasswordAdapter} implementing Auth.js contract plus password helpers (`createUserPassword`, `verifyUserPassword`, `deleteUserPassword`, `resetUserPassword`, `findUserIdByEmail`).
+ * @returns {@link PasswordAdapter} implementing Auth.js contract plus password helpers (`createUserPassword`, `getUserPassword`, `deleteUserPassword`, `resetUserPassword`, `findUserIdByEmail`).
  * @throws {Error} If the Prisma client or password delegate is missing.
  * @throws {Error} If `@auth/prisma-adapter` is not installed.
  *
@@ -293,15 +267,6 @@ function normalizeEmail(email: string): string {
  * import { PrismaClient } from '@prisma/client'
  * const prisma = new PrismaClient()
  * const adapter = createPrismaAdapter({ client: prisma, secret: process.env.AUTH_SECRET! })
- * ```
- *
- * @example Custom Argon2id parameters
- * ```ts
- * const adapter = createPrismaAdapter({
- * 	client: prisma,
- * 	secret: process.env.AUTH_SECRET!,
- * 	hashParameters: { memorySize: 8192, passes: 4 }
- * })
  * ```
  *
  * @example Custom password model name
@@ -337,7 +302,7 @@ function normalizeEmail(email: string): string {
  * @see listPrismaUserIds and listPrismaUsers for pagination helpers.
  */
 export function createPrismaAdapter(options: PrismaAdapterOptions): PasswordAdapter {
-	const { client, hashParameters, models } = options
+	const { client, models } = options
 	// Fail fast when required primitives are missing so configuration bugs surface early.
 	if (!client) {
 		throw new Error('Prisma adapter requires a Prisma client instance.')
@@ -387,13 +352,11 @@ export function createPrismaAdapter(options: PrismaAdapterOptions): PasswordAdap
 			return null
 		},
 
-		async createUserPassword({ userId, email, password }) {
-			// Upserts a password record using Argon2id, normalizing email to lowercase for lookups.
+		async createUserPassword({ userId, email, hash }) {
+			// Upserts a password record using the provided hash, normalizing email to lowercase for lookups.
 			// ⚠️ Security: plaintext passwords are hashed before touching the database.
 			const normalized = normalizeEmail(email)
 
-			// Hash with optional custom parameters before persisting credentials.
-			const hash = await hashPassword(password, { parameters: hashParameters })
 			const row = await passwordDelegate.upsert?.({
 				where: { userId },
 				create: {
@@ -414,30 +377,14 @@ export function createPrismaAdapter(options: PrismaAdapterOptions): PasswordAdap
 			return normalizePasswordRecord(row)
 		},
 
-		async verifyUserPassword({ userId, password }) {
-			// Verifies credentials using timing-safe comparison and auto-rehashes when parameters tighten.
-			// ⚠️ Security: auto-rehashing ensures all rows adopt the strongest Argon2id settings.
+		async getUserPassword(userId) {
 			const row = passwordDelegate.findUnique
 				? await passwordDelegate.findUnique({
 						where: { userId }
 					})
 				: null
-			if (!row || !isPasswordRow(row)) return false
-			const match = await verifyPasswordHash(password, row.hash)
-
-			// Opportunistically upgrade the stored hash when parameters become stronger.
-			if (match && hashParameters && needsRehash(row.hash, hashParameters)) {
-				const nextHash = await hashPassword(password, { parameters: hashParameters })
-				await passwordDelegate.update?.({
-					where: { userId },
-					data: {
-						hash: nextHash,
-						updatedAt: new Date()
-					}
-				})
-			}
-
-			return match
+			if (!row || !isPasswordRow(row)) return null
+			return normalizePasswordRecord(row)
 		},
 
 		async deleteUserPassword(userId) {
@@ -445,12 +392,11 @@ export function createPrismaAdapter(options: PrismaAdapterOptions): PasswordAdap
 			await passwordDelegate.deleteMany?.({ where: { userId } })
 		},
 
-		async resetUserPassword({ userId, password }) {
+		async resetUserPassword({ userId, hash }) {
 			// Replaces the stored hash and updates timestamps. Returns null for OAuth-only users.
 			const row = passwordDelegate.findUnique ? await passwordDelegate.findUnique({ where: { userId } }) : null
 			if (!row || !isPasswordRow(row)) return null
 			// Replace the stored hash and bump timestamps for auditing.
-			const hash = await hashPassword(password, { parameters: hashParameters })
 			const updated = await passwordDelegate.update?.({
 				where: { userId },
 				data: {

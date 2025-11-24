@@ -156,12 +156,12 @@ function resolveSecret(options: NormalizedAuthPluginOptions): string {
 	return secret
 }
 
-function extractEmailPasswordOverrides(providers: Provider[]): EmailPasswordRouteOverrides | undefined {
+function extractEmailPasswordMetadata(providers: Provider[]): EmailPasswordProviderMetadata | undefined {
 	for (const provider of providers) {
 		if (!provider || typeof provider !== 'object') continue
 		const metadata = (provider as ProviderWithEmailPasswordMeta).__roboEmailPassword
 		if (metadata) {
-			return metadata.routes
+			return metadata
 		}
 	}
 	return undefined
@@ -420,7 +420,7 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 
 	const handler = createAuthRequestHandler(authConfig)
 
-	const emailPasswordOverrides = extractEmailPasswordOverrides(providers)
+	const emailPasswordMetadata = extractEmailPasswordMetadata(providers)
 
 	const hasCredentialsProvider = providers.some((provider) => {
 		return typeof provider === 'object' && provider && (provider as { id?: string }).id === 'credentials'
@@ -437,10 +437,11 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 			events: composedEvents,
 			handler,
 			options,
-			overrides: emailPasswordOverrides,
+			overrides: emailPasswordMetadata?.routes,
 			recentSigninNotified,
 			secret,
-			sessionStrategy: options.session.strategy ?? 'jwt'
+			sessionStrategy: options.session.strategy ?? 'jwt',
+			hasher: emailPasswordMetadata?.hasher
 		})
 	}
 
