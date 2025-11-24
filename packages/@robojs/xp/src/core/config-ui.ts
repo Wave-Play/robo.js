@@ -19,7 +19,7 @@ import { formatChannel, formatLevel, formatRole } from './utils.js'
 
 const MAX_ENTITY_VALUES = 25
 
-export const COMPONENT_FLAGS = MessageFlags.IsComponentsV2
+export const COMPONENT_FLAGS = (MessageFlags as unknown as { IsComponentsV2: number }).IsComponentsV2
 
 export type ConfigViewRender = {
 	components: Array<ActionRowBuilder<MessageActionRowComponentBuilder> | SectionBuilder>
@@ -209,12 +209,6 @@ function buildRewardsRolePickerRow(userId: string): ActionRowBuilder<RoleSelectM
 function buildRewardsActionRow(userId: string, hasRewards: boolean): ActionRowBuilder<ButtonBuilder> {
 	return new ActionRowBuilder<ButtonBuilder>().addComponents([
 		new ButtonBuilder()
-			.setCustomId(`xp_config_rewards_remove_${userId}`)
-			.setLabel('Remove Reward')
-			.setEmoji('➖')
-			.setDisabled(!hasRewards)
-			.setStyle(ButtonStyle.Danger),
-		new ButtonBuilder()
 			.setCustomId(`xp_config_rewards_view_${userId}`)
 			.setLabel('View All')
 			.setEmoji('📋')
@@ -303,17 +297,31 @@ export function buildNoXpZonesView(config: GuildConfig, userId: string): ConfigV
 	}
 }
 
-export function buildRoleRewardsView(config: GuildConfig, userId: string): ConfigViewRender {
-	return {
-		components: [
-			headingSection('Role Rewards', 'Grant or remove roles at specific levels.'),
-			buildRewardsSummary(config),
-			buildRewardsRolePickerRow(userId),
-			buildRewardsActionRow(userId, config.roleRewards.length > 0),
-			buildRewardsModeRow(userId, config.rewardsMode, config.removeRewardOnXpLoss),
-			buildNavRow(userId, 'rewards')
-		]
+export function buildRoleRewardsView(config: GuildConfig, userId: string, page = 0): ConfigViewRender {
+	const total = config.roleRewards.length
+	const totalPages = Math.max(Math.ceil(total / MAX_ENTITY_VALUES), 1)
+	const currentPage = Math.max(0, Math.min(page, totalPages - 1))
+
+	const components: Array<ActionRowBuilder<MessageActionRowComponentBuilder> | SectionBuilder> = [
+		headingSection('Role Rewards', 'Grant or remove roles at specific levels.'),
+		buildRewardsSummary(config),
+		buildRewardsRolePickerRow(userId)
+	]
+
+	if (total > 0) {
+		components.push(buildRemoveRewardSelect(config.roleRewards, userId, currentPage))
+		if (totalPages > 1) {
+			components.push(buildRemoveRewardPager(userId, currentPage, totalPages))
+		}
 	}
+
+	components.push(
+		buildRewardsActionRow(userId, total > 0),
+		buildRewardsModeRow(userId, config.rewardsMode, config.removeRewardOnXpLoss),
+		buildNavRow(userId, 'rewards')
+	)
+
+	return { components }
 }
 
 export function buildRemoveRewardSelect(

@@ -20,9 +20,7 @@ import {
 	buildNoXpZonesView,
 	buildRewardLevelModal,
 	buildRoleRewardsView,
-	buildXpRateModal,
-	buildRemoveRewardPager,
-	buildRemoveRewardSelect
+	buildXpRateModal
 } from '../../core/config-ui.js'
 import {
 	createErrorEmbed,
@@ -249,7 +247,10 @@ async function handleRemoveReward(interaction: ButtonInteraction, guildId: strin
 		return
 	}
 
-	await renderRewardRemoval(interaction, guildConfig, interaction.user.id, 0)
+	// Legacy handler kept for safety; in the new UX removal is inline,
+	// so this simply refreshes the rewards view.
+	const payload = buildViewPayload('rewards', guildConfig, interaction.user.id)
+	await interaction.update({ components: payload.components, flags: COMPONENT_FLAGS })
 }
 
 async function handleViewRewards(interaction: ButtonInteraction, guildId: string) {
@@ -736,18 +737,11 @@ async function renderRewardRemoval(
 ) {
 	const totalPages = Math.max(Math.ceil(guildConfig.roleRewards.length / REMOVE_REWARD_PAGE_SIZE), 1)
 	const currentPage = clampRemoveRewardPage(page, totalPages)
-	const selectRow = buildRemoveRewardSelect(guildConfig.roleRewards, userId, currentPage)
-	const pagerRow = buildRemoveRewardPager(userId, currentPage, totalPages)
-	const layout = buildRoleRewardsView(guildConfig, userId)
+	const layout = buildRoleRewardsView(guildConfig, userId, currentPage)
 
 	await interaction.update({
-		components: [selectRow, pagerRow, ...layout.components],
+		components: layout.components,
 		flags: COMPONENT_FLAGS
-	})
-
-	await interaction.followUp({
-		content: 'Select a reward level to remove.',
-		flags: MessageFlags.Ephemeral
 	})
 }
 
