@@ -12,8 +12,7 @@ import {
 	StringSelectMenuBuilder,
 	TextDisplayBuilder,
 	TextInputBuilder,
-	TextInputStyle,
-	ThumbnailBuilder
+	TextInputStyle
 } from 'discord.js'
 import type { GuildConfig, RoleReward, RewardsMode } from '../types.js'
 import { formatChannel, formatLevel, formatRole } from './utils.js'
@@ -30,26 +29,30 @@ function text(content: string): TextDisplayBuilder {
 	return new TextDisplayBuilder().setContent(content)
 }
 
+/**
+ * Creates a minimal placeholder button accessory for sections.
+ * Required by Discord Components v2, but kept visually minimal with a zero-width label.
+ *
+ * customIdKey is used to ensure uniqueness per section within a message.
+ */
+function createPlaceholderAccessory(kind: 'heading' | 'summary', customIdKey: string): ButtonBuilder {
+	const key = customIdKey.replace(/\s+/g, '-').toLowerCase()
+
+	return new ButtonBuilder()
+		.setCustomId(`xp_config:${kind}:${key}`)
+		.setLabel('\u200b') // Zero-width space: satisfies length constraint, renders as “empty”
+		.setStyle(ButtonStyle.Secondary)
+		.setDisabled(true)
+}
+
 function headingSection(title: string, body: string): SectionBuilder {
 	return new SectionBuilder()
 		.addTextDisplayComponents([text(`# ${title}`), text(body)])
-		.setThumbnailAccessory(
-			new ThumbnailBuilder({
-				media: {
-					url: 'https://cdn.discordapp.com/embed/avatars/3.png'
-				}
-			})
-		)
+		.setButtonAccessory(createPlaceholderAccessory('heading', title))
 }
 
 function summarySection(title: string, lines: string[]): SectionBuilder {
-	const section = new SectionBuilder().setThumbnailAccessory(
-		new ThumbnailBuilder({
-			media: {
-				url: 'https://cdn.discordapp.com/embed/avatars/2.png'
-			}
-		})
-	)
+	const section = new SectionBuilder().setButtonAccessory(createPlaceholderAccessory('summary', title))
 	for (const line of lines) {
 		if (line?.trim()) {
 			section.addTextDisplayComponents([text(line)])
