@@ -503,3 +503,114 @@ export type DateRangeFilter = {
 	 */
 	readonly dateField?: 'created' | 'updated'
 }
+
+// Thread History ------------------------------------------------------------
+
+/**
+ * Represents a historical thread entry for a card that has moved between columns.
+ *
+ * @remarks
+ * Thread history enables linking to previous discussions when a card moves to a new forum.
+ * The messageCount is used to determine if the old thread had meaningful user activity
+ * and to provide informative linking text (e.g., "View 52 old messages").
+ *
+ * This entry is created when a thread is moved to a different forum (Phase 2), capturing
+ * the thread's state at the time of the move. Multiple history entries can exist for a
+ * single card if it moves through multiple columns over time.
+ *
+ * @example
+ * ```ts
+ * import type { ThreadHistoryEntry } from '@robojs/roadmap';
+ *
+ * const historyEntry: ThreadHistoryEntry = {
+ *   threadId: '1234567890123456789',
+ *   column: 'In Progress',
+ *   forumId: '9876543210987654321',
+ *   movedAt: Date.now(),
+ *   messageCount: 52 // Includes starter message + 51 user messages
+ * };
+ * ```
+ */
+export type ThreadHistoryEntry = {
+	/**
+	 * The Discord thread ID of the historical thread.
+	 */
+	readonly threadId: string
+	/**
+	 * The column name the thread was in before being moved.
+	 */
+	readonly column: string
+	/**
+	 * The forum channel ID where this thread existed.
+	 */
+	readonly forumId: string
+	/**
+	 * Unix timestamp in milliseconds when the thread was moved to a new forum.
+	 */
+	readonly movedAt: number
+	/**
+	 * Optional count of total messages in the thread at the time of move.
+	 *
+	 * This count includes the starter message plus all user messages. It's used
+	 * to determine if the thread had meaningful user activity (messageCount > 1)
+	 * and to generate informative link text like "View 52 messages".
+	 *
+	 * Only populated when the thread is actually moved (Phase 2). Threads with
+	 * only the starter message (messageCount = 1) typically won't be linked.
+	 */
+	readonly messageCount?: number
+}
+
+/**
+ * Metadata describing an active roadmap sync operation.
+ *
+ * @remarks
+ * Used by the `/roadmap sync` command to track in-flight syncs and enable
+ * cancellation via interaction components. Entries are removed when the sync
+ * completes, fails, or is canceled, and may also be pruned on a timeout.
+ *
+ * @example
+ * ```ts
+ * const syncData: SyncData = {
+ *   controller: new AbortController(),
+ *   startedBy: interaction.user.id,
+ *   guildId: interaction.guildId!,
+ *   dryRun: false,
+ *   startedAt: Date.now()
+ * }
+ * activeSyncs.set(interaction.id, syncData)
+ * ```
+ */
+export interface SyncData {
+	/**
+	 * Abort controller used to cancel the sync from user interactions.
+	 */
+	readonly controller: AbortController
+	/**
+	 * Discord user ID of the user who initiated the sync; used for authorization.
+	 */
+	readonly startedBy: string
+	/**
+	 * Discord guild ID where the sync is executing.
+	 */
+	readonly guildId: string
+	/**
+	 * Indicates whether the sync is running in dry-run mode.
+	 */
+	readonly dryRun: boolean
+	/**
+	 * Unix timestamp (milliseconds) when the sync started; enables timeout cleanup.
+	 */
+	readonly startedAt: number
+	/**
+	 * Optional timeout identifier used to auto-cleanup abandoned syncs.
+	 *
+	 * The `/roadmap sync` command schedules a 15-minute timeout when a sync begins.
+	 * This timeout is cleared on normal completion, explicit cancellation, or error.
+	 * If the timeout triggers, the sync entry is removed from the in-memory `activeSyncs`
+	 * map and a warning is logged to indicate an abnormal termination (e.g., crash or
+	 * interaction expiration). Storing the ID allows us to cancel the timeout to avoid
+	 * unnecessary callbacks and potential memory leaks.
+	 */
+	readonly cleanupTimeoutId?: ReturnType<typeof setTimeout>
+}

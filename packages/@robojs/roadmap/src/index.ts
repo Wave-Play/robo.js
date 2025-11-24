@@ -172,8 +172,11 @@ export * from './core/constants.js'
  * ```ts
  * import { syncSingleCard } from '@robojs/roadmap';
  *
- * const { threadId, threadUrl } = await syncSingleCard(card, guild, provider);
- * await interaction.reply(`Created: ${threadUrl}`);
+ * const result = await syncSingleCard(card, guild, provider);
+ * if (result) {
+ *   const { threadId, threadUrl } = result;
+ *   await interaction.reply(`Created: ${threadUrl}`);
+ * }
  * ```
  *
  * @example

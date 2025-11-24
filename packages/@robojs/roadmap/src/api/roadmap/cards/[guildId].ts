@@ -297,12 +297,16 @@ export default wrapHandler(async (request: RoboRequest): Promise<ApiResponse<Cre
 	if (body.sync !== false) {
 		try {
 			const syncResult = await syncSingleCard(result.card, guild, provider)
-			threadId = syncResult.threadId
-			threadUrl = syncResult.threadUrl
-			synced = true
+			if (syncResult) {
+				threadId = syncResult.threadId
+				threadUrl = syncResult.threadUrl
+				synced = true
 
-			// Log successful sync
-			apiLogger.debug(`Synced card ${result.card.id} to thread ${threadId}`)
+				// Log successful sync
+				apiLogger.debug(`Synced card ${result.card.id} to thread ${threadId}`)
+			} else {
+				apiLogger.debug(`Skipped syncing card ${result.card.id} (likely archived column)`)
+			}
 		} catch (error) {
 			// Log sync failure but don't fail the request
 			apiLogger.warn('Failed to sync card after creation:', error)

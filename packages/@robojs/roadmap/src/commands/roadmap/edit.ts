@@ -27,21 +27,30 @@
  * @module
  */
 
-import type { AutocompleteInteraction, ChatInputCommandInteraction } from 'discord.js'
+import type {
+	AutocompleteInteraction,
+	ChatInputCommandInteraction,
+	ThreadChannel,
+	Guild,
+	ForumChannel
+} from 'discord.js'
 import { ChannelType, EmbedBuilder, PermissionFlagsBits } from 'discord.js'
 import { createCommandConfig } from 'robo.js'
 import type { CommandResult } from 'robo.js'
-import { getProvider, isProviderReady } from '../../events/_start.js'
+import { getProvider, isProviderReady, options } from '../../events/_start.js'
 import { canUserCreateCards, getSettings, getSyncedPostId } from '../../core/settings.js'
-import type { UpdateCardInput } from '../../types.js'
-import { formatCardContent } from '../../core/sync-engine.js'
+import type { UpdateCardInput, RoadmapCard, RoadmapColumn } from '../../types.js'
+import { formatCardContent, moveThreadToNewForum } from '../../core/sync-engine.js'
 import { client } from 'robo.js'
 import { roadmapLogger } from '../../core/logger.js'
+import { getForumChannelForColumn } from '../../core/forum-manager.js'
 
 // In-memory cache for card titles and column options
 interface CardCacheItem {
 	cardId: string
 	title: string
+	identifier: string
+	column?: string
 }
 
 interface CardTitleCache {
@@ -57,6 +66,134 @@ interface ColumnCache {
 const cardCacheMap = new Map<string, CardTitleCache>() // Keyed by guildId
 const columnCacheMap = new Map<string, ColumnCache>() // Keyed by guildId
 const CACHE_TTL_MS = 60000 // 60 seconds
+
+interface ColumnChangeContext {
+	guild: Guild
+	guildId: string
+	currentCard: RoadmapCard
+	updatedCard: RoadmapCard
+	requestedColumn?: string | null
+	thread: ThreadChannel
+}
+
+interface ColumnChangeResult {
+	moved: boolean
+	thread?: ThreadChannel
+	newThreadId?: string
+	oldThreadId?: string
+	errorMessage?: string
+}
+
+interface DiscordApiError {
+	readonly code?: number | string
+}
+
+function getDiscordErrorCode(error: unknown): number | string | undefined {
+	if (error && typeof error === 'object' && 'code' in error) {
+		return (error as DiscordApiError).code
+	}
+
+	return undefined
+}
+
+function getAppliedTagsFromForum(forum: ForumChannel, labels: string[]): string[] {
+	const labelToTagId = new Map<string, string>()
+	for (const tag of forum.availableTags) {
+		labelToTagId.set(tag.name.toLowerCase(), tag.id)
+	}
+
+	return labels
+		.map((label) => labelToTagId.get(label.toLowerCase()))
+		.filter((tagId): tagId is string => Boolean(tagId))
+		.slice(0, 5)
+}
+
+async function handleColumnChange({
+	guild,
+	guildId,
+	currentCard,
+	updatedCard,
+	requestedColumn,
+	thread
+}: ColumnChangeContext): Promise<ColumnChangeResult> {
+	const columnChanged =
+		(requestedColumn && requestedColumn !== currentCard.column) || updatedCard.column !== currentCard.column
+
+	if (!columnChanged) {
+		return { moved: false, thread }
+	}
+
+	roadmapLogger.debug(
+		`Column change detected for card ${updatedCard.id} in guild ${guildId}: ${currentCard.column} -> ${updatedCard.column}`
+	)
+
+	const targetForum = await getForumChannelForColumn(guild, updatedCard.column)
+	if (!targetForum) {
+		roadmapLogger.error(
+			`Forum channel for column ${updatedCard.column} not found in guild ${guildId} while moving card ${updatedCard.id}`
+		)
+
+		return {
+			moved: false,
+			thread,
+			errorMessage: `Forum channel for column ${updatedCard.column} not found. Run /roadmap setup to configure forums.`
+		}
+	}
+
+	if (thread.parentId === targetForum.id) {
+		roadmapLogger.debug(
+			`Thread ${thread.id} for card ${updatedCard.id} already in forum ${targetForum.id}, skipping move`
+		)
+
+		return { moved: false, thread }
+	}
+
+	roadmapLogger.debug(
+		`Checking if thread ${thread.id} needs to move from forum ${thread.parentId ?? 'unknown'} to ${targetForum.id}`
+	)
+
+	const appliedTags = getAppliedTagsFromForum(targetForum, updatedCard.labels)
+
+	try {
+		const newThread = await moveThreadToNewForum(updatedCard, thread, targetForum, appliedTags, guildId)
+		roadmapLogger.info(
+			`Successfully moved thread for card ${updatedCard.id} from forum ${thread.parent?.name ?? thread.parentId ?? 'unknown'} to ${targetForum.name}`
+		)
+
+		return {
+			moved: true,
+			thread: newThread,
+			newThreadId: newThread.id,
+			oldThreadId: thread.id
+		}
+	} catch (error) {
+		const message = error instanceof Error ? error.message : String(error)
+		const errorCode = getDiscordErrorCode(error)
+
+		if (errorCode === 403) {
+			roadmapLogger.error(
+				`Missing permissions to move thread for card ${updatedCard.id} from forum ${thread.parent?.name ?? thread.parentId ?? 'unknown'} to ${targetForum.name}: ${message}`
+			)
+
+			return {
+				moved: false,
+				thread,
+				errorMessage:
+					"Card was updated in the provider but the bot is missing permissions to move the Discord thread. Ensure it has 'Manage Threads' and 'Send Messages in Threads' for both forums."
+			}
+		}
+
+		roadmapLogger.error(
+			`Failed to move thread for card ${updatedCard.id} from forum ${thread.parent?.name ?? thread.parentId ?? 'unknown'} to ${targetForum.name}: ${message}`
+		)
+
+		return {
+			moved: false,
+			thread,
+			errorMessage: `Card was updated in the provider but failed to move the Discord thread: ${message}. Run /roadmap sync to retry.`
+		}
+	}
+}
 
 /**
  * Jira-specific metadata structure for issue type information.
@@ -213,7 +350,12 @@ export const autocomplete = async (interaction: AutocompleteInteraction) => {
 					try {
 						const card = await provider.getCard(cardId)
 						if (card) {
-							return { cardId, title: card.title }
+							return {
+								cardId,
+								title: card.title,
+								identifier: card.id ?? cardId,
+								column: card.column
+							}
 						}
 					} catch (error) {
 						roadmapLogger.warn(`Failed to fetch card ${cardId} for autocomplete:`, error)
@@ -235,7 +377,11 @@ export const autocomplete = async (interaction: AutocompleteInteraction) => {
 					break
 				}
 
-				const name = item.title.length > 100 ? item.title.substring(0, 97) + '...' : item.title
+				const baseName = item.column
+					? `${item.title} (${item.identifier}, ${item.column})`
+					: `${item.title} (${item.identifier})`
+
+				const name = baseName.length > 100 ? baseName.substring(0, 97) + '...' : baseName
 				options.push({ name, value: item.cardId })
 				matchCount++
 			}
@@ -306,8 +452,8 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 		return 'This command can only be run in a server'
 	}
 
-	// Defer reply (ephemeral to keep card edits private)
-	await interaction.deferReply({ ephemeral: true })
+	// Defer reply (ephemeral by default; configurable via plugin options)
+	await interaction.deferReply({ ephemeral: options.ephemeralCommands ?? true })
 
 	// Check authorization
 	const userRoleIds =
@@ -369,13 +515,15 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 		return `Failed to fetch card: ${message}`
 	}
 
+	let providerColumns: readonly RoadmapColumn[] | undefined
+
 	// Validate column if provided
 	if (column) {
 		try {
-			const columns = await provider.getColumns()
-			const validColumn = columns.find((col) => col.name === column)
+			providerColumns = await provider.getColumns()
+			const validColumn = providerColumns?.find((col) => col.name === column)
 			if (!validColumn) {
-				const columnNames = columns.map((col) => col.name).join(', ')
+				const columnNames = providerColumns?.map((col) => col.name).join(', ') ?? ''
 				return `Invalid column "${column}". Available columns: ${columnNames}`
 			}
 		} catch (error) {
@@ -434,90 +582,124 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 		`Card updated successfully: ${result.card.id} by @${interaction.user.username} in guild ${interaction.guildId}`
 	)
 
+	const columnChanged =
+		(column && column !== currentCard.column) || result.card.column !== currentCard.column
+
 	// Update Discord thread if synced
 	let discordSynced = false
 	let threadId: string | undefined
+	let syncedThread: ThreadChannel | null = null
+	let threadWasMoved = false
+	let movedThreadOldId: string | undefined
+
 	try {
 		threadId = getSyncedPostId(interaction.guildId, cardId)
-		if (threadId) {
-			try {
-				const thread = await client.channels.fetch(threadId)
-				if (thread && thread.isThread()) {
-					// Update thread name using canonical title from provider
-					if (result.card.title !== currentCard.title) {
-						await thread.edit({ name: result.card.title.substring(0, 100) })
-					}
-
-					// Update starter message (verify bot is the author first)
-					// Message edits have a 2000 character limit in Discord
-					const starterMessage = await thread.fetchStarterMessage()
-					if (starterMessage && starterMessage.author?.id === client.user?.id) {
-						const formattedContent = formatCardContent(result.card, 2000)
-						await starterMessage.edit({ content: formattedContent })
-					}
-
-					// Update thread tags to reflect current card labels (including clearing)
-					const forum = thread.parent
-					if (forum && forum.type === ChannelType.GuildForum) {
-						try {
-							// Build tag mapping for this forum (case-insensitive)
-							const labelToTagId = new Map<string, string>()
-							for (const tag of forum.availableTags) {
-								labelToTagId.set(tag.name.toLowerCase(), tag.id)
-							}
-
-							// Map labels to tag IDs (max 5)
-							const appliedTags = result.card.labels
-								.map((label) => labelToTagId.get(label.toLowerCase()))
-								.filter((tagId): tagId is string => Boolean(tagId))
-								.slice(0, 5)
-
-							// Always update tags, even if empty (to clear existing tags)
-							await thread.edit({ appliedTags })
-						} catch (error) {
-							// Guard for permission errors and unknown message
-							const errorCode = error && typeof error === 'object' && 'code' in error ? error.code : undefined
-							if (errorCode !== 403 && errorCode !== 10003 && errorCode !== 10008) {
-								roadmapLogger.warn('Failed to update thread tags:', error)
-							}
-						}
-					} // Handle column change and archiving
-					if (column) {
-						const columns = await provider.getColumns()
-						const newColumn = columns.find((col) => col.name === result.card.column)
-						if (newColumn?.archived) {
-							try {
-								await thread.setArchived(true, 'Roadmap edit: card completed')
-							} catch (error) {
-								// Guard for permission errors and unknown message
-								const errorCode = error && typeof error === 'object' && 'code' in error ? error.code : undefined
-								if (errorCode !== 403 && errorCode !== 10003 && errorCode !== 10008) {
-									roadmapLogger.warn('Failed to archive thread:', error)
-								}
-							}
-						} else if (!newColumn?.archived && thread.archived) {
-							// Ensure thread is unarchived if moved out of archived column
-							try {
-								await thread.setArchived(false, 'Roadmap edit: card moved to active column')
-							} catch (error) {
-								// Guard for permission errors and unknown message
-								const errorCode = error && typeof error === 'object' && 'code' in error ? error.code : undefined
-								if (errorCode !== 403 && errorCode !== 10003 && errorCode !== 10008) {
-									roadmapLogger.warn('Failed to unarchive thread:', error)
-								}
-							}
-						}
-					}
-
-					discordSynced = true
-				}
-			} catch (error) {
-				roadmapLogger.warn('Failed to sync Discord thread after card update:', error)
-				// Thread may have been deleted; continue silently
-			}
-		}
 	} catch (error) {
 		roadmapLogger.warn('Failed to get synced thread ID:', error)
+	}
+
+	const originalThreadId = threadId
+
+	if (threadId) {
+		try {
+			const channel = await client.channels.fetch(threadId)
+			if (channel && channel.isThread()) {
+				// Cast through unknown to satisfy TypeScript's private property checks between thread channel variants
+				syncedThread = channel as unknown as ThreadChannel
+			}
+		} catch (error) {
+			roadmapLogger.warn('Failed to fetch synced Discord thread after card update:', error)
+		}
+	}
+
+	if (syncedThread && columnChanged) {
+		const columnChangeResult = await handleColumnChange({
+			guild: interaction.guild,
+			guildId: interaction.guildId,
+			currentCard,
+			updatedCard: result.card,
+			requestedColumn: column,
+			thread: syncedThread
+		})
+
+		if (columnChangeResult.errorMessage) {
+			return columnChangeResult.errorMessage
+		}
+
+		if (columnChangeResult.moved) {
+			threadWasMoved = true
+			syncedThread = columnChangeResult.thread ?? syncedThread
+			threadId = columnChangeResult.newThreadId ?? syncedThread?.id ?? threadId
+			movedThreadOldId = columnChangeResult.oldThreadId ?? originalThreadId
+			discordSynced = true
+		}
+	} else if (columnChanged && !syncedThread) {
+		roadmapLogger.debug(`Column changed for card ${cardId} but no synced thread found to move`)
+	}
+
+	if (syncedThread && !threadWasMoved) {
+		try {
+			if (result.card.title !== currentCard.title) {
+				await syncedThread.edit({ name: result.card.title.substring(0, 100) })
+			}
+
+			const starterMessage = await syncedThread.fetchStarterMessage()
+			if (starterMessage && starterMessage.author?.id === client.user?.id) {
+				const formattedContent = formatCardContent(result.card, 2000)
+				await starterMessage.edit({ content: formattedContent })
+			}
+
+			const forum = syncedThread.parent
+			if (forum && forum.type === ChannelType.GuildForum) {
+				try {
+					const appliedTags = getAppliedTagsFromForum(forum, result.card.labels)
+					await syncedThread.edit({ appliedTags })
+				} catch (error) {
+					const errorCode =
+						error && typeof error === 'object' && 'code' in error ? (error as { code?: number | string }).code : undefined
+					if (errorCode !== 403 && errorCode !== 10003 && errorCode !== 10008) {
+						roadmapLogger.warn('Failed to update thread tags:', error)
+					}
+				}
+			}
+
+			discordSynced = true
+		} catch (error) {
+			roadmapLogger.warn('Failed to sync Discord thread after card update:', error)
+		}
+	}
+
+	if (syncedThread && columnChanged) {
+		try {
+			if (!providerColumns) {
+				providerColumns = await provider.getColumns()
+			}
+
+			const newColumn = providerColumns?.find((col) => col.name === result.card.column)
+			if (newColumn?.archived) {
+				try {
+					await syncedThread.setArchived(true, 'Roadmap edit: card completed')
+				} catch (error) {
+					const errorCode =
+						error && typeof error === 'object' && 'code' in error ? (error as { code?: number | string }).code : undefined
+					if (errorCode !== 403 && errorCode !== 10003 && errorCode !== 10008) {
+						roadmapLogger.warn('Failed to archive thread:', error)
+					}
+				}
+			} else if (!newColumn?.archived && syncedThread.archived) {
+				try {
+					await syncedThread.setArchived(false, 'Roadmap edit: card moved to active column')
+				} catch (error) {
+					const errorCode =
+						error && typeof error === 'object' && 'code' in error ? (error as { code?: number | string }).code : undefined
+					if (errorCode !== 403 && errorCode !== 10003 && errorCode !== 10008) {
+						roadmapLogger.warn('Failed to unarchive thread:', error)
+					}
+				}
+			}
+		} catch (error) {
+			roadmapLogger.warn('Failed to adjust thread archive state after column change:', error)
+		}
 	}
 
 	// Build success response with embed
@@ -526,7 +708,9 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 		const embed = new EmbedBuilder().setTitle('Card Updated Successfully').setColor(0x57f287) // Success green
 
 		// Set description with Discord thread link if available
-		if (threadId) {
+		if (threadWasMoved && movedThreadOldId && threadId) {
+			embed.setDescription(`Thread moved from <#${movedThreadOldId}> to <#${threadId}>`)
+		} else if (threadId) {
 			embed.setDescription(`Discord thread: <#${threadId}>`)
 		}
 
@@ -540,6 +724,14 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 		fields.push({ name: 'Title', value: titleValue, inline: true })
 
 		fields.push({ name: 'Column', value: result.card.column, inline: true })
+
+		if (columnChanged) {
+			fields.push({
+				name: 'Column Change',
+				value: `${currentCard.column} -> ${result.card.column}`,
+				inline: true
+			})
+		}
 
 		// Add labels field if present (truncate with +N more indicator)
 		if (result.card.labels.length > 0) {
@@ -573,7 +765,9 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 		embed.addFields(fields)
 
 		// Set footer with sync status
-		if (discordSynced) {
+		if (threadWasMoved) {
+			embed.setFooter({ text: 'Moved to new forum and updated in provider' })
+		} else if (discordSynced) {
 			embed.setFooter({ text: 'Updated in provider and Discord' })
 		} else {
 			embed.setFooter({ text: '⚠️ Updated in provider - Discord sync may require manual sync' })
@@ -588,14 +782,24 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 		response += `**ID:** ${result.card.id}\n`
 		response += `**Title:** ${result.card.title}\n`
 		response += `**Column:** ${result.card.column}\n`
+		if (columnChanged) {
+			response += `**Column Change:** ${currentCard.column} -> ${result.card.column}\n`
+		}
 		if (result.card.labels.length > 0) {
 			response += `**Labels:** ${result.card.labels.join(', ')}\n`
 		}
 		if (result.card.url) {
 			response += `**URL:** ${result.card.url}\n`
 		}
+		if (threadWasMoved && movedThreadOldId && threadId) {
+			response += `Thread moved from <#${movedThreadOldId}> to <#${threadId}>\n`
+		} else if (threadId) {
+			response += `Discord thread: <#${threadId}>\n`
+		}
 
-		if (discordSynced) {
+		if (threadWasMoved) {
+			response += '\nThe card has been updated in the provider and moved to the correct Discord forum.'
+		} else if (discordSynced) {
 			response += '\nThe card has been updated in both the provider and Discord.'
 		} else {
 			response += '\nThe card has been updated in the provider. Discord thread sync may require manual sync.'

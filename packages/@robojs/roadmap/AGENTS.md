@@ -86,8 +86,21 @@ sequenceDiagram
         Settings-->>Sync: Thread ID or null
         alt Thread exists
             Sync->>Discord: Fetch thread
-            Sync->>Discord: Edit thread name/tags
-            Sync->>Discord: Edit starter message
+            Note over Sync,Discord: Column Change Handling
+            alt Column changed (thread.parentId ≠ forum.id)
+                Sync->>Sync: Check hasUserMessages(thread)
+                alt Has user messages (messageCount > 1)
+                    Sync->>Sync: Build link: "📜 See X messages in previous discussion"
+                    Sync->>Sync: Prepend link to card content
+                end
+                Sync->>Discord: Create new thread in target forum
+                Sync->>Discord: Lock and archive old thread
+                Sync->>Settings: addThreadToHistory(entry with messageCount)
+                Sync->>Settings: setSyncedPost(cardId, newThreadId)
+            else Same forum
+                Sync->>Discord: Edit thread name/tags
+                Sync->>Discord: Edit starter message
+            end
         else Create new
             Sync->>Discord: Create thread
             Sync->>Settings: setSyncedPost(cardId, threadId)
@@ -330,7 +343,7 @@ Follow these standards for all new code and update existing code during maintena
   3. Group cards by column
   4. Update forum tags per column (merge + dedupe)
   5. Refresh forums to get latest tags and build tag maps
-  6. For each card, decide op (create/update/archive/skip), map tags (≤5), format content (≤4096), execute and track stats
+  6. For each card, decide op (create/update/archive/skip), map tags (≤5), format content (≤2000 for forum thread starters), execute and track stats
   7. Update last sync timestamp
   8. Return `SyncResult`
 - Idempotent: existing threads updated without duplication
@@ -341,9 +354,108 @@ Follow these standards for all new code and update existing code during maintena
   - Missing permissions abort with clear message
 - Stats: `total`, `created`, `updated`, `archived`, `errors`
 
+### Sync Cancellation
+
+- Overview: Syncs can be canceled mid-operation via a cancel button in the progress UI.
+- Sync ID System: Each sync uses the Discord interaction ID as a unique `syncId`, tracked in the in-memory `activeSyncs` map within `src/commands/roadmap/sync.ts`.
+- AbortController Pattern:
+  - A single `AbortController` is created when the sync starts and stored in `activeSyncs` alongside metadata (`startedBy`, `guildId`, `dryRun`, `startedAt`).
+  - The `AbortSignal` is passed into `syncRoadmap()` via `SyncOptions` and is checked within the per-card loop inside `src/core/sync-engine.ts`.
+  - When the signal is aborted, the engine throws `Error('Sync canceled by user')`, which is caught by the command handler.
+- Authorization: Only administrators or the user who initiated the sync can cancel it.
+- Cancel Button Handler: Implemented in `src/events/interactionCreate/button-cancel-sync.ts`.
+  - Custom ID prefix is `Buttons.CancelSync.id`; the concrete ID format is `${prefix}-${syncId}`.
+  - Extracts `syncId`, validates authorization (admin or starter match), then calls `controller.abort()`.
+- Cleanup Flow:
+  - Abort triggers an error from the sync engine that is handled in the command’s catch block.
+  - The command builds a cancellation UI showing partial stats and removes the entry from `activeSyncs`.
+  - The auto-cleanup timeout is cleared before deletion.
+- Auto-Cleanup:
+  - A 15-minute timeout is scheduled on sync start using `setTimeout`; the timeout ID is stored as `cleanupTimeoutId` on the `SyncData`.
+  - On normal completion, cancellation, or error, the timeout is cleared with `clearTimeout`.
+  - If the timeout triggers, the entry is pruned and a warning is logged (indicates abnormal termination).
+  - This prevents memory leaks from abandoned syncs and aligns with Discord interaction expiry.
+- Partial Results:
+  - The command tracks `lastProgressUpdate` (current index and total) and displays partial stats on cancel.
+  - UI emphasizes: “Partial sync: X/Y cards processed.”
+- Concurrent Syncs:
+  - Each sync is isolated by `syncId`; canceling one doesn’t affect others.
+  - The map prevents cross-cancellation.
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Button as Cancel Button Handler
+    participant Map as activeSyncs Map
+    participant Controller as AbortController
+    participant Engine as syncRoadmap()
+    participant Command as /roadmap sync
+    participant Discord
+
+    User->>Button: Click "Cancel Sync" button
+    Button->>Button: Extract syncId from customId
+    Button->>Map: get(syncId)
+    Map-->>Button: SyncData with controller
+    
+    Button->>Button: Verify authorization (admin or starter)
+    
+    alt Authorized
+        Button->>Controller: abort()
+        Note over Controller: Signal becomes aborted
+        
+        Engine->>Engine: Check signal?.aborted in card loop
+        Engine->>Engine: Throw Error('Sync canceled by user')
+        
+        Engine-->>Command: Error propagates to catch block
+        
+        Command->>Command: Detect cancellation error message
+        Command->>Command: Build cancellation UI with partial stats
+        Command->>Map: Clear timeout and delete(syncId)
+        
+        Command->>Discord: editReply(cancellation UI)
+        Discord-->>User: "⚠️ Sync Canceled - Partial sync: X/Y cards"
+        
+        Button->>Discord: deferUpdate()
+    else Not Authorized
+        Button->>Discord: followUp("Not authorized", ephemeral)
+    end
+```
+
+### Thread Movement Functions
+
+**`hasUserMessages(thread: ThreadChannel): boolean`**
+
+- Location: `src/core/sync-engine.ts` (lines 145-149)
+- Purpose: Determine if a thread has user activity beyond the starter message
+- Logic: Returns `true` if `thread.messageCount > 1` (starter message counts as 1)
+- Used by: `moveThreadToNewForum()` to decide whether to link to old threads
+
+**`moveThreadToNewForum(card, existingThread, targetForum, appliedTags, guildId): Promise<ThreadChannel>`**
+
+- Location: `src/core/sync-engine.ts` (lines 171-255)
+- Purpose: Orchestrate thread movement when a card's column changes
+- Process:
+  1. Validate inputs and check if thread is already in target forum (early return if so)
+  2. Check if old thread has user messages via `hasUserMessages()`
+  3. Format new thread content:
+     - If user messages exist: prepend link "📜 See X message(s) in previous discussion: [url]" where X = messageCount - 1
+     - Otherwise: use standard `formatCardContent()`
+  4. Create new thread in target forum with name, content, and tags
+  5. Lock and archive old thread (non-critical, logs warning if fails)
+  6. Record history entry via `addThreadToHistory()` with threadId, column, forumId, movedAt, messageCount
+  7. Update `syncedPosts` mapping via `setSyncedPost()` to point to new thread
+  8. Return new thread
+- Error handling: Throws if inputs invalid or thread creation fails; logs warning if lock/archive fails
+- Integration: Called by `syncCard()`, `/roadmap edit` command, and REST API PUT endpoint
+
 ### `syncCard()` details
 
-- Operation selection:
+- Column change detection (before operation selection):
+  - Fetch existing thread if `existingThreadId` exists
+  - Compare `thread.parentId` with target `forum.id`
+  - If different, call `moveThreadToNewForum()` and return 'create' operation
+  - Handles thread moves before normal create/update/archive flow
+- Operation selection (when no column change):
   - create: no mapped thread and column not archived
   - update: mapped thread exists and column not archived
   - archive: mapped thread exists and column archived
@@ -353,7 +465,7 @@ Follow these standards for all new code and update existing code during maintena
   - Update: `thread.edit()` (name/tags) + `starterMessage.edit()` (content)
   - Archive: `thread.setArchived(true)`
 - Tag mapping: case-insensitive, up to 5 applied thread tags
-- Names and content limits: 100 chars for name; 4096 chars for message content with prioritized metadata
+- Names and content limits: 100 chars for name; 2000 chars for forum thread starter messages (Discord limit)
 - Error handling:
   - 10008 (Unknown message/thread): recreate
   - 403 (Missing permissions): bubble up with clear message
@@ -365,7 +477,7 @@ Follow these standards for all new code and update existing code during maintena
   1. Description
   2. `---` separator
   3. Metadata: Assigned to, Labels, Last Updated
-- Truncation strategy prioritizes metadata; description gets truncated first if over 4096 total
+- Truncation strategy prioritizes metadata; description gets truncated first if over 2000 total (forum thread starter message limit)
 - Status/provider URL sections intentionally omitted
 
 ### Discord API limits
@@ -373,7 +485,7 @@ Follow these standards for all new code and update existing code during maintena
 - 20 forum tags per forum (excess warned)
 - 5 thread tags per thread
 - 100-char thread names (truncate with `...`)
-- 4096-char bot message content
+- 2000-char limit for forum thread starter messages (Discord API restriction)
 - Rate limits vary by endpoint (typically 5–50 rps)
 
 ## Forum Management
@@ -433,6 +545,7 @@ Follow these standards for all new code and update existing code during maintena
 - `lastSyncTimestamp?: number`
 - `syncedPosts?: Record<string, string>`
 - `authorizedCreatorRoles?: string[]`
+- `threadHistory?: Record<string, ThreadHistoryEntry[]>`
 
 ### CRUD utilities
 
@@ -446,6 +559,19 @@ Follow these standards for all new code and update existing code during maintena
 - `setSyncedPost(guildId, cardId, threadId)`
 - `getAuthorizedCreatorRoles(guildId)`
 - `setAuthorizedCreatorRoles(guildId, roleIds)`
+- `getThreadHistory(guildId, cardId)`
+- `addThreadToHistory(guildId, cardId, entry)`
+- `getCurrentThreadInfo(guildId, cardId, threadParentId)`
+
+### Thread History Tracking
+
+- `threadHistory` maps card IDs to arrays of `ThreadHistoryEntry` objects
+- Each entry captures: `threadId`, `column`, `forumId`, `movedAt` (timestamp), `messageCount` (optional)
+- `getThreadHistory(guildId, cardId)` returns array of historical entries (empty if none)
+- `addThreadToHistory(guildId, cardId, entry)` appends new entry when thread is moved
+- `getCurrentThreadInfo(guildId, cardId, threadParentId)` returns current thread ID and column by looking up which forum the thread belongs to
+- Message count is used to determine if linking is worthwhile (threads with only starter message typically not linked)
+- Multiple entries can exist for cards that move through multiple columns over time
 - `canUserCreateCards(guildId, userRoleIds, isAdmin)`
 
 - Authorization: admins always allowed; otherwise must have any authorized role. Empty roles means admins-only.
@@ -515,6 +641,12 @@ Follow these standards for all new code and update existing code during maintena
 - Location: `src/commands/roadmap/sync.ts`
 - Option: `dry-run`
 - Triggers `syncRoadmap()` and returns stats; guards for missing provider/setup/permissions.
+- Cancellation:
+  - A cancel button appears during sync; only administrators or the sync starter can cancel.
+  - Cancellation stops after the current card finishes processing; partial results are preserved.
+  - UI surfaces: “Partial sync: X/Y cards processed” plus stats (created, updated, archived, errors).
+  - Abandoned syncs are auto-cleaned after 15 minutes with a warning log.
+  - Multiple concurrent syncs are supported and isolated by `syncId`.
 
 ### `/roadmap add` (Admins or authorized roles)
 
@@ -526,7 +658,9 @@ Follow these standards for all new code and update existing code during maintena
 
 - Location: `src/commands/roadmap/edit.ts`
 - Options: `card` (autocomplete), `title`, `description`, `column` (autocomplete), `labels`
-- Updates provider card and adjusts Discord thread if synced; 60s per-guild cache for autocomplete.
+- Updates provider card and adjusts Discord thread if synced
+- Column changes trigger thread movement: creates new thread in target forum, locks/archives old thread, links if user messages exist
+- 60s per-guild cache for autocomplete
 
 ## Interaction Handlers
 
@@ -555,6 +689,10 @@ Follow these standards for all new code and update existing code during maintena
 - `url: string`
 - `updatedAt: Date`
 - `metadata?: Record<string, unknown>`
+
+### Thread History
+
+- `ThreadHistoryEntry` with `threadId`, `column`, `forumId`, `movedAt`, `messageCount?`
 
 ### `RoadmapColumn`
 
@@ -665,12 +803,32 @@ export default {
 10. Thread name truncation at 100 chars.
 11. Content truncation preserves metadata over description.
 12. Autocomplete cache TTL ~60s; recent changes may lag.
+13. Thread movement creates new threads when columns change; old threads are locked/archived, not deleted.
+14. Links to old threads only appear when `messageCount > 1` (user messages beyond starter message).
+15. Message count in links excludes the starter message (e.g., "See 5 messages" = 5 user replies).
+16. Thread history is tracked per card in `settings.threadHistory` for audit trail.
+17. Lock/archive failures on old threads are non-critical; new thread creation is prioritized.
+18. Column change detection compares `thread.parentId` with target `forum.id` before operation selection.
+19. Canceled syncs show partial results, not zero; stats reflect processed cards prior to cancellation.
+20. Auto-cleanup timeout (15 minutes) triggers only for abandoned syncs; normal flows clear it on exit.
+21. Cancel button authorization checks admin permission or sync starter; non-admins can only cancel their own sync.
+22. Bot restarts clear the `activeSyncs` map; interactions expire in 15 minutes, so this is acceptable.
+23. Concurrent syncs are isolated by `syncId`; canceling one does not impact others.
+24. Abort signal is checked per-card; typical cancellation latency is <1s (time to finish current card).
 
 ## Testing Patterns
 
 - Framework: check package `package.json` for Jest/Vitest; unit test core functions and integration test sync flow.
 - Mocking: discord.js Guild/Forum/Thread, provider methods, Flashcore state, fetch for Jira.
 - Scenarios: sync idempotency/recovery/stats; forum modes/tags; settings CRUD; command auth/validation; Jira config/ADF/mapping.
+- Cancellation scenarios:
+  - Concurrent syncs in different guilds; cancel one, ensure the other continues.
+  - Dry-run cancel behaves identically to regular cancel in terms of UI/stats.
+  - Invalid clicks after sync completes produce “sync already ended” UX.
+  - Authorization failures show “not authorized” message for non-admin, non-starter.
+  - Partial stats correctness when canceling mid-sync (X/Y, stats counters).
+  - Auto-cleanup fires after 15 minutes for an intentionally abandoned sync.
+  - Bot restart during sync resets the map; acceptable due to interaction expiry.
 
 ## Integration Patterns for Custom Providers
 
@@ -786,7 +944,7 @@ Types:
 
 Discord limits:
 
-- Forum tags: 20; Thread tags: 5; Thread name: 100 chars; Message content: 4096 chars; Rate limits vary.
+- Forum tags: 20; Thread tags: 5; Thread name: 100 chars; Forum thread starter messages: 2000 chars; Rate limits vary.
 
 Error codes:
 

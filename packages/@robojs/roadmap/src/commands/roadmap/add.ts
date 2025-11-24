@@ -57,7 +57,9 @@ const getAutocompleteCacheTtl = () => {
 	// Validate and clamp
 	if (!Number.isFinite(parsedValue) || parsedValue < 0) {
 		if (!cacheTtlWarningLogged) {
-			roadmapLogger.warn(`Invalid autocompleteCacheTtl value: ${rawValue}. Using default: ${DEFAULT_TTL}ms`)
+			roadmapLogger.warn(
+				`Invalid autocompleteCacheTtl value "${rawValue}" in roadmap plugin options. Using default ${DEFAULT_TTL}ms; autocomplete suggestions may refresh less often than expected until this is corrected.`
+			)
 			cacheTtlWarningLogged = true
 		}
 		return DEFAULT_TTL
@@ -67,7 +69,9 @@ const getAutocompleteCacheTtl = () => {
 	const clampedValue = Math.max(0, parsedValue)
 
 	if (clampedValue !== parsedValue && !cacheTtlWarningLogged) {
-		roadmapLogger.debug(`Clamped autocompleteCacheTtl from ${parsedValue} to ${clampedValue}ms`)
+		roadmapLogger.debug(
+			`Clamped autocompleteCacheTtl from ${parsedValue} to ${clampedValue}ms for roadmap autocomplete cache. This controls how long card, column, and label suggestions stay cached per guild.`
+		)
 		cacheTtlWarningLogged = true
 	}
 
@@ -133,7 +137,7 @@ export const config = createCommandConfig({
 		},
 		{
 			name: 'labels',
-			description: 'Comma-separated labels (e.g., "bug, urgent")',
+			description: 'Comma-separated labels from your provider (e.g., "bug, urgent"); autocompletes provider labels',
 			type: 'string',
 			required: false,
 			autocomplete: true
@@ -189,8 +193,8 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 		return 'This command can only be run in a server'
 	}
 
-	// Defer reply (ephemeral to keep card creation private)
-	await interaction.deferReply({ ephemeral: true })
+	// Defer reply (ephemeral by default; configurable via plugin options)
+	await interaction.deferReply({ ephemeral: options.ephemeralCommands ?? true })
 
 	// Extract user roles for authorization check
 	const userRoleIds =
@@ -239,6 +243,24 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 				.map((l) => l.trim())
 				.filter(Boolean)
 		: []
+
+	// Track any labels that don't exist in the provider for UX feedback
+	let unknownLabels: string[] = []
+	if (labels.length > 0) {
+		try {
+			const providerLabels = await provider.getLabels()
+			const providerLabelSet = new Set(providerLabels.map((label) => label.toLowerCase()))
+			unknownLabels = labels.filter((label) => !providerLabelSet.has(label.toLowerCase()))
+
+			if (unknownLabels.length > 0) {
+				roadmapLogger.debug(
+					`Unknown labels requested for new card in guild ${interaction.guildId}: ${unknownLabels.join(', ')}`
+				)
+			}
+		} catch (error) {
+			roadmapLogger.warn('Failed to validate labels against provider labels:', error)
+		}
+	}
 
 	// Log card creation attempt
 	roadmapLogger.debug(
@@ -334,8 +356,12 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 	let threadId: string | undefined
 	try {
 		const syncResult = await syncSingleCard(result.card, guild, provider)
-		threadId = syncResult.threadId
-		roadmapLogger.debug(`Synced card ${result.card.id} to thread ${threadId}`)
+		if (syncResult) {
+			threadId = syncResult.threadId
+			roadmapLogger.debug(`Synced card ${result.card.id} to thread ${threadId}`)
+		} else {
+			roadmapLogger.debug(`Skipped syncing card ${result.card.id} (likely archived column)`)
+		}
 	} catch (error) {
 		roadmapLogger.error('Failed to sync card after creation:', error)
 		syncSuccess = false
@@ -393,11 +419,23 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 
 		embed.addFields(fields)
 
-		// Set footer with sync status
+		// Set footer with sync status (and optional label hint)
+		let footerText = syncSuccess
+			? 'Synced to Discord forums'
+			: '⚠️ Created but sync failed - run /roadmap sync to update forums'
+
+		if (unknownLabels.length > 0) {
+			const sampleUnknown =
+				unknownLabels.length > 3
+					? `${unknownLabels.slice(0, 3).join(', ')} +${unknownLabels.length - 3} more`
+					: unknownLabels.join(', ')
+			footerText += ` • Note: some labels may not exist in the provider (${sampleUnknown}).`
+		}
+
 		if (syncSuccess) {
-			embed.setFooter({ text: 'Synced to Discord forums' })
+			embed.setFooter({ text: footerText })
 		} else {
-			embed.setFooter({ text: '⚠️ Created but sync failed - run /roadmap sync to update forums' })
+			embed.setFooter({ text: footerText })
 		}
 
 		return { embeds: [embed] }
@@ -431,6 +469,14 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 		} else {
 			response +=
 				'\n⚠️ The card was created but could not be synced automatically. Run `/roadmap sync` to update the forums.'
+		}
+
+		if (unknownLabels.length > 0) {
+			const sampleUnknown =
+				unknownLabels.length > 3
+					? `${unknownLabels.slice(0, 3).join(', ')} +${unknownLabels.length - 3} more`
+					: unknownLabels.join(', ')
+			response += `\n\nNote: some labels may not exist in the provider (${sampleUnknown}).`
 		}
 
 		return response
@@ -505,7 +551,20 @@ export async function autocomplete(interaction: AutocompleteInteraction) {
 				// Fetch from provider if cache stale
 				try {
 					const types = await provider.getIssueTypes()
-					issueTypes = [...types]
+					const uniqueMap = new Map<string, string>()
+					for (const type of types) {
+						const lowerKey = type.toLowerCase()
+						if (!uniqueMap.has(lowerKey)) {
+							uniqueMap.set(lowerKey, type)
+						}
+					}
+					issueTypes = Array.from(uniqueMap.values())
+					const duplicateCount = types.length - issueTypes.length
+					if (duplicateCount > 0) {
+						roadmapLogger.debug(
+							`Deduplicated ${duplicateCount} duplicate issue types for guild ${interaction.guildId}`
+						)
+					}
 
 					// Update cache
 					guildCache.issueTypes = {

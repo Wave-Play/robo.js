@@ -218,7 +218,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 			roadmapLogger.error('JIRA_URL is not configured.')
 			isValid = false
 		} else if (!this.isValidUrl(resolved.url)) {
-			roadmapLogger.error('JIRA_URL must be a valid URL. Received: %s', resolved.url)
+			roadmapLogger.error(`JIRA_URL must be a valid URL. Received: ${resolved.url}`)
 			isValid = false
 		}
 
@@ -226,7 +226,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 			roadmapLogger.error('JIRA_EMAIL is not configured.')
 			isValid = false
 		} else if (!resolved.email.includes('@')) {
-			roadmapLogger.error('JIRA_EMAIL must be a valid email address. Received: %s', resolved.email)
+			roadmapLogger.error(`JIRA_EMAIL must be a valid email address. Received: ${resolved.email}`)
 			isValid = false
 		}
 
@@ -244,9 +244,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 			const knownTypes = ['Epic', 'Story', 'Task', 'Bug', 'Subtask']
 			if (!knownTypes.includes(resolved.defaultIssueType)) {
 				roadmapLogger.warn(
-					'JIRA_DEFAULT_ISSUE_TYPE "%s" is not a standard Jira issue type. Known types: %s',
-					resolved.defaultIssueType,
-					knownTypes.join(', ')
+					`JIRA_DEFAULT_ISSUE_TYPE "${resolved.defaultIssueType}" is not a standard Jira issue type. Known types: ${knownTypes.join(', ')}`
 				)
 			}
 		}
@@ -267,7 +265,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 		}
 
 		const { url, email } = this.resolvedConfig
-		roadmapLogger.debug('Initializing Jira provider for %s', url)
+		roadmapLogger.debug(`Initializing Jira provider for ${url}`)
 
 		try {
 			const response = await fetch(`${url}/rest/api/3/myself`, {
@@ -284,9 +282,9 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 				throw new Error(`Failed to initialize Jira provider (status ${response.status}): ${message}`)
 			}
 
-			roadmapLogger.debug('Authenticated with Jira as %s', email)
+			roadmapLogger.debug(`Authenticated with Jira as ${email}`)
 		} catch (error) {
-			roadmapLogger.error('Unable to initialize Jira provider: %s', (error as Error).message)
+			roadmapLogger.error(`Unable to initialize Jira provider: ${(error as Error).message}`)
 			throw error
 		}
 	}
@@ -306,7 +304,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 		let finalPageReached = false
 		const cards: RoadmapCard[] = []
 
-		roadmapLogger.debug('Fetching Jira issues using JQL: %s', this.resolvedConfig.jql)
+		roadmapLogger.debug(`Fetching Jira issues using JQL: ${this.resolvedConfig.jql}`)
 
 		do {
 			// Build request payload with JQL and pagination
@@ -335,7 +333,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 				})
 			} catch (error) {
 				const message = (error as Error).message
-				roadmapLogger.error('Network error while querying Jira: %s', message)
+				roadmapLogger.error(`Network error while querying Jira: ${message}`)
 				throw new Error(`Unable to reach Jira. Confirm network connectivity. Reason: ${message}`)
 			}
 
@@ -366,7 +364,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 				try {
 					cards.push(this.mapIssueToCard(issue))
 				} catch (error) {
-					roadmapLogger.warn('Failed to map Jira issue %s: %s', issue?.key ?? issue?.id, (error as Error).message)
+					roadmapLogger.warn(`Failed to map Jira issue ${issue?.key ?? issue?.id}: ${(error as Error).message}`)
 				}
 			}
 
@@ -375,19 +373,12 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 			finalPageReached = data.isLast || typeof nextPageToken !== 'string'
 
 			roadmapLogger.debug(
-				'Fetched %d issues on page %d (isLast=%s, nextPageToken=%s)',
-				data.issues.length,
-				pageNumber,
-				data.isLast,
-				typeof nextPageToken === 'string' ? nextPageToken : 'none'
+				`Fetched ${data.issues.length} issues on page ${pageNumber} (isLast=${data.isLast}, nextPageToken=${typeof nextPageToken === 'string' ? nextPageToken : 'none'})`
 			)
 		} while (!finalPageReached)
 
 		roadmapLogger.info(
-			'Fetched %d Jira issues across %d page(s); final page reached: %s',
-			cards.length,
-			pageNumber,
-			finalPageReached
+			`Fetched ${cards.length} Jira issues across ${pageNumber} page(s); final page reached: ${finalPageReached}`
 		)
 
 		return cards
@@ -419,7 +410,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 
 		// Check cache
 		if (this.issueTypesCache && Date.now() - this.issueTypesCache.timestamp < CACHE_TTL) {
-			roadmapLogger.debug('Returning cached issue types (%d types)', this.issueTypesCache.types.length)
+			roadmapLogger.debug(`Returning cached issue types (${this.issueTypesCache.types.length} types)`)
 			return this.issueTypesCache.types
 		}
 
@@ -465,12 +456,12 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 				timestamp: Date.now()
 			}
 
-			roadmapLogger.debug('Fetched and cached %d issue types from Jira', typeNames.length)
+			roadmapLogger.debug(`Fetched and cached ${typeNames.length} issue types from Jira`)
 
 			return typeNames
 		} catch (error) {
-			roadmapLogger.error('Failed to fetch issue types from Jira: %s', (error as Error).message)
-			roadmapLogger.warn('Returning fallback issue types: %s', FALLBACK_TYPES.join(', '))
+			roadmapLogger.error(`Failed to fetch issue types from Jira: ${(error as Error).message}`)
+			roadmapLogger.warn(`Returning fallback issue types: ${FALLBACK_TYPES.join(', ')}`)
 
 			return [...FALLBACK_TYPES]
 		}
@@ -488,7 +479,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 
 		// Check cache
 		if (this.labelsCache && Date.now() - this.labelsCache.timestamp < CACHE_TTL) {
-			roadmapLogger.debug('Returning cached labels (%d labels)', this.labelsCache.labels.length)
+			roadmapLogger.debug(`Returning cached labels (${this.labelsCache.labels.length} labels)`)
 			return this.labelsCache.labels
 		}
 
@@ -570,11 +561,11 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 				timestamp: Date.now()
 			}
 
-			roadmapLogger.debug('Fetched and cached %d labels from Jira across %d page(s)', processedLabels.length, pageCount)
+			roadmapLogger.debug(`Fetched and cached ${processedLabels.length} labels from Jira across ${pageCount} page(s)`)
 
 			return processedLabels
 		} catch (error) {
-			roadmapLogger.error('Failed to fetch labels from Jira: %s', (error as Error).message)
+			roadmapLogger.error(`Failed to fetch labels from Jira: ${(error as Error).message}`)
 
 			return []
 		}
@@ -649,9 +640,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 			const cached = this.dateRangeCache.get(cacheKey)
 			if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
 				roadmapLogger.debug(
-					'Returning cached date range query results (%d cards, key=%s)',
-					cached.cards.length,
-					cacheKey
+					`Returning cached date range query results (${cached.cards.length} cards, key=${cacheKey})`
 				)
 
 				return cached.cards
@@ -692,7 +681,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 			// Add ORDER BY clause
 			const jql = jqlConditions.join(' AND ') + ` ORDER BY ${dateField} DESC`
 
-			roadmapLogger.debug('Fetching Jira issues with date range filter. JQL: %s', jql)
+			roadmapLogger.debug(`Fetching Jira issues with date range filter. JQL: ${jql}`)
 
 			// Fetch issues with pagination (same pattern as fetchCards)
 			const { url, maxResults } = this.resolvedConfig
@@ -728,7 +717,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 					})
 				} catch (error) {
 					const message = (error as Error).message
-					roadmapLogger.error('Network error while querying Jira with date range filter: %s', message)
+					roadmapLogger.error(`Network error while querying Jira with date range filter: ${message}`)
 					throw new Error(`Unable to reach Jira. Confirm network connectivity. Reason: ${message}`)
 				}
 
@@ -758,7 +747,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 					try {
 						cards.push(this.mapIssueToCard(issue))
 					} catch (error) {
-						roadmapLogger.warn('Failed to map Jira issue %s: %s', issue?.key ?? issue?.id, (error as Error).message)
+						roadmapLogger.warn(`Failed to map Jira issue ${issue?.key ?? issue?.id}: ${(error as Error).message}`)
 					}
 				}
 
@@ -766,11 +755,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 				finalPageReached = data.isLast || typeof nextPageToken !== 'string'
 
 				roadmapLogger.debug(
-					'Fetched %d issues on page %d (isLast=%s, nextPageToken=%s)',
-					data.issues.length,
-					pageNumber,
-					data.isLast,
-					typeof nextPageToken === 'string' ? nextPageToken : 'none'
+					`Fetched ${data.issues.length} issues on page ${pageNumber} (isLast=${data.isLast}, nextPageToken=${typeof nextPageToken === 'string' ? nextPageToken : 'none'})`
 				)
 			} while (!finalPageReached)
 
@@ -781,22 +766,13 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 			})
 
 			roadmapLogger.info(
-				'Fetched %d Jira issues with date range filter across %d page(s). Filter: startDate=%s, endDate=%s, dateField=%s',
-				cards.length,
-				pageNumber,
-				filter.startDate ?? 'none',
-				filter.endDate ?? 'none',
-				dateField
+				`Fetched ${cards.length} Jira issues with date range filter across ${pageNumber} page(s). Filter: startDate=${filter.startDate ?? 'none'}, endDate=${filter.endDate ?? 'none'}, dateField=${dateField}`
 			)
 
 			return cards
 		} catch (error) {
 			roadmapLogger.error(
-				'Failed to fetch cards by date range (startDate=%s, endDate=%s, dateField=%s): %s',
-				filter.startDate ?? 'none',
-				filter.endDate ?? 'none',
-				filter.dateField ?? 'updated',
-				(error as Error).message
+				`Failed to fetch cards by date range (startDate=${filter.startDate ?? 'none'}, endDate=${filter.endDate ?? 'none'}, dateField=${filter.dateField ?? 'updated'}): ${(error as Error).message}`
 			)
 
 			return []

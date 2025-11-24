@@ -9,6 +9,7 @@
  */
 
 import { getState, setState } from 'robo.js'
+import type { ThreadHistoryEntry } from '../types.js'
 import { ID_NAMESPACE } from './constants.js'
 import { roadmapLogger } from './logger.js'
 
@@ -93,6 +94,41 @@ export interface RoadmapSettings {
 	 * ```
 	 */
 	authorizedCreatorRoles?: string[]
+
+	/**
+	 * Map of provider card IDs to arrays of historical thread entries.
+	 *
+	 * This tracks the history of threads for cards that have moved between columns,
+	 * enabling linking to previous discussions. Each entry captures the thread's
+	 * state (ID, column, forum, message count) at the time it was moved to a new forum.
+	 *
+	 * The message count is used to determine if linking is worthwhile (threads with
+	 * only the starter message are typically not linked) and to provide informative
+	 * link text like "View 52 messages from In Progress".
+	 *
+	 * @example
+	 * ```ts
+	 * {
+	 *   "PROJ-123": [
+	 *     {
+	 *       threadId: "1234567890123456789",
+	 *       column: "Backlog",
+	 *       forumId: "9876543210987654321",
+	 *       movedAt: 1704067200000,
+	 *       messageCount: 3
+	 *     },
+	 *     {
+	 *       threadId: "1111222233334444555",
+	 *       column: "In Progress",
+	 *       forumId: "5555666677778888999",
+	 *       movedAt: 1704153600000,
+	 *       messageCount: 52
+	 *     }
+	 *   ]
+	 * }
+	 * ```
+	 */
+	threadHistory?: Record<string, ThreadHistoryEntry[]>
 }
 
 /**
@@ -107,7 +143,7 @@ export interface RoadmapSettings {
 export function getSettings(guildId: string | null): RoadmapSettings {
 	// Validate guild ID is provided
 	if (!guildId) {
-		roadmapLogger.error('getSettings: Guild ID is required (supplied guildId=%s)', guildId)
+		roadmapLogger.error(`getSettings: Guild ID is required (supplied guildId=${guildId})`)
 		throw new Error('Guild ID is required to get roadmap settings')
 	}
 
@@ -144,9 +180,7 @@ export function updateSettings(guildId: string | null, settings: Partial<Roadmap
 		return newSettings
 	} catch (error) {
 		roadmapLogger.error(
-			'updateSettings: Failed to persist settings for guild %s: %s',
-			guildId,
-			(error as Error).message
+			`updateSettings: Failed to persist settings for guild ${guildId}: ${(error as Error).message}`
 		)
 		throw new Error(`Failed to update settings for guild ${guildId}: ${(error as Error).message}`)
 	}
@@ -224,6 +258,179 @@ export function isForumPublic(guildId: string): boolean {
  */
 export function getSyncedPostId(guildId: string, cardId: string): string | undefined {
 	return getSettings(guildId).syncedPosts?.[cardId]
+}
+
+/**
+ * Retrieves the thread history array for a specific card.
+ *
+ * This helper returns all historical thread entries for a card that has
+ * moved between columns. Each entry contains the thread ID, column name,
+ * forum ID, timestamp, and message count at the time of the move.
+ *
+ * @param guildId - The Discord guild ID
+ * @param cardId - The provider card ID (e.g., "PROJ-123")
+ * @returns Array of thread history entries, empty array if no history exists
+ *
+ * @example
+ * ```ts
+ * const history = getThreadHistory(guildId, 'PROJ-123');
+ * if (history.length > 0) {
+ *   const lastThread = history[history.length - 1];
+ *   console.log(`Previous thread in ${lastThread.column}: ${lastThread.messageCount} messages`);
+ * }
+ * ```
+ */
+export function getThreadHistory(guildId: string, cardId: string): ThreadHistoryEntry[] {
+	return getSettings(guildId).threadHistory?.[cardId] ?? []
+}
+
+/**
+ * Retrieves the most recent thread entry for a specific column.
+ *
+ * This helper filters the thread history for a card to find entries matching
+ * the target column name, then returns the most recent one based on the
+ * `movedAt` timestamp. This is used by the sync engine to detect when cards
+ * move back to previously visited columns, enabling thread reuse to prevent
+ * duplicate threads.
+ *
+ * @param guildId - The Discord guild ID
+ * @param cardId - The provider card ID (e.g., "PROJ-123")
+ * @param targetColumn - The column name to search for (e.g., "Backlog")
+ * @returns The most recent thread history entry for the target column, or null if no matching entries exist
+ *
+ * @example
+ * ```ts
+ * // Check if card has been in Backlog before
+ * const previousBacklogThread = getThreadForColumn(guildId, 'PROJ-123', 'Backlog');
+ * if (previousBacklogThread) {
+ *   // Reuse the existing thread instead of creating a new one
+ *   console.log(`Found previous thread: ${previousBacklogThread.threadId}`);
+ * } else {
+ *   // Create a new thread for this column
+ *   console.log('No previous thread found, creating new one');
+ * }
+ * ```
+ */
+export function getThreadForColumn(
+	guildId: string,
+	cardId: string,
+	targetColumn: string
+): ThreadHistoryEntry | null {
+	// Get all history entries for this card
+	const history = getThreadHistory(guildId, cardId)
+
+	// Filter entries matching the target column (exact case-sensitive match)
+	const matchingEntries = history.filter((entry) => entry.column === targetColumn)
+
+	// Return null if no matches found
+	if (matchingEntries.length === 0) {
+		return null
+	}
+
+	// Sort by movedAt descending (most recent first)
+	matchingEntries.sort((a, b) => b.movedAt - a.movedAt)
+
+	// Return the most recent entry
+	return matchingEntries[0]
+}
+
+/**
+ * Appends a new thread entry to a card's history.
+ *
+ * This helper is called when a thread is moved to a new forum (Phase 2).
+ * It records the old thread's metadata including message count for future
+ * reference and linking. Multiple entries can exist for cards that move
+ * through multiple columns over time.
+ *
+ * @param guildId - The Discord guild ID
+ * @param cardId - The provider card ID (e.g., "PROJ-123")
+ * @param entry - The thread history entry to add
+ *
+ * @example
+ * ```ts
+ * // When moving a thread from "In Progress" to "Done"
+ * const thread = await forum.client.channels.fetch(existingThreadId);
+ * if (thread && thread.isThread()) {
+ *   await addThreadToHistory(guildId, card.id, {
+ *     threadId: thread.id,
+ *     column: 'In Progress',
+ *     forumId: thread.parentId,
+ *     movedAt: Date.now(),
+ *     messageCount: thread.messageCount
+ *   });
+ * }
+ * ```
+ */
+export function addThreadToHistory(guildId: string, cardId: string, entry: ThreadHistoryEntry): void {
+	// Get existing history for this card
+	const existingHistory = getThreadHistory(guildId, cardId)
+
+	// Get current threadHistory map
+	const currentSettings = getSettings(guildId)
+	const threadHistory = currentSettings.threadHistory ?? {}
+
+	// Append new entry and sort by movedAt descending (most recent first)
+	const combinedHistory = [...existingHistory, entry]
+	combinedHistory.sort((a, b) => b.movedAt - a.movedAt)
+
+	// Keep only the last 10 entries to prevent unbounded growth
+	const trimmedHistory = combinedHistory.slice(0, 10)
+
+	// Update threadHistory with trimmed array
+	updateSettings(guildId, {
+		threadHistory: {
+			...threadHistory,
+			[cardId]: trimmedHistory
+		}
+	})
+}
+
+/**
+ * Retrieves the current thread ID and its column information for a card.
+ *
+ * This helper determines which column a card's current thread belongs to by
+ * looking up the thread's parent forum ID in the forumChannels mapping. This
+ * is used during sync to detect when a card has moved to a different column.
+ *
+ * @param guildId - The Discord guild ID
+ * @param cardId - The provider card ID (e.g., "PROJ-123")
+ * @param threadParentId - The thread's parent forum channel ID
+ * @returns Object with threadId and column, or null if no thread exists or column cannot be determined
+ *
+ * @example
+ * ```ts
+ * const thread = await forum.client.channels.fetch(existingThreadId);
+ * if (thread && thread.isThread()) {
+ *   const currentInfo = getCurrentThreadInfo(guildId, card.id, thread.parentId);
+ *   if (currentInfo && card.column !== currentInfo.column) {
+ *     console.log('Column has changed!');
+ *   }
+ * }
+ * ```
+ */
+export function getCurrentThreadInfo(
+	guildId: string,
+	cardId: string,
+	threadParentId: string
+): { threadId: string; column: string } | null {
+	const threadId = getSyncedPostId(guildId, cardId)
+	if (!threadId) {
+		return null
+	}
+
+	// Get forum channels mapping to determine which column the thread is in
+	const settings = getSettings(guildId)
+	const forumChannels = settings.forumChannels ?? {}
+
+	// Find the column whose forum ID matches the thread's parent forum
+	for (const [columnName, forumId] of Object.entries(forumChannels)) {
+		if (forumId === threadParentId) {
+			return { threadId, column: columnName }
+		}
+	}
+
+	// Could not determine column - thread's parent forum doesn't match any configured column
+	return null
 }
 
 /**
