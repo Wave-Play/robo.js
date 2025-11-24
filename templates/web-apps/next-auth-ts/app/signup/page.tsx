@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getCsrfToken, signIn } from '@robojs/auth/client'
+import { getCsrfToken, signIn, signUp } from '@robojs/auth/client'
 import Link from 'next/link'
 import styles from './signup.module.css'
 
@@ -33,18 +33,11 @@ export default function SignupPage() {
 		}
 
 		try {
-			const res = await fetch('/api/auth/signup', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					email,
-					password,
-					passwordConfirm: confirmPassword,
-					csrfToken,
-					termsAccepted: true
-				})
+			const res = await signUp({
+				email,
+				password,
+				passwordConfirm: confirmPassword,
+				csrfToken
 			})
 
 			const data = await res.json().catch(() => ({}))
