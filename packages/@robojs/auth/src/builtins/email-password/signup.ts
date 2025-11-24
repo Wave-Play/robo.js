@@ -149,12 +149,6 @@ function ensurePasswordValid(password: string, confirm?: string) {
 	}
 }
 
-function ensureTermsAccepted(accepted: boolean) {
-	if (!accepted) {
-		throw new SignupError('TermsRequired', 'You must accept the terms to create an account.')
-	}
-}
-
 function validateCsrfToken(payloadToken: string, cookieHeader: string | null, cookies: CookiesOptions, secret: string) {
 	if (!payloadToken) {
 		throw new SignupError('MissingCsrf', 'Missing CSRF token.')
@@ -310,7 +304,6 @@ export function createSignupHandler(options: SignupHandlerOptions) {
 
 			ensureEmailValid(payload.email)
 			ensurePasswordValid(payload.password, payload.passwordConfirm)
-			ensureTermsAccepted(payload.termsAccepted)
 			validateCsrfToken(payload.csrfToken, request.headers.get('cookie'), cookies, secret)
 
 			const normalizedEmail = payload.email.toLowerCase()

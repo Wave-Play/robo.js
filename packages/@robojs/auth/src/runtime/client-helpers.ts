@@ -381,3 +381,42 @@ export async function getCsrfToken(options?: ClientOptions): Promise<string | nu
 	const data = (await response.json()) as { csrfToken?: string }
 	return data?.csrfToken ?? null
 }
+
+/**
+ * Initiates the sign-up flow for the Email/Password provider.
+ *
+ * @param body - The sign-up payload (email, password, etc.).
+ * @param options - Overrides for base path, headers, or a custom fetch implementation.
+ * @returns A `Response` from the `/signup` endpoint.
+ *
+ * @example
+ * ```ts
+ * await signUp({ email: 'user@example.com', password: 'password' })
+ * ```
+ */
+export async function signUp(
+	body: Record<string, unknown>,
+	options?: ClientOptions
+): Promise<Response> {
+	const client = options
+	const target = resolveEndpoint(client, '/signup')
+	const request = resolveFetch(client?.fetch)
+
+	const csrfToken: string | null =
+		typeof body?.csrfToken === 'string' && body.csrfToken
+			? (body.csrfToken as string)
+			: await getCsrfToken({ ...client, fetch: request })
+
+	const init: Record<string, unknown> = {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'Accept': 'application/json',
+			...(client?.headers ?? {})
+		},
+		credentials: 'include',
+		body: JSON.stringify({ ...body, csrfToken: csrfToken ?? undefined })
+	}
+
+	return request(target, init)
+}
