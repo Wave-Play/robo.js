@@ -16,12 +16,14 @@ import { client } from 'robo.js'
 import { loadDiscordVoice, OptionalDependencyError } from '@/core/voice/deps.js'
 import type {
 	BaseEngine,
+	ChatHookContext,
 	ChatMessage,
 	ChatMessageContent,
 	GenerateImageOptions,
 	GenerateImageResult,
-	MCPTool
-} from '@/engines/base.js'
+	MCPTool,
+	ReplyHookContext
+} from '../engines/base.js'
 import type { TextBasedChannel, VoiceBasedChannel, Guild } from 'discord.js'
 import type {
 	TokenSummaryQuery,
@@ -446,15 +448,14 @@ async function chat(messages: ChatMessage[], options: ChatOptions): Promise<void
 		let workingMessages = withTaskContext(aiMessages, channel, contextPrepUserId, digests)
 
 		// Execute engine hooks for message preprocessing
-		workingMessages = await engine.callHooks(
-			'chat',
-			{
-				channel,
-				member,
-				messages: workingMessages
-			},
-			0
-		)
+		const chatHookContext: ChatHookContext = {
+			channel: channel ?? null,
+			member: member ?? null,
+			messages: workingMessages,
+			user: user ?? null
+		}
+		await engine.callHooks('chat', chatHookContext)
+		workingMessages = chatHookContext.messages
 
 		// Remove task context markers for logging
 		aiMessages = stripTaskContext(workingMessages)
@@ -474,11 +475,25 @@ async function chat(messages: ChatMessage[], options: ChatOptions): Promise<void
 
 		if (!reply) {
 			logger.error(`No response from engine`)
-
 			return
 		}
 
-		if (typeof reply.message?.content === 'string') {
+		// Construct ReplyHookContext
+		const replyHookContext: ReplyHookContext = {
+			channel: channel ?? null,
+			member: member ?? null,
+			mcpCalls: reply.mcpCalls,
+			response: reply,
+			user: user ?? null
+		}
+		const hookReply = await engine.callHooks('reply', replyHookContext)
+
+		// If a hook returned a reply, use it instead of the engine's reply
+		if (hookReply) {
+			if (options.onReply) {
+				await options.onReply(hookReply)
+			}
+		} else if (typeof reply.message?.content === 'string') {
 			// Extract and clean the assistant's text response
 			let content = reply.message.content
 			const clientUsername = client?.user?.username ?? 'mock'

@@ -29,7 +29,8 @@ import type {
 	VoiceInputFrame,
 	VoiceSessionHandle,
 	VoiceSessionStartOptions,
-	VoiceTranscriptSegment
+	VoiceTranscriptSegment,
+	MCPCall
 } from '@/engines/base.js'
 import type {
 	Response,
@@ -921,7 +922,9 @@ export class OpenAiEngine extends BaseEngine {
 			}
 		}
 
-		state.memberCache.set(userId, member)
+		if (member) {
+			state.memberCache.set(userId, member)
+		}
 		this.trimVoiceMemberCache(state)
 		return member
 	}
@@ -1996,6 +1999,7 @@ export class OpenAiEngine extends BaseEngine {
 
 	private parseResponse(conversationId: string, response: Response): ChatResult {
 		const toolCalls: ChatFunctionCall[] = []
+		const mcpCalls: MCPCall[] = []
 		const citationContext = createCitationContext()
 		const messageFragments: string[] = []
 	if (Array.isArray(response.output)) {
@@ -2030,19 +2034,23 @@ export class OpenAiEngine extends BaseEngine {
 						error: item.error ?? null
 					})
 				} else {
-					logger.debug('MCP tool call completed', basePayload)
-					// Log full result separately for detailed inspection
-					logger.debug('MCP tool call full result', {
-						conversationId,
-						serverLabel: item.server_label ?? null,
-						toolName: item.name ?? null,
-						arguments: item.arguments,
-						result: item.result
+					const { name, arguments: args, server_label } = item
+					
+					// MCP tools are executed server-side by OpenAI; results already
+					// influence the assistant message, so we only log them instead of
+					// scheduling local execution.
+					logger.debug(
+						`MCP tool call completed server-side:`,
+						name,
+						server_label ? `(via ${server_label})` : '(unknown server)'
+					)
+
+					mcpCalls.push({
+						name: name ?? 'unknown',
+						arguments: typeof args === 'string' ? safeParseArguments(args) : (args as Record<string, unknown>),
+						serverLabel: server_label ?? null
 					})
 				}
-				// MCP tools are executed server-side by OpenAI; results already
-				// influence the assistant message, so we only log them instead of
-				// scheduling local execution.
 			}
 		}
 	}
@@ -2071,7 +2079,8 @@ export class OpenAiEngine extends BaseEngine {
 				role: 'assistant'
 			},
 			rawResponse: response,
-			toolCalls: toolCalls
+			toolCalls: toolCalls,
+			mcpCalls: mcpCalls
 		}
 		logger.debug('Parsed OpenAI response summary', {
 			conversationId,

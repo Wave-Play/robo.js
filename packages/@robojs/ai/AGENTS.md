@@ -367,6 +367,10 @@
 ## Extension Hooks
 - Swap engines by supplying a `BaseEngine` subclass via config.
 - Engine hooks (`engine.on('chat', hook)`) can pre-process messages for prompt injection or throttling.
+- Reply hooks (`engine.on('reply', hook)`) can intercept and override the final response, accessing cumulative tool usage (including MCP calls) and reasoning data.
+  - `ReplyHookContext` provides `response`, `mcpCalls`, `channel`, `member`, and `user`.
+  - Returning a `ChatReply` object (text, components, files, flags) overrides the default engine response.
+- Hooks can be registered globally via `pluginOptions.hooks` in the config file.
 - Additional tools/commands auto-register if exposed through the Robo command portal and allowed by plugin config.
 
 ## Operational Notes

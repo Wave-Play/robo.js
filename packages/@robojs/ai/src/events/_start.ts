@@ -8,7 +8,7 @@ import { voiceManager } from '@/core/voice/index.js'
 import { tokenLedger, type TokenLimitConfig, type TokenLedgerHooks } from '../core/token-ledger.js'
 import { Client } from 'discord.js'
 import type { VoiceConfigPatch } from '../core/voice/config.js'
-import type { BaseEngine, MCPTool } from '@/engines/base.js'
+import type { BaseEngine, Hook, HookEvent, MCPTool } from '@/engines/base.js'
 
 /** Voice configuration with optional per-guild overrides and instructions. */
 interface VoicePluginVoiceOptions extends VoiceConfigPatch {
@@ -42,6 +42,8 @@ export interface PluginOptions {
 	usage?: PluginUsageOptions
 	/** MCP (Model Context Protocol) server configurations for tool integration. */
 	mcpServers?: MCPTool[]
+	/** Hooks to run during engine orchestration events. */
+	hooks?: Partial<Record<HookEvent, Hook>>
 }
 
 /** Token usage configuration including limit rules and hooks. */
@@ -102,6 +104,13 @@ export default async (_client: Client, pluginOptions: PluginOptions) => {
 	}
 
 	// Register engine with AI singleton
+	// Register configured hooks
+	if (options.engine && options.hooks) {
+		for (const [event, hook] of Object.entries(options.hooks)) {
+			options.engine.on(event as HookEvent, hook)
+		}
+	}
+
 	setEngine(options.engine)
 
 	const engineFeatures = options.engine.supportedFeatures()

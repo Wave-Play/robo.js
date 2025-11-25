@@ -142,3 +142,5 @@ export type {
 	UsageLimitEvent,
 	UsageRecordedEvent
 } from './core/token-ledger.js'
+
+export type { ChatReply } from './core/chat/types.js'

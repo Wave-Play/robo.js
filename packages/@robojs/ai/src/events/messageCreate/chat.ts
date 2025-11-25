@@ -98,7 +98,7 @@ export default async (message: Message) => {
 		member: message.member ?? message.guild?.members.cache.get(message.author.id),
 		user: message.author,
 		onReply: async (reply) => {
-			let { components, embeds, files } = reply
+			let { components, embeds, files, flags } = reply
 			// Split response into Discord-compatible chunks
 			const chunks = chunkMessage(reply.text ?? '')
 			let lastMessage = targetMessage
@@ -108,7 +108,8 @@ export default async (message: Message) => {
 				await lastMessage.reply({
 					components,
 					embeds,
-					files
+					files,
+					flags: flags as any
 				})
 
 				return
@@ -121,11 +122,13 @@ export default async (message: Message) => {
 					content,
 					components,
 					embeds,
-					files
+					files,
+					flags: flags as any
 				})
 				components = undefined
 				embeds = undefined
 				files = undefined
+				flags = undefined
 			}
 		}
 	})

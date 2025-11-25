@@ -445,6 +445,39 @@ export default async function handler(req: RoboRequest) {
 
 > [!NOTE] Install `@robojs/server` via `npx robo add @robojs/server` to enable the route.
 
+## 🪝 Hooks
+
+Intercept and modify the AI pipeline with global hooks.
+
+- **`chat`** – Pre-process messages before they reach the engine.
+- **`reply`** – Post-process the final response, access MCP tool usage, and override the output.
+
+```ts
+// config/plugins/robojs/ai.ts
+import type { ReplyHookContext, ChatReply } from '@robojs/ai'
+
+export default {
+  hooks: {
+    reply: (context: ReplyHookContext): ChatReply | void => {
+      const { response, mcpCalls } = context
+
+      // Log MCP tool usage
+      if (mcpCalls?.length) {
+        console.log('MCP Tools used:', mcpCalls.map(c => c.name))
+      }
+
+      // Modify the response if needed
+      if (response.mcpCalls?.some(call => call.serverLabel === 'my-secure-server')) {
+        return {
+          text: response.message?.content + '\n\n🔒 *Verified Secure Response*',
+          // You can also add components/embeds here
+        }
+      }
+    }
+  }
+}
+```
+
 ## 🔌 Custom Engine Development
 
 Create your own engine by extending the abstract base class.
