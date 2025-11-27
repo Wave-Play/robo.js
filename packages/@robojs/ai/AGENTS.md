@@ -90,8 +90,15 @@
   - Restriction/whitelist logic
   - Mention requirement enforcement
   - Reply chain context loading (via `getReplyChain` with 'context' or 'reference' modes)
+  - Surrounding context fetching (via `getSurroundingContext`) when mentioned in regular channels
   - Mention normalization (replaces Discord mentions with readable usernames)
   - Username-to-ID mapping for restoring mentions in bot replies
+- **Surrounding Context** (enabled by default):
+  - When the bot is mentioned in a regular channel (not whitelisted/DM), it fetches recent channel messages for context
+  - Context is presented as a separate system message with clear framing: "Recent channel conversation for reference. Only use this context if directly relevant to the user's question"
+  - Default depth: 8 messages (configurable via `context.depth`)
+  - Automatically excludes messages already in reply chains to avoid duplication
+  - Can be disabled via `context.enabled: false`
 
 ## Vision Capabilities
 - Vision-capable models automatically support image understanding:
@@ -346,7 +353,7 @@
 - `discord-utils.ts` – Chunking, mention replacement, and the mock interaction adapter for tool execution.
 
 ## Configuration Touchpoints
-- Plugin options (config file `config/plugins/robojs/ai.*`): `instructions`, `commands` allow/deny, `restrict`, `whitelist`, `insight`, `engine`, `mcpServers`, optional `voice` overrides (`voice.instructions`, realtime config, etc.).
+- Plugin options (config file `config/plugins/robojs/ai.*`): `instructions`, `commands` allow/deny, `restrict`, `whitelist`, `context` (surrounding context config with `enabled` and `depth`), `insight`, `engine`, `mcpServers`, optional `voice` overrides (`voice.instructions`, realtime config, etc.).
 - Default chat behavior (model, temperature, max output tokens) now comes from the engine constructor. The bundled `OpenAiEngine` accepts `new OpenAiEngine({ chat: { model, temperature, maxOutputTokens } })`.
 - Sage options (global or per-command) influence auto-deferral (`defer`, `deferBuffer`, `ephemeral`). `getCommandReply` reads them via `resolveSageOptions`.
 - Env requirements: `OPENAI_API_KEY` (default engine); vector store files under `/documents`.

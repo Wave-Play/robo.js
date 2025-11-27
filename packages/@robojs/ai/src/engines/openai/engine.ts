@@ -333,10 +333,31 @@ export class OpenAiEngine extends BaseEngine {
 			}
 		}
 
+		// Extract system messages (e.g., surrounding context) to include in instructions
+		// Exclude the main instructions system message since it's handled separately
+		const mainInstructions = pluginOptions?.instructions?.trim() ?? ''
+		const systemContext = messages
+			.filter((m) => {
+				if (m.role !== 'system') {
+					return false
+				}
+				// Exclude the main instructions message
+				const content = this.extractTextFromChatMessage(m)
+				return content !== mainInstructions && content.trim().length > 0
+			})
+			.map((m) => this.extractTextFromChatMessage(m))
+			.filter((t) => t && t.trim().length > 0)
+			.join('\n\n')
+
 		const inputItems = this.buildConversationInput(messages)
 		// Build the Responses API payload for the current chat turn.
 		const payload: Record<string, unknown> = {
-			instructions: this.buildChatInstructions(session),
+			instructions: this.buildChatInstructions(
+				session,
+				systemContext
+					? [mainInstructions, systemContext].filter(Boolean).join('\n\n')
+					: undefined
+			),
 			input: inputItems,
 			model,
 			tools: this.buildToolset('worker')

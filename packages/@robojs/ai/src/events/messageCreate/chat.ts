@@ -79,6 +79,25 @@ export default async (message: Message) => {
 		logger.warn('Error getting reply chain', error)
 	}
 
+	// Fetch surrounding context if enabled and not in open conversation
+	let surroundingContext: ChatMessage | null = null
+	if (!isOpenConvo) {
+		const contextEnabled = pluginOptions.context?.enabled !== false // Default to true
+		if (contextEnabled) {
+			try {
+				const contextMessages = await getSurroundingContext(targetMessage, {
+					depth: pluginOptions.context?.depth ?? 8,
+					excludeIds: new Set(messages.map((m) => m.id))
+				})
+				if (contextMessages.length > 0) {
+					surroundingContext = buildBackgroundContextMessage(contextMessages)
+				}
+			} catch (error) {
+				logger.warn('Error getting surrounding context', error)
+			}
+		}
+	}
+
 	// Create username-to-ID mapping for mention replacement
 	const userMap: Record<string, string> = {}
 	const userIterator = targetMessage.guild ? targetMessage.guild.members.cache.values() : []
@@ -91,6 +110,12 @@ export default async (message: Message) => {
 		role: nextMessage.author.id === client.user?.id ? 'assistant' : 'user',
 		content: getMessageContent(nextMessage)
 	}))
+
+	// Prepend surrounding context if available
+	// System instructions will be inserted before this in AI.chat() to ensure proper ordering
+	if (surroundingContext) {
+		gptMessages.unshift(surroundingContext)
+	}
 
 	// Execute chat with reply chunking and mention restoration
 	await AI.chat(gptMessages, {
@@ -209,4 +234,85 @@ async function getReplyChain(message: Message, options?: ReplyChainOptions): Pro
 
 	// Reverse to chronological order
 	return chain.reverse()
+}
+
+/** Options for fetching surrounding context messages. */
+interface SurroundingContextOptions {
+	/** Number of recent messages to fetch. */
+	depth?: number
+	/** Message IDs to exclude from results (e.g., already in reply chain). */
+	excludeIds?: Set<string>
+}
+
+/**
+ * Fetches recent channel messages before the target message for surrounding context.
+ * Excludes messages already in the reply chain to avoid duplication.
+ */
+async function getSurroundingContext(
+	message: Message,
+	options?: SurroundingContextOptions
+): Promise<Message[]> {
+	const { depth = 8, excludeIds = new Set() } = options ?? {}
+
+	// Validate depth parameter
+	if (depth <= 0) {
+		return []
+	}
+
+	try {
+		// Fetch recent messages before the current message
+		const fetchedMessages = await message.channel.messages.fetch({
+			before: message.id,
+			limit: depth * 2 // Fetch more to account for exclusions
+		})
+
+		// Filter out excluded messages and bot's own messages, then limit to depth
+		const contextMessages: Message[] = []
+		for (const msg of fetchedMessages.values()) {
+			if (contextMessages.length >= depth) {
+				break
+			}
+			// Skip excluded messages, bot messages, and empty messages
+			if (
+				!excludeIds.has(msg.id) &&
+				msg.author.id !== client.user?.id &&
+				msg.content.trim().length > 0
+			) {
+				contextMessages.push(msg)
+			}
+		}
+
+		// Reverse to chronological order (oldest first)
+		return contextMessages.reverse()
+	} catch (error) {
+		logger.warn('Failed to fetch surrounding context', error)
+		return []
+	}
+}
+
+/**
+ * Formats surrounding context messages into a system message with clear framing
+ * that helps the AI understand ongoing conversations.
+ */
+function buildBackgroundContextMessage(messages: Message[]): ChatMessage {
+	if (messages.length === 0) {
+		return {
+			role: 'system',
+			content: ''
+		}
+	}
+
+	// Format messages with usernames
+	const formatted = messages
+		.map((msg) => {
+			const content = msg.content.trim()
+			return content ? `${msg.author.username}: ${content}` : null
+		})
+		.filter((line): line is string => line !== null)
+		.join('\n')
+
+	return {
+		role: 'system',
+		content: `Recent channel conversation context (the user may be referencing this):\n\n${formatted}\n\nUse this context only to understand what the user is referring to when they use phrases like "the two", "these", "which one", or other pronouns/references. If their question doesn't clearly relate to this context, ignore it and answer based on their question alone.`
+	}
 }

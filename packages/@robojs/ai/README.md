@@ -166,6 +166,7 @@ Sources:
 - `insight` – Enable `/documents` sync for vector search (default `true`).
 - `restrict` – Limit responses to specific channel IDs.
 - `whitelist` – Allow mention-free chat in selected channels.
+- `context` – Surrounding context configuration for understanding ongoing conversations (default `{ enabled: true, depth: 8 }`).
 - `engine` – Instance of any `BaseEngine` subclass.
 - `voice` – Voice configuration overrides.
 - `usage` – Token ledger settings (limits, alerts, hooks).
@@ -179,6 +180,10 @@ export default {
   insight: true,
   restrict: { channelIds: ['123'] },
   whitelist: { channelIds: ['456', '789'] },
+  context: {
+    enabled: true,
+    depth: 8
+  },
   usage: {
     limits: [
       {

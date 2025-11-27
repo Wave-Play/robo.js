@@ -36,6 +36,13 @@ export interface PluginOptions {
 	whitelist?: {
 		channelIds: string[]
 	}
+	/** Surrounding context configuration for understanding ongoing conversations. */
+	context?: {
+		/** Enable surrounding channel context when mentioned. Default: true */
+		enabled?: boolean
+		/** Number of recent messages to fetch for context. Default: 8 */
+		depth?: number
+	}
 	/** Voice feature configuration delegated to the voice manager. */
 	voice?: VoicePluginVoiceOptions
 	/** Token usage tracking configuration. */

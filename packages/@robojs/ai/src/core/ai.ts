@@ -420,12 +420,25 @@ async function chat(messages: ChatMessage[], options: ChatOptions): Promise<void
 	// Retrieve completed tool results for context injection
 	const digests = drainDigests(channelKey)
 
-	if (aiMessages[0]?.role !== 'system' && pluginOptions.instructions) {
-		// Prepend system instructions if not already present
-		aiMessages.unshift({
-			role: 'system',
-			content: pluginOptions.instructions
-		})
+	// Handle system messages: ensure instructions come first, then other system messages (e.g., surrounding context)
+	if (pluginOptions.instructions) {
+		const firstMessage = aiMessages[0]
+		if (firstMessage?.role === 'system') {
+			// If first message is system but not instructions, prepend instructions
+			// Otherwise, instructions are already first or we need to add them
+			if (firstMessage.content !== pluginOptions.instructions) {
+				aiMessages.unshift({
+					role: 'system',
+					content: pluginOptions.instructions
+				})
+			}
+		} else {
+			// No system message yet, prepend instructions
+			aiMessages.unshift({
+				role: 'system',
+				content: pluginOptions.instructions
+			})
+		}
 	}
 
 	const replyingUserId = member?.user.id ?? user?.id ?? null
