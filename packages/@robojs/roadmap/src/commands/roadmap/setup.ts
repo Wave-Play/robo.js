@@ -259,6 +259,9 @@ export async function createSetupMessage(
 		const mappingEntries = Object.entries(assigneeMapping).slice(0, 10) // Show up to 10 mappings
 
 		for (const [jiraName, discordUserId] of mappingEntries) {
+			// Note: Displaying Jira name here is acceptable because this is an admin-only setup UI.
+			// In all other contexts (Discord messages, public APIs), provider names must be redacted
+			// via the assignee mapping system. See AGENTS.md "Assignee Name Redaction Contract" section.
 			const mappingSection = new SectionBuilder().addTextDisplayComponents([
 				new TextDisplayBuilder().setContent(`**${jiraName}**`),
 				new TextDisplayBuilder().setContent(`Mapped to <@${discordUserId}>`)

@@ -76,7 +76,16 @@ export type RoadmapCard = {
 		 */
 		readonly id: string
 		/**
-		 * Display name suitable for Discord presentation.
+		 * Provider display name (e.g., Jira's `displayName`).
+		 *
+		 * @remarks
+		 * **Security Warning:** For providers like Jira, this field contains the provider's
+		 * display name and is not a safe public identifier. It must never be displayed
+		 * directly to end users in UI or Discord surfaces. Instead, it should be used only
+		 * as a key for guild-specific mapping to Discord user identities. The assignee
+		 * mapping system redacts these names and replaces them with Discord user mentions.
+		 * If no mapping exists, the assignee should be hidden entirely rather than showing
+		 * the provider name.
 		 */
 		readonly name: string
 		/**

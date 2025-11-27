@@ -308,6 +308,7 @@ Follow these standards for all new code and update existing code during maintena
   - Single assignee supported by Jira
   - First assignee used; extras ignored with a warning
   - IDs must be Jira `accountId`
+  - **Redaction Contract:** `mapAssignee()` stores Jira's `displayName` directly as `RoadmapCard.assignees[].name`. This field must never be displayed directly to end users. It is intended only as a key for guild-specific mapping to Discord user identities. UI/Discord surfaces must not render `name` directly unless it has been redacted or mapped to Discord. See "Critical Implementation Details" below for more information.
 - Status transitions:
   - Fetch transitions, match by target status, warn if not found
   - Workflow-specific transition IDs; not guaranteed direct transitions
@@ -762,6 +763,25 @@ export default {
 - Status transitions require workflow-specific transition IDs; warn if none found.
 - ADF conversion is basic; complex formatting is lost; consider storing original ADF in `metadata`.
 - Config precedence: explicit > options > env; URL normalized; results clamped; defaults via constants.
+
+### Assignee Name Redaction Contract
+
+**Critical Security Contract:** The `RoadmapCard.assignees[].name` field stores provider display names (e.g., Jira's `displayName`) and must never be displayed directly to end users. This field is intended only as a key for guild-specific mapping to Discord user identities.
+
+**Implementation Requirements:**
+- Provider implementations (e.g., `JiraProvider.mapAssignee()`) store provider display names in `name` without modification.
+- UI/Discord surfaces must not render `name` directly unless it has been redacted or mapped to Discord.
+- The assignee mapping system (`getDiscordUserIdForJiraName()`) performs the redaction by mapping provider names to Discord user IDs.
+- If no mapping exists, assignees should be hidden entirely rather than showing the provider name.
+- Admin-only UIs (e.g., setup commands) may display provider names for configuration purposes, but this is an exception to the general rule.
+
+**Current Implementation:**
+- `formatCardContent()` in `sync-engine.ts` properly redacts names by using `getDiscordUserIdForJiraName()` and only displaying Discord mentions.
+- Setup UI displays provider names in admin-only contexts for mapping configuration.
+- All non-admin-facing code should use the mapping system or hide assignees without mappings.
+
+**Future Provider Implementations:**
+- Follow the same pattern: store provider display names in `name`, document the redaction requirement, and ensure UI code uses mapping/redaction helpers.
 
 ### Discord integration patterns
 

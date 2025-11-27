@@ -645,7 +645,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 
 			const starterMessage = await syncedThread.fetchStarterMessage()
 			if (starterMessage && starterMessage.author?.id === client.user?.id) {
-				const formattedContent = formatCardContent(result.card, 2000)
+				const formattedContent = await formatCardContent(result.card, interaction.guildId!, interaction.guild!, 2000)
 				await starterMessage.edit({ content: formattedContent })
 			}
 

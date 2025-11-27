@@ -580,7 +580,7 @@ export default wrapHandler(async (request: RoboRequest): Promise<ApiResponse<Get
 								// Only edit if message was created by bot
 								if (starter && starter.author?.id === client.user?.id) {
 									// Format card content to fit within Discord message limits
-									const formattedContent = formatCardContent(result.card, 2000)
+									const formattedContent = await formatCardContent(result.card, guild.id, guild, 2000)
 
 									// Edit message with updated content
 									await starter.edit({ content: formattedContent })

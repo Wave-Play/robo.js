@@ -593,7 +593,7 @@ async function tryReuseHistoricalThread(
 		try {
 			const starter = (await candidateThread.fetchStarterMessage()) as Message | null
 			if (starter && starter.author.id === forum.client.user?.id) {
-				await starter.edit({ content: formatCardContent(card, 2000) })
+				await starter.edit({ content: await formatCardContent(card, guildId, forum.guild, 2000) })
 				roadmapLogger.debug(`Updated starter message for thread ${candidateThread.id} (card ${card.id})`)
 			}
 		} catch (error) {

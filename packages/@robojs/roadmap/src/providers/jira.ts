@@ -1321,6 +1321,15 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 
 	/**
 	 * Maps Jira assignee to RoadmapCard assignees array (single assignee).
+	 *
+	 * @remarks
+	 * **Critical: Redaction Contract**
+	 * The `name` field is set to Jira's `displayName` and must never be displayed directly
+	 * to end users. It is intended to be used only as a key for guild-specific mapping to
+	 * Discord user identities via the assignee mapping system. UI/Discord surfaces must
+	 * not render `name` directly unless it has been redacted or mapped to a Discord user.
+	 * For Jira providers, this field holds the provider display name and is not a safe public
+	 * identifier unless redacted or mapped to Discord.
 	 */
 	private mapAssignee(assignee?: JiraUser | null): RoadmapCard['assignees'] {
 		if (!assignee) {
