@@ -129,6 +129,24 @@ export interface RoadmapSettings {
 	 * ```
 	 */
 	threadHistory?: Record<string, ThreadHistoryEntry[]>
+
+	/**
+	 * Map of Jira assignee display names to Discord user IDs.
+	 *
+	 * This mapping allows redacting Jira names from public Discord messages
+	 * by replacing them with Discord user mentions. Jira names are matched
+	 * exactly (case-sensitive). If no mapping exists for a Jira assignee,
+	 * that assignee is hidden from Discord messages entirely.
+	 *
+	 * @example
+	 * ```ts
+	 * {
+	 *   "Alice Jira": "1234567890123456789",
+	 *   "Bob Jira": "9876543210987654321"
+	 * }
+	 * ```
+	 */
+	assigneeMapping?: Record<string, string>
 }
 
 /**
@@ -546,4 +564,98 @@ export function canUserCreateCards(guildId: string, userRoleIds: string[], isAdm
 	const authorizedRoles = getAuthorizedCreatorRoles(guildId)
 
 	return userRoleIds.some((roleId) => authorizedRoles.includes(roleId))
+}
+
+/**
+ * Retrieves the assignee mapping for a guild.
+ *
+ * This helper returns the map of Jira assignee names to Discord user IDs.
+ * Returns an empty object if no mappings exist.
+ *
+ * @param guildId - The Discord guild ID
+ * @returns Record mapping Jira assignee names to Discord user IDs
+ *
+ * @example
+ * ```ts
+ * const mapping = getAssigneeMapping(guildId);
+ * // { "Alice Jira": "1234567890123456789", "Bob Jira": "9876543210987654321" }
+ * ```
+ */
+export function getAssigneeMapping(guildId: string): Record<string, string> {
+	return getSettings(guildId).assigneeMapping ?? {}
+}
+
+/**
+ * Sets a mapping between a Jira assignee name and a Discord user ID.
+ *
+ * This helper updates the assignee mapping for a specific Jira assignee.
+ * The mapping is case-sensitive and matches Jira display names exactly.
+ *
+ * @param guildId - The Discord guild ID
+ * @param jiraName - The Jira assignee display name (exact match, case-sensitive)
+ * @param discordUserId - The Discord user ID to map to
+ *
+ * @example
+ * ```ts
+ * setAssigneeMapping(guildId, 'Alice Jira', '1234567890123456789');
+ * ```
+ */
+export function setAssigneeMapping(guildId: string, jiraName: string, discordUserId: string): void {
+	const currentSettings = getSettings(guildId)
+	const assigneeMapping = currentSettings.assigneeMapping ?? {}
+
+	updateSettings(guildId, {
+		assigneeMapping: {
+			...assigneeMapping,
+			[jiraName]: discordUserId
+		}
+	})
+}
+
+/**
+ * Removes a mapping for a Jira assignee name.
+ *
+ * This helper removes an existing assignee mapping. After removal, the
+ * Jira assignee will be hidden from Discord messages (no mapping exists).
+ *
+ * @param guildId - The Discord guild ID
+ * @param jiraName - The Jira assignee display name to unmap
+ *
+ * @example
+ * ```ts
+ * removeAssigneeMapping(guildId, 'Alice Jira');
+ * ```
+ */
+export function removeAssigneeMapping(guildId: string, jiraName: string): void {
+	const currentSettings = getSettings(guildId)
+	const assigneeMapping = currentSettings.assigneeMapping ?? {}
+
+	const { [jiraName]: removed, ...remaining } = assigneeMapping
+
+	updateSettings(guildId, {
+		assigneeMapping: remaining
+	})
+}
+
+/**
+ * Looks up the Discord user ID for a Jira assignee name.
+ *
+ * This helper performs a case-sensitive lookup of the Jira assignee name
+ * in the assignee mapping. Returns undefined if no mapping exists.
+ *
+ * @param guildId - The Discord guild ID
+ * @param jiraName - The Jira assignee display name to look up
+ * @returns The Discord user ID if a mapping exists, undefined otherwise
+ *
+ * @example
+ * ```ts
+ * const discordUserId = getDiscordUserIdForJiraName(guildId, 'Alice Jira');
+ * if (discordUserId) {
+ *   // Use the Discord user ID
+ * }
+ * ```
+ */
+export function getDiscordUserIdForJiraName(guildId: string, jiraName: string): string | undefined {
+	const assigneeMapping = getAssigneeMapping(guildId)
+	return assigneeMapping[jiraName]
 }

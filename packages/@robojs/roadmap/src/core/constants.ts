@@ -62,6 +62,35 @@ export const Buttons = {
 	 */
 	CancelSync: {
 		id: ID_NAMESPACE + 'button-cancel-sync'
+	},
+	/**
+	 * Base ID for the remove assignee mapping button.
+	 *
+	 * The full custom ID is constructed as `${id}:${jiraName}` so each mapping can be
+	 * uniquely identified. Clicking this button removes the mapping between a Jira
+	 * assignee and Discord user. Only administrators can remove mappings.
+	 */
+	RemoveAssigneeMapping: {
+		id: ID_NAMESPACE + 'button-remove-assignee-mapping'
+	},
+	/**
+	 * Button to open an ephemeral message with selects for adding a new assignee mapping.
+	 *
+	 * When clicked, this button shows an ephemeral message with both a Jira assignee
+	 * select and Discord user select. The mapping is created automatically when both
+	 * are selected.
+	 */
+	AddAssigneeMapping: {
+		id: ID_NAMESPACE + 'button-add-assignee-mapping'
+	},
+	/**
+	 * Button to open an ephemeral message with role select for managing authorized creator roles.
+	 *
+	 * When clicked, this button shows an ephemeral message with a role select menu.
+	 * Selecting roles updates the authorized creator roles and refreshes the setup message.
+	 */
+	ManageAuthorizedRoles: {
+		id: ID_NAMESPACE + 'button-manage-authorized-roles'
 	}
 } as const
 
@@ -94,5 +123,24 @@ export const Selects = {
 	 */
 	AuthorizedCreatorRoles: {
 		id: ID_NAMESPACE + 'select-authorized-creator-roles'
+	},
+	/**
+	 * String select menu for choosing a Jira assignee name to map.
+	 *
+	 * Used in the setup command to allow administrators to select which Jira
+	 * assignee name they want to map to a Discord user. Populated with known
+	 * Jira assignee names from synced cards.
+	 */
+	AssigneeJiraName: {
+		id: ID_NAMESPACE + 'select-assignee-jira'
+	},
+	/**
+	 * User select menu for choosing a Discord user to map to a Jira assignee.
+	 *
+	 * Used in the setup command to allow administrators to select which Discord
+	 * user should be mentioned when a Jira assignee appears in roadmap cards.
+	 */
+	AssigneeDiscordUser: {
+		id: ID_NAMESPACE + 'select-assignee-discord'
 	}
 } as const

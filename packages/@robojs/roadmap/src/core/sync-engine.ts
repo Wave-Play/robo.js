@@ -7,7 +7,8 @@ import {
 	setSyncedPost,
 	addThreadToHistory,
 	getCurrentThreadInfo,
-	getThreadForColumn
+	getThreadForColumn,
+	getDiscordUserIdForJiraName
 } from './settings.js'
 import { getAllForumChannels, updateForumTagsForColumn } from './forum-manager.js'
 import { roadmapLogger } from './logger.js'
@@ -97,17 +98,25 @@ export type ThreadOperation = 'create' | 'update' | 'archive' | 'skip'
  *
  * Includes description and metadata (assignees, labels, last updated). Content is
  * truncated to respect Discord limits (2000 for forum thread starter messages and message edits).
+ * Assignees are redacted - only mapped Discord users are mentioned, and Jira names are never shown.
  *
  * @param card - The roadmap card to format.
+ * @param guildId - The Discord guild ID for looking up assignee mappings.
+ * @param guild - Optional guild object for validating Discord user existence.
  * @param maxLength - Maximum character limit (default: 2000).
  * @returns Formatted message content.
  *
  * @example
  * ```ts
- * const content = formatCardContent(card, 2000);
+ * const content = formatCardContent(card, guildId, guild, 2000);
  * ```
  */
-export function formatCardContent(card: RoadmapCard, maxLength: number = 2000): string {
+export async function formatCardContent(
+	card: RoadmapCard,
+	guildId: string,
+	guild?: Guild,
+	maxLength: number = 2000
+): Promise<string> {
 	// Use a safe default if description is undefined
 	const desc = card.description || 'No description provided.'
 
@@ -120,10 +129,45 @@ export function formatCardContent(card: RoadmapCard, maxLength: number = 2000): 
 	// Build metadata sections
 	const metadata: string[] = []
 
-	// Assignees section
+	// Assignees section - use mapping to redact Jira names
 	if (card.assignees && card.assignees.length > 0) {
-		const assigneeNames = card.assignees.map((a) => a.name).join(', ')
-		metadata.push(`**Assigned to:** ${assigneeNames}`)
+		const discordMentions: string[] = []
+
+		for (const assignee of card.assignees) {
+			const discordUserId = getDiscordUserIdForJiraName(guildId, assignee.name)
+			if (!discordUserId) {
+				// No mapping exists - skip this assignee (never show Jira name)
+				continue
+			}
+
+			// Validate Discord user exists in guild if guild object is provided
+			if (guild) {
+				try {
+					const member = await guild.members.fetch(discordUserId).catch(() => null)
+					if (!member) {
+						// User not in guild - log warning and skip
+						roadmapLogger.warn(
+							`Assignee mapping for Jira name "${assignee.name}" points to Discord user ${discordUserId} who is not in guild ${guildId}`
+						)
+						continue
+					}
+				} catch (error) {
+					// Fetch failed - log warning and skip
+					roadmapLogger.warn(
+						`Failed to validate Discord user ${discordUserId} for Jira assignee "${assignee.name}" in guild ${guildId}: ${(error as Error).message}`
+					)
+					continue
+				}
+			}
+
+			// User exists - add mention
+			discordMentions.push(`<@${discordUserId}>`)
+		}
+
+		// Only show assignee section if at least one valid Discord mention exists
+		if (discordMentions.length > 0) {
+			metadata.push(`**Assigned to:** ${discordMentions.join(', ')}`)
+		}
 	}
 
 	// Labels section
@@ -252,7 +296,7 @@ export async function moveThreadToNewForum(
 	const threadName = card.title.length > 100 ? `${card.title.substring(0, 97)}...` : card.title
 
 	// Always use clean card content for starter message
-	const formattedContent = formatCardContent(card, 2000)
+	const formattedContent = await formatCardContent(card, guildId, targetForum.guild)
 
 	const newThread = await targetForum.threads.create({
 		name: threadName,
@@ -739,9 +783,10 @@ async function applyInPlaceOperation(
 				if (!channel || !channel.isThread() || channel.parentId !== forum.id) {
 					// Thread was deleted or invalid, treat as create
 					roadmapLogger.warn(`Thread ${existingThreadId} not found for card ${card.id}, creating new thread`)
+					const contentString = typeof formattedContent === 'string' ? formattedContent : await formattedContent
 					const newThread = await forum.threads.create({
 						name: threadName,
-						message: { content: formattedContent },
+						message: { content: contentString },
 						appliedTags,
 						reason: 'Roadmap sync: recreating deleted thread'
 					})
@@ -757,7 +802,7 @@ async function applyInPlaceOperation(
 			// Message edits have a 2000 character limit in Discord
 			const starter = (await thread.fetchStarterMessage()) as Message | null
 			if (starter && starter.author.id === forum.client.user?.id) {
-				await starter.edit({ content: formatCardContent(card, 2000) })
+				await starter.edit({ content: await formatCardContent(card, guildId, forum.guild) })
 			}
 
 			roadmapLogger.info(`Updated thread for card ${card.id}: ${thread.name}`)
@@ -867,7 +912,7 @@ async function syncCard(
 		.map((label) => labelToTagId.get(label.toLowerCase()))
 		.filter((tagId): tagId is string => Boolean(tagId))
 		.slice(0, 5)
-	const formattedContent = formatCardContent(card, 2000)
+	const formattedContent = await formatCardContent(card, guildId, forum.guild)
 	const threadName = card.title.length > 100 ? card.title.substring(0, 97) + '...' : card.title
 
 	// Branch 2: Handle column move with new thread creation
@@ -876,6 +921,8 @@ async function syncCard(
 	}
 
 	// Branch 3: Apply in-place operation (create/update/archive)
+	// formattedContent is a Promise<string>, await it before passing
+	const contentString = await formattedContent
 	return await applyInPlaceOperation(
 		card,
 		forum,
@@ -883,7 +930,7 @@ async function syncCard(
 		existingThreadId,
 		existingThread,
 		appliedTags,
-		formattedContent,
+		contentString,
 		threadName,
 		guildId,
 		dryRun
