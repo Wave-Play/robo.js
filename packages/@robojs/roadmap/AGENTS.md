@@ -292,14 +292,14 @@ Follow these standards for all new code and update existing code during maintena
   2. Plugin options
   3. Environment variables
 - Required configuration: `url`, `email`, `apiToken`, `projectKey`
-- Optional configuration: `jql`, `maxResults` (1-100), `defaultIssueType` (default: `Epic`)
+- Optional configuration: `jql`, `maxResults` (1-100), `defaultIssueType` (default: `Epic`), `columnConfig`
 - Authentication: Basic auth using `email:apiToken` (base64)
 - API: Jira REST API v3 with cursor-based pagination
 - Status mapping:
-  - Jira category To Do → `Backlog`
-  - In Progress → `In Progress`
-  - Done → `Done`
-  - Fallback: `Backlog`
+  - Default behavior: Jira category To Do → `Backlog`, In Progress → `In Progress`, Done → `Done`, Fallback: `Backlog`
+  - Customizable via `columnConfig.statusMapping` (provider-level) or guild settings (runtime-level)
+  - Supports many-to-one mappings (multiple statuses to one column)
+  - Supports null mappings (status tracked but not synced to forum)
 - ADF conversion:
   - ADF → text: recursive visitor (paragraphs, headings, lists, code blocks)
   - text → ADF: paragraph-per-line
@@ -451,16 +451,21 @@ sequenceDiagram
 
 ### `syncCard()` details
 
+- Column mapping resolution (before column change detection):
+  - Apply guild-level column mapping overrides first (via `getColumnMapping()`)
+  - Then apply provider-level mappings (via `provider.resolveColumn()`)
+  - If mapping resolves to `null`, card is marked with `metadata.trackOnly: true` and skipped (no forum thread created)
+  - Original status preserved in `card.metadata.originalStatus` for queryability
 - Column change detection (before operation selection):
   - Fetch existing thread if `existingThreadId` exists
   - Compare `thread.parentId` with target `forum.id`
   - If different, call `moveThreadToNewForum()` and return 'create' operation
   - Handles thread moves before normal create/update/archive flow
 - Operation selection (when no column change):
-  - create: no mapped thread and column not archived
+  - create: no mapped thread and column not archived and `createForum !== false`
   - update: mapped thread exists and column not archived
   - archive: mapped thread exists and column archived
-  - skip: no thread and column archived
+  - skip: no thread and column archived, or `createForum === false`, or `trackOnly === true`
 - Thread lifecycle:
   - Create: `forum.threads.create()` (name, starter message, tags)
   - Update: `thread.edit()` (name/tags) + `starterMessage.edit()` (content)
@@ -517,11 +522,12 @@ sequenceDiagram
 - Options: `{ guild, columns }`
 - Process:
   1. Read settings for existing IDs
-  2. If all non-archived forums exist, return
+  2. If all forums that should exist already exist, return (checks `createForum !== false` and `!archived`)
   3. Build permission overwrites for category
   4. Create category if missing
-  5. Create forums for non-archived columns
+  5. Create forums for columns where `!archived && createForum !== false`
   6. Persist IDs to settings
+- Column filtering: Skips columns with `createForum: false` or `archived: true`
 - Default permissions (private mode):
   - `@everyone`: `ViewChannel: false`
   - Guild owner: `ViewChannel: true`
@@ -563,6 +569,8 @@ sequenceDiagram
 - `threadHistory?: Record<string, ThreadHistoryEntry[]>`
 - `assigneeMapping?: Record<string, string>`
 - `threadTitleTemplate?: string` - Per-guild template for formatting Discord thread titles (overrides plugin default)
+- `columnMapping?: Record<string, string | null>` - Per-guild status-to-column mapping overrides
+- `customColumns?: Array<{id: string, name: string, order: number, archived?: boolean, createForum?: boolean}>` - Per-guild custom column definitions
 
 ### CRUD utilities
 
@@ -583,6 +591,11 @@ sequenceDiagram
 - `setAssigneeMapping(guildId, jiraName, discordUserId)`
 - `removeAssigneeMapping(guildId, jiraName)`
 - `getDiscordUserIdForJiraName(guildId, jiraName)`
+- `getColumnMapping(guildId)` - Get guild-level column mapping overrides
+- `setColumnMapping(guildId, status, column)` - Set status-to-column mapping (column can be null for track-only)
+- `removeColumnMapping(guildId, status)` - Remove column mapping override
+- `getCustomColumns(guildId)` - Get custom column definitions for guild
+- `setCustomColumns(guildId, columns)` - Set custom column definitions for guild
 
 ### Thread History Tracking
 
@@ -763,12 +776,31 @@ export default {
 			url: process.env.JIRA_URL,
 			email: process.env.JIRA_EMAIL,
 			apiToken: process.env.JIRA_API_TOKEN,
-			jql: '(issuetype = Epic AND (labels NOT IN ("Private") OR labels IS EMPTY)) OR labels IN ("Public")'
+			jql: '(issuetype = Epic AND (labels NOT IN ("Private") OR labels IS EMPTY)) OR labels IN ("Public")',
+			columnConfig: {
+				columns: [
+					{ id: 'planning', name: 'Planning', order: 0 },
+					{ id: 'development', name: 'Development', order: 1 }
+				],
+				statusMapping: {
+					'To Do': 'Planning',
+					'In Progress': 'Development'
+				}
+			}
 		}
 	},
 	threadTitleTemplate: "[{id}] {title}" // Default format for all guilds
 }
 ```
+
+### Column Mapping Configuration
+
+- **Provider-level:** Configure `columnConfig` in provider options with custom `columns` and `statusMapping`
+- **Runtime-level:** Use `setColumnMapping()`, `getColumnMapping()`, `removeColumnMapping()` from settings API
+- **Custom columns:** Use `setCustomColumns()`, `getCustomColumns()` to override provider columns per-guild
+- **Many-to-one:** Multiple statuses can map to the same column
+- **Track-only:** Map status to `null` to track without creating forum thread (useful for changelogs)
+- **Original status preserved:** Cards maintain `metadata.originalStatus` for queryability
 
 ### Environment Variables (Jira)
 

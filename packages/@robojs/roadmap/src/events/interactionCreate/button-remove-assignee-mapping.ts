@@ -149,13 +149,36 @@ export default async (interaction: ButtonInteraction) => {
 		}
 	}
 
-	// Update setup message with new mapping configuration
+	// Get known statuses for refresh
+	let knownStatuses: string[] = []
+	if (settings.lastSyncTimestamp) {
+		try {
+			const provider = getProvider()
+			if (provider) {
+				const cards = await provider.fetchCards()
+				const statusSet = new Set<string>()
+				for (const card of cards) {
+					const originalStatus = (card.metadata?.originalStatus as string) || card.column
+					if (originalStatus) {
+						statusSet.add(originalStatus)
+					}
+				}
+				knownStatuses = Array.from(statusSet).sort()
+			}
+		} catch (error) {
+			logger.warn('Failed to fetch cards for status refresh:', error)
+		}
+	}
+
+	// Update setup message - refresh to provider settings page since that's where remove buttons are shown
 	const setupMessage = await createSetupMessage(
 		interaction,
 		category,
 		forums,
 		settings,
-		knownJiraAssignees
+		knownJiraAssignees,
+		knownStatuses,
+		'provider-settings'
 	)
 	await interaction.editReply(setupMessage)
 

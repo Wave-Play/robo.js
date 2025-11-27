@@ -7,17 +7,28 @@ import type { RoadmapPluginOptions } from '@robojs/roadmap'
  * This file configures the @robojs/roadmap plugin to sync your project roadmap
  * from Jira (or custom providers) to Discord forum channels.
  *
- * 📚 Full Documentation: https://robojs.dev/docs/plugins/roadmap
- * ⚙️ Configuration Guide: https://robojs.dev/docs/plugins/roadmap#-configuration
- * 🔧 Provider Setup: https://robojs.dev/docs/plugins/roadmap#-provider-setup
- * 🏷️ Thread Title Templates: https://robojs.dev/docs/plugins/roadmap#-thread-title-templates
+ * 📚 Full Documentation: https://robojs.dev/plugins/roadmap
+ * ⚙️ Configuration Guide: https://robojs.dev/plugins/roadmap#-configuration
+ * 🔧 Provider Setup: https://robojs.dev/plugins/roadmap#-provider-setup
+ * 🏷️ Thread Title Templates: https://robojs.dev/plugins/roadmap#-thread-title-templates
  *
  * Column Mapping:
- * Columns are automatically mapped from Jira status categories:
- * - "To Do" category → "Backlog"
- * - "In Progress" category → "In Progress"
- * - "Done" category → "Done"
- * No configuration needed - the plugin handles this automatically.
+ * 
+ * ✅ DEFAULT BEHAVIOR (No configuration needed):
+ * The plugin automatically maps Jira status categories to columns:
+ * - "To Do" category → "Backlog" column
+ * - "In Progress" category → "In Progress" column
+ * - "Done" category → "Done" column
+ * 
+ * These defaults work immediately - you don't need to configure anything to start syncing!
+ *
+ * 🔧 OPTIONAL CUSTOMIZATION:
+ * You can override defaults at two levels:
+ * 1. Provider-level: Set `columnConfig` in provider options (affects all guilds)
+ * 2. Runtime-level: Use `/roadmap setup` to configure per-guild overrides
+ *
+ * Supports many-to-one mappings (multiple statuses to one column) and null mappings
+ * (status tracked but not synced to forum, useful for changelogs).
  */
 
 const config: RoadmapPluginOptions = {
@@ -49,7 +60,29 @@ const config: RoadmapPluginOptions = {
 
 			// Optional: Default issue type for new cards created via /roadmap add (default: 'Task')
 			// Common values: 'Task', 'Story', 'Epic', 'Bug'
-			defaultIssueType: process.env.JIRA_DEFAULT_ISSUE_TYPE || 'Task'
+			defaultIssueType: process.env.JIRA_DEFAULT_ISSUE_TYPE || 'Task',
+
+			// Optional: Custom column definitions and status-to-column mappings
+			// Uncomment and customize to match your Jira workflow:
+			// columnConfig: {
+			//   columns: [
+			//     { id: 'planning', name: 'Planning', order: 0 },
+			//     { id: 'development', name: 'Development', order: 1 },
+			//     { id: 'review', name: 'Review', order: 2 },
+			//     { id: 'done', name: 'Done', order: 3, archived: true }
+			//   ]
+            // },
+			// statusMapping: {
+			//     'Backlog': 'Planning',
+			//     'To Do': 'Planning',
+			//     'In Progress': 'Development',
+			//     'Code Review': 'Review',
+			//     'QA': 'Review',
+			//     'Done': 'Done',
+			//     'Closed': null,  // Track but don't create forum thread
+			//     'Won\'t Do': null
+			//   }
+			// }
 		}
 	}),
 

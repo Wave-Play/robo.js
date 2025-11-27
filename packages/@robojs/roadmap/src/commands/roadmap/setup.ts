@@ -7,15 +7,12 @@ import {
 	type InteractionEditReplyOptions,
 	type ForumChannel,
 	type CategoryChannel,
-	StringSelectMenuBuilder,
-	UserSelectMenuBuilder,
 	MessageFlags,
 	ContainerBuilder,
 	SectionBuilder,
 	TextDisplayBuilder,
 	SeparatorBuilder,
 	SeparatorSpacingSize,
-	ActionRowBuilder,
 	ButtonBuilder,
 	Colors
 } from 'discord.js'
@@ -25,6 +22,7 @@ import {
 	getSettings,
 	getAuthorizedCreatorRoles,
 	getAssigneeMapping,
+	getColumnMapping,
 	type RoadmapSettings
 } from '../../core/settings.js'
 import { Buttons, ID_NAMESPACE } from '../../core/constants.js'
@@ -114,23 +112,32 @@ export default async (interaction: ChatInputCommandInteraction): Promise<Command
 	// Load current settings for display
 	const settings = getSettings(interaction.guildId)
 
-	// Fetch cards to get known Jira assignee names (if sync has been run)
+	// Fetch cards to get known Jira assignee names and statuses (if sync has been run)
 	let knownJiraAssignees: string[] = []
+	let knownStatuses: string[] = []
 	if (settings.lastSyncTimestamp) {
 		try {
 			const cards = await provider.fetchCards()
 			const assigneeSet = new Set<string>()
+			const statusSet = new Set<string>()
 			for (const card of cards) {
+				// Collect assignees
 				for (const assignee of card.assignees) {
 					if (assignee.name && assignee.name !== 'Unassigned') {
 						assigneeSet.add(assignee.name)
 					}
 				}
+				// Collect statuses from metadata
+				const originalStatus = (card.metadata?.originalStatus as string) || card.column
+				if (originalStatus) {
+					statusSet.add(originalStatus)
+				}
 			}
 			knownJiraAssignees = Array.from(assigneeSet).sort()
+			knownStatuses = Array.from(statusSet).sort()
 		} catch (error) {
-			logger.warn('Failed to fetch cards for assignee mapping:', error)
-			// Continue without assignee names - mapping will be disabled
+			logger.warn('Failed to fetch cards for mapping:', error)
+			// Continue without assignee names/statuses - mapping will be disabled
 		}
 	}
 
@@ -140,7 +147,8 @@ export default async (interaction: ChatInputCommandInteraction): Promise<Command
 		category,
 		forums,
 		settings,
-		knownJiraAssignees
+		knownJiraAssignees,
+		knownStatuses
 	)
 
 	logger.info(`Setup command executed by @${interaction.user.username} in guild ${interaction.guildId}`)
@@ -166,18 +174,43 @@ export default async (interaction: ChatInputCommandInteraction): Promise<Command
  * @param settings - Current guild settings
  * @returns Message options for the setup interface
  */
+export type SetupPage = 'overview' | 'provider-settings'
+
 export async function createSetupMessage(
 	interaction: BaseInteraction,
 	category: CategoryChannel,
 	forums: Map<string, ForumChannel>,
 	settings: RoadmapSettings,
-	knownJiraAssignees: string[] = []
+	knownJiraAssignees: string[] = [],
+	knownStatuses: string[] = [],
+	page: SetupPage = 'overview'
 ): Promise<InteractionReplyOptions & InteractionEditReplyOptions> {
 	const isPublic = settings.isPublic ?? false
 	const authorizedRoles = getAuthorizedCreatorRoles(interaction.guildId!)
 	const assigneeMapping = getAssigneeMapping(interaction.guildId!)
 	const mappingCount = Object.keys(assigneeMapping).length
+	const columnMapping = getColumnMapping(interaction.guildId!)
+	const columnMappingCount = Object.keys(columnMapping).length
 
+	// Build container with accent color
+	const container = new ContainerBuilder().setAccentColor(Colors.Blurple)
+
+	// Route to appropriate page builder
+	if (page === 'provider-settings') {
+		return buildProviderSettingsPage(
+			container,
+			interaction,
+			settings,
+			knownJiraAssignees,
+			knownStatuses,
+			assigneeMapping,
+			columnMapping,
+			mappingCount,
+			columnMappingCount
+		)
+	}
+
+	// Build overview page
 	// Build main status section
 	const statusSection = new SectionBuilder().addTextDisplayComponents([
 		new TextDisplayBuilder().setContent('✅ **Roadmap Forums Ready**'),
@@ -196,10 +229,7 @@ export async function createSetupMessage(
 			.setEmoji(isPublic ? '🔒' : '🌐')
 	)
 
-	// Build container with accent color
-	const container = new ContainerBuilder()
-		.setAccentColor(Colors.Blurple)
-		.addSectionComponents(statusSection)
+	container.addSectionComponents(statusSection)
 
 	// Add separator
 	container.addSeparatorComponents(
@@ -250,26 +280,119 @@ export async function createSetupMessage(
 
 	container.addSectionComponents(rolesSection)
 
-	// Build assignee mappings section with thumbnails
-	if (mappingCount > 0) {
+	// Build provider settings summary section (overview page only)
+	container.addSeparatorComponents(
+		new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Large).setDivider(true)
+	)
+
+	// Build provider settings summary with clarity about defaults
+	const assigneeText = mappingCount > 0 
+		? `Assignee mappings: ${mappingCount} custom override${mappingCount === 1 ? '' : 's'}`
+		: 'Assignee mappings: Using defaults (none configured)'
+	
+	const columnText = columnMappingCount > 0
+		? `Column mappings: ${columnMappingCount} custom override${columnMappingCount === 1 ? '' : 's'}`
+		: 'Column mappings: Using defaults (To Do→Backlog, In Progress→In Progress, Done→Done)'
+
+	const providerSettingsSection = new SectionBuilder().addTextDisplayComponents([
+		new TextDisplayBuilder().setContent('**Provider Settings**'),
+		new TextDisplayBuilder().setContent(assigneeText),
+		new TextDisplayBuilder().setContent(columnText)
+	])
+
+	providerSettingsSection.setButtonAccessory(
+		new ButtonBuilder()
+			.setCustomId(Buttons.SetupProviderSettings.id)
+			.setLabel('Manage Provider')
+			.setStyle(ButtonStyle.Secondary)
+			.setEmoji('⚙️')
+	)
+
+	container.addSectionComponents(providerSettingsSection)
+
+	// Add last sync timestamp at the end if available (small text)
+	if (settings.lastSyncTimestamp) {
 		container.addSeparatorComponents(
 			new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Large).setDivider(true)
 		)
+		container.addTextDisplayComponents(
+			new TextDisplayBuilder().setContent(
+				`<t:${Math.floor(settings.lastSyncTimestamp / 1000)}:R> • Last synced`
+			)
+		)
+	}
 
-		const mappingEntries = Object.entries(assigneeMapping).slice(0, 10) // Show up to 10 mappings
+	// Component budget check (development only)
+	if (process.env.NODE_ENV !== 'production') {
+		const componentCount = countComponents(container)
+		logger.debug(`Setup overview page component count: ${componentCount}`)
+		if (componentCount >= 40) {
+			logger.warn(`Setup overview page is approaching Discord's 40-component limit: ${componentCount}`)
+		}
+	}
 
-		for (const [jiraName, discordUserId] of mappingEntries) {
+	return {
+		flags: MessageFlags.IsComponentsV2,
+		components: [container]
+	}
+}
+
+/**
+ * Builds the provider settings page with assignee and column mappings.
+ */
+async function buildProviderSettingsPage(
+	container: ContainerBuilder,
+	interaction: BaseInteraction,
+	settings: RoadmapSettings,
+	knownJiraAssignees: string[],
+	knownStatuses: string[],
+	assigneeMapping: Record<string, string>,
+	columnMapping: Record<string, string | null>,
+	mappingCount: number,
+	columnMappingCount: number
+): Promise<InteractionReplyOptions & InteractionEditReplyOptions> {
+	// Heading section with back button as accessory
+	// Combine into single TextDisplay to reduce component count
+	const headingSection = new SectionBuilder().addTextDisplayComponents([
+		new TextDisplayBuilder().setContent('**Provider Settings**\nManage assignee and column mappings for your provider.')
+	])
+	headingSection.setButtonAccessory(
+		new ButtonBuilder()
+			.setCustomId(Buttons.SetupBackOverview.id)
+			.setLabel('Back')
+			.setStyle(ButtonStyle.Secondary)
+			.setEmoji('⬅️')
+	)
+	container.addSectionComponents(headingSection)
+
+	// Assignee Mappings section
+	container.addSeparatorComponents(
+		new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Large).setDivider(true)
+	)
+
+	// Combine explanation into single TextDisplay to reduce component count
+	const assigneeExplanationSection = new SectionBuilder().addTextDisplayComponents([
+		new TextDisplayBuilder().setContent('**Assignee Mappings**\nMap Jira assignees to Discord users')
+	])
+	assigneeExplanationSection.setButtonAccessory(createPlaceholderAccessory('assignee-explanation'))
+	container.addSectionComponents(assigneeExplanationSection)
+
+	// Show assignee mappings (limit to 2 to stay under component budget)
+	// Each mapping = 1 Section + 1 TextDisplay = 2 components
+	// With separators, explanation sections, and buttons, we need to be very conservative
+	const MAX_MAPPINGS_PER_SECTION = 2
+	const assigneeEntries = Object.entries(assigneeMapping).slice(0, MAX_MAPPINGS_PER_SECTION)
+
+		if (assigneeEntries.length > 0) {
+		for (const [jiraName, discordUserId] of assigneeEntries) {
 			// Note: Displaying Jira name here is acceptable because this is an admin-only setup UI.
 			// In all other contexts (Discord messages, public APIs), provider names must be redacted
 			// via the assignee mapping system. See AGENTS.md "Assignee Name Redaction Contract" section.
+			// Combine into single TextDisplay to reduce component count
 			const mappingSection = new SectionBuilder().addTextDisplayComponents([
-				new TextDisplayBuilder().setContent(`**${jiraName}**`),
-				new TextDisplayBuilder().setContent(`Mapped to <@${discordUserId}>`)
+				new TextDisplayBuilder().setContent(`**${jiraName}** → <@${discordUserId}>`)
 			])
 
-			// Note: Sections can have EITHER a button OR a thumbnail accessory, not both
-			// Using button accessory for remove functionality
-			// Thumbnails can be added later if the validation issue is resolved
 			mappingSection.setButtonAccessory(
 				new ButtonBuilder()
 					.setCustomId(`${Buttons.RemoveAssigneeMapping.id}:${jiraName}`)
@@ -281,42 +404,48 @@ export async function createSetupMessage(
 			container.addSectionComponents(mappingSection)
 		}
 
-		if (mappingCount > 10) {
-			container.addTextDisplayComponents(
-				new TextDisplayBuilder().setContent(
-					`... and ${mappingCount - 10} more mapping${mappingCount - 10 === 1 ? '' : 's'}`
-				)
+		if (mappingCount > MAX_MAPPINGS_PER_SECTION) {
+			container.addSeparatorComponents(
+				new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(false)
 			)
+			
+			const viewAllSection = new SectionBuilder()
+				.addTextDisplayComponents([
+					new TextDisplayBuilder().setContent(
+						`Showing ${MAX_MAPPINGS_PER_SECTION} of ${mappingCount} assignee mapping${mappingCount === 1 ? '' : 's'}`
+					)
+				])
+				.setButtonAccessory(
+					new ButtonBuilder()
+						.setCustomId(`${Buttons.ViewAllMappings.id}:assignee`)
+						.setLabel('View All')
+						.setStyle(ButtonStyle.Secondary)
+						.setEmoji('📋')
+				)
+			
+			container.addSectionComponents(viewAllSection)
 		}
 	} else if (settings.lastSyncTimestamp && knownJiraAssignees.length > 0) {
-		// Show empty state if sync has been run but no mappings exist
-		container.addSeparatorComponents(
-			new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Large).setDivider(true)
-		)
 		container.addTextDisplayComponents(
-			new TextDisplayBuilder().setContent('**Assignee Mappings**'),
-			new TextDisplayBuilder().setContent('No mappings yet. Use the select menus below to create mappings.')
+			new TextDisplayBuilder().setContent('No assignee mappings yet.')
+		)
+	} else if (!settings.lastSyncTimestamp) {
+		container.addTextDisplayComponents(
+			new TextDisplayBuilder().setContent(
+				'💡 Run `/roadmap sync` once to discover Jira assignees and enable mapping.'
+			)
 		)
 	}
 
-	// Build action rows for interactive components (no role select - it's in an ephemeral message now)
-	const actionRows: ActionRowBuilder<
-		ButtonBuilder | StringSelectMenuBuilder | UserSelectMenuBuilder
-	>[] = []
-
-	// Add assignee mapping components if sync has been run and we have known assignees
+	// Add assignee mapping button if sync has been run
 	if (settings.lastSyncTimestamp && knownJiraAssignees.length > 0) {
-		// Add a dedicated section for adding new mappings
 		container.addSeparatorComponents(
-			new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Large).setDivider(true)
+			new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(false)
 		)
 
-		const addMappingSection = new SectionBuilder()
+		const addAssigneeSection = new SectionBuilder()
 			.addTextDisplayComponents([
-				new TextDisplayBuilder().setContent('**Add New Mapping**'),
-				new TextDisplayBuilder().setContent(
-					'Click the button below to map a Jira assignee to a Discord user.'
-				)
+				new TextDisplayBuilder().setContent('Add a new assignee mapping')
 			])
 			.setButtonAccessory(
 				new ButtonBuilder()
@@ -326,33 +455,141 @@ export async function createSetupMessage(
 					.setEmoji('➕')
 			)
 
-		container.addSectionComponents(addMappingSection)
-	} else if (!settings.lastSyncTimestamp) {
-		// Show guidance if sync hasn't been run
-		container.addSeparatorComponents(
-			new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Large).setDivider(true)
-		)
+		container.addSectionComponents(addAssigneeSection)
+	}
+
+	// Column Mappings section
+	container.addSeparatorComponents(
+		new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Large).setDivider(true)
+	)
+
+	// Combine explanation into single TextDisplay to reduce component count
+	const columnExplanationText = columnMappingCount > 0
+		? '**Column Mappings**\nCustom overrides (defaults: To Do→Backlog, In Progress→In Progress, Done→Done)'
+		: '**Column Mappings**\nDefaults active: To Do→Backlog, In Progress→In Progress, Done→Done. Add custom mappings to override.'
+	
+	const columnExplanationSection = new SectionBuilder().addTextDisplayComponents([
+		new TextDisplayBuilder().setContent(columnExplanationText)
+	])
+	columnExplanationSection.setButtonAccessory(createPlaceholderAccessory('column-explanation'))
+	container.addSectionComponents(columnExplanationSection)
+
+	// Show column mappings (limit to 3 to stay under component budget)
+	const columnEntries = Object.entries(columnMapping).slice(0, MAX_MAPPINGS_PER_SECTION)
+
+		if (columnEntries.length > 0) {
+		for (const [status, column] of columnEntries) {
+			const mappingValue = column === null ? 'Track Only (no forum)' : column
+			// Combine into single TextDisplay to reduce component count
+			const mappingSection = new SectionBuilder().addTextDisplayComponents([
+				new TextDisplayBuilder().setContent(`**${status}** → ${mappingValue}`)
+			])
+
+			mappingSection.setButtonAccessory(
+				new ButtonBuilder()
+					.setCustomId(`${Buttons.RemoveColumnMapping.id}:${status}`)
+					.setLabel('Remove')
+					.setStyle(ButtonStyle.Danger)
+					.setEmoji('🗑️')
+			)
+
+			container.addSectionComponents(mappingSection)
+		}
+
+		if (columnMappingCount > MAX_MAPPINGS_PER_SECTION) {
+			container.addSeparatorComponents(
+				new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(false)
+			)
+			
+			const viewAllSection = new SectionBuilder()
+				.addTextDisplayComponents([
+					new TextDisplayBuilder().setContent(
+						`Showing ${MAX_MAPPINGS_PER_SECTION} of ${columnMappingCount} column mapping${columnMappingCount === 1 ? '' : 's'}`
+					)
+				])
+				.setButtonAccessory(
+					new ButtonBuilder()
+						.setCustomId(`${Buttons.ViewAllMappings.id}:column`)
+						.setLabel('View All')
+						.setStyle(ButtonStyle.Secondary)
+						.setEmoji('📋')
+				)
+			
+			container.addSectionComponents(viewAllSection)
+		}
+	} else if (settings.lastSyncTimestamp && knownStatuses.length > 0) {
 		container.addTextDisplayComponents(
 			new TextDisplayBuilder().setContent(
-				'💡 **Assignee Mapping:** Run `/roadmap sync` once to discover Jira assignees and enable mapping.'
+				'✅ Using default mappings (To Do→Backlog, In Progress→In Progress, Done→Done). Add custom mappings to override specific statuses.'
+			)
+		)
+	} else if (!settings.lastSyncTimestamp) {
+		container.addTextDisplayComponents(
+			new TextDisplayBuilder().setContent(
+				'💡 Default mappings are active. Run `/roadmap sync` once to discover provider statuses and add custom overrides if needed.'
 			)
 		)
 	}
 
-	// Add last sync timestamp at the end if available
-	if (settings.lastSyncTimestamp) {
+	// Add column mapping button if sync has been run
+	if (settings.lastSyncTimestamp && knownStatuses.length > 0) {
 		container.addSeparatorComponents(
-			new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Large).setDivider(true)
+			new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(false)
 		)
-		container.addTextDisplayComponents(
-			new TextDisplayBuilder().setContent(
-				`**Last Synced:** ${new Date(settings.lastSyncTimestamp).toLocaleString()}`
+
+		const addColumnSection = new SectionBuilder()
+			.addTextDisplayComponents([
+				new TextDisplayBuilder().setContent('Add a new column mapping')
+			])
+			.setButtonAccessory(
+				new ButtonBuilder()
+					.setCustomId(Buttons.AddColumnMapping.id)
+					.setLabel('Add Mapping')
+					.setStyle(ButtonStyle.Primary)
+					.setEmoji('➕')
 			)
-		)
+
+		container.addSectionComponents(addColumnSection)
+	}
+
+
+	// Component budget check (development only)
+	if (process.env.NODE_ENV !== 'production') {
+		const componentCount = countComponents(container)
+		logger.debug(`Setup provider settings page component count: ${componentCount}`)
+		if (componentCount >= 40) {
+			logger.warn(`Setup provider settings page is approaching Discord's 40-component limit: ${componentCount}`)
+		}
 	}
 
 	return {
 		flags: MessageFlags.IsComponentsV2,
-		components: [container, ...actionRows]
+		components: [container]
+	}
+}
+
+/**
+ * Counts the total number of components in a container for budget tracking.
+ * This is a rough estimate for debugging - Discord counts components differently
+ * (sections, separators, text displays, buttons all count toward the 40 limit).
+ */
+function countComponents(container: ContainerBuilder): number {
+	// Try to access internal structure for counting (may not work in all cases)
+	try {
+		const internal = container as unknown as {
+			sections?: unknown[]
+			separators?: unknown[]
+			textDisplays?: unknown[]
+		}
+		
+		let count = 0
+		if (internal.sections) count += internal.sections.length
+		if (internal.separators) count += internal.separators.length
+		if (internal.textDisplays) count += internal.textDisplays.length
+		
+		return count
+	} catch {
+		// If we can't access internal structure, return 0 (component counting is best-effort)
+		return 0
 	}
 }

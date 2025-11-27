@@ -171,6 +171,45 @@ export interface RoadmapSettings {
 	 * ```
 	 */
 	threadTitleTemplate?: string
+
+	/**
+	 * Per-guild column mapping overrides.
+	 *
+	 * Maps provider status names to column names (or null for no forum).
+	 * Overrides provider-level defaults. Keys are matched case-insensitively.
+	 *
+	 * @example
+	 * ```ts
+	 * {
+	 *   "QA": "Development",  // Map QA status to Development column
+	 *   "Blocked": null        // Track Blocked status but don't create forum thread
+	 * }
+	 * ```
+	 */
+	columnMapping?: Record<string, string | null>
+
+	/**
+	 * Custom columns for this guild (overrides provider columns).
+	 *
+	 * If provided, replaces the default column set entirely.
+	 * Each column can optionally disable forum creation by setting `createForum: false`.
+	 *
+	 * @example
+	 * ```ts
+	 * [
+	 *   { id: 'planning', name: 'Planning', order: 0 },
+	 *   { id: 'development', name: 'Development', order: 1 },
+	 *   { id: 'review', name: 'Review', order: 2, createForum: false }
+	 * ]
+	 * ```
+	 */
+	customColumns?: Array<{
+		readonly id: string
+		readonly name: string
+		readonly order: number
+		readonly archived?: boolean
+		readonly createForum?: boolean
+	}>
 }
 
 /**
@@ -682,4 +721,135 @@ export function removeAssigneeMapping(guildId: string, jiraName: string): void {
 export function getDiscordUserIdForJiraName(guildId: string, jiraName: string): string | undefined {
 	const assigneeMapping = getAssigneeMapping(guildId)
 	return assigneeMapping[jiraName]
+}
+
+/**
+ * Retrieves the column mapping for a guild.
+ *
+ * This helper returns the map of provider status names to column names (or null for no forum).
+ * Returns an empty object if no mappings exist.
+ *
+ * @param guildId - The Discord guild ID
+ * @returns Record mapping provider status names to column names (or null)
+ *
+ * @example
+ * ```ts
+ * const mapping = getColumnMapping(guildId);
+ * // { "QA": "Development", "Blocked": null }
+ * ```
+ */
+export function getColumnMapping(guildId: string): Record<string, string | null> {
+	return getSettings(guildId).columnMapping ?? {}
+}
+
+/**
+ * Sets a mapping between a provider status name and a column name (or null for no forum).
+ *
+ * This helper updates the column mapping for a specific status.
+ * The mapping is case-insensitive and matches status names.
+ *
+ * @param guildId - The Discord guild ID
+ * @param status - The provider status name (case-insensitive)
+ * @param column - The column name to map to, or null to track without forum
+ *
+ * @example
+ * ```ts
+ * setColumnMapping(guildId, 'QA', 'Development');  // Map QA to Development
+ * setColumnMapping(guildId, 'Blocked', null);       // Track Blocked without forum
+ * ```
+ */
+export function setColumnMapping(guildId: string, status: string, column: string | null): void {
+	const currentSettings = getSettings(guildId)
+	const columnMapping = currentSettings.columnMapping ?? {}
+
+	updateSettings(guildId, {
+		columnMapping: {
+			...columnMapping,
+			[status]: column
+		}
+	})
+}
+
+/**
+ * Removes a mapping for a provider status name.
+ *
+ * This helper removes an existing column mapping. After removal, the
+ * status will use the provider-level default mapping.
+ *
+ * @param guildId - The Discord guild ID
+ * @param status - The provider status name to unmap
+ *
+ * @example
+ * ```ts
+ * removeColumnMapping(guildId, 'QA');
+ * ```
+ */
+export function removeColumnMapping(guildId: string, status: string): void {
+	const currentSettings = getSettings(guildId)
+	const columnMapping = currentSettings.columnMapping ?? {}
+
+	const { [status]: removed, ...remaining } = columnMapping
+
+	updateSettings(guildId, {
+		columnMapping: remaining
+	})
+}
+
+/**
+ * Retrieves custom columns for a guild.
+ *
+ * This helper returns the custom column definitions if configured.
+ * Returns undefined if no custom columns are set (uses provider defaults).
+ *
+ * @param guildId - The Discord guild ID
+ * @returns Array of custom column definitions or undefined
+ *
+ * @example
+ * ```ts
+ * const columns = getCustomColumns(guildId);
+ * // [{ id: 'planning', name: 'Planning', order: 0 }, ...]
+ * ```
+ */
+export function getCustomColumns(
+	guildId: string
+): Array<{
+	id: string
+	name: string
+	order: number
+	archived?: boolean
+	createForum?: boolean
+}> | undefined {
+	return getSettings(guildId).customColumns
+}
+
+/**
+ * Sets custom columns for a guild.
+ *
+ * This helper replaces the default column set with custom columns.
+ * If provided, these columns completely override the provider's default columns.
+ *
+ * @param guildId - The Discord guild ID
+ * @param columns - Array of custom column definitions
+ *
+ * @example
+ * ```ts
+ * setCustomColumns(guildId, [
+ *   { id: 'planning', name: 'Planning', order: 0 },
+ *   { id: 'development', name: 'Development', order: 1 }
+ * ]);
+ * ```
+ */
+export function setCustomColumns(
+	guildId: string,
+	columns: Array<{
+		id: string
+		name: string
+		order: number
+		archived?: boolean
+		createForum?: boolean
+	}>
+): void {
+	updateSettings(guildId, {
+		customColumns: columns
+	})
 }

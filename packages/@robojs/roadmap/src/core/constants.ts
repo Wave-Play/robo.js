@@ -101,6 +101,52 @@ export const Buttons = {
 	 */
 	ViewSyncErrors: {
 		id: ID_NAMESPACE + 'button-view-sync-errors'
+	},
+	/**
+	 * Base ID for the remove column mapping button.
+	 *
+	 * The full custom ID is constructed as `${id}:${status}` so each mapping can be
+	 * uniquely identified. Clicking this button removes the mapping between a provider
+	 * status and a column. Only administrators can remove mappings.
+	 */
+	RemoveColumnMapping: {
+		id: ID_NAMESPACE + 'button-remove-column-mapping'
+	},
+	/**
+	 * Button to open an ephemeral message with selects for adding a new column mapping.
+	 *
+	 * When clicked, this button shows an ephemeral message with both a provider status
+	 * select and column select. The mapping is created automatically when both are selected.
+	 */
+	AddColumnMapping: {
+		id: ID_NAMESPACE + 'button-add-column-mapping'
+	},
+	/**
+	 * Button to navigate to the provider settings page from the overview.
+	 *
+	 * When clicked, this button morphs the setup message to show provider-specific
+	 * settings (assignee and column mappings).
+	 */
+	SetupProviderSettings: {
+		id: ID_NAMESPACE + 'setup:provider-settings'
+	},
+	/**
+	 * Button to navigate back to the overview page from provider settings.
+	 *
+	 * When clicked, this button morphs the setup message back to the overview view.
+	 */
+	SetupBackOverview: {
+		id: ID_NAMESPACE + 'setup:back-overview'
+	},
+	/**
+	 * Base ID for the view all mappings button.
+	 *
+	 * The full custom ID is constructed as `${id}:${type}` where type is either
+	 * 'assignee' or 'column'. Clicking this button shows an ephemeral message
+	 * with the complete list of mappings.
+	 */
+	ViewAllMappings: {
+		id: ID_NAMESPACE + 'button-view-all-mappings'
 	}
 } as const
 
@@ -152,5 +198,23 @@ export const Selects = {
 	 */
 	AssigneeDiscordUser: {
 		id: ID_NAMESPACE + 'select-assignee-discord'
+	},
+	/**
+	 * String select menu for choosing a provider status name to map.
+	 *
+	 * Used in the setup command to allow administrators to select which provider
+	 * status they want to map to a column. Populated with known status names from synced cards.
+	 */
+	ColumnMappingStatus: {
+		id: ID_NAMESPACE + 'select-column-mapping-status'
+	},
+	/**
+	 * String select menu for choosing a column to map a status to.
+	 *
+	 * Used in the setup command to allow administrators to select which column
+	 * a provider status should map to, or select "Track Only" to map to null.
+	 */
+	ColumnMappingColumn: {
+		id: ID_NAMESPACE + 'select-column-mapping-column'
 	}
 } as const

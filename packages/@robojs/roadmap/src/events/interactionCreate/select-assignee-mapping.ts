@@ -296,26 +296,44 @@ async function createMappingAndUpdate(
 				if (category && forums.size > 0) {
 					const settings = getSettings(interaction.guildId!)
 					let knownJiraAssignees: string[] = []
+					let knownStatuses: string[] = []
 					if (settings.lastSyncTimestamp) {
 						try {
 							const provider = getProvider()
 							if (provider) {
 								const cards = await provider.fetchCards()
 								const assigneeSet = new Set<string>()
+								const statusSet = new Set<string>()
 								for (const card of cards) {
+									// Collect assignees
 									for (const assignee of card.assignees) {
 										if (assignee.name && assignee.name !== 'Unassigned') {
 											assigneeSet.add(assignee.name)
 										}
 									}
+									// Collect statuses from metadata
+									const originalStatus = (card.metadata?.originalStatus as string) || card.column
+									if (originalStatus) {
+										statusSet.add(originalStatus)
+									}
 								}
 								knownJiraAssignees = Array.from(assigneeSet).sort()
+								knownStatuses = Array.from(statusSet).sort()
 							}
 						} catch (error) {
 							logger.warn('Failed to fetch cards for assignee mapping refresh:', error)
 						}
 					}
-					const setupMessage = await createSetupMessage(interaction, category, forums, settings, knownJiraAssignees)
+					// Refresh to provider settings page since that's where add buttons are shown
+					const setupMessage = await createSetupMessage(
+						interaction,
+						category,
+						forums,
+						settings,
+						knownJiraAssignees,
+						knownStatuses,
+						'provider-settings'
+					)
 					
 					// Use webhook to edit ephemeral message
 					await interaction.client.rest.patch(
@@ -336,7 +354,10 @@ async function createMappingAndUpdate(
 	}
 }
 
-async function refreshSetupMessage(interaction: StringSelectMenuInteraction | UserSelectMenuInteraction) {
+async function refreshSetupMessage(
+	interaction: StringSelectMenuInteraction | UserSelectMenuInteraction,
+	page: 'overview' | 'provider-settings' = 'provider-settings'
+) {
 	try {
 		// Get category and forums for message refresh
 		const category = await getRoadmapCategory(interaction.guild!)
@@ -374,7 +395,36 @@ async function refreshSetupMessage(interaction: StringSelectMenuInteraction | Us
 		}
 
 		// Update setup message with new mapping configuration
-		const setupMessage = await createSetupMessage(interaction, category, forums, settings, knownJiraAssignees)
+		// Get known statuses for refresh
+		let knownStatuses: string[] = []
+		if (settings.lastSyncTimestamp) {
+			try {
+				const provider = getProvider()
+				if (provider) {
+					const cards = await provider.fetchCards()
+					const statusSet = new Set<string>()
+					for (const card of cards) {
+						const originalStatus = (card.metadata?.originalStatus as string) || card.column
+						if (originalStatus) {
+							statusSet.add(originalStatus)
+						}
+					}
+					knownStatuses = Array.from(statusSet).sort()
+				}
+			} catch (error) {
+				logger.warn('Failed to fetch cards for status refresh:', error)
+			}
+		}
+
+		const setupMessage = await createSetupMessage(
+			interaction,
+			category,
+			forums,
+			settings,
+			knownJiraAssignees,
+			knownStatuses,
+			page
+		)
 		await interaction.editReply(setupMessage)
 	} catch (error) {
 		logger.error('Failed to refresh setup message:', error)

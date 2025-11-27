@@ -13,11 +13,11 @@ import { getSettings } from '../../core/settings.js'
 
 /**
  * Global cache for button flow pending mappings.
- * Key: `${guildId}:${userId}`, Value: { messageId?: string, webhookId?: string, webhookToken?: string }
+ * Key: `${guildId}:${userId}`, Value: { jiraName?: string, discordUserId?: string, messageId?: string, webhookId?: string, webhookToken?: string }
  */
 declare global {
 	// eslint-disable-next-line no-var
-	var roadmapPendingMappings: Map<string, { messageId?: string; webhookId?: string; webhookToken?: string }> | undefined
+	var roadmapPendingMappings: Map<string, { jiraName?: string; discordUserId?: string; messageId?: string; webhookId?: string; webhookToken?: string }> | undefined
 }
 
 /**

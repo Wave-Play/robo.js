@@ -134,6 +134,95 @@ export type RoadmapColumn = {
 	 * Signals whether items in this column should be considered archived.
 	 */
 	readonly archived: boolean
+	/**
+	 * Whether to create a Discord forum channel for this column.
+	 *
+	 * If false, cards in this column are tracked but no forum thread is created.
+	 * Defaults to true unless the column is archived.
+	 */
+	readonly createForum?: boolean
+}
+
+/**
+ * Configuration for custom column definitions and status-to-column mappings.
+ *
+ * @remarks
+ * This type allows providers to define custom columns and map provider statuses
+ * to those columns. Supports many-to-one mappings (multiple statuses to one column)
+ * and null mappings (status tracked but not synced to forum).
+ *
+ * @example
+ * ```ts
+ * const columnConfig: ColumnConfig = {
+ *   columns: [
+ *     { id: 'planning', name: 'Planning', order: 0 },
+ *     { id: 'development', name: 'Development', order: 1 },
+ *     { id: 'done', name: 'Done', order: 2, archived: true }
+ *   ],
+ *   statusMapping: {
+ *     'To Do': 'Planning',
+ *     'Backlog': 'Planning',
+ *     'In Progress': 'Development',
+ *     'Code Review': 'Development',
+ *     'Done': 'Done',
+ *     'Closed': null  // Track but don't create forum
+ *   }
+ * }
+ * ```
+ */
+export type ColumnConfig = {
+	/**
+	 * Custom column definitions (what forums to create).
+	 *
+	 * If provided, replaces the default column set. Each column can optionally
+	 * disable forum creation by setting `createForum: false`.
+	 */
+	readonly columns?: Array<{
+		/**
+		 * Unique identifier for the column (e.g., 'backlog', 'in-progress', 'done').
+		 */
+		readonly id: string
+		/**
+		 * Display name for the column (e.g., 'Backlog', 'In Progress').
+		 */
+		readonly name: string
+		/**
+		 * Sort order for the column (lower numbers appear first).
+		 */
+		readonly order: number
+		/**
+		 * Whether items in this column should be considered archived.
+		 */
+		readonly archived?: boolean
+		/**
+		 * Whether to create a Discord forum channel for this column.
+		 *
+		 * If false, cards in this column are tracked but no forum thread is created.
+		 * Defaults to true unless the column is archived.
+		 */
+		readonly createForum?: boolean
+	}>
+	/**
+	 * Status-to-column mapping (many-to-one supported).
+	 *
+	 * Maps provider status names (or categories) to column names.
+	 * Use null to track a status without creating a forum thread.
+	 * Keys are matched case-insensitively.
+	 *
+	 * @example
+	 * ```ts
+	 * {
+	 *   'To Do': 'Backlog',
+	 *   'Open': 'Backlog',
+	 *   'In Progress': 'In Progress',
+	 *   'In Review': 'In Progress',
+	 *   'Done': 'Done',
+	 *   'Closed': null,        // Track but don't create forum thread
+	 *   'Won\'t Fix': null
+	 * }
+	 * ```
+	 */
+	readonly statusMapping?: Record<string, string | null>
 }
 
 // Provider Configuration ----------------------------------------------------

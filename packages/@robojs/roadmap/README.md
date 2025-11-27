@@ -237,6 +237,66 @@ jql: 'project = PROJ AND updated >= -30d'
 
 ## ⚙️ Configuration
 
+### Column Mapping
+
+**✅ Default Behavior (Works Out of the Box):**
+
+The plugin **automatically** maps Jira status categories to three columns without any configuration:
+- "To Do" category → "Backlog" column
+- "In Progress" category → "In Progress" column
+- "Done" category → "Done" column
+
+**These defaults are always active** - you can start syncing immediately without configuring anything!
+
+**🔧 Optional Customization:**
+
+If your Jira workflow uses different statuses or you want custom columns, you can override defaults at two levels:
+
+**Provider-Level (Default):** Configure custom columns and status mappings in your provider config:
+
+```typescript
+provider: new JiraProvider({
+  type: 'jira',
+  options: {
+    // ... credentials ...
+    columnConfig: {
+      columns: [
+        { id: 'planning', name: 'Planning', order: 0 },
+        { id: 'development', name: 'Development', order: 1 },
+        { id: 'review', name: 'Review', order: 2 },
+        { id: 'done', name: 'Done', order: 3, archived: true }
+      ],
+      statusMapping: {
+        'Backlog': 'Planning',
+        'To Do': 'Planning',
+        'In Progress': 'Development',
+        'Code Review': 'Review',
+        'QA': 'Review',
+        'Done': 'Done',
+        'Closed': null,  // Track but don't create forum thread
+        'Won\'t Do': null
+      }
+    }
+  }
+})
+```
+
+**Runtime-Level (Per-Guild):** Override mappings per-guild using `/roadmap setup` or the settings API:
+
+```typescript
+import { setColumnMapping } from '@robojs/roadmap'
+
+// Map QA status to Development column
+setColumnMapping(guildId, 'QA', 'Development')
+
+// Track Blocked status without creating forum thread
+setColumnMapping(guildId, 'Blocked', null)
+```
+
+**Many-to-One Support:** Multiple statuses can map to the same column (e.g., both "Code Review" and "QA" map to "Review").
+
+**Track-Only Mappings:** Map a status to `null` to track it programmatically (useful for changelogs) without creating a Discord forum thread.
+
 ### Plugin Options
 
 Configure the plugin in `config/plugins/robojs/roadmap.mjs` (or `.ts`):

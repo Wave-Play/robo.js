@@ -1,5 +1,6 @@
 import { RoadmapProvider } from './base.js'
 import type {
+	ColumnConfig,
 	CreateCardInput,
 	CreateCardResult,
 	DateRangeFilter,
@@ -65,6 +66,14 @@ export interface JiraProviderConfig extends ProviderConfig {
 		readonly maxResults?: number
 		readonly projectKey?: string
 		readonly defaultIssueType?: string
+		/**
+		 * Custom column definitions and status-to-column mappings.
+		 *
+		 * If provided, replaces the default three-column structure (Backlog, In Progress, Done).
+		 * Supports many-to-one mappings (multiple statuses to one column) and null mappings
+		 * (status tracked but not synced to forum).
+		 */
+		readonly columnConfig?: ColumnConfig
 	}
 }
 
@@ -194,7 +203,7 @@ type AdfNode =
  * ```
  */
 export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
-	private resolvedConfig: ResolvedJiraConfig = this.resolveConfig()
+	private resolvedConfig: ResolvedJiraConfig & { columnConfig?: ColumnConfig } = this.resolveConfig()
 	private issueTypesCache: { types: readonly string[]; timestamp: number } | null = null
 	private labelsCache: { labels: readonly string[]; timestamp: number } | null = null
 	private dateRangeCache: Map<string, { cards: readonly RoadmapCard[]; timestamp: number }> = new Map()
@@ -202,6 +211,15 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 	public constructor(config: JiraProviderConfig) {
 		super(config)
 		this.resolvedConfig = this.resolveConfig()
+	}
+
+	/**
+	 * Returns the configured status-to-column mapping, if any.
+	 *
+	 * @returns Status mapping record or undefined if using defaults.
+	 */
+	public override getStatusMapping(): Record<string, string | null> | undefined {
+		return this.resolvedConfig.columnConfig?.statusMapping
 	}
 
 	/**
@@ -390,10 +408,23 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 	 * @returns Array of column definitions.
 	 */
 	public override async getColumns(): Promise<readonly RoadmapColumn[]> {
+		// Check for custom column configuration
+		const columnConfig = this.resolvedConfig.columnConfig
+		if (columnConfig?.columns && columnConfig.columns.length > 0) {
+			return columnConfig.columns.map((col) => ({
+				id: col.id,
+				name: col.name,
+				order: col.order,
+				archived: col.archived ?? false,
+				createForum: col.createForum ?? (col.archived ? false : true)
+			}))
+		}
+
+		// Default columns
 		return [
-			{ id: 'backlog', name: 'Backlog', order: 0, archived: false },
-			{ id: 'in-progress', name: 'In Progress', order: 1, archived: false },
-			{ id: 'done', name: 'Done', order: 2, archived: true }
+			{ id: 'backlog', name: 'Backlog', order: 0, archived: false, createForum: true },
+			{ id: 'in-progress', name: 'In Progress', order: 1, archived: false, createForum: true },
+			{ id: 'done', name: 'Done', order: 2, archived: true, createForum: true }
 		]
 	}
 
@@ -1224,7 +1255,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 	/**
 	 * Resolves configuration from explicit values, plugin options, and environment variables (in that order).
 	 */
-	private resolveConfig(config: JiraProviderConfig = this.config): ResolvedJiraConfig {
+	private resolveConfig(config: JiraProviderConfig = this.config): ResolvedJiraConfig & { columnConfig?: ColumnConfig } {
 		// Read values from environment variables
 		const envUrl = process.env.JIRA_URL
 		const envEmail = process.env.JIRA_EMAIL
@@ -1267,6 +1298,9 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 				DEFAULT_MAX_RESULTS
 		)
 
+		// Resolve column configuration from options
+		const columnConfig = config.options?.columnConfig
+
 		return {
 			url: resolvedUrl,
 			email: resolvedEmail,
@@ -1274,7 +1308,8 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 			jql: resolvedJql,
 			maxResults: resolvedMaxResults,
 			projectKey: resolvedProjectKey,
-			defaultIssueType: resolvedDefaultIssueType
+			defaultIssueType: resolvedDefaultIssueType,
+			...(columnConfig ? { columnConfig } : {})
 		}
 	}
 
@@ -1292,6 +1327,8 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 
 	/**
 	 * Converts a Jira issue to a RoadmapCard with ADF-to-text conversion.
+	 *
+	 * @param issue - Jira issue object
 	 */
 	private mapIssueToCard(issue: JiraIssue): RoadmapCard {
 		const { fields } = issue
@@ -1299,11 +1336,14 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 		const title = fields.summary ?? issue.key
 		const description = this.convertAdfToPlainText(fields.description)
 		const labels = Array.isArray(fields.labels) ? [...fields.labels] : []
+		const originalStatus = fields.status?.name ?? 'Unknown'
 		const column = this.mapStatusToColumn(fields.status)
 		const assignees = this.mapAssignee(fields.assignee)
 		const url = `${this.resolvedConfig.url}/browse/${issue.key}`
 		const updatedAt = fields.updated ? new Date(fields.updated) : new Date()
 
+		const existingMetadata = (issue as unknown as { metadata?: Record<string, unknown> })?.metadata || {}
+		
 		return {
 			id: issue.key,
 			title,
@@ -1314,6 +1354,8 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 			url,
 			updatedAt,
 			metadata: {
+				...existingMetadata,
+				originalStatus: originalStatus,
 				issue
 			}
 		}
@@ -1350,15 +1392,31 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 	}
 
 	/**
-	 * Maps Jira status to roadmap column using status name and category.
+	 * Maps Jira status to roadmap column using configured mapping or default logic.
+	 *
+	 * @param status - Jira status object
+	 * @returns Column name to map to (provider-level mapping only; guild overrides applied in sync engine)
 	 */
 	private mapStatusToColumn(status?: JiraStatus): string {
 		if (!status) {
 			return 'Backlog'
 		}
 
-		// Normalize status name
-		const normalized = status.name?.toLowerCase() ?? ''
+		const statusName = status.name ?? ''
+		
+		// Try to resolve using provider-level mapping (guild overrides handled in sync engine)
+		const resolved = this.resolveColumn(statusName)
+		if (resolved !== undefined) {
+			// If resolved to null, that means track without forum - use default column for now
+			// The sync engine will handle null mappings separately
+			if (resolved === null) {
+				return 'Backlog' // Fallback, but sync engine should handle null
+			}
+			return resolved
+		}
+
+		// Default mapping logic (backward compatibility)
+		const normalized = statusName.toLowerCase()
 
 		// Check for 'backlog' in status name
 		if (normalized.includes('backlog')) {

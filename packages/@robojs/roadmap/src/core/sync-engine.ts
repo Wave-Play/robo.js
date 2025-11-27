@@ -20,7 +20,9 @@ import {
 	getCurrentThreadInfo,
 	getThreadForColumn,
 	getDiscordUserIdForJiraName,
-	getSettings
+	getSettings,
+	getColumnMapping,
+	getCustomColumns
 } from './settings.js'
 import { getAllForumChannels, updateForumTagsForColumn } from './forum-manager.js'
 import { roadmapLogger } from './logger.js'
@@ -1243,17 +1245,80 @@ export async function syncRoadmap(options: SyncOptions): Promise<SyncResult> {
 
 		// Fetch provider data
 		const cards = await provider.fetchCards()
-		const columns = await provider.getColumns()
+		let columns = await provider.getColumns()
+		
+		// Check for custom columns (guild-level override)
+		const customColumns = getCustomColumns(guild.id)
+		if (customColumns) {
+			columns = customColumns.map((col) => ({
+				id: col.id,
+				name: col.name,
+				order: col.order,
+				archived: col.archived ?? false,
+				createForum: col.createForum ?? (col.archived ? false : true)
+			}))
+			roadmapLogger.debug(`Using custom columns for guild ${guild.id}: ${columns.map((c) => c.name).join(', ')}`)
+		}
+		
 		roadmapLogger.info(
 			`Fetched ${cards.length} cards and ${columns.length} columns from provider${syncId ? ` [${syncId}]` : ''}`
 		)
 
+		// Get guild-level column mapping overrides
+		const guildColumnMapping = getColumnMapping(guild.id)
+		
+		// Apply column mapping to cards (guild overrides first, then provider config)
+		const mappedCards = cards.map((card) => {
+			const originalStatus = (card.metadata?.originalStatus as string) || card.column
+			
+			// Try to resolve column using provider's resolveColumn with guild mapping
+			const resolved = provider.resolveColumn(originalStatus, guildColumnMapping)
+			
+			if (resolved === null) {
+				// Status mapped to null - track but don't create forum thread
+				return {
+					...card,
+					column: originalStatus, // Keep original for tracking
+					metadata: {
+						...(card.metadata || {}),
+						originalStatus,
+						trackOnly: true // Flag to skip forum creation
+					}
+				}
+			} else if (resolved !== undefined) {
+				// Mapped to a column
+				return {
+					...card,
+					column: resolved,
+					metadata: {
+						...(card.metadata || {}),
+						originalStatus
+					}
+				}
+			}
+			
+			// No mapping found - use card's existing column (provider default)
+			return {
+				...card,
+				metadata: {
+					...(card.metadata || {}),
+					originalStatus
+				}
+			}
+		})
+
 		// Create column map for quick lookup
 		const columnMap = new Map(columns.map((col) => [col.name, col]))
 
-		// Group cards by column for tag updates
+		// Group cards by column for tag updates (exclude track-only cards)
 		const cardsByColumn = new Map<string, RoadmapCard[]>()
-		for (const card of cards) {
+		for (const card of mappedCards) {
+			// Skip cards that are tracked but not synced to forums
+			const trackOnly = (card.metadata as { trackOnly?: boolean })?.trackOnly
+			if (trackOnly) {
+				continue
+			}
+			
 			if (!cardsByColumn.has(card.column)) {
 				cardsByColumn.set(card.column, [])
 			}
@@ -1310,7 +1375,7 @@ export async function syncRoadmap(options: SyncOptions): Promise<SyncResult> {
 
 		// Initialize sync statistics
 		const stats = {
-			total: cards.length,
+			total: mappedCards.length,
 			created: 0,
 			updated: 0,
 			archived: 0,
@@ -1343,12 +1408,12 @@ export async function syncRoadmap(options: SyncOptions): Promise<SyncResult> {
 		}
 
 		// Send initial progress update if callback provided
-		if (onProgress && cards.length > 0) {
+		if (onProgress && mappedCards.length > 0) {
 			try {
 				await onProgress({
 					currentIndex: 0,
-					totalCards: cards.length,
-					currentCard: cards[0],
+					totalCards: mappedCards.length,
+					currentCard: mappedCards[0],
 					stats: { ...stats },
 					dryRun,
 					errors: [...syncErrors]
@@ -1361,15 +1426,26 @@ export async function syncRoadmap(options: SyncOptions): Promise<SyncResult> {
 		}
 
 		// Process each card
-		for (let i = 0; i < cards.length; i++) {
+		for (let i = 0; i < mappedCards.length; i++) {
 			if (signal?.aborted) {
 				roadmapLogger.info(
-					`Sync canceled by user${syncId ? ` [${syncId}]` : ''} for guild ${guild.id} after processing ${i}/${cards.length} cards`
+					`Sync canceled by user${syncId ? ` [${syncId}]` : ''} for guild ${guild.id} after processing ${i}/${mappedCards.length} cards`
 				)
 				throw new SyncCanceledError()
 			}
 
-			const card = cards[i]
+			const card = mappedCards[i]
+			
+			// Skip cards that are tracked but not synced to forums
+			const trackOnly = (card.metadata as { trackOnly?: boolean })?.trackOnly
+			if (trackOnly) {
+				// Still track in syncedPosts but without thread ID
+				setSyncedPost(guild.id, card.id, '')
+				const originalStatus = (card.metadata as { originalStatus?: string })?.originalStatus || card.column
+				roadmapLogger.debug(`Skipping forum sync for card ${card.id} (track-only status: ${originalStatus})`)
+				continue
+			}
+			
 			try {
 				// Get the tag mapping for this card's column
 				const labelToTagId = forumTagMappings.get(card.column) || new Map<string, string>()
@@ -1404,7 +1480,7 @@ export async function syncRoadmap(options: SyncOptions): Promise<SyncResult> {
 				try {
 					await onProgress({
 						currentIndex: i,
-						totalCards: cards.length,
+						totalCards: mappedCards.length,
 						currentCard: card,
 						stats: { ...stats },
 						dryRun,
@@ -1429,7 +1505,7 @@ export async function syncRoadmap(options: SyncOptions): Promise<SyncResult> {
 
 		// Return sync result
 		return {
-			cards,
+			cards: mappedCards,
 			columns,
 			syncedAt: new Date(),
 			stats,
