@@ -5,5 +5,8 @@ export default <Config>{
 		intents: ['Guilds']
 	},
 	plugins: [],
+	seed: {
+		description: 'Adds roadmap configuration with Jira provider defaults.'
+	},
 	type: 'plugin'
 }
