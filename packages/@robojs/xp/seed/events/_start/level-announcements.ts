@@ -70,7 +70,7 @@ export default async () => {
 
 			// Create visual progress bar using Unicode blocks (15 blocks total)
 			const filledBlocks = Math.floor((progress.percentage / 100) * 15)
-			const progressBar = '█'.repeat(filledBlocks) + '░'.repeat(15 - filledBlocks)
+			const progressBar = '▰'.repeat(filledBlocks) + '▱'.repeat(15 - filledBlocks)
 
 			// ===== Build Level-Up Embed =====
 			const embed = new EmbedBuilder()
@@ -82,7 +82,7 @@ export default async () => {
 					{ name: 'Current Level', value: `${newLevel}`, inline: true },
 					{ name: 'Total XP', value: `${totalXp.toLocaleString()}`, inline: true },
 					{ name: 'Next Level', value: `${nextLevelXp.toLocaleString()} XP`, inline: true },
-					{ name: 'Progress', value: `${progressBar} ${progress.percentage.toFixed(1)}%`, inline: false }
+					{ name: 'Progress', value: `${progressBar} ${progress.percentage.toFixed(1)}% (${progress.current.toLocaleString()} / ${progress.needed.toLocaleString()})`, inline: false }
 				)
 				.setFooter({ text: `Keep chatting to reach Level ${newLevel + 1}!` })
 				.setTimestamp()
