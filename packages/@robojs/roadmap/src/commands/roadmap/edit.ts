@@ -40,7 +40,7 @@ import type { CommandResult } from 'robo.js'
 import { getProvider, isProviderReady, options } from '../../events/_start.js'
 import { canUserCreateCards, getSettings, getSyncedPostId } from '../../core/settings.js'
 import type { UpdateCardInput, RoadmapCard, RoadmapColumn } from '../../types.js'
-import { formatCardContent, moveThreadToNewForum } from '../../core/sync-engine.js'
+import { formatCardContent, formatThreadName, moveThreadToNewForum } from '../../core/sync-engine.js'
 import { client } from 'robo.js'
 import { roadmapLogger } from '../../core/logger.js'
 import { getForumChannelForColumn } from '../../core/forum-manager.js'
@@ -640,7 +640,7 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 	if (syncedThread && !threadWasMoved) {
 		try {
 			if (result.card.title !== currentCard.title) {
-				await syncedThread.edit({ name: result.card.title.substring(0, 100) })
+				await syncedThread.edit({ name: formatThreadName(result.card, interaction.guildId!) })
 			}
 
 			const starterMessage = await syncedThread.fetchStarterMessage()

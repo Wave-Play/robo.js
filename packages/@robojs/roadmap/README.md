@@ -265,6 +265,9 @@ export default {
 	// Whether /roadmap add and /roadmap edit replies are ephemeral (true) or visible in-channel (false)
 	ephemeralCommands: true,
 
+	// Default template for Discord thread titles (can be overridden per-guild)
+	threadTitleTemplate: "[{id}] {title}",
+
 	// Reserved for future automatic sync feature
 	autoSync: false,
 
@@ -280,6 +283,7 @@ export default {
 | `provider`             | `RoadmapProvider \| ProviderConfig` | required | Provider instance or config object                                          |
 | `autocompleteCacheTtl` | `number`                            | `300000` | Cache duration in milliseconds for autocomplete                             |
 | `ephemeralCommands`    | `boolean`                           | `true`   | Controls whether `/roadmap add` and `/roadmap edit` replies are ephemeral   |
+| `threadTitleTemplate`  | `string`                            | `undefined` | Default template for formatting Discord thread titles (see [Thread Title Templates](#-thread-title-templates)) |
 | `autoSync`             | `boolean`                           | `false`  | Reserved for future automatic sync                                          |
 | `syncInterval`         | `number \| null`                    | `null`   | Reserved for future sync interval                                           |
 
@@ -347,6 +351,75 @@ export default {
 - **Private mode**: Only authorized roles can view forum channels
 
 Configure access mode via `/roadmap setup` or the settings API.
+
+## 🏷️ Thread Title Templates
+
+Customize how Discord thread titles are formatted using template strings with placeholders.
+
+### Template Format
+
+Templates support two placeholders:
+- `{id}` - The card ID (e.g., "ROBO-23", "PROJ-123")
+- `{title}` - The card title
+
+### Configuration
+
+**Global Default (Plugin Options):**
+
+Set a default template for all guilds in your plugin configuration:
+
+```typescript
+// config/plugins/robojs/roadmap.ts
+export default {
+	provider: { /* ... */ },
+	threadTitleTemplate: "[{id}] {title}" // Default for all guilds
+}
+```
+
+**Per-Guild Override (Settings API):**
+
+Override the global default per-guild using the settings API:
+
+```typescript
+import { updateSettings } from '@robojs/roadmap'
+
+// Set custom template for a specific guild
+updateSettings(guildId, {
+	threadTitleTemplate: "{id} - {title}"
+})
+```
+
+### Examples
+
+```typescript
+// Default format: "[ROBO-23] Lorem ipsum"
+threadTitleTemplate: "[{id}] {title}"
+
+// Alternative format: "ROBO-23 - Lorem ipsum"
+threadTitleTemplate: "{id} - {title}"
+
+// Title first: "Lorem ipsum (ROBO-23)"
+threadTitleTemplate: "{title} ({id})"
+
+// Just ID: "ROBO-23"
+threadTitleTemplate: "{id}"
+
+// Just title (same as undefined/empty)
+threadTitleTemplate: "{title}"
+```
+
+### Behavior
+
+- **Character Limit**: Discord thread names have a 100 character limit. The template system automatically truncates the `{title}` portion while preserving the template structure (including `{id}`).
+- **Fallback**: If no template is provided (or it's empty), thread titles use just the card title.
+- **Precedence**: Guild-specific settings override the global plugin default.
+- **Sync Updates**: Running `/roadmap sync` will update all existing thread titles to match the current template configuration.
+
+### Use Cases
+
+- **Consistent formatting**: Ensure all threads follow your team's naming convention
+- **Easy identification**: Include card IDs in thread titles for quick reference
+- **Custom branding**: Format titles to match your organization's style guide
 
 ## 🧰 Programmatic API
 

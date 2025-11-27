@@ -90,7 +90,7 @@ import { client } from 'robo.js'
 import { ChannelType, type ForumChannel, type ThreadChannel } from 'discord.js'
 import { getProvider, isProviderReady } from '../../../../events/_start.js'
 import { getSyncedPostId } from '../../../../core/settings.js'
-import { formatCardContent, moveThreadToNewForum, syncSingleCard } from '../../../../core/sync-engine.js'
+import { formatCardContent, formatThreadName, moveThreadToNewForum, syncSingleCard } from '../../../../core/sync-engine.js'
 import { getForumChannelForColumn } from '../../../../core/forum-manager.js'
 import {
 	getGuildFromRequest,
@@ -532,7 +532,7 @@ export default wrapHandler(async (request: RoboRequest): Promise<ApiResponse<Get
 
 							// Update thread name to match card title
 							try {
-								await thread.edit({ name: result.card.title.substring(0, 100) })
+								await thread.edit({ name: formatThreadName(result.card, guild.id) })
 							} catch (error) {
 								const errorCode =
 									error && typeof error === 'object' && 'code' in error ? (error as { code: number }).code : undefined

@@ -8,10 +8,12 @@ import {
 	addThreadToHistory,
 	getCurrentThreadInfo,
 	getThreadForColumn,
-	getDiscordUserIdForJiraName
+	getDiscordUserIdForJiraName,
+	getSettings
 } from './settings.js'
 import { getAllForumChannels, updateForumTagsForColumn } from './forum-manager.js'
 import { roadmapLogger } from './logger.js'
+import { options } from '../events/_start.js'
 
 /**
  * Error thrown when a sync is canceled via AbortSignal.
@@ -225,6 +227,90 @@ export async function formatCardContent(
 }
 
 /**
+ * Formats a roadmap card title for use as a Discord thread name.
+ *
+ * Uses a configurable template string from guild settings, supporting placeholders:
+ * - `{id}` - The card ID (e.g., "ROBO-23")
+ * - `{title}` - The card title
+ *
+ * If no template is provided or it's empty, uses just the card title.
+ * Handles Discord's 100 character limit by truncating the title portion while
+ * preserving the template structure.
+ *
+ * @param card - The roadmap card to format.
+ * @param guildId - The Discord guild ID for looking up settings.
+ * @returns Formatted thread name respecting Discord's 100 character limit.
+ *
+ * @example
+ * ```ts
+ * const threadName = formatThreadName(card, guildId);
+ * // With threadTitleTemplate: "[{id}] {title}"
+ * // Returns: "[ROBO-23] Lorem ipsum"
+ * // With threadTitleTemplate: "{id} - {title}"
+ * // Returns: "ROBO-23 - Lorem ipsum"
+ * // With no template or empty string
+ * // Returns: "Lorem ipsum"
+ * ```
+ */
+export function formatThreadName(card: RoadmapCard, guildId: string): string {
+	const settings = getSettings(guildId)
+	// Check guild-specific setting first, then fall back to plugin default
+	const template = settings.threadTitleTemplate ?? options.threadTitleTemplate
+
+	// If no template or empty, use just the title (backward compatible)
+	if (!template || template.trim() === '') {
+		return card.title.length > 100 ? card.title.substring(0, 97) + '...' : card.title
+	}
+
+	// Replace placeholders in template
+	let threadName = template
+		.replace(/\{id\}/g, card.id)
+		.replace(/\{title\}/g, card.title)
+
+	// If the result fits within 100 characters, we're done
+	if (threadName.length <= 100) {
+		return threadName
+	}
+
+	// Need to truncate - find where {title} appears and truncate that portion
+	const titlePlaceholder = '{title}'
+	const titleIndex = template.indexOf(titlePlaceholder)
+
+	if (titleIndex === -1) {
+		// No {title} placeholder, just truncate the whole thing
+		return threadName.length > 100 ? threadName.substring(0, 97) + '...' : threadName
+	}
+
+	// Calculate the fixed portion (everything except {title})
+	const beforeTitle = template.substring(0, titleIndex)
+	const afterTitle = template.substring(titleIndex + titlePlaceholder.length)
+	const fixedPortion = beforeTitle.replace(/\{id\}/g, card.id) + afterTitle.replace(/\{id\}/g, card.id)
+	const fixedLength = fixedPortion.length
+
+	// Calculate how much space is left for the title
+	const maxTitleLength = 100 - fixedLength
+
+	if (maxTitleLength <= 0) {
+		// Fixed portion itself is too long, just truncate everything
+		return threadName.length > 100 ? threadName.substring(0, 97) + '...' : threadName
+	}
+
+	// Truncate title to fit
+	let truncatedTitle: string
+	if (card.title.length > maxTitleLength) {
+		truncatedTitle = card.title.substring(0, maxTitleLength - 3) + '...'
+	} else {
+		truncatedTitle = card.title
+	}
+
+	// Rebuild with truncated title
+	threadName = beforeTitle.replace(/\{id\}/g, card.id) + truncatedTitle + afterTitle.replace(/\{id\}/g, card.id)
+
+	// Final safety check: ensure we never exceed 100 characters
+	return threadName.length > 100 ? threadName.substring(0, 100) : threadName
+}
+
+/**
  * Determines whether a thread has user activity beyond the starter message.
  *
  * The Discord API includes the starter message in the `messageCount`, so a value greater
@@ -293,7 +379,7 @@ export async function moveThreadToNewForum(
 
 	const totalMessages = existingThread.messageCount ?? 0
 	const userActivity = hasUserMessages(existingThread)
-	const threadName = card.title.length > 100 ? `${card.title.substring(0, 97)}...` : card.title
+	const threadName = formatThreadName(card, guildId)
 
 	// Always use clean card content for starter message
 	const formattedContent = await formatCardContent(card, guildId, targetForum.guild)
@@ -578,7 +664,7 @@ async function tryReuseHistoricalThread(
 		.map((label) => labelToTagId.get(label.toLowerCase()))
 		.filter((tagId): tagId is string => Boolean(tagId))
 		.slice(0, 5)
-	const reuseThreadName = card.title.length > 100 ? card.title.substring(0, 97) + '...' : card.title
+	const reuseThreadName = formatThreadName(card, guildId)
 
 	try {
 		// Update thread metadata (name and tags)
@@ -913,7 +999,7 @@ async function syncCard(
 		.filter((tagId): tagId is string => Boolean(tagId))
 		.slice(0, 5)
 	const formattedContent = await formatCardContent(card, guildId, forum.guild)
-	const threadName = card.title.length > 100 ? card.title.substring(0, 97) + '...' : card.title
+	const threadName = formatThreadName(card, guildId)
 
 	// Branch 2: Handle column move with new thread creation
 	if (existingThread && existingThread.parentId && existingThread.parentId !== forum.id) {

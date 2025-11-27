@@ -147,6 +147,30 @@ export interface RoadmapSettings {
 	 * ```
 	 */
 	assigneeMapping?: Record<string, string>
+
+	/**
+	 * Template string for formatting Discord thread titles.
+	 *
+	 * Supports placeholders: `{id}` for the card ID and `{title}` for the card title.
+	 * If not provided or empty, thread titles will use just the card title.
+	 * The template is always respected even if it means truncating the title portion
+	 * to fit Discord's 100 character limit.
+	 *
+	 * @defaultValue undefined (uses just the title)
+	 *
+	 * @example
+	 * ```ts
+	 * // Default format: "[ROBO-23] Lorem ipsum"
+	 * threadTitleTemplate: "[{id}] {title}"
+	 *
+	 * // Alternative format: "ROBO-23 - Lorem ipsum"
+	 * threadTitleTemplate: "{id} - {title}"
+	 *
+	 * // Just title (same as undefined/empty)
+	 * threadTitleTemplate: "{title}"
+	 * ```
+	 */
+	threadTitleTemplate?: string
 }
 
 /**

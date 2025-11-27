@@ -467,6 +467,7 @@ sequenceDiagram
   - Archive: `thread.setArchived(true)`
 - Tag mapping: case-insensitive, up to 5 applied thread tags
 - Names and content limits: 100 chars for name; 2000 chars for forum thread starter messages (Discord limit)
+- Thread name formatting: Uses `formatThreadName(card, guildId)` which applies `threadTitleTemplate` from guild settings (or plugin default). Template supports `{id}` and `{title}` placeholders. Smart truncation preserves template structure while respecting 100-char limit.
 - Error handling:
   - 10008 (Unknown message/thread): recreate
   - 403 (Missing permissions): bubble up with clear message
@@ -480,6 +481,19 @@ sequenceDiagram
   3. Metadata: Assigned to, Labels, Last Updated
 - Truncation strategy prioritizes metadata; description gets truncated first if over 2000 total (forum thread starter message limit)
 - Status/provider URL sections intentionally omitted
+
+### `formatThreadName(card: RoadmapCard, guildId: string)`
+
+- Location: `src/core/sync-engine.ts`
+- Purpose: Format Discord thread names using configurable template strings
+- Template placeholders: `{id}` (card ID) and `{title}` (card title)
+- Configuration precedence: Guild-specific `threadTitleTemplate` setting overrides plugin default from `options.threadTitleTemplate`
+- Fallback: If no template or empty, uses just `card.title` (backward compatible)
+- Truncation logic:
+  - If template contains `{title}`: Only truncates the title portion while preserving template structure (including `{id}`)
+  - If template doesn't contain `{title}`: Truncates entire result
+  - Always respects Discord's 100 character limit
+- Used by: All thread creation/update operations (sync, edit command, API endpoints, thread moves, thread reuse)
 
 ### Discord API limits
 
@@ -547,6 +561,8 @@ sequenceDiagram
 - `syncedPosts?: Record<string, string>`
 - `authorizedCreatorRoles?: string[]`
 - `threadHistory?: Record<string, ThreadHistoryEntry[]>`
+- `assigneeMapping?: Record<string, string>`
+- `threadTitleTemplate?: string` - Per-guild template for formatting Discord thread titles (overrides plugin default)
 
 ### CRUD utilities
 
@@ -563,6 +579,10 @@ sequenceDiagram
 - `getThreadHistory(guildId, cardId)`
 - `addThreadToHistory(guildId, cardId, entry)`
 - `getCurrentThreadInfo(guildId, cardId, threadParentId)`
+- `getAssigneeMapping(guildId)`
+- `setAssigneeMapping(guildId, jiraName, discordUserId)`
+- `removeAssigneeMapping(guildId, jiraName)`
+- `getDiscordUserIdForJiraName(guildId, jiraName)`
 
 ### Thread History Tracking
 
@@ -728,6 +748,9 @@ sequenceDiagram
 ### Plugin Options (`RoadmapPluginOptions` in `src/events/_start.ts`)
 
 - `provider?: ProviderConfig | RoadmapProvider`
+- `autocompleteCacheTtl?: number` (default: 300000 = 5 minutes)
+- `ephemeralCommands?: boolean` (default: true)
+- `threadTitleTemplate?: string` - Default template for formatting Discord thread titles (see Thread Title Templates below)
 - `autoSync?: boolean` (reserved)
 - `syncInterval?: number` (reserved)
 - Example:
@@ -742,7 +765,8 @@ export default {
 			apiToken: process.env.JIRA_API_TOKEN,
 			jql: '(issuetype = Epic AND (labels NOT IN ("Private") OR labels IS EMPTY)) OR labels IN ("Public")'
 		}
-	}
+	},
+	threadTitleTemplate: "[{id}] {title}" // Default format for all guilds
 }
 ```
 
@@ -820,7 +844,7 @@ export default {
 7. Card creation API lacks auth; must add before production.
 8. Provider initialization is graceful; commands show not-configured until fixed.
 9. Settings are per-guild; each guild requires setup.
-10. Thread name truncation at 100 chars.
+10. Thread name truncation at 100 chars. Template system (`formatThreadName()`) handles truncation intelligently: if template contains `{title}`, only the title portion is truncated while preserving the template structure (including `{id}`). If template doesn't contain `{title}`, the entire result is truncated.
 11. Content truncation preserves metadata over description.
 12. Autocomplete cache TTL ~60s; recent changes may lag.
 13. Thread movement creates new threads when columns change; old threads are locked/archived, not deleted.
@@ -835,6 +859,7 @@ export default {
 22. Bot restarts clear the `activeSyncs` map; interactions expire in 15 minutes, so this is acceptable.
 23. Concurrent syncs are isolated by `syncId`; canceling one does not impact others.
 24. Abort signal is checked per-card; typical cancellation latency is <1s (time to finish current card).
+25. Thread title templates: `threadTitleTemplate` can be set globally in plugin options or per-guild in settings. Guild settings override plugin default. Template supports `{id}` and `{title}` placeholders. Empty/undefined template uses just the card title. Running `/roadmap sync` updates all existing thread titles to match current template configuration.
 
 ## Testing Patterns
 
@@ -951,7 +976,7 @@ Key constants:
 Key helpers:
 
 - Provider: `getProvider()`, `isProviderReady()`
-- Sync: `syncRoadmap()`, `formatCardContent()`
+- Sync: `syncRoadmap()`, `formatCardContent()`, `formatThreadName()`
 - Forum: `createOrGetRoadmapCategory()`, `toggleForumAccess()`, `updateForumTagsForColumn()`
 - Settings: `getSettings()`, `updateSettings()`, `getSyncedPostId()`, `setSyncedPost()`, `canUserCreateCards()`
 - API utils: `success()`, `error()`, `getGuildFromRequest()`, `validateMethod()`, `wrapHandler()`
@@ -961,6 +986,7 @@ Types:
 - `RoadmapCard`, `RoadmapColumn`, `ProviderInfo`, `ProviderConfig`
 - `CreateCardInput`, `CreateCardResult`, `UpdateCardInput`, `UpdateCardResult`
 - `SyncResult`, `RoadmapSettings`, `RoadmapPluginOptions`
+- `ThreadHistoryEntry`
 
 Discord limits:
 

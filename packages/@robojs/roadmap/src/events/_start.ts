@@ -126,6 +126,24 @@ export interface RoadmapPluginOptions {
 	 * ```
 	 */
 	ephemeralCommands?: boolean
+
+	/**
+	 * Default template string for formatting Discord thread titles.
+	 *
+	 * Supports placeholders: `{id}` for the card ID and `{title}` for the card title.
+	 * This serves as a default that can be overridden per-guild via guild settings.
+	 * If not provided, thread titles will use just the card title.
+	 *
+	 * @defaultValue undefined (uses just the title)
+	 *
+	 * @example
+	 * ```ts
+	 * export default {
+	 *   threadTitleTemplate: "[{id}] {title}" // Default format for all guilds
+	 * }
+	 * ```
+	 */
+	threadTitleTemplate?: string
 }
 
 // Create namespaced logger for initialization
