@@ -40,7 +40,7 @@ import type { CommandResult } from 'robo.js'
 import { getProvider, isProviderReady, options } from '../../events/_start.js'
 import { canUserCreateCards, getSettings, getSyncedPostId } from '../../core/settings.js'
 import type { UpdateCardInput, RoadmapCard, RoadmapColumn } from '../../types.js'
-import { formatCardContent, formatThreadName, moveThreadToNewForum } from '../../core/sync-engine.js'
+import { formatCardContentV2, formatThreadName, moveThreadToNewForum } from '../../core/sync-engine.js'
 import { client } from 'robo.js'
 import { roadmapLogger } from '../../core/logger.js'
 import { getForumChannelForColumn } from '../../core/forum-manager.js'
@@ -645,8 +645,9 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 
 			const starterMessage = await syncedThread.fetchStarterMessage()
 			if (starterMessage && starterMessage.author?.id === client.user?.id) {
-				const formattedContent = await formatCardContent(result.card, interaction.guildId!, interaction.guild!, 2000)
-				await starterMessage.edit({ content: formattedContent })
+				const { flags, components } = await formatCardContentV2(result.card, interaction.guildId!, interaction.guild!)
+				// Explicitly remove content field when using Components v2
+				await starterMessage.edit({ flags, components, content: null })
 			}
 
 			const forum = syncedThread.parent

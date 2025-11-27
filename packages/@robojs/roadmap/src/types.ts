@@ -381,6 +381,36 @@ export type UpdateCardResult = {
 // Synchronization Results ---------------------------------------------------
 
 /**
+ * Represents an error that occurred during card synchronization.
+ *
+ * @remarks
+ * This type captures detailed error information for individual card sync failures,
+ * enabling users to diagnose and fix issues with specific cards.
+ */
+export type SyncError = {
+	/**
+	 * Unique identifier of the card that failed to sync.
+	 */
+	readonly cardId: string
+	/**
+	 * Title of the card that failed to sync.
+	 */
+	readonly cardTitle: string
+	/**
+	 * Human-readable error message describing what went wrong.
+	 */
+	readonly errorMessage: string
+	/**
+	 * Optional categorization of the error type for better error handling.
+	 */
+	readonly errorType?: 'discord_api' | 'provider_api' | 'validation' | 'unknown'
+	/**
+	 * Optional URL to the card in the provider system.
+	 */
+	readonly cardUrl?: string
+}
+
+/**
  * Captures the result of a synchronization run between a provider and the roadmap surface.
  *
  * @remarks
@@ -426,6 +456,10 @@ export type SyncResult = {
 		 */
 		readonly errors: number
 	}
+	/**
+	 * Detailed list of errors that occurred during synchronization.
+	 */
+	readonly errors: readonly SyncError[]
 }
 
 // Date Range Filtering ------------------------------------------------------
@@ -622,4 +656,11 @@ export interface SyncData {
 	 * unnecessary callbacks and potential memory leaks.
 	 */
 	readonly cleanupTimeoutId?: ReturnType<typeof setTimeout>
+	/**
+	 * Optional list of errors that occurred during synchronization.
+	 *
+	 * Stored temporarily to allow users to view error details after sync completion.
+	 * Cleaned up when the sync entry is removed (after timeout or when errors are viewed).
+	 */
+	readonly errors?: readonly SyncError[]
 }

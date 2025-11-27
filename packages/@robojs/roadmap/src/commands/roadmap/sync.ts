@@ -342,14 +342,25 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 			new TextDisplayBuilder().setContent(statusText)
 		])
 
-		// For completion state, show a disabled completion button; otherwise show cancel option
+		// For completion state, show completion button (enabled if errors exist); otherwise show cancel option
 		if (isComplete) {
+			const hasErrors = update && update.stats.errors > 0
+			const buttonLabel = hasErrors
+				? `${dryRun ? 'Dry Run' : 'Sync Complete'} (${update.stats.errors} error${update.stats.errors === 1 ? '' : 's'})`
+				: dryRun
+					? 'Dry Run (preview only)'
+					: 'Sync Complete'
+
 			statusSection.setButtonAccessory(
 				new ButtonBuilder()
-					.setCustomId('roadmap:sync:completed') // never actually used
-					.setLabel(dryRun ? 'Dry Run (preview only)' : 'Sync Complete')
-					.setStyle(ButtonStyle.Secondary)
-					.setDisabled(true)
+					.setCustomId(
+						hasErrors
+							? `${Buttons.ViewSyncErrors.id}-${info.syncId}`
+							: 'roadmap:sync:completed' // never actually used
+					)
+					.setLabel(buttonLabel)
+					.setStyle(hasErrors ? ButtonStyle.Danger : ButtonStyle.Secondary)
+					.setDisabled(!hasErrors)
 			)
 		} else {
 			statusSection.setButtonAccessory(
@@ -460,7 +471,19 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 				updatedAt: new Date()
 			},
 			stats: result.stats,
-			dryRun
+			dryRun,
+			errors: result.errors
+		}
+
+		// Store errors in activeSyncs before cleanup (for button handler access)
+		if (result.errors.length > 0) {
+			const syncData = activeSyncs.get(syncId)
+			if (syncData) {
+				activeSyncs.set(syncId, {
+					...syncData,
+					errors: result.errors
+				})
+			}
 		}
 
 		// Build completion components
@@ -494,8 +517,35 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 		}
 
 		clearSyncTimeout(syncId)
-		activeSyncs.delete(syncId)
-		roadmapLogger.debug(`Cleaned up sync ${syncId} from active syncs`)
+		
+		// Only delete sync entry if there are no errors
+		// If errors exist, keep the entry so users can view them (cleanup timer will clean it up after 15 minutes)
+		if (result.errors.length === 0) {
+			activeSyncs.delete(syncId)
+			roadmapLogger.debug(`Cleaned up sync ${syncId} from active syncs`)
+		} else {
+			// Schedule cleanup timer for error viewing (15 minutes)
+			const ERROR_VIEWING_TIMEOUT_MS = 15 * 60 * 1000
+			const errorTimeoutId = setTimeout(() => {
+				if (activeSyncs.has(syncId)) {
+					roadmapLogger.debug(
+						`Auto-cleaning sync ${syncId} error data after 15 minutes`
+					)
+					activeSyncs.delete(syncId)
+				}
+			}, ERROR_VIEWING_TIMEOUT_MS)
+			
+			// Update sync data with cleanup timeout
+			const syncData = activeSyncs.get(syncId)
+			if (syncData) {
+				activeSyncs.set(syncId, {
+					...syncData,
+					cleanupTimeoutId: errorTimeoutId
+				})
+			}
+			
+			roadmapLogger.debug(`Keeping sync ${syncId} in active syncs for error viewing (${result.errors.length} errors, cleanup in 15 minutes)`)
+		}
 
 		roadmapLogger.info(
 			`Sync ${syncId} completed by @${interaction.user.username} in guild ${interaction.guildId}: ` +
@@ -523,8 +573,24 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 			const processedLabel =
 				totalCards > 0 ? `${processedCards}/${totalCards}` : `${processedCards}`
 
+			const errors = latestProgress?.errors || []
+			const hasErrors = stats.errors > 0
+
+			// Store errors in activeSyncs before cleanup (for button handler access)
+			if (hasErrors && errors.length > 0) {
+				const syncData = activeSyncs.get(syncId)
+				if (syncData) {
+					activeSyncs.set(syncId, {
+						...syncData,
+						errors
+					})
+				}
+			}
+
 			clearSyncTimeout(syncId)
-			activeSyncs.delete(syncId)
+			if (!hasErrors) {
+				activeSyncs.delete(syncId)
+			}
 			roadmapLogger.debug(`Cleaned up sync ${syncId} from active syncs after cancellation`)
 
 			roadmapLogger.info(
@@ -532,6 +598,12 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 			)
 
 			const noProgress = latestProgress === null
+			const buttonLabel = hasErrors
+				? `${dryRun ? 'Dry Run' : 'Sync Complete'} (${stats.errors} error${stats.errors === 1 ? '' : 's'})`
+				: dryRun
+					? 'Dry Run (preview only)'
+					: 'Sync Complete'
+
 			const cancellationContainer = new ContainerBuilder()
 				.setAccentColor(Colors.Yellow)
 				.addSectionComponents(
@@ -544,10 +616,14 @@ export default async function (interaction: ChatInputCommandInteraction): Promis
 					])
 					.setButtonAccessory(
 						new ButtonBuilder()
-							.setCustomId('roadmap:sync:completed') // never actually used
-							.setLabel(dryRun ? 'Dry Run (preview only)' : 'Sync Complete')
-							.setStyle(ButtonStyle.Secondary)
-							.setDisabled(true)
+							.setCustomId(
+								hasErrors
+									? `${Buttons.ViewSyncErrors.id}-${syncId}`
+									: 'roadmap:sync:completed' // never actually used
+							)
+							.setLabel(buttonLabel)
+							.setStyle(hasErrors ? ButtonStyle.Danger : ButtonStyle.Secondary)
+							.setDisabled(!hasErrors)
 					)
 				)
 

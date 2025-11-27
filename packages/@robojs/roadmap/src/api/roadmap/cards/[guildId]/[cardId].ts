@@ -90,7 +90,7 @@ import { client } from 'robo.js'
 import { ChannelType, type ForumChannel, type ThreadChannel } from 'discord.js'
 import { getProvider, isProviderReady } from '../../../../events/_start.js'
 import { getSyncedPostId } from '../../../../core/settings.js'
-import { formatCardContent, formatThreadName, moveThreadToNewForum, syncSingleCard } from '../../../../core/sync-engine.js'
+import { formatCardContentV2, formatThreadName, moveThreadToNewForum, syncSingleCard } from '../../../../core/sync-engine.js'
 import { getForumChannelForColumn } from '../../../../core/forum-manager.js'
 import {
 	getGuildFromRequest,
@@ -579,11 +579,11 @@ export default wrapHandler(async (request: RoboRequest): Promise<ApiResponse<Get
 
 								// Only edit if message was created by bot
 								if (starter && starter.author?.id === client.user?.id) {
-									// Format card content to fit within Discord message limits
-									const formattedContent = await formatCardContent(result.card, guild.id, guild, 2000)
+									// Format card content with Components v2
+									const { flags, components } = await formatCardContentV2(result.card, guild.id, guild)
 
-									// Edit message with updated content
-									await starter.edit({ content: formattedContent })
+									// Edit message with updated content - explicitly remove content field for Components v2
+									await starter.edit({ flags, components, content: null })
 								}
 							} catch (error) {
 								const errorCode =

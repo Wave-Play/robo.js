@@ -91,6 +91,16 @@ export const Buttons = {
 	 */
 	ManageAuthorizedRoles: {
 		id: ID_NAMESPACE + 'button-manage-authorized-roles'
+	},
+	/**
+	 * Base ID for the view sync errors button.
+	 *
+	 * The full custom ID is constructed as `${id}-${syncId}` so each sync's errors can be
+	 * uniquely identified. Clicking this button shows an ephemeral message with a browsable
+	 * list of errors that occurred during synchronization.
+	 */
+	ViewSyncErrors: {
+		id: ID_NAMESPACE + 'button-view-sync-errors'
 	}
 } as const
 

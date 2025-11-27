@@ -1,6 +1,17 @@
 import type { Guild, ForumChannel, ThreadChannel, Message } from 'discord.js'
+import {
+	ContainerBuilder,
+	SectionBuilder,
+	TextDisplayBuilder,
+	ThumbnailBuilder,
+	SeparatorBuilder,
+	SeparatorSpacingSize,
+	MessageFlags,
+	ButtonBuilder,
+	ButtonStyle
+} from 'discord.js'
 import type { RoadmapProvider } from '../providers/base.js'
-import type { RoadmapCard, RoadmapColumn, SyncResult } from '../types.js'
+import type { RoadmapCard, RoadmapColumn, SyncResult, SyncError } from '../types.js'
 import {
 	updateSettings,
 	getSyncedPostId,
@@ -88,6 +99,8 @@ export interface SyncProgressUpdate {
 	}
 	/** Whether this is a dry run (no changes applied) */
 	readonly dryRun: boolean
+	/** List of errors that have occurred during synchronization */
+	readonly errors: readonly SyncError[]
 }
 
 /**
@@ -224,6 +237,178 @@ export async function formatCardContent(
 	}
 
 	return fullContent
+}
+
+/**
+ * Formats a roadmap card into Discord Components v2 structure with rich presentation.
+ *
+ * Uses ContainerBuilder, SectionBuilder, and TextDisplayBuilder to create a visually
+ * appealing layout with the card description, assignee avatar as thumbnail accessory,
+ * and metadata (assignees, labels, last updated) in separate sections.
+ *
+ * Assignees are redacted - only mapped Discord users are mentioned, and Jira names are never shown.
+ * The first assignee's avatar is displayed as a thumbnail accessory in the main content section.
+ *
+ * @param card - The roadmap card to format.
+ * @param guildId - The Discord guild ID for looking up assignee mappings.
+ * @param guild - Optional guild object for validating Discord user existence and fetching avatars.
+ * @returns Object containing Components v2 structure with flags and components array.
+ *
+ * @example
+ * ```ts
+ * const { flags, components } = await formatCardContentV2(card, guildId, guild);
+ * await thread.send({ flags, components });
+ * ```
+ */
+export async function formatCardContentV2(
+	card: RoadmapCard,
+	guildId: string,
+	guild?: Guild
+): Promise<{ flags: number; components: ContainerBuilder[] }> {
+	const desc = card.description || 'No description provided.'
+
+	// Create main container
+	const container = new ContainerBuilder()
+
+	// Build assignee information for thumbnail and mentions
+	let firstAssigneeAvatarUrl: string | null = null
+	const discordMentions: string[] = []
+
+	if (card.assignees && card.assignees.length > 0) {
+		for (const assignee of card.assignees) {
+			const discordUserId = getDiscordUserIdForJiraName(guildId, assignee.name)
+			if (!discordUserId) {
+				continue
+			}
+
+			// If guild is provided, validate user exists and fetch avatar
+			if (guild) {
+				try {
+					const member = await guild.members.fetch(discordUserId).catch(() => null)
+					if (!member) {
+						roadmapLogger.warn(
+							`Assignee mapping for Jira name "${assignee.name}" points to Discord user ${discordUserId} who is not in guild ${guildId}`
+						)
+						continue
+					}
+
+					// Use first valid assignee's avatar for thumbnail
+					if (!firstAssigneeAvatarUrl) {
+						firstAssigneeAvatarUrl = member.displayAvatarURL({ size: 256 }) || member.user.displayAvatarURL({ size: 256 })
+					}
+
+					discordMentions.push(`<@${discordUserId}>`)
+				} catch (error) {
+					roadmapLogger.warn(
+						`Failed to validate Discord user ${discordUserId} for Jira assignee "${assignee.name}" in guild ${guildId}: ${(error as Error).message}`
+					)
+				}
+			} else {
+				// No guild provided - still add mention but no avatar
+				discordMentions.push(`<@${discordUserId}>`)
+			}
+		}
+	}
+
+	// Build metadata text displays first to calculate their total length
+	// Discord counts ALL TextDisplay content across all components (4000 char total limit)
+	const metadataTexts: string[] = []
+	
+	if (discordMentions.length > 0) {
+		metadataTexts.push(`**Assigned to:** ${discordMentions.join(', ')}`)
+	}
+	
+	if (card.labels && card.labels.length > 0) {
+		metadataTexts.push(`**Labels:** ${card.labels.join(', ')}`)
+	}
+	
+	metadataTexts.push(`**Last Updated:** ${card.updatedAt.toLocaleDateString()}`)
+	
+	const metadataTotalLength = metadataTexts.reduce((sum, text) => sum + text.length, 0)
+
+	// Truncate description to account for metadata text
+	// Total limit is 4000 characters across ALL TextDisplay components
+	const TEXT_DISPLAY_MAX_LENGTH = 4000
+	const truncationMarker = '\n... (truncated)'
+	const codeBlockCloser = '\n```'
+	
+	// Calculate available space for description (accounting for metadata)
+	const availableForDesc = TEXT_DISPLAY_MAX_LENGTH - metadataTotalLength
+	let truncatedDesc = desc
+	
+	if (desc.length > availableForDesc) {
+		roadmapLogger.warn(
+			`formatCardContentV2: Truncating description for card ${card.id} (original: ${desc.length}, available: ${availableForDesc}, metadata: ${metadataTotalLength})`
+		)
+		
+		// Account for truncation marker and potential code block closer
+		const maxDescLength = availableForDesc - truncationMarker.length - codeBlockCloser.length
+		truncatedDesc = desc.substring(0, Math.max(0, maxDescLength))
+		
+		// Check if we're in the middle of a code block (unclosed ```)
+		const codeBlockMatches = truncatedDesc.match(/```/g)
+		const codeBlockCount = codeBlockMatches ? codeBlockMatches.length : 0
+		
+		// If odd number of ```, we're in the middle of a code block - close it
+		if (codeBlockCount % 2 === 1) {
+			truncatedDesc += codeBlockCloser
+		}
+		
+		truncatedDesc += truncationMarker
+		
+		// Final safety check - ensure total doesn't exceed limit
+		const totalLength = truncatedDesc.length + metadataTotalLength
+		if (totalLength > TEXT_DISPLAY_MAX_LENGTH) {
+			// Hard cut description if still over
+			const maxAllowed = TEXT_DISPLAY_MAX_LENGTH - metadataTotalLength
+			truncatedDesc = truncatedDesc.substring(0, Math.max(0, maxAllowed))
+		}
+	}
+
+	// Main content section with description
+	// Sections in Components v2 MUST have an accessory (button or thumbnail)
+	const mainSection = new SectionBuilder().addTextDisplayComponents(
+		new TextDisplayBuilder().setContent(truncatedDesc)
+	)
+
+	// Add thumbnail accessory if we have an assignee avatar, otherwise use placeholder button
+	if (firstAssigneeAvatarUrl) {
+		mainSection.setThumbnailAccessory(
+			new ThumbnailBuilder({ media: { url: firstAssigneeAvatarUrl } })
+		)
+	} else {
+		// Use placeholder button to satisfy Components v2 requirement
+		// Zero-width space label makes it visually minimal
+		mainSection.setButtonAccessory(
+			new ButtonBuilder()
+				.setCustomId(`@robojs/roadmap:card-placeholder:${card.id}`)
+				.setLabel('\u200b') // Zero-width space
+				.setStyle(ButtonStyle.Secondary)
+				.setDisabled(true)
+		)
+	}
+
+	container.addSectionComponents(mainSection)
+
+	// Add separator before metadata
+	container.addSeparatorComponents(
+		new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Large)
+	)
+
+	// Build metadata text displays from pre-calculated texts
+	const metadataDisplays: TextDisplayBuilder[] = metadataTexts.map(
+		(text) => new TextDisplayBuilder().setContent(text)
+	)
+
+	// Add metadata to container
+	if (metadataDisplays.length > 0) {
+		container.addTextDisplayComponents(...metadataDisplays)
+	}
+
+	return {
+		flags: MessageFlags.IsComponentsV2,
+		components: [container]
+	}
 }
 
 /**
@@ -381,12 +566,12 @@ export async function moveThreadToNewForum(
 	const userActivity = hasUserMessages(existingThread)
 	const threadName = formatThreadName(card, guildId)
 
-	// Always use clean card content for starter message
-	const formattedContent = await formatCardContent(card, guildId, targetForum.guild)
+	// Always use clean card content for starter message with Components v2
+	const { flags, components } = await formatCardContentV2(card, guildId, targetForum.guild)
 
 	const newThread = await targetForum.threads.create({
 		name: threadName,
-		message: { content: formattedContent },
+		message: { flags, components },
 		appliedTags,
 		reason: 'Roadmap sync: card moved to new column'
 	})
@@ -675,11 +860,13 @@ async function tryReuseHistoricalThread(
 		})
 		roadmapLogger.debug(`Updated thread metadata for ${candidateThread.id} (card ${card.id})`)
 
-		// Update starter message if bot-authored
+		// Update starter message if bot-authored with Components v2
 		try {
 			const starter = (await candidateThread.fetchStarterMessage()) as Message | null
 			if (starter && starter.author.id === forum.client.user?.id) {
-				await starter.edit({ content: await formatCardContent(card, guildId, forum.guild, 2000) })
+				const { flags, components } = await formatCardContentV2(card, guildId, forum.guild)
+				// Explicitly remove content field when using Components v2
+				await starter.edit({ flags, components, content: null })
 				roadmapLogger.debug(`Updated starter message for thread ${candidateThread.id} (card ${card.id})`)
 			}
 		} catch (error) {
@@ -808,7 +995,7 @@ async function handleColumnMoveWithNewThread(
  * @param existingThreadId - The existing thread ID (if any)
  * @param existingThread - The existing thread (if fetched)
  * @param appliedTags - Tag IDs to apply
- * @param formattedContent - Formatted card content
+ * @param formattedContentV2 - Formatted card content with Components v2 structure
  * @param threadName - Formatted thread name
  * @param guildId - Guild ID for settings operations
  * @param dryRun - Whether this is a dry run
@@ -821,7 +1008,7 @@ async function applyInPlaceOperation(
 	existingThreadId: string | undefined,
 	existingThread: ThreadChannel | null,
 	appliedTags: string[],
-	formattedContent: string,
+	formattedContentV2: { flags: number; components: ContainerBuilder[] },
 	threadName: string,
 	guildId: string,
 	dryRun: boolean
@@ -850,7 +1037,7 @@ async function applyInPlaceOperation(
 	if (operation === 'create') {
 		const thread = await forum.threads.create({
 			name: threadName,
-			message: { content: formattedContent },
+			message: formattedContentV2,
 			appliedTags,
 			reason: 'Roadmap sync: new card'
 		})
@@ -869,10 +1056,9 @@ async function applyInPlaceOperation(
 				if (!channel || !channel.isThread() || channel.parentId !== forum.id) {
 					// Thread was deleted or invalid, treat as create
 					roadmapLogger.warn(`Thread ${existingThreadId} not found for card ${card.id}, creating new thread`)
-					const contentString = typeof formattedContent === 'string' ? formattedContent : await formattedContent
 					const newThread = await forum.threads.create({
 						name: threadName,
-						message: { content: contentString },
+						message: formattedContentV2,
 						appliedTags,
 						reason: 'Roadmap sync: recreating deleted thread'
 					})
@@ -884,11 +1070,12 @@ async function applyInPlaceOperation(
 			}
 			await thread.edit({ name: threadName, appliedTags, reason: 'Roadmap sync: card updated' })
 
-			// Update starter message if bot authored it
-			// Message edits have a 2000 character limit in Discord
+			// Update starter message if bot authored it with Components v2
 			const starter = (await thread.fetchStarterMessage()) as Message | null
 			if (starter && starter.author.id === forum.client.user?.id) {
-				await starter.edit({ content: await formatCardContent(card, guildId, forum.guild) })
+				const { flags, components } = await formatCardContentV2(card, guildId, forum.guild)
+				// Explicitly remove content field when using Components v2
+				await starter.edit({ flags, components, content: null })
 			}
 
 			roadmapLogger.info(`Updated thread for card ${card.id}: ${thread.name}`)
@@ -899,7 +1086,7 @@ async function applyInPlaceOperation(
 				roadmapLogger.warn(`Thread ${existingThreadId} not found for card ${card.id}, creating new thread`)
 				const newThread = await forum.threads.create({
 					name: threadName,
-					message: { content: formattedContent },
+					message: formattedContentV2,
 					appliedTags,
 					reason: 'Roadmap sync: recreating deleted thread'
 				})
@@ -960,7 +1147,7 @@ async function syncCard(
 
 	// If no forum channel found for this column, log error and skip
 	if (!forum) {
-		roadmapLogger.error(`No forum channel found for column ${card.column}, skipping card ${card.id}`)
+		roadmapLogger.warn(`No forum channel found for column ${card.column}, skipping card ${card.id}`)
 		return 'skip'
 	}
 
@@ -998,7 +1185,7 @@ async function syncCard(
 		.map((label) => labelToTagId.get(label.toLowerCase()))
 		.filter((tagId): tagId is string => Boolean(tagId))
 		.slice(0, 5)
-	const formattedContent = await formatCardContent(card, guildId, forum.guild)
+	const formattedContentV2 = await formatCardContentV2(card, guildId, forum.guild)
 	const threadName = formatThreadName(card, guildId)
 
 	// Branch 2: Handle column move with new thread creation
@@ -1007,8 +1194,6 @@ async function syncCard(
 	}
 
 	// Branch 3: Apply in-place operation (create/update/archive)
-	// formattedContent is a Promise<string>, await it before passing
-	const contentString = await formattedContent
 	return await applyInPlaceOperation(
 		card,
 		forum,
@@ -1016,7 +1201,7 @@ async function syncCard(
 		existingThreadId,
 		existingThread,
 		appliedTags,
-		contentString,
+		formattedContentV2,
 		threadName,
 		guildId,
 		dryRun
@@ -1132,6 +1317,31 @@ export async function syncRoadmap(options: SyncOptions): Promise<SyncResult> {
 			errors: 0
 		}
 
+		// Initialize error collection array
+		const syncErrors: SyncError[] = []
+
+		// Helper function to create a SyncError from an error and card
+		const createSyncError = (error: unknown, card: RoadmapCard): SyncError => {
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			let errorType: SyncError['errorType'] = 'unknown'
+
+			if (isDiscordError(error)) {
+				errorType = 'discord_api'
+			} else if (errorMessage.includes('provider') || errorMessage.includes('API')) {
+				errorType = 'provider_api'
+			} else if (errorMessage.includes('validation') || errorMessage.includes('invalid')) {
+				errorType = 'validation'
+			}
+
+			return {
+				cardId: card.id,
+				cardTitle: card.title,
+				errorMessage,
+				errorType,
+				cardUrl: card.url
+			}
+		}
+
 		// Send initial progress update if callback provided
 		if (onProgress && cards.length > 0) {
 			try {
@@ -1140,7 +1350,8 @@ export async function syncRoadmap(options: SyncOptions): Promise<SyncResult> {
 					totalCards: cards.length,
 					currentCard: cards[0],
 					stats: { ...stats },
-					dryRun
+					dryRun,
+					errors: [...syncErrors]
 				})
 			} catch (error) {
 				roadmapLogger.warn(
@@ -1172,6 +1383,10 @@ export async function syncRoadmap(options: SyncOptions): Promise<SyncResult> {
 				stats.errors++
 				roadmapLogger.error(`Failed to sync card ${card.id} (${card.title}):`, error)
 
+				// Collect error details
+				const syncError = createSyncError(error, card)
+				syncErrors.push(syncError)
+
 				// Handle specific Discord API errors
 				if (isDiscordError(error)) {
 					if (error.code === 429) {
@@ -1192,7 +1407,8 @@ export async function syncRoadmap(options: SyncOptions): Promise<SyncResult> {
 						totalCards: cards.length,
 						currentCard: card,
 						stats: { ...stats },
-						dryRun
+						dryRun,
+						errors: [...syncErrors]
 					})
 				} catch (error) {
 					roadmapLogger.warn(
@@ -1216,7 +1432,8 @@ export async function syncRoadmap(options: SyncOptions): Promise<SyncResult> {
 			cards,
 			columns,
 			syncedAt: new Date(),
-			stats
+			stats,
+			errors: syncErrors
 		}
 	} catch (error) {
 		roadmapLogger.error(`Sync failed${options.syncId ? ` [${options.syncId}]` : ''}:`, error)
