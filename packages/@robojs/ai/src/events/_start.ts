@@ -49,6 +49,17 @@ export interface PluginOptions {
 	usage?: PluginUsageOptions
 	/** MCP (Model Context Protocol) server configurations for tool integration. */
 	mcpServers?: MCPTool[]
+	/** MCP error handling configuration. */
+	mcp?: {
+		/** Enable graceful degradation by removing MCP tools on persistent failures. Default: true */
+		gracefulDegradation?: boolean
+		/** Number of extra retry attempts before degrading. Default: 1 */
+		extraRetries?: number
+		/** Base delay in milliseconds for exponential backoff. Default: 500 */
+		baseDelayMs?: number
+		/** Maximum delay in milliseconds for exponential backoff. Default: 2000 */
+		maxDelayMs?: number
+	}
 	/** Hooks to run during engine orchestration events. */
 	hooks?: Partial<Record<HookEvent, Hook>>
 }
@@ -92,7 +103,9 @@ export default async (_client: Client, pluginOptions: PluginOptions) => {
 	if (!options.engine && hasOpenAiKey) {
 		try {
 			const { OpenAiEngine } = await import('@/engines/openai/engine.js')
-			options.engine = new OpenAiEngine()
+			options.engine = new OpenAiEngine({
+				mcp: pluginOptions.mcp
+			})
 		} catch (error) {
 			logger.error('Failed to load the default OpenAI engine', error)
 		}

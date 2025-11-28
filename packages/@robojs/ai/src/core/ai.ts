@@ -635,6 +635,7 @@ async function chat(messages: ChatMessage[], options: ChatOptions): Promise<void
 			channel: channel ?? null,
 			member: member ?? null,
 			mcpCalls: reply.mcpCalls,
+			degradedMcpServers: reply.degradedMcpServers,
 			response: reply,
 			user: user ?? null
 		}

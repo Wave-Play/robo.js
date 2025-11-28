@@ -151,13 +151,24 @@
         allowed_tools: ['resolve-library-id', 'get-library-docs'],
         require_approval: 'never'
       }
-    ]
+    ],
+    mcp: {
+      gracefulDegradation: true,  // Default: true
+      extraRetries: 1,            // Default: 1
+      baseDelayMs: 500,            // Default: 500
+      maxDelayMs: 2000             // Default: 2000
+    }
   }
   ```
 - **How it works**: MCP tools are server-side proxied by OpenAI—the engine passes MCP configs in the tools array, OpenAI executes them remotely, and results are incorporated into responses automatically. No local execution or special handling needed.
+- **Error handling and graceful degradation**: 
+  - When MCP tools are present and the Responses API call fails with retryable network errors (after the OpenAI SDK's built-in retries), the engine performs additional retry attempts with exponential backoff.
+  - If retries with MCPs still fail and `gracefulDegradation` is enabled (default: true), the engine automatically removes MCP tools from the request and retries once more.
+  - When degradation occurs, a status note is injected into the instructions informing the model that certain external tools were unavailable, ensuring the AI can transparently communicate this to users.
+  - This prevents entire requests from failing due to transient MCP server issues while maintaining user awareness of tool unavailability.
 - **Engine support**: MCP is currently implemented in `OpenAiEngine` via `buildToolset()` and can be extended to custom engines by implementing the optional `getMCPTools()` method from `BaseEngine`.
 - **Limitations**: MCP tools are only available in 'worker' context (standard chat), not in 'realtime' (voice) or 'chat' (legacy) contexts, matching the pattern of web_search.
-- **Integration points**: Reference `_start.ts` for plugin options loading, `base.ts` for type definitions (`MCPTool` interface), and `openai/engine.ts` for tool injection logic.
+- **Integration points**: Reference `_start.ts` for plugin options loading, `base.ts` for type definitions (`MCPTool` interface), and `openai/engine.ts` for tool injection logic and error handling (`createResponseWithMcpHandling()`).
 
 ## Token Usage & Limits
 - **Token Ledger Subsystem** (`core/token-ledger.ts`) provides comprehensive usage tracking:
@@ -380,7 +391,8 @@
 - Swap engines by supplying a `BaseEngine` subclass via config.
 - Engine hooks (`engine.on('chat', hook)`) can pre-process messages for prompt injection or throttling.
 - Reply hooks (`engine.on('reply', hook)`) can intercept and override the final response, accessing cumulative tool usage (including MCP calls) and reasoning data.
-  - `ReplyHookContext` provides `response`, `mcpCalls`, `channel`, `member`, and `user`.
+  - `ReplyHookContext` provides `response`, `mcpCalls`, `degradedMcpServers`, `channel`, `member`, and `user`.
+  - `degradedMcpServers` is an array of MCP server labels that were removed due to persistent failures, allowing hooks to apply post-processing or send notifications.
   - Returning a `ChatReply` object (text, components, files, flags) overrides the default engine response.
 - Hooks can be registered globally via `pluginOptions.hooks` in the config file.
 - Additional tools/commands auto-register if exposed through the Robo command portal and allowed by plugin config.

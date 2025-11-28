@@ -213,6 +213,7 @@ The default `OpenAiEngine` accepts these options:
 - `chat` – Default chat model config (`model`, `temperature`, `maxOutputTokens`, `reasoningEffort`).
 - `voice` – Defaults for realtime or TTS models plus transcription settings.
 - `webSearch` – Enable/disable web search tool.
+- `mcp` – MCP error handling configuration (see MCP section below).
 
 ```ts
 new OpenAiEngine({
@@ -240,6 +241,45 @@ new OpenAiEngine({
 > 💡 Use reasoning models (`o1`, `o3`, `gpt-5`) for complex planning; standard models (`gpt-4o`, `gpt-4.1-mini`) keep responses fast and vision-ready.
 
 > [!NOTE] Image generation is available via `AI.generateImage(options)`; engine-level defaults for images are not currently configurable through the constructor.
+
+## 🔌 MCP (Model Context Protocol) Support
+
+MCP tools are server-side proxied by OpenAI—the engine passes MCP configs in the tools array, OpenAI executes them remotely, and results are incorporated into responses automatically.
+
+### Configuration
+
+```ts
+export default {
+  mcpServers: [
+    {
+      type: 'mcp',
+      server_label: 'context7',
+      server_url: 'https://mcp.context7.com/mcp',
+      headers: { CONTEXT7_API_KEY: process.env.CONTEXT7_API_KEY ?? '' },
+      allowed_tools: ['resolve-library-id', 'get-library-docs'],
+      require_approval: 'never'
+    }
+  ],
+  mcp: {
+    gracefulDegradation: true,  // Default: true - removes MCPs on persistent failures
+    extraRetries: 1,            // Default: 1 - extra retry attempts before degrading
+    baseDelayMs: 500,            // Default: 500 - base delay for exponential backoff
+    maxDelayMs: 2000             // Default: 2000 - maximum delay for exponential backoff
+  }
+}
+```
+
+### Error Handling & Graceful Degradation
+
+When MCP tools are present and the Responses API call fails with retryable network errors (after the OpenAI SDK's built-in retries), the engine:
+
+1. **Performs extra retries** with exponential backoff (configurable via `extraRetries`, `baseDelayMs`, `maxDelayMs`)
+2. **Gracefully degrades** by removing MCP tools and retrying once more (if `gracefulDegradation` is enabled, default: `true`)
+3. **Informs the AI** that certain external tools were unavailable, ensuring transparent communication to users
+
+This prevents entire requests from failing due to transient MCP server issues while maintaining user awareness of tool unavailability.
+
+> [!NOTE] MCP tools are only available in 'worker' context (standard chat), not in 'realtime' (voice) contexts.
 
 ## 🎙️ Voice Features
 
@@ -489,11 +529,17 @@ import type { ReplyHookContext, ChatReply } from '@robojs/ai'
 export default {
   hooks: {
     reply: (context: ReplyHookContext): ChatReply | void => {
-      const { response, mcpCalls } = context
+      const { response, mcpCalls, degradedMcpServers } = context
 
       // Log MCP tool usage
       if (mcpCalls?.length) {
         console.log('MCP Tools used:', mcpCalls.map(c => c.name))
+      }
+
+      // Handle MCP degradation notifications
+      if (degradedMcpServers && degradedMcpServers.length > 0) {
+        console.warn('MCP servers were degraded:', degradedMcpServers)
+        // You can apply post-processing, send alerts, etc.
       }
 
       // Modify the response if needed

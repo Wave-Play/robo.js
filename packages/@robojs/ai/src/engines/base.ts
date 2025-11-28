@@ -39,6 +39,8 @@ export interface ReplyHookContext {
 	channel: TextBasedChannel | null
 	member: GuildMember | null
 	mcpCalls?: MCPCall[]
+	/** MCP server labels that were degraded (removed) due to persistent failures. */
+	degradedMcpServers?: string[] | null
 	response: ChatResult
 	user: User | null
 }
@@ -307,6 +309,8 @@ export interface ChatResult {
 	toolCalls?: ChatFunctionCall[]
 	/** Any MCP calls emitted during the completion. */
 	mcpCalls?: MCPCall[]
+	/** MCP server labels that were degraded (removed) due to persistent failures. */
+	degradedMcpServers?: string[] | null
 	/** Voice response metadata, when applicable. */
 	voice?: VoiceChatResult
 }

@@ -107,6 +107,17 @@ export interface OpenAiEngineOptions {
 	voice?: OpenAiVoiceDefaults
 	/** Enables optional web search tool exposure to the Responses API. */
 	webSearch?: boolean
+	/** MCP error handling configuration. */
+	mcp?: {
+		/** Enable graceful degradation by removing MCP tools on persistent failures. Default: true */
+		gracefulDegradation?: boolean
+		/** Number of extra retry attempts before degrading. Default: 1 */
+		extraRetries?: number
+		/** Base delay in milliseconds for exponential backoff. Default: 500 */
+		baseDelayMs?: number
+		/** Maximum delay in milliseconds for exponential backoff. Default: 2000 */
+		maxDelayMs?: number
+	}
 }
 
 const VISION_MODEL_HINTS = ['vision', 'gpt-4o', 'gpt-4.1', 'gpt-5', 'gpt-5-codex', 'omni', 'o1', 'o3'] as const
@@ -186,6 +197,12 @@ export class OpenAiEngine extends BaseEngine {
 	private readonly _chatDefaults: ResolvedChatDefaults
 	private readonly _voiceDefaults: ResolvedVoiceDefaults
 	private readonly _webSearchEnabled: boolean
+	private readonly _mcpConfig: {
+		gracefulDegradation: boolean
+		extraRetries: number
+		baseDelayMs: number
+		maxDelayMs: number
+	}
 	private _functions: ChatFunction[] = []
 	private _functionHandlers: Record<string, Command> = {}
 	private _vectorStoreId: string | null = null
@@ -219,6 +236,13 @@ export class OpenAiEngine extends BaseEngine {
 			transcription: voiceDefaults.transcription
 		}
 		this._webSearchEnabled = options.webSearch === true
+		const mcpConfig = options.mcp ?? {}
+		this._mcpConfig = {
+			gracefulDegradation: mcpConfig.gracefulDegradation ?? true,
+			extraRetries: mcpConfig.extraRetries ?? 1,
+			baseDelayMs: mcpConfig.baseDelayMs ?? 500,
+			maxDelayMs: mcpConfig.maxDelayMs ?? 2000
+		}
 	}
 
 	/**
@@ -372,11 +396,17 @@ export class OpenAiEngine extends BaseEngine {
 			payload.reasoning = { effort: this._chatDefaults.reasoningEffort }
 		}
 
-		// Send the payload to OpenAI, threading the conversation and response ids.
-		const response = await this.createResponse(
+		// Send the payload to OpenAI with MCP-aware error handling and graceful degradation.
+		const result = await this.createResponseWithMcpHandling(
 			{ conversationId: session.conversationId, previousResponseId: session.previousResponseId },
 			payload
 		)
+		const response = result.response
+		const degradedMcpServers = result.degradedMcpServers
+
+		// Note: If MCPs were degraded, the status note was already injected into instructions
+		// during the degraded request, so the model response should already reflect this.
+		// The degraded MCP servers are logged in createResponseWithMcpHandling for observability.
 		void this.trackUsageFromResponse({
 			model,
 			response,
@@ -387,6 +417,19 @@ export class OpenAiEngine extends BaseEngine {
 			}
 		})
 		const parsed = this.parseResponse(session.conversationId, response)
+		// Include degraded MCP servers in the result for hook access
+		// Merge servers degraded before request (from createResponseWithMcpHandling) 
+		// with servers that failed during execution (from parseResponse)
+		const allDegradedServers = new Set<string>()
+		if (degradedMcpServers && degradedMcpServers.length > 0) {
+			degradedMcpServers.forEach(server => allDegradedServers.add(server))
+		}
+		if (parsed.degradedMcpServers && parsed.degradedMcpServers.length > 0) {
+			parsed.degradedMcpServers.forEach(server => allDegradedServers.add(server))
+		}
+		if (allDegradedServers.size > 0) {
+			parsed.degradedMcpServers = Array.from(allDegradedServers)
+		}
 		if (parsed.toolCalls?.length) {
 			// Tools must never be tied to the user-facing conversation; rotate immediately.
 			session.previousResponseId = null
@@ -1702,7 +1745,11 @@ export class OpenAiEngine extends BaseEngine {
 		}
 	}
 
-	private buildChatInstructions(state: SessionState, override?: string | null): string | undefined {
+	private buildChatInstructions(
+		state: SessionState,
+		override?: string | null,
+		mcpStatusNote?: string | null
+	): string | undefined {
 		const instructions: string[] = []
 		const directive = (override ?? pluginOptions?.instructions)?.trim()
 		if (directive) {
@@ -1710,6 +1757,9 @@ export class OpenAiEngine extends BaseEngine {
 		}
 		if (state.summary.text.trim().length > 0) {
 			instructions.push(`Conversation summary:\n${state.summary.text.trim()}`)
+		}
+		if (mcpStatusNote) {
+			instructions.push(mcpStatusNote)
 		}
 		instructions.push('Respond immediately and conversationally.')
 		return instructions.filter(Boolean).join('\n\n') || undefined
@@ -1759,6 +1809,187 @@ export class OpenAiEngine extends BaseEngine {
 			}
 		}
 		return ''
+	}
+
+	/**
+	 * Checks if the tools array contains any MCP tools.
+	 */
+	private hasMcpTools(tools: unknown[]): boolean {
+		return tools.some((tool) => {
+			if (typeof tool === 'object' && tool !== null) {
+				return (tool as { type?: unknown }).type === 'mcp'
+			}
+			return false
+		})
+	}
+
+	/**
+	 * Classifies whether an error is a retryable network/transient error.
+	 * Conservative classification to avoid degrading MCPs on semantic/provider errors.
+	 */
+	private isRetryableNetworkError(error: unknown): boolean {
+		// Check for network-level errors
+		if (error instanceof Error) {
+			const code = (error as Error & { code?: string }).code
+			const message = error.message.toLowerCase()
+
+			// Network connection errors
+			if (
+				code === 'ECONNRESET' ||
+				code === 'ETIMEDOUT' ||
+				code === 'ECONNREFUSED' ||
+				code === 'ENOTFOUND' ||
+				code === 'EAI_AGAIN' ||
+				message.includes('network') ||
+				message.includes('timeout') ||
+				message.includes('connection') ||
+				message.includes('dns') ||
+				message.includes('mcp server') // MCP-specific errors
+			) {
+				return true
+			}
+		}
+
+		// Check for OpenAI SDK error types with retryable status codes
+		if (error && typeof error === 'object') {
+			const status = (error as { status?: number }).status
+			if (status !== undefined) {
+				// Retryable HTTP status codes (matching OpenAI SDK behavior)
+				// Include 424 (Failed Dependency) for MCP server failures
+				return status === 408 || status === 409 || status === 424 || status === 429 || status >= 500
+			}
+		}
+
+		return false
+	}
+
+	/**
+	 * Gets the server labels for all configured MCP servers.
+	 */
+	private getDegradedMcpServerLabels(): string[] {
+		return this._mcpServers
+			.filter((server) => server.type === 'mcp' && server.server_label)
+			.map((server) => server.server_label as string)
+	}
+
+	/**
+	 * Creates a Responses API call with MCP-aware error handling and graceful degradation.
+	 * Returns the response along with any degraded MCP server labels.
+	 */
+	private async createResponseWithMcpHandling(
+		context: { conversationId: string; previousResponseId: string | null },
+		body: Record<string, unknown>
+	): Promise<{ response: Response; degradedMcpServers: string[] | null }> {
+		// Clone the request body so we can append conversation threading metadata.
+		const payload = { ...body }
+		if (context.previousResponseId) {
+			payload.previous_response_id = context.previousResponseId
+		} else {
+			Object.assign(payload, {
+				conversation: { id: context.conversationId }
+			})
+		}
+
+		const tools = Array.isArray(payload.tools) ? payload.tools : []
+		const hasMcps = this.hasMcpTools(tools)
+		const model = typeof payload.model === 'string' ? payload.model : 'unknown'
+
+		try {
+			// Let the OpenAI SDK handle its built-in retries first
+			const response = await this._client.responses.create(payload)
+			logger.debug(
+				`Conversation response for ${color.bold(context.conversationId)} (prev=${context.previousResponseId ?? 'none'}):`,
+				response
+			)
+			return { response, degradedMcpServers: null }
+		} catch (error) {
+			// If no MCPs present or error is not retryable, rethrow immediately
+			if (!hasMcps || !this.isRetryableNetworkError(error)) {
+				throw error
+			}
+
+			logger.debug('MCP+network error detected, attempting extra retries', {
+				conversationId: context.conversationId,
+				error: error instanceof Error ? error.message : String(error)
+			})
+
+			// Perform extra retries with exponential backoff (still including MCPs)
+			let lastError = error
+			for (let attempt = 1; attempt <= this._mcpConfig.extraRetries; attempt++) {
+				const delay = Math.min(
+					this._mcpConfig.maxDelayMs,
+					this._mcpConfig.baseDelayMs * Math.pow(2, attempt - 1)
+				)
+
+				logger.debug(`MCP retry attempt ${attempt}/${this._mcpConfig.extraRetries} after ${delay}ms`, {
+					conversationId: context.conversationId
+				})
+
+				await new Promise((resolve) => setTimeout(resolve, delay))
+
+				try {
+					const response = await this._client.responses.create(payload)
+					logger.debug(
+						`Conversation response after MCP retry for ${color.bold(context.conversationId)}:`,
+						response
+					)
+					return { response, degradedMcpServers: null }
+				} catch (retryError) {
+					lastError = retryError
+					if (!this.isRetryableNetworkError(retryError)) {
+						// Non-retryable error, stop retrying
+						break
+					}
+				}
+			}
+
+			// All retries failed - attempt graceful degradation if enabled
+			if (!this._mcpConfig.gracefulDegradation) {
+				throw lastError
+			}
+
+			// Remove MCP tools from payload
+			const degradedPayload = { ...payload }
+			degradedPayload.tools = tools.filter((tool) => {
+				if (typeof tool === 'object' && tool !== null) {
+					return (tool as { type?: unknown }).type !== 'mcp'
+				}
+				return true
+			})
+
+			const degradedMcpServers = this.getDegradedMcpServerLabels()
+
+			// Inject MCP status note into instructions so the model can inform the user
+			const mcpStatusNote = `MCP status: The following external tools were unavailable this turn and were not used: ${degradedMcpServers.join(', ')}. If these tools were required to answer the question fully, you MUST tell the user that some external tools were temporarily unavailable.`
+			const existingInstructions = typeof degradedPayload.instructions === 'string' ? degradedPayload.instructions : ''
+			degradedPayload.instructions = existingInstructions
+				? `${existingInstructions}\n\n${mcpStatusNote}`
+				: mcpStatusNote
+
+			logger.warn('MCP graceful degradation: removing MCP tools and retrying', {
+				conversationId: context.conversationId,
+				model,
+				error: lastError instanceof Error ? lastError.message : String(lastError),
+				degradedMcpServers
+			})
+
+			try {
+				// Final attempt without MCPs
+				const response = await this._client.responses.create(degradedPayload)
+				logger.debug(
+					`Conversation response after MCP degradation for ${color.bold(context.conversationId)}:`,
+					response
+				)
+				return { response, degradedMcpServers }
+			} catch (degradedError) {
+				// Even without MCPs, the request failed - rethrow
+				logger.error('Request failed even after MCP degradation', {
+					conversationId: context.conversationId,
+					error: degradedError instanceof Error ? degradedError.message : String(degradedError)
+				})
+				throw degradedError
+			}
+		}
 	}
 
 	private async createResponse(
@@ -2021,6 +2252,7 @@ export class OpenAiEngine extends BaseEngine {
 	private parseResponse(conversationId: string, response: Response): ChatResult {
 		const toolCalls: ChatFunctionCall[] = []
 		const mcpCalls: MCPCall[] = []
+		const failedMcpServers = new Set<string>() // Track failed MCP servers from response output
 		const citationContext = createCitationContext()
 		const messageFragments: string[] = []
 	if (Array.isArray(response.output)) {
@@ -2050,6 +2282,10 @@ export class OpenAiEngine extends BaseEngine {
 					arguments: item.arguments
 				}
 				if (isFailed) {
+					// Track failed MCP server for hook notification
+					if (item.server_label && typeof item.server_label === 'string') {
+						failedMcpServers.add(item.server_label)
+					}
 					logger.warn('MCP tool call failed', {
 						...basePayload,
 						error: item.error ?? null
@@ -2101,7 +2337,9 @@ export class OpenAiEngine extends BaseEngine {
 			},
 			rawResponse: response,
 			toolCalls: toolCalls,
-			mcpCalls: mcpCalls
+			mcpCalls: mcpCalls,
+			// Include failed MCP servers if any were detected in the response output
+			degradedMcpServers: failedMcpServers.size > 0 ? Array.from(failedMcpServers) : undefined
 		}
 		logger.debug('Parsed OpenAI response summary', {
 			conversationId,
