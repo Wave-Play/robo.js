@@ -24,6 +24,11 @@
 - `AI.generateImage` – Pass-through to engine image endpoint.
 - `AI.getActiveTasks` – Snapshot of in-flight tool jobs per channel.
 - `AI.isReady` – Frontend indicator once engine init completes.
+- Channel management methods for runtime configuration:
+  - `addWhitelistChannel(channelId)` / `removeWhitelistChannel(channelId)` – Dynamically manage whitelist
+  - `addRestrictChannel(channelId)` / `removeRestrictChannel(channelId)` – Dynamically manage restrict list
+  - `getWhitelistChannels()` / `getRestrictChannels()` – Query current channel lists
+  - Runtime changes are not persisted; config file takes precedence on restart.
 - All public calls now short-circuit (and log once) if no engine is configured; `AI.chatSync` rejects in that scenario so slash commands surface the error.
 - Voice controls exposed from `core/ai.ts`:
   - `startVoice({ guildId, channelId, textChannelId?, deaf?, mute? })`

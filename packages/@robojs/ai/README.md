@@ -371,6 +371,31 @@ tokenLedger.on('usage.limitReached', payload => {
 - `AI.getLifetimeUsage(model?)` – Lifetime totals.
 - `AI.onUsageEvent(event, listener)` / `AI.onceUsageEvent(event, listener)` / `AI.offUsageEvent(event, listener)`.
 
+### Channel Management
+
+- `AI.addWhitelistChannel(channelId)` – Adds a channel to the whitelist at runtime.
+- `AI.removeWhitelistChannel(channelId)` – Removes a channel from the whitelist.
+- `AI.addRestrictChannel(channelId)` – Adds a channel to the restrict list at runtime.
+- `AI.removeRestrictChannel(channelId)` – Removes a channel from the restrict list.
+- `AI.getWhitelistChannels()` – Returns array of whitelisted channel IDs.
+- `AI.getRestrictChannels()` – Returns array of restricted channel IDs.
+
+```ts
+import { AI } from '@robojs/ai'
+
+// Dynamically whitelist a channel based on an event
+AI.addWhitelistChannel('123456789012345678')
+
+// Check current whitelist
+const whitelisted = AI.getWhitelistChannels()
+console.log('Whitelisted channels:', whitelisted)
+
+// Remove from whitelist when no longer needed
+AI.removeWhitelistChannel('123456789012345678')
+```
+
+> [!NOTE] Runtime changes are not persisted and will be lost on restart. The config file takes precedence.
+
 ### Token Ledger Direct Access
 
 - `tokenLedger.recordUsage(entry)`

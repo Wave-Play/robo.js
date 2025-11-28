@@ -110,7 +110,13 @@ export const AI = {
 	onUsageEvent,
 	onceUsageEvent,
 	offUsageEvent,
-	getMCPServers
+	getMCPServers,
+	addWhitelistChannel,
+	removeWhitelistChannel,
+	addRestrictChannel,
+	removeRestrictChannel,
+	getWhitelistChannels,
+	getRestrictChannels
 }
 
 /** Tracks active reply handles for each user to enforce concurrency safeguards. */
@@ -377,6 +383,139 @@ function getMCPServers(): MCPTool[] {
 		return _engine.getMCPTools()
 	}
 	return pluginOptions.mcpServers ?? []
+}
+
+/**
+ * Adds a channel to the whitelist at runtime, enabling mention-free chat in that channel.
+ * Initializes the whitelist configuration if it doesn't exist.
+ *
+ * @param channelId - Discord channel ID to add to the whitelist.
+ * @remarks Changes take effect immediately for new messages. Runtime changes are not persisted
+ * and will be lost on restart; the config file takes precedence.
+ *
+ * @example
+ * ```ts
+ * import { AI } from '@robojs/ai'
+ *
+ * // Whitelist a channel when a specific event occurs
+ * AI.addWhitelistChannel('123456789012345678')
+ * ```
+ */
+function addWhitelistChannel(channelId: string): void {
+	if (!pluginOptions.whitelist) {
+		pluginOptions.whitelist = { channelIds: [] }
+	}
+	if (!pluginOptions.whitelist.channelIds.includes(channelId)) {
+		pluginOptions.whitelist.channelIds.push(channelId)
+	}
+}
+
+/**
+ * Removes a channel from the whitelist at runtime.
+ *
+ * @param channelId - Discord channel ID to remove from the whitelist.
+ * @remarks Safe to call even if the channel isn't in the whitelist. Changes take effect
+ * immediately for new messages.
+ *
+ * @example
+ * ```ts
+ * import { AI } from '@robojs/ai'
+ *
+ * // Remove a channel from whitelist
+ * AI.removeWhitelistChannel('123456789012345678')
+ * ```
+ */
+function removeWhitelistChannel(channelId: string): void {
+	const index = pluginOptions.whitelist?.channelIds?.indexOf(channelId)
+	if (index !== undefined && index !== -1) {
+		pluginOptions.whitelist!.channelIds.splice(index, 1)
+	}
+}
+
+/**
+ * Adds a channel to the restrict list at runtime, limiting bot responses to only that channel.
+ * Initializes the restrict configuration if it doesn't exist.
+ *
+ * @param channelId - Discord channel ID to add to the restrict list.
+ * @remarks Changes take effect immediately for new messages. Runtime changes are not persisted
+ * and will be lost on restart; the config file takes precedence. Restrict list takes precedence
+ * over whitelist.
+ *
+ * @example
+ * ```ts
+ * import { AI } from '@robojs/ai'
+ *
+ * // Restrict bot to only respond in a specific channel
+ * AI.addRestrictChannel('123456789012345678')
+ * ```
+ */
+function addRestrictChannel(channelId: string): void {
+	if (!pluginOptions.restrict) {
+		pluginOptions.restrict = { channelIds: [] }
+	}
+	if (!pluginOptions.restrict.channelIds.includes(channelId)) {
+		pluginOptions.restrict.channelIds.push(channelId)
+	}
+}
+
+/**
+ * Removes a channel from the restrict list at runtime.
+ *
+ * @param channelId - Discord channel ID to remove from the restrict list.
+ * @remarks Safe to call even if the channel isn't in the restrict list. Changes take effect
+ * immediately for new messages.
+ *
+ * @example
+ * ```ts
+ * import { AI } from '@robojs/ai'
+ *
+ * // Remove a channel from restrict list
+ * AI.removeRestrictChannel('123456789012345678')
+ * ```
+ */
+function removeRestrictChannel(channelId: string): void {
+	const index = pluginOptions.restrict?.channelIds?.indexOf(channelId)
+	if (index !== undefined && index !== -1) {
+		pluginOptions.restrict!.channelIds.splice(index, 1)
+	}
+}
+
+/**
+ * Returns the current list of whitelisted channel IDs.
+ *
+ * @returns Array of whitelisted channel IDs, or empty array if none are configured.
+ * @remarks Returns a copy of the array to prevent external mutation.
+ *
+ * @example
+ * ```ts
+ * import { AI } from '@robojs/ai'
+ *
+ * // Check current whitelist
+ * const whitelisted = AI.getWhitelistChannels()
+ * console.log('Whitelisted channels:', whitelisted)
+ * ```
+ */
+function getWhitelistChannels(): string[] {
+	return pluginOptions.whitelist?.channelIds ? [...pluginOptions.whitelist.channelIds] : []
+}
+
+/**
+ * Returns the current list of restricted channel IDs.
+ *
+ * @returns Array of restricted channel IDs, or empty array if none are configured.
+ * @remarks Returns a copy of the array to prevent external mutation.
+ *
+ * @example
+ * ```ts
+ * import { AI } from '@robojs/ai'
+ *
+ * // Check current restrict list
+ * const restricted = AI.getRestrictChannels()
+ * console.log('Restricted channels:', restricted)
+ * ```
+ */
+function getRestrictChannels(): string[] {
+	return pluginOptions.restrict?.channelIds ? [...pluginOptions.restrict.channelIds] : []
 }
 
 /**
