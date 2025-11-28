@@ -56,6 +56,12 @@ export interface JiraProviderConfig extends ProviderConfig {
 	 */
 	readonly defaultIssueType?: string
 	/**
+	 * Jira custom field ID containing Discord User ID (e.g., 'customfield_10001').
+	 * When set, this field takes priority over Jira assignee mapping.
+	 * The field should contain a Discord User ID (17-19 digit numeric string).
+	 */
+	readonly discordUserIdFieldId?: string
+	/**
 	 * Provider options bag allowing runtime overrides via plugin configuration.
 	 */
 	readonly options: ProviderConfig['options'] & {
@@ -66,6 +72,12 @@ export interface JiraProviderConfig extends ProviderConfig {
 		readonly maxResults?: number
 		readonly projectKey?: string
 		readonly defaultIssueType?: string
+		/**
+		 * Jira custom field ID containing Discord User ID (e.g., 'customfield_10001').
+		 * When set, this field takes priority over Jira assignee mapping.
+		 * The field should contain a Discord User ID (17-19 digit numeric string).
+		 */
+		readonly discordUserIdFieldId?: string
 		/**
 		 * Custom column definitions and status-to-column mappings.
 		 *
@@ -85,6 +97,7 @@ interface ResolvedJiraConfig {
 	readonly maxResults: number
 	readonly projectKey: string
 	readonly defaultIssueType: string
+	readonly discordUserIdFieldId?: string
 }
 
 interface JiraSearchResponse {
@@ -107,6 +120,8 @@ interface JiraFields {
 	readonly status?: JiraStatus
 	readonly assignee?: JiraUser | null
 	readonly updated?: string
+	// Allow custom fields via index signature
+	readonly [key: string]: unknown
 }
 
 interface JiraStatus {
@@ -325,11 +340,17 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 		roadmapLogger.debug(`Fetching Jira issues using JQL: ${this.resolvedConfig.jql}`)
 
 		do {
+			// Build fields array - include custom field if configured
+			const baseFields = ['summary', 'description', 'labels', 'status', 'assignee', 'updated']
+			const fields = this.resolvedConfig.discordUserIdFieldId
+				? [...baseFields, this.resolvedConfig.discordUserIdFieldId]
+				: baseFields
+
 			// Build request payload with JQL and pagination
 			const payload: Record<string, unknown> = {
 				jql: this.resolvedConfig.jql,
 				maxResults,
-				fields: ['summary', 'description', 'labels', 'status', 'assignee', 'updated']
+				fields
 			}
 
 			// Add pagination token if present
@@ -858,8 +879,14 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 			const { url } = this.resolvedConfig
 			roadmapLogger.debug('Fetching Jira issue: %s', cardId)
 
+			// Build fields query - include custom field if configured
+			const baseFields = 'summary,description,labels,status,assignee,updated'
+			const fields = this.resolvedConfig.discordUserIdFieldId
+				? `${baseFields},${this.resolvedConfig.discordUserIdFieldId}`
+				: baseFields
+
 			const response = await fetch(
-				`${url}/rest/api/3/issue/${cardId}?fields=summary,description,labels,status,assignee,updated`,
+				`${url}/rest/api/3/issue/${cardId}?fields=${fields}`,
 				{
 					method: 'GET',
 					headers: {
@@ -1264,6 +1291,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 		const envMaxResults = process.env.JIRA_MAX_RESULTS
 		const envProjectKey = process.env.JIRA_PROJECT_KEY
 		const envDefaultIssueType = process.env.JIRA_DEFAULT_ISSUE_TYPE
+		const envDiscordUserIdFieldId = process.env.JIRA_DISCORD_USER_ID_FIELD_ID
 
 		// Read values from plugin options
 		const optionUrl = this.readString(config.options?.url)
@@ -1273,6 +1301,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 		const optionMaxResults = this.readNumber(config.options?.maxResults)
 		const optionProjectKey = this.readString(config.options?.projectKey)
 		const optionDefaultIssueType = this.readString(config.options?.defaultIssueType)
+		const optionDiscordUserIdFieldId = this.readString(config.options?.discordUserIdFieldId)
 
 		// Read explicit config values
 		const explicitUrl = this.readString(config.url)
@@ -1282,6 +1311,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 		const explicitMaxResults = this.readNumber(config.maxResults)
 		const explicitProjectKey = this.readString(config.projectKey)
 		const explicitDefaultIssueType = this.readString(config.defaultIssueType)
+		const explicitDiscordUserIdFieldId = this.readString(config.discordUserIdFieldId)
 
 		// Apply precedence: explicit > options > env, with normalization
 		const resolvedUrl = this.normalizeUrl(explicitUrl ?? optionUrl ?? envUrl ?? '')
@@ -1290,6 +1320,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 		const resolvedJql = explicitJql ?? optionJql ?? envJql ?? DEFAULT_JQL
 		const resolvedProjectKey = explicitProjectKey ?? optionProjectKey ?? envProjectKey ?? ''
 		const resolvedDefaultIssueType = explicitDefaultIssueType ?? optionDefaultIssueType ?? envDefaultIssueType ?? 'Task'
+		const resolvedDiscordUserIdFieldId = explicitDiscordUserIdFieldId ?? optionDiscordUserIdFieldId ?? envDiscordUserIdFieldId
 
 		const resolvedMaxResults = this.normalizeMaxResults(
 			explicitMaxResults ??
@@ -1309,6 +1340,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 			maxResults: resolvedMaxResults,
 			projectKey: resolvedProjectKey,
 			defaultIssueType: resolvedDefaultIssueType,
+			...(resolvedDiscordUserIdFieldId ? { discordUserIdFieldId: resolvedDiscordUserIdFieldId } : {}),
 			...(columnConfig ? { columnConfig } : {})
 		}
 	}
@@ -1326,6 +1358,53 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 	}
 
 	/**
+	 * Extracts and validates Discord User ID from a Jira custom field.
+	 *
+	 * @param fields - Jira fields object
+	 * @param fieldId - Custom field ID (e.g., 'customfield_10001')
+	 * @returns Discord User ID if valid, null otherwise
+	 */
+	private extractDiscordUserIdFromCustomField(fields: JiraFields, fieldId?: string): string | null {
+		if (!fieldId) {
+			return null
+		}
+
+		const fieldValue = fields[fieldId]
+		if (!fieldValue) {
+			return null
+		}
+
+		// Handle different field value types (text field returns string, user field returns object)
+		let discordUserId: string | null = null
+
+		if (typeof fieldValue === 'string') {
+			discordUserId = fieldValue.trim()
+		} else if (typeof fieldValue === 'object' && fieldValue !== null) {
+			// Some custom fields might return objects, try to extract string value
+			const stringValue = String(fieldValue).trim()
+			if (stringValue && stringValue !== '[object Object]') {
+				discordUserId = stringValue
+			}
+		}
+
+		if (!discordUserId) {
+			return null
+		}
+
+		// Validate Discord User ID format: 17-19 digit numeric string
+		// Discord User IDs are snowflakes: 17-19 digits
+		const discordIdPattern = /^\d{17,19}$/
+		if (!discordIdPattern.test(discordUserId)) {
+			roadmapLogger.warn(
+				`Invalid Discord User ID format in custom field ${fieldId}: "${discordUserId}". Expected 17-19 digit numeric string.`
+			)
+			return null
+		}
+
+		return discordUserId
+	}
+
+	/**
 	 * Converts a Jira issue to a RoadmapCard with ADF-to-text conversion.
 	 *
 	 * @param issue - Jira issue object
@@ -1338,7 +1417,13 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 		const labels = Array.isArray(fields.labels) ? [...fields.labels] : []
 		const originalStatus = fields.status?.name ?? 'Unknown'
 		const column = this.mapStatusToColumn(fields.status)
-		const assignees = this.mapAssignee(fields.assignee)
+
+		// Check custom field for Discord User ID first (priority)
+		const discordUserId = this.extractDiscordUserIdFromCustomField(fields, this.resolvedConfig.discordUserIdFieldId)
+		const assignees = discordUserId
+			? this.mapAssigneeFromDiscordUserId(discordUserId)
+			: this.mapAssignee(fields.assignee)
+
 		const url = `${this.resolvedConfig.url}/browse/${issue.key}`
 		const updatedAt = fields.updated ? new Date(fields.updated) : new Date()
 
@@ -1359,6 +1444,23 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 				issue
 			}
 		}
+	}
+
+	/**
+	 * Maps Discord User ID directly to RoadmapCard assignees array.
+	 *
+	 * Used when a custom field contains a Discord User ID, bypassing Jira assignee mapping.
+	 *
+	 * @param discordUserId - Discord User ID (17-19 digit numeric string)
+	 * @returns RoadmapCard assignees array with Discord User ID
+	 */
+	private mapAssigneeFromDiscordUserId(discordUserId: string): RoadmapCard['assignees'] {
+		return [
+			{
+				id: discordUserId,
+				name: `Discord:${discordUserId}` // Marker to indicate this is a direct Discord ID
+			}
+		]
 	}
 
 	/**

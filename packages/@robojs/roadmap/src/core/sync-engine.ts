@@ -39,6 +39,29 @@ export class SyncCanceledError extends Error {
 }
 
 /**
+ * Checks if an assignee has a direct Discord User ID (from custom field).
+ *
+ * @param assignee - RoadmapCard assignee
+ * @returns Discord User ID if assignee has direct Discord ID, undefined otherwise
+ */
+function getDirectDiscordUserId(assignee: { id: string; name: string }): string | undefined {
+	// Check if name starts with "Discord:" marker (from custom field)
+	if (assignee.name.startsWith('Discord:')) {
+		// Extract Discord User ID from the marker
+		const discordUserId = assignee.name.substring(8) // "Discord:".length
+		// Validate it's a valid Discord User ID format (17-19 digits)
+		if (/^\d{17,19}$/.test(discordUserId)) {
+			return discordUserId
+		}
+	}
+	// Also check if the id itself is a Discord User ID (fallback)
+	if (/^\d{17,19}$/.test(assignee.id)) {
+		return assignee.id
+	}
+	return undefined
+}
+
+/**
  * Discord API error with error code.
  * @see https://discord.com/developers/docs/topics/opcodes-and-status-codes#json
  */
@@ -151,10 +174,15 @@ export async function formatCardContent(
 		const discordMentions: string[] = []
 
 		for (const assignee of card.assignees) {
-			const discordUserId = getDiscordUserIdForJiraName(guildId, assignee.name)
+			// Check if assignee has direct Discord User ID from custom field (priority)
+			let discordUserId = getDirectDiscordUserId(assignee)
 			if (!discordUserId) {
-				// No mapping exists - skip this assignee (never show Jira name)
-				continue
+				// Fall back to Jira assignee mapping
+				discordUserId = getDiscordUserIdForJiraName(guildId, assignee.name)
+				if (!discordUserId) {
+					// No mapping exists - skip this assignee (never show Jira name)
+					continue
+				}
 			}
 
 			// Validate Discord user exists in guild if guild object is provided
@@ -278,9 +306,14 @@ export async function formatCardContentV2(
 
 	if (card.assignees && card.assignees.length > 0) {
 		for (const assignee of card.assignees) {
-			const discordUserId = getDiscordUserIdForJiraName(guildId, assignee.name)
+			// Check if assignee has direct Discord User ID from custom field (priority)
+			let discordUserId = getDirectDiscordUserId(assignee)
 			if (!discordUserId) {
-				continue
+				// Fall back to Jira assignee mapping
+				discordUserId = getDiscordUserIdForJiraName(guildId, assignee.name)
+				if (!discordUserId) {
+					continue
+				}
 			}
 
 			// If guild is provided, validate user exists and fetch avatar
@@ -288,8 +321,9 @@ export async function formatCardContentV2(
 				try {
 					const member = await guild.members.fetch(discordUserId).catch(() => null)
 					if (!member) {
+						const assigneeSource = getDirectDiscordUserId(assignee) ? 'custom field' : `Jira name "${assignee.name}"`
 						roadmapLogger.warn(
-							`Assignee mapping for Jira name "${assignee.name}" points to Discord user ${discordUserId} who is not in guild ${guildId}`
+							`Assignee from ${assigneeSource} points to Discord user ${discordUserId} who is not in guild ${guildId}`
 						)
 						continue
 					}
@@ -301,8 +335,9 @@ export async function formatCardContentV2(
 
 					discordMentions.push(`<@${discordUserId}>`)
 				} catch (error) {
+					const assigneeSource = getDirectDiscordUserId(assignee) ? 'custom field' : `Jira assignee "${assignee.name}"`
 					roadmapLogger.warn(
-						`Failed to validate Discord user ${discordUserId} for Jira assignee "${assignee.name}" in guild ${guildId}: ${(error as Error).message}`
+						`Failed to validate Discord user ${discordUserId} for ${assigneeSource} in guild ${guildId}: ${(error as Error).message}`
 					)
 				}
 			} else {

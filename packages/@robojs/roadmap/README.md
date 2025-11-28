@@ -182,6 +182,7 @@ Jira is the built-in provider for syncing roadmaps from Jira Cloud.
 - `JIRA_JQL` - Custom JQL query to filter issues
 - `JIRA_MAX_RESULTS` - Max results per page (1-1000, default 100)
 - `JIRA_DEFAULT_ISSUE_TYPE` - Default issue type for new cards (default 'Task')
+- `JIRA_DISCORD_USER_ID_FIELD_ID` - Custom field ID containing Discord User ID (e.g., `customfield_10001`)
 
 **Example `.env` file:**
 
@@ -193,6 +194,7 @@ JIRA_PROJECT_KEY="PROJ"
 JIRA_JQL="labels = public"
 JIRA_MAX_RESULTS="50"
 JIRA_DEFAULT_ISSUE_TYPE="Story"
+JIRA_DISCORD_USER_ID_FIELD_ID="customfield_10001"
 ```
 
 **Configuration File Example:**
@@ -231,6 +233,38 @@ jql: 'project = PROJ AND updated >= -30d'
 ```
 
 > 💡 JQL (Jira Query Language) allows powerful filtering. See [Atlassian JQL documentation](https://support.atlassian.com/jira-service-management-cloud/docs/use-advanced-search-with-jira-query-language-jql/) for advanced queries.
+
+#### Discord User ID Custom Field
+
+You can use a Jira custom field to directly assign Discord users to cards, bypassing the standard Jira assignee mapping. This is useful when you want to assign cards to Discord users who may not have Jira accounts or when you want to override the Jira assignee.
+
+**Setup:**
+
+1. Create a text custom field in Jira (e.g., `customfield_10001`)
+2. Configure the field ID in your environment or config:
+   ```env
+   JIRA_DISCORD_USER_ID_FIELD_ID="customfield_10001"
+   ```
+3. In Jira issues, enter the Discord User ID (17-19 digit numeric string) in this custom field
+
+**Behavior:**
+
+- **Priority:** Custom field Discord User ID takes priority over Jira assignee mapping
+- **Fallback:** If the custom field is empty or invalid, falls back to Jira assignee mapping
+- **Avatar:** When a custom field Discord User ID is present, that user's Discord avatar is displayed instead of the Jira assignee's avatar
+- **Validation:** Invalid Discord User ID formats (not 17-19 digits) are logged and ignored, falling back to Jira assignee
+
+**Example:**
+
+```typescript
+provider: new JiraProvider({
+  type: 'jira',
+  options: {
+    // ... credentials ...
+    discordUserIdFieldId: 'customfield_10001'
+  }
+})
+```
 
 > [!NOTE]
 > Configuration precedence: explicit config file > plugin options > environment variables. Environment variables provide the simplest setup for most use cases.

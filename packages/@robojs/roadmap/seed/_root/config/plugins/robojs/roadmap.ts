@@ -62,6 +62,14 @@ const config: RoadmapPluginOptions = {
 			// Common values: 'Task', 'Story', 'Epic', 'Bug'
 			defaultIssueType: process.env.JIRA_DEFAULT_ISSUE_TYPE || 'Task',
 
+			// Optional: Jira custom field ID containing Discord User ID (e.g., 'customfield_10001')
+			// When set, this field takes priority over Jira assignee mapping.
+			// The field should contain a Discord User ID (17-19 digit numeric string).
+			// If the custom field exists and contains a valid Discord User ID, that user's
+			// avatar and mention will be used instead of mapping from the Jira assignee name.
+			// Falls back to Jira assignee mapping if the custom field is empty or invalid.
+			// discordUserIdFieldId: process.env.JIRA_DISCORD_USER_ID_FIELD_ID,
+
 			// Optional: Custom column definitions and status-to-column mappings
 			// Uncomment and customize to match your Jira workflow:
 			// columnConfig: {
