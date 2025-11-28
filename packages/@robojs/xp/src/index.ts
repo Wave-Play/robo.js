@@ -450,7 +450,7 @@ import {
  * // Build a progress bar
  * const barLength = 20
  * const filled = Math.floor((inLevel / (inLevel + toNext)) * barLength)
- * const bar = '█'.repeat(filled) + '░'.repeat(barLength - filled)
+ * const bar = '▰'.repeat(filled) + '▱'.repeat(barLength - filled)
  * console.log(`[${bar}] ${inLevel}/${inLevel + toNext} XP`)
  * ```
  *

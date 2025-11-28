@@ -122,14 +122,14 @@ export function getEmbedColor(config: GuildConfig): number {
  * @param current - Current progress value
  * @param total - Total/maximum value
  * @param length - Bar length in characters (default: 10, min: 5, max: 30)
- * @returns Progress bar string using █ (filled) and ░ (empty)
+ * @returns Progress bar string using ▰ (filled) and ▱ (empty)
  *
  * @example
  * ```typescript
- * createProgressBar(50, 100, 10) // Returns "█████░░░░░"
- * createProgressBar(75, 100, 10) // Returns "███████░░░"
- * createProgressBar(100, 100, 10) // Returns "██████████"
- * createProgressBar(0, 100, 10) // Returns "░░░░░░░░░░"
+ * createProgressBar(50, 100, 10) // Returns "▰▰▰▰▰▱▱▱▱▱"
+ * createProgressBar(75, 100, 10) // Returns "▰▰▰▰▰▰▱▱▱▱"
+ * createProgressBar(100, 100, 10) // Returns "▰▰▰▰▰▰▰▰▰▰"
+ * createProgressBar(0, 100, 10) // Returns "▱▱▱▱▱▱▱▱"
  * ```
  */
 export function createProgressBar(current: number, total: number, length: number = 10): string {
@@ -138,17 +138,17 @@ export function createProgressBar(current: number, total: number, length: number
 
 	// Handle edge cases
 	if (total <= 0 || current <= 0) {
-		return '░'.repeat(clampedLength)
+		return '▱'.repeat(clampedLength)
 	}
 	if (current >= total) {
-		return '█'.repeat(clampedLength)
+		return '▰'.repeat(clampedLength)
 	}
 
 	// Calculate filled blocks
 	const filled = Math.floor((current / total) * clampedLength)
 	const empty = clampedLength - filled
 
-	return '█'.repeat(filled) + '░'.repeat(empty)
+	return '▰'.repeat(filled) + '▱'.repeat(empty)
 }
 
 /**
