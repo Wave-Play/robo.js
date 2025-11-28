@@ -12,11 +12,17 @@ import { getSettings } from '../../core/settings.js'
 
 /**
  * Global cache for button flow pending column mappings.
- * Key: `${guildId}:${userId}`, Value: { messageId?: string, webhookId?: string, webhookToken?: string }
+ * Key: `${guildId}:${userId}`, Value: { status?: string, column?: string | null, messageId?: string, webhookId?: string, webhookToken?: string }
  */
 declare global {
 	// eslint-disable-next-line no-var
-	var roadmapPendingColumnMappings: Map<string, { messageId?: string; webhookId?: string; webhookToken?: string }> | undefined
+	var roadmapPendingColumnMappings: Map<string, {
+		status?: string
+		column?: string | null
+		messageId?: string
+		webhookId?: string
+		webhookToken?: string
+	}> | undefined
 }
 
 /**

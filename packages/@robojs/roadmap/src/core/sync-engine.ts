@@ -1018,12 +1018,12 @@ async function applyInPlaceOperation(
 	// Determine operation based on existing thread and column state
 	let operation: ThreadOperation = 'skip'
 
-	if (existingThreadId && column?.archived) {
+	if (existingThreadId && column?.archived && column.createForum !== true) {
 		operation = 'archive'
 	} else if (existingThreadId) {
 		operation = 'update'
-	} else if (column?.archived) {
-		// Skip creating new threads for cards already in archived columns
+	} else if (column?.archived && column.createForum !== true) {
+		// Skip creating new threads for cards in archived columns that don't create forums
 		operation = 'skip'
 	} else {
 		operation = 'create'
@@ -1325,10 +1325,10 @@ export async function syncRoadmap(options: SyncOptions): Promise<SyncResult> {
 			cardsByColumn.get(card.column)!.push(card)
 		}
 
-		// Update tags for each non-archived forum
+		// Update tags for each forum (including archived columns with createForum: true)
 		for (const column of columns) {
-			// Skip archived columns
-			if (column.archived) {
+			// Skip archived columns that don't create forums
+			if (column.archived && column.createForum !== true) {
 				continue
 			}
 

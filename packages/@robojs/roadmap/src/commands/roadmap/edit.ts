@@ -50,7 +50,7 @@ interface CardCacheItem {
 	cardId: string
 	title: string
 	identifier: string
-	column?: string
+	column: string
 }
 
 interface CardTitleCache {
