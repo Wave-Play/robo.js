@@ -1,7 +1,7 @@
 {
 	"name": "@robojs/auth",
 	"description": "Authentication plugin for Robo.js powered by Auth.js",
-	"version": "0.0.0",
+	"version": "0.1.0",
 	"type": "module",
 	"private": false,
 	"keywords": [
