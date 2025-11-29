@@ -14,6 +14,11 @@ import { Flashcore } from '../../../core/flashcore.js'
 import { bold } from '../../../core/color.js'
 import { buildPublicDirectory } from '../../utils/public.js'
 import { discordLogger, FLASHCORE_KEYS } from '../../../core/constants.js'
+import {
+	executeBuildStartHooks,
+	executeBuildCompleteHooks,
+	loadPluginData
+} from '../../utils/build-hooks.js'
 import type { LoggerOptions } from '../../../core/logger.js'
 
 const command = new Command('build')
@@ -93,8 +98,17 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 		logger.warn(`Could not find configuration file.`)
 	}
 
+	// Load plugin data for build hooks
+	const plugins = loadPluginData(config)
+
 	// Initialize Flashcore to persist build error data
 	await Flashcore.$init({ keyvOptions: config.flashcore?.keyv, namespaceSeparator: config.flashcore?.namespaceSeparator })
+
+	// Determine build mode
+	const buildMode = options.dev ? 'development' : 'production'
+
+	// Execute build/start hooks
+	await executeBuildStartHooks(plugins, config, buildMode)
 
 	// Use the Robo Compiler to generate .robo/build
 	const compileTime = await Compiler.buildCode({
@@ -110,8 +124,11 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 	// Generate manifest.json
 	const oldManifest = await Compiler.useManifest({ safe: true })
 	const manifestTime = Date.now()
-	const manifest = await generateManifest(generatedFiles, 'robo')
+	const manifest = await generateManifest(generatedFiles, 'robo', { config, mode: buildMode, plugins })
 	logger.debug(`Generated manifest in ${Date.now() - manifestTime}ms`)
+
+	// Execute build/complete hooks
+	await executeBuildCompleteHooks(plugins, config, buildMode, manifest)
 
 	if (!options.dev) {
 		// Build /public for production if available

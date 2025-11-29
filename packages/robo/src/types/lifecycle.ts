@@ -1,6 +1,10 @@
 import type { Logger } from '../core/logger.js'
 import type { Env } from '../core/env.js'
 import type { Config } from './config.js'
+import type { ApiEntry, ContextEntry, MiddlewareEntry } from './index.js'
+import type { CommandEntry } from './commands.js'
+import type { EventConfig } from './events.js'
+import type { Manifest } from './manifest.js'
 
 /**
  * Context provided to init hooks.
@@ -119,6 +123,63 @@ export interface PluginContext<TConfig = unknown> {
 		/** Package version */
 		version: string
 	}
+}
+
+/**
+ * Context provided to build hooks.
+ * Base context shared by all build hook types.
+ */
+export interface BuildContext {
+	/** Current build mode */
+	mode: 'development' | 'production'
+
+	/** Environment variable access */
+	env: typeof Env
+
+	/** Logger instance (forked for plugins) */
+	logger: Logger
+
+	/** Project paths */
+	paths: {
+		root: string
+		src: string
+		output: string
+	}
+
+	/** Loaded configuration */
+	config: Config
+}
+
+/**
+ * Context provided to build/transform.ts hooks.
+ * Extends BuildContext with collected handler entries.
+ * Runs AFTER entries are scanned, BEFORE manifest is written.
+ */
+export interface BuildTransformContext extends BuildContext {
+	/**
+	 * Collected handler entries by type.
+	 * Can be filtered/modified by plugins.
+	 */
+	entries: {
+		api: Record<string, ApiEntry>
+		commands: Record<string, CommandEntry>
+		context: {
+			message: Record<string, ContextEntry>
+			user: Record<string, ContextEntry>
+		}
+		events: Record<string, EventConfig[]>
+		middleware: MiddlewareEntry[]
+	}
+}
+
+/**
+ * Context provided to build/complete.ts hooks.
+ * Extends BuildContext with the generated manifest.
+ * Runs AFTER manifest is written.
+ */
+export interface BuildCompleteContext extends BuildContext {
+	/** The generated manifest */
+	manifest: Manifest
 }
 
 export default {}

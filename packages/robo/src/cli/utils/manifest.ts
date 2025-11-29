@@ -12,6 +12,7 @@ import {
 	SeedEnvVariableConfig,
 	SeedHookHandler,
 	ContextConfig,
+	ContextEntry,
 	EventConfig,
 	Manifest,
 	MiddlewareEntry,
@@ -30,6 +31,8 @@ import { Compiler } from './compiler.js'
 import { IS_BUN_RUNTIME } from './runtime-utils.js'
 import { PermissionsString } from 'discord.js'
 import { getContextType, getIntegrationType } from './commands.js'
+import { executeBuildTransformHooks } from './build-hooks.js'
+import type { PluginData } from '../../types/common.js'
 
 // TODO:
 // - Ensure base manifest is always up to date (function-based instead of default object)
@@ -188,15 +191,50 @@ async function serializeSeedConfig(seed: Config['seed']): Promise<Manifest['__ro
 	return Object.keys(manifestSeed).length > 0 ? manifestSeed : undefined
 }
 
-export async function generateManifest(generatedDefaults: DefaultGen, type: 'plugin' | 'robo'): Promise<Manifest> {
-	const config = await loadConfig('robo', true)
+export interface GenerateManifestOptions {
+	config?: Config
+	mode?: 'development' | 'production'
+	plugins?: Map<string, PluginData>
+}
+
+export async function generateManifest(
+	generatedDefaults: DefaultGen,
+	type: 'plugin' | 'robo',
+	options?: GenerateManifestOptions
+): Promise<Manifest> {
+	const config = options?.config ?? (await loadConfig('robo', true))
+	const plugins = options?.plugins ?? new Map<string, PluginData>()
+	const mode = options?.mode ?? 'production'
 	const pluginsManifest = type === 'plugin' ? BASE_MANIFEST : await readPluginManifest(config?.plugins)
-	const api = await generateEntries<ApiEntry>('api', [])
-	const commands = await generateEntries<CommandEntry>('commands', Object.keys(generatedDefaults?.commands ?? {}))
-	const context = await generateEntries<CommandEntry>('context', Object.keys(generatedDefaults?.context ?? {}))
-	const events = await generateEntries<EventConfig>('events', Object.keys(generatedDefaults?.events ?? {}))
-	const middleware = Object.values(await generateEntries<MiddlewareEntry>('middleware', [])).flat()
+
+	// Collect entries from scanned directories
+	let api = await generateEntries<ApiEntry>('api', [])
+	let commands = await generateEntries<CommandEntry>('commands', Object.keys(generatedDefaults?.commands ?? {}))
+	let context = (await generateEntries<ContextEntry>('context', Object.keys(generatedDefaults?.context ?? {}))) as {
+		message: Record<string, ContextEntry>
+		user: Record<string, ContextEntry>
+	}
+	let events = await generateEntries<EventConfig>('events', Object.keys(generatedDefaults?.events ?? {}))
+	let middleware = Object.values(await generateEntries<MiddlewareEntry>('middleware', [])).flat()
 	const { isTypeScript } = Compiler.isTypescriptProject()
+
+	// Execute transform hooks to allow project and plugins to modify entries
+	if (type === 'robo') {
+		const transformedEntries = await executeBuildTransformHooks(plugins, config, mode, {
+			api,
+			commands,
+			context,
+			events,
+			middleware
+		})
+
+		// Apply transformed entries
+		api = transformedEntries.api
+		commands = transformedEntries.commands
+		context = transformedEntries.context
+		events = transformedEntries.events
+		middleware = transformedEntries.middleware
+	}
 
 	const newManifest: Manifest = {
 		...BASE_MANIFEST,
