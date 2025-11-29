@@ -1,6 +1,6 @@
 {
 	"name": "robo.js",
-	"version": "0.10.31",
+	"version": "0.10.32",
 	"private": false,
 	"description": "The Discord Framework - activities, bots, web servers, and more!",
 	"keywords": [

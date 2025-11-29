@@ -1,10 +1,13 @@
-# @robojs/cron
+# @robojs/giveaways
 
-## 0.1.2
+## 0.1.0
+
+### Minor Changes
+
+- 6d102dc: feat: first release
 
 ### Patch Changes
 
-- ad7659f: feat: support for absolute paths for cron job files
 - Updated dependencies [6a97a61]
 - Updated dependencies [528fd9f]
 - Updated dependencies [ee2a767]
@@ -17,18 +20,3 @@
 - Updated dependencies [495bb08]
 - Updated dependencies [ec2589f]
   - robo.js@0.10.32
-
-## 0.1.1
-
-### Patch Changes
-
-- 6179012: feat: add Cron.get() method for retrieving saved jobs
-- Updated dependencies [32b172c]
-- Updated dependencies [fe88aee]
-  - robo.js@0.10.24
-
-## 0.1.0
-
-### Minor Changes
-
-- fb2f028: feat: cron package
