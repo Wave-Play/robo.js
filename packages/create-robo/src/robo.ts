@@ -384,7 +384,7 @@ export default class Robo {
 
 		try {
 			logger.debug(`Installing plugins:`, packages)
-			await exec(`${executor} robo add ${packages.join(' ')} -y`, execOptions)
+			await exec(`${executor} robo add ${packages.join(' ')} -y --trigger create`, execOptions)
 
 			// Update config files for each plugin with the provided configuration
 			const pendingConfigs = plugins
@@ -964,7 +964,7 @@ export default class Robo {
 			const executor = getPackageExecutor()
 
 			try {
-				await exec(`${executor} robo add ${plugins.join(' ')}`, { cwd: this._workingDir })
+				await exec(`${executor} robo add ${plugins.join(' ')} --trigger create`, { cwd: this._workingDir })
 			} catch (error) {
 				logger.error(`Failed to install plugins:`, error)
 				logger.warn(`Please add the plugins manually using ${color.bold(executor + ' robo add')}`)

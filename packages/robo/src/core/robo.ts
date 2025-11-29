@@ -15,6 +15,7 @@ import {
 import { hasProperties, PackageDir } from '../cli/utils/utils.js'
 import { Nanocore } from '../internal/nanocore.js'
 import { Flashcore } from './flashcore.js'
+import { executeInitHooks } from './hooks.js'
 import { Mode } from './mode.js'
 import { loadState } from './state.js'
 import Portal from './portal.js'
@@ -88,14 +89,28 @@ async function start(options?: StartOptions) {
 		// This ensures the "ready" signal is sent to the parent process
 		registerProcessEvents()
 
-		// Load config and manifest up next!
-		// This makes them available globally via getConfig() and getManifest()
-		const [config] = await Promise.all([loadConfig(), Compiler.useManifest()])
+		// 1. Load config first (needed for plugin list and logger config)
+		const config = await loadConfig()
 		logger({
 			drain: config?.logger?.drain,
 			enabled: config?.logger?.enabled,
 			level: logLevel ?? config?.logger?.level
 		}).debug('Starting Robo...')
+
+		// 2. Get mode and load environment early (needed for init hooks)
+		const mode = Mode.get()
+		await Env.load({ mode })
+
+		// 3. Load plugin data early (needed for init hooks)
+		// Assign to module-level variable for stop/restart lifecycle events
+		plugins = loadPluginData()
+
+		// 4. Execute init hooks BEFORE manifest loading
+		// Init hooks run very early and can modify config/env before manifest processing
+		await executeInitHooks(plugins, mode as 'development' | 'production')
+
+		// 5. Now load manifest (init hooks may have modified config/env)
+		await Compiler.useManifest()
 
 		// Wanna shard? Delegate to the shard manager and await recursive call
 		if (shard && config.experimental?.disableBot !== true) {
@@ -111,8 +126,7 @@ async function start(options?: StartOptions) {
 			return
 		}
 
-		const mode = Mode.get()
-		await Env.load({ mode })
+		// 6. Initialize Flashcore and other services
 		await Flashcore.$init({ keyvOptions: config.flashcore?.keyv, namespaceSeparator: config.flashcore?.namespaceSeparator })
 
 		// Wait for states to be loaded
@@ -130,9 +144,6 @@ async function start(options?: StartOptions) {
 			}
 			logger.debug(`State loaded in ${Date.now() - stateStart}ms`)
 		}
-
-		// Load plugin options
-		const plugins = loadPluginData()
 
 		// Create the new client instance (unless disabled)
 		if (config.experimental?.disableBot !== true) {

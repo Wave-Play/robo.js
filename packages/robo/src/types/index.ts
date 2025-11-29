@@ -4,6 +4,7 @@ export type * from './commands.js'
 export type * from './common.js'
 export type * from './config.js'
 export type * from './events.js'
+export type * from './lifecycle.js'
 export type * from './manifest.js'
 
 import type { CommandEntry } from './commands.js'

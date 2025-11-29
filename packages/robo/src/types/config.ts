@@ -102,6 +102,15 @@ export interface Config {
 	}
 	type?: 'plugin' | 'robo'
 
+	/**
+	 * Portal namespace for plugin routes.
+	 * If omitted, inferred from package name:
+	 * - @robojs/discord → 'discord'
+	 * - @robojs/server → 'server'
+	 * - robo-plugin-analytics → 'analytics'
+	 */
+	namespace?: string
+
 	/** How often to check for updates to Robo.js in seconds. Default: 1 hour */
 	updateCheckInterval?: number
 

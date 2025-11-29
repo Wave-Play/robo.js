@@ -14,6 +14,7 @@ import { Spinner } from '../utils/spinner.js'
 import { applyEnvVariables, detectEnvFiles } from '../utils/env-editor.js'
 import type { EnvApplyResult, EnvFileDescriptor, EnvVariableAssignment } from '../utils/env-editor.js'
 import { runSeedHook } from '../utils/seed-hook.js'
+import { runSetupHook } from '../utils/setup-hook.js'
 import type { NormalizedSeedHookResult } from '../utils/seed-hook.js'
 import readline from 'node:readline'
 
@@ -26,6 +27,7 @@ const command = new Command('add')
 	.option('-f', '--force', 'forcefully install & register packages')
 	.option('-ns', '--no-seed', 'skip the seeding of files from the plugin')
 	.option('-s', '--silent', 'do not print anything')
+	.option('-t', '--trigger', 'setup hook trigger context (add or create)')
 	.option('-v', '--verbose', 'print more information for debugging')
 	.option('-y', '--yes', 'auto-accept seed files')
 	.positionalArgs(true)
@@ -37,6 +39,7 @@ interface AddCommandOptions {
 	'no-seed'?: boolean
 	silent?: boolean
 	sync?: boolean
+	trigger?: 'add' | 'create'
 	verbose?: boolean
 	yes?: boolean
 }
@@ -339,6 +342,18 @@ export async function addAction(packages: string[], options: AddCommandOptions) 
 			}
 		} else {
 			logger.log(Indent, color.dim('Skipping environment variable additions.'))
+		}
+	}
+
+	// Execute setup hooks for newly added plugins
+	const setupTrigger = options.trigger ?? 'add'
+	for (const pkg of pendingRegistration) {
+		try {
+			const pkgJsonPath = path.join(process.cwd(), 'node_modules', pkg, 'package.json')
+			const pkgJson = JSON.parse(await fs.readFile(pkgJsonPath, 'utf-8'))
+			await runSetupHook(pkg, pkgJson?.version || 'unknown', setupTrigger)
+		} catch (error) {
+			logger.debug(`Failed to run setup hook for ${pkg}:`, error)
 		}
 	}
 
