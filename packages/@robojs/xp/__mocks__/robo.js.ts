@@ -16,12 +16,10 @@ import { mockFlashcore, mockClient } from '../__tests__/helpers/mocks.js'
 // Bridge Flashcore to the shared test mock (which uses jest.fn for call asserts)
 // Test mocks require flexible types to match various call signatures
 export const Flashcore = {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	get: (key: string, options?: { namespace?: string | string[]; default?: unknown }) =>
-		mockFlashcore.get(key, options as any),
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		mockFlashcore.get(key, options),
 	set: (key: string, value: unknown, options?: { namespace?: string | string[] }) =>
-		mockFlashcore.set(key, value, options as any),
+		mockFlashcore.set(key, value, options),
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	delete: (key: string, options?: { namespace?: string | string[] }) => mockFlashcore.delete(key, options as any)
 }
