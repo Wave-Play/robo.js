@@ -1,11 +1,17 @@
 import { getConfig } from './config.js'
 import { logger } from './logger.js'
 import { Env } from './env.js'
-import type { InitContext } from '../types/lifecycle.js'
+import { state } from './state.js'
+import { DEFAULT_CONFIG, TIMEOUT } from './constants.js'
+import { timeout } from '../cli/utils/utils.js'
+import type { InitContext, PluginContext, PluginState } from '../types/lifecycle.js'
 import type { PluginData } from '../types/common.js'
 import path from 'node:path'
 import fs from 'node:fs/promises'
 import { pathToFileURL } from 'node:url'
+
+// Cache for plugin versions to avoid repeated package.json reads
+const pluginVersionCache = new Map<string, string>()
 
 /**
  * Check if a file exists.
@@ -157,6 +163,265 @@ export async function executeInitHooks(
 				loggerInstance.error(`Init hook for ${pluginName} failed:`, error)
 				throw error
 			}
+		}
+	}
+}
+
+/**
+ * Create a plugin-scoped state instance.
+ * Uses namespaced keys to isolate plugin data.
+ */
+export function createPluginState(pluginName: string): PluginState {
+	const namespace = `__plugin_${pluginName}__`
+
+	return {
+		get<T>(key: string): T | undefined {
+			return state[`${namespace}${key}`] as T | undefined
+		},
+
+		set<T>(key: string, value: T): void {
+			state[`${namespace}${key}`] = value
+		},
+
+		has(key: string): boolean {
+			return `${namespace}${key}` in state
+		},
+
+		delete(key: string): boolean {
+			const fullKey = `${namespace}${key}`
+			if (fullKey in state) {
+				delete state[fullKey]
+				return true
+			}
+			return false
+		},
+
+		clear(): void {
+			for (const key of Object.keys(state)) {
+				if (key.startsWith(namespace)) {
+					delete state[key]
+				}
+			}
+		}
+	}
+}
+
+/**
+ * Get plugin version from its package.json.
+ * Uses a cache to avoid repeated file reads.
+ */
+async function getPluginVersion(pluginName: string): Promise<string> {
+	if (pluginVersionCache.has(pluginName)) {
+		return pluginVersionCache.get(pluginName)!
+	}
+
+	try {
+		const packageJsonPath = path.join(process.cwd(), 'node_modules', pluginName, 'package.json')
+		const packageJsonContent = await fs.readFile(packageJsonPath, 'utf-8')
+		const packageJson = JSON.parse(packageJsonContent)
+		const version = packageJson.version ?? '0.0.0'
+		pluginVersionCache.set(pluginName, version)
+		return version
+	} catch {
+		pluginVersionCache.set(pluginName, '0.0.0')
+		return '0.0.0'
+	}
+}
+
+/**
+ * Execute start hooks for project and all registered plugins.
+ * Runs sequentially: project FIRST, then plugins in registration order.
+ *
+ * This runs AFTER portal is populated but BEFORE Discord login.
+ */
+export async function executeStartHooks(
+	plugins: Map<string, PluginData>,
+	mode: 'development' | 'production'
+): Promise<void> {
+	const config = getConfig()
+	const loggerInstance = logger()
+	const timeoutDuration = config?.timeouts?.lifecycle ?? DEFAULT_CONFIG.timeouts.lifecycle
+
+	// 1. Execute project's start hook first (if exists)
+	const projectHookPath = await resolveProjectHookPath('start', mode)
+	if (projectHookPath) {
+		try {
+			loggerInstance.debug('Executing project start hook...')
+			const hookModule = await import(pathToFileURL(projectHookPath).href)
+
+			if (typeof hookModule.default === 'function') {
+				const hookPromise = hookModule.default({
+					config,
+					logger: loggerInstance,
+					env: Env,
+					mode
+				})
+
+				if (hookPromise instanceof Promise) {
+					const timeoutPromise = timeout(() => TIMEOUT, timeoutDuration)
+					const result = await Promise.race([hookPromise, timeoutPromise])
+
+					if (result === TIMEOUT) {
+						loggerInstance.warn('Project start hook timed out')
+					}
+				}
+			}
+		} catch (error) {
+			// Project start hook failure is always fatal
+			loggerInstance.error('Project start hook failed:', error)
+			throw error
+		}
+	}
+
+	// 2. Execute plugin start hooks in registration order
+	for (const [pluginName, pluginData] of plugins) {
+		const hookPath = await resolvePluginHookPath(pluginName, 'start')
+
+		if (!hookPath) {
+			continue // Plugin doesn't have a start hook
+		}
+
+		// Get plugin version from package.json (cached)
+		const pluginVersion = await getPluginVersion(pluginName)
+
+		// Create plugin-scoped context
+		const context: PluginContext = {
+			config: pluginData.options,
+			state: createPluginState(pluginName),
+			logger: loggerInstance.fork(inferNamespace(pluginName)),
+			env: Env,
+			meta: {
+				name: pluginName,
+				version: pluginVersion
+			}
+		}
+
+		try {
+			loggerInstance.debug(`Executing start hook for ${pluginName}...`)
+			const hookModule = await import(pathToFileURL(hookPath).href)
+
+			if (typeof hookModule.default === 'function') {
+				const hookPromise = hookModule.default(context)
+
+				if (hookPromise instanceof Promise) {
+					const timeoutPromise = timeout(() => TIMEOUT, timeoutDuration)
+					const result = await Promise.race([hookPromise, timeoutPromise])
+
+					if (result === TIMEOUT) {
+						loggerInstance.warn(`Start hook for ${pluginName} timed out`)
+					}
+				}
+			}
+		} catch (error) {
+			// Check failSafe meta option
+			const failSafe = pluginData.metaOptions?.failSafe ?? false
+
+			if (failSafe) {
+				loggerInstance.warn(`Start hook for ${pluginName} failed (failSafe enabled):`, error)
+				// Continue with other plugins
+			} else {
+				loggerInstance.error(`Start hook for ${pluginName} failed:`, error)
+				throw error
+			}
+		}
+	}
+}
+
+/**
+ * Execute stop hooks for all registered plugins and project.
+ * Runs sequentially: plugins in REVERSE registration order, then project LAST.
+ *
+ * This runs when shutdown signal is received.
+ */
+export async function executeStopHooks(
+	plugins: Map<string, PluginData>,
+	mode: 'development' | 'production'
+): Promise<void> {
+	const config = getConfig()
+	const loggerInstance = logger()
+	const timeoutDuration = config?.timeouts?.lifecycle ?? DEFAULT_CONFIG.timeouts.lifecycle
+
+	// 1. Execute plugin stop hooks in REVERSE registration order
+	const pluginEntries = Array.from(plugins.entries()).reverse()
+
+	for (const [pluginName, pluginData] of pluginEntries) {
+		const hookPath = await resolvePluginHookPath(pluginName, 'stop')
+
+		if (!hookPath) {
+			continue // Plugin doesn't have a stop hook
+		}
+
+		// Get plugin version from cache
+		const pluginVersion = await getPluginVersion(pluginName)
+
+		// Create plugin-scoped context
+		const context: PluginContext = {
+			config: pluginData.options,
+			state: createPluginState(pluginName),
+			logger: loggerInstance.fork(inferNamespace(pluginName)),
+			env: Env,
+			meta: {
+				name: pluginName,
+				version: pluginVersion
+			}
+		}
+
+		try {
+			loggerInstance.debug(`Executing stop hook for ${pluginName}...`)
+			const hookModule = await import(pathToFileURL(hookPath).href)
+
+			if (typeof hookModule.default === 'function') {
+				const hookPromise = hookModule.default(context)
+
+				if (hookPromise instanceof Promise) {
+					const timeoutPromise = timeout(() => TIMEOUT, timeoutDuration)
+					const result = await Promise.race([hookPromise, timeoutPromise])
+
+					if (result === TIMEOUT) {
+						loggerInstance.warn(`Stop hook for ${pluginName} timed out`)
+					}
+				}
+			}
+		} catch (error) {
+			// On stop, log errors but continue to ensure cleanup happens
+			const failSafe = pluginData.metaOptions?.failSafe ?? false
+
+			if (failSafe) {
+				loggerInstance.warn(`Stop hook for ${pluginName} failed (failSafe enabled):`, error)
+			} else {
+				loggerInstance.error(`Stop hook for ${pluginName} failed:`, error)
+			}
+			// Continue with other plugins regardless - graceful shutdown should complete
+		}
+	}
+
+	// 2. Execute project's stop hook last (if exists)
+	const projectHookPath = await resolveProjectHookPath('stop', mode)
+	if (projectHookPath) {
+		try {
+			loggerInstance.debug('Executing project stop hook...')
+			const hookModule = await import(pathToFileURL(projectHookPath).href)
+
+			if (typeof hookModule.default === 'function') {
+				const hookPromise = hookModule.default({
+					config,
+					logger: loggerInstance,
+					env: Env,
+					mode
+				})
+
+				if (hookPromise instanceof Promise) {
+					const timeoutPromise = timeout(() => TIMEOUT, timeoutDuration)
+					const result = await Promise.race([hookPromise, timeoutPromise])
+
+					if (result === TIMEOUT) {
+						loggerInstance.warn('Project stop hook timed out')
+					}
+				}
+			}
+		} catch (error) {
+			// Project stop hook failure - log but don't throw (shutdown should complete)
+			loggerInstance.error('Project stop hook failed:', error)
 		}
 	}
 }

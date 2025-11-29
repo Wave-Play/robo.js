@@ -45,4 +45,80 @@ export interface PromptQuestion {
 	when?: boolean
 }
 
+/**
+ * Plugin-scoped state storage.
+ * Isolated from other plugins using namespaced keys.
+ */
+export interface PluginState {
+	/**
+	 * Get a value from plugin state.
+	 */
+	get<T>(key: string): T | undefined
+
+	/**
+	 * Set a value in plugin state.
+	 */
+	set<T>(key: string, value: T): void
+
+	/**
+	 * Check if a key exists in plugin state.
+	 */
+	has(key: string): boolean
+
+	/**
+	 * Delete a key from plugin state.
+	 */
+	delete(key: string): boolean
+
+	/**
+	 * Clear all plugin state.
+	 */
+	clear(): void
+}
+
+/**
+ * Context provided to start and stop hooks.
+ * Start runs SEQUENTIALLY in registration order.
+ * Stop runs SEQUENTIALLY in REVERSE order.
+ */
+export interface PluginContext<TConfig = unknown> {
+	/**
+	 * Plugin's configuration from user's /config/plugins/.
+	 * Typed based on plugin's config schema.
+	 */
+	config: TConfig
+
+	/**
+	 * Plugin-scoped state storage.
+	 * Isolated from other plugins.
+	 */
+	state: PluginState
+
+	/**
+	 * Logger instance prefixed with plugin name.
+	 */
+	logger: Logger
+
+	/**
+	 * Environment variable access.
+	 */
+	env: typeof Env
+
+	/**
+	 * Portal access scoped to this plugin's routes.
+	 * Reserved for future route system (Phase 3).
+	 */
+	portal?: unknown
+
+	/**
+	 * Plugin metadata.
+	 */
+	meta: {
+		/** Package name */
+		name: string
+		/** Package version */
+		version: string
+	}
+}
+
 export default {}

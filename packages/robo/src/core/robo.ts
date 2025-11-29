@@ -15,7 +15,7 @@ import {
 import { hasProperties, PackageDir } from '../cli/utils/utils.js'
 import { Nanocore } from '../internal/nanocore.js'
 import { Flashcore } from './flashcore.js'
-import { executeInitHooks } from './hooks.js'
+import { executeInitHooks, executeStartHooks, executeStopHooks } from './hooks.js'
 import { Mode } from './mode.js'
 import { loadState } from './state.js'
 import Portal from './portal.js'
@@ -155,6 +155,9 @@ async function start(options?: StartOptions) {
 		// Load the portal (commands, context, events)
 		await Portal.open()
 
+		// Execute start hooks (project first, then plugins sequentially)
+		await executeStartHooks(plugins, mode as 'development' | 'production')
+
 		// Let external watchers know we're ready to go
 		await Nanocore.set('watch', { id, pid, startedAt: Date.now(), status: 'running' })
 
@@ -213,6 +216,9 @@ async function stop(exitCode = 0) {
 	await Nanocore.update('watch', { status: exitCode === 0 ? 'stopping' : 'error' })
 
 	try {
+		// Execute stop hooks (plugins in reverse order, then project)
+		await executeStopHooks(plugins, Mode.get() as 'development' | 'production')
+
 		// Notify lifecycle handler
 		await executeEventHandler(plugins, '_stop', client)
 		client?.destroy()
