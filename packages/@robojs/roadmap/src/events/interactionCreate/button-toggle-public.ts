@@ -4,6 +4,7 @@ import { toggleForumAccess, getRoadmapCategory, getAllForumChannels } from '../.
 import { getSettings, isForumPublic } from '../../core/settings.js'
 import { Buttons } from '../../core/constants.js'
 import { createSetupMessage } from '../../commands/roadmap/setup.js'
+import { getProvider } from '../_start.js'
 
 /**
  * Button interaction handler for toggling roadmap category access between public and private modes.
@@ -122,7 +123,30 @@ export default async (interaction: ButtonInteraction) => {
 
 	// Update setup message with new state
 	const settings = getSettings(interaction.guildId)
-	const setupMessage = createSetupMessage(interaction, category, forums, settings)
+	
+	// Fetch known Jira assignees for the select menu
+	let knownJiraAssignees: string[] = []
+	if (settings.lastSyncTimestamp) {
+		try {
+			const provider = getProvider()
+			if (provider) {
+				const cards = await provider.fetchCards()
+				const assigneeSet = new Set<string>()
+				for (const card of cards) {
+					for (const assignee of card.assignees) {
+						if (assignee.name && assignee.name !== 'Unassigned') {
+							assigneeSet.add(assignee.name)
+						}
+					}
+				}
+				knownJiraAssignees = Array.from(assigneeSet).sort()
+			}
+		} catch (error) {
+			logger.warn('Failed to fetch cards for assignee mapping refresh:', error)
+		}
+	}
+	
+	const setupMessage = await createSetupMessage(interaction, category, forums, settings, knownJiraAssignees)
 	await interaction.editReply(setupMessage)
 
 	// Build confirmation message based on new mode

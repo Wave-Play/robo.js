@@ -7,7 +7,7 @@ function formatCardContent(card, maxLength): string
 Formats a roadmap card into Discord message content with automatic truncation.
 
 Includes description and metadata (assignees, labels, last updated). Content is
-truncated to respect Discord limits (4000 for thread creation, 2000 for updates).
+truncated to respect Discord limits (2000 for forum thread starter messages and message edits).
 
 ## Parameters
 
@@ -25,5 +25,5 @@ Formatted message content.
 ## Example
 
 ```ts
-const content = formatCardContent(card, 4000);
+const content = formatCardContent(card, 2000);
 ```

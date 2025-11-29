@@ -4,6 +4,16 @@ import { Selects } from '../../core/constants.js'
 import { setAuthorizedCreatorRoles, getSettings } from '../../core/settings.js'
 import { createSetupMessage } from '../../commands/roadmap/setup.js'
 import { getRoadmapCategory, getAllForumChannels } from '../../core/forum-manager.js'
+import { getProvider } from '../_start.js'
+
+/**
+ * Global cache for role management webhook info.
+ * Key: `${guildId}:${userId}`, Value: { messageId?: string, webhookId?: string, webhookToken?: string }
+ */
+declare global {
+	// eslint-disable-next-line no-var
+	var roadmapRoleManagement: Map<string, { messageId?: string; webhookId?: string; webhookToken?: string }> | undefined
+}
 
 /**
  * Role select menu interaction handler for updating authorized creator roles.
@@ -24,7 +34,6 @@ import { getRoadmapCategory, getAllForumChannels } from '../../core/forum-manage
  * // 2. Extracts selected role IDs
  * // 3. Updates authorizedCreatorRoles in settings
  * // 4. Refreshes setup message with new role list
- * // 5. Sends confirmation message
  */
 
 export const config: EventConfig = {
@@ -102,29 +111,70 @@ export default async (interaction: RoleSelectMenuInteraction) => {
 			// Get updated settings for display
 			const settings = getSettings(interaction.guildId)
 
+			// Fetch known Jira assignees for the select menu
+			let knownJiraAssignees: string[] = []
+			if (settings.lastSyncTimestamp) {
+				try {
+					const provider = getProvider()
+					if (provider) {
+						const cards = await provider.fetchCards()
+						const assigneeSet = new Set<string>()
+						for (const card of cards) {
+							for (const assignee of card.assignees) {
+								if (assignee.name && assignee.name !== 'Unassigned') {
+									assigneeSet.add(assignee.name)
+								}
+							}
+						}
+						knownJiraAssignees = Array.from(assigneeSet).sort()
+					}
+				} catch (error) {
+					logger.warn('Failed to fetch cards for assignee mapping refresh:', error)
+				}
+			}
+
 			// Update setup message with new role configuration
-			const setupMessage = createSetupMessage(interaction, category, forums, settings)
-			await interaction.editReply(setupMessage)
+			const setupMessage = await createSetupMessage(
+				interaction,
+				category,
+				forums,
+				settings,
+				knownJiraAssignees
+			)
+
+			// Check if we have webhook info from the button click (ephemeral message flow)
+			const cacheKey = `${interaction.guildId}:${interaction.user.id}`
+			const cachedData = globalThis.roadmapRoleManagement?.get(cacheKey)
+
+			if (cachedData?.messageId && cachedData.webhookId && cachedData.webhookToken) {
+				// Use webhook to update the original setup message
+				try {
+					await interaction.client.rest.patch(
+						`/webhooks/${cachedData.webhookId}/${cachedData.webhookToken}/messages/${cachedData.messageId}`,
+						{ body: setupMessage }
+					)
+					// Clear cache after successful update
+					globalThis.roadmapRoleManagement?.delete(cacheKey)
+				} catch (error) {
+					logger.warn('Failed to update original setup message via webhook:', error)
+					// Fallback to editReply if webhook update fails
+					try {
+						await interaction.editReply(setupMessage)
+					} catch (editError) {
+						logger.error('Failed to edit reply as fallback:', editError)
+					}
+				}
+			} else {
+				// Original flow - edit the interaction reply directly
+				await interaction.editReply(setupMessage)
+			}
 		}
 	} catch (error) {
 		logger.error('Failed to refresh setup message:', error)
-		// Don't return here - still send confirmation even if refresh failed
+		// Don't return here - still log success even if refresh failed
 	}
 
-	// Build confirmation message based on role selection
-	let confirmationMessage: string
-	if (roleIds.length > 0) {
-		const roleMentions = roleIds.map((id) => `<@&${id}>`).join(', ')
-		confirmationMessage = `Updated authorized creator roles. The following roles can now create roadmap cards: ${roleMentions}`
-	} else {
-		confirmationMessage = 'Cleared authorized creator roles. Only administrators can create roadmap cards.'
-	}
-
-	// Send confirmation to user
-	await interaction.followUp({
-		content: confirmationMessage,
-		ephemeral: true
-	})
+	// No confirmation message - the setup message update is sufficient feedback
 
 	// Log successful role update
 	logger.info(

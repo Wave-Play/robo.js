@@ -6,7 +6,7 @@ import { client } from 'robo.js'
  * Level-Up Announcements
  *
  * This seed file demonstrates the @robojs/xp plugin's event-driven API by creating
- * a MEE6-style level-up announcement system. When users gain enough XP to level up,
+ * a standard level-up announcement system. When users gain enough XP to level up,
  * a rich embed is automatically sent to announce their achievement.
  *
  * Key Features:
@@ -70,9 +70,9 @@ export default async () => {
 
 			// Create visual progress bar using Unicode blocks (15 blocks total)
 			const filledBlocks = Math.floor((progress.percentage / 100) * 15)
-			const progressBar = '█'.repeat(filledBlocks) + '░'.repeat(15 - filledBlocks)
+			const progressBar = '▰'.repeat(filledBlocks) + '▱'.repeat(15 - filledBlocks)
 
-			// ===== Build MEE6-Style Embed =====
+			// ===== Build Level-Up Embed =====
 			const embed = new EmbedBuilder()
 				.setTitle('🎉 Level Up!')
 				.setDescription(`${member} just reached **Level ${newLevel}**!`)
@@ -82,7 +82,7 @@ export default async () => {
 					{ name: 'Current Level', value: `${newLevel}`, inline: true },
 					{ name: 'Total XP', value: `${totalXp.toLocaleString()}`, inline: true },
 					{ name: 'Next Level', value: `${nextLevelXp.toLocaleString()} XP`, inline: true },
-					{ name: 'Progress', value: `${progressBar} ${progress.percentage.toFixed(1)}%`, inline: false }
+					{ name: 'Progress', value: `${progressBar} ${progress.percentage.toFixed(1)}% (${progress.current.toLocaleString()} / ${progress.needed.toLocaleString()})`, inline: false }
 				)
 				.setFooter({ text: `Keep chatting to reach Level ${newLevel + 1}!` })
 				.setTimestamp()

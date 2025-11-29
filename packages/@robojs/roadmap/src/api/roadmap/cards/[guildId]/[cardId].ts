@@ -62,6 +62,8 @@
  *     "discordSynced": true,
  *     "threadId": "1234567890123456789",
  *     "threadUrl": "https://discord.com/channels/123456789/1234567890123456789",
+ *     "movedThread": true,
+ *     "previousThreadId": "9876543210987654321",
  *     "message": "Card updated successfully"
  *   }
  * }
@@ -84,11 +86,12 @@
  */
 
 import type { RoboRequest } from '@robojs/server'
-import { client, logger } from 'robo.js'
-import { ChannelType, type ForumChannel } from 'discord.js'
+import { client } from 'robo.js'
+import { ChannelType, type ForumChannel, type ThreadChannel } from 'discord.js'
 import { getProvider, isProviderReady } from '../../../../events/_start.js'
 import { getSyncedPostId } from '../../../../core/settings.js'
-import { formatCardContent } from '../../../../core/sync-engine.js'
+import { formatCardContentV2, formatThreadName, moveThreadToNewForum, syncSingleCard } from '../../../../core/sync-engine.js'
+import { getForumChannelForColumn } from '../../../../core/forum-manager.js'
 import {
 	getGuildFromRequest,
 	success,
@@ -97,9 +100,8 @@ import {
 	ERROR_CODES,
 	type ApiResponse
 } from '../../utils.js'
-import type { UpdateCardInput } from '../../../../types.js'
-
-const apiLogger = logger.fork('roadmap')
+import type { UpdateCardInput, RoadmapCard } from '../../../../types.js'
+import { roadmapLogger } from '../../../../core/logger.js'
 
 /**
  * Request body structure for card updates
@@ -184,6 +186,14 @@ interface UpdateCardResponse {
 	 */
 	threadUrl?: string
 	/**
+	 * Whether the thread was moved to a new forum due to a column change
+	 */
+	movedThread?: boolean
+	/**
+	 * Previous Discord thread ID before the move
+	 */
+	previousThreadId?: string
+	/**
 	 * Success message
 	 */
 	message: string
@@ -228,7 +238,7 @@ export default wrapHandler(async (request: RoboRequest): Promise<ApiResponse<Get
 	// Handle GET request
 	if (request.method === 'GET') {
 		// Log card retrieval attempt
-		apiLogger.debug(`Fetching card via API: ${cardId} from guild ${guild.id}`)
+		roadmapLogger.debug(`Fetching card via API: ${cardId} from guild ${guild.id}`)
 
 		// Fetch card from provider
 		const card = await provider.getCard(cardId)
@@ -253,7 +263,7 @@ export default wrapHandler(async (request: RoboRequest): Promise<ApiResponse<Get
 		}
 
 		// Log successful card retrieval
-		apiLogger.info(`Card retrieved via API: ${card.id} from guild ${guild.id}`)
+		roadmapLogger.info(`Card retrieved via API: ${card.id} from guild ${guild.id}`)
 
 		return success(response)
 	}
@@ -261,7 +271,7 @@ export default wrapHandler(async (request: RoboRequest): Promise<ApiResponse<Get
 	// Handle PUT request
 	if (request.method === 'PUT') {
 		// Log card update attempt
-		apiLogger.debug(`Updating card via API: ${cardId} from guild ${guild.id}`)
+		roadmapLogger.debug(`Updating card via API: ${cardId} from guild ${guild.id}`)
 
 		// Parse and validate request body
 		let body: UpdateCardRequest
@@ -294,6 +304,22 @@ export default wrapHandler(async (request: RoboRequest): Promise<ApiResponse<Get
 				const error = new Error(`Invalid column "${body.column}". Valid columns: ${columnNames}`)
 				error.name = ERROR_CODES.INVALID_REQUEST
 				throw error
+			}
+		}
+
+		// Fetch current card if column update requested to detect column changes
+		let currentCard: RoadmapCard | null = null
+		if (body.syncDiscord !== false && body.column !== undefined) {
+			try {
+				roadmapLogger.debug(`Fetching current card state for column change detection: cardId=${cardId}`)
+				currentCard = await provider.getCard(cardId)
+				if (currentCard) {
+					roadmapLogger.debug(
+						`Fetched current card state for column change detection: cardId=${cardId}, column=${currentCard.column}`
+					)
+				}
+			} catch (error) {
+				roadmapLogger.warn(`Failed to fetch current card state for column change detection: cardId=${cardId}`, error)
 			}
 		}
 
@@ -349,16 +375,153 @@ export default wrapHandler(async (request: RoboRequest): Promise<ApiResponse<Get
 		}
 
 		// Log successful card update
-		apiLogger.info(`Card updated successfully via API: ${result.card.id} from guild ${guild.id}`)
+		roadmapLogger.info(`Card updated successfully via API: ${result.card.id} from guild ${guild.id}`)
 
 		// Sync to Discord if requested (default: true)
 		let discordSynced = false
 		let threadId: string | undefined
 		let threadUrl: string | undefined
-		if (body.syncDiscord !== false) {
+		let threadWasMoved = false
+		let previousThreadId: string | undefined
+		let skipAdditionalDiscordSync = false
+		let responseMessage = 'Card updated'
+
+		// Column change detection and thread move logic
+		const columnChanged =
+			body.syncDiscord !== false && body.column !== undefined && currentCard && currentCard.column !== result.card.column
+
+		if (columnChanged) {
+			roadmapLogger.debug(
+				`Column change detected for card ${cardId} via API: ${currentCard?.column ?? 'unknown'} → ${result.card.column}`
+			)
+
+			threadId = getSyncedPostId(guild.id, cardId)
+			if (!threadId) {
+				roadmapLogger.debug(`Column changed for card ${cardId} but no synced thread found; skipping move`)
+			} else {
+				let existingThread: ThreadChannel | null = null
+				try {
+					const channel = await client.channels.fetch(threadId)
+					if (channel && channel.isThread()) {
+						// Cast through unknown to satisfy TypeScript's private property checks between thread channel variants
+						existingThread = channel as unknown as ThreadChannel
+					} else {
+						roadmapLogger.warn(`Synced channel ${threadId} is not a thread, skipping move`)
+					}
+				} catch (error) {
+					const errorCode =
+						error && typeof error === 'object' && 'code' in error ? (error as { code?: number }).code : undefined
+
+					if (errorCode !== 403 && errorCode !== 10003 && errorCode !== 10008) {
+						roadmapLogger.warn(`Failed to fetch thread ${threadId} for move:`, error)
+					}
+				}
+
+				if (existingThread) {
+					const targetForum = await getForumChannelForColumn(guild, result.card.column)
+					if (!targetForum) {
+						const warning = `Forum channel for column ${result.card.column} not found. Run /roadmap setup to configure forums.`
+						roadmapLogger.warn(warning)
+						responseMessage = 'Card updated but target forum is not configured; Discord sync skipped'
+					} else {
+						roadmapLogger.debug(
+							`Checking if thread ${threadId} needs to move from forum ${existingThread.parentId} to forum ${targetForum.id}`
+						)
+
+						if (existingThread.parentId !== targetForum.id) {
+							const labelToTagId = new Map<string, string>()
+							for (const tag of targetForum.availableTags) {
+								labelToTagId.set(tag.name.toLowerCase(), tag.id)
+							}
+
+							const appliedTags = result.card.labels
+								.map((label) => labelToTagId.get(label.toLowerCase()))
+								.filter((tagId): tagId is string => Boolean(tagId))
+								.slice(0, 5)
+
+							previousThreadId = existingThread.id
+
+							try {
+								const newThread = await moveThreadToNewForum(
+									result.card,
+									existingThread,
+									targetForum,
+									appliedTags,
+									guild.id
+								)
+
+								threadWasMoved = true
+								discordSynced = true
+								skipAdditionalDiscordSync = true
+								threadId = newThread.id
+								threadUrl = newThread.url ?? `https://discord.com/channels/${guild.id}/${newThread.id}`
+								responseMessage = 'Card updated and thread moved to new forum'
+
+								roadmapLogger.info(
+									`Successfully moved thread for card ${cardId} from forum ${existingThread.parent?.name ?? existingThread.parentId ?? 'unknown'} to ${targetForum.name} via API`
+								)
+							} catch (moveError) {
+								const errorCode =
+									moveError && typeof moveError === 'object' && 'code' in moveError
+										? (moveError as { code?: number }).code
+										: undefined
+
+								const syncError =
+									moveError instanceof Error ? moveError : new Error(String(moveError))
+
+								let failureMessage = `Card updated in ${(await provider.getProviderInfo()).name} but failed to move the Discord thread: ${syncError.message}`
+								if (errorCode === 403 || errorCode === 50013) {
+									failureMessage =
+										"Card updated but Discord sync failed: missing permissions to move thread. Ensure the bot has 'Manage Threads' and 'Send Messages in Threads' permissions in both forums."
+								}
+
+								responseMessage = failureMessage
+								discordSynced = false
+								roadmapLogger.error(
+									`Failed to move thread for card ${cardId} via API: ${syncError.message}`,
+									moveError
+								)
+							}
+						} else {
+							roadmapLogger.debug(`Thread ${threadId} already in target forum ${targetForum.id}, skipping move`)
+						}
+					}
+				} else {
+					try {
+						const syncResult = await syncSingleCard(result.card, guild, provider)
+						if (syncResult) {
+							threadId = syncResult.threadId
+							threadUrl = syncResult.threadUrl
+							discordSynced = true
+							skipAdditionalDiscordSync = true
+							responseMessage = 'Card updated and Discord thread recreated in target forum'
+							roadmapLogger.info(`Recreated Discord thread for card ${cardId} via syncSingleCard after missing thread`)
+						} else {
+							roadmapLogger.debug(`Skipped recreating thread for card ${cardId} (likely archived column)`)
+						}
+					} catch (syncError) {
+						roadmapLogger.warn(
+							`Failed to recreate Discord thread for card ${cardId} after missing thread: ${
+								syncError instanceof Error ? syncError.message : String(syncError)
+							}`,
+							syncError
+						)
+						responseMessage = `Card updated but Discord sync failed: ${
+							syncError instanceof Error ? syncError.message : String(syncError)
+						}`
+					}
+				}
+			}
+		}
+
+		// End column change detection and thread move logic
+
+		if (body.syncDiscord !== false && !skipAdditionalDiscordSync) {
 			try {
 				// Get Discord thread ID from sync mapping
-				threadId = getSyncedPostId(guild.id, cardId)
+				if (!threadId) {
+					threadId = getSyncedPostId(guild.id, cardId)
+				}
 				if (threadId) {
 					try {
 						// Fetch Discord thread channel
@@ -369,14 +532,14 @@ export default wrapHandler(async (request: RoboRequest): Promise<ApiResponse<Get
 
 							// Update thread name to match card title
 							try {
-								await thread.edit({ name: result.card.title.substring(0, 100) })
+								await thread.edit({ name: formatThreadName(result.card, guild.id) })
 							} catch (error) {
 								const errorCode =
 									error && typeof error === 'object' && 'code' in error ? (error as { code: number }).code : undefined
 
 								// Silently handle permission and not found errors
 								if (errorCode !== 403 && errorCode !== 10003 && errorCode !== 10008) {
-									apiLogger.warn(`Failed to update thread name for ${threadId}:`, error)
+									roadmapLogger.warn(`Failed to update thread name for ${threadId}:`, error)
 								}
 							}
 
@@ -403,7 +566,7 @@ export default wrapHandler(async (request: RoboRequest): Promise<ApiResponse<Get
 
 									// Silently handle permission and not found errors
 									if (errorCode !== 403 && errorCode !== 10003 && errorCode !== 10008) {
-										apiLogger.warn(`Failed to update thread tags for ${threadId}:`, error)
+										roadmapLogger.warn(`Failed to update thread tags for ${threadId}:`, error)
 									}
 								}
 							}
@@ -416,11 +579,11 @@ export default wrapHandler(async (request: RoboRequest): Promise<ApiResponse<Get
 
 								// Only edit if message was created by bot
 								if (starter && starter.author?.id === client.user?.id) {
-									// Format card content to fit within Discord message limits
-									const formattedContent = formatCardContent(result.card, 2000)
+									// Format card content with Components v2
+									const { flags, components } = await formatCardContentV2(result.card, guild.id, guild)
 
-									// Edit message with updated content
-									await starter.edit({ content: formattedContent })
+									// Edit message with updated content - explicitly remove content field for Components v2
+									await starter.edit({ flags, components, content: null })
 								}
 							} catch (error) {
 								const errorCode =
@@ -428,7 +591,7 @@ export default wrapHandler(async (request: RoboRequest): Promise<ApiResponse<Get
 
 								// Silently handle permission and not found errors
 								if (errorCode !== 403 && errorCode !== 10003 && errorCode !== 10008) {
-									apiLogger.warn(`Failed to update starter message for ${threadId}:`, error)
+									roadmapLogger.warn(`Failed to update starter message for ${threadId}:`, error)
 								}
 							}
 
@@ -441,7 +604,7 @@ export default wrapHandler(async (request: RoboRequest): Promise<ApiResponse<Get
 							}
 
 							// Log successful Discord sync
-							apiLogger.debug(`Discord thread synced for card ${cardId}`)
+							roadmapLogger.debug(`Discord thread synced for card ${cardId}`)
 						}
 					} catch (error) {
 						const errorCode =
@@ -449,13 +612,13 @@ export default wrapHandler(async (request: RoboRequest): Promise<ApiResponse<Get
 
 						// Silently handle permission and not found errors
 						if (errorCode !== 403 && errorCode !== 10003 && errorCode !== 10008) {
-							apiLogger.warn(`Failed to fetch thread ${threadId}:`, error)
+							roadmapLogger.warn(`Failed to fetch thread ${threadId}:`, error)
 						}
 					}
 				}
 			} catch (error) {
 				// Log sync failure but don't fail the request
-				apiLogger.warn('Failed to sync Discord thread after card update:', error)
+				roadmapLogger.warn('Failed to sync Discord thread after card update:', error)
 				// Don't fail the request - card was updated successfully
 			}
 		}
@@ -476,7 +639,9 @@ export default wrapHandler(async (request: RoboRequest): Promise<ApiResponse<Get
 			discordSynced,
 			...(threadId && { threadId }),
 			...(threadUrl && { threadUrl }),
-			message: 'Card updated'
+			...(threadWasMoved ? { movedThread: true } : {}),
+			...(threadWasMoved && previousThreadId ? { previousThreadId } : {}),
+			message: responseMessage
 		}
 
 		return success(responseData)

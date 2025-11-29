@@ -114,6 +114,21 @@ Retrieves lifetime token totals aggregated by model.
 
 `Promise`\<`Record`\<`string`, [`TokenWindowTotals`](Interface.TokenWindowTotals.md)\>\>
 
+### getMCPServers()
+
+```ts
+getMCPServers: () => MCPTool[];
+```
+
+Retrieves configured MCP servers from plugin options, optionally delegating to the engine's
+getMCPTools() method if available. Returns an empty array if no MCP servers are configured.
+
+#### Returns
+
+[`MCPTool`](Interface.MCPTool.md)[]
+
+Array of MCP tool configurations.
+
 ### getUsageSummary()
 
 ```ts

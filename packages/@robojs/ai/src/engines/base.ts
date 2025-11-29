@@ -3,7 +3,8 @@
  * {@link @robojs/ai} plugin. Custom engines should extend {@link BaseEngine} and rely on the
  * exported interfaces to ensure compatibility with Robo's runtime expectations.
  */
-import type { GuildMember, TextBasedChannel, VoiceBasedChannel } from 'discord.js'
+import type { ChatReply } from '../core/chat/types.js'
+import type { GuildMember, TextBasedChannel, User, VoiceBasedChannel } from 'discord.js'
 import type { Command } from 'robo.js'
 
 /**
@@ -26,32 +27,31 @@ export interface EngineSupportedFeatures {
  * Hook function invoked during message orchestration. Hooks can adjust the message array before each
  * attempt, enabling preprocessing, safety filters, or analytics.
  *
- * @param context Mutable hook context containing the latest message sequence.
- * @param iteration Zero-based retry counter indicating which attempt is currently running.
- * @returns A promise resolving with the updated message array for the next handler stage.
- * @example Prepending a safety system message
- * ```ts
- * engine.on('chat', async (ctx) => {
- *   ctx.messages.unshift({ role: 'system', content: 'Follow Robo safety policies.' })
- *   return ctx.messages
- * })
- * ```
  */
-export type Hook = (context: HookContext, iteration: number) => Promise<ChatMessage[]>
-
-type HookEvent = 'chat'
-
-/**
- * Execution context supplied to hook callbacks.
- */
-interface HookContext {
-	/** The text channel where the interaction originated, if known. */
-	channel?: TextBasedChannel | null
-	/** Discord guild member that initiated the interaction, if applicable. */
-	member?: GuildMember | null
-	/** Current sequence of chat messages being processed. */
+export interface ChatHookContext {
+	channel: TextBasedChannel | null
+	member: GuildMember | null
 	messages: ChatMessage[]
+	user: User | null
 }
+
+export interface ReplyHookContext {
+	channel: TextBasedChannel | null
+	member: GuildMember | null
+	mcpCalls?: MCPCall[]
+	/** MCP server labels that were degraded (removed) due to persistent failures. */
+	degradedMcpServers?: string[] | null
+	response: ChatResult
+	user: User | null
+}
+
+export type ChatHook = (context: ChatHookContext) => Promise<void | ChatMessage[]> | void | ChatMessage[]
+
+export type ReplyHook = (context: ReplyHookContext) => Promise<ChatReply | void> | ChatReply | void
+
+export type Hook = ChatHook | ReplyHook
+
+export type HookEvent = 'chat' | 'reply'
 
 /**
  * Normalized representation of a chat message exchanged with an engine.
@@ -117,6 +117,25 @@ export interface ChatFunction {
 }
 
 /**
+ * Configuration for an MCP (Model Context Protocol) server tool.
+ * MCP tools are server-side proxied by OpenAI, requiring no local execution logic.
+ */
+export interface MCPTool extends Record<string, unknown> {
+	/** Tool type discriminator, must be 'mcp'. */
+	type: 'mcp'
+	/** Human-readable label identifying the MCP server. */
+	server_label: string
+	/** Base URL of the MCP server endpoint. */
+	server_url: string
+	/** Optional HTTP headers to include in MCP requests (e.g., API keys). */
+	headers?: Record<string, string>
+	/** Optional whitelist of tool names allowed from this server. */
+	allowed_tools?: string[]
+	/** Approval requirement for tool calls: 'never' (auto-approve) or 'always' (require approval). */
+	require_approval?: 'never' | 'always'
+}
+
+/**
  * JSON schema snippet describing function parameters accepted by a chat tool.
  */
 export interface ChatFunctionParameters {
@@ -138,6 +157,12 @@ export interface ChatFunctionCall {
 	name: string
 	/** Parsed arguments adhering to {@link ChatFunctionParameters}. */
 	arguments: Record<string, unknown>
+}
+
+export interface MCPCall {
+	name: string
+	arguments: Record<string, unknown>
+	serverLabel: string | null
 }
 
 /**
@@ -282,6 +307,10 @@ export interface ChatResult {
 	rawResponse?: unknown
 	/** Any tool calls emitted during the completion. */
 	toolCalls?: ChatFunctionCall[]
+	/** Any MCP calls emitted during the completion. */
+	mcpCalls?: MCPCall[]
+	/** MCP server labels that were degraded (removed) due to persistent failures. */
+	degradedMcpServers?: string[] | null
 	/** Voice response metadata, when applicable. */
 	voice?: VoiceChatResult
 }
@@ -497,9 +526,7 @@ export interface VoiceSessionHandle {
  */
 export abstract class BaseEngine {
 	/** Registered hooks keyed by event type. */
-	protected _hooks: Record<HookEvent, Hook[]> = {
-		chat: []
-	}
+	protected _hooks: Map<HookEvent, Hook[]> = new Map()
 
 	/**
 	 * Returns the supported feature flags for the engine. Override to enable capabilities.
@@ -521,15 +548,23 @@ export abstract class BaseEngine {
 	 * @param iteration Current retry iteration.
 	 * @returns Latest message array after all hooks have run.
 	 */
-	public async callHooks(event: HookEvent, context: HookContext, iteration: number): Promise<ChatMessage[]> {
-		for (const hook of this._hooks[event]) {
-			const result = await hook(context, iteration)
-			if (result) {
-				context.messages = result
+	public async callHooks(event: 'chat', context: ChatHookContext): Promise<void>
+	public async callHooks(event: 'reply', context: ReplyHookContext): Promise<ChatReply | void>
+	public async callHooks(event: HookEvent, context: ChatHookContext | ReplyHookContext): Promise<ChatReply | void> {
+		const hooks = this._hooks.get(event) ?? []
+		for (const hook of hooks) {
+			if (event === 'chat') {
+				const result = await (hook as ChatHook)(context as ChatHookContext)
+				if (Array.isArray(result)) {
+					;(context as ChatHookContext).messages = result
+				}
+			} else if (event === 'reply') {
+				const reply = await (hook as ReplyHook)(context as ReplyHookContext)
+				if (reply) {
+					return reply
+				}
 			}
 		}
-
-		return context.messages
 	}
 
 	/**
@@ -558,6 +593,16 @@ export abstract class BaseEngine {
 	 * Provides descriptive information about the engine for diagnostics or inspection tooling.
 	 */
 	public abstract getInfo(): Record<string, unknown>
+
+	/**
+	 * Optionally returns MCP (Model Context Protocol) tool configurations for this engine.
+	 * Engines that support MCP should override this method to return their configured MCP servers.
+	 *
+	 * @returns Array of MCP tool configurations, or empty array if MCP is not supported.
+	 */
+	public getMCPTools?(): MCPTool[] {
+		return []
+	}
 
 	/**
 	 * Optionally summarize tool execution results for provider-specific follow-up prompts.
@@ -614,9 +659,12 @@ export abstract class BaseEngine {
 	 * @param hook Hook callback to remove.
 	 */
 	public off(event: HookEvent, hook: Hook) {
-		const index = this._hooks[event].indexOf(hook)
-		if (index !== -1) {
-			this._hooks[event].splice(index, 1)
+		const hooks = this._hooks.get(event)
+		if (hooks) {
+			const index = hooks.indexOf(hook)
+			if (index !== -1) {
+				hooks.splice(index, 1)
+			}
 		}
 	}
 
@@ -627,6 +675,9 @@ export abstract class BaseEngine {
 	 * @param hook Hook callback to register.
 	 */
 	public on(event: HookEvent, hook: Hook) {
-		this._hooks[event].push(hook)
+		if (!this._hooks.has(event)) {
+			this._hooks.set(event, [])
+		}
+		this._hooks.get(event)?.push(hook)
 	}
 }

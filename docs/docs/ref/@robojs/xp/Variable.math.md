@@ -4,9 +4,9 @@
 const math: object;
 ```
 
-MEE6-style level curve mathematics
+Standard level curve mathematics
 
-Provides pure, deterministic functions for XP calculations using the MEE6
+Provides pure, deterministic functions for XP calculations using the default
 formula: `XP = 5 * level² + 50 * level + 100`
 
 **Features:**
@@ -19,22 +19,23 @@ formula: `XP = 5 * level² + 50 * level + 100`
 **Performance:** All operations are O(1) or O(log n) - suitable for real-time use.
 
 **Formula Coefficients:**
-- CURVE_A (5): Quadratic coefficient - controls exponential growth
-- CURVE_B (50): Linear coefficient - controls linear growth
-- CURVE_C (100): Constant - base XP for level 1
+- DEFAULT_CURVE_A (5): Quadratic coefficient - controls exponential growth
+- DEFAULT_CURVE_B (50): Linear coefficient - controls linear growth
+- DEFAULT_CURVE_C (100): Constant - base XP for level 1
 
 ## Type declaration
 
 ### computeLevelFromTotalXp()
 
 ```ts
-computeLevelFromTotalXp: (totalXp) => LevelProgress;
+computeLevelFromTotalXp: (totalXp) => LevelProgress(totalXp, curve) => LevelProgress;
 ```
 
 Compute current level and progress from total XP
 
 Computes current level and progress from total XP
 Inverse calculation of totalXpForLevel
+Uses custom curve's optimized inverse function if provided
 
 #### Parameters
 
@@ -48,7 +49,7 @@ Inverse calculation of totalXpForLevel
 
 LevelProgress with current level, XP in level, and XP to next level
 
-#### Example
+#### Examples
 
 ```ts
 computeLevelFromTotalXp(0)   // { level: 0, inLevel: 0, toNext: 155 }
@@ -56,6 +57,23 @@ computeLevelFromTotalXp(100) // { level: 0, inLevel: 100, toNext: 55 }
 computeLevelFromTotalXp(155) // { level: 1, inLevel: 0, toNext: 220 }
 computeLevelFromTotalXp(200) // { level: 1, inLevel: 45, toNext: 175 }
 ```
+
+```ts
+With custom curve
+const curve = buildLinearCurve({ type: 'linear', params: { xpPerLevel: 100 } })
+computeLevelFromTotalXp(550, curve) // { level: 5, inLevel: 50, toNext: 50 }
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `totalXp` | `number` |
+| `curve` | `LevelCurve` |
+
+#### Returns
+
+[`LevelProgress`](Interface.LevelProgress.md)
 
 ### isValidLevel()
 
@@ -122,7 +140,7 @@ isValidXp(1.5)   // true
 ### progressInLevel()
 
 ```ts
-progressInLevel: (totalXp) => object;
+progressInLevel: (totalXp) => object(totalXp, curve) => object;
 ```
 
 Calculate progress within current level (absolute and percentage)
@@ -168,16 +186,48 @@ progressInLevel(155) // { current: 0, needed: 220, percentage: 0 }
 progressInLevel(265) // { current: 110, needed: 220, percentage: 50 }
 ```
 
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `totalXp` | `number` |
+| `curve` | `LevelCurve` |
+
+#### Returns
+
+`object`
+
+##### current
+
+```ts
+current: number;
+```
+
+##### needed
+
+```ts
+needed: number;
+```
+
+##### percentage
+
+```ts
+percentage: number;
+```
+
 ### totalXpForLevel()
 
 ```ts
-totalXpForLevel: (level) => number;
+totalXpForLevel: (level) => number(level, curve) => number;
 ```
 
 Calculate cumulative XP needed to reach a level
 
 Calculates cumulative XP needed to reach a level
 This is the total XP required to be at the START of the specified level
+
+When using a custom curve, delegates to curve.xpForLevel(level) which returns
+the total threshold. For the default curve, uses iterative summation.
 
 #### Parameters
 
@@ -191,18 +241,36 @@ This is the total XP required to be at the START of the specified level
 
 Cumulative XP from level 0 to specified level
 
-#### Example
+#### Examples
 
 ```ts
+Default curve (iterative summation)
 totalXpForLevel(0) // 0
 totalXpForLevel(1) // 155 (0 + 155)
 totalXpForLevel(2) // 375 (155 + 220)
 ```
 
+```ts
+With custom linear curve (direct threshold)
+const curve = buildLinearCurve({ type: 'linear', params: { xpPerLevel: 100 } })
+totalXpForLevel(5, curve) // 500 (curve.xpForLevel(5))
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `level` | `number` |
+| `curve` | `LevelCurve` |
+
+#### Returns
+
+`number`
+
 ### xpDeltaForLevelRange()
 
 ```ts
-xpDeltaForLevelRange: (fromLevel, toLevel) => number;
+xpDeltaForLevelRange: (fromLevel, toLevel) => number(fromLevel, toLevel, curve) => number;
 ```
 
 Calculate XP difference between two levels
@@ -232,16 +300,32 @@ xpDeltaForLevelRange(1, 2)  // 220
 xpDeltaForLevelRange(2, 1)  // -220
 ```
 
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `fromLevel` | `number` |
+| `toLevel` | `number` |
+| `curve` | `LevelCurve` |
+
+#### Returns
+
+`number`
+
 ### xpNeededForLevel()
 
 ```ts
-xpNeededForLevel: (level) => number;
+xpNeededForLevel: (level) => number(level, curve) => number;
 ```
 
 Calculate XP required to reach a specific level from level 0
 
-Calculates XP required to reach a specific level from level 0
-Uses MEE6 formula: 5 * level^2 + 50 * level + 100
+Calculates XP required to gain a specific level (delta from previous level)
+Uses default quadratic formula or custom curve if provided
+
+When using a custom curve, returns the XP delta between the specified level
+and the previous level: curve.xpForLevel(level) - curve.xpForLevel(level - 1).
+This represents the XP cost to gain that specific level.
 
 #### Parameters
 
@@ -253,20 +337,39 @@ Uses MEE6 formula: 5 * level^2 + 50 * level + 100
 
 `number`
 
-Total XP needed to reach the specified level
+XP required to gain the specified level from the previous level
 
 #### Throws
 
 Error if level is negative
 
-#### Example
+#### Examples
 
 ```ts
+Default curve (quadratic)
 xpNeededForLevel(0) // 0
-xpNeededForLevel(1) // 155
-xpNeededForLevel(2) // 220
-xpNeededForLevel(10) // 1100
+xpNeededForLevel(1) // 155 (XP to gain level 1)
+xpNeededForLevel(2) // 220 (XP to gain level 2)
+xpNeededForLevel(10) // 1100 (XP to gain level 10)
 ```
+
+```ts
+With custom linear curve
+const curve = buildLinearCurve({ type: 'linear', params: { xpPerLevel: 100 } })
+xpNeededForLevel(1, curve) // 100 (100 - 0)
+xpNeededForLevel(10, curve) // 100 (1000 - 900)
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `level` | `number` |
+| `curve` | `LevelCurve` |
+
+#### Returns
+
+`number`
 
 ## Examples
 
@@ -342,8 +445,8 @@ const reward = Math.floor((xpFor100 - xpFor50) * 0.1) // 10% of XP difference
 console.log(`Reward for level 100: ${reward} XP`)
 
 // Use formula coefficients for custom calculations
-const { CURVE_A, CURVE_B, CURVE_C } = constants
-const customXp = (level: number) => CURVE_A * level ** 2 + CURVE_B * level + CURVE_C
+const { DEFAULT_CURVE_A, DEFAULT_CURVE_B, DEFAULT_CURVE_C } = constants
+const customXp = (level: number) => DEFAULT_CURVE_A * level ** 2 + DEFAULT_CURVE_B * level + DEFAULT_CURVE_C
 ```
 
 ## Remarks

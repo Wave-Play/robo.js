@@ -109,6 +109,41 @@ export interface RoadmapPluginOptions {
 	 * ```
 	 */
 	autocompleteCacheTtl?: number
+
+	/**
+	 * Whether roadmap command responses (e.g., /roadmap add, /roadmap edit) should be ephemeral.
+	 *
+	 * When true, command replies are only visible to the invoking user. When false, results are
+	 * posted visibly in the channel so project teams can see card creation and edit activity.
+	 *
+	 * @defaultValue true
+	 *
+	 * @example
+	 * ```ts
+	 * export default {
+	 *   ephemeralCommands: false // share add/edit results with the whole channel
+	 * }
+	 * ```
+	 */
+	ephemeralCommands?: boolean
+
+	/**
+	 * Default template string for formatting Discord thread titles.
+	 *
+	 * Supports placeholders: `{id}` for the card ID and `{title}` for the card title.
+	 * This serves as a default that can be overridden per-guild via guild settings.
+	 * If not provided, thread titles will use just the card title.
+	 *
+	 * @defaultValue undefined (uses just the title)
+	 *
+	 * @example
+	 * ```ts
+	 * export default {
+	 *   threadTitleTemplate: "[{id}] {title}" // Default format for all guilds
+	 * }
+	 * ```
+	 */
+	threadTitleTemplate?: string
 }
 
 // Create namespaced logger for initialization

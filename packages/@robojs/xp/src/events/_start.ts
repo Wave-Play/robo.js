@@ -4,7 +4,7 @@ import { getPluginOptions, logger } from 'robo.js'
 
 export default async () => {
 	try {
-		const options = getPluginOptions<PluginOptions>('@robojs/xp')
+		const options = getPluginOptions('@robojs/xp') as PluginOptions | undefined
 
 		if (options?.defaults) {
 			await setGlobalConfig(options.defaults)

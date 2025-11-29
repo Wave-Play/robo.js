@@ -14,11 +14,13 @@ import { jest } from '@jest/globals'
 import { mockFlashcore, mockClient } from '../__tests__/helpers/mocks.js'
 
 // Bridge Flashcore to the shared test mock (which uses jest.fn for call asserts)
+// Test mocks require flexible types to match various call signatures
 export const Flashcore = {
 	get: (key: string, options?: { namespace?: string | string[]; default?: unknown }) =>
-		mockFlashcore.get(key, options as any),
+		mockFlashcore.get(key, options),
 	set: (key: string, value: unknown, options?: { namespace?: string | string[] }) =>
-		mockFlashcore.set(key, value, options as any),
+		mockFlashcore.set(key, value, options),
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	delete: (key: string, options?: { namespace?: string | string[] }) => mockFlashcore.delete(key, options as any)
 }
 
@@ -43,4 +45,7 @@ export const logger = {
 // Re-export the shared mock client used by tests
 export { mockClient as client }
 
-export default { Flashcore, client: mockClient, logger }
+// Mock getPluginOptions - returns null by default, can be mocked in tests
+export const getPluginOptions = jest.fn(() => null)
+
+export default { Flashcore, client: mockClient, logger, getPluginOptions }

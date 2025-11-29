@@ -3,6 +3,7 @@ import type { Adapter, AdapterUser } from '@auth/core/adapters'
 import type { CookiesOptions } from '@auth/core/types'
 import type { RoboRequest } from '@robojs/server'
 import type { RequestPayloadHandle } from '../../utils/request-payload.js'
+import type { PasswordHasher } from '../../utils/password-hash.js'
 
 /** Persistent password metadata stored by the email-password provider. */
 export interface PasswordRecord {
@@ -17,15 +18,15 @@ export interface PasswordRecord {
 /** Auth.js adapter contract extended with password management helpers. */
 export interface PasswordAdapter extends Adapter {
 	/** Persists a hashed password for the given user and returns the storage record. */
-	createUserPassword(params: { userId: string; email: string; password: string }): Promise<PasswordRecord>
-	/** Compares a plaintext password against the stored hash for the user. */
-	verifyUserPassword(params: { userId: string; password: string }): Promise<boolean>
+	createUserPassword(params: { userId: string; email: string; hash: string }): Promise<PasswordRecord>
+	/** Retrieves the password record for the given user. */
+	getUserPassword(userId: string): Promise<PasswordRecord | null>
 	/** Looks up the internal user id associated with an email address. */
 	findUserIdByEmail(email: string): Promise<string | null>
 	/** Removes any stored password material for a user. */
 	deleteUserPassword(userId: string): Promise<void>
 	/** Replaces the existing password hash and returns the updated record. */
-	resetUserPassword(params: { userId: string; password: string }): Promise<PasswordRecord | null>
+	resetUserPassword(params: { userId: string; hash: string }): Promise<PasswordRecord | null>
 }
 
 /** Options accepted by the Email/Password provider factory. */
@@ -34,6 +35,7 @@ export interface EmailPasswordProviderOptions {
 	name?: string
 	authorize?: EmailPasswordAuthorize
 	routes?: EmailPasswordRouteOverrides
+	hasher?: PasswordHasher
 }
 
 /** Context object passed to custom `authorize` implementations. */
@@ -75,6 +77,7 @@ export interface EmailPasswordRouteOverrides {
 /** Metadata returned from the Email/Password provider factory. */
 export interface EmailPasswordProviderMetadata {
 	routes?: EmailPasswordRouteOverrides
+	hasher?: PasswordHasher
 }
 
 /**
@@ -97,7 +100,7 @@ export function assertPasswordAdapter(adapter: Adapter | undefined): asserts ada
 	const missing: string[] = []
 	const candidate = adapter as Partial<PasswordAdapter>
 	if (typeof candidate.createUserPassword !== 'function') missing.push('createUserPassword')
-	if (typeof candidate.verifyUserPassword !== 'function') missing.push('verifyUserPassword')
+	if (typeof candidate.getUserPassword !== 'function') missing.push('getUserPassword')
 	if (typeof candidate.findUserIdByEmail !== 'function') missing.push('findUserIdByEmail')
 	if (typeof (adapter as Partial<PasswordAdapter>).deleteUserPassword !== 'function') missing.push('deleteUserPassword')
 	if (typeof candidate.resetUserPassword !== 'function') missing.push('resetUserPassword')

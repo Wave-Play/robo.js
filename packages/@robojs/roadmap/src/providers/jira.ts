@@ -1,5 +1,6 @@
 import { RoadmapProvider } from './base.js'
 import type {
+	ColumnConfig,
 	CreateCardInput,
 	CreateCardResult,
 	DateRangeFilter,
@@ -55,6 +56,12 @@ export interface JiraProviderConfig extends ProviderConfig {
 	 */
 	readonly defaultIssueType?: string
 	/**
+	 * Jira custom field ID containing Discord User ID (e.g., 'customfield_10001').
+	 * When set, this field takes priority over Jira assignee mapping.
+	 * The field should contain a Discord User ID (17-19 digit numeric string).
+	 */
+	readonly discordUserIdFieldId?: string
+	/**
 	 * Provider options bag allowing runtime overrides via plugin configuration.
 	 */
 	readonly options: ProviderConfig['options'] & {
@@ -65,6 +72,20 @@ export interface JiraProviderConfig extends ProviderConfig {
 		readonly maxResults?: number
 		readonly projectKey?: string
 		readonly defaultIssueType?: string
+		/**
+		 * Jira custom field ID containing Discord User ID (e.g., 'customfield_10001').
+		 * When set, this field takes priority over Jira assignee mapping.
+		 * The field should contain a Discord User ID (17-19 digit numeric string).
+		 */
+		readonly discordUserIdFieldId?: string
+		/**
+		 * Custom column definitions and status-to-column mappings.
+		 *
+		 * If provided, replaces the default three-column structure (Backlog, In Progress, Done).
+		 * Supports many-to-one mappings (multiple statuses to one column) and null mappings
+		 * (status tracked but not synced to forum).
+		 */
+		readonly columnConfig?: ColumnConfig
 	}
 }
 
@@ -76,6 +97,7 @@ interface ResolvedJiraConfig {
 	readonly maxResults: number
 	readonly projectKey: string
 	readonly defaultIssueType: string
+	readonly discordUserIdFieldId?: string
 }
 
 interface JiraSearchResponse {
@@ -98,6 +120,8 @@ interface JiraFields {
 	readonly status?: JiraStatus
 	readonly assignee?: JiraUser | null
 	readonly updated?: string
+	// Allow custom fields via index signature
+	readonly [key: string]: unknown
 }
 
 interface JiraStatus {
@@ -194,7 +218,7 @@ type AdfNode =
  * ```
  */
 export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
-	private resolvedConfig: ResolvedJiraConfig = this.resolveConfig()
+	private resolvedConfig: ResolvedJiraConfig & { columnConfig?: ColumnConfig } = this.resolveConfig()
 	private issueTypesCache: { types: readonly string[]; timestamp: number } | null = null
 	private labelsCache: { labels: readonly string[]; timestamp: number } | null = null
 	private dateRangeCache: Map<string, { cards: readonly RoadmapCard[]; timestamp: number }> = new Map()
@@ -202,6 +226,15 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 	public constructor(config: JiraProviderConfig) {
 		super(config)
 		this.resolvedConfig = this.resolveConfig()
+	}
+
+	/**
+	 * Returns the configured status-to-column mapping, if any.
+	 *
+	 * @returns Status mapping record or undefined if using defaults.
+	 */
+	public override getStatusMapping(): Record<string, string | null> | undefined {
+		return this.resolvedConfig.columnConfig?.statusMapping
 	}
 
 	/**
@@ -218,7 +251,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 			roadmapLogger.error('JIRA_URL is not configured.')
 			isValid = false
 		} else if (!this.isValidUrl(resolved.url)) {
-			roadmapLogger.error('JIRA_URL must be a valid URL. Received: %s', resolved.url)
+			roadmapLogger.error(`JIRA_URL must be a valid URL. Received: ${resolved.url}`)
 			isValid = false
 		}
 
@@ -226,7 +259,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 			roadmapLogger.error('JIRA_EMAIL is not configured.')
 			isValid = false
 		} else if (!resolved.email.includes('@')) {
-			roadmapLogger.error('JIRA_EMAIL must be a valid email address. Received: %s', resolved.email)
+			roadmapLogger.error(`JIRA_EMAIL must be a valid email address. Received: ${resolved.email}`)
 			isValid = false
 		}
 
@@ -244,9 +277,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 			const knownTypes = ['Epic', 'Story', 'Task', 'Bug', 'Subtask']
 			if (!knownTypes.includes(resolved.defaultIssueType)) {
 				roadmapLogger.warn(
-					'JIRA_DEFAULT_ISSUE_TYPE "%s" is not a standard Jira issue type. Known types: %s',
-					resolved.defaultIssueType,
-					knownTypes.join(', ')
+					`JIRA_DEFAULT_ISSUE_TYPE "${resolved.defaultIssueType}" is not a standard Jira issue type. Known types: ${knownTypes.join(', ')}`
 				)
 			}
 		}
@@ -267,7 +298,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 		}
 
 		const { url, email } = this.resolvedConfig
-		roadmapLogger.debug('Initializing Jira provider for %s', url)
+		roadmapLogger.debug(`Initializing Jira provider for ${url}`)
 
 		try {
 			const response = await fetch(`${url}/rest/api/3/myself`, {
@@ -284,9 +315,9 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 				throw new Error(`Failed to initialize Jira provider (status ${response.status}): ${message}`)
 			}
 
-			roadmapLogger.debug('Authenticated with Jira as %s', email)
+			roadmapLogger.debug(`Authenticated with Jira as ${email}`)
 		} catch (error) {
-			roadmapLogger.error('Unable to initialize Jira provider: %s', (error as Error).message)
+			roadmapLogger.error(`Unable to initialize Jira provider: ${(error as Error).message}`)
 			throw error
 		}
 	}
@@ -306,14 +337,20 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 		let finalPageReached = false
 		const cards: RoadmapCard[] = []
 
-		roadmapLogger.debug('Fetching Jira issues using JQL: %s', this.resolvedConfig.jql)
+		roadmapLogger.debug(`Fetching Jira issues using JQL: ${this.resolvedConfig.jql}`)
 
 		do {
+			// Build fields array - include custom field if configured
+			const baseFields = ['summary', 'description', 'labels', 'status', 'assignee', 'updated']
+			const fields = this.resolvedConfig.discordUserIdFieldId
+				? [...baseFields, this.resolvedConfig.discordUserIdFieldId]
+				: baseFields
+
 			// Build request payload with JQL and pagination
 			const payload: Record<string, unknown> = {
 				jql: this.resolvedConfig.jql,
 				maxResults,
-				fields: ['summary', 'description', 'labels', 'status', 'assignee', 'updated']
+				fields
 			}
 
 			// Add pagination token if present
@@ -335,7 +372,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 				})
 			} catch (error) {
 				const message = (error as Error).message
-				roadmapLogger.error('Network error while querying Jira: %s', message)
+				roadmapLogger.error(`Network error while querying Jira: ${message}`)
 				throw new Error(`Unable to reach Jira. Confirm network connectivity. Reason: ${message}`)
 			}
 
@@ -366,7 +403,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 				try {
 					cards.push(this.mapIssueToCard(issue))
 				} catch (error) {
-					roadmapLogger.warn('Failed to map Jira issue %s: %s', issue?.key ?? issue?.id, (error as Error).message)
+					roadmapLogger.warn(`Failed to map Jira issue ${issue?.key ?? issue?.id}: ${(error as Error).message}`)
 				}
 			}
 
@@ -375,19 +412,12 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 			finalPageReached = data.isLast || typeof nextPageToken !== 'string'
 
 			roadmapLogger.debug(
-				'Fetched %d issues on page %d (isLast=%s, nextPageToken=%s)',
-				data.issues.length,
-				pageNumber,
-				data.isLast,
-				typeof nextPageToken === 'string' ? nextPageToken : 'none'
+				`Fetched ${data.issues.length} issues on page ${pageNumber} (isLast=${data.isLast}, nextPageToken=${typeof nextPageToken === 'string' ? nextPageToken : 'none'})`
 			)
 		} while (!finalPageReached)
 
 		roadmapLogger.info(
-			'Fetched %d Jira issues across %d page(s); final page reached: %s',
-			cards.length,
-			pageNumber,
-			finalPageReached
+			`Fetched ${cards.length} Jira issues across ${pageNumber} page(s); final page reached: ${finalPageReached}`
 		)
 
 		return cards
@@ -399,10 +429,23 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 	 * @returns Array of column definitions.
 	 */
 	public override async getColumns(): Promise<readonly RoadmapColumn[]> {
+		// Check for custom column configuration
+		const columnConfig = this.resolvedConfig.columnConfig
+		if (columnConfig?.columns && columnConfig.columns.length > 0) {
+			return columnConfig.columns.map((col) => ({
+				id: col.id,
+				name: col.name,
+				order: col.order,
+				archived: col.archived ?? false,
+				createForum: col.createForum ?? (col.archived ? false : true)
+			}))
+		}
+
+		// Default columns
 		return [
-			{ id: 'backlog', name: 'Backlog', order: 0, archived: false },
-			{ id: 'in-progress', name: 'In Progress', order: 1, archived: false },
-			{ id: 'done', name: 'Done', order: 2, archived: true }
+			{ id: 'backlog', name: 'Backlog', order: 0, archived: false, createForum: true },
+			{ id: 'in-progress', name: 'In Progress', order: 1, archived: false, createForum: true },
+			{ id: 'done', name: 'Done', order: 2, archived: true, createForum: true }
 		]
 	}
 
@@ -419,7 +462,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 
 		// Check cache
 		if (this.issueTypesCache && Date.now() - this.issueTypesCache.timestamp < CACHE_TTL) {
-			roadmapLogger.debug('Returning cached issue types (%d types)', this.issueTypesCache.types.length)
+			roadmapLogger.debug(`Returning cached issue types (${this.issueTypesCache.types.length} types)`)
 			return this.issueTypesCache.types
 		}
 
@@ -465,12 +508,12 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 				timestamp: Date.now()
 			}
 
-			roadmapLogger.debug('Fetched and cached %d issue types from Jira', typeNames.length)
+			roadmapLogger.debug(`Fetched and cached ${typeNames.length} issue types from Jira`)
 
 			return typeNames
 		} catch (error) {
-			roadmapLogger.error('Failed to fetch issue types from Jira: %s', (error as Error).message)
-			roadmapLogger.warn('Returning fallback issue types: %s', FALLBACK_TYPES.join(', '))
+			roadmapLogger.error(`Failed to fetch issue types from Jira: ${(error as Error).message}`)
+			roadmapLogger.warn(`Returning fallback issue types: ${FALLBACK_TYPES.join(', ')}`)
 
 			return [...FALLBACK_TYPES]
 		}
@@ -488,7 +531,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 
 		// Check cache
 		if (this.labelsCache && Date.now() - this.labelsCache.timestamp < CACHE_TTL) {
-			roadmapLogger.debug('Returning cached labels (%d labels)', this.labelsCache.labels.length)
+			roadmapLogger.debug(`Returning cached labels (${this.labelsCache.labels.length} labels)`)
 			return this.labelsCache.labels
 		}
 
@@ -570,11 +613,11 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 				timestamp: Date.now()
 			}
 
-			roadmapLogger.debug('Fetched and cached %d labels from Jira across %d page(s)', processedLabels.length, pageCount)
+			roadmapLogger.debug(`Fetched and cached ${processedLabels.length} labels from Jira across ${pageCount} page(s)`)
 
 			return processedLabels
 		} catch (error) {
-			roadmapLogger.error('Failed to fetch labels from Jira: %s', (error as Error).message)
+			roadmapLogger.error(`Failed to fetch labels from Jira: ${(error as Error).message}`)
 
 			return []
 		}
@@ -649,9 +692,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 			const cached = this.dateRangeCache.get(cacheKey)
 			if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
 				roadmapLogger.debug(
-					'Returning cached date range query results (%d cards, key=%s)',
-					cached.cards.length,
-					cacheKey
+					`Returning cached date range query results (${cached.cards.length} cards, key=${cacheKey})`
 				)
 
 				return cached.cards
@@ -692,7 +733,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 			// Add ORDER BY clause
 			const jql = jqlConditions.join(' AND ') + ` ORDER BY ${dateField} DESC`
 
-			roadmapLogger.debug('Fetching Jira issues with date range filter. JQL: %s', jql)
+			roadmapLogger.debug(`Fetching Jira issues with date range filter. JQL: ${jql}`)
 
 			// Fetch issues with pagination (same pattern as fetchCards)
 			const { url, maxResults } = this.resolvedConfig
@@ -728,7 +769,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 					})
 				} catch (error) {
 					const message = (error as Error).message
-					roadmapLogger.error('Network error while querying Jira with date range filter: %s', message)
+					roadmapLogger.error(`Network error while querying Jira with date range filter: ${message}`)
 					throw new Error(`Unable to reach Jira. Confirm network connectivity. Reason: ${message}`)
 				}
 
@@ -758,7 +799,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 					try {
 						cards.push(this.mapIssueToCard(issue))
 					} catch (error) {
-						roadmapLogger.warn('Failed to map Jira issue %s: %s', issue?.key ?? issue?.id, (error as Error).message)
+						roadmapLogger.warn(`Failed to map Jira issue ${issue?.key ?? issue?.id}: ${(error as Error).message}`)
 					}
 				}
 
@@ -766,11 +807,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 				finalPageReached = data.isLast || typeof nextPageToken !== 'string'
 
 				roadmapLogger.debug(
-					'Fetched %d issues on page %d (isLast=%s, nextPageToken=%s)',
-					data.issues.length,
-					pageNumber,
-					data.isLast,
-					typeof nextPageToken === 'string' ? nextPageToken : 'none'
+					`Fetched ${data.issues.length} issues on page ${pageNumber} (isLast=${data.isLast}, nextPageToken=${typeof nextPageToken === 'string' ? nextPageToken : 'none'})`
 				)
 			} while (!finalPageReached)
 
@@ -781,22 +818,13 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 			})
 
 			roadmapLogger.info(
-				'Fetched %d Jira issues with date range filter across %d page(s). Filter: startDate=%s, endDate=%s, dateField=%s',
-				cards.length,
-				pageNumber,
-				filter.startDate ?? 'none',
-				filter.endDate ?? 'none',
-				dateField
+				`Fetched ${cards.length} Jira issues with date range filter across ${pageNumber} page(s). Filter: startDate=${filter.startDate ?? 'none'}, endDate=${filter.endDate ?? 'none'}, dateField=${dateField}`
 			)
 
 			return cards
 		} catch (error) {
 			roadmapLogger.error(
-				'Failed to fetch cards by date range (startDate=%s, endDate=%s, dateField=%s): %s',
-				filter.startDate ?? 'none',
-				filter.endDate ?? 'none',
-				filter.dateField ?? 'updated',
-				(error as Error).message
+				`Failed to fetch cards by date range (startDate=${filter.startDate ?? 'none'}, endDate=${filter.endDate ?? 'none'}, dateField=${filter.dateField ?? 'updated'}): ${(error as Error).message}`
 			)
 
 			return []
@@ -851,8 +879,14 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 			const { url } = this.resolvedConfig
 			roadmapLogger.debug('Fetching Jira issue: %s', cardId)
 
+			// Build fields query - include custom field if configured
+			const baseFields = 'summary,description,labels,status,assignee,updated'
+			const fields = this.resolvedConfig.discordUserIdFieldId
+				? `${baseFields},${this.resolvedConfig.discordUserIdFieldId}`
+				: baseFields
+
 			const response = await fetch(
-				`${url}/rest/api/3/issue/${cardId}?fields=summary,description,labels,status,assignee,updated`,
+				`${url}/rest/api/3/issue/${cardId}?fields=${fields}`,
 				{
 					method: 'GET',
 					headers: {
@@ -1248,7 +1282,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 	/**
 	 * Resolves configuration from explicit values, plugin options, and environment variables (in that order).
 	 */
-	private resolveConfig(config: JiraProviderConfig = this.config): ResolvedJiraConfig {
+	private resolveConfig(config: JiraProviderConfig = this.config): ResolvedJiraConfig & { columnConfig?: ColumnConfig } {
 		// Read values from environment variables
 		const envUrl = process.env.JIRA_URL
 		const envEmail = process.env.JIRA_EMAIL
@@ -1257,6 +1291,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 		const envMaxResults = process.env.JIRA_MAX_RESULTS
 		const envProjectKey = process.env.JIRA_PROJECT_KEY
 		const envDefaultIssueType = process.env.JIRA_DEFAULT_ISSUE_TYPE
+		const envDiscordUserIdFieldId = process.env.JIRA_DISCORD_USER_ID_FIELD_ID
 
 		// Read values from plugin options
 		const optionUrl = this.readString(config.options?.url)
@@ -1266,6 +1301,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 		const optionMaxResults = this.readNumber(config.options?.maxResults)
 		const optionProjectKey = this.readString(config.options?.projectKey)
 		const optionDefaultIssueType = this.readString(config.options?.defaultIssueType)
+		const optionDiscordUserIdFieldId = this.readString(config.options?.discordUserIdFieldId)
 
 		// Read explicit config values
 		const explicitUrl = this.readString(config.url)
@@ -1275,6 +1311,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 		const explicitMaxResults = this.readNumber(config.maxResults)
 		const explicitProjectKey = this.readString(config.projectKey)
 		const explicitDefaultIssueType = this.readString(config.defaultIssueType)
+		const explicitDiscordUserIdFieldId = this.readString(config.discordUserIdFieldId)
 
 		// Apply precedence: explicit > options > env, with normalization
 		const resolvedUrl = this.normalizeUrl(explicitUrl ?? optionUrl ?? envUrl ?? '')
@@ -1283,6 +1320,7 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 		const resolvedJql = explicitJql ?? optionJql ?? envJql ?? DEFAULT_JQL
 		const resolvedProjectKey = explicitProjectKey ?? optionProjectKey ?? envProjectKey ?? ''
 		const resolvedDefaultIssueType = explicitDefaultIssueType ?? optionDefaultIssueType ?? envDefaultIssueType ?? 'Task'
+		const resolvedDiscordUserIdFieldId = explicitDiscordUserIdFieldId ?? optionDiscordUserIdFieldId ?? envDiscordUserIdFieldId
 
 		const resolvedMaxResults = this.normalizeMaxResults(
 			explicitMaxResults ??
@@ -1291,6 +1329,9 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 				DEFAULT_MAX_RESULTS
 		)
 
+		// Resolve column configuration from options
+		const columnConfig = config.options?.columnConfig
+
 		return {
 			url: resolvedUrl,
 			email: resolvedEmail,
@@ -1298,7 +1339,9 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 			jql: resolvedJql,
 			maxResults: resolvedMaxResults,
 			projectKey: resolvedProjectKey,
-			defaultIssueType: resolvedDefaultIssueType
+			defaultIssueType: resolvedDefaultIssueType,
+			...(resolvedDiscordUserIdFieldId ? { discordUserIdFieldId: resolvedDiscordUserIdFieldId } : {}),
+			...(columnConfig ? { columnConfig } : {})
 		}
 	}
 
@@ -1315,7 +1358,56 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 	}
 
 	/**
+	 * Extracts and validates Discord User ID from a Jira custom field.
+	 *
+	 * @param fields - Jira fields object
+	 * @param fieldId - Custom field ID (e.g., 'customfield_10001')
+	 * @returns Discord User ID if valid, null otherwise
+	 */
+	private extractDiscordUserIdFromCustomField(fields: JiraFields, fieldId?: string): string | null {
+		if (!fieldId) {
+			return null
+		}
+
+		const fieldValue = fields[fieldId]
+		if (!fieldValue) {
+			return null
+		}
+
+		// Handle different field value types (text field returns string, user field returns object)
+		let discordUserId: string | null = null
+
+		if (typeof fieldValue === 'string') {
+			discordUserId = fieldValue.trim()
+		} else if (typeof fieldValue === 'object' && fieldValue !== null) {
+			// Some custom fields might return objects, try to extract string value
+			const stringValue = String(fieldValue).trim()
+			if (stringValue && stringValue !== '[object Object]') {
+				discordUserId = stringValue
+			}
+		}
+
+		if (!discordUserId) {
+			return null
+		}
+
+		// Validate Discord User ID format: 17-19 digit numeric string
+		// Discord User IDs are snowflakes: 17-19 digits
+		const discordIdPattern = /^\d{17,19}$/
+		if (!discordIdPattern.test(discordUserId)) {
+			roadmapLogger.warn(
+				`Invalid Discord User ID format in custom field ${fieldId}: "${discordUserId}". Expected 17-19 digit numeric string.`
+			)
+			return null
+		}
+
+		return discordUserId
+	}
+
+	/**
 	 * Converts a Jira issue to a RoadmapCard with ADF-to-text conversion.
+	 *
+	 * @param issue - Jira issue object
 	 */
 	private mapIssueToCard(issue: JiraIssue): RoadmapCard {
 		const { fields } = issue
@@ -1323,11 +1415,20 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 		const title = fields.summary ?? issue.key
 		const description = this.convertAdfToPlainText(fields.description)
 		const labels = Array.isArray(fields.labels) ? [...fields.labels] : []
+		const originalStatus = fields.status?.name ?? 'Unknown'
 		const column = this.mapStatusToColumn(fields.status)
-		const assignees = this.mapAssignee(fields.assignee)
+
+		// Check custom field for Discord User ID first (priority)
+		const discordUserId = this.extractDiscordUserIdFromCustomField(fields, this.resolvedConfig.discordUserIdFieldId)
+		const assignees = discordUserId
+			? this.mapAssigneeFromDiscordUserId(discordUserId)
+			: this.mapAssignee(fields.assignee)
+
 		const url = `${this.resolvedConfig.url}/browse/${issue.key}`
 		const updatedAt = fields.updated ? new Date(fields.updated) : new Date()
 
+		const existingMetadata = (issue as unknown as { metadata?: Record<string, unknown> })?.metadata || {}
+		
 		return {
 			id: issue.key,
 			title,
@@ -1338,13 +1439,41 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 			url,
 			updatedAt,
 			metadata: {
+				...existingMetadata,
+				originalStatus: originalStatus,
 				issue
 			}
 		}
 	}
 
 	/**
+	 * Maps Discord User ID directly to RoadmapCard assignees array.
+	 *
+	 * Used when a custom field contains a Discord User ID, bypassing Jira assignee mapping.
+	 *
+	 * @param discordUserId - Discord User ID (17-19 digit numeric string)
+	 * @returns RoadmapCard assignees array with Discord User ID
+	 */
+	private mapAssigneeFromDiscordUserId(discordUserId: string): RoadmapCard['assignees'] {
+		return [
+			{
+				id: discordUserId,
+				name: `Discord:${discordUserId}` // Marker to indicate this is a direct Discord ID
+			}
+		]
+	}
+
+	/**
 	 * Maps Jira assignee to RoadmapCard assignees array (single assignee).
+	 *
+	 * @remarks
+	 * **Critical: Redaction Contract**
+	 * The `name` field is set to Jira's `displayName` and must never be displayed directly
+	 * to end users. It is intended to be used only as a key for guild-specific mapping to
+	 * Discord user identities via the assignee mapping system. UI/Discord surfaces must
+	 * not render `name` directly unless it has been redacted or mapped to a Discord user.
+	 * For Jira providers, this field holds the provider display name and is not a safe public
+	 * identifier unless redacted or mapped to Discord.
 	 */
 	private mapAssignee(assignee?: JiraUser | null): RoadmapCard['assignees'] {
 		if (!assignee) {
@@ -1365,15 +1494,31 @@ export class JiraProvider extends RoadmapProvider<JiraProviderConfig> {
 	}
 
 	/**
-	 * Maps Jira status to roadmap column using status name and category.
+	 * Maps Jira status to roadmap column using configured mapping or default logic.
+	 *
+	 * @param status - Jira status object
+	 * @returns Column name to map to (provider-level mapping only; guild overrides applied in sync engine)
 	 */
 	private mapStatusToColumn(status?: JiraStatus): string {
 		if (!status) {
 			return 'Backlog'
 		}
 
-		// Normalize status name
-		const normalized = status.name?.toLowerCase() ?? ''
+		const statusName = status.name ?? ''
+		
+		// Try to resolve using provider-level mapping (guild overrides handled in sync engine)
+		const resolved = this.resolveColumn(statusName)
+		if (resolved !== undefined) {
+			// If resolved to null, that means track without forum - use default column for now
+			// The sync engine will handle null mappings separately
+			if (resolved === null) {
+				return 'Backlog' // Fallback, but sync engine should handle null
+			}
+			return resolved
+		}
+
+		// Default mapping logic (backward compatibility)
+		const normalized = statusName.toLowerCase()
 
 		// Check for 'backlog' in status name
 		if (normalized.includes('backlog')) {

@@ -11,8 +11,7 @@ import { authLogger } from '../utils/logger.js'
 import { registerEmailPasswordRuntime } from '../builtins/email-password/runtime.js'
 import {
 	assertPasswordAdapter,
-	EmailPasswordProviderMetadata,
-	EmailPasswordRouteOverrides
+	EmailPasswordProviderMetadata
 } from '../builtins/email-password/types.js'
 import { ensureLeadingSlash, joinPath, stripTrailingSlash } from '../utils/path.js'
 import { EmailManager, setEmailManager, notifyEmail } from '../emails/manager.js'
@@ -156,12 +155,12 @@ function resolveSecret(options: NormalizedAuthPluginOptions): string {
 	return secret
 }
 
-function extractEmailPasswordOverrides(providers: Provider[]): EmailPasswordRouteOverrides | undefined {
+function extractEmailPasswordMetadata(providers: Provider[]): EmailPasswordProviderMetadata | undefined {
 	for (const provider of providers) {
 		if (!provider || typeof provider !== 'object') continue
 		const metadata = (provider as ProviderWithEmailPasswordMeta).__roboEmailPassword
 		if (metadata) {
-			return metadata.routes
+			return metadata
 		}
 	}
 	return undefined
@@ -174,7 +173,8 @@ function resolveBaseUrl(options: NormalizedAuthPluginOptions): string {
 		return explicit
 	}
 
-	const fallback = 'http://localhost:3000'
+	const port = process.env.PORT ?? '3000'
+	const fallback = `http://localhost:${port}`
 	if (process.env.NODE_ENV === 'production') {
 		authLogger.warn(
 			`Using fallback AUTH_URL (${fallback}). Configure auth.url in your plugin config or set AUTH_URL in your environment.`
@@ -419,7 +419,7 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 
 	const handler = createAuthRequestHandler(authConfig)
 
-	const emailPasswordOverrides = extractEmailPasswordOverrides(providers)
+	const emailPasswordMetadata = extractEmailPasswordMetadata(providers)
 
 	const hasCredentialsProvider = providers.some((provider) => {
 		return typeof provider === 'object' && provider && (provider as { id?: string }).id === 'credentials'
@@ -436,10 +436,11 @@ export default async function startAuth(_client: Client, runtimeOptions?: unknow
 			events: composedEvents,
 			handler,
 			options,
-			overrides: emailPasswordOverrides,
+			overrides: emailPasswordMetadata?.routes,
 			recentSigninNotified,
 			secret,
-			sessionStrategy: options.session.strategy ?? 'jwt'
+			sessionStrategy: options.session.strategy ?? 'jwt',
+			hasher: emailPasswordMetadata?.hasher
 		})
 	}
 

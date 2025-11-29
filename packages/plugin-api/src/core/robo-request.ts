@@ -4,6 +4,7 @@ const INTERNALS = Symbol('internal request')
 
 interface FromOptions {
 	body?: Buffer
+	skipBody?: boolean
 }
 
 /**
@@ -58,7 +59,7 @@ export class RoboRequest extends Request {
 		const headers = new Headers(req.headers as HeadersInit)
 
 		let body: BodyInit | null = options?.body ?? null
-		if (!options?.body && !['GET', 'HEAD'].includes(method)) {
+		if (!options?.skipBody && !options?.body && !['GET', 'HEAD'].includes(method)) {
 			body = await new Promise<Buffer>((resolve, reject) => {
 				const chunks: Buffer[] = []
 				req.on('data', (chunk) => chunks.push(chunk))
@@ -67,7 +68,7 @@ export class RoboRequest extends Request {
 			})
 		}
 
-		const request = new RoboRequest(url, { body, headers, method })
+		const request = new RoboRequest(url, { body: body as BodyInit, headers, method })
 		request[INTERNALS].raw = req
 
 		return request

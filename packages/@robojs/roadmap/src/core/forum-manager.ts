@@ -84,6 +84,11 @@ export async function createOrGetRoadmapCategory(
 		// Check if forum channels already exist for columns
 		if (category && settings.forumChannels) {
 			for (const column of columns) {
+				// Skip columns that don't create forums
+				if (column.createForum === false) {
+					continue
+				}
+				
 				const channelId = settings.forumChannels[column.name]
 				if (channelId) {
 					const existingChannel = guild.channels.cache.get(channelId)
@@ -94,9 +99,14 @@ export async function createOrGetRoadmapCategory(
 				}
 			}
 
-			// If all non-archived forums exist, return early (idempotent)
-			const nonArchivedCount = columns.filter((col) => !col.archived).length
-			if (forums.size === nonArchivedCount) {
+			// If all forums that should exist already exist, return early (idempotent)
+			// Count only columns that should have forums:
+			// - createForum !== false (not explicitly disabled)
+			// - AND (not archived OR createForum === true, i.e., explicit override)
+			const shouldCreateForums = columns.filter(
+				(col) => col.createForum !== false && (!col.archived || col.createForum === true)
+			).length
+			if (forums.size === shouldCreateForums) {
 				roadmapLogger.debug('All forum channels already exist, skipping creation')
 
 				return { category, forums }
@@ -176,17 +186,23 @@ export async function createOrGetRoadmapCategory(
 			roadmapLogger.info(`Created roadmap category in guild ${guild.name}`)
 		}
 
-		// Create forum channels for each non-archived column
+		// Create forum channels for each column that should have a forum
 		for (const column of columns) {
 			// Skip if forum already exists for this column
 			if (forums.has(column.name)) {
 				continue
 			}
 
-			// Skip archived columns
-			if (column.archived) {
-				roadmapLogger.debug(`Skipping archived column: ${column.name}`)
-
+			// Skip columns where createForum is explicitly false
+			if (column.createForum === false) {
+				roadmapLogger.debug(`Skipping column ${column.name} (createForum: false)`)
+				continue
+			}
+			
+			// Skip archived columns unless createForum is explicitly true
+			// This allows explicit override: archived: true, createForum: true
+			if (column.archived && column.createForum !== true) {
+				roadmapLogger.debug(`Skipping archived column: ${column.name} (createForum not explicitly true)`)
 				continue
 			}
 

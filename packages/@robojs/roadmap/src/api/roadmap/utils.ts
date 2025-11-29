@@ -1,11 +1,7 @@
-import { client, logger } from 'robo.js'
+import { client } from 'robo.js'
 import type { RoboRequest } from '@robojs/server'
 import type { Guild } from 'discord.js'
-
-/**
- * Logger instance for API-specific logging
- */
-const apiLogger = logger.fork('roadmap')
+import { roadmapLogger } from '../../core/logger.js'
 
 /**
  * Success response structure
@@ -23,6 +19,7 @@ export interface ApiErrorResponse {
 	error: {
 		code: string
 		message: string
+		hint?: string
 	}
 }
 
@@ -62,7 +59,7 @@ export async function getGuildFromRequest(request: RoboRequest): Promise<Guild> 
 	const { guildId } = request.params as { guildId?: string }
 
 	if (!guildId) {
-		apiLogger.warn('Request missing guildId parameter')
+	roadmapLogger.warn('Request missing guildId parameter')
 		const error = new Error('Guild ID is required')
 		error.name = ERROR_CODES.MISSING_GUILD_ID
 		throw error
@@ -70,10 +67,10 @@ export async function getGuildFromRequest(request: RoboRequest): Promise<Guild> 
 
 	try {
 		const guild = await client.guilds.fetch(guildId)
-		apiLogger.debug(`Fetched guild: ${guild.name} (${guild.id})`)
+		roadmapLogger.debug(`Fetched guild: ${guild.name} (${guild.id})`)
 		return guild as unknown as Guild
 	} catch (err) {
-		apiLogger.warn(`Guild not found: ${guildId}`, err)
+		roadmapLogger.warn(`Guild not found: ${guildId}`, err)
 		const error = new Error('Guild not found or bot is not a member')
 		error.name = ERROR_CODES.GUILD_NOT_FOUND
 		throw error
@@ -106,14 +103,20 @@ export function error(
 	code: string,
 	message: string,
 	statusCode: number = 400,
-	headers?: Record<string, string>
+	headers?: Record<string, string>,
+	hint?: string
 ): Response {
-	apiLogger.warn(`API Error: [${code}] ${message}`)
+	roadmapLogger.warn(`API Error: [${code}] ${message}`)
 
-	const errorResponse: ApiErrorResponse = {
-		success: false,
-		error: { code, message }
-	}
+	const errorResponse: ApiErrorResponse = hint
+		? {
+				success: false,
+				error: { code, message, hint }
+		  }
+		: {
+				success: false,
+				error: { code, message }
+		  }
 
 	return Response.json(errorResponse, { status: statusCode, headers })
 }
@@ -159,7 +162,7 @@ export function wrapHandler(
 			const result = await handler(request)
 			return Response.json(result, { status: 200 })
 		} catch (err) {
-			apiLogger.error('Handler error:', err)
+			roadmapLogger.error('Handler error:', err)
 
 			// Extract error properties for categorization
 			const errorName = (err as Error).name
@@ -181,17 +184,35 @@ export function wrapHandler(
 
 			// Map error to 400 Bad Request
 			if (errorName === ERROR_CODES.MISSING_GUILD_ID) {
-				return error(ERROR_CODES.MISSING_GUILD_ID, 'Guild ID is required', 400)
+				return error(
+					ERROR_CODES.MISSING_GUILD_ID,
+					'Guild ID is required',
+					400,
+					undefined,
+					'Include :guildId in the URL path or query when calling this endpoint.'
+				)
 			}
 
 			// Map error to 503 Service Unavailable
 			if (errorName === ERROR_CODES.PROVIDER_NOT_READY) {
-				return error(ERROR_CODES.PROVIDER_NOT_READY, errorMessage, 503)
+				return error(
+					ERROR_CODES.PROVIDER_NOT_READY,
+					errorMessage,
+					503,
+					undefined,
+					'Verify your roadmap provider credentials and configuration, then restart Robo so the provider can initialize.'
+				)
 			}
 
 			// Map error to 404 Not Found
 			if (errorName === ERROR_CODES.FORUM_NOT_SETUP) {
-				return error(ERROR_CODES.FORUM_NOT_SETUP, errorMessage, 404)
+				return error(
+					ERROR_CODES.FORUM_NOT_SETUP,
+					errorMessage,
+					404,
+					undefined,
+					'Run the `/roadmap setup` command in Discord to create the roadmap forums before calling this endpoint.'
+				)
 			}
 
 			// Map error to 400 Bad Request

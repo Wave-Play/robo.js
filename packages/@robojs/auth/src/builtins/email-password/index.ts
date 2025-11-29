@@ -1,5 +1,6 @@
 import CredentialsProvider from '@auth/core/providers/credentials'
 import { authLogger } from '../../utils/logger.js'
+import { Argon2Hasher } from '../../utils/password-hash.js'
 import type {
 	EmailPasswordAuthorizeContext,
 	EmailPasswordProviderMetadata,
@@ -11,7 +12,7 @@ type ProviderLike = ReturnType<typeof CredentialsProvider>
 type ProviderWithMetadata = ProviderLike & { __roboEmailPassword?: EmailPasswordProviderMetadata }
 
 function createProvider(options: EmailPasswordProviderOptions): ProviderLike {
-	const { adapter, name = 'Email & Password', authorize, routes } = options
+	const { adapter, name = 'Email & Password', authorize, routes, hasher = new Argon2Hasher() } = options
 
 	const defaultAuthorize = async (credentials: Record<string, unknown> | undefined) => {
 		authLogger.debug('Authorizing credentials login', {
@@ -31,10 +32,26 @@ function createProvider(options: EmailPasswordProviderOptions): ProviderLike {
 			return null
 		}
 
-		const isValid = await adapter.verifyUserPassword({ userId, password })
+		const record = await adapter.getUserPassword(userId)
+		if (!record) {
+			authLogger.debug(`No password record found for ${email}`)
+			return null
+		}
+
+		const isValid = await hasher.verify(password, record.hash)
 		if (!isValid) {
 			authLogger.debug(`Invalid password attempt for ${email}`)
 			return null
+		}
+
+		if (hasher.needsRehash(record.hash)) {
+			try {
+				const newHash = await hasher.hash(password)
+				await adapter.resetUserPassword({ userId, hash: newHash })
+				authLogger.debug(`Rehashed password for ${email}`)
+			} catch (error) {
+				authLogger.warn(`Failed to rehash password for ${email}`, error)
+			}
 		}
 
 		return adapter.getUser ? adapter.getUser(userId) : null
@@ -64,7 +81,8 @@ function createProvider(options: EmailPasswordProviderOptions): ProviderLike {
 		enumerable: false,
 		writable: true,
 		value: {
-			routes
+			routes,
+			hasher
 		} satisfies EmailPasswordProviderMetadata
 	})
 
@@ -74,13 +92,3 @@ function createProvider(options: EmailPasswordProviderOptions): ProviderLike {
 export default function EmailPasswordProvider(options: EmailPasswordProviderOptions): ProviderLike {
 	return createProvider(options)
 }
-
-export type {
-	EmailPasswordAuthorize,
-	EmailPasswordAuthorizeContext,
-	EmailPasswordRouteContext,
-	EmailPasswordRouteHandler,
-	EmailPasswordRouteOverrides,
-	PasswordRecord
-} from './types.js'
-export type { RequestPayloadHandle } from '../../utils/request-payload.js'

@@ -9,6 +9,7 @@
 - [AdapterUser](Interface.AdapterUser.md)
 - [AuthConfig](Interface.AuthConfig.md)
 - [AuthMailer](Interface.AuthMailer.md)
+- [AuthPluginOptions](Interface.AuthPluginOptions.md)
 - [ConfigureAuthProxyRuntimeOptions](Interface.ConfigureAuthProxyRuntimeOptions.md)
 - [ConfigureAuthRuntimeOptions](Interface.ConfigureAuthRuntimeOptions.md)
 - [CookieOption](Interface.CookieOption.md)
@@ -37,7 +38,6 @@
 ## Type Aliases
 
 - [AuthEmailEvent](TypeAlias.AuthEmailEvent.md)
-- [AuthPluginOptions](TypeAlias.AuthPluginOptions.md)
 - [Awaitable](TypeAlias.Awaitable.md)
 - [Awaited](TypeAlias.Awaited.md)
 - [EmailBuilder](TypeAlias.EmailBuilder.md)

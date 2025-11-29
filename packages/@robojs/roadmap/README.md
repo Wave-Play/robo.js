@@ -33,6 +33,17 @@ Sync project roadmaps from Jira (or custom providers) to organized Discord forum
 - 🔌 **Extensible provider architecture** (Jira, GitHub, Linear, custom)
 - ⚡ **Idempotent sync** with automatic error recovery
 
+## ⚡ Quick Happy Path
+
+1. `npx robo add @robojs/roadmap` in an existing Robo project.
+2. Set Jira env vars (`JIRA_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`, `JIRA_PROJECT_KEY`) in your `.env`.
+3. Start Robo with `npx robo dev`.
+4. In Discord, run `/roadmap setup` to create roadmap forums.
+5. Run `/roadmap sync` to import cards.
+6. Click into the generated roadmap forums to collaborate on cards.
+
+For a full walkthrough, see [Getting Started](#-getting-started) and [Provider Setup](#-provider-setup).
+
 ## 💻 Getting Started
 
 ```bash
@@ -100,7 +111,9 @@ Manually syncs cards from provider to Discord. **Admin only.**
   - `dry-run` (boolean) - Preview sync without making changes
 
 - Shows sync statistics (created, updated, archived)
+- Cancellation: A cancel button appears during sync, allowing you to stop the operation. Only administrators or the user who started the sync can cancel. Partial results are preserved and shown (e.g., "Partial sync: 15/42 cards processed").
 - Idempotent: safe to run multiple times
+- When a card's column changes, the thread is moved to the new forum channel. The old thread is locked and archived to preserve discussion history, and the new thread links to it if there were user messages.
 
 **Example:**
 
@@ -141,6 +154,7 @@ Updates an existing card. **Authorized users.**
 
 - Updates both provider and Discord thread
 - Autocomplete searches cards by title and key
+- When changing a card's column, the Discord thread is moved to the new forum channel. The previous thread is locked and archived, and the new thread includes a link to the old discussion if it had user activity.
 
 **Example:**
 
@@ -148,7 +162,7 @@ Updates an existing card. **Authorized users.**
 /roadmap edit card:"PROJ-123" column:"In Progress"
 ```
 
-> 💡 All autocomplete fields update every 5 minutes (configurable via `autocompleteCacheTtl`). Labels support comma-separated values for multi-selection.
+> 💡 All autocomplete fields are cached for performance and refresh every 5 minutes by default. You can change this by setting `autocompleteCacheTtl` (in milliseconds) in your roadmap plugin options; lower values refresh suggestions more often at the cost of more provider API calls. Labels support comma-separated values for multi-selection.
 
 ## 🔧 Provider Setup
 
@@ -168,6 +182,7 @@ Jira is the built-in provider for syncing roadmaps from Jira Cloud.
 - `JIRA_JQL` - Custom JQL query to filter issues
 - `JIRA_MAX_RESULTS` - Max results per page (1-1000, default 100)
 - `JIRA_DEFAULT_ISSUE_TYPE` - Default issue type for new cards (default 'Task')
+- `JIRA_DISCORD_USER_ID_FIELD_ID` - Custom field ID containing Discord User ID (e.g., `customfield_10001`)
 
 **Example `.env` file:**
 
@@ -179,6 +194,7 @@ JIRA_PROJECT_KEY="PROJ"
 JIRA_JQL="labels = public"
 JIRA_MAX_RESULTS="50"
 JIRA_DEFAULT_ISSUE_TYPE="Story"
+JIRA_DISCORD_USER_ID_FIELD_ID="customfield_10001"
 ```
 
 **Configuration File Example:**
@@ -218,10 +234,102 @@ jql: 'project = PROJ AND updated >= -30d'
 
 > 💡 JQL (Jira Query Language) allows powerful filtering. See [Atlassian JQL documentation](https://support.atlassian.com/jira-service-management-cloud/docs/use-advanced-search-with-jira-query-language-jql/) for advanced queries.
 
+#### Discord User ID Custom Field
+
+You can use a Jira custom field to directly assign Discord users to cards, bypassing the standard Jira assignee mapping. This is useful when you want to assign cards to Discord users who may not have Jira accounts or when you want to override the Jira assignee.
+
+**Setup:**
+
+1. Create a text custom field in Jira (e.g., `customfield_10001`)
+2. Configure the field ID in your environment or config:
+   ```env
+   JIRA_DISCORD_USER_ID_FIELD_ID="customfield_10001"
+   ```
+3. In Jira issues, enter the Discord User ID (17-19 digit numeric string) in this custom field
+
+**Behavior:**
+
+- **Priority:** Custom field Discord User ID takes priority over Jira assignee mapping
+- **Fallback:** If the custom field is empty or invalid, falls back to Jira assignee mapping
+- **Avatar:** When a custom field Discord User ID is present, that user's Discord avatar is displayed instead of the Jira assignee's avatar
+- **Validation:** Invalid Discord User ID formats (not 17-19 digits) are logged and ignored, falling back to Jira assignee
+
+**Example:**
+
+```typescript
+provider: new JiraProvider({
+  type: 'jira',
+  options: {
+    // ... credentials ...
+    discordUserIdFieldId: 'customfield_10001'
+  }
+})
+```
+
 > [!NOTE]
 > Configuration precedence: explicit config file > plugin options > environment variables. Environment variables provide the simplest setup for most use cases.
 
 ## ⚙️ Configuration
+
+### Column Mapping
+
+**✅ Default Behavior (Works Out of the Box):**
+
+The plugin **automatically** maps Jira status categories to three columns without any configuration:
+- "To Do" category → "Backlog" column
+- "In Progress" category → "In Progress" column
+- "Done" category → "Done" column
+
+**These defaults are always active** - you can start syncing immediately without configuring anything!
+
+**🔧 Optional Customization:**
+
+If your Jira workflow uses different statuses or you want custom columns, you can override defaults at two levels:
+
+**Provider-Level (Default):** Configure custom columns and status mappings in your provider config:
+
+```typescript
+provider: new JiraProvider({
+  type: 'jira',
+  options: {
+    // ... credentials ...
+    columnConfig: {
+      columns: [
+        { id: 'planning', name: 'Planning', order: 0 },
+        { id: 'development', name: 'Development', order: 1 },
+        { id: 'review', name: 'Review', order: 2 },
+        { id: 'done', name: 'Done', order: 3, archived: true }
+      ],
+      statusMapping: {
+        'Backlog': 'Planning',
+        'To Do': 'Planning',
+        'In Progress': 'Development',
+        'Code Review': 'Review',
+        'QA': 'Review',
+        'Done': 'Done',
+        'Closed': null,  // Track but don't create forum thread
+        'Won\'t Do': null
+      }
+    }
+  }
+})
+```
+
+**Runtime-Level (Per-Guild):** Override mappings per-guild using `/roadmap setup` or the settings API:
+
+```typescript
+import { setColumnMapping } from '@robojs/roadmap'
+
+// Map QA status to Development column
+setColumnMapping(guildId, 'QA', 'Development')
+
+// Track Blocked status without creating forum thread
+setColumnMapping(guildId, 'Blocked', null)
+```
+
+**Many-to-One Support:** Multiple statuses can map to the same column (e.g., both "Code Review" and "QA" map to "Review").
+
+**Track-Only Mappings:** Map a status to `null` to track it programmatically (useful for changelogs) without creating a Discord forum thread.
 
 ### Plugin Options
 
@@ -248,6 +356,12 @@ export default {
 	// Cache duration for autocomplete suggestions (default: 300000 = 5 minutes)
 	autocompleteCacheTtl: 300000,
 
+	// Whether /roadmap add and /roadmap edit replies are ephemeral (true) or visible in-channel (false)
+	ephemeralCommands: true,
+
+	// Default template for Discord thread titles (can be overridden per-guild)
+	threadTitleTemplate: "[{id}] {title}",
+
 	// Reserved for future automatic sync feature
 	autoSync: false,
 
@@ -258,12 +372,14 @@ export default {
 
 **Available Options:**
 
-| Option                 | Type                                | Default  | Description                                     |
-| ---------------------- | ----------------------------------- | -------- | ----------------------------------------------- |
-| `provider`             | `RoadmapProvider \| ProviderConfig` | required | Provider instance or config object              |
-| `autocompleteCacheTtl` | `number`                            | `300000` | Cache duration in milliseconds for autocomplete |
-| `autoSync`             | `boolean`                           | `false`  | Reserved for future automatic sync              |
-| `syncInterval`         | `number \| null`                    | `null`   | Reserved for future sync interval               |
+| Option                 | Type                                | Default  | Description                                                                 |
+| ---------------------- | ----------------------------------- | -------- | --------------------------------------------------------------------------- |
+| `provider`             | `RoadmapProvider \| ProviderConfig` | required | Provider instance or config object                                          |
+| `autocompleteCacheTtl` | `number`                            | `300000` | Cache duration in milliseconds for autocomplete                             |
+| `ephemeralCommands`    | `boolean`                           | `true`   | Controls whether `/roadmap add` and `/roadmap edit` replies are ephemeral   |
+| `threadTitleTemplate`  | `string`                            | `undefined` | Default template for formatting Discord thread titles (see [Thread Title Templates](#-thread-title-templates)) |
+| `autoSync`             | `boolean`                           | `false`  | Reserved for future automatic sync                                          |
+| `syncInterval`         | `number \| null`                    | `null`   | Reserved for future sync interval                                           |
 
 ### Jira Configuration
 
@@ -330,6 +446,75 @@ export default {
 
 Configure access mode via `/roadmap setup` or the settings API.
 
+## 🏷️ Thread Title Templates
+
+Customize how Discord thread titles are formatted using template strings with placeholders.
+
+### Template Format
+
+Templates support two placeholders:
+- `{id}` - The card ID (e.g., "ROBO-23", "PROJ-123")
+- `{title}` - The card title
+
+### Configuration
+
+**Global Default (Plugin Options):**
+
+Set a default template for all guilds in your plugin configuration:
+
+```typescript
+// config/plugins/robojs/roadmap.ts
+export default {
+	provider: { /* ... */ },
+	threadTitleTemplate: "[{id}] {title}" // Default for all guilds
+}
+```
+
+**Per-Guild Override (Settings API):**
+
+Override the global default per-guild using the settings API:
+
+```typescript
+import { updateSettings } from '@robojs/roadmap'
+
+// Set custom template for a specific guild
+updateSettings(guildId, {
+	threadTitleTemplate: "{id} - {title}"
+})
+```
+
+### Examples
+
+```typescript
+// Default format: "[ROBO-23] Lorem ipsum"
+threadTitleTemplate: "[{id}] {title}"
+
+// Alternative format: "ROBO-23 - Lorem ipsum"
+threadTitleTemplate: "{id} - {title}"
+
+// Title first: "Lorem ipsum (ROBO-23)"
+threadTitleTemplate: "{title} ({id})"
+
+// Just ID: "ROBO-23"
+threadTitleTemplate: "{id}"
+
+// Just title (same as undefined/empty)
+threadTitleTemplate: "{title}"
+```
+
+### Behavior
+
+- **Character Limit**: Discord thread names have a 100 character limit. The template system automatically truncates the `{title}` portion while preserving the template structure (including `{id}`).
+- **Fallback**: If no template is provided (or it's empty), thread titles use just the card title.
+- **Precedence**: Guild-specific settings override the global plugin default.
+- **Sync Updates**: Running `/roadmap sync` will update all existing thread titles to match the current template configuration.
+
+### Use Cases
+
+- **Consistent formatting**: Ensure all threads follow your team's naming convention
+- **Easy identification**: Include card IDs in thread titles for quick reference
+- **Custom branding**: Format titles to match your organization's style guide
+
 ## 🧰 Programmatic API
 
 All functionality is available as importable functions for use in custom commands, events, or plugins.
@@ -365,6 +550,31 @@ const preview = await syncRoadmap({
 })
 
 console.log(`Synced ${result.stats.total} cards`)
+```
+
+### Thread Movement on Column Changes
+
+When a card moves to a different column (e.g., from "Backlog" to "In Progress"), the sync engine automatically moves the Discord thread to the corresponding forum channel:
+
+- **New thread created** in the target forum with the same name, tags, and content
+- **Old thread locked and archived** to preserve discussion history
+- **Conditional linking**: If the old thread had user messages (more than just the starter message), the new thread includes a link at the top: "📜 See X messages in previous discussion: [link]"
+- **Thread history tracked** in settings for audit trail
+
+This behavior applies to:
+- `/roadmap sync` operations
+- `/roadmap edit` command when changing the column
+- REST API `PUT /api/roadmap/cards/:guildId/:cardId` when updating the column
+
+**Example:**
+```typescript
+import { syncRoadmap } from '@robojs/roadmap'
+
+// When a card moves from "Backlog" to "In Progress"
+// The thread will be moved to the In Progress forum
+const result = await syncRoadmap({ guild, provider })
+// Old thread: locked and archived in Backlog forum
+// New thread: active in In Progress forum with link to old thread
 ```
 
 ### Card Operations
@@ -503,7 +713,8 @@ The REST API provides HTTP endpoints for external integrations, custom dashboard
 	"success": false,
 	"error": {
 		"code": "ERROR_CODE",
-		"message": "Human-readable error message"
+		"message": "Human-readable error message",
+		"hint": "Optional operator-friendly hint with a suggested fix"
 	}
 }
 ```
@@ -571,6 +782,13 @@ curl http://localhost:3000/api/roadmap/cards/:guildId/:cardId
 ## 🔌 Custom Providers
 
 Extend the roadmap to sync from GitHub Projects, Linear, or any custom backend.
+
+**Minimal implementation checklist**
+
+- Extend `RoadmapProvider` with your own provider class.
+- Implement the required methods: `fetchCards`, `getColumns`, `getCard`, `createCard`, `updateCard`, and `getProviderInfo`.
+- Optionally implement helpers like `getIssueTypes`, `getLabels`, `fetchCardsByDateRange`, `validateConfig`, and `init` if your backend supports them.
+- Register your provider in `config/plugins/robojs/roadmap.(mjs\|ts)` via the plugin options.
 
 ### Creating a Provider
 
@@ -714,7 +932,7 @@ export default {
 **Sync errors (content too long)**
 
 - Card descriptions are automatically truncated to Discord's limits
-- 4000 characters for thread creation, 2000 for updates
+- 2000 characters for forum thread starter messages and message edits
 
 **Cards not appearing**
 
@@ -738,6 +956,51 @@ export default {
 - Wait for cache refresh (default 5 minutes)
 - Restart bot to force cache refresh
 - Check provider is ready via `isProviderReady()`
+
+**How to cancel a running sync**
+
+- Click the "Cancel Sync" button that appears during the sync progress.
+- Only administrators or the user who started the sync can cancel.
+- The sync stops after finishing the current card (typically < 1 second).
+- Partial results are preserved and shown in the cancellation message.
+- Stats reflect cards successfully processed before cancellation.
+
+**Sync canceled but shows partial results**
+
+- This is expected behavior — cancellation preserves completed work.
+- The cancellation message shows "Partial sync: X/Y cards processed".
+- Stats (created, updated, archived, errors) reflect processed cards before cancellation.
+- Cards synced before cancellation remain in Discord.
+- Run `/roadmap sync` again to complete the sync.
+
+**Cancel button not working**
+
+- Verify you are an administrator or the user who started the sync.
+- If the sync already completed, the cancel button won't work (sync already ended).
+- If you see a "Not authorized" message, you don't have permission to cancel this sync.
+- If the button appears disabled, the sync may have already finished.
+- Check bot logs for any errors related to cancellation.
+
+**Threads moved to different forums**
+
+- This is expected behavior when a card's column changes
+- Old threads are locked and archived to preserve history
+- New threads link to old discussions if they had user activity
+- Thread history is tracked in settings
+
+**Old threads are locked**
+
+- Threads are automatically locked when a card moves to a new column
+- This prevents confusion from discussions in multiple places
+- Users can still view locked threads and their history
+- The new thread includes a link to the old discussion
+
+**Thread links show "See X messages"**
+
+- Links only appear when the old thread had user messages (not just the starter message)
+- Message count excludes the starter message (e.g., "See 5 messages" means 5 user replies)
+- This helps users find valuable prior discussions
+- Threads with only the starter message are not linked
 
 **Thread creation fails**
 

@@ -25,12 +25,12 @@ export async function getCardsFromLastMonth(
 ): Promise<readonly RoadmapCard[]> {
 	// Validate provider
 	if (!provider) {
-		roadmapLogger.error('getCardsFromLastMonth: Provider is required (dateField=%s)', dateField)
+		roadmapLogger.error(`getCardsFromLastMonth: Provider is required (dateField=${dateField})`)
 		throw new Error('Provider is required for date range filtering')
 	}
 
 	if (!provider.fetchCardsByDateRange) {
-		roadmapLogger.warn('getCardsFromDateRange: Provider does not support date filtering (dateField=%s)', dateField)
+		roadmapLogger.warn(`getCardsFromDateRange: Provider does not support date filtering (dateField=${dateField})`)
 		throw new Error('Provider does not support date filtering')
 	}
 
@@ -56,11 +56,7 @@ export async function getCardsFromLastMonth(
 		return await provider.fetchCardsByDateRange(filter)
 	} catch (error) {
 		roadmapLogger.error(
-			'getCardsFromLastMonth: Provider error (dateField=%s, startDate=%s, endDate=%s): %s',
-			dateField,
-			startDate.toISOString(),
-			endDate.toISOString(),
-			(error as Error).message
+			`getCardsFromLastMonth: Provider error (dateField=${dateField}, startDate=${startDate.toISOString()}, endDate=${endDate.toISOString()}): ${(error as Error).message}`
 		)
 		throw new Error(`Failed to fetch cards from last month: ${(error as Error).message}`)
 	}
@@ -85,12 +81,12 @@ export async function getCardsFromLastWeek(
 ): Promise<readonly RoadmapCard[]> {
 	// Validate provider
 	if (!provider) {
-		roadmapLogger.error('getCardsFromLastWeek: Provider is required (dateField=%s)', dateField)
+		roadmapLogger.error(`getCardsFromLastWeek: Provider is required (dateField=${dateField})`)
 		throw new Error('Provider is required for date range filtering')
 	}
 
 	if (!provider.fetchCardsByDateRange) {
-		roadmapLogger.warn('getCardsFromLastWeek: Provider does not support date filtering (dateField=%s)', dateField)
+		roadmapLogger.warn(`getCardsFromLastWeek: Provider does not support date filtering (dateField=${dateField})`)
 		throw new Error('Provider does not support date filtering')
 	}
 
@@ -117,11 +113,7 @@ export async function getCardsFromLastWeek(
 		return await provider.fetchCardsByDateRange(filter)
 	} catch (error) {
 		roadmapLogger.error(
-			'getCardsFromLastWeek: Provider error (dateField=%s, startDate=%s, endDate=%s): %s',
-			dateField,
-			startDate.toISOString(),
-			endDate.toISOString(),
-			(error as Error).message
+			`getCardsFromLastWeek: Provider error (dateField=${dateField}, startDate=${startDate.toISOString()}, endDate=${endDate.toISOString()}): ${(error as Error).message}`
 		)
 		throw new Error(`Failed to fetch cards from last week: ${(error as Error).message}`)
 	}
@@ -148,21 +140,19 @@ export async function getCardsFromLastDays(
 ): Promise<readonly RoadmapCard[]> {
 	// Validate days parameter
 	if (days <= 0 || !Number.isInteger(days)) {
-		roadmapLogger.error('getCardsFromLastDays: Days must be a positive integer, received: %s', days)
+		roadmapLogger.error(`getCardsFromLastDays: Days must be a positive integer, received: ${days}`)
 		throw new Error(`Days must be a positive integer, received: ${days}`)
 	}
 
 	// Validate provider
 	if (!provider) {
-		roadmapLogger.error('getCardsFromLastDays: Provider is required (days=%d, dateField=%s)', days, dateField)
+		roadmapLogger.error(`getCardsFromLastDays: Provider is required (days=${days}, dateField=${dateField})`)
 		throw new Error('Provider is required for date range filtering')
 	}
 
 	if (!provider.fetchCardsByDateRange) {
 		roadmapLogger.error(
-			'getCardsFromLastDays: Provider does not support date filtering (days=%d, dateField=%s)',
-			days,
-			dateField
+			`getCardsFromLastDays: Provider does not support date filtering (days=${days}, dateField=${dateField})`
 		)
 		throw new Error('Provider does not support date filtering')
 	}
@@ -190,12 +180,7 @@ export async function getCardsFromLastDays(
 		return await provider.fetchCardsByDateRange(filter)
 	} catch (error) {
 		roadmapLogger.error(
-			'getCardsFromLastDays: Provider error (days=%d, dateField=%s, startDate=%s, endDate=%s): %s',
-			days,
-			dateField,
-			startDate.toISOString(),
-			endDate.toISOString(),
-			(error as Error).message
+			`getCardsFromLastDays: Provider error (days=${days}, dateField=${dateField}, startDate=${startDate.toISOString()}, endDate=${endDate.toISOString()}): ${(error as Error).message}`
 		)
 		throw new Error(`Failed to fetch cards from last ${days} days: ${(error as Error).message}`)
 	}
@@ -229,9 +214,7 @@ export async function getCardsFromDateRange(
 	// Validate that dates are valid Date objects
 	if (isNaN(start.getTime()) || isNaN(end.getTime())) {
 		roadmapLogger.error(
-			'getCardsFromDateRange: Invalid date(s) provided (startDate=%s, endDate=%s)',
-			startDate,
-			endDate
+			`getCardsFromDateRange: Invalid date(s) provided (startDate=${startDate}, endDate=${endDate})`
 		)
 		throw new Error(`Invalid date(s) provided: startDate=${startDate}, endDate=${endDate}`)
 	}
@@ -239,9 +222,7 @@ export async function getCardsFromDateRange(
 	// Validate date range (start must be before or equal to end)
 	if (start > end) {
 		roadmapLogger.error(
-			'getCardsFromDateRange: Start date must be before or equal to end date (startDate=%s, endDate=%s)',
-			start.toISOString(),
-			end.toISOString()
+			`getCardsFromDateRange: Start date must be before or equal to end date (startDate=${start.toISOString()}, endDate=${end.toISOString()})`
 		)
 		throw new Error(
 			`Start date must be before or equal to end date: startDate=${start.toISOString()}, endDate=${end.toISOString()}`
@@ -250,12 +231,12 @@ export async function getCardsFromDateRange(
 
 	// Validate provider
 	if (!provider) {
-		roadmapLogger.error('getCardsFromDateRange: Provider is required (dateField=%s)', dateField)
+		roadmapLogger.error(`getCardsFromDateRange: Provider is required (dateField=${dateField})`)
 		throw new Error('Provider is required for date range filtering')
 	}
 
 	if (!provider.fetchCardsByDateRange) {
-		roadmapLogger.warn('getCardsFromLastDays: Provider does not support date filtering (dateField=%s)', dateField)
+		roadmapLogger.warn(`getCardsFromLastDays: Provider does not support date filtering (dateField=${dateField})`)
 		throw new Error('Provider does not support date filtering')
 	}
 
@@ -270,11 +251,7 @@ export async function getCardsFromDateRange(
 		return await provider.fetchCardsByDateRange(filter)
 	} catch (error) {
 		roadmapLogger.error(
-			'getCardsFromDateRange: Provider error (dateField=%s, startDate=%s, endDate=%s): %s',
-			dateField,
-			start.toISOString(),
-			end.toISOString(),
-			(error as Error).message
+			`getCardsFromDateRange: Provider error (dateField=${dateField}, startDate=${start.toISOString()}, endDate=${end.toISOString()}): ${(error as Error).message}`
 		)
 		throw new Error(`Failed to fetch cards from date range: ${(error as Error).message}`)
 	}

@@ -65,7 +65,7 @@ export function normalizeAuthOptions(options: unknown): NormalizedAuthPluginOpti
 	const appName = (parsed.appName?.trim() ?? '') || 'Robo.js'
 
 	// Merge user overrides with opinionated defaults to keep Auth.js cookies predictable.
-	const cookies = applyCookieOverrides(buildDefaultCookies(), parsed.cookies)
+	const cookies = applyCookieOverrides(buildDefaultCookies(), parsed.cookies as unknown as Partial<CookiesOptions>)
 	const sessionStrategy = parsed.session?.strategy ?? (parsed.adapter ? 'database' : 'jwt')
 
 	let upstream: NormalizedAuthPluginOptions['upstream']

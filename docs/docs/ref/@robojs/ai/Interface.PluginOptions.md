@@ -44,6 +44,16 @@ System instructions injected into AI prompts.
 
 ***
 
+### mcpServers?
+
+```ts
+optional mcpServers: MCPTool[];
+```
+
+MCP (Model Context Protocol) server configurations for tool integration.
+
+***
+
 ### restrict?
 
 ```ts

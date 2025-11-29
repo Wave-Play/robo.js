@@ -1,1 +1,1 @@
-export { signIn, signOut, getSession, getProviders, getCsrfToken } from './runtime/client-helpers.js'
+export { signIn, signOut, signUp, getSession, getProviders, getCsrfToken } from './runtime/client-helpers.js'

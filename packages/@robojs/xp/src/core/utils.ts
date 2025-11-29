@@ -3,7 +3,16 @@
  * Provides permission checking, embed creation, formatting, and validation helpers.
  */
 
-import { EmbedBuilder, Colors, PermissionFlagsBits, type ChatInputCommandInteraction } from 'discord.js'
+import {
+	EmbedBuilder,
+	Colors,
+	MessageFlags,
+	PermissionFlagsBits,
+	type ChatInputCommandInteraction,
+	type Interaction,
+	type InteractionReplyOptions,
+	type RepliableInteraction
+} from 'discord.js'
 import type { CommandResult } from 'robo.js'
 import type { GuildConfig } from '../types.js'
 import { logger } from 'robo.js'
@@ -85,7 +94,7 @@ export function hasAdminPermission(interaction: ChatInputCommandInteraction): bo
  * const { guildId } = guildCheck
  * ```
  */
-export function requireGuild(interaction: ChatInputCommandInteraction): { guildId: string } | string {
+export function requireGuild(interaction: Interaction): { guildId: string } | string {
 	if (!interaction.guildId) {
 		return 'This command can only be used in a server'
 	}
@@ -113,14 +122,14 @@ export function getEmbedColor(config: GuildConfig): number {
  * @param current - Current progress value
  * @param total - Total/maximum value
  * @param length - Bar length in characters (default: 10, min: 5, max: 30)
- * @returns Progress bar string using █ (filled) and ░ (empty)
+ * @returns Progress bar string using ▰ (filled) and ▱ (empty)
  *
  * @example
  * ```typescript
- * createProgressBar(50, 100, 10) // Returns "█████░░░░░"
- * createProgressBar(75, 100, 10) // Returns "███████░░░"
- * createProgressBar(100, 100, 10) // Returns "██████████"
- * createProgressBar(0, 100, 10) // Returns "░░░░░░░░░░"
+ * createProgressBar(50, 100, 10) // Returns "▰▰▰▰▰▱▱▱▱▱"
+ * createProgressBar(75, 100, 10) // Returns "▰▰▰▰▰▰▱▱▱▱"
+ * createProgressBar(100, 100, 10) // Returns "▰▰▰▰▰▰▰▰▰▰"
+ * createProgressBar(0, 100, 10) // Returns "▱▱▱▱▱▱▱▱"
  * ```
  */
 export function createProgressBar(current: number, total: number, length: number = 10): string {
@@ -129,17 +138,17 @@ export function createProgressBar(current: number, total: number, length: number
 
 	// Handle edge cases
 	if (total <= 0 || current <= 0) {
-		return '░'.repeat(clampedLength)
+		return '▱'.repeat(clampedLength)
 	}
 	if (current >= total) {
-		return '█'.repeat(clampedLength)
+		return '▰'.repeat(clampedLength)
 	}
 
 	// Calculate filled blocks
 	const filled = Math.floor((current / total) * clampedLength)
 	const empty = clampedLength - filled
 
-	return '█'.repeat(filled) + '░'.repeat(empty)
+	return '▰'.repeat(filled) + '▱'.repeat(empty)
 }
 
 /**
@@ -206,6 +215,17 @@ export function formatMultiplier(multiplier: number): string {
 	// multiplier < 1.0
 	const decrease = ((1 - multiplier) * 100).toFixed(0)
 	return `-${decrease}%`
+}
+
+export async function safeReply(
+	interaction: RepliableInteraction,
+	options: InteractionReplyOptions
+): Promise<void> {
+	if (interaction.deferred || interaction.replied) {
+		await interaction.followUp(options)
+	} else {
+		await interaction.reply(options)
+	}
 }
 
 /**
@@ -381,7 +401,7 @@ export function validateSnowflake(id: string): boolean {
 export function createPermissionError(): CommandResult {
 	return {
 		embeds: [createErrorEmbed('Permission Denied', 'You do not have permission to use this command.')],
-		ephemeral: true
+		flags: MessageFlags.Ephemeral
 	}
 }
 
@@ -391,7 +411,7 @@ export function createPermissionError(): CommandResult {
 export function createGuildOnlyError(): CommandResult {
 	return {
 		embeds: [createErrorEmbed('Server Only', 'This command can only be used in a server, not in direct messages.')],
-		ephemeral: true
+		flags: MessageFlags.Ephemeral
 	}
 }
 
@@ -401,6 +421,6 @@ export function createGuildOnlyError(): CommandResult {
 export function createUserNotFoundError(userId: string): CommandResult {
 	return {
 		embeds: [createErrorEmbed('User Not Found', `The user ${formatUser(userId)} has no XP record in this server.`)],
-		ephemeral: true
+		flags: MessageFlags.Ephemeral
 	}
 }

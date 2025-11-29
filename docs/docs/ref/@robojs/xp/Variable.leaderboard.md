@@ -29,7 +29,7 @@ on large servers. Designed to handle 10k+ users with under 200ms response times.
 ### get()
 
 ```ts
-get: (guildId, offset, limit) => Promise<object> = getLeaderboardCore;
+get: (guildId, offset, limit, options?) => Promise<object> = getLeaderboardCore;
 ```
 
 Get paginated leaderboard entries (offset, limit)
@@ -50,6 +50,7 @@ Complexity:
 | `guildId` | `string` | `undefined` | Guild ID |
 | `offset` | `number` | `0` | Starting position (0-indexed, default: 0) |
 | `limit` | `number` | `10` | Number of entries to return (default: 10) |
+| `options`? | [`FlashcoreOptions`](Interface.FlashcoreOptions.md) | `undefined` | Optional Flashcore options (e.g., storeId for multi-store support) |
 
 #### Returns
 
@@ -72,20 +73,23 @@ total: number;
 #### Example
 
 ```typescript
-// Get top 10 users
+// Get top 10 users (default store)
 const { entries, total } = await getLeaderboard('123...', 0, 10)
 
-// Get users 11-20 (page 2)
+// Get users 11-20 (page 2, default store)
 const { entries, total } = await getLeaderboard('123...', 10, 10)
 
-// Get users 101-110 (beyond cached top 100)
+// Get users 101-110 (beyond cached top 100, default store)
 const { entries, total } = await getLeaderboard('123...', 100, 10)
+
+// Get top 10 users from custom store
+const { entries, total } = await getLeaderboard('123...', 0, 10, { storeId: 'reputation' })
 ```
 
 ### getRank()
 
 ```ts
-getRank: (guildId, userId) => Promise<object | null> = getUserRankCore;
+getRank: (guildId, userId, options?) => Promise<object | null> = getUserRankCore;
 ```
 
 Get user's rank position (1-indexed)
@@ -103,6 +107,7 @@ Always returns the total number of tracked users from getAllUsers.
 | ------ | ------ | ------ |
 | `guildId` | `string` | Guild ID |
 | `userId` | `string` | User ID |
+| `options`? | [`FlashcoreOptions`](Interface.FlashcoreOptions.md) | Optional Flashcore options (e.g., storeId for multi-store support) |
 
 #### Returns
 
@@ -113,28 +118,37 @@ Rank info (1-indexed position and total users) or null if user not found
 #### Example
 
 ```typescript
+// Get user rank from default store
 const rankInfo = await getUserRank('123...', '456...')
 if (rankInfo) {
   console.log(`User is rank ${rankInfo.rank} out of ${rankInfo.total}`)
 }
+
+// Get user rank from custom store
+const repRank = await getUserRank('123...', '456...', { storeId: 'reputation' })
 ```
 
 ### invalidateCache()
 
 ```ts
-invalidateCache: (guildId) => void = invalidateCacheCore;
+invalidateCache: (guildId, options?) => void = invalidateCacheCore;
 ```
 
 Manually invalidate cache for a guild (usually automatic)
 
-Invalidates cache for a specific guild.
+Invalidates cache for a specific guild and store.
 Called automatically when XP changes via event listeners.
+
+Supports two modes:
+- Specific store: Pass `{ storeId: 'name' }` to invalidate only that store
+- All stores: Pass `{ all: true }` to invalidate all stores for the guild
 
 #### Parameters
 
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
 | `guildId` | `string` | Guild ID |
+| `options`? | [`FlashcoreOptions`](Interface.FlashcoreOptions.md) \| `object` | Optional Flashcore options or `{ all: true }` to invalidate all stores |
 
 #### Returns
 
@@ -143,8 +157,11 @@ Called automatically when XP changes via event listeners.
 #### Example
 
 ```typescript
-// Manual cache invalidation (usually automatic)
-invalidateCache('123...')
+// Manual cache invalidation for specific store (usually automatic)
+invalidateCache('123...', { storeId: 'reputation' })
+
+// Invalidate all stores for a guild
+invalidateCache('123...', { all: true })
 ```
 
 ## Examples
@@ -154,14 +171,17 @@ invalidateCache('123...')
 ```typescript
 import { leaderboard } from '@robojs/xp'
 
-// Get top 10 users (first page)
+// Get top 10 users from default store
 const top10 = await leaderboard.get('guildId', 0, 10)
-top10.forEach(entry => {
+top10.entries.forEach(entry => {
   console.log(`#${entry.rank}: ${entry.userId} - Level ${entry.level} (${entry.xp} XP)`)
 })
 
-// Get next 10 users (second page)
-const next10 = await leaderboard.get('guildId', 10, 10)
+// Get top 10 users from custom reputation store
+const repTop10 = await leaderboard.get('guildId', 0, 10, { storeId: 'reputation' })
+repTop10.entries.forEach(entry => {
+  console.log(`#${entry.rank}: ${entry.userId} - Rep Level ${entry.level}`)
+})
 ```
 
 ### Build Leaderboard Command
@@ -197,19 +217,21 @@ async function handleLeaderboardCommand(interaction: CommandInteraction) {
 }
 ```
 
-### Get User's Rank Position
+### Get User's Rank Position (multi-store)
 
 ```typescript
 import { leaderboard } from '@robojs/xp'
 
-// Get user's rank position
-const rankInfo = await leaderboard.getRank('guildId', 'userId')
+// Get user's rank in default store
+const defaultRank = await leaderboard.getRank('guildId', 'userId')
+if (defaultRank) {
+  console.log(`Default rank: #${defaultRank.rank} out of ${defaultRank.total}`)
+}
 
-if (rankInfo) {
-  console.log(`User is rank #${rankInfo.rank} out of ${rankInfo.total} users`)
-  console.log(`Level: ${rankInfo.level}, XP: ${rankInfo.xp}`)
-} else {
-  console.log('User has no XP record')
+// Get user's rank in custom reputation store
+const repRank = await leaderboard.getRank('guildId', 'userId', { storeId: 'reputation' })
+if (repRank) {
+  console.log(`Reputation rank: #${repRank.rank} out of ${repRank.total}`)
 }
 ```
 

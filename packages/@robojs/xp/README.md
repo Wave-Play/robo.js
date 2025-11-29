@@ -4,7 +4,7 @@
 
 # @robojs/xp
 
-MEE6-style chat XP system that exposes a powerful event-driven API that makes building custom features incredibly easy. No need to fork the plugin or write complex integrations—just listen to events and call imperative functions.
+Standard chat XP system that exposes a powerful event-driven API that makes building custom features incredibly easy. No need to fork the plugin or write complex integrations—just listen to events and call imperative functions.
 
 <div align="center">
   <a href="https://github.com/Wave-Play/robo/blob/main/LICENSE"><img alt="GitHub license" src="https://img.shields.io/github/license/Wave-Play/robo" /></a>
@@ -19,15 +19,16 @@ MEE6-style chat XP system that exposes a powerful event-driven API that makes bu
 
 ## Features
 
-- 💬 **MEE6-parity XP mechanics** - Awards 15-25 XP per message with 60-second cooldown
+- 💬 **Standard XP mechanics** - Awards 15-25 XP per message with 60-second cooldown
 - 🎯 **Role rewards** - Automatic role assignment with stack or replace modes
-- 🚀 **Multipliers** - Server, role, and user XP boosts (MEE6 Pro parity)
+- 🚀 **Multipliers** - Server, role, and user XP boosts (premium features)
 - 📊 **Cached leaderboards** - Optimized for 10k+ users with under 200ms refresh
 - 🛡️ **No-XP roles/channels** - Granular control over where XP is earned
 - 🔧 **Admin commands** - Complete control via `/xp` command suite
 - 📈 **Event system** - Real-time hooks for level changes and XP updates
 - 🌐 **REST API** - Optional HTTP endpoints (requires @robojs/server)
 - 💾 **Flashcore persistence** - Guild-scoped data storage with automatic caching
+- 🗄️ **Multi-store architecture** - Run parallel progression systems (leveling + currencies, multi-dimensional reputation)
 
 ## 🚀 **Build Custom Features in Minutes**
 
@@ -85,31 +86,44 @@ npx robo add @robojs/server
 
 #### Role Rewards
 
-| Command                                | Description                      | Options                             |
-| -------------------------------------- | -------------------------------- | ----------------------------------- |
-| `/xp rewards add <level> <role>`       | Add role reward at level         | `level` (1-1000), `role` (required) |
-| `/xp rewards remove <level>`           | Remove role reward               | `level` (required)                  |
-| `/xp rewards list`                     | List all role rewards            | None                                |
-| `/xp rewards mode <mode>`              | Set stack or replace mode        | `mode` (`stack` or `replace`)       |
-| `/xp rewards remove-on-loss <enabled>` | Toggle reward removal on XP loss | `enabled` (boolean)                 |
+| Command | Description | Options |
+| ------- | ----------- | ------- |
+| `/xp config` | Configure role rewards (admin only) | Interactive UI with buttons and modals |
 
-**Stack Mode:** Users keep all role rewards from previous levels
+**Role Rewards Configuration** (via `/xp config` → Role Rewards):
+- **Add Reward**: Assign a role to be awarded at a specific level (1-1000)
+- **Remove Reward**: Remove a role reward from a specific level
+- **Set Mode**: Choose between Stack (keep all rewards) or Replace (only highest reward)
+- **Toggle Remove-on-Loss**: Enable/disable removing rewards when users lose XP/levels
+- **View All**: See all configured rewards with pagination
+
+**Stack Mode:** Users keep all role rewards from previous levels  
 **Replace Mode:** Users only get the highest level role reward
 
 #### Configuration
 
-| Command                                       | Description                | Options              |
-| --------------------------------------------- | -------------------------- | -------------------- |
-| `/xp config get`                              | View current configuration | None                 |
-| `/xp config set-cooldown <seconds>`           | Set XP award cooldown      | `seconds` (0-3600)   |
-| `/xp config set-xp-rate <rate>`               | Set XP rate multiplier     | `rate` (0.1-10.0)    |
-| `/xp config add-no-xp-role <role>`            | Add No-XP role             | `role` (required)    |
-| `/xp config remove-no-xp-role <role>`         | Remove No-XP role          | `role` (required)    |
-| `/xp config add-no-xp-channel <channel>`      | Add No-XP channel          | `channel` (required) |
-| `/xp config remove-no-xp-channel <channel>`   | Remove No-XP channel       | `channel` (required) |
-| `/xp config set-leaderboard-public <enabled>` | Toggle public leaderboard  | `enabled` (boolean)  |
+| Command | Description | Options |
+| ------- | ----------- | ------- |
+| `/xp config` | Configure XP system settings | Interactive UI with category navigation |
+
+**Configuration Categories** (via `/xp config`):
+
+**General Settings:**
+- **Cooldown**: Set per-user message cooldown (0-3600 seconds)
+- **XP Rate**: Set XP rate multiplier (0.1-10.0x)
+- **Leaderboard Visibility**: Toggle public/private leaderboard access
+
+**No-XP Zones:**
+- **Add/Remove Roles**: Manage roles that don't earn XP
+- **Add/Remove Channels**: Manage channels that don't award XP
+
+**Role Rewards:** (see Role Rewards section above)
+
+> **Note:** General settings, No-XP zones, and role rewards are managed through an interactive component-based interface using Discord.js Components V2. Simply run `/xp config` and navigate through the categories using buttons and select menus. Multipliers are managed separately via dedicated slash commands (see Multipliers section below).
 
 #### Multipliers
+
+**Multipliers are managed via dedicated slash commands** and are not currently part of the interactive `/xp config` UI:
 
 | Command                                   | Description                   | Options                         |
 | ----------------------------------------- | ----------------------------- | ------------------------------- |
@@ -125,8 +139,9 @@ npx robo add @robojs/server
 | --------------------- | ---------------------------- | ----------------------------------- |
 | `/rank [user]`        | View rank card with progress | `user` (optional, defaults to self) |
 | `/leaderboard [page]` | View server leaderboard      | `page` (optional, default: 1)       |
+| `/xp rewards`         | View all role rewards        | None (public, with pagination)      |
 
-> **Note:** `/leaderboard` requires admin permission when `leaderboard.public` is `false`
+> **Note:** `/leaderboard` requires admin permission when `leaderboard.public` is `false`. `/xp rewards` is always public and shows all configured role rewards with pagination support.
 
 ## Configuration Guide
 
@@ -147,7 +162,7 @@ interface GuildConfig {
 	rewardsMode: 'stack' | 'replace' // Stack (keep all) or replace (highest only)
 	removeRewardOnXpLoss: boolean // Remove roles when XP drops below level
 
-	// Multipliers (MEE6 Pro parity)
+	// Multipliers (premium features)
 	multipliers: {
 		server?: number // Server-wide multiplier (set to 0 to disable automatic XP)
 		role?: Record<string, number> // Per-role multipliers (set to 0 to disable for role)
@@ -334,6 +349,81 @@ await XP.config.set(guildId, {
 })
 ````
 
+
+## Multi-Store Architecture
+
+The XP plugin supports multiple isolated data stores so you can run parallel progression systems side-by-side. Each store has independent user data, configuration, leaderboard cache, and event stream. The default store is used by built-in commands; custom stores are accessed imperatively via the API.
+
+### Basic Usage
+
+```typescript
+import { XP, leaderboard, config } from '@robojs/xp'
+
+// Default store (implicit)
+await XP.addXP(guildId, userId, 100)
+const defaultXP = await XP.getXP(guildId, userId)
+
+// Custom reputation store
+await XP.addXP(guildId, userId, 50, { storeId: 'reputation' })
+const repXP = await XP.getXP(guildId, userId, { storeId: 'reputation' })
+
+// Custom credits store
+await XP.addXP(guildId, userId, 200, { storeId: 'credits' })
+const creditsXP = await XP.getXP(guildId, userId, { storeId: 'credits' })
+```
+
+### Use Cases
+
+| Use Case | Default Store | Custom Stores | Example |
+|----------|---------------|---------------|---------|
+| Leveling + Currencies | XP/Levels with role rewards | 'coins', 'gems', 'tokens' | Traditional leveling + economy |
+| Multi-Dimensional Reputation | Overall activity | 'helpfulness', 'creativity', 'trading' | Community reputation systems |
+| Seasonal Systems | Permanent progression | 'season1', 'season2', 'event_halloween' | Battle passes, events |
+
+### Store Isolation
+
+- Each store has its own configuration. Changing one store’s config doesn’t affect others.
+- Leaderboards are per store. Caches and invalidation are independent per store.
+- All emitted events include a `storeId` field so listeners can filter by store.
+
+Different cooldowns per store:
+
+```typescript
+// Default store
+await config.set(guildId, { cooldownSeconds: 60 })
+
+// Reputation store
+await config.set(guildId, { cooldownSeconds: 120 }, { storeId: 'reputation' })
+```
+
+### Built-in Commands vs Custom Stores
+
+- Built-in commands (`/rank`, `/leaderboard`, `/xp`) only use the default store.
+- Custom stores require building your own commands or integrations.
+- Role rewards only trigger for the default store to avoid conflicts where multiple stores would grant/remove the same roles.
+
+### Configuration Per Store
+
+```typescript
+import { config } from '@robojs/xp'
+
+// Configure default store
+await config.set(guildId, {
+	cooldownSeconds: 60,
+	labels: { xpDisplayName: 'XP' }
+})
+
+// Configure reputation store with different settings
+await config.set(
+	guildId,
+	{
+		cooldownSeconds: 120,
+		labels: { xpDisplayName: 'Reputation' }
+	},
+	{ storeId: 'reputation' }
+)
+```
+
 ### Global Configuration Defaults
 
 Global defaults apply to all guilds unless overridden. They're stored at `['xp', 'global', 'config']`.
@@ -356,15 +446,271 @@ await config.set(guildId, {
 
 **Config Precedence:** Guild config > Global config > System defaults
 
-### MEE6 Parity Notes
+### Default Behavior Notes
 
-This plugin matches MEE6's core mechanics:
+This plugin provides standard XP mechanics:
 
 - **XP per message:** 15-25 XP (random, configurable via `xpRate`)
 - **Cooldown:** 60 seconds (configurable)
 - **Level curve:** `XP = 5 * level² + 50 * level + 100`
 - **Role rewards:** Stack or replace modes
-- **Multipliers:** Server, role, and user multipliers (MEE6 Pro feature)
+- **Multipliers:** Server, role, and user multipliers (premium features)
+
+## Custom Level Curves
+
+Robo XP supports fully customizable level progression curves. By default, the plugin uses a standard quadratic formula, but you can override the curve per guild and per store (multi-store aware). You can choose from presets (quadratic, linear, exponential, lookup) or supply code via the `getCurve` callback in your plugin config for dynamic logic.
+
+Note: Unless you customize it, the default store uses the default quadratic curve defined as:
+
+XP(level) = 5 × level² + 50 × level + 100
+
+This preserves familiar progression for most servers. You can override this globally, per guild, and/or per store.
+
+### Preset Curve Types
+
+You can set a preset curve for a guild (and optionally per store) using your configuration APIs or helper utilities. Presets are fully serializable and are persisted in Flashcore so they survive restarts.
+
+All presets support an optional `maxLevel` cap to prevent progression beyond a certain level.
+
+#### 1) Quadratic Curves (Custom Coefficients)
+
+Formula: XP(level) = a × level² + b × level + c
+
+- Steeper progression example (large or highly active guilds):
+
+```ts
+// Example: steeper quadratic
+await config.set(guildId, {
+  levels: {
+    type: 'quadratic',
+    params: { a: 10, b: 100, c: 200 },
+    maxLevel: 100,
+  },
+})
+```
+
+- Gentler progression example (small/early-stage guilds):
+
+```ts
+// Example: gentler quadratic
+await config.set(guildId, {
+  levels: {
+    type: 'quadratic',
+    params: { a: 2, b: 20, c: 50 },
+  },
+})
+```
+
+Notes:
+- Use higher `a` for faster late‑game growth; adjust `b` and `c` for early levels.
+- Add `maxLevel` to cap the system for seasons or events.
+
+#### 2) Linear Curves
+
+Formula: XP(level) = level × xpPerLevel
+
+- Constant 100 XP per level:
+
+```ts
+await config.set(guildId, {
+  levels: { type: 'linear', params: { xpPerLevel: 100 } },
+})
+```
+
+- Slower 500 XP per level progression:
+
+```ts
+await config.set(guildId, {
+  levels: { type: 'linear', params: { xpPerLevel: 500 } },
+})
+```
+
+Notes:
+- Simplest to reason about; great for reputation/credits or non‑competitive tracks.
+
+#### 3) Exponential Curves
+
+Formula: XP(level) = multiplier × base^level
+
+- Doubles required XP every level:
+
+```ts
+await config.set(guildId, {
+  levels: {
+    type: 'exponential',
+    params: { base: 2, multiplier: 100 },
+    maxLevel: 50, // strongly recommended
+  },
+})
+```
+
+- 50% increase per level:
+
+```ts
+await config.set(guildId, {
+  levels: {
+    type: 'exponential',
+    params: { base: 1.5, multiplier: 100 },
+    maxLevel: 75,
+  },
+})
+```
+
+Warnings:
+- Exponential growth becomes extremely steep; always set a `maxLevel`.
+
+#### 4) Lookup Table Curves
+
+Define exact XP thresholds per level.
+
+```ts
+await config.set(guildId, {
+  levels: {
+    type: 'lookup',
+    params: { thresholds: [0, 100, 250, 500, 1000, 2000, 5000] },
+    // maxLevel defaults to thresholds.length - 1 when omitted
+  },
+})
+```
+
+Notes:
+- Provides pixel‑perfect control over each level’s requirement.
+- Useful for seasonal passes and event‑specific tuning.
+
+### Advanced Customization with getCurve Callback
+
+For dynamic logic that can’t be expressed with static presets, define `levels.getCurve` in your plugin config file `config/plugins/robojs/xp.ts`. This callback has the highest precedence:
+
+getCurve callback → guild preset → default quadratic
+
+The callback can be synchronous or asynchronous and is not stored in Flashcore.
+
+Example: Different curves per store
+
+```ts
+// config/plugins/robojs/xp.ts
+import type { PluginOptions } from '@robojs/xp'
+
+export default {
+  levels: {
+    getCurve: (guildId, storeId) => {
+      if (storeId === 'reputation') {
+        // Linear: 500 XP per level
+        return {
+          xpForLevel: (level) => level * 500,
+          levelFromXp: (xp) => Math.floor(xp / 500),
+        }
+      }
+      return null // falls through to guild preset or default quadratic
+    },
+  },
+} satisfies PluginOptions
+```
+
+Example: Special guild gets custom quadratic with cap
+
+```ts
+export default {
+  levels: {
+    getCurve: (guildId) => {
+      if (guildId === 'SPECIAL_GUILD_ID') {
+        return {
+          xpForLevel: (level) => 10 * level * level + 100 * level + 200,
+          levelFromXp: (xp) => Math.floor((-100 + Math.sqrt(10000 + 40 * (xp - 200))) / 20),
+          maxLevel: 100,
+        }
+      }
+      return null
+    },
+  },
+} satisfies PluginOptions
+```
+
+Example: Dynamic curves based on guild size (async)
+
+```ts
+export default {
+  levels: {
+    getCurve: async (guildId) => {
+      const guild = await client.guilds.fetch(guildId)
+      if (guild.memberCount > 1000) {
+        return {
+          xpForLevel: (level) => 10 * level * level + 100 * level + 200,
+          levelFromXp: (xp) => Math.floor((-100 + Math.sqrt(10000 + 40 * (xp - 200))) / 20),
+        }
+      }
+      return null // small guilds use preset/default
+    },
+  },
+} satisfies PluginOptions
+```
+
+Curves resolved via `getCurve` are cached per `(guildId, storeId)` to avoid repeated computation.
+
+### Migration Guide
+
+Follow these steps to migrate from the default curve to custom curves.
+
+1) Choose your curve type
+
+- Simple, constant progression → Linear
+- Exact per‑level control → Lookup
+- Rapid growth (with caps) → Exponential
+- Familiar quadratic with tunable coefficients → Quadratic
+
+2) Configure a per‑guild preset (recommended)
+
+```ts
+await config.set(guildId, {
+  levels: { type: 'linear', params: { xpPerLevel: 100 } },
+})
+```
+
+- Presets persist in Flashcore and can be changed per guild and per store.
+
+3) Test your curve
+
+- Use `/xp set` to simulate levels and validate math.
+- Verify `/rank` and `/leaderboard` outputs.
+- Start with small XP ranges to confirm expected progression.
+
+4) Optional: Use the `getCurve` callback for advanced scenarios
+
+- Dynamic logic (guild size, time‑based seasons).
+- Different curves per store (e.g., reputation vs. coins).
+- Special partner/premium guilds.
+
+Common use cases
+
+- Small servers (< 100 members): gentler curves for faster early progression.
+- Large servers (1000+ members): steeper curves to maintain challenge.
+- Seasonal systems: lookup tables with strict level caps.
+- Multi‑currency: different curves per store (linear for coins, exponential for gems).
+
+### Default Behavior
+
+Default quadratic curve:
+
+XP(level) = 5 × level² + 50 × level + 100
+
+Example requirements:
+
+- Level 1: 100 XP
+- Level 5: 475 XP
+- Level 10: 1,100 XP
+- Level 20: 3,100 XP
+- Level 50: 15,100 XP
+- Level 100: 55,100 XP
+
+Overriding defaults
+
+- Any custom preset or `getCurve` override replaces the default for that guild/store.
+- Built‑in commands like `/rank` and `/leaderboard` work with all curve types.
+
+Custom stores
+
+- Custom stores (e.g., `reputation`, `coins`) also default to quadratic but may be configured independently.
+- Example: default store uses quadratic, `reputation` uses linear 500 XP/level via `getCurve`.
 
 ## TypeScript API Reference
 
@@ -384,11 +730,11 @@ console.log(result.leveledDown) // true if user leveled down
 // Set exact XP value
 const result = await XP.setXP(guildId, userId, 5000, { reason: 'admin_adjustment' })
 
-// Recalculate level and reconcile roles
+// Recalculate level and reconcile roles (supports storeId option)
 const result = await XP.recalc(guildId, userId)
 console.log(result.reconciled) // true if level was corrected
 
-// Query user data
+// Query user data (supports storeId option)
 const user = await XP.getUser(guildId, userId)
 const xp = await XP.getXP(guildId, userId)
 const level = await XP.getLevel(guildId, userId)
@@ -396,6 +742,25 @@ const level = await XP.getLevel(guildId, userId)
 // User object includes both message counters
 console.log(user.messages) // Total messages sent: 423
 console.log(user.xpMessages) // Messages that awarded XP: 156
+```
+
+Supported signatures (multi-store):
+
+- `addXP(guildId, userId, amount, { reason?, storeId? })`
+- `removeXP(guildId, userId, amount, { reason?, storeId? })`
+- `setXP(guildId, userId, totalXp, { reason?, storeId? })`
+- `recalc(guildId, userId, { storeId? })`
+- `getUser(guildId, userId, { storeId? })`
+- `getXP(guildId, userId, { storeId? })`
+- `getLevel(guildId, userId, { storeId? })`
+
+Multi-store query example:
+
+```typescript
+// Query different stores
+const defaultXP = await XP.getXP(guildId, userId) // Default store
+const repXP = await XP.getXP(guildId, userId, { storeId: 'reputation' })
+const coins = await XP.getXP(guildId, userId, { storeId: 'coins' })
 ```
 
 **Result Types:**
@@ -454,6 +819,21 @@ const globalConfig = config.getGlobal()
 config.setGlobal({ xpRate: 1.5 })
 ```
 
+Supported signatures (multi-store):
+
+- `config.get(guildId, { storeId? })`
+- `config.set(guildId, partial, { storeId? })`
+
+Multi-store configuration example:
+
+```typescript
+// Configure default store
+await config.set(guildId, { cooldownSeconds: 60 })
+
+// Configure custom store
+await config.set(guildId, { cooldownSeconds: 120 }, { storeId: 'reputation' })
+```
+
 **Multipliers (0 for manual control):**
 
 ```ts
@@ -500,6 +880,22 @@ const rankInfo = await leaderboard.getRank(guildId, userId)
 
 // Manually invalidate cache
 await leaderboard.invalidateCache(guildId)
+```
+
+Supported signatures (multi-store):
+
+- `leaderboard.get(guildId, offset, limit, { storeId? })`
+- `leaderboard.getRank(guildId, userId, { storeId? })`
+- `leaderboard.invalidateCache(guildId, { storeId? })`
+
+Multi-store example:
+
+```typescript
+// Default store leaderboard
+const defaultTop = await leaderboard.get(guildId, 0, 10)
+
+// Custom store leaderboard
+const repTop = await leaderboard.get(guildId, 0, 10, { storeId: 'reputation' })
 ```
 
 ### Role Rewards
@@ -573,6 +969,7 @@ events.off('xpChange', handler)
 interface LevelUpEvent {
 	guildId: string
 	userId: string
+	storeId: string
 	oldLevel: number
 	newLevel: number
 	totalXp: number
@@ -581,6 +978,7 @@ interface LevelUpEvent {
 interface LevelDownEvent {
 	guildId: string
 	userId: string
+	storeId: string
 	oldLevel: number
 	newLevel: number
 	totalXp: number
@@ -589,11 +987,26 @@ interface LevelDownEvent {
 interface XPChangeEvent {
 	guildId: string
 	userId: string
+	storeId: string
 	oldXp: number
 	newXp: number
 	delta: number
 	reason?: string
 }
+```
+
+Filter events by store:
+
+```typescript
+import { events } from '@robojs/xp'
+
+events.onLevelUp(({ guildId, userId, newLevel, storeId }) => {
+  if (storeId === 'reputation') {
+    console.log(`Reputation level up: ${newLevel}`)
+  } else if (storeId === 'default') {
+    console.log(`XP level up: ${newLevel}`)
+  }
+})
 ```
 
 ### Constants
@@ -605,17 +1018,17 @@ import { constants } from '@robojs/xp'
 constants.DEFAULT_COOLDOWN // 60
 constants.DEFAULT_XP_RATE // 1.0
 
-// Level curve formula coefficients
-constants.CURVE_A // 5
-constants.CURVE_B // 50
-constants.CURVE_C // 100
+// Default curve coefficients
+constants.DEFAULT_CURVE_A // 5
+constants.DEFAULT_CURVE_B // 50
+constants.DEFAULT_CURVE_C // 100
 ```
 
 ### Additional APIs
 
 #### config.getDefault()
 
-Returns the default MEE6-compatible configuration before applying any global or guild overrides.
+Returns the default configuration before applying any global or guild overrides.
 
 ```ts
 import { config } from '@robojs/xp'
@@ -653,7 +1066,7 @@ await rewards.reconcileRewards(guildId, userId)
 
 The @robojs/xp plugin is designed to be extended. These recipes demonstrate common integration patterns using the event system and imperative API.
 
-For a complete, production-ready example, see `seed/events/_start/level-announcements.ts` which demonstrates MEE6-style level-up announcements with rich embeds, progress bars, and extensive customization options.
+For a complete, production-ready example, see `seed/events/_start/level-announcements.ts` which demonstrates standard level-up announcements with rich embeds, progress bars, and extensive customization options.
 
 Below are additional recipes for common use cases:
 
@@ -823,6 +1236,59 @@ await XP.addXP(guildId, eventParticipantId, 500, { reason: 'event_participation'
 
 **Note:** Admin commands (`/xp give`, `/xp set`, `/xp remove`) bypass the message handler and work regardless of multiplier settings.
 
+### Custom Configuration UI Integration
+
+If you need to programmatically configure XP settings (e.g., from a web dashboard or bot setup wizard), use the same public API that the `/xp config` command uses:
+
+```typescript
+import { config } from '@robojs/xp'
+
+// Example: Setup wizard that configures XP for a new guild
+export default async function setupGuild(guildId: string) {
+  // Configure basic settings
+  await config.set(guildId, {
+    cooldownSeconds: 45,
+    xpRate: 1.2,
+    leaderboard: { public: true }
+  })
+
+  // Add no-XP zones
+  await config.set(guildId, {
+    noXpRoleIds: ['123456789012345678'], // Muted role
+    noXpChannelIds: ['987654321098765432'] // Bot commands channel
+  })
+
+  // Configure role rewards
+  await config.set(guildId, {
+    roleRewards: [
+      { level: 5, roleId: '111111111111111111' },
+      { level: 10, roleId: '222222222222222222' },
+      { level: 20, roleId: '333333333333333333' }
+    ],
+    rewardsMode: 'stack',
+    removeRewardOnXpLoss: false
+  })
+
+  // Set multipliers
+  await config.set(guildId, {
+    multipliers: {
+      server: 1.5, // 50% boost for entire server
+      role: {
+        '444444444444444444': 2.0 // Booster role gets 2x XP
+      }
+    }
+  })
+}
+```
+
+**Use cases:**
+- Web dashboard for guild admins
+- Automated setup wizards
+- Bulk configuration across multiple guilds
+- Integration with other management systems
+
+**Note:** The `/xp config` command provides a user-friendly interface for manual configuration, while the API enables programmatic control for advanced integrations.
+
 ### Custom Rewards: Build Custom Logic
 
 ```ts
@@ -850,6 +1316,90 @@ events.onLevelUp(async ({ guildId, userId, newLevel }) => {
 			break
 	}
 })
+```
+
+### Multi-Currency Economy System
+
+```typescript
+// Award XP to multiple stores simultaneously
+import { XP } from '@robojs/xp'
+
+export default async (message) => {
+	const guildId = message.guildId
+	const userId = message.author.id
+
+	// Award to default store (leveling with role rewards)
+	await XP.addXP(guildId, userId, 20, { reason: 'message' })
+
+	// Award coins (server currency)
+	await XP.addXP(guildId, userId, 10, { reason: 'message', storeId: 'coins' })
+
+	// Award tokens (premium currency) if user has premium role
+	if (message.member.roles.cache.has(premiumRoleId)) {
+		await XP.addXP(guildId, userId, 5, { reason: 'premium_message', storeId: 'tokens' })
+	}
+}
+```
+
+### Reputation System with Multiple Dimensions
+
+```typescript
+// Track different types of reputation
+import { XP, events } from '@robojs/xp'
+
+// Award helpfulness reputation
+export async function awardHelpfulness(guildId: string, userId: string) {
+	await XP.addXP(guildId, userId, 25, {
+		reason: 'helped_member',
+		storeId: 'helpfulness'
+	})
+}
+
+// Award creativity reputation
+export async function awardCreativity(guildId: string, userId: string) {
+	await XP.addXP(guildId, userId, 50, {
+		reason: 'created_content',
+		storeId: 'creativity'
+	})
+}
+
+// Listen for reputation level-ups
+events.onLevelUp(({ userId, newLevel, storeId }) => {
+	if (storeId === 'helpfulness') {
+		console.log(`${userId} reached helpfulness level ${newLevel}!`)
+	}
+})
+```
+
+### Seasonal Battle Pass System
+
+```typescript
+// Seasonal progression with store isolation
+import { XP, config } from '@robojs/xp'
+
+const CURRENT_SEASON = 'season3'
+
+// Award seasonal XP
+export async function awardSeasonalXP(guildId: string, userId: string, amount: number) {
+	await XP.addXP(guildId, userId, amount, {
+		reason: 'seasonal_activity',
+		storeId: CURRENT_SEASON
+	})
+}
+
+// Get user's seasonal progress
+export async function getSeasonalProgress(guildId: string, userId: string) {
+	const xp = await XP.getXP(guildId, userId, { storeId: CURRENT_SEASON })
+	const level = await XP.getLevel(guildId, userId, { storeId: CURRENT_SEASON })
+	return { xp, level, season: CURRENT_SEASON }
+}
+
+// Reset season (start new season without affecting default store)
+export async function startNewSeason(guildId: string) {
+	// Old season data remains in 'season3' store
+	// New season starts fresh in 'season4' store
+	// Default store (permanent progression) is unaffected
+}
 ```
 
 ## REST API Documentation
@@ -1048,13 +1598,20 @@ curl -X PUT http://localhost:3000/api/xp/config/global \
 
 ### Caching Strategy
 
-- **Leaderboard cache:** Top 100 users per guild, 60-second TTL
+- **Leaderboard cache:** Top 100 users per guild per store, 60-second TTL
 - **Config cache:** In-memory with event-driven invalidation
 - **Complexity:** O(1) cached reads, O(n log n) refresh for n users
 
+### Multi-Store Performance
+
+- Each store maintains an independent cache (e.g., default store cache, reputation store cache).
+- XP changes in one store do not invalidate caches for other stores.
+- Approximate memory: ~10KB per store per guild for 100 cached entries.
+- Example: A guild with 3 stores (default, reputation, coins) ≈ ~30KB cache.
+
 ### Scalability
 
-- **Memory per guild:** ~10KB for 100 cached leaderboard entries
+- **Memory per guild:** ~10KB × number of stores for 100 cached leaderboard entries per store
 - **Recommended limits:** 100k users per guild max
 - **Cache eviction:** TTL-based, auto-refreshes on query after expiry
 
@@ -1062,17 +1619,33 @@ See [PERFORMANCE.md](./PERFORMANCE.md) for detailed benchmarks and optimization 
 
 ## Data Model
 
-Flashcore keys live under `['xp', guildId]`:
+Flashcore keys live under `['xp', storeId, guildId]`:
 
-| Key                   | Contents                                 | Example                                                                                 |
-| --------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------- |
-| `config`              | Guild config merged with global defaults | `{ cooldownSeconds: 60, xpRate: 1.0, ... }`                                             |
-| `user:{userId}`       | UserXP record                            | `{ xp: 5500, level: 10, messages: 423, xpMessages: 156, lastAwardedAt: 1234567890000 }` |
-| `members`             | Set of tracked member IDs                | `['user1', 'user2', ...]`                                                               |
-| `lb:{perPage}:{page}` | Leaderboard cache                        | `[{ userId, xp, level, rank }, ...]`                                                    |
-| `schema`              | Schema version for future migrations     | `1`                                                                                     |
+| Key                                 | Contents                                 | Example                                                                                 |
+| ----------------------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------- |
+| `['xp', 'default', guildId]`        | Guild config merged with global defaults | `{ cooldownSeconds: 60, xpRate: 1.0, ... }`                                             |
+| `['xp', 'default', guildId, 'users', userId]` | UserXP record (default store)            | `{ xp: 5500, level: 10, messages: 423, xpMessages: 156, lastAwardedAt: 1234567890000 }` |
+| `['xp', 'reputation', guildId, 'users', userId]` | UserXP record (custom store example)   | `{ xp: 250, level: 2 }`                                                                  |
+| `['xp', 'default', guildId, 'members']` | Set of tracked member IDs                | `['user1', 'user2', ...]`                                                               |
+| `['xp', 'default', guildId, 'lb:{perPage}:{page}']` | Leaderboard cache (per store)      | `[{ userId, xp, level, rank }, ...]`                                                    |
+| `['xp', 'default', guildId, 'schema']` | Schema version for future migrations     | `1`                                                                                     |
 
-Global defaults live at `['xp', 'global', 'config']`.
+Global defaults live at `['xp', 'global', 'config']` and apply to all stores as base defaults.
+
+### Multi-Store Namespace Structure
+
+Each store has independent data under its own namespace:
+
+- Default store: `['xp', 'default', guildId, ...]`
+- Reputation store: `['xp', 'reputation', guildId, ...]`
+- Coins store: `['xp', 'coins', guildId, ...]`
+
+This ensures complete isolation between stores:
+
+- Independent user data
+- Independent configuration
+- Independent members tracking
+- Independent schema versions
 
 ### UserXP Structure
 
@@ -1104,22 +1677,22 @@ Example: A user sends 100 messages in 5 minutes. With a 60s cooldown, only ~5 me
 
 See [Configuration Guide](#configuration-guide) above for complete structure.
 
-## MEE6 Parity
+## Default Configuration
 
-This plugin provides feature parity with MEE6's XP system:
+This plugin provides standard XP system features:
 
-### Parity Features
+### Standard Features
 
 - ✅ **XP per message:** 15-25 XP (configurable)
 - ✅ **Cooldown:** 60 seconds (configurable)
-- ✅ **Level curve:** Same quadratic formula
+- ✅ **Level curve:** Standard quadratic formula
 - ✅ **Role rewards:** Stack or replace modes
-- ✅ **Multipliers:** Server, role, user (MEE6 Pro)
+- ✅ **Multipliers:** Server, role, user (premium features)
 - ✅ **No-XP roles/channels**
 - ✅ **Leaderboard pagination**
 - ✅ **Admin commands**
 
-### Configuration for MEE6-like Behavior
+### Configuration for Standard Behavior
 
 ```ts
 import { config } from '@robojs/xp'
@@ -1330,6 +1903,55 @@ for (const guildId of guildIds) {
 }
 ```
 
+### Multi-Store Issues
+
+#### Custom Store Not Working
+
+- Symptom: Custom store operations fail or return null
+- Cause: Forgetting to pass `storeId` in options
+- Solution: Always include `{ storeId: 'storeName' }` for custom stores
+
+```typescript
+// ❌ Wrong - uses default store
+await XP.getXP(guildId, userId)
+
+// ✅ Correct - uses reputation store
+await XP.getXP(guildId, userId, { storeId: 'reputation' })
+```
+
+#### Role Rewards Not Working for Custom Store
+
+- Symptom: Leveling up in custom store doesn't grant roles
+- This is expected: Role rewards only trigger for default store
+- Rationale: Prevents conflicts where multiple stores would grant/remove the same roles
+- Solution: Use default store for leveling with role rewards; use custom stores for parallel progression without roles
+
+#### Leaderboard Showing Wrong Data
+
+- Symptom: Leaderboard shows data from different store
+- Cause: Not passing `storeId` to leaderboard query
+- Solution:
+
+```typescript
+// Default store leaderboard
+const defaultTop = await leaderboard.get(guildId, 0, 10)
+
+// Reputation store leaderboard
+const repTop = await leaderboard.get(guildId, 0, 10, { storeId: 'reputation' })
+```
+
+#### Events Firing for All Stores
+
+- Symptom: Event listener triggers for all stores, not just one
+- Solution: Filter events by `storeId` field
+
+```typescript
+events.onLevelUp((event) => {
+	if (event.storeId !== 'reputation') return // Skip non-reputation events
+	console.log('Reputation level up!')
+})
+```
+
 ## Development
 
 Run tests or build from the package root:
@@ -1348,3 +1970,257 @@ pnpm build plugin
 - [Discord Community](https://roboplay.dev/discord)
 - [GitHub Repository](https://github.com/Wave-Play/robo.js)
 - [npm Package](https://www.npmjs.com/package/@robojs/xp)
+
+Robo XP supports fully customizable level progression curves. By default, the plugin uses a standard quadratic formula, but you can override the curve per guild and per store (multi-store aware). You can choose from presets (quadratic, linear, exponential, lookup) or supply code via the `getCurve` callback in your plugin config for dynamic logic.
+
+Note: Unless you customize it, the default store uses the default quadratic curve defined as:
+
+XP(level) = 5 × level² + 50 × level + 100
+
+This preserves familiar progression for most servers. You can override this globally, per guild, and/or per store.
+
+### Preset Curve Types
+
+You can set a preset curve for a guild (and optionally per store) using your configuration APIs or helper utilities. Presets are fully serializable and are persisted in Flashcore so they survive restarts.
+
+All presets support an optional `maxLevel` cap to prevent progression beyond a certain level.
+
+#### 1) Quadratic Curves (Custom Coefficients)
+
+Formula: XP(level) = a × level² + b × level + c
+
+- Steeper progression example (large or highly active guilds):
+
+```ts
+// Example: steeper quadratic
+await config.set(guildId, {
+  levels: {
+    type: 'quadratic',
+    params: { a: 10, b: 100, c: 200 },
+    maxLevel: 100,
+  },
+})
+```
+
+- Gentler progression example (small/early-stage guilds):
+
+```ts
+// Example: gentler quadratic
+await config.set(guildId, {
+  levels: {
+    type: 'quadratic',
+    params: { a: 2, b: 20, c: 50 },
+  },
+})
+```
+
+Notes:
+- Use higher `a` for faster late‑game growth; adjust `b` and `c` for early levels.
+- Add `maxLevel` to cap the system for seasons or events.
+
+#### 2) Linear Curves
+
+Formula: XP(level) = level × xpPerLevel
+
+- Constant 100 XP per level:
+
+```ts
+await config.set(guildId, {
+  levels: { type: 'linear', params: { xpPerLevel: 100 } },
+})
+```
+
+- Slower 500 XP per level progression:
+
+```ts
+await config.set(guildId, {
+  levels: { type: 'linear', params: { xpPerLevel: 500 } },
+})
+```
+
+Notes:
+- Simplest to reason about; great for reputation/credits or non‑competitive tracks.
+
+#### 3) Exponential Curves
+
+Formula: XP(level) = multiplier × base^level
+
+- Doubles required XP every level:
+
+```ts
+await config.set(guildId, {
+  levels: {
+    type: 'exponential',
+    params: { base: 2, multiplier: 100 },
+    maxLevel: 50, // strongly recommended
+  },
+})
+```
+
+- 50% increase per level:
+
+```ts
+await config.set(guildId, {
+  levels: {
+    type: 'exponential',
+    params: { base: 1.5, multiplier: 100 },
+    maxLevel: 75,
+  },
+})
+```
+
+Warnings:
+- Exponential growth becomes extremely steep; always set a `maxLevel`.
+
+#### 4) Lookup Table Curves
+
+Define exact XP thresholds per level.
+
+```ts
+await config.set(guildId, {
+  levels: {
+    type: 'lookup',
+    params: { thresholds: [0, 100, 250, 500, 1000, 2000, 5000] },
+    // maxLevel defaults to thresholds.length - 1 when omitted
+  },
+})
+```
+
+Notes:
+- Provides pixel‑perfect control over each level’s requirement.
+- Useful for seasonal passes and event‑specific tuning.
+
+### Advanced Customization with getCurve Callback
+
+For dynamic logic that can’t be expressed with static presets, define `levels.getCurve` in your plugin config file `config/plugins/robojs/xp.ts`. This callback has the highest precedence:
+
+getCurve callback → guild preset → default quadratic
+
+The callback can be synchronous or asynchronous and is not stored in Flashcore.
+
+Example: Different curves per store
+
+```ts
+// config/plugins/robojs/xp.ts
+import type { PluginOptions } from '@robojs/xp'
+
+export default {
+  levels: {
+    getCurve: (guildId, storeId) => {
+      if (storeId === 'reputation') {
+        // Linear: 500 XP per level
+        return {
+          xpForLevel: (level) => level * 500,
+          levelFromXp: (xp) => Math.floor(xp / 500),
+        }
+      }
+      return null // falls through to guild preset or default quadratic
+    },
+  },
+} satisfies PluginOptions
+```
+
+Example: Special guild gets custom quadratic with cap
+
+```ts
+export default {
+  levels: {
+    getCurve: (guildId) => {
+      if (guildId === 'SPECIAL_GUILD_ID') {
+        return {
+          xpForLevel: (level) => 10 * level * level + 100 * level + 200,
+          levelFromXp: (xp) => Math.floor((-100 + Math.sqrt(10000 + 40 * (xp - 200))) / 20),
+          maxLevel: 100,
+        }
+      }
+      return null
+    },
+  },
+} satisfies PluginOptions
+```
+
+Example: Dynamic curves based on guild size (async)
+
+```ts
+export default {
+  levels: {
+    getCurve: async (guildId) => {
+      const guild = await client.guilds.fetch(guildId)
+      if (guild.memberCount > 1000) {
+        return {
+          xpForLevel: (level) => 10 * level * level + 100 * level + 200,
+          levelFromXp: (xp) => Math.floor((-100 + Math.sqrt(10000 + 40 * (xp - 200))) / 20),
+        }
+      }
+      return null // small guilds use preset/default
+    },
+  },
+} satisfies PluginOptions
+```
+
+Curves resolved via `getCurve` are cached per `(guildId, storeId)` to avoid repeated computation.
+
+### Migration Guide
+
+Follow these steps to migrate from the default curve to custom curves.
+
+1) Choose your curve type
+
+- Simple, constant progression → Linear
+- Exact per‑level control → Lookup
+- Rapid growth (with caps) → Exponential
+- Familiar quadratic with tunable coefficients → Quadratic
+
+2) Configure a per‑guild preset (recommended)
+
+```ts
+await config.set(guildId, {
+  levels: { type: 'linear', params: { xpPerLevel: 100 } },
+})
+```
+
+- Presets persist in Flashcore and can be changed per guild and per store.
+
+3) Test your curve
+
+- Use `/xp set` to simulate levels and validate math.
+- Verify `/rank` and `/leaderboard` outputs.
+- Start with small XP ranges to confirm expected progression.
+
+4) Optional: Use the `getCurve` callback for advanced scenarios
+
+- Dynamic logic (guild size, time‑based seasons).
+- Different curves per store (e.g., reputation vs. coins).
+- Special partner/premium guilds.
+
+Common use cases
+
+- Small servers (< 100 members): gentler curves for faster early progression.
+- Large servers (1000+ members): steeper curves to maintain challenge.
+- Seasonal systems: lookup tables with strict level caps.
+- Multi‑currency: different curves per store (linear for coins, exponential for gems).
+
+### Default Behavior
+
+Default quadratic curve:
+
+XP(level) = 5 × level² + 50 × level + 100
+
+Example requirements:
+
+- Level 1: 100 XP
+- Level 5: 475 XP
+- Level 10: 1,100 XP
+- Level 20: 3,100 XP
+- Level 50: 15,100 XP
+- Level 100: 55,100 XP
+
+Overriding defaults
+
+- Any custom preset or `getCurve` override replaces the default for that guild/store.
+- Built‑in commands like `/rank` and `/leaderboard` work with all curve types.
+
+Custom stores
+
+- Custom stores (e.g., `reputation`, `coins`) also default to quadratic but may be configured independently.
+- Example: default store uses quadratic, `reputation` uses linear 500 XP/level via `getCurve`.

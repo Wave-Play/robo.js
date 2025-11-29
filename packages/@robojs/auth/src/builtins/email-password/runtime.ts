@@ -10,6 +10,8 @@ import { createSignupHandler } from './signup.js'
 import { getRequestPayload } from '../../utils/request-payload.js'
 import type { NormalizedAuthPluginOptions } from '../../config/defaults.js'
 import type { EmailPasswordRouteOverrides, PasswordAdapter } from './types.js'
+import type { PasswordHasher } from '../../utils/password-hash.js'
+import { Argon2Hasher } from '../../utils/password-hash.js'
 
 type AuthHandler = (request: RoboRequest, reply: RoboReply) => Promise<Response>
 
@@ -28,6 +30,7 @@ interface EmailPasswordRuntimeOptions {
 	recentSigninNotified: Set<string>
 	secret: string
 	sessionStrategy: 'jwt' | 'database'
+	hasher?: PasswordHasher
 }
 
 function escapeHtml(value: string): string {
@@ -118,7 +121,8 @@ function registerSignupRoute(options: EmailPasswordRuntimeOptions): void {
 		options: pluginOptions,
 		overrides,
 		secret,
-		sessionStrategy
+		sessionStrategy,
+		hasher = new Argon2Hasher()
 	} = options
 
 	const signupHandler = createSignupHandler({
@@ -127,10 +131,11 @@ function registerSignupRoute(options: EmailPasswordRuntimeOptions): void {
 		basePath,
 		baseUrl,
 		cookies,
-		defaultRedirectPath: pluginOptions.pages?.newUser ?? '/dashboard',
+		defaultRedirectPath: pluginOptions.pages?.newUser ?? '/',
 		secret,
 		sessionStrategy,
-		events
+		events,
+		hasher
 	})
 
 	const signupPath = joinPath(basePath, '/signup')
@@ -291,7 +296,8 @@ function registerPasswordResetRoutes(options: EmailPasswordRuntimeOptions): void
 		cookies,
 		events,
 		secret,
-		sessionStrategy
+		sessionStrategy,
+		hasher = new Argon2Hasher()
 	} = options
 
 	const resetRequestPath = joinPath(basePath, '/password/reset/request')
@@ -450,7 +456,10 @@ function registerPasswordResetRoutes(options: EmailPasswordRuntimeOptions): void
 				if (!user) return invalidLink()
 				try {
 					const uid = await adapter.findUserIdByEmail(identifier)
-					if (uid) await adapter.resetUserPassword({ userId: uid, password: newPassword })
+					if (uid) {
+						const hash = await hasher.hash(newPassword)
+						await adapter.resetUserPassword({ userId: uid, hash })
+					}
 					await notifyEmail('password:reset-completed', {
 						appName: pluginOptions.appName,
 						user: { id: user.id, email: user.email ?? null, name: user.name ?? null },

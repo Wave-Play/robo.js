@@ -13,21 +13,21 @@ Flashcore immediately.
 **Features:**
 - Guild-specific and global configuration
 - Automatic validation with detailed error messages
-- MEE6-compatible defaults for seamless migration
+- Standard defaults for easy setup
 - Role rewards, multipliers, and No-XP zones
 - Cache invalidation when using setGlobal
 
 **Config Precedence** (highest to lowest):
 1. Guild-specific config (via `config.set()`)
 2. Global config defaults (via `config.setGlobal()`)
-3. System defaults (MEE6 parity)
+3. System defaults
 
 ## Type declaration
 
 ### get()
 
 ```ts
-get: (guildId) => Promise<GuildConfig> = getConfig;
+get: (guildId, options?) => Promise<GuildConfig> = getConfig;
 ```
 
 Get guild configuration with all defaults applied
@@ -40,6 +40,7 @@ Primary entry point for reading guild configuration
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
 | `guildId` | `string` | Guild ID |
+| `options`? | [`FlashcoreOptions`](Interface.FlashcoreOptions.md) | Optional Flashcore options (e.g., storeId for multi-store support) |
 
 #### Returns
 
@@ -50,10 +51,14 @@ Complete GuildConfig (never null, uses defaults if needed)
 #### Example
 
 ```ts
+// Default store
 const config = await getConfig('123456789012345678')
 if (config.cooldownSeconds > 0) {
   // Check cooldown before awarding XP
 }
+
+// Custom store (e.g., reputation system)
+const repConfig = await getConfig('123456789012345678', { storeId: 'reputation' })
 ```
 
 ### getDefault()
@@ -62,9 +67,9 @@ if (config.cooldownSeconds > 0) {
 getDefault: () => GuildConfig = getDefaultConfig;
 ```
 
-Get default configuration (MEE6 parity)
+Get default configuration
 
-Returns default guild configuration (MEE6 parity)
+Returns default guild configuration
 
 #### Returns
 
@@ -89,6 +94,8 @@ Get global configuration defaults
 
 Retrieves current global configuration defaults
 
+Global config is shared across all stores as base defaults.
+
 #### Returns
 
 `Promise`\<[`GlobalConfig`](TypeAlias.GlobalConfig.md)\>
@@ -105,7 +112,7 @@ console.log('Global cooldown:', global.cooldownSeconds ?? DEFAULT_COOLDOWN)
 ### set()
 
 ```ts
-set: (guildId, partial) => Promise<GuildConfig> = setConfig;
+set: (guildId, partial, options?) => Promise<GuildConfig> = setConfig;
 ```
 
 Update guild configuration with validation
@@ -119,6 +126,7 @@ Merges partial values with existing config
 | ------ | ------ | ------ |
 | `guildId` | `string` | Guild ID |
 | `partial` | `Partial`\<[`GuildConfig`](Interface.GuildConfig.md)\> | Partial config to merge |
+| `options`? | [`FlashcoreOptions`](Interface.FlashcoreOptions.md) | Optional Flashcore options (e.g., storeId for multi-store support) |
 
 #### Returns
 
@@ -133,12 +141,18 @@ Error if validation fails
 #### Example
 
 ```ts
+// Default store
 const updated = await setConfig('123...', {
   cooldownSeconds: 90,
   roleRewards: [
     { level: 5, roleId: '345678901234567890' }
   ]
 })
+
+// Custom store (e.g., reputation system)
+const repUpdated = await setConfig('123...', {
+  cooldownSeconds: 120
+}, { storeId: 'reputation' })
 ```
 
 ### setGlobal()
@@ -151,6 +165,9 @@ Set global configuration defaults
 
 Updates global configuration defaults
 Clears all guild config caches to force re-merge on next access
+
+Global config is shared across all stores as base defaults.
+Each store can then apply its own guild-specific overrides on top.
 
 #### Parameters
 
@@ -185,6 +202,9 @@ Validate configuration object
 
 Validates configuration object
 
+Validates level curve configuration if present, including type-specific
+parameter validation (positive numbers, sorted arrays, etc.).
+
 #### Parameters
 
 | Parameter | Type | Description |
@@ -209,13 +229,24 @@ errors: string[];
 valid: boolean;
 ```
 
-#### Example
+#### Examples
 
 ```ts
 const result = validateConfig({ cooldownSeconds: -10 })
 if (!result.valid) {
   console.error('Errors:', result.errors)
 }
+```
+
+```ts
+const result = validateConfig({
+  levels: {
+    type: 'linear',
+    params: { xpPerLevel: -100 }
+  }
+})
+// result.valid: false
+// result.errors: ['levels.params.xpPerLevel must be positive number']
 ```
 
 ## Examples
@@ -258,7 +289,7 @@ await config.set('123456789012345678', {
 })
 ```
 
-### XP Multipliers (MEE6 Pro Parity)
+### XP Multipliers (Premium Features)
 
 ```typescript
 import { config } from '@robojs/xp'
@@ -336,12 +367,12 @@ await config.set('specificGuildId', {
 })
 ```
 
-### MEE6 Migration Setup
+### Default Configuration Setup
 
 ```typescript
 import { config } from '@robojs/xp'
 
-// Default config already matches MEE6 - no setup needed!
+// Default config uses standard settings - no setup needed!
 const defaultConfig = config.getDefault()
 console.log(defaultConfig)
 // {
@@ -352,14 +383,14 @@ console.log(defaultConfig)
 //   ...
 // }
 
-// Or explicitly get MEE6-compatible config
+// Get guild config with defaults applied
 const guildConfig = await config.get('123456789012345678')
-// Returns MEE6-compatible defaults if not customized
+// Returns default configuration if not customized
 ```
 
 ## Remarks
 
 - Config changes are validated before persistence
 - Global config updates invalidate caches for consistency
-- Default MEE6 settings: 60s cooldown, 15-25 XP/msg, stack mode
+- Default settings: 60s cooldown, 15-25 XP/msg, stack mode
 - Multipliers stack multiplicatively (user * role * guild)

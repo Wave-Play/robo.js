@@ -57,6 +57,17 @@
  * })
  * ```
  *
+ * @example Dynamic channel management
+ * ```ts
+ * import { AI } from '@robojs/ai'
+ *
+ * // Whitelist a channel when a specific event occurs
+ * AI.addWhitelistChannel('123456789012345678')
+ *
+ * // Check current whitelist
+ * const whitelisted = AI.getWhitelistChannels()
+ * ```
+ *
  * @remarks Engines perform lazy initialization and some functionality will remain unavailable until
  * {@link AI.isReady | AI.isReady()} resolves `true`. For custom engines, use {@link BaseEngine} to
  * participate in the lifecycle hooks.
@@ -142,3 +153,5 @@ export type {
 	UsageLimitEvent,
 	UsageRecordedEvent
 } from './core/token-ledger.js'
+
+export type { ChatReply } from './core/chat/types.js'

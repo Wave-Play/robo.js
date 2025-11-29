@@ -1,0 +1,62 @@
+{
+	"name": "next-auth-ts",
+	"description": "",
+	"version": "1.0.0",
+	"type": "module",
+	"private": true,
+	"keywords": [
+		"api",
+		"http",
+		"http",
+		"robo",
+		"robo.js",
+		"server",
+		"server",
+		"typescript",
+		"vite",
+		"vite",
+		"web",
+		"web"
+	],
+	"scripts": {
+		"build": "robo build",
+		"deploy": "robo deploy",
+		"dev": "robox dev --tunnel",
+		"doctor": "sage doctor",
+		"invite": "robo invite",
+		"lint:style": "prettier --write .",
+		"start": "robo start",
+		"tunnel": ".robo/bin/cloudflared tunnel --url http://localhost:3000",
+		"upgrade": "sage upgrade"
+	},
+	"pnpm": {
+        "overrides": {
+          "@prisma/adapter-better-sqlite3>better-sqlite3": "^12.4.6",
+          "better-sqlite3": "^12.4.6"
+        }
+      },
+	"dependencies": {
+		"@auth/prisma-adapter": "^2.10.0",
+		"@prisma/adapter-better-sqlite3": "^7.0.0",
+		"@prisma/client": "^7.0.0",
+		"@robojs/auth": "https://pkg.pr.new/Wave-Play/robo.js/@robojs/auth@3ec5b2a",
+		"@robojs/server": "https://pkg.pr.new/Wave-Play/robo.js/@robojs/server@3ec5b2a",
+		"better-sqlite3": "^12.4.6",
+		"next": "^15.5.4",
+		"react": "^19.1.1",
+		"react-dom": "^19.1.1",
+		"robo.js": "https://pkg.pr.new/Wave-Play/robo.js@ef0c000"
+	},
+	"devDependencies": {
+		"@swc/core": "^1.15.2",
+		"@types/better-sqlite3": "^7.6.13",
+		"@types/node": "^24.10.1",
+		"@types/react": "^19.2.6",
+		"@types/react-dom": "^19.2.3",
+		"discord.js": "14.22.1",
+		"eslint-plugin-react-hooks": "^7.0.1",
+		"prettier": "^3.6.2",
+		"prisma": "^7.0.0",
+		"typescript": "^5.9.3"
+	}
+}

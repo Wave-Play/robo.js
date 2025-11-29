@@ -1,15 +1,15 @@
 /**
  * @robojs/xp - XP and Leveling System for Discord Bots
  *
- * A comprehensive XP and leveling system plugin for Robo.js with MEE6 parity.
+ * A comprehensive XP and leveling system plugin for Robo.js with standard defaults.
  * Provides XP manipulation APIs, configuration management, level curve mathematics,
  * role rewards, event system, and admin commands for Discord servers.
  *
  * ## Features
  *
- * - **MEE6 Parity**: Formula `XP = 5 * level^2 + 50 * level + 100` with default settings matching MEE6
+ * - **Default Configuration**: Formula `XP = 5 * level^2 + 50 * level + 100` with standard settings
  * - **Role Rewards**: Automatic role assignment on level-up with stack/replace modes
- * - **XP Multipliers**: Per-user and per-role multipliers (MEE6 Pro parity)
+ * - **XP Multipliers**: Per-user and per-role multipliers (premium features)
  * - **Event-Driven**: Type-safe events for levelUp, levelDown, xpChange
  * - **No-XP Zones**: Configure channels/roles to exclude from XP gains
  * - **Fully Typed**: Comprehensive TypeScript support with result types
@@ -75,7 +75,7 @@
  *   rewardsMode: 'stack' // Users keep all qualifying roles
  * })
  *
- * // Set up XP multipliers (MEE6 Pro parity)
+ * // Set up XP multipliers (premium features)
  * await config.set('123456789012345678', {
  *   multipliers: {
  *     user: {
@@ -102,6 +102,34 @@
  *   console.log(`You are rank ${rankInfo.rank} out of ${rankInfo.total}`)
  * }
  * ```
+ *
+ * ### Multi-Store Usage
+ *
+ * ```typescript
+ * import { xp, leaderboard } from '@robojs/xp'
+ *
+ * // Default store (implicit - used by built-in commands)
+ * await xp.add('guildId', 'userId', 100)
+ * const defaultXP = await xp.get('guildId', 'userId')
+ * const defaultLeaderboard = await leaderboard.get('guildId', 0, 10)
+ *
+ * // Custom reputation store
+ * await xp.add('guildId', 'userId', 50, { storeId: 'reputation' })
+ * const repXP = await xp.get('guildId', 'userId', { storeId: 'reputation' })
+ * const repLeaderboard = await leaderboard.get('guildId', 0, 10, { storeId: 'reputation' })
+ *
+ * // Custom credits store
+ * await xp.add('guildId', 'userId', 200, { storeId: 'credits' })
+ * const creditsXP = await xp.get('guildId', 'userId', { storeId: 'credits' })
+ *
+ * // Built-in commands only use default store
+ * // Custom stores require imperative API calls
+ * ```
+ *
+ * **Use Cases:**
+ * - **Leveling + Currencies**: Default store for XP/levels, custom stores for 'coins', 'gems', 'tokens'
+ * - **Multi-Dimensional Reputation**: Separate stores for 'helpfulness', 'creativity', 'activity'
+ * - **Seasonal Systems**: Isolated stores for 'season1', 'season2', 'season3'
  *
  * ## Integration Examples
  *
@@ -158,7 +186,77 @@
  * })
  * ```
  *
+ * ### Multi-Currency Economy Integration
+ *
+ * ```typescript
+ * import { xp } from '@robojs/xp'
+ *
+ * // Default store for XP/leveling (includes role rewards)
+ * await xp.add(guildId, userId, 20, { reason: 'message', storeId: 'default' })
+ *
+ * // Custom coins store for server currency
+ * await xp.add(guildId, userId, 10, { reason: 'daily_bonus', storeId: 'coins' })
+ *
+ * // Custom tokens store for premium currency
+ * await xp.add(guildId, userId, 5, { reason: 'purchase', storeId: 'tokens' })
+ *
+ * // Build custom commands for each store
+ * // /balance - Show coins and tokens
+ * // /rank - Show XP and level (default store)
+ * ```
+ *
+ * ### Reputation System Integration
+ *
+ * ```typescript
+ * import { xp, events } from '@robojs/xp'
+ *
+ * // Track different types of reputation
+ * async function awardHelpfulnessRep(guildId: string, userId: string) {
+ *   await xp.add(guildId, userId, 25, { reason: 'helped_member', storeId: 'helpfulness' })
+ * }
+ *
+ * async function awardCreativityRep(guildId: string, userId: string) {
+ *   await xp.add(guildId, userId, 50, { reason: 'created_content', storeId: 'creativity' })
+ * }
+ *
+ * // Event listener filtering by store
+ * events.on('levelUp', (event) => {
+ *   if (event.storeId === 'helpfulness') {
+ *     console.log(`${event.userId} leveled up in helpfulness!`)
+ *   } else if (event.storeId === 'creativity') {
+ *     console.log(`${event.userId} leveled up in creativity!`)
+ *   }
+ * })
+ * ```
+ *
  * ## Remarks
+ *
+ * ### Multi-Store Architecture
+ *
+ * The XP plugin supports multiple isolated data stores. Each store has:
+ * - Independent user XP data and levels
+ * - Independent guild configuration
+ * - Independent leaderboard rankings and cache
+ * - Independent event stream (events include `storeId` field)
+ *
+ * **Default Store ('default'):**
+ * - Used by all built-in commands (/rank, /leaderboard, /xp)
+ * - Role rewards only trigger for this store
+ * - Automatic event processing
+ *
+ * **Custom Stores:**
+ * - Accessed imperatively via API
+ * - No automatic role rewards (prevents conflicts)
+ * - Events include `storeId` for filtering
+ *
+ * **Flashcore Namespace Structure:**
+ * - Default store: `['xp', 'default', guildId, 'users', userId]`
+ * - Custom store: `['xp', 'reputation', guildId, 'users', userId]`
+ * - Config: `['xp', storeId, guildId]` → `{ config, members, schema }`
+ *
+ * **Performance:**
+ * - Each store maintains independent leaderboard cache (top 100, 60s TTL)
+ * - Cache invalidation is per-store (XP changes in one store don't affect others)
  *
  * ### Event-Driven Architecture
  *
@@ -166,13 +264,27 @@
  * automatically via event listeners. Events guarantee consistency (emitted only after
  * successful persistence).
  *
- * ### MEE6 Parity
+ * **Events include `storeId` field:**
+ * - Allows event listeners to filter by store
+ * - Role rewards only process default store events
+ * - Leaderboard cache invalidation is per-store
+ *
+ * **Example:**
+ * ```typescript
+ * events.on('levelUp', (event) => {
+ *   if (event.storeId === 'reputation') {
+ *     // Handle reputation level-up
+ *   }
+ * })
+ * ```
+ *
+ * ### Default Configuration
  *
  * - **Level curve formula**: `5*l² + 50*l + 100`
- * - **Default settings**: Match MEE6 for seamless migration
+ * - **Default settings**: Standard XP system configuration
  * - **XP per message**: 15-25 XP with 60s cooldown
  * - **Role rewards**: Stack vs replace modes
- * - **Multipliers**: Equivalent to MEE6 Pro features
+ * - **Multipliers**: Premium features for advanced customization
  *
  * ### Performance Characteristics
  *
@@ -183,7 +295,10 @@
  * ### Persistence & Consistency
  *
  * - **Storage**: All data in Flashcore under 'xp' namespace
- * - **Guild-scoped data**: `['xp', guildId, ...]`
+ * - **Guild-scoped data with stores**: `['xp', storeId, guildId, ...]`
+ * - **Default store example**: `['xp', 'default', guildId, 'users', userId]`
+ * - **Custom store example**: `['xp', 'reputation', guildId, 'users', userId]`
+ * - **Config per store**: `['xp', storeId, guildId]` → `{ config, members, schema }`
  * - **Global config**: `['xp', 'global', 'config']`
  * - **Event timing**: Emitted only after successful persistence
  *
@@ -224,7 +339,11 @@ export type {
 	LevelProgress,
 	AddXPOptions,
 	LeaderboardEntry,
-	PluginOptions
+	PluginOptions,
+	StoreOptions,
+	GetXPOptions,
+	RecalcOptions,
+	FlashcoreOptions
 } from './types.js'
 
 import type { LevelUpEvent, LevelDownEvent, XPChangeEvent } from './types.js'
@@ -265,15 +384,15 @@ import {
 	xpDeltaForLevelRange,
 	isValidLevel,
 	isValidXp,
-	CURVE_A,
-	CURVE_B,
-	CURVE_C
+	DEFAULT_CURVE_A,
+	DEFAULT_CURVE_B,
+	DEFAULT_CURVE_C
 } from './math/curve.js'
 
 /**
- * MEE6-style level curve mathematics
+ * Standard level curve mathematics
  *
- * Provides pure, deterministic functions for XP calculations using the MEE6
+ * Provides pure, deterministic functions for XP calculations using the default
  * formula: `XP = 5 * level² + 50 * level + 100`
  *
  * **Features:**
@@ -286,9 +405,9 @@ import {
  * **Performance:** All operations are O(1) or O(log n) - suitable for real-time use.
  *
  * **Formula Coefficients:**
- * - CURVE_A (5): Quadratic coefficient - controls exponential growth
- * - CURVE_B (50): Linear coefficient - controls linear growth
- * - CURVE_C (100): Constant - base XP for level 1
+ * - DEFAULT_CURVE_A (5): Quadratic coefficient - controls exponential growth
+ * - DEFAULT_CURVE_B (50): Linear coefficient - controls linear growth
+ * - DEFAULT_CURVE_C (100): Constant - base XP for level 1
  *
  * @example
  * ### Basic Level Calculations
@@ -331,7 +450,7 @@ import {
  * // Build a progress bar
  * const barLength = 20
  * const filled = Math.floor((inLevel / (inLevel + toNext)) * barLength)
- * const bar = '█'.repeat(filled) + '░'.repeat(barLength - filled)
+ * const bar = '▰'.repeat(filled) + '▱'.repeat(barLength - filled)
  * console.log(`[${bar}] ${inLevel}/${inLevel + toNext} XP`)
  * ```
  *
@@ -367,8 +486,8 @@ import {
  * console.log(`Reward for level 100: ${reward} XP`)
  *
  * // Use formula coefficients for custom calculations
- * const { CURVE_A, CURVE_B, CURVE_C } = constants
- * const customXp = (level: number) => CURVE_A * level ** 2 + CURVE_B * level + CURVE_C
+ * const { DEFAULT_CURVE_A, DEFAULT_CURVE_B, DEFAULT_CURVE_C } = constants
+ * const customXp = (level: number) => DEFAULT_CURVE_A * level ** 2 + DEFAULT_CURVE_B * level + DEFAULT_CURVE_C
  * ```
  *
  * @remarks
@@ -426,14 +545,14 @@ import {
  * **Features:**
  * - Guild-specific and global configuration
  * - Automatic validation with detailed error messages
- * - MEE6-compatible defaults for seamless migration
+ * - Standard defaults for easy setup
  * - Role rewards, multipliers, and No-XP zones
  * - Cache invalidation when using setGlobal
  *
  * **Config Precedence** (highest to lowest):
  * 1. Guild-specific config (via `config.set()`)
  * 2. Global config defaults (via `config.setGlobal()`)
- * 3. System defaults (MEE6 parity)
+ * 3. System defaults
  *
  * @example
  * ### Basic Configuration
@@ -476,7 +595,7 @@ import {
  * ```
  *
  * @example
- * ### XP Multipliers (MEE6 Pro Parity)
+ * ### XP Multipliers (Premium Features)
  *
  * ```typescript
  * import { config } from '@robojs/xp'
@@ -558,12 +677,12 @@ import {
  * ```
  *
  * @example
- * ### MEE6 Migration Setup
+ * ### Default Configuration Setup
  *
  * ```typescript
  * import { config } from '@robojs/xp'
  *
- * // Default config already matches MEE6 - no setup needed!
+ * // Default config uses standard settings - no setup needed!
  * const defaultConfig = config.getDefault()
  * console.log(defaultConfig)
  * // {
@@ -574,15 +693,15 @@ import {
  * //   ...
  * // }
  *
- * // Or explicitly get MEE6-compatible config
+ * // Get guild config with defaults applied
  * const guildConfig = await config.get('123456789012345678')
- * // Returns MEE6-compatible defaults if not customized
+ * // Returns default configuration if not customized
  * ```
  *
  * @remarks
  * - Config changes are validated before persistence
  * - Global config updates invalidate caches for consistency
- * - Default MEE6 settings: 60s cooldown, 15-25 XP/msg, stack mode
+ * - Default settings: 60s cooldown, 15-25 XP/msg, stack mode
  * - Multipliers stack multiplicatively (user * role * guild)
  */
 export const config = {
@@ -601,7 +720,7 @@ export const config = {
 	/** Validate configuration object */
 	validate: validateConfig,
 
-	/** Get default configuration (MEE6 parity) */
+	/** Get default configuration */
 	getDefault: getDefaultConfig
 }
 
@@ -612,17 +731,17 @@ export const config = {
 /**
  * Default configuration constants
  *
- * These values match MEE6 behavior for seamless migration. Reference these
+ * These values represent the standard default configuration. Reference these
  * constants when:
  * - Building documentation or UI that references defaults
- * - Implementing custom XP calculations using the MEE6 formula
+ * - Implementing custom XP calculations using the default formula
  * - Validating user input against default values
  * - Creating custom configurations that extend defaults
  *
- * **MEE6 Formula Coefficients:**
- * - **CURVE_A (5)**: Quadratic coefficient - controls exponential growth rate
- * - **CURVE_B (50)**: Linear coefficient - controls linear growth component
- * - **CURVE_C (100)**: Constant term - base XP requirement for level 1
+ * **Default Formula Coefficients:**
+ * - **DEFAULT_CURVE_A (5)**: Quadratic coefficient - controls exponential growth rate
+ * - **DEFAULT_CURVE_B (50)**: Linear coefficient - controls linear growth component
+ * - **DEFAULT_CURVE_C (100)**: Constant term - base XP requirement for level 1
  * - **Formula**: `XP = 5*level² + 50*level + 100`
  *
  * @example
@@ -631,7 +750,7 @@ export const config = {
  * ```typescript
  * import { constants } from '@robojs/xp'
  *
- * console.log(`Default cooldown: ${constants.DEFAULT_COOLDOWN}s (MEE6 parity)`)
+ * console.log(`Default cooldown: ${constants.DEFAULT_COOLDOWN}s`)
  * console.log(`Default XP rate: ${constants.DEFAULT_XP_RATE}x`)
  * console.log(`Default rewards mode: ${constants.DEFAULT_REWARDS_MODE}`)
  * ```
@@ -642,11 +761,11 @@ export const config = {
  * ```typescript
  * import { constants } from '@robojs/xp'
  *
- * const { CURVE_A, CURVE_B, CURVE_C } = constants
+ * const { DEFAULT_CURVE_A, DEFAULT_CURVE_B, DEFAULT_CURVE_C } = constants
  *
  * // Implement custom XP calculation
  * function calculateXpForLevel(level: number): number {
- *   return CURVE_A * level ** 2 + CURVE_B * level + CURVE_C
+ *   return DEFAULT_CURVE_A * level ** 2 + DEFAULT_CURVE_B * level + DEFAULT_CURVE_C
  * }
  *
  * // Calculate XP needed for level 50
@@ -659,9 +778,9 @@ export const config = {
  * ```typescript
  * import { constants } from '@robojs/xp'
  *
- * // Check if user config matches MEE6 defaults
+ * // Check if user config matches defaults
  * if (userConfig.cooldownSeconds === constants.DEFAULT_COOLDOWN) {
- *   console.log('Using MEE6 default cooldown (60s)')
+ *   console.log('Using default cooldown (60s)')
  * }
  *
  * // Determine if custom XP rate is applied
@@ -675,7 +794,7 @@ export const config = {
  * ```typescript
  * import { constants } from '@robojs/xp'
  *
- * // Start with MEE6 defaults, override specific values
+ * // Start with defaults, override specific values
  * const customConfig = {
  *   cooldownSeconds: constants.DEFAULT_COOLDOWN, // Keep default 60s
  *   xpRate: 1.5, // Override: +50% XP boost
@@ -685,30 +804,33 @@ export const config = {
  * ```
  */
 export const constants = {
-	/** Default cooldown between XP awards (60 seconds) - MEE6 parity */
+	/** Default cooldown between XP awards (60 seconds) */
 	DEFAULT_COOLDOWN,
 
-	/** Default XP rate multiplier (1.0 = no modification) - MEE6 parity */
+	/** Default XP rate multiplier (1.0 = no modification) */
 	DEFAULT_XP_RATE,
 
-	/** Default rewards mode ('stack' = keep all role rewards) - MEE6 parity */
+	/** Default rewards mode ('stack' = keep all role rewards) */
 	DEFAULT_REWARDS_MODE,
 
-	/** Default remove rewards on XP loss (false = keep rewards) - MEE6 parity */
+	/** Default remove rewards on XP loss (false = keep rewards) */
 	DEFAULT_REMOVE_ON_LOSS,
 
-	/** Default leaderboard visibility (false = restricted) - MEE6 parity */
+	/** Default leaderboard visibility (false = restricted) */
 	DEFAULT_LEADERBOARD_PUBLIC,
 
-	/** MEE6 level curve formula coefficient A (quadratic term: 5) */
-	CURVE_A,
+	/** Default level curve formula coefficient A (quadratic term: 5) */
+	DEFAULT_CURVE_A,
 
-	/** MEE6 level curve formula coefficient B (linear term: 50) */
-	CURVE_B,
+	/** Default level curve formula coefficient B (linear term: 50) */
+	DEFAULT_CURVE_B,
 
-	/** MEE6 level curve formula coefficient C (constant term: 100) */
-	CURVE_C
+	/** Default level curve formula coefficient C (constant term: 100) */
+	DEFAULT_CURVE_C
 }
+
+// Export curve constants as named exports
+export { DEFAULT_CURVE_A, DEFAULT_CURVE_B, DEFAULT_CURVE_C }
 
 // ============================================================================
 // Event System
@@ -729,6 +851,12 @@ import './runtime/rewards.js'
  * - `'levelUp'`: Emitted when a user gains a level (typed as `LevelUpEvent`)
  * - `'levelDown'`: Emitted when a user loses a level (typed as `LevelDownEvent`)
  * - `'xpChange'`: Emitted on any XP change (typed as `XPChangeEvent`)
+ *
+ * **All events include `storeId` field:**
+ * - Identifies which data store triggered the event
+ * - Allows event listeners to filter events by store
+ * - Role rewards only process default store events
+ * - Leaderboard cache invalidation uses this for per-store invalidation
  *
  * **Convenience Methods** (delegates to `on()`):
  * - `onLevelUp(handler)`: Shorthand for `on('levelUp', handler)`
@@ -789,15 +917,15 @@ import './runtime/rewards.js'
  *
  * // Using convenience method
  * events.onXPChange((event: XPChangeEvent) => {
- *   console.log(`User ${event.userId} XP changed by ${event.delta}`)
+ *   console.log(`Store ${event.storeId}: User ${event.userId} XP changed by ${event.delta}`)
  * })
  *
  * // Or using generic on() method
  * events.on('xpChange', (event: XPChangeEvent) => {
  *   console.log(`User ${event.userId} XP changed by ${event.delta}`)
+ *   console.log(`Store: ${event.storeId}`)
  *   console.log(`Reason: ${event.reason || 'message'}`)
  *   console.log(`Old XP: ${event.oldXp}, New XP: ${event.newXp}`)
- *   console.log(`Old Level: ${event.oldLevel}, New Level: ${event.newLevel}`)
  * })
  * ```
  *
@@ -889,7 +1017,7 @@ import './runtime/rewards.js'
  * ```
  *
  * @example
- * ### Track XP for Analytics
+ * ### Track XP for Analytics (with multi-store support)
  *
  * ```typescript
  * import { events } from '@robojs/xp'
@@ -899,11 +1027,22 @@ import './runtime/rewards.js'
  *   analytics.track('xp_change', {
  *     guildId: event.guildId,
  *     userId: event.userId,
+ *     storeId: event.storeId,
  *     delta: event.delta,
  *     reason: event.reason,
- *     levelChanged: event.oldLevel !== event.newLevel,
  *     timestamp: Date.now()
  *   })
+ * })
+ *
+ * // Filter by store for specific tracking
+ * events.on('levelUp', (event) => {
+ *   if (event.storeId === 'reputation') {
+ *     analytics.track('reputation_level_up', {
+ *       guildId: event.guildId,
+ *       userId: event.userId,
+ *       newLevel: event.newLevel
+ *     })
+ *   }
  * })
  * ```
  *
@@ -957,7 +1096,7 @@ import {
  *
  * **Features:**
  * - Add/remove/set XP values with type-safe result objects
- * - Automatic level calculation based on MEE6 curve
+ * - Automatic level calculation based on default curve
  * - Event emission (levelUp, levelDown, xpChange) after persistence
  * - Automatic role reward reconciliation via event listeners
  * - Flashcore persistence with consistency guarantees
@@ -972,7 +1111,7 @@ import {
  * **All XP Mutations Automatically:**
  * 1. Validate inputs (non-negative amounts, valid IDs)
  * 2. Load or create user record
- * 3. Calculate new level using MEE6 formula
+ * 3. Calculate new level using default formula
  * 4. Persist to Flashcore
  * 5. Emit events (after successful persistence)
  * 6. Trigger role reconciliation (via event listeners)
@@ -984,7 +1123,7 @@ import {
  * import { xp } from '@robojs/xp'
  * import type { XPChangeResult } from '@robojs/xp'
  *
- * // Award XP to a user - using addXP alias
+ * // Award XP to a user (default store)
  * const result: XPChangeResult = await xp.addXP('guildId', 'userId', 100, {
  *   reason: 'contest_winner'
  * })
@@ -997,8 +1136,8 @@ import {
  *   // Role rewards already applied automatically via event listeners
  * }
  *
- * // Or use the shorthand add() method (equivalent)
- * const result2 = await xp.add('guildId', 'userId', 100, { reason: 'contest_winner' })
+ * // Award XP to custom store (parallel progression)
+ * await xp.add('guildId', 'userId', 50, { reason: 'helped_user', storeId: 'reputation' })
  * ```
  *
  * @example
@@ -1291,14 +1430,17 @@ import {
  * ```typescript
  * import { leaderboard } from '@robojs/xp'
  *
- * // Get top 10 users (first page)
+ * // Get top 10 users from default store
  * const top10 = await leaderboard.get('guildId', 0, 10)
- * top10.forEach(entry => {
+ * top10.entries.forEach(entry => {
  *   console.log(`#${entry.rank}: ${entry.userId} - Level ${entry.level} (${entry.xp} XP)`)
  * })
  *
- * // Get next 10 users (second page)
- * const next10 = await leaderboard.get('guildId', 10, 10)
+ * // Get top 10 users from custom reputation store
+ * const repTop10 = await leaderboard.get('guildId', 0, 10, { storeId: 'reputation' })
+ * repTop10.entries.forEach(entry => {
+ *   console.log(`#${entry.rank}: ${entry.userId} - Rep Level ${entry.level}`)
+ * })
  * ```
  *
  * @example
@@ -1336,19 +1478,21 @@ import {
  * ```
  *
  * @example
- * ### Get User's Rank Position
+ * ### Get User's Rank Position (multi-store)
  *
  * ```typescript
  * import { leaderboard } from '@robojs/xp'
  *
- * // Get user's rank position
- * const rankInfo = await leaderboard.getRank('guildId', 'userId')
+ * // Get user's rank in default store
+ * const defaultRank = await leaderboard.getRank('guildId', 'userId')
+ * if (defaultRank) {
+ *   console.log(`Default rank: #${defaultRank.rank} out of ${defaultRank.total}`)
+ * }
  *
- * if (rankInfo) {
- *   console.log(`User is rank #${rankInfo.rank} out of ${rankInfo.total} users`)
- *   console.log(`Level: ${rankInfo.level}, XP: ${rankInfo.xp}`)
- * } else {
- *   console.log('User has no XP record')
+ * // Get user's rank in custom reputation store
+ * const repRank = await leaderboard.getRank('guildId', 'userId', { storeId: 'reputation' })
+ * if (repRank) {
+ *   console.log(`Reputation rank: #${repRank.rank} out of ${repRank.total}`)
  * }
  * ```
  *
@@ -1413,7 +1557,16 @@ export const leaderboard = {
 	/** Get user's rank position (1-indexed) */
 	getRank: getUserRankCore,
 
-	/** Manually invalidate cache for a guild (usually automatic) */
+	/**
+	 * Manually invalidate cache for a guild (usually automatic)
+	 *
+	 * Supports two modes:
+	 * - Specific store: Pass `{ storeId: 'name' }` to invalidate only that store
+	 * - All stores: Pass `{ all: true }` to invalidate all stores for the guild
+	 *
+	 * @param guildId - Guild ID
+	 * @param options - Optional Flashcore options or `{ all: true }` to invalidate all stores
+	 */
 	invalidateCache: invalidateCacheCore
 }
 

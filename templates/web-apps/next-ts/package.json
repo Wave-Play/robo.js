@@ -43,7 +43,7 @@
 		"@types/node": "^24.6.1",
 		"@types/react": "^19.1.17",
 		"@types/react-dom": "^19.1.11",
-		"discord.js": "^14.22.1",
+		"discord.js": "14.22.1",
 		"eslint-plugin-react-hooks": "^5.2.0",
 		"prettier": "^3.6.2",
 		"typescript": "^5.9.3"

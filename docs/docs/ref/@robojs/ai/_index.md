@@ -27,6 +27,7 @@ catalog, or composing plugins that depend on shared AI services.
 - [EngineSupportedFeatures](Interface.EngineSupportedFeatures.md)
 - [GenerateImageOptions](Interface.GenerateImageOptions.md)
 - [GenerateImageResult](Interface.GenerateImageResult.md)
+- [MCPTool](Interface.MCPTool.md)
 - [PluginOptions](Interface.PluginOptions.md)
 - [PluginUsageOptions](Interface.PluginUsageOptions.md)
 - [TokenLedgerConfiguration](Interface.TokenLedgerConfiguration.md)

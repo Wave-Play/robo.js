@@ -10,6 +10,8 @@ export interface ChatReply {
 	embeds?: InteractionReplyOptions['embeds']
 	/** File attachments included with the reply. */
 	files?: InteractionReplyOptions['files']
+	/** Message flags to apply to the reply. */
+	flags?: InteractionReplyOptions['flags']
 	/** Plain text content for the reply. */
 	text?: string
 }

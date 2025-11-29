@@ -6,14 +6,25 @@
  * - Per-guild overrides with validation
  * - Deep merging of nested configuration objects
  * - Cache invalidation when global config changes
+ * - Level curve validation with type-specific parameter checks
+ * - Multi-store support: Each store has independent config with shared global defaults
  *
  * Config precedence (highest to lowest):
- * 1. Guild-specific config
- * 2. Global config defaults
- * 3. System defaults (MEE6 parity)
+ * 1. Guild-specific config (per store)
+ * 2. Global config defaults (shared across all stores)
+ * 3. System defaults
+ *
+ * @example
+ * ```typescript
+ * // Default store
+ * const config = await getConfig('123456789012345678')
+ *
+ * // Custom store (e.g., reputation system)
+ * const repConfig = await getConfig('123456789012345678', { storeId: 'reputation' })
+ * ```
  */
 
-import type { GuildConfig, GlobalConfig, RoleReward } from './types.js'
+import type { GuildConfig, GlobalConfig, RoleReward, FlashcoreOptions, LevelCurveConfig } from './types.js'
 import {
 	updateConfig as storeUpdateConfig,
 	getOrInitConfig as storeGetOrInitConfig,
@@ -24,7 +35,7 @@ import {
 } from './store/index.js'
 
 /**
- * Default configuration constants (MEE6 parity)
+ * Default configuration constants
  */
 export const DEFAULT_COOLDOWN = 60 // 1 minute between XP awards
 export const DEFAULT_XP_RATE = 1.0 // No rate modification
@@ -37,16 +48,21 @@ export const DEFAULT_LEADERBOARD_PUBLIC = false // Leaderboard restricted by def
  * Primary entry point for reading guild configuration
  *
  * @param guildId - Guild ID
+ * @param options - Optional Flashcore options (e.g., storeId for multi-store support)
  * @returns Complete GuildConfig (never null, uses defaults if needed)
  *
  * @example
+ * // Default store
  * const config = await getConfig('123456789012345678')
  * if (config.cooldownSeconds > 0) {
  *   // Check cooldown before awarding XP
  * }
+ *
+ * // Custom store (e.g., reputation system)
+ * const repConfig = await getConfig('123456789012345678', { storeId: 'reputation' })
  */
-export async function getConfig(guildId: string): Promise<GuildConfig> {
-	return storeGetOrInitConfig(guildId)
+export async function getConfig(guildId: string, options?: FlashcoreOptions): Promise<GuildConfig> {
+	return storeGetOrInitConfig(guildId, options)
 }
 
 /**
@@ -55,18 +71,25 @@ export async function getConfig(guildId: string): Promise<GuildConfig> {
  *
  * @param guildId - Guild ID
  * @param partial - Partial config to merge
+ * @param options - Optional Flashcore options (e.g., storeId for multi-store support)
  * @returns Complete merged GuildConfig
  * @throws Error if validation fails
  *
  * @example
+ * // Default store
  * const updated = await setConfig('123...', {
  *   cooldownSeconds: 90,
  *   roleRewards: [
  *     { level: 5, roleId: '345678901234567890' }
  *   ]
  * })
+ *
+ * // Custom store (e.g., reputation system)
+ * const repUpdated = await setConfig('123...', {
+ *   cooldownSeconds: 120
+ * }, { storeId: 'reputation' })
  */
-export async function setConfig(guildId: string, partial: Partial<GuildConfig>): Promise<GuildConfig> {
+export async function setConfig(guildId: string, partial: Partial<GuildConfig>, options?: FlashcoreOptions): Promise<GuildConfig> {
 	// Validate input
 	const validation = validateConfig(partial)
 	if (!validation.valid) {
@@ -74,12 +97,15 @@ export async function setConfig(guildId: string, partial: Partial<GuildConfig>):
 	}
 
 	// Merge and persist
-	return storeUpdateConfig(guildId, partial)
+	return storeUpdateConfig(guildId, partial, options)
 }
 
 /**
  * Updates global configuration defaults
  * Clears all guild config caches to force re-merge on next access
+ *
+ * Global config is shared across all stores as base defaults.
+ * Each store can then apply its own guild-specific overrides on top.
  *
  * @param config - Partial config to use as global defaults
  * @throws Error if validation fails
@@ -103,6 +129,8 @@ export async function setGlobalConfig(config: GlobalConfig): Promise<void> {
 /**
  * Retrieves current global configuration defaults
  *
+ * Global config is shared across all stores as base defaults.
+ *
  * @returns GlobalConfig (empty object if not set)
  *
  * @example
@@ -114,7 +142,7 @@ export async function getGlobalConfig(): Promise<GlobalConfig> {
 }
 
 /**
- * Returns default guild configuration (MEE6 parity)
+ * Returns default guild configuration
  *
  * @returns GuildConfig with all default values
  *
@@ -129,6 +157,9 @@ export function getDefaultConfig(): GuildConfig {
 /**
  * Validates configuration object
  *
+ * Validates level curve configuration if present, including type-specific
+ * parameter validation (positive numbers, sorted arrays, etc.).
+ *
  * @param config - Partial config to validate
  * @returns Validation result with error messages
  *
@@ -137,6 +168,16 @@ export function getDefaultConfig(): GuildConfig {
  * if (!result.valid) {
  *   console.error('Errors:', result.errors)
  * }
+ *
+ * @example
+ * const result = validateConfig({
+ *   levels: {
+ *     type: 'linear',
+ *     params: { xpPerLevel: -100 }
+ *   }
+ * })
+ * // result.valid: false
+ * // result.errors: ['levels.params.xpPerLevel must be positive number']
  */
 export function validateConfig(config: Partial<GuildConfig>): { valid: boolean; errors: string[] } {
 	const errors: string[] = []
@@ -267,10 +308,141 @@ export function validateConfig(config: Partial<GuildConfig>): { valid: boolean; 
 		}
 	}
 
+	// Validate levels (custom level curve)
+	if (config.levels !== undefined) {
+		if (typeof config.levels !== 'object' || config.levels === null) {
+			errors.push('levels must be object')
+		} else {
+			const curveErrors = validateLevelCurve(config.levels)
+			errors.push(...curveErrors)
+		}
+	}
+
 	return {
 		valid: errors.length === 0,
 		errors
 	}
+}
+
+/**
+ * Validates level curve configuration
+ *
+ * Performs type-specific validation based on curve type discriminator.
+ * Each curve type has different parameter requirements:
+ * - Quadratic: optional positive coefficients (a, b, c)
+ * - Linear: required positive xpPerLevel
+ * - Exponential: required base > 1 and positive multiplier, maxLevel strongly recommended
+ * - Lookup: required non-empty sorted array of non-negative thresholds
+ *
+ * @param curve - Level curve configuration to validate
+ * @returns Array of error messages (empty if valid)
+ *
+ * @example
+ * const errors = validateLevelCurve({
+ *   type: 'linear',
+ *   params: { xpPerLevel: 100 }
+ * })
+ * // errors: [] (valid)
+ *
+ * @example
+ * const errors = validateLevelCurve({
+ *   type: 'linear',
+ *   params: { xpPerLevel: -50 }
+ * })
+ * // errors: ['levels.params.xpPerLevel must be positive number']
+ */
+export function validateLevelCurve(curve: LevelCurveConfig): string[] {
+	const errors: string[] = []
+
+	// Dispatch based on curve type discriminator
+	switch (curve.type) {
+		case 'quadratic':
+			if (curve.params) {
+				const { a, b, c } = curve.params
+				if (a !== undefined && (typeof a !== 'number' || a <= 0)) {
+					errors.push('levels.params.a must be positive number')
+				}
+				if (b !== undefined && (typeof b !== 'number' || b <= 0)) {
+					errors.push('levels.params.b must be positive number')
+				}
+				if (c !== undefined && (typeof c !== 'number' || c <= 0)) {
+					errors.push('levels.params.c must be positive number')
+				}
+			}
+			break
+
+		case 'linear':
+			if (!curve.params || typeof curve.params.xpPerLevel !== 'number') {
+				errors.push('levels.params.xpPerLevel is required for linear curves')
+			} else if (curve.params.xpPerLevel <= 0) {
+				errors.push('levels.params.xpPerLevel must be positive number')
+			}
+			break
+
+		case 'exponential':
+			if (!curve.params) {
+				errors.push('levels.params is required for exponential curves')
+			} else {
+				const { base, multiplier } = curve.params
+				if (typeof base !== 'number' || base <= 1) {
+					errors.push('levels.params.base must be number greater than 1')
+				}
+				if (typeof multiplier !== 'number' || multiplier <= 0) {
+					errors.push('levels.params.multiplier must be positive number')
+				}
+			}
+			break
+
+		case 'lookup':
+			if (!curve.params || !Array.isArray(curve.params.thresholds)) {
+				errors.push('levels.params.thresholds is required for lookup curves')
+			} else {
+				const thresholds = curve.params.thresholds
+
+				// Check non-empty
+				if (thresholds.length === 0) {
+					errors.push('levels.params.thresholds must be non-empty array')
+				}
+
+				// Check all values are non-negative numbers
+				for (let i = 0; i < thresholds.length; i++) {
+					if (typeof thresholds[i] !== 'number' || thresholds[i] < 0) {
+						errors.push(`levels.params.thresholds[${i}] must be non-negative number`)
+					}
+				}
+
+				// Check sorted in ascending order
+				for (let i = 1; i < thresholds.length; i++) {
+					if (thresholds[i] < thresholds[i - 1]) {
+						errors.push('levels.params.thresholds must be sorted in ascending order')
+						break // Only report once
+					}
+				}
+
+				// Validate maxLevel doesn't exceed array bounds
+				if (curve.maxLevel !== undefined && curve.maxLevel > thresholds.length - 1) {
+					errors.push(
+						`levels.maxLevel (${curve.maxLevel}) cannot exceed thresholds.length - 1 (${thresholds.length - 1})`
+					)
+				}
+			}
+			break
+
+		default: {
+			// TypeScript exhaustiveness check
+			const exhaustive: never = curve
+			errors.push(`Unknown curve type: ${(exhaustive as LevelCurveConfig).type}`)
+		}
+	}
+
+	// Validate maxLevel if present (common to all curve types)
+	if (curve.maxLevel !== undefined) {
+		if (typeof curve.maxLevel !== 'number' || curve.maxLevel < 0 || !Number.isInteger(curve.maxLevel)) {
+			errors.push('levels.maxLevel must be non-negative integer')
+		}
+	}
+
+	return errors
 }
 
 /**

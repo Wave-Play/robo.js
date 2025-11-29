@@ -1,8 +1,17 @@
 # Interface: PrismaClientLike
 
-Describes the minimal surface of a Prisma client that the adapter expects.
+Minimal Prisma client surface required by [createPrismaAdapter](Function.createPrismaAdapter.md).
+Compatible with any Prisma version that exposes standard CRUD delegates.
 
-## Example
+Fields:
+- `user`: Required delegate exposing `findUnique/findFirst/findMany/create/update/delete/count`.
+- `$transaction?`: Optional transaction helper for future use.
+
+Edge cases:
+- If your client removes or renames CRUD helpers, the adapter will throw at runtime.
+- Prisma client extensions can wrap delegates; ensure they still expose the methods above.
+
+## Examples
 
 ```ts
 import { PrismaClient } from '@prisma/client'
@@ -10,27 +19,25 @@ const prisma = new PrismaClient()
 const adapter = createPrismaAdapter({ client: prisma, secret: process.env.AUTH_SECRET! })
 ```
 
-## Indexable
+```ts
+const prisma = new PrismaClient().$extends({ ...features })
+const adapter = createPrismaAdapter({
+	client: prisma,
+	secret: process.env.AUTH_SECRET!
+})
+```
 
- \[`key`: `string`\]: `PrismaDelegate` \| `unknown`
+## See
+
+PrismaDelegate for expected delegate shape.
 
 ## Properties
 
-### $transaction()?
+### $transaction?
 
 ```ts
-optional $transaction: (...operations) => Promise<unknown>;
+optional $transaction: unknown;
 ```
-
-#### Parameters
-
-| Parameter | Type |
-| ------ | ------ |
-| ...`operations` | `unknown`[] |
-
-#### Returns
-
-`Promise`\<`unknown`\>
 
 ***
 

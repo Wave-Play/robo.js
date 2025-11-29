@@ -106,6 +106,21 @@ Need validation? Use the exported `authPluginOptionsSchema` or call `normalizeAu
 ### Built-in Email + Password Storage
 
 When no custom adapter is supplied, Robo stores hashed passwords, reset tokens, and user metadata in Flashcore. The bundled email/password provider (documented later) is turned on by default so your UI can immediately present email + password fields without extra wiring. Swap the adapter whenever you introduce your own persistence layer.
+ 
+### Signup Redirects
+
+By default, successful signups redirect to `/`. You can customize this by:
+1. Sending a `callbackUrl` in the signup request body.
+2. Setting `pages.newUser` in your plugin configuration:
+
+```ts
+export default <AuthPluginOptions>{
+  // ...
+  pages: {
+    newUser: '/dashboard' // Redirect to dashboard after signup
+  }
+}
+```
 
 ### Proxying Another Robo Project
 
@@ -208,6 +223,55 @@ const providers = await getProviders()
 ```
 
 Set `baseUrl` when calling these helpers to speak to a different origin—ideal when a frontend Robo app proxies to a backend deployment that owns the Auth.js adapter.
+
+### Redirect Mode (Proxy)
+
+OAuth flows often require top‑level navigation. When using a cross‑origin proxy, `fetch` to `/signin/:provider` produces an `opaqueredirect` and does not change the location. The client helpers support an explicit redirect mode so you can opt into a safe, CSRF‑primed navigation without bespoke code.
+
+New signatures (backwards compatible):
+
+- `signIn(provider, options?, proxy?, redirect?)`
+  - `options`: `{ csrfToken?: string; callbackUrl?: string; [extra] }` (also carries any provider‑specific fields for credentials flows)
+  - `proxy`: `{ baseUrl: string; basePath?: string }` (you may also pass `headers` or a custom `fetch`)
+  - `redirect`: `boolean | 'manual'`
+
+- `signOut(options?, proxy?, redirect?)`
+  - `options`: `{ csrfToken?: string; callbackUrl?: string }`
+  - `proxy`: `{ baseUrl: string; basePath?: string }`
+  - `redirect`: `boolean | 'manual'`
+
+Return values when `redirect` is provided:
+
+- `redirect: true` → `{ ok: true, redirected: true }` and performs `window.location.assign(url)`.
+- `redirect: 'manual'` → `{ ok: true, url }` so frameworks can issue their own redirect.
+- `redirect: false` → `{ ok: boolean, url?: string, error?: string }` using the fetch‑based flow.
+
+If `redirect` is omitted, behavior is unchanged and the legacy helpers return the raw `Response` for backwards compatibility.
+
+Examples
+
+```ts
+import { signIn, signOut } from '@robojs/auth/client'
+
+// Top-level client redirect
+await signIn('discord', { callbackUrl: window.location.origin + '/dashboard' }, { baseUrl: 'https://auth.example.com' }, true)
+
+// Manual redirect on the server (e.g., Next.js action/loader)
+const { url } = await signIn('discord', { callbackUrl }, { baseUrl: process.env.AUTH_URL! }, 'manual')
+return redirect(url)
+
+// Programmatic fetch remains unchanged
+await signIn('email-password', { email, password }, { basePath: '/api/auth' })
+
+// Sign out with manual redirect
+const out = await signOut({ callbackUrl: '/' }, { baseUrl: 'https://auth.example.com' }, 'manual')
+```
+
+Notes for proxy deployments:
+
+- Ensure cookies used by the auth server are set with `SameSite=None; Secure` when the frontend runs on a different origin.
+- Add the frontend origin to your `AUTH_PROXY_BASE_URLS` and CORS allowlist.
+- The client guarantees a CSRF cookie before producing a redirect URL by calling `getCsrfToken` when needed.
 
 ## Server API
 
@@ -432,6 +496,46 @@ Available hooks:
 | `passwordResetConfirm` | `POST /password/reset/confirm` / helper GET | Extra password policy, audit logging. |
 
 Handlers can return their own `Response` to short-circuit the plugin or call `defaultHandler()` to inherit the stock flow. Because the payload is shared, any `assign()` calls you make persist through the rest of the lifecycle, including Auth.js callbacks and events.
+
+### Custom Password Hashing
+
+By default, Robo.js uses `argon2id` for secure password hashing. You can swap this for your own algorithm (e.g. `bcrypt`, `scrypt`, or a legacy hash migration) by implementing the `PasswordHasher` interface.
+
+```ts
+import { EmailPassword } from '@robojs/auth'
+import { compare, hash } from 'bcrypt'
+import type { PasswordHasher } from '@robojs/auth/utils/password-hash'
+
+class BcryptHasher implements PasswordHasher {
+  async hash(password: string): Promise<string> {
+    return hash(password, 10)
+  }
+
+  async verify(password: string, storedHash: string): Promise<boolean> {
+    return compare(password, storedHash)
+  }
+
+  needsRehash(storedHash: string): boolean {
+    // Optional: return true if you want to migrate legacy hashes on login
+    return false
+  }
+}
+
+export default <AuthPluginOptions>{
+  // ...
+  providers: [
+    EmailPassword({
+      hasher: new BcryptHasher()
+    })
+  ]
+}
+```
+
+The `hasher` is used for:
+- **Sign up**: Hashing the password before storage.
+- **Sign in**: Verifying the password against the stored hash.
+- **Password Reset**: Hashing the new password.
+- **Rehashing**: Automatically updating hashes if `needsRehash` returns true (e.g. upgrading parameters or algorithms).
 
 ## Got questions? 🤔
 

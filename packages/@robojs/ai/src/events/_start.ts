@@ -8,7 +8,7 @@ import { voiceManager } from '@/core/voice/index.js'
 import { tokenLedger, type TokenLimitConfig, type TokenLedgerHooks } from '../core/token-ledger.js'
 import { Client } from 'discord.js'
 import type { VoiceConfigPatch } from '../core/voice/config.js'
-import type { BaseEngine } from '@/engines/base.js'
+import type { BaseEngine, Hook, HookEvent, MCPTool } from '@/engines/base.js'
 
 /** Voice configuration with optional per-guild overrides and instructions. */
 interface VoicePluginVoiceOptions extends VoiceConfigPatch {
@@ -36,10 +36,32 @@ export interface PluginOptions {
 	whitelist?: {
 		channelIds: string[]
 	}
+	/** Surrounding context configuration for understanding ongoing conversations. */
+	context?: {
+		/** Enable surrounding channel context when mentioned. Default: true */
+		enabled?: boolean
+		/** Number of recent messages to fetch for context. Default: 8 */
+		depth?: number
+	}
 	/** Voice feature configuration delegated to the voice manager. */
 	voice?: VoicePluginVoiceOptions
 	/** Token usage tracking configuration. */
 	usage?: PluginUsageOptions
+	/** MCP (Model Context Protocol) server configurations for tool integration. */
+	mcpServers?: MCPTool[]
+	/** MCP error handling configuration. */
+	mcp?: {
+		/** Enable graceful degradation by removing MCP tools on persistent failures. Default: true */
+		gracefulDegradation?: boolean
+		/** Number of extra retry attempts before degrading. Default: 1 */
+		extraRetries?: number
+		/** Base delay in milliseconds for exponential backoff. Default: 500 */
+		baseDelayMs?: number
+		/** Maximum delay in milliseconds for exponential backoff. Default: 2000 */
+		maxDelayMs?: number
+	}
+	/** Hooks to run during engine orchestration events. */
+	hooks?: Partial<Record<HookEvent, Hook>>
 }
 
 /** Token usage configuration including limit rules and hooks. */
@@ -81,7 +103,9 @@ export default async (_client: Client, pluginOptions: PluginOptions) => {
 	if (!options.engine && hasOpenAiKey) {
 		try {
 			const { OpenAiEngine } = await import('@/engines/openai/engine.js')
-			options.engine = new OpenAiEngine()
+			options.engine = new OpenAiEngine({
+				mcp: pluginOptions.mcp
+			})
 		} catch (error) {
 			logger.error('Failed to load the default OpenAI engine', error)
 		}
@@ -100,6 +124,13 @@ export default async (_client: Client, pluginOptions: PluginOptions) => {
 	}
 
 	// Register engine with AI singleton
+	// Register configured hooks
+	if (options.engine && options.hooks) {
+		for (const [event, hook] of Object.entries(options.hooks)) {
+			options.engine.on(event as HookEvent, hook)
+		}
+	}
+
 	setEngine(options.engine)
 
 	const engineFeatures = options.engine.supportedFeatures()

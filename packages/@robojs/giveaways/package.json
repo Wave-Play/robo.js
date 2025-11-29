@@ -1,6 +1,6 @@
 {
   "name": "@robojs/giveaways",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "One-click Discord giveaways plugin for Robo.js - Makes running giveaways effortless with automatic winner selection, persistent storage, and rich moderation tools",
   "type": "module",
   "private": false,
@@ -73,7 +73,7 @@
     "@robojs/server": "workspace:*",
     "@swc/core": "^1.13.5",
     "@types/node": "^24.7.0",
-    "discord.js": "^14.22.1",
+    "discord.js": "14.22.1",
     "prettier": "^3.6.2",
     "robo.js": "workspace:*",
     "typescript": "^5.9.3"

@@ -16,11 +16,14 @@ import { client } from 'robo.js'
 import { loadDiscordVoice, OptionalDependencyError } from '@/core/voice/deps.js'
 import type {
 	BaseEngine,
+	ChatHookContext,
 	ChatMessage,
 	ChatMessageContent,
 	GenerateImageOptions,
-	GenerateImageResult
-} from '@/engines/base.js'
+	GenerateImageResult,
+	MCPTool,
+	ReplyHookContext
+} from '../engines/base.js'
 import type { TextBasedChannel, VoiceBasedChannel, Guild } from 'discord.js'
 import type {
 	TokenSummaryQuery,
@@ -106,7 +109,14 @@ export const AI = {
 	getLifetimeUsage,
 	onUsageEvent,
 	onceUsageEvent,
-	offUsageEvent
+	offUsageEvent,
+	getMCPServers,
+	addWhitelistChannel,
+	removeWhitelistChannel,
+	addRestrictChannel,
+	removeRestrictChannel,
+	getWhitelistChannels,
+	getRestrictChannels
 }
 
 /** Tracks active reply handles for each user to enforce concurrency safeguards. */
@@ -362,6 +372,153 @@ function offUsageEvent<T extends UsageEventName>(event: T, listener: UsageEventL
 }
 
 /**
+ * Retrieves configured MCP servers from plugin options, optionally delegating to the engine's
+ * getMCPTools() method if available. Returns an empty array if no MCP servers are configured.
+ *
+ * @returns Array of MCP tool configurations.
+ */
+function getMCPServers(): MCPTool[] {
+	// Prefer engine's getMCPTools() if available, otherwise fall back to plugin options
+	if (_engine && typeof _engine.getMCPTools === 'function') {
+		return _engine.getMCPTools()
+	}
+	return pluginOptions.mcpServers ?? []
+}
+
+/**
+ * Adds a channel to the whitelist at runtime, enabling mention-free chat in that channel.
+ * Initializes the whitelist configuration if it doesn't exist.
+ *
+ * @param channelId - Discord channel ID to add to the whitelist.
+ * @remarks Changes take effect immediately for new messages. Runtime changes are not persisted
+ * and will be lost on restart; the config file takes precedence.
+ *
+ * @example
+ * ```ts
+ * import { AI } from '@robojs/ai'
+ *
+ * // Whitelist a channel when a specific event occurs
+ * AI.addWhitelistChannel('123456789012345678')
+ * ```
+ */
+function addWhitelistChannel(channelId: string): void {
+	if (!pluginOptions.whitelist) {
+		pluginOptions.whitelist = { channelIds: [] }
+	}
+	if (!pluginOptions.whitelist.channelIds.includes(channelId)) {
+		pluginOptions.whitelist.channelIds.push(channelId)
+	}
+}
+
+/**
+ * Removes a channel from the whitelist at runtime.
+ *
+ * @param channelId - Discord channel ID to remove from the whitelist.
+ * @remarks Safe to call even if the channel isn't in the whitelist. Changes take effect
+ * immediately for new messages.
+ *
+ * @example
+ * ```ts
+ * import { AI } from '@robojs/ai'
+ *
+ * // Remove a channel from whitelist
+ * AI.removeWhitelistChannel('123456789012345678')
+ * ```
+ */
+function removeWhitelistChannel(channelId: string): void {
+	const index = pluginOptions.whitelist?.channelIds?.indexOf(channelId)
+	if (index !== undefined && index !== -1) {
+		pluginOptions.whitelist!.channelIds.splice(index, 1)
+	}
+}
+
+/**
+ * Adds a channel to the restrict list at runtime, limiting bot responses to only that channel.
+ * Initializes the restrict configuration if it doesn't exist.
+ *
+ * @param channelId - Discord channel ID to add to the restrict list.
+ * @remarks Changes take effect immediately for new messages. Runtime changes are not persisted
+ * and will be lost on restart; the config file takes precedence. Restrict list takes precedence
+ * over whitelist.
+ *
+ * @example
+ * ```ts
+ * import { AI } from '@robojs/ai'
+ *
+ * // Restrict bot to only respond in a specific channel
+ * AI.addRestrictChannel('123456789012345678')
+ * ```
+ */
+function addRestrictChannel(channelId: string): void {
+	if (!pluginOptions.restrict) {
+		pluginOptions.restrict = { channelIds: [] }
+	}
+	if (!pluginOptions.restrict.channelIds.includes(channelId)) {
+		pluginOptions.restrict.channelIds.push(channelId)
+	}
+}
+
+/**
+ * Removes a channel from the restrict list at runtime.
+ *
+ * @param channelId - Discord channel ID to remove from the restrict list.
+ * @remarks Safe to call even if the channel isn't in the restrict list. Changes take effect
+ * immediately for new messages.
+ *
+ * @example
+ * ```ts
+ * import { AI } from '@robojs/ai'
+ *
+ * // Remove a channel from restrict list
+ * AI.removeRestrictChannel('123456789012345678')
+ * ```
+ */
+function removeRestrictChannel(channelId: string): void {
+	const index = pluginOptions.restrict?.channelIds?.indexOf(channelId)
+	if (index !== undefined && index !== -1) {
+		pluginOptions.restrict!.channelIds.splice(index, 1)
+	}
+}
+
+/**
+ * Returns the current list of whitelisted channel IDs.
+ *
+ * @returns Array of whitelisted channel IDs, or empty array if none are configured.
+ * @remarks Returns a copy of the array to prevent external mutation.
+ *
+ * @example
+ * ```ts
+ * import { AI } from '@robojs/ai'
+ *
+ * // Check current whitelist
+ * const whitelisted = AI.getWhitelistChannels()
+ * console.log('Whitelisted channels:', whitelisted)
+ * ```
+ */
+function getWhitelistChannels(): string[] {
+	return pluginOptions.whitelist?.channelIds ? [...pluginOptions.whitelist.channelIds] : []
+}
+
+/**
+ * Returns the current list of restricted channel IDs.
+ *
+ * @returns Array of restricted channel IDs, or empty array if none are configured.
+ * @remarks Returns a copy of the array to prevent external mutation.
+ *
+ * @example
+ * ```ts
+ * import { AI } from '@robojs/ai'
+ *
+ * // Check current restrict list
+ * const restricted = AI.getRestrictChannels()
+ * console.log('Restricted channels:', restricted)
+ * ```
+ */
+function getRestrictChannels(): string[] {
+	return pluginOptions.restrict?.channelIds ? [...pluginOptions.restrict.channelIds] : []
+}
+
+/**
  * Fetches a guild either from the local cache or, if absent, via the Discord REST API.
  */
 async function resolveGuild(guildId: string): Promise<Guild> {
@@ -402,12 +559,25 @@ async function chat(messages: ChatMessage[], options: ChatOptions): Promise<void
 	// Retrieve completed tool results for context injection
 	const digests = drainDigests(channelKey)
 
-	if (aiMessages[0]?.role !== 'system' && pluginOptions.instructions) {
-		// Prepend system instructions if not already present
-		aiMessages.unshift({
-			role: 'system',
-			content: pluginOptions.instructions
-		})
+	// Handle system messages: ensure instructions come first, then other system messages (e.g., surrounding context)
+	if (pluginOptions.instructions) {
+		const firstMessage = aiMessages[0]
+		if (firstMessage?.role === 'system') {
+			// If first message is system but not instructions, prepend instructions
+			// Otherwise, instructions are already first or we need to add them
+			if (firstMessage.content !== pluginOptions.instructions) {
+				aiMessages.unshift({
+					role: 'system',
+					content: pluginOptions.instructions
+				})
+			}
+		} else {
+			// No system message yet, prepend instructions
+			aiMessages.unshift({
+				role: 'system',
+				content: pluginOptions.instructions
+			})
+		}
 	}
 
 	const replyingUserId = member?.user.id ?? user?.id ?? null
@@ -430,15 +600,14 @@ async function chat(messages: ChatMessage[], options: ChatOptions): Promise<void
 		let workingMessages = withTaskContext(aiMessages, channel, contextPrepUserId, digests)
 
 		// Execute engine hooks for message preprocessing
-		workingMessages = await engine.callHooks(
-			'chat',
-			{
-				channel,
-				member,
-				messages: workingMessages
-			},
-			0
-		)
+		const chatHookContext: ChatHookContext = {
+			channel: channel ?? null,
+			member: member ?? null,
+			messages: workingMessages,
+			user: user ?? null
+		}
+		await engine.callHooks('chat', chatHookContext)
+		workingMessages = chatHookContext.messages
 
 		// Remove task context markers for logging
 		aiMessages = stripTaskContext(workingMessages)
@@ -458,11 +627,26 @@ async function chat(messages: ChatMessage[], options: ChatOptions): Promise<void
 
 		if (!reply) {
 			logger.error(`No response from engine`)
-
 			return
 		}
 
-		if (typeof reply.message?.content === 'string') {
+		// Construct ReplyHookContext
+		const replyHookContext: ReplyHookContext = {
+			channel: channel ?? null,
+			member: member ?? null,
+			mcpCalls: reply.mcpCalls,
+			degradedMcpServers: reply.degradedMcpServers,
+			response: reply,
+			user: user ?? null
+		}
+		const hookReply = await engine.callHooks('reply', replyHookContext)
+
+		// If a hook returned a reply, use it instead of the engine's reply
+		if (hookReply) {
+			if (options.onReply) {
+				await options.onReply(hookReply)
+			}
+		} else if (typeof reply.message?.content === 'string') {
 			// Extract and clean the assistant's text response
 			let content = reply.message.content
 			const clientUsername = client?.user?.username ?? 'mock'

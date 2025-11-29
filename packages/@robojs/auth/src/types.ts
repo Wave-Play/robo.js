@@ -39,6 +39,12 @@ export type {
 } from './emails/types.js'
 export type { EmailsOptions, AuthPluginOptions } from './config/schema.js'
 export type { RequestPayloadHandle } from './utils/request-payload.js'
+export type {
+	PasswordHasher,
+	Argon2Params,
+	HashPasswordOptions,
+	PasswordHashMetadata
+} from './utils/password-hash.js'
 export type { ConfigureAuthRuntimeOptions, ConfigureAuthProxyRuntimeOptions } from './runtime/server-helpers.js'
 export type {
 	PasswordAdapter,

@@ -76,7 +76,16 @@ export type RoadmapCard = {
 		 */
 		readonly id: string
 		/**
-		 * Display name suitable for Discord presentation.
+		 * Provider display name (e.g., Jira's `displayName`).
+		 *
+		 * @remarks
+		 * **Security Warning:** For providers like Jira, this field contains the provider's
+		 * display name and is not a safe public identifier. It must never be displayed
+		 * directly to end users in UI or Discord surfaces. Instead, it should be used only
+		 * as a key for guild-specific mapping to Discord user identities. The assignee
+		 * mapping system redacts these names and replaces them with Discord user mentions.
+		 * If no mapping exists, the assignee should be hidden entirely rather than showing
+		 * the provider name.
 		 */
 		readonly name: string
 		/**
@@ -125,6 +134,95 @@ export type RoadmapColumn = {
 	 * Signals whether items in this column should be considered archived.
 	 */
 	readonly archived: boolean
+	/**
+	 * Whether to create a Discord forum channel for this column.
+	 *
+	 * If false, cards in this column are tracked but no forum thread is created.
+	 * Defaults to true unless the column is archived.
+	 */
+	readonly createForum?: boolean
+}
+
+/**
+ * Configuration for custom column definitions and status-to-column mappings.
+ *
+ * @remarks
+ * This type allows providers to define custom columns and map provider statuses
+ * to those columns. Supports many-to-one mappings (multiple statuses to one column)
+ * and null mappings (status tracked but not synced to forum).
+ *
+ * @example
+ * ```ts
+ * const columnConfig: ColumnConfig = {
+ *   columns: [
+ *     { id: 'planning', name: 'Planning', order: 0 },
+ *     { id: 'development', name: 'Development', order: 1 },
+ *     { id: 'done', name: 'Done', order: 2, archived: true }
+ *   ],
+ *   statusMapping: {
+ *     'To Do': 'Planning',
+ *     'Backlog': 'Planning',
+ *     'In Progress': 'Development',
+ *     'Code Review': 'Development',
+ *     'Done': 'Done',
+ *     'Closed': null  // Track but don't create forum
+ *   }
+ * }
+ * ```
+ */
+export type ColumnConfig = {
+	/**
+	 * Custom column definitions (what forums to create).
+	 *
+	 * If provided, replaces the default column set. Each column can optionally
+	 * disable forum creation by setting `createForum: false`.
+	 */
+	readonly columns?: Array<{
+		/**
+		 * Unique identifier for the column (e.g., 'backlog', 'in-progress', 'done').
+		 */
+		readonly id: string
+		/**
+		 * Display name for the column (e.g., 'Backlog', 'In Progress').
+		 */
+		readonly name: string
+		/**
+		 * Sort order for the column (lower numbers appear first).
+		 */
+		readonly order: number
+		/**
+		 * Whether items in this column should be considered archived.
+		 */
+		readonly archived?: boolean
+		/**
+		 * Whether to create a Discord forum channel for this column.
+		 *
+		 * If false, cards in this column are tracked but no forum thread is created.
+		 * Defaults to true unless the column is archived.
+		 */
+		readonly createForum?: boolean
+	}>
+	/**
+	 * Status-to-column mapping (many-to-one supported).
+	 *
+	 * Maps provider status names (or categories) to column names.
+	 * Use null to track a status without creating a forum thread.
+	 * Keys are matched case-insensitively.
+	 *
+	 * @example
+	 * ```ts
+	 * {
+	 *   'To Do': 'Backlog',
+	 *   'Open': 'Backlog',
+	 *   'In Progress': 'In Progress',
+	 *   'In Review': 'In Progress',
+	 *   'Done': 'Done',
+	 *   'Closed': null,        // Track but don't create forum thread
+	 *   'Won\'t Fix': null
+	 * }
+	 * ```
+	 */
+	readonly statusMapping?: Record<string, string | null>
 }
 
 // Provider Configuration ----------------------------------------------------
@@ -372,6 +470,36 @@ export type UpdateCardResult = {
 // Synchronization Results ---------------------------------------------------
 
 /**
+ * Represents an error that occurred during card synchronization.
+ *
+ * @remarks
+ * This type captures detailed error information for individual card sync failures,
+ * enabling users to diagnose and fix issues with specific cards.
+ */
+export type SyncError = {
+	/**
+	 * Unique identifier of the card that failed to sync.
+	 */
+	readonly cardId: string
+	/**
+	 * Title of the card that failed to sync.
+	 */
+	readonly cardTitle: string
+	/**
+	 * Human-readable error message describing what went wrong.
+	 */
+	readonly errorMessage: string
+	/**
+	 * Optional categorization of the error type for better error handling.
+	 */
+	readonly errorType?: 'discord_api' | 'provider_api' | 'validation' | 'unknown'
+	/**
+	 * Optional URL to the card in the provider system.
+	 */
+	readonly cardUrl?: string
+}
+
+/**
  * Captures the result of a synchronization run between a provider and the roadmap surface.
  *
  * @remarks
@@ -417,6 +545,10 @@ export type SyncResult = {
 		 */
 		readonly errors: number
 	}
+	/**
+	 * Detailed list of errors that occurred during synchronization.
+	 */
+	readonly errors: readonly SyncError[]
 }
 
 // Date Range Filtering ------------------------------------------------------
@@ -502,4 +634,122 @@ export type DateRangeFilter = {
 	 * Defaults to 'updated' if not specified.
 	 */
 	readonly dateField?: 'created' | 'updated'
+}
+
+// Thread History ------------------------------------------------------------
+
+/**
+ * Represents a historical thread entry for a card that has moved between columns.
+ *
+ * @remarks
+ * Thread history enables linking to previous discussions when a card moves to a new forum.
+ * The messageCount is used to determine if the old thread had meaningful user activity
+ * and to provide informative linking text (e.g., "View 52 old messages").
+ *
+ * This entry is created when a thread is moved to a different forum (Phase 2), capturing
+ * the thread's state at the time of the move. Multiple history entries can exist for a
+ * single card if it moves through multiple columns over time.
+ *
+ * @example
+ * ```ts
+ * import type { ThreadHistoryEntry } from '@robojs/roadmap';
+ *
+ * const historyEntry: ThreadHistoryEntry = {
+ *   threadId: '1234567890123456789',
+ *   column: 'In Progress',
+ *   forumId: '9876543210987654321',
+ *   movedAt: Date.now(),
+ *   messageCount: 52 // Includes starter message + 51 user messages
+ * };
+ * ```
+ */
+export type ThreadHistoryEntry = {
+	/**
+	 * The Discord thread ID of the historical thread.
+	 */
+	readonly threadId: string
+	/**
+	 * The column name the thread was in before being moved.
+	 */
+	readonly column: string
+	/**
+	 * The forum channel ID where this thread existed.
+	 */
+	readonly forumId: string
+	/**
+	 * Unix timestamp in milliseconds when the thread was moved to a new forum.
+	 */
+	readonly movedAt: number
+	/**
+	 * Optional count of total messages in the thread at the time of move.
+	 *
+	 * This count includes the starter message plus all user messages. It's used
+	 * to determine if the thread had meaningful user activity (messageCount > 1)
+	 * and to generate informative link text like "View 52 messages".
+	 *
+	 * Only populated when the thread is actually moved (Phase 2). Threads with
+	 * only the starter message (messageCount = 1) typically won't be linked.
+	 */
+	readonly messageCount?: number
+}
+
+/**
+ * Metadata describing an active roadmap sync operation.
+ *
+ * @remarks
+ * Used by the `/roadmap sync` command to track in-flight syncs and enable
+ * cancellation via interaction components. Entries are removed when the sync
+ * completes, fails, or is canceled, and may also be pruned on a timeout.
+ *
+ * @example
+ * ```ts
+ * const syncData: SyncData = {
+ *   controller: new AbortController(),
+ *   startedBy: interaction.user.id,
+ *   guildId: interaction.guildId!,
+ *   dryRun: false,
+ *   startedAt: Date.now()
+ * }
+ * activeSyncs.set(interaction.id, syncData)
+ * ```
+ */
+export interface SyncData {
+	/**
+	 * Abort controller used to cancel the sync from user interactions.
+	 */
+	readonly controller: AbortController
+	/**
+	 * Discord user ID of the user who initiated the sync; used for authorization.
+	 */
+	readonly startedBy: string
+	/**
+	 * Discord guild ID where the sync is executing.
+	 */
+	readonly guildId: string
+	/**
+	 * Indicates whether the sync is running in dry-run mode.
+	 */
+	readonly dryRun: boolean
+	/**
+	 * Unix timestamp (milliseconds) when the sync started; enables timeout cleanup.
+	 */
+	readonly startedAt: number
+	/**
+	 * Optional timeout identifier used to auto-cleanup abandoned syncs.
+	 *
+	 * The `/roadmap sync` command schedules a 15-minute timeout when a sync begins.
+	 * This timeout is cleared on normal completion, explicit cancellation, or error.
+	 * If the timeout triggers, the sync entry is removed from the in-memory `activeSyncs`
+	 * map and a warning is logged to indicate an abnormal termination (e.g., crash or
+	 * interaction expiration). Storing the ID allows us to cancel the timeout to avoid
+	 * unnecessary callbacks and potential memory leaks.
+	 */
+	readonly cleanupTimeoutId?: ReturnType<typeof setTimeout>
+	/**
+	 * Optional list of errors that occurred during synchronization.
+	 *
+	 * Stored temporarily to allow users to view error details after sync completion.
+	 * Cleaned up when the sync entry is removed (after timeout or when errors are viewed).
+	 */
+	readonly errors?: readonly SyncError[]
 }

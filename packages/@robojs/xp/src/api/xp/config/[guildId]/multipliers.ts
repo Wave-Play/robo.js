@@ -19,7 +19,7 @@ import {
  *
  * **Use Cases:**
  * - Setting server-wide XP boost (e.g., 2x XP weekend)
- * - Configuring premium role multipliers (MEE6 Pro parity)
+ * - Configuring premium role multipliers
  * - Setting per-user boosts for supporters
  * - Removing expired multipliers
  *

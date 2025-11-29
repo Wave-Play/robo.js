@@ -24,6 +24,11 @@
 - `AI.generateImage` – Pass-through to engine image endpoint.
 - `AI.getActiveTasks` – Snapshot of in-flight tool jobs per channel.
 - `AI.isReady` – Frontend indicator once engine init completes.
+- Channel management methods for runtime configuration:
+  - `addWhitelistChannel(channelId)` / `removeWhitelistChannel(channelId)` – Dynamically manage whitelist
+  - `addRestrictChannel(channelId)` / `removeRestrictChannel(channelId)` – Dynamically manage restrict list
+  - `getWhitelistChannels()` / `getRestrictChannels()` – Query current channel lists
+  - Runtime changes are not persisted; config file takes precedence on restart.
 - All public calls now short-circuit (and log once) if no engine is configured; `AI.chatSync` rejects in that scenario so slash commands surface the error.
 - Voice controls exposed from `core/ai.ts`:
   - `startVoice({ guildId, channelId, textChannelId?, deaf?, mute? })`
@@ -90,8 +95,15 @@
   - Restriction/whitelist logic
   - Mention requirement enforcement
   - Reply chain context loading (via `getReplyChain` with 'context' or 'reference' modes)
+  - Surrounding context fetching (via `getSurroundingContext`) when mentioned in regular channels
   - Mention normalization (replaces Discord mentions with readable usernames)
   - Username-to-ID mapping for restoring mentions in bot replies
+- **Surrounding Context** (enabled by default):
+  - When the bot is mentioned in a regular channel (not whitelisted/DM), it fetches recent channel messages for context
+  - Context is presented as a separate system message with clear framing: "Recent channel conversation for reference. Only use this context if directly relevant to the user's question"
+  - Default depth: 8 messages (configurable via `context.depth`)
+  - Automatically excludes messages already in reply chains to avoid duplication
+  - Can be disabled via `context.enabled: false`
 
 ## Vision Capabilities
 - Vision-capable models automatically support image understanding:
@@ -125,6 +137,38 @@
 - Citation context is built from `ResponseOutputText.URLCitation` annotations returned by OpenAI Responses API
 - Web search is optional and can be enabled/disabled per engine configuration
 - Tool is included in toolset via `buildToolset()` when `this._webSearch` flag is true
+
+## MCP (Model Context Protocol) Support
+- **Configuration**: Users can define MCP servers in plugin options via `mcpServers` array in `config/plugins/robojs/ai.ts`:
+  ```typescript
+  export default {
+    mcpServers: [
+      {
+        type: 'mcp',
+        server_label: 'context7',
+        server_url: 'https://mcp.context7.com/mcp',
+        headers: { CONTEXT7_API_KEY: process.env.CONTEXT7_API_KEY ?? '' },
+        allowed_tools: ['resolve-library-id', 'get-library-docs'],
+        require_approval: 'never'
+      }
+    ],
+    mcp: {
+      gracefulDegradation: true,  // Default: true
+      extraRetries: 1,            // Default: 1
+      baseDelayMs: 500,            // Default: 500
+      maxDelayMs: 2000             // Default: 2000
+    }
+  }
+  ```
+- **How it works**: MCP tools are server-side proxied by OpenAI—the engine passes MCP configs in the tools array, OpenAI executes them remotely, and results are incorporated into responses automatically. No local execution or special handling needed.
+- **Error handling and graceful degradation**: 
+  - When MCP tools are present and the Responses API call fails with retryable network errors (after the OpenAI SDK's built-in retries), the engine performs additional retry attempts with exponential backoff.
+  - If retries with MCPs still fail and `gracefulDegradation` is enabled (default: true), the engine automatically removes MCP tools from the request and retries once more.
+  - When degradation occurs, a status note is injected into the instructions informing the model that certain external tools were unavailable, ensuring the AI can transparently communicate this to users.
+  - This prevents entire requests from failing due to transient MCP server issues while maintaining user awareness of tool unavailability.
+- **Engine support**: MCP is currently implemented in `OpenAiEngine` via `buildToolset()` and can be extended to custom engines by implementing the optional `getMCPTools()` method from `BaseEngine`.
+- **Limitations**: MCP tools are only available in 'worker' context (standard chat), not in 'realtime' (voice) or 'chat' (legacy) contexts, matching the pattern of web_search.
+- **Integration points**: Reference `_start.ts` for plugin options loading, `base.ts` for type definitions (`MCPTool` interface), and `openai/engine.ts` for tool injection logic and error handling (`createResponseWithMcpHandling()`).
 
 ## Token Usage & Limits
 - **Token Ledger Subsystem** (`core/token-ledger.ts`) provides comprehensive usage tracking:
@@ -325,7 +369,7 @@
 - `discord-utils.ts` – Chunking, mention replacement, and the mock interaction adapter for tool execution.
 
 ## Configuration Touchpoints
-- Plugin options (config file `config/plugins/robojs/ai.*`): `instructions`, `commands` allow/deny, `restrict`, `whitelist`, `insight`, `engine`, optional `voice` overrides (`voice.instructions`, realtime config, etc.).
+- Plugin options (config file `config/plugins/robojs/ai.*`): `instructions`, `commands` allow/deny, `restrict`, `whitelist`, `context` (surrounding context config with `enabled` and `depth`), `insight`, `engine`, `mcpServers`, optional `voice` overrides (`voice.instructions`, realtime config, etc.).
 - Default chat behavior (model, temperature, max output tokens) now comes from the engine constructor. The bundled `OpenAiEngine` accepts `new OpenAiEngine({ chat: { model, temperature, maxOutputTokens } })`.
 - Sage options (global or per-command) influence auto-deferral (`defer`, `deferBuffer`, `ephemeral`). `getCommandReply` reads them via `resolveSageOptions`.
 - Env requirements: `OPENAI_API_KEY` (default engine); vector store files under `/documents`.
@@ -346,6 +390,11 @@
 ## Extension Hooks
 - Swap engines by supplying a `BaseEngine` subclass via config.
 - Engine hooks (`engine.on('chat', hook)`) can pre-process messages for prompt injection or throttling.
+- Reply hooks (`engine.on('reply', hook)`) can intercept and override the final response, accessing cumulative tool usage (including MCP calls) and reasoning data.
+  - `ReplyHookContext` provides `response`, `mcpCalls`, `degradedMcpServers`, `channel`, `member`, and `user`.
+  - `degradedMcpServers` is an array of MCP server labels that were removed due to persistent failures, allowing hooks to apply post-processing or send notifications.
+  - Returning a `ChatReply` object (text, components, files, flags) overrides the default engine response.
+- Hooks can be registered globally via `pluginOptions.hooks` in the config file.
 - Additional tools/commands auto-register if exposed through the Robo command portal and allowed by plugin config.
 
 ## Operational Notes
@@ -359,4 +408,5 @@
 - **Token limits are enforced:** Configure via `tokenLedger.configure()` with `mode: 'block'` to throw `TokenLimitError` or `mode: 'warn'` to emit events. Monitor usage via `/ai usage` seed command or `tokenLedger.getSummary()`
 - **Voice audio processing:** PCM16 format, 48kHz→24kHz downsampling, mono conversion, VAD threshold application. Adjust `capture.vadThreshold` if voice detection is too sensitive/insensitive
 - **Realtime session retry:** Exponential backoff with transcript tail restoration. Failed reconnections increment `realtimeReconnectAttempts` metric
-- Always adjust this AGENTS file if you change flows, options, or storage so future work isn’t guessing
+- **MCP servers require valid credentials:** Ensure environment variables for MCP API keys (e.g., `CONTEXT7_API_KEY`) are set. Invalid configs are logged during engine initialization.
+- Always adjust this AGENTS file if you change flows, options, or storage so future work isn't guessing

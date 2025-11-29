@@ -9,6 +9,8 @@ import { nanoid } from 'nanoid'
 import { authLogger } from '../../utils/logger.js'
 import { getRequestPayload } from '../../utils/request-payload.js'
 import type { PasswordAdapter } from './types.js'
+import type { PasswordHasher } from '../../utils/password-hash.js'
+import { Argon2Hasher } from '../../utils/password-hash.js'
 
 interface SignupHandlerOptions {
 	authConfig: AuthConfig
@@ -20,6 +22,7 @@ interface SignupHandlerOptions {
 	secret: string
 	events?: AuthConfig['events']
 	sessionStrategy?: 'jwt' | 'database'
+	hasher?: PasswordHasher
 }
 
 interface SignupPayload {
@@ -32,7 +35,15 @@ interface SignupPayload {
 }
 
 const EMAIL_REGEX = /^(?:[^\s@]+)@(?:[^\s@.]+\.)+[^\s@.]{2,}$/i
-const DEFAULT_REDIRECT_PATH = '/dashboard'
+
+/**
+ * Default redirect path after a successful signup.
+ *
+ * This can be overridden by:
+ * 1. Providing a `callbackUrl` in the signup request body.
+ * 2. Setting `pages.newUser` in the Auth plugin configuration.
+ */
+const DEFAULT_REDIRECT_PATH = '/'
 
 class SignupError extends Error {
 	public readonly code: string
@@ -138,12 +149,6 @@ function ensurePasswordValid(password: string, confirm?: string) {
 	}
 }
 
-function ensureTermsAccepted(accepted: boolean) {
-	if (!accepted) {
-		throw new SignupError('TermsRequired', 'You must accept the terms to create an account.')
-	}
-}
-
 function validateCsrfToken(payloadToken: string, cookieHeader: string | null, cookies: CookiesOptions, secret: string) {
 	if (!payloadToken) {
 		throw new SignupError('MissingCsrf', 'Missing CSRF token.')
@@ -178,6 +183,7 @@ function resolveDefaultRedirect(baseUrl: string, redirectPath?: string | null): 
 
 async function createUserWithPassword(
 	adapter: PasswordAdapter,
+	hasher: PasswordHasher,
 	email: string,
 	password: string,
 	events?: AuthConfig['events']
@@ -201,7 +207,8 @@ async function createUserWithPassword(
 	let created: AdapterUser | null = null
 	try {
 		created = await adapter.createUser(baseUser)
-		await adapter.createUserPassword({ userId: created.id, email, password })
+		const hash = await hasher.hash(password)
+		await adapter.createUserPassword({ userId: created.id, email, hash })
 		await events?.createUser?.({ user: created })
 		authLogger.debug('Created new credentials user.', { email, userId: created.id })
 		return created
@@ -280,7 +287,8 @@ export function createSignupHandler(options: SignupHandlerOptions) {
 		defaultRedirectPath = DEFAULT_REDIRECT_PATH,
 		secret,
 		events,
-		sessionStrategy = 'jwt'
+		sessionStrategy = 'jwt',
+		hasher = new Argon2Hasher()
 	} = options
 
 	return async function handleSignup(request: RoboRequest): Promise<Response> {
@@ -296,11 +304,10 @@ export function createSignupHandler(options: SignupHandlerOptions) {
 
 			ensureEmailValid(payload.email)
 			ensurePasswordValid(payload.password, payload.passwordConfirm)
-			ensureTermsAccepted(payload.termsAccepted)
 			validateCsrfToken(payload.csrfToken, request.headers.get('cookie'), cookies, secret)
 
 			const normalizedEmail = payload.email.toLowerCase()
-			const user = await createUserWithPassword(adapter, normalizedEmail, payload.password, events)
+			const user = await createUserWithPassword(adapter, hasher, normalizedEmail, payload.password, events)
 			authLogger.debug('User signed up successfully.', { email: normalizedEmail, userId: user.id })
 
 			const callbackUrl = resolveDefaultRedirect(baseUrl, payload.callbackUrl ?? defaultRedirectPath)

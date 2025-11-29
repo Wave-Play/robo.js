@@ -113,10 +113,14 @@ export { JiraProvider, type JiraProviderConfig } from './providers/jira.js'
  *
  * @example
  * ```ts
- * import { getSettings, updateSettings } from '@robojs/roadmap';
+ * import { getSettings, updateSettings, getColumnMapping, setColumnMapping } from '@robojs/roadmap';
  *
  * const settings = getSettings(guildId);
  * updateSettings(guildId, { isPublic: true });
+ * 
+ * // Column mapping
+ * setColumnMapping(guildId, 'QA', 'Development');
+ * const mapping = getColumnMapping(guildId);
  * ```
  */
 export * from './core/settings.js'
@@ -172,8 +176,11 @@ export * from './core/constants.js'
  * ```ts
  * import { syncSingleCard } from '@robojs/roadmap';
  *
- * const { threadId, threadUrl } = await syncSingleCard(card, guild, provider);
- * await interaction.reply(`Created: ${threadUrl}`);
+ * const result = await syncSingleCard(card, guild, provider);
+ * if (result) {
+ *   const { threadId, threadUrl } = result;
+ *   await interaction.reply(`Created: ${threadUrl}`);
+ * }
  * ```
  *
  * @example

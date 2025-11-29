@@ -1,7 +1,7 @@
 {
 	"name": "@robojs/cron",
 	"description": "Easily schedule and manage recurring tasks.",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"type": "module",
 	"private": false,
 	"keywords": [
@@ -40,7 +40,7 @@
 		"@swc/core": "^1.7.36",
 		"@types/node": "^22.7.7",
 		"@types/uuid": "^10.0.0",
-		"discord.js": "^14.16.3",
+		"discord.js": "14.22.1",
 		"prettier": "^3.3.3",
 		"robo.js": "workspace:*",
 		"typescript": "^5.6.3"

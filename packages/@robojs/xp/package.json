@@ -1,7 +1,7 @@
 {
 	"name": "@robojs/xp",
 	"description": "Experience points and leveling plugin for Robo.js",
-	"version": "0.0.0",
+	"version": "0.1.0",
 	"type": "module",
 	"private": false,
 	"keywords": [
@@ -19,6 +19,9 @@
 			"types": "./.robo/build/index.d.ts",
 			"default": "./.robo/build/index.js"
 		}
+	},
+	"dependencies": {
+		"p-limit": "^7.2.0"
 	},
 	"license": "MIT",
 	"author": "WavePlay <dev@waveplay.com> (waveplay.com)",
@@ -48,7 +51,7 @@
 		"@robojs/server": "workspace:*",
 		"@swc/core": "^1.13.5",
 		"@types/node": "^24.6.2",
-		"discord.js": "^14.22.1",
+		"discord.js": "14.22.1",
 		"prettier": "^3.6.2",
 		"robo.js": "workspace:*",
 		"tsx": "^4.17.0",

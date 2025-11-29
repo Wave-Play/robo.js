@@ -161,6 +161,23 @@ Provides descriptive information about the engine for diagnostics or inspection 
 
 ***
 
+### getMCPTools()?
+
+```ts
+optional getMCPTools(): MCPTool[]
+```
+
+Optionally returns MCP (Model Context Protocol) tool configurations for this engine.
+Engines that support MCP should override this method to return their configured MCP servers.
+
+#### Returns
+
+[`MCPTool`](Interface.MCPTool.md)[]
+
+Array of MCP tool configurations, or empty array if MCP is not supported.
+
+***
+
 ### init()
 
 ```ts

@@ -1,7 +1,7 @@
 {
 	"name": "@robojs/auth",
 	"description": "Authentication plugin for Robo.js powered by Auth.js",
-	"version": "0.0.0",
+	"version": "0.1.0",
 	"type": "module",
 	"private": false,
 	"keywords": [
@@ -83,7 +83,7 @@
 		"@robojs/server": "workspace:*",
 		"@swc/core": "^1.13.3",
 		"@types/node": "^24.2.1",
-		"discord.js": "^14.21.0",
+		"discord.js": "14.22.1",
 		"prettier": "^3.6.2",
 		"react-dom": "^19.1.1",
 		"resend": "^6.1.0",

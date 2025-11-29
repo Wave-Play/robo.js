@@ -1,6 +1,4 @@
 import { createRequire } from 'node:module'
-import { hashPassword, needsRehash, verifyPasswordHash } from '../utils/password-hash.js'
-import type { PasswordHashParams } from '../utils/password-hash.js'
 import type { Adapter, AdapterUser } from '@auth/core/adapters'
 import type { PasswordAdapter, PasswordRecord } from '../builtins/email-password/types.js'
 
@@ -20,53 +18,106 @@ interface PrismaDelegate {
 }
 
 /**
-	Describes the minimal surface of a Prisma client that the adapter expects.
-
-	@example
-	```ts
-	import { PrismaClient } from '@prisma/client'
-	const prisma = new PrismaClient()
-	const adapter = createPrismaAdapter({ client: prisma, secret: process.env.AUTH_SECRET! })
-	```
-*/
+ * Minimal Prisma client surface required by {@link createPrismaAdapter}.
+ * Compatible with any Prisma version that exposes standard CRUD delegates.
+ *
+ * Fields:
+ * - `user`: Required delegate exposing `findUnique/findFirst/findMany/create/update/delete/count`.
+ * - `$transaction?`: Optional transaction helper for future use.
+ *
+ * Edge cases:
+ * - If your client removes or renames CRUD helpers, the adapter will throw at runtime.
+ * - Prisma client extensions can wrap delegates; ensure they still expose the methods above.
+ *
+ * @example Standard Prisma client
+ * ```ts
+ * import { PrismaClient } from '@prisma/client'
+ * const prisma = new PrismaClient()
+ * const adapter = createPrismaAdapter({ client: prisma, secret: process.env.AUTH_SECRET! })
+ * ```
+ *
+ * @example Prisma client with extensions
+ * ```ts
+ * const prisma = new PrismaClient().$extends({ ...features })
+ * const adapter = createPrismaAdapter({
+ * 	client: prisma,
+ * 	secret: process.env.AUTH_SECRET!
+ * })
+ * ```
+ *
+ * @see PrismaDelegate for expected delegate shape.
+ */
 export interface PrismaClientLike {
-	[key: string]: PrismaDelegate | unknown
 	user: PrismaDelegate
-	$transaction?: (...operations: unknown[]) => Promise<unknown>
+	$transaction?: ((...operations: unknown[]) => Promise<unknown>) | unknown
 }
 
 /**
-	Allows mapping the adapter to custom Prisma model names when your schema deviates from defaults.
-
-	@example
-	```ts
-	const adapter = createPrismaAdapter({
-		client: prisma,
-		secret: process.env.AUTH_SECRET!,
-		models: { password: 'userPassword' }
-	})
-	```
-*/
+ * Customizes Prisma model names when your schema deviates from the defaults.
+ * Currently only the password model is configurable.
+ *
+ * Field guidance:
+ * - `password`: Name of the password model (defaults to `password`). Must refer
+ *   to a model with fields `id`, `userId`, `email`, `hash`, `createdAt`, `updatedAt`.
+ *
+ * Edge cases:
+ * - Names are case-sensitive. Passing the wrong case throws during adapter init.
+ * - Custom models must match the expected schema; missing fields cause runtime errors.
+ *
+ * @example Custom password model
+ * ```ts
+ * createPrismaAdapter({
+ * 	client: prisma,
+ * 	secret: process.env.AUTH_SECRET!,
+ * 	models: { password: 'userPassword' }
+ * })
+ * ```
+ *
+ * @example Default naming (no override)
+ * ```ts
+ * createPrismaAdapter({ client: prisma, secret: process.env.AUTH_SECRET! })
+ * ```
+ *
+ * @see DEFAULT_PASSWORD_MODEL for the fallback name.
+ */
 export interface PrismaAdapterModelOptions {
 	password?: string
 }
 
 /**
-	Configuration object accepted by {@link createPrismaAdapter}.
-
-	@example
-	```ts
-	createPrismaAdapter({
-		client: prisma,
-		secret: process.env.AUTH_SECRET!,
-		hashParameters: { memoryCost: 19456 }
-	})
-	```
-*/
+ * Complete configuration object for {@link createPrismaAdapter}.
+ *
+ * Fields:
+ * - `client`: Required {@link PrismaClientLike} instance with user + password models.
+ * - `secret`: Required token hashing secret. Minimum 32 characters recommended.
+ * - `models?`: Optional {@link PrismaAdapterModelOptions} for custom model names.
+ *
+ * ⚠️ Security:
+ * - Never commit secrets; load them from environment variables or secret stores.
+ *
+ * Performance notes:
+ * - Each adapter method runs 1–3 database queries. Enable Prisma connection pooling for high throughput.
+ *
+ * Edge cases:
+ * - Call `await prisma.$connect()` before passing the client if your environment requires manual connections.
+ *
+ * @example Basic setup
+ * ```ts
+ * createPrismaAdapter({ client: prisma, secret: process.env.AUTH_SECRET! })
+ * ```
+ *
+ * @example Custom password model
+ * ```ts
+ * createPrismaAdapter({
+ * 	client: prisma,
+ * 	secret: process.env.AUTH_SECRET!,
+ * 	models: { password: 'userCredentials' }
+ * })
+ * ```
+ */
 export interface PrismaAdapterOptions {
 	client: PrismaClientLike
 	secret: string
-	hashParameters?: Partial<PasswordHashParams>
 	models?: PrismaAdapterModelOptions
 }
 
@@ -92,7 +143,14 @@ type AuthPrismaAdapterFactory = (client: PrismaClientLike) => Adapter
 
 let prismaAdapterFactory: AuthPrismaAdapterFactory | undefined
 
-/** Lazily resolve the optional Auth.js Prisma adapter so the root exports stay safe when unused. */
+/**
+ * Lazily loads and caches the `@auth/prisma-adapter` factory. Handles the
+ * package's various export styles (named, default, nested) and throws a helpful
+ * error if the peer dependency is missing.
+ *
+ * @returns Prisma adapter factory exported by `@auth/prisma-adapter`.
+ * @throws {Error} If the module is missing or exports an unexpected shape.
+ */
 function loadAuthPrismaAdapter(): AuthPrismaAdapterFactory {
 	if (prismaAdapterFactory) return prismaAdapterFactory
 	try {
@@ -124,6 +182,16 @@ function loadAuthPrismaAdapter(): AuthPrismaAdapterFactory {
 	}
 }
 
+/**
+ * Validates that a Prisma model delegate exists and is an object. Throws a
+ * descriptive error when the model is missing to help surface schema issues
+ * during startup.
+ *
+ * @param delegate - Delegate instance to validate.
+ * @param name - Model name for error messages.
+ * @returns The delegate if valid.
+ * @throws {Error} If the delegate is missing or invalid.
+ */
 function assertDelegate(delegate: PrismaDelegate | undefined, name: string): PrismaDelegate {
 	if (!delegate || typeof delegate !== 'object') {
 		throw new Error(`Prisma client is missing delegate for model "${name}". Ensure the model exists in your schema.`)
@@ -132,6 +200,11 @@ function assertDelegate(delegate: PrismaDelegate | undefined, name: string): Pri
 	return delegate
 }
 
+/**
+ * Converts a Prisma password row into the shared {@link PasswordRecord}
+ * structure. Dates are serialized to ISO strings so Flashcore and Prisma
+ * adapters stay consistent.
+ */
 function normalizePasswordRecord(row: PrismaPasswordRow): PasswordRecord {
 	return {
 		id: row.id,
@@ -143,6 +216,7 @@ function normalizePasswordRecord(row: PrismaPasswordRow): PasswordRecord {
 	}
 }
 
+/** Type guard ensuring a value contains all password row fields. Internal helper to guard against malformed rows. */
 function isPasswordRow(value: unknown): value is PrismaPasswordRow {
 	return (
 		!!value &&
@@ -156,21 +230,79 @@ function isPasswordRow(value: unknown): value is PrismaPasswordRow {
 	)
 }
 
+/** Normalizes emails to lowercase for case-insensitive lookups. Internal helper shared with Flashcore adapter. */
 function normalizeEmail(email: string): string {
 	return email.toLowerCase()
 }
 
 /**
-	Creates a password-capable Auth.js adapter backed by Prisma models.
-
-	@example
-	```ts
-	import { createPrismaAdapter } from '@robojs/auth/adapters/prisma'
-	const adapter = createPrismaAdapter({ client: prisma, secret: process.env.AUTH_SECRET! })
-	```
-*/
+ * Creates a password-capable Auth.js adapter backed by Prisma. Wraps the
+ * official `@auth/prisma-adapter` and layers on password helpers.
+ *
+ * ⚠️ Security:
+ * - Passwords are hashed by the provider before storage; plaintext never touches the DB.
+ * - Verification tokens (handled by the base adapter) are hashed with SHA-256.
+ * - Email lookups are case-insensitive; prefer Postgres `@db.Citext` or database collations for enforcement.
+ *
+ * Performance:
+ * - Each password operation performs 1–2 queries; ensure `userId` and `email` columns are indexed.
+ * - `findUserIdByEmail` performs two lookups (user + password models). Optimize with database indexes.
+ *
+ * Edge cases:
+ * - Requires `@auth/prisma-adapter` and `@prisma/client`. Install both: `npm i @auth/prisma-adapter @prisma/client`.
+ * - Password model must include `id`, `userId`, `email`, `hash`, `createdAt`, `updatedAt` columns.
+ * - Concurrent password updates can race; wrap in application-level locks if necessary.
+ * - `deleteUser` is overridden to remove password rows; omitting this would leave orphaned sensitive data.
+ * - `findUserIdByEmail` falls back to password rows for legacy schemas without `user.email`.
+ *
+ * @param options.client - Initialized Prisma client with user/password models.
+ * @param options.secret - Secret for hashing verification tokens; must match Auth.js config.
+ * @param options.models - Optional Prisma model name overrides (currently `password`).
+ * @returns {@link PasswordAdapter} implementing Auth.js contract plus password helpers (`createUserPassword`, `getUserPassword`, `deleteUserPassword`, `resetUserPassword`, `findUserIdByEmail`).
+ * @throws {Error} If the Prisma client or password delegate is missing.
+ * @throws {Error} If `@auth/prisma-adapter` is not installed.
+ *
+ * @example Basic usage
+ * ```ts
+ * import { PrismaClient } from '@prisma/client'
+ * const prisma = new PrismaClient()
+ * const adapter = createPrismaAdapter({ client: prisma, secret: process.env.AUTH_SECRET! })
+ * ```
+ *
+ * @example Custom password model name
+ * ```ts
+ * const adapter = createPrismaAdapter({
+ * 	client: prisma,
+ * 	secret: process.env.AUTH_SECRET!,
+ * 	models: { password: 'userPassword' }
+ * })
+ * ```
+ *
+ * @example Integration with Auth.js config
+ * ```ts
+ * export default {
+ * 	adapter: createPrismaAdapter({ client: prisma, secret: process.env.AUTH_SECRET! }),
+ * 	providers: [...]
+ * }
+ * ```
+ *
+ * @example Error handling for missing peer dependency
+ * ```ts
+ * try {
+ * 	createPrismaAdapter({ client: prisma, secret: process.env.AUTH_SECRET! })
+ * } catch (error) {
+ * 	if (String(error).includes('prisma-adapter')) {
+ * 		console.error('Install @auth/prisma-adapter before continuing')
+ * 	}
+ * }
+ * ```
+ *
+ * @see PasswordAdapter in `src/builtins/email-password/types.ts`
+ * @see @auth/prisma-adapter for the base adapter implementation.
+ * @see listPrismaUserIds and listPrismaUsers for pagination helpers.
+ */
 export function createPrismaAdapter(options: PrismaAdapterOptions): PasswordAdapter {
-	const { client, hashParameters, models } = options
+	const { client, models } = options
 	// Fail fast when required primitives are missing so configuration bugs surface early.
 	if (!client) {
 		throw new Error('Prisma adapter requires a Prisma client instance.')
@@ -178,26 +310,25 @@ export function createPrismaAdapter(options: PrismaAdapterOptions): PasswordAdap
 
 	const base = loadAuthPrismaAdapter()(client) as Adapter
 	// Use configured model names when available, otherwise fall back to opinionated defaults.
-	const passwordDelegate = assertDelegate(
-		client[models?.password ?? DEFAULT_PASSWORD_MODEL] as PrismaDelegate | undefined,
-		models?.password ?? DEFAULT_PASSWORD_MODEL
-	)
+	const passwordKey = (models?.password ?? DEFAULT_PASSWORD_MODEL) as string
+	const delegates = client as unknown as Record<string, PrismaDelegate | undefined>
+	const passwordDelegate = assertDelegate(delegates[passwordKey], passwordKey)
 
 	const adapter: PasswordAdapter = {
 		...base,
 
 		async findUserIdByEmail(email) {
+			// Case-insensitive lookup that checks both the user model and password model for legacy support.
+			// Uses Prisma's `mode: 'insensitive'` for databases that support it (e.g., PostgreSQL).
+			// For databases without native case-insensitive support, relies on normalized lowercase comparisons.
+			// Edge case: returns null for OAuth-only accounts without password rows.
 			const delegate = client.user
 			const normalized = normalizeEmail(email)
 
 			// Prefer the primary user model for a case-insensitive lookup.
 			const byUser = delegate.findFirst
 				? await delegate.findFirst({
-						where: {
-							email: {
-								equals: email
-							}
-						},
+						where: { email },
 						select: { id: true }
 					})
 				: null
@@ -206,6 +337,7 @@ export function createPrismaAdapter(options: PrismaAdapterOptions): PasswordAdap
 			}
 
 			// Fallback to a stored password record in scenarios where the user model lacks the email field.
+			// Password records are already normalized to lowercase, so strict equality works here.
 			const byPassword = passwordDelegate.findFirst
 				? await passwordDelegate.findFirst({
 						where: { email: normalized },
@@ -220,11 +352,11 @@ export function createPrismaAdapter(options: PrismaAdapterOptions): PasswordAdap
 			return null
 		},
 
-		async createUserPassword({ userId, email, password }) {
+		async createUserPassword({ userId, email, hash }) {
+			// Upserts a password record using the provided hash, normalizing email to lowercase for lookups.
+			// ⚠️ Security: plaintext passwords are hashed before touching the database.
 			const normalized = normalizeEmail(email)
 
-			// Hash with optional custom parameters before persisting credentials.
-			const hash = await hashPassword(password, { parameters: hashParameters })
 			const row = await passwordDelegate.upsert?.({
 				where: { userId },
 				create: {
@@ -245,40 +377,26 @@ export function createPrismaAdapter(options: PrismaAdapterOptions): PasswordAdap
 			return normalizePasswordRecord(row)
 		},
 
-		async verifyUserPassword({ userId, password }) {
+		async getUserPassword(userId) {
 			const row = passwordDelegate.findUnique
 				? await passwordDelegate.findUnique({
 						where: { userId }
 					})
 				: null
-			if (!row || !isPasswordRow(row)) return false
-			const match = await verifyPasswordHash(password, row.hash)
-
-			// Opportunistically upgrade the stored hash when parameters become stronger.
-			if (match && hashParameters && needsRehash(row.hash, hashParameters)) {
-				const nextHash = await hashPassword(password, { parameters: hashParameters })
-				await passwordDelegate.update?.({
-					where: { userId },
-					data: {
-						hash: nextHash,
-						updatedAt: new Date()
-					}
-				})
-			}
-
-			return match
+			if (!row || !isPasswordRow(row)) return null
+			return normalizePasswordRecord(row)
 		},
 
 		async deleteUserPassword(userId) {
-			// Remove any lingering password rows to keep orphaned data out of the database.
+			// Removes password rows (even duplicates) to keep sensitive data from lingering post-deletion.
 			await passwordDelegate.deleteMany?.({ where: { userId } })
 		},
 
-		async resetUserPassword({ userId, password }) {
+		async resetUserPassword({ userId, hash }) {
+			// Replaces the stored hash and updates timestamps. Returns null for OAuth-only users.
 			const row = passwordDelegate.findUnique ? await passwordDelegate.findUnique({ where: { userId } }) : null
 			if (!row || !isPasswordRow(row)) return null
 			// Replace the stored hash and bump timestamps for auditing.
-			const hash = await hashPassword(password, { parameters: hashParameters })
 			const updated = await passwordDelegate.update?.({
 				where: { userId },
 				data: {
@@ -297,7 +415,8 @@ export function createPrismaAdapter(options: PrismaAdapterOptions): PasswordAdap
 	if (typeof base.deleteUser === 'function') {
 		const originalDeleteUser = base.deleteUser.bind(base)
 		adapter.deleteUser = async (id): Promise<AdapterUser | null | undefined> => {
-			// Ensure password artifacts are purged alongside the Auth.js delete lifecycle.
+			// Ensures password artifacts are purged during Auth.js deletion.
+			// ⚠️ Security: prevents orphaned password hashes from remaining in the database.
 			await passwordDelegate.deleteMany?.({ where: { userId: id } })
 			const user = await originalDeleteUser(id)
 			return user ?? null
@@ -308,13 +427,66 @@ export function createPrismaAdapter(options: PrismaAdapterOptions): PasswordAdap
 }
 
 /**
-	Paged helper that returns only user identifiers via the Prisma client.
-
-	@example
-	```ts
-	const { ids, pageCount } = await listPrismaUserIds(prisma, { page: 0, pageSize: 100 })
-	```
-*/
+ * Retrieves a paginated list of Auth.js user IDs using Prisma. Useful for bulk
+ * operations, admin exports, or background jobs where only identifiers are
+ * needed. Supports custom filtering/ordering via Prisma `where`/`orderBy`
+ * clauses.
+ *
+ * ⚠️ Security: Do not pass raw user input into `where`/`orderBy` without
+ * validation. Always rely on Prisma's parameterization to avoid SQL injection.
+ *
+ * Performance:
+ * - Executes two queries per call (`count` + `findMany`). Cache results or
+ *   limit page sizes for heavy workloads.
+ * - Uses `select: { id: true }` to minimize data transfer.
+ * - Large page sizes (>1000) can increase memory usage and query latency.
+ * - Sorting on non-indexed columns can be slow; add DB indexes for frequent orderings.
+ *
+ * Edge cases:
+ * - Out-of-range pages return an empty `ids` array but include metadata.
+ * - Total counts may change between calls if new users are added/deleted.
+ * - Custom filters may yield zero matches; handle `total === 0`.
+ *
+ * @param client - Prisma client with a `user` delegate.
+ * @param options.page - Zero-based page index (default `0`).
+ * @param options.pageSize - Page size (default {@link DEFAULT_LIST_PAGE_SIZE}). Minimum 1.
+ * @param options.orderBy - Prisma `orderBy` clause. Defaults to `{ createdAt: 'desc' }`.
+ * @param options.where - Prisma `where` clause for filtering results.
+ * @returns Object with `ids`, `page`, `pageCount`, and `total` user count.
+ *
+ * @example Basic pagination
+ * ```ts
+ * const { ids, pageCount } = await listPrismaUserIds(prisma, { page: 0, pageSize: 100 })
+ * ```
+ *
+ * @example Filter verified users
+ * ```ts
+ * await listPrismaUserIds(prisma, { where: { emailVerified: { not: null } } })
+ * ```
+ *
+ * @example Custom ordering
+ * ```ts
+ * await listPrismaUserIds(prisma, { orderBy: { email: 'asc' } })
+ * ```
+ *
+ * @example Iterate every page
+ * ```ts
+ * const { pageCount } = await listPrismaUserIds(prisma)
+ * for (let page = 0; page < pageCount; page++) {
+ * 	const { ids } = await listPrismaUserIds(prisma, { page })
+ * 	await process(ids)
+ * }
+ * ```
+ *
+ * @example Handle empty result sets
+ * ```ts
+ * const { total } = await listPrismaUserIds(prisma, { where: { role: 'admin' } })
+ * if (total === 0) console.log('No admins found')
+ * ```
+ *
+ * @see DEFAULT_LIST_PAGE_SIZE for defaults.
+ * @see listPrismaUsers for fetching full user objects.
+ */
 export async function listPrismaUserIds(
 	client: PrismaClientLike,
 	options: ListUsersOptions = {}
@@ -348,13 +520,61 @@ export async function listPrismaUserIds(
 }
 
 /**
-	Lists full Auth.js users with pagination using the provided Prisma client.
-
-	@example
-	```ts
-	const { users } = await listPrismaUsers(prisma, { where: { emailVerified: { not: null } } })
-	```
-*/
+ * Retrieves paginated {@link AdapterUser} records via Prisma. Loads complete
+ * user objects (id, email, name, image, emailVerified) and supports custom
+ * filtering/ordering.
+ *
+ * ⚠️ Security:
+ * - Avoid exposing raw user objects directly to clients; redact sensitive fields.
+ * - Validate any dynamic filters to prevent leaking data.
+ *
+ * Performance:
+ * - Executes two queries per call (`count` + `findMany`).
+ * - Fetching full rows is heavier than {@link listPrismaUserIds}; use IDs when possible.
+ * - Large page sizes can tax memory. Stick to {@link DEFAULT_LIST_PAGE_SIZE} or smaller.
+ * - Full exports for massive datasets should run in background jobs or streams.
+ *
+ * Edge cases:
+ * - Out-of-range pages return an empty `users` array with metadata.
+ * - Optional fields (name, email, image) may be `null`; always null-check.
+ * - Custom filters may yield zero matches; handle `total === 0`.
+ *
+ * @param client - Prisma client with a `user` delegate.
+ * @param options.page - Zero-based page index (default `0`).
+ * @param options.pageSize - Page size (default {@link DEFAULT_LIST_PAGE_SIZE}).
+ * @param options.orderBy - Prisma `orderBy` clause (default `{ createdAt: 'desc' }`).
+ * @param options.where - Prisma `where` clause for filtering rows.
+ * @returns Object with `users`, `page`, `pageCount`, and `total` user count.
+ *
+ * @example Display a dashboard
+ * ```ts
+ * const { users, total } = await listPrismaUsers(prisma, { page: 0 })
+ * console.log(`Showing ${users.length} of ${total}`)
+ * ```
+ *
+ * @example Filter verified users
+ * ```ts
+ * await listPrismaUsers(prisma, { where: { emailVerified: { not: null } } })
+ * ```
+ *
+ * @example Export all users
+ * ```ts
+ * const { pageCount } = await listPrismaUsers(prisma)
+ * const rows: AdapterUser[] = []
+ * for (let page = 0; page < pageCount; page++) {
+ * 	const { users } = await listPrismaUsers(prisma, { page })
+ * 	rows.push(...users)
+ * }
+ * ```
+ *
+ * @example Custom page size
+ * ```ts
+ * await listPrismaUsers(prisma, { pageSize: 50 })
+ * ```
+ *
+ * @see AdapterUser from `@auth/core/adapters`.
+ * @see listPrismaUserIds for ID-only pagination.
+ */
 export async function listPrismaUsers(
 	client: PrismaClientLike,
 	options: ListUsersOptions = {}

@@ -1,6 +1,7 @@
 /**
  * Manages pending tool execution digests so subsequent AI turns can ingest tool outputs.
  */
+import { logger } from '@/core/logger.js'
 import type { ChatFunctionCall } from '@/engines/base.js'
 
 /**
@@ -21,6 +22,10 @@ export interface ToolDigest {
 	createdAt: number
 	/** Optional shadow summarization response identifier. */
 	shadowResponseId?: string | null
+	/** True when the tool was executed by an MCP server rather than Discord. */
+	isMcp?: boolean
+	/** Label describing which MCP server handled the tool call. */
+	serverLabel?: string | null
 }
 
 /**
@@ -30,6 +35,8 @@ interface ScheduleOptions {
 	call: ChatFunctionCall
 	channelKey: string
 	execute: () => Promise<ToolDigest>
+	isMcp?: boolean
+	serverLabel?: string | null
 	onFailure?: (digest: ToolDigest, error: unknown) => void
 	onSuccess?: (digest: ToolDigest) => void
 }
@@ -87,6 +94,20 @@ export function scheduleToolRun(options: ScheduleOptions): void {
 		try {
 			// Execute tool and capture digest
 			const digest = await options.execute()
+			if (options.isMcp && digest.isMcp !== true) {
+				digest.isMcp = true
+			}
+			if (options.serverLabel && !digest.serverLabel) {
+				digest.serverLabel = options.serverLabel
+			}
+			if (digest.isMcp) {
+				logger.debug('MCP tool digest enqueued', {
+					callId: digest.callId,
+					name: digest.name,
+					serverLabel: digest.serverLabel ?? null,
+					success: digest.success
+				})
+			}
 
 			// Queue successful result
 			enqueueDigest(options.channelKey, digest)
@@ -98,7 +119,17 @@ export function scheduleToolRun(options: ScheduleOptions): void {
 				createdAt: Date.now(),
 				name: options.call.name,
 				success: false,
-				summary: error instanceof Error ? error.message : String(error)
+				summary: error instanceof Error ? error.message : String(error),
+				isMcp: options.isMcp,
+				serverLabel: options.serverLabel ?? null
+			}
+			if (digest.isMcp) {
+				logger.debug('MCP tool digest enqueued', {
+					callId: digest.callId,
+					name: digest.name,
+					serverLabel: digest.serverLabel,
+					success: digest.success
+				})
 			}
 
 			// Convert errors to failure digests

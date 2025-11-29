@@ -445,10 +445,18 @@ export async function registerCommandsToDiscord(
 
 			// Success - exit retry loop
 			return
-		} catch (error: any) {
-			if (error.type === 'rate_limit' && attempt < maxRetries) {
+		} catch (error: unknown) {
+			if (
+				typeof error === 'object' &&
+				error !== null &&
+				'type' in error &&
+				error.type === 'rate_limit' &&
+				attempt < maxRetries
+			) {
 				// Wait and retry
-				const delay = error.delay || Math.min(baseDelay * Math.pow(2, attempt), maxDelay)
+				const delay =
+					('delay' in error && typeof error.delay === 'number' ? error.delay : undefined) ||
+					Math.min(baseDelay * Math.pow(2, attempt), maxDelay)
 				logger.debug(`Rate limited, waiting ${delay}ms before retry ${attempt + 1}/${maxRetries}`)
 				await new Promise(resolve => setTimeout(resolve, delay))
 				attempt++
@@ -456,10 +464,13 @@ export async function registerCommandsToDiscord(
 			}
 
 			// Max retries exceeded or other error
-			if (error.type === 'timeout') {
+			if (typeof error === 'object' && error !== null && 'type' in error && error.type === 'timeout') {
 				throw new Error('Command registration timed out')
 			}
-			throw error.error || error
+			if (typeof error === 'object' && error !== null && 'error' in error) {
+				throw error.error
+			}
+			throw error
 		}
 	}
 

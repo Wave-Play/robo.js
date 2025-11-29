@@ -1,0 +1,213 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
+    /* Match App.css body background */
+    background: radial-gradient(circle at 20% 18%, rgba(59, 130, 246, 0.25), transparent 50%),
+        radial-gradient(circle at 80% 12%, rgba(14, 165, 233, 0.22), transparent 55%),
+        radial-gradient(circle at 40% 80%, rgba(37, 99, 235, 0.18), transparent 60%),
+        #030510;
+    color: #e8edf9;
+}
+
+.card {
+    width: 100%;
+    max-width: 400px;
+    padding: 2.5rem;
+    /* Match App.css .card */
+    background: linear-gradient(182deg, rgba(7, 11, 22, 0.95), rgba(4, 6, 16, 0.95));
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    border-radius: 8px;
+    box-shadow: 0 24px 48px -42px rgba(15, 23, 42, 0.8);
+}
+
+.title {
+    margin: 0 0 2rem;
+    font-size: 1.8rem;
+    font-weight: 700;
+    text-align: center;
+    color: #f1f5ff;
+    letter-spacing: -0.02em;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: rgba(202, 211, 238, 0.9);
+}
+
+.input {
+    padding: 0.75rem 1rem;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    border-radius: 6px;
+    font-size: 1rem;
+    color: #f8fafc;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.input:focus {
+    border-color: #60a5fa;
+    background: rgba(15, 23, 42, 0.8);
+    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+}
+
+.button {
+    display: flex;
+    justify-content: center;
+    padding: 0.75rem 1rem;
+    border: 1px solid rgba(96, 165, 250, 0.6);
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #f8fafc;
+    /* Match .button--primary */
+    background: linear-gradient(135deg, #1d4ed8, #38bdf8);
+    box-shadow: 0 12px 30px -20px rgba(37, 99, 235, 0.85);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 0.5rem;
+}
+
+.button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 18px 36px -24px rgba(37, 99, 235, 0.9);
+}
+
+.button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    margin: 1.75rem 0;
+    color: rgba(148, 163, 184, 0.6);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.divider span {
+    padding: 0 1rem;
+}
+
+.socialButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(148, 163, 184, 0.38);
+    border-radius: 6px;
+    color: #e2e8f0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.socialButton:hover {
+    background: rgba(30, 41, 59, 0.8);
+    border-color: rgba(148, 163, 184, 0.55);
+    color: #f8fafc;
+}
+
+.error {
+    padding: 0.75rem;
+    margin-bottom: 1.5rem;
+    border-radius: 6px;
+    background: rgba(69, 10, 10, 0.5);
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    color: #fca5a5;
+    font-size: 0.875rem;
+    text-align: center;
+}
+
+.backLink {
+    align-self: flex-start;
+    margin-bottom: 1.5rem;
+    color: rgba(148, 163, 184, 0.8);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: color 0.2s ease;
+}
+
+.backLink:hover {
+    color: #60a5fa;
+}
+
+.forgotPassword {
+    align-self: flex-end;
+    font-size: 0.8rem;
+    color: rgba(148, 163, 184, 0.8);
+    text-decoration: none;
+    margin-top: -0.25rem;
+    transition: color 0.2s ease;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+.forgotPassword:hover {
+    color: #60a5fa;
+}
+
+.signupContainer {
+    margin-top: 1.5rem;
+    text-align: center;
+    font-size: 0.9rem;
+    color: rgba(148, 163, 184, 0.8);
+}
+
+.link {
+    color: #60a5fa;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.link:hover {
+    color: #93c5fd;
+}
+
+.success {
+    padding: 0.75rem;
+    margin-bottom: 1.5rem;
+    border-radius: 6px;
+    background: rgba(22, 101, 52, 0.5);
+    border: 1px solid rgba(74, 222, 128, 0.3);
+    color: #86efac;
+    font-size: 0.875rem;
+    text-align: center;
+}

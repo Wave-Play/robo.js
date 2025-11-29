@@ -39,7 +39,7 @@
 	"devDependencies": {
 		"@swc/core": "^1.7.23",
 		"@types/node": "^22.5.2",
-		"discord.js": "^14.16.1",
+		"discord.js": "14.22.1",
 		"prettier": "^3.3.3",
 		"robo.js": "workspace:*",
 		"typescript": "^5.5.4",

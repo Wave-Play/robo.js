@@ -39,7 +39,7 @@
 		"@robojs/server": "^0.5.7",
 		"class-variance-authority": "^0.7.0",
 		"clsx": "^2.1.1",
-		"discord.js": "^14.16.2",
+		"discord.js": "14.22.1",
 		"extensionless": "^1.9.9",
 		"lucide-react": "^0.395.0",
 		"react": "^18.3.1",
