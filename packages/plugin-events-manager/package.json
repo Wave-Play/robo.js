@@ -1,0 +1,57 @@
+{
+	"name": "@robojs/events-manager",
+	"description": "A comprehensive Discord events management plugin for Robo.js that helps communities organize events with RSVP tracking, automated reminders, and seamless Discord integration.",
+	"version": "0.0.0",
+	"private": false,
+	"type": "module",
+	"main": ".robo/build/index.js",
+	"license": "MIT",
+	"author": "DevArqf",
+	"contributors": [
+		"DevArqf"
+	],
+	"files": [
+		".robo/",
+		"src/",
+		"config/",
+		"LICENSE",
+		"README.md"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Wave-Play/robo.git",
+		"directory": "packages/plugin-events-manager"
+	},
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://registry.npmjs.org/"
+	},
+	"scripts": {
+		"build": "robo build plugin",
+		"dev": "NODE_OPTIONS=--enable-source-maps robo build plugin --watch",
+		"lint": "pnpm lint:eslint && pnpm lint:style",
+		"lint:eslint": "eslint . --ext js,jsx,ts,tsx",
+		"lint:style": "prettier --write ."
+	},
+	"devDependencies": {
+		"@swc/core": "^1.11.29",
+		"@types/node": "^20.16.5",
+		"@typescript-eslint/eslint-plugin": "^5.56.0",
+		"@typescript-eslint/parser": "^5.56.0",
+		"discord.js": "^14.7.1",
+		"eslint": "^8.36.0",
+		"prettier": "^2.8.5",
+		"robo.js": "workspace:*",
+		"typescript": "^5.0.0"
+	},
+	"keywords": [
+		"discord",
+		"events",
+		"rsvp",
+		"bot",
+		"robo",
+		"plugin",
+		"community",
+		"management"
+	]
+}
