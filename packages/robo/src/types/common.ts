@@ -123,5 +123,7 @@ export interface BaseConfig {
 		path: string
 	}
 	description?: string
+	disabled?: boolean
+	serverOnly?: string[] | string
 	timeout?: number
 }
