@@ -82,10 +82,15 @@ export interface PluginState {
 
 /**
  * Context provided to start and stop hooks.
- * Start runs SEQUENTIALLY in registration order.
- * Stop runs SEQUENTIALLY in REVERSE order.
+ * Start runs SEQUENTIALLY: plugins in registration order → project.
+ * Stop runs SEQUENTIALLY: project first → plugins in REVERSE order.
  */
 export interface PluginContext<TConfig = unknown> {
+	/**
+	 * Current runtime mode.
+	 */
+	mode: 'development' | 'production'
+
 	/**
 	 * Plugin's configuration from user's /config/plugins/.
 	 * Typed based on plugin's config schema.
@@ -123,6 +128,26 @@ export interface PluginContext<TConfig = unknown> {
 		/** Package version */
 		version: string
 	}
+}
+
+/**
+ * Context provided to start.ts hooks.
+ * Alias for PluginContext for clarity.
+ */
+export type StartContext<TConfig = unknown> = PluginContext<TConfig>
+
+/**
+ * Context provided to stop.ts hooks.
+ * Extends PluginContext with shutdown reason.
+ */
+export interface StopContext<TConfig = unknown> extends PluginContext<TConfig> {
+	/**
+	 * Reason for shutdown.
+	 * - 'signal': SIGTERM/SIGINT received
+	 * - 'error': Uncaught exception
+	 * - 'restart': HMR restart (though stop hooks typically don't run on restart)
+	 */
+	reason: 'signal' | 'error' | 'restart'
 }
 
 /**

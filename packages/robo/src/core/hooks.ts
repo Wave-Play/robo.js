@@ -4,7 +4,7 @@ import { Env } from './env.js'
 import { state } from './state.js'
 import { DEFAULT_CONFIG, TIMEOUT } from './constants.js'
 import { timeout } from '../cli/utils/utils.js'
-import type { InitContext, PluginContext, PluginState } from '../types/lifecycle.js'
+import type { InitContext, PluginContext, PluginState, StopContext } from '../types/lifecycle.js'
 import type { PluginData } from '../types/common.js'
 import path from 'node:path'
 import fs from 'node:fs/promises'
@@ -98,7 +98,7 @@ export function inferNamespace(packageName: string): string {
 
 /**
  * Execute init hooks for project and all registered plugins.
- * Runs sequentially: project first, then plugins in registration order.
+ * Runs sequentially: plugins FIRST (in registration order), then project LAST.
  * Respects failSafe meta option for error handling.
  */
 export async function executeInitHooks(
@@ -110,29 +110,7 @@ export async function executeInitHooks(
 	// Get the logger instance for use in hooks
 	const loggerInstance = logger()
 
-	// 1. Execute project's init hook first (if exists)
-	const projectHookPath = await resolveProjectHookPath('init', mode)
-	if (projectHookPath) {
-		const context: InitContext = {
-			config,
-			logger: loggerInstance,
-			env: Env,
-			mode
-		}
-
-		try {
-			const hookModule = await import(pathToFileURL(projectHookPath).href)
-			if (typeof hookModule.default === 'function') {
-				await hookModule.default(context)
-			}
-		} catch (error) {
-			// Project init hook failure is always fatal
-			loggerInstance.error('Project init hook failed:', error)
-			throw error
-		}
-	}
-
-	// 2. Execute plugin init hooks in registration order
+	// 1. Execute plugin init hooks FIRST (in registration order)
 	for (const [pluginName, pluginData] of plugins) {
 		const hookPath = await resolvePluginHookPath(pluginName, 'init')
 
@@ -163,6 +141,28 @@ export async function executeInitHooks(
 				loggerInstance.error(`Init hook for ${pluginName} failed:`, error)
 				throw error
 			}
+		}
+	}
+
+	// 2. Execute project's init hook LAST (if exists)
+	const projectHookPath = await resolveProjectHookPath('init', mode)
+	if (projectHookPath) {
+		const context: InitContext = {
+			config,
+			logger: loggerInstance,
+			env: Env,
+			mode
+		}
+
+		try {
+			const hookModule = await import(pathToFileURL(projectHookPath).href)
+			if (typeof hookModule.default === 'function') {
+				await hookModule.default(context)
+			}
+		} catch (error) {
+			// Project init hook failure is always fatal
+			loggerInstance.error('Project init hook failed:', error)
+			throw error
 		}
 	}
 }
@@ -230,7 +230,7 @@ async function getPluginVersion(pluginName: string): Promise<string> {
 
 /**
  * Execute start hooks for project and all registered plugins.
- * Runs sequentially: project FIRST, then plugins in registration order.
+ * Runs sequentially: plugins FIRST (in registration order), then project LAST.
  *
  * This runs AFTER portal is populated but BEFORE Discord login.
  */
@@ -242,38 +242,7 @@ export async function executeStartHooks(
 	const loggerInstance = logger()
 	const timeoutDuration = config?.timeouts?.lifecycle ?? DEFAULT_CONFIG.timeouts.lifecycle
 
-	// 1. Execute project's start hook first (if exists)
-	const projectHookPath = await resolveProjectHookPath('start', mode)
-	if (projectHookPath) {
-		try {
-			loggerInstance.debug('Executing project start hook...')
-			const hookModule = await import(pathToFileURL(projectHookPath).href)
-
-			if (typeof hookModule.default === 'function') {
-				const hookPromise = hookModule.default({
-					config,
-					logger: loggerInstance,
-					env: Env,
-					mode
-				})
-
-				if (hookPromise instanceof Promise) {
-					const timeoutPromise = timeout(() => TIMEOUT, timeoutDuration)
-					const result = await Promise.race([hookPromise, timeoutPromise])
-
-					if (result === TIMEOUT) {
-						loggerInstance.warn('Project start hook timed out')
-					}
-				}
-			}
-		} catch (error) {
-			// Project start hook failure is always fatal
-			loggerInstance.error('Project start hook failed:', error)
-			throw error
-		}
-	}
-
-	// 2. Execute plugin start hooks in registration order
+	// 1. Execute plugin start hooks FIRST (in registration order)
 	for (const [pluginName, pluginData] of plugins) {
 		const hookPath = await resolvePluginHookPath(pluginName, 'start')
 
@@ -286,6 +255,7 @@ export async function executeStartHooks(
 
 		// Create plugin-scoped context
 		const context: PluginContext = {
+			mode,
 			config: pluginData.options,
 			state: createPluginState(pluginName),
 			logger: loggerInstance.fork(inferNamespace(pluginName)),
@@ -325,23 +295,86 @@ export async function executeStartHooks(
 			}
 		}
 	}
+
+	// 2. Execute project's start hook LAST (if exists)
+	const projectHookPath = await resolveProjectHookPath('start', mode)
+	if (projectHookPath) {
+		try {
+			loggerInstance.debug('Executing project start hook...')
+			const hookModule = await import(pathToFileURL(projectHookPath).href)
+
+			if (typeof hookModule.default === 'function') {
+				const hookPromise = hookModule.default({
+					config,
+					logger: loggerInstance,
+					env: Env,
+					mode
+				})
+
+				if (hookPromise instanceof Promise) {
+					const timeoutPromise = timeout(() => TIMEOUT, timeoutDuration)
+					const result = await Promise.race([hookPromise, timeoutPromise])
+
+					if (result === TIMEOUT) {
+						loggerInstance.warn('Project start hook timed out')
+					}
+				}
+			}
+		} catch (error) {
+			// Project start hook failure is always fatal
+			loggerInstance.error('Project start hook failed:', error)
+			throw error
+		}
+	}
 }
 
 /**
  * Execute stop hooks for all registered plugins and project.
- * Runs sequentially: plugins in REVERSE registration order, then project LAST.
+ * Runs sequentially: project FIRST, then plugins in REVERSE registration order.
  *
  * This runs when shutdown signal is received.
  */
 export async function executeStopHooks(
 	plugins: Map<string, PluginData>,
-	mode: 'development' | 'production'
+	mode: 'development' | 'production',
+	reason: 'signal' | 'error' | 'restart' = 'signal'
 ): Promise<void> {
 	const config = getConfig()
 	const loggerInstance = logger()
 	const timeoutDuration = config?.timeouts?.lifecycle ?? DEFAULT_CONFIG.timeouts.lifecycle
 
-	// 1. Execute plugin stop hooks in REVERSE registration order
+	// 1. Execute project's stop hook FIRST (if exists)
+	const projectHookPath = await resolveProjectHookPath('stop', mode)
+	if (projectHookPath) {
+		try {
+			loggerInstance.debug('Executing project stop hook...')
+			const hookModule = await import(pathToFileURL(projectHookPath).href)
+
+			if (typeof hookModule.default === 'function') {
+				const hookPromise = hookModule.default({
+					config,
+					logger: loggerInstance,
+					env: Env,
+					mode,
+					reason
+				})
+
+				if (hookPromise instanceof Promise) {
+					const timeoutPromise = timeout(() => TIMEOUT, timeoutDuration)
+					const result = await Promise.race([hookPromise, timeoutPromise])
+
+					if (result === TIMEOUT) {
+						loggerInstance.warn('Project stop hook timed out')
+					}
+				}
+			}
+		} catch (error) {
+			// Project stop hook failure - log but don't throw (shutdown should complete)
+			loggerInstance.error('Project stop hook failed:', error)
+		}
+	}
+
+	// 2. Execute plugin stop hooks in REVERSE registration order
 	const pluginEntries = Array.from(plugins.entries()).reverse()
 
 	for (const [pluginName, pluginData] of pluginEntries) {
@@ -354,8 +387,10 @@ export async function executeStopHooks(
 		// Get plugin version from cache
 		const pluginVersion = await getPluginVersion(pluginName)
 
-		// Create plugin-scoped context
-		const context: PluginContext = {
+		// Create plugin-scoped context with StopContext
+		const context: StopContext = {
+			mode,
+			reason,
 			config: pluginData.options,
 			state: createPluginState(pluginName),
 			logger: loggerInstance.fork(inferNamespace(pluginName)),
@@ -392,36 +427,6 @@ export async function executeStopHooks(
 				loggerInstance.error(`Stop hook for ${pluginName} failed:`, error)
 			}
 			// Continue with other plugins regardless - graceful shutdown should complete
-		}
-	}
-
-	// 2. Execute project's stop hook last (if exists)
-	const projectHookPath = await resolveProjectHookPath('stop', mode)
-	if (projectHookPath) {
-		try {
-			loggerInstance.debug('Executing project stop hook...')
-			const hookModule = await import(pathToFileURL(projectHookPath).href)
-
-			if (typeof hookModule.default === 'function') {
-				const hookPromise = hookModule.default({
-					config,
-					logger: loggerInstance,
-					env: Env,
-					mode
-				})
-
-				if (hookPromise instanceof Promise) {
-					const timeoutPromise = timeout(() => TIMEOUT, timeoutDuration)
-					const result = await Promise.race([hookPromise, timeoutPromise])
-
-					if (result === TIMEOUT) {
-						loggerInstance.warn('Project stop hook timed out')
-					}
-				}
-			}
-		} catch (error) {
-			// Project stop hook failure - log but don't throw (shutdown should complete)
-			loggerInstance.error('Project stop hook failed:', error)
 		}
 	}
 }

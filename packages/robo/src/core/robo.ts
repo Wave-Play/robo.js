@@ -211,13 +211,17 @@ async function start(options?: StartOptions) {
  * Stops your Robo instance gracefully. Similar to pressing `Ctrl+C` in the terminal.
  *
  * @param exitCode - The exit code to use when stopping Robo
+ * @param reason - The reason for stopping (defaults to 'signal' if exitCode is 0, 'error' otherwise)
  */
-async function stop(exitCode = 0) {
+async function stop(exitCode = 0, reason?: 'signal' | 'error' | 'restart') {
 	await Nanocore.update('watch', { status: exitCode === 0 ? 'stopping' : 'error' })
 
+	// Determine reason if not provided
+	const stopReason = reason ?? (exitCode === 0 ? 'signal' : 'error')
+
 	try {
-		// Execute stop hooks (plugins in reverse order, then project)
-		await executeStopHooks(plugins, Mode.get() as 'development' | 'production')
+		// Execute stop hooks (project first, then plugins in reverse order)
+		await executeStopHooks(plugins, Mode.get() as 'development' | 'production', stopReason)
 
 		// Notify lifecycle handler
 		await executeEventHandler(plugins, '_stop', client)
