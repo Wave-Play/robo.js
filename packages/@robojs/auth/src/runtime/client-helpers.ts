@@ -187,7 +187,9 @@ export async function signIn(
 		const data = (await response.clone().json()) as { url?: string; error?: string }
 		url = typeof data?.url === 'string' ? data.url : undefined
 		error = typeof data?.error === 'string' ? data.error : undefined
-	} catch {}
+	} catch {
+		// Intentionally empty - JSON parsing errors are handled by falling back to undefined values
+	}
 
 	if (!error && response.url) {
 		try {
@@ -198,7 +200,9 @@ export async function signIn(
 				const code = urlObj.searchParams.get('code')
 				if (code) error = `${error} (${code})`
 			}
-		} catch {}
+		} catch {
+			// Intentionally empty - URL parsing errors are handled by falling back to undefined error
+		}
 	}
 
 	return { ok: response.ok && !error, url, error }
@@ -281,7 +285,9 @@ export async function signOut(
 		const data = (await response.clone().json()) as { url?: string; error?: string }
 		url = typeof data?.url === 'string' ? data.url : undefined
 		error = typeof data?.error === 'string' ? data.error : undefined
-	} catch {}
+	} catch {
+		// Intentionally empty - JSON parsing errors are handled by falling back to undefined values
+	}
 	return { ok: response.ok, url, error }
 }
 

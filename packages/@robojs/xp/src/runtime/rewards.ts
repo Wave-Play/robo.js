@@ -9,10 +9,10 @@
  */
 import { client, logger } from 'robo.js'
 import { PermissionFlagsBits } from 'discord.js'
-import type { Guild, GuildMember, Role } from 'discord.js'
+import type { GuildMember, Role } from 'discord.js'
 import * as events from './events.js'
 import { getConfig } from '../config.js'
-import type { LevelUpEvent, LevelDownEvent, GuildConfig, RoleReward, RewardsMode } from '../types.js'
+import type { LevelUpEvent, LevelDownEvent, GuildConfig, RoleReward } from '../types.js'
 
 /**
  * Checks if the bot can manage a specific role

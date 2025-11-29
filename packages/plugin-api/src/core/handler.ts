@@ -371,7 +371,8 @@ function appendHeader(res: ServerResponse, name: string, value: string | string[
 		const nextArr = Array.isArray(value) ? value : [value]
 		res.setHeader('Set-Cookie', [...prevArr, ...nextArr])
 	} else {
-		// For non-mergeable headers, last write wins (that’s fine)
-		res.setHeader(name, value as any)
+		// For non-mergeable headers, last write wins (that's fine)
+		// ServerResponse.setHeader accepts string | number | string[] | readonly string[]
+		res.setHeader(name, value as unknown as string | number | string[] | readonly string[])
 	}
 }

@@ -18,6 +18,6 @@
 		"isolatedModules": true,
 		"incremental": true
 	},
-	"include": ["src/**/*"],
+	"include": ["src/**/*", "seed/rewards"],
 	"exclude": ["node_modules", "__tests__", ".robo"]
 }

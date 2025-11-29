@@ -7,7 +7,7 @@ import { AI, getEngine } from '@/core/ai.js'
 import { chunkMessage, replaceUsernamesWithIds } from '@/utils/discord-utils.js'
 import { logger } from '@/core/logger.js'
 import { options as pluginOptions } from '@/events/_start.js'
-import { Message } from 'discord.js'
+import { Message, type MessageReplyOptions } from 'discord.js'
 import { client } from 'robo.js'
 import type { ChatMessage, ChatMessageContent } from '@/engines/base.js'
 
@@ -130,12 +130,15 @@ export default async (message: Message) => {
 
 			// Send metadata-only response when no text content exists
 			if (!chunks.length) {
-				await lastMessage.reply({
+				const replyOptions: MessageReplyOptions = {
 					components,
 					embeds,
-					files,
-					flags: flags as any
-				})
+					files
+				}
+				if (flags !== undefined) {
+					replyOptions.flags = flags as MessageReplyOptions['flags']
+				}
+				await lastMessage.reply(replyOptions)
 
 				return
 			}
@@ -143,13 +146,16 @@ export default async (message: Message) => {
 			// Send each chunk as a reply, attaching extra data to the first message
 			for (const chunk of chunks) {
 				const content = replaceUsernamesWithIds(chunk, userMap)
-				lastMessage = await lastMessage.reply({
+				const replyOptions: MessageReplyOptions = {
 					content,
 					components,
 					embeds,
-					files,
-					flags: flags as any
-				})
+					files
+				}
+				if (flags !== undefined) {
+					replyOptions.flags = flags as MessageReplyOptions['flags']
+				}
+				lastMessage = await lastMessage.reply(replyOptions)
 				components = undefined
 				embeds = undefined
 				files = undefined

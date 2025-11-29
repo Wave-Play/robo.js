@@ -11,8 +11,7 @@ import { authLogger } from '../utils/logger.js'
 import { registerEmailPasswordRuntime } from '../builtins/email-password/runtime.js'
 import {
 	assertPasswordAdapter,
-	EmailPasswordProviderMetadata,
-	EmailPasswordRouteOverrides
+	EmailPasswordProviderMetadata
 } from '../builtins/email-password/types.js'
 import { ensureLeadingSlash, joinPath, stripTrailingSlash } from '../utils/path.js'
 import { EmailManager, setEmailManager, notifyEmail } from '../emails/manager.js'

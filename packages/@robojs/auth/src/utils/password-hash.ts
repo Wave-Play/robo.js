@@ -39,7 +39,7 @@ export interface PasswordHasher {
  * Argon2id default constants used across the auth package.
  *
  * - `ARGON2_VERSION`: Algorithm version (19 = Argon2 v1.3).
- * - `ARGON2_MEMORY_KIB`: Memory cost in KiB (4096 = 4 MiB).
+ * - `ARGON2_MEMORY_KIB`: Memory cost in KiB (4096 = 4 MiB).
  * - `ARGON2_TIME_COST`: Time cost/number of passes (3).
  * - `ARGON2_PARALLELISM`: Number of threads (1).
  * - `ARGON2_TAG_LENGTH`: Hash length in bytes (32 = 256 bits).
@@ -54,7 +54,7 @@ export interface PasswordHasher {
  * increase resistance to brute-force attacks but also raise CPU/RAM costs.
  *
  * Fields:
- * - `memorySize`: Memory cost in KiB. Default 4096 (4 MiB). Increase to 8192+ for high-security apps.
+ * - `memorySize`: Memory cost in KiB. Default 4096 (4 MiB). Increase to 8192+ for high-security apps.
  * - `passes`: Number of iterations/time cost. Default 3. Raising this linearly increases hashing time.
  * - `parallelism`: Thread count. Default 1. Increase on multi-core servers; keep ≤ available cores.
  * - `tagLength`: Output hash length in bytes. Default 32 (256 bits). Use 32 or 64 for most cases.
@@ -65,7 +65,7 @@ export interface PasswordHasher {
  * - Changing parameters requires rehashing existing passwords (see {@link needsRehash}).
  *
  * Performance:
- * - 4096 KiB with 3 passes hashes in ~50 ms on typical servers; 8192 KiB doubles that.
+ * - 4096 KiB with 3 passes hashes in ~50 ms on typical servers; 8192 KiB doubles that.
  * - High parallelism increases RAM usage proportionally.
  *
  * @example Default-strength parameters
@@ -131,7 +131,7 @@ export interface HashPasswordOptions {
  * Fields:
  * - `algorithm`: Always `'argon2id'` for this implementation.
  * - `params`: Parsed {@link Argon2Params} showing the effective security level.
- * - `salt`: Raw salt bytes (16 bytes by default).
+ * - `salt`: Raw salt bytes (16 bytes by default).
  * - `hash`: Raw digest bytes (length = `params.tagLength`).
  *
  * Edge cases:
@@ -160,7 +160,7 @@ export interface PasswordHashMetadata {
 
 /**
  * Default Argon2id parameters derived from OWASP's password storage guidance.
- * Provide a solid balance between security (~50 ms hashing time) and
+ * Provide a solid balance between security (~50 ms hashing time) and
  * performance for typical web workloads. Increase `memorySize` or `passes`
  * when targeting high-risk environments.
  *

@@ -4,7 +4,7 @@
  * exported interfaces to ensure compatibility with Robo's runtime expectations.
  */
 import type { ChatReply } from '../core/chat/types.js'
-import type { Client, GuildMember, TextBasedChannel, User, VoiceBasedChannel } from 'discord.js'
+import type { GuildMember, TextBasedChannel, User, VoiceBasedChannel } from 'discord.js'
 import type { Command } from 'robo.js'
 
 /**
