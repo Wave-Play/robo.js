@@ -8,6 +8,7 @@
 			"packages/@robojs/analytics",
 			"packages/@robojs/auth",
 			"packages/@robojs/cron",
+			"packages/@robojs/discordjs",
 			"packages/@robojs/giveaways",
 			"packages/@robojs/i18n",
 			"packages/@robojs/patch",
