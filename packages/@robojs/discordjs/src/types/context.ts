@@ -93,3 +93,14 @@ export const ContextType = {
 } as const
 
 export type ContextTypeValue = (typeof ContextType)[keyof typeof ContextType]
+
+/**
+ * Namespace controller for portal.discord.context
+ * Provides access to all context menus.
+ */
+export interface ContextNamespaceController {
+	/** Get a specific context menu handler by name */
+	get(name: string): Promise<ContextHandler | null>
+	/** Get all context menu keys */
+	list(): string[]
+}

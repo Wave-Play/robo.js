@@ -61,3 +61,16 @@ export interface EventController {
  * Re-exported for convenience.
  */
 export type DiscordEventName = keyof ClientEvents
+
+/**
+ * Namespace controller for portal.discord.events
+ * Provides access to all events and emit utilities.
+ */
+export interface EventsNamespaceController {
+	/** Get handlers for a specific event by name */
+	get<K extends keyof ClientEvents = keyof ClientEvents>(name: K): Promise<EventHandler<K>[]>
+	/** Get all event names that have handlers */
+	list(): string[]
+	/** Emit an event programmatically (execute all handlers for the event) */
+	emit<K extends keyof ClientEvents>(name: K, ...args: ClientEvents[K]): Promise<void>
+}

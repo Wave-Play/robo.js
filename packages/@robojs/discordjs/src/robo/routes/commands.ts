@@ -2,9 +2,11 @@
  * Route definition for Discord slash commands.
  * Directory inferred from filename: /src/commands/
  */
-import type { RouteConfig, ScannedEntry, ProcessedEntry } from 'robo.js'
-import type { CommandHandler, CommandController, CommandConfig } from '../../types/commands.js'
+import type { PortalAPI, RouteConfig, ScannedEntry, ProcessedEntry } from 'robo.js'
+import type { ChatInputCommandInteraction } from 'discord.js'
+import type { CommandHandler, CommandController, CommandConfig, CommandsNamespaceController } from '../../types/commands.js'
 import { createCommandController } from '../../core/controllers.js'
+import { executeCommandHandler } from '../../core/handlers/command.js'
 
 /**
  * Handler type for data access (portal.discord.commands)
@@ -17,9 +19,34 @@ export type Handler = CommandHandler
 export type Controller = CommandController
 
 /**
- * Controller factory for runtime
+ * Controller factory for runtime (per-handler)
  */
 export { createCommandController as controller }
+
+/**
+ * Namespace controller factory for portal access.
+ * Provides get, list, execute methods for all commands.
+ */
+export const NamespaceController = (portal: PortalAPI): CommandsNamespaceController => ({
+	async get(name: string): Promise<CommandHandler | null> {
+		try {
+			const handler = await portal.getHandler<CommandHandler>('discord', 'commands', name)
+			return handler?.default ?? null
+		} catch {
+			return null
+		}
+	},
+
+	list(): string[] {
+		const portalApi = portal as unknown as { getByType: (type: string) => Record<string, unknown> }
+		const commandsData = portalApi.getByType('discord:commands')
+		return Object.keys(commandsData)
+	},
+
+	async execute(name: string, interaction: ChatInputCommandInteraction): Promise<void> {
+		await executeCommandHandler(interaction, name)
+	}
+})
 
 /**
  * Route configuration - how to scan and process files.

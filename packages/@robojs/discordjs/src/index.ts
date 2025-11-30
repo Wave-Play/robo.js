@@ -60,6 +60,7 @@ export type {
 	CommandOptionTypes,
 	CommandOptions,
 	CommandResult,
+	CommandsNamespaceController,
 	// Events
 	DiscordEventName,
 	Event,
@@ -67,22 +68,26 @@ export type {
 	EventController,
 	EventEntry,
 	EventHandler,
+	EventsNamespaceController,
 	// Context menus
 	Context,
 	ContextConfig,
 	ContextController,
 	ContextEntry,
 	ContextHandler,
+	ContextNamespaceController,
 	ContextTypeValue,
 	MessageContextHandler,
 	UserContextHandler,
 	// Middleware
 	Middleware,
+	MiddlewareChainEntry,
 	MiddlewareConfig,
 	MiddlewareController,
 	MiddlewareData,
 	MiddlewareEntry,
 	MiddlewareHandler,
+	MiddlewareNamespaceController,
 	MiddlewareResult
 } from './types/index.js'
 
@@ -130,3 +135,28 @@ export { executeAutocompleteHandler } from './core/handlers/autocomplete.js'
 export { executeContextHandler } from './core/handlers/context.js'
 export { executeEventHandler } from './core/handlers/event.js'
 export { handleInteraction } from './core/interactions.js'
+
+// Export namespace controller factories
+export {
+	createCommandsNamespaceController,
+	createContextNamespaceController,
+	createEventsNamespaceController,
+	createMiddlewareNamespaceController
+} from './core/namespace-controllers.js'
+
+// Export pre-instantiated namespace controllers for convenience
+import {
+	createCommandsNamespaceController,
+	createContextNamespaceController,
+	createEventsNamespaceController,
+	createMiddlewareNamespaceController
+} from './core/namespace-controllers.js'
+
+/** Namespace controller for commands - access all commands, execute programmatically */
+export const commands = createCommandsNamespaceController()
+/** Namespace controller for events - access all events, emit programmatically */
+export const events = createEventsNamespaceController()
+/** Namespace controller for context menus - access all context menus */
+export const context = createContextNamespaceController()
+/** Namespace controller for middleware - access middleware chain */
+export const middleware = createMiddlewareNamespaceController()

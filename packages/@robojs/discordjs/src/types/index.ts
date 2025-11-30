@@ -18,7 +18,8 @@ export type {
 	CommandOption,
 	CommandOptionTypes,
 	CommandOptions,
-	CommandResult
+	CommandResult,
+	CommandsNamespaceController
 } from './commands.js'
 
 // Event types
@@ -28,7 +29,8 @@ export type {
 	EventConfig,
 	EventController,
 	EventEntry,
-	EventHandler
+	EventHandler,
+	EventsNamespaceController
 } from './events.js'
 
 // Context menu types
@@ -38,6 +40,7 @@ export type {
 	ContextController,
 	ContextEntry,
 	ContextHandler,
+	ContextNamespaceController,
 	ContextTypeValue,
 	MessageContextHandler,
 	UserContextHandler
@@ -47,10 +50,17 @@ export { ContextType } from './context.js'
 // Middleware types
 export type {
 	Middleware,
+	MiddlewareChainEntry,
 	MiddlewareConfig,
 	MiddlewareController,
 	MiddlewareData,
 	MiddlewareEntry,
 	MiddlewareHandler,
+	MiddlewareNamespaceController,
 	MiddlewareResult
 } from './middleware.js'
+
+// Portal type augmentation (enables IDE autocomplete for portal.discord.*)
+export type { DiscordPortalNamespace } from './portal.js'
+// Side-effect import to ensure module augmentation is applied
+import './portal.js'

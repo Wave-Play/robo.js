@@ -174,3 +174,16 @@ export interface CommandController {
 	/** Get command metadata */
 	getMetadata(): Record<string, unknown>
 }
+
+/**
+ * Namespace controller for portal.discord.commands
+ * Provides access to all commands and execution utilities.
+ */
+export interface CommandsNamespaceController {
+	/** Get a specific command handler by name */
+	get(name: string): Promise<CommandHandler | null>
+	/** Get all command keys */
+	list(): string[]
+	/** Execute a command programmatically */
+	execute(name: string, interaction: ChatInputCommandInteraction): Promise<void>
+}

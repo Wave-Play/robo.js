@@ -2,8 +2,8 @@
  * Route definition for Discord context menu commands.
  * Directory inferred from filename: /src/context/
  */
-import type { RouteConfig, ScannedEntry, ProcessedEntry } from 'robo.js'
-import type { ContextHandler, ContextController, ContextConfig } from '../../types/context.js'
+import type { PortalAPI, RouteConfig, ScannedEntry, ProcessedEntry } from 'robo.js'
+import type { ContextHandler, ContextController, ContextConfig, ContextNamespaceController } from '../../types/context.js'
 import { createContextController } from '../../core/controllers.js'
 
 /**
@@ -17,9 +17,30 @@ export type Handler = ContextHandler
 export type Controller = ContextController
 
 /**
- * Controller factory for runtime
+ * Controller factory for runtime (per-handler)
  */
 export { createContextController as controller }
+
+/**
+ * Namespace controller factory for portal access.
+ * Provides get, list methods for all context menus.
+ */
+export const NamespaceController = (portal: PortalAPI): ContextNamespaceController => ({
+	async get(name: string): Promise<ContextHandler | null> {
+		try {
+			const handler = await portal.getHandler<ContextHandler>('discord', 'context', name)
+			return handler?.default ?? null
+		} catch {
+			return null
+		}
+	},
+
+	list(): string[] {
+		const portalApi = portal as unknown as { getByType: (type: string) => Record<string, unknown> }
+		const contextData = portalApi.getByType('discord:context')
+		return Object.keys(contextData)
+	}
+})
 
 /**
  * Route configuration - how to scan and process files.

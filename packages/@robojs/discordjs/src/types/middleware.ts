@@ -68,3 +68,28 @@ export interface MiddlewareController {
 	/** Set middleware execution order */
 	setOrder(order: number): void
 }
+
+/**
+ * Middleware chain entry with handler and metadata.
+ */
+export interface MiddlewareChainEntry {
+	/** Middleware key */
+	key: string
+	/** Middleware handler function */
+	handler: MiddlewareHandler
+	/** Execution order */
+	order: number
+	/** Whether middleware is enabled */
+	enabled: boolean
+}
+
+/**
+ * Namespace controller for portal.discord.middleware
+ * Provides access to middleware chain.
+ */
+export interface MiddlewareNamespaceController {
+	/** Get all middleware keys */
+	list(): string[]
+	/** Get the ordered middleware chain (sorted by order, filtered by enabled) */
+	chain(): Promise<MiddlewareChainEntry[]>
+}
