@@ -1,7 +1,7 @@
 {
 	"name": "@robojs/discordjs",
-	"description": "",
-	"version": "1.0.0",
+	"description": "Discord.js integration plugin for Robo.js - provides commands, events, and context menus",
+	"version": "0.0.0",
 	"type": "module",
 	"private": false,
 	"keywords": [
@@ -10,14 +10,31 @@
 		"discord.js",
 		"robo",
 		"robo.js",
-		"typescript"
+		"typescript",
+		"plugin"
 	],
 	"main": ".robo/build/index.js",
+	"types": ".robo/build/index.d.ts",
+	"exports": {
+		".": {
+			"import": "./.robo/build/index.js",
+			"types": "./.robo/build/index.d.ts"
+		},
+		"./types": {
+			"import": "./.robo/build/types/index.js",
+			"types": "./.robo/build/types/index.d.ts"
+		}
+	},
 	"license": "MIT",
-	"author": "Your Name <email>",
+	"author": "Robo.js",
 	"contributors": [
-		"Your Name <email>"
+		"Robo.js Team"
 	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Wave-Play/robo.js.git",
+		"directory": "packages/@robojs/discordjs"
+	},
 	"files": [
 		".robo/",
 		"src/",
@@ -37,16 +54,20 @@
 	"devDependencies": {
 		"@swc/core": "^1.15.3",
 		"@types/node": "^24.10.1",
-		"discord.js": "^14.25.1",
+		"discord.js": "14.25.1",
 		"prettier": "^3.7.3",
-		"robo.js": "^0.10.32",
+		"robo.js": "workspace:*",
 		"typescript": "^5.9.3"
 	},
 	"peerDependencies": {
-		"robo.js": "^0.10.1"
+		"discord.js": "^14.0.0",
+		"robo.js": "^0.11.0"
 	},
 	"peerDependenciesMeta": {
 		"robo.js": {
+			"optional": false
+		},
+		"discord.js": {
 			"optional": false
 		}
 	}
