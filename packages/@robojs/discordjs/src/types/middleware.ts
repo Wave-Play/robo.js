@@ -1,22 +1,19 @@
 /**
  * Discord middleware types for @robojs/discordjs
  */
-import type { Interaction } from 'discord.js'
 import type { BaseConfig } from './common.js'
 
 /**
  * Middleware data passed to handler.
  */
 export interface MiddlewareData {
-	/** The Discord interaction being processed */
-	interaction: Interaction
 	/** The handler record being invoked */
 	record: {
 		key: string
 		type: string
 		metadata: Record<string, unknown>
 	}
-	/** Original payload/arguments */
+	/** Original payload/arguments (first element is usually the interaction) */
 	payload: unknown[]
 }
 

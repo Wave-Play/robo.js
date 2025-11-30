@@ -30,6 +30,11 @@ export interface EventConfig extends BaseConfig {
 	 * - 'once': Handler runs only on first occurrence
 	 */
 	frequency?: 'always' | 'once'
+	/**
+	 * Execution priority (lower runs first).
+	 * Default is 0.
+	 */
+	priority?: number
 }
 
 /**

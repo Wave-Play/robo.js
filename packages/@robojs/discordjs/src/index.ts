@@ -117,3 +117,16 @@ export type { AggregatedPermissions } from './core/permissions.js'
 
 // Export logger
 export { discordLogger } from './core/logger.js'
+
+// Export client utilities
+export { getClient, hasClient } from './core/client.js'
+
+// Export handler utilities
+export { getSage, extractCommandOptions, getCommandKey } from './core/utils.js'
+
+// Export handler execution (for advanced usage)
+export { executeCommandHandler } from './core/handlers/command.js'
+export { executeAutocompleteHandler } from './core/handlers/autocomplete.js'
+export { executeContextHandler } from './core/handlers/context.js'
+export { executeEventHandler } from './core/handlers/event.js'
+export { handleInteraction } from './core/interactions.js'

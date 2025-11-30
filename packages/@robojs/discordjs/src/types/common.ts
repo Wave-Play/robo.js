@@ -52,8 +52,8 @@ export interface SageOptions {
 export interface DiscordConfig {
 	/** Discord.js Client options */
 	clientOptions?: ClientOptions
-	/** Sage (auto-defer/reply) configuration */
-	sage?: SageOptions
+	/** Sage (auto-defer/reply) configuration. Set to false to disable. */
+	sage?: false | SageOptions
 	/** Whether to register commands in development mode */
 	registerOnDev?: boolean
 	/** Server IDs to use as test servers for command registration */
