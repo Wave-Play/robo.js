@@ -107,7 +107,7 @@ async function start(options?: StartOptions) {
 
 		// 4. Execute init hooks BEFORE manifest loading
 		// Init hooks run very early and can modify config/env before manifest processing
-		await executeInitHooks(plugins, mode as 'development' | 'production')
+		await executeInitHooks(plugins, mode)
 
 		// 5. Now load manifest (init hooks may have modified config/env)
 		await Compiler.useManifest()
@@ -156,7 +156,7 @@ async function start(options?: StartOptions) {
 		await Portal.open()
 
 		// Execute start hooks (project first, then plugins sequentially)
-		await executeStartHooks(plugins, mode as 'development' | 'production')
+		await executeStartHooks(plugins, mode)
 
 		// Let external watchers know we're ready to go
 		await Nanocore.set('watch', { id, pid, startedAt: Date.now(), status: 'running' })
@@ -221,7 +221,7 @@ async function stop(exitCode = 0, reason?: 'signal' | 'error' | 'restart') {
 
 	try {
 		// Execute stop hooks (project first, then plugins in reverse order)
-		await executeStopHooks(plugins, Mode.get() as 'development' | 'production', stopReason)
+		await executeStopHooks(plugins, Mode.get(), stopReason)
 
 		// Notify lifecycle handler
 		await executeEventHandler(plugins, '_stop', client)

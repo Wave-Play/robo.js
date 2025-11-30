@@ -17,7 +17,8 @@ export interface InitContext {
 	config: Config
 	logger: Logger
 	env: typeof Env
-	mode: 'development' | 'production'
+	/** Current runtime mode (supports custom modes like 'beta', 'staging', etc.) */
+	mode: string
 }
 
 /**
@@ -89,9 +90,9 @@ export interface PluginState {
  */
 export interface PluginContext<TConfig = unknown> {
 	/**
-	 * Current runtime mode.
+	 * Current runtime mode (supports custom modes like 'beta', 'staging', etc.).
 	 */
-	mode: 'development' | 'production'
+	mode: string
 
 	/**
 	 * Plugin's configuration from user's /config/plugins/.
@@ -153,12 +154,44 @@ export interface StopContext<TConfig = unknown> extends PluginContext<TConfig> {
 }
 
 /**
+ * Key-value store for passing data between build hooks.
+ * Data persists across build/start, build/transform, and build/complete hooks
+ * within the same build session.
+ */
+export interface BuildStore {
+	/**
+	 * Get a value from the store.
+	 */
+	get<T>(key: string): T | undefined
+
+	/**
+	 * Set a value in the store.
+	 */
+	set<T>(key: string, value: T): void
+
+	/**
+	 * Check if a key exists in the store.
+	 */
+	has(key: string): boolean
+
+	/**
+	 * Delete a key from the store.
+	 */
+	delete(key: string): boolean
+
+	/**
+	 * Clear all data from the store.
+	 */
+	clear(): void
+}
+
+/**
  * Context provided to build hooks.
  * Base context shared by all build hook types.
  */
 export interface BuildContext {
-	/** Current build mode */
-	mode: 'development' | 'production'
+	/** Current build mode (supports custom modes like 'beta', 'staging', etc.) */
+	mode: string
 
 	/** Environment variable access */
 	env: typeof Env
@@ -175,6 +208,12 @@ export interface BuildContext {
 
 	/** Loaded configuration */
 	config: Config
+
+	/**
+	 * Key-value store for passing data between build hooks.
+	 * Use to share computed values between build/start, build/transform, and build/complete.
+	 */
+	store: BuildStore
 }
 
 /**

@@ -55,11 +55,14 @@ export async function resolvePluginHookPath(
  * implemented, this function should resolve to `.robo/build/{mode}/robo/{hookName}.js`
  * instead of the current `.robo/build/robo/{hookName}.js` path.
  * See: packages/robo/docs/future-mode-specific-builds.md
+ *
+ * @param hookName - The hook to resolve
+ * @param mode - Runtime mode (supports custom modes like 'beta', 'staging', etc.)
  */
 export async function resolveProjectHookPath(
 	hookName: 'init' | 'start' | 'stop',
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	mode: 'development' | 'production'
+	mode: string
 ): Promise<string | null> {
 	// Note: mode parameter is kept for future use when mode-specific builds are implemented
 	logger().debug(`[hooks] resolveProjectHookPath called with mode '${mode}' (currently unused - builds output to .robo/build/ directly)`)
@@ -100,10 +103,13 @@ export function inferNamespace(packageName: string): string {
  * Execute init hooks for project and all registered plugins.
  * Runs sequentially: plugins FIRST (in registration order), then project LAST.
  * Respects failSafe meta option for error handling.
+ *
+ * @param plugins - Plugin data map
+ * @param mode - Runtime mode (supports custom modes like 'beta', 'staging', etc.)
  */
 export async function executeInitHooks(
 	plugins: Map<string, PluginData>,
-	mode: 'development' | 'production'
+	mode: string
 ): Promise<void> {
 	const config = getConfig()
 
@@ -233,10 +239,13 @@ async function getPluginVersion(pluginName: string): Promise<string> {
  * Runs sequentially: plugins FIRST (in registration order), then project LAST.
  *
  * This runs AFTER portal is populated but BEFORE Discord login.
+ *
+ * @param plugins - Plugin data map
+ * @param mode - Runtime mode (supports custom modes like 'beta', 'staging', etc.)
  */
 export async function executeStartHooks(
 	plugins: Map<string, PluginData>,
-	mode: 'development' | 'production'
+	mode: string
 ): Promise<void> {
 	const config = getConfig()
 	const loggerInstance = logger()
@@ -333,10 +342,14 @@ export async function executeStartHooks(
  * Runs sequentially: project FIRST, then plugins in REVERSE registration order.
  *
  * This runs when shutdown signal is received.
+ *
+ * @param plugins - Plugin data map
+ * @param mode - Runtime mode (supports custom modes like 'beta', 'staging', etc.)
+ * @param reason - Reason for stopping
  */
 export async function executeStopHooks(
 	plugins: Map<string, PluginData>,
-	mode: 'development' | 'production',
+	mode: string,
 	reason: 'signal' | 'error' | 'restart' = 'signal'
 ): Promise<void> {
 	const config = getConfig()

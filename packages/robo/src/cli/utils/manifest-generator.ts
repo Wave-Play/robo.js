@@ -17,24 +17,20 @@ import type { Manifest } from '../../types/manifest.js'
 import type { DiscoveredRoute, ProcessedEntry, RouteEntries } from '../../types/routes.js'
 import type { PluginData } from '../../types/common.js'
 import type {
-	AggregatedMetadata,
 	HandlerEntry,
 	HookEntry,
 	HooksManifest,
 	MetadataAggregatorRegistry,
 	MetadataIndex,
-	NamespaceRouteDefinitions,
-	PluginInfo,
 	PluginRegistry,
 	ProjectMetadata,
 	RouteDefinition,
-	RouteDefinitionConfig,
 	RouteDefinitions
 } from '../../types/manifest-v1.js'
 
 export interface ManifestGeneratorOptions {
-	/** Build mode */
-	mode: 'development' | 'production'
+	/** Build mode (supports custom modes like 'beta', 'staging', etc.) */
+	mode: string
 	/** Project configuration */
 	config: Config
 	/** Discovered route definitions */
@@ -53,7 +49,7 @@ export interface ManifestGeneratorOptions {
  * Generates the granular manifest directory structure.
  */
 export class ManifestGenerator {
-	private mode: 'development' | 'production'
+	private mode: string
 	private config: Config
 	private routes: DiscoveredRoute[]
 	private routeEntries: RouteEntries
@@ -91,7 +87,9 @@ export class ManifestGenerator {
 			path.join(this.basePath, 'config'),
 			path.join(this.basePath, 'routes'),
 			path.join(this.basePath, 'hooks'),
-			path.join(this.basePath, 'metadata')
+			path.join(this.basePath, 'metadata'),
+			path.join(this.basePath, 'metadata', 'raw'),
+			path.join(this.basePath, 'seeds')
 		]
 
 		for (const dir of dirs) {
@@ -297,6 +295,7 @@ export class ManifestGenerator {
 
 	/**
 	 * Generate metadata files using registered aggregators.
+	 * Creates both aggregated metadata and per-source raw breakdowns.
 	 */
 	async generateMetadataFiles(registry?: MetadataAggregatorRegistry): Promise<void> {
 		if (!registry || registry.size === 0) {
@@ -334,12 +333,39 @@ export class ManifestGenerator {
 
 			// Write aggregated metadata
 			writes.push(this.writeJson(`metadata/${namespace}.json`, aggregated))
+
+			// Write per-source raw metadata breakdowns
+			const entriesBySource = this.groupEntriesBySource(allEntries)
+			for (const [source, sourceEntries] of Object.entries(entriesBySource)) {
+				const sourceDefaults = source === pluginName ? pluginDefaults : {}
+				const sourceMetadata = aggregator(sourceEntries, sourceDefaults)
+				// Sanitize source name for filename (@ → +)
+				const safeSource = source === 'project' ? 'project' : source.replace(/@/g, '').replace(/\//g, '+')
+				writes.push(this.writeJson(`metadata/raw/${namespace}.${safeSource}.json`, sourceMetadata))
+			}
 		}
 
 		// Write index
 		writes.push(this.writeJson('metadata/@.json', metadataIndex))
 
 		await Promise.all(writes)
+	}
+
+	/**
+	 * Group handler entries by their source (project or plugin name).
+	 */
+	private groupEntriesBySource(entries: HandlerEntry[]): Record<string, HandlerEntry[]> {
+		const grouped: Record<string, HandlerEntry[]> = {}
+
+		for (const entry of entries) {
+			const source = entry.source === 'plugin' && entry.plugin ? entry.plugin : 'project'
+			if (!grouped[source]) {
+				grouped[source] = []
+			}
+			grouped[source].push(entry)
+		}
+
+		return grouped
 	}
 
 	// =========================================================================
@@ -459,7 +485,9 @@ export class ManifestGenerator {
 	}
 
 	private serializeRouteDefinition(route: DiscoveredRoute): RouteDefinition {
-		const config: RouteDefinitionConfig = {
+		// Build definition with properties at the route level (not nested under config)
+		const definition: RouteDefinition = {
+			directory: route.directory,
 			key: {
 				style: route.config.key.style,
 				separator: route.config.key.separator,
@@ -468,7 +496,7 @@ export class ManifestGenerator {
 		}
 
 		if (route.config.nesting) {
-			config.nesting = {
+			definition.nesting = {
 				maxDepth: route.config.nesting.maxDepth,
 				allowIndex: route.config.nesting.allowIndex,
 				dynamicSegment: route.config.nesting.dynamicSegment?.source,
@@ -478,24 +506,19 @@ export class ManifestGenerator {
 		}
 
 		if (route.config.exports) {
-			config.exports = route.config.exports
+			definition.exports = route.config.exports
 		}
 
 		if (route.config.multiple !== undefined) {
-			config.multiple = route.config.multiple
+			definition.multiple = route.config.multiple
 		}
 
 		if (route.config.filter) {
-			config.filter = route.config.filter.source
+			definition.filter = route.config.filter.source
 		}
 
 		if (route.config.description) {
-			config.description = route.config.description
-		}
-
-		const definition: RouteDefinition = {
-			directory: route.directory,
-			config
+			definition.description = route.config.description
 		}
 
 		// Add type info if available

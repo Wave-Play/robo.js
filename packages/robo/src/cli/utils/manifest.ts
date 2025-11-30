@@ -31,7 +31,7 @@ import { Compiler } from './compiler.js'
 import { IS_BUN_RUNTIME } from './runtime-utils.js'
 import { PermissionsString } from 'discord.js'
 import { getContextType, getIntegrationType } from './commands.js'
-import { executeBuildTransformHooks } from './build-hooks.js'
+import { executeBuildTransformHooks, createBuildStore } from './build-hooks.js'
 import { discoverRoutes, validateRoutes } from './route-discovery.js'
 import { scanAllRoutes } from './route-scanner.js'
 import { processAllRoutes, validateProcessedEntries } from './route-processor.js'
@@ -197,7 +197,8 @@ async function serializeSeedConfig(seed: Config['seed']): Promise<Manifest['__ro
 
 export interface GenerateManifestOptions {
 	config?: Config
-	mode?: 'development' | 'production'
+	/** Build mode (supports custom modes like 'beta', 'staging', etc.) */
+	mode?: string
 	plugins?: Map<string, PluginData>
 }
 
@@ -224,13 +225,15 @@ export async function generateManifest(
 
 	// Execute transform hooks to allow project and plugins to modify entries
 	if (type === 'robo') {
+		// Create a temporary store for legacy manifest generation
+		const legacyStore = createBuildStore()
 		const transformedEntries = await executeBuildTransformHooks(plugins, config, mode, {
 			api,
 			commands,
 			context,
 			events,
 			middleware
-		})
+		}, legacyStore)
 
 		// Apply transformed entries
 		api = transformedEntries.api

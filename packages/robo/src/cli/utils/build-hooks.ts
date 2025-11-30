@@ -1,7 +1,7 @@
 import { logger } from '../../core/logger.js'
 import { Env } from '../../core/env.js'
 import { inferNamespace } from '../../core/hooks.js'
-import type { BuildContext, BuildTransformContext, BuildCompleteContext } from '../../types/lifecycle.js'
+import type { BuildContext, BuildTransformContext, BuildCompleteContext, BuildStore } from '../../types/lifecycle.js'
 import type { PluginData } from '../../types/common.js'
 import type { Config } from '../../types/config.js'
 import type { ProcessedEntry, RouteEntries } from '../../types/routes.js'
@@ -19,6 +19,32 @@ async function fileExists(filePath: string): Promise<boolean> {
 		return true
 	} catch {
 		return false
+	}
+}
+
+/**
+ * Create a new BuildStore instance.
+ * Used for passing data between build hooks within the same build session.
+ */
+export function createBuildStore(): BuildStore {
+	const data = new Map<string, unknown>()
+
+	return {
+		get<T>(key: string): T | undefined {
+			return data.get(key) as T | undefined
+		},
+		set<T>(key: string, value: T): void {
+			data.set(key, value)
+		},
+		has(key: string): boolean {
+			return data.has(key)
+		},
+		delete(key: string): boolean {
+			return data.delete(key)
+		},
+		clear(): void {
+			data.clear()
+		}
 	}
 }
 
@@ -63,13 +89,23 @@ export async function resolveProjectBuildHookPath(
 /**
  * Execute build/start hooks for project and all registered plugins.
  * Project hook runs first, then all plugin hooks run in parallel.
+ *
+ * @param plugins - Plugin data map
+ * @param config - Project configuration
+ * @param mode - Build mode (supports custom modes like 'beta', 'staging', etc.)
+ * @param store - Optional existing store (creates new one if not provided)
+ * @returns The BuildStore for use in subsequent hooks
  */
 export async function executeBuildStartHooks(
 	plugins: Map<string, PluginData>,
 	config: Config,
-	mode: 'development' | 'production'
-): Promise<void> {
+	mode: string,
+	store?: BuildStore
+): Promise<BuildStore> {
 	const loggerInstance = logger()
+
+	// Create or use existing store
+	const buildStore = store ?? createBuildStore()
 
 	// Create base context
 	const baseContext: BuildContext = {
@@ -81,7 +117,8 @@ export async function executeBuildStartHooks(
 			src: path.join(process.cwd(), 'src'),
 			output: path.join(process.cwd(), '.robo', 'build')
 		},
-		config
+		config,
+		store: buildStore
 	}
 
 	// 1. Execute project's build/start hook first (if exists)
@@ -141,18 +178,27 @@ export async function executeBuildStartHooks(
 	}
 
 	await Promise.all(hookPromises)
+
+	return buildStore
 }
 
 /**
  * Execute build/transform hooks for project and all registered plugins.
  * Runs SEQUENTIALLY (project first, then plugins in order) because each hook
  * can modify entries and pass them to the next hook in the chain.
+ *
+ * @param plugins - Plugin data map
+ * @param config - Project configuration
+ * @param mode - Build mode (supports custom modes like 'beta', 'staging', etc.)
+ * @param entries - Handler entries to transform
+ * @param store - BuildStore from previous hooks
  */
 export async function executeBuildTransformHooks(
 	plugins: Map<string, PluginData>,
 	config: Config,
-	mode: 'development' | 'production',
-	entries: BuildTransformContext['entries']
+	mode: string,
+	entries: BuildTransformContext['entries'],
+	store: BuildStore
 ): Promise<BuildTransformContext['entries']> {
 	const loggerInstance = logger()
 	let currentEntries = entries
@@ -167,7 +213,8 @@ export async function executeBuildTransformHooks(
 			src: path.join(process.cwd(), 'src'),
 			output: path.join(process.cwd(), '.robo', 'build')
 		},
-		config
+		config,
+		store
 	}
 
 	// 1. Execute project's build/transform hook first (if exists)
@@ -251,12 +298,20 @@ export interface BuildCompleteResult {
  * Execute build/complete hooks for project and all registered plugins.
  * Project hook runs first, then all plugin hooks run in parallel.
  * Returns metadata aggregators for granular manifest generation.
+ *
+ * @param plugins - Plugin data map
+ * @param config - Project configuration
+ * @param mode - Build mode (supports custom modes like 'beta', 'staging', etc.)
+ * @param manifest - Generated manifest
+ * @param store - BuildStore from previous hooks
+ * @param routeEntries - Optional route entries for metadata aggregation
  */
 export async function executeBuildCompleteHooks(
 	plugins: Map<string, PluginData>,
 	config: Config,
-	mode: 'development' | 'production',
+	mode: string,
 	manifest: BuildCompleteContext['manifest'],
+	store: BuildStore,
 	routeEntries?: RouteEntries
 ): Promise<BuildCompleteResult> {
 	const loggerInstance = logger()
@@ -309,6 +364,7 @@ export async function executeBuildCompleteHooks(
 			output: path.join(process.cwd(), '.robo', 'build')
 		},
 		config,
+		store,
 		manifest,
 		entries: entriesAccessor,
 		registerMetadataAggregator<T extends AggregatedMetadata>(

@@ -43,7 +43,7 @@ interface ManifestCache {
  * Implementation of the Manifest API.
  */
 class ManifestLoader implements ManifestAPI {
-	private _mode: 'development' | 'production' = 'production'
+	private _mode: string = 'production'
 	private _initialized = false
 	private _cache: ManifestCache = {
 		routes: new Map(),
@@ -52,7 +52,7 @@ class ManifestLoader implements ManifestAPI {
 		pluginConfigs: new Map()
 	}
 
-	get mode(): 'development' | 'production' {
+	get mode(): string {
 		return this._mode
 	}
 
@@ -63,8 +63,9 @@ class ManifestLoader implements ManifestAPI {
 	/**
 	 * Initialize the manifest loader.
 	 * Called during Robo.start() to set the mode and preload core files.
+	 * @param mode - Runtime mode (supports custom modes like 'beta', 'staging', etc.)
 	 */
-	async initialize(mode: 'development' | 'production'): Promise<void> {
+	async initialize(mode: string): Promise<void> {
 		this._mode = mode
 		this._initialized = true
 
@@ -218,7 +219,31 @@ class ManifestLoader implements ManifestAPI {
 	metadata<T extends AggregatedMetadata = AggregatedMetadata>(
 		namespace: string,
 		options?: ManifestOptions
-	): T | undefined {
+	): T | undefined
+	/**
+	 * Get metadata for a specific source within a namespace.
+	 * Loads from metadata/raw/{namespace}.{source}.json
+	 */
+	metadata<T extends AggregatedMetadata = AggregatedMetadata>(
+		namespace: string,
+		source: string,
+		options?: ManifestOptions
+	): Partial<T> | undefined
+	metadata<T extends AggregatedMetadata = AggregatedMetadata>(
+		namespace: string,
+		sourceOrOptions?: string | ManifestOptions,
+		options?: ManifestOptions
+	): T | Partial<T> | undefined {
+		// Determine if second param is source or options
+		const isSourceOverload = typeof sourceOrOptions === 'string'
+		const source = isSourceOverload ? sourceOrOptions : undefined
+
+		if (source) {
+			// Load per-source metadata from raw/ directory
+			return this.loadSourceMetadata<T>(namespace, source)
+		}
+
+		// Load aggregated metadata
 		const cached = this._cache.metadata.get(namespace)
 		if (cached) {
 			return cached as T
@@ -230,6 +255,34 @@ class ManifestLoader implements ManifestAPI {
 			const content = fsSync.readFileSync(filePath, 'utf-8')
 			const metadata = JSON.parse(content) as T
 			this._cache.metadata.set(namespace, metadata)
+			return metadata
+		} catch {
+			return undefined
+		}
+	}
+
+	/**
+	 * Load metadata for a specific source from the raw/ directory.
+	 */
+	private loadSourceMetadata<T extends AggregatedMetadata = AggregatedMetadata>(
+		namespace: string,
+		source: string
+	): Partial<T> | undefined {
+		// Sanitize source name for filename (same logic as generator)
+		const safeSource = source === 'project' ? 'project' : source.replace(/@/g, '').replace(/\//g, '+')
+		const cacheKey = `${namespace}:${source}`
+
+		// Check cache (using a separate key pattern for source-specific metadata)
+		const cached = this._cache.metadata.get(cacheKey)
+		if (cached) {
+			return cached as Partial<T>
+		}
+
+		try {
+			const filePath = this.manifestPath(`metadata/raw/${namespace}.${safeSource}.json`)
+			const content = fsSync.readFileSync(filePath, 'utf-8')
+			const metadata = JSON.parse(content) as Partial<T>
+			this._cache.metadata.set(cacheKey, metadata as AggregatedMetadata)
 			return metadata
 		} catch {
 			return undefined

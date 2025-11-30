@@ -26,8 +26,8 @@ export interface ProjectMetadata {
 	language: 'typescript' | 'javascript'
 	/** Robo.js version used to build */
 	roboVersion: string
-	/** Which mode this manifest is for */
-	mode: 'development' | 'production'
+	/** Which mode this manifest is for (supports custom modes like 'beta', 'staging', etc.) */
+	mode: string
 	/** When this manifest was generated (ISO 8601) */
 	buildTime: string
 	/** Hash for cache invalidation */
@@ -163,12 +163,40 @@ export interface RouteDefinitionConfig {
 
 /**
  * Route definition with handler and controller info.
+ * Properties are at the route level (not nested under config) per spec.
  */
 export interface RouteDefinition {
 	/** Directory this route scans */
 	directory: string
-	/** Route configuration */
-	config: RouteDefinitionConfig
+	/** Key generation configuration */
+	key: {
+		style: 'filename' | 'filepath'
+		separator?: string
+		nested?: 'camelCase' | 'dotNotation'
+	}
+	/** Nesting configuration */
+	nesting?: {
+		maxDepth?: number
+		allowIndex?: boolean
+		/** Dynamic segment pattern (string form of regex) */
+		dynamicSegment?: string
+		/** Catch-all pattern (string form of regex) */
+		catchAllSegment?: string
+		/** Optional catch-all pattern (string form of regex) */
+		optionalCatchAll?: string
+	}
+	/** Export requirements */
+	exports?: {
+		named?: string[]
+		default?: 'required' | 'optional' | 'forbidden'
+		config?: 'required' | 'optional' | 'forbidden'
+	}
+	/** Whether multiple handlers per key are allowed */
+	multiple?: boolean
+	/** File filter pattern (string form of regex) */
+	filter?: string
+	/** Human-readable description */
+	description?: string
 	/** Handler type information */
 	handler?: {
 		type: string
@@ -336,8 +364,8 @@ export interface EntriesAccessor {
  * Options for manifest operations.
  */
 export interface ManifestOptions {
-	/** Override the mode to load from */
-	mode?: 'development' | 'production'
+	/** Override the mode to load from (supports custom modes like 'beta', 'staging', etc.) */
+	mode?: string
 }
 
 /**
@@ -345,8 +373,8 @@ export interface ManifestOptions {
  * Provides lazy-loaded, type-safe access to manifest data.
  */
 export interface ManifestAPI {
-	/** Current runtime mode */
-	readonly mode: 'development' | 'production'
+	/** Current runtime mode (supports custom modes like 'beta', 'staging', etc.) */
+	readonly mode: string
 
 	/** Whether the manifest has been initialized */
 	readonly isInitialized: boolean
@@ -411,6 +439,15 @@ export interface ManifestAPI {
 		namespace: string,
 		options?: ManifestOptions
 	): T | undefined
+	/**
+	 * Get metadata for a specific source within a namespace.
+	 * Loads from metadata/raw/{namespace}.{source}.json
+	 */
+	metadata<T extends AggregatedMetadata = AggregatedMetadata>(
+		namespace: string,
+		source: string,
+		options?: ManifestOptions
+	): Partial<T> | undefined
 
 	/**
 	 * Get project metadata.
@@ -442,8 +479,9 @@ export interface ManifestAPI {
 	/**
 	 * Initialize the manifest by preloading core files.
 	 * Called during Robo.start().
+	 * @param mode - Runtime mode (supports custom modes like 'beta', 'staging', etc.)
 	 */
-	initialize(mode: 'development' | 'production'): Promise<void>
+	initialize(mode: string): Promise<void>
 
 	/**
 	 * Clear all cached data (for testing).

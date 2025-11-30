@@ -22,7 +22,8 @@ import {
 import { discoverRoutes, validateRoutes } from '../../utils/route-discovery.js'
 import { scanAllRoutes } from '../../utils/route-scanner.js'
 import { processAllRoutes } from '../../utils/route-processor.js'
-import { ManifestGenerator, createHookEntries, discoverProjectHooks } from '../../utils/manifest-generator.js'
+import { ManifestGenerator } from '../../utils/manifest-generator.js'
+import { discoverAllHooks } from '../../utils/hook-discovery.js'
 import { generateManifestTypes } from '../../utils/manifest-types.js'
 import type { LoggerOptions } from '../../../core/logger.js'
 import type { RouteEntries } from '../../../types/routes.js'
@@ -111,10 +112,13 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 	await Flashcore.$init({ keyvOptions: config.flashcore?.keyv, namespaceSeparator: config.flashcore?.namespaceSeparator })
 
 	// Determine build mode
-	const buildMode = options.dev ? 'development' : 'production'
+	// Use custom mode from --mode flag if specified, otherwise fall back to dev/production
+	const defaultBuildMode = options.dev ? 'development' : 'production'
+	const buildMode = envMode ?? defaultBuildMode
 
 	// Execute build/start hooks
-	await executeBuildStartHooks(plugins, config, buildMode)
+	// Create build store and execute start hooks
+	const buildStore = await executeBuildStartHooks(plugins, config, buildMode)
 
 	// Use the Robo Compiler to generate .robo/build
 	const compileTime = await Compiler.buildCode({
@@ -157,18 +161,14 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 	}
 
 	// Execute build/complete hooks with route entries
-	const { metadataRegistry } = await executeBuildCompleteHooks(plugins, config, buildMode, manifest, routeEntries)
+	const { metadataRegistry } = await executeBuildCompleteHooks(plugins, config, buildMode, manifest, buildStore, routeEntries)
 
 	// Generate granular manifest (enabled by default)
 	if (!config.experimental?.disableGranularManifest) {
 		const granularStartTime = Date.now()
 
-		// Discover project hooks from built files
-		const buildDir = config.experimental?.buildDirectory
-			? path.join(process.cwd(), config.experimental.buildDirectory)
-			: path.join(process.cwd(), '.robo', 'build')
-		const projectHooks = await discoverProjectHooks(buildDir)
-		const hookEntries = createHookEntries(plugins, projectHooks)
+		// Discover all hooks from plugins and project (for manifest generation)
+		const hookEntries = await discoverAllHooks(plugins)
 
 		const manifestGenerator = new ManifestGenerator({
 			mode: buildMode,

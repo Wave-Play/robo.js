@@ -428,3 +428,91 @@ export async function scanAllRoutes(
 
 	return results
 }
+
+/**
+ * Information about a route conflict.
+ */
+export interface RouteConflict {
+	/** The directory that is claimed by multiple plugins */
+	directory: string
+	/** List of plugins/sources claiming this directory */
+	claimants: Array<{
+		/** Plugin name or 'project' */
+		source: string
+		/** Namespace of the route */
+		namespace: string
+		/** Route name */
+		routeName: string
+	}>
+}
+
+/**
+ * Detect conflicts where multiple plugins/project claim the same directory.
+ * This prevents silent overwrites and unclear ownership.
+ *
+ * @param routes - All discovered routes from plugins and project
+ * @returns Array of conflicts found (empty if no conflicts)
+ */
+export function detectRouteConflicts(routes: DiscoveredRoute[]): RouteConflict[] {
+	const loggerInstance = logger()
+	const directoryMap = new Map<string, RouteConflict['claimants']>()
+
+	// Build map of directory -> claimants
+	for (const route of routes) {
+		const dir = route.directory.toLowerCase() // Normalize for comparison
+
+		if (!directoryMap.has(dir)) {
+			directoryMap.set(dir, [])
+		}
+
+		// Determine source (plugin name or 'project')
+		const source = route.sourcePath.includes('node_modules')
+			? route.sourcePath.match(/node_modules\/([^/]+(?:\/[^/]+)?)/)?.[1] ?? 'unknown'
+			: 'project'
+
+		directoryMap.get(dir)!.push({
+			source,
+			namespace: route.namespace,
+			routeName: route.name
+		})
+	}
+
+	// Find conflicts (directories with multiple claimants)
+	const conflicts: RouteConflict[] = []
+
+	for (const [directory, claimants] of directoryMap) {
+		if (claimants.length > 1) {
+			// Check if they're actually different sources
+			const uniqueSources = new Set(claimants.map((c) => `${c.source}:${c.namespace}`))
+
+			if (uniqueSources.size > 1) {
+				conflicts.push({ directory, claimants })
+				loggerInstance.warn(
+					`Route conflict: directory "${directory}" claimed by multiple sources: ${claimants.map((c) => c.source).join(', ')}`
+				)
+			}
+		}
+	}
+
+	return conflicts
+}
+
+/**
+ * Throw an error if route conflicts are detected.
+ * Use this during build to enforce single ownership of directories.
+ *
+ * @param routes - All discovered routes
+ * @throws Error if conflicts are found
+ */
+export function enforceNoRouteConflicts(routes: DiscoveredRoute[]): void {
+	const conflicts = detectRouteConflicts(routes)
+
+	if (conflicts.length > 0) {
+		const messages = conflicts.map((c) => {
+			const claimantList = c.claimants.map((cl) => `  - ${cl.source} (${cl.namespace}:${cl.routeName})`).join('\n')
+			return `Directory "${c.directory}" is claimed by multiple sources:\n${claimantList}`
+		})
+
+		throw new Error(`Route conflicts detected:\n\n${messages.join('\n\n')}\n\nEach directory can only be owned by one plugin or the project.`)
+	}
+}
