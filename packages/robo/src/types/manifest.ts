@@ -3,6 +3,7 @@ import type { CommandEntry } from './commands.js'
 import type { Config, Scope, SeedEnvVariableConfig } from './config.js'
 import type { EventConfig } from './events.js'
 import type { ApiEntry, ContextEntry, MiddlewareEntry } from './index.js'
+import type { ProcessedEntry } from './routes.js'
 
 export type ManifestSeedEnvVariables = Record<string, SeedEnvVariableConfig | string>
 
@@ -18,6 +19,16 @@ export interface ManifestSeed {
 	hook?: string
 }
 
+/**
+ * Route entries organized by namespace and route name.
+ * This is the new plugin-based route system format.
+ */
+export type ManifestRoutes = {
+	[namespace: string]: {
+		[routeName: string]: ProcessedEntry[]
+	}
+}
+
 export interface Manifest {
 	__README: string
 	__robo: {
@@ -29,6 +40,11 @@ export interface Manifest {
 		updatedAt?: string
 		version?: string
 	}
+	/**
+	 * Route entries from the new plugin-based route system.
+	 * Organized by namespace (plugin) and route name.
+	 */
+	__routes?: ManifestRoutes
 	api: Record<string, ApiEntry>
 	commands: Record<string, CommandEntry>
 	context: {
