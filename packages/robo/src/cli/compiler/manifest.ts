@@ -4,8 +4,97 @@ import { BaseConfig, Manifest } from '../../types/index.js'
 import { compilerLogger } from '../utils/loggers.js'
 import { hasProperties } from '../utils/utils.js'
 import { BASE_MANIFEST } from '../utils/manifest.js'
+import { Mode } from '../../core/mode.js'
+import type { ProjectMetadata, RouteDefinitions, HandlerEntry } from '../../types/manifest-v1.js'
 
 const ManifestCache: Record<string, Manifest> = {}
+
+/**
+ * Check if granular manifest exists for the current mode.
+ */
+async function hasGranularManifest(basePath: string = ''): Promise<boolean> {
+	const mode = Mode.get()
+	const manifestDir = path.join(basePath || '.', '.robo', 'manifest', mode)
+
+	try {
+		await fs.access(path.join(manifestDir, 'robo.json'))
+		return true
+	} catch {
+		return false
+	}
+}
+
+/**
+ * Load manifest from granular files and reconstruct legacy format.
+ * This provides backward compatibility while supporting the new granular system.
+ */
+async function loadGranularManifest(basePath: string = ''): Promise<Manifest | null> {
+	const mode = Mode.get()
+	const manifestDir = path.join(basePath || '.', '.robo', 'manifest', mode)
+
+	try {
+		// Load core files
+		const [roboContent, routeDefsContent] = await Promise.all([
+			fs.readFile(path.join(manifestDir, 'robo.json'), 'utf-8'),
+			fs.readFile(path.join(manifestDir, 'routes', '@.json'), 'utf-8').catch(() => '{}')
+		])
+
+		const robo: ProjectMetadata = JSON.parse(roboContent)
+		// Route definitions are available for future use
+		const _routeDefs: RouteDefinitions = JSON.parse(routeDefsContent)
+		void _routeDefs // Silence unused warning - available for future use
+
+		// Start with base manifest
+		const manifest: Manifest = {
+			...BASE_MANIFEST,
+			__README: 'This file was reconstructed from granular manifest files.',
+			__robo: {
+				config: null, // Config is loaded separately
+				language: robo.language,
+				mode: robo.mode,
+				type: 'robo',
+				updatedAt: robo.buildTime,
+				version: robo.roboVersion
+			}
+		}
+
+		// Load route entries and reconstruct legacy format
+		const routesDir = path.join(manifestDir, 'routes')
+
+		try {
+			const routeFiles = await fs.readdir(routesDir)
+
+			for (const file of routeFiles) {
+				if (file === '@.json' || !file.endsWith('.json')) {
+					continue
+				}
+
+				const content = await fs.readFile(path.join(routesDir, file), 'utf-8')
+				const entries: HandlerEntry[] = JSON.parse(content)
+
+				// Parse namespace and route from filename (e.g., "discord.commands.json")
+				const [namespace, route] = file.replace('.json', '').split('.')
+
+				// Store in __routes for new system
+				if (!manifest.__routes) {
+					manifest.__routes = {}
+				}
+				if (!manifest.__routes[namespace]) {
+					manifest.__routes[namespace] = {}
+				}
+				manifest.__routes[namespace][route] = entries
+			}
+		} catch {
+			// Routes directory might not exist
+		}
+
+		compilerLogger.debug(`Loaded granular manifest from ${manifestDir}`)
+		return manifest
+	} catch (error) {
+		compilerLogger.debug(`Failed to load granular manifest:`, error)
+		return null
+	}
+}
 
 interface GetManifestOptions {
 	name?: string
@@ -32,6 +121,9 @@ export function getManifest(options?: GetManifestOptions): Manifest | null {
  *
  * Results are cached in memory unless the `cache` option is set to `false`.
  * When `safe` is set to `true`, errors are suppressed and the base manifest is returned.
+ *
+ * For projects with granular manifests, will attempt to load from the granular
+ * directory structure first, falling back to legacy manifest.json.
  */
 export async function useManifest(options?: UseManifestOptions): Promise<Manifest> {
 	const { cache = true, name = '', basePath = '', safe } = options ?? {}
@@ -44,7 +136,19 @@ export async function useManifest(options?: UseManifestOptions): Promise<Manifes
 		return manifest
 	}
 
-	// Load manifest from file
+	// Try loading from granular manifest first (only for project, not plugins)
+	if (!name && !basePath) {
+		const granularExists = await hasGranularManifest(basePath)
+		if (granularExists) {
+			const granularManifest = await loadGranularManifest(basePath)
+			if (granularManifest) {
+				ManifestCache[name] = granularManifest
+				return granularManifest
+			}
+		}
+	}
+
+	// Fall back to legacy manifest.json
 	const manifestPath = path.join(basePath || '.', '.robo', 'manifest.json')
 	compilerLogger.debug(`Loading manifest`, name ? `for plugin ${name}` : '', `from ${manifestPath}...`)
 

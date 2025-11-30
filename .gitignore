@@ -64,6 +64,7 @@ typings/
 
 # Generate output
 dist
+.robo
 
 # Temporary files
 temp

@@ -53,6 +53,13 @@ export interface Config {
 	experimental?: {
 		buildDirectory?: string
 		disableBot?: boolean
+		/**
+		 * Disable granular manifest generation.
+		 * When true, only the legacy manifest.json will be generated.
+		 * Granular manifests are enabled by default.
+		 * @default false
+		 */
+		disableGranularManifest?: boolean
 		incrementalBuilds?: boolean
 		shard?: boolean | ShardingManagerOptions
 		/** @deprecated Use `integrationTypes` in command config instead */

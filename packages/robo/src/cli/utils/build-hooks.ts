@@ -4,6 +4,8 @@ import { inferNamespace } from '../../core/hooks.js'
 import type { BuildContext, BuildTransformContext, BuildCompleteContext } from '../../types/lifecycle.js'
 import type { PluginData } from '../../types/common.js'
 import type { Config } from '../../types/config.js'
+import type { ProcessedEntry, RouteEntries } from '../../types/routes.js'
+import type { AggregatedMetadata, HandlerEntry, MetadataAggregator, MetadataAggregatorRegistry } from '../../types/manifest-v1.js'
 import path from 'node:path'
 import fs from 'node:fs/promises'
 import { pathToFileURL } from 'node:url'
@@ -236,18 +238,67 @@ export async function executeBuildTransformHooks(
 }
 
 /**
+ * Result of executing build/complete hooks.
+ */
+export interface BuildCompleteResult {
+	/** Metadata aggregators registered by plugins */
+	metadataRegistry: MetadataAggregatorRegistry
+	/** Metadata updates from plugins */
+	metadataUpdates: Map<string, Record<string, unknown>>
+}
+
+/**
  * Execute build/complete hooks for project and all registered plugins.
  * Project hook runs first, then all plugin hooks run in parallel.
+ * Returns metadata aggregators for granular manifest generation.
  */
 export async function executeBuildCompleteHooks(
 	plugins: Map<string, PluginData>,
 	config: Config,
 	mode: 'development' | 'production',
-	manifest: BuildCompleteContext['manifest']
-): Promise<void> {
+	manifest: BuildCompleteContext['manifest'],
+	routeEntries?: RouteEntries
+): Promise<BuildCompleteResult> {
 	const loggerInstance = logger()
 
-	// Create base context
+	// Initialize registries for metadata aggregation
+	const metadataRegistry: MetadataAggregatorRegistry = new Map()
+	const metadataUpdates = new Map<string, Record<string, unknown>>()
+
+	// Create entries accessor
+	const entriesAccessor: BuildCompleteContext['entries'] = {
+		get(namespace: string, route: string): ProcessedEntry[] {
+			return routeEntries?.[namespace]?.[route] ?? []
+		},
+		all(): RouteEntries {
+			return routeEntries ?? {}
+		},
+		handlers(namespace: string, route: string): HandlerEntry[] {
+			const entries = routeEntries?.[namespace]?.[route] ?? []
+			return entries.map((entry, index) => {
+				const plugin = entry.module?.startsWith('@') || entry.module?.startsWith('robo-plugin-')
+					? entry.module
+					: null
+				let id = entry.key
+				if (plugin) {
+					id = `${plugin}:${entry.key}`
+				}
+				if (entries.filter((e) => e.key === entry.key).length > 1) {
+					id = `${id}:${index}`
+				}
+
+				return {
+					...entry,
+					id,
+					source: plugin ? 'plugin' : 'project',
+					plugin,
+					index: entries.filter((e) => e.key === entry.key).length > 1 ? index : undefined
+				} as HandlerEntry
+			})
+		}
+	}
+
+	// Create base context with entries accessor and metadata methods
 	const baseContext: BuildCompleteContext = {
 		mode,
 		env: Env,
@@ -258,7 +309,18 @@ export async function executeBuildCompleteHooks(
 			output: path.join(process.cwd(), '.robo', 'build')
 		},
 		config,
-		manifest
+		manifest,
+		entries: entriesAccessor,
+		registerMetadataAggregator<T extends AggregatedMetadata>(
+			namespace: string,
+			aggregator: MetadataAggregator<T>
+		): void {
+			metadataRegistry.set(namespace, aggregator as MetadataAggregator)
+		},
+		updateMetadata(namespace: string, updates: Record<string, unknown>): void {
+			const existing = metadataUpdates.get(namespace) ?? {}
+			metadataUpdates.set(namespace, { ...existing, ...updates })
+		}
 	}
 
 	// 1. Execute project's build/complete hook first (if exists)
@@ -318,6 +380,8 @@ export async function executeBuildCompleteHooks(
 	}
 
 	await Promise.all(hookPromises)
+
+	return { metadataRegistry, metadataUpdates }
 }
 
 /**

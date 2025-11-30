@@ -5,6 +5,8 @@ import type { ApiEntry, ContextEntry, MiddlewareEntry } from './index.js'
 import type { CommandEntry } from './commands.js'
 import type { EventConfig } from './events.js'
 import type { Manifest } from './manifest.js'
+import type { ProcessedEntry, RouteEntries } from './routes.js'
+import type { AggregatedMetadata, HandlerEntry, MetadataAggregator } from './manifest-v1.js'
 
 /**
  * Context provided to init hooks.
@@ -205,6 +207,50 @@ export interface BuildTransformContext extends BuildContext {
 export interface BuildCompleteContext extends BuildContext {
 	/** The generated manifest */
 	manifest: Manifest
+
+	/**
+	 * Access to processed route entries.
+	 * Enables plugins to inspect all handlers during build.
+	 */
+	entries: {
+		/**
+		 * Get entries for a specific route.
+		 * @param namespace - Plugin namespace (e.g., 'discord', 'server')
+		 * @param route - Route name (e.g., 'commands', 'api')
+		 */
+		get(namespace: string, route: string): ProcessedEntry[]
+
+		/**
+		 * Get all entries organized by namespace and route.
+		 */
+		all(): RouteEntries
+
+		/**
+		 * Get handler entries (with source tracking) for a route.
+		 * @param namespace - Plugin namespace
+		 * @param route - Route name
+		 */
+		handlers(namespace: string, route: string): HandlerEntry[]
+	}
+
+	/**
+	 * Register a metadata aggregator for a namespace.
+	 * Aggregators combine metadata from all handlers into a summary.
+	 * @param namespace - Plugin namespace to aggregate (e.g., 'discord')
+	 * @param aggregator - Function that processes entries into aggregated metadata
+	 */
+	registerMetadataAggregator<T extends AggregatedMetadata>(
+		namespace: string,
+		aggregator: MetadataAggregator<T>
+	): void
+
+	/**
+	 * Update aggregated metadata for a namespace.
+	 * Can be called multiple times; updates are merged.
+	 * @param namespace - Plugin namespace
+	 * @param updates - Partial metadata to merge
+	 */
+	updateMetadata(namespace: string, updates: Record<string, unknown>): void
 }
 
 export default {}

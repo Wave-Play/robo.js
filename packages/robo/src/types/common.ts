@@ -108,6 +108,19 @@ export interface PluginData {
 	name: string
 	options?: unknown
 	metaOptions?: PluginMetaOptions
+	/** Plugin version (from package.json) */
+	version?: string
+	/** Path to the plugin package */
+	path?: string
+	/** Portal namespace for this plugin's routes */
+	namespace?: string
+	/** Hook definitions from the plugin */
+	hooks?: Array<{
+		type: string
+		path: string
+		priority?: number
+		phase?: 'start' | 'transform' | 'complete'
+	}>
 }
 
 export interface PluginMetaOptions {

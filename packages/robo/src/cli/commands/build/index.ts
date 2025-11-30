@@ -19,7 +19,13 @@ import {
 	executeBuildCompleteHooks,
 	loadPluginData
 } from '../../utils/build-hooks.js'
+import { discoverRoutes, validateRoutes } from '../../utils/route-discovery.js'
+import { scanAllRoutes } from '../../utils/route-scanner.js'
+import { processAllRoutes } from '../../utils/route-processor.js'
+import { ManifestGenerator, createHookEntries, discoverProjectHooks } from '../../utils/manifest-generator.js'
+import { generateManifestTypes } from '../../utils/manifest-types.js'
 import type { LoggerOptions } from '../../../core/logger.js'
+import type { RouteEntries } from '../../../types/routes.js'
 
 const command = new Command('build')
 	.description('Builds your bot for production.')
@@ -121,14 +127,83 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 	// Assign default commands and events
 	const generatedFiles = await generateDefaults(config.experimental?.buildDirectory)
 
-	// Generate manifest.json
+	// Generate manifest.json (legacy)
 	const oldManifest = await Compiler.useManifest({ safe: true })
 	const manifestTime = Date.now()
 	const manifest = await generateManifest(generatedFiles, 'robo', { config, mode: buildMode, plugins })
 	logger.debug(`Generated manifest in ${Date.now() - manifestTime}ms`)
 
-	// Execute build/complete hooks
-	await executeBuildCompleteHooks(plugins, config, buildMode, manifest)
+	// Discover and process routes for granular manifest
+	let routeEntries: RouteEntries = {}
+	const routes = await discoverRoutes(plugins)
+
+	if (routes.length > 0) {
+		// Validate routes for conflicts
+		const routeErrors = validateRoutes(routes)
+		if (routeErrors.length > 0) {
+			for (const error of routeErrors) {
+				logger.error(error)
+			}
+			throw new Error('Route validation failed')
+		}
+
+		// Scan and process routes
+		const buildDir = config.experimental?.buildDirectory
+			? path.join(process.cwd(), config.experimental.buildDirectory)
+			: path.join(process.cwd(), '.robo', 'build')
+
+		const scannedResults = await scanAllRoutes(routes, buildDir)
+		routeEntries = await processAllRoutes(scannedResults)
+	}
+
+	// Execute build/complete hooks with route entries
+	const { metadataRegistry } = await executeBuildCompleteHooks(plugins, config, buildMode, manifest, routeEntries)
+
+	// Generate granular manifest (enabled by default)
+	if (!config.experimental?.disableGranularManifest) {
+		const granularStartTime = Date.now()
+
+		// Discover project hooks from built files
+		const buildDir = config.experimental?.buildDirectory
+			? path.join(process.cwd(), config.experimental.buildDirectory)
+			: path.join(process.cwd(), '.robo', 'build')
+		const projectHooks = await discoverProjectHooks(buildDir)
+		const hookEntries = createHookEntries(plugins, projectHooks)
+
+		const manifestGenerator = new ManifestGenerator({
+			mode: buildMode,
+			config,
+			routes,
+			routeEntries,
+			plugins,
+			legacyManifest: manifest,
+			hookEntries
+		})
+
+		await manifestGenerator.generateAll(metadataRegistry)
+
+		// Generate manifest types
+		await generateManifestTypes({
+			routes,
+			routeEntries,
+			hooks: hookEntries,
+			plugins: Object.fromEntries(
+				Array.from(plugins.entries()).map(([name, data]) => [
+					name,
+					{
+						name,
+						version: data.version ?? '0.0.0',
+						path: data.path ?? `node_modules/${name}`,
+						namespace: data.namespace ?? name.replace('@robojs/', '').replace('robo-plugin-', ''),
+						routes: routes.filter((r) => r.namespace === data.namespace).map((r) => r.name),
+						hooks: Object.keys(hookEntries).filter((h) => hookEntries[h].some((e) => e.plugin === name))
+					}
+				])
+			)
+		})
+
+		logger.debug(`Generated granular manifest in ${Date.now() - granularStartTime}ms`)
+	}
 
 	if (!options.dev) {
 		// Build /public for production if available
