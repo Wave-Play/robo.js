@@ -94,6 +94,14 @@ export interface Config {
 	portal?: {
 		/** When true, disabling a module or component won't unregister commands, events, etc. */
 		keepRegistered?: boolean
+		/**
+		 * Handler loading strategy.
+		 * - 'eager': Import all handlers at startup (faster runtime, slower startup)
+		 * - 'lazy': Import handlers on first access (faster startup, slower first access)
+		 *
+		 * Defaults to 'eager' in production, 'lazy' in development.
+		 */
+		loading?: 'eager' | 'lazy'
 	}
 	roboplay?: {
 		node?: '18' | '20' | 'latest'

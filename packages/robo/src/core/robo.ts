@@ -16,9 +16,10 @@ import { hasProperties, PackageDir } from '../cli/utils/utils.js'
 import { Nanocore } from '../internal/nanocore.js'
 import { Flashcore } from './flashcore.js'
 import { executeInitHooks, executeStartHooks, executeStopHooks } from './hooks.js'
+import { Manifest } from './manifest-api.js'
 import { Mode } from './mode.js'
 import { loadState } from './state.js'
-import Portal from './portal.js'
+import { portal, populatePortal } from './portal.js'
 import path from 'node:path'
 import { isMainThread, parentPort } from 'node:worker_threads'
 import type { Event, HandlerRecord, PluginData } from '../types/index.js'
@@ -43,8 +44,8 @@ export const Robo = { restart, start, stop, build }
 // Each Robo instance has its own client, exported for convenience
 export let client: Client
 
-// A Portal is exported with each Robo to allow for dynamic controls
-export const portal = new Portal()
+// Re-export portal from portal module for convenience
+export { portal }
 
 // Be careful, plugins may contain sensitive data in their config
 let plugins: Map<string, PluginData>
@@ -112,6 +113,9 @@ async function start(options?: StartOptions) {
 		// 5. Now load manifest (init hooks may have modified config/env)
 		await Compiler.useManifest()
 
+		// 5.5 Initialize the new Manifest API
+		await Manifest.initialize(mode)
+
 		// Wanna shard? Delegate to the shard manager and await recursive call
 		if (shard && config.experimental?.disableBot !== true) {
 			discordLogger.debug('Sharding is enabled. Delegating start to shard manager...')
@@ -153,7 +157,9 @@ async function start(options?: StartOptions) {
 		}
 
 		// Load the portal (commands, context, events)
-		await Portal.open()
+		// In production mode, handlers are loaded eagerly for faster runtime access
+		// In development mode, handlers are loaded lazily on first access
+		await populatePortal(mode)
 
 		// Execute start hooks (project first, then plugins sequentially)
 		await executeStartHooks(plugins, mode)
@@ -166,8 +172,10 @@ async function start(options?: StartOptions) {
 
 		if (config.experimental?.disableBot !== true) {
 			// Define event handlers
-			for (const key of portal.events.keys()) {
-				const onlyAuto = portal.events.get(key).every((event: HandlerRecord<Event>) => event.auto)
+			// Get events from portal using the new namespace-based access
+			const events = portal.getByType('discord:events') as Record<string, HandlerRecord<Event>[]>
+			for (const [key, eventHandlers] of Object.entries(events)) {
+				const onlyAuto = eventHandlers.every((event: HandlerRecord<Event>) => event.auto)
 				client.on(key, async (...args) => {
 					if (!onlyAuto) {
 						discordLogger.event(`Event received: ${color.bold(key)}`)

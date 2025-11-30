@@ -37,6 +37,14 @@ export interface RouteConfig {
 	multiple?: boolean
 
 	/**
+	 * Singular accessor name for portal controller access.
+	 * Used to derive the singular form of the route name for controller factories.
+	 * @example "command" for "commands", "contextMenu" for "context"
+	 * @default Derived by removing trailing 's' from route name
+	 */
+	singular?: string
+
+	/**
 	 * Regex pattern to filter files.
 	 * Non-matching files are excluded from scanning.
 	 * @example /^(?!_)/ excludes files starting with underscore

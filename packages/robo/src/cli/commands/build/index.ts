@@ -25,6 +25,7 @@ import { processAllRoutes } from '../../utils/route-processor.js'
 import { ManifestGenerator } from '../../utils/manifest-generator.js'
 import { discoverAllHooks } from '../../utils/hook-discovery.js'
 import { generateManifestTypes } from '../../utils/manifest-types.js'
+import { generatePortalTypes, collectPluginRoutes, generateTypesIndex } from '../../codegen/portal-types.js'
 import type { LoggerOptions } from '../../../core/logger.js'
 import type { RouteEntries } from '../../../types/routes.js'
 
@@ -202,6 +203,36 @@ export async function buildAction(files: string[], options: BuildCommandOptions)
 			)
 		})
 
+		// Generate portal types (auto-typed portal access)
+		const { isTypeScript } = Compiler.isTypescriptProject()
+		const typesDir = path.join(process.cwd(), '.robo', 'types')
+		const portalTypesPath = path.join(typesDir, 'portal.d.ts')
+
+		// Build route definitions for portal type generation
+		const routeDefinitions: Record<string, { routes: Record<string, { directory: string; multiple?: boolean; singular?: string }> }> = {}
+		for (const route of routes) {
+			if (!routeDefinitions[route.namespace]) {
+				routeDefinitions[route.namespace] = { routes: {} }
+			}
+			routeDefinitions[route.namespace].routes[route.name] = {
+				directory: route.directory,
+				multiple: route.config?.multiple,
+				singular: route.config?.singular
+			}
+		}
+
+		// Collect plugin routes for type extraction
+		const pluginRoutesInfo = Array.from(plugins.entries()).map(([name, data]) => ({
+			name,
+			path: data.path ?? path.join(process.cwd(), 'node_modules', name),
+			namespace: data.namespace ?? name.replace('@robojs/', '').replace('robo-plugin-', '')
+		}))
+
+		const pluginRoutes = await collectPluginRoutes(pluginRoutesInfo, routeDefinitions)
+		await generatePortalTypes(pluginRoutes, portalTypesPath, isTypeScript)
+		await generateTypesIndex(typesDir)
+
+		logger.debug(`Generated portal types at ${portalTypesPath}`)
 		logger.debug(`Generated granular manifest in ${Date.now() - granularStartTime}ms`)
 	}
 

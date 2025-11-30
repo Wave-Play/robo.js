@@ -1,5 +1,5 @@
 import { Client, GatewayIntentBits } from 'discord.js'
-import { portal } from './robo.js'
+import { portal } from './portal.js'
 import { discordLogger } from './constants.js'
 import { bold } from './color.js'
 
@@ -90,7 +90,8 @@ export const REQUIRED_INTENTS: Record<string, GatewayIntentBits | GatewayIntentB
 
 export function checkIntents(client: Client): void {
 	const missingIntents = new Set<GatewayIntentBits>()
-	const events = portal.events.keys() as unknown as string[]
+	const eventsData = portal.getByType('discord:events')
+	const events = Object.keys(eventsData)
 	const intents = Number(client.options.intents.bitfield)
 
 	for (const eventName of events) {

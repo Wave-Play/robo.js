@@ -7,6 +7,7 @@ export type * from './events.js'
 export type * from './lifecycle.js'
 export type * from './manifest.js'
 export type * from './manifest-v1.js'
+export type * from './portal.js'
 export type * from './routes.js'
 
 import type { CommandEntry } from './commands.js'

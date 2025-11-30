@@ -1,18 +1,64 @@
 import type { LogLevel } from '../core/logger.js'
 import type { CommandContext, CommandIntegrationType } from './commands.js'
 
-export interface HandlerRecord<T = unknown> {
-	auto?: boolean
-	description?: string
-	handler: T
-	key: string
+/**
+ * Handler object returned after lazy import.
+ * Contains the default export, config, and any named exports.
+ */
+export interface HandlerModule<THandler = unknown, TNamedExports = Record<string, unknown>> {
+	default?: THandler
+	config?: unknown
 	module?: string
+	[key: string]: unknown
+}
+
+/**
+ * Handler record representing a registered handler in the portal.
+ * The handler field is null until lazy-loaded.
+ */
+export interface HandlerRecord<THandler = unknown, TNamedExports = Record<string, unknown>> {
+	/**
+	 * Handler module. NULL until imported (lazy loading).
+	 * After import, contains default, config, and named exports.
+	 */
+	handler: (HandlerModule<THandler> & TNamedExports) | null
+
+	/**
+	 * Which exports this handler has (from manifest).
+	 * Available BEFORE handler is imported.
+	 */
+	exports: {
+		default: boolean
+		config: boolean
+		named: string[]
+	}
+
+	/** Handler key (e.g., 'ping', 'admin ban') */
+	key: string
+
+	/** Route type in namespace:route format (e.g., 'discord:commands') */
+	type: string
+
+	/** Path to the compiled handler file */
 	path: string
+
+	/** Metadata extracted from config export */
+	metadata: Record<string, unknown>
+
+	/** Plugin that provides this handler */
 	plugin?: {
 		name: string
-		path: string
+		version: string
 	}
-	type: 'api' | 'command' | 'context' | 'event' | 'middleware'
+
+	/** Module this handler belongs to (for cross-cutting enable/disable) */
+	module?: string
+
+	/** Whether this handler was auto-generated */
+	auto?: boolean
+
+	/** Runtime enable/disable state */
+	enabled: boolean
 }
 
 export interface ContextConfig extends BaseConfig {

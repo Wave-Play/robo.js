@@ -193,6 +193,8 @@ export interface RouteDefinition {
 	}
 	/** Whether multiple handlers per key are allowed */
 	multiple?: boolean
+	/** Singular accessor name (e.g., 'command' for 'commands', 'contextMenu' for 'context') */
+	singular?: string
 	/** File filter pattern (string form of regex) */
 	filter?: string
 	/** Human-readable description */
@@ -252,6 +254,11 @@ export interface HandlerEntry extends ProcessedEntry {
 	 * Plugin name if source is 'plugin', null otherwise.
 	 */
 	plugin: string | null
+
+	/**
+	 * Plugin version if source is 'plugin'.
+	 */
+	pluginVersion?: string
 
 	/**
 	 * For multiple handlers per key (events), the index.

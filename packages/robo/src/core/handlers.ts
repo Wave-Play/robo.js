@@ -1,11 +1,10 @@
-import { portal } from './robo.js'
+import { portal } from './portal.js'
 import { CommandInteraction, ContextMenuCommandInteraction } from 'discord.js'
 import { getSage, timeout, withEphemeralDefer, withEphemeralReply } from '../cli/utils/utils.js'
 import { getConfig } from './config.js'
 import { BUFFER, DEFAULT_CONFIG, TIMEOUT, discordLogger } from './constants.js'
 import { printErrorResponse } from './debug.js'
 import { color } from './color.js'
-import path from 'node:path'
 import type {
 	AutocompleteInteraction,
 	ChatInputCommandInteraction,
@@ -17,49 +16,81 @@ import type {
 	ContextConfig,
 	Event,
 	HandlerRecord,
+	MiddlewareData,
+	MiddlewareResult,
 	PluginData,
 	SmartCommandConfig
 } from '../types/index.js'
 
+// Type for handler module with callable default
+type HandlerWithDefault<T> = {
+	default?: T
+	config?: unknown
+	autocomplete?: (interaction: AutocompleteInteraction) => Promise<Array<{ name: string; value: string | number }>>
+	[key: string]: unknown
+}
+
+// Type for middleware handler
+type MiddlewareHandler = (data: MiddlewareData) => void | MiddlewareResult | Promise<MiddlewareResult>
+
+// Helper to get path for logging (uses plugin name now, not path)
+function getHandlerPath(record: HandlerRecord): string {
+	const pluginPrefix = record.plugin ? `[${record.plugin.name}] ` : ''
+	return pluginPrefix + record.path
+}
+
+// Helper to get middleware records
+function getMiddleware(): HandlerRecord[] {
+	const middlewareRecords = portal.getByType('discord:middleware')
+	if (!middlewareRecords) return []
+
+	const result: HandlerRecord[] = []
+	for (const recordOrArray of Object.values(middlewareRecords)) {
+		if (Array.isArray(recordOrArray)) {
+			result.push(...recordOrArray)
+		} else {
+			result.push(recordOrArray)
+		}
+	}
+	return result
+}
+
 export async function executeAutocompleteHandler(interaction: AutocompleteInteraction, commandKey: string) {
-	const command = portal.commands.get(commandKey)
+	const command = portal.getRecord('discord', 'commands', commandKey)
 	if (!command) {
 		discordLogger.error(`No command matching ${commandKey} was found.`)
 		return
 	}
 
 	// Check if the command's module is enabled
-	if (command.module && !portal.module(command.module).isEnabled) {
+	if (command.module && !portal.module(command.module).isEnabled()) {
 		discordLogger.debug(`Tried to execute disabled command from module: ${color.bold(command.module)}`)
 		return
 	}
 
 	// Check if the command itself is enabled
-	if (!portal.command(commandKey).isEnabled) {
+	if (!command.enabled) {
 		discordLogger.debug(`Tried to execute disabled command: ${color.bold(commandKey)}`)
 		return
 	}
 
-	if (interaction.guildId && !portal.isEnabledForServer(commandKey, interaction.guildId)) {
-		discordLogger.debug(`Command ${color.bold(commandKey)} is not enabled for server ${interaction.guildId}`)
-		return
-	}
-
 	// Execute middleware
+	const middleware = getMiddleware()
 	try {
-		for (const middleware of portal.middleware) {
-			if (!portal.middlewareController(middleware.key || String(portal.middleware.indexOf(middleware))).isEnabled) {
+		for (const mw of middleware) {
+			if (!mw.enabled) {
 				continue
 			}
 
-			if (interaction.guildId && !portal.isEnabledForServer(middleware.key || String(portal.middleware.indexOf(middleware)), interaction.guildId)) {
-				continue
+			discordLogger.debug(`Executing middleware: ${color.bold(getHandlerPath(mw))}`)
+
+			// Import handler if needed
+			if (!mw.handler) {
+				await portal.importHandler('discord', 'middleware', mw.key)
 			}
-			
-			discordLogger.debug(
-				`Executing middleware: ${color.bold(path.join(middleware.plugin?.path ?? '.', middleware.path))}`
-			)
-			const result = await middleware.handler.default({
+
+			const handler = mw.handler as HandlerWithDefault<MiddlewareHandler> | null
+			const result = await handler?.default?.({
 				payload: [interaction],
 				record: command
 			})
@@ -76,21 +107,26 @@ export async function executeAutocompleteHandler(interaction: AutocompleteIntera
 
 	const config = getConfig()
 	try {
+		// Import handler if needed
+		if (!command.handler) {
+			await portal.importHandler('discord', 'commands', commandKey)
+		}
+
 		// Delegate to autocomplete handler
-		discordLogger.debug(
-			`Executing autocomplete handler: ${color.bold(path.join(command.plugin?.path ?? '.', command.path))}`
-		)
-		const promises = [command.handler.autocomplete(interaction)]
+		discordLogger.debug(`Executing autocomplete handler: ${color.bold(getHandlerPath(command))}`)
+		const commandHandler = command.handler as HandlerWithDefault<unknown> | null
+		const promises = [commandHandler?.autocomplete?.(interaction)]
 		const timeoutDuration = config?.timeouts?.autocomplete
 
 		// Enforce timeout only if custom timeout is configured
 		if (timeoutDuration) {
 			promises.push(
 				timeout(
-					() => [] as Array<{
-						name: string;
-						value: string | number;
-					}>,
+					() =>
+						[] as Array<{
+							name: string
+							value: string | number
+						}>,
 					timeoutDuration
 				)
 			)
@@ -110,43 +146,40 @@ export async function executeAutocompleteHandler(interaction: AutocompleteIntera
 
 export async function executeCommandHandler(interaction: ChatInputCommandInteraction, commandKey: string) {
 	// Find command handler
-	const command = portal.commands.get(commandKey)
+	const command = portal.getRecord('discord', 'commands', commandKey)
 	if (!command) {
 		discordLogger.error(`No command matching "${commandKey}" was found.`)
 		return
 	}
 
 	// Check if the command's module is enabled
-	if (command.module && !portal.module(command.module).isEnabled) {
+	if (command.module && !portal.module(command.module).isEnabled()) {
 		discordLogger.debug(`Tried to execute disabled command from module: ${color.bold(command.module)}`)
 		return
 	}
 
-	if (!portal.command(commandKey).isEnabled) {
+	if (!command.enabled) {
 		discordLogger.debug(`Tried to execute disabled command: ${color.bold(commandKey)}`)
 		return
 	}
 
-	if (interaction.guildId && !portal.isEnabledForServer(commandKey, interaction.guildId)) {
-		discordLogger.debug(`Command ${color.bold(commandKey)} is not enabled for server ${interaction.guildId}`)
-		return
-	}
-
 	// Execute middleware
+	const middleware = getMiddleware()
 	try {
-		for (const middleware of portal.middleware) {
-			if (!portal.middlewareController(middleware.key || String(portal.middleware.indexOf(middleware))).isEnabled) {
+		for (const mw of middleware) {
+			if (!mw.enabled) {
 				continue
 			}
 
-			if (interaction.guildId && !portal.isEnabledForServer(middleware.key || String(portal.middleware.indexOf(middleware)), interaction.guildId)) {
-				continue
+			discordLogger.debug(`Executing middleware: ${color.bold(getHandlerPath(mw))}`)
+
+			// Import handler if needed
+			if (!mw.handler) {
+				await portal.importHandler('discord', 'middleware', mw.key)
 			}
-			
-			discordLogger.debug(
-				`Executing middleware: ${color.bold(path.join(middleware.plugin?.path ?? '.', middleware.path))}`
-			)
-			const result = await middleware.handler.default({
+
+			const mwHandler = mw.handler as HandlerWithDefault<MiddlewareHandler> | null
+			const result = await mwHandler?.default?.({
 				payload: [interaction],
 				record: command
 			})
@@ -161,17 +194,21 @@ export async function executeCommandHandler(interaction: ChatInputCommandInterac
 		return
 	}
 
+	// Import handler if needed
+	if (!command.handler) {
+		await portal.importHandler('discord', 'commands', commandKey)
+	}
+
 	// Prepare options and config
-	const commandConfig: CommandConfig = command.handler.config
+	const cmdHandler = command.handler as HandlerWithDefault<(interaction: ChatInputCommandInteraction, options: Record<string, unknown>) => unknown> | null
+	const commandConfig: CommandConfig = cmdHandler?.config as CommandConfig
 	const config = getConfig()
 	const sage = getSage(commandConfig, config)
 	discordLogger.debug(`Sage options:`, sage)
 
 	try {
-		discordLogger.debug(
-			`Executing command handler: ${color.bold(path.join(command.plugin?.path ?? '.', command.path))}`
-		)
-		if (!command.handler.default) {
+		discordLogger.debug(`Executing command handler: ${color.bold(getHandlerPath(command))}`)
+		if (!cmdHandler?.default) {
 			throw `Missing default export function for command: ${color.bold('/' + commandKey)}`
 		}
 
@@ -180,7 +217,7 @@ export async function executeCommandHandler(interaction: ChatInputCommandInterac
 
 		// Delegate to command handler
 		const options = extractCommandOptions(interaction, commandConfig?.options)
-		const result = command.handler.default(interaction, options)
+		const result = cmdHandler.default(interaction, options)
 		const promises = []
 		let response
 
@@ -255,43 +292,40 @@ export async function executeCommandHandler(interaction: ChatInputCommandInterac
 
 export async function executeContextHandler(interaction: ContextMenuCommandInteraction, commandKey: string) {
 	// Find command handler
-	const command = portal.context.get(commandKey)
+	const command = portal.getRecord('discord', 'context', commandKey)
 	if (!command) {
 		discordLogger.error(`No context menu command matching "${commandKey}" was found.`)
 		return
 	}
 
 	// Check if the context menu's module is enabled
-	if (command.module && !portal.module(command.module).isEnabled) {
+	if (command.module && !portal.module(command.module).isEnabled()) {
 		discordLogger.debug(`Tried to execute disabled context menu command from module: ${color.bold(command.module)}`)
 		return
 	}
 
-	if (!portal.contextController(commandKey).isEnabled) {
+	if (!command.enabled) {
 		discordLogger.debug(`Tried to execute disabled context menu command: ${color.bold(commandKey)}`)
 		return
 	}
 
-	if (interaction.guildId && !portal.isEnabledForServer(commandKey, interaction.guildId)) {
-		discordLogger.debug(`Context menu command ${color.bold(commandKey)} is not enabled for server ${interaction.guildId}`)
-		return
-	}
-
 	// Execute middleware
+	const middleware = getMiddleware()
 	try {
-		for (const middleware of portal.middleware) {
-			if (!portal.middlewareController(middleware.key || String(portal.middleware.indexOf(middleware))).isEnabled) {
+		for (const mw of middleware) {
+			if (!mw.enabled) {
 				continue
 			}
 
-			if (interaction.guildId && !portal.isEnabledForServer(middleware.key || String(portal.middleware.indexOf(middleware)), interaction.guildId)) {
-				continue
+			discordLogger.debug(`Executing middleware: ${color.bold(getHandlerPath(mw))}`)
+
+			// Import handler if needed
+			if (!mw.handler) {
+				await portal.importHandler('discord', 'middleware', mw.key)
 			}
-			
-			discordLogger.debug(
-				`Executing middleware: ${color.bold(path.join(middleware.plugin?.path ?? '.', middleware.path))}`
-			)
-			const result = await middleware.handler.default({
+
+			const mwHandler = mw.handler as HandlerWithDefault<MiddlewareHandler> | null
+			const result = await mwHandler?.default?.({
 				payload: [interaction],
 				record: command
 			})
@@ -306,17 +340,21 @@ export async function executeContextHandler(interaction: ContextMenuCommandInter
 		return
 	}
 
+	// Import handler if needed
+	if (!command.handler) {
+		await portal.importHandler('discord', 'context', commandKey)
+	}
+
 	// Prepare options and config
-	const commandConfig: ContextConfig = command.handler.config
+	const ctxHandler = command.handler as HandlerWithDefault<(interaction: ContextMenuCommandInteraction, target: unknown) => unknown> | null
+	const commandConfig: ContextConfig = ctxHandler?.config as ContextConfig
 	const config = getConfig()
 	const sage = getSage(commandConfig, config)
 	discordLogger.debug(`Sage options:`, sage)
 
 	try {
-		discordLogger.debug(
-			`Executing context menu handler: ${color.bold(path.join(command.plugin?.path ?? '.', command.path))}`
-		)
-		if (!command.handler.default) {
+		discordLogger.debug(`Executing context menu handler: ${color.bold(getHandlerPath(command))}`)
+		if (!ctxHandler?.default) {
 			throw `Missing default export function for command: ${color.bold('/' + commandKey)}`
 		}
 
@@ -329,7 +367,7 @@ export async function executeContextHandler(interaction: ContextMenuCommandInter
 		}
 
 		// Delegate to context menu handler
-		const result = command.handler.default(interaction, target)
+		const result = ctxHandler.default(interaction, target)
 		const promises = []
 		let response
 
@@ -387,57 +425,56 @@ export async function executeEventHandler(
 	eventName: string,
 	...eventData: unknown[]
 ) {
-	const callbacks = portal.events.get(eventName)
+	const eventsData = portal.getByType('discord:events')
+	const callbacks = eventsData[eventName] as HandlerRecord<Event>[] | undefined
 	if (!callbacks?.length) {
 		return Promise.resolve()
 	}
 
 	const config = getConfig()
 	const isLifecycleEvent = eventName.startsWith('_')
+	const middleware = getMiddleware()
+
 	await Promise.all(
 		callbacks.map(async (callback: HandlerRecord<Event>, index: number) => {
 			try {
-				discordLogger.debug(
-					`Executing event handler: ${color.bold(path.join(callback.plugin?.path ?? '.', callback.path))}`
-				)
-				if (!callback.handler.default) {
+				discordLogger.debug(`Executing event handler: ${color.bold(getHandlerPath(callback))}`)
+
+				// Import handler if needed
+				if (!callback.handler) {
+					await portal.importHandler('discord', 'events', eventName)
+				}
+
+				if (!callback.handler?.default) {
 					throw `Missing default export function for event: ${color.bold(eventName)}`
 				}
 
 				// Check if the event's module is enabled
-				if (callback.module && !portal.module(callback.module).isEnabled) {
+				if (callback.module && !portal.module(callback.module).isEnabled()) {
 					discordLogger.debug(`Tried to execute disabled event from module: ${color.bold(callback.module)}`)
 					return
 				}
 
-				const eventKey = `${eventName}:${index}`
-				if (!portal.event(eventKey).isEnabled) {
-					discordLogger.debug(`Tried to execute disabled event: ${color.bold(eventKey)}`)
-					return
-				}
-
-				const interaction = eventData[0] as any
-				const guildId = interaction?.guildId || interaction?.guild?.id
-				if (guildId && !portal.isEnabledForServer(eventKey, guildId)) {
-					discordLogger.debug(`Event ${color.bold(eventKey)} is not enabled for server ${guildId}`)
+				if (!callback.enabled) {
+					discordLogger.debug(`Tried to execute disabled event: ${color.bold(eventName)}:${index}`)
 					return
 				}
 
 				// Execute middleware
 				try {
-					for (const middleware of portal.middleware) {
-						if (!portal.middlewareController(middleware.key || String(portal.middleware.indexOf(middleware))).isEnabled) {
+					for (const mw of middleware) {
+						if (!mw.enabled) {
 							continue
 						}
 
-						if (guildId && !portal.isEnabledForServer(middleware.key || String(portal.middleware.indexOf(middleware)), guildId)) {
-							continue
+						// Import handler if needed
+						if (!mw.handler) {
+							await portal.importHandler('discord', 'middleware', mw.key)
 						}
 
-						discordLogger.debug(
-							`Executing middleware: ${color.bold(path.join(middleware.plugin?.path ?? '.', middleware.path))}`
-						)
-						const result = await middleware.handler.default({
+						discordLogger.debug(`Executing middleware: ${color.bold(getHandlerPath(mw))}`)
+						const middlewareModule = mw.handler as HandlerWithDefault<MiddlewareHandler> | null
+						const result = await middlewareModule?.default?.({
 							payload: eventData,
 							record: callback
 						})
@@ -453,7 +490,8 @@ export async function executeEventHandler(
 				}
 
 				// Execute handler without timeout if not a lifecycle event
-				const handlerPromise = callback.handler.default(...eventData, plugins?.get(callback.plugin?.name)?.options)
+				const eventModule = callback.handler as unknown as HandlerWithDefault<(...args: unknown[]) => unknown> | null
+				const handlerPromise = eventModule!.default!(...eventData, plugins?.get(callback.plugin?.name ?? '')?.options)
 				if (!isLifecycleEvent) {
 					return await handlerPromise
 				}
@@ -463,7 +501,7 @@ export async function executeEventHandler(
 				return await Promise.race([handlerPromise, timeoutPromise])
 			} catch (error) {
 				try {
-					const metaOptions = plugins?.get(callback.plugin?.name)?.metaOptions ?? {}
+					const metaOptions = plugins?.get(callback.plugin?.name ?? '')?.metaOptions ?? {}
 					let message
 
 					if (error === TIMEOUT) {
