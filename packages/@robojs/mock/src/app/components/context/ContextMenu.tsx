@@ -118,18 +118,41 @@ export function ContextMenu({
 			role="menu"
 			className={styles.menu}
 		>
+<<<<<<< HEAD
+=======
+			{/* App commands section */}
+			{contextCommands.length > 0 && (
+				<>
+					<ListItemHeader className={styles.menuHeader}>Apps</ListItemHeader>
+					{contextCommands.map((cmd) => (
+						<ListItem
+							key={cmd.id}
+							label={cmd.name}
+							icon={<CommandIcon />}
+							className={styles.menuItem}
+							onClick={() => handleCommandClick(cmd)}
+							role="menuitem"
+						/>
+					))}
+					<ListItemSeparator className={styles.menuSeparator} />
+				</>
+			)}
+
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
 			{/* Standard Discord actions */}
 			{type === 'message' && (
 				<>
-					{onReply && <ListItem label="Reply" icon={<ReplyIcon />} onClick={handleReply} role="menuitem" />}
+					{onReply && <ListItem label="Reply" icon={<ReplyIcon />} className={styles.menuItem} onClick={handleReply} role="menuitem" />}
 					{onPinMessage && (
 						<ListItem
 							label={isPinned ? 'Unpin Message' : 'Pin Message'}
 							icon={<PinIcon />}
+							className={styles.menuItem}
 							onClick={handlePinMessage}
 							role="menuitem"
 						/>
 					)}
+<<<<<<< HEAD
 					{/* Apps submenu */}
 					{contextCommands.length > 0 && (
 						<div
@@ -159,14 +182,20 @@ export function ContextMenu({
 					<ListItemSeparator />
 					<ListItem label="Copy Text" icon={<CopyIcon />} onClick={handleCopyText} role="menuitem" />
 					<ListItem label="Copy Message ID" icon={<IdIcon />} onClick={handleCopyId} role="menuitem" />
+=======
+					<ListItemSeparator className={styles.menuSeparator} />
+					<ListItem label="Copy Text" icon={<CopyIcon />} className={styles.menuItem} onClick={handleCopyText} role="menuitem" />
+					<ListItem label="Copy Message ID" icon={<IdIcon />} className={styles.menuItem} onClick={handleCopyId} role="menuitem" />
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
 				</>
 			)}
 
 			{type === 'user' && (
 				<>
 					{onMessageUser && (
-						<ListItem label="Message" icon={<MessageIcon />} onClick={handleMessageUser} role="menuitem" />
+						<ListItem label="Message" icon={<MessageIcon />} className={styles.menuItem} onClick={handleMessageUser} role="menuitem" />
 					)}
+<<<<<<< HEAD
 					{/* Apps submenu */}
 					{contextCommands.length > 0 && (
 						<div
@@ -195,6 +224,10 @@ export function ContextMenu({
 					)}
 					<ListItemSeparator />
 					<ListItem label="Copy User ID" icon={<IdIcon />} onClick={handleCopyId} role="menuitem" />
+=======
+					<ListItemSeparator className={styles.menuSeparator} />
+					<ListItem label="Copy User ID" icon={<IdIcon />} className={styles.menuItem} onClick={handleCopyId} role="menuitem" />
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
 				</>
 			)}
 		</DropdownContainer>

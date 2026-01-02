@@ -5,17 +5,21 @@
 	margin-bottom: 8px;
 	display: flex;
 	flex-direction: column;
+	border: 1px solid var(--background-modifier-accent);
 }
 
 .header {
-	padding: 12px 16px 8px;
+	padding: 10px 16px 8px;
 	border-bottom: 1px solid var(--background-modifier-accent);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	font-size: 11px;
 }
 
 .commandList {
 	overflow-y: auto;
 	max-height: 300px;
-	padding: 8px;
+	padding: 6px;
 }
 
 .commandIcon {
@@ -30,7 +34,7 @@
 }
 
 .empty {
-	padding: 16px;
+	padding: 20px;
 	text-align: center;
 	color: var(--text-muted);
 	font-size: 14px;

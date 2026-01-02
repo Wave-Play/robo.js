@@ -57,6 +57,17 @@
 	gap: 6px;
 }
 
+.buttonGroupStack {
+	flex-direction: column;
+	flex-wrap: nowrap;
+	align-items: stretch;
+}
+
+.buttonGroupStack .actionButton {
+	justify-content: flex-start;
+	width: 100%;
+}
+
 .toastButton {
 	padding: 6px 10px;
 	border-radius: var(--radius-sm);

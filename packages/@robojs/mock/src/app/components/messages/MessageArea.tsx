@@ -1,4 +1,4 @@
-import { useRef, useEffect, useMemo, useState, useCallback } from 'react'
+import { useRef, useEffect, useMemo, useState, useCallback, type ReactNode } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useStageData } from '../../hooks/useStageData'
 import { useContextMenu } from '../../hooks/useContextMenu'
@@ -8,6 +8,9 @@ import { TypingIndicator } from './TypingIndicator'
 import { ThinkingIndicator } from './ThinkingIndicator'
 import { PendingMessage } from './PendingMessage'
 import { ContextMenu } from '../context/ContextMenu'
+import { ForumChannelView } from './ForumChannelView'
+import { VoiceChannelView } from './VoiceChannelView'
+import ThreadIcon from '../icons/thread'
 import type { StageMessage, StageUser, StageApplicationCommand } from '../../types/stage'
 import styles from './MessageArea.module.css'
 
@@ -27,6 +30,8 @@ interface VirtualizedListProps {
 	isPlaybackMode: boolean
 	channelName: string
 	channelTopic?: string
+	footer?: ReactNode
+	onDismissEphemeral?: (messageId: string) => void
 	onButtonClick: (messageId: string, customId: string) => Promise<void>
 	onSelectOption: (messageId: string, customId: string, values: string[]) => Promise<void>
 	onAddReaction: (messageId: string, emoji: string) => Promise<void>
@@ -43,6 +48,8 @@ function VirtualizedMessageList({
 	isPlaybackMode,
 	channelName,
 	channelTopic,
+	footer,
+	onDismissEphemeral,
 	onButtonClick,
 	onSelectOption,
 	onAddReaction,
@@ -267,19 +274,21 @@ function VirtualizedMessageList({
 								<Message
 									message={group.message}
 									isFirstInGroup={group.isFirstInGroup}
-									isHighlighted={group.isHighlighted}
-									onButtonClick={onButtonClick}
-									onSelectOption={onSelectOption}
-									onAddReaction={onAddReaction}
-									onRemoveReaction={onRemoveReaction}
-									onContextMenu={onMessageContextMenu}
-									onUserContextMenu={onUserContextMenu}
-								/>
-							</div>
-						)
-					})}
+										isHighlighted={group.isHighlighted}
+										onButtonClick={onButtonClick}
+										onSelectOption={onSelectOption}
+										onAddReaction={onAddReaction}
+										onRemoveReaction={onRemoveReaction}
+										onDismissEphemeral={onDismissEphemeral}
+										onContextMenu={onMessageContextMenu}
+										onUserContextMenu={onUserContextMenu}
+									/>
+								</div>
+							)
+						})}
 				</div>
 			)}
+			{footer}
 		</div>
 	)
 }
@@ -287,10 +296,24 @@ function VirtualizedMessageList({
 export function MessageArea({ channelId }: MessageAreaProps) {
 	// Unified hook handles live/playback mode switching automatically
 	const {
+<<<<<<< HEAD
 		messages,
 		typingUsers,
 		pendingInteractions,
 		pendingMessages,
+=======
+		guildChannels,
+		guildVoiceStates,
+		users,
+		botUser,
+		messages,
+		channelMessages,
+		channelTypingUsers,
+		channelPendingInteractions,
+		channelPendingMessages,
+		members,
+		selectedGuildId,
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
 		selectedChannel,
 		clickButton,
 		selectOption,
@@ -304,10 +327,43 @@ export function MessageArea({ channelId }: MessageAreaProps) {
 		pinMessage,
 		unpinMessage,
 		openDM,
+<<<<<<< HEAD
 		isPlaybackMode,
 		playback
 	} = useStageData({ channelId })
 	const { menu: contextMenu, showMenu: showContextMenu, hideMenu: hideContextMenu } = useContextMenu()
+=======
+		joinVoice,
+		leaveVoice
+	} = useSession()
+	const { menu: contextMenu, showMenu: showContextMenu, hideMenu: hideContextMenu } = useContextMenu()
+	const isPlaybackMode = useIsPlaybackMode()
+	const playbackMessages = usePlaybackMessages(channelId)
+	const playbackTypingUsers = usePlaybackTypingUsers(channelId)
+	const playbackState = usePlayback()
+	const [dismissedEphemeralIds, setDismissedEphemeralIds] = useState<string[]>([])
+
+	// Use playback messages when in playback mode, otherwise use session messages
+	const displayMessages = isPlaybackMode && playbackMessages !== null ? playbackMessages : channelMessages
+
+	// Use playback typing users when in playback mode, otherwise use session typing users
+	const displayTypingUsers = isPlaybackMode && playbackTypingUsers !== null ? playbackTypingUsers : channelTypingUsers
+	const voiceUsers = botUser && !users.some((user) => user.id === botUser.id) ? [...users, botUser] : users
+	const guildMembers = selectedGuildId
+		? members.filter((member) => member.guild_id === selectedGuildId)
+		: members
+	const visibleMessages = dismissedEphemeralIds.length
+		? displayMessages.filter((message) => !dismissedEphemeralIds.includes(message.id))
+		: displayMessages
+
+	const handleDismissEphemeral = useCallback((messageId: string) => {
+		setDismissedEphemeralIds((prev) => (prev.includes(messageId) ? prev : [...prev, messageId]))
+	}, [])
+
+	useEffect(() => {
+		setDismissedEphemeralIds([])
+	}, [channelId])
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
 
 	// Context menu handlers
 	const handleMessageContextMenu = useCallback(
@@ -381,6 +437,47 @@ export function MessageArea({ channelId }: MessageAreaProps) {
 		)
 	}
 
+	const isThreadChannel =
+		selectedChannel.type === 10 ||
+		selectedChannel.type === 11 ||
+		selectedChannel.type === 12
+	const isForumChannel = selectedChannel.type === 15 || selectedChannel.type === 16
+	const isVoiceChannel = selectedChannel.type === 2 || selectedChannel.type === 13
+	const threadParent = isThreadChannel
+		? guildChannels.find((channel) => channel.id === selectedChannel.parent_id)
+		: null
+	const forumThreads = isForumChannel
+		? guildChannels.filter((channel) => channel.parent_id === selectedChannel.id && (
+			channel.type === 10 ||
+			channel.type === 11 ||
+			channel.type === 12
+		))
+		: []
+
+	if (isForumChannel) {
+		return (
+			<div className={styles.container}>
+				<ForumChannelView channel={selectedChannel} threads={forumThreads} messages={messages} />
+			</div>
+		)
+	}
+
+	if (isVoiceChannel) {
+		return (
+			<div className={styles.container}>
+				<VoiceChannelView
+					channel={selectedChannel}
+					voiceStates={guildVoiceStates}
+					users={voiceUsers}
+					members={guildMembers}
+					currentUserId={botUser?.id}
+					onJoin={async () => { await joinVoice(selectedChannel.id, selectedChannel.guild_id) }}
+					onLeave={async () => { await leaveVoice(selectedChannel.guild_id) }}
+				/>
+			</div>
+		)
+	}
+
 	return (
 		<div className={styles.container}>
 			{/* Playback mode banner */}
@@ -396,10 +493,36 @@ export function MessageArea({ channelId }: MessageAreaProps) {
 				</div>
 			)}
 
+			{isThreadChannel && (
+				<div className={styles.threadHeader}>
+					<div className={styles.threadHeaderInfo}>
+						<div className={styles.threadIcon}>
+							<ThreadIcon width={20} height={20} />
+						</div>
+						<div>
+							<div className={styles.threadTitle}>{selectedChannel.name}</div>
+							<div className={styles.threadSubtitle}>
+								{threadParent ? `Thread in #${threadParent.name}` : 'Thread'}
+							</div>
+						</div>
+					</div>
+					<div className={styles.threadActions}>
+						{selectedChannel.thread_metadata?.archived && <span className={styles.threadBadge}>Archived</span>}
+						{selectedChannel.thread_metadata?.locked && <span className={styles.threadBadge}>Locked</span>}
+						<button type="button" className={styles.threadButton}>Members</button>
+						<button type="button" className={styles.threadButton}>Notifications</button>
+					</div>
+				</div>
+			)}
+
 			{/* Virtualized message list - keyed to force reset on channel/mode change */}
 			<VirtualizedMessageList
 				key={`${channelId}-${isPlaybackMode}`}
+<<<<<<< HEAD
 				messages={messages}
+=======
+				messages={visibleMessages}
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
 				isPlaybackMode={isPlaybackMode}
 				channelName={selectedChannel.name}
 				channelTopic={selectedChannel.topic ?? undefined}
@@ -407,10 +530,28 @@ export function MessageArea({ channelId }: MessageAreaProps) {
 				onSelectOption={async (messageId, customId, values) => { await selectOption(messageId, customId, values) }}
 				onAddReaction={async (messageId, emoji) => { await addReaction(messageId, emoji) }}
 				onRemoveReaction={async (messageId, emoji) => { await removeReaction(messageId, emoji) }}
+				onDismissEphemeral={handleDismissEphemeral}
 				onMessageContextMenu={handleMessageContextMenu}
 				onUserContextMenu={handleUserContextMenu}
+				footer={
+					<>
+						{channelPendingMessages.map((pending) => (
+							<PendingMessage key={pending.id} message={pending} onRetry={retryMessage} onCancel={cancelMessage} />
+						))}
+						{channelPendingInteractions.map((pending) => (
+							<ThinkingIndicator
+								key={pending.id}
+								botName={pending.botName}
+								botAvatar={pending.botAvatar}
+								botId={pending.botId}
+							/>
+						))}
+						<TypingIndicator typingUsers={displayTypingUsers} />
+					</>
+				}
 			/>
 
+<<<<<<< HEAD
 			{/* Pending messages (sending/failed) */}
 			{pendingMessages.map((pending) => (
 				<PendingMessage key={pending.id} message={pending} onRetry={retryMessage} onCancel={cancelMessage} />
@@ -429,6 +570,8 @@ export function MessageArea({ channelId }: MessageAreaProps) {
 			{/* Typing indicator */}
 			<TypingIndicator typingUsers={typingUsers} />
 
+=======
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
 			{/* Message input */}
 			<MessageInput channelId={selectedChannel.id} channelName={selectedChannel.name} />
 
@@ -544,9 +687,10 @@ function estimateV2ComponentsHeight(components: unknown[] | undefined): number {
 				// Estimate text height from nested TextDisplay components
 				let textHeight = 0
 				if (comp.components?.length) {
+					const maxLineLength = comp.accessory?.type === 11 ? 52 : 60
 					for (const textComp of comp.components) {
 						const tc = textComp as { content?: string }
-						textHeight += estimateTextHeight(tc.content || '')
+						textHeight += estimateTextHeight(tc.content || '', maxLineLength)
 					}
 					// Add gaps between text components (4px)
 					textHeight += (comp.components.length - 1) * 4
@@ -609,7 +753,7 @@ function estimateV2ComponentsHeight(components: unknown[] | undefined): number {
  * Uses 14px font size with 1.375 line-height (~19px per line)
  * Assumes ~70 chars per line at max content width
  */
-function estimateTextHeight(content: string): number {
+function estimateTextHeight(content: string, maxLineLength = 70): number {
 	if (!content) return 19 // Minimum one line
 
 	// Split by actual newlines first
@@ -625,8 +769,8 @@ function estimateTextHeight(content: string): number {
 		} else if (line.length === 0) {
 			totalLines += 0.5 // Empty lines are shorter
 		} else {
-			// Estimate wrapping at ~70 chars per line
-			totalLines += Math.max(1, Math.ceil(line.length / 70))
+			// Estimate wrapping at configured line length
+			totalLines += Math.max(1, Math.ceil(line.length / maxLineLength))
 		}
 	}
 

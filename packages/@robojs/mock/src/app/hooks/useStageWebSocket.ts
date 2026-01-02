@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
 import { useSessionDispatch } from '../stores/sessionStore'
 import type { StageEvent, StageCommand, StageMessageCreateData, StateSyncPayload } from '../types/stage'
+import { buildStageWebSocketUrls } from '../utils'
 
 interface UseStageWebSocketOptions {
 	sessionId: string | null
@@ -120,21 +121,14 @@ export function useStageWebSocket({
 		setError(null)
 		dispatch({ type: 'SET_CONNECTING', payload: true })
 
-		const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-		const host = window.location.host
+		const [url] = buildStageWebSocketUrls(sessionId)
 
-		// Token handling:
-		// - If already has 'mock:' prefix, use as-is (legacy format)
-		// - If looks like Discord-like format (contains 3 dot-separated parts), use as-is
-		// - Otherwise, prepend 'mock:' for legacy session ID format
-		const isDiscordLikeToken = sessionId.includes('.') && sessionId.split('.').length === 3
-		const token = sessionId.startsWith('mock:') || isDiscordLikeToken ? sessionId : `mock:${sessionId}`
-
-		// Detect prefix from current page URL (e.g., /mock/stage -> /mock/stage/ws)
-		const pathname = window.location.pathname
-		const stageIndex = pathname.indexOf('/stage')
-		const basePath = stageIndex !== -1 ? pathname.slice(0, stageIndex + '/stage'.length) : '/stage'
-		const url = `${protocol}//${host}${basePath}/ws?token=${encodeURIComponent(token)}`
+		if (!url) {
+			setError('Invalid Stage WebSocket URL')
+			setIsConnecting(false)
+			dispatch({ type: 'SET_ERROR', payload: 'Invalid Stage WebSocket URL' })
+			return
+		}
 
 		const ws = new WebSocket(url)
 		wsRef.current = ws

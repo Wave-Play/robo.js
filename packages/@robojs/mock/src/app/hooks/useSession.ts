@@ -1,4 +1,5 @@
 import { useSession as useSessionState, useSessionDispatch, useWebSocket, type PendingMessage } from '../stores/sessionStore'
+import { normalizeStageSessionId } from '../utils'
 import type { ModalActionRow } from '../components/modals/Modal'
 import type { StageMessage, StageUser } from '../types/stage'
 
@@ -42,7 +43,7 @@ export function useSession() {
 
 	// Actions
 	const setSessionId = (sessionId: string) => {
-		dispatch({ type: 'SET_SESSION_ID', payload: sessionId })
+		dispatch({ type: 'SET_SESSION_ID', payload: normalizeStageSessionId(sessionId) })
 	}
 
 	const selectGuild = (guildId: string | null) => {

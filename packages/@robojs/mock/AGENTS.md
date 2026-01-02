@@ -682,6 +682,8 @@ Bot sends Type 9 response → SHOW_MODAL → Modal overlay
 | StatusBar | `src/app/components/layout/StatusBar.tsx` |
 | MessageArea | `src/app/components/messages/MessageArea.tsx` |
 | Message | `src/app/components/messages/Message.tsx` |
+| ForumChannelView | `src/app/components/messages/ForumChannelView.tsx` |
+| VoiceChannelView | `src/app/components/messages/VoiceChannelView.tsx` |
 | MessageInput | `src/app/components/messages/MessageInput.tsx` |
 | PendingMessage | `src/app/components/messages/PendingMessage.tsx` |
 | ThinkingIndicator | `src/app/components/messages/ThinkingIndicator.tsx` |

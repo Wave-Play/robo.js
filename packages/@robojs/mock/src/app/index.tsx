@@ -8,6 +8,7 @@ import { ToasterProvider } from './components/common/Toaster'
 import { DevToolsProvider } from './components/devtools/DevToolsPanel'
 import { LogsProvider } from './stores/logsStore'
 import { initDevReload } from '@robojs/server/client'
+import { normalizeStageSessionId } from './utils'
 
 // Initialize dev reload for hot reloading during development
 initDevReload()
@@ -25,10 +26,7 @@ function getInitialSessionId(): string | null {
 	const sessionParam = urlParams.get('session') || urlParams.get('token')
 
 	if (sessionParam) {
-		// Remove 'mock:' prefix if present for cleaner storage
-		// Also strip trailing slashes that may come from server redirects
-		let cleanId = sessionParam.startsWith('mock:') ? sessionParam.slice(5) : sessionParam
-		cleanId = cleanId.replace(/\/+$/, '')
+		const cleanId = normalizeStageSessionId(sessionParam)
 		localStorage.setItem('stage_session_id', cleanId)
 		return cleanId
 	}

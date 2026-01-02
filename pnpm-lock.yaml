@@ -1081,6 +1081,49 @@ importers:
         specifier: ^5.7.2
         version: 5.9.3
 
+  templates/discord-bots/mockbot-ts:
+    dependencies:
+      '@robojs/discordjs':
+        specifier: link:..\..\..\packages\@robojs\discordjs
+        version: link:../../../packages/@robojs/discordjs
+      '@robojs/mock':
+        specifier: link:..\..\..\packages\@robojs\mock
+        version: link:../../../packages/@robojs/mock
+      '@robojs/server':
+        specifier: link:..\..\..\packages\plugin-api
+        version: link:../../../packages/plugin-api
+      discord.js:
+        specifier: ^14.25.1
+        version: 14.25.1
+      robo.js:
+        specifier: link:..\..\..\packages\robo
+        version: link:../../../packages/robo
+    devDependencies:
+      '@swc/core':
+        specifier: ^1.15.4
+        version: 1.15.8
+      '@types/jest':
+        specifier: ^29.5.14
+        version: 29.5.14
+      '@types/node':
+        specifier: ^25.0.2
+        version: 25.0.2
+      jest:
+        specifier: ^29.7.0
+        version: 29.7.0(@types/node@25.0.2)
+      prettier:
+        specifier: ^3.7.4
+        version: 3.7.4
+      ts-jest:
+        specifier: ^29.2.5
+        version: 29.4.6(@babel/core@7.28.5)(jest@29.7.0)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vite:
+        specifier: ^7.2.7
+        version: 7.3.0(@types/node@25.0.2)
+
 packages:
 
   /@ai-sdk/mcp@1.0.1(zod@3.25.76):
@@ -2023,7 +2066,11 @@ packages:
     cpu: [ppc64]
     os: [aix]
     requiresBuild: true
+<<<<<<< HEAD
     dev: false
+=======
+    dev: true
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     optional: true
 
   /@esbuild/android-arm64@0.17.19:
@@ -2077,7 +2124,11 @@ packages:
     cpu: [arm64]
     os: [android]
     requiresBuild: true
+<<<<<<< HEAD
     dev: false
+=======
+    dev: true
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     optional: true
 
   /@esbuild/android-arm@0.17.19:
@@ -2131,7 +2182,11 @@ packages:
     cpu: [arm]
     os: [android]
     requiresBuild: true
+<<<<<<< HEAD
     dev: false
+=======
+    dev: true
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     optional: true
 
   /@esbuild/android-x64@0.17.19:
@@ -2185,7 +2240,11 @@ packages:
     cpu: [x64]
     os: [android]
     requiresBuild: true
+<<<<<<< HEAD
     dev: false
+=======
+    dev: true
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     optional: true
 
   /@esbuild/darwin-arm64@0.17.19:
@@ -2239,7 +2298,11 @@ packages:
     cpu: [arm64]
     os: [darwin]
     requiresBuild: true
+<<<<<<< HEAD
     dev: false
+=======
+    dev: true
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     optional: true
 
   /@esbuild/darwin-x64@0.17.19:
@@ -2293,7 +2356,11 @@ packages:
     cpu: [x64]
     os: [darwin]
     requiresBuild: true
+<<<<<<< HEAD
     dev: false
+=======
+    dev: true
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     optional: true
 
   /@esbuild/freebsd-arm64@0.17.19:
@@ -2347,7 +2414,11 @@ packages:
     cpu: [arm64]
     os: [freebsd]
     requiresBuild: true
+<<<<<<< HEAD
     dev: false
+=======
+    dev: true
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     optional: true
 
   /@esbuild/freebsd-x64@0.17.19:
@@ -2401,7 +2472,11 @@ packages:
     cpu: [x64]
     os: [freebsd]
     requiresBuild: true
+<<<<<<< HEAD
     dev: false
+=======
+    dev: true
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     optional: true
 
   /@esbuild/linux-arm64@0.17.19:
@@ -2455,7 +2530,11 @@ packages:
     cpu: [arm64]
     os: [linux]
     requiresBuild: true
+<<<<<<< HEAD
     dev: false
+=======
+    dev: true
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     optional: true
 
   /@esbuild/linux-arm@0.17.19:
@@ -2509,7 +2588,11 @@ packages:
     cpu: [arm]
     os: [linux]
     requiresBuild: true
+<<<<<<< HEAD
     dev: false
+=======
+    dev: true
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     optional: true
 
   /@esbuild/linux-ia32@0.17.19:
@@ -2563,7 +2646,11 @@ packages:
     cpu: [ia32]
     os: [linux]
     requiresBuild: true
+<<<<<<< HEAD
     dev: false
+=======
+    dev: true
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     optional: true
 
   /@esbuild/linux-loong64@0.17.19:
@@ -2617,7 +2704,11 @@ packages:
     cpu: [loong64]
     os: [linux]
     requiresBuild: true
+<<<<<<< HEAD
     dev: false
+=======
+    dev: true
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     optional: true
 
   /@esbuild/linux-mips64el@0.17.19:
@@ -2671,7 +2762,11 @@ packages:
     cpu: [mips64el]
     os: [linux]
     requiresBuild: true
+<<<<<<< HEAD
     dev: false
+=======
+    dev: true
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     optional: true
 
   /@esbuild/linux-ppc64@0.17.19:
@@ -2725,7 +2820,11 @@ packages:
     cpu: [ppc64]
     os: [linux]
     requiresBuild: true
+<<<<<<< HEAD
     dev: false
+=======
+    dev: true
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     optional: true
 
   /@esbuild/linux-riscv64@0.17.19:
@@ -2779,7 +2878,11 @@ packages:
     cpu: [riscv64]
     os: [linux]
     requiresBuild: true
+<<<<<<< HEAD
     dev: false
+=======
+    dev: true
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     optional: true
 
   /@esbuild/linux-s390x@0.17.19:
@@ -2833,7 +2936,11 @@ packages:
     cpu: [s390x]
     os: [linux]
     requiresBuild: true
+<<<<<<< HEAD
     dev: false
+=======
+    dev: true
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     optional: true
 
   /@esbuild/linux-x64@0.17.19:
@@ -2887,6 +2994,7 @@ packages:
     cpu: [x64]
     os: [linux]
     requiresBuild: true
+<<<<<<< HEAD
     dev: false
     optional: true
 
@@ -2896,6 +3004,8 @@ packages:
     cpu: [arm64]
     os: [netbsd]
     requiresBuild: true
+=======
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     dev: true
     optional: true
 
@@ -2914,7 +3024,11 @@ packages:
     cpu: [arm64]
     os: [netbsd]
     requiresBuild: true
+<<<<<<< HEAD
     dev: false
+=======
+    dev: true
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     optional: true
 
   /@esbuild/netbsd-x64@0.17.19:
@@ -2968,7 +3082,11 @@ packages:
     cpu: [x64]
     os: [netbsd]
     requiresBuild: true
+<<<<<<< HEAD
     dev: false
+=======
+    dev: true
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     optional: true
 
   /@esbuild/openbsd-arm64@0.23.1:
@@ -3004,7 +3122,11 @@ packages:
     cpu: [arm64]
     os: [openbsd]
     requiresBuild: true
+<<<<<<< HEAD
     dev: false
+=======
+    dev: true
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     optional: true
 
   /@esbuild/openbsd-x64@0.17.19:
@@ -3058,7 +3180,11 @@ packages:
     cpu: [x64]
     os: [openbsd]
     requiresBuild: true
+<<<<<<< HEAD
     dev: false
+=======
+    dev: true
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     optional: true
 
   /@esbuild/openharmony-arm64@0.25.12:
@@ -3076,7 +3202,11 @@ packages:
     cpu: [arm64]
     os: [openharmony]
     requiresBuild: true
+<<<<<<< HEAD
     dev: false
+=======
+    dev: true
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     optional: true
 
   /@esbuild/sunos-x64@0.17.19:
@@ -3130,7 +3260,11 @@ packages:
     cpu: [x64]
     os: [sunos]
     requiresBuild: true
+<<<<<<< HEAD
     dev: false
+=======
+    dev: true
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     optional: true
 
   /@esbuild/win32-arm64@0.17.19:
@@ -3184,7 +3318,11 @@ packages:
     cpu: [arm64]
     os: [win32]
     requiresBuild: true
+<<<<<<< HEAD
     dev: false
+=======
+    dev: true
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     optional: true
 
   /@esbuild/win32-ia32@0.17.19:
@@ -3238,7 +3376,11 @@ packages:
     cpu: [ia32]
     os: [win32]
     requiresBuild: true
+<<<<<<< HEAD
     dev: false
+=======
+    dev: true
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     optional: true
 
   /@esbuild/win32-x64@0.17.19:
@@ -3292,7 +3434,11 @@ packages:
     cpu: [x64]
     os: [win32]
     requiresBuild: true
+<<<<<<< HEAD
     dev: false
+=======
+    dev: true
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     optional: true
 
   /@eslint-community/eslint-utils@4.9.0(eslint@8.36.0):
@@ -3886,11 +4032,54 @@ packages:
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
     dependencies:
       '@jest/types': 29.6.3
-      '@types/node': 24.10.1
+      '@types/node': 25.0.2
       chalk: 4.1.2
       jest-message-util: 29.7.0
       jest-util: 29.7.0
       slash: 3.0.0
+    dev: true
+
+  /@jest/core@29.7.0:
+    resolution: {integrity: sha512-n7aeXWKMnGtDA48y8TLWJPJmLmmZ642Ceo78cYWEpiD7FzDgmNDV/GCVRorPABdXLJZ/9wzzgZAlHjXjxDHGsg==}
+    engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
+    peerDependencies:
+      node-notifier: ^8.0.1 || ^9.0.0 || ^10.0.0
+    peerDependenciesMeta:
+      node-notifier:
+        optional: true
+    dependencies:
+      '@jest/console': 29.7.0
+      '@jest/reporters': 29.7.0
+      '@jest/test-result': 29.7.0
+      '@jest/transform': 29.7.0
+      '@jest/types': 29.6.3
+      '@types/node': 25.0.2
+      ansi-escapes: 4.3.2
+      chalk: 4.1.2
+      ci-info: 3.9.0
+      exit: 0.1.2
+      graceful-fs: 4.2.11
+      jest-changed-files: 29.7.0
+      jest-config: 29.7.0(@types/node@25.0.2)
+      jest-haste-map: 29.7.0
+      jest-message-util: 29.7.0
+      jest-regex-util: 29.6.3
+      jest-resolve: 29.7.0
+      jest-resolve-dependencies: 29.7.0
+      jest-runner: 29.7.0
+      jest-runtime: 29.7.0
+      jest-snapshot: 29.7.0
+      jest-util: 29.7.0
+      jest-validate: 29.7.0
+      jest-watcher: 29.7.0
+      micromatch: 4.0.8
+      pretty-format: 29.7.0
+      slash: 3.0.0
+      strip-ansi: 6.0.1
+    transitivePeerDependencies:
+      - babel-plugin-macros
+      - supports-color
+      - ts-node
     dev: true
 
   /@jest/core@29.7.0(ts-node@10.9.2):
@@ -3947,7 +4136,7 @@ packages:
     dependencies:
       '@jest/fake-timers': 29.7.0
       '@jest/types': 29.6.3
-      '@types/node': 24.10.1
+      '@types/node': 25.0.2
       jest-mock: 29.7.0
     dev: true
 
@@ -4001,7 +4190,7 @@ packages:
     dependencies:
       '@jest/types': 29.6.3
       '@sinonjs/fake-timers': 10.3.0
-      '@types/node': 24.10.1
+      '@types/node': 25.0.2
       jest-message-util: 29.7.0
       jest-mock: 29.7.0
       jest-util: 29.7.0
@@ -4071,7 +4260,7 @@ packages:
       '@jest/transform': 29.7.0
       '@jest/types': 29.6.3
       '@jridgewell/trace-mapping': 0.3.31
-      '@types/node': 24.10.1
+      '@types/node': 25.0.2
       chalk: 4.1.2
       collect-v8-coverage: 1.0.3
       exit: 0.1.2
@@ -6330,8 +6519,13 @@ packages:
     dev: true
     optional: true
 
+<<<<<<< HEAD
   /@swc/core-darwin-arm64@1.15.7:
     resolution: {integrity: sha512-+hNVUfezUid7LeSHqnhoC6Gh3BROABxjlDNInuZ/fie1RUxaEX4qzDwdTgozJELgHhvYxyPIg1ro8ibnKtgO4g==}
+=======
+  /@swc/core-darwin-arm64@1.15.8:
+    resolution: {integrity: sha512-M9cK5GwyWWRkRGwwCbREuj6r8jKdES/haCZ3Xckgkl8MUQJZA3XB7IXXK1IXRNeLjg6m7cnoMICpXv1v1hlJOg==}
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     engines: {node: '>=10'}
     cpu: [arm64]
     os: [darwin]
@@ -6366,8 +6560,13 @@ packages:
     dev: true
     optional: true
 
+<<<<<<< HEAD
   /@swc/core-darwin-x64@1.15.7:
     resolution: {integrity: sha512-ZAFuvtSYZTuXPcrhanaD5eyp27H8LlDzx2NAeVyH0FchYcuXf0h5/k3GL9ZU6Jw9eQ63R1E8KBgpXEJlgRwZUQ==}
+=======
+  /@swc/core-darwin-x64@1.15.8:
+    resolution: {integrity: sha512-j47DasuOvXl80sKJHSi2X25l44CMc3VDhlJwA7oewC1nV1VsSzwX+KOwE5tLnfORvVJJyeiXgJORNYg4jeIjYQ==}
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     engines: {node: '>=10'}
     cpu: [x64]
     os: [darwin]
@@ -6402,8 +6601,13 @@ packages:
     dev: true
     optional: true
 
+<<<<<<< HEAD
   /@swc/core-linux-arm-gnueabihf@1.15.7:
     resolution: {integrity: sha512-K3HTYocpqnOw8KcD8SBFxiDHjIma7G/X+bLdfWqf+qzETNBrzOub/IEkq9UaeupaJiZJkPptr/2EhEXXWryS/A==}
+=======
+  /@swc/core-linux-arm-gnueabihf@1.15.8:
+    resolution: {integrity: sha512-siAzDENu2rUbwr9+fayWa26r5A9fol1iORG53HWxQL1J8ym4k7xt9eME0dMPXlYZDytK5r9sW8zEA10F2U3Xwg==}
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     engines: {node: '>=10'}
     cpu: [arm]
     os: [linux]
@@ -6438,8 +6642,13 @@ packages:
     dev: true
     optional: true
 
+<<<<<<< HEAD
   /@swc/core-linux-arm64-gnu@1.15.7:
     resolution: {integrity: sha512-HCnVIlsLnCtQ3uXcXgWrvQ6SAraskLA9QJo9ykTnqTH6TvUYqEta+TdTdGjzngD6TOE7XjlAiUs/RBtU8Z0t+Q==}
+=======
+  /@swc/core-linux-arm64-gnu@1.15.8:
+    resolution: {integrity: sha512-o+1y5u6k2FfPYbTRUPvurwzNt5qd0NTumCTFscCNuBksycloXY16J8L+SMW5QRX59n4Hp9EmFa3vpvNHRVv1+Q==}
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     engines: {node: '>=10'}
     cpu: [arm64]
     os: [linux]
@@ -6474,8 +6683,13 @@ packages:
     dev: true
     optional: true
 
+<<<<<<< HEAD
   /@swc/core-linux-arm64-musl@1.15.7:
     resolution: {integrity: sha512-/OOp9UZBg4v2q9+x/U21Jtld0Wb8ghzBScwhscI7YvoSh4E8RALaJ1msV8V8AKkBkZH7FUAFB7Vbv0oVzZsezA==}
+=======
+  /@swc/core-linux-arm64-musl@1.15.8:
+    resolution: {integrity: sha512-koiCqL09EwOP1S2RShCI7NbsQuG6r2brTqUYE7pV7kZm9O17wZ0LSz22m6gVibpwEnw8jI3IE1yYsQTVpluALw==}
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     engines: {node: '>=10'}
     cpu: [arm64]
     os: [linux]
@@ -6510,8 +6724,13 @@ packages:
     dev: true
     optional: true
 
+<<<<<<< HEAD
   /@swc/core-linux-x64-gnu@1.15.7:
     resolution: {integrity: sha512-VBbs4gtD4XQxrHuQ2/2+TDZpPQQgrOHYRnS6SyJW+dw0Nj/OomRqH+n5Z4e/TgKRRbieufipeIGvADYC/90PYQ==}
+=======
+  /@swc/core-linux-x64-gnu@1.15.8:
+    resolution: {integrity: sha512-4p6lOMU3bC+Vd5ARtKJ/FxpIC5G8v3XLoPEZ5s7mLR8h7411HWC/LmTXDHcrSXRC55zvAVia1eldy6zDLz8iFQ==}
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     engines: {node: '>=10'}
     cpu: [x64]
     os: [linux]
@@ -6546,8 +6765,13 @@ packages:
     dev: true
     optional: true
 
+<<<<<<< HEAD
   /@swc/core-linux-x64-musl@1.15.7:
     resolution: {integrity: sha512-kVuy2unodso6p0rMauS2zby8/bhzoGRYxBDyD6i2tls/fEYAE74oP0VPFzxIyHaIjK1SN6u5TgvV9MpyJ5xVug==}
+=======
+  /@swc/core-linux-x64-musl@1.15.8:
+    resolution: {integrity: sha512-z3XBnbrZAL+6xDGAhJoN4lOueIxC/8rGrJ9tg+fEaeqLEuAtHSW2QHDHxDwkxZMjuF/pZ6MUTjHjbp8wLbuRLA==}
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     engines: {node: '>=10'}
     cpu: [x64]
     os: [linux]
@@ -6582,8 +6806,13 @@ packages:
     dev: true
     optional: true
 
+<<<<<<< HEAD
   /@swc/core-win32-arm64-msvc@1.15.7:
     resolution: {integrity: sha512-uddYoo5Xmo1XKLhAnh4NBIyy5d0xk33x1sX3nIJboFySLNz878ksCFCZ3IBqrt1Za0gaoIWoOSSSk0eNhAc/sw==}
+=======
+  /@swc/core-win32-arm64-msvc@1.15.8:
+    resolution: {integrity: sha512-djQPJ9Rh9vP8GTS/Df3hcc6XP6xnG5c8qsngWId/BLA9oX6C7UzCPAn74BG/wGb9a6j4w3RINuoaieJB3t+7iQ==}
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     engines: {node: '>=10'}
     cpu: [arm64]
     os: [win32]
@@ -6618,8 +6847,13 @@ packages:
     dev: true
     optional: true
 
+<<<<<<< HEAD
   /@swc/core-win32-ia32-msvc@1.15.7:
     resolution: {integrity: sha512-rqq8JjNMLx3QNlh0aPTtN/4+BGLEHC94rj9mkH1stoNRf3ra6IksNHMHy+V1HUqElEgcZyx+0yeXx3eLOTcoFw==}
+=======
+  /@swc/core-win32-ia32-msvc@1.15.8:
+    resolution: {integrity: sha512-/wfAgxORg2VBaUoFdytcVBVCgf1isWZIEXB9MZEUty4wwK93M/PxAkjifOho9RN3WrM3inPLabICRCEgdHpKKQ==}
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     engines: {node: '>=10'}
     cpu: [ia32]
     os: [win32]
@@ -6654,8 +6888,13 @@ packages:
     dev: true
     optional: true
 
+<<<<<<< HEAD
   /@swc/core-win32-x64-msvc@1.15.7:
     resolution: {integrity: sha512-4BK06EGdPnuplgcNhmSbOIiLdRgHYX3v1nl4HXo5uo4GZMfllXaCyBUes+0ePRfwbn9OFgVhCWPcYYjMT6hycQ==}
+=======
+  /@swc/core-win32-x64-msvc@1.15.8:
+    resolution: {integrity: sha512-GpMePrh9Sl4d61o4KAHOOv5is5+zt6BEXCOCgs/H0FLGeii7j9bWDE8ExvKFy2GRRZVNR1ugsnzaGWHKM6kuzA==}
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     engines: {node: '>=10'}
     cpu: [x64]
     os: [win32]
@@ -6722,8 +6961,13 @@ packages:
       '@swc/core-win32-x64-msvc': 1.15.3
     dev: true
 
+<<<<<<< HEAD
   /@swc/core@1.15.7:
     resolution: {integrity: sha512-kTGB8XI7P+pTKW83tnUEDVP4zduF951u3UAOn5eTi0vyW6MvL56A3+ggMdfuVFtDI0/DsbSzf5z34HVBbuScWw==}
+=======
+  /@swc/core@1.15.8:
+    resolution: {integrity: sha512-T8keoJjXaSUoVBCIjgL6wAnhADIb09GOELzKg10CjNg+vLX48P93SME6jTfte9MZIm5m+Il57H3rTSk/0kzDUw==}
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     engines: {node: '>=10'}
     requiresBuild: true
     peerDependencies:
@@ -6735,6 +6979,7 @@ packages:
       '@swc/counter': 0.1.3
       '@swc/types': 0.1.25
     optionalDependencies:
+<<<<<<< HEAD
       '@swc/core-darwin-arm64': 1.15.7
       '@swc/core-darwin-x64': 1.15.7
       '@swc/core-linux-arm-gnueabihf': 1.15.7
@@ -6745,6 +6990,18 @@ packages:
       '@swc/core-win32-arm64-msvc': 1.15.7
       '@swc/core-win32-ia32-msvc': 1.15.7
       '@swc/core-win32-x64-msvc': 1.15.7
+=======
+      '@swc/core-darwin-arm64': 1.15.8
+      '@swc/core-darwin-x64': 1.15.8
+      '@swc/core-linux-arm-gnueabihf': 1.15.8
+      '@swc/core-linux-arm64-gnu': 1.15.8
+      '@swc/core-linux-arm64-musl': 1.15.8
+      '@swc/core-linux-x64-gnu': 1.15.8
+      '@swc/core-linux-x64-musl': 1.15.8
+      '@swc/core-win32-arm64-msvc': 1.15.8
+      '@swc/core-win32-ia32-msvc': 1.15.8
+      '@swc/core-win32-x64-msvc': 1.15.8
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     dev: true
 
   /@swc/core@1.7.36:
@@ -7094,7 +7351,7 @@ packages:
   /@types/graceful-fs@4.1.9:
     resolution: {integrity: sha512-olP3sd1qOEe5dXTSaFvQG+02VdRXcdytWLAZsAq1PecU8uqQAhkrnbli7DagjtXKW/Bl7YJbUsa8MPcuc8LHEQ==}
     dependencies:
-      '@types/node': 24.10.1
+      '@types/node': 25.0.2
     dev: true
 
   /@types/hast@3.0.4:
@@ -7325,7 +7582,11 @@ packages:
   /@types/ws@8.18.1:
     resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
     dependencies:
+<<<<<<< HEAD
       '@types/node': 25.0.3
+=======
+      '@types/node': 25.0.2
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
 
   /@types/ws@8.5.10:
     resolution: {integrity: sha512-vmQSUcfalpIq0R9q7uTo2lXs6eGIpt9wtnLdMv9LVpIjCA/+ufZRozlVoVelIYixx1ugCBKDhn89vnsEGOCx9A==}
@@ -8678,6 +8939,25 @@ packages:
       - ts-node
     dev: true
 
+  /create-jest@29.7.0(@types/node@25.0.2):
+    resolution: {integrity: sha512-Adz2bdH0Vq3F53KEMJOoftQFutWCukm6J24wbPWRO4k1kMY7gS7ds/uoJkNuV8wDCtWWnuwGcJwpWcih+zEW1Q==}
+    engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
+    hasBin: true
+    dependencies:
+      '@jest/types': 29.6.3
+      chalk: 4.1.2
+      exit: 0.1.2
+      graceful-fs: 4.2.11
+      jest-config: 29.7.0(@types/node@25.0.2)
+      jest-util: 29.7.0
+      prompts: 2.4.2
+    transitivePeerDependencies:
+      - '@types/node'
+      - babel-plugin-macros
+      - supports-color
+      - ts-node
+    dev: true
+
   /create-require@1.1.1:
     resolution: {integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==}
     dev: true
@@ -9502,7 +9782,11 @@ packages:
       '@esbuild/win32-arm64': 0.27.2
       '@esbuild/win32-ia32': 0.27.2
       '@esbuild/win32-x64': 0.27.2
+<<<<<<< HEAD
     dev: false
+=======
+    dev: true
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
 
   /escalade@3.2.0:
     resolution: {integrity: sha512-WUj2qlxaQtO4g6Pq5c29GTcWGDyd8itL8zTlipgECz3JesAiiOKotd8JU6otB3PACgG6xkJUyVhboMS+bje/jA==}
@@ -10637,6 +10921,19 @@ packages:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
     dev: true
 
+  /handlebars@4.7.8:
+    resolution: {integrity: sha512-vafaFqs8MZkRrSX7sFVUdo3ap/eNiLnb4IakshzvP56X5Nr1iGKAIqdX6tMlm6HcNRIkr6AxO5jFEoJzzpT8aQ==}
+    engines: {node: '>=0.4.7'}
+    hasBin: true
+    dependencies:
+      minimist: 1.2.8
+      neo-async: 2.6.2
+      source-map: 0.6.1
+      wordwrap: 1.0.0
+    optionalDependencies:
+      uglify-js: 3.19.3
+    dev: true
+
   /hard-rejection@2.1.0:
     resolution: {integrity: sha512-VIZB+ibDhx7ObhAe7OVtoEbuP4h/MuOTHJ+J8h/eBXotJYl0fBgR72xDFCKgIh22OJZIOVNxBMWuhAr10r8HdA==}
     engines: {node: '>=6'}
@@ -11282,7 +11579,7 @@ packages:
       '@jest/expect': 29.7.0
       '@jest/test-result': 29.7.0
       '@jest/types': 29.6.3
-      '@types/node': 24.10.1
+      '@types/node': 25.0.2
       chalk: 4.1.2
       co: 4.6.0
       dedent: 1.7.0
@@ -11415,6 +11712,7 @@ packages:
       - ts-node
     dev: true
 
+<<<<<<< HEAD
   /jest-config@29.7.0(@types/node@22.10.2):
     resolution: {integrity: sha512-uXbpfeQ7R6TZBqI3/TxCU4q4ttk3u0PJeC+E0zbfSoSjq6bJ7buBPxzQPL0ifrkY4DNu4JUdk0ImlBUYi840eQ==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
@@ -11453,6 +11751,34 @@ packages:
     transitivePeerDependencies:
       - babel-plugin-macros
       - supports-color
+=======
+  /jest-cli@29.7.0(@types/node@25.0.2):
+    resolution: {integrity: sha512-OVVobw2IubN/GSYsxETi+gOe7Ka59EFMR/twOU3Jb2GnKKeMGJB5SGUUrEz3SFVmJASUdZUzy83sLNNQ2gZslg==}
+    engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
+    hasBin: true
+    peerDependencies:
+      node-notifier: ^8.0.1 || ^9.0.0 || ^10.0.0
+    peerDependenciesMeta:
+      node-notifier:
+        optional: true
+    dependencies:
+      '@jest/core': 29.7.0
+      '@jest/test-result': 29.7.0
+      '@jest/types': 29.6.3
+      chalk: 4.1.2
+      create-jest: 29.7.0(@types/node@25.0.2)
+      exit: 0.1.2
+      import-local: 3.2.0
+      jest-config: 29.7.0(@types/node@25.0.2)
+      jest-util: 29.7.0
+      jest-validate: 29.7.0
+      yargs: 17.7.2
+    transitivePeerDependencies:
+      - '@types/node'
+      - babel-plugin-macros
+      - supports-color
+      - ts-node
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     dev: true
 
   /jest-config@29.7.0(@types/node@24.10.1)(ts-node@10.9.2):
@@ -11577,6 +11903,46 @@ packages:
       - supports-color
     dev: true
 
+  /jest-config@29.7.0(@types/node@25.0.2):
+    resolution: {integrity: sha512-uXbpfeQ7R6TZBqI3/TxCU4q4ttk3u0PJeC+E0zbfSoSjq6bJ7buBPxzQPL0ifrkY4DNu4JUdk0ImlBUYi840eQ==}
+    engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
+    peerDependencies:
+      '@types/node': '*'
+      ts-node: '>=9.0.0'
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+      ts-node:
+        optional: true
+    dependencies:
+      '@babel/core': 7.28.5
+      '@jest/test-sequencer': 29.7.0
+      '@jest/types': 29.6.3
+      '@types/node': 25.0.2
+      babel-jest: 29.7.0(@babel/core@7.28.5)
+      chalk: 4.1.2
+      ci-info: 3.9.0
+      deepmerge: 4.3.1
+      glob: 7.2.3
+      graceful-fs: 4.2.11
+      jest-circus: 29.7.0
+      jest-environment-node: 29.7.0
+      jest-get-type: 29.6.3
+      jest-regex-util: 29.6.3
+      jest-resolve: 29.7.0
+      jest-runner: 29.7.0
+      jest-util: 29.7.0
+      jest-validate: 29.7.0
+      micromatch: 4.0.8
+      parse-json: 5.2.0
+      pretty-format: 29.7.0
+      slash: 3.0.0
+      strip-json-comments: 3.1.1
+    transitivePeerDependencies:
+      - babel-plugin-macros
+      - supports-color
+    dev: true
+
   /jest-diff@29.7.0:
     resolution: {integrity: sha512-LMIgiIrhigmPrs03JHpxUh2yISK3vLFPkAodPeo0+BuF7wA2FoQbkEg1u8gBYBThncu7e1oEDUfIXVuTqLRUjw==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
@@ -11622,7 +11988,7 @@ packages:
       '@jest/environment': 29.7.0
       '@jest/fake-timers': 29.7.0
       '@jest/types': 29.6.3
-      '@types/node': 24.10.1
+      '@types/node': 25.0.2
       jest-mock: 29.7.0
       jest-util: 29.7.0
     dev: true
@@ -11638,7 +12004,7 @@ packages:
     dependencies:
       '@jest/types': 29.6.3
       '@types/graceful-fs': 4.1.9
-      '@types/node': 24.10.1
+      '@types/node': 25.0.2
       anymatch: 3.1.3
       fb-watchman: 2.0.2
       graceful-fs: 4.2.11
@@ -11732,7 +12098,7 @@ packages:
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
     dependencies:
       '@jest/types': 29.6.3
-      '@types/node': 24.10.1
+      '@types/node': 25.0.2
       jest-util: 29.7.0
     dev: true
 
@@ -11807,7 +12173,7 @@ packages:
       '@jest/test-result': 29.7.0
       '@jest/transform': 29.7.0
       '@jest/types': 29.6.3
-      '@types/node': 24.10.1
+      '@types/node': 25.0.2
       chalk: 4.1.2
       emittery: 0.13.1
       graceful-fs: 4.2.11
@@ -11838,7 +12204,7 @@ packages:
       '@jest/test-result': 29.7.0
       '@jest/transform': 29.7.0
       '@jest/types': 29.6.3
-      '@types/node': 24.10.1
+      '@types/node': 25.0.2
       chalk: 4.1.2
       cjs-module-lexer: 1.4.3
       collect-v8-coverage: 1.0.3
@@ -11956,7 +12322,7 @@ packages:
     dependencies:
       '@jest/test-result': 29.7.0
       '@jest/types': 29.6.3
-      '@types/node': 24.10.1
+      '@types/node': 25.0.2
       ansi-escapes: 4.3.2
       chalk: 4.1.2
       emittery: 0.13.1
@@ -11968,7 +12334,7 @@ packages:
     resolution: {integrity: sha512-eIz2msL/EzL9UFTFFx7jBTkeZfku0yUAyZZZmJ93H2TYEiroIx2PQjEXcwYtYl8zXCxb+PAmA2hLIt/6ZEkPHw==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
     dependencies:
-      '@types/node': 24.10.1
+      '@types/node': 25.0.2
       jest-util: 29.7.0
       merge-stream: 2.0.0
       supports-color: 8.1.1
@@ -12069,9 +12435,31 @@ packages:
       - ts-node
     dev: true
 
+<<<<<<< HEAD
   /jiti@2.6.1:
     resolution: {integrity: sha512-ekilCSN1jwRvIbgeg/57YFh8qQDNbwDb9xT/qu2DAHbFFZUicIl4ygVaAvzveMhMVr3LnpSKTNnwt8PoOfmKhQ==}
     hasBin: true
+=======
+  /jest@29.7.0(@types/node@25.0.2):
+    resolution: {integrity: sha512-NIy3oAFp9shda19hy4HK0HRTWKtPJmGdnvywu01nOqNC2vZg+Z+fvJDxpMQA88eb2I9EcafcdjYgsDthnYTvGw==}
+    engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
+    hasBin: true
+    peerDependencies:
+      node-notifier: ^8.0.1 || ^9.0.0 || ^10.0.0
+    peerDependenciesMeta:
+      node-notifier:
+        optional: true
+    dependencies:
+      '@jest/core': 29.7.0
+      '@jest/types': 29.6.3
+      import-local: 3.2.0
+      jest-cli: 29.7.0(@types/node@25.0.2)
+    transitivePeerDependencies:
+      - '@types/node'
+      - babel-plugin-macros
+      - supports-color
+      - ts-node
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     dev: true
 
   /jose@6.1.2:
@@ -13302,6 +13690,7 @@ packages:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
     dev: true
 
+<<<<<<< HEAD
   /negotiator@0.6.3:
     resolution: {integrity: sha512-+EUsqGPLsM+j/zdChZjsnX51g4XrHFOIXwfnCVPGlQk/k5giakcKsuxCObBRu6DSm9opw/O6slWbJdghQM4bBg==}
     engines: {node: '>= 0.6'}
@@ -13366,6 +13755,12 @@ packages:
       - babel-plugin-macros
     dev: false
 
+=======
+  /neo-async@2.6.2:
+    resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
+    dev: true
+
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
   /node-fetch@2.7.0:
     resolution: {integrity: sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==}
     engines: {node: 4.x || >=6.0.0}
@@ -15645,17 +16040,31 @@ packages:
       yargs-parser: 21.1.1
     dev: true
 
+<<<<<<< HEAD
   /ts-jest@29.2.5(@babel/core@7.28.5)(esbuild@0.24.2)(jest@29.7.0)(typescript@5.9.3):
     resolution: {integrity: sha512-KD8zB2aAZrcKIdGk4OwpJggeLcH1FgrICqDSROWqlnJXGCXK4Mn6FcdK2B6670Xr73lHMG1kHw8R87A0ecZ+vA==}
+=======
+  /ts-jest@29.4.6(@babel/core@7.28.5)(jest@29.7.0)(typescript@5.9.3):
+    resolution: {integrity: sha512-fSpWtOO/1AjSNQguk43hb/JCo16oJDnMJf3CdEGNkqsEX3t0KX96xvyX1D7PfLCpVoKu4MfVrqUkFyblYoY4lA==}
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     engines: {node: ^14.15.0 || ^16.10.0 || ^18.0.0 || >=20.0.0}
     hasBin: true
     peerDependencies:
       '@babel/core': '>=7.0.0-beta.0 <8'
+<<<<<<< HEAD
       '@jest/transform': ^29.0.0
       '@jest/types': ^29.0.0
       babel-jest: ^29.0.0
       esbuild: '*'
       jest: ^29.0.0
+=======
+      '@jest/transform': ^29.0.0 || ^30.0.0
+      '@jest/types': ^29.0.0 || ^30.0.0
+      babel-jest: ^29.0.0 || ^30.0.0
+      esbuild: '*'
+      jest: ^29.0.0 || ^30.0.0
+      jest-util: ^29.0.0 || ^30.0.0
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
       typescript: '>=4.3 <6'
     peerDependenciesMeta:
       '@babel/core':
@@ -15668,6 +16077,7 @@ packages:
         optional: true
       esbuild:
         optional: true
+<<<<<<< HEAD
     dependencies:
       '@babel/core': 7.28.5
       bs-logger: 0.2.6
@@ -15676,10 +16086,24 @@ packages:
       fast-json-stable-stringify: 2.1.0
       jest: 29.7.0(@types/node@22.10.2)
       jest-util: 29.7.0
+=======
+      jest-util:
+        optional: true
+    dependencies:
+      '@babel/core': 7.28.5
+      bs-logger: 0.2.6
+      fast-json-stable-stringify: 2.1.0
+      handlebars: 4.7.8
+      jest: 29.7.0(@types/node@25.0.2)
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
       json5: 2.2.3
       lodash.memoize: 4.1.2
       make-error: 1.3.6
       semver: 7.7.3
+<<<<<<< HEAD
+=======
+      type-fest: 4.41.0
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
       typescript: 5.9.3
       yargs-parser: 21.1.1
     dev: true
@@ -15961,9 +16385,15 @@ packages:
     engines: {node: '>=8'}
     dev: false
 
+<<<<<<< HEAD
   /type-fest@2.19.0:
     resolution: {integrity: sha512-RAH822pAdBgcNMAfWnCBU3CFZcfZ/i1eZjwFU/dsLKumyuuP3niueg2UAukXYF0E2AAoc82ZSSf9J0WQBinzHA==}
     engines: {node: '>=12.20'}
+=======
+  /type-fest@4.41.0:
+    resolution: {integrity: sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA==}
+    engines: {node: '>=16'}
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
     dev: true
 
   /typed-array-buffer@1.0.3:
@@ -16056,6 +16486,14 @@ packages:
   /ufo@1.6.1:
     resolution: {integrity: sha512-9a4/uxlTWJ4+a5i0ooc1rU7C7YOw3wT+UGqdeNNHWnOF9qcMBgLRS+4IYUqbczewFx4mLEig6gawh7X6mFlEkA==}
     dev: true
+
+  /uglify-js@3.19.3:
+    resolution: {integrity: sha512-v3Xu+yuwBXisp6QYTcH4UbH+xYJXqnq2m/LtQVWKWzYc1iehYnLixoQDN9FH6/j9/oybfd6W9Ghwkl8+UMKTKQ==}
+    engines: {node: '>=0.8.0'}
+    hasBin: true
+    requiresBuild: true
+    dev: true
+    optional: true
 
   /ulid@2.3.0:
     resolution: {integrity: sha512-keqHubrlpvT6G2wH0OEfSW4mquYRcbe/J8NMmveoQOjUqmo+hXtO+ORCpWhdbZ7k72UtY61BL7haGxW6enBnjw==}
@@ -16392,6 +16830,57 @@ packages:
       fsevents: 2.3.3
     dev: true
 
+  /vite@7.3.0(@types/node@25.0.2):
+    resolution: {integrity: sha512-dZwN5L1VlUBewiP6H9s2+B3e3Jg96D0vzN+Ry73sOefebhYr9f94wwkMNN/9ouoU8pV1BqA1d1zGk8928cx0rg==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    hasBin: true
+    peerDependencies:
+      '@types/node': ^20.19.0 || >=22.12.0
+      jiti: '>=1.21.0'
+      less: ^4.0.0
+      lightningcss: ^1.21.0
+      sass: ^1.70.0
+      sass-embedded: ^1.70.0
+      stylus: '>=0.54.8'
+      sugarss: ^5.0.0
+      terser: ^5.16.0
+      tsx: ^4.8.1
+      yaml: ^2.4.2
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+      jiti:
+        optional: true
+      less:
+        optional: true
+      lightningcss:
+        optional: true
+      sass:
+        optional: true
+      sass-embedded:
+        optional: true
+      stylus:
+        optional: true
+      sugarss:
+        optional: true
+      terser:
+        optional: true
+      tsx:
+        optional: true
+      yaml:
+        optional: true
+    dependencies:
+      '@types/node': 25.0.2
+      esbuild: 0.27.2
+      fdir: 6.5.0(picomatch@4.0.3)
+      picomatch: 4.0.3
+      postcss: 8.5.6
+      rollup: 4.53.3
+      tinyglobby: 0.2.15
+    optionalDependencies:
+      fsevents: 2.3.3
+    dev: true
+
   /walker@1.0.8:
     resolution: {integrity: sha512-ts/8E8l5b7kY0vlWLewOkDXMmPdLcVV4GmOQLyxuSswIJsweeFZtAsMF7k1Nszz+TYBQrlYRmzOnr398y1JemQ==}
     dependencies:
@@ -16515,6 +17004,10 @@ packages:
   /word-wrap@1.2.5:
     resolution: {integrity: sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA==}
     engines: {node: '>=0.10.0'}
+    dev: true
+
+  /wordwrap@1.0.0:
+    resolution: {integrity: sha512-gvVzJFlPycKc5dZN4yPkP8w7Dc37BtP1yczEneOb4uq34pXZcvrtRTmWV8W+Ume+XCxKgbjM+nevkyFPMybd4Q==}
     dev: true
 
   /wrap-ansi@5.1.0:

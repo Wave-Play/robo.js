@@ -1,16 +1,18 @@
-import type { StageChannel, StageVoiceState, StageUser } from '../../types/stage'
+import type { StageChannel, StageMember, StageVoiceState, StageUser } from '../../types/stage'
+import { getDisplayName } from '../../utils'
 import styles from './VoiceChannel.module.css'
 
 interface VoiceChannelProps {
 	channel: StageChannel
 	voiceStates: StageVoiceState[]
 	users: StageUser[]
+	members: StageMember[]
 	onJoin: () => void
 	onLeave: () => void
 	currentUserId?: string
 }
 
-export function VoiceChannel({ channel, voiceStates, users, onJoin, onLeave, currentUserId }: VoiceChannelProps) {
+export function VoiceChannel({ channel, voiceStates, users, members, onJoin, onLeave, currentUserId }: VoiceChannelProps) {
 	// Filter voice states for this channel
 	const membersInChannel = voiceStates.filter((vs) => vs.channel_id === channel.id)
 	const isCurrentUserInChannel = currentUserId
@@ -33,7 +35,8 @@ export function VoiceChannel({ channel, voiceStates, users, onJoin, onLeave, cur
 				<div className={styles.members}>
 					{membersInChannel.map((vs) => {
 						const user = users.find((u) => u.id === vs.user_id)
-						return <VoiceMember key={vs.user_id} voiceState={vs} user={user} />
+						const member = members.find((m) => m.user.id === vs.user_id)
+						return <VoiceMember key={vs.user_id} voiceState={vs} user={user} member={member} />
 					})}
 				</div>
 			)}
@@ -44,11 +47,13 @@ export function VoiceChannel({ channel, voiceStates, users, onJoin, onLeave, cur
 interface VoiceMemberProps {
 	voiceState: StageVoiceState
 	user?: StageUser
+	member?: StageMember
 }
 
-function VoiceMember({ voiceState, user }: VoiceMemberProps) {
+function VoiceMember({ voiceState, user, member }: VoiceMemberProps) {
 	const hasIcons = voiceState.self_mute || voiceState.self_deaf || voiceState.mute || voiceState.deaf
 	const avatarClassName = `${styles.memberAvatar}${voiceState.speaking ? ` ${styles.speaking}` : ''}`
+	const displayName = getDisplayName(user, member)
 
 	return (
 		<div className={styles.member}>
@@ -63,7 +68,7 @@ function VoiceMember({ voiceState, user }: VoiceMemberProps) {
 					<DefaultAvatar className={styles.avatarImg} />
 				)}
 			</div>
-			<span className={styles.memberName}>{user?.username || 'Unknown User'}</span>
+			<span className={styles.memberName}>{displayName}</span>
 
 			{hasIcons && (
 				<div className={styles.icons}>

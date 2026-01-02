@@ -5,7 +5,7 @@
 .header {
 	display: flex;
 	align-items: center;
-	gap: 6px;
+	gap: 4px;
 	width: 100%;
 	padding: 6px 8px;
 	border-radius: var(--radius-sm);
@@ -93,12 +93,14 @@
 	align-items: center;
 	gap: 4px;
 	flex-shrink: 0;
+	line-height: 0;
 }
 
 .statusIcon {
 	width: 14px;
 	height: 14px;
 	color: var(--text-muted);
+	display: block;
 }
 
 /* Speaking indicator - standalone class for CSS modules export */

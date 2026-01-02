@@ -17,6 +17,7 @@ import type {
 } from '../types/stage'
 import type { ModalData } from '../components/modals/Modal'
 import { usePlaybackDispatch, type RecordedEvent } from './playbackStore'
+import { buildStageWebSocketUrls } from '../utils'
 
 // Pending interaction for "Bot is thinking..." indicator
 export interface PendingInteraction {
@@ -374,10 +375,25 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 
 		case 'HANDLE_VOICE_STATE_UPDATE': {
 			const voiceState = action.payload
+			let nextUsers = state.users
+			let nextMembers = state.members
+
+			if (voiceState.member) {
+				const memberUser = voiceState.member.user
+				if (!state.users.some((u) => u.id === memberUser.id)) {
+					nextUsers = [...state.users, memberUser]
+				}
+				if (!state.members.some((m) => m.user.id === memberUser.id && m.guild_id === voiceState.member?.guild_id)) {
+					nextMembers = [...state.members, voiceState.member]
+				}
+			}
+
 			// If channel_id is null, user left voice - remove from list
 			if (!voiceState.channel_id) {
 				return {
 					...state,
+					users: nextUsers,
+					members: nextMembers,
 					voiceStates: state.voiceStates.filter(
 						(vs) => !(vs.guild_id === voiceState.guild_id && vs.user_id === voiceState.user_id)
 					),
@@ -394,6 +410,8 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 				newVoiceStates[existingIndex] = voiceState
 				return {
 					...state,
+					users: nextUsers,
+					members: nextMembers,
 					voiceStates: newVoiceStates,
 					eventCount: state.eventCount + 1
 				}
@@ -401,6 +419,8 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 			// Add new
 			return {
 				...state,
+				users: nextUsers,
+				members: nextMembers,
 				voiceStates: [...state.voiceStates, voiceState],
 				eventCount: state.eventCount + 1
 			}
@@ -752,6 +772,8 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 	const { state, dispatch } = useSessionStore()
 	const playbackDispatch = usePlaybackDispatch()
 	const wsRef = useRef<WebSocket | null>(null)
+	const pendingUrlsRef = useRef<string[]>([])
+	const hasOpenedRef = useRef(false)
 	const reconnectTimeoutRef = useRef<number | null>(null)
 	const reconnectAttempts = useRef(0)
 	const eventSeqRef = useRef(0)
@@ -1134,37 +1156,109 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 		setError(null)
 		dispatch({ type: 'SET_CONNECTING', payload: true })
 
-		const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-		const host = window.location.host
+		const urls = buildStageWebSocketUrls(state.sessionId)
+		pendingUrlsRef.current = urls.slice(1)
+		hasOpenedRef.current = false
 
-		// Token handling:
-		// - If already has 'mock:' prefix, use as-is
-		// - If looks like Discord-like format (3 dot-separated parts), use as-is
-		// - Otherwise, prepend 'mock:' for plain session IDs
-		const isDiscordLikeToken = state.sessionId.includes('.') && state.sessionId.split('.').length === 3
-		const token = state.sessionId.startsWith('mock:') || isDiscordLikeToken ? state.sessionId : `mock:${state.sessionId}`
+		const openWebSocket = (url: string) => {
+			console.log('[Stage] Connecting to WebSocket:', url)
+			const ws = new WebSocket(url)
+			wsRef.current = ws
 
-		// Detect prefix from current page URL (e.g., /mock/stage -> /mock/stage/ws)
-		const pathname = window.location.pathname
-		const stageIndex = pathname.indexOf('/stage')
-		const basePath = stageIndex !== -1 ? pathname.slice(0, stageIndex + '/stage'.length) : '/stage'
-		const url = `${protocol}//${host}${basePath}/ws?token=${encodeURIComponent(token)}`
+			ws.onopen = () => {
+				console.log('[Stage] WebSocket connected!')
+				hasOpenedRef.current = true
+				setIsConnected(true)
+				setIsConnecting(false)
+				setError(null)
+				setHasGivenUp(false)
+				setIsSessionInvalid(false)
+				reconnectAttempts.current = 0
+				dispatch({ type: 'SET_CONNECTED', payload: true })
+			}
 
-		console.log('[Stage] Connecting to WebSocket:', url)
-		const ws = new WebSocket(url)
-		wsRef.current = ws
+			ws.onmessage = (event) => {
+				try {
+					const data = JSON.parse(event.data) as StageEvent
+					handleEvent(data)
+				} catch (e) {
+					console.error('[Stage] Failed to parse WebSocket message:', e)
+				}
+			}
 
-		ws.onopen = () => {
-			console.log('[Stage] WebSocket connected!')
-			setIsConnected(true)
-			setIsConnecting(false)
-			setError(null)
-			setHasGivenUp(false)
-			setIsSessionInvalid(false)
-			reconnectAttempts.current = 0
-			dispatch({ type: 'SET_CONNECTED', payload: true })
+			ws.onclose = (event) => {
+				console.log('[Stage] WebSocket closed:', { code: event.code, reason: event.reason, sessionId: state.sessionId })
+				setIsConnected(false)
+				wsRef.current = null
+				dispatch({ type: 'SET_CONNECTED', payload: false })
+
+				if (!hasOpenedRef.current && pendingUrlsRef.current.length > 0) {
+					const nextUrl = pendingUrlsRef.current.shift()
+					if (nextUrl) {
+						openWebSocket(nextUrl)
+						return
+					}
+				}
+
+				// Don't reconnect if session is invalid (code 4001)
+				if (event.code === 4001) {
+					console.log('[Stage] Session invalid, not reconnecting')
+					setIsSessionInvalid(true)
+					return
+				}
+
+				// Don't reconnect if intentionally closed
+				if (event.code === 1000) {
+					console.log('[Stage] Intentionally closed, not reconnecting')
+					return
+				}
+
+				// Don't reconnect if no session ID
+				if (!state.sessionId) {
+					console.log('[Stage] No session ID, not reconnecting')
+					return
+				}
+
+				// Check if we've exceeded max retry attempts
+				if (reconnectAttempts.current >= MAX_RECONNECT_ATTEMPTS) {
+					console.log('[Stage] Max reconnect attempts reached, giving up')
+					setHasGivenUp(true)
+					setError('Connection lost after multiple attempts')
+					return
+				}
+
+				// Reconnect with exponential backoff
+				const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000)
+				reconnectAttempts.current++
+				console.log('[Stage] Scheduling reconnect in', delay, 'ms (attempt', reconnectAttempts.current, '/', MAX_RECONNECT_ATTEMPTS, ')')
+
+				// Mark that we're waiting for a scheduled reconnect (prevents auto-connect effect from bypassing backoff)
+				isReconnectingRef.current = true
+
+				reconnectTimeoutRef.current = window.setTimeout(() => {
+					console.log('[Stage] Reconnect timeout fired, calling connect()')
+					isReconnectingRef.current = false
+					connect()
+				}, delay)
+			}
+
+			ws.onerror = (err) => {
+				console.log('[Stage] WebSocket error:', err)
+				setError('Connection failed')
+				setIsConnecting(false)
+				dispatch({ type: 'SET_ERROR', payload: 'Connection failed' })
+			}
 		}
 
+		const firstUrl = urls[0]
+		if (!firstUrl) {
+			setError('Invalid Stage WebSocket URL')
+			setIsConnecting(false)
+			dispatch({ type: 'SET_ERROR', payload: 'Invalid Stage WebSocket URL' })
+			return
+		}
+
+<<<<<<< HEAD
 		ws.onmessage = (event) => {
 			try {
 				const data = JSON.parse(event.data) as StageEvent
@@ -1229,6 +1323,9 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 			setIsConnecting(false)
 			dispatch({ type: 'SET_ERROR', payload: 'Connection failed' })
 		}
+=======
+		openWebSocket(firstUrl)
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
 	}, [state.sessionId, dispatch, handleEvent])
 
 	// Disconnect from WebSocket

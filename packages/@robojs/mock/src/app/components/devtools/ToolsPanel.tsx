@@ -910,6 +910,7 @@ export function ToolsPanel() {
 							roles: [],
 							members: testMembers.map(m => ({
 								user: m.user,
+								nick: m.nick ?? null,
 								roles: m.roles,
 								joined_at: m.joined_at
 							}))
@@ -1105,7 +1106,7 @@ export function ToolsPanel() {
 				<p className={styles.description}>
 					Test ephemeral messages, edited indicators, and loading states.
 				</p>
-				<div className={styles.buttonGroup}>
+				<div className={`${styles.buttonGroup} ${styles.buttonGroupStack}`}>
 					<button
 						className={styles.actionButton}
 						onClick={() => {
@@ -1168,7 +1169,7 @@ export function ToolsPanel() {
 				<p className={styles.description}>
 					Test voice channel member display and state indicators. Click &quot;Generate Test Data&quot; first to create voice channels.
 				</p>
-				<div className={styles.buttonGroup}>
+				<div className={`${styles.buttonGroup} ${styles.buttonGroupStack}`}>
 					<button
 						className={styles.actionButton}
 						onClick={async () => {
@@ -1227,9 +1228,9 @@ export function ToolsPanel() {
 
 							// Add multiple users with various states
 							const voiceUsers = [
-								{ user_id: 'test_user_001', username: 'Alice', self_mute: false, self_deaf: false },
-								{ user_id: 'test_user_002', username: 'Bob', self_mute: true, self_deaf: false },
-								{ user_id: 'test_user_003', username: 'Charlie', self_mute: false, self_deaf: true }
+								{ user_id: 'test_user_001', username: 'Alice', nick: null, self_mute: false, self_deaf: false },
+								{ user_id: 'test_user_002', username: 'Bob', nick: 'Bobby', self_mute: true, self_deaf: false },
+								{ user_id: 'test_user_003', username: 'Charlie', nick: null, self_mute: false, self_deaf: true }
 							]
 
 							try {
@@ -1249,6 +1250,7 @@ export function ToolsPanel() {
 												deaf: false,
 												member: {
 													user: { id: vu.user_id, username: vu.username, discriminator: '0001', avatar: null },
+													nick: vu.nick,
 													roles: [],
 													joined_at: new Date().toISOString()
 												}
@@ -1385,7 +1387,7 @@ export function ToolsPanel() {
 				<p className={styles.description}>
 					Test Discord Components V2 message format with TextDisplay, Section, MediaGallery, Container, and more.
 				</p>
-				<div className={styles.buttonGroup}>
+				<div className={`${styles.buttonGroup} ${styles.buttonGroupStack}`}>
 					<button
 						className={styles.actionButton}
 						onClick={async () => {

@@ -18,6 +18,7 @@ interface Thread {
 
 interface ThreadListProps {
 	threads?: Thread[]
+	onClose?: () => void
 }
 
 const mockThreads: Thread[] = [
@@ -49,7 +50,11 @@ const mockThreads: Thread[] = [
 	}
 ]
 
+<<<<<<< HEAD
 export function ThreadList({ threads = mockThreads }: ThreadListProps) {
+=======
+export function ThreadList({ threads = [], onClose }: ThreadListProps) {
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
 	return (
 		<div className={styles.container}>
 			<div className={styles.header}>
@@ -60,7 +65,16 @@ export function ThreadList({ threads = mockThreads }: ThreadListProps) {
 				<div className={styles.searchContainer}>
 					<input type="text" className={styles.searchInput} placeholder="Search for Thread Name" />
 				</div>
+<<<<<<< HEAD
 				<button className={styles.createButton}>Create</button>
+=======
+				<button className={styles.createButton} type="button">
+					Create
+				</button>
+				<button className={styles.closeButton} type="button" onClick={onClose} aria-label="Close threads panel">
+					<CloseIcon />
+				</button>
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
 			</div>
 
 			<div className={styles.section}>
@@ -101,5 +115,13 @@ export function ThreadList({ threads = mockThreads }: ThreadListProps) {
 				)}
 			</div>
 		</div>
+	)
+}
+
+function CloseIcon() {
+	return (
+		<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+			<path d="M18.3 5.71L12 12l6.3 6.29-1.41 1.42L10.59 13.4 4.29 19.71 2.88 18.29 9.17 12 2.88 5.71 4.29 4.29l6.3 6.3 6.3-6.3z" />
+		</svg>
 	)
 }

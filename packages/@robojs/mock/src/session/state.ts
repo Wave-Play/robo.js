@@ -3763,7 +3763,7 @@ export function createMockMessage(config: MockMessageConfig): MockMessage {
 		message.interaction = {
 			id: config.interactionMetadata.id,
 			type: config.interactionMetadata.type,
-			name: '', // Not available in metadata
+			name: config.interactionName ?? '',
 			user: config.interactionMetadata.user
 		}
 	}

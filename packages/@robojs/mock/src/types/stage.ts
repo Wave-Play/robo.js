@@ -190,6 +190,7 @@ export interface StageActivity {
 export interface StageUser {
 	id: Snowflake
 	username: string
+	global_name?: string
 	discriminator?: string
 	avatar: string | null
 	bot?: boolean
@@ -234,6 +235,7 @@ export interface StageVoiceState {
 	self_stream?: boolean
 	self_video?: boolean
 	speaking?: boolean // Simulated speaking indicator (Phase 5P)
+	member?: StageMember
 }
 
 /**
@@ -282,8 +284,26 @@ export interface StageMessage {
 		channel_id?: Snowflake
 		guild_id?: Snowflake
 	}
+<<<<<<< HEAD
 	/** Interaction metadata for command responses */
 	interaction_metadata?: StageMessageInteractionMetadata
+=======
+	interaction_metadata?: {
+		id: Snowflake
+		type: number
+		user: StageUser
+		authorizing_integration_owners?: Record<number, Snowflake>
+		original_response_message_id?: Snowflake
+		target_user?: StageUser
+		target_message_id?: Snowflake
+	}
+	interaction?: {
+		id: Snowflake
+		type: number
+		name?: string
+		user: StageUser
+	}
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
 }
 
 // ============================================================================

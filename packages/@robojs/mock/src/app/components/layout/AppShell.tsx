@@ -157,6 +157,7 @@ export function AppShell() {
 						<span>{guildName()}</span>
 					</div>
 
+<<<<<<< HEAD
 					<div className={styles.contentWrapper}>
 						<div className={styles.serverList}>
 							<ServerList
@@ -166,9 +167,42 @@ export function AppShell() {
 								sessionId={sessionId}
 								onHomeClick={handleHomeClick}
 								homeSelected={showHome}
+=======
+			<div className={styles.contentWrapper}>
+				<div className={styles.serverList}>
+					<ServerList
+						guilds={guilds}
+						selectedId={selectedGuildId}
+						onSelect={handleGuildSelect}
+						sessionId={sessionId}
+						onHomeClick={handleHomeClick}
+						homeSelected={showHome}
+					/>
+				</div>
+
+				<div className={styles.mainContent}>
+					{showHome ? (
+						<FriendsAppShell onTitleChange={setHomeTitle} resetKey={homeResetKey} />
+					) : (
+						<>
+							<ChannelList
+								guild={selectedGuild ?? undefined}
+								channels={displayChannels}
+								selectedId={selectedChannelId}
+								onSelect={handleChannelSelect}
+								voiceStates={guildVoiceStates}
+								users={allUsers}
+								members={guildMembers}
+								currentUser={botUser}
+								availableUsers={allUsers}
+								onJoinVoice={joinVoice}
+								onLeaveVoice={leaveVoice}
+								currentUserId={botUser?.id}
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
 							/>
 						</div>
 
+<<<<<<< HEAD
 						<div className={styles.mainContent}>
 							{showHome ? (
 								<FriendsAppShell />
@@ -211,6 +245,16 @@ export function AppShell() {
 							)}
 						</div>
 					</div>
+=======
+								<div className={styles.content}>
+									<MessageArea channelId={selectedChannelId} />
+									{showThreads && <ThreadList onClose={() => setShowThreads(false)} />}
+									{showMembers && <MemberList members={displayMembers} roles={guildRoles} />}
+								</div>
+							</div>
+						</>
+					)}
+>>>>>>> 29e5f5ec (fix: adjusted mock ui's small issues)
 				</div>
 
 				{/* Logs panel - outside main area to push everything left */}

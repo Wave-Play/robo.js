@@ -1,0 +1,235 @@
+.container {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	padding: 20px 24px 28px;
+	height: 100%;
+	overflow-y: auto;
+}
+
+.hero {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 18px 20px;
+	border-radius: 12px;
+	background: linear-gradient(135deg, rgba(88, 101, 242, 0.15), rgba(35, 165, 89, 0.08));
+	border: 1px solid rgba(88, 101, 242, 0.2);
+}
+
+.heroInfo {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.badge {
+	align-self: flex-start;
+	padding: 4px 10px;
+	border-radius: 999px;
+	background: rgba(88, 101, 242, 0.2);
+	color: var(--brand-500);
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+}
+
+.title {
+	font-size: 24px;
+	font-weight: 700;
+	color: var(--header-primary);
+}
+
+.subtitle {
+	font-size: 14px;
+	color: var(--header-secondary);
+}
+
+.heroActions {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 12px;
+}
+
+.heroButton {
+	padding: 8px 16px;
+	border-radius: 8px;
+	font-weight: 600;
+	font-size: 14px;
+	color: white;
+	transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.heroButton.join {
+	background: var(--brand-500);
+}
+
+.heroButton.join:hover {
+	background: var(--brand-560);
+	transform: translateY(-1px);
+}
+
+.heroButton.leave {
+	background: var(--red-400);
+}
+
+.heroButton.leave:hover {
+	background: var(--red-500);
+	transform: translateY(-1px);
+}
+
+.controlRow {
+	display: flex;
+	gap: 8px;
+}
+
+.controlButton {
+	width: 36px;
+	height: 36px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 10px;
+	background: var(--background-secondary);
+	color: var(--interactive-normal);
+	transition: background 0.15s ease, color 0.15s ease;
+}
+
+.controlButton:hover {
+	background: var(--background-modifier-hover);
+	color: var(--interactive-hover);
+}
+
+.memberSection {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.memberHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	font-size: 12px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: var(--text-muted);
+}
+
+.memberCount {
+	background: var(--background-tertiary);
+	color: var(--text-normal);
+	padding: 2px 8px;
+	border-radius: 999px;
+	font-size: 12px;
+}
+
+.memberGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 12px;
+}
+
+.memberCard {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px;
+	border-radius: 10px;
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-accent);
+}
+
+.memberAvatar {
+	width: 48px;
+	height: 48px;
+	border-radius: 50%;
+	overflow: hidden;
+	position: relative;
+}
+
+.memberAvatar img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.memberAvatar.speaking::after {
+	content: '';
+	position: absolute;
+	inset: -3px;
+	border-radius: 50%;
+	border: 2px solid var(--status-online);
+	animation: pulse 1.1s ease-in-out infinite;
+}
+
+.memberMeta {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.memberName {
+	font-size: 15px;
+	font-weight: 600;
+	color: var(--header-primary);
+}
+
+.memberStatus {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 12px;
+	color: var(--text-muted);
+}
+
+.emptyState {
+	grid-column: 1 / -1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 24px;
+	border-radius: 12px;
+	background: var(--background-secondary);
+	border: 1px dashed var(--background-modifier-accent);
+}
+
+.emptyIcon {
+	width: 48px;
+	height: 48px;
+	border-radius: 50%;
+	background: var(--background-tertiary);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--interactive-normal);
+	margin-bottom: 10px;
+}
+
+.emptyTitle {
+	font-size: 16px;
+	font-weight: 700;
+	color: var(--header-primary);
+}
+
+.emptyText {
+	font-size: 13px;
+	color: var(--text-muted);
+}
+
+@keyframes pulse {
+	0%,
+	100% {
+		opacity: 0.6;
+		transform: scale(1);
+	}
+	50% {
+		opacity: 1;
+		transform: scale(1.05);
+	}
+}
