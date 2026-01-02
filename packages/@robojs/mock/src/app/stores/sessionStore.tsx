@@ -214,6 +214,12 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 			const firstChannel = firstGuild
 				? channels.find((c) => c.guild_id === firstGuild.id && (c.type === 0 || c.type === 5))
 				: null
+			const filteredMessages = Object.fromEntries(
+				Object.entries(messages).map(([channelId, channelMessages]) => [
+					channelId,
+					channelMessages.filter((message) => ((message.flags ?? 0) & 64) === 0)
+				])
+			)
 
 			return {
 				...state,
@@ -223,7 +229,7 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 				roles: roles || [],
 				voiceStates: voice_states || [],
 				users,
-				messages,
+				messages: filteredMessages,
 				commands: commands || [],
 				botUser: session.bot,
 				currentUser: currentUser ?? state.currentUser,

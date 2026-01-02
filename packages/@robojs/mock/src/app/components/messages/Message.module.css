@@ -1,8 +1,9 @@
 .message {
 	display: flex;
-	padding: 6px 48px 6px 72px;
+	padding: 8px 48px 4px 72px;
 	position: relative;
 	min-height: 48px;
+	isolation: isolate;
 }
 
 .message:hover {
@@ -20,6 +21,7 @@
 	background: var(--background-secondary);
 	border: 1px solid var(--background-modifier-accent);
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+	z-index: 2;
 	opacity: 0;
 	pointer-events: none;
 	transition: opacity 0.15s ease;

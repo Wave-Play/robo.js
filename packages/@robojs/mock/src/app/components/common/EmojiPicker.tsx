@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { DropdownContainer } from '../base'
+=======
+import { useEffect } from 'react'
+import { DropdownContainer, useDropdownPosition } from '../base'
+>>>>>>> 73140c52 (fix: small ui issues)
 import styles from './EmojiPicker.module.css'
 
 interface GuildEmoji {
@@ -12,45 +17,47 @@ interface EmojiPickerProps {
 	guildId?: string | null
 	onSelect: (emoji: string) => void
 	onClose: () => void
+	position: { x: number; y: number }
 }
 
 // Common emoji set for MVP
 const EMOJI_LIST = [
 	// Reactions
-	'👍',
-	'👎',
-	'❤️',
-	'🔥',
-	'🎉',
-	'😂',
-	'😢',
-	'😮',
-	'😡',
-	'🤔',
+	':)',
+	':-)',
+	':D',
+	':-D',
+	';)',
+	';-)',
+	':P',
+	':-P',
+	'XD',
+	'xD',
 	// Common
-	'👀',
-	'💯',
-	'✅',
-	'❌',
-	'⭐',
-	'🙏',
-	'💪',
-	'🚀',
-	'💡',
-	'📌',
+	':(',
+	':-(',
+	":'(",
+	':|',
+	':-|',
+	':/',
+	':-/',
+	':O',
+	':-O',
+	':3',
 	// Faces
-	'😊',
-	'😎',
-	'🤣',
-	'😍',
-	'🥳',
-	'😴',
-	'🤯',
-	'🥺',
-	'😤',
-	'🤝'
+	'^_^',
+	'O_o',
+	'-_-',
+	'>:(',
+	'<3',
+	'</3',
+	':*',
+	'B)',
+	'8)',
+	'T_T'
 ]
 
+<<<<<<< HEAD
 // Detect API prefix from current URL
 function getApiPrefix() {
 	const pathname = window.location.pathname
@@ -102,11 +109,18 @@ export function EmojiPicker({ guildId, onSelect, onClose }: EmojiPickerProps) {
 		window.addEventListener('guild_emojis_update', handleEmojisUpdate)
 		return () => window.removeEventListener('guild_emojis_update', handleEmojisUpdate)
 	}, [guildId])
+=======
+export function EmojiPicker({ onSelect, onClose, position }: EmojiPickerProps) {
+	const { dropdownRef, adjustedPosition, isPositioned } = useDropdownPosition({
+		position,
+		viewportPadding: 8
+	})
+>>>>>>> 73140c52 (fix: small ui issues)
 
 	// Close on click outside
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
-			if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
+			if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
 				onClose()
 			}
 		}
@@ -114,7 +128,7 @@ export function EmojiPicker({ guildId, onSelect, onClose }: EmojiPickerProps) {
 		// Use capture phase to handle click before it bubbles
 		document.addEventListener('mousedown', handleClickOutside, true)
 		return () => document.removeEventListener('mousedown', handleClickOutside, true)
-	}, [onClose])
+	}, [onClose, dropdownRef])
 
 	// Close on Escape
 	useEffect(() => {
@@ -138,6 +152,7 @@ export function EmojiPicker({ guildId, onSelect, onClose }: EmojiPickerProps) {
 	)
 
 	return (
+<<<<<<< HEAD
 		<DropdownContainer ref={pickerRef} role="dialog" aria-label="Emoji picker" placement="top-end" className={styles.picker}>
 			{/* Tab bar */}
 			{guildId && (
@@ -148,6 +163,21 @@ export function EmojiPicker({ guildId, onSelect, onClose }: EmojiPickerProps) {
 						title="Standard Emojis"
 					>
 						😀
+=======
+		<DropdownContainer
+			ref={dropdownRef}
+			role="dialog"
+			aria-label="Emoji picker"
+			className={styles.picker}
+			position="fixed"
+			coordinates={adjustedPosition}
+			isPositioned={isPositioned}
+		>
+			<div className={styles.grid}>
+				{EMOJI_LIST.map((emoji, index) => (
+					<button key={`${emoji}-${index}`} className={styles.emoji} onClick={() => onSelect(emoji)} title={emoji}>
+						{emoji}
+>>>>>>> 73140c52 (fix: small ui issues)
 					</button>
 					<button
 						className={`${styles.tab} ${activeTab === 'guild' ? styles.activeTab : ''}`}

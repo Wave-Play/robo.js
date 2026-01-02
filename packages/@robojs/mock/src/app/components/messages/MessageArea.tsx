@@ -103,9 +103,9 @@ function VirtualizedMessageList({
 				let remainingContent = content
 
 				for (const block of codeBlockMatches) {
-					// Count lines in code block + padding (16px top/bottom)
+					// Count lines in code block + padding
 					const codeLines = (block.match(/\n/g) || []).length + 1
-					codeBlockHeight += codeLines * 20 + 32 // 20px per line + 32px padding
+					codeBlockHeight += codeLines * 18 + 24
 					remainingContent = remainingContent.replace(block, '')
 				}
 
@@ -113,8 +113,7 @@ function VirtualizedMessageList({
 				const textLines = remainingContent.split('\n')
 				let textHeight = 0
 				for (const line of textLines) {
-					// Each line wraps at ~80 chars
-					textHeight += Math.max(1, Math.ceil(line.length / 80)) * 22
+					textHeight += Math.max(1, Math.ceil(line.length / 70)) * 19
 				}
 
 				contentHeight = codeBlockHeight + textHeight
@@ -125,14 +124,14 @@ function VirtualizedMessageList({
 			if (!isV2 && message.embeds?.length) {
 				for (const embed of message.embeds as Array<{ image?: unknown; fields?: unknown[] }>) {
 					// Base embed: padding + author + title + description
-					embedHeight += 120
+					embedHeight += 104
 					// Fields add height
 					if (embed.fields?.length) {
-						embedHeight += Math.ceil(embed.fields.length / 3) * 50
+						embedHeight += Math.ceil(embed.fields.length / 3) * 42
 					}
 					// Image adds significant height
 					if (embed.image) {
-						embedHeight += 320
+						embedHeight += 280
 					}
 				}
 			}
@@ -143,12 +142,12 @@ function VirtualizedMessageList({
 				for (const att of message.attachments as Array<{ content_type?: string; height?: number }>) {
 					if (att.content_type?.startsWith('image/')) {
 						// Image: constrained to max 300px height + margin
-						attachmentHeight += Math.min(att.height || 200, 300) + 16
+						attachmentHeight += Math.min(att.height || 200, 300) + 8
 					} else if (att.content_type?.startsWith('video/')) {
-						attachmentHeight += 320
+						attachmentHeight += 300
 					} else {
 						// File attachment card
-						attachmentHeight += 72
+						attachmentHeight += 64
 					}
 				}
 			}
@@ -157,17 +156,21 @@ function VirtualizedMessageList({
 			let v1ComponentHeight = 0
 			if (!isV2 && message.components?.length) {
 				// Each action row is about 40px (button/select height + gap)
-				v1ComponentHeight = message.components.length * 44
+				v1ComponentHeight = message.components.length * 40
 			}
 
 			// Date divider adds ~40px (16px margin + 24px content)
 			const dateDividerHeight = group.showDateDivider ? 40 : 0
 
+<<<<<<< HEAD
 			// Command invocation header adds ~28px (avatar + text + margin)
 			const hasCommandInvocation = (message as { interaction_metadata?: { type: number } }).interaction_metadata?.type === 2
 			const commandInvocationHeight = hasCommandInvocation ? 28 : 0
 
 			return dateDividerHeight + commandInvocationHeight + (hasHeader ? 44 : 0) + contentHeight + embedHeight + attachmentHeight + v1ComponentHeight + 16
+=======
+			return dateDividerHeight + (hasHeader ? 44 : 0) + contentHeight + embedHeight + attachmentHeight + v1ComponentHeight + 8
+>>>>>>> 73140c52 (fix: small ui issues)
 		},
 		overscan: 10
 	})
