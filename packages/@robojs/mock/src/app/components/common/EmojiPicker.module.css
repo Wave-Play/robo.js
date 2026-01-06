@@ -49,10 +49,10 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	width: 32px;
+	width: 34px;
 	height: 32px;
 	padding: 0;
-	font-size: 20px;
+	font-size: 16px;
 	line-height: 1;
 	background: transparent;
 	border: none;

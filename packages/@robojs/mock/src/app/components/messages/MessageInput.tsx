@@ -428,13 +428,13 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
 
 									<div className={styles.iconButton} aria-label="Open GIF picker" role="button" tabIndex={0}>
 										<div className={styles.iconButtonInner}>
-											<GifIcon />
+											<GifIcon  width={25} height={25} />
 										</div>
 									</div>
 
 									<div className={styles.iconButton} aria-label="Open sticker picker" role="button" tabIndex={0}>
 										<div className={styles.iconButtonInner}>
-											<FileIcon />
+											<FileIcon  width={25} height={25} />
 										</div>
 									</div>
 
@@ -453,7 +453,6 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
 									</div>
 									{showEmojiPicker && (
 										<EmojiPicker
-											guildId={selectedGuildId}
 											onSelect={handleEmojiSelect}
 											onClose={() => setShowEmojiPicker(false)}
 										/>

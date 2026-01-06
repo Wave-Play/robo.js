@@ -45,8 +45,10 @@ export function PinnedMessagesDropdown({ messages = [], onClose }: PinnedMessage
 								<div className={styles.messageText}>{message.content}</div>
 							</div>
 							<div className={styles.messageActions}>
-								<button className={styles.jumpButton}>Jump</button>
-								<button className={styles.closeButton}>
+								<button className={styles.jumpButton} onClick={onClose}>
+									Jump
+								</button>
+								<button className={styles.closeButton} onClick={onClose}>
 									<CloseIcon />
 								</button>
 							</div>
@@ -77,9 +79,7 @@ export function PinnedMessagesDropdown({ messages = [], onClose }: PinnedMessage
 					<div className={styles.footer}>
 						<div className={styles.protipLabel}>PROTIP:</div>
 						<p className={styles.protipText}>
-							Users with the 'Pin Messages' permission can pin a message from
-							<br />
-							its context menu.
+							Users with the 'Pin Messages' permission can pin a message from its context menu.
 						</p>
 					</div>
 				</>

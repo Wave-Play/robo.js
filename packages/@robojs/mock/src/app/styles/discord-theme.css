@@ -1,84 +1,161 @@
-/* Discord Dark Theme CSS Variables */
+/* Discord Dark Theme CSS Variables - Descriptive Naming */
 :root {
-	/* Background colors - Discord's current dark theme (darker variant) */
-	--background-primary: #1e1f22;
-	--background-secondary: #2b2d31;
-	--background-secondary-alt: #232428;
-	--background-tertiary: #111214;
-	--background-accent: #4e5058;
-	--background-floating: #111214;
-	--background-modifier-hover: rgba(79, 84, 92, 0.16);
-	--background-modifier-active: rgba(79, 84, 92, 0.24);
-	--background-modifier-selected: rgba(79, 84, 92, 0.32);
-	--background-modifier-accent: rgba(79, 84, 92, 0.48);
+	/* ===== BACKGROUND COLORS ===== */
 
-	/* Text colors */
-	--text-normal: #dbdee1;
-	--text-muted: #949ba4;
-	--text-link: #00a8fc;
-	--header-primary: #f2f3f5;
-	--header-secondary: #b5bac1;
+	/* Main Content Areas */
+	--main-chat-background: #1a1a1e; /* Main chat/message area background */
+	--sidebar-left-background: #121214; /* Left sidebar (channels/friends list) */
+	--sidebar-right-background: #121214; /* Right sidebar (members list) */
+	--server-list-background: #121214; /* Far left server icons column */
 
-	/* Brand colors */
-	--brand-500: #5865f2; /* Blurple */
-	--brand-560: #4752c4;
-	--brand-600: #3c45a5;
+	/* Input & Interactive Backgrounds */
+	--text-input-background: #222327; /* Message input field background */
+	--card-background: #1a1a1e; /* Cards, embeds, and content blocks */
+	--modal-background: #18191C; /* Floating modals and dropdowns */
+	--accent-background: #4E5058; /* Accent elements */
 
-	/* Green variants */
-	--green-360: #23a559;
-	--green-400: #57f287;
-	--green-500: #1a8346;
-	--green-600: #156b39;
+	/* Overlay States (for hover, active, selected) */
+	--hover-overlay: rgba(79, 84, 92, 0.16); /* Hover state overlay */
+	--active-overlay: rgba(79, 84, 92, 0.24); /* Active/pressed state overlay */
+	--selected-overlay: rgba(79, 84, 92, 0.32); /* Selected item overlay */
+	--accent-overlay: rgba(79, 84, 92, 0.48); /* Strong accent overlay */
 
-	/* Yellow variants */
-	--yellow-300: #fee75c;
-	--yellow-400: #faa81a;
+	/* Borders & Dividers */
+	--divider-color: rgba(79, 84, 92, 0.48); /* Divider lines and borders */
+	--secondary-divider: #292B2F; /* Secondary/alternative divider */
 
-	/* Red variants */
-	--red-400: #f23f43;
-	--red-500: #a12d2f;
-	--red-600: #8a2729;
+	/* ===== TEXT COLORS ===== */
 
-	/* Grey variants for secondary buttons */
-	--grey-400: #6d6f78;
-	--grey-500: #5d5f66;
+	/* Primary Text */
+	--text-default: #94959b; /* Default text color */
+	--text-hover: #FFFFFF; /* Text on hover state */
+	--text-bright: #DCDDDE; /* Bright text for emphasis */
+	--text-muted: #72767D; /* Muted/secondary text */
+	--text-link: #00AFF4; /* Hyperlinks */
 
-	/* Status colors */
-	--status-online: #23a559;
-	--status-idle: #f0b232;
-	--status-dnd: #f23f43;
-	--status-offline: #80848e;
-	--status-positive: #23a559;
-	--status-warning: #f0b232;
-	--status-danger: #f23f43;
+	/* Header Text */
+	--header-text-primary: #94959b; /* Primary headers */
+	--header-text-secondary: #B9BBBE; /* Secondary headers */
 
-	/* Channel colors */
-	--channel-icon: #80848e;
-	--channel-text-area: #222327;
+	/* ===== INTERACTIVE ELEMENT COLORS ===== */
 
-	/* Interactive colors */
-	--interactive-normal: #b5bac1;
-	--interactive-hover: #dbdee1;
-	--interactive-active: #fff;
-	--interactive-muted: #4e5058;
+	/* Interactive Elements (buttons, clickable items) */
+	--interactive-default: #B9BBBE; /* Default interactive element color */
+	--interactive-hover: #FFFFFF; /* Interactive element on hover */
+	--interactive-active: #94959b; /* Active/selected interactive element */
+	--interactive-muted: #4F545C; /* Muted interactive elements */
 
-	/* Embed colors */
-	--embed-background: #2b2d31;
-	--embed-border: #1e1f22;
+	/* Channel Icons & Navigation */
+	--channel-icon-default: #8E9297; /* Default channel icon color */
+	--channel-icon-hover: #FFFFFF; /* Channel icon on hover */
+	--channel-icon-selected: #94959b; /* Selected channel icon */
 
-	/* Spacing */
-	--server-list-width: 72px;
-	--sidebar-width: 240px;
-	--member-list-width: 240px;
+	/* ===== BRAND COLORS ===== */
 
-	/* Typography */
+	/* Discord Blurple Brand Colors */
+	--brand-primary: #5865f2; /* Primary brand color (blurple) */
+	--brand-dark: #4752c4; /* Darker brand variant */
+	--brand-darker: #3c45a5; /* Darkest brand variant */
+
+	/* ===== STATUS COLORS ===== */
+
+	/* User Status Indicators */
+	--status-online: #23a559; /* Online status */
+	--status-idle: #f0b232; /* Idle/away status */
+	--status-dnd: #f23f43; /* Do not disturb status */
+	--status-offline: #80848e; /* Offline status */
+
+	/* Semantic Status Colors */
+	--status-positive: #23a559; /* Success/positive state */
+	--status-warning: #f0b232; /* Warning state */
+	--status-danger: #f23f43; /* Error/danger state */
+
+	/* ===== COLOR VARIANTS ===== */
+
+	/* Green variants (success, online) */
+	--green-light: #57f287;
+	--green-medium: #23a559;
+	--green-dark: #1a8346;
+	--green-darker: #156b39;
+
+	/* Yellow variants (warning, idle) */
+	--yellow-light: #fee75c;
+	--yellow-medium: #faa81a;
+
+	/* Red variants (error, danger) */
+	--red-light: #f23f43;
+	--red-medium: #a12d2f;
+	--red-dark: #8a2729;
+
+	/* Grey variants (secondary buttons, muted elements) */
+	--grey-light: #6d6f78;
+	--grey-medium: #5d5f66;
+
+	/* ===== LAYOUT DIMENSIONS ===== */
+
+	/* Component Widths */
+	--server-list-width: 72px; /* Far left server icons column */
+	--sidebar-width: 240px; /* Left sidebar (channels) */
+	--member-list-width: 240px; /* Right sidebar (members) */
+
+	/* ===== TYPOGRAPHY ===== */
+
+	/* Font Families */
 	--font-primary: 'gg sans', 'Noto Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	--font-code: 'Consolas', 'Monaco', 'Andale Mono', monospace;
 
-	/* Border radius */
-	--radius-xs: 3px;
-	--radius-sm: 4px;
-	--radius-md: 8px;
-	--radius-lg: 16px;
-	--radius-round: 50%;
+	/* ===== BORDER RADIUS ===== */
+
+	/* Border Radius Sizes */
+	--radius-xs: 3px; /* Extra small radius */
+	--radius-sm: 4px; /* Small radius */
+	--radius-md: 8px; /* Medium radius */
+	--radius-lg: 16px; /* Large radius */
+	--radius-round: 50%; /* Fully rounded (circles) */
+
+	/* ===== LEGACY COMPATIBILITY ===== */
+	/* These provide backwards compatibility with old variable names */
+	/* TODO: Remove these once all components are updated to new names */
+
+	--background-primary: var(--main-chat-background);
+	--background-secondary: var(--sidebar-left-background);
+	--background-secondary-alt: var(--secondary-divider);
+	--background-tertiary: var(--card-background);
+	--background-accent: var(--accent-background);
+	--background-floating: var(--modal-background);
+	--background-modifier-hover: var(--hover-overlay);
+	--background-modifier-active: var(--active-overlay);
+	--background-modifier-selected: var(--selected-overlay);
+	--background-modifier-accent: var(--accent-overlay);
+
+	--text-normal: var(--text-bright);
+	--header-primary: var(--header-text-primary);
+	--header-secondary: var(--header-text-secondary);
+
+	--brand-500: var(--brand-primary);
+	--brand-560: var(--brand-dark);
+	--brand-600: var(--brand-darker);
+
+	--green-360: var(--green-medium);
+	--green-400: var(--green-light);
+	--green-500: var(--green-dark);
+	--green-600: var(--green-darker);
+
+	--yellow-300: var(--yellow-light);
+	--yellow-400: var(--yellow-medium);
+
+	--red-400: var(--red-light);
+	--red-500: var(--red-medium);
+	--red-600: var(--red-dark);
+
+	--grey-400: var(--grey-light);
+	--grey-500: var(--grey-medium);
+
+	--channel-icon: var(--channel-icon-default);
+	--channel-text-area: var(--text-input-background);
+
+	--interactive-normal: var(--interactive-default);
+
+	--embed-background: var(--card-background);
+	--embed-border: var(--card-background);
 }

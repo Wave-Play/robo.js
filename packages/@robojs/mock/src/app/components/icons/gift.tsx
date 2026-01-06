@@ -5,13 +5,22 @@ interface Props {
 }
 
 export default function GiftIcon(props: Props) {
-	const { width = 30, height = 30, fill = 'white' } = props
+	const { width = 30, height = 30, fill = 'currentColor' } = props
 	return (
-		<svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width={width} height={height} viewBox="0 0 30 30">
-			<path
-				fill={fill}
-				d="M 13 2 C 11.35503 2 10 3.3550302 10 5 C 10 5.3518425 10.07394 5.6851085 10.1875 6 L 5 6 C 3.895 6 3 6.895 3 8 L 3 10 L 27 10 L 27 8 C 27 6.895 26.105 6 25 6 L 19.8125 6 C 19.92606 5.6851085 20 5.3518425 20 5 C 20 3.3550302 18.64497 2 17 2 C 16.231416 2 15.533353 2.3041249 15 2.7871094 C 14.466647 2.3041249 13.768584 2 13 2 z M 13 4 C 13.56503 4 14 4.4349698 14 5 L 14 6 L 13 6 C 12.43497 6 12 5.5650302 12 5 C 12 4.4349698 12.43497 4 13 4 z M 17 4 C 17.56503 4 18 4.4349698 18 5 C 18 5.5650302 17.56503 6 17 6 L 16 6 L 16 5 C 16 4.4349698 16.43497 4 17 4 z M 4 12 L 4 25 C 4 26.105 4.895 27 6 27 L 14 27 L 14 12 L 4 12 z M 16 12 L 16 27 L 24 27 C 25.105 27 26 26.105 26 25 L 26 12 L 16 12 z"
-			></path>
+		<svg
+			width={width}
+			height={height}
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke={fill}
+			strokeWidth="1.25"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+		>
+			<rect x="3" y="8" width="18" height="4" rx="1" />
+			<path d="M12 8v13" />
+			<path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7" />
+			<path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5" />
 		</svg>
 	)
 }

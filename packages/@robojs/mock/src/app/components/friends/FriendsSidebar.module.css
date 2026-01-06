@@ -1,8 +1,14 @@
 .topSearch {
-	padding: 10px;
+	height: 48px;
+	min-height: 48px;
+	padding: 0 10px;
+	display: flex;
+	align-items: center;
 	border-bottom: 1px solid var(--background-modifier-accent);
 	background: var(--background-secondary);
+	border-top-left-radius: 10px;
 }
+
 
 .nav {
 	padding: 8px;

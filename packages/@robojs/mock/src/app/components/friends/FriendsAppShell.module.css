@@ -8,7 +8,7 @@
 .sidebar {
 	width: var(--sidebar-width);
 	min-width: var(--sidebar-width);
-	background: var(--background-secondary);
+	background: none;
 	display: flex;
 	flex-direction: column;
 	border-right: 1px solid var(--background-modifier-accent);

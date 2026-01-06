@@ -10,13 +10,13 @@ import type {
 	StageApplicationCommand,
 	StateSyncPayload,
 	StageMessageCreateData,
-	StageCommandsUpdatedData,
 	StageEvent,
 	StageCommand,
 	StageInteractionResponseData
 } from '../types/stage'
 import type { ModalData } from '../components/modals/Modal'
 import { usePlaybackDispatch, type RecordedEvent } from './playbackStore'
+import { buildStageWebSocketUrls } from '../utils'
 
 // Pending interaction for "Bot is thinking..." indicator
 export interface PendingInteraction {
@@ -79,7 +79,7 @@ export interface SessionState {
 	messages: Record<string, StageMessage[]>
 	commands: StageApplicationCommand[] // Phase 5G: Available slash commands
 	botUser: StageUser | null
-	currentUser: StageUser | null // Current "acting" user for Stage UI
+	currentUser: StageUser | null
 
 	// UI state
 	selectedGuildId: string | null
@@ -107,9 +107,6 @@ export interface SessionState {
 	// Loop detection warning
 	loopWarning: LoopWarning | null
 
-	// Mention tracking - count of unread mentions per channel
-	unreadMentions: Record<string, number>
-
 	// Stats
 	eventCount: number
 	lastHeartbeat: number | null
@@ -131,6 +128,7 @@ type SessionAction =
 	| { type: 'SELECT_GUILD'; payload: string | null }
 	| { type: 'SELECT_CHANNEL'; payload: string | null }
 	| { type: 'TOGGLE_MEMBERS' }
+	| { type: 'SET_CURRENT_USER'; payload: StageUser }
 	| { type: 'INCREMENT_EVENT_COUNT' }
 	| { type: 'SET_HEARTBEAT'; payload: number }
 	| { type: 'RESET' }
@@ -152,13 +150,6 @@ type SessionAction =
 	| { type: 'CLEAR_FILTERED_EVENTS' }
 	| { type: 'SET_LOOP_WARNING'; payload: LoopWarning }
 	| { type: 'CLEAR_LOOP_WARNING' }
-	| { type: 'SET_CURRENT_USER'; payload: StageUser }
-	| { type: 'UPDATE_CURRENT_USER'; payload: Partial<StageUser> }
-	| { type: 'INCREMENT_UNREAD_MENTIONS'; payload: { channelId: string; count: number } }
-	| { type: 'CLEAR_UNREAD_MENTIONS'; payload: string }
-	| { type: 'REORDER_CHANNELS'; payload: { guildId: string; updates: Array<{ id: string; position: number; parent_id?: string | null }> } }
-	| { type: 'HANDLE_CHANNEL_UPDATE'; payload: StageChannel }
-	| { type: 'SET_COMMANDS'; payload: StageApplicationCommand[] }
 
 // Initial state
 const initialState: SessionState = {
@@ -178,7 +169,7 @@ const initialState: SessionState = {
 	currentUser: null,
 	selectedGuildId: null,
 	selectedChannelId: null,
-	showMembers: false,
+	showMembers: true,
 	typingUsers: {},
 	activeModal: null,
 	pendingInteractions: [],
@@ -186,7 +177,6 @@ const initialState: SessionState = {
 	replyingTo: null,
 	filteredEvents: [],
 	loopWarning: null,
-	unreadMentions: {},
 	eventCount: 0,
 	lastHeartbeat: null
 }
@@ -207,12 +197,19 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 			return { ...state, error: action.payload, isConnecting: false, isConnected: false }
 
 		case 'HANDLE_STATE_SYNC': {
-			const { session, guilds, channels, members, roles, messages, users, commands, voice_states, currentUser } = action.payload
+			const { session, guilds, channels, members, roles, messages, users, commands, voice_states, currentUser } =
+				action.payload
 			const firstGuild = guilds[0]
 			// Find first text channel (type 0) or announcement channel (type 5), not categories (type 4) or voice (type 2)
 			const firstChannel = firstGuild
 				? channels.find((c) => c.guild_id === firstGuild.id && (c.type === 0 || c.type === 5))
 				: null
+			const filteredMessages = Object.fromEntries(
+				Object.entries(messages).map(([channelId, channelMessages]) => [
+					channelId,
+					channelMessages.filter((message) => ((message.flags ?? 0) & 64) === 0)
+				])
+			)
 
 			return {
 				...state,
@@ -222,21 +219,15 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 				roles: roles || [],
 				voiceStates: voice_states || [],
 				users,
-				messages,
+				messages: filteredMessages,
 				commands: commands || [],
 				botUser: session.bot,
-				currentUser: currentUser ?? state.currentUser,
+				currentUser: currentUser ?? null,
 				selectedGuildId: state.selectedGuildId || firstGuild?.id || null,
 				selectedChannelId: state.selectedChannelId || firstChannel?.id || null,
 				eventCount: state.eventCount + 1
 			}
 		}
-
-		case 'SET_COMMANDS':
-			return {
-				...state,
-				commands: action.payload
-			}
 
 		case 'HANDLE_MESSAGE_CREATE': {
 			const { message } = action.payload
@@ -374,10 +365,25 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 
 		case 'HANDLE_VOICE_STATE_UPDATE': {
 			const voiceState = action.payload
+			let nextUsers = state.users
+			let nextMembers = state.members
+
+			if (voiceState.member) {
+				const memberUser = voiceState.member.user
+				if (!state.users.some((u) => u.id === memberUser.id)) {
+					nextUsers = [...state.users, memberUser]
+				}
+				if (!state.members.some((m) => m.user.id === memberUser.id && m.guild_id === voiceState.member?.guild_id)) {
+					nextMembers = [...state.members, voiceState.member]
+				}
+			}
+
 			// If channel_id is null, user left voice - remove from list
 			if (!voiceState.channel_id) {
 				return {
 					...state,
+					users: nextUsers,
+					members: nextMembers,
 					voiceStates: state.voiceStates.filter(
 						(vs) => !(vs.guild_id === voiceState.guild_id && vs.user_id === voiceState.user_id)
 					),
@@ -394,6 +400,8 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 				newVoiceStates[existingIndex] = voiceState
 				return {
 					...state,
+					users: nextUsers,
+					members: nextMembers,
 					voiceStates: newVoiceStates,
 					eventCount: state.eventCount + 1
 				}
@@ -401,6 +409,8 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 			// Add new
 			return {
 				...state,
+				users: nextUsers,
+				members: nextMembers,
 				voiceStates: [...state.voiceStates, voiceState],
 				eventCount: state.eventCount + 1
 			}
@@ -420,18 +430,28 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 			}
 		}
 
-		case 'SELECT_CHANNEL': {
-			const channelId = action.payload
-			// Clear unread mentions for the selected channel
-			if (channelId && state.unreadMentions[channelId]) {
-				const { [channelId]: _, ...remainingMentions } = state.unreadMentions
-				return { ...state, selectedChannelId: channelId, unreadMentions: remainingMentions }
-			}
-			return { ...state, selectedChannelId: channelId }
-		}
+		case 'SELECT_CHANNEL':
+			return { ...state, selectedChannelId: action.payload }
 
 		case 'TOGGLE_MEMBERS':
 			return { ...state, showMembers: !state.showMembers }
+
+		case 'SET_CURRENT_USER': {
+			const updatedUser = action.payload
+			const users = state.users.some((user) => user.id === updatedUser.id)
+				? state.users.map((user) => (user.id === updatedUser.id ? updatedUser : user))
+				: [...state.users, updatedUser]
+			const members = state.members.map((member) =>
+				member.user.id === updatedUser.id ? { ...member, user: updatedUser } : member
+			)
+
+			return {
+				...state,
+				currentUser: updatedUser,
+				users,
+				members
+			}
+		}
 
 		case 'INCREMENT_EVENT_COUNT':
 			return { ...state, eventCount: state.eventCount + 1 }
@@ -570,111 +590,6 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 				loopWarning: null
 			}
 
-		case 'SET_CURRENT_USER': {
-			const updatedUser = action.payload
-			// Check if user exists in users array
-			const userExists = state.users.some(u => u.id === updatedUser.id)
-			const updatedUsers = userExists
-				? state.users.map(u => u.id === updatedUser.id ? updatedUser : u)
-				: [...state.users, updatedUser]
-			// Check if user exists in members array (for any guild)
-			const memberExists = state.members.some(m => m.user.id === updatedUser.id)
-			const updatedMembers = memberExists
-				? state.members.map(m =>
-						m.user.id === updatedUser.id
-							? { ...m, user: { ...m.user, ...updatedUser } }
-							: m
-					)
-				: state.members
-			return {
-				...state,
-				currentUser: updatedUser,
-				users: updatedUsers,
-				members: updatedMembers
-			}
-		}
-
-		case 'UPDATE_CURRENT_USER': {
-			if (!state.currentUser) return state
-			const updatedUser = { ...state.currentUser, ...action.payload }
-			// Check if user exists in users array
-			const userExists = state.users.some(u => u.id === updatedUser.id)
-			const updatedUsers = userExists
-				? state.users.map(u => u.id === updatedUser.id ? updatedUser : u)
-				: [...state.users, updatedUser]
-			// Check if user exists in members array
-			const memberExists = state.members.some(m => m.user.id === updatedUser.id)
-			const updatedMembers = memberExists
-				? state.members.map(m =>
-						m.user.id === updatedUser.id
-							? { ...m, user: { ...m.user, ...updatedUser } }
-							: m
-					)
-				: state.members
-			return {
-				...state,
-				currentUser: updatedUser,
-				users: updatedUsers,
-				members: updatedMembers
-			}
-		}
-
-		case 'INCREMENT_UNREAD_MENTIONS': {
-			const { channelId, count } = action.payload
-			// Don't increment for the currently selected channel
-			if (channelId === state.selectedChannelId) {
-				return state
-			}
-			const currentCount = state.unreadMentions[channelId] || 0
-			return {
-				...state,
-				unreadMentions: {
-					...state.unreadMentions,
-					[channelId]: currentCount + count
-				}
-			}
-		}
-
-		case 'CLEAR_UNREAD_MENTIONS': {
-			const channelId = action.payload
-			if (!state.unreadMentions[channelId]) {
-				return state
-			}
-			const { [channelId]: _, ...remainingMentions } = state.unreadMentions
-			return {
-				...state,
-				unreadMentions: remainingMentions
-			}
-		}
-
-		case 'REORDER_CHANNELS': {
-			const { guildId, updates } = action.payload
-			return {
-				...state,
-				channels: state.channels.map((c) => {
-					if (c.guild_id !== guildId) return c
-					const update = updates.find((u) => u.id === c.id)
-					if (!update) return c
-					return {
-						...c,
-						position: update.position,
-						parent_id: update.parent_id !== undefined ? update.parent_id : c.parent_id
-					}
-				})
-			}
-		}
-
-		case 'HANDLE_CHANNEL_UPDATE': {
-			const channel = action.payload
-			return {
-				...state,
-				channels: state.channels.map((c) =>
-					c.id === channel.id ? { ...c, ...channel } : c
-				),
-				eventCount: state.eventCount + 1
-			}
-		}
-
 		default:
 			return state
 	}
@@ -752,6 +667,8 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 	const { state, dispatch } = useSessionStore()
 	const playbackDispatch = usePlaybackDispatch()
 	const wsRef = useRef<WebSocket | null>(null)
+	const pendingUrlsRef = useRef<string[]>([])
+	const hasOpenedRef = useRef(false)
 	const reconnectTimeoutRef = useRef<number | null>(null)
 	const reconnectAttempts = useRef(0)
 	const eventSeqRef = useRef(0)
@@ -784,19 +701,15 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 					dispatch({ type: 'SET_CONNECTED', payload: true })
 					break
 
-				case 'state_sync': {
-					const syncPayload = event.data as StateSyncPayload
-					dispatch({ type: 'HANDLE_STATE_SYNC', payload: syncPayload })
-					// Dispatch historical logs to LogsProvider if present
-					if (syncPayload.logs && syncPayload.logs.length > 0) {
-						window.dispatchEvent(new CustomEvent('stage:logs_history', { detail: syncPayload.logs }))
-					}
+				case 'state_sync':
+					dispatch({ type: 'HANDLE_STATE_SYNC', payload: event.data as StateSyncPayload })
 					break
-				}
 
-				case 'commands_updated': {
-					const data = event.data as StageCommandsUpdatedData
-					dispatch({ type: 'SET_COMMANDS', payload: data.commands })
+				case 'current_user_update': {
+					const updateData = event.data as { user?: StageUser }
+					if (updateData.user) {
+						dispatch({ type: 'SET_CURRENT_USER', payload: updateData.user })
+					}
 					break
 				}
 
@@ -811,17 +724,6 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 							payload: {
 								channelId: msgData.message.channel_id,
 								botId: msgData.message.author.id
-							}
-						})
-					}
-
-					// Track unread mentions if the message mentions the current user
-					if (msgData.mentions?.mentionsCurrentUser || msgData.mentions?.mentionsEveryone || msgData.mentions?.mentionsHere) {
-						dispatch({
-							type: 'INCREMENT_UNREAD_MENTIONS',
-							payload: {
-								channelId: msgData.message.channel_id,
-								count: 1
 							}
 						})
 					}
@@ -900,15 +802,6 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 					dispatch({
 						type: 'HANDLE_VOICE_STATE_UPDATE',
 						payload: voiceData
-					})
-					break
-				}
-
-				case 'current_user_update': {
-					const userData = event.data as { user: StageUser }
-					dispatch({
-						type: 'SET_CURRENT_USER',
-						payload: userData.user
 					})
 					break
 				}
@@ -1053,54 +946,6 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 					break
 				}
 
-				case 'log_entry': {
-					// Log entry from connected bot - emit custom event for LogsProvider
-					window.dispatchEvent(new CustomEvent('stage:log_entry', { detail: event.data }))
-					break
-				}
-
-				case 'channel_update': {
-					// Channel was updated (position, name, etc.)
-					const channelData = event.data as StageChannel
-					dispatch({
-						type: 'HANDLE_CHANNEL_UPDATE',
-						payload: channelData
-					})
-					break
-				}
-
-				case 'guild_emojis_update': {
-					// Guild emojis changed - forward to window for EmojiPicker to listen
-					window.dispatchEvent(new CustomEvent('guild_emojis_update', {
-						detail: event.data
-					}))
-					dispatch({ type: 'INCREMENT_EVENT_COUNT' })
-					break
-				}
-
-				case 'control_action': {
-					// Control action performed - show toast to all viewers
-					const actionData = event.data as {
-						action: string
-						message: string
-						toastType: 'info' | 'success' | 'warning' | 'error'
-						actor?: { type: 'user' | 'bot'; name: string }
-					}
-
-					// Format message with actor name if it's a bot
-					let displayMessage = actionData.message
-					if (actionData.actor?.type === 'bot') {
-						displayMessage = `${actionData.actor.name}: ${actionData.message}`
-					}
-
-					// Dispatch window event for Toaster to listen
-					window.dispatchEvent(new CustomEvent('show_toast', {
-						detail: { message: displayMessage, type: actionData.toastType }
-					}))
-					dispatch({ type: 'INCREMENT_EVENT_COUNT' })
-					break
-				}
-
 				default:
 					dispatch({ type: 'INCREMENT_EVENT_COUNT' })
 			}
@@ -1134,101 +979,109 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 		setError(null)
 		dispatch({ type: 'SET_CONNECTING', payload: true })
 
-		const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-		const host = window.location.host
+		const urls = buildStageWebSocketUrls(state.sessionId)
+		pendingUrlsRef.current = urls.slice(1)
+		hasOpenedRef.current = false
 
-		// Token handling:
-		// - If already has 'mock:' prefix, use as-is
-		// - If looks like Discord-like format (3 dot-separated parts), use as-is
-		// - Otherwise, prepend 'mock:' for plain session IDs
-		const isDiscordLikeToken = state.sessionId.includes('.') && state.sessionId.split('.').length === 3
-		const token = state.sessionId.startsWith('mock:') || isDiscordLikeToken ? state.sessionId : `mock:${state.sessionId}`
+		const openWebSocket = (url: string) => {
+			console.log('[Stage] Connecting to WebSocket:', url)
+			const ws = new WebSocket(url)
+			wsRef.current = ws
 
-		// Detect prefix from current page URL (e.g., /mock/stage -> /mock/stage/ws)
-		const pathname = window.location.pathname
-		const stageIndex = pathname.indexOf('/stage')
-		const basePath = stageIndex !== -1 ? pathname.slice(0, stageIndex + '/stage'.length) : '/stage'
-		const url = `${protocol}//${host}${basePath}/ws?token=${encodeURIComponent(token)}`
+			ws.onopen = () => {
+				console.log('[Stage] WebSocket connected!')
+				hasOpenedRef.current = true
+				setIsConnected(true)
+				setIsConnecting(false)
+				setError(null)
+				setHasGivenUp(false)
+				setIsSessionInvalid(false)
+				reconnectAttempts.current = 0
+				dispatch({ type: 'SET_CONNECTED', payload: true })
+			}
 
-		console.log('[Stage] Connecting to WebSocket:', url)
-		const ws = new WebSocket(url)
-		wsRef.current = ws
+			ws.onmessage = (event) => {
+				try {
+					const data = JSON.parse(event.data) as StageEvent
+					handleEvent(data)
+				} catch (e) {
+					console.error('[Stage] Failed to parse WebSocket message:', e)
+				}
+			}
 
-		ws.onopen = () => {
-			console.log('[Stage] WebSocket connected!')
-			setIsConnected(true)
+			ws.onclose = (event) => {
+				console.log('[Stage] WebSocket closed:', { code: event.code, reason: event.reason, sessionId: state.sessionId })
+				setIsConnected(false)
+				wsRef.current = null
+				dispatch({ type: 'SET_CONNECTED', payload: false })
+
+				if (!hasOpenedRef.current && pendingUrlsRef.current.length > 0) {
+					const nextUrl = pendingUrlsRef.current.shift()
+					if (nextUrl) {
+						openWebSocket(nextUrl)
+						return
+					}
+				}
+
+				// Don't reconnect if session is invalid (code 4001)
+				if (event.code === 4001) {
+					console.log('[Stage] Session invalid, not reconnecting')
+					setIsSessionInvalid(true)
+					return
+				}
+
+				// Don't reconnect if intentionally closed
+				if (event.code === 1000) {
+					console.log('[Stage] Intentionally closed, not reconnecting')
+					return
+				}
+
+				// Don't reconnect if no session ID
+				if (!state.sessionId) {
+					console.log('[Stage] No session ID, not reconnecting')
+					return
+				}
+
+				// Check if we've exceeded max retry attempts
+				if (reconnectAttempts.current >= MAX_RECONNECT_ATTEMPTS) {
+					console.log('[Stage] Max reconnect attempts reached, giving up')
+					setHasGivenUp(true)
+					setError('Connection lost after multiple attempts')
+					return
+				}
+
+				// Reconnect with exponential backoff
+				const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000)
+				reconnectAttempts.current++
+				console.log('[Stage] Scheduling reconnect in', delay, 'ms (attempt', reconnectAttempts.current, '/', MAX_RECONNECT_ATTEMPTS, ')')
+
+				// Mark that we're waiting for a scheduled reconnect (prevents auto-connect effect from bypassing backoff)
+				isReconnectingRef.current = true
+
+				reconnectTimeoutRef.current = window.setTimeout(() => {
+					console.log('[Stage] Reconnect timeout fired, calling connect()')
+					isReconnectingRef.current = false
+					connect()
+				}, delay)
+			}
+
+			ws.onerror = (err) => {
+				console.log('[Stage] WebSocket error:', err)
+				setError('Connection failed')
+				setIsConnecting(false)
+				dispatch({ type: 'SET_ERROR', payload: 'Connection failed' })
+			}
+		}
+
+		const firstUrl = urls[0]
+		if (!firstUrl) {
+			setError('Invalid Stage WebSocket URL')
 			setIsConnecting(false)
-			setError(null)
-			setHasGivenUp(false)
-			setIsSessionInvalid(false)
-			reconnectAttempts.current = 0
-			dispatch({ type: 'SET_CONNECTED', payload: true })
+			dispatch({ type: 'SET_ERROR', payload: 'Invalid Stage WebSocket URL' })
+			return
 		}
 
-		ws.onmessage = (event) => {
-			try {
-				const data = JSON.parse(event.data) as StageEvent
-				handleEvent(data)
-			} catch (e) {
-				console.error('[Stage] Failed to parse WebSocket message:', e)
-			}
-		}
-
-		ws.onclose = (event) => {
-			console.log('[Stage] WebSocket closed:', { code: event.code, reason: event.reason, sessionId: state.sessionId })
-			setIsConnected(false)
-			setIsConnecting(false) // Ensure we exit connecting state if closed before onopen
-			wsRef.current = null
-			dispatch({ type: 'SET_CONNECTED', payload: false })
-
-			// Don't reconnect if session is invalid (code 4001)
-			if (event.code === 4001) {
-				console.log('[Stage] Session invalid, not reconnecting')
-				setIsSessionInvalid(true)
-				return
-			}
-
-			// Don't reconnect if intentionally closed
-			if (event.code === 1000) {
-				console.log('[Stage] Intentionally closed, not reconnecting')
-				return
-			}
-
-			// Don't reconnect if no session ID
-			if (!state.sessionId) {
-				console.log('[Stage] No session ID, not reconnecting')
-				return
-			}
-
-			// Check if we've exceeded max retry attempts
-			if (reconnectAttempts.current >= MAX_RECONNECT_ATTEMPTS) {
-				console.log('[Stage] Max reconnect attempts reached, giving up')
-				setHasGivenUp(true)
-				setError('Connection lost after multiple attempts')
-				return
-			}
-
-			// Reconnect with exponential backoff
-			const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000)
-			reconnectAttempts.current++
-			console.log('[Stage] Scheduling reconnect in', delay, 'ms (attempt', reconnectAttempts.current, '/', MAX_RECONNECT_ATTEMPTS, ')')
-
-			// Mark that we're waiting for a scheduled reconnect (prevents auto-connect effect from bypassing backoff)
-			isReconnectingRef.current = true
-
-			reconnectTimeoutRef.current = window.setTimeout(() => {
-				console.log('[Stage] Reconnect timeout fired, calling connect()')
-				isReconnectingRef.current = false
-				connect()
-			}, delay)
-		}
-
-		ws.onerror = (err) => {
-			console.log('[Stage] WebSocket error:', err)
-			setError('Connection failed')
-			setIsConnecting(false)
-			dispatch({ type: 'SET_ERROR', payload: 'Connection failed' })
-		}
+		openWebSocket(firstUrl)
 	}, [state.sessionId, dispatch, handleEvent])
 
 	// Disconnect from WebSocket

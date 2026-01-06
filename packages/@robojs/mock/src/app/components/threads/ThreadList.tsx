@@ -1,3 +1,4 @@
+import { DropdownContainer } from '../base'
 import ThreadIcon from '../icons/thread'
 import styles from './ThreadList.module.css'
 
@@ -16,6 +17,7 @@ interface Thread {
 
 interface ThreadListProps {
 	threads?: Thread[]
+	onClose?: () => void
 }
 
 function SearchIcon() {
@@ -26,12 +28,13 @@ function SearchIcon() {
 	)
 }
 
-export function ThreadList({ threads = [] }: ThreadListProps) {
+export function ThreadList({ threads = [], onClose }: ThreadListProps) {
 	return (
-		<div className={styles.container}>
+		<DropdownContainer placement="bottom-end" className={styles.dropdown} role="dialog" aria-label="Threads">
+			<div className={styles.container}>
 			<div className={styles.header}>
 				<div className={styles.headerIcon}>
-					<ThreadIcon width={24} height={24} fill="var(--interactive-normal)" />
+					<ThreadIcon width={20} height={20} fill="var(--interactive-normal)" />
 				</div>
 				<h2 className={styles.headerTitle}>Threads</h2>
 				<div className={styles.searchContainer}>
@@ -43,18 +46,19 @@ export function ThreadList({ threads = [] }: ThreadListProps) {
 				<button className={styles.createButton} type="button">
 					Create
 				</button>
+				<button className={styles.closeButton} type="button" onClick={onClose} aria-label="Close threads panel">
+					<CloseIcon />
+				</button>
 			</div>
 
 			{threads.length === 0 ? (
 				<div className={styles.emptyWrap}>
 					<div className={styles.emptyIcon}>
-						<ThreadIcon width={44} height={44} fill="var(--interactive-normal)" />
+						<ThreadIcon width={32} height={32} fill="var(--interactive-normal)" />
 					</div>
 					<div className={styles.emptyTitle}>There are no threads.</div>
 					<div className={styles.emptySub}>
-						Stay focused on a conversation with a thread - a temporary
-						<br />
-						text channel.
+						Stay focused on a conversation with a thread - a temporary text channel.
 					</div>
 					<button className={styles.emptyCta} type="button">
 						Create Thread
@@ -96,6 +100,15 @@ export function ThreadList({ threads = [] }: ThreadListProps) {
 					</div>
 				</>
 			)}
-		</div>
+			</div>
+		</DropdownContainer>
+	)
+}
+
+function CloseIcon() {
+	return (
+		<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+			<path d="M18.3 5.71L12 12l6.3 6.29-1.41 1.42L10.59 13.4 4.29 19.71 2.88 18.29 9.17 12 2.88 5.71 4.29 4.29l6.3 6.3 6.3-6.3z" />
+		</svg>
 	)
 }

@@ -16,16 +16,39 @@ function FriendsGlyph() {
 
 function InboxIcon() {
 	return (
-		<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-			<path d="M3 3h18v12h-5l-2 3h-4l-2-3H3V3Zm2 2v8h4l2 3h2l2-3h4V5H5Z" />
+		<svg
+			width="20"
+			height="20"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="1.25"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			aria-hidden="true"
+		>
+			<polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
+			<path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
 		</svg>
 	)
 }
 
 function HelpIcon() {
 	return (
-		<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-			<path d="M12 2a10 10 0 1 0 0 20a10 10 0 0 0 0-20Zm0 17a1.25 1.25 0 1 1 0-2.5A1.25 1.25 0 0 1 12 19Zm2.2-7.8c-.6.55-1 1-1 2.3h-2c0-2 .7-2.9 1.6-3.7c.8-.7 1.2-1.1 1.2-1.8c0-.9-.7-1.5-1.8-1.5c-1 0-1.8.5-2.1 1.5l-1.9-.8C8.7 5.7 10.1 5 12.1 5c2.3 0 3.9 1.3 3.9 3.2c0 1.5-.9 2.4-1.8 3Z" />
+		<svg
+			width="20"
+			height="20"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="1.25"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			aria-hidden="true"
+		>
+			<circle cx="12" cy="12" r="10" />
+			<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+			<path d="M12 17h.01" />
 		</svg>
 	)
 }

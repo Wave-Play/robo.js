@@ -1,41 +1,23 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useStageData } from '../../hooks/useStageData'
-import { useDevTools } from '../devtools/DevToolsPanel'
-import { apiFetch } from '../../utils/api'
+import { useSession } from '../../hooks/useSession'
+import { normalizeStageSessionId } from '../../utils'
 import styles from './ConnectionScreen.module.css'
 
 // Detect if user is on macOS
 const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform)
 
 export function ConnectionScreen() {
-	const { sessionId, isConnecting, error, setSessionId, connect, hasGivenUp, isSessionInvalid, retryCount, retry } = useStageData()
-	const { open: openDevTools } = useDevTools()
+	const { sessionId, isConnecting, error, setSessionId, connect, hasGivenUp, isSessionInvalid, retryCount, retry } = useSession()
 	const [inputValue, setInputValue] = useState(sessionId || '')
 	const [isCreating, setIsCreating] = useState(false)
 	const [createError, setCreateError] = useState<string | null>(null)
-	const [hasTestResults, setHasTestResults] = useState(false)
-
-	// Check for available test results on mount
-	useEffect(() => {
-		apiFetch('/control/tests/registry')
-			.then((res) => res.json())
-			.then((data) => {
-				if (data.registry && data.registry.testFiles?.length > 0) {
-					setHasTestResults(true)
-				}
-			})
-			.catch(() => {
-				// Ignore errors - test results just won't be available
-			})
-	}, [])
 
 	// Extract token from URL on mount and auto-connect
 	useEffect(() => {
 		const params = new URLSearchParams(window.location.search)
 		const token = params.get('token')
 		if (token && !sessionId) {
-			// Clean up token (remove trailing slashes that might come from redirects)
-			const cleanToken = token.replace(/\/+$/, '')
+			const cleanToken = normalizeStageSessionId(token)
 			setInputValue(cleanToken)
 			setSessionId(cleanToken)
 			// Small delay to ensure state is updated before connecting
@@ -102,7 +84,9 @@ export function ConnectionScreen() {
 
 	const handleConnect = () => {
 		if (inputValue.trim()) {
-			setSessionId(inputValue.trim())
+			const cleanSessionId = normalizeStageSessionId(inputValue)
+			setInputValue(cleanSessionId)
+			setSessionId(cleanSessionId)
 			// Small delay to ensure state is updated
 			setTimeout(() => connect(), 0)
 		}
@@ -180,24 +164,6 @@ export function ConnectionScreen() {
 						Press <kbd className={styles.kbd}>{isMac ? '⌘' : 'Ctrl+'}K</kbd> to create a new session
 					</p>
 				</div>
-
-				{/* Show test results option if available */}
-				{hasTestResults && (
-					<div className={styles.testResults}>
-						<div className={styles.divider}>
-							<span>or</span>
-						</div>
-						<button
-							className={styles.testResultsButton}
-							onClick={() => openDevTools('tests')}
-						>
-							View Test Results
-						</button>
-						<p className={styles.testResultsHint}>
-							Test results from a previous run are available
-						</p>
-					</div>
-				)}
 			</div>
 		</div>
 	)

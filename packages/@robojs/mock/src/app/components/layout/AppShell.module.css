@@ -67,7 +67,8 @@
 	width: 100%;
 	border: 1px solid var(--background-modifier-accent);
 	border-radius: var(--radius-lg) 0 0 0; /* top-left only */
-	overflow: hidden;
+	overflow: visible;
+	position: relative;
 }
 
 .main {
@@ -96,6 +97,15 @@
 	box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
 }
 
+.voiceDockOverlay {
+	position: absolute;
+	left: calc(-1 * var(--server-list-width) + 10px);
+	right: auto;
+	width: calc(var(--server-list-width) + var(--sidebar-width) - 18px);
+	bottom: 8px;
+	z-index: 2;
+}
+
 /* Mobile sidebar overlay */
 .sidebarOverlay {
 	display: none;
@@ -116,6 +126,11 @@
 
 	.serverList {
 		display: none;
+	}
+
+	.voiceDockOverlay {
+		left: 8px;
+		width: calc(var(--sidebar-width) - 16px);
 	}
 }
 

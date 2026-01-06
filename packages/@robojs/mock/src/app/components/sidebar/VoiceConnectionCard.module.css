@@ -1,0 +1,81 @@
+.container {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 14px;
+}
+
+.info {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	min-width: 0;
+}
+
+.icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	border-radius: var(--radius-sm);
+	color: var(--status-online);
+	background: rgba(35, 165, 89, 0.18);
+	flex-shrink: 0;
+}
+
+.text {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	min-width: 0;
+}
+
+.status {
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--status-online);
+}
+
+.channelName {
+	font-size: 12px;
+	color: var(--text-normal);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+.channelName:hover {
+	color: var(--interactive-hover);
+	text-decoration: underline;
+}
+
+.actions {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.quickActions {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex-wrap: nowrap;
+	justify-content: space-evenly;
+	width: 100%;
+}
+
+.quickButton {
+	background: var(--background-modifier-active);
+}
+
+.quickButton:hover:not(:disabled) {
+	background: var(--background-modifier-selected);
+}

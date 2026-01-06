@@ -1,0 +1,96 @@
+.wrapper {
+	position: relative;
+	display: inline-flex;
+}
+
+.button {
+	width: 32px;
+	height: 32px;
+	border-radius: var(--radius-sm);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--interactive-normal);
+	padding: 0;
+	line-height: 0;
+	transition: background 0.1s ease, color 0.1s ease;
+}
+
+.sizeSm {
+	width: 28px;
+	height: 28px;
+}
+
+.sizeLg {
+	width: 38px;
+	height: 38px;
+	border-radius: var(--radius-md);
+}
+
+.button:hover:not(:disabled) {
+	background: var(--background-modifier-hover);
+	color: var(--interactive-hover);
+}
+
+.button:focus-visible {
+	background: var(--background-modifier-hover);
+}
+
+.button:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+
+.active {
+	background: var(--background-modifier-selected);
+	color: var(--interactive-active);
+}
+
+.toneDanger {
+	color: var(--red-400);
+}
+
+.toneDanger:hover:not(:disabled) {
+	color: var(--red-400);
+}
+
+.toneWarning {
+	color: var(--yellow-400);
+}
+
+.toneWarning:hover:not(:disabled) {
+	color: var(--yellow-400);
+}
+
+.active.toneDanger {
+	background: rgba(242, 63, 67, 0.2);
+	color: var(--red-400);
+}
+
+.active.toneWarning {
+	background: rgba(250, 168, 26, 0.2);
+	color: var(--yellow-400);
+}
+
+.tooltip {
+	position: absolute;
+	bottom: calc(100% + 6px);
+	left: 50%;
+	transform: translateX(-50%);
+	padding: 6px 10px;
+	border-radius: 6px;
+	background: var(--background-secondary);
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+	font-size: 12px;
+	color: var(--text-normal);
+	white-space: nowrap;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.1s ease;
+	z-index: 20;
+}
+
+.wrapper:hover .tooltip,
+.wrapper:focus-within .tooltip {
+	opacity: 1;
+}

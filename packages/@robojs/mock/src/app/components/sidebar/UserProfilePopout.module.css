@@ -1,0 +1,467 @@
+.container {
+	display: flex;
+	gap: 0;
+	background: transparent;
+	box-shadow: none;
+	border-radius: 0;
+	overflow: visible;
+	overflow-y: visible;
+	align-items: flex-start;
+	position: relative;
+}
+
+.mainPanel {
+	width: 320px;
+	max-width: calc(100vw - 32px);
+	background: var(--background-floating);
+	border-radius: var(--radius-lg);
+	box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+	overflow: hidden;
+}
+
+.banner {
+	height: 70px;
+	background: #6b6fb0;
+}
+
+.profileHeader {
+	display: flex;
+	align-items: flex-end;
+	gap: 12px;
+	padding: 0 16px;
+	margin-top: -36px;
+}
+
+.avatarWrapper {
+	position: relative;
+	width: 72px;
+	height: 72px;
+	border-radius: 50%;
+	border: 6px solid var(--background-floating);
+	background: var(--background-secondary);
+	overflow: hidden;
+	flex-shrink: 0;
+}
+
+.avatar {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.statusDot {
+	position: absolute;
+	bottom: 4px;
+	right: 4px;
+	width: 14px;
+	height: 14px;
+	border-radius: 50%;
+	border: 3px solid var(--background-floating);
+}
+
+.statusDot.online {
+	background: var(--status-online);
+}
+
+.statusDot.idle {
+	background: var(--status-idle);
+}
+
+.statusDot.dnd {
+	background: var(--status-dnd);
+}
+
+.statusDot.offline {
+	background: var(--status-offline);
+}
+
+.statusBubble {
+	background: var(--background-secondary);
+	color: var(--text-normal);
+	padding: 6px 10px;
+	border-radius: 14px;
+	font-size: 12px;
+	line-height: 1.3;
+	max-width: 220px;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	position: relative;
+	width: fit-content;
+	cursor: pointer;
+	transition: background 0.1s ease;
+}
+
+.statusBubble:hover {
+	background: var(--background-secondary);
+	box-shadow: inset 0 0 0 1px var(--background-modifier-hover);
+}
+
+.statusBubble:focus-visible {
+	outline: 2px solid var(--brand-500);
+	outline-offset: 2px;
+}
+
+.statusBubbleText {
+	display: inline-block;
+	max-width: 100%;
+	word-break: break-word;
+}
+
+.statusBubblePlaceholder {
+	color: var(--text-muted);
+}
+
+.statusBubbleHasActions {
+	padding-right: 10px;
+}
+
+.statusBubbleIcon {
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	background: var(--background-tertiary);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--text-muted);
+	flex-shrink: 0;
+	transition: background 0.1s ease, color 0.1s ease;
+}
+
+.statusBubble:hover .statusBubbleIcon {
+	background: var(--background-modifier-hover);
+	color: var(--interactive-hover);
+}
+
+.statusActions {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	opacity: 0;
+	transition: opacity 0.1s ease;
+	position: absolute;
+	right: 4px;
+	top: -10px;
+	transform: none;
+	pointer-events: none;
+}
+
+.statusBubble:hover .statusActions,
+.statusBubble:focus-within .statusActions {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.statusActionButton {
+	width: 22px;
+	height: 22px;
+	border-radius: 6px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--interactive-normal);
+	background: var(--background-secondary);
+	border: 1px solid var(--background-tertiary);
+	transition: background 0.1s ease, color 0.1s ease, opacity 0.1s ease;
+}
+
+.statusActionButton:hover:not(:disabled) {
+	background: var(--background-modifier-hover);
+	color: var(--interactive-hover);
+}
+
+.statusActionButton:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+
+.presenceDot {
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	background: var(--status-offline);
+	box-shadow: 0 0 0 2px var(--background-secondary);
+}
+
+.presenceDot.online {
+	background: var(--status-online);
+}
+
+.presenceDot.idle {
+	background: var(--status-idle);
+}
+
+.presenceDot.dnd {
+	background: var(--status-dnd);
+}
+
+.presenceDot.offline {
+	background: var(--status-offline);
+}
+.profileBody {
+	padding: 12px 16px 16px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.displayName {
+	font-size: 20px;
+	font-weight: 700;
+	color: var(--header-primary);
+}
+
+.subline {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	color: var(--header-secondary);
+	font-size: 13px;
+	flex-wrap: wrap;
+}
+
+.handle {
+	color: var(--header-secondary);
+}
+
+.dot {
+	opacity: 0.6;
+}
+
+.pronouns {
+	color: var(--header-secondary);
+}
+
+.badges {
+	display: flex;
+	gap: 6px;
+	margin-left: auto;
+}
+
+.badge {
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	background: var(--background-secondary);
+}
+
+.badgeActive {
+	background: var(--brand-500);
+	box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.15);
+}
+
+.aboutText {
+	background: transparent;
+	border-radius: 0;
+	padding: 0;
+	font-size: 13px;
+	color: var(--text-normal);
+}
+
+.callCard {
+	background: var(--background-secondary);
+	border-radius: var(--radius-md);
+	padding: 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.callHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	color: var(--text-muted);
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.callTitle {
+	color: var(--text-muted);
+}
+
+.callInfo {
+	width: 18px;
+	height: 18px;
+	border-radius: 50%;
+	background: var(--background-tertiary);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 11px;
+	color: var(--text-muted);
+}
+
+.callBody {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: var(--text-normal);
+	font-size: 14px;
+}
+
+.callAvatarStack {
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+}
+
+.callAvatarWrap {
+	width: 32px;
+	height: 32px;
+	border-radius: 10px;
+	background: var(--background-tertiary);
+	border: 2px solid var(--background-secondary);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	margin-left: -10px;
+}
+
+.callAvatarWrap:first-child {
+	margin-left: 0;
+}
+
+.callAvatar {
+	width: 26px;
+	height: 26px;
+	border-radius: 50%;
+	object-fit: cover;
+}
+
+.callAvatarOverflow {
+	width: 32px;
+	height: 32px;
+	border-radius: 10px;
+	background: var(--background-tertiary);
+	border: 2px solid var(--background-secondary);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-left: -10px;
+	font-size: 11px;
+	font-weight: 600;
+	color: var(--text-muted);
+}
+
+.callName {
+	font-weight: 600;
+}
+
+.callButton {
+	width: 100%;
+	padding: 6px 12px;
+	border-radius: var(--radius-sm);
+	background: var(--background-tertiary);
+	color: var(--text-normal);
+	font-weight: 600;
+	text-align: center;
+	font-size: 12px;
+	line-height: 1.2;
+	transition: background 0.1s ease;
+}
+
+.callButton:hover {
+	background: var(--background-modifier-hover);
+}
+
+.callButton:focus-visible {
+	background: var(--background-modifier-hover);
+}
+
+.actionPanel {
+	background: var(--background-secondary);
+	border-radius: var(--radius-md);
+	padding: 6px;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.newBadge {
+	background: var(--red-400);
+	color: white;
+	font-size: 10px;
+	font-weight: 700;
+	padding: 2px 6px;
+	border-radius: 999px;
+}
+
+.presencePanel {
+	min-width: 240px;
+	max-width: calc(100vw - 24px);
+	padding: 8px;
+	background: var(--background-secondary);
+	border-radius: var(--radius-md);
+	box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+	border: 1px solid var(--background-modifier-accent);
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	position: absolute;
+	top: 0;
+	z-index: 3;
+}
+
+.presencePanelRight {
+	left: calc(100% + 8px);
+}
+
+.presencePanelLeft {
+	right: calc(100% + 8px);
+}
+
+.presenceSubmenu {
+	position: absolute;
+	top: 0;
+	min-width: 200px;
+	padding: 8px;
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-accent);
+	box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+}
+
+.presenceSubmenuRight {
+	left: calc(100% + 2px);
+	border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+.presenceSubmenuLeft {
+	right: calc(100% + 2px);
+	border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+
+.switchPanel {
+	min-width: 220px;
+	max-width: calc(100vw - 24px);
+	padding: 8px;
+	background: var(--background-secondary);
+	border-radius: var(--radius-md);
+	box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+	border: 1px solid var(--background-modifier-accent);
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	position: absolute;
+	top: 0;
+	z-index: 2;
+	max-height: 260px;
+	overflow-y: auto;
+}
+
+.switchPanelRight {
+	left: calc(100% + 8px);
+}
+
+.switchPanelLeft {
+	right: calc(100% + 8px);
+}
+
+.switchAvatar {
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	object-fit: cover;
+}

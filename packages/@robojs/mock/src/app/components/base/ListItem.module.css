@@ -12,6 +12,10 @@
 	background: var(--background-modifier-hover);
 }
 
+.item:focus-visible {
+	background: var(--background-modifier-hover);
+}
+
 .item.selected {
 	background: var(--background-modifier-selected);
 }

@@ -3,7 +3,7 @@
 	background: var(--background-secondary);
 	overflow-y: auto;
 	padding: 24px 8px;
-	border: 1px solid var(--background-modifier-accent);
+	border-right: 1px solid var(--background-modifier-accent);
 }
 
 .group {

@@ -4,16 +4,22 @@
 	right: 0;
 	margin-top: 8px;
 	width: fit-content;
+	background: var(--background-secondary);
+	border-radius: var(--radius-md);
+	border: 1px solid var(--background-modifier-accent);
+	box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+	overflow: hidden;
 }
 
 .mainPanel {
 	padding: 8px;
+	background: var(--background-secondary);
 }
 
 .submenuPanel {
 	min-width: 200px;
 	padding: 8px;
-	background: var(--background-floating);
+	background: var(--background-secondary);
 	border-left: 1px solid var(--background-modifier-accent);
 	border-radius: 0 var(--radius-md) var(--radius-md) 0;
 }

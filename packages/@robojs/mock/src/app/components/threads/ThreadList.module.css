@@ -1,24 +1,28 @@
+.dropdown {
+	background: transparent;
+	box-shadow: none;
+	overflow: visible;
+	overflow-y: visible;
+}
+
 .container {
 	background: var(--background-secondary);
-	overflow-y: auto;
-	border-left: 1px solid var(--background-modifier-accent);
+	overflow: hidden;
+	border: 1px solid var(--background-modifier-accent);
 	display: flex;
 	flex-direction: column;
-	width: 440px;
-	border-radius: var(--radius-lg);
-	position: absolute;
-	top: 8px;
-	right: 8px;
-	bottom: 8px;
-	z-index: 10;
-	box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+	width: 420px;
+	max-width: calc(100vw - 24px);
+	max-height: 420px;
+	border-radius: var(--radius-md);
+	box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
 }
 
 .header {
 	display: flex;
 	align-items: center;
-	gap: 12px;
-	padding: 16px;
+	gap: 10px;
+	padding: 12px;
 	border-bottom: 1px solid var(--background-modifier-accent);
 }
 
@@ -29,7 +33,7 @@
 }
 
 .headerTitle {
-	font-size: 16px;
+	font-size: 14px;
 	font-weight: 600;
 	color: var(--header-primary);
 	white-space: nowrap;
@@ -53,12 +57,12 @@
 
 .searchInput {
 	width: 100%;
-	padding: 6px 12px 6px 34px;
+	padding: 5px 12px 5px 30px;
 	border: 1px solid var(--background-modifier-accent);
 	border-radius: var(--radius-sm);
 	background: var(--background-tertiary);
 	color: var(--text-normal);
-	font-size: 14px;
+	font-size: 13px;
 	outline: none;
 }
 
@@ -71,12 +75,12 @@
 }
 
 .createButton {
-	padding: 6px 16px;
+	padding: 5px 12px;
 	background: var(--brand-500);
 	border: none;
 	border-radius: 4px;
 	color: white;
-	font-size: 14px;
+	font-size: 13px;
 	font-weight: 500;
 	cursor: pointer;
 	transition: background 0.15s ease;
@@ -87,8 +91,24 @@
 	background: var(--brand-560);
 }
 
+.closeButton {
+	width: 28px;
+	height: 28px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 6px;
+	background: var(--background-tertiary);
+	color: var(--text-normal);
+	margin-left: 4px;
+}
+
+.closeButton:hover {
+	background: var(--background-modifier-hover);
+}
+
 .section {
-	padding: 16px 16px 8px;
+	padding: 12px 12px 6px;
 }
 
 .sectionTitle {
@@ -103,15 +123,18 @@
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
-	padding: 0 16px 16px;
+	padding: 0 12px 12px;
 	width: 100%;
+	overflow-y: auto;
+	flex: 1;
+	min-height: 0;
 }
 
 .threadItem {
 	display: flex;
 	align-items: center;
-	gap: 12px;
-	padding: 12px 16px;
+	gap: 10px;
+	padding: 10px 12px;
 	background: var(--background-secondary-alt);
 	border: 1px solid var(--background-modifier-accent);
 	border-radius: 8px;
@@ -129,7 +152,7 @@
 }
 
 .threadName {
-	font-size: 16px;
+	font-size: 14px;
 	font-weight: 600;
 	color: var(--header-primary);
 	margin-bottom: 4px;
@@ -142,7 +165,7 @@
 	display: flex;
 	align-items: center;
 	gap: 6px;
-	font-size: 14px;
+	font-size: 12px;
 	color: var(--text-muted);
 }
 
@@ -192,19 +215,18 @@
 }
 
 .emptyWrap {
-	flex: 1;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	gap: 14px;
+	gap: 12px;
 	padding: 24px 18px;
 	text-align: center;
 }
 
 .emptyIcon {
-	width: 88px;
-	height: 88px;
+	width: 64px;
+	height: 64px;
 	border-radius: 999px;
 	background: rgba(0, 0, 0, 0.18);
 	display: flex;
@@ -213,26 +235,26 @@
 }
 
 .emptyTitle {
-	font-size: 32px;
-	font-weight: 900;
+	font-size: 20px;
+	font-weight: 700;
 	color: var(--header-primary);
 }
 
 .emptySub {
-	font-size: 18px;
+	font-size: 13px;
 	color: var(--header-secondary);
-	max-width: 360px;
+	max-width: 300px;
 	line-height: 1.4;
 }
 
 .emptyCta {
-	margin-top: 10px;
-	padding: 12px 18px;
+	margin-top: 4px;
+	padding: 8px 14px;
 	background: var(--brand-500);
 	border-radius: var(--radius-md);
 	color: white;
-	font-size: 18px;
-	font-weight: 800;
+	font-size: 14px;
+	font-weight: 700;
 }
 
 .emptyCta:hover {

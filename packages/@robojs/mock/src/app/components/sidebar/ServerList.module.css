@@ -12,29 +12,31 @@
 	align-items: center;
 	width: 100%;
 	justify-content: center;
+	position: relative;
 }
 
 .pill {
-    position: relative;
-	left: 0;
+	position: absolute;
+	left: -8px;
+	top: 50%;
+	transform: translateY(-50%);
 	width: 4px;
 	height: 8px;
 	background: var(--header-primary);
 	border-radius: 0 4px 4px 0;
 	opacity: 0;
+	pointer-events: none;
 	transition:
 		height 0.15s ease,
 		opacity 0.15s ease;
 }
 
 .serverWrapper:hover .pill {
-	margin-right: 10px;
 	opacity: 1;
 	height: 20px;
 }
 
 .serverWrapper.selected .pill {
-	margin-right: 10px;
 	opacity: 1;
 	height: 40px;
 }
@@ -93,7 +95,7 @@
 
 .addButton {
 	background: var(--background-primary);
-	color: var(--green-360);
+	color: #fff;
 }
 
 .addButton:hover {

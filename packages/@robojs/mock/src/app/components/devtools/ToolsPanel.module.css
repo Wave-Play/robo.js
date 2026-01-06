@@ -3,8 +3,9 @@
 	flex-direction: row;
 	gap: 24px;
 	padding: 16px;
-	overflow-x: auto;
+	overflow: auto;
 	height: 100%;
+	align-items: flex-start;
 }
 
 .section {
@@ -55,6 +56,17 @@
 	display: flex;
 	flex-wrap: wrap;
 	gap: 6px;
+}
+
+.buttonGroupStack {
+	flex-direction: column;
+	flex-wrap: nowrap;
+	align-items: stretch;
+}
+
+.buttonGroupStack .actionButton {
+	justify-content: flex-start;
+	width: 100%;
 }
 
 .toastButton {

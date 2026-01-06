@@ -1,16 +1,11 @@
-import { useState, useEffect, useCallback } from 'react'
-import type { StageChannel, StageGuild, StageVoiceState, StageUser } from '../../types/stage'
+import { useState, useRef, useEffect } from 'react'
+import type { StageChannel, StageGuild, StageMember, StageVoiceState, StageUser } from '../../types/stage'
 import { VoiceChannel } from './VoiceChannel'
-import { UserArea } from './UserArea'
+import { VoiceControlDock } from './VoiceControlDock'
+import { ServerMenu } from './ServerMenu'
 import styles from './ChannelList.module.css'
 import CogwheelIcon from '../icons/cogwheel'
 import InviteIcon from '../icons/invite'
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent, DragOverlay, type DragStartEvent } from '@dnd-kit/core'
-import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
-import { useSessionDispatch, useSession } from '../../stores/sessionStore'
-
-const COLLAPSED_CATEGORIES_KEY = 'stage_collapsed_categories'
 
 interface ChannelListProps {
 	guild: StageGuild | undefined
@@ -18,19 +13,16 @@ interface ChannelListProps {
 	selectedId: string | null
 	onSelect: (id: string | null) => void
 	unreadChannelIds?: Set<string>
-	mentionCounts?: Record<string, number>
 	voiceStates?: StageVoiceState[]
 	users?: StageUser[]
+	members?: StageMember[]
+	currentUser?: StageUser | null
+	availableUsers?: StageUser[]
 	onJoinVoice?: (channelId: string, guildId: string) => void
 	onLeaveVoice?: (guildId: string) => void
+	onUpdateVoiceState?: (guildId: string, updates: { selfMute?: boolean; selfDeaf?: boolean }) => void
 	currentUserId?: string
-}
-
-// Detect API prefix from current URL
-function getApiPrefix() {
-	const pathname = window.location.pathname
-	const stageIndex = pathname.indexOf('/stage')
-	return stageIndex !== -1 ? pathname.slice(0, stageIndex) : ''
+	isPlaybackMode?: boolean
 }
 
 // Discord channel types
@@ -57,37 +49,33 @@ export function ChannelList({
 	selectedId,
 	onSelect,
 	unreadChannelIds,
-	mentionCounts = {},
 	voiceStates = [],
 	users = [],
+	members = [],
+	currentUser,
+	availableUsers = [],
 	onJoinVoice,
 	onLeaveVoice,
-	currentUserId
+	onUpdateVoiceState,
+	currentUserId,
+	isPlaybackMode = false
 }: ChannelListProps) {
-	const dispatch = useSessionDispatch()
-	const { sessionId } = useSession()
-	const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(() => {
-		try {
-			const stored = localStorage.getItem(COLLAPSED_CATEGORIES_KEY)
-			return stored ? new Set(JSON.parse(stored)) : new Set()
-		} catch {
-			return new Set()
-		}
-	})
+	const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set())
 	const [showArchivedThreads, setShowArchivedThreads] = useState(false)
-	const [activeId, setActiveId] = useState<string | null>(null)
+	const [showServerMenu, setShowServerMenu] = useState(false)
+	const headerRef = useRef<HTMLDivElement>(null)
 
-	// DnD sensors - require 8px movement to start drag
-	const sensors = useSensors(
-		useSensor(PointerSensor, {
-			activationConstraint: { distance: 8 }
-		})
-	)
-
-	// Persist collapsed categories to localStorage
+	// Handle click outside to close server menu
 	useEffect(() => {
-		localStorage.setItem(COLLAPSED_CATEGORIES_KEY, JSON.stringify([...collapsedCategories]))
-	}, [collapsedCategories])
+		const handleClickOutside = (event: MouseEvent) => {
+			if (showServerMenu && headerRef.current && !headerRef.current.contains(event.target as Node)) {
+				setShowServerMenu(false)
+			}
+		}
+
+		document.addEventListener('mousedown', handleClickOutside)
+		return () => document.removeEventListener('mousedown', handleClickOutside)
+	}, [showServerMenu])
 
 	// Separate threads from regular channels
 	const isThread = (type: number) =>
@@ -98,13 +86,9 @@ export function ChannelList({
 	const regularChannels = channels.filter((c) => !isThread(c.type))
 	const threads = channels.filter((c) => isThread(c.type))
 
-	// Group regular channels by category (sorted by position)
-	const categories = regularChannels
-		.filter((c) => c.type === ChannelType.GUILD_CATEGORY)
-		.sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
-	const uncategorizedChannels = regularChannels
-		.filter((c) => c.type !== ChannelType.GUILD_CATEGORY && !c.parent_id)
-		.sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+	// Group regular channels by category
+	const categories = regularChannels.filter((c) => c.type === ChannelType.GUILD_CATEGORY)
+	const uncategorizedChannels = regularChannels.filter((c) => c.type !== ChannelType.GUILD_CATEGORY && !c.parent_id)
 
 	// Group threads by parent channel
 	const getThreadsForChannel = (channelId: string, includeArchived = false) => {
@@ -130,293 +114,145 @@ export function ChannelList({
 	}
 
 	const getChannelsInCategory = (categoryId: string) => {
-		return regularChannels
-			.filter((c) => c.parent_id === categoryId && c.type !== ChannelType.GUILD_CATEGORY)
-			.sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+		return regularChannels.filter((c) => c.parent_id === categoryId && c.type !== ChannelType.GUILD_CATEGORY)
 	}
 
 	const isVoiceChannel = (type: number) => type === ChannelType.GUILD_VOICE || type === ChannelType.GUILD_STAGE_VOICE
 
-	// Persist channel order to backend API
-	const persistChannelOrder = useCallback(
-		async (guildId: string, updates: Array<{ id: string; position: number; parent_id?: string | null }>) => {
-			if (!sessionId) return
-
-			const apiPrefix = getApiPrefix()
-			try {
-				const response = await fetch(`${apiPrefix}/api/v10/guilds/${guildId}/channels`, {
-					method: 'PATCH',
-					headers: {
-						'Content-Type': 'application/json',
-						'Authorization': `Bot mock:${sessionId}`
-					},
-					body: JSON.stringify(
-						updates.map((u) => ({
-							id: u.id,
-							position: u.position,
-							parent_id: u.parent_id
-						}))
-					)
-				})
-				if (!response.ok) {
-					console.error('[ChannelList] Failed to persist channel order:', response.status)
-				}
-			} catch (error) {
-				console.error('[ChannelList] Failed to persist channel order:', error)
-			}
-		},
-		[sessionId]
-	)
-
-	// Drag handlers
-	const handleDragStart = useCallback((event: DragStartEvent) => {
-		setActiveId(event.active.id as string)
-	}, [])
-
-	const handleDragEnd = useCallback(
-		async (event: DragEndEvent) => {
-			const { active, over } = event
-			setActiveId(null)
-
-			if (!over || active.id === over.id || !guild) return
-
-			const activeChannel = regularChannels.find((c) => c.id === active.id)
-			const overChannel = regularChannels.find((c) => c.id === over.id)
-
-			if (!activeChannel || !overChannel) return
-
-			// Determine the context (uncategorized or within a category)
-			const activeParent = activeChannel.parent_id
-			const overParent = overChannel.parent_id
-
-			// Get the relevant channel list
-			let channelList: StageChannel[]
-			if (!activeParent && !overParent) {
-				// Both uncategorized
-				channelList = uncategorizedChannels
-			} else if (activeParent === overParent) {
-				// Same category
-				channelList = getChannelsInCategory(activeParent!)
-			} else if (!activeParent && overChannel.type === ChannelType.GUILD_CATEGORY) {
-				// Moving into a category - uncategorized to category header
-				channelList = uncategorizedChannels
-			} else if (overChannel.type === ChannelType.GUILD_CATEGORY) {
-				// Dragging onto a category header - reorder categories
-				channelList = categories
-			} else {
-				// Cross-category move
-				const targetChannels = overParent
-					? getChannelsInCategory(overParent)
-					: uncategorizedChannels
-
-				// Calculate new position
-				const overIndex = targetChannels.findIndex((c) => c.id === over.id)
-				const newPosition = targetChannels[overIndex]?.position ?? 0
-
-				// Build updates - move channel to new parent and position
-				const updates: Array<{ id: string; position: number; parent_id?: string | null }> = [
-					{ id: activeChannel.id, position: newPosition, parent_id: overParent ?? null }
-				]
-
-				// Shift other channels in target category
-				targetChannels.forEach((c, idx) => {
-					if (c.id !== activeChannel.id) {
-						const pos = idx >= overIndex ? c.position! + 1 : c.position!
-						updates.push({ id: c.id, position: pos })
-					}
-				})
-
-				// Optimistic update, then persist to backend
-				dispatch({ type: 'REORDER_CHANNELS', payload: { guildId: guild.id, updates } })
-				persistChannelOrder(guild.id, updates)
-				return
-			}
-
-			// Find indices
-			const oldIndex = channelList.findIndex((c) => c.id === active.id)
-			const newIndex = channelList.findIndex((c) => c.id === over.id)
-
-			if (oldIndex === -1 || newIndex === -1) return
-
-			// Reorder and calculate new positions
-			const reordered = arrayMove(channelList, oldIndex, newIndex)
-			const updates = reordered.map((channel, index) => ({
-				id: channel.id,
-				position: index
-			}))
-
-			// Optimistic update, then persist to backend
-			dispatch({ type: 'REORDER_CHANNELS', payload: { guildId: guild.id, updates } })
-			persistChannelOrder(guild.id, updates)
-		},
-		[regularChannels, uncategorizedChannels, categories, getChannelsInCategory, guild, dispatch, persistChannelOrder]
-	)
-
-	const activeChannel = activeId ? regularChannels.find((c) => c.id === activeId) : null
-
 	// Render a channel item - uses VoiceChannel for voice channels
-	const renderChannelItem = (channel: StageChannel, isDragOverlay = false) => {
+	const renderChannelItem = (channel: StageChannel) => {
 		if (isVoiceChannel(channel.type)) {
-			const voiceContent = (
+			return (
 				<VoiceChannel
 					key={channel.id}
 					channel={channel}
 					voiceStates={voiceStates}
 					users={users}
+					members={members}
 					currentUserId={currentUserId}
 					onJoin={() => onJoinVoice?.(channel.id, channel.guild_id!)}
 					onLeave={() => onLeaveVoice?.(channel.guild_id!)}
 				/>
 			)
-			if (isDragOverlay) return voiceContent
-			return (
-				<SortableChannelWrapper key={channel.id} id={channel.id}>
-					{voiceContent}
-				</SortableChannelWrapper>
-			)
 		}
 
-		const channelContent = (
-			<div style={{ position: 'relative' }}>
-				<div className={styles.channelIconsExtra}>
-					<button>
-						<CogwheelIcon width={20} height={20} />
-					</button>
-					<button>
-						<InviteIcon width={20} height={20} />
-					</button>
-				</div>
-				<ChannelItemWithThreads
-					channel={channel}
-					threads={getThreadsForChannel(channel.id)}
-					isSelected={selectedId === channel.id}
-					isUnread={unreadChannelIds?.has(channel.id)}
-					mentionCount={mentionCounts[channel.id]}
-					selectedThreadId={selectedId}
-					onClick={() => onSelect(channel.id)}
-					onThreadSelect={onSelect}
-				/>
-			</div>
-		)
-		if (isDragOverlay) return channelContent
 		return (
-			<SortableChannelWrapper key={channel.id} id={channel.id}>
-				{channelContent}
-			</SortableChannelWrapper>
+			<ChannelItemWithThreads
+				key={channel.id}
+				channel={channel}
+				threads={getThreadsForChannel(channel.id)}
+				isSelected={selectedId === channel.id}
+				isUnread={unreadChannelIds?.has(channel.id)}
+				selectedThreadId={selectedId}
+				onClick={() => onSelect(channel.id)}
+				onThreadSelect={onSelect}
+			/>
 		)
 	}
-
-	// Collect all sortable IDs
-	const allSortableIds = [
-		...uncategorizedChannels.map((c) => c.id),
-		...categories.flatMap((cat) => [cat.id, ...getChannelsInCategory(cat.id).map((c) => c.id)])
-	]
 
 	return (
 		<div className={styles.container}>
 			{/* Server header */}
-
-			<div className={styles.header}>
-				<span className={styles.serverName}>{guild?.name ?? 'Select a server'}</span>
-				<ChevronDown className={styles.headerIcon} />
+			<div className={styles.headerWrapper} ref={headerRef}>
+				<div className={styles.header} onClick={() => setShowServerMenu(!showServerMenu)}>
+					<span className={styles.serverName}>{guild?.name ?? 'Select a server'}</span>
+					<ChevronDown className={styles.headerIcon} />
+				</div>
+				{showServerMenu && (
+					<ServerMenu
+						onClose={() => setShowServerMenu(false)}
+						onCreateChannel={() => console.log('Create Channel')}
+						onCreateCategory={() => console.log('Create Category')}
+						onInviteToServer={() => console.log('Invite to Server')}
+					/>
+				)}
 			</div>
 
-			{/* Channel list with drag-and-drop */}
-			<DndContext
-				sensors={sensors}
-				collisionDetection={closestCenter}
-				onDragStart={handleDragStart}
-				onDragEnd={handleDragEnd}
-			>
-				<nav className={styles.channels} aria-label="Channels">
-					<SortableContext items={allSortableIds} strategy={verticalListSortingStrategy}>
-						{/* Uncategorized channels */}
-						{uncategorizedChannels.map((channel) => renderChannelItem(channel))}
-						{/* Categories with their channels */}
-						{categories.map((category) => {
-							const categoryChannels = getChannelsInCategory(category.id)
-							const isCollapsed = collapsedCategories.has(category.id)
+			{/* Channel list */}
+			<nav className={styles.channels} aria-label="Channels">
+				{/* Uncategorized channels */}
+				{uncategorizedChannels.map((channel) => renderChannelItem(channel))}
+				{/* Categories with their channels */}
+				{categories.map((category) => {
+					const categoryChannels = getChannelsInCategory(category.id)
+					const isCollapsed = collapsedCategories.has(category.id)
 
-							return (
-								<SortableChannelWrapper key={category.id} id={category.id}>
-									<div className={styles.category}>
-										<button
-											className={styles.categoryHeader}
-											onClick={() => toggleCategory(category.id)}
-											aria-expanded={!isCollapsed}
-											aria-label={`${category.name} category, ${isCollapsed ? 'collapsed' : 'expanded'}`}
-										>
-											<svg
-												className={`${styles.collapseIcon} ${isCollapsed ? styles.collapsed : ''}`}
-												width="12"
-												height="12"
-												viewBox="0 0 12 12"
-												aria-hidden="true"
-											>
-												<path fill="currentColor" d="M2 4l4 4 4-4H2z" />
-											</svg>
-											<span className={styles.categoryName}>{category.name.toUpperCase()}</span>
-										</button>
-
-										{!isCollapsed && (
-											<div className={styles.categoryChannels}>
-												{categoryChannels.map((channel) => renderChannelItem(channel))}
-											</div>
-										)}
-									</div>
-								</SortableChannelWrapper>
-							)
-						})}
-					</SortableContext>
-					{/* Archived threads section */}
-					{archivedThreads.length > 0 && (
-						<div className={styles.category}>
-							<button className={styles.categoryHeader} onClick={() => setShowArchivedThreads(!showArchivedThreads)}>
+					return (
+						<div key={category.id} className={styles.category}>
+							<button
+								className={styles.categoryHeader}
+								onClick={() => toggleCategory(category.id)}
+								aria-expanded={!isCollapsed}
+								aria-label={`${category.name} category, ${isCollapsed ? 'collapsed' : 'expanded'}`}
+							>
 								<svg
-									className={`${styles.collapseIcon} ${!showArchivedThreads ? styles.collapsed : ''}`}
+									className={`${styles.collapseIcon} ${isCollapsed ? styles.collapsed : ''}`}
 									width="12"
 									height="12"
 									viewBox="0 0 12 12"
+									aria-hidden="true"
 								>
 									<path fill="currentColor" d="M2 4l4 4 4-4H2z" />
 								</svg>
-								<span className={styles.categoryName}>ARCHIVED THREADS</span>
+								<span className={styles.categoryName}>{category.name.toUpperCase()}</span>
 							</button>
 
-							{showArchivedThreads && (
+							{!isCollapsed && (
 								<div className={styles.categoryChannels}>
-									{archivedThreads.map((thread) => (
-										<ThreadItem
-											key={thread.id}
-											thread={thread}
-											isSelected={selectedId === thread.id}
-											onClick={() => onSelect(thread.id)}
-										/>
-									))}
+									{categoryChannels.map((channel) => renderChannelItem(channel))}
 								</div>
 							)}
 						</div>
-					)}
-					{/* Empty state */}
-					{channels.length === 0 && guild && (
-						<div className={styles.empty}>
-							<p>No channels</p>
-						</div>
-					)}
-				</nav>
+					)
+				})}
+				{/* Archived threads section */}
+				{archivedThreads.length > 0 && (
+					<div className={styles.category}>
+						<button className={styles.categoryHeader} onClick={() => setShowArchivedThreads(!showArchivedThreads)}>
+							<svg
+								className={`${styles.collapseIcon} ${!showArchivedThreads ? styles.collapsed : ''}`}
+								width="12"
+								height="12"
+								viewBox="0 0 12 12"
+							>
+								<path fill="currentColor" d="M2 4l4 4 4-4H2z" />
+							</svg>
+							<span className={styles.categoryName}>ARCHIVED THREADS</span>
+						</button>
 
-				{/* Drag overlay for visual feedback */}
-				<DragOverlay>
-					{activeChannel ? (
-						<div className={styles.dragOverlay}>
-							{renderChannelItem(activeChannel, true)}
-						</div>
-					) : null}
-				</DragOverlay>
-			</DndContext>
-
-			{/* Current user area at bottom */}
-			<UserArea />
+						{showArchivedThreads && (
+							<div className={styles.categoryChannels}>
+								{archivedThreads.map((thread) => (
+									<ThreadItem
+										key={thread.id}
+										thread={thread}
+										isSelected={selectedId === thread.id}
+										onClick={() => onSelect(thread.id)}
+									/>
+								))}
+							</div>
+						)}
+					</div>
+				)}
+				{/* Empty state */}
+				{channels.length === 0 && guild && (
+					<div className={styles.empty}>
+						<p>No channels</p>
+					</div>
+				)}
+			</nav>
+			<div className={styles.userArea}>
+				<VoiceControlDock
+					currentUser={currentUser ?? null}
+					availableUsers={availableUsers}
+					channels={channels}
+					voiceStates={voiceStates}
+					currentUserId={currentUserId}
+					onLeaveVoice={onLeaveVoice}
+					onUpdateVoiceState={onUpdateVoiceState}
+					isPlaybackMode={isPlaybackMode}
+				/>
+			</div>
 		</div>
 	)
 }
@@ -425,14 +261,12 @@ interface ChannelItemProps {
 	channel: StageChannel
 	isSelected: boolean
 	isUnread?: boolean
-	mentionCount?: number
 	onClick: () => void
 }
 
-function ChannelItem({ channel, isSelected, isUnread, mentionCount, onClick }: ChannelItemProps) {
+function ChannelItem({ channel, isSelected, isUnread, onClick }: ChannelItemProps) {
 	const Icon = getChannelIcon(channel.type)
 	const hasUnread = isUnread && !isSelected
-	const hasMentions = mentionCount && mentionCount > 0 && !isSelected
 	const isVoice = channel.type === ChannelType.GUILD_VOICE || channel.type === ChannelType.GUILD_STAGE_VOICE
 
 	// Voice channels have a different appearance - show empty state
@@ -449,14 +283,13 @@ function ChannelItem({ channel, isSelected, isUnread, mentionCount, onClick }: C
 
 	return (
 		<button
-			className={`${styles.channel} ${isSelected ? styles.selected : ''} ${hasUnread || hasMentions ? styles.unread : ''}`}
+			className={`${styles.channel} ${isSelected ? styles.selected : ''} ${hasUnread ? styles.unread : ''}`}
 			onClick={onClick}
 			aria-current={isSelected ? 'page' : undefined}
-			aria-label={`${channel.name}${hasMentions ? ` (${mentionCount} mentions)` : hasUnread ? ' (unread messages)' : ''}`}
+			aria-label={`${channel.name}${hasUnread ? ' (unread messages)' : ''}`}
 		>
 			<Icon className={styles.channelIcon} aria-hidden="true" />
 			<span className={styles.channelName}>{channel.name}</span>
-			{hasMentions && <span className={styles.mentionBadge}>{mentionCount}</span>}
 		</button>
 	)
 }
@@ -491,7 +324,9 @@ function TextIcon({ className }: { className?: string }) {
 function VoiceIcon({ className }: { className?: string }) {
 	return (
 		<svg className={className} width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-			<path d="M12 3C10.34 3 9 4.37 9 6.07V12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12V6.07C15 4.37 13.66 3 12 3ZM5.5 11C5.5 14.53 8.36 17.38 11.75 17.89V21H12.25V17.89C15.64 17.38 18.5 14.53 18.5 11H17C17 14.03 14.54 16.5 11.88 16.5C9.21 16.5 7 14.03 7 11H5.5Z" />
+			<path d="M3 9v6h4l5 5V4L7 9H3z" />
+			<path d="M14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+			<path d="M14 8.03v8.05c1.48-.74 2.5-2.26 2.5-4.02s-1.02-3.29-2.5-4.03z" />
 		</svg>
 	)
 }
@@ -567,7 +402,6 @@ interface ChannelItemWithThreadsProps {
 	threads: StageChannel[]
 	isSelected: boolean
 	isUnread?: boolean
-	mentionCount?: number
 	selectedThreadId: string | null
 	onClick: () => void
 	onThreadSelect: (id: string | null) => void
@@ -578,14 +412,23 @@ function ChannelItemWithThreads({
 	threads,
 	isSelected,
 	isUnread,
-	mentionCount,
 	selectedThreadId,
 	onClick,
 	onThreadSelect
 }: ChannelItemWithThreadsProps) {
 	return (
 		<>
-			<ChannelItem channel={channel} isSelected={isSelected} isUnread={isUnread} mentionCount={mentionCount} onClick={onClick} />
+			<div className={`${styles.channelRow} ${isSelected ? styles.channelRowSelected : ''}`}>
+				<ChannelItem channel={channel} isSelected={isSelected} isUnread={isUnread} onClick={onClick} />
+				<div className={styles.channelActions}>
+					<button type="button" aria-label="Create invite">
+						<InviteIcon width={16} height={16} />
+					</button>
+					<button type="button" aria-label="Edit channel settings">
+						<CogwheelIcon width={16} height={16} />
+					</button>
+				</div>
+			</div>
 
 			{threads.length > 0 && (
 				<div className={styles.threadList}>
@@ -600,28 +443,5 @@ function ChannelItemWithThreads({
 				</div>
 			)}
 		</>
-	)
-}
-
-// Sortable wrapper for drag-and-drop
-interface SortableChannelWrapperProps {
-	id: string
-	children: React.ReactNode
-}
-
-function SortableChannelWrapper({ id, children }: SortableChannelWrapperProps) {
-	const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
-
-	const style: React.CSSProperties = {
-		transform: CSS.Transform.toString(transform),
-		transition,
-		opacity: isDragging ? 0.5 : 1,
-		cursor: isDragging ? 'grabbing' : 'grab'
-	}
-
-	return (
-		<div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-			{children}
-		</div>
 	)
 }

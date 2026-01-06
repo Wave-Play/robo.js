@@ -1,0 +1,104 @@
+.menu {
+	position: absolute;
+	top: calc(100% + 4px);
+	left: 8px;
+	width: calc(100% - 16px);
+	background: var(--background-floating);
+	border-radius: var(--radius-md);
+	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.24);
+	padding: 6px 8px;
+	z-index: 100;
+	animation: slideDown 0.1s ease-out;
+}
+
+@keyframes slideDown {
+	from {
+		opacity: 0;
+		transform: translateY(-8px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.menuItem {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 10px 8px;
+	border-radius: var(--radius-sm);
+	cursor: pointer;
+	transition: background 0.15s ease;
+	user-select: none;
+}
+
+.menuItem:hover {
+	background: var(--brand-500);
+}
+
+.menuItem:hover .menuItemText {
+	color: #fff;
+}
+
+.menuItemText {
+	font-size: 14px;
+	font-weight: 500;
+	color: var(--interactive-normal);
+	transition: color 0.15s ease;
+}
+
+.separator {
+	height: 1px;
+	background: var(--background-modifier-accent);
+	margin: 4px 0;
+}
+
+/* Checkbox Styles */
+.checkbox {
+	position: relative;
+	cursor: pointer;
+	pointer-events: none;
+}
+
+.checkboxInput {
+	position: absolute;
+	opacity: 0;
+	width: 0;
+	height: 0;
+	pointer-events: none;
+}
+
+.checkboxBox {
+	width: 20px;
+	height: 20px;
+	border: 2px solid var(--interactive-normal);
+	border-radius: 3px;
+	background: transparent;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition:
+		background 0.15s ease,
+		border-color 0.15s ease;
+}
+
+.checkboxBox svg {
+	width: 16px;
+	height: 16px;
+	color: #fff;
+}
+
+.checkboxChecked {
+	background: var(--brand-500);
+	border-color: var(--brand-500);
+}
+
+.menuItem:hover .checkboxBox {
+	border-color: var(--interactive-hover);
+}
+
+.menuItem:hover .checkboxChecked {
+	background: var(--brand-500);
+	border-color: var(--brand-500);
+}

@@ -991,6 +991,7 @@ export default async (request: RoboRequest) => {
 			speaking?: boolean
 			member?: {
 				user: { id: string; username: string; discriminator?: string; avatar?: string | null }
+				nick?: string | null
 				roles?: string[]
 				joined_at?: string
 			}
@@ -1040,6 +1041,16 @@ export default async (request: RoboRequest) => {
 					bot: false
 				})
 			}
+			if (data.member?.user) {
+				session.state.createGuildMember(data.guild_id, data.member.user.id, {
+					roles: data.member.roles ?? [],
+					nick: data.member.nick ?? null
+				})
+				const storedMember = session.state.getGuildMember(data.guild_id, data.member.user.id)
+				if (storedMember && data.member.joined_at) {
+					storedMember.joinedAt = data.member.joined_at
+				}
+			}
 		}
 
 		// Dispatch VOICE_STATE_UPDATE to gateway
@@ -1076,6 +1087,44 @@ export default async (request: RoboRequest) => {
 			}, 10)
 		}
 
+		const storedUser = session.state.getUser(data.user_id)
+		const storedMember = session.state.getGuildMember(data.guild_id, data.user_id)
+		const memberUser = data.member?.user
+			? {
+					id: data.member.user.id,
+					username: data.member.user.username,
+					global_name: undefined,
+					discriminator: data.member.user.discriminator ?? '0',
+					avatar: data.member.user.avatar ?? null,
+					bot: false
+				}
+			: storedUser
+				? {
+						id: storedUser.id,
+						username: storedUser.username,
+						global_name: storedUser.globalName ?? undefined,
+						discriminator: storedUser.discriminator ?? '0',
+						avatar: storedUser.avatar ?? null,
+						bot: storedUser.bot
+					}
+				: undefined
+		const stageMember = memberUser
+			? {
+					user: {
+						id: memberUser.id,
+						username: memberUser.username,
+						global_name: memberUser.global_name,
+						discriminator: memberUser.discriminator ?? '0',
+						avatar: memberUser.avatar ?? null,
+						bot: memberUser.bot
+					},
+					nick: data.member?.nick ?? storedMember?.nick ?? null,
+					roles: data.member?.roles ?? storedMember?.roles ?? [],
+					joined_at: data.member?.joined_at ?? storedMember?.joinedAt,
+					guild_id: data.guild_id
+				}
+			: undefined
+
 		// Broadcast to Stage clients
 		getStageServer().broadcastToSession(id, {
 			type: 'voice_state_update',
@@ -1087,7 +1136,8 @@ export default async (request: RoboRequest) => {
 				self_deaf: data.self_deaf ?? false,
 				mute: data.mute ?? false,
 				deaf: data.deaf ?? false,
-				speaking: data.speaking
+				speaking: data.speaking,
+				member: stageMember
 			}
 		})
 
