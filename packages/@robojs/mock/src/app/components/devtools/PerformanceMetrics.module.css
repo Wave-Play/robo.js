@@ -21,9 +21,9 @@
 	align-items: center;
 	gap: 12px;
 	padding: 12px;
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	border-radius: var(--radius-md);
-	border: 1px solid var(--background-accent);
+	border: 1px solid var(--accent-background);
 }
 
 .metricIcon {
@@ -33,7 +33,7 @@
 	width: 36px;
 	height: 36px;
 	border-radius: var(--radius-sm);
-	background: var(--background-modifier-active);
+	background: var(--active-overlay);
 	color: var(--text-muted);
 }
 
@@ -47,7 +47,7 @@
 	font-size: 20px;
 	font-weight: 700;
 	font-family: var(--font-code);
-	color: var(--text-normal);
+	color: var(--text-bright);
 }
 
 .metricLabel {
@@ -59,11 +59,11 @@
 /* Metric card colors */
 .metricCard.brand .metricIcon {
 	background: rgba(88, 101, 242, 0.15);
-	color: var(--brand-500);
+	color: var(--brand-primary);
 }
 
 .metricCard.brand .metricValue {
-	color: var(--brand-500);
+	color: var(--brand-primary);
 }
 
 .metricCard.green .metricIcon {
@@ -86,11 +86,11 @@
 
 .metricCard.red .metricIcon {
 	background: rgba(237, 66, 69, 0.15);
-	color: var(--red-400);
+	color: var(--red-light);
 }
 
 .metricCard.red .metricValue {
-	color: var(--red-400);
+	color: var(--red-light);
 }
 
 /* Breakdown section */
@@ -103,7 +103,7 @@
 .breakdownTitle {
 	font-size: 12px;
 	font-weight: 600;
-	color: var(--header-secondary);
+	color: var(--header-text-secondary);
 	text-transform: uppercase;
 }
 
@@ -123,20 +123,20 @@
 	min-width: 140px;
 	font-size: 11px;
 	font-family: var(--font-code);
-	color: var(--text-normal);
+	color: var(--text-bright);
 }
 
 .breakdownBar {
 	flex: 1;
 	height: 8px;
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	border-radius: 4px;
 	overflow: hidden;
 }
 
 .breakdownFill {
 	height: 100%;
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	border-radius: 4px;
 	transition: width 0.3s ease;
 }

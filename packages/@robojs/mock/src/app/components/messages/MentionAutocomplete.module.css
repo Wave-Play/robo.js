@@ -12,7 +12,7 @@
 	font-size: 12px;
 	font-weight: 700;
 	text-transform: uppercase;
-	color: var(--channels-default);
+	color: var(--channel-icon-default);
 	letter-spacing: 0.02em;
 }
 
@@ -34,12 +34,12 @@
 	width: 24px;
 	height: 24px;
 	border-radius: 50%;
-	background: var(--background-modifier-accent);
-	color: var(--interactive-normal);
+	background: var(--accent-overlay);
+	color: var(--interactive-default);
 	flex-shrink: 0;
 }
 
 .specialIcon {
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	color: white;
 }

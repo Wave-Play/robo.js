@@ -142,7 +142,7 @@ function HeadphonesOffIcon({ className }: { className?: string }) {
 function DefaultAvatar({ className }: { className?: string }) {
 	return (
 		<svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-			<rect width="24" height="24" rx="12" fill="var(--background-tertiary)" />
+			<rect width="24" height="24" rx="12" fill="var(--card-background)" />
 			<path
 				d="M12 11.5C13.1046 11.5 14 10.6046 14 9.5C14 8.39543 13.1046 7.5 12 7.5C10.8954 7.5 10 8.39543 10 9.5C10 10.6046 10.8954 11.5 12 11.5Z"
 				fill="var(--text-muted)"

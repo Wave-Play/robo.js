@@ -9,17 +9,17 @@
 	gap: 6px;
 	padding: 6px 10px;
 	font-size: 12px;
-	color: var(--text-normal);
-	background: var(--background-tertiary);
-	border: 1px solid var(--background-modifier-accent);
+	color: var(--text-bright);
+	background: var(--card-background);
+	border: 1px solid var(--accent-overlay);
 	border-radius: var(--radius-sm);
 	transition: all 0.1s ease;
 	white-space: nowrap;
 }
 
 .trigger:hover {
-	background: var(--background-modifier-hover);
-	border-color: var(--background-modifier-accent);
+	background: var(--hover-overlay);
+	border-color: var(--accent-overlay);
 }
 
 .icon {
@@ -48,8 +48,8 @@
 	min-width: 220px;
 	max-height: 400px;
 	overflow-y: auto;
-	background: var(--background-floating);
-	border: 1px solid var(--background-modifier-accent);
+	background: var(--modal-background);
+	border: 1px solid var(--accent-overlay);
 	border-radius: var(--radius-md);
 	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 	z-index: 100;
@@ -72,7 +72,7 @@
 .divider {
 	height: 1px;
 	margin: 4px 0;
-	background: var(--background-modifier-accent);
+	background: var(--accent-overlay);
 }
 
 .item {
@@ -82,22 +82,22 @@
 	width: 100%;
 	padding: 8px 12px;
 	font-size: 13px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 	text-align: left;
 	transition: background 0.1s ease;
 }
 
 .item:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .item.active {
-	background: var(--brand-500-alpha-20);
+	background: var(--brand-primary-overlay);
 }
 
 .checkIcon {
 	margin-left: auto;
-	color: var(--brand-500);
+	color: var(--brand-primary);
 }
 
 /* Timezone footer */
@@ -108,8 +108,8 @@
 	padding: 8px 12px;
 	font-size: 11px;
 	color: var(--text-muted);
-	background: var(--background-secondary);
-	border-top: 1px solid var(--background-modifier-accent);
+	background: var(--sidebar-left-background);
+	border-top: 1px solid var(--accent-overlay);
 }
 
 .globeIcon {
@@ -126,7 +126,7 @@
 	align-items: center;
 	gap: 8px;
 	padding: 12px;
-	border-bottom: 1px solid var(--background-modifier-accent);
+	border-bottom: 1px solid var(--accent-overlay);
 }
 
 .backButton {
@@ -141,14 +141,14 @@
 }
 
 .backButton:hover {
-	color: var(--text-normal);
-	background: var(--background-modifier-hover);
+	color: var(--text-bright);
+	background: var(--hover-overlay);
 }
 
 .customTitle {
 	font-size: 14px;
 	font-weight: 600;
-	color: var(--text-normal);
+	color: var(--text-bright);
 }
 
 .customInputs {
@@ -171,16 +171,16 @@
 	padding: 8px 10px;
 	font-size: 13px;
 	font-family: 'JetBrains Mono', 'Fira Code', monospace;
-	color: var(--text-normal);
-	background: var(--background-tertiary);
-	border: 1px solid var(--background-modifier-accent);
+	color: var(--text-bright);
+	background: var(--card-background);
+	border: 1px solid var(--accent-overlay);
 	border-radius: var(--radius-sm);
 	outline: none;
 	transition: border-color 0.15s ease;
 }
 
 .dateInput:focus {
-	border-color: var(--brand-500);
+	border-color: var(--brand-primary);
 }
 
 /* Color scheme for date picker */
@@ -194,8 +194,8 @@
 	align-items: center;
 	justify-content: space-between;
 	padding: 12px;
-	background: var(--background-secondary);
-	border-top: 1px solid var(--background-modifier-accent);
+	background: var(--sidebar-left-background);
+	border-top: 1px solid var(--accent-overlay);
 }
 
 .timezoneSmall {
@@ -211,11 +211,11 @@
 	font-size: 13px;
 	font-weight: 500;
 	color: white;
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	border-radius: var(--radius-sm);
 	transition: background 0.1s ease;
 }
 
 .applyButton:hover {
-	background: var(--brand-600);
+	background: var(--brand-darker);
 }

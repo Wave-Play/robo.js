@@ -16,7 +16,7 @@
 .header {
 	height: 48px;
 	min-height: 48px;
-	border-bottom: 1px solid var(--background-modifier-accent);
+	border-bottom: 1px solid var(--accent-overlay);
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -29,13 +29,13 @@
 }
 
 .header:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .serverName {
 	font-size: 16px;
 	font-weight: 600;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -43,7 +43,7 @@
 
 .headerIcon {
 	flex-shrink: 0;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 }
 
 /* Channel list scrollable area */
@@ -72,7 +72,7 @@
 	gap: 4px;
 	padding: 2px 8px;
 	width: 100%;
-	color: var(--channel-icon);
+	color: var(--channel-icon-default);
 	font-size: 11px;
 	font-weight: 600;
 	text-transform: uppercase;
@@ -123,12 +123,12 @@
 }
 
 .channel:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 	color: var(--interactive-hover);
 }
 
 .channel.selected {
-	background: var(--background-modifier-selected);
+	background: var(--selected-overlay);
 	color: var(--interactive-active);
 }
 
@@ -169,7 +169,7 @@
 	align-items: center;
 	justify-content: center;
 	border-radius: var(--radius-sm);
-	color: var(--interactive-normal);
+	color: var(--interactive-default);
 	transition: background 0.15s ease, color 0.15s ease;
 }
 
@@ -179,7 +179,7 @@
 }
 
 .channelActions button:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 	color: var(--interactive-hover);
 }
 
@@ -189,12 +189,12 @@
 
 .channelRow:hover .channel,
 .channelRow:focus-within .channel {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 	color: var(--interactive-hover);
 }
 
 .channelRowSelected .channel {
-	background: var(--background-modifier-selected);
+	background: var(--selected-overlay);
 	color: var(--interactive-active);
 }
 
@@ -228,7 +228,7 @@
 	padding: 4px 8px;
 	margin: 2px 0;
 	border-radius: var(--radius-sm);
-	color: var(--channel-icon);
+	color: var(--channel-icon-default);
 	font-size: 13px;
 	font-weight: 500;
 	cursor: pointer;
@@ -238,12 +238,12 @@
 }
 
 .thread:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 	color: var(--interactive-hover);
 }
 
 .thread.selected {
-	background: var(--background-modifier-selected);
+	background: var(--selected-overlay);
 	color: var(--interactive-active);
 }
 
@@ -267,7 +267,7 @@
 .threadCount {
 	font-size: 11px;
 	color: var(--text-muted);
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	padding: 0 4px;
 	border-radius: 4px;
 }
@@ -303,7 +303,7 @@
 }
 
 .voiceChannelHeader:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 	color: var(--interactive-hover);
 }
 

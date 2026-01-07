@@ -24,7 +24,7 @@
 
 /* Modal Container */
 .modal {
-	background: var(--background-primary);
+	background: var(--main-chat-background);
 	border-radius: var(--radius-sm);
 	width: 440px;
 	max-width: 90vw;
@@ -61,7 +61,7 @@
 	margin: 0;
 	font-size: 20px;
 	font-weight: 600;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 	line-height: 24px;
 }
 
@@ -75,7 +75,7 @@
 	border: none;
 	border-radius: 4px;
 	cursor: pointer;
-	color: var(--interactive-normal);
+	color: var(--interactive-default);
 	transition:
 		color 0.15s ease,
 		background-color 0.15s ease;
@@ -84,7 +84,7 @@
 
 .closeButton:hover {
 	color: var(--interactive-hover);
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .closeButton svg {
@@ -113,7 +113,7 @@
 	display: flex;
 	justify-content: flex-end;
 	gap: 8px;
-	background: var(--background-secondary);
+	background: var(--sidebar-left-background);
 	border-radius: 0 0 var(--radius-sm) var(--radius-sm);
 	flex-shrink: 0;
 }
@@ -124,7 +124,7 @@
 	font-size: 14px;
 	font-weight: 500;
 	background: transparent;
-	color: var(--text-normal);
+	color: var(--text-bright);
 	border: none;
 	border-radius: 3px;
 	cursor: pointer;
@@ -143,7 +143,7 @@
 	min-width: 96px;
 	font-size: 14px;
 	font-weight: 500;
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	color: white;
 	border: none;
 	border-radius: var(--radius-xs);
@@ -152,7 +152,7 @@
 }
 
 .submitButton:hover:not(:disabled) {
-	background: var(--brand-560);
+	background: var(--brand-dark);
 }
 
 .submitButton:disabled {
@@ -171,12 +171,12 @@
 	font-size: 12px;
 	font-weight: 700;
 	text-transform: uppercase;
-	color: var(--header-secondary);
+	color: var(--header-text-secondary);
 	letter-spacing: 0.02em;
 }
 
 .required {
-	color: var(--red-400);
+	color: var(--red-light);
 	padding-left: 4px;
 }
 
@@ -185,17 +185,17 @@
 	padding: 10px;
 	font-size: 16px;
 	font-family: inherit;
-	background: var(--background-secondary);
-	border: 1px solid var(--background-tertiary);
+	background: var(--sidebar-left-background);
+	border: 1px solid var(--card-background);
 	border-radius: var(--radius-xs);
-	color: var(--text-normal);
+	color: var(--text-bright);
 	outline: none;
 	transition: border-color 0.15s ease;
 	box-sizing: border-box;
 }
 
 .input:focus {
-	border-color: var(--brand-500);
+	border-color: var(--brand-primary);
 }
 
 .input::placeholder {
@@ -203,7 +203,7 @@
 }
 
 .input.error {
-	border-color: var(--red-400);
+	border-color: var(--red-light);
 }
 
 .textarea {
@@ -211,10 +211,10 @@
 	padding: 10px;
 	font-size: 16px;
 	font-family: inherit;
-	background: var(--background-secondary);
-	border: 1px solid var(--background-tertiary);
+	background: var(--sidebar-left-background);
+	border: 1px solid var(--card-background);
 	border-radius: var(--radius-xs);
-	color: var(--text-normal);
+	color: var(--text-bright);
 	outline: none;
 	transition: border-color 0.15s ease;
 	resize: vertical;
@@ -223,7 +223,7 @@
 }
 
 .textarea:focus {
-	border-color: var(--brand-500);
+	border-color: var(--brand-primary);
 }
 
 .textarea::placeholder {
@@ -231,7 +231,7 @@
 }
 
 .textarea.error {
-	border-color: var(--red-400);
+	border-color: var(--red-light);
 }
 
 .inputFooter {
@@ -242,7 +242,7 @@
 
 .errorText {
 	font-size: 12px;
-	color: var(--red-400);
+	color: var(--red-light);
 }
 
 .charCount {
@@ -252,9 +252,9 @@
 }
 
 .charCount.nearLimit {
-	color: var(--yellow-400);
+	color: var(--yellow-medium);
 }
 
 .charCount.atLimit {
-	color: var(--red-400);
+	color: var(--red-light);
 }

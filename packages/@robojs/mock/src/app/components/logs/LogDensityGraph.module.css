@@ -3,8 +3,8 @@
 	flex-direction: row;
 	height: 80px;
 	padding: 8px 12px;
-	background: var(--background-secondary);
-	border-bottom: 1px solid var(--background-modifier-accent);
+	background: var(--sidebar-left-background);
+	border-bottom: 1px solid var(--accent-overlay);
 }
 
 .container.empty {
@@ -57,7 +57,7 @@
 .bar {
 	flex-shrink: 0;
 	min-height: 2px;
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	border-radius: 1px 1px 0 0;
 	opacity: 0.7;
 	cursor: pointer;
@@ -67,11 +67,11 @@
 .bar:hover,
 .bar.hovered {
 	opacity: 1;
-	background: var(--brand-400);
+	background: var(--brand-light);
 }
 
 .bar:active {
-	background: var(--brand-600);
+	background: var(--brand-darker);
 }
 
 /* Grid lines */
@@ -88,7 +88,7 @@
 	left: 0;
 	right: 0;
 	height: 1px;
-	background: var(--background-modifier-accent);
+	background: var(--accent-overlay);
 	opacity: 0.5;
 }
 
@@ -117,5 +117,5 @@
 	transform: translateX(-50%);
 	width: 1px;
 	height: 4px;
-	background: var(--background-modifier-accent);
+	background: var(--accent-overlay);
 }

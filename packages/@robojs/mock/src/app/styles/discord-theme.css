@@ -10,7 +10,7 @@
 
 	/* Input & Interactive Backgrounds */
 	--text-input-background: #222327; /* Message input field background */
-	--card-background: #1a1a1e; /* Cards, embeds, and content blocks */
+	--card-background: #121214; /* Cards, embeds, and content blocks */
 	--modal-background: #18191C; /* Floating modals and dropdowns */
 	--accent-background: #4E5058; /* Accent elements */
 
@@ -56,6 +56,8 @@
 	--brand-primary: #5865f2; /* Primary brand color (blurple) */
 	--brand-dark: #4752c4; /* Darker brand variant */
 	--brand-darker: #3c45a5; /* Darkest brand variant */
+	--brand-light: color-mix(in srgb, var(--brand-primary) 85%, white); /* Light brand tint */
+	--brand-primary-overlay: color-mix(in srgb, var(--brand-primary) 20%, transparent); /* Subtle brand overlay */
 
 	/* ===== STATUS COLORS ===== */
 
@@ -97,6 +99,8 @@
 	--server-list-width: 72px; /* Far left server icons column */
 	--sidebar-width: 240px; /* Left sidebar (channels) */
 	--member-list-width: 240px; /* Right sidebar (members) */
+	--control-dock-height: 62px; /* Voice/user control dock height */
+	--control-dock-offset: 8px; /* Bottom offset for dock-aligned elements */
 
 	/* ===== TYPOGRAPHY ===== */
 
@@ -113,49 +117,4 @@
 	--radius-lg: 16px; /* Large radius */
 	--radius-round: 50%; /* Fully rounded (circles) */
 
-	/* ===== LEGACY COMPATIBILITY ===== */
-	/* These provide backwards compatibility with old variable names */
-	/* TODO: Remove these once all components are updated to new names */
-
-	--background-primary: var(--main-chat-background);
-	--background-secondary: var(--sidebar-left-background);
-	--background-secondary-alt: var(--secondary-divider);
-	--background-tertiary: var(--card-background);
-	--background-accent: var(--accent-background);
-	--background-floating: var(--modal-background);
-	--background-modifier-hover: var(--hover-overlay);
-	--background-modifier-active: var(--active-overlay);
-	--background-modifier-selected: var(--selected-overlay);
-	--background-modifier-accent: var(--accent-overlay);
-
-	--text-normal: var(--text-bright);
-	--header-primary: var(--header-text-primary);
-	--header-secondary: var(--header-text-secondary);
-
-	--brand-500: var(--brand-primary);
-	--brand-560: var(--brand-dark);
-	--brand-600: var(--brand-darker);
-
-	--green-360: var(--green-medium);
-	--green-400: var(--green-light);
-	--green-500: var(--green-dark);
-	--green-600: var(--green-darker);
-
-	--yellow-300: var(--yellow-light);
-	--yellow-400: var(--yellow-medium);
-
-	--red-400: var(--red-light);
-	--red-500: var(--red-medium);
-	--red-600: var(--red-dark);
-
-	--grey-400: var(--grey-light);
-	--grey-500: var(--grey-medium);
-
-	--channel-icon: var(--channel-icon-default);
-	--channel-text-area: var(--text-input-background);
-
-	--interactive-normal: var(--interactive-default);
-
-	--embed-background: var(--card-background);
-	--embed-border: var(--card-background);
 }

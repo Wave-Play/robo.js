@@ -25,7 +25,7 @@
 	padding: 4px 10px;
 	border-radius: 999px;
 	background: rgba(35, 165, 89, 0.18);
-	color: var(--green-400);
+	color: var(--green-light);
 	font-size: 12px;
 	font-weight: 600;
 	letter-spacing: 0.02em;
@@ -35,12 +35,12 @@
 .headerTitle {
 	font-size: 24px;
 	font-weight: 700;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 }
 
 .headerSubtitle {
 	font-size: 14px;
-	color: var(--header-secondary);
+	color: var(--header-text-secondary);
 }
 
 .headerActions {
@@ -53,7 +53,7 @@
 	display: flex;
 	align-items: center;
 	gap: 6px;
-	background: var(--background-secondary);
+	background: var(--sidebar-left-background);
 	border-radius: 8px;
 	padding: 8px 10px;
 	color: var(--text-muted);
@@ -61,7 +61,7 @@
 }
 
 .search input {
-	color: var(--text-normal);
+	color: var(--text-bright);
 	width: 100%;
 	font-size: 13px;
 }
@@ -69,14 +69,14 @@
 .newPost {
 	padding: 8px 14px;
 	border-radius: 8px;
-	background: var(--green-400);
+	background: var(--green-light);
 	color: #0b0b0b;
 	font-weight: 700;
 	font-size: 13px;
 }
 
 .newPost:hover {
-	background: var(--green-360);
+	background: var(--green-medium);
 }
 
 .filters {
@@ -89,14 +89,14 @@
 .filterChip {
 	padding: 6px 12px;
 	border-radius: 999px;
-	background: var(--background-secondary);
+	background: var(--sidebar-left-background);
 	color: var(--text-muted);
 	font-size: 12px;
 	font-weight: 600;
 }
 
 .filterChip.active {
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	color: white;
 }
 
@@ -115,8 +115,8 @@
 	gap: 6px;
 	padding: 6px 10px;
 	border-radius: 8px;
-	background: var(--background-secondary);
-	color: var(--text-normal);
+	background: var(--sidebar-left-background);
+	color: var(--text-bright);
 	font-weight: 600;
 }
 
@@ -132,8 +132,8 @@
 	gap: 12px;
 	padding: 14px;
 	border-radius: 12px;
-	background: var(--background-secondary);
-	border: 1px solid var(--background-modifier-accent);
+	background: var(--sidebar-left-background);
+	border: 1px solid var(--accent-overlay);
 }
 
 .postHeader {
@@ -146,14 +146,14 @@
 .postTitle {
 	font-size: 16px;
 	font-weight: 700;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 }
 
 .postArchived {
 	padding: 3px 8px;
 	border-radius: 999px;
 	background: rgba(242, 63, 67, 0.2);
-	color: var(--red-400);
+	color: var(--red-light);
 	font-size: 11px;
 	font-weight: 600;
 }
@@ -186,7 +186,7 @@
 .metaValue {
 	font-size: 13px;
 	font-weight: 600;
-	color: var(--text-normal);
+	color: var(--text-bright);
 }
 
 .postFooter {
@@ -198,8 +198,8 @@
 .postButton {
 	padding: 6px 12px;
 	border-radius: 8px;
-	background: var(--background-tertiary);
-	color: var(--text-normal);
+	background: var(--card-background);
+	color: var(--text-bright);
 	font-size: 12px;
 	font-weight: 600;
 }
@@ -207,7 +207,7 @@
 .postTag {
 	padding: 4px 10px;
 	border-radius: 999px;
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	color: var(--text-muted);
 	font-size: 11px;
 	font-weight: 600;
@@ -221,8 +221,8 @@
 	gap: 10px;
 	padding: 32px;
 	border-radius: 12px;
-	background: var(--background-secondary);
-	border: 1px dashed var(--background-modifier-accent);
+	background: var(--sidebar-left-background);
+	border: 1px dashed var(--accent-overlay);
 	text-align: center;
 }
 
@@ -230,17 +230,17 @@
 	width: 56px;
 	height: 56px;
 	border-radius: 50%;
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	color: var(--interactive-normal);
+	color: var(--interactive-default);
 }
 
 .emptyTitle {
 	font-size: 18px;
 	font-weight: 700;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 }
 
 .emptyText {
@@ -251,7 +251,7 @@
 .emptyButton {
 	padding: 8px 16px;
 	border-radius: 8px;
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	color: white;
 	font-weight: 600;
 }

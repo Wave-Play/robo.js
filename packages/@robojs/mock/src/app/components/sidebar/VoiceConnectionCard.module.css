@@ -45,7 +45,7 @@
 
 .channelName {
 	font-size: 12px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -73,9 +73,9 @@
 }
 
 .quickButton {
-	background: var(--background-modifier-active);
+	background: var(--active-overlay);
 }
 
 .quickButton:hover:not(:disabled) {
-	background: var(--background-modifier-selected);
+	background: var(--selected-overlay);
 }

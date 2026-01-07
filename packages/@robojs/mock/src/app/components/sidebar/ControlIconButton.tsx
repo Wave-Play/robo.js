@@ -9,6 +9,7 @@ interface ControlIconButtonProps {
 	isDisabled?: boolean
 	tone?: 'default' | 'danger' | 'warning'
 	size?: 'sm' | 'md' | 'lg'
+	tooltipPlacement?: 'top' | 'bottom'
 	className?: string
 }
 
@@ -20,6 +21,7 @@ export function ControlIconButton({
 	isDisabled = false,
 	tone = 'default',
 	size = 'md',
+	tooltipPlacement = 'top',
 	className
 }: ControlIconButtonProps) {
 	const tooltipId = useId()
@@ -32,6 +34,10 @@ export function ControlIconButton({
 		tone === 'danger' && styles.toneDanger,
 		tone === 'warning' && styles.toneWarning,
 		className
+	].filter(Boolean).join(' ')
+	const tooltipClasses = [
+		styles.tooltip,
+		tooltipPlacement === 'bottom' && styles.tooltipBottom
 	].filter(Boolean).join(' ')
 
 	return (
@@ -47,7 +53,7 @@ export function ControlIconButton({
 			>
 				{children}
 			</button>
-			<span id={tooltipId} role="tooltip" className={styles.tooltip}>
+			<span id={tooltipId} role="tooltip" className={tooltipClasses}>
 				{label}
 			</span>
 		</div>

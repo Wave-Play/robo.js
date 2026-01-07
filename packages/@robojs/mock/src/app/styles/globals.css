@@ -18,8 +18,8 @@ body,
 body {
 	font-family: var(--font-primary);
 	font-size: 16px;
-	background: var(--background-tertiary);
-	color: var(--text-normal);
+	background: var(--card-background);
+	color: var(--text-bright);
 	line-height: 1.375;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
@@ -37,18 +37,18 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-	background: var(--background-accent);
+	background: var(--accent-background);
 }
 
 /* Firefox scrollbar */
 * {
 	scrollbar-width: thin;
-	scrollbar-color: var(--background-tertiary) transparent;
+	scrollbar-color: var(--card-background) transparent;
 }
 
 /* Links */
@@ -63,7 +63,7 @@ a:hover {
 
 /* Focus styles */
 :focus-visible {
-	outline: 2px solid var(--brand-500);
+	outline: 2px solid var(--brand-primary);
 	outline-offset: 2px;
 }
 
@@ -94,7 +94,7 @@ textarea:focus {
 
 /* Selection */
 ::selection {
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	color: white;
 }
 
@@ -129,7 +129,7 @@ textarea:focus {
 /* Base dropdown container */
 .dropdown-base {
 	position: absolute;
-	background: var(--background-floating);
+	background: var(--modal-background);
 	border-radius: var(--radius-md);
 	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.24);
 	z-index: 1000;
@@ -155,17 +155,17 @@ textarea:focus {
 }
 
 .interactive-item:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .interactive-item.selected,
 .interactive-item.active {
-	background: var(--background-modifier-selected);
+	background: var(--selected-overlay);
 }
 
 /* Interactive with color change */
 .interactive-item-fade {
-	color: var(--channel-icon);
+	color: var(--channel-icon-default);
 	cursor: pointer;
 	transition:
 		background 0.1s ease,
@@ -173,13 +173,13 @@ textarea:focus {
 }
 
 .interactive-item-fade:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 	color: var(--interactive-hover);
 }
 
 .interactive-item-fade.selected,
 .interactive-item-fade.active {
-	background: var(--background-modifier-selected);
+	background: var(--selected-overlay);
 	color: var(--interactive-active);
 }
 
@@ -190,7 +190,7 @@ textarea:focus {
 	justify-content: center;
 	background: none;
 	border: none;
-	color: var(--interactive-normal);
+	color: var(--interactive-default);
 	cursor: pointer;
 	border-radius: var(--radius-sm);
 	padding: 0;
@@ -200,7 +200,7 @@ textarea:focus {
 }
 
 .icon-button:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 	color: var(--interactive-hover);
 }
 
@@ -215,5 +215,5 @@ textarea:focus {
 }
 
 .menu-row:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }

@@ -3,7 +3,7 @@
 	flex-direction: column;
 	height: 100%;
 	min-height: 0;
-	background: var(--background-primary);
+	background: var(--main-chat-background);
 }
 
 .body {
@@ -33,18 +33,19 @@
 
 .author {
 	font-size: 14px;
-	font-weight: 800;
-	color: var(--header-primary);
+	font-weight: 500;
+	color: var(--text-hover);
 }
 
 .time {
 	font-size: 12px;
 	color: var(--text-muted);
+	font-weight: 400;
 }
 
 .text {
 	font-size: 14px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 	line-height: 1.4;
 	white-space: pre-wrap;
 }
@@ -58,7 +59,7 @@
 	align-items: center;
 	gap: 10px;
 	padding: 10px 12px;
-	background: var(--channel-text-area);
+	background: var(--text-input-background);
 	border-radius: var(--radius-md);
 	border: 1px solid rgba(255, 255, 255, 0.06);
 }
@@ -73,7 +74,7 @@
 	flex: 1;
 	min-width: 0;
 	font-size: 14px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 }
 
 .input::placeholder {

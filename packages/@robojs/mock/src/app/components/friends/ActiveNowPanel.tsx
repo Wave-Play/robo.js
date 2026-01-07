@@ -13,7 +13,7 @@ export function ActiveNowPanel() {
 			<div className={styles.wrap}>
 				<div className={styles.card}>
 					<div className={styles.cardTop}>
-						<Avatar imageUrl={url} size={32} showStatus statusBorderColor="var(--background-primary)" statusColor="var(--status-online)" />
+						<Avatar imageUrl={url} size={32} showStatus statusBorderColor="var(--main-chat-background)" statusColor="var(--status-online)" />
 						<div className={styles.nameBlock}>
 							<div className={styles.name}>MrBatata</div>
 							<div className={styles.sub}>Code – 1h</div>

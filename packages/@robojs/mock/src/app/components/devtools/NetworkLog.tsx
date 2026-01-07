@@ -557,7 +557,7 @@ export function NetworkLog() {
 											{selectedCall.data.error && (
 												<div className={styles.detailSection}>
 													<div className={styles.detailLabel}>Error</div>
-													<div className={styles.detailValue} style={{ color: 'var(--red-400)' }}>
+													<div className={styles.detailValue} style={{ color: 'var(--red-light)' }}>
 														{selectedCall.data.error}
 													</div>
 												</div>

@@ -22,13 +22,13 @@
 }
 
 .header:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 	color: var(--interactive-hover);
 }
 
 .row:hover .header,
 .row:focus-within .header {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 	color: var(--interactive-hover);
 }
 
@@ -51,12 +51,12 @@
 	align-items: center;
 	justify-content: center;
 	border-radius: var(--radius-sm);
-	color: var(--interactive-normal);
+	color: var(--interactive-default);
 	transition: background 0.15s ease, color 0.15s ease;
 }
 
 .actions button:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 	color: var(--interactive-hover);
 }
 
@@ -92,7 +92,7 @@
 .memberCount {
 	font-size: 11px;
 	color: var(--text-muted);
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	padding: 0 6px;
 	border-radius: 8px;
 	min-width: 16px;
@@ -115,7 +115,7 @@
 }
 
 .member:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .memberAvatar {
@@ -137,7 +137,7 @@
 .memberName {
 	flex: 1;
 	font-size: 13px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;

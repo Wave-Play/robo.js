@@ -10,12 +10,12 @@
 	justify-content: space-between;
 	gap: 8px;
 	padding: 8px 12px;
-	background: var(--background-secondary);
+	background: var(--sidebar-left-background);
 	border: 1px solid transparent;
 	border-radius: var(--radius-sm);
 	cursor: pointer;
 	font-size: 14px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 	transition:
 		border-color 0.15s ease,
 		background-color 0.15s ease;
@@ -23,7 +23,7 @@
 }
 
 .trigger:hover:not(.disabled):not(.loading) {
-	border-color: var(--background-modifier-accent);
+	border-color: var(--accent-overlay);
 }
 
 .trigger:focus {
@@ -31,12 +31,12 @@
 }
 
 .trigger:focus-visible {
-	border-color: var(--brand-500);
+	border-color: var(--brand-primary);
 }
 
 .trigger.open {
-	border-color: var(--brand-500);
-	background: var(--background-tertiary);
+	border-color: var(--brand-primary);
+	background: var(--card-background);
 }
 
 .trigger.disabled {
@@ -56,7 +56,7 @@
 }
 
 .selectedText {
-	color: var(--text-normal);
+	color: var(--text-bright);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;

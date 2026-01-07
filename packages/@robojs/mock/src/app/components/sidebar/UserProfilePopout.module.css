@@ -13,7 +13,7 @@
 .mainPanel {
 	width: 320px;
 	max-width: calc(100vw - 32px);
-	background: var(--background-floating);
+	background: var(--modal-background);
 	border-radius: var(--radius-lg);
 	box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
 	overflow: hidden;
@@ -37,8 +37,8 @@
 	width: 72px;
 	height: 72px;
 	border-radius: 50%;
-	border: 6px solid var(--background-floating);
-	background: var(--background-secondary);
+	border: 6px solid var(--modal-background);
+	background: var(--sidebar-left-background);
 	overflow: hidden;
 	flex-shrink: 0;
 }
@@ -56,7 +56,7 @@
 	width: 14px;
 	height: 14px;
 	border-radius: 50%;
-	border: 3px solid var(--background-floating);
+	border: 3px solid var(--modal-background);
 }
 
 .statusDot.online {
@@ -76,8 +76,8 @@
 }
 
 .statusBubble {
-	background: var(--background-secondary);
-	color: var(--text-normal);
+	background: var(--sidebar-left-background);
+	color: var(--text-bright);
 	padding: 6px 10px;
 	border-radius: 14px;
 	font-size: 12px;
@@ -93,12 +93,12 @@
 }
 
 .statusBubble:hover {
-	background: var(--background-secondary);
-	box-shadow: inset 0 0 0 1px var(--background-modifier-hover);
+	background: var(--sidebar-left-background);
+	box-shadow: inset 0 0 0 1px var(--hover-overlay);
 }
 
 .statusBubble:focus-visible {
-	outline: 2px solid var(--brand-500);
+	outline: 2px solid var(--brand-primary);
 	outline-offset: 2px;
 }
 
@@ -120,7 +120,7 @@
 	width: 20px;
 	height: 20px;
 	border-radius: 50%;
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -130,7 +130,7 @@
 }
 
 .statusBubble:hover .statusBubbleIcon {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 	color: var(--interactive-hover);
 }
 
@@ -160,14 +160,14 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	color: var(--interactive-normal);
-	background: var(--background-secondary);
-	border: 1px solid var(--background-tertiary);
+	color: var(--interactive-default);
+	background: var(--sidebar-left-background);
+	border: 1px solid var(--card-background);
 	transition: background 0.1s ease, color 0.1s ease, opacity 0.1s ease;
 }
 
 .statusActionButton:hover:not(:disabled) {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 	color: var(--interactive-hover);
 }
 
@@ -181,7 +181,7 @@
 	height: 10px;
 	border-radius: 50%;
 	background: var(--status-offline);
-	box-shadow: 0 0 0 2px var(--background-secondary);
+	box-shadow: 0 0 0 2px var(--sidebar-left-background);
 }
 
 .presenceDot.online {
@@ -209,20 +209,20 @@
 .displayName {
 	font-size: 20px;
 	font-weight: 700;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 }
 
 .subline {
 	display: flex;
 	align-items: center;
 	gap: 6px;
-	color: var(--header-secondary);
+	color: var(--header-text-secondary);
 	font-size: 13px;
 	flex-wrap: wrap;
 }
 
 .handle {
-	color: var(--header-secondary);
+	color: var(--header-text-secondary);
 }
 
 .dot {
@@ -230,7 +230,7 @@
 }
 
 .pronouns {
-	color: var(--header-secondary);
+	color: var(--header-text-secondary);
 }
 
 .badges {
@@ -243,11 +243,11 @@
 	width: 22px;
 	height: 22px;
 	border-radius: 50%;
-	background: var(--background-secondary);
+	background: var(--sidebar-left-background);
 }
 
 .badgeActive {
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.15);
 }
 
@@ -256,11 +256,11 @@
 	border-radius: 0;
 	padding: 0;
 	font-size: 13px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 }
 
 .callCard {
-	background: var(--background-secondary);
+	background: var(--sidebar-left-background);
 	border-radius: var(--radius-md);
 	padding: 12px;
 	display: flex;
@@ -285,7 +285,7 @@
 	width: 18px;
 	height: 18px;
 	border-radius: 50%;
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -297,7 +297,7 @@
 	display: flex;
 	align-items: center;
 	gap: 8px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 	font-size: 14px;
 }
 
@@ -311,8 +311,8 @@
 	width: 32px;
 	height: 32px;
 	border-radius: 10px;
-	background: var(--background-tertiary);
-	border: 2px solid var(--background-secondary);
+	background: var(--card-background);
+	border: 2px solid var(--sidebar-left-background);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -335,8 +335,8 @@
 	width: 32px;
 	height: 32px;
 	border-radius: 10px;
-	background: var(--background-tertiary);
-	border: 2px solid var(--background-secondary);
+	background: var(--card-background);
+	border: 2px solid var(--sidebar-left-background);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -354,8 +354,8 @@
 	width: 100%;
 	padding: 6px 12px;
 	border-radius: var(--radius-sm);
-	background: var(--background-tertiary);
-	color: var(--text-normal);
+	background: var(--card-background);
+	color: var(--text-bright);
 	font-weight: 600;
 	text-align: center;
 	font-size: 12px;
@@ -364,15 +364,15 @@
 }
 
 .callButton:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .callButton:focus-visible {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .actionPanel {
-	background: var(--background-secondary);
+	background: var(--sidebar-left-background);
 	border-radius: var(--radius-md);
 	padding: 6px;
 	display: flex;
@@ -381,7 +381,7 @@
 }
 
 .newBadge {
-	background: var(--red-400);
+	background: var(--red-light);
 	color: white;
 	font-size: 10px;
 	font-weight: 700;
@@ -393,10 +393,10 @@
 	min-width: 240px;
 	max-width: calc(100vw - 24px);
 	padding: 8px;
-	background: var(--background-secondary);
+	background: var(--sidebar-left-background);
 	border-radius: var(--radius-md);
 	box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
-	border: 1px solid var(--background-modifier-accent);
+	border: 1px solid var(--accent-overlay);
 	display: flex;
 	flex-direction: column;
 	gap: 2px;
@@ -418,8 +418,8 @@
 	top: 0;
 	min-width: 200px;
 	padding: 8px;
-	background: var(--background-secondary);
-	border: 1px solid var(--background-modifier-accent);
+	background: var(--sidebar-left-background);
+	border: 1px solid var(--accent-overlay);
 	box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
 }
 
@@ -437,10 +437,10 @@
 	min-width: 220px;
 	max-width: calc(100vw - 24px);
 	padding: 8px;
-	background: var(--background-secondary);
+	background: var(--sidebar-left-background);
 	border-radius: var(--radius-md);
 	box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
-	border: 1px solid var(--background-modifier-accent);
+	border: 1px solid var(--accent-overlay);
 	display: flex;
 	flex-direction: column;
 	gap: 2px;

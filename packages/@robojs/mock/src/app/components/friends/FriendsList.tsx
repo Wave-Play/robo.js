@@ -22,13 +22,14 @@ function MoreIcon() {
 
 function FriendRow({ friend, onOpen }: { friend: FriendRowData; onOpen?: (friend: FriendRowData) => void }) {
 	const url = friend.avatar ? getAvatarUrl(friend.id, friend.avatar, 32) : null
+	const subtitle = friend.subtitle?.trim()
 
 	return (
 		<button className={styles.row} type="button" onClick={() => onOpen?.(friend)}>
-			<Avatar imageUrl={url} size={32} showStatus statusBorderColor="var(--background-primary)" statusColor="var(--status-online)" />
+			<Avatar imageUrl={url} size={32} showStatus statusBorderColor="var(--main-chat-background)" statusColor="var(--status-online)" />
 			<div className={styles.info}>
 				<div className={styles.name}>{friend.username}</div>
-				<div className={styles.sub}>{friend.subtitle}</div>
+				{subtitle ? <div className={styles.sub}>{subtitle}</div> : null}
 			</div>
 			<div className={styles.actions}>
 				<IconButton ariaLabel="Message" size="sm">

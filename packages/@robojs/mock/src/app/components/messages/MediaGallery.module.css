@@ -38,7 +38,7 @@
 	position: relative;
 	overflow: hidden;
 	cursor: pointer;
-	background: var(--background-secondary);
+	background: var(--sidebar-left-background);
 }
 
 .image {

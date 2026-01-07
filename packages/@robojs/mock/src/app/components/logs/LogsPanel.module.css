@@ -2,8 +2,8 @@
 .panel {
 	display: flex;
 	flex-direction: column;
-	background: var(--background-secondary);
-	border-left: 1px solid var(--background-modifier-accent);
+	background: var(--sidebar-left-background);
+	border-left: 1px solid var(--accent-overlay);
 	animation: slideInRight 0.15s ease;
 	position: relative;
 	min-width: 320px;
@@ -55,14 +55,14 @@
 	left: 50%;
 	bottom: 0;
 	width: 1px;
-	background: var(--background-modifier-accent);
+	background: var(--accent-overlay);
 	transform: translateX(-50%);
 	transition: transform 0.15s ease, background 0.15s ease;
 }
 
 .resizeHandle:hover::before {
 	transform: translateX(-50%) scaleX(4);
-	background: var(--brand-500);
+	background: var(--brand-primary);
 }
 
 /* Header */
@@ -71,8 +71,8 @@
 	flex-direction: column;
 	gap: 8px;
 	padding: 12px;
-	background: var(--background-tertiary);
-	border-bottom: 1px solid var(--background-modifier-accent);
+	background: var(--card-background);
+	border-bottom: 1px solid var(--accent-overlay);
 }
 
 .headerTop {
@@ -87,7 +87,7 @@
 	gap: 8px;
 	font-size: 14px;
 	font-weight: 600;
-	color: var(--text-normal);
+	color: var(--text-bright);
 }
 
 .count {
@@ -108,8 +108,8 @@
 }
 
 .closeButton:hover {
-	color: var(--text-normal);
-	background: var(--background-modifier-hover);
+	color: var(--text-bright);
+	background: var(--hover-overlay);
 }
 
 /* Controls row */
@@ -139,8 +139,8 @@
 	color: var(--text-muted);
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
-	background: var(--background-primary);
-	border-bottom: 1px solid var(--background-modifier-accent);
+	background: var(--main-chat-background);
+	border-bottom: 1px solid var(--accent-overlay);
 }
 
 .colTime {
@@ -168,7 +168,7 @@
 	flex: 1;
 	overflow-y: auto;
 	overflow-x: hidden;
-	background: var(--background-primary);
+	background: var(--main-chat-background);
 }
 
 .empty {
@@ -192,7 +192,7 @@
 	align-items: center;
 	gap: 6px;
 	padding: 6px 12px;
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	color: white;
 	font-size: 12px;
 	font-weight: 500;
@@ -203,7 +203,7 @@
 }
 
 .scrollToBottom:hover {
-	background: var(--brand-600);
+	background: var(--brand-darker);
 }
 
 /* Responsive - overlay panel on small screens */

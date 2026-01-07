@@ -9,7 +9,7 @@
 	width: var(--avatar-size);
 	height: var(--avatar-size);
 	border-radius: 50%;
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	overflow: hidden;
 	display: flex;
 	align-items: center;
@@ -29,7 +29,7 @@
 	width: 14px;
 	height: 14px;
 	border-radius: 50%;
-	border: 3px solid var(--avatar-status-border, var(--background-primary));
+	border: 3px solid var(--avatar-status-border, var(--main-chat-background));
 	background: var(--avatar-status-color, var(--status-online));
 }
 

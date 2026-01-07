@@ -6,9 +6,9 @@
 }
 
 .container {
-	background: var(--background-secondary);
+	background: var(--sidebar-left-background);
 	overflow: hidden;
-	border: 1px solid var(--background-modifier-accent);
+	border: 1px solid var(--accent-overlay);
 	display: flex;
 	flex-direction: column;
 	width: 420px;
@@ -23,7 +23,7 @@
 	align-items: center;
 	gap: 10px;
 	padding: 12px;
-	border-bottom: 1px solid var(--background-modifier-accent);
+	border-bottom: 1px solid var(--accent-overlay);
 }
 
 .headerIcon {
@@ -35,7 +35,7 @@
 .headerTitle {
 	font-size: 14px;
 	font-weight: 600;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 	white-space: nowrap;
 }
 
@@ -58,10 +58,10 @@
 .searchInput {
 	width: 100%;
 	padding: 5px 12px 5px 30px;
-	border: 1px solid var(--background-modifier-accent);
+	border: 1px solid var(--accent-overlay);
 	border-radius: var(--radius-sm);
-	background: var(--background-tertiary);
-	color: var(--text-normal);
+	background: var(--card-background);
+	color: var(--text-bright);
 	font-size: 13px;
 	outline: none;
 }
@@ -71,12 +71,12 @@
 }
 
 .searchInput:focus {
-	border-color: var(--brand-500);
+	border-color: var(--brand-primary);
 }
 
 .createButton {
 	padding: 5px 12px;
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	border: none;
 	border-radius: 4px;
 	color: white;
@@ -88,7 +88,7 @@
 }
 
 .createButton:hover {
-	background: var(--brand-560);
+	background: var(--brand-dark);
 }
 
 .closeButton {
@@ -98,13 +98,13 @@
 	align-items: center;
 	justify-content: center;
 	border-radius: 6px;
-	background: var(--background-tertiary);
-	color: var(--text-normal);
+	background: var(--card-background);
+	color: var(--text-bright);
 	margin-left: 4px;
 }
 
 .closeButton:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .section {
@@ -135,15 +135,15 @@
 	align-items: center;
 	gap: 10px;
 	padding: 10px 12px;
-	background: var(--background-secondary-alt);
-	border: 1px solid var(--background-modifier-accent);
+	background: var(--secondary-divider);
+	border: 1px solid var(--accent-overlay);
 	border-radius: 8px;
 	cursor: pointer;
 	transition: background 0.15s ease;
 }
 
 .threadItem:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .threadContent {
@@ -154,7 +154,7 @@
 .threadName {
 	font-size: 14px;
 	font-weight: 600;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 	margin-bottom: 4px;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -177,7 +177,7 @@
 }
 
 .threadAuthorName {
-	color: var(--brand-500);
+	color: var(--brand-primary);
 	font-weight: 500;
 }
 
@@ -195,7 +195,7 @@
 	width: 32px;
 	height: 32px;
 	border-radius: 50%;
-	border: 3px solid var(--background-secondary-alt);
+	border: 3px solid var(--secondary-divider);
 	object-fit: cover;
 	margin-left: -10px;
 }
@@ -237,12 +237,12 @@
 .emptyTitle {
 	font-size: 20px;
 	font-weight: 700;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 }
 
 .emptySub {
 	font-size: 13px;
-	color: var(--header-secondary);
+	color: var(--header-text-secondary);
 	max-width: 300px;
 	line-height: 1.4;
 }
@@ -250,7 +250,7 @@
 .emptyCta {
 	margin-top: 4px;
 	padding: 8px 14px;
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	border-radius: var(--radius-md);
 	color: white;
 	font-size: 14px;
@@ -258,5 +258,5 @@
 }
 
 .emptyCta:hover {
-	background: var(--brand-560);
+	background: var(--brand-dark);
 }

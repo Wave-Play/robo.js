@@ -29,6 +29,6 @@
 }
 
 .dismiss:hover {
-	color: var(--text-normal);
+	color: var(--text-bright);
 	opacity: 1;
 }

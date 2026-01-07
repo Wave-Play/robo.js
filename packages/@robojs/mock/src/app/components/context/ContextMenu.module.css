@@ -2,8 +2,8 @@
 	min-width: 188px;
 	max-width: 320px;
 	padding: 6px;
-	border: 1px solid var(--background-modifier-accent);
-	background: var(--background-floating);
+	border: 1px solid var(--accent-overlay);
+	background: var(--modal-background);
 }
 
 .menuHeader {

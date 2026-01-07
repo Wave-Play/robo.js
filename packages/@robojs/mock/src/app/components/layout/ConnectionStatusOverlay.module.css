@@ -9,8 +9,8 @@
 	gap: 12px;
 	padding: 16px;
 	min-height: 52px;
-	background: var(--background-secondary);
-	border-top: 1px solid var(--background-modifier-accent);
+	background: var(--sidebar-left-background);
+	border-top: 1px solid var(--accent-overlay);
 	animation: slideUp 0.2s ease-out;
 }
 
@@ -40,8 +40,8 @@
 }
 
 .collapseButton:hover {
-	background: var(--background-modifier-hover);
-	color: var(--text-normal);
+	background: var(--hover-overlay);
+	color: var(--text-bright);
 }
 
 .collapsedPill {
@@ -80,14 +80,14 @@
 }
 
 .collapsedText {
-	color: var(--text-normal);
+	color: var(--text-bright);
 }
 
 .smallSpinner {
 	width: 14px;
 	height: 14px;
 	border: 2px solid rgba(255, 255, 255, 0.3);
-	border-top-color: var(--brand-500);
+	border-top-color: var(--brand-primary);
 	border-radius: 50%;
 	animation: spin 0.8s linear infinite;
 }
@@ -126,7 +126,7 @@
 .title {
 	font-size: 14px;
 	font-weight: 600;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 }
 
 .hint {
@@ -145,7 +145,7 @@
 
 .button {
 	padding: 6px 12px;
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	color: white;
 	font-size: 13px;
 	font-weight: 500;
@@ -154,13 +154,13 @@
 }
 
 .button:hover {
-	background: var(--brand-560);
+	background: var(--brand-dark);
 }
 
 .secondaryButton {
 	padding: 6px 12px;
-	background: var(--background-tertiary);
-	color: var(--text-normal);
+	background: var(--card-background);
+	color: var(--text-bright);
 	font-size: 13px;
 	font-weight: 500;
 	border-radius: var(--radius-sm);
@@ -168,14 +168,14 @@
 }
 
 .secondaryButton:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .spinner {
 	width: 18px;
 	height: 18px;
 	border: 2px solid rgba(255, 255, 255, 0.3);
-	border-top-color: var(--brand-500);
+	border-top-color: var(--brand-primary);
 	border-radius: 50%;
 	animation: spin 0.8s linear infinite;
 	flex-shrink: 0;

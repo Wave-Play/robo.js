@@ -29,7 +29,7 @@
 	padding: 4px 10px;
 	border-radius: 999px;
 	background: rgba(88, 101, 242, 0.2);
-	color: var(--brand-500);
+	color: var(--brand-primary);
 	font-size: 12px;
 	font-weight: 600;
 	letter-spacing: 0.02em;
@@ -39,12 +39,12 @@
 .title {
 	font-size: 24px;
 	font-weight: 700;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 }
 
 .subtitle {
 	font-size: 14px;
-	color: var(--header-secondary);
+	color: var(--header-text-secondary);
 }
 
 .heroActions {
@@ -64,20 +64,20 @@
 }
 
 .heroButton.join {
-	background: var(--brand-500);
+	background: var(--brand-primary);
 }
 
 .heroButton.join:hover {
-	background: var(--brand-560);
+	background: var(--brand-dark);
 	transform: translateY(-1px);
 }
 
 .heroButton.leave {
-	background: var(--red-400);
+	background: var(--red-light);
 }
 
 .heroButton.leave:hover {
-	background: var(--red-500);
+	background: var(--red-medium);
 	transform: translateY(-1px);
 }
 
@@ -93,13 +93,13 @@
 	align-items: center;
 	justify-content: center;
 	border-radius: 10px;
-	background: var(--background-secondary);
-	color: var(--interactive-normal);
+	background: var(--sidebar-left-background);
+	color: var(--interactive-default);
 	transition: background 0.15s ease, color 0.15s ease;
 }
 
 .controlButton:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 	color: var(--interactive-hover);
 }
 
@@ -121,8 +121,8 @@
 }
 
 .memberCount {
-	background: var(--background-tertiary);
-	color: var(--text-normal);
+	background: var(--card-background);
+	color: var(--text-bright);
 	padding: 2px 8px;
 	border-radius: 999px;
 	font-size: 12px;
@@ -140,8 +140,8 @@
 	gap: 12px;
 	padding: 12px;
 	border-radius: 10px;
-	background: var(--background-secondary);
-	border: 1px solid var(--background-modifier-accent);
+	background: var(--sidebar-left-background);
+	border: 1px solid var(--accent-overlay);
 }
 
 .memberAvatar {
@@ -176,7 +176,7 @@
 .memberName {
 	font-size: 15px;
 	font-weight: 600;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 }
 
 .memberStatus {
@@ -195,26 +195,26 @@
 	justify-content: center;
 	padding: 24px;
 	border-radius: 12px;
-	background: var(--background-secondary);
-	border: 1px dashed var(--background-modifier-accent);
+	background: var(--sidebar-left-background);
+	border: 1px dashed var(--accent-overlay);
 }
 
 .emptyIcon {
 	width: 48px;
 	height: 48px;
 	border-radius: 50%;
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	color: var(--interactive-normal);
+	color: var(--interactive-default);
 	margin-bottom: 10px;
 }
 
 .emptyTitle {
 	font-size: 16px;
 	font-weight: 700;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 }
 
 .emptyText {

@@ -7,7 +7,7 @@
 }
 
 .message:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .hoverActions {
@@ -18,8 +18,8 @@
 	gap: 4px;
 	padding: 4px;
 	border-radius: 8px;
-	background: var(--background-secondary);
-	border: 1px solid var(--background-modifier-accent);
+	background: var(--sidebar-left-background);
+	border: 1px solid var(--accent-overlay);
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 	z-index: 2;
 	opacity: 0;
@@ -34,12 +34,12 @@
 	align-items: center;
 	justify-content: center;
 	border-radius: 6px;
-	color: var(--interactive-normal);
+	color: var(--interactive-default);
 	transition: background 0.15s ease, color 0.15s ease;
 }
 
 .hoverActions button:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 	color: var(--interactive-hover);
 }
 
@@ -51,7 +51,7 @@
 
 .highlighted {
 	background: rgba(88, 101, 242, 0.1);
-	border-left: 2px solid var(--brand-500);
+	border-left: 2px solid var(--brand-primary);
 	padding-left: 70px;
 }
 
@@ -96,7 +96,7 @@
 
 .author {
 	font-weight: 500;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 	cursor: pointer;
 }
 
@@ -108,7 +108,7 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 2px;
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	color: white;
 	font-size: 10px;
 	font-weight: 500;
@@ -156,7 +156,7 @@
 .messageContent {
 	line-height: 1.375;
 	word-wrap: break-word;
-	color: var(--text-normal);
+	color: var(--text-bright);
 }
 
 .interactionInfo {
@@ -175,8 +175,8 @@
 	width: 18px;
 	height: 18px;
 	border-radius: 5px;
-	background: var(--background-tertiary);
-	color: var(--interactive-normal);
+	background: var(--card-background);
+	color: var(--interactive-default);
 }
 
 .interactionText {
@@ -205,7 +205,7 @@
 /* Ephemeral message styling */
 .ephemeral {
 	background: linear-gradient(90deg, rgba(88, 101, 242, 0.08), rgba(88, 101, 242, 0.02));
-	border-left: 2px solid var(--brand-500);
+	border-left: 2px solid var(--brand-primary);
 	padding-left: 70px;
 }
 
@@ -242,8 +242,8 @@
 	top: 2px;
 	width: 12px;
 	height: 10px;
-	border-left: 2px solid var(--background-modifier-accent);
-	border-bottom: 2px solid var(--background-modifier-accent);
+	border-left: 2px solid var(--accent-overlay);
+	border-bottom: 2px solid var(--accent-overlay);
 	border-bottom-left-radius: 6px;
 	opacity: 0.9;
 	transform: rotate(90deg);
@@ -298,12 +298,12 @@
 .slashIcon {
 	width: 16px;
 	height: 16px;
-	color: var(--brand-500);
+	color: var(--brand-primary);
 	flex-shrink: 0;
 }
 
 .commandUser {
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 	font-weight: 500;
 }
 
@@ -326,7 +326,7 @@
 }
 
 .systemMessage:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .systemIcon {

@@ -2,10 +2,10 @@
 	display: flex;
 	flex-direction: column;
 	gap: 12px;
-	background: var(--background-secondary);
+	background: var(--sidebar-left-background);
 	border-radius: var(--radius-lg);
 	padding: 6px 12px;
 	box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35);
-	border: 1px solid var(--background-modifier-accent);
+	border: 1px solid var(--accent-overlay);
 	width: 100%;
 }

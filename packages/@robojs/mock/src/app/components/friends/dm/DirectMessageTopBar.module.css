@@ -5,8 +5,8 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	border-bottom: 1px solid var(--background-modifier-accent);
-	background: var(--background-primary);
+	border-bottom: 1px solid var(--accent-overlay);
+	background: var(--main-chat-background);
 }
 
 .left {
@@ -17,9 +17,9 @@
 }
 
 .name {
-	font-size: 16px;
-	font-weight: 800;
-	color: var(--header-primary);
+	font-size: 14px;
+	font-weight: 500;
+	color: var(--text-hover);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -35,10 +35,17 @@
 	width: 220px;
 }
 
+.search input {
+	border-radius: 8px;
+	border: 1px solid var(--accent-overlay);
+	background: var(--card-background);
+	padding: 0 34px 0 12px;
+}
+
 .profileActive {
-	box-shadow: 0 0 0 2px var(--brand-500);
-	background: rgba(88, 101, 242, 0.18);
-	color: var(--interactive-active);
+	background: transparent;
+	box-shadow: none;
+	color: var(--text-hover);
 }
 
 

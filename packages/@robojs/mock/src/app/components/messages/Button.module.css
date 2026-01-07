@@ -24,64 +24,64 @@
 }
 
 .button:focus-visible {
-	outline: 2px solid var(--brand-500);
+	outline: 2px solid var(--brand-primary);
 	outline-offset: 2px;
 }
 
 /* Primary (Blurple) */
 .primary {
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	color: white;
 }
 
 .primary:hover:not(.disabled):not(.loading) {
-	background: var(--brand-560);
+	background: var(--brand-dark);
 }
 
 .primary:active:not(.disabled):not(.loading) {
-	background: var(--brand-600);
+	background: var(--brand-darker);
 }
 
 /* Secondary (Grey) */
 .secondary {
-	background: var(--background-accent);
-	color: var(--text-normal);
+	background: var(--accent-background);
+	color: var(--text-bright);
 }
 
 .secondary:hover:not(.disabled):not(.loading) {
-	background: var(--grey-400);
+	background: var(--grey-light);
 }
 
 .secondary:active:not(.disabled):not(.loading) {
-	background: var(--grey-500);
+	background: var(--grey-medium);
 }
 
 /* Success (Green) */
 .success {
-	background: var(--green-360);
+	background: var(--green-medium);
 	color: white;
 }
 
 .success:hover:not(.disabled):not(.loading) {
-	background: var(--green-500);
+	background: var(--green-dark);
 }
 
 .success:active:not(.disabled):not(.loading) {
-	background: var(--green-600);
+	background: var(--green-darker);
 }
 
 /* Danger (Red) */
 .danger {
-	background: var(--red-400);
+	background: var(--red-light);
 	color: white;
 }
 
 .danger:hover:not(.disabled):not(.loading) {
-	background: var(--red-500);
+	background: var(--red-medium);
 }
 
 .danger:active:not(.disabled):not(.loading) {
-	background: var(--red-600);
+	background: var(--red-dark);
 }
 
 /* Link */

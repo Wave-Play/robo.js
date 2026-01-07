@@ -3,14 +3,14 @@
 	align-items: center;
 	justify-content: center;
 	min-height: 100vh;
-	background: var(--background-primary);
+	background: var(--main-chat-background);
 	padding: 20px;
 }
 
 .content {
 	max-width: 500px;
 	text-align: center;
-	background: var(--background-secondary);
+	background: var(--sidebar-left-background);
 	border-radius: 8px;
 	padding: 40px;
 	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
@@ -24,7 +24,7 @@
 .title {
 	font-size: 24px;
 	font-weight: 600;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 	margin: 0 0 12px 0;
 }
 
@@ -37,7 +37,7 @@
 
 .details {
 	text-align: left;
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	border-radius: 4px;
 	margin-bottom: 24px;
 	overflow: hidden;
@@ -48,12 +48,12 @@
 	cursor: pointer;
 	font-size: 13px;
 	font-weight: 500;
-	color: var(--text-normal);
+	color: var(--text-bright);
 	user-select: none;
 }
 
 .summary:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .errorStack {
@@ -79,7 +79,7 @@
 	font-size: 11px;
 	font-family: 'Consolas', 'Monaco', monospace;
 	color: var(--text-muted);
-	background: var(--background-primary);
+	background: var(--main-chat-background);
 	padding: 12px;
 	border-radius: 4px;
 	overflow-x: auto;
@@ -91,7 +91,7 @@
 }
 
 .button {
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	color: white;
 	border: none;
 	border-radius: 4px;
@@ -103,9 +103,9 @@
 }
 
 .button:hover {
-	background: var(--brand-560);
+	background: var(--brand-dark);
 }
 
 .button:active {
-	background: var(--brand-600);
+	background: var(--brand-darker);
 }

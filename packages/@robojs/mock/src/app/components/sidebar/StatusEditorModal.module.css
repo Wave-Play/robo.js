@@ -11,14 +11,14 @@
 .modal {
 	width: 440px;
 	max-width: calc(100vw - 32px);
-	background: var(--background-secondary);
+	background: var(--sidebar-left-background);
 	border-radius: var(--radius-lg);
 	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
 	padding: 18px;
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 }
 
 .header {
@@ -31,7 +31,7 @@
 .title {
 	font-size: 18px;
 	font-weight: 700;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 }
 
 .closeButton {
@@ -41,18 +41,18 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	color: var(--interactive-normal);
+	color: var(--interactive-default);
 	transition: background 0.1s ease, color 0.1s ease;
 }
 
 .closeButton:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 	color: var(--interactive-hover);
 }
 
 .previewCard {
 	background: transparent;
-	border: 1px solid var(--background-modifier-accent);
+	border: 1px solid var(--accent-overlay);
 	border-radius: var(--radius-md);
 	padding: 12px;
 	display: flex;
@@ -81,8 +81,8 @@
 	width: 64px;
 	height: 64px;
 	border-radius: 50%;
-	border: 4px solid var(--background-tertiary);
-	background: var(--background-secondary);
+	border: 4px solid var(--card-background);
+	background: var(--sidebar-left-background);
 	overflow: hidden;
 	flex-shrink: 0;
 }
@@ -100,7 +100,7 @@
 	width: 12px;
 	height: 12px;
 	border-radius: 50%;
-	border: 3px solid var(--background-tertiary);
+	border: 3px solid var(--card-background);
 }
 
 .previewStatusDot.online {
@@ -120,13 +120,13 @@
 }
 
 .previewBubble {
-	background: var(--background-secondary);
+	background: var(--sidebar-left-background);
 	border-radius: 14px;
 	padding: 6px 10px;
 	font-size: 12px;
 	line-height: 1.3;
 	max-width: 220px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 	display: inline-flex;
 	width: fit-content;
 }
@@ -145,7 +145,7 @@
 .previewDisplayName {
 	font-size: 16px;
 	font-weight: 700;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 }
 
 .previewHandle {
@@ -174,7 +174,7 @@
 	background: transparent;
 	border-radius: var(--radius-md);
 	padding: 8px 10px;
-	border: 1px solid var(--background-modifier-accent);
+	border: 1px solid var(--accent-overlay);
 	transition: border-color 0.1s ease, box-shadow 0.1s ease;
 }
 
@@ -201,7 +201,7 @@
 
 .input {
 	flex: 1;
-	color: var(--text-normal);
+	color: var(--text-bright);
 	font-size: 14px;
 	background: transparent;
 	border: none;
@@ -220,7 +220,7 @@
 }
 
 .clearButton:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 	color: var(--interactive-hover);
 }
 
@@ -244,18 +244,18 @@
 	background: transparent;
 	border-radius: var(--radius-sm);
 	padding: 6px 10px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 	border: 1px solid transparent;
 	transition: background 0.1s ease, border-color 0.1s ease;
 }
 
 .dropdownButton:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .dropdownButtonOpen {
-	background: var(--background-modifier-hover);
-	border-color: var(--background-modifier-accent);
+	background: var(--hover-overlay);
+	border-color: var(--accent-overlay);
 }
 
 .clearMenu {
@@ -263,9 +263,9 @@
 	bottom: calc(100% + 8px);
 	left: 0;
 	min-width: 240px;
-	background: var(--background-secondary);
+	background: var(--sidebar-left-background);
 	border-radius: var(--radius-md);
-	border: 1px solid var(--background-modifier-accent);
+	border: 1px solid var(--accent-overlay);
 	box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
 	padding: 6px;
 	z-index: 2;
@@ -287,7 +287,7 @@
 	border-radius: var(--radius-xs);
 	background: transparent;
 	border: none;
-	color: var(--text-normal);
+	color: var(--text-bright);
 	font-size: 14px;
 	text-align: left;
 	cursor: pointer;
@@ -295,19 +295,19 @@
 }
 
 .clearMenuItem:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .clearMenuItemSelected {
-	background: var(--background-modifier-selected);
+	background: var(--selected-overlay);
 }
 
 .clearMenuItemSelected svg {
-	color: var(--brand-500);
+	color: var(--brand-primary);
 }
 
 .saveButton {
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	color: white;
 	border-radius: var(--radius-sm);
 	padding: 8px 18px;
@@ -316,7 +316,7 @@
 }
 
 .saveButton:hover {
-	background: var(--brand-560);
+	background: var(--brand-dark);
 }
 
 .saveButton:disabled {

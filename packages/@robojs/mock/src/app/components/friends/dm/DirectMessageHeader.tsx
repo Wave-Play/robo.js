@@ -56,7 +56,7 @@ export function DirectMessageHeader({
 	return (
 		<div className={styles.header}>
 			<div className={styles.left}>
-				<Avatar imageUrl={null} size={28} showStatus statusBorderColor="var(--background-primary)" statusColor="var(--status-online)" />
+				<Avatar imageUrl={null} size={28} showStatus statusBorderColor="var(--main-chat-background)" statusColor="var(--status-online)" />
 				<div className={styles.name}>{friend.username}</div>
 				<div className={styles.aka}>
 					<span className={styles.akaLabel}>AKA</span>

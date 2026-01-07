@@ -31,11 +31,11 @@
 
 .botName {
 	font-weight: 500;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 }
 
 .botBadge {
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	color: white;
 	font-size: 10px;
 	font-weight: 500;

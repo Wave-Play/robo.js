@@ -12,9 +12,9 @@
 	min-width: 220px;
 	max-width: 320px;
 	padding: 12px;
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	border-radius: var(--radius-md);
-	border: 1px solid var(--background-accent);
+	border: 1px solid var(--accent-background);
 }
 
 .sectionHeader {
@@ -31,7 +31,7 @@
 	margin: 0 0 8px 0;
 	font-size: 13px;
 	font-weight: 600;
-	color: var(--text-normal);
+	color: var(--text-bright);
 }
 
 .badge {
@@ -42,7 +42,7 @@
 	height: 18px;
 	padding: 0 5px;
 	margin-left: 6px;
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	color: white;
 	font-size: 11px;
 	font-weight: 600;
@@ -62,7 +62,7 @@
 	background: rgba(88, 101, 242, 0.1);
 	border-radius: var(--radius-sm);
 	font-size: 11px;
-	color: var(--brand-400);
+	color: var(--brand-light);
 }
 
 /* Enforcement Level Buttons */
@@ -77,27 +77,27 @@
 	flex-direction: column;
 	align-items: flex-start;
 	padding: 10px 12px;
-	background: var(--background-primary);
-	border: 1px solid var(--background-accent);
+	background: var(--main-chat-background);
+	border: 1px solid var(--accent-background);
 	border-radius: var(--radius-sm);
 	cursor: pointer;
 	transition: all 0.15s ease;
 }
 
 .levelButton:hover {
-	background: var(--background-modifier-hover);
-	border-color: var(--background-modifier-hover);
+	background: var(--hover-overlay);
+	border-color: var(--hover-overlay);
 }
 
 .levelButton.active {
-	background: var(--brand-500);
-	border-color: var(--brand-560);
+	background: var(--brand-primary);
+	border-color: var(--brand-dark);
 }
 
 .levelLabel {
 	font-size: 12px;
 	font-weight: 600;
-	color: var(--text-normal);
+	color: var(--text-bright);
 }
 
 .levelButton.active .levelLabel {
@@ -118,7 +118,7 @@
 .quickActions {
 	margin-top: 12px;
 	padding-top: 12px;
-	border-top: 1px solid var(--background-accent);
+	border-top: 1px solid var(--accent-background);
 }
 
 .quickTitle {
@@ -141,18 +141,18 @@
 	align-items: center;
 	gap: 4px;
 	padding: 6px 10px;
-	background: var(--background-primary);
-	border: 1px solid var(--background-accent);
+	background: var(--main-chat-background);
+	border: 1px solid var(--accent-background);
 	border-radius: var(--radius-sm);
 	font-size: 11px;
 	font-weight: 500;
-	color: var(--text-normal);
+	color: var(--text-bright);
 	cursor: pointer;
 	transition: all 0.15s ease;
 }
 
 .quickButton:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 /* Overrides List */
@@ -166,9 +166,9 @@
 
 .overrideItem {
 	padding: 8px;
-	background: var(--background-primary);
+	background: var(--main-chat-background);
 	border-radius: var(--radius-sm);
-	border: 1px solid var(--background-accent);
+	border: 1px solid var(--accent-background);
 }
 
 .overrideHeader {
@@ -181,7 +181,7 @@
 .overrideUser {
 	font-size: 12px;
 	font-weight: 500;
-	color: var(--text-normal);
+	color: var(--text-bright);
 }
 
 .removeButton {
@@ -200,8 +200,8 @@
 }
 
 .removeButton:hover {
-	background: var(--background-modifier-hover);
-	color: var(--red-400);
+	background: var(--hover-overlay);
+	color: var(--red-light);
 }
 
 .overridePermissions {
@@ -213,7 +213,7 @@
 .permTag {
 	display: inline-block;
 	padding: 2px 6px;
-	background: var(--background-modifier-accent);
+	background: var(--accent-overlay);
 	border-radius: var(--radius-xs, 2px);
 	font-size: 10px;
 	color: var(--text-muted);
@@ -221,12 +221,12 @@
 
 .permTag.grant {
 	background: rgba(67, 181, 129, 0.2);
-	color: var(--green-400);
+	color: var(--green-light);
 }
 
 .permTag.deny {
 	background: rgba(237, 66, 69, 0.2);
-	color: var(--red-400);
+	color: var(--red-light);
 }
 
 .overrideReason {
@@ -242,7 +242,7 @@
 	text-align: center;
 	font-size: 12px;
 	color: var(--text-muted);
-	background: var(--background-primary);
+	background: var(--main-chat-background);
 	border-radius: var(--radius-sm);
 }
 
@@ -260,22 +260,22 @@
 	align-items: center;
 	gap: 8px;
 	padding: 6px 8px;
-	background: var(--background-primary);
+	background: var(--main-chat-background);
 	border-radius: var(--radius-sm);
 	font-size: 11px;
 }
 
 .eventTime {
 	color: var(--text-muted);
-	font-family: var(--font-mono);
+	font-family: var(--font-code);
 	flex-shrink: 0;
 }
 
 .eventMethod {
 	padding: 2px 4px;
-	background: var(--background-modifier-accent);
+	background: var(--accent-overlay);
 	border-radius: var(--radius-xs, 2px);
-	color: var(--text-normal);
+	color: var(--text-bright);
 	font-weight: 500;
 	flex-shrink: 0;
 }
@@ -290,14 +290,14 @@
 }
 
 .eventMissing {
-	color: var(--red-400);
+	color: var(--red-light);
 	flex-shrink: 0;
 }
 
 .clearButton {
 	padding: 4px 8px;
 	background: transparent;
-	border: 1px solid var(--background-accent);
+	border: 1px solid var(--accent-background);
 	border-radius: var(--radius-sm);
 	font-size: 11px;
 	color: var(--text-muted);
@@ -306,6 +306,6 @@
 }
 
 .clearButton:hover {
-	background: var(--background-modifier-hover);
-	color: var(--text-normal);
+	background: var(--hover-overlay);
+	color: var(--text-bright);
 }

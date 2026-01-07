@@ -12,7 +12,7 @@
 	width: 440px;
 	max-width: 90vw;
 	max-height: 80vh;
-	background: var(--background-primary);
+	background: var(--main-chat-background);
 	border-radius: var(--radius-lg);
 	display: flex;
 	flex-direction: column;
@@ -24,14 +24,14 @@
 	align-items: center;
 	justify-content: space-between;
 	padding: 16px;
-	border-bottom: 1px solid var(--background-modifier-accent);
+	border-bottom: 1px solid var(--accent-overlay);
 }
 
 .header h2 {
 	margin: 0;
 	font-size: 20px;
 	font-weight: 600;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 }
 
 .closeButton {
@@ -40,12 +40,12 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	color: var(--interactive-normal);
+	color: var(--interactive-default);
 	border-radius: var(--radius-sm);
 }
 
 .closeButton:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 	color: var(--interactive-hover);
 }
 
@@ -66,22 +66,22 @@
 .field label {
 	font-size: 12px;
 	font-weight: 700;
-	color: var(--header-secondary);
+	color: var(--header-text-secondary);
 	text-transform: uppercase;
 	letter-spacing: 0.02em;
 }
 
 .field input {
 	padding: 10px;
-	background: var(--input-background);
+	background: var(--text-input-background);
 	border: none;
 	border-radius: var(--radius-xs);
-	color: var(--text-normal);
+	color: var(--text-bright);
 	font-size: 14px;
 }
 
 .field input:focus {
-	outline: 2px solid var(--brand-500);
+	outline: 2px solid var(--brand-primary);
 }
 
 .hint {
@@ -102,15 +102,15 @@
 	padding: 10px 12px;
 	border-radius: var(--radius-sm);
 	text-align: left;
-	color: var(--text-normal);
+	color: var(--text-bright);
 }
 
 .statusOption:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .statusOption.selected {
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	color: white;
 }
 
@@ -142,7 +142,7 @@
 	justify-content: flex-end;
 	gap: 8px;
 	padding: 16px;
-	background: var(--background-secondary);
+	background: var(--sidebar-left-background);
 }
 
 .cancelButton {
@@ -150,7 +150,7 @@
 	border-radius: var(--radius-xs);
 	font-size: 14px;
 	font-weight: 500;
-	color: var(--text-normal);
+	color: var(--text-bright);
 }
 
 .cancelButton:hover:not(:disabled) {
@@ -159,7 +159,7 @@
 
 .saveButton {
 	padding: 8px 16px;
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	border-radius: var(--radius-xs);
 	font-size: 14px;
 	font-weight: 500;
@@ -167,7 +167,7 @@
 }
 
 .saveButton:hover:not(:disabled) {
-	background: var(--brand-560);
+	background: var(--brand-dark);
 }
 
 .saveButton:disabled,

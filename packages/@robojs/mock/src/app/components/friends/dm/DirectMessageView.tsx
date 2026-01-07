@@ -41,12 +41,12 @@ export function DirectMessageView({
 }) {
 	const messages: ChatLine[] = useMemo(
 		() => [
-			{ id: 'm1', author: friend.username, time: '22:26', text: 'Yes vro it peak vro\n\nThe same thing the tv station does but made by me\nlol' },
-			{ id: 'm2', author: 'Fair', time: '22:27', text: 'are u the tv station\nkzStation' },
-			{ id: 'm3', author: friend.username, time: '22:27', text: 'yes vro kzStation' },
-			{ id: 'm4', author: 'Fair', time: '22:27', text: 'time for me to kzSleep' },
-			{ id: 'm5', author: friend.username, time: '22:27', text: 'kzNight vro' },
-			{ id: 'm6', author: friend.username, time: '22:27', text: 'nooo vro kzsleep is kzbad vro\nkzcode is better vro' }
+			{ id: 'm1', author: friend.username, time: '11/5/2025 22:26', text: 'Yes vro it peak vro\n\nThe same thing the tv station does but made by me\nlol' },
+			{ id: 'm2', author: 'Fair', time: '11/5/2025 22:27', text: 'are u the tv station\nkzStation' },
+			{ id: 'm3', author: friend.username, time: '11/5/2025 22:27', text: 'yes vro kzStation' },
+			{ id: 'm4', author: 'Fair', time: '11/5/2025 22:27', text: 'time for me to kzSleep' },
+			{ id: 'm5', author: friend.username, time: '11/5/2025 22:27', text: 'kzNight vro' },
+			{ id: 'm6', author: friend.username, time: '11/5/2025 22:27', text: 'nooo vro kzsleep is kzbad vro\nkzcode is better vro' }
 		],
 		[friend.username]
 	)

@@ -44,7 +44,7 @@
 
 .author {
 	font-weight: 500;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 }
 
 .status {
@@ -62,7 +62,7 @@
 .textContent {
 	line-height: 1.375;
 	word-wrap: break-word;
-	color: var(--text-normal);
+	color: var(--text-bright);
 	white-space: pre-wrap;
 }
 
@@ -101,5 +101,5 @@
 }
 
 .cancelButton:hover {
-	color: var(--text-normal);
+	color: var(--text-bright);
 }

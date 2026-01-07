@@ -22,7 +22,7 @@
 }
 
 .identity:hover:not(:disabled) {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .avatarWrapper {
@@ -37,7 +37,7 @@
 	width: 34px;
 	height: 34px;
 	border-radius: 50%;
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	object-fit: cover;
 }
 
@@ -48,7 +48,7 @@
 	width: 12px;
 	height: 12px;
 	border-radius: 50%;
-	border: 3px solid var(--background-secondary);
+	border: 3px solid var(--sidebar-left-background);
 }
 
 .status.online {
@@ -76,7 +76,7 @@
 .username {
 	font-size: 13px;
 	font-weight: 600;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;

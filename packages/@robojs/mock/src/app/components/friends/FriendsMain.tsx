@@ -14,45 +14,6 @@ function FriendsGlyph() {
 	)
 }
 
-function InboxIcon() {
-	return (
-		<svg
-			width="20"
-			height="20"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="1.25"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-			aria-hidden="true"
-		>
-			<polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
-			<path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
-		</svg>
-	)
-}
-
-function HelpIcon() {
-	return (
-		<svg
-			width="20"
-			height="20"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="1.25"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-			aria-hidden="true"
-		>
-			<circle cx="12" cy="12" r="10" />
-			<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-			<path d="M12 17h.01" />
-		</svg>
-	)
-}
-
 function Tab({
 	label,
 	selected,
@@ -104,7 +65,7 @@ export function FriendsMain({
 			<header className={styles.header}>
 				<div className={styles.friendsTitle}>
 					<FriendsGlyph />
-					<span>Friends</span>
+					<span style={{color: "white"}}>Friends</span>
 				</div>
 				<div className={styles.divider} />
 
@@ -112,26 +73,15 @@ export function FriendsMain({
 					<div className={styles.tabRow} aria-label="Friends tabs">
 						<Tab label="Online" selected={activeTab === 'online'} onClick={() => setActiveTab('online')} />
 						<Tab label="All" selected={activeTab === 'all'} onClick={() => setActiveTab('all')} />
-						<Tab label="Pending" />
-						<Tab label="Blocked" />
 						<button className={styles.addFriend} type="button">
 							Add Friend
 						</button>
 					</div>
 				</div>
-
-				<div className={styles.topRight}>
-					<IconButton ariaLabel="Inbox" size="sm">
-						<InboxIcon />
-					</IconButton>
-					<IconButton ariaLabel="Help" size="sm">
-						<HelpIcon />
-					</IconButton>
-				</div>
 			</header>
 
 			<div className={styles.searchWrap}>
-				<SearchInput placeholder="Search" />
+				<SearchInput placeholder="Search" className={styles.searchInput} />
 			</div>
 
 			<div className={styles.sectionLabel}>{sectionLabel}</div>

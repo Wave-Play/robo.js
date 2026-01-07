@@ -34,7 +34,7 @@ export function ThreadList({ threads = [], onClose }: ThreadListProps) {
 			<div className={styles.container}>
 			<div className={styles.header}>
 				<div className={styles.headerIcon}>
-					<ThreadIcon width={20} height={20} fill="var(--interactive-normal)" />
+					<ThreadIcon width={20} height={20} fill="var(--interactive-default)" />
 				</div>
 				<h2 className={styles.headerTitle}>Threads</h2>
 				<div className={styles.searchContainer}>
@@ -54,7 +54,7 @@ export function ThreadList({ threads = [], onClose }: ThreadListProps) {
 			{threads.length === 0 ? (
 				<div className={styles.emptyWrap}>
 					<div className={styles.emptyIcon}>
-						<ThreadIcon width={32} height={32} fill="var(--interactive-normal)" />
+						<ThreadIcon width={32} height={32} fill="var(--interactive-default)" />
 					</div>
 					<div className={styles.emptyTitle}>There are no threads.</div>
 					<div className={styles.emptySub}>

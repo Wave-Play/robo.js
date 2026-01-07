@@ -1,5 +1,5 @@
 .container {
-	padding: 0 16px 24px;
+	padding: 0 16px var(--control-dock-offset);
 	position: relative;
 }
 
@@ -14,10 +14,10 @@
 .inputWrapper {
 	display: flex;
 	align-items: center;
-	background: var(--channel-text-area);
+	background: var(--text-input-background);
 	border-radius: 8px;
-	min-height: 44px;
-	border: 1px solid var(--background-modifier-accent);
+	min-height: var(--control-dock-height);
+	border: 1px solid var(--accent-overlay);
 	box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
 }
 
@@ -68,7 +68,7 @@
 	flex-shrink: 0;
 	background: none;
 	border: none;
-	color: var(--interactive-normal);
+	color: var(--interactive-default);
 	cursor: pointer;
 	padding: 0;
 	transition: color 0.15s ease;
@@ -89,7 +89,7 @@
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
-	min-height: 44px;
+	min-height: var(--control-dock-height);
 	margin-right: 12px;
 }
 
@@ -97,7 +97,7 @@
 	background: transparent;
 	border: none;
 	outline: none;
-	color: var(--text-normal);
+	color: var(--text-bright);
 	font-size: 15px;
 	font-family: var(--font-primary);
 	line-height: 1.375rem;
@@ -134,7 +134,7 @@
 	align-items: center;
 	gap: 2px;
 	padding-right: 12px;
-	height: 44px;
+	height: var(--control-dock-height);
 }
 
 .iconButton {
@@ -146,7 +146,7 @@
 	background: none;
 	border: none;
 	border-radius: 4px;
-	color: var(--interactive-normal);
+	color: var(--interactive-default);
 	cursor: pointer;
 	padding: 0;
 	transition: color 0.15s ease;
@@ -154,7 +154,7 @@
 
 .iconButton:hover {
 	color: var(--interactive-hover);
-	background-color: var(--background-modifier-hover);
+	background-color: var(--hover-overlay);
 }
 
 .iconButton svg {
@@ -163,7 +163,7 @@
 }
 
 .iconButton.active {
-	color: var(--brand-500);
+	color: var(--brand-primary);
 }
 
 .hiddenVisually {
@@ -205,10 +205,10 @@
 	align-items: center;
 	justify-content: space-between;
 	padding: 8px 16px;
-	background: var(--background-secondary);
+	background: var(--sidebar-left-background);
 	border-radius: 8px 8px 0 0;
 	margin: 0 16px;
-	border-bottom: 1px solid var(--background-tertiary);
+	border-bottom: 1px solid var(--card-background);
 }
 
 .replyContent {
@@ -232,7 +232,7 @@
 }
 
 .replyText strong {
-	color: var(--text-normal);
+	color: var(--text-bright);
 	font-weight: 500;
 }
 
@@ -245,7 +245,7 @@
 	background: none;
 	border: none;
 	border-radius: 4px;
-	color: var(--interactive-normal);
+	color: var(--interactive-default);
 	cursor: pointer;
 	padding: 0;
 	flex-shrink: 0;
@@ -254,5 +254,5 @@
 
 .replyClose:hover {
 	color: var(--interactive-hover);
-	background-color: var(--background-modifier-hover);
+	background-color: var(--hover-overlay);
 }

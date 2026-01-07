@@ -5,22 +5,22 @@
 	display: flex;
 	align-items: center;
 	gap: 12px;
-	border-bottom: 1px solid var(--background-modifier-accent);
-	background: var(--background-primary);
+	border-bottom: 1px solid var(--accent-overlay);
+	background: var(--main-chat-background);
 }
 
 .friendsTitle {
 	display: flex;
 	align-items: center;
 	gap: 10px;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 	font-weight: 700;
 }
 
 .divider {
 	width: 1px;
 	height: 24px;
-	background: var(--background-modifier-accent);
+	background: var(--accent-overlay);
 }
 
 .tabs {
@@ -40,19 +40,19 @@
 .tab {
 	padding: 6px 10px;
 	border-radius: var(--radius-sm);
-	color: var(--interactive-normal);
+	color: var(--interactive-default);
 	font-size: 14px;
 	font-weight: 600;
 }
 
 .tab:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 	color: var(--interactive-hover);
 }
 
 .tabSelected {
-	background: var(--background-modifier-selected);
-	color: var(--interactive-active);
+	background: var(--selected-overlay);
+	color: var(--interactive-hover);
 }
 
 .addFriend {
@@ -60,7 +60,7 @@
 	padding: 6px 10px;
 	border-radius: var(--radius-sm);
 	background: rgba(35, 165, 89, 0.18);
-	color: var(--green-400);
+	color: var(--green-light);
 	font-size: 14px;
 	font-weight: 700;
 }
@@ -84,12 +84,34 @@
 
 .searchWrap {
 	padding: 16px;
-	border-bottom: 1px solid var(--background-modifier-accent);
+	border-bottom: 1px solid var(--accent-overlay);
+}
+
+.searchInput {
+	width: 100%;
+}
+
+.searchInput input {
+	height: 32px;
+	padding: 0 12px 0 34px;
+	border-radius: 6px;
+	border: 1px solid var(--accent-overlay);
+	background: var(--main-chat-background);
+	color: var(--text-bright);
+}
+
+.searchInput input:focus {
+	border-color: var(--brand-primary);
+}
+
+.searchInput span {
+	left: 12px;
+	right: auto;
 }
 
 .sectionLabel {
 	padding: 12px 16px 8px;
-	color: var(--text-muted);
+	color: var(--text-hover);
 	font-size: 12px;
 	font-weight: 700;
 	text-transform: uppercase;

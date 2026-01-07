@@ -1,7 +1,7 @@
 .shell {
 	display: flex;
 	flex-direction: column;
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	height: 100%;
 	border-top-left-radius: var(--radius-lg);
 	overflow: hidden; /* clip rounded edge cleanly */
@@ -29,13 +29,13 @@
 	padding-block: 5px;
 	justify-content: center;
 	align-items: center;
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	position: relative;
 }
 
 .topTitle {
 	font-size: 14px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 	font-weight: 700;
 }
 
@@ -48,7 +48,7 @@
 }
 
 .serverList {
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -65,7 +65,7 @@
 .mainContent {
 	display: flex;
 	width: 100%;
-	border: 1px solid var(--background-modifier-accent);
+	border: 1px solid var(--accent-overlay);
 	border-radius: var(--radius-lg) 0 0 0; /* top-left only */
 	overflow: visible;
 	position: relative;
@@ -75,7 +75,7 @@
 	display: flex;
 	flex-direction: column;
 	width: -webkit-fill-available;
-	background: var(--background-primary);
+	background: var(--main-chat-background);
 	min-width: 0; /* Allow shrinking */
 	min-height: 0; /* Allow proper overflow scrolling in children */
 }
@@ -92,8 +92,8 @@
 	flex-shrink: 0;
 	display: flex;
 	flex-direction: column;
-	background: var(--background-tertiary);
-	border-top: 3px solid var(--brand-500);
+	background: var(--card-background);
+	border-top: 3px solid var(--brand-primary);
 	box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
 }
 
@@ -175,12 +175,12 @@
 	}
 
 	.sidebarMobile .serverList {
-		background: var(--background-tertiary);
+		background: var(--card-background);
 	}
 
 	.sidebarMobile .channelList {
 		flex: 1;
-		background: var(--background-secondary);
+		background: var(--sidebar-left-background);
 	}
 }
 

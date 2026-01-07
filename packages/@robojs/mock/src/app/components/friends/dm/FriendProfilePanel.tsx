@@ -20,64 +20,58 @@ function MoreIcon() {
 
 export function FriendProfilePanel({ friend }: { friend: FriendRowData }) {
 	const username = friend.username
+	const handle = `${username.toLowerCase()}2977`
+
 	return (
 		<div className={styles.root}>
-			<div className={styles.header}>Profile</div>
 			<div className={styles.scroll}>
-				<div className={styles.card}>
-					<div className={styles.banner}>
-						<div className={styles.bannerActions} aria-label="Profile actions">
-							<button className={['icon-button', styles.bannerBtn].join(' ')} aria-label="Add friend" type="button">
-								<UserPlusIcon />
-							</button>
-							<button className={['icon-button', styles.bannerBtn].join(' ')} aria-label="More" type="button">
-								<MoreIcon />
-							</button>
+				<div className={styles.banner}>
+					<div className={styles.bannerActions} aria-label="Profile actions">
+						<button className={['icon-button', styles.bannerBtn].join(' ')} aria-label="Add friend" type="button">
+							<UserPlusIcon />
+						</button>
+						<button className={['icon-button', styles.bannerBtn].join(' ')} aria-label="More" type="button">
+							<MoreIcon />
+						</button>
+					</div>
+				</div>
+
+				<div className={styles.content}>
+					<div className={styles.identity}>
+						<div className={styles.avatarRing}>
+							<Avatar
+								imageUrl={null}
+								size={72}
+								showStatus
+								statusBorderColor="var(--sidebar-left-background)"
+								statusColor="var(--status-online)"
+							/>
+						</div>
+						<div className={styles.nameBlock}>
+							<div className={styles.name}>{username}</div>
+							<div className={styles.sub}>{handle}</div>
 						</div>
 					</div>
-					<div className={styles.body}>
-						<div className={styles.top}>
-							<div className={styles.avatarRing}>
-								<Avatar
-									imageUrl={null}
-									size={72}
-									showStatus
-									statusBorderColor="var(--background-primary)"
-									statusColor="var(--status-online)"
-								/>
-							</div>
-							<div className={styles.nameBlock}>
-								<div className={styles.name}>{username}</div>
-								<div className={styles.sub}>{username.toLowerCase()}2977</div>
-							</div>
-						</div>
 
-						<div className={styles.section}>
-							<div className={styles.sectionTitle}>Member Since</div>
-							<div className={styles.row}>
-								<div className={styles.label}>Jun 19, 2016</div>
-								<div className={styles.value} />
-							</div>
-						</div>
-
-						<div className={styles.section}>
-							<button className={styles.linkRow} type="button">
-								<span>Mutual Servers — 1</span>
-								<span className={styles.chev}>›</span>
-							</button>
-							<div style={{ height: 10 }} />
-							<button className={styles.linkRow} type="button">
-								<span>Mutual Friends — 3</span>
-								<span className={styles.chev}>›</span>
-							</button>
-						</div>
-
-						<div className={styles.footerLink}>View Full Profile</div>
+					<div className={styles.card}>
+						<div className={styles.cardTitle}>Member Since</div>
+						<div className={styles.cardValue}>Jun 19, 2016</div>
 					</div>
+
+					<div className={styles.linkGroup} role="group" aria-label="Mutuals">
+						<button className={styles.linkRow} type="button">
+							<span>Mutual Servers - 1</span>
+							<span className={styles.chev}>&gt;</span>
+						</button>
+						<button className={styles.linkRow} type="button">
+							<span>Mutual Friends - 3</span>
+							<span className={styles.chev}>&gt;</span>
+						</button>
+					</div>
+
+					<div className={styles.footer}>View Full Profile</div>
 				</div>
 			</div>
 		</div>
 	)
 }
-
-

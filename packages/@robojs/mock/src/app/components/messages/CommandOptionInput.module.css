@@ -8,11 +8,11 @@
 	font-size: 12px;
 	font-weight: 700;
 	text-transform: uppercase;
-	color: var(--header-secondary);
+	color: var(--header-text-secondary);
 }
 
 .required {
-	color: var(--red-400);
+	color: var(--red-light);
 	margin-left: 2px;
 }
 
@@ -27,16 +27,16 @@
 	padding: 10px;
 	font-size: 14px;
 	font-family: inherit;
-	color: var(--text-normal);
-	background: var(--input-background);
-	border: 1px solid var(--background-tertiary);
+	color: var(--text-bright);
+	background: var(--text-input-background);
+	border: 1px solid var(--card-background);
 	border-radius: 3px;
 	outline: none;
 	transition: border-color 0.2s ease;
 }
 
 .input:focus {
-	border-color: var(--brand-500);
+	border-color: var(--brand-primary);
 }
 
 .input::placeholder {
@@ -58,9 +58,9 @@
 	padding: 10px;
 	font-size: 14px;
 	font-family: inherit;
-	color: var(--text-normal);
-	background: var(--input-background);
-	border: 1px solid var(--background-tertiary);
+	color: var(--text-bright);
+	background: var(--text-input-background);
+	border: 1px solid var(--card-background);
 	border-radius: 3px;
 	outline: none;
 	cursor: pointer;
@@ -72,12 +72,12 @@
 }
 
 .select:focus {
-	border-color: var(--brand-500);
+	border-color: var(--brand-primary);
 }
 
 .select option {
-	background: var(--background-floating);
-	color: var(--text-normal);
+	background: var(--modal-background);
+	color: var(--text-bright);
 }
 
 .checkboxWrapper {
@@ -90,8 +90,8 @@
 	width: 24px;
 	height: 24px;
 	border-radius: 6px;
-	border: 2px solid var(--background-tertiary);
-	background: var(--input-background);
+	border: 2px solid var(--card-background);
+	background: var(--text-input-background);
 	cursor: pointer;
 	appearance: none;
 	position: relative;
@@ -99,8 +99,8 @@
 }
 
 .checkbox:checked {
-	background: var(--brand-500);
-	border-color: var(--brand-500);
+	background: var(--brand-primary);
+	border-color: var(--brand-primary);
 }
 
 .checkbox:checked::after {
@@ -116,13 +116,13 @@
 }
 
 .checkbox:focus {
-	outline: 2px solid var(--brand-500);
+	outline: 2px solid var(--brand-primary);
 	outline-offset: 2px;
 }
 
 .checkboxLabel {
 	font-size: 14px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 	cursor: pointer;
 }
 
@@ -130,8 +130,8 @@
 	padding: 10px;
 	font-size: 14px;
 	color: var(--text-muted);
-	background: var(--input-background);
-	border: 1px dashed var(--background-tertiary);
+	background: var(--text-input-background);
+	border: 1px dashed var(--card-background);
 	border-radius: 3px;
 	text-align: center;
 }

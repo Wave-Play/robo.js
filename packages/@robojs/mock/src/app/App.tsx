@@ -39,7 +39,7 @@ export default function App({ testResultsMode = false }: AppProps) {
 					display: 'flex',
 					flexDirection: 'column',
 					height: '100vh',
-					background: 'var(--background-primary)'
+					background: 'var(--main-chat-background)'
 				}}>
 					<div style={{
 						flex: 1,
@@ -50,10 +50,10 @@ export default function App({ testResultsMode = false }: AppProps) {
 						flexDirection: 'column',
 						gap: '16px'
 					}}>
-						<h2 style={{ margin: 0, color: 'var(--text-normal)' }}>Test Results Viewer</h2>
+						<h2 style={{ margin: 0, color: 'var(--text-bright)' }}>Test Results Viewer</h2>
 						<p style={{ margin: 0 }}>View test results in the DevTools panel below</p>
 						<p style={{ margin: 0, fontSize: '12px' }}>
-							Press <kbd style={{ background: 'var(--background-secondary)', padding: '2px 6px', borderRadius: '4px' }}>Ctrl+Shift+D</kbd> to toggle DevTools
+							Press <kbd style={{ background: 'var(--sidebar-left-background)', padding: '2px 6px', borderRadius: '4px' }}>Ctrl+Shift+D</kbd> to toggle DevTools
 						</p>
 					</div>
 					<DevToolsPanel />
@@ -97,7 +97,7 @@ export default function App({ testResultsMode = false }: AppProps) {
 					<>
 						<KeyboardShortcuts />
 						<AppShell />
-						<div style={{ position: 'fixed', inset: 0, background: 'var(--background-tertiary)', zIndex: 9998 }}>
+						<div style={{ position: 'fixed', inset: 0, background: 'var(--card-background)', zIndex: 9998 }}>
 							<ConnectionScreen />
 						</div>
 					</>

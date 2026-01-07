@@ -1,5 +1,6 @@
 import type { FriendRowData } from '../friends.data'
-import { Avatar, IconButton, SearchInput } from '../../ui'
+import { Avatar, SearchInput } from '../../ui'
+import { ControlIconButton } from '../../sidebar/ControlIconButton'
 import styles from './DirectMessageTopBar.module.css'
 
 function PhoneIcon() {
@@ -56,30 +57,31 @@ export function DirectMessageTopBar({
 	return (
 		<div className={styles.bar}>
 			<div className={styles.left}>
-				<Avatar imageUrl={null} size={28} showStatus statusBorderColor="var(--background-primary)" statusColor="var(--status-online)" />
+				<Avatar imageUrl={null} size={28} showStatus statusBorderColor="var(--main-chat-background)" statusColor="var(--status-online)" />
 				<div className={styles.name}>{friend.username}</div>
 			</div>
 			<div className={styles.right}>
-				<IconButton ariaLabel="Start voice call" size="sm">
+				<ControlIconButton label="Start voice call" size="sm" tooltipPlacement="bottom">
 					<PhoneIcon />
-				</IconButton>
-				<IconButton ariaLabel="Start video call" size="sm">
+				</ControlIconButton>
+				<ControlIconButton label="Start video call" size="sm" tooltipPlacement="bottom">
 					<VideoIcon />
-				</IconButton>
-				<IconButton ariaLabel="Pinned messages" size="sm">
+				</ControlIconButton>
+				<ControlIconButton label="Pinned messages" size="sm" tooltipPlacement="bottom">
 					<PinIcon />
-				</IconButton>
-				<IconButton ariaLabel="Add friend to DM" size="sm">
+				</ControlIconButton>
+				<ControlIconButton label="Add friend to DM" size="sm" tooltipPlacement="bottom">
 					<AddFriendIcon />
-				</IconButton>
-				<IconButton
-					ariaLabel="Profile"
+				</ControlIconButton>
+				<ControlIconButton
+					label="Profile"
 					size="sm"
+					tooltipPlacement="bottom"
 					className={profileOpen ? styles.profileActive : undefined}
 					onClick={onToggleProfile}
 				>
 					<ProfileIcon />
-				</IconButton>
+				</ControlIconButton>
 				<SearchInput placeholder={`Search ${handle}`} className={styles.search} />
 			</div>
 		</div>
