@@ -32,7 +32,7 @@ export default async (request: RoboRequest) => {
 	// Determine protocol (ws for http, wss for https)
 	const protocol = host.includes('localhost') || host.startsWith('127.') ? 'ws' : 'wss'
 
-	return {
+	const response = {
 		url: `${protocol}://${host}`,
 		shards: 1,
 		session_start_limit: {
@@ -42,4 +42,9 @@ export default async (request: RoboRequest) => {
 			max_concurrency: 1
 		}
 	}
+
+	return new Response(JSON.stringify(response), {
+		status: 200,
+		headers: { 'Content-Type': 'application/json' }
+	})
 }

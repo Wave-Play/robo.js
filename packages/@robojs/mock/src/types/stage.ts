@@ -35,15 +35,21 @@ export type StageEventType =
 	// Voice (Phase 5P)
 	| 'voice_state_update'     // User joined/left/updated voice channel
 
+	// Guild/Channel events
+	| 'channel_update'         // Channel was updated
+	| 'guild_emojis_update'    // Guild emojis were updated
+
 	// Bot lifecycle
 	| 'bot_ready'              // Bot connected and ready
 	| 'bot_disconnected'       // Bot disconnected
 	| 'bot_error'              // Bot encountered error
+	| 'commands_updated'       // Bot commands were registered/updated
 
 	// System
 	| 'heartbeat'              // Keep-alive (every 30s)
 	| 'error'                  // Error occurred
 	| 'session_invalid'        // Session token is stale/expired
+	| 'control_action'         // Control action performed
 
 	// REST API (Phase 5K)
 	| 'rest_call'              // REST API call made by bot
@@ -51,6 +57,8 @@ export type StageEventType =
 	// Diagnostics
 	| 'event_filtered'         // Event was not delivered due to missing intent
 	| 'loop_detected'          // Event loop detected, circuit breaker triggered
+	| 'log_entry'              // Log entry from bot process
+	| 'permission_denied'      // Permission denied for an action
 
 /**
  * Command types sent from stage clients to server
@@ -68,6 +76,8 @@ export type StageCommandType =
 	| 'request_state'          // Request current state
 	| 'set_playback'           // Control playback (play/pause/seek)
 	| 'subscribe_channel'      // Subscribe to channel updates
+	| 'set_current_user'       // Set the current user for the session
+	| 'switch_user'            // Switch to a different user
 	// Voice (Phase 5P)
 	| 'join_voice'             // Join a voice channel
 	| 'leave_voice'            // Leave voice channel
