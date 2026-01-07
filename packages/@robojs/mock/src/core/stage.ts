@@ -36,7 +36,7 @@ import type {
 	StageSetCurrentUserData,
 	StageSwitchUserData
 } from '../types/stage.js'
-import type { MockApplicationCommand, MockApplicationCommandOption } from '../types/index.js'
+import type { MockApplicationCommand, MockApplicationCommandOption, MockUser } from '../types/index.js'
 import type { Session } from '../types/index.js'
 import { safeStringify } from '../utils/json.js'
 
@@ -918,12 +918,20 @@ export class StageServer {
 				case 'set_current_user': {
 					const data = command.data as StageSetCurrentUserData
 					// Update current user properties
-					const updatedUser = session.state.updateCurrentUser({
-						username: data.username,
-						avatar: data.avatar,
-						status: data.status,
-						activities: data.activities
-					})
+					const updates: Partial<Omit<MockUser, 'id'>> = {}
+					if (data.username !== undefined) {
+						updates.username = data.username
+					}
+					if (data.avatar !== undefined) {
+						updates.avatar = data.avatar
+					}
+					if (data.status !== undefined) {
+						updates.status = data.status
+					}
+					if (data.activities !== undefined) {
+						updates.activities = data.activities
+					}
+					const updatedUser = session.state.updateCurrentUser(updates)
 					// Broadcast current_user_update to all stage clients in this session
 					this.broadcastToSession(connState.sessionId, {
 						type: 'current_user_update',
