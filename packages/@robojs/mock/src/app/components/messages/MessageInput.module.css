@@ -116,7 +116,8 @@
 
 .placeholder {
 	position: absolute;
-	top: 10px;
+	top: 50%;
+	transform: translateY(-50%);
 	left: 0;
 	color: var(--text-muted);
 	pointer-events: none;

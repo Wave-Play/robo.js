@@ -13,7 +13,7 @@
 .mainPanel {
 	width: 320px;
 	max-width: calc(100vw - 32px);
-	background: var(--modal-background);
+	background: var(--dropdown-background);
 	border-radius: var(--radius-lg);
 	box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
 	overflow: hidden;
@@ -393,7 +393,7 @@
 	min-width: 240px;
 	max-width: calc(100vw - 24px);
 	padding: 8px;
-	background: var(--sidebar-left-background);
+	background: var(--dropdown-background);
 	border-radius: var(--radius-md);
 	box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
 	border: 1px solid var(--accent-overlay);
@@ -418,7 +418,7 @@
 	top: 0;
 	min-width: 200px;
 	padding: 8px;
-	background: var(--sidebar-left-background);
+	background: var(--dropdown-background);
 	border: 1px solid var(--accent-overlay);
 	box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
 }
@@ -437,7 +437,7 @@
 	min-width: 220px;
 	max-width: calc(100vw - 24px);
 	padding: 8px;
-	background: var(--sidebar-left-background);
+	background: var(--dropdown-background);
 	border-radius: var(--radius-md);
 	box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
 	border: 1px solid var(--accent-overlay);

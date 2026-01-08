@@ -4,7 +4,7 @@
 	right: 0;
 	margin-top: 8px;
 	width: fit-content;
-	background: var(--sidebar-left-background);
+	background: var(--main-chat-background);
 	border-radius: var(--radius-md);
 	border: 1px solid var(--accent-overlay);
 	box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
@@ -13,13 +13,13 @@
 
 .mainPanel {
 	padding: 8px;
-	background: var(--sidebar-left-background);
+	background: var(--dropdown-background);
 }
 
 .submenuPanel {
 	min-width: 200px;
 	padding: 8px;
-	background: var(--sidebar-left-background);
+	background: var(--dropdown-background);
 	border-left: 1px solid var(--accent-overlay);
 	border-radius: 0 var(--radius-md) var(--radius-md) 0;
 }

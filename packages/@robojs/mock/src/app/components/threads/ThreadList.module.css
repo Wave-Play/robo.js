@@ -6,7 +6,7 @@
 }
 
 .container {
-	background: var(--sidebar-left-background);
+	background: var(--dropdown-background);
 	overflow: hidden;
 	border: 1px solid var(--accent-overlay);
 	display: flex;

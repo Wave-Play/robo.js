@@ -5,6 +5,10 @@
 	width: 420px;
 	display: flex;
 	flex-direction: column;
+	background: var(--dropdown-background);
+	border-radius: var(--radius-md);
+	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.24);
+	overflow: hidden;
 }
 
 .header {
@@ -142,7 +146,7 @@
 .sadFace {
 	width: 80px;
 	height: 80px;
-	background: var(--sidebar-left-background);
+	background: #4e5058;
 	border-radius: 50%;
 	display: flex;
 	align-items: center;
@@ -160,7 +164,7 @@
 .eye {
 	width: 8px;
 	height: 8px;
-	background: var(--modal-background);
+	background: #1e1f22;
 	border-radius: 50%;
 }
 
@@ -169,7 +173,7 @@
 	bottom: 22px;
 	width: 24px;
 	height: 12px;
-	border: 3px solid var(--modal-background);
+	border: 3px solid #1e1f22;
 	border-top: none;
 	border-radius: 0 0 24px 24px;
 	transform: rotate(180deg);
@@ -180,7 +184,7 @@
 	top: -8px;
 	right: -4px;
 	transform: rotate(45deg);
-	color: var(--interactive-muted);
+	color: var(--status-positive);
 }
 
 .emptyText {
@@ -193,7 +197,7 @@
 
 .footer {
 	padding: 16px;
-	background: var(--card-background);
+	background: #232428;
 	text-align: center;
 }
 

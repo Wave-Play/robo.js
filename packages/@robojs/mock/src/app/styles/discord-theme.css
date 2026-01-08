@@ -12,6 +12,7 @@
 	--text-input-background: #222327; /* Message input field background */
 	--card-background: #121214; /* Cards, embeds, and content blocks */
 	--modal-background: #18191C; /* Floating modals and dropdowns */
+	--dropdown-background: #2b2d31; /* Dropdown/popup background - lighter grey */
 	--accent-background: #4E5058; /* Accent elements */
 
 	/* Overlay States (for hover, active, selected) */

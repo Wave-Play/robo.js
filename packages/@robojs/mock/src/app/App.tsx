@@ -7,6 +7,7 @@ import { ConnectionStatusOverlay } from './components/layout/ConnectionStatusOve
 import { ErrorBoundary } from './components/common/ErrorBoundary'
 import { KeyboardShortcuts } from './components/common/KeyboardShortcuts'
 import { Modal } from './components/modals/Modal'
+import { DisclaimerModal } from './components/modals/DisclaimerModal'
 import { DevToolsPanel } from './components/devtools/DevToolsPanel'
 import './styles/discord-theme.css'
 import './styles/globals.css'
@@ -26,6 +27,7 @@ export default function App({ testResultsMode = false }: AppProps) {
 			<ErrorBoundary>
 				<KeyboardShortcuts />
 				<AppShell />
+				<DisclaimerModal />
 			</ErrorBoundary>
 		)
 	}
@@ -58,6 +60,7 @@ export default function App({ testResultsMode = false }: AppProps) {
 					</div>
 					<DevToolsPanel />
 				</div>
+				<DisclaimerModal />
 			</ErrorBoundary>
 		)
 	}
@@ -107,6 +110,7 @@ export default function App({ testResultsMode = false }: AppProps) {
 						<DevToolsPanel />
 					</>
 				)}
+				<DisclaimerModal />
 			</ErrorBoundary>
 		)
 	}
@@ -118,6 +122,7 @@ export default function App({ testResultsMode = false }: AppProps) {
 			<ConnectionStatusOverlay onChangeSession={handleChangeSession} />
 			<AppShell />
 			{activeModal && <Modal modal={activeModal.modal} onClose={closeModal} onSubmit={handleModalSubmit} />}
+			<DisclaimerModal />
 		</ErrorBoundary>
 	)
 }
