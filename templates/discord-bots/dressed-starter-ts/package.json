@@ -1,0 +1,42 @@
+{
+	"name": "dressed-starter-ts",
+	"description": "",
+	"version": "1.0.0",
+	"type": "module",
+	"private": true,
+	"keywords": [
+		"bot",
+		"discord",
+		"discord.js",
+		"robo",
+		"robo.js",
+		"typescript"
+	],
+	"scripts": {
+		"build": "robo build",
+		"deploy": "robo deploy",
+		"dev": "robox dev",
+		"doctor": "sage doctor",
+		"invite": "robo invite",
+		"lint:style": "prettier --write .",
+		"start": "robo start",
+		"upgrade": "sage upgrade"
+	},
+	"dependencies": {
+		"@dressed/react": "^1.8.4",
+		"@robojs/dev": "link:/Users/pkmmte/Documents/GitHub/robo/packages/plugin-devtools",
+		"@robojs/discordjs": "link:/Users/pkmmte/Documents/GitHub/robo/packages/@robojs/discordjs",
+		"@robojs/mock": "link:/Users/pkmmte/Documents/GitHub/robo/packages/@robojs/mock",
+		"@robojs/server": "link:/Users/pkmmte/Documents/GitHub/robo/packages/plugin-api",
+		"discord.js": "^14.25.1",
+		"react": "^19.2.3",
+		"robo.js": "link:/Users/pkmmte/Documents/GitHub/robo/packages/robo"
+	},
+	"devDependencies": {
+		"@swc/core": "^1.15.8",
+		"@types/node": "^25.0.6",
+		"@types/react": "^19.2.8",
+		"prettier": "^3.7.4",
+		"typescript": "^5.9.3"
+	}
+}
