@@ -1,7 +1,8 @@
-import type { RoboRequest } from '@robojs/server'
+import { define } from '@robojs/server'
+import { z } from 'zod'
 import { sessionManager } from '../../core/manager.js'
 import type { CreateSessionOptions, SessionConfig } from '../../types/index.js'
-import { validateMethod, badRequest } from './utils.js'
+import { badRequest } from './utils.js'
 import { serializeSessionState } from '../../session/state.js'
 
 /**
@@ -34,9 +35,13 @@ interface CreateSessionBody {
 	config?: SessionConfig
 }
 
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['POST'])
+const CreateSessionSchema = z.object({
+	name: z.string().optional(),
+	ttl: z.number().optional(),
+	config: z.unknown().optional()
+})
 
+export const POST = define({ body: CreateSessionSchema }, async (request) => {
 	let body: CreateSessionBody = {}
 
 	// Parse body if present
@@ -76,4 +81,4 @@ export default async (request: RoboRequest) => {
 		expires_at: session.expiresAt,
 		state: serializeSessionState(session.state)
 	}
-}
+})

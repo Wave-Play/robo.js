@@ -308,6 +308,19 @@ export interface BuildContext {
 	 * ```
 	 */
 	entries?: EntriesAccessor
+
+	/**
+	 * Type of build being performed.
+	 * - `'robo'`: Building a Robo project
+	 * - `'plugin'`: Building a plugin for distribution
+	 */
+	buildType?: 'robo' | 'plugin'
+
+	/**
+	 * Name of the plugin being built (only set when buildType is 'plugin').
+	 * This is the package name from package.json.
+	 */
+	pluginName?: string
 }
 
 /**

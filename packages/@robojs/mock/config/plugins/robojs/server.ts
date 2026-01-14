@@ -12,5 +12,6 @@ export default {
 	 * registration by @robojs/server. The final path is: prefix + baseKey
 	 * where baseKey already includes `/api/`, so we only need `/mock` here.
 	 */
-	prefix: '/mock'
+	prefix: '/mock',
+	openapi: true
 }

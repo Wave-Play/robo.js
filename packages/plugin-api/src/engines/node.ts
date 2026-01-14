@@ -50,6 +50,7 @@ export class NodeEngine extends BaseEngine {
 				defaultHandler(req, socket, head)
 			} else {
 				logger.warn(`No WebSocket handler found for`, req.url)
+				socket.destroy()
 			}
 		})
 	}

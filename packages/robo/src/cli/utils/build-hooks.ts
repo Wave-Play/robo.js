@@ -50,6 +50,17 @@ export function createBuildStore(): BuildStore {
 }
 
 /**
+ * Options for build hook execution.
+ * Used to pass additional context about the build type.
+ */
+export interface BuildHookOptions {
+	/** Type of build being performed */
+	buildType?: 'robo' | 'plugin'
+	/** Name of the plugin being built (only set when buildType is 'plugin') */
+	pluginName?: string
+}
+
+/**
  * Resolve the build hook path for a plugin (compiled JS only).
  * Plugins don't use mode-specific builds - they're pre-built.
  */
@@ -101,20 +112,28 @@ export async function resolveProjectBuildHookPath(
  * @param config - Project configuration
  * @param mode - Build mode (supports custom modes like 'beta', 'staging', etc.)
  * @param store - Optional existing store (creates new one if not provided)
+ * @param options - Optional build hook options (buildType, pluginName)
  * @returns The BuildStore for use in subsequent hooks
  */
 export async function executeBuildStartHooks(
 	plugins: Map<string, PluginData>,
 	config: Config,
 	mode: string,
-	store?: BuildStore
+	store?: BuildStore,
+	options?: BuildHookOptions
 ): Promise<BuildStore> {
 	const loggerInstance = logger()
 
 	// Create or use existing store
 	const buildStore = store ?? createBuildStore()
 
-	// Create base context with mode-specific output path
+	// Create base context with appropriate output path
+	// Plugin builds use non-mode-specific output (.robo/build/) while project builds use mode-specific (.robo/build/{mode}/)
+	const outputPath =
+		options?.buildType === 'plugin'
+			? path.join(process.cwd(), '.robo', 'build')
+			: RoboPaths.build(mode)
+
 	const baseContext: BuildContext = {
 		mode,
 		env: Env,
@@ -122,10 +141,12 @@ export async function executeBuildStartHooks(
 		paths: {
 			root: process.cwd(),
 			src: path.join(process.cwd(), 'src'),
-			output: RoboPaths.build(mode)
+			output: outputPath
 		},
 		config,
-		store: buildStore
+		store: buildStore,
+		buildType: options?.buildType,
+		pluginName: options?.pluginName
 	}
 
 	// 1. Execute project's build/start hook first (if exists)
@@ -199,6 +220,7 @@ export async function executeBuildStartHooks(
  * @param mode - Build mode
  * @param store - BuildStore from previous hooks
  * @param entries - Route entries to transform
+ * @param options - Optional build hook options (buildType, pluginName)
  * @returns Transformed route entries
  */
 export async function executeBuildTransformHooks(
@@ -206,7 +228,8 @@ export async function executeBuildTransformHooks(
 	config: Config,
 	mode: string,
 	store: BuildStore,
-	entries: RouteEntries
+	entries: RouteEntries,
+	options?: BuildHookOptions
 ): Promise<RouteEntries> {
 	const loggerInstance = logger()
 
@@ -242,7 +265,13 @@ export async function executeBuildTransformHooks(
 		}
 	}
 
-	// Create base context with entries accessor (using mode-specific output path)
+	// Create base context with entries accessor
+	// Plugin builds use non-mode-specific output (.robo/build/) while project builds use mode-specific (.robo/build/{mode}/)
+	const outputPath =
+		options?.buildType === 'plugin'
+			? path.join(process.cwd(), '.robo', 'build')
+			: RoboPaths.build(mode)
+
 	const baseContext: BuildTransformContext = {
 		mode,
 		env: Env,
@@ -250,11 +279,13 @@ export async function executeBuildTransformHooks(
 		paths: {
 			root: process.cwd(),
 			src: path.join(process.cwd(), 'src'),
-			output: RoboPaths.build(mode)
+			output: outputPath
 		},
 		config,
 		store,
-		entries: entriesAccessor
+		entries: entriesAccessor,
+		buildType: options?.buildType,
+		pluginName: options?.pluginName
 	}
 
 	// Flatten entries for transform hooks
@@ -417,13 +448,15 @@ export interface BuildCompleteResult {
  * @param mode - Build mode (supports custom modes like 'beta', 'staging', etc.)
  * @param store - BuildStore from previous hooks
  * @param routeEntries - Optional route entries for metadata aggregation
+ * @param options - Optional build hook options (buildType, pluginName)
  */
 export async function executeBuildCompleteHooks(
 	plugins: Map<string, PluginData>,
 	config: Config,
 	mode: string,
 	store: BuildStore,
-	routeEntries?: RouteEntries
+	routeEntries?: RouteEntries,
+	options?: BuildHookOptions
 ): Promise<BuildCompleteResult> {
 	const loggerInstance = logger()
 
@@ -464,7 +497,13 @@ export async function executeBuildCompleteHooks(
 		}
 	}
 
-	// Create base context with entries accessor and metadata methods (using mode-specific output path)
+	// Create base context with entries accessor and metadata methods
+	// Plugin builds use non-mode-specific output (.robo/build/) while project builds use mode-specific (.robo/build/{mode}/)
+	const outputPath =
+		options?.buildType === 'plugin'
+			? path.join(process.cwd(), '.robo', 'build')
+			: RoboPaths.build(mode)
+
 	const baseContext: BuildCompleteContext = {
 		mode,
 		env: Env,
@@ -472,11 +511,13 @@ export async function executeBuildCompleteHooks(
 		paths: {
 			root: process.cwd(),
 			src: path.join(process.cwd(), 'src'),
-			output: RoboPaths.build(mode)
+			output: outputPath
 		},
 		config,
 		store,
 		entries: entriesAccessor,
+		buildType: options?.buildType,
+		pluginName: options?.pluginName,
 		registerMetadataAggregator<T extends AggregatedMetadata>(
 			namespace: string,
 			aggregator: MetadataAggregator<T>

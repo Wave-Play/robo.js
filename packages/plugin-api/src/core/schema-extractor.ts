@@ -41,7 +41,7 @@ async function convertToExtracted(schema: EndpointSchema): Promise<ExtractedSche
 		deprecated: schema.deprecated
 	}
 
-	const options = { target: 'openapi-3.0' as const }
+	const options = { target: 'draft-2020-12' as const }
 
 	if (schema.body) {
 		extracted.body = z.toJSONSchema(schema.body, options) as object
