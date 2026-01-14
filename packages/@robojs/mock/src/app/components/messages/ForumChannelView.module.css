@@ -1,139 +1,226 @@
 .container {
 	display: flex;
 	flex-direction: column;
-	gap: 18px;
-	padding: 20px 24px 28px;
+	gap: 12px;
+	padding: 16px 20px 24px;
 	height: 100%;
 	overflow-y: auto;
 }
 
 .header {
 	display: flex;
-	align-items: flex-start;
-	justify-content: space-between;
-	gap: 16px;
-}
-
-.headerInfo {
-	display: flex;
 	flex-direction: column;
-	gap: 6px;
+	gap: 12px;
 }
 
-.headerBadge {
-	align-self: flex-start;
-	padding: 4px 10px;
-	border-radius: 999px;
-	background: rgba(35, 165, 89, 0.18);
-	color: var(--green-light);
-	font-size: 12px;
-	font-weight: 600;
-	letter-spacing: 0.02em;
-	text-transform: uppercase;
+.channelMeta {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
 }
 
-.headerTitle {
-	font-size: 24px;
+.channelIcon {
+	width: 36px;
+	height: 36px;
+	border-radius: 12px;
+	background: var(--card-background);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--brand-primary);
+}
+
+.channelName {
+	font-size: 18px;
 	font-weight: 700;
-	color: var(--header-text-primary);
-}
-
-.headerSubtitle {
-	font-size: 14px;
-	color: var(--header-text-secondary);
-}
-
-.headerActions {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-}
-
-.search {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	background: var(--sidebar-left-background);
-	border-radius: 8px;
-	padding: 8px 10px;
-	color: var(--text-muted);
-	min-width: 220px;
-}
-
-.search input {
 	color: var(--text-bright);
-	width: 100%;
+}
+
+.channelSubtitle {
 	font-size: 13px;
+	color: var(--header-text-secondary);
+	margin-top: 2px;
 }
 
-.newPost {
-	padding: 8px 14px;
-	border-radius: 8px;
-	background: var(--green-light);
-	color: #0b0b0b;
-	font-weight: 700;
-	font-size: 13px;
-}
-
-.newPost:hover {
-	background: var(--green-medium);
-}
-
-.filters {
+.searchRow {
 	display: flex;
 	align-items: center;
 	gap: 10px;
 	flex-wrap: wrap;
 }
 
-.filterChip {
-	padding: 6px 12px;
-	border-radius: 999px;
-	background: var(--sidebar-left-background);
-	color: var(--text-muted);
-	font-size: 12px;
-	font-weight: 600;
-}
-
-.filterChip.active {
-	background: var(--brand-primary);
-	color: white;
-}
-
-.sort {
-	margin-left: auto;
+.searchBox {
+	flex: 1;
 	display: flex;
 	align-items: center;
 	gap: 8px;
-	font-size: 12px;
+	background: var(--sidebar-left-background);
+	border: 1px solid var(--accent-overlay);
+	border-radius: 10px;
+	padding: 10px 12px;
 	color: var(--text-muted);
+	min-width: 220px;
+}
+
+.searchBox input {
+	flex: 1;
+	background: transparent;
+	border: none;
+	color: var(--text-bright);
+	font-size: 14px;
+}
+
+.primaryButton {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 10px 14px;
+	border-radius: 8px;
+	background: var(--brand-primary);
+	color: #ffffff;
+	font-weight: 700;
+	transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.primaryButton:hover:not(:disabled) {
+	background: var(--brand-dark);
+	transform: translateY(-1px);
+}
+
+.primaryButton:disabled {
+	opacity: 0.7;
+	cursor: not-allowed;
+}
+
+.toolbar {
+	display: flex;
+	align-items: center;
+	gap: 8px;
 }
 
 .sortButton {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
-	padding: 6px 10px;
+	padding: 8px 12px;
+	border-radius: 999px;
+	background: var(--sidebar-left-background);
+	color: var(--text-bright);
+	border: 1px solid var(--accent-overlay);
+}
+
+.composer {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	background: var(--sidebar-left-background);
+	border: 1px solid var(--accent-overlay);
+	border-radius: 12px;
+	padding: 12px;
+}
+
+.composerHeader {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.titleInput {
+	flex: 1;
+	background: transparent;
+	border: none;
+	color: var(--text-bright);
+	font-size: 16px;
+	font-weight: 700;
+	padding: 6px 0;
+}
+
+.closeComposer {
+	background: transparent;
+	color: var(--text-muted);
+	border-radius: var(--radius-sm);
+	padding: 6px;
+	transition: background 0.15s ease, color 0.15s ease;
+}
+
+.closeComposer:hover {
+	background: var(--hover-overlay);
+	color: var(--text-bright);
+}
+
+.bodyInput {
+	width: 100%;
+	background: var(--main-chat-background);
+	border: 1px solid var(--accent-overlay);
+	border-radius: 10px;
+	padding: 10px 12px;
+	color: var(--text-bright);
+	font-size: 14px;
+	min-height: 96px;
+	resize: vertical;
+}
+
+.error {
+	color: var(--red-light);
+	font-size: 12px;
+	margin-top: 4px;
+}
+
+.composerFooter {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+.composerHint {
+	color: var(--text-muted);
+	font-size: 12px;
+}
+
+.composerActions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.secondaryButton {
+	padding: 9px 14px;
 	border-radius: 8px;
 	background: var(--sidebar-left-background);
 	color: var(--text-bright);
+	border: 1px solid var(--accent-overlay);
 	font-weight: 600;
+	transition: background 0.15s ease, color 0.15s ease;
 }
 
-.postGrid {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-	gap: 16px;
+.secondaryButton:hover {
+	background: var(--hover-overlay);
+}
+
+.postList {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
 }
 
 .postCard {
-	display: flex;
-	flex-direction: column;
-	gap: 12px;
-	padding: 14px;
-	border-radius: 12px;
+	display: block;
+	width: 100%;
+	text-align: left;
+	padding: 14px 16px;
+	border-radius: 10px;
 	background: var(--sidebar-left-background);
 	border: 1px solid var(--accent-overlay);
+	transition:
+		border-color 0.15s ease,
+		background 0.15s ease;
+}
+
+.postCard:hover {
+	border-color: var(--brand-primary);
+	background: color-mix(in srgb, var(--brand-primary) 8%, var(--sidebar-left-background));
 }
 
 .postHeader {
@@ -144,82 +231,54 @@
 }
 
 .postTitle {
-	font-size: 16px;
+	font-size: 15px;
 	font-weight: 700;
-	color: var(--header-text-primary);
+	color: var(--text-bright);
 }
 
-.postArchived {
+.postBadge {
 	padding: 3px 8px;
 	border-radius: 999px;
-	background: rgba(242, 63, 67, 0.2);
+	background: rgba(242, 63, 67, 0.18);
 	color: var(--red-light);
 	font-size: 11px;
-	font-weight: 600;
+	font-weight: 700;
 }
 
 .postPreview {
+	margin: 6px 0 10px;
+	color: var(--header-text-secondary);
 	font-size: 13px;
-	color: var(--text-muted);
 	line-height: 1.4;
-	min-height: 40px;
 }
 
 .postMeta {
 	display: flex;
-	gap: 12px;
-}
-
-.metaRow {
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
-}
-
-.metaLabel {
-	font-size: 11px;
-	text-transform: uppercase;
-	color: var(--text-muted);
-	letter-spacing: 0.04em;
-}
-
-.metaValue {
-	font-size: 13px;
-	font-weight: 600;
-	color: var(--text-bright);
-}
-
-.postFooter {
-	display: flex;
 	align-items: center;
-	justify-content: space-between;
-}
-
-.postButton {
-	padding: 6px 12px;
-	border-radius: 8px;
-	background: var(--card-background);
-	color: var(--text-bright);
+	gap: 8px;
+	color: var(--header-text-secondary);
 	font-size: 12px;
-	font-weight: 600;
 }
 
-.postTag {
-	padding: 4px 10px;
-	border-radius: 999px;
-	background: var(--card-background);
-	color: var(--text-muted);
-	font-size: 11px;
-	font-weight: 600;
+.metaItem {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.dot {
+	width: 4px;
+	height: 4px;
+	border-radius: 50%;
+	background: var(--divider-color);
 }
 
 .emptyState {
-	grid-column: 1 / -1;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	gap: 10px;
-	padding: 32px;
+	padding: 36px 16px;
 	border-radius: 12px;
 	background: var(--sidebar-left-background);
 	border: 1px dashed var(--accent-overlay);
@@ -227,14 +286,14 @@
 }
 
 .emptyIcon {
-	width: 56px;
-	height: 56px;
-	border-radius: 50%;
+	width: 52px;
+	height: 52px;
+	border-radius: 14px;
 	background: var(--card-background);
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	color: var(--interactive-default);
+	color: var(--brand-primary);
 }
 
 .emptyTitle {
@@ -248,10 +307,14 @@
 	color: var(--text-muted);
 }
 
-.emptyButton {
-	padding: 8px 16px;
-	border-radius: 8px;
-	background: var(--brand-primary);
-	color: white;
-	font-weight: 600;
+@media (max-width: 640px) {
+	.searchRow {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.primaryButton {
+		width: 100%;
+		justify-content: center;
+	}
 }

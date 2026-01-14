@@ -7,6 +7,8 @@ import { Attachments } from './Attachments'
 import { ComponentsContainer } from './ComponentRow'
 import { Reactions } from './Reactions'
 import { EphemeralBadge } from './EphemeralBadge'
+import PinIcon from '../icons/pin'
+import ThreadIcon from '../icons/thread'
 import styles from './Message.module.css'
 
 // Discord message flags
@@ -58,6 +60,8 @@ interface MessageProps {
 	replyMessage?: StageMessage
 	isFirstInGroup: boolean
 	isHighlighted?: boolean
+	onOpenThreads?: () => void
+	onOpenThread?: (threadId: string) => void
 	onDismissEphemeral?: (messageId: string) => void
 	onButtonClick?: (messageId: string, customId: string) => Promise<void>
 	onSelectOption?: (messageId: string, customId: string, values: string[]) => Promise<void>
@@ -72,6 +76,8 @@ export function Message({
 	replyMessage,
 	isFirstInGroup,
 	isHighlighted,
+	onOpenThreads,
+	onOpenThread,
 	onDismissEphemeral,
 	onButtonClick,
 	onSelectOption,
@@ -84,6 +90,7 @@ export function Message({
 	const isEphemeral = ((flags ?? 0) & MESSAGE_FLAGS.EPHEMERAL) !== 0
 	const isV2 = ((flags ?? 0) & MESSAGE_FLAGS.IS_COMPONENTS_V2) !== 0
 	const isSystemMessage = type === MESSAGE_TYPES.GUILD_MEMBER_JOIN
+	const isThreadCreated = type === MESSAGE_TYPES.THREAD_CREATED
 	const rawMessage = message as StageMessage & {
 		interaction_metadata?: { user?: StageUser }
 		interactionMetadata?: { user?: StageUser }
@@ -134,9 +141,76 @@ export function Message({
 		)
 	}
 
+	if (isThreadCreated) {
+		const threadName = (rawMessage.thread_name || 'New Thread').trim()
+		const threadOwner = rawMessage.thread_owner || author
+		const threadOwnerName = threadOwner?.username || 'Unknown'
+		const threadId = rawMessage.thread_id
+		const threadMessageCount = rawMessage.thread_message_count ?? 0
+		const lastMessageAt = rawMessage.thread_last_message_at || timestamp
+		const messageCountLabel = `${Math.max(threadMessageCount, 1)} Message${Math.max(threadMessageCount, 1) === 1 ? '' : 's'}`
+
+		return (
+			<div
+				className={styles.threadSystem}
+				onContextMenu={onContextMenu ? (e) => onContextMenu(e, message) : undefined}
+			>
+				<div className={styles.threadSystemIcon}>
+					<ThreadIcon width={18} height={18} />
+				</div>
+				<div className={styles.threadSystemContent}>
+					<div className={styles.threadSystemLine}>
+						<span className={styles.threadAuthorName}>{author.username}</span>
+						<span> started a thread: </span>
+						<span className={styles.threadInlineIcon}>
+							<ThreadIcon width={18} height={18} />
+						</span>
+						<span className={styles.threadNameText}>{threadName}</span>
+						<span>.</span>
+						{onOpenThreads && (
+							<>
+								<span> </span>
+								<button type="button" className={styles.threadLink} onClick={onOpenThreads}>
+									See all threads
+								</button>
+							</>
+						)}
+						<span className={styles.threadMetaDot}>·</span>
+						<span className={styles.threadTimestamp}>{formatTimestamp(timestamp)}</span>
+					</div>
+					<button
+						type="button"
+						className={styles.threadPreview}
+						onClick={() => {
+							if (threadId && onOpenThread) {
+								onOpenThread(threadId)
+							}
+						}}
+						disabled={!threadId || !onOpenThread}
+						aria-label={threadId ? `Open thread ${threadName}` : 'Thread unavailable'}
+					>
+						<div className={styles.threadPreviewIcon}>
+							<ThreadIcon width={18} height={18} />
+						</div>
+						<div className={styles.threadPreviewContent}>
+							<div className={styles.threadPreviewTitle}>{threadName}</div>
+							<div className={styles.threadPreviewMeta}>
+								<span>{messageCountLabel}</span>
+								<span className={styles.threadMetaDot}>·</span>
+								<span>{threadOwnerName}</span>
+								<span className={styles.threadMetaDot}>·</span>
+								<span>{formatTimestamp(lastMessageAt, 'short')}</span>
+							</div>
+						</div>
+					</button>
+				</div>
+			</div>
+		)
+	}
+
 	return (
 		<div
-			className={`${styles.message} ${isHighlighted ? styles.highlighted : ''} ${isEphemeral ? styles.ephemeral : ''}`}
+			className={`${styles.message} ${!isFirstInGroup ? styles.grouped : ''} ${isHighlighted ? styles.highlighted : ''} ${isEphemeral ? styles.ephemeral : ''}`}
 			onContextMenu={onContextMenu ? (e) => onContextMenu(e, message) : undefined}
 		>
 			<div className={styles.hoverActions}>
@@ -216,7 +290,11 @@ export function Message({
 									<span>APP</span>
 								</span>
 							)}
-							{pinned && <span className={styles.pinnedBadge} title="Pinned"><PinIcon /></span>}
+							{pinned && (
+								<span className={styles.pinnedBadge} title="Pinned">
+									<PinIcon width={14} height={14} />
+								</span>
+							)}
 							<span className={styles.timestamp}>{formatTimestamp(timestamp)}</span>
 						</div>
 						<MessageContent
@@ -368,7 +446,15 @@ function MessageContent({
 			{interactionMeta?.user && (
 				<div className={styles.interactionInfo}>
 					<span className={styles.interactionIcon}>
-						<SlashIcon />
+						<img
+							src={getAvatarUrl(interactionMeta.user.id, interactionMeta.user.avatar)}
+							alt=""
+							className={styles.interactionAvatar}
+							onError={(event) => {
+								const target = event.target as HTMLImageElement
+								target.src = getAvatarUrl(interactionMeta.user.id, null)
+							}}
+						/>
 					</span>
 					<span className={styles.interactionText}>
 						{interactionMeta.user.username} used {interactionMeta.name ? `/${interactionMeta.name}` : 'a command'}
@@ -459,14 +545,6 @@ function getReplySnippet(message?: StageMessage): string {
 }
 
 // Icon components for message indicators
-function PinIcon() {
-	return (
-		<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-			<path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l5.59-5.59L19 10l-7 7z" />
-		</svg>
-	)
-}
-
 function SlashIcon() {
 	return (
 		<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">

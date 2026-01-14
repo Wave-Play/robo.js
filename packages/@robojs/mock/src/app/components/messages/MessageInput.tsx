@@ -9,7 +9,7 @@ import styles from './MessageInput.module.css'
 import GiftIcon from '../icons/gift'
 import GifIcon from '../icons/gif'
 import EmojiIcon from '../icons/emoji'
-import FileIcon from '../icons/file'
+import StickersIcon from '../icons/stickers'
 
 interface MessageInputProps {
 	channelId: string
@@ -434,30 +434,30 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
 
 									<div className={styles.iconButton} aria-label="Open sticker picker" role="button" tabIndex={0}>
 										<div className={styles.iconButtonInner}>
-											<FileIcon  width={25} height={25} />
+											<StickersIcon  width={25} height={25} />
 										</div>
 									</div>
 
 									<div className={styles.emojiButtonWrapper}>
-									<div
-										ref={emojiButtonRef}
-										className={styles.iconButton}
-										aria-label="Add Emoji"
-										role="button"
-										tabIndex={0}
-										onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-									>
-										<div className={styles.iconButtonInner}>
-											<EmojiIcon width={25} height={25} />
+										<div
+											ref={emojiButtonRef}
+											className={styles.iconButton}
+											aria-label="Add Emoji"
+											role="button"
+											tabIndex={0}
+											onClick={() => setShowEmojiPicker((prev) => !prev)}
+										>
+											<div className={styles.iconButtonInner}>
+												<EmojiIcon width={25} height={25} />
+											</div>
 										</div>
+										{showEmojiPicker && (
+											<EmojiPicker
+												onSelect={handleEmojiSelect}
+												onClose={() => setShowEmojiPicker(false)}
+											/>
+										)}
 									</div>
-									{showEmojiPicker && (
-										<EmojiPicker
-											onSelect={handleEmojiSelect}
-											onClose={() => setShowEmojiPicker(false)}
-										/>
-									)}
-								</div>
 								</div>
 							</div>
 						</div>

@@ -1,6 +1,7 @@
 import type { FriendRowData } from '../friends.data'
 import { Avatar, SearchInput } from '../../ui'
 import { ControlIconButton } from '../../sidebar/ControlIconButton'
+import PinIcon from '../../icons/pin'
 import styles from './DirectMessageTopBar.module.css'
 
 function PhoneIcon() {
@@ -15,14 +16,6 @@ function VideoIcon() {
 	return (
 		<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
 			<path d="M3 7a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v2.2l3.6-2a1 1 0 0 1 1.4.9v8a1 1 0 0 1-1.4.9l-3.6-2V17a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7Zm3-1a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H6Z" />
-		</svg>
-	)
-}
-
-function PinIcon() {
-	return (
-		<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-			<path d="M14 2l8 8-3 3v6h-2l-2-2-3 3v2h-2v-2l-3-3-2 2H3v-6L0 10l8-8 3 3 3-3Z" />
 		</svg>
 	)
 }
@@ -68,7 +61,7 @@ export function DirectMessageTopBar({
 					<VideoIcon />
 				</ControlIconButton>
 				<ControlIconButton label="Pinned messages" size="sm" tooltipPlacement="bottom">
-					<PinIcon />
+					<PinIcon width={20} height={20} />
 				</ControlIconButton>
 				<ControlIconButton label="Add friend to DM" size="sm" tooltipPlacement="bottom">
 					<AddFriendIcon />

@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import type { StageApplicationCommand, StageMessage, StageUser } from '../../types/stage'
 import { useDropdownPosition, DropdownContainer, ListItem, ListItemSeparator, ListItemHeader } from '../base'
+import PinIcon from '../icons/pin'
 import styles from './ContextMenu.module.css'
 
 interface ContextMenuProps {
@@ -142,7 +143,7 @@ export function ContextMenu({
 					{onPinMessage && (
 						<ListItem
 							label={isPinned ? 'Unpin Message' : 'Pin Message'}
-							icon={<PinIcon />}
+							icon={<PinIcon width={16} height={16} />}
 							className={styles.menuItem}
 							onClick={handlePinMessage}
 							role="menuitem"
@@ -196,14 +197,6 @@ function ReplyIcon() {
 	return (
 		<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
 			<path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z" />
-		</svg>
-	)
-}
-
-function PinIcon() {
-	return (
-		<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-			<path d="M22 12L12.101 2.10101L10.686 3.51401L12.101 4.92901L7.15096 9.87801V9.88001L5.73596 8.46501L4.32196 9.88001L8.56496 14.122L2.90796 19.778L4.32196 21.192L9.97896 15.536L14.222 19.778L15.636 18.364L14.222 16.95L19.171 12H19.172L20.586 13.414L22 12Z" />
 		</svg>
 	)
 }

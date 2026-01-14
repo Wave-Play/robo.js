@@ -117,16 +117,26 @@
 	font-size: 14px;
 	font-weight: 500;
 	color: var(--text-bright);
+	margin-left: -4px;
 }
 
 .welcomeCardCheck {
-	color: var(--status-online);
+	width: 22px;
+	height: 22px;
+	border-radius: 6px;
+	border: 1px solid var(--accent-overlay);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--text-muted);
 	flex-shrink: 0;
+	background: var(--card-background);
 }
 
-.welcomeCardChevron {
-	color: var(--interactive-default);
-	flex-shrink: 0;
+.welcomeCardCheckActive {
+	background: var(--green-medium);
+	border-color: var(--green-medium);
+	color: #fff;
 }
 
 /* Date divider between message groups */
@@ -236,6 +246,232 @@
 	color: var(--text-bright);
 	font-size: 12px;
 	font-weight: 600;
+}
+
+/* Voice split layout */
+.voiceLayout {
+	flex-direction: row;
+	gap: 12px;
+}
+
+.voiceStage {
+	position: relative;
+	flex: 0 0 44%;
+	min-height: 320px;
+	border-radius: 0;
+	overflow: hidden;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background:
+		radial-gradient(circle at 30% 20%, rgba(88, 101, 242, 0.45), rgba(9, 11, 24, 0.65)),
+		radial-gradient(circle at 70% 70%, rgba(88, 101, 242, 0.35), rgba(12, 12, 20, 0.95));
+	color: var(--text-bright);
+	text-align: center;
+}
+
+.voiceStageFull {
+	flex: 1;
+	width: 100%;
+}
+
+.voiceSolo {
+	flex-direction: column;
+}
+
+.voiceGlow {
+	position: absolute;
+	inset: 0;
+	background:
+		radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.08), transparent 50%),
+		radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.05), transparent 45%);
+}
+
+.voiceStageContent {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 10px;
+	padding: 16px;
+}
+
+.voiceStageTitle {
+	font-size: 24px;
+	font-weight: 800;
+}
+
+.voiceStageSubtitle {
+	font-size: 14px;
+	color: var(--header-text-secondary);
+}
+
+.voiceCta {
+	margin-top: 6px;
+	padding: 10px 18px;
+	border-radius: 10px;
+	background: var(--text-bright);
+	color: var(--main-chat-background);
+	font-weight: 700;
+	transition: transform 0.1s ease, opacity 0.15s ease;
+}
+
+.voiceCta:hover {
+	transform: translateY(-1px);
+}
+
+.voiceCtaLeave {
+	background: var(--red-light);
+	color: var(--text-bright);
+}
+
+.voiceParticipants {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 8px;
+	margin-top: 8px;
+}
+
+.voiceChip {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 10px;
+	border-radius: 999px;
+	background: rgba(0, 0, 0, 0.28);
+}
+
+.voiceAvatar {
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	overflow: hidden;
+	background: rgba(0, 0, 0, 0.35);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: 700;
+	color: var(--text-bright);
+}
+
+.voiceAvatar img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.voiceChipText {
+	color: var(--text-bright);
+	font-weight: 600;
+}
+
+.voiceChatPane {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	border-radius: 12px;
+	border: 1px solid var(--accent-overlay);
+	background: var(--sidebar-left-background);
+	overflow: hidden;
+}
+
+
+.voiceChatHeader {
+	padding: 12px 14px;
+	border-bottom: 1px solid var(--accent-overlay);
+	font-size: 14px;
+	font-weight: 700;
+	color: var(--header-text-primary);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.voiceChatTitle {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.voiceChatActions {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.voiceActionButton {
+	width: 30px;
+	height: 30px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 8px;
+	color: var(--text-bright);
+	background: transparent;
+	transition: background 0.15s ease, color 0.15s ease;
+}
+
+.voiceActionButton:hover {
+	background: var(--hover-overlay);
+	color: var(--interactive-hover);
+}
+
+.voiceMenu {
+	position: relative;
+}
+
+.voiceMenuDropdown {
+	position: absolute;
+	right: 0;
+	top: 38px;
+	background: var(--dropdown-background);
+	border-radius: 8px;
+	border: 1px solid var(--accent-overlay);
+	padding: 6px;
+	min-width: 160px;
+	box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+	z-index: 5;
+}
+
+.voiceMenuItem {
+	width: 100%;
+	text-align: left;
+	padding: 8px 10px;
+	border-radius: 6px;
+	color: var(--text-bright);
+	background: transparent;
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.voiceMenuItem:hover {
+	background: var(--hover-overlay);
+}
+
+.voiceMessages {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+}
+
+.voiceInput {
+	padding: 0 12px 12px;
+}
+
+@media (max-width: 960px) {
+	.voiceLayout {
+		flex-direction: column;
+	}
+
+	.voiceStage {
+		flex-basis: auto;
+		min-height: 260px;
+	}
+
 }
 
 @keyframes pulse {

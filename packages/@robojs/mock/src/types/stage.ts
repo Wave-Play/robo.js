@@ -143,6 +143,8 @@ export interface StageChannel {
 	parent_id?: Snowflake | null
 	position?: number
 	topic?: string | null
+	/** Mock-only flag to indicate restricted/private channels */
+	is_private?: boolean
 	// Thread-specific fields (types 10, 11, 12)
 	thread_metadata?: {
 		archived: boolean
@@ -268,6 +270,12 @@ export interface StageMessage {
 		name?: string
 		user: StageUser
 	}
+	// Mock-only thread metadata for thread created messages
+	thread_id?: Snowflake
+	thread_name?: string
+	thread_owner?: StageUser
+	thread_message_count?: number
+	thread_last_message_at?: string
 }
 
 // ============================================================================

@@ -4,6 +4,7 @@ import { usePlayback, usePlaybackControls, usePlaybackGuilds, usePlaybackChannel
 import { useUnifiedSelection } from '../stores/unifiedSelectionStore'
 import { useCurrentUser } from './useCurrentUser'
 import { MentionParser } from '../../utils/mention-parser'
+import { createLocalId } from '../utils'
 import type { ModalActionRow, ModalData } from '../components/modals/Modal'
 import type { StageMessage, StageUser, StageGuild, StageChannel, StageMember, StageRole, StageVoiceState, StageApplicationCommand } from '../types/stage'
 
@@ -370,6 +371,30 @@ export function useStageData(options?: UseStageDataOptions): StageDataResult {
 		})
 
 		try {
+			const targetChannel = sessionState.channels.find((channel) => channel.id === targetChannelId)
+			const isThreadChannel = targetChannel ? [10, 11, 12].includes(targetChannel.type) : false
+			const isLocalThread = isThreadChannel || targetChannelId.startsWith('thread_')
+
+			if (isLocalThread) {
+				const message: StageMessage = {
+					id: createLocalId('msg'),
+					channel_id: targetChannelId,
+					guild_id: targetChannel?.guild_id ?? undefined,
+					author,
+					content,
+					timestamp: new Date().toISOString(),
+					embeds: [],
+					components: [],
+					attachments: [],
+					reactions: [],
+					message_reference: messageReference
+				}
+
+				sessionDispatch({ type: 'REMOVE_PENDING_MESSAGE', payload: pendingId })
+				sessionDispatch({ type: 'INJECT_MESSAGES', payload: { channelId: targetChannelId, messages: [message] } })
+				return { message_id: message.id }
+			}
+
 			// Parse mentions from content
 			const mentions = MentionParser.parse(content)
 
@@ -391,7 +416,7 @@ export function useStageData(options?: UseStageDataOptions): StageDataResult {
 			})
 			throw err
 		}
-	}, [isPlaybackMode, selection.selectedChannelId, sendCommand, sessionDispatch, browserCurrentUser])
+	}, [isPlaybackMode, selection.selectedChannelId, sendCommand, sessionDispatch, browserCurrentUser, sessionState.channels])
 
 	const retryMessage = useCallback(async (messageId: string) => {
 		if (isPlaybackMode) return

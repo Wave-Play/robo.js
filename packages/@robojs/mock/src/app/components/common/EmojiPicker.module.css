@@ -1,58 +1,99 @@
 .picker {
-	padding: 8px;
-	min-width: 200px;
+	padding: 0;
+	min-width: 320px;
+	background: var(--dropdown-background);
+	border-radius: 12px;
+	overflow: hidden;
 }
 
-.tabs {
+.container {
 	display: flex;
-	gap: 4px;
-	margin-bottom: 8px;
-	padding-bottom: 8px;
-	border-bottom: 1px solid var(--accent-overlay);
+	width: 320px;
+	height: 260px;
 }
 
-.tab {
+.sidebar {
+	width: 36px;
+	background: var(--sidebar-left-background);
 	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 8px 4px;
+	border-right: 1px solid var(--accent-overlay);
+}
+
+.sideButton {
+	width: 28px;
+	height: 28px;
+	border-radius: 8px;
+	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 32px;
-	height: 32px;
-	padding: 0;
-	font-size: 18px;
-	line-height: 1;
 	background: transparent;
-	border: none;
-	border-radius: var(--radius-sm);
+	color: var(--interactive-default);
+	font-size: 18px;
 	cursor: pointer;
-	opacity: 0.5;
-	transition: background-color 0.1s ease, opacity 0.1s ease;
 }
 
-.tab:hover {
+.sideButton:hover {
 	background: var(--hover-overlay);
-	opacity: 0.8;
+	color: var(--text-hover);
 }
 
-.activeTab {
-	opacity: 1;
+.sideActive {
 	background: var(--selected-overlay);
+	color: var(--text-hover);
+}
+
+.main {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+}
+
+.header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 8px 10px 6px;
+	border-bottom: 1px solid var(--accent-overlay);
+	color: var(--text-bright);
+	font-size: 14px;
+	font-weight: 700;
+}
+
+.headerTitle {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.headerIcon {
+	font-size: 18px;
+}
+
+.headerCaret {
+	font-size: 12px;
+	color: var(--text-muted);
 }
 
 .grid {
 	display: grid;
-	grid-template-columns: repeat(5, 1fr);
+	grid-template-columns: repeat(7, 1fr);
 	gap: 4px;
-	width: 180px;
+	padding: 8px 10px;
+	overflow-y: auto;
+	flex: 1;
 }
 
 .emoji {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	width: 34px;
-	height: 32px;
+	width: 28px;
+	height: 28px;
 	padding: 0;
-	font-size: 16px;
+	font-size: 18px;
 	line-height: 1;
 	background: transparent;
 	border: none;
@@ -74,20 +115,26 @@
 	outline-offset: -2px;
 }
 
-.emojiImage {
-	object-fit: contain;
-}
-
-.guildSection {
-	min-height: 64px;
-}
-
-.empty {
+.footer {
 	display: flex;
 	align-items: center;
-	justify-content: center;
+	gap: 8px;
+	padding: 6px 10px;
+	border-top: 1px solid var(--accent-overlay);
 	color: var(--text-muted);
 	font-size: 12px;
-	padding: 16px 8px;
-	text-align: center;
+}
+
+.footerEmoji {
+	font-size: 18px;
+}
+
+.footerName {
+	white-space: nowrap;
+}
+.overlay {
+	position: fixed;
+	inset: 0;
+	background: transparent;
+	z-index: 60;
 }

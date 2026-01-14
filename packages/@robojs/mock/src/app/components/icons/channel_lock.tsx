@@ -6,12 +6,12 @@ interface Props {
 	className?: string
 }
 
-export default function PinIcon(props: Props) {
-	const { width = 24, height = 24, className } = props
+export default function ChannelLockIcon(props: Props) {
+	const { width = 16, height = 16, className } = props
 
 	return (
 		<img
-			src={assetUrl('/icons/discord_pin_icon.png')}
+			src={assetUrl('/icons/discord_channel_lock_icon.png')}
 			alt=""
 			width={width}
 			height={height}

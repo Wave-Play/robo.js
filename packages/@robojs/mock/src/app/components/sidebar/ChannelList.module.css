@@ -147,6 +147,13 @@
 	white-space: nowrap;
 }
 
+.channelLock {
+	color: var(--text-muted);
+	width: 14px;
+	height: 14px;
+	flex-shrink: 0;
+}
+
 .channelActions {
 	display: flex;
 	align-items: center;
@@ -173,6 +180,11 @@
 	transition: background 0.15s ease, color 0.15s ease;
 }
 
+.channelActions button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
 .channelActions svg {
 	width: 16px;
 	height: 16px;
@@ -184,7 +196,7 @@
 }
 
 .channelRow .channel {
-	padding-right: 56px;
+	padding-right: 88px;
 }
 
 .channelRow:hover .channel,

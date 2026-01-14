@@ -9,6 +9,7 @@ import { MessageArea } from '../messages/MessageArea'
 import { MemberList } from '../members/MemberList'
 import { PlaybackControls } from '../playback/PlaybackControls'
 import { DevToolsPanel } from '../devtools/DevToolsPanel'
+import { ThreadPanel } from '../threads/ThreadPanel'
 import styles from './AppShell.module.css'
 
 export function StageAppShell() {
@@ -19,6 +20,7 @@ export function StageAppShell() {
 		guildRoles,
 		guildVoiceStates,
 		users,
+		messages,
 		selectedGuildId,
 		selectedChannelId,
 		showMembers,
@@ -40,6 +42,15 @@ export function StageAppShell() {
 
 	// Threads panel state
 	const [showThreads, setShowThreads] = useState(false)
+	const [threadPanel, setThreadPanel] = useState<{
+		mode: 'closed' | 'create' | 'view'
+		parentId: string | null
+		threadId: string | null
+	}>({
+		mode: 'closed',
+		parentId: null,
+		threadId: null
+	})
 
 	// Notifications dropdown state
 	const [showNotifications, setShowNotifications] = useState(false)
@@ -89,6 +100,12 @@ export function StageAppShell() {
 		})
 	}, [])
 
+	const handleOpenThreads = useCallback(() => {
+		setShowThreads(true)
+		setShowNotifications(false)
+		setShowPinnedMessages(false)
+	}, [])
+
 	const handleToggleNotifications = useCallback(() => {
 		setShowNotifications((prev) => {
 			if (!prev) {
@@ -108,6 +125,57 @@ export function StageAppShell() {
 			return !prev
 		})
 	}, [])
+
+	const threadChannels = useMemo(() => {
+		return guildChannels.filter((channel) => channel.type === 10 || channel.type === 11 || channel.type === 12)
+	}, [guildChannels])
+
+	const handleOpenThreadCreate = useCallback(() => {
+		if (!selectedChannel) return
+		setThreadPanel({
+			mode: 'create',
+			parentId: selectedChannel.id,
+			threadId: null
+		})
+		setShowThreads(false)
+	}, [selectedChannel])
+
+	const handleThreadCreated = useCallback((threadId: string) => {
+		setThreadPanel((prev) => ({
+			mode: 'view',
+			parentId: prev.parentId,
+			threadId
+		}))
+		setShowThreads(false)
+	}, [])
+
+	const handleCloseThreadPanel = useCallback(() => {
+		setThreadPanel({
+			mode: 'closed',
+			parentId: null,
+			threadId: null
+		})
+	}, [])
+
+	const handleThreadSelect = useCallback((threadId: string) => {
+		const thread = guildChannels.find((channel) => channel.id === threadId)
+		if (!thread) return
+		setThreadPanel({
+			mode: 'view',
+			parentId: thread.parent_id ?? null,
+			threadId
+		})
+		setShowThreads(false)
+	}, [guildChannels])
+
+	const handleThreadFullView = useCallback((threadId: string) => {
+		selectChannel(threadId)
+		setThreadPanel({
+			mode: 'closed',
+			parentId: null,
+			threadId: null
+		})
+	}, [selectChannel])
 
 	const guildName = () => {
 		const filterGuilds = guilds.filter((guild) => guild.id === selectedGuildId)
@@ -160,12 +228,33 @@ export function StageAppShell() {
 							showPinnedMessages={showPinnedMessages}
 							onMobileMenuToggle={handleMobileMenuToggle}
 							isMobileSidebarOpen={mobileSidebarOpen}
+							threads={threadChannels}
+							threadMessages={messages}
+							users={users}
+							onCreateThread={handleOpenThreadCreate}
+							onThreadSelect={handleThreadSelect}
 						/>
 
 						<div className={styles.content}>
-							<MessageArea channelId={selectedChannelId} />
+							<MessageArea
+								channelId={selectedChannelId}
+								onOpenThreads={handleOpenThreads}
+								onOpenThread={handleThreadSelect}
+							/>
+							{threadPanel.mode !== 'closed' && (
+								<ThreadPanel
+									mode={threadPanel.mode === 'create' ? 'create' : 'view'}
+									parentChannelId={threadPanel.parentId}
+									threadId={threadPanel.threadId}
+									onClose={handleCloseThreadPanel}
+									onThreadCreated={handleThreadCreated}
+									onOpenFullView={handleThreadFullView}
+								/>
+							)}
 
-							{showMembers && <MemberList members={displayMembers} roles={guildRoles} />}
+							{showMembers && threadPanel.mode === 'closed' && (
+								<MemberList members={displayMembers} roles={guildRoles} />
+							)}
 						</div>
 					</div>
 				</div>

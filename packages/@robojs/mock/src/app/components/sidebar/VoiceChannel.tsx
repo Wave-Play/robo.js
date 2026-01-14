@@ -3,6 +3,7 @@ import { getDisplayName } from '../../utils'
 import styles from './VoiceChannel.module.css'
 import CogwheelIcon from '../icons/cogwheel'
 import InviteIcon from '../icons/invite'
+import VoiceChannelIcon from '../icons/voice_channel'
 
 interface VoiceChannelProps {
 	channel: StageChannel
@@ -12,14 +13,16 @@ interface VoiceChannelProps {
 	onJoin: () => void
 	onLeave: () => void
 	currentUserId?: string
+	onOpenPanel?: () => void
 }
 
-export function VoiceChannel({ channel, voiceStates, users, members, onJoin, onLeave, currentUserId }: VoiceChannelProps) {
+export function VoiceChannel({ channel, voiceStates, users, members, onJoin, onLeave, currentUserId, onOpenPanel }: VoiceChannelProps) {
 	// Filter voice states for this channel
 	const membersInChannel = voiceStates.filter((vs) => vs.channel_id === channel.id)
 	const isCurrentUserInChannel = currentUserId
 		? membersInChannel.some((vs) => vs.user_id === currentUserId)
 		: false
+	const displayName = channel.name.trim()
 
 	return (
 		<div className={styles.container}>
@@ -27,14 +30,14 @@ export function VoiceChannel({ channel, voiceStates, users, members, onJoin, onL
 				<button
 					className={styles.header}
 					onClick={isCurrentUserInChannel ? onLeave : onJoin}
-					aria-label={`Voice channel: ${channel.name}${membersInChannel.length > 0 ? `, ${membersInChannel.length} connected` : ''}`}
+					aria-label={`Voice channel: ${displayName}${membersInChannel.length > 0 ? `, ${membersInChannel.length} connected` : ''}`}
 				>
-					<VoiceIcon className={styles.channelIcon} />
-					<span className={styles.channelName}>{channel.name}</span>
+					<VoiceChannelIcon width={16} height={16} />
+					<span className={styles.channelName}>{displayName}</span>
 					{membersInChannel.length > 0 && <span className={styles.memberCount}>{membersInChannel.length}</span>}
 				</button>
 				<div className={styles.actions}>
-					<button type="button" aria-label="Open voice chat">
+					<button type="button" aria-label="Open voice chat" onClick={onOpenPanel}>
 						<ChatBubbleIcon className={styles.actionIcon} />
 					</button>
 					<button type="button" aria-label="Create invite">
@@ -92,17 +95,6 @@ function VoiceMember({ voiceState, user, member }: VoiceMemberProps) {
 				</div>
 			)}
 		</div>
-	)
-}
-
-// Voice channel icon (speaker)
-function VoiceIcon({ className }: { className?: string }) {
-	return (
-		<svg className={className} width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-			<path d="M3 9v6h4l5 5V4L7 9H3z" />
-			<path d="M14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
-			<path d="M14 8.03v8.05c1.48-.74 2.5-2.26 2.5-4.02s-1.02-3.29-2.5-4.03z" />
-		</svg>
 	)
 }
 

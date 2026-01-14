@@ -85,6 +85,10 @@ export interface SessionState {
 	selectedGuildId: string | null
 	selectedChannelId: string | null
 	showMembers: boolean
+	voicePanel: {
+		channelId: string | null
+		mode: 'closed' | 'split' | 'full'
+	}
 
 	// Typing indicators (Phase 5H)
 	typingUsers: Record<string, { userId: string; username: string; expiresAt: number }[]>
@@ -128,6 +132,7 @@ type SessionAction =
 	| { type: 'SELECT_GUILD'; payload: string | null }
 	| { type: 'SELECT_CHANNEL'; payload: string | null }
 	| { type: 'TOGGLE_MEMBERS' }
+	| { type: 'SET_VOICE_PANEL'; payload: { channelId: string | null; mode: 'closed' | 'split' | 'full' } }
 	| { type: 'SET_CURRENT_USER'; payload: StageUser }
 	| { type: 'INCREMENT_EVENT_COUNT' }
 	| { type: 'SET_HEARTBEAT'; payload: number }
@@ -142,6 +147,7 @@ type SessionAction =
 	| { type: 'ADD_PENDING_MESSAGE'; payload: PendingMessage }
 	| { type: 'MARK_MESSAGE_FAILED'; payload: { id: string; error?: string } }
 	| { type: 'REMOVE_PENDING_MESSAGE'; payload: string }
+	| { type: 'DELETE_THREAD'; payload: { threadId: string } }
 	| { type: 'ADD_DM_CHANNEL'; payload: StageChannel }
 	| { type: 'SET_REPLYING_TO'; payload: StageMessage }
 	| { type: 'CLEAR_REPLYING_TO' }
@@ -170,6 +176,10 @@ const initialState: SessionState = {
 	selectedGuildId: null,
 	selectedChannelId: null,
 	showMembers: true,
+	voicePanel: {
+		channelId: null,
+		mode: 'closed'
+	},
 	typingUsers: {},
 	activeModal: null,
 	pendingInteractions: [],
@@ -233,9 +243,18 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 			const { message } = action.payload
 			const channelId = message.channel_id
 			const existingMessages = state.messages[channelId] || []
+			const updatedChannels = state.channels.map((channel) => {
+				if (channel.id !== channelId) return channel
+				if (channel.type === 10 || channel.type === 11 || channel.type === 12) {
+					const currentCount = channel.message_count ?? existingMessages.length
+					return { ...channel, message_count: currentCount + 1 }
+				}
+				return channel
+			})
 
 			return {
 				...state,
+				channels: updatedChannels,
 				messages: {
 					...state.messages,
 					[channelId]: [...existingMessages, message].slice(-100) // Keep last 100 messages
@@ -261,9 +280,18 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 		case 'HANDLE_MESSAGE_DELETE': {
 			const { channelId, messageId } = action.payload
 			const existingMessages = state.messages[channelId] || []
+			const updatedChannels = state.channels.map((channel) => {
+				if (channel.id !== channelId) return channel
+				if (channel.type === 10 || channel.type === 11 || channel.type === 12) {
+					const currentCount = channel.message_count ?? existingMessages.length
+					return { ...channel, message_count: Math.max(currentCount - 1, 0) }
+				}
+				return channel
+			})
 
 			return {
 				...state,
+				channels: updatedChannels,
 				messages: {
 					...state.messages,
 					[channelId]: existingMessages.filter((m) => m.id !== messageId)
@@ -436,6 +464,9 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 		case 'TOGGLE_MEMBERS':
 			return { ...state, showMembers: !state.showMembers }
 
+		case 'SET_VOICE_PANEL':
+			return { ...state, voicePanel: action.payload }
+
 		case 'SET_CURRENT_USER': {
 			const updatedUser = action.payload
 			const users = state.users.some((user) => user.id === updatedUser.id)
@@ -465,12 +496,41 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 		case 'INJECT_MESSAGES': {
 			const { channelId, messages } = action.payload
 			const existingMessages = state.messages[channelId] || []
+			const updatedChannels = state.channels.map((channel) => {
+				if (channel.id !== channelId) return channel
+				if (channel.type === 10 || channel.type === 11 || channel.type === 12) {
+					const currentCount = channel.message_count ?? existingMessages.length
+					return { ...channel, message_count: currentCount + messages.length }
+				}
+				return channel
+			})
+
+			const updatedMessages = {
+				...state.messages,
+				[channelId]: [...existingMessages, ...messages].slice(-100)
+			}
+
+			const threadChannel = state.channels.find((channel) => channel.id === channelId)
+			if (threadChannel?.parent_id && (threadChannel.type === 10 || threadChannel.type === 11 || threadChannel.type === 12)) {
+				const parentId = threadChannel.parent_id
+				const parentMessages = state.messages[parentId] || []
+				const lastMessageTimestamp = messages[messages.length - 1]?.timestamp
+				const updatedParentMessages = parentMessages.map((message) => {
+					if (message.type !== 18 || message.thread_id !== channelId) return message
+					const currentCount = message.thread_message_count ?? 0
+					return {
+						...message,
+						thread_message_count: currentCount + messages.length,
+						thread_last_message_at: lastMessageTimestamp ?? message.thread_last_message_at ?? message.timestamp
+					}
+				})
+				updatedMessages[parentId] = updatedParentMessages
+			}
+
 			return {
 				...state,
-				messages: {
-					...state.messages,
-					[channelId]: [...existingMessages, ...messages].slice(-100)
-				}
+				channels: updatedChannels,
+				messages: updatedMessages
 			}
 		}
 
@@ -491,6 +551,31 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 			return {
 				...state,
 				channels: [...state.channels, ...newChannels]
+			}
+		}
+
+		case 'DELETE_THREAD': {
+			const { threadId } = action.payload
+			const threadChannel = state.channels.find((channel) => channel.id === threadId)
+			if (!threadChannel) return state
+
+			const parentId = threadChannel.parent_id ?? null
+			const nextChannels = state.channels.filter((channel) => channel.id !== threadId)
+			const nextMessages = { ...state.messages }
+			delete nextMessages[threadId]
+
+			if (parentId && nextMessages[parentId]) {
+				nextMessages[parentId] = nextMessages[parentId].filter((message) => {
+					if (message.type !== 18) return true
+					return message.thread_id !== threadId
+				})
+			}
+
+			return {
+				...state,
+				channels: nextChannels,
+				messages: nextMessages,
+				selectedChannelId: state.selectedChannelId === threadId ? parentId : state.selectedChannelId
 			}
 		}
 

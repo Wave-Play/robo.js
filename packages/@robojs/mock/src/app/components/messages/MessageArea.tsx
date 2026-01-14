@@ -3,6 +3,7 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 import { useSession } from '../../hooks/useSession'
 import { usePlaybackMessages, useIsPlaybackMode, usePlayback, usePlaybackTypingUsers } from '../../stores/playbackStore'
 import { useContextMenu } from '../../hooks/useContextMenu'
+import { getAvatarUrl } from '../../utils'
 import { Message } from './Message'
 import { MessageInput } from './MessageInput'
 import { TypingIndicator } from './TypingIndicator'
@@ -10,13 +11,13 @@ import { ThinkingIndicator } from './ThinkingIndicator'
 import { PendingMessage } from './PendingMessage'
 import { ContextMenu } from '../context/ContextMenu'
 import { ForumChannelView } from './ForumChannelView'
-import { VoiceChannelView } from './VoiceChannelView'
-import ThreadIcon from '../icons/thread'
 import type { StageMessage, StageUser, StageApplicationCommand } from '../../types/stage'
 import styles from './MessageArea.module.css'
 
 interface MessageAreaProps {
 	channelId: string | null
+	onOpenThreads?: () => void
+	onOpenThread?: (threadId: string) => void
 }
 
 interface MessageGroup {
@@ -32,6 +33,8 @@ interface VirtualizedListProps {
 	channelName: string
 	channelTopic?: string
 	footer?: ReactNode
+	onOpenThreads?: () => void
+	onOpenThread?: (threadId: string) => void
 	onDismissEphemeral?: (messageId: string) => void
 	onButtonClick: (messageId: string, customId: string) => Promise<void>
 	onSelectOption: (messageId: string, customId: string, values: string[]) => Promise<void>
@@ -50,6 +53,8 @@ function VirtualizedMessageList({
 	channelName,
 	channelTopic,
 	footer,
+	onOpenThreads,
+	onOpenThread,
 	onDismissEphemeral,
 	onButtonClick,
 	onSelectOption,
@@ -234,27 +239,39 @@ function VirtualizedMessageList({
 							{channelTopic || `This is the start of the #${channelName} channel.`}
 						</p>
 						<div className={styles.welcomeCards}>
-							<div className={styles.welcomeCard}>
-								<div className={styles.welcomeCardIcon}>
-									<InviteIcon />
-								</div>
+							<button type="button" className={styles.welcomeCard}>
+								<span className={styles.welcomeCardIcon}>
+									<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+										<path d="M15 12a4 4 0 1 0-4-4a4 4 0 0 0 4 4Zm-9 2c0-2.4 3-4 6-4c.5 0 1 .05 1.5.14A6.5 6.5 0 0 0 10 16.1V18H4v-2Zm14-2v3h3v2h-3v3h-2v-3h-3v-2h3v-3h2Z" />
+									</svg>
+								</span>
 								<span className={styles.welcomeCardText}>Invite your friends</span>
-								<CheckIcon className={styles.welcomeCardCheck} />
-							</div>
-							<div className={styles.welcomeCard}>
-								<div className={styles.welcomeCardIcon}>
-									<MessageIcon />
-								</div>
+								<span className={`${styles.welcomeCardCheck} ${styles.welcomeCardCheckActive}`} aria-hidden="true">
+									<CheckIcon />
+								</span>
+							</button>
+							<button type="button" className={styles.welcomeCard}>
+								<span className={styles.welcomeCardIcon}>
+									<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+										<path d="M4 4h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H7l-4 4V6a2 2 0 0 1 2-2Z" />
+									</svg>
+								</span>
 								<span className={styles.welcomeCardText}>Send your first message</span>
-								<CheckIcon className={styles.welcomeCardCheck} />
-							</div>
-							<div className={styles.welcomeCard}>
-								<div className={styles.welcomeCardIcon}>
-									<AppIcon />
-								</div>
+								<span className={`${styles.welcomeCardCheck} ${styles.welcomeCardCheckActive}`} aria-hidden="true">
+									<CheckIcon />
+								</span>
+							</button>
+							<button type="button" className={styles.welcomeCard}>
+								<span className={styles.welcomeCardIcon}>
+									<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+										<path d="M4 4h6v6H4V4zm10 0h6v6h-6V4zM4 14h6v6H4v-6zm10 0h6v6h-6v-6z" />
+									</svg>
+								</span>
 								<span className={styles.welcomeCardText}>Add your first app</span>
-								<ChevronIcon className={styles.welcomeCardChevron} />
-							</div>
+								<span className={styles.welcomeCardCheck} aria-hidden="true">
+									<CheckIcon />
+								</span>
+							</button>
 						</div>
 					</div>
 				)
@@ -287,6 +304,8 @@ function VirtualizedMessageList({
 										onAddReaction={onAddReaction}
 										onRemoveReaction={onRemoveReaction}
 										onDismissEphemeral={onDismissEphemeral}
+										onOpenThreads={onOpenThreads}
+										onOpenThread={onOpenThread}
 										onContextMenu={onMessageContextMenu}
 										onUserContextMenu={onUserContextMenu}
 									/>
@@ -300,12 +319,16 @@ function VirtualizedMessageList({
 	)
 }
 
-export function MessageArea({ channelId }: MessageAreaProps) {
+export function MessageArea({ channelId, onOpenThreads, onOpenThread }: MessageAreaProps) {
 	const {
 		guildChannels,
 		guildVoiceStates,
 		users,
 		botUser,
+		currentUser,
+		voicePanelMode,
+		setVoicePanelMode,
+		closeVoicePanel,
 		messages,
 		channelMessages,
 		channelTypingUsers,
@@ -318,6 +341,8 @@ export function MessageArea({ channelId }: MessageAreaProps) {
 		selectOption,
 		addReaction,
 		removeReaction,
+		selectChannel,
+		createForumPost,
 		retryMessage,
 		cancelMessage,
 		commands,
@@ -413,6 +438,51 @@ export function MessageArea({ channelId }: MessageAreaProps) {
 		[openDM]
 	)
 
+	const messageFooter = (
+		<>
+			{channelPendingMessages.map((pending) => (
+				<PendingMessage key={pending.id} message={pending} onRetry={retryMessage} onCancel={cancelMessage} />
+			))}
+			{channelPendingInteractions.map((pending) => (
+				<ThinkingIndicator
+					key={pending.id}
+					botName={pending.botName}
+					botAvatar={pending.botAvatar}
+					botId={pending.botId}
+				/>
+			))}
+			<TypingIndicator typingUsers={displayTypingUsers} />
+		</>
+	)
+
+	const handleCreateForumPost = useCallback(
+		async (title: string, content: string) => {
+			if (!selectedChannel) return null
+			return createForumPost(selectedChannel.id, title, content)
+		},
+		[selectedChannel, createForumPost]
+	)
+
+	const handleOpenForumThread = useCallback(
+		(threadId: string) => {
+			selectChannel(threadId)
+		},
+		[selectChannel]
+	)
+
+	const [showVoiceMenu, setShowVoiceMenu] = useState(false)
+	const voiceMenuRef = useRef<HTMLDivElement>(null)
+
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (showVoiceMenu && voiceMenuRef.current && !voiceMenuRef.current.contains(event.target as Node)) {
+				setShowVoiceMenu(false)
+			}
+		}
+		document.addEventListener('mousedown', handleClickOutside)
+		return () => document.removeEventListener('mousedown', handleClickOutside)
+	}, [showVoiceMenu])
+
 	if (!channelId || !selectedChannel) {
 		return (
 			<div className={styles.container}>
@@ -435,9 +505,11 @@ export function MessageArea({ channelId }: MessageAreaProps) {
 		selectedChannel.type === 12
 	const isForumChannel = selectedChannel.type === 15 || selectedChannel.type === 16
 	const isVoiceChannel = selectedChannel.type === 2 || selectedChannel.type === 13
-	const threadParent = isThreadChannel
-		? guildChannels.find((channel) => channel.id === selectedChannel.parent_id)
-		: null
+	const voiceParticipants = isVoiceChannel
+		? guildVoiceStates.filter((state) => state.channel_id === selectedChannel.id)
+		: []
+	const activeVoiceUserId = currentUser?.id ?? botUser?.id
+	const isUserInVoice = activeVoiceUserId ? voiceParticipants.some((vs) => vs.user_id === activeVoiceUserId) : false
 	const forumThreads = isForumChannel
 		? guildChannels.filter((channel) => channel.parent_id === selectedChannel.id && (
 			channel.type === 10 ||
@@ -449,23 +521,231 @@ export function MessageArea({ channelId }: MessageAreaProps) {
 	if (isForumChannel) {
 		return (
 			<div className={styles.container}>
-				<ForumChannelView channel={selectedChannel} threads={forumThreads} messages={messages} />
+				<ForumChannelView
+					channel={selectedChannel}
+					threads={forumThreads}
+					messages={messages}
+					onCreatePost={handleCreateForumPost}
+					onOpenThread={handleOpenForumThread}
+				/>
+			</div>
+		)
+	}
+
+	if (isVoiceChannel && voicePanelMode === 'full') {
+		return (
+			<div className={styles.container}>
+				<VirtualizedMessageList
+					key={`${channelId}-${isPlaybackMode}`}
+					messages={visibleMessages}
+					isPlaybackMode={isPlaybackMode}
+					channelName={selectedChannel.name}
+					channelTopic={selectedChannel.topic ?? undefined}
+					onButtonClick={async (messageId, customId) => { await clickButton(messageId, customId) }}
+					onSelectOption={async (messageId, customId, values) => { await selectOption(messageId, customId, values) }}
+					onAddReaction={async (messageId, emoji) => { await addReaction(messageId, emoji) }}
+					onRemoveReaction={async (messageId, emoji) => { await removeReaction(messageId, emoji) }}
+					onDismissEphemeral={handleDismissEphemeral}
+					onOpenThreads={onOpenThreads}
+					onOpenThread={onOpenThread}
+					onMessageContextMenu={handleMessageContextMenu}
+					onUserContextMenu={handleUserContextMenu}
+					footer={messageFooter}
+				/>
+				<MessageInput channelId={selectedChannel.id} channelName={selectedChannel.name} />
+				{contextMenu && (
+					<ContextMenu
+						type={contextMenu.type}
+						targetId={contextMenu.targetId}
+						targetData={contextMenu.targetData}
+						position={contextMenu.position}
+						commands={commands}
+						onClose={hideContextMenu}
+						onCommandClick={handleContextCommandClick}
+						onReply={handleReply}
+						onPinMessage={handlePinMessage}
+						onMessageUser={handleMessageUser}
+					/>
+				)}
+			</div>
+		)
+	}
+
+	if (isVoiceChannel && voicePanelMode === 'split') {
+		return (
+			<div className={`${styles.container} ${styles.voiceLayout}`}>
+				<div className={styles.voiceStage}>
+					<div className={styles.voiceGlow} />
+						<div className={styles.voiceStageContent}>
+							<div className={styles.voiceStageTitle}>{selectedChannel.name}</div>
+							<div className={styles.voiceStageSubtitle}>
+								{isUserInVoice
+									? 'You are connected'
+									: voiceParticipants.length > 0
+										? `${voiceParticipants.length} in voice`
+										: 'No one is currently in voice'}
+						</div>
+						<button
+							type="button"
+							className={`${styles.voiceCta} ${isUserInVoice ? styles.voiceCtaLeave : ''}`}
+							onClick={async () => {
+								if (isUserInVoice) {
+									await leaveVoice(selectedChannel.guild_id)
+								} else {
+									await joinVoice(selectedChannel.id, selectedChannel.guild_id)
+								}
+							}}
+						>
+							{isUserInVoice ? 'Leave Voice' : 'Join Voice'}
+						</button>
+
+						{voiceParticipants.length > 0 && (
+							<div className={styles.voiceParticipants}>
+								{voiceParticipants.map((vs) => {
+									const user = voiceUsers.find((u) => u.id === vs.user_id)
+									const name = user?.username ?? 'Guest'
+									const avatar = user?.avatar ? getAvatarUrl(user.id, user.avatar) : null
+
+									return (
+										<div key={vs.user_id} className={styles.voiceChip}>
+											<div className={styles.voiceAvatar}>
+												{avatar ? <img src={avatar} alt="" /> : <span>{name.charAt(0)}</span>}
+											</div>
+											<div className={styles.voiceChipText}>{name}</div>
+										</div>
+									)
+								})}
+							</div>
+						)}
+					</div>
+				</div>
+
+				<div className={styles.voiceChatPane}>
+					<div className={styles.voiceChatHeader}>
+						<span className={styles.voiceChatTitle}>{selectedChannel.name}</span>
+						<div className={styles.voiceChatActions}>
+							<div className={styles.voiceMenu} ref={voiceMenuRef}>
+								<button
+									type="button"
+									className={styles.voiceActionButton}
+									aria-label="More options"
+									onClick={() => setShowVoiceMenu((prev) => !prev)}
+								>
+									<MoreIcon />
+								</button>
+								{showVoiceMenu && (
+									<div className={styles.voiceMenuDropdown}>
+										<button
+											type="button"
+											className={styles.voiceMenuItem}
+											onClick={() => {
+												setVoicePanelMode('full')
+												setShowVoiceMenu(false)
+											}}
+										>
+											Open full view
+										</button>
+									</div>
+								)}
+							</div>
+							<button
+								type="button"
+								className={styles.voiceActionButton}
+								aria-label="Close voice chat"
+								onClick={() => closeVoicePanel()}
+							>
+								<CloseIcon />
+							</button>
+						</div>
+					</div>
+					<div className={styles.voiceMessages}>
+						<VirtualizedMessageList
+							key={`${channelId}-${isPlaybackMode}`}
+							messages={visibleMessages}
+							isPlaybackMode={isPlaybackMode}
+							channelName={selectedChannel.name}
+							channelTopic={selectedChannel.topic ?? undefined}
+							onButtonClick={async (messageId, customId) => { await clickButton(messageId, customId) }}
+							onSelectOption={async (messageId, customId, values) => { await selectOption(messageId, customId, values) }}
+							onAddReaction={async (messageId, emoji) => { await addReaction(messageId, emoji) }}
+							onRemoveReaction={async (messageId, emoji) => { await removeReaction(messageId, emoji) }}
+							onDismissEphemeral={handleDismissEphemeral}
+							onOpenThreads={onOpenThreads}
+							onOpenThread={onOpenThread}
+							onMessageContextMenu={handleMessageContextMenu}
+							onUserContextMenu={handleUserContextMenu}
+							footer={messageFooter}
+						/>
+					</div>
+					<div className={styles.voiceInput}>
+						<MessageInput channelId={selectedChannel.id} channelName={selectedChannel.name} />
+					</div>
+					{contextMenu && (
+						<ContextMenu
+							type={contextMenu.type}
+							targetId={contextMenu.targetId}
+							targetData={contextMenu.targetData}
+							position={contextMenu.position}
+							commands={commands}
+							onClose={hideContextMenu}
+							onCommandClick={handleContextCommandClick}
+							onReply={handleReply}
+							onPinMessage={handlePinMessage}
+							onMessageUser={handleMessageUser}
+						/>
+					)}
+				</div>
 			</div>
 		)
 	}
 
 	if (isVoiceChannel) {
 		return (
-			<div className={styles.container}>
-				<VoiceChannelView
-					channel={selectedChannel}
-					voiceStates={guildVoiceStates}
-					users={voiceUsers}
-					members={guildMembers}
-					currentUserId={botUser?.id}
-					onJoin={async () => { await joinVoice(selectedChannel.id, selectedChannel.guild_id) }}
-					onLeave={async () => { await leaveVoice(selectedChannel.guild_id) }}
-				/>
+			<div className={`${styles.container} ${styles.voiceSolo}`}>
+				<div className={`${styles.voiceStage} ${styles.voiceStageFull}`}>
+					<div className={styles.voiceGlow} />
+					<div className={styles.voiceStageContent}>
+						<div className={styles.voiceStageTitle}>{selectedChannel.name}</div>
+						<div className={styles.voiceStageSubtitle}>
+							{isUserInVoice
+								? 'You are connected'
+								: voiceParticipants.length > 0
+									? `${voiceParticipants.length} in voice`
+									: 'No one is currently in voice'}
+						</div>
+						<button
+							type="button"
+							className={`${styles.voiceCta} ${isUserInVoice ? styles.voiceCtaLeave : ''}`}
+							onClick={async () => {
+								if (isUserInVoice) {
+									await leaveVoice(selectedChannel.guild_id)
+								} else {
+									await joinVoice(selectedChannel.id, selectedChannel.guild_id)
+								}
+							}}
+						>
+							{isUserInVoice ? 'Leave Voice' : 'Join Voice'}
+						</button>
+						{voiceParticipants.length > 0 && (
+							<div className={styles.voiceParticipants}>
+								{voiceParticipants.map((vs) => {
+									const user = voiceUsers.find((u) => u.id === vs.user_id)
+									const name = user?.username ?? 'Guest'
+									const avatar = user?.avatar ? getAvatarUrl(user.id, user.avatar) : null
+
+									return (
+										<div key={vs.user_id} className={styles.voiceChip}>
+											<div className={styles.voiceAvatar}>
+												{avatar ? <img src={avatar} alt="" /> : <span>{name.charAt(0)}</span>}
+											</div>
+											<div className={styles.voiceChipText}>{name}</div>
+										</div>
+									)
+								})}
+							</div>
+						)}
+					</div>
+				</div>
 			</div>
 		)
 	}
@@ -485,28 +765,6 @@ export function MessageArea({ channelId }: MessageAreaProps) {
 				</div>
 			)}
 
-			{isThreadChannel && (
-				<div className={styles.threadHeader}>
-					<div className={styles.threadHeaderInfo}>
-						<div className={styles.threadIcon}>
-							<ThreadIcon width={20} height={20} />
-						</div>
-						<div>
-							<div className={styles.threadTitle}>{selectedChannel.name}</div>
-							<div className={styles.threadSubtitle}>
-								{threadParent ? `Thread in #${threadParent.name}` : 'Thread'}
-							</div>
-						</div>
-					</div>
-					<div className={styles.threadActions}>
-						{selectedChannel.thread_metadata?.archived && <span className={styles.threadBadge}>Archived</span>}
-						{selectedChannel.thread_metadata?.locked && <span className={styles.threadBadge}>Locked</span>}
-						<button type="button" className={styles.threadButton}>Members</button>
-						<button type="button" className={styles.threadButton}>Notifications</button>
-					</div>
-				</div>
-			)}
-
 			{/* Virtualized message list - keyed to force reset on channel/mode change */}
 			<VirtualizedMessageList
 				key={`${channelId}-${isPlaybackMode}`}
@@ -519,24 +777,11 @@ export function MessageArea({ channelId }: MessageAreaProps) {
 				onAddReaction={async (messageId, emoji) => { await addReaction(messageId, emoji) }}
 				onRemoveReaction={async (messageId, emoji) => { await removeReaction(messageId, emoji) }}
 				onDismissEphemeral={handleDismissEphemeral}
+				onOpenThreads={onOpenThreads}
+				onOpenThread={onOpenThread}
 				onMessageContextMenu={handleMessageContextMenu}
 				onUserContextMenu={handleUserContextMenu}
-				footer={
-					<>
-						{channelPendingMessages.map((pending) => (
-							<PendingMessage key={pending.id} message={pending} onRetry={retryMessage} onCancel={cancelMessage} />
-						))}
-						{channelPendingInteractions.map((pending) => (
-							<ThinkingIndicator
-								key={pending.id}
-								botName={pending.botName}
-								botAvatar={pending.botAvatar}
-								botId={pending.botId}
-							/>
-						))}
-						<TypingIndicator typingUsers={displayTypingUsers} />
-					</>
-				}
+				footer={messageFooter}
 			/>
 
 			{/* Message input */}
@@ -745,44 +990,28 @@ function estimateTextHeight(content: string, maxLineLength = 70): number {
 	return Math.ceil(totalLines * 19)
 }
 
-// Welcome card icon components
-function InviteIcon() {
+function MoreIcon() {
 	return (
-		<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-			<path d="M21 3a1 1 0 0 1 1 1v5.5a2.5 2.5 0 0 1-5 0V8h-3a4 4 0 0 0-4 4v3h1.5a2.5 2.5 0 0 1 0 5H6a4 4 0 0 1-4-4v-5a1 1 0 0 1 1-1h3V5a2 2 0 0 1 2-2h13z" />
+		<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+			<circle cx="5" cy="12" r="2" />
+			<circle cx="12" cy="12" r="2" />
+			<circle cx="19" cy="12" r="2" />
 		</svg>
 	)
 }
 
-function MessageIcon() {
+function CheckIcon() {
 	return (
-		<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-			<path d="M12 2C6.486 2 2 6.262 2 11.5c0 2.545 1.088 4.988 3.039 6.822.146.138.35.383.242.84-.107.455-.491 1.822-.783 2.662-.123.355.208.65.538.47 1.538-.841 2.49-1.352 2.913-1.521.423-.169.828-.169 1.089-.169h2.962c5.514 0 10-4.262 10-9.5S17.514 2 12 2z" />
+		<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+			<path d="M9.5 16.2L4.8 11.5l1.4-1.4 3.3 3.3 8-8 1.4 1.4-9.4 9.4z" />
 		</svg>
 	)
 }
 
-function AppIcon() {
+function CloseIcon() {
 	return (
-		<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-			<path d="M6 7a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1H6zM4 8a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V8z" />
-			<path d="M9 10a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
-		</svg>
-	)
-}
-
-function CheckIcon({ className }: { className?: string }) {
-	return (
-		<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" className={className}>
-			<path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm3.707-9.293a1 1 0 0 0-1.414-1.414L9 10.586 7.707 9.293a1 1 0 0 0-1.414 1.414l2 2a1 1 0 0 0 1.414 0l4-4z" clipRule="evenodd" />
-		</svg>
-	)
-}
-
-function ChevronIcon({ className }: { className?: string }) {
-	return (
-		<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" className={className}>
-			<path fillRule="evenodd" d="M7.293 14.707a1 1 0 0 1 0-1.414L10.586 10 7.293 6.707a1 1 0 0 1 1.414-1.414l4 4a1 1 0 0 1 0 1.414l-4 4a1 1 0 0 1-1.414 0z" clipRule="evenodd" />
+		<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+			<path d="M18 6L6 18M6 6l12 12" />
 		</svg>
 	)
 }

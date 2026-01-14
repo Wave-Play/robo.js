@@ -13,7 +13,6 @@ interface ReactionsProps {
 export function Reactions({ messageId, reactions, onAddReaction, onRemoveReaction }: ReactionsProps) {
 	const [showPicker, setShowPicker] = useState(false)
 	const [loadingEmoji, setLoadingEmoji] = useState<string | null>(null)
-	const [pickerPosition, setPickerPosition] = useState<{ x: number; y: number } | null>(null)
 	const addButtonRef = useRef<HTMLButtonElement>(null)
 
 	const handleReactionClick = async (emoji: string, hasReacted: boolean) => {
@@ -46,18 +45,7 @@ export function Reactions({ messageId, reactions, onAddReaction, onRemoveReactio
 	}
 
 	const togglePicker = () => {
-		if (showPicker) {
-			setShowPicker(false)
-			return
-		}
-
-		const rect = addButtonRef.current?.getBoundingClientRect()
-		if (rect) {
-			setPickerPosition({ x: rect.left, y: rect.bottom + 6 })
-		} else {
-			setPickerPosition({ x: 0, y: 0 })
-		}
-		setShowPicker(true)
+		setShowPicker((prev) => !prev)
 	}
 
 	const hasReactions = reactions.length > 0
@@ -104,11 +92,10 @@ export function Reactions({ messageId, reactions, onAddReaction, onRemoveReactio
 					<SmilePlus />
 				</button>
 
-				{showPicker && pickerPosition && (
+				{showPicker && (
 					<EmojiPicker
 						onSelect={handleAddReaction}
 						onClose={() => setShowPicker(false)}
-						position={pickerPosition}
 					/>
 				)}
 			</div>

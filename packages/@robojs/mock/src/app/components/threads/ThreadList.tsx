@@ -1,23 +1,17 @@
+import { useMemo, useState } from 'react'
+import type { StageChannel, StageMessage, StageUser } from '../../types/stage'
+import { getAvatarUrl } from '../../utils'
 import { DropdownContainer } from '../base'
 import ThreadIcon from '../icons/thread'
 import styles from './ThreadList.module.css'
 
-interface Thread {
-	id: string
-	name: string
-	authorName: string
-	authorAvatar?: string
-	lastActive: string
-	participants: Array<{
-		id: string
-		avatar?: string
-		name: string
-	}>
-}
-
 interface ThreadListProps {
-	threads?: Thread[]
+	threads?: StageChannel[]
+	messages?: Record<string, StageMessage[]>
+	users?: StageUser[]
 	onClose?: () => void
+	onCreateThread?: () => void
+	onThreadSelect?: (threadId: string) => void
 }
 
 function SearchIcon() {
@@ -28,87 +22,143 @@ function SearchIcon() {
 	)
 }
 
-export function ThreadList({ threads = [], onClose }: ThreadListProps) {
+export function ThreadList({
+	threads = [],
+	messages = {},
+	users = [],
+	onClose,
+	onCreateThread,
+	onThreadSelect
+}: ThreadListProps) {
+	const [search, setSearch] = useState('')
+	const filteredThreads = useMemo(() => {
+		const query = search.trim().toLowerCase()
+		if (!query) return threads
+		return threads.filter((thread) => thread.name.toLowerCase().includes(query))
+	}, [search, threads])
+
+	const handleCreateThread = () => {
+		onCreateThread?.()
+		onClose?.()
+	}
+
+	const handleThreadSelect = (threadId: string) => {
+		onThreadSelect?.(threadId)
+		onClose?.()
+	}
+
 	return (
 		<DropdownContainer placement="bottom-end" className={styles.dropdown} role="dialog" aria-label="Threads">
 			<div className={styles.container}>
-			<div className={styles.header}>
-				<div className={styles.headerIcon}>
-					<ThreadIcon width={20} height={20} fill="var(--interactive-default)" />
-				</div>
-				<h2 className={styles.headerTitle}>Threads</h2>
-				<div className={styles.searchContainer}>
-					<span className={styles.searchIcon} aria-hidden="true">
-						<SearchIcon />
-					</span>
-					<input type="text" className={styles.searchInput} placeholder="Search for Thread Name" />
-				</div>
-				<button className={styles.createButton} type="button">
-					Create
-				</button>
-				<button className={styles.closeButton} type="button" onClick={onClose} aria-label="Close threads panel">
-					<CloseIcon />
-				</button>
-			</div>
-
-			{threads.length === 0 ? (
-				<div className={styles.emptyWrap}>
-					<div className={styles.emptyIcon}>
-						<ThreadIcon width={32} height={32} fill="var(--interactive-default)" />
+				<div className={styles.header}>
+					<div className={styles.headerIcon}>
+						<ThreadIcon width={20} height={20} />
 					</div>
-					<div className={styles.emptyTitle}>There are no threads.</div>
-					<div className={styles.emptySub}>
-						Stay focused on a conversation with a thread - a temporary text channel.
+					<h2 className={styles.headerTitle}>Threads</h2>
+					<div className={styles.searchContainer}>
+						<span className={styles.searchIcon} aria-hidden="true">
+							<SearchIcon />
+						</span>
+						<input
+							type="text"
+							className={styles.searchInput}
+							placeholder="Search for Thread Name"
+							value={search}
+							onChange={(event) => setSearch(event.target.value)}
+						/>
 					</div>
-					<button className={styles.emptyCta} type="button">
-						Create Thread
+					<button className={styles.createButton} type="button" onClick={handleCreateThread} disabled={!onCreateThread}>
+						Create
 					</button>
 				</div>
-			) : (
-				<>
-					<div className={styles.section}>
-						<h3 className={styles.sectionTitle}>Older Threads</h3>
+
+				{filteredThreads.length === 0 ? (
+					<div className={styles.emptyWrap}>
+						<div className={styles.emptyIcon}>
+							<ThreadIcon width={32} height={32} />
+						</div>
+						<div className={styles.emptyTitle}>There are no threads.</div>
+						<div className={styles.emptySub}>
+							Stay focused on a conversation with a thread - a temporary text channel.
+						</div>
+						<button className={styles.emptyCta} type="button" onClick={handleCreateThread} disabled={!onCreateThread}>
+							Create Thread
+						</button>
 					</div>
-					<div className={styles.threadList}>
-						{threads.map((thread) => (
-							<div key={thread.id} className={styles.threadItem}>
-								<div className={styles.threadContent}>
-									<div className={styles.threadName}>{thread.name}</div>
-									<div className={styles.threadMeta}>
-										{thread.authorAvatar && (
-											<img src={thread.authorAvatar} alt={thread.authorName} className={styles.threadAuthorAvatar} />
+				) : (
+					<>
+						<div className={styles.section}>
+							<h3 className={styles.sectionTitle}>{filteredThreads.length} Joined Threads</h3>
+						</div>
+						<div className={styles.threadList}>
+							{filteredThreads.map((thread) => {
+								const threadMessages = messages[thread.id] || []
+								const lastMessage = threadMessages[threadMessages.length - 1]
+								const author = lastMessage?.author ?? users.find((user) => user.id === thread.owner_id)
+								const authorName = author?.username || 'Unknown'
+								const authorAvatar = author ? getAvatarUrl(author.id, author.avatar) : undefined
+
+								const threadName = thread.name.trim()
+								const preview = getPreviewText(lastMessage?.content)
+								const previewTime = formatRelativeTime(lastMessage?.timestamp)
+
+								return (
+									<button
+										key={thread.id}
+										className={styles.threadItem}
+										type="button"
+										onClick={() => handleThreadSelect(thread.id)}
+									>
+										<div className={styles.threadContent}>
+											<div className={styles.threadName}>{threadName}</div>
+											<div className={styles.threadMetaRow}>
+												{authorAvatar && (
+													<img src={authorAvatar} alt={authorName} className={styles.threadAuthorAvatar} />
+												)}
+												<span className={styles.threadMetaText}>{authorName}</span>
+												<span className={styles.metaDot}>.</span>
+												<span className={styles.threadMetaText}>{preview}</span>
+												<span className={styles.metaDot}>.</span>
+												<span className={styles.threadMetaText}>{previewTime}</span>
+											</div>
+										</div>
+										{authorAvatar && (
+											<div className={styles.threadAvatars}>
+												<img
+													src={authorAvatar}
+													alt={authorName}
+													className={styles.participantAvatar}
+												/>
+											</div>
 										)}
-										<span>Started by</span>
-										<span className={styles.threadAuthorName}>{thread.authorName}</span>
-										<span className={styles.metaDot}>·</span>
-										<span>Last active {thread.lastActive}</span>
-									</div>
-								</div>
-								<div className={styles.threadAvatars}>
-									{thread.participants.slice(0, 3).map((participant, index) => (
-										<img
-											key={participant.id}
-											src={participant.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'}
-											alt={participant.name}
-											className={styles.participantAvatar}
-											style={{ zIndex: 3 - index }}
-										/>
-									))}
-								</div>
-							</div>
-						))}
-					</div>
-				</>
-			)}
+									</button>
+								)
+							})}
+						</div>
+					</>
+				)}
 			</div>
 		</DropdownContainer>
 	)
 }
 
-function CloseIcon() {
-	return (
-		<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-			<path d="M18.3 5.71L12 12l6.3 6.29-1.41 1.42L10.59 13.4 4.29 19.71 2.88 18.29 9.17 12 2.88 5.71 4.29 4.29l6.3 6.3 6.3-6.3z" />
-		</svg>
-	)
+function getPreviewText(content?: string) {
+	if (!content) return 'No messages yet.'
+	const normalized = content.replace(/\s+/g, ' ').trim()
+	return normalized || 'No messages yet.'
+}
+
+function formatRelativeTime(timestamp?: string) {
+	if (!timestamp) return 'Just now'
+	const diff = Date.now() - new Date(timestamp).getTime()
+	const minutes = Math.floor(diff / 60000)
+	if (minutes < 1) return 'Just now'
+	if (minutes === 1) return '1m ago'
+	if (minutes < 60) return `${minutes}m ago`
+	const hours = Math.floor(minutes / 60)
+	if (hours === 1) return '1h ago'
+	if (hours < 24) return `${hours}h ago`
+	const days = Math.floor(hours / 24)
+	if (days === 1) return '1d ago'
+	return `${days}d ago`
 }

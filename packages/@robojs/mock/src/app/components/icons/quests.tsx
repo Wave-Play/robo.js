@@ -6,12 +6,12 @@ interface Props {
 	className?: string
 }
 
-export default function PinIcon(props: Props) {
-	const { width = 24, height = 24, className } = props
+export default function QuestsIcon(props: Props) {
+	const { width = 20, height = 20, className } = props
 
 	return (
 		<img
-			src={assetUrl('/icons/discord_pin_icon.png')}
+			src={assetUrl('/icons/discord_quests_icon.png')}
 			alt=""
 			width={width}
 			height={height}

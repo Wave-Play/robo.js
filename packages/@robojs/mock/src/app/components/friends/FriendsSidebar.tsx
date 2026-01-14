@@ -2,6 +2,8 @@ import type { ReactNode } from 'react'
 import type { FriendRowData } from './friends.data'
 import { FRIENDS } from './friends.data'
 import { Avatar, IconButton, SearchInput } from '../ui'
+import ShopIcon from '../icons/shop'
+import QuestsIcon from '../icons/quests'
 import styles from './FriendsSidebar.module.css'
 
 function FriendsIcon() {
@@ -20,21 +22,6 @@ function NitroIcon() {
 	)
 }
 
-function ShopIcon() {
-	return (
-		<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-			<path d="M7 4h10l1 4H6l1-4Zm-2 6h14v10H5V10Zm3 2v6h2v-6H8Zm6 0v6h2v-6h-2Z" />
-		</svg>
-	)
-}
-
-function QuestsIcon() {
-	return (
-		<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-			<path d="M7 2h10v4h3v16H4V6h3V2Zm2 4h6V4H9v2Zm-3 4h12v2H6v-2Zm0 4h12v2H6v-2Z" />
-		</svg>
-	)
-}
 
 function PlusIcon() {
 	return (
