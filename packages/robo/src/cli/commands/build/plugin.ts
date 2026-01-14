@@ -13,10 +13,16 @@ import { discoverRoutes } from '../../utils/route-discovery.js'
 import { scanAllRoutes } from '../../utils/route-scanner.js'
 import { processAllRoutes } from '../../utils/route-processor.js'
 import { ManifestGenerator, discoverProjectHooks, createHookEntries } from '../../utils/manifest-generator.js'
-import { loadPluginData } from '../../utils/build-hooks.js'
+import {
+	executeBuildStartHooks,
+	executeBuildTransformHooks,
+	executeBuildCompleteHooks,
+	loadPluginData
+} from '../../utils/build-hooks.js'
+import { RoboPaths } from '../../../core/paths.js'
 import type { CliContext } from '../../../types/cli.js'
 import type { PluginData } from '../../../types/common.js'
-import type { RouteEntries, ProcessedEntry } from '../../../types/routes.js'
+import type { RouteEntries } from '../../../types/routes.js'
 
 const command = new Command('plugin')
 	.description('Builds your plugin for distribution.')
@@ -67,6 +73,44 @@ async function pluginAction(context: CliContext) {
 	const startTime = Date.now()
 	const config = await loadConfig('robo', true)
 
+	// Determine build mode early (needed for hooks and compilation)
+	const buildMode = options.dev ? 'development' : 'production'
+
+	// Configure RoboPaths with custom build directory BEFORE running hooks
+	RoboPaths.configure({ customBuildDir: config.experimental?.buildDirectory })
+
+	// Load dependent plugins from config (needed for hook execution)
+	const dependentPlugins = loadPluginData(config)
+	logger.debug(`Loaded ${dependentPlugins.size} dependent plugin(s) from config`)
+
+	// Create a plugin data entry for self (the plugin being built)
+	const pkg = await readPackageJson()
+	const pluginName = (pkg.name as string) ?? 'unnamed-plugin'
+	const selfPluginData: PluginData = {
+		name: pluginName,
+		version: (pkg.version as string) ?? '0.0.0',
+		path: '.',
+		namespace: inferNamespace(pluginName),
+		hooks: [],
+		seed: config.seed
+			? {
+					description: config.seed.description,
+					env: config.seed.env,
+					hook: config.seed.hook ? '/.robo/seed/__inline__/seed.js' : undefined
+				}
+			: undefined
+	}
+
+	// Combine dependent plugins with self
+	const plugins = new Map<string, PluginData>(dependentPlugins)
+	plugins.set(pluginName, selfPluginData)
+
+	// Execute build/start hooks
+	const buildStore = await executeBuildStartHooks(plugins, config, buildMode, undefined, {
+		buildType: 'plugin',
+		pluginName
+	})
+
 	// Run the Robo Compiler
 	const { Compiler } = await import('../../utils/compiler.js')
 	const compileTime = await Compiler.buildCode({
@@ -84,47 +128,25 @@ async function pluginAction(context: CliContext) {
 		? path.join(process.cwd(), config.experimental.buildDirectory)
 		: path.join(process.cwd(), '.robo', 'build')
 
-	// Load dependent plugins from config (e.g., @robojs/discordjs)
-	// This allows the plugin being built to use route definitions from its dependencies
-	const dependentPlugins = loadPluginData(config)
-	logger.debug(`Loaded ${dependentPlugins.size} dependent plugin(s) from config`)
-
-	// Create a plugin data entry for self (the plugin being built)
-	const pkg = await readPackageJson()
-	const pluginName = pkg.name ?? 'unnamed-plugin'
-	const selfPluginData: PluginData = {
-		name: pluginName,
-		version: pkg.version ?? '0.0.0',
-		path: '.',
-		namespace: inferNamespace(pluginName),
-		hooks: [],
-		seed: config.seed
-			? {
-					description: config.seed.description,
-					env: config.seed.env,
-					hook: config.seed.hook ? '/.robo/seed/__inline__/seed.js' : undefined
-				}
-			: undefined
-	}
-
-	// Combine dependent plugins with self - self goes last so its entries are processed
-	const plugins = new Map<string, PluginData>(dependentPlugins)
-	plugins.set(pluginName, selfPluginData)
-
 	// Discover routes that this plugin provides
 	const routes = await discoverRoutes(plugins)
 	logger.debug(`Discovered ${routes.length} route(s) for plugin`)
 
 	// Scan and process route entries from the plugin's build
 	const scannedResults = await scanAllRoutes(routes, buildDir)
-	const routeEntries = await processAllRoutes(scannedResults)
+	let routeEntries = await processAllRoutes(scannedResults)
+
+	// Execute build/transform hooks
+	routeEntries = await executeBuildTransformHooks(plugins, config, buildMode, buildStore, routeEntries, {
+		buildType: 'plugin',
+		pluginName
+	})
 
 	// Discover hooks from the plugin's build
 	const projectHooks = await discoverProjectHooks(buildDir)
 	const hookEntries = createHookEntries(plugins, projectHooks, pluginName)
 
 	// Generate granular manifest files
-	const buildMode = options.dev ? 'development' : 'production'
 	const manifestGenerator = new ManifestGenerator({
 		mode: buildMode,
 		config,
@@ -137,6 +159,12 @@ async function pluginAction(context: CliContext) {
 	})
 	await manifestGenerator.generateAll()
 	logger.debug(`Generated manifest in ${Date.now() - manifestTime}ms`)
+
+	// Execute build/complete hooks
+	await executeBuildCompleteHooks(plugins, config, buildMode, buildStore, routeEntries, {
+		buildType: 'plugin',
+		pluginName
+	})
 
 	if (!options.dev) {
 		// Get the size of the entire current working directory
