@@ -18,6 +18,8 @@ import type { BuildCompleteContext } from 'robo.js'
 import type { ConfigEnv, UserConfig } from 'vite'
 import type { PluginConfig } from '../prepare.js'
 import type { PluginPrefixConfig, PluginPrefixMap } from '../../core/plugin-routes.js'
+import { generateOpenAPISpec } from '../../core/openapi-generator.js'
+import type { OpenAPIConfig } from '../../core/openapi-generator.js'
 
 /**
  * Build complete hook - Bundles frontend assets with Vite and copies plugin assets
@@ -47,6 +49,36 @@ export default async function (context: BuildCompleteContext): Promise<void> {
 		await copyPluginAssets()
 	} catch (error) {
 		logger.error('Failed to copy plugin assets:', error)
+	}
+
+	// Generate OpenAPI spec
+	const pluginConfig = getPluginOptions('@robojs/server') as PluginConfig | null
+	const openapiConfig = pluginConfig?.openapi as OpenAPIConfig | boolean | undefined
+
+	// Check if OpenAPI generation is disabled
+	// Supports: openapi: false OR openapi: { enabled: false }
+	const isDisabled = openapiConfig === false || (typeof openapiConfig === 'object' && openapiConfig.enabled === false)
+
+	if (!isDisabled) {
+		const apiEntries = context.entries.handlers('server', 'api')
+		if (apiEntries.length > 0) {
+			const buildDir = path.join(context.paths.output, 'build')
+			const options = typeof openapiConfig === 'object' ? openapiConfig : {}
+
+			await generateOpenAPISpec(apiEntries, buildDir, {
+				title: options.title ?? 'API',
+				version: options.version ?? '1.0.0',
+				description: options.description,
+				servers: options.servers,
+				contact: options.contact,
+				license: options.license,
+				securitySchemes: options.securitySchemes,
+				tags: options.tags,
+				outputPath: path.join(context.paths.output, 'openapi.json')
+			})
+		}
+	} else {
+		logger.debug('OpenAPI generation disabled via config')
 	}
 }
 

@@ -78,7 +78,7 @@ export class RoboRequest extends Request {
 		const method = req.method || 'GET'
 		const headers = new Headers(req.headers as HeadersInit)
 
-		let body: BodyInit | null = options?.body ?? null
+		let body: BodyInit | null | Buffer = options?.body ?? null
 		if (!options?.skipBody && !options?.body && !['GET', 'HEAD'].includes(method)) {
 			body = await new Promise<Buffer>((resolve, reject) => {
 				const chunks: Uint8Array[] = []

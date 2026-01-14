@@ -23,6 +23,7 @@ import type { BaseEngine } from '../engines/base.js'
 import type { PrepareContext } from 'robo.js'
 import type { ViteDevServer } from 'vite'
 import type { TunnelConfig } from '../core/tunnel/types.js'
+import type { OpenAPIConfig } from '../core/openapi-generator.js'
 
 /**
  * CORS configuration options.
@@ -77,6 +78,7 @@ export interface PluginConfig {
 	prefix?: string | null | false
 	vite?: ViteDevServer
 	tunnel?: TunnelConfig
+	openapi?: boolean | OpenAPIConfig
 }
 
 export let pluginOptions: PluginConfig = {}
