@@ -3,9 +3,9 @@
 	align-items: center;
 	gap: 12px;
 	padding: 12px;
-	background: var(--background-secondary);
+	background: var(--sidebar-left-background);
 	border-radius: 8px;
-	border: 1px solid var(--background-tertiary);
+	border: 1px solid var(--card-background);
 	max-width: 400px;
 }
 
@@ -15,7 +15,7 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	border-radius: 4px;
 	font-size: 20px;
 	flex-shrink: 0;
@@ -41,7 +41,7 @@ a.fileName:hover {
 
 .downloadButton {
 	padding: 8px;
-	color: var(--interactive-normal);
+	color: var(--interactive-default);
 	cursor: pointer;
 	display: flex;
 	align-items: center;
@@ -52,7 +52,7 @@ a.fileName:hover {
 
 .downloadButton:hover {
 	color: var(--interactive-hover);
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 /* Spoiler state */
@@ -70,7 +70,7 @@ a.fileName:hover {
 
 .spoilerBadge {
 	padding: 4px 8px;
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	border-radius: 4px;
 	font-size: 10px;
 	font-weight: 600;

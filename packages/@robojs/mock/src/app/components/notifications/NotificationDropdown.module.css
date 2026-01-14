@@ -4,17 +4,23 @@
 	right: 0;
 	margin-top: 8px;
 	width: fit-content;
+	background: var(--main-chat-background);
+	border-radius: var(--radius-md);
+	border: 1px solid var(--accent-overlay);
+	box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+	overflow: hidden;
 }
 
 .mainPanel {
 	padding: 8px;
+	background: var(--dropdown-background);
 }
 
 .submenuPanel {
 	min-width: 200px;
 	padding: 8px;
-	background: var(--background-floating);
-	border-left: 1px solid var(--background-modifier-accent);
+	background: var(--dropdown-background);
+	border-left: 1px solid var(--accent-overlay);
 	border-radius: 0 var(--radius-md) var(--radius-md) 0;
 }
 
@@ -23,7 +29,7 @@
 	width: 20px;
 	height: 20px;
 	border-radius: 50%;
-	border: 2px solid var(--interactive-normal);
+	border: 2px solid var(--interactive-default);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -31,8 +37,8 @@
 }
 
 .radioSelected {
-	border-color: var(--brand-500);
-	background: var(--brand-500);
+	border-color: var(--brand-primary);
+	background: var(--brand-primary);
 }
 
 .radioInner {

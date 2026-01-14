@@ -1,17 +1,57 @@
 .message {
 	display: flex;
-	padding: 2px 48px 2px 72px;
+	padding: 8px 48px 4px 72px;
 	position: relative;
-	min-height: 44px;
+	min-height: 48px;
+	isolation: isolate;
 }
 
 .message:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
+}
+
+.hoverActions {
+	position: absolute;
+	top: 4px;
+	right: 12px;
+	display: flex;
+	gap: 4px;
+	padding: 4px;
+	border-radius: 8px;
+	background: var(--sidebar-left-background);
+	border: 1px solid var(--accent-overlay);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+	z-index: 2;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.15s ease;
+}
+
+.hoverActions button {
+	width: 28px;
+	height: 28px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 6px;
+	color: var(--interactive-default);
+	transition: background 0.15s ease, color 0.15s ease;
+}
+
+.hoverActions button:hover {
+	background: var(--hover-overlay);
+	color: var(--interactive-hover);
+}
+
+.message:hover .hoverActions,
+.message:focus-within .hoverActions {
+	opacity: 1;
+	pointer-events: auto;
 }
 
 .highlighted {
 	background: rgba(88, 101, 242, 0.1);
-	border-left: 2px solid var(--brand-500);
+	border-left: 2px solid var(--brand-primary);
 	padding-left: 70px;
 }
 
@@ -56,7 +96,7 @@
 
 .author {
 	font-weight: 500;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 	cursor: pointer;
 }
 
@@ -68,7 +108,7 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 2px;
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	color: white;
 	font-size: 10px;
 	font-weight: 500;
@@ -87,6 +127,7 @@
 .timestamp {
 	font-size: 12px;
 	color: var(--text-muted);
+	white-space: nowrap;
 }
 
 .timestampGutter {
@@ -100,6 +141,7 @@
 	font-size: 11px;
 	color: var(--text-muted);
 	opacity: 0;
+	white-space: nowrap;
 }
 
 .message:hover .hoverTimestamp {
@@ -114,7 +156,33 @@
 .messageContent {
 	line-height: 1.375;
 	word-wrap: break-word;
-	color: var(--text-normal);
+	color: var(--text-bright);
+}
+
+.interactionInfo {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 12px;
+	color: var(--text-muted);
+	margin-bottom: 4px;
+}
+
+.interactionIcon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 18px;
+	height: 18px;
+	border-radius: 5px;
+	background: var(--card-background);
+	color: var(--interactive-default);
+}
+
+.interactionText {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .textContent {
@@ -136,8 +204,8 @@
 
 /* Ephemeral message styling */
 .ephemeral {
-	background: linear-gradient(to right, rgba(88, 101, 242, 0.1), transparent);
-	border-left: 2px solid var(--brand-500);
+	background: linear-gradient(90deg, rgba(88, 101, 242, 0.08), rgba(88, 101, 242, 0.02));
+	border-left: 2px solid var(--brand-primary);
 	padding-left: 70px;
 }
 
@@ -157,23 +225,56 @@
 .replyReference {
 	display: flex;
 	align-items: center;
-	gap: 4px;
-	margin-left: 72px;
-	margin-bottom: 2px;
-	padding: 2px 0;
+	gap: 6px;
+	margin-bottom: 4px;
 	font-size: 12px;
 	color: var(--text-muted);
+	min-width: 0;
+	position: relative;
+	padding-left: 20px;
+	line-height: 1.2;
 }
 
-.replyReference svg {
-	transform: scaleX(-1);
-	opacity: 0.7;
+.replyReference::before {
+	content: '';
+	position: absolute;
+	left: 2px;
+	top: 2px;
+	width: 12px;
+	height: 10px;
+	border-left: 2px solid var(--accent-overlay);
+	border-bottom: 2px solid var(--accent-overlay);
+	border-bottom-left-radius: 6px;
+	opacity: 0.9;
+	transform: rotate(90deg);
+	transform-origin: top left;
+}
+
+.replyAvatar {
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+	object-fit: cover;
+	flex-shrink: 0;
 }
 
 .replyText {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+}
+
+.replyAuthor {
+	color: var(--text-link);
+	font-weight: 500;
+	white-space: nowrap;
+}
+
+.replySnippet {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	min-width: 0;
 }
 
 /* Command invocation header - "User used /command" */
@@ -197,12 +298,12 @@
 .slashIcon {
 	width: 16px;
 	height: 16px;
-	color: var(--brand-500);
+	color: var(--brand-primary);
 	flex-shrink: 0;
 }
 
 .commandUser {
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 	font-weight: 500;
 }
 
@@ -225,7 +326,7 @@
 }
 
 .systemMessage:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .systemIcon {

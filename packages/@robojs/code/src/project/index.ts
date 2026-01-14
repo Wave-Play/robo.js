@@ -36,8 +36,4 @@ export {
 export { ProjectIndexer, createProjectIndexer, type ProjectIndexerConfig } from './indexer.js'
 
 // Project overview builder
-export {
-	ProjectOverviewBuilder,
-	createProjectOverviewBuilder,
-	type ProjectOverviewBuilderConfig
-} from './overview.js'
+export { ProjectOverviewBuilder, createProjectOverviewBuilder, type ProjectOverviewBuilderConfig } from './overview.js'

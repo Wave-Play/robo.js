@@ -8,7 +8,7 @@
 	gap: 4px;
 	margin-bottom: 8px;
 	padding-bottom: 8px;
-	border-bottom: 1px solid var(--background-modifier-accent);
+	border-bottom: 1px solid var(--accent-overlay);
 }
 
 .tab {
@@ -29,13 +29,13 @@
 }
 
 .tab:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 	opacity: 0.8;
 }
 
 .activeTab {
 	opacity: 1;
-	background: var(--background-modifier-selected);
+	background: var(--selected-overlay);
 }
 
 .grid {
@@ -49,10 +49,10 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	width: 32px;
+	width: 34px;
 	height: 32px;
 	padding: 0;
-	font-size: 20px;
+	font-size: 16px;
 	line-height: 1;
 	background: transparent;
 	border: none;
@@ -62,7 +62,7 @@
 }
 
 .emoji:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .emoji:focus {
@@ -70,7 +70,7 @@
 }
 
 .emoji:focus-visible {
-	outline: 2px solid var(--brand-500);
+	outline: 2px solid var(--brand-primary);
 	outline-offset: -2px;
 }
 

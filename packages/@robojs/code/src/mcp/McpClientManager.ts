@@ -193,9 +193,7 @@ export class McpClientManager {
 
 		// Local discovery required
 		if (!this.serviceDiscovery) {
-			throw new Error(
-				`Server '${serverId}' requires URL discovery but no LocalServiceDiscovery is available`
-			)
+			throw new Error(`Server '${serverId}' requires URL discovery but no LocalServiceDiscovery is available`)
 		}
 
 		if (!config.startCommand) {

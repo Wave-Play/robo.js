@@ -237,9 +237,12 @@ export async function resolveProjectHookPath(
  * Infer namespace from package name.
  */
 export function inferNamespace(packageName: string): string {
+	// Normalize path separators to forward slashes for Windows compatibility
+	const normalizedName = packageName.split(path.sep).join('/')
+
 	// @robojs/discord → discord
-	if (packageName.startsWith('@')) {
-		const parts = packageName.split('/')
+	if (normalizedName.startsWith('@')) {
+		const parts = normalizedName.split('/')
 		return parts[parts.length - 1]
 	}
 

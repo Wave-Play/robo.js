@@ -10,7 +10,7 @@
 	flex: 1;
 	display: flex;
 	flex-direction: column;
-	border-right: 1px solid var(--background-accent);
+	border-right: 1px solid var(--accent-background);
 	min-width: 300px;
 }
 
@@ -20,33 +20,33 @@
 	align-items: center;
 	gap: 8px;
 	padding: 8px;
-	background: var(--background-tertiary);
-	border-bottom: 1px solid var(--background-accent);
+	background: var(--card-background);
+	border-bottom: 1px solid var(--accent-background);
 }
 
 .typeFilter {
 	padding: 4px 8px;
 	border-radius: var(--radius-sm);
-	background: var(--background-secondary);
-	color: var(--text-normal);
+	background: var(--sidebar-left-background);
+	color: var(--text-bright);
 	font-size: 11px;
-	border: 1px solid var(--background-accent);
+	border: 1px solid var(--accent-background);
 	cursor: pointer;
 }
 
 .typeFilter:focus {
 	outline: none;
-	border-color: var(--brand-500);
+	border-color: var(--brand-primary);
 }
 
 .searchInput {
 	flex: 1;
 	padding: 4px 8px;
 	border-radius: var(--radius-sm);
-	background: var(--background-secondary);
-	color: var(--text-normal);
+	background: var(--sidebar-left-background);
+	color: var(--text-bright);
 	font-size: 11px;
-	border: 1px solid var(--background-accent);
+	border: 1px solid var(--accent-background);
 }
 
 .searchInput::placeholder {
@@ -55,7 +55,7 @@
 
 .searchInput:focus {
 	outline: none;
-	border-color: var(--brand-500);
+	border-color: var(--brand-primary);
 }
 
 .count {
@@ -82,11 +82,11 @@
 }
 
 .eventItem:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .eventItem.selected {
-	background: var(--background-modifier-selected);
+	background: var(--selected-overlay);
 }
 
 /* Sequence number */
@@ -106,7 +106,7 @@
 	font-size: 9px;
 	font-weight: 600;
 	text-transform: uppercase;
-	background: var(--background-accent);
+	background: var(--accent-background);
 	color: var(--text-muted);
 	white-space: nowrap;
 }
@@ -118,7 +118,7 @@
 
 .badge.interaction {
 	background: rgba(88, 101, 242, 0.15);
-	color: var(--brand-500);
+	color: var(--brand-primary);
 }
 
 .badge.response {
@@ -127,13 +127,13 @@
 }
 
 .badge.typing {
-	background: var(--background-modifier-active);
+	background: var(--active-overlay);
 	color: var(--text-muted);
 }
 
 .badge.sync {
 	background: rgba(88, 101, 242, 0.15);
-	color: var(--brand-500);
+	color: var(--brand-primary);
 }
 
 .badge.reaction {
@@ -147,7 +147,7 @@
 }
 
 .badge.heartbeat {
-	background: var(--background-modifier-active);
+	background: var(--active-overlay);
 	color: var(--text-muted);
 }
 
@@ -155,7 +155,7 @@
 .preview {
 	flex: 1;
 	font-size: 11px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -184,7 +184,7 @@
 	display: flex;
 	flex-direction: column;
 	min-width: 300px;
-	background: var(--background-primary);
+	background: var(--main-chat-background);
 }
 
 .detailHeader {
@@ -192,8 +192,8 @@
 	align-items: center;
 	gap: 8px;
 	padding: 8px;
-	background: var(--background-tertiary);
-	border-bottom: 1px solid var(--background-accent);
+	background: var(--card-background);
+	border-bottom: 1px solid var(--accent-background);
 }
 
 .detailSeq {

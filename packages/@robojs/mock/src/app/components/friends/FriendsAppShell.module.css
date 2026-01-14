@@ -2,23 +2,32 @@
 	display: flex;
 	height: 100%;
 	width: 100%;
-	background: var(--background-tertiary);
 }
 
 .sidebar {
 	width: var(--sidebar-width);
 	min-width: var(--sidebar-width);
-	background: var(--background-secondary);
+	background: transparent;
 	display: flex;
 	flex-direction: column;
-	border-right: 1px solid var(--background-modifier-accent);
+	border-right: 1px solid var(--accent-overlay);
 }
 
 .main {
 	flex: 1;
 	min-width: 0;
 	display: flex;
-	background: var(--background-primary);
+	background: var(--main-chat-background);
+}
+
+.mainDm {
+	flex-direction: column;
+}
+
+.dmRow {
+	flex: 1;
+	min-height: 0;
+	display: flex;
 }
 
 .center {
@@ -29,10 +38,10 @@
 }
 
 .right {
-	width: 360px;
-	min-width: 360px;
-	background: var(--background-secondary);
-	border-left: 1px solid var(--background-modifier-accent);
+	width: 320px;
+	min-width: 320px;
+	background: var(--sidebar-left-background);
+	border-left: 1px solid var(--accent-overlay);
 	display: flex;
 	flex-direction: column;
 }

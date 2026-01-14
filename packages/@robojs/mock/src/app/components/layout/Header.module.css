@@ -5,8 +5,8 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	border-bottom: 1px solid var(--background-modifier-accent);
-	background: var(--background-primary);
+	border-bottom: 1px solid var(--accent-overlay);
+	background: var(--main-chat-background);
 }
 
 .inputContainer {
@@ -15,10 +15,10 @@
 }
 
 .headerInput {
-	border: 1px solid var(--background-modifier-accent);
+	border: 1px solid var(--accent-overlay);
 	padding: 5px;
 	border-radius: var(--radius-sm);
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	position: relative;
 }
 
@@ -42,13 +42,20 @@
 .hash {
 	font-size: 24px;
 	font-weight: 500;
-	color: var(--channel-icon);
+	color: var(--channel-icon-default);
+}
+
+.channelIcon {
+	width: 20px;
+	height: 20px;
+	color: var(--channel-icon-default);
+	flex-shrink: 0;
 }
 
 .channelName {
 	font-size: 16px;
 	font-weight: 600;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 	margin: 0;
 	white-space: nowrap;
 	overflow: hidden;
@@ -58,13 +65,13 @@
 .divider {
 	width: 1px;
 	height: 24px;
-	background: var(--background-modifier-accent);
+	background: var(--accent-overlay);
 	flex-shrink: 0;
 }
 
 .topic {
 	font-size: 14px;
-	color: var(--header-secondary);
+	color: var(--header-text-secondary);
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -79,7 +86,13 @@
 .actions {
 	display: flex;
 	align-items: center;
-	gap: 8px;
+	gap: 12px;
+}
+
+.iconGroup {
+	display: flex;
+	align-items: center;
+	gap: 10px;
 }
 
 .iconButton {
@@ -88,7 +101,7 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	color: var(--interactive-normal);
+	color: var(--interactive-default);
 	border-radius: var(--radius-sm);
 	transition: color 0.15s ease;
 }
@@ -112,7 +125,7 @@
 	height: 32px;
 	align-items: center;
 	justify-content: center;
-	color: var(--interactive-normal);
+	color: var(--interactive-default);
 	border-radius: var(--radius-sm);
 	transition:
 		color 0.15s ease,
@@ -123,12 +136,12 @@
 
 .mobileMenuButton:hover {
 	color: var(--interactive-hover);
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .mobileMenuButton.active {
 	color: var(--interactive-active);
-	background: var(--background-modifier-selected);
+	background: var(--selected-overlay);
 }
 
 /* Show mobile menu button on mobile */

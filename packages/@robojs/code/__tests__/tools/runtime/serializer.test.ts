@@ -89,12 +89,14 @@ describe('SerialExecutionQueue', () => {
 		it('should continue processing after a failed task', async () => {
 			const results: string[] = []
 
-			const task1 = queue.enqueue(async () => {
-				results.push('task1-start')
-				throw new Error('task1 failed')
-			}).catch(() => {
-				results.push('task1-caught')
-			})
+			const task1 = queue
+				.enqueue(async () => {
+					results.push('task1-start')
+					throw new Error('task1 failed')
+				})
+				.catch(() => {
+					results.push('task1-caught')
+				})
 
 			const task2 = queue.enqueue(async () => {
 				results.push('task2-executed')

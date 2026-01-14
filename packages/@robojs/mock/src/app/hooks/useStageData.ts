@@ -504,6 +504,21 @@ export function useStageData(options?: UseStageDataOptions): StageDataResult {
 	const openDM = useCallback(async (userId: string) => {
 		if (isPlaybackMode) return
 
+		// First check if a DM channel already exists for this user in session state
+		const existingDM = sessionState.channels.find((ch) => {
+			// DM channels have type 1 and recipient_ids array
+			if (ch.type !== 1) return false
+			const recipientIds = (ch as { recipient_ids?: string[] }).recipient_ids
+			return recipientIds?.includes(userId)
+		})
+
+		if (existingDM) {
+			// DM channel already exists - just select it
+			sessionDispatch({ type: 'SELECT_CHANNEL', payload: existingDM.id })
+			return existingDM
+		}
+
+		// No existing DM channel - create one via API
 		const response = await fetch('/api/v10/users/@me/channels', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
@@ -515,7 +530,7 @@ export function useStageData(options?: UseStageDataOptions): StageDataResult {
 		sessionDispatch({ type: 'ADD_DM_CHANNEL', payload: dmChannel })
 		sessionDispatch({ type: 'SELECT_CHANNEL', payload: dmChannel.id })
 		return dmChannel
-	}, [isPlaybackMode, sessionDispatch])
+	}, [isPlaybackMode, sessionDispatch, sessionState.channels])
 
 	// === Voice Actions (no-op in playback) ===
 	const joinVoice = useCallback(async (channelId: string, guildId?: string, userId?: string) => {

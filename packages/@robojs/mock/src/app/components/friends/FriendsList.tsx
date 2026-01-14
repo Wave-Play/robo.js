@@ -1,22 +1,7 @@
+import type { StageUser } from '../../types/stage'
 import { Avatar, IconButton } from '../ui'
 import { getAvatarUrl } from '../../utils/avatar'
 import styles from './FriendsList.module.css'
-
-type FriendRowData = {
-	id: string
-	username: string
-	subtitle: string
-	avatar: string | null
-}
-
-const FRIENDS: FriendRowData[] = [
-	{ id: '1', username: 'Dreamnugget', subtitle: 'Online', avatar: null },
-	{ id: '2', username: 'Jake', subtitle: 'Do Not Disturb', avatar: null },
-	{ id: '3', username: 'MrBatata', subtitle: 'Code • 🥲 The month is so slow without her D:', avatar: null },
-	{ id: '4', username: 'Pkmmte', subtitle: 'https://robojs.dev', avatar: null },
-	{ id: '5', username: 'secretised', subtitle: '🦀', avatar: null },
-	{ id: '6', username: 'Zoryko', subtitle: 'Do Not Disturb', avatar: null }
-]
 
 function MessageIcon() {
 	return (
@@ -34,15 +19,16 @@ function MoreIcon() {
 	)
 }
 
-function FriendRow({ friend }: { friend: FriendRowData }) {
-	const url = friend.avatar ? getAvatarUrl(friend.id, friend.avatar, 32) : null
+function FriendRow({ user, onOpen }: { user: StageUser; onOpen?: (user: StageUser) => void }) {
+	const url = user.avatar ? getAvatarUrl(user.id, user.avatar, 32) : null
+	const subtitle = user.activities?.[0]?.state?.trim() ?? ''
 
 	return (
-		<div className={styles.row}>
-			<Avatar imageUrl={url} size={32} showStatus statusBorderColor="var(--background-primary)" statusColor="var(--status-online)" />
+		<button className={styles.row} type="button" onClick={() => onOpen?.(user)}>
+			<Avatar imageUrl={url} size={32} showStatus statusBorderColor="var(--main-chat-background)" statusColor={`var(--status-${user.status ?? 'online'})`} />
 			<div className={styles.info}>
-				<div className={styles.name}>{friend.username}</div>
-				<div className={styles.sub}>{friend.subtitle}</div>
+				<div className={styles.name}>{user.username}</div>
+				{subtitle ? <div className={styles.sub}>{subtitle}</div> : null}
 			</div>
 			<div className={styles.actions}>
 				<IconButton ariaLabel="Message" size="sm">
@@ -52,18 +38,16 @@ function FriendRow({ friend }: { friend: FriendRowData }) {
 					<MoreIcon />
 				</IconButton>
 			</div>
-		</div>
+		</button>
 	)
 }
 
-export function FriendsList() {
+export function FriendsList({ users, onOpenUser }: { users: StageUser[]; onOpenUser?: (user: StageUser) => void }) {
 	return (
 		<div>
-			{FRIENDS.map((friend) => (
-				<FriendRow key={friend.id} friend={friend} />
+			{users.map((user) => (
+				<FriendRow key={user.id} user={user} onOpen={onOpenUser} />
 			))}
 		</div>
 	)
 }
-
-

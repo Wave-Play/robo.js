@@ -27,11 +27,12 @@ registerEnvPattern('DISCORD_CLIENT_SECRET', {
 
 export default function (context: BuildContext) {
 	const { mode } = context
-	const envData = Env.data()
+	const envData = Env.data() ?? {}
 
 	// Validate environment before scanning
-	const token = envData.DISCORD_TOKEN
-	const clientId = envData.DISCORD_CLIENT_ID
+	// Fallback to process.env for tools like Doppler that inject directly
+	const token = envData.DISCORD_TOKEN ?? process.env.DISCORD_TOKEN
+	const clientId = envData.DISCORD_CLIENT_ID ?? process.env.DISCORD_CLIENT_ID
 
 	if (!token) {
 		discordLogger.warn('DISCORD_TOKEN is not set. Discord features will not work at runtime.')

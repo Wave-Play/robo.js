@@ -7,8 +7,8 @@
 	align-items: center;
 	gap: 6px;
 	padding: 8px 12px;
-	background: var(--background-secondary);
-	border: 1px solid var(--background-accent);
+	background: var(--sidebar-left-background);
+	border: 1px solid var(--accent-background);
 	border-radius: var(--radius-md);
 	color: var(--text-muted);
 	font-size: 12px;
@@ -19,9 +19,9 @@
 }
 
 .toggleButton:hover {
-	background: var(--background-tertiary);
-	color: var(--text-normal);
-	border-color: var(--brand-500);
+	background: var(--card-background);
+	color: var(--text-bright);
+	border-color: var(--brand-primary);
 }
 
 /* Panel (expanded state) */
@@ -31,8 +31,8 @@
 	left: 0;
 	right: 0;
 	/* height is now controlled via inline style */
-	background: var(--background-secondary);
-	border-top: 1px solid var(--background-accent);
+	background: var(--sidebar-left-background);
+	border-top: 1px solid var(--accent-background);
 	display: flex;
 	flex-direction: column;
 	z-index: 100;
@@ -63,14 +63,14 @@
 	left: 0;
 	right: 0;
 	height: 1px;
-	background: var(--background-accent);
+	background: var(--accent-background);
 	transform: translateY(-50%);
 	transition: transform 0.15s ease, background 0.15s ease;
 }
 
 .resizeHandle:hover::before {
 	transform: translateY(-50%) scaleY(4);
-	background: var(--brand-500);
+	background: var(--brand-primary);
 }
 
 @keyframes slideUp {
@@ -107,8 +107,8 @@
 	padding: 0 8px;
 	height: 36px;
 	min-height: 36px;
-	background: var(--background-tertiary);
-	border-bottom: 1px solid var(--background-accent);
+	background: var(--card-background);
+	border-bottom: 1px solid var(--accent-background);
 }
 
 /* Tabs */
@@ -131,13 +131,13 @@
 }
 
 .tab:hover {
-	color: var(--text-normal);
-	background: var(--background-modifier-hover);
+	color: var(--text-bright);
+	background: var(--hover-overlay);
 }
 
 .tab.active {
-	color: var(--text-normal);
-	background: var(--background-modifier-selected);
+	color: var(--text-bright);
+	background: var(--selected-overlay);
 }
 
 /* Header controls (maximize + close) */
@@ -162,13 +162,14 @@
 
 .closeButton:hover,
 .maximizeButton:hover {
-	color: var(--text-normal);
-	background: var(--background-modifier-hover);
+	color: var(--text-bright);
+	background: var(--hover-overlay);
 }
 
 /* Content area */
 .content {
 	flex: 1;
-	overflow: hidden;
+	min-height: 0;
+	overflow: auto;
 	display: flex;
 }

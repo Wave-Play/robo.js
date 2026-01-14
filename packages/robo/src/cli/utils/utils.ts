@@ -192,6 +192,20 @@ export async function findNodeModules(basePath: string): Promise<string | null> 
 	}
 }
 
+async function resolvePackagePathFallback(
+	nodeModulesPath: string,
+	packageName: string
+): Promise<string | null> {
+	const candidatePath = path.join(nodeModulesPath, packageName)
+	logger.debug(`Falling back to ${packageName} in ${candidatePath}`)
+	try {
+		await fs.access(candidatePath)
+		return candidatePath
+	} catch {
+		return null
+	}
+}
+
 export async function findPackagePath(packageName: string, currentPath: string): Promise<string | null> {
 	const nodeModulesPath = await findNodeModules(currentPath)
 	if (!nodeModulesPath) {
@@ -217,9 +231,13 @@ export async function findPackagePath(packageName: string, currentPath: string):
 			const { stdout } = await execAsync(`pnpm list ${packageName} --json`, { cwd: currentPath })
 			const packages = JSON.parse(stdout)
 			const packageInfo = Array.isArray(packages) ? packages[0] : packages
-			packagePath = packageInfo.dependencies[packageName].path
+			packagePath = packageInfo?.dependencies?.[packageName]?.path
 		} catch (error) {
 			logger.error('', error)
+		}
+
+		if (!packagePath) {
+			packagePath = await resolvePackagePathFallback(nodeModulesPath, packageName)
 		}
 	} else {
 		const candidatePath = path.join(nodeModulesPath, packageName)
@@ -233,6 +251,9 @@ export async function findPackagePath(packageName: string, currentPath: string):
 	}
 
 	if (packagePath) {
+		if (!path.isAbsolute(packagePath)) {
+			packagePath = path.resolve(currentPath, packagePath)
+		}
 		return path.relative(process.cwd(), packagePath)
 	}
 

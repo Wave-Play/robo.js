@@ -20,11 +20,13 @@ import type { ProjectProfile } from '../../src/types/robo.js'
 /**
  * Create a mock execution provider for testing
  */
-function createMockProvider(options: {
-	serverOutput?: string[]
-	streamExit?: number
-	startSessionError?: Error
-} = {}): ExecutionProvider & { mockHandle: TerminalSessionHandle } {
+function createMockProvider(
+	options: {
+		serverOutput?: string[]
+		streamExit?: number
+		startSessionError?: Error
+	} = {}
+): ExecutionProvider & { mockHandle: TerminalSessionHandle } {
 	const mockHandle: TerminalSessionHandle = { id: 'mock-session-123' }
 
 	const provider: ExecutionProvider & { mockHandle: TerminalSessionHandle } = {

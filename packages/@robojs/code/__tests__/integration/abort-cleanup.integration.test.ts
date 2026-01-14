@@ -20,9 +20,7 @@ const files: Record<string, string> = {
 	'/project/src/index.ts': 'console.log("hello")'
 }
 
-function createMockProvider(
-	overrides: Partial<ExecutionProvider> = {}
-): ExecutionProvider {
+function createMockProvider(overrides: Partial<ExecutionProvider> = {}): ExecutionProvider {
 	const base = {
 		readFile: jest.fn(async (path: string) => {
 			if (files[path]) return files[path]
@@ -54,10 +52,12 @@ function createMockLLM(): LLMProvider {
 			toolCalls: [],
 			finishReason: 'stop' as const
 		})),
-		stream: jest.fn(() => (async function* () {
-			yield { type: 'text' as const, text: 'Done' }
-			yield { type: 'done' as const, finishReason: 'stop' as const }
-		})())
+		stream: jest.fn(() =>
+			(async function* () {
+				yield { type: 'text' as const, text: 'Done' }
+				yield { type: 'done' as const, finishReason: 'stop' as const }
+			})()
+		)
 	} as unknown as LLMProvider
 }
 
@@ -71,7 +71,11 @@ function createMockToolRegistry(): ToolRegistry {
 	} as unknown as ToolRegistry
 }
 
-function createMockToolExecutor(registry: ToolRegistry, provider: ExecutionProvider, policy: AgentPolicy): ToolExecutor {
+function createMockToolExecutor(
+	registry: ToolRegistry,
+	provider: ExecutionProvider,
+	policy: AgentPolicy
+): ToolExecutor {
 	// Use the real executor so CodeAgent can safely fork per-run instances.
 	// These tests don't execute tools, but they do require a valid ToolExecutor.
 	return new ToolExecutor(registry, {
@@ -194,9 +198,7 @@ describe('Abort and Cleanup Integration', () => {
 			agent.registerSession(runId, 'session_3')
 
 			// Should not throw even if some sessions fail to stop
-			await expect(
-				agent.abort({ runId, reason: 'Cancelled' })
-			).resolves.not.toThrow()
+			await expect(agent.abort({ runId, reason: 'Cancelled' })).resolves.not.toThrow()
 
 			// All sessions should have been attempted
 			expect(mockStopSession).toHaveBeenCalledTimes(3)

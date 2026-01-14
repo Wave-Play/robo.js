@@ -22,11 +22,11 @@
 
 .emptyState h3 {
 	margin: 0;
-	color: var(--text-normal);
+	color: var(--text-bright);
 }
 
 .emptyState code {
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	padding: 2px 6px;
 	border-radius: 4px;
 	font-family: monospace;
@@ -67,8 +67,8 @@
 	align-items: center;
 	gap: 12px;
 	padding: 8px 12px;
-	background: var(--background-tertiary);
-	border-bottom: 1px solid var(--background-accent);
+	background: var(--card-background);
+	border-bottom: 1px solid var(--accent-background);
 	flex-shrink: 0;
 }
 
@@ -89,8 +89,8 @@
 }
 
 .summaryToggle:hover {
-	background: var(--background-modifier-hover);
-	color: var(--text-normal);
+	background: var(--hover-overlay);
+	color: var(--text-bright);
 }
 
 .summaryRunId {
@@ -108,7 +108,7 @@
 }
 
 .summaryStatTotal {
-	color: var(--text-normal);
+	color: var(--text-bright);
 	font-weight: 600;
 }
 
@@ -141,8 +141,8 @@
 }
 
 .refreshButton:hover {
-	background: var(--background-modifier-hover);
-	color: var(--text-normal);
+	background: var(--hover-overlay);
+	color: var(--text-bright);
 }
 
 /* Split Pane Layout */
@@ -157,7 +157,7 @@
 	width: 220px;
 	min-width: 180px;
 	max-width: 300px;
-	border-right: 1px solid var(--background-accent);
+	border-right: 1px solid var(--accent-background);
 	overflow-y: auto;
 	flex-shrink: 0;
 }
@@ -191,11 +191,11 @@
 }
 
 .fileListItem:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .fileListItem.selected {
-	background: var(--background-modifier-selected);
+	background: var(--selected-overlay);
 }
 
 .fileListItem.passed {
@@ -238,7 +238,7 @@
 
 .fileListItemName {
 	font-size: 12px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 	font-family: monospace;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -279,8 +279,8 @@
 	align-items: center;
 	justify-content: space-between;
 	padding: 8px 12px;
-	background: var(--background-tertiary);
-	border-bottom: 1px solid var(--background-accent);
+	background: var(--card-background);
+	border-bottom: 1px solid var(--accent-background);
 	flex-shrink: 0;
 }
 
@@ -294,7 +294,7 @@
 
 .compactDetailPath {
 	font-size: 12px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 	font-family: monospace;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -311,7 +311,7 @@
 	font-size: 10px;
 	color: var(--text-muted);
 	font-family: monospace;
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	padding: 2px 6px;
 	border-radius: 3px;
 	cursor: pointer;
@@ -319,12 +319,12 @@
 }
 
 .compactDetailSessionId:hover {
-	color: var(--text-normal);
-	background: var(--background-modifier-hover);
+	color: var(--text-bright);
+	background: var(--hover-overlay);
 }
 
 .compactReplayButton {
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	border: none;
 	color: white;
 	width: 28px;
@@ -339,7 +339,7 @@
 }
 
 .compactReplayButton:hover {
-	background: var(--brand-560);
+	background: var(--brand-dark);
 }
 
 .compactReplayButton:disabled {
@@ -353,7 +353,7 @@
 	align-items: center;
 	gap: 6px;
 	padding: 6px 12px;
-	background: linear-gradient(135deg, var(--brand-500), #5865f2);
+	background: linear-gradient(135deg, var(--brand-primary), #5865f2);
 	border: none;
 	border-radius: 4px;
 	color: white;
@@ -365,7 +365,7 @@
 }
 
 .replaySessionButton:hover {
-	background: linear-gradient(135deg, var(--brand-560), #4752c4);
+	background: linear-gradient(135deg, var(--brand-dark), #4752c4);
 	transform: translateY(-1px);
 	box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
 }
@@ -381,7 +381,7 @@
 }
 
 .replaySessionButton.disabled {
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	box-shadow: none;
 	cursor: not-allowed;
 	opacity: 0.5;
@@ -397,10 +397,10 @@
 	align-items: center;
 	gap: 6px;
 	padding: 6px 12px;
-	background: var(--background-tertiary);
-	border: 1px solid var(--background-accent);
+	background: var(--card-background);
+	border: 1px solid var(--accent-background);
 	border-radius: 4px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 	font-size: 12px;
 	font-weight: 500;
 	cursor: pointer;
@@ -408,8 +408,8 @@
 }
 
 .viewLogsButton:hover {
-	background: var(--background-modifier-hover);
-	border-color: var(--brand-500);
+	background: var(--hover-overlay);
+	border-color: var(--brand-primary);
 }
 
 .viewLogsButton svg {
@@ -417,7 +417,7 @@
 }
 
 .viewLogsButton:hover svg {
-	color: var(--text-normal);
+	color: var(--text-bright);
 }
 
 /* Actions container */
@@ -447,8 +447,8 @@
 	display: flex;
 	gap: 2px;
 	padding: 6px 12px;
-	background: var(--background-secondary);
-	border-bottom: 1px solid var(--background-accent);
+	background: var(--sidebar-left-background);
+	border-bottom: 1px solid var(--accent-background);
 	flex-shrink: 0;
 }
 
@@ -464,13 +464,13 @@
 }
 
 .compactSectionTab:hover {
-	background: var(--background-modifier-hover);
-	color: var(--text-normal);
+	background: var(--hover-overlay);
+	color: var(--text-bright);
 }
 
 .compactSectionTab.active {
-	background: var(--background-modifier-selected);
-	color: var(--text-normal);
+	background: var(--selected-overlay);
+	color: var(--text-bright);
 }
 
 .compactSectionContent {
@@ -489,7 +489,7 @@
 
 .compactTestItem {
 	padding: 8px 12px;
-	border-bottom: 1px solid var(--background-accent);
+	border-bottom: 1px solid var(--accent-background);
 	border-left: 2px solid transparent;
 }
 
@@ -532,7 +532,7 @@
 .compactTestName {
 	flex: 1;
 	font-size: 12px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 }
 
 .compactTestDuration {
@@ -575,7 +575,7 @@
 	align-items: center;
 	gap: 12px;
 	padding-bottom: 12px;
-	border-bottom: 1px solid var(--background-accent);
+	border-bottom: 1px solid var(--accent-background);
 }
 
 .backButton {
@@ -590,7 +590,7 @@
 }
 
 .backButton:hover {
-	background: var(--background-tertiary);
+	background: var(--card-background);
 }
 
 .detailTitle {
@@ -598,7 +598,7 @@
 	margin: 0;
 	font-size: 14px;
 	font-weight: 600;
-	color: var(--text-normal);
+	color: var(--text-bright);
 	font-family: monospace;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -620,7 +620,7 @@
 }
 
 .replayButton {
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	border: none;
 	color: white;
 	padding: 8px 16px;
@@ -632,7 +632,7 @@
 }
 
 .replayButton:hover {
-	background: var(--brand-560);
+	background: var(--brand-dark);
 }
 
 /* Section Tabs */
@@ -640,7 +640,7 @@
 	display: flex;
 	gap: 4px;
 	padding: 12px 0;
-	border-bottom: 1px solid var(--background-accent);
+	border-bottom: 1px solid var(--accent-background);
 }
 
 .sectionTab {
@@ -655,13 +655,13 @@
 }
 
 .sectionTab:hover {
-	background: var(--background-tertiary);
-	color: var(--text-normal);
+	background: var(--card-background);
+	color: var(--text-bright);
 }
 
 .sectionTab.active {
-	background: var(--background-tertiary);
-	color: var(--text-normal);
+	background: var(--card-background);
+	color: var(--text-bright);
 	font-weight: 500;
 }
 
@@ -679,10 +679,10 @@
 }
 
 .testItem {
-	background: var(--background-secondary);
+	background: var(--sidebar-left-background);
 	border-radius: 8px;
 	padding: 12px;
-	border: 1px solid var(--background-accent);
+	border: 1px solid var(--accent-background);
 }
 
 .testItem.passed {
@@ -706,7 +706,7 @@
 .testName {
 	flex: 1;
 	font-size: 13px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 }
 
 .testDuration {
@@ -736,14 +736,14 @@
 .assertionsList {
 	margin-top: 12px;
 	padding-top: 12px;
-	border-top: 1px solid var(--background-accent);
+	border-top: 1px solid var(--accent-background);
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
 }
 
 .assertion {
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	border-radius: 4px;
 	overflow: hidden;
 }
@@ -758,7 +758,7 @@
 }
 
 .assertionHeader:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .assertionIcon {
@@ -778,7 +778,7 @@
 .assertionDescription {
 	flex: 1;
 	font-size: 12px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 }
 
 .expandIcon {
@@ -788,8 +788,8 @@
 
 .assertionDetails {
 	padding: 12px;
-	background: var(--background-secondary);
-	border-top: 1px solid var(--background-accent);
+	background: var(--sidebar-left-background);
+	border-top: 1px solid var(--accent-background);
 }
 
 .assertionValuePair {
@@ -816,7 +816,7 @@
 }
 
 .jsonViewerWrapper {
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	border-radius: 4px;
 	padding: 8px;
 	max-height: 300px;
@@ -827,7 +827,7 @@
 .assertionDiff pre {
 	margin: 0;
 	padding: 8px;
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	border-radius: 4px;
 	font-size: 11px;
 	overflow-x: auto;
@@ -856,8 +856,8 @@
 	align-items: center;
 	gap: 12px;
 	padding: 8px 12px;
-	background: var(--background-tertiary);
-	border-bottom: 1px solid var(--background-accent);
+	background: var(--card-background);
+	border-bottom: 1px solid var(--accent-background);
 	flex-shrink: 0;
 }
 
@@ -866,17 +866,17 @@
 	min-width: 120px;
 	max-width: 250px;
 	padding: 6px 10px;
-	background: var(--background-secondary);
-	border: 1px solid var(--background-accent);
+	background: var(--sidebar-left-background);
+	border: 1px solid var(--accent-background);
 	border-radius: 4px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 	font-size: 12px;
 	outline: none;
 	transition: border-color 0.15s ease;
 }
 
 .logSearchInput:focus {
-	border-color: var(--brand-500);
+	border-color: var(--brand-primary);
 }
 
 .logSearchInput::placeholder {
@@ -891,7 +891,7 @@
 .logLevelButton {
 	padding: 4px 8px;
 	background: transparent;
-	border: 1px solid var(--background-accent);
+	border: 1px solid var(--accent-background);
 	border-radius: 4px;
 	color: var(--text-muted);
 	font-size: 10px;
@@ -901,13 +901,13 @@
 }
 
 .logLevelButton:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .logLevelButton.active {
-	background: var(--background-modifier-selected);
-	color: var(--text-normal);
-	border-color: var(--brand-500);
+	background: var(--selected-overlay);
+	color: var(--text-bright);
+	border-color: var(--brand-primary);
 }
 
 .logLevelButton.error.active {
@@ -941,7 +941,7 @@
 .logContent {
 	margin: 0;
 	padding: 12px;
-	background: var(--background-secondary);
+	background: var(--sidebar-left-background);
 	font-size: 12px;
 	font-family: var(--font-code), monospace;
 	overflow: auto;
@@ -956,7 +956,7 @@
 }
 
 .logLine:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .logLineError {
@@ -992,7 +992,7 @@
 		height: 120px;
 		min-height: 80px;
 		border-right: none;
-		border-bottom: 1px solid var(--background-accent);
+		border-bottom: 1px solid var(--accent-background);
 	}
 
 	.detailPane {
@@ -1015,6 +1015,6 @@
 		max-width: none;
 		height: 120px;
 		border-right: none;
-		border-bottom: 1px solid var(--background-accent);
+		border-bottom: 1px solid var(--accent-background);
 	}
 }

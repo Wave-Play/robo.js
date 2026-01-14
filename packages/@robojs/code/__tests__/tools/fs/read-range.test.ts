@@ -49,10 +49,7 @@ function createPolicy(overrides: Partial<AgentPolicy> = {}): AgentPolicy {
 	}
 }
 
-function createContext(
-	policy: Partial<AgentPolicy> = {},
-	provider?: ExecutionProvider
-): ToolContext {
+function createContext(policy: Partial<AgentPolicy> = {}, provider?: ExecutionProvider): ToolContext {
 	return {
 		provider: provider ?? createMockProvider(),
 		policy: createPolicy(policy),
@@ -189,10 +186,7 @@ describe('fs_read_range', () => {
 		})
 		const context = createContext({}, provider)
 
-		const result = await fsReadRangeTool.execute(
-			{ path: '/file.txt', offset: 7, length: 5 },
-			context
-		)
+		const result = await fsReadRangeTool.execute({ path: '/file.txt', offset: 7, length: 5 }, context)
 
 		expect(result.success).toBe(true)
 		expect(result.data?.text).toBe('World')
@@ -206,10 +200,7 @@ describe('fs_read_range', () => {
 		})
 		const context = createContext({}, provider)
 
-		const result = await fsReadRangeTool.execute(
-			{ path: '/small.txt', offset: 0, length: 100 },
-			context
-		)
+		const result = await fsReadRangeTool.execute({ path: '/small.txt', offset: 0, length: 100 }, context)
 
 		expect(result.success).toBe(true)
 		expect(result.data?.text).toBe('Hi')
@@ -218,10 +209,7 @@ describe('fs_read_range', () => {
 
 	it('should deny range read on restricted paths', async () => {
 		const context = createContext()
-		const result = await fsReadRangeTool.execute(
-			{ path: '/secrets/private.key', offset: 0, length: 100 },
-			context
-		)
+		const result = await fsReadRangeTool.execute({ path: '/secrets/private.key', offset: 0, length: 100 }, context)
 
 		expect(result.success).toBe(false)
 		expect(result.errorCode).toBe('POLICY_VIOLATION')
@@ -233,10 +221,7 @@ describe('fs_read_range', () => {
 		})
 		const context = createContext({}, provider)
 
-		const result = await fsReadRangeTool.execute(
-			{ path: '/file.txt', offset: 0, length: 5 },
-			context
-		)
+		const result = await fsReadRangeTool.execute({ path: '/file.txt', offset: 0, length: 5 }, context)
 
 		expect(result.success).toBe(true)
 		expect(result.data?.offset).toBe(0)

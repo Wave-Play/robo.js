@@ -5,7 +5,10 @@
  * using mocked WebContainer API.
  */
 
-import { WebContainerProvider, type WebContainerProviderConfig } from '../../../src/providers/webcontainer/WebContainerProvider.js'
+import {
+	WebContainerProvider,
+	type WebContainerProviderConfig
+} from '../../../src/providers/webcontainer/WebContainerProvider.js'
 import { CodeAgentError } from '../../../src/errors/index.js'
 import {
 	createMockContainer,

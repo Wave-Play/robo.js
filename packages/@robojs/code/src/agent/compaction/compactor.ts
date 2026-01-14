@@ -18,7 +18,12 @@ import type { AgentState } from '../state.js'
 import type { ContextPolicy } from '../../types/policy.js'
 import { codeLogger } from '../../core/logger.js'
 import { countMessageTokens } from '../token-counter.js'
-import { getModelContextLimit, calculateTokenThreshold, calculateTargetAfterCompaction, DEFAULT_TOKEN_POLICY } from '../token-limits.js'
+import {
+	getModelContextLimit,
+	calculateTokenThreshold,
+	calculateTargetAfterCompaction,
+	DEFAULT_TOKEN_POLICY
+} from '../token-limits.js'
 
 /**
  * Result of a compaction operation
@@ -196,7 +201,7 @@ export class ContextCompactor {
 		const dropTurns = turns.slice(0, turns.length - turnsToKeep)
 
 		// Flatten kept turns back into messages
-		const trimmedMessages = keepTurns.flatMap(t => t.messages)
+		const trimmedMessages = keepTurns.flatMap((t) => t.messages)
 
 		// Count dropped messages
 		const droppedCount = dropTurns.reduce((sum, t) => sum + t.messages.length, 0)
@@ -242,7 +247,7 @@ export class ContextCompactor {
 		const turns = this.groupMessagesIntoTurns(messages)
 
 		// Calculate tokens per turn
-		const turnTokens: Array<{ turn: MessageTurn; tokens: number }> = turns.map(turn => ({
+		const turnTokens: Array<{ turn: MessageTurn; tokens: number }> = turns.map((turn) => ({
 			turn,
 			tokens: turn.messages.reduce((sum, msg) => sum + countMessageTokens(msg), 0)
 		}))
@@ -273,7 +278,7 @@ export class ContextCompactor {
 		const keepTurns = turns.slice(keepIndex)
 		const dropTurns = turns.slice(0, keepIndex)
 
-		const trimmedMessages = keepTurns.flatMap(t => t.messages)
+		const trimmedMessages = keepTurns.flatMap((t) => t.messages)
 		const droppedCount = dropTurns.reduce((sum, t) => sum + t.messages.length, 0)
 		const afterTokens = keptTokens
 
@@ -416,23 +421,19 @@ export class ContextCompactor {
 
 		// 2. Plan steps (if available)
 		if (state.plan && state.plan.length > 0) {
-			const planSummary = state.plan
-				.map(step => `${step.step}. ${step.title} [${step.status}]`)
-				.join('\n')
+			const planSummary = state.plan.map((step) => `${step.step}. ${step.title} [${step.status}]`).join('\n')
 			parts.push(`\n## Plan\n${planSummary}`)
 		}
 
 		// 3. Key decisions (extract from dropped AI messages)
 		const decisions = this.extractDecisions(droppedTurns)
 		if (decisions.length > 0) {
-			parts.push(`\n## Key Decisions\n${decisions.map(d => `- ${d}`).join('\n')}`)
+			parts.push(`\n## Key Decisions\n${decisions.map((d) => `- ${d}`).join('\n')}`)
 		}
 
 		// 4. Changed files
 		if (state.appliedChanges && state.appliedChanges.length > 0) {
-			const filesList = state.appliedChanges
-				.map(c => `- ${c.path} (${c.type})`)
-				.join('\n')
+			const filesList = state.appliedChanges.map((c) => `- ${c.path} (${c.type})`).join('\n')
 			parts.push(`\n## Files Changed\n${filesList}`)
 		}
 
@@ -448,8 +449,8 @@ export class ContextCompactor {
 				if (state.lastVerification.tests?.failures?.length) {
 					verificationParts.push(`- Test failures: ${state.lastVerification.tests.failures.length}`)
 				}
-				if (state.lastVerification.mock?.scenarios?.some(s => s.error)) {
-					const failedCount = state.lastVerification.mock.scenarios.filter(s => s.error).length
+				if (state.lastVerification.mock?.scenarios?.some((s) => s.error)) {
+					const failedCount = state.lastVerification.mock.scenarios.filter((s) => s.error).length
 					verificationParts.push(`- Mock failures: ${failedCount}`)
 				}
 			}
@@ -492,10 +493,14 @@ export class ContextCompactor {
 				if (decisions.length >= maxDecisions) break
 
 				if (msg instanceof AIMessage) {
-					const content = typeof msg.content === 'string'
-						? msg.content
-						: Array.isArray(msg.content)
-							? msg.content.filter(c => typeof c === 'object' && 'text' in c).map(c => (c as { text: string }).text).join(' ')
+					const content =
+						typeof msg.content === 'string'
+							? msg.content
+							: Array.isArray(msg.content)
+							? msg.content
+									.filter((c) => typeof c === 'object' && 'text' in c)
+									.map((c) => (c as { text: string }).text)
+									.join(' ')
 							: ''
 
 					if (!content) continue

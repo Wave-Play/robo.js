@@ -41,9 +41,7 @@ describe('StreamAdapter', () => {
 		})
 
 		it('should emit plan event when plan updates', () => {
-			const plan = [
-				{ step: 1, title: 'Read files', description: 'Read relevant files', status: 'pending' as const }
-			]
+			const plan = [{ step: 1, title: 'Read files', description: 'Read relevant files', status: 'pending' as const }]
 
 			adapter.processStateUpdate({ plan })
 
@@ -94,12 +92,8 @@ describe('StreamAdapter', () => {
 		})
 
 		it('should emit approval_required when awaiting approval', () => {
-			const changes = [
-				{ path: '/src/index.ts', type: 'create' as const, content: 'test' }
-			]
-			const diffs = [
-				{ path: '/src/index.ts', type: 'create' as const, before: null, after: 'test', hunks: [] }
-			]
+			const changes = [{ path: '/src/index.ts', type: 'create' as const, content: 'test' }]
+			const diffs = [{ path: '/src/index.ts', type: 'create' as const, before: null, after: 'test', hunks: [] }]
 
 			adapter.processStateUpdate({
 				awaitingApproval: true,
@@ -116,9 +110,7 @@ describe('StreamAdapter', () => {
 		})
 
 		it('should emit file_proposed when changes pending but not awaiting', () => {
-			const changes = [
-				{ path: '/src/util.ts', type: 'modify' as const, content: 'updated' }
-			]
+			const changes = [{ path: '/src/util.ts', type: 'modify' as const, content: 'updated' }]
 
 			adapter.processStateUpdate({
 				awaitingApproval: false,
@@ -132,13 +124,20 @@ describe('StreamAdapter', () => {
 		})
 
 		it('should emit complete event on completion summary', () => {
-			const appliedChanges = [
-				{ path: '/src/index.ts', type: 'create' as const, content: 'done' }
-			]
+			const appliedChanges = [{ path: '/src/index.ts', type: 'create' as const, content: 'done' }]
 			const verification = {
 				success: true,
 				timestamp: '2024-01-01T00:00:00Z',
-				build: { success: true, command: 'npm', args: ['run', 'build'], exitCode: 0, output: '', errors: [], warnings: [], durationMs: 100 }
+				build: {
+					success: true,
+					command: 'npm',
+					args: ['run', 'build'],
+					exitCode: 0,
+					output: '',
+					errors: [],
+					warnings: [],
+					durationMs: 100
+				}
 			}
 
 			adapter.processStateUpdate({

@@ -94,10 +94,7 @@ function createMockProvider(): ExecutionProvider {
 	} as unknown as ExecutionProvider
 }
 
-function createContext(
-	policy: Partial<AgentPolicy> = {},
-	provider?: ExecutionProvider
-): ToolContext {
+function createContext(policy: Partial<AgentPolicy> = {}, provider?: ExecutionProvider): ToolContext {
 	return {
 		provider: provider ?? createMockProvider(),
 		policy: {
@@ -161,10 +158,7 @@ describe('Policy Integration: Deny Path Enforcement', () => {
 
 		it('denies tail read on private key', async () => {
 			const context = createContext()
-			const result = await fsReadTailTool.execute(
-				{ path: '/secrets/private.key', maxBytes: 100 },
-				context
-			)
+			const result = await fsReadTailTool.execute({ path: '/secrets/private.key', maxBytes: 100 }, context)
 
 			expect(result.success).toBe(false)
 			expect(result.errorCode).toBe('POLICY_VIOLATION')
@@ -172,10 +166,7 @@ describe('Policy Integration: Deny Path Enforcement', () => {
 
 		it('denies range read on .git contents', async () => {
 			const context = createContext()
-			const result = await fsReadRangeTool.execute(
-				{ path: '/.git/HEAD', offset: 0, length: 10 },
-				context
-			)
+			const result = await fsReadRangeTool.execute({ path: '/.git/HEAD', offset: 0, length: 10 }, context)
 
 			expect(result.success).toBe(false)
 			expect(result.errorCode).toBe('POLICY_VIOLATION')
@@ -213,10 +204,7 @@ describe('Policy Integration: Deny Path Enforcement', () => {
 	describe('fs_write denies sensitive paths', () => {
 		it('denies writing to .env', async () => {
 			const context = createContext()
-			const result = await fsWriteTool.execute(
-				{ path: '/.env', content: 'MALICIOUS=true' },
-				context
-			)
+			const result = await fsWriteTool.execute({ path: '/.env', content: 'MALICIOUS=true' }, context)
 
 			expect(result.success).toBe(false)
 			expect(result.errorCode).toBe('POLICY_VIOLATION')
@@ -235,10 +223,7 @@ describe('Policy Integration: Deny Path Enforcement', () => {
 
 		it('denies writing key files', async () => {
 			const context = createContext()
-			const result = await fsWriteTool.execute(
-				{ path: '/new-secret.key', content: 'fake key' },
-				context
-			)
+			const result = await fsWriteTool.execute({ path: '/new-secret.key', content: 'fake key' }, context)
 
 			expect(result.success).toBe(false)
 			expect(result.errorCode).toBe('POLICY_VIOLATION')
@@ -256,10 +241,7 @@ describe('Policy Integration: Deny Path Enforcement', () => {
 
 		it('denies listing node_modules', async () => {
 			const context = createContext()
-			const result = await fsListTool.execute(
-				{ path: '/node_modules', recursive: false },
-				context
-			)
+			const result = await fsListTool.execute({ path: '/node_modules', recursive: false }, context)
 
 			expect(result.success).toBe(false)
 			expect(result.errorCode).toBe('POLICY_VIOLATION')
@@ -269,10 +251,7 @@ describe('Policy Integration: Deny Path Enforcement', () => {
 	describe('fs_search filters out denied paths from results', () => {
 		it('filters .env from search results', async () => {
 			const context = createContext()
-			const result = await fsSearchTool.execute(
-				{ pattern: 'secret', maxResults: 100 },
-				context
-			)
+			const result = await fsSearchTool.execute({ pattern: 'secret', maxResults: 100 }, context)
 
 			expect(result.success).toBe(true)
 			const paths = result.data?.results.map((r) => r.path) ?? []
@@ -282,10 +261,7 @@ describe('Policy Integration: Deny Path Enforcement', () => {
 
 		it('filters private.key from search results', async () => {
 			const context = createContext()
-			const result = await fsSearchTool.execute(
-				{ pattern: 'BEGIN', maxResults: 100 },
-				context
-			)
+			const result = await fsSearchTool.execute({ pattern: 'BEGIN', maxResults: 100 }, context)
 
 			expect(result.success).toBe(true)
 			const paths = result.data?.results.map((r) => r.path) ?? []
@@ -319,10 +295,7 @@ describe('Policy Integration: Deny Path Enforcement', () => {
 describe('Policy Integration: Command Allowlist', () => {
 	it('allows commands in allowlist', async () => {
 		const context = createContext({ commandAllowlist: ['npm', 'node', 'git'] })
-		const result = await terminalRunTool.execute(
-			{ command: 'npm', args: ['install'] },
-			context
-		)
+		const result = await terminalRunTool.execute({ command: 'npm', args: ['install'] }, context)
 
 		expect(result.success).toBe(true)
 	})
@@ -337,10 +310,7 @@ describe('Policy Integration: Command Allowlist', () => {
 
 	it('denies curl when not in allowlist', async () => {
 		const context = createContext({ commandAllowlist: ['npm'] })
-		const result = await terminalRunTool.execute(
-			{ command: 'curl', args: ['http://malicious.com'] },
-			context
-		)
+		const result = await terminalRunTool.execute({ command: 'curl', args: ['http://malicious.com'] }, context)
 
 		expect(result.success).toBe(false)
 		expect(result.errorCode).toBe('COMMAND_DENIED')
@@ -373,10 +343,7 @@ describe('Policy Integration: Argument Policies', () => {
 			}
 		})
 
-		const result = await terminalRunTool.execute(
-			{ command: 'node', args: ['index.js'] },
-			context
-		)
+		const result = await terminalRunTool.execute({ command: 'node', args: ['index.js'] }, context)
 
 		expect(result.success).toBe(true)
 	})
@@ -390,10 +357,7 @@ describe('Policy Integration: Argument Policies', () => {
 			}
 		})
 
-		const result = await terminalRunTool.execute(
-			{ command: 'npx', args: ['cowsay', 'hello'] },
-			context
-		)
+		const result = await terminalRunTool.execute({ command: 'npx', args: ['cowsay', 'hello'] }, context)
 
 		expect(result.success).toBe(false)
 		expect(result.requiresApproval).toBe(true)
@@ -408,10 +372,7 @@ describe('Policy Integration: Argument Policies', () => {
 			}
 		})
 
-		const result = await terminalRunTool.execute(
-			{ command: 'npx', args: ['cowsay', 'hello'] },
-			context
-		)
+		const result = await terminalRunTool.execute({ command: 'npx', args: ['cowsay', 'hello'] }, context)
 
 		expect(result.success).toBe(true)
 	})

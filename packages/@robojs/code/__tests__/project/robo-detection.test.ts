@@ -19,10 +19,7 @@ import type { DirEntry, FileStat } from '../../src/types/terminal.js'
 /**
  * Create a mock provider for testing
  */
-function createMockProvider(
-	files: Record<string, string> = {},
-	dirs: string[] = []
-): ExecutionProvider {
+function createMockProvider(files: Record<string, string> = {}, dirs: string[] = []): ExecutionProvider {
 	const mockProvider: ExecutionProvider = {
 		readFile: jest.fn(async (path: string) => {
 			if (files[path]) return files[path]

@@ -11,11 +11,7 @@ import type { TokenUsage } from '../state.js'
 /**
  * Create a tool timing debug event
  */
-export function createToolTimingEvent(
-	toolName: string,
-	durationMs: number,
-	callId: string
-): DebugEvent {
+export function createToolTimingEvent(toolName: string, durationMs: number, callId: string): DebugEvent {
 	return { type: 'debug_tool_timing', toolName, durationMs, callId }
 }
 

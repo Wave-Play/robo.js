@@ -216,7 +216,7 @@ export class FileReadTracker {
 		if (!snapshot || snapshot.turnNumber === undefined) {
 			return false
 		}
-		return (this.currentTurn - snapshot.turnNumber) <= recencyThreshold
+		return this.currentTurn - snapshot.turnNumber <= recencyThreshold
 	}
 
 	/**
@@ -229,7 +229,7 @@ export class FileReadTracker {
 		const inactive: FileReadSnapshot[] = []
 		for (const snapshot of this.snapshots.values()) {
 			if (snapshot.turnNumber !== undefined) {
-				if ((this.currentTurn - snapshot.turnNumber) > recencyThreshold) {
+				if (this.currentTurn - snapshot.turnNumber > recencyThreshold) {
 					inactive.push(snapshot)
 				}
 			}
@@ -247,7 +247,7 @@ export class FileReadTracker {
 		const active: FileReadSnapshot[] = []
 		for (const snapshot of this.snapshots.values()) {
 			if (snapshot.turnNumber !== undefined) {
-				if ((this.currentTurn - snapshot.turnNumber) <= recencyThreshold) {
+				if (this.currentTurn - snapshot.turnNumber <= recencyThreshold) {
 					active.push(snapshot)
 				}
 			}

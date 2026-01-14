@@ -2,28 +2,84 @@
 	margin: 1px 0;
 }
 
+.row {
+	position: relative;
+}
+
 .header {
 	display: flex;
 	align-items: center;
 	gap: 6px;
 	width: 100%;
 	padding: 6px 8px;
+	padding-right: 84px;
 	border-radius: var(--radius-sm);
-	color: var(--channel-icon);
-	font-size: 16px;
+	color: var(--text-muted);
+	font-size: 14px;
 	font-weight: 500;
+	line-height: 20px;
 	transition: background 0.1s ease, color 0.1s ease;
 }
 
 .header:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 	color: var(--interactive-hover);
+}
+
+.row:hover .header,
+.row:focus-within .header {
+	background: var(--hover-overlay);
+	color: var(--interactive-hover);
+}
+
+.actions {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	position: absolute;
+	right: 6px;
+	top: 50%;
+	transform: translateY(-50%);
+	opacity: 0;
+	pointer-events: none;
+}
+
+.actions button {
+	width: 24px;
+	height: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: var(--radius-sm);
+	color: var(--interactive-default);
+	transition: background 0.15s ease, color 0.15s ease;
+}
+
+.actions button:hover {
+	background: var(--hover-overlay);
+	color: var(--interactive-hover);
+}
+
+.actions svg {
+	width: 16px;
+	height: 16px;
+}
+
+.actionIcon {
+	display: block;
+}
+
+.row:hover .actions,
+.row:focus-within .actions {
+	opacity: 1;
+	pointer-events: auto;
 }
 
 .channelIcon {
 	flex-shrink: 0;
-	width: 20px;
-	height: 20px;
+	width: 18px;
+	height: 18px;
+	display: block;
 }
 
 .channelName {
@@ -34,9 +90,9 @@
 }
 
 .memberCount {
-	font-size: 12px;
+	font-size: 11px;
 	color: var(--text-muted);
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	padding: 0 6px;
 	border-radius: 8px;
 	min-width: 16px;
@@ -45,27 +101,27 @@
 
 /* Members list */
 .members {
-	padding-left: 28px;
+	padding-left: 24px;
 	margin-top: 2px;
 }
 
 .member {
 	display: flex;
 	align-items: center;
-	gap: 8px;
+	gap: 6px;
 	padding: 4px 8px;
 	border-radius: var(--radius-sm);
 	transition: background 0.1s ease;
 }
 
 .member:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .memberAvatar {
 	position: relative;
-	width: 20px;
-	height: 20px;
+	width: 18px;
+	height: 18px;
 	border-radius: 50%;
 	overflow: hidden;
 	flex-shrink: 0;
@@ -80,8 +136,8 @@
 
 .memberName {
 	flex: 1;
-	font-size: 14px;
-	color: var(--text-normal);
+	font-size: 13px;
+	color: var(--text-bright);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -93,12 +149,14 @@
 	align-items: center;
 	gap: 4px;
 	flex-shrink: 0;
+	line-height: 0;
 }
 
 .statusIcon {
 	width: 14px;
 	height: 14px;
 	color: var(--text-muted);
+	display: block;
 }
 
 /* Speaking indicator - standalone class for CSS modules export */

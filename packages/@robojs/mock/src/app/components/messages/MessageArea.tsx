@@ -1,6 +1,7 @@
-import { useRef, useEffect, useMemo, useState, useCallback } from 'react'
+import { useRef, useEffect, useMemo, useState, useCallback, type ReactNode } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { useStageData } from '../../hooks/useStageData'
+import { useSession } from '../../hooks/useSession'
+import { usePlaybackMessages, useIsPlaybackMode, usePlayback, usePlaybackTypingUsers } from '../../stores/playbackStore'
 import { useContextMenu } from '../../hooks/useContextMenu'
 import { Message } from './Message'
 import { MessageInput } from './MessageInput'
@@ -8,6 +9,9 @@ import { TypingIndicator } from './TypingIndicator'
 import { ThinkingIndicator } from './ThinkingIndicator'
 import { PendingMessage } from './PendingMessage'
 import { ContextMenu } from '../context/ContextMenu'
+import { ForumChannelView } from './ForumChannelView'
+import { VoiceChannelView } from './VoiceChannelView'
+import ThreadIcon from '../icons/thread'
 import type { StageMessage, StageUser, StageApplicationCommand } from '../../types/stage'
 import styles from './MessageArea.module.css'
 
@@ -27,6 +31,8 @@ interface VirtualizedListProps {
 	isPlaybackMode: boolean
 	channelName: string
 	channelTopic?: string
+	footer?: ReactNode
+	onDismissEphemeral?: (messageId: string) => void
 	onButtonClick: (messageId: string, customId: string) => Promise<void>
 	onSelectOption: (messageId: string, customId: string, values: string[]) => Promise<void>
 	onAddReaction: (messageId: string, emoji: string) => Promise<void>
@@ -43,6 +49,8 @@ function VirtualizedMessageList({
 	isPlaybackMode,
 	channelName,
 	channelTopic,
+	footer,
+	onDismissEphemeral,
 	onButtonClick,
 	onSelectOption,
 	onAddReaction,
@@ -65,6 +73,13 @@ function VirtualizedMessageList({
 
 	// Group consecutive messages from same author
 	const groupedMessages = useMemo(() => groupMessages(messages), [messages])
+	const messageLookup = useMemo(() => {
+		const lookup = new Map<string, StageMessage>()
+		messages.forEach((message) => {
+			lookup.set(message.id, message)
+		})
+		return lookup
+	}, [messages])
 
 	// Virtual scrolling for performance
 	const virtualizer = useVirtualizer({
@@ -96,9 +111,9 @@ function VirtualizedMessageList({
 				let remainingContent = content
 
 				for (const block of codeBlockMatches) {
-					// Count lines in code block + padding (16px top/bottom)
+					// Count lines in code block + padding
 					const codeLines = (block.match(/\n/g) || []).length + 1
-					codeBlockHeight += codeLines * 20 + 32 // 20px per line + 32px padding
+					codeBlockHeight += codeLines * 18 + 24
 					remainingContent = remainingContent.replace(block, '')
 				}
 
@@ -106,8 +121,7 @@ function VirtualizedMessageList({
 				const textLines = remainingContent.split('\n')
 				let textHeight = 0
 				for (const line of textLines) {
-					// Each line wraps at ~80 chars
-					textHeight += Math.max(1, Math.ceil(line.length / 80)) * 22
+					textHeight += Math.max(1, Math.ceil(line.length / 70)) * 19
 				}
 
 				contentHeight = codeBlockHeight + textHeight
@@ -118,14 +132,14 @@ function VirtualizedMessageList({
 			if (!isV2 && message.embeds?.length) {
 				for (const embed of message.embeds as Array<{ image?: unknown; fields?: unknown[] }>) {
 					// Base embed: padding + author + title + description
-					embedHeight += 120
+					embedHeight += 104
 					// Fields add height
 					if (embed.fields?.length) {
-						embedHeight += Math.ceil(embed.fields.length / 3) * 50
+						embedHeight += Math.ceil(embed.fields.length / 3) * 42
 					}
 					// Image adds significant height
 					if (embed.image) {
-						embedHeight += 320
+						embedHeight += 280
 					}
 				}
 			}
@@ -136,12 +150,12 @@ function VirtualizedMessageList({
 				for (const att of message.attachments as Array<{ content_type?: string; height?: number }>) {
 					if (att.content_type?.startsWith('image/')) {
 						// Image: constrained to max 300px height + margin
-						attachmentHeight += Math.min(att.height || 200, 300) + 16
+						attachmentHeight += Math.min(att.height || 200, 300) + 8
 					} else if (att.content_type?.startsWith('video/')) {
-						attachmentHeight += 320
+						attachmentHeight += 300
 					} else {
 						// File attachment card
-						attachmentHeight += 72
+						attachmentHeight += 64
 					}
 				}
 			}
@@ -150,20 +164,25 @@ function VirtualizedMessageList({
 			let v1ComponentHeight = 0
 			if (!isV2 && message.components?.length) {
 				// Each action row is about 40px (button/select height + gap)
-				v1ComponentHeight = message.components.length * 44
+				v1ComponentHeight = message.components.length * 40
 			}
 
 			// Date divider adds ~40px (16px margin + 24px content)
 			const dateDividerHeight = group.showDateDivider ? 40 : 0
 
-			// Command invocation header adds ~28px (avatar + text + margin)
-			const hasCommandInvocation = (message as { interaction_metadata?: { type: number } }).interaction_metadata?.type === 2
-			const commandInvocationHeight = hasCommandInvocation ? 28 : 0
+			const rawMessage = message as StageMessage & { referenced_message?: StageMessage; referencedMessage?: StageMessage }
+			const replyHeight = (message.message_reference || rawMessage.referenced_message || rawMessage.referencedMessage) ? 18 : 0
 
-			return dateDividerHeight + commandInvocationHeight + (hasHeader ? 44 : 0) + contentHeight + embedHeight + attachmentHeight + v1ComponentHeight + 16
+			return dateDividerHeight + (hasHeader ? 44 : 0) + replyHeight + contentHeight + embedHeight + attachmentHeight + v1ComponentHeight + 8
 		},
 		overscan: 10
 	})
+	const virtualItems = virtualizer.getVirtualItems()
+	const paddingTop = virtualItems.length > 0 ? virtualItems[0].start : 0
+	const paddingBottom =
+		virtualItems.length > 0
+			? virtualizer.getTotalSize() - virtualItems[virtualItems.length - 1].end
+			: 0
 
 	// Auto-scroll to bottom on new messages
 	useEffect(() => {
@@ -243,22 +262,16 @@ function VirtualizedMessageList({
 				<div
 					className={styles.virtualContainer}
 					style={{
-						height: virtualizer.getTotalSize(),
-						position: 'relative'
+						paddingTop,
+						paddingBottom
 					}}
 				>
-					{virtualizer.getVirtualItems().map((virtualItem) => {
+					{virtualItems.map((virtualItem) => {
 						const group = groupedMessages[virtualItem.index]
+						const referencedMessageId = group.message.message_reference?.message_id
+						const replyMessage = referencedMessageId ? messageLookup.get(referencedMessageId) : undefined
 						return (
-							<div
-								key={group.message.id}
-								style={{
-									position: 'absolute',
-									top: virtualItem.start,
-									left: 0,
-									right: 0
-								}}
-							>
+							<div key={group.message.id}>
 								{group.showDateDivider && (
 									<div className={styles.dateDivider}>
 										<span className={styles.dateDividerText}>{group.showDateDivider}</span>
@@ -266,31 +279,40 @@ function VirtualizedMessageList({
 								)}
 								<Message
 									message={group.message}
+									replyMessage={replyMessage}
 									isFirstInGroup={group.isFirstInGroup}
-									isHighlighted={group.isHighlighted}
-									onButtonClick={onButtonClick}
-									onSelectOption={onSelectOption}
-									onAddReaction={onAddReaction}
-									onRemoveReaction={onRemoveReaction}
-									onContextMenu={onMessageContextMenu}
-									onUserContextMenu={onUserContextMenu}
-								/>
-							</div>
-						)
-					})}
+										isHighlighted={group.isHighlighted}
+										onButtonClick={onButtonClick}
+										onSelectOption={onSelectOption}
+										onAddReaction={onAddReaction}
+										onRemoveReaction={onRemoveReaction}
+										onDismissEphemeral={onDismissEphemeral}
+										onContextMenu={onMessageContextMenu}
+										onUserContextMenu={onUserContextMenu}
+									/>
+								</div>
+							)
+						})}
 				</div>
 			)}
+			{footer}
 		</div>
 	)
 }
 
 export function MessageArea({ channelId }: MessageAreaProps) {
-	// Unified hook handles live/playback mode switching automatically
 	const {
+		guildChannels,
+		guildVoiceStates,
+		users,
+		botUser,
 		messages,
-		typingUsers,
-		pendingInteractions,
-		pendingMessages,
+		channelMessages,
+		channelTypingUsers,
+		channelPendingInteractions,
+		channelPendingMessages,
+		members,
+		selectedGuildId,
 		selectedChannel,
 		clickButton,
 		selectOption,
@@ -304,10 +326,36 @@ export function MessageArea({ channelId }: MessageAreaProps) {
 		pinMessage,
 		unpinMessage,
 		openDM,
-		isPlaybackMode,
-		playback
-	} = useStageData({ channelId })
+		joinVoice,
+		leaveVoice
+	} = useSession()
 	const { menu: contextMenu, showMenu: showContextMenu, hideMenu: hideContextMenu } = useContextMenu()
+	const isPlaybackMode = useIsPlaybackMode()
+	const playbackMessages = usePlaybackMessages(channelId)
+	const playbackTypingUsers = usePlaybackTypingUsers(channelId)
+	const playbackState = usePlayback()
+	const [dismissedEphemeralIds, setDismissedEphemeralIds] = useState<string[]>([])
+
+	// Use playback messages when in playback mode, otherwise use session messages
+	const displayMessages = isPlaybackMode && playbackMessages !== null ? playbackMessages : channelMessages
+
+	// Use playback typing users when in playback mode, otherwise use session typing users
+	const displayTypingUsers = isPlaybackMode && playbackTypingUsers !== null ? playbackTypingUsers : channelTypingUsers
+	const voiceUsers = botUser && !users.some((user) => user.id === botUser.id) ? [...users, botUser] : users
+	const guildMembers = selectedGuildId
+		? members.filter((member) => member.guild_id === selectedGuildId)
+		: members
+	const visibleMessages = dismissedEphemeralIds.length
+		? displayMessages.filter((message) => !dismissedEphemeralIds.includes(message.id))
+		: displayMessages
+
+	const handleDismissEphemeral = useCallback((messageId: string) => {
+		setDismissedEphemeralIds((prev) => (prev.includes(messageId) ? prev : [...prev, messageId]))
+	}, [])
+
+	useEffect(() => {
+		setDismissedEphemeralIds([])
+	}, [channelId])
 
 	// Context menu handlers
 	const handleMessageContextMenu = useCallback(
@@ -381,6 +429,47 @@ export function MessageArea({ channelId }: MessageAreaProps) {
 		)
 	}
 
+	const isThreadChannel =
+		selectedChannel.type === 10 ||
+		selectedChannel.type === 11 ||
+		selectedChannel.type === 12
+	const isForumChannel = selectedChannel.type === 15 || selectedChannel.type === 16
+	const isVoiceChannel = selectedChannel.type === 2 || selectedChannel.type === 13
+	const threadParent = isThreadChannel
+		? guildChannels.find((channel) => channel.id === selectedChannel.parent_id)
+		: null
+	const forumThreads = isForumChannel
+		? guildChannels.filter((channel) => channel.parent_id === selectedChannel.id && (
+			channel.type === 10 ||
+			channel.type === 11 ||
+			channel.type === 12
+		))
+		: []
+
+	if (isForumChannel) {
+		return (
+			<div className={styles.container}>
+				<ForumChannelView channel={selectedChannel} threads={forumThreads} messages={messages} />
+			</div>
+		)
+	}
+
+	if (isVoiceChannel) {
+		return (
+			<div className={styles.container}>
+				<VoiceChannelView
+					channel={selectedChannel}
+					voiceStates={guildVoiceStates}
+					users={voiceUsers}
+					members={guildMembers}
+					currentUserId={botUser?.id}
+					onJoin={async () => { await joinVoice(selectedChannel.id, selectedChannel.guild_id) }}
+					onLeave={async () => { await leaveVoice(selectedChannel.guild_id) }}
+				/>
+			</div>
+		)
+	}
+
 	return (
 		<div className={styles.container}>
 			{/* Playback mode banner */}
@@ -390,16 +479,38 @@ export function MessageArea({ channelId }: MessageAreaProps) {
 						<path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm0 14A6 6 0 1 1 8 2a6 6 0 0 1 0 12zm.5-9H7v5l4.25 2.5.75-1.23-3.5-2.08V5z" />
 					</svg>
 					<span>
-						Playback Mode — Viewing {messages.length} message{messages.length !== 1 ? 's' : ''} at{' '}
-						{formatPlaybackTime(playback.currentTime)}
+						Playback Mode — Viewing {displayMessages.length} message{displayMessages.length !== 1 ? 's' : ''} at{' '}
+						{formatPlaybackTime(playbackState.currentTime)}
 					</span>
+				</div>
+			)}
+
+			{isThreadChannel && (
+				<div className={styles.threadHeader}>
+					<div className={styles.threadHeaderInfo}>
+						<div className={styles.threadIcon}>
+							<ThreadIcon width={20} height={20} />
+						</div>
+						<div>
+							<div className={styles.threadTitle}>{selectedChannel.name}</div>
+							<div className={styles.threadSubtitle}>
+								{threadParent ? `Thread in #${threadParent.name}` : 'Thread'}
+							</div>
+						</div>
+					</div>
+					<div className={styles.threadActions}>
+						{selectedChannel.thread_metadata?.archived && <span className={styles.threadBadge}>Archived</span>}
+						{selectedChannel.thread_metadata?.locked && <span className={styles.threadBadge}>Locked</span>}
+						<button type="button" className={styles.threadButton}>Members</button>
+						<button type="button" className={styles.threadButton}>Notifications</button>
+					</div>
 				</div>
 			)}
 
 			{/* Virtualized message list - keyed to force reset on channel/mode change */}
 			<VirtualizedMessageList
 				key={`${channelId}-${isPlaybackMode}`}
-				messages={messages}
+				messages={visibleMessages}
 				isPlaybackMode={isPlaybackMode}
 				channelName={selectedChannel.name}
 				channelTopic={selectedChannel.topic ?? undefined}
@@ -407,27 +518,26 @@ export function MessageArea({ channelId }: MessageAreaProps) {
 				onSelectOption={async (messageId, customId, values) => { await selectOption(messageId, customId, values) }}
 				onAddReaction={async (messageId, emoji) => { await addReaction(messageId, emoji) }}
 				onRemoveReaction={async (messageId, emoji) => { await removeReaction(messageId, emoji) }}
+				onDismissEphemeral={handleDismissEphemeral}
 				onMessageContextMenu={handleMessageContextMenu}
 				onUserContextMenu={handleUserContextMenu}
+				footer={
+					<>
+						{channelPendingMessages.map((pending) => (
+							<PendingMessage key={pending.id} message={pending} onRetry={retryMessage} onCancel={cancelMessage} />
+						))}
+						{channelPendingInteractions.map((pending) => (
+							<ThinkingIndicator
+								key={pending.id}
+								botName={pending.botName}
+								botAvatar={pending.botAvatar}
+								botId={pending.botId}
+							/>
+						))}
+						<TypingIndicator typingUsers={displayTypingUsers} />
+					</>
+				}
 			/>
-
-			{/* Pending messages (sending/failed) */}
-			{pendingMessages.map((pending) => (
-				<PendingMessage key={pending.id} message={pending} onRetry={retryMessage} onCancel={cancelMessage} />
-			))}
-
-			{/* Thinking indicators for deferred bot responses */}
-			{pendingInteractions.map((pending) => (
-				<ThinkingIndicator
-					key={pending.id}
-					botName={pending.botName}
-					botAvatar={pending.botAvatar}
-					botId={pending.botId}
-				/>
-			))}
-
-			{/* Typing indicator */}
-			<TypingIndicator typingUsers={typingUsers} />
 
 			{/* Message input */}
 			<MessageInput channelId={selectedChannel.id} channelName={selectedChannel.name} />
@@ -544,9 +654,10 @@ function estimateV2ComponentsHeight(components: unknown[] | undefined): number {
 				// Estimate text height from nested TextDisplay components
 				let textHeight = 0
 				if (comp.components?.length) {
+					const maxLineLength = comp.accessory?.type === 11 ? 52 : 60
 					for (const textComp of comp.components) {
 						const tc = textComp as { content?: string }
-						textHeight += estimateTextHeight(tc.content || '')
+						textHeight += estimateTextHeight(tc.content || '', maxLineLength)
 					}
 					// Add gaps between text components (4px)
 					textHeight += (comp.components.length - 1) * 4
@@ -609,7 +720,7 @@ function estimateV2ComponentsHeight(components: unknown[] | undefined): number {
  * Uses 14px font size with 1.375 line-height (~19px per line)
  * Assumes ~70 chars per line at max content width
  */
-function estimateTextHeight(content: string): number {
+function estimateTextHeight(content: string, maxLineLength = 70): number {
 	if (!content) return 19 // Minimum one line
 
 	// Split by actual newlines first
@@ -625,8 +736,8 @@ function estimateTextHeight(content: string): number {
 		} else if (line.length === 0) {
 			totalLines += 0.5 // Empty lines are shorter
 		} else {
-			// Estimate wrapping at ~70 chars per line
-			totalLines += Math.max(1, Math.ceil(line.length / 70))
+			// Estimate wrapping at configured line length
+			totalLines += Math.max(1, Math.ceil(line.length / maxLineLength))
 		}
 	}
 

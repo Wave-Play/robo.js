@@ -1,8 +1,7 @@
+import type { StageUser } from '../../types/stage'
 import { FriendsList } from './FriendsList'
 
-// UI-only: All is a copy of Online (no logic / no differences yet).
-export function FriendsAllPanel() {
-	return <FriendsList />
+// UI-only: All shows all non-bot users
+export function FriendsAllPanel({ users, onOpenUser }: { users: StageUser[]; onOpenUser?: (user: StageUser) => void }) {
+	return <FriendsList users={users} onOpenUser={onOpenUser} />
 }
-
-

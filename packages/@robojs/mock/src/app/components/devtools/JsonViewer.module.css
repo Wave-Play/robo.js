@@ -3,7 +3,7 @@
 	font-family: var(--font-code);
 	font-size: 12px;
 	line-height: 1.4;
-	color: var(--text-normal);
+	color: var(--text-bright);
 }
 
 /* Node */
@@ -22,7 +22,7 @@
 }
 
 .expandable:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 /* Arrow icon */
@@ -46,7 +46,7 @@
 
 /* Key name */
 .key {
-	color: var(--brand-500);
+	color: var(--brand-primary);
 }
 
 /* Brackets */
@@ -80,14 +80,14 @@
 }
 
 .copyButton:hover {
-	background: var(--background-modifier-active);
-	color: var(--text-normal);
+	background: var(--active-overlay);
+	color: var(--text-bright);
 }
 
 /* Children container */
 .children {
 	padding-left: 16px;
-	border-left: 1px solid var(--background-modifier-active);
+	border-left: 1px solid var(--active-overlay);
 	margin-left: 6px;
 }
 

@@ -1,8 +1,14 @@
 .topSearch {
-	padding: 10px;
-	border-bottom: 1px solid var(--background-modifier-accent);
-	background: var(--background-secondary);
+	height: 48px;
+	min-height: 48px;
+	padding: 0 12px;
+	display: flex;
+	align-items: center;
+	border-bottom: 1px solid var(--accent-overlay);
+	border-top-left-radius: 10px;
+    background: transparent;
 }
+
 
 .nav {
 	padding: 8px;
@@ -14,22 +20,24 @@
 .navItem {
 	display: flex;
 	align-items: center;
-	gap: 12px;
+	gap: 11px;
 	width: 100%;
-	padding: 10px 10px;
+	padding: 6px 8px;
+	min-height: 44px;
 	border-radius: var(--radius-sm);
-	color: var(--interactive-normal);
-	font-size: 15px;
+	color: var(--interactive-default);
+	font-size: 14px;
 	font-weight: 500;
+	justify-content: flex-start;
 }
 
 .navIcon {
-	width: 22px;
-	height: 22px;
+	width: 32px;
+	height: 32px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	color: var(--interactive-normal);
+	color: var(--interactive-default);
 }
 
 .navText {
@@ -38,15 +46,45 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	line-height: 20px;
+	text-align: left;
+}
+
+.topSearchInput input {
+	border-radius: var(--radius-md);
+	padding: 0 34px 0 14px;
+	background: var(--card-background);
+}
+
+.topSearchInput span {
+	right: 12px;
+}
+
+.navItem:hover {
+	color: var(--text-hover);
+}
+
+.navItem:hover .navIcon {
+	color: var(--text-hover);
 }
 
 .selected {
-	background: var(--background-modifier-selected);
-	color: var(--interactive-active);
+	background: var(--selected-overlay);
+	color: var(--text-hover);
 }
 
 .selected .navIcon {
-	color: var(--interactive-active);
+	color: var(--text-hover);
+}
+
+.navBadge {
+	padding: 2px 6px;
+	border-radius: 999px;
+	background: var(--red-light);
+	color: white;
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.02em;
 }
 
 .sectionHeader {
@@ -57,11 +95,20 @@
 	justify-content: space-between;
 	color: var(--text-muted);
 	font-size: 12px;
-	font-weight: 700;
+	font-weight: 600;
 	letter-spacing: 0.02em;
-	text-transform: uppercase;
+	text-transform: none;
+	position: relative;
 }
 
+.sectionHeader::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 5%;
+	width: 90%;
+	border-top: 1px solid var(--accent-overlay);
+}
 .dmList {
 	padding: 0 8px 12px;
 	display: flex;
@@ -70,10 +117,72 @@
 	overflow: hidden;
 }
 
-.dmRow {
-	height: 42px;
+.dmItem {
+	min-height: 44px;
 	border-radius: var(--radius-sm);
-	background: rgba(17, 18, 20, 0.18);
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 6px 8px;
+	width: 100%;
+	color: var(--interactive-default);
+	text-align: left;
 }
 
+.dmSelected {
+	background: var(--selected-overlay);
+	color: var(--text-hover);
+}
+
+.dmAvatar {
+	flex-shrink: 0;
+}
+
+.dmText {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 0;
+}
+
+.dmName {
+	font-size: 14px;
+	font-weight: 500;
+	color: var(--header-text-primary);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	line-height: 18px;
+}
+
+.dmSub {
+	font-size: 12px;
+	color: var(--text-default);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	line-height: 14px;
+}
+
+.dmItem:hover {
+	color: var(--text-hover);
+}
+
+.dmItem:hover .dmName,
+.dmSelected .dmName {
+	color: var(--text-hover);
+}
+
+.dmItem:hover .dmSub,
+.dmSelected .dmSub {
+	color: var(--text-bright);
+}
+
+.dmClose {
+	width: 28px;
+	height: 28px;
+	border-radius: var(--radius-sm);
+}
 

@@ -6,10 +6,12 @@
 	margin: 0 4px;
 	border-radius: var(--radius-sm);
 	border-top: 1px solid rgba(255, 255, 255, 0.04);
+	width: calc(100% - 8px);
+	text-align: left;
 }
 
 .row:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .info {
@@ -23,7 +25,7 @@
 .name {
 	font-size: 15px;
 	font-weight: 700;
-	color: var(--header-primary);
+	color: var(--text-bright);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;

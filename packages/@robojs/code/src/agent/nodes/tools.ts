@@ -202,8 +202,7 @@ export function toolsNode(context: CodeAgentContext) {
 				// Convert exception to tool result (preserve tool_call_id)
 				codeLogger.warn('Tool execution error:', { toolName, error })
 
-				const errorMessage =
-					error instanceof Error ? error.message : String(error)
+				const errorMessage = error instanceof Error ? error.message : String(error)
 
 				toolMessages.push(
 					new ToolMessage({

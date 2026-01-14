@@ -106,9 +106,7 @@ describe('Serialization Integration: FIFO Order', () => {
 
 		// Queue multiple operations - they should execute in order
 		const op1 = queue.enqueue(() => fsReadTool.execute({ path: '/file.txt' }, context))
-		const op2 = queue.enqueue(() =>
-			fsWriteTool.execute({ path: '/file.txt', content: 'modified' }, context)
-		)
+		const op2 = queue.enqueue(() => fsWriteTool.execute({ path: '/file.txt', content: 'modified' }, context))
 		const op3 = queue.enqueue(() => fsReadTool.execute({ path: '/file.txt' }, context))
 
 		const results = await Promise.all([op1, op2, op3])
@@ -300,10 +298,7 @@ describe('Serialization Integration: Real Tool Scenarios', () => {
 		const increment = async () => {
 			const readResult = await fsReadTool.execute({ path: '/counter.txt' }, context)
 			const current = parseInt(readResult.data?.content ?? '0', 10)
-			await fsWriteTool.execute(
-				{ path: '/counter.txt', content: String(current + 1) },
-				context
-			)
+			await fsWriteTool.execute({ path: '/counter.txt', content: String(current + 1) }, context)
 		}
 
 		// Queue 5 increments
@@ -325,9 +320,7 @@ describe('Serialization Integration: Real Tool Scenarios', () => {
 
 		// Queue many rapid operations
 		const operations = Array.from({ length: 20 }, (_, i) =>
-			queue.enqueue(() =>
-				fsWriteTool.execute({ path: `/file${i}.txt`, content: `content${i}` }, context)
-			)
+			queue.enqueue(() => fsWriteTool.execute({ path: `/file${i}.txt`, content: `content${i}` }, context))
 		)
 
 		await Promise.all(operations)
@@ -393,10 +386,7 @@ describe('Serialization Integration: Multiple Queues', () => {
 		})
 
 		// Wait for both queues
-		await Promise.all([
-			queue1.enqueue(async () => {}),
-			queue2.enqueue(async () => {})
-		])
+		await Promise.all([queue1.enqueue(async () => {}), queue2.enqueue(async () => {})])
 
 		// Each queue should maintain FIFO order
 		expect(results1).toEqual([1, 2])

@@ -1,5 +1,5 @@
 .container {
-	padding: 0 16px 24px;
+	padding: 0 16px var(--control-dock-offset);
 	position: relative;
 }
 
@@ -14,10 +14,16 @@
 .inputWrapper {
 	display: flex;
 	align-items: center;
-	background: var(--channel-text-area);
+	background: var(--text-input-background);
 	border-radius: 8px;
-	min-height: 44px;
-	/* Removed padding-left: 16px as inner does logic or attach button padding */
+	min-height: var(--control-dock-height);
+	border: 1px solid var(--accent-overlay);
+	box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+}
+
+.inputWrapper:focus-within {
+	border-color: var(--interactive-muted);
+	box-shadow: none;
 }
 
 .inner {
@@ -62,7 +68,7 @@
 	flex-shrink: 0;
 	background: none;
 	border: none;
-	color: var(--interactive-normal);
+	color: var(--interactive-default);
 	cursor: pointer;
 	padding: 0;
 	transition: color 0.15s ease;
@@ -83,25 +89,29 @@
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
-	min-height: 44px;
-	margin-right: 16px;
+	min-height: var(--control-dock-height);
+	margin-right: 12px;
 }
 
 .input {
 	background: transparent;
 	border: none;
 	outline: none;
-	color: var(--text-normal);
-	font-size: 1rem;
+	color: var(--text-bright);
+	font-size: 15px;
 	font-family: var(--font-primary);
 	line-height: 1.375rem;
-	padding: 11px 0;
+	padding: 10px 0;
 	resize: none;
 	max-height: 50vh;
 	overflow-y: auto;
 	width: 100%;
 	white-space: pre-wrap;
 	overflow-wrap: break-word;
+}
+
+.input:focus-visible {
+	outline: none;
 }
 
 .placeholder {
@@ -112,7 +122,7 @@
 	color: var(--text-muted);
 	pointer-events: none;
 	user-select: none;
-	font-size: 1rem;
+	font-size: 15px;
 	font-family: var(--font-primary);
 	white-space: nowrap;
 	overflow: hidden;
@@ -123,9 +133,9 @@
 .buttons {
 	display: flex;
 	align-items: center;
-	gap: 4px;
-	padding-right: 16px;
-	height: 44px;
+	gap: 2px;
+	padding-right: 12px;
+	height: var(--control-dock-height);
 }
 
 .iconButton {
@@ -137,7 +147,7 @@
 	background: none;
 	border: none;
 	border-radius: 4px;
-	color: var(--interactive-normal);
+	color: var(--interactive-default);
 	cursor: pointer;
 	padding: 0;
 	transition: color 0.15s ease;
@@ -145,7 +155,7 @@
 
 .iconButton:hover {
 	color: var(--interactive-hover);
-	background-color: var(--background-modifier-hover);
+	background-color: var(--hover-overlay);
 }
 
 .iconButton svg {
@@ -154,7 +164,7 @@
 }
 
 .iconButton.active {
-	color: var(--brand-500);
+	color: var(--brand-primary);
 }
 
 .hiddenVisually {
@@ -196,10 +206,10 @@
 	align-items: center;
 	justify-content: space-between;
 	padding: 8px 16px;
-	background: var(--background-secondary);
+	background: var(--sidebar-left-background);
 	border-radius: 8px 8px 0 0;
 	margin: 0 16px;
-	border-bottom: 1px solid var(--background-tertiary);
+	border-bottom: 1px solid var(--card-background);
 }
 
 .replyContent {
@@ -223,7 +233,7 @@
 }
 
 .replyText strong {
-	color: var(--text-normal);
+	color: var(--text-bright);
 	font-weight: 500;
 }
 
@@ -236,7 +246,7 @@
 	background: none;
 	border: none;
 	border-radius: 4px;
-	color: var(--interactive-normal);
+	color: var(--interactive-default);
 	cursor: pointer;
 	padding: 0;
 	flex-shrink: 0;
@@ -245,24 +255,5 @@
 
 .replyClose:hover {
 	color: var(--interactive-hover);
-	background-color: var(--background-modifier-hover);
-}
-
-/* Mention styles in input */
-.mentionUser,
-.mentionRole {
-	padding: 0 2px;
-	border-radius: 3px;
-	background: hsla(235, 85.6%, 64.7%, 0.3);
-	color: var(--text-link);
-	font-weight: 500;
-}
-
-.mentionEveryone,
-.mentionHere {
-	padding: 0 2px;
-	border-radius: 3px;
-	background: hsla(38, 95.7%, 54.1%, 0.3);
-	color: #f0b232;
-	font-weight: 500;
+	background-color: var(--hover-overlay);
 }

@@ -17,10 +17,7 @@ import { codeLogger } from '../../core/logger.js'
 /**
  * Check if a command is allowed by the policy
  */
-export function checkCommandPolicy(
-	check: CommandPolicyCheck,
-	policy: AgentPolicy
-): PolicyCheckResult {
+export function checkCommandPolicy(check: CommandPolicyCheck, policy: AgentPolicy): PolicyCheckResult {
 	const { command, args } = check
 
 	// Check if command is in allowlist
@@ -45,11 +42,7 @@ export function checkCommandPolicy(
 /**
  * Check command arguments against the argument policy
  */
-export function checkCommandArgPolicy(
-	command: string,
-	args: string[],
-	argPolicy: CommandArgPolicy
-): PolicyCheckResult {
+export function checkCommandArgPolicy(command: string, args: string[], argPolicy: CommandArgPolicy): PolicyCheckResult {
 	// Check disallowed patterns
 	if (argPolicy.disallow) {
 		for (const rule of argPolicy.disallow) {
@@ -132,10 +125,7 @@ function argsMatchPrefix(args: string[], prefix: string): boolean {
 /**
  * Check if a file operation is allowed by the policy
  */
-export function checkFilePolicy(
-	check: FilePolicyCheck,
-	policy: AgentPolicy
-): PolicyCheckResult {
+export function checkFilePolicy(check: FilePolicyCheck, policy: AgentPolicy): PolicyCheckResult {
 	const { path, operation, size } = check
 
 	// Validate path (throws on traversal)
@@ -173,10 +163,7 @@ export function checkFilePolicy(
 /**
  * Check if a snapshot operation is allowed
  */
-export function checkSnapshotPolicy(
-	totalBytes: number,
-	policy: AgentPolicy
-): PolicyCheckResult {
+export function checkSnapshotPolicy(totalBytes: number, policy: AgentPolicy): PolicyCheckResult {
 	const maxBytes = policy.maxSnapshotBytes ?? 2_000_000 // 2MB default
 
 	if (totalBytes > maxBytes) {
@@ -192,10 +179,7 @@ export function checkSnapshotPolicy(
 /**
  * Check if a total diff size is allowed
  */
-export function checkDiffPolicy(
-	totalBytes: number,
-	policy: AgentPolicy
-): PolicyCheckResult {
+export function checkDiffPolicy(totalBytes: number, policy: AgentPolicy): PolicyCheckResult {
 	const maxBytes = policy.maxTotalDiffBytes ?? 2_000_000 // 2MB default
 
 	if (totalBytes > maxBytes) {
@@ -231,9 +215,7 @@ export class PolicyValidator {
 		const result = checkCommandPolicy({ command, args }, this.policy)
 
 		if (!result.allowed) {
-			codeLogger.debug(
-				`[${this.runId}] Command denied: ${command} ${args.join(' ')} - ${result.reason}`
-			)
+			codeLogger.debug(`[${this.runId}] Command denied: ${command} ${args.join(' ')} - ${result.reason}`)
 		}
 
 		return result
@@ -242,17 +224,11 @@ export class PolicyValidator {
 	/**
 	 * Check if a file operation is allowed
 	 */
-	checkFile(
-		path: string,
-		operation: 'read' | 'write' | 'delete' | 'list',
-		size?: number
-	): PolicyCheckResult {
+	checkFile(path: string, operation: 'read' | 'write' | 'delete' | 'list', size?: number): PolicyCheckResult {
 		const result = checkFilePolicy({ path, operation, size }, this.policy)
 
 		if (!result.allowed) {
-			codeLogger.debug(
-				`[${this.runId}] File operation denied: ${operation} ${path} - ${result.reason}`
-			)
+			codeLogger.debug(`[${this.runId}] File operation denied: ${operation} ${path} - ${result.reason}`)
 		}
 
 		return result
@@ -265,9 +241,7 @@ export class PolicyValidator {
 		const result = checkSnapshotPolicy(totalBytes, this.policy)
 
 		if (!result.allowed) {
-			codeLogger.debug(
-				`[${this.runId}] Snapshot denied: ${totalBytes} bytes - ${result.reason}`
-			)
+			codeLogger.debug(`[${this.runId}] Snapshot denied: ${totalBytes} bytes - ${result.reason}`)
 		}
 
 		return result
@@ -280,9 +254,7 @@ export class PolicyValidator {
 		const result = checkDiffPolicy(totalBytes, this.policy)
 
 		if (!result.allowed) {
-			codeLogger.debug(
-				`[${this.runId}] Diff denied: ${totalBytes} bytes - ${result.reason}`
-			)
+			codeLogger.debug(`[${this.runId}] Diff denied: ${totalBytes} bytes - ${result.reason}`)
 		}
 
 		return result

@@ -192,11 +192,7 @@ import { changeTools } from './changes/index.js'
 /**
  * All available tools
  */
-export const allTools = [
-	...fsTools,
-	...terminalTools,
-	...changeTools
-]
+export const allTools = [...fsTools, ...terminalTools, ...changeTools]
 
 /**
  * Register all tools in a registry

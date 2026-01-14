@@ -222,16 +222,19 @@ async function readPackageJson(): Promise<Record<string, unknown>> {
  * Infer namespace from plugin name.
  */
 function inferNamespace(pluginName: string): string {
+	// Normalize path separators to forward slashes for Windows compatibility
+	const normalizedName = pluginName.split(path.sep).join('/')
+
 	// @robojs/discord → discord
 	// @robojs/discordjs → discordjs
 	// robo-plugin-analytics → analytics
-	if (pluginName.startsWith('@robojs/')) {
-		return pluginName.replace('@robojs/', '')
+	if (normalizedName.startsWith('@robojs/')) {
+		return normalizedName.replace('@robojs/', '')
 	}
-	if (pluginName.startsWith('robo-plugin-')) {
-		return pluginName.replace('robo-plugin-', '')
+	if (normalizedName.startsWith('robo-plugin-')) {
+		return normalizedName.replace('robo-plugin-', '')
 	}
-	return pluginName
+	return normalizedName
 }
 
 /**

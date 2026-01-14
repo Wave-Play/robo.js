@@ -9,6 +9,4 @@ export { applyChangesTool, applyChangesSchema, type ApplyChangesInput, type Appl
  */
 import { applyChangesTool } from './apply.js'
 
-export const changeTools = [
-	applyChangesTool
-]
+export const changeTools = [applyChangesTool]

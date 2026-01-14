@@ -62,9 +62,7 @@ const CONFIG_FILES = {
 /**
  * Detect the test runner type from script content
  */
-function detectRunnerType(
-	scriptContent: string
-): 'vitest' | 'jest' | 'mocha' | 'node-test' | 'unknown' {
+function detectRunnerType(scriptContent: string): 'vitest' | 'jest' | 'mocha' | 'node-test' | 'unknown' {
 	if (RUNNER_PATTERNS.vitest.test(scriptContent)) return 'vitest'
 	if (RUNNER_PATTERNS.jest.test(scriptContent)) return 'jest'
 	if (RUNNER_PATTERNS.mocha.test(scriptContent)) return 'mocha'
@@ -140,10 +138,7 @@ export async function detectTestRunnerFromConfig(
  * @param pattern - Optional test pattern
  * @returns Test runner config
  */
-export function buildRunnerConfig(
-	type: 'vitest' | 'jest' | 'mocha' | 'node-test',
-	pattern?: string
-): TestRunnerConfig {
+export function buildRunnerConfig(type: 'vitest' | 'jest' | 'mocha' | 'node-test', pattern?: string): TestRunnerConfig {
 	switch (type) {
 		case 'vitest':
 			return {

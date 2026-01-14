@@ -1,5 +1,4 @@
 import type { Snowflake } from 'discord-api-types/v10'
-import type { SessionLogEntry } from './index.js'
 
 // ============================================================================
 // Stage WebSocket Protocol Types
@@ -13,6 +12,7 @@ export type StageEventType =
 	// Connection lifecycle
 	| 'connected'              // Initial connection established
 	| 'state_sync'             // Full state on connect
+	| 'current_user_update'    // Current user updated
 	| 'command_response'       // Response to a command
 
 	// Message events
@@ -35,15 +35,21 @@ export type StageEventType =
 	// Voice (Phase 5P)
 	| 'voice_state_update'     // User joined/left/updated voice channel
 
+	// Guild/Channel events
+	| 'channel_update'         // Channel was updated
+	| 'guild_emojis_update'    // Guild emojis were updated
+
 	// Bot lifecycle
 	| 'bot_ready'              // Bot connected and ready
 	| 'bot_disconnected'       // Bot disconnected
 	| 'bot_error'              // Bot encountered error
+	| 'commands_updated'       // Bot commands were registered/updated
 
 	// System
 	| 'heartbeat'              // Keep-alive (every 30s)
 	| 'error'                  // Error occurred
 	| 'session_invalid'        // Session token is stale/expired
+	| 'control_action'         // Control action performed
 
 	// REST API (Phase 5K)
 	| 'rest_call'              // REST API call made by bot
@@ -51,30 +57,8 @@ export type StageEventType =
 	// Diagnostics
 	| 'event_filtered'         // Event was not delivered due to missing intent
 	| 'loop_detected'          // Event loop detected, circuit breaker triggered
-
-	// Playback/Recording (raw gateway events)
-	| 'dispatch'               // Raw gateway dispatch event from recordings
-
-	// Current User (User Abstraction Layer)
-	| 'current_user_update'    // Current acting user changed
-
-	// Logs Panel
-	| 'log_entry'              // Log entry from connected bot
-
-	// Permissions (Phase 3 - Permissions Admin UI)
-	| 'permission_denied'      // Permission check failed
-
-	// Channel events
-	| 'channel_update'         // Channel position/properties changed
-
-	// Guild events
-	| 'guild_emojis_update'    // Guild emojis changed
-
-	// Control actions (toast notifications)
-	| 'control_action'         // Action performed (for toast broadcasts)
-
-	// Commands
-	| 'commands_updated'       // Commands list changed (after registration)
+	| 'log_entry'              // Log entry from bot process
+	| 'permission_denied'      // Permission denied for an action
 
 /**
  * Command types sent from stage clients to server
@@ -92,13 +76,12 @@ export type StageCommandType =
 	| 'request_state'          // Request current state
 	| 'set_playback'           // Control playback (play/pause/seek)
 	| 'subscribe_channel'      // Subscribe to channel updates
+	| 'set_current_user'       // Set the current user for the session
+	| 'switch_user'            // Switch to a different user
 	// Voice (Phase 5P)
 	| 'join_voice'             // Join a voice channel
 	| 'leave_voice'            // Leave voice channel
 	| 'update_voice_state'     // Update mute/deaf state
-	// Current User (User Abstraction Layer)
-	| 'set_current_user'       // Update current acting user
-	| 'switch_user'            // Switch to a different user
 
 // ============================================================================
 // Stage Event Payloads
@@ -135,8 +118,7 @@ export interface StateSyncPayload {
 	users: StageUser[]
 	commands: StageApplicationCommand[]  // Phase 5G: Available slash commands
 	voice_states: StageVoiceState[]  // Phase 5P: Voice channel states
-	currentUser: StageUser | null  // Current "acting" user for Stage UI
-	logs?: SessionLogEntry[]  // Historical logs (last 1,000) for log panel
+	currentUser?: StageUser
 }
 
 /**
@@ -170,8 +152,6 @@ export interface StageChannel {
 	}
 	message_count?: number
 	owner_id?: Snowflake
-	// DM-specific fields (type 1)
-	recipient_ids?: Snowflake[]
 }
 
 /**
@@ -190,6 +170,7 @@ export interface StageActivity {
 export interface StageUser {
 	id: Snowflake
 	username: string
+	global_name?: string
 	discriminator?: string
 	avatar: string | null
 	bot?: boolean
@@ -234,6 +215,7 @@ export interface StageVoiceState {
 	self_stream?: boolean
 	self_video?: boolean
 	speaking?: boolean // Simulated speaking indicator (Phase 5P)
+	member?: StageMember
 }
 
 /**
@@ -246,17 +228,6 @@ export interface StageReaction {
 		id: string | null
 		name: string | null
 	}
-}
-
-/**
- * Interaction metadata for Stage UI to display "User used /command" header
- */
-export interface StageMessageInteractionMetadata {
-	id: Snowflake
-	type: number
-	/** Command name for slash commands */
-	name?: string
-	user: StageUser
 }
 
 /**
@@ -282,8 +253,21 @@ export interface StageMessage {
 		channel_id?: Snowflake
 		guild_id?: Snowflake
 	}
-	/** Interaction metadata for command responses */
-	interaction_metadata?: StageMessageInteractionMetadata
+	interaction_metadata?: {
+		id: Snowflake
+		type: number
+		user: StageUser
+		authorizing_integration_owners?: Record<number, Snowflake>
+		original_response_message_id?: Snowflake
+		target_user?: StageUser
+		target_message_id?: Snowflake
+	}
+	interaction?: {
+		id: Snowflake
+		type: number
+		name?: string
+		user: StageUser
+	}
 }
 
 // ============================================================================
@@ -335,29 +319,11 @@ export interface StageApplicationCommand {
 export type StageMessageSource = 'bot' | 'injected' | 'system'
 
 /**
- * Mention metadata for a message
- */
-export interface StageMentionData {
-	/** Whether this message mentions the current Stage UI user */
-	mentionsCurrentUser: boolean
-	/** Whether @everyone was used */
-	mentionsEveryone: boolean
-	/** Whether @here was used */
-	mentionsHere: boolean
-	/** Role IDs mentioned */
-	mentionedRoles: Snowflake[]
-	/** Channel IDs mentioned */
-	mentionedChannels: Snowflake[]
-}
-
-/**
  * Data payload for message_create events
  */
 export interface StageMessageCreateData {
 	source: StageMessageSource
 	message: StageMessage
-	/** Mention metadata for notification tracking (optional for backward compat) */
-	mentions?: StageMentionData
 }
 
 /**
@@ -398,13 +364,6 @@ export interface StageBotDisconnectedData {
 export interface StageBotErrorData {
 	error: string
 	connectionId?: string
-}
-
-/**
- * Data payload for commands_updated events
- */
-export interface StageCommandsUpdatedData {
-	commands: StageApplicationCommand[]
 }
 
 /**
@@ -673,27 +632,6 @@ export interface StageUpdateVoiceStateData {
 		id?: Snowflake
 		username?: string
 	}
-}
-
-/**
- * Data for set_current_user command
- * Updates the current "acting" user for Stage UI interactions
- */
-export interface StageSetCurrentUserData {
-	username?: string
-	avatar?: string | null
-	status?: 'online' | 'offline' | 'idle' | 'dnd'
-	activities?: StageActivity[]
-	/** If true, creates a new user instead of updating the current one */
-	create_new?: boolean
-}
-
-/**
- * Data for switch_user command
- * Switches to a different existing user as the current user
- */
-export interface StageSwitchUserData {
-	user_id: Snowflake
 }
 
 // ============================================================================

@@ -12,7 +12,7 @@
 	width: 28px;
 	height: 28px;
 	border-radius: var(--radius-sm);
-	color: var(--yellow-400, #faa61a);
+	color: var(--yellow-medium, #faa61a);
 	background: rgba(250, 166, 26, 0.15);
 	transition: all 0.15s ease;
 }
@@ -23,7 +23,7 @@
 
 /* Danger variant (for active loop detection) */
 .button.danger {
-	color: var(--red-400, #ed4245);
+	color: var(--red-light, #ed4245);
 	background: rgba(237, 66, 69, 0.15);
 	animation: pulse-danger 1.5s ease-in-out infinite;
 }
@@ -44,7 +44,7 @@
 
 /* Resolved variant (loop detected but cooldown complete) */
 .button.resolved {
-	color: var(--green-400, #57f287);
+	color: var(--green-light, #57f287);
 	background: rgba(87, 242, 135, 0.15);
 }
 
@@ -61,7 +61,7 @@
 	height: 16px;
 	padding: 0 4px;
 	border-radius: 8px;
-	background: var(--red-400, #ed4245);
+	background: var(--red-light, #ed4245);
 	color: white;
 	font-size: 10px;
 	font-weight: 700;
@@ -79,7 +79,7 @@
 	height: 16px;
 	padding: 0 4px;
 	border-radius: 8px;
-	background: var(--green-400, #57f287);
+	background: var(--green-light, #57f287);
 	color: white;
 	font-size: 10px;
 	font-weight: 700;
@@ -95,7 +95,7 @@
 	right: 0;
 	margin-bottom: 8px;
 	width: 280px;
-	background: var(--background-floating);
+	background: var(--modal-background);
 	border-radius: var(--radius-md);
 	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.24);
 	z-index: 1000;
@@ -107,13 +107,13 @@
 	align-items: center;
 	justify-content: space-between;
 	padding: 12px;
-	border-bottom: 1px solid var(--background-modifier-accent);
+	border-bottom: 1px solid var(--accent-overlay);
 }
 
 .popoverTitle {
 	font-size: 12px;
 	font-weight: 700;
-	color: var(--yellow-400, #faa61a);
+	color: var(--yellow-medium, #faa61a);
 	text-transform: uppercase;
 	letter-spacing: 0.02em;
 }
@@ -128,8 +128,8 @@
 }
 
 .clearButton:hover {
-	color: var(--text-normal);
-	background: var(--background-modifier-hover);
+	color: var(--text-bright);
+	background: var(--hover-overlay);
 }
 
 .popoverContent {
@@ -146,7 +146,7 @@
 	width: 100%;
 	padding: 8px 10px;
 	border-radius: var(--radius-sm);
-	background: var(--background-secondary);
+	background: var(--sidebar-left-background);
 	margin-bottom: 4px;
 	border: none;
 	text-align: left;
@@ -168,12 +168,12 @@
 }
 
 .eventItem.clickable:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .eventItem.clickable:hover .playIcon {
 	opacity: 1;
-	color: var(--brand-500);
+	color: var(--brand-primary);
 }
 
 /* Event info container */
@@ -188,7 +188,7 @@
 .eventName {
 	font-size: 12px;
 	font-weight: 600;
-	color: var(--text-normal);
+	color: var(--text-bright);
 	font-family: var(--font-code);
 }
 
@@ -205,7 +205,7 @@
 	width: 24px;
 	height: 24px;
 	border-radius: 50%;
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	color: var(--text-muted);
 	opacity: 0.6;
 	flex-shrink: 0;
@@ -215,10 +215,10 @@
 
 .popoverHint {
 	padding: 10px 12px;
-	border-top: 1px solid var(--background-modifier-accent);
+	border-top: 1px solid var(--accent-overlay);
 	font-size: 11px;
 	color: var(--text-muted);
-	background: var(--background-secondary);
+	background: var(--sidebar-left-background);
 }
 
 /* Danger header (for loop detection) */
@@ -227,7 +227,7 @@
 }
 
 .popoverHeader.dangerHeader .popoverTitle {
-	color: var(--red-400, #ed4245);
+	color: var(--red-light, #ed4245);
 }
 
 /* Loop warning content */
@@ -242,14 +242,14 @@
 	gap: 4px;
 	margin-bottom: 8px;
 	padding: 8px;
-	background: var(--background-secondary);
+	background: var(--sidebar-left-background);
 	border-radius: var(--radius-sm);
 }
 
 .loopEventType {
 	font-size: 13px;
 	font-weight: 700;
-	color: var(--red-400, #ed4245);
+	color: var(--red-light, #ed4245);
 	font-family: var(--font-code);
 }
 
@@ -260,7 +260,7 @@
 
 .loopAuthor {
 	font-size: 11px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 }
 
 .loopContent {
@@ -285,7 +285,7 @@
 /* Danger hint */
 .popoverHint.dangerHint {
 	background: rgba(237, 66, 69, 0.08);
-	color: var(--red-300, #f04747);
+	color: var(--red-light, #f04747);
 }
 
 /* Resolved header (loop resolved) */
@@ -294,7 +294,7 @@
 }
 
 .popoverHeader.resolvedHeader .popoverTitle {
-	color: var(--green-400, #57f287);
+	color: var(--green-light, #57f287);
 }
 
 /* Loop resolved content */
@@ -307,12 +307,12 @@
 .loopEventTypeResolved {
 	font-size: 13px;
 	font-weight: 700;
-	color: var(--green-400, #57f287);
+	color: var(--green-light, #57f287);
 	font-family: var(--font-code);
 }
 
 /* Resolved hint */
 .popoverHint.resolvedHint {
 	background: rgba(87, 242, 135, 0.08);
-	color: var(--green-400, #57f287);
+	color: var(--green-light, #57f287);
 }

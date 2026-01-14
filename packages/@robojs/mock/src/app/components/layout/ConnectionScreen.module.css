@@ -3,12 +3,12 @@
 	align-items: center;
 	justify-content: center;
 	min-height: 100vh;
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	padding: 20px;
 }
 
 .card {
-	background: var(--background-secondary);
+	background: var(--sidebar-left-background);
 	border-radius: var(--radius-lg);
 	padding: 40px;
 	max-width: 400px;
@@ -17,14 +17,14 @@
 }
 
 .logo {
-	color: var(--brand-500);
+	color: var(--brand-primary);
 	margin-bottom: 16px;
 }
 
 .title {
 	font-size: 28px;
 	font-weight: 700;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 	margin: 0 0 8px;
 }
 
@@ -43,17 +43,17 @@
 	font-size: 12px;
 	font-weight: 700;
 	text-transform: uppercase;
-	color: var(--header-secondary);
+	color: var(--header-text-secondary);
 	margin-bottom: 8px;
 }
 
 .input {
 	width: 100%;
 	padding: 12px;
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	border-radius: var(--radius-sm);
 	font-size: 16px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 	margin-bottom: 16px;
 }
 
@@ -62,7 +62,7 @@
 }
 
 .input:focus {
-	outline: 2px solid var(--brand-500);
+	outline: 2px solid var(--brand-primary);
 	outline-offset: -2px;
 }
 
@@ -74,7 +74,7 @@
 .button {
 	width: 100%;
 	padding: 14px;
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	color: white;
 	font-size: 16px;
 	font-weight: 500;
@@ -87,7 +87,7 @@
 }
 
 .button:hover:not(:disabled) {
-	background: var(--brand-560);
+	background: var(--brand-dark);
 }
 
 .button:disabled {
@@ -115,14 +115,14 @@
 	padding: 12px;
 	background: rgba(242, 63, 67, 0.1);
 	border-radius: var(--radius-sm);
-	color: var(--red-400);
+	color: var(--red-light);
 	font-size: 14px;
 }
 
 .help {
 	margin-top: 32px;
 	padding-top: 24px;
-	border-top: 1px solid var(--background-modifier-accent);
+	border-top: 1px solid var(--accent-overlay);
 }
 
 .help p {
@@ -134,22 +134,22 @@
 .code {
 	display: inline-block;
 	padding: 8px 12px;
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	border-radius: var(--radius-sm);
 	font-family: var(--font-code);
 	font-size: 12px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 }
 
 .kbd {
 	display: inline-block;
 	padding: 2px 6px;
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	border-radius: 3px;
 	font-family: var(--font-code);
 	font-size: 11px;
-	color: var(--text-normal);
-	border: 1px solid var(--background-modifier-accent);
+	color: var(--text-bright);
+	border: 1px solid var(--accent-overlay);
 }
 
 /* Session invalid state - stale token */
@@ -168,7 +168,7 @@
 }
 
 .invalidTitle {
-	color: var(--yellow-400, #faa61a);
+	color: var(--yellow-medium, #faa61a);
 	font-size: 16px;
 	font-weight: 600;
 	margin: 0 0 4px;
@@ -182,7 +182,7 @@
 
 .createNewButton {
 	padding: 10px 20px;
-	background: var(--yellow-400, #faa61a);
+	background: var(--yellow-medium, #faa61a);
 	color: #000;
 	font-size: 14px;
 	font-weight: 500;
@@ -194,7 +194,7 @@
 }
 
 .createNewButton:hover:not(:disabled) {
-	background: var(--yellow-500, #f0a000);
+	background: var(--yellow-medium, #f0a000);
 }
 
 .createNewButton:disabled {
@@ -213,7 +213,7 @@
 }
 
 .givenUpTitle {
-	color: var(--red-400);
+	color: var(--red-light);
 	font-size: 16px;
 	font-weight: 600;
 	margin: 0 0 4px;
@@ -227,7 +227,7 @@
 
 .retryButton {
 	padding: 10px 20px;
-	background: var(--red-400);
+	background: var(--red-light);
 	color: white;
 	font-size: 14px;
 	font-weight: 500;
@@ -236,7 +236,7 @@
 }
 
 .retryButton:hover {
-	background: var(--red-500);
+	background: var(--red-medium);
 }
 
 /* Test results section */
@@ -256,7 +256,7 @@
 	content: '';
 	flex: 1;
 	height: 1px;
-	background: var(--background-modifier-accent);
+	background: var(--accent-overlay);
 }
 
 .divider span {
@@ -269,12 +269,12 @@
 .testResultsButton {
 	width: 100%;
 	padding: 12px;
-	background: var(--background-tertiary);
-	color: var(--text-normal);
+	background: var(--card-background);
+	color: var(--text-bright);
 	font-size: 14px;
 	font-weight: 500;
 	border-radius: var(--radius-sm);
-	border: 1px solid var(--background-modifier-accent);
+	border: 1px solid var(--accent-overlay);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -283,8 +283,8 @@
 }
 
 .testResultsButton:hover {
-	background: var(--background-modifier-hover);
-	border-color: var(--brand-500);
+	background: var(--hover-overlay);
+	border-color: var(--brand-primary);
 }
 
 .testResultsHint {

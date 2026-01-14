@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import type { StageMessage, StageReaction, StageUser } from '../../types/stage'
 import { formatTimestamp } from '../../utils/time'
 import { getAvatarUrl } from '../../utils/avatar'
@@ -8,17 +7,7 @@ import { Attachments } from './Attachments'
 import { ComponentsContainer } from './ComponentRow'
 import { Reactions } from './Reactions'
 import { EphemeralBadge } from './EphemeralBadge'
-import { useUserById } from '../../hooks/useCurrentUser'
-import { useStageData } from '../../hooks/useStageData'
 import styles from './Message.module.css'
-
-// Interaction types (from Discord API)
-const INTERACTION_TYPES = {
-	APPLICATION_COMMAND: 2,
-	MESSAGE_COMPONENT: 3,
-	APPLICATION_COMMAND_AUTOCOMPLETE: 4,
-	MODAL_SUBMIT: 5
-}
 
 // Discord message flags
 const MESSAGE_FLAGS = {
@@ -66,9 +55,10 @@ function getJoinMessage(userId: string, username: string): string {
 
 interface MessageProps {
 	message: StageMessage
+	replyMessage?: StageMessage
 	isFirstInGroup: boolean
 	isHighlighted?: boolean
-	isMentioned?: boolean
+	onDismissEphemeral?: (messageId: string) => void
 	onButtonClick?: (messageId: string, customId: string) => Promise<void>
 	onSelectOption?: (messageId: string, customId: string, values: string[]) => Promise<void>
 	onAddReaction?: (messageId: string, emoji: string) => Promise<void>
@@ -79,9 +69,10 @@ interface MessageProps {
 
 export function Message({
 	message,
+	replyMessage,
 	isFirstInGroup,
 	isHighlighted,
-	isMentioned,
+	onDismissEphemeral,
 	onButtonClick,
 	onSelectOption,
 	onAddReaction,
@@ -89,17 +80,28 @@ export function Message({
 	onContextMenu,
 	onUserContextMenu
 }: MessageProps) {
-	const { author: messageAuthor, content, timestamp, edited_timestamp, embeds, attachments, components, reactions, flags, pinned, message_reference, type, interaction_metadata } = message
-
-	// Look up the latest user data by ID - this makes user display reactive to changes
-	// Falls back to the embedded author data if user is not found in state
-	const resolvedUser = useUserById(messageAuthor.id, messageAuthor)
-	const author = useMemo(() => resolvedUser ?? messageAuthor, [resolvedUser, messageAuthor])
-
+	const { author, content, timestamp, edited_timestamp, embeds, attachments, components, reactions, flags, pinned, message_reference, type } = message
 	const isEphemeral = ((flags ?? 0) & MESSAGE_FLAGS.EPHEMERAL) !== 0
 	const isV2 = ((flags ?? 0) & MESSAGE_FLAGS.IS_COMPONENTS_V2) !== 0
 	const isSystemMessage = type === MESSAGE_TYPES.GUILD_MEMBER_JOIN
-	const isCommandResponse = interaction_metadata && interaction_metadata.type === INTERACTION_TYPES.APPLICATION_COMMAND
+	const rawMessage = message as StageMessage & {
+		interaction_metadata?: { user?: StageUser }
+		interactionMetadata?: { user?: StageUser }
+		interaction?: { user?: StageUser; name?: string }
+		referenced_message?: StageMessage
+		referencedMessage?: StageMessage
+	}
+	const interactionMetadata = rawMessage.interaction_metadata ?? rawMessage.interactionMetadata
+	const interactionUser = interactionMetadata?.user ?? rawMessage.interaction?.user
+	const interactionName = rawMessage.interaction?.name
+	const interactionMeta = interactionUser ? { user: interactionUser, name: interactionName } : undefined
+	const resolvedReplyMessage = replyMessage ?? rawMessage.referenced_message ?? rawMessage.referencedMessage
+	const replyAuthorName = resolvedReplyMessage?.author?.global_name ?? resolvedReplyMessage?.author?.username ?? 'Unknown'
+	const replySnippet = getReplySnippet(resolvedReplyMessage)
+	const replyAvatarUrl = resolvedReplyMessage
+		? getAvatarUrl(resolvedReplyMessage.author.id, resolvedReplyMessage.author.avatar)
+		: null
+	const hasReply = Boolean(message_reference || resolvedReplyMessage)
 
 	// Render system message (member join)
 	if (isSystemMessage) {
@@ -133,36 +135,21 @@ export function Message({
 	}
 
 	return (
-		<>
-			{/* Command invocation header - shows "User used /command" with avatar */}
-			{isCommandResponse && interaction_metadata && (
-				<div className={styles.commandInvocation}>
-					<img
-						src={getAvatarUrl(interaction_metadata.user.id, interaction_metadata.user.avatar)}
-						alt=""
-						className={styles.commandAvatar}
-						onError={(e) => {
-							const target = e.target as HTMLImageElement
-							target.src = getAvatarUrl(interaction_metadata.user.id, null)
-						}}
-					/>
-					<span className={styles.commandUser}>{interaction_metadata.user.username}</span>
-					<span className={styles.commandText}> used </span>
-					<SlashCommandIcon />
-					<span className={styles.commandName}>{interaction_metadata.name || 'command'}</span>
-				</div>
-			)}
-			<div
-				className={`${styles.message} ${isHighlighted ? styles.highlighted : ''} ${isMentioned ? styles.mentioned : ''} ${isEphemeral ? styles.ephemeral : ''}`}
-				onContextMenu={onContextMenu ? (e) => onContextMenu(e, message) : undefined}
-			>
-				{/* Reply reference indicator */}
-			{message_reference && (
-				<div className={styles.replyReference}>
-					<ReplyIcon />
-					<span className={styles.replyText}>Replying to a message</span>
-				</div>
-			)}
+		<div
+			className={`${styles.message} ${isHighlighted ? styles.highlighted : ''} ${isEphemeral ? styles.ephemeral : ''}`}
+			onContextMenu={onContextMenu ? (e) => onContextMenu(e, message) : undefined}
+		>
+			<div className={styles.hoverActions}>
+				<button type="button" aria-label="Add reaction">
+					<SmileIcon />
+				</button>
+				<button type="button" aria-label="Reply">
+					<ReplyActionIcon />
+				</button>
+				<button type="button" aria-label="More">
+					<MoreIcon />
+				</button>
+			</div>
 			{isFirstInGroup ? (
 				<>
 					<div className={styles.avatar}>
@@ -186,6 +173,29 @@ export function Message({
 						/>
 					</div>
 					<div className={styles.content}>
+						{hasReply && (
+							<div className={styles.replyReference}>
+								{resolvedReplyMessage ? (
+									<>
+										{replyAvatarUrl && (
+											<img
+												src={replyAvatarUrl}
+												alt=""
+												className={styles.replyAvatar}
+												onError={(e) => {
+													const target = e.target as HTMLImageElement
+													target.src = getAvatarUrl(resolvedReplyMessage.author.id, null)
+												}}
+											/>
+										)}
+										<span className={styles.replyAuthor}>@{replyAuthorName}</span>
+										<span className={styles.replySnippet}>{replySnippet}</span>
+									</>
+								) : (
+									<span className={styles.replyText}>Replying to a message</span>
+								)}
+							</div>
+						)}
 						<div className={styles.header}>
 							<span
 								className={styles.author}
@@ -216,10 +226,12 @@ export function Message({
 							attachments={attachments}
 							components={components}
 							reactions={reactions}
+							interactionMeta={interactionMeta}
 							messageId={message.id}
 							channelId={message.channel_id}
 							isEphemeral={isEphemeral}
 							isV2={isV2}
+							onDismissEphemeral={onDismissEphemeral}
 							onButtonClick={onButtonClick}
 							onSelectOption={onSelectOption}
 							onAddReaction={onAddReaction}
@@ -233,6 +245,29 @@ export function Message({
 						<span className={styles.hoverTimestamp}>{formatTimestamp(timestamp, 'short')}</span>
 					</div>
 					<div className={styles.content}>
+						{hasReply && (
+							<div className={styles.replyReference}>
+								{resolvedReplyMessage ? (
+									<>
+										{replyAvatarUrl && (
+											<img
+												src={replyAvatarUrl}
+												alt=""
+												className={styles.replyAvatar}
+												onError={(e) => {
+													const target = e.target as HTMLImageElement
+													target.src = getAvatarUrl(resolvedReplyMessage.author.id, null)
+												}}
+											/>
+										)}
+										<span className={styles.replyAuthor}>@{replyAuthorName}</span>
+										<span className={styles.replySnippet}>{replySnippet}</span>
+									</>
+								) : (
+									<span className={styles.replyText}>Replying to a message</span>
+								)}
+							</div>
+						)}
 						<MessageContent
 							content={content}
 							editedTimestamp={edited_timestamp}
@@ -240,10 +275,12 @@ export function Message({
 							attachments={attachments}
 							components={components}
 							reactions={reactions}
+							interactionMeta={interactionMeta}
 							messageId={message.id}
 							channelId={message.channel_id}
 							isEphemeral={isEphemeral}
 							isV2={isV2}
+							onDismissEphemeral={onDismissEphemeral}
 							onButtonClick={onButtonClick}
 							onSelectOption={onSelectOption}
 							onAddReaction={onAddReaction}
@@ -253,7 +290,6 @@ export function Message({
 				</>
 			)}
 		</div>
-		</>
 	)
 }
 
@@ -264,10 +300,15 @@ interface MessageContentProps {
 	attachments?: unknown[]
 	components?: unknown[]
 	reactions?: StageReaction[]
+	interactionMeta?: {
+		user?: StageUser
+		name?: string
+	}
 	messageId: string
 	channelId: string
 	isEphemeral?: boolean
 	isV2?: boolean
+	onDismissEphemeral?: (messageId: string) => void
 	onButtonClick?: (messageId: string, customId: string) => Promise<void>
 	onSelectOption?: (messageId: string, customId: string, values: string[]) => Promise<void>
 	onAddReaction?: (messageId: string, emoji: string) => Promise<void>
@@ -281,17 +322,17 @@ function MessageContent({
 	attachments,
 	components,
 	reactions,
+	interactionMeta,
 	messageId,
 	channelId,
 	isEphemeral,
 	isV2,
+	onDismissEphemeral,
 	onButtonClick,
 	onSelectOption,
 	onAddReaction,
 	onRemoveReaction
 }: MessageContentProps) {
-	const { members, roles, channels } = useStageData()
-
 	// Type assertion for embeds and attachments - they come as unknown[] from StageMessage
 	const typedEmbeds = embeds as Array<{
 		color?: number
@@ -324,10 +365,20 @@ function MessageContent({
 
 	return (
 		<div className={styles.messageContent}>
+			{interactionMeta?.user && (
+				<div className={styles.interactionInfo}>
+					<span className={styles.interactionIcon}>
+						<SlashIcon />
+					</span>
+					<span className={styles.interactionText}>
+						{interactionMeta.user.username} used {interactionMeta.name ? `/${interactionMeta.name}` : 'a command'}
+					</span>
+				</div>
+			)}
 			{/* V2 replaces content and embeds - only render these in V1 mode */}
 			{!isV2 && content && (
 				<div className={styles.textContent}>
-					<Markdown text={content} members={members} roles={roles} channels={channels} />
+					<Markdown text={content} />
 					{editedTimestamp && (
 						<span
 							className={styles.edited}
@@ -376,9 +427,35 @@ function MessageContent({
 			)}
 
 			{/* Ephemeral badge */}
-			{isEphemeral && <EphemeralBadge />}
+			{isEphemeral && (
+				<EphemeralBadge onDismiss={onDismissEphemeral ? () => onDismissEphemeral(messageId) : undefined} />
+			)}
 		</div>
 	)
+}
+
+function getReplySnippet(message?: StageMessage): string {
+	if (!message) return 'Replying to a message'
+
+	const trimmedContent = (message.content || '').trim()
+	if (trimmedContent) {
+		return trimmedContent.replace(/\s+/g, ' ')
+	}
+
+	const attachments = message.attachments as Array<{ content_type?: string; filename?: string }> | undefined
+	if (attachments?.length) {
+		const attachment = attachments[0]
+		if (attachment.content_type?.startsWith('image/')) return 'Image'
+		if (attachment.content_type?.startsWith('video/')) return 'Video'
+		if (attachment.content_type?.startsWith('audio/')) return 'Audio'
+		if (attachment.filename) return attachment.filename
+		return 'Attachment'
+	}
+
+	if ((message.embeds ?? []).length > 0) return 'Embed'
+	if ((message.components ?? []).length > 0) return 'Interaction'
+
+	return 'Message'
 }
 
 // Icon components for message indicators
@@ -390,10 +467,34 @@ function PinIcon() {
 	)
 }
 
-function ReplyIcon() {
+function SlashIcon() {
 	return (
-		<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+		<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+			<path d="M7 7h4l-2.5 5H4l3-5zm6.5 10h-4l2.5-5h4l-2.5 5z" />
+		</svg>
+	)
+}
+
+function SmileIcon() {
+	return (
+		<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+			<path d="M12 2a10 10 0 1 0 0 20a10 10 0 0 0 0-20zm-4 7a1.5 1.5 0 1 1 0 3a1.5 1.5 0 0 1 0-3zm8 0a1.5 1.5 0 1 1 0 3a1.5 1.5 0 0 1 0-3zm-8.2 6.2a1 1 0 0 1 1.4 0a4.5 4.5 0 0 0 5.6 0a1 1 0 1 1 1.4 1.4a6.5 6.5 0 0 1-8.4 0a1 1 0 0 1 0-1.4z" />
+		</svg>
+	)
+}
+
+function ReplyActionIcon() {
+	return (
+		<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
 			<path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z" />
+		</svg>
+	)
+}
+
+function MoreIcon() {
+	return (
+		<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+			<path d="M6 12a2 2 0 1 1-4 0a2 2 0 0 1 4 0zm8 0a2 2 0 1 1-4 0a2 2 0 0 1 4 0zm8 0a2 2 0 1 1-4 0a2 2 0 0 1 4 0z" />
 		</svg>
 	)
 }
@@ -410,14 +511,6 @@ function VerifiedCheckIcon() {
 	return (
 		<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
 			<path d="M7.4,11.17,4,8.62,5,7.26l2,1.53L10.64,4l1.36,1Z" />
-		</svg>
-	)
-}
-
-function SlashCommandIcon() {
-	return (
-		<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className={styles.slashIcon}>
-			<path d="M5 19h4L12 5H8L5 19zm7 0h4L19 5h-4L12 19z" />
 		</svg>
 	)
 }

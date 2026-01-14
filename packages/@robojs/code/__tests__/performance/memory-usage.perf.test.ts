@@ -298,7 +298,8 @@ describe('Memory Usage', () => {
 				await provider.readFile('/test.txt')
 				await provider.writeFile('/out.txt', 'x'.repeat(5000))
 				const stream = provider.runStream!('cmd', [])
-				for await (const _chunk of stream) {}
+				for await (const _chunk of stream) {
+				}
 			}
 
 			forceGc()
@@ -348,7 +349,8 @@ describe('Memory Usage', () => {
 				for (let i = 0; i < 10; i++) {
 					await provider.readFile('/file.txt')
 					const stream = provider.runStream!('test', [])
-					for await (const _chunk of stream) {}
+					for await (const _chunk of stream) {
+					}
 				}
 				forceGc()
 				heapMeasurements.push(getHeapMb())

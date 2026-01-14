@@ -5,39 +5,22 @@ interface Props {
 }
 
 export default function GifIcon(props: Props) {
-	const { width = 100, height = 100, fill = '#26e07f' } = props
+	const { width = 100, height = 100, fill = 'currentColor' } = props
 
 	return (
 		<svg
-			xmlns="http://www.w3.org/2000/svg"
-			x="0px"
-			y="0px"
 			width={width}
 			height={height}
-			viewBox="0 0 172 172"
-			fill={fill}
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke={fill}
+			strokeWidth="1.25"
+			strokeLinecap="round"
+			strokeLinejoin="round"
 		>
-			<g
-				fill="none"
-				fillRule="nonzero"
-				stroke="none"
-				strokeWidth="1"
-				strokeLinecap="butt"
-				strokeLinejoin="miter"
-				strokeMiterlimit="10"
-				strokeDasharray=""
-				strokeDashoffset="0"
-				fontFamily="none"
-				fontWeight="none"
-				fontSize="none"
-				textAnchor="none"
-				style={{ mixBlendMode: 'normal' }}
-			>
-				<path d="M0,172v-172h172v172z" fill="none"></path>
-				<g fill="#1fb141">
-					<path d="M21.5,21.5v129h64.5v-32.25v-64.5v-32.25zM86,53.75c0,17.7805 14.4695,32.25 32.25,32.25c17.7805,0 32.25,-14.4695 32.25,-32.25c0,-17.7805 -14.4695,-32.25 -32.25,-32.25c-17.7805,0 -32.25,14.4695 -32.25,32.25zM118.25,86c-17.7805,0 -32.25,14.4695 -32.25,32.25c0,17.7805 14.4695,32.25 32.25,32.25c17.7805,0 32.25,-14.4695 32.25,-32.25c0,-17.7805 -14.4695,-32.25 -32.25,-32.25z"></path>
-				</g>
-			</g>
+			<path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" />
+			<path d="M14 2v5a1 1 0 0 0 1 1h5" />
+			<path d="M15.033 13.44a.647.647 0 0 1 0 1.12l-4.065 2.352a.645.645 0 0 1-.968-.56v-4.704a.645.645 0 0 1 .967-.56z" />
 		</svg>
 	)
 }

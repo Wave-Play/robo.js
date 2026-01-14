@@ -169,7 +169,8 @@ async function scanPlugins(
 				const scopedPath = path.join(pluginPath, scopedPlugin)
 				const resolvedPath = path.relative(pluginsPath, scopedPath)
 				const parts = resolvedPath.split('.')
-				const pluginName = '@' + parts[0]
+				// Normalize to forward slashes for consistent plugin names across platforms
+				const pluginName = '@' + parts[0].split(path.sep).join('/')
 				let mode = undefined
 				if (parts.length > 2) {
 					mode = parts[1]

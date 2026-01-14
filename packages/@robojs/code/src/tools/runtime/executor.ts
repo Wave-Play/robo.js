@@ -78,9 +78,7 @@ export class ToolExecutor {
 		try {
 			if (this.serialize) {
 				// Execute through the serialization queue
-				result = await this.queue.enqueue(() =>
-					this.executeInternal(toolCall.toolName, toolCall.args)
-				)
+				result = await this.queue.enqueue(() => this.executeInternal(toolCall.toolName, toolCall.args))
 			} else {
 				// Direct execution (not recommended)
 				result = await this.executeInternal(toolCall.toolName, toolCall.args)
@@ -131,9 +129,7 @@ export class ToolExecutor {
 
 			// If a tool requires approval, stop processing further calls
 			if (result.result.requiresApproval) {
-				codeLogger.debug(
-					`[${this.context.runId}] Stopping execution: tool ${toolCall.toolName} requires approval`
-				)
+				codeLogger.debug(`[${this.context.runId}] Stopping execution: tool ${toolCall.toolName} requires approval`)
 				break
 			}
 		}
@@ -158,10 +154,9 @@ export class ToolExecutor {
 		const parseResult = tool.schema.safeParse(args)
 		if (!parseResult.success) {
 			// Zod 4 uses 'issues' instead of 'errors'
-			const issues = parseResult.error.issues ?? (parseResult.error as unknown as { errors?: z.ZodIssue[] }).errors ?? []
-			const errorMessage = issues
-				.map((e: z.ZodIssue) => `${e.path.join('.')}: ${e.message}`)
-				.join(', ')
+			const issues =
+				parseResult.error.issues ?? (parseResult.error as unknown as { errors?: z.ZodIssue[] }).errors ?? []
+			const errorMessage = issues.map((e: z.ZodIssue) => `${e.path.join('.')}: ${e.message}`).join(', ')
 
 			return errorResult(`Invalid arguments: ${errorMessage}`, {
 				errorCode: 'INVALID_ARGS',
@@ -291,21 +286,14 @@ export class ToolExecutor {
 /**
  * Create a tool executor
  */
-export function createToolExecutor(
-	registry: ToolRegistry,
-	config: ToolExecutorConfig
-): ToolExecutor {
+export function createToolExecutor(registry: ToolRegistry, config: ToolExecutorConfig): ToolExecutor {
 	return new ToolExecutor(registry, config)
 }
 
 /**
  * Helper to create a pending tool call
  */
-export function createToolCall(
-	callId: string,
-	toolName: string,
-	args: unknown
-): PendingToolCall {
+export function createToolCall(callId: string, toolName: string, args: unknown): PendingToolCall {
 	return {
 		callId,
 		toolName,

@@ -34,6 +34,7 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
 				<ListItem
 					label="Mute Channel"
 					onMouseEnter={() => setShowMuteSubmenu(true)}
+					onClick={onClose}
 					rightContent={<ChevronRightIcon />}
 					role="menuitem"
 				/>
@@ -45,8 +46,11 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
 						key={setting.value}
 						label={setting.label}
 						description={setting.sublabel}
-						onClick={() => setSelectedSetting(setting.value)}
+						onClick={() => {
+							setSelectedSetting(setting.value)
+						}}
 						onMouseEnter={() => setShowMuteSubmenu(false)}
+						isSelected={selectedSetting === setting.value}
 						rightContent={<Radio isSelected={selectedSetting === setting.value} />}
 						role="menuitem"
 					/>
@@ -60,7 +64,7 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
 					onMouseLeave={() => setShowMuteSubmenu(false)}
 				>
 					{muteDurations.map((duration) => (
-						<ListItem key={duration} label={duration} role="menuitem" />
+						<ListItem key={duration} label={duration} onClick={onClose} role="menuitem" />
 					))}
 				</div>
 			)}

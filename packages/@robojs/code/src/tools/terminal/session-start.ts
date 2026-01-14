@@ -35,10 +35,14 @@ export interface TerminalSessionStartOutput {
  */
 export const terminalSessionStartTool: ToolDefinition<TerminalSessionStartInput, TerminalSessionStartOutput> = {
 	name: 'terminal_session_start',
-	description: 'Start a long-running terminal session (like dev server, mock server). Returns a session ID for later streaming or stopping.',
+	description:
+		'Start a long-running terminal session (like dev server, mock server). Returns a session ID for later streaming or stopping.',
 	schema: terminalSessionStartSchema,
 
-	async execute(input: TerminalSessionStartInput, context: ToolContext): Promise<ToolResult<TerminalSessionStartOutput>> {
+	async execute(
+		input: TerminalSessionStartInput,
+		context: ToolContext
+	): Promise<ToolResult<TerminalSessionStartOutput>> {
 		const { command, args, cwd, env } = input
 
 		// Check command policy

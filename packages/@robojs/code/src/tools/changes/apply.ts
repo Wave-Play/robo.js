@@ -15,24 +15,26 @@ import { checkStaleness } from '../tracking/file-tracker.js'
  * Input schema for apply_changes
  */
 export const applyChangesSchema = z.object({
-	changes: z.array(
-		z.union([
-			z.object({
-				path: z.string(),
-				type: z.literal('create'),
-				content: z.string()
-			}),
-			z.object({
-				path: z.string(),
-				type: z.literal('modify'),
-				content: z.string()
-			}),
-			z.object({
-				path: z.string(),
-				type: z.literal('delete')
-			})
-		])
-	).describe('Array of file changes to apply'),
+	changes: z
+		.array(
+			z.union([
+				z.object({
+					path: z.string(),
+					type: z.literal('create'),
+					content: z.string()
+				}),
+				z.object({
+					path: z.string(),
+					type: z.literal('modify'),
+					content: z.string()
+				}),
+				z.object({
+					path: z.string(),
+					type: z.literal('delete')
+				})
+			])
+		)
+		.describe('Array of file changes to apply'),
 	reason: z.string().optional().describe('Reason for the changes')
 })
 
@@ -52,7 +54,12 @@ export interface ApplyChangesOutput {
 /**
  * Generate a simple unified diff
  */
-function generateUnifiedDiff(path: string, oldContent: string | null, newContent: string | null, type: 'create' | 'modify' | 'delete'): string {
+function generateUnifiedDiff(
+	path: string,
+	oldContent: string | null,
+	newContent: string | null,
+	type: 'create' | 'modify' | 'delete'
+): string {
 	const oldLines = oldContent?.split('\n') ?? []
 	const newLines = newContent?.split('\n') ?? []
 
@@ -79,7 +86,8 @@ function generateUnifiedDiff(path: string, oldContent: string | null, newContent
  */
 export const applyChangesTool: ToolDefinition<ApplyChangesInput, ApplyChangesOutput> = {
 	name: 'apply_changes',
-	description: 'Atomically apply multiple file changes. All changes succeed or none do. Use for coordinated file modifications.',
+	description:
+		'Atomically apply multiple file changes. All changes succeed or none do. Use for coordinated file modifications.',
 	schema: applyChangesSchema,
 	mutates: true,
 	requiresApproval: true,
@@ -218,11 +226,7 @@ export const applyChangesTool: ToolDefinition<ApplyChangesInput, ApplyChangesOut
 				changes: changes as FileChange[]
 			})
 
-			return approvalRequired(
-				changes as FileChange[],
-				diffs,
-				reason ?? `Apply ${changes.length} file change(s)`
-			)
+			return approvalRequired(changes as FileChange[], diffs, reason ?? `Apply ${changes.length} file change(s)`)
 		}
 
 		// Phase 4: Apply changes atomically
@@ -252,7 +256,7 @@ export const applyChangesTool: ToolDefinition<ApplyChangesInput, ApplyChangesOut
 					appliedPaths.push(change.path)
 					codeLogger.debug('[apply_changes] Change applied successfully', { path: change.path })
 
-						// Record rollback action
+					// Record rollback action
 					if (oldContent !== null && oldContent !== undefined) {
 						const path = change.path
 						const content: string = oldContent
@@ -318,10 +322,13 @@ export const applyChangesTool: ToolDefinition<ApplyChangesInput, ApplyChangesOut
 				}
 			}
 
-			return errorResult(`Failed to apply changes (rolled back): ${error instanceof Error ? error.message : String(error)}`, {
-				errorCode: 'EXECUTION_FAILED',
-				recoverable: true
-			})
+			return errorResult(
+				`Failed to apply changes (rolled back): ${error instanceof Error ? error.message : String(error)}`,
+				{
+					errorCode: 'EXECUTION_FAILED',
+					recoverable: true
+				}
+			)
 		}
 	}
 }

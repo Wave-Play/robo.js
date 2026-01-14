@@ -1,9 +1,9 @@
 .embed {
 	max-width: 520px;
 	margin-top: 4px;
-	background: var(--background-secondary);
+	background: var(--sidebar-left-background);
 	border-radius: 4px;
-	border-left: 4px solid var(--background-tertiary);
+	border-left: 4px solid var(--card-background);
 	padding: 0.5rem 1rem 1rem 0.75rem;
 	overflow: hidden;
 }
@@ -34,7 +34,7 @@
 .authorName {
 	font-size: 14px;
 	font-weight: 600;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 	text-decoration: none;
 }
 
@@ -57,7 +57,7 @@ a.title:hover {
 
 .description {
 	font-size: 0.875rem;
-	color: var(--text-normal);
+	color: var(--text-bright);
 	margin-bottom: 8px;
 	line-height: 1.125rem;
 	white-space: pre-wrap;
@@ -82,13 +82,13 @@ a.title:hover {
 .fieldName {
 	font-size: 14px;
 	font-weight: 600;
-	color: var(--header-secondary);
+	color: var(--header-text-secondary);
 	margin-bottom: 2px;
 }
 
 .fieldValue {
 	font-size: 14px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 	line-height: 1.125rem;
 }
 

@@ -8,11 +8,18 @@ export default function NotificationIcon(props: Props) {
 	const { width = 24, height = 24, fill = 'currentColor' } = props
 
 	return (
-		<svg width={width} height={height} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-			<path
-				d="M18 9V14C18 15.657 19.344 17 21 17V18H3V17C4.656 17 6 15.657 6 14V9C6 5.686 8.686 3 12 3C15.314 3 18 5.686 18 9ZM11.9999 21C10.5239 21 9.24793 20.19 8.55493 19H15.4449C14.7519 20.19 13.4759 21 11.9999 21Z"
-				fill={fill}
-			/>
+		<svg
+			width={width}
+			height={height}
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke={fill}
+			strokeWidth="1.25"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+		>
+			<path d="M10.268 21a2 2 0 0 0 3.464 0" />
+			<path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" />
 		</svg>
 	)
 }

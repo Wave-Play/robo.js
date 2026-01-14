@@ -19,7 +19,7 @@
 	min-height: 24px;
 	font-size: 14px;
 	font-family: inherit;
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 	border: 1px solid transparent;
 	border-radius: 8px;
 	cursor: pointer;
@@ -27,7 +27,7 @@
 }
 
 .reaction:hover:not(.loading) {
-	background: var(--background-modifier-active);
+	background: var(--active-overlay);
 }
 
 .reaction:focus {
@@ -35,13 +35,13 @@
 }
 
 .reaction:focus-visible {
-	outline: 2px solid var(--brand-500);
+	outline: 2px solid var(--brand-primary);
 	outline-offset: 1px;
 }
 
 .reacted {
 	background: rgba(88, 101, 242, 0.15);
-	border-color: var(--brand-500);
+	border-color: var(--brand-primary);
 }
 
 .reacted:hover:not(.loading) {
@@ -67,7 +67,7 @@
 }
 
 .count {
-	color: var(--text-normal);
+	color: var(--text-bright);
 	font-size: 12px;
 	font-weight: 500;
 	min-width: 12px;
@@ -75,7 +75,7 @@
 }
 
 .reacted .count {
-	color: var(--brand-500);
+	color: var(--brand-primary);
 }
 
 .addButtonWrapper {
@@ -98,9 +98,9 @@
 }
 
 .addButton:hover {
-	background: var(--background-modifier-hover);
-	border-color: var(--interactive-normal);
-	color: var(--interactive-normal);
+	background: var(--hover-overlay);
+	border-color: var(--interactive-default);
+	color: var(--interactive-default);
 }
 
 .addButton:focus {
@@ -108,6 +108,6 @@
 }
 
 .addButton:focus-visible {
-	outline: 2px solid var(--brand-500);
+	outline: 2px solid var(--brand-primary);
 	outline-offset: 1px;
 }

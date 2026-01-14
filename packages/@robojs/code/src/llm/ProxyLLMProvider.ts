@@ -5,14 +5,7 @@
  * The browser never holds LLM API keys - all calls go through the proxy.
  */
 
-import type {
-	LLMProvider,
-	LLMProviderConfig,
-	ChatRequest,
-	ChatResponse,
-	StreamChunk,
-	ToolCall
-} from '../types/llm.js'
+import type { LLMProvider, LLMProviderConfig, ChatRequest, ChatResponse, StreamChunk, ToolCall } from '../types/llm.js'
 import { codeLogger } from '../core/logger.js'
 
 /**
@@ -73,7 +66,7 @@ export class ProxyLLMProvider implements LLMProvider {
 			throw new Error(`LLM proxy error: ${response.status} - ${error}`)
 		}
 
-		const data = await response.json() as Record<string, unknown>
+		const data = (await response.json()) as Record<string, unknown>
 
 		const parsed = this.parseResponse(data)
 

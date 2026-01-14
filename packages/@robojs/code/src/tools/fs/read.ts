@@ -94,7 +94,8 @@ export const fsReadTool: ToolDefinition<FsReadInput, FsReadOutput> = {
 				finalContent = new TextDecoder().decode(truncatedBytes)
 				finalSize = maxReadBytes
 				truncated = true
-				truncationNote = `File is ${actualSize} bytes (${Math.round(actualSize / 1024)}KB). ` +
+				truncationNote =
+					`File is ${actualSize} bytes (${Math.round(actualSize / 1024)}KB). ` +
 					`Showing first ${maxReadBytes} bytes (${Math.round(maxReadBytes / 1024)}KB). ` +
 					`Use fs_read_range to read specific sections, or fs_read_head/fs_read_tail for previews.`
 			}
@@ -130,9 +131,7 @@ export const fsReadTool: ToolDefinition<FsReadInput, FsReadOutput> = {
 				// Check if error indicates file doesn't exist
 				const errorMessage = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase()
 				const isNotFound =
-					errorMessage.includes('not found') ||
-					errorMessage.includes('no such file') ||
-					errorMessage.includes('enoent')
+					errorMessage.includes('not found') || errorMessage.includes('no such file') || errorMessage.includes('enoent')
 				if (isNotFound) {
 					context.fileTracker.record({
 						path,

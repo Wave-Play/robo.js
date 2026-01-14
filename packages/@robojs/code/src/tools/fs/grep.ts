@@ -78,10 +78,7 @@ export const fsGrepTool: ToolDefinition<FsGrepInput, FsGrepOutput> = {
 
 				// Apply glob filter
 				if (glob) {
-					const globRegex = new RegExp(
-						'^' + glob.replace(/\*/g, '.*').replace(/\?/g, '.') + '$',
-						'i'
-					)
+					const globRegex = new RegExp('^' + glob.replace(/\*/g, '.*').replace(/\?/g, '.') + '$', 'i')
 					if (!globRegex.test(file.name)) continue
 				}
 

@@ -3,11 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach } from '@jest/globals'
-import {
-	FileReadTracker,
-	checkStaleness,
-	type FileReadSnapshot
-} from '../../../src/tools/tracking/file-tracker.js'
+import { FileReadTracker, checkStaleness, type FileReadSnapshot } from '../../../src/tools/tracking/file-tracker.js'
 
 describe('FileReadTracker', () => {
 	let tracker: FileReadTracker

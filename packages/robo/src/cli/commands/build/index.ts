@@ -192,7 +192,7 @@ export async function buildAction(context: CliContext) {
 					name,
 					version: data.version ?? '0.0.0',
 					path: data.path ?? `node_modules/${name}`,
-					namespace: data.namespace ?? name.replace('@robojs/', '').replace('robo-plugin-', ''),
+					namespace: data.namespace ?? name.split(path.sep).join('/').replace('@robojs/', '').replace('robo-plugin-', ''),
 					routes: routes.filter((r) => r.namespace === data.namespace).map((r) => r.name),
 					hooks: Object.keys(hookEntries).filter((h) => hookEntries[h].some((e) => e.plugin === name))
 				}
@@ -222,7 +222,7 @@ export async function buildAction(context: CliContext) {
 	const pluginRoutesInfo = Array.from(plugins.entries()).map(([name, data]) => ({
 		name,
 		path: data.path ?? path.join(process.cwd(), 'node_modules', name),
-		namespace: data.namespace ?? name.replace('@robojs/', '').replace('robo-plugin-', '')
+		namespace: data.namespace ?? name.split(path.sep).join('/').replace('@robojs/', '').replace('robo-plugin-', '')
 	}))
 
 	const pluginRoutes = await collectPluginRoutes(pluginRoutesInfo, routeDefinitions)

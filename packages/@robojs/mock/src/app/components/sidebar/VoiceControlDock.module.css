@@ -1,0 +1,11 @@
+.container {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	background: var(--main-chat-background);
+	border-radius: var(--radius-md);
+	padding: 6px 12px;
+	box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35);
+	border: 1px solid var(--accent-overlay);
+	width: 100%;
+}

@@ -1,18 +1,26 @@
 .container {
 	display: flex;
 	flex-direction: column;
-	width: 33%;
+	width: var(--sidebar-width);
+	min-height: 0;
+	height: 100%;
+	position: relative;
+}
+
+/* Server header wrapper */
+.headerWrapper {
+	position: relative;
 }
 
 /* Server header */
 .header {
-	padding-top: 13px;
-	border-bottom: 1px solid var(--background-modifier-accent);
+	height: 48px;
+	min-height: 48px;
+	border-bottom: 1px solid var(--accent-overlay);
 	display: flex;
-	justify-content: center;
 	align-items: center;
 	justify-content: space-between;
-	padding: 12px 16px;
+	padding: 0 16px;
 	box-shadow:
 		0 1px 0 rgba(0, 0, 0, 0.2),
 		0 2px 0 rgba(0, 0, 0, 0.06);
@@ -21,13 +29,13 @@
 }
 
 .header:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .serverName {
 	font-size: 16px;
 	font-weight: 600;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -35,26 +43,19 @@
 
 .headerIcon {
 	flex-shrink: 0;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 }
 
 /* Channel list scrollable area */
 .channels {
 	flex: 1;
 	overflow-y: auto;
-	padding: 0 8px 8px;
-
-	padding-top: 20px;
+	padding: 8px 8px 220px;
 }
 
-.channelIconsExtra {
-	position: absolute;
-	width: -webkit-fill-available;
-	display: flex;
-	justify-content: end;
-	height: -webkit-fill-available;
-	align-items: center;
-	gap: 10px;
+.channelRow {
+	position: relative;
+	margin: 1px 0;
 }
 
 .category {
@@ -68,11 +69,11 @@
 .categoryHeader {
 	display: flex;
 	align-items: center;
-	gap: 2px;
-	padding: 0 4px;
+	gap: 4px;
+	padding: 2px 8px;
 	width: 100%;
-	color: var(--channel-icon);
-	font-size: 12px;
+	color: var(--channel-icon-default);
+	font-size: 11px;
 	font-weight: 600;
 	text-transform: uppercase;
 	letter-spacing: 0.02em;
@@ -109,34 +110,99 @@
 	width: 100%;
 	padding: 6px 8px;
 	border-radius: var(--radius-sm);
-	color: var(--channel-icon);
-	font-size: 16px;
+	color: var(--text-muted);
+	font-size: 14px;
 	font-weight: 500;
+	line-height: 20px;
+	min-width: 0;
+	flex: 1;
+	background: transparent;
 	transition:
 		background 0.1s ease,
 		color 0.1s ease;
 }
 
 .channel:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 	color: var(--interactive-hover);
 }
 
 .channel.selected {
-	background: var(--background-modifier-selected);
+	background: var(--selected-overlay);
 	color: var(--interactive-active);
 }
 
 .channelIcon {
 	flex-shrink: 0;
-	width: 20px;
-	height: 20px;
+	width: 18px;
+	height: 18px;
+	display: block;
 }
 
 .channelName {
+	flex: 1;
+	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+}
+
+.channelActions {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	width: auto;
+	justify-content: flex-end;
+	flex-shrink: 0;
+	opacity: 0;
+	pointer-events: none;
+	position: absolute;
+	right: 6px;
+	top: 50%;
+	transform: translateY(-50%);
+}
+
+.channelActions button {
+	width: 24px;
+	height: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: var(--radius-sm);
+	color: var(--interactive-default);
+	transition: background 0.15s ease, color 0.15s ease;
+}
+
+.channelActions svg {
+	width: 16px;
+	height: 16px;
+}
+
+.channelActions button:hover {
+	background: var(--hover-overlay);
+	color: var(--interactive-hover);
+}
+
+.channelRow .channel {
+	padding-right: 56px;
+}
+
+.channelRow:hover .channel,
+.channelRow:focus-within .channel {
+	background: var(--hover-overlay);
+	color: var(--interactive-hover);
+}
+
+.channelRowSelected .channel {
+	background: var(--selected-overlay);
+	color: var(--interactive-active);
+}
+
+.channelRow:hover .channelActions,
+.channelRow:focus-within .channelActions,
+.channelRowSelected .channelActions {
+	opacity: 1;
+	pointer-events: auto;
 }
 
 .empty {
@@ -162,8 +228,8 @@
 	padding: 4px 8px;
 	margin: 2px 0;
 	border-radius: var(--radius-sm);
-	color: var(--channel-icon);
-	font-size: 14px;
+	color: var(--channel-icon-default);
+	font-size: 13px;
 	font-weight: 500;
 	cursor: pointer;
 	transition:
@@ -172,12 +238,12 @@
 }
 
 .thread:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 	color: var(--interactive-hover);
 }
 
 .thread.selected {
-	background: var(--background-modifier-selected);
+	background: var(--selected-overlay);
 	color: var(--interactive-active);
 }
 
@@ -187,8 +253,8 @@
 
 .threadIcon {
 	flex-shrink: 0;
-	width: 16px;
-	height: 16px;
+	width: 14px;
+	height: 14px;
 }
 
 .threadName {
@@ -201,7 +267,7 @@
 .threadCount {
 	font-size: 11px;
 	color: var(--text-muted);
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	padding: 0 4px;
 	border-radius: 4px;
 }
@@ -213,23 +279,6 @@
 
 .channel.unread .channelName {
 	font-weight: 600;
-}
-
-/* Mention badge styles - Discord-like red badge */
-.mentionBadge {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	min-width: 16px;
-	height: 16px;
-	padding: 0 4px;
-	margin-left: auto;
-	background: var(--status-danger);
-	color: white;
-	font-size: 11px;
-	font-weight: 700;
-	border-radius: 8px;
-	flex-shrink: 0;
 }
 
 /* Voice channel styles */
@@ -244,29 +293,30 @@
 	width: 100%;
 	padding: 6px 8px;
 	border-radius: var(--radius-sm);
-	color: var(--channel-icon);
-	font-size: 16px;
+	color: var(--text-muted);
+	font-size: 14px;
 	font-weight: 500;
+	line-height: 20px;
 	transition:
 		background 0.1s ease,
 		color 0.1s ease;
 }
 
 .voiceChannelHeader:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 	color: var(--interactive-hover);
 }
 
-/* Drag and drop styles */
-.dragOverlay {
-	background: var(--background-secondary);
-	border-radius: var(--radius-sm);
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-	opacity: 0.95;
+.userArea {
+	position: absolute;
+	left: calc(-1 * var(--server-list-width) + 10px);
+	right: 8px;
+	bottom: 8px;
+	z-index: 2;
 }
 
-.dragOverlay .channel,
-.dragOverlay .voiceChannelHeader,
-.dragOverlay .categoryHeader {
-	background: var(--background-modifier-selected);
+@media (max-width: 1024px) {
+	.userArea {
+		left: 8px;
+	}
 }

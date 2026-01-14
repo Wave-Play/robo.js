@@ -116,12 +116,7 @@ export function verifyBuildNode(context: CodeAgentContext) {
 
 			// Debug event: emit verification detail
 			if (context.debugMode) {
-				context.onEvent?.(createVerificationDetailEvent(
-					'build',
-					result.output,
-					result.exitCode,
-					durationMs
-				))
+				context.onEvent?.(createVerificationDetailEvent('build', result.output, result.exitCode, durationMs))
 			}
 
 			return {
@@ -170,10 +165,7 @@ export function verifyBuildNode(context: CodeAgentContext) {
  * Determine the build command to use
  * Returns null if no build is needed (simple projects without build step)
  */
-function determineBuildCommand(
-	state: AgentState,
-	context: CodeAgentContext
-): { cmd: string; args: string[] } | null {
+function determineBuildCommand(state: AgentState, context: CodeAgentContext): { cmd: string; args: string[] } | null {
 	// Check for configured build command in policy
 	if (context.roboConfig?.buildCommand) {
 		return context.roboConfig.buildCommand

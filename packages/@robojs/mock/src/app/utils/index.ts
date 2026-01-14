@@ -1,3 +1,5 @@
 export { formatTimestamp } from './time'
 export { getAvatarUrl } from './avatar'
 export { formatFileSize, constrainDimensions } from './format'
+export { buildStageToken, buildStageWebSocketUrls, parseStageSessionId, normalizeStageSessionId } from './stage-websocket'
+export { getDisplayName } from './display-name'

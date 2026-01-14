@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import type { StageApplicationCommand, StageMessage, StageUser } from '../../types/stage'
-import { useDropdownPosition, DropdownContainer, ListItem, ListItemSeparator } from '../base'
+import { useDropdownPosition, DropdownContainer, ListItem, ListItemSeparator, ListItemHeader } from '../base'
 import styles from './ContextMenu.module.css'
 
 interface ContextMenuProps {
@@ -30,7 +30,6 @@ export function ContextMenu({
 	onMessageUser
 }: ContextMenuProps) {
 	const { dropdownRef, adjustedPosition, isPositioned } = useDropdownPosition({ position })
-	const [showAppsSubmenu, setShowAppsSubmenu] = useState(false)
 
 	// Filter commands by type (2 = USER, 3 = MESSAGE)
 	const contextCommands = commands.filter((cmd) => (type === 'user' ? cmd.type === 2 : cmd.type === 3))
@@ -118,83 +117,50 @@ export function ContextMenu({
 			role="menu"
 			className={styles.menu}
 		>
+			{/* App commands section */}
+			{contextCommands.length > 0 && (
+				<>
+					<ListItemHeader className={styles.menuHeader}>Apps</ListItemHeader>
+					{contextCommands.map((cmd) => (
+						<ListItem
+							key={cmd.id}
+							label={cmd.name}
+							icon={<CommandIcon />}
+							className={styles.menuItem}
+							onClick={() => handleCommandClick(cmd)}
+							role="menuitem"
+						/>
+					))}
+					<ListItemSeparator className={styles.menuSeparator} />
+				</>
+			)}
+
 			{/* Standard Discord actions */}
 			{type === 'message' && (
 				<>
-					{onReply && <ListItem label="Reply" icon={<ReplyIcon />} onClick={handleReply} role="menuitem" />}
+					{onReply && <ListItem label="Reply" icon={<ReplyIcon />} className={styles.menuItem} onClick={handleReply} role="menuitem" />}
 					{onPinMessage && (
 						<ListItem
 							label={isPinned ? 'Unpin Message' : 'Pin Message'}
 							icon={<PinIcon />}
+							className={styles.menuItem}
 							onClick={handlePinMessage}
 							role="menuitem"
 						/>
 					)}
-					{/* Apps submenu */}
-					{contextCommands.length > 0 && (
-						<div
-							className={styles.submenuContainer}
-							onMouseEnter={() => setShowAppsSubmenu(true)}
-							onMouseLeave={() => setShowAppsSubmenu(false)}
-						>
-							<ListItem
-								label="Apps"
-								icon={<AppsIcon />}
-								rightContent={<ChevronIcon />}
-								role="menuitem"
-							/>
-							<div className={`${styles.submenu} ${showAppsSubmenu ? styles.submenuVisible : ''}`}>
-								{contextCommands.map((cmd) => (
-									<ListItem
-										key={cmd.id}
-										label={cmd.name}
-										icon={<CommandIcon />}
-										onClick={() => handleCommandClick(cmd)}
-										role="menuitem"
-									/>
-								))}
-							</div>
-						</div>
-					)}
-					<ListItemSeparator />
-					<ListItem label="Copy Text" icon={<CopyIcon />} onClick={handleCopyText} role="menuitem" />
-					<ListItem label="Copy Message ID" icon={<IdIcon />} onClick={handleCopyId} role="menuitem" />
+					<ListItemSeparator className={styles.menuSeparator} />
+					<ListItem label="Copy Text" icon={<CopyIcon />} className={styles.menuItem} onClick={handleCopyText} role="menuitem" />
+					<ListItem label="Copy Message ID" icon={<IdIcon />} className={styles.menuItem} onClick={handleCopyId} role="menuitem" />
 				</>
 			)}
 
 			{type === 'user' && (
 				<>
 					{onMessageUser && (
-						<ListItem label="Message" icon={<MessageIcon />} onClick={handleMessageUser} role="menuitem" />
+						<ListItem label="Message" icon={<MessageIcon />} className={styles.menuItem} onClick={handleMessageUser} role="menuitem" />
 					)}
-					{/* Apps submenu */}
-					{contextCommands.length > 0 && (
-						<div
-							className={styles.submenuContainer}
-							onMouseEnter={() => setShowAppsSubmenu(true)}
-							onMouseLeave={() => setShowAppsSubmenu(false)}
-						>
-							<ListItem
-								label="Apps"
-								icon={<AppsIcon />}
-								rightContent={<ChevronIcon />}
-								role="menuitem"
-							/>
-							<div className={`${styles.submenu} ${showAppsSubmenu ? styles.submenuVisible : ''}`}>
-								{contextCommands.map((cmd) => (
-									<ListItem
-										key={cmd.id}
-										label={cmd.name}
-										icon={<CommandIcon />}
-										onClick={() => handleCommandClick(cmd)}
-										role="menuitem"
-									/>
-								))}
-							</div>
-						</div>
-					)}
-					<ListItemSeparator />
-					<ListItem label="Copy User ID" icon={<IdIcon />} onClick={handleCopyId} role="menuitem" />
+					<ListItemSeparator className={styles.menuSeparator} />
+					<ListItem label="Copy User ID" icon={<IdIcon />} className={styles.menuItem} onClick={handleCopyId} role="menuitem" />
 				</>
 			)}
 		</DropdownContainer>
@@ -246,22 +212,6 @@ function MessageIcon() {
 	return (
 		<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
 			<path d="M4.79805 3C3.80445 3 2.99805 3.8055 2.99805 4.8V15.6C2.99805 16.5936 3.80445 17.4 4.79805 17.4H7.49805V21L11.098 17.4H19.198C20.1925 17.4 20.998 16.5936 20.998 15.6V4.8C20.998 3.8055 20.1925 3 19.198 3H4.79805Z" />
-		</svg>
-	)
-}
-
-function AppsIcon() {
-	return (
-		<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-			<path d="M6 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM6 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM6 22a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" />
-		</svg>
-	)
-}
-
-function ChevronIcon() {
-	return (
-		<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-			<path d="M9.29 6.71a1 1 0 0 0 0 1.41L13.17 12l-3.88 3.88a1 1 0 1 0 1.41 1.41l4.59-4.59a1 1 0 0 0 0-1.41l-4.59-4.59a1 1 0 0 0-1.41 0Z" />
 		</svg>
 	)
 }

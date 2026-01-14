@@ -3,7 +3,7 @@
 }
 
 .withDivider {
-	border-top: 1px solid var(--background-modifier-accent);
+	border-top: 1px solid var(--accent-overlay);
 }
 
 .noDivider {

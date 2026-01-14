@@ -417,9 +417,7 @@ describe('MockRunner', () => {
 
 			await runner.stop(session)
 
-			const endEvent = events.find(
-				(e) => e.type === 'mock' && (e as any).event.type === 'session_end'
-			)
+			const endEvent = events.find((e) => e.type === 'mock' && (e as any).event.type === 'session_end')
 			expect(endEvent).toBeDefined()
 		})
 	})

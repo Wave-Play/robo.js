@@ -164,9 +164,7 @@ describe('McpToolAdapter', () => {
 				},
 				execute: mockExecute({
 					proposedChanges: {
-						changes: [
-							{ path: '/src/test.ts', type: 'create', content: 'console.log("test")' }
-						]
+						changes: [{ path: '/src/test.ts', type: 'create', content: 'console.log("test")' }]
 					}
 					// No notes - so approvalReason falls back to serverId-based message
 				})
@@ -239,18 +237,15 @@ describe('McpToolAdapter', () => {
 			const adapted = adaptMcpTools(tools)
 
 			expect(adapted).toHaveLength(3)
-			expect(adapted.map(t => t.name)).toEqual(['server1__tool1', 'server1__tool2', 'server2__tool1'])
+			expect(adapted.map((t) => t.name)).toEqual(['server1__tool1', 'server1__tool2', 'server2__tool1'])
 		})
 
 		it('should apply options to all tools', () => {
-			const tools = [
-				createMockMcpTool({ name: 'tool1' }),
-				createMockMcpTool({ name: 'tool2' })
-			]
+			const tools = [createMockMcpTool({ name: 'tool1' }), createMockMcpTool({ name: 'tool2' })]
 
 			const adapted = adaptMcpTools(tools, { namePrefix: 'mcp_' })
 
-			expect(adapted.map(t => t.name)).toEqual(['mcp_tool1', 'mcp_tool2'])
+			expect(adapted.map((t) => t.name)).toEqual(['mcp_tool1', 'mcp_tool2'])
 		})
 	})
 
@@ -260,10 +255,7 @@ describe('McpToolAdapter', () => {
 				register: jest.fn()
 			}
 
-			const tools = [
-				createMockMcpTool({ name: 'tool1' }),
-				createMockMcpTool({ name: 'tool2' })
-			]
+			const tools = [createMockMcpTool({ name: 'tool1' }), createMockMcpTool({ name: 'tool2' })]
 
 			registerMcpTools(mockRegistry, tools)
 
@@ -279,9 +271,7 @@ describe('McpToolAdapter', () => {
 
 			registerMcpTools(mockRegistry, tools, { namePrefix: 'mcp_' })
 
-			expect(mockRegistry.register).toHaveBeenCalledWith(
-				expect.objectContaining({ name: 'mcp_tool1' })
-			)
+			expect(mockRegistry.register).toHaveBeenCalledWith(expect.objectContaining({ name: 'mcp_tool1' }))
 		})
 	})
 })

@@ -1,0 +1,51 @@
+.bar {
+	height: 48px;
+	min-height: 48px;
+	padding: 0 16px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	border-bottom: 1px solid var(--accent-overlay);
+	background: var(--main-chat-background);
+}
+
+.left {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-width: 0;
+}
+
+.name {
+	font-size: 14px;
+	font-weight: 500;
+	color: var(--text-hover);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.right {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.search {
+	width: 220px;
+}
+
+.search input {
+	border-radius: 8px;
+	border: 1px solid var(--accent-overlay);
+	background: var(--card-background);
+	padding: 0 34px 0 12px;
+}
+
+.profileActive {
+	background: transparent;
+	box-shadow: none;
+	color: var(--text-hover);
+}
+
+

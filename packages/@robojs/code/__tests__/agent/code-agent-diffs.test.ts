@@ -41,10 +41,12 @@ function createMockLLM(): LLMProvider {
 			toolCalls: [],
 			finishReason: 'stop' as const
 		})),
-		stream: jest.fn(() => (async function* () {
-			yield { type: 'text' as const, text: 'Done' }
-			yield { type: 'done' as const, finishReason: 'stop' as const }
-		})())
+		stream: jest.fn(() =>
+			(async function* () {
+				yield { type: 'text' as const, text: 'Done' }
+				yield { type: 'done' as const, finishReason: 'stop' as const }
+			})()
+		)
 	} as unknown as LLMProvider
 }
 
@@ -59,7 +61,11 @@ function createMockToolRegistry(): ToolRegistry {
 	} as unknown as ToolRegistry
 }
 
-function createMockToolExecutor(registry: ToolRegistry, provider: ExecutionProvider, policy: AgentPolicy): ToolExecutor {
+function createMockToolExecutor(
+	registry: ToolRegistry,
+	provider: ExecutionProvider,
+	policy: AgentPolicy
+): ToolExecutor {
 	// Use the real executor so CodeAgent can safely fork per-run instances.
 	// These tests don't execute tools, but they do require a valid ToolExecutor.
 	return new ToolExecutor(registry, {
@@ -244,8 +250,8 @@ describe('CodeAgent', () => {
 
 			const runs = await agent.listRunsWithMeta()
 			expect(runs.length).toBe(2)
-			expect(runs.some(r => r.runId === id1)).toBe(true)
-			expect(runs.some(r => r.runId === id2)).toBe(true)
+			expect(runs.some((r) => r.runId === id1)).toBe(true)
+			expect(runs.some((r) => r.runId === id2)).toBe(true)
 		})
 
 		it('should filter by mode', async () => {
@@ -276,9 +282,9 @@ describe('CodeAgent', () => {
 
 			const { runId: id1 } = await agent.start({ input: 'First' })
 			// Small delay to ensure different timestamps
-			await new Promise(resolve => setTimeout(resolve, 10))
+			await new Promise((resolve) => setTimeout(resolve, 10))
 			const { runId: id2 } = await agent.start({ input: 'Second' })
-			await new Promise(resolve => setTimeout(resolve, 10))
+			await new Promise((resolve) => setTimeout(resolve, 10))
 			const { runId: id3 } = await agent.start({ input: 'Third' })
 
 			const runs = await agent.listRunsWithMeta()

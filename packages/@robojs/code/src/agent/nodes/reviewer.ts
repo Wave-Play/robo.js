@@ -118,10 +118,10 @@ export function reviewerNode(context: CodeAgentContext) {
 			reason: decision.needsBuild
 				? 'Build verification needed'
 				: decision.needsTests
-					? 'Test verification needed'
-					: decision.needsMock
-						? 'Mock verification needed'
-						: 'More work needed'
+				? 'Test verification needed'
+				: decision.needsMock
+				? 'Mock verification needed'
+				: 'More work needed'
 		})
 
 		return {

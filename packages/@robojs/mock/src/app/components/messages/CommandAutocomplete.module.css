@@ -5,17 +5,21 @@
 	margin-bottom: 8px;
 	display: flex;
 	flex-direction: column;
+	border: 1px solid var(--accent-overlay);
 }
 
 .header {
-	padding: 12px 16px 8px;
-	border-bottom: 1px solid var(--background-modifier-accent);
+	padding: 10px 16px 8px;
+	border-bottom: 1px solid var(--accent-overlay);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	font-size: 11px;
 }
 
 .commandList {
 	overflow-y: auto;
 	max-height: 300px;
-	padding: 8px;
+	padding: 6px;
 }
 
 .commandIcon {
@@ -25,12 +29,12 @@
 	width: 32px;
 	height: 32px;
 	border-radius: var(--radius-sm);
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	color: white;
 }
 
 .empty {
-	padding: 16px;
+	padding: 20px;
 	text-align: center;
 	color: var(--text-muted);
 	font-size: 14px;
@@ -42,7 +46,7 @@
 	align-items: center;
 	gap: 8px;
 	padding: 12px 16px;
-	border-bottom: 1px solid var(--background-modifier-accent);
+	border-bottom: 1px solid var(--accent-overlay);
 }
 
 .backButton {
@@ -53,14 +57,14 @@
 	height: 24px;
 	background: none;
 	border: none;
-	color: var(--interactive-normal);
+	color: var(--interactive-default);
 	cursor: pointer;
 	border-radius: var(--radius-sm);
 	padding: 0;
 }
 
 .backButton:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 	color: var(--interactive-hover);
 }
 
@@ -71,14 +75,14 @@
 	width: 24px;
 	height: 24px;
 	border-radius: var(--radius-sm);
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	color: white;
 }
 
 .commandName {
 	font-size: 16px;
 	font-weight: 600;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 }
 
 .commandDescription {
@@ -103,14 +107,14 @@
 	display: flex;
 	justify-content: flex-end;
 	padding: 12px 16px;
-	border-top: 1px solid var(--background-modifier-accent);
+	border-top: 1px solid var(--accent-overlay);
 }
 
 .submitButton {
 	padding: 8px 16px;
 	font-size: 14px;
 	font-weight: 500;
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	color: white;
 	border: none;
 	border-radius: var(--radius-xs);
@@ -119,7 +123,7 @@
 }
 
 .submitButton:hover:not(.disabled) {
-	background: var(--brand-560);
+	background: var(--brand-dark);
 }
 
 .submitButton.disabled {

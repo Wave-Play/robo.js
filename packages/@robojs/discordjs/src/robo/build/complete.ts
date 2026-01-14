@@ -102,7 +102,7 @@ function getCommandHashKey(guildId: string | undefined): string {
 export default async function (context: BuildCompleteContext) {
 	const { entries, mode, store, registerMetadataAggregator } = context
 	const discordConfig = context.config as unknown as DiscordConfig | undefined
-	const envData = Env.data()
+	const envData = Env.data() ?? {}
 
 	// Register metadata aggregator for discordjs namespace
 	registerMetadataAggregator<DiscordjsAggregatedMetadata>('discordjs', (handlerEntries, pluginDefaults) => {
@@ -168,9 +168,15 @@ export default async function (context: BuildCompleteContext) {
 	}
 
 	// Get credentials
-	const clientId = envData.DISCORD_CLIENT_ID!
-	const token = envData.DISCORD_TOKEN!
-	const guildId = envData.DISCORD_GUILD_ID ?? discordConfig?.testServers?.[0]
+	// Fallback to process.env for tools like Doppler that inject directly
+	const clientId = envData.DISCORD_CLIENT_ID ?? process.env.DISCORD_CLIENT_ID
+	const token = envData.DISCORD_TOKEN ?? process.env.DISCORD_TOKEN
+	const guildId = envData.DISCORD_GUILD_ID ?? process.env.DISCORD_GUILD_ID ?? discordConfig?.testServers?.[0]
+
+	if (!clientId || !token) {
+		discordLogger.warn('Cannot register commands: missing DISCORD_CLIENT_ID or DISCORD_TOKEN')
+		return
+	}
 	const scope = guildId ? `guild ${guildId}` : 'global'
 
 	// Compute hash from manifest data (includes credentials to detect bot changes)

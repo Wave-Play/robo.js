@@ -3,7 +3,7 @@
 	bottom: 60px;
 	left: 8px;
 	right: 8px;
-	background: var(--background-floating);
+	background: var(--modal-background);
 	border-radius: var(--radius-md);
 	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 	z-index: 100;
@@ -12,13 +12,13 @@
 
 .header {
 	padding: 12px;
-	border-bottom: 1px solid var(--background-modifier-accent);
+	border-bottom: 1px solid var(--accent-overlay);
 }
 
 .title {
 	font-size: 12px;
 	font-weight: 700;
-	color: var(--header-secondary);
+	color: var(--header-text-secondary);
 	text-transform: uppercase;
 	letter-spacing: 0.02em;
 }
@@ -47,11 +47,11 @@
 }
 
 .userItem:hover:not(:disabled) {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .userItem.current {
-	background: var(--background-modifier-selected);
+	background: var(--selected-overlay);
 }
 
 .userItem:disabled {
@@ -79,7 +79,7 @@
 	width: 12px;
 	height: 12px;
 	border-radius: 50%;
-	border: 2px solid var(--background-floating);
+	border: 2px solid var(--modal-background);
 }
 
 .status.online {
@@ -108,7 +108,7 @@
 .username {
 	font-size: 14px;
 	font-weight: 500;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -120,6 +120,6 @@
 }
 
 .checkIcon {
-	color: var(--brand-500);
+	color: var(--brand-primary);
 	flex-shrink: 0;
 }

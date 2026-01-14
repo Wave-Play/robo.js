@@ -5,6 +5,10 @@
 	width: 420px;
 	display: flex;
 	flex-direction: column;
+	background: var(--dropdown-background);
+	border-radius: var(--radius-md);
+	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.24);
+	overflow: hidden;
 }
 
 .header {
@@ -18,13 +22,13 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	color: var(--interactive-normal);
+	color: var(--interactive-default);
 }
 
 .headerTitle {
 	font-size: 20px;
 	font-weight: 600;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 	margin: 0;
 }
 
@@ -40,8 +44,8 @@
 	align-items: flex-start;
 	gap: 12px;
 	padding: 12px;
-	background: var(--background-secondary-alt);
-	border: 1px solid var(--background-modifier-accent);
+	background: var(--secondary-divider);
+	border: 1px solid var(--accent-overlay);
 	border-radius: var(--radius-md);
 }
 
@@ -68,7 +72,7 @@
 .username {
 	font-size: 16px;
 	font-weight: 600;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 }
 
 .timestamp {
@@ -78,7 +82,7 @@
 
 .messageText {
 	font-size: 14px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 	line-height: 1.4;
 }
 
@@ -91,10 +95,10 @@
 
 .jumpButton {
 	padding: 6px 16px;
-	background: var(--background-modifier-accent);
+	background: var(--accent-overlay);
 	border: none;
 	border-radius: var(--radius-sm);
-	color: var(--text-normal);
+	color: var(--text-bright);
 	font-size: 14px;
 	font-weight: 500;
 	cursor: pointer;
@@ -102,7 +106,7 @@
 }
 
 .jumpButton:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .closeButton {
@@ -111,16 +115,16 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: var(--background-modifier-accent);
+	background: var(--accent-overlay);
 	border: none;
 	border-radius: var(--radius-sm);
-	color: var(--text-normal);
+	color: var(--text-bright);
 	cursor: pointer;
 	transition: background 0.15s ease;
 }
 
 .closeButton:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 /* Empty state */
@@ -142,7 +146,7 @@
 .sadFace {
 	width: 80px;
 	height: 80px;
-	background: var(--background-secondary);
+	background: #4e5058;
 	border-radius: 50%;
 	display: flex;
 	align-items: center;
@@ -160,7 +164,7 @@
 .eye {
 	width: 8px;
 	height: 8px;
-	background: var(--background-floating);
+	background: #1e1f22;
 	border-radius: 50%;
 }
 
@@ -169,7 +173,7 @@
 	bottom: 22px;
 	width: 24px;
 	height: 12px;
-	border: 3px solid var(--background-floating);
+	border: 3px solid #1e1f22;
 	border-top: none;
 	border-radius: 0 0 24px 24px;
 	transform: rotate(180deg);
@@ -180,7 +184,7 @@
 	top: -8px;
 	right: -4px;
 	transform: rotate(45deg);
-	color: var(--interactive-muted);
+	color: var(--status-positive);
 }
 
 .emptyText {
@@ -193,7 +197,7 @@
 
 .footer {
 	padding: 16px;
-	background: var(--background-tertiary);
+	background: #232428;
 	text-align: center;
 }
 

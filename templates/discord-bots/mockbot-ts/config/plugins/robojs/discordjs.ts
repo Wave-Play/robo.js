@@ -1,7 +1,7 @@
-import { DiscordConfig } from "@robojs/discordjs";
+import type { DiscordConfig } from "@robojs/discordjs";
 
 export default {
     clientOptions: {
-        intents: ['Guilds', 'GuildMessages']
+        intents: ["Guilds", "GuildMessages"]
     }
-} satisfies DiscordConfig
+} satisfies DiscordConfig;

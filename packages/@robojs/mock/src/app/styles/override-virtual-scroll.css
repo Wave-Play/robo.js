@@ -1,0 +1,56 @@
+/* ====================================================================
+   NUCLEAR OPTION: Force Override Virtual Scrolling Inline Styles
+   ==================================================================== */
+
+/* Target any div with virtualContainer in the class name */
+div[class*="virtualContainer"] {
+	height: auto !important;
+	position: relative !important;
+}
+
+/* Force all children to NOT use absolute positioning */
+div[class*="virtualContainer"] > div[style*="position: absolute"] {
+	position: relative !important;
+	top: auto !important;
+	left: auto !important;
+	right: auto !important;
+	margin-top: 0 !important;
+}
+
+/* Same for messageList */
+div[class*="messageList"] > div[style*="position: absolute"] {
+	position: relative !important;
+	top: auto !important;
+	left: auto !important;
+	right: auto !important;
+	margin-top: 0 !important;
+}
+
+/* Target the specific generated class names from CSS modules */
+._virtualContainer_y6gv3_313,
+._virtualContainer_y6gv3_157 {
+	height: auto !important;
+	position: relative !important;
+}
+
+._virtualContainer_y6gv3_313 > div[style*="position"],
+._virtualContainer_y6gv3_157 > div[style*="position"] {
+	position: relative !important;
+	top: auto !important;
+	left: auto !important;
+	right: auto !important;
+}
+
+/* Ensure messages stack naturally */
+div[class*="_message_"] {
+	position: relative !important;
+	margin: 0 !important;
+}
+
+/* Override ANY div with inline position: absolute inside messages container */
+div[class*="messages"] div[style*="position: absolute"] {
+	position: relative !important;
+	top: auto !important;
+	left: auto !important;
+	right: auto !important;
+}

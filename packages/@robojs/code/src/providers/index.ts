@@ -23,5 +23,17 @@ export {
 } from './webcontainer/index.js'
 
 // Shared utilities
-export { normalizePath, hasTraversalAttempt, validatePath, matchesDenyPath, validatePathWithPolicy } from './utils/path.js'
-export { TerminalBuffer, TerminalBufferManager, type TruncationEvent, type TerminalBufferStats, type AggregateBufferStats } from './utils/buffer.js'
+export {
+	normalizePath,
+	hasTraversalAttempt,
+	validatePath,
+	matchesDenyPath,
+	validatePathWithPolicy
+} from './utils/path.js'
+export {
+	TerminalBuffer,
+	TerminalBufferManager,
+	type TruncationEvent,
+	type TerminalBufferStats,
+	type AggregateBufferStats
+} from './utils/buffer.js'

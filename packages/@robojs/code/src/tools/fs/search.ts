@@ -68,9 +68,7 @@ export const fsSearchTool: ToolDefinition<FsSearchInput, FsSearchOutput> = {
 			})
 
 			// Filter out deny paths at tool layer (policy enforcement)
-			const filteredResults = searchResults.filter(
-				(result) => !matchesDenyPath(result.path, denyPaths)
-			)
+			const filteredResults = searchResults.filter((result) => !matchesDenyPath(result.path, denyPaths))
 
 			const results: SearchEntry[] = filteredResults.map((result) => ({
 				path: result.path,

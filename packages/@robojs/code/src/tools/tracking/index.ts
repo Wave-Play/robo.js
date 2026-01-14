@@ -11,9 +11,4 @@ export {
 	type CurrentFileState
 } from './file-tracker.js'
 
-export {
-	FileSummarizer,
-	createFileSummarizer,
-	type FileSummary,
-	type OutlineSymbol
-} from './file-summarizer.js'
+export { FileSummarizer, createFileSummarizer, type FileSummary, type OutlineSymbol } from './file-summarizer.js'

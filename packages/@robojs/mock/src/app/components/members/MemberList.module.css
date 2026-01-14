@@ -1,9 +1,9 @@
 .container {
 	width: var(--member-list-width);
-	background: var(--background-secondary);
+	background: var(--sidebar-left-background);
 	overflow-y: auto;
 	padding: 24px 8px;
-	border: 1px solid var(--background-modifier-accent);
+	border-right: 1px solid var(--accent-overlay);
 }
 
 .group {
@@ -16,7 +16,7 @@
 	font-size: 12px;
 	font-weight: 600;
 	text-transform: uppercase;
-	color: var(--channel-icon);
+	color: var(--channel-icon-default);
 }
 
 .member {
@@ -31,7 +31,7 @@
 }
 
 .member:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 }
 
 .avatar {
@@ -52,7 +52,7 @@
 	width: 100%;
 	height: 100%;
 	border-radius: 50%;
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -68,7 +68,7 @@
 	width: 12px;
 	height: 12px;
 	border-radius: 50%;
-	border: 3px solid var(--background-secondary);
+	border: 3px solid var(--sidebar-left-background);
 }
 
 .statusDot.online {
@@ -98,7 +98,7 @@
 	gap: 4px;
 	font-size: 14px;
 	font-weight: 500;
-	color: var(--channel-icon);
+	color: var(--channel-icon-default);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -113,7 +113,7 @@
 }
 
 .name.bot:not([style]) {
-	color: var(--text-normal);
+	color: var(--text-bright);
 }
 
 .botTag {
@@ -122,7 +122,7 @@
 	gap: 2px;
 	padding: 0 4px;
 	height: 14px;
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	border-radius: var(--radius-xs);
 	font-size: 10px;
 	font-weight: 500;

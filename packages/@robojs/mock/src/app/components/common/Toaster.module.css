@@ -14,7 +14,7 @@
 	align-items: center;
 	gap: 12px;
 	padding: 12px 16px;
-	background: var(--background-floating);
+	background: var(--modal-background);
 	border-radius: 8px;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 	min-width: 280px;
@@ -44,7 +44,7 @@
 .message {
 	flex: 1;
 	font-size: 14px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 	line-height: 1.4;
 }
 
@@ -56,20 +56,20 @@
 	padding: 4px;
 	background: none;
 	border: none;
-	color: var(--interactive-normal);
+	color: var(--interactive-default);
 	cursor: pointer;
 	border-radius: 4px;
 	transition: background 0.15s ease, color 0.15s ease;
 }
 
 .dismiss:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 	color: var(--interactive-hover);
 }
 
 /* Toast type colors */
 .info .icon {
-	color: var(--brand-500);
+	color: var(--brand-primary);
 }
 
 .success .icon {
@@ -97,7 +97,7 @@
 }
 
 .info {
-	border-left: 3px solid var(--brand-500);
+	border-left: 3px solid var(--brand-primary);
 }
 
 /* Responsive */

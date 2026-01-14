@@ -18,7 +18,7 @@
 
 .banner {
 	height: 60px;
-	background: linear-gradient(135deg, var(--brand-500) 0%, var(--brand-560) 100%);
+	background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-dark) 100%);
 }
 
 .avatarContainer {
@@ -33,8 +33,8 @@
 	width: 80px;
 	height: 80px;
 	border-radius: 50%;
-	border: 6px solid var(--background-floating);
-	background: var(--background-secondary);
+	border: 6px solid var(--modal-background);
+	background: var(--sidebar-left-background);
 }
 
 .avatarImage {
@@ -48,7 +48,7 @@
 	width: 100%;
 	height: 100%;
 	border-radius: 50%;
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -64,7 +64,7 @@
 	width: 20px;
 	height: 20px;
 	border-radius: 50%;
-	border: 4px solid var(--background-floating);
+	border: 4px solid var(--modal-background);
 }
 
 .statusDot.online {
@@ -98,12 +98,12 @@
 	margin: 0;
 	font-size: 20px;
 	font-weight: 600;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 }
 
 .botTag {
 	padding: 2px 6px;
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	border-radius: var(--radius-xs);
 	font-size: 10px;
 	font-weight: 600;
@@ -113,12 +113,12 @@
 .username {
 	margin: 4px 0 0;
 	font-size: 14px;
-	color: var(--header-secondary);
+	color: var(--header-text-secondary);
 }
 
 .divider {
 	height: 1px;
-	background: var(--background-modifier-accent);
+	background: var(--accent-overlay);
 	margin: 12px 0;
 }
 
@@ -135,13 +135,13 @@
 	font-size: 12px;
 	font-weight: 700;
 	text-transform: uppercase;
-	color: var(--header-secondary);
+	color: var(--header-text-secondary);
 }
 
 .sectionValue {
 	margin: 0;
 	font-size: 14px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 }
 
 .roles {
@@ -155,7 +155,7 @@
 	align-items: center;
 	gap: 4px;
 	padding: 4px 8px;
-	background: var(--background-secondary);
+	background: var(--sidebar-left-background);
 	border-radius: var(--radius-sm);
 }
 
@@ -169,7 +169,7 @@
 .roleName {
 	font-size: 12px;
 	font-weight: 500;
-	color: var(--text-normal);
+	color: var(--text-bright);
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;

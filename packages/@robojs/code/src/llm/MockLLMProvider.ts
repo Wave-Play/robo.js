@@ -5,13 +5,7 @@
  * Use this to test agent behavior without calling real LLM APIs.
  */
 
-import type {
-	LLMProvider,
-	ChatRequest,
-	ChatResponse,
-	StreamChunk,
-	ToolCall
-} from '../types/llm.js'
+import type { LLMProvider, ChatRequest, ChatResponse, StreamChunk, ToolCall } from '../types/llm.js'
 
 /**
  * Mock response configuration
@@ -182,8 +176,7 @@ export class MockLLMProvider implements LLMProvider {
 		}))
 
 		// Determine finish reason
-		const finishReason =
-			mockResponse.finishReason ?? (toolCalls && toolCalls.length > 0 ? 'tool_calls' : 'stop')
+		const finishReason = mockResponse.finishReason ?? (toolCalls && toolCalls.length > 0 ? 'tool_calls' : 'stop')
 
 		return {
 			id: `mock_response_${this.callHistory.length}`,

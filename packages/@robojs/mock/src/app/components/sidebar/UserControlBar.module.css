@@ -1,0 +1,95 @@
+.container {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	position: relative;
+}
+
+.identity {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex: 1;
+	min-width: 0;
+	padding: 8px 10px 8px 0;
+	border-radius: var(--radius-sm);
+	transition: background 0.1s ease;
+}
+
+.identity:disabled {
+	cursor: not-allowed;
+	opacity: 0.7;
+}
+
+.identity:hover:not(:disabled) {
+	background: var(--hover-overlay);
+}
+
+.avatarWrapper {
+	position: relative;
+	width: 34px;
+	height: 34px;
+	flex-shrink: 0;
+}
+
+.avatar,
+.avatarPlaceholder {
+	width: 34px;
+	height: 34px;
+	border-radius: 50%;
+	background: var(--card-background);
+	object-fit: cover;
+}
+
+.status {
+	position: absolute;
+	bottom: -2px;
+	right: -2px;
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	border: 3px solid var(--sidebar-left-background);
+}
+
+.status.online {
+	background: var(--status-online);
+}
+
+.status.idle {
+	background: var(--status-idle);
+}
+
+.status.dnd {
+	background: var(--status-dnd);
+}
+
+.status.offline {
+	background: var(--status-offline);
+}
+
+.userInfo {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.username {
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--header-text-primary);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.statusText {
+	font-size: 11px;
+	color: var(--text-muted);
+	text-transform: capitalize;
+}
+
+.actions {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}

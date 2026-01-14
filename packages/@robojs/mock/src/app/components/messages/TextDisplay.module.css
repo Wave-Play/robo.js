@@ -1,6 +1,6 @@
 .textDisplay {
 	font-size: 14px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 	line-height: 1.375;
 	word-wrap: break-word;
 }

@@ -3,8 +3,9 @@
 	flex-direction: row;
 	gap: 24px;
 	padding: 16px;
-	overflow-x: auto;
+	overflow: auto;
 	height: 100%;
+	align-items: flex-start;
 }
 
 .section {
@@ -12,9 +13,9 @@
 	min-width: 200px;
 	max-width: 280px;
 	padding: 12px;
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	border-radius: var(--radius-md);
-	border: 1px solid var(--background-accent);
+	border: 1px solid var(--accent-background);
 }
 
 .sectionTitle {
@@ -24,7 +25,7 @@
 	margin: 0 0 8px 0;
 	font-size: 13px;
 	font-weight: 600;
-	color: var(--text-normal);
+	color: var(--text-bright);
 }
 
 .description {
@@ -39,7 +40,7 @@
 	align-items: center;
 	gap: 6px;
 	padding: 8px 12px;
-	background: var(--brand-500);
+	background: var(--brand-primary);
 	border-radius: var(--radius-sm);
 	font-size: 12px;
 	font-weight: 500;
@@ -48,13 +49,24 @@
 }
 
 .actionButton:hover {
-	background: var(--brand-560);
+	background: var(--brand-dark);
 }
 
 .buttonGroup {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 6px;
+}
+
+.buttonGroupStack {
+	flex-direction: column;
+	flex-wrap: nowrap;
+	align-items: stretch;
+}
+
+.buttonGroupStack .actionButton {
+	justify-content: flex-start;
+	width: 100%;
 }
 
 .toastButton {
@@ -71,28 +83,28 @@
 }
 
 .toastButton.info {
-	background: var(--brand-500);
+	background: var(--brand-primary);
 }
 
 .toastButton.success {
-	background: var(--green-500);
+	background: var(--green-dark);
 }
 
 .toastButton.warning {
-	background: var(--yellow-500);
-	color: var(--background-primary);
+	background: var(--yellow-medium);
+	color: var(--main-chat-background);
 }
 
 .toastButton.error {
-	background: var(--red-500);
+	background: var(--red-medium);
 }
 
 .skeletonPreview {
 	margin-top: 12px;
 	padding: 12px;
-	background: var(--background-primary);
+	background: var(--main-chat-background);
 	border-radius: var(--radius-sm);
-	border: 1px solid var(--background-accent);
+	border: 1px solid var(--accent-background);
 }
 
 .previewSection {
@@ -124,7 +136,7 @@
 	justify-content: space-between;
 	gap: 12px;
 	font-size: 12px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 }
 
 .toggleButton {
@@ -143,26 +155,26 @@
 }
 
 .toggleButton.enabled {
-	background: var(--green-500);
+	background: var(--green-dark);
 	color: white;
-	border: 1px solid var(--green-560);
+	border: 1px solid var(--green-darker);
 	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .toggleButton.enabled:hover {
-	background: var(--green-560);
-	border-color: var(--green-600, #3ba55c);
+	background: var(--green-darker);
+	border-color: var(--green-darker, #3ba55c);
 }
 
 .toggleButton.disabled {
-	background: var(--background-modifier-accent);
+	background: var(--accent-overlay);
 	color: var(--text-muted);
-	border: 1px solid var(--background-modifier-accent);
+	border: 1px solid var(--accent-overlay);
 }
 
 .toggleButton.disabled:hover {
-	background: var(--background-modifier-hover);
-	color: var(--text-normal);
+	background: var(--hover-overlay);
+	color: var(--text-bright);
 }
 
 .toggleIcon {
@@ -181,7 +193,7 @@
 	border: 1px solid rgba(237, 66, 69, 0.3);
 	border-radius: var(--radius-sm);
 	font-size: 11px;
-	color: var(--red-400);
+	color: var(--red-light);
 	line-height: 1.4;
 }
 
@@ -193,23 +205,23 @@
 	gap: 12px;
 	margin-bottom: 8px;
 	font-size: 12px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 }
 
 .inputRow input[type="number"] {
 	width: 70px;
 	padding: 6px 8px;
 	border-radius: var(--radius-sm);
-	background: var(--background-primary);
-	border: 1px solid var(--background-accent);
-	color: var(--text-normal);
+	background: var(--main-chat-background);
+	border: 1px solid var(--accent-background);
+	color: var(--text-bright);
 	font-size: 12px;
 	text-align: center;
 }
 
 .inputRow input[type="number"]:focus {
 	outline: none;
-	border-color: var(--brand-500);
+	border-color: var(--brand-primary);
 }
 
 .selectRow {
@@ -219,7 +231,7 @@
 	gap: 12px;
 	margin-bottom: 8px;
 	font-size: 12px;
-	color: var(--text-normal);
+	color: var(--text-bright);
 }
 
 .selectRow select {
@@ -227,16 +239,16 @@
 	max-width: 140px;
 	padding: 6px 8px;
 	border-radius: var(--radius-sm);
-	background: var(--background-primary);
-	border: 1px solid var(--background-accent);
-	color: var(--text-normal);
+	background: var(--main-chat-background);
+	border: 1px solid var(--accent-background);
+	color: var(--text-bright);
 	font-size: 12px;
 	cursor: pointer;
 }
 
 .selectRow select:focus {
 	outline: none;
-	border-color: var(--brand-500);
+	border-color: var(--brand-primary);
 }
 
 /* Active indicator for rate limit */
@@ -249,7 +261,7 @@
 	background: rgba(250, 166, 26, 0.1);
 	border: 1px solid rgba(250, 166, 26, 0.3);
 	border-radius: var(--radius-sm);
-	color: var(--yellow-400, #faa61a);
+	color: var(--yellow-medium, #faa61a);
 	font-size: 11px;
 	line-height: 1.4;
 }
@@ -258,7 +270,7 @@
 	width: 8px;
 	height: 8px;
 	border-radius: 50%;
-	background: var(--yellow-400, #faa61a);
+	background: var(--yellow-medium, #faa61a);
 	animation: pulse 1.5s ease-in-out infinite;
 }
 

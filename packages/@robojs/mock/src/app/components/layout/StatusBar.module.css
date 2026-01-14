@@ -5,7 +5,7 @@
 	display: flex;
 	align-items: center;
 	gap: 12px;
-	background: var(--background-secondary-alt);
+	background: var(--secondary-divider);
 	font-size: 11px;
 }
 
@@ -22,7 +22,7 @@
 }
 
 .value {
-	color: var(--text-normal);
+	color: var(--text-bright);
 	font-family: var(--font-code);
 }
 
@@ -43,7 +43,7 @@
 .divider {
 	width: 1px;
 	height: 12px;
-	background: var(--background-modifier-accent);
+	background: var(--accent-overlay);
 }
 
 .spacer {

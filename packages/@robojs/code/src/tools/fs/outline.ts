@@ -21,7 +21,19 @@ export type FsOutlineInput = z.infer<typeof fsOutlineSchema>
 /**
  * Symbol types
  */
-export type SymbolType = 'class' | 'interface' | 'function' | 'method' | 'property' | 'const' | 'let' | 'var' | 'type' | 'enum' | 'import' | 'export'
+export type SymbolType =
+	| 'class'
+	| 'interface'
+	| 'function'
+	| 'method'
+	| 'property'
+	| 'const'
+	| 'let'
+	| 'var'
+	| 'type'
+	| 'enum'
+	| 'import'
+	| 'export'
 
 /**
  * Outline symbol
@@ -134,7 +146,8 @@ function detectLanguage(path: string): string {
  */
 export const fsOutlineTool: ToolDefinition<FsOutlineInput, FsOutlineOutput> = {
 	name: 'fs_outline',
-	description: 'Get a structural outline of a file showing classes, functions, exports, etc. Useful for understanding file structure without reading all content.',
+	description:
+		'Get a structural outline of a file showing classes, functions, exports, etc. Useful for understanding file structure without reading all content.',
 	schema: fsOutlineSchema,
 
 	async execute(input: FsOutlineInput, context: ToolContext): Promise<ToolResult<FsOutlineOutput>> {

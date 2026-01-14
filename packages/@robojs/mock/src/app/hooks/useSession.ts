@@ -1,4 +1,5 @@
 import { useSession as useSessionState, useSessionDispatch, useWebSocket, type PendingMessage } from '../stores/sessionStore'
+import { normalizeStageSessionId } from '../utils'
 import type { ModalActionRow } from '../components/modals/Modal'
 import type { StageMessage, StageUser } from '../types/stage'
 
@@ -42,7 +43,7 @@ export function useSession() {
 
 	// Actions
 	const setSessionId = (sessionId: string) => {
-		dispatch({ type: 'SET_SESSION_ID', payload: sessionId })
+		dispatch({ type: 'SET_SESSION_ID', payload: normalizeStageSessionId(sessionId) })
 	}
 
 	const selectGuild = (guildId: string | null) => {
@@ -129,11 +130,60 @@ export function useSession() {
 			throw new Error('No channel selected')
 		}
 
-		return sendCommand('invoke_command', {
+		const normalizedCommandName = commandName.startsWith('/') ? commandName.slice(1) : commandName
+		const interactionUser: StageUser = state.users.find((user) => user.id === 'user_0') || {
+			id: 'user_0',
+			username: 'You',
+			avatar: null
+		}
+		const responseAuthor: StageUser = state.botUser
+			? { ...state.botUser, bot: true }
+			: {
+					id: 'bot_0',
+					username: 'Mock Bot',
+					avatar: null,
+					bot: true
+				}
+		const interactionId = `interaction_${Date.now()}_${Math.random().toString(36).slice(2)}`
+		const responseMessage: StageMessage = {
+			id: `msg_${Date.now()}_${Math.random().toString(36).slice(2)}`,
 			channel_id: targetChannelId,
-			command_name: commandName,
+			guild_id: state.selectedGuildId ?? undefined,
+			author: responseAuthor,
+			content: normalizedCommandName === 'ping' ? 'Pong!' : `Received /${normalizedCommandName}.`,
+			timestamp: new Date().toISOString(),
+			embeds: [],
+			components: [],
+			attachments: [],
+			reactions: [],
+			interaction_metadata: {
+				id: interactionId,
+				type: 2,
+				user: interactionUser
+			},
+			interaction: {
+				id: interactionId,
+				type: 2,
+				name: normalizedCommandName,
+				user: interactionUser
+			}
+		}
+
+		const result = await sendCommand('invoke_command', {
+			channel_id: targetChannelId,
+			command_name: normalizedCommandName,
 			options
 		})
+
+		dispatch({
+			type: 'INJECT_MESSAGES',
+			payload: {
+				channelId: targetChannelId,
+				messages: [responseMessage]
+			}
+		})
+
+		return result
 	}
 
 	// Click a button component
@@ -295,8 +345,8 @@ export function useSession() {
 			throw new Error('No guild selected')
 		}
 
-		// Use provided userId, or fall back to bot user
-		const targetUserId = userId || state.botUser?.id
+		// Use provided userId, or fall back to current user, then bot user
+		const targetUserId = userId || state.currentUser?.id || state.botUser?.id
 
 		return sendCommand('join_voice', {
 			channel_id: channelId,
@@ -312,11 +362,31 @@ export function useSession() {
 			throw new Error('No guild selected')
 		}
 
-		// Use provided userId, or fall back to bot user
-		const targetUserId = userId || state.botUser?.id
+		// Use provided userId, or fall back to current user, then bot user
+		const targetUserId = userId || state.currentUser?.id || state.botUser?.id
 
 		return sendCommand('leave_voice', {
 			guild_id: targetGuildId,
+			user: targetUserId ? { id: targetUserId } : undefined
+		})
+	}
+
+	// Update voice state (mute/deafen) (Phase 5P)
+	const updateVoiceState = async (
+		guildId?: string,
+		updates?: { selfMute?: boolean; selfDeaf?: boolean; userId?: string }
+	) => {
+		const targetGuildId = guildId || state.selectedGuildId
+		if (!targetGuildId) {
+			throw new Error('No guild selected')
+		}
+
+		const targetUserId = updates?.userId || state.currentUser?.id || state.botUser?.id
+
+		return sendCommand('update_voice_state', {
+			guild_id: targetGuildId,
+			self_mute: updates?.selfMute,
+			self_deaf: updates?.selfDeaf,
 			user: targetUserId ? { id: targetUserId } : undefined
 		})
 	}
@@ -382,6 +452,7 @@ export function useSession() {
 		clearFilteredEvents,
 		clearLoopWarning,
 		joinVoice,
-		leaveVoice
+		leaveVoice,
+		updateVoiceState
 	}
 }

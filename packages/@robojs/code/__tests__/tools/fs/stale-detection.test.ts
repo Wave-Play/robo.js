@@ -120,10 +120,7 @@ describe('fs_write stale detection', () => {
 		expect(tracker.hasRead('/src/app.ts')).toBe(true)
 
 		// Write immediately (no external changes)
-		const writeResult = await fsWriteTool.execute(
-			{ path: '/src/app.ts', content: 'new content' },
-			context
-		)
+		const writeResult = await fsWriteTool.execute({ path: '/src/app.ts', content: 'new content' }, context)
 		expect(writeResult.success).toBe(true)
 	})
 
@@ -141,10 +138,7 @@ describe('fs_write stale detection', () => {
 		updateFile('/src/app.ts', 'externally modified content')
 
 		// Try to write - should detect staleness
-		const writeResult = await fsWriteTool.execute(
-			{ path: '/src/app.ts', content: 'my changes' },
-			context
-		)
+		const writeResult = await fsWriteTool.execute({ path: '/src/app.ts', content: 'my changes' }, context)
 
 		expect(writeResult.success).toBe(false)
 		expect(writeResult.errorCode).toBe('STALE_FILE')
@@ -171,10 +165,7 @@ describe('fs_write stale detection', () => {
 		})
 
 		// Try to write - should detect staleness via size
-		const writeResult = await fsWriteTool.execute(
-			{ path: '/src/app.ts', content: 'my changes' },
-			context
-		)
+		const writeResult = await fsWriteTool.execute({ path: '/src/app.ts', content: 'my changes' }, context)
 
 		expect(writeResult.success).toBe(false)
 		expect(writeResult.errorCode).toBe('STALE_FILE')
@@ -187,10 +178,7 @@ describe('fs_write stale detection', () => {
 		const context = createContext(provider, tracker)
 
 		// Write without reading first
-		const writeResult = await fsWriteTool.execute(
-			{ path: '/src/new.ts', content: 'new file content' },
-			context
-		)
+		const writeResult = await fsWriteTool.execute({ path: '/src/new.ts', content: 'new file content' }, context)
 
 		expect(writeResult.success).toBe(true)
 		expect(writeResult.data?.created).toBe(true)
@@ -210,10 +198,7 @@ describe('fs_write stale detection', () => {
 		updateFile('/src/app.ts', 'externally modified content')
 
 		// First write attempt fails
-		const writeResult1 = await fsWriteTool.execute(
-			{ path: '/src/app.ts', content: 'my changes' },
-			context
-		)
+		const writeResult1 = await fsWriteTool.execute({ path: '/src/app.ts', content: 'my changes' }, context)
 		expect(writeResult1.success).toBe(false)
 		expect(writeResult1.errorCode).toBe('STALE_FILE')
 
@@ -240,10 +225,7 @@ describe('fs_write stale detection', () => {
 		expect(tracker.hasRead('/src/app.ts')).toBe(true)
 
 		// Write successfully
-		await fsWriteTool.execute(
-			{ path: '/src/app.ts', content: 'new content' },
-			context
-		)
+		await fsWriteTool.execute({ path: '/src/app.ts', content: 'new content' }, context)
 
 		// Tracker should be cleared for this path
 		expect(tracker.hasRead('/src/app.ts')).toBe(false)
@@ -259,10 +241,7 @@ describe('fs_write stale detection', () => {
 		await fsReadTool.execute({ path: '/src/app.ts' }, context)
 		updateFile('/src/app.ts', 'modified')
 
-		const result = await fsWriteTool.execute(
-			{ path: '/src/app.ts', content: 'attempt' },
-			context
-		)
+		const result = await fsWriteTool.execute({ path: '/src/app.ts', content: 'attempt' }, context)
 
 		expect(result.errorCode).toBe('STALE_FILE')
 		expect(result.recoverable).toBe(true)
@@ -275,10 +254,7 @@ describe('fs_write stale detection', () => {
 		// No fileTracker
 		const context = createContext(provider, undefined)
 
-		const result = await fsWriteTool.execute(
-			{ path: '/src/app.ts', content: 'new content' },
-			context
-		)
+		const result = await fsWriteTool.execute({ path: '/src/app.ts', content: 'new content' }, context)
 
 		expect(result.success).toBe(true)
 	})
@@ -299,10 +275,7 @@ describe('fs_write stale detection', () => {
 		createFile('/src/new.ts', 'created externally')
 
 		// Try to write - should detect file was created
-		const writeResult = await fsWriteTool.execute(
-			{ path: '/src/new.ts', content: 'my content' },
-			context
-		)
+		const writeResult = await fsWriteTool.execute({ path: '/src/new.ts', content: 'my content' }, context)
 
 		expect(writeResult.success).toBe(false)
 		expect(writeResult.errorCode).toBe('STALE_FILE')
@@ -323,10 +296,7 @@ describe('fs_write stale detection', () => {
 		deleteFile('/src/app.ts')
 
 		// Try to write - should detect file was deleted
-		const writeResult = await fsWriteTool.execute(
-			{ path: '/src/app.ts', content: 'my content' },
-			context
-		)
+		const writeResult = await fsWriteTool.execute({ path: '/src/app.ts', content: 'my content' }, context)
 
 		expect(writeResult.success).toBe(false)
 		expect(writeResult.errorCode).toBe('STALE_FILE')
@@ -354,10 +324,7 @@ describe('other read tools snapshot recording', () => {
 		updateFile('/src/a.ts', 'modified')
 
 		// Write should detect staleness
-		const writeResult = await fsWriteTool.execute(
-			{ path: '/src/a.ts', content: 'my changes' },
-			context
-		)
+		const writeResult = await fsWriteTool.execute({ path: '/src/a.ts', content: 'my changes' }, context)
 		expect(writeResult.success).toBe(false)
 		expect(writeResult.errorCode).toBe('STALE_FILE')
 	})
@@ -377,10 +344,7 @@ describe('other read tools snapshot recording', () => {
 		updateFile('/src/app.ts', 'modified')
 
 		// Write should detect staleness
-		const writeResult = await fsWriteTool.execute(
-			{ path: '/src/app.ts', content: 'new' },
-			context
-		)
+		const writeResult = await fsWriteTool.execute({ path: '/src/app.ts', content: 'new' }, context)
 		expect(writeResult.success).toBe(false)
 		expect(writeResult.errorCode).toBe('STALE_FILE')
 	})
@@ -400,10 +364,7 @@ describe('other read tools snapshot recording', () => {
 		updateFile('/src/app.ts', 'modified')
 
 		// Write should detect staleness
-		const writeResult = await fsWriteTool.execute(
-			{ path: '/src/app.ts', content: 'new' },
-			context
-		)
+		const writeResult = await fsWriteTool.execute({ path: '/src/app.ts', content: 'new' }, context)
 		expect(writeResult.success).toBe(false)
 		expect(writeResult.errorCode).toBe('STALE_FILE')
 	})
@@ -423,10 +384,7 @@ describe('other read tools snapshot recording', () => {
 		updateFile('/src/app.ts', 'modified')
 
 		// Write should detect staleness
-		const writeResult = await fsWriteTool.execute(
-			{ path: '/src/app.ts', content: 'new' },
-			context
-		)
+		const writeResult = await fsWriteTool.execute({ path: '/src/app.ts', content: 'new' }, context)
 		expect(writeResult.success).toBe(false)
 		expect(writeResult.errorCode).toBe('STALE_FILE')
 	})

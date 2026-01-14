@@ -5,6 +5,7 @@ This guide covers verification workflows for Robo.js Discord bots.
 ## Overview
 
 When working on Robo.js projects, the agent can verify changes using:
+
 1. **Build Verification**: `robo build` for type checking
 2. **Test Verification**: Standard test runners
 3. **Mock Verification**: `@robojs/mock` for Discord API simulation
@@ -13,12 +14,12 @@ When working on Robo.js projects, the agent can verify changes using:
 
 ```typescript
 const agent = createCodeAgent({
-  provider,
-  llm,
-  robo: {
-    enabled: true,
-    preferMockWhenAvailable: true
-  }
+	provider,
+	llm,
+	robo: {
+		enabled: true,
+		preferMockWhenAvailable: true
+	}
 })
 ```
 
@@ -34,12 +35,12 @@ The agent automatically detects Robo.js projects by checking:
 ```typescript
 // Detection result
 interface ProjectProfile {
-  type: 'robo' | 'node' | 'frontend'
-  hasRobo: boolean
-  hasMock: boolean
-  hasTests: boolean
-  testRunner: 'jest' | 'vitest' | 'mocha' | null
-  packageManager: 'npm' | 'pnpm' | 'yarn'
+	type: 'robo' | 'node' | 'frontend'
+	hasRobo: boolean
+	hasMock: boolean
+	hasTests: boolean
+	testRunner: 'jest' | 'vitest' | 'mocha' | null
+	packageManager: 'npm' | 'pnpm' | 'yarn'
 }
 ```
 
@@ -66,6 +67,7 @@ interface VerificationResult {
 ```
 
 Build errors trigger a retry loop:
+
 1. Agent sees build errors
 2. Reads error messages
 3. Proposes fixes
@@ -75,12 +77,12 @@ Build errors trigger a retry loop:
 
 The agent detects and uses the appropriate test runner:
 
-| Detection | Runner | Command |
-|-----------|--------|---------|
+| Detection        | Runner | Command          |
+| ---------------- | ------ | ---------------- |
 | `vitest` in deps | Vitest | `npx vitest run` |
-| `jest` in deps | Jest | `npx jest` |
-| `mocha` in deps | Mocha | `npx mocha` |
-| `test` script | npm | `npm test` |
+| `jest` in deps   | Jest   | `npx jest`       |
+| `mocha` in deps  | Mocha  | `npx mocha`      |
+| `test` script    | npm    | `npm test`       |
 
 ## Mock Verification
 
@@ -108,16 +110,19 @@ For Discord bots, `@robojs/mock` provides API simulation.
 ### Mock Flow
 
 1. **Start Dev Server**
+
    ```bash
    npx robo dev
    ```
 
 2. **Start Mock Stage**
+
    ```bash
    npx robo mock start
    ```
 
 3. **Run Test Scenarios**
+
    ```typescript
    // Agent calls mock control API
    POST /control/sessions/:id/test
@@ -139,13 +144,13 @@ For Discord bots, `@robojs/mock` provides API simulation.
 4. **Get Results**
    ```typescript
    interface MockVerificationResult {
-     success: boolean
-     scenarios: Array<{
-       description: string
-       passed: boolean
-       error?: string
-       actualOutput?: string
-     }>
+   	success: boolean
+   	scenarios: Array<{
+   		description: string
+   		passed: boolean
+   		error?: string
+   		actualOutput?: string
+   	}>
    }
    ```
 
@@ -186,21 +191,21 @@ The agent maps code changes to test scenarios:
 
 ```typescript
 const result = await agent.execute({
-  mode: 'execute',
-  input: 'Add a /ping command that responds with Pong!',
-  onEvent: (event) => {
-    if (event.type === 'complete') {
-      // Access verification results
-      const verification = event.verification
+	mode: 'execute',
+	input: 'Add a /ping command that responds with Pong!',
+	onEvent: (event) => {
+		if (event.type === 'complete') {
+			// Access verification results
+			const verification = event.verification
 
-      if (verification?.mock) {
-        console.log('Mock results:', verification.mock.scenarios)
-        for (const scenario of verification.mock.scenarios) {
-          console.log(`${scenario.description}: ${scenario.passed ? '✓' : '✗'}`)
-        }
-      }
-    }
-  }
+			if (verification?.mock) {
+				console.log('Mock results:', verification.mock.scenarios)
+				for (const scenario of verification.mock.scenarios) {
+					console.log(`${scenario.description}: ${scenario.passed ? '✓' : '✗'}`)
+				}
+			}
+		}
+	}
 })
 ```
 
@@ -229,6 +234,7 @@ When verification fails, the agent retries:
 ```
 
 The retry loop:
+
 1. Runs verification (build → tests → mock)
 2. If any fail, analyze errors
 3. Read relevant files
@@ -243,15 +249,15 @@ The retry loop:
 
 ```typescript
 const agent = createCodeAgent({
-  provider,
-  llm,
-  robo: {
-    enabled: true,
-    buildCommand: {
-      cmd: 'pnpm',
-      args: ['run', 'build']
-    }
-  }
+	provider,
+	llm,
+	robo: {
+		enabled: true,
+		buildCommand: {
+			cmd: 'pnpm',
+			args: ['run', 'build']
+		}
+	}
 })
 ```
 
@@ -259,15 +265,15 @@ const agent = createCodeAgent({
 
 ```typescript
 const agent = createCodeAgent({
-  provider,
-  llm,
-  robo: {
-    enabled: true,
-    testCommand: {
-      cmd: 'pnpm',
-      args: ['test', '--', '--passWithNoTests']
-    }
-  }
+	provider,
+	llm,
+	robo: {
+		enabled: true,
+		testCommand: {
+			cmd: 'pnpm',
+			args: ['test', '--', '--passWithNoTests']
+		}
+	}
 })
 ```
 
@@ -275,13 +281,13 @@ const agent = createCodeAgent({
 
 ```typescript
 const agent = createCodeAgent({
-  provider,
-  llm,
-  robo: {
-    enabled: true,
-    // Use mock validation when @robojs/mock is available
-    preferMockWhenAvailable: true
-  }
+	provider,
+	llm,
+	robo: {
+		enabled: true,
+		// Use mock validation when @robojs/mock is available
+		preferMockWhenAvailable: true
+	}
 })
 ```
 
@@ -291,35 +297,35 @@ Monitor verification progress:
 
 ```typescript
 agent.execute({
-  mode: 'execute',
-  input: 'Add a new command',
-  onEvent: (event) => {
-    switch (event.type) {
-      case 'phase':
-        if (event.phase === 'verify') {
-          console.log('Starting verification...')
-        }
-        break
-      case 'tool_call':
-        if (event.name === 'robo_build') {
-          console.log('Running robo build...')
-        } else if (event.name === 'robo_mock') {
-          console.log('Running mock validation...')
-        }
-        break
-      case 'retry':
-        console.log(`Retry ${event.iteration}: ${event.reason}`)
-        break
-      case 'complete':
-        if (event.verification?.build?.success) {
-          console.log('Build passed!')
-        }
-        if (event.verification?.mock?.success) {
-          console.log('Mock tests passed!')
-        }
-        break
-    }
-  }
+	mode: 'execute',
+	input: 'Add a new command',
+	onEvent: (event) => {
+		switch (event.type) {
+			case 'phase':
+				if (event.phase === 'verify') {
+					console.log('Starting verification...')
+				}
+				break
+			case 'tool_call':
+				if (event.name === 'robo_build') {
+					console.log('Running robo build...')
+				} else if (event.name === 'robo_mock') {
+					console.log('Running mock validation...')
+				}
+				break
+			case 'retry':
+				console.log(`Retry ${event.iteration}: ${event.reason}`)
+				break
+			case 'complete':
+				if (event.verification?.build?.success) {
+					console.log('Build passed!')
+				}
+				if (event.verification?.mock?.success) {
+					console.log('Mock tests passed!')
+				}
+				break
+		}
+	}
 })
 ```
 
@@ -328,6 +334,7 @@ agent.execute({
 ### Build Fails Repeatedly
 
 Check for:
+
 - Missing dependencies
 - Incorrect TypeScript config
 - Conflicting type definitions
@@ -340,6 +347,7 @@ Check for:
 ### Mock Tests Fail
 
 Check for:
+
 - Dev server not running
 - Mock stage not started
 - Incorrect command syntax
@@ -351,9 +359,9 @@ The agent respects `maxIterations`:
 
 ```typescript
 const agent = createCodeAgent({
-  policy: {
-    maxIterations: 10 // Stop after 10 verification attempts
-  }
+	policy: {
+		maxIterations: 10 // Stop after 10 verification attempts
+	}
 })
 ```
 

@@ -1,3 +1,3 @@
 export default function ping() {
-  return 'Pong!'
+	return 'Pong!'
 }

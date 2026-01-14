@@ -118,49 +118,57 @@ describe('MemoryRunStore', () => {
 			beforeEach(async () => {
 				store = new MemoryRunStore()
 
-				await store.saveRun(createRunMeta({
-					runId: 'run_1',
-					status: 'running',
-					mode: 'execute',
-					createdAt: new Date('2024-01-01').toISOString()
-				}))
-				await store.saveRun(createRunMeta({
-					runId: 'run_2',
-					status: 'completed',
-					mode: 'execute',
-					createdAt: new Date('2024-02-01').toISOString()
-				}))
-				await store.saveRun(createRunMeta({
-					runId: 'run_3',
-					status: 'running',
-					mode: 'plan',
-					createdAt: new Date('2024-03-01').toISOString()
-				}))
-				await store.saveRun(createRunMeta({
-					runId: 'run_4',
-					status: 'aborted',
-					mode: 'explain',
-					createdAt: new Date('2024-04-01').toISOString()
-				}))
+				await store.saveRun(
+					createRunMeta({
+						runId: 'run_1',
+						status: 'running',
+						mode: 'execute',
+						createdAt: new Date('2024-01-01').toISOString()
+					})
+				)
+				await store.saveRun(
+					createRunMeta({
+						runId: 'run_2',
+						status: 'completed',
+						mode: 'execute',
+						createdAt: new Date('2024-02-01').toISOString()
+					})
+				)
+				await store.saveRun(
+					createRunMeta({
+						runId: 'run_3',
+						status: 'running',
+						mode: 'plan',
+						createdAt: new Date('2024-03-01').toISOString()
+					})
+				)
+				await store.saveRun(
+					createRunMeta({
+						runId: 'run_4',
+						status: 'aborted',
+						mode: 'explain',
+						createdAt: new Date('2024-04-01').toISOString()
+					})
+				)
 			})
 
 			it('should filter by status', async () => {
 				const runs = await store.listRuns({ status: 'running' })
 				expect(runs.length).toBe(2)
-				expect(runs.every(r => r.status === 'running')).toBe(true)
+				expect(runs.every((r) => r.status === 'running')).toBe(true)
 			})
 
 			it('should filter by mode', async () => {
 				const runs = await store.listRuns({ mode: 'execute' })
 				expect(runs.length).toBe(2)
-				expect(runs.every(r => r.mode === 'execute')).toBe(true)
+				expect(runs.every((r) => r.mode === 'execute')).toBe(true)
 			})
 
 			it('should filter by since date', async () => {
 				const runs = await store.listRuns({ since: '2024-02-15' })
 				expect(runs.length).toBe(2) // run_3 and run_4
-				expect(runs.some(r => r.runId === 'run_3')).toBe(true)
-				expect(runs.some(r => r.runId === 'run_4')).toBe(true)
+				expect(runs.some((r) => r.runId === 'run_3')).toBe(true)
+				expect(runs.some((r) => r.runId === 'run_4')).toBe(true)
 			})
 
 			it('should apply limit', async () => {
@@ -208,26 +216,34 @@ describe('MemoryRunStore', () => {
 		it('should evict oldest run when maxRuns is exceeded', async () => {
 			const store = new MemoryRunStore({ maxRuns: 3 })
 
-			await store.saveRun(createRunMeta({
-				runId: 'run_oldest',
-				createdAt: new Date('2024-01-01').toISOString()
-			}))
-			await store.saveRun(createRunMeta({
-				runId: 'run_mid',
-				createdAt: new Date('2024-02-01').toISOString()
-			}))
-			await store.saveRun(createRunMeta({
-				runId: 'run_newer',
-				createdAt: new Date('2024-03-01').toISOString()
-			}))
+			await store.saveRun(
+				createRunMeta({
+					runId: 'run_oldest',
+					createdAt: new Date('2024-01-01').toISOString()
+				})
+			)
+			await store.saveRun(
+				createRunMeta({
+					runId: 'run_mid',
+					createdAt: new Date('2024-02-01').toISOString()
+				})
+			)
+			await store.saveRun(
+				createRunMeta({
+					runId: 'run_newer',
+					createdAt: new Date('2024-03-01').toISOString()
+				})
+			)
 
 			expect(store.size).toBe(3)
 
 			// Add a 4th run, should evict the oldest
-			await store.saveRun(createRunMeta({
-				runId: 'run_newest',
-				createdAt: new Date('2024-04-01').toISOString()
-			}))
+			await store.saveRun(
+				createRunMeta({
+					runId: 'run_newest',
+					createdAt: new Date('2024-04-01').toISOString()
+				})
+			)
 
 			expect(store.size).toBe(3)
 			expect(await store.getRun('run_oldest')).toBeNull()
@@ -239,22 +255,30 @@ describe('MemoryRunStore', () => {
 		it('should evict correctly with multiple additions', async () => {
 			const store = new MemoryRunStore({ maxRuns: 2 })
 
-			await store.saveRun(createRunMeta({
-				runId: 'run_1',
-				createdAt: new Date('2024-01-01').toISOString()
-			}))
-			await store.saveRun(createRunMeta({
-				runId: 'run_2',
-				createdAt: new Date('2024-02-01').toISOString()
-			}))
-			await store.saveRun(createRunMeta({
-				runId: 'run_3',
-				createdAt: new Date('2024-03-01').toISOString()
-			}))
-			await store.saveRun(createRunMeta({
-				runId: 'run_4',
-				createdAt: new Date('2024-04-01').toISOString()
-			}))
+			await store.saveRun(
+				createRunMeta({
+					runId: 'run_1',
+					createdAt: new Date('2024-01-01').toISOString()
+				})
+			)
+			await store.saveRun(
+				createRunMeta({
+					runId: 'run_2',
+					createdAt: new Date('2024-02-01').toISOString()
+				})
+			)
+			await store.saveRun(
+				createRunMeta({
+					runId: 'run_3',
+					createdAt: new Date('2024-03-01').toISOString()
+				})
+			)
+			await store.saveRun(
+				createRunMeta({
+					runId: 'run_4',
+					createdAt: new Date('2024-04-01').toISOString()
+				})
+			)
 
 			expect(store.size).toBe(2)
 			expect(await store.getRun('run_1')).toBeNull()

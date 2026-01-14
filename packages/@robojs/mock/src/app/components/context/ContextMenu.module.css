@@ -1,53 +1,22 @@
 .menu {
 	min-width: 188px;
 	max-width: 320px;
+	padding: 6px;
+	border: 1px solid var(--accent-overlay);
+	background: var(--modal-background);
+}
+
+.menuHeader {
+	padding: 6px 8px 4px;
+	font-size: 11px;
+	letter-spacing: 0.04em;
+}
+
+.menuItem {
 	padding: 6px 8px;
-	overflow: visible;
+	border-radius: 6px;
 }
 
-/* Submenu container - wraps the trigger item and submenu */
-.submenuContainer {
-	position: relative;
-}
-
-/* The submenu itself */
-.submenu {
-	position: absolute;
-	left: 100%;
-	top: -6px;
-	min-width: 188px;
-	max-width: 320px;
-	padding: 6px 8px;
-	background: var(--background-floating);
-	border-radius: var(--radius-sm);
-	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.24);
-	z-index: 1001;
-	opacity: 0;
-	visibility: hidden;
-	pointer-events: none;
-	transition: opacity 0.1s ease, visibility 0.1s ease;
-}
-
-/* Invisible bridge to maintain hover when moving to submenu */
-.submenu::before {
-	content: '';
-	position: absolute;
-	left: -12px;
-	top: 0;
-	width: 12px;
-	height: 100%;
-}
-
-/* Show submenu when visible class is applied */
-.submenu.submenuVisible {
-	opacity: 1;
-	visibility: visible;
-	pointer-events: auto;
-}
-
-/* Chevron icon for submenu items */
-.chevron {
-	display: flex;
-	align-items: center;
-	color: var(--interactive-normal);
+.menuSeparator {
+	margin: 4px 6px;
 }

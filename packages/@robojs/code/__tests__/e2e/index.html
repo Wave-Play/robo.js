@@ -1,95 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>WebContainer Provider Test Harness</title>
-	<style>
-		body {
-			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-			max-width: 800px;
-			margin: 0 auto;
-			padding: 20px;
-		}
-		.status {
-			padding: 10px;
-			margin: 10px 0;
-			border-radius: 4px;
-		}
-		.status.loading { background: #fff3cd; }
-		.status.ready { background: #d4edda; }
-		.status.error { background: #f8d7da; }
-		#output {
-			background: #1e1e1e;
-			color: #d4d4d4;
-			padding: 15px;
-			border-radius: 4px;
-			font-family: monospace;
-			white-space: pre-wrap;
-			max-height: 400px;
-			overflow-y: auto;
-		}
-	</style>
-</head>
-<body>
-	<h1>WebContainer Provider Test Harness</h1>
-	<div id="status" class="status loading">Loading WebContainer...</div>
-	<div id="output"></div>
-
-	<script type="module">
-		// This harness is used by Playwright tests to interact with WebContainer
-		// The actual test logic is in the Playwright spec files
-
-		window.testHarness = {
-			container: null,
-			status: 'loading',
-			lastError: null,
-			logs: []
-		};
-
-		function log(message) {
-			const output = document.getElementById('output');
-			const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
-			const line = `[${timestamp}] ${message}\n`;
-			output.textContent += line;
-			window.testHarness.logs.push(line);
-		}
-
-		function setStatus(status, message) {
-			const el = document.getElementById('status');
-			el.className = `status ${status}`;
-			el.textContent = message;
-			window.testHarness.status = status;
-		}
-
-		async function bootWebContainer() {
-			try {
-				log('Importing @webcontainer/api...');
-				const { WebContainer } = await import('https://esm.sh/@webcontainer/api@1.4.1');
-
-				log('Booting WebContainer...');
-				const container = await WebContainer.boot();
-
-				window.testHarness.container = container;
-				setStatus('ready', 'WebContainer is ready');
-				log('WebContainer booted successfully!');
-
-				// Expose container for tests
-				window.getWebContainer = () => container;
-
-				// Dispatch event for tests to know we're ready
-				window.dispatchEvent(new CustomEvent('webcontainer-ready', { detail: container }));
-
-			} catch (error) {
-				window.testHarness.lastError = error;
-				setStatus('error', `Error: ${error.message}`);
-				log(`Error: ${error.stack || error.message}`);
-				window.dispatchEvent(new CustomEvent('webcontainer-error', { detail: error }));
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>WebContainer Provider Test Harness</title>
+		<style>
+			body {
+				font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+				max-width: 800px;
+				margin: 0 auto;
+				padding: 20px;
 			}
-		}
+			.status {
+				padding: 10px;
+				margin: 10px 0;
+				border-radius: 4px;
+			}
+			.status.loading {
+				background: #fff3cd;
+			}
+			.status.ready {
+				background: #d4edda;
+			}
+			.status.error {
+				background: #f8d7da;
+			}
+			#output {
+				background: #1e1e1e;
+				color: #d4d4d4;
+				padding: 15px;
+				border-radius: 4px;
+				font-family: monospace;
+				white-space: pre-wrap;
+				max-height: 400px;
+				overflow-y: auto;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>WebContainer Provider Test Harness</h1>
+		<div id="status" class="status loading">Loading WebContainer...</div>
+		<div id="output"></div>
 
-		// Boot on load
-		bootWebContainer();
-	</script>
-</body>
+		<script type="module">
+			// This harness is used by Playwright tests to interact with WebContainer
+			// The actual test logic is in the Playwright spec files
+
+			window.testHarness = {
+				container: null,
+				status: 'loading',
+				lastError: null,
+				logs: []
+			}
+
+			function log(message) {
+				const output = document.getElementById('output')
+				const timestamp = new Date().toISOString().split('T')[1].split('.')[0]
+				const line = `[${timestamp}] ${message}\n`
+				output.textContent += line
+				window.testHarness.logs.push(line)
+			}
+
+			function setStatus(status, message) {
+				const el = document.getElementById('status')
+				el.className = `status ${status}`
+				el.textContent = message
+				window.testHarness.status = status
+			}
+
+			async function bootWebContainer() {
+				try {
+					log('Importing @webcontainer/api...')
+					const { WebContainer } = await import('https://esm.sh/@webcontainer/api@1.4.1')
+
+					log('Booting WebContainer...')
+					const container = await WebContainer.boot()
+
+					window.testHarness.container = container
+					setStatus('ready', 'WebContainer is ready')
+					log('WebContainer booted successfully!')
+
+					// Expose container for tests
+					window.getWebContainer = () => container
+
+					// Dispatch event for tests to know we're ready
+					window.dispatchEvent(new CustomEvent('webcontainer-ready', { detail: container }))
+				} catch (error) {
+					window.testHarness.lastError = error
+					setStatus('error', `Error: ${error.message}`)
+					log(`Error: ${error.stack || error.message}`)
+					window.dispatchEvent(new CustomEvent('webcontainer-error', { detail: error }))
+				}
+			}
+
+			// Boot on load
+			bootWebContainer()
+		</script>
+	</body>
 </html>

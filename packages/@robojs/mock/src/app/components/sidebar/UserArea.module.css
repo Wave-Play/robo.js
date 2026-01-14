@@ -4,7 +4,8 @@
 	gap: 8px;
 	padding: 0 8px;
 	height: 52px;
-	background: var(--background-secondary-alt);
+	background: var(--secondary-divider);
+	position: relative;
 }
 
 .placeholder {
@@ -23,7 +24,7 @@
 	width: 32px;
 	height: 32px;
 	border-radius: 50%;
-	background: var(--background-tertiary);
+	background: var(--card-background);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -45,7 +46,7 @@
 	width: 14px;
 	height: 14px;
 	border-radius: 50%;
-	border: 3px solid var(--background-secondary-alt);
+	border: 3px solid var(--secondary-divider);
 }
 
 .status.online {
@@ -84,7 +85,7 @@
 .username {
 	font-size: 14px;
 	font-weight: 600;
-	color: var(--header-primary);
+	color: var(--header-text-primary);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -92,13 +93,29 @@
 
 .discriminator {
 	font-size: 12px;
-	color: var(--header-secondary);
+	color: var(--header-text-secondary);
 }
 
 /* Action buttons */
 .buttons {
 	display: flex;
 	gap: 4px;
+}
+
+.switchButton {
+	width: 32px;
+	height: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: var(--radius-sm);
+	color: var(--interactive-default);
+	transition: background 0.1s ease, color 0.1s ease;
+}
+
+.switchButton:hover {
+	background: var(--hover-overlay);
+	color: var(--interactive-hover);
 }
 
 .iconButton {
@@ -108,16 +125,57 @@
 	align-items: center;
 	justify-content: center;
 	border-radius: var(--radius-sm);
-	color: var(--interactive-normal);
+	color: var(--interactive-default);
 	transition: background 0.1s ease, color 0.1s ease;
 }
 
 .iconButton:hover {
-	background: var(--background-modifier-hover);
+	background: var(--hover-overlay);
 	color: var(--interactive-hover);
 }
 
 .iconButton svg {
 	width: 20px;
 	height: 20px;
+}
+
+.switcher {
+	min-width: 260px;
+	max-width: 320px;
+	padding: 8px;
+}
+
+.switcherHeader {
+	padding: 8px 8px 6px;
+	font-size: 11px;
+}
+
+.switcherList {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.switcherAvatar {
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	overflow: hidden;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--card-background);
+	color: var(--text-muted);
+}
+
+.switcherAvatar img,
+.switcherAvatar svg {
+	width: 100%;
+	height: 100%;
+}
+
+.activeBadge {
+	font-size: 11px;
+	color: var(--brand-primary);
+	font-weight: 600;
 }

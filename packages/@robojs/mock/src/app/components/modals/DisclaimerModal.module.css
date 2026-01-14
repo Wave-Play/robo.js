@@ -1,0 +1,131 @@
+/* Modal Overlay */
+.overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.9);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 9999;
+	animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+/* Modal Container */
+.modal {
+	background: #2b2d31;
+	border-radius: var(--radius-md);
+	width: 480px;
+	max-width: 90vw;
+	padding: 24px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	box-shadow:
+		0 0 0 1px rgba(0, 0, 0, 0.1),
+		0 8px 32px rgba(0, 0, 0, 0.4);
+	animation: slideIn 0.25s ease-out;
+	border: 1px solid rgba(250, 168, 26, 0.3);
+}
+
+@keyframes slideIn {
+	from {
+		transform: scale(0.9) translateY(-20px);
+		opacity: 0;
+	}
+	to {
+		transform: scale(1) translateY(0);
+		opacity: 1;
+	}
+}
+
+/* Warning Icon */
+.iconWrapper {
+	width: 72px;
+	height: 72px;
+	border-radius: 50%;
+	background: rgba(250, 168, 26, 0.15);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-bottom: 16px;
+	color: #faa81a;
+}
+
+/* Title */
+.title {
+	margin: 0 0 16px;
+	font-size: 24px;
+	font-weight: 700;
+	color: #faa81a;
+	line-height: 1.2;
+}
+
+/* Description */
+.description {
+	margin-bottom: 24px;
+}
+
+.paragraph {
+	font-size: 15px;
+	color: #dbdee1;
+	line-height: 1.5;
+	margin: 0 0 12px;
+}
+
+.paragraph:last-of-type {
+	margin-bottom: 0;
+}
+
+.paragraph strong {
+	color: #ffffff;
+	font-weight: 600;
+}
+
+.paragraphMuted {
+	font-size: 13px;
+	color: #80848e;
+	line-height: 1.4;
+	margin: 16px 0 0;
+	padding-top: 16px;
+	border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Accept Button */
+.acceptButton {
+	width: 100%;
+	padding: 12px 24px;
+	font-size: 15px;
+	font-weight: 600;
+	background: #faa81a;
+	color: #000000;
+	border: none;
+	border-radius: var(--radius-sm);
+	cursor: pointer;
+	transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.acceptButton:hover {
+	background: #f0b232;
+}
+
+.acceptButton:active {
+	transform: scale(0.98);
+}
+
+.acceptButton:focus-visible {
+	outline: 2px solid #faa81a;
+	outline-offset: 2px;
+}
