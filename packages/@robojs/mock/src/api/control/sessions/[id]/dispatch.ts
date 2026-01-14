@@ -1,8 +1,9 @@
-import type { RoboRequest } from '@robojs/server'
+import { define } from '@robojs/server'
+import { z } from 'zod'
 import { sessionManager } from '../../../../core/manager.js'
 import { getStageServer } from '../../../../core/stage.js'
 import { VOICE_GATEWAY_PORT } from '../../../../core/voice-gateway.js'
-import { validateMethod, notFound, badRequest } from '../../utils.js'
+import { notFound, badRequest } from '../../utils.js'
 import { createMockGuild, createMockChannel } from '../../../../session/state.js'
 import { generateSnowflake } from '../../../../utils/snowflake.js'
 import type { VoiceServerState, MockAttachment } from '../../../../types/index.js'
@@ -48,32 +49,44 @@ import type { VoiceServerState, MockAttachment } from '../../../../types/index.j
  *   interaction_token?: string // For INTERACTION_CREATE, the interaction token
  * }
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['POST'])
+const SessionParamsSchema = z.object({
+	id: z.string()
+})
 
-	const { id } = request.params as { id: string }
+const DispatchBodySchema = z.object({
+	event: z.string(),
+	data: z.record(z.unknown())
+})
 
-	if (!id) {
-		return notFound('Session ID required')
-	}
+export const POST = define(
+	{
+		params: SessionParamsSchema,
+		body: DispatchBodySchema
+	},
+	async (request) => {
+		const { id } = request.params
 
-	const session = sessionManager.get(id)
+		if (!id) {
+			return notFound('Session ID required')
+		}
 
-	if (!session) {
-		return notFound('Session not found')
-	}
+		const session = sessionManager.get(id)
 
-	// Parse request body
-	let body: {
-		event: string
-		data: Record<string, unknown>
-	}
+		if (!session) {
+			return notFound('Session not found')
+		}
 
-	try {
-		body = await request.json()
-	} catch {
-		return badRequest('Invalid JSON body')
-	}
+		// Parse request body
+		let body: {
+			event: string
+			data: Record<string, unknown>
+		}
+
+		try {
+			body = await request.json()
+		} catch {
+			return badRequest('Invalid JSON body')
+		}
 
 	// Validate required fields
 	if (!body.event || typeof body.event !== 'string') {
@@ -1153,8 +1166,9 @@ export default async (request: RoboRequest) => {
 	// For other events, dispatch raw data
 	await session.dispatch(body.event, body.data)
 
-	return {
-		success: true,
-		dispatched: session.connections.size
+		return {
+			success: true,
+			dispatched: session.connections.size
+		}
 	}
-}
+)

@@ -1,6 +1,7 @@
-import type { RoboRequest } from '@robojs/server'
+import { define } from '@robojs/server'
+import { z } from 'zod'
 import { sessionManager } from '../../../core/manager.js'
-import { validateMethod, notFound } from '../utils.js'
+import { notFound } from '../utils.js'
 
 /**
  * GET /api/control/sessions/:id - Get session info with state
@@ -26,10 +27,12 @@ import { validateMethod, notFound } from '../utils.js'
  *   success: true
  * }
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['GET', 'DELETE'])
+const SessionParamsSchema = z.object({
+	id: z.string()
+})
 
-	const { id } = request.params as { id: string }
+export const GET = define({ params: SessionParamsSchema }, async (request) => {
+	const { id } = request.params
 
 	if (!id) {
 		return notFound('Session ID required')
@@ -75,4 +78,21 @@ export default async (request: RoboRequest) => {
 			channels
 		}
 	}
-}
+})
+
+export const DELETE = define({ params: SessionParamsSchema }, async (request) => {
+	const { id } = request.params
+
+	if (!id) {
+		return notFound('Session ID required')
+	}
+
+	const session = sessionManager.get(id)
+
+	if (!session) {
+		return notFound('Session not found')
+	}
+
+	await sessionManager.delete(id)
+	return { success: true }
+})

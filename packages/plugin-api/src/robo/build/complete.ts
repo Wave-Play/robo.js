@@ -62,7 +62,7 @@ export default async function (context: BuildCompleteContext): Promise<void> {
 	if (!isDisabled) {
 		const apiEntries = context.entries.handlers('server', 'api')
 		if (apiEntries.length > 0) {
-			const buildDir = path.join(context.paths.output, 'build')
+			const buildDir = context.paths.output
 			const options = typeof openapiConfig === 'object' ? openapiConfig : {}
 
 			await generateOpenAPISpec(apiEntries, buildDir, {

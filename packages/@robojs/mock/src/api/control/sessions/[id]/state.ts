@@ -1,6 +1,7 @@
-import type { RoboRequest } from '@robojs/server'
+import { define } from '@robojs/server'
+import { z } from 'zod'
 import { sessionManager } from '../../../../core/manager.js'
-import { validateMethod, notFound } from '../../utils.js'
+import { notFound } from '../../utils.js'
 import { serializeSessionState } from '../../../../session/state.js'
 
 /**
@@ -16,10 +17,12 @@ import { serializeSessionState } from '../../../../session/state.js'
  *   sequence: number
  * }
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['GET'])
+const SessionParamsSchema = z.object({
+	id: z.string()
+})
 
-	const { id } = request.params as { id: string }
+export const GET = define({ params: SessionParamsSchema }, async (request) => {
+	const { id } = request.params
 
 	if (!id) {
 		return notFound('Session ID required')
@@ -32,4 +35,4 @@ export default async (request: RoboRequest) => {
 	}
 
 	return serializeSessionState(session.state)
-}
+})
