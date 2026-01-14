@@ -127,7 +127,13 @@ export async function executeBuildStartHooks(
 	// Create or use existing store
 	const buildStore = store ?? createBuildStore()
 
-	// Create base context with mode-specific output path
+	// Create base context with appropriate output path
+	// Plugin builds use non-mode-specific output (.robo/build/) while project builds use mode-specific (.robo/build/{mode}/)
+	const outputPath =
+		options?.buildType === 'plugin'
+			? path.join(process.cwd(), '.robo', 'build')
+			: RoboPaths.build(mode)
+
 	const baseContext: BuildContext = {
 		mode,
 		env: Env,
@@ -135,7 +141,7 @@ export async function executeBuildStartHooks(
 		paths: {
 			root: process.cwd(),
 			src: path.join(process.cwd(), 'src'),
-			output: RoboPaths.build(mode)
+			output: outputPath
 		},
 		config,
 		store: buildStore,
@@ -259,7 +265,13 @@ export async function executeBuildTransformHooks(
 		}
 	}
 
-	// Create base context with entries accessor (using mode-specific output path)
+	// Create base context with entries accessor
+	// Plugin builds use non-mode-specific output (.robo/build/) while project builds use mode-specific (.robo/build/{mode}/)
+	const outputPath =
+		options?.buildType === 'plugin'
+			? path.join(process.cwd(), '.robo', 'build')
+			: RoboPaths.build(mode)
+
 	const baseContext: BuildTransformContext = {
 		mode,
 		env: Env,
@@ -267,7 +279,7 @@ export async function executeBuildTransformHooks(
 		paths: {
 			root: process.cwd(),
 			src: path.join(process.cwd(), 'src'),
-			output: RoboPaths.build(mode)
+			output: outputPath
 		},
 		config,
 		store,
@@ -485,7 +497,13 @@ export async function executeBuildCompleteHooks(
 		}
 	}
 
-	// Create base context with entries accessor and metadata methods (using mode-specific output path)
+	// Create base context with entries accessor and metadata methods
+	// Plugin builds use non-mode-specific output (.robo/build/) while project builds use mode-specific (.robo/build/{mode}/)
+	const outputPath =
+		options?.buildType === 'plugin'
+			? path.join(process.cwd(), '.robo', 'build')
+			: RoboPaths.build(mode)
+
 	const baseContext: BuildCompleteContext = {
 		mode,
 		env: Env,
@@ -493,7 +511,7 @@ export async function executeBuildCompleteHooks(
 		paths: {
 			root: process.cwd(),
 			src: path.join(process.cwd(), 'src'),
-			output: RoboPaths.build(mode)
+			output: outputPath
 		},
 		config,
 		store,
