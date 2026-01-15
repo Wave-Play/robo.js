@@ -3,6 +3,7 @@ import type { ExtractedSchema } from './schema-extractor.js'
 import { logger } from './logger.js'
 import { writeFile, mkdir } from 'node:fs/promises'
 import path from 'node:path'
+import { pathToFileURL } from 'node:url'
 
 const HTTP_METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'] as const
 
@@ -273,7 +274,7 @@ export async function generateOpenAPISpec(
 
 		try {
 			const modulePath = path.resolve(buildDir, entry.path)
-			const module = await import(modulePath)
+			const module = await import(pathToFileURL(modulePath).href)
 
 			for (const method of HTTP_METHODS) {
 				const handler = module[method]

@@ -1,7 +1,11 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # robo.js
-.robo/*
+/.robo/*
+!/.robo/
+!/.robo/build/
+/.robo/build/*
+!/.robo/build/openapi.json
 
 # dependencies
 /node_modules
