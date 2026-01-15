@@ -140,6 +140,7 @@ type SessionAction =
 	| { type: 'INJECT_MESSAGES'; payload: { channelId: string; messages: StageMessage[] } }
 	| { type: 'INJECT_MEMBERS'; payload: StageMember[] }
 	| { type: 'INJECT_CHANNELS'; payload: StageChannel[] }
+	| { type: 'INJECT_USERS'; payload: StageUser[] }
 	| { type: 'SHOW_MODAL'; payload: { modal: ModalData; sourceInteractionId: string } }
 	| { type: 'CLOSE_MODAL' }
 	| { type: 'ADD_PENDING_INTERACTION'; payload: PendingInteraction }
@@ -576,6 +577,16 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 				channels: nextChannels,
 				messages: nextMessages,
 				selectedChannelId: state.selectedChannelId === threadId ? parentId : state.selectedChannelId
+			}
+		}
+
+		case 'INJECT_USERS': {
+			// Merge with existing users, avoiding duplicates by id
+			const existingIds = new Set(state.users.map((u) => u.id))
+			const newUsers = action.payload.filter((u) => !existingIds.has(u.id))
+			return {
+				...state,
+				users: [...state.users, ...newUsers]
 			}
 		}
 

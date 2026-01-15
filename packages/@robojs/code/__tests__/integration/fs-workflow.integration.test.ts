@@ -136,10 +136,7 @@ function createPolicy(overrides: Partial<AgentPolicy> = {}): AgentPolicy {
 	}
 }
 
-function createContext(
-	policy: Partial<AgentPolicy> = {},
-	provider: ExecutionProvider
-): ToolContext {
+function createContext(policy: Partial<AgentPolicy> = {}, provider: ExecutionProvider): ToolContext {
 	return {
 		provider,
 		policy: createPolicy(policy),
@@ -150,8 +147,9 @@ function createContext(
 describe('FS Tools Integration: Large File Workflow', () => {
 	it('should use stat → head pattern for large files', async () => {
 		// Create a 100KB log file
-		const logContent = Array.from({ length: 5000 }, (_, i) =>
-			`[2024-01-15T10:${String(i % 60).padStart(2, '0')}:00Z] INFO: Processing request ${i}`
+		const logContent = Array.from(
+			{ length: 5000 },
+			(_, i) => `[2024-01-15T10:${String(i % 60).padStart(2, '0')}:00Z] INFO: Processing request ${i}`
 		).join('\n')
 
 		const { provider } = createMockFileSystem({
@@ -165,18 +163,16 @@ describe('FS Tools Integration: Large File Workflow', () => {
 		expect(statResult.data?.size).toBeGreaterThan(50000)
 
 		// Step 2: Based on size, read just the head
-		const headResult = await fsReadHeadTool.execute(
-			{ path: '/var/log/app.log', maxBytes: 1024 },
-			context
-		)
+		const headResult = await fsReadHeadTool.execute({ path: '/var/log/app.log', maxBytes: 1024 }, context)
 		expect(headResult.success).toBe(true)
 		expect(headResult.data?.truncated).toBe(true)
 		expect(headResult.data?.text).toContain('[2024-01-15T10:00:00Z]')
 	})
 
 	it('should use stat → tail pattern for log inspection', async () => {
-		const logContent = Array.from({ length: 1000 }, (_, i) =>
-			`Line ${i}: ${i === 999 ? 'ERROR: Connection failed' : 'INFO: OK'}`
+		const logContent = Array.from(
+			{ length: 1000 },
+			(_, i) => `Line ${i}: ${i === 999 ? 'ERROR: Connection failed' : 'INFO: OK'}`
 		).join('\n')
 
 		const { provider } = createMockFileSystem({
@@ -189,10 +185,7 @@ describe('FS Tools Integration: Large File Workflow', () => {
 		expect(statResult.success).toBe(true)
 
 		// Step 2: Read tail to find recent errors
-		const tailResult = await fsReadTailTool.execute(
-			{ path: '/app/error.log', maxBytes: 500 },
-			context
-		)
+		const tailResult = await fsReadTailTool.execute({ path: '/app/error.log', maxBytes: 500 }, context)
 		expect(tailResult.success).toBe(true)
 		expect(tailResult.data?.text).toContain('ERROR: Connection failed')
 	})
@@ -210,10 +203,7 @@ describe('FS Tools Integration: Large File Workflow', () => {
 		const context = createContext({}, provider)
 
 		// Read header region (first 50 bytes)
-		const headerResult = await fsReadRangeTool.execute(
-			{ path: '/data/structured.dat', offset: 0, length: 50 },
-			context
-		)
+		const headerResult = await fsReadRangeTool.execute({ path: '/data/structured.dat', offset: 0, length: 50 }, context)
 		expect(headerResult.success).toBe(true)
 		expect(headerResult.data?.text).toContain('HEADER:v1.0')
 
@@ -251,9 +241,7 @@ describe('FS Tools Integration: Multi-File Operations', () => {
 		expect(result.success).toBe(true)
 		expect(result.data?.files).toHaveLength(4)
 		expect(result.data?.files.map((f) => f.path)).toContain('/src/index.ts')
-		expect(result.data?.files.find((f) => f.path === '/src/utils.ts')?.content).toContain(
-			'helper'
-		)
+		expect(result.data?.files.find((f) => f.path === '/src/utils.ts')?.content).toContain('helper')
 	})
 
 	it('should list directory and then read specific files', async () => {
@@ -265,19 +253,13 @@ describe('FS Tools Integration: Multi-File Operations', () => {
 		const context = createContext({}, provider)
 
 		// Step 1: List the directory
-		const listResult = await fsListTool.execute(
-			{ path: '/project/src', recursive: false },
-			context
-		)
+		const listResult = await fsListTool.execute({ path: '/project/src', recursive: false }, context)
 		expect(listResult.success).toBe(true)
 		expect(listResult.data?.entries).toHaveLength(3)
 
 		// Step 2: Read specific files based on listing
 		const tsFiles = listResult.data!.entries.filter((e) => e.name.endsWith('.ts'))
-		const readResult = await fsReadManyTool.execute(
-			{ paths: tsFiles.map((f) => f.path) },
-			context
-		)
+		const readResult = await fsReadManyTool.execute({ paths: tsFiles.map((f) => f.path) }, context)
 		expect(readResult.success).toBe(true)
 		expect(readResult.data?.files).toHaveLength(3)
 	})
@@ -291,10 +273,7 @@ describe('FS Tools Integration: Multi-File Operations', () => {
 		const context = createContext({}, provider)
 
 		// Step 1: Search for TODO comments
-		const searchResult = await fsSearchTool.execute(
-			{ pattern: 'TODO', maxResults: 100 },
-			context
-		)
+		const searchResult = await fsSearchTool.execute({ pattern: 'TODO', maxResults: 100 }, context)
 		expect(searchResult.success).toBe(true)
 		expect(searchResult.data?.results.length).toBeGreaterThan(0)
 
@@ -318,10 +297,7 @@ describe('FS Tools Integration: Write and Verify Workflow', () => {
 		const content = 'export const VERSION = "1.0.0";'
 
 		// Write the file
-		const writeResult = await fsWriteTool.execute(
-			{ path: '/src/version.ts', content },
-			context
-		)
+		const writeResult = await fsWriteTool.execute({ path: '/src/version.ts', content }, context)
 		expect(writeResult.success).toBe(true)
 
 		// Verify file exists in mock fs
@@ -381,10 +357,7 @@ describe('FS Tools Integration: Error Recovery', () => {
 		const context = createContext({}, provider)
 
 		// Try to read mix of existing and missing files
-		const result = await fsReadManyTool.execute(
-			{ paths: ['/src/exists.ts', '/src/missing.ts'] },
-			context
-		)
+		const result = await fsReadManyTool.execute({ paths: ['/src/exists.ts', '/src/missing.ts'] }, context)
 
 		// Should have partial results with error for missing file
 		expect(result.success).toBe(true)
@@ -431,10 +404,7 @@ export function fetchUsers() {
 		const context = createContext({}, provider)
 
 		// Step 1: Search for the pattern we want to change
-		const searchResult = await fsSearchTool.execute(
-			{ pattern: 'localhost:3000', maxResults: 100 },
-			context
-		)
+		const searchResult = await fsSearchTool.execute({ pattern: 'localhost:3000', maxResults: 100 }, context)
 		expect(searchResult.success).toBe(true)
 		expect(searchResult.data?.results).toHaveLength(1)
 
@@ -444,16 +414,10 @@ export function fetchUsers() {
 		expect(readResult.success).toBe(true)
 
 		// Step 3: Modify content
-		const newContent = readResult.data!.content.replace(
-			'localhost:3000',
-			'api.production.com'
-		)
+		const newContent = readResult.data!.content.replace('localhost:3000', 'api.production.com')
 
 		// Step 4: Write back
-		const writeResult = await fsWriteTool.execute(
-			{ path: filePath, content: newContent },
-			context
-		)
+		const writeResult = await fsWriteTool.execute({ path: filePath, content: newContent }, context)
 		expect(writeResult.success).toBe(true)
 
 		// Step 5: Verify change

@@ -539,9 +539,10 @@ export class CodeAgent {
 				const iterations = currentState?.iterations ?? 0
 
 				// Build a friendly, context-aware message
-				const stepProgress = plan.length > 0
-					? { current: currentStep + 1, total: plan.length, label: plan[currentStep]?.title ?? 'current step' }
-					: undefined
+				const stepProgress =
+					plan.length > 0
+						? { current: currentStep + 1, total: plan.length, label: plan[currentStep]?.title ?? 'current step' }
+						: undefined
 
 				const message = this.buildLimitMessage(phase, stepProgress, iterations)
 
@@ -600,7 +601,7 @@ export class CodeAgent {
 			parts.push(`Currently in the ${phaseLabel} phase.`)
 		}
 
-		parts.push('\nWould you like me to continue, or would you prefer to take a break and review what I\'ve done so far?')
+		parts.push("\nWould you like me to continue, or would you prefer to take a break and review what I've done so far?")
 
 		return parts.join(' ')
 	}
@@ -863,28 +864,24 @@ export class CodeAgent {
 	 */
 	private applyFilter(runs: RunMeta[], filter?: RunFilter): RunMeta[] {
 		if (!filter) {
-			return runs.sort((a, b) =>
-				new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-			)
+			return runs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 		}
 
 		let filtered = runs
 
 		if (filter.status) {
-			filtered = filtered.filter(r => r.status === filter.status)
+			filtered = filtered.filter((r) => r.status === filter.status)
 		}
 		if (filter.mode) {
-			filtered = filtered.filter(r => r.mode === filter.mode)
+			filtered = filtered.filter((r) => r.mode === filter.mode)
 		}
 		if (filter.since) {
 			const since = new Date(filter.since)
-			filtered = filtered.filter(r => new Date(r.createdAt) >= since)
+			filtered = filtered.filter((r) => new Date(r.createdAt) >= since)
 		}
 
 		// Sort by creation time descending
-		filtered = filtered.sort((a, b) =>
-			new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-		)
+		filtered = filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
 		if (filter.limit) {
 			filtered = filtered.slice(0, filter.limit)

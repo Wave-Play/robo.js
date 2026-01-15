@@ -11,14 +11,7 @@
 
 import type { ExecutionProvider } from '../types/execution.js'
 import type { AgentPolicy } from '../types/policy.js'
-import type {
-	ProjectOverview,
-	PackageInfo,
-	KeyFile,
-	Decision,
-	ChangeLogEntry,
-	RefreshOptions
-} from '../types/scale.js'
+import type { ProjectOverview, PackageInfo, KeyFile, Decision, ChangeLogEntry, RefreshOptions } from '../types/scale.js'
 import { OVERVIEW_CAPS, type OverviewCaps } from './caps.js'
 import { ProjectIndexer } from './indexer.js'
 import { buildRoboOverview, parsePackageJson, getRoboVersion, hasRoboConfig } from './robo-detection.js'
@@ -220,9 +213,7 @@ export class ProjectOverviewBuilder {
 	 */
 	private async getPackageInfo(): Promise<PackageInfo> {
 		try {
-			const content = await this.provider.readFile(
-				this.root === '/' ? '/package.json' : `${this.root}/package.json`
-			)
+			const content = await this.provider.readFile(this.root === '/' ? '/package.json' : `${this.root}/package.json`)
 			const pkg = parsePackageJson(content)
 
 			if (!pkg) {

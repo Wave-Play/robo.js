@@ -37,12 +37,7 @@ export type {
 } from './llm.js'
 
 // Policy types
-export type {
-	CommandArgPolicy,
-	NetworkPolicy,
-	ContextPolicy,
-	AgentPolicy
-} from './policy.js'
+export type { CommandArgPolicy, NetworkPolicy, ContextPolicy, AgentPolicy } from './policy.js'
 export { DEFAULT_POLICY } from './policy.js'
 
 // Robo-aware types
@@ -62,13 +57,7 @@ export type {
 } from './robo.js'
 
 // Change and diff types
-export type {
-	FileChange,
-	FileDiff,
-	ChangeSet,
-	DiffOptions,
-	ProposedChanges
-} from './changes.js'
+export type { FileChange, FileDiff, ChangeSet, DiffOptions, ProposedChanges } from './changes.js'
 
 // Acceptance criteria types
 export type {
@@ -112,10 +101,5 @@ export type {
 } from './run.js'
 
 // Event types
-export type {
-	StreamOptions,
-	AgentEvent,
-	AgentEventType,
-	AgentEventPayload
-} from './events.js'
+export type { StreamOptions, AgentEvent, AgentEventType, AgentEventPayload } from './events.js'
 export { DEFAULT_STREAM_OPTIONS } from './events.js'

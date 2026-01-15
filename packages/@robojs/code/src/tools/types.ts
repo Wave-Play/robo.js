@@ -427,10 +427,13 @@ export function successResult<T>(data: T): ToolResult<T> {
 /**
  * Create a failed tool result
  */
-export function errorResult<T = never>(error: string, options?: {
-	errorCode?: string
-	recoverable?: boolean
-}): ToolResult<T> {
+export function errorResult<T = never>(
+	error: string,
+	options?: {
+		errorCode?: string
+		recoverable?: boolean
+	}
+): ToolResult<T> {
 	return {
 		success: false,
 		error,
@@ -442,11 +445,7 @@ export function errorResult<T = never>(error: string, options?: {
 /**
  * Create a result requiring approval
  */
-export function approvalRequired<T = never>(
-	changes: FileChange[],
-	diffs: FileDiff[],
-	reason: string
-): ToolResult<T> {
+export function approvalRequired<T = never>(changes: FileChange[], diffs: FileDiff[], reason: string): ToolResult<T> {
 	return {
 		success: false,
 		requiresApproval: true,

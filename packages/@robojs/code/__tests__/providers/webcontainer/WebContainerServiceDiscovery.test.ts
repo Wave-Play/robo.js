@@ -110,11 +110,7 @@ describe('WebContainerServiceDiscovery', () => {
 
 				await discovery.start('mock')
 
-				expect(container.spawn).toHaveBeenCalledWith(
-					'npx',
-					['robo', 'mock'],
-					expect.objectContaining({ cwd: '/' })
-				)
+				expect(container.spawn).toHaveBeenCalledWith('npx', ['robo', 'mock'], expect.objectContaining({ cwd: '/' }))
 			})
 
 			it('should return unique serviceId', async () => {
@@ -156,11 +152,7 @@ describe('WebContainerServiceDiscovery', () => {
 
 				await discovery.start('mock', { port: 5000 })
 
-				expect(container.spawn).toHaveBeenCalledWith(
-					'npx',
-					['robo', 'mock', '--port', '5000'],
-					expect.any(Object)
-				)
+				expect(container.spawn).toHaveBeenCalledWith('npx', ['robo', 'mock', '--port', '5000'], expect.any(Object))
 			})
 
 			it('should use custom env when provided', async () => {

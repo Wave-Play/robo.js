@@ -204,10 +204,7 @@ export class MockRunner {
 	 * @param expectedPort - Expected port number
 	 * @returns Server URL once ready
 	 */
-	private async waitForReady(
-		handle: TerminalSessionHandle,
-		expectedPort: number
-	): Promise<string> {
+	private async waitForReady(handle: TerminalSessionHandle, expectedPort: number): Promise<string> {
 		const startTime = Date.now()
 		let output = ''
 
@@ -289,9 +286,7 @@ export class MockRunner {
 		}
 
 		// Get full session state
-		const stateResponse = await this.httpRequest(
-			`${serverUrl}/api/control/sessions/${sessionData.session_id}/state`
-		)
+		const stateResponse = await this.httpRequest(`${serverUrl}/api/control/sessions/${sessionData.session_id}/state`)
 
 		const state = (await stateResponse.json()) as {
 			botUser: { id: string; username: string }
@@ -387,10 +382,7 @@ export class MockRunner {
 	/**
 	 * Execute a single scenario step
 	 */
-	private async executeStep(
-		session: MockSession,
-		step: ScenarioStep
-	): Promise<{ success: boolean; error?: string }> {
+	private async executeStep(session: MockSession, step: ScenarioStep): Promise<{ success: boolean; error?: string }> {
 		codeLogger.debug('MockRunner: Executing step', { action: step.action })
 
 		try {
@@ -426,7 +418,7 @@ export class MockRunner {
 			return {
 				type: 'message',
 				channelId: defaultChannelId,
-				content: step.input as string ?? step.expected ?? 'test message'
+				content: (step.input as string) ?? step.expected ?? 'test message'
 			}
 		}
 
@@ -443,7 +435,7 @@ export class MockRunner {
 		if (action.includes('click button')) {
 			return {
 				type: 'button',
-				customId: step.input as string ?? 'button_0'
+				customId: (step.input as string) ?? 'button_0'
 			}
 		}
 

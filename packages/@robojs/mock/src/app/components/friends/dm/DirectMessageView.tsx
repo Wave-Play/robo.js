@@ -1,5 +1,7 @@
-import { useMemo } from 'react'
-import type { FriendRowData } from '../friends.data'
+import { useState, useCallback, useMemo } from 'react'
+import type { StageUser } from '../../../types/stage'
+import { useStageData } from '../../../hooks/useStageData'
+import { getAvatarUrl } from '../../../utils/avatar'
 import { Avatar, IconButton } from '../../ui'
 import styles from './DirectMessageView.module.css'
 
@@ -27,45 +29,86 @@ function PlusCircleIcon() {
 	)
 }
 
-type ChatLine = {
-	id: string
-	author: string
-	time: string
-	text: string
+function formatTimestamp(timestamp: string | number | undefined): string {
+	if (!timestamp) return ''
+	const date = new Date(timestamp)
+	return date.toLocaleString('en-US', {
+		month: 'numeric',
+		day: 'numeric',
+		year: 'numeric',
+		hour: 'numeric',
+		minute: '2-digit',
+		hour12: true
+	})
 }
 
 export function DirectMessageView({
-	friend,
+	user,
+	channelId,
 }: {
-	friend: FriendRowData
+	user: StageUser
+	channelId: string
 }) {
-	const messages: ChatLine[] = useMemo(
-		() => [
-			{ id: 'm1', author: friend.username, time: '11/5/2025 22:26', text: 'Yes vro it peak vro\n\nThe same thing the tv station does but made by me\nlol' },
-			{ id: 'm2', author: 'Fair', time: '11/5/2025 22:27', text: 'are u the tv station\nkzStation' },
-			{ id: 'm3', author: friend.username, time: '11/5/2025 22:27', text: 'yes vro kzStation' },
-			{ id: 'm4', author: 'Fair', time: '11/5/2025 22:27', text: 'time for me to kzSleep' },
-			{ id: 'm5', author: friend.username, time: '11/5/2025 22:27', text: 'kzNight vro' },
-			{ id: 'm6', author: friend.username, time: '11/5/2025 22:27', text: 'nooo vro kzsleep is kzbad vro\nkzcode is better vro' }
-		],
-		[friend.username]
-	)
+	const { messages, sendMessage, users } = useStageData({ channelId })
+	const [inputValue, setInputValue] = useState('')
+
+	// Create a map of user IDs to users for quick lookup
+	const userMap = useMemo(() => {
+		const map = new Map<string, StageUser>()
+		for (const u of users) {
+			map.set(u.id, u)
+		}
+		return map
+	}, [users])
+
+	const handleSendMessage = useCallback(async () => {
+		const content = inputValue.trim()
+		if (!content) return
+
+		try {
+			await sendMessage(content, channelId)
+			setInputValue('')
+		} catch (err) {
+			console.error('Failed to send message:', err)
+		}
+	}, [inputValue, channelId, sendMessage])
+
+	const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === 'Enter' && !e.shiftKey) {
+			e.preventDefault()
+			handleSendMessage()
+		}
+	}, [handleSendMessage])
 
 	return (
 		<div className={styles.root}>
 			<div className={styles.body}>
-				{messages.map((m) => (
-					<div key={m.id} className={styles.msgGroup}>
-						<Avatar imageUrl={null} size={40} />
-						<div className={styles.msgContent}>
-							<div className={styles.meta}>
-								<div className={styles.author}>{m.author}</div>
-								<div className={styles.time}>{m.time}</div>
-							</div>
-							<div className={styles.text}>{m.text}</div>
+				{messages.length === 0 ? (
+					<div className={styles.emptyState}>
+						<Avatar imageUrl={user.avatar ? getAvatarUrl(user.id, user.avatar, 80) : null} size={80} />
+						<div className={styles.emptyTitle}>{user.username}</div>
+						<div className={styles.emptySubtitle}>
+							This is the beginning of your direct message history with <strong>@{user.username}</strong>.
 						</div>
 					</div>
-				))}
+				) : (
+					messages.map((m) => {
+						const author = userMap.get(m.author.id) ?? m.author
+						const avatarUrl = author.avatar ? getAvatarUrl(author.id, author.avatar, 40) : null
+						return (
+							<div key={m.id} className={styles.msgGroup}>
+								<Avatar imageUrl={avatarUrl} size={40} />
+								<div className={styles.msgContent}>
+									<div className={styles.meta}>
+										<div className={styles.author}>{author.username}</div>
+										<div className={styles.time}>{formatTimestamp(m.timestamp)}</div>
+									</div>
+									<div className={styles.text}>{m.content}</div>
+								</div>
+							</div>
+						)
+					})
+				)}
 			</div>
 
 			<div className={styles.composerWrap}>
@@ -75,7 +118,13 @@ export function DirectMessageView({
 							<PlusCircleIcon />
 						</IconButton>
 					</div>
-					<input className={styles.input} placeholder={`Message @${friend.username}`} />
+					<input
+						className={styles.input}
+						placeholder={`Message @${user.username}`}
+						value={inputValue}
+						onChange={(e) => setInputValue(e.target.value)}
+						onKeyDown={handleKeyDown}
+					/>
 					<div className={styles.composerRight}>
 						<IconButton ariaLabel="Gift" size="sm">
 							<GiftIcon />
@@ -89,5 +138,3 @@ export function DirectMessageView({
 		</div>
 	)
 }
-
-

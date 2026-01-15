@@ -1,19 +1,19 @@
 {
-  "name": "robo-bot",
-  "version": "1.0.0",
-  "description": "A Robo.js Discord bot",
-  "type": "module",
-  "scripts": {
-    "dev": "robo dev",
-    "build": "robo build",
-    "start": "robo start"
-  },
-  "dependencies": {
-    "robo.js": "^0.10.0",
-    "@robojs/discordjs": "^0.5.0"
-  },
-  "devDependencies": {
-    "typescript": "^5.0.0",
-    "@robojs/mock": "^0.1.0"
-  }
+	"name": "robo-bot",
+	"version": "1.0.0",
+	"description": "A Robo.js Discord bot",
+	"type": "module",
+	"scripts": {
+		"dev": "robo dev",
+		"build": "robo build",
+		"start": "robo start"
+	},
+	"dependencies": {
+		"robo.js": "^0.10.0",
+		"@robojs/discordjs": "^0.5.0"
+	},
+	"devDependencies": {
+		"typescript": "^5.0.0",
+		"@robojs/mock": "^0.1.0"
+	}
 }

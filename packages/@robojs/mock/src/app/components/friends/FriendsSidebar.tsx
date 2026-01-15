@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
-import type { FriendRowData } from './friends.data'
-import { FRIENDS } from './friends.data'
+import type { StageUser } from '../../types/stage'
+import { useStageData } from '../../hooks/useStageData'
+import { getAvatarUrl } from '../../utils/avatar'
 import { Avatar, IconButton, SearchInput } from '../ui'
 import ShopIcon from '../icons/shop'
 import QuestsIcon from '../icons/quests'
@@ -66,17 +67,18 @@ function CloseIcon() {
 }
 
 function DmRow({
-	friend,
+	user,
 	selected,
 	onOpen,
 	onClose
 }: {
-	friend: FriendRowData
+	user: StageUser
 	selected: boolean
 	onOpen: () => void
 	onClose: () => void
 }) {
-	const subtitle = friend.subtitle?.trim()
+	const subtitle = user.activities?.[0]?.state?.trim() ?? ''
+	const avatarUrl = user.avatar ? getAvatarUrl(user.id, user.avatar, 32) : null
 
 	return (
 		<button
@@ -86,22 +88,22 @@ function DmRow({
 		>
 			<div className={styles.dmAvatar}>
 				<Avatar
-					imageUrl={friend.avatar}
+					imageUrl={avatarUrl}
 					size={32}
 					showStatus
 					statusBorderColor="var(--sidebar-left-background)"
-					statusColor={`var(--status-${friend.status ?? 'online'})`}
+					statusColor={`var(--status-${user.status ?? 'online'})`}
 				/>
 			</div>
 			<div className={styles.dmText}>
-				<div className={styles.dmName}>{friend.username}</div>
+				<div className={styles.dmName}>{user.username}</div>
 				{subtitle ? <div className={styles.dmSub}>{subtitle}</div> : null}
 			</div>
 			{selected && (
 				<button
 					type="button"
 					className={[styles.dmClose, 'icon-button'].join(' ')}
-					aria-label={`Close DM ${friend.username}`}
+					aria-label={`Close DM ${user.username}`}
 					title="Close"
 					onClick={(e) => {
 						e.stopPropagation()
@@ -115,7 +117,12 @@ function DmRow({
 	)
 }
 
-export function FriendsSidebar({ openFriend, onOpenFriend }: { openFriend: FriendRowData | null; onOpenFriend: (friend: FriendRowData | null) => void }) {
+export function FriendsSidebar({ openUser, onOpenUser }: { openUser: StageUser | null; onOpenUser: (user: StageUser | null) => void }) {
+	const { users } = useStageData()
+
+	// Filter out bot users to show only "friends" (non-bot users)
+	const friends = users.filter((u) => !u.bot)
+
 	return (
 		<div>
 			<div className={styles.topSearch}>
@@ -123,7 +130,7 @@ export function FriendsSidebar({ openFriend, onOpenFriend }: { openFriend: Frien
 			</div>
 
 			<nav className={styles.nav} aria-label="Primary">
-				<NavItem icon={<FriendsIcon />} label="Friends" selected={!openFriend} onClick={() => onOpenFriend(null)} />
+				<NavItem icon={<FriendsIcon />} label="Friends" selected={!openUser} onClick={() => onOpenUser(null)} />
 				<NavItem icon={<NitroIcon />} label="Nitro Home" />
 				<NavItem icon={<ShopIcon />} label="Shop" />
 				<NavItem icon={<QuestsIcon />} label="Quests" />
@@ -137,18 +144,16 @@ export function FriendsSidebar({ openFriend, onOpenFriend }: { openFriend: Frien
 			</div>
 
 			<div className={styles.dmList} aria-label="Direct Messages">
-				{FRIENDS.map((friend) => (
+				{friends.map((user) => (
 					<DmRow
-						key={friend.id}
-						friend={friend}
-						selected={openFriend?.id === friend.id}
-						onOpen={() => onOpenFriend(friend)}
-						onClose={() => onOpenFriend(null)}
+						key={user.id}
+						user={user}
+						selected={openUser?.id === user.id}
+						onOpen={() => onOpenUser(user)}
+						onClose={() => onOpenUser(null)}
 					/>
 				))}
 			</div>
 		</div>
 	)
 }
-
-

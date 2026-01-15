@@ -99,10 +99,7 @@ describe('checkCommandArgPolicy', () => {
 
 	describe('requireApproval patterns', () => {
 		const argPolicy: CommandArgPolicy = {
-			requireApproval: [
-				{ command: 'npx' },
-				{ command: 'npm', argsPrefix: ['run'] }
-			]
+			requireApproval: [{ command: 'npx' }, { command: 'npm', argsPrefix: ['run'] }]
 		}
 
 		it('should require approval for entire command', () => {
@@ -207,20 +204,14 @@ describe('checkFilePolicy', () => {
 	describe('size limits', () => {
 		it('should enforce maxFileWriteBytes', () => {
 			const policy = createPolicy({ maxFileWriteBytes: 1000 })
-			const result = checkFilePolicy(
-				{ path: '/file.txt', operation: 'write', size: 2000 },
-				policy
-			)
+			const result = checkFilePolicy({ path: '/file.txt', operation: 'write', size: 2000 }, policy)
 			expect(result.allowed).toBe(false)
 			expect(result.reason).toContain('exceeds')
 		})
 
 		it('should allow writes under limit', () => {
 			const policy = createPolicy({ maxFileWriteBytes: 1000 })
-			const result = checkFilePolicy(
-				{ path: '/file.txt', operation: 'write', size: 500 },
-				policy
-			)
+			const result = checkFilePolicy({ path: '/file.txt', operation: 'write', size: 500 }, policy)
 			expect(result.allowed).toBe(true)
 		})
 	})
@@ -337,10 +328,7 @@ describe('PolicyValidator', () => {
 		it('should return autoApprove setting', () => {
 			expect(validator.isAutoApprove()).toBe(false)
 
-			const approvedValidator = new PolicyValidator(
-				createPolicy({ autoApprove: true }),
-				'test-run'
-			)
+			const approvedValidator = new PolicyValidator(createPolicy({ autoApprove: true }), 'test-run')
 			expect(approvedValidator.isAutoApprove()).toBe(true)
 		})
 	})

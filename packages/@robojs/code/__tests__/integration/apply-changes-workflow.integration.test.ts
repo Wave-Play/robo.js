@@ -120,16 +120,11 @@ describe('Apply Changes Integration: Full Workflow', () => {
 		await applyChangesTool.execute({ changes }, context)
 
 		// Verify with read tools
-		const readResult = await fsReadManyTool.execute(
-			{ paths: ['/src/a.ts', '/src/b.ts', '/src/c.ts'] },
-			context
-		)
+		const readResult = await fsReadManyTool.execute({ paths: ['/src/a.ts', '/src/b.ts', '/src/c.ts'] }, context)
 
 		expect(readResult.success).toBe(true)
 		expect(readResult.data?.files).toHaveLength(3)
-		expect(readResult.data?.files.find((f) => f.path === '/src/a.ts')?.content).toBe(
-			'const a = 1;'
-		)
+		expect(readResult.data?.files.find((f) => f.path === '/src/a.ts')?.content).toBe('const a = 1;')
 	})
 })
 
@@ -225,9 +220,7 @@ describe('Apply Changes Integration: Approval Flow', () => {
 		const { provider, files } = createMockFileSystem({})
 		const context = createContext({ autoApprove: true }, provider)
 
-		const changes: FileChange[] = [
-			{ type: 'create', path: '/auto-approved.ts', content: 'content' }
-		]
+		const changes: FileChange[] = [{ type: 'create', path: '/auto-approved.ts', content: 'content' }]
 
 		const result = await applyChangesTool.execute({ changes }, context)
 
@@ -242,9 +235,7 @@ describe('Apply Changes Integration: Approval Flow', () => {
 		})
 		const context = createContext({ autoApprove: false }, provider)
 
-		const changes: FileChange[] = [
-			{ type: 'modify', path: '/file.ts', content: 'new1\nnew2\nnew3' }
-		]
+		const changes: FileChange[] = [{ type: 'modify', path: '/file.ts', content: 'new1\nnew2\nnew3' }]
 
 		const result = await applyChangesTool.execute({ changes }, context)
 
@@ -288,9 +279,7 @@ describe('Apply Changes Integration: Event Emission', () => {
 	it('should not emit events on validation failure', async () => {
 		const { provider } = createMockFileSystem({})
 		const events: AgentEvent[] = []
-		const context = createContext({ autoApprove: true, denyPaths: ['.env'] }, provider, (e) =>
-			events.push(e)
-		)
+		const context = createContext({ autoApprove: true, denyPaths: ['.env'] }, provider, (e) => events.push(e))
 
 		const changes: FileChange[] = [{ type: 'create', path: '/.env', content: 'secret' }]
 
@@ -306,9 +295,7 @@ describe('Apply Changes Integration: Edge Cases', () => {
 		const { provider, files } = createMockFileSystem({})
 		const context = createContext({ autoApprove: true }, provider)
 
-		const changes: FileChange[] = [
-			{ type: 'modify', path: '/nonexistent.ts', content: 'created via modify' }
-		]
+		const changes: FileChange[] = [{ type: 'modify', path: '/nonexistent.ts', content: 'created via modify' }]
 
 		const result = await applyChangesTool.execute({ changes }, context)
 

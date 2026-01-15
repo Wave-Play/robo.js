@@ -82,10 +82,7 @@ export function adaptMcpTool(
 					)
 				})
 
-				const result = await Promise.race([
-					mcpTool.execute(input),
-					timeoutPromise
-				])
+				const result = await Promise.race([mcpTool.execute(input), timeoutPromise])
 
 				const duration = Date.now() - startTime
 				codeLogger.debug(`MCP tool '${mcpTool.name}' completed in ${duration}ms`)
@@ -125,10 +122,7 @@ export function adaptMcpTool(
  * Handle result from a remote MCP tool (patch-plan rule)
  * Remote tools cannot modify files directly - they return proposed changes
  */
-function handleRemoteToolResult(
-	result: unknown,
-	metadata: McpToolMetadata
-): ToolResult<unknown> {
+function handleRemoteToolResult(result: unknown, metadata: McpToolMetadata): ToolResult<unknown> {
 	// Try to parse as McpRemoteToolResult
 	const remoteResult = result as McpRemoteToolResult
 
@@ -211,11 +205,8 @@ function createZodSchemaFromJsonSchema(_jsonSchema: Record<string, unknown>): z.
 /**
  * Adapt multiple MCP tools
  */
-export function adaptMcpTools(
-	mcpTools: McpToolDefinition[],
-	options: McpToolAdapterOptions = {}
-): ToolDefinition[] {
-	return mcpTools.map(tool => adaptMcpTool(tool, options))
+export function adaptMcpTools(mcpTools: McpToolDefinition[], options: McpToolAdapterOptions = {}): ToolDefinition[] {
+	return mcpTools.map((tool) => adaptMcpTool(tool, options))
 }
 
 /**

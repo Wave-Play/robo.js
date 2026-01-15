@@ -22,7 +22,9 @@ function createMockProvider(files: Record<string, string> = {}) {
 	})
 	const writeFileFn = jest.fn(async () => {})
 	const readdirFn = jest.fn(async () => [] as Array<{ name: string; path: string; isDirectory: boolean }>)
-	const searchFn = jest.fn(async () => [] as Array<{ path: string; matches?: Array<{ line: number; column: number; text: string }> }>)
+	const searchFn = jest.fn(
+		async () => [] as Array<{ path: string; matches?: Array<{ line: number; column: number; text: string }> }>
+	)
 
 	return {
 		readFile: readFileFn,
@@ -56,7 +58,10 @@ function createPolicy(overrides: Partial<AgentPolicy> = {}): AgentPolicy {
 	}
 }
 
-function createContext(policy: Partial<AgentPolicy> = {}, provider?: ReturnType<typeof createMockProvider>): ToolContext {
+function createContext(
+	policy: Partial<AgentPolicy> = {},
+	provider?: ReturnType<typeof createMockProvider>
+): ToolContext {
 	return {
 		provider: (provider ?? createMockProvider()) as unknown as ExecutionProvider,
 		policy: createPolicy(policy),
@@ -129,10 +134,7 @@ describe('fs_read deny-path enforcement', () => {
 describe('fs_read_many deny-path enforcement', () => {
 	it('should deny all paths if any are denied', async () => {
 		const context = createContext()
-		const result = await fsReadManyTool.execute(
-			{ paths: ['/src/index.ts', '/.env', '/package.json'] },
-			context
-		)
+		const result = await fsReadManyTool.execute({ paths: ['/src/index.ts', '/.env', '/package.json'] }, context)
 
 		expect(result.success).toBe(false)
 		expect(result.errorCode).toBe('POLICY_VIOLATION')
@@ -144,10 +146,7 @@ describe('fs_read_many deny-path enforcement', () => {
 			'/package.json': '{}'
 		})
 		const context = createContext({}, provider)
-		const result = await fsReadManyTool.execute(
-			{ paths: ['/src/index.ts', '/package.json'] },
-			context
-		)
+		const result = await fsReadManyTool.execute({ paths: ['/src/index.ts', '/package.json'] }, context)
 
 		expect(result.success).toBe(true)
 		expect(result.data?.files).toHaveLength(2)
@@ -157,10 +156,7 @@ describe('fs_read_many deny-path enforcement', () => {
 describe('fs_write deny-path enforcement', () => {
 	it('should deny writing to .env files', async () => {
 		const context = createContext()
-		const result = await fsWriteTool.execute(
-			{ path: '/.env', content: 'SECRET=value' },
-			context
-		)
+		const result = await fsWriteTool.execute({ path: '/.env', content: 'SECRET=value' }, context)
 
 		expect(result.success).toBe(false)
 		expect(result.errorCode).toBe('POLICY_VIOLATION')
@@ -168,10 +164,7 @@ describe('fs_write deny-path enforcement', () => {
 
 	it('should deny writing to .git directory', async () => {
 		const context = createContext()
-		const result = await fsWriteTool.execute(
-			{ path: '/.git/config', content: 'malicious content' },
-			context
-		)
+		const result = await fsWriteTool.execute({ path: '/.git/config', content: 'malicious content' }, context)
 
 		expect(result.success).toBe(false)
 		expect(result.errorCode).toBe('POLICY_VIOLATION')
@@ -180,10 +173,7 @@ describe('fs_write deny-path enforcement', () => {
 	it('should allow writing to non-denied paths', async () => {
 		const provider = createMockProvider()
 		const context = createContext({}, provider)
-		const result = await fsWriteTool.execute(
-			{ path: '/src/new-file.ts', content: 'export const x = 1' },
-			context
-		)
+		const result = await fsWriteTool.execute({ path: '/src/new-file.ts', content: 'export const x = 1' }, context)
 
 		expect(result.success).toBe(true)
 		expect(provider.writeFile).toHaveBeenCalledWith('/src/new-file.ts', 'export const x = 1')

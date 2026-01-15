@@ -16,11 +16,7 @@ import type { TestRunnerConfig } from '../../src/verification/runner-selection.j
 import type { ScenarioSpec } from '../../src/types/acceptance.js'
 
 // Helper to create a scenario spec
-function createScenario(
-	id: string,
-	kind: ScenarioSpec['kind'],
-	overrides: Partial<ScenarioSpec> = {}
-): ScenarioSpec {
+function createScenario(id: string, kind: ScenarioSpec['kind'], overrides: Partial<ScenarioSpec> = {}): ScenarioSpec {
 	return {
 		id,
 		title: `Test ${id}`,
@@ -194,9 +190,7 @@ describe('mapScenarioToAction', () => {
 	describe('mock scenarios', () => {
 		it('should map mock scenario', () => {
 			const scenario = createScenario('mock-1', 'mock', {
-				steps: [
-					{ action: 'send message', input: '/ping' }
-				],
+				steps: [{ action: 'send message', input: '/ping' }],
 				assertions: ['response contains "pong"']
 			})
 
@@ -225,9 +219,7 @@ describe('mapScenarioToAction', () => {
 	describe('manual scenarios', () => {
 		it('should map manual scenario', () => {
 			const scenario = createScenario('manual-1', 'manual', {
-				steps: [
-					{ action: 'verify UI looks correct', expected: 'UI is correct' }
-				]
+				steps: [{ action: 'verify UI looks correct', expected: 'UI is correct' }]
 			})
 
 			const action = mapScenarioToAction(scenario, defaultContext)
@@ -269,11 +261,7 @@ describe('mapScenariosToActions', () => {
 	})
 
 	it('should preserve scenario order', () => {
-		const scenarios = [
-			createScenario('a', 'mock'),
-			createScenario('b', 'build'),
-			createScenario('c', 'test')
-		]
+		const scenarios = [createScenario('a', 'mock'), createScenario('b', 'build'), createScenario('c', 'test')]
 
 		const actions = mapScenariosToActions(scenarios, roboContext)
 
@@ -331,10 +319,7 @@ describe('groupActionsByType', () => {
 
 describe('requiresMockServer', () => {
 	it('should return true for mock scenarios', () => {
-		const scenarios = [
-			createScenario('build-1', 'build'),
-			createScenario('mock-1', 'mock')
-		]
+		const scenarios = [createScenario('build-1', 'build'), createScenario('mock-1', 'mock')]
 
 		expect(requiresMockServer(scenarios)).toBe(true)
 	})
@@ -350,10 +335,7 @@ describe('requiresMockServer', () => {
 	})
 
 	it('should return false when no mock scenarios', () => {
-		const scenarios = [
-			createScenario('build-1', 'build'),
-			createScenario('test-1', 'test')
-		]
+		const scenarios = [createScenario('build-1', 'build'), createScenario('test-1', 'test')]
 
 		expect(requiresMockServer(scenarios)).toBe(false)
 	})
@@ -375,10 +357,7 @@ describe('requiresDevServer', () => {
 	})
 
 	it('should return false when no dev server required', () => {
-		const scenarios = [
-			createScenario('build-1', 'build'),
-			createScenario('test-1', 'test')
-		]
+		const scenarios = [createScenario('build-1', 'build'), createScenario('test-1', 'test')]
 
 		expect(requiresDevServer(scenarios)).toBe(false)
 	})
@@ -390,19 +369,13 @@ describe('requiresDevServer', () => {
 
 describe('hasManualScenarios', () => {
 	it('should return true for manual scenarios', () => {
-		const scenarios = [
-			createScenario('test-1', 'test'),
-			createScenario('manual-1', 'manual')
-		]
+		const scenarios = [createScenario('test-1', 'test'), createScenario('manual-1', 'manual')]
 
 		expect(hasManualScenarios(scenarios)).toBe(true)
 	})
 
 	it('should return false when no manual scenarios', () => {
-		const scenarios = [
-			createScenario('build-1', 'build'),
-			createScenario('mock-1', 'mock')
-		]
+		const scenarios = [createScenario('build-1', 'build'), createScenario('mock-1', 'mock')]
 
 		expect(hasManualScenarios(scenarios)).toBe(false)
 	})

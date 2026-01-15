@@ -1,4 +1,5 @@
-import type { FriendRowData } from '../friends.data'
+import type { StageUser } from '../../../types/stage'
+import { getAvatarUrl } from '../../../utils/avatar'
 import { Avatar } from '../../ui'
 import styles from './FriendProfilePanel.module.css'
 
@@ -18,9 +19,10 @@ function MoreIcon() {
 	)
 }
 
-export function FriendProfilePanel({ friend }: { friend: FriendRowData }) {
-	const username = friend.username
-	const handle = `${username.toLowerCase()}2977`
+export function FriendProfilePanel({ user }: { user: StageUser }) {
+	const username = user.global_name ?? user.username
+	const handle = user.discriminator ? `${user.username.toLowerCase()}#${user.discriminator}` : user.username.toLowerCase()
+	const avatarUrl = user.avatar ? getAvatarUrl(user.id, user.avatar, 72) : null
 
 	return (
 		<div className={styles.root}>
@@ -40,11 +42,11 @@ export function FriendProfilePanel({ friend }: { friend: FriendRowData }) {
 					<div className={styles.identity}>
 						<div className={styles.avatarRing}>
 							<Avatar
-								imageUrl={null}
+								imageUrl={avatarUrl}
 								size={72}
 								showStatus
 								statusBorderColor="var(--sidebar-left-background)"
-								statusColor="var(--status-online)"
+								statusColor={`var(--status-${user.status ?? 'online'})`}
 							/>
 						</div>
 						<div className={styles.nameBlock}>
@@ -55,16 +57,16 @@ export function FriendProfilePanel({ friend }: { friend: FriendRowData }) {
 
 					<div className={styles.card}>
 						<div className={styles.cardTitle}>Member Since</div>
-						<div className={styles.cardValue}>Jun 19, 2016</div>
+						<div className={styles.cardValue}>-</div>
 					</div>
 
 					<div className={styles.linkGroup} role="group" aria-label="Mutuals">
 						<button className={styles.linkRow} type="button">
-							<span>Mutual Servers - 1</span>
+							<span>Mutual Servers</span>
 							<span className={styles.chev}>&gt;</span>
 						</button>
 						<button className={styles.linkRow} type="button">
-							<span>Mutual Friends - 3</span>
+							<span>Mutual Friends</span>
 							<span className={styles.chev}>&gt;</span>
 						</button>
 					</div>

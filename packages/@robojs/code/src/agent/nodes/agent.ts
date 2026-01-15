@@ -9,7 +9,12 @@ import type { ToolSchema } from '../../tools/types.js'
 import type { CodeAgentContext } from '../types.js'
 import { codeLogger } from '../../core/logger.js'
 import { ContextCompactor } from '../compaction/index.js'
-import { createSystemPromptEvent, createLlmMetaEvent, createTokenUsageEvent, createContextCompactedEvent } from '../events/debug-events.js'
+import {
+	createSystemPromptEvent,
+	createLlmMetaEvent,
+	createTokenUsageEvent,
+	createContextCompactedEvent
+} from '../events/debug-events.js'
 import { countContextTokens, countMessagesTokens } from '../token-counter.js'
 import { getModelContextLimit } from '../token-limits.js'
 import type { ChatRequest, ChatResponse, StreamChunk, ToolCall } from '../../types/llm.js'
@@ -52,19 +57,14 @@ export function agentNode(context: CodeAgentContext) {
 		const modelContextLimit = policy.context?.modelContextLimit ?? getModelContextLimit(context.modelAlias)
 
 		// Get tool schemas for binding (only in execute mode) - needed for token counting
-		const toolSchemas: ToolSchema[] =
-			state.mode === 'execute' ? toolRegistry.getSchemas() : []
+		const toolSchemas: ToolSchema[] = state.mode === 'execute' ? toolRegistry.getSchemas() : []
 
 		// Build system prompt for token counting (will rebuild after potential compaction)
 		const stateForPrompt = state.summary ? state : state
 		const systemPromptForCounting = buildSystemPrompt(stateForPrompt, context)
 
 		// Count current context tokens BEFORE compaction decision
-		const preCompactionTokens = countContextTokens(
-			systemPromptForCounting,
-			state.messages,
-			toolSchemas
-		)
+		const preCompactionTokens = countContextTokens(systemPromptForCounting, state.messages, toolSchemas)
 
 		codeLogger.debug('[Agent] Pre-compaction token count', {
 			systemPromptTokens: preCompactionTokens.systemPromptTokens,
@@ -115,14 +115,16 @@ export function agentNode(context: CodeAgentContext) {
 
 				// Debug event: emit context compaction details with token info
 				if (context.debugMode) {
-					context.onEvent?.(createContextCompactedEvent(
-						result.droppedCount,
-						result.summary,
-						state.messages.length,
-						result.trimmedMessages.length,
-						result.beforeTokens,
-						result.afterTokens
-					))
+					context.onEvent?.(
+						createContextCompactedEvent(
+							result.droppedCount,
+							result.summary,
+							state.messages.length,
+							result.trimmedMessages.length,
+							result.beforeTokens,
+							result.afterTokens
+						)
+					)
 				}
 			}
 		}
@@ -164,7 +166,7 @@ export function agentNode(context: CodeAgentContext) {
 								description: t.description,
 								parameters: t.parameters
 							}
-						}))
+					  }))
 					: undefined,
 			toolChoice,
 			modelAlias: context.modelAlias
@@ -282,20 +284,20 @@ export function agentNode(context: CodeAgentContext) {
 
 		// Debug events: emit LLM metadata and token usage
 		if (context.debugMode) {
-			context.onEvent?.(createLlmMetaEvent(
-				response.model ?? 'unknown',
-				response.finishReason ?? 'unknown',
-				llmDurationMs
-			))
+			context.onEvent?.(
+				createLlmMetaEvent(response.model ?? 'unknown', response.finishReason ?? 'unknown', llmDurationMs)
+			)
 
 			if (response.usage) {
-				context.onEvent?.(createTokenUsageEvent(
-					response.usage.promptTokens ?? 0,
-					response.usage.completionTokens ?? 0,
-					response.usage.totalTokens ?? 0,
-					response.model ?? 'unknown',
-					newTokenUsage
-				))
+				context.onEvent?.(
+					createTokenUsageEvent(
+						response.usage.promptTokens ?? 0,
+						response.usage.completionTokens ?? 0,
+						response.usage.totalTokens ?? 0,
+						response.model ?? 'unknown',
+						newTokenUsage
+					)
+				)
 			}
 		}
 
@@ -331,7 +333,7 @@ export function agentNode(context: CodeAgentContext) {
 
 		// Calculate final context token count (after potential compaction)
 		const finalContextTokens = compactionResult
-			? (compactionResult.afterTokens ?? preCompactionTokens.totalTokens)
+			? compactionResult.afterTokens ?? preCompactionTokens.totalTokens
 			: preCompactionTokens.totalTokens
 
 		// Build state update

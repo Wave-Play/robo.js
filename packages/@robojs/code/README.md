@@ -25,21 +25,21 @@ pnpm add @robojs/code
 
 ```typescript
 import {
-  // Types
-  ExecutionProvider,
-  LocalServiceDiscovery,
-  LLMProvider,
-  AgentPolicy,
-  AgentEvent,
-  StreamOptions,
-  RunMode,
-  // ... and more
+	// Types
+	ExecutionProvider,
+	LocalServiceDiscovery,
+	LLMProvider,
+	AgentPolicy,
+	AgentEvent,
+	StreamOptions,
+	RunMode,
+	// ... and more
 
-  // Values
-  CodeAgentError,
-  DEFAULT_POLICY,
-  DEFAULT_STREAM_OPTIONS,
-  codeLogger
+	// Values
+	CodeAgentError,
+	DEFAULT_POLICY,
+	DEFAULT_STREAM_OPTIONS,
+	codeLogger
 } from '@robojs/code'
 ```
 
@@ -47,13 +47,13 @@ import {
 
 ```typescript
 import type {
-  FileChange,
-  FileDiff,
-  ProjectProfile,
-  AcceptanceCriteria,
-  ProjectIndex,
-  ProjectOverview,
-  RunMeta
+	FileChange,
+	FileDiff,
+	ProjectProfile,
+	AcceptanceCriteria,
+	ProjectIndex,
+	ProjectOverview,
+	RunMeta
 } from '@robojs/code/types'
 ```
 
@@ -65,22 +65,22 @@ The authoritative interface for filesystem and command execution:
 
 ```typescript
 interface ExecutionProvider {
-  // File operations
-  readFile(path: string): Promise<string>
-  writeFile(path: string, content: string): Promise<void>
-  deletePath(path: string, opts?: { recursive?: boolean }): Promise<void>
-  exists(path: string): Promise<boolean>
-  readdir(path: string, opts?: { recursive?: boolean }): Promise<DirEntry[]>
-  // ... more file operations
+	// File operations
+	readFile(path: string): Promise<string>
+	writeFile(path: string, content: string): Promise<void>
+	deletePath(path: string, opts?: { recursive?: boolean }): Promise<void>
+	exists(path: string): Promise<boolean>
+	readdir(path: string, opts?: { recursive?: boolean }): Promise<DirEntry[]>
+	// ... more file operations
 
-  // Command execution (no shell interpolation)
-  run(command: string, args: string[], opts?: RunOptions): Promise<RunResult>
-  runStream(command: string, args: string[], opts?: RunOptions): AsyncIterable<TerminalChunk>
+	// Command execution (no shell interpolation)
+	run(command: string, args: string[], opts?: RunOptions): Promise<RunResult>
+	runStream(command: string, args: string[], opts?: RunOptions): AsyncIterable<TerminalChunk>
 
-  // Long-running sessions
-  startSession(command: string, args: string[], opts?: RunOptions): Promise<TerminalSessionHandle>
-  stopSession(handle: TerminalSessionHandle): Promise<void>
-  streamSession(handle: TerminalSessionHandle): AsyncIterable<TerminalChunk>
+	// Long-running sessions
+	startSession(command: string, args: string[], opts?: RunOptions): Promise<TerminalSessionHandle>
+	stopSession(handle: TerminalSessionHandle): Promise<void>
+	streamSession(handle: TerminalSessionHandle): AsyncIterable<TerminalChunk>
 }
 ```
 
@@ -90,10 +90,10 @@ Client-side model selection aliases (capability order ascending):
 
 ```typescript
 type BrandedModelAlias =
-  | 'Sage'              // Entry-level capable model
-  | 'Great Sage'        // Mid-tier capable model
-  | 'Raphael'           // High capability model
-  | 'Words of the World' // Most capable model (highest tier)
+	| 'Sage' // Entry-level capable model
+	| 'Great Sage' // Mid-tier capable model
+	| 'Raphael' // High capability model
+	| 'Words of the World' // Most capable model (highest tier)
 ```
 
 ### AgentPolicy
@@ -102,13 +102,13 @@ Security and execution policy:
 
 ```typescript
 interface AgentPolicy {
-  autoApprove: boolean
-  maxIterations: number
-  commandAllowlist: string[]
-  commandArgPolicy?: CommandArgPolicy
-  denyPaths?: string[]
-  maxFileWriteBytes?: number
-  // ... more policy options
+	autoApprove: boolean
+	maxIterations: number
+	commandAllowlist: string[]
+	commandArgPolicy?: CommandArgPolicy
+	denyPaths?: string[]
+	maxFileWriteBytes?: number
+	// ... more policy options
 }
 ```
 
@@ -118,13 +118,13 @@ UI streaming contract:
 
 ```typescript
 type AgentEvent =
-  | { type: 'start'; runId: string; instruction: string }
-  | { type: 'plan'; steps: TaskStep[] }
-  | { type: 'tool_call'; source: 'core'; name: string; args: unknown }
-  | { type: 'question'; runId: string; text: string; choices?: QuestionChoice[] }
-  | { type: 'approval_required'; runId: string; changes: FileChange[]; diffs?: FileDiff[] }
-  | { type: 'complete'; summary: string; changes: FileChange[] }
-  // ... more event types
+	| { type: 'start'; runId: string; instruction: string }
+	| { type: 'plan'; steps: TaskStep[] }
+	| { type: 'tool_call'; source: 'core'; name: string; args: unknown }
+	| { type: 'question'; runId: string; text: string; choices?: QuestionChoice[] }
+	| { type: 'approval_required'; runId: string; changes: FileChange[]; diffs?: FileDiff[] }
+	| { type: 'complete'; summary: string; changes: FileChange[] }
+// ... more event types
 ```
 
 ## Run Modes
@@ -139,12 +139,12 @@ type AgentEvent =
 import { CodeAgentError } from '@robojs/code'
 
 try {
-  // agent operations
+	// agent operations
 } catch (error) {
-  if (CodeAgentError.isCodeAgentError(error)) {
-    console.log(error.code) // 'POLICY_VIOLATION', 'BUDGET_EXCEEDED', etc.
-    console.log(error.recoverable)
-  }
+	if (CodeAgentError.isCodeAgentError(error)) {
+		console.log(error.code) // 'POLICY_VIOLATION', 'BUDGET_EXCEEDED', etc.
+		console.log(error.recoverable)
+	}
 }
 ```
 

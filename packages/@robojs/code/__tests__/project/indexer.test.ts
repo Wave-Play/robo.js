@@ -11,10 +11,7 @@ import type { DirEntry, FileStat } from '../../src/types/terminal.js'
 /**
  * Create a mock provider for testing
  */
-function createMockProvider(
-	files: Record<string, string> = {},
-	options: { mtimeMs?: number } = {}
-): ExecutionProvider {
+function createMockProvider(files: Record<string, string> = {}, options: { mtimeMs?: number } = {}): ExecutionProvider {
 	const { mtimeMs = 1000000 } = options
 
 	const mockProvider: ExecutionProvider = {

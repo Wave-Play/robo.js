@@ -1,4 +1,5 @@
-import type { FriendRowData } from '../friends.data'
+import type { StageUser } from '../../../types/stage'
+import { getAvatarUrl } from '../../../utils/avatar'
 import { Avatar, IconButton, SearchInput } from '../../ui'
 import PinIcon from '../../icons/pin'
 import styles from './DirectMessageHeader.module.css'
@@ -36,25 +37,28 @@ function ProfileIcon() {
 }
 
 export function DirectMessageHeader({
-	friend,
+	user,
 	profileOpen,
 	onToggleProfile
 }: {
-	friend: FriendRowData
+	user: StageUser
 	profileOpen: boolean
 	onToggleProfile: () => void
 }) {
-	const handle = `${friend.username.toLowerCase()}2977`
+	const handle = user.discriminator ? `${user.username.toLowerCase()}#${user.discriminator}` : user.username.toLowerCase()
+	const avatarUrl = user.avatar ? getAvatarUrl(user.id, user.avatar, 28) : null
 
 	return (
 		<div className={styles.header}>
 			<div className={styles.left}>
-				<Avatar imageUrl={null} size={28} showStatus statusBorderColor="var(--main-chat-background)" statusColor="var(--status-online)" />
-				<div className={styles.name}>{friend.username}</div>
-				<div className={styles.aka}>
-					<span className={styles.akaLabel}>AKA</span>
-					<span className={styles.akaValue}>고키</span>
-				</div>
+				<Avatar imageUrl={avatarUrl} size={28} showStatus statusBorderColor="var(--main-chat-background)" statusColor={`var(--status-${user.status ?? 'online'})`} />
+				<div className={styles.name}>{user.username}</div>
+				{user.global_name && user.global_name !== user.username && (
+					<div className={styles.aka}>
+						<span className={styles.akaLabel}>AKA</span>
+						<span className={styles.akaValue}>{user.global_name}</span>
+					</div>
+				)}
 			</div>
 			<div className={styles.right}>
 				<IconButton ariaLabel="Start voice call" size="sm">
@@ -82,5 +86,3 @@ export function DirectMessageHeader({
 		</div>
 	)
 }
-
-

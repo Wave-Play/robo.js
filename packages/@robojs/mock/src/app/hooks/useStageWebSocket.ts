@@ -98,6 +98,16 @@ export function useStageWebSocket({
 					break
 				}
 
+				case 'log_entry':
+					// Dispatch log entry to window for LogsProvider to handle
+					window.dispatchEvent(new CustomEvent('stage:log_entry', { detail: event.data }))
+					break
+
+				case 'logs_history':
+					// Dispatch historical logs to window for LogsProvider to handle
+					window.dispatchEvent(new CustomEvent('stage:logs_history', { detail: event.data }))
+					break
+
 				default:
 					// Other events just increment the counter
 					dispatch({ type: 'INCREMENT_EVENT_COUNT' })

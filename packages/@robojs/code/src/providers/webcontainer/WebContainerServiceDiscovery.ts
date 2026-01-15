@@ -15,7 +15,11 @@ import { codeLogger } from '../../core/logger.js'
  * WebContainer instance interface (minimal subset needed for discovery)
  */
 interface WebContainerInstance {
-	spawn(command: string, args?: string[], options?: { cwd?: string; env?: Record<string, string> }): Promise<{
+	spawn(
+		command: string,
+		args?: string[],
+		options?: { cwd?: string; env?: Record<string, string> }
+	): Promise<{
 		output: ReadableStream<string>
 		exit: Promise<number>
 		kill(): void

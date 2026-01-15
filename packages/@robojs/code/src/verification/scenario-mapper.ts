@@ -83,10 +83,7 @@ export interface ScenarioMappingContext {
  * @param context - Mapping context with project info
  * @returns Verification action
  */
-export function mapScenarioToAction(
-	scenario: ScenarioSpec,
-	context: ScenarioMappingContext
-): VerificationAction {
+export function mapScenarioToAction(scenario: ScenarioSpec, context: ScenarioMappingContext): VerificationAction {
 	switch (scenario.kind) {
 		case 'build':
 			return mapBuildScenario(scenario, context)
@@ -105,10 +102,7 @@ export function mapScenarioToAction(
 /**
  * Map a build scenario to a build action
  */
-function mapBuildScenario(
-	scenario: ScenarioSpec,
-	context: ScenarioMappingContext
-): BuildVerificationAction {
+function mapBuildScenario(scenario: ScenarioSpec, context: ScenarioMappingContext): BuildVerificationAction {
 	// Use robo build for Robo projects, npm run build otherwise
 	const isRoboProject = context.profile?.kind !== 'unknown' && context.profile !== null
 
@@ -124,10 +118,7 @@ function mapBuildScenario(
 /**
  * Map a test scenario to a test action
  */
-function mapTestScenario(
-	scenario: ScenarioSpec,
-	context: ScenarioMappingContext
-): TestVerificationAction {
+function mapTestScenario(scenario: ScenarioSpec, context: ScenarioMappingContext): TestVerificationAction {
 	// Get test pattern from tool hints if available
 	const pattern = scenario.toolHints?.testPattern
 
@@ -166,10 +157,7 @@ function mapTestScenario(
 /**
  * Map a mock scenario to a mock action
  */
-function mapMockScenario(
-	scenario: ScenarioSpec,
-	context: ScenarioMappingContext
-): MockVerificationAction {
+function mapMockScenario(scenario: ScenarioSpec, context: ScenarioMappingContext): MockVerificationAction {
 	return {
 		type: 'mock',
 		scenarioId: scenario.id,

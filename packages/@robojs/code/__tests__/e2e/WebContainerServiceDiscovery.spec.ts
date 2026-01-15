@@ -194,7 +194,17 @@ async function injectServiceDiscovery(page: Page): Promise<void> {
  */
 async function setupTestProject(page: Page): Promise<void> {
 	await page.evaluate(async () => {
-		const container = (window as unknown as { getWebContainer: () => { fs: { writeFile: (p: string, c: string) => Promise<void>; mkdir: (p: string, o?: { recursive?: boolean }) => Promise<void> }; spawn: (cmd: string, args?: string[]) => Promise<{ exit: Promise<number> }> } }).getWebContainer()
+		const container = (
+			window as unknown as {
+				getWebContainer: () => {
+					fs: {
+						writeFile: (p: string, c: string) => Promise<void>
+						mkdir: (p: string, o?: { recursive?: boolean }) => Promise<void>
+					}
+					spawn: (cmd: string, args?: string[]) => Promise<{ exit: Promise<number> }>
+				}
+			}
+		).getWebContainer()
 
 		// Create package.json
 		await container.fs.writeFile(
@@ -236,7 +246,9 @@ test.describe('WebContainerServiceDiscovery', () => {
 					start: (type: string, opts?: { port?: number }) => Promise<{ serviceId: string }>
 					isRunning: (id: string) => boolean
 				}
-				const createServiceDiscovery = (window as unknown as { createServiceDiscovery: () => Promise<ServiceDiscovery> }).createServiceDiscovery
+				const createServiceDiscovery = (
+					window as unknown as { createServiceDiscovery: () => Promise<ServiceDiscovery> }
+				).createServiceDiscovery
 				const discovery = await createServiceDiscovery()
 				const { serviceId } = await discovery.start('mock', { port: 3001 })
 				return {
@@ -256,7 +268,9 @@ test.describe('WebContainerServiceDiscovery', () => {
 					stop: (id: string) => Promise<void>
 					isRunning: (id: string) => boolean
 				}
-				const createServiceDiscovery = (window as unknown as { createServiceDiscovery: () => Promise<ServiceDiscovery> }).createServiceDiscovery
+				const createServiceDiscovery = (
+					window as unknown as { createServiceDiscovery: () => Promise<ServiceDiscovery> }
+				).createServiceDiscovery
 				const discovery = await createServiceDiscovery()
 				const { serviceId } = await discovery.start('mock', { port: 3002 })
 
@@ -278,7 +292,9 @@ test.describe('WebContainerServiceDiscovery', () => {
 					stop: (id: string) => Promise<void>
 					getActiveServiceCount: () => number
 				}
-				const createServiceDiscovery = (window as unknown as { createServiceDiscovery: () => Promise<ServiceDiscovery> }).createServiceDiscovery
+				const createServiceDiscovery = (
+					window as unknown as { createServiceDiscovery: () => Promise<ServiceDiscovery> }
+				).createServiceDiscovery
 				const discovery = await createServiceDiscovery()
 
 				const count0 = discovery.getActiveServiceCount()
@@ -312,7 +328,9 @@ test.describe('WebContainerServiceDiscovery', () => {
 					stopAll: () => Promise<void>
 					getActiveServiceCount: () => number
 				}
-				const createServiceDiscovery = (window as unknown as { createServiceDiscovery: () => Promise<ServiceDiscovery> }).createServiceDiscovery
+				const createServiceDiscovery = (
+					window as unknown as { createServiceDiscovery: () => Promise<ServiceDiscovery> }
+				).createServiceDiscovery
 				const discovery = await createServiceDiscovery()
 
 				await discovery.start('mock', { port: 3005 })
@@ -341,7 +359,9 @@ test.describe('WebContainerServiceDiscovery', () => {
 					start: (type: string, opts?: { port?: number }) => Promise<{ serviceId: string }>
 					waitForUrl: (id: string) => Promise<{ url: string }>
 				}
-				const createServiceDiscovery = (window as unknown as { createServiceDiscovery: () => Promise<ServiceDiscovery> }).createServiceDiscovery
+				const createServiceDiscovery = (
+					window as unknown as { createServiceDiscovery: () => Promise<ServiceDiscovery> }
+				).createServiceDiscovery
 				const discovery = await createServiceDiscovery()
 
 				const { serviceId } = await discovery.start('mock', { port: 3008 })
@@ -365,7 +385,9 @@ test.describe('WebContainerServiceDiscovery', () => {
 					start: (type: string, opts?: { port?: number }) => Promise<{ serviceId: string }>
 					getUrl: (id: string) => string | null
 				}
-				const createServiceDiscovery = (window as unknown as { createServiceDiscovery: () => Promise<ServiceDiscovery> }).createServiceDiscovery
+				const createServiceDiscovery = (
+					window as unknown as { createServiceDiscovery: () => Promise<ServiceDiscovery> }
+				).createServiceDiscovery
 				const discovery = await createServiceDiscovery()
 
 				const { serviceId } = await discovery.start('mock', { port: 3009 })
@@ -384,7 +406,9 @@ test.describe('WebContainerServiceDiscovery', () => {
 					isRunning: (id: string) => boolean
 					getActiveServiceCount: () => number
 				}
-				const createServiceDiscovery = (window as unknown as { createServiceDiscovery: () => Promise<ServiceDiscovery> }).createServiceDiscovery
+				const createServiceDiscovery = (
+					window as unknown as { createServiceDiscovery: () => Promise<ServiceDiscovery> }
+				).createServiceDiscovery
 				const discovery = await createServiceDiscovery()
 
 				const [mock, dev, mcp] = await Promise.all([
@@ -412,7 +436,9 @@ test.describe('WebContainerServiceDiscovery', () => {
 				interface ServiceDiscovery {
 					start: (type: string, opts?: { port?: number }) => Promise<{ serviceId: string }>
 				}
-				const createServiceDiscovery = (window as unknown as { createServiceDiscovery: () => Promise<ServiceDiscovery> }).createServiceDiscovery
+				const createServiceDiscovery = (
+					window as unknown as { createServiceDiscovery: () => Promise<ServiceDiscovery> }
+				).createServiceDiscovery
 				const discovery = await createServiceDiscovery()
 
 				const mock = await discovery.start('mock', { port: 3013 })

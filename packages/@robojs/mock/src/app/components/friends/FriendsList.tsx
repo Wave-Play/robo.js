@@ -1,8 +1,7 @@
+import type { StageUser } from '../../types/stage'
 import { Avatar, IconButton } from '../ui'
 import { getAvatarUrl } from '../../utils/avatar'
 import styles from './FriendsList.module.css'
-import type { FriendRowData } from './friends.data'
-import { FRIENDS } from './friends.data'
 
 function MessageIcon() {
 	return (
@@ -20,15 +19,15 @@ function MoreIcon() {
 	)
 }
 
-function FriendRow({ friend, onOpen }: { friend: FriendRowData; onOpen?: (friend: FriendRowData) => void }) {
-	const url = friend.avatar ? getAvatarUrl(friend.id, friend.avatar, 32) : null
-	const subtitle = friend.subtitle?.trim()
+function FriendRow({ user, onOpen }: { user: StageUser; onOpen?: (user: StageUser) => void }) {
+	const url = user.avatar ? getAvatarUrl(user.id, user.avatar, 32) : null
+	const subtitle = user.activities?.[0]?.state?.trim() ?? ''
 
 	return (
-		<button className={styles.row} type="button" onClick={() => onOpen?.(friend)}>
-			<Avatar imageUrl={url} size={32} showStatus statusBorderColor="var(--main-chat-background)" statusColor="var(--status-online)" />
+		<button className={styles.row} type="button" onClick={() => onOpen?.(user)}>
+			<Avatar imageUrl={url} size={32} showStatus statusBorderColor="var(--main-chat-background)" statusColor={`var(--status-${user.status ?? 'online'})`} />
 			<div className={styles.info}>
-				<div className={styles.name}>{friend.username}</div>
+				<div className={styles.name}>{user.username}</div>
 				{subtitle ? <div className={styles.sub}>{subtitle}</div> : null}
 			</div>
 			<div className={styles.actions}>
@@ -43,14 +42,12 @@ function FriendRow({ friend, onOpen }: { friend: FriendRowData; onOpen?: (friend
 	)
 }
 
-export function FriendsList({ onOpenFriend }: { onOpenFriend?: (friend: FriendRowData) => void }) {
+export function FriendsList({ users, onOpenUser }: { users: StageUser[]; onOpenUser?: (user: StageUser) => void }) {
 	return (
 		<div>
-			{FRIENDS.map((friend) => (
-				<FriendRow key={friend.id} friend={friend} onOpen={onOpenFriend} />
+			{users.map((user) => (
+				<FriendRow key={user.id} user={user} onOpen={onOpenUser} />
 			))}
 		</div>
 	)
 }
-
-

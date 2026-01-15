@@ -303,7 +303,7 @@ function createFallbackPlan(instruction: string): PlannerResponse {
  * Format plan summary for AI message
  */
 function formatPlanSummary(acceptance: AcceptanceCriteria, plan: TaskStep[]): string {
-	const parts: string[] = ['I\'ve analyzed your request and created a plan:']
+	const parts: string[] = ["I've analyzed your request and created a plan:"]
 
 	parts.push('\n**Requirements:**')
 	for (const bullet of acceptance.requirements.featureBullets) {

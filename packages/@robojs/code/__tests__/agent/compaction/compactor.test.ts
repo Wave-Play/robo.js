@@ -102,9 +102,9 @@ describe('ContextCompactor', () => {
 			})
 
 			// Create 10 turns (each a HumanMessage)
-			const messages = Array(10).fill(null).map((_, i) =>
-				new HumanMessage(`message ${i}`)
-			)
+			const messages = Array(10)
+				.fill(null)
+				.map((_, i) => new HumanMessage(`message ${i}`))
 
 			const state = createTestState({ messages })
 			const result = compactor.compact(state)
@@ -154,9 +154,9 @@ describe('ContextCompactor', () => {
 			expect(result.trimmedMessages.length).toBe(4)
 
 			// Verify the tool-call group is intact
-			const aiMessage = result.trimmedMessages.find(m => m instanceof AIMessage)
+			const aiMessage = result.trimmedMessages.find((m) => m instanceof AIMessage)
 			expect(aiMessage).toBeDefined()
-			const toolMessages = result.trimmedMessages.filter(m => m instanceof ToolMessage)
+			const toolMessages = result.trimmedMessages.filter((m) => m instanceof ToolMessage)
 			expect(toolMessages.length).toBe(2)
 		})
 
@@ -185,12 +185,7 @@ describe('ContextCompactor', () => {
 				name: 'fs_read'
 			})
 
-			const messages = [
-				new HumanMessage('start'),
-				aiWithTools,
-				toolResult1,
-				toolResult2
-			]
+			const messages = [new HumanMessage('start'), aiWithTools, toolResult1, toolResult2]
 
 			const state = createTestState({ messages })
 			const result = compactor.compact(state)
@@ -261,11 +256,7 @@ describe('ContextCompactor', () => {
 
 			const state = createTestState({
 				instruction: 'Add user authentication',
-				messages: [
-					new HumanMessage('start'),
-					new AIMessage('working'),
-					new HumanMessage('continue')
-				]
+				messages: [new HumanMessage('start'), new AIMessage('working'), new HumanMessage('continue')]
 			})
 
 			const result = compactor.compact(state)
@@ -285,11 +276,7 @@ describe('ContextCompactor', () => {
 					{ step: 1, title: 'Create route', description: 'Add API route', status: 'completed' as const },
 					{ step: 2, title: 'Add validation', description: 'Input validation', status: 'pending' as const }
 				],
-				messages: [
-					new HumanMessage('start'),
-					new AIMessage('working'),
-					new HumanMessage('continue')
-				]
+				messages: [new HumanMessage('start'), new AIMessage('working'), new HumanMessage('continue')]
 			})
 
 			const result = compactor.compact(state)
@@ -310,11 +297,7 @@ describe('ContextCompactor', () => {
 					{ path: 'src/index.ts', type: 'create' as const, content: 'new content' },
 					{ path: 'src/utils.ts', type: 'modify' as const, content: 'modified' }
 				],
-				messages: [
-					new HumanMessage('start'),
-					new AIMessage('working'),
-					new HumanMessage('continue')
-				]
+				messages: [new HumanMessage('start'), new AIMessage('working'), new HumanMessage('continue')]
 			})
 
 			const result = compactor.compact(state)
@@ -348,11 +331,7 @@ describe('ContextCompactor', () => {
 						warnings: []
 					}
 				},
-				messages: [
-					new HumanMessage('start'),
-					new AIMessage('working'),
-					new HumanMessage('continue')
-				]
+				messages: [new HumanMessage('start'), new AIMessage('working'), new HumanMessage('continue')]
 			})
 
 			const result = compactor.compact(state)
@@ -371,10 +350,7 @@ describe('ContextCompactor', () => {
 
 			const state = createTestState({
 				instruction: 'A'.repeat(200), // Very long instruction
-				messages: [
-					new HumanMessage('start'),
-					new HumanMessage('continue')
-				]
+				messages: [new HumanMessage('start'), new HumanMessage('continue')]
 			})
 
 			const result = compactor.compact(state)
@@ -392,9 +368,9 @@ describe('ContextCompactor', () => {
 			const state = createTestState({
 				messages: [
 					new HumanMessage('start'),
-					new AIMessage("I will create a new authentication module."),
+					new AIMessage('I will create a new authentication module.'),
 					new HumanMessage('continue'),
-					new AIMessage("Let me add input validation to the form."),
+					new AIMessage('Let me add input validation to the form.'),
 					new HumanMessage('final')
 				]
 			})
@@ -452,11 +428,7 @@ describe('ContextCompactor', () => {
 				keepLastMessages: 10
 			})
 
-			const messages = [
-				new HumanMessage('one'),
-				new AIMessage('two'),
-				new HumanMessage('three')
-			]
+			const messages = [new HumanMessage('one'), new AIMessage('two'), new HumanMessage('three')]
 
 			const state = createTestState({ messages })
 			const result = compactor.compact(state)

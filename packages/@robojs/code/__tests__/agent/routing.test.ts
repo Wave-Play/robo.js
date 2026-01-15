@@ -14,7 +14,12 @@ import {
 } from '../../src/agent/edges/routing.js'
 import { DEFAULT_TOKEN_USAGE, type AgentState } from '../../src/agent/state.js'
 import type { AcceptanceCriteria } from '../../src/types/acceptance.js'
-import type { BuildVerificationResult, TestVerificationResult, ProjectProfile, VerificationResult } from '../../src/types/robo.js'
+import type {
+	BuildVerificationResult,
+	TestVerificationResult,
+	ProjectProfile,
+	VerificationResult
+} from '../../src/types/robo.js'
 
 // Helper to create minimal build verification result
 function createBuildResult(success: boolean): BuildVerificationResult {
@@ -47,18 +52,21 @@ function createTestResult(success: boolean): TestVerificationResult {
 }
 
 // Helper to create acceptance criteria
-function createAcceptance(scenarios: Array<{ id: string; kind: 'build' | 'test' | 'mock' | 'manual'; title: string }>, mustPass: string[] = []): AcceptanceCriteria {
+function createAcceptance(
+	scenarios: Array<{ id: string; kind: 'build' | 'test' | 'mock' | 'manual'; title: string }>,
+	mustPass: string[] = []
+): AcceptanceCriteria {
 	return {
 		requirements: {
 			featureBullets: ['Feature 1']
 		},
-		scenarios: scenarios.map(s => ({
+		scenarios: scenarios.map((s) => ({
 			id: s.id,
 			title: s.title,
 			description: `${s.title} scenario`,
 			kind: s.kind
 		})),
-		mustPass: mustPass.length > 0 ? mustPass : scenarios.map(s => s.id)
+		mustPass: mustPass.length > 0 ? mustPass : scenarios.map((s) => s.id)
 	}
 }
 

@@ -1,4 +1,5 @@
-import type { FriendRowData } from '../friends.data'
+import type { StageUser } from '../../../types/stage'
+import { getAvatarUrl } from '../../../utils/avatar'
 import { Avatar, SearchInput } from '../../ui'
 import { ControlIconButton } from '../../sidebar/ControlIconButton'
 import PinIcon from '../../icons/pin'
@@ -37,21 +38,22 @@ function ProfileIcon() {
 }
 
 export function DirectMessageTopBar({
-	friend,
+	user,
 	profileOpen,
 	onToggleProfile
 }: {
-	friend: FriendRowData
+	user: StageUser
 	profileOpen: boolean
 	onToggleProfile: () => void
 }) {
-	const handle = `${friend.username.toLowerCase()}2977`
+	const handle = user.discriminator ? `${user.username.toLowerCase()}#${user.discriminator}` : user.username.toLowerCase()
+	const avatarUrl = user.avatar ? getAvatarUrl(user.id, user.avatar, 28) : null
 
 	return (
 		<div className={styles.bar}>
 			<div className={styles.left}>
-				<Avatar imageUrl={null} size={28} showStatus statusBorderColor="var(--main-chat-background)" statusColor="var(--status-online)" />
-				<div className={styles.name}>{friend.username}</div>
+				<Avatar imageUrl={avatarUrl} size={28} showStatus statusBorderColor="var(--main-chat-background)" statusColor={`var(--status-${user.status ?? 'online'})`} />
+				<div className={styles.name}>{user.username}</div>
 			</div>
 			<div className={styles.right}>
 				<ControlIconButton label="Start voice call" size="sm" tooltipPlacement="bottom">
@@ -80,5 +82,3 @@ export function DirectMessageTopBar({
 		</div>
 	)
 }
-
-

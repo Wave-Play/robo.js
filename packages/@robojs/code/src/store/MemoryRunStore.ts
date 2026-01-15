@@ -41,20 +41,18 @@ export class MemoryRunStore implements RunStore {
 
 		// Apply filters
 		if (filter?.status) {
-			runs = runs.filter(r => r.status === filter.status)
+			runs = runs.filter((r) => r.status === filter.status)
 		}
 		if (filter?.mode) {
-			runs = runs.filter(r => r.mode === filter.mode)
+			runs = runs.filter((r) => r.mode === filter.mode)
 		}
 		if (filter?.since) {
 			const since = new Date(filter.since)
-			runs = runs.filter(r => new Date(r.createdAt) >= since)
+			runs = runs.filter((r) => new Date(r.createdAt) >= since)
 		}
 
 		// Sort by creation time descending (newest first)
-		runs = runs.sort((a, b) =>
-			new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-		)
+		runs = runs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
 		// Apply limit
 		if (filter?.limit && filter.limit > 0) {

@@ -66,9 +66,7 @@ export interface ChatMessage {
 /**
  * Content block in a message (for multimodal support)
  */
-export type ChatMessageContent =
-	| { type: 'text'; text: string }
-	| { type: 'image_url'; image_url: { url: string } }
+export type ChatMessageContent = { type: 'text'; text: string } | { type: 'image_url'; image_url: { url: string } }
 
 /**
  * Tool call from the model

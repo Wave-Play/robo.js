@@ -184,8 +184,11 @@ export interface AgentPolicy {
 	networkPolicy?: NetworkPolicy
 
 	/**
-	 * Paths that should never be read, written, or included in snapshots
-	 * Common examples: [".env", ".git", "node_modules"]
+	 * Paths that should never be read, written, or included in snapshots.
+	 * Supports exact segment match, path prefix (with /), and glob-like patterns.
+	 *
+	 * Default includes: .env*, .git, node_modules, dist, build, .next, .nuxt,
+	 * .output, .robo/build, .cache, .turbo, .pnpm-store, .yarn, coverage
 	 */
 	denyPaths?: string[]
 
@@ -233,7 +236,31 @@ export const DEFAULT_POLICY: Partial<AgentPolicy> = {
 	autoApprove: false,
 	maxIterations: 10,
 	commandAllowlist: ['npm', 'pnpm', 'yarn', 'robo', 'node', 'vitest', 'jest'],
-	denyPaths: ['.env', '.env.local', '.env.production', '.git'],
+	denyPaths: [
+		// Secrets
+		'.env',
+		'.env.local',
+		'.env.production',
+		'.env.development',
+		// Version control
+		'.git',
+		// Dependencies
+		'node_modules',
+		// Build outputs
+		'dist',
+		'build',
+		'.next',
+		'.nuxt',
+		'.output',
+		'.robo/build',
+		// Caches
+		'.cache',
+		'.turbo',
+		'.pnpm-store',
+		'.yarn',
+		// Test artifacts
+		'coverage'
+	],
 	maxFileWriteBytes: 512_000, // 512KB
 	maxTotalDiffBytes: 2_000_000, // 2MB
 	maxSnapshotBytes: 2_000_000, // 2MB
@@ -243,10 +270,7 @@ export const DEFAULT_POLICY: Partial<AgentPolicy> = {
 			{ command: 'node', argsPrefix: ['-e', '--eval'] },
 			{ command: 'npm', argsPrefix: ['exec'] }
 		],
-		requireApproval: [
-			{ command: 'npx' },
-			{ command: 'npm', argsPrefix: ['run'] }
-		]
+		requireApproval: [{ command: 'npx' }, { command: 'npm', argsPrefix: ['run'] }]
 	},
 	// Token-based context compaction (enabled by default for safety)
 	context: {

@@ -87,10 +87,7 @@ function createMockProvider(overrides: Partial<ExecutionProvider> = {}): Executi
 	} as unknown as ExecutionProvider
 }
 
-function createContext(
-	policy: Partial<AgentPolicy> = {},
-	provider?: ExecutionProvider
-): ToolContext {
+function createContext(policy: Partial<AgentPolicy> = {}, provider?: ExecutionProvider): ToolContext {
 	return {
 		provider: provider ?? createMockProvider(),
 		policy: {
@@ -240,10 +237,7 @@ describe('Error Taxonomy', () => {
 
 		it('should return POLICY_VIOLATION for write to denied path', async () => {
 			const context = createContext({ denyPaths: ['.git/'] })
-			const result = await fsWriteTool.execute(
-				{ path: '/.git/config', content: 'test' },
-				context
-			)
+			const result = await fsWriteTool.execute({ path: '/.git/config', content: 'test' }, context)
 
 			expect(result.success).toBe(false)
 			expect(result.errorCode).toBe('POLICY_VIOLATION')
@@ -261,10 +255,7 @@ describe('Error Taxonomy', () => {
 
 		it('should return POLICY_VIOLATION for write exceeding max bytes', async () => {
 			const context = createContext({ maxFileWriteBytes: 10 })
-			const result = await fsWriteTool.execute(
-				{ path: '/test.txt', content: 'x'.repeat(100) },
-				context
-			)
+			const result = await fsWriteTool.execute({ path: '/test.txt', content: 'x'.repeat(100) }, context)
 
 			expect(result.success).toBe(false)
 			expect(result.errorCode).toBe('POLICY_VIOLATION')
@@ -273,10 +264,7 @@ describe('Error Taxonomy', () => {
 
 		it('should return COMMAND_DENIED for command not in allowlist', async () => {
 			const context = createContext({ commandAllowlist: ['npm'] })
-			const result = await terminalRunTool.execute(
-				{ command: 'rm', args: ['-rf', '/'] },
-				context
-			)
+			const result = await terminalRunTool.execute({ command: 'rm', args: ['-rf', '/'] }, context)
 
 			expect(result.success).toBe(false)
 			expect(result.errorCode).toBe('COMMAND_DENIED')
@@ -302,10 +290,7 @@ describe('Error Taxonomy', () => {
 				run: jest.fn(async () => ({ exitCode: 1, output: 'Command failed' }))
 			})
 			const context = createContext({ commandAllowlist: ['npm'] }, provider)
-			const result = await terminalRunTool.execute(
-				{ command: 'npm', args: ['run', 'nonexistent'] },
-				context
-			)
+			const result = await terminalRunTool.execute({ command: 'npm', args: ['run', 'nonexistent'] }, context)
 
 			// Non-zero exit is not necessarily an error in the tool result
 			// The tool reports success with exitCode in data
@@ -376,10 +361,7 @@ describe('Error Taxonomy', () => {
 
 		it('should include relevant context in error messages', async () => {
 			const context = createContext({ maxFileWriteBytes: 100 })
-			const result = await fsWriteTool.execute(
-				{ path: '/test.txt', content: 'x'.repeat(200) },
-				context
-			)
+			const result = await fsWriteTool.execute({ path: '/test.txt', content: 'x'.repeat(200) }, context)
 
 			expect(result.error).toContain('200') // Actual size
 			expect(result.error).toContain('100') // Max allowed

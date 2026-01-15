@@ -369,6 +369,89 @@ export default {
 }
 ```
 
+## Typed Endpoints
+
+Define typed API endpoints with Zod schemas for TypeScript inference and OpenAPI generation:
+
+```typescript
+import { define } from '@robojs/server'
+import { z } from 'zod'
+
+export const POST = define({
+  summary: 'Create a user',
+  body: z.object({
+    name: z.string(),
+    email: z.string().email()
+  }),
+  response: {
+    201: z.object({ id: z.string() }),
+    400: z.object({ error: z.string() })
+  }
+}, async (request) => {
+  const body = await request.json()  // Typed as { name: string, email: string }
+  return { id: crypto.randomUUID() }
+})
+```
+
+The `define()` function provides:
+- **TypeScript inference** for `request.json()`, `request.query`, `request.params`, and `request.header()`
+- **OpenAPI 3.1 generation** during `robo build`
+- **No auto-parsing** - raw body access is always available via `await request.json()`
+
+### Schema Options
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `summary` | `string` | Short description for OpenAPI |
+| `description` | `string` | Detailed description for OpenAPI |
+| `tags` | `string[]` | OpenAPI tags for grouping |
+| `deprecated` | `boolean` | Mark endpoint as deprecated |
+| `body` | `ZodType` | Request body schema |
+| `query` | `ZodObject` | Query parameters schema |
+| `params` | `ZodObject` | URL parameters schema |
+| `headers` | `ZodObject` | Request headers schema |
+| `response` | `Record<number, ZodType>` | Response schemas by status code |
+
+### OpenAPI Generation
+
+Run `robo build` to generate `.robo/openapi.json` from your typed endpoints.
+
+To configure OpenAPI generation, add options to your plugin config:
+
+```typescript
+// config/plugins/robojs/server.ts
+export default {
+  openapi: {
+    title: 'My API',
+    version: '1.0.0',
+    servers: [{ url: 'https://api.example.com' }],
+    contact: { name: 'Support', email: 'support@example.com' },
+    license: { name: 'MIT', identifier: 'MIT' },
+    securitySchemes: {
+      apiKey: { type: 'apiKey', in: 'header', name: 'X-API-Key' }
+    }
+  }
+}
+```
+
+To disable OpenAPI generation:
+
+```typescript
+export default {
+  openapi: false
+}
+```
+
+### Plain Exports Still Work
+
+You don't need to use `define()` for simple endpoints:
+
+```typescript
+export function GET(request: RoboRequest) {
+  return { status: 'ok' }
+}
+```
+
 ## Server Engine
 
 The API plugin uses Node's `http` module by default. If you have Fastify installed, it will automatically switch to Fastify for enhanced performance.

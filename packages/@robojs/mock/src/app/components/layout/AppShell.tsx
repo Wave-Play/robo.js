@@ -12,6 +12,7 @@ import { MemberList } from '../members/MemberList'
 import { PlaybackControls } from '../playback/PlaybackControls'
 import { DevToolsPanel } from '../devtools/DevToolsPanel'
 import { ThreadPanel } from '../threads/ThreadPanel'
+import { LogsPanel } from '../logs/LogsPanel'
 import styles from './AppShell.module.css'
 
 export function AppShell() {
@@ -268,115 +269,124 @@ export function AppShell() {
 				</div>
 			</div>
 
-			<div className={styles.contentWrapper}>
-				<div className={styles.serverList}>
-					<ServerList
-						guilds={guilds}
-						selectedId={selectedGuildId}
-						onSelect={handleGuildSelect}
-						sessionId={sessionId}
-						onHomeClick={handleHomeClick}
-						homeSelected={showHome}
-					/>
-				</div>
-
-				<div className={styles.mainContent}>
-					{showHome ? (
-						<FriendsAppShell onTitleChange={setHomeTitle} resetKey={homeResetKey} />
-					) : (
-						<>
-							<ChannelList
-								guild={selectedGuild ?? undefined}
-								channels={displayChannels}
-								selectedId={selectedChannelId}
-								onSelect={handleChannelSelect}
-								voiceStates={guildVoiceStates}
-								users={allUsers}
-								members={guildMembers}
-								currentUser={currentUser}
-								availableUsers={allUsers}
-								onJoinVoice={joinVoice}
-								onLeaveVoice={leaveVoice}
-								onUpdateVoiceState={updateVoiceState}
-								currentUserId={currentUser?.id}
-								isPlaybackMode={isPlaybackMode}
-								onCreateChannel={createChannel}
-								onOpenVoicePanel={openVoicePanel}
-							/>
-							<div className={styles.main}>
-								<Header
-									channel={selectedChannel}
-									guild={selectedGuild}
-									currentUser={currentUser}
-									onToggleMembers={toggleMembers}
-									showMembers={showMembers}
-									onToggleThreads={handleToggleThreads}
-									showThreads={showThreads}
-									onToggleNotifications={handleToggleNotifications}
-									showNotifications={showNotifications}
-									onTogglePinnedMessages={handleTogglePinnedMessages}
-									showPinnedMessages={showPinnedMessages}
-									onMobileMenuToggle={handleMobileMenuToggle}
-									isMobileSidebarOpen={mobileSidebarOpen}
-									threads={threadChannels}
-									threadMessages={messages}
-									users={users}
-									onCreateThread={handleOpenThreadCreate}
-									onThreadSelect={handleThreadSelect}
-								/>
-
-								<div className={styles.content}>
-									<MessageArea
-										channelId={selectedChannelId}
-										onOpenThreads={handleOpenThreads}
-										onOpenThread={handleThreadSelect}
-									/>
-									{threadPanel.mode !== 'closed' && (
-										<ThreadPanel
-											mode={threadPanel.mode === 'create' ? 'create' : 'view'}
-											parentChannelId={threadPanel.parentId}
-											threadId={threadPanel.threadId}
-											onClose={handleCloseThreadPanel}
-											onThreadCreated={handleThreadCreated}
-											onOpenFullView={handleThreadFullView}
-										/>
-									)}
-								{showMembers &&
-									threadPanel.mode === 'closed' &&
-									!(selectedChannel?.type === 2 || selectedChannel?.type === 13) && (
-										<MemberList members={displayMembers} roles={guildRoles} />
-									)}
-								{showMembers &&
-									(selectedChannel?.type === 2 || selectedChannel?.type === 13) &&
-									voicePanelMode === 'full' &&
-									threadPanel.mode === 'closed' && (
-										<MemberList members={displayMembers} roles={guildRoles} />
-									)}
-							</div>
-							</div>
-						</>
-					)}
-					{showHome && (
-						<div className={styles.voiceDockOverlay}>
-							<VoiceControlDock
-								currentUser={currentUser ?? null}
-								availableUsers={allUsers}
-								channels={channels}
-								voiceStates={voiceStates}
-								currentUserId={currentUser?.id}
-								onLeaveVoice={leaveVoice}
-								onUpdateVoiceState={updateVoiceState}
-								isPlaybackMode={isPlaybackMode}
+			{/* Body wrapper - main content + logs panel in a row */}
+			<div className={styles.bodyWrapper}>
+				{/* Main area - everything except logs panel */}
+				<div className={styles.mainArea}>
+					<div className={styles.contentWrapper}>
+						<div className={styles.serverList}>
+							<ServerList
+								guilds={guilds}
+								selectedId={selectedGuildId}
+								onSelect={handleGuildSelect}
+								sessionId={sessionId}
+								onHomeClick={handleHomeClick}
+								homeSelected={showHome}
 							/>
 						</div>
-					)}
-				</div>
-			</div>
 
-			{/* Bottom bar with playback controls and status */}
-			<div className={styles.bottomBar}>
-				<PlaybackControls />
-				<StatusBar />
+						<div className={styles.mainContent}>
+							{showHome ? (
+								<FriendsAppShell onTitleChange={setHomeTitle} resetKey={homeResetKey} />
+							) : (
+								<>
+									<ChannelList
+										guild={selectedGuild ?? undefined}
+										channels={displayChannels}
+										selectedId={selectedChannelId}
+										onSelect={handleChannelSelect}
+										voiceStates={guildVoiceStates}
+										users={allUsers}
+										members={guildMembers}
+										currentUser={currentUser}
+										availableUsers={allUsers}
+										onJoinVoice={joinVoice}
+										onLeaveVoice={leaveVoice}
+										onUpdateVoiceState={updateVoiceState}
+										currentUserId={currentUser?.id}
+										isPlaybackMode={isPlaybackMode}
+										onCreateChannel={createChannel}
+										onOpenVoicePanel={openVoicePanel}
+									/>
+									<div className={styles.main}>
+										<Header
+											channel={selectedChannel}
+											guild={selectedGuild}
+											currentUser={currentUser}
+											onToggleMembers={toggleMembers}
+											showMembers={showMembers}
+											onToggleThreads={handleToggleThreads}
+											showThreads={showThreads}
+											onToggleNotifications={handleToggleNotifications}
+											showNotifications={showNotifications}
+											onTogglePinnedMessages={handleTogglePinnedMessages}
+											showPinnedMessages={showPinnedMessages}
+											onMobileMenuToggle={handleMobileMenuToggle}
+											isMobileSidebarOpen={mobileSidebarOpen}
+											threads={threadChannels}
+											threadMessages={messages}
+											users={users}
+											onCreateThread={handleOpenThreadCreate}
+											onThreadSelect={handleThreadSelect}
+										/>
+
+										<div className={styles.content}>
+											<MessageArea
+												channelId={selectedChannelId}
+												onOpenThreads={handleOpenThreads}
+												onOpenThread={handleThreadSelect}
+											/>
+											{threadPanel.mode !== 'closed' && (
+												<ThreadPanel
+													mode={threadPanel.mode === 'create' ? 'create' : 'view'}
+													parentChannelId={threadPanel.parentId}
+													threadId={threadPanel.threadId}
+													onClose={handleCloseThreadPanel}
+													onThreadCreated={handleThreadCreated}
+													onOpenFullView={handleThreadFullView}
+												/>
+											)}
+											{showMembers &&
+												threadPanel.mode === 'closed' &&
+												!(selectedChannel?.type === 2 || selectedChannel?.type === 13) && (
+													<MemberList members={displayMembers} roles={guildRoles} />
+												)}
+											{showMembers &&
+												(selectedChannel?.type === 2 || selectedChannel?.type === 13) &&
+												voicePanelMode === 'full' &&
+												threadPanel.mode === 'closed' && (
+													<MemberList members={displayMembers} roles={guildRoles} />
+												)}
+										</div>
+									</div>
+								</>
+							)}
+							{showHome && (
+								<div className={styles.voiceDockOverlay}>
+									<VoiceControlDock
+										currentUser={currentUser ?? null}
+										availableUsers={allUsers}
+										channels={channels}
+										voiceStates={voiceStates}
+										currentUserId={currentUser?.id}
+										onLeaveVoice={leaveVoice}
+										onUpdateVoiceState={updateVoiceState}
+										isPlaybackMode={isPlaybackMode}
+									/>
+								</div>
+							)}
+						</div>
+					</div>
+
+					{/* Bottom bar with playback controls and status */}
+					<div className={styles.bottomBar}>
+						<PlaybackControls />
+						<StatusBar />
+					</div>
+				</div>
+
+				{/* Logs Panel - pushes content left when open */}
+				<LogsPanel />
 			</div>
 
 			{/* Developer Tools Panel */}

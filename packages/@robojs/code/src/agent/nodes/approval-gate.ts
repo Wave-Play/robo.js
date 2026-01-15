@@ -67,9 +67,7 @@ export function approvalGateNode(context: CodeAgentContext) {
 
 				// Find the tool call ID from the last AIMessage to create a proper ToolMessage
 				// This is required because the LLM expects a tool_result for every tool_use
-				const lastAIMessage = [...state.messages].reverse().find((m) => m instanceof AIMessage) as
-					| AIMessage
-					| undefined
+				const lastAIMessage = [...state.messages].reverse().find((m) => m instanceof AIMessage) as AIMessage | undefined
 				const toolCalls = lastAIMessage?.tool_calls ?? []
 				const applyChangesCall = toolCalls.find((tc) => tc.name === 'apply_changes')
 
@@ -84,7 +82,7 @@ export function approvalGateNode(context: CodeAgentContext) {
 									appliedFiles: (state.pendingChanges ?? []).map((c) => c.path)
 								})
 							})
-						]
+					  ]
 					: []
 
 				if (!applyChangesCall) {
@@ -107,9 +105,7 @@ export function approvalGateNode(context: CodeAgentContext) {
 				codeLogger.info('[ApprovalGate] Changes rejected')
 
 				// Find the tool call ID from the last AIMessage to create a proper ToolMessage
-				const lastAIMessage = [...state.messages].reverse().find((m) => m instanceof AIMessage) as
-					| AIMessage
-					| undefined
+				const lastAIMessage = [...state.messages].reverse().find((m) => m instanceof AIMessage) as AIMessage | undefined
 				const toolCalls = lastAIMessage?.tool_calls ?? []
 				const applyChangesCall = toolCalls.find((tc) => tc.name === 'apply_changes')
 
@@ -124,7 +120,7 @@ export function approvalGateNode(context: CodeAgentContext) {
 									rejectedFiles: (state.pendingChanges ?? []).map((c) => c.path)
 								})
 							})
-						]
+					  ]
 					: []
 
 				return {
@@ -164,8 +160,6 @@ export function approvalGateNode(context: CodeAgentContext) {
 			pendingChangesCount: state.pendingChanges?.length ?? 0,
 			reason: state.approvalReason
 		})
-		throw new NodeInterrupt(
-			`Awaiting approval: ${state.approvalReason ?? 'Changes require approval'}`
-		)
+		throw new NodeInterrupt(`Awaiting approval: ${state.approvalReason ?? 'Changes require approval'}`)
 	}
 }

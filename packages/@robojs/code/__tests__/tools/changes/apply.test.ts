@@ -66,10 +66,7 @@ function createPolicy(overrides: Partial<AgentPolicy> = {}): AgentPolicy {
 	}
 }
 
-function createContext(
-	policy: Partial<AgentPolicy> = {},
-	provider?: ExecutionProvider
-): ToolContext {
+function createContext(policy: Partial<AgentPolicy> = {}, provider?: ExecutionProvider): ToolContext {
 	return {
 		provider: provider ?? createMockProvider().provider,
 		policy: createPolicy(policy),
@@ -82,9 +79,7 @@ describe('apply_changes basic operations', () => {
 		const { provider, fs } = createMockProvider({})
 		const context = createContext({ autoApprove: true }, provider)
 
-		const changes: FileChange[] = [
-			{ type: 'create', path: '/new-file.ts', content: 'export const x = 1' }
-		]
+		const changes: FileChange[] = [{ type: 'create', path: '/new-file.ts', content: 'export const x = 1' }]
 
 		const result = await applyChangesTool.execute({ changes }, context)
 
@@ -99,9 +94,7 @@ describe('apply_changes basic operations', () => {
 		})
 		const context = createContext({ autoApprove: true }, provider)
 
-		const changes: FileChange[] = [
-			{ type: 'modify', path: '/existing.ts', content: 'const updated = 2' }
-		]
+		const changes: FileChange[] = [{ type: 'modify', path: '/existing.ts', content: 'const updated = 2' }]
 
 		const result = await applyChangesTool.execute({ changes }, context)
 
@@ -115,9 +108,7 @@ describe('apply_changes basic operations', () => {
 		})
 		const context = createContext({ autoApprove: true }, provider)
 
-		const changes: FileChange[] = [
-			{ type: 'delete', path: '/to-delete.ts' }
-		]
+		const changes: FileChange[] = [{ type: 'delete', path: '/to-delete.ts' }]
 
 		const result = await applyChangesTool.execute({ changes }, context)
 
@@ -195,9 +186,7 @@ describe('apply_changes approval workflow', () => {
 		const { provider } = createMockProvider({})
 		const context = createContext({ autoApprove: false }, provider)
 
-		const changes: FileChange[] = [
-			{ type: 'create', path: '/file.ts', content: 'content' }
-		]
+		const changes: FileChange[] = [{ type: 'create', path: '/file.ts', content: 'content' }]
 
 		const result = await applyChangesTool.execute({ changes }, context)
 
@@ -211,9 +200,7 @@ describe('apply_changes approval workflow', () => {
 		})
 		const context = createContext({ autoApprove: false }, provider)
 
-		const changes: FileChange[] = [
-			{ type: 'modify', path: '/existing.ts', content: 'const x = 2' }
-		]
+		const changes: FileChange[] = [{ type: 'modify', path: '/existing.ts', content: 'const x = 2' }]
 
 		const result = await applyChangesTool.execute({ changes }, context)
 
@@ -229,9 +216,7 @@ describe('apply_changes approval workflow', () => {
 		const { provider, fs } = createMockProvider({})
 		const context = createContext({ autoApprove: true }, provider)
 
-		const changes: FileChange[] = [
-			{ type: 'create', path: '/approved.ts', content: 'content' }
-		]
+		const changes: FileChange[] = [{ type: 'create', path: '/approved.ts', content: 'content' }]
 
 		const result = await applyChangesTool.execute({ changes }, context)
 
@@ -247,9 +232,7 @@ describe('apply_changes diff generation', () => {
 		})
 		const context = createContext({ autoApprove: false }, provider)
 
-		const changes: FileChange[] = [
-			{ type: 'modify', path: '/file.ts', content: 'line1\nmodified\nline3' }
-		]
+		const changes: FileChange[] = [{ type: 'modify', path: '/file.ts', content: 'line1\nmodified\nline3' }]
 
 		const result = await applyChangesTool.execute({ changes }, context)
 
@@ -262,9 +245,7 @@ describe('apply_changes diff generation', () => {
 		const { provider } = createMockProvider({})
 		const context = createContext({ autoApprove: false }, provider)
 
-		const changes: FileChange[] = [
-			{ type: 'create', path: '/new.ts', content: 'new content' }
-		]
+		const changes: FileChange[] = [{ type: 'create', path: '/new.ts', content: 'new content' }]
 
 		const result = await applyChangesTool.execute({ changes }, context)
 
@@ -279,9 +260,7 @@ describe('apply_changes diff generation', () => {
 		})
 		const context = createContext({ autoApprove: false }, provider)
 
-		const changes: FileChange[] = [
-			{ type: 'delete', path: '/delete.ts' }
-		]
+		const changes: FileChange[] = [{ type: 'delete', path: '/delete.ts' }]
 
 		const result = await applyChangesTool.execute({ changes }, context)
 
@@ -308,9 +287,7 @@ describe('apply_changes edge cases', () => {
 		const context = createContext({ autoApprove: true }, provider)
 
 		// Modify a file that doesn't exist should work (creates it)
-		const changes: FileChange[] = [
-			{ type: 'modify', path: '/nonexistent.ts', content: 'created' }
-		]
+		const changes: FileChange[] = [{ type: 'modify', path: '/nonexistent.ts', content: 'created' }]
 
 		const result = await applyChangesTool.execute({ changes }, context)
 
@@ -322,9 +299,7 @@ describe('apply_changes edge cases', () => {
 		const { provider } = createMockProvider({})
 		const context = createContext({ autoApprove: true }, provider)
 
-		const changes: FileChange[] = [
-			{ type: 'delete', path: '/nonexistent.ts' }
-		]
+		const changes: FileChange[] = [{ type: 'delete', path: '/nonexistent.ts' }]
 
 		const result = await applyChangesTool.execute({ changes }, context)
 
@@ -376,9 +351,7 @@ describe('apply_changes event emission', () => {
 			onEvent: (event) => events.push(event)
 		}
 
-		const changes: FileChange[] = [
-			{ type: 'create', path: '/file.ts', content: 'content' }
-		]
+		const changes: FileChange[] = [{ type: 'create', path: '/file.ts', content: 'content' }]
 
 		await applyChangesTool.execute({ changes }, context)
 

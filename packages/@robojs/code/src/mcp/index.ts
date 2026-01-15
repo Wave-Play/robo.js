@@ -58,9 +58,4 @@ export {
 } from './McpClientManager.js'
 
 // Tool Adapter
-export {
-	adaptMcpTool,
-	adaptMcpTools,
-	registerMcpTools,
-	type McpToolAdapterOptions
-} from './McpToolAdapter.js'
+export { adaptMcpTool, adaptMcpTools, registerMcpTools, type McpToolAdapterOptions } from './McpToolAdapter.js'

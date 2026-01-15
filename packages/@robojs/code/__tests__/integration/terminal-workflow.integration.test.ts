@@ -92,10 +92,7 @@ function createMockProvider(): {
 	return { provider, commandLog, sessions }
 }
 
-function createContext(
-	policy: Partial<AgentPolicy>,
-	provider: ExecutionProvider
-): ToolContext {
+function createContext(policy: Partial<AgentPolicy>, provider: ExecutionProvider): ToolContext {
 	return {
 		provider,
 		policy: {
@@ -114,10 +111,7 @@ describe('Terminal Integration: Command Execution', () => {
 		const { provider, commandLog } = createMockProvider()
 		const context = createContext({}, provider)
 
-		const result = await terminalRunTool.execute(
-			{ command: 'npm', args: ['version'] },
-			context
-		)
+		const result = await terminalRunTool.execute({ command: 'npm', args: ['version'] }, context)
 
 		expect(result.success).toBe(true)
 		expect(result.data?.output).toBe('10.0.0')
@@ -143,15 +137,9 @@ describe('Terminal Integration: Command Execution', () => {
 
 	it('should deny commands not in allowlist', async () => {
 		const { provider } = createMockProvider()
-		const context = createContext(
-			{ commandAllowlist: ['npm'] },
-			provider
-		)
+		const context = createContext({ commandAllowlist: ['npm'] }, provider)
 
-		const result = await terminalRunTool.execute(
-			{ command: 'rm', args: ['-rf', '/'] },
-			context
-		)
+		const result = await terminalRunTool.execute({ command: 'rm', args: ['-rf', '/'] }, context)
 
 		expect(result.success).toBe(false)
 		expect(result.errorCode).toBe('COMMAND_DENIED')
@@ -171,10 +159,7 @@ describe('Terminal Integration: Argument Policies', () => {
 			provider
 		)
 
-		const result = await terminalRunTool.execute(
-			{ command: 'node', args: ['-e', 'process.exit(1)'] },
-			context
-		)
+		const result = await terminalRunTool.execute({ command: 'node', args: ['-e', 'process.exit(1)'] }, context)
 
 		expect(result.success).toBe(false)
 		expect(result.errorCode).toBe('COMMAND_DENIED')
@@ -193,10 +178,7 @@ describe('Terminal Integration: Argument Policies', () => {
 			provider
 		)
 
-		const result = await terminalRunTool.execute(
-			{ command: 'npm', args: ['run', 'build'] },
-			context
-		)
+		const result = await terminalRunTool.execute({ command: 'npm', args: ['run', 'build'] }, context)
 
 		expect(result.success).toBe(false)
 		expect(result.requiresApproval).toBe(true)
@@ -215,10 +197,7 @@ describe('Terminal Integration: Argument Policies', () => {
 			provider
 		)
 
-		const result = await terminalRunTool.execute(
-			{ command: 'npm', args: ['run', 'build'] },
-			context
-		)
+		const result = await terminalRunTool.execute({ command: 'npm', args: ['run', 'build'] }, context)
 
 		expect(result.success).toBe(true)
 		expect(result.data?.output).toBe('Build successful!')
@@ -230,10 +209,7 @@ describe('Terminal Integration: Streaming Execution', () => {
 		const { provider } = createMockProvider()
 		const context = createContext({}, provider)
 
-		const result = await terminalRunStreamTool.execute(
-			{ command: 'npm', args: ['install'] },
-			context
-		)
+		const result = await terminalRunStreamTool.execute({ command: 'npm', args: ['install'] }, context)
 
 		expect(result.success).toBe(true)
 		// Output has chunkCount (number of chunks) and output (concatenated text)
@@ -245,10 +221,7 @@ describe('Terminal Integration: Streaming Execution', () => {
 		const { provider } = createMockProvider()
 		const context = createContext({}, provider)
 
-		const result = await terminalRunStreamTool.execute(
-			{ command: 'npm', args: ['test'] },
-			context
-		)
+		const result = await terminalRunStreamTool.execute({ command: 'npm', args: ['test'] }, context)
 
 		expect(result.success).toBe(true)
 		// The output should contain all the chunks concatenated
@@ -260,10 +233,7 @@ describe('Terminal Integration: Streaming Execution', () => {
 		const { provider } = createMockProvider()
 		const context = createContext({}, provider)
 
-		const result = await terminalRunStreamTool.execute(
-			{ command: 'npm', args: ['version'] },
-			context
-		)
+		const result = await terminalRunStreamTool.execute({ command: 'npm', args: ['version'] }, context)
 
 		expect(result.success).toBe(true)
 		expect(result.data?.exitCode).toBe(0)
@@ -278,10 +248,7 @@ describe('Terminal Integration: Session Management', () => {
 		const context = createContext({}, provider)
 
 		// Start session - uses command/args, not shell
-		const startResult = await terminalSessionStartTool.execute(
-			{ command: 'npm', args: ['run', 'dev'] },
-			context
-		)
+		const startResult = await terminalSessionStartTool.execute({ command: 'npm', args: ['run', 'dev'] }, context)
 
 		expect(startResult.success).toBe(true)
 		expect(startResult.data?.sessionId).toBeDefined()
@@ -297,10 +264,7 @@ describe('Terminal Integration: Session Management', () => {
 		const context = createContext({}, provider)
 
 		// Start session
-		const startResult = await terminalSessionStartTool.execute(
-			{ command: 'node', args: ['server.js'] },
-			context
-		)
+		const startResult = await terminalSessionStartTool.execute({ command: 'node', args: ['server.js'] }, context)
 		const sessionId = startResult.data!.sessionId
 		expect(sessions.get(sessionId)?.active).toBe(true)
 
@@ -315,16 +279,10 @@ describe('Terminal Integration: Session Management', () => {
 
 	it('should enforce command policy on session start', async () => {
 		const { provider } = createMockProvider()
-		const context = createContext(
-			{ commandAllowlist: ['npm'] },
-			provider
-		)
+		const context = createContext({ commandAllowlist: ['npm'] }, provider)
 
 		// Try to start a session with disallowed command
-		const result = await terminalSessionStartTool.execute(
-			{ command: 'python', args: ['malicious.py'] },
-			context
-		)
+		const result = await terminalSessionStartTool.execute({ command: 'python', args: ['malicious.py'] }, context)
 
 		expect(result.success).toBe(false)
 		expect(result.errorCode).toBe('COMMAND_DENIED')
@@ -337,24 +295,15 @@ describe('Terminal Integration: Combined Workflows', () => {
 		const context = createContext({}, provider)
 
 		// Install dependencies
-		const installResult = await terminalRunTool.execute(
-			{ command: 'npm', args: ['install'] },
-			context
-		)
+		const installResult = await terminalRunTool.execute({ command: 'npm', args: ['install'] }, context)
 		expect(installResult.success).toBe(true)
 
 		// Build
-		const buildResult = await terminalRunTool.execute(
-			{ command: 'npm', args: ['run', 'build'] },
-			context
-		)
+		const buildResult = await terminalRunTool.execute({ command: 'npm', args: ['run', 'build'] }, context)
 		expect(buildResult.success).toBe(true)
 
 		// Test
-		const testResult = await terminalRunTool.execute(
-			{ command: 'npm', args: ['test'] },
-			context
-		)
+		const testResult = await terminalRunTool.execute({ command: 'npm', args: ['test'] }, context)
 		expect(testResult.success).toBe(true)
 
 		// Verify execution order
@@ -365,10 +314,7 @@ describe('Terminal Integration: Combined Workflows', () => {
 		const { provider } = createMockProvider()
 		const context = createContext({ commandAllowlist: ['git'] }, provider)
 
-		const statusResult = await terminalRunTool.execute(
-			{ command: 'git', args: ['status'] },
-			context
-		)
+		const statusResult = await terminalRunTool.execute({ command: 'git', args: ['status'] }, context)
 
 		expect(statusResult.success).toBe(true)
 		expect(statusResult.data?.output).toContain('On branch main')
@@ -379,10 +325,7 @@ describe('Terminal Integration: Combined Workflows', () => {
 		const context = createContext({}, provider)
 
 		// Start dev server
-		const startResult = await terminalSessionStartTool.execute(
-			{ command: 'npm', args: ['run', 'dev'] },
-			context
-		)
+		const startResult = await terminalSessionStartTool.execute({ command: 'npm', args: ['run', 'dev'] }, context)
 		expect(startResult.success).toBe(true)
 		const sessionId = startResult.data!.sessionId
 
@@ -408,10 +351,7 @@ describe('Terminal Integration: Error Handling', () => {
 
 		const context = createContext({ commandAllowlist: ['foobar'] }, provider)
 
-		const result = await terminalRunTool.execute(
-			{ command: 'foobar', args: [] },
-			context
-		)
+		const result = await terminalRunTool.execute({ command: 'foobar', args: [] }, context)
 
 		expect(result.success).toBe(false)
 		expect(result.error).toContain('Command')
@@ -427,10 +367,7 @@ describe('Terminal Integration: Error Handling', () => {
 
 		const context = createContext({}, provider)
 
-		const result = await terminalRunTool.execute(
-			{ command: 'npm', args: ['run', 'build'] },
-			context
-		)
+		const result = await terminalRunTool.execute({ command: 'npm', args: ['run', 'build'] }, context)
 
 		// Non-zero exit is still "success" from tool perspective
 		// (command executed, just failed)
@@ -444,10 +381,7 @@ describe('Terminal Integration: Error Handling', () => {
 		const context = createContext({}, provider)
 
 		// Try to stop a session that doesn't exist
-		const result = await terminalSessionStopTool.execute(
-			{ sessionId: 'non-existent-session' },
-			context
-		)
+		const result = await terminalSessionStopTool.execute({ sessionId: 'non-existent-session' }, context)
 
 		// Should succeed (considered already stopped)
 		expect(result.success).toBe(true)
@@ -475,10 +409,7 @@ describe('Terminal Integration: Policy Combinations', () => {
 		expect(r1.success).toBe(true)
 
 		// Allowed command with disallowed args
-		const r2 = await terminalRunTool.execute(
-			{ command: 'node', args: ['-e', 'code'] },
-			context
-		)
+		const r2 = await terminalRunTool.execute({ command: 'node', args: ['-e', 'code'] }, context)
 		expect(r2.success).toBe(false)
 
 		// Disallowed command entirely

@@ -37,7 +37,10 @@ export const terminalSessionStreamTool: ToolDefinition<TerminalSessionStreamInpu
 	description: 'Stream output from a running terminal session. Useful for monitoring dev server or mock server output.',
 	schema: terminalSessionStreamSchema,
 
-	async execute(input: TerminalSessionStreamInput, context: ToolContext): Promise<ToolResult<TerminalSessionStreamOutput>> {
+	async execute(
+		input: TerminalSessionStreamInput,
+		context: ToolContext
+	): Promise<ToolResult<TerminalSessionStreamOutput>> {
 		const { sessionId, maxChunks, timeout } = input
 
 		try {

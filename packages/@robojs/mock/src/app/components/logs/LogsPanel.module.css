@@ -1,39 +1,18 @@
-/* Panel container - right side panel that pushes content */
+/* Panel container - flex item that pushes content left */
 .panel {
 	display: flex;
 	flex-direction: column;
+	flex-shrink: 0;
 	background: var(--sidebar-left-background);
 	border-left: 1px solid var(--accent-overlay);
-	animation: slideInRight 0.15s ease;
-	position: relative;
 	min-width: 320px;
 	max-width: 60vw;
+	position: relative;
 }
 
 .panel.closing {
-	animation: slideOutRight 0.15s ease forwards;
-}
-
-@keyframes slideInRight {
-	from {
-		transform: translateX(100%);
-		opacity: 0;
-	}
-	to {
-		transform: translateX(0);
-		opacity: 1;
-	}
-}
-
-@keyframes slideOutRight {
-	from {
-		transform: translateX(0);
-		opacity: 1;
-	}
-	to {
-		transform: translateX(100%);
-		opacity: 0;
-	}
+	/* Panel is removed from DOM after animation, so we just hide it */
+	display: none;
 }
 
 /* Resize handle on left edge */
@@ -206,7 +185,7 @@
 	background: var(--brand-darker);
 }
 
-/* Responsive - overlay panel on small screens */
+/* Responsive - on mobile, panel becomes fixed overlay */
 @media (max-width: 768px) {
 	.panel {
 		position: fixed;
@@ -214,9 +193,9 @@
 		right: 0;
 		bottom: 0;
 		z-index: 200;
-		box-shadow: -4px 0 16px rgba(0, 0, 0, 0.4);
 		min-width: 280px;
 		max-width: 90vw;
+		box-shadow: -4px 0 16px rgba(0, 0, 0, 0.4);
 	}
 
 	.columnHeaders {

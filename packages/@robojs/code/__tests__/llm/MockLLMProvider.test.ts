@@ -2,11 +2,7 @@
  * Unit tests for MockLLMProvider
  */
 
-import {
-	MockLLMProvider,
-	createMockLLMProvider,
-	MockResponses
-} from '../../src/llm/MockLLMProvider.js'
+import { MockLLMProvider, createMockLLMProvider, MockResponses } from '../../src/llm/MockLLMProvider.js'
 import type { ChatRequest } from '../../src/types/llm.js'
 
 describe('MockLLMProvider', () => {
@@ -191,9 +187,7 @@ describe('MockResponses', () => {
 
 	describe('withToolCalls', () => {
 		it('should create a response with tool calls', () => {
-			const calls = [
-				{ name: 'fs_read', args: { path: '/test.ts' } }
-			]
+			const calls = [{ name: 'fs_read', args: { path: '/test.ts' } }]
 
 			const response = MockResponses.withToolCalls(calls)
 

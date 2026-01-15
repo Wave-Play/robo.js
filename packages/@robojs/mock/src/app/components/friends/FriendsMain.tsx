@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { IconButton, SearchInput } from '../ui'
+import type { StageUser } from '../../types/stage'
+import { SearchInput } from '../ui'
 import { FriendsAllPanel } from './FriendsAllPanel'
 import { FriendsOnlinePanel } from './FriendsOnlinePanel'
-import type { FriendRowData } from './friends.data'
 import { DirectMessageView } from './dm/DirectMessageView'
 import styles from './FriendsMain.module.css'
 
@@ -37,27 +37,32 @@ function Tab({
 
 export function FriendsMain({
 	onTitleChange,
-	openFriend,
-	onOpenFriend,
+	openUser,
+	onOpenUser,
+	dmChannelId,
+	users,
 }: {
 	onTitleChange?: (title: string) => void
-	openFriend: FriendRowData | null
-	onOpenFriend: (friend: FriendRowData | null) => void
+	openUser: StageUser | null
+	onOpenUser: (user: StageUser | null) => void
+	dmChannelId: string | null
+	users: StageUser[]
 }) {
 	const [activeTab, setActiveTab] = useState<'online' | 'all'>('online')
 
-	const sectionLabel = activeTab === 'all' ? 'All — 6' : 'Online — 6'
+	const onlineCount = users.filter((u) => u.status !== 'offline').length
+	const sectionLabel = activeTab === 'all' ? `All — ${users.length}` : `Online — ${onlineCount}`
 
 	useEffect(() => {
-		if (openFriend) {
-			onTitleChange?.(openFriend.username)
+		if (openUser) {
+			onTitleChange?.(openUser.username)
 		} else {
 			onTitleChange?.('Friends')
 		}
-	}, [openFriend, onTitleChange])
+	}, [openUser, onTitleChange])
 
-	if (openFriend) {
-		return <DirectMessageView friend={openFriend} />
+	if (openUser && dmChannelId) {
+		return <DirectMessageView user={openUser} channelId={dmChannelId} />
 	}
 
 	return (
@@ -87,13 +92,11 @@ export function FriendsMain({
 			<div className={styles.sectionLabel}>{sectionLabel}</div>
 			<div className={styles.list}>
 				{activeTab === 'all' ? (
-					<FriendsAllPanel onOpenFriend={onOpenFriend} />
+					<FriendsAllPanel users={users} onOpenUser={onOpenUser} />
 				) : (
-					<FriendsOnlinePanel onOpenFriend={onOpenFriend} />
+					<FriendsOnlinePanel users={users} onOpenUser={onOpenUser} />
 				)}
 			</div>
 		</div>
 	)
 }
-
-

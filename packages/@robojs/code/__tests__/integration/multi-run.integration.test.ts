@@ -50,10 +50,12 @@ function createMockLLM(): LLMProvider {
 			toolCalls: [],
 			finishReason: 'stop' as const
 		})),
-		stream: jest.fn(() => (async function* () {
-			yield { type: 'text' as const, text: 'Done' }
-			yield { type: 'done' as const, finishReason: 'stop' as const }
-		})())
+		stream: jest.fn(() =>
+			(async function* () {
+				yield { type: 'text' as const, text: 'Done' }
+				yield { type: 'done' as const, finishReason: 'stop' as const }
+			})()
+		)
 	} as unknown as LLMProvider
 }
 
@@ -67,7 +69,11 @@ function createMockToolRegistry(): ToolRegistry {
 	} as unknown as ToolRegistry
 }
 
-function createMockToolExecutor(registry: ToolRegistry, provider: ExecutionProvider, policy: AgentPolicy): ToolExecutor {
+function createMockToolExecutor(
+	registry: ToolRegistry,
+	provider: ExecutionProvider,
+	policy: AgentPolicy
+): ToolExecutor {
 	// Use the real executor so CodeAgent can safely fork per-run instances.
 	// These tests don't execute tools, but they do require a valid ToolExecutor.
 	return new ToolExecutor(registry, {
@@ -159,7 +165,7 @@ describe('Multi-Run Isolation Integration', () => {
 
 			const runs = await agent.listRunsWithMeta()
 			expect(runs.length).toBe(2)
-			expect(runs.every(r => r.runId && r.instruction && r.mode)).toBe(true)
+			expect(runs.every((r) => r.runId && r.instruction && r.mode)).toBe(true)
 		})
 
 		it('should filter runs by mode', async () => {
@@ -172,7 +178,7 @@ describe('Multi-Run Isolation Integration', () => {
 
 			const executeRuns = await agent.listRunsWithMeta({ mode: 'execute' })
 			expect(executeRuns.length).toBe(2)
-			expect(executeRuns.every(r => r.mode === 'execute')).toBe(true)
+			expect(executeRuns.every((r) => r.mode === 'execute')).toBe(true)
 		})
 
 		it('should limit number of runs returned', async () => {
@@ -190,9 +196,9 @@ describe('Multi-Run Isolation Integration', () => {
 			const agent = new CodeAgent(createTestConfig())
 
 			const { runId: first } = await agent.start({ input: 'First' })
-			await new Promise(resolve => setTimeout(resolve, 10))
+			await new Promise((resolve) => setTimeout(resolve, 10))
 			const { runId: second } = await agent.start({ input: 'Second' })
-			await new Promise(resolve => setTimeout(resolve, 10))
+			await new Promise((resolve) => setTimeout(resolve, 10))
 			const { runId: third } = await agent.start({ input: 'Third' })
 
 			const runs = await agent.listRunsWithMeta()
@@ -267,18 +273,16 @@ describe('Multi-Run Isolation Integration', () => {
 		it('should handle rapid run creation', async () => {
 			const agent = new CodeAgent(createTestConfig())
 
-			const runPromises = Array.from({ length: 10 }, (_, i) =>
-				agent.start({ input: `Task ${i + 1}` })
-			)
+			const runPromises = Array.from({ length: 10 }, (_, i) => agent.start({ input: `Task ${i + 1}` }))
 
 			const runs = await Promise.all(runPromises)
-			const runIds = runs.map(r => r.runId)
+			const runIds = runs.map((r) => r.runId)
 
 			// All run IDs should be unique
 			expect(new Set(runIds).size).toBe(10)
 
 			// All runs should exist
-			runIds.forEach(id => {
+			runIds.forEach((id) => {
 				expect(agent.hasRun(id)).toBe(true)
 			})
 		})

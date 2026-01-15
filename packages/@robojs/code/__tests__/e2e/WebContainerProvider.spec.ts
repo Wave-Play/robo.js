@@ -159,7 +159,14 @@ test.describe('WebContainerProvider', () => {
 	test.describe('File Operations', () => {
 		test('can write and read a file', async ({ page }) => {
 			const result = await page.evaluate(async () => {
-				const provider = (window as unknown as { testProvider: { writeFile: (p: string, c: string) => Promise<void>; readFile: (p: string) => Promise<string> } }).testProvider
+				const provider = (
+					window as unknown as {
+						testProvider: {
+							writeFile: (p: string, c: string) => Promise<void>
+							readFile: (p: string) => Promise<string>
+						}
+					}
+				).testProvider
 				await provider.writeFile('/test.txt', 'Hello, WebContainer!')
 				return await provider.readFile('/test.txt')
 			})
@@ -169,7 +176,14 @@ test.describe('WebContainerProvider', () => {
 
 		test('can write files in nested directories', async ({ page }) => {
 			const result = await page.evaluate(async () => {
-				const provider = (window as unknown as { testProvider: { writeFile: (p: string, c: string) => Promise<void>; readFile: (p: string) => Promise<string> } }).testProvider
+				const provider = (
+					window as unknown as {
+						testProvider: {
+							writeFile: (p: string, c: string) => Promise<void>
+							readFile: (p: string) => Promise<string>
+						}
+					}
+				).testProvider
 				await provider.writeFile('/src/utils/helper.ts', 'export const foo = 42;')
 				return await provider.readFile('/src/utils/helper.ts')
 			})
@@ -179,7 +193,14 @@ test.describe('WebContainerProvider', () => {
 
 		test('can check file existence', async ({ page }) => {
 			const result = await page.evaluate(async () => {
-				const provider = (window as unknown as { testProvider: { writeFile: (p: string, c: string) => Promise<void>; exists: (p: string) => Promise<boolean> } }).testProvider
+				const provider = (
+					window as unknown as {
+						testProvider: {
+							writeFile: (p: string, c: string) => Promise<void>
+							exists: (p: string) => Promise<boolean>
+						}
+					}
+				).testProvider
 				const beforeWrite = await provider.exists('/existence-test.txt')
 				await provider.writeFile('/existence-test.txt', 'test')
 				const afterWrite = await provider.exists('/existence-test.txt')
@@ -192,7 +213,15 @@ test.describe('WebContainerProvider', () => {
 
 		test('can delete files', async ({ page }) => {
 			const result = await page.evaluate(async () => {
-				const provider = (window as unknown as { testProvider: { writeFile: (p: string, c: string) => Promise<void>; deletePath: (p: string) => Promise<void>; exists: (p: string) => Promise<boolean> } }).testProvider
+				const provider = (
+					window as unknown as {
+						testProvider: {
+							writeFile: (p: string, c: string) => Promise<void>
+							deletePath: (p: string) => Promise<void>
+							exists: (p: string) => Promise<boolean>
+						}
+					}
+				).testProvider
 				await provider.writeFile('/to-delete.txt', 'temporary')
 				await provider.deletePath('/to-delete.txt')
 				return await provider.exists('/to-delete.txt')
@@ -209,7 +238,15 @@ test.describe('WebContainerProvider', () => {
 					isDirectory: boolean
 					isFile: boolean
 				}
-				const provider = (window as unknown as { testProvider: { mkdir: (p: string) => Promise<void>; writeFile: (p: string, c: string) => Promise<void>; readdir: (p: string) => Promise<DirEntry[]> } }).testProvider
+				const provider = (
+					window as unknown as {
+						testProvider: {
+							mkdir: (p: string) => Promise<void>
+							writeFile: (p: string, c: string) => Promise<void>
+							readdir: (p: string) => Promise<DirEntry[]>
+						}
+					}
+				).testProvider
 				await provider.mkdir('/test-dir')
 				await provider.writeFile('/test-dir/file1.txt', 'content1')
 				await provider.writeFile('/test-dir/file2.txt', 'content2')
@@ -224,7 +261,11 @@ test.describe('WebContainerProvider', () => {
 	test.describe('Command Execution', () => {
 		test('can run node --version', async ({ page }) => {
 			const result = await page.evaluate(async () => {
-				const provider = (window as unknown as { testProvider: { run: (cmd: string, args: string[]) => Promise<{ exitCode: number; output: string }> } }).testProvider
+				const provider = (
+					window as unknown as {
+						testProvider: { run: (cmd: string, args: string[]) => Promise<{ exitCode: number; output: string }> }
+					}
+				).testProvider
 				return await provider.run('node', ['--version'])
 			})
 
@@ -234,7 +275,11 @@ test.describe('WebContainerProvider', () => {
 
 		test('can run npm --version', async ({ page }) => {
 			const result = await page.evaluate(async () => {
-				const provider = (window as unknown as { testProvider: { run: (cmd: string, args: string[]) => Promise<{ exitCode: number; output: string }> } }).testProvider
+				const provider = (
+					window as unknown as {
+						testProvider: { run: (cmd: string, args: string[]) => Promise<{ exitCode: number; output: string }> }
+					}
+				).testProvider
 				return await provider.run('npm', ['--version'])
 			})
 
@@ -244,7 +289,14 @@ test.describe('WebContainerProvider', () => {
 
 		test('can run node script and capture output', async ({ page }) => {
 			const result = await page.evaluate(async () => {
-				const provider = (window as unknown as { testProvider: { writeFile: (p: string, c: string) => Promise<void>; run: (cmd: string, args: string[]) => Promise<{ exitCode: number; output: string }> } }).testProvider
+				const provider = (
+					window as unknown as {
+						testProvider: {
+							writeFile: (p: string, c: string) => Promise<void>
+							run: (cmd: string, args: string[]) => Promise<{ exitCode: number; output: string }>
+						}
+					}
+				).testProvider
 				await provider.writeFile('/script.js', 'console.log("Hello from script!");')
 				return await provider.run('node', ['/script.js'])
 			})
@@ -255,7 +307,14 @@ test.describe('WebContainerProvider', () => {
 
 		test('captures non-zero exit codes', async ({ page }) => {
 			const result = await page.evaluate(async () => {
-				const provider = (window as unknown as { testProvider: { writeFile: (p: string, c: string) => Promise<void>; run: (cmd: string, args: string[]) => Promise<{ exitCode: number; output: string }> } }).testProvider
+				const provider = (
+					window as unknown as {
+						testProvider: {
+							writeFile: (p: string, c: string) => Promise<void>
+							run: (cmd: string, args: string[]) => Promise<{ exitCode: number; output: string }>
+						}
+					}
+				).testProvider
 				await provider.writeFile('/exit-code.js', 'process.exit(42);')
 				return await provider.run('node', ['/exit-code.js'])
 			})
@@ -270,7 +329,9 @@ test.describe('WebContainerProvider', () => {
 				interface Provider {
 					readFile: (p: string) => Promise<string>
 				}
-				const createProvider = (window as unknown as { createProvider: (config: { denyPaths: string[] }) => Promise<Provider> }).createProvider
+				const createProvider = (
+					window as unknown as { createProvider: (config: { denyPaths: string[] }) => Promise<Provider> }
+				).createProvider
 				const provider = await createProvider({ denyPaths: ['/secret'] })
 				try {
 					await provider.readFile('/secret/data.txt')

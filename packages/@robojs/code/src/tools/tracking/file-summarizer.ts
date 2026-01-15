@@ -205,12 +205,7 @@ export class FileSummarizer {
 	/**
 	 * Summarize TypeScript/JavaScript code
 	 */
-	private summarizeCode(
-		path: string,
-		content: string,
-		language: string,
-		totalSize: number
-	): FileSummary {
+	private summarizeCode(path: string, content: string, language: string, totalSize: number): FileSummary {
 		const outline = this.parseCodeOutline(content)
 		const headPreview = this.getHeadPreview(content)
 
@@ -331,7 +326,12 @@ export class FileSummarizer {
 		// Extract headings
 		const headings = content.match(/^#{1,3}\s+.+$/gm) ?? []
 		if (headings.length > 0) {
-			keyPoints.push(`Headings: ${headings.slice(0, 5).map(h => h.replace(/^#+\s+/, '')).join(', ')}`)
+			keyPoints.push(
+				`Headings: ${headings
+					.slice(0, 5)
+					.map((h) => h.replace(/^#+\s+/, ''))
+					.join(', ')}`
+			)
 		}
 
 		// Count code blocks
@@ -354,12 +354,7 @@ export class FileSummarizer {
 	/**
 	 * Summarize CSS/SCSS content
 	 */
-	private summarizeCss(
-		path: string,
-		content: string,
-		language: string,
-		totalSize: number
-	): FileSummary {
+	private summarizeCss(path: string, content: string, language: string, totalSize: number): FileSummary {
 		const keyPoints: string[] = []
 
 		// Count selectors
@@ -389,12 +384,7 @@ export class FileSummarizer {
 	/**
 	 * Generic file summary for unknown types
 	 */
-	private summarizeGeneric(
-		path: string,
-		content: string,
-		language: string,
-		totalSize: number
-	): FileSummary {
+	private summarizeGeneric(path: string, content: string, language: string, totalSize: number): FileSummary {
 		const lines = content.split('\n')
 
 		return {
@@ -427,9 +417,6 @@ export class FileSummarizer {
 /**
  * Create a file summarizer with optional configuration
  */
-export function createFileSummarizer(options?: {
-	maxSummaryChars?: number
-	maxPreviewLines?: number
-}): FileSummarizer {
+export function createFileSummarizer(options?: { maxSummaryChars?: number; maxPreviewLines?: number }): FileSummarizer {
 	return new FileSummarizer(options)
 }

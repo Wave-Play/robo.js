@@ -50,10 +50,12 @@ function createMockLLM(): LLMProvider {
 			toolCalls: [],
 			finishReason: 'stop' as const
 		})),
-		stream: jest.fn(() => (async function* () {
-			yield { type: 'text' as const, text: 'Done' }
-			yield { type: 'done' as const, finishReason: 'stop' as const }
-		})())
+		stream: jest.fn(() =>
+			(async function* () {
+				yield { type: 'text' as const, text: 'Done' }
+				yield { type: 'done' as const, finishReason: 'stop' as const }
+			})()
+		)
 	} as unknown as LLMProvider
 }
 
@@ -67,7 +69,11 @@ function createMockToolRegistry(): ToolRegistry {
 	} as unknown as ToolRegistry
 }
 
-function createMockToolExecutor(registry: ToolRegistry, provider: ExecutionProvider, policy: AgentPolicy): ToolExecutor {
+function createMockToolExecutor(
+	registry: ToolRegistry,
+	provider: ExecutionProvider,
+	policy: AgentPolicy
+): ToolExecutor {
 	// Use the real executor so CodeAgent can safely fork per-run instances.
 	// These tests don't execute tools, but they do require a valid ToolExecutor.
 	return new ToolExecutor(registry, {
@@ -212,9 +218,9 @@ describe('Interrupt/Resume Integration', () => {
 			const agent = new CodeAgent(createTestConfig())
 
 			// Should throw for non-existent run
-			await expect(
-				agent.abort({ runId: 'non_existent', reason: 'Test' })
-			).rejects.toThrow('Run not found: non_existent')
+			await expect(agent.abort({ runId: 'non_existent', reason: 'Test' })).rejects.toThrow(
+				'Run not found: non_existent'
+			)
 		})
 	})
 

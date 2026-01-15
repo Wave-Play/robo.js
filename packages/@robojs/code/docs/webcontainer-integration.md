@@ -5,6 +5,7 @@ This guide covers running `@robojs/code` in the browser using WebContainer.
 ## Overview
 
 WebContainer provides a full Node.js environment in the browser, enabling:
+
 - In-browser code editing and execution
 - File system operations
 - npm package installation
@@ -24,9 +25,9 @@ npm install @robojs/code @webcontainer/api
 import { WebContainer } from '@webcontainer/api'
 import { createCodeAgent } from '@robojs/code'
 import {
-  WebContainerProvider,
-  createWebContainerProvider,
-  WebContainerServiceDiscovery
+	WebContainerProvider,
+	createWebContainerProvider,
+	WebContainerServiceDiscovery
 } from '@robojs/code/providers/webcontainer'
 
 // Boot WebContainer
@@ -34,23 +35,23 @@ const webContainer = await WebContainer.boot()
 
 // Create the provider
 const provider = createWebContainerProvider({
-  container: webContainer,
-  workdir: '/app'
+	container: webContainer,
+	workdir: '/app'
 })
 
 // Create service discovery (for dev servers, mock validation, MCP)
 const serviceDiscovery = new WebContainerServiceDiscovery({
-  container: webContainer,
-  onServerReady: ({ port, url }) => {
-    console.log(`Server ready on port ${port}: ${url}`)
-  }
+	container: webContainer,
+	onServerReady: ({ port, url }) => {
+		console.log(`Server ready on port ${port}: ${url}`)
+	}
 })
 
 // Create the agent
 const agent = createCodeAgent({
-  provider,
-  llm, // Your LLM provider
-  serviceDiscovery
+	provider,
+	llm, // Your LLM provider
+	serviceDiscovery
 })
 ```
 
@@ -60,13 +61,13 @@ WebContainer servers start on ephemeral ports. Service discovery resolves URLs:
 
 ```typescript
 const serviceDiscovery = new WebContainerServiceDiscovery({
-  container: webContainer,
+	container: webContainer,
 
-  // Called when any server becomes ready
-  onServerReady: ({ port, url }) => {
-    // url format: https://[webcontainer-id]-[port].[host]
-    console.log(`Port ${port} ready at ${url}`)
-  }
+	// Called when any server becomes ready
+	onServerReady: ({ port, url }) => {
+		// url format: https://[webcontainer-id]-[port].[host]
+		console.log(`Port ${port} ready at ${url}`)
+	}
 })
 
 // Start watching for a specific service
@@ -105,8 +106,8 @@ await provider.deletePath('/app/temp.txt')
 
 // Search for patterns
 const results = await provider.search('/app', {
-  pattern: 'function\\s+\\w+',
-  fileExtensions: ['.ts', '.js']
+	pattern: 'function\\s+\\w+',
+	fileExtensions: ['.ts', '.js']
 })
 
 // Snapshot (for diffs)
@@ -120,28 +121,28 @@ Run commands in WebContainer:
 ```typescript
 // One-off command
 const result = await provider.run('npm', ['install'], {
-  cwd: '/app',
-  timeout: 60000
+	cwd: '/app',
+	timeout: 60000
 })
 console.log('Exit code:', result.exitCode)
 console.log('Output:', result.output)
 
 // Streaming output
 for await (const chunk of provider.runStream('npm', ['run', 'build'], {
-  cwd: '/app'
+	cwd: '/app'
 })) {
-  process.stdout.write(chunk.data)
+	process.stdout.write(chunk.data)
 }
 
 // Long-running session (dev server, etc)
 const session = await provider.startSession('npm', ['run', 'dev'], {
-  cwd: '/app'
+	cwd: '/app'
 })
 
 // Stream session output
 for await (const chunk of provider.streamSession(session)) {
-  console.log(chunk.data)
-  if (chunk.done) break
+	console.log(chunk.data)
+	if (chunk.done) break
 }
 
 // Stop session
@@ -156,13 +157,13 @@ For Robo.js Discord bots, integrate with `@robojs/mock`:
 import { createCodeAgent } from '@robojs/code'
 
 const agent = createCodeAgent({
-  provider,
-  llm,
-  serviceDiscovery,
-  robo: {
-    enabled: true,
-    preferMockWhenAvailable: true
-  }
+	provider,
+	llm,
+	serviceDiscovery,
+	robo: {
+		enabled: true,
+		preferMockWhenAvailable: true
+	}
 })
 
 // Agent will automatically:
@@ -179,25 +180,25 @@ MCP servers must use Streamable HTTP transport (no stdio in WebContainer):
 
 ```typescript
 const agent = createCodeAgent({
-  provider,
-  llm,
-  serviceDiscovery,
-  mcp: {
-    enabled: true,
-    servers: {
-      // Local MCP server started in WebContainer
-      localMcp: {
-        transport: 'streamable_http',
-        url: '__DISCOVERED__', // Resolved via service discovery
-        startCommand: {
-          command: 'node',
-          args: ['mcp-server.mjs'],
-          env: { PORT: '3001' }
-        },
-        expectedPort: 3001
-      }
-    }
-  }
+	provider,
+	llm,
+	serviceDiscovery,
+	mcp: {
+		enabled: true,
+		servers: {
+			// Local MCP server started in WebContainer
+			localMcp: {
+				transport: 'streamable_http',
+				url: '__DISCOVERED__', // Resolved via service discovery
+				startCommand: {
+					command: 'node',
+					args: ['mcp-server.mjs'],
+					env: { PORT: '3001' }
+				},
+				expectedPort: 3001
+			}
+		}
+	}
 })
 
 // On connect, agent will:
@@ -213,23 +214,23 @@ Handle WebContainer-specific events:
 
 ```typescript
 const result = await agent.execute({
-  mode: 'execute',
-  input: 'Start the dev server',
-  onEvent: (event) => {
-    switch (event.type) {
-      case 'tool_call':
-        if (event.name === 'terminal_session_start') {
-          console.log('Starting session...')
-        }
-        break
-      case 'tool_result':
-        if (event.name === 'terminal_session_start') {
-          console.log('Session started:', event.result)
-        }
-        break
-      // Handle other events...
-    }
-  }
+	mode: 'execute',
+	input: 'Start the dev server',
+	onEvent: (event) => {
+		switch (event.type) {
+			case 'tool_call':
+				if (event.name === 'terminal_session_start') {
+					console.log('Starting session...')
+				}
+				break
+			case 'tool_result':
+				if (event.name === 'terminal_session_start') {
+					console.log('Session started:', event.result)
+				}
+				break
+			// Handle other events...
+		}
+	}
 })
 ```
 
@@ -239,15 +240,15 @@ WebContainer-specific errors:
 
 ```typescript
 try {
-  await provider.run('npm', ['install'])
+	await provider.run('npm', ['install'])
 } catch (error) {
-  if (error.code === 'ENOENT') {
-    // File/directory not found
-  } else if (error.code === 'TIMEOUT') {
-    // Command timed out
-  } else if (error.code === 'DENIED') {
-    // Path denied by policy
-  }
+	if (error.code === 'ENOENT') {
+		// File/directory not found
+	} else if (error.code === 'TIMEOUT') {
+		// Command timed out
+	} else if (error.code === 'DENIED') {
+		// Path denied by policy
+	}
 }
 ```
 
@@ -257,18 +258,18 @@ WebContainer has memory limits. The SDK helps manage them:
 
 ```typescript
 const agent = createCodeAgent({
-  provider,
-  llm,
-  policy: {
-    // Limit file write size
-    maxFileWriteBytes: 500_000,
+	provider,
+	llm,
+	policy: {
+		// Limit file write size
+		maxFileWriteBytes: 500_000,
 
-    // Limit snapshot size (for diffs)
-    maxSnapshotBytes: 5_000_000,
+		// Limit snapshot size (for diffs)
+		maxSnapshotBytes: 5_000_000,
 
-    // Limit terminal output buffering
-    maxTerminalBytes: 100_000
-  }
+		// Limit terminal output buffering
+		maxTerminalBytes: 100_000
+	}
 })
 ```
 
@@ -285,41 +286,38 @@ const agent = createCodeAgent({
 ```typescript
 import { WebContainer } from '@webcontainer/api'
 import { createCodeAgent } from '@robojs/code'
-import {
-  createWebContainerProvider,
-  WebContainerServiceDiscovery
-} from '@robojs/code/providers/webcontainer'
+import { createWebContainerProvider, WebContainerServiceDiscovery } from '@robojs/code/providers/webcontainer'
 
 // Initialize
 const webContainer = await WebContainer.boot()
 const provider = createWebContainerProvider({ container: webContainer })
 const serviceDiscovery = new WebContainerServiceDiscovery({
-  container: webContainer,
-  onServerReady: ({ port, url }) => {
-    updateUI(`Server on ${port}: ${url}`)
-  }
+	container: webContainer,
+	onServerReady: ({ port, url }) => {
+		updateUI(`Server on ${port}: ${url}`)
+	}
 })
 
 // Create agent
 const agent = createCodeAgent({
-  provider,
-  llm: yourLLMProvider,
-  serviceDiscovery,
-  policy: {
-    autoApprove: false,
-    maxIterations: 20
-  },
-  robo: {
-    enabled: true,
-    preferMockWhenAvailable: true
-  }
+	provider,
+	llm: yourLLMProvider,
+	serviceDiscovery,
+	policy: {
+		autoApprove: false,
+		maxIterations: 20
+	},
+	robo: {
+		enabled: true,
+		preferMockWhenAvailable: true
+	}
 })
 
 // Run task
 const result = await agent.execute({
-  mode: 'execute',
-  input: 'Build a Discord slash command',
-  onEvent: handleEvent
+	mode: 'execute',
+	input: 'Build a Discord slash command',
+	onEvent: handleEvent
 })
 
 // Cleanup

@@ -83,10 +83,7 @@ describe('Boundary Limits', () => {
 			// Content that exceeds the limit
 			const largeContent = 'x'.repeat(maxBytes + 1)
 
-			const result = await fsWriteTool.execute(
-				{ path: '/test.txt', content: largeContent },
-				context
-			)
+			const result = await fsWriteTool.execute({ path: '/test.txt', content: largeContent }, context)
 
 			expect(result.success).toBe(false)
 			expect(result.errorCode).toBe('POLICY_VIOLATION')
@@ -102,10 +99,7 @@ describe('Boundary Limits', () => {
 			// Content exactly at the limit
 			const exactContent = 'x'.repeat(maxBytes)
 
-			const result = await fsWriteTool.execute(
-				{ path: '/test.txt', content: exactContent },
-				context
-			)
+			const result = await fsWriteTool.execute({ path: '/test.txt', content: exactContent }, context)
 
 			expect(result.success).toBe(true)
 			expect(result.data?.size).toBe(maxBytes)
@@ -119,10 +113,7 @@ describe('Boundary Limits', () => {
 			// Content below the limit
 			const smallContent = 'x'.repeat(maxBytes - 1)
 
-			const result = await fsWriteTool.execute(
-				{ path: '/test.txt', content: smallContent },
-				context
-			)
+			const result = await fsWriteTool.execute({ path: '/test.txt', content: smallContent }, context)
 
 			expect(result.success).toBe(true)
 			expect(result.data?.size).toBe(maxBytes - 1)
@@ -137,16 +128,10 @@ describe('Boundary Limits', () => {
 			}
 
 			// 512KB default
-			const underDefault = checkFilePolicy(
-				{ path: '/test.txt', operation: 'write', size: 512_000 },
-				policy
-			)
+			const underDefault = checkFilePolicy({ path: '/test.txt', operation: 'write', size: 512_000 }, policy)
 			expect(underDefault.allowed).toBe(true)
 
-			const overDefault = checkFilePolicy(
-				{ path: '/test.txt', operation: 'write', size: 512_001 },
-				policy
-			)
+			const overDefault = checkFilePolicy({ path: '/test.txt', operation: 'write', size: 512_001 }, policy)
 			expect(overDefault.allowed).toBe(false)
 		})
 
@@ -159,10 +144,7 @@ describe('Boundary Limits', () => {
 			const emoji = '😀' // 4 bytes
 			const content = emoji.repeat(3) // 12 bytes total
 
-			const result = await fsWriteTool.execute(
-				{ path: '/test.txt', content },
-				context
-			)
+			const result = await fsWriteTool.execute({ path: '/test.txt', content }, context)
 
 			expect(result.success).toBe(false)
 			expect(result.errorCode).toBe('POLICY_VIOLATION')
@@ -325,17 +307,11 @@ describe('Boundary Limits', () => {
 			)
 
 			// File write within limit
-			const writeResult = await fsWriteTool.execute(
-				{ path: '/small.txt', content: 'x'.repeat(50) },
-				context
-			)
+			const writeResult = await fsWriteTool.execute({ path: '/small.txt', content: 'x'.repeat(50) }, context)
 			expect(writeResult.success).toBe(true)
 
 			// File write exceeding limit
-			const largeWriteResult = await fsWriteTool.execute(
-				{ path: '/large.txt', content: 'x'.repeat(101) },
-				context
-			)
+			const largeWriteResult = await fsWriteTool.execute({ path: '/large.txt', content: 'x'.repeat(101) }, context)
 			expect(largeWriteResult.success).toBe(false)
 			expect(largeWriteResult.errorCode).toBe('POLICY_VIOLATION')
 		})
@@ -345,10 +321,7 @@ describe('Boundary Limits', () => {
 			const context = createContext({}, provider)
 
 			// Large write should use default (512KB)
-			const result = await fsWriteTool.execute(
-				{ path: '/test.txt', content: 'x'.repeat(100_000) },
-				context
-			)
+			const result = await fsWriteTool.execute({ path: '/test.txt', content: 'x'.repeat(100_000) }, context)
 
 			expect(result.success).toBe(true)
 		})

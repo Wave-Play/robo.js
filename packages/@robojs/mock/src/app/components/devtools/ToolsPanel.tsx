@@ -201,6 +201,151 @@ export function ToolsPanel() {
 			bot: true
 		}
 
+		// Friend users with statuses and activities for the DM/Friends list
+		const friendUser1 = {
+			id: 'friend_user_001',
+			username: 'Luna',
+			global_name: 'Luna Star',
+			discriminator: '1234',
+			avatar: null,
+			bot: false,
+			status: 'online' as const,
+			activities: [{ name: 'Custom Status', type: 4, state: 'Playing some games 🎮' }]
+		}
+		const friendUser2 = {
+			id: 'friend_user_002',
+			username: 'Nova',
+			global_name: 'Nova Eclipse',
+			discriminator: '5678',
+			avatar: null,
+			bot: false,
+			status: 'idle' as const,
+			activities: [{ name: 'Custom Status', type: 4, state: 'AFK for a bit' }]
+		}
+		const friendUser3 = {
+			id: 'friend_user_003',
+			username: 'Cosmos',
+			discriminator: '9012',
+			avatar: null,
+			bot: false,
+			status: 'dnd' as const,
+			activities: [{ name: 'Custom Status', type: 4, state: 'Do not disturb - working' }]
+		}
+		const friendUser4 = {
+			id: 'friend_user_004',
+			username: 'Stellar',
+			global_name: 'Stellar Drift',
+			discriminator: '3456',
+			avatar: null,
+			bot: false,
+			status: 'online' as const,
+			activities: [{ name: 'Visual Studio Code', type: 0 }]
+		}
+		const friendUser5 = {
+			id: 'friend_user_005',
+			username: 'Nebula',
+			discriminator: '7890',
+			avatar: null,
+			bot: false,
+			status: 'online' as const,
+			activities: []
+		}
+
+		// DM channels (type: 1) for each friend - include recipient_ids for lookup
+		const dmChannel1 = {
+			id: 'dm_channel_001',
+			name: 'Luna',
+			type: 1,
+			position: 0,
+			recipient_ids: [friendUser1.id]
+		}
+		const dmChannel2 = {
+			id: 'dm_channel_002',
+			name: 'Nova',
+			type: 1,
+			position: 1,
+			recipient_ids: [friendUser2.id]
+		}
+		const dmChannel3 = {
+			id: 'dm_channel_003',
+			name: 'Cosmos',
+			type: 1,
+			position: 2,
+			recipient_ids: [friendUser3.id]
+		}
+
+		const dmChannels = [dmChannel1, dmChannel2, dmChannel3]
+
+		// DM messages for each channel
+		const dmMessages1: StageMessage[] = [
+			{
+				id: 'dm_msg_001',
+				channel_id: dmChannel1.id,
+				content: 'Hey! How are you doing?',
+				timestamp: new Date(now - 86400000).toISOString(),
+				author: friendUser1,
+				embeds: [],
+				components: [],
+				attachments: []
+			},
+			{
+				id: 'dm_msg_002',
+				channel_id: dmChannel1.id,
+				content: "I'm good! Just testing out this new Discord bot.",
+				timestamp: new Date(now - 86300000).toISOString(),
+				author: testUser1,
+				embeds: [],
+				components: [],
+				attachments: []
+			},
+			{
+				id: 'dm_msg_003',
+				channel_id: dmChannel1.id,
+				content: "That's awesome! Let me know if you need any help with it 🚀",
+				timestamp: new Date(now - 86200000).toISOString(),
+				author: friendUser1,
+				embeds: [],
+				components: [],
+				attachments: []
+			}
+		]
+
+		const dmMessages2: StageMessage[] = [
+			{
+				id: 'dm_msg_004',
+				channel_id: dmChannel2.id,
+				content: 'Did you see the announcement in the server?',
+				timestamp: new Date(now - 172800000).toISOString(),
+				author: friendUser2,
+				embeds: [],
+				components: [],
+				attachments: []
+			},
+			{
+				id: 'dm_msg_005',
+				channel_id: dmChannel2.id,
+				content: 'Not yet! What did I miss?',
+				timestamp: new Date(now - 172700000).toISOString(),
+				author: testUser1,
+				embeds: [],
+				components: [],
+				attachments: []
+			}
+		]
+
+		const dmMessages3: StageMessage[] = [
+			{
+				id: 'dm_msg_006',
+				channel_id: dmChannel3.id,
+				content: "Working on a secret project... can't share details yet 🤫",
+				timestamp: new Date(now - 259200000).toISOString(),
+				author: friendUser3,
+				embeds: [],
+				components: [],
+				attachments: []
+			}
+		]
+
 		// Create test members for the member list
 		const testMembers: StageMember[] = [
 			{ user: testUser1, nick: null, roles: [], joined_at: new Date(now - 86400000).toISOString(), guild_id: testGuildId },
@@ -229,8 +374,8 @@ export function ToolsPanel() {
 			{ id: 'test_voice_gaming', name: 'Gaming', type: 2, guild_id: testGuildId, position: 11 }
 		]
 
-		// All channels for state_sync
-		const allChannels: StageChannel[] = [generalChannel, ...additionalChannels]
+		// All channels for state_sync (includes DM channels)
+		const allChannels: StageChannel[] = [generalChannel, ...additionalChannels, ...dmChannels]
 
 		// Test guild
 		const testGuild: StageGuild = {
@@ -240,8 +385,8 @@ export function ToolsPanel() {
 			owner_id: testUser1.id
 		}
 
-		// Test users for state_sync
-		const testUsers = [testUser1, testUser2, testUser3, botUser, moderatorBot]
+		// Test users for state_sync (includes friends with statuses/activities)
+		const testUsers = [testUser1, testUser2, testUser3, botUser, moderatorBot, friendUser1, friendUser2, friendUser3, friendUser4, friendUser5]
 
 		let msgId = 1000000000000000000n
 		const nextMsgId = () => {
@@ -960,10 +1105,36 @@ export function ToolsPanel() {
 			payload: testMembers
 		})
 
+		// Inject friend users into session store for DM/Friends list
+		sessionDispatch({
+			type: 'INJECT_USERS',
+			payload: [friendUser1, friendUser2, friendUser3, friendUser4, friendUser5]
+		})
+
 		// Inject additional test channels into session store
 		sessionDispatch({
 			type: 'INJECT_CHANNELS',
 			payload: additionalChannels
+		})
+
+		// Inject DM channels for friends
+		sessionDispatch({
+			type: 'INJECT_CHANNELS',
+			payload: dmChannels
+		})
+
+		// Inject DM messages for each DM channel
+		sessionDispatch({
+			type: 'INJECT_MESSAGES',
+			payload: { channelId: dmChannel1.id, messages: dmMessages1 }
+		})
+		sessionDispatch({
+			type: 'INJECT_MESSAGES',
+			payload: { channelId: dmChannel2.id, messages: dmMessages2 }
+		})
+		sessionDispatch({
+			type: 'INJECT_MESSAGES',
+			payload: { channelId: dmChannel3.id, messages: dmMessages3 }
 		})
 
 		setIsGenerating(false)

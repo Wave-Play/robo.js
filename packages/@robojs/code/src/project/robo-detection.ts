@@ -211,11 +211,7 @@ export async function detectRoboProject(
 /**
  * Scan a directory for file names (non-recursive)
  */
-async function scanDirectory(
-	provider: ExecutionProvider,
-	dirPath: string,
-	maxItems: number
-): Promise<string[]> {
+async function scanDirectory(provider: ExecutionProvider, dirPath: string, maxItems: number): Promise<string[]> {
 	try {
 		const entries = await provider.readdir(dirPath, { recursive: false })
 		const names: string[] = []
@@ -317,10 +313,7 @@ async function scanApiRoutes(provider: ExecutionProvider, dirPath: string, maxIt
  * @param signals - RoboIndexSignals from detection
  * @returns Detailed RoboOverview
  */
-export async function buildRoboOverview(
-	provider: ExecutionProvider,
-	signals: RoboIndexSignals
-): Promise<RoboOverview> {
+export async function buildRoboOverview(provider: ExecutionProvider, signals: RoboIndexSignals): Promise<RoboOverview> {
 	const overview: RoboOverview = {
 		kind: signals.kind,
 		plugins: signals.plugins
@@ -343,11 +336,7 @@ export async function buildRoboOverview(
 
 	// Scan Flashcore schemas
 	if (signals.flashcoreDir) {
-		overview.flashcoreSchemas = await scanDirectory(
-			provider,
-			signals.flashcoreDir,
-			OVERVIEW_CAPS.maxFlashcoreSchemas
-		)
+		overview.flashcoreSchemas = await scanDirectory(provider, signals.flashcoreDir, OVERVIEW_CAPS.maxFlashcoreSchemas)
 	}
 
 	// Mock support

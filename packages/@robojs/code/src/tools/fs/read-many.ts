@@ -36,7 +36,8 @@ export interface FsReadManyOutput {
  */
 export const fsReadManyTool: ToolDefinition<FsReadManyInput, FsReadManyOutput> = {
 	name: 'fs_read_many',
-	description: 'Read multiple files at once. Returns content for each file, with errors for files that could not be read.',
+	description:
+		'Read multiple files at once. Returns content for each file, with errors for files that could not be read.',
 	schema: fsReadManySchema,
 
 	async execute(input: FsReadManyInput, context: ToolContext): Promise<ToolResult<FsReadManyOutput>> {

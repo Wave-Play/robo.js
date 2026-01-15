@@ -127,12 +127,7 @@ export function verifyMockNode(context: CodeAgentContext) {
 				const summaryOutput = scenarioResults
 					.map((r) => `${r.passed ? '✓' : '✗'} ${r.title}${r.error ? `: ${r.error}` : ''}`)
 					.join('\n')
-				context.onEvent?.(createVerificationDetailEvent(
-					'mock',
-					summaryOutput,
-					success ? 0 : 1,
-					durationMs
-				))
+				context.onEvent?.(createVerificationDetailEvent('mock', summaryOutput, success ? 0 : 1, durationMs))
 			}
 
 			return {
@@ -169,12 +164,9 @@ export function verifyMockNode(context: CodeAgentContext) {
 
 			// Debug event: emit verification detail for error
 			if (context.debugMode) {
-				context.onEvent?.(createVerificationDetailEvent(
-					'mock',
-					error instanceof Error ? error.message : String(error),
-					-1,
-					durationMs
-				))
+				context.onEvent?.(
+					createVerificationDetailEvent('mock', error instanceof Error ? error.message : String(error), -1, durationMs)
+				)
 			}
 
 			return {

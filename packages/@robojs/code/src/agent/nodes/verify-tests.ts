@@ -122,12 +122,7 @@ export function verifyTestsNode(context: CodeAgentContext) {
 
 			// Debug event: emit verification detail
 			if (context.debugMode) {
-				context.onEvent?.(createVerificationDetailEvent(
-					'tests',
-					result.output,
-					result.exitCode,
-					durationMs
-				))
+				context.onEvent?.(createVerificationDetailEvent('tests', result.output, result.exitCode, durationMs))
 			}
 
 			return {
@@ -167,12 +162,9 @@ export function verifyTestsNode(context: CodeAgentContext) {
 
 			// Debug event: emit verification detail for error
 			if (context.debugMode) {
-				context.onEvent?.(createVerificationDetailEvent(
-					'tests',
-					error instanceof Error ? error.message : String(error),
-					-1,
-					durationMs
-				))
+				context.onEvent?.(
+					createVerificationDetailEvent('tests', error instanceof Error ? error.message : String(error), -1, durationMs)
+				)
 			}
 
 			return {
@@ -186,10 +178,7 @@ export function verifyTestsNode(context: CodeAgentContext) {
 /**
  * Determine the test command to use
  */
-function determineTestCommand(
-	state: AgentState,
-	context: CodeAgentContext
-): { cmd: string; args: string[] } | null {
+function determineTestCommand(state: AgentState, context: CodeAgentContext): { cmd: string; args: string[] } | null {
 	// Check for configured test command
 	if (context.roboConfig?.testCommand) {
 		return context.roboConfig.testCommand

@@ -12,7 +12,12 @@ import type { AgentPolicy } from '../types/policy.js'
 import type { ProjectIndex, RoboIndexSignals, RefreshOptions } from '../types/scale.js'
 import { matchesDenyPath } from '../providers/utils/path.js'
 import { INDEX_CAPS, type IndexCaps } from './caps.js'
-import { computeFingerprint, computeFileFingerprint, hasFingerprintChanged, type FileFingerprint } from './fingerprint.js'
+import {
+	computeFingerprint,
+	computeFileFingerprint,
+	hasFingerprintChanged,
+	type FileFingerprint
+} from './fingerprint.js'
 import { detectRoboProject, parsePackageJson } from './robo-detection.js'
 import { codeLogger } from '../core/logger.js'
 
@@ -143,15 +148,15 @@ export class ProjectIndexer {
 
 		// Compare with current (which has content hashes)
 		// If structure changed, definitely need refresh
-		const currentQuickFp = computeFingerprint(
-			this.currentIndex.files.map((f) => ({ path: f.path, size: f.size }))
-		)
+		const currentQuickFp = computeFingerprint(this.currentIndex.files.map((f) => ({ path: f.path, size: f.size })))
 
 		return hasFingerprintChanged(currentQuickFp, quickFp)
 	}
 
 	/**
 	 * Scan the project for files and directories
+	 *
+	 * Uses batched parallel stat() calls for efficiency.
 	 */
 	private async scanProject(): Promise<{
 		files: Array<{ path: string; size: number; mtimeMs?: number }>
@@ -164,38 +169,48 @@ export class ProjectIndexer {
 		try {
 			const entries = await this.provider.readdir(this.root, { recursive: true })
 
+			// Separate files and directories, respecting caps and deny paths
+			const filePaths: string[] = []
 			for (const entry of entries) {
-				// Check caps
-				if (entry.isDirectory) {
-					if (dirs.length >= this.caps.maxDirs) {
-						codeLogger.warn('Max dirs cap reached', { cap: this.caps.maxDirs })
-						break
-					}
-				} else {
-					if (files.length >= this.caps.maxFiles) {
-						codeLogger.warn('Max files cap reached', { cap: this.caps.maxFiles })
-						break
-					}
-				}
-
 				// Skip denied paths
 				if (matchesDenyPath(entry.path, denyPaths)) {
 					continue
 				}
 
 				if (entry.isDirectory) {
+					if (dirs.length >= this.caps.maxDirs) {
+						codeLogger.warn('Max dirs cap reached', { cap: this.caps.maxDirs })
+						break
+					}
 					dirs.push(entry.path)
 				} else if (entry.isFile) {
-					// Get file stat for size
-					try {
-						const stat = await this.provider.stat(entry.path)
-						files.push({
-							path: entry.path,
-							size: stat.size,
-							mtimeMs: stat.mtimeMs
-						})
-					} catch (e) {
-						codeLogger.debug('Failed to stat file', { path: entry.path, error: e })
+					if (filePaths.length >= this.caps.maxFiles) {
+						codeLogger.warn('Max files cap reached', { cap: this.caps.maxFiles })
+						break
+					}
+					filePaths.push(entry.path)
+				}
+			}
+
+			// Batch parallel stat() calls for efficiency
+			const STAT_BATCH_SIZE = 50
+			for (let i = 0; i < filePaths.length; i += STAT_BATCH_SIZE) {
+				const batch = filePaths.slice(i, i + STAT_BATCH_SIZE)
+				const statResults = await Promise.all(
+					batch.map(async (path) => {
+						try {
+							const stat = await this.provider.stat(path)
+							return { path, size: stat.size, mtimeMs: stat.mtimeMs }
+						} catch (e) {
+							codeLogger.debug('Failed to stat file', { path, error: e })
+							return null
+						}
+					})
+				)
+				// Filter out failed stats and add to files
+				for (const result of statResults) {
+					if (result) {
+						files.push(result)
 					}
 				}
 			}
@@ -208,16 +223,20 @@ export class ProjectIndexer {
 
 	/**
 	 * Compute fingerprints for all files
+	 *
+	 * Uses batched parallel readFile() calls for small files that need content hashing.
 	 */
 	private async computeFileFingerprints(
 		files: Array<{ path: string; size: number; mtimeMs?: number }>,
 		deep: boolean
 	): Promise<FileFingerprint[]> {
-		const fingerprints: FileFingerprint[] = []
 		const denyPaths = this.policy.denyPaths ?? []
 
+		// Filter denied paths and separate files by whether they need content hashing
+		const filesToHash: Array<{ path: string; size: number; mtimeMs?: number }> = []
+		const largeFiles: Array<{ path: string; size: number; mtimeMs?: number }> = []
+
 		for (const file of files) {
-			// Skip denied paths
 			if (matchesDenyPath(file.path, denyPaths)) {
 				continue
 			}
@@ -225,19 +244,36 @@ export class ProjectIndexer {
 			// For small files, always compute content hash
 			// For large files, use size+mtime unless deep mode
 			const shouldHashContent = file.size <= this.caps.largeFileThreshold || deep
-
-			let content: string | null = null
 			if (shouldHashContent) {
-				try {
-					content = await this.provider.readFile(file.path)
-				} catch (e) {
-					codeLogger.debug('Failed to read file for hashing', { path: file.path, error: e })
-				}
+				filesToHash.push(file)
+			} else {
+				largeFiles.push(file)
 			}
+		}
 
-			fingerprints.push(
-				computeFileFingerprint(file.path, content, file.size, file.mtimeMs, this.caps.largeFileThreshold)
+		// Batch parallel readFile() calls for files that need content hashing
+		const READ_BATCH_SIZE = 50
+		const fingerprints: FileFingerprint[] = []
+
+		for (let i = 0; i < filesToHash.length; i += READ_BATCH_SIZE) {
+			const batch = filesToHash.slice(i, i + READ_BATCH_SIZE)
+			const readResults = await Promise.all(
+				batch.map(async (file) => {
+					let content: string | null = null
+					try {
+						content = await this.provider.readFile(file.path)
+					} catch (e) {
+						codeLogger.debug('Failed to read file for hashing', { path: file.path, error: e })
+					}
+					return computeFileFingerprint(file.path, content, file.size, file.mtimeMs, this.caps.largeFileThreshold)
+				})
 			)
+			fingerprints.push(...readResults)
+		}
+
+		// Add fingerprints for large files (no content hash needed)
+		for (const file of largeFiles) {
+			fingerprints.push(computeFileFingerprint(file.path, null, file.size, file.mtimeMs, this.caps.largeFileThreshold))
 		}
 
 		return fingerprints

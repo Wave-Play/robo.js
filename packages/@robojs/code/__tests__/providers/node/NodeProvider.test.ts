@@ -336,10 +336,7 @@ describe('NodeProvider', () => {
 				let hasStdout = false
 				let hasStderr = false
 
-				for await (const chunk of provider.runStream('node', [
-					'-e',
-					'console.log("out"); console.error("err")'
-				])) {
+				for await (const chunk of provider.runStream('node', ['-e', 'console.log("out"); console.error("err")'])) {
 					if (chunk.type === 'output') {
 						if (chunk.stream === 'stdout') hasStdout = true
 						if (chunk.stream === 'stderr') hasStderr = true

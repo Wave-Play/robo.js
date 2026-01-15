@@ -281,8 +281,8 @@ export class StreamAdapter {
 				reason = state.lastVerification.build.errors[0].message
 			} else if (state.lastVerification.tests?.failures?.length) {
 				reason = state.lastVerification.tests.failures[0].message
-			} else if (state.lastVerification.mock?.scenarios?.some(s => s.error)) {
-				const failedScenario = state.lastVerification.mock.scenarios.find(s => s.error)
+			} else if (state.lastVerification.mock?.scenarios?.some((s) => s.error)) {
+				const failedScenario = state.lastVerification.mock.scenarios.find((s) => s.error)
 				reason = failedScenario?.error ?? 'Mock scenario failed'
 			}
 			this.emit({
@@ -347,9 +347,7 @@ export class StreamAdapter {
 				// Only emit if value actually changed (simple comparison for primitives)
 				// For objects, we always emit since deep comparison is expensive
 				const isPrimitive = typeof newValue !== 'object' || newValue === null
-				const hasChanged = isPrimitive
-					? newValue !== oldValue
-					: true // Always emit for objects since they likely changed
+				const hasChanged = isPrimitive ? newValue !== oldValue : true // Always emit for objects since they likely changed
 
 				if (hasChanged) {
 					this.emit({
@@ -562,10 +560,7 @@ export function createStreamAdapter(config: StreamAdapterConfig): StreamAdapter 
  *
  * Useful for extracting tool events from message history.
  */
-export function extractToolEventsFromMessages(
-	messages: BaseMessage[],
-	options: StreamOptions = {}
-): AgentEvent[] {
+export function extractToolEventsFromMessages(messages: BaseMessage[], options: StreamOptions = {}): AgentEvent[] {
 	const events: AgentEvent[] = []
 	const opts = { ...DEFAULT_OPTIONS, ...options }
 

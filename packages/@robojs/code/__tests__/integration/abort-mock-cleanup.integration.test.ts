@@ -16,12 +16,14 @@ import { MockRunner } from '../../src/verification/mock-runner.js'
 /**
  * Create a mock execution provider for testing
  */
-function createMockProvider(options: {
-	serverOutput?: string[]
-	streamExit?: number
-	stopSessionFail?: boolean
-	stopSessionDelay?: number
-} = {}): ExecutionProvider & {
+function createMockProvider(
+	options: {
+		serverOutput?: string[]
+		streamExit?: number
+		stopSessionFail?: boolean
+		stopSessionDelay?: number
+	} = {}
+): ExecutionProvider & {
 	mockHandle: TerminalSessionHandle
 	stoppedSessions: string[]
 } {
@@ -48,7 +50,7 @@ function createMockProvider(options: {
 		}),
 		stopSession: jest.fn(async (handle: TerminalSessionHandle) => {
 			if (options.stopSessionDelay) {
-				await new Promise(r => setTimeout(r, options.stopSessionDelay))
+				await new Promise((r) => setTimeout(r, options.stopSessionDelay))
 			}
 			if (options.stopSessionFail) {
 				throw new Error('Failed to stop session')
@@ -194,10 +196,13 @@ describe('Abort Mock Cleanup Integration', () => {
 				}
 
 				if (urlStr.includes('/state')) {
-					return new Response(JSON.stringify({
-						botUser: { id: '1', username: 'TestBot' },
-						guilds: [{ id: '2', name: 'Test Guild' }]
-					}), { status: 200 })
+					return new Response(
+						JSON.stringify({
+							botUser: { id: '1', username: 'TestBot' },
+							guilds: [{ id: '2', name: 'Test Guild' }]
+						}),
+						{ status: 200 }
+					)
 				}
 
 				if (urlStr.includes('/api/control/sessions') && init?.method === 'POST') {
@@ -258,9 +263,7 @@ describe('Abort Mock Cleanup Integration', () => {
 			const session = await runner.start()
 			await runner.stop(session)
 
-			const endEvents = events.filter(
-				(e) => e.type === 'mock' && (e as any).event.type === 'session_end'
-			)
+			const endEvents = events.filter((e) => e.type === 'mock' && (e as any).event.type === 'session_end')
 			expect(endEvents).toHaveLength(1)
 		})
 	})
@@ -305,11 +308,7 @@ describe('Abort Mock Cleanup Integration', () => {
 			await runner.start()
 
 			// Call cleanup multiple times concurrently
-			await Promise.all([
-				runner.cleanup(),
-				runner.cleanup(),
-				runner.cleanup()
-			])
+			await Promise.all([runner.cleanup(), runner.cleanup(), runner.cleanup()])
 
 			// Should complete without error
 		})
