@@ -17,6 +17,7 @@
  */
 import { getGatewayServer } from '../core/gateway.js'
 import { getStageServer } from '../core/stage.js'
+import { getControlEventsHub } from '../core/control-events.js'
 import { mockLogger } from '../core/logger.js'
 import { getMockPluginPrefix } from '../utils/server.js'
 import type { BaseEngine } from '@robojs/server/engines'
@@ -108,6 +109,24 @@ export function registerWebSocketHandlers(engine: BaseEngine): void {
 	if (pluginPrefix) {
 		engine.registerWebsocket(`${pluginPrefix}/stage/ws`, stageWsHandler)
 		mockLogger.debug(`Registered Stage WebSocket at prefixed path: ${pluginPrefix}/stage/ws`)
+	}
+
+	// Register Control Events WebSocket upgrade handler
+	// SDK/Disgraph clients connect to: ws://host/api/control/events?session_id=sess_xxx
+	const controlEventsHub = getControlEventsHub()
+	const controlEventsHandler = (
+		req: Parameters<typeof controlEventsHub.handleUpgrade>[0],
+		socket: Parameters<typeof controlEventsHub.handleUpgrade>[1],
+		head: Parameters<typeof controlEventsHub.handleUpgrade>[2]
+	) => {
+		controlEventsHub.handleUpgrade(req, socket, head)
+	}
+	engine.registerWebsocket('/api/control/events', controlEventsHandler)
+
+	// Also register at prefixed path for plugin compatibility
+	if (pluginPrefix) {
+		engine.registerWebsocket(`${pluginPrefix}/api/control/events`, controlEventsHandler)
+		mockLogger.debug(`Registered Control Events WebSocket at prefixed path: ${pluginPrefix}/api/control/events`)
 	}
 
 	mockLogger.debug('WebSocket handlers registered on server engine')

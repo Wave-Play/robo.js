@@ -46,6 +46,40 @@ interface AddCommandOptions {
 	yes?: boolean
 }
 
+interface PluginResult {
+	plugin: string
+	status: 'success' | 'failed'
+	error?: string
+	stage?: 'install' | 'register' | 'seed' | 'env' | 'setup'
+}
+
+interface AddCommandResults {
+	plugins: Map<string, PluginResult>
+	hasErrors: boolean
+}
+
+function createResults(): AddCommandResults {
+	return {
+		plugins: new Map(),
+		hasErrors: false
+	}
+}
+
+function recordSuccess(results: AddCommandResults, plugin: string): void {
+	results.plugins.set(plugin, { plugin, status: 'success' })
+}
+
+function recordFailure(
+	results: AddCommandResults,
+	plugin: string,
+	stage: PluginResult['stage'],
+	error: unknown
+): void {
+	const errorMessage = error instanceof Error ? error.message : String(error)
+	results.plugins.set(plugin, { plugin, status: 'failed', error: errorMessage, stage })
+	results.hasErrors = true
+}
+
 export async function addAction(context: CliContext) {
 	const options = context.options as AddCommandOptions
 	const packages = context.args
@@ -59,6 +93,7 @@ export async function addAction(context: CliContext) {
 	const startTime = Date.now()
 	const seed = !options['no-seed']
 	const s = packages.length > 1 ? 's' : ''
+	const results = createResults()
 
 	if (packages.length === 0) {
 		logger.error(`No packages specified. Use ${color.bold('robo add <package>')} to add a plugin.`)
@@ -89,8 +124,9 @@ export async function addAction(context: CliContext) {
 					const packageJsonPath = path.join(spec, 'package.json')
 					const pkgJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'))
 					if (pkgJson?.name) nameMap[spec] = pkgJson.name
-				} catch {
-					// ignore; will try later
+				} catch (error) {
+					// Local package.json not found or unreadable - will attempt resolution after install
+					logger.debug(`Could not pre-resolve local package name for ${spec}:`, error)
 				}
 			} else if (!isUrlSpec(spec)) {
 				nameMap[spec] = spec
@@ -129,6 +165,10 @@ export async function addAction(context: CliContext) {
 			logger.debug(`Successfully installed packages!`)
 		} catch (error) {
 			logger.error(`Failed to install packages:`, error)
+			// Track installation failures for all packages in this batch
+			for (const spec of pendingInstall) {
+				recordFailure(results, nameMap[spec] ?? spec, 'install', error)
+			}
 			if (!options.force) {
 				return
 			}
@@ -175,14 +215,41 @@ export async function addAction(context: CliContext) {
 	logger.debug('Pending registration add:', pendingRegistration)
 
 	// Register plugins by adding them to the config
-	await Promise.all(pendingRegistration.map((pkg) => createPluginConfig(pkg, {})))
-
-	// Update spinner with registered plugins
-	spinner.setText(
-		pendingRegistration.map((pkg) => `${Indent}    ${HighlightGreen('✔ ' + pkg)}  `).join('\n') + `\n\n`,
-		false
+	const registrationResults = await Promise.allSettled(
+		pendingRegistration.map((pkg) => createPluginConfig(pkg, {}))
 	)
+
+	// Track registration failures
+	const registrationFailures: string[] = []
+	registrationResults.forEach((result, index) => {
+		const pkg = pendingRegistration[index]
+		if (result.status === 'rejected') {
+			registrationFailures.push(pkg)
+			recordFailure(results, pkg, 'register', result.reason)
+			logger.warn(`Failed to register plugin ${color.bold(pkg)}: ${result.reason?.message || result.reason}`)
+		} else {
+			recordSuccess(results, pkg)
+		}
+	})
+
+	// Update spinner with registered plugins (show success/failure status)
+	const registrationDisplay = pendingRegistration.map((pkg) => {
+		if (registrationFailures.includes(pkg)) {
+			return `${Indent}    ${color.red('✗ ' + pkg)}  `
+		}
+		return `${Indent}    ${HighlightGreen('✔ ' + pkg)}  `
+	})
+	spinner.setText(registrationDisplay.join('\n') + `\n\n`, false)
 	spinner.stop(false, false)
+
+	// If all plugins failed to register, exit early (unless force flag is set)
+	if (registrationFailures.length === pendingRegistration.length && pendingRegistration.length > 0 && !options.force) {
+		logger.error(`Failed to register all plugins. Check permissions on config/plugins directory.`)
+		process.exit(1)
+	}
+
+	// Filter out failed plugins from further processing
+	const successfullyRegistered = pendingRegistration.filter((pkg) => !registrationFailures.includes(pkg))
 
 	const manifestEntries = await Promise.all(
 		resolvedNames.map(async (pkg) => {
@@ -237,6 +304,7 @@ export async function addAction(context: CliContext) {
 					try {
 						await Compiler.useSeed(pkg)
 					} catch (error) {
+						recordFailure(results, pkg, 'seed', error)
 						logger.error(`Failed to copy seed files for plugin ${color.bold(pkg)}:`, error)
 					}
 				})
@@ -281,7 +349,23 @@ export async function addAction(context: CliContext) {
 		}
 
 		if (envConsent) {
-			const applyResults = await applyEnvVariables(envFiles, envAssignments)
+			let applyResults: EnvApplyResult[]
+			try {
+				applyResults = await applyEnvVariables(envFiles, envAssignments)
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				logger.error(`Failed to apply environment variables: ${errorMessage}`)
+				logger.debug(`Full error:`, error)
+
+				// Track as partial failure for each plugin with env plans
+				for (const plan of envPlans) {
+					recordFailure(results, plan.plugin, 'env', error)
+				}
+
+				logger.warn(`Environment variables were not applied. Other operations may have completed successfully.`)
+				applyResults = [] // Continue with empty results
+			}
+
 			const keyStatus = buildKeyStatus(applyResults)
 			const pluginSummaries = new Map<string, { added: string[]; displayName: string; merged: string[]; skipped: string[] }>()
 
@@ -349,16 +433,42 @@ export async function addAction(context: CliContext) {
 		}
 	}
 
-	// Execute setup hooks for newly added plugins
+	// Execute setup hooks for successfully registered plugins
 	const setupTrigger = options.trigger ?? 'add'
-	for (const pkg of pendingRegistration) {
+	for (const pkg of successfullyRegistered) {
 		try {
 			const pkgJsonPath = path.join(process.cwd(), 'node_modules', pkg, 'package.json')
 			const pkgJson = JSON.parse(await fs.readFile(pkgJsonPath, 'utf-8'))
 			await runSetupHook(pkg, pkgJson?.version || 'unknown', setupTrigger)
 		} catch (error) {
-			logger.debug(`Failed to run setup hook for ${pkg}:`, error)
+			recordFailure(results, pkg, 'setup', error)
+			// Log at warn level so users see it, but don't fail the whole command
+			logger.warn(`Setup hook failed for ${color.bold(pkg)}. The plugin is installed but may need manual configuration.`)
+			logger.debug(`Setup hook error details for ${pkg}:`, error)
 		}
+	}
+
+	// Print summary if there were any failures
+	if (results.hasErrors) {
+		logger.log('')
+		logger.log(Indent, color.bold(`⚠️  Some operations encountered issues:`))
+
+		const failures = Array.from(results.plugins.values()).filter((r) => r.status === 'failed')
+		for (const failure of failures) {
+			const stageLabel = failure.stage ? ` (${failure.stage})` : ''
+			logger.log(`${Indent}    - ${color.red(failure.plugin)}${stageLabel}: ${failure.error}`)
+		}
+
+		logger.log('')
+
+		const successCount = Array.from(results.plugins.values()).filter((r) => r.status === 'success').length
+		if (successCount > 0) {
+			logger.log(Indent, `⚠️  ${successCount} plugin${successCount > 1 ? 's' : ''} installed with warnings.\n`)
+		} else {
+			logger.log(Indent, `❌ Plugin installation failed.\n`)
+		}
+		logger.debug(`Finished in ${Date.now() - startTime}ms`)
+		process.exit(1)
 	}
 
 	// Ta-dah!
@@ -375,26 +485,29 @@ export async function addAction(context: CliContext) {
 async function createPluginConfig(pluginName: string, config: Record<string, unknown>) {
 	// Split plugin name into parts to create parent directories
 	const pluginParts = pluginName.replace(/^@/, '').split('/')
+	const configDir = path.join(process.cwd(), 'config', 'plugins')
 
-	// Make sure the directory exists
-	await fs.mkdir(path.join(process.cwd(), 'config', 'plugins'), {
-		recursive: true
-	})
+	try {
+		// Make sure the directory exists
+		await fs.mkdir(configDir, { recursive: true })
 
-	// Create parent directory if this is a scoped plugin
-	if (pluginName.startsWith('@')) {
-		await fs.mkdir(path.join(process.cwd(), 'config', 'plugins', pluginParts[0]), {
-			recursive: true
-		})
+		// Create parent directory if this is a scoped plugin
+		if (pluginName.startsWith('@')) {
+			await fs.mkdir(path.join(configDir, pluginParts[0]), { recursive: true })
+		}
+
+		// Normalize plugin path
+		const { isTypeScript } = Compiler.isTypescriptProject()
+		const pluginPath = path.join(configDir, ...pluginParts) + (isTypeScript ? '.ts' : '.mjs')
+		const pluginConfig = JSON.stringify(config) + '\n'
+
+		logger.debug(`Writing ${pluginName} config to ${pluginPath}...`)
+		await fs.writeFile(pluginPath, `export default ${pluginConfig}`)
+	} catch (error) {
+		// Re-throw with more context
+		const message = error instanceof Error ? error.message : String(error)
+		throw new Error(`Failed to create config for ${pluginName}: ${message}`)
 	}
-
-	// Normalize plugin path
-	const { isTypeScript } = Compiler.isTypescriptProject()
-	const pluginPath = path.join(process.cwd(), 'config', 'plugins', ...pluginParts) + (isTypeScript ? '.ts' : '.mjs')
-	const pluginConfig = JSON.stringify(config) + '\n'
-
-	logger.debug(`Writing ${pluginName} config to ${pluginPath}...`)
-	await fs.writeFile(pluginPath, `export default ${pluginConfig}`)
 }
 
 function isUrlSpec(input: string) {
@@ -686,7 +799,9 @@ async function loadPluginManifest(pkg: string): Promise<ManifestRecord | null> {
 				const manifestInfo = await loadPluginManifestInfo(basePath, pkg)
 				return { basePath, manifestInfo }
 			} catch (error) {
-				logger.debug(`Failed to load manifest info for ${pkg}:`, error)
+				// Log at warn level - manifest issues affect seed and env capabilities
+				logger.warn(`Could not load manifest for ${color.bold(pkg)}. Seed files and environment variables may not be configured.`)
+				logger.debug(`Manifest loading error for ${pkg}:`, error)
 			}
 		}
 	}

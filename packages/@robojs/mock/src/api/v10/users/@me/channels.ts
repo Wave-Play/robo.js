@@ -88,8 +88,8 @@ export default async (request: RoboRequest) => {
 	const isNew = !session.state.getDMChannel(recipient_id)
 	const dmChannel = session.state.getOrCreateDMChannel(recipient_id)
 
-	// 6. Record action
-	session.recorder.record(
+	// 6. Record action (use session.recordAction for metadata propagation)
+	session.recordAction(
 		'dm_channel_opened',
 		{
 			channel_id: dmChannel.id,

@@ -369,8 +369,8 @@ export default async (request: RoboRequest) => {
 		}
 	}
 
-	// 11. Record as 'interaction_response' action
-	session.recorder.record(
+	// 11. Record as 'interaction_response' action (use session.recordAction for metadata propagation)
+	session.recordAction(
 		'interaction_response',
 		{
 			interaction_id: interaction.id,

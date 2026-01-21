@@ -1,5 +1,6 @@
 import { createContext, useContext, useReducer, useCallback, useEffect, type ReactNode, type Dispatch } from 'react'
 import { usePlayback } from './playbackStore'
+import type { StageNavigationChangedData } from '../types/stage'
 
 // ============================================================================
 // Types
@@ -29,6 +30,10 @@ type SelectionAction =
 	| { type: 'SAVE_LIVE_SELECTION' }
 	| { type: 'RESTORE_LIVE_SELECTION' }
 	| { type: 'SET_SELECTION'; payload: { guildId: string | null; channelId: string | null } }
+	| { type: 'NAVIGATE_TO_GUILD'; payload: { guildId: string | null } }
+	| { type: 'NAVIGATE_TO_CHANNEL'; payload: { channelId: string } }
+	| { type: 'NAVIGATE_TO_DM'; payload: { userId: string } }
+	| { type: 'NAVIGATE_TO_THREAD'; payload: { threadId: string } }
 
 // ============================================================================
 // Initial State
@@ -82,6 +87,32 @@ function selectionReducer(state: UnifiedSelectionState, action: SelectionAction)
 				selectedChannelId: action.payload.channelId
 			}
 
+		case 'NAVIGATE_TO_GUILD':
+			return {
+				...state,
+				selectedGuildId: action.payload.guildId,
+				selectedChannelId: null // Clear channel when guild changes
+			}
+
+		case 'NAVIGATE_TO_CHANNEL':
+			return {
+				...state,
+				selectedChannelId: action.payload.channelId
+			}
+
+		case 'NAVIGATE_TO_DM':
+			return {
+				...state,
+				selectedGuildId: null, // DMs are outside of guilds
+				selectedChannelId: action.payload.userId // Use userId as channel for DM navigation
+			}
+
+		case 'NAVIGATE_TO_THREAD':
+			return {
+				...state,
+				selectedChannelId: action.payload.threadId // Threads are channel-like
+			}
+
 		default:
 			return state
 	}
@@ -97,6 +128,9 @@ interface SelectionContextValue {
 }
 
 const SelectionContext = createContext<SelectionContextValue | null>(null)
+
+// Module-level ref for accessing state outside React components
+let _currentSelectionState: UnifiedSelectionState = initialState
 
 // ============================================================================
 // Provider
@@ -116,6 +150,11 @@ export function UnifiedSelectionProvider({ children }: UnifiedSelectionProviderP
 		// This effect doesn't auto-select - that's handled by useStageData
 		// It only saves/restores the live selection on mode change
 	}, [playbackState.mode])
+
+	// Keep module-level ref in sync for getNavigationStateSnapshot
+	useEffect(() => {
+		_currentSelectionState = state
+	}, [state])
 
 	return <SelectionContext.Provider value={{ state, dispatch }}>{children}</SelectionContext.Provider>
 }
@@ -168,6 +207,35 @@ export function useUnifiedSelection() {
 		dispatch({ type: 'RESTORE_LIVE_SELECTION' })
 	}, [dispatch])
 
+	// Navigation actions for external control (Phase 8)
+	const navigateToGuild = useCallback(
+		(guildId: string | null) => {
+			dispatch({ type: 'NAVIGATE_TO_GUILD', payload: { guildId } })
+		},
+		[dispatch]
+	)
+
+	const navigateToChannel = useCallback(
+		(channelId: string) => {
+			dispatch({ type: 'NAVIGATE_TO_CHANNEL', payload: { channelId } })
+		},
+		[dispatch]
+	)
+
+	const navigateToDM = useCallback(
+		(userId: string) => {
+			dispatch({ type: 'NAVIGATE_TO_DM', payload: { userId } })
+		},
+		[dispatch]
+	)
+
+	const navigateToThread = useCallback(
+		(threadId: string) => {
+			dispatch({ type: 'NAVIGATE_TO_THREAD', payload: { threadId } })
+		},
+		[dispatch]
+	)
+
 	return {
 		// State
 		selectedGuildId: state.selectedGuildId,
@@ -180,6 +248,29 @@ export function useUnifiedSelection() {
 		selectChannel,
 		setSelection,
 		saveLiveSelection,
-		restoreLiveSelection
+		restoreLiveSelection,
+
+		// External navigation (Phase 8)
+		navigateToGuild,
+		navigateToChannel,
+		navigateToDM,
+		navigateToThread
+	}
+}
+
+// ============================================================================
+// State Snapshot for Control Commands
+// ============================================================================
+
+/**
+ * Get a snapshot of the current navigation state for control command responses.
+ * This can be called outside of React components.
+ */
+export function getNavigationStateSnapshot(): StageNavigationChangedData {
+	const state = _currentSelectionState
+	return {
+		guildId: state.selectedGuildId,
+		channelId: state.selectedChannelId,
+		timestamp: Date.now()
 	}
 }

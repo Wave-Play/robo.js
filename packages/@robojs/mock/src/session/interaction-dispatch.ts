@@ -5,7 +5,7 @@
  * Used by both the plugin route and standalone server to avoid code duplication.
  */
 import { generateSnowflake } from '../utils/snowflake.js'
-import type { Session } from '../types/index.js'
+import type { Session, ActionMetadata } from '../types/index.js'
 
 /**
  * Input for dispatching an interaction
@@ -25,6 +25,8 @@ export interface DispatchInteractionInput {
 		id?: string
 		username?: string
 	}
+	/** Optional metadata for simulation tracing (Phase 3) */
+	metadata?: ActionMetadata
 }
 
 /**
@@ -121,7 +123,7 @@ export async function dispatchInteractionToSession(
 					joined_at: new Date().toISOString(),
 					deaf: false,
 					mute: false
-				}
+			  }
 			: undefined,
 		user: !defaultGuildId
 			? {
@@ -131,12 +133,30 @@ export async function dispatchInteractionToSession(
 					global_name: username,
 					avatar: null,
 					bot: false
-				}
+			  }
 			: undefined,
 		entitlements: [],
 		app_permissions: '0',
 		locale: 'en-US',
 		guild_locale: 'en-US'
+	}
+
+	// Set up action context for metadata propagation (Phase 3)
+	if (input.metadata) {
+		const context = { metadata: input.metadata }
+		session.setActionContext(context)
+
+		// Ad-hoc interaction context should not leak indefinitely. Clear after a short timeout
+		// if it hasn't been replaced by a new dispatch (Phase 3 lifetime rules).
+		const timeout = setTimeout(() => {
+			if (session.getActionContext() === context) {
+				session.clearActionContext()
+			}
+		}, 5000)
+		timeout.unref?.()
+	} else {
+		// Clear any existing context to prevent stale metadata from leaking
+		session.clearActionContext()
 	}
 
 	// Dispatch the interaction

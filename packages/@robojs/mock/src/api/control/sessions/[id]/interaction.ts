@@ -1,7 +1,10 @@
 import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../core/manager.js'
 import { notFound, badRequest } from '../../utils.js'
-import { dispatchInteractionToSession, type DispatchInteractionInput } from '../../../../session/interaction-dispatch.js'
+import {
+	dispatchInteractionToSession,
+	type DispatchInteractionInput
+} from '../../../../session/interaction-dispatch.js'
 
 /**
  * POST /api/control/sessions/:id/interaction - Dispatch an interaction to a session
@@ -30,6 +33,7 @@ import { dispatchInteractionToSession, type DispatchInteractionInput } from '../
  *     id?: string
  *     username?: string
  *   }
+ *   metadata?: ActionMetadata // Optional metadata for simulation tracing (Phase 3)
  * }
  *
  * Response:

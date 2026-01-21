@@ -363,8 +363,8 @@ export default async (request: RoboRequest) => {
 			: undefined
 	})
 
-	// 7. Record as 'message_sent' action
-	session.recorder.record(
+	// 7. Record as 'message_sent' action (use session.recordAction for metadata propagation)
+	session.recordAction(
 		'message_sent',
 		{
 			message_id: message.id,

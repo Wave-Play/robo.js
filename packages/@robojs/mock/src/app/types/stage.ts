@@ -39,5 +39,13 @@ export type {
 	StageLeaveVoiceData,
 	StageUpdateVoiceStateData,
 	StageRESTCallData,
-	StageCommandsUpdatedData
+	StageCommandsUpdatedData,
+	// Phase 8: Control command types
+	StageControlCommand,
+	StageControlCommandKind,
+	StageControlResponseData,
+	StagePlaybackControlPayload,
+	StageNavigationControlPayload,
+	StagePlaybackChangedData,
+	StageNavigationChangedData
 } from '../../types/stage.js'

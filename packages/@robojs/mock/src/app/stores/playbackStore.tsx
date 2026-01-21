@@ -1,9 +1,38 @@
-import { createContext, useContext, useReducer, useRef, useCallback, useEffect, useMemo, type ReactNode, type Dispatch } from 'react'
-import type { StageEventType, StageMessage, StageMessageCreateData, StageChannel, StageMember, StageGuild, StateSyncPayload } from '../types/stage'
+import {
+	createContext,
+	useContext,
+	useReducer,
+	useRef,
+	useCallback,
+	useEffect,
+	useMemo,
+	type ReactNode,
+	type Dispatch
+} from 'react'
+import type {
+	StageEventType,
+	StageMessage,
+	StageMessageCreateData,
+	StageChannel,
+	StageMember,
+	StageGuild,
+	StateSyncPayload,
+	StagePlaybackChangedData
+} from '../types/stage'
 
 // ============================================================================
 // Playback Types
 // ============================================================================
+
+/**
+ * Default significant event types for step navigation
+ */
+const DEFAULT_SIGNIFICANT_TYPES: StageEventType[] = [
+	'message_create',
+	'interaction_create',
+	'interaction_response',
+	'typing_start'
+]
 
 /**
  * A recorded event for playback
@@ -32,6 +61,8 @@ export interface PlaybackState {
 	speed: number
 	/** All recorded events */
 	events: RecordedEvent[]
+	/** Event types considered "significant" for step navigation */
+	significantTypes: StageEventType[]
 }
 
 // ============================================================================
@@ -47,6 +78,10 @@ type PlaybackAction =
 	| { type: 'ADD_EVENTS'; payload: RecordedEvent[] }
 	| { type: 'CLEAR_EVENTS' }
 	| { type: 'UPDATE_TIME'; payload: number }
+	| { type: 'STEP_FORWARD' }
+	| { type: 'STEP_BACKWARD' }
+	| { type: 'SEEK_TO_EVENT'; payload: number }
+	| { type: 'SET_SIGNIFICANT_TYPES'; payload: StageEventType[] }
 
 // ============================================================================
 // Initial State
@@ -58,7 +93,62 @@ const initialState: PlaybackState = {
 	currentTime: 0,
 	duration: 0,
 	speed: 1,
-	events: []
+	events: [],
+	significantTypes: DEFAULT_SIGNIFICANT_TYPES
+}
+
+// ============================================================================
+// Significant Event Helpers
+// ============================================================================
+
+/**
+ * Get indices of events that are considered "significant" for step navigation
+ */
+function getSignificantEventIndices(state: PlaybackState): number[] {
+	return state.events
+		.map((e, i) => ({ event: e, index: i }))
+		.filter(({ event }) => state.significantTypes.includes(event.type))
+		.map(({ index }) => index)
+}
+
+/**
+ * Get the time offset for an event relative to the first event
+ */
+function getEventTime(event: RecordedEvent, state: PlaybackState): number {
+	if (state.events.length === 0) return 0
+	return event.timestamp - state.events[0].timestamp
+}
+
+/**
+ * Find the index of the next significant event after currentTime
+ */
+function findNextSignificantEventIndex(state: PlaybackState): number {
+	const indices = getSignificantEventIndices(state)
+	const startTime = state.events[0]?.timestamp ?? 0
+	const currentTimestamp = startTime + state.currentTime
+
+	for (const idx of indices) {
+		if (state.events[idx].timestamp > currentTimestamp) {
+			return idx
+		}
+	}
+	return -1 // No next significant event
+}
+
+/**
+ * Find the index of the previous significant event before currentTime
+ */
+function findPrevSignificantEventIndex(state: PlaybackState): number {
+	const indices = getSignificantEventIndices(state)
+	const startTime = state.events[0]?.timestamp ?? 0
+	const currentTimestamp = startTime + state.currentTime
+
+	for (let i = indices.length - 1; i >= 0; i--) {
+		if (state.events[indices[i]].timestamp < currentTimestamp) {
+			return indices[i]
+		}
+	}
+	return -1 // No previous significant event
 }
 
 // ============================================================================
@@ -105,15 +195,13 @@ function playbackReducer(state: PlaybackState, action: PlaybackAction): Playback
 				return state
 			}
 			const newEvents = [...state.events, action.payload]
-			const duration =
-				newEvents.length > 1 ? newEvents[newEvents.length - 1].timestamp - newEvents[0].timestamp : 0
+			const duration = newEvents.length > 1 ? newEvents[newEvents.length - 1].timestamp - newEvents[0].timestamp : 0
 			return { ...state, events: newEvents, duration }
 		}
 
 		case 'ADD_EVENTS': {
 			const newEvents = [...state.events, ...action.payload]
-			const duration =
-				newEvents.length > 1 ? newEvents[newEvents.length - 1].timestamp - newEvents[0].timestamp : 0
+			const duration = newEvents.length > 1 ? newEvents[newEvents.length - 1].timestamp - newEvents[0].timestamp : 0
 			return { ...state, events: newEvents, duration }
 		}
 
@@ -128,6 +216,40 @@ function playbackReducer(state: PlaybackState, action: PlaybackAction): Playback
 			}
 			return { ...state, currentTime: newTime }
 		}
+
+		case 'STEP_FORWARD': {
+			// Find next significant event after current time
+			const nextIndex = findNextSignificantEventIndex(state)
+			if (nextIndex !== -1) {
+				const targetTime = getEventTime(state.events[nextIndex], state)
+				return { ...state, currentTime: targetTime }
+			}
+			// No next event - stay at current position
+			return state
+		}
+
+		case 'STEP_BACKWARD': {
+			// Find previous significant event before current time
+			const prevIndex = findPrevSignificantEventIndex(state)
+			if (prevIndex !== -1) {
+				const targetTime = getEventTime(state.events[prevIndex], state)
+				return { ...state, currentTime: targetTime }
+			}
+			// No previous event - go to start
+			return { ...state, currentTime: 0 }
+		}
+
+		case 'SEEK_TO_EVENT': {
+			const eventIndex = action.payload
+			if (eventIndex >= 0 && eventIndex < state.events.length) {
+				const targetTime = getEventTime(state.events[eventIndex], state)
+				return { ...state, currentTime: targetTime }
+			}
+			return state
+		}
+
+		case 'SET_SIGNIFICANT_TYPES':
+			return { ...state, significantTypes: action.payload }
 
 		default:
 			return state
@@ -144,6 +266,9 @@ interface PlaybackContextValue {
 }
 
 const PlaybackContext = createContext<PlaybackContextValue | null>(null)
+
+// Module-level ref for accessing state outside React components
+let _currentPlaybackState: PlaybackState = initialState
 
 // ============================================================================
 // Provider
@@ -168,6 +293,11 @@ export function PlaybackProvider({ children }: PlaybackProviderProps) {
 	useEffect(() => {
 		speedRef.current = state.speed
 	}, [state.speed])
+
+	// Keep module-level ref in sync for getPlaybackStateSnapshot
+	useEffect(() => {
+		_currentPlaybackState = state
+	}, [state])
 
 	// Playback animation loop - only depends on isPlaying to avoid re-initialization
 	useEffect(() => {
@@ -283,6 +413,28 @@ export function usePlaybackControls() {
 		dispatch({ type: 'CLEAR_EVENTS' })
 	}, [dispatch])
 
+	const stepForward = useCallback(() => {
+		dispatch({ type: 'STEP_FORWARD' })
+	}, [dispatch])
+
+	const stepBackward = useCallback(() => {
+		dispatch({ type: 'STEP_BACKWARD' })
+	}, [dispatch])
+
+	const seekToEvent = useCallback(
+		(eventIndex: number) => {
+			dispatch({ type: 'SEEK_TO_EVENT', payload: eventIndex })
+		},
+		[dispatch]
+	)
+
+	const setSignificantTypes = useCallback(
+		(types: StageEventType[]) => {
+			dispatch({ type: 'SET_SIGNIFICANT_TYPES', payload: types })
+		},
+		[dispatch]
+	)
+
 	// Get events that have occurred up to currentTime
 	const getEventsAtCurrentTime = useCallback(() => {
 		if (state.events.length === 0) return []
@@ -295,7 +447,12 @@ export function usePlaybackControls() {
 	const getEventMarkers = useCallback(() => {
 		if (state.events.length === 0) return []
 		const startTimestamp = state.events[0].timestamp
-		const significantTypes: StageEventType[] = ['message_create', 'interaction_create', 'interaction_response', 'typing_start']
+		const significantTypes: StageEventType[] = [
+			'message_create',
+			'interaction_create',
+			'interaction_response',
+			'typing_start'
+		]
 
 		return state.events
 			.filter((e) => significantTypes.includes(e.type))
@@ -306,6 +463,15 @@ export function usePlaybackControls() {
 			}))
 	}, [state.events])
 
+	// Get the current event index based on currentTime
+	const getCurrentEventIndex = useCallback(() => {
+		if (state.events.length === 0) return -1
+		const startTime = state.events[0].timestamp
+		const currentTimestamp = startTime + state.currentTime
+		const idx = state.events.findIndex((e) => e.timestamp >= currentTimestamp)
+		return idx === -1 ? state.events.length : idx
+	}, [state.events, state.currentTime])
+
 	return {
 		// State
 		mode: state.mode,
@@ -315,6 +481,7 @@ export function usePlaybackControls() {
 		speed: state.speed,
 		events: state.events,
 		eventCount: state.events.length,
+		significantTypes: state.significantTypes,
 
 		// Actions
 		setMode,
@@ -326,10 +493,15 @@ export function usePlaybackControls() {
 		addEvent,
 		addEvents,
 		clearEvents,
+		stepForward,
+		stepBackward,
+		seekToEvent,
+		setSignificantTypes,
 
 		// Derived
 		getEventsAtCurrentTime,
-		getEventMarkers
+		getEventMarkers,
+		getCurrentEventIndex
 	}
 }
 
@@ -383,7 +555,18 @@ export function usePlaybackMessages(channelId: string | null): StageMessage[] | 
 
 	return useMemo(() => {
 		// Debug logging
-		console.log('[usePlaybackMessages] mode:', state.mode, 'events:', state.events.length, 'currentTime:', state.currentTime, 'duration:', state.duration, 'channelId:', channelId)
+		console.log(
+			'[usePlaybackMessages] mode:',
+			state.mode,
+			'events:',
+			state.events.length,
+			'currentTime:',
+			state.currentTime,
+			'duration:',
+			state.duration,
+			'channelId:',
+			channelId
+		)
 
 		// In live mode, return null to signal "use normal session messages"
 		if (state.mode === 'live' || state.events.length === 0) {
@@ -412,7 +595,11 @@ export function usePlaybackMessages(channelId: string | null): StageMessage[] | 
 						// (or all messages if no channel is selected)
 						if (!channelId || data.message.channel_id === channelId) {
 							messages.set(data.message.id, data.message)
-							console.log('[usePlaybackMessages] Added message:', data.message.id, data.message.content?.substring(0, 30))
+							console.log(
+								'[usePlaybackMessages] Added message:',
+								data.message.id,
+								data.message.content?.substring(0, 30)
+							)
 						}
 					}
 					break
@@ -477,10 +664,21 @@ export function usePlaybackMessages(channelId: string | null): StageMessage[] | 
 					console.log('[usePlaybackMessages] dispatch event:', data?.event, 'has payload:', !!data?.payload)
 					if (data?.event === 'MESSAGE_CREATE' && data?.payload) {
 						const message = data.payload
-						console.log('[usePlaybackMessages] dispatch MESSAGE_CREATE, channel match:', !channelId || message.channel_id === channelId, 'msg channel:', message.channel_id, 'filter channel:', channelId)
+						console.log(
+							'[usePlaybackMessages] dispatch MESSAGE_CREATE, channel match:',
+							!channelId || message.channel_id === channelId,
+							'msg channel:',
+							message.channel_id,
+							'filter channel:',
+							channelId
+						)
 						if (!channelId || message.channel_id === channelId) {
 							messages.set(message.id, message)
-							console.log('[usePlaybackMessages] Added dispatch message:', message.id, message.content?.substring(0, 30))
+							console.log(
+								'[usePlaybackMessages] Added dispatch message:',
+								message.id,
+								message.content?.substring(0, 30)
+							)
 						}
 					} else if (data?.event === 'MESSAGE_UPDATE' && data?.payload) {
 						const message = data.payload
@@ -625,7 +823,7 @@ export function usePlaybackChannels(guildId: string | null): StageChannel[] | nu
 
 		// Filter by guild if specified
 		if (guildId) {
-			return channels.filter(c => c.guild_id === guildId)
+			return channels.filter((c) => c.guild_id === guildId)
 		}
 
 		return channels
@@ -669,7 +867,7 @@ export function usePlaybackMembers(guildId: string | null): StageMember[] | null
 
 		// Filter by guild if specified
 		if (guildId) {
-			return members.filter(m => m.guild_id === guildId)
+			return members.filter((m) => m.guild_id === guildId)
 		}
 
 		return members
@@ -710,4 +908,51 @@ export function usePlaybackGuilds(): StageGuild[] | null {
 
 		return guilds
 	}, [state.mode, state.events, state.currentTime])
+}
+
+// ============================================================================
+// State Snapshot for Control Commands
+// ============================================================================
+
+/**
+ * Get a snapshot of the current playback state for control command responses.
+ * This can be called outside of React components.
+ */
+export function getPlaybackStateSnapshot(): StagePlaybackChangedData {
+	const state = _currentPlaybackState
+	const significantIndices = getSignificantEventIndices(state)
+
+	// Calculate current event index
+	let currentEventIndex = -1
+	if (state.events.length > 0) {
+		const startTime = state.events[0].timestamp
+		const currentTimestamp = startTime + state.currentTime
+		const idx = state.events.findIndex((e) => e.timestamp >= currentTimestamp)
+		currentEventIndex = idx === -1 ? state.events.length : idx
+	}
+
+	// Find the current significant event index
+	let significantEventIndex = -1
+	for (let i = 0; i < significantIndices.length; i++) {
+		if (significantIndices[i] >= currentEventIndex) {
+			significantEventIndex = i
+			break
+		}
+	}
+	if (significantEventIndex === -1 && significantIndices.length > 0) {
+		significantEventIndex = significantIndices.length
+	}
+
+	return {
+		mode: state.mode,
+		isPlaying: state.isPlaying,
+		currentTime: state.currentTime,
+		duration: state.duration,
+		speed: state.speed,
+		eventIndex: currentEventIndex,
+		totalEvents: state.events.length,
+		significantEventIndex,
+		totalSignificantEvents: significantIndices.length,
+		timestamp: Date.now()
+	}
 }

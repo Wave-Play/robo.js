@@ -34,7 +34,12 @@ import type {
 	StageLeaveVoiceData,
 	StageUpdateVoiceStateData,
 	StageSetCurrentUserData,
-	StageSwitchUserData
+	StageSwitchUserData,
+	StageControlCommand,
+	StageControlCommandKind,
+	StagePlaybackControlPayload,
+	StageNavigationControlPayload,
+	StageControlResponseData
 } from '../types/stage.js'
 import type { MockApplicationCommand, MockApplicationCommandOption, MockUser } from '../types/index.js'
 import type { Session } from '../types/index.js'
@@ -42,8 +47,20 @@ import { safeStringify } from '../utils/json.js'
 
 // Default configuration values
 const DEFAULT_MAX_BUFFER_SIZE = 1000
-const DEFAULT_HEARTBEAT_INTERVAL = 30000  // 30 seconds
+const DEFAULT_HEARTBEAT_INTERVAL = 30000 // 30 seconds
 const DEFAULT_MAX_MESSAGES_PER_CHANNEL = 50
+const DEFAULT_CONTROL_COMMAND_TIMEOUT = 5000 // 5 seconds
+
+/**
+ * Pending control command awaiting response from Stage UI
+ */
+interface PendingControlCommand {
+	commandId: string
+	sessionId: string
+	resolve: (data: StageControlResponseData) => void
+	reject: (error: Error) => void
+	timeout: NodeJS.Timeout
+}
 
 /**
  * Stage WebSocket server for real-time event streaming to test clients
@@ -53,9 +70,10 @@ const DEFAULT_MAX_MESSAGES_PER_CHANNEL = 50
 export class StageServer {
 	private wss: WebSocketServer
 	private connections: Map<WebSocket, StageConnectionState> = new Map()
-	private eventBuffers: Map<string, BufferedStageEvent[]> = new Map()  // sessionId -> events
-	private sessionSequences: Map<string, number> = new Map()  // sessionId -> last seq (for replay)
+	private eventBuffers: Map<string, BufferedStageEvent[]> = new Map() // sessionId -> events
+	private sessionSequences: Map<string, number> = new Map() // sessionId -> last seq (for replay)
 	private heartbeatIntervals: Map<WebSocket, NodeJS.Timeout> = new Map()
+	private pendingControlCommands: Map<string, PendingControlCommand> = new Map() // commandId -> pending
 
 	private readonly maxBufferSize: number
 	private readonly heartbeatInterval: number
@@ -96,7 +114,9 @@ export class StageServer {
 		// Reject if no token/session provided at all (this is a client bug)
 		if (!token && !sessionId) {
 			mockLogger.warn('Stage connection rejected: missing token or session parameter')
-			socket.write('HTTP/1.1 401 Unauthorized\r\nContent-Type: text/plain\r\n\r\nMissing token or session parameter\r\n')
+			socket.write(
+				'HTTP/1.1 401 Unauthorized\r\nContent-Type: text/plain\r\n\r\nMissing token or session parameter\r\n'
+			)
 			socket.destroy()
 			return
 		}
@@ -125,9 +145,11 @@ export class StageServer {
 		this.wss.handleUpgrade(req, socket, head, (ws) => {
 			mockLogger.debug('wss.handleUpgrade callback fired, ws readyState:', ws.readyState)
 			// Store session ID (or attempted ID) and lastSeq in socket for later use
-			;(ws as WebSocket & { _stageSessionId: string; _lastSeq: number; _sessionValid: boolean })._stageSessionId = session?.id ?? resolvedSessionId ?? ''
+			;(ws as WebSocket & { _stageSessionId: string; _lastSeq: number; _sessionValid: boolean })._stageSessionId =
+				session?.id ?? resolvedSessionId ?? ''
 			;(ws as WebSocket & { _stageSessionId: string; _lastSeq: number; _sessionValid: boolean })._lastSeq = lastSeq
-			;(ws as WebSocket & { _stageSessionId: string; _lastSeq: number; _sessionValid: boolean })._sessionValid = !!session
+			;(ws as WebSocket & { _stageSessionId: string; _lastSeq: number; _sessionValid: boolean })._sessionValid =
+				!!session
 			mockLogger.debug('Emitting connection event for session:', session?.id ?? resolvedSessionId)
 			this.wss.emit('connection', ws, req)
 		})
@@ -150,15 +172,17 @@ export class StageServer {
 		// This allows the client to receive a proper message instead of just seeing connection failure
 		if (!sessionValid) {
 			mockLogger.debug(`Stage connection rejected: invalid session "${sessionId}"`)
-			ws.send(JSON.stringify({
-				seq: 0,
-				timestamp: Date.now(),
-				type: 'session_invalid',
-				data: {
-					reason: 'Session not found or expired',
-					code: 4001
-				}
-			}))
+			ws.send(
+				JSON.stringify({
+					seq: 0,
+					timestamp: Date.now(),
+					type: 'session_invalid',
+					data: {
+						reason: 'Session not found or expired',
+						code: 4001
+					}
+				})
+			)
 			ws.close(4001, 'Invalid session')
 			return
 		}
@@ -169,7 +193,7 @@ export class StageServer {
 		const connState: StageConnectionState = {
 			id: `stage_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
 			sessionId,
-			authenticated: true,  // Already authenticated via token
+			authenticated: true, // Already authenticated via token
 			lastSeq: 0,
 			subscribedChannels: new Set(),
 			connectedAt: Date.now()
@@ -260,7 +284,13 @@ export class StageServer {
 	/**
 	 * Convert MockGuild to StageGuild
 	 */
-	private toStageGuild(guild: { id: string; name: string; icon?: string | null; ownerId?: string; memberCount?: number }): StageGuild {
+	private toStageGuild(guild: {
+		id: string
+		name: string
+		icon?: string | null
+		ownerId?: string
+		memberCount?: number
+	}): StageGuild {
 		return {
 			id: guild.id,
 			name: guild.name,
@@ -273,7 +303,16 @@ export class StageServer {
 	/**
 	 * Convert MockChannel to StageChannel
 	 */
-	private toStageChannel(channel: { id: string; name: string; type: number; guildId?: string; parentId?: string | null; position?: number; topic?: string | null; recipientIds?: string[] }): StageChannel {
+	private toStageChannel(channel: {
+		id: string
+		name: string
+		type: number
+		guildId?: string
+		parentId?: string | null
+		position?: number
+		topic?: string | null
+		recipientIds?: string[]
+	}): StageChannel {
 		return {
 			id: channel.id,
 			name: channel.name,
@@ -289,7 +328,15 @@ export class StageServer {
 	/**
 	 * Convert MockUser to StageUser
 	 */
-	private toStageUser(user: { id: string; username: string; discriminator?: string; avatar?: string | null; bot?: boolean; status?: 'online' | 'offline' | 'idle' | 'dnd'; activities?: Array<{ name: string; type: number; state?: string; url?: string }> }): StageUser {
+	private toStageUser(user: {
+		id: string
+		username: string
+		discriminator?: string
+		avatar?: string | null
+		bot?: boolean
+		status?: 'online' | 'offline' | 'idle' | 'dnd'
+		activities?: Array<{ name: string; type: number; state?: string; url?: string }>
+	}): StageUser {
 		return {
 			id: user.id,
 			username: user.username,
@@ -324,7 +371,14 @@ export class StageServer {
 		id: string
 		channelId: string
 		guildId?: string
-		author?: { id: string; username: string; discriminator?: string; avatar?: string | null; bot?: boolean; globalName?: string | null }
+		author?: {
+			id: string
+			username: string
+			discriminator?: string
+			avatar?: string | null
+			bot?: boolean
+			globalName?: string | null
+		}
 		content: string
 		timestamp: string
 		editedTimestamp?: string | null
@@ -335,17 +389,38 @@ export class StageServer {
 		interaction_metadata?: {
 			id: string
 			type: number
-			user: { id: string; username: string; discriminator?: string; avatar?: string | null; bot?: boolean; globalName?: string | null }
+			user: {
+				id: string
+				username: string
+				discriminator?: string
+				avatar?: string | null
+				bot?: boolean
+				globalName?: string | null
+			}
 			authorizing_integration_owners?: Record<number, string>
 			original_response_message_id?: string
-			target_user?: { id: string; username: string; discriminator?: string; avatar?: string | null; bot?: boolean; globalName?: string | null }
+			target_user?: {
+				id: string
+				username: string
+				discriminator?: string
+				avatar?: string | null
+				bot?: boolean
+				globalName?: string | null
+			}
 			target_message_id?: string
 		}
 		interaction?: {
 			id: string
 			type: number
 			name?: string
-			user: { id: string; username: string; discriminator?: string; avatar?: string | null; bot?: boolean; globalName?: string | null }
+			user: {
+				id: string
+				username: string
+				discriminator?: string
+				avatar?: string | null
+				bot?: boolean
+				globalName?: string | null
+			}
 		}
 	}): StageMessage {
 		return {
@@ -378,7 +453,7 @@ export class StageServer {
 							? this.toStageUser(message.interaction_metadata.target_user)
 							: undefined,
 						target_message_id: message.interaction_metadata.target_message_id
-					}
+				  }
 				: undefined,
 			interaction: message.interaction
 				? {
@@ -386,7 +461,7 @@ export class StageServer {
 						type: message.interaction.type,
 						name: message.interaction.name,
 						user: this.toStageUser(message.interaction.user)
-					}
+				  }
 				: undefined
 		}
 	}
@@ -400,7 +475,7 @@ export class StageServer {
 			name: cmd.name,
 			description: cmd.description,
 			type: cmd.type ?? 1, // Default to ChatInput if not specified
-			options: cmd.options?.map(opt => this.toStageCommandOption(opt))
+			options: cmd.options?.map((opt) => this.toStageCommandOption(opt))
 		}
 	}
 
@@ -413,8 +488,8 @@ export class StageServer {
 			name: opt.name,
 			description: opt.description,
 			required: opt.required,
-			choices: opt.choices?.map(c => ({ name: c.name, value: c.value })),
-			options: opt.options?.map(o => this.toStageCommandOption(o)),
+			choices: opt.choices?.map((c) => ({ name: c.name, value: c.value })),
+			options: opt.options?.map((o) => this.toStageCommandOption(o)),
 			channel_types: opt.channel_types,
 			min_value: opt.min_value,
 			max_value: opt.max_value,
@@ -510,13 +585,15 @@ export class StageServer {
 			const sorted = messages
 				.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
 				.slice(0, this.maxMessagesPerChannel)
-				.reverse()  // Oldest first
+				.reverse() // Oldest first
 
-			result[channelId] = sorted.map(m => {
+			result[channelId] = sorted.map((m) => {
 				const author = state.users.get(m.authorId)
 				return this.toStageMessage({
 					...m,
-					author: author ? { id: author.id, username: author.username, avatar: author.avatar, bot: author.bot } : undefined
+					author: author
+						? { id: author.id, username: author.username, avatar: author.avatar, bot: author.bot }
+						: undefined
 				})
 			})
 		}
@@ -531,7 +608,7 @@ export class StageServer {
 		const buffer = this.eventBuffers.get(sessionId)
 		if (!buffer) return
 
-		const eventsToReplay = buffer.filter(b => b.event.seq > fromSeq)
+		const eventsToReplay = buffer.filter((b) => b.event.seq > fromSeq)
 		mockLogger.debug(`Replaying ${eventsToReplay.length} events from seq ${fromSeq} for session ${sessionId}`)
 
 		for (const buffered of eventsToReplay) {
@@ -546,7 +623,12 @@ export class StageServer {
 	/**
 	 * Handle incoming WebSocket message (command from stage client)
 	 */
-	private handleMessage(ws: WebSocket, connState: StageConnectionState, data: WebSocket.RawData, isBinary: boolean): void {
+	private handleMessage(
+		ws: WebSocket,
+		connState: StageConnectionState,
+		data: WebSocket.RawData,
+		isBinary: boolean
+	): void {
 		// Reject binary frames
 		if (isBinary) {
 			this.sendError(ws, connState, 'Binary frames not supported')
@@ -779,7 +861,14 @@ export class StageServer {
 						emoji: { id: null, name: data.emoji },
 						guildId: channel?.guildId
 					})
-					this.sendCommandResponse(ws, connState, command.id, success, undefined, success ? undefined : 'Message not found')
+					this.sendCommandResponse(
+						ws,
+						connState,
+						command.id,
+						success,
+						undefined,
+						success ? undefined : 'Message not found'
+					)
 					break
 				}
 
@@ -799,13 +888,43 @@ export class StageServer {
 						emoji: { id: null, name: data.emoji },
 						guildId: channel?.guildId
 					})
-					this.sendCommandResponse(ws, connState, command.id, success, undefined, success ? undefined : 'Message or reaction not found')
+					this.sendCommandResponse(
+						ws,
+						connState,
+						command.id,
+						success,
+						undefined,
+						success ? undefined : 'Message or reaction not found'
+					)
 					break
 				}
 
 				case 'set_playback': {
-					// Playback controls will be implemented in Phase 5J
-					this.sendCommandResponse(ws, connState, command.id, false, undefined, 'Playback controls not yet implemented')
+					// Legacy playback control - superseded by control_command protocol (Phase 8)
+					// Stage UI should now respond to control_command events instead
+					this.sendCommandResponse(
+						ws,
+						connState,
+						command.id,
+						false,
+						undefined,
+						'Use control_command protocol instead (Phase 8)'
+					)
+					break
+				}
+
+				case 'control_response': {
+					// Handle response from Stage UI to a control command
+					const data = command.data as StageControlResponseData
+					const pending = this.pendingControlCommands.get(data.commandId)
+					if (pending) {
+						clearTimeout(pending.timeout)
+						this.pendingControlCommands.delete(data.commandId)
+						pending.resolve(data)
+					} else {
+						mockLogger.debug(`Received control_response for unknown command: ${data.commandId}`)
+					}
+					this.sendCommandResponse(ws, connState, command.id, true)
 					break
 				}
 
@@ -1057,7 +1176,7 @@ export class StageServer {
 
 		// LRU eviction if buffer is full
 		if (buffer.length > this.maxBufferSize) {
-			const evictCount = Math.ceil(this.maxBufferSize * 0.1)  // Remove oldest 10%
+			const evictCount = Math.ceil(this.maxBufferSize * 0.1) // Remove oldest 10%
 			buffer.splice(0, evictCount)
 		}
 	}
@@ -1094,7 +1213,9 @@ export class StageServer {
 
 		// Skip debug log for log_entry to avoid feedback loop spam
 		if (broadcastCount > 0 && event.type !== 'log_entry') {
-			mockLogger.debug(`Broadcast ${event.type} (seq: ${seq}) to ${broadcastCount} stage client(s) for session ${sessionId}`)
+			mockLogger.debug(
+				`Broadcast ${event.type} (seq: ${seq}) to ${broadcastCount} stage client(s) for session ${sessionId}`
+			)
 		}
 	}
 
@@ -1235,6 +1356,73 @@ export class StageServer {
 				actor
 			}
 		})
+	}
+
+	/**
+	 * Send a control command to Stage UI clients and wait for response.
+	 * Used by HTTP endpoints to control Stage UI playback and navigation.
+	 *
+	 * @param sessionId - Session ID
+	 * @param kind - Command kind (playback_control, navigation_control, state_request)
+	 * @param payload - Command-specific payload
+	 * @param timeoutMs - Timeout in ms (default: 5000)
+	 * @returns Promise resolving to control response data
+	 * @throws Error if no Stage UI connected or timeout
+	 */
+	async sendControlCommand(
+		sessionId: string,
+		kind: StageControlCommandKind,
+		payload: StagePlaybackControlPayload | StageNavigationControlPayload | Record<string, never>,
+		timeoutMs: number = DEFAULT_CONTROL_COMMAND_TIMEOUT
+	): Promise<StageControlResponseData> {
+		// Check if any Stage UI clients are connected
+		const connectionCount = this.getSessionConnectionCount(sessionId)
+		if (connectionCount === 0) {
+			throw new Error('NO_STAGE_CLIENT')
+		}
+
+		// Generate unique command ID
+		const commandId = `ctrl_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+
+		// Create promise that will be resolved when response is received
+		return new Promise((resolve, reject) => {
+			// Set up timeout
+			const timeout = setTimeout(() => {
+				this.pendingControlCommands.delete(commandId)
+				reject(new Error('TIMEOUT'))
+			}, timeoutMs)
+
+			// Store pending command
+			this.pendingControlCommands.set(commandId, {
+				commandId,
+				sessionId,
+				resolve,
+				reject,
+				timeout
+			})
+
+			// Build and broadcast control command
+			const controlCommand: StageControlCommand = {
+				commandId,
+				kind,
+				payload
+			}
+
+			mockLogger.debug(`Sending control command: ${kind} (${commandId}) to session ${sessionId}`)
+
+			this.broadcastToSession(sessionId, {
+				type: 'control_command',
+				data: controlCommand
+			})
+		})
+	}
+
+	/**
+	 * Check if a session has any Stage UI clients connected.
+	 * Useful for HTTP endpoints to return early with error if no client.
+	 */
+	hasStageClients(sessionId: string): boolean {
+		return this.getSessionConnectionCount(sessionId) > 0
 	}
 
 	/**

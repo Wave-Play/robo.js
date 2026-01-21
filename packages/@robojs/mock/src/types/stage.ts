@@ -1,4 +1,5 @@
 import type { Snowflake } from 'discord-api-types/v10'
+import type { ScenarioStepResultSummary } from './index.js'
 
 // ============================================================================
 // Stage WebSocket Protocol Types
@@ -10,78 +11,98 @@ import type { Snowflake } from 'discord-api-types/v10'
  */
 export type StageEventType =
 	// Connection lifecycle
-	| 'connected'              // Initial connection established
-	| 'state_sync'             // Full state on connect
-	| 'current_user_update'    // Current user updated
-	| 'command_response'       // Response to a command
+	| 'connected' // Initial connection established
+	| 'state_sync' // Full state on connect
+	| 'current_user_update' // Current user updated
+	| 'command_response' // Response to a command
 
 	// Message events
-	| 'message_create'         // New message (from user or bot)
-	| 'message_update'         // Message edited
-	| 'message_delete'         // Message deleted
-	| 'message_reaction_add'   // Reaction added to message
+	| 'message_create' // New message (from user or bot)
+	| 'message_update' // Message edited
+	| 'message_delete' // Message deleted
+	| 'message_reaction_add' // Reaction added to message
 	| 'message_reaction_remove' // Reaction removed from message
 
 	// Interaction events
-	| 'interaction_create'     // Slash command, button, etc. invoked
-	| 'interaction_response'   // Bot responded to interaction
-	| 'interaction_followup'   // Bot sent followup message
-	| 'interaction_edit'       // Bot edited interaction message (Phase 5O)
+	| 'interaction_create' // Slash command, button, etc. invoked
+	| 'interaction_response' // Bot responded to interaction
+	| 'interaction_followup' // Bot sent followup message
+	| 'interaction_edit' // Bot edited interaction message (Phase 5O)
 
 	// Typing & presence
-	| 'typing_start'           // User started typing
-	| 'presence_update'        // User status changed
+	| 'typing_start' // User started typing
+	| 'presence_update' // User status changed
 
 	// Voice (Phase 5P)
-	| 'voice_state_update'     // User joined/left/updated voice channel
+	| 'voice_state_update' // User joined/left/updated voice channel
 
 	// Guild/Channel events
-	| 'channel_update'         // Channel was updated
-	| 'guild_emojis_update'    // Guild emojis were updated
+	| 'channel_update' // Channel was updated
+	| 'guild_emojis_update' // Guild emojis were updated
 
 	// Bot lifecycle
-	| 'bot_ready'              // Bot connected and ready
-	| 'bot_disconnected'       // Bot disconnected
-	| 'bot_error'              // Bot encountered error
-	| 'commands_updated'       // Bot commands were registered/updated
+	| 'bot_ready' // Bot connected and ready
+	| 'bot_disconnected' // Bot disconnected
+	| 'bot_error' // Bot encountered error
+	| 'commands_updated' // Bot commands were registered/updated
 
 	// System
-	| 'heartbeat'              // Keep-alive (every 30s)
-	| 'error'                  // Error occurred
-	| 'session_invalid'        // Session token is stale/expired
-	| 'control_action'         // Control action performed
+	| 'heartbeat' // Keep-alive (every 30s)
+	| 'error' // Error occurred
+	| 'session_invalid' // Session token is stale/expired
+	| 'control_action' // Control action performed
 
 	// REST API (Phase 5K)
-	| 'rest_call'              // REST API call made by bot
+	| 'rest_call' // REST API call made by bot
 
 	// Diagnostics
-	| 'event_filtered'         // Event was not delivered due to missing intent
-	| 'loop_detected'          // Event loop detected, circuit breaker triggered
-	| 'log_entry'              // Log entry from bot process
-	| 'permission_denied'      // Permission denied for an action
+	| 'event_filtered' // Event was not delivered due to missing intent
+	| 'loop_detected' // Event loop detected, circuit breaker triggered
+	| 'log_entry' // Log entry from bot process
+	| 'permission_denied' // Permission denied for an action
+
+	// Simulation events (Simulation Support)
+	| 'scenario.step.started' // Scenario step execution started
+	| 'scenario.step.completed' // Scenario step completed successfully
+	| 'scenario.step.failed' // Scenario step failed
+	| 'scenario.run.idle' // Scenario run idle (no scenario loaded)
+	| 'scenario.run.loaded' // Scenario loaded, ready to start
+	| 'scenario.run.started' // Scenario run started
+	| 'scenario.run.running' // Scenario actively running
+	| 'scenario.run.paused' // Scenario run paused
+	| 'scenario.run.resumed' // Scenario run resumed
+	| 'scenario.run.stopped' // Scenario run stopped by user
+	| 'scenario.run.completed' // Scenario run completed (all steps done)
+	| 'scenario.run.failed' // Scenario run failed (assertion failures)
+	| 'scenario.run.error' // Scenario run fatal error (not resumable)
+	| 'stage.playback.changed' // Playback state changed (mode, position, etc.)
+	| 'stage.navigation.changed' // Navigation state changed (guild, channel)
+	| 'control_command' // Server-initiated control command
 
 /**
  * Command types sent from stage clients to server
  */
 export type StageCommandType =
-	| 'send_message'           // Send a message as a user
-	| 'invoke_command'         // Invoke slash command
+	| 'send_message' // Send a message as a user
+	| 'invoke_command' // Invoke slash command
 	| 'invoke_context_command' // Invoke context menu command (right-click)
-	| 'click_button'           // Click a button
-	| 'select_option'          // Select from dropdown
-	| 'submit_modal'           // Submit modal form
-	| 'add_reaction'           // Add reaction to message
-	| 'remove_reaction'        // Remove reaction from message
-	| 'start_typing'           // Show typing indicator
-	| 'request_state'          // Request current state
-	| 'set_playback'           // Control playback (play/pause/seek)
-	| 'subscribe_channel'      // Subscribe to channel updates
-	| 'set_current_user'       // Set the current user for the session
-	| 'switch_user'            // Switch to a different user
+	| 'click_button' // Click a button
+	| 'select_option' // Select from dropdown
+	| 'submit_modal' // Submit modal form
+	| 'add_reaction' // Add reaction to message
+	| 'remove_reaction' // Remove reaction from message
+	| 'start_typing' // Show typing indicator
+	| 'request_state' // Request current state
+	| 'set_playback' // Control playback (play/pause/seek)
+	| 'subscribe_channel' // Subscribe to channel updates
+	| 'set_current_user' // Set the current user for the session
+	| 'switch_user' // Switch to a different user
 	// Voice (Phase 5P)
-	| 'join_voice'             // Join a voice channel
-	| 'leave_voice'            // Leave voice channel
-	| 'update_voice_state'     // Update mute/deaf state
+	| 'join_voice' // Join a voice channel
+	| 'leave_voice' // Leave voice channel
+	| 'update_voice_state' // Update mute/deaf state
+	// Simulation Support
+	| 'control_response' // Response to server-initiated control command
 
 // ============================================================================
 // Stage Event Payloads
@@ -113,11 +134,11 @@ export interface StateSyncPayload {
 	guilds: StageGuild[]
 	channels: StageChannel[]
 	members: StageMember[]
-	roles: StageRole[]  // Phase 5H: Guild roles
-	messages: Record<string, StageMessage[]>  // channelId -> messages
+	roles: StageRole[] // Phase 5H: Guild roles
+	messages: Record<string, StageMessage[]> // channelId -> messages
 	users: StageUser[]
-	commands: StageApplicationCommand[]  // Phase 5G: Available slash commands
-	voice_states: StageVoiceState[]  // Phase 5P: Voice channel states
+	commands: StageApplicationCommand[] // Phase 5G: Available slash commands
+	voice_states: StageVoiceState[] // Phase 5P: Voice channel states
 	currentUser?: StageUser
 }
 
@@ -197,10 +218,10 @@ export interface StageMember {
 export interface StageRole {
 	id: Snowflake
 	name: string
-	color: number  // RGB integer (0 = no color)
+	color: number // RGB integer (0 = no color)
 	position: number
 	guild_id: Snowflake
-	hoist: boolean  // Whether to show separately in member list
+	hoist: boolean // Whether to show separately in member list
 }
 
 /**
@@ -247,10 +268,11 @@ export interface StageMessage {
 	components: unknown[]
 	attachments: unknown[]
 	reactions?: StageReaction[]
-	flags?: number  // Message flags (64 = EPHEMERAL)
-	pinned?: boolean  // Whether message is pinned
-	type?: number  // Message type (0=DEFAULT, 7=GUILD_MEMBER_JOIN, etc.)
-	message_reference?: {  // Reference for reply messages
+	flags?: number // Message flags (64 = EPHEMERAL)
+	pinned?: boolean // Whether message is pinned
+	type?: number // Message type (0=DEFAULT, 7=GUILD_MEMBER_JOIN, etc.)
+	message_reference?: {
+		// Reference for reply messages
 		message_id?: Snowflake
 		channel_id?: Snowflake
 		guild_id?: Snowflake
@@ -556,7 +578,7 @@ export interface StageSubmitModalData {
 export interface StageAddReactionData {
 	channel_id: Snowflake
 	message_id: Snowflake
-	emoji: string  // Unicode emoji or custom emoji string
+	emoji: string // Unicode emoji or custom emoji string
 	user?: {
 		id?: Snowflake
 		username?: string
@@ -569,7 +591,7 @@ export interface StageAddReactionData {
 export interface StageRemoveReactionData {
 	channel_id: Snowflake
 	message_id: Snowflake
-	emoji: string  // Unicode emoji or custom emoji string
+	emoji: string // Unicode emoji or custom emoji string
 	user?: {
 		id?: Snowflake
 		username?: string
@@ -674,6 +696,268 @@ export interface BufferedStageEvent {
 	event: StageEvent
 	/** When this event was buffered */
 	bufferedAt: number
+}
+
+// ============================================================================
+// Simulation Event Payloads (Simulation Support)
+// ============================================================================
+
+/**
+ * Step type for scenario step events
+ */
+export type ScenarioStepType = 'dispatch' | 'wait' | 'assert' | 'interact'
+
+/**
+ * Data payload for scenario.step.started events
+ */
+export interface StageScenarioStepStartedData {
+	/** Run ID */
+	runId: string
+	/** Scenario ID */
+	scenarioId: string
+	/** Step index (zero-based) */
+	stepIndex: number
+	/** Step type being executed */
+	stepType: ScenarioStepType
+	/** Optional step ID from definition */
+	stepId?: string
+	/** Optional step description */
+	description?: string
+	/** Expected node ID for highlighting */
+	expectedNodeId?: string
+	/** Timestamp when step started */
+	timestamp: number
+}
+
+/**
+ * Data payload for scenario.step.completed events
+ */
+export interface StageScenarioStepCompletedData {
+	/** Run ID */
+	runId: string
+	/** Scenario ID */
+	scenarioId: string
+	/** Step index (zero-based) */
+	stepIndex: number
+	/** Step type that completed */
+	stepType: ScenarioStepType
+	/** Optional step ID from definition */
+	stepId?: string
+	/** Execution status */
+	status: 'ok' | 'skipped'
+	/** Duration in milliseconds */
+	duration: number
+	/** IDs of actions recorded during this step */
+	recordedActionIds: string[]
+	/** Node ID that executed (from metadata or step config) */
+	executedNodeId?: string
+	/** Timestamp when step completed */
+	timestamp: number
+}
+
+/**
+ * Data payload for scenario.step.failed events
+ */
+export interface StageScenarioStepFailedData {
+	/** Run ID */
+	runId: string
+	/** Scenario ID */
+	scenarioId: string
+	/** Step index (zero-based) */
+	stepIndex: number
+	/** Step type that failed */
+	stepType: ScenarioStepType
+	/** Optional step ID from definition */
+	stepId?: string
+	/** Failure status */
+	status: 'failed' | 'timeout'
+	/** Error message */
+	error: string
+	/** Additional error details */
+	errorDetails?: unknown
+	/** Duration before failure (ms) */
+	duration: number
+	/** For assertions: expected vs actual */
+	assertionResult?: {
+		expected?: unknown
+		actual?: unknown
+		failureReason?: string
+	}
+	/** Timestamp when failure occurred */
+	timestamp: number
+}
+
+/**
+ * Run status for scenario run events
+ */
+export type ScenarioRunEventStatus =
+	| 'idle'
+	| 'loaded'
+	| 'running'
+	| 'paused'
+	| 'completed'
+	| 'failed'
+	| 'stopped'
+	| 'error'
+
+/**
+ * Data payload for scenario.run.* events
+ */
+export interface StageScenarioRunEventData {
+	/** Run ID */
+	runId: string
+	/** Scenario ID */
+	scenarioId: string
+	/** Current status */
+	status: ScenarioRunEventStatus
+	/** Current step index */
+	currentStepIndex: number
+	/** Total steps */
+	totalSteps: number
+	/** Success count */
+	successCount: number
+	/** Failure count */
+	failureCount: number
+	/** Skipped count */
+	skippedCount: number
+	/** Error message for 'failed' or 'error' status */
+	error?: string
+	/** Timestamp */
+	timestamp: number
+}
+
+/**
+ * Data payload for stage.playback.changed events
+ */
+export interface StagePlaybackChangedData {
+	/** Current playback mode */
+	mode: 'live' | 'playback'
+	/** Whether currently playing */
+	isPlaying: boolean
+	/** Current time position in milliseconds */
+	currentTime: number
+	/** Total duration in milliseconds */
+	duration: number
+	/** Playback speed multiplier */
+	speed: number
+	/** Current event index */
+	eventIndex: number
+	/** Total events */
+	totalEvents: number
+	/** Current significant event index (for step-based navigation) */
+	significantEventIndex?: number
+	/** Total significant events */
+	totalSignificantEvents?: number
+	/** Timestamp */
+	timestamp: number
+}
+
+/**
+ * Data payload for stage.navigation.changed events
+ */
+export interface StageNavigationChangedData {
+	/** Currently selected guild ID (null for DMs) */
+	guildId: string | null
+	/** Currently selected channel ID */
+	channelId: string | null
+	/** Channel type (for context) */
+	channelType?: number
+	/** Timestamp */
+	timestamp: number
+
+	// Scenario navigation fields (Phase 6: Backward Navigation)
+	/** Run ID when navigating scenario steps */
+	runId?: string
+	/** Scenario ID when navigating scenario steps */
+	scenarioId?: string
+	/** Navigation index (step being viewed, may differ from execution index) */
+	navigationIndex?: number
+	/** Step result summary for the navigated step */
+	stepResult?: ScenarioStepResultSummary
+	/** Last action ID at this step boundary (for action correlation) */
+	actionIdsBoundary?: string
+}
+
+// ============================================================================
+// Server-Initiated Control Commands (Simulation Support)
+// ============================================================================
+
+/**
+ * Kinds of control commands the server can send.
+ */
+export type StageControlCommandKind =
+	| 'playback_control' // Control playback (play/pause/seek/etc.)
+	| 'navigation_control' // Control navigation (select guild/channel)
+	| 'state_request' // Request current state
+
+/**
+ * Control command sent from server to Stage UI.
+ * Stage UI should process and respond via 'control_response' command.
+ */
+export interface StageControlCommand {
+	/** Unique command ID for response correlation */
+	commandId: string
+	/** Command kind */
+	kind: StageControlCommandKind
+	/** Command-specific payload */
+	payload: StagePlaybackControlPayload | StageNavigationControlPayload | Record<string, never>
+}
+
+/**
+ * Payload for playback_control commands.
+ */
+export interface StagePlaybackControlPayload {
+	action:
+		| 'play'
+		| 'pause'
+		| 'step_forward'
+		| 'step_backward'
+		| 'seek_to_event'
+		| 'seek_to_time'
+		| 'set_speed'
+		| 'set_mode'
+	/** For seek_to_event */
+	eventIndex?: number
+	/** For seek_to_time (ms) */
+	time?: number
+	/** For set_speed */
+	speed?: number
+	/** For set_mode */
+	mode?: 'live' | 'playback'
+}
+
+/**
+ * Payload for navigation_control commands.
+ */
+export interface StageNavigationControlPayload {
+	action: 'select_guild' | 'select_channel' | 'open_dm' | 'open_thread'
+	guildId?: string
+	channelId?: string
+	userId?: string
+	threadId?: string
+}
+
+/**
+ * Data for control_response command (Stage UI -> Server).
+ */
+export interface StageControlResponseData {
+	/** Command ID being responded to */
+	commandId: string
+	/** Whether command succeeded */
+	success: boolean
+	/** Result data (command-specific) */
+	result?: unknown
+	/** Error message if failed */
+	error?: string
+}
+
+/**
+ * Result payload for `state_request` control commands.
+ * Returned by Stage UI to allow the server (and external clients) to snapshot UI state.
+ */
+export interface StageStateRequestResult {
+	playback: StagePlaybackChangedData
+	navigation: StageNavigationChangedData
 }
 
 // ============================================================================

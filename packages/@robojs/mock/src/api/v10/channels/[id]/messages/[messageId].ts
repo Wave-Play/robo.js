@@ -259,8 +259,8 @@ async function handlePatch(
 		})
 	}
 
-	// Record action
-	session.recorder.record(
+	// Record action (use session.recordAction for metadata propagation)
+	session.recordAction(
 		'message_edited',
 		{
 			message_id: messageId,
@@ -303,8 +303,8 @@ function handleDelete(session: Session, channel: MockChannel, channelId: string,
 		})
 	}
 
-	// Record action
-	session.recorder.record(
+	// Record action (use session.recordAction for metadata propagation)
+	session.recordAction(
 		'message_deleted',
 		{
 			message_id: messageId,

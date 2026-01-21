@@ -98,8 +98,8 @@ export default async (request: RoboRequest) => {
 	}
 	getGatewayServer().dispatchToSession(session.id, 'MESSAGE_UPDATE', dispatchData, channel.guildId)
 
-	// 10. Record action
-	session.recorder.record(
+	// 10. Record action (use session.recordAction for metadata propagation)
+	session.recordAction(
 		'poll_expired',
 		{
 			message_id: messageId,

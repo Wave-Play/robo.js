@@ -760,8 +760,8 @@ async function handleInteractionWebhook(request: RoboRequest, appId: string, tok
 	}
 	await session.dispatch('MESSAGE_CREATE', dispatchData)
 
-	// 11. Record as 'interaction_followup' action
-	session.recorder.record(
+	// 11. Record as 'interaction_followup' action (use session.recordAction for metadata propagation)
+	session.recordAction(
 		'interaction_followup',
 		{
 			interaction_id: interaction.id,

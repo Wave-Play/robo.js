@@ -1,4 +1,14 @@
-import { createContext, useContext, useReducer, useRef, useEffect, useCallback, useState, type ReactNode, type Dispatch } from 'react'
+import {
+	createContext,
+	useContext,
+	useReducer,
+	useRef,
+	useEffect,
+	useCallback,
+	useState,
+	type ReactNode,
+	type Dispatch
+} from 'react'
 import type {
 	StageGuild,
 	StageChannel,
@@ -16,6 +26,7 @@ import type {
 } from '../types/stage'
 import type { ModalData } from '../components/modals/Modal'
 import { usePlaybackDispatch, type RecordedEvent } from './playbackStore'
+import { useControlCommandHandler } from '../hooks/useControlCommandHandler'
 import { buildStageWebSocketUrls } from '../utils'
 
 // Pending interaction for "Bot is thinking..." indicator
@@ -126,8 +137,14 @@ type SessionAction =
 	| { type: 'HANDLE_MESSAGE_CREATE'; payload: StageMessageCreateData }
 	| { type: 'HANDLE_MESSAGE_UPDATE'; payload: { channelId: string; message: StageMessage } }
 	| { type: 'HANDLE_MESSAGE_DELETE'; payload: { channelId: string; messageId: string } }
-	| { type: 'HANDLE_REACTION_ADD'; payload: { channel_id: string; message_id: string; user_id: string; emoji: { id: string | null; name: string } } }
-	| { type: 'HANDLE_REACTION_REMOVE'; payload: { channel_id: string; message_id: string; user_id: string; emoji: { id: string | null; name: string } } }
+	| {
+			type: 'HANDLE_REACTION_ADD'
+			payload: { channel_id: string; message_id: string; user_id: string; emoji: { id: string | null; name: string } }
+	  }
+	| {
+			type: 'HANDLE_REACTION_REMOVE'
+			payload: { channel_id: string; message_id: string; user_id: string; emoji: { id: string | null; name: string } }
+	  }
 	| { type: 'HANDLE_TYPING_START'; payload: { channelId: string; userId: string; username: string } }
 	| { type: 'SELECT_GUILD'; payload: string | null }
 	| { type: 'SELECT_CHANNEL'; payload: string | null }
@@ -314,28 +331,21 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 						if (m.id !== message_id) return m
 
 						const reactions = m.reactions || []
-						const existingReaction = reactions.find(
-							(r) => (r.emoji.id || r.emoji.name) === emojiKey
-						)
+						const existingReaction = reactions.find((r) => (r.emoji.id || r.emoji.name) === emojiKey)
 
 						if (existingReaction) {
 							// Increment count on existing reaction
 							return {
 								...m,
 								reactions: reactions.map((r) =>
-									(r.emoji.id || r.emoji.name) === emojiKey
-										? { ...r, count: r.count + 1, me: true }
-										: r
+									(r.emoji.id || r.emoji.name) === emojiKey ? { ...r, count: r.count + 1, me: true } : r
 								)
 							}
 						} else {
 							// Add new reaction
 							return {
 								...m,
-								reactions: [
-									...reactions,
-									{ count: 1, me: true, emoji: { id: emoji.id, name: emoji.name } }
-								]
+								reactions: [...reactions, { count: 1, me: true, emoji: { id: emoji.id, name: emoji.name } }]
 							}
 						}
 					})
@@ -512,7 +522,10 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 			}
 
 			const threadChannel = state.channels.find((channel) => channel.id === channelId)
-			if (threadChannel?.parent_id && (threadChannel.type === 10 || threadChannel.type === 11 || threadChannel.type === 12)) {
+			if (
+				threadChannel?.parent_id &&
+				(threadChannel.type === 10 || threadChannel.type === 11 || threadChannel.type === 12)
+			) {
 				const parentId = threadChannel.parent_id
 				const parentMessages = state.messages[parentId] || []
 				const lastMessageTimestamp = messages[messages.length - 1]?.timestamp
@@ -626,9 +639,7 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 			const { id, error } = action.payload
 			return {
 				...state,
-				pendingMessages: state.pendingMessages.map((m) =>
-					m.id === id ? { ...m, state: 'failed' as const, error } : m
-				)
+				pendingMessages: state.pendingMessages.map((m) => (m.id === id ? { ...m, state: 'failed' as const, error } : m))
 			}
 		}
 
@@ -1149,7 +1160,15 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 				// Reconnect with exponential backoff
 				const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000)
 				reconnectAttempts.current++
-				console.log('[Stage] Scheduling reconnect in', delay, 'ms (attempt', reconnectAttempts.current, '/', MAX_RECONNECT_ATTEMPTS, ')')
+				console.log(
+					'[Stage] Scheduling reconnect in',
+					delay,
+					'ms (attempt',
+					reconnectAttempts.current,
+					'/',
+					MAX_RECONNECT_ATTEMPTS,
+					')'
+				)
 
 				// Mark that we're waiting for a scheduled reconnect (prevents auto-connect effect from bypassing backoff)
 				isReconnectingRef.current = true
@@ -1199,7 +1218,7 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 	}, [dispatch])
 
 	// Send command and wait for response
-	const sendCommand = useCallback(<T = unknown>(type: string, data: unknown): Promise<T> => {
+	const sendCommand = useCallback(<T = unknown,>(type: string, data: unknown): Promise<T> => {
 		return new Promise((resolve, reject) => {
 			if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
 				reject(new Error('Not connected'))
@@ -1251,12 +1270,29 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 	// - Session is invalid (stale token)
 	// - We've given up after max retries
 	useEffect(() => {
-		console.log('[Stage] Auto-connect check:', { sessionId: state.sessionId, isConnected, isConnecting, isReconnecting: isReconnectingRef.current, isSessionInvalid, hasGivenUp })
-		if (state.sessionId && !isConnected && !isConnecting && !isReconnectingRef.current && !isSessionInvalid && !hasGivenUp) {
+		console.log('[Stage] Auto-connect check:', {
+			sessionId: state.sessionId,
+			isConnected,
+			isConnecting,
+			isReconnecting: isReconnectingRef.current,
+			isSessionInvalid,
+			hasGivenUp
+		})
+		if (
+			state.sessionId &&
+			!isConnected &&
+			!isConnecting &&
+			!isReconnectingRef.current &&
+			!isSessionInvalid &&
+			!hasGivenUp
+		) {
 			console.log('[Stage] Auto-connecting with session:', state.sessionId)
 			connect()
 		}
 	}, [state.sessionId, isConnected, isConnecting, connect, isSessionInvalid, hasGivenUp])
+
+	// Phase 8: Handle incoming control commands from the server
+	useControlCommandHandler({ sendCommand, enabled: isConnected })
 
 	const value: WebSocketContextValue = {
 		connect,

@@ -118,8 +118,8 @@ export default async (request: RoboRequest) => {
 		})
 		.filter((u): u is NonNullable<typeof u> => u !== null)
 
-	// 9. Record action
-	session.recorder.record(
+	// 9. Record action (use session.recordAction for metadata propagation)
+	session.recordAction(
 		'poll_voters_fetched',
 		{
 			message_id: messageId,

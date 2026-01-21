@@ -645,8 +645,8 @@ async function handlePatch(
 	// Get channel for guild ID
 	const channel = session.state.getChannel(message.channelId)
 
-	// Record action
-	session.recorder.record(
+	// Record action (use session.recordAction for metadata propagation)
+	session.recordAction(
 		'interaction_edit',
 		{
 			interaction_id: interaction.id,
@@ -719,8 +719,8 @@ function handleDelete(
 		}
 	}
 
-	// Record action
-	session.recorder.record(
+	// Record action (use session.recordAction for metadata propagation)
+	session.recordAction(
 		'interaction_edit',
 		{
 			interaction_id: interaction.id,

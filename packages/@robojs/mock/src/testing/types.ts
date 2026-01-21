@@ -70,10 +70,31 @@ export interface CreateTestSessionConfig {
 				type?: number
 			}>
 		}>
+		/** Pre-configured users */
+		users?: Array<{
+			id?: string
+			username?: string
+			bot?: boolean
+		}>
+		/** Application ID for the bot */
+		applicationId?: string
+		/** Commands to seed in session (for Stage UI testing) */
+		commands?: Array<{
+			name: string
+			description: string
+			type?: number
+			options?: unknown[]
+		}>
+		/** Maximum number of recorded actions before LRU eviction (default: 10000) */
+		maxActions?: number
+		/** Maximum number of recorded logs before LRU eviction (default: 10000) */
+		maxLogs?: number
 		/** Enforce intents */
 		enforceIntents?: boolean
 		/** Approved privileged intents as bigint */
 		approvedPrivilegedIntents?: bigint
+		/** Permission enforcement level */
+		permissionEnforcement?: 'none' | 'basic' | 'strict'
 	}
 }
 
@@ -109,7 +130,7 @@ export interface WaitForActionOptions {
 export interface RecordedAction {
 	/** Action ID */
 	id: string
-	/** Action type (e.g., REST_CREATE_MESSAGE, INTERACTION_RESPONSE) */
+	/** Action type (e.g., message_sent, interaction_response) */
 	type: string
 	/** Action data */
 	data: unknown

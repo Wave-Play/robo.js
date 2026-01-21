@@ -38,6 +38,7 @@ import { generateSnowflake } from '../utils/snowflake.js'
 import { MockServerState, createMockUser, createMockGuild, createMockChannel } from './state.js'
 import { ActionRecorder } from './recorder.js'
 import { LogRecorder } from './log-recorder.js'
+import { ScenarioManager } from './scenario/index.js'
 import { saveRecording } from './recording-storage.js'
 import { mockLogger } from '../core/logger.js'
 import { getGatewayServer } from '../core/gateway.js'
@@ -86,6 +87,17 @@ import {
 const DEFAULT_TTL = 60 * 60 * 1000
 
 /**
+ * Context for propagating metadata from dispatches to bot response actions.
+ * Set by dispatch handlers and consumed by recordAction().
+ */
+interface ActionContext {
+	/** Metadata to attach to actions recorded while this context is active */
+	metadata?: import('../types/index.js').ActionMetadata
+	/** ID of the triggering action (dispatch) to set as triggeredBy */
+	triggerActionId?: string
+}
+
+/**
  * Represents an isolated test session with its own state
  */
 export class Session implements ISession {
@@ -106,6 +118,7 @@ export class Session implements ISession {
 
 	readonly recorder: ActionRecorder
 	readonly logRecorder: LogRecorder
+	readonly scenarioManager: ScenarioManager
 	private ending = false
 	private autoArchiveInterval: ReturnType<typeof setInterval> | null = null
 
@@ -131,6 +144,9 @@ export class Session implements ISession {
 	private _permissionDeniedEvents: PermissionDeniedEvent[] = []
 	private static readonly MAX_PERMISSION_DENIED_EVENTS = 100
 
+	// Action context for metadata propagation (Phase 3 simulation support)
+	private _actionContext: ActionContext | null = null
+
 	// Loop detection constants
 	private static readonly LOOP_THRESHOLD = 10 // events
 	private static readonly LOOP_WINDOW_MS = 1000 // 1 second
@@ -151,6 +167,11 @@ export class Session implements ISession {
 
 		// Initialize log recorder for capturing bot logs
 		this.logRecorder = new LogRecorder(this.id, options?.config?.maxLogs ?? 10000)
+
+		// Initialize scenario manager for simulation support (Phase 4)
+		this.scenarioManager = new ScenarioManager()
+		// Set session reference for runner creation (Phase 5)
+		this.scenarioManager.setSession(this as unknown as import('../types/index.js').Session)
 
 		// Initialize state with optional configuration
 		this.state = new MockServerState({
@@ -295,9 +316,7 @@ export class Session implements ISession {
 			let author: MockUser
 			if (msgConfig.authorUsername) {
 				// Look for existing user with this username
-				const existingUser = Array.from(this.state.users.values()).find(
-					(u) => u.username === msgConfig.authorUsername
-				)
+				const existingUser = Array.from(this.state.users.values()).find((u) => u.username === msgConfig.authorUsername)
 				if (existingUser) {
 					author = existingUser
 				} else {
@@ -363,8 +382,17 @@ export class Session implements ISession {
 			}
 		}
 
-		// Record the dispatched event
-		this.recorder.record('dispatch', { event, payload: data })
+		// Record the dispatched event (uses recordAction to pick up action context)
+		const dispatchAction = this.recordAction('dispatch', { event, payload: data })
+
+		// If an action context is active, pin the triggering dispatch action ID so subsequent
+		// bot outputs can link back via `triggeredBy` (Phase 3 metadata propagation).
+		if (this._actionContext?.metadata && !this._actionContext.triggerActionId) {
+			this._actionContext = {
+				...this._actionContext,
+				triggerActionId: dispatchAction.id
+			}
+		}
 
 		// Get the guild ID for intent filtering (if present in data)
 		const guildId = (data as Record<string, unknown>)?.guild_id as string | undefined
@@ -584,9 +612,10 @@ export class Session implements ISession {
 		}
 
 		// Update state
-		const reactions = options.action === 'add'
-			? this.state.addReaction(options.messageId, options.userId, options.emoji)
-			: this.state.removeReaction(options.messageId, options.userId, options.emoji)
+		const reactions =
+			options.action === 'add'
+				? this.state.addReaction(options.messageId, options.userId, options.emoji)
+				: this.state.removeReaction(options.messageId, options.userId, options.emoji)
 
 		if (reactions === undefined) {
 			return false
@@ -843,7 +872,9 @@ export class Session implements ISession {
 		// Dispatch to connections
 		await this.dispatch('INTERACTION_CREATE', (payload as GatewayPayload).d)
 
-		mockLogger.debug(`Session ${this.id} dispatched select menu: ${options.customId} with values [${options.values.join(', ')}]`)
+		mockLogger.debug(
+			`Session ${this.id} dispatched select menu: ${options.customId} with values [${options.values.join(', ')}]`
+		)
 
 		return interaction
 	}
@@ -941,7 +972,11 @@ export class Session implements ISession {
 		// Dispatch to connections
 		await this.dispatch('INTERACTION_CREATE', (payload as GatewayPayload).d)
 
-		mockLogger.debug(`Session ${this.id} dispatched modal submit: ${options.customId} with ${Object.keys(options.fields).length} fields`)
+		mockLogger.debug(
+			`Session ${this.id} dispatched modal submit: ${options.customId} with ${
+				Object.keys(options.fields).length
+			} fields`
+		)
 
 		return interaction
 	}
@@ -1045,7 +1080,9 @@ export class Session implements ISession {
 		// Dispatch to connections
 		await this.dispatch('INTERACTION_CREATE', (payload as GatewayPayload).d)
 
-		mockLogger.debug(`Session ${this.id} dispatched autocomplete: /${options.commandName} option:${options.focusedOption.name}`)
+		mockLogger.debug(
+			`Session ${this.id} dispatched autocomplete: /${options.commandName} option:${options.focusedOption.name}`
+		)
 
 		return interaction
 	}
@@ -1183,7 +1220,9 @@ export class Session implements ISession {
 
 		// Validate parent channel type (must be text or announcement)
 		if (parentChannel.type !== 0 && parentChannel.type !== 5) {
-			throw new Error(`Cannot create thread in channel type ${parentChannel.type}. Must be text (0) or announcement (5)`)
+			throw new Error(
+				`Cannot create thread in channel type ${parentChannel.type}. Must be text (0) or announcement (5)`
+			)
 		}
 
 		// Get or create owner user
@@ -1223,7 +1262,7 @@ export class Session implements ISession {
 		})
 
 		// Record the action
-		this.recorder.record('thread_created', {
+		this.recordAction('thread_created', {
 			threadId: thread.id,
 			name: thread.name,
 			type: thread.type,
@@ -1282,7 +1321,7 @@ export class Session implements ISession {
 		})
 
 		// Record the action
-		this.recorder.record('thread_updated', {
+		this.recordAction('thread_updated', {
 			threadId: thread.id,
 			updates
 		})
@@ -1328,7 +1367,7 @@ export class Session implements ISession {
 		})
 
 		// Record the action
-		this.recorder.record('thread_deleted', {
+		this.recordAction('thread_deleted', {
 			threadId,
 			guildId,
 			parentId,
@@ -1371,7 +1410,7 @@ export class Session implements ISession {
 		})
 
 		// Record the action
-		this.recorder.record('thread_member_added', {
+		this.recordAction('thread_member_added', {
 			threadId,
 			userId: this.state.botUser.id
 		})
@@ -1412,7 +1451,7 @@ export class Session implements ISession {
 		// For the bot's own membership, the thread simply becomes "invisible"
 
 		// Record the action
-		this.recorder.record('thread_member_removed', {
+		this.recordAction('thread_member_removed', {
 			threadId,
 			userId: this.state.botUser.id
 		})
@@ -1453,7 +1492,7 @@ export class Session implements ISession {
 		})
 
 		// Record the action
-		this.recorder.record('thread_member_added', {
+		this.recordAction('thread_member_added', {
 			threadId,
 			userId
 		})
@@ -1501,7 +1540,7 @@ export class Session implements ISession {
 		})
 
 		// Record the action
-		this.recorder.record('thread_member_removed', {
+		this.recordAction('thread_member_removed', {
 			threadId,
 			userId
 		})
@@ -1540,7 +1579,7 @@ export class Session implements ISession {
 			guildId,
 			channelIds,
 			threads,
-			members: members as NonNullable<typeof members[number]>[],
+			members: members as NonNullable<(typeof members)[number]>[],
 			sequence: 0
 		})
 
@@ -2077,9 +2116,40 @@ export class Session implements ISession {
 
 	/**
 	 * Record an action from the bot (REST API call, Gateway message, etc.)
+	 * Automatically merges in the current action context if metadata/triggeredBy not provided.
 	 */
 	recordAction(type: ActionType, data: unknown, options?: RecordActionOptions): RecordedAction {
-		return this.recorder.record(type, data, options)
+		const context = this._actionContext
+		const mergedOptions: RecordActionOptions = {
+			...options,
+			// Only merge metadata if not explicitly provided
+			metadata: options?.metadata ?? context?.metadata,
+			// Only merge triggeredBy if not explicitly provided
+			triggeredBy: options?.triggeredBy ?? context?.triggerActionId
+		}
+		return this.recorder.record(type, data, mergedOptions)
+	}
+
+	/**
+	 * Set the action context for metadata propagation.
+	 * Actions recorded while this context is active will inherit the metadata.
+	 */
+	setActionContext(context: ActionContext | null): void {
+		this._actionContext = context
+	}
+
+	/**
+	 * Get the current action context.
+	 */
+	getActionContext(): ActionContext | null {
+		return this._actionContext
+	}
+
+	/**
+	 * Clear the action context.
+	 */
+	clearActionContext(): void {
+		this._actionContext = null
 	}
 
 	/**
@@ -2206,7 +2276,14 @@ export class Session implements ISession {
 	 * @param retryAfter - Retry-After value in seconds (only used when config is boolean)
 	 */
 	setRateLimitSimulation(
-		config: boolean | { enabled: boolean; retryAfter?: number; persistent?: boolean; scope?: 'all' | 'messages' | 'interactions' | 'guilds' | 'channels' },
+		config:
+			| boolean
+			| {
+					enabled: boolean
+					retryAfter?: number
+					persistent?: boolean
+					scope?: 'all' | 'messages' | 'interactions' | 'guilds' | 'channels'
+			  },
 		retryAfter = 1
 	): void {
 		if (typeof config === 'boolean') {
@@ -2705,7 +2782,10 @@ export class Session implements ISession {
 	 * @param setAsCurrent Whether to set this user as the current user (default: false)
 	 * @returns The created user
 	 */
-	createUser(config: { username: string; bot?: boolean; avatar?: string | null; status?: 'online' | 'offline' | 'idle' | 'dnd' }, setAsCurrent = false): MockUser {
+	createUser(
+		config: { username: string; bot?: boolean; avatar?: string | null; status?: 'online' | 'offline' | 'idle' | 'dnd' },
+		setAsCurrent = false
+	): MockUser {
 		const user = createMockUser({
 			username: config.username,
 			bot: config.bot ?? false,
@@ -2735,7 +2815,10 @@ export class Session implements ISession {
 	 * @param updates The properties to update
 	 * @returns The updated user, or undefined if not found
 	 */
-	updateUser(userId: string, updates: Partial<{ username: string; avatar: string | null; status: 'online' | 'offline' | 'idle' | 'dnd' }>): MockUser | undefined {
+	updateUser(
+		userId: string,
+		updates: Partial<{ username: string; avatar: string | null; status: 'online' | 'offline' | 'idle' | 'dnd' }>
+	): MockUser | undefined {
 		const user = this.state.users.get(userId)
 		if (!user) return undefined
 
@@ -2809,7 +2892,11 @@ export class Session implements ISession {
 	 * @param options Optional command options
 	 * @returns The created interaction
 	 */
-	async invokeCommandAs(userId: string, commandName: string, options?: Record<string, string | number | boolean>): Promise<MockInteraction> {
+	async invokeCommandAs(
+		userId: string,
+		commandName: string,
+		options?: Record<string, string | number | boolean>
+	): Promise<MockInteraction> {
 		const user = this.state.users.get(userId)
 		if (!user) throw new Error(`User ${userId} not found`)
 

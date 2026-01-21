@@ -5,7 +5,7 @@ import { VOICE_GATEWAY_PORT } from '../../../../core/voice-gateway.js'
 import { validateMethod, notFound, badRequest } from '../../utils.js'
 import { createMockGuild, createMockChannel } from '../../../../session/state.js'
 import { generateSnowflake } from '../../../../utils/snowflake.js'
-import type { VoiceServerState, MockAttachment } from '../../../../types/index.js'
+import type { VoiceServerState, MockAttachment, ActionMetadata } from '../../../../types/index.js'
 
 /**
  * POST /api/control/sessions/:id/dispatch - Dispatch an event to session connections
@@ -36,7 +36,8 @@ import type { VoiceServerState, MockAttachment } from '../../../../types/index.j
  *     user_id: string      // Required - user who voted
  *     message_id: string   // Required - message with poll
  *     answer_id: number    // Required - poll answer ID (1-indexed)
- *   }
+ *   },
+ *   metadata?: ActionMetadata // Optional metadata for simulation tracing (Phase 3)
  * }
  *
  * Response:
@@ -67,6 +68,7 @@ export default async (request: RoboRequest) => {
 	let body: {
 		event: string
 		data: Record<string, unknown>
+		metadata?: ActionMetadata
 	}
 
 	try {
@@ -84,6 +86,25 @@ export default async (request: RoboRequest) => {
 		return badRequest('Missing or invalid "data" field')
 	}
 
+	// Set up action context for metadata propagation (Phase 3)
+	// Context is set before dispatch so the dispatch recording and subsequent bot actions inherit metadata.
+	if (body.metadata) {
+		const context = { metadata: body.metadata }
+		session.setActionContext(context)
+
+		// Ad-hoc dispatch context should not leak indefinitely. Clear after a short timeout
+		// if it hasn't been replaced by a new dispatch (Phase 3 lifetime rules).
+		const timeout = setTimeout(() => {
+			if (session.getActionContext() === context) {
+				session.clearActionContext()
+			}
+		}, 5000)
+		timeout.unref?.()
+	} else {
+		// Clear any existing context to prevent stale metadata from leaking
+		session.clearActionContext()
+	}
+
 	// Handle MESSAGE_CREATE specially
 	if (body.event === 'MESSAGE_CREATE') {
 		const data = body.data as {
@@ -98,7 +119,14 @@ export default async (request: RoboRequest) => {
 			embeds?: unknown[]
 			attachments?: unknown[]
 			components?: unknown[]
-			mentions?: Array<{ id?: string; username?: string; discriminator?: string; avatar?: string | null; bot?: boolean; global_name?: string | null }>
+			mentions?: Array<{
+				id?: string
+				username?: string
+				discriminator?: string
+				avatar?: string | null
+				bot?: boolean
+				global_name?: string | null
+			}>
 			mention_roles?: string[]
 			mention_everyone?: boolean
 			mention_channels?: Array<{ id: string; name: string; type: number; guild_id: string }>
@@ -162,12 +190,14 @@ export default async (request: RoboRequest) => {
 				reactions: data.reactions,
 				type: data.type,
 				call: data.call,
-				roleSubscriptionData: data.role_subscription_data ? {
-					roleSubscriptionListingId: data.role_subscription_data.role_subscription_listing_id ?? '',
-					tierName: data.role_subscription_data.tier_name ?? '',
-					totalMonthsSubscribed: data.role_subscription_data.total_months_subscribed ?? 0,
-					isRenewal: data.role_subscription_data.is_renewal ?? false
-				} : undefined,
+				roleSubscriptionData: data.role_subscription_data
+					? {
+							roleSubscriptionListingId: data.role_subscription_data.role_subscription_listing_id ?? '',
+							tierName: data.role_subscription_data.tier_name ?? '',
+							totalMonthsSubscribed: data.role_subscription_data.total_months_subscribed ?? 0,
+							isRenewal: data.role_subscription_data.is_renewal ?? false
+					  }
+					: undefined,
 				position: data.position
 			})
 
@@ -458,7 +488,9 @@ export default async (request: RoboRequest) => {
 
 		// Slash command interaction
 		if (!data.command_name) {
-			return badRequest('INTERACTION_CREATE requires "command_name", "custom_id", "focused_option", or "target_id" with "context_menu_type" in data')
+			return badRequest(
+				'INTERACTION_CREATE requires "command_name", "custom_id", "focused_option", or "target_id" with "context_menu_type" in data'
+			)
 		}
 
 		try {
@@ -862,7 +894,9 @@ export default async (request: RoboRequest) => {
 		}
 
 		if (!data.guild_scheduled_event_id || !data.user_id || !data.guild_id) {
-			return badRequest('GUILD_SCHEDULED_EVENT_USER_ADD requires "guild_scheduled_event_id", "user_id", and "guild_id" in data')
+			return badRequest(
+				'GUILD_SCHEDULED_EVENT_USER_ADD requires "guild_scheduled_event_id", "user_id", and "guild_id" in data'
+			)
 		}
 
 		// Add subscriber to state
@@ -903,7 +937,9 @@ export default async (request: RoboRequest) => {
 		}
 
 		if (!data.guild_scheduled_event_id || !data.user_id || !data.guild_id) {
-			return badRequest('GUILD_SCHEDULED_EVENT_USER_REMOVE requires "guild_scheduled_event_id", "user_id", and "guild_id" in data')
+			return badRequest(
+				'GUILD_SCHEDULED_EVENT_USER_REMOVE requires "guild_scheduled_event_id", "user_id", and "guild_id" in data'
+			)
 		}
 
 		// Remove subscriber from state
@@ -1097,17 +1133,17 @@ export default async (request: RoboRequest) => {
 					discriminator: data.member.user.discriminator ?? '0',
 					avatar: data.member.user.avatar ?? null,
 					bot: false
-				}
+			  }
 			: storedUser
-				? {
-						id: storedUser.id,
-						username: storedUser.username,
-						global_name: storedUser.globalName ?? undefined,
-						discriminator: storedUser.discriminator ?? '0',
-						avatar: storedUser.avatar ?? null,
-						bot: storedUser.bot
-					}
-				: undefined
+			? {
+					id: storedUser.id,
+					username: storedUser.username,
+					global_name: storedUser.globalName ?? undefined,
+					discriminator: storedUser.discriminator ?? '0',
+					avatar: storedUser.avatar ?? null,
+					bot: storedUser.bot
+			  }
+			: undefined
 		const stageMember = memberUser
 			? {
 					user: {
@@ -1122,7 +1158,7 @@ export default async (request: RoboRequest) => {
 					roles: data.member?.roles ?? storedMember?.roles ?? [],
 					joined_at: data.member?.joined_at ?? storedMember?.joinedAt,
 					guild_id: data.guild_id
-				}
+			  }
 			: undefined
 
 		// Broadcast to Stage clients

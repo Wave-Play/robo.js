@@ -22,12 +22,16 @@ export interface Session {
 	readonly isExpired: boolean
 	readonly isEnding: boolean
 	readonly recorder: IActionRecorder
+	readonly scenarioManager: IScenarioManager
 
 	// Event Dispatch
 	dispatch(event: string, data: unknown): Promise<void>
 
 	// Recording Methods
 	recordAction(type: ActionType, data: unknown, options?: RecordActionOptions): RecordedAction
+	setActionContext(context: ActionContext | null): void
+	getActionContext(): ActionContext | null
+	clearActionContext(): void
 	getActions(): RecordedAction[]
 	getActionsSince(timestamp: number): RecordedAction[]
 	getActionsByType(type: ActionType): RecordedAction[]
@@ -241,7 +245,12 @@ export interface SessionState {
 	getGuildRole(guildId: Snowflake, roleId: Snowflake): MockRole | undefined
 	createEveryoneRole(guildId: Snowflake): MockRole
 	createGuildRole(guildId: Snowflake, config?: MockRoleConfig): MockRole | null
-	updateGuildRole(guildId: Snowflake, roleId: Snowflake, updates: Partial<MockRoleConfig>, reason?: string): MockRole | null
+	updateGuildRole(
+		guildId: Snowflake,
+		roleId: Snowflake,
+		updates: Partial<MockRoleConfig>,
+		reason?: string
+	): MockRole | null
 	updateGuildRolePositions(guildId: Snowflake, positions: Array<{ id: Snowflake; position: number }>): MockRole[]
 	deleteGuildRole(guildId: Snowflake, roleId: Snowflake, reason?: string): boolean
 
@@ -249,7 +258,11 @@ export interface SessionState {
 	getGuildMember(guildId: Snowflake, userId: Snowflake): MockGuildMember | undefined
 	getGuildMembers(guildId: Snowflake): MockGuildMember[]
 	createGuildMember(guildId: Snowflake, userId: Snowflake, config?: MockGuildMemberConfig): MockGuildMember | null
-	updateGuildMember(guildId: Snowflake, userId: Snowflake, updates: Partial<MockGuildMemberConfig>): MockGuildMember | null
+	updateGuildMember(
+		guildId: Snowflake,
+		userId: Snowflake,
+		updates: Partial<MockGuildMemberConfig>
+	): MockGuildMember | null
 	removeGuildMember(guildId: Snowflake, userId: Snowflake): boolean
 	addMemberRole(guildId: Snowflake, userId: Snowflake, roleId: Snowflake): boolean
 	removeMemberRole(guildId: Snowflake, userId: Snowflake, roleId: Snowflake): boolean
@@ -280,15 +293,28 @@ export interface SessionState {
 	getInvite(code: string): MockInvite | undefined
 	getGuildInvites(guildId: Snowflake): MockInvite[]
 	getChannelInvites(channelId: Snowflake): MockInvite[]
-	createInvite(guildId: Snowflake, channelId: Snowflake, config: MockInviteConfig, inviterId: Snowflake): MockInvite | null
+	createInvite(
+		guildId: Snowflake,
+		channelId: Snowflake,
+		config: MockInviteConfig,
+		inviterId: Snowflake
+	): MockInvite | null
 	deleteInvite(code: string): MockInvite | null
 	useInvite(code: string): boolean
 
 	// Scheduled Event Operations
 	getScheduledEvent(guildId: Snowflake, eventId: Snowflake): MockScheduledEvent | undefined
 	getGuildScheduledEvents(guildId: Snowflake): MockScheduledEvent[]
-	createScheduledEvent(guildId: Snowflake, config: MockScheduledEventConfig, creatorId: Snowflake): MockScheduledEvent | null
-	updateScheduledEvent(guildId: Snowflake, eventId: Snowflake, updates: MockScheduledEventUpdateConfig): MockScheduledEvent | null
+	createScheduledEvent(
+		guildId: Snowflake,
+		config: MockScheduledEventConfig,
+		creatorId: Snowflake
+	): MockScheduledEvent | null
+	updateScheduledEvent(
+		guildId: Snowflake,
+		eventId: Snowflake,
+		updates: MockScheduledEventUpdateConfig
+	): MockScheduledEvent | null
 	deleteScheduledEvent(guildId: Snowflake, eventId: Snowflake): boolean
 	addScheduledEventSubscriber(guildId: Snowflake, eventId: Snowflake, userId: Snowflake): boolean
 	removeScheduledEventSubscriber(guildId: Snowflake, eventId: Snowflake, userId: Snowflake): boolean
@@ -1976,6 +2002,160 @@ export type ActionType =
 	| 'automod_rule_updated'
 	| 'automod_rule_deleted'
 
+// ============================================================================
+// Action Metadata Types (Simulation Support)
+// ============================================================================
+
+/**
+ * Metadata attached to recorded actions for tracing and orchestration.
+ * Designed for extensibility - external systems (like Disgraph) can use these
+ * fields to correlate actions with their own domain concepts.
+ */
+export interface ActionMetadata {
+	/**
+	 * Source system identifier (e.g., "disgraph", "test-runner", "manual").
+	 * Used to identify which system originated the action.
+	 */
+	source?: string
+
+	/**
+	 * Opaque identifier from the source system (e.g., schema ID, test file path).
+	 * Interpretation is source-specific.
+	 */
+	sourceId?: string
+
+	/**
+	 * Scenario identifier when action is part of a scenario run.
+	 * Set by the scenario runner.
+	 */
+	scenarioId?: string
+
+	/**
+	 * Unique run identifier for this scenario execution.
+	 * Different each time the same scenario is run.
+	 */
+	runId?: string
+
+	/**
+	 * Zero-based index of the step that triggered this action.
+	 * Useful for correlating actions with scenario steps.
+	 */
+	stepIndex?: number
+
+	/**
+	 * Node identifier from the source system (e.g., Disgraph node ID).
+	 * Enables automatic node highlighting during simulation.
+	 */
+	nodeId?: string
+
+	/**
+	 * Arbitrary key-value tags for future extensibility.
+	 * Can store custom data without modifying the core schema.
+	 */
+	tags?: Record<string, string>
+}
+
+/**
+ * Context for propagating metadata from dispatches to bot response actions.
+ * Set by dispatch handlers and consumed by recordAction().
+ */
+export interface ActionContext {
+	/** Metadata to attach to actions recorded while this context is active */
+	metadata?: ActionMetadata
+	/** ID of the triggering action (dispatch) to set as triggeredBy */
+	triggerActionId?: string
+}
+
+// ============================================================================
+// Scenario Manager Interface
+// ============================================================================
+
+/**
+ * Result of loading a scenario into the manager.
+ */
+export interface ScenarioLoadResult {
+	/** Unique identifier for this run */
+	runId: string
+	/** Scenario ID from the definition */
+	scenarioId: string
+	/** Total number of steps */
+	stepCount: number
+	/** Warnings about unsupported features (e.g., Flashcore) */
+	warnings: string[]
+}
+
+/**
+ * Interface for ScenarioManager to allow type-safe access from Session.
+ * Manages scenario lifecycle for simulation support.
+ */
+export interface IScenarioManager {
+	/**
+	 * Load a scenario definition into the manager.
+	 * Validates the scenario and initializes run state.
+	 * @throws Error if validation fails
+	 */
+	load(scenario: ScenarioDefinition): ScenarioLoadResult
+
+	/**
+	 * Clear the loaded scenario and run state.
+	 */
+	clear(): void
+
+	/**
+	 * Get the loaded scenario definition, if any.
+	 */
+	getScenario(): ScenarioDefinition | null
+
+	/**
+	 * Get the current run state.
+	 * Returns an idle state if no scenario is loaded.
+	 */
+	getRunState(): ScenarioRunState
+
+	/**
+	 * Check if a scenario is currently loaded.
+	 */
+	hasScenario(): boolean
+
+	/**
+	 * Update the run status.
+	 * Used by the scenario runner (Phase 5) to update execution state.
+	 */
+	setStatus(status: ScenarioRunStatus): void
+
+	/**
+	 * Add a step result to the run state.
+	 * Used by the scenario runner (Phase 5) to record step outcomes.
+	 */
+	addStepResult(result: ScenarioStepResult): void
+
+	/**
+	 * Add an error to the run state.
+	 * Used for both step-level and run-level errors.
+	 */
+	addError(error: ScenarioRunError): void
+
+	/**
+	 * Set the current step index.
+	 * Used by the scenario runner to track progress.
+	 */
+	setCurrentStepIndex(index: number): void
+
+	/**
+	 * Mark the run as started.
+	 */
+	markStarted(): void
+
+	/**
+	 * Mark the run as ended.
+	 */
+	markEnded(): void
+}
+
+// ============================================================================
+// Action Recording Types
+// ============================================================================
+
 /**
  * Recorded action from bot (for test assertions)
  */
@@ -1998,6 +2178,12 @@ export interface RecordedAction {
 	responseType?: number
 	/** ID of the event that triggered this action (for causal tracking) */
 	triggeredBy?: string
+	/**
+	 * Optional metadata for tracing and orchestration.
+	 * Used by external systems (like Disgraph) to correlate actions
+	 * with their domain concepts (nodes, steps, scenarios).
+	 */
+	metadata?: ActionMetadata
 }
 
 /**
@@ -2009,6 +2195,11 @@ export interface RecordActionOptions {
 	interactionId?: string
 	responseType?: number
 	triggeredBy?: string
+	/**
+	 * Metadata to attach to the recorded action.
+	 * Propagates to response actions triggered by this dispatch.
+	 */
+	metadata?: ActionMetadata
 }
 
 /**
@@ -2052,6 +2243,652 @@ export interface SessionRecording {
 	actions: RecordedAction[]
 	/** Captured logs from connected bots (optional, for log replay) */
 	logs?: SessionLogEntry[]
+}
+
+// ============================================================================
+// Scenario Types (Simulation Support)
+// ============================================================================
+
+/**
+ * Scenario format version for migration compatibility.
+ * Increment when making breaking changes to the scenario schema.
+ */
+export type ScenarioVersion = 1
+
+/**
+ * Top-level scenario definition for simulation execution.
+ * Scenarios are versioned JSON documents that define a sequence of
+ * steps to execute against a mock session.
+ */
+export interface ScenarioDefinition {
+	/**
+	 * Schema version for forward compatibility.
+	 * Implementations should check this before parsing.
+	 */
+	version: ScenarioVersion
+
+	/**
+	 * Unique identifier for this scenario.
+	 * Should be stable across edits (UUID recommended).
+	 */
+	id: string
+
+	/**
+	 * Human-readable scenario metadata.
+	 */
+	metadata: ScenarioMetadata
+
+	/**
+	 * Compatibility requirements for this scenario.
+	 * Used for pre-flight validation before execution.
+	 */
+	compatibility?: ScenarioCompatibility
+
+	/**
+	 * Mock environment configuration applied before execution.
+	 * Sets up users, guilds, channels, and other mock data.
+	 */
+	mockConfig?: ScenarioMockConfig
+
+	/**
+	 * Ordered sequence of steps to execute.
+	 * Steps are executed in order, with completion detection between each.
+	 */
+	steps: ScenarioStep[]
+}
+
+/**
+ * Human-readable scenario metadata for display and organization.
+ */
+export interface ScenarioMetadata {
+	/** Display name for the scenario */
+	name: string
+
+	/** Optional longer description */
+	description?: string
+
+	/** Tags for filtering and organization (e.g., "happy-path", "edge-case") */
+	tags?: string[]
+
+	/** ISO 8601 timestamp when scenario was created */
+	createdAt?: string
+
+	/** ISO 8601 timestamp when scenario was last modified */
+	updatedAt?: string
+
+	/** Author identifier (username, email, etc.) */
+	author?: string
+}
+
+/**
+ * Compatibility requirements for scenario validation.
+ * Used to check if a scenario can run against a given schema/bot.
+ */
+export interface ScenarioCompatibility {
+	/**
+	 * List of command names this scenario requires.
+	 * Pre-flight check fails if any are missing.
+	 */
+	requiredCommands?: string[]
+
+	/**
+	 * List of command option names by command this scenario uses.
+	 * Format: { "command-name": ["option1", "option2"] }
+	 */
+	requiredOptions?: Record<string, string[]>
+
+	/**
+	 * List of action types this scenario expects the bot to produce.
+	 */
+	requiredActionTypes?: ActionType[]
+
+	/**
+	 * Minimum version of the source system (e.g., schema version).
+	 * Interpretation is source-specific.
+	 */
+	minVersion?: string
+}
+
+/**
+ * Mock environment configuration for a scenario.
+ * Applied to the session before step execution begins.
+ */
+export interface ScenarioMockConfig {
+	/**
+	 * Mock user configuration for the invoking user.
+	 * This user will be the author of dispatched events.
+	 */
+	user?: MockUserConfig
+
+	/**
+	 * Mock guild configuration for the test environment.
+	 */
+	guild?: MockGuildConfig
+
+	/**
+	 * Mock channel configuration where interactions occur.
+	 */
+	channel?: MockChannelConfig
+
+	/**
+	 * Pre-seeded command option values for slash commands.
+	 * Format: { "command-name": { "option": value } }
+	 */
+	commandOptions?: Record<string, Record<string, unknown>>
+
+	/**
+	 * Time configuration for deterministic time-based testing.
+	 */
+	time?: ScenarioTimeConfig
+
+	/**
+	 * Flashcore data pre-seeding (deferred - not implemented in MVP).
+	 * Stored but not applied until Flashcore mocking is implemented.
+	 */
+	flashcoreData?: Record<string, unknown>
+
+	/**
+	 * External API response mocks (deferred - not implemented in MVP).
+	 * Stored but not applied until API mocking is implemented.
+	 */
+	apiMocks?: Record<string, unknown>
+}
+
+/**
+ * Time configuration for deterministic testing.
+ */
+export interface ScenarioTimeConfig {
+	/**
+	 * Fixed timestamp (ms since epoch) for Date.now() calls.
+	 * If set, all time operations return this value.
+	 */
+	fixedTime?: number
+
+	/**
+	 * Time progression rate multiplier.
+	 * 1.0 = real-time, 2.0 = 2x speed, 0.5 = half speed.
+	 * Only applies when fixedTime is not set.
+	 */
+	timeScale?: number
+}
+
+// ============================================================================
+// Scenario Step Types
+// ============================================================================
+
+/**
+ * Union of all possible step types.
+ * Each step type has a `type` discriminator for type narrowing.
+ */
+export type ScenarioStep = ScenarioDispatchStep | ScenarioWaitStep | ScenarioAssertStep | ScenarioInteractStep
+
+/**
+ * Base fields shared by all step types.
+ */
+export interface ScenarioStepBase {
+	/**
+	 * Optional step identifier for debugging and result correlation.
+	 * If not provided, steps are identified by index.
+	 */
+	id?: string
+
+	/**
+	 * Optional human-readable description of this step.
+	 */
+	description?: string
+
+	/**
+	 * Expected node ID in the source system (e.g., Disgraph node).
+	 * Used for automatic highlighting during execution.
+	 */
+	expectedNodeId?: string
+
+	/**
+	 * Maximum time (ms) to wait for step completion.
+	 * Overrides the default timeout if specified.
+	 */
+	timeout?: number
+}
+
+/**
+ * Dispatch step: Send a Discord gateway event to the bot.
+ */
+export interface ScenarioDispatchStep extends ScenarioStepBase {
+	type: 'dispatch'
+
+	/**
+	 * The dispatch action to perform.
+	 * Uses the same structure as Control API dispatch endpoints.
+	 */
+	dispatch: ScenarioDispatchAction
+}
+
+/**
+ * Dispatch action configuration (mirrors Control API dispatch options).
+ */
+export interface ScenarioDispatchAction {
+	/**
+	 * Type of dispatch to perform.
+	 */
+	kind:
+		| 'slash_command'
+		| 'button_click'
+		| 'select_option'
+		| 'modal_submit'
+		| 'message_create'
+		| 'context_command'
+		| 'autocomplete'
+
+	/**
+	 * Dispatch-specific payload.
+	 * Structure depends on the `kind` field.
+	 */
+	payload: unknown
+
+	/**
+	 * Channel ID where the dispatch occurs.
+	 * Defaults to the scenario's configured channel.
+	 */
+	channelId?: string
+
+	/**
+	 * Guild ID for guild-based dispatches.
+	 * Defaults to the scenario's configured guild.
+	 */
+	guildId?: string
+
+	/**
+	 * Override user for this specific dispatch.
+	 * Defaults to the scenario's configured user.
+	 */
+	user?: MockUserConfig
+}
+
+/**
+ * Wait step: Pause execution for a duration or condition.
+ */
+export interface ScenarioWaitStep extends ScenarioStepBase {
+	type: 'wait'
+
+	/**
+	 * Wait configuration (mutually exclusive options).
+	 */
+	wait: ScenarioWaitConfig
+}
+
+/**
+ * Wait configuration options.
+ */
+export interface ScenarioWaitConfig {
+	/**
+	 * Wait for a fixed duration in milliseconds.
+	 */
+	duration?: number
+
+	/**
+	 * Wait for a specific action type to be recorded.
+	 */
+	forActionType?: ActionType
+
+	/**
+	 * Wait for any of these action types to be recorded.
+	 */
+	forAnyActionType?: ActionType[]
+
+	/**
+	 * Wait for an action matching custom criteria.
+	 * Uses a simplified matcher structure.
+	 */
+	forAction?: ScenarioActionMatcher
+}
+
+/**
+ * Matcher for waiting on specific actions.
+ */
+export interface ScenarioActionMatcher {
+	/** Action type to match */
+	type?: ActionType
+	/** Match against endpoint (substring match) */
+	endpointContains?: string
+	/** Match against data fields (shallow equality) */
+	dataContains?: Record<string, unknown>
+}
+
+/**
+ * Assert step: Verify bot output matches expectations.
+ */
+export interface ScenarioAssertStep extends ScenarioStepBase {
+	type: 'assert'
+
+	/**
+	 * Assertion configuration.
+	 */
+	assert: ScenarioAssertConfig
+}
+
+/**
+ * Assertion configuration.
+ */
+export interface ScenarioAssertConfig {
+	/**
+	 * Assert that an action of this type was recorded.
+	 */
+	actionRecorded?: ActionType
+
+	/**
+	 * Assert that a message was sent matching these criteria.
+	 */
+	messageSent?: ScenarioMessageMatcher
+
+	/**
+	 * Assert that an interaction response was sent.
+	 */
+	interactionResponse?: ScenarioInteractionMatcher
+
+	/**
+	 * Custom assertion using recorded actions.
+	 * Future: may support expression-based matching.
+	 */
+	custom?: Record<string, unknown>
+}
+
+/**
+ * Matcher for message assertions.
+ */
+export interface ScenarioMessageMatcher {
+	/** Message content contains this substring */
+	contentContains?: string
+	/** Message content matches this regex pattern */
+	contentMatches?: string
+	/** Message has at least N embeds */
+	hasEmbeds?: number
+	/** Message has at least N components */
+	hasComponents?: number
+	/** Message channel ID matches */
+	channelId?: string
+}
+
+/**
+ * Matcher for interaction response assertions.
+ */
+export interface ScenarioInteractionMatcher {
+	/** Response type (4=reply, 5=deferred, 6=deferred update, 7=update) */
+	responseType?: number
+	/** Response content contains this substring */
+	contentContains?: string
+	/** Response is ephemeral */
+	isEphemeral?: boolean
+}
+
+/**
+ * Interact step: Simulate user interaction with a component.
+ */
+export interface ScenarioInteractStep extends ScenarioStepBase {
+	type: 'interact'
+
+	/**
+	 * Interaction configuration.
+	 */
+	interact: ScenarioInteractConfig
+}
+
+/**
+ * Interaction configuration for component interactions.
+ */
+export interface ScenarioInteractConfig {
+	/**
+	 * Type of component interaction.
+	 */
+	componentType: 'button' | 'select' | 'modal'
+
+	/**
+	 * Component custom_id to interact with.
+	 */
+	customId: string
+
+	/**
+	 * Message ID containing the component.
+	 * If not specified, uses the most recent message with matching custom_id.
+	 */
+	messageId?: string
+
+	/**
+	 * For select components: values to select.
+	 */
+	selectValues?: string[]
+
+	/**
+	 * For modal components: field values to submit.
+	 * Format: { "field_custom_id": "value" }
+	 */
+	modalFields?: Record<string, string>
+}
+
+// ============================================================================
+// Scenario Run State Types
+// ============================================================================
+
+/**
+ * Status of a scenario run.
+ */
+export type ScenarioRunStatus =
+	| 'idle' // No scenario loaded
+	| 'loaded' // Scenario loaded, not started
+	| 'running' // Actively executing steps
+	| 'paused' // Execution paused (resumable)
+	| 'completed' // All steps finished successfully
+	| 'failed' // Run stopped due to failures (may be resumable)
+	| 'stopped' // Run stopped by user
+	| 'error' // Fatal error (not resumable)
+
+/**
+ * Current state of a scenario run.
+ * Returned by state polling and event broadcasts.
+ */
+export interface ScenarioRunState {
+	/** Unique identifier for this run */
+	runId: string
+
+	/** ID of the loaded scenario */
+	scenarioId: string
+
+	/** Current run status */
+	status: ScenarioRunStatus
+
+	/** Zero-based index of the current/next step to execute */
+	currentStepIndex: number
+
+	/** Total number of steps in the scenario */
+	totalSteps: number
+
+	/** Results for executed steps (index-aligned with scenario.steps) */
+	stepResults: ScenarioStepResult[]
+
+	/** Number of steps that executed successfully */
+	successCount: number
+
+	/** Number of steps that failed assertions or execution */
+	failureCount: number
+
+	/** Number of steps that were skipped */
+	skippedCount: number
+
+	/** Whether any step has failed */
+	hasFailures: boolean
+
+	/** Error messages from failed steps or fatal errors */
+	errors: ScenarioRunError[]
+
+	/** Timestamp when run started (ms since epoch) */
+	startedAt?: number
+
+	/** Timestamp when run completed/stopped (ms since epoch) */
+	endedAt?: number
+
+	/** Timestamp of last step completion (ms since epoch) */
+	lastStepAt?: number
+}
+
+/**
+ * Error information for scenario runs.
+ */
+export interface ScenarioRunError {
+	/** Step index where error occurred (-1 for run-level errors) */
+	stepIndex: number
+
+	/** Error message */
+	message: string
+
+	/** Error code for categorization */
+	code?: string
+
+	/** Additional error details */
+	details?: unknown
+}
+
+// ============================================================================
+// Scenario Step Result Types
+// ============================================================================
+
+/**
+ * Status of a single step execution.
+ */
+export type ScenarioStepStatus =
+	| 'pending' // Not yet executed
+	| 'running' // Currently executing
+	| 'ok' // Completed successfully
+	| 'failed' // Failed (assertion or execution error)
+	| 'skipped' // Skipped (e.g., user chose to skip after failure)
+	| 'timeout' // Timed out waiting for completion
+
+/**
+ * Result of executing a single scenario step.
+ */
+export interface ScenarioStepResult {
+	/** Step index in the scenario */
+	stepIndex: number
+
+	/** Optional step ID from the step definition */
+	stepId?: string
+
+	/** Step type that was executed */
+	stepType: ScenarioStep['type']
+
+	/** Execution status */
+	status: ScenarioStepStatus
+
+	/** Timestamp when step started (ms since epoch) */
+	startedAt: number
+
+	/** Timestamp when step completed (ms since epoch) */
+	completedAt?: number
+
+	/** Duration in milliseconds */
+	duration?: number
+
+	/** IDs of recorded actions attributed to this step */
+	recordedActionIds: string[]
+
+	/** Echoed metadata from the step (for correlation) */
+	metadata?: ActionMetadata
+
+	/** Error message if step failed */
+	error?: string
+
+	/** Additional error details */
+	errorDetails?: unknown
+
+	/** For assert steps: the matcher result */
+	assertionResult?: ScenarioAssertionResult
+
+	/** Node ID that executed (from recorded action metadata or step config) */
+	executedNodeId?: string
+}
+
+/**
+ * Result of an assertion step.
+ */
+export interface ScenarioAssertionResult {
+	/** Whether the assertion passed */
+	passed: boolean
+
+	/** Human-readable description of what was asserted */
+	description: string
+
+	/** Expected value/pattern */
+	expected?: unknown
+
+	/** Actual value found */
+	actual?: unknown
+
+	/** Reason for failure if applicable */
+	failureReason?: string
+}
+
+// ============================================================================
+// Scenario Snapshot Types (Phase 6: Backward Navigation)
+// ============================================================================
+
+/**
+ * Lightweight step result summary for snapshot storage.
+ * Contains only essential fields needed for navigation state.
+ */
+export interface ScenarioStepResultSummary {
+	/** Step index in the scenario */
+	stepIndex: number
+
+	/** Optional step ID from the step definition */
+	stepId?: string
+
+	/** Step type that was executed */
+	stepType: 'dispatch' | 'wait' | 'assert' | 'interact'
+
+	/** Execution status */
+	status: ScenarioStepStatus
+
+	/** Duration in milliseconds */
+	duration?: number
+
+	/** Node ID that executed (for UI highlighting) */
+	executedNodeId?: string
+}
+
+/**
+ * Minimal snapshot for backward navigation.
+ * Stores navigation state only - does NOT capture bot/session state.
+ * The Stage UI is responsible for visual rewind using recorded actions.
+ */
+export interface ScenarioSnapshot {
+	/** Step index this snapshot was captured at */
+	stepIndex: number
+
+	/** Timestamp when snapshot was captured (ms since epoch) */
+	timestamp: number
+
+	/** Summary of step result at this index */
+	stepResult: ScenarioStepResultSummary
+
+	/** Last action ID at this step boundary (for correlation with action recorder) */
+	actionIdsBoundary: string
+
+	/**
+	 * Stage playback time offset (ms) captured at this step boundary.
+	 * Used for UI-only backward navigation via Stage playback seek controls.
+	 *
+	 * Semantics: time is relative to the first recorded Stage event timestamp.
+	 */
+	playbackTime?: number
+
+	/** Total Stage events recorded at this boundary (for debugging/correlation) */
+	playbackEventCount?: number
+}
+
+/**
+ * Configuration for snapshot storage.
+ */
+export interface SnapshotStoreConfig {
+	/** Maximum snapshots to retain (default: 50) */
+	maxSnapshots?: number
 }
 
 // ============================================================================

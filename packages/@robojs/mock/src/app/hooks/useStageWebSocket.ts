@@ -1,6 +1,12 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
 import { useSessionDispatch } from '../stores/sessionStore'
-import type { StageEvent, StageCommand, StageMessageCreateData, StateSyncPayload } from '../types/stage'
+import type {
+	StageEvent,
+	StageCommand,
+	StageMessageCreateData,
+	StateSyncPayload,
+	StageControlCommand
+} from '../types/stage'
 import { buildStageWebSocketUrls } from '../utils'
 
 interface UseStageWebSocketOptions {
@@ -106,6 +112,11 @@ export function useStageWebSocket({
 				case 'logs_history':
 					// Dispatch historical logs to window for LogsProvider to handle
 					window.dispatchEvent(new CustomEvent('stage:logs_history', { detail: event.data }))
+					break
+
+				case 'control_command':
+					// Dispatch control command to window for useControlCommandHandler to process
+					window.dispatchEvent(new CustomEvent('stage:control_command', { detail: event.data as StageControlCommand }))
 					break
 
 				default:

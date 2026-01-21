@@ -41,8 +41,17 @@ export const before: CliBeforeHook = async (ctx) => {
 	// - 'new' = external mode, create new session
 	// - 'sess_xxx' or token = external mode, connect to existing session
 	const isAutoDetect = mock === true || mock === ''
+	const forceEmbedded = process.env.__ROBO_MOCK_FORCE_EMBEDDED === 'true'
 
 	if (isAutoDetect) {
+		// Force embedded mode (skip external server auto-detection).
+		// This is used by RoboKit when starting a robo for deterministic simulation UX.
+		if (forceEmbedded) {
+			ctx.logger.debug('Mock mode enabled (forced embedded)')
+			await setupEmbeddedMode(ctx)
+			return
+		}
+
 		// Auto-detect: check if a mock server is already running
 		const isServerRunning = await checkMockServerRunning(ctx)
 
