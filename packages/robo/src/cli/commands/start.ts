@@ -75,7 +75,7 @@ async function startAction(context: CliContext) {
 	// Check if granular manifest is missing
 	const manifestPath = path.join('.robo', 'manifest', envMode, 'robo.json')
 	try {
-		await fs.access(manifestPath)
+		await fs.stat(manifestPath)
 	} catch (err) {
 		logger.error(
 			`The manifest file is missing. Make sure your project structure is correct and run ${composeColors(

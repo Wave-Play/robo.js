@@ -63,7 +63,7 @@ export async function hasPluginManifest(basePath: string): Promise<boolean> {
 	const manifestDir = path.join(basePath, '.robo', 'manifest', 'production')
 
 	try {
-		await fs.access(path.join(manifestDir, 'robo.json'))
+		await fs.stat(path.join(manifestDir, 'robo.json'))
 		return true
 	} catch {
 		return false

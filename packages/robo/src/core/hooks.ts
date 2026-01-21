@@ -182,7 +182,7 @@ export function groupPluginsByPriority(
  */
 async function fileExists(filePath: string): Promise<boolean> {
 	try {
-		await fs.access(filePath)
+		await fs.stat(filePath)
 		return true
 	} catch {
 		return false

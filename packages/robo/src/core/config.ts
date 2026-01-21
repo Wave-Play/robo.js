@@ -106,7 +106,7 @@ export async function loadConfigPath(file = 'robo'): Promise<string> {
 	const results = await Promise.all(
 		candidates.map(async (fullPath) => {
 			try {
-				await fsPromises.access(fullPath)
+				await fsPromises.stat(fullPath)
 				return fullPath
 			} catch {
 				return null
@@ -140,7 +140,7 @@ async function scanPlugins(
 
 	// Check if plugins directory exists (async)
 	try {
-		await fsPromises.access(pluginsPath)
+		await fsPromises.stat(pluginsPath)
 	} catch {
 		return
 	}
@@ -201,7 +201,7 @@ async function scanPlugins(
 
 				if (modeVariant?.path) {
 					try {
-						await fsPromises.access(modeVariant.path)
+						await fsPromises.stat(modeVariant.path)
 						return
 					} catch {
 						// Mode variant doesn't exist, continue with non-mode config

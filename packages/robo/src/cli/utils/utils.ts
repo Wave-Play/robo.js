@@ -180,7 +180,7 @@ export function openBrowser(url: string) {
 export async function findNodeModules(basePath: string): Promise<string | null> {
 	const nodeModulesPath = path.join(basePath, 'node_modules')
 	try {
-		await fs.access(nodeModulesPath)
+		await fs.stat(nodeModulesPath)
 		return nodeModulesPath
 	} catch (error) {
 		const parentPath = path.resolve(basePath, '..')
@@ -199,7 +199,7 @@ async function resolvePackagePathFallback(
 	const candidatePath = path.join(nodeModulesPath, packageName)
 	logger.debug(`Falling back to ${packageName} in ${candidatePath}`)
 	try {
-		await fs.access(candidatePath)
+		await fs.stat(candidatePath)
 		return candidatePath
 	} catch {
 		return null
@@ -218,7 +218,7 @@ export async function findPackagePath(packageName: string, currentPath: string):
 	// Determine if node_modules folder is managed by pnpm
 	// Note: This does *not* mean that the process was started with pnpm
 	const pnpmNodeModulesPath = path.resolve(nodeModulesPath, '.pnpm')
-	const isPnpmModules = await fs.access(pnpmNodeModulesPath).then(
+	const isPnpmModules = await fs.stat(pnpmNodeModulesPath).then(
 		() => true,
 		() => false
 	)
@@ -243,7 +243,7 @@ export async function findPackagePath(packageName: string, currentPath: string):
 		const candidatePath = path.join(nodeModulesPath, packageName)
 		logger.debug(`Checking for ${packageName} in ${candidatePath}`)
 		try {
-			await fs.access(candidatePath)
+			await fs.stat(candidatePath)
 			packagePath = candidatePath
 		} catch (error) {
 			// Do nothing

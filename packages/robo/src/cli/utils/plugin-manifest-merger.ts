@@ -39,7 +39,7 @@ async function readPluginManifest(packagePath: string, mode: string): Promise<Pl
 	for (const modeToTry of modesToTry) {
 		const candidatePath = path.join(packagePath, '.robo', 'manifest', modeToTry)
 		try {
-			await fs.access(candidatePath)
+			await fs.readdir(candidatePath)
 			manifestBase = candidatePath
 			if (modeToTry !== mode) {
 				loggerInstance.debug(`Falling back to ${modeToTry} manifest for ${packagePath}`)
