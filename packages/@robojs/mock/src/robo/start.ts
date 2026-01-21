@@ -51,10 +51,10 @@ export function clearMockModeSession(): void {
 
 /**
  * Lifecycle hook: Called when the Robo starts
- * Starts Voice Gateway server and creates mock mode session.
+ * Registers WebSocket handlers, starts Voice Gateway server, and creates mock mode session.
  *
- * Note: WebSocket handlers are registered in the prepare hook (prepare.ts)
- * to ensure they're ready before @robojs/discordjs tries to connect.
+ * For embedded mode (robo dev --mock): WebSocket handlers are registered here
+ * For standalone mode (robo mock start): Handlers were registered via prepare hook callback
  */
 export default async (context: StartContext<MockPluginConfig>) => {
 	const { pluginConfig } = context
@@ -84,15 +84,18 @@ export default async (context: StartContext<MockPluginConfig>) => {
 		return
 	}
 
-	// WebSocket handlers should already be registered in prepare hook.
-	// If not (e.g., server engine wasn't ready), register them now as fallback.
+	// Register WebSocket handlers if not already registered.
+	// For embedded mode (robo dev --mock): This is the primary registration path
+	//   - Prepare hook skips callback to avoid race conditions
+	//   - Server engine is guaranteed to exist here (all prepare hooks completed)
+	// For standalone mode: Handlers were registered via prepare hook callback
 	if (!areHandlersRegistered()) {
 		const engine = getServerEngine()
 		if (!engine) {
 			mockLogger.error('Server engine not available - @robojs/server may not be installed')
 			return
 		}
-		mockLogger.debug('Registering WebSocket handlers in start hook (fallback)')
+		mockLogger.debug('Registering WebSocket handlers in start hook')
 		registerWebSocketHandlers(engine)
 		markHandlersRegistered()
 	}

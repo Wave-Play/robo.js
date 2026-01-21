@@ -1,19 +1,24 @@
 /**
  * Prepare Hook - WebSocket Handler Registration Setup
  *
- * This hook runs during Robo.start() BEFORE start hooks. Since prepare hooks
- * run alphabetically (mock < server), the server engine won't exist yet.
+ * This hook handles WebSocket handler registration differently based on mode:
  *
- * To solve this, we register a callback that @robojs/server's prepare hook
- * will call after creating the engine. This ensures WebSocket handlers are
- * registered before any start hooks run.
+ * **Standalone mode** (robo mock start):
+ * - Registers a callback that @robojs/server's prepare hook calls after creating the engine
+ * - Mock controls startup, so callback timing is reliable
  *
- * Execution order:
- * 1. @robojs/mock prepare hook - registers engine callback (this file)
- * 2. @robojs/server prepare hook - creates engine, calls callback
+ * **Embedded mode** (robo dev --mock):
+ * - Skips callback registration entirely to avoid race conditions
+ * - Prepare hooks run in parallel when they have the same priority, which can cause
+ *   the server to check for callbacks before mock registers them
+ * - Instead, WebSocket handlers are registered in the start hook (start.ts) where
+ *   the server engine is guaranteed to exist (all prepare hooks have completed)
+ *
+ * Execution order for embedded mode:
+ * 1. Prepare hooks run (mock skips callback, server creates engine)
+ * 2. @robojs/mock start hook - registers WebSocket handlers, creates session
  * 3. @robojs/discordjs start hook - connects to gateway (handlers ready!)
- * 4. @robojs/mock start hook - starts voice gateway, creates session
- * 5. @robojs/server start hook - starts listening
+ * 4. @robojs/server start hook - starts listening
  */
 import { getGatewayServer } from '../core/gateway.js'
 import { getStageServer } from '../core/stage.js'
@@ -27,34 +32,37 @@ type EngineCallbackArray = Array<(engine: BaseEngine) => void>
 
 /**
  * Prepare hook - Registers a callback for when the server engine is ready
+ *
+ * For standalone mode (robo mock start): Register callback since mock controls startup
+ * For embedded mode (robo dev --mock): Skip callback, let start hook register handlers
+ *   - This avoids race conditions when prepare hooks run in parallel
+ *   - By start hook time, server engine is guaranteed to exist
  */
 export default async () => {
 	const isStandalone = process.env.__ROBO_MOCK_STANDALONE === 'true'
 	const isMockMode = process.env.ROBO_MOCK_MODE === 'true'
 
-	// In standalone mode, always register handlers (CLI manages mock infrastructure)
+	// In standalone mode, register callback (mock controls startup order)
 	if (isStandalone) {
 		mockLogger.debug('Standalone mode - registering WebSocket handler callback')
 		registerEngineCallback()
 		return
 	}
 
-	// For robo dev --mock: Only register WebSocket handlers if in mock mode
-	if (!isMockMode) {
-		mockLogger.debug('Not in mock mode, skipping prepare hook')
+	// For robo dev --mock: Skip callback registration entirely
+	// WebSocket handlers will be registered in start hook when engine is guaranteed to exist
+	// This avoids race conditions when prepare hooks run in parallel
+	if (isMockMode) {
+		const connectingToExisting = process.env.__ROBO_MOCK_CONNECT_EXISTING === 'true'
+		if (connectingToExisting) {
+			mockLogger.debug('Connecting to external mock server, skipping local WebSocket registration')
+		} else {
+			mockLogger.debug('Embedded mock mode - deferring WebSocket registration to start hook')
+		}
 		return
 	}
 
-	// Skip local WebSocket registration if connecting to external mock server
-	// (via --mock-session flag). The external server handles WebSockets.
-	const connectingToExisting = process.env.__ROBO_MOCK_CONNECT_EXISTING === 'true'
-	if (connectingToExisting) {
-		mockLogger.debug('Connecting to external mock server, skipping local WebSocket registration')
-		return
-	}
-
-	// Register callback for robo dev --mock mode
-	registerEngineCallback()
+	mockLogger.debug('Not in mock mode, skipping prepare hook')
 }
 
 /**
@@ -78,8 +86,8 @@ function registerEngineCallback(): void {
 }
 
 /**
- * Register WebSocket handlers on the server engine
- * Exported so start hook can call this as fallback
+ * Register WebSocket handlers on the server engine.
+ * Called by start hook (embedded mode) or via callback (standalone mode).
  */
 export function registerWebSocketHandlers(engine: BaseEngine): void {
 	const gatewayServer = getGatewayServer()
