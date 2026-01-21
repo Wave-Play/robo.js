@@ -190,13 +190,61 @@ async function fileExists(filePath: string): Promise<boolean> {
 }
 
 /**
+ * Try to get hook path from the plugin's manifest.
+ * Returns the full path if manifest confirms hook exists, null otherwise.
+ *
+ * This is more reliable than fs.access() in environments like WebContainer
+ * where filesystem checks may fail for valid files.
+ */
+async function getPluginHookFromManifest(
+	pluginName: string,
+	hookName: string
+): Promise<string | null> {
+	try {
+		const manifestPath = path.join(
+			process.cwd(),
+			'node_modules',
+			pluginName,
+			'.robo',
+			'manifest',
+			'production',
+			'hooks',
+			`${hookName}.json`
+		)
+
+		// Read and parse manifest - if it exists and has entries, the hook exists
+		const content = await fs.readFile(manifestPath, 'utf-8')
+		const entries = JSON.parse(content) as Array<{ path: string }>
+
+		if (entries.length > 0 && entries[0].path) {
+			// Construct full path from manifest's relative path
+			return path.join(process.cwd(), 'node_modules', pluginName, '.robo', 'build', entries[0].path)
+		}
+	} catch {
+		// Manifest doesn't exist or is invalid - fall through to filesystem check
+	}
+
+	return null
+}
+
+/**
  * Resolve the hook path for a plugin (compiled JS only).
  * Plugins don't use mode-specific builds - they're pre-built.
+ *
+ * Checks the plugin's manifest first (more reliable in WebContainer),
+ * then falls back to filesystem existence checks for legacy plugins.
  */
 export async function resolvePluginHookPath(
 	pluginName: string,
 	hookName: 'init' | 'prepare' | 'start' | 'stop' | 'setup' | 'error' | 'hmr'
 ): Promise<string | null> {
+	// 1. Check manifest first (works reliably in WebContainer)
+	const manifestHookPath = await getPluginHookFromManifest(pluginName, hookName)
+	if (manifestHookPath) {
+		return manifestHookPath
+	}
+
+	// 2. Fall back to filesystem check for legacy/unmanifested plugins
 	const possiblePaths = [
 		// Plugin package: node_modules/@robojs/discord/.robo/build/robo/init.js
 		RoboPaths.pluginHook(pluginName, hookName),
