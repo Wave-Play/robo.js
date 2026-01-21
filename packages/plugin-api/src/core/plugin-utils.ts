@@ -15,7 +15,7 @@ export const _readyPromise = new Promise<void>((resolve) => {
 })
 
 export function getServerEngine<T extends BaseEngine = BaseEngine>() {
-	return pluginOptions.engine as T
+	return (pluginOptions.engine ?? globalThis.roboServer?.engine) as T
 }
 
 /**
