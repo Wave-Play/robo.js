@@ -69,6 +69,17 @@ export interface PlaybackState {
 // Actions
 // ============================================================================
 
+/**
+ * External playback state for SYNC_STATE action (from server broadcast)
+ */
+export interface ExternalPlaybackState {
+	mode: 'live' | 'playback'
+	isPlaying: boolean
+	speed: number
+	currentTime: number
+	eventIndex: number
+}
+
 type PlaybackAction =
 	| { type: 'SET_MODE'; payload: 'live' | 'playback' }
 	| { type: 'SET_PLAYING'; payload: boolean }
@@ -82,6 +93,7 @@ type PlaybackAction =
 	| { type: 'STEP_BACKWARD' }
 	| { type: 'SEEK_TO_EVENT'; payload: number }
 	| { type: 'SET_SIGNIFICANT_TYPES'; payload: StageEventType[] }
+	| { type: 'SYNC_STATE'; payload: ExternalPlaybackState }
 
 // ============================================================================
 // Initial State
@@ -251,6 +263,20 @@ function playbackReducer(state: PlaybackState, action: PlaybackAction): Playback
 		case 'SET_SIGNIFICANT_TYPES':
 			return { ...state, significantTypes: action.payload }
 
+		case 'SYNC_STATE': {
+			// Sync external playback state from server broadcast
+			// Preserve local-only state (events, significantTypes)
+			const external = action.payload
+			return {
+				...state,
+				mode: external.mode,
+				isPlaying: external.isPlaying,
+				speed: external.speed,
+				currentTime: external.currentTime
+				// Note: events and significantTypes are preserved from local state
+			}
+		}
+
 		default:
 			return state
 	}
@@ -269,6 +295,18 @@ const PlaybackContext = createContext<PlaybackContextValue | null>(null)
 
 // Module-level ref for accessing state outside React components
 let _currentPlaybackState: PlaybackState = initialState
+
+/**
+ * Dispatch an action and update the module-level state synchronously.
+ * This ensures getPlaybackStateSnapshot() returns the correct state immediately
+ * after a control action, without waiting for React's async useEffect.
+ */
+function dispatchWithSync(dispatch: Dispatch<PlaybackAction>, action: PlaybackAction): void {
+	// Update module-level state synchronously BEFORE React processes the dispatch
+	_currentPlaybackState = playbackReducer(_currentPlaybackState, action)
+	// Now dispatch to trigger React re-render
+	dispatch(action)
+}
 
 // ============================================================================
 // Provider
@@ -362,35 +400,37 @@ export function usePlaybackDispatch() {
 export function usePlaybackControls() {
 	const { state, dispatch } = usePlaybackStore()
 
+	// Use dispatchWithSync for control methods that need immediate state updates
+	// for getPlaybackStateSnapshot() to return accurate state in control responses
 	const setMode = useCallback(
 		(mode: 'live' | 'playback') => {
-			dispatch({ type: 'SET_MODE', payload: mode })
+			dispatchWithSync(dispatch, { type: 'SET_MODE', payload: mode })
 		},
 		[dispatch]
 	)
 
 	const togglePlay = useCallback(() => {
-		dispatch({ type: 'SET_PLAYING', payload: !state.isPlaying })
+		dispatchWithSync(dispatch, { type: 'SET_PLAYING', payload: !state.isPlaying })
 	}, [dispatch, state.isPlaying])
 
 	const play = useCallback(() => {
-		dispatch({ type: 'SET_PLAYING', payload: true })
+		dispatchWithSync(dispatch, { type: 'SET_PLAYING', payload: true })
 	}, [dispatch])
 
 	const pause = useCallback(() => {
-		dispatch({ type: 'SET_PLAYING', payload: false })
+		dispatchWithSync(dispatch, { type: 'SET_PLAYING', payload: false })
 	}, [dispatch])
 
 	const seek = useCallback(
 		(time: number) => {
-			dispatch({ type: 'SEEK', payload: time })
+			dispatchWithSync(dispatch, { type: 'SEEK', payload: time })
 		},
 		[dispatch]
 	)
 
 	const setSpeed = useCallback(
 		(speed: number) => {
-			dispatch({ type: 'SET_SPEED', payload: speed })
+			dispatchWithSync(dispatch, { type: 'SET_SPEED', payload: speed })
 		},
 		[dispatch]
 	)
@@ -414,16 +454,16 @@ export function usePlaybackControls() {
 	}, [dispatch])
 
 	const stepForward = useCallback(() => {
-		dispatch({ type: 'STEP_FORWARD' })
+		dispatchWithSync(dispatch, { type: 'STEP_FORWARD' })
 	}, [dispatch])
 
 	const stepBackward = useCallback(() => {
-		dispatch({ type: 'STEP_BACKWARD' })
+		dispatchWithSync(dispatch, { type: 'STEP_BACKWARD' })
 	}, [dispatch])
 
 	const seekToEvent = useCallback(
 		(eventIndex: number) => {
-			dispatch({ type: 'SEEK_TO_EVENT', payload: eventIndex })
+			dispatchWithSync(dispatch, { type: 'SEEK_TO_EVENT', payload: eventIndex })
 		},
 		[dispatch]
 	)

@@ -132,6 +132,18 @@ const SelectionContext = createContext<SelectionContextValue | null>(null)
 // Module-level ref for accessing state outside React components
 let _currentSelectionState: UnifiedSelectionState = initialState
 
+/**
+ * Dispatch an action and update the module-level state synchronously.
+ * This ensures getNavigationStateSnapshot() returns the correct state immediately
+ * after a control action, without waiting for React's async useEffect.
+ */
+function dispatchWithSync(dispatch: Dispatch<SelectionAction>, action: SelectionAction): void {
+	// Update module-level state synchronously BEFORE React processes the dispatch
+	_currentSelectionState = selectionReducer(_currentSelectionState, action)
+	// Now dispatch to trigger React re-render
+	dispatch(action)
+}
+
 // ============================================================================
 // Provider
 // ============================================================================
@@ -208,30 +220,32 @@ export function useUnifiedSelection() {
 	}, [dispatch])
 
 	// Navigation actions for external control (Phase 8)
+	// Use dispatchWithSync for control methods that need immediate state updates
+	// for getNavigationStateSnapshot() to return accurate state in control responses
 	const navigateToGuild = useCallback(
 		(guildId: string | null) => {
-			dispatch({ type: 'NAVIGATE_TO_GUILD', payload: { guildId } })
+			dispatchWithSync(dispatch, { type: 'NAVIGATE_TO_GUILD', payload: { guildId } })
 		},
 		[dispatch]
 	)
 
 	const navigateToChannel = useCallback(
 		(channelId: string) => {
-			dispatch({ type: 'NAVIGATE_TO_CHANNEL', payload: { channelId } })
+			dispatchWithSync(dispatch, { type: 'NAVIGATE_TO_CHANNEL', payload: { channelId } })
 		},
 		[dispatch]
 	)
 
 	const navigateToDM = useCallback(
 		(userId: string) => {
-			dispatch({ type: 'NAVIGATE_TO_DM', payload: { userId } })
+			dispatchWithSync(dispatch, { type: 'NAVIGATE_TO_DM', payload: { userId } })
 		},
 		[dispatch]
 	)
 
 	const navigateToThread = useCallback(
 		(threadId: string) => {
-			dispatch({ type: 'NAVIGATE_TO_THREAD', payload: { threadId } })
+			dispatchWithSync(dispatch, { type: 'NAVIGATE_TO_THREAD', payload: { threadId } })
 		},
 		[dispatch]
 	)

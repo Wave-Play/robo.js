@@ -57,6 +57,7 @@ const DEFAULT_CONTROL_COMMAND_TIMEOUT = 5000 // 5 seconds
 interface PendingControlCommand {
 	commandId: string
 	sessionId: string
+	kind: StageControlCommandKind
 	resolve: (data: StageControlResponseData) => void
 	reject: (error: Error) => void
 	timeout: NodeJS.Timeout
@@ -74,6 +75,7 @@ export class StageServer {
 	private sessionSequences: Map<string, number> = new Map() // sessionId -> last seq (for replay)
 	private heartbeatIntervals: Map<WebSocket, NodeJS.Timeout> = new Map()
 	private pendingControlCommands: Map<string, PendingControlCommand> = new Map() // commandId -> pending
+	private sessionCommandLocks: Map<string, Promise<void>> = new Map() // sessionId -> lock for command queuing
 
 	private readonly maxBufferSize: number
 	private readonly heartbeatInterval: number
@@ -921,6 +923,15 @@ export class StageServer {
 						clearTimeout(pending.timeout)
 						this.pendingControlCommands.delete(data.commandId)
 						pending.resolve(data)
+
+						// Broadcast playback state to ALL clients in session for sync
+						// This ensures other Stage UI clients and SDK subscribers see the change
+						if (pending.kind === 'playback_control' && data.success && data.result) {
+							this.broadcastToSession(pending.sessionId, {
+								type: 'playback_state_changed',
+								data: data.result
+							})
+						}
 					} else {
 						mockLogger.debug(`Received control_response for unknown command: ${data.commandId}`)
 					}
@@ -1284,6 +1295,7 @@ export class StageServer {
 	 */
 	clearSessionBuffer(sessionId: string): void {
 		this.eventBuffers.delete(sessionId)
+		this.sessionCommandLocks.delete(sessionId)
 	}
 
 	/**
@@ -1362,6 +1374,8 @@ export class StageServer {
 	 * Send a control command to Stage UI clients and wait for response.
 	 * Used by HTTP endpoints to control Stage UI playback and navigation.
 	 *
+	 * Commands are queued per-session to prevent race conditions from concurrent requests.
+	 *
 	 * @param sessionId - Session ID
 	 * @param kind - Command kind (playback_control, navigation_control, state_request)
 	 * @param payload - Command-specific payload
@@ -1373,7 +1387,53 @@ export class StageServer {
 		sessionId: string,
 		kind: StageControlCommandKind,
 		payload: StagePlaybackControlPayload | StageNavigationControlPayload | Record<string, never>,
-		timeoutMs: number = DEFAULT_CONTROL_COMMAND_TIMEOUT
+		timeoutMs: number = DEFAULT_CONTROL_COMMAND_TIMEOUT,
+		maxRetries: number = 1
+	): Promise<StageControlResponseData> {
+		// Get or create per-session lock to prevent concurrent command race conditions
+		const currentLock = this.sessionCommandLocks.get(sessionId) ?? Promise.resolve()
+
+		// Chain this command after the current lock for this session
+		const commandPromise = currentLock.then(async () => {
+			// Retry loop for transient timeout failures
+			for (let attempt = 0; attempt <= maxRetries; attempt++) {
+				try {
+					return await this.sendControlCommandOnce(sessionId, kind, payload, timeoutMs)
+				} catch (error) {
+					const isTimeout = error instanceof Error && error.message === 'TIMEOUT'
+					const isLastAttempt = attempt === maxRetries
+
+					// Only retry on timeout errors, not validation errors
+					if (!isTimeout || isLastAttempt) {
+						throw error
+					}
+
+					// Wait before retry (exponential backoff: 1s, 2s, etc.)
+					mockLogger.debug(`Control command timeout, retrying (attempt ${attempt + 1}/${maxRetries})`)
+					await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)))
+				}
+			}
+			// Should never reach here, but TypeScript needs a return
+			throw new Error('TIMEOUT')
+		})
+
+		// Store the new lock (catch to prevent unhandled rejection from blocking future commands)
+		this.sessionCommandLocks.set(
+			sessionId,
+			commandPromise.catch(() => {})
+		)
+
+		return commandPromise
+	}
+
+	/**
+	 * Internal: Execute a single control command without queuing.
+	 */
+	private async sendControlCommandOnce(
+		sessionId: string,
+		kind: StageControlCommandKind,
+		payload: StagePlaybackControlPayload | StageNavigationControlPayload | Record<string, never>,
+		timeoutMs: number
 	): Promise<StageControlResponseData> {
 		// Check if any Stage UI clients are connected
 		const connectionCount = this.getSessionConnectionCount(sessionId)
@@ -1396,6 +1456,7 @@ export class StageServer {
 			this.pendingControlCommands.set(commandId, {
 				commandId,
 				sessionId,
+				kind,
 				resolve,
 				reject,
 				timeout

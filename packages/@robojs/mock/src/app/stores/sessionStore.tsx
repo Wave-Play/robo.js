@@ -22,7 +22,8 @@ import type {
 	StageMessageCreateData,
 	StageEvent,
 	StageCommand,
-	StageInteractionResponseData
+	StageInteractionResponseData,
+	StageControlCommand
 } from '../types/stage'
 import type { ModalData } from '../components/modals/Modal'
 import { usePlaybackDispatch, type RecordedEvent } from './playbackStore'
@@ -779,6 +780,7 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 	const reconnectTimeoutRef = useRef<number | null>(null)
 	const reconnectAttempts = useRef(0)
 	const eventSeqRef = useRef(0)
+	const lastServerSeqRef = useRef(0) // Track last received server event seq for replay on reconnect
 	const pendingCommands = useRef<Map<string, { resolve: (value: unknown) => void; reject: (error: Error) => void }>>(
 		new Map()
 	)
@@ -793,6 +795,11 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 	// Handle incoming events
 	const handleEvent = useCallback(
 		(event: StageEvent) => {
+			// Track last server event seq for replay on reconnect
+			if (typeof event.seq === 'number' && event.seq > lastServerSeqRef.current) {
+				lastServerSeqRef.current = event.seq
+			}
+
 			// Record event for playback (Phase 5J)
 			const recordedEvent: RecordedEvent = {
 				id: `evt_${Date.now()}_${Math.random().toString(36).slice(2)}`,
@@ -1053,6 +1060,24 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 					break
 				}
 
+				case 'control_command':
+					// Phase 8: Dispatch control command to window for useControlCommandHandler to process
+					window.dispatchEvent(new CustomEvent('stage:control_command', { detail: event.data as StageControlCommand }))
+					break
+
+				case 'playback_state_changed':
+					// Sync playback state from server broadcast (for multi-client sync)
+					// eslint-disable-next-line no-case-declarations
+					const externalState = event.data as {
+						mode: 'live' | 'playback'
+						isPlaying: boolean
+						speed: number
+						currentTime: number
+						eventIndex: number
+					}
+					playbackDispatch({ type: 'SYNC_STATE', payload: externalState })
+					break
+
 				default:
 					dispatch({ type: 'INCREMENT_EVENT_COUNT' })
 			}
@@ -1086,7 +1111,8 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 		setError(null)
 		dispatch({ type: 'SET_CONNECTING', payload: true })
 
-		const urls = buildStageWebSocketUrls(state.sessionId)
+		// Pass lastServerSeqRef for event replay on reconnect (will be 0 on first connect)
+		const urls = buildStageWebSocketUrls(state.sessionId, lastServerSeqRef.current)
 		pendingUrlsRef.current = urls.slice(1)
 		hasOpenedRef.current = false
 

@@ -32,6 +32,122 @@ interface UseControlCommandHandlerOptions {
 }
 
 /**
+ * Result of a playback control action including whether it was applied
+ */
+interface PlaybackControlResult {
+	data: StagePlaybackChangedData
+	applied: boolean
+	warning?: string
+}
+
+/**
+ * Result of a navigation control action including whether it was applied
+ */
+interface NavigationControlResult {
+	data: StageNavigationChangedData
+	applied: boolean
+	warning?: string
+}
+
+/**
+ * Detect if a playback control action actually changed the state
+ */
+function detectPlaybackStateChange(
+	before: StagePlaybackChangedData,
+	after: StagePlaybackChangedData,
+	action: string
+): boolean {
+	switch (action) {
+		case 'play':
+		case 'pause':
+			return before.isPlaying !== after.isPlaying
+		case 'step_forward':
+		case 'step_backward':
+		case 'seek_to_event':
+		case 'seek_to_time':
+			return before.currentTime !== after.currentTime || before.eventIndex !== after.eventIndex
+		case 'set_speed':
+			return before.speed !== after.speed
+		case 'set_mode':
+			return before.mode !== after.mode
+		default:
+			return true
+	}
+}
+
+/**
+ * Get a human-readable reason why a playback action was a no-op
+ */
+function getPlaybackNoOpReason(state: StagePlaybackChangedData, action: string): string {
+	switch (action) {
+		case 'play':
+			if (state.mode !== 'playback') return 'Cannot play: not in playback mode'
+			if (state.totalEvents === 0) return 'Cannot play: no events recorded'
+			if (state.isPlaying) return 'Already playing'
+			return 'Play action had no effect'
+		case 'pause':
+			if (!state.isPlaying) return 'Already paused'
+			return 'Pause action had no effect'
+		case 'step_forward':
+			if (state.totalEvents === 0) return 'Cannot step: no events recorded'
+			if (state.eventIndex >= state.totalEvents - 1) return 'Already at end of recording'
+			return 'Step forward had no effect'
+		case 'step_backward':
+			if (state.totalEvents === 0) return 'Cannot step: no events recorded'
+			if (state.currentTime === 0) return 'Already at start of recording'
+			return 'Step backward had no effect'
+		case 'seek_to_event':
+			return 'Seek to event had no effect (invalid index or same position)'
+		case 'seek_to_time':
+			return 'Seek to time had no effect'
+		case 'set_speed':
+			return 'Speed already at requested value'
+		case 'set_mode':
+			return 'Already in requested mode'
+		default:
+			return 'Action had no effect'
+	}
+}
+
+/**
+ * Detect if a navigation control action actually changed the state
+ */
+function detectNavigationStateChange(
+	before: StageNavigationChangedData,
+	after: StageNavigationChangedData,
+	action: string
+): boolean {
+	switch (action) {
+		case 'select_guild':
+			return before.guildId !== after.guildId
+		case 'select_channel':
+		case 'open_dm':
+		case 'open_thread':
+			return before.channelId !== after.channelId
+		default:
+			return true
+	}
+}
+
+/**
+ * Get a human-readable reason why a navigation action was a no-op
+ */
+function getNavigationNoOpReason(state: StageNavigationChangedData, action: string): string {
+	switch (action) {
+		case 'select_guild':
+			return 'Already viewing the requested guild'
+		case 'select_channel':
+			return 'Already viewing the requested channel'
+		case 'open_dm':
+			return 'Already viewing the requested DM'
+		case 'open_thread':
+			return 'Already viewing the requested thread'
+		default:
+			return 'Navigation had no effect'
+	}
+}
+
+/**
  * Hook that handles incoming control commands from the server.
  * Processes playback and navigation control commands and sends responses.
  */
@@ -39,9 +155,12 @@ export function useControlCommandHandler({ sendCommand, enabled = true }: UseCon
 	const playbackControls = usePlaybackControls()
 	const selection = useUnifiedSelection()
 
-	// Handle playback control commands
+	// Handle playback control commands with state change detection
 	const handlePlaybackControl = useCallback(
-		(payload: StagePlaybackControlPayload): StagePlaybackChangedData => {
+		(payload: StagePlaybackControlPayload): PlaybackControlResult => {
+			// Capture state BEFORE action
+			const stateBefore = getPlaybackStateSnapshot()
+
 			switch (payload.action) {
 				case 'play':
 					playbackControls.play()
@@ -77,15 +196,24 @@ export function useControlCommandHandler({ sendCommand, enabled = true }: UseCon
 					break
 			}
 
-			// Return current state after the action
-			return getPlaybackStateSnapshot()
+			// Capture state AFTER action
+			const stateAfter = getPlaybackStateSnapshot()
+
+			// Detect if action was a no-op
+			const applied = detectPlaybackStateChange(stateBefore, stateAfter, payload.action)
+			const warning = !applied ? getPlaybackNoOpReason(stateBefore, payload.action) : undefined
+
+			return { data: stateAfter, applied, warning }
 		},
 		[playbackControls]
 	)
 
-	// Handle navigation control commands
+	// Handle navigation control commands with state change detection
 	const handleNavigationControl = useCallback(
-		(payload: StageNavigationControlPayload): StageNavigationChangedData => {
+		(payload: StageNavigationControlPayload): NavigationControlResult => {
+			// Capture state BEFORE action
+			const stateBefore = getNavigationStateSnapshot()
+
 			switch (payload.action) {
 				case 'select_guild':
 					selection.navigateToGuild(payload.guildId ?? null)
@@ -107,8 +235,14 @@ export function useControlCommandHandler({ sendCommand, enabled = true }: UseCon
 					break
 			}
 
-			// Return current state after the action
-			return getNavigationStateSnapshot()
+			// Capture state AFTER action
+			const stateAfter = getNavigationStateSnapshot()
+
+			// Detect if action was a no-op
+			const applied = detectNavigationStateChange(stateBefore, stateAfter, payload.action)
+			const warning = !applied ? getNavigationNoOpReason(stateBefore, payload.action) : undefined
+
+			return { data: stateAfter, applied, warning }
 		},
 		[selection]
 	)
@@ -123,14 +257,24 @@ export function useControlCommandHandler({ sendCommand, enabled = true }: UseCon
 
 			try {
 				switch (kind) {
-					case 'playback_control':
-						result = handlePlaybackControl(payload as StagePlaybackControlPayload)
-						success = true
+					case 'playback_control': {
+						const playbackResult = handlePlaybackControl(payload as StagePlaybackControlPayload)
+						result = playbackResult.data
+						success = playbackResult.applied
+						if (!success && playbackResult.warning) {
+							error = playbackResult.warning
+						}
 						break
-					case 'navigation_control':
-						result = handleNavigationControl(payload as StageNavigationControlPayload)
-						success = true
+					}
+					case 'navigation_control': {
+						const navResult = handleNavigationControl(payload as StageNavigationControlPayload)
+						result = navResult.data
+						success = navResult.applied
+						if (!success && navResult.warning) {
+							error = navResult.warning
+						}
 						break
+					}
 					case 'state_request':
 						result = {
 							playback: getPlaybackStateSnapshot(),

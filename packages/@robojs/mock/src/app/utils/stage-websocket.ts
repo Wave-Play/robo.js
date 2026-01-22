@@ -38,7 +38,7 @@ export function normalizeStageSessionId(value: string): string {
 	return parsed ?? value.trim().replace(/\/+$/, '')
 }
 
-export function buildStageWebSocketUrls(sessionId: string): string[] {
+export function buildStageWebSocketUrls(sessionId: string, lastSeq?: number): string[] {
 	const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
 	const host = window.location.host
 	const pathname = window.location.pathname
@@ -46,10 +46,14 @@ export function buildStageWebSocketUrls(sessionId: string): string[] {
 	const basePath = stageIndex !== -1 ? pathname.slice(0, stageIndex + '/stage'.length) : '/stage'
 	const token = encodeURIComponent(buildStageToken(sessionId))
 	const origin = `${protocol}//${host}`
-	const urls = [`${origin}${basePath}/ws?token=${token}`]
+
+	// Add last_seq parameter for event replay on reconnect
+	const seqParam = lastSeq !== undefined && lastSeq > 0 ? `&last_seq=${lastSeq}` : ''
+
+	const urls = [`${origin}${basePath}/ws?token=${token}${seqParam}`]
 
 	if (basePath !== '/stage') {
-		urls.push(`${origin}/stage/ws?token=${token}`)
+		urls.push(`${origin}/stage/ws?token=${token}${seqParam}`)
 	}
 
 	return Array.from(new Set(urls))
