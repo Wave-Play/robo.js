@@ -7,7 +7,8 @@
 
 import { v4 as uuid } from 'uuid'
 import { MemorySaver } from '@langchain/langgraph/web'
-import { HumanMessage } from '@langchain/core/messages'
+import type { BaseCheckpointSaver } from '@langchain/langgraph'
+import { AIMessage, HumanMessage, SystemMessage } from '@langchain/core/messages'
 import { buildAgentGraph, type CompiledAgentGraph } from './graph.js'
 import { AgentStateAnnotation, type AgentState, createInitialState } from './state.js'
 import { RECURSION_LIMIT } from './constants.js'
@@ -28,6 +29,7 @@ import type {
 	StartRunResult,
 	ResumeRunRequest,
 	AbortRunRequest,
+	HydrateThreadRequest,
 	RunMode,
 	RunMeta,
 	RunFilter,
@@ -91,6 +93,14 @@ export interface CodeAgentConfig {
 	 * Required if using local MCP servers with url: '__DISCOVERED__'
 	 */
 	serviceDiscovery?: LocalServiceDiscovery
+
+	/**
+	 * Factory for creating per-thread checkpointers.
+	 * The factory receives a threadId and should return the same checkpointer instance
+	 * for the same threadId to enable multi-turn conversation continuity.
+	 * If not provided, each run creates a new MemorySaver (no cross-run continuity).
+	 */
+	checkpointerFactory?: (threadId: string) => BaseCheckpointSaver
 }
 
 /**
@@ -103,7 +113,7 @@ interface RunInfo {
 	instruction: string
 	graph: CompiledAgentGraph
 	context: CodeAgentContext
-	checkpointer: MemorySaver
+	checkpointer: BaseCheckpointSaver
 	streamAdapter: StreamAdapter | null
 	abortController: AbortController
 	createdAt: Date
@@ -206,7 +216,7 @@ export class CodeAgent {
 	 */
 	async start(request: StartRunRequest): Promise<StartRunResult> {
 		const runId = uuid()
-		const threadId = runId // 1:1 mapping as per spec
+		const threadId = request.threadId ?? runId // Use provided threadId or default to runId
 		const mode = request.mode ?? 'execute'
 		const debugMode = request.debugMode ?? false
 
@@ -275,8 +285,10 @@ export class CodeAgent {
 			debugMode
 		}
 
-		// Create checkpointer for this run
-		const checkpointer = new MemorySaver()
+		// Create or retrieve checkpointer for this thread
+		// If a factory is provided, use it to get/create a checkpointer for the threadId
+		// This enables multi-turn continuity when the same threadId is used across runs
+		const checkpointer = this.config.checkpointerFactory?.(threadId) ?? new MemorySaver()
 
 		// Build the graph
 		const graph = buildAgentGraph({ context, checkpointer })
@@ -302,7 +314,7 @@ export class CodeAgent {
 
 		this.runs.set(runId, runInfo)
 
-		return { runId }
+		return { runId, threadId }
 	}
 
 	/**
@@ -652,6 +664,79 @@ export class CodeAgent {
 		// Store the resume data - stream() will use it
 		runInfo.pendingResume = stateUpdate
 		codeLogger.debug('Resume data stored, call stream() to continue')
+	}
+
+	/**
+	 * Hydrate a thread with historical context
+	 *
+	 * Use this to restore conversation history after reload without a durable checkpointer.
+	 * Call this after start() but before stream() to seed the thread's message history.
+	 *
+	 * @example
+	 * ```typescript
+	 * // 1. Start a run with the thread you want to hydrate
+	 * const { runId, threadId } = await agent.start({
+	 *   input: 'Follow-up question',
+	 *   threadId: 'restored-thread-123'
+	 * })
+	 *
+	 * // 2. Hydrate the thread with historical context BEFORE streaming
+	 * await agent.hydrateThread({
+	 *   threadId: 'restored-thread-123',
+	 *   messages: [
+	 *     { role: 'user', content: 'What does this project do?' },
+	 *     { role: 'assistant', content: 'This is a TypeScript project that...' }
+	 *   ],
+	 *   summary: 'User asked about project structure. I explained the architecture.'
+	 * })
+	 *
+	 * // 3. Stream - the new message will be appended after hydrated messages
+	 * for await (const event of agent.stream(runId)) {
+	 *   // ...
+	 * }
+	 * ```
+	 */
+	async hydrateThread(request: HydrateThreadRequest): Promise<void> {
+		// Find any run with matching threadId (to get the graph + checkpointer)
+		const runInfo = Array.from(this.runs.values()).find((run) => run.threadId === request.threadId)
+
+		if (!runInfo) {
+			throw new Error(
+				`No run found for threadId: ${request.threadId}. ` + `Call start({ threadId: '${request.threadId}' }) first.`
+			)
+		}
+
+		// Build state patch
+		const patch: Partial<AgentState> = {}
+
+		// Convert and add messages if provided
+		if (request.messages && request.messages.length > 0) {
+			patch.messages = request.messages.map((msg) => {
+				switch (msg.role) {
+					case 'user':
+						return new HumanMessage(msg.content)
+					case 'assistant':
+						return new AIMessage(msg.content)
+					case 'system':
+						return new SystemMessage(msg.content)
+				}
+			})
+		}
+
+		// Add summary if provided
+		if (request.summary !== undefined) {
+			patch.summary = request.summary
+		}
+
+		// Update state via graph
+		const config = { configurable: { thread_id: request.threadId } }
+		await runInfo.graph.updateState(config, patch)
+
+		codeLogger.debug('[CodeAgent.hydrateThread] Thread hydrated', {
+			threadId: request.threadId,
+			messageCount: request.messages?.length ?? 0,
+			hasSummary: !!request.summary
+		})
 	}
 
 	/**

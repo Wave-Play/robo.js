@@ -154,9 +154,35 @@ describe('routeAfterAgent', () => {
 		expect(routeAfterAgent(state)).toBe(END)
 	})
 
-	it('should return END for explain mode after producing answer', () => {
-		const state = createTestState({ mode: 'explain' })
+	it('should return END for explain mode without tool calls', () => {
+		const aiMessage = new AIMessage({
+			content: 'The project uses TypeScript and has a modular structure.'
+		})
+
+		const state = createTestState({
+			mode: 'explain',
+			messages: [aiMessage]
+		})
 		expect(routeAfterAgent(state)).toBe(END)
+	})
+
+	it('should return TOOLS for explain mode with tool calls', () => {
+		const aiMessage = new AIMessage({
+			content: 'Let me read the file to answer your question.',
+			tool_calls: [
+				{
+					id: 'call_1',
+					name: 'fs_read',
+					args: { path: '/src/index.ts' }
+				}
+			]
+		})
+
+		const state = createTestState({
+			mode: 'explain',
+			messages: [aiMessage]
+		})
+		expect(routeAfterAgent(state)).toBe(NODE.TOOLS)
 	})
 
 	it('should return TOOLS when message has tool calls', () => {
@@ -200,6 +226,15 @@ describe('routeAfterTools', () => {
 	it('should return END when aborted', () => {
 		const state = createTestState({ aborted: true })
 		expect(routeAfterTools(state)).toBe(END)
+	})
+
+	it('should return AGENT for explain mode (skips approval gate)', () => {
+		// Explain mode should never hit approval gate, even if awaitingApproval is somehow set
+		const state = createTestState({
+			mode: 'explain',
+			awaitingApproval: true
+		})
+		expect(routeAfterTools(state)).toBe(NODE.AGENT)
 	})
 
 	it('should return APPROVAL_GATE when awaiting approval', () => {

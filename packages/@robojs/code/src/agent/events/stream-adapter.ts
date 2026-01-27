@@ -415,11 +415,19 @@ export class StreamAdapter {
 	private handleToolStart(name: string | undefined, data: unknown): void {
 		if (!name) return
 
-		const toolData = data as { input?: unknown }
+		const toolData = data as {
+			input?: unknown
+			run_id?: string
+			metadata?: { serverId?: string; tool_call_id?: string }
+		}
 		const args = toolData?.input ?? {}
 
+		// Extract callId from LangGraph event data
+		// Prefer tool_call_id from metadata (original LLM ID), fallback to run_id (LangGraph run ID)
+		const callId = toolData?.metadata?.tool_call_id ?? toolData?.run_id
+
 		// Check if MCP tool (would have serverId in metadata)
-		const isMcp = (data as { metadata?: { serverId?: string } })?.metadata?.serverId
+		const isMcp = toolData?.metadata?.serverId
 
 		if (isMcp) {
 			if (!this.options.includeMcpCalls) return
@@ -428,7 +436,8 @@ export class StreamAdapter {
 				source: 'mcp',
 				serverId: isMcp,
 				tool: name,
-				args
+				args,
+				callId
 			})
 		} else {
 			if (!this.options.includeToolCalls) return
@@ -436,7 +445,8 @@ export class StreamAdapter {
 				type: 'tool_call',
 				source: 'core',
 				name,
-				args
+				args,
+				callId
 			})
 		}
 	}
@@ -447,11 +457,19 @@ export class StreamAdapter {
 	private handleToolEnd(name: string | undefined, data: unknown): void {
 		if (!name) return
 
-		const toolData = data as { output?: unknown }
+		const toolData = data as {
+			output?: unknown
+			run_id?: string
+			metadata?: { serverId?: string; tool_call_id?: string }
+		}
 		const result = toolData?.output ?? {}
 
+		// Extract callId from LangGraph event data
+		// Prefer tool_call_id from metadata (original LLM ID), fallback to run_id (LangGraph run ID)
+		const callId = toolData?.metadata?.tool_call_id ?? toolData?.run_id
+
 		// Check if MCP tool
-		const isMcp = (data as { metadata?: { serverId?: string } })?.metadata?.serverId
+		const isMcp = toolData?.metadata?.serverId
 
 		if (isMcp) {
 			if (!this.options.includeMcpResults) return
@@ -460,7 +478,8 @@ export class StreamAdapter {
 				source: 'mcp',
 				serverId: isMcp,
 				tool: name,
-				result
+				result,
+				callId
 			})
 		} else {
 			if (!this.options.includeToolResults) return
@@ -468,7 +487,8 @@ export class StreamAdapter {
 				type: 'tool_result',
 				source: 'core',
 				name,
-				result
+				result,
+				callId
 			})
 		}
 	}
@@ -572,7 +592,8 @@ export function extractToolEventsFromMessages(messages: BaseMessage[], options: 
 						type: 'tool_call',
 						source: 'core',
 						name: call.name,
-						args: call.args
+						args: call.args,
+						callId: call.id
 					})
 				}
 			}
@@ -584,7 +605,8 @@ export function extractToolEventsFromMessages(messages: BaseMessage[], options: 
 					type: 'tool_result',
 					source: 'core',
 					name: msg.name || 'unknown',
-					result: msg.content
+					result: msg.content,
+					callId: msg.tool_call_id
 				})
 			}
 		}

@@ -54,7 +54,9 @@ export function toolsNode(context: CodeAgentContext) {
 		})
 
 		for (const tc of toolCalls) {
-			const callId = tc.id ?? `tool_${Date.now()}`
+			// Prefer provider/tool-runtime call id when present.
+			// Fallback must be unique per tool call to avoid collisions in tool_result pairing.
+			const callId = tc.id ?? `tool_${Date.now()}_${Math.random().toString(16).slice(2)}`
 			const toolName = tc.name
 			const args = tc.args
 

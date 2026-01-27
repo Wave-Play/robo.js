@@ -56,8 +56,9 @@ export function agentNode(context: CodeAgentContext) {
 		// Get model context limit for token tracking
 		const modelContextLimit = policy.context?.modelContextLimit ?? getModelContextLimit(context.modelAlias)
 
-		// Get tool schemas for binding (only in execute mode) - needed for token counting
-		const toolSchemas: ToolSchema[] = state.mode === 'execute' ? toolRegistry.getSchemas() : []
+		// Get tool schemas for binding (explain and execute modes) - needed for token counting
+		// Plan mode remains tool-free (clarifying questions only)
+		const toolSchemas: ToolSchema[] = state.mode !== 'plan' ? toolRegistry.getSchemas() : []
 
 		// Build system prompt for token counting (will rebuild after potential compaction)
 		const stateForPrompt = state.summary ? state : state
@@ -154,7 +155,8 @@ export function agentNode(context: CodeAgentContext) {
 		const llmStartTime = Date.now()
 
 		// Build request for streaming
-		const toolChoice: 'auto' | 'none' = state.mode === 'explain' ? 'none' : 'auto'
+		// Explain and execute modes can call tools; plan mode cannot
+		const toolChoice: 'auto' | 'none' = state.mode === 'plan' ? 'none' : 'auto'
 		const chatRequest: ChatRequest = {
 			messages: [{ role: 'system' as const, content: systemPrompt }, ...llmMessages],
 			tools:
@@ -371,7 +373,9 @@ function buildSystemPrompt(state: AgentState, context: CodeAgentContext): string
 	switch (state.mode) {
 		case 'explain':
 			parts.push('You are a code assistant. Answer questions about this project accurately.')
-			parts.push('You may NOT make any file changes or run commands.')
+			parts.push(
+				'You may use read-only tools to explore the project, but you may NOT make any file changes or run destructive commands.'
+			)
 			parts.push('Base your answers on the project context provided.')
 			break
 

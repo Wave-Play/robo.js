@@ -107,7 +107,9 @@ export type {
 	StartRunRequest,
 	StartRunResult,
 	ResumeRunRequest,
-	AbortRunRequest
+	AbortRunRequest,
+	HydrationMessage,
+	HydrateThreadRequest
 } from './types/run.js'
 
 // Event types
@@ -139,6 +141,9 @@ export type {
 	DurableCheckpointerConfig
 } from './checkpointer/types.js'
 
+// LangGraph's BaseCheckpointSaver type (for checkpointerFactory)
+export type { BaseCheckpointSaver } from '@langchain/langgraph'
+
 // ============================================================================
 // Store Types and Implementations
 // ============================================================================
@@ -146,6 +151,20 @@ export type {
 export type { RunStore, MemoryRunStoreConfig, DurableRunStoreConfig, RunStoreKey } from './store/types.js'
 
 export { MemoryRunStore, createMemoryRunStore } from './store/index.js'
+
+// ============================================================================
+// Checkpointer Implementations
+// ============================================================================
+
+// IndexedDB checkpointer (for browser environments)
+export {
+	IndexedDBCheckpointSaver,
+	createIndexedDBCheckpointSaver,
+	type IndexedDBCheckpointerConfig
+} from './checkpointer/indexeddb.js'
+
+// Note: Filesystem checkpointer is Node.js-only (uses node:fs and node:path).
+// Import it from '@robojs/code/providers/node' to avoid bundling Node builtins into browser builds.
 
 // ============================================================================
 // Logger

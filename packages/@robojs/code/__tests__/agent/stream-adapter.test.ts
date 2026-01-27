@@ -329,4 +329,55 @@ describe('extractToolEventsFromMessages', () => {
 
 		expect(events).toHaveLength(0)
 	})
+
+	it('should yield distinct callIds for sequential calls to the same tool and pair correctly with results', () => {
+		// Two sequential calls to the same tool (fs_read)
+		const aiMessage = new AIMessage({
+			content: 'Reading two files',
+			tool_calls: [
+				{ id: 'call_abc123', name: 'fs_read', args: { path: '/file1.ts' } },
+				{ id: 'call_def456', name: 'fs_read', args: { path: '/file2.ts' } }
+			]
+		})
+
+		// Corresponding tool results (same order)
+		const toolMessage1 = new ToolMessage({
+			content: 'Contents of file1',
+			tool_call_id: 'call_abc123',
+			name: 'fs_read'
+		})
+		const toolMessage2 = new ToolMessage({
+			content: 'Contents of file2',
+			tool_call_id: 'call_def456',
+			name: 'fs_read'
+		})
+
+		const events = extractToolEventsFromMessages([aiMessage, toolMessage1, toolMessage2])
+
+		// Should have 4 events: 2 tool_call + 2 tool_result
+		expect(events).toHaveLength(4)
+
+		// Extract tool call events
+		const callEvents = events.filter((e) => e.type === 'tool_call')
+		expect(callEvents).toHaveLength(2)
+
+		// Extract tool result events
+		const resultEvents = events.filter((e) => e.type === 'tool_result')
+		expect(resultEvents).toHaveLength(2)
+
+		// Verify distinct callIds on tool calls
+		const callIds = callEvents.map((e) => (e as { callId?: string }).callId)
+		expect(callIds[0]).toBe('call_abc123')
+		expect(callIds[1]).toBe('call_def456')
+		expect(callIds[0]).not.toBe(callIds[1])
+
+		// Verify callIds on results match their corresponding calls
+		const resultCallIds = resultEvents.map((e) => (e as { callId?: string }).callId)
+		expect(resultCallIds[0]).toBe('call_abc123')
+		expect(resultCallIds[1]).toBe('call_def456')
+
+		// Verify pairing: callId from call matches callId from result
+		expect(callIds[0]).toBe(resultCallIds[0])
+		expect(callIds[1]).toBe(resultCallIds[1])
+	})
 })

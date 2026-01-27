@@ -36,7 +36,8 @@ export interface RunMeta {
 	runId: string
 
 	/**
-	 * LangGraph thread ID (same as runId)
+	 * LangGraph thread ID.
+	 * Equals runId unless explicitly provided in StartRunRequest.
 	 */
 	threadId: string
 
@@ -213,6 +214,13 @@ export interface StartRunRequest {
 	 * state changes, and decisions.
 	 */
 	debugMode?: boolean
+
+	/**
+	 * Thread ID for multi-turn conversation continuity.
+	 * If provided, this run shares LangGraph thread state with other runs using the same threadId.
+	 * If omitted, defaults to runId (single-run behavior).
+	 */
+	threadId?: string
 }
 
 /**
@@ -223,6 +231,12 @@ export interface StartRunResult {
 	 * The run ID (use this to stream, resume, or abort)
 	 */
 	runId: string
+
+	/**
+	 * The resolved thread ID.
+	 * Equals runId if not explicitly provided in the request.
+	 */
+	threadId: string
 }
 
 /**
@@ -263,4 +277,43 @@ export interface AbortRunRequest {
 	 * Reason for aborting
 	 */
 	reason: string
+}
+
+/**
+ * Message format for thread hydration
+ */
+export interface HydrationMessage {
+	/**
+	 * Message role
+	 */
+	role: 'user' | 'assistant' | 'system'
+
+	/**
+	 * Message content
+	 */
+	content: string
+}
+
+/**
+ * Request to hydrate a thread with historical context
+ *
+ * Use this to restore conversation history after reload without a durable checkpointer.
+ * Call this after start() but before stream() to seed the thread's message history.
+ */
+export interface HydrateThreadRequest {
+	/**
+	 * Thread ID to hydrate. Must match a threadId used in start().
+	 */
+	threadId: string
+
+	/**
+	 * Messages to seed into the thread's history.
+	 * Converted to LangGraph message types internally.
+	 */
+	messages?: HydrationMessage[]
+
+	/**
+	 * Summary of previous context (compacted history).
+	 */
+	summary?: string
 }

@@ -71,7 +71,8 @@ export class ToolExecutor {
 			type: 'tool_call',
 			source: 'core',
 			name: toolCall.toolName,
-			args: toolCall.args
+			args: toolCall.args,
+			callId: toolCall.callId
 		})
 
 		let result: ToolResult
@@ -104,7 +105,8 @@ export class ToolExecutor {
 			type: 'tool_result',
 			source: 'core',
 			name: toolCall.toolName,
-			result
+			result,
+			callId: toolCall.callId
 		})
 
 		return {

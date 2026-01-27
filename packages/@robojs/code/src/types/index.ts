@@ -97,7 +97,9 @@ export type {
 	StartRunRequest,
 	StartRunResult,
 	ResumeRunRequest,
-	AbortRunRequest
+	AbortRunRequest,
+	HydrationMessage,
+	HydrateThreadRequest
 } from './run.js'
 
 // Event types

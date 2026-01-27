@@ -113,12 +113,12 @@ export type AgentEvent =
 	| { type: 'llm_text'; delta: string }
 
 	// Core tool events
-	| { type: 'tool_call'; source: 'core'; name: string; args: unknown }
-	| { type: 'tool_result'; source: 'core'; name: string; result: unknown }
+	| { type: 'tool_call'; source: 'core'; name: string; args: unknown; callId?: string }
+	| { type: 'tool_result'; source: 'core'; name: string; result: unknown; callId?: string }
 
 	// MCP tool events (distinguished from core)
-	| { type: 'mcp_call'; source: 'mcp'; serverId: string; tool: string; args: unknown }
-	| { type: 'mcp_result'; source: 'mcp'; serverId: string; tool: string; result: unknown }
+	| { type: 'mcp_call'; source: 'mcp'; serverId: string; tool: string; args: unknown; callId?: string }
+	| { type: 'mcp_result'; source: 'mcp'; serverId: string; tool: string; result: unknown; callId?: string }
 
 	// File change events
 	| { type: 'file_proposed'; changes: FileChange[]; diffs?: FileDiff[] }

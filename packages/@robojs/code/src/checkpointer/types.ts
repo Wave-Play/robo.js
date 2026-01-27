@@ -39,6 +39,16 @@ export interface CheckpointData {
 /**
  * Checkpointer interface for saving/loading agent state.
  *
+ * @deprecated Use BaseCheckpointSaver from @langchain/langgraph instead.
+ * This interface is maintained for backward compatibility only.
+ *
+ * For new implementations, import BaseCheckpointSaver:
+ * ```typescript
+ * import type { BaseCheckpointSaver } from '@robojs/code'
+ * // or directly from LangGraph:
+ * import type { BaseCheckpointSaver } from '@langchain/langgraph'
+ * ```
+ *
  * Hard requirement: Approvals and questions require a checkpointer.
  *
  * Options:
@@ -87,7 +97,7 @@ export interface DurableCheckpointerConfig {
 	/**
 	 * Storage backend type
 	 */
-	type: 'redis' | 'postgres' | 'custom'
+	type: 'indexeddb' | 'filesystem' | 'redis' | 'postgres' | 'custom'
 
 	/**
 	 * Connection string or configuration

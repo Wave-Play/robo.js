@@ -5,6 +5,7 @@
  */
 
 import { END, MemorySaver, START, StateGraph } from '@langchain/langgraph/web'
+import type { BaseCheckpointSaver } from '@langchain/langgraph'
 import { AgentStateAnnotation } from './state.js'
 import { RECURSION_LIMIT } from './constants.js'
 import {
@@ -43,9 +44,10 @@ export interface GraphConfig {
 	context: CodeAgentContext
 
 	/**
-	 * Optional custom checkpointer (defaults to MemorySaver)
+	 * Optional custom checkpointer (defaults to MemorySaver).
+	 * Can be any LangGraph-compatible checkpointer (MemorySaver, PostgresSaver, etc.)
 	 */
-	checkpointer?: MemorySaver
+	checkpointer?: BaseCheckpointSaver
 }
 
 /**

@@ -64,8 +64,9 @@ export function routeAfterPlanner(state: AgentState): NodeName | typeof END {
 /**
  * Route after agent node
  *
- * - If tool_calls exist in last message, go to tools
  * - If aborted, go to END
+ * - If tool_calls exist in last message, go to tools (all tool-enabled modes)
+ * - If explain mode with no tool calls, go to END
  * - Otherwise go to reviewer
  */
 export function routeAfterAgent(state: AgentState): NodeName | typeof END {
@@ -74,16 +75,16 @@ export function routeAfterAgent(state: AgentState): NodeName | typeof END {
 		return END
 	}
 
-	// Explain mode - after agent produces answer, go to END
-	if (state.mode === 'explain') {
-		return END
-	}
-
-	// Check if LLM wants to use tools
+	// Check if LLM wants to use tools (applies to explain and execute modes)
 	const lastMessage = state.messages[state.messages.length - 1]
 
 	if (hasToolCalls(lastMessage)) {
 		return NODE.TOOLS
+	}
+
+	// Explain mode - after agent produces answer (no tool calls), end
+	if (state.mode === 'explain') {
+		return END
 	}
 
 	// No tools, go to reviewer
@@ -118,6 +119,8 @@ export function routeAfterQuestionGate(state: AgentState): NodeName | typeof END
 /**
  * Route after tools node
  *
+ * - If aborted, go to END
+ * - If explain mode, always loop back to agent (skip approval gate, no verification)
  * - If awaiting approval, go to approval_gate (will pause there)
  * - Otherwise go back to agent
  */
@@ -125,6 +128,11 @@ export function routeAfterTools(state: AgentState): NodeName | typeof END {
 	// Check for abort
 	if (state.aborted) {
 		return END
+	}
+
+	// Explain mode - always loop back to agent (skip approval gate and verification)
+	if (state.mode === 'explain') {
+		return NODE.AGENT
 	}
 
 	// If awaiting approval, go to approval gate (which will throw NodeInterrupt)
