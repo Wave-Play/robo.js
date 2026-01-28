@@ -7,7 +7,7 @@
 
 import type { FileChange, FileDiff } from './changes.js'
 import type { ProjectProfile, MockEvent, VerificationResult } from './robo.js'
-import type { TaskStep, QuestionChoice } from './run.js'
+import type { TaskStep, QuestionChoice, Question } from './run.js'
 import type { TerminalChunk } from './terminal.js'
 import type { AcceptanceCriteria } from './acceptance.js'
 
@@ -141,8 +141,17 @@ export type AgentEvent =
 	| { type: 'terminal'; chunk: TerminalChunk }
 	| { type: 'terminal_truncated'; sessionId: string; droppedBytes: number }
 
-	// Question Gate interrupt
-	| { type: 'question'; runId: string; text: string; choices?: QuestionChoice[] }
+	// Question Gate interrupt (supports single or multiple questions)
+	| {
+			type: 'question'
+			runId: string
+			/** Legacy: single question text (also set to first question text for backwards compat) */
+			text?: string
+			/** Legacy: single question choices */
+			choices?: QuestionChoice[]
+			/** New: array of questions (1-4 questions for multi-question prompts) */
+			questions?: Question[]
+	  }
 
 	// Limit reached interrupt (graceful pause when iterations hit limit)
 	| {
@@ -190,6 +199,14 @@ export type DebugEvent =
 
 	// State field changes with before/after
 	| { type: 'debug_state_update'; field: string; oldValue: unknown; newValue: unknown; timestamp: number }
+
+	// Context compaction starting (before operation)
+	| {
+			type: 'debug_context_compacting'
+			currentTokens: number
+			threshold: number
+			modelLimit: number
+	  }
 
 	// Context compaction happened (with optional token info)
 	| {

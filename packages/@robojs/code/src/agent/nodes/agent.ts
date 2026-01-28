@@ -13,6 +13,7 @@ import {
 	createSystemPromptEvent,
 	createLlmMetaEvent,
 	createTokenUsageEvent,
+	createContextCompactingEvent,
 	createContextCompactedEvent
 } from '../events/debug-events.js'
 import { countContextTokens, countMessagesTokens } from '../token-counter.js'
@@ -90,6 +91,17 @@ export function agentNode(context: CodeAgentContext) {
 					threshold: compactor.getTokenThreshold(),
 					modelLimit: modelContextLimit
 				})
+
+				// Debug event: emit compacting-started event BEFORE compaction
+				if (context.debugMode) {
+					context.onEvent?.(
+						createContextCompactingEvent(
+							preCompactionTokens.totalTokens,
+							compactor.getTokenThreshold(),
+							modelContextLimit
+						)
+					)
+				}
 
 				// Use token-aware compaction to reach target
 				const result = compactor.compactWithTokenTarget(state)

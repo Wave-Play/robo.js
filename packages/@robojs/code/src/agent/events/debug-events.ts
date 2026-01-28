@@ -87,6 +87,17 @@ export function createVerificationDetailEvent(
 }
 
 /**
+ * Create a context compacting (starting) debug event
+ */
+export function createContextCompactingEvent(
+	currentTokens: number,
+	threshold: number,
+	modelLimit: number
+): DebugEvent {
+	return { type: 'debug_context_compacting', currentTokens, threshold, modelLimit }
+}
+
+/**
  * Create a context compaction debug event with optional token info
  */
 export function createContextCompactedEvent(

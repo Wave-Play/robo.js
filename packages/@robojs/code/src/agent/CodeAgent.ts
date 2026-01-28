@@ -101,6 +101,13 @@ export interface CodeAgentConfig {
 	 * If not provided, each run creates a new MemorySaver (no cross-run continuity).
 	 */
 	checkpointerFactory?: (threadId: string) => BaseCheckpointSaver
+
+	/**
+	 * If true, disables the built-in question gate node.
+	 * Use this when implementing custom question handling via tools.
+	 * @default false
+	 */
+	disableQuestionGate?: boolean
 }
 
 /**
@@ -291,7 +298,11 @@ export class CodeAgent {
 		const checkpointer = this.config.checkpointerFactory?.(threadId) ?? new MemorySaver()
 
 		// Build the graph
-		const graph = buildAgentGraph({ context, checkpointer })
+		const graph = buildAgentGraph({
+			context,
+			checkpointer,
+			disableQuestionGate: this.config.disableQuestionGate
+		})
 
 		// Store run info
 		const runInfo: RunInfo = {

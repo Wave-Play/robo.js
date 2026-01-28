@@ -48,6 +48,15 @@ export interface GraphConfig {
 	 * Can be any LangGraph-compatible checkpointer (MemorySaver, PostgresSaver, etc.)
 	 */
 	checkpointer?: BaseCheckpointSaver
+
+	/**
+	 * If true, disables the built-in question gate node.
+	 * When disabled, the planner can still set pendingQuestion, but the question gate
+	 * won't interrupt - execution routes directly to the agent node.
+	 * Use this when implementing custom question handling via tools.
+	 * @default false
+	 */
+	disableQuestionGate?: boolean
 }
 
 /**
@@ -74,7 +83,7 @@ export interface GraphConfig {
  * ```
  */
 export function buildAgentGraph(config: GraphConfig) {
-	const { context, checkpointer = new MemorySaver() } = config
+	const { context, checkpointer = new MemorySaver(), disableQuestionGate = false } = config
 
 	// Create state graph with annotation
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -86,7 +95,6 @@ export function buildAgentGraph(config: GraphConfig) {
 	graph.addNode(NODE.REFRESH_INDEX, refreshIndexNode(context))
 	graph.addNode(NODE.REFRESH_OVERVIEW, refreshOverviewNode(context))
 	graph.addNode(NODE.PLANNER, plannerNode(context))
-	graph.addNode(NODE.QUESTION_GATE, questionGateNode(context))
 	graph.addNode(NODE.APPROVAL_GATE, approvalGateNode(context))
 	graph.addNode(NODE.AGENT, agentNode(context))
 	graph.addNode(NODE.TOOLS, toolsNode(context))
@@ -95,6 +103,11 @@ export function buildAgentGraph(config: GraphConfig) {
 	graph.addNode(NODE.VERIFY_TESTS, verifyTestsNode(context))
 	graph.addNode(NODE.VERIFY_MOCK, verifyMockNode(context))
 
+	// Only add question gate node if not disabled
+	if (!disableQuestionGate) {
+		graph.addNode(NODE.QUESTION_GATE, questionGateNode(context))
+	}
+
 	// Add edges - linear path from START to planner
 	graph.addEdge(START, NODE.DETECT_PROFILE)
 	graph.addEdge(NODE.DETECT_PROFILE, NODE.REFRESH_INDEX)
@@ -102,18 +115,28 @@ export function buildAgentGraph(config: GraphConfig) {
 	graph.addEdge(NODE.REFRESH_OVERVIEW, NODE.PLANNER)
 
 	// Conditional edge from planner
-	graph.addConditionalEdges(NODE.PLANNER, routeAfterPlanner, {
-		[NODE.QUESTION_GATE]: NODE.QUESTION_GATE,
-		[NODE.AGENT]: NODE.AGENT,
-		[END]: END
-	})
+	// When question gate is disabled, route directly to agent instead of question_gate
+	if (disableQuestionGate) {
+		graph.addConditionalEdges(NODE.PLANNER, routeAfterPlanner, {
+			// Route question_gate to agent when disabled
+			[NODE.QUESTION_GATE]: NODE.AGENT,
+			[NODE.AGENT]: NODE.AGENT,
+			[END]: END
+		})
+	} else {
+		graph.addConditionalEdges(NODE.PLANNER, routeAfterPlanner, {
+			[NODE.QUESTION_GATE]: NODE.QUESTION_GATE,
+			[NODE.AGENT]: NODE.AGENT,
+			[END]: END
+		})
 
-	// Question gate routes back to planner (if no acceptance) or agent (if has acceptance)
-	graph.addConditionalEdges(NODE.QUESTION_GATE, routeAfterQuestionGate, {
-		[NODE.PLANNER]: NODE.PLANNER,
-		[NODE.AGENT]: NODE.AGENT,
-		[END]: END
-	})
+		// Question gate routes back to planner (if no acceptance) or agent (if has acceptance)
+		graph.addConditionalEdges(NODE.QUESTION_GATE, routeAfterQuestionGate, {
+			[NODE.PLANNER]: NODE.PLANNER,
+			[NODE.AGENT]: NODE.AGENT,
+			[END]: END
+		})
+	}
 
 	// Conditional edge from agent
 	graph.addConditionalEdges(NODE.AGENT, routeAfterAgent, {

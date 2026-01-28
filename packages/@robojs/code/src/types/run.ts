@@ -153,18 +153,70 @@ export interface QuestionChoice {
 }
 
 /**
- * Answer to a question from the Question Gate
+ * Single question in a multi-question set.
+ * Supports 1-4 questions per prompt for gathering related information.
  */
-export interface QuestionAnswer {
+export interface Question {
 	/**
-	 * Free-text answer
+	 * Question text to display
 	 */
 	text: string
 
 	/**
-	 * Selected choice ID (if choices were provided)
+	 * Short header/label for the question (max 12 chars)
+	 * Used for compact UI display
+	 */
+	header?: string
+
+	/**
+	 * Available choices for the question (2-4 options)
+	 */
+	choices?: QuestionChoice[]
+
+	/**
+	 * If true, user can select multiple choices
+	 */
+	multiSelect?: boolean
+}
+
+/**
+ * Answer to a single question in a multi-question set.
+ */
+export interface QuestionSetAnswer {
+	/**
+	 * Question ID (q1, q2, etc.)
+	 */
+	questionId: string
+
+	/**
+	 * Selected choice ID(s)
+	 */
+	choiceIds: string[]
+
+	/**
+	 * Free-text response if "Other" was selected
+	 */
+	freeText?: string
+}
+
+/**
+ * Answer to a question from the Question Gate
+ */
+export interface QuestionAnswer {
+	/**
+	 * Free-text answer (legacy single-question support)
+	 */
+	text?: string
+
+	/**
+	 * Selected choice ID (legacy single-question support)
 	 */
 	choiceId?: string
+
+	/**
+	 * Answers to multiple questions (new multi-question support)
+	 */
+	answers?: QuestionSetAnswer[]
 }
 
 /**

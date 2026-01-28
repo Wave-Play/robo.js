@@ -19,12 +19,20 @@ const PLANNER_SYSTEM_PROMPT = `You are a planning assistant for a coding agent. 
 4. Create a plan with clear steps
 
 If the request is ambiguous, you MUST ask clarifying questions before proceeding.
+You can ask 1-4 questions at once to gather all needed information efficiently.
 
 Output Format:
 You must respond with a JSON object containing:
 {
   "needsClarification": boolean,
-  "question": { "text": string, "choices": [{ "id": string, "label": string }] } | null,
+  "questions": [
+    {
+      "text": string,
+      "header": string (optional, max 12 chars - short label like "Framework" or "Features"),
+      "choices": [{ "id": string, "label": string, "description": string (optional) }],
+      "multiSelect": boolean (optional - if true, user can select multiple choices)
+    }
+  ] | null,
   "requirements": { "featureBullets": string[], "constraints": string[], "nonGoals": string[] },
   "scenarios": [{ "id": string, "title": string, "description": string, "kind": "build"|"test"|"mock"|"manual", "assertions": string[] }],
   "mustPass": string[],
@@ -37,6 +45,12 @@ Guidelines:
 - Include "test" scenarios if tests exist in the project
 - Set mustPass to include all scenarios that must pass for completion
 - Ask clarifying questions for: command names, API routes, permission levels, error handling strategies
+- When asking questions, batch related questions together (max 4 questions)
+- Each question should have 2-4 choices for the user to select from
+- Use multiSelect: true when multiple choices can apply (e.g., "Which features do you want?")
+
+When user answers, questionId will be 'q1' for the first question, 'q2' for the second, etc.
+The answers array will contain entries like: { questionId: 'q1', choiceIds: ['opt1'], freeText: 'custom input' }
 `
 
 /**
@@ -108,11 +122,39 @@ Set "needsClarification": false and provide the full plan.`
 		}
 
 		// Check if clarification is needed - BUT only allow if user hasn't answered yet
-		if (parsed.needsClarification && parsed.question && !hasUserAnswer) {
-			const pendingQuestion: PendingQuestion = {
-				text: parsed.question.text,
-				choices: parsed.question.choices,
-				askedAt: new Date().toISOString()
+		const hasQuestions = parsed.questions && parsed.questions.length > 0
+		const hasLegacyQuestion = parsed.question && parsed.question.text
+
+		// Validate question count (max 4 to avoid breaking UI)
+		if (hasQuestions && parsed.questions!.length > 4) {
+			codeLogger.warn('[Planner] LLM sent more than 4 questions, truncating to 4')
+			parsed.questions = parsed.questions!.slice(0, 4)
+		}
+
+		if (parsed.needsClarification && (hasQuestions || hasLegacyQuestion) && !hasUserAnswer) {
+			let pendingQuestion: PendingQuestion
+
+			if (hasQuestions) {
+				// New multi-question format
+				pendingQuestion = {
+					questions: parsed.questions!.map((q) => ({
+						text: q.text,
+						header: q.header,
+						choices: q.choices,
+						multiSelect: q.multiSelect
+					})),
+					// Backwards compat: also set text/choices from first question
+					text: parsed.questions![0].text,
+					choices: parsed.questions![0].choices,
+					askedAt: new Date().toISOString()
+				}
+			} else {
+				// Legacy single question format
+				pendingQuestion = {
+					text: parsed.question!.text,
+					choices: parsed.question!.choices,
+					askedAt: new Date().toISOString()
+				}
 			}
 
 			return {
@@ -209,13 +251,34 @@ function buildPlannerContext(state: AgentState): string {
 
 	// Include question context so LLM knows what was asked
 	if (state.pendingQuestion) {
-		parts.push(`\nClarifying Question Asked: ${state.pendingQuestion.text}`)
+		// Handle both multi-question and legacy single-question formats
+		if (state.pendingQuestion.questions && state.pendingQuestion.questions.length > 0) {
+			parts.push('\nClarifying Questions Asked:')
+			for (const q of state.pendingQuestion.questions) {
+				parts.push(`  - ${q.text}`)
+			}
+		} else if (state.pendingQuestion.text) {
+			parts.push(`\nClarifying Question Asked: ${state.pendingQuestion.text}`)
+		}
 	}
 
 	if (state.lastAnswer) {
-		parts.push(`User Answer: ${state.lastAnswer.text}`)
-		if (state.lastAnswer.choiceId) {
-			parts.push(`Selected Choice: ${state.lastAnswer.choiceId}`)
+		// Handle multi-question answers (new format)
+		if (state.lastAnswer.answers && state.lastAnswer.answers.length > 0) {
+			parts.push('User Answers:')
+			for (const ans of state.lastAnswer.answers) {
+				const choiceText = ans.choiceIds.length > 0 ? ans.choiceIds.join(', ') : 'none'
+				const freeTextPart = ans.freeText ? ` (other: ${ans.freeText})` : ''
+				parts.push(`  ${ans.questionId}: ${choiceText}${freeTextPart}`)
+			}
+		} else {
+			// Legacy single-question format
+			if (state.lastAnswer.text) {
+				parts.push(`User Answer: ${state.lastAnswer.text}`)
+			}
+			if (state.lastAnswer.choiceId) {
+				parts.push(`Selected Choice: ${state.lastAnswer.choiceId}`)
+			}
 		}
 	}
 
@@ -227,10 +290,18 @@ function buildPlannerContext(state: AgentState): string {
  */
 interface PlannerResponse {
 	needsClarification?: boolean
+	/** Legacy single question support */
 	question?: {
 		text: string
 		choices?: Array<{ id: string; label: string }>
 	}
+	/** Multi-question support (1-4 questions) */
+	questions?: Array<{
+		text: string
+		header?: string
+		choices?: Array<{ id: string; label: string; description?: string }>
+		multiSelect?: boolean
+	}>
 	requirements?: Requirements
 	scenarios?: ScenarioSpec[]
 	mustPass?: string[]

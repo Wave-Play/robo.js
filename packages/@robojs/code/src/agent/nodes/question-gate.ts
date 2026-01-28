@@ -45,7 +45,8 @@ export function questionGateNode(context: CodeAgentContext) {
 		if (lastAnswer) {
 			codeLogger.debug('[QuestionGate] Answer received, continuing', {
 				answerText: lastAnswer.text?.slice(0, 100),
-				choiceId: lastAnswer.choiceId
+				choiceId: lastAnswer.choiceId,
+				answersCount: lastAnswer.answers?.length
 			})
 			return {
 				pendingQuestion: null,
@@ -54,18 +55,35 @@ export function questionGateNode(context: CodeAgentContext) {
 		}
 
 		// Emit question event before pausing
-		context.onEvent?.({
-			type: 'question',
-			runId: context.runId,
-			text: pendingQuestion.text,
-			choices: pendingQuestion.choices
-		})
+		// Support both legacy single-question and new multi-question formats
+		if (pendingQuestion.questions && pendingQuestion.questions.length > 0) {
+			// Multi-question format
+			context.onEvent?.({
+				type: 'question',
+				runId: context.runId,
+				// New: include questions array
+				questions: pendingQuestion.questions,
+				// Backwards compat: also set text/choices from first question
+				text: pendingQuestion.questions[0].text,
+				choices: pendingQuestion.questions[0].choices
+			})
+		} else {
+			// Legacy single-question format
+			context.onEvent?.({
+				type: 'question',
+				runId: context.runId,
+				text: pendingQuestion.text,
+				choices: pendingQuestion.choices
+			})
+		}
 
 		// Throw NodeInterrupt to pause graph execution
 		// The SDK's resume() method will set lastAnswer and re-invoke the graph
+		const questionText = pendingQuestion.questions?.[0]?.text ?? pendingQuestion.text
 		codeLogger.debug('[QuestionGate] Throwing NodeInterrupt to pause', {
-			questionText: pendingQuestion.text?.slice(0, 100)
+			questionText: questionText?.slice(0, 100),
+			questionCount: pendingQuestion.questions?.length ?? 1
 		})
-		throw new NodeInterrupt(`Waiting for answer to: ${pendingQuestion.text}`)
+		throw new NodeInterrupt(`Waiting for answer to: ${questionText}`)
 	}
 }

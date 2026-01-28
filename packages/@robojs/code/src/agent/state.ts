@@ -7,7 +7,7 @@
 
 import { Annotation } from '@langchain/langgraph/web'
 import type { BaseMessage } from '@langchain/core/messages'
-import type { RunMode, TaskStep, QuestionChoice, QuestionAnswer, ApprovalResponse } from '../types/run.js'
+import type { RunMode, TaskStep, QuestionChoice, QuestionAnswer, ApprovalResponse, Question } from '../types/run.js'
 import type { AcceptanceCriteria, AcceptanceStatus } from '../types/acceptance.js'
 import type { ProjectProfile, VerificationResult } from '../types/robo.js'
 import type { ProjectIndex, ProjectOverview } from '../types/scale.js'
@@ -65,14 +65,19 @@ export const DEFAULT_TOKEN_USAGE: TokenUsage = {
  */
 export interface PendingQuestion {
 	/**
-	 * Question text to display
+	 * Question text to display (legacy single-question support)
 	 */
-	text: string
+	text?: string
 
 	/**
-	 * Optional choices for the user
+	 * Optional choices for the user (legacy single-question support)
 	 */
 	choices?: QuestionChoice[]
+
+	/**
+	 * Array of questions for multi-question support (1-4 questions)
+	 */
+	questions?: Question[]
 
 	/**
 	 * When the question was asked
