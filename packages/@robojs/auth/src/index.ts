@@ -4,8 +4,15 @@ export { DEFAULT_BASE_PATH, normalizeAuthOptions } from './config/defaults.js'
 export { authPluginOptionsSchema } from './config/schema.js'
 export { createAuthRequestHandler } from './runtime/handler.js'
 export { AUTH_ROUTES } from './runtime/route-map.js'
-export { configureAuthRuntime, configureAuthProxyRuntime, getServerSession, getToken } from './runtime/server-helpers.js'
+export {
+	configureAuthRuntime,
+	configureAuthProxyRuntime,
+	getServerSession,
+	getToken
+} from './runtime/server-helpers.js'
 export { signIn, signOut, signUp, getSession, getProviders, getCsrfToken } from './runtime/client-helpers.js'
+export { getSessions, switchSession, removeSession, clearSessions } from './runtime/client-helpers.js'
+export type { DeviceSession, SwitchSessionResult } from './runtime/session-stack.js'
 export { authLogger } from './utils/logger.js'
 export { getRequestPayload } from './utils/request-payload.js'
 export { assertPasswordAdapter } from './builtins/email-password/types.js'

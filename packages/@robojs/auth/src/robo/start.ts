@@ -9,10 +9,8 @@ import { configureAuthRuntime, configureAuthProxyRuntime } from '../runtime/serv
 import { nanoid } from 'nanoid'
 import { authLogger } from '../utils/logger.js'
 import { registerEmailPasswordRuntime } from '../builtins/email-password/runtime.js'
-import {
-	assertPasswordAdapter,
-	EmailPasswordProviderMetadata
-} from '../builtins/email-password/types.js'
+import { registerSessionStackRoutes, updateStack } from '../runtime/session-stack.js'
+import { assertPasswordAdapter, EmailPasswordProviderMetadata } from '../builtins/email-password/types.js'
 import { ensureLeadingSlash, joinPath, stripTrailingSlash } from '../utils/path.js'
 import { EmailManager, setEmailManager, notifyEmail } from '../emails/manager.js'
 import type { RoboReply, RoboRequest } from '@robojs/server'
@@ -250,8 +248,7 @@ export default async (context: StartContext) => {
 			localBasePath: basePath,
 			targetBasePath: upstreamBasePath,
 			baseUrl: options.upstream.baseUrl,
-			cookieName:
-				options.upstream.cookieName ?? options.cookies.sessionToken?.name ?? 'authjs.session-token',
+			cookieName: options.upstream.cookieName ?? options.cookies.sessionToken?.name ?? 'authjs.session-token',
 			secret: options.upstream.secret ?? options.secret,
 			sessionStrategy: options.upstream.sessionStrategy,
 			headers: options.upstream.headers,
@@ -424,6 +421,8 @@ export default async (context: StartContext) => {
 		return typeof provider === 'object' && provider && (provider as { id?: string }).id === 'credentials'
 	})
 
+	const sessionStrategy = options.session.strategy ?? 'jwt'
+
 	if (hasCredentialsProvider) {
 		assertPasswordAdapter(adapter)
 		registerEmailPasswordRuntime({
@@ -438,9 +437,14 @@ export default async (context: StartContext) => {
 			overrides: emailPasswordMetadata?.routes,
 			recentSigninNotified,
 			secret,
-			sessionStrategy: options.session.strategy ?? 'jwt',
+			sessionStrategy,
 			hasher: emailPasswordMetadata?.hasher
 		})
+	}
+
+	// Session stack routes (database strategy only, local mode)
+	if (sessionStrategy !== 'jwt') {
+		registerSessionStackRoutes({ adapter, basePath, cookies, config: authConfig, secret })
 	}
 
 	const methods = collectMethods(basePath)
@@ -474,6 +478,14 @@ export default async (context: StartContext) => {
 				path,
 				status: response.status
 			})
+
+			// Post-process: update session stack on sign-in (OAuth flows).
+			// For credentials sign-ins, the stack is already updated via attachDbSessionCookie → updateStackDirect.
+			// If both fire (server-dependent), upsertStack deduplication ensures correctness.
+			if (sessionStrategy !== 'jwt') {
+				return updateStack({ request, response, adapter, cookies, config: authConfig })
+			}
+
 			return response
 		})
 	}
@@ -485,7 +497,7 @@ export default async (context: StartContext) => {
 		baseUrl,
 		cookieName,
 		secret,
-		sessionStrategy: options.session.strategy ?? 'jwt'
+		sessionStrategy
 	})
 
 	authLogger.ready(`@robojs/auth mounted on ${basePath}`)

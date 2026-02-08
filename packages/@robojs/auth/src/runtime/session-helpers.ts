@@ -3,6 +3,7 @@ import type { AuthConfig } from '@auth/core'
 import type { CookiesOptions } from '@auth/core/types'
 import { serializeCookie } from '../utils/cookies.js'
 import { nanoid } from 'nanoid'
+import { updateStackDirect } from './session-stack.js'
 
 /** Detects whether an Auth.js response redirects to a success destination. */
 export function isSuccessRedirect(response: Response): boolean {
@@ -30,13 +31,14 @@ function normalizeSameSite(input: unknown): SameSite {
 
 /** Appends a database session cookie to the response so credentials providers stay logged in. */
 export async function attachDbSessionCookie(params: {
+	request?: Request
 	response: Response
 	adapter: Adapter
 	cookies: CookiesOptions
 	config: AuthConfig
 	userId: string
 }): Promise<Response> {
-	const { response, adapter, cookies, config, userId } = params
+	const { request, response, adapter, cookies, config, userId } = params
 
 	const cookieName = cookies.sessionToken?.name ?? 'authjs.session-token'
 
@@ -64,5 +66,16 @@ export async function attachDbSessionCookie(params: {
 	headers.append('set-cookie', headerValue)
 	// Respond with the original status code while guaranteeing the cookie is delivered.
 
-	return new Response(null, { status: response.status, headers })
+	const responseWithCookie = new Response(response.body, {
+		status: response.status,
+		statusText: response.statusText,
+		headers
+	})
+
+	// Update session stack when request context is available (credentials sign-in).
+	if (request) {
+		return updateStackDirect({ request, response: responseWithCookie, token, userId, adapter, cookies })
+	}
+
+	return responseWithCookie
 }

@@ -561,6 +561,7 @@ function registerCredentialsInterceptor(options: EmailPasswordRuntimeOptions): v
 		if (sessionStrategy === 'database' && userId) {
 			try {
 				return await attachDbSessionCookie({
+					request,
 					response,
 					adapter,
 					cookies,

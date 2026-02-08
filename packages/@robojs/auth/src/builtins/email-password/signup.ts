@@ -329,6 +329,7 @@ export function createSignupHandler(options: SignupHandlerOptions) {
 					try {
 						// Mirror Auth.js behaviour by creating a database-backed session cookie.
 						return await attachDbSessionCookie({
+							request,
 							response,
 							adapter,
 							cookies,

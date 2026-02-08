@@ -1,4 +1,5 @@
 import type { PublicProvider, Session } from '@auth/core/types'
+import type { DeviceSession, SwitchSessionResult } from './session-stack.js'
 import { ensureLeadingSlash, joinPath, stripTrailingSlash } from '../utils/path.js'
 
 type HeadersInput = Record<string, string> | Array<[string, string]> | undefined
@@ -87,7 +88,7 @@ export async function signIn(
 ): Promise<Response>
 export async function signIn(
 	providerId: string,
-	options?: (Record<string, unknown> & { csrfToken?: string; callbackUrl?: string }),
+	options?: Record<string, unknown> & { csrfToken?: string; callbackUrl?: string },
 	proxy?: ClientOptions,
 	redirect?: RedirectMode
 ): Promise<SignInFetchResult | SignInManualResult | SignInRedirectedResult>
@@ -104,7 +105,10 @@ export async function signIn(
 
 	if (legacyMode) {
 		// Resolve the runtime environment before composing the Auth.js request.
-		const target = resolveEndpoint(client, providerId === 'credentials' ? '/callback/credentials' : joinPath('/signin', providerId))
+		const target = resolveEndpoint(
+			client,
+			providerId === 'credentials' ? '/callback/credentials' : joinPath('/signin', providerId)
+		)
 		const request = resolveFetch(client?.fetch)
 		const init: Record<string, unknown> = {
 			method: 'POST',
@@ -127,7 +131,9 @@ export async function signIn(
 			? (body.csrfToken as string)
 			: await getCsrfToken({ ...client, fetch: resolveFetch(client?.fetch) })
 
-	const callbackUrl = resolveCallbackUrl(typeof body?.callbackUrl === 'string' ? (body.callbackUrl as string) : undefined)
+	const callbackUrl = resolveCallbackUrl(
+		typeof body?.callbackUrl === 'string' ? (body.callbackUrl as string) : undefined
+	)
 	const query = toQuery({ callbackUrl: callbackUrl, csrfToken: csrfToken ?? undefined })
 	const startPath = joinPath('/signin', `/${providerId}`)
 	const startUrl = buildAbsoluteUrl(basePath, `${startPath}${query ? `?${query}` : ''}`, baseUrl)
@@ -138,9 +144,11 @@ export async function signIn(
 
 	if (redirect === true) {
 		if (!hasWindow()) {
-			throw new Error('Cannot perform top-level navigation during SSR. Use signIn(..., "manual") to obtain a redirect URL and issue it from your framework.')
+			throw new Error(
+				'Cannot perform top-level navigation during SSR. Use signIn(..., "manual") to obtain a redirect URL and issue it from your framework.'
+			)
 		}
-		
+
 		const form = document.createElement('form')
 		form.method = 'POST'
 		form.action = startUrl
@@ -167,17 +175,26 @@ export async function signIn(
 	}
 
 	// redirect === false: keep fetch-based flow but normalize return shape
-	const target = resolveEndpoint(client, providerId === 'credentials' ? '/callback/credentials' : joinPath('/signin', providerId))
+	const target = resolveEndpoint(
+		client,
+		providerId === 'credentials' ? '/callback/credentials' : joinPath('/signin', providerId)
+	)
 	const request = resolveFetch(client?.fetch)
 	const init: Record<string, unknown> = {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
-			'Accept': 'application/json',
+			Accept: 'application/json',
 			...(client?.headers ?? {})
 		},
 		credentials: 'include',
-		body: JSON.stringify({ ...body, provider: providerId, csrfToken: csrfToken ?? undefined, json: true, redirect: false })
+		body: JSON.stringify({
+			...body,
+			provider: providerId,
+			csrfToken: csrfToken ?? undefined,
+			json: true,
+			redirect: false
+		})
 	}
 
 	const response = await request(target, init)
@@ -229,14 +246,24 @@ export async function signOut(
 	params?: { csrfToken?: string; callbackUrl?: string },
 	proxy?: ClientOptions,
 	redirect?: RedirectMode
-): Promise<Response | { ok: boolean; url?: string; error?: string } | { ok: true; redirected: true } | { ok: true; url: string }>
+): Promise<
+	Response | { ok: boolean; url?: string; error?: string } | { ok: true; redirected: true } | { ok: true; url: string }
+>
 export async function signOut(
 	params?: ClientOptions | { csrfToken?: string; callbackUrl?: string },
 	proxy?: ClientOptions,
 	redirect?: RedirectMode
-): Promise<Response | { ok: boolean; url?: string; error?: string } | { ok: true; redirected: true } | { ok: true; url: string }> {
+): Promise<
+	Response | { ok: boolean; url?: string; error?: string } | { ok: true; redirected: true } | { ok: true; url: string }
+> {
 	// Legacy behavior: single argument of ClientOptions and no redirect flag
-	if (typeof redirect === 'undefined' && (params === undefined || 'basePath' in (params as ClientOptions) || 'baseUrl' in (params as ClientOptions) || 'fetch' in (params as ClientOptions))) {
+	if (
+		typeof redirect === 'undefined' &&
+		(params === undefined ||
+			'basePath' in (params as ClientOptions) ||
+			'baseUrl' in (params as ClientOptions) ||
+			'fetch' in (params as ClientOptions))
+	) {
 		const options = params as ClientOptions | undefined
 		const target = resolveEndpoint(options, '/signout')
 		const request = resolveFetch(options?.fetch)
@@ -262,7 +289,9 @@ export async function signOut(
 
 	if (redirect === true) {
 		if (!hasWindow()) {
-			throw new Error('Cannot perform top-level navigation during SSR. Use signOut(..., "manual") to obtain a redirect URL and issue it from your framework.')
+			throw new Error(
+				'Cannot perform top-level navigation during SSR. Use signOut(..., "manual") to obtain a redirect URL and issue it from your framework.'
+			)
 		}
 		const query = toQuery({ callbackUrl })
 		const url = buildAbsoluteUrl(basePath, `/signout${query ? `?${query}` : ''}`, baseUrl)
@@ -400,10 +429,7 @@ export async function getCsrfToken(options?: ClientOptions): Promise<string | nu
  * await signUp({ email: 'user@example.com', password: 'password' })
  * ```
  */
-export async function signUp(
-	body: Record<string, unknown>,
-	options?: ClientOptions
-): Promise<Response> {
+export async function signUp(body: Record<string, unknown>, options?: ClientOptions): Promise<Response> {
 	const client = options
 	const target = resolveEndpoint(client, '/signup')
 	const request = resolveFetch(client?.fetch)
@@ -417,7 +443,7 @@ export async function signUp(
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
-			'Accept': 'application/json',
+			Accept: 'application/json',
 			...(client?.headers ?? {})
 		},
 		credentials: 'include',
@@ -425,4 +451,130 @@ export async function signUp(
 	}
 
 	return request(target, init)
+}
+
+// ---------------------------------------------------------------------------
+// Session stack helpers (multi-account switching)
+// ---------------------------------------------------------------------------
+
+/**
+ * Lists all sessions stored on this device, including expired ones.
+ *
+ * @param options - Overrides for base path, headers, or a custom fetch implementation.
+ * @returns An array of device sessions, or `null` if the request fails.
+ *
+ * @example
+ * ```ts
+ * const sessions = await getSessions()
+ * ```
+ */
+export async function getSessions(options?: ClientOptions): Promise<DeviceSession[] | null> {
+	const target = resolveEndpoint(options, '/sessions')
+	const request = resolveFetch(options?.fetch)
+	const init: Record<string, unknown> = {
+		headers: options?.headers,
+		credentials: 'include'
+	}
+
+	const response = await request(target, init)
+	if (!response.ok) return null
+
+	const data = (await response.json()) as { sessions?: DeviceSession[] }
+	return data?.sessions ?? null
+}
+
+/**
+ * Switches the active session to the given user.
+ *
+ * @param userId - The user ID to switch to (must exist in the device session stack).
+ * @param options - Overrides for base path, headers, or a custom fetch implementation.
+ * @returns A result indicating success or the reason for failure.
+ *
+ * @example
+ * ```ts
+ * const result = await switchSession('user-id-123')
+ * if (result.ok) window.location.reload()
+ * ```
+ */
+export async function switchSession(userId: string, options?: ClientOptions): Promise<SwitchSessionResult> {
+	const target = resolveEndpoint(options, '/sessions/switch')
+	const request = resolveFetch(options?.fetch)
+	const csrfToken = await getCsrfToken({ ...options, fetch: request })
+	const init: Record<string, unknown> = {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			...(options?.headers ?? {})
+		},
+		credentials: 'include',
+		body: JSON.stringify({ userId, csrfToken: csrfToken ?? undefined })
+	}
+
+	const response = await request(target, init)
+	if (!response.ok) {
+		try {
+			return (await response.json()) as SwitchSessionResult
+		} catch {
+			return { ok: false, error: 'not_found' }
+		}
+	}
+	try {
+		return (await response.json()) as SwitchSessionResult
+	} catch {
+		return { ok: false, error: 'not_found' }
+	}
+}
+
+/**
+ * Removes a session from the device stack and deletes the server-side session.
+ *
+ * @param userId - The user ID to remove.
+ * @param options - Overrides for base path, headers, or a custom fetch implementation.
+ * @returns The raw `Response` from the server.
+ *
+ * @example
+ * ```ts
+ * await removeSession('user-id-456')
+ * ```
+ */
+export async function removeSession(userId: string, options?: ClientOptions): Promise<Response> {
+	const target = resolveEndpoint(options, '/sessions/remove')
+	const request = resolveFetch(options?.fetch)
+	const csrfToken = await getCsrfToken({ ...options, fetch: request })
+	return request(target, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			...(options?.headers ?? {})
+		},
+		credentials: 'include',
+		body: JSON.stringify({ userId, csrfToken: csrfToken ?? undefined })
+	})
+}
+
+/**
+ * Removes all sessions from the device and signs out completely.
+ *
+ * @param options - Overrides for base path, headers, or a custom fetch implementation.
+ * @returns The raw `Response` from the server.
+ *
+ * @example
+ * ```ts
+ * await clearSessions()
+ * window.location.href = '/auth'
+ * ```
+ */
+export async function clearSessions(options?: ClientOptions): Promise<Response> {
+	const target = resolveEndpoint(options, '/sessions/clear')
+	const request = resolveFetch(options?.fetch)
+	const csrfToken = await getCsrfToken({ ...options, fetch: request })
+	return request(target, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			...(options?.headers ?? {})
+		},
+		credentials: 'include',
+		body: JSON.stringify({ csrfToken: csrfToken ?? undefined })
+	})
 }
