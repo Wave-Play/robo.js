@@ -680,6 +680,38 @@ export class Session implements ISession {
 		const channel = this.state.getChannel(channelId)
 		const guildId = options.guildId ?? channel?.guildId
 
+		// Parse subcommand path from command name (e.g., "nested sub" → parent "nested", subcommand ["sub"])
+		const nameParts = options.commandName.split(' ')
+		const parentCommandName = nameParts[0]
+		const subcommandParts = nameParts.slice(1)
+
+		// Build interaction options, wrapping in subcommand structure if needed
+		const userOptions = options.options ? this.convertOptionsToArray(options.options) : []
+		let interactionOptions: MockInteractionOption[] | undefined
+
+		if (subcommandParts.length === 2) {
+			// Subcommand group: /parent group sub [options]
+			interactionOptions = [{
+				name: subcommandParts[0],
+				type: 2, // SubCommandGroup
+				options: [{
+					name: subcommandParts[1],
+					type: 1, // SubCommand
+					options: userOptions.length > 0 ? userOptions : undefined
+				}]
+			}]
+		} else if (subcommandParts.length === 1) {
+			// Simple subcommand: /parent sub [options]
+			interactionOptions = [{
+				name: subcommandParts[0],
+				type: 1, // SubCommand
+				options: userOptions.length > 0 ? userOptions : undefined
+			}]
+		} else {
+			// Regular command (no subcommands)
+			interactionOptions = userOptions.length > 0 ? userOptions : undefined
+		}
+
 		// Create interaction
 		const now = Date.now()
 		const interaction: MockInteraction = {
@@ -690,9 +722,9 @@ export class Session implements ISession {
 			channelId,
 			guildId,
 			userId: user.id,
-			commandName: options.commandName,
+			commandName: parentCommandName,
 			commandId: generateSnowflake(),
-			options: options.options ? this.convertOptionsToArray(options.options) : undefined,
+			options: interactionOptions,
 			createdAt: now,
 			expiresAt: now + 15 * 60 * 1000 // 15 minutes
 		}

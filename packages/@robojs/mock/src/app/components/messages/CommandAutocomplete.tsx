@@ -21,13 +21,56 @@ export function CommandAutocomplete({ search, commands, onSelect, onClose: _onCl
 	const [highlightedIndex, setHighlightedIndex] = useState(0)
 	const [focusedOptionIndex, setFocusedOptionIndex] = useState(0)
 
+	// Flatten commands with subcommands into individual entries
+	// e.g., command "nested" with subcommand "sub" becomes "nested sub"
+	const flattenedCommands = useMemo(() => {
+		const result: StageApplicationCommand[] = []
+
+		for (const cmd of commands) {
+			const subcommands = cmd.options?.filter((opt) => opt.type === 1) || []
+			const subcommandGroups = cmd.options?.filter((opt) => opt.type === 2) || []
+
+			if (subcommands.length === 0 && subcommandGroups.length === 0) {
+				// Regular command without subcommands
+				result.push(cmd)
+			} else {
+				// Expand subcommands into separate entries
+				for (const sub of subcommands) {
+					result.push({
+						id: `${cmd.id}_${sub.name}`,
+						name: `${cmd.name} ${sub.name}`,
+						description: sub.description || cmd.description,
+						type: cmd.type,
+						options: sub.options
+					})
+				}
+
+				// Expand subcommand groups
+				for (const group of subcommandGroups) {
+					const groupSubs = group.options?.filter((opt) => opt.type === 1) || []
+					for (const sub of groupSubs) {
+						result.push({
+							id: `${cmd.id}_${group.name}_${sub.name}`,
+							name: `${cmd.name} ${group.name} ${sub.name}`,
+							description: sub.description || group.description || cmd.description,
+							type: cmd.type,
+							options: sub.options
+						})
+					}
+				}
+			}
+		}
+
+		return result
+	}, [commands])
+
 	// Filter commands by search
 	const filteredCommands = useMemo(() => {
 		const searchLower = search.toLowerCase()
-		return commands.filter(
+		return flattenedCommands.filter(
 			(cmd) => cmd.name.toLowerCase().includes(searchLower) || cmd.description.toLowerCase().includes(searchLower)
 		)
-	}, [commands, search])
+	}, [flattenedCommands, search])
 
 	// Reset highlighted index when search changes
 	useEffect(() => {
