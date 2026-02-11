@@ -67,7 +67,16 @@ export default async function (context: HmrContext): Promise<void> {
 
 			// Get the current handler record from portal
 			const record = portal.getRecord(route.namespace, route.route, handler.key)
-			if (!record) continue
+
+			// Handler was removed - still need to re-register so Discord reflects the deletion
+			if (!record) {
+				if (context.changeType === 'remove') {
+					changedKeys.push(handler.key)
+					previousHashes.delete(cacheKey)
+					discordLogger.debug(`[HMR] Command removed: ${handler.key}`)
+				}
+				continue
+			}
 
 			// Ensure handler is imported
 			await portal.importHandler(route.namespace, route.route, handler.key)

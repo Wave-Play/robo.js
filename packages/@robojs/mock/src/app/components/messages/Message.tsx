@@ -109,6 +109,7 @@ export function Message({
 		? getAvatarUrl(resolvedReplyMessage.author.id, resolvedReplyMessage.author.avatar)
 		: null
 	const hasReply = Boolean(message_reference || resolvedReplyMessage)
+	const hasMessageRef = hasReply || Boolean(interactionMeta?.user)
 
 	// Render system message (member join)
 	if (isSystemMessage) {
@@ -210,7 +211,7 @@ export function Message({
 
 	return (
 		<div
-			className={`${styles.message} ${!isFirstInGroup ? styles.grouped : ''} ${isHighlighted ? styles.highlighted : ''} ${isEphemeral ? styles.ephemeral : ''}`}
+			className={`${styles.message} ${!isFirstInGroup ? styles.grouped : ''} ${isHighlighted ? styles.highlighted : ''} ${isEphemeral ? styles.ephemeral : ''} ${hasMessageRef ? styles.hasMessageRef : ''}`}
 			onContextMenu={onContextMenu ? (e) => onContextMenu(e, message) : undefined}
 		>
 			<div className={styles.hoverActions}>
@@ -247,29 +248,14 @@ export function Message({
 						/>
 					</div>
 					<div className={styles.content}>
-						{hasReply && (
-							<div className={styles.replyReference}>
-								{resolvedReplyMessage ? (
-									<>
-										{replyAvatarUrl && (
-											<img
-												src={replyAvatarUrl}
-												alt=""
-												className={styles.replyAvatar}
-												onError={(e) => {
-													const target = e.target as HTMLImageElement
-													target.src = getAvatarUrl(resolvedReplyMessage.author.id, null)
-												}}
-											/>
-										)}
-										<span className={styles.replyAuthor}>@{replyAuthorName}</span>
-										<span className={styles.replySnippet}>{replySnippet}</span>
-									</>
-								) : (
-									<span className={styles.replyText}>Replying to a message</span>
-								)}
-							</div>
-						)}
+						<MessageReference
+							hasReply={hasReply}
+							resolvedReplyMessage={resolvedReplyMessage}
+							replyAvatarUrl={replyAvatarUrl}
+							replyAuthorName={replyAuthorName}
+							replySnippet={replySnippet}
+							interactionMeta={interactionMeta}
+						/>
 						<div className={styles.header}>
 							<span
 								className={styles.author}
@@ -304,7 +290,6 @@ export function Message({
 							attachments={attachments}
 							components={components}
 							reactions={reactions}
-							interactionMeta={interactionMeta}
 							messageId={message.id}
 							channelId={message.channel_id}
 							isEphemeral={isEphemeral}
@@ -323,29 +308,14 @@ export function Message({
 						<span className={styles.hoverTimestamp}>{formatTimestamp(timestamp, 'short')}</span>
 					</div>
 					<div className={styles.content}>
-						{hasReply && (
-							<div className={styles.replyReference}>
-								{resolvedReplyMessage ? (
-									<>
-										{replyAvatarUrl && (
-											<img
-												src={replyAvatarUrl}
-												alt=""
-												className={styles.replyAvatar}
-												onError={(e) => {
-													const target = e.target as HTMLImageElement
-													target.src = getAvatarUrl(resolvedReplyMessage.author.id, null)
-												}}
-											/>
-										)}
-										<span className={styles.replyAuthor}>@{replyAuthorName}</span>
-										<span className={styles.replySnippet}>{replySnippet}</span>
-									</>
-								) : (
-									<span className={styles.replyText}>Replying to a message</span>
-								)}
-							</div>
-						)}
+						<MessageReference
+							hasReply={hasReply}
+							resolvedReplyMessage={resolvedReplyMessage}
+							replyAvatarUrl={replyAvatarUrl}
+							replyAuthorName={replyAuthorName}
+							replySnippet={replySnippet}
+							interactionMeta={interactionMeta}
+						/>
 						<MessageContent
 							content={content}
 							editedTimestamp={edited_timestamp}
@@ -353,7 +323,6 @@ export function Message({
 							attachments={attachments}
 							components={components}
 							reactions={reactions}
-							interactionMeta={interactionMeta}
 							messageId={message.id}
 							channelId={message.channel_id}
 							isEphemeral={isEphemeral}
@@ -371,6 +340,80 @@ export function Message({
 	)
 }
 
+interface MessageReferenceProps {
+	hasReply: boolean
+	resolvedReplyMessage?: StageMessage
+	replyAvatarUrl: string | null
+	replyAuthorName: string
+	replySnippet: string
+	interactionMeta?: {
+		user: StageUser
+		name?: string
+	}
+}
+
+function MessageReference({
+	hasReply,
+	resolvedReplyMessage,
+	replyAvatarUrl,
+	replyAuthorName,
+	replySnippet,
+	interactionMeta
+}: MessageReferenceProps) {
+	if (hasReply) {
+		return (
+			<div className={styles.messageReference}>
+				{resolvedReplyMessage ? (
+					<>
+						{replyAvatarUrl && (
+							<img
+								src={replyAvatarUrl}
+								alt=""
+								className={styles.replyAvatar}
+								onError={(e) => {
+									const target = e.target as HTMLImageElement
+									target.src = getAvatarUrl(resolvedReplyMessage.author.id, null)
+								}}
+							/>
+						)}
+						<span className={styles.replyAuthor}>@{replyAuthorName}</span>
+						<span className={styles.replySnippet}>{replySnippet}</span>
+					</>
+				) : (
+					<span className={styles.replyText}>Replying to a message</span>
+				)}
+			</div>
+		)
+	}
+
+	if (interactionMeta?.user) {
+		return (
+			<div className={styles.messageReference}>
+				<img
+					src={getAvatarUrl(interactionMeta.user.id, interactionMeta.user.avatar)}
+					alt=""
+					className={styles.replyAvatar}
+					onError={(e) => {
+						const target = e.target as HTMLImageElement
+						target.src = getAvatarUrl(interactionMeta.user.id, null)
+					}}
+				/>
+				<span className={styles.interactionText}>
+					<span className={styles.interactionUser}>{interactionMeta.user.username}</span> used{' '}
+					{interactionMeta.name ? (
+						<span className={styles.commandBadge}>
+							<CommandIcon />
+							<span>{interactionMeta.name}</span>
+						</span>
+					) : 'a command'}
+				</span>
+			</div>
+		)
+	}
+
+	return null
+}
+
 interface MessageContentProps {
 	content: string
 	editedTimestamp?: string | null
@@ -378,10 +421,6 @@ interface MessageContentProps {
 	attachments?: unknown[]
 	components?: unknown[]
 	reactions?: StageReaction[]
-	interactionMeta?: {
-		user?: StageUser
-		name?: string
-	}
 	messageId: string
 	channelId: string
 	isEphemeral?: boolean
@@ -400,7 +439,6 @@ function MessageContent({
 	attachments,
 	components,
 	reactions,
-	interactionMeta,
 	messageId,
 	channelId,
 	isEphemeral,
@@ -443,24 +481,6 @@ function MessageContent({
 
 	return (
 		<div className={styles.messageContent}>
-			{interactionMeta?.user && (
-				<div className={styles.interactionInfo}>
-					<span className={styles.interactionIcon}>
-						<img
-							src={getAvatarUrl(interactionMeta.user.id, interactionMeta.user.avatar)}
-							alt=""
-							className={styles.interactionAvatar}
-							onError={(event) => {
-								const target = event.target as HTMLImageElement
-								target.src = getAvatarUrl(interactionMeta.user.id, null)
-							}}
-						/>
-					</span>
-					<span className={styles.interactionText}>
-						{interactionMeta.user.username} used {interactionMeta.name ? `/${interactionMeta.name}` : 'a command'}
-					</span>
-				</div>
-			)}
 			{/* V2 replaces content and embeds - only render these in V1 mode */}
 			{!isV2 && content && (
 				<div className={styles.textContent}>
@@ -545,10 +565,13 @@ function getReplySnippet(message?: StageMessage): string {
 }
 
 // Icon components for message indicators
-function SlashIcon() {
+function CommandIcon() {
 	return (
-		<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-			<path d="M7 7h4l-2.5 5H4l3-5zm6.5 10h-4l2.5-5h4l-2.5 5z" />
+		<svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor" className={styles.commandIcon}>
+			<rect x="0.5" y="0.5" width="3.5" height="3.5" rx="0.8" transform="rotate(15 2.25 2.25)" />
+			<path d="M7.75,0.3 L9.6,3.5 Q9.8,3.9 9.4,3.9 L6.1,3.9 Q5.7,3.9 5.9,3.5 Z" />
+			<circle cx="2.25" cy="7.75" r="1.75" />
+			<rect x="6.25" y="6.25" width="3" height="3" rx="0.7" transform="rotate(45 7.75 7.75)" />
 		</svg>
 	)
 }

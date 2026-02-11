@@ -825,11 +825,16 @@ function groupMessages(messages: StageMessage[]): MessageGroup[] {
 			lastDateStr = currentDateStr
 		}
 
+		const hasReference =
+			Boolean(message.message_reference) ||
+			Boolean(message.interaction_metadata ?? message.interaction)
+
 		const isFirstInGroup =
 			!prevMessage ||
 			prevMessage.author.id !== message.author.id ||
 			messageDate.getTime() - new Date(prevMessage.timestamp).getTime() > 5 * 60 * 1000 ||
-			showDateDivider !== undefined // New date always starts a new group
+			showDateDivider !== undefined || // New date always starts a new group
+			hasReference // Always show avatar for replies and command usage
 
 		return {
 			message,

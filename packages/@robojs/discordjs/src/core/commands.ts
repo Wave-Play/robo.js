@@ -823,7 +823,19 @@ export function recordsToContext(
 	const result: Record<string, ContextEntry> = {}
 
 	for (const [key, record] of Object.entries(records)) {
-		if (record.metadata.contextType === contextType) {
+		// Check metadata first, then infer from handler path when metadata is missing
+		// (e.g., during HMR when route processor hasn't run for new entries)
+		let recordContextType = record.metadata.contextType
+		if (recordContextType === undefined) {
+			const path = (record as { path?: string }).path ?? ''
+			if (path.includes('/user/')) {
+				recordContextType = 2
+			} else if (path.includes('/message/')) {
+				recordContextType = 3
+			}
+		}
+
+		if (recordContextType === contextType) {
 			result[key] = record.metadata as ContextEntry
 		}
 	}

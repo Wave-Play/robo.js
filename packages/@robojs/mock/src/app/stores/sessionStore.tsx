@@ -175,6 +175,7 @@ type SessionAction =
 	| { type: 'CLEAR_FILTERED_EVENTS' }
 	| { type: 'SET_LOOP_WARNING'; payload: LoopWarning }
 	| { type: 'CLEAR_LOOP_WARNING' }
+	| { type: 'HANDLE_COMMANDS_UPDATED'; payload: { commands: StageApplicationCommand[] } }
 
 // Initial state
 const initialState: SessionState = {
@@ -698,6 +699,13 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 				loopWarning: null
 			}
 
+		case 'HANDLE_COMMANDS_UPDATED':
+			return {
+				...state,
+				commands: action.payload.commands,
+				eventCount: state.eventCount + 1
+			}
+
 		default:
 			return state
 	}
@@ -1057,6 +1065,12 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 							timestamp: loopData.timestamp
 						}
 					})
+					break
+				}
+
+				case 'commands_updated': {
+					const commandsData = event.data as { commands: StageApplicationCommand[] }
+					dispatch({ type: 'HANDLE_COMMANDS_UPDATED', payload: { commands: commandsData.commands } })
 					break
 				}
 

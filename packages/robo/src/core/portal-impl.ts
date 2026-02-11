@@ -657,8 +657,10 @@ class PortalImpl implements PortalAPI {
 			}
 
 			// Atomic swap: only update handler and metadata on success
+			// Merge with existing metadata to preserve build-time fields (e.g., contextType)
+			// that aren't part of the handler's config export
 			record.handler = newHandler
-			record.metadata = module.config ?? {}
+			record.metadata = { ...record.metadata, ...(module.config ?? {}) }
 		} catch (error) {
 			// Preserve old handler and metadata on failure
 			record.handler = oldHandler

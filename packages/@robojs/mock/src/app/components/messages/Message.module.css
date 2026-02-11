@@ -164,37 +164,65 @@
 	color: var(--text-bright);
 }
 
-.interactionInfo {
+.messageReference {
+	position: relative;
 	display: flex;
 	align-items: center;
 	gap: 6px;
+	margin-bottom: 4px;
 	font-size: 12px;
 	color: var(--text-muted);
-	margin-bottom: 4px;
+	line-height: 1.2;
 }
 
-.interactionIcon {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 18px;
-	height: 18px;
-	border-radius: 50%;
-	overflow: hidden;
-	background: transparent;
+.messageReference::before {
+	content: '';
+	position: absolute;
+	left: -37px;
+	top: 50%;
+	width: 32px;
+	height: 14px;
+	border-left: 2px solid var(--accent-overlay);
+	border-top: 2px solid var(--accent-overlay);
+	border-top-left-radius: 6px;
+	transition: border-color 0.15s ease;
 }
 
-.interactionAvatar {
-	width: 100%;
-	height: 100%;
-	border-radius: 50%;
-	object-fit: cover;
+.message:hover .messageReference::before {
+	border-color: var(--interactive-default);
+}
+
+.hasMessageRef .avatar {
+	margin-top: 26px;
 }
 
 .interactionText {
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
+}
+
+.commandBadge {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	padding: 0 4px;
+	border-radius: 3px;
+	background: rgba(88, 101, 242, 0.15);
+	color: rgb(138, 148, 255);
+	font-weight: 500;
+	cursor: pointer;
+	transition: background 0.15s ease, color 0.15s ease;
+	vertical-align: baseline;
+}
+
+.commandBadge:hover {
+	background: rgba(88, 101, 242, 0.8);
+	color: #fff;
+}
+
+.commandIcon {
+	flex-shrink: 0;
 }
 
 .textContent {
@@ -233,35 +261,6 @@
 	opacity: 0.7;
 }
 
-/* Reply reference indicator */
-.replyReference {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	margin-bottom: 4px;
-	font-size: 12px;
-	color: var(--text-muted);
-	min-width: 0;
-	position: relative;
-	padding-left: 20px;
-	line-height: 1.2;
-}
-
-.replyReference::before {
-	content: '';
-	position: absolute;
-	left: 2px;
-	top: 2px;
-	width: 12px;
-	height: 10px;
-	border-left: 2px solid var(--accent-overlay);
-	border-bottom: 2px solid var(--accent-overlay);
-	border-bottom-left-radius: 6px;
-	opacity: 0.9;
-	transform: rotate(90deg);
-	transform-origin: top left;
-}
-
 .replyAvatar {
 	width: 16px;
 	height: 16px;
@@ -280,6 +279,21 @@
 	color: var(--text-link);
 	font-weight: 500;
 	white-space: nowrap;
+	cursor: pointer;
+}
+
+.replyAuthor:hover {
+	text-decoration: underline;
+}
+
+.interactionUser {
+	color: var(--text-link);
+	font-weight: 500;
+	cursor: pointer;
+}
+
+.interactionUser:hover {
+	text-decoration: underline;
 }
 
 .replySnippet {
