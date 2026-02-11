@@ -29,3 +29,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 .gitattributes
+
+/public/stage/**
+
