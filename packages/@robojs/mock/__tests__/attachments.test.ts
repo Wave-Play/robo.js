@@ -1,5 +1,5 @@
 /**
- * Phase 4E: File Uploads & Attachments Tests
+ * File Uploads & Attachments Tests
  *
  * Tests the multipart parser, image dimension detection,
  * attachment storage, and CDN URL generation.
@@ -13,7 +13,7 @@ import { AttachmentLimits, AttachmentFlags } from '../src/types/index.js'
 import { generateSnowflake } from '../src/utils/snowflake.js'
 import { MemoryAttachmentStorage, createStorage } from '../src/storage/attachment-storage.js'
 
-describe('Phase 4E: File Uploads & Attachments', () => {
+describe('File Uploads & Attachments', () => {
 	describe('Multipart Parser Utility', () => {
 		it('should detect multipart requests', () => {
 			const multipartRequest = new Request('http://localhost/test', {
@@ -683,12 +683,12 @@ describe('Phase 4E: File Uploads & Attachments', () => {
 		})
 	})
 
-	describe('Phase 4E Requirements Verification', () => {
+	describe('Requirements Verification', () => {
 		let session: Session
 
 		beforeEach(() => {
 			session = new Session({
-				name: 'phase-4e-verification',
+				name: 'attachment-verification',
 				config: {
 					guilds: [{ name: 'Test Guild' }]
 				}

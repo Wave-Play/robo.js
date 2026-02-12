@@ -701,7 +701,7 @@ async function handleInteractionWebhook(request: RoboRequest, appId: string, tok
 		})
 	}
 
-	// 8b. Validate Components V2 if flag is set (Phase 4F)
+	// 8b. Validate Components V2 if flag is set
 	if (body.flags && body.flags & MessageFlags.IsComponentsV2) {
 		// V2 components cannot coexist with content or embeds
 		if (body.content || (body.embeds && body.embeds.length > 0)) {
@@ -739,9 +739,9 @@ async function handleInteractionWebhook(request: RoboRequest, appId: string, tok
 		authorId: session.state.botUser.id,
 		content: body.content ?? '',
 		embeds: body.embeds ?? [],
-		attachments, // Phase 4E: Include uploaded attachments
+		attachments, // Include uploaded attachments
 		tts: body.tts ?? false,
-		// Phase 4F: Components V2 support
+		// Components V2 support
 		flags: body.flags,
 		components: body.components
 	})

@@ -1,5 +1,5 @@
 /**
- * Phase 2H: Intent Handling & Filtering Tests
+ * Intent Handling & Filtering Tests
  * Tests the intent-based event filtering and MESSAGE_CONTENT stripping
  */
 import { GatewayIntentBits } from 'discord-api-types/v10'
@@ -14,7 +14,7 @@ import {
 	hasApprovedPrivilegedIntents
 } from '../src/core/intents.js'
 
-describe('Phase 2H: Intent Handling & Filtering', () => {
+describe('Intent Handling & Filtering', () => {
 	describe('EVENT_INTENTS mapping', () => {
 		it('should have null for events that require no intent', () => {
 			expect(EVENT_INTENTS['READY']).toBeNull()
@@ -270,7 +270,7 @@ describe('Phase 2H: Intent Handling & Filtering', () => {
 		})
 	})
 
-	describe('Phase 2H Requirements Verification', () => {
+	describe('Requirements Verification', () => {
 		it('Task 1: EVENT_INTENTS mapping covers all major event categories', () => {
 			// Verify presence of key events
 			expect(EVENT_INTENTS).toHaveProperty('GUILD_CREATE')

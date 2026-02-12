@@ -1,5 +1,5 @@
 /**
- * Phase 1D: READY Event Tests
+ * READY Event Tests
  * Tests the READY payload builder and type conversions
  */
 import { GatewayOpcodes } from 'discord-api-types/v10'
@@ -7,7 +7,7 @@ import { buildReadyPayload, mockUserToAPIUser, mockGuildToUnavailable } from '..
 import { createSessionState, createMockUser, createMockGuild } from '../src/session/state.js'
 import type { MockUser, SessionState } from '../src/types/index.js'
 
-describe('Phase 1D: READY Event', () => {
+describe('READY Event', () => {
 	describe('mockUserToAPIUser', () => {
 		it('should convert MockUser to APIUser format', () => {
 			const mockUser: MockUser = {
@@ -235,7 +235,7 @@ describe('Phase 1D: READY Event', () => {
 		})
 	})
 
-	describe('Phase 1D Requirements Verification', () => {
+	describe('Requirements Verification', () => {
 		it('Task 1: Snowflake generator utility exists', () => {
 			// Verified by createMockUser generating snowflake IDs
 			const user = createMockUser()

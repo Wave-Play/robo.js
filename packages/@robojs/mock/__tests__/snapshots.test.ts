@@ -1,6 +1,6 @@
 /**
  * Unit tests for SnapshotStore class
- * Phase 6: Backward Navigation Semantics
+ * Backward Navigation Semantics
  */
 
 import { SnapshotStore } from '../src/session/scenario/snapshots.js'

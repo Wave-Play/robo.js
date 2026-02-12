@@ -933,7 +933,7 @@ export function ToolsPanel() {
 					}
 				})
 			},
-			// Phase 5O: Edited message test
+			// Edited message test
 			{
 				type: 'message_create',
 				getData: (time) => ({
@@ -951,7 +951,7 @@ export function ToolsPanel() {
 					}
 				})
 			},
-			// Phase 5O: Ephemeral message test (only you can see this)
+			// Ephemeral message test (only you can see this)
 			{
 				type: 'message_create',
 				getData: (time) => ({
@@ -1271,9 +1271,9 @@ export function ToolsPanel() {
 				)}
 			</section>
 
-			{/* Phase 5O: Visual States Testing */}
+			{/* Visual States Testing */}
 			<section className={styles.section}>
-				<h3 className={styles.sectionTitle}>Message States (Phase 5O)</h3>
+				<h3 className={styles.sectionTitle}>Message States</h3>
 				<p className={styles.description}>
 					Test ephemeral messages, edited indicators, and loading states.
 				</p>
@@ -1334,9 +1334,9 @@ export function ToolsPanel() {
 				</div>
 			</section>
 
-			{/* Phase 5P: Voice States Testing */}
+			{/* Voice States Testing */}
 			<section className={styles.section}>
-				<h3 className={styles.sectionTitle}>Voice States (Phase 5P)</h3>
+				<h3 className={styles.sectionTitle}>Voice States</h3>
 				<p className={styles.description}>
 					Test voice channel member display and state indicators. Click &quot;Generate Test Data&quot; first to create voice channels.
 				</p>
@@ -1552,9 +1552,9 @@ export function ToolsPanel() {
 				</div>
 			</section>
 
-			{/* Phase 5Q: Components V2 Testing */}
+			{/* Components V2 Testing */}
 			<section className={styles.section}>
-				<h3 className={styles.sectionTitle}>Components V2 (Phase 5Q)</h3>
+				<h3 className={styles.sectionTitle}>Components V2</h3>
 				<p className={styles.description}>
 					Test Discord Components V2 message format with TextDisplay, Section, MediaGallery, Container, and more.
 				</p>
@@ -2050,7 +2050,7 @@ function SpeakingIcon() {
 	)
 }
 
-// Phase 5Q: Components V2 Icons
+// Components V2 Icons
 function ComponentsIcon() {
 	return (
 		<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">

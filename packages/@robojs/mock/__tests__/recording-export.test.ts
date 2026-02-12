@@ -1,6 +1,6 @@
 /**
  * Unit tests for Session Recording Export functionality
- * Phase 4A: Fixture Recording
+ * Fixture Recording
  */
 
 import { Session } from '../src/session/session.js'

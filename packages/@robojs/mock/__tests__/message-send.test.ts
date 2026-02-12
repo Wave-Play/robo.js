@@ -1,5 +1,5 @@
 /**
- * Phase 2D: Bot Message Capture Tests
+ * Bot Message Capture Tests
  * Tests the POST /channels/:id/messages REST endpoint
  * that captures messages sent by the bot via REST API.
  */
@@ -7,7 +7,7 @@ import { Session } from '../src/session/session.js'
 import { createSessionState, createDefaultGuildWithChannel } from '../src/session/state.js'
 import type { SessionState } from '../src/types/index.js'
 
-describe('Phase 2D: Bot Message Capture', () => {
+describe('Bot Message Capture', () => {
 	describe('POST /channels/:id/messages endpoint logic', () => {
 		let sessionState: SessionState
 
@@ -395,12 +395,12 @@ describe('Phase 2D: Bot Message Capture', () => {
 		})
 	})
 
-	describe('Phase 2D Requirements Verification', () => {
+	describe('Requirements Verification', () => {
 		let session: Session
 
 		beforeEach(() => {
 			session = new Session({
-				name: 'phase-2d-test',
+				name: 'message-send-test',
 				config: {
 					guilds: [{ name: 'Test Guild' }]
 				}

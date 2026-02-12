@@ -1,6 +1,6 @@
 /**
  * Unit tests for context menu interactions
- * Phase 3G: Context Menu Commands
+ * Context Menu Commands
  */
 
 import {
@@ -13,7 +13,7 @@ import {
 import { Session } from '../src/session/session.js'
 import type { MockInteraction } from '../src/types/index.js'
 
-describe('Context Menu Interactions (Phase 3G)', () => {
+describe('Context Menu Interactions', () => {
 	describe('buildContextMenuInteractionPayload', () => {
 		it('should build USER context menu payload with resolved user', () => {
 			const state = createSessionState()

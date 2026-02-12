@@ -1,5 +1,5 @@
 /**
- * Phase 4J: Webhooks Tests
+ * Webhooks Tests
  * Tests the webhook CRUD operations and execution:
  * - POST /channels/:id/webhooks (create)
  * - GET /channels/:id/webhooks (list)
@@ -58,7 +58,7 @@ async function normalizeResponse(
 	return { status: 200, body: result }
 }
 
-describe('Phase 4J: Webhooks', () => {
+describe('Webhooks', () => {
 	let session: Session
 	let token: string
 	let guildId: string

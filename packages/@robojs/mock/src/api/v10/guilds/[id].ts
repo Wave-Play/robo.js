@@ -110,7 +110,7 @@ export default async (request: RoboRequest) => {
 		if (body.mfa_level !== undefined) {
 			guild.mfaLevel = Number(body.mfa_level)
 		}
-		// Handle image fields - generate hashes from data URLs (Phase 7)
+		// Handle image fields - generate hashes from data URLs
 		if (body.icon !== undefined) {
 			guild.icon = generateImageHash(body.icon as string | null)
 		}
@@ -123,21 +123,21 @@ export default async (request: RoboRequest) => {
 		if (body.discovery_splash !== undefined) {
 			guild.discoverySplash = generateImageHash(body.discovery_splash as string | null)
 		}
-		// Handle premium tier and features (Phase 7)
+		// Handle premium tier and features
 		if (body.premium_tier !== undefined) {
 			guild.premiumTier = Number(body.premium_tier)
 		}
 		if (body.features !== undefined) {
 			guild.features = body.features as string[]
 		}
-		// Phase 11: Premium progress bar and preferred locale
+		// Premium progress bar and preferred locale
 		if (body.premium_progress_bar_enabled !== undefined) {
 			guild.premiumProgressBarEnabled = Boolean(body.premium_progress_bar_enabled)
 		}
 		if (body.preferred_locale !== undefined) {
 			guild.preferredLocale = String(body.preferred_locale)
 		}
-		// Phase 30: Guild ownership transfer
+		// Guild ownership transfer
 		if (body.owner_id !== undefined) {
 			guild.ownerId = String(body.owner_id)
 		}

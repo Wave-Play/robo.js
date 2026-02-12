@@ -1,6 +1,6 @@
 /**
- * Phase 3A, 3C, 3D & 3E: INTERACTION_CREATE Event Tests
- * Tests the INTERACTION_CREATE payload builder for slash commands (3A), button clicks (3C), select menus (3D), and modals (3E)
+ * INTERACTION_CREATE Event Tests
+ * Tests the INTERACTION_CREATE payload builder for slash commands, button clicks, select menus, and modals
  */
 import { GatewayOpcodes, InteractionType, ApplicationCommandType, ComponentType } from 'discord-api-types/v10'
 import { buildInteractionCreatePayload, buildButtonInteractionPayload, buildSelectMenuInteractionPayload, buildModalSubmitInteractionPayload } from '../src/discord/payloads.js'
@@ -15,7 +15,7 @@ import { generateSnowflake } from '../src/utils/snowflake.js'
 import { generateInteractionToken } from '../src/utils/id.js'
 import type { MockInteraction, SessionState } from '../src/types/index.js'
 
-describe('Phase 3A: INTERACTION_CREATE Event', () => {
+describe('INTERACTION_CREATE Event', () => {
 	describe('buildInteractionCreatePayload', () => {
 		let sessionState: SessionState
 
@@ -635,7 +635,7 @@ describe('Phase 3A: INTERACTION_CREATE Event', () => {
 		})
 	})
 
-	describe('Phase 3A Requirements Verification', () => {
+	describe('Requirements Verification', () => {
 		let sessionState: SessionState
 
 		beforeEach(() => {
@@ -792,7 +792,7 @@ describe('Phase 3A: INTERACTION_CREATE Event', () => {
 	})
 })
 
-describe('Phase 3C: Button Interactions', () => {
+describe('Button Interactions', () => {
 	describe('buildButtonInteractionPayload', () => {
 		let sessionState: SessionState
 
@@ -1395,7 +1395,7 @@ describe('Phase 3C: Button Interactions', () => {
 		})
 	})
 
-	describe('Phase 3C Requirements Verification', () => {
+	describe('Requirements Verification', () => {
 		let sessionState: SessionState
 
 		beforeEach(() => {
@@ -1574,10 +1574,10 @@ describe('Phase 3C: Button Interactions', () => {
 })
 
 // ============================================================================
-// Phase 3D: INTERACTION_CREATE - Select Menu
+// INTERACTION_CREATE - Select Menu
 // ============================================================================
 
-describe('Phase 3D: Select Menu Interactions', () => {
+describe('Select Menu Interactions', () => {
 	describe('buildSelectMenuInteractionPayload', () => {
 		let sessionState: SessionState
 
@@ -2312,7 +2312,7 @@ describe('Phase 3D: Select Menu Interactions', () => {
 		})
 	})
 
-	describe('Phase 3D Requirements Verification', () => {
+	describe('Requirements Verification', () => {
 		let sessionState: SessionState
 
 		beforeEach(() => {
@@ -2511,10 +2511,10 @@ describe('Phase 3D: Select Menu Interactions', () => {
 })
 
 // ============================================================================
-// Phase 3E: INTERACTION_CREATE - Modal Submit
+// INTERACTION_CREATE - Modal Submit
 // ============================================================================
 
-describe('Phase 3E: Modal Submit Interactions', () => {
+describe('Modal Submit Interactions', () => {
 	describe('buildModalSubmitInteractionPayload', () => {
 		let sessionState: SessionState
 
@@ -2979,7 +2979,7 @@ describe('Phase 3E: Modal Submit Interactions', () => {
 		})
 	})
 
-	describe('Phase 3E Requirements Verification', () => {
+	describe('Requirements Verification', () => {
 		let sessionState: SessionState
 
 		beforeEach(() => {

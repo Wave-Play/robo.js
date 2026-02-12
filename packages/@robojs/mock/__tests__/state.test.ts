@@ -1,6 +1,6 @@
 /**
  * Unit tests for MockServerState class and state management functions
- * Phase 2A: State Management Foundation
+ * State Management Foundation
  */
 
 import {

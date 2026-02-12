@@ -523,7 +523,7 @@ export class StageServer {
 	}
 
 	/**
-	 * Get all guild roles as StageRole array (Phase 5H)
+	 * Get all guild roles as StageRole array
 	 */
 	private getStageRoles(state: Session['state']): StageRole[] {
 		const roles: StageRole[] = []
@@ -542,7 +542,7 @@ export class StageServer {
 	}
 
 	/**
-	 * Get all voice states as StageVoiceState array (Phase 5P)
+	 * Get all voice states as StageVoiceState array
 	 */
 	private getStageVoiceStates(state: Session['state']): StageVoiceState[] {
 		const voiceStates: StageVoiceState[] = []

@@ -1,5 +1,5 @@
 /**
- * Permission enforcement helper for REST API endpoints (Phase 4L-Extended)
+ * Permission enforcement helper for REST API endpoints
  *
  * Provides a simple utility function that endpoints can call to enforce permissions
  * based on the session's configured enforcement level.

@@ -1,5 +1,5 @@
 /**
- * Phase 4L: Roles & Permissions Tests
+ * Roles & Permissions Tests
  * Tests for Discord role management and state operations
  */
 import { createSessionState, createDefaultGuildWithChannel, MockServerState, createMockRole } from '../src/session/state.js'
@@ -7,7 +7,7 @@ import { mockRoleToAPIRole, buildGuildRoleCreatePayload, buildGuildRoleUpdatePay
 import type { MockRoleConfig } from '../src/types/index.js'
 import { RoleLimits } from '../src/types/index.js'
 
-describe('Phase 4L: Roles', () => {
+describe('Roles', () => {
 	describe('Role creation', () => {
 		let sessionState: MockServerState
 

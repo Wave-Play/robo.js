@@ -1,5 +1,5 @@
 /**
- * Phase 4M: Application Command Registration Tests
+ * Application Command Registration Tests
  * Tests for Discord application command management and state operations
  */
 import { createSessionState, createDefaultGuildWithChannel, MockServerState } from '../src/session/state.js'
@@ -7,7 +7,7 @@ import { mockCommandToAPICommand } from '../src/discord/payloads.js'
 import type { MockApplicationCommandConfig } from '../src/types/index.js'
 import { ApplicationCommandType, ApplicationCommandOptionType, CommandLimits } from '../src/types/index.js'
 
-describe('Phase 4M: Application Commands', () => {
+describe('Application Commands', () => {
 	describe('Command creation', () => {
 		let sessionState: MockServerState
 

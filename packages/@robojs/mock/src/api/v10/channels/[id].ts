@@ -56,7 +56,7 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 4b. Check permissions (Phase 4L-Extended)
+	// 4b. Check permissions
 	const permError = enforcePermissions(
 		session,
 		request.method,

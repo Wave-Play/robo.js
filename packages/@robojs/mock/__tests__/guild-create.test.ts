@@ -1,5 +1,5 @@
 /**
- * Phase 1E: GUILD_CREATE Event Tests
+ * GUILD_CREATE Event Tests
  * Tests the GUILD_CREATE payload builder and guild/channel management helpers
  */
 import { GatewayOpcodes, ChannelType } from 'discord-api-types/v10'
@@ -18,7 +18,7 @@ import {
 } from '../src/session/state.js'
 import type { MockChannel, SessionState } from '../src/types/index.js'
 
-describe('Phase 1E: GUILD_CREATE Event', () => {
+describe('GUILD_CREATE Event', () => {
 	describe('mockChannelToAPIChannel', () => {
 		it('should convert MockChannel to APIChannel format', () => {
 			const mockChannel: MockChannel = {
@@ -403,7 +403,7 @@ describe('Phase 1E: GUILD_CREATE Event', () => {
 		})
 	})
 
-	describe('Phase 1E Requirements Verification', () => {
+	describe('Requirements Verification', () => {
 		let sessionState: SessionState
 
 		beforeEach(() => {

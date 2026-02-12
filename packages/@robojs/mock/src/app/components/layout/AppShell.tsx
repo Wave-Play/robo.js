@@ -80,7 +80,7 @@ export function AppShell() {
 	const displayChannels = isPlaybackMode && playbackChannels !== null ? playbackChannels : guildChannels
 	const displayMembers = isPlaybackMode && playbackMembers !== null ? playbackMembers : guildMembers
 
-	// Combine users with botUser for voice channel display (Phase 5P)
+	// Combine users with botUser for voice channel display
 	const allUsers = useMemo(() => {
 		if (!botUser) return users
 		const botInUsers = users.some((u) => u.id === botUser.id)

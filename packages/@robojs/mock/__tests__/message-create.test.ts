@@ -1,5 +1,5 @@
 /**
- * Phase 2C: MESSAGE_CREATE Event Tests
+ * MESSAGE_CREATE Event Tests
  * Tests the MESSAGE_CREATE payload builder and message dispatch functionality
  */
 import { GatewayOpcodes, MessageType } from 'discord-api-types/v10'
@@ -18,7 +18,7 @@ import {
 import { Session } from '../src/session/session.js'
 import type { MockMessage, MockUser, SessionState } from '../src/types/index.js'
 
-describe('Phase 2C: MESSAGE_CREATE Event', () => {
+describe('MESSAGE_CREATE Event', () => {
 	describe('mockUserToAPIUser', () => {
 		it('should convert MockUser to APIUser format', () => {
 			const mockUser: MockUser = {
@@ -550,7 +550,7 @@ describe('Phase 2C: MESSAGE_CREATE Event', () => {
 		})
 	})
 
-	describe('Phase 2C Requirements Verification', () => {
+	describe('Requirements Verification', () => {
 		let sessionState: SessionState
 
 		beforeEach(() => {
@@ -650,10 +650,10 @@ describe('Phase 2C: MESSAGE_CREATE Event', () => {
 	})
 
 	// ============================================================================
-	// Phase 3I: APIMessage Completeness Tests
+	// APIMessage Completeness Tests
 	// ============================================================================
 
-	describe('Phase 3I: APIMessage Completeness', () => {
+	describe('APIMessage Completeness', () => {
 		describe('interaction_metadata field', () => {
 			it('should include interaction_metadata for messages from interactions', () => {
 				const author = createMockUser({ username: 'Author' })

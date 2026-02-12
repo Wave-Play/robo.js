@@ -260,7 +260,7 @@ interface TieredStorageConfig {
 
 ## Migration Strategy
 
-### Phase 1: Abstract Storage Interface
+### Step 1: Abstract Storage Interface
 
 Create a pluggable storage interface that the current in-memory implementation satisfies:
 
@@ -280,7 +280,7 @@ class MemoryAttachmentStorage implements AttachmentStorage {
 }
 ```
 
-### Phase 2: Add Configuration
+### Step 2: Add Configuration
 
 Allow storage backend selection via configuration:
 
@@ -293,7 +293,7 @@ interface MockServerConfig {
 }
 ```
 
-### Phase 3: Implement Additional Backends
+### Step 3: Implement Additional Backends
 
 Add storage implementations as needed, starting with the most impactful for your use case.
 
@@ -339,4 +339,4 @@ Worst case per session = 250MB
 3. **Medium-term**: Add S3 storage for production scalability
 4. **Long-term**: Consider tiered storage for cost optimization
 
-The abstraction layer (Phase 1) has been implemented. The `AttachmentStorage` interface and `MemoryAttachmentStorage` class are available, and `createStorage()` is ready for new backends.
+The abstraction layer (Step 1) has been implemented. The `AttachmentStorage` interface and `MemoryAttachmentStorage` class are available, and `createStorage()` is ready for new backends.

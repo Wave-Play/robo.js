@@ -67,7 +67,7 @@ export class ScenarioRunner {
 	private navigationIndex = 0
 	/** Last step result for step() return value */
 	private lastStepResult: ScenarioStepResult | null = null
-	/** Snapshot store for backward navigation (Phase 6) */
+	/** Snapshot store for backward navigation */
 	private snapshotStore: SnapshotStore
 
 	constructor(session: Session, manager: IScenarioManager, snapshotConfig?: SnapshotStoreConfig) {
@@ -451,7 +451,7 @@ export class ScenarioRunner {
 		// Add result to manager
 		this.manager.addStepResult(stepResult)
 
-		// Capture snapshot at step boundary (Phase 6: Backward Navigation)
+		// Capture snapshot at step boundary
 		const lastActionId = recordedActionIds.length > 0 ? recordedActionIds[recordedActionIds.length - 1] : ''
 		const playback = await this.getStagePlaybackBoundarySnapshot()
 		this.snapshotStore.capture(stepIndex, stepResult, lastActionId, playback)
@@ -529,7 +529,7 @@ export class ScenarioRunner {
 				return undefined
 			}
 
-			// Request state from Stage UI (Phase 8 control command protocol).
+			// Request state from Stage UI.
 			const response = await stageServer.sendControlCommand(this.session.id, 'state_request', {}, 1000)
 			if (!response.success) {
 				return undefined
@@ -747,7 +747,7 @@ export class ScenarioRunner {
 
 	/**
 	 * Emit a navigation event when seek is called.
-	 * Includes snapshot data for the navigated step (Phase 6).
+	 * Includes snapshot data for the navigated step.
 	 */
 	private emitNavigationEvent(): void {
 		const state = this.manager.getRunState()
@@ -758,7 +758,7 @@ export class ScenarioRunner {
 			guildId: null,
 			channelId: null,
 			timestamp: Date.now(),
-			// Scenario navigation fields (Phase 6)
+			// Scenario navigation fields
 			runId: state.runId,
 			scenarioId: state.scenarioId,
 			navigationIndex: this.navigationIndex,

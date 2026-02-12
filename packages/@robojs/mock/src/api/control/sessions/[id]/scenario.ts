@@ -50,7 +50,7 @@ export default async (request: RoboRequest) => {
 	if (request.method === 'DELETE') {
 		session.scenarioManager.clear()
 
-		// Emit scenario idle event (Phase 7) so external clients can react immediately.
+		// Emit scenario idle event so external clients can react immediately.
 		const idleState = session.scenarioManager.getRunState()
 		const idleEventData = {
 			runId: idleState.runId,
@@ -104,7 +104,7 @@ export default async (request: RoboRequest) => {
 			applyMockConfig(session, scenario.mockConfig)
 		}
 
-		// Emit scenario loaded event (Phase 7) so clients can react without polling.
+		// Emit scenario loaded event so clients can react without polling.
 		const loadedState = session.scenarioManager.getRunState()
 		const loadedEventData = {
 			runId: loadedState.runId,
@@ -171,5 +171,5 @@ function applyMockConfig(
 
 	// Time configuration (fixedTime, timeScale) would require hooking into
 	// Date.now() which is deferred for now. The mockConfig is stored in the
-	// scenario definition and can be accessed by the runner in Phase 5.
+	// scenario definition and can be accessed by the runner.
 }

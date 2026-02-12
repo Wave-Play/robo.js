@@ -1,5 +1,5 @@
 /**
- * Phase 2F: Message Edit & Delete Tests
+ * Message Edit & Delete Tests
  * Tests the MESSAGE_UPDATE and MESSAGE_DELETE payload builders and state operations
  */
 import { GatewayOpcodes } from 'discord-api-types/v10'
@@ -13,7 +13,7 @@ import {
 import { Session } from '../src/session/session.js'
 import type { SessionState } from '../src/types/index.js'
 
-describe('Phase 2F: Message Edit & Delete', () => {
+describe('Message Edit & Delete', () => {
 	describe('buildMessageUpdatePayload', () => {
 		let sessionState: SessionState
 
@@ -466,7 +466,7 @@ describe('Phase 2F: Message Edit & Delete', () => {
 		})
 	})
 
-	describe('Phase 2F Requirements Verification', () => {
+	describe('Requirements Verification', () => {
 		let sessionState: SessionState
 
 		beforeEach(() => {

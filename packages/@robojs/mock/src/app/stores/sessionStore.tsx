@@ -40,7 +40,7 @@ export interface PendingInteraction {
 	createdAt: number
 }
 
-// Pending message for "sending" / "failed" states (Phase 5O)
+// Pending message for "sending" / "failed" states
 export interface PendingMessage {
 	id: string
 	content: string
@@ -85,11 +85,11 @@ export interface SessionState {
 	guilds: StageGuild[]
 	channels: StageChannel[]
 	members: StageMember[]
-	roles: StageRole[] // Phase 5H: Guild roles
-	voiceStates: StageVoiceState[] // Phase 5P: Voice channel states
+	roles: StageRole[] // Guild roles
+	voiceStates: StageVoiceState[] // Voice channel states
 	users: StageUser[]
 	messages: Record<string, StageMessage[]>
-	commands: StageApplicationCommand[] // Phase 5G: Available slash commands
+	commands: StageApplicationCommand[] // Available slash commands
 	botUser: StageUser | null
 	currentUser: StageUser | null
 
@@ -102,19 +102,19 @@ export interface SessionState {
 		mode: 'closed' | 'split' | 'full'
 	}
 
-	// Typing indicators (Phase 5H)
+	// Typing indicators
 	typingUsers: Record<string, { userId: string; username: string; expiresAt: number }[]>
 
-	// Modal state (Phase 5M)
+	// Modal state
 	activeModal: { modal: ModalData; sourceInteractionId: string } | null
 
-	// Pending interactions for "Bot is thinking..." (Phase 5O)
+	// Pending interactions for "Bot is thinking..."
 	pendingInteractions: PendingInteraction[]
 
-	// Pending messages being sent (Phase 5O)
+	// Pending messages being sent
 	pendingMessages: PendingMessage[]
 
-	// Reply state (Phase 5N enhancement)
+	// Reply state
 	replyingTo: StageMessage | null
 
 	// Intent diagnostics - events filtered due to missing intents
@@ -808,7 +808,7 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 				lastServerSeqRef.current = event.seq
 			}
 
-			// Record event for playback (Phase 5J)
+			// Record event for playback
 			const recordedEvent: RecordedEvent = {
 				id: `evt_${Date.now()}_${Math.random().toString(36).slice(2)}`,
 				seq: event.seq ?? eventSeqRef.current++,
@@ -990,7 +990,7 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 				}
 
 				case 'interaction_edit': {
-					// Phase 5O: Bot edited an interaction message (e.g., editReply after deferReply)
+					// Bot edited an interaction message (e.g., editReply after deferReply)
 					// This clears the "Bot is thinking..." indicator
 					const editData = event.data as { interactionId: string }
 					dispatch({
@@ -1075,7 +1075,7 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 				}
 
 				case 'control_command':
-					// Phase 8: Dispatch control command to window for useControlCommandHandler to process
+					// Dispatch control command to window for useControlCommandHandler to process
 					window.dispatchEvent(new CustomEvent('stage:control_command', { detail: event.data as StageControlCommand }))
 					break
 
@@ -1331,7 +1331,7 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 		}
 	}, [state.sessionId, isConnected, isConnecting, connect, isSessionInvalid, hasGivenUp])
 
-	// Phase 8: Handle incoming control commands from the server
+	// Handle incoming control commands from the server
 	useControlCommandHandler({ sendCommand, enabled: isConnected })
 
 	const value: WebSocketContextValue = {

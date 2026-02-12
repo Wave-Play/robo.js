@@ -67,13 +67,13 @@ export interface IScenarioManager {
 
 	/**
 	 * Update the run status.
-	 * Used by the scenario runner (Phase 5) to update execution state.
+	 * Used by the scenario runner to update execution state.
 	 */
 	setStatus(status: ScenarioRunStatus): void
 
 	/**
 	 * Add a step result to the run state.
-	 * Used by the scenario runner (Phase 5) to record step outcomes.
+	 * Used by the scenario runner to record step outcomes.
 	 */
 	addStepResult(result: ScenarioStepResult): void
 
@@ -171,7 +171,7 @@ export class ScenarioManager implements IScenarioManager {
 		// Collect warnings for unsupported features
 		const warnings: string[] = []
 
-		// Check for Flashcore data (explicitly deferred per spec)
+		// Check for Flashcore data (not yet supported)
 		if (scenario.mockConfig?.flashcoreData && Object.keys(scenario.mockConfig.flashcoreData).length > 0) {
 			warnings.push('Flashcore seeding is not supported yet; flashcoreData will be stored but not applied')
 		}
@@ -223,7 +223,7 @@ export class ScenarioManager implements IScenarioManager {
 				if (state.status === 'running' || state.status === 'paused' || state.status === 'failed') {
 					this._runner.stop()
 				}
-				// Clear snapshots (Phase 6)
+				// Clear snapshots
 				this._runner.clearSnapshots()
 			} catch {
 				// Ignore errors during cleanup

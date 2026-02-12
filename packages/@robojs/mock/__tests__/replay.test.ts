@@ -1,6 +1,6 @@
 /**
  * Unit tests for Session Replay functionality
- * Phase 4B: Fixture Replay
+ * Fixture Replay
  */
 
 import { Session } from '../src/session/session.js'

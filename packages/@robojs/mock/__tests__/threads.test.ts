@@ -1,5 +1,5 @@
 /**
- * Phase 4D: Thread Support Tests
+ * Thread Support Tests
  * Tests thread creation, management, membership, and gateway events
  */
 import { APIThreadChannel, ChannelType, GatewayOpcodes } from 'discord-api-types/v10'
@@ -27,7 +27,7 @@ import type {
 	SessionState
 } from '../src/types/index.js'
 
-describe('Phase 4D: Thread Support', () => {
+describe('Thread Support', () => {
 	describe('createMockThread', () => {
 		it('should create a public thread with default values', () => {
 			const thread = createMockThread({

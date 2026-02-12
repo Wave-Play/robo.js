@@ -1,6 +1,6 @@
 /**
  * Unit tests for ActionRecorder class
- * Phase 2B: Action Recorder
+ * Action Recorder
  */
 
 import { ActionRecorder } from '../src/session/recorder.js'

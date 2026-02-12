@@ -1,5 +1,5 @@
 /**
- * Stage Playback Control Endpoint (Phase 8)
+ * Stage Playback Control Endpoint
  *
  * POST /api/control/sessions/:id/stage/playback
  *
@@ -131,7 +131,7 @@ export default async function handler(request: RoboRequest): Promise<Response> {
 			return badRequest(response.error || 'Playback control failed')
 		}
 
-		// Broadcast playback change for external subscribers (Phase 7).
+		// Broadcast playback change for external subscribers.
 		try {
 			getControlEventsHub().broadcast(id, 'stage.playback.changed', response.result as StagePlaybackChangedData)
 		} catch {

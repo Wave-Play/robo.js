@@ -19,7 +19,7 @@ import { validateMethod, notFound } from '../../../utils.js'
  *
  * Returns the history of permission denied events for debugging and UI display.
  *
- * @see Phase 3: Permissions Admin UI
+ * @see Permissions Admin UI
  */
 export default async (request: RoboRequest) => {
 	validateMethod(request, ['GET', 'DELETE'])

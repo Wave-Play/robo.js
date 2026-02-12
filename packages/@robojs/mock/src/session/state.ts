@@ -28,23 +28,23 @@ import type {
 	MockPollConfig,
 	MockPollAnswer,
 	MockPollResults,
-	// Phase 4H: Forum & Media Channels
+	// Forum & Media Channels
 	MockForumChannel,
 	MockForumChannelConfig,
 	MockForumTag,
 	MockForumThread,
 	MockForumPostConfig,
-	// Phase 4I: Stickers
+	// Stickers
 	MockSticker,
 	MockStickerConfig,
-	// Phase 4J: Webhooks
+	// Webhooks
 	MockWebhook,
 	MockWebhookConfig,
 	SerializedMockWebhook,
-	// Phase 4K: Emojis
+	// Emojis
 	MockEmoji,
 	MockEmojiConfig,
-	// Phase 4L: Roles & Permissions
+	// Roles & Permissions
 	MockRole,
 	MockRoleConfig,
 	MockGuildMember,
@@ -52,33 +52,33 @@ import type {
 	MockChannelOverwrite,
 	SerializedMockRole,
 	SerializedMockGuildMember,
-	// Phase 4L-B: Bans
+	// Bans
 	MockBan,
 	MockBanConfig,
-	// Phase 4M: Application Commands
+	// Application Commands
 	MockApplicationCommand,
 	MockApplicationCommandConfig,
-	// Phase 5A: Invites
+	// Invites
 	MockInvite,
 	MockInviteConfig,
-	// Phase 5B: Scheduled Events
+	// Scheduled Events
 	MockScheduledEvent,
 	MockScheduledEventConfig,
 	MockScheduledEventUpdateConfig,
-	// Phase 5C: Auto-Moderation
+	// Auto-Moderation
 	MockAutoModRule,
 	MockAutoModRuleConfig,
 	MockAutoModRuleUpdateConfig,
-	// Phase 7: Voice States
+	// Voice States
 	MockVoiceState,
-	// Phase 5I: Reactions
+	// Reactions
 	MockReaction,
-	// Phase 11: Stage Instances
+	// Stage Instances
 	MockStageInstance,
 	MockStageInstanceConfig,
-	// Phase 11: Command Permissions
+	// Command Permissions
 	MockCommandPermission,
-	// Phase 14: Audit Logs
+	// Audit Logs
 	MockAuditLogEntry,
 	MockAuditLogEntryConfig
 } from '../types/index.js'
@@ -115,22 +115,22 @@ export class MockServerState implements SessionState {
 	readonly messages: Map<Snowflake, MockMessage>
 	readonly interactions: Map<Snowflake, MockInteraction>
 	readonly threadMembers: Map<Snowflake, Map<Snowflake, MockThreadMember>> // threadId -> userId -> member
-	readonly pollVotes: Map<Snowflake, Map<Snowflake, number[]>> // Phase 4G: messageId -> userId -> answerIds[]
-	readonly stickers: Map<Snowflake, MockSticker> // Phase 4I: stickerId -> sticker
-	readonly webhooks: Map<Snowflake, MockWebhook> // Phase 4J: webhookId -> webhook
-	readonly emojis: Map<Snowflake, MockEmoji> // Phase 4K: emojiId -> emoji
-	readonly applicationEmojis: Map<Snowflake, MockEmoji> // Phase 20: Application-level emojis
-	readonly roles: Map<Snowflake, MockRole> // Phase 4L: roleId -> role
-	readonly guildMembers: Map<string, MockGuildMember> // Phase 4L: `${guildId}:${userId}` -> member
-	readonly bans: Map<string, MockBan> // Phase 4L-B: `${guildId}:${userId}` -> ban
-	readonly commands: Map<Snowflake, MockApplicationCommand> // Phase 4M: commandId -> command
-	readonly invites: Map<string, MockInvite> // Phase 5A: code -> invite
-	readonly scheduledEvents: Map<string, MockScheduledEvent> // Phase 5B: `${guildId}:${eventId}` -> event
-	readonly autoModRules: Map<string, MockAutoModRule> // Phase 5C: `${guildId}:${ruleId}` -> rule
-	readonly stageInstances: Map<Snowflake, MockStageInstance> // Phase 11: channelId -> stage instance
-	readonly commandPermissions: Map<string, MockCommandPermission[]> // Phase 11: `${guildId}:${commandId}` -> permissions
-	readonly voiceStates: Map<string, MockVoiceState> // Phase 7: `${guildId}:${userId}` -> voice state
-	readonly auditLogs: Map<string, MockAuditLogEntry[]> // Phase 14: guildId -> audit log entries
+	readonly pollVotes: Map<Snowflake, Map<Snowflake, number[]>> // messageId -> userId -> answerIds[]
+	readonly stickers: Map<Snowflake, MockSticker> // stickerId -> sticker
+	readonly webhooks: Map<Snowflake, MockWebhook> // webhookId -> webhook
+	readonly emojis: Map<Snowflake, MockEmoji> // emojiId -> emoji
+	readonly applicationEmojis: Map<Snowflake, MockEmoji> // Application-level emojis
+	readonly roles: Map<Snowflake, MockRole> // roleId -> role
+	readonly guildMembers: Map<string, MockGuildMember> // `${guildId}:${userId}` -> member
+	readonly bans: Map<string, MockBan> // `${guildId}:${userId}` -> ban
+	readonly commands: Map<Snowflake, MockApplicationCommand> // commandId -> command
+	readonly invites: Map<string, MockInvite> // code -> invite
+	readonly scheduledEvents: Map<string, MockScheduledEvent> // `${guildId}:${eventId}` -> event
+	readonly autoModRules: Map<string, MockAutoModRule> // `${guildId}:${ruleId}` -> rule
+	readonly stageInstances: Map<Snowflake, MockStageInstance> // channelId -> stage instance
+	readonly commandPermissions: Map<string, MockCommandPermission[]> // `${guildId}:${commandId}` -> permissions
+	readonly voiceStates: Map<string, MockVoiceState> // `${guildId}:${userId}` -> voice state
+	readonly auditLogs: Map<string, MockAuditLogEntry[]> // guildId -> audit log entries
 	readonly botUser: MockUser
 	readonly applicationId: Snowflake
 
@@ -145,7 +145,7 @@ export class MockServerState implements SessionState {
 	private readonly maxMessages: number
 	private readonly maxInteractions: number
 	private readonly interactionsByToken: Map<string, Snowflake>
-	private readonly webhooksByToken: Map<string, Snowflake> // Phase 4J: token -> webhookId
+	private readonly webhooksByToken: Map<string, Snowflake> // token -> webhookId
 
 	/**
 	 * Current "acting" user for Stage UI interactions.
@@ -551,7 +551,7 @@ export class MockServerState implements SessionState {
 
 		const message = createMockMessage(config)
 
-		// Phase 4I: Resolve sticker_ids to sticker_items
+		// Resolve sticker_ids to sticker_items
 		if (config.sticker_ids?.length) {
 			message.sticker_items = config.sticker_ids
 				.map((id) => this.stickers.get(id))
@@ -605,7 +605,7 @@ export class MockServerState implements SessionState {
 	}
 
 	// ============================================================================
-	// Reaction Operations (Phase 5I)
+	// Reaction Operations
 	// ============================================================================
 
 	/**
@@ -702,7 +702,7 @@ export class MockServerState implements SessionState {
 	}
 
 	// ============================================================================
-	// Attachment Operations (Phase 4E)
+	// Attachment Operations
 	// Uses AttachmentStorage interface for pluggable backends
 	// ============================================================================
 
@@ -778,7 +778,7 @@ export class MockServerState implements SessionState {
 	}
 
 	// ============================================================================
-	// Interaction Operations (Phase 3A)
+	// Interaction Operations
 	// ============================================================================
 
 	/**
@@ -844,7 +844,7 @@ export class MockServerState implements SessionState {
 	}
 
 	// ============================================================================
-	// Thread Operations (Phase 4D)
+	// Thread Operations
 	// ============================================================================
 
 	/**
@@ -1147,7 +1147,7 @@ export class MockServerState implements SessionState {
 	}
 
 	// ============================================================================
-	// Forum & Media Channel Operations (Phase 4H)
+	// Forum & Media Channel Operations
 	// ============================================================================
 
 	/**
@@ -1453,7 +1453,7 @@ export class MockServerState implements SessionState {
 	}
 
 	// ============================================================================
-	// Poll Operations (Phase 4G)
+	// Poll Operations
 	// ============================================================================
 
 	/**
@@ -1650,7 +1650,7 @@ export class MockServerState implements SessionState {
 	}
 
 	// ============================================================================
-	// Sticker Operations (Phase 4I)
+	// Sticker Operations
 	// ============================================================================
 
 	/**
@@ -1801,7 +1801,7 @@ export class MockServerState implements SessionState {
 	}
 
 	// ============================================================================
-	// Webhook Operations (Phase 4J)
+	// Webhook Operations
 	// ============================================================================
 
 	/**
@@ -1954,7 +1954,7 @@ export class MockServerState implements SessionState {
 	}
 
 	// ============================================================================
-	// Emoji Operations (Phase 4K)
+	// Emoji Operations
 	// ============================================================================
 
 	/**
@@ -2077,7 +2077,7 @@ export class MockServerState implements SessionState {
 	}
 
 	// ============================================================================
-	// Role Operations (Phase 4L)
+	// Role Operations
 	// ============================================================================
 
 	/**
@@ -2363,7 +2363,7 @@ export class MockServerState implements SessionState {
 	}
 
 	// ============================================================================
-	// Guild Member Operations (Phase 4L)
+	// Guild Member Operations
 	// ============================================================================
 
 	/**
@@ -2528,7 +2528,7 @@ export class MockServerState implements SessionState {
 	}
 
 	// ============================================================================
-	// Channel Permission Overwrite Operations (Phase 4L)
+	// Channel Permission Overwrite Operations
 	// ============================================================================
 
 	/**
@@ -2584,7 +2584,7 @@ export class MockServerState implements SessionState {
 	}
 
 	// ============================================================================
-	// Guild Ban Operations (Phase 4L-B)
+	// Guild Ban Operations
 	// ============================================================================
 
 	/**
@@ -2668,7 +2668,7 @@ export class MockServerState implements SessionState {
 	}
 
 	// ============================================================================
-	// Application Command Operations (Phase 4M)
+	// Application Command Operations
 	// ============================================================================
 
 	/**
@@ -2921,7 +2921,7 @@ export class MockServerState implements SessionState {
 	}
 
 	// ============================================================================
-	// Invite Operations (Phase 5A)
+	// Invite Operations
 	// ============================================================================
 
 	/**
@@ -3026,7 +3026,7 @@ export class MockServerState implements SessionState {
 	}
 
 	// ============================================================================
-	// Scheduled Event Operations (Phase 5B)
+	// Scheduled Event Operations
 	// ============================================================================
 
 	/**
@@ -3229,7 +3229,7 @@ export class MockServerState implements SessionState {
 	}
 
 	// ============================================================================
-	// Auto-Moderation Rule Operations (Phase 5C)
+	// Auto-Moderation Rule Operations
 	// ============================================================================
 
 	/**
@@ -3351,7 +3351,7 @@ export class MockServerState implements SessionState {
 	}
 
 	// ============================================================================
-	// Phase 11: Stage Instance Operations
+	// Stage Instance Operations
 	// ============================================================================
 
 	/**
@@ -3447,7 +3447,7 @@ export class MockServerState implements SessionState {
 	}
 
 	// ============================================================================
-	// Phase 14: Audit Log Operations
+	// Audit Log Operations
 	// ============================================================================
 
 	/**
@@ -3625,8 +3625,8 @@ export function createMockGuild(config?: { id?: Snowflake; name?: string; ownerI
 		channels: [],
 		members: [],
 		roles: [id], // @everyone role has same ID as guild
-		stickers: [], // Phase 4I
-		emojis: [] // Phase 4K
+		stickers: [],
+		emojis: []
 	}
 }
 
@@ -3685,7 +3685,7 @@ export function createMockThread(config: MockThreadConfig): MockThread {
 }
 
 /**
- * Create a mock forum/media channel from config (Phase 4H)
+ * Create a mock forum/media channel from config
  */
 export function createMockForumChannel(config?: MockForumChannelConfig): MockForumChannel {
 	const type = config?.type ?? 15 // Default to GUILD_FORUM
@@ -3744,7 +3744,7 @@ export function createMockMessage(config: MockMessageConfig): MockMessage {
 		nonce: config.nonce ?? null
 	}
 
-	// Phase 3I: Add optional fields if provided
+	// Add optional fields if provided
 	if (config.call) {
 		message.call = config.call
 	}
@@ -3765,7 +3765,7 @@ export function createMockMessage(config: MockMessageConfig): MockMessage {
 		message.resolved = config.resolved
 	}
 
-	// Phase 4F: Components V2
+	// Components V2
 	if (config.flags !== undefined) {
 		message.flags = config.flags
 	}
@@ -3773,17 +3773,17 @@ export function createMockMessage(config: MockMessageConfig): MockMessage {
 		message.components = config.components
 	}
 
-	// Phase 4G: Polls
+	// Polls
 	if (config.poll) {
 		message.poll = createMockPoll(config.poll)
 	}
 
-	// Phase 3: Message reference (for replies)
+	// Message reference (for replies)
 	if (config.message_reference) {
 		message.message_reference = config.message_reference
 	}
 
-	// Phase 20: Position and roleSubscriptionData
+	// Position and roleSubscriptionData
 	if (config.position !== undefined) {
 		message.position = config.position
 	}
@@ -3897,7 +3897,7 @@ export function createDefaultGuildWithChannel(
 	state.guilds.set(guild.id, guild)
 	state.channels.set(channel.id, channel)
 
-	// Create @everyone role and add bot as member (Phase 4L)
+	// Create @everyone role and add bot as member
 	if (state instanceof MockServerState) {
 		// Create the @everyone role
 		state.createEveryoneRole(guild.id)
@@ -4071,17 +4071,17 @@ export function serializeMockInteraction(interaction: MockInteraction): Serializ
 		options: interaction.options,
 		createdAt: interaction.createdAt,
 		expiresAt: interaction.expiresAt,
-		// Response tracking (Phase 3B)
+		// Response tracking
 		response: interaction.response,
 		respondedAt: interaction.respondedAt,
-		// MESSAGE_COMPONENT interactions (Phase 3C, 3D)
+		// MESSAGE_COMPONENT interactions
 		customId: interaction.customId,
 		componentType: interaction.componentType,
 		messageId: interaction.messageId,
 		values: interaction.values,
-		// MODAL_SUBMIT interactions (Phase 3E)
+		// MODAL_SUBMIT interactions
 		modalFields: interaction.modalFields,
-		// Context menu commands (Phase 3G)
+		// Context menu commands
 		targetId: interaction.targetId,
 		contextMenuType: interaction.contextMenuType
 	}
@@ -4147,7 +4147,7 @@ export function deserializeStoredAttachment(serialized: SerializedStoredAttachme
 }
 
 /**
- * Serialize a mock webhook (Phase 4J)
+ * Serialize a mock webhook
  */
 export function serializeMockWebhook(webhook: MockWebhook): SerializedMockWebhook {
 	return {
@@ -4166,7 +4166,7 @@ export function serializeMockWebhook(webhook: MockWebhook): SerializedMockWebhoo
 }
 
 /**
- * Serialize a mock role (Phase 4L)
+ * Serialize a mock role
  */
 export function serializeMockRole(role: MockRole): SerializedMockRole {
 	return {
@@ -4196,7 +4196,7 @@ export function serializeMockRole(role: MockRole): SerializedMockRole {
 }
 
 /**
- * Serialize a mock guild member (Phase 4L)
+ * Serialize a mock guild member
  */
 export function serializeMockGuildMember(member: MockGuildMember, user: MockUser): SerializedMockGuildMember {
 	return {
@@ -4215,7 +4215,7 @@ export function serializeMockGuildMember(member: MockGuildMember, user: MockUser
 }
 
 /**
- * Create a mock role from config (Phase 4L)
+ * Create a mock role from config
  */
 export function createMockRole(guildId: Snowflake, config?: MockRoleConfig): MockRole {
 	return {
@@ -4236,7 +4236,7 @@ export function createMockRole(guildId: Snowflake, config?: MockRoleConfig): Moc
 }
 
 /**
- * Create a mock guild member from config (Phase 4L)
+ * Create a mock guild member from config
  */
 export function createMockGuildMember(guildId: Snowflake, userId: Snowflake, config?: MockGuildMemberConfig): MockGuildMember {
 	return {
@@ -4255,7 +4255,7 @@ export function createMockGuildMember(guildId: Snowflake, userId: Snowflake, con
 }
 
 // ============================================================================
-// Phase 4F: Components V2 Validation
+// Components V2 Validation
 // ============================================================================
 
 /**
@@ -4454,7 +4454,7 @@ export function validateComponentsV2(
 }
 
 // ============================================================================
-// Phase 14: Classic (V1) Component Validation
+// Classic (V1) Component Validation
 // ============================================================================
 
 /**
@@ -4582,7 +4582,7 @@ export function validateComponents(components: unknown[]): ComponentsV2Validatio
 }
 
 // ============================================================================
-// Phase 5A: Invite Helper
+// Invite Helper
 // ============================================================================
 
 /**

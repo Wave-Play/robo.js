@@ -25,7 +25,7 @@ export interface DispatchInteractionInput {
 		id?: string
 		username?: string
 	}
-	/** Optional metadata for simulation tracing (Phase 3) */
+	/** Optional metadata for simulation tracing */
 	metadata?: ActionMetadata
 }
 
@@ -141,13 +141,13 @@ export async function dispatchInteractionToSession(
 		guild_locale: 'en-US'
 	}
 
-	// Set up action context for metadata propagation (Phase 3)
+	// Set up action context for metadata propagation
 	if (input.metadata) {
 		const context = { metadata: input.metadata }
 		session.setActionContext(context)
 
 		// Ad-hoc interaction context should not leak indefinitely. Clear after a short timeout
-		// if it hasn't been replaced by a new dispatch (Phase 3 lifetime rules).
+		// if it hasn't been replaced by a new dispatch.
 		const timeout = setTimeout(() => {
 			if (session.getActionContext() === context) {
 				session.clearActionContext()

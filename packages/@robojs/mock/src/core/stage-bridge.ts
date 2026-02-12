@@ -52,8 +52,8 @@ export class StageBridge {
 	 * @param sessionId - The session
 	 * @param interactionId - The interaction that was responded to
 	 * @param response - The response data
-	 * @param channelId - Optional channel ID for deferred responses (Phase 5O)
-	 * @param bot - Optional bot info for deferred responses (Phase 5O)
+	 * @param channelId - Optional channel ID for deferred responses
+	 * @param bot - Optional bot info for deferred responses
 	 */
 	onInteractionResponse(
 		sessionId: string,
@@ -96,7 +96,7 @@ export class StageBridge {
 
 	/**
 	 * Called when a bot edits an interaction message (e.g., editReply after deferReply).
-	 * Phase 5O: This clears the "Bot is thinking..." indicator.
+	 * This clears the "Bot is thinking..." indicator.
 	 *
 	 * @param sessionId - The session
 	 * @param interactionId - The interaction that was edited

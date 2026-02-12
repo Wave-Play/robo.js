@@ -177,7 +177,7 @@ export class GatewayServer {
 				}, GatewayServer.RESUME_TIMEOUT_MS)
 				this.resumeCleanupTimeouts.set(state.id, cleanupTimeout)
 
-				// Notify stage clients that bot disconnected (Phase 5A)
+				// Notify stage clients that bot disconnected
 				try {
 					getStageBridge().onBotDisconnected(state.sessionId, state.id, code, reason.toString())
 				} catch {
@@ -318,7 +318,7 @@ export class GatewayServer {
 					ws.close(GatewayCloseCodes.NotAuthenticated, 'Not authenticated')
 					return
 				}
-				// Other opcodes will be handled in future phases
+				// Other opcodes are not currently handled
 				mockLogger.debug(`Unhandled opcode: ${payload.op}`)
 		}
 	}
@@ -350,7 +350,7 @@ export class GatewayServer {
 			return
 		}
 
-		// Phase 2H: Check privileged intents if enforceIntents is enabled
+		// Check privileged intents if enforceIntents is enabled
 		if (session.config?.enforceIntents) {
 			const approvedPrivileged = session.config.approvedPrivilegedIntents ?? DEFAULT_APPROVED_PRIVILEGED_INTENTS
 			if (!hasApprovedPrivilegedIntents(data.intents, approvedPrivileged)) {
@@ -389,7 +389,7 @@ export class GatewayServer {
 		connState.botUser = connectionBotUser
 		mockLogger.debug(`Resolved bot identity for connection ${connState.id}: ${connectionBotUser.username}`)
 
-		// Send READY event (Phase 1D)
+		// Send READY event
 		// Include session_id in resume_gateway_url so reconnections can use per-session heartbeat interval
 		const readyPayload = buildReadyPayload({
 			sessionState: session.state,
@@ -401,7 +401,7 @@ export class GatewayServer {
 		connState.sequence = 1 // READY is sequence 1
 		mockLogger.debug(`Sent READY to connection ${connState.id}`)
 
-		// Send GUILD_CREATE for each guild (Phase 1E)
+		// Send GUILD_CREATE for each guild
 		// This makes guilds "available" after they were sent as "unavailable" in READY
 		for (const guild of session.state.guilds.values()) {
 			connState.sequence++
@@ -687,7 +687,7 @@ export class GatewayServer {
 			return (connState.intents & requiredIntent) !== 0
 		}
 
-		// Poll vote events (Phase 4G) require GuildMessagePolls (1 << 24) or DirectMessagePolls (1 << 25)
+		// Poll vote events require GuildMessagePolls (1 << 24) or DirectMessagePolls (1 << 25)
 		// Note: These intents may not be in discord-api-types yet, so we define them inline
 		if (event === 'MESSAGE_POLL_VOTE_ADD' || event === 'MESSAGE_POLL_VOTE_REMOVE') {
 			const GuildMessagePolls = 1 << 24
@@ -711,7 +711,7 @@ export class GatewayServer {
 			return (connState.intents & GatewayIntentBits.Guilds) !== 0
 		}
 
-		// Thread events (Phase 4D)
+		// Thread events
 		if (event.startsWith('THREAD_')) {
 			// THREAD_CREATE, THREAD_UPDATE, THREAD_DELETE, THREAD_LIST_SYNC require Guilds intent
 			if (['THREAD_CREATE', 'THREAD_UPDATE', 'THREAD_DELETE', 'THREAD_LIST_SYNC'].includes(event)) {
@@ -727,7 +727,7 @@ export class GatewayServer {
 			}
 		}
 
-		// WEBHOOKS_UPDATE requires Guilds intent (Phase 4J)
+		// WEBHOOKS_UPDATE requires Guilds intent
 		if (event === 'WEBHOOKS_UPDATE') {
 			return (connState.intents & GatewayIntentBits.Guilds) !== 0
 		}
@@ -792,7 +792,7 @@ export class GatewayServer {
 				continue
 			}
 
-			// Phase 2H: Check intents using comprehensive filtering when enforceIntents is enabled
+			// Check intents using comprehensive filtering when enforceIntents is enabled
 			if (enforceIntents) {
 				if (!shouldDispatchEvent(event, data, connState.intents)) {
 					this.warnAboutFilteredEvent(session.id, connectionId, event, data)
@@ -813,7 +813,7 @@ export class GatewayServer {
 				continue
 			}
 
-			// Phase 2H: Strip message content if MESSAGE_CONTENT intent is missing
+			// Strip message content if MESSAGE_CONTENT intent is missing
 			let eventData = data
 			if (enforceIntents && (event === 'MESSAGE_CREATE' || event === 'MESSAGE_UPDATE')) {
 				eventData = stripMessageContent(

@@ -1,5 +1,5 @@
 /**
- * Phase 2H: Intent Handling & Filtering
+ * Intent Handling & Filtering
  * Maps Discord Gateway events to their required intents
  *
  * Note: GatewayIntentBits from discord-api-types are numbers, so we use number-based

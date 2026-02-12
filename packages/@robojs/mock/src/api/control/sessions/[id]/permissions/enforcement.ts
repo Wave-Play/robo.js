@@ -25,7 +25,7 @@ type EnforcementLevel = 'none' | 'basic' | 'strict'
  *   is_runtime: boolean
  * }
  *
- * @see Phase 3: Permissions Admin UI
+ * @see Permissions Admin UI
  */
 export default async (request: RoboRequest) => {
 	validateMethod(request, ['GET', 'POST'])

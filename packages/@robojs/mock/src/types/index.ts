@@ -71,24 +71,24 @@ export interface SessionState {
 	users: Map<Snowflake, MockUser>
 	messages: Map<Snowflake, MockMessage>
 	interactions: Map<Snowflake, MockInteraction>
-	attachmentStorage: MemoryAttachmentStorage // Phase 4E: File storage
-	pollVotes: Map<Snowflake, Map<Snowflake, number[]>> // Phase 4G: messageId -> userId -> answerIds[]
-	stickers: Map<Snowflake, MockSticker> // Phase 4I: Sticker storage
-	webhooks: Map<Snowflake, MockWebhook> // Phase 4J: Webhook storage
-	emojis: Map<Snowflake, MockEmoji> // Phase 4K: Emoji storage
-	applicationEmojis: Map<Snowflake, MockEmoji> // Phase 20: Application-level emojis
-	roles: Map<Snowflake, MockRole> // Phase 4L: Role storage
-	guildMembers: Map<string, MockGuildMember> // Phase 4L: key = `${guildId}:${userId}`
-	bans: Map<string, MockBan> // Phase 4L-B: key = `${guildId}:${userId}`
-	commands: Map<Snowflake, MockApplicationCommand> // Phase 4M: Application commands
-	invites: Map<string, MockInvite> // Phase 5A: Invite storage (key = code)
-	scheduledEvents: Map<string, MockScheduledEvent> // Phase 5B: key = `${guildId}:${eventId}`
-	autoModRules: Map<string, MockAutoModRule> // Phase 5C: key = `${guildId}:${ruleId}`
-	stageInstances: Map<Snowflake, MockStageInstance> // Phase 11: Stage instances by channel ID
-	commandPermissions: Map<string, MockCommandPermission[]> // Phase 11: key = `${guildId}:${commandId}`
+	attachmentStorage: MemoryAttachmentStorage // File storage
+	pollVotes: Map<Snowflake, Map<Snowflake, number[]>> // messageId -> userId -> answerIds[]
+	stickers: Map<Snowflake, MockSticker> // Sticker storage
+	webhooks: Map<Snowflake, MockWebhook> // Webhook storage
+	emojis: Map<Snowflake, MockEmoji> // Emoji storage
+	applicationEmojis: Map<Snowflake, MockEmoji> // Application-level emojis
+	roles: Map<Snowflake, MockRole> // Role storage
+	guildMembers: Map<string, MockGuildMember> // key = `${guildId}:${userId}`
+	bans: Map<string, MockBan> // key = `${guildId}:${userId}`
+	commands: Map<Snowflake, MockApplicationCommand> // Application commands
+	invites: Map<string, MockInvite> // Invite storage (key = code)
+	scheduledEvents: Map<string, MockScheduledEvent> // key = `${guildId}:${eventId}`
+	autoModRules: Map<string, MockAutoModRule> // key = `${guildId}:${ruleId}`
+	stageInstances: Map<Snowflake, MockStageInstance> // Stage instances by channel ID
+	commandPermissions: Map<string, MockCommandPermission[]> // key = `${guildId}:${commandId}`
 	threadMembers: Map<Snowflake, Map<Snowflake, MockThreadMember>> // threadId -> userId -> member
-	voiceStates: Map<string, MockVoiceState> // Phase 7: `${guildId}:${userId}` -> voice state
-	auditLogs: Map<string, MockAuditLogEntry[]> // Phase 14: guildId -> audit log entries
+	voiceStates: Map<string, MockVoiceState> // `${guildId}:${userId}` -> voice state
+	auditLogs: Map<string, MockAuditLogEntry[]> // guildId -> audit log entries
 	botUser: MockUser
 	applicationId: Snowflake
 	sequence: number
@@ -519,9 +519,9 @@ export interface MockGuild {
 	channels: Snowflake[]
 	members: Snowflake[]
 	roles: Snowflake[]
-	stickers: Snowflake[] // Phase 4I: Guild sticker IDs
-	emojis: Snowflake[] // Phase 4K: Guild emoji IDs
-	// Guild settings (Phase 6: Guild CRUD)
+	stickers: Snowflake[] // Guild sticker IDs
+	emojis: Snowflake[] // Guild emoji IDs
+	// Guild settings
 	description?: string | null
 	afkChannelId?: Snowflake | null
 	afkTimeout?: number // In seconds: 60, 300, 900, 1800, 3600
@@ -534,16 +534,16 @@ export interface MockGuild {
 	icon?: string | null
 	splash?: string | null
 	banner?: string | null
-	discoverySplash?: string | null // Phase 7: Discovery splash image hash
-	premiumTier?: number // Phase 7: Server boost level (0-3)
-	features?: string[] // Phase 7: Guild features array
-	premiumProgressBarEnabled?: boolean // Phase 11: Whether premium progress bar is enabled
-	preferredLocale?: string // Phase 11: Guild's preferred locale
+	discoverySplash?: string | null // Discovery splash image hash
+	premiumTier?: number // Server boost level (0-3)
+	features?: string[] // Guild features array
+	premiumProgressBarEnabled?: boolean // Whether premium progress bar is enabled
+	preferredLocale?: string // Guild's preferred locale
 	vanityUrlCode?: string | null // Vanity URL code for the guild
 	vanityUrlUses?: number // Number of times vanity URL has been used
-	// Phase 19: Welcome Screen
+	// Welcome Screen
 	welcomeScreen?: MockWelcomeScreen
-	// Phase 19: Guild Onboarding
+	// Guild Onboarding
 	onboarding?: MockGuildOnboarding
 }
 
@@ -555,8 +555,8 @@ export interface MockGuildConfig {
 	name?: string
 	ownerId?: Snowflake
 	channels?: MockChannelConfig[]
-	stickers?: MockStickerConfig[] // Phase 4I
-	emojis?: MockEmojiConfig[] // Phase 4K
+	stickers?: MockStickerConfig[]
+	emojis?: MockEmojiConfig[]
 }
 
 /**
@@ -569,7 +569,7 @@ export interface MockChannel {
 	type: number
 	position?: number
 	parentId?: Snowflake | null
-	permissionOverwrites?: MockChannelOverwrite[] // Phase 4L
+	permissionOverwrites?: MockChannelOverwrite[]
 	topic?: string | null
 	nsfw?: boolean
 	bitrate?: number
@@ -584,7 +584,7 @@ export interface MockChannel {
 }
 
 /**
- * Mock voice state data (Phase 7)
+ * Mock voice state data
  */
 export interface MockVoiceState {
 	guild_id: Snowflake
@@ -603,7 +603,7 @@ export interface MockVoiceState {
 }
 
 // ============================================================================
-// Thread Types (Phase 4D)
+// Thread Types
 // ============================================================================
 
 /**
@@ -687,7 +687,7 @@ export interface DispatchThreadUpdateOptions {
 }
 
 // ============================================================================
-// Forum & Media Channel Types (Phase 4H)
+// Forum & Media Channel Types
 // ============================================================================
 
 /**
@@ -806,37 +806,37 @@ export interface MockMessage {
 	embeds: unknown[]
 	pinned: boolean
 	type: number
-	// Phase 13: Message nonce support
+	// Message nonce support
 	nonce?: string | number | null
-	// Phase 3B: Reactions
+	// Reactions
 	reactions?: MockReaction[]
-	// Phase 3I: APIMessage completeness fields
+	// APIMessage completeness fields
 	call?: MockMessageCall
 	interaction_metadata?: MockMessageInteractionMetadata
 	interaction?: MockMessageInteraction // Deprecated, kept for backwards compatibility
 	message_snapshots?: MockMessageSnapshot[]
 	resolved?: unknown
-	// Phase 4F: Components V2
+	// Components V2
 	flags?: number
 	components?: unknown[]
-	// Phase 4G: Polls
+	// Polls
 	poll?: MockPoll
-	// Phase 4I: Stickers
+	// Stickers
 	sticker_items?: MockStickerItem[]
-	// Phase 3: Message reference (for replies)
+	// Message reference (for replies)
 	message_reference?: {
 		message_id?: Snowflake
 		channel_id?: Snowflake
 		guild_id?: Snowflake
 	}
-	// Phase 20: Role subscription data
+	// Role subscription data
 	roleSubscriptionData?: {
 		roleSubscriptionListingId: Snowflake
 		tierName: string
 		totalMonthsSubscribed: number
 		isRenewal: boolean
 	}
-	// Phase 20: Message position
+	// Message position
 	position?: number
 }
 
@@ -859,7 +859,7 @@ export interface MockReaction {
 }
 
 // ============================================================================
-// Phase 4G: Poll Types
+// Poll Types
 // ============================================================================
 
 /**
@@ -937,7 +937,7 @@ export interface MockPollConfig {
 }
 
 // ============================================================================
-// Phase 4I: Sticker Types
+// Sticker Types
 // ============================================================================
 
 /**
@@ -1037,7 +1037,7 @@ export const StickerLimits = {
 } as const
 
 // ============================================================================
-// Phase 4K: Emoji Types
+// Emoji Types
 // ============================================================================
 
 /**
@@ -1082,7 +1082,7 @@ export const EmojiLimits = {
 } as const
 
 // ============================================================================
-// Phase 4J: Webhook Types
+// Webhook Types
 // ============================================================================
 
 /**
@@ -1187,7 +1187,7 @@ export interface SerializedMockWebhook {
 }
 
 // ============================================================================
-// Phase 4L: Role & Permission Types
+// Role & Permission Types
 // ============================================================================
 
 /**
@@ -1405,7 +1405,7 @@ export interface SerializedMockGuildMember {
 }
 
 // ============================================================================
-// Phase 4L-B: Ban Types
+// Ban Types
 // ============================================================================
 
 /**
@@ -1465,7 +1465,7 @@ export const BanLimits = {
 } as const
 
 // ============================================================================
-// Phase 4E: Attachment Types
+// Attachment Types
 // ============================================================================
 
 /**
@@ -1539,7 +1539,7 @@ export interface AttachmentPayload {
 }
 
 // ============================================================================
-// Phase 3I: APIMessage Completeness Types
+// APIMessage Completeness Types
 // ============================================================================
 
 /**
@@ -1596,12 +1596,12 @@ export interface MockMessageSnapshotContent {
 	flags?: number
 	mentions: MockUser[]
 	mention_roles: Snowflake[]
-	sticker_items?: MockStickerItem[] // Phase 4I
+	sticker_items?: MockStickerItem[]
 	components?: unknown[]
 }
 
 // ============================================================================
-// Mock Interaction Types (Phase 3A)
+// Mock Interaction Types
 // ============================================================================
 
 /**
@@ -1620,26 +1620,26 @@ export interface MockInteraction {
 	options?: MockInteractionOption[]
 	createdAt: number
 	expiresAt: number // 15 minutes from creation
-	// Response tracking (Phase 3B)
+	// Response tracking
 	response?: MockInteractionResponse
 	respondedAt?: number
-	// For MESSAGE_COMPONENT interactions (Phase 3C - buttons, Phase 3D - selects)
+	// For MESSAGE_COMPONENT interactions
 	customId?: string // Button/select/modal custom_id
 	componentType?: number // 2 = button, 3 = string select, 5-8 = entity selects
 	messageId?: Snowflake // ID of message the component was on
-	values?: string[] // Selected values (Phase 3D - select menus only)
-	// For MODAL_SUBMIT interactions (Phase 3E)
+	values?: string[] // Selected values
+	// For MODAL_SUBMIT interactions
 	modalFields?: Record<string, string> // { field_custom_id: value }
-	// For context menu commands (Phase 3G)
+	// For context menu commands
 	targetId?: Snowflake // Target user/message ID
 	contextMenuType?: 2 | 3 // 2=USER, 3=MESSAGE
-	// For tracking response messages (Phase 3H)
+	// For tracking response messages
 	responseMessageId?: Snowflake // ID of message created by initial response (type 4/7)
 	followupMessageIds?: Snowflake[] // IDs of followup messages sent via webhook
 }
 
 /**
- * Stored response for an interaction (Phase 3B)
+ * Stored response for an interaction
  */
 export interface MockInteractionResponse {
 	type: number // InteractionResponseType enum
@@ -1682,7 +1682,7 @@ export interface DispatchSlashCommandOptions {
 }
 
 /**
- * Options for dispatching a button click (Phase 3C)
+ * Options for dispatching a button click
  */
 export interface DispatchButtonClickOptions {
 	customId: string // Required: button's custom_id
@@ -1693,7 +1693,7 @@ export interface DispatchButtonClickOptions {
 }
 
 /**
- * Options for dispatching a select menu interaction (Phase 3D)
+ * Options for dispatching a select menu interaction
  */
 export interface DispatchSelectMenuOptions {
 	customId: string // Required: select menu's custom_id
@@ -1706,7 +1706,7 @@ export interface DispatchSelectMenuOptions {
 }
 
 /**
- * Options for dispatching a modal submit interaction (Phase 3E)
+ * Options for dispatching a modal submit interaction
  */
 export interface DispatchModalSubmitOptions {
 	customId: string // Required: modal's custom_id
@@ -1718,7 +1718,7 @@ export interface DispatchModalSubmitOptions {
 }
 
 /**
- * Options for dispatching an autocomplete interaction (Phase 3F)
+ * Options for dispatching an autocomplete interaction
  */
 export interface DispatchAutocompleteOptions {
 	/** Command name being typed */
@@ -1742,7 +1742,7 @@ export interface DispatchAutocompleteOptions {
 }
 
 /**
- * Options for dispatching a context menu interaction (Phase 3G)
+ * Options for dispatching a context menu interaction
  */
 export interface DispatchContextMenuOptions {
 	/** Command name (e.g., "Get Info", "Report Message") */
@@ -1776,26 +1776,26 @@ export interface MockMessageConfig {
 	nonce?: string | number | null
 	/** User IDs that are mentioned in this message */
 	mentions?: Snowflake[]
-	// Phase 3I: APIMessage completeness config fields
+	// APIMessage completeness config fields
 	call?: MockMessageCall
 	interactionMetadata?: MockMessageInteractionMetadata
 	interactionName?: string
 	messageSnapshots?: MockMessageSnapshot[]
 	resolved?: unknown
-	// Phase 4F: Components V2
+	// Components V2
 	flags?: number
 	components?: unknown[]
-	// Phase 4G: Polls
+	// Polls
 	poll?: MockPollConfig
-	// Phase 4I: Stickers
+	// Stickers
 	sticker_ids?: Snowflake[]
-	// Phase 3: Message reference (for replies)
+	// Message reference (for replies)
 	message_reference?: {
 		message_id?: Snowflake
 		channel_id?: Snowflake
 		guild_id?: Snowflake
 	}
-	// Phase 20: Message position and subscription data
+	// Message position and subscription data
 	position?: number
 	roleSubscriptionData?: {
 		roleSubscriptionListingId: string
@@ -1818,7 +1818,7 @@ export interface MockChannelConfig {
 }
 
 /**
- * Configuration for seed messages (Phase 5I)
+ * Configuration for seed messages
  */
 export interface SeedMessageConfig {
 	content: string
@@ -1911,7 +1911,7 @@ export interface AuthResult {
  * Action type classification for recorded actions
  */
 export type ActionType =
-	// REST API actions (for Phase 2D+)
+	// REST API actions
 	| 'message_sent'
 	| 'message_edited'
 	| 'message_deleted'
@@ -1933,34 +1933,34 @@ export type ActionType =
 	| 'channels_positions_updated'
 	| 'channel_overwrite_updated'
 	| 'channel_overwrite_deleted'
-	// Thread actions (Phase 4D)
+	// Thread actions
 	| 'thread_created'
 	| 'thread_updated'
 	| 'thread_deleted'
 	| 'thread_member_added'
 	| 'thread_member_removed'
-	// Poll actions (Phase 4G)
+	// Poll actions
 	| 'poll_voters_fetched'
 	| 'poll_expired'
-	// Sticker actions (Phase 4I)
+	// Sticker actions
 	| 'sticker_created'
 	| 'sticker_updated'
 	| 'sticker_deleted'
-	// Webhook actions (Phase 4J)
+	// Webhook actions
 	| 'webhook_created'
 	| 'webhook_updated'
 	| 'webhook_deleted'
 	| 'webhook_executed'
-	// Emoji actions (Phase 4K)
+	// Emoji actions
 	| 'emoji_created'
 	| 'emoji_updated'
 	| 'emoji_deleted'
-	// Role actions (Phase 4L)
+	// Role actions
 	| 'role_created'
 	| 'role_updated'
 	| 'role_deleted'
 	| 'role_positions_updated'
-	// Guild member actions (Phase 4L)
+	// Guild member actions
 	| 'guild_member_added'
 	| 'guild_member_updated'
 	| 'guild_member_removed'
@@ -1993,14 +1993,14 @@ export type ActionType =
 	| 'gateway_request_guild_members'
 	// Dispatched events (server → client, for debugging)
 	| 'dispatch'
-	// Invite actions (Phase 5A)
+	// Invite actions
 	| 'invite_created'
 	| 'invite_deleted'
-	// Scheduled event actions (Phase 5B)
+	// Scheduled event actions
 	| 'scheduled_event_created'
 	| 'scheduled_event_updated'
 	| 'scheduled_event_deleted'
-	// AutoMod actions (Phase 5C)
+	// AutoMod actions
 	| 'automod_rule_created'
 	| 'automod_rule_updated'
 	| 'automod_rule_deleted'
@@ -2122,13 +2122,13 @@ export interface IScenarioManager {
 
 	/**
 	 * Update the run status.
-	 * Used by the scenario runner (Phase 5) to update execution state.
+	 * Used by the scenario runner to update execution state.
 	 */
 	setStatus(status: ScenarioRunStatus): void
 
 	/**
 	 * Add a step result to the run state.
-	 * Used by the scenario runner (Phase 5) to record step outcomes.
+	 * Used by the scenario runner to record step outcomes.
 	 */
 	addStepResult(result: ScenarioStepResult): void
 
@@ -2229,7 +2229,7 @@ export interface IActionRecorder {
 }
 
 // ============================================================================
-// Session Recording Types (Phase 4A)
+// Session Recording Types
 // ============================================================================
 
 /**
@@ -2385,13 +2385,13 @@ export interface ScenarioMockConfig {
 	time?: ScenarioTimeConfig
 
 	/**
-	 * Flashcore data pre-seeding (deferred - not implemented in MVP).
+	 * Flashcore data pre-seeding (not yet implemented).
 	 * Stored but not applied until Flashcore mocking is implemented.
 	 */
 	flashcoreData?: Record<string, unknown>
 
 	/**
-	 * External API response mocks (deferred - not implemented in MVP).
+	 * External API response mocks (not yet implemented).
 	 * Stored but not applied until API mocking is implemented.
 	 */
 	apiMocks?: Record<string, unknown>
@@ -2829,7 +2829,7 @@ export interface ScenarioAssertionResult {
 }
 
 // ============================================================================
-// Scenario Snapshot Types (Phase 6: Backward Navigation)
+// Scenario Snapshot Types
 // ============================================================================
 
 /**
@@ -2998,8 +2998,8 @@ export interface SerializedSessionState {
 	users: SerializedMockUser[]
 	messages: SerializedMockMessage[]
 	interactions: SerializedMockInteraction[]
-	attachments: SerializedStoredAttachment[] // Phase 4E
-	webhooks: SerializedMockWebhook[] // Phase 4J
+	attachments: SerializedStoredAttachment[]
+	webhooks: SerializedMockWebhook[]
 	botUser: SerializedMockUser
 	applicationId: string
 	sequence: number
@@ -3042,7 +3042,7 @@ export interface SerializedMockThread extends SerializedMockChannel {
 }
 
 /**
- * Serialized forum tag (Phase 4H)
+ * Serialized forum tag
  */
 export interface SerializedMockForumTag {
 	id: string
@@ -3053,7 +3053,7 @@ export interface SerializedMockForumTag {
 }
 
 /**
- * Serialized forum/media channel (Phase 4H)
+ * Serialized forum/media channel
  */
 export interface SerializedMockForumChannel extends SerializedMockChannel {
 	type: 15 | 16
@@ -3071,7 +3071,7 @@ export interface SerializedMockForumChannel extends SerializedMockChannel {
 }
 
 /**
- * Serialized forum thread/post (Phase 4H)
+ * Serialized forum thread/post
  */
 export interface SerializedMockForumThread extends SerializedMockThread {
 	applied_tags: string[]
@@ -3152,26 +3152,26 @@ export interface SerializedMockInteraction {
 	options?: MockInteractionOption[]
 	createdAt: number
 	expiresAt: number
-	// Response tracking (Phase 3B)
+	// Response tracking
 	response?: MockInteractionResponse
 	respondedAt?: number
-	// For MESSAGE_COMPONENT interactions (Phase 3C)
+	// For MESSAGE_COMPONENT interactions
 	customId?: string
 	componentType?: number
 	messageId?: string
-	values?: string[] // Phase 3D - select menus
-	// For MODAL_SUBMIT interactions (Phase 3E)
+	values?: string[] // select menus
+	// For MODAL_SUBMIT interactions
 	modalFields?: Record<string, string>
-	// For context menu commands (Phase 3G)
+	// For context menu commands
 	targetId?: string
 	contextMenuType?: 2 | 3
-	// For tracking response messages (Phase 3H)
+	// For tracking response messages
 	responseMessageId?: string
 	followupMessageIds?: string[]
 }
 
 // ============================================================================
-// Replay Types (Phase 4B)
+// Replay Types
 // ============================================================================
 
 /**
@@ -3198,7 +3198,7 @@ export interface ReplayOptions {
 }
 
 /**
- * Real-time playback state for UI binding (Phase 5J compatible)
+ * Real-time playback state for UI binding
  */
 export interface ReplayState {
 	/** Current playback mode */
@@ -3264,7 +3264,7 @@ export interface ValidationMismatch {
 }
 
 // ============================================================================
-// Phase 4F: Components V2 Types
+// Components V2 Types
 // ============================================================================
 
 /**
@@ -3553,7 +3553,7 @@ export function createV2ConflictError(): DiscordAPIError {
 }
 
 // ============================================================================
-// Phase 4M: Application Command Types
+// Application Command Types
 // ============================================================================
 
 /**
@@ -3650,7 +3650,7 @@ export interface MockApplicationCommand {
 	nsfw?: boolean
 	integration_types?: number[] // Installation contexts
 	contexts?: number[] // Interaction contexts
-	handler?: number // EntryPointCommandHandlerType for PrimaryEntryPoint commands (Phase 20)
+	handler?: number // EntryPointCommandHandlerType for PrimaryEntryPoint commands
 	version: Snowflake // Autoincrement snowflake for change tracking
 }
 
@@ -3729,7 +3729,7 @@ export interface SerializedMockApplicationCommand {
 }
 
 // ============================================================================
-// Phase 5A: Invite Types
+// Invite Types
 // ============================================================================
 
 /**
@@ -3830,7 +3830,7 @@ export interface SerializedMockExtendedInvite extends SerializedMockInvite {
 }
 
 // ============================================================================
-// Phase 5B: Scheduled Event Types
+// Scheduled Event Types
 // ============================================================================
 
 /**
@@ -4015,7 +4015,7 @@ export interface DispatchScheduledEventUserOptions {
 }
 
 // ============================================================================
-// Phase 5C: Auto-Moderation Types
+// Auto-Moderation Types
 // ============================================================================
 
 /**
@@ -4286,7 +4286,7 @@ export interface DispatchAutoModActionExecutionOptions {
 }
 
 // ============================================================================
-// Phase 11: Stage Instance Types
+// Stage Instance Types
 // ============================================================================
 
 /**
@@ -4326,7 +4326,7 @@ export interface MockStageInstanceConfig {
 }
 
 // ============================================================================
-// Phase 11: Command Permissions Types
+// Command Permissions Types
 // ============================================================================
 
 /**
@@ -4353,7 +4353,7 @@ export interface MockCommandPermission {
 }
 
 // ============================================================================
-// Phase 14: Audit Log Types
+// Audit Log Types
 // ============================================================================
 
 /**
@@ -4464,7 +4464,7 @@ export const AuditLogLimits = {
 } as const
 
 // ============================================================================
-// Phase 19: Welcome Screen Types
+// Welcome Screen Types
 // ============================================================================
 
 /**
@@ -4487,7 +4487,7 @@ export interface MockWelcomeScreen {
 }
 
 // ============================================================================
-// Phase 19: Guild Onboarding Types
+// Guild Onboarding Types
 // ============================================================================
 
 /**
@@ -4531,7 +4531,7 @@ export interface MockGuildOnboarding {
 }
 
 // ============================================================================
-// Phase 27: Voice Gateway Types
+// Voice Gateway Types
 // ============================================================================
 
 /**
@@ -4616,6 +4616,6 @@ export interface VoiceServerUpdatePayload {
 }
 
 // ============================================================================
-// Phase 5A: Stage WebSocket Protocol Types
+// Stage WebSocket Protocol Types
 // ============================================================================
 export * from './stage.js'

@@ -1,5 +1,5 @@
 /**
- * Phase 4E: Multipart Form Data Parser
+ * Multipart Form Data Parser
  *
  * Parses multipart/form-data requests using the Fetch API's native formData() method.
  * Used for file uploads in Discord API endpoints.

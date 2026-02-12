@@ -1,5 +1,5 @@
 /**
- * Phase 4L: Permission Calculation Tests
+ * Permission Calculation Tests
  * Tests for Discord permission calculation and enforcement
  */
 import { createSessionState, createDefaultGuildWithChannel, MockServerState, createMockGuildMember } from '../src/session/state.js'
@@ -16,7 +16,7 @@ import {
 } from '../src/core/permissions.js'
 import { OverwriteType } from '../src/types/index.js'
 
-describe('Phase 4L: Permissions', () => {
+describe('Permissions', () => {
 	describe('Permission bitfield operations', () => {
 		it('should check if permission is set', () => {
 			const permissions = PermissionFlagsBits.SendMessages | PermissionFlagsBits.ViewChannel
@@ -550,7 +550,7 @@ describe('Phase 4L: Permissions', () => {
 })
 
 // ============================================================================
-// Phase 4L-Extended: Permission Enforcement Tests
+// Permission Enforcement Tests
 // ============================================================================
 import {
 	isServerOwner,
@@ -560,7 +560,7 @@ import {
 	checkEndpointPermissionWithEnforcement
 } from '../src/core/permissions.js'
 
-describe('Phase 4L-Extended: Permission Enforcement', () => {
+describe('Permission Enforcement', () => {
 	describe('Role hierarchy helpers', () => {
 		let sessionState: MockServerState
 

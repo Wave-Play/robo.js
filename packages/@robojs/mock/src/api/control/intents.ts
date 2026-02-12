@@ -8,7 +8,7 @@ import type { Session } from '../../session/session.js'
  * GET /api/control/intents - Get intent configuration
  * POST /api/control/intents - Update intent configuration
  *
- * Phase 2H: Intent Handling & Filtering
+ * Intent Handling & Filtering
  *
  * Session is identified via Authorization header containing the mock token
  * e.g., Authorization: mock:sess_abc123

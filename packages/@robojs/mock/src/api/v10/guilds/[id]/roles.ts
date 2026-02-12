@@ -46,7 +46,7 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 3b. Check permissions for POST/PATCH (Phase 4L-Extended)
+	// 3b. Check permissions for POST/PATCH
 	if (request.method === 'POST' || request.method === 'PATCH') {
 		const permError = enforcePermissions(
 			session,

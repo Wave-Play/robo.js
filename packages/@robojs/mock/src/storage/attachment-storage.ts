@@ -1,5 +1,5 @@
 /**
- * Phase 4E: Attachment Storage Abstraction
+ * Attachment Storage Abstraction
  *
  * This module provides a pluggable interface for attachment storage backends.
  * The default implementation stores attachments in-memory, but alternative

@@ -32,12 +32,12 @@ import type { VoiceServerState, MockAttachment, ActionMetadata } from '../../../
  *     channel_id?: string
  *     guild_id?: string
  *
- *     // For MESSAGE_POLL_VOTE_ADD / MESSAGE_POLL_VOTE_REMOVE (Phase 4G):
+ *     // For MESSAGE_POLL_VOTE_ADD / MESSAGE_POLL_VOTE_REMOVE:
  *     user_id: string      // Required - user who voted
  *     message_id: string   // Required - message with poll
  *     answer_id: number    // Required - poll answer ID (1-indexed)
  *   },
- *   metadata?: ActionMetadata // Optional metadata for simulation tracing (Phase 3)
+ *   metadata?: ActionMetadata // Optional metadata for simulation tracing
  * }
  *
  * Response:
@@ -86,14 +86,14 @@ export default async (request: RoboRequest) => {
 		return badRequest('Missing or invalid "data" field')
 	}
 
-	// Set up action context for metadata propagation (Phase 3)
+	// Set up action context for metadata propagation
 	// Context is set before dispatch so the dispatch recording and subsequent bot actions inherit metadata.
 	if (body.metadata) {
 		const context = { metadata: body.metadata }
 		session.setActionContext(context)
 
 		// Ad-hoc dispatch context should not leak indefinitely. Clear after a short timeout
-		// if it hasn't been replaced by a new dispatch (Phase 3 lifetime rules).
+		// if it hasn't been replaced by a new dispatch.
 		const timeout = setTimeout(() => {
 			if (session.getActionContext() === context) {
 				session.clearActionContext()
@@ -211,7 +211,7 @@ export default async (request: RoboRequest) => {
 		}
 	}
 
-	// Handle MESSAGE_POLL_VOTE_ADD and MESSAGE_POLL_VOTE_REMOVE (Phase 4G)
+	// Handle MESSAGE_POLL_VOTE_ADD and MESSAGE_POLL_VOTE_REMOVE
 	if (body.event === 'MESSAGE_POLL_VOTE_ADD' || body.event === 'MESSAGE_POLL_VOTE_REMOVE') {
 		const data = body.data as {
 			user_id?: string
@@ -252,7 +252,7 @@ export default async (request: RoboRequest) => {
 	// Handle INTERACTION_CREATE specially for slash commands, button clicks, select menus, and autocomplete
 	if (body.event === 'INTERACTION_CREATE') {
 		const data = body.data as {
-			// Raw INTERACTION_CREATE payload fields (Phase 7)
+			// Raw INTERACTION_CREATE payload fields
 			id?: string
 			type?: number
 			application_id?: string
@@ -263,19 +263,19 @@ export default async (request: RoboRequest) => {
 			// Slash command fields
 			command_name?: string
 			options?: Record<string, string | number | boolean>
-			// Autocomplete fields (Phase 3F)
+			// Autocomplete fields
 			focused_option?: {
 				name: string
 				value: string
 				type?: number
 			}
-			// Button click fields (Phase 3C)
+			// Button click fields
 			custom_id?: string
 			message_id?: string
-			// Select menu fields (Phase 3D)
+			// Select menu fields
 			values?: string[]
 			component_type?: number
-			// Context menu fields (Phase 3G)
+			// Context menu fields
 			target_id?: string
 			context_menu_type?: 2 | 3
 			// Common fields (structured format)
@@ -288,7 +288,7 @@ export default async (request: RoboRequest) => {
 			guild_id?: string
 		}
 
-		// Phase 7: Handle raw INTERACTION_CREATE payload (from integration tests)
+		// Handle raw INTERACTION_CREATE payload (from integration tests)
 		// Raw payloads have: id, type, application_id, token, data (not command_name at root level)
 		if (data.id && data.type !== undefined && data.application_id && data.token) {
 			// This is a raw Discord-format INTERACTION_CREATE payload
@@ -350,7 +350,7 @@ export default async (request: RoboRequest) => {
 			}
 		}
 
-		// Select menu interaction (Phase 3D) - check BEFORE button since both have custom_id
+		// Select menu interaction - check BEFORE button since both have custom_id
 		// Select menus have values array, buttons don't
 		if (data.custom_id && data.values !== undefined) {
 			if (!data.message_id) {
@@ -385,7 +385,7 @@ export default async (request: RoboRequest) => {
 			}
 		}
 
-		// Button click interaction (Phase 3C)
+		// Button click interaction
 		if (data.custom_id) {
 			if (!data.message_id) {
 				return badRequest('Button click requires "message_id" in data')
@@ -415,7 +415,7 @@ export default async (request: RoboRequest) => {
 			}
 		}
 
-		// Context menu interaction (Phase 3G)
+		// Context menu interaction
 		// Context menus have target_id + context_menu_type
 		if (data.target_id && data.context_menu_type) {
 			if (!data.command_name) {
@@ -452,7 +452,7 @@ export default async (request: RoboRequest) => {
 			}
 		}
 
-		// Autocomplete interaction (Phase 3F)
+		// Autocomplete interaction
 		// Autocomplete has command_name + focused_option (not custom_id)
 		if (data.command_name && data.focused_option) {
 			const focusedOption = data.focused_option
@@ -516,7 +516,7 @@ export default async (request: RoboRequest) => {
 		}
 	}
 
-	// Handle THREAD_CREATE (Phase 4D)
+	// Handle THREAD_CREATE
 	if (body.event === 'THREAD_CREATE') {
 		const data = body.data as {
 			name: string
@@ -558,7 +558,7 @@ export default async (request: RoboRequest) => {
 		}
 	}
 
-	// Handle THREAD_UPDATE (Phase 4D)
+	// Handle THREAD_UPDATE
 	if (body.event === 'THREAD_UPDATE') {
 		const data = body.data as {
 			thread_id: string
@@ -595,7 +595,7 @@ export default async (request: RoboRequest) => {
 		}
 	}
 
-	// Handle THREAD_DELETE (Phase 4D)
+	// Handle THREAD_DELETE
 	if (body.event === 'THREAD_DELETE') {
 		const data = body.data as {
 			thread_id: string
@@ -618,7 +618,7 @@ export default async (request: RoboRequest) => {
 		}
 	}
 
-	// Handle THREAD_MEMBER_UPDATE (join/leave) (Phase 4D)
+	// Handle THREAD_MEMBER_UPDATE (join/leave)
 	if (body.event === 'THREAD_MEMBER_UPDATE') {
 		const data = body.data as {
 			thread_id: string
@@ -657,7 +657,7 @@ export default async (request: RoboRequest) => {
 		}
 	}
 
-	// Handle THREAD_LIST_SYNC (Phase 4D)
+	// Handle THREAD_LIST_SYNC
 	if (body.event === 'THREAD_LIST_SYNC') {
 		const data = body.data as {
 			guild_id: string
@@ -818,7 +818,7 @@ export default async (request: RoboRequest) => {
 			}
 		}
 
-		// Create roles from data (Phase 5H)
+		// Create roles from data
 		if (data.roles && data.roles.length > 0) {
 			for (const roleData of data.roles) {
 				session.state.roles.set(roleData.id, {
@@ -836,7 +836,7 @@ export default async (request: RoboRequest) => {
 			}
 		}
 
-		// Create members from data (Phase 5H)
+		// Create members from data
 		if (data.members && data.members.length > 0) {
 			for (const memberData of data.members) {
 				// Create or get user
@@ -1012,8 +1012,8 @@ export default async (request: RoboRequest) => {
 		}
 	}
 
-	// Handle VOICE_STATE_UPDATE - update state AND broadcast to Stage clients (Phase 5P)
-	// Also dispatch VOICE_SERVER_UPDATE when bot joins voice (Phase 27)
+	// Handle VOICE_STATE_UPDATE - update state AND broadcast to Stage clients
+	// Also dispatch VOICE_SERVER_UPDATE when bot joins voice
 	if (body.event === 'VOICE_STATE_UPDATE') {
 		const data = body.data as {
 			guild_id: string
@@ -1096,7 +1096,7 @@ export default async (request: RoboRequest) => {
 		}
 		await session.dispatch(body.event, voiceStatePayload)
 
-		// If bot is joining voice, also dispatch VOICE_SERVER_UPDATE (Phase 27)
+		// If bot is joining voice, also dispatch VOICE_SERVER_UPDATE
 		if (isBotUser && isJoiningVoice) {
 			// Generate voice server token and store state
 			const voiceToken = `mock-voice-${generateSnowflake()}`

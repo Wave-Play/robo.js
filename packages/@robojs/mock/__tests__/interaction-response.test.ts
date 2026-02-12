@@ -1,5 +1,5 @@
 /**
- * Phase 3B: Interaction Response Endpoint Tests
+ * Interaction Response Endpoint Tests
  * Tests the POST /interactions/:id/:token/callback endpoint
  */
 import { InteractionType } from 'discord-api-types/v10'
@@ -33,7 +33,7 @@ function createMockRequest(options: {
 	}
 }
 
-describe('Phase 3B: Interaction Response Endpoint', () => {
+describe('Interaction Response Endpoint', () => {
 	let sessionManager: SessionManager
 	let session: Session
 
@@ -442,7 +442,7 @@ describe('Phase 3B: Interaction Response Endpoint', () => {
 		})
 	})
 
-	describe('Phase 3B Requirements Verification', () => {
+	describe('Requirements Verification', () => {
 		it('Task 1: Types exist for interaction response', () => {
 			// Verify MockInteractionResponse type works
 			const response: MockInteraction['response'] = {

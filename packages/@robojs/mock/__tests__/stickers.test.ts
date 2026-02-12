@@ -1,12 +1,12 @@
 /**
- * Phase 4I: Stickers Tests
+ * Stickers Tests
  * Tests for Discord sticker support in messages and guild management
  */
 import { createSessionState, createDefaultGuildWithChannel, MockServerState } from '../src/session/state.js'
 import { mockMessageToAPIMessage, mockStickerToAPISticker, buildGuildStickersUpdatePayload } from '../src/discord/payloads.js'
 import { StickerType, StickerFormatType, StickerLimits, MockStickerConfig } from '../src/types/index.js'
 
-describe('Phase 4I: Stickers', () => {
+describe('Stickers', () => {
 	describe('Sticker creation', () => {
 		let sessionState: MockServerState
 

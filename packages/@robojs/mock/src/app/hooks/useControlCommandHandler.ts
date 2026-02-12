@@ -1,5 +1,5 @@
 /**
- * Control Command Handler Hook (Phase 8)
+ * Control Command Handler Hook
  *
  * Listens for control_command events from the Stage WebSocket and
  * processes them using the playback and selection stores.

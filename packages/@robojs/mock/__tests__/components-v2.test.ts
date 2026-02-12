@@ -1,5 +1,5 @@
 /**
- * Phase 4F: Components V2 Tests
+ * Components V2 Tests
  *
  * Comprehensive tests for Discord's Components V2 message format.
  * Tests cover validation, error handling, and message creation with V2 components.
@@ -19,7 +19,7 @@ import {
 } from '../src/types/index.js'
 import type { SessionState } from '../src/types/index.js'
 
-describe('Phase 4F: Components V2', () => {
+describe('Components V2', () => {
 	describe('MessageFlags', () => {
 		it('should define IsComponentsV2 as 1 << 15 (32768)', () => {
 			expect(MessageFlags.IsComponentsV2).toBe(32768)

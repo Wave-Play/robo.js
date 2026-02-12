@@ -1,5 +1,5 @@
 /**
- * Phase 4K: Custom Emojis Tests
+ * Custom Emojis Tests
  * Tests for Discord custom emoji support in guilds
  */
 import { createSessionState, createDefaultGuildWithChannel, MockServerState } from '../src/session/state.js'
@@ -7,7 +7,7 @@ import { mockEmojiToAPIEmoji, buildGuildEmojisUpdatePayload } from '../src/disco
 import type { MockEmojiConfig } from '../src/types/index.js'
 import { EmojiLimits } from '../src/types/index.js'
 
-describe('Phase 4K: Custom Emojis', () => {
+describe('Custom Emojis', () => {
 	describe('Emoji creation', () => {
 		let sessionState: MockServerState
 

@@ -572,7 +572,7 @@ async function handlePatch(
 		})
 	}
 
-	// Validate Components V2 if flag is set (Phase 4F)
+	// Validate Components V2 if flag is set
 	if (body.flags && body.flags & MessageFlags.IsComponentsV2) {
 		// V2 components cannot coexist with content or embeds
 		if (body.content || (body.embeds && body.embeds.length > 0)) {
@@ -630,7 +630,7 @@ async function handlePatch(
 		content: body.content ?? message.content,
 		embeds: body.embeds ?? message.embeds,
 		attachments: finalAttachments,
-		// Phase 4F: Components V2 support
+		// Components V2 support
 		flags: body.flags ?? message.flags,
 		components: body.components ?? message.components
 	})
@@ -679,7 +679,7 @@ async function handlePatch(
 
 	getGatewayServer().dispatchToSession(session.id, 'MESSAGE_UPDATE', dispatchData, channel?.guildId)
 
-	// Phase 5O: Notify stage that interaction edit is complete (clears "Bot is thinking..." indicator)
+	// Notify stage that interaction edit is complete (clears "Bot is thinking..." indicator)
 	try {
 		getStageBridge().onInteractionEdit(session.id, interaction.id)
 	} catch {

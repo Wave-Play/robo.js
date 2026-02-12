@@ -3,7 +3,7 @@ import type { ScenarioStepResultSummary } from './index.js'
 
 // ============================================================================
 // Stage WebSocket Protocol Types
-// Phase 5A: Real-time event streaming for test clients
+// Real-time event streaming for test clients
 // ============================================================================
 
 /**
@@ -27,13 +27,13 @@ export type StageEventType =
 	| 'interaction_create' // Slash command, button, etc. invoked
 	| 'interaction_response' // Bot responded to interaction
 	| 'interaction_followup' // Bot sent followup message
-	| 'interaction_edit' // Bot edited interaction message (Phase 5O)
+	| 'interaction_edit' // Bot edited interaction message
 
 	// Typing & presence
 	| 'typing_start' // User started typing
 	| 'presence_update' // User status changed
 
-	// Voice (Phase 5P)
+	// Voice
 	| 'voice_state_update' // User joined/left/updated voice channel
 
 	// Guild/Channel events
@@ -52,7 +52,7 @@ export type StageEventType =
 	| 'session_invalid' // Session token is stale/expired
 	| 'control_action' // Control action performed
 
-	// REST API (Phase 5K)
+	// REST API
 	| 'rest_call' // REST API call made by bot
 
 	// Diagnostics
@@ -96,7 +96,7 @@ export type StageCommandType =
 	| 'subscribe_channel' // Subscribe to channel updates
 	| 'set_current_user' // Set the current user for the session
 	| 'switch_user' // Switch to a different user
-	// Voice (Phase 5P)
+	// Voice
 	| 'join_voice' // Join a voice channel
 	| 'leave_voice' // Leave voice channel
 	| 'update_voice_state' // Update mute/deaf state
@@ -133,11 +133,11 @@ export interface StateSyncPayload {
 	guilds: StageGuild[]
 	channels: StageChannel[]
 	members: StageMember[]
-	roles: StageRole[] // Phase 5H: Guild roles
+	roles: StageRole[] // Guild roles
 	messages: Record<string, StageMessage[]> // channelId -> messages
 	users: StageUser[]
-	commands: StageApplicationCommand[] // Phase 5G: Available slash commands
-	voice_states: StageVoiceState[] // Phase 5P: Voice channel states
+	commands: StageApplicationCommand[] // Available slash commands
+	voice_states: StageVoiceState[] // Voice channel states
 	currentUser?: StageUser
 }
 
@@ -212,7 +212,7 @@ export interface StageMember {
 }
 
 /**
- * Simplified role data for stage clients (Phase 5H)
+ * Simplified role data for stage clients
  */
 export interface StageRole {
 	id: Snowflake
@@ -224,7 +224,7 @@ export interface StageRole {
 }
 
 /**
- * Simplified voice state data for stage clients (Phase 5P)
+ * Simplified voice state data for stage clients
  */
 export interface StageVoiceState {
 	guild_id: Snowflake
@@ -236,7 +236,7 @@ export interface StageVoiceState {
 	deaf: boolean // Server deaf
 	self_stream?: boolean
 	self_video?: boolean
-	speaking?: boolean // Simulated speaking indicator (Phase 5P)
+	speaking?: boolean // Simulated speaking indicator
 	member?: StageMember
 }
 
@@ -300,7 +300,7 @@ export interface StageMessage {
 }
 
 // ============================================================================
-// Phase 5G: Application Command Types for Stage UI
+// Application Command Types for Stage UI
 // ============================================================================
 
 /**
@@ -361,7 +361,7 @@ export interface StageMessageCreateData {
 export interface StageInteractionResponseData {
 	interactionId: Snowflake
 	response: unknown
-	// Phase 5O: Additional fields for "Bot is thinking..." indicator
+	// Additional fields for "Bot is thinking..." indicator
 	channelId?: Snowflake
 	bot?: {
 		id?: string
@@ -406,7 +406,7 @@ export interface StageCommandResponseData {
 }
 
 /**
- * Data payload for rest_call events (Phase 5K)
+ * Data payload for rest_call events
  */
 export interface StageRESTCallData {
 	/** HTTP method */
@@ -518,7 +518,7 @@ export interface StageInvokeCommandData {
 }
 
 /**
- * Data for invoke_context_command command (Phase 5N)
+ * Data for invoke_context_command command
  */
 export interface StageInvokeContextCommandData {
 	channel_id: Snowflake
@@ -617,7 +617,7 @@ export interface StageSubscribeChannelData {
 }
 
 /**
- * Data for join_voice command (Phase 5P)
+ * Data for join_voice command
  */
 export interface StageJoinVoiceData {
 	channel_id: Snowflake
@@ -631,7 +631,7 @@ export interface StageJoinVoiceData {
 }
 
 /**
- * Data for leave_voice command (Phase 5P)
+ * Data for leave_voice command
  */
 export interface StageLeaveVoiceData {
 	guild_id: Snowflake
@@ -642,7 +642,7 @@ export interface StageLeaveVoiceData {
 }
 
 /**
- * Data for update_voice_state command (Phase 5P)
+ * Data for update_voice_state command
  */
 export interface StageUpdateVoiceStateData {
 	guild_id: Snowflake
@@ -855,7 +855,7 @@ export interface StageNavigationChangedData {
 	/** Timestamp */
 	timestamp: number
 
-	// Scenario navigation fields (Phase 6: Backward Navigation)
+	// Scenario navigation fields
 	/** Run ID when navigating scenario steps */
 	runId?: string
 	/** Scenario ID when navigating scenario steps */

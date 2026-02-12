@@ -17,7 +17,7 @@ import type { PermissionOverride } from '../../../../../../types/index.js'
  *   deleted_id: string
  * }
  *
- * @see Phase 3: Permissions Admin UI
+ * @see Permissions Admin UI
  */
 export default async (request: RoboRequest) => {
 	validateMethod(request, ['GET', 'DELETE'])

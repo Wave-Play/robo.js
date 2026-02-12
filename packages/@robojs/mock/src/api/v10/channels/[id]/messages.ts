@@ -134,7 +134,7 @@ export default async (request: RoboRequest) => {
 	}
 
 	// POST - Create message
-	// 4b. Check permissions (Phase 4L-Extended)
+	// 4b. Check permissions
 	const permError = enforcePermissions(
 		session,
 		'POST',
@@ -152,10 +152,10 @@ export default async (request: RoboRequest) => {
 		tts?: boolean
 		message_reference?: { message_id: string }
 		attachments?: AttachmentPayload[] // Metadata for uploaded files
-		// Phase 13: Message nonce support
+		// Message nonce support
 		nonce?: string | number
 		enforceNonce?: boolean
-		// Phase 4G: Poll support
+		// Poll support
 		poll?: {
 			question: { text: string; emoji?: { id?: string; name?: string } }
 			answers: Array<{ poll_media: { text?: string; emoji?: { id?: string; name?: string } } }>
@@ -163,7 +163,7 @@ export default async (request: RoboRequest) => {
 			allow_multiselect?: boolean
 			layout_type?: number
 		}
-		// Phase 4I: Sticker support
+		// Sticker support
 		sticker_ids?: string[]
 	}
 

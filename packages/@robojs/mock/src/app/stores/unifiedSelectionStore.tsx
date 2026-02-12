@@ -219,7 +219,7 @@ export function useUnifiedSelection() {
 		dispatch({ type: 'RESTORE_LIVE_SELECTION' })
 	}, [dispatch])
 
-	// Navigation actions for external control (Phase 8)
+	// Navigation actions for external control
 	// Use dispatchWithSync for control methods that need immediate state updates
 	// for getNavigationStateSnapshot() to return accurate state in control responses
 	const navigateToGuild = useCallback(
@@ -264,7 +264,7 @@ export function useUnifiedSelection() {
 		saveLiveSelection,
 		restoreLiveSelection,
 
-		// External navigation (Phase 8)
+		// External navigation
 		navigateToGuild,
 		navigateToChannel,
 		navigateToDM,

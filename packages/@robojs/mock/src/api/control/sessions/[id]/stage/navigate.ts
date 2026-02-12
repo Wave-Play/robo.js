@@ -1,5 +1,5 @@
 /**
- * Stage Navigation Control Endpoint (Phase 8)
+ * Stage Navigation Control Endpoint
  *
  * POST /api/control/sessions/:id/stage/navigate
  *
@@ -114,7 +114,7 @@ export default async function handler(request: RoboRequest): Promise<Response> {
 			return badRequest(response.error || 'Navigation control failed')
 		}
 
-		// Broadcast navigation change for external subscribers (Phase 7).
+		// Broadcast navigation change for external subscribers.
 		try {
 			getControlEventsHub().broadcast(id, 'stage.navigation.changed', response.result as StageNavigationChangedData)
 		} catch {

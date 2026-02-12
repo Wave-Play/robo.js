@@ -1,6 +1,6 @@
 # Integration Testing Guide for @robojs/mock
 
-This guide provides comprehensive documentation for implementing and maintaining Discord.js integration tests for the @robojs/mock Discord Mock Server. It is designed for AI agents implementing future test phases.
+This guide provides comprehensive documentation for implementing and maintaining Discord.js integration tests for the @robojs/mock Discord Mock Server. It is designed for AI agents implementing additional test suites.
 
 ## Table of Contents
 
@@ -11,7 +11,7 @@ This guide provides comprehensive documentation for implementing and maintaining
 5. [Test Utilities Reference](#test-utilities-reference)
 6. [Control API Reference](#control-api-reference)
 7. [Writing New Tests](#writing-new-tests)
-8. [Adding New Test Phases](#adding-new-test-phases)
+8. [Adding New Test Suites](#adding-new-test-suites)
 9. [Troubleshooting](#troubleshooting)
 10. [Best Practices](#best-practices)
 
@@ -38,142 +38,142 @@ These integration tests verify that the @robojs/mock Discord Mock Server works c
 
 ### Test Organization
 
-Tests are organized into phases matching the mock server implementation:
+Tests are organized into suites by feature area:
 
-| Phase | Description | File |
+| Suite | Description | File |
 |-------|-------------|------|
-| Phase 1 | Basic Connection | `phase-1/connection.test.ts` |
-| Phase 2A | Gateway Connection | `phase-2/gateway.test.ts` |
-| Phase 2B | Heartbeat | `phase-2/heartbeat.test.ts` |
-| Phase 2C | Reconnection | `phase-2/reconnection.test.ts` |
-| Phase 2D | REST API | `phase-2/rest-api.test.ts` |
-| Phase 2E-2H | Intents | `phase-2/intents.test.ts` |
-| Phase 3 | Messages, Channels, Threads, Webhooks | `phase-3/*.test.ts` |
-| Phase 4 | Members, Roles, Bans, Permissions | `phase-4/*.test.ts` |
-| Phase 5 | Interactions, AutoMod, Stickers, etc. | `phase-5/*.test.ts` |
-| Phase 6A | Recording Export | `phase-6/recording-export.test.ts` |
-| Phase 6B | Recording Replay | `phase-6/recording-replay.test.ts` |
-| Phase 6C | State Inspection API | `phase-6/state-api.test.ts` |
-| Phase 6E | File Uploads & Attachments | `phase-6/attachments.test.ts` |
-| Phase 6F | Components V2 | `phase-6/components-v2.test.ts` |
-| Phase 6H | Forum Channels Deep | `phase-6/forum-channels.test.ts` |
-| Phase 6 | Guild Settings | `phase-6/guild-settings.test.ts` |
-| Phase 6 | Message Completeness | `phase-6/message-completeness.test.ts` |
-| Phase 7 | Interaction Response Lifecycle | `phase-7/interaction-lifecycle.test.ts` |
-| Phase 7 | Channel Helper Methods | `phase-7/channel-helpers.test.ts` |
-| Phase 7 | Message Helper Methods | `phase-7/message-helpers.test.ts` |
-| Phase 7 | Member Voice Methods | `phase-7/member-voice.test.ts` |
-| Phase 7 | Guild Asset Methods | `phase-7/guild-assets.test.ts` |
-| Phase 7 | Webhook Thread Operations | `phase-7/webhook-threads.test.ts` |
-| Phase 8 | User Methods (send, fetch, DM) | `phase-8/user-methods.test.ts` |
-| Phase 8 | GuildMember Shortcut Methods | `phase-8/member-shortcuts.test.ts` |
-| Phase 8 | Message Methods (reply, react, etc.) | `phase-8/message-methods.test.ts` |
-| Phase 8 | Reaction Methods | `phase-8/reaction-methods.test.ts` |
-| Phase 8 | Thread Methods | `phase-8/thread-methods.test.ts` |
-| Phase 8 | Role Methods | `phase-8/role-methods.test.ts` |
-| Phase 8 | Guild Methods | `phase-8/guild-methods.test.ts` |
-| Phase 8 | Collector Methods | `phase-8/collectors.test.ts` |
-| Phase 9 | Client-Level Methods | `phase-9/client-methods.test.ts` |
-| Phase 9 | GuildMemberManager Methods | `phase-9/member-manager.test.ts` |
-| Phase 9 | GuildChannelManager Methods | `phase-9/channel-manager.test.ts` |
-| Phase 9 | Permission Overwrites | `phase-9/permission-overwrites.test.ts` |
-| Phase 9 | Sticker Methods | `phase-9/stickers.test.ts` |
-| Phase 9 | Discord.js Utilities | `phase-9/utilities.test.ts` |
-| Phase 12 | Message Reference & Reply Chain | `phase-12/message-references.test.ts` |
-| Phase 12 | Thread Member Management | `phase-12/thread-members.test.ts` |
-| Phase 12 | Channel Position & Category Sync | `phase-12/channel-sync.test.ts` |
-| Phase 12 | Guild Preview & Widget | `phase-12/guild-widget.test.ts` |
-| Phase 12 | Invite Properties | `phase-12/invite-properties.test.ts` |
-| Phase 12 | TextChannel-Specific Methods | `phase-12/text-channel-methods.test.ts` |
-| Phase 12 | VoiceChannel-Specific Methods | `phase-12/voice-channel-methods.test.ts` |
-| Phase 12 | AnnouncementChannel Methods | `phase-12/announcement-channel.test.ts` |
-| Phase 12 | Client Caching & Sweepers | `phase-12/client-caching.test.ts` |
-| Phase 12 | ForumChannel-Specific Methods | `phase-12/forum-channel-methods.test.ts` |
-| Phase 13 | CategoryChannel Children | `phase-13/category-children.test.ts` |
-| Phase 13 | Role Position Comparison | `phase-13/role-positions.test.ts` |
-| Phase 13 | Channel Comparisons | `phase-13/channel-comparisons.test.ts` |
-| Phase 13 | Extended Embeds | `phase-13/embeds.test.ts` |
-| Phase 13 | Application & Bot User | `phase-13/application-bot.test.ts` |
-| Phase 13 | Fetch Options | `phase-13/fetch-options.test.ts` |
-| Phase 13 | Message Nonce & System Messages | `phase-13/message-nonce.test.ts` |
-| Phase 13 | Partial Structures | `phase-13/partials.test.ts` |
-| Phase 13 | Voice Regions | `phase-13/voice-regions.test.ts` |
-| Phase 13 | Guild Integrations & Vanity | `phase-13/guild-integrations.test.ts` |
-| Phase 13 | Guild Templates | `phase-13/guild-templates.test.ts` |
-| Phase 13 | Error Classes & Handling | `phase-13/error-handling.test.ts` |
-| Phase 14 | Button Variations | `phase-14/buttons.test.ts` |
-| Phase 14 | Select Menu Variations | `phase-14/select-menus.test.ts` |
-| Phase 14 | Modal & TextInput | `phase-14/modals.test.ts` |
-| Phase 14 | Multiple Action Rows | `phase-14/action-rows.test.ts` |
-| Phase 14 | Thread Archive/Unarchive | `phase-14/thread-archive.test.ts` |
-| Phase 14 | Audit Log Details | `phase-14/audit-logs.test.ts` |
-| Phase 14 | Scheduled Event Subscribers | `phase-14/scheduled-event-subscribers.test.ts` |
-| Phase 16 | VoiceState Properties | `phase-16/voice-state-properties.test.ts` |
-| Phase 16 | Stage Channel & Instance | `phase-16/stage-instance.test.ts` |
-| Phase 16 | VoiceChannel Members Collection | `phase-16/voice-channel-members.test.ts` |
-| Phase 16 | Presence & Activity Details | `phase-16/presence-activity.test.ts` |
-| Phase 16 | User Properties | `phase-16/user-properties.test.ts` |
-| Phase 16 | Attachment Properties | `phase-16/attachment-properties.test.ts` |
-| Phase 17 | Client Debug Events | `phase-17/client-events.test.ts` |
-| Phase 17 | Shard Events | `phase-17/shard-events.test.ts` |
-| Phase 17 | GuildMember Communication Disabled | `phase-17/member-communication.test.ts` |
-| Phase 17 | Webhook Types & Properties | `phase-17/webhook-types.test.ts` |
-| Phase 17 | ThreadMember Properties | `phase-17/thread-member-properties.test.ts` |
-| Phase 17 | GuildBan Properties | `phase-17/guild-ban-properties.test.ts` |
-| Phase 17 | Invite Targeting | `phase-17/invite-targeting.test.ts` |
-| Phase 17 | Emoji fetchAuthor | `phase-17/emoji-author.test.ts` |
-| Phase 17 | Scheduled Event Status Methods | `phase-17/scheduled-event-status.test.ts` |
-| Phase 20 | Message roleSubscriptionData | `phase-20/role-subscription.test.ts` |
-| Phase 20 | Interaction Response States | `phase-20/interaction-response-states.test.ts` |
-| Phase 20 | Button Interaction Properties | `phase-20/button-interaction.test.ts` |
-| Phase 20 | Autocomplete Interaction | `phase-20/autocomplete.test.ts` |
-| Phase 20 | Message Position | `phase-20/message-position.test.ts` |
-| Phase 20 | Application Emojis | `phase-20/application-emojis.test.ts` |
-| Phase 20 | EntryPoint Command | `phase-20/entrypoint-command.test.ts` |
-| Phase 20 | Interaction Entitlements | `phase-20/interaction-entitlements.test.ts` |
-| Phase 20 | GuildMember Boost Info | `phase-20/member-boost.test.ts` |
-| Phase 20 | Client Statistics | `phase-20/client-statistics.test.ts` |
-| Phase 21 | Guild AFK Settings | `phase-21/guild-afk-settings.test.ts` |
-| Phase 21 | Guild System Channel | `phase-21/guild-system-channel.test.ts` |
-| Phase 21 | Guild Verification & Content Filter | `phase-21/guild-verification.test.ts` |
-| Phase 21 | Guild Splash & Banner | `phase-21/guild-splash-banner.test.ts` |
-| Phase 21 | Guild Approximate Counts | `phase-21/guild-counts.test.ts` |
-| Phase 21 | Guild Max Properties | `phase-21/guild-max-properties.test.ts` |
-| Phase 21 | Guild Preview | `phase-21/guild-preview.test.ts` |
-| Phase 21 | Guild Widget | `phase-21/guild-widget.test.ts` |
-| Phase 21 | Channel Default Settings | `phase-21/channel-defaults.test.ts` |
-| Phase 21 | Forum Channel Settings | `phase-21/forum-settings.test.ts` |
-| Phase 22 | Permission & Intent Enforcement | `phase-22/permissions-intents.test.ts` |
-| Phase 22 | Collection Methods on Mock Data | `phase-22/collection-methods.test.ts` |
-| Phase 22 | Formatters & Embeds Round-Trip | `phase-22/formatters-embeds.test.ts` |
-| Phase 25 | Client Options | `phase-25/client-options.test.ts` |
-| Phase 25 | Interaction Webhook | `phase-25/interaction-webhook.test.ts` |
-| Phase 25 | Permission Overwrites Manager | `phase-25/permission-overwrites-manager.test.ts` |
-| Phase 25 | GuildMember Permissions | `phase-25/member-permissions.test.ts` |
-| Phase 25 | Role Permissions | `phase-25/role-permissions.test.ts` |
-| Phase 25 | Message Mentions | `phase-25/message-mentions.test.ts` |
-| Phase 25 | Final Client Properties | `phase-25/client-properties.test.ts` |
-| Phase 26 | Sharding (Shard Calc, Config, Events, Multi-Client) | `phase-26/sharding.test.ts` |
-| Phase 26 | ShardingManager (Creation, Properties, Spawn*) | `phase-26/sharding-manager.test.ts` |
-| Phase 27 | Voice Connection Basics | `phase-27/voice-connections.test.ts` |
-| Phase 27 | Audio Player | `phase-27/audio-player.test.ts` |
-| Phase 27 | Audio Resource | `phase-27/audio-resource.test.ts` |
-| Phase 27 | Voice Connection Events | `phase-27/voice-events.test.ts` |
-| Phase 27 | Voice Adapter Creator | `phase-27/voice-adapter.test.ts` |
-| Phase 28 | Burst Reactions (Super Reactions) | `phase-28/burst-reactions.test.ts` |
-| Phase 28 | Role Connection Metadata | `phase-28/role-connections.test.ts` |
-| Phase 28 | Interaction Context Types | `phase-28/interaction-contexts.test.ts` |
-| Phase 28 | Message Snapshot Details | `phase-28/message-snapshots.test.ts` |
-| Phase 28 | Command Permissions V2 | `phase-28/command-permissions-v2.test.ts` |
-| Phase 28 | Guild Member Search Extended | `phase-28/member-search.test.ts` |
-| Phase 28 | Webhooks in Threads Extended | `phase-28/webhooks-threads-extended.test.ts` |
-| Phase 29 | ChannelManager Methods | `phase-29/channel-manager.test.ts` |
-| Phase 29 | GuildManager Methods | `phase-29/guild-manager.test.ts` |
-| Phase 29 | UserManager Methods | `phase-29/user-manager.test.ts` |
-| Phase 29 | All Client Events | `phase-29/all-client-events.test.ts` |
-| Phase 29 | Premium Required Responses | `phase-29/premium-responses.test.ts` |
-| Phase 29 | MessageManager Additional Methods | `phase-29/message-manager.test.ts` |
-| Phase 30 | Final Gap Coverage | `phase-30/final-gap-coverage.test.ts` |
+| Connection | Basic Connection | `01-connection/connection.test.ts` |
+| Gateway | Gateway Connection | `02-gateway/gateway.test.ts` |
+| Gateway | Heartbeat | `02-gateway/heartbeat.test.ts` |
+| Gateway | Reconnection | `02-gateway/reconnection.test.ts` |
+| Gateway | REST API | `02-gateway/rest-api.test.ts` |
+| Gateway | Intents | `02-gateway/intents.test.ts` |
+| Messaging | Messages, Channels, Threads, Webhooks | `03-messaging/*.test.ts` |
+| Guild Entities | Members, Roles, Bans, Permissions | `04-guild-entities/*.test.ts` |
+| Discord Features | Interactions, AutoMod, Stickers, etc. | `05-discord-features/*.test.ts` |
+| Recording & State | Recording Export | `06-recording-state/recording-export.test.ts` |
+| Recording & State | Recording Replay | `06-recording-state/recording-replay.test.ts` |
+| Recording & State | State Inspection API | `06-recording-state/state-api.test.ts` |
+| Recording & State | File Uploads & Attachments | `06-recording-state/attachments.test.ts` |
+| Recording & State | Components V2 | `06-recording-state/components-v2.test.ts` |
+| Recording & State | Forum Channels Deep | `06-recording-state/forum-channels.test.ts` |
+| Recording & State | Guild Settings | `06-recording-state/guild-settings.test.ts` |
+| Recording & State | Message Completeness | `06-recording-state/message-completeness.test.ts` |
+| Helper Methods | Interaction Response Lifecycle | `07-helper-methods/interaction-lifecycle.test.ts` |
+| Helper Methods | Channel Helper Methods | `07-helper-methods/channel-helpers.test.ts` |
+| Helper Methods | Message Helper Methods | `07-helper-methods/message-helpers.test.ts` |
+| Helper Methods | Member Voice Methods | `07-helper-methods/member-voice.test.ts` |
+| Helper Methods | Guild Asset Methods | `07-helper-methods/guild-assets.test.ts` |
+| Helper Methods | Webhook Thread Operations | `07-helper-methods/webhook-threads.test.ts` |
+| Entity Methods | User Methods (send, fetch, DM) | `08-entity-methods/user-methods.test.ts` |
+| Entity Methods | GuildMember Shortcut Methods | `08-entity-methods/member-shortcuts.test.ts` |
+| Entity Methods | Message Methods (reply, react, etc.) | `08-entity-methods/message-methods.test.ts` |
+| Entity Methods | Reaction Methods | `08-entity-methods/reaction-methods.test.ts` |
+| Entity Methods | Thread Methods | `08-entity-methods/thread-methods.test.ts` |
+| Entity Methods | Role Methods | `08-entity-methods/role-methods.test.ts` |
+| Entity Methods | Guild Methods | `08-entity-methods/guild-methods.test.ts` |
+| Entity Methods | Collector Methods | `08-entity-methods/collectors.test.ts` |
+| Managers | Client-Level Methods | `09-managers/client-methods.test.ts` |
+| Managers | GuildMemberManager Methods | `09-managers/member-manager.test.ts` |
+| Managers | GuildChannelManager Methods | `09-managers/channel-manager.test.ts` |
+| Managers | Permission Overwrites | `09-managers/permission-overwrites.test.ts` |
+| Managers | Sticker Methods | `09-managers/stickers.test.ts` |
+| Managers | Discord.js Utilities | `09-managers/utilities.test.ts` |
+| Channel Types | Message Reference & Reply Chain | `12-channel-types/message-references.test.ts` |
+| Channel Types | Thread Member Management | `12-channel-types/thread-members.test.ts` |
+| Channel Types | Channel Position & Category Sync | `12-channel-types/channel-sync.test.ts` |
+| Channel Types | Guild Preview & Widget | `12-channel-types/guild-widget.test.ts` |
+| Channel Types | Invite Properties | `12-channel-types/invite-properties.test.ts` |
+| Channel Types | TextChannel-Specific Methods | `12-channel-types/text-channel-methods.test.ts` |
+| Channel Types | VoiceChannel-Specific Methods | `12-channel-types/voice-channel-methods.test.ts` |
+| Channel Types | AnnouncementChannel Methods | `12-channel-types/announcement-channel.test.ts` |
+| Channel Types | Client Caching & Sweepers | `12-channel-types/client-caching.test.ts` |
+| Channel Types | ForumChannel-Specific Methods | `12-channel-types/forum-channel-methods.test.ts` |
+| Extended Entities | CategoryChannel Children | `13-extended-entities/category-children.test.ts` |
+| Extended Entities | Role Position Comparison | `13-extended-entities/role-positions.test.ts` |
+| Extended Entities | Channel Comparisons | `13-extended-entities/channel-comparisons.test.ts` |
+| Extended Entities | Extended Embeds | `13-extended-entities/embeds.test.ts` |
+| Extended Entities | Application & Bot User | `13-extended-entities/application-bot.test.ts` |
+| Extended Entities | Fetch Options | `13-extended-entities/fetch-options.test.ts` |
+| Extended Entities | Message Nonce & System Messages | `13-extended-entities/message-nonce.test.ts` |
+| Extended Entities | Partial Structures | `13-extended-entities/partials.test.ts` |
+| Extended Entities | Voice Regions | `13-extended-entities/voice-regions.test.ts` |
+| Extended Entities | Guild Integrations & Vanity | `13-extended-entities/guild-integrations.test.ts` |
+| Extended Entities | Guild Templates | `13-extended-entities/guild-templates.test.ts` |
+| Extended Entities | Error Classes & Handling | `13-extended-entities/error-handling.test.ts` |
+| Components | Button Variations | `14-components/buttons.test.ts` |
+| Components | Select Menu Variations | `14-components/select-menus.test.ts` |
+| Components | Modal & TextInput | `14-components/modals.test.ts` |
+| Components | Multiple Action Rows | `14-components/action-rows.test.ts` |
+| Components | Thread Archive/Unarchive | `14-components/thread-archive.test.ts` |
+| Components | Audit Log Details | `14-components/audit-logs.test.ts` |
+| Components | Scheduled Event Subscribers | `14-components/scheduled-event-subscribers.test.ts` |
+| Voice & Presence | VoiceState Properties | `16-voice-presence/voice-state-properties.test.ts` |
+| Voice & Presence | Stage Channel & Instance | `16-voice-presence/stage-instance.test.ts` |
+| Voice & Presence | VoiceChannel Members Collection | `16-voice-presence/voice-channel-members.test.ts` |
+| Voice & Presence | Presence & Activity Details | `16-voice-presence/presence-activity.test.ts` |
+| Voice & Presence | User Properties | `16-voice-presence/user-properties.test.ts` |
+| Voice & Presence | Attachment Properties | `16-voice-presence/attachment-properties.test.ts` |
+| Entity Properties | Client Debug Events | `17-entity-properties/client-events.test.ts` |
+| Entity Properties | Shard Events | `17-entity-properties/shard-events.test.ts` |
+| Entity Properties | GuildMember Communication Disabled | `17-entity-properties/member-communication.test.ts` |
+| Entity Properties | Webhook Types & Properties | `17-entity-properties/webhook-types.test.ts` |
+| Entity Properties | ThreadMember Properties | `17-entity-properties/thread-member-properties.test.ts` |
+| Entity Properties | GuildBan Properties | `17-entity-properties/guild-ban-properties.test.ts` |
+| Entity Properties | Invite Targeting | `17-entity-properties/invite-targeting.test.ts` |
+| Entity Properties | Emoji fetchAuthor | `17-entity-properties/emoji-author.test.ts` |
+| Entity Properties | Scheduled Event Status Methods | `17-entity-properties/scheduled-event-status.test.ts` |
+| Interaction Extras | Message roleSubscriptionData | `20-interaction-extras/role-subscription.test.ts` |
+| Interaction Extras | Interaction Response States | `20-interaction-extras/interaction-response-states.test.ts` |
+| Interaction Extras | Button Interaction Properties | `20-interaction-extras/button-interaction.test.ts` |
+| Interaction Extras | Autocomplete Interaction | `20-interaction-extras/autocomplete.test.ts` |
+| Interaction Extras | Message Position | `20-interaction-extras/message-position.test.ts` |
+| Interaction Extras | Application Emojis | `20-interaction-extras/application-emojis.test.ts` |
+| Interaction Extras | EntryPoint Command | `20-interaction-extras/entrypoint-command.test.ts` |
+| Interaction Extras | Interaction Entitlements | `20-interaction-extras/interaction-entitlements.test.ts` |
+| Interaction Extras | GuildMember Boost Info | `20-interaction-extras/member-boost.test.ts` |
+| Interaction Extras | Client Statistics | `20-interaction-extras/client-statistics.test.ts` |
+| Guild Settings | Guild AFK Settings | `21-guild-settings/guild-afk-settings.test.ts` |
+| Guild Settings | Guild System Channel | `21-guild-settings/guild-system-channel.test.ts` |
+| Guild Settings | Guild Verification & Content Filter | `21-guild-settings/guild-verification.test.ts` |
+| Guild Settings | Guild Splash & Banner | `21-guild-settings/guild-splash-banner.test.ts` |
+| Guild Settings | Guild Approximate Counts | `21-guild-settings/guild-counts.test.ts` |
+| Guild Settings | Guild Max Properties | `21-guild-settings/guild-max-properties.test.ts` |
+| Guild Settings | Guild Preview | `21-guild-settings/guild-preview.test.ts` |
+| Guild Settings | Guild Widget | `21-guild-settings/guild-widget.test.ts` |
+| Guild Settings | Channel Default Settings | `21-guild-settings/channel-defaults.test.ts` |
+| Guild Settings | Forum Channel Settings | `21-guild-settings/forum-settings.test.ts` |
+| Permissions & Collections | Permission & Intent Enforcement | `22-permissions-collections/permissions-intents.test.ts` |
+| Permissions & Collections | Collection Methods on Mock Data | `22-permissions-collections/collection-methods.test.ts` |
+| Permissions & Collections | Formatters & Embeds Round-Trip | `22-permissions-collections/formatters-embeds.test.ts` |
+| Client Permissions | Client Options | `25-client-permissions/client-options.test.ts` |
+| Client Permissions | Interaction Webhook | `25-client-permissions/interaction-webhook.test.ts` |
+| Client Permissions | Permission Overwrites Manager | `25-client-permissions/permission-overwrites-manager.test.ts` |
+| Client Permissions | GuildMember Permissions | `25-client-permissions/member-permissions.test.ts` |
+| Client Permissions | Role Permissions | `25-client-permissions/role-permissions.test.ts` |
+| Client Permissions | Message Mentions | `25-client-permissions/message-mentions.test.ts` |
+| Client Permissions | Final Client Properties | `25-client-permissions/client-properties.test.ts` |
+| Sharding | Sharding (Shard Calc, Config, Events, Multi-Client) | `26-sharding/sharding.test.ts` |
+| Sharding | ShardingManager (Creation, Properties, Spawn*) | `26-sharding/sharding-manager.test.ts` |
+| Voice | Voice Connection Basics | `27-voice/voice-connections.test.ts` |
+| Voice | Audio Player | `27-voice/audio-player.test.ts` |
+| Voice | Audio Resource | `27-voice/audio-resource.test.ts` |
+| Voice | Voice Connection Events | `27-voice/voice-events.test.ts` |
+| Voice | Voice Adapter Creator | `27-voice/voice-adapter.test.ts` |
+| Advanced Features | Burst Reactions (Super Reactions) | `28-advanced-features/burst-reactions.test.ts` |
+| Advanced Features | Role Connection Metadata | `28-advanced-features/role-connections.test.ts` |
+| Advanced Features | Interaction Context Types | `28-advanced-features/interaction-contexts.test.ts` |
+| Advanced Features | Message Snapshot Details | `28-advanced-features/message-snapshots.test.ts` |
+| Advanced Features | Command Permissions V2 | `28-advanced-features/command-permissions-v2.test.ts` |
+| Advanced Features | Guild Member Search Extended | `28-advanced-features/member-search.test.ts` |
+| Advanced Features | Webhooks in Threads Extended | `28-advanced-features/webhooks-threads-extended.test.ts` |
+| Manager Methods | ChannelManager Methods | `29-manager-methods/channel-manager.test.ts` |
+| Manager Methods | GuildManager Methods | `29-manager-methods/guild-manager.test.ts` |
+| Manager Methods | UserManager Methods | `29-manager-methods/user-manager.test.ts` |
+| Manager Methods | All Client Events | `29-manager-methods/all-client-events.test.ts` |
+| Manager Methods | Premium Required Responses | `29-manager-methods/premium-responses.test.ts` |
+| Manager Methods | MessageManager Additional Methods | `29-manager-methods/message-manager.test.ts` |
+| Gap Coverage | Final Gap Coverage | `30-gap-coverage/final-gap-coverage.test.ts` |
 
 ---
 
@@ -192,25 +192,25 @@ __tests__/integration/
 │   └── test-client.ts              # Discord.js client factory
 ├── utils/
 │   └── helpers.ts                  # Test utility functions
-├── phase-1/
+├── 01-connection/
 │   └── connection.test.ts          # Basic connection tests
-├── phase-2/
+├── 02-gateway/
 │   ├── gateway.test.ts             # Gateway tests
 │   ├── heartbeat.test.ts           # Heartbeat tests
 │   ├── reconnection.test.ts        # Reconnection tests
 │   ├── rest-api.test.ts            # REST API tests
 │   └── intents.test.ts             # Intent filtering tests
-├── phase-3/
+├── 03-messaging/
 │   ├── channels.test.ts            # Channel CRUD tests
 │   ├── messages.test.ts            # Message tests
 │   ├── threads.test.ts             # Thread tests
 │   └── webhooks.test.ts            # Webhook tests
-├── phase-4/
+├── 04-guild-entities/
 │   ├── members.test.ts             # Member operations
 │   ├── roles.test.ts               # Role CRUD tests
 │   ├── bans.test.ts                # Ban management tests
 │   └── permissions.test.ts         # Permission tests
-├── phase-5/
+├── 05-discord-features/
 │   ├── interactions.test.ts        # Interaction tests
 │   ├── automod.test.ts             # Auto moderation tests
 │   ├── stickers.test.ts            # Sticker tests
@@ -218,23 +218,23 @@ __tests__/integration/
 │   ├── invites.test.ts             # Invite tests
 │   ├── scheduled-events.test.ts    # Scheduled events
 │   └── ... (additional tests)
-└── phase-6/
-    ├── recording-export.test.ts    # Recording export tests
-    ├── recording-replay.test.ts    # Recording replay tests
-    ├── state-api.test.ts           # State inspection API tests
-    ├── attachments.test.ts         # File upload tests
-    ├── components-v2.test.ts       # Components V2 tests
-    ├── forum-channels.test.ts      # Forum channel tests
-    ├── guild-settings.test.ts      # Guild CRUD tests
-    └── message-completeness.test.ts # Message validation tests
-├── phase-7/
+├── 06-recording-state/
+│   ├── recording-export.test.ts    # Recording export tests
+│   ├── recording-replay.test.ts    # Recording replay tests
+│   ├── state-api.test.ts           # State inspection API tests
+│   ├── attachments.test.ts         # File upload tests
+│   ├── components-v2.test.ts       # Components V2 tests
+│   ├── forum-channels.test.ts      # Forum channel tests
+│   ├── guild-settings.test.ts      # Guild CRUD tests
+│   └── message-completeness.test.ts # Message validation tests
+├── 07-helper-methods/
 │   ├── interaction-lifecycle.test.ts # Interaction response lifecycle
 │   ├── channel-helpers.test.ts      # Channel helper methods
 │   ├── message-helpers.test.ts      # Message helper methods
 │   ├── member-voice.test.ts         # Member voice state methods
 │   ├── guild-assets.test.ts         # Guild asset methods
 │   └── webhook-threads.test.ts      # Webhook thread operations
-├── phase-8/
+├── 08-entity-methods/
 │   ├── user-methods.test.ts         # User methods (send, fetch, DM)
 │   ├── member-shortcuts.test.ts     # GuildMember shortcut methods
 │   ├── message-methods.test.ts      # Message methods (reply, react, etc.)
@@ -243,14 +243,14 @@ __tests__/integration/
 │   ├── role-methods.test.ts         # Role methods
 │   ├── guild-methods.test.ts        # Guild methods
 │   └── collectors.test.ts           # Collector methods
-├── phase-9/
+├── 09-managers/
 │   ├── client-methods.test.ts       # Client-level methods
 │   ├── member-manager.test.ts       # GuildMemberManager methods
 │   ├── channel-manager.test.ts      # GuildChannelManager methods
 │   ├── permission-overwrites.test.ts # Permission overwrites
 │   ├── stickers.test.ts             # Sticker methods
 │   └── utilities.test.ts            # Discord.js utilities
-├── phase-12/
+├── 12-channel-types/
 │   ├── message-references.test.ts   # Message reference & reply chain
 │   ├── thread-members.test.ts       # Thread member management
 │   ├── channel-sync.test.ts         # Channel position & category sync
@@ -261,7 +261,7 @@ __tests__/integration/
 │   ├── announcement-channel.test.ts # AnnouncementChannel methods
 │   ├── client-caching.test.ts       # Client caching & sweepers
 │   └── forum-channel-methods.test.ts # ForumChannel-specific methods
-├── phase-13/
+├── 13-extended-entities/
 │   ├── category-children.test.ts    # CategoryChannel children
 │   ├── role-positions.test.ts       # Role position comparison
 │   ├── channel-comparisons.test.ts  # Channel type checks
@@ -274,7 +274,7 @@ __tests__/integration/
 │   ├── guild-integrations.test.ts   # Guild integrations & vanity
 │   ├── guild-templates.test.ts      # Guild templates
 │   └── error-handling.test.ts       # Error classes & handling
-├── phase-14/
+├── 14-components/
 │   ├── buttons.test.ts              # Button style variations
 │   ├── select-menus.test.ts         # Select menu types & options
 │   ├── modals.test.ts               # Modal & TextInput variations
@@ -282,14 +282,14 @@ __tests__/integration/
 │   ├── thread-archive.test.ts       # Thread archive/unarchive edge cases
 │   ├── audit-logs.test.ts           # Audit log entry details
 │   └── scheduled-event-subscribers.test.ts # Scheduled event subscribers
-├── phase-16/
+├── 16-voice-presence/
 │   ├── voice-state-properties.test.ts # VoiceState flags & properties
 │   ├── stage-instance.test.ts        # Stage channel & instance ops
 │   ├── voice-channel-members.test.ts # Voice channel member tracking
 │   ├── presence-activity.test.ts     # Presence & activity details
 │   ├── user-properties.test.ts       # User extended properties
 │   └── attachment-properties.test.ts # Attachment metadata
-├── phase-17/
+├── 17-entity-properties/
 │   ├── client-events.test.ts         # Client debug, warn, error, invalidated
 │   ├── shard-events.test.ts          # Shard lifecycle events
 │   ├── member-communication.test.ts  # Communication disabled & member flags
@@ -299,7 +299,7 @@ __tests__/integration/
 │   ├── invite-targeting.test.ts      # Invite targeting & date properties
 │   ├── emoji-author.test.ts          # Emoji fetchAuthor method
 │   └── scheduled-event-status.test.ts # Scheduled event status methods
-├── phase-20/
+├── 20-interaction-extras/
 │   ├── role-subscription.test.ts     # Message roleSubscriptionData
 │   ├── interaction-response-states.test.ts # Interaction state tracking
 │   ├── button-interaction.test.ts    # Button interaction properties
@@ -310,7 +310,7 @@ __tests__/integration/
 │   ├── interaction-entitlements.test.ts # Interaction entitlements
 │   ├── member-boost.test.ts          # GuildMember boost info
 │   └── client-statistics.test.ts     # Client cache statistics
-├── phase-21/
+├── 21-guild-settings/
 │   ├── guild-afk-settings.test.ts    # Guild AFK channel & timeout settings
 │   ├── guild-system-channel.test.ts  # Guild system channel & flags
 │   ├── guild-verification.test.ts    # Verification level & content filter
@@ -321,7 +321,11 @@ __tests__/integration/
 │   ├── guild-widget.test.ts          # Guild widget settings & data
 │   ├── channel-defaults.test.ts      # Channel default settings & slowmode
 │   └── forum-settings.test.ts        # Forum channel settings & tags
-├── phase-25/
+├── 22-permissions-collections/
+│   ├── permissions-intents.test.ts   # Permission & intent enforcement
+│   ├── collection-methods.test.ts    # Collection methods on mock data
+│   └── formatters-embeds.test.ts     # Formatters & embeds round-trip
+├── 25-client-permissions/
 │   ├── client-options.test.ts        # Client configuration options
 │   ├── interaction-webhook.test.ts   # Interaction webhook property & methods
 │   ├── permission-overwrites-manager.test.ts # PermissionOverwriteManager methods
@@ -329,18 +333,18 @@ __tests__/integration/
 │   ├── role-permissions.test.ts      # Role permission methods
 │   ├── message-mentions.test.ts      # Message mentions properties
 │   └── client-properties.test.ts     # Final client properties
-├── phase-26/
+├── 26-sharding/
 │   ├── sharding.test.ts              # Sharding configuration & multi-client tests
 │   ├── sharding-manager.test.ts      # ShardingManager creation & properties
 │   └── fixtures/
 │       └── shard-bot.js              # Bot script for ShardingManager tests
-├── phase-27/
+├── 27-voice/
 │   ├── voice-connections.test.ts     # Voice connection basics
 │   ├── audio-player.test.ts          # Audio player functionality
 │   ├── audio-resource.test.ts        # Audio resource handling
 │   ├── voice-events.test.ts          # Voice connection events
 │   └── voice-adapter.test.ts         # Voice adapter creator
-├── phase-28/
+├── 28-advanced-features/
 │   ├── burst-reactions.test.ts       # Burst/super reactions
 │   ├── role-connections.test.ts      # Role connection metadata
 │   ├── interaction-contexts.test.ts  # Interaction context types
@@ -348,14 +352,14 @@ __tests__/integration/
 │   ├── command-permissions-v2.test.ts # Command permissions V2
 │   ├── member-search.test.ts         # Guild member search extended
 │   └── webhooks-threads-extended.test.ts # Webhooks in threads extended
-├── phase-29/
+├── 29-manager-methods/
 │   ├── channel-manager.test.ts       # ChannelManager methods
 │   ├── guild-manager.test.ts         # GuildManager methods
 │   ├── user-manager.test.ts          # UserManager methods
 │   ├── all-client-events.test.ts     # All client events
 │   ├── premium-responses.test.ts     # Premium required responses
 │   └── message-manager.test.ts       # MessageManager additional methods
-└── phase-30/
+└── 30-gap-coverage/
     └── final-gap-coverage.test.ts    # Final gap coverage tests
 ```
 
@@ -431,10 +435,10 @@ pnpm test:integration
 pnpm test:integration -- --testPathPattern=gateway
 ```
 
-### Specific Test Phase
+### Specific Test Suite
 
 ```bash
-pnpm test:integration -- --testPathPattern=phase-2
+pnpm test:integration -- --testPathPattern=02-gateway
 ```
 
 ### Environment Variables
@@ -557,7 +561,7 @@ invalidateSession(sessionId)            // Invalidate session for fresh READY
 // Action Recording
 getSessionActions(sessionId, options?)  // Get recorded actions
 
-// Recording & Replay (Phase 6)
+// Recording & Replay
 getSessionRecording(sessionId)          // Export session recording
 replayRecording(sessionId, recording, options?)  // Replay a recording
 getFullSessionState(sessionId)          // Get full session state
@@ -644,7 +648,7 @@ createDeferred()                  // Create externally-controlled promise
 | GET | `/sessions/:id/intents` | Get intent configuration |
 | POST | `/sessions/:id/intents` | Update intent configuration |
 
-### Voice Control (Phase 27)
+### Voice Control
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -681,10 +685,10 @@ createDeferred()                  // Create externally-controlled promise
 
 ## Writing New Tests
 
-### Step 1: Choose the Right Phase Directory
+### Step 1: Choose the Right Test Directory
 
-- Use existing phase directory if test fits the category
-- Create new phase directory for new feature areas
+- Use existing test directory if test fits the category
+- Create new test directory for new feature areas
 
 ### Step 2: Follow the Pattern
 
@@ -695,7 +699,7 @@ import { createTestClient, destroyClient } from '../setup/test-client.js'
 import { waitForReady, waitForEvent, delay } from '../utils/helpers.js'
 
 // 2. Use describe blocks for organization
-describe('Phase X: Feature Name', () => {
+describe('Feature Name', () => {
   // 3. Always clean up clients
   let client: Client | null = null
 
@@ -731,12 +735,12 @@ describe('Phase X: Feature Name', () => {
 
 ---
 
-## Adding New Test Phases
+## Adding New Test Suites
 
-### Step 1: Create Phase Directory
+### Step 1: Create Test Directory
 
 ```bash
-mkdir __tests__/integration/phase-N
+mkdir __tests__/integration/NN-descriptive-name
 ```
 
 ### Step 2: Create Test Files
@@ -745,7 +749,7 @@ Follow naming convention: `feature.test.ts`
 
 ### Step 3: Update This Guide
 
-Add new phase to the [Test Organization](#test-organization) table.
+Add new suite to the [Test Organization](#test-organization) table.
 
 ### Step 4: Update Plan File (if applicable)
 
@@ -857,18 +861,18 @@ const result = await waitForEvent(client, Events.MessageCreate) // May miss even
 
 ---
 
-## Future Test Parts
+## Additional Test Coverage
 
-This infrastructure supports adding tests for future mock server phases:
+This infrastructure supports adding tests for additional Discord.js functionality:
 
-- **Part 2:** Interaction handling (slash commands, buttons, modals)
-- **Part 3:** Voice state, presence, typing events
-- **Part 4:** Threads, forums, polls
-- **Part 5+:** Additional Discord features
+- Interaction handling (slash commands, buttons, modals)
+- Voice state, presence, typing events
+- Threads, forums, polls
+- Additional Discord features as they are added
 
-When implementing new parts:
+When implementing new test suites:
 1. Read the corresponding test specification document
-2. Create new phase directories as needed
+2. Create new test directories as needed
 3. Follow existing patterns and utilities
 4. Update this guide with new endpoints/utilities
 

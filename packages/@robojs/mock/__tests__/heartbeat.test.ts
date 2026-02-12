@@ -1,12 +1,12 @@
 /**
- * Phase 1C: Heartbeat Loop Tests
+ * Heartbeat Loop Tests
  * Tests the heartbeat/heartbeat-ack cycle
  */
 import { GatewayOpcodes } from 'discord-api-types/v10'
 import { buildHeartbeatAckPayload } from '../src/discord/payloads.js'
 import type { ConnectionState } from '../src/types/index.js'
 
-describe('Phase 1C: Heartbeat Loop', () => {
+describe('Heartbeat Loop', () => {
 	describe('buildHeartbeatAckPayload', () => {
 		it('should return op: 11 (HEARTBEAT_ACK)', () => {
 			const payload = buildHeartbeatAckPayload()
@@ -82,7 +82,7 @@ describe('Phase 1C: Heartbeat Loop', () => {
 		})
 	})
 
-	describe('Phase 1C Requirements Verification', () => {
+	describe('Requirements Verification', () => {
 		it('Task 1: Can receive HEARTBEAT (op 1) with sequence number', () => {
 			// The gateway.ts handles GatewayOpcodes.Heartbeat case
 			// This test verifies the opcode constant is correct

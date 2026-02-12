@@ -20,14 +20,14 @@ import type { MockForumChannel, MockForumThread } from '../../../../../types/ind
  *   parent_id?: string,
  *   message_count: number,
  *   messages?: SerializedMockMessage[],
- *   // Forum channel fields (Phase 4H):
+ *   // Forum channel fields:
  *   topic?: string,
  *   available_tags?: SerializedMockForumTag[],
  *   default_auto_archive_duration?: number,
  *   default_sort_order?: number,
  *   default_forum_layout?: number,
  *   template?: string,
- *   // Forum thread fields (Phase 4H):
+ *   // Forum thread fields:
  *   applied_tags?: string[]
  * }
  */
@@ -73,7 +73,7 @@ export default async (request: RoboRequest) => {
 		message_count: messageCount
 	}
 
-	// Phase 4H: Include forum channel fields
+	// Include forum channel fields
 	if (channel.type === 15 || channel.type === 16) {
 		const forumChannel = channel as MockForumChannel
 		result.topic = forumChannel.topic
@@ -92,7 +92,7 @@ export default async (request: RoboRequest) => {
 		result.template = forumChannel.template
 	}
 
-	// Phase 4H: Include forum thread fields
+	// Include forum thread fields
 	if (channel.type === 10 || channel.type === 11 || channel.type === 12) {
 		// Check if this thread belongs to a forum channel
 		const parentChannel = session.state.getChannel(channel.parentId!)

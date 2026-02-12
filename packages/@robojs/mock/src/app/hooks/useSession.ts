@@ -38,7 +38,7 @@ export function useSession() {
 	const channelPendingMessages = state.selectedChannelId
 		? state.pendingMessages.filter((m) => m.channelId === state.selectedChannelId)
 		: []
-	// Get voice states for current guild (Phase 5P)
+	// Get voice states for current guild
 	const guildVoiceStates = state.voiceStates.filter((vs) => vs.guild_id === state.selectedGuildId)
 
 	// Actions
@@ -468,7 +468,7 @@ export function useSession() {
 		})
 	}
 
-	// Submit a modal form (Phase 5M)
+	// Submit a modal form
 	const submitModal = async (customId: string, components: ModalActionRow[]) => {
 		return sendCommand('submit_modal', {
 			custom_id: customId,
@@ -476,12 +476,12 @@ export function useSession() {
 		})
 	}
 
-	// Close the active modal (Phase 5M)
+	// Close the active modal
 	const closeModal = () => {
 		dispatch({ type: 'CLOSE_MODAL' })
 	}
 
-	// Invoke context menu command (Phase 5N)
+	// Invoke context menu command
 	const invokeContextCommand = async (
 		commandName: string,
 		commandType: 2 | 3,
@@ -504,7 +504,7 @@ export function useSession() {
 		})
 	}
 
-	// Pin a message (Phase 5N enhancement)
+	// Pin a message
 	const pinMessage = async (channelId: string, messageId: string) => {
 		const response = await fetch(`/api/v10/channels/${channelId}/pins/${messageId}`, {
 			method: 'PUT'
@@ -515,7 +515,7 @@ export function useSession() {
 		// Update local state - the gateway event will handle this via MESSAGE_UPDATE
 	}
 
-	// Unpin a message (Phase 5N enhancement)
+	// Unpin a message
 	const unpinMessage = async (channelId: string, messageId: string) => {
 		const response = await fetch(`/api/v10/channels/${channelId}/pins/${messageId}`, {
 			method: 'DELETE'
@@ -526,7 +526,7 @@ export function useSession() {
 		// Update local state - the gateway event will handle this via MESSAGE_UPDATE
 	}
 
-	// Open a DM channel with a user (Phase 5N enhancement)
+	// Open a DM channel with a user
 	const openDM = async (userId: string) => {
 		const response = await fetch('/api/v10/users/@me/channels', {
 			method: 'POST',
@@ -543,12 +543,12 @@ export function useSession() {
 		return dmChannel
 	}
 
-	// Set the message being replied to (Phase 5N enhancement)
+	// Set the message being replied to
 	const setReplyingTo = (message: StageMessage) => {
 		dispatch({ type: 'SET_REPLYING_TO', payload: message })
 	}
 
-	// Clear the reply state (Phase 5N enhancement)
+	// Clear the reply state
 	const clearReplyingTo = () => {
 		dispatch({ type: 'CLEAR_REPLYING_TO' })
 	}
@@ -563,7 +563,7 @@ export function useSession() {
 		dispatch({ type: 'CLEAR_LOOP_WARNING' })
 	}
 
-	// Join a voice channel (Phase 5P)
+	// Join a voice channel
 	const joinVoice = async (channelId: string, guildId?: string, userId?: string) => {
 		const targetGuildId = guildId || state.selectedGuildId
 		if (!targetGuildId) {
@@ -580,7 +580,7 @@ export function useSession() {
 		})
 	}
 
-	// Leave voice channel (Phase 5P)
+	// Leave voice channel
 	const leaveVoice = async (guildId?: string, userId?: string) => {
 		const targetGuildId = guildId || state.selectedGuildId
 		if (!targetGuildId) {
@@ -596,7 +596,7 @@ export function useSession() {
 		})
 	}
 
-	// Update voice state (mute/deafen) (Phase 5P)
+	// Update voice state (mute/deafen)
 	const updateVoiceState = async (
 		guildId?: string,
 		updates?: { selfMute?: boolean; selfDeaf?: boolean; userId?: string }

@@ -1,5 +1,5 @@
 /**
- * Phase 4E: Image Dimension Detection
+ * Image Dimension Detection
  *
  * Extracts width/height from common image formats without external dependencies.
  * Reads binary headers directly from Uint8Array data.

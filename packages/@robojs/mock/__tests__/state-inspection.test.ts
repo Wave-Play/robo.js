@@ -1,5 +1,5 @@
 /**
- * Phase 4C: State Inspection API Tests
+ * State Inspection API Tests
  *
  * Tests for the HTTP endpoints that allow external tools to inspect mock server state:
  * - GET /api/control/sessions/:id/status
@@ -23,7 +23,7 @@ afterEach(async () => {
 	await mockSessionManager.destroy()
 })
 
-describe('Phase 4C: State Inspection API', () => {
+describe('State Inspection API', () => {
 	describe('GET /api/control/sessions/:id/status', () => {
 		it('should return session status with correct counts', async () => {
 			const session = await mockSessionManager.create({

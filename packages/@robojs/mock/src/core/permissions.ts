@@ -1,5 +1,5 @@
 /**
- * Permission calculation and enforcement utilities for Discord Mock Server (Phase 4L)
+ * Permission calculation and enforcement utilities for Discord Mock Server
  *
  * Implements Discord's permission calculation algorithm:
  * 1. Start with @everyone role permissions
@@ -243,7 +243,7 @@ export function parsePermissions(permissions: string): bigint {
 }
 
 // ============================================================================
-// Role Hierarchy Helpers (Phase 4L-Extended)
+// Role Hierarchy Helpers
 // ============================================================================
 
 /**
@@ -641,7 +641,7 @@ export function createPermissionErrorResponse(result: PermissionCheckResult): Re
 }
 
 // ============================================================================
-// Permission Enforcement (Phase 4L-Extended)
+// Permission Enforcement
 // ============================================================================
 
 /**

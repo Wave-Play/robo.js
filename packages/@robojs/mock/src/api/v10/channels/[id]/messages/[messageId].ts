@@ -88,7 +88,7 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 6b. Check permissions (Phase 4L-Extended)
+	// 6b. Check permissions
 	const permError = enforcePermissions(
 		session,
 		request.method,
@@ -134,7 +134,7 @@ async function handlePatch(
 		embeds?: unknown[]
 		components?: unknown[]
 		attachments?: (AttachmentPayload | { id: string })[] // Can include existing attachment IDs or new file metadata
-		flags?: number // Phase 7: Message flags (e.g., SuppressEmbeds)
+		flags?: number // Message flags (e.g., SuppressEmbeds)
 	}
 
 	const newAttachments: MockAttachment[] = []

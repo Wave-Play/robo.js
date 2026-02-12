@@ -39,7 +39,7 @@ export type {
 	StageUpdateVoiceStateData,
 	StageRESTCallData,
 	StageCommandsUpdatedData,
-	// Phase 8: Control command types
+	// Control command types
 	StageControlCommand,
 	StageControlCommandKind,
 	StageControlResponseData,

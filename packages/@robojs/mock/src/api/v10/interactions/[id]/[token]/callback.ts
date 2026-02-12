@@ -198,7 +198,7 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 9b. Validate autocomplete response format (type 8) - Phase 3F
+	// 9b. Validate autocomplete response format (type 8)
 	if (body.type === 8) {
 		// Validate interaction was an autocomplete request (type 4)
 		if (interaction.type !== 4) {
@@ -235,7 +235,7 @@ export default async (request: RoboRequest) => {
 		}
 	}
 
-	// 9c. Validate Components V2 if flag is set (Phase 4F)
+	// 9c. Validate Components V2 if flag is set
 	const responseData = body.data as InteractionResponseData | undefined
 	if (responseData?.flags && responseData.flags & MessageFlags.IsComponentsV2) {
 		// V2 components cannot coexist with content or embeds
@@ -276,7 +276,7 @@ export default async (request: RoboRequest) => {
 	interaction.respondedAt = now
 
 	// 10b. Create message for type 4 (ChannelMessageWithSource), type 5 (DeferredChannelMessageWithSource),
-	// type 6 (DeferredUpdateMessage), or type 7 (UpdateMessage) - Phase 3H/7
+	// type 6 (DeferredUpdateMessage), or type 7 (UpdateMessage)7
 	if (body.type === 5) {
 		// Type 5: Deferred reply - create an empty placeholder message for editReply() to update later
 		const message = session.state.createMessage({
@@ -296,7 +296,7 @@ export default async (request: RoboRequest) => {
 		interaction.responseMessageId = interaction.messageId
 	} else if (body.type === 4 && responseData) {
 		// Type 4: Create a new message as the response
-		// Phase 3I: Get the user who triggered the interaction for interaction_metadata
+		// Get the user who triggered the interaction for interaction_metadata
 		const interactionUser = session.state.getUser(interaction.userId)
 
 		const message = session.state.createMessage({
@@ -306,12 +306,12 @@ export default async (request: RoboRequest) => {
 			authorId: session.state.botUser.id,
 			content: responseData.content ?? '',
 			embeds: responseData.embeds,
-			attachments, // Phase 4E: Include uploaded attachments
+			attachments, // Include uploaded attachments
 			tts: responseData.tts ?? false,
-			// Phase 4F: Components V2 support
+			// Components V2 support
 			flags: responseData.flags,
 			components: responseData.components,
-			// Phase 3I: Add interaction metadata to the response message
+			// Add interaction metadata to the response message
 			interactionMetadata: interactionUser
 				? {
 						id: interaction.id,
@@ -319,7 +319,7 @@ export default async (request: RoboRequest) => {
 						name: interaction.commandName,
 						user: interactionUser,
 						authorizing_integration_owners: {},
-						// Add target info for context menu commands (Phase 3G)
+						// Add target info for context menu commands
 						...(interaction.targetId &&
 							interaction.contextMenuType === 2 && {
 								target_user: session.state.getUser(interaction.targetId)
@@ -351,7 +351,7 @@ export default async (request: RoboRequest) => {
 			content: responseData.content ?? '',
 			embeds: responseData.embeds as unknown[],
 			attachments: finalAttachments,
-			// Phase 4F: Components V2 support
+			// Components V2 support
 			flags: responseData.flags,
 			components: responseData.components as unknown[]
 		})
@@ -390,7 +390,7 @@ export default async (request: RoboRequest) => {
 
 	// 12. Notify stage clients of interaction response
 	try {
-		// Phase 5O: Include channel and bot info for "Bot is thinking..." indicator
+		// Include channel and bot info for "Bot is thinking..." indicator
 		const botUser = session.state.botUser
 		getStageBridge().onInteractionResponse(
 			session.id,

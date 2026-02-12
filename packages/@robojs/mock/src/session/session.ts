@@ -144,7 +144,7 @@ export class Session implements ISession {
 	private _permissionDeniedEvents: PermissionDeniedEvent[] = []
 	private static readonly MAX_PERMISSION_DENIED_EVENTS = 100
 
-	// Action context for metadata propagation (Phase 3 simulation support)
+	// Action context for metadata propagation
 	private _actionContext: ActionContext | null = null
 
 	// Loop detection constants
@@ -168,9 +168,9 @@ export class Session implements ISession {
 		// Initialize log recorder for capturing bot logs
 		this.logRecorder = new LogRecorder(this.id, options?.config?.maxLogs ?? 10000)
 
-		// Initialize scenario manager for simulation support (Phase 4)
+		// Initialize scenario manager for simulation support
 		this.scenarioManager = new ScenarioManager()
-		// Set session reference for runner creation (Phase 5)
+		// Set session reference for runner creation
 		this.scenarioManager.setSession(this as unknown as import('../types/index.js').Session)
 
 		// Initialize state with optional configuration
@@ -386,7 +386,7 @@ export class Session implements ISession {
 		const dispatchAction = this.recordAction('dispatch', { event, payload: data })
 
 		// If an action context is active, pin the triggering dispatch action ID so subsequent
-		// bot outputs can link back via `triggeredBy` (Phase 3 metadata propagation).
+		// bot outputs can link back via `triggeredBy`.
 		if (this._actionContext?.metadata && !this._actionContext.triggerActionId) {
 			this._actionContext = {
 				...this._actionContext,
@@ -760,7 +760,7 @@ export class Session implements ISession {
 	}
 
 	/**
-	 * Dispatch an INTERACTION_CREATE event for a button click (Phase 3C)
+	 * Dispatch an INTERACTION_CREATE event for a button click
 	 * Creates an interaction in state and dispatches it to connected bots
 	 *
 	 * @param options - Button click options
@@ -834,7 +834,7 @@ export class Session implements ISession {
 	}
 
 	/**
-	 * Dispatch an INTERACTION_CREATE event for a select menu interaction (Phase 3D)
+	 * Dispatch an INTERACTION_CREATE event for a select menu interaction
 	 * Creates an interaction in state and dispatches it to connected bots
 	 *
 	 * @param options - Select menu options
@@ -912,7 +912,7 @@ export class Session implements ISession {
 	}
 
 	/**
-	 * Dispatch an INTERACTION_CREATE event for a modal submit (Phase 3E)
+	 * Dispatch an INTERACTION_CREATE event for a modal submit
 	 * Creates an interaction in state and dispatches it to connected bots
 	 *
 	 * @param options - Modal submit options
@@ -1014,7 +1014,7 @@ export class Session implements ISession {
 	}
 
 	/**
-	 * Dispatch an INTERACTION_CREATE event for autocomplete (Phase 3F)
+	 * Dispatch an INTERACTION_CREATE event for autocomplete
 	 * Creates an autocomplete interaction for testing bot autocomplete handlers
 	 *
 	 * @param options - Autocomplete options including focused option
@@ -1120,7 +1120,7 @@ export class Session implements ISession {
 	}
 
 	/**
-	 * Dispatch an INTERACTION_CREATE event for a context menu command (Phase 3G)
+	 * Dispatch an INTERACTION_CREATE event for a context menu command
 	 * Creates an interaction in state and dispatches it to connected bots
 	 *
 	 * @param options - Context menu command options
@@ -1229,7 +1229,7 @@ export class Session implements ISession {
 	}
 
 	// ============================================================================
-	// Thread Dispatch Methods (Phase 4D)
+	// Thread Dispatch Methods
 	// ============================================================================
 
 	/**
@@ -1622,7 +1622,7 @@ export class Session implements ISession {
 	}
 
 	// ============================================================================
-	// Sticker Events (Phase 4I)
+	// Sticker Events
 	// ============================================================================
 
 	/**
@@ -1652,7 +1652,7 @@ export class Session implements ISession {
 	}
 
 	// ============================================================================
-	// Emoji Events (Phase 4K)
+	// Emoji Events
 	// ============================================================================
 
 	/**
@@ -1682,7 +1682,7 @@ export class Session implements ISession {
 	}
 
 	// ============================================================================
-	// Role Event Dispatching (Phase 4L)
+	// Role Event Dispatching
 	// ============================================================================
 
 	/**
@@ -1758,7 +1758,7 @@ export class Session implements ISession {
 	}
 
 	// ============================================================================
-	// Guild Member Event Dispatching (Phase 4L)
+	// Guild Member Event Dispatching
 	// ============================================================================
 
 	/**
@@ -1838,7 +1838,7 @@ export class Session implements ISession {
 	}
 
 	// ============================================================================
-	// Guild Ban Event Dispatching (Phase 4L-B)
+	// Guild Ban Event Dispatching
 	// ============================================================================
 
 	/**
@@ -1890,7 +1890,7 @@ export class Session implements ISession {
 	}
 
 	// ============================================================================
-	// Scheduled Event Dispatching (Phase 5B)
+	// Scheduled Event Dispatching
 	// ============================================================================
 
 	/**
@@ -2005,7 +2005,7 @@ export class Session implements ISession {
 	}
 
 	// ============================================================================
-	// Invite Event Dispatching (Phase 5A)
+	// Invite Event Dispatching
 	// ============================================================================
 
 	/**
@@ -2050,7 +2050,7 @@ export class Session implements ISession {
 	}
 
 	// ============================================================================
-	// Auto-Moderation Event Dispatching (Phase 5C)
+	// Auto-Moderation Event Dispatching
 	// ============================================================================
 
 	/**
@@ -2297,7 +2297,7 @@ export class Session implements ISession {
 	}
 
 	// ============================================================================
-	// Rate Limit Simulation (Phase 13)
+	// Rate Limit Simulation
 	// ============================================================================
 
 	/**
@@ -2411,7 +2411,7 @@ export class Session implements ISession {
 	}
 
 	// ============================================================================
-	// Loop Protection (Phase 5R)
+	// Loop Protection
 	// ============================================================================
 
 	/**
@@ -2474,7 +2474,7 @@ export class Session implements ISession {
 	}
 
 	// ============================================================================
-	// Permission Enforcement (Phase 3 - Permissions Admin UI)
+	// Permission Enforcement
 	// ============================================================================
 
 	/**
@@ -2648,7 +2648,7 @@ export class Session implements ISession {
 	}
 
 	// ============================================================================
-	// Recording Export (Phase 4A)
+	// Recording Export
 	// ============================================================================
 
 	/**
@@ -2734,7 +2734,7 @@ export class Session implements ISession {
 	}
 
 	// ============================================================================
-	// Auto-Archive (Phase 4D)
+	// Auto-Archive
 	// ============================================================================
 
 	/**
@@ -2790,7 +2790,7 @@ export class Session implements ISession {
 	}
 
 	// ============================================================================
-	// User Management API (Phase 8)
+	// User Management API
 	// ============================================================================
 
 	/**
@@ -2977,7 +2977,7 @@ export class Session implements ISession {
 			this.loopCooldownTimeout = null
 		}
 
-		// Close all connections (will be implemented in future phases)
+		// Close all connections
 		for (const _conn of this.connections.values()) {
 			// _conn.socket.close() - when WebSocket is implemented
 		}

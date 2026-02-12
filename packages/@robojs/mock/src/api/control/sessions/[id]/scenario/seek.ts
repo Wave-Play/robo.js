@@ -91,7 +91,7 @@ export default async (request: RoboRequest) => {
 					)
 
 					if (response.success) {
-						// Broadcast playback change for external subscribers (Phase 7).
+						// Broadcast playback change for external subscribers.
 						try {
 							getControlEventsHub().broadcast(id, 'stage.playback.changed', response.result as StagePlaybackChangedData)
 						} catch {

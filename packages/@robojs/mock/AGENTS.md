@@ -28,7 +28,7 @@ Note: This file is for AI agents and maintainers, not end users.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              MCP Layer (Future)                              │
+│                              MCP Layer (Planned)                              │
 │            (User-facing - handles AI tool integration)                       │
 │                                                                              │
 │  • Provides tools to AI (create_session, send_message, etc.)                │
@@ -793,7 +793,7 @@ await rest.put(Routes.applicationCommands(clientId), { body: commandData })
 
 ### Testing
 
-29. **30 integration test phases** covering all Discord.js functionality
+29. **31 integration test suites** covering all Discord.js functionality
 30. **Test utilities in `__tests__/integration/setup/`** and `utils/`
 31. **Factory functions** for test data creation
 32. **Jest with ESM support** via `NODE_OPTIONS="--experimental-vm-modules"`
@@ -827,7 +827,7 @@ mockLogger.error('Error:', error)
 
 ### Test Structure
 
-- **30 integration test phases** in `__tests__/integration/`
+- **31 integration test suites** in `__tests__/integration/`
 - **Unit tests** in `__tests__/*.test.ts`
 - **~20,000+ lines** of test code
 
@@ -859,8 +859,8 @@ controlAPI<T>(endpoint, {method, body})
 # Run all tests
 NODE_OPTIONS="--experimental-vm-modules" npx jest
 
-# Run specific phase
-NODE_OPTIONS="--experimental-vm-modules" npx jest --testPathPattern=phase-1
+# Run specific suite
+NODE_OPTIONS="--experimental-vm-modules" npx jest --testPathPattern=01-connection
 ```
 
 ## Directory Map
@@ -869,11 +869,11 @@ NODE_OPTIONS="--experimental-vm-modules" npx jest --testPathPattern=phase-1
 packages/@robojs/mock/
 ├── __tests__/                 # Jest tests
 │   ├── *.test.ts              # Unit tests (29 files)
-│   └── integration/           # 30 phase integration tests
-│       ├── phase-1/           # Basic connection
-│       ├── phase-2A/          # Gateway READY
-│       ├── phase-2B/          # Heartbeat
-│       ├── ...                # More phases
+│   └── integration/           # 31 integration test suites
+│       ├── 01-connection/     # Basic connection
+│       ├── 02-gateway/        # Gateway READY, Heartbeat
+│       ├── 03-messaging/      # Messages, Channels, Threads
+│       ├── ...                # More suites
 │       ├── setup/             # Test utilities
 │       │   ├── constants.ts   # Config values
 │       │   ├── control-api.ts # API helpers

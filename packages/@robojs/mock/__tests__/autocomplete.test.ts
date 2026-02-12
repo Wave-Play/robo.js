@@ -1,5 +1,5 @@
 /**
- * Phase 3F: Autocomplete Interactions Tests
+ * Autocomplete Interactions Tests
  * Tests autocomplete dispatch and response validation
  */
 import { GatewayOpcodes, InteractionType, ApplicationCommandType } from 'discord-api-types/v10'
@@ -14,7 +14,7 @@ import { generateSnowflake } from '../src/utils/snowflake.js'
 import { generateInteractionToken } from '../src/utils/id.js'
 import type { MockInteraction, SessionState } from '../src/types/index.js'
 
-describe('Phase 3F: Autocomplete Interactions', () => {
+describe('Autocomplete Interactions', () => {
 	describe('buildAutocompleteInteractionPayload', () => {
 		let sessionState: SessionState
 

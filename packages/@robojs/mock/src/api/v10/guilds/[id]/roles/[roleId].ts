@@ -55,7 +55,7 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 4b. Check permissions for PATCH/DELETE (Phase 4L-Extended)
+	// 4b. Check permissions for PATCH/DELETE
 	if (request.method === 'PATCH' || request.method === 'DELETE') {
 		const permError = enforcePermissions(
 			session,

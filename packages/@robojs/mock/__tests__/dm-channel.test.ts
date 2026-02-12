@@ -1,5 +1,5 @@
 /**
- * Phase 2G: DM Channel Creation Tests
+ * DM Channel Creation Tests
  * Tests the DM channel creation endpoint and related functionality
  */
 import { ChannelType } from 'discord-api-types/v10'
@@ -12,7 +12,7 @@ import {
 import { Session } from '../src/session/session.js'
 import type { SessionState } from '../src/types/index.js'
 
-describe('Phase 2G: DM Channel Creation', () => {
+describe('DM Channel Creation', () => {
 	describe('mockDMChannelToAPIDMChannel', () => {
 		it('should convert MockChannel to APIDMChannel format', () => {
 			const recipient = createMockUser({ id: '123456789', username: 'TestRecipient' })
@@ -171,7 +171,7 @@ describe('Phase 2G: DM Channel Creation', () => {
 		})
 	})
 
-	describe('Phase 2G Requirements Verification', () => {
+	describe('Requirements Verification', () => {
 		let sessionState: SessionState
 
 		beforeEach(() => {

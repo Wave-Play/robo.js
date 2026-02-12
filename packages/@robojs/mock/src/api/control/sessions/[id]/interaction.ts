@@ -33,7 +33,7 @@ import {
  *     id?: string
  *     username?: string
  *   }
- *   metadata?: ActionMetadata // Optional metadata for simulation tracing (Phase 3)
+ *   metadata?: ActionMetadata // Optional metadata for simulation tracing
  * }
  *
  * Response:

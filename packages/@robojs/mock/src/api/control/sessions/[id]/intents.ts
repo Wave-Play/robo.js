@@ -8,7 +8,7 @@ import type { Session } from '../../../../session/session.js'
  * GET /api/control/sessions/:id/intents - Get intent configuration
  * POST /api/control/sessions/:id/intents - Update intent configuration
  *
- * Phase 2H: Intent Handling & Filtering
+ * Intent Handling & Filtering
  */
 
 interface SetIntentsConfigRequest {

@@ -1,5 +1,5 @@
 /**
- * Phase 4G: Polls Tests
+ * Polls Tests
  * Tests for Discord's native poll feature in messages
  */
 import { createSessionState, createDefaultGuildWithChannel, createMockPoll, createMockUser } from '../src/session/state.js'
@@ -7,7 +7,7 @@ import { mockMessageToAPIMessage } from '../src/discord/payloads.js'
 import type { SessionState, MockPollConfig } from '../src/types/index.js'
 import { PollLayoutType } from '../src/types/index.js'
 
-describe('Phase 4G: Polls', () => {
+describe('Polls', () => {
 	describe('Poll creation', () => {
 		let sessionState: SessionState
 

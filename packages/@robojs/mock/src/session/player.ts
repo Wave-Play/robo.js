@@ -35,7 +35,7 @@ const OUTPUT_ACTION_TYPES: ActionType[] = [
 /**
  * RecordingPlayer - Replays recorded sessions with timing and validation
  *
- * Designed for Phase 5J UI compatibility with real-time state updates.
+ * Designed for UI compatibility with real-time state updates.
  */
 export class RecordingPlayer {
 	private readonly recording: SessionRecording

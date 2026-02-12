@@ -17,7 +17,7 @@ import type { MockForumChannel } from '../../../../types/index.js'
  *   rate_limit_per_user?: number           // Slowmode in seconds
  * }
  *
- * Request body (forum/media channel posts - Phase 4H):
+ * Request body (forum/media channel posts):
  * {
  *   name: string,                          // Post title (1-100 chars)
  *   auto_archive_duration?: 60|1440|4320|10080,
@@ -88,7 +88,7 @@ export default async (request: RoboRequest) => {
 		)
 	}
 
-	// Check if this is a forum/media channel (Phase 4H)
+	// Check if this is a forum/media channel
 	const isForumChannel = channel.type === 15 || channel.type === 16
 
 	// 6. Parse thread creation payload
@@ -98,7 +98,7 @@ export default async (request: RoboRequest) => {
 		type?: 10 | 11 | 12
 		invitable?: boolean
 		rate_limit_per_user?: number
-		// Forum/media channel specific fields (Phase 4H)
+		// Forum/media channel specific fields
 		message?: {
 			content?: string
 			embeds?: unknown[]
@@ -131,7 +131,7 @@ export default async (request: RoboRequest) => {
 		)
 	}
 
-	// 7b. For forum/media channels, message is required (Phase 4H)
+	// 7b. For forum/media channels, message is required
 	if (isForumChannel && !body.message) {
 		return new Response(
 			JSON.stringify({
@@ -145,7 +145,7 @@ export default async (request: RoboRequest) => {
 		)
 	}
 
-	// 7c. Validate applied_tags for forum channels (Phase 4H)
+	// 7c. Validate applied_tags for forum channels
 	if (isForumChannel && body.applied_tags) {
 		if (body.applied_tags.length > 5) {
 			return new Response(
@@ -179,7 +179,7 @@ export default async (request: RoboRequest) => {
 		}
 	}
 
-	// 8. Handle forum/media channel posts differently (Phase 4H)
+	// 8. Handle forum/media channel posts differently
 	if (isForumChannel) {
 		// Create forum post with initial message
 		const { thread, message } = session.state.createForumPost({

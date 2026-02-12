@@ -31,7 +31,7 @@ import type { PermissionOverride } from '../../../../../types/index.js'
  * DELETE (clear all):
  * Response: { success: true, cleared: number }
  *
- * @see Phase 3: Permissions Admin UI
+ * @see Permissions Admin UI
  */
 export default async (request: RoboRequest) => {
 	validateMethod(request, ['GET', 'POST', 'DELETE'])

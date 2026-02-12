@@ -1,5 +1,5 @@
 /**
- * Phase 4H: Forum & Media Channel Support Tests
+ * Forum & Media Channel Support Tests
  * Tests forum channel creation, tag management, and forum post operations
  */
 import { ChannelType } from 'discord-api-types/v10'
@@ -18,7 +18,7 @@ import {
 import type { MockForumTag } from '../src/types/index.js'
 import { ForumSortOrderType, ForumLayoutType } from '../src/types/index.js'
 
-describe('Phase 4H: Forum & Media Channels', () => {
+describe('Forum & Media Channels', () => {
 	describe('createMockForumChannel', () => {
 		it('should create a forum channel with default values', () => {
 			const channel = createMockForumChannel()

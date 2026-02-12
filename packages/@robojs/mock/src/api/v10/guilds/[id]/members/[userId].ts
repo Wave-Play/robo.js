@@ -86,7 +86,7 @@ export default async (request: RoboRequest) => {
 	if (request.method === 'GET') {
 		const apiMember = mockGuildMemberToAPIMember(member, user)
 
-		// Look up voice state for current deaf/mute values (Phase 7)
+		// Look up voice state for current deaf/mute values
 		// Voice state deaf/mute are server-side values that can be modified via voice.setMute/setDeaf
 		const voiceState = session.state.voiceStates.get(`${guildId}:${targetUserId}`)
 		if (voiceState) {
@@ -174,7 +174,7 @@ export default async (request: RoboRequest) => {
 			})
 		}
 
-		// Phase 7: Update voice state if mute, deaf, or channel_id are being modified
+		// Update voice state if mute, deaf, or channel_id are being modified
 		const voiceStateKey = `${guildId}:${targetUserId}`
 		const existingVoiceState = session.state.voiceStates.get(voiceStateKey)
 		if (body.mute !== undefined || body.deaf !== undefined || body.channel_id !== undefined) {

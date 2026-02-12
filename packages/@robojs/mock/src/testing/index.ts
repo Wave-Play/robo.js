@@ -100,6 +100,6 @@ export type {
 	StartMockRoboOptions
 } from './helpers.js'
 
-// User utilities (Phase 8)
+// User utilities
 export { TestUsers, TestInteractions, createTestUtils } from './user-utils.js'
 export type { TestUtils } from './user-utils.js'

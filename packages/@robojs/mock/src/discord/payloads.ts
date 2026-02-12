@@ -291,7 +291,7 @@ export function mockCommandToAPICommand(command: MockApplicationCommand, options
 	if (command.contexts !== undefined) {
 		apiCommand.contexts = command.contexts
 	}
-	// Phase 20: Entry point command handler
+	// Entry point command handler
 	if (command.handler !== undefined) {
 		apiCommand.handler = command.handler
 	}
@@ -467,7 +467,7 @@ export function mockWebhookToAPIWebhook(
 }
 
 // ============================================================================
-// READY Payload (Phase 1D)
+// READY Payload
 // ============================================================================
 
 /**
@@ -533,7 +533,7 @@ export function buildReadyPayload(options: ReadyPayloadOptions): GatewayPayload 
 }
 
 // ============================================================================
-// GUILD_CREATE Payload (Phase 1E)
+// GUILD_CREATE Payload
 // ============================================================================
 
 /**
@@ -549,7 +549,7 @@ export interface GuildCreatePayloadOptions {
  * Convert MockChannel to Discord APIChannel format
  */
 export function mockChannelToAPIChannel(channel: MockChannel): APIChannel {
-	// Handle forum/media channels (Phase 4H)
+	// Handle forum/media channels
 	if (channel.type === 15 || channel.type === 16) {
 		return mockForumChannelToAPIChannel(channel as MockForumChannel)
 	}
@@ -603,7 +603,7 @@ export function mockChannelToAPIChannel(channel: MockChannel): APIChannel {
 }
 
 /**
- * Convert MockForumChannel to Discord APIChannel format (Phase 4H)
+ * Convert MockForumChannel to Discord APIChannel format
  */
 export function mockForumChannelToAPIChannel(channel: MockForumChannel): APIChannel {
 	return {
@@ -630,7 +630,7 @@ export function mockForumChannelToAPIChannel(channel: MockForumChannel): APIChan
 }
 
 /**
- * Convert MockForumTag to Discord API forum tag format (Phase 4H)
+ * Convert MockForumTag to Discord API forum tag format
  */
 export function mockForumTagToAPIForumTag(tag: MockForumTag): {
 	id: Snowflake
@@ -649,7 +649,7 @@ export function mockForumTagToAPIForumTag(tag: MockForumTag): {
 }
 
 /**
- * Convert MockForumThread to Discord API channel format with applied_tags (Phase 4H)
+ * Convert MockForumThread to Discord API channel format with applied_tags
  * @param thread The forum thread
  * @param message Optional initial message to include in response
  * @param author Optional author for the message (required if message is provided)
@@ -769,7 +769,7 @@ export function buildGuildCreatePayload(options: GuildCreatePayloadOptions): Gat
 			return mockThreadToAPIChannel(thread, botMember ?? undefined)
 		})
 
-	// Build roles from state (Phase 4L)
+	// Build roles from state
 	// If roles exist in the state's roles Map, use them; otherwise fall back to @everyone only
 	const roles: APIRole[] = guild.roles
 		.map((roleId) => sessionState.roles.get(roleId))
@@ -780,7 +780,7 @@ export function buildGuildCreatePayload(options: GuildCreatePayloadOptions): Gat
 		roles.push(buildEveryoneRole(guild.id))
 	}
 
-	// Build members from state (Phase 4L)
+	// Build members from state
 	// If guildMembers exist in state, use them; otherwise fall back to simple members
 	const members: APIGuildMember[] = []
 	for (const memberId of guild.members) {
@@ -883,7 +883,7 @@ export function buildGuildCreatePayload(options: GuildCreatePayloadOptions): Gat
 }
 
 // ============================================================================
-// GUILD_STICKERS_UPDATE Payload (Phase 4I)
+// GUILD_STICKERS_UPDATE Payload
 // ============================================================================
 
 /**
@@ -914,7 +914,7 @@ export function buildGuildStickersUpdatePayload(options: GuildStickersUpdatePayl
 }
 
 // ============================================================================
-// GUILD_EMOJIS_UPDATE Payload (Phase 4K)
+// GUILD_EMOJIS_UPDATE Payload
 // ============================================================================
 
 /**
@@ -946,7 +946,7 @@ export function buildGuildEmojisUpdatePayload(options: GuildEmojisUpdatePayloadO
 }
 
 // ============================================================================
-// WEBHOOKS_UPDATE Payload (Phase 4J)
+// WEBHOOKS_UPDATE Payload
 // ============================================================================
 
 /**
@@ -979,7 +979,7 @@ export function buildWebhooksUpdatePayload(options: WebhooksUpdatePayloadOptions
 }
 
 // ============================================================================
-// Role Event Payloads (Phase 4L)
+// Role Event Payloads
 // ============================================================================
 
 /**
@@ -1067,7 +1067,7 @@ export function buildGuildRoleDeletePayload(options: GuildRoleDeletePayloadOptio
 }
 
 // ============================================================================
-// Guild Member Event Payloads (Phase 4L)
+// Guild Member Event Payloads
 // ============================================================================
 
 /**
@@ -1166,7 +1166,7 @@ export function buildGuildMemberRemovePayload(options: GuildMemberRemovePayloadO
 }
 
 // ============================================================================
-// GUILD_BAN_ADD and GUILD_BAN_REMOVE Payloads (Phase 4L-B)
+// GUILD_BAN_ADD and GUILD_BAN_REMOVE Payloads
 // ============================================================================
 
 /**
@@ -1226,7 +1226,7 @@ export function buildGuildBanRemovePayload(options: GuildBanRemovePayloadOptions
 }
 
 // ============================================================================
-// MESSAGE_CREATE Payload (Phase 2C)
+// MESSAGE_CREATE Payload
 // ============================================================================
 
 /**
@@ -1275,7 +1275,7 @@ export function mockMessageToAPIMessage(message: MockMessage, author: MockUser):
 		nonce: message.nonce ?? undefined
 	}
 
-	// Phase 3B: Add reactions (always include to ensure Discord.js cache is updated)
+	// Add reactions (always include to ensure Discord.js cache is updated)
 	// Include empty array to clear reactions, or populated array if reactions exist
 	if (message.reactions !== undefined) {
 		apiMessage.reactions = message.reactions.map((r) => ({
@@ -1288,7 +1288,7 @@ export function mockMessageToAPIMessage(message: MockMessage, author: MockUser):
 		}))
 	}
 
-	// Phase 3I: Add optional fields if present
+	// Add optional fields if present
 
 	// Call info for voice/video calls in DMs (MessageType.Call = 3)
 	if (message.call) {
@@ -1356,7 +1356,7 @@ export function mockMessageToAPIMessage(message: MockMessage, author: MockUser):
 		apiMessage.resolved = message.resolved as APIMessage['resolved']
 	}
 
-	// Phase 4F: Components V2
+	// Components V2
 	if (message.flags !== undefined) {
 		apiMessage.flags = message.flags
 	}
@@ -1364,12 +1364,12 @@ export function mockMessageToAPIMessage(message: MockMessage, author: MockUser):
 		apiMessage.components = message.components as APIMessage['components']
 	}
 
-	// Phase 4G: Polls
+	// Polls
 	if (message.poll) {
 		;(apiMessage as unknown as { poll: unknown }).poll = message.poll
 	}
 
-	// Phase 3: Message reference (for replies)
+	// Message reference (for replies)
 	if (message.message_reference) {
 		apiMessage.message_reference = {
 			message_id: message.message_reference.message_id,
@@ -1378,12 +1378,12 @@ export function mockMessageToAPIMessage(message: MockMessage, author: MockUser):
 		}
 	}
 
-	// Phase 4I: Stickers
+	// Stickers
 	if (message.sticker_items?.length) {
 		;(apiMessage as unknown as { sticker_items: unknown[] }).sticker_items = message.sticker_items
 	}
 
-	// Phase 20: Role subscription data
+	// Role subscription data
 	if (message.roleSubscriptionData) {
 		;(apiMessage as any).role_subscription_data = {
 			role_subscription_listing_id: message.roleSubscriptionData.roleSubscriptionListingId,
@@ -1393,7 +1393,7 @@ export function mockMessageToAPIMessage(message: MockMessage, author: MockUser):
 		}
 	}
 
-	// Phase 20: Message position
+	// Message position
 	if (message.position !== undefined) {
 		apiMessage.position = message.position
 	}
@@ -1455,7 +1455,7 @@ export function buildMessageCreatePayload(options: MessageCreatePayloadOptions):
 }
 
 // ============================================================================
-// MESSAGE_UPDATE Payload (Phase 2F)
+// MESSAGE_UPDATE Payload
 // ============================================================================
 
 /**
@@ -1498,7 +1498,7 @@ export function buildMessageUpdatePayload(options: MessageUpdatePayloadOptions):
 }
 
 // ============================================================================
-// MESSAGE_DELETE Payload (Phase 2F)
+// MESSAGE_DELETE Payload
 // ============================================================================
 
 /**
@@ -1536,7 +1536,7 @@ export function buildMessageDeletePayload(options: MessageDeletePayloadOptions):
 }
 
 // ============================================================================
-// MESSAGE_POLL_VOTE Payloads (Phase 4G)
+// MESSAGE_POLL_VOTE Payloads
 // ============================================================================
 
 /**
@@ -1616,7 +1616,7 @@ export function buildMessagePollVoteRemovePayload(options: MessagePollVotePayloa
 }
 
 // ============================================================================
-// INTERACTION_CREATE Payload (Phase 3A)
+// INTERACTION_CREATE Payload
 // ============================================================================
 
 /**
@@ -1718,7 +1718,7 @@ export function buildInteractionCreatePayload(options: InteractionCreatePayloadO
 	}
 }
 
-// INTERACTION_CREATE Payload - Button (Phase 3C)
+// INTERACTION_CREATE Payload - Button
 // ============================================================================
 
 /**
@@ -1805,7 +1805,7 @@ export function buildButtonInteractionPayload(options: ButtonInteractionPayloadO
 	}
 }
 
-// INTERACTION_CREATE Payload - Select Menu (Phase 3D)
+// INTERACTION_CREATE Payload - Select Menu
 // ============================================================================
 
 /**
@@ -2000,7 +2000,7 @@ export function buildSelectMenuInteractionPayload(options: SelectMenuInteraction
 	}
 }
 
-// INTERACTION_CREATE Payload - Modal Submit (Phase 3E)
+// INTERACTION_CREATE Payload - Modal Submit
 // ============================================================================
 
 /**
@@ -2105,7 +2105,7 @@ export function buildModalSubmitInteractionPayload(options: ModalSubmitInteracti
 	}
 }
 
-// INTERACTION_CREATE Payload - Autocomplete (Phase 3F)
+// INTERACTION_CREATE Payload - Autocomplete
 // ============================================================================
 
 /**
@@ -2192,7 +2192,7 @@ export function buildAutocompleteInteractionPayload(options: AutocompleteInterac
 	}
 }
 
-// INTERACTION_CREATE Payload - Context Menu (Phase 3G)
+// INTERACTION_CREATE Payload - Context Menu
 // ============================================================================
 
 /**
@@ -2311,7 +2311,7 @@ export function buildContextMenuInteractionPayload(options: ContextMenuInteracti
 }
 
 // ============================================================================
-// Thread Payload Builders (Phase 4D)
+// Thread Payload Builders
 // ============================================================================
 
 /**
@@ -2569,7 +2569,7 @@ export function buildThreadMembersUpdatePayload(options: ThreadMembersUpdatePayl
 }
 
 // ============================================================================
-// Invite Conversion Functions (Phase 5A)
+// Invite Conversion Functions
 // ============================================================================
 
 /**
@@ -2638,7 +2638,7 @@ export function mockInviteToAPIExtendedInvite(invite: MockInvite, state: Session
 }
 
 // ============================================================================
-// Invite Gateway Event Payload Builders (Phase 5A)
+// Invite Gateway Event Payload Builders
 // ============================================================================
 
 /**
@@ -2724,7 +2724,7 @@ export function buildInviteDeletePayload(options: InviteDeletePayloadOptions): G
 }
 
 // ============================================================================
-// Scheduled Event Payload Builders (Phase 5B)
+// Scheduled Event Payload Builders
 // ============================================================================
 
 /**
@@ -2892,7 +2892,7 @@ export function buildGuildScheduledEventUserRemovePayload(options: GuildSchedule
 }
 
 // ============================================================================
-// Auto-Moderation Payload Builders (Phase 5C)
+// Auto-Moderation Payload Builders
 // ============================================================================
 
 /**

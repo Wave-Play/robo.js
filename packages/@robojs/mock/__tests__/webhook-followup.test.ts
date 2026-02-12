@@ -1,5 +1,5 @@
 /**
- * Phase 3H: Webhook Followup & Edit/Delete Tests
+ * Webhook Followup & Edit/Delete Tests
  * Tests the webhook endpoints for interaction response lifecycle:
  * - POST /webhooks/:app_id/:token (followup messages)
  * - PATCH/DELETE /webhooks/:app_id/:token/messages/@original
@@ -54,7 +54,7 @@ async function normalizeResponse(
 	return { status: 200, body: result }
 }
 
-describe('Phase 3H: Webhook Followup & Edit/Delete', () => {
+describe('Webhook Followup & Edit/Delete', () => {
 	let session: Session
 
 	beforeEach(async () => {
@@ -217,7 +217,7 @@ describe('Phase 3H: Webhook Followup & Edit/Delete', () => {
 		})
 	})
 
-	describe('Callback creates response message (Phase 3H enhancement)', () => {
+	describe('Callback creates response message', () => {
 		it('should create message for type 4 response', async () => {
 			const guild = Array.from(session.state.guilds.values())[0]
 			const channelId = guild.channels[0]
@@ -549,7 +549,7 @@ describe('Phase 3H: Webhook Followup & Edit/Delete', () => {
 		})
 	})
 
-	describe('Phase 3H Requirements Verification', () => {
+	describe('Requirements Verification', () => {
 		it('Task 1: PATCH /webhooks/:app_id/:token/messages/@original works', async () => {
 			const guild = Array.from(session.state.guilds.values())[0]
 			const channelId = guild.channels[0]
