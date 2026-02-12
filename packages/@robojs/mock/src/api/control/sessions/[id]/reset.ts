@@ -1,6 +1,6 @@
 import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../core/manager.js'
-import { validateMethod, notFound, badRequest } from '../../utils.js'
+import { notFound, badRequest } from '../../utils.js'
 
 /**
  * POST /api/control/sessions/:id/reset - Reset session state
@@ -21,9 +21,7 @@ import { validateMethod, notFound, badRequest } from '../../utils.js'
  *   sequence: number
  * }
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['POST'])
-
+export async function POST(request: RoboRequest) {
 	const { id } = request.params as { id: string }
 
 	if (!id) {

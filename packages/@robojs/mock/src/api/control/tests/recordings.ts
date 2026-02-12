@@ -1,7 +1,6 @@
 import type { RoboRequest } from '@robojs/server'
 import { listRecordings } from '../../../session/recording-storage.js'
 import { readRegistry } from '../../../session/registry.js'
-import { validateMethod } from '../utils.js'
 
 /**
  * GET /api/control/tests/recordings - List all saved recordings
@@ -16,9 +15,7 @@ import { validateMethod } from '../utils.js'
  *   }>
  * }
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['GET'])
-
+export async function GET(request: RoboRequest) {
 	const recordings = listRecordings()
 	const registry = readRegistry()
 

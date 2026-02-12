@@ -41,26 +41,39 @@ const CDN_BASE_URL = process.env.MOCK_CDN_URL || 'http://localhost:53596'
  * Response (GET/PATCH): APIMessage object
  * Response (DELETE): 204 No Content
  */
-export default async (request: RoboRequest) => {
-	// 1. Validate method
-	if (request.method !== 'GET' && request.method !== 'PATCH' && request.method !== 'DELETE') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
 
-	// 2. Extract params from URL (decode messageId since @ may be URL-encoded as %40)
+/**
+ * Find a webhook by its token across all sessions
+ */
+function findWebhookByToken(token: string): { session: Session; webhook: MockWebhook } | null {
+	for (const session of sessionManager.getAll()) {
+		const webhook = session.state.getWebhookByToken(token)
+		if (webhook) {
+			return { session, webhook }
+		}
+	}
+	return null
+}
+
+/**
+ * Resolve the interaction webhook context from request params.
+ * Returns context object or a Response for errors.
+ */
+function resolveInteractionWebhookMessage(request: RoboRequest): {
+	session: Session
+	interaction: MockInteraction
+	message: MockMessage
+	webhookOrAppId: string
+	token: string
+	messageId: string
+	actualMessageId: string
+	isOriginal: boolean
+} | Response {
+	// Extract params from URL (decode messageId since @ may be URL-encoded as %40)
 	const { app_id: webhookOrAppId, token, messageId: rawMessageId } = request.params as { app_id: string; token: string; messageId: string }
 	const messageId = decodeURIComponent(rawMessageId)
 
-	// 3. Try to find a regular webhook first (by looking up the token)
-	const webhookResult = findWebhookByToken(token)
-	if (webhookResult) {
-		return handleRegularWebhookMessage(request, webhookResult.session, webhookResult.webhook, webhookOrAppId, messageId)
-	}
-
-	// 4. Not a regular webhook - try interaction webhook
+	// Find session containing this interaction (lookup by token)
 	const session = sessionManager.findSessionByInteractionToken(token)
 	if (!session) {
 		return new Response(
@@ -75,7 +88,7 @@ export default async (request: RoboRequest) => {
 		)
 	}
 
-	// 4. Get the interaction from state
+	// Get the interaction from state
 	const interaction = session.state.getInteractionByToken(token)
 	if (!interaction) {
 		return new Response(
@@ -90,7 +103,7 @@ export default async (request: RoboRequest) => {
 		)
 	}
 
-	// 5. Validate app_id matches interaction's applicationId
+	// Validate app_id matches interaction's applicationId
 	if (interaction.applicationId !== webhookOrAppId) {
 		return new Response(
 			JSON.stringify({
@@ -104,7 +117,7 @@ export default async (request: RoboRequest) => {
 		)
 	}
 
-	// 6. Check expiration (interactions expire after 15 minutes)
+	// Check expiration (interactions expire after 15 minutes)
 	if (Date.now() > interaction.expiresAt) {
 		return new Response(
 			JSON.stringify({
@@ -118,9 +131,10 @@ export default async (request: RoboRequest) => {
 		)
 	}
 
-	// 7. Handle @original as a special case (original interaction response)
+	// Handle @original as a special case (original interaction response)
 	let actualMessageId = messageId
-	if (messageId === '@original') {
+	const isOriginal = messageId === '@original'
+	if (isOriginal) {
 		// @original refers to the original interaction response
 		if (!interaction.responseMessageId) {
 			return new Response(
@@ -152,7 +166,7 @@ export default async (request: RoboRequest) => {
 		}
 	}
 
-	// 8. Get the message
+	// Get the message
 	const message = session.state.getMessage(actualMessageId)
 	if (!message) {
 		return new Response(
@@ -167,40 +181,76 @@ export default async (request: RoboRequest) => {
 		)
 	}
 
-	// 9. Handle based on method (pass actualMessageId for @original handling)
-	const isOriginal = messageId === '@original'
-	if (request.method === 'GET') {
-		return handleGet(session, message)
-	} else if (request.method === 'PATCH') {
-		return handlePatch(request, session, interaction, message, webhookOrAppId, token, actualMessageId, isOriginal)
-	} else {
-		return handleDelete(session, interaction, message, webhookOrAppId, token, actualMessageId, isOriginal)
+	return { session, interaction, message, webhookOrAppId, token, messageId, actualMessageId, isOriginal }
+}
+
+export async function GET(request: RoboRequest) {
+	// Extract params from URL (decode messageId since @ may be URL-encoded as %40)
+	const { app_id: webhookOrAppId, token, messageId: rawMessageId } = request.params as { app_id: string; token: string; messageId: string }
+	const messageId = decodeURIComponent(rawMessageId)
+
+	// Try to find a regular webhook first (by looking up the token)
+	const webhookResult = findWebhookByToken(token)
+	if (webhookResult) {
+		const resolved = resolveRegularWebhookMessage(webhookResult.session, webhookResult.webhook, webhookOrAppId, messageId)
+		if (resolved instanceof Response) return resolved
+		return handleGet(resolved.session, resolved.message)
 	}
+
+	// Not a regular webhook - try interaction webhook
+	const resolved = resolveInteractionWebhookMessage(request)
+	if (resolved instanceof Response) return resolved
+	return handleGet(resolved.session, resolved.message)
+}
+
+export async function PATCH(request: RoboRequest) {
+	// Extract params from URL (decode messageId since @ may be URL-encoded as %40)
+	const { app_id: webhookOrAppId, token, messageId: rawMessageId } = request.params as { app_id: string; token: string; messageId: string }
+	const messageId = decodeURIComponent(rawMessageId)
+
+	// Try to find a regular webhook first (by looking up the token)
+	const webhookResult = findWebhookByToken(token)
+	if (webhookResult) {
+		const resolved = resolveRegularWebhookMessage(webhookResult.session, webhookResult.webhook, webhookOrAppId, messageId)
+		if (resolved instanceof Response) return resolved
+		return handleWebhookMessagePatch(request, resolved.session, resolved.webhook, resolved.message, messageId)
+	}
+
+	// Not a regular webhook - try interaction webhook
+	const resolved = resolveInteractionWebhookMessage(request)
+	if (resolved instanceof Response) return resolved
+	return handleInteractionPatch(request, resolved.session, resolved.interaction, resolved.message, webhookOrAppId, token, resolved.actualMessageId, resolved.isOriginal)
+}
+
+export async function DELETE(request: RoboRequest) {
+	// Extract params from URL (decode messageId since @ may be URL-encoded as %40)
+	const { app_id: webhookOrAppId, token, messageId: rawMessageId } = request.params as { app_id: string; token: string; messageId: string }
+	const messageId = decodeURIComponent(rawMessageId)
+
+	// Try to find a regular webhook first (by looking up the token)
+	const webhookResult = findWebhookByToken(token)
+	if (webhookResult) {
+		const resolved = resolveRegularWebhookMessage(webhookResult.session, webhookResult.webhook, webhookOrAppId, messageId)
+		if (resolved instanceof Response) return resolved
+		return handleWebhookMessageDelete(resolved.session, resolved.webhook, resolved.message, messageId)
+	}
+
+	// Not a regular webhook - try interaction webhook
+	const resolved = resolveInteractionWebhookMessage(request)
+	if (resolved instanceof Response) return resolved
+	return handleInteractionDelete(resolved.session, resolved.interaction, resolved.message, webhookOrAppId, token, resolved.actualMessageId, resolved.isOriginal)
 }
 
 /**
- * Find a webhook by its token across all sessions
+ * Resolve regular webhook message context.
+ * Returns context object or a Response for errors.
  */
-function findWebhookByToken(token: string): { session: Session; webhook: MockWebhook } | null {
-	for (const session of sessionManager.getAll()) {
-		const webhook = session.state.getWebhookByToken(token)
-		if (webhook) {
-			return { session, webhook }
-		}
-	}
-	return null
-}
-
-/**
- * Handle regular webhook message operations
- */
-async function handleRegularWebhookMessage(
-	request: RoboRequest,
+function resolveRegularWebhookMessage(
 	session: Session,
 	webhook: MockWebhook,
 	webhookId: string,
 	messageId: string
-): Promise<Response> {
+): { session: Session; webhook: MockWebhook; message: MockMessage } | Response {
 	// Validate webhook ID matches
 	if (webhook.id !== webhookId) {
 		return new Response(JSON.stringify({ message: 'Unknown Webhook', code: 10015 }), {
@@ -236,14 +286,7 @@ async function handleRegularWebhookMessage(
 		})
 	}
 
-	// Handle based on method
-	if (request.method === 'GET') {
-		return handleGet(session, message)
-	} else if (request.method === 'PATCH') {
-		return handleWebhookMessagePatch(request, session, webhook, message, messageId)
-	} else {
-		return handleWebhookMessageDelete(session, webhook, message, messageId)
-	}
+	return { session, webhook, message }
 }
 
 /**
@@ -478,7 +521,7 @@ function handleGet(session: Session, message: MockMessage): Response {
 	})
 }
 
-async function handlePatch(
+async function handleInteractionPatch(
 	request: RoboRequest,
 	session: Session,
 	interaction: MockInteraction,
@@ -690,7 +733,7 @@ async function handlePatch(
 	return mockMessageToAPIMessage(updatedMessage, author)
 }
 
-function handleDelete(
+function handleInteractionDelete(
 	session: Session,
 	interaction: MockInteraction,
 	message: MockMessage,

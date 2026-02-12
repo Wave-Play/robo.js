@@ -13,7 +13,8 @@ import type { MockCommandPermission } from '../../../../../../../../types/index.
  * @see https://discord.com/developers/docs/interactions/application-commands#get-application-command-permissions
  * @see https://discord.com/developers/docs/interactions/application-commands#edit-application-command-permissions
  */
-export default async (request: RoboRequest) => {
+
+function resolveCommandPermissions(request: RoboRequest) {
 	// Extract params
 	const { app_id: appId, guild_id: guildId, command_id: commandId } = request.params as {
 		app_id: string
@@ -91,47 +92,71 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// Handle GET - Get command permissions
-	if (request.method === 'GET') {
-		const key = `${guildId}:${commandId}`
-		const permissions = session.state.commandPermissions.get(key) || []
+	return { session, appId, guildId, commandId }
+}
 
+export async function GET(request: RoboRequest) {
+	const resolved = resolveCommandPermissions(request)
+	if (resolved instanceof Response) return resolved
+	const { session, appId, guildId, commandId } = resolved
+
+	const key = `${guildId}:${commandId}`
+	const permissions = session.state.commandPermissions.get(key) || []
+
+	return new Response(
+		JSON.stringify({
+			id: commandId,
+			application_id: appId,
+			guild_id: guildId,
+			permissions: permissions.map((p) => ({
+				id: p.id,
+				type: p.type,
+				permission: p.permission
+			}))
+		}),
+		{
+			status: 200,
+			headers: { 'Content-Type': 'application/json' }
+		}
+	)
+}
+
+export async function PUT(request: RoboRequest) {
+	const resolved = resolveCommandPermissions(request)
+	if (resolved instanceof Response) return resolved
+	const { session, appId, guildId, commandId } = resolved
+
+	let body: { permissions: MockCommandPermission[] }
+
+	try {
+		body = await request.json()
+	} catch {
+		return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
+			status: 400,
+			headers: { 'Content-Type': 'application/json' }
+		})
+	}
+
+	// Validate permissions array
+	if (!Array.isArray(body.permissions)) {
 		return new Response(
 			JSON.stringify({
-				id: commandId,
-				application_id: appId,
-				guild_id: guildId,
-				permissions: permissions.map((p) => ({
-					id: p.id,
-					type: p.type,
-					permission: p.permission
-				}))
+				error: 'permissions must be an array',
+				code: 50035
 			}),
 			{
-				status: 200,
+				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			}
 		)
 	}
 
-	// Handle PUT - Set command permissions
-	if (request.method === 'PUT') {
-		let body: { permissions: MockCommandPermission[] }
-
-		try {
-			body = await request.json()
-		} catch {
-			return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
-				status: 400,
-				headers: { 'Content-Type': 'application/json' }
-			})
-		}
-
-		// Validate permissions array
-		if (!Array.isArray(body.permissions)) {
+	// Validate each permission entry
+	for (const perm of body.permissions) {
+		if (!perm.id || typeof perm.type !== 'number' || typeof perm.permission !== 'boolean') {
 			return new Response(
 				JSON.stringify({
-					error: 'permissions must be an array',
+					error: 'Each permission must have id, type (number), and permission (boolean)',
 					code: 50035
 				}),
 				{
@@ -141,75 +166,53 @@ export default async (request: RoboRequest) => {
 			)
 		}
 
-		// Validate each permission entry
-		for (const perm of body.permissions) {
-			if (!perm.id || typeof perm.type !== 'number' || typeof perm.permission !== 'boolean') {
-				return new Response(
-					JSON.stringify({
-						error: 'Each permission must have id, type (number), and permission (boolean)',
-						code: 50035
-					}),
-					{
-						status: 400,
-						headers: { 'Content-Type': 'application/json' }
-					}
-				)
-			}
-
-			// Validate type is valid (1=Role, 2=User, 3=Channel)
-			if (![1, 2, 3].includes(perm.type)) {
-				return new Response(
-					JSON.stringify({
-						error: 'Permission type must be 1 (Role), 2 (User), or 3 (Channel)',
-						code: 50035
-					}),
-					{
-						status: 400,
-						headers: { 'Content-Type': 'application/json' }
-					}
-				)
-			}
+		// Validate type is valid (1=Role, 2=User, 3=Channel)
+		if (![1, 2, 3].includes(perm.type)) {
+			return new Response(
+				JSON.stringify({
+					error: 'Permission type must be 1 (Role), 2 (User), or 3 (Channel)',
+					code: 50035
+				}),
+				{
+					status: 400,
+					headers: { 'Content-Type': 'application/json' }
+				}
+			)
 		}
-
-		// Store permissions
-		const key = `${guildId}:${commandId}`
-		session.state.commandPermissions.set(key, body.permissions)
-
-		// Record action
-		session.recordAction(
-			'rest_request',
-			{
-				command_id: commandId,
-				guild_id: guildId,
-				permissions_count: body.permissions.length
-			},
-			{
-				endpoint: `PUT /applications/${appId}/guilds/${guildId}/commands/${commandId}/permissions`,
-				method: 'PUT'
-			}
-		)
-
-		return new Response(
-			JSON.stringify({
-				id: commandId,
-				application_id: appId,
-				guild_id: guildId,
-				permissions: body.permissions.map((p) => ({
-					id: p.id,
-					type: p.type,
-					permission: p.permission
-				}))
-			}),
-			{
-				status: 200,
-				headers: { 'Content-Type': 'application/json' }
-			}
-		)
 	}
 
-	// Method not allowed
-	return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-		status: 405,
-		headers: { 'Content-Type': 'application/json' }
-	})
+	// Store permissions
+	const key = `${guildId}:${commandId}`
+	session.state.commandPermissions.set(key, body.permissions)
+
+	// Record action
+	session.recordAction(
+		'rest_request',
+		{
+			command_id: commandId,
+			guild_id: guildId,
+			permissions_count: body.permissions.length
+		},
+		{
+			endpoint: `PUT /applications/${appId}/guilds/${guildId}/commands/${commandId}/permissions`,
+			method: 'PUT'
+		}
+	)
+
+	return new Response(
+		JSON.stringify({
+			id: commandId,
+			application_id: appId,
+			guild_id: guildId,
+			permissions: body.permissions.map((p) => ({
+				id: p.id,
+				type: p.type,
+				permission: p.permission
+			}))
+		}),
+		{
+			status: 200,
+			headers: { 'Content-Type': 'application/json' }
+		}
+	)
 }

@@ -1,6 +1,6 @@
 import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../core/manager.js'
-import { validateMethod, notFound } from '../../utils.js'
+import { notFound } from '../../utils.js'
 import { serializeSessionState } from '../../../../session/state.js'
 
 /**
@@ -16,9 +16,7 @@ import { serializeSessionState } from '../../../../session/state.js'
  *   sequence: number
  * }
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['GET'])
-
+export async function GET(request: RoboRequest) {
 	const { id } = request.params as { id: string }
 
 	if (!id) {

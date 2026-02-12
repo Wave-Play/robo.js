@@ -2,7 +2,7 @@ import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../core/manager.js'
 import { getStageServer } from '../../../../core/stage.js'
 import { VOICE_GATEWAY_PORT } from '../../../../core/voice-gateway.js'
-import { validateMethod, notFound, badRequest } from '../../utils.js'
+import { notFound, badRequest } from '../../utils.js'
 import { createMockGuild, createMockChannel } from '../../../../session/state.js'
 import { generateSnowflake } from '../../../../utils/snowflake.js'
 import type { VoiceServerState, MockAttachment, ActionMetadata } from '../../../../types/index.js'
@@ -49,9 +49,7 @@ import type { VoiceServerState, MockAttachment, ActionMetadata } from '../../../
  *   interaction_token?: string // For INTERACTION_CREATE, the interaction token
  * }
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['POST'])
-
+export async function POST(request: RoboRequest) {
 	const { id } = request.params as { id: string }
 
 	if (!id) {

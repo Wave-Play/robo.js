@@ -16,14 +16,7 @@ import { parseMockToken } from '../../../../utils/id.js'
  *
  * @see https://discord.com/developers/docs/resources/user#get-current-user-guilds
  */
-export default async (request: RoboRequest) => {
-	if (request.method !== 'GET') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
+export async function GET(request: RoboRequest) {
 	// Get token from Authorization header
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)

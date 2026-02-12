@@ -1,7 +1,7 @@
 import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../core/manager.js'
 import type { CreateSessionOptions, SessionConfig } from '../../types/index.js'
-import { validateMethod, badRequest } from './utils.js'
+import { badRequest } from './utils.js'
 import { serializeSessionState } from '../../session/state.js'
 
 /**
@@ -57,55 +57,50 @@ interface CreateSessionBody {
 	config?: SessionConfig
 }
 
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['GET', 'POST'])
+export async function GET(request: RoboRequest) {
+	const url = new URL(request.url)
+	const onlyReady = url.searchParams.get('only_ready') === 'true'
+	const mockSessionId = process.env.ROBO_MOCK_SESSION_ID
 
-	// GET - List all active sessions
-	if (request.method === 'GET') {
-		const url = new URL(request.url)
-		const onlyReady = url.searchParams.get('only_ready') === 'true'
-		const mockSessionId = process.env.ROBO_MOCK_SESSION_ID
+	const sessions = sessionManager.getAll()
+	const result = sessions
+		.filter((session) => !onlyReady || session.connections.size > 0)
+		.map((session) => {
+			const guilds = Array.from(session.state.guilds.values()).map((g) => ({
+				id: g.id,
+				name: g.name
+			}))
 
-		const sessions = sessionManager.getAll()
-		const result = sessions
-			.filter((session) => !onlyReady || session.connections.size > 0)
-			.map((session) => {
-				const guilds = Array.from(session.state.guilds.values()).map((g) => ({
-					id: g.id,
-					name: g.name
-				}))
+			const channels = Array.from(session.state.channels.values()).map((c) => ({
+				id: c.id,
+				name: c.name,
+				guildId: c.guildId,
+				type: c.type
+			}))
 
-				const channels = Array.from(session.state.channels.values()).map((c) => ({
-					id: c.id,
-					name: c.name,
-					guildId: c.guildId,
-					type: c.type
-				}))
-
-				return {
-					session_id: session.id,
-					token: session.token,
-					name: session.name,
-					created_at: session.createdAt,
-					expires_at: session.expiresAt,
-					connections: session.connections.size,
-					is_mock_mode: process.env.ROBO_MOCK_MODE === 'true' && session.id === mockSessionId,
-					state: {
-						botUser: {
-							id: session.state.botUser.id,
-							username: session.state.botUser.username
-						},
-						guilds,
-						channels
-					}
+			return {
+				session_id: session.id,
+				token: session.token,
+				name: session.name,
+				created_at: session.createdAt,
+				expires_at: session.expiresAt,
+				connections: session.connections.size,
+				is_mock_mode: process.env.ROBO_MOCK_MODE === 'true' && session.id === mockSessionId,
+				state: {
+					botUser: {
+						id: session.state.botUser.id,
+						username: session.state.botUser.username
+					},
+					guilds,
+					channels
 				}
-			})
+			}
+		})
 
-		return { sessions: result }
-	}
+	return { sessions: result }
+}
 
-	// POST - Create a new session
-
+export async function POST(request: RoboRequest) {
 	let body: CreateSessionBody = {}
 
 	// Parse body if present

@@ -1,6 +1,6 @@
 import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../core/manager.js'
-import { validateMethod, notFound, badRequest } from '../../utils.js'
+import { notFound, badRequest } from '../../utils.js'
 import { DEFAULT_APPROVED_PRIVILEGED_INTENTS, PRIVILEGED_INTENTS } from '../../../../core/intents.js'
 import type { Session } from '../../../../session/session.js'
 
@@ -16,46 +16,47 @@ interface SetIntentsConfigRequest {
 	approvedPrivilegedIntents?: string // Bitfield as string (bigint serialization)
 }
 
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['GET', 'POST'])
-
+function resolveSession(request: RoboRequest) {
 	const { id } = request.params as { id: string }
-
-	if (!id) {
-		return notFound('Session ID required')
-	}
-
+	if (!id) return notFound('Session ID required')
 	const session = sessionManager.get(id) as Session | undefined
+	if (!session) return notFound('Session not found')
+	return { session, id }
+}
 
-	if (!session) {
-		return notFound('Session not found')
-	}
+export async function GET(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session } = resolved
 
-	// GET: Return current intent configuration
-	if (request.method === 'GET') {
-		// Get connection intents if any connections exist
-		let connectionIntents: string | null = null
-		for (const conn of session.connections.values()) {
-			if (conn.identified) {
-				connectionIntents = conn.intents.toString()
-				break
-			}
-		}
-
-		return {
-			enforceIntents: session.config?.enforceIntents ?? false,
-			approvedPrivilegedIntents: (
-				session.config?.approvedPrivilegedIntents ?? DEFAULT_APPROVED_PRIVILEGED_INTENTS
-			).toString(),
-			connectionIntents,
-			privilegedIntentBits: {
-				GuildMembers: (1n << 1n).toString(),
-				GuildPresences: (1n << 8n).toString(),
-				MessageContent: (1n << 15n).toString(),
-				all: PRIVILEGED_INTENTS.toString()
-			}
+	// Get connection intents if any connections exist
+	let connectionIntents: string | null = null
+	for (const conn of session.connections.values()) {
+		if (conn.identified) {
+			connectionIntents = conn.intents.toString()
+			break
 		}
 	}
+
+	return {
+		enforceIntents: session.config?.enforceIntents ?? false,
+		approvedPrivilegedIntents: (
+			session.config?.approvedPrivilegedIntents ?? DEFAULT_APPROVED_PRIVILEGED_INTENTS
+		).toString(),
+		connectionIntents,
+		privilegedIntentBits: {
+			GuildMembers: (1n << 1n).toString(),
+			GuildPresences: (1n << 8n).toString(),
+			MessageContent: (1n << 15n).toString(),
+			all: PRIVILEGED_INTENTS.toString()
+		}
+	}
+}
+
+export async function POST(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session } = resolved
 
 	// POST: Update intent configuration
 	let body: SetIntentsConfigRequest = {}

@@ -1,7 +1,7 @@
 import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../core/manager.js'
 import { getStageServer } from '../../../../core/stage.js'
-import { validateMethod, notFound } from '../../utils.js'
+import { notFound } from '../../utils.js'
 
 /**
  * GET /api/control/sessions/:id/emojis - List all emojis for all guilds
@@ -15,44 +15,45 @@ import { validateMethod, notFound } from '../../utils.js'
  *   roles?: string[],   // Optional role IDs that can use this emoji
  * }
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['GET', 'POST'])
 
+function resolveSession(request: RoboRequest) {
 	const { id } = request.params as { id: string }
-
-	if (!id) {
-		return notFound('Session ID required')
-	}
-
+	if (!id) return notFound('Session ID required')
 	const session = sessionManager.get(id)
+	if (!session) return notFound('Session not found')
+	return { session, id }
+}
 
-	if (!session) {
-		return notFound('Session not found')
-	}
+export async function GET(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session } = resolved
 
-	// GET - List all emojis
-	if (request.method === 'GET') {
-		const guilds: Array<{ guild_id: string; guild_name: string; emojis: unknown[] }> = []
+	const guilds: Array<{ guild_id: string; guild_name: string; emojis: unknown[] }> = []
 
-		for (const guild of session.state.guilds.values()) {
-			const guildEmojis = session.state.getGuildEmojis(guild.id)
-			guilds.push({
+	for (const guild of session.state.guilds.values()) {
+		const guildEmojis = session.state.getGuildEmojis(guild.id)
+		guilds.push({
+			guild_id: guild.id,
+			guild_name: guild.name,
+			emojis: guildEmojis.map((e) => ({
+				id: e.id,
+				name: e.name,
+				animated: e.animated,
 				guild_id: guild.id,
-				guild_name: guild.name,
-				emojis: guildEmojis.map((e) => ({
-					id: e.id,
-					name: e.name,
-					animated: e.animated,
-					guild_id: guild.id,
-					available: e.available
-				}))
-			})
-		}
-
-		return { guilds }
+				available: e.available
+			}))
+		})
 	}
 
-	// POST - Create emoji
+	return { guilds }
+}
+
+export async function POST(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session, id } = resolved
+
 	const body = (await request.json()) as {
 		guild_id: string
 		name: string

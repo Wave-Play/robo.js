@@ -1,6 +1,6 @@
 import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../core/manager.js'
-import { validateMethod, notFound } from '../utils.js'
+import { notFound } from '../utils.js'
 
 /**
  * GET /api/control/sessions/:id - Get session info with state
@@ -26,25 +26,19 @@ import { validateMethod, notFound } from '../utils.js'
  *   success: true
  * }
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['GET', 'DELETE'])
 
+function resolveSession(request: RoboRequest) {
 	const { id } = request.params as { id: string }
-
-	if (!id) {
-		return notFound('Session ID required')
-	}
-
+	if (!id) return notFound('Session ID required')
 	const session = sessionManager.get(id)
+	if (!session) return notFound('Session not found')
+	return { session, id }
+}
 
-	if (!session) {
-		return notFound('Session not found')
-	}
-
-	if (request.method === 'DELETE') {
-		await sessionManager.delete(id)
-		return { success: true }
-	}
+export async function GET(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session } = resolved
 
 	// GET - return session info with state
 	const guilds = Array.from(session.state.guilds.values()).map((g) => ({
@@ -75,4 +69,13 @@ export default async (request: RoboRequest) => {
 			channels
 		}
 	}
+}
+
+export async function DELETE(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { id } = resolved
+
+	await sessionManager.delete(id)
+	return { success: true }
 }

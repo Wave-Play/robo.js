@@ -15,7 +15,8 @@ import { enforcePermissions } from '../../../utils/permission-check.js'
  * @see https://discord.com/developers/docs/resources/invite#get-invite
  * @see https://discord.com/developers/docs/resources/invite#delete-invite
  */
-export default async (request: RoboRequest) => {
+
+function resolveInvite(request: RoboRequest) {
 	// 1. Parse Authorization header → get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
@@ -47,77 +48,79 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// Handle GET - Get invite
-	if (request.method === 'GET') {
-		// Parse query parameters for optional data
-		const url = new URL(request.url)
-		const withCounts = url.searchParams.get('with_counts') === 'true'
-		const withExpiration = url.searchParams.get('with_expiration') === 'true'
-		const guildScheduledEventId = url.searchParams.get('guild_scheduled_event_id')
+	return { session, code, invite }
+}
 
-		// Build the response based on query params
-		if (withCounts || withExpiration) {
-			// Extended invite with metadata
-			const apiInvite = mockInviteToAPIExtendedInvite(invite, session.state)
+export async function GET(request: RoboRequest) {
+	const resolved = resolveInvite(request)
+	if (resolved instanceof Response) return resolved
+	const { session, invite } = resolved
 
-			// Include scheduled event if requested
-			if (guildScheduledEventId && invite.guildId) {
-				const event = session.state.getScheduledEvent(invite.guildId, guildScheduledEventId)
-				if (event) {
-					// Would add guild_scheduled_event to response
-					// For now, we just acknowledge the parameter
-				}
+	// Parse query parameters for optional data
+	const url = new URL(request.url)
+	const withCounts = url.searchParams.get('with_counts') === 'true'
+	const withExpiration = url.searchParams.get('with_expiration') === 'true'
+	const guildScheduledEventId = url.searchParams.get('guild_scheduled_event_id')
+
+	// Build the response based on query params
+	if (withCounts || withExpiration) {
+		// Extended invite with metadata
+		const apiInvite = mockInviteToAPIExtendedInvite(invite, session.state)
+
+		// Include scheduled event if requested
+		if (guildScheduledEventId && invite.guildId) {
+			const event = session.state.getScheduledEvent(invite.guildId, guildScheduledEventId)
+			if (event) {
+				// Would add guild_scheduled_event to response
+				// For now, we just acknowledge the parameter
 			}
-
-			return apiInvite
 		}
 
-		// Basic invite
-		return mockInviteToAPIInvite(invite, session.state)
-	}
-
-	// Handle DELETE - Delete invite
-	if (request.method === 'DELETE') {
-		// Check permissions (MANAGE_CHANNELS on the channel or MANAGE_GUILD)
-		const permError = enforcePermissions(
-			session,
-			'DELETE',
-			`/invites/${code}`,
-			invite.channelId,
-			invite.guildId
-		)
-		if (permError) return permError
-
-		// Get the invite data before deletion for the response
-		const apiInvite = mockInviteToAPIInvite(invite, session.state)
-
-		// Delete the invite
-		session.state.deleteInvite(code)
-
-		// Record action
-		session.recordAction(
-			'invite_deleted',
-			{
-				code,
-				channel_id: invite.channelId,
-				guild_id: invite.guildId
-			},
-			{
-				endpoint: `DELETE /invites/${code}`,
-				method: 'DELETE'
-			}
-		)
-
-		// Dispatch INVITE_DELETE event
-		await session.dispatchInviteDelete(invite)
-
-		// Return the deleted invite
 		return apiInvite
 	}
 
-	// Method not allowed
-	return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-		status: 405,
-		headers: { 'Content-Type': 'application/json' }
-	})
+	// Basic invite
+	return mockInviteToAPIInvite(invite, session.state)
+}
+
+export async function DELETE(request: RoboRequest) {
+	const resolved = resolveInvite(request)
+	if (resolved instanceof Response) return resolved
+	const { session, code, invite } = resolved
+
+	// Check permissions (MANAGE_CHANNELS on the channel or MANAGE_GUILD)
+	const permError = enforcePermissions(
+		session,
+		'DELETE',
+		`/invites/${code}`,
+		invite.channelId,
+		invite.guildId
+	)
+	if (permError) return permError
+
+	// Get the invite data before deletion for the response
+	const apiInvite = mockInviteToAPIInvite(invite, session.state)
+
+	// Delete the invite
+	session.state.deleteInvite(code)
+
+	// Record action
+	session.recordAction(
+		'invite_deleted',
+		{
+			code,
+			channel_id: invite.channelId,
+			guild_id: invite.guildId
+		},
+		{
+			endpoint: `DELETE /invites/${code}`,
+			method: 'DELETE'
+		}
+	)
+
+	// Dispatch INVITE_DELETE event
+	await session.dispatchInviteDelete(invite)
+
+	// Return the deleted invite
+	return apiInvite
 }

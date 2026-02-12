@@ -1,7 +1,7 @@
 import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../core/manager.js'
 import { VOICE_GATEWAY_PORT } from '../../../../core/voice-gateway.js'
-import { validateMethod, notFound, badRequest } from '../../utils.js'
+import { notFound, badRequest } from '../../utils.js'
 import { generateSnowflake } from '../../../../utils/snowflake.js'
 import type { VoiceServerState } from '../../../../types/index.js'
 
@@ -18,76 +18,80 @@ import type { VoiceServerState } from '../../../../types/index.js'
  * DELETE /api/control/sessions/:id/voice-server?guild_id=xxx
  *   Clear voice server state (simulates disconnect)
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['GET', 'POST', 'DELETE'])
 
+function resolveSession(request: RoboRequest) {
 	const { id } = request.params as { id: string }
-
-	if (!id) {
-		return notFound('Session ID required')
-	}
-
+	if (!id) return notFound('Session ID required')
 	const session = sessionManager.get(id)
+	if (!session) return notFound('Session not found')
+	return { session, id }
+}
 
-	if (!session) {
-		return notFound('Session not found')
-	}
+export async function GET(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session } = resolved
 
-	// Handle GET - return voice server state
-	if (request.method === 'GET') {
-		const url = new URL(request.url, 'http://localhost')
-		const guildId = url.searchParams.get('guild_id')
+	const url = new URL(request.url, 'http://localhost')
+	const guildId = url.searchParams.get('guild_id')
 
-		if (!guildId) {
-			// Return all voice servers
-			const voiceServers: Record<string, VoiceServerState> = {}
-			for (const [key, value] of session.voiceServers) {
-				voiceServers[key] = value
-			}
-			return {
-				success: true,
-				voice_servers: voiceServers
-			}
+	if (!guildId) {
+		// Return all voice servers
+		const voiceServers: Record<string, VoiceServerState> = {}
+		for (const [key, value] of session.voiceServers) {
+			voiceServers[key] = value
 		}
-
-		// Return specific voice server
-		const voiceServer = session.voiceServers.get(guildId)
-		if (!voiceServer) {
-			return notFound('Voice server not found for guild')
-		}
-
 		return {
 			success: true,
-			voice_server: voiceServer
+			voice_servers: voiceServers
 		}
 	}
 
-	// Handle DELETE - clear voice server state
-	if (request.method === 'DELETE') {
-		const url = new URL(request.url, 'http://localhost')
-		const guildId = url.searchParams.get('guild_id')
-
-		if (!guildId) {
-			return badRequest('guild_id query parameter required')
-		}
-
-		const deleted = session.voiceServers.delete(guildId)
-
-		// Also dispatch VOICE_SERVER_UPDATE with null endpoint to signal disconnect
-		await session.dispatch('VOICE_SERVER_UPDATE', {
-			token: null,
-			guild_id: guildId,
-			endpoint: null
-		})
-
-		return {
-			success: true,
-			deleted,
-			guild_id: guildId
-		}
+	// Return specific voice server
+	const voiceServer = session.voiceServers.get(guildId)
+	if (!voiceServer) {
+		return notFound('Voice server not found for guild')
 	}
 
-	// Handle POST - manually trigger VOICE_SERVER_UPDATE
+	return {
+		success: true,
+		voice_server: voiceServer
+	}
+}
+
+export async function DELETE(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session } = resolved
+
+	const url = new URL(request.url, 'http://localhost')
+	const guildId = url.searchParams.get('guild_id')
+
+	if (!guildId) {
+		return badRequest('guild_id query parameter required')
+	}
+
+	const deleted = session.voiceServers.delete(guildId)
+
+	// Also dispatch VOICE_SERVER_UPDATE with null endpoint to signal disconnect
+	await session.dispatch('VOICE_SERVER_UPDATE', {
+		token: null,
+		guild_id: guildId,
+		endpoint: null
+	})
+
+	return {
+		success: true,
+		deleted,
+		guild_id: guildId
+	}
+}
+
+export async function POST(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session } = resolved
+
 	let body: {
 		guild_id?: string
 		channel_id?: string

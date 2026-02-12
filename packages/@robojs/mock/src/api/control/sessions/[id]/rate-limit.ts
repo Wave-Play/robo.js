@@ -1,6 +1,6 @@
 import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../core/manager.js'
-import { validateMethod, notFound, badRequest } from '../../utils.js'
+import { notFound, badRequest } from '../../utils.js'
 
 type RateLimitScope = 'all' | 'messages' | 'interactions' | 'guilds' | 'channels'
 
@@ -37,34 +37,35 @@ type RateLimitScope = 'all' | 'messages' | 'interactions' | 'guilds' | 'channels
  * returning the first 429 response. In persistent mode, it continues returning 429
  * until manually disabled.
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['POST', 'GET'])
 
+function resolveSession(request: RoboRequest) {
 	const { id } = request.params as { id: string }
-
-	if (!id) {
-		return notFound('Session ID required')
-	}
-
+	if (!id) return notFound('Session ID required')
 	const session = sessionManager.get(id) ?? sessionManager.getByToken(id)
+	if (!session) return notFound('Session not found')
+	return { session, id }
+}
 
-	if (!session) {
-		return notFound('Session not found')
+export async function GET(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session } = resolved
+
+	const config = session.rateLimitConfig
+	return {
+		enabled: config.enabled,
+		retry_after: config.retryAfter,
+		persistent: config.persistent,
+		scope: config.scope,
+		triggered_count: config.triggeredCount
 	}
+}
 
-	// GET - Check current rate limit simulation status
-	if (request.method === 'GET') {
-		const config = session.rateLimitConfig
-		return {
-			enabled: config.enabled,
-			retry_after: config.retryAfter,
-			persistent: config.persistent,
-			scope: config.scope,
-			triggered_count: config.triggeredCount
-		}
-	}
+export async function POST(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session } = resolved
 
-	// POST - Set rate limit simulation
 	let body: {
 		enabled?: boolean
 		retry_after?: number

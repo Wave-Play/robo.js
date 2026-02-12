@@ -1,14 +1,12 @@
 import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../../core/manager.js'
 import { getStageServer } from '../../../../../core/stage.js'
-import { validateMethod, notFound } from '../../../utils.js'
+import { notFound } from '../../../utils.js'
 
 /**
  * DELETE /api/control/sessions/:id/emojis/:emojiId - Delete an emoji
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['DELETE'])
-
+export async function DELETE(request: RoboRequest) {
 	const { id, emojiId } = request.params as { id: string; emojiId: string }
 
 	if (!id) {

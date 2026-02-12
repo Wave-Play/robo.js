@@ -1,6 +1,6 @@
 import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../core/manager.js'
-import { validateMethod, notFound } from '../../utils.js'
+import { notFound } from '../../utils.js'
 
 /**
  * GET /api/control/sessions/:id/status - Get session status summary
@@ -25,9 +25,7 @@ import { validateMethod, notFound } from '../../utils.js'
  *   expires_at: string
  * }
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['GET'])
-
+export async function GET(request: RoboRequest) {
 	const { id } = request.params as { id: string }
 
 	if (!id) {

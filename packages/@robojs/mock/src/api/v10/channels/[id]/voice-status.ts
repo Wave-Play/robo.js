@@ -9,16 +9,8 @@ import { mockChannelToAPIChannel } from '../../../../discord/payloads.js'
  *
  * @see https://discord.com/developers/docs/resources/channel#modify-channel-voice-status
  */
-export default async (request: RoboRequest) => {
-	// 1. Validate method (PUT only)
-	if (request.method !== 'PUT') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// 2. Parse Authorization header → get session
+export async function PUT(request: RoboRequest) {
+	// 1. Parse Authorization header → get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
 
@@ -37,10 +29,10 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 3. Extract channel ID from params
+	// 2. Extract channel ID from params
 	const { id: channelId } = request.params as { id: string }
 
-	// 4. Validate channel exists and is a voice channel
+	// 3. Validate channel exists and is a voice channel
 	const channel = session.state.getChannel(channelId)
 	if (!channel) {
 		return new Response(JSON.stringify({ message: 'Unknown Channel', code: 10003 }), {
@@ -57,7 +49,7 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 5. Parse request body
+	// 4. Parse request body
 	let body: { status?: string }
 
 	try {
@@ -69,7 +61,7 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 6. Update channel status
+	// 5. Update channel status
 	channel.status = body.status ?? null
 
 	// Record action
@@ -85,10 +77,10 @@ export default async (request: RoboRequest) => {
 		}
 	)
 
-	// 7. Dispatch CHANNEL_UPDATE event
+	// 6. Dispatch CHANNEL_UPDATE event
 	const apiChannel = mockChannelToAPIChannel(channel)
 	getGatewayServer().dispatchToSession(session.id, 'CHANNEL_UPDATE', apiChannel, channel.guildId)
 
-	// 8. Return 204 No Content
+	// 7. Return 204 No Content
 	return new Response(null, { status: 204 })
 }

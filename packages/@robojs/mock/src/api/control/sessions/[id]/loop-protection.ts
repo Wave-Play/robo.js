@@ -1,6 +1,6 @@
 import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../core/manager.js'
-import { validateMethod, notFound, badRequest } from '../../utils.js'
+import { notFound, badRequest } from '../../utils.js'
 
 /**
  * POST /api/control/sessions/:id/loop-protection - Enable/disable loop protection
@@ -25,31 +25,32 @@ import { validateMethod, notFound, badRequest } from '../../utils.js'
  * - You're intentionally testing high-frequency message scenarios
  * - You believe the detection is producing false positives
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['POST', 'GET'])
 
+function resolveSession(request: RoboRequest) {
 	const { id } = request.params as { id: string }
-
-	if (!id) {
-		return notFound('Session ID required')
-	}
-
+	if (!id) return notFound('Session ID required')
 	// Try to find session by ID first, then by token
 	const session = sessionManager.get(id) ?? sessionManager.getByToken(id)
+	if (!session) return notFound('Session not found')
+	return { session, id }
+}
 
-	if (!session) {
-		return notFound('Session not found')
+export async function GET(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session } = resolved
+
+	return {
+		enabled: session.loopProtectionEnabled,
+		isLoopDetected: session.isLoopDetected
 	}
+}
 
-	// GET - Check current loop protection status
-	if (request.method === 'GET') {
-		return {
-			enabled: session.loopProtectionEnabled,
-			isLoopDetected: session.isLoopDetected
-		}
-	}
+export async function POST(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session } = resolved
 
-	// POST - Set loop protection
 	let body: {
 		enabled?: boolean
 	}

@@ -13,7 +13,8 @@ import { EmojiLimits } from '../../../../../types/index.js'
  * @see https://discord.com/developers/docs/resources/emoji#modify-guild-emoji
  * @see https://discord.com/developers/docs/resources/emoji#delete-guild-emoji
  */
-export default async (request: RoboRequest) => {
+
+function resolveGuildEmoji(request: RoboRequest) {
 	// 1. Parse Authorization header → get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
@@ -54,131 +55,136 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// Handle GET - Get emoji
-	if (request.method === 'GET') {
-		return mockEmojiToAPIEmoji(emoji)
+	return { session, guild, guildId, emojiId, emoji }
+}
+
+export async function GET(request: RoboRequest) {
+	const resolved = resolveGuildEmoji(request)
+	if (resolved instanceof Response) return resolved
+	const { emoji } = resolved
+
+	return mockEmojiToAPIEmoji(emoji)
+}
+
+export async function PATCH(request: RoboRequest) {
+	const resolved = resolveGuildEmoji(request)
+	if (resolved instanceof Response) return resolved
+	const { session, guildId, emojiId } = resolved
+
+	let body: {
+		name?: string
+		roles?: string[]
 	}
 
-	// Handle PATCH - Modify emoji
-	if (request.method === 'PATCH') {
-		let body: {
-			name?: string
-			roles?: string[]
-		}
-
-		try {
-			body = await request.json()
-		} catch {
-			return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
-				status: 400,
-				headers: { 'Content-Type': 'application/json' }
-			})
-		}
-
-		// Validate name length
-		if (body.name !== undefined) {
-			if (body.name.length < EmojiLimits.MIN_NAME_LENGTH) {
-				return new Response(
-					JSON.stringify({
-						error: `Emoji name must be at least ${EmojiLimits.MIN_NAME_LENGTH} characters`,
-						code: 50035
-					}),
-					{
-						status: 400,
-						headers: { 'Content-Type': 'application/json' }
-					}
-				)
-			}
-
-			if (body.name.length > EmojiLimits.MAX_NAME_LENGTH) {
-				return new Response(
-					JSON.stringify({
-						error: `Emoji name cannot exceed ${EmojiLimits.MAX_NAME_LENGTH} characters`,
-						code: 50035
-					}),
-					{
-						status: 400,
-						headers: { 'Content-Type': 'application/json' }
-					}
-				)
-			}
-
-			// Validate name pattern (alphanumeric and underscores only)
-			if (!EmojiLimits.NAME_PATTERN.test(body.name)) {
-				return new Response(
-					JSON.stringify({
-						error: 'Emoji name must only contain alphanumeric characters and underscores',
-						code: 50035
-					}),
-					{
-						status: 400,
-						headers: { 'Content-Type': 'application/json' }
-					}
-				)
-			}
-		}
-
-		// Update the emoji
-		const updated = session.state.updateGuildEmoji(emojiId, body)
-		if (!updated) {
-			return new Response(JSON.stringify({ message: 'Failed to update emoji', code: 50035 }), {
-				status: 400,
-				headers: { 'Content-Type': 'application/json' }
-			})
-		}
-
-		// Record action
-		session.recordAction(
-			'emoji_updated',
-			{
-				emoji_id: emojiId,
-				guild_id: guildId,
-				updates: body
-			},
-			{
-				endpoint: `PATCH /guilds/${guildId}/emojis/${emojiId}`,
-				method: 'PATCH'
-			}
-		)
-
-		// Dispatch GUILD_EMOJIS_UPDATE event
-		await session.dispatchGuildEmojisUpdate(guildId)
-
-		return mockEmojiToAPIEmoji(updated)
+	try {
+		body = await request.json()
+	} catch {
+		return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
+			status: 400,
+			headers: { 'Content-Type': 'application/json' }
+		})
 	}
 
-	// Handle DELETE - Delete emoji
-	if (request.method === 'DELETE') {
-		const deleted = session.state.deleteGuildEmoji(emojiId)
-		if (!deleted) {
-			return new Response(JSON.stringify({ message: 'Failed to delete emoji', code: 50035 }), {
-				status: 400,
-				headers: { 'Content-Type': 'application/json' }
-			})
+	// Validate name length
+	if (body.name !== undefined) {
+		if (body.name.length < EmojiLimits.MIN_NAME_LENGTH) {
+			return new Response(
+				JSON.stringify({
+					error: `Emoji name must be at least ${EmojiLimits.MIN_NAME_LENGTH} characters`,
+					code: 50035
+				}),
+				{
+					status: 400,
+					headers: { 'Content-Type': 'application/json' }
+				}
+			)
 		}
 
-		// Record action
-		session.recordAction(
-			'emoji_deleted',
-			{
-				emoji_id: emojiId,
-				guild_id: guildId
-			},
-			{
-				endpoint: `DELETE /guilds/${guildId}/emojis/${emojiId}`,
-				method: 'DELETE'
-			}
-		)
+		if (body.name.length > EmojiLimits.MAX_NAME_LENGTH) {
+			return new Response(
+				JSON.stringify({
+					error: `Emoji name cannot exceed ${EmojiLimits.MAX_NAME_LENGTH} characters`,
+					code: 50035
+				}),
+				{
+					status: 400,
+					headers: { 'Content-Type': 'application/json' }
+				}
+			)
+		}
 
-		// Dispatch GUILD_EMOJIS_UPDATE event
-		await session.dispatchGuildEmojisUpdate(guildId)
-
-		return new Response(null, { status: 204 })
+		// Validate name pattern (alphanumeric and underscores only)
+		if (!EmojiLimits.NAME_PATTERN.test(body.name)) {
+			return new Response(
+				JSON.stringify({
+					error: 'Emoji name must only contain alphanumeric characters and underscores',
+					code: 50035
+				}),
+				{
+					status: 400,
+					headers: { 'Content-Type': 'application/json' }
+				}
+			)
+		}
 	}
 
-	// Method not allowed
-	return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-		status: 405,
-		headers: { 'Content-Type': 'application/json' }
-	})
+	// Update the emoji
+	const updated = session.state.updateGuildEmoji(emojiId, body)
+	if (!updated) {
+		return new Response(JSON.stringify({ message: 'Failed to update emoji', code: 50035 }), {
+			status: 400,
+			headers: { 'Content-Type': 'application/json' }
+		})
+	}
+
+	// Record action
+	session.recordAction(
+		'emoji_updated',
+		{
+			emoji_id: emojiId,
+			guild_id: guildId,
+			updates: body
+		},
+		{
+			endpoint: `PATCH /guilds/${guildId}/emojis/${emojiId}`,
+			method: 'PATCH'
+		}
+	)
+
+	// Dispatch GUILD_EMOJIS_UPDATE event
+	await session.dispatchGuildEmojisUpdate(guildId)
+
+	return mockEmojiToAPIEmoji(updated)
+}
+
+export async function DELETE(request: RoboRequest) {
+	const resolved = resolveGuildEmoji(request)
+	if (resolved instanceof Response) return resolved
+	const { session, guildId, emojiId } = resolved
+
+	const deleted = session.state.deleteGuildEmoji(emojiId)
+	if (!deleted) {
+		return new Response(JSON.stringify({ message: 'Failed to delete emoji', code: 50035 }), {
+			status: 400,
+			headers: { 'Content-Type': 'application/json' }
+		})
+	}
+
+	// Record action
+	session.recordAction(
+		'emoji_deleted',
+		{
+			emoji_id: emojiId,
+			guild_id: guildId
+		},
+		{
+			endpoint: `DELETE /guilds/${guildId}/emojis/${emojiId}`,
+			method: 'DELETE'
+		}
+	)
+
+	// Dispatch GUILD_EMOJIS_UPDATE event
+	await session.dispatchGuildEmojisUpdate(guildId)
+
+	return new Response(null, { status: 204 })
 }

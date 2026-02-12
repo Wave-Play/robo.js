@@ -1,6 +1,5 @@
 import type { RoboRequest } from '@robojs/server'
 import { readRegistry } from '../../../session/registry.js'
-import { validateMethod } from '../utils.js'
 
 /**
  * GET /api/control/tests/registry - Get the current test session registry
@@ -10,9 +9,7 @@ import { validateMethod } from '../utils.js'
  *   registry: TestSessionRegistry | null
  * }
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['GET'])
-
+export async function GET(request: RoboRequest) {
 	const registry = readRegistry()
 
 	return {

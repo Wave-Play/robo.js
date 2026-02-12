@@ -8,14 +8,7 @@ import { parseMockToken } from '../../../../utils/id.js'
  * Returns a list of integrations for a guild (Twitch, YouTube, etc.)
  * Most guilds will have an empty list.
  */
-export default async (request: RoboRequest) => {
-	if (request.method !== 'GET') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
+export async function GET(request: RoboRequest) {
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
 

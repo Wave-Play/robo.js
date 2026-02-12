@@ -9,14 +9,7 @@ import { getTemplatesForSession } from '../template-storage.js'
  * This is a global endpoint to fetch any template by its code.
  * Used by client.fetchGuildTemplate(code)
  */
-export default async (request: RoboRequest) => {
-	if (request.method !== 'GET') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
+export async function GET(request: RoboRequest) {
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
 

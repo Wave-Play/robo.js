@@ -2,7 +2,7 @@ import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../../core/manager.js'
 import { getControlEventsHub } from '../../../../../core/control-events.js'
 import { getStageServer } from '../../../../../core/stage.js'
-import { validateMethod, notFound, badRequest } from '../../../utils.js'
+import { notFound, badRequest } from '../../../utils.js'
 import type { StagePlaybackChangedData } from '../../../../../types/stage.js'
 
 /**
@@ -22,9 +22,7 @@ import type { StagePlaybackChangedData } from '../../../../../types/stage.js'
  * - 400: No scenario loaded, stepIndex out of range, or invalid request
  * - 404: Session not found
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['POST'])
-
+export async function POST(request: RoboRequest) {
 	const { id } = request.params as { id: string }
 
 	if (!id) {

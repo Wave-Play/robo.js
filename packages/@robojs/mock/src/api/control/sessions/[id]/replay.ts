@@ -2,7 +2,7 @@ import type { RoboRequest } from '@robojs/server'
 import type { SessionRecording, ReplayOptions } from '../../../../types/index.js'
 import { sessionManager } from '../../../../core/manager.js'
 import { RecordingPlayer } from '../../../../session/player.js'
-import { validateMethod, notFound, badRequest, serverError } from '../../utils.js'
+import { notFound, badRequest, serverError } from '../../utils.js'
 
 /**
  * POST /api/control/sessions/:id/replay - Replay a recording into a session
@@ -34,9 +34,7 @@ import { validateMethod, notFound, badRequest, serverError } from '../../utils.j
  *   }
  * }
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['POST'])
-
+export async function POST(request: RoboRequest) {
 	const { id } = request.params as { id: string }
 
 	if (!id) {

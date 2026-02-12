@@ -22,16 +22,8 @@ import { createMockUser } from '../../../../session/state.js'
  *
  * @see https://discord.com/developers/docs/resources/guild#bulk-guild-ban
  */
-export default async (request: RoboRequest) => {
-	// 1. Validate POST method
-	if (request.method !== 'POST') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// 2. Parse Authorization header → get session
+export async function POST(request: RoboRequest) {
+	// 1. Parse Authorization header → get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
 
@@ -50,10 +42,10 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 3. Extract guild ID from params
+	// 2. Extract guild ID from params
 	const { id: guildId } = request.params as { id: string }
 
-	// 4. Validate guild exists
+	// 3. Validate guild exists
 	const guild = session.state.guilds.get(guildId)
 	if (!guild) {
 		return new Response(JSON.stringify({ message: 'Unknown Guild', code: 10004 }), {
@@ -62,11 +54,11 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 5. Check permissions (requires BAN_MEMBERS and MANAGE_GUILD)
+	// 4. Check permissions (requires BAN_MEMBERS and MANAGE_GUILD)
 	const permError = enforcePermissions(session, request.method, `/guilds/${guildId}/bulk-ban`, undefined, guildId)
 	if (permError) return permError
 
-	// 6. Parse request body
+	// 5. Parse request body
 	let body: {
 		user_ids: string[]
 		delete_message_seconds?: number
@@ -81,7 +73,7 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 7. Validate user_ids array
+	// 6. Validate user_ids array
 	if (!Array.isArray(body.user_ids)) {
 		return new Response(JSON.stringify({ message: 'user_ids must be an array', code: 50035 }), {
 			status: 400,
@@ -106,7 +98,7 @@ export default async (request: RoboRequest) => {
 		)
 	}
 
-	// 8. Validate delete_message_seconds
+	// 7. Validate delete_message_seconds
 	const deleteMessageSeconds = body.delete_message_seconds
 	if (
 		deleteMessageSeconds !== undefined &&
@@ -124,11 +116,11 @@ export default async (request: RoboRequest) => {
 		)
 	}
 
-	// 9. Get reason from header
+	// 8. Get reason from header
 	const rawReason = request.headers.get('X-Audit-Log-Reason')
 	const reason = rawReason ? decodeURIComponent(rawReason) : null
 
-	// 10. Process each user
+	// 9. Process each user
 	const bannedUsers: string[] = []
 	const failedUsers: string[] = []
 
@@ -179,7 +171,7 @@ export default async (request: RoboRequest) => {
 		}
 	}
 
-	// 11. Record action
+	// 10. Record action
 	session.recordAction(
 		'bulk_ban',
 		{
@@ -195,7 +187,7 @@ export default async (request: RoboRequest) => {
 		}
 	)
 
-	// 12. Return result
+	// 11. Return result
 	return new Response(
 		JSON.stringify({
 			banned_users: bannedUsers,

@@ -18,14 +18,7 @@ import type { RoboRequest } from '@robojs/server'
  *   }
  * }
  */
-export default async (request: RoboRequest) => {
-	if (request.method !== 'GET') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
+export async function GET(request: RoboRequest) {
 	// Get host from request header (includes port)
 	const host = request.headers.get('host') || 'localhost:3000'
 

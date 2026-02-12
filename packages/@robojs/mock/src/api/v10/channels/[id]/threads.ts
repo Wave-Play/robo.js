@@ -33,16 +33,8 @@ import type { MockForumChannel } from '../../../../types/index.js'
  *
  * Response: APIChannel (thread) object
  */
-export default async (request: RoboRequest) => {
-	// 1. Validate POST method
-	if (request.method !== 'POST') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// 2. Parse Authorization header → get session
+export async function POST(request: RoboRequest) {
+	// 1. Parse Authorization header → get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
 
@@ -61,10 +53,10 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 3. Extract channel ID from params
+	// 2. Extract channel ID from params
 	const { id: channelId } = request.params as { id: string }
 
-	// 4. Validate parent channel exists
+	// 3. Validate parent channel exists
 	const channel = session.state.getChannel(channelId)
 	if (!channel) {
 		return new Response(JSON.stringify({ message: 'Unknown Channel', code: 10003 }), {
@@ -73,7 +65,7 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 5. Validate channel type (must be text, announcement, forum, or media)
+	// 4. Validate channel type (must be text, announcement, forum, or media)
 	const allowedTypes = [0, 5, 15, 16] // GUILD_TEXT, GUILD_ANNOUNCEMENT, GUILD_FORUM, GUILD_MEDIA
 	if (!allowedTypes.includes(channel.type)) {
 		return new Response(
@@ -91,7 +83,7 @@ export default async (request: RoboRequest) => {
 	// Check if this is a forum/media channel
 	const isForumChannel = channel.type === 15 || channel.type === 16
 
-	// 6. Parse thread creation payload
+	// 5. Parse thread creation payload
 	let body: {
 		name: string
 		auto_archive_duration?: 60 | 1440 | 4320 | 10080
@@ -117,7 +109,7 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 7. Validate required fields
+	// 6. Validate required fields
 	if (!body.name || typeof body.name !== 'string' || body.name.length < 1 || body.name.length > 100) {
 		return new Response(
 			JSON.stringify({
@@ -131,7 +123,7 @@ export default async (request: RoboRequest) => {
 		)
 	}
 
-	// 7b. For forum/media channels, message is required
+	// 6b. For forum/media channels, message is required
 	if (isForumChannel && !body.message) {
 		return new Response(
 			JSON.stringify({
@@ -145,7 +137,7 @@ export default async (request: RoboRequest) => {
 		)
 	}
 
-	// 7c. Validate applied_tags for forum channels
+	// 6c. Validate applied_tags for forum channels
 	if (isForumChannel && body.applied_tags) {
 		if (body.applied_tags.length > 5) {
 			return new Response(
@@ -179,7 +171,7 @@ export default async (request: RoboRequest) => {
 		}
 	}
 
-	// 8. Handle forum/media channel posts differently
+	// 7. Handle forum/media channel posts differently
 	if (isForumChannel) {
 		// Create forum post with initial message
 		const { thread, message } = session.state.createForumPost({
@@ -213,7 +205,7 @@ export default async (request: RoboRequest) => {
 		return mockForumThreadToAPIChannel(thread, message, session.state.botUser)
 	}
 
-	// 9. Regular thread creation (text/announcement channels)
+	// 8. Regular thread creation (text/announcement channels)
 	const threadType = body.type ?? (channel.type === 5 ? 10 : 11)
 
 	const thread = session.state.createThread({
@@ -226,7 +218,7 @@ export default async (request: RoboRequest) => {
 		rateLimitPerUser: body.rate_limit_per_user
 	})
 
-	// 10. Record as 'thread_created' action
+	// 9. Record as 'thread_created' action
 	session.recordAction(
 		'thread_created',
 		{
@@ -241,7 +233,7 @@ export default async (request: RoboRequest) => {
 		}
 	)
 
-	// 11. Return thread as APIChannel (include member since creator is automatically added)
+	// 10. Return thread as APIChannel (include member since creator is automatically added)
 	const botMember = session.state.getThreadMember(thread.id, session.state.botUser.id)
 	return mockThreadToAPIChannel(thread, botMember ?? undefined)
 }

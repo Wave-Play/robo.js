@@ -10,7 +10,7 @@ import { parseMockToken } from '../../../../../utils/id.js'
  *
  * @see https://discord.com/developers/docs/monetization/entitlements#delete-test-entitlement
  */
-export default async (request: RoboRequest) => {
+export async function DELETE(request: RoboRequest) {
 	// 1. Parse Authorization header → get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
@@ -44,18 +44,9 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// Handle DELETE - Delete Test Entitlement
-	if (request.method === 'DELETE') {
-		// In a real implementation, we'd remove from state
-		// For mock purposes, we just return 204 No Content
-		return new Response(null, {
-			status: 204
-		})
-	}
-
-	// Method not allowed
-	return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-		status: 405,
-		headers: { 'Content-Type': 'application/json' }
+	// In a real implementation, we'd remove from state
+	// For mock purposes, we just return 204 No Content
+	return new Response(null, {
+		status: 204
 	})
 }

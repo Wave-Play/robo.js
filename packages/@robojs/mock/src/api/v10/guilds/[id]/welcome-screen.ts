@@ -9,15 +9,7 @@ import { parseMockToken } from '../../../../utils/id.js'
  * @see https://discord.com/developers/docs/resources/guild#get-guild-welcome-screen
  * @see https://discord.com/developers/docs/resources/guild#modify-guild-welcome-screen
  */
-export default async (request: RoboRequest) => {
-	// Only GET and PATCH are supported
-	if (request.method !== 'GET' && request.method !== 'PATCH') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
+function resolveGuild(request: RoboRequest) {
 	// Parse Authorization header -> get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
@@ -57,45 +49,69 @@ export default async (request: RoboRequest) => {
 		}
 	}
 
-	if (request.method === 'PATCH') {
-		// Parse request body
-		let body: {
-			enabled?: boolean
-			welcome_channels?: Array<{
-				channel_id: string
-				description: string
-				emoji_id?: string | null
-				emoji_name?: string | null
-			}>
-			description?: string | null
-		}
+	return { session, guild, guildId }
+}
 
-		try {
-			body = await request.json()
-		} catch {
-			return new Response(JSON.stringify({ message: 'Invalid JSON body', code: 50035 }), {
-				status: 400,
-				headers: { 'Content-Type': 'application/json' }
-			})
-		}
+export async function GET(request: RoboRequest) {
+	const resolved = resolveGuild(request)
+	if (resolved instanceof Response) return resolved
+	const { guild } = resolved
 
-		// Update welcome screen
-		if (body.description !== undefined) {
-			guild.welcomeScreen.description = body.description
-		}
+	// Return welcome screen
+	// Note: Discord API doesn't return 'enabled' in the response - it's input-only
+	return {
+		description: guild.welcomeScreen.description,
+		welcome_channels: guild.welcomeScreen.welcome_channels.map((channel) => ({
+			channel_id: channel.channel_id,
+			description: channel.description,
+			emoji_id: channel.emoji_id,
+			emoji_name: channel.emoji_name
+		}))
+	}
+}
 
-		if (body.welcome_channels !== undefined) {
-			guild.welcomeScreen.welcome_channels = body.welcome_channels.map((channel) => ({
-				channel_id: channel.channel_id,
-				description: channel.description,
-				emoji_id: channel.emoji_id ?? null,
-				emoji_name: channel.emoji_name ?? null
-			}))
-		}
+export async function PATCH(request: RoboRequest) {
+	const resolved = resolveGuild(request)
+	if (resolved instanceof Response) return resolved
+	const { guild } = resolved
 
-		if (body.enabled !== undefined) {
-			guild.welcomeScreen.enabled = body.enabled
-		}
+	// Parse request body
+	let body: {
+		enabled?: boolean
+		welcome_channels?: Array<{
+			channel_id: string
+			description: string
+			emoji_id?: string | null
+			emoji_name?: string | null
+		}>
+		description?: string | null
+	}
+
+	try {
+		body = await request.json()
+	} catch {
+		return new Response(JSON.stringify({ message: 'Invalid JSON body', code: 50035 }), {
+			status: 400,
+			headers: { 'Content-Type': 'application/json' }
+		})
+	}
+
+	// Update welcome screen
+	if (body.description !== undefined) {
+		guild.welcomeScreen.description = body.description
+	}
+
+	if (body.welcome_channels !== undefined) {
+		guild.welcomeScreen.welcome_channels = body.welcome_channels.map((channel) => ({
+			channel_id: channel.channel_id,
+			description: channel.description,
+			emoji_id: channel.emoji_id ?? null,
+			emoji_name: channel.emoji_name ?? null
+		}))
+	}
+
+	if (body.enabled !== undefined) {
+		guild.welcomeScreen.enabled = body.enabled
 	}
 
 	// Return welcome screen

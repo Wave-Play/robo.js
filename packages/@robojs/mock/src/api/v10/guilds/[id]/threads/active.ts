@@ -13,16 +13,8 @@ import { mockThreadToAPIChannel } from '../../../../../discord/payloads.js'
  *   has_more: boolean        // Whether there are more threads
  * }
  */
-export default async (request: RoboRequest) => {
-	// 1. Validate GET method
-	if (request.method !== 'GET') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// 2. Parse Authorization header → get session
+export async function GET(request: RoboRequest) {
+	// 1. Parse Authorization header → get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
 
@@ -41,10 +33,10 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 3. Extract guild ID from params
+	// 2. Extract guild ID from params
 	const { id: guildId } = request.params as { id: string }
 
-	// 4. Validate guild exists
+	// 3. Validate guild exists
 	const guild = session.state.guilds.get(guildId)
 	if (!guild) {
 		return new Response(JSON.stringify({ message: 'Unknown Guild', code: 10004 }), {
@@ -53,10 +45,10 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 5. Get all active (non-archived) threads in the guild
+	// 4. Get all active (non-archived) threads in the guild
 	const threads = session.state.getActiveThreadsForGuild(guildId)
 
-	// 6. Get bot's membership in each thread
+	// 5. Get bot's membership in each thread
 	const members = threads
 		.map((thread) => {
 			const member = session.state.getThreadMember(thread.id, session.state.botUser.id)
@@ -72,7 +64,7 @@ export default async (request: RoboRequest) => {
 		})
 		.filter((m) => m !== null)
 
-	// 7. Return response (include member field in each thread if bot is a member)
+	// 6. Return response (include member field in each thread if bot is a member)
 	return {
 		threads: threads.map((thread) => {
 			const botMember = session.state.getThreadMember(thread.id, session.state.botUser.id)

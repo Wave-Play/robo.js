@@ -22,19 +22,6 @@ const CDN_BASE_URL = process.env.MOCK_CDN_URL || 'http://localhost:53596'
  *
  * @see https://discord.com/developers/docs/resources/webhook
  */
-export default async (request: RoboRequest) => {
-	// Extract id and token from URL params
-	const { app_id: webhookOrAppId, token } = request.params as { app_id: string; token: string }
-
-	// Try to find a regular webhook first (by looking up the token)
-	const webhookResult = findWebhookByToken(token)
-	if (webhookResult) {
-		return handleRegularWebhook(request, webhookResult.session, webhookResult.webhook, webhookOrAppId)
-	}
-
-	// Not a regular webhook - try interaction webhook
-	return handleInteractionWebhook(request, webhookOrAppId, token)
-}
 
 /**
  * Find a webhook by its token across all sessions
@@ -50,159 +37,199 @@ function findWebhookByToken(token: string): { session: Session; webhook: MockWeb
 }
 
 /**
- * Handle regular webhook operations (GET/PATCH/DELETE/POST with token)
+ * Resolve regular webhook from request params.
+ * Returns context object or null if no regular webhook matches.
  */
-async function handleRegularWebhook(
-	request: RoboRequest,
-	session: Session,
-	webhook: MockWebhook,
-	webhookId: string
-): Promise<Response> {
+function resolveRegularWebhook(request: RoboRequest): { session: Session; webhook: MockWebhook; webhookId: string; token: string } | null {
+	const { app_id: webhookId, token } = request.params as { app_id: string; token: string }
+
+	const webhookResult = findWebhookByToken(token)
+	if (!webhookResult) {
+		return null
+	}
+
 	// Validate webhook ID matches
-	if (webhook.id !== webhookId) {
+	if (webhookResult.webhook.id !== webhookId) {
+		return null
+	}
+
+	return { session: webhookResult.session, webhook: webhookResult.webhook, webhookId, token }
+}
+
+export async function GET(request: RoboRequest) {
+	const resolved = resolveRegularWebhook(request)
+	if (!resolved) {
 		return new Response(JSON.stringify({ message: 'Unknown Webhook', code: 10015 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
 	}
 
-	// Handle GET - Get webhook (no auth needed with token)
-	if (request.method === 'GET') {
-		// When fetching with token, always include token but don't include user
-		const result = mockWebhookToAPIWebhook(webhook, true)
-		// Remove user when fetching via token (Discord behavior)
-		delete (result as { user?: unknown }).user
-		return new Response(JSON.stringify(result), {
-			status: 200,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
+	const { webhook } = resolved
 
-	// Handle PATCH - Modify webhook (no auth needed with token)
-	if (request.method === 'PATCH') {
-		let body: {
-			name?: string
-			avatar?: string | null
-			channel_id?: string
-		}
-
-		try {
-			body = await request.json()
-		} catch {
-			return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
-				status: 400,
-				headers: { 'Content-Type': 'application/json' }
-			})
-		}
-
-		// Validate name if provided
-		if (body.name !== undefined) {
-			if (typeof body.name !== 'string' || body.name.length < WebhookLimits.MIN_NAME_LENGTH || body.name.length > WebhookLimits.MAX_NAME_LENGTH) {
-				return new Response(JSON.stringify({ message: 'Invalid webhook name', code: 50035 }), {
-					status: 400,
-					headers: { 'Content-Type': 'application/json' }
-				})
-			}
-			const nameLower = body.name.toLowerCase()
-			if (nameLower.includes('clyde')) {
-				return new Response(JSON.stringify({ message: 'Webhook name cannot contain "clyde"', code: 50035 }), {
-					status: 400,
-					headers: { 'Content-Type': 'application/json' }
-				})
-			}
-			if (nameLower.includes('discord')) {
-				return new Response(JSON.stringify({ message: 'Webhook name cannot contain "discord"', code: 50035 }), {
-					status: 400,
-					headers: { 'Content-Type': 'application/json' }
-				})
-			}
-		}
-
-		// Capture old channel for WEBHOOKS_UPDATE dispatch when moving
-		const oldChannelId = webhook.channel_id
-
-		const updatedWebhook = session.state.updateWebhook(webhookId, {
-			name: body.name,
-			avatar: body.avatar,
-			channel_id: body.channel_id
-		})
-
-		if (!updatedWebhook) {
-			return new Response(JSON.stringify({ message: 'Failed to update webhook', code: 50035 }), {
-				status: 400,
-				headers: { 'Content-Type': 'application/json' }
-			})
-		}
-
-		session.recordAction(
-			'webhook_updated',
-			{ webhook_id: webhookId, updates: body },
-			{ endpoint: `PATCH /webhooks/${webhookId}/:token`, method: 'PATCH' }
-		)
-
-		// Dispatch WEBHOOKS_UPDATE gateway event
-		if (updatedWebhook.guild_id) {
-			// If channel changed, dispatch for both old and new channels
-			if (oldChannelId !== updatedWebhook.channel_id) {
-				await session.dispatch('WEBHOOKS_UPDATE', {
-					guild_id: updatedWebhook.guild_id,
-					channel_id: oldChannelId
-				})
-			}
-			await session.dispatch('WEBHOOKS_UPDATE', {
-				guild_id: updatedWebhook.guild_id,
-				channel_id: updatedWebhook.channel_id
-			})
-		}
-
-		const result = mockWebhookToAPIWebhook(updatedWebhook, true)
-		delete (result as { user?: unknown }).user
-		return new Response(JSON.stringify(result), {
-			status: 200,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// Handle DELETE - Delete webhook (no auth needed with token)
-	if (request.method === 'DELETE') {
-		// Capture channel/guild info before deletion for WEBHOOKS_UPDATE event
-		const channelId = webhook.channel_id
-		const guildId = webhook.guild_id
-
-		const deleted = session.state.deleteWebhook(webhookId)
-		if (!deleted) {
-			return new Response(JSON.stringify({ message: 'Failed to delete webhook', code: 50035 }), {
-				status: 400,
-				headers: { 'Content-Type': 'application/json' }
-			})
-		}
-
-		session.recordAction(
-			'webhook_deleted',
-			{ webhook_id: webhookId },
-			{ endpoint: `DELETE /webhooks/${webhookId}/:token`, method: 'DELETE' }
-		)
-
-		// Dispatch WEBHOOKS_UPDATE gateway event
-		if (guildId) {
-			await session.dispatch('WEBHOOKS_UPDATE', {
-				guild_id: guildId,
-				channel_id: channelId
-			})
-		}
-
-		return new Response(null, { status: 204 })
-	}
-
-	// Handle POST - Execute webhook (send message)
-	if (request.method === 'POST') {
-		return executeWebhook(request, session, webhook)
-	}
-
-	return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-		status: 405,
+	// When fetching with token, always include token but don't include user
+	const result = mockWebhookToAPIWebhook(webhook, true)
+	// Remove user when fetching via token (Discord behavior)
+	delete (result as { user?: unknown }).user
+	return new Response(JSON.stringify(result), {
+		status: 200,
 		headers: { 'Content-Type': 'application/json' }
 	})
+}
+
+export async function PATCH(request: RoboRequest) {
+	const resolved = resolveRegularWebhook(request)
+	if (!resolved) {
+		return new Response(JSON.stringify({ message: 'Unknown Webhook', code: 10015 }), {
+			status: 404,
+			headers: { 'Content-Type': 'application/json' }
+		})
+	}
+
+	const { session, webhook, webhookId } = resolved
+
+	let body: {
+		name?: string
+		avatar?: string | null
+		channel_id?: string
+	}
+
+	try {
+		body = await request.json()
+	} catch {
+		return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
+			status: 400,
+			headers: { 'Content-Type': 'application/json' }
+		})
+	}
+
+	// Validate name if provided
+	if (body.name !== undefined) {
+		if (typeof body.name !== 'string' || body.name.length < WebhookLimits.MIN_NAME_LENGTH || body.name.length > WebhookLimits.MAX_NAME_LENGTH) {
+			return new Response(JSON.stringify({ message: 'Invalid webhook name', code: 50035 }), {
+				status: 400,
+				headers: { 'Content-Type': 'application/json' }
+			})
+		}
+		const nameLower = body.name.toLowerCase()
+		if (nameLower.includes('clyde')) {
+			return new Response(JSON.stringify({ message: 'Webhook name cannot contain "clyde"', code: 50035 }), {
+				status: 400,
+				headers: { 'Content-Type': 'application/json' }
+			})
+		}
+		if (nameLower.includes('discord')) {
+			return new Response(JSON.stringify({ message: 'Webhook name cannot contain "discord"', code: 50035 }), {
+				status: 400,
+				headers: { 'Content-Type': 'application/json' }
+			})
+		}
+	}
+
+	// Capture old channel for WEBHOOKS_UPDATE dispatch when moving
+	const oldChannelId = webhook.channel_id
+
+	const updatedWebhook = session.state.updateWebhook(webhookId, {
+		name: body.name,
+		avatar: body.avatar,
+		channel_id: body.channel_id
+	})
+
+	if (!updatedWebhook) {
+		return new Response(JSON.stringify({ message: 'Failed to update webhook', code: 50035 }), {
+			status: 400,
+			headers: { 'Content-Type': 'application/json' }
+		})
+	}
+
+	session.recordAction(
+		'webhook_updated',
+		{ webhook_id: webhookId, updates: body },
+		{ endpoint: `PATCH /webhooks/${webhookId}/:token`, method: 'PATCH' }
+	)
+
+	// Dispatch WEBHOOKS_UPDATE gateway event
+	if (updatedWebhook.guild_id) {
+		// If channel changed, dispatch for both old and new channels
+		if (oldChannelId !== updatedWebhook.channel_id) {
+			await session.dispatch('WEBHOOKS_UPDATE', {
+				guild_id: updatedWebhook.guild_id,
+				channel_id: oldChannelId
+			})
+		}
+		await session.dispatch('WEBHOOKS_UPDATE', {
+			guild_id: updatedWebhook.guild_id,
+			channel_id: updatedWebhook.channel_id
+		})
+	}
+
+	const result = mockWebhookToAPIWebhook(updatedWebhook, true)
+	delete (result as { user?: unknown }).user
+	return new Response(JSON.stringify(result), {
+		status: 200,
+		headers: { 'Content-Type': 'application/json' }
+	})
+}
+
+export async function DELETE(request: RoboRequest) {
+	const resolved = resolveRegularWebhook(request)
+	if (!resolved) {
+		return new Response(JSON.stringify({ message: 'Unknown Webhook', code: 10015 }), {
+			status: 404,
+			headers: { 'Content-Type': 'application/json' }
+		})
+	}
+
+	const { session, webhook, webhookId } = resolved
+
+	// Capture channel/guild info before deletion for WEBHOOKS_UPDATE event
+	const channelId = webhook.channel_id
+	const guildId = webhook.guild_id
+
+	const deleted = session.state.deleteWebhook(webhookId)
+	if (!deleted) {
+		return new Response(JSON.stringify({ message: 'Failed to delete webhook', code: 50035 }), {
+			status: 400,
+			headers: { 'Content-Type': 'application/json' }
+		})
+	}
+
+	session.recordAction(
+		'webhook_deleted',
+		{ webhook_id: webhookId },
+		{ endpoint: `DELETE /webhooks/${webhookId}/:token`, method: 'DELETE' }
+	)
+
+	// Dispatch WEBHOOKS_UPDATE gateway event
+	if (guildId) {
+		await session.dispatch('WEBHOOKS_UPDATE', {
+			guild_id: guildId,
+			channel_id: channelId
+		})
+	}
+
+	return new Response(null, { status: 204 })
+}
+
+export async function POST(request: RoboRequest) {
+	// Extract id and token from URL params
+	const { app_id: webhookOrAppId, token } = request.params as { app_id: string; token: string }
+
+	// Try to find a regular webhook first (by looking up the token)
+	const webhookResult = findWebhookByToken(token)
+	if (webhookResult) {
+		// Validate webhook ID matches
+		if (webhookResult.webhook.id !== webhookOrAppId) {
+			return new Response(JSON.stringify({ message: 'Unknown Webhook', code: 10015 }), {
+				status: 404,
+				headers: { 'Content-Type': 'application/json' }
+			})
+		}
+		return executeWebhook(request, webhookResult.session, webhookResult.webhook)
+	}
+
+	// Not a regular webhook - try interaction webhook
+	return handleInteractionWebhook(request, webhookOrAppId, token)
 }
 
 /**
@@ -536,14 +563,6 @@ async function executeWebhook(request: RoboRequest, session: Session, webhook: M
  * Handle interaction webhook (followup messages)
  */
 async function handleInteractionWebhook(request: RoboRequest, appId: string, token: string): Promise<Response> {
-	// Only POST is supported for interaction webhooks
-	if (request.method !== 'POST') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
 	// Find session containing this interaction (lookup by token)
 	const session = sessionManager.findSessionByInteractionToken(token)
 	if (!session) {

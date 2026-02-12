@@ -8,7 +8,8 @@ import { parseMockToken } from '../../../../utils/id.js'
  *
  * Returns or sets the vanity URL for a guild (requires VANITY_URL feature).
  */
-export default async (request: RoboRequest) => {
+
+function resolveGuildVanity(request: RoboRequest) {
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
 
@@ -37,58 +38,66 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
+	return { session, guild }
+}
+
+export async function GET(request: RoboRequest) {
+	const resolved = resolveGuildVanity(request)
+	if (resolved instanceof Response) return resolved
+	const { guild } = resolved
+
 	// Check if guild has VANITY_URL feature
 	const hasVanityFeature = guild.features?.includes('VANITY_URL')
 
-	if (request.method === 'GET') {
-		if (!hasVanityFeature) {
-			return new Response(
-				JSON.stringify({
-					message: 'This guild does not have the VANITY_URL feature',
-					code: 50020
-				}),
-				{
-					status: 400,
-					headers: { 'Content-Type': 'application/json' }
-				}
-			)
-		}
-
-		// Return vanity data
-		return {
-			code: guild.vanityUrlCode || null,
-			uses: guild.vanityUrlUses || 0
-		}
+	if (!hasVanityFeature) {
+		return new Response(
+			JSON.stringify({
+				message: 'This guild does not have the VANITY_URL feature',
+				code: 50020
+			}),
+			{
+				status: 400,
+				headers: { 'Content-Type': 'application/json' }
+			}
+		)
 	}
 
-	if (request.method === 'PATCH') {
-		if (!hasVanityFeature) {
-			return new Response(
-				JSON.stringify({
-					message: 'This guild does not have the VANITY_URL feature',
-					code: 50020
-				}),
-				{
-					status: 400,
-					headers: { 'Content-Type': 'application/json' }
-				}
-			)
-		}
+	// Return vanity data
+	return {
+		code: guild.vanityUrlCode || null,
+		uses: guild.vanityUrlUses || 0
+	}
+}
 
-		const body = (await request.json()) as { code?: string }
+export async function PATCH(request: RoboRequest) {
+	const resolved = resolveGuildVanity(request)
+	if (resolved instanceof Response) return resolved
+	const { guild } = resolved
 
-		if (body.code !== undefined) {
-			guild.vanityUrlCode = body.code
-		}
+	// Check if guild has VANITY_URL feature
+	const hasVanityFeature = guild.features?.includes('VANITY_URL')
 
-		return {
-			code: guild.vanityUrlCode || null,
-			uses: guild.vanityUrlUses || 0
-		}
+	if (!hasVanityFeature) {
+		return new Response(
+			JSON.stringify({
+				message: 'This guild does not have the VANITY_URL feature',
+				code: 50020
+			}),
+			{
+				status: 400,
+				headers: { 'Content-Type': 'application/json' }
+			}
+		)
 	}
 
-	return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-		status: 405,
-		headers: { 'Content-Type': 'application/json' }
-	})
+	const body = (await request.json()) as { code?: string }
+
+	if (body.code !== undefined) {
+		guild.vanityUrlCode = body.code
+	}
+
+	return {
+		code: guild.vanityUrlCode || null,
+		uses: guild.vanityUrlUses || 0
+	}
 }

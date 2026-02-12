@@ -12,15 +12,7 @@ import { enforcePermissions } from '../../../../../../utils/permission-check.js'
  * Used by discord.js for Message.crosspost() in announcement channels.
  * Publishes a message to all servers following the announcement channel.
  */
-export default async (request: RoboRequest) => {
-	// Validate method
-	if (request.method !== 'POST') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
+export async function POST(request: RoboRequest) {
 	// Extract session from Authorization header
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)

@@ -12,16 +12,8 @@ import { parseMockToken } from '../../../../utils/id.js'
  *
  * Response: Array of ThreadMember objects
  */
-export default async (request: RoboRequest) => {
-	// 1. Validate GET method
-	if (request.method !== 'GET') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// 2. Parse Authorization header → get session
+export async function GET(request: RoboRequest) {
+	// 1. Parse Authorization header → get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
 
@@ -40,10 +32,10 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 3. Extract thread ID from params
+	// 2. Extract thread ID from params
 	const { id: threadId } = request.params as { id: string }
 
-	// 4. Validate thread exists
+	// 3. Validate thread exists
 	const thread = session.state.getThread(threadId)
 	if (!thread) {
 		return new Response(JSON.stringify({ message: 'Unknown Channel', code: 10003 }), {
@@ -52,16 +44,16 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 5. Parse query params
+	// 4. Parse query params
 	const url = new URL(request.url)
 	const after = url.searchParams.get('after')
 	const limit = Math.min(parseInt(url.searchParams.get('limit') || '100', 10), 100)
 	const withMember = url.searchParams.get('with_member') === 'true'
 
-	// 6. Get all thread members
+	// 5. Get all thread members
 	let members = session.state.getThreadMembers(threadId)
 
-	// 7. Apply pagination
+	// 6. Apply pagination
 	if (after) {
 		const afterIndex = members.findIndex((m) => m.user_id === after)
 		if (afterIndex >= 0) {
@@ -69,10 +61,10 @@ export default async (request: RoboRequest) => {
 		}
 	}
 
-	// 8. Apply limit
+	// 7. Apply limit
 	members = members.slice(0, limit)
 
-	// 9. Return members as API format
+	// 8. Return members as API format
 	return members.map((member) => {
 		const result: Record<string, unknown> = {
 			id: threadId,

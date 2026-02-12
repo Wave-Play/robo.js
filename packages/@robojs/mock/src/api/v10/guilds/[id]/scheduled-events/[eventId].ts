@@ -18,7 +18,7 @@ import { enforcePermissions } from '../../../../../utils/permission-check.js'
  * @see https://discord.com/developers/docs/resources/guild-scheduled-event#modify-guild-scheduled-event
  * @see https://discord.com/developers/docs/resources/guild-scheduled-event#delete-guild-scheduled-event
  */
-export default async (request: RoboRequest) => {
+function resolveScheduledEvent(request: RoboRequest) {
 	// 1. Parse Authorization header → get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
@@ -59,76 +59,63 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// Handle GET - Get scheduled event
-	if (request.method === 'GET') {
-		// Parse query parameter
-		const url = new URL(request.url)
-		const withUserCount = url.searchParams.get('with_user_count') === 'true'
+	return { session, guild, guildId, event, eventId }
+}
 
-		const apiEvent = mockScheduledEventToAPIScheduledEvent(event)
-		if (withUserCount) {
-			apiEvent.user_count = event.subscribers.size
-		}
+export async function GET(request: RoboRequest) {
+	const resolved = resolveScheduledEvent(request)
+	if (resolved instanceof Response) return resolved
+	const { event } = resolved
 
-		return apiEvent
+	// Parse query parameter
+	const url = new URL(request.url)
+	const withUserCount = url.searchParams.get('with_user_count') === 'true'
+
+	const apiEvent = mockScheduledEventToAPIScheduledEvent(event)
+	if (withUserCount) {
+		apiEvent.user_count = event.subscribers.size
 	}
 
-	// Handle PATCH - Modify scheduled event
-	if (request.method === 'PATCH') {
-		// Check permissions (MANAGE_EVENTS required)
-		const permError = enforcePermissions(session, 'PATCH', `/guilds/${guildId}/scheduled-events/${eventId}`, undefined, guildId)
-		if (permError) return permError
+	return apiEvent
+}
 
-		// Parse request body
-		let body: {
-			channel_id?: string | null
-			entity_metadata?: { location?: string } | null
-			name?: string
-			privacy_level?: number
-			scheduled_start_time?: string
-			scheduled_end_time?: string
-			description?: string | null
-			entity_type?: GuildScheduledEventEntityType
-			status?: GuildScheduledEventStatus
-			image?: string | null
-		}
+export async function PATCH(request: RoboRequest) {
+	const resolved = resolveScheduledEvent(request)
+	if (resolved instanceof Response) return resolved
+	const { session, guildId, event, eventId } = resolved
 
-		try {
-			body = await request.json()
-		} catch {
-			return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
-				status: 400,
-				headers: { 'Content-Type': 'application/json' }
-			})
-		}
+	// Check permissions (MANAGE_EVENTS required)
+	const permError = enforcePermissions(session, 'PATCH', `/guilds/${guildId}/scheduled-events/${eventId}`, undefined, guildId)
+	if (permError) return permError
 
-		// Validate name length if provided
-		if (body.name !== undefined) {
-			if (body.name.length < ScheduledEventLimits.MIN_NAME_LENGTH) {
-				return new Response(
-					JSON.stringify({ message: `Event name must be at least ${ScheduledEventLimits.MIN_NAME_LENGTH} character`, code: 50035 }),
-					{
-						status: 400,
-						headers: { 'Content-Type': 'application/json' }
-					}
-				)
-			}
+	// Parse request body
+	let body: {
+		channel_id?: string | null
+		entity_metadata?: { location?: string } | null
+		name?: string
+		privacy_level?: number
+		scheduled_start_time?: string
+		scheduled_end_time?: string
+		description?: string | null
+		entity_type?: GuildScheduledEventEntityType
+		status?: GuildScheduledEventStatus
+		image?: string | null
+	}
 
-			if (body.name.length > ScheduledEventLimits.MAX_NAME_LENGTH) {
-				return new Response(
-					JSON.stringify({ message: `Event name cannot exceed ${ScheduledEventLimits.MAX_NAME_LENGTH} characters`, code: 50035 }),
-					{
-						status: 400,
-						headers: { 'Content-Type': 'application/json' }
-					}
-				)
-			}
-		}
+	try {
+		body = await request.json()
+	} catch {
+		return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
+			status: 400,
+			headers: { 'Content-Type': 'application/json' }
+		})
+	}
 
-		// Validate description length if provided
-		if (body.description && body.description.length > ScheduledEventLimits.MAX_DESCRIPTION_LENGTH) {
+	// Validate name length if provided
+	if (body.name !== undefined) {
+		if (body.name.length < ScheduledEventLimits.MIN_NAME_LENGTH) {
 			return new Response(
-				JSON.stringify({ message: `Event description cannot exceed ${ScheduledEventLimits.MAX_DESCRIPTION_LENGTH} characters`, code: 50035 }),
+				JSON.stringify({ message: `Event name must be at least ${ScheduledEventLimits.MIN_NAME_LENGTH} character`, code: 50035 }),
 				{
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
@@ -136,101 +123,119 @@ export default async (request: RoboRequest) => {
 			)
 		}
 
-		// Validate status transitions
-		if (body.status !== undefined) {
-			const validTransitions: Record<GuildScheduledEventStatus, GuildScheduledEventStatus[]> = {
-				[GuildScheduledEventStatus.Scheduled]: [GuildScheduledEventStatus.Active, GuildScheduledEventStatus.Canceled],
-				[GuildScheduledEventStatus.Active]: [GuildScheduledEventStatus.Completed],
-				[GuildScheduledEventStatus.Completed]: [],
-				[GuildScheduledEventStatus.Canceled]: []
-			}
-
-			if (!validTransitions[event.status].includes(body.status)) {
-				return new Response(
-					JSON.stringify({ message: `Invalid status transition from ${event.status} to ${body.status}`, code: 50035 }),
-					{
-						status: 400,
-						headers: { 'Content-Type': 'application/json' }
-					}
-				)
-			}
+		if (body.name.length > ScheduledEventLimits.MAX_NAME_LENGTH) {
+			return new Response(
+				JSON.stringify({ message: `Event name cannot exceed ${ScheduledEventLimits.MAX_NAME_LENGTH} characters`, code: 50035 }),
+				{
+					status: 400,
+					headers: { 'Content-Type': 'application/json' }
+				}
+			)
 		}
+	}
 
-		// Update the scheduled event
-		const updatedEvent = session.state.updateScheduledEvent(guildId, eventId, {
-			channelId: body.channel_id,
-			name: body.name,
-			description: body.description,
-			scheduledStartTime: body.scheduled_start_time,
-			scheduledEndTime: body.scheduled_end_time,
-			privacyLevel: body.privacy_level,
-			entityType: body.entity_type,
-			entityMetadata: body.entity_metadata ? { location: body.entity_metadata.location } : body.entity_metadata,
-			status: body.status,
-			image: body.image
-		})
-
-		if (!updatedEvent) {
-			return new Response(JSON.stringify({ message: 'Failed to update scheduled event', code: 50035 }), {
+	// Validate description length if provided
+	if (body.description && body.description.length > ScheduledEventLimits.MAX_DESCRIPTION_LENGTH) {
+		return new Response(
+			JSON.stringify({ message: `Event description cannot exceed ${ScheduledEventLimits.MAX_DESCRIPTION_LENGTH} characters`, code: 50035 }),
+			{
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
-			})
-		}
-
-		// Record action
-		session.recordAction(
-			'scheduled_event_updated',
-			{
-				event_id: eventId,
-				guild_id: guildId,
-				changes: body
-			},
-			{
-				endpoint: `PATCH /guilds/${guildId}/scheduled-events/${eventId}`,
-				method: 'PATCH'
 			}
 		)
+	}
 
-		// Dispatch GUILD_SCHEDULED_EVENT_UPDATE event
-		await session.dispatchGuildScheduledEventUpdate(updatedEvent)
+	// Validate status transitions
+	if (body.status !== undefined) {
+		const validTransitions: Record<GuildScheduledEventStatus, GuildScheduledEventStatus[]> = {
+			[GuildScheduledEventStatus.Scheduled]: [GuildScheduledEventStatus.Active, GuildScheduledEventStatus.Canceled],
+			[GuildScheduledEventStatus.Active]: [GuildScheduledEventStatus.Completed],
+			[GuildScheduledEventStatus.Completed]: [],
+			[GuildScheduledEventStatus.Canceled]: []
+		}
 
-		return new Response(JSON.stringify(mockScheduledEventToAPIScheduledEvent(updatedEvent)), {
-			status: 200,
+		if (!validTransitions[event.status].includes(body.status)) {
+			return new Response(
+				JSON.stringify({ message: `Invalid status transition from ${event.status} to ${body.status}`, code: 50035 }),
+				{
+					status: 400,
+					headers: { 'Content-Type': 'application/json' }
+				}
+			)
+		}
+	}
+
+	// Update the scheduled event
+	const updatedEvent = session.state.updateScheduledEvent(guildId, eventId, {
+		channelId: body.channel_id,
+		name: body.name,
+		description: body.description,
+		scheduledStartTime: body.scheduled_start_time,
+		scheduledEndTime: body.scheduled_end_time,
+		privacyLevel: body.privacy_level,
+		entityType: body.entity_type,
+		entityMetadata: body.entity_metadata ? { location: body.entity_metadata.location } : body.entity_metadata,
+		status: body.status,
+		image: body.image
+	})
+
+	if (!updatedEvent) {
+		return new Response(JSON.stringify({ message: 'Failed to update scheduled event', code: 50035 }), {
+			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		})
 	}
 
-	// Handle DELETE - Delete scheduled event
-	if (request.method === 'DELETE') {
-		// Check permissions (MANAGE_EVENTS required)
-		const permError = enforcePermissions(session, 'DELETE', `/guilds/${guildId}/scheduled-events/${eventId}`, undefined, guildId)
-		if (permError) return permError
+	// Record action
+	session.recordAction(
+		'scheduled_event_updated',
+		{
+			event_id: eventId,
+			guild_id: guildId,
+			changes: body
+		},
+		{
+			endpoint: `PATCH /guilds/${guildId}/scheduled-events/${eventId}`,
+			method: 'PATCH'
+		}
+	)
 
-		// Delete the scheduled event
-		session.state.deleteScheduledEvent(guildId, eventId)
+	// Dispatch GUILD_SCHEDULED_EVENT_UPDATE event
+	await session.dispatchGuildScheduledEventUpdate(updatedEvent)
 
-		// Record action
-		session.recordAction(
-			'scheduled_event_deleted',
-			{
-				event_id: eventId,
-				guild_id: guildId
-			},
-			{
-				endpoint: `DELETE /guilds/${guildId}/scheduled-events/${eventId}`,
-				method: 'DELETE'
-			}
-		)
-
-		// Dispatch GUILD_SCHEDULED_EVENT_DELETE event
-		await session.dispatchGuildScheduledEventDelete(event)
-
-		return new Response(null, { status: 204 })
-	}
-
-	// Method not allowed
-	return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-		status: 405,
+	return new Response(JSON.stringify(mockScheduledEventToAPIScheduledEvent(updatedEvent)), {
+		status: 200,
 		headers: { 'Content-Type': 'application/json' }
 	})
+}
+
+export async function DELETE(request: RoboRequest) {
+	const resolved = resolveScheduledEvent(request)
+	if (resolved instanceof Response) return resolved
+	const { session, guildId, event, eventId } = resolved
+
+	// Check permissions (MANAGE_EVENTS required)
+	const permError = enforcePermissions(session, 'DELETE', `/guilds/${guildId}/scheduled-events/${eventId}`, undefined, guildId)
+	if (permError) return permError
+
+	// Delete the scheduled event
+	session.state.deleteScheduledEvent(guildId, eventId)
+
+	// Record action
+	session.recordAction(
+		'scheduled_event_deleted',
+		{
+			event_id: eventId,
+			guild_id: guildId
+		},
+		{
+			endpoint: `DELETE /guilds/${guildId}/scheduled-events/${eventId}`,
+			method: 'DELETE'
+		}
+	)
+
+	// Dispatch GUILD_SCHEDULED_EVENT_DELETE event
+	await session.dispatchGuildScheduledEventDelete(event)
+
+	return new Response(null, { status: 204 })
 }

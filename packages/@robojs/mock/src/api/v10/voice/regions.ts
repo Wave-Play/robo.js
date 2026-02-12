@@ -6,14 +6,7 @@ import type { RoboRequest } from '@robojs/server'
  * Returns a list of available voice regions that can be used when
  * creating/updating voice channels.
  */
-export default async (request: RoboRequest) => {
-	if (request.method !== 'GET') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
+export async function GET(_request: RoboRequest) {
 	// Return mock voice regions matching Discord's format
 	return [
 		{

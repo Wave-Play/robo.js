@@ -10,16 +10,8 @@ import { mockMessageToAPIMessage } from '../../../../../../discord/payloads.js'
  * Immediately end a poll and finalize results
  * Returns: APIMessage with finalized poll results
  */
-export default async (request: RoboRequest) => {
-	// 1. Validate POST method
-	if (request.method !== 'POST') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// 2. Parse Authorization header → get session
+export async function POST(request: RoboRequest) {
+	// 1. Parse Authorization header → get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
 
@@ -38,13 +30,13 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 3. Extract params
+	// 2. Extract params
 	const { id: channelId, messageId } = request.params as {
 		id: string
 		messageId: string
 	}
 
-	// 4. Validate channel exists
+	// 3. Validate channel exists
 	const channel = session.state.getChannel(channelId)
 	if (!channel) {
 		return new Response(JSON.stringify({ message: 'Unknown Channel', code: 10003 }), {
@@ -53,7 +45,7 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 5. Validate message exists and has poll
+	// 4. Validate message exists and has poll
 	const message = session.state.getMessage(messageId)
 	if (!message) {
 		return new Response(JSON.stringify({ message: 'Unknown Message', code: 10008 }), {
@@ -76,7 +68,7 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 6. Check if poll is already finalized
+	// 5. Check if poll is already finalized
 	if (message.poll.results?.is_finalized) {
 		return new Response(JSON.stringify({ message: 'Poll already ended', code: 50035 }), {
 			status: 400,
@@ -84,13 +76,13 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 7. Expire the poll
+	// 6. Expire the poll
 	session.state.expirePoll(messageId)
 
-	// 8. Get author for response
+	// 7. Get author for response
 	const author = session.state.users.get(message.authorId) ?? session.state.botUser
 
-	// 9. Dispatch MESSAGE_UPDATE event via Gateway
+	// 8. Dispatch MESSAGE_UPDATE event via Gateway
 	const apiMessage = mockMessageToAPIMessage(message, author)
 	const dispatchData: Record<string, unknown> = { ...apiMessage }
 	if (message.guildId) {
@@ -98,7 +90,7 @@ export default async (request: RoboRequest) => {
 	}
 	getGatewayServer().dispatchToSession(session.id, 'MESSAGE_UPDATE', dispatchData, channel.guildId)
 
-	// 10. Record action (use session.recordAction for metadata propagation)
+	// 9. Record action (use session.recordAction for metadata propagation)
 	session.recordAction(
 		'poll_expired',
 		{
@@ -113,6 +105,6 @@ export default async (request: RoboRequest) => {
 		}
 	)
 
-	// 11. Return updated message with finalized poll
+	// 10. Return updated message with finalized poll
 	return mockMessageToAPIMessage(message, author)
 }

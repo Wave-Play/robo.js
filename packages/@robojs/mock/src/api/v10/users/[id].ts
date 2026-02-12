@@ -19,14 +19,7 @@ import { parseMockToken } from '../../../utils/id.js'
  *   ...
  * }
  */
-export default async (request: RoboRequest) => {
-	if (request.method !== 'GET') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
+export async function GET(request: RoboRequest) {
 	const { id } = request.params as { id: string }
 
 	// Get token from Authorization header

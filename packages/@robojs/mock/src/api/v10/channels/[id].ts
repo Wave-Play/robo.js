@@ -16,16 +16,7 @@ import { getGatewayServer } from '../../../core/gateway.js'
  * - PATCH: name, archived, auto_archive_duration, locked, invitable, rate_limit_per_user
  * - DELETE: Remove the thread entirely
  */
-export default async (request: RoboRequest) => {
-	// 1. Validate method
-	if (request.method !== 'GET' && request.method !== 'PATCH' && request.method !== 'DELETE') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// 2. Parse Authorization header → get session
+function resolveChannel(request: RoboRequest) {
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
 
@@ -44,10 +35,8 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 3. Extract channel ID from params
 	const { id: channelId } = request.params as { id: string }
 
-	// 4. Validate channel exists
 	const channel = session.state.getChannel(channelId)
 	if (!channel) {
 		return new Response(JSON.stringify({ message: 'Unknown Channel', code: 10003 }), {
@@ -56,10 +45,18 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 4b. Check permissions
+	return { session, channel, channelId }
+}
+
+export async function GET(request: RoboRequest) {
+	const resolved = resolveChannel(request)
+	if (resolved instanceof Response) return resolved
+	const { session, channel, channelId } = resolved
+
+	// Check permissions
 	const permError = enforcePermissions(
 		session,
-		request.method,
+		'GET',
 		`/channels/${channelId}`,
 		channelId
 	)
@@ -68,77 +65,106 @@ export default async (request: RoboRequest) => {
 	// Check if this is a thread
 	const isThread = channel.type === 10 || channel.type === 11 || channel.type === 12
 
-	// GET - return channel representation
-	if (request.method === 'GET') {
-		if (isThread) {
-			const botMember = session.state.getThreadMember(channelId, session.state.botUser.id)
-			return mockThreadToAPIChannel(channel as any, botMember ?? undefined)
+	if (isThread) {
+		const botMember = session.state.getThreadMember(channelId, session.state.botUser.id)
+		return mockThreadToAPIChannel(channel as any, botMember ?? undefined)
+	}
+	return mockChannelToAPIChannel(channel)
+}
+
+export async function DELETE(request: RoboRequest) {
+	const resolved = resolveChannel(request)
+	if (resolved instanceof Response) return resolved
+	const { session, channel, channelId } = resolved
+
+	// Check permissions
+	const permError = enforcePermissions(
+		session,
+		'DELETE',
+		`/channels/${channelId}`,
+		channelId
+	)
+	if (permError) return permError
+
+	// Check if this is a thread
+	const isThread = channel.type === 10 || channel.type === 11 || channel.type === 12
+
+	if (isThread) {
+		const deleted = session.state.deleteThread(channelId)
+		if (!deleted) {
+			return new Response(JSON.stringify({ message: 'Failed to delete thread', code: 50001 }), {
+				status: 500,
+				headers: { 'Content-Type': 'application/json' }
+			})
 		}
-		return mockChannelToAPIChannel(channel)
+
+		// Record action
+		session.recordAction(
+			'thread_deleted',
+			{
+				thread_id: channelId,
+				parent_id: channel.parentId,
+				type: channel.type
+			},
+			{
+				endpoint: `DELETE /channels/${channelId}`,
+				method: 'DELETE'
+			}
+		)
+	} else {
+		// Regular channel deletion
+		const deleted = session.state.removeChannel(channelId)
+		if (!deleted) {
+			return new Response(JSON.stringify({ message: 'Failed to delete channel', code: 50001 }), {
+				status: 500,
+				headers: { 'Content-Type': 'application/json' }
+			})
+		}
+
+		// Record action
+		session.recordAction(
+			'channel_deleted',
+			{
+				channel_id: channelId,
+				guild_id: channel.guildId,
+				type: channel.type
+			},
+			{
+				endpoint: `DELETE /channels/${channelId}`,
+				method: 'DELETE'
+			}
+		)
 	}
 
-	if (request.method === 'DELETE') {
-		// 5a. DELETE - Remove channel/thread
-		if (isThread) {
-			const deleted = session.state.deleteThread(channelId)
-			if (!deleted) {
-				return new Response(JSON.stringify({ message: 'Failed to delete thread', code: 50001 }), {
-					status: 500,
-					headers: { 'Content-Type': 'application/json' }
-				})
-			}
-
-			// Record action
-			session.recordAction(
-				'thread_deleted',
-				{
-					thread_id: channelId,
-					parent_id: channel.parentId,
-					type: channel.type
-				},
-				{
-					endpoint: `DELETE /channels/${channelId}`,
-					method: 'DELETE'
-				}
-			)
-		} else {
-			// Regular channel deletion
-			const deleted = session.state.removeChannel(channelId)
-			if (!deleted) {
-				return new Response(JSON.stringify({ message: 'Failed to delete channel', code: 50001 }), {
-					status: 500,
-					headers: { 'Content-Type': 'application/json' }
-				})
-			}
-
-			// Record action
-			session.recordAction(
-				'channel_deleted',
-				{
-					channel_id: channelId,
-					guild_id: channel.guildId,
-					type: channel.type
-				},
-				{
-					endpoint: `DELETE /channels/${channelId}`,
-					method: 'DELETE'
-				}
-			)
-		}
-
-		// Dispatch CHANNEL_DELETE event
-		if (isThread) {
-			const apiChannel = mockThreadToAPIChannel(channel as any)
-			getGatewayServer().dispatchToSession(session.id, 'CHANNEL_DELETE', apiChannel, channel.guildId)
-			return apiChannel
-		} else {
-			const apiChannel = mockChannelToAPIChannel(channel)
-			getGatewayServer().dispatchToSession(session.id, 'CHANNEL_DELETE', apiChannel, channel.guildId)
-			return apiChannel
-		}
+	// Dispatch CHANNEL_DELETE event
+	if (isThread) {
+		const apiChannel = mockThreadToAPIChannel(channel as any)
+		getGatewayServer().dispatchToSession(session.id, 'CHANNEL_DELETE', apiChannel, channel.guildId)
+		return apiChannel
+	} else {
+		const apiChannel = mockChannelToAPIChannel(channel)
+		getGatewayServer().dispatchToSession(session.id, 'CHANNEL_DELETE', apiChannel, channel.guildId)
+		return apiChannel
 	}
+}
 
-	// 5b. PATCH - Modify channel/thread
+export async function PATCH(request: RoboRequest) {
+	const resolved = resolveChannel(request)
+	if (resolved instanceof Response) return resolved
+	const { session, channel, channelId } = resolved
+
+	// Check permissions
+	const permError = enforcePermissions(
+		session,
+		'PATCH',
+		`/channels/${channelId}`,
+		channelId
+	)
+	if (permError) return permError
+
+	// Check if this is a thread
+	const isThread = channel.type === 10 || channel.type === 11 || channel.type === 12
+
 	let body: {
 		name?: string
 		archived?: boolean

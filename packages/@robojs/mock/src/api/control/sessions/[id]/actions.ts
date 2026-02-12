@@ -1,7 +1,7 @@
 import type { RoboRequest } from '@robojs/server'
 import type { ActionType } from '../../../../types/index.js'
 import { sessionManager } from '../../../../core/manager.js'
-import { validateMethod, notFound } from '../../utils.js'
+import { notFound } from '../../utils.js'
 
 /**
  * GET /api/control/sessions/:id/actions - Get recorded actions
@@ -24,25 +24,28 @@ import { validateMethod, notFound } from '../../utils.js'
  * Response (DELETE):
  * { success: true }
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['GET', 'DELETE'])
 
+function resolveSession(request: RoboRequest) {
 	const { id } = request.params as { id: string }
-
-	if (!id) {
-		return notFound('Session ID required')
-	}
-
+	if (!id) return notFound('Session ID required')
 	const session = sessionManager.get(id)
+	if (!session) return notFound('Session not found')
+	return { session, id }
+}
 
-	if (!session) {
-		return notFound('Session not found')
-	}
+export async function DELETE(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session } = resolved
 
-	if (request.method === 'DELETE') {
-		session.clearActions()
-		return { success: true }
-	}
+	session.clearActions()
+	return { success: true }
+}
+
+export async function GET(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session } = resolved
 
 	const url = new URL(request.url, 'http://localhost')
 	const type = url.searchParams.get('type') as ActionType | null

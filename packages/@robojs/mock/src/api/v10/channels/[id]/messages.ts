@@ -25,16 +25,7 @@ const CDN_BASE_URL = process.env.MOCK_CDN_URL || 'http://localhost:53596'
  * - JSON body: { content, embeds, components, tts, message_reference }
  * - Multipart: payload_json + files[0], files[1], etc.
  */
-export default async (request: RoboRequest) => {
-	// 1. Validate method
-	if (request.method !== 'GET' && request.method !== 'POST') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// 2. Parse Authorization header → get session
+function resolveChannelForMessages(request: RoboRequest) {
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
 
@@ -53,16 +44,14 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 3. Extract channel ID from params
 	const { id: channelId } = request.params as { id: string }
 
-	// 3.5. Check for rate limit simulation
+	// Check for rate limit simulation
 	const rateLimitResponse = checkRateLimitForEndpoint(session, `/channels/${channelId}/messages`)
 	if (rateLimitResponse) {
 		return rateLimitResponse
 	}
 
-	// 4. Validate channel exists in session state
 	const channel = session.state.getChannel(channelId)
 	if (!channel) {
 		return new Response(JSON.stringify({ message: 'Unknown Channel', code: 10003 }), {
@@ -71,70 +60,80 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// GET - List messages
-	if (request.method === 'GET') {
-		// Check permissions
-		const permError = enforcePermissions(session, 'GET', `/channels/${channelId}/messages`, channelId)
-		if (permError) return permError
+	return { session, channel, channelId }
+}
 
-		// Parse query parameters
-		const url = new URL(request.url)
-		const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10), 100)
-		const before = url.searchParams.get('before')
-		const after = url.searchParams.get('after')
-		const around = url.searchParams.get('around')
+export async function GET(request: RoboRequest) {
+	const resolved = resolveChannelForMessages(request)
+	if (resolved instanceof Response) return resolved
+	const { session, channelId } = resolved
 
-		// Get messages for channel
-		let messages = session.state.getMessagesForChannel(channelId)
+	// Check permissions
+	const permError = enforcePermissions(session, 'GET', `/channels/${channelId}/messages`, channelId)
+	if (permError) return permError
 
-		// Sort by snowflake ID descending (newest first)
-		// Discord snowflake IDs contain a timestamp component, so larger ID = newer message
-		messages.sort((a, b) => {
-			return BigInt(b.id) > BigInt(a.id) ? 1 : BigInt(b.id) < BigInt(a.id) ? -1 : 0
-		})
+	// Parse query parameters
+	const url = new URL(request.url)
+	const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10), 100)
+	const before = url.searchParams.get('before')
+	const after = url.searchParams.get('after')
+	const around = url.searchParams.get('around')
 
-		// Apply pagination
-		if (around) {
-			// Find message and return messages around it
-			const aroundIndex = messages.findIndex((m) => m.id === around)
-			if (aroundIndex >= 0) {
-				const start = Math.max(0, aroundIndex - Math.floor(limit / 2))
-				messages = messages.slice(start, start + limit)
-			} else {
-				messages = messages.slice(0, limit)
-			}
-		} else if (before) {
-			// Get messages before this ID
-			const beforeIndex = messages.findIndex((m) => m.id === before)
-			if (beforeIndex >= 0) {
-				messages = messages.slice(beforeIndex + 1, beforeIndex + 1 + limit)
-			} else {
-				messages = messages.slice(0, limit)
-			}
-		} else if (after) {
-			// Get messages after this ID
-			const afterIndex = messages.findIndex((m) => m.id === after)
-			if (afterIndex >= 0) {
-				messages = messages.slice(0, afterIndex).slice(-limit)
-			} else {
-				messages = messages.slice(0, limit)
-			}
+	// Get messages for channel
+	let messages = session.state.getMessagesForChannel(channelId)
+
+	// Sort by snowflake ID descending (newest first)
+	// Discord snowflake IDs contain a timestamp component, so larger ID = newer message
+	messages.sort((a, b) => {
+		return BigInt(b.id) > BigInt(a.id) ? 1 : BigInt(b.id) < BigInt(a.id) ? -1 : 0
+	})
+
+	// Apply pagination
+	if (around) {
+		// Find message and return messages around it
+		const aroundIndex = messages.findIndex((m) => m.id === around)
+		if (aroundIndex >= 0) {
+			const start = Math.max(0, aroundIndex - Math.floor(limit / 2))
+			messages = messages.slice(start, start + limit)
 		} else {
-			// Just limit
 			messages = messages.slice(0, limit)
 		}
-
-		// Convert to API format
-		const apiMessages = messages.map((msg) => {
-			const author = session.state.getUser(msg.authorId) || session.state.botUser
-			return mockMessageToAPIMessage(msg, author)
-		})
-
-		return apiMessages
+	} else if (before) {
+		// Get messages before this ID
+		const beforeIndex = messages.findIndex((m) => m.id === before)
+		if (beforeIndex >= 0) {
+			messages = messages.slice(beforeIndex + 1, beforeIndex + 1 + limit)
+		} else {
+			messages = messages.slice(0, limit)
+		}
+	} else if (after) {
+		// Get messages after this ID
+		const afterIndex = messages.findIndex((m) => m.id === after)
+		if (afterIndex >= 0) {
+			messages = messages.slice(0, afterIndex).slice(-limit)
+		} else {
+			messages = messages.slice(0, limit)
+		}
+	} else {
+		// Just limit
+		messages = messages.slice(0, limit)
 	}
 
-	// POST - Create message
-	// 4b. Check permissions
+	// Convert to API format
+	const apiMessages = messages.map((msg) => {
+		const author = session.state.getUser(msg.authorId) || session.state.botUser
+		return mockMessageToAPIMessage(msg, author)
+	})
+
+	return apiMessages
+}
+
+export async function POST(request: RoboRequest) {
+	const resolved = resolveChannelForMessages(request)
+	if (resolved instanceof Response) return resolved
+	const { session, channel, channelId } = resolved
+
+	// Check permissions
 	const permError = enforcePermissions(
 		session,
 		'POST',
@@ -143,7 +142,7 @@ export default async (request: RoboRequest) => {
 	)
 	if (permError) return permError
 
-	// 5. Parse message payload (JSON or multipart)
+	// Parse message payload (JSON or multipart)
 	let body: {
 		content?: string
 		embeds?: unknown[]
@@ -241,7 +240,7 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 5b. Validate Components V2 if flag is set
+	// Validate Components V2 if flag is set
 	if (body.flags && body.flags & MessageFlags.IsComponentsV2) {
 		// V2 components cannot coexist with content or embeds
 		if (body.content || (body.embeds && body.embeds.length > 0)) {
@@ -271,7 +270,7 @@ export default async (request: RoboRequest) => {
 		}
 	}
 
-	// 5b1. Validate message length (2000 character limit)
+	// Validate message length (2000 character limit)
 	if (body.content && body.content.length > 2000) {
 		return new Response(JSON.stringify({ message: 'Message content exceeds 2000 characters', code: 50035 }), {
 			status: 400,
@@ -279,7 +278,7 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 5c. Validate poll if present
+	// Validate poll if present
 	if (body.poll) {
 		if (!body.poll.question?.text) {
 			return new Response(JSON.stringify({ message: 'Poll question text is required', code: 50035 }), {
@@ -317,7 +316,7 @@ export default async (request: RoboRequest) => {
 		}
 	}
 
-	// 5d. Validate sticker_ids if present
+	// Validate sticker_ids if present
 	if (body.sticker_ids?.length) {
 		if (body.sticker_ids.length > 3) {
 			return new Response(JSON.stringify({ message: 'Cannot send more than 3 stickers', code: 50035 }), {
@@ -336,7 +335,7 @@ export default async (request: RoboRequest) => {
 		}
 	}
 
-	// 6. Create message in state (author is bot user)
+	// Create message in state (author is bot user)
 	// Set type to 19 (Reply) when message_reference is present
 	const messageType = body.message_reference ? 19 : 0 // 19 = Reply, 0 = Default
 	const message = session.state.createMessage({
@@ -363,7 +362,7 @@ export default async (request: RoboRequest) => {
 			: undefined
 	})
 
-	// 7. Record as 'message_sent' action (use session.recordAction for metadata propagation)
+	// Record as 'message_sent' action (use session.recordAction for metadata propagation)
 	session.recordAction(
 		'message_sent',
 		{
@@ -383,7 +382,7 @@ export default async (request: RoboRequest) => {
 		}
 	)
 
-	// 8. Dispatch MESSAGE_CREATE event via Gateway (routed through session for loop detection)
+	// Dispatch MESSAGE_CREATE event via Gateway (routed through session for loop detection)
 	const author = session.state.botUser
 	const apiMessage = mockMessageToAPIMessage(message, author)
 	const dispatchData: Record<string, unknown> = { ...apiMessage }
@@ -392,6 +391,6 @@ export default async (request: RoboRequest) => {
 	}
 	await session.dispatch('MESSAGE_CREATE', dispatchData)
 
-	// 9. Return APIMessage response
+	// Return APIMessage response
 	return apiMessage
 }

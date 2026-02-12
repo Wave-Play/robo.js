@@ -9,16 +9,8 @@ import { mockUserToAPIUser } from '../../../../../../../discord/payloads.js'
  * Get users who voted for a specific poll answer
  * Returns: { users: APIUser[] }
  */
-export default async (request: RoboRequest) => {
-	// 1. Validate GET method
-	if (request.method !== 'GET') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// 2. Parse Authorization header → get session
+export async function GET(request: RoboRequest) {
+	// 1. Parse Authorization header → get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
 
@@ -37,7 +29,7 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 3. Extract params
+	// 2. Extract params
 	const { id: channelId, messageId, answerId: answerIdStr } = request.params as {
 		id: string
 		messageId: string
@@ -52,7 +44,7 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 4. Validate channel exists
+	// 3. Validate channel exists
 	const channel = session.state.getChannel(channelId)
 	if (!channel) {
 		return new Response(JSON.stringify({ message: 'Unknown Channel', code: 10003 }), {
@@ -61,7 +53,7 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 5. Validate message exists and has poll
+	// 4. Validate message exists and has poll
 	const message = session.state.getMessage(messageId)
 	if (!message) {
 		return new Response(JSON.stringify({ message: 'Unknown Message', code: 10008 }), {
@@ -84,7 +76,7 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 6. Validate answer exists
+	// 5. Validate answer exists
 	const answerExists = message.poll.answers.some((a) => a.answer_id === answerId)
 	if (!answerExists) {
 		return new Response(JSON.stringify({ message: 'Invalid answer ID', code: 50035 }), {
@@ -93,12 +85,12 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 7. Parse pagination query params
+	// 6. Parse pagination query params
 	const url = new URL(request.url)
 	const limit = Math.min(parseInt(url.searchParams.get('limit') || '25', 10), 100)
 	const after = url.searchParams.get('after')
 
-	// 8. Get voters for this answer
+	// 7. Get voters for this answer
 	let voterIds = session.state.getPollVoters(messageId, answerId)
 
 	// Apply pagination
@@ -110,7 +102,7 @@ export default async (request: RoboRequest) => {
 	}
 	voterIds = voterIds.slice(0, limit)
 
-	// 9. Convert to API user objects
+	// 8. Convert to API user objects
 	const users = voterIds
 		.map((userId) => {
 			const user = session.state.users.get(userId)

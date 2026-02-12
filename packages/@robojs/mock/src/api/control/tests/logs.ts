@@ -1,7 +1,7 @@
 import type { RoboRequest } from '@robojs/server'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join, basename } from 'node:path'
-import { validateMethod, badRequest } from '../utils.js'
+import { badRequest } from '../utils.js'
 
 /**
  * GET /api/control/tests/logs - List available test logs or get a specific log
@@ -27,9 +27,7 @@ function getLogsDir(): string {
 	return join(process.cwd(), '.robo', 'logs', 'tests')
 }
 
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['GET'])
-
+export async function GET(request: RoboRequest) {
 	const url = new URL(request.url)
 	const file = url.searchParams.get('file')
 	const logsDir = getLogsDir()

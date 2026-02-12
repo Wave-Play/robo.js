@@ -1,6 +1,6 @@
 import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../../core/manager.js'
-import { validateMethod, notFound, badRequest } from '../../../utils.js'
+import { notFound, badRequest } from '../../../utils.js'
 
 /**
  * POST /api/control/sessions/:id/scenario/resume - Resume scenario execution
@@ -13,9 +13,7 @@ import { validateMethod, notFound, badRequest } from '../../../utils.js'
  * - 400: No scenario loaded or scenario not in 'paused' or 'failed' status
  * - 404: Session not found
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['POST'])
-
+export async function POST(request: RoboRequest) {
 	const { id } = request.params as { id: string }
 
 	if (!id) {

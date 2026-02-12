@@ -1,6 +1,6 @@
 import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../core/manager.js'
-import { validateMethod, notFound, badRequest } from '../../utils.js'
+import { notFound, badRequest } from '../../utils.js'
 import { getGatewayServer } from '../../../../core/gateway.js'
 
 /**
@@ -25,36 +25,40 @@ import { getGatewayServer } from '../../../../core/gateway.js'
  *
  * Use shorter intervals (e.g., 1000ms) for faster testing of heartbeat behavior.
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['POST', 'GET'])
 
+function resolveSession(request: RoboRequest) {
 	const { id } = request.params as { id: string }
-
-	if (!id) {
-		return notFound('Session ID required')
-	}
-
+	if (!id) return notFound('Session ID required')
 	// Try to find session by ID first, then by token
 	const session = sessionManager.get(id) ?? sessionManager.getByToken(id)
+	if (!session) return notFound('Session not found')
+	return { session, id }
+}
 
-	if (!session) {
-		return notFound('Session not found')
-	}
+export async function GET(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session } = resolved
 
 	const gateway = getGatewayServer()
 	const globalInterval = gateway.getHeartbeatInterval()
 
-	// GET - Check current heartbeat interval
-	if (request.method === 'GET') {
-		const sessionInterval = session.heartbeatInterval
-		return {
-			interval: sessionInterval,
-			effectiveInterval: sessionInterval ?? globalInterval,
-			globalDefault: globalInterval
-		}
+	const sessionInterval = session.heartbeatInterval
+	return {
+		interval: sessionInterval,
+		effectiveInterval: sessionInterval ?? globalInterval,
+		globalDefault: globalInterval
 	}
+}
 
-	// POST - Set heartbeat interval
+export async function POST(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session } = resolved
+
+	const gateway = getGatewayServer()
+	const globalInterval = gateway.getHeartbeatInterval()
+
 	let body: {
 		interval?: number | null
 	}

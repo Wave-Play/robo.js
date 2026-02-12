@@ -8,15 +8,7 @@ import { mockWebhookToAPIWebhook } from '../../../../discord/payloads.js'
  *
  * @see https://discord.com/developers/docs/resources/webhook#get-guild-webhooks
  */
-export default async (request: RoboRequest) => {
-	// Only GET is supported
-	if (request.method !== 'GET') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
+export async function GET(request: RoboRequest) {
 	// 1. Parse Authorization header → get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)

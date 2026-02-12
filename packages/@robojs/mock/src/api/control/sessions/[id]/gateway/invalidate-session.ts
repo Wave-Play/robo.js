@@ -1,7 +1,7 @@
 import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../../core/manager.js'
 import { getGatewayServer } from '../../../../../core/gateway.js'
-import { validateMethod, notFound } from '../../../utils.js'
+import { notFound } from '../../../utils.js'
 
 /**
  * POST /api/control/sessions/:id/gateway/invalidate-session - Invalidate session for fresh READY
@@ -28,8 +28,6 @@ import { validateMethod, notFound } from '../../../utils.js'
  * }
  */
 export async function POST(request: RoboRequest) {
-	validateMethod(request, ['POST'])
-
 	const { id } = request.params as { id: string }
 
 	if (!id) {
@@ -52,5 +50,3 @@ export async function POST(request: RoboRequest) {
 		session_id: id
 	}
 }
-
-export default POST

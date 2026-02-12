@@ -9,16 +9,8 @@ import { parseMockToken } from '../../utils/id.js'
  *
  * @see https://discord.com/developers/docs/resources/sticker#list-sticker-packs
  */
-export default async (request: RoboRequest) => {
-	// 1. Validate GET method
-	if (request.method !== 'GET') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// 2. Parse Authorization header → get session
+export async function GET(request: RoboRequest) {
+	// 1. Parse Authorization header → get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
 

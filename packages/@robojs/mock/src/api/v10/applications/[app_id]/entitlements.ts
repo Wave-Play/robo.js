@@ -16,7 +16,8 @@ import { generateSnowflake } from '../../../../utils/snowflake.js'
  * @see https://discord.com/developers/docs/monetization/entitlements#list-entitlements
  * @see https://discord.com/developers/docs/monetization/entitlements#create-test-entitlement
  */
-export default async (request: RoboRequest) => {
+
+function resolveEntitlements(request: RoboRequest) {
 	// 1. Parse Authorization header → get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
@@ -47,71 +48,72 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// Handle GET - List Entitlements
-	if (request.method === 'GET') {
-		// Return empty array by default - entitlements can be added via control API if needed
-		const entitlements: unknown[] = []
+	return { session }
+}
 
-		return new Response(JSON.stringify(entitlements), {
-			status: 200,
+export async function GET(request: RoboRequest) {
+	const resolved = resolveEntitlements(request)
+	if (resolved instanceof Response) return resolved
+
+	// Return empty array by default - entitlements can be added via control API if needed
+	const entitlements: unknown[] = []
+
+	return new Response(JSON.stringify(entitlements), {
+		status: 200,
+		headers: { 'Content-Type': 'application/json' }
+	})
+}
+
+export async function POST(request: RoboRequest) {
+	const resolved = resolveEntitlements(request)
+	if (resolved instanceof Response) return resolved
+	const { session } = resolved
+
+	let body: {
+		sku_id: string
+		owner_id: string
+		owner_type: 1 | 2 // 1 = guild, 2 = user
+	}
+
+	try {
+		body = await request.json()
+	} catch {
+		return new Response(JSON.stringify({ message: 'Invalid JSON body', code: 50035 }), {
+			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		})
 	}
 
-	// Handle POST - Create Test Entitlement
-	if (request.method === 'POST') {
-		let body: {
-			sku_id: string
-			owner_id: string
-			owner_type: 1 | 2 // 1 = guild, 2 = user
-		}
-
-		try {
-			body = await request.json()
-		} catch {
-			return new Response(JSON.stringify({ message: 'Invalid JSON body', code: 50035 }), {
-				status: 400,
-				headers: { 'Content-Type': 'application/json' }
-			})
-		}
-
-		if (!body.sku_id) {
-			return new Response(JSON.stringify({ message: 'Missing sku_id', code: 50035 }), {
-				status: 400,
-				headers: { 'Content-Type': 'application/json' }
-			})
-		}
-
-		if (!body.owner_id) {
-			return new Response(JSON.stringify({ message: 'Missing owner_id', code: 50035 }), {
-				status: 400,
-				headers: { 'Content-Type': 'application/json' }
-			})
-		}
-
-		// Create a test entitlement
-		const entitlement = {
-			id: generateSnowflake(),
-			sku_id: body.sku_id,
-			application_id: session.state.botUser.id,
-			user_id: body.owner_type === 2 ? body.owner_id : undefined,
-			guild_id: body.owner_type === 1 ? body.owner_id : undefined,
-			type: 5, // TestModePurchase
-			deleted: false,
-			starts_at: null,
-			ends_at: null,
-			consumed: false
-		}
-
-		return new Response(JSON.stringify(entitlement), {
-			status: 200,
+	if (!body.sku_id) {
+		return new Response(JSON.stringify({ message: 'Missing sku_id', code: 50035 }), {
+			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		})
 	}
 
-	// Method not allowed
-	return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-		status: 405,
+	if (!body.owner_id) {
+		return new Response(JSON.stringify({ message: 'Missing owner_id', code: 50035 }), {
+			status: 400,
+			headers: { 'Content-Type': 'application/json' }
+		})
+	}
+
+	// Create a test entitlement
+	const entitlement = {
+		id: generateSnowflake(),
+		sku_id: body.sku_id,
+		application_id: session.state.botUser.id,
+		user_id: body.owner_type === 2 ? body.owner_id : undefined,
+		guild_id: body.owner_type === 1 ? body.owner_id : undefined,
+		type: 5, // TestModePurchase
+		deleted: false,
+		starts_at: null,
+		ends_at: null,
+		consumed: false
+	}
+
+	return new Response(JSON.stringify(entitlement), {
+		status: 200,
 		headers: { 'Content-Type': 'application/json' }
 	})
 }

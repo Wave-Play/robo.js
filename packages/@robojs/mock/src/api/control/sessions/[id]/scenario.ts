@@ -1,6 +1,6 @@
 import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../core/manager.js'
-import { validateMethod, notFound, badRequest } from '../../utils.js'
+import { notFound, badRequest } from '../../utils.js'
 import type { ScenarioDefinition } from '../../../../types/index.js'
 import { getStageServer } from '../../../../core/stage.js'
 import { getControlEventsHub } from '../../../../core/control-events.js'
@@ -31,56 +31,58 @@ import { getControlEventsHub } from '../../../../core/control-events.js'
  * Response:
  * { success: true }
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['POST', 'DELETE'])
 
+function resolveSession(request: RoboRequest) {
 	const { id } = request.params as { id: string }
-
-	if (!id) {
-		return notFound('Session ID required')
-	}
-
+	if (!id) return notFound('Session ID required')
 	const session = sessionManager.get(id)
+	if (!session) return notFound('Session not found')
+	return { session, id }
+}
 
-	if (!session) {
-		return notFound('Session not found')
+export async function DELETE(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session } = resolved
+
+	session.scenarioManager.clear()
+
+	// Emit scenario idle event so external clients can react immediately.
+	const idleState = session.scenarioManager.getRunState()
+	const idleEventData = {
+		runId: idleState.runId,
+		scenarioId: idleState.scenarioId,
+		status: 'idle' as const,
+		currentStepIndex: idleState.currentStepIndex,
+		totalSteps: idleState.totalSteps,
+		successCount: idleState.successCount,
+		failureCount: idleState.failureCount,
+		skippedCount: idleState.skippedCount,
+		timestamp: Date.now()
 	}
 
-	// Handle DELETE - clear scenario
-	if (request.method === 'DELETE') {
-		session.scenarioManager.clear()
-
-		// Emit scenario idle event so external clients can react immediately.
-		const idleState = session.scenarioManager.getRunState()
-		const idleEventData = {
-			runId: idleState.runId,
-			scenarioId: idleState.scenarioId,
-			status: 'idle' as const,
-			currentStepIndex: idleState.currentStepIndex,
-			totalSteps: idleState.totalSteps,
-			successCount: idleState.successCount,
-			failureCount: idleState.failureCount,
-			skippedCount: idleState.skippedCount,
-			timestamp: Date.now()
-		}
-
-		try {
-			getStageServer().broadcastToSession(session.id, {
-				type: 'scenario.run.idle',
-				data: idleEventData
-			})
-		} catch {
-			// Stage server may not be initialized in all contexts
-		}
-
-		try {
-			getControlEventsHub().broadcast(session.id, 'scenario.run.idle', idleEventData)
-		} catch {
-			// Control events hub may not be initialized in all contexts
-		}
-
-		return { success: true }
+	try {
+		getStageServer().broadcastToSession(session.id, {
+			type: 'scenario.run.idle',
+			data: idleEventData
+		})
+	} catch {
+		// Stage server may not be initialized in all contexts
 	}
+
+	try {
+		getControlEventsHub().broadcast(session.id, 'scenario.run.idle', idleEventData)
+	} catch {
+		// Control events hub may not be initialized in all contexts
+	}
+
+	return { success: true }
+}
+
+export async function POST(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session } = resolved
 
 	// Handle POST - load scenario
 	let scenario: ScenarioDefinition

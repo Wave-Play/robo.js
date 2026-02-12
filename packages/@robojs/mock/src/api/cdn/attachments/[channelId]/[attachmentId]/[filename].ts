@@ -11,14 +11,7 @@ import { sessionManager } from '../../../../../core/manager.js'
  * way to identify the session. We use a custom X-Mock-Session header or
  * iterate through sessions to find the attachment.
  */
-export default async (request: RoboRequest) => {
-	if (request.method !== 'GET') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
+export async function GET(request: RoboRequest) {
 	const { channelId, attachmentId, filename: _filename } = request.params as {
 		channelId: string
 		attachmentId: string

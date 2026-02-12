@@ -64,15 +64,7 @@ function requestTimeout(message: string, code: string): Response {
 	})
 }
 
-export default async function handler(request: RoboRequest): Promise<Response> {
-	// Only allow POST
-	if (request.method !== 'POST') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
+export async function POST(request: RoboRequest): Promise<Response> {
 	const { id } = request.params as { id: string }
 
 	// Check if session exists

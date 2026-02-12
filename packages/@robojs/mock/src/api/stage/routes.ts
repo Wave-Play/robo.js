@@ -106,14 +106,7 @@ function getAllRoutes(): RouteInfo[] {
  *
  * Used by the Stage UI for REST client autocomplete.
  */
-export default async (request: RoboRequest) => {
-	if (request.method !== 'GET') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
+export async function GET(_request: RoboRequest) {
 	try {
 		const routes = getAllRoutes()
 

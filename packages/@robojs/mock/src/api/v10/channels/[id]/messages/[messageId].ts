@@ -31,16 +31,7 @@ const CDN_BASE_URL = process.env.MOCK_CDN_URL || 'http://localhost:53596'
  * Response (GET/PATCH): APIMessage object
  * Response (DELETE): 204 No Content
  */
-export default async (request: RoboRequest) => {
-	// 1. Validate method
-	if (request.method !== 'GET' && request.method !== 'PATCH' && request.method !== 'DELETE') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// 2. Parse Authorization header → get session
+function resolveMessage(request: RoboRequest) {
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
 
@@ -59,10 +50,8 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 3. Extract IDs from params
 	const { id: channelId, messageId } = request.params as { id: string; messageId: string }
 
-	// 4. Validate channel exists
 	const channel = session.state.getChannel(channelId)
 	if (!channel) {
 		return new Response(JSON.stringify({ message: 'Unknown Channel', code: 10003 }), {
@@ -71,7 +60,6 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 5. Validate message exists
 	const message = session.state.getMessage(messageId)
 	if (!message) {
 		return new Response(JSON.stringify({ message: 'Unknown Message', code: 10008 }), {
@@ -80,7 +68,6 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 6. Verify message is in the specified channel
 	if (message.channelId !== channelId) {
 		return new Response(JSON.stringify({ message: 'Unknown Message', code: 10008 }), {
 			status: 404,
@@ -88,10 +75,18 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 6b. Check permissions
+	return { session, channel, message, channelId, messageId }
+}
+
+export async function GET(request: RoboRequest) {
+	const resolved = resolveMessage(request)
+	if (resolved instanceof Response) return resolved
+	const { session, channel, channelId, messageId, message } = resolved
+
+	// Check permissions
 	const permError = enforcePermissions(
 		session,
-		request.method,
+		'GET',
 		`/channels/${channelId}/messages/${messageId}`,
 		channelId,
 		undefined,
@@ -99,17 +94,48 @@ export default async (request: RoboRequest) => {
 	)
 	if (permError) return permError
 
-	// 7. Handle based on method
-	if (request.method === 'GET') {
-		// GET - Return the message (re-fetch to ensure latest state)
-		const freshMessage = session.state.getMessage(messageId)!
-		const author = session.state.getUser(freshMessage.authorId) || session.state.botUser
-		return mockMessageToAPIMessage(freshMessage, author)
-	} else if (request.method === 'PATCH') {
-		return handlePatch(request, session, channel, message, channelId, messageId)
-	} else {
-		return handleDelete(session, channel, channelId, messageId)
-	}
+	// GET - Return the message (re-fetch to ensure latest state)
+	const freshMessage = session.state.getMessage(messageId)!
+	const author = session.state.getUser(freshMessage.authorId) || session.state.botUser
+	return mockMessageToAPIMessage(freshMessage, author)
+}
+
+export async function PATCH(request: RoboRequest) {
+	const resolved = resolveMessage(request)
+	if (resolved instanceof Response) return resolved
+	const { session, channel, channelId, messageId, message } = resolved
+
+	// Check permissions
+	const permError = enforcePermissions(
+		session,
+		'PATCH',
+		`/channels/${channelId}/messages/${messageId}`,
+		channelId,
+		undefined,
+		{ messageId, messageAuthorId: message.authorId }
+	)
+	if (permError) return permError
+
+	return handlePatch(request, session, channel, message, channelId, messageId)
+}
+
+export async function DELETE(request: RoboRequest) {
+	const resolved = resolveMessage(request)
+	if (resolved instanceof Response) return resolved
+	const { session, channel, channelId, messageId, message } = resolved
+
+	// Check permissions
+	const permError = enforcePermissions(
+		session,
+		'DELETE',
+		`/channels/${channelId}/messages/${messageId}`,
+		channelId,
+		undefined,
+		{ messageId, messageAuthorId: message.authorId }
+	)
+	if (permError) return permError
+
+	return handleDelete(session, channel, channelId, messageId)
 }
 
 async function handlePatch(

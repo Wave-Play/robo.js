@@ -1,6 +1,6 @@
 import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../core/manager.js'
-import { validateMethod, notFound } from '../../utils.js'
+import { notFound } from '../../utils.js'
 
 /**
  * GET /api/control/sessions/:id/guilds - List guilds with stats
@@ -25,9 +25,7 @@ import { validateMethod, notFound } from '../../utils.js'
  *   total: number
  * }
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['GET'])
-
+export async function GET(request: RoboRequest) {
 	const { id } = request.params as { id: string }
 	const url = new URL(request.url, 'http://localhost')
 	const nameFilter = url.searchParams.get('name')

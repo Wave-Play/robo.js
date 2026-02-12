@@ -15,15 +15,7 @@ import type { MockVoiceState as _MockVoiceState } from '../../../../../types/ind
  * - GuildMember.voice.setChannel(channelId)
  * - GuildMember.voice.disconnect()
  */
-export default async (request: RoboRequest) => {
-	// Validate method
-	if (request.method !== 'PATCH') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
+export async function PATCH(request: RoboRequest) {
 	// Extract session from Authorization header
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)

@@ -8,16 +8,8 @@ import { enforcePermissions } from '../../../../../../../../utils/permission-che
  *
  * Response: 204 No Content
  */
-export default async (request: RoboRequest) => {
-	// 1. Validate DELETE method
-	if (request.method !== 'DELETE') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// 2. Parse Authorization header → get session
+export async function DELETE(request: RoboRequest) {
+	// 1. Parse Authorization header → get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
 
@@ -36,7 +28,7 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 3. Extract IDs from params
+	// 2. Extract IDs from params
 	const { id: channelId, messageId, emoji, userId } = request.params as {
 		id: string
 		messageId: string
@@ -50,7 +42,7 @@ export default async (request: RoboRequest) => {
 	// Determine if this is a self-removal or removing another user's reaction
 	const targetUserId = userId === '@me' ? session.state.botUser.id : userId
 
-	// 4. Validate channel exists
+	// 3. Validate channel exists
 	const channel = session.state.getChannel(channelId)
 	if (!channel) {
 		return new Response(JSON.stringify({ message: 'Unknown Channel', code: 10003 }), {
@@ -59,7 +51,7 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 5. Validate message exists
+	// 4. Validate message exists
 	const message = session.state.getMessage(messageId)
 	if (!message || message.channelId !== channelId) {
 		return new Response(JSON.stringify({ message: 'Unknown Message', code: 10008 }), {
@@ -68,7 +60,7 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 6. Check permissions
+	// 5. Check permissions
 	const permError = enforcePermissions(
 		session,
 		'DELETE',
@@ -77,7 +69,7 @@ export default async (request: RoboRequest) => {
 	)
 	if (permError) return permError
 
-	// 7. Remove reaction from message state
+	// 6. Remove reaction from message state
 	const reactions = message.reactions ?? []
 	const reactionIndex = reactions.findIndex((r) => r.emoji.name === decodedEmoji)
 
@@ -119,6 +111,6 @@ export default async (request: RoboRequest) => {
 		}
 	)
 
-	// 8. Return 204 No Content
+	// 7. Return 204 No Content
 	return new Response(null, { status: 204 })
 }

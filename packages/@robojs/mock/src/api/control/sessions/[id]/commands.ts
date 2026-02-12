@@ -1,7 +1,7 @@
 import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../core/manager.js'
 import { getStageServer } from '../../../../core/stage.js'
-import { validateMethod, notFound, badRequest } from '../../utils.js'
+import { notFound, badRequest } from '../../utils.js'
 import type { MockApplicationCommandConfig } from '../../../../types/index.js'
 
 /**
@@ -27,49 +27,53 @@ import type { MockApplicationCommandConfig } from '../../../../types/index.js'
  *   commands: [...]
  * }
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['GET', 'POST', 'DELETE'])
 
+function resolveSession(request: RoboRequest) {
 	const { id } = request.params as { id: string }
-
-	if (!id) {
-		return notFound('Session ID required')
-	}
-
+	if (!id) return notFound('Session ID required')
 	const session = sessionManager.get(id)
+	if (!session) return notFound('Session not found')
+	return { session, id }
+}
 
-	if (!session) {
-		return notFound('Session not found')
+export async function GET(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session } = resolved
+
+	const commands = Array.from(session.state.commands.values())
+	return {
+		success: true,
+		commands
+	}
+}
+
+export async function DELETE(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session, id } = resolved
+
+	const count = session.state.commands.size
+	session.state.commands.clear()
+
+	// Notify stage clients of the change
+	try {
+		getStageServer().refreshSessionState(id)
+	} catch {
+		// Stage server may not be initialized
 	}
 
-	// GET - List all commands
-	if (request.method === 'GET') {
-		const commands = Array.from(session.state.commands.values())
-		return {
-			success: true,
-			commands
-		}
+	return {
+		success: true,
+		deleted: count
 	}
+}
 
-	// DELETE - Delete all commands
-	if (request.method === 'DELETE') {
-		const count = session.state.commands.size
-		session.state.commands.clear()
+export async function POST(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session, id } = resolved
 
-		// Notify stage clients of the change
-		try {
-			getStageServer().refreshSessionState(id)
-		} catch {
-			// Stage server may not be initialized
-		}
-
-		return {
-			success: true,
-			deleted: count
-		}
-	}
-
-	// POST - Add commands
 	let body: {
 		commands?: MockApplicationCommandConfig[]
 	}

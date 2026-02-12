@@ -29,19 +29,11 @@ const CDN_BASE_URL = process.env.MOCK_CDN_URL || 'http://localhost:53596'
  *
  * Response: 204 No Content on success
  */
-export default async (request: RoboRequest) => {
-	// 1. Validate POST method
-	if (request.method !== 'POST') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// 2. Extract interaction ID and token from URL params
+export async function POST(request: RoboRequest) {
+	// 1. Extract interaction ID and token from URL params
 	const { id: interactionId, token } = request.params as { id: string; token: string }
 
-	// 3. Find session containing this interaction (lookup by token, not session token)
+	// 2. Find session containing this interaction (lookup by token, not session token)
 	const session = sessionManager.findSessionByInteractionToken(token)
 	if (!session) {
 		return new Response(
@@ -56,7 +48,7 @@ export default async (request: RoboRequest) => {
 		)
 	}
 
-	// 4. Get the interaction from state
+	// 3. Get the interaction from state
 	const interaction = session.state.getInteractionByToken(token)
 	if (!interaction) {
 		return new Response(
@@ -71,7 +63,7 @@ export default async (request: RoboRequest) => {
 		)
 	}
 
-	// 5. Validate interaction ID matches (Discord includes this for verification)
+	// 4. Validate interaction ID matches (Discord includes this for verification)
 	if (interaction.id !== interactionId) {
 		return new Response(
 			JSON.stringify({
@@ -85,7 +77,7 @@ export default async (request: RoboRequest) => {
 		)
 	}
 
-	// 6. Check expiration (interactions expire after 15 minutes)
+	// 5. Check expiration (interactions expire after 15 minutes)
 	if (Date.now() > interaction.expiresAt) {
 		return new Response(
 			JSON.stringify({
@@ -99,7 +91,7 @@ export default async (request: RoboRequest) => {
 		)
 	}
 
-	// 7. Check if already responded (can only respond once to initial callback)
+	// 6. Check if already responded (can only respond once to initial callback)
 	if (interaction.response) {
 		return new Response(
 			JSON.stringify({
@@ -113,7 +105,7 @@ export default async (request: RoboRequest) => {
 		)
 	}
 
-	// 8. Parse response body (JSON or multipart)
+	// 7. Parse response body (JSON or multipart)
 	let body: { type: number; data?: InteractionResponseData & { attachments?: AttachmentPayload[] } }
 	const attachments: MockAttachment[] = []
 	const messageId = generateSnowflake() // Pre-generate for attachment URLs
@@ -190,7 +182,7 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 9. Validate response type is present
+	// 8. Validate response type is present
 	if (typeof body.type !== 'number') {
 		return new Response(JSON.stringify({ message: 'Invalid response type', code: 50035 }), {
 			status: 400,
@@ -198,7 +190,7 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 9b. Validate autocomplete response format (type 8)
+	// 8b. Validate autocomplete response format (type 8)
 	if (body.type === 8) {
 		// Validate interaction was an autocomplete request (type 4)
 		if (interaction.type !== 4) {
@@ -235,7 +227,7 @@ export default async (request: RoboRequest) => {
 		}
 	}
 
-	// 9c. Validate Components V2 if flag is set
+	// 8c. Validate Components V2 if flag is set
 	const responseData = body.data as InteractionResponseData | undefined
 	if (responseData?.flags && responseData.flags & MessageFlags.IsComponentsV2) {
 		// V2 components cannot coexist with content or embeds
@@ -266,7 +258,7 @@ export default async (request: RoboRequest) => {
 		}
 	}
 
-	// 10. Store response on interaction
+	// 9. Store response on interaction
 	const now = Date.now()
 	interaction.response = {
 		type: body.type,
@@ -275,7 +267,7 @@ export default async (request: RoboRequest) => {
 	}
 	interaction.respondedAt = now
 
-	// 10b. Create message for type 4 (ChannelMessageWithSource), type 5 (DeferredChannelMessageWithSource),
+	// 9b. Create message for type 4 (ChannelMessageWithSource), type 5 (DeferredChannelMessageWithSource),
 	// type 6 (DeferredUpdateMessage), or type 7 (UpdateMessage)7
 	if (body.type === 5) {
 		// Type 5: Deferred reply - create an empty placeholder message for editReply() to update later
@@ -369,7 +361,7 @@ export default async (request: RoboRequest) => {
 		}
 	}
 
-	// 11. Record as 'interaction_response' action (use session.recordAction for metadata propagation)
+	// 10. Record as 'interaction_response' action (use session.recordAction for metadata propagation)
 	session.recordAction(
 		'interaction_response',
 		{
@@ -388,7 +380,7 @@ export default async (request: RoboRequest) => {
 		}
 	)
 
-	// 12. Notify stage clients of interaction response
+	// 11. Notify stage clients of interaction response
 	try {
 		// Include channel and bot info for "Bot is thinking..." indicator
 		const botUser = session.state.botUser
@@ -410,6 +402,6 @@ export default async (request: RoboRequest) => {
 		// Stage bridge may not be initialized
 	}
 
-	// 13. Discord returns 204 No Content on success
+	// 12. Discord returns 204 No Content on success
 	return new Response(null, { status: 204 })
 }

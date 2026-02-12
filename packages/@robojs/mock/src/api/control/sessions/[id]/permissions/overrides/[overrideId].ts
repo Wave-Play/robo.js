@@ -1,6 +1,6 @@
 import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../../../core/manager.js'
-import { validateMethod, notFound } from '../../../../utils.js'
+import { notFound } from '../../../../utils.js'
 import type { PermissionOverride } from '../../../../../../types/index.js'
 
 /**
@@ -19,9 +19,7 @@ import type { PermissionOverride } from '../../../../../../types/index.js'
  *
  * @see Permissions Admin UI
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['GET', 'DELETE'])
-
+function resolveSessionAndOverride(request: RoboRequest) {
 	const { id, overrideId } = request.params as { id: string; overrideId: string }
 
 	if (!id) {
@@ -38,20 +36,30 @@ export default async (request: RoboRequest) => {
 		return notFound('Session not found')
 	}
 
-	// GET - Get specific override
-	if (request.method === 'GET') {
-		const override = session.getPermissionOverride(overrideId)
+	return { session, overrideId }
+}
 
-		if (!override) {
-			return notFound('Override not found')
-		}
+export async function GET(request: RoboRequest) {
+	const resolved = resolveSessionAndOverride(request)
+	if (resolved instanceof Response) return resolved
+	const { session, overrideId } = resolved
 
-		return {
-			override: formatOverrideForResponse(override)
-		}
+	const override = session.getPermissionOverride(overrideId)
+
+	if (!override) {
+		return notFound('Override not found')
 	}
 
-	// DELETE - Remove the override
+	return {
+		override: formatOverrideForResponse(override)
+	}
+}
+
+export async function DELETE(request: RoboRequest) {
+	const resolved = resolveSessionAndOverride(request)
+	if (resolved instanceof Response) return resolved
+	const { session, overrideId } = resolved
+
 	const existed = session.removePermissionOverride(overrideId)
 
 	if (!existed) {

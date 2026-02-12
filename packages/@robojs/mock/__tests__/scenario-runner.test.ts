@@ -1,6 +1,6 @@
 /**
  * Unit tests for ScenarioRunner + simulation plumbing
- * Covers Phases 3–6 of mock-simulation.md (metadata propagation, stepping, assertions, snapshots).
+ * Covers metadata propagation, stepping, assertions, and snapshots.
  */
 
 import { Session } from '../src/session/session.js'

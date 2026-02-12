@@ -10,7 +10,7 @@ import { parseMockToken } from '../../../../utils/id.js'
  *
  * @see https://discord.com/developers/docs/monetization/skus#list-skus
  */
-export default async (request: RoboRequest) => {
+export async function GET(request: RoboRequest) {
 	// 1. Parse Authorization header → get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
@@ -41,20 +41,11 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// Handle GET - List SKUs
-	if (request.method === 'GET') {
-		// Return empty array by default - SKUs can be added via control API if needed
-		const skus: unknown[] = []
+	// Return empty array by default - SKUs can be added via control API if needed
+	const skus: unknown[] = []
 
-		return new Response(JSON.stringify(skus), {
-			status: 200,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// Method not allowed
-	return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-		status: 405,
+	return new Response(JSON.stringify(skus), {
+		status: 200,
 		headers: { 'Content-Type': 'application/json' }
 	})
 }

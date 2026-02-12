@@ -10,16 +10,8 @@ import { mockStickerToAPISticker } from '../../../discord/payloads.js'
  *
  * @see https://discord.com/developers/docs/resources/sticker#get-sticker
  */
-export default async (request: RoboRequest) => {
-	// 1. Validate GET method
-	if (request.method !== 'GET') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// 2. Parse Authorization header → get session
+export async function GET(request: RoboRequest) {
+	// 1. Parse Authorization header → get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
 
@@ -38,10 +30,10 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 3. Extract sticker ID from params
+	// 2. Extract sticker ID from params
 	const { stickerId } = request.params as { stickerId: string }
 
-	// 4. Get sticker from state
+	// 3. Get sticker from state
 	const sticker = session.state.getSticker(stickerId)
 	if (!sticker) {
 		return new Response(JSON.stringify({ message: 'Unknown Sticker', code: 10060 }), {

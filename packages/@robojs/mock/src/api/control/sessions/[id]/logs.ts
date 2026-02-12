@@ -1,7 +1,7 @@
 import type { RoboRequest } from '@robojs/server'
 import type { SessionLogEntry, SessionLogLevel } from '../../../../types/index.js'
 import { sessionManager } from '../../../../core/manager.js'
-import { validateMethod, notFound, badRequest } from '../../utils.js'
+import { notFound, badRequest } from '../../utils.js'
 
 /**
  * GET /api/control/sessions/:id/logs - Get captured session logs
@@ -44,51 +44,53 @@ import { validateMethod, notFound, badRequest } from '../../utils.js'
  *   logId: string
  * }
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['GET', 'POST'])
 
+function resolveSession(request: RoboRequest) {
 	const { id } = request.params as { id: string }
-
-	if (!id) {
-		return notFound('Session ID required')
-	}
-
+	if (!id) return notFound('Session ID required')
 	const session = sessionManager.get(id)
+	if (!session) return notFound('Session not found')
+	return { session, id }
+}
 
-	if (!session) {
-		return notFound('Session not found')
-	}
+export async function POST(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session, id } = resolved
 
-	// Handle POST - record a log entry
-	if (request.method === 'POST') {
-		try {
-			const body = (await request.json()) as Omit<SessionLogEntry, 'id'>
+	try {
+		const body = (await request.json()) as Omit<SessionLogEntry, 'id'>
 
-			// Validate required fields
-			if (!body.timestamp || !body.level || !body.message || !body.source?.connectionId) {
-				return badRequest('Missing required fields: timestamp, level, message, source.connectionId')
-			}
-
-			// Ensure source.sessionId matches
-			const entry: Omit<SessionLogEntry, 'id'> = {
-				...body,
-				source: {
-					...body.source,
-					sessionId: id
-				}
-			}
-
-			// Record the log
-			const logEntry = session.recordLog(entry)
-
-			return {
-				success: true,
-				logId: logEntry.id
-			}
-		} catch (error) {
-			return badRequest(`Invalid request body: ${(error as Error).message}`)
+		// Validate required fields
+		if (!body.timestamp || !body.level || !body.message || !body.source?.connectionId) {
+			return badRequest('Missing required fields: timestamp, level, message, source.connectionId')
 		}
+
+		// Ensure source.sessionId matches
+		const entry: Omit<SessionLogEntry, 'id'> = {
+			...body,
+			source: {
+				...body.source,
+				sessionId: id
+			}
+		}
+
+		// Record the log
+		const logEntry = session.recordLog(entry)
+
+		return {
+			success: true,
+			logId: logEntry.id
+		}
+	} catch (error) {
+		return badRequest(`Invalid request body: ${(error as Error).message}`)
 	}
+}
+
+export async function GET(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session } = resolved
 
 	// Handle GET - retrieve logs
 	const url = new URL(request.url, 'http://localhost')

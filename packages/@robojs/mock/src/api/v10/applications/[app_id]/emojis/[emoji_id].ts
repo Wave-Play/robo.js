@@ -2,7 +2,7 @@ import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../../core/manager.js'
 import { parseMockToken } from '../../../../../utils/id.js'
 
-export default async (request: RoboRequest) => {
+function resolveAppEmoji(request: RoboRequest) {
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
 
@@ -31,40 +31,45 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
+	return { session, emoji_id }
+}
+
+// GET - Fetch specific emoji
+export async function GET(request: RoboRequest) {
+	const resolved = resolveAppEmoji(request)
+	if (resolved instanceof Response) return resolved
+	const { session, emoji_id } = resolved
+
 	const emoji = session.state.applicationEmojis.get(emoji_id)
-
-	// GET - Fetch specific emoji
-	if (request.method === 'GET') {
-		if (!emoji) {
-			return new Response(JSON.stringify({ message: 'Unknown Emoji', code: 10014 }), {
-				status: 404,
-				headers: { 'Content-Type': 'application/json' }
-			})
-		}
-
-		return {
-			id: emoji.id,
-			name: emoji.name,
-			animated: emoji.animated ?? false
-		}
+	if (!emoji) {
+		return new Response(JSON.stringify({ message: 'Unknown Emoji', code: 10014 }), {
+			status: 404,
+			headers: { 'Content-Type': 'application/json' }
+		})
 	}
 
-	// DELETE - Delete emoji
-	if (request.method === 'DELETE') {
-		if (!emoji) {
-			return new Response(JSON.stringify({ message: 'Unknown Emoji', code: 10014 }), {
-				status: 404,
-				headers: { 'Content-Type': 'application/json' }
-			})
-		}
+	return {
+		id: emoji.id,
+		name: emoji.name,
+		animated: emoji.animated ?? false
+	}
+}
 
-		session.state.applicationEmojis.delete(emoji_id)
+// DELETE - Delete emoji
+export async function DELETE(request: RoboRequest) {
+	const resolved = resolveAppEmoji(request)
+	if (resolved instanceof Response) return resolved
+	const { session, emoji_id } = resolved
 
-		return new Response(null, { status: 204 })
+	const emoji = session.state.applicationEmojis.get(emoji_id)
+	if (!emoji) {
+		return new Response(JSON.stringify({ message: 'Unknown Emoji', code: 10014 }), {
+			status: 404,
+			headers: { 'Content-Type': 'application/json' }
+		})
 	}
 
-	return new Response(JSON.stringify({ message: 'Method not allowed', code: 0 }), {
-		status: 405,
-		headers: { 'Content-Type': 'application/json' }
-	})
+	session.state.applicationEmojis.delete(emoji_id)
+
+	return new Response(null, { status: 204 })
 }

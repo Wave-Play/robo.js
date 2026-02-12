@@ -26,14 +26,7 @@ import { computePermissions, getPermissionNames, hasPermission, PermissionFlagsB
  *
  * @see Plan Step 7: Control API for Permission Testing
  */
-export default async (request: RoboRequest) => {
-	if (request.method !== 'GET') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
+export async function GET(request: RoboRequest) {
 	const { id, channelId } = request.params as { id: string; channelId: string }
 
 	if (!id) {

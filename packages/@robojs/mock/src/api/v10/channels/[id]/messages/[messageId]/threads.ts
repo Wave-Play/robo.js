@@ -15,16 +15,8 @@ import { mockThreadToAPIChannel } from '../../../../../../discord/payloads.js'
  *
  * Response: APIChannel (thread) object
  */
-export default async (request: RoboRequest) => {
-	// 1. Validate POST method
-	if (request.method !== 'POST') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// 2. Parse Authorization header → get session
+export async function POST(request: RoboRequest) {
+	// 1. Parse Authorization header → get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
 
@@ -43,10 +35,10 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 3. Extract params
+	// 2. Extract params
 	const { id: channelId, messageId } = request.params as { id: string; messageId: string }
 
-	// 4. Validate parent channel exists
+	// 3. Validate parent channel exists
 	const channel = session.state.getChannel(channelId)
 	if (!channel) {
 		return new Response(JSON.stringify({ message: 'Unknown Channel', code: 10003 }), {
@@ -55,7 +47,7 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 5. Validate message exists
+	// 4. Validate message exists
 	const message = session.state.getMessage(messageId)
 	if (!message) {
 		return new Response(JSON.stringify({ message: 'Unknown Message', code: 10008 }), {
@@ -64,7 +56,7 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 6. Validate message is in the specified channel
+	// 5. Validate message is in the specified channel
 	if (message.channelId !== channelId) {
 		return new Response(JSON.stringify({ message: 'Unknown Message', code: 10008 }), {
 			status: 404,
@@ -72,7 +64,7 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 7. Validate channel type (must be text or announcement)
+	// 6. Validate channel type (must be text or announcement)
 	if (channel.type !== 0 && channel.type !== 5) {
 		return new Response(
 			JSON.stringify({
@@ -86,7 +78,7 @@ export default async (request: RoboRequest) => {
 		)
 	}
 
-	// 8. Parse thread creation payload
+	// 7. Parse thread creation payload
 	let body: {
 		name: string
 		auto_archive_duration?: 60 | 1440 | 4320 | 10080
@@ -102,7 +94,7 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 9. Validate required fields
+	// 8. Validate required fields
 	if (!body.name || typeof body.name !== 'string' || body.name.length < 1 || body.name.length > 100) {
 		return new Response(
 			JSON.stringify({
@@ -116,10 +108,10 @@ export default async (request: RoboRequest) => {
 		)
 	}
 
-	// 10. Determine thread type (public thread or announcement thread based on parent)
+	// 9. Determine thread type (public thread or announcement thread based on parent)
 	const threadType = channel.type === 5 ? 10 : 11
 
-	// 11. Create thread in state
+	// 10. Create thread in state
 	const thread = session.state.createThread({
 		name: body.name,
 		type: threadType,
@@ -129,7 +121,7 @@ export default async (request: RoboRequest) => {
 		rateLimitPerUser: body.rate_limit_per_user
 	})
 
-	// 12. Record as 'thread_created' action
+	// 11. Record as 'thread_created' action
 	session.recordAction(
 		'thread_created',
 		{
@@ -145,7 +137,7 @@ export default async (request: RoboRequest) => {
 		}
 	)
 
-	// 13. Return thread as APIChannel (include member since creator is automatically added)
+	// 12. Return thread as APIChannel (include member since creator is automatically added)
 	const botMember = session.state.getThreadMember(thread.id, session.state.botUser.id)
 	return mockThreadToAPIChannel(thread, botMember ?? undefined)
 }

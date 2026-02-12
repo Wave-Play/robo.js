@@ -1,6 +1,6 @@
 import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../../core/manager.js'
-import { validateMethod, notFound } from '../../../utils.js'
+import { notFound } from '../../../utils.js'
 import { serializeMockMessage } from '../../../../../session/state.js'
 import type { MockForumChannel, MockForumThread } from '../../../../../types/index.js'
 
@@ -31,9 +31,7 @@ import type { MockForumChannel, MockForumThread } from '../../../../../types/ind
  *   applied_tags?: string[]
  * }
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['GET'])
-
+export async function GET(request: RoboRequest) {
 	const { id, channelId } = request.params as { id: string; channelId: string }
 	const url = new URL(request.url, 'http://localhost')
 	const includeMessages = url.searchParams.get('include_messages') === 'true'

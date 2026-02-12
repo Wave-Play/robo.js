@@ -1,7 +1,7 @@
 import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../core/manager.js'
 import { getStageServer } from '../../../../core/stage.js'
-import { validateMethod, notFound, badRequest } from '../../utils.js'
+import { notFound, badRequest } from '../../utils.js'
 import type { StageEventType } from '../../../../types/stage.js'
 
 /**
@@ -33,38 +33,43 @@ import type { StageEventType } from '../../../../types/stage.js'
  *   broadcast_count: number
  * }
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['GET', 'POST'])
 
+function resolveSession(request: RoboRequest) {
 	const { id } = request.params as { id: string }
-
-	if (!id) {
-		return notFound('Session ID required')
-	}
-
+	if (!id) return notFound('Session ID required')
 	const session = sessionManager.get(id)
+	if (!session) return notFound('Session not found')
+	return { session, id }
+}
 
-	if (!session) {
-		return notFound('Session not found')
-	}
+export async function GET(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session } = resolved
 
 	const stageServer = getStageServer()
 
-	if (request.method === 'GET') {
-		// Return stage connection info
-		const connectionCount = stageServer.getSessionConnectionCount(session.id)
-		const bufferStats = stageServer.getBufferStats(session.id)
+	// Return stage connection info
+	const connectionCount = stageServer.getSessionConnectionCount(session.id)
+	const bufferStats = stageServer.getBufferStats(session.id)
 
-		return {
-			session_id: session.id,
-			stage_connections: connectionCount,
-			buffer_stats: {
-				size: bufferStats.size,
-				oldest_seq: bufferStats.oldestSeq,
-				newest_seq: bufferStats.newestSeq
-			}
+	return {
+		session_id: session.id,
+		stage_connections: connectionCount,
+		buffer_stats: {
+			size: bufferStats.size,
+			oldest_seq: bufferStats.oldestSeq,
+			newest_seq: bufferStats.newestSeq
 		}
 	}
+}
+
+export async function POST(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session } = resolved
+
+	const stageServer = getStageServer()
 
 	// POST - Broadcast custom event
 	const body = await request.json() as { type?: StageEventType; data?: unknown }

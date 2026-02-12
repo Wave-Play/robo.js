@@ -14,16 +14,8 @@ import { enforcePermissions } from '../../../../../utils/permission-check.js'
  *
  * Response: 204 No Content
  */
-export default async (request: RoboRequest) => {
-	// 1. Validate POST method
-	if (request.method !== 'POST') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// 2. Parse Authorization header → get session
+export async function POST(request: RoboRequest) {
+	// 1. Parse Authorization header → get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
 
@@ -42,10 +34,10 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 3. Extract channel ID from params
+	// 2. Extract channel ID from params
 	const { id: channelId } = request.params as { id: string }
 
-	// 4. Validate channel exists
+	// 3. Validate channel exists
 	const channel = session.state.getChannel(channelId)
 	if (!channel) {
 		return new Response(JSON.stringify({ message: 'Unknown Channel', code: 10003 }), {
@@ -54,11 +46,11 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 5. Check permissions
+	// 4. Check permissions
 	const permError = enforcePermissions(session, 'POST', `/channels/${channelId}/messages/bulk-delete`, channelId)
 	if (permError) return permError
 
-	// 6. Parse request body
+	// 5. Parse request body
 	let body: { messages: string[] }
 
 	try {
@@ -70,7 +62,7 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 7. Validate messages array
+	// 6. Validate messages array
 	if (!Array.isArray(body.messages) || body.messages.length < 2 || body.messages.length > 100) {
 		return new Response(
 			JSON.stringify({ message: 'You must provide 2-100 message IDs to delete', code: 50035 }),
@@ -81,7 +73,7 @@ export default async (request: RoboRequest) => {
 		)
 	}
 
-	// 8. Delete messages and dispatch events
+	// 7. Delete messages and dispatch events
 	const deletedIds: string[] = []
 	for (const messageId of body.messages) {
 		const deleted = session.state.deleteMessage(messageId)
@@ -100,7 +92,7 @@ export default async (request: RoboRequest) => {
 		}
 	}
 
-	// 9. Record action
+	// 8. Record action
 	session.recordAction(
 		'messages_bulk_deleted',
 		{
@@ -115,7 +107,6 @@ export default async (request: RoboRequest) => {
 		}
 	)
 
-	// 10. Return 204 No Content
+	// 9. Return 204 No Content
 	return new Response(null, { status: 204 })
 }
-

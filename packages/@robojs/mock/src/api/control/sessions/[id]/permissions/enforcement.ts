@@ -1,6 +1,6 @@
 import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../../core/manager.js'
-import { validateMethod, notFound, badRequest } from '../../../utils.js'
+import { notFound, badRequest } from '../../../utils.js'
 
 type EnforcementLevel = 'none' | 'basic' | 'strict'
 
@@ -27,9 +27,7 @@ type EnforcementLevel = 'none' | 'basic' | 'strict'
  *
  * @see Permissions Admin UI
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['GET', 'POST'])
-
+function resolveSession(request: RoboRequest) {
 	const { id } = request.params as { id: string }
 
 	if (!id) {
@@ -42,19 +40,29 @@ export default async (request: RoboRequest) => {
 		return notFound('Session not found')
 	}
 
-	// GET - Check current enforcement level
-	if (request.method === 'GET') {
-		// Access private field to check if runtime value is set
-		const runtimeLevel = (session as unknown as { _permissionEnforcement: EnforcementLevel | null })._permissionEnforcement
-		const isRuntime = runtimeLevel !== null
+	return { session }
+}
 
-		return {
-			level: session.permissionEnforcement,
-			is_runtime: isRuntime
-		}
+export async function GET(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session } = resolved
+
+	// Access private field to check if runtime value is set
+	const runtimeLevel = (session as unknown as { _permissionEnforcement: EnforcementLevel | null })._permissionEnforcement
+	const isRuntime = runtimeLevel !== null
+
+	return {
+		level: session.permissionEnforcement,
+		is_runtime: isRuntime
 	}
+}
 
-	// POST - Set enforcement level
+export async function POST(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session } = resolved
+
 	let body: {
 		level?: EnforcementLevel | null
 	}

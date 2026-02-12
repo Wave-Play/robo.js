@@ -1,7 +1,7 @@
 import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../../core/manager.js'
 import { getGatewayServer } from '../../../../../core/gateway.js'
-import { validateMethod, notFound, badRequest } from '../../../utils.js'
+import { notFound, badRequest } from '../../../utils.js'
 
 /**
  * POST /api/control/sessions/:id/gateway/disconnect - Force disconnect gateway connections
@@ -34,8 +34,6 @@ import { validateMethod, notFound, badRequest } from '../../../utils.js'
  * }
  */
 export async function POST(request: RoboRequest) {
-	validateMethod(request, ['POST'])
-
 	const { id } = request.params as { id: string }
 
 	if (!id) {
@@ -80,5 +78,3 @@ export async function POST(request: RoboRequest) {
 		session_id: id
 	}
 }
-
-export default POST

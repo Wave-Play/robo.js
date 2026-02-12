@@ -10,16 +10,7 @@ import { getGatewayServer } from '../../../../../core/gateway.js'
  *
  * Response: 204 No Content on success
  */
-export default async (request: RoboRequest) => {
-	// 1. Validate method (PUT or DELETE)
-	if (request.method !== 'PUT' && request.method !== 'DELETE') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// 2. Parse Authorization header → get session
+function resolveThreadForSelf(request: RoboRequest) {
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
 
@@ -38,10 +29,8 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 3. Extract thread ID from params
 	const { id: threadId } = request.params as { id: string }
 
-	// 4. Validate thread exists
 	const thread = session.state.getThread(threadId)
 	if (!thread) {
 		return new Response(JSON.stringify({ message: 'Unknown Channel', code: 10003 }), {
@@ -50,54 +39,68 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
+	return { session, thread, threadId }
+}
+
+export async function PUT(request: RoboRequest) {
+	const resolved = resolveThreadForSelf(request)
+	if (resolved instanceof Response) return resolved
+	const { session, thread, threadId } = resolved
+
 	const botUserId = session.state.botUser.id
 
-	if (request.method === 'PUT') {
-		// 5a. Join thread
-		const member = session.state.addThreadMember(threadId, botUserId)
+	// Join thread
+	const member = session.state.addThreadMember(threadId, botUserId)
 
-		// Record action
-		session.recordAction(
-			'thread_member_added',
-			{
-				thread_id: threadId,
-				user_id: botUserId
-			},
-			{
-				endpoint: `PUT /channels/${threadId}/thread-members/@me`,
-				method: 'PUT'
-			}
-		)
+	// Record action
+	session.recordAction(
+		'thread_member_added',
+		{
+			thread_id: threadId,
+			user_id: botUserId
+		},
+		{
+			endpoint: `PUT /channels/${threadId}/thread-members/@me`,
+			method: 'PUT'
+		}
+	)
 
-		// Dispatch THREAD_UPDATE so Discord.js updates its local cache
-		const apiChannel = mockThreadToAPIChannel(thread, member ?? undefined)
-		getGatewayServer().dispatchToSession(session.id, 'THREAD_UPDATE', apiChannel, thread.guildId)
+	// Dispatch THREAD_UPDATE so Discord.js updates its local cache
+	const apiChannel = mockThreadToAPIChannel(thread, member ?? undefined)
+	getGatewayServer().dispatchToSession(session.id, 'THREAD_UPDATE', apiChannel, thread.guildId)
 
-		// Return 204 No Content
-		return new Response(null, { status: 204 })
-	} else {
-		// 5b. Leave thread
-		session.state.removeThreadMember(threadId, botUserId)
+	// Return 204 No Content
+	return new Response(null, { status: 204 })
+}
 
-		// Record action
-		session.recordAction(
-			'thread_member_removed',
-			{
-				thread_id: threadId,
-				user_id: botUserId
-			},
-			{
-				endpoint: `DELETE /channels/${threadId}/thread-members/@me`,
-				method: 'DELETE'
-			}
-		)
+export async function DELETE(request: RoboRequest) {
+	const resolved = resolveThreadForSelf(request)
+	if (resolved instanceof Response) return resolved
+	const { session, thread, threadId } = resolved
 
-		// Dispatch THREAD_UPDATE so Discord.js updates its local cache
-		// After leaving, the member field should not be included
-		const apiChannel = mockThreadToAPIChannel(thread)
-		getGatewayServer().dispatchToSession(session.id, 'THREAD_UPDATE', apiChannel, thread.guildId)
+	const botUserId = session.state.botUser.id
 
-		// Return 204 No Content
-		return new Response(null, { status: 204 })
-	}
+	// Leave thread
+	session.state.removeThreadMember(threadId, botUserId)
+
+	// Record action
+	session.recordAction(
+		'thread_member_removed',
+		{
+			thread_id: threadId,
+			user_id: botUserId
+		},
+		{
+			endpoint: `DELETE /channels/${threadId}/thread-members/@me`,
+			method: 'DELETE'
+		}
+	)
+
+	// Dispatch THREAD_UPDATE so Discord.js updates its local cache
+	// After leaving, the member field should not be included
+	const apiChannel = mockThreadToAPIChannel(thread)
+	getGatewayServer().dispatchToSession(session.id, 'THREAD_UPDATE', apiChannel, thread.guildId)
+
+	// Return 204 No Content
+	return new Response(null, { status: 204 })
 }

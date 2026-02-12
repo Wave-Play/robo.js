@@ -1,6 +1,6 @@
 import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../core/manager.js'
-import { validateMethod, notFound, badRequest } from '../../utils.js'
+import { notFound, badRequest } from '../../utils.js'
 import type { AuditLogEvent } from '../../../../types/index.js'
 
 /**
@@ -40,9 +40,7 @@ import type { AuditLogEvent } from '../../../../types/index.js'
  *   entry_ids: string[]
  * }
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['POST'])
-
+export async function POST(request: RoboRequest) {
 	const { id } = request.params as { id: string }
 
 	if (!id) {

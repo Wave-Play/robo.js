@@ -29,15 +29,7 @@ function generateImageHash(dataUrl: string | null): string | null {
  * @see https://discord.com/developers/docs/resources/guild#get-guild
  * @see https://discord.com/developers/docs/resources/guild#modify-guild
  */
-export default async (request: RoboRequest) => {
-	// Validate method
-	if (request.method !== 'GET' && request.method !== 'PATCH') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
+function resolveGuild(request: RoboRequest) {
 	// Extract session from Authorization header
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
@@ -67,98 +59,13 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// Handle PATCH - Modify guild
-	if (request.method === 'PATCH') {
-		let body: Record<string, unknown>
-		try {
-			body = await request.json()
-		} catch {
-			return new Response(JSON.stringify({ message: 'Invalid JSON body', code: 50035 }), {
-				status: 400,
-				headers: { 'Content-Type': 'application/json' }
-			})
-		}
+	return { session, guild, guildId }
+}
 
-		// Update guild fields
-		if (body.name !== undefined) {
-			guild.name = String(body.name)
-		}
-		if (body.description !== undefined) {
-			guild.description = body.description === null ? null : String(body.description)
-		}
-		if (body.afk_channel_id !== undefined) {
-			guild.afkChannelId = body.afk_channel_id as string | null
-		}
-		if (body.afk_timeout !== undefined) {
-			guild.afkTimeout = Number(body.afk_timeout)
-		}
-		if (body.system_channel_id !== undefined) {
-			guild.systemChannelId = body.system_channel_id as string | null
-		}
-		if (body.system_channel_flags !== undefined) {
-			guild.systemChannelFlags = Number(body.system_channel_flags)
-		}
-		if (body.verification_level !== undefined) {
-			guild.verificationLevel = Number(body.verification_level)
-		}
-		if (body.default_message_notifications !== undefined) {
-			guild.defaultMessageNotifications = Number(body.default_message_notifications)
-		}
-		if (body.explicit_content_filter !== undefined) {
-			guild.explicitContentFilter = Number(body.explicit_content_filter)
-		}
-		if (body.mfa_level !== undefined) {
-			guild.mfaLevel = Number(body.mfa_level)
-		}
-		// Handle image fields - generate hashes from data URLs
-		if (body.icon !== undefined) {
-			guild.icon = generateImageHash(body.icon as string | null)
-		}
-		if (body.splash !== undefined) {
-			guild.splash = generateImageHash(body.splash as string | null)
-		}
-		if (body.banner !== undefined) {
-			guild.banner = generateImageHash(body.banner as string | null)
-		}
-		if (body.discovery_splash !== undefined) {
-			guild.discoverySplash = generateImageHash(body.discovery_splash as string | null)
-		}
-		// Handle premium tier and features
-		if (body.premium_tier !== undefined) {
-			guild.premiumTier = Number(body.premium_tier)
-		}
-		if (body.features !== undefined) {
-			guild.features = body.features as string[]
-		}
-		// Premium progress bar and preferred locale
-		if (body.premium_progress_bar_enabled !== undefined) {
-			guild.premiumProgressBarEnabled = Boolean(body.premium_progress_bar_enabled)
-		}
-		if (body.preferred_locale !== undefined) {
-			guild.preferredLocale = String(body.preferred_locale)
-		}
-		// Guild ownership transfer
-		if (body.owner_id !== undefined) {
-			guild.ownerId = String(body.owner_id)
-		}
-
-		// Dispatch GUILD_UPDATE event
-		session.state.sequence++
-		const payload = buildGuildCreatePayload({
-			sessionState: session.state,
-			guild,
-			sequence: session.state.sequence
-		})
-
-		// Dispatch GUILD_UPDATE to connected clients
-		getGatewayServer().dispatchToSession(session.id, 'GUILD_UPDATE', payload.d, guildId)
-
-		// Record the action
-		session.recordAction('GUILD_UPDATE', {
-			guild_id: guildId,
-			changes: body
-		})
-	}
+export async function GET(request: RoboRequest) {
+	const resolved = resolveGuild(request)
+	if (resolved instanceof Response) return resolved
+	const { session, guild, guildId } = resolved
 
 	// Build and return the guild payload
 	const payload = buildGuildCreatePayload({
@@ -169,4 +76,110 @@ export default async (request: RoboRequest) => {
 
 	// payload.d is the guild object
 	return payload.d
+}
+
+export async function PATCH(request: RoboRequest) {
+	const resolved = resolveGuild(request)
+	if (resolved instanceof Response) return resolved
+	const { session, guild, guildId } = resolved
+
+	let body: Record<string, unknown>
+	try {
+		body = await request.json()
+	} catch {
+		return new Response(JSON.stringify({ message: 'Invalid JSON body', code: 50035 }), {
+			status: 400,
+			headers: { 'Content-Type': 'application/json' }
+		})
+	}
+
+	// Update guild fields
+	if (body.name !== undefined) {
+		guild.name = String(body.name)
+	}
+	if (body.description !== undefined) {
+		guild.description = body.description === null ? null : String(body.description)
+	}
+	if (body.afk_channel_id !== undefined) {
+		guild.afkChannelId = body.afk_channel_id as string | null
+	}
+	if (body.afk_timeout !== undefined) {
+		guild.afkTimeout = Number(body.afk_timeout)
+	}
+	if (body.system_channel_id !== undefined) {
+		guild.systemChannelId = body.system_channel_id as string | null
+	}
+	if (body.system_channel_flags !== undefined) {
+		guild.systemChannelFlags = Number(body.system_channel_flags)
+	}
+	if (body.verification_level !== undefined) {
+		guild.verificationLevel = Number(body.verification_level)
+	}
+	if (body.default_message_notifications !== undefined) {
+		guild.defaultMessageNotifications = Number(body.default_message_notifications)
+	}
+	if (body.explicit_content_filter !== undefined) {
+		guild.explicitContentFilter = Number(body.explicit_content_filter)
+	}
+	if (body.mfa_level !== undefined) {
+		guild.mfaLevel = Number(body.mfa_level)
+	}
+	// Handle image fields - generate hashes from data URLs
+	if (body.icon !== undefined) {
+		guild.icon = generateImageHash(body.icon as string | null)
+	}
+	if (body.splash !== undefined) {
+		guild.splash = generateImageHash(body.splash as string | null)
+	}
+	if (body.banner !== undefined) {
+		guild.banner = generateImageHash(body.banner as string | null)
+	}
+	if (body.discovery_splash !== undefined) {
+		guild.discoverySplash = generateImageHash(body.discovery_splash as string | null)
+	}
+	// Handle premium tier and features
+	if (body.premium_tier !== undefined) {
+		guild.premiumTier = Number(body.premium_tier)
+	}
+	if (body.features !== undefined) {
+		guild.features = body.features as string[]
+	}
+	// Premium progress bar and preferred locale
+	if (body.premium_progress_bar_enabled !== undefined) {
+		guild.premiumProgressBarEnabled = Boolean(body.premium_progress_bar_enabled)
+	}
+	if (body.preferred_locale !== undefined) {
+		guild.preferredLocale = String(body.preferred_locale)
+	}
+	// Guild ownership transfer
+	if (body.owner_id !== undefined) {
+		guild.ownerId = String(body.owner_id)
+	}
+
+	// Dispatch GUILD_UPDATE event
+	session.state.sequence++
+	const payload = buildGuildCreatePayload({
+		sessionState: session.state,
+		guild,
+		sequence: session.state.sequence
+	})
+
+	// Dispatch GUILD_UPDATE to connected clients
+	getGatewayServer().dispatchToSession(session.id, 'GUILD_UPDATE', payload.d, guildId)
+
+	// Record the action
+	session.recordAction('GUILD_UPDATE', {
+		guild_id: guildId,
+		changes: body
+	})
+
+	// Build and return the guild payload
+	const returnPayload = buildGuildCreatePayload({
+		sessionState: session.state,
+		guild,
+		sequence: session.state.sequence
+	})
+
+	// payload.d is the guild object
+	return returnPayload.d
 }

@@ -1,7 +1,7 @@
 import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../core/manager.js'
 import { sendVoiceError } from '../../../../core/voice-gateway.js'
-import { validateMethod, notFound, badRequest } from '../../utils.js'
+import { notFound, badRequest } from '../../utils.js'
 
 /**
  * Voice Error Control Endpoint
@@ -18,9 +18,7 @@ import { validateMethod, notFound, badRequest } from '../../utils.js'
  * This will close the voice WebSocket connection with an error, triggering
  * the error event on the VoiceConnection.
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['POST'])
-
+export async function POST(request: RoboRequest) {
 	const { id } = request.params as { id: string }
 
 	if (!id) {

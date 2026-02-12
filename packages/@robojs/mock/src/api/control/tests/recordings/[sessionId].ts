@@ -1,6 +1,6 @@
 import type { RoboRequest } from '@robojs/server'
 import { loadRecording, deleteRecording } from '../../../../session/recording-storage.js'
-import { validateMethod, notFound } from '../../utils.js'
+import { notFound } from '../../utils.js'
 
 /**
  * GET /api/control/tests/recordings/:sessionId - Get a specific recording
@@ -12,24 +12,26 @@ import { validateMethod, notFound } from '../../utils.js'
  * Response (DELETE):
  * { deleted: boolean }
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['GET', 'DELETE'])
-
+export async function GET(request: RoboRequest) {
 	const sessionId = request.params.sessionId
 	if (!sessionId) {
 		return notFound('Session ID required')
 	}
 
-	if (request.method === 'DELETE') {
-		const deleted = deleteRecording(sessionId)
-		return { deleted }
-	}
-
-	// GET request
 	const recording = loadRecording(sessionId)
 	if (!recording) {
 		return notFound(`Recording not found for session: ${sessionId}`)
 	}
 
 	return recording
+}
+
+export async function DELETE(request: RoboRequest) {
+	const sessionId = request.params.sessionId
+	if (!sessionId) {
+		return notFound('Session ID required')
+	}
+
+	const deleted = deleteRecording(sessionId)
+	return { deleted }
 }

@@ -1,6 +1,6 @@
 import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../../core/manager.js'
-import { validateMethod, notFound, badRequest } from '../../../utils.js'
+import { notFound, badRequest } from '../../../utils.js'
 import type { PermissionOverride } from '../../../../../types/index.js'
 
 /**
@@ -33,9 +33,7 @@ import type { PermissionOverride } from '../../../../../types/index.js'
  *
  * @see Permissions Admin UI
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['GET', 'POST', 'DELETE'])
-
+function resolveSession(request: RoboRequest) {
 	const { id } = request.params as { id: string }
 
 	if (!id) {
@@ -48,28 +46,41 @@ export default async (request: RoboRequest) => {
 		return notFound('Session not found')
 	}
 
-	// GET - List all overrides
-	if (request.method === 'GET') {
-		const overrides = session.getPermissionOverrides()
+	return { session }
+}
 
-		return {
-			overrides: overrides.map(formatOverrideForResponse),
-			count: overrides.length
-		}
+export async function GET(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session } = resolved
+
+	const overrides = session.getPermissionOverrides()
+
+	return {
+		overrides: overrides.map(formatOverrideForResponse),
+		count: overrides.length
 	}
+}
 
-	// DELETE - Clear all overrides
-	if (request.method === 'DELETE') {
-		const count = session.getPermissionOverrides().length
-		session.clearPermissionOverrides()
+export async function DELETE(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session } = resolved
 
-		return {
-			success: true,
-			cleared: count
-		}
+	const count = session.getPermissionOverrides().length
+	session.clearPermissionOverrides()
+
+	return {
+		success: true,
+		cleared: count
 	}
+}
 
-	// POST - Add a new override
+export async function POST(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session } = resolved
+
 	let body: {
 		user_id?: string
 		channel_id?: string

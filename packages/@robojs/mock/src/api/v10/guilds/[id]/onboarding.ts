@@ -10,15 +10,7 @@ import { generateSnowflake } from '../../../../utils/snowflake.js'
  * @see https://discord.com/developers/docs/resources/guild#get-guild-onboarding
  * @see https://discord.com/developers/docs/resources/guild#modify-guild-onboarding
  */
-export default async (request: RoboRequest) => {
-	// Only GET and PUT are supported
-	if (request.method !== 'GET' && request.method !== 'PUT') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
+function resolveGuild(request: RoboRequest) {
 	// Parse Authorization header -> get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
@@ -61,74 +53,110 @@ export default async (request: RoboRequest) => {
 		}
 	}
 
-	if (request.method === 'PUT') {
-		// Parse request body
-		let body: {
-			prompts?: Array<{
-				id?: string
-				type: number
-				title: string
-				single_select: boolean
-				required: boolean
-				in_onboarding: boolean
-				options: Array<{
-					id?: string
-					title: string
-					description?: string | null
-					channel_ids: string[]
-					role_ids: string[]
-					emoji?: {
-						id?: string | null
-						name?: string | null
-						animated?: boolean
-					}
-				}>
-			}>
-			default_channel_ids?: string[]
-			enabled?: boolean
-			mode?: number
-		}
+	return { session, guild, guildId }
+}
 
-		try {
-			body = await request.json()
-		} catch {
-			return new Response(JSON.stringify({ message: 'Invalid JSON body', code: 50035 }), {
-				status: 400,
-				headers: { 'Content-Type': 'application/json' }
-			})
-		}
+export async function GET(request: RoboRequest) {
+	const resolved = resolveGuild(request)
+	if (resolved instanceof Response) return resolved
+	const { guild, guildId } = resolved
 
-		// Update onboarding
-		if (body.prompts !== undefined) {
-			guild.onboarding.prompts = body.prompts.map((prompt) => ({
-				id: prompt.id ?? generateSnowflake(),
-				type: prompt.type,
-				title: prompt.title,
-				single_select: prompt.single_select,
-				required: prompt.required,
-				in_onboarding: prompt.in_onboarding,
-				options: prompt.options.map((option) => ({
-					id: option.id ?? generateSnowflake(),
-					title: option.title,
-					description: option.description ?? null,
-					channel_ids: option.channel_ids,
-					role_ids: option.role_ids,
-					emoji: option.emoji ?? null
-				}))
+	// Return onboarding
+	return {
+		guild_id: guildId,
+		prompts: guild.onboarding.prompts.map((prompt) => ({
+			id: prompt.id,
+			type: prompt.type,
+			title: prompt.title,
+			single_select: prompt.single_select,
+			required: prompt.required,
+			in_onboarding: prompt.in_onboarding,
+			options: prompt.options.map((option) => ({
+				id: option.id,
+				title: option.title,
+				description: option.description,
+				channel_ids: option.channel_ids,
+				role_ids: option.role_ids,
+				emoji: option.emoji
 			}))
-		}
+		})),
+		default_channel_ids: guild.onboarding.default_channel_ids,
+		enabled: guild.onboarding.enabled,
+		mode: guild.onboarding.mode
+	}
+}
 
-		if (body.default_channel_ids !== undefined) {
-			guild.onboarding.default_channel_ids = body.default_channel_ids
-		}
+export async function PUT(request: RoboRequest) {
+	const resolved = resolveGuild(request)
+	if (resolved instanceof Response) return resolved
+	const { guild, guildId } = resolved
 
-		if (body.enabled !== undefined) {
-			guild.onboarding.enabled = body.enabled
-		}
+	// Parse request body
+	let body: {
+		prompts?: Array<{
+			id?: string
+			type: number
+			title: string
+			single_select: boolean
+			required: boolean
+			in_onboarding: boolean
+			options: Array<{
+				id?: string
+				title: string
+				description?: string | null
+				channel_ids: string[]
+				role_ids: string[]
+				emoji?: {
+					id?: string | null
+					name?: string | null
+					animated?: boolean
+				}
+			}>
+		}>
+		default_channel_ids?: string[]
+		enabled?: boolean
+		mode?: number
+	}
 
-		if (body.mode !== undefined) {
-			guild.onboarding.mode = body.mode
-		}
+	try {
+		body = await request.json()
+	} catch {
+		return new Response(JSON.stringify({ message: 'Invalid JSON body', code: 50035 }), {
+			status: 400,
+			headers: { 'Content-Type': 'application/json' }
+		})
+	}
+
+	// Update onboarding
+	if (body.prompts !== undefined) {
+		guild.onboarding.prompts = body.prompts.map((prompt) => ({
+			id: prompt.id ?? generateSnowflake(),
+			type: prompt.type,
+			title: prompt.title,
+			single_select: prompt.single_select,
+			required: prompt.required,
+			in_onboarding: prompt.in_onboarding,
+			options: prompt.options.map((option) => ({
+				id: option.id ?? generateSnowflake(),
+				title: option.title,
+				description: option.description ?? null,
+				channel_ids: option.channel_ids,
+				role_ids: option.role_ids,
+				emoji: option.emoji ?? null
+			}))
+		}))
+	}
+
+	if (body.default_channel_ids !== undefined) {
+		guild.onboarding.default_channel_ids = body.default_channel_ids
+	}
+
+	if (body.enabled !== undefined) {
+		guild.onboarding.enabled = body.enabled
+	}
+
+	if (body.mode !== undefined) {
+		guild.onboarding.mode = body.mode
 	}
 
 	// Return onboarding

@@ -36,14 +36,8 @@ function stageInstanceToAPI(instance: {
  * @see https://discord.com/developers/docs/resources/stage-instance#modify-stage-instance
  * @see https://discord.com/developers/docs/resources/stage-instance#delete-stage-instance
  */
-export default async (request: RoboRequest) => {
-	if (request.method !== 'GET' && request.method !== 'PATCH' && request.method !== 'DELETE') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
 
+function resolveStageInstance(request: RoboRequest) {
 	// Extract session from Authorization header
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
@@ -74,98 +68,104 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// Handle GET - Get stage instance
-	if (request.method === 'GET') {
-		return new Response(JSON.stringify(stageInstanceToAPI(stageInstance)), {
-			status: 200,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
+	return { session, channelId, stageInstance }
+}
 
-	// Handle PATCH - Modify stage instance
-	if (request.method === 'PATCH') {
-		let body: {
-			topic?: string
-			privacy_level?: number
-		}
+export async function GET(request: RoboRequest) {
+	const resolved = resolveStageInstance(request)
+	if (resolved instanceof Response) return resolved
+	const { stageInstance } = resolved
 
-		try {
-			body = await request.json()
-		} catch {
-			return new Response(JSON.stringify({ message: 'Invalid JSON body', code: 50035 }), {
-				status: 400,
-				headers: { 'Content-Type': 'application/json' }
-			})
-		}
-
-		// Validate topic if provided
-		if (body.topic !== undefined) {
-			if (body.topic.length < 1 || body.topic.length > 120) {
-				return new Response(JSON.stringify({ message: 'Topic must be between 1 and 120 characters', code: 50035 }), {
-					status: 400,
-					headers: { 'Content-Type': 'application/json' }
-				})
-			}
-		}
-
-		// Update the stage instance
-		const updatedInstance = session.state.updateStageInstance(channelId, {
-			topic: body.topic,
-			privacyLevel: body.privacy_level as StageInstancePrivacyLevel | undefined
-		})
-
-		if (!updatedInstance) {
-			return new Response(JSON.stringify({ message: 'Failed to update stage instance', code: 50035 }), {
-				status: 400,
-				headers: { 'Content-Type': 'application/json' }
-			})
-		}
-
-		// Record action
-		session.recordAction('stage_instance_updated', {
-			stage_instance_id: updatedInstance.id,
-			channel_id: updatedInstance.channelId,
-			guild_id: updatedInstance.guildId,
-			changes: body
-		})
-
-		// Dispatch STAGE_INSTANCE_UPDATE event
-		const apiPayload = stageInstanceToAPI(updatedInstance)
-		getGatewayServer().dispatchToSession(session.id, 'STAGE_INSTANCE_UPDATE', apiPayload, updatedInstance.guildId)
-
-		return new Response(JSON.stringify(apiPayload), {
-			status: 200,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// Handle DELETE - Delete stage instance
-	if (request.method === 'DELETE') {
-		const deletedInstance = session.state.deleteStageInstance(channelId)
-
-		if (!deletedInstance) {
-			return new Response(JSON.stringify({ message: 'Failed to delete stage instance', code: 50035 }), {
-				status: 400,
-				headers: { 'Content-Type': 'application/json' }
-			})
-		}
-
-		// Record action
-		session.recordAction('stage_instance_deleted', {
-			stage_instance_id: deletedInstance.id,
-			channel_id: deletedInstance.channelId,
-			guild_id: deletedInstance.guildId
-		})
-
-		// Dispatch STAGE_INSTANCE_DELETE event
-		const apiPayload = stageInstanceToAPI(deletedInstance)
-		getGatewayServer().dispatchToSession(session.id, 'STAGE_INSTANCE_DELETE', apiPayload, deletedInstance.guildId)
-
-		return new Response(null, { status: 204 })
-	}
-
-	return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-		status: 405,
+	return new Response(JSON.stringify(stageInstanceToAPI(stageInstance)), {
+		status: 200,
 		headers: { 'Content-Type': 'application/json' }
 	})
+}
+
+export async function PATCH(request: RoboRequest) {
+	const resolved = resolveStageInstance(request)
+	if (resolved instanceof Response) return resolved
+	const { session, channelId } = resolved
+
+	let body: {
+		topic?: string
+		privacy_level?: number
+	}
+
+	try {
+		body = await request.json()
+	} catch {
+		return new Response(JSON.stringify({ message: 'Invalid JSON body', code: 50035 }), {
+			status: 400,
+			headers: { 'Content-Type': 'application/json' }
+		})
+	}
+
+	// Validate topic if provided
+	if (body.topic !== undefined) {
+		if (body.topic.length < 1 || body.topic.length > 120) {
+			return new Response(JSON.stringify({ message: 'Topic must be between 1 and 120 characters', code: 50035 }), {
+				status: 400,
+				headers: { 'Content-Type': 'application/json' }
+			})
+		}
+	}
+
+	// Update the stage instance
+	const updatedInstance = session.state.updateStageInstance(channelId, {
+		topic: body.topic,
+		privacyLevel: body.privacy_level as StageInstancePrivacyLevel | undefined
+	})
+
+	if (!updatedInstance) {
+		return new Response(JSON.stringify({ message: 'Failed to update stage instance', code: 50035 }), {
+			status: 400,
+			headers: { 'Content-Type': 'application/json' }
+		})
+	}
+
+	// Record action
+	session.recordAction('stage_instance_updated', {
+		stage_instance_id: updatedInstance.id,
+		channel_id: updatedInstance.channelId,
+		guild_id: updatedInstance.guildId,
+		changes: body
+	})
+
+	// Dispatch STAGE_INSTANCE_UPDATE event
+	const apiPayload = stageInstanceToAPI(updatedInstance)
+	getGatewayServer().dispatchToSession(session.id, 'STAGE_INSTANCE_UPDATE', apiPayload, updatedInstance.guildId)
+
+	return new Response(JSON.stringify(apiPayload), {
+		status: 200,
+		headers: { 'Content-Type': 'application/json' }
+	})
+}
+
+export async function DELETE(request: RoboRequest) {
+	const resolved = resolveStageInstance(request)
+	if (resolved instanceof Response) return resolved
+	const { session, channelId } = resolved
+
+	const deletedInstance = session.state.deleteStageInstance(channelId)
+
+	if (!deletedInstance) {
+		return new Response(JSON.stringify({ message: 'Failed to delete stage instance', code: 50035 }), {
+			status: 400,
+			headers: { 'Content-Type': 'application/json' }
+		})
+	}
+
+	// Record action
+	session.recordAction('stage_instance_deleted', {
+		stage_instance_id: deletedInstance.id,
+		channel_id: deletedInstance.channelId,
+		guild_id: deletedInstance.guildId
+	})
+
+	// Dispatch STAGE_INSTANCE_DELETE event
+	const apiPayload = stageInstanceToAPI(deletedInstance)
+	getGatewayServer().dispatchToSession(session.id, 'STAGE_INSTANCE_DELETE', apiPayload, deletedInstance.guildId)
+
+	return new Response(null, { status: 204 })
 }

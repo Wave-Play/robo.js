@@ -1,6 +1,6 @@
 import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../core/manager.js'
-import { validateMethod, notFound } from '../../utils.js'
+import { notFound } from '../../utils.js'
 import { StickerFormatType, StickerType } from 'discord-api-types/v10'
 import type { MockSticker } from '../../../../types/index.js'
 
@@ -22,9 +22,7 @@ import type { MockSticker } from '../../../../types/index.js'
  * This endpoint allows adding stickers of any type (standard/nitro or guild)
  * directly to the session state for testing purposes.
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['POST'])
-
+export async function POST(request: RoboRequest) {
 	const { id } = request.params as { id: string }
 
 	if (!id) {

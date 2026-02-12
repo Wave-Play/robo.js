@@ -9,16 +9,8 @@ import { enforcePermissions } from '../../../../utils/permission-check.js'
  *
  * Response: Array of APIMessage objects
  */
-export default async (request: RoboRequest) => {
-	// 1. Validate GET method
-	if (request.method !== 'GET') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// 2. Parse Authorization header → get session
+export async function GET(request: RoboRequest) {
+	// 1. Parse Authorization header → get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
 
@@ -37,10 +29,10 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 3. Extract channel ID from params
+	// 2. Extract channel ID from params
 	const { id: channelId } = request.params as { id: string }
 
-	// 4. Validate channel exists
+	// 3. Validate channel exists
 	const channel = session.state.getChannel(channelId)
 	if (!channel) {
 		return new Response(JSON.stringify({ message: 'Unknown Channel', code: 10003 }), {
@@ -49,11 +41,11 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 5. Check permissions
+	// 4. Check permissions
 	const permError = enforcePermissions(session, 'GET', `/channels/${channelId}/pins`, channelId)
 	if (permError) return permError
 
-	// 6. Get all pinned messages for this channel
+	// 5. Get all pinned messages for this channel
 	const allMessages = session.state.getMessagesForChannel(channelId)
 	const pinnedMessages = allMessages.filter((msg) => msg.pinned)
 
@@ -64,7 +56,7 @@ export default async (request: RoboRequest) => {
 		return timeB - timeA
 	})
 
-	// 7. Convert to API format
+	// 6. Convert to API format
 	const apiMessages = pinnedMessages.map((msg) => {
 		const author = session.state.getUser(msg.authorId) || session.state.botUser
 		return mockMessageToAPIMessage(msg, author)
@@ -72,4 +64,3 @@ export default async (request: RoboRequest) => {
 
 	return apiMessages
 }
-

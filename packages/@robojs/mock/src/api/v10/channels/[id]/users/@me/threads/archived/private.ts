@@ -19,16 +19,8 @@ import { mockThreadToAPIChannel } from '../../../../../../../../discord/payloads
  *   has_more: boolean        // Whether there are more threads
  * }
  */
-export default async (request: RoboRequest) => {
-	// 1. Validate GET method
-	if (request.method !== 'GET') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// 2. Parse Authorization header → get session
+export async function GET(request: RoboRequest) {
+	// 1. Parse Authorization header → get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
 
@@ -47,10 +39,10 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 3. Extract channel ID from params
+	// 2. Extract channel ID from params
 	const { id: channelId } = request.params as { id: string }
 
-	// 4. Validate parent channel exists
+	// 3. Validate parent channel exists
 	const channel = session.state.getChannel(channelId)
 	if (!channel) {
 		return new Response(JSON.stringify({ message: 'Unknown Channel', code: 10003 }), {
@@ -59,36 +51,36 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 5. Parse query params
+	// 4. Parse query params
 	const url = new URL(request.url)
 	const before = url.searchParams.get('before')
 	const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10), 100)
 
-	// 6. Get archived private threads for this channel that the bot is a member of
+	// 5. Get archived private threads for this channel that the bot is a member of
 	let threads = session.state
 		.getThreadsForChannel(channelId, { archived: true })
 		.filter((t) => t.type === 12) // PrivateThread = 12
 		.filter((t) => session.state.getThreadMember(t.id, session.state.botUser.id))
 
-	// 7. Apply timestamp filter
+	// 6. Apply timestamp filter
 	if (before) {
 		const beforeDate = new Date(before)
 		threads = threads.filter((t) => new Date(t.threadMetadata.archive_timestamp) < beforeDate)
 	}
 
-	// 8. Sort by archive timestamp (newest first)
+	// 7. Sort by archive timestamp (newest first)
 	threads.sort(
 		(a, b) =>
 			new Date(b.threadMetadata.archive_timestamp).getTime() - new Date(a.threadMetadata.archive_timestamp).getTime()
 	)
 
-	// 9. Check if there are more
+	// 8. Check if there are more
 	const hasMore = threads.length > limit
 
-	// 10. Apply limit
+	// 9. Apply limit
 	threads = threads.slice(0, limit)
 
-	// 11. Get bot's membership in each thread
+	// 10. Get bot's membership in each thread
 	const members = threads
 		.map((thread) => {
 			const member = session.state.getThreadMember(thread.id, session.state.botUser.id)
@@ -104,7 +96,7 @@ export default async (request: RoboRequest) => {
 		})
 		.filter((m) => m !== null)
 
-	// 12. Return response
+	// 11. Return response
 	return {
 		threads: threads.map((thread) => {
 			const botMember = session.state.getThreadMember(thread.id, session.state.botUser.id)

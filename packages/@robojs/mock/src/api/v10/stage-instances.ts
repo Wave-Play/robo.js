@@ -41,14 +41,7 @@ function stageInstanceToAPI(instance: {
  *
  * @see https://discord.com/developers/docs/resources/stage-instance#create-stage-instance
  */
-export default async (request: RoboRequest) => {
-	if (request.method !== 'POST') {
-		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-			status: 405,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
+export async function POST(request: RoboRequest) {
 	// Extract session from Authorization header
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)

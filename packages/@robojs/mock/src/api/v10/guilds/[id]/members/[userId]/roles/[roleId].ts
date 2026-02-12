@@ -10,7 +10,7 @@ import { enforcePermissions } from '../../../../../../../utils/permission-check.
  * @see https://discord.com/developers/docs/resources/guild#add-guild-member-role
  * @see https://discord.com/developers/docs/resources/guild#remove-guild-member-role
  */
-export default async (request: RoboRequest) => {
+function resolveMemberRole(request: RoboRequest) {
 	// 1. Parse Authorization header → get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
@@ -51,17 +51,6 @@ export default async (request: RoboRequest) => {
 		})
 	}
 
-	// 4b. Check permissions
-	const permError = enforcePermissions(
-		session,
-		request.method,
-		`/guilds/${guildId}/members/${userId}/roles/${roleId}`,
-		undefined,
-		guildId,
-		{ targetRoleId: roleId, targetUserId: userId }
-	)
-	if (permError) return permError
-
 	// 5. Cannot add/remove @everyone role (it's implicit)
 	if (roleId === guildId) {
 		return new Response(
@@ -95,71 +84,95 @@ export default async (request: RoboRequest) => {
 		}
 	}
 
-	// Handle PUT - Add role to member
-	if (request.method === 'PUT') {
-		const added = session.state.addMemberRole(guildId, userId, roleId)
+	return { session, guild, guildId, userId, roleId, member, user }
+}
 
-		// Record action (even if role was already present)
-		session.recordAction(
-			'member_role_added',
-			{
-				guild_id: guildId,
-				user_id: userId,
-				role_id: roleId,
-				was_new: added
-			},
-			{
-				endpoint: `PUT /guilds/${guildId}/members/${userId}/roles/${roleId}`,
-				method: 'PUT'
-			}
-		)
+export async function PUT(request: RoboRequest) {
+	const resolved = resolveMemberRole(request)
+	if (resolved instanceof Response) return resolved
+	const { session, guildId, userId, roleId, user } = resolved
 
-		// Dispatch GUILD_MEMBER_UPDATE event if role was actually added
-		if (added && user) {
-			const updatedMember = session.state.getGuildMember(guildId, userId)
-			if (updatedMember) {
-				await session.dispatchGuildMemberUpdate(guildId, updatedMember, user)
-			}
+	// Check permissions
+	const permError = enforcePermissions(
+		session,
+		'PUT',
+		`/guilds/${guildId}/members/${userId}/roles/${roleId}`,
+		undefined,
+		guildId,
+		{ targetRoleId: roleId, targetUserId: userId }
+	)
+	if (permError) return permError
+
+	const added = session.state.addMemberRole(guildId, userId, roleId)
+
+	// Record action (even if role was already present)
+	session.recordAction(
+		'member_role_added',
+		{
+			guild_id: guildId,
+			user_id: userId,
+			role_id: roleId,
+			was_new: added
+		},
+		{
+			endpoint: `PUT /guilds/${guildId}/members/${userId}/roles/${roleId}`,
+			method: 'PUT'
 		}
+	)
 
-		// Discord returns 204 No Content on success
-		return new Response(null, { status: 204 })
+	// Dispatch GUILD_MEMBER_UPDATE event if role was actually added
+	if (added && user) {
+		const updatedMember = session.state.getGuildMember(guildId, userId)
+		if (updatedMember) {
+			await session.dispatchGuildMemberUpdate(guildId, updatedMember, user)
+		}
 	}
 
-	// Handle DELETE - Remove role from member
-	if (request.method === 'DELETE') {
-		const removed = session.state.removeMemberRole(guildId, userId, roleId)
+	// Discord returns 204 No Content on success
+	return new Response(null, { status: 204 })
+}
 
-		// Record action
-		session.recordAction(
-			'member_role_removed',
-			{
-				guild_id: guildId,
-				user_id: userId,
-				role_id: roleId,
-				was_present: removed
-			},
-			{
-				endpoint: `DELETE /guilds/${guildId}/members/${userId}/roles/${roleId}`,
-				method: 'DELETE'
-			}
-		)
+export async function DELETE(request: RoboRequest) {
+	const resolved = resolveMemberRole(request)
+	if (resolved instanceof Response) return resolved
+	const { session, guildId, userId, roleId, user } = resolved
 
-		// Dispatch GUILD_MEMBER_UPDATE event if role was actually removed
-		if (removed && user) {
-			const updatedMember = session.state.getGuildMember(guildId, userId)
-			if (updatedMember) {
-				await session.dispatchGuildMemberUpdate(guildId, updatedMember, user)
-			}
+	// Check permissions
+	const permError = enforcePermissions(
+		session,
+		'DELETE',
+		`/guilds/${guildId}/members/${userId}/roles/${roleId}`,
+		undefined,
+		guildId,
+		{ targetRoleId: roleId, targetUserId: userId }
+	)
+	if (permError) return permError
+
+	const removed = session.state.removeMemberRole(guildId, userId, roleId)
+
+	// Record action
+	session.recordAction(
+		'member_role_removed',
+		{
+			guild_id: guildId,
+			user_id: userId,
+			role_id: roleId,
+			was_present: removed
+		},
+		{
+			endpoint: `DELETE /guilds/${guildId}/members/${userId}/roles/${roleId}`,
+			method: 'DELETE'
 		}
+	)
 
-		// Discord returns 204 No Content on success
-		return new Response(null, { status: 204 })
+	// Dispatch GUILD_MEMBER_UPDATE event if role was actually removed
+	if (removed && user) {
+		const updatedMember = session.state.getGuildMember(guildId, userId)
+		if (updatedMember) {
+			await session.dispatchGuildMemberUpdate(guildId, updatedMember, user)
+		}
 	}
 
-	// Method not allowed
-	return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-		status: 405,
-		headers: { 'Content-Type': 'application/json' }
-	})
+	// Discord returns 204 No Content on success
+	return new Response(null, { status: 204 })
 }

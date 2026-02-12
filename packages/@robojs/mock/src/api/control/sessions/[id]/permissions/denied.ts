@@ -1,6 +1,6 @@
 import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../../core/manager.js'
-import { validateMethod, notFound } from '../../../utils.js'
+import { notFound } from '../../../utils.js'
 
 /**
  * GET/DELETE /api/control/sessions/:id/permissions/denied
@@ -21,9 +21,7 @@ import { validateMethod, notFound } from '../../../utils.js'
  *
  * @see Permissions Admin UI
  */
-export default async (request: RoboRequest) => {
-	validateMethod(request, ['GET', 'DELETE'])
-
+function resolveSession(request: RoboRequest) {
 	const { id } = request.params as { id: string }
 
 	if (!id) {
@@ -36,26 +34,36 @@ export default async (request: RoboRequest) => {
 		return notFound('Session not found')
 	}
 
-	// GET - List denied events
-	if (request.method === 'GET') {
-		const events = session.getPermissionDeniedEvents()
+	return { session }
+}
 
-		return {
-			events: events.map((event) => ({
-				timestamp: event.timestamp,
-				method: event.method,
-				path: event.path,
-				missing_permissions: event.missingPermissions,
-				code: event.code,
-				message: event.message,
-				channel_id: event.channelId,
-				guild_id: event.guildId
-			})),
-			count: events.length
-		}
+export async function GET(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session } = resolved
+
+	const events = session.getPermissionDeniedEvents()
+
+	return {
+		events: events.map((event) => ({
+			timestamp: event.timestamp,
+			method: event.method,
+			path: event.path,
+			missing_permissions: event.missingPermissions,
+			code: event.code,
+			message: event.message,
+			channel_id: event.channelId,
+			guild_id: event.guildId
+		})),
+		count: events.length
 	}
+}
 
-	// DELETE - Clear history
+export async function DELETE(request: RoboRequest) {
+	const resolved = resolveSession(request)
+	if (resolved instanceof Response) return resolved
+	const { session } = resolved
+
 	const count = session.getPermissionDeniedEvents().length
 	session.clearPermissionDeniedEvents()
 
