@@ -12,13 +12,13 @@
 .modal {
 	width: 520px;
 	max-width: 640px;
-	background: var(--modal-background);
+	background: #313338;
 	border-radius: 12px;
-	border: 1px solid var(--accent-overlay);
+	border: none;
 	box-shadow:
 		0 16px 40px rgba(0, 0, 0, 0.6),
 		0 4px 12px rgba(0, 0, 0, 0.35);
-	color: var(--text-bright);
+	color: #dbdee1;
 }
 
 .header {
@@ -31,97 +31,134 @@
 
 .title {
 	margin: 0;
-	font-size: 20px;
+	font-size: 24px;
 	font-weight: 700;
-	color: #ffffff;
+	color: #f2f3f5;
 }
 
 .subtitle {
 	margin: 4px 0 0;
-	color: var(--text-muted);
+	color: #949ba4;
 	font-size: 13px;
 }
 
 .closeButton {
 	background: transparent;
-	color: var(--text-muted);
+	color: #b5bac1;
 	border-radius: var(--radius-sm);
 	padding: 6px;
 	transition: background 0.15s ease, color 0.15s ease;
 }
 
 .closeButton:hover {
-	background: var(--hover-overlay);
-	color: var(--text-bright);
+	background: rgba(79, 84, 92, 0.24);
+	color: #f2f3f5;
 }
 
 .section {
 	padding: 12px 24px;
-	border-top: 1px solid var(--accent-overlay);
+	border-top: none;
 }
 
 .section:first-of-type {
-	border-top: none;
 	padding-top: 0;
 }
 
 .sectionTitle {
 	margin: 0 0 8px;
-	font-size: 13px;
+	font-size: 12px;
 	font-weight: 700;
-	color: #ffffff;
+	color: #b5bac1;
+	text-transform: uppercase;
+	letter-spacing: 0.02em;
 }
 
 .sectionDescription {
 	margin: 2px 0 0;
-	font-size: 12px;
-	color: var(--text-muted);
+	font-size: 14px;
+	color: #949ba4;
+	line-height: 1.4;
 }
 
+/* ===== Channel type radio rows ===== */
 .typeList {
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
+	gap: 0;
 }
 
 .typeOption {
 	display: flex;
 	align-items: center;
 	gap: 12px;
-	padding: 12px;
-	border: 1px solid var(--accent-overlay);
-	border-radius: 12px;
-	background: var(--sidebar-left-background);
+	padding: 12px 4px;
+	border: none;
+	border-bottom: 1px solid rgba(79, 84, 92, 0.32);
+	border-radius: 0;
+	background: transparent;
 	cursor: pointer;
-	transition:
-		border-color 0.15s ease,
-		box-shadow 0.15s ease,
-		background 0.15s ease;
+	transition: background 0.15s ease;
+}
+
+.typeOption:last-child {
+	border-bottom: none;
 }
 
 .typeOption:hover {
-	border-color: var(--interactive-hover);
+	background: rgba(79, 84, 92, 0.12);
+	border-color: rgba(79, 84, 92, 0.32);
 }
 
 .typeOptionActive {
-	border-color: var(--brand-primary);
-	box-shadow: 0 0 0 1px var(--brand-primary);
-	background: color-mix(in srgb, var(--brand-primary) 10%, var(--sidebar-left-background));
+	background: transparent;
+	border-color: rgba(79, 84, 92, 0.32);
+	box-shadow: none;
 }
 
+/* Custom radio indicator */
 .typeOption input {
 	display: none;
 }
 
-.typeIcon {
-	width: 36px;
-	height: 36px;
-	border-radius: 10px;
-	background: var(--card-background);
+.radioIndicator {
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	border: 2px solid #80848e;
+	flex-shrink: 0;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	color: var(--text-bright);
+	transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.typeOptionActive .radioIndicator {
+	border-color: var(--brand-primary);
+	background: var(--brand-primary);
+}
+
+.radioIndicatorDot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: #ffffff;
+	opacity: 0;
+	transition: opacity 0.15s ease;
+}
+
+.typeOptionActive .radioIndicatorDot {
+	opacity: 1;
+}
+
+.typeIcon {
+	width: auto;
+	height: auto;
+	border-radius: 0;
+	background: transparent;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #dbdee1;
 	flex-shrink: 0;
 }
 
@@ -132,22 +169,23 @@
 }
 
 .typeTitle {
-	font-size: 14px;
+	font-size: 16px;
 	font-weight: 700;
-	color: #ffffff;
+	color: #dbdee1;
 }
 
 .typeDescription {
-	font-size: 12px;
-	color: var(--text-muted);
+	font-size: 14px;
+	color: #949ba4;
 }
 
+/* ===== Input field ===== */
 .inputField {
 	display: flex;
 	align-items: center;
 	gap: 8px;
-	background: var(--sidebar-left-background);
-	border: 1px solid var(--accent-overlay);
+	background: #1e1f22;
+	border: 1px solid #1e1f22;
 	border-radius: 8px;
 	padding: 10px 12px;
 	transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -155,11 +193,11 @@
 
 .inputField:focus-within {
 	border-color: var(--brand-primary);
-	box-shadow: 0 0 0 1px var(--brand-primary-overlay);
+	box-shadow: 0 0 0 1px var(--brand-primary);
 }
 
 .inputPrefix {
-	color: var(--text-muted);
+	color: #87898c;
 	font-weight: 700;
 }
 
@@ -168,12 +206,33 @@
 	background: transparent;
 	border: none;
 	outline: none;
-	color: var(--text-bright);
+	color: #dbdee1;
 	font-size: 14px;
+}
+
+.inputField input::placeholder {
+	color: #87898c;
+}
+
+.emojiButton {
+	flex-shrink: 0;
+	color: #b5bac1;
+	padding: 2px;
+	border-radius: var(--radius-sm);
+	transition: color 0.15s ease;
+}
+
+.emojiButton:hover {
+	color: #dbdee1;
 }
 
 .inputError {
 	border-color: var(--red-light);
+}
+
+.inputError:focus-within {
+	border-color: var(--red-light);
+	box-shadow: 0 0 0 1px var(--red-light);
 }
 
 .errorText {
@@ -182,6 +241,7 @@
 	font-size: 12px;
 }
 
+/* ===== Private toggle row ===== */
 .toggleRow {
 	display: flex;
 	align-items: center;
@@ -189,13 +249,21 @@
 	gap: 16px;
 }
 
+.privateTitle {
+	margin: 0 0 8px;
+	font-size: 16px;
+	font-weight: 600;
+	color: #dbdee1;
+}
+
 .toggle {
 	width: 46px;
 	height: 26px;
 	border-radius: 999px;
-	background: var(--accent-overlay);
-	border: 1px solid var(--divider-color);
+	background: #80848e;
+	border: 1px solid #80848e;
 	position: relative;
+	flex-shrink: 0;
 	transition: background 0.15s ease, border-color 0.15s ease;
 }
 
@@ -219,25 +287,31 @@
 	transform: translateX(20px);
 }
 
+/* ===== Footer ===== */
 .footer {
 	display: flex;
 	justify-content: flex-end;
 	gap: 10px;
 	padding: 16px 24px 20px;
-	border-top: 1px solid var(--accent-overlay);
+	border-top: none;
+}
+
+.footer button {
+	flex: 1;
 }
 
 .secondaryButton {
 	padding: 10px 16px;
 	border-radius: 8px;
-	background: var(--sidebar-left-background);
-	color: var(--text-bright);
+	background: #2b2d31;
+	color: #dbdee1;
+	font-size: 14px;
 	font-weight: 600;
 	transition: background 0.15s ease, color 0.15s ease;
 }
 
 .secondaryButton:hover:not(:disabled) {
-	background: var(--hover-overlay);
+	background: #232428;
 }
 
 .primaryButton {
@@ -245,6 +319,7 @@
 	border-radius: 8px;
 	background: var(--brand-primary);
 	color: #ffffff;
+	font-size: 14px;
 	font-weight: 700;
 	transition: background 0.15s ease, transform 0.1s ease;
 }

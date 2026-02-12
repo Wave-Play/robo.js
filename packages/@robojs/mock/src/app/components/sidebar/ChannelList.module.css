@@ -117,6 +117,7 @@
 	min-width: 0;
 	flex: 1;
 	background: transparent;
+	text-align: left;
 	transition:
 		background 0.1s ease,
 		color 0.1s ease;
@@ -331,4 +332,23 @@
 	.userArea {
 		left: 8px;
 	}
+}
+
+/* Channel list context menu */
+.contextMenu {
+	min-width: 188px;
+	max-width: 320px;
+	padding: 6px;
+	border: 1px solid var(--accent-overlay);
+	background: var(--modal-background);
+}
+
+.contextMenuItem {
+	padding: 6px 8px;
+	border-radius: 6px;
+}
+
+.contextMenuItem:hover {
+	background: var(--brand-primary);
+	color: #fff;
 }

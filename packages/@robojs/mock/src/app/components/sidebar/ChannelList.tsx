@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import type { StageChannel, StageGuild, StageMember, StageVoiceState, StageUser } from '../../types/stage'
+import { CreateCategoryModal } from './CreateCategoryModal'
 import { CreateChannelModal } from './CreateChannelModal'
 import { VoiceChannel } from './VoiceChannel'
 import { VoiceControlDock } from './VoiceControlDock'
 import { ServerMenu } from './ServerMenu'
+import { useDropdownPosition, DropdownContainer, ListItem } from '../base'
 import styles from './ChannelList.module.css'
 import CogwheelIcon from '../icons/cogwheel'
 import InviteIcon from '../icons/invite'
@@ -75,6 +77,8 @@ export function ChannelList({
 	const [showArchivedThreads, setShowArchivedThreads] = useState(false)
 	const [showServerMenu, setShowServerMenu] = useState(false)
 	const [createModalState, setCreateModalState] = useState<{ parentId: string | null; defaultType: number } | null>(null)
+	const [showCategoryModal, setShowCategoryModal] = useState(false)
+	const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null)
 	const headerRef = useRef<HTMLDivElement>(null)
 
 	// Handle click outside to close server menu
@@ -88,6 +92,17 @@ export function ChannelList({
 		document.addEventListener('mousedown', handleClickOutside)
 		return () => document.removeEventListener('mousedown', handleClickOutside)
 	}, [showServerMenu])
+
+	const handleChannelListContextMenu = (event: React.MouseEvent) => {
+		// Only show context menu when right-clicking on empty space (not on a channel/category)
+		const target = event.target as HTMLElement
+		if (target.closest('button, a, [role="menuitem"]')) {
+			return
+		}
+
+		event.preventDefault()
+		setContextMenu({ x: event.clientX, y: event.clientY })
+	}
 
 	const openCreateChannelModal = (parentId: string | null, defaultType: number = ChannelType.GUILD_TEXT) => {
 		setShowServerMenu(false)
@@ -203,14 +218,17 @@ export function ChannelList({
 					<ServerMenu
 						onClose={() => setShowServerMenu(false)}
 						onCreateChannel={() => openCreateChannelModal(null, ChannelType.GUILD_TEXT)}
-						onCreateCategory={() => console.log('Create Category')}
+						onCreateCategory={() => {
+						setShowServerMenu(false)
+						setShowCategoryModal(true)
+					}}
 						onInviteToServer={() => console.log('Invite to Server')}
 					/>
 				)}
 			</div>
 
 			{/* Channel list */}
-			<nav className={styles.channels} aria-label="Channels">
+			<nav className={styles.channels} aria-label="Channels" onContextMenu={handleChannelListContextMenu}>
 				{/* Uncategorized channels */}
 				{uncategorizedChannels.map((channel) => renderChannelItem(channel))}
 				{/* Categories with their channels */}
@@ -282,6 +300,20 @@ export function ChannelList({
 					</div>
 				)}
 			</nav>
+			{contextMenu && (
+				<ChannelListContextMenu
+					position={contextMenu}
+					onClose={() => setContextMenu(null)}
+					onCreateChannel={() => {
+						setContextMenu(null)
+						openCreateChannelModal(null, ChannelType.GUILD_TEXT)
+					}}
+					onCreateCategory={() => {
+						setContextMenu(null)
+						setShowCategoryModal(true)
+					}}
+				/>
+			)}
 			<div className={styles.userArea}>
 				<VoiceControlDock
 					currentUser={currentUser ?? null}
@@ -301,6 +333,23 @@ export function ChannelList({
 					defaultType={createModalState.defaultType}
 					onClose={() => setCreateModalState(null)}
 					onSubmit={handleCreateChannel}
+				/>
+			)}
+			{showCategoryModal && onCreateChannel && (
+				<CreateCategoryModal
+					onClose={() => setShowCategoryModal(false)}
+					onSubmit={async (payload) => {
+						const created = await onCreateChannel({
+							name: payload.name,
+							type: ChannelType.GUILD_CATEGORY,
+							parentId: null,
+							isPrivate: payload.isPrivate
+						})
+						if (created) {
+							onSelect(created.id)
+						}
+						setShowCategoryModal(false)
+					}}
 				/>
 			)}
 		</div>
@@ -470,5 +519,69 @@ function ChannelItemWithThreads({
 				</div>
 			)}
 		</>
+	)
+}
+
+// Context menu for right-clicking empty space in the channel list
+interface ChannelListContextMenuProps {
+	position: { x: number; y: number }
+	onClose: () => void
+	onCreateChannel: () => void
+	onCreateCategory: () => void
+}
+
+function ChannelListContextMenu({ position, onClose, onCreateChannel, onCreateCategory }: ChannelListContextMenuProps) {
+	const { dropdownRef, adjustedPosition, isPositioned } = useDropdownPosition({ position })
+
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+				onClose()
+			}
+		}
+
+		const timer = setTimeout(() => {
+			document.addEventListener('mousedown', handleClickOutside)
+		}, 0)
+
+		return () => {
+			clearTimeout(timer)
+			document.removeEventListener('mousedown', handleClickOutside)
+		}
+	}, [onClose, dropdownRef])
+
+	useEffect(() => {
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (event.key === 'Escape') {
+				onClose()
+			}
+		}
+
+		document.addEventListener('keydown', handleKeyDown)
+		return () => document.removeEventListener('keydown', handleKeyDown)
+	}, [onClose])
+
+	return (
+		<DropdownContainer
+			ref={dropdownRef}
+			position="fixed"
+			coordinates={adjustedPosition}
+			isPositioned={isPositioned}
+			role="menu"
+			className={styles.contextMenu}
+		>
+			<ListItem
+				label="Create Channel"
+				className={styles.contextMenuItem}
+				onClick={onCreateChannel}
+				role="menuitem"
+			/>
+			<ListItem
+				label="Create Category"
+				className={styles.contextMenuItem}
+				onClick={onCreateCategory}
+				role="menuitem"
+			/>
+		</DropdownContainer>
 	)
 }

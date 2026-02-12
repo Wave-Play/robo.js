@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from 'react'
+import { useMemo, useState, useCallback, useRef } from 'react'
 import type { StageMember, StageRole, StageUser, StageApplicationCommand } from '../../types/stage'
 import { useStageData } from '../../hooks/useStageData'
 import { useContextMenu } from '../../hooks/useContextMenu'
@@ -18,9 +18,15 @@ interface MemberGroup {
 	color?: number
 }
 
+interface PopoutState {
+	member: StageMember
+	anchorTop: number
+}
+
 export function MemberList({ members, roles }: MemberListProps) {
-	const [selectedMember, setSelectedMember] = useState<StageMember | null>(null)
-	const { commands, invokeContextCommand, openDM } = useStageData()
+	const containerRef = useRef<HTMLElement>(null)
+	const [popoutState, setPopoutState] = useState<PopoutState | null>(null)
+	const { commands, currentUser, botUser, invokeContextCommand, openDM } = useStageData()
 	const { menu: contextMenu, showMenu: showContextMenu, hideMenu: hideContextMenu } = useContextMenu()
 
 	// Context menu handlers
@@ -48,6 +54,11 @@ export function MemberList({ members, roles }: MemberListProps) {
 		},
 		[openDM]
 	)
+
+	const handleMemberClick = useCallback((member: StageMember, e: React.MouseEvent) => {
+		const rect = e.currentTarget.getBoundingClientRect()
+		setPopoutState({ member, anchorTop: rect.top })
+	}, [])
 
 	// Create role lookup map
 	const roleMap = useMemo(() => {
@@ -145,8 +156,14 @@ export function MemberList({ members, roles }: MemberListProps) {
 		return groups
 	}, [members, roleMap])
 
+	// Compute popout position from container ref
+	const listLeft = containerRef.current?.getBoundingClientRect().left ?? 0
+
+	// Check if bot has slash commands
+	const hasSlashCommands = commands.some((c) => (c.type ?? 1) === 1)
+
 	return (
-		<aside className={styles.container}>
+		<aside ref={containerRef} className={styles.container}>
 			{groupedMembers.map((group) => (
 				<div key={group.name} className={styles.group}>
 					<h3 className={styles.groupHeader}>
@@ -157,7 +174,7 @@ export function MemberList({ members, roles }: MemberListProps) {
 							key={`${member.guild_id}-${member.user.id}`}
 							member={member}
 							color={getMemberColor(member)}
-							onClick={() => setSelectedMember(member)}
+							onClick={(e) => handleMemberClick(member, e)}
 							onContextMenu={handleUserContextMenu}
 						/>
 					))}
@@ -172,11 +189,17 @@ export function MemberList({ members, roles }: MemberListProps) {
 			)}
 
 			{/* User profile popout */}
-			{selectedMember && (
+			{popoutState && (
 				<UserProfilePopout
-					member={selectedMember}
+					member={popoutState.member}
 					roles={roles}
-					onClose={() => setSelectedMember(null)}
+					currentUserId={currentUser?.id}
+					botUserId={botUser?.id}
+					hasSlashCommands={hasSlashCommands}
+					anchorTop={popoutState.anchorTop}
+					listLeft={listLeft}
+					onClose={() => setPopoutState(null)}
+					onMessage={handleMessageUser}
 				/>
 			)}
 
@@ -200,7 +223,7 @@ export function MemberList({ members, roles }: MemberListProps) {
 interface MemberItemProps {
 	member: StageMember
 	color: number
-	onClick: () => void
+	onClick: (e: React.MouseEvent) => void
 	onContextMenu: (e: React.MouseEvent, user: StageUser) => void
 }
 

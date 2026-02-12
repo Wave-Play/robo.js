@@ -1,25 +1,33 @@
-.overlay {
-	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	background: rgba(0, 0, 0, 0.5);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	z-index: 1000;
-}
-
 .popout {
+	position: fixed;
 	width: 340px;
 	border-radius: var(--radius-lg);
+	background: var(--dropdown-background);
+	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.24);
+	overflow: hidden;
+	z-index: 1000;
+	animation: fadeIn 0.15s ease-out;
 }
 
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateX(8px);
+	}
+	to {
+		opacity: 1;
+		transform: translateX(0);
+	}
+}
+
+/* ── Banner ── */
+
 .banner {
-	height: 60px;
+	height: 90px;
 	background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-dark) 100%);
 }
+
+/* ── Avatar ── */
 
 .avatarContainer {
 	display: flex;
@@ -33,7 +41,7 @@
 	width: 80px;
 	height: 80px;
 	border-radius: 50%;
-	border: 6px solid var(--modal-background);
+	border: 6px solid var(--dropdown-background);
 	background: var(--sidebar-left-background);
 }
 
@@ -44,27 +52,14 @@
 	object-fit: cover;
 }
 
-.defaultAvatar {
-	width: 100%;
-	height: 100%;
-	border-radius: 50%;
-	background: var(--brand-primary);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	color: white;
-	font-size: 32px;
-	font-weight: 600;
-}
-
 .statusDot {
 	position: absolute;
-	bottom: 2px;
-	right: 2px;
+	bottom: -2px;
+	right: -2px;
 	width: 20px;
 	height: 20px;
 	border-radius: 50%;
-	border: 4px solid var(--modal-background);
+	border: 4px solid var(--dropdown-background);
 }
 
 .statusDot.online {
@@ -83,13 +78,13 @@
 	background: var(--status-offline);
 }
 
+/* ── Content ── */
+
 .content {
 	padding: 12px 16px 16px;
 }
 
-.header {
-	margin-bottom: 12px;
-}
+/* ── Name & Username ── */
 
 .displayName {
 	display: flex;
@@ -97,40 +92,70 @@
 	gap: 6px;
 	margin: 0;
 	font-size: 20px;
-	font-weight: 600;
+	font-weight: 700;
 	color: var(--header-text-primary);
 }
 
-.botTag {
-	padding: 2px 6px;
+.appTag {
+	padding: 1px 6px;
 	background: var(--brand-primary);
 	border-radius: var(--radius-xs);
 	font-size: 10px;
-	font-weight: 600;
+	font-weight: 700;
 	color: white;
+	letter-spacing: 0.02em;
+	flex-shrink: 0;
 }
 
 .username {
-	margin: 4px 0 0;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	margin: 2px 0 0;
 	font-size: 14px;
 	color: var(--header-text-secondary);
 }
 
-.divider {
-	height: 1px;
-	background: var(--accent-overlay);
-	margin: 12px 0;
+.slashCommandBadge {
+	display: inline-flex;
+	align-items: center;
+	margin-left: 4px;
+	font-size: 14px;
+	font-weight: 700;
+	color: #57f287;
+	font-family: var(--font-mono, 'Consolas', 'Monaco', monospace);
 }
 
-.section {
-	margin-bottom: 16px;
+/* ── Add App button (bots) ── */
+
+.addAppButton {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	margin-top: 12px;
+	padding: 8px 16px;
+	background: var(--sidebar-left-background);
+	border: none;
+	border-radius: var(--radius-sm);
+	color: var(--text-bright);
+	font-size: 14px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background 0.15s ease;
 }
 
-.section:last-child {
-	margin-bottom: 0;
+.addAppButton:hover {
+	background: var(--hover-overlay);
 }
 
-.sectionTitle {
+/* ── Roles section ── */
+
+.rolesSection {
+	margin-top: 12px;
+}
+
+.rolesTitle {
 	margin: 0 0 8px;
 	font-size: 12px;
 	font-weight: 700;
@@ -138,16 +163,11 @@
 	color: var(--header-text-secondary);
 }
 
-.sectionValue {
-	margin: 0;
-	font-size: 14px;
-	color: var(--text-bright);
-}
-
 .roles {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 4px;
+	align-items: center;
 }
 
 .rolePill {
@@ -174,4 +194,133 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	max-width: 120px;
+}
+
+.roleRemoveButton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	margin-left: 2px;
+	background: none;
+	border: none;
+	color: var(--text-muted);
+	cursor: pointer;
+	opacity: 0.6;
+	transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.roleRemoveButton:hover {
+	opacity: 1;
+	color: var(--text-bright);
+}
+
+.addRoleButton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 24px;
+	background: var(--sidebar-left-background);
+	border: none;
+	border-radius: var(--radius-sm);
+	color: var(--text-muted);
+	cursor: pointer;
+	transition: background 0.15s ease, color 0.15s ease;
+}
+
+.addRoleButton:hover {
+	background: var(--hover-overlay);
+	color: var(--text-bright);
+}
+
+/* ── Add role link (no roles) ── */
+
+.addRoleLink {
+	display: block;
+	margin-top: 12px;
+	padding: 0;
+	background: none;
+	border: none;
+	color: var(--text-muted);
+	font-size: 13px;
+	cursor: pointer;
+	transition: color 0.15s ease;
+}
+
+.addRoleLink:hover {
+	color: var(--text-bright);
+}
+
+/* ── Footer ── */
+
+.footer {
+	margin-top: 12px;
+	padding-top: 12px;
+	border-top: 1px solid var(--accent-overlay);
+}
+
+/* Edit Profile button (self) */
+.editProfileButton {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	width: 100%;
+	padding: 10px 16px;
+	background: var(--brand-primary);
+	border: none;
+	border-radius: var(--radius-sm);
+	color: white;
+	font-size: 14px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background 0.15s ease;
+}
+
+.editProfileButton:hover {
+	background: var(--brand-dark);
+}
+
+/* Message input (others) */
+.messageInputWrapper {
+	position: relative;
+	display: flex;
+	align-items: center;
+	background: var(--sidebar-left-background);
+	border-radius: var(--radius-sm);
+}
+
+.messageInput {
+	flex: 1;
+	padding: 10px 12px;
+	background: transparent;
+	border: none;
+	color: var(--text-bright);
+	font-size: 14px;
+	cursor: text;
+}
+
+.messageInput::placeholder {
+	color: var(--text-muted);
+}
+
+.messageInput:focus {
+	outline: none;
+}
+
+.emojiButton {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 8px 12px;
+	background: none;
+	border: none;
+	color: var(--text-muted);
+	cursor: pointer;
+	transition: color 0.15s ease;
+}
+
+.emojiButton:hover {
+	color: var(--text-bright);
 }

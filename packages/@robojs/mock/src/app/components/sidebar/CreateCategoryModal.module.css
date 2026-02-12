@@ -1,0 +1,120 @@
+/* ===== Modal shell ===== */
+.modal {
+	background: #313338;
+	border: none;
+}
+
+/* ===== Remove shared section/footer dividers ===== */
+.section {
+	border-top: none;
+}
+
+.footer {
+	border-top: none;
+}
+
+/* ===== Typography color overrides ===== */
+.title {
+	color: #f2f3f5;
+	font-size: 24px;
+}
+
+.sectionTitle {
+	color: #b5bac1;
+	text-transform: uppercase;
+	font-size: 12px;
+	letter-spacing: 0.02em;
+}
+
+.privateTitle {
+	color: #dbdee1;
+	text-transform: none;
+	font-size: 16px;
+	font-weight: 600;
+	letter-spacing: normal;
+}
+
+.description {
+	color: #949ba4;
+	font-size: 14px;
+	line-height: 1.4;
+}
+
+/* ===== Close button ===== */
+.closeButton {
+	color: #b5bac1;
+}
+
+.closeButton:hover {
+	color: #f2f3f5;
+}
+
+/* ===== Input field ===== */
+.inputField {
+	background: #1e1f22;
+	border-color: #1e1f22;
+}
+
+.inputField:focus-within {
+	border-color: var(--brand-primary);
+	box-shadow: 0 0 0 1px var(--brand-primary);
+}
+
+.inputField input {
+	color: #dbdee1;
+}
+
+.inputField input::placeholder {
+	color: #87898c;
+}
+
+/* ===== Emoji button ===== */
+.emojiButton {
+	color: #b5bac1;
+}
+
+.emojiButton:hover {
+	color: #dbdee1;
+}
+
+/* ===== Toggle ===== */
+.toggle {
+	flex-shrink: 0;
+	background: #80848e;
+	border-color: #80848e;
+}
+
+.toggleOn {
+	background: var(--brand-primary);
+	border-color: var(--brand-primary);
+}
+
+/* ===== Footer buttons — equal half-width ===== */
+.footer button {
+	flex: 1;
+}
+
+.cancelButton {
+	background: #2b2d31;
+	color: #dbdee1;
+	font-size: 14px;
+}
+
+.cancelButton:hover:not(:disabled) {
+	background: #232428;
+}
+
+.createButton {
+	background: var(--brand-primary);
+	color: #ffffff;
+	font-size: 14px;
+}
+
+.createButton:hover:not(:disabled) {
+	background: var(--brand-dark);
+}
+
+/* ===== Emoji picker wrapper ===== */
+.emojiAnchor {
+	position: relative;
+}
