@@ -87,7 +87,6 @@ export {
 	recordAssertion,
 	sleep,
 	startMockRobo,
-	startMockBot, // Deprecated alias
 	waitForAction,
 	waitForAnyAction,
 	waitForInteractionResponse,
@@ -98,9 +97,7 @@ export {
 // Types for bot lifecycle
 export type {
 	MockRoboHandle,
-	StartMockRoboOptions,
-	MockBotHandle, // Deprecated alias
-	StartMockBotOptions // Deprecated alias
+	StartMockRoboOptions
 } from './helpers.js'
 
 // User utilities (Phase 8)

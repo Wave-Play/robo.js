@@ -18,7 +18,7 @@ export default async (request: RoboRequest) => {
 	const sessionId = parseMockToken(authHeader)
 
 	if (!sessionId) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -26,7 +26,7 @@ export default async (request: RoboRequest) => {
 
 	const session = sessionManager.get(sessionId)
 	if (!session) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -38,7 +38,7 @@ export default async (request: RoboRequest) => {
 	// 3. Validate channel exists
 	const channel = session.state.channels.get(channelId)
 	if (!channel) {
-		return new Response(JSON.stringify({ error: 'Unknown Channel', code: 10003 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Channel', code: 10003 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -46,7 +46,7 @@ export default async (request: RoboRequest) => {
 
 	// Channel must be in a guild
 	if (!channel.guildId) {
-		return new Response(JSON.stringify({ error: 'Cannot set permissions on DM channel', code: 50035 }), {
+		return new Response(JSON.stringify({ message: 'Cannot set permissions on DM channel', code: 50035 }), {
 			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -63,7 +63,7 @@ export default async (request: RoboRequest) => {
 		try {
 			body = await request.json()
 		} catch {
-			return new Response(JSON.stringify({ error: 'Invalid request body', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -71,7 +71,7 @@ export default async (request: RoboRequest) => {
 
 		// Validate type
 		if (body.type !== OverwriteType.Role && body.type !== OverwriteType.Member) {
-			return new Response(JSON.stringify({ error: 'Invalid overwrite type', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Invalid overwrite type', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -81,7 +81,7 @@ export default async (request: RoboRequest) => {
 		if (body.type === OverwriteType.Role) {
 			const role = session.state.getGuildRole(channel.guildId, overwriteId)
 			if (!role) {
-				return new Response(JSON.stringify({ error: 'Unknown Role', code: 10011 }), {
+				return new Response(JSON.stringify({ message: 'Unknown Role', code: 10011 }), {
 					status: 404,
 					headers: { 'Content-Type': 'application/json' }
 				})
@@ -92,7 +92,7 @@ export default async (request: RoboRequest) => {
 		if (body.type === OverwriteType.Member) {
 			const user = session.state.users.get(overwriteId)
 			if (!user) {
-				return new Response(JSON.stringify({ error: 'Unknown User', code: 10013 }), {
+				return new Response(JSON.stringify({ message: 'Unknown User', code: 10013 }), {
 					status: 404,
 					headers: { 'Content-Type': 'application/json' }
 				})
@@ -108,7 +108,7 @@ export default async (request: RoboRequest) => {
 		})
 
 		if (!success) {
-			return new Response(JSON.stringify({ error: 'Failed to set permission overwrite', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Failed to set permission overwrite', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -164,7 +164,7 @@ export default async (request: RoboRequest) => {
 	}
 
 	// Method not allowed
-	return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+	return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 		status: 405,
 		headers: { 'Content-Type': 'application/json' }
 	})

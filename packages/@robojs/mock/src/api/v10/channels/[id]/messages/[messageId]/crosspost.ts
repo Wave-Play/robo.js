@@ -15,7 +15,7 @@ import { enforcePermissions } from '../../../../../../utils/permission-check.js'
 export default async (request: RoboRequest) => {
 	// Validate method
 	if (request.method !== 'POST') {
-		return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 			status: 405,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -26,7 +26,7 @@ export default async (request: RoboRequest) => {
 	const sessionId = parseMockToken(authHeader)
 
 	if (!sessionId) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -34,7 +34,7 @@ export default async (request: RoboRequest) => {
 
 	const session = sessionManager.get(sessionId)
 	if (!session) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -45,7 +45,7 @@ export default async (request: RoboRequest) => {
 	// Get channel
 	const channel = session.state.channels.get(channelId)
 	if (!channel) {
-		return new Response(JSON.stringify({ error: 'Unknown Channel', code: 10003 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Channel', code: 10003 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -78,7 +78,7 @@ export default async (request: RoboRequest) => {
 	// Get message
 	const message = session.state.messages.get(messageId)
 	if (!message) {
-		return new Response(JSON.stringify({ error: 'Unknown Message', code: 10008 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Message', code: 10008 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -86,7 +86,7 @@ export default async (request: RoboRequest) => {
 
 	// Verify message is in the correct channel
 	if (message.channelId !== channelId) {
-		return new Response(JSON.stringify({ error: 'Unknown Message', code: 10008 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Message', code: 10008 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})

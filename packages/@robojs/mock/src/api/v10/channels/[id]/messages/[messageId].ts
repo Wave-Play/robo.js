@@ -34,7 +34,7 @@ const CDN_BASE_URL = process.env.MOCK_CDN_URL || 'http://localhost:53596'
 export default async (request: RoboRequest) => {
 	// 1. Validate method
 	if (request.method !== 'GET' && request.method !== 'PATCH' && request.method !== 'DELETE') {
-		return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 			status: 405,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -45,7 +45,7 @@ export default async (request: RoboRequest) => {
 	const sessionId = parseMockToken(authHeader)
 
 	if (!sessionId) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -53,7 +53,7 @@ export default async (request: RoboRequest) => {
 
 	const session = sessionManager.get(sessionId)
 	if (!session) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -65,7 +65,7 @@ export default async (request: RoboRequest) => {
 	// 4. Validate channel exists
 	const channel = session.state.getChannel(channelId)
 	if (!channel) {
-		return new Response(JSON.stringify({ error: 'Unknown Channel', code: 10003 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Channel', code: 10003 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -74,7 +74,7 @@ export default async (request: RoboRequest) => {
 	// 5. Validate message exists
 	const message = session.state.getMessage(messageId)
 	if (!message) {
-		return new Response(JSON.stringify({ error: 'Unknown Message', code: 10008 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Message', code: 10008 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -82,7 +82,7 @@ export default async (request: RoboRequest) => {
 
 	// 6. Verify message is in the specified channel
 	if (message.channelId !== channelId) {
-		return new Response(JSON.stringify({ error: 'Unknown Message', code: 10008 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Message', code: 10008 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -122,7 +122,7 @@ async function handlePatch(
 ) {
 	// Verify message belongs to bot (Discord only allows editing your own messages)
 	if (message.authorId !== session.state.botUser.id) {
-		return new Response(JSON.stringify({ error: 'Cannot edit a message authored by another user', code: 50005 }), {
+		return new Response(JSON.stringify({ message: 'Cannot edit a message authored by another user', code: 50005 }), {
 			status: 403,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -200,12 +200,12 @@ async function handlePatch(
 		}
 	} catch (error) {
 		if (error instanceof MultipartError) {
-			return new Response(JSON.stringify({ error: error.message, code: error.code }), {
+			return new Response(JSON.stringify({ message: error.message, code: error.code }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
 		}
-		return new Response(JSON.stringify({ error: 'Invalid request body' }), {
+		return new Response(JSON.stringify({ message: 'Invalid request body' }), {
 			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -253,7 +253,7 @@ async function handlePatch(
 	})
 
 	if (!updatedMessage) {
-		return new Response(JSON.stringify({ error: 'Failed to update message' }), {
+		return new Response(JSON.stringify({ message: 'Failed to update message' }), {
 			status: 500,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -297,7 +297,7 @@ function handleDelete(session: Session, channel: MockChannel, channelId: string,
 	// Delete message from state (this also cleans up attachments)
 	const deleted = session.state.deleteMessage(messageId)
 	if (!deleted) {
-		return new Response(JSON.stringify({ error: 'Failed to delete message' }), {
+		return new Response(JSON.stringify({ message: 'Failed to delete message' }), {
 			status: 500,
 			headers: { 'Content-Type': 'application/json' }
 		})

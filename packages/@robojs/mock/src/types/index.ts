@@ -1,4 +1,5 @@
 import type { Snowflake } from 'discord-api-types/v10'
+import type { MemoryAttachmentStorage } from '../storage/attachment-storage.js'
 
 // Re-export Snowflake for use by other modules
 export type { Snowflake }
@@ -70,7 +71,7 @@ export interface SessionState {
 	users: Map<Snowflake, MockUser>
 	messages: Map<Snowflake, MockMessage>
 	interactions: Map<Snowflake, MockInteraction>
-	attachments: Map<Snowflake, StoredAttachment> // Phase 4E: File storage
+	attachmentStorage: MemoryAttachmentStorage // Phase 4E: File storage
 	pollVotes: Map<Snowflake, Map<Snowflake, number[]>> // Phase 4G: messageId -> userId -> answerIds[]
 	stickers: Map<Snowflake, MockSticker> // Phase 4I: Sticker storage
 	webhooks: Map<Snowflake, MockWebhook> // Phase 4J: Webhook storage
@@ -383,6 +384,8 @@ export interface ConnectionState {
 	 * Stored so we can fetch the bot's real identity from Discord API
 	 */
 	realToken?: string
+	/** Ring buffer of dispatched events for RESUME replay */
+	dispatchHistory?: Array<{ seq: number; event: string; data: unknown }>
 }
 
 // ============================================================================
@@ -3644,7 +3647,6 @@ export interface MockApplicationCommand {
 	options?: MockApplicationCommandOption[] // Max 25
 	default_member_permissions: string | null // Permission bitfield as string
 	dm_permission?: boolean // Deprecated but still supported
-	default_permission?: boolean // Deprecated - use default_member_permissions
 	nsfw?: boolean
 	integration_types?: number[] // Installation contexts
 	contexts?: number[] // Interaction contexts

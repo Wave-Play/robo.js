@@ -41,6 +41,43 @@ export interface IdentifyPayloadData {
 }
 
 /**
+ * RESUME payload data (op 6)
+ * Sent by client to resume a dropped Gateway connection
+ */
+export interface ResumePayloadData {
+	token: string
+	session_id: string
+	seq: number
+}
+
+/**
+ * Validate that data is a valid RESUME payload
+ */
+export function isValidResumePayload(data: unknown): data is ResumePayloadData {
+	if (!data || typeof data !== 'object') return false
+	const d = data as Record<string, unknown>
+	return typeof d.token === 'string' && typeof d.session_id === 'string' && typeof d.seq === 'number'
+}
+
+/**
+ * Build a RESUMED payload (op 0, t: RESUMED)
+ * Sent by server after successfully resuming a connection
+ */
+export function buildResumedPayload(): GatewayPayload {
+	return { op: 0, s: null, t: 'RESUMED', d: null }
+}
+
+/**
+ * Build an INVALID_SESSION payload (op 9)
+ * Sent by server when a session can no longer be resumed
+ *
+ * @param resumable - Whether the session can be reconnected via a new IDENTIFY (true) or not (false)
+ */
+export function buildInvalidSessionPayload(resumable: boolean): GatewayPayload {
+	return { op: 9, d: resumable, s: null, t: null }
+}
+
+/**
  * Validate that data is a valid IDENTIFY payload
  */
 export function isValidIdentifyPayload(data: unknown): data is IdentifyPayloadData {

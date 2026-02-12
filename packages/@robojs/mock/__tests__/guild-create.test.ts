@@ -14,8 +14,6 @@ import {
 	createMockUser,
 	createMockGuild,
 	createMockChannel,
-	addGuildToSession,
-	addChannelToGuild,
 	createDefaultGuildWithChannel
 } from '../src/session/state.js'
 import type { MockChannel, SessionState } from '../src/types/index.js'
@@ -114,10 +112,10 @@ describe('Phase 1E: GUILD_CREATE Event', () => {
 			})
 		})
 
-		describe('addGuildToSession', () => {
+		describe('addGuild', () => {
 			it('should add guild to session state', () => {
 				const guild = createMockGuild({ name: 'My Guild' })
-				addGuildToSession(sessionState, guild)
+				sessionState.addGuild(guild)
 
 				expect(sessionState.guilds.get(guild.id)).toBe(guild)
 			})
@@ -126,7 +124,7 @@ describe('Phase 1E: GUILD_CREATE Event', () => {
 				const guild = createMockGuild({ name: 'My Guild' })
 				guild.members = [] // Start with empty members
 
-				addGuildToSession(sessionState, guild)
+				sessionState.addGuild(guild)
 
 				expect(guild.members).toContain(sessionState.botUser.id)
 			})
@@ -135,7 +133,7 @@ describe('Phase 1E: GUILD_CREATE Event', () => {
 				const guild = createMockGuild({ name: 'My Guild' })
 				guild.members = [sessionState.botUser.id]
 
-				addGuildToSession(sessionState, guild)
+				sessionState.addGuild(guild)
 
 				const botUserCount = guild.members.filter((id) => id === sessionState.botUser.id).length
 				expect(botUserCount).toBe(1)
@@ -145,30 +143,30 @@ describe('Phase 1E: GUILD_CREATE Event', () => {
 		describe('addChannelToGuild', () => {
 			it('should add channel to session state', () => {
 				const guild = createMockGuild({ name: 'My Guild' })
-				addGuildToSession(sessionState, guild)
+				sessionState.addGuild(guild)
 
 				const channel = createMockChannel({ name: 'new-channel' })
-				addChannelToGuild(sessionState, guild.id, channel)
+				sessionState.addChannelToGuild(guild.id, channel)
 
 				expect(sessionState.channels.get(channel.id)).toBe(channel)
 			})
 
 			it('should set guild ID on channel', () => {
 				const guild = createMockGuild({ name: 'My Guild' })
-				addGuildToSession(sessionState, guild)
+				sessionState.addGuild(guild)
 
 				const channel = createMockChannel({ name: 'new-channel' })
-				addChannelToGuild(sessionState, guild.id, channel)
+				sessionState.addChannelToGuild(guild.id, channel)
 
 				expect(channel.guildId).toBe(guild.id)
 			})
 
 			it('should add channel ID to guild channels list', () => {
 				const guild = createMockGuild({ name: 'My Guild' })
-				addGuildToSession(sessionState, guild)
+				sessionState.addGuild(guild)
 
 				const channel = createMockChannel({ name: 'new-channel' })
-				addChannelToGuild(sessionState, guild.id, channel)
+				sessionState.addChannelToGuild(guild.id, channel)
 
 				expect(guild.channels).toContain(channel.id)
 			})

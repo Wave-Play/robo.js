@@ -38,7 +38,7 @@ function stageInstanceToAPI(instance: {
  */
 export default async (request: RoboRequest) => {
 	if (request.method !== 'GET' && request.method !== 'PATCH' && request.method !== 'DELETE') {
-		return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 			status: 405,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -49,7 +49,7 @@ export default async (request: RoboRequest) => {
 	const sessionId = parseMockToken(authHeader)
 
 	if (!sessionId) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -57,7 +57,7 @@ export default async (request: RoboRequest) => {
 
 	const session = sessionManager.get(sessionId)
 	if (!session) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -68,7 +68,7 @@ export default async (request: RoboRequest) => {
 	// Get the stage instance
 	const stageInstance = session.state.getStageInstance(channelId)
 	if (!stageInstance) {
-		return new Response(JSON.stringify({ error: 'Unknown Stage Instance', code: 10067 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Stage Instance', code: 10067 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -92,7 +92,7 @@ export default async (request: RoboRequest) => {
 		try {
 			body = await request.json()
 		} catch {
-			return new Response(JSON.stringify({ error: 'Invalid JSON body', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Invalid JSON body', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -101,7 +101,7 @@ export default async (request: RoboRequest) => {
 		// Validate topic if provided
 		if (body.topic !== undefined) {
 			if (body.topic.length < 1 || body.topic.length > 120) {
-				return new Response(JSON.stringify({ error: 'Topic must be between 1 and 120 characters', code: 50035 }), {
+				return new Response(JSON.stringify({ message: 'Topic must be between 1 and 120 characters', code: 50035 }), {
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
 				})
@@ -115,7 +115,7 @@ export default async (request: RoboRequest) => {
 		})
 
 		if (!updatedInstance) {
-			return new Response(JSON.stringify({ error: 'Failed to update stage instance', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Failed to update stage instance', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -144,7 +144,7 @@ export default async (request: RoboRequest) => {
 		const deletedInstance = session.state.deleteStageInstance(channelId)
 
 		if (!deletedInstance) {
-			return new Response(JSON.stringify({ error: 'Failed to delete stage instance', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Failed to delete stage instance', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -164,7 +164,7 @@ export default async (request: RoboRequest) => {
 		return new Response(null, { status: 204 })
 	}
 
-	return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+	return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 		status: 405,
 		headers: { 'Content-Type': 'application/json' }
 	})

@@ -27,6 +27,57 @@ interface DrainHandle {
 // ============================================================================
 
 /**
+ * Format a summary of recorded actions for inclusion in timeout error messages.
+ * Helps developers debug why a waited-for action was not found.
+ */
+function formatActionSummary(actions: RecordedAction[], expectedType: string, hadCustomFilter: boolean): string {
+	if (actions.length === 0) {
+		return 'No actions were recorded during the wait period.'
+	}
+
+	// Separate actions by whether they match the expected type
+	const matchingType = actions.filter((a) => a.type === expectedType)
+	const otherActions = actions.filter((a) => a.type !== expectedType)
+
+	const lines: string[] = []
+
+	// If there are actions of the right type but none passed the filter
+	if (matchingType.length > 0 && hadCustomFilter) {
+		lines.push(`Found ${matchingType.length} action(s) of type "${expectedType}", but none matched the filter:`)
+		const toShow = matchingType.slice(0, 5)
+		for (const action of toShow) {
+			let dataPreview: string
+			try {
+				dataPreview = JSON.stringify(action.data)
+				if (dataPreview.length > 200) {
+					dataPreview = dataPreview.slice(0, 200) + '...'
+				}
+			} catch {
+				dataPreview = '[unserializable]'
+			}
+			lines.push(`  - ${dataPreview}`)
+		}
+		if (matchingType.length > 5) {
+			lines.push(`  ... and ${matchingType.length - 5} more`)
+		}
+	}
+
+	// List other action types with counts
+	if (otherActions.length > 0) {
+		const typeCounts = new Map<string, number>()
+		for (const action of otherActions) {
+			typeCounts.set(action.type, (typeCounts.get(action.type) ?? 0) + 1)
+		}
+		lines.push(`Found ${otherActions.length} action(s) of other types:`)
+		for (const [type, count] of typeCounts) {
+			lines.push(`  - ${type}: ${count}`)
+		}
+	}
+
+	return lines.length > 0 ? lines.join('\n') : 'No actions were recorded during the wait period.'
+}
+
+/**
  * Wait for a specific action to be recorded
  */
 export async function waitForAction(
@@ -68,8 +119,14 @@ export async function waitForAction(
 		await sleep(100)
 	}
 
+	// Fetch all actions (unfiltered by type) to build a diagnostic summary
+	const { actions: allActions } = await getSessionActions(sessionId, {
+		since: querySince
+	})
+	const summary = formatActionSummary(allActions, opts.type, !!opts.filter)
+
 	throw new Error(
-		`Timeout waiting for action "${opts.type}" after ${timeout}ms`
+		`Timeout waiting for action "${opts.type}" after ${timeout}ms\n${summary}`
 	)
 }
 
@@ -98,7 +155,13 @@ export async function waitForAnyAction(
 		await sleep(100)
 	}
 
-	throw new Error(`Timeout waiting for matching action after ${actualTimeout}ms`)
+	// Fetch all actions to build a diagnostic summary
+	const { actions: allActions } = await getSessionActions(sessionId, {
+		since: querySince
+	})
+	const summary = formatActionSummary(allActions, '(custom filter)', true)
+
+	throw new Error(`Timeout waiting for matching action after ${actualTimeout}ms\n${summary}`)
 }
 
 /**
@@ -310,14 +373,14 @@ export async function expectAction(
 
 		return action
 	} catch (error) {
-		// Record timeout as failed assertion
+		// Record timeout as failed assertion with diagnostic details
 		if ((error as Error).message.includes('Timeout')) {
 			recordAssertion(sessionId, {
 				description,
 				passed: false,
 				expected,
 				actual: undefined,
-				diff: `Timeout: No action of type "${type}" was recorded`
+				diff: (error as Error).message
 			})
 		}
 		throw error
@@ -442,11 +505,6 @@ export interface MockRoboHandle {
 }
 
 /**
- * @deprecated Use MockRoboHandle instead
- */
-export type MockBotHandle = MockRoboHandle
-
-/**
  * Options for starting a mock Robo
  */
 export interface StartMockRoboOptions {
@@ -485,11 +543,6 @@ export interface StartMockRoboOptions {
 	 */
 	hmr?: boolean
 }
-
-/**
- * @deprecated Use StartMockRoboOptions instead
- */
-export type StartMockBotOptions = StartMockRoboOptions
 
 /**
  * Discover the mock server port dynamically.
@@ -564,11 +617,6 @@ export async function startMockRobo(options: StartMockRoboOptions = {}): Promise
 	}
 	return startDirectMode(options)
 }
-
-/**
- * @deprecated Use startMockRobo instead
- */
-export const startMockBot = startMockRobo
 
 /**
  * HMR mode implementation - spawns robo dev --hmr as child process

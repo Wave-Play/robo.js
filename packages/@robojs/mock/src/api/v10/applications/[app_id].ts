@@ -17,7 +17,7 @@ export default async (request: RoboRequest) => {
 	const sessionId = parseMockToken(authHeader)
 
 	if (!sessionId) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -25,7 +25,7 @@ export default async (request: RoboRequest) => {
 
 	const session = sessionManager.get(sessionId)
 	if (!session) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -40,7 +40,7 @@ export default async (request: RoboRequest) => {
 
 		// Verify app ID matches bot user ID (or is @me)
 		if (appId !== '@me' && appId !== botUser.id) {
-			return new Response(JSON.stringify({ error: 'Unknown Application', code: 10002 }), {
+			return new Response(JSON.stringify({ message: 'Unknown Application', code: 10002 }), {
 				status: 404,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -88,7 +88,7 @@ export default async (request: RoboRequest) => {
 	}
 
 	// Method not allowed
-	return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+	return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 		status: 405,
 		headers: { 'Content-Type': 'application/json' }
 	})

@@ -901,20 +901,6 @@ export class StageServer {
 					break
 				}
 
-				case 'set_playback': {
-					// Legacy playback control - superseded by control_command protocol (Phase 8)
-					// Stage UI should now respond to control_command events instead
-					this.sendCommandResponse(
-						ws,
-						connState,
-						command.id,
-						false,
-						undefined,
-						'Use control_command protocol instead (Phase 8)'
-					)
-					break
-				}
-
 				case 'control_response': {
 					// Handle response from Stage UI to a control command
 					const data = command.data as StageControlResponseData
@@ -1288,14 +1274,6 @@ export class StageServer {
 				this.sendStateSync(ws, connState, session)
 			}
 		}
-	}
-
-	/**
-	 * Clear event buffer for a session (call when session is deleted)
-	 */
-	clearSessionBuffer(sessionId: string): void {
-		this.eventBuffers.delete(sessionId)
-		this.sessionCommandLocks.delete(sessionId)
 	}
 
 	/**

@@ -17,7 +17,7 @@ export default async (request: RoboRequest) => {
 	const sessionId = parseMockToken(authHeader)
 
 	if (!sessionId) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -25,7 +25,7 @@ export default async (request: RoboRequest) => {
 
 	const session = sessionManager.get(sessionId)
 	if (!session) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -37,7 +37,7 @@ export default async (request: RoboRequest) => {
 	// 3. Validate channel exists
 	const channel = session.state.getChannel(channelId)
 	if (!channel) {
-		return new Response(JSON.stringify({ error: 'Unknown Channel', code: 10003 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Channel', code: 10003 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -60,7 +60,7 @@ export default async (request: RoboRequest) => {
 		try {
 			body = await request.json()
 		} catch {
-			return new Response(JSON.stringify({ error: 'Invalid request body', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -68,7 +68,7 @@ export default async (request: RoboRequest) => {
 
 		// Validate required name field
 		if (!body.name || typeof body.name !== 'string') {
-			return new Response(JSON.stringify({ error: 'Name is required', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Name is required', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -77,7 +77,7 @@ export default async (request: RoboRequest) => {
 		// Validate name length
 		if (body.name.length < WebhookLimits.MIN_NAME_LENGTH) {
 			return new Response(
-				JSON.stringify({ error: `Webhook name must be at least ${WebhookLimits.MIN_NAME_LENGTH} character`, code: 50035 }),
+				JSON.stringify({ message: `Webhook name must be at least ${WebhookLimits.MIN_NAME_LENGTH} character`, code: 50035 }),
 				{
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
@@ -87,7 +87,7 @@ export default async (request: RoboRequest) => {
 
 		if (body.name.length > WebhookLimits.MAX_NAME_LENGTH) {
 			return new Response(
-				JSON.stringify({ error: `Webhook name cannot exceed ${WebhookLimits.MAX_NAME_LENGTH} characters`, code: 50035 }),
+				JSON.stringify({ message: `Webhook name cannot exceed ${WebhookLimits.MAX_NAME_LENGTH} characters`, code: 50035 }),
 				{
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
@@ -99,7 +99,7 @@ export default async (request: RoboRequest) => {
 		const nameLower = body.name.toLowerCase()
 		if (nameLower.includes('clyde')) {
 			return new Response(
-				JSON.stringify({ error: 'Webhook name cannot contain "clyde"', code: 50035 }),
+				JSON.stringify({ message: 'Webhook name cannot contain "clyde"', code: 50035 }),
 				{
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
@@ -108,7 +108,7 @@ export default async (request: RoboRequest) => {
 		}
 		if (nameLower.includes('discord')) {
 			return new Response(
-				JSON.stringify({ error: 'Webhook name cannot contain "discord"', code: 50035 }),
+				JSON.stringify({ message: 'Webhook name cannot contain "discord"', code: 50035 }),
 				{
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
@@ -142,7 +142,7 @@ export default async (request: RoboRequest) => {
 		)
 
 		if (!webhook) {
-			return new Response(JSON.stringify({ error: 'Failed to create webhook', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Failed to create webhook', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -179,7 +179,7 @@ export default async (request: RoboRequest) => {
 	}
 
 	// Method not allowed
-	return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+	return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 		status: 405,
 		headers: { 'Content-Type': 'application/json' }
 	})

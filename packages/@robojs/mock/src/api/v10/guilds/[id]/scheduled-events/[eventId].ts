@@ -24,7 +24,7 @@ export default async (request: RoboRequest) => {
 	const sessionId = parseMockToken(authHeader)
 
 	if (!sessionId) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -32,7 +32,7 @@ export default async (request: RoboRequest) => {
 
 	const session = sessionManager.get(sessionId)
 	if (!session) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -44,7 +44,7 @@ export default async (request: RoboRequest) => {
 	// 3. Validate guild exists
 	const guild = session.state.guilds.get(guildId)
 	if (!guild) {
-		return new Response(JSON.stringify({ error: 'Unknown Guild', code: 10004 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Guild', code: 10004 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -53,7 +53,7 @@ export default async (request: RoboRequest) => {
 	// 4. Get the scheduled event
 	const event = session.state.getScheduledEvent(guildId, eventId)
 	if (!event) {
-		return new Response(JSON.stringify({ error: 'Unknown Scheduled Event', code: 10070 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Scheduled Event', code: 10070 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -96,7 +96,7 @@ export default async (request: RoboRequest) => {
 		try {
 			body = await request.json()
 		} catch {
-			return new Response(JSON.stringify({ error: 'Invalid request body', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -106,7 +106,7 @@ export default async (request: RoboRequest) => {
 		if (body.name !== undefined) {
 			if (body.name.length < ScheduledEventLimits.MIN_NAME_LENGTH) {
 				return new Response(
-					JSON.stringify({ error: `Event name must be at least ${ScheduledEventLimits.MIN_NAME_LENGTH} character`, code: 50035 }),
+					JSON.stringify({ message: `Event name must be at least ${ScheduledEventLimits.MIN_NAME_LENGTH} character`, code: 50035 }),
 					{
 						status: 400,
 						headers: { 'Content-Type': 'application/json' }
@@ -116,7 +116,7 @@ export default async (request: RoboRequest) => {
 
 			if (body.name.length > ScheduledEventLimits.MAX_NAME_LENGTH) {
 				return new Response(
-					JSON.stringify({ error: `Event name cannot exceed ${ScheduledEventLimits.MAX_NAME_LENGTH} characters`, code: 50035 }),
+					JSON.stringify({ message: `Event name cannot exceed ${ScheduledEventLimits.MAX_NAME_LENGTH} characters`, code: 50035 }),
 					{
 						status: 400,
 						headers: { 'Content-Type': 'application/json' }
@@ -128,7 +128,7 @@ export default async (request: RoboRequest) => {
 		// Validate description length if provided
 		if (body.description && body.description.length > ScheduledEventLimits.MAX_DESCRIPTION_LENGTH) {
 			return new Response(
-				JSON.stringify({ error: `Event description cannot exceed ${ScheduledEventLimits.MAX_DESCRIPTION_LENGTH} characters`, code: 50035 }),
+				JSON.stringify({ message: `Event description cannot exceed ${ScheduledEventLimits.MAX_DESCRIPTION_LENGTH} characters`, code: 50035 }),
 				{
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
@@ -147,7 +147,7 @@ export default async (request: RoboRequest) => {
 
 			if (!validTransitions[event.status].includes(body.status)) {
 				return new Response(
-					JSON.stringify({ error: `Invalid status transition from ${event.status} to ${body.status}`, code: 50035 }),
+					JSON.stringify({ message: `Invalid status transition from ${event.status} to ${body.status}`, code: 50035 }),
 					{
 						status: 400,
 						headers: { 'Content-Type': 'application/json' }
@@ -171,7 +171,7 @@ export default async (request: RoboRequest) => {
 		})
 
 		if (!updatedEvent) {
-			return new Response(JSON.stringify({ error: 'Failed to update scheduled event', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Failed to update scheduled event', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -229,7 +229,7 @@ export default async (request: RoboRequest) => {
 	}
 
 	// Method not allowed
-	return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+	return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 		status: 405,
 		headers: { 'Content-Type': 'application/json' }
 	})

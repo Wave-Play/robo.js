@@ -683,7 +683,6 @@ Bot sends Type 9 response → SHOW_MODAL → Modal overlay
 | MessageArea | `src/app/components/messages/MessageArea.tsx` |
 | Message | `src/app/components/messages/Message.tsx` |
 | ForumChannelView | `src/app/components/messages/ForumChannelView.tsx` |
-| VoiceChannelView | `src/app/components/messages/VoiceChannelView.tsx` |
 | MessageInput | `src/app/components/messages/MessageInput.tsx` |
 | PendingMessage | `src/app/components/messages/PendingMessage.tsx` |
 | ThinkingIndicator | `src/app/components/messages/ThinkingIndicator.tsx` |
@@ -694,7 +693,8 @@ Bot sends Type 9 response → SHOW_MODAL → Modal overlay
 | Button | `src/app/components/messages/Button.tsx` |
 | SelectMenu | `src/app/components/messages/SelectMenu.tsx` |
 | MemberList | `src/app/components/members/MemberList.tsx` |
-| UserProfilePopout | `src/app/components/members/UserProfilePopout.tsx` |
+| UserProfilePopout (member) | `src/app/components/members/UserProfilePopout.tsx` |
+| UserProfilePopout (sidebar) | `src/app/components/sidebar/UserProfilePopout.tsx` |
 | DevToolsPanel | `src/app/components/devtools/DevToolsPanel.tsx` |
 | EventLog | `src/app/components/devtools/EventLog.tsx` |
 | StateViewer | `src/app/components/devtools/StateViewer.tsx` |
@@ -708,7 +708,6 @@ Bot sends Type 9 response → SHOW_MODAL → Modal overlay
 | SessionStore | `src/app/stores/sessionStore.tsx` |
 | PlaybackStore | `src/app/stores/playbackStore.tsx` |
 | useSession | `src/app/hooks/useSession.ts` |
-| useStageWebSocket | `src/app/hooks/useStageWebSocket.ts` |
 
 ## Discord.js Integration
 
@@ -924,7 +923,7 @@ packages/@robojs/mock/
 │   │   │   ├── modals/        # Modal
 │   │   │   └── common/        # ErrorBoundary, Toaster, EmojiPicker, Markdown
 │   │   ├── stores/            # sessionStore.tsx, playbackStore.tsx
-│   │   ├── hooks/             # useSession.ts, useStageWebSocket.ts, useContextMenu.ts
+│   │   ├── hooks/             # useSession.ts, useContextMenu.ts
 │   │   ├── styles/            # discord-theme.css, globals.css
 │   │   ├── types/             # Stage types (stage.ts, css.d.ts)
 │   │   └── utils/             # Helpers (avatar.ts, format.ts, time.ts)

@@ -61,7 +61,7 @@ export default async (request: RoboRequest) => {
 	}
 
 	if (!body.guild_id || !body.name || !body.image) {
-		return new Response(JSON.stringify({ error: 'guild_id, name, and image are required' }), {
+		return new Response(JSON.stringify({ message: 'guild_id, name, and image are required' }), {
 			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -69,14 +69,14 @@ export default async (request: RoboRequest) => {
 
 	// Validate name
 	if (!/^[a-zA-Z0-9_]+$/.test(body.name)) {
-		return new Response(JSON.stringify({ error: 'Name must be alphanumeric with underscores only' }), {
+		return new Response(JSON.stringify({ message: 'Name must be alphanumeric with underscores only' }), {
 			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		})
 	}
 
 	if (body.name.length < 2 || body.name.length > 32) {
-		return new Response(JSON.stringify({ error: 'Name must be 2-32 characters' }), {
+		return new Response(JSON.stringify({ message: 'Name must be 2-32 characters' }), {
 			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -85,7 +85,7 @@ export default async (request: RoboRequest) => {
 	// Check guild exists
 	const guild = session.state.guilds.get(body.guild_id)
 	if (!guild) {
-		return new Response(JSON.stringify({ error: 'Guild not found' }), {
+		return new Response(JSON.stringify({ message: 'Guild not found' }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -106,7 +106,7 @@ export default async (request: RoboRequest) => {
 	)
 
 	if (!emoji) {
-		return new Response(JSON.stringify({ error: 'Failed to create emoji (limit reached or invalid data)' }), {
+		return new Response(JSON.stringify({ message: 'Failed to create emoji (limit reached or invalid data)' }), {
 			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		})

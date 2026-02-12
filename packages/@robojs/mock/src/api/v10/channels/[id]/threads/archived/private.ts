@@ -20,7 +20,7 @@ import { mockThreadToAPIChannel } from '../../../../../../discord/payloads.js'
 export default async (request: RoboRequest) => {
 	// 1. Validate GET method
 	if (request.method !== 'GET') {
-		return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 			status: 405,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -31,7 +31,7 @@ export default async (request: RoboRequest) => {
 	const sessionId = parseMockToken(authHeader)
 
 	if (!sessionId) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -39,7 +39,7 @@ export default async (request: RoboRequest) => {
 
 	const session = sessionManager.get(sessionId)
 	if (!session) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -51,7 +51,7 @@ export default async (request: RoboRequest) => {
 	// 4. Validate parent channel exists
 	const channel = session.state.getChannel(channelId)
 	if (!channel) {
-		return new Response(JSON.stringify({ error: 'Unknown Channel', code: 10003 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Channel', code: 10003 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})

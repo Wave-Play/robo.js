@@ -23,52 +23,83 @@ export type { StateOptions } from './session/index.js'
 export { sessionManager } from './core/manager.js'
 export { mockLogger } from './core/logger.js'
 export { GatewayServer, getGatewayServer, closeGatewayServer } from './core/gateway.js'
-export { StageServer, getStageServer, closeStageServer } from './core/stage.js'
-export { StageBridge, getStageBridge, resetStageBridge } from './core/stage-bridge.js'
 
-// Discord Gateway exports
+// Discord Gateway constants
 export {
 	GatewayOpcodes,
 	GatewayCloseCodes,
 	DEFAULT_HEARTBEAT_INTERVAL,
 	GATEWAY_VERSION
 } from './discord/opcodes.js'
+
+// Utility exports (public-facing only)
 export {
-	buildHelloPayload,
-	buildHeartbeatAckPayload,
-	isValidIdentifyPayload,
-	buildInteractionCreatePayload,
-	buildButtonInteractionPayload,
-	buildSelectMenuInteractionPayload,
-	buildModalSubmitInteractionPayload,
-	buildAutocompleteInteractionPayload,
-	buildContextMenuInteractionPayload,
-	// Thread payload builders (Phase 4D)
-	mockThreadToAPIChannel,
-	buildThreadCreatePayload,
-	buildThreadUpdatePayload,
-	buildThreadDeletePayload,
-	buildThreadListSyncPayload,
-	buildThreadMemberUpdatePayload,
-	buildThreadMembersUpdatePayload,
-	// Forum payload builders (Phase 4H)
-	mockForumChannelToAPIChannel,
-	mockForumThreadToAPIChannel,
-	mockForumTagToAPIForumTag,
-	// Webhook payload builders (Phase 4J)
-	mockWebhookToAPIWebhook,
-	buildWebhooksUpdatePayload,
-	// Role & Member payload builders (Phase 4L)
-	mockRoleToAPIRole,
-	mockGuildMemberToAPIMember,
-	mockOverwriteToAPIOverwrite,
-	buildGuildRoleCreatePayload,
-	buildGuildRoleUpdatePayload,
-	buildGuildRoleDeletePayload,
-	buildGuildMemberAddPayload,
-	buildGuildMemberUpdatePayload,
-	buildGuildMemberRemovePayload
-} from './discord/payloads.js'
+	generateSnowflake,
+	snowflakeToTimestamp,
+	timestampToSnowflake
+} from './utils/snowflake.js'
+export {
+	getMockServerUrl,
+	getMockRestApiUrl,
+	getStageUIUrl
+} from './utils/server.js'
+
+// State factory functions
+export {
+	createSessionState,
+	createDefaultGuildWithChannel,
+	createMockUser,
+	createMockGuild,
+	createMockChannel,
+	createMockMessage,
+	// Thread helpers
+	createMockThread,
+	// Forum helpers
+	createMockForumChannel,
+	// Role & Member helpers
+	createMockRole,
+	createMockGuildMember
+} from './session/state.js'
+
+// Auth exports
+export { createAuthMiddleware, NoOpAuthProvider, ApiKeyAuthProvider } from './auth/index.js'
+
+// Storage exports
+export {
+	MemoryAttachmentStorage,
+	createStorage,
+	type AttachmentStorage,
+	type StorageConfig,
+	type StorageStats
+} from './storage/attachment-storage.js'
+
+// Permission utilities (public-facing only)
+export {
+	computePermissions,
+	hasPermission,
+	hasAnyPermission,
+	hasAllPermissions,
+	getPermissionNames,
+	DiscordErrorCodes,
+	PermissionFlagsBits
+} from './core/permissions.js'
+
+// Constants
+export { AttachmentFlags, AttachmentLimits } from './types/index.js'
+export { ForumSortOrderType, ForumLayoutType } from './types/index.js'
+export { WebhookType, WebhookLimits } from './types/index.js'
+export { RoleLimits, OverwriteType } from './types/index.js'
+
+// Plugin config exports
+export { DEFAULT_MOCK_PLUGIN_CONFIG } from './types/plugin.js'
+export type { MockPluginConfig } from './types/plugin.js'
+
+// Mock mode helpers
+export { getMockModeState } from './robo/init.js'
+export type { MockModeState } from './robo/init.js'
+export { getMockModeSession } from './robo/start.js'
+
+// Type exports (safe — erased at runtime, no backward-compat risk)
 export type {
 	GatewayPayload,
 	HelloPayloadData,
@@ -79,16 +110,13 @@ export type {
 	ModalSubmitInteractionPayloadOptions,
 	AutocompleteInteractionPayloadOptions,
 	ContextMenuInteractionPayloadOptions,
-	// Thread payload types (Phase 4D)
 	ThreadCreatePayloadOptions,
 	ThreadUpdatePayloadOptions,
 	ThreadDeletePayloadOptions,
 	ThreadListSyncPayloadOptions,
 	ThreadMemberUpdatePayloadOptions,
 	ThreadMembersUpdatePayloadOptions,
-	// Webhook payload types (Phase 4J)
 	WebhooksUpdatePayloadOptions,
-	// Role & Member payload types (Phase 4L)
 	GuildRoleCreatePayloadOptions,
 	GuildRoleUpdatePayloadOptions,
 	GuildRoleDeletePayloadOptions,
@@ -97,68 +125,6 @@ export type {
 	GuildMemberRemovePayloadOptions
 } from './discord/payloads.js'
 
-// Utility exports
-export {
-	generateSnowflake,
-	snowflakeToTimestamp,
-	timestampToSnowflake,
-	generateSessionId,
-	generateInteractionToken,
-	generateGatewaySessionId,
-	createMockToken,
-	parseMockToken,
-	TOKEN_PREFIX,
-	// Server utilities
-	getServerConfig,
-	getServerPort,
-	getServerHostname,
-	getMockServerUrl,
-	getMockRestApiUrl,
-	getMockPluginPrefix,
-	getStageUIUrl
-} from './utils/index.js'
-
-// State helpers
-export {
-	createSessionState,
-	createDefaultGuildWithChannel,
-	createMockUser,
-	createMockGuild,
-	createMockChannel,
-	createMockMessage,
-	serializeSessionState,
-	serializeMockGuild,
-	serializeMockChannel,
-	serializeMockUser,
-	serializeMockMessage,
-	serializeMockInteraction,
-	// Thread helpers (Phase 4D)
-	createMockThread,
-	serializeMockThread,
-	// Forum helpers (Phase 4H)
-	createMockForumChannel,
-	// Webhook helpers (Phase 4J)
-	serializeMockWebhook,
-	// Role & Member helpers (Phase 4L)
-	createMockRole,
-	createMockGuildMember,
-	serializeMockRole,
-	serializeMockGuildMember
-} from './session/state.js'
-
-// Auth exports
-export { createAuthMiddleware, NoOpAuthProvider, ApiKeyAuthProvider } from './auth/index.js'
-
-// Storage exports (Phase 4E)
-export {
-	MemoryAttachmentStorage,
-	createStorage,
-	type AttachmentStorage,
-	type StorageConfig,
-	type StorageStats
-} from './storage/attachment-storage.js'
-
-// Type exports
 export type {
 	Session as ISession,
 	SessionState,
@@ -195,28 +161,23 @@ export type {
 	SerializedMockUser,
 	SerializedMockMessage,
 	SerializedMockInteraction,
-	// Session Recording types (Phase 4A)
 	SessionRecording,
 	RecordingMetadata,
-	// Replay types (Phase 4B)
 	ValidationMode,
 	ReplayOptions,
 	ReplayState,
 	ReplayResult,
 	ValidationResult,
 	ValidationMismatch,
-	// Thread types (Phase 4D)
 	MockThread,
 	MockThreadConfig,
 	MockThreadMetadata,
 	MockThreadMember,
 	DispatchThreadCreateOptions,
 	SerializedMockThread,
-	// Attachment types (Phase 4E)
 	MockAttachment,
 	StoredAttachment,
 	AttachmentPayload,
-	// Forum types (Phase 4H)
 	MockForumChannel,
 	MockForumChannelConfig,
 	MockForumTag,
@@ -226,11 +187,9 @@ export type {
 	SerializedMockForumChannel,
 	SerializedMockForumTag,
 	SerializedMockForumThread,
-	// Webhook types (Phase 4J)
 	MockWebhook,
 	MockWebhookConfig,
 	SerializedMockWebhook,
-	// Role & Member types (Phase 4L)
 	MockRole,
 	MockRoleConfig,
 	MockRoleTags,
@@ -247,56 +206,19 @@ export type {
 	DispatchGuildMemberRemoveOptions
 } from './types/index.js'
 
-// Attachment constants (Phase 4E)
-export { AttachmentFlags, AttachmentLimits } from './types/index.js'
-
-// Forum constants (Phase 4H)
-export { ForumSortOrderType, ForumLayoutType } from './types/index.js'
-
-// Webhook constants (Phase 4J)
-export { WebhookType, WebhookLimits } from './types/index.js'
-
-// Role & Permission constants (Phase 4L)
-export { RoleLimits, OverwriteType } from './types/index.js'
-
-// Permission utilities (Phase 4L)
-export {
-	computePermissions,
-	computeBasePermissions,
-	hasPermission,
-	hasAnyPermission,
-	hasAllPermissions,
-	getPermissionNames,
-	parsePermissions,
-	permissionAllowed,
-	permissionDenied,
-	DiscordErrorCodes,
-	PermissionFlagsBits,
-	// Permission enforcement (Phase 4L)
-	checkEndpointPermission,
-	createPermissionErrorResponse,
-	// Role hierarchy helpers (Phase 4L-Extended)
-	isServerOwner,
-	getHighestRolePosition,
-	canActOnMember,
-	canManageRole,
-	// Enforcement middleware (Phase 4L-Extended)
-	checkEndpointPermissionWithEnforcement
-} from './core/permissions.js'
 export type {
 	PermissionCheckResult,
 	PermissionContext,
-	// Enforcement types (Phase 4L-Extended)
 	PermissionEnforcementLevel,
 	EnforcementOptions,
 	EnforcementContext
 } from './core/permissions.js'
 
-// Permission enforcement helper (Phase 4L-Extended)
-export { enforcePermissions, getEnforcementLevel } from './utils/permission-check.js'
+export type { SessionSummary } from './core/summary.js'
+export type { PersistedSession } from './core/persistence.js'
 export type { EnforcePermissionsOptions } from './utils/permission-check.js'
 
-// Stage WebSocket types (Phase 5A)
+// Stage types (kept as types — no runtime cost)
 export type {
 	StageEventType,
 	StageCommandType,
@@ -325,34 +247,6 @@ export type {
 	StageAddReactionData,
 	StageStartTypingData,
 	StageSubscribeChannelData,
-	StageSetPlaybackData,
 	BufferedStageEvent,
 	StageServerConfig
 } from './types/stage.js'
-
-// Plugin config exports (CLI Command)
-export { DEFAULT_MOCK_PLUGIN_CONFIG } from './types/plugin.js'
-export type { MockPluginConfig } from './types/plugin.js'
-
-// Session summary exports (CLI Command)
-export { generateSessionSummary, printSessionSummary, getCompactSummary } from './core/summary.js'
-export type { SessionSummary } from './core/summary.js'
-
-// Session persistence exports (CLI Command)
-export {
-	persistSession,
-	loadPersistedSession,
-	listPersistedSessions,
-	deletePersistedSession,
-	cleanupOldSessions,
-	getPersistedSessionsSize,
-	getMockDataDir,
-	getSessionFilePath,
-	ensureMockDataDir
-} from './core/persistence.js'
-export type { PersistedSession } from './core/persistence.js'
-
-// Mock mode helpers (CLI Command)
-export { getMockModeState, resetMockModeState } from './robo/init.js'
-export type { MockModeState } from './robo/init.js'
-export { getMockModeSession, clearMockModeSession } from './robo/start.js'

@@ -12,7 +12,7 @@ import { mockChannelToAPIChannel } from '../../../../discord/payloads.js'
 export default async (request: RoboRequest) => {
 	// 1. Validate method (PUT only)
 	if (request.method !== 'PUT') {
-		return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 			status: 405,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -23,7 +23,7 @@ export default async (request: RoboRequest) => {
 	const sessionId = parseMockToken(authHeader)
 
 	if (!sessionId) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -31,7 +31,7 @@ export default async (request: RoboRequest) => {
 
 	const session = sessionManager.get(sessionId)
 	if (!session) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -43,7 +43,7 @@ export default async (request: RoboRequest) => {
 	// 4. Validate channel exists and is a voice channel
 	const channel = session.state.getChannel(channelId)
 	if (!channel) {
-		return new Response(JSON.stringify({ error: 'Unknown Channel', code: 10003 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Channel', code: 10003 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -51,7 +51,7 @@ export default async (request: RoboRequest) => {
 
 	// Voice channels are type 2
 	if (channel.type !== 2) {
-		return new Response(JSON.stringify({ error: 'Channel is not a voice channel', code: 50035 }), {
+		return new Response(JSON.stringify({ message: 'Channel is not a voice channel', code: 50035 }), {
 			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -63,7 +63,7 @@ export default async (request: RoboRequest) => {
 	try {
 		body = await request.json()
 	} catch {
-		return new Response(JSON.stringify({ error: 'Invalid request body', code: 50035 }), {
+		return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
 			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		})

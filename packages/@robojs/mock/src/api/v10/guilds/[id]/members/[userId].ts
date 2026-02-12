@@ -20,7 +20,7 @@ export default async (request: RoboRequest) => {
 	const sessionId = parseMockToken(authHeader)
 
 	if (!sessionId) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -28,7 +28,7 @@ export default async (request: RoboRequest) => {
 
 	const session = sessionManager.get(sessionId)
 	if (!session) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -40,7 +40,7 @@ export default async (request: RoboRequest) => {
 	// 3. Validate guild exists
 	const guild = session.state.guilds.get(guildId)
 	if (!guild) {
-		return new Response(JSON.stringify({ error: 'Unknown Guild', code: 10004 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Guild', code: 10004 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -54,7 +54,7 @@ export default async (request: RoboRequest) => {
 	// 4. Validate member exists
 	const member = session.state.getGuildMember(guildId, targetUserId)
 	if (!member) {
-		return new Response(JSON.stringify({ error: 'Unknown Member', code: 10007 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Member', code: 10007 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -76,7 +76,7 @@ export default async (request: RoboRequest) => {
 	// Get the user for the member
 	const user = session.state.users.get(targetUserId)
 	if (!user) {
-		return new Response(JSON.stringify({ error: 'Unknown User', code: 10013 }), {
+		return new Response(JSON.stringify({ message: 'Unknown User', code: 10013 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -114,7 +114,7 @@ export default async (request: RoboRequest) => {
 		try {
 			body = await request.json()
 		} catch {
-			return new Response(JSON.stringify({ error: 'Invalid request body', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -123,7 +123,7 @@ export default async (request: RoboRequest) => {
 		// Validate nickname length if provided
 		if (body.nick !== undefined && body.nick !== null && body.nick.length > 32) {
 			return new Response(
-				JSON.stringify({ error: 'Nickname cannot exceed 32 characters', code: 50035 }),
+				JSON.stringify({ message: 'Nickname cannot exceed 32 characters', code: 50035 }),
 				{
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
@@ -136,7 +136,7 @@ export default async (request: RoboRequest) => {
 			const disabledUntil = new Date(body.communication_disabled_until)
 			if (isNaN(disabledUntil.getTime())) {
 				return new Response(
-					JSON.stringify({ error: 'Invalid communication_disabled_until format', code: 50035 }),
+					JSON.stringify({ message: 'Invalid communication_disabled_until format', code: 50035 }),
 					{
 						status: 400,
 						headers: { 'Content-Type': 'application/json' }
@@ -149,7 +149,7 @@ export default async (request: RoboRequest) => {
 			const maxTimeout = 28 * 24 * 60 * 60 * 1000
 			if (disabledUntil.getTime() > now + maxTimeout) {
 				return new Response(
-					JSON.stringify({ error: 'Timeout duration cannot exceed 28 days', code: 50035 }),
+					JSON.stringify({ message: 'Timeout duration cannot exceed 28 days', code: 50035 }),
 					{
 						status: 400,
 						headers: { 'Content-Type': 'application/json' }
@@ -168,7 +168,7 @@ export default async (request: RoboRequest) => {
 		})
 
 		if (!updatedMember) {
-			return new Response(JSON.stringify({ error: 'Failed to update member', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Failed to update member', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -252,7 +252,7 @@ export default async (request: RoboRequest) => {
 		// Cannot kick the bot itself (would break the session)
 		if (targetUserId === session.state.botUser.id) {
 			return new Response(
-				JSON.stringify({ error: 'Cannot kick the bot user', code: 50013 }),
+				JSON.stringify({ message: 'Cannot kick the bot user', code: 50013 }),
 				{
 					status: 403,
 					headers: { 'Content-Type': 'application/json' }
@@ -263,7 +263,7 @@ export default async (request: RoboRequest) => {
 		// Remove the member
 		const removed = session.state.removeGuildMember(guildId, targetUserId)
 		if (!removed) {
-			return new Response(JSON.stringify({ error: 'Failed to remove member', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Failed to remove member', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -290,7 +290,7 @@ export default async (request: RoboRequest) => {
 	}
 
 	// Method not allowed
-	return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+	return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 		status: 405,
 		headers: { 'Content-Type': 'application/json' }
 	})

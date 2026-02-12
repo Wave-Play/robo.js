@@ -34,7 +34,6 @@ export type {
 	StageRemoveReactionData,
 	StageStartTypingData,
 	StageSubscribeChannelData,
-	StageSetPlaybackData,
 	StageJoinVoiceData,
 	StageLeaveVoiceData,
 	StageUpdateVoiceStateData,

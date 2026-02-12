@@ -141,15 +141,6 @@ export class MockServerState implements SessionState {
 	 */
 	readonly attachmentStorage: MemoryAttachmentStorage
 
-	/**
-	 * @deprecated Use attachmentStorage methods instead. This getter provides backward compatibility.
-	 */
-	get attachments(): Map<Snowflake, StoredAttachment> {
-		// Return a proxy Map that delegates to the storage backend
-		// This maintains backward compatibility with code that accesses attachments directly
-		return (this.attachmentStorage as unknown as { attachments: Map<Snowflake, StoredAttachment> }).attachments
-	}
-
 	private _sequence: number = 0
 	private readonly maxMessages: number
 	private readonly maxInteractions: number
@@ -607,7 +598,7 @@ export class MockServerState implements SessionState {
 		if (message) {
 			// Clean up associated attachments
 			for (const attachment of message.attachments) {
-				this.attachments.delete(attachment.id)
+				this.attachmentStorage.deleteSync(attachment.id)
 			}
 		}
 		return this.messages.delete(id)
@@ -3586,7 +3577,7 @@ export class MockServerState implements SessionState {
 			users: Array.from(this.users.values()).map(serializeMockUser),
 			messages: Array.from(this.messages.values()).map(serializeMockMessage),
 			interactions: Array.from(this.interactions.values()).map(serializeMockInteraction),
-			attachments: Array.from(this.attachments.values()).map(serializeStoredAttachment),
+			attachments: this.attachmentStorage.getAllSync().map(serializeStoredAttachment),
 			webhooks: Array.from(this.webhooks.values()).map(serializeMockWebhook),
 			botUser: serializeMockUser(this.botUser),
 			applicationId: this.applicationId,
@@ -3876,37 +3867,6 @@ export function createMockPoll(config: MockPollConfig): MockPoll {
 // ============================================================================
 
 /**
- * Add a guild to the session state
- * @deprecated Use state.addGuild() instead
- */
-export function addGuildToSession(state: SessionState, guild: MockGuild): void {
-	state.guilds.set(guild.id, guild)
-
-	// Add bot user as member if not already
-	if (!guild.members.includes(state.botUser.id)) {
-		guild.members.push(state.botUser.id)
-	}
-}
-
-/**
- * Add a channel to a guild in the session state
- * @deprecated Use state.addChannelToGuild() instead
- */
-export function addChannelToGuild(state: SessionState, guildId: Snowflake, channel: MockChannel): void {
-	// Set guild ID on channel
-	channel.guildId = guildId
-
-	// Add channel to state
-	state.channels.set(channel.id, channel)
-
-	// Add channel ID to guild's channel list
-	const guild = state.guilds.get(guildId)
-	if (guild && !guild.channels.includes(channel.id)) {
-		guild.channels.push(channel.id)
-	}
-}
-
-/**
  * Create a default guild with a general channel and add it to the session state
  * Returns the created guild for reference
  */
@@ -3995,7 +3955,7 @@ export function serializeSessionState(state: SessionState): SerializedSessionSta
 		users: Array.from(state.users.values()).map(serializeMockUser),
 		messages: Array.from(state.messages.values()).map(serializeMockMessage),
 		interactions: Array.from(state.interactions.values()).map(serializeMockInteraction),
-		attachments: Array.from(state.attachments.values()).map(serializeStoredAttachment),
+		attachments: state.attachmentStorage.getAllSync().map(serializeStoredAttachment),
 		webhooks: Array.from(state.webhooks.values()).map(serializeMockWebhook),
 		botUser: serializeMockUser(state.botUser),
 		applicationId: state.applicationId,

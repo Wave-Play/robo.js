@@ -19,7 +19,7 @@ export default async (request: RoboRequest) => {
 	const sessionId = parseMockToken(authHeader)
 
 	if (!sessionId) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -27,7 +27,7 @@ export default async (request: RoboRequest) => {
 
 	const session = sessionManager.get(sessionId)
 	if (!session) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -39,7 +39,7 @@ export default async (request: RoboRequest) => {
 	// 3. Validate guild exists
 	const guild = session.state.guilds.get(guildId)
 	if (!guild) {
-		return new Response(JSON.stringify({ error: 'Unknown Guild', code: 10004 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Guild', code: 10004 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -48,7 +48,7 @@ export default async (request: RoboRequest) => {
 	// 4. Validate sticker exists and belongs to this guild
 	const sticker = session.state.getSticker(stickerId)
 	if (!sticker || sticker.guild_id !== guildId) {
-		return new Response(JSON.stringify({ error: 'Unknown Sticker', code: 10060 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Sticker', code: 10060 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -70,7 +70,7 @@ export default async (request: RoboRequest) => {
 		try {
 			body = await request.json()
 		} catch {
-			return new Response(JSON.stringify({ error: 'Invalid request body', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -80,7 +80,7 @@ export default async (request: RoboRequest) => {
 		if (body.name !== undefined) {
 			if (body.name.length < StickerLimits.MIN_NAME_LENGTH) {
 				return new Response(
-					JSON.stringify({ error: `Sticker name must be at least ${StickerLimits.MIN_NAME_LENGTH} characters`, code: 50035 }),
+					JSON.stringify({ message: `Sticker name must be at least ${StickerLimits.MIN_NAME_LENGTH} characters`, code: 50035 }),
 					{
 						status: 400,
 						headers: { 'Content-Type': 'application/json' }
@@ -89,7 +89,7 @@ export default async (request: RoboRequest) => {
 			}
 			if (body.name.length > StickerLimits.MAX_NAME_LENGTH) {
 				return new Response(
-					JSON.stringify({ error: `Sticker name cannot exceed ${StickerLimits.MAX_NAME_LENGTH} characters`, code: 50035 }),
+					JSON.stringify({ message: `Sticker name cannot exceed ${StickerLimits.MAX_NAME_LENGTH} characters`, code: 50035 }),
 					{
 						status: 400,
 						headers: { 'Content-Type': 'application/json' }
@@ -130,7 +130,7 @@ export default async (request: RoboRequest) => {
 		if (body.tags !== undefined) {
 			if (body.tags.length < StickerLimits.MIN_TAGS_LENGTH) {
 				return new Response(
-					JSON.stringify({ error: `Sticker tags must be at least ${StickerLimits.MIN_TAGS_LENGTH} characters`, code: 50035 }),
+					JSON.stringify({ message: `Sticker tags must be at least ${StickerLimits.MIN_TAGS_LENGTH} characters`, code: 50035 }),
 					{
 						status: 400,
 						headers: { 'Content-Type': 'application/json' }
@@ -139,7 +139,7 @@ export default async (request: RoboRequest) => {
 			}
 			if (body.tags.length > StickerLimits.MAX_TAGS_LENGTH) {
 				return new Response(
-					JSON.stringify({ error: `Sticker tags cannot exceed ${StickerLimits.MAX_TAGS_LENGTH} characters`, code: 50035 }),
+					JSON.stringify({ message: `Sticker tags cannot exceed ${StickerLimits.MAX_TAGS_LENGTH} characters`, code: 50035 }),
 					{
 						status: 400,
 						headers: { 'Content-Type': 'application/json' }
@@ -151,7 +151,7 @@ export default async (request: RoboRequest) => {
 		// Update the sticker
 		const updated = session.state.updateGuildSticker(stickerId, body)
 		if (!updated) {
-			return new Response(JSON.stringify({ error: 'Failed to update sticker', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Failed to update sticker', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -181,7 +181,7 @@ export default async (request: RoboRequest) => {
 	if (request.method === 'DELETE') {
 		const deleted = session.state.deleteGuildSticker(stickerId)
 		if (!deleted) {
-			return new Response(JSON.stringify({ error: 'Failed to delete sticker', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Failed to delete sticker', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -207,7 +207,7 @@ export default async (request: RoboRequest) => {
 	}
 
 	// Method not allowed
-	return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+	return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 		status: 405,
 		headers: { 'Content-Type': 'application/json' }
 	})

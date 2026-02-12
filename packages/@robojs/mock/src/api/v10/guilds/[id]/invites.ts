@@ -15,7 +15,7 @@ import { enforcePermissions } from '../../../../utils/permission-check.js'
 export default async (request: RoboRequest) => {
 	// Only GET is allowed on this endpoint
 	if (request.method !== 'GET') {
-		return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 			status: 405,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -26,7 +26,7 @@ export default async (request: RoboRequest) => {
 	const sessionId = parseMockToken(authHeader)
 
 	if (!sessionId) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -34,7 +34,7 @@ export default async (request: RoboRequest) => {
 
 	const session = sessionManager.get(sessionId)
 	if (!session) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -46,7 +46,7 @@ export default async (request: RoboRequest) => {
 	// 3. Validate guild exists
 	const guild = session.state.guilds.get(guildId)
 	if (!guild) {
-		return new Response(JSON.stringify({ error: 'Unknown Guild', code: 10004 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Guild', code: 10004 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})

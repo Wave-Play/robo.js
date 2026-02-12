@@ -20,7 +20,7 @@ export default async (request: RoboRequest) => {
 	const sessionId = parseMockToken(authHeader)
 
 	if (!sessionId) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -28,7 +28,7 @@ export default async (request: RoboRequest) => {
 
 	const session = sessionManager.get(sessionId)
 	if (!session) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -40,7 +40,7 @@ export default async (request: RoboRequest) => {
 	// 3. Validate guild exists
 	const guild = session.state.guilds.get(guildId)
 	if (!guild) {
-		return new Response(JSON.stringify({ error: 'Unknown Guild', code: 10004 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Guild', code: 10004 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -49,7 +49,7 @@ export default async (request: RoboRequest) => {
 	// 4. Get the auto moderation rule
 	const rule = session.state.getAutoModRule(guildId, ruleId)
 	if (!rule) {
-		return new Response(JSON.stringify({ error: 'Unknown Auto Moderation Rule', code: 10132 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Auto Moderation Rule', code: 10132 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -98,7 +98,7 @@ export default async (request: RoboRequest) => {
 		try {
 			body = await request.json()
 		} catch {
-			return new Response(JSON.stringify({ error: 'Invalid request body', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -107,7 +107,7 @@ export default async (request: RoboRequest) => {
 		// Validate name length if provided
 		if (body.name !== undefined && body.name.length > AutoModLimits.MAX_NAME_LENGTH) {
 			return new Response(
-				JSON.stringify({ error: `Rule name cannot exceed ${AutoModLimits.MAX_NAME_LENGTH} characters`, code: 50035 }),
+				JSON.stringify({ message: `Rule name cannot exceed ${AutoModLimits.MAX_NAME_LENGTH} characters`, code: 50035 }),
 				{
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
@@ -119,7 +119,7 @@ export default async (request: RoboRequest) => {
 		if (body.trigger_metadata) {
 			if (body.trigger_metadata.keyword_filter && body.trigger_metadata.keyword_filter.length > AutoModLimits.MAX_KEYWORD_FILTER) {
 				return new Response(
-					JSON.stringify({ error: `keyword_filter cannot exceed ${AutoModLimits.MAX_KEYWORD_FILTER} entries`, code: 50035 }),
+					JSON.stringify({ message: `keyword_filter cannot exceed ${AutoModLimits.MAX_KEYWORD_FILTER} entries`, code: 50035 }),
 					{
 						status: 400,
 						headers: { 'Content-Type': 'application/json' }
@@ -129,7 +129,7 @@ export default async (request: RoboRequest) => {
 
 			if (body.trigger_metadata.regex_patterns && body.trigger_metadata.regex_patterns.length > AutoModLimits.MAX_REGEX_PATTERNS) {
 				return new Response(
-					JSON.stringify({ error: `regex_patterns cannot exceed ${AutoModLimits.MAX_REGEX_PATTERNS} entries`, code: 50035 }),
+					JSON.stringify({ message: `regex_patterns cannot exceed ${AutoModLimits.MAX_REGEX_PATTERNS} entries`, code: 50035 }),
 					{
 						status: 400,
 						headers: { 'Content-Type': 'application/json' }
@@ -139,7 +139,7 @@ export default async (request: RoboRequest) => {
 
 			if (body.trigger_metadata.allow_list && body.trigger_metadata.allow_list.length > AutoModLimits.MAX_ALLOW_LIST_KEYWORD) {
 				return new Response(
-					JSON.stringify({ error: `allow_list cannot exceed ${AutoModLimits.MAX_ALLOW_LIST_KEYWORD} entries`, code: 50035 }),
+					JSON.stringify({ message: `allow_list cannot exceed ${AutoModLimits.MAX_ALLOW_LIST_KEYWORD} entries`, code: 50035 }),
 					{
 						status: 400,
 						headers: { 'Content-Type': 'application/json' }
@@ -150,7 +150,7 @@ export default async (request: RoboRequest) => {
 			if (body.trigger_metadata.mention_total_limit !== undefined) {
 				if (body.trigger_metadata.mention_total_limit > AutoModLimits.MAX_MENTION_TOTAL_LIMIT) {
 					return new Response(
-						JSON.stringify({ error: `mention_total_limit cannot exceed ${AutoModLimits.MAX_MENTION_TOTAL_LIMIT}`, code: 50035 }),
+						JSON.stringify({ message: `mention_total_limit cannot exceed ${AutoModLimits.MAX_MENTION_TOTAL_LIMIT}`, code: 50035 }),
 						{
 							status: 400,
 							headers: { 'Content-Type': 'application/json' }
@@ -163,7 +163,7 @@ export default async (request: RoboRequest) => {
 		// Validate exempt limits if provided
 		if (body.exempt_roles && body.exempt_roles.length > AutoModLimits.MAX_EXEMPT_ROLES) {
 			return new Response(
-				JSON.stringify({ error: `exempt_roles cannot exceed ${AutoModLimits.MAX_EXEMPT_ROLES} entries`, code: 50035 }),
+				JSON.stringify({ message: `exempt_roles cannot exceed ${AutoModLimits.MAX_EXEMPT_ROLES} entries`, code: 50035 }),
 				{
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
@@ -173,7 +173,7 @@ export default async (request: RoboRequest) => {
 
 		if (body.exempt_channels && body.exempt_channels.length > AutoModLimits.MAX_EXEMPT_CHANNELS) {
 			return new Response(
-				JSON.stringify({ error: `exempt_channels cannot exceed ${AutoModLimits.MAX_EXEMPT_CHANNELS} entries`, code: 50035 }),
+				JSON.stringify({ message: `exempt_channels cannot exceed ${AutoModLimits.MAX_EXEMPT_CHANNELS} entries`, code: 50035 }),
 				{
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
@@ -207,7 +207,7 @@ export default async (request: RoboRequest) => {
 		})
 
 		if (!updatedRule) {
-			return new Response(JSON.stringify({ error: 'Failed to update auto moderation rule', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Failed to update auto moderation rule', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -265,7 +265,7 @@ export default async (request: RoboRequest) => {
 	}
 
 	// Method not allowed
-	return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+	return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 		status: 405,
 		headers: { 'Content-Type': 'application/json' }
 	})

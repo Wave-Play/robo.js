@@ -19,7 +19,7 @@ export default async (request: RoboRequest) => {
 	const sessionId = parseMockToken(authHeader)
 
 	if (!sessionId) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -27,7 +27,7 @@ export default async (request: RoboRequest) => {
 
 	const session = sessionManager.get(sessionId)
 	if (!session) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -39,7 +39,7 @@ export default async (request: RoboRequest) => {
 	// 3. Validate guild exists
 	const guild = session.state.guilds.get(guildId)
 	if (!guild) {
-		return new Response(JSON.stringify({ error: 'Unknown Guild', code: 10004 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Guild', code: 10004 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -48,7 +48,7 @@ export default async (request: RoboRequest) => {
 	// 4. Validate emoji exists and belongs to this guild
 	const emoji = session.state.getEmoji(emojiId)
 	if (!emoji || !guild.emojis.includes(emojiId)) {
-		return new Response(JSON.stringify({ error: 'Unknown Emoji', code: 10014 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Emoji', code: 10014 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -69,7 +69,7 @@ export default async (request: RoboRequest) => {
 		try {
 			body = await request.json()
 		} catch {
-			return new Response(JSON.stringify({ error: 'Invalid request body', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -121,7 +121,7 @@ export default async (request: RoboRequest) => {
 		// Update the emoji
 		const updated = session.state.updateGuildEmoji(emojiId, body)
 		if (!updated) {
-			return new Response(JSON.stringify({ error: 'Failed to update emoji', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Failed to update emoji', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -151,7 +151,7 @@ export default async (request: RoboRequest) => {
 	if (request.method === 'DELETE') {
 		const deleted = session.state.deleteGuildEmoji(emojiId)
 		if (!deleted) {
-			return new Response(JSON.stringify({ error: 'Failed to delete emoji', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Failed to delete emoji', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -177,7 +177,7 @@ export default async (request: RoboRequest) => {
 	}
 
 	// Method not allowed
-	return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+	return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 		status: 405,
 		headers: { 'Content-Type': 'application/json' }
 	})

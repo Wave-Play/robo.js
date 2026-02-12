@@ -26,7 +26,7 @@ import { createMockUser } from '../../../../session/state.js'
 export default async (request: RoboRequest) => {
 	// 1. Validate POST method
 	if (request.method !== 'POST') {
-		return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 			status: 405,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -37,7 +37,7 @@ export default async (request: RoboRequest) => {
 	const sessionId = parseMockToken(authHeader)
 
 	if (!sessionId) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -45,7 +45,7 @@ export default async (request: RoboRequest) => {
 
 	const session = sessionManager.get(sessionId)
 	if (!session) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -57,7 +57,7 @@ export default async (request: RoboRequest) => {
 	try {
 		body = await request.json()
 	} catch {
-		return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
+		return new Response(JSON.stringify({ message: 'Invalid JSON body' }), {
 			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -66,7 +66,7 @@ export default async (request: RoboRequest) => {
 	const { recipient_id } = body
 
 	if (!recipient_id) {
-		return new Response(JSON.stringify({ error: 'recipient_id is required', code: 50035 }), {
+		return new Response(JSON.stringify({ message: 'recipient_id is required', code: 50035 }), {
 			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		})

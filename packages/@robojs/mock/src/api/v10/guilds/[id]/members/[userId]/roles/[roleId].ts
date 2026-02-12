@@ -16,7 +16,7 @@ export default async (request: RoboRequest) => {
 	const sessionId = parseMockToken(authHeader)
 
 	if (!sessionId) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -24,7 +24,7 @@ export default async (request: RoboRequest) => {
 
 	const session = sessionManager.get(sessionId)
 	if (!session) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -36,7 +36,7 @@ export default async (request: RoboRequest) => {
 	// 3. Validate guild exists
 	const guild = session.state.guilds.get(guildId)
 	if (!guild) {
-		return new Response(JSON.stringify({ error: 'Unknown Guild', code: 10004 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Guild', code: 10004 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -45,7 +45,7 @@ export default async (request: RoboRequest) => {
 	// 4. Validate role exists
 	const role = session.state.getGuildRole(guildId, roleId)
 	if (!role) {
-		return new Response(JSON.stringify({ error: 'Unknown Role', code: 10011 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Role', code: 10011 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -65,7 +65,7 @@ export default async (request: RoboRequest) => {
 	// 5. Cannot add/remove @everyone role (it's implicit)
 	if (roleId === guildId) {
 		return new Response(
-			JSON.stringify({ error: 'Cannot modify @everyone role assignment', code: 50028 }),
+			JSON.stringify({ message: 'Cannot modify @everyone role assignment', code: 50028 }),
 			{
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
@@ -78,7 +78,7 @@ export default async (request: RoboRequest) => {
 	const user = session.state.users.get(userId)
 
 	if (!member && !user) {
-		return new Response(JSON.stringify({ error: 'Unknown Member', code: 10007 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Member', code: 10007 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -88,7 +88,7 @@ export default async (request: RoboRequest) => {
 	if (!member && user) {
 		member = session.state.createGuildMember(guildId, userId, { roles: [] }) ?? undefined
 		if (!member) {
-			return new Response(JSON.stringify({ error: 'Failed to create member', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Failed to create member', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -158,7 +158,7 @@ export default async (request: RoboRequest) => {
 	}
 
 	// Method not allowed
-	return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+	return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 		status: 405,
 		headers: { 'Content-Type': 'application/json' }
 	})

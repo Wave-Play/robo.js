@@ -17,7 +17,7 @@ export default async (request: RoboRequest) => {
 	const sessionId = parseMockToken(authHeader)
 
 	if (!sessionId) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -25,7 +25,7 @@ export default async (request: RoboRequest) => {
 
 	const session = sessionManager.get(sessionId)
 	if (!session) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -37,7 +37,7 @@ export default async (request: RoboRequest) => {
 	// 3. Validate guild exists
 	const guild = session.state.guilds.get(guildId)
 	if (!guild) {
-		return new Response(JSON.stringify({ error: 'Unknown Guild', code: 10004 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Guild', code: 10004 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -60,7 +60,7 @@ export default async (request: RoboRequest) => {
 		try {
 			body = await request.json()
 		} catch {
-			return new Response(JSON.stringify({ error: 'Invalid request body', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -68,7 +68,7 @@ export default async (request: RoboRequest) => {
 
 		// Validate required fields
 		if (!body.name || typeof body.name !== 'string') {
-			return new Response(JSON.stringify({ error: 'Name is required', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Name is required', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -77,7 +77,7 @@ export default async (request: RoboRequest) => {
 		// Validate name length
 		if (body.name.length < EmojiLimits.MIN_NAME_LENGTH) {
 			return new Response(
-				JSON.stringify({ error: `Emoji name must be at least ${EmojiLimits.MIN_NAME_LENGTH} characters`, code: 50035 }),
+				JSON.stringify({ message: `Emoji name must be at least ${EmojiLimits.MIN_NAME_LENGTH} characters`, code: 50035 }),
 				{
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
@@ -87,7 +87,7 @@ export default async (request: RoboRequest) => {
 
 		if (body.name.length > EmojiLimits.MAX_NAME_LENGTH) {
 			return new Response(
-				JSON.stringify({ error: `Emoji name cannot exceed ${EmojiLimits.MAX_NAME_LENGTH} characters`, code: 50035 }),
+				JSON.stringify({ message: `Emoji name cannot exceed ${EmojiLimits.MAX_NAME_LENGTH} characters`, code: 50035 }),
 				{
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
@@ -113,7 +113,7 @@ export default async (request: RoboRequest) => {
 		// Note: Discord requires base64-encoded image data in data URI format
 		if (!body.image || typeof body.image !== 'string') {
 			return new Response(
-				JSON.stringify({ error: 'Image is required', code: 50035 }),
+				JSON.stringify({ message: 'Image is required', code: 50035 }),
 				{
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
@@ -151,7 +151,7 @@ export default async (request: RoboRequest) => {
 		)
 
 		if (!emoji) {
-			return new Response(JSON.stringify({ error: 'Failed to create emoji', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Failed to create emoji', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -181,7 +181,7 @@ export default async (request: RoboRequest) => {
 	}
 
 	// Method not allowed
-	return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+	return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 		status: 405,
 		headers: { 'Content-Type': 'application/json' }
 	})

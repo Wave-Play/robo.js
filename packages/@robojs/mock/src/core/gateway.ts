@@ -2,10 +2,10 @@ import type { IncomingMessage } from 'node:http'
 import type { Duplex } from 'node:stream'
 import WebSocket, { WebSocketServer } from 'ws'
 import { GatewayCloseCodes, GatewayIntentBits, GatewayOpcodes } from 'discord-api-types/v10'
-import { buildHelloPayload, buildHeartbeatAckPayload, buildReadyPayload, buildGuildCreatePayload, isValidIdentifyPayload, mockGuildMemberToAPIMember } from '../discord/payloads.js'
+import { buildHelloPayload, buildHeartbeatAckPayload, buildReadyPayload, buildGuildCreatePayload, isValidIdentifyPayload, isValidResumePayload, buildResumedPayload, buildInvalidSessionPayload, mockGuildMemberToAPIMember } from '../discord/payloads.js'
 import type { GatewayPayload } from '../discord/payloads.js'
 import { GATEWAY_VERSION, DEFAULT_HEARTBEAT_INTERVAL } from '../discord/opcodes.js'
-import { generateGatewaySessionId } from '../utils/id.js'
+import { generateGatewaySessionId, parseMockToken } from '../utils/id.js'
 import { sessionManager } from './manager.js'
 import { mockLogger } from './logger.js'
 import { getStageBridge } from './stage-bridge.js'
@@ -40,6 +40,10 @@ export class GatewayServer {
 	private heartbeatInterval: number = DEFAULT_HEARTBEAT_INTERVAL
 	// Track warned intent filters to avoid spam (connectionId:eventName -> true)
 	private warnedIntentFilters: Set<string> = new Set()
+	// Pending cleanup timeouts for disconnected connections awaiting RESUME (connectionId -> timeout)
+	private resumeCleanupTimeouts: Map<string, ReturnType<typeof setTimeout>> = new Map()
+	// Duration to keep connection state alive for RESUME after disconnect (3 minutes)
+	private static readonly RESUME_TIMEOUT_MS = 3 * 60 * 1000
 
 	constructor() {
 		this.wss = new WebSocketServer({ noServer: true })
@@ -151,10 +155,27 @@ export class GatewayServer {
 		ws.on('close', (code, reason) => {
 			const state = this.connections.get(ws)
 			if (state?.sessionId) {
-				// Remove connection from session
-				const session = sessionManager.get(state.sessionId)
-				session?.connections.delete(state.id)
-				mockLogger.debug(`Removed connection ${state.id} from session ${state.sessionId}`)
+				// Remove the WebSocket→state mapping so we don't send to a dead socket
+				this.connections.delete(ws)
+
+				// Keep the connection state in the session for RESUME
+				// Do NOT delete from session.connections yet - RESUME needs to find it
+				mockLogger.debug(`Connection ${state.id} disconnected from session ${state.sessionId}, keeping state for RESUME`)
+
+				// Set a cleanup timeout to remove the connection state if no RESUME arrives
+				const cleanupTimeout = setTimeout(() => {
+					const session = sessionManager.get(state.sessionId)
+					if (session) {
+						// Only delete if the connection state is still there (wasn't resumed)
+						const existingState = session.connections.get(state.id)
+						if (existingState && !this.getWebSocketForConnection(state.id)) {
+							session.connections.delete(state.id)
+							mockLogger.debug(`RESUME timeout expired, removed connection ${state.id} from session ${state.sessionId}`)
+						}
+					}
+					this.resumeCleanupTimeouts.delete(state.id)
+				}, GatewayServer.RESUME_TIMEOUT_MS)
+				this.resumeCleanupTimeouts.set(state.id, cleanupTimeout)
 
 				// Notify stage clients that bot disconnected (Phase 5A)
 				try {
@@ -162,8 +183,9 @@ export class GatewayServer {
 				} catch {
 					// Stage bridge may not be initialized
 				}
+			} else {
+				this.connections.delete(ws)
 			}
-			this.connections.delete(ws)
 			mockLogger.debug(`Connection closed: ${code} ${reason.toString()}`)
 		})
 
@@ -261,6 +283,12 @@ export class GatewayServer {
 				// Send HEARTBEAT_ACK immediately
 				this.send(ws, buildHeartbeatAckPayload())
 				mockLogger.debug(`Heartbeat ACK sent to connection ${connState.id}`)
+				break
+
+			case GatewayOpcodes.Resume:
+				// Handle RESUME (op 6) - reconnection mechanism
+				// RESUME does NOT require identified check since it IS the authentication for reconnection
+				this.handleResume(ws, payload.d)
 				break
 
 			case GatewayOpcodes.RequestGuildMembers:
@@ -424,6 +452,96 @@ export class GatewayServer {
 		// Fall back to session-level bot user (most common case)
 		// This maintains backward compatibility with existing behavior
 		return sessionBotUser
+	}
+
+	/**
+	 * Handle RESUME payload (op 6)
+	 * Restores a previous Gateway connection, replaying missed events
+	 *
+	 * Discord protocol:
+	 * 1. Client sends op 6 with { token, session_id, seq }
+	 * 2. Server validates token + session_id and finds the old connection state
+	 * 3. If valid: replay missed events, then send RESUMED (op 0, t: "RESUMED")
+	 * 4. If invalid: send INVALID_SESSION (op 9, d: false)
+	 */
+	private handleResume(ws: WebSocket, data: unknown): void {
+		// Validate the resume payload structure
+		if (!isValidResumePayload(data)) {
+			mockLogger.warn('Invalid RESUME payload structure')
+			this.send(ws, buildInvalidSessionPayload(false))
+			return
+		}
+
+		// Parse the token to find the session
+		const sessionId = parseMockToken(data.token)
+		if (!sessionId) {
+			mockLogger.warn(`RESUME failed: could not parse token`)
+			this.send(ws, buildInvalidSessionPayload(false))
+			return
+		}
+
+		const session = sessionManager.get(sessionId)
+		if (!session) {
+			mockLogger.warn(`RESUME failed: session ${sessionId} not found`)
+			this.send(ws, buildInvalidSessionPayload(false))
+			return
+		}
+
+		// Look up the old ConnectionState by session_id (the Gateway session ID, not the mock session ID)
+		const oldConnState = session.connections.get(data.session_id)
+		if (!oldConnState) {
+			mockLogger.warn(`RESUME failed: connection ${data.session_id} not found in session ${sessionId}`)
+			this.send(ws, buildInvalidSessionPayload(false))
+			return
+		}
+
+		// Cancel the cleanup timeout since RESUME arrived in time
+		const cleanupTimeout = this.resumeCleanupTimeouts.get(oldConnState.id)
+		if (cleanupTimeout) {
+			clearTimeout(cleanupTimeout)
+			this.resumeCleanupTimeouts.delete(oldConnState.id)
+		}
+
+		// Restore the connection state to the new WebSocket
+		this.connections.set(ws, oldConnState)
+		oldConnState.lastHeartbeat = Date.now()
+		oldConnState.missedHeartbeats = 0
+
+		// Record the RESUME action
+		session.recordAction('gateway_resume', {
+			session_id: data.session_id,
+			seq: data.seq
+		})
+
+		// Replay missed events from dispatch history
+		const history = oldConnState.dispatchHistory ?? []
+		let replayed = 0
+		for (const entry of history) {
+			if (entry.seq > data.seq) {
+				const replayPayload: GatewayPayload = {
+					op: GatewayOpcodes.Dispatch,
+					s: entry.seq,
+					t: entry.event,
+					d: entry.data
+				}
+				this.send(ws, replayPayload)
+				replayed++
+			}
+		}
+
+		// Send RESUMED event
+		this.send(ws, buildResumedPayload())
+
+		mockLogger.info(`RESUME successful: connection=${oldConnState.id}, session=${sessionId}, replayed=${replayed} events (from seq ${data.seq})`)
+
+		// Notify stage clients that bot is ready again
+		try {
+			if (oldConnState.botUser) {
+				getStageBridge().onBotReady(session.id, oldConnState.botUser, oldConnState.id)
+			}
+		} catch {
+			// Stage bridge may not be initialized
+		}
 	}
 
 	/**
@@ -714,6 +832,13 @@ export class GatewayServer {
 				d: eventData
 			}
 
+			// Record dispatch in history for RESUME replay
+			if (!connState.dispatchHistory) connState.dispatchHistory = []
+			connState.dispatchHistory.push({ seq: connState.sequence, event, data: eventData })
+			if (connState.dispatchHistory.length > 2500) {
+				connState.dispatchHistory = connState.dispatchHistory.slice(-2500)
+			}
+
 			this.send(ws, payload)
 			dispatched++
 			mockLogger.debug(`Dispatched ${event} (seq: ${connState.sequence}) to connection ${connectionId}`)
@@ -928,6 +1053,12 @@ export class GatewayServer {
 	 */
 	close(): void {
 		mockLogger.debug('Closing Gateway server...')
+
+		// Cancel all pending RESUME cleanup timeouts
+		for (const timeout of this.resumeCleanupTimeouts.values()) {
+			clearTimeout(timeout)
+		}
+		this.resumeCleanupTimeouts.clear()
 
 		// Close all active connections
 		for (const [ws, connState] of this.connections) {

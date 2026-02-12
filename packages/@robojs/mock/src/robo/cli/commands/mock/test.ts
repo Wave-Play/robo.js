@@ -10,7 +10,7 @@
  * 1. Starts the mock server in test mode
  * 2. Sets environment variables for tests to connect
  * 3. Auto-detects and runs the test suite (Jest or Node)
- * 4. Tests use startMockBot() to spawn their own bot instances
+ * 4. Tests use startMockRobo() to spawn their own bot instances
  * 5. Tracks sessions and results for UI display
  * 6. Keeps the server alive after tests for inspection
  */
@@ -119,9 +119,9 @@ export default async function mockTestCommand({ options, logger }: CliContext) {
 		logger.info(color.green('Mock server ready'))
 		logger.log('')
 
-		// Run tests - tests will use startMockBot() to spawn their own bot instances
+		// Run tests - tests will use startMockRobo() to spawn their own bot instances
 		logger.info('Running tests...')
-		logger.info(color.dim('  (Tests use startMockBot() to start bot instances)'))
+		logger.info(color.dim('  (Tests use startMockRobo() to start bot instances)'))
 		logger.log('')
 
 		const testResult = await runTests(detectedRunner, timeout, verbose, port)

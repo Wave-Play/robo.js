@@ -49,7 +49,7 @@ export default async (request: RoboRequest) => {
 	}
 
 	if (!body.id || !body.name) {
-		return new Response(JSON.stringify({ error: 'id and name are required' }), {
+		return new Response(JSON.stringify({ message: 'id and name are required' }), {
 			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		})

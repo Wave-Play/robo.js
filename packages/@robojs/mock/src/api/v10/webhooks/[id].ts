@@ -19,7 +19,7 @@ export default async (request: RoboRequest) => {
 	const sessionId = parseMockToken(authHeader)
 
 	if (!sessionId) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -27,7 +27,7 @@ export default async (request: RoboRequest) => {
 
 	const session = sessionManager.get(sessionId)
 	if (!session) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -39,7 +39,7 @@ export default async (request: RoboRequest) => {
 	// 3. Get the webhook
 	const webhook = session.state.getWebhook(webhookId)
 	if (!webhook) {
-		return new Response(JSON.stringify({ error: 'Unknown Webhook', code: 10015 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Webhook', code: 10015 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -63,7 +63,7 @@ export default async (request: RoboRequest) => {
 		try {
 			body = await request.json()
 		} catch {
-			return new Response(JSON.stringify({ error: 'Invalid request body', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -72,7 +72,7 @@ export default async (request: RoboRequest) => {
 		// Validate name if provided
 		if (body.name !== undefined) {
 			if (typeof body.name !== 'string') {
-				return new Response(JSON.stringify({ error: 'Name must be a string', code: 50035 }), {
+				return new Response(JSON.stringify({ message: 'Name must be a string', code: 50035 }), {
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
 				})
@@ -80,7 +80,7 @@ export default async (request: RoboRequest) => {
 
 			if (body.name.length < WebhookLimits.MIN_NAME_LENGTH) {
 				return new Response(
-					JSON.stringify({ error: `Webhook name must be at least ${WebhookLimits.MIN_NAME_LENGTH} character`, code: 50035 }),
+					JSON.stringify({ message: `Webhook name must be at least ${WebhookLimits.MIN_NAME_LENGTH} character`, code: 50035 }),
 					{
 						status: 400,
 						headers: { 'Content-Type': 'application/json' }
@@ -90,7 +90,7 @@ export default async (request: RoboRequest) => {
 
 			if (body.name.length > WebhookLimits.MAX_NAME_LENGTH) {
 				return new Response(
-					JSON.stringify({ error: `Webhook name cannot exceed ${WebhookLimits.MAX_NAME_LENGTH} characters`, code: 50035 }),
+					JSON.stringify({ message: `Webhook name cannot exceed ${WebhookLimits.MAX_NAME_LENGTH} characters`, code: 50035 }),
 					{
 						status: 400,
 						headers: { 'Content-Type': 'application/json' }
@@ -102,7 +102,7 @@ export default async (request: RoboRequest) => {
 			const nameLower = body.name.toLowerCase()
 			if (nameLower.includes('clyde')) {
 				return new Response(
-					JSON.stringify({ error: 'Webhook name cannot contain "clyde"', code: 50035 }),
+					JSON.stringify({ message: 'Webhook name cannot contain "clyde"', code: 50035 }),
 					{
 						status: 400,
 						headers: { 'Content-Type': 'application/json' }
@@ -111,7 +111,7 @@ export default async (request: RoboRequest) => {
 			}
 			if (nameLower.includes('discord')) {
 				return new Response(
-					JSON.stringify({ error: 'Webhook name cannot contain "discord"', code: 50035 }),
+					JSON.stringify({ message: 'Webhook name cannot contain "discord"', code: 50035 }),
 					{
 						status: 400,
 						headers: { 'Content-Type': 'application/json' }
@@ -124,7 +124,7 @@ export default async (request: RoboRequest) => {
 		if (body.channel_id !== undefined) {
 			const targetChannel = session.state.getChannel(body.channel_id)
 			if (!targetChannel) {
-				return new Response(JSON.stringify({ error: 'Unknown Channel', code: 10003 }), {
+				return new Response(JSON.stringify({ message: 'Unknown Channel', code: 10003 }), {
 					status: 404,
 					headers: { 'Content-Type': 'application/json' }
 				})
@@ -159,7 +159,7 @@ export default async (request: RoboRequest) => {
 		})
 
 		if (!updatedWebhook) {
-			return new Response(JSON.stringify({ error: 'Failed to update webhook', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Failed to update webhook', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -208,7 +208,7 @@ export default async (request: RoboRequest) => {
 
 		const deleted = session.state.deleteWebhook(webhookId)
 		if (!deleted) {
-			return new Response(JSON.stringify({ error: 'Failed to delete webhook', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Failed to delete webhook', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -240,7 +240,7 @@ export default async (request: RoboRequest) => {
 	}
 
 	// Method not allowed
-	return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+	return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 		status: 405,
 		headers: { 'Content-Type': 'application/json' }
 	})

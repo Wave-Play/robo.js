@@ -406,34 +406,6 @@
 	font-size: 12px;
 }
 
-/* Legacy support - keeping old class names for compatibility */
-.controls {
-	display: flex;
-	align-items: center;
-	gap: 4px;
-}
-
-.controlButton {
-	width: 28px;
-	height: 28px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	border-radius: var(--radius-sm);
-	color: var(--interactive-default);
-	transition: color 0.1s ease, background 0.1s ease;
-}
-
-.controlButton:hover:not(:disabled) {
-	color: var(--interactive-hover);
-	background: var(--hover-overlay);
-}
-
-.controlButton:disabled {
-	opacity: 0.4;
-	cursor: not-allowed;
-}
-
 .progressBar {
 	flex: 1;
 	height: 4px;

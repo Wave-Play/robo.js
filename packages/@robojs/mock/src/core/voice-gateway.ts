@@ -416,19 +416,6 @@ export class VoiceGatewayServer {
 		}
 	}
 
-	/**
-	 * Get connection count
-	 */
-	getConnectionCount(): number {
-		return this.connections.size
-	}
-
-	/**
-	 * Set heartbeat interval for testing
-	 */
-	setHeartbeatInterval(interval: number): void {
-		this.heartbeatInterval = interval
-	}
 }
 
 // Payload type definitions

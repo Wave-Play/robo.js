@@ -28,7 +28,7 @@ const CDN_BASE_URL = process.env.MOCK_CDN_URL || 'http://localhost:53596'
 export default async (request: RoboRequest) => {
 	// 1. Validate method
 	if (request.method !== 'GET' && request.method !== 'POST') {
-		return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 			status: 405,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -39,7 +39,7 @@ export default async (request: RoboRequest) => {
 	const sessionId = parseMockToken(authHeader)
 
 	if (!sessionId) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -47,7 +47,7 @@ export default async (request: RoboRequest) => {
 
 	const session = sessionManager.get(sessionId)
 	if (!session) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -65,7 +65,7 @@ export default async (request: RoboRequest) => {
 	// 4. Validate channel exists in session state
 	const channel = session.state.getChannel(channelId)
 	if (!channel) {
-		return new Response(JSON.stringify({ error: 'Unknown Channel', code: 10003 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Channel', code: 10003 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -230,12 +230,12 @@ export default async (request: RoboRequest) => {
 		}
 	} catch (error) {
 		if (error instanceof MultipartError) {
-			return new Response(JSON.stringify({ error: error.message, code: error.code }), {
+			return new Response(JSON.stringify({ message: error.message, code: error.code }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
 		}
-		return new Response(JSON.stringify({ error: 'Invalid request body' }), {
+		return new Response(JSON.stringify({ message: 'Invalid request body' }), {
 			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -273,7 +273,7 @@ export default async (request: RoboRequest) => {
 
 	// 5b1. Validate message length (2000 character limit)
 	if (body.content && body.content.length > 2000) {
-		return new Response(JSON.stringify({ error: 'Message content exceeds 2000 characters', code: 50035 }), {
+		return new Response(JSON.stringify({ message: 'Message content exceeds 2000 characters', code: 50035 }), {
 			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -282,25 +282,25 @@ export default async (request: RoboRequest) => {
 	// 5c. Validate poll if present
 	if (body.poll) {
 		if (!body.poll.question?.text) {
-			return new Response(JSON.stringify({ error: 'Poll question text is required', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Poll question text is required', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
 		}
 		if (body.poll.question.text.length > 300) {
-			return new Response(JSON.stringify({ error: 'Poll question text cannot exceed 300 characters', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Poll question text cannot exceed 300 characters', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
 		}
 		if (!body.poll.answers || body.poll.answers.length < 1) {
-			return new Response(JSON.stringify({ error: 'Poll must have at least 1 answer', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Poll must have at least 1 answer', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
 		}
 		if (body.poll.answers.length > 10) {
-			return new Response(JSON.stringify({ error: 'Poll cannot have more than 10 answers', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Poll cannot have more than 10 answers', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -309,7 +309,7 @@ export default async (request: RoboRequest) => {
 		for (let i = 0; i < body.poll.answers.length; i++) {
 			const answerText = body.poll.answers[i].poll_media?.text
 			if (answerText && answerText.length > 55) {
-				return new Response(JSON.stringify({ error: `Poll answer ${i + 1} text cannot exceed 55 characters`, code: 50035 }), {
+				return new Response(JSON.stringify({ message: `Poll answer ${i + 1} text cannot exceed 55 characters`, code: 50035 }), {
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
 				})
@@ -320,7 +320,7 @@ export default async (request: RoboRequest) => {
 	// 5d. Validate sticker_ids if present
 	if (body.sticker_ids?.length) {
 		if (body.sticker_ids.length > 3) {
-			return new Response(JSON.stringify({ error: 'Cannot send more than 3 stickers', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Cannot send more than 3 stickers', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -328,7 +328,7 @@ export default async (request: RoboRequest) => {
 		// Validate all stickers exist
 		for (const stickerId of body.sticker_ids) {
 			if (!session.state.getSticker(stickerId)) {
-				return new Response(JSON.stringify({ error: `Unknown sticker: ${stickerId}`, code: 50035 }), {
+				return new Response(JSON.stringify({ message: `Unknown sticker: ${stickerId}`, code: 50035 }), {
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
 				})

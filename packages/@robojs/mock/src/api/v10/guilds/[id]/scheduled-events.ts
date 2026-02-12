@@ -22,7 +22,7 @@ export default async (request: RoboRequest) => {
 	const sessionId = parseMockToken(authHeader)
 
 	if (!sessionId) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -30,7 +30,7 @@ export default async (request: RoboRequest) => {
 
 	const session = sessionManager.get(sessionId)
 	if (!session) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -42,7 +42,7 @@ export default async (request: RoboRequest) => {
 	// 3. Validate guild exists
 	const guild = session.state.guilds.get(guildId)
 	if (!guild) {
-		return new Response(JSON.stringify({ error: 'Unknown Guild', code: 10004 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Guild', code: 10004 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -91,7 +91,7 @@ export default async (request: RoboRequest) => {
 		try {
 			body = await request.json()
 		} catch {
-			return new Response(JSON.stringify({ error: 'Invalid request body', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -99,21 +99,21 @@ export default async (request: RoboRequest) => {
 
 		// Validate required fields
 		if (!body.name) {
-			return new Response(JSON.stringify({ error: 'name is required', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'name is required', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
 		}
 
 		if (!body.scheduled_start_time) {
-			return new Response(JSON.stringify({ error: 'scheduled_start_time is required', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'scheduled_start_time is required', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
 		}
 
 		if (!body.entity_type) {
-			return new Response(JSON.stringify({ error: 'entity_type is required', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'entity_type is required', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -122,7 +122,7 @@ export default async (request: RoboRequest) => {
 		// Validate name length
 		if (body.name.length < ScheduledEventLimits.MIN_NAME_LENGTH) {
 			return new Response(
-				JSON.stringify({ error: `Event name must be at least ${ScheduledEventLimits.MIN_NAME_LENGTH} character`, code: 50035 }),
+				JSON.stringify({ message: `Event name must be at least ${ScheduledEventLimits.MIN_NAME_LENGTH} character`, code: 50035 }),
 				{
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
@@ -132,7 +132,7 @@ export default async (request: RoboRequest) => {
 
 		if (body.name.length > ScheduledEventLimits.MAX_NAME_LENGTH) {
 			return new Response(
-				JSON.stringify({ error: `Event name cannot exceed ${ScheduledEventLimits.MAX_NAME_LENGTH} characters`, code: 50035 }),
+				JSON.stringify({ message: `Event name cannot exceed ${ScheduledEventLimits.MAX_NAME_LENGTH} characters`, code: 50035 }),
 				{
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
@@ -143,7 +143,7 @@ export default async (request: RoboRequest) => {
 		// Validate description length if provided
 		if (body.description && body.description.length > ScheduledEventLimits.MAX_DESCRIPTION_LENGTH) {
 			return new Response(
-				JSON.stringify({ error: `Event description cannot exceed ${ScheduledEventLimits.MAX_DESCRIPTION_LENGTH} characters`, code: 50035 }),
+				JSON.stringify({ message: `Event description cannot exceed ${ScheduledEventLimits.MAX_DESCRIPTION_LENGTH} characters`, code: 50035 }),
 				{
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
@@ -156,7 +156,7 @@ export default async (request: RoboRequest) => {
 			// External events require location and end time
 			if (!body.entity_metadata?.location) {
 				return new Response(
-					JSON.stringify({ error: 'entity_metadata.location is required for EXTERNAL events', code: 50035 }),
+					JSON.stringify({ message: 'entity_metadata.location is required for EXTERNAL events', code: 50035 }),
 					{
 						status: 400,
 						headers: { 'Content-Type': 'application/json' }
@@ -166,7 +166,7 @@ export default async (request: RoboRequest) => {
 
 			if (body.entity_metadata.location.length > ScheduledEventLimits.MAX_LOCATION_LENGTH) {
 				return new Response(
-					JSON.stringify({ error: `Location cannot exceed ${ScheduledEventLimits.MAX_LOCATION_LENGTH} characters`, code: 50035 }),
+					JSON.stringify({ message: `Location cannot exceed ${ScheduledEventLimits.MAX_LOCATION_LENGTH} characters`, code: 50035 }),
 					{
 						status: 400,
 						headers: { 'Content-Type': 'application/json' }
@@ -176,7 +176,7 @@ export default async (request: RoboRequest) => {
 
 			if (!body.scheduled_end_time) {
 				return new Response(
-					JSON.stringify({ error: 'scheduled_end_time is required for EXTERNAL events', code: 50035 }),
+					JSON.stringify({ message: 'scheduled_end_time is required for EXTERNAL events', code: 50035 }),
 					{
 						status: 400,
 						headers: { 'Content-Type': 'application/json' }
@@ -187,7 +187,7 @@ export default async (request: RoboRequest) => {
 			// Stage or Voice events require channel_id
 			if (!body.channel_id) {
 				return new Response(
-					JSON.stringify({ error: 'channel_id is required for STAGE_INSTANCE and VOICE events', code: 50035 }),
+					JSON.stringify({ message: 'channel_id is required for STAGE_INSTANCE and VOICE events', code: 50035 }),
 					{
 						status: 400,
 						headers: { 'Content-Type': 'application/json' }
@@ -198,7 +198,7 @@ export default async (request: RoboRequest) => {
 			// Validate channel exists
 			const channel = session.state.getChannel(body.channel_id)
 			if (!channel) {
-				return new Response(JSON.stringify({ error: 'Unknown Channel', code: 10003 }), {
+				return new Response(JSON.stringify({ message: 'Unknown Channel', code: 10003 }), {
 					status: 404,
 					headers: { 'Content-Type': 'application/json' }
 				})
@@ -223,7 +223,7 @@ export default async (request: RoboRequest) => {
 		)
 
 		if (!event) {
-			return new Response(JSON.stringify({ error: 'Failed to create scheduled event', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Failed to create scheduled event', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -254,7 +254,7 @@ export default async (request: RoboRequest) => {
 	}
 
 	// Method not allowed
-	return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+	return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 		status: 405,
 		headers: { 'Content-Type': 'application/json' }
 	})

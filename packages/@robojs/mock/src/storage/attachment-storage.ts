@@ -174,6 +174,10 @@ export class MemoryAttachmentStorage implements AttachmentStorage {
 		}
 		return result
 	}
+
+	getAllSync(): StoredAttachment[] {
+		return Array.from(this.attachments.values())
+	}
 }
 
 /**

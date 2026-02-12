@@ -47,7 +47,7 @@ export default async (request: RoboRequest) => {
 	const deleted = session.state.deleteGuildEmoji(emojiId)
 
 	if (!deleted) {
-		return new Response(JSON.stringify({ error: 'Failed to delete emoji' }), {
+		return new Response(JSON.stringify({ message: 'Failed to delete emoji' }), {
 			status: 500,
 			headers: { 'Content-Type': 'application/json' }
 		})

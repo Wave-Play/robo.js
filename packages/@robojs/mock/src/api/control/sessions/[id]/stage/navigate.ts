@@ -31,7 +31,7 @@ const VALID_ACTIONS = ['select_guild', 'select_channel', 'open_dm', 'open_thread
  * Create a 409 Conflict response
  */
 function conflict(message: string, code: string): Response {
-	return new Response(JSON.stringify({ error: message, code }), {
+	return new Response(JSON.stringify({ message: message, code }), {
 		status: 409,
 		headers: { 'Content-Type': 'application/json' }
 	})
@@ -41,7 +41,7 @@ function conflict(message: string, code: string): Response {
  * Create a 408 Request Timeout response
  */
 function requestTimeout(message: string, code: string): Response {
-	return new Response(JSON.stringify({ error: message, code }), {
+	return new Response(JSON.stringify({ message: message, code }), {
 		status: 408,
 		headers: { 'Content-Type': 'application/json' }
 	})
@@ -50,7 +50,7 @@ function requestTimeout(message: string, code: string): Response {
 export default async function handler(request: RoboRequest): Promise<Response> {
 	// Only allow POST
 	if (request.method !== 'POST') {
-		return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 			status: 405,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -142,7 +142,7 @@ export default async function handler(request: RoboRequest): Promise<Response> {
 			return requestTimeout('Stage UI did not respond in time', 'TIMEOUT')
 		}
 
-		return new Response(JSON.stringify({ error: message }), {
+		return new Response(JSON.stringify({ message: message }), {
 			status: 500,
 			headers: { 'Content-Type': 'application/json' }
 		})

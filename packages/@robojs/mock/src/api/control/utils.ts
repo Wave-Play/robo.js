@@ -15,7 +15,7 @@ export function validateMethod(request: RoboRequest, allowed: HttpMethod[]): voi
  * Create a 404 Not Found response
  */
 export function notFound(message = 'Not found'): Response {
-	return new Response(JSON.stringify({ error: message }), {
+	return new Response(JSON.stringify({ message, code: 0 }), {
 		status: 404,
 		headers: { 'Content-Type': 'application/json' }
 	})
@@ -25,7 +25,7 @@ export function notFound(message = 'Not found'): Response {
  * Create a 400 Bad Request response
  */
 export function badRequest(message = 'Bad request'): Response {
-	return new Response(JSON.stringify({ error: message }), {
+	return new Response(JSON.stringify({ message, code: 0 }), {
 		status: 400,
 		headers: { 'Content-Type': 'application/json' }
 	})
@@ -35,7 +35,7 @@ export function badRequest(message = 'Bad request'): Response {
  * Create a 500 Internal Server Error response
  */
 export function serverError(message = 'Internal server error'): Response {
-	return new Response(JSON.stringify({ error: message }), {
+	return new Response(JSON.stringify({ message, code: 0 }), {
 		status: 500,
 		headers: { 'Content-Type': 'application/json' }
 	})

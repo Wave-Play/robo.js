@@ -19,7 +19,7 @@ import { getGatewayServer } from '../../../core/gateway.js'
 export default async (request: RoboRequest) => {
 	// 1. Validate method
 	if (request.method !== 'GET' && request.method !== 'PATCH' && request.method !== 'DELETE') {
-		return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 			status: 405,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -30,7 +30,7 @@ export default async (request: RoboRequest) => {
 	const sessionId = parseMockToken(authHeader)
 
 	if (!sessionId) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -38,7 +38,7 @@ export default async (request: RoboRequest) => {
 
 	const session = sessionManager.get(sessionId)
 	if (!session) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -50,7 +50,7 @@ export default async (request: RoboRequest) => {
 	// 4. Validate channel exists
 	const channel = session.state.getChannel(channelId)
 	if (!channel) {
-		return new Response(JSON.stringify({ error: 'Unknown Channel', code: 10003 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Channel', code: 10003 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -82,7 +82,7 @@ export default async (request: RoboRequest) => {
 		if (isThread) {
 			const deleted = session.state.deleteThread(channelId)
 			if (!deleted) {
-				return new Response(JSON.stringify({ error: 'Failed to delete thread', code: 50001 }), {
+				return new Response(JSON.stringify({ message: 'Failed to delete thread', code: 50001 }), {
 					status: 500,
 					headers: { 'Content-Type': 'application/json' }
 				})
@@ -105,7 +105,7 @@ export default async (request: RoboRequest) => {
 			// Regular channel deletion
 			const deleted = session.state.removeChannel(channelId)
 			if (!deleted) {
-				return new Response(JSON.stringify({ error: 'Failed to delete channel', code: 50001 }), {
+				return new Response(JSON.stringify({ message: 'Failed to delete channel', code: 50001 }), {
 					status: 500,
 					headers: { 'Content-Type': 'application/json' }
 				})
@@ -164,7 +164,7 @@ export default async (request: RoboRequest) => {
 	try {
 		body = await request.json()
 	} catch {
-		return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
+		return new Response(JSON.stringify({ message: 'Invalid JSON body' }), {
 			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -182,7 +182,7 @@ export default async (request: RoboRequest) => {
 		})
 
 		if (!thread) {
-			return new Response(JSON.stringify({ error: 'Failed to update thread', code: 50001 }), {
+			return new Response(JSON.stringify({ message: 'Failed to update thread', code: 50001 }), {
 				status: 500,
 				headers: { 'Content-Type': 'application/json' }
 			})

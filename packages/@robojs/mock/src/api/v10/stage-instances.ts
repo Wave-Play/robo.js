@@ -43,7 +43,7 @@ function stageInstanceToAPI(instance: {
  */
 export default async (request: RoboRequest) => {
 	if (request.method !== 'POST') {
-		return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 			status: 405,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -54,7 +54,7 @@ export default async (request: RoboRequest) => {
 	const sessionId = parseMockToken(authHeader)
 
 	if (!sessionId) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -62,7 +62,7 @@ export default async (request: RoboRequest) => {
 
 	const session = sessionManager.get(sessionId)
 	if (!session) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -80,7 +80,7 @@ export default async (request: RoboRequest) => {
 	try {
 		body = await request.json()
 	} catch {
-		return new Response(JSON.stringify({ error: 'Invalid JSON body', code: 50035 }), {
+		return new Response(JSON.stringify({ message: 'Invalid JSON body', code: 50035 }), {
 			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -88,14 +88,14 @@ export default async (request: RoboRequest) => {
 
 	// Validate required fields
 	if (!body.channel_id) {
-		return new Response(JSON.stringify({ error: 'Missing channel_id', code: 50035 }), {
+		return new Response(JSON.stringify({ message: 'Missing channel_id', code: 50035 }), {
 			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		})
 	}
 
 	if (!body.topic) {
-		return new Response(JSON.stringify({ error: 'Missing topic', code: 50035 }), {
+		return new Response(JSON.stringify({ message: 'Missing topic', code: 50035 }), {
 			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -103,7 +103,7 @@ export default async (request: RoboRequest) => {
 
 	// Validate topic length
 	if (body.topic.length < 1 || body.topic.length > 120) {
-		return new Response(JSON.stringify({ error: 'Topic must be between 1 and 120 characters', code: 50035 }), {
+		return new Response(JSON.stringify({ message: 'Topic must be between 1 and 120 characters', code: 50035 }), {
 			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -112,7 +112,7 @@ export default async (request: RoboRequest) => {
 	// Find the channel
 	const channel = session.state.channels.get(body.channel_id)
 	if (!channel) {
-		return new Response(JSON.stringify({ error: 'Unknown Channel', code: 10003 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Channel', code: 10003 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -121,7 +121,7 @@ export default async (request: RoboRequest) => {
 	// Validate channel is a stage channel
 	if (channel.type !== 13) {
 		// 13 = GUILD_STAGE_VOICE
-		return new Response(JSON.stringify({ error: 'Channel is not a stage channel', code: 50035 }), {
+		return new Response(JSON.stringify({ message: 'Channel is not a stage channel', code: 50035 }), {
 			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -129,7 +129,7 @@ export default async (request: RoboRequest) => {
 
 	// Check if stage instance already exists
 	if (session.state.getStageInstance(body.channel_id)) {
-		return new Response(JSON.stringify({ error: 'Stage instance already exists for this channel', code: 50035 }), {
+		return new Response(JSON.stringify({ message: 'Stage instance already exists for this channel', code: 50035 }), {
 			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -145,7 +145,7 @@ export default async (request: RoboRequest) => {
 	})
 
 	if (!stageInstance) {
-		return new Response(JSON.stringify({ error: 'Failed to create stage instance', code: 50035 }), {
+		return new Response(JSON.stringify({ message: 'Failed to create stage instance', code: 50035 }), {
 			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		})

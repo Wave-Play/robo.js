@@ -93,7 +93,6 @@ export type StageCommandType =
 	| 'remove_reaction' // Remove reaction from message
 	| 'start_typing' // Show typing indicator
 	| 'request_state' // Request current state
-	| 'set_playback' // Control playback (play/pause/seek)
 	| 'subscribe_channel' // Subscribe to channel updates
 	| 'set_current_user' // Set the current user for the session
 	| 'switch_user' // Switch to a different user
@@ -615,15 +614,6 @@ export interface StageStartTypingData {
 export interface StageSubscribeChannelData {
 	channel_id: Snowflake
 	subscribe: boolean
-}
-
-/**
- * Data for set_playback command (Phase 5J)
- */
-export interface StageSetPlaybackData {
-	action: 'play' | 'pause' | 'seek' | 'stop'
-	position?: number // For seek, in milliseconds
-	speed?: number // Playback speed multiplier
 }
 
 /**

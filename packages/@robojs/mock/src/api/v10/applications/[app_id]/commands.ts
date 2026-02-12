@@ -21,7 +21,7 @@ export default async (request: RoboRequest) => {
 	const sessionId = parseMockToken(authHeader)
 
 	if (!sessionId) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -29,7 +29,7 @@ export default async (request: RoboRequest) => {
 
 	const session = sessionManager.get(sessionId)
 	if (!session) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -40,7 +40,7 @@ export default async (request: RoboRequest) => {
 
 	// 3. Validate app_id matches session's application ID
 	if (appId !== session.state.applicationId) {
-		return new Response(JSON.stringify({ error: 'Missing Access', code: 50001 }), {
+		return new Response(JSON.stringify({ message: 'Missing Access', code: 50001 }), {
 			status: 403,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -63,7 +63,7 @@ export default async (request: RoboRequest) => {
 		try {
 			body = await request.json()
 		} catch {
-			return new Response(JSON.stringify({ error: 'Invalid request body', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -71,7 +71,7 @@ export default async (request: RoboRequest) => {
 
 		// Validate required fields
 		if (!body.name) {
-			return new Response(JSON.stringify({ error: 'Missing required field: name', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Missing required field: name', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -95,7 +95,7 @@ export default async (request: RoboRequest) => {
 		const type = body.type ?? ApplicationCommandType.ChatInput
 		if (type === ApplicationCommandType.ChatInput) {
 			if (!body.description) {
-				return new Response(JSON.stringify({ error: 'Missing required field: description', code: 50035 }), {
+				return new Response(JSON.stringify({ message: 'Missing required field: description', code: 50035 }), {
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
 				})
@@ -177,7 +177,7 @@ export default async (request: RoboRequest) => {
 		const command = session.state.createCommand(body, undefined)
 
 		if (!command) {
-			return new Response(JSON.stringify({ error: 'Failed to create command', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Failed to create command', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -213,14 +213,14 @@ export default async (request: RoboRequest) => {
 		try {
 			body = await request.json()
 		} catch {
-			return new Response(JSON.stringify({ error: 'Invalid request body', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
 		}
 
 		if (!Array.isArray(body)) {
-			return new Response(JSON.stringify({ error: 'Expected array of commands', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Expected array of commands', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -243,7 +243,7 @@ export default async (request: RoboRequest) => {
 		// Validate each command
 		for (const cmd of body) {
 			if (!cmd.name) {
-				return new Response(JSON.stringify({ error: 'Missing required field: name', code: 50035 }), {
+				return new Response(JSON.stringify({ message: 'Missing required field: name', code: 50035 }), {
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
 				})
@@ -252,7 +252,7 @@ export default async (request: RoboRequest) => {
 			const type = cmd.type ?? ApplicationCommandType.ChatInput
 			if (type === ApplicationCommandType.ChatInput) {
 				if (!cmd.description) {
-					return new Response(JSON.stringify({ error: `Missing required field: description for command "${cmd.name}"`, code: 50035 }), {
+					return new Response(JSON.stringify({ message: `Missing required field: description for command "${cmd.name}"`, code: 50035 }), {
 						status: 400,
 						headers: { 'Content-Type': 'application/json' }
 					})
@@ -264,7 +264,7 @@ export default async (request: RoboRequest) => {
 		const commands = session.state.bulkOverwriteCommands(body, undefined)
 
 		if (!commands) {
-			return new Response(JSON.stringify({ error: 'Failed to overwrite commands', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Failed to overwrite commands', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -290,7 +290,7 @@ export default async (request: RoboRequest) => {
 	}
 
 	// Method not allowed
-	return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+	return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 		status: 405,
 		headers: { 'Content-Type': 'application/json' }
 	})

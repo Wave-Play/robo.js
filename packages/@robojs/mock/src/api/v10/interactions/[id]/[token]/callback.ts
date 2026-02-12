@@ -32,7 +32,7 @@ const CDN_BASE_URL = process.env.MOCK_CDN_URL || 'http://localhost:53596'
 export default async (request: RoboRequest) => {
 	// 1. Validate POST method
 	if (request.method !== 'POST') {
-		return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 			status: 405,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -179,12 +179,12 @@ export default async (request: RoboRequest) => {
 		}
 	} catch (error) {
 		if (error instanceof MultipartError) {
-			return new Response(JSON.stringify({ error: error.message, code: error.code }), {
+			return new Response(JSON.stringify({ message: error.message, code: error.code }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
 		}
-		return new Response(JSON.stringify({ error: 'Invalid request body' }), {
+		return new Response(JSON.stringify({ message: 'Invalid request body' }), {
 			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -192,7 +192,7 @@ export default async (request: RoboRequest) => {
 
 	// 9. Validate response type is present
 	if (typeof body.type !== 'number') {
-		return new Response(JSON.stringify({ error: 'Invalid response type', code: 50035 }), {
+		return new Response(JSON.stringify({ message: 'Invalid response type', code: 50035 }), {
 			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		})

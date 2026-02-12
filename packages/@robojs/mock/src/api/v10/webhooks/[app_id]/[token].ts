@@ -60,7 +60,7 @@ async function handleRegularWebhook(
 ): Promise<Response> {
 	// Validate webhook ID matches
 	if (webhook.id !== webhookId) {
-		return new Response(JSON.stringify({ error: 'Unknown Webhook', code: 10015 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Webhook', code: 10015 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -89,7 +89,7 @@ async function handleRegularWebhook(
 		try {
 			body = await request.json()
 		} catch {
-			return new Response(JSON.stringify({ error: 'Invalid request body', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -98,20 +98,20 @@ async function handleRegularWebhook(
 		// Validate name if provided
 		if (body.name !== undefined) {
 			if (typeof body.name !== 'string' || body.name.length < WebhookLimits.MIN_NAME_LENGTH || body.name.length > WebhookLimits.MAX_NAME_LENGTH) {
-				return new Response(JSON.stringify({ error: 'Invalid webhook name', code: 50035 }), {
+				return new Response(JSON.stringify({ message: 'Invalid webhook name', code: 50035 }), {
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
 				})
 			}
 			const nameLower = body.name.toLowerCase()
 			if (nameLower.includes('clyde')) {
-				return new Response(JSON.stringify({ error: 'Webhook name cannot contain "clyde"', code: 50035 }), {
+				return new Response(JSON.stringify({ message: 'Webhook name cannot contain "clyde"', code: 50035 }), {
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
 				})
 			}
 			if (nameLower.includes('discord')) {
-				return new Response(JSON.stringify({ error: 'Webhook name cannot contain "discord"', code: 50035 }), {
+				return new Response(JSON.stringify({ message: 'Webhook name cannot contain "discord"', code: 50035 }), {
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
 				})
@@ -128,7 +128,7 @@ async function handleRegularWebhook(
 		})
 
 		if (!updatedWebhook) {
-			return new Response(JSON.stringify({ error: 'Failed to update webhook', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Failed to update webhook', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -171,7 +171,7 @@ async function handleRegularWebhook(
 
 		const deleted = session.state.deleteWebhook(webhookId)
 		if (!deleted) {
-			return new Response(JSON.stringify({ error: 'Failed to delete webhook', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Failed to delete webhook', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -199,7 +199,7 @@ async function handleRegularWebhook(
 		return executeWebhook(request, session, webhook)
 	}
 
-	return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+	return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 		status: 405,
 		headers: { 'Content-Type': 'application/json' }
 	})
@@ -220,7 +220,7 @@ async function executeWebhook(request: RoboRequest, session: Session, webhook: M
 		// Validate thread exists and belongs to webhook's channel
 		const thread = session.state.getChannel(threadId)
 		if (!thread || thread.parentId !== webhook.channel_id) {
-			return new Response(JSON.stringify({ error: 'Unknown Channel', code: 10003 }), {
+			return new Response(JSON.stringify({ message: 'Unknown Channel', code: 10003 }), {
 				status: 404,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -299,12 +299,12 @@ async function executeWebhook(request: RoboRequest, session: Session, webhook: M
 		}
 	} catch (error) {
 		if (error instanceof MultipartError) {
-			return new Response(JSON.stringify({ error: error.message, code: error.code }), {
+			return new Response(JSON.stringify({ message: error.message, code: error.code }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
 		}
-		return new Response(JSON.stringify({ error: 'Invalid request body' }), {
+		return new Response(JSON.stringify({ message: 'Invalid request body' }), {
 			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -315,7 +315,7 @@ async function executeWebhook(request: RoboRequest, session: Session, webhook: M
 		// Check if webhook's channel is a forum channel
 		const forumChannel = session.state.getForumChannel(webhook.channel_id)
 		if (!forumChannel) {
-			return new Response(JSON.stringify({ error: 'thread_name can only be used with forum channels', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'thread_name can only be used with forum channels', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -323,7 +323,7 @@ async function executeWebhook(request: RoboRequest, session: Session, webhook: M
 
 		// Validate thread_name length (1-100 characters)
 		if (body.thread_name.length < 1 || body.thread_name.length > 100) {
-			return new Response(JSON.stringify({ error: 'Thread name must be between 1 and 100 characters', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Thread name must be between 1 and 100 characters', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -332,7 +332,7 @@ async function executeWebhook(request: RoboRequest, session: Session, webhook: M
 		// Validate applied_tags if provided
 		if (body.applied_tags?.length) {
 			if (body.applied_tags.length > 5) {
-				return new Response(JSON.stringify({ error: 'Cannot apply more than 5 tags', code: 50035 }), {
+				return new Response(JSON.stringify({ message: 'Cannot apply more than 5 tags', code: 50035 }), {
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
 				})
@@ -340,7 +340,7 @@ async function executeWebhook(request: RoboRequest, session: Session, webhook: M
 			const validTagIds = new Set(forumChannel.available_tags.map((t) => t.id))
 			for (const tagId of body.applied_tags) {
 				if (!validTagIds.has(tagId)) {
-					return new Response(JSON.stringify({ error: `Invalid tag: ${tagId}`, code: 50035 }), {
+					return new Response(JSON.stringify({ message: `Invalid tag: ${tagId}`, code: 50035 }), {
 						status: 400,
 						headers: { 'Content-Type': 'application/json' }
 					})
@@ -402,7 +402,7 @@ async function executeWebhook(request: RoboRequest, session: Session, webhook: M
 
 			return new Response(null, { status: 204 })
 		} catch (error) {
-			return new Response(JSON.stringify({ error: (error as Error).message, code: 50035 }), {
+			return new Response(JSON.stringify({ message: (error as Error).message, code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -424,7 +424,7 @@ async function executeWebhook(request: RoboRequest, session: Session, webhook: M
 	// Validate content - must have content, embeds, attachments, poll, or stickers
 	const hasStickers = body.sticker_ids && body.sticker_ids.length > 0
 	if (!body.content && (!body.embeds || body.embeds.length === 0) && attachments.length === 0 && !body.poll && !hasStickers) {
-		return new Response(JSON.stringify({ error: 'Cannot send an empty message', code: 50006 }), {
+		return new Response(JSON.stringify({ message: 'Cannot send an empty message', code: 50006 }), {
 			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -433,7 +433,7 @@ async function executeWebhook(request: RoboRequest, session: Session, webhook: M
 	// Validate sticker_ids if present
 	if (body.sticker_ids?.length) {
 		if (body.sticker_ids.length > 3) {
-			return new Response(JSON.stringify({ error: 'Cannot send more than 3 stickers', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Cannot send more than 3 stickers', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -441,7 +441,7 @@ async function executeWebhook(request: RoboRequest, session: Session, webhook: M
 		// Validate all stickers exist
 		for (const stickerId of body.sticker_ids) {
 			if (!session.state.getSticker(stickerId)) {
-				return new Response(JSON.stringify({ error: `Unknown sticker: ${stickerId}`, code: 50035 }), {
+				return new Response(JSON.stringify({ message: `Unknown sticker: ${stickerId}`, code: 50035 }), {
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
 				})
@@ -538,7 +538,7 @@ async function executeWebhook(request: RoboRequest, session: Session, webhook: M
 async function handleInteractionWebhook(request: RoboRequest, appId: string, token: string): Promise<Response> {
 	// Only POST is supported for interaction webhooks
 	if (request.method !== 'POST') {
-		return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 			status: 405,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -690,12 +690,12 @@ async function handleInteractionWebhook(request: RoboRequest, appId: string, tok
 		}
 	} catch (error) {
 		if (error instanceof MultipartError) {
-			return new Response(JSON.stringify({ error: error.message, code: error.code }), {
+			return new Response(JSON.stringify({ message: error.message, code: error.code }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
 		}
-		return new Response(JSON.stringify({ error: 'Invalid request body' }), {
+		return new Response(JSON.stringify({ message: 'Invalid request body' }), {
 			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		})

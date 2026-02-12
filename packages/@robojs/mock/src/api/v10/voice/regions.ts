@@ -8,7 +8,7 @@ import type { RoboRequest } from '@robojs/server'
  */
 export default async (request: RoboRequest) => {
 	if (request.method !== 'GET') {
-		return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 			status: 405,
 			headers: { 'Content-Type': 'application/json' }
 		})

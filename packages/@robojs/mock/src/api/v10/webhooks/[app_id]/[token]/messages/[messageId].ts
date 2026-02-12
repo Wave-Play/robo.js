@@ -44,7 +44,7 @@ const CDN_BASE_URL = process.env.MOCK_CDN_URL || 'http://localhost:53596'
 export default async (request: RoboRequest) => {
 	// 1. Validate method
 	if (request.method !== 'GET' && request.method !== 'PATCH' && request.method !== 'DELETE') {
-		return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 			status: 405,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -203,7 +203,7 @@ async function handleRegularWebhookMessage(
 ): Promise<Response> {
 	// Validate webhook ID matches
 	if (webhook.id !== webhookId) {
-		return new Response(JSON.stringify({ error: 'Unknown Webhook', code: 10015 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Webhook', code: 10015 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -212,7 +212,7 @@ async function handleRegularWebhookMessage(
 	// Get the message
 	const message = session.state.getMessage(messageId)
 	if (!message) {
-		return new Response(JSON.stringify({ error: 'Unknown Message', code: 10008 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Message', code: 10008 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -221,7 +221,7 @@ async function handleRegularWebhookMessage(
 	// Verify message is in webhook's channel (or a thread under it)
 	const channel = session.state.getChannel(message.channelId)
 	if (!channel) {
-		return new Response(JSON.stringify({ error: 'Unknown Message', code: 10008 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Message', code: 10008 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -230,7 +230,7 @@ async function handleRegularWebhookMessage(
 	// Message must be in webhook's channel or a thread parented to it
 	const isInWebhookChannel = message.channelId === webhook.channel_id || channel.parentId === webhook.channel_id
 	if (!isInWebhookChannel) {
-		return new Response(JSON.stringify({ error: 'Unknown Message', code: 10008 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Message', code: 10008 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -320,12 +320,12 @@ async function handleWebhookMessagePatch(
 		}
 	} catch (error) {
 		if (error instanceof MultipartError) {
-			return new Response(JSON.stringify({ error: error.message, code: error.code }), {
+			return new Response(JSON.stringify({ message: error.message, code: error.code }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
 		}
-		return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
+		return new Response(JSON.stringify({ message: 'Invalid JSON body' }), {
 			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -383,7 +383,7 @@ async function handleWebhookMessagePatch(
 	})
 
 	if (!updatedMessage) {
-		return new Response(JSON.stringify({ error: 'Failed to update message' }), {
+		return new Response(JSON.stringify({ message: 'Failed to update message' }), {
 			status: 500,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -435,7 +435,7 @@ function handleWebhookMessageDelete(
 
 	const deleted = session.state.deleteMessage(message.id)
 	if (!deleted) {
-		return new Response(JSON.stringify({ error: 'Failed to delete message' }), {
+		return new Response(JSON.stringify({ message: 'Failed to delete message' }), {
 			status: 500,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -561,12 +561,12 @@ async function handlePatch(
 		}
 	} catch (error) {
 		if (error instanceof MultipartError) {
-			return new Response(JSON.stringify({ error: error.message, code: error.code }), {
+			return new Response(JSON.stringify({ message: error.message, code: error.code }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
 		}
-		return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
+		return new Response(JSON.stringify({ message: 'Invalid JSON body' }), {
 			status: 400,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -636,7 +636,7 @@ async function handlePatch(
 	})
 
 	if (!updatedMessage) {
-		return new Response(JSON.stringify({ error: 'Failed to update message' }), {
+		return new Response(JSON.stringify({ message: 'Failed to update message' }), {
 			status: 500,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -705,7 +705,7 @@ function handleDelete(
 	// Delete message from state (this also cleans up attachments)
 	const deleted = session.state.deleteMessage(message.id)
 	if (!deleted) {
-		return new Response(JSON.stringify({ error: 'Failed to delete message' }), {
+		return new Response(JSON.stringify({ message: 'Failed to delete message' }), {
 			status: 500,
 			headers: { 'Content-Type': 'application/json' }
 		})

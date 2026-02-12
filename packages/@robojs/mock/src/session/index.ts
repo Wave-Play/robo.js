@@ -12,9 +12,6 @@ export {
 	createMockGuild,
 	createMockChannel,
 	createMockMessage,
-	// Helper functions (backward compatibility)
-	addGuildToSession,
-	addChannelToGuild,
 	createDefaultGuildWithChannel,
 	// Serialization functions
 	serializeSessionState,

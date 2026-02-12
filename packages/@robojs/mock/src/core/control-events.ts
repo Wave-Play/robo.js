@@ -361,28 +361,6 @@ export class ControlEventsHub {
 	}
 
 	/**
-	 * Clear buffer for a specific session.
-	 * Called when a session is deleted.
-	 */
-	clearSessionBuffer(sessionId: string): void {
-		this.eventBuffers.delete(sessionId)
-		this.sessionSequences.delete(sessionId)
-	}
-
-	/**
-	 * Get the number of connected clients for a session.
-	 */
-	getConnectionCount(sessionId: string): number {
-		let count = 0
-		for (const conn of this.connections.values()) {
-			if (conn.sessionId === sessionId) {
-				count++
-			}
-		}
-		return count
-	}
-
-	/**
 	 * Destroy the hub and close all connections.
 	 */
 	destroy(): void {
@@ -421,12 +399,3 @@ export function getControlEventsHub(): ControlEventsHub {
 	return instance
 }
 
-/**
- * Reset the singleton instance (for testing).
- */
-export function resetControlEventsHub(): void {
-	if (instance) {
-		instance.destroy()
-		instance = null
-	}
-}

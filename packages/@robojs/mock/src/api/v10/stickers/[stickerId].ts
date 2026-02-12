@@ -13,7 +13,7 @@ import { mockStickerToAPISticker } from '../../../discord/payloads.js'
 export default async (request: RoboRequest) => {
 	// 1. Validate GET method
 	if (request.method !== 'GET') {
-		return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 			status: 405,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -24,7 +24,7 @@ export default async (request: RoboRequest) => {
 	const sessionId = parseMockToken(authHeader)
 
 	if (!sessionId) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -32,7 +32,7 @@ export default async (request: RoboRequest) => {
 
 	const session = sessionManager.get(sessionId)
 	if (!session) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -44,7 +44,7 @@ export default async (request: RoboRequest) => {
 	// 4. Get sticker from state
 	const sticker = session.state.getSticker(stickerId)
 	if (!sticker) {
-		return new Response(JSON.stringify({ error: 'Unknown Sticker', code: 10060 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Sticker', code: 10060 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})

@@ -42,9 +42,3 @@ export async function generateSelfSignedCert(): Promise<{ key: string; cert: str
 	return cachedCert
 }
 
-/**
- * Clear cached certificate (useful for testing)
- */
-export function clearCertCache(): void {
-	cachedCert = null
-}

@@ -5,30 +5,29 @@ import { validateMethod, notFound } from '../../utils.js'
 
 /**
  * GET /api/control/sessions/:id/actions - Get recorded actions
+ * DELETE /api/control/sessions/:id/actions - Clear recorded actions
  *
- * Query params:
+ * Query params (GET only):
  * - type: Filter by action type (e.g., "message_sent", "dispatch")
  * - since: Filter actions after timestamp (ms)
  * - limit: Maximum number of actions to return (default: 100)
  * - offset: Offset for pagination (default: 0)
  *
- * Response:
+ * Response (GET):
  * {
  *   actions: RecordedAction[],
  *   total: number,
  *   limit: number,
  *   offset: number
  * }
+ *
+ * Response (DELETE):
+ * { success: true }
  */
 export default async (request: RoboRequest) => {
-	validateMethod(request, ['GET'])
+	validateMethod(request, ['GET', 'DELETE'])
 
 	const { id } = request.params as { id: string }
-	const url = new URL(request.url, 'http://localhost')
-	const type = url.searchParams.get('type') as ActionType | null
-	const since = url.searchParams.get('since')
-	const limit = parseInt(url.searchParams.get('limit') ?? '100', 10)
-	const offset = parseInt(url.searchParams.get('offset') ?? '0', 10)
 
 	if (!id) {
 		return notFound('Session ID required')
@@ -39,6 +38,17 @@ export default async (request: RoboRequest) => {
 	if (!session) {
 		return notFound('Session not found')
 	}
+
+	if (request.method === 'DELETE') {
+		session.clearActions()
+		return { success: true }
+	}
+
+	const url = new URL(request.url, 'http://localhost')
+	const type = url.searchParams.get('type') as ActionType | null
+	const since = url.searchParams.get('since')
+	const limit = parseInt(url.searchParams.get('limit') ?? '100', 10)
+	const offset = parseInt(url.searchParams.get('offset') ?? '0', 10)
 
 	let actions = session.getActions()
 

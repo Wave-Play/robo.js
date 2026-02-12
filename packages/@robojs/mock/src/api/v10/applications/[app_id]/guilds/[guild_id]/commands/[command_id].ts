@@ -20,7 +20,7 @@ export default async (request: RoboRequest) => {
 	const sessionId = parseMockToken(authHeader)
 
 	if (!sessionId) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -28,7 +28,7 @@ export default async (request: RoboRequest) => {
 
 	const session = sessionManager.get(sessionId)
 	if (!session) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -43,7 +43,7 @@ export default async (request: RoboRequest) => {
 
 	// 3. Validate app_id matches session's application ID
 	if (appId !== session.state.applicationId) {
-		return new Response(JSON.stringify({ error: 'Missing Access', code: 50001 }), {
+		return new Response(JSON.stringify({ message: 'Missing Access', code: 50001 }), {
 			status: 403,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -52,7 +52,7 @@ export default async (request: RoboRequest) => {
 	// 4. Validate guild exists
 	const guild = session.state.guilds.get(guildId)
 	if (!guild) {
-		return new Response(JSON.stringify({ error: 'Unknown Guild', code: 10004 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Guild', code: 10004 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -63,7 +63,7 @@ export default async (request: RoboRequest) => {
 
 	// 6. Validate command exists and belongs to this guild
 	if (!command || command.guild_id !== guildId) {
-		return new Response(JSON.stringify({ error: 'Unknown Application Command', code: 10063 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Application Command', code: 10063 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -85,7 +85,7 @@ export default async (request: RoboRequest) => {
 		try {
 			body = await request.json()
 		} catch {
-			return new Response(JSON.stringify({ error: 'Invalid request body', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -172,7 +172,7 @@ export default async (request: RoboRequest) => {
 		const updated = session.state.updateCommand(commandId, body)
 
 		if (!updated) {
-			return new Response(JSON.stringify({ error: 'Failed to update command', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Failed to update command', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -204,7 +204,7 @@ export default async (request: RoboRequest) => {
 		const deleted = session.state.deleteCommand(commandId)
 
 		if (!deleted) {
-			return new Response(JSON.stringify({ error: 'Unknown Application Command', code: 10063 }), {
+			return new Response(JSON.stringify({ message: 'Unknown Application Command', code: 10063 }), {
 				status: 404,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -228,7 +228,7 @@ export default async (request: RoboRequest) => {
 	}
 
 	// Method not allowed
-	return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+	return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 		status: 405,
 		headers: { 'Content-Type': 'application/json' }
 	})

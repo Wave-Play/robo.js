@@ -22,7 +22,7 @@ export default async (request: RoboRequest) => {
 	const sessionId = parseMockToken(authHeader)
 
 	if (!sessionId) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -30,7 +30,7 @@ export default async (request: RoboRequest) => {
 
 	const session = sessionManager.get(sessionId)
 	if (!session) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -41,7 +41,7 @@ export default async (request: RoboRequest) => {
 
 	// Verify app ID matches bot user ID (or is @me)
 	if (appId !== '@me' && appId !== session.state.botUser.id) {
-		return new Response(JSON.stringify({ error: 'Unknown Application', code: 10002 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Application', code: 10002 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -69,21 +69,21 @@ export default async (request: RoboRequest) => {
 		try {
 			body = await request.json()
 		} catch {
-			return new Response(JSON.stringify({ error: 'Invalid JSON body', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Invalid JSON body', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
 		}
 
 		if (!body.sku_id) {
-			return new Response(JSON.stringify({ error: 'Missing sku_id', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Missing sku_id', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
 		}
 
 		if (!body.owner_id) {
-			return new Response(JSON.stringify({ error: 'Missing owner_id', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Missing owner_id', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -110,7 +110,7 @@ export default async (request: RoboRequest) => {
 	}
 
 	// Method not allowed
-	return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+	return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 		status: 405,
 		headers: { 'Content-Type': 'application/json' }
 	})

@@ -21,7 +21,7 @@ export default async (request: RoboRequest) => {
 	const sessionId = parseMockToken(authHeader)
 
 	if (!sessionId) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -29,7 +29,7 @@ export default async (request: RoboRequest) => {
 
 	const session = sessionManager.get(sessionId)
 	if (!session) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -41,7 +41,7 @@ export default async (request: RoboRequest) => {
 	// 3. Validate guild exists
 	const guild = session.state.guilds.get(guildId)
 	if (!guild) {
-		return new Response(JSON.stringify({ error: 'Unknown Guild', code: 10004 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Guild', code: 10004 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -62,7 +62,7 @@ export default async (request: RoboRequest) => {
 	if (request.method === 'GET') {
 		const ban = session.state.getBan(guildId, userId)
 		if (!ban) {
-			return new Response(JSON.stringify({ error: 'Unknown Ban', code: 10026 }), {
+			return new Response(JSON.stringify({ message: 'Unknown Ban', code: 10026 }), {
 				status: 404,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -87,7 +87,7 @@ export default async (request: RoboRequest) => {
 	if (request.method === 'PUT') {
 		// Cannot ban the bot itself
 		if (userId === session.state.botUser.id) {
-			return new Response(JSON.stringify({ error: 'Cannot ban the bot user', code: 50013 }), {
+			return new Response(JSON.stringify({ message: 'Cannot ban the bot user', code: 50013 }), {
 				status: 403,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -105,7 +105,7 @@ export default async (request: RoboRequest) => {
 				body = JSON.parse(text)
 			}
 		} catch {
-			return new Response(JSON.stringify({ error: 'Invalid request body', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -153,7 +153,7 @@ export default async (request: RoboRequest) => {
 		})
 
 		if (!ban) {
-			return new Response(JSON.stringify({ error: 'Failed to create ban', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Failed to create ban', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -185,7 +185,7 @@ export default async (request: RoboRequest) => {
 	if (request.method === 'DELETE') {
 		const ban = session.state.getBan(guildId, userId)
 		if (!ban) {
-			return new Response(JSON.stringify({ error: 'Unknown Ban', code: 10026 }), {
+			return new Response(JSON.stringify({ message: 'Unknown Ban', code: 10026 }), {
 				status: 404,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -201,7 +201,7 @@ export default async (request: RoboRequest) => {
 		// Remove the ban
 		const removed = session.state.removeBan(guildId, userId)
 		if (!removed) {
-			return new Response(JSON.stringify({ error: 'Failed to remove ban', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Failed to remove ban', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -228,7 +228,7 @@ export default async (request: RoboRequest) => {
 	}
 
 	// Method not allowed
-	return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+	return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 		status: 405,
 		headers: { 'Content-Type': 'application/json' }
 	})

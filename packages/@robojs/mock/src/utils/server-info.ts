@@ -61,22 +61,3 @@ export async function deleteServerInfo(): Promise<void> {
 	}
 }
 
-/**
- * Check if a mock server is running by validating server info file.
- */
-export async function isServerRunning(): Promise<boolean> {
-	const info = await readServerInfo()
-	if (!info) {
-		return false
-	}
-
-	// Validate process is still running
-	try {
-		process.kill(info.pid, 0) // Signal 0 = check if process exists
-		return true
-	} catch {
-		// Process not running, clean up stale file
-		await deleteServerInfo()
-		return false
-	}
-}

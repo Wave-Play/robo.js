@@ -17,7 +17,7 @@ import { parseMockToken } from '../../../../../utils/id.js'
 export default async (request: RoboRequest) => {
 	// 1. Validate method
 	if (request.method !== 'GET' && request.method !== 'PUT' && request.method !== 'DELETE') {
-		return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+		return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 			status: 405,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -28,7 +28,7 @@ export default async (request: RoboRequest) => {
 	const sessionId = parseMockToken(authHeader)
 
 	if (!sessionId) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -36,7 +36,7 @@ export default async (request: RoboRequest) => {
 
 	const session = sessionManager.get(sessionId)
 	if (!session) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -48,7 +48,7 @@ export default async (request: RoboRequest) => {
 	// 4. Validate thread exists
 	const thread = session.state.getThread(threadId)
 	if (!thread) {
-		return new Response(JSON.stringify({ error: 'Unknown Channel', code: 10003 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Channel', code: 10003 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -58,7 +58,7 @@ export default async (request: RoboRequest) => {
 		// 5a. Get member
 		const member = session.state.getThreadMember(threadId, userId)
 		if (!member) {
-			return new Response(JSON.stringify({ error: 'Unknown Member', code: 10007 }), {
+			return new Response(JSON.stringify({ message: 'Unknown Member', code: 10007 }), {
 				status: 404,
 				headers: { 'Content-Type': 'application/json' }
 			})

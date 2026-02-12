@@ -18,7 +18,7 @@ export default async (request: RoboRequest) => {
 	const sessionId = parseMockToken(authHeader)
 
 	if (!sessionId) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -26,7 +26,7 @@ export default async (request: RoboRequest) => {
 
 	const session = sessionManager.get(sessionId)
 	if (!session) {
-		return new Response(JSON.stringify({ error: 'Unauthorized', code: 0 }), {
+		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
 			status: 401,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -38,7 +38,7 @@ export default async (request: RoboRequest) => {
 	// 3. Validate channel exists
 	const channel = session.state.getChannel(channelId)
 	if (!channel) {
-		return new Response(JSON.stringify({ error: 'Unknown Channel', code: 10003 }), {
+		return new Response(JSON.stringify({ message: 'Unknown Channel', code: 10003 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
 		})
@@ -82,7 +82,7 @@ export default async (request: RoboRequest) => {
 				body = JSON.parse(text)
 			}
 		} catch {
-			return new Response(JSON.stringify({ error: 'Invalid request body', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -92,7 +92,7 @@ export default async (request: RoboRequest) => {
 		const maxAge = body.max_age ?? InviteLimits.DEFAULT_MAX_AGE
 		if (maxAge < 0 || maxAge > InviteLimits.MAX_AGE) {
 			return new Response(
-				JSON.stringify({ error: `max_age must be between 0 and ${InviteLimits.MAX_AGE}`, code: 50035 }),
+				JSON.stringify({ message: `max_age must be between 0 and ${InviteLimits.MAX_AGE}`, code: 50035 }),
 				{
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
@@ -104,7 +104,7 @@ export default async (request: RoboRequest) => {
 		const maxUses = body.max_uses ?? 0
 		if (maxUses < 0 || maxUses > InviteLimits.MAX_USES) {
 			return new Response(
-				JSON.stringify({ error: `max_uses must be between 0 and ${InviteLimits.MAX_USES}`, code: 50035 }),
+				JSON.stringify({ message: `max_uses must be between 0 and ${InviteLimits.MAX_USES}`, code: 50035 }),
 				{
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
@@ -115,7 +115,7 @@ export default async (request: RoboRequest) => {
 		// Validate target_type requirements
 		if (body.target_type === InviteTargetType.Stream && !body.target_user_id) {
 			return new Response(
-				JSON.stringify({ error: 'target_user_id is required when target_type is STREAM', code: 50035 }),
+				JSON.stringify({ message: 'target_user_id is required when target_type is STREAM', code: 50035 }),
 				{
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
@@ -153,7 +153,7 @@ export default async (request: RoboRequest) => {
 		)
 
 		if (!invite) {
-			return new Response(JSON.stringify({ error: 'Failed to create invite', code: 50035 }), {
+			return new Response(JSON.stringify({ message: 'Failed to create invite', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
@@ -186,7 +186,7 @@ export default async (request: RoboRequest) => {
 	}
 
 	// Method not allowed
-	return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+	return new Response(JSON.stringify({ message: 'Method not allowed' }), {
 		status: 405,
 		headers: { 'Content-Type': 'application/json' }
 	})
