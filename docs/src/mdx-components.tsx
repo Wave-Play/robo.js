@@ -8,6 +8,8 @@ import defaultComponents from "fumadocs-ui/mdx"
 import type { MDXComponents } from "mdx/types"
 import { ReturnType } from "@/components/return-type"
 import { Card, Cards } from "@/components/mdx-card"
+import { ScreenshotPlaceholder } from "@/components/screenshot-placeholder"
+import { StateFlowDiagram } from "@/components/state-flow-diagram"
 import * as Icons from "@/components/ui/icons"
 
 export function getMDXComponents(components?: MDXComponents): MDXComponents {
@@ -28,6 +30,8 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
     ReturnType,
     Card,
     Cards,
+    ScreenshotPlaceholder,
+    StateFlowDiagram,
     pre: ({ ref: _ref, children, ...props }) => (
       <CodeBlock keepBackground {...props}>
         <Pre>{children}</Pre>
