@@ -1,0 +1,367 @@
+.overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 52px;
+	max-height: calc(100vh - 280px);
+	z-index: 10;
+	padding: 0;
+	transition: bottom 0.2s ease, max-height 0.2s ease;
+}
+
+.overlay.chatHidden {
+	bottom: 0;
+	max-height: none;
+}
+
+.panel {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	border-radius: 0;
+	overflow: visible;
+	background: #1a1a1e;
+}
+
+.contentArea {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 0;
+}
+
+.placeholder {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
+	opacity: 0.5;
+	user-select: none;
+}
+
+.placeholderIcon {
+	width: 64px;
+	height: 64px;
+	border-radius: 16px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 28px;
+	font-weight: 700;
+	color: #fff;
+}
+
+.placeholderName {
+	font-size: 16px;
+	font-weight: 600;
+	color: #fff;
+}
+
+.controlBar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	height: 74px;
+	padding: 12px 24px;
+	background: #000;
+	flex-shrink: 0;
+}
+
+.controlBarLeft {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.avatarWrapper {
+	position: relative;
+	display: inline-flex;
+}
+
+.userAvatar {
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	object-fit: cover;
+	cursor: pointer;
+}
+
+.avatarTooltip {
+	position: absolute;
+	top: calc(100% + 6px);
+	left: 50%;
+	transform: translateX(-50%);
+	padding: 6px 10px;
+	border-radius: 6px;
+	background: #000;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+	font-size: 12px;
+	font-weight: 600;
+	color: #fff;
+	white-space: nowrap;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.1s ease;
+	z-index: 9999;
+}
+
+.avatarWrapper:hover .avatarTooltip {
+	opacity: 1;
+}
+
+.controlBarCenter {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.buttonTooltipWrapper {
+	position: relative;
+	display: inline-flex;
+}
+
+.buttonTooltip {
+	position: absolute;
+	bottom: calc(100% + 8px);
+	left: 50%;
+	transform: translateX(-50%);
+	padding: 6px 10px;
+	border-radius: 6px;
+	background: #000;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+	font-size: 12px;
+	font-weight: 600;
+	color: #fff;
+	white-space: nowrap;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.1s ease;
+	z-index: 9999;
+}
+
+.buttonTooltipWrapper:hover .buttonTooltip {
+	opacity: 1;
+}
+
+.controlGroup {
+	display: flex;
+	align-items: center;
+	width: 98px;
+	background: #1a1b1e;
+	border-radius: 12px;
+	overflow: visible;
+}
+
+.controlGroup > .buttonTooltipWrapper {
+	flex: 1;
+}
+
+.controlBarRight {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.controlButton {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex: 1;
+	height: 50px;
+	border-radius: 0;
+	border: none;
+	background: transparent;
+	color: #fff;
+	cursor: pointer;
+	padding: 4px;
+	transition: color 0.15s;
+}
+
+.controlButtonInner {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	border-radius: 8px;
+	transition: background 0.15s;
+}
+
+.controlButton:hover {
+	color: var(--text-bright, #fff);
+}
+
+.controlButton:hover .controlButtonInner {
+	background: #2b2d31;
+}
+
+.disconnectButton {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 66px;
+	height: 50px;
+	border-radius: 12px;
+	border: none;
+	background: var(--status-danger, #ed4245);
+	color: #fff;
+	cursor: pointer;
+	padding: 12px;
+	transition: background 0.15s;
+}
+
+.disconnectButton:hover {
+	background: #c93b3e;
+}
+
+/* Minimized floating card */
+.minimized {
+	position: absolute;
+	width: 320px;
+	height: 180px;
+	border-radius: 8px;
+	z-index: 10;
+	cursor: grab;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+	user-select: none;
+}
+
+.minimized.dragging {
+	cursor: grabbing;
+}
+
+.minimized.snapping {
+	transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.cornerBottomRight {
+	bottom: 16px;
+	right: 16px;
+}
+
+.cornerBottomLeft {
+	bottom: 16px;
+	left: 16px;
+}
+
+.cornerTopRight {
+	top: 16px;
+	right: 16px;
+}
+
+.cornerTopLeft {
+	top: 16px;
+	left: 16px;
+}
+
+.minimizedContent {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+.minimizedHoverOverlay {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	border-radius: 8px;
+	overflow: visible;
+	opacity: 0;
+	transition: opacity 0.15s ease;
+	pointer-events: none;
+}
+
+.minimized:hover .minimizedHoverOverlay {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.minimizedTopBar {
+	background: linear-gradient(to bottom, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%);
+	padding: 10px 12px;
+	border-radius: 8px 8px 0 0;
+}
+
+.minimizedBottomBar {
+	background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%);
+	padding: 10px 12px;
+	border-radius: 0 0 8px 8px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	color: #fff;
+}
+
+.minimizedBackButton {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	background: none;
+	border: none;
+	border-bottom: 1px solid transparent;
+	color: #fff;
+	cursor: pointer;
+	padding: 0 0 1px;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.minimizedBackButton:hover {
+	border-bottom-color: #fff;
+}
+
+.minimizedName {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.minimizedAvatar {
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	object-fit: cover;
+}
+
+.minimizedLeaveButton {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: none;
+	background: none;
+	color: #fff;
+	cursor: pointer;
+	padding: 0;
+}
+
+.minimizedLeaveTooltip {
+	position: absolute;
+	bottom: calc(100% + 6px);
+	left: 50%;
+	transform: translateX(-50%);
+	padding: 6px 10px;
+	border-radius: 6px;
+	background: #000;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+	font-size: 12px;
+	font-weight: 600;
+	color: #fff;
+	white-space: nowrap;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.1s ease;
+	z-index: 9999;
+}
+
+.minimizedLeaveButton:hover .minimizedLeaveTooltip {
+	opacity: 1;
+}

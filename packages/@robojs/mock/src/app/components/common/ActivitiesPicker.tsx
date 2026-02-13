@@ -5,12 +5,13 @@ import styles from './ActivitiesPicker.module.css'
 interface ActivitiesPickerProps {
 	onClose: () => void
 	position?: { x: number; y: number }
+	onPlayActivity?: (activity: Activity) => void
 }
 
 export const ACTIVITIES_PICKER_WIDTH = 500
 export const ACTIVITIES_PICKER_HEIGHT = 680
 
-interface Activity {
+export interface Activity {
 	id: string
 	name: string
 	description: string
@@ -176,7 +177,7 @@ const CATEGORIES: Array<{
 
 const RECENT_ACTIVITIES = [PROMOTED_ACTIVITIES[0]]
 
-export function ActivitiesPicker({ onClose, position }: ActivitiesPickerProps) {
+export function ActivitiesPicker({ onClose, position, onPlayActivity }: ActivitiesPickerProps) {
 	const [search, setSearch] = useState('')
 	const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null)
 	const [showFullDescription, setShowFullDescription] = useState(false)
@@ -493,7 +494,12 @@ export function ActivitiesPicker({ onClose, position }: ActivitiesPickerProps) {
 
 											{/* Action buttons */}
 											<div className={styles.detailActions}>
-												<PrimaryButton>Play</PrimaryButton>
+												<PrimaryButton onClick={() => {
+													if (onPlayActivity && displayedActivity.current) {
+														onPlayActivity(displayedActivity.current)
+													}
+													onClose()
+												}}>Play</PrimaryButton>
 												<button className={styles.launchDmButton} type="button">
 													Launch in DM
 												</button>

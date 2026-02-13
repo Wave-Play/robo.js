@@ -139,7 +139,7 @@ export function DevToolsPanel() {
 			const timer = setTimeout(() => {
 				setShouldRender(false)
 				setIsClosing(false)
-			}, 150) // Match animation duration
+			}, 250) // Match animation duration
 			return () => clearTimeout(timer)
 		}
 	}, [isOpen, shouldRender])

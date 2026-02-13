@@ -53,9 +53,10 @@ export const DEFAULT_MOCK_PLUGIN_CONFIG: Required<MockPluginConfig> = {
 			{
 				name: 'Test Server',
 				channels: [
-					{ name: 'general', type: 0 },
-					{ name: 'bot-commands', type: 0 },
-					{ name: 'General', type: 2 }
+					{ name: 'Text Channels', type: 4, position: 0 },
+					{ name: 'general', type: 0, parentCategory: 'Text Channels', position: 0 },
+					{ name: 'Voice Channels', type: 4, position: 1 },
+					{ name: 'General', type: 2, parentCategory: 'Voice Channels', position: 0 }
 				]
 			}
 		],

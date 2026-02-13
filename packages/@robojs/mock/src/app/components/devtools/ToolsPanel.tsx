@@ -7,11 +7,22 @@ import type { StageEventType, StageMessage, StageChannel, StageMember, StageGuil
 import styles from './ToolsPanel.module.css'
 
 export function ToolsPanel() {
-	const { selectedChannelId, selectedGuildId, sessionId } = useStageData()
+	const { selectedChannelId, selectedGuildId, sessionId, isConnected, botUser } = useStageData()
 	const sessionDispatch = useSessionDispatch()
 	const { addEvents } = usePlaybackControls()
 	const { showToast } = useToaster()
 	const [isGenerating, setIsGenerating] = useState(false)
+	const [copied, setCopied] = useState(false)
+
+	const copySessionId = useCallback(() => {
+		if (!sessionId) return
+		navigator.clipboard.writeText(sessionId).then(() => {
+			setCopied(true)
+			showToast('Session ID copied to clipboard', 'success')
+			setTimeout(() => setCopied(false), 2000)
+		})
+	}, [sessionId, showToast])
+
 	const [loopProtectionEnabled, setLoopProtectionEnabled] = useState(true)
 
 	// Rate limit simulation state
@@ -1143,6 +1154,23 @@ export function ToolsPanel() {
 
 	return (
 		<div className={styles.container}>
+			{/* Session Info */}
+			<section className={`${styles.section} ${styles.sessionSection}`}>
+				<div className={styles.sessionHeader}>
+					<span className={`${styles.sessionDot} ${isConnected ? styles.online : styles.offline}`} />
+					<span className={styles.sessionTitle}>{botUser?.username ?? 'Disconnected'}</span>
+				</div>
+				<button
+					className={`${styles.sessionIdButton} ${copied ? styles.sessionIdCopied : ''}`}
+					onClick={copySessionId}
+					title="Click to copy full session ID"
+				>
+					<span className={styles.sessionIdPrefix}>sess_</span>
+					<span className={styles.sessionIdValue}>{sessionId ? sessionId.replace('sess_', '') : '--'}</span>
+					<span className={styles.sessionIdIcon}>{copied ? <CheckIcon /> : <CopyIcon />}</span>
+				</button>
+			</section>
+
 			{/* Test Data Section */}
 			<section className={styles.section}>
 				<h3 className={styles.sectionTitle}>Test Data</h3>
@@ -2104,6 +2132,22 @@ function SpoilerIcon() {
 	return (
 		<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
 			<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+		</svg>
+	)
+}
+
+function CopyIcon() {
+	return (
+		<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+			<path d="M4 2a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1H2z" />
+		</svg>
+	)
+}
+
+function CheckIcon() {
+	return (
+		<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+			<path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 1 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0z" />
 		</svg>
 	)
 }

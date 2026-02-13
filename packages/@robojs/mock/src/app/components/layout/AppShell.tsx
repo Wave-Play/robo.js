@@ -1,12 +1,14 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useMicrophone } from '../../hooks/useMicrophone'
 import { useSession } from '../../hooks/useSession'
 import { useIsPlaybackMode, usePlaybackChannels, usePlaybackMembers } from '../../stores/playbackStore'
+import { ActivityView } from '../activity/ActivityView'
+import { ActivityInfoBar } from '../activity/ActivityInfoBar'
 import { FriendsAppShell } from '../friends'
 import { ServerList } from '../sidebar/ServerList'
 import { ChannelList } from '../sidebar/ChannelList'
 import { VoiceControlDock } from '../sidebar/VoiceControlDock'
 import { Header } from './Header'
-import { StatusBar } from './StatusBar'
 import { MessageArea } from '../messages/MessageArea'
 import { MemberList } from '../members/MemberList'
 import { PlaybackControls } from '../playback/PlaybackControls'
@@ -42,13 +44,41 @@ export function AppShell() {
 		updateVoiceState,
 		openVoicePanel,
 		createChannel,
-		voicePanelMode
+		voicePanelMode,
+		activity,
+		closeActivity
 	} = useSession()
 
 	// Home view toggle (Friends UI) via the top-left Home button in the server list.
 	const [showHome, setShowHome] = useState(false)
 	const [homeTitle, setHomeTitle] = useState('Friends')
 	const [homeResetKey, setHomeResetKey] = useState(0)
+
+	// Activity overlay height (for member list padding)
+	const activityOverlayRef = useRef<HTMLDivElement>(null)
+	const [activityHeight, setActivityHeight] = useState(0)
+	const [activityMinimized, setActivityMinimized] = useState(false)
+
+	// Reset minimized state when activity closes
+	useEffect(() => {
+		if (!activity.isOpen) {
+			setActivityMinimized(false)
+		}
+	}, [activity.isOpen])
+
+	useEffect(() => {
+		if (!activity.isOpen || activityMinimized || !activityOverlayRef.current) {
+			setActivityHeight(0)
+			return
+		}
+		const el = activityOverlayRef.current
+		setActivityHeight(el.offsetHeight)
+		const observer = new ResizeObserver((entries) => {
+			setActivityHeight(entries[0].contentRect.height)
+		})
+		observer.observe(el)
+		return () => observer.disconnect()
+	}, [activity.isOpen, activityMinimized])
 
 	// Mobile sidebar state
 	const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
@@ -86,6 +116,12 @@ export function AppShell() {
 		const botInUsers = users.some((u) => u.id === botUser.id)
 		return botInUsers ? users : [...users, botUser]
 	}, [users, botUser])
+
+	// Microphone + voice activity detection
+	const isCurrentUserInVoice = currentUser
+		? guildVoiceStates.some((vs) => vs.user_id === currentUser.id && vs.channel_id)
+		: false
+	const { isSpeaking: currentUserSpeaking } = useMicrophone(isCurrentUserInVoice)
 
 	const handleMobileMenuToggle = useCallback(() => {
 		setMobileSidebarOpen((prev) => !prev)
@@ -307,6 +343,8 @@ export function AppShell() {
 										isPlaybackMode={isPlaybackMode}
 										onCreateChannel={createChannel}
 										onOpenVoicePanel={openVoicePanel}
+										activity={activity}
+										currentUserSpeaking={currentUserSpeaking}
 									/>
 									<div className={styles.main}>
 										<Header
@@ -328,9 +366,21 @@ export function AppShell() {
 											users={users}
 											onCreateThread={handleOpenThreadCreate}
 											onThreadSelect={handleThreadSelect}
+											activityOpen={activity.isOpen && !activityMinimized}
 										/>
 
 										<div className={styles.content}>
+											{activity.isOpen && (
+												<ActivityView
+													activity={activity}
+													onDisconnect={closeActivity}
+													overlayRef={activityOverlayRef}
+													currentUser={currentUser}
+													minimized={activityMinimized}
+													onMinimize={() => setActivityMinimized(true)}
+													onRestore={() => setActivityMinimized(false)}
+												/>
+											)}
 											<MessageArea
 												channelId={selectedChannelId}
 												onOpenThreads={handleOpenThreads}
@@ -349,16 +399,23 @@ export function AppShell() {
 											{showMembers &&
 												threadPanel.mode === 'closed' &&
 												!(selectedChannel?.type === 2 || selectedChannel?.type === 13) && (
-													<MemberList members={displayMembers} roles={guildRoles} />
+													<MemberList members={displayMembers} roles={guildRoles} activityPaddingTop={activityHeight} />
 												)}
 											{showMembers &&
 												(selectedChannel?.type === 2 || selectedChannel?.type === 13) &&
 												voicePanelMode === 'full' &&
 												threadPanel.mode === 'closed' && (
-													<MemberList members={displayMembers} roles={guildRoles} />
+													<MemberList members={displayMembers} roles={guildRoles} activityPaddingTop={activityHeight} />
 												)}
 										</div>
 									</div>
+									{activity.isOpen && !activityMinimized && selectedChannel && selectedGuild && (
+										<ActivityInfoBar
+											activityName={activity.name || ''}
+											channelName={selectedChannel.name}
+											guildName={selectedGuild.name}
+										/>
+									)}
 								</>
 							)}
 							{showHome && (
@@ -378,10 +435,9 @@ export function AppShell() {
 						</div>
 					</div>
 
-					{/* Bottom bar with playback controls and status */}
+					{/* Bottom bar with playback controls */}
 					<div className={styles.bottomBar}>
 						<PlaybackControls />
-						<StatusBar />
 					</div>
 				</div>
 

@@ -1813,6 +1813,9 @@ export interface MockChannelConfig {
 	name?: string
 	type?: number
 	parentId?: Snowflake | null
+	/** Name of a category channel to nest this channel under (resolved at creation time) */
+	parentCategory?: string
+	position?: number
 	/** Seed messages to create in this channel */
 	messages?: SeedMessageConfig[]
 }

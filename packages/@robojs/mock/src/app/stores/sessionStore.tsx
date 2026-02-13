@@ -101,6 +101,16 @@ export interface SessionState {
 		channelId: string | null
 		mode: 'closed' | 'split' | 'full'
 	}
+	activity: {
+		id: string | null
+		name: string | null
+		description: string | null
+		iconColor: string | null
+		bannerGradient: string | null
+		channelId: string | null
+		guildId: string | null
+		isOpen: boolean
+	}
 
 	// Typing indicators
 	typingUsers: Record<string, { userId: string; username: string; expiresAt: number }[]>
@@ -176,6 +186,8 @@ type SessionAction =
 	| { type: 'SET_LOOP_WARNING'; payload: LoopWarning }
 	| { type: 'CLEAR_LOOP_WARNING' }
 	| { type: 'HANDLE_COMMANDS_UPDATED'; payload: { commands: StageApplicationCommand[] } }
+	| { type: 'SET_ACTIVITY'; payload: { id: string; name: string; description: string; iconColor: string; bannerGradient: string; channelId: string; guildId: string } }
+	| { type: 'CLEAR_ACTIVITY' }
 
 // Initial state
 const initialState: SessionState = {
@@ -200,6 +212,7 @@ const initialState: SessionState = {
 		channelId: null,
 		mode: 'closed'
 	},
+	activity: { id: null, name: null, description: null, iconColor: null, bannerGradient: null, channelId: null, guildId: null, isOpen: false },
 	typingUsers: {},
 	activeModal: null,
 	pendingInteractions: [],
@@ -479,6 +492,12 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 
 		case 'SET_VOICE_PANEL':
 			return { ...state, voicePanel: action.payload }
+
+		case 'SET_ACTIVITY':
+			return { ...state, activity: { ...action.payload, isOpen: true } }
+
+		case 'CLEAR_ACTIVITY':
+			return { ...state, activity: initialState.activity }
 
 		case 'SET_CURRENT_USER': {
 			const updatedUser = action.payload

@@ -74,6 +74,20 @@ export function useSession() {
 		dispatch({ type: 'SET_VOICE_PANEL', payload: { channelId, mode: 'closed' } })
 	}
 
+	const launchActivity = (activity: { id: string; name: string; description: string; iconColor: string; bannerGradient: string }) => {
+		const channelId = state.selectedChannelId
+		const guildId = state.selectedGuildId
+		if (!channelId || !guildId) return
+		dispatch({
+			type: 'SET_ACTIVITY',
+			payload: { ...activity, channelId, guildId }
+		})
+	}
+
+	const closeActivity = () => {
+		dispatch({ type: 'CLEAR_ACTIVITY' })
+	}
+
 	const deleteThread = (threadId: string) => {
 		const threadChannel = state.channels.find((channel) => channel.id === threadId)
 		dispatch({ type: 'DELETE_THREAD', payload: { threadId } })
@@ -650,6 +664,7 @@ export function useSession() {
 			state.voicePanel.channelId && state.voicePanel.channelId === state.selectedChannelId
 				? state.voicePanel.mode
 				: 'closed',
+		activity: state.activity,
 
 		// Connection
 		connect,
@@ -663,6 +678,8 @@ export function useSession() {
 		openVoicePanel,
 		setVoicePanelMode,
 		closeVoicePanel,
+		launchActivity,
+		closeActivity,
 		deleteThread,
 		createChannel,
 		createForumPost,

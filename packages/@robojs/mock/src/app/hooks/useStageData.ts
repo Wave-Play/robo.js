@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useEffect, useRef } from 'react'
-import { useSession as useSessionState, useSessionDispatch, useWebSocket, type PendingMessage, type PendingInteraction, type FilteredEvent, type LoopWarning } from '../stores/sessionStore'
+import { useSession as useSessionState, useSessionDispatch, useWebSocket, type PendingMessage, type PendingInteraction, type FilteredEvent, type LoopWarning, type SessionState } from '../stores/sessionStore'
 import { usePlayback, usePlaybackControls, usePlaybackGuilds, usePlaybackChannels, usePlaybackMembers, usePlaybackMessages, usePlaybackTypingUsers } from '../stores/playbackStore'
 import { useUnifiedSelection } from '../stores/unifiedSelectionStore'
 import { useCurrentUser } from './useCurrentUser'
@@ -81,6 +81,9 @@ export interface StageDataResult {
 	// === Mention Tracking ===
 	unreadMentions: Record<string, number>
 
+	// === Activity State ===
+	activity: SessionState['activity']
+
 	// === Selection Actions (work in both modes) ===
 	selectGuild: (guildId: string | null) => void
 	selectChannel: (channelId: string | null) => void
@@ -92,6 +95,8 @@ export interface StageDataResult {
 	clearReplyingTo: () => void
 	clearFilteredEvents: () => void
 	clearLoopWarning: () => void
+	launchActivity: (activity: { id: string; name: string; description: string; iconColor: string; bannerGradient: string }) => void
+	closeActivity: () => void
 
 	// === Connection Actions (live only, no-op in playback) ===
 	connect: () => void
@@ -323,6 +328,21 @@ export function useStageData(options?: UseStageDataOptions): StageDataResult {
 
 	const clearLoopWarning = useCallback(() => {
 		sessionDispatch({ type: 'CLEAR_LOOP_WARNING' })
+	}, [sessionDispatch])
+
+	// === Activity Actions (work in both modes) ===
+	const launchActivity = useCallback((activity: { id: string; name: string; description: string; iconColor: string; bannerGradient: string }) => {
+		const channelId = selection.selectedChannelId
+		const guildId = selection.selectedGuildId
+		if (!channelId || !guildId) return
+		sessionDispatch({
+			type: 'SET_ACTIVITY',
+			payload: { ...activity, channelId, guildId }
+		})
+	}, [sessionDispatch, selection.selectedChannelId, selection.selectedGuildId])
+
+	const closeActivity = useCallback(() => {
+		sessionDispatch({ type: 'CLEAR_ACTIVITY' })
 	}, [sessionDispatch])
 
 	// === Connection Actions (no-op in playback) ===
@@ -648,6 +668,9 @@ export function useStageData(options?: UseStageDataOptions): StageDataResult {
 		eventCount: sessionState.eventCount,
 		lastHeartbeat: sessionState.lastHeartbeat,
 
+		// Activity State
+		activity: sessionState.activity,
+
 		// Mention Tracking
 		unreadMentions: sessionState.unreadMentions,
 
@@ -662,6 +685,8 @@ export function useStageData(options?: UseStageDataOptions): StageDataResult {
 		clearReplyingTo,
 		clearFilteredEvents,
 		clearLoopWarning,
+		launchActivity,
+		closeActivity,
 
 		// Connection Actions
 		connect: connectAction,

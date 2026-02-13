@@ -65,6 +65,7 @@
 		"@dnd-kit/core": "^6.3.1",
 		"@dnd-kit/sortable": "^10.0.0",
 		"@dnd-kit/utilities": "^3.2.2",
+		"@ricky0123/vad-web": "^0.0.30",
 		"@robojs/server": "workspace:*",
 		"discord-api-types": "^0.37.115",
 		"robo.js": "workspace:*",

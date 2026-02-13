@@ -16,6 +16,7 @@ interface UserProfilePopoutProps {
 	hasSlashCommands: boolean
 	anchorTop: number
 	listLeft: number
+	side?: 'left' | 'right'
 	onClose: () => void
 	onMessage: (userId: string) => void
 }
@@ -27,6 +28,7 @@ export function UserProfilePopout({
 	hasSlashCommands,
 	anchorTop,
 	listLeft,
+	side = 'left',
 	onClose,
 	onMessage
 }: UserProfilePopoutProps) {
@@ -118,8 +120,8 @@ export function UserProfilePopout({
 		}
 	}, [])
 
-	// Position: right edge flush to left of member list (minus margin)
-	const left = listLeft - POPOUT_WIDTH - MARGIN
+	// Position: to the left or right of the anchor list
+	const left = side === 'right' ? listLeft + MARGIN : listLeft - POPOUT_WIDTH - MARGIN
 
 	// Banner color: bots get green, default is brand gradient
 	const bannerStyle = isBot

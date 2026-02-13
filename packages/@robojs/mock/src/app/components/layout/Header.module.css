@@ -11,6 +11,11 @@
 	z-index: 1;
 }
 
+.header.activityOpen {
+	background: #000;
+	border-bottom-color: transparent;
+}
+
 .inputContainer {
 	display: flex;
 	flex-direction: row;

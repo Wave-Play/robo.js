@@ -10,6 +10,7 @@ import styles from './MemberList.module.css'
 interface MemberListProps {
 	members: StageMember[]
 	roles: StageRole[]
+	activityPaddingTop?: number
 }
 
 interface MemberGroup {
@@ -23,7 +24,7 @@ interface PopoutState {
 	anchorTop: number
 }
 
-export function MemberList({ members, roles }: MemberListProps) {
+export function MemberList({ members, roles, activityPaddingTop }: MemberListProps) {
 	const containerRef = useRef<HTMLElement>(null)
 	const [popoutState, setPopoutState] = useState<PopoutState | null>(null)
 	const { commands, currentUser, botUser, invokeContextCommand, openDM } = useStageData()
@@ -163,7 +164,7 @@ export function MemberList({ members, roles }: MemberListProps) {
 	const hasSlashCommands = commands.some((c) => (c.type ?? 1) === 1)
 
 	return (
-		<aside ref={containerRef} className={styles.container}>
+		<aside ref={containerRef} className={styles.container} style={activityPaddingTop ? { paddingTop: activityPaddingTop + 24 } : undefined}>
 			{groupedMembers.map((group) => (
 				<div key={group.name} className={styles.group}>
 					<h3 className={styles.groupHeader}>

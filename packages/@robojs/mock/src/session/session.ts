@@ -193,11 +193,39 @@ export class Session implements ISession {
 
 				// Create channels from config, or default to a general channel
 				if (guildConfig.channels && guildConfig.channels.length > 0) {
+					// Two-pass creation: categories first, then channels
+					const categoryMap = new Map<string, string>() // name -> id
+
+					// Pass 1: Create categories (type 4)
 					for (const channelConfig of guildConfig.channels) {
+						if (channelConfig.type === 4) {
+							const channel = createMockChannel({
+								guildId: guild.id,
+								name: channelConfig.name ?? 'category',
+								type: 4,
+								position: channelConfig.position
+							})
+							this.state.addChannelToGuild(guild.id, channel)
+							categoryMap.set(channel.name, channel.id)
+						}
+					}
+
+					// Pass 2: Create non-category channels
+					for (const channelConfig of guildConfig.channels) {
+						if (channelConfig.type === 4) continue
+
+						// Resolve parentId: use explicit parentId, or look up category by name
+						let parentId = channelConfig.parentId ?? null
+						if (!parentId && channelConfig.parentCategory) {
+							parentId = categoryMap.get(channelConfig.parentCategory) ?? null
+						}
+
 						const channel = createMockChannel({
 							guildId: guild.id,
 							name: channelConfig.name ?? 'channel',
-							type: channelConfig.type ?? 0
+							type: channelConfig.type ?? 0,
+							parentId,
+							position: channelConfig.position
 						})
 						this.state.addChannelToGuild(guild.id, channel)
 
@@ -217,23 +245,51 @@ export class Session implements ISession {
 				}
 			}
 		} else {
-			// No guilds configured - create a default guild with just a general channel
+			// No guilds configured - create a default guild with categories and channels
 			const defaultGuild = createMockGuild({
 				name: 'Test Server',
 				ownerId: this.state.botUser.id
 			})
 			this.state.addGuild(defaultGuild)
 
-			// Create only the general channel by default
-			// Additional channels can be added via test data
+			// Create "Text Channels" category
+			const textCategory = createMockChannel({
+				guildId: defaultGuild.id,
+				name: 'Text Channels',
+				type: 4, // GUILD_CATEGORY
+				position: 0
+			})
+			this.state.addChannelToGuild(defaultGuild.id, textCategory)
+
+			// Create general text channel under the category
 			const generalChannel = createMockChannel({
 				guildId: defaultGuild.id,
 				name: 'general',
 				type: 0, // GUILD_TEXT
+				parentId: textCategory.id,
 				topic: 'Chat about anything and everything here',
 				position: 0
 			})
 			this.state.addChannelToGuild(defaultGuild.id, generalChannel)
+
+			// Create "Voice Channels" category
+			const voiceCategory = createMockChannel({
+				guildId: defaultGuild.id,
+				name: 'Voice Channels',
+				type: 4, // GUILD_CATEGORY
+				position: 1
+			})
+			this.state.addChannelToGuild(defaultGuild.id, voiceCategory)
+
+			// Create General voice channel under the category
+			const voiceChannel = createMockChannel({
+				guildId: defaultGuild.id,
+				name: 'General',
+				type: 2, // GUILD_VOICE
+				parentId: voiceCategory.id,
+				position: 0
+			})
+			this.state.addChannelToGuild(defaultGuild.id, voiceChannel)
 		}
 
 		// Create users from config and add as members to all guilds

@@ -31,6 +31,7 @@ interface HeaderProps {
 	users?: StageUser[]
 	onCreateThread?: () => void
 	onThreadSelect?: (threadId: string) => void
+	activityOpen?: boolean
 }
 
 export function Header({
@@ -51,7 +52,8 @@ export function Header({
 	threadMessages,
 	users,
 	onCreateThread,
-	onThreadSelect
+	onThreadSelect,
+	activityOpen
 }: HeaderProps) {
 	const notificationsRef = useRef<HTMLDivElement>(null)
 	const pinnedRef = useRef<HTMLDivElement>(null)
@@ -114,7 +116,7 @@ export function Header({
 	])
 
 	return (
-		<header className={styles.header}>
+		<header className={`${styles.header}${activityOpen ? ` ${styles.activityOpen}` : ''}`}>
 			{/* Mobile hamburger menu */}
 			{onMobileMenuToggle && (
 				<button

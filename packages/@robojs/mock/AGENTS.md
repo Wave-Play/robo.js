@@ -531,7 +531,6 @@ App.tsx
 │   │   ├── Role groups
 │   │   └── Member items with presence
 │   ├── PlaybackControls (record/replay controls)
-│   ├── StatusBar (heartbeat, event count)
 │   └── DevToolsPanel (floating, 8 tabs)
 ├── Modal (interaction modals)
 └── ConnectionScreen (overlay when reconnecting)
@@ -691,7 +690,6 @@ Bot sends Type 9 response → SHOW_MODAL → Modal overlay
 | ChannelList | `src/app/components/sidebar/ChannelList.tsx` |
 | UserArea | `src/app/components/sidebar/UserArea.tsx` |
 | Header | `src/app/components/layout/Header.tsx` |
-| StatusBar | `src/app/components/layout/StatusBar.tsx` |
 | MessageArea | `src/app/components/messages/MessageArea.tsx` |
 | Message | `src/app/components/messages/Message.tsx` |
 | ForumChannelView | `src/app/components/messages/ForumChannelView.tsx` |
@@ -926,7 +924,7 @@ packages/@robojs/mock/
 │   │   ├── App.tsx            # Root component
 │   │   ├── index.tsx          # Entry + provider stack
 │   │   ├── components/
-│   │   │   ├── layout/        # AppShell, Header, StatusBar, ConnectionScreen
+│   │   │   ├── layout/        # AppShell, Header, ConnectionScreen
 │   │   │   ├── sidebar/       # ServerList, ChannelList, UserArea, VoiceChannel
 │   │   │   ├── messages/      # MessageArea, Message, MessageInput, Embed, etc.
 │   │   │   ├── members/       # MemberList, UserProfilePopout

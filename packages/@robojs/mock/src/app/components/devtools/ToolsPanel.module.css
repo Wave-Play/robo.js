@@ -125,6 +125,97 @@
 	letter-spacing: 0.5px;
 }
 
+/* Session info styles */
+.sessionSection {
+	min-width: 180px;
+	max-width: 220px;
+	padding: 0;
+	overflow: hidden;
+}
+
+.sessionHeader {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 10px 12px;
+	background: var(--accent-overlay);
+}
+
+.sessionDot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	flex-shrink: 0;
+}
+
+.sessionDot.online {
+	background: var(--status-online);
+	box-shadow: 0 0 6px var(--status-online);
+}
+
+.sessionDot.offline {
+	background: var(--status-offline);
+}
+
+.sessionTitle {
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--text-bright);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.sessionIdButton {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+	width: 100%;
+	padding: 8px 12px;
+	background: none;
+	border: none;
+	cursor: pointer;
+	font-family: var(--font-code);
+	font-size: 11px;
+	color: var(--text-muted);
+	transition: background 0.15s ease, color 0.15s ease;
+	text-align: left;
+}
+
+.sessionIdButton:hover {
+	background: var(--hover-overlay);
+	color: var(--text-bright);
+}
+
+.sessionIdCopied {
+	color: var(--status-online);
+}
+
+.sessionIdPrefix {
+	opacity: 0.5;
+}
+
+.sessionIdValue {
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.sessionIdIcon {
+	display: flex;
+	align-items: center;
+	flex-shrink: 0;
+	margin-left: 6px;
+	opacity: 0;
+	transition: opacity 0.15s ease;
+}
+
+.sessionIdButton:hover .sessionIdIcon,
+.sessionIdCopied .sessionIdIcon {
+	opacity: 1;
+}
+
 /* Toggle button styles */
 .toggleRow {
 	margin-bottom: 8px;

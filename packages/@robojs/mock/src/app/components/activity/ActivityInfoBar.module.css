@@ -1,0 +1,31 @@
+.container {
+	position: absolute;
+	bottom: 8px;
+	left: 8px;
+	z-index: 11;
+	background: rgba(17, 18, 20, 0.9);
+	border-radius: 8px;
+	padding: 8px 12px;
+	backdrop-filter: blur(4px);
+}
+
+.row {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	color: var(--text-bright, #fff);
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.icon {
+	display: flex;
+	align-items: center;
+	color: var(--brand-primary, #5865f2);
+}
+
+.context {
+	font-size: 11px;
+	color: var(--text-muted, #b5bac1);
+	margin-top: 2px;
+}

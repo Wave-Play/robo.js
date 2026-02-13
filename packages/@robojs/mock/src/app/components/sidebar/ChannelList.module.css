@@ -2,9 +2,27 @@
 	display: flex;
 	flex-direction: column;
 	width: var(--sidebar-width);
+	min-width: var(--sidebar-width);
+	flex-shrink: 0;
 	min-height: 0;
 	height: 100%;
 	position: relative;
+}
+
+.resizeHandle {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 4px;
+	height: 100%;
+	cursor: col-resize;
+	z-index: 10;
+	transition: background 0.15s ease;
+}
+
+.resizeHandle:hover,
+.resizeHandle:active {
+	background: rgba(255, 255, 255, 0.1);
 }
 
 /* Server header wrapper */
@@ -66,12 +84,19 @@
 	margin-top: 8px;
 }
 
+.categoryRow {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
 .categoryHeader {
 	display: flex;
 	align-items: center;
 	gap: 4px;
 	padding: 2px 8px;
-	width: 100%;
+	flex: 1;
+	min-width: 0;
 	color: var(--channel-icon-default);
 	font-size: 11px;
 	font-weight: 600;
@@ -81,6 +106,23 @@
 }
 
 .categoryHeader:hover {
+	color: var(--interactive-hover);
+}
+
+.categoryAddButton {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 18px;
+	height: 18px;
+	flex-shrink: 0;
+	color: var(--channel-icon-default);
+	border-radius: var(--radius-sm);
+	transition: color 0.1s ease;
+	margin-right: 8px;
+}
+
+.categoryAddButton:hover {
 	color: var(--interactive-hover);
 }
 
@@ -130,7 +172,7 @@
 
 .channel.selected {
 	background: var(--selected-overlay);
-	color: var(--interactive-active);
+	color: var(--interactive-hover);
 }
 
 .channelIcon {
@@ -196,19 +238,22 @@
 	color: var(--interactive-hover);
 }
 
-.channelRow .channel {
-	padding-right: 88px;
+
+.channelRowActivity .channel {
+	padding-right: 40px;
 }
 
 .channelRow:hover .channel,
 .channelRow:focus-within .channel {
 	background: var(--hover-overlay);
 	color: var(--interactive-hover);
+	padding-right: 60px;
 }
 
 .channelRowSelected .channel {
 	background: var(--selected-overlay);
-	color: var(--interactive-active);
+	color: var(--interactive-hover);
+	padding-right: 60px;
 }
 
 .channelRow:hover .channelActions,
@@ -216,6 +261,142 @@
 .channelRowSelected .channelActions {
 	opacity: 1;
 	pointer-events: auto;
+}
+
+/* Activity badge shown on channel when activity is active */
+.activityBadge {
+	position: absolute;
+	right: 8px;
+	top: 50%;
+	transform: translateY(-50%);
+	display: flex;
+	align-items: center;
+}
+
+.activityBadgeIcon {
+	width: 24px;
+	height: 24px;
+	border-radius: 8px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 12px;
+	font-weight: 700;
+	color: #fff;
+}
+
+/* Activity popover */
+.activityPopover {
+	position: fixed;
+	z-index: 1000;
+	width: 300px;
+	background: #232428;
+	border-radius: 16px;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+	animation: activityPopoverFadeIn 0.15s ease-out;
+	overflow: hidden;
+	padding: 16px;
+}
+
+@keyframes activityPopoverFadeIn {
+	from {
+		opacity: 0;
+		transform: translateX(8px);
+	}
+	to {
+		opacity: 1;
+		transform: translateX(0);
+	}
+}
+
+.activityPopoverHeader {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding-bottom: 12px;
+}
+
+.activityPopoverChannelIcon {
+	width: 20px;
+	height: 20px;
+	color: var(--channel-icon-default, #80848e);
+	flex-shrink: 0;
+}
+
+.activityPopoverChannelName {
+	font-size: 16px;
+	font-weight: 600;
+	color: #f2f3f5;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.activityPopoverDivider {
+	height: 1px;
+	background: rgba(255, 255, 255, 0.08);
+}
+
+.activityPopoverBody {
+	display: flex;
+	gap: 12px;
+	padding: 16px 0;
+}
+
+.activityPopoverIcon {
+	width: 64px;
+	height: 64px;
+	border-radius: 14px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 28px;
+	font-weight: 700;
+	color: #fff;
+	flex-shrink: 0;
+}
+
+.activityPopoverInfo {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 0;
+	padding-top: 2px;
+}
+
+.activityPopoverName {
+	font-size: 16px;
+	font-weight: 700;
+	color: #f2f3f5;
+}
+
+.activityPopoverDescription {
+	font-size: 14px;
+	color: #b5bac1;
+	line-height: 1.3;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.activityPopoverDiscordLogo {
+	margin-top: 6px;
+}
+
+.activityPopoverFooter {
+	padding-top: 4px;
+}
+
+.activityPopoverJoinedButton {
+	width: 100%;
+	padding: 12px;
+	border: none;
+	border-radius: 8px;
+	background: #4e5058;
+	color: #dbdee1;
+	font-size: 14px;
+	font-weight: 600;
+	cursor: default;
 }
 
 .empty {

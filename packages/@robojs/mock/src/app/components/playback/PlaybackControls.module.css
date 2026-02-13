@@ -313,6 +313,27 @@
 	gap: 8px;
 }
 
+/* Docs Button */
+.docsButton {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	padding: 4px 8px;
+	border-radius: var(--radius-sm);
+	font-size: 10px;
+	font-weight: 600;
+	color: var(--text-normal);
+	background: var(--accent-overlay);
+	transition: all 0.1s ease;
+	text-decoration: none;
+}
+
+.docsButton:hover {
+	color: var(--text-bright);
+	background: var(--hover-overlay);
+	text-decoration: none;
+}
+
 /* Dev Button */
 .devButton {
 	display: flex;
@@ -341,21 +362,6 @@
 }
 
 /* Clear Button */
-.clearButton {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 24px;
-	height: 24px;
-	border-radius: var(--radius-sm);
-	color: var(--text-muted);
-	transition: all 0.1s ease;
-}
-
-.clearButton:hover {
-	color: var(--red-light);
-	background: var(--hover-overlay);
-}
 
 /* Tooltip */
 .tooltip {

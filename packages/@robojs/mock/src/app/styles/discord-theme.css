@@ -106,7 +106,7 @@
 	/* ===== TYPOGRAPHY ===== */
 
 	/* Font Families */
-	--font-primary: 'gg sans', 'Noto Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	--font-primary: 'Inter', 'Noto Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	--font-code: 'Consolas', 'Monaco', 'Andale Mono', monospace;
 
 	/* ===== BORDER RADIUS ===== */

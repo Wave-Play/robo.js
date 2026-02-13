@@ -1,6 +1,11 @@
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { StageChannel, StageMember, StageVoiceState, StageUser } from '../../types/stage'
+import { useStageData } from '../../hooks/useStageData'
+import { getAvatarUrl } from '../../utils/avatar'
 import { getDisplayName } from '../../utils'
+import { UserProfilePopout } from '../members/UserProfilePopout'
 import styles from './VoiceChannel.module.css'
+import { FixedTooltip } from '../common/FixedTooltip'
 import CogwheelIcon from '../icons/cogwheel'
 import InviteIcon from '../icons/invite'
 import VoiceChannelIcon from '../icons/voice_channel'
@@ -13,40 +18,101 @@ interface VoiceChannelProps {
 	onJoin: () => void
 	onLeave: () => void
 	currentUserId?: string
+	currentUserSpeaking?: boolean
 	onOpenPanel?: () => void
+	onSelect?: () => void
 }
 
-export function VoiceChannel({ channel, voiceStates, users, members, onJoin, onLeave, currentUserId, onOpenPanel }: VoiceChannelProps) {
+export function VoiceChannel({ channel, voiceStates, users, members, onJoin, onLeave, currentUserId, currentUserSpeaking = false, onOpenPanel, onSelect }: VoiceChannelProps) {
+	const { roles, commands, currentUser, botUser, openDM } = useStageData()
 	// Filter voice states for this channel
 	const membersInChannel = voiceStates.filter((vs) => vs.channel_id === channel.id)
 	const isCurrentUserInChannel = currentUserId
 		? membersInChannel.some((vs) => vs.user_id === currentUserId)
 		: false
 	const displayName = channel.name.trim()
+	const [isHovered, setIsHovered] = useState(false)
+	const [elapsed, setElapsed] = useState(0)
+	const [popoutState, setPopoutState] = useState<{ member: StageMember; anchorTop: number } | null>(null)
+	const joinedAt = useRef<number | null>(null)
+	const containerRef = useRef<HTMLDivElement>(null)
+
+	const handleMemberClick = useCallback((member: StageMember, e: React.MouseEvent) => {
+		const rect = e.currentTarget.getBoundingClientRect()
+		setPopoutState({ member, anchorTop: rect.top })
+	}, [])
+
+	const handleMessageUser = useCallback(async (userId: string) => {
+		await openDM(userId)
+		setPopoutState(null)
+	}, [openDM])
+
+	const hasSlashCommands = commands.some((c) => (c.type ?? 1) === 1)
+	const listRight = containerRef.current?.getBoundingClientRect().right ?? 0
+
+	useEffect(() => {
+		if (isCurrentUserInChannel) {
+			if (joinedAt.current === null) {
+				joinedAt.current = Date.now()
+			}
+			const tick = () => setElapsed(Math.floor((Date.now() - joinedAt.current!) / 1000))
+			tick()
+			const interval = setInterval(tick, 1000)
+			return () => clearInterval(interval)
+		} else {
+			joinedAt.current = null
+			setElapsed(0)
+		}
+	}, [isCurrentUserInChannel])
+
+	const minutes = String(Math.floor(elapsed / 60)).padStart(2, '0')
+	const seconds = String(elapsed % 60).padStart(2, '0')
 
 	return (
-		<div className={styles.container}>
-			<div className={styles.row}>
+		<div ref={containerRef} className={styles.container}>
+			<div
+				className={`${styles.row} ${isCurrentUserInChannel ? styles.rowJoined : ''}`}
+				onMouseEnter={() => setIsHovered(true)}
+				onMouseLeave={() => setIsHovered(false)}
+			>
 				<button
-					className={styles.header}
-					onClick={isCurrentUserInChannel ? onLeave : onJoin}
+					className={`${styles.header} ${isCurrentUserInChannel ? styles.joined : ''}`}
+					onClick={isCurrentUserInChannel ? onSelect : onJoin}
 					aria-label={`Voice channel: ${displayName}${membersInChannel.length > 0 ? `, ${membersInChannel.length} connected` : ''}`}
 				>
 					<VoiceChannelIcon width={16} height={16} />
-					<span className={styles.channelName}>{displayName}</span>
-					{membersInChannel.length > 0 && <span className={styles.memberCount}>{membersInChannel.length}</span>}
+					<div className={styles.channelInfo}>
+						<span className={styles.channelName}>{displayName}</span>
+						{isCurrentUserInChannel && (
+							<span className={styles.channelStatus}>
+								Set a channel status
+								<PencilIcon />
+							</span>
+						)}
+					</div>
+					{membersInChannel.length > 0 && !isCurrentUserInChannel && <span className={styles.memberCount}>{membersInChannel.length}</span>}
 				</button>
-				<div className={styles.actions}>
-					<button type="button" aria-label="Open voice chat" onClick={onOpenPanel}>
-						<ChatBubbleIcon className={styles.actionIcon} />
-					</button>
-					<button type="button" aria-label="Create invite">
-						<InviteIcon width={16} height={16} />
-					</button>
-					<button type="button" aria-label="Edit channel settings">
-						<CogwheelIcon width={16} height={16} />
-					</button>
-				</div>
+				{isCurrentUserInChannel && !isHovered ? (
+					<div className={styles.timer}>{minutes}:{seconds}</div>
+				) : (
+					<div className={styles.actions}>
+						<FixedTooltip label="Open Chat">
+							<button type="button" aria-label="Open Chat" onClick={onOpenPanel}>
+								<ChatBubbleIcon className={styles.actionIcon} />
+							</button>
+						</FixedTooltip>
+						<FixedTooltip label="Invite to Voice">
+							<button type="button" aria-label="Invite to Voice">
+								<InviteIcon width={16} height={16} />
+							</button>
+						</FixedTooltip>
+						<FixedTooltip label="Edit Channel">
+							<button type="button" aria-label="Edit Channel">
+								<CogwheelIcon width={16} height={16} />
+							</button>
+						</FixedTooltip>
+					</div>
+				)}
 			</div>
 
 			{membersInChannel.length > 0 && (
@@ -54,9 +120,33 @@ export function VoiceChannel({ channel, voiceStates, users, members, onJoin, onL
 					{membersInChannel.map((vs) => {
 						const user = users.find((u) => u.id === vs.user_id)
 						const member = members.find((m) => m.user.id === vs.user_id)
-						return <VoiceMember key={vs.user_id} voiceState={vs} user={user} member={member} />
+						return (
+							<VoiceMember
+								key={vs.user_id}
+								voiceState={vs}
+								user={user}
+								member={member}
+								speaking={vs.user_id === currentUserId ? currentUserSpeaking : !!vs.speaking}
+								onClick={member ? (e) => handleMemberClick(member, e) : undefined}
+							/>
+						)
 					})}
 				</div>
+			)}
+
+			{popoutState && (
+				<UserProfilePopout
+					member={popoutState.member}
+					roles={roles}
+					currentUserId={currentUser?.id}
+					botUserId={botUser?.id}
+					hasSlashCommands={hasSlashCommands}
+					anchorTop={popoutState.anchorTop}
+					listLeft={listRight}
+					side="right"
+					onClose={() => setPopoutState(null)}
+					onMessage={handleMessageUser}
+				/>
 			)}
 		</div>
 	)
@@ -66,27 +156,27 @@ interface VoiceMemberProps {
 	voiceState: StageVoiceState
 	user?: StageUser
 	member?: StageMember
+	speaking?: boolean
+	onClick?: (e: React.MouseEvent) => void
 }
 
-function VoiceMember({ voiceState, user, member }: VoiceMemberProps) {
+function VoiceMember({ voiceState, user, member, speaking = false, onClick }: VoiceMemberProps) {
 	const hasIcons = voiceState.self_mute || voiceState.self_deaf || voiceState.mute || voiceState.deaf
-	const avatarClassName = `${styles.memberAvatar}${voiceState.speaking ? ` ${styles.speaking}` : ''}`
+	const avatarClassName = `${styles.memberAvatar}${speaking ? ` ${styles.speaking}` : ''}`
 	const displayName = getDisplayName(user, member)
 
+	const avatarSrc = user ? getAvatarUrl(user.id, user.avatar ?? null, 32) : null
+
 	return (
-		<div className={styles.member}>
+		<div className={styles.member} onClick={onClick}>
 			<div className={avatarClassName}>
-				{user?.avatar ? (
-					<img
-						src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=32`}
-						alt=""
-						className={styles.avatarImg}
-					/>
-				) : (
-					<DefaultAvatar className={styles.avatarImg} />
-				)}
+				<img
+					src={avatarSrc ?? ''}
+					alt=""
+					className={styles.avatarImg}
+				/>
 			</div>
-			<span className={styles.memberName}>{displayName}</span>
+			<span className={`${styles.memberName}${speaking ? ` ${styles.memberNameSpeaking}` : ''}`}>{displayName}</span>
 
 			{hasIcons && (
 				<div className={styles.icons}>
@@ -101,13 +191,7 @@ function VoiceMember({ voiceState, user, member }: VoiceMemberProps) {
 function ChatBubbleIcon({ className }: { className?: string }) {
 	return (
 		<svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none">
-			<path
-				d="M8 19l-4 3V7a4 4 0 0 1 4-4h9a4 4 0 0 1 4 4v7a4 4 0 0 1-4 4H8z"
-				stroke="currentColor"
-				strokeWidth="1.25"
-				strokeLinecap="round"
-				strokeLinejoin="round"
-			/>
+			<path fill="currentColor" d="M12 22a10 10 0 1 0-8.45-4.64c.13.19.11.44-.04.61l-2.06 2.37A1 1 0 0 0 2.2 22H12Z" />
 		</svg>
 	)
 }
@@ -130,19 +214,11 @@ function HeadphonesOffIcon({ className }: { className?: string }) {
 	)
 }
 
-// Default avatar for users without one
-function DefaultAvatar({ className }: { className?: string }) {
+function PencilIcon() {
 	return (
-		<svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-			<rect width="24" height="24" rx="12" fill="var(--card-background)" />
-			<path
-				d="M12 11.5C13.1046 11.5 14 10.6046 14 9.5C14 8.39543 13.1046 7.5 12 7.5C10.8954 7.5 10 8.39543 10 9.5C10 10.6046 10.8954 11.5 12 11.5Z"
-				fill="var(--text-muted)"
-			/>
-			<path
-				d="M12 13C9.33 13 4 14.34 4 17V18.5H20V17C20 14.34 14.67 13 12 13Z"
-				fill="var(--text-muted)"
-			/>
+		<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
+			<path d="M13.96 5.46 11.18 8.24l4.58 4.58 2.78-2.78a.63.63 0 0 0 0-.88L14.83 5.46a.63.63 0 0 0-.87 0ZM10.23 9.18l-5.45 5.46-.79 4.44a.63.63 0 0 0 .74.74l4.44-.8 5.45-5.44-4.39-4.4Z" />
 		</svg>
 	)
 }
+
