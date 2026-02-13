@@ -1,0 +1,133 @@
+---
+title: Mock Server
+description: Test Discord bots without Discord
+---
+
+**Mock Server** simulates Discord's API on your machine. Your bot connects to it instead of Discord, giving you full control over messages, users, and events. Test slash commands, buttons, modals, and complex flows without waiting for Discord's servers.
+
+## Quick Start
+
+Add the plugin to your Robo:
+
+```package-install
+npx robo add @robojs/mock
+```
+
+Start in mock mode:
+
+```bash
+npx robo dev --mock
+```
+
+Stage UI opens automatically in your browser. Send messages, trigger commands, and watch your bot respond in real-time.
+
+<ScreenshotPlaceholder
+  alt="Stage UI overview showing the full Discord-like interface with a server list on the left, channel list, a message area in the center with a bot conversation, and a member list on the right, with playback controls and a status bar at the bottom"
+  focus="The full Stage UI layout with a bot responding to a user message"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show a realistic session: a user has sent a message or slash command, and the bot has replied. Include the server list, channel list, message area, member list, and the bottom bar with playback controls and status indicators."
+/>
+
+## Two Ways to Test
+
+### Interactive Testing
+
+Use **Stage UI** to test manually. The browser-based interface mirrors Discord's layout:
+
+- Send messages as different users
+- Run slash commands with autocomplete
+- Click buttons and submit modals
+- Watch events flow through DevTools
+
+Best for exploring behavior and debugging issues.
+
+### Automated Testing
+
+Write tests with Jest that run in CI/CD:
+
+```typescript
+import { createTestSession, dispatchInteraction, expectAction } from '@robojs/mock/testing'
+
+describe('ping command', () => {
+  let session
+
+  beforeAll(async () => {
+    session = await createTestSession(__filename)
+  })
+
+  afterAll(async () => {
+    await session?.destroy()
+  })
+
+  it('responds with pong', async () => {
+    await dispatchInteraction(session.id, {
+      type: 2,
+      data: { name: 'ping', type: 1 },
+      channel_id: session.channels[0].id
+    })
+
+    await expectAction(session.id, {
+      description: 'Bot should reply with pong',
+      type: 'interaction_response',
+      expected: {
+        response_data: { content: expect.stringContaining('Pong') }
+      }
+    })
+  })
+})
+```
+
+Run your tests:
+
+```bash
+npx robo mock test
+```
+
+## What Gets Simulated
+
+Mock Server emulates Discord's Gateway v10 and REST API:
+
+| Feature | Support |
+|---------|---------|
+| Gateway WebSocket | Full v10 protocol |
+| REST API | 150+ endpoints |
+| Intents | Filtering and privileged intent enforcement |
+| Permissions | Role hierarchy, channel overwrites |
+| Voice Gateway | Connection handshake (no audio) |
+| Rate Limits | Configurable enforcement |
+
+## Session Isolation
+
+Each test gets its own session with independent state. Sessions have their own:
+
+- Guilds, channels, and users
+- Messages and interactions
+- Recorded actions for assertions
+
+This enables parallel test execution without interference.
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./stage-ui"
+    title="Stage UI"
+    description="Learn the interactive testing interface."
+  />
+  <Card
+    href="./automated-testing"
+    title="Automated Testing"
+    description="Write tests with Jest."
+  />
+  <Card
+    href="./devtools"
+    title="DevTools"
+    description="Debug with the DevTools panel."
+  />
+  <Card
+    href="./configuration"
+    title="Configuration"
+    description="Configure mock server behavior."
+  />
+</Cards>

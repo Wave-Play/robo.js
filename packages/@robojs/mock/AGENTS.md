@@ -73,6 +73,10 @@ Each test gets its own isolated session with independent state:
 └────────────────────────────────────────────────────────────────────────────┘
 ```
 
+### Scenario System
+
+The mock server includes a scenario runner for executing JSON-based test flows against sessions. Scenarios are managed per-session via `ScenarioManager` (`src/session/scenario/index.ts`) and executed by `ScenarioRunner` (`src/session/scenario/runner.ts`). Step executors live in `src/session/scenario/step-executors/` and handle dispatch, wait, assert, and interact step types. Control API endpoints under `src/api/control/sessions/[id]/scenario/` provide load, start, pause, resume, stop, step, seek, and state operations. The runner emits real-time events to Stage UI and Control Events clients for step-by-step progress tracking.
+
 ### Token Routing
 
 Session routing uses the token format `mock:<session_id>`:
@@ -439,6 +443,8 @@ class ActionRecorder {
 
 ### Action Types
 
+Action types use **snake_case** naming (e.g., `guild_update`, not `GUILD_UPDATE`). This convention applies to all recorded action types, including guild actions that were previously using SCREAMING_CASE.
+
 ```typescript
 type ActionType =
   | 'gateway_identify'
@@ -452,6 +458,9 @@ type ActionType =
   | 'dispatch'
   | 'interaction_response'
   | 'interaction_followup'
+  // ... plus 40+ more types including:
+  // message_sent, channel_created, thread_created, role_created,
+  // guild_member_added, ban_created, guild_update, dm_channel_opened, etc.
 ```
 
 ## Stage UI Architecture (Detailed)
@@ -523,7 +532,7 @@ App.tsx
 │   │   └── Member items with presence
 │   ├── PlaybackControls (record/replay controls)
 │   ├── StatusBar (heartbeat, event count)
-│   └── DevToolsPanel (floating, 5 tabs)
+│   └── DevToolsPanel (floating, 8 tabs)
 ├── Modal (interaction modals)
 └── ConnectionScreen (overlay when reconnecting)
 ```
@@ -623,6 +632,9 @@ interface PlaybackState {
 | Network | `NetworkLog.tsx` | Commands sent + responses, JSON inspection |
 | Performance | `PerformanceMetrics.tsx` | Render times, latency, memory |
 | Tools | `ToolsPanel.tsx` | Clear events, export JSON, inject test data |
+| Permissions | `PermissionsPanel.tsx` | View and manage role/member permissions |
+| Tests | `TestResults.tsx` | Scenario run results and test pass/fail status |
+| Emojis | `EmojisPanel.tsx` | Browse and manage guild emojis |
 
 ### User Action Flows
 

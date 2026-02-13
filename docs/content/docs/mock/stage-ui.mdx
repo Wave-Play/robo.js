@@ -1,0 +1,229 @@
+---
+title: Stage UI
+description: Interactive Discord testing interface
+---
+
+**Stage UI** provides a Discord-like interface for interactive bot testing. Send messages, run commands, and watch your bot respond in real-time without touching Discord's servers.
+
+## Opening Stage UI
+
+Stage UI opens automatically when you start mock mode:
+
+```bash
+npx robo dev --mock
+```
+
+Or navigate directly to `http://localhost:3000/mock/stage` while the server runs.
+
+## The Interface
+
+Stage UI mirrors Discord's layout:
+
+<ScreenshotPlaceholder
+  alt="Full Stage UI interface showing the Discord-like layout with a server list on the far left, a channel list and user area beside it, a header bar with channel name and toolbar, a central message area with bot conversation, and a toggleable member list on the right, all above a bottom bar containing playback controls and a status bar"
+  focus="Label the major areas: Server List, Channel List, User Area, Header, Message Area, Member List, Playback Controls, Status Bar"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show the interface in live mode with a connected bot. The User Area is at the bottom of the channel list sidebar showing the current user's avatar and name. The Status Bar at the bottom right shows event count, latency, bot connection status, and session ID. The playback controls at the bottom left show live/playback mode toggle and event count."
+/>
+
+- **Server List** (far left) - Test guilds and Home button for DMs
+- **Channel List** - Text, voice, forum, and thread channels grouped by category
+- **User Area** (below channels) - Shows current user, click to switch between users
+- **Header** (top) - Channel name, member toggle, thread toggle, search, and notification icons
+- **Message Area** (center) - Conversation view with message input, autocomplete, and context menus
+- **Member List** (right, toggleable) - Users in the current guild grouped by role
+- **Playback Controls** (bottom left) - Live/playback mode toggle, transport controls, and timeline scrubber
+- **Status Bar** (bottom right) - Event count, latency, bot status, and session ID
+
+## Sending Messages
+
+Type in the message input and press Enter. Messages appear from the currently selected user.
+
+### Switch Users
+
+Click your avatar in the **User Area** (bottom of the channel list) to open the user switcher. Select a different user to send messages as that person. This lets you test multi-user scenarios like:
+
+- One user sends a message, bot responds
+- Different user reacts, triggers another action
+- Admin user runs moderation command
+
+<ScreenshotPlaceholder
+  alt="Stage UI User Area with the user switcher popout open, showing a list of multiple test users with different avatars to select from"
+  focus="The user switcher popout showing available test users"
+  zoom="100%"
+  aspect="16/9"
+  notes="Click the avatar in the User Area to open the user switcher. Show at least 3 test users in the popout list with different usernames and avatars. One user should be highlighted as currently selected."
+/>
+
+### Message Actions
+
+Right-click or hover over messages for actions:
+
+- **Add Reaction** - Test reaction handlers
+- **Reply** - Create message references
+- **Pin/Unpin** - Test pin functionality
+- **Delete** - Remove messages
+
+## Running Commands
+
+Press `Ctrl+K` (or `Cmd+K` on Mac) to focus the input with a `/` prefix. Autocomplete shows available commands.
+
+<ScreenshotPlaceholder
+  alt="Stage UI showing the slash command autocomplete dropdown above the message input, listing available bot commands with their descriptions, or a modal dialog that appeared after a bot interaction"
+  focus="The command autocomplete dropdown or a modal interaction in the message area"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show the message input with a '/' typed and the autocomplete popup listing several commands. Alternatively, show a modal form that appeared after clicking a button or running a command. Either screenshot demonstrates the interactive testing capabilities."
+/>
+
+### Command Options
+
+Slash command options appear as you type:
+
+1. Type the command name (e.g., `/ban`)
+2. Tab or click to select options
+3. Enter values for required options
+4. Press Enter to execute
+
+### Context Menus
+
+Right-click users or messages to access context menu commands:
+
+- **User Context** - Commands registered as user context menus
+- **Message Context** - Commands registered as message context menus
+
+## Interacting with Components
+
+When your bot sends messages with buttons, select menus, or other components:
+
+- **Click buttons** directly to trigger interactions
+- **Open select menus** and choose options
+- **Fill modal forms** when they appear
+
+Component interactions are recorded and visible in DevTools.
+
+<ScreenshotPlaceholder
+  alt="Stage UI message area showing a bot message with clickable action row buttons and an open select menu dropdown displaying selectable options"
+  focus="Interactive components in the message area: buttons and an open select menu"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show a bot message with at least two buttons (e.g., Confirm and Cancel with different styles) and a select menu that is open showing dropdown options. The components should look like Discord's native button and select menu styling."
+/>
+
+## Voice Channels
+
+Click a voice channel to simulate joining. Visual indicators show:
+
+- Which users are in voice
+- Speaking state
+- Mute/deafen status
+
+<Callout type="info">
+Voice Gateway handles connection handshakes. Actual audio streaming is not simulated.
+</Callout>
+
+<ScreenshotPlaceholder
+  alt="Voice channel in the Stage UI sidebar showing connected users with speaking, mute, and deafen indicators, plus the voice connection status card at the bottom"
+  focus="Voice channel with connected users and their voice state indicators"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show a voice channel in the channel list with 2-3 users connected. Include visual indicators for speaking (green outline), self-muted (microphone icon), and deafened (headphone icon). Show the voice connection card at the bottom of the sidebar."
+/>
+
+## Forum Channels
+
+Stage UI renders forum channels with a dedicated post-browsing view. Click a forum channel in the channel list to see existing posts and create new ones. Forum posts appear as threaded conversations within the forum layout.
+
+## DM Channels
+
+Click the **Home** button at the top of the server list to navigate to the DM view. This shows a friends list with online/all/pending tabs and a sidebar of direct message conversations. Select a conversation to open a one-on-one message view.
+
+<ScreenshotPlaceholder
+  alt="Stage UI showing either the forum channel post list view with post titles and preview text, or the Home/DM view with friends list tabs and direct message conversation sidebar"
+  focus="Forum channel post browsing view or the DM/Home view with friends list"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show either: (1) A forum channel with several posts listed showing titles, authors, and reply counts, OR (2) The Home/DM view with the friends list showing online/all/pending tabs and a sidebar of DM conversations. Either screenshot demonstrates non-standard channel types."
+/>
+
+## Emoji Picker
+
+An emoji picker is available when adding reactions to messages and within the DevTools Emojis tab. Click the reaction icon on a message to open the picker, browse categories, and select an emoji to react with.
+
+## Channel Management
+
+Create and reorder channels and categories directly in Stage UI. Right-click or use the channel list header to create new text, voice, or forum channels and categories. Drag and drop channels to reorder them within or across categories using the built-in sortable interface.
+
+## Recording and Playback
+
+Stage UI records all events for review:
+
+### Playback Controls
+
+| Control | Action |
+|---------|--------|
+| Live / Playback | Switch between live recording and playback mode |
+| Skip to Start | Jump to the beginning of the recording |
+| Rewind | Jump back 5 seconds (also `←` key) |
+| Play / Pause | Toggle playback (also `Space` key) |
+| Fast Forward | Jump forward 5 seconds (also `→` key) |
+| Skip to End | Jump to the end of the recording |
+| Timeline | Scrub through events with event markers |
+| Speed | Select playback speed (0.5x, 1x, 2x, 4x) |
+
+<ScreenshotPlaceholder
+  alt="Stage UI playback controls bar in playback mode showing transport buttons (skip to start, rewind, play/pause, fast forward, skip to end), a timeline scrubber with color-coded event markers, and a speed selector"
+  focus="The playback controls bar with transport buttons, timeline scrubber, and speed selector"
+  zoom="100%"
+  aspect="16/9"
+  notes="Switch to playback mode to show the full playback controls bar. The timeline scrubber should have colored markers representing different event types. Show the speed selector with the current speed visible (e.g., 1x)."
+/>
+
+### Use Cases
+
+- **Debug timing issues** - See exact event order
+- **Share reproductions** - Export recordings for bug reports
+- **Demo features** - Replay interactions for documentation
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl/Cmd + K` | Focus message input with `/` |
+| `Ctrl/Cmd + Shift + D` | Toggle DevTools |
+| `Ctrl/Cmd + Shift + L` | Toggle Logs panel |
+| `Space` | Play/pause playback |
+| `←` | Seek backward 5s |
+| `→` | Seek forward 5s |
+| `Escape` | Close modals/dropdowns |
+
+<Callout type="info">
+Shortcuts are disabled when typing in input fields.
+</Callout>
+
+## Connection Status
+
+An overlay shows connection state when not connected:
+
+- **Connecting** - Initial connection or reconnecting (shows attempt count)
+- **Disconnected** - Connection lost, click **Reconnect** to retry
+- **Session Invalid** - Session no longer exists (server may have restarted), check your terminal for the new Stage URL
+- **Connection Lost** - Failed after multiple retry attempts, click **Retry Connection**
+
+The overlay can be collapsed to a small pill at the bottom of the screen. When connected, no overlay is shown.
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./devtools"
+    title="DevTools"
+    description="Inspect events, state, and network activity."
+  />
+  <Card
+    href="./commands"
+    title="Testing Commands"
+    description="Test slash commands systematically."
+  />
+</Cards>

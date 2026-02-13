@@ -1,0 +1,325 @@
+---
+title: Configuration
+description: Configure mock server behavior
+---
+
+Configure Mock Server through plugin options and environment variables.
+
+## Plugin Options
+
+Create `config/plugins/robojs/mock.ts`:
+
+```typescript
+export default {
+  // Auto-open Stage UI in browser when starting mock mode
+  autoOpenStage: true,
+
+  // Default session configuration for robo mock start
+  defaultSessionConfig: {
+    botUser: {
+      username: 'TestBot',
+      discriminator: '0001'
+    },
+    guilds: [{
+      name: 'Test Server',
+      channels: [
+        { name: 'general', type: 0 },
+        { name: 'bot-commands', type: 0 }
+      ]
+    }],
+    users: [
+      { username: 'TestUser' }
+    ]
+  },
+
+  // Port for standalone mock server (default: 6625)
+  standalonePort: 6625,
+
+  // Data directory relative to .robo (default: 'mock')
+  dataDirectory: 'mock'
+}
+```
+
+<ScreenshotPlaceholder
+  alt="Editor or file tree showing the config/plugins/robojs/mock.ts file location relative to the project root, demonstrating the plugin configuration file structure"
+  focus="The file tree showing where the mock plugin configuration file lives in the project"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show a file tree or editor sidebar with the project root expanded to show: config/plugins/robojs/mock.ts. Include other common project files (src/, package.json, etc.) for context. The mock.ts file should be highlighted or open in the editor."
+/>
+
+### Option Reference
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `autoOpenStage` | boolean | `true` | Open Stage UI in browser automatically |
+| `defaultSessionConfig` | object | - | Default config for new sessions |
+| `standalonePort` | number | `6625` | Port for standalone server |
+| `dataDirectory` | string | `'mock'` | Directory for mock data |
+
+## Session Configuration
+
+Configure session defaults for testing:
+
+### Bot User
+
+```typescript
+defaultSessionConfig: {
+  botUser: {
+    username: 'MyBot',
+    discriminator: '1234',
+    avatar: null,
+    bot: true
+  }
+}
+```
+
+### Guilds
+
+```typescript
+defaultSessionConfig: {
+  guilds: [{
+    name: 'Test Server',
+    ownerId: '123456789',
+    channels: [
+      { name: 'general', type: 0 },         // Text
+      { name: 'announcements', type: 5 },    // Announcement
+      { name: 'Voice', type: 2 }             // Voice
+    ]
+  }]
+}
+```
+
+### Users
+
+```typescript
+defaultSessionConfig: {
+  users: [
+    { username: 'TestUser', bot: false },
+    { username: 'AnotherBot', bot: true }
+  ]
+}
+```
+
+### Intents
+
+Control which intents are enforced:
+
+```typescript
+import { GatewayIntentBits } from 'discord-api-types/v10'
+
+defaultSessionConfig: {
+  enforceIntents: true,
+  // Approve specific privileged intents using bigint bitmask
+  approvedPrivilegedIntents: BigInt(
+    GatewayIntentBits.GuildMembers |    // 1 << 1
+    GatewayIntentBits.GuildPresences |  // 1 << 8
+    GatewayIntentBits.MessageContent    // 1 << 15
+  )
+}
+```
+
+<Callout type="info">
+`approvedPrivilegedIntents` uses a bigint bitmask, not a string array. Import `GatewayIntentBits` from `discord-api-types/v10` for readable intent values.
+</Callout>
+
+### Permission Enforcement
+
+Control how strictly permissions are checked:
+
+```typescript
+defaultSessionConfig: {
+  permissionEnforcement: 'basic'  // 'none' | 'basic' | 'strict'
+}
+```
+
+| Level | Description |
+|-------|-------------|
+| `none` | All actions succeed regardless of permissions (default) |
+| `basic` | Simple permission checks (requires the permission) |
+| `strict` | Full Discord-accurate logic with hierarchy, context, and owner bypass |
+
+<ScreenshotPlaceholder
+  alt="DevTools Permissions tab showing strict enforcement level selected, with denied operations visible in the permission denied log"
+  focus="The Permissions tab configured with strict enforcement and showing denied log entries"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show the DevTools Permissions tab with the enforcement level dropdown set to 'strict'. The denied log section should show several entries with timestamps, HTTP methods, paths, and the missing permissions that caused each denial."
+/>
+
+## Environment Variables
+
+### Core Variables
+
+| Variable | Description |
+|----------|-------------|
+| `ROBO_MOCK_MODE` | Set to `true` to enable mock mode |
+| `ROBO_MOCK_SESSION_ID` | Pre-generated session ID |
+| `ROBO_MOCK_PORT` | Override mock server port |
+
+### Testing Variables
+
+| Variable | Description |
+|----------|-------------|
+| `ROBO_MOCK_TEST_MODE` | Set by `robo mock test` |
+| `ROBO_MOCK_TEST_RUN_ID` | Unique identifier for test run |
+
+### Internal Variables
+
+| Variable | Description |
+|----------|-------------|
+| `__ROBO_MOCK_STANDALONE` | Set when running standalone server |
+| `__ROBO_MOCK_CONNECT_EXISTING` | Connect to external mock server |
+
+## Server Integration
+
+Mock Server integrates with @robojs/server. Configure server options in `config/plugins/robojs/server.ts`:
+
+```typescript
+export default {
+  cors: true,
+  port: 3000,
+  pluginPrefixes: {
+    '@robojs/mock': '/mock'
+  }
+}
+```
+
+### Plugin Prefix
+
+Mock Server routes are prefixed by default:
+
+| Route | Path |
+|-------|------|
+| Stage UI | `/mock/stage/` |
+| REST API | `/mock/api/v10/*` |
+| Control API | `/mock/api/control/*` |
+
+### Custom Prefix
+
+```typescript
+pluginPrefixes: {
+  '@robojs/mock': '/test'  // Stage at /test/stage/
+}
+```
+
+### Disable Prefix
+
+```typescript
+pluginPrefixes: {
+  '@robojs/mock': {
+    api: false,
+    static: false
+  }
+}
+```
+
+## Loop Protection
+
+Mock Server detects infinite loops when bots trigger themselves:
+
+```typescript
+// Defaults (not configurable via config file)
+loopThreshold: 10,      // Events per second
+loopCooldown: 5000      // Milliseconds
+```
+
+When 10+ `MESSAGE_CREATE` events occur in 1 second, loop protection triggers a 5-second cooldown. DevTools shows when this happens.
+
+To disable for a specific session (via code):
+
+```typescript
+session.loopProtectionEnabled = false
+```
+
+## Session Limits
+
+Resource limits per session:
+
+| Resource | Limit | Behavior |
+|----------|-------|----------|
+| Actions | 10,000 | LRU eviction (oldest 10%) |
+| Logs | 10,000 | LRU eviction |
+| Stage Events | 1,000 | Buffer with replay support |
+| Session TTL | 1 hour | Auto-cleanup on inactivity |
+
+## Protocol Constants
+
+Internal constants used by Mock Server:
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| Gateway Version | `10` | Discord Gateway API version |
+| Heartbeat Interval | `41250ms` | Gateway heartbeat timing |
+| Voice Gateway Port | `50001` | Separate port for voice (WSS) |
+| Session TTL | `3600000ms` | 1 hour default |
+| Cleanup Interval | `60000ms` | Session cleanup check |
+| Max Actions | `10000` | Per-session action limit |
+| LRU Eviction | `10%` | Oldest actions removed |
+| Stage Buffer | `1000` | Event replay buffer |
+| Loop Threshold | `10/sec` | Events before detection |
+| Loop Cooldown | `5000ms` | Pause after loop detected |
+
+## Package Exports
+
+`@robojs/mock` provides five export paths for different use cases:
+
+| Import Path | Purpose |
+|-------------|---------|
+| `@robojs/mock` | Core classes, factories, and constants (`Session`, `SessionManager`, `MockServerState`, factory functions, snowflake utilities) |
+| `@robojs/mock/session` | Session-related classes for advanced usage (`Session`, `SessionManager`, `InMemoryStorage`, `ActionRecorder`, `RecordingPlayer`, `MockServerState`) |
+| `@robojs/mock/testing` | Testing utilities and Control API helpers (`createTestSession`, `dispatchEvent`, `expectAction`, `waitForAction`, etc.) |
+| `@robojs/mock/testing/jest-reporter` | Custom Jest reporter for tracking test results in Stage UI |
+| `@robojs/mock/types` | TypeScript type definitions (`Session`, `SessionConfig`, `ActionType`, `ScenarioDefinition`, etc.) |
+
+Most test files only need the `testing` export:
+
+```typescript
+import {
+  createTestSession,
+  dispatchEvent,
+  expectAction,
+  waitForAction
+} from '@robojs/mock/testing'
+```
+
+For custom integrations or advanced scenarios, import from the core or session paths:
+
+```typescript
+import { sessionManager, createMockGuild } from '@robojs/mock'
+import { MockServerState } from '@robojs/mock/session'
+import type { ActionType, ScenarioDefinition } from '@robojs/mock/types'
+```
+
+## Production Considerations
+
+Mock Server is designed for development and testing:
+
+<Callout type="warn">
+Do not run Mock Server in production. It has no authentication and is not designed for public exposure.
+</Callout>
+
+For CI environments:
+
+```bash
+# Set explicit mode
+ROBO_MOCK_MODE=true npx robo mock test
+
+# Or use the CLI flag
+npx robo dev --mock
+```
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./cli"
+    title="CLI Reference"
+    description="Command-line interface reference."
+  />
+  <Card
+    href="./testing-api"
+    title="Testing API"
+    description="Full API reference."
+  />
+</Cards>

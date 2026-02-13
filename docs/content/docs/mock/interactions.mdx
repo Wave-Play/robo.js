@@ -1,0 +1,431 @@
+---
+title: Testing Interactions
+description: Test buttons, select menus, and modals
+---
+
+Test component interactions like buttons, select menus, and modals. These follow the same pattern as commands but use different interaction types.
+
+<ScreenshotPlaceholder
+  alt="Stage UI showing a message with interactive button components and a select menu, demonstrating component interactions in action"
+  focus="The message area displaying a bot response with action row buttons and a select menu dropdown"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show a bot message that contains buttons (e.g., Confirm/Cancel) and a select menu component. The buttons should be visually styled like Discord's button components."
+/>
+
+## Button Clicks
+
+### Basic Button
+
+```typescript
+import { dispatchInteraction, expectAction } from '@robojs/mock/testing'
+
+it('handles button click', async () => {
+  await dispatchInteraction(session.id, {
+    type: 3, // MESSAGE_COMPONENT
+    data: {
+      component_type: 2, // BUTTON
+      custom_id: 'confirm-action'
+    },
+    channel_id: session.channels[0].id
+  })
+
+  await expectAction(session.id, {
+    description: 'Bot should acknowledge button',
+    type: 'interaction_response',
+    expected: {
+      response_type: 6 // DEFERRED_UPDATE_MESSAGE
+    }
+  })
+})
+```
+
+### Button with Data
+
+Pass data through custom_id:
+
+```typescript
+await dispatchInteraction(session.id, {
+  type: 3,
+  data: {
+    component_type: 2,
+    custom_id: 'delete:123:456'  // action:userId:itemId
+  },
+  channel_id: session.channels[0].id
+})
+```
+
+### Update vs Reply
+
+Check response type:
+
+```typescript
+// Update existing message
+await expectAction(session.id, {
+  description: 'Button should update message',
+  type: 'interaction_response',
+  expected: {
+    response_type: 7 // UPDATE_MESSAGE
+  }
+})
+
+// Reply with new message
+await expectAction(session.id, {
+  description: 'Button should reply',
+  type: 'interaction_response',
+  expected: {
+    response_type: 4 // CHANNEL_MESSAGE_WITH_SOURCE
+  }
+})
+```
+
+## Select Menus
+
+### String Select
+
+```typescript
+await dispatchInteraction(session.id, {
+  type: 3,
+  data: {
+    component_type: 3, // STRING_SELECT
+    custom_id: 'role-select',
+    values: ['admin', 'moderator']  // Selected values
+  },
+  channel_id: session.channels[0].id
+})
+
+await expectAction(session.id, {
+  description: 'Bot should assign selected roles',
+  type: 'interaction_response',
+  expected: {
+    response_data: {
+      content: expect.stringContaining('admin')
+    }
+  }
+})
+```
+
+### User Select
+
+```typescript
+// Define test user data inline
+const selectedUserId = '111222333444555666'
+const selectedUsername = 'TestUser'
+
+await dispatchInteraction(session.id, {
+  type: 3,
+  data: {
+    component_type: 5, // USER_SELECT
+    custom_id: 'user-select',
+    values: [selectedUserId],
+    resolved: {
+      users: {
+        [selectedUserId]: {
+          id: selectedUserId,
+          username: selectedUsername
+        }
+      }
+    }
+  },
+  channel_id: session.channels[0].id
+})
+```
+
+### Channel Select
+
+```typescript
+const selectedChannel = session.channels[0]
+
+await dispatchInteraction(session.id, {
+  type: 3,
+  data: {
+    component_type: 8, // CHANNEL_SELECT
+    custom_id: 'channel-select',
+    values: [selectedChannel.id],
+    resolved: {
+      channels: {
+        [selectedChannel.id]: {
+          id: selectedChannel.id,
+          name: selectedChannel.name,
+          type: selectedChannel.type
+        }
+      }
+    }
+  },
+  channel_id: session.channels[0].id
+})
+```
+
+### Role Select
+
+```typescript
+await dispatchInteraction(session.id, {
+  type: 3,
+  data: {
+    component_type: 6, // ROLE_SELECT
+    custom_id: 'role-picker',
+    values: [roleId],
+    resolved: {
+      roles: {
+        [roleId]: {
+          id: roleId,
+          name: 'Moderator',
+          color: 0x3498db
+        }
+      }
+    }
+  },
+  channel_id: session.channels[0].id
+})
+```
+
+### Mentionable Select
+
+Combines users and roles:
+
+```typescript
+await dispatchInteraction(session.id, {
+  type: 3,
+  data: {
+    component_type: 7, // MENTIONABLE_SELECT
+    custom_id: 'mention-select',
+    values: [userId, roleId],
+    resolved: {
+      users: { [userId]: userObject },
+      roles: { [roleId]: roleObject }
+    }
+  },
+  channel_id: session.channels[0].id
+})
+```
+
+## Modal Submissions
+
+### Basic Modal
+
+```typescript
+await dispatchInteraction(session.id, {
+  type: 5, // MODAL_SUBMIT
+  data: {
+    custom_id: 'feedback-modal',
+    components: [{
+      type: 1, // ACTION_ROW
+      components: [{
+        type: 4, // TEXT_INPUT
+        custom_id: 'feedback-input',
+        value: 'Great service'
+      }]
+    }]
+  },
+  channel_id: session.channels[0].id
+})
+
+await expectAction(session.id, {
+  description: 'Bot should process feedback',
+  type: 'interaction_response',
+  expected: {
+    response_data: {
+      content: expect.stringContaining('Thank you')
+    }
+  }
+})
+```
+
+<ScreenshotPlaceholder
+  alt="Stage UI showing a modal form dialog open with text input fields, a title bar, and Submit/Cancel buttons at the bottom"
+  focus="The modal dialog overlay with form inputs and action buttons"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show a modal triggered by a bot interaction with a title, at least one or two text input fields (short and paragraph), and Submit/Cancel buttons. The modal should be overlaying the Stage UI message area behind it."
+/>
+
+### Multiple Inputs
+
+```typescript
+await dispatchInteraction(session.id, {
+  type: 5,
+  data: {
+    custom_id: 'application-form',
+    components: [
+      {
+        type: 1,
+        components: [{
+          type: 4,
+          custom_id: 'name',
+          value: 'John Doe'
+        }]
+      },
+      {
+        type: 1,
+        components: [{
+          type: 4,
+          custom_id: 'experience',
+          value: '5 years of development'
+        }]
+      },
+      {
+        type: 1,
+        components: [{
+          type: 4,
+          custom_id: 'reason',
+          value: 'I want to contribute to the community'
+        }]
+      }
+    ]
+  },
+  channel_id: session.channels[0].id
+})
+```
+
+### Paragraph Input
+
+```typescript
+await dispatchInteraction(session.id, {
+  type: 5,
+  data: {
+    custom_id: 'report-modal',
+    components: [{
+      type: 1,
+      components: [{
+        type: 4,
+        custom_id: 'description',
+        value: 'This is a detailed description\nwith multiple lines\nof text.'
+      }]
+    }]
+  },
+  channel_id: session.channels[0].id
+})
+```
+
+## Component Chains
+
+Test multi-step interaction flows:
+
+```typescript
+it('completes multi-step flow', async () => {
+  // Step 1: Run command that shows buttons
+  await dispatchInteraction(session.id, {
+    type: 2,
+    data: { name: 'setup', type: 1 },
+    channel_id: session.channels[0].id
+  })
+
+  await expectAction(session.id, {
+    description: 'Bot shows setup options',
+    type: 'interaction_response',
+    expected: {
+      response_data: {
+        components: expect.arrayContaining([
+          expect.objectContaining({ type: 1 })
+        ])
+      }
+    }
+  })
+
+  // Step 2: Click configure button
+  await dispatchInteraction(session.id, {
+    type: 3,
+    data: {
+      component_type: 2,
+      custom_id: 'setup:configure'
+    },
+    channel_id: session.channels[0].id
+  })
+
+  // Step 3: Submit modal
+  await dispatchInteraction(session.id, {
+    type: 5,
+    data: {
+      custom_id: 'setup:modal',
+      components: [{
+        type: 1,
+        components: [{
+          type: 4,
+          custom_id: 'setting',
+          value: 'enabled'
+        }]
+      }]
+    },
+    channel_id: session.channels[0].id
+  })
+
+  await expectAction(session.id, {
+    description: 'Setup completes successfully',
+    type: 'interaction_response',
+    expected: {
+      response_data: {
+        content: expect.stringContaining('Setup complete')
+      }
+    }
+  })
+})
+```
+
+<ScreenshotPlaceholder
+  alt="Stage UI showing a multi-step interaction flow: a slash command response with buttons, followed by a button click resulting in an updated message or new response"
+  focus="The message area showing the progression from command to buttons to final result"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show a sequence in the message area: (1) a bot response with action row buttons from a slash command, and (2) the result after clicking a button, either an updated message or a new reply. This demonstrates the component chain testing flow."
+/>
+
+## Ephemeral Interactions
+
+Test ephemeral message handling:
+
+```typescript
+await dispatchInteraction(session.id, {
+  type: 3,
+  data: {
+    component_type: 2,
+    custom_id: 'secret-info'
+  },
+  channel_id: session.channels[0].id
+})
+
+await expectAction(session.id, {
+  description: 'Response should be ephemeral',
+  type: 'interaction_response',
+  expected: {
+    response_data: {
+      flags: 64
+    }
+  }
+})
+```
+
+## Interaction Context
+
+Specify which user triggers the interaction:
+
+```typescript
+await dispatchInteraction(session.id, {
+  type: 3,
+  data: {
+    component_type: 2,
+    custom_id: 'admin-action'
+  },
+  channel_id: session.channels[0].id,
+  user: {
+    id: '111',
+    username: 'Admin'
+  }
+})
+```
+
+The mock server generates a guild member for the specified user automatically. If no `user` is provided, the session's current user is used.
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./devtools"
+    title="DevTools"
+    description="Debug interactions with DevTools."
+  />
+  <Card
+    href="./recipes"
+    title="Recipes"
+    description="Common interaction patterns."
+  />
+</Cards>

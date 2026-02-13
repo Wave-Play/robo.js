@@ -1,0 +1,289 @@
+---
+title: CLI Reference
+description: Mock server CLI commands
+---
+
+Mock Server extends the Robo CLI with commands for testing and server management.
+
+## Development Mode
+
+### robo dev --mock
+
+Start your bot connected to Mock Server:
+
+```bash
+npx robo dev --mock
+```
+
+This:
+
+1. Detects if a standalone mock server is already running
+2. If yes: connects to the existing server and creates a new session
+3. If no: starts an embedded mock server in the same process
+4. Creates a test session and connects your bot
+5. Opens Stage UI in your browser
+
+Your bot receives events from Mock Server instead of Discord.
+
+<ScreenshotPlaceholder
+  alt="Terminal output showing npx robo dev --mock startup sequence with mock mode detection, session creation, and Stage UI URL printed as a clickable link"
+  focus="The terminal output showing the startup flow including session ID and Stage UI URL"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show realistic terminal output with colored text. Include the mock mode enabled message, session ID, and the Stage UI URL. The URL should be something like http://localhost:3000/mock/stage/"
+/>
+
+### Options
+
+```bash
+npx robo dev --mock [session-id]
+```
+
+| Option | Alias | Description |
+|--------|-------|-------------|
+| `[session-id]` | | Connect to existing session on an external server |
+| `--mock` | `-M` | Enable mock mode |
+
+When no value is provided, auto-detection runs: if a standalone server is running it connects to it, otherwise it starts an embedded server. Pass a session ID or `"new"` to explicitly connect to an external server.
+
+### Examples
+
+```bash
+# Start fresh (auto-detect mode)
+npx robo dev --mock
+
+# Connect to existing session on external server
+npx robo dev --mock sess_abc123xyz
+
+# Create new session on external server
+npx robo dev --mock new
+```
+
+## Test Mode
+
+### robo mock test
+
+Run integration tests with the mock Discord server:
+
+```bash
+npx robo mock test
+```
+
+This:
+
+1. Starts a standalone Mock Server on port 6625
+2. Auto-detects the test runner (Jest or Node)
+3. Runs the test suite
+4. Displays results in terminal and Stage UI
+5. Keeps the server running for inspection (default behavior)
+
+<ScreenshotPlaceholder
+  alt="Terminal output of npx robo mock test showing mock server startup, test execution with pass/fail results, and a summary of total tests run"
+  focus="The terminal output showing the full test run lifecycle from server start to results summary"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show realistic terminal output with: (1) mock server starting on port 6625, (2) test runner auto-detection, (3) individual test results with checkmarks/crosses, and (4) summary line showing total passed/failed/skipped counts."
+/>
+
+### Options
+
+```bash
+npx robo mock test [options]
+```
+
+| Option | Alias | Description | Default |
+|--------|-------|-------------|---------|
+| `--port` | `-p` | Port to run the mock server on | `6625` |
+| `--runner` | `-r` | Test runner: `"jest"` or `"node"` | Auto-detect |
+| `--timeout` | `-t` | Test timeout in seconds | `120` |
+| `--no-browser` | `-n` | Skip opening Stage UI after tests | `false` |
+| `--verbose` | `-v` | Verbose debug output | `false` |
+| `--watch` | `-w` | Keep server running after tests | `true` |
+
+### Test Runner Detection
+
+When `--runner` is not specified, the test runner is auto-detected:
+
+1. Check for Jest config files (`jest.config.js`, `.ts`, `.mjs`, `.cjs`, `.json`)
+2. Check for `jest` key in `package.json`
+3. Check if the `test` script uses `node --test`
+4. Default to Jest if nothing else matches
+
+### Examples
+
+```bash
+# Run all tests (auto-detect runner)
+npx robo mock test
+
+# Use a specific port
+npx robo mock test --port 4000
+
+# Use Node test runner instead of Jest
+npx robo mock test --runner node
+
+# Run with verbose output
+npx robo mock test --verbose
+
+# Exit immediately after tests complete
+npx robo mock test --no-watch
+
+# Set a 60-second timeout
+npx robo mock test --timeout 60
+```
+
+## Standalone Server
+
+### robo mock start
+
+Start Mock Server without a bot:
+
+```bash
+npx robo mock start
+```
+
+Useful for:
+
+- Running tests from external processes
+- Developing Stage UI
+- Manual testing via Stage UI
+- Connecting multiple bots to the same server
+
+### Options
+
+```bash
+npx robo mock start [options]
+```
+
+| Option | Alias | Description | Default |
+|--------|-------|-------------|---------|
+| `--port` | `-p` | Port to listen on | `6625` |
+| `--mode` | `-m` | Environment mode (dev, prod, etc.) | `development` |
+| `--silent` | `-s` | Suppress output | `false` |
+| `--verbose` | `-v` | Verbose debug output | `false` |
+| `--no-browser` | `-n` | Skip opening Stage UI in browser | `false` |
+
+### Examples
+
+```bash
+# Default port (6625)
+npx robo mock start
+
+# Custom port
+npx robo mock start --port 4000
+
+# Silent mode for CI
+npx robo mock start --silent
+
+# Verbose for debugging
+npx robo mock start --verbose
+
+# Don't open browser
+npx robo mock start --no-browser
+```
+
+## Session Management
+
+### Via REST API
+
+Sessions are managed through the control API:
+
+```bash
+# Create session
+curl -X POST http://localhost:6625/api/control/sessions \
+  -H "Content-Type: application/json" \
+  -d '{"name": "my-test"}'
+
+# List sessions
+curl http://localhost:6625/api/control/sessions
+
+# Get session details
+curl http://localhost:6625/api/control/sessions/sess_xxx
+
+# Dispatch an event to a session
+curl -X POST http://localhost:6625/api/control/sessions/sess_xxx/dispatch \
+  -H "Content-Type: application/json" \
+  -d '{"event": "MESSAGE_CREATE", "data": {"channel_id": "123", "content": "Hello"}}'
+```
+
+When the mock server is running as a plugin (embedded mode), the control API is prefixed. For example: `http://localhost:3000/mock/api/control/sessions`.
+
+## Environment Variables
+
+Set these before running commands:
+
+```bash
+# Enable mock mode explicitly
+ROBO_MOCK_MODE=true npx robo dev
+
+# Override port for standalone server
+ROBO_MOCK_PORT=4000 npx robo mock start
+
+# Test run ID for grouping
+ROBO_MOCK_TEST_RUN_ID=run_123 npx robo mock test
+```
+
+## Integration with npm Scripts
+
+Add to `package.json`:
+
+```json
+{
+  "scripts": {
+    "dev:mock": "robo dev --mock",
+    "test": "robo mock test",
+    "test:quick": "robo mock test --no-watch",
+    "mock:server": "robo mock start"
+  }
+}
+```
+
+Run with:
+
+```bash
+npm run dev:mock
+npm test
+npm run test:quick
+```
+
+## Exit Codes
+
+| Code | Meaning |
+|------|---------|
+| 0 | Success |
+| 1 | Test failures or errors |
+
+CI systems interpret these codes for pass/fail status.
+
+## Debugging
+
+### Verbose Mode
+
+Enable debug logging:
+
+```bash
+npx robo mock test --verbose
+npx robo mock start --verbose
+```
+
+### Log File
+
+Redirect logs to file:
+
+```bash
+npx robo mock test 2>&1 | tee test.log
+```
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./testing-api"
+    title="Testing API"
+    description="Full API reference."
+  />
+  <Card
+    href="./recipes"
+    title="Recipes"
+    description="Common patterns and solutions."
+  />
+</Cards>

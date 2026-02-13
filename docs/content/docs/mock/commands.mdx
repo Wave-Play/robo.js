@@ -1,0 +1,424 @@
+---
+title: Testing Commands
+description: Test slash commands and autocomplete
+---
+
+Test your slash commands systematically with Mock Server. Verify responses, check option handling, and test autocomplete behavior.
+
+<ScreenshotPlaceholder
+  alt="Stage UI showing a slash command being executed and the bot's response with an embed displayed in the message area"
+  focus="The message area showing the command invocation and bot response"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show a slash command like /ping being typed or just executed, with the bot's response visible below it. Include the channel sidebar for context."
+/>
+
+## Basic Commands
+
+### Simple Command
+
+Test a command with no options:
+
+```typescript
+import { dispatchInteraction, expectAction } from '@robojs/mock/testing'
+
+it('responds to /ping', async () => {
+  await dispatchInteraction(session.id, {
+    type: 2, // APPLICATION_COMMAND
+    data: {
+      name: 'ping',
+      type: 1 // CHAT_INPUT
+    },
+    channel_id: session.channels[0].id,
+    guild_id: session.guildId
+  })
+
+  await expectAction(session.id, {
+    description: 'Bot should respond with pong',
+    type: 'interaction_response',
+    expected: {
+      response_data: {
+        content: expect.stringContaining('Pong')
+      }
+    }
+  })
+})
+```
+
+### Response Types
+
+Check different response behaviors:
+
+```typescript
+// Ephemeral response
+await expectAction(session.id, {
+  description: 'Response should be ephemeral',
+  type: 'interaction_response',
+  expected: {
+    response_data: {
+      flags: 64 // EPHEMERAL flag
+    }
+  }
+})
+
+// Deferred response (thinking state)
+await expectAction(session.id, {
+  description: 'Bot should defer',
+  type: 'interaction_response',
+  expected: {
+    response_type: 5 // DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
+  }
+})
+```
+
+## Commands with Options
+
+### String Options
+
+```typescript
+await dispatchInteraction(session.id, {
+  type: 2,
+  data: {
+    name: 'echo',
+    type: 1,
+    options: [{
+      name: 'message',
+      type: 3, // STRING
+      value: 'Hello world'
+    }]
+  },
+  channel_id: session.channels[0].id
+})
+
+await expectAction(session.id, {
+  description: 'Bot should echo the message',
+  type: 'interaction_response',
+  expected: {
+    response_data: {
+      content: 'Hello world'
+    }
+  }
+})
+```
+
+### User Options
+
+```typescript
+// Define test user data inline
+const targetUserId = '111222333444555666'
+const targetUsername = 'TestUser'
+
+await dispatchInteraction(session.id, {
+  type: 2,
+  data: {
+    name: 'info',
+    type: 1,
+    options: [{
+      name: 'user',
+      type: 6, // USER
+      value: targetUserId
+    }],
+    resolved: {
+      users: {
+        [targetUserId]: {
+          id: targetUserId,
+          username: targetUsername,
+          discriminator: '0',
+          avatar: null
+        }
+      }
+    }
+  },
+  channel_id: session.channels[0].id
+})
+```
+
+### Channel Options
+
+```typescript
+const channel = session.channels.find(c => c.name === 'announcements')
+
+await dispatchInteraction(session.id, {
+  type: 2,
+  data: {
+    name: 'announce',
+    type: 1,
+    options: [{
+      name: 'channel',
+      type: 7, // CHANNEL
+      value: channel.id
+    }],
+    resolved: {
+      channels: {
+        [channel.id]: {
+          id: channel.id,
+          name: channel.name,
+          type: channel.type
+        }
+      }
+    }
+  },
+  channel_id: session.channels[0].id
+})
+```
+
+### Number Options
+
+```typescript
+await dispatchInteraction(session.id, {
+  type: 2,
+  data: {
+    name: 'roll',
+    type: 1,
+    options: [{
+      name: 'sides',
+      type: 4, // INTEGER
+      value: 20
+    }]
+  },
+  channel_id: session.channels[0].id
+})
+```
+
+## Subcommands
+
+### Single Level
+
+```typescript
+// /config set key:setting value:enabled
+await dispatchInteraction(session.id, {
+  type: 2,
+  data: {
+    name: 'config',
+    type: 1,
+    options: [{
+      name: 'set',
+      type: 1, // SUB_COMMAND
+      options: [
+        { name: 'key', type: 3, value: 'setting' },
+        { name: 'value', type: 3, value: 'enabled' }
+      ]
+    }]
+  },
+  channel_id: session.channels[0].id
+})
+```
+
+### Subcommand Groups
+
+```typescript
+// /moderation user ban target:@user reason:spam
+const targetUserId = '111222333444555666'
+
+await dispatchInteraction(session.id, {
+  type: 2,
+  data: {
+    name: 'moderation',
+    type: 1,
+    options: [{
+      name: 'user',
+      type: 2, // SUB_COMMAND_GROUP
+      options: [{
+        name: 'ban',
+        type: 1, // SUB_COMMAND
+        options: [
+          { name: 'target', type: 6, value: targetUserId },
+          { name: 'reason', type: 3, value: 'spam' }
+        ]
+      }]
+    }]
+  },
+  channel_id: session.channels[0].id
+})
+```
+
+## Autocomplete
+
+### Testing Autocomplete
+
+Autocomplete sends a special interaction type:
+
+```typescript
+await dispatchInteraction(session.id, {
+  type: 4, // APPLICATION_COMMAND_AUTOCOMPLETE
+  data: {
+    name: 'search',
+    type: 1,
+    options: [{
+      name: 'query',
+      type: 3,
+      value: 'test',
+      focused: true  // This option is being autocompleted
+    }]
+  },
+  channel_id: session.channels[0].id
+})
+
+await expectAction(session.id, {
+  description: 'Bot should return autocomplete choices',
+  type: 'interaction_response',
+  expected: {
+    response_type: 8, // APPLICATION_COMMAND_AUTOCOMPLETE_RESULT
+    response_data: {
+      choices: expect.arrayContaining([
+        expect.objectContaining({ name: expect.any(String) })
+      ])
+    }
+  }
+})
+```
+
+### Verify Specific Choices
+
+```typescript
+const actions = await waitForAction(session.id, {
+  type: 'interaction_response',
+  timeout: 5000
+})
+
+const choices = (actions[0].data as any)?.response_data?.choices
+expect(choices).toContainEqual(
+  expect.objectContaining({
+    name: 'Test Item',
+    value: 'test-item'
+  })
+)
+```
+
+<ScreenshotPlaceholder
+  alt="Stage UI showing the autocomplete dropdown with suggestion choices appearing as the user types a slash command option value"
+  focus="The autocomplete dropdown above the message input showing suggested choices"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show the message input with a slash command being typed and the autocomplete dropdown listing several suggestion choices. Each choice should show a name and optionally a description, similar to Discord's autocomplete UI."
+/>
+
+## Context Menu Commands
+
+### User Context Menu
+
+```typescript
+const targetUserId = '111222333444555666'
+const targetUsername = 'TestUser'
+
+await dispatchInteraction(session.id, {
+  type: 2,
+  data: {
+    name: 'Get User Info',
+    type: 2, // USER context menu
+    target_id: targetUserId,
+    resolved: {
+      users: {
+        [targetUserId]: {
+          id: targetUserId,
+          username: targetUsername,
+          discriminator: '0',
+          avatar: null
+        }
+      }
+    }
+  },
+  channel_id: session.channels[0].id
+})
+```
+
+### Message Context Menu
+
+```typescript
+const messageId = '123456789'
+const authorId = '111222333444555666'
+const authorUsername = 'TestUser'
+
+await dispatchInteraction(session.id, {
+  type: 2,
+  data: {
+    name: 'Translate',
+    type: 3, // MESSAGE context menu
+    target_id: messageId,
+    resolved: {
+      messages: {
+        [messageId]: {
+          id: messageId,
+          content: 'Bonjour',
+          channel_id: session.channels[0].id,
+          author: { id: authorId, username: authorUsername }
+        }
+      }
+    }
+  },
+  channel_id: session.channels[0].id
+})
+```
+
+<ScreenshotPlaceholder
+  alt="Stage UI showing a right-click context menu on a user or message with custom context menu commands visible in the Apps section"
+  focus="The context menu with custom bot commands listed under the Apps section"
+  zoom="100%"
+  aspect="16/9"
+  notes="Right-click on a user in the member list or a message to show the context menu. The menu should include an 'Apps' section with custom context menu commands like 'Get User Info' or 'Translate'. Show both the standard menu items and the custom bot commands."
+/>
+
+## Permission Testing
+
+### Required Permissions
+
+Test that commands respect permissions. The mock server generates a member for the dispatching user with empty roles by default, so a non-admin user is the default behavior:
+
+```typescript
+// User without admin role (default behavior)
+await dispatchInteraction(session.id, {
+  type: 2,
+  data: { name: 'admin-only', type: 1 },
+  channel_id: session.channels[0].id
+})
+
+await expectAction(session.id, {
+  description: 'Bot should deny access',
+  type: 'interaction_response',
+  expected: {
+    response_data: {
+      content: expect.stringContaining('permission')
+    }
+  }
+})
+```
+
+## Guild vs DM Commands
+
+### Guild Command
+
+```typescript
+await dispatchInteraction(session.id, {
+  type: 2,
+  data: { name: 'server-info', type: 1 },
+  channel_id: session.channels[0].id,
+  guild_id: session.guildId  // Include guild_id
+})
+```
+
+### DM Command
+
+```typescript
+// DM channels have no guild_id
+await dispatchInteraction(session.id, {
+  type: 2,
+  data: { name: 'help', type: 1 },
+  channel_id: dmChannel.id
+  // No guild_id for DMs
+})
+```
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./interactions"
+    title="Testing Interactions"
+    description="Test buttons, selects, and modals."
+  />
+  <Card
+    href="./testing-api"
+    title="Testing API"
+    description="Full API reference."
+  />
+</Cards>

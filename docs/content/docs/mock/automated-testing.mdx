@@ -1,0 +1,457 @@
+---
+title: Automated Testing
+description: Write tests with Jest
+---
+
+Write automated tests for your Discord bot using Jest. Tests run against the mock server, giving you full control over Discord events and assertions.
+
+<ScreenshotPlaceholder
+  alt="Terminal output showing npx robo mock test with passing test results including test suite summary, individual test names with checkmarks, and timing information"
+  focus="The terminal output with test results and pass/fail status"
+  zoom="100%"
+  aspect="16/9"
+  notes="Run npx robo mock test in the mockbot-ts template to capture real test output. Show a few passing tests with green checkmarks and the summary line at the bottom."
+/>
+
+## Setup
+
+### Prerequisites
+
+Mock Server requires `@robojs/server` as a peer dependency. Install both:
+
+```package-install
+npx robo add @robojs/mock
+```
+
+### Jest Configuration
+
+Create or update `jest.config.ts`:
+
+```typescript
+export default {
+  testEnvironment: 'node',
+  extensionsToTreatAsEsm: ['.ts'],
+  transform: {
+    '^.+\\.ts$': ['ts-jest', { useESM: true }]
+  },
+  testMatch: ['**/__tests__/**/*.test.ts'],
+  reporters: [
+    'default',
+    '@robojs/mock/testing/jest-reporter'
+  ]
+}
+```
+
+The custom reporter syncs test results to Stage UI for visual debugging.
+
+<ScreenshotPlaceholder
+  alt="Jest custom reporter output synced to Stage UI DevTools Tests tab, showing test file results alongside the terminal reporter output"
+  focus="The connection between Jest reporter output and the DevTools Tests tab visualization"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show the DevTools Tests tab with test results that came from the Jest custom reporter. Include test file names, individual test case results with pass/fail status, and durations. This demonstrates how the reporter bridges terminal tests to the visual UI."
+/>
+
+## Creating Test Sessions
+
+Each test file gets an isolated session:
+
+```typescript
+import { createTestSession } from '@robojs/mock/testing'
+import type { TestSession } from '@robojs/mock/testing'
+
+describe('my feature', () => {
+  let session: TestSession
+
+  beforeAll(async () => {
+    session = await createTestSession(__filename)
+  })
+
+  afterAll(async () => {
+    await session?.destroy()
+  })
+
+  // tests go here
+})
+```
+
+### Session Properties
+
+`TestSession` provides access to:
+
+```typescript
+session.id          // Session identifier
+session.token       // Bot token (mock:sess_xxx)
+session.botUser     // { id, username }
+session.guilds      // Array of test guilds
+session.channels    // Array of channels
+session.guildId     // First guild ID (convenience)
+```
+
+### Custom Session Config
+
+Configure guilds, users, and bot settings:
+
+```typescript
+const session = await createTestSession(__filename, {
+  name: 'my-test',
+  config: {
+    botUser: {
+      username: 'TestBot'
+    },
+    guilds: [{
+      name: 'Test Server',
+      channels: [
+        { name: 'general', type: 0 },
+        { name: 'bot-spam', type: 0 }
+      ]
+    }],
+    users: [
+      { username: 'TestUser' },
+      { username: 'Admin' }
+    ]
+  }
+})
+```
+
+## Session vs Full Bot Startup
+
+There are two ways to set up a test environment:
+
+- **`createTestSession()`** creates a session on the mock server but does not start the bot. Use this when the bot is already running separately (e.g., via `npx robo mock test` or a manual `npx robo mock start`).
+- **`startMockRobo()`** creates a session _and_ starts the bot within the test process itself. Use this for fully self-contained tests where no external process is needed.
+
+`startMockRobo` returns a `MockRoboHandle` with the same session properties plus a `stop()` method and access to the Discord.js `client`:
+
+```typescript
+import { startMockRobo, dispatchInteraction, expectAction } from '@robojs/mock/testing'
+import type { MockRoboHandle } from '@robojs/mock/testing'
+
+describe('self-contained test', () => {
+  let bot: MockRoboHandle
+
+  beforeAll(async () => {
+    bot = await startMockRobo({ name: 'my-test', testFilePath: __filename })
+  })
+
+  afterAll(async () => {
+    await bot.stop()
+  })
+
+  it('responds to ping', async () => {
+    await dispatchInteraction(bot.sessionId, {
+      type: 2,
+      data: { name: 'ping', type: 1 },
+      channel_id: bot.channels[0].id
+    })
+
+    await expectAction(bot.sessionId, {
+      description: 'Bot should respond with pong',
+      type: 'interaction_response',
+      expected: {
+        response_data: { content: expect.stringContaining('Pong') }
+      }
+    })
+  })
+})
+```
+
+## Dispatching Events
+
+### Interactions
+
+Trigger slash commands, buttons, and other interactions:
+
+```typescript
+import { dispatchInteraction } from '@robojs/mock/testing'
+
+// Slash command
+await dispatchInteraction(session.id, {
+  type: 2, // APPLICATION_COMMAND
+  data: {
+    name: 'ping',
+    type: 1 // CHAT_INPUT
+  },
+  channel_id: session.channels[0].id,
+  guild_id: session.guildId
+})
+```
+
+### Gateway Events
+
+Inject any Discord Gateway event:
+
+```typescript
+import { dispatchEvent } from '@robojs/mock/testing'
+
+await dispatchEvent(session.id, 'MESSAGE_CREATE', {
+  id: '123456789',
+  content: 'Hello bot',
+  channel_id: session.channels[0].id,
+  author: {
+    id: '987654321',
+    username: 'TestUser'
+  }
+})
+```
+
+## Making Assertions
+
+<Callout type="info">
+**Default Timeouts:** Most assertion functions default to 5000ms. The exception is `expectNoAction` which defaults to 500ms since it waits for the absence of an action.
+</Callout>
+
+### expectAction
+
+Assert that a specific action occurred:
+
+```typescript
+import { expectAction } from '@robojs/mock/testing'
+
+await expectAction(session.id, {
+  description: 'Bot should respond with pong',
+  type: 'interaction_response',
+  expected: {
+    response_data: {
+      content: 'Pong'
+    }
+  },
+  timeout: 5000
+})
+```
+
+### Jest Matchers
+
+Use Jest asymmetric matchers in expectations:
+
+```typescript
+await expectAction(session.id, {
+  description: 'Bot sends embed',
+  type: 'message_sent',
+  expected: {
+    embeds: expect.arrayContaining([
+      expect.objectContaining({
+        title: expect.stringContaining('Results')
+      })
+    ])
+  }
+})
+```
+
+### expectNoAction
+
+Assert that an action did not occur:
+
+```typescript
+import { expectNoAction } from '@robojs/mock/testing'
+
+await expectNoAction(session.id, {
+  description: 'Bot should not respond to ignored message',
+  type: 'message_sent',
+  waitMs: 2000  // How long to wait before confirming no action (default: 500ms)
+})
+```
+
+### waitForAction
+
+Wait for an action and get the result:
+
+```typescript
+import { waitForAction } from '@robojs/mock/testing'
+
+const actions = await waitForAction(session.id, {
+  type: 'interaction_response',
+  timeout: 5000
+})
+
+expect((actions[0].data as any).content).toBe('Success')
+```
+
+### waitForMessage
+
+Wait specifically for a message:
+
+```typescript
+import { waitForMessage } from '@robojs/mock/testing'
+
+const action = await waitForMessage(session.id, {
+  channelId: session.channels[0].id,
+  timeout: 5000
+})
+
+expect((action.data as any).content).toContain('Welcome')
+```
+
+## Test Lifecycle
+
+### Cleanup
+
+Always clean up sessions in `afterAll`:
+
+```typescript
+afterAll(async () => {
+  await session?.destroy()
+})
+```
+
+### Resetting State
+
+Reset session between tests if needed:
+
+```typescript
+import { resetSession } from '@robojs/mock/testing'
+
+beforeEach(async () => {
+  await resetSession(session.id)
+})
+```
+
+## Running Tests
+
+### With Robo CLI
+
+```bash
+npx robo mock test
+```
+
+This starts the mock server, runs Jest, and keeps the server running for inspection. Use `--no-watch` to exit immediately after tests complete.
+
+### Manual Mode
+
+Start mock server separately:
+
+```bash
+# Terminal 1: Start mock server
+npx robo mock start
+
+# Terminal 2: Run tests
+npm test
+```
+
+### Watch Mode
+
+For development:
+
+```bash
+npx robo mock test --watch
+```
+
+## CI Integration
+
+### GitHub Actions
+
+```yaml
+name: Test
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - run: npx robo build
+
+      - run: npx robo mock test
+```
+
+<ScreenshotPlaceholder
+  alt="GitHub Actions workflow run showing passing mock tests with green checkmarks, job summary, and test output logs"
+  focus="The GitHub Actions CI workflow with test results showing pass/fail status"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show a GitHub Actions workflow run page with the test job completed successfully. Include green checkmarks on steps, the test output in the logs section showing passing tests, and the overall workflow status badge."
+/>
+
+### Environment Variables
+
+Set these in CI:
+
+```yaml
+env:
+  ROBO_MOCK_MODE: true
+  NODE_ENV: test
+```
+
+<ScreenshotPlaceholder
+  alt="Stage UI DevTools panel showing the Tests tab with a list of test assertions, each showing pass or fail status, description text, and expandable expected vs actual comparison for failed assertions"
+  focus="The Tests tab in the DevTools panel with assertion results"
+  zoom="100%"
+  aspect="16/9"
+  notes="Open Stage UI, connect to a test session, and open the DevTools panel. Navigate to the Tests tab to show assertion results synced from the Jest reporter. Ideally show a mix of passed and failed assertions with diff output visible."
+/>
+
+## Best Practices
+
+### Test Isolation
+
+Each test file should create its own session. Avoid sharing state between test files.
+
+### Timeouts
+
+Set appropriate timeouts for async operations:
+
+```typescript
+await expectAction(session.id, {
+  description: 'Slow operation',
+  type: 'message_sent',
+  timeout: 10000  // 10 seconds for slow operations
+})
+```
+
+### Descriptive Assertions
+
+Use clear descriptions in `expectAction`:
+
+```typescript
+// Good
+description: 'Bot should send welcome message with user mention'
+
+// Less helpful
+description: 'Check message'
+```
+
+### Sequential vs Parallel
+
+Run tests sequentially when they share external state:
+
+```typescript
+// jest.config.ts
+export default {
+  // Run integration tests sequentially
+  projects: [{
+    displayName: 'integration',
+    testMatch: ['**/__tests__/integration/**/*.test.ts'],
+    runInBand: true
+  }]
+}
+```
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./commands"
+    title="Testing Commands"
+    description="Test slash commands in detail."
+  />
+  <Card
+    href="./interactions"
+    title="Testing Interactions"
+    description="Test buttons, selects, and modals."
+  />
+  <Card
+    href="./testing-api"
+    title="Testing API"
+    description="Full API reference."
+  />
+</Cards>

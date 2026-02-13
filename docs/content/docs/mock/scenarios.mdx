@@ -1,0 +1,542 @@
+---
+title: Scenarios
+description: JSON-based test definitions for reproducible test flows
+---
+
+Scenarios are versioned JSON documents that define a sequence of steps to execute against a mock session. They provide reproducible, shareable test flows that can be loaded and run through the Control API or Stage UI.
+
+## Overview
+
+A scenario describes:
+- **What to send** to the bot (commands, messages, button clicks)
+- **What to wait for** (durations, specific action types)
+- **What to verify** (assertions on recorded actions)
+- **What to interact with** (component clicks, select menus, modals)
+
+<ScreenshotPlaceholder
+  alt="Stage UI showing a scenario executing with step-by-step progress indicators, each step displaying its type (dispatch, wait, assert, interact) and pass/fail status"
+  focus="The scenario runner progress view with step-by-step execution status"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show a scenario mid-execution or just completed with several steps visible. Each step should show its type badge, description, and pass/fail status. Include the scenario name and overall progress indicator."
+/>
+
+Scenarios run inside an existing session. Load a scenario via the Control API, start it, and the runner executes each step in order with automatic completion detection between steps.
+
+## ScenarioDefinition Structure
+
+Every scenario follows this top-level structure:
+
+```json
+{
+  "version": 1,
+  "id": "unique-scenario-id",
+  "metadata": {
+    "name": "My Test Scenario",
+    "description": "Tests the /ping command responds correctly",
+    "tags": ["happy-path", "commands"],
+    "author": "dev@example.com"
+  },
+  "compatibility": {
+    "requiredCommands": ["ping"]
+  },
+  "mockConfig": {
+    "user": { "username": "TestUser" },
+    "guild": { "name": "Test Server" }
+  },
+  "steps": []
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `version` | `1` | Yes | Schema version (only `1` is supported) |
+| `id` | string | Yes | Unique identifier (UUID recommended) |
+| `metadata` | object | Yes | Display name, description, tags, author |
+| `compatibility` | object | No | Pre-flight requirements (commands, options, action types) |
+| `mockConfig` | object | No | Environment setup (user, guild, channel, time config) |
+| `steps` | array | Yes | Ordered sequence of steps to execute |
+
+### Metadata
+
+```typescript
+interface ScenarioMetadata {
+  name: string           // Display name (required)
+  description?: string   // Longer description
+  tags?: string[]        // For filtering ("happy-path", "edge-case")
+  createdAt?: string     // ISO 8601 timestamp
+  updatedAt?: string     // ISO 8601 timestamp
+  author?: string        // Author identifier
+}
+```
+
+### Mock Config
+
+Applied to the session before execution begins:
+
+```typescript
+interface ScenarioMockConfig {
+  user?: MockUserConfig        // Invoking user identity
+  guild?: MockGuildConfig      // Test guild setup
+  channel?: MockChannelConfig  // Test channel setup
+  commandOptions?: Record<string, Record<string, unknown>>
+  time?: { fixedTime?: number; timeScale?: number }
+  flashcoreData?: Record<string, unknown>  // Not yet supported
+  apiMocks?: Record<string, unknown>       // Not yet supported
+}
+```
+
+## Step Types
+
+Each step has a `type` discriminator and optional base fields:
+
+```typescript
+interface ScenarioStepBase {
+  id?: string              // Step identifier for debugging
+  description?: string     // Human-readable description
+  expectedNodeId?: string  // Source system node ID (for UI highlighting)
+  timeout?: number         // Max wait time in ms (overrides default)
+}
+```
+
+### dispatch
+
+Send a Discord gateway event to the bot. The `dispatch.kind` field determines the payload shape.
+
+```json
+{
+  "type": "dispatch",
+  "description": "Run the /ping command",
+  "dispatch": {
+    "kind": "slash_command",
+    "payload": {
+      "command_name": "ping"
+    }
+  }
+}
+```
+
+#### Dispatch Kinds
+
+| Kind | Payload Fields | Description |
+|------|---------------|-------------|
+| `slash_command` | `command_name`, `options?` | Invoke a slash command |
+| `message_create` | `content?`, `channel_id`, `author?`, `embeds?`, `components?` | Send a user message |
+| `button_click` | `custom_id`, `message_id` | Click a button component |
+| `select_option` | `custom_id`, `message_id`, `values` | Select from a select menu |
+| `modal_submit` | `custom_id`, `fields`, `message_id?` | Submit a modal form |
+| `context_command` | `command_name`, `target_id`, `context_type` | Trigger a user/message context menu |
+| `autocomplete` | `command_name`, `focused_option: { name, value, type? }`, `options?` | Trigger autocomplete |
+
+Each dispatch can also specify `channelId`, `guildId`, and `user` overrides.
+
+**Slash command with options:**
+
+```json
+{
+  "type": "dispatch",
+  "dispatch": {
+    "kind": "slash_command",
+    "payload": {
+      "command_name": "ban",
+      "options": { "user": "123456789", "reason": "Testing" }
+    }
+  }
+}
+```
+
+**Message create:**
+
+```json
+{
+  "type": "dispatch",
+  "dispatch": {
+    "kind": "message_create",
+    "payload": {
+      "content": "Hello bot!",
+      "channel_id": "111222333"
+    }
+  }
+}
+```
+
+**Context command:**
+
+```json
+{
+  "type": "dispatch",
+  "dispatch": {
+    "kind": "context_command",
+    "payload": {
+      "command_name": "Report User",
+      "target_id": "987654321",
+      "context_type": 2
+    }
+  }
+}
+```
+
+### wait
+
+Pause execution for a fixed duration or until a condition is met.
+
+```json
+{
+  "type": "wait",
+  "description": "Wait for bot response",
+  "wait": {
+    "forActionType": "interaction_response"
+  },
+  "timeout": 5000
+}
+```
+
+#### Wait Conditions
+
+| Condition | Type | Description |
+|-----------|------|-------------|
+| `duration` | number | Fixed wait time in milliseconds |
+| `forActionType` | string | Wait for a specific action type |
+| `forAnyActionType` | string[] | Wait for any of the listed action types |
+| `forAction` | object | Wait for an action matching custom criteria |
+
+At least one condition must be specified. The `forAction` matcher supports:
+
+```json
+{
+  "type": "wait",
+  "wait": {
+    "forAction": {
+      "type": "rest_request",
+      "endpointContains": "/channels/",
+      "dataContains": { "method": "POST" }
+    }
+  }
+}
+```
+
+If no condition is met before the timeout (default: 5000ms), the step fails.
+
+### assert
+
+Verify that the bot produced expected output by checking recorded actions.
+
+```json
+{
+  "type": "assert",
+  "description": "Bot should reply with pong",
+  "assert": {
+    "interactionResponse": {
+      "responseType": 4,
+      "contentContains": "Pong"
+    }
+  }
+}
+```
+
+#### Assert Checks
+
+| Check | Description |
+|-------|-------------|
+| `actionRecorded` | Verify an action of this type was recorded |
+| `messageSent` | Check that a message was sent matching criteria |
+| `interactionResponse` | Check that an interaction response was sent |
+
+**actionRecorded** takes an action type string:
+
+```json
+{ "assert": { "actionRecorded": "interaction_response" } }
+```
+
+**messageSent** matcher:
+
+```json
+{
+  "assert": {
+    "messageSent": {
+      "contentContains": "Hello",
+      "contentMatches": "^Hello.*world$",
+      "hasEmbeds": 1,
+      "hasComponents": 1,
+      "channelId": "111222333"
+    }
+  }
+}
+```
+
+**interactionResponse** matcher:
+
+```json
+{
+  "assert": {
+    "interactionResponse": {
+      "responseType": 4,
+      "contentContains": "Success",
+      "isEphemeral": true
+    }
+  }
+}
+```
+
+Response type values: `4` = reply, `5` = deferred reply, `6` = deferred update, `7` = update message.
+
+### interact
+
+Simulate user interaction with a message component. The runner automatically finds the most recent message containing the specified `customId` if no `messageId` is provided.
+
+```json
+{
+  "type": "interact",
+  "description": "Click the confirm button",
+  "interact": {
+    "componentType": "button",
+    "customId": "confirm-action"
+  }
+}
+```
+
+#### Component Types
+
+| Type | Required Fields | Description |
+|------|----------------|-------------|
+| `button` | `customId` | Click a button |
+| `select` | `customId`, `selectValues` | Choose from a select menu |
+| `modal` | `customId`, `modalFields` | Submit a modal form |
+
+**Select menu:**
+
+```json
+{
+  "type": "interact",
+  "interact": {
+    "componentType": "select",
+    "customId": "role-select",
+    "selectValues": ["admin", "moderator"]
+  }
+}
+```
+
+**Modal submit:**
+
+```json
+{
+  "type": "interact",
+  "interact": {
+    "componentType": "modal",
+    "customId": "feedback-form",
+    "modalFields": {
+      "title": "Bug Report",
+      "description": "The bot crashed when..."
+    }
+  }
+}
+```
+
+## Run States
+
+A scenario run transitions through these states:
+
+<StateFlowDiagram />
+
+When a step fails, the runner halts in the `failed` state. You can resume to continue executing remaining steps or stop the run.
+
+## Control API
+
+All scenario endpoints are under `/api/control/sessions/:id/scenario`.
+
+### Load a Scenario
+
+```
+POST /api/control/sessions/:id/scenario
+```
+
+Request body is the full `ScenarioDefinition` JSON. Returns:
+
+```json
+{
+  "run_id": "uuid",
+  "scenario_id": "your-scenario-id",
+  "step_count": 5,
+  "warnings": ["Flashcore seeding is not supported yet"]
+}
+```
+
+### Start Execution
+
+```
+POST /api/control/sessions/:id/scenario/start
+```
+
+```json
+{ "mode": "continuous" }
+```
+
+Mode can be `"continuous"` (run all steps) or `"step"` (run one step then pause). Default is `"continuous"`.
+
+### Pause / Resume / Stop
+
+```
+POST /api/control/sessions/:id/scenario/pause
+POST /api/control/sessions/:id/scenario/resume
+POST /api/control/sessions/:id/scenario/stop
+```
+
+Each returns the current `ScenarioRunState`.
+
+### Step
+
+```
+POST /api/control/sessions/:id/scenario/step
+```
+
+Execute a single step and return the result. Works from `loaded`, `paused`, or `failed` states.
+
+### Seek
+
+```
+POST /api/control/sessions/:id/scenario/seek
+```
+
+Navigate to a previously executed step (for reviewing results). Does not re-execute steps.
+
+### Get State
+
+```
+GET /api/control/sessions/:id/scenario/state
+```
+
+Returns the current `ScenarioRunState` for polling.
+
+### Clear Scenario
+
+```
+DELETE /api/control/sessions/:id/scenario
+```
+
+Removes the loaded scenario and resets run state to idle.
+
+## Example Scenario
+
+A complete scenario that tests a `/ping` command:
+
+```json
+{
+  "version": 1,
+  "id": "test-ping-command",
+  "metadata": {
+    "name": "Ping Command Test",
+    "description": "Verifies that /ping responds with Pong",
+    "tags": ["commands", "smoke-test"]
+  },
+  "compatibility": {
+    "requiredCommands": ["ping"]
+  },
+  "steps": [
+    {
+      "id": "dispatch-ping",
+      "type": "dispatch",
+      "description": "Run /ping command",
+      "dispatch": {
+        "kind": "slash_command",
+        "payload": { "command_name": "ping" }
+      }
+    },
+    {
+      "id": "assert-pong",
+      "type": "assert",
+      "description": "Bot should respond with Pong",
+      "assert": {
+        "interactionResponse": {
+          "responseType": 4,
+          "contentContains": "Pong"
+        }
+      }
+    }
+  ]
+}
+```
+
+A more complex scenario with component interactions:
+
+```json
+{
+  "version": 1,
+  "id": "test-confirmation-flow",
+  "metadata": {
+    "name": "Confirmation Flow",
+    "description": "Tests a command with a confirm/cancel button"
+  },
+  "steps": [
+    {
+      "type": "dispatch",
+      "description": "Run /delete-data command",
+      "dispatch": {
+        "kind": "slash_command",
+        "payload": { "command_name": "delete-data" }
+      }
+    },
+    {
+      "type": "assert",
+      "description": "Should show confirmation buttons",
+      "assert": {
+        "interactionResponse": {
+          "responseType": 4,
+          "contentContains": "Are you sure?"
+        }
+      }
+    },
+    {
+      "type": "interact",
+      "description": "Click the confirm button",
+      "interact": {
+        "componentType": "button",
+        "customId": "confirm-delete"
+      }
+    },
+    {
+      "type": "assert",
+      "description": "Should confirm deletion",
+      "assert": {
+        "interactionResponse": {
+          "contentContains": "deleted"
+        }
+      }
+    }
+  ]
+}
+```
+
+## Stage UI Integration
+
+When a scenario is running, Stage UI receives real-time events:
+
+- **`scenario.run.*`** - Run lifecycle events (`idle`, `loaded`, `started`, `running`, `paused`, `resumed`, `stopped`, `completed`, `failed`, `error`)
+- **`scenario.step.started`** / **`scenario.step.completed`** / **`scenario.step.failed`** - Step progress events
+- **`stage.navigation.changed`** - Emitted when `seek` is called, includes snapshot data
+
+These events allow the Stage UI to show step-by-step progress, highlight the current step, and display pass/fail results. The DevTools Tests tab shows scenario run results alongside regular test results.
+
+The runner also captures snapshots at each step boundary. Snapshots store lightweight state (step result summary, last action ID, playback position) for backward navigation using `seek`.
+
+<ScreenshotPlaceholder
+  alt="DevTools Events tab showing scenario-specific events like scenario.step.started, scenario.step.completed, and scenario.run.completed during a scenario run"
+  focus="Scenario lifecycle events in the DevTools Events tab"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show the DevTools Events tab with scenario events visible in the event list. Include events like scenario.run.started, scenario.step.started, scenario.step.completed with their JSON payloads showing step IDs and results."
+/>
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./testing-api"
+    title="Testing API"
+    description="Full API reference for test utilities."
+  />
+  <Card
+    href="./automated-testing"
+    title="Automated Testing"
+    description="Write Jest tests against the mock server."
+  />
+</Cards>

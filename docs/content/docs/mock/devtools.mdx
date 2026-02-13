@@ -1,0 +1,383 @@
+---
+title: DevTools
+description: Debug with the DevTools panel
+---
+
+DevTools provides real-time debugging for your bot. Inspect events, view session state, make REST API calls, and analyze performance.
+
+## Opening DevTools
+
+Press `Ctrl+Shift+D` (or `Cmd+Shift+D` on Mac) in Stage UI to toggle the DevTools panel.
+
+The panel appears docked at the bottom of the screen with 8 tabs for different debugging perspectives. You can resize the panel by dragging the top edge and double-click the header to maximize.
+
+<ScreenshotPlaceholder
+  alt="DevTools panel open at the bottom of Stage UI showing the Events tab with a chronological list of stage events including message_create, interaction_create, and typing_start entries, with a detail pane on the right showing JSON data for a selected event"
+  focus="The DevTools panel docked at the bottom, showing the tab bar with Events/State/Network/Performance/Tools/Permissions/Tests/Emojis tabs, and the Events tab active with a split view of event list and detail pane"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show a realistic session with several events in the list. The Events tab should be active. Include the resize handle at the top and the close/maximize buttons in the header."
+/>
+
+## Events Tab
+
+View all Stage events in real-time with a split-pane layout:
+
+- **Event List** (left) - Chronological event stream with sequence numbers, type badges, and preview text
+- **Event Details** (right) - Click any event to see its full JSON payload in an expandable viewer
+- **Type Filter** - Dropdown to filter by event type
+- **Search** - Find events by content, type, or payload data
+
+### Event Types
+
+Events are filtered by the Stage event system. Common types include:
+
+| Event | Description |
+|-------|-------------|
+| `state_sync` | Initial state synchronization |
+| `message_create` | New message in channel |
+| `message_update` | Message edited |
+| `message_delete` | Message removed |
+| `interaction_create` | Slash command, button, etc. |
+| `interaction_response` | Bot response to interaction |
+| `typing_start` | User started typing |
+| `message_reaction_add` | Reaction added |
+| `message_reaction_remove` | Reaction removed |
+| `connected` | Connection established |
+| `heartbeat` | WebSocket heartbeat |
+
+## State Tab
+
+Explore the current session state tree with a summary bar showing entity counts at a glance:
+
+The summary bar shows counts for **Guilds**, **Channels**, **Members**, **Roles**, **Messages**, and **Commands**.
+
+Below the summary, an expandable JSON tree viewer shows the full session state:
+
+```
+session
+├── connection
+│   ├── sessionId
+│   ├── isConnected
+│   ├── isConnecting
+│   └── error
+├── ui
+│   ├── selectedGuildId
+│   ├── selectedChannelId
+│   └── showMembers
+├── botUser: { id, username, avatar, ... }
+├── stats
+│   ├── eventCount
+│   ├── lastHeartbeat
+│   ├── guildsCount, channelsCount, ...
+│   └── commandsCount
+├── guilds: [...]
+├── channels: [...]
+├── members: [...]
+├── roles: [...]
+├── users: [...]
+├── commands: [...]
+├── messages: { [channelId]: [...] }
+└── typingUsers: { [channelId]: [...] }
+```
+
+<ScreenshotPlaceholder
+  alt="DevTools State tab showing the summary bar at the top with entity counts (Guilds: 1, Channels: 6, Members: 5, etc.) and below it an expandable JSON tree viewer with the session state tree expanded to show guilds, channels, and members data"
+  focus="The State tab with the summary bar of counts and the collapsible JSON tree viewer showing nested session data"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show the summary bar with realistic counts and the tree expanded one or two levels deep. The tree should show the root 'session' node with children like connection, ui, botUser, guilds, etc."
+/>
+
+### Use Cases
+
+- Verify guild setup is correct
+- Check that messages are stored in the right channels
+- Inspect user/member data
+- Monitor connection status and event counts
+
+## Network Tab
+
+The Network tab has two sub-tabs:
+
+### Client
+
+A built-in REST client for making API requests directly:
+
+- **Method Selector** - Choose GET, POST, PUT, PATCH, or DELETE
+- **Path Input** - Enter the endpoint path with autocomplete suggestions from registered routes
+- **Request Body** - JSON editor for non-GET requests
+- **Response Viewer** - Shows status code, duration, and response body as expandable JSON
+
+### Log
+
+Monitor REST API calls made by the bot:
+
+- **Request List** - Each entry shows method, path, status code, and duration
+- **Detail View** - Click a request to see full details including request body, response body, endpoint name, and timestamp
+- **Filtering** - Filter by path or method
+
+<ScreenshotPlaceholder
+  alt="DevTools Network tab showing the REST client with method selector, path input, and response viewer on the Client sub-tab, and request log entries on the Log sub-tab"
+  focus="The Network tab with its two sub-tabs: Client for making requests and Log for monitoring API calls"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show the Client sub-tab with a GET request completed and the response JSON visible. Alternatively show the Log sub-tab with several request entries showing method badges, paths, status codes, and durations."
+/>
+
+## Performance Tab
+
+Track event throughput and response times:
+
+### Metrics
+
+| Metric | Description |
+|--------|-------------|
+| Total Events | Total number of recorded events |
+| Interactions | Number of interaction events |
+| Responses | Number of interaction responses |
+| Messages | Number of message events |
+| Avg Response | Average time between interaction and response |
+| Events/min | Event throughput rate |
+
+### Event Type Breakdown
+
+A bar chart showing the distribution of event types, sorted by frequency. This helps identify which events dominate the session.
+
+<ScreenshotPlaceholder
+  alt="DevTools Performance tab showing a metrics table with Total Events, Interactions, Responses, Messages, Avg Response time, and Events/min, alongside an event type bar chart breakdown"
+  focus="The Performance tab metrics table and event type distribution bar chart"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show the metrics table with realistic values and the bar chart with several event types sorted by frequency. The bar chart should show interaction_create, message_create, etc."
+/>
+
+## Tools Tab
+
+Testing utilities and simulation controls:
+
+### Test Data
+
+Generate sample messages, users, channels, and other entities for testing the Stage UI. Clicking "Generate Test Data" populates the current session with realistic test content including messages with embeds, attachments, reactions, and interactive components.
+
+### Loop Protection
+
+Toggle the loop detection system that prevents infinite loops when bots respond to their own MESSAGE_CREATE events:
+
+- **Status** - Enable or disable loop protection
+- When disabled, the server will not prevent infinite loops
+
+### Rate Limit Simulation
+
+Simulate Discord API rate limits to test bot retry logic:
+
+- **Status** - Enable or disable rate limiting
+- **Retry After** - Configurable delay in seconds (1-60)
+- **Mode** - One-shot (auto-disables after first 429) or Persistent (keeps returning 429)
+- **Scope** - Target specific endpoint groups: All, Messages, Interactions, Guilds, or Channels
+
+### Message States
+
+Test visual states in the message area:
+
+- **Show "Bot is thinking..."** - Simulates a deferred interaction response indicator
+- **Show Failed Message** - Displays a failed message with error details
+
+### Voice States
+
+Test voice channel member display:
+
+- **Add User to Voice** - Add a test user to a voice channel
+- **Add Multiple Users** - Add several users with varying mute/deaf states
+- **Remove User from Voice** - Remove a user from voice
+- **Simulate Speaking** - Show the speaking indicator for a user
+
+### Components V2
+
+Test Discord Components V2 message format with various component types:
+
+- TextDisplay + Separator
+- Section + Thumbnail
+- Section + Button
+- MediaGallery
+- Container + Buttons
+- File + Spoiler
+- Spoiler Container
+
+<ScreenshotPlaceholder
+  alt="DevTools Tools tab showing the test data generator button, loop protection toggle, rate limit simulation controls with mode and scope selectors, message state buttons, and Components V2 test options"
+  focus="The Tools tab with its various testing utilities and simulation controls"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show the Tools tab with all sections visible: Test Data generator, Loop Protection toggle, Rate Limit Simulation with status/retry/mode/scope controls, Message States buttons, Voice States controls, and Components V2 section."
+/>
+
+## Permissions Tab
+
+Test and debug the permission enforcement system:
+
+### Enforcement Level
+
+Control how strictly permissions are checked for API requests:
+
+- **None** - All requests allowed regardless of permissions
+- **Basic** - Simple permission checks
+- **Strict** - Full Discord-style permission enforcement
+
+### Quick Actions
+
+- **Grant Admin** - Grant Administrator to all users
+- **Deny All** - Deny common permissions (SendMessages, ManageMessages, ManageChannels)
+- **Reset** - Clear all permission overrides
+
+### Permission Overrides
+
+View and manage active permission overrides. Each override shows the target user (or "All Users" for wildcard), the permissions being granted or denied, and an optional reason.
+
+### Permission Denied Log
+
+View recent permission check failures with timestamp, HTTP method, path, and the missing permissions that caused the denial.
+
+<ScreenshotPlaceholder
+  alt="DevTools Permissions tab showing enforcement level selector set to strict, quick action buttons for Grant Admin, Deny All, and Reset, a list of active permission overrides, and a denied log with recent permission check failures"
+  focus="The Permissions tab with enforcement level, quick actions, permission overrides list, and denied log"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show the enforcement level dropdown set to 'strict', the three quick action buttons, at least one active permission override entry, and several entries in the denied log showing timestamp, method, path, and missing permissions."
+/>
+
+## Emojis Tab
+
+Manage custom guild emojis:
+
+### Guild Selector
+
+Select which guild to manage emojis for using the dropdown.
+
+### Emoji Grid
+
+View all custom emojis in the selected guild. Each emoji shows its name and can be deleted.
+
+### Create Emoji
+
+Upload a new custom emoji:
+
+- **Name** - Alphanumeric with underscores, 2-32 characters
+- **Image** - PNG, GIF, or JPEG, max 256KB
+- Preview the image before creating
+
+## Tests Tab
+
+View test results when running `robo mock test`:
+
+### Split Pane Layout
+
+- **File List** (left) - Shows all test files with pass/fail status icons and counts
+- **Detail View** (right) - Click a file to see its tests
+
+### Test Details
+
+For each test file, the detail view shows:
+
+- Overall status badge (running, passed, failed)
+- File path and duration
+- Session ID (click to copy)
+- **View Logs** button - Opens the Logs panel filtered to this test session
+- **Replay** button - Loads the test recording into playback mode
+
+### Assertion Results
+
+Each test case shows:
+
+- Name and duration
+- Pass/fail status
+- Error message and stack trace (if failed)
+- Expandable assertions with expected vs actual values and diffs
+
+<ScreenshotPlaceholder
+  alt="DevTools Tests tab with a split pane layout: file list on the left showing test files with pass/fail icons, and assertion results on the right showing individual test cases with pass/fail diffs, duration, and a Replay button"
+  focus="The Tests tab split pane with file list and detailed assertion results including expected vs actual diffs"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show the file list with a mix of passed and failed test files. On the right, show a selected file's test details with status badges, durations, and at least one expanded assertion showing expected vs actual values with a diff."
+/>
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl/Cmd + Shift + D` | Toggle DevTools |
+| `Ctrl/Cmd + Shift + L` | Toggle Logs panel |
+| `Escape` | Close DevTools |
+
+## Logs Panel
+
+The Logs panel is a **separate overlay** from DevTools, accessed via `Ctrl+Shift+L`. It shows:
+
+- Bot console output
+- Logger messages
+- ANSI color rendering
+- Log level filtering
+
+### Log Levels
+
+Filter by severity:
+
+- **Debug** - Verbose debugging info
+- **Info** - General information
+- **Warn** - Warnings
+- **Error** - Errors
+
+<ScreenshotPlaceholder
+  alt="Logs panel overlay showing colored console output with ANSI-rendered log messages, level filter buttons for Debug, Info, Warn, and Error, a search bar, and a density graph showing log activity over time"
+  focus="The Logs panel overlay with colored log output, level filters, and search functionality"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show the Logs panel as a separate overlay from DevTools with several log messages in different colors (green for info, yellow for warn, red for error). Include the level filter buttons and search bar at the top."
+/>
+
+## Tips
+
+### Debugging Flow Issues
+
+1. Open Events tab
+2. Trigger the problematic flow
+3. Watch events arrive
+4. Check for filtered events
+5. Inspect payloads for unexpected data
+
+### Debugging State Issues
+
+1. Open State tab
+2. Check the summary bar for expected entity counts
+3. Expand the relevant section in the tree viewer
+4. Verify data matches expectations
+
+### Debugging Performance
+
+1. Open Performance tab
+2. Run the slow operation
+3. Check response times and event throughput
+4. Review the event type breakdown for unexpected patterns
+
+### Testing Permissions
+
+1. Open Permissions tab
+2. Set enforcement level to "basic" or "strict"
+3. Use Quick Actions to grant or deny permissions
+4. Trigger bot operations and check the Permission Denied Log
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./configuration"
+    title="Configuration"
+    description="Configure mock server behavior."
+  />
+  <Card
+    href="./testing-api"
+    title="Testing API"
+    description="Full API reference."
+  />
+</Cards>
