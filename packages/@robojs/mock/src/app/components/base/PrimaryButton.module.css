@@ -1,0 +1,22 @@
+.button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	padding: 10px 24px;
+	background: var(--brand-primary);
+	color: #fff;
+	border: none;
+	border-radius: 8px;
+	font-family: inherit;
+	font-size: 14px;
+	font-weight: 500;
+	cursor: pointer;
+	white-space: nowrap;
+	text-decoration: none;
+	transition: background-color 0.17s ease;
+}
+.button:hover:not(.disabled) { background: var(--brand-dark); text-decoration: none; }
+.button:active:not(.disabled) { background: var(--brand-darker); }
+.button.disabled { opacity: 0.5; cursor: not-allowed; }
+.button.fullWidth { width: 100%; }

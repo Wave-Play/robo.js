@@ -9,6 +9,7 @@ import type {
 	CreateTestSessionConfig,
 	InteractionData,
 	MockConfig,
+	MockMessage,
 	RecordedAction,
 	SessionResponse,
 	SessionState,
@@ -216,10 +217,10 @@ export async function getChannelMessages(
 	sessionId: string,
 	channelId: string,
 	limit = 50
-): Promise<Array<{ id: string; content: string; author: { id: string; bot?: boolean }; [key: string]: unknown }>> {
+): Promise<MockMessage[]> {
 	const response = (await controlAPI(
 		`/sessions/${sessionId}/channels/${channelId}?include_messages=true&message_limit=${limit}`
-	)) as { messages?: Array<{ id: string; content: string; author: { id: string; bot?: boolean } }> }
+	)) as { messages?: MockMessage[] }
 	return response.messages || []
 }
 

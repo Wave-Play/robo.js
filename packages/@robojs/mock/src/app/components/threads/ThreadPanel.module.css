@@ -203,20 +203,6 @@
 	border-color: var(--brand-primary);
 }
 
-.createButton {
-	background: var(--brand-primary);
-	color: white;
-	border-radius: 8px;
-	padding: 10px 14px;
-	font-weight: 700;
-	font-size: 13px;
-}
-
-.createButton:disabled {
-	opacity: 0.5;
-	cursor: not-allowed;
-}
-
 
 .threadBody {
 	flex: 1;

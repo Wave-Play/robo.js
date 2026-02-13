@@ -137,28 +137,6 @@
 	text-decoration: underline;
 }
 
-.submitButton {
-	padding: 2px 16px;
-	min-height: 38px;
-	min-width: 96px;
-	font-size: 14px;
-	font-weight: 500;
-	background: var(--brand-primary);
-	color: white;
-	border: none;
-	border-radius: var(--radius-xs);
-	cursor: pointer;
-	transition: background-color 0.17s ease;
-}
-
-.submitButton:hover:not(:disabled) {
-	background: var(--brand-dark);
-}
-
-.submitButton:disabled {
-	opacity: 0.5;
-	cursor: not-allowed;
-}
 
 /* Text Input Styles */
 .inputGroup {

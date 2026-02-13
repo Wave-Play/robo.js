@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { StageChannel, StageMessage } from '../../types/stage'
+import { PrimaryButton } from '../base'
 import ForumIcon from '../icons/forum'
 import styles from './ForumChannelView.module.css'
 
@@ -104,10 +105,10 @@ export function ForumChannelView({ channel, threads, messages, onCreatePost, onO
 							aria-label="Search posts"
 						/>
 					</div>
-					<button className={styles.primaryButton} type="button" onClick={() => setIsComposing(true)}>
+					<PrimaryButton onClick={() => setIsComposing(true)}>
 						<CommentIcon />
 						New Post
-					</button>
+					</PrimaryButton>
 				</div>
 			</header>
 
@@ -148,14 +149,12 @@ export function ForumChannelView({ channel, threads, messages, onCreatePost, onO
 							<button className={styles.secondaryButton} type="button" onClick={() => setIsComposing(false)}>
 								Cancel
 							</button>
-							<button
-								className={styles.primaryButton}
-								type="button"
+							<PrimaryButton
 								onClick={handleSubmitPost}
 								disabled={isPosting || !title.trim()}
 							>
 								{isPosting ? 'Posting…' : 'Post'}
-							</button>
+							</PrimaryButton>
 						</div>
 					</div>
 				</div>
@@ -169,9 +168,9 @@ export function ForumChannelView({ channel, threads, messages, onCreatePost, onO
 						</div>
 						<div className={styles.emptyTitle}>No posts yet</div>
 						<div className={styles.emptyText}>Start a discussion to kick things off.</div>
-						<button className={styles.primaryButton} type="button" onClick={() => setIsComposing(true)}>
+						<PrimaryButton onClick={() => setIsComposing(true)}>
 							Create Post
-						</button>
+						</PrimaryButton>
 					</div>
 				) : (
 					posts.map((post) => (

@@ -90,22 +90,3 @@
 	overflow-y: auto;
 }
 
-.button {
-	background: var(--brand-primary);
-	color: white;
-	border: none;
-	border-radius: 4px;
-	padding: 12px 24px;
-	font-size: 14px;
-	font-weight: 500;
-	cursor: pointer;
-	transition: background 0.15s ease;
-}
-
-.button:hover {
-	background: var(--brand-dark);
-}
-
-.button:active {
-	background: var(--brand-darker);
-}

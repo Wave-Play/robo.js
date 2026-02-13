@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { PrimaryButton } from '../base'
 import { TextInput, TextInputComponentData } from './TextInput'
 import styles from './Modal.module.css'
 
@@ -171,9 +172,9 @@ export function Modal({ modal, onClose, onSubmit }: ModalProps) {
 					<button className={styles.cancelButton} onClick={onClose} disabled={isSubmitting} type="button">
 						Cancel
 					</button>
-					<button className={styles.submitButton} onClick={handleSubmit} disabled={isSubmitting} type="button">
+					<PrimaryButton onClick={handleSubmit} disabled={isSubmitting}>
 						{isSubmitting ? 'Submitting...' : 'Submit'}
-					</button>
+					</PrimaryButton>
 				</div>
 			</div>
 		</div>

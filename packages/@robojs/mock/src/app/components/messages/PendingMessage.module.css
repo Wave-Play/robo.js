@@ -10,7 +10,7 @@
 }
 
 .failed {
-	background: rgba(237, 66, 69, 0.1);
+	background: rgba(237, 66, 69, 0.2);
 	border-left: 2px solid var(--status-danger, #ed4245);
 	padding-left: 70px;
 }

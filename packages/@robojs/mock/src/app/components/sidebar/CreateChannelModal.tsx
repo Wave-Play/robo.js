@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { CHANNEL_TYPE, normalizeChannelName } from '../../utils'
+import { PrimaryButton } from '../base'
 import { EmojiPicker } from '../common/EmojiPicker'
 import ChannelIcon from '../icons/channel'
 import VoiceChannelIcon from '../icons/voice_channel'
@@ -227,14 +228,12 @@ export function CreateChannelModal({ defaultType = CHANNEL_TYPE.TEXT, onClose, o
 					<button className={styles.secondaryButton} onClick={onClose} type="button" disabled={isSubmitting}>
 						Cancel
 					</button>
-					<button
-						className={styles.primaryButton}
+					<PrimaryButton
 						onClick={handleSubmit}
-						type="button"
 						disabled={isSubmitting || !channelName}
 					>
 						{isSubmitting ? 'Creating...' : 'Create Channel'}
-					</button>
+					</PrimaryButton>
 				</footer>
 			</div>
 

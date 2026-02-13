@@ -104,16 +104,6 @@
 	background: #232428;
 }
 
-.createButton {
-	background: var(--brand-primary);
-	color: #ffffff;
-	font-size: 14px;
-}
-
-.createButton:hover:not(:disabled) {
-	background: var(--brand-dark);
-}
-
 /* ===== Emoji picker wrapper ===== */
 .emojiAnchor {
 	position: relative;

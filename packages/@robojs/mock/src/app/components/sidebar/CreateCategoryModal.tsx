@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { PrimaryButton } from '../base'
 import { EmojiPicker } from '../common/EmojiPicker'
 import shared from './CreateChannelModal.module.css'
 import local from './CreateCategoryModal.module.css'
@@ -147,14 +148,12 @@ export function CreateCategoryModal({ onClose, onSubmit }: CreateCategoryModalPr
 					<button className={`${shared.secondaryButton} ${local.cancelButton}`} onClick={onClose} type="button" disabled={isSubmitting}>
 						Cancel
 					</button>
-					<button
-						className={`${shared.primaryButton} ${local.createButton}`}
+					<PrimaryButton
 						onClick={handleSubmit}
-						type="button"
 						disabled={isSubmitting || !categoryName.trim()}
 					>
 						{isSubmitting ? 'Creating...' : 'Create Category'}
-					</button>
+					</PrimaryButton>
 				</footer>
 			</div>
 

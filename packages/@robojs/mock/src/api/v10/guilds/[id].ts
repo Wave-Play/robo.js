@@ -168,7 +168,7 @@ export async function PATCH(request: RoboRequest) {
 	getGatewayServer().dispatchToSession(session.id, 'GUILD_UPDATE', payload.d, guildId)
 
 	// Record the action
-	session.recordAction('GUILD_UPDATE', {
+	session.recordAction('guild_update', {
 		guild_id: guildId,
 		changes: body
 	})

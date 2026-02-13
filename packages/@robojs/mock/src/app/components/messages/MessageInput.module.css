@@ -183,6 +183,10 @@
 	position: relative;
 }
 
+.activitiesButtonWrapper {
+	position: relative;
+}
+
 /* Position emoji picker above the button */
 .emojiButtonWrapper :global(.picker) {
 	position: absolute;

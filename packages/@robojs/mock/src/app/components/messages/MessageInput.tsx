@@ -4,12 +4,14 @@ import { useSession } from '../../stores/sessionStore'
 import { CommandAutocomplete } from './CommandAutocomplete'
 import { MentionAutocomplete, type MentionItem } from './MentionAutocomplete'
 import { EmojiPicker } from '../common/EmojiPicker'
+import { ActivitiesPicker, ACTIVITIES_PICKER_WIDTH, ACTIVITIES_PICKER_HEIGHT } from '../common/ActivitiesPicker'
 import type { StageApplicationCommand } from '../../types/stage'
 import styles from './MessageInput.module.css'
 import GiftIcon from '../icons/gift'
 import GifIcon from '../icons/gif'
 import EmojiIcon from '../icons/emoji'
 import StickersIcon from '../icons/stickers'
+import ActivitiesIcon from '../icons/activities'
 
 interface MessageInputProps {
 	channelId: string
@@ -28,8 +30,11 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
 	const [showMentionAutocomplete, setShowMentionAutocomplete] = useState(false)
 	const [mentionSearch, setMentionSearch] = useState('')
 	const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+	const [showActivitiesPicker, setShowActivitiesPicker] = useState(false)
+	const [activitiesPickerPosition, setActivitiesPickerPosition] = useState<{ x: number; y: number } | undefined>()
 	const inputRef = useRef<HTMLDivElement>(null)
 	const emojiButtonRef = useRef<HTMLDivElement>(null)
+	const activitiesButtonRef = useRef<HTMLDivElement>(null)
 
 	// Extract actual message content from contentEditable (replaces mention spans with their syntax)
 	const getMessageContent = useCallback(() => {
@@ -445,7 +450,10 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
 											aria-label="Add Emoji"
 											role="button"
 											tabIndex={0}
-											onClick={() => setShowEmojiPicker((prev) => !prev)}
+											onClick={() => {
+												setShowEmojiPicker((prev) => !prev)
+												setShowActivitiesPicker(false)
+											}}
 										>
 											<div className={styles.iconButtonInner}>
 												<EmojiIcon width={25} height={25} />
@@ -455,6 +463,39 @@ export function MessageInput({ channelId, channelName }: MessageInputProps) {
 											<EmojiPicker
 												onSelect={handleEmojiSelect}
 												onClose={() => setShowEmojiPicker(false)}
+											/>
+										)}
+									</div>
+
+									<div className={styles.activitiesButtonWrapper}>
+										<div
+											ref={activitiesButtonRef}
+											className={styles.iconButton}
+											aria-label="Open Activities"
+											role="button"
+											tabIndex={0}
+											onClick={() => {
+												setShowActivitiesPicker((prev) => {
+													if (!prev && activitiesButtonRef.current) {
+														const rect = activitiesButtonRef.current.getBoundingClientRect()
+														setActivitiesPickerPosition({
+															x: rect.right - ACTIVITIES_PICKER_WIDTH,
+															y: rect.top - ACTIVITIES_PICKER_HEIGHT
+														})
+													}
+													return !prev
+												})
+												setShowEmojiPicker(false)
+											}}
+										>
+											<div className={styles.iconButtonInner}>
+												<ActivitiesIcon width={25} height={25} />
+											</div>
+										</div>
+										{showActivitiesPicker && (
+											<ActivitiesPicker
+												position={activitiesPickerPosition}
+												onClose={() => setShowActivitiesPicker(false)}
 											/>
 										)}
 									</div>

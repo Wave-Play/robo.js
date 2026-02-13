@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { StageChannel, StageMessage, StageUser } from '../../types/stage'
 import { getAvatarUrl } from '../../utils'
-import { DropdownContainer } from '../base'
+import { DropdownContainer, PrimaryButton } from '../base'
 import ThreadIcon from '../icons/thread'
 import styles from './ThreadList.module.css'
 
@@ -81,9 +81,9 @@ export function ThreadList({
 						<div className={styles.emptySub}>
 							Stay focused on a conversation with a thread - a temporary text channel.
 						</div>
-						<button className={styles.emptyCta} type="button" onClick={handleCreateThread} disabled={!onCreateThread}>
+						<PrimaryButton onClick={handleCreateThread} disabled={!onCreateThread}>
 							Create Thread
-						</button>
+						</PrimaryButton>
 					</div>
 				) : (
 					<>

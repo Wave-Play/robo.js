@@ -260,28 +260,6 @@
 	border-top: 1px solid var(--accent-overlay);
 }
 
-/* Edit Profile button (self) */
-.editProfileButton {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 8px;
-	width: 100%;
-	padding: 10px 16px;
-	background: var(--brand-primary);
-	border: none;
-	border-radius: var(--radius-sm);
-	color: white;
-	font-size: 14px;
-	font-weight: 600;
-	cursor: pointer;
-	transition: background 0.15s ease;
-}
-
-.editProfileButton:hover {
-	background: var(--brand-dark);
-}
-
 /* Message input (others) */
 .messageInputWrapper {
 	position: relative;

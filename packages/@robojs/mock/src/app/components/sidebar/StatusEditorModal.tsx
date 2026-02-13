@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { StageUser } from '../../types/stage'
+import { PrimaryButton } from '../base'
 import { getAvatarUrl } from '../../utils/avatar'
 import styles from './StatusEditorModal.module.css'
 
@@ -206,9 +207,9 @@ export function StatusEditorModal({
 							</div>
 						)}
 					</div>
-					<button className={styles.saveButton} type="button" onClick={handleSave} disabled={isSaving}>
+					<PrimaryButton onClick={handleSave} disabled={isSaving}>
 						{isSaving ? 'Saving...' : 'Save'}
-					</button>
+					</PrimaryButton>
 				</div>
 			</div>
 		</div>

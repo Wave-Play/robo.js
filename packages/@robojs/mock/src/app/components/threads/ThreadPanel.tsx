@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSession } from '../../hooks/useSession'
 import type { StageMessage } from '../../types/stage'
+import { PrimaryButton } from '../base'
 import { Message } from '../messages/Message'
 import { MessageInput } from '../messages/MessageInput'
 import ThreadIcon from '../icons/thread'
@@ -143,14 +144,12 @@ export function ThreadPanel({
 							onKeyDown={handleDraftKeyDown}
 						/>
 					</div>
-					<button
-						className={styles.createButton}
-						type="button"
+					<PrimaryButton
 						onClick={handleCreateThread}
 						disabled={isCreating || !draftMessage.trim()}
 					>
 						Create Thread
-					</button>
+					</PrimaryButton>
 				</div>
 			</aside>
 		)

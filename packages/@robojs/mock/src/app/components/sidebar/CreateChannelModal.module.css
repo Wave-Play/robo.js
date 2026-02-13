@@ -314,26 +314,6 @@
 	background: #232428;
 }
 
-.primaryButton {
-	padding: 10px 18px;
-	border-radius: 8px;
-	background: var(--brand-primary);
-	color: #ffffff;
-	font-size: 14px;
-	font-weight: 700;
-	transition: background 0.15s ease, transform 0.1s ease;
-}
-
-.primaryButton:hover:not(:disabled) {
-	background: var(--brand-dark);
-	transform: translateY(-1px);
-}
-
-.primaryButton:disabled {
-	opacity: 0.7;
-	cursor: not-allowed;
-}
-
 @media (max-width: 560px) {
 	.modal {
 		width: 100%;

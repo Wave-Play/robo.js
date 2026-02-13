@@ -29,7 +29,7 @@
  *
  *     await expectAction(session.id, {
  *       description: 'Bot should reply',
- *       type: 'REST_CREATE_MESSAGE',
+ *       type: 'message_sent',
  *       expected: { content: expect.stringContaining('Hello') }
  *     })
  *   })
@@ -45,6 +45,7 @@ export type {
 	ExpectActionOptions,
 	InteractionData,
 	MockConfig,
+	MockMessage,
 	RecordedAction,
 	SessionResponse,
 	SessionState,

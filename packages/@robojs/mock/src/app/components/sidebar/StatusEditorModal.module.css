@@ -306,20 +306,3 @@
 	color: var(--brand-primary);
 }
 
-.saveButton {
-	background: var(--brand-primary);
-	color: white;
-	border-radius: var(--radius-sm);
-	padding: 8px 18px;
-	font-weight: 600;
-	transition: background 0.1s ease, opacity 0.1s ease;
-}
-
-.saveButton:hover {
-	background: var(--brand-dark);
-}
-
-.saveButton:disabled {
-	opacity: 0.6;
-	cursor: not-allowed;
-}

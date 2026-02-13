@@ -1,0 +1,317 @@
+.overlay {
+	position: fixed;
+	inset: 0;
+	background: transparent;
+	z-index: 60;
+}
+
+.picker {
+	padding: 0;
+	min-width: 500px;
+	background: var(--main-chat-background);
+	border: 1px solid #2e3035;
+	border-radius: 12px;
+	overflow: hidden;
+}
+
+.container {
+	display: flex;
+	flex-direction: column;
+	width: 500px;
+	height: min(100vh, 680px);
+}
+
+/* Search section */
+.searchSection {
+	padding: 16px;
+}
+
+.searchWrapper {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	background: #17181b;
+	border: 1px solid #2e3035;
+	border-radius: 8px;
+	padding: 8px 12px;
+	transition: border-color 0.15s ease;
+}
+
+.searchWrapper:focus-within {
+	border: 2px solid var(--brand-primary);
+	padding: 7px 11px;
+}
+
+.searchIcon {
+	flex-shrink: 0;
+	color: var(--text-bright);
+}
+
+.searchInput {
+	flex: 1;
+	background: none;
+	border: none;
+	outline: none;
+	color: var(--text-bright);
+	font-size: 16px;
+	font-family: var(--font-primary);
+	padding: 0;
+}
+
+.searchInput::placeholder {
+	color: var(--text-muted);
+}
+
+/* Scrollable content — thin scrollbar matching Discord */
+.content {
+	flex: 1;
+	overflow: hidden scroll;
+	padding: 0 8px 16px 16px;
+}
+
+.content::-webkit-scrollbar {
+	width: 8px;
+}
+
+.content::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.content::-webkit-scrollbar-thumb {
+	background: var(--scrollbar-thumb);
+	border-radius: 4px;
+}
+
+/* Section headers */
+.sectionHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 16px 0 8px;
+}
+
+.sectionTitle {
+	font-size: 14px;
+	font-weight: 700;
+	color: var(--text-bright);
+}
+
+.viewMore {
+	font-size: 16px;
+	font-weight: 500;
+	color: var(--brand-primary);
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 0;
+}
+
+.viewMore:hover {
+	text-decoration: underline;
+}
+
+/* Recents row — rounded-square icon cards */
+.recentsRow {
+	display: flex;
+	gap: 12px;
+	padding-bottom: 4px;
+}
+
+.recentItem {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+	cursor: pointer;
+	background: none;
+	border: none;
+	padding: 4px;
+	border-radius: 8px;
+	transition: background-color 0.15s ease;
+}
+
+.recentItem:hover {
+	background: var(--hover-overlay);
+}
+
+.recentIcon {
+	width: 56px;
+	height: 56px;
+	border-radius: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 22px;
+	font-weight: 700;
+	color: #fff;
+}
+
+.recentName {
+	font-size: 12px;
+	color: var(--text-muted);
+	max-width: 64px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	text-align: center;
+}
+
+/* Promoted 2x2 grid */
+.promotedGrid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 12px;
+}
+
+.activityCard {
+	border-radius: 8px;
+	overflow: hidden;
+	cursor: pointer;
+	background: #232528;
+
+	transition: filter 0.15s ease;
+}
+
+.activityCard:hover {
+	filter: brightness(1.1);
+}
+
+.cardBanner {
+	height: 120px;
+	width: 100%;
+}
+
+.cardInfo {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 12px;
+}
+
+.cardIcon {
+	width: 36px;
+	height: 36px;
+	border-radius: 8px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 16px;
+	font-weight: 700;
+	color: #fff;
+	flex-shrink: 0;
+}
+
+.cardText {
+	overflow: hidden;
+	min-width: 0;
+}
+
+.cardName {
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--text-bright);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.cardDescription {
+	font-size: 12px;
+	color: var(--text-muted);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Category section — items grouped inside a rounded container */
+.sectionContainer {
+	background: #232528;
+
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+.listItem {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 8px 12px;
+	cursor: pointer;
+	transition: background-color 0.15s ease;
+}
+
+.listItem:hover {
+	background: var(--hover-overlay);
+}
+
+.listIcon {
+	width: 40px;
+	height: 40px;
+	border-radius: 8px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 16px;
+	font-weight: 700;
+	color: #fff;
+	flex-shrink: 0;
+}
+
+.listDetails {
+	flex: 1;
+	min-width: 0;
+	padding: 10px 0;
+	border-bottom: 1px solid var(--hover-overlay);
+}
+
+.listItem:last-child .listDetails {
+	border-bottom: none;
+}
+
+.listName {
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--text-bright);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.listDescription {
+	font-size: 12px;
+	color: var(--text-muted);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Footer CTA card */
+.footerCard {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	background: #232528;
+
+	border-radius: 8px;
+	padding: 20px;
+	margin-top: 16px;
+}
+
+.footerBody {
+	flex: 1;
+	min-width: 0;
+}
+
+.footerHeading {
+	font-size: 18px;
+	font-weight: 700;
+	color: var(--text-bright);
+	margin-bottom: 4px;
+}
+
+.footerText {
+	font-size: 12px;
+	color: var(--text-default);
+	line-height: 1.4;
+}

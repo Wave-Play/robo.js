@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { StageMember, StageRole } from '../../types/stage'
 import { getAvatarUrl } from '../../utils/avatar'
+import { PrimaryButton } from '../base'
 import { EmojiPicker, EMOJI_PICKER_WIDTH, EMOJI_PICKER_HEIGHT } from '../common/EmojiPicker'
 import styles from './UserProfilePopout.module.css'
 
@@ -203,10 +204,10 @@ export function UserProfilePopout({
 				{/* Footer action */}
 				<div className={styles.footer}>
 					{isSelf ? (
-						<button className={styles.editProfileButton} type="button">
+						<PrimaryButton fullWidth>
 							<PencilIcon />
 							Edit Profile
-						</button>
+						</PrimaryButton>
 					) : (
 						<div className={styles.messageInputWrapper}>
 							<input

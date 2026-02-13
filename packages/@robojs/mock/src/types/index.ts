@@ -1982,7 +1982,7 @@ export type ActionType =
 	// DM actions
 	| 'dm_channel_opened'
 	// Guild actions
-	| 'GUILD_UPDATE'
+	| 'guild_update'
 	// Gateway WebSocket actions (client → server)
 	| 'gateway_message'
 	| 'gateway_identify'

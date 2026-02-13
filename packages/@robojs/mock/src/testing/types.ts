@@ -125,6 +125,25 @@ export interface WaitForActionOptions {
 }
 
 /**
+ * Message returned from `getChannelMessages`.
+ * Represents the REST API shape of a message as returned by the control API.
+ */
+export interface MockMessage {
+	/** Message ID */
+	id: string
+	/** Message content */
+	content: string
+	/** Message author */
+	author: {
+		id: string
+		username?: string
+		bot?: boolean
+	}
+	/** Additional fields may be present depending on message type */
+	[key: string]: unknown
+}
+
+/**
  * Recorded action from the mock server
  */
 export interface RecordedAction {
@@ -190,7 +209,7 @@ export interface DispatchEventData {
  * Interaction dispatch data
  */
 export interface InteractionData {
-	/** Interaction type (2 = APPLICATION_COMMAND, 3 = MESSAGE_COMPONENT, 5 = MODAL_SUBMIT) */
+	/** Interaction type (2 = APPLICATION_COMMAND, 3 = MESSAGE_COMPONENT, 4 = AUTOCOMPLETE, 5 = MODAL_SUBMIT) */
 	type: number
 	/** Interaction data */
 	data: {
@@ -203,7 +222,9 @@ export interface InteractionData {
 			name: string
 			type: number
 			value?: unknown
-			options?: Array<{ name: string; type: number; value?: unknown }>
+			/** Whether this option is the currently focused autocomplete option */
+			focused?: boolean
+			options?: Array<{ name: string; type: number; value?: unknown; focused?: boolean }>
 		}>
 		/** Component custom_id for MESSAGE_COMPONENT */
 		custom_id?: string
@@ -220,13 +241,33 @@ export interface InteractionData {
 				value: string
 			}>
 		}>
+		/** Target ID for context menu commands (USER or MESSAGE) */
+		target_id?: string
+		/** Resolved data (users, members, channels, roles, messages) */
+		resolved?: Record<string, unknown>
 	}
 	/** Guild ID (optional, for guild interactions) */
 	guild_id?: string
 	/** Channel ID (optional) */
 	channel_id?: string
-	/** User ID (optional, defaults to test user) */
-	user_id?: string
+	/**
+	 * User who triggered the interaction (optional, defaults to current test user).
+	 */
+	user?: {
+		id?: string
+		username?: string
+	}
+	/** Guild member who triggered the interaction (optional, for permission-aware dispatches) */
+	member?: {
+		user?: { id?: string; username?: string }
+		roles?: string[]
+		permissions?: string
+	}
+	/** Message associated with the interaction (for MESSAGE_COMPONENT interactions) */
+	message?: {
+		id: string
+		[key: string]: unknown
+	}
 }
 
 /**

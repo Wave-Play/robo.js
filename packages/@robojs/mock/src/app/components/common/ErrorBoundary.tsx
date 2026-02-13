@@ -1,4 +1,5 @@
 import { Component, type ReactNode, type ErrorInfo } from 'react'
+import { PrimaryButton } from '../base'
 import styles from './ErrorBoundary.module.css'
 
 interface ErrorBoundaryProps {
@@ -74,9 +75,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 							</details>
 						)}
 
-						<button className={styles.button} onClick={this.handleReset}>
+						<PrimaryButton onClick={this.handleReset}>
 							Try Again
-						</button>
+						</PrimaryButton>
 					</div>
 				</div>
 			)

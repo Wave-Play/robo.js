@@ -9,6 +9,25 @@ import type { Session } from '../session/session.js'
 import type { MockUser, Snowflake } from '../types/index.js'
 
 /**
+ * Cached reference to the session manager, resolved lazily on first use.
+ * This avoids importing the session manager at module load time, which would
+ * fail when the testing module is loaded in a separate process from the mock server.
+ */
+let _cachedSessionManager: { get: (id: string) => Session | undefined } | null = null
+
+function getSessionManagerSync(): { get: (id: string) => Session | undefined } {
+	if (!_cachedSessionManager) {
+		// Dynamic require for synchronous resolution - works in Node.js/Jest environments
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		const mod = require('../core/manager.js') as {
+			sessionManager: { get: (id: string) => Session | undefined }
+		}
+		_cachedSessionManager = mod.sessionManager
+	}
+	return _cachedSessionManager
+}
+
+/**
  * Test helper for managing multiple users in a session
  */
 export class TestUsers {
@@ -181,33 +200,58 @@ export interface TestUtils {
 }
 
 /**
- * Create test utilities for a session
- * @param session The session to create utilities for
+ * Create test utilities for a session.
+ *
+ * Accepts either the internal `Session` instance or a `sessionId` string.
+ * When given a string, the session is resolved from the in-process session manager
+ * (requires the mock server to be running in the same process).
+ *
+ * @param sessionOrId The session instance or session ID string
  * @returns Object with users and interactions helpers
  *
  * @example
  * ```typescript
- * import { createSession, createTestUtils } from '@robojs/mock'
+ * import { startMockRobo, createTestUtils } from '@robojs/mock/testing'
  *
- * const session = await createSession()
- * const testUtils = createTestUtils(session)
+ * const bot = await startMockRobo({ name: 'test' })
+ * const { users, interactions } = createTestUtils(bot.sessionId)
  *
  * // Create test users
- * const [alice, bob] = testUtils.users.createMany(['Alice', 'Bob'])
+ * const [alice, bob] = users.createMany(['Alice', 'Bob'])
  *
  * // Simulate a conversation
- * await testUtils.interactions.conversation(channelId, [
+ * await interactions.conversation(channelId, [
  *   { user: 'Alice', content: 'Hello!' },
  *   { user: 'Bob', content: 'Hi there!' }
  * ])
  *
  * // Act as a specific user
- * await testUtils.users.as(alice, async () => {
+ * await users.as(alice, async () => {
  *   // Do something as Alice
  * })
  * ```
  */
-export function createTestUtils(session: Session): TestUtils {
+export function createTestUtils(sessionOrId: Session): TestUtils
+export function createTestUtils(sessionOrId: string): TestUtils
+export function createTestUtils(sessionOrId: Session | string): TestUtils {
+	let session: Session
+
+	if (typeof sessionOrId === 'string') {
+		// Resolve session from the in-process session manager
+		const manager = getSessionManagerSync()
+		const resolved = manager.get(sessionOrId)
+		if (!resolved) {
+			throw new Error(
+				`Session not found: ${sessionOrId}. ` +
+				`createTestUtils(sessionId) requires the mock server to be running in the same process. ` +
+				`If you are using HMR mode, pass the Session instance directly instead.`
+			)
+		}
+		session = resolved
+	} else {
+		session = sessionOrId
+	}
+
 	return {
 		users: new TestUsers(session),
 		interactions: new TestInteractions(session)

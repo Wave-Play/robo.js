@@ -243,21 +243,3 @@
 	line-height: 1.4;
 }
 
-.emptyCta {
-	margin-top: 4px;
-	padding: 8px 14px;
-	background: var(--brand-primary);
-	border-radius: var(--radius-md);
-	color: white;
-	font-size: 14px;
-	font-weight: 700;
-}
-
-.emptyCta:hover {
-	background: var(--brand-dark);
-}
-
-.emptyCta:disabled {
-	opacity: 0.6;
-	cursor: not-allowed;
-}
