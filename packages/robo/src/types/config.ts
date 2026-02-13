@@ -195,6 +195,11 @@ export interface Config {
 
 	watcher?: {
 		ignore?: string[]
+		/**
+		 * Shell commands to spawn as companion processes during --watch mode.
+		 * Each command runs once when the watcher starts and is killed on exit.
+		 */
+		commands?: string[]
 	}
 }
 

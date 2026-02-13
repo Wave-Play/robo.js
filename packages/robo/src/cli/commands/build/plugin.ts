@@ -4,6 +4,7 @@ import { logger } from '../../../core/logger.js'
 import { getProjectSize } from '../../utils/build-summary.js'
 import { buildAsync } from '../dev.js'
 import path from 'node:path'
+import { spawn, type ChildProcess } from 'node:child_process'
 import { Env } from '../../../core/env.js'
 import { Mode, resolveCliMode, setMode } from '../../../core/mode.js'
 import { loadConfig, loadConfigPath } from '../../../core/config.js'
@@ -16,6 +17,7 @@ import { ManifestGenerator, discoverProjectHooks, createHookEntries } from '../.
 import { loadPluginData } from '../../utils/build-hooks.js'
 import type { CliContext } from '../../../types/cli.js'
 import type { PluginData } from '../../../types/common.js'
+import type { MetadataAggregatorRegistry } from '../../../types/manifest-v1.js'
 import type { RouteEntries, ProcessedEntry } from '../../../types/routes.js'
 
 const command = new Command('plugin')
@@ -117,14 +119,26 @@ async function pluginAction(context: CliContext) {
 
 	// Scan and process route entries from the plugin's build
 	const scannedResults = await scanAllRoutes(routes, buildDir)
-	const routeEntries = await processAllRoutes(scannedResults)
+	let routeEntries = await processAllRoutes(scannedResults)
 
 	// Discover hooks from the plugin's build
 	const projectHooks = await discoverProjectHooks(buildDir)
 	const hookEntries = createHookEntries(plugins, projectHooks, pluginName)
 
-	// Generate granular manifest files
+	// Execute build hooks for production builds (not --dev or --watch)
+	// Runs BEFORE manifest generation so hooks can transform entries and register metadata
 	const buildMode = options.dev ? 'development' : 'production'
+	let metadataRegistry: MetadataAggregatorRegistry | undefined
+	if (!options.dev && !options.watch) {
+		const { executeBuildStartHooks, executeBuildTransformHooks, executeBuildCompleteHooks, createBuildStore } = await import('../../utils/build-hooks.js')
+		const buildStore = createBuildStore()
+		await executeBuildStartHooks(dependentPlugins, config, buildMode, buildStore)
+		routeEntries = await executeBuildTransformHooks(dependentPlugins, config, buildMode, buildStore, routeEntries)
+		const result = await executeBuildCompleteHooks(dependentPlugins, config, buildMode, buildStore, routeEntries)
+		metadataRegistry = result.metadataRegistry
+	}
+
+	// Generate granular manifest files
 	const manifestGenerator = new ManifestGenerator({
 		mode: buildMode,
 		config,
@@ -135,7 +149,7 @@ async function pluginAction(context: CliContext) {
 		buildType: 'plugin',
 		pluginName
 	})
-	await manifestGenerator.generateAll()
+	await manifestGenerator.generateAll(metadataRegistry)
 	logger.debug(`Generated manifest in ${Date.now() - manifestTime}ms`)
 
 	if (!options.dev) {
@@ -158,6 +172,39 @@ async function pluginAction(context: CliContext) {
 	}
 
 	if (options.watch) {
+		// Spawn companion processes if configured
+		const companions: ChildProcess[] = []
+		const watcherCommands = config.watcher?.commands
+		if (watcherCommands && watcherCommands.length > 0) {
+			for (const cmd of watcherCommands) {
+				logger.debug(`Spawning companion process: ${cmd}`)
+				const child = spawn(cmd, { shell: true, stdio: 'inherit' })
+
+				child.on('error', (err) => {
+					logger.warn(`Companion process failed to start: ${cmd}`, err)
+				})
+				child.on('exit', (code) => {
+					if (code !== null && code !== 0) {
+						logger.warn(`Companion process exited with code ${code}: ${cmd}`)
+					}
+				})
+
+				companions.push(child)
+			}
+
+			// Clean up companions on exit
+			const killCompanions = () => {
+				for (const child of companions) {
+					if (!child.killed) {
+						child.kill()
+					}
+				}
+			}
+			process.on('SIGINT', killCompanions)
+			process.on('SIGTERM', killCompanions)
+			process.on('exit', killCompanions)
+		}
+
 		// Watch for changes in the "src" directory or config file
 		const watchedPaths = ['src']
 		const configPath = await loadConfigPath()
@@ -168,7 +215,7 @@ async function pluginAction(context: CliContext) {
 		}
 
 		const watcher = new Watcher(watchedPaths, {
-			exclude: ['node_modules', '.git']
+			exclude: ['node_modules', '.git', ...(config.watcher?.ignore ?? [])]
 		})
 
 		// Watch while preventing multiple restarts from happening at the same time
