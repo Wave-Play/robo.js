@@ -79,6 +79,11 @@ export interface PluginConfig {
 	vite?: ViteDevServer
 	tunnel?: TunnelConfig
 	openapi?: boolean | OpenAPIConfig
+	/** Vite config for building frontend assets. Used by build/complete hook. */
+	viteBuild?: {
+		/** Path to Vite config file, relative to project root. */
+		configFile: string
+	}
 }
 
 export let pluginOptions: PluginConfig = {}

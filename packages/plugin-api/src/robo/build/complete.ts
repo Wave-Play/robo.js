@@ -14,7 +14,7 @@ import { existsSync } from 'node:fs'
 import { cp, mkdir } from 'node:fs/promises'
 import path from 'node:path'
 import { getPluginOptions, Manifest } from 'robo.js'
-import type { BuildCompleteContext } from 'robo.js'
+import type { BuildCompleteContext, Config } from 'robo.js'
 import type { ConfigEnv, UserConfig } from 'vite'
 import type { PluginConfig } from '../prepare.js'
 import type { PluginPrefixConfig, PluginPrefixMap } from '../../core/plugin-routes.js'
@@ -33,10 +33,13 @@ export default async function (context: BuildCompleteContext): Promise<void> {
 		return
 	}
 
+	// Resolve plugin config — try runtime options first, fall back to build context config
+	const pluginConfig = resolveServerConfig(context)
+
 	// Build Vite assets if available
 	if (await hasDependency('vite', true)) {
 		try {
-			await buildVite()
+			await buildVite(pluginConfig?.viteBuild?.configFile)
 		} catch (error) {
 			logger.error('Failed to build Vite:', error)
 		}
@@ -52,7 +55,6 @@ export default async function (context: BuildCompleteContext): Promise<void> {
 	}
 
 	// Generate OpenAPI spec
-	const pluginConfig = getPluginOptions('@robojs/server') as PluginConfig | null
 	const openapiConfig = pluginConfig?.openapi as OpenAPIConfig | boolean | undefined
 
 	// Check if OpenAPI generation is disabled
@@ -83,10 +85,38 @@ export default async function (context: BuildCompleteContext): Promise<void> {
 }
 
 /**
- * Build frontend assets with Vite.
- * Loads config from config/vite.ts, config/vite.mjs, or vite.config.ts/js.
+ * Resolve @robojs/server plugin config from runtime options or build context.
+ * During `robo build`, getPluginOptions works (runtime initialized).
+ * During `robo build plugin`, falls back to extracting from config.plugins.
  */
-async function buildVite(): Promise<void> {
+function resolveServerConfig(context: BuildCompleteContext): PluginConfig | null {
+	// Try runtime options first (works during normal robo build)
+	try {
+		const config = getPluginOptions('@robojs/server') as PluginConfig | null
+		if (config) return config
+	} catch {
+		// Runtime not initialized — expected during plugin builds
+	}
+
+	// Fall back to extracting from config.plugins (works during robo build plugin)
+	const projectConfig = context.config as Config
+	if (projectConfig?.plugins) {
+		for (const plugin of projectConfig.plugins) {
+			if (Array.isArray(plugin) && plugin[0] === '@robojs/server') {
+				return (plugin[1] as PluginConfig) ?? null
+			}
+		}
+	}
+
+	return null
+}
+
+/**
+ * Build frontend assets with Vite.
+ * When configFile is provided, uses it directly and respects its outDir.
+ * Otherwise, auto-discovers config and outputs to .robo/public/.
+ */
+async function buildVite(configFile?: string): Promise<void> {
 	const time = Date.now()
 	logger.debug('Building Vite...')
 	const { build, loadConfigFromFile } = await import('vite')
@@ -100,37 +130,62 @@ async function buildVite(): Promise<void> {
 		mode: 'production'
 	}
 
-	// Check config paths in order of preference
-	const configPaths = [
-		path.join(process.cwd(), 'config', 'vite.ts'),
-		path.join(process.cwd(), 'config', 'vite.mjs'),
-		path.join(process.cwd(), 'vite.config.ts'),
-		path.join(process.cwd(), 'vite.config.js')
-	]
-
-	for (const configPath of configPaths) {
-		if (existsSync(configPath)) {
-			config = (await loadConfigFromFile(configEnv, configPath))?.config
-			break
+	if (configFile) {
+		// Explicit config file provided — resolve relative to project root
+		const resolvedPath = path.resolve(process.cwd(), configFile)
+		if (existsSync(resolvedPath)) {
+			config = (await loadConfigFromFile(configEnv, resolvedPath))?.config
 		}
+
+		if (!config) {
+			logger.debug(`Vite config not found at ${configFile}. Skipping...`)
+			return
+		}
+		logger.debug('Vite config loaded from explicit path:', configFile)
+
+		// Build with Vite — let the config control outDir
+		await build({
+			logLevel: 'warn',
+			...(config ?? {}),
+			build: {
+				...(config?.build ?? {}),
+				emptyOutDir: true
+			}
+		})
+	} else {
+		// Auto-discover config paths in order of preference
+		const configPaths = [
+			path.join(process.cwd(), 'config', 'vite.ts'),
+			path.join(process.cwd(), 'config', 'vite.mjs'),
+			path.join(process.cwd(), 'vite.config.ts'),
+			path.join(process.cwd(), 'vite.config.js')
+		]
+
+		for (const configPath of configPaths) {
+			if (existsSync(configPath)) {
+				config = (await loadConfigFromFile(configEnv, configPath))?.config
+				break
+			}
+		}
+
+		if (!config) {
+			logger.debug('No Vite config found. Skipping...')
+			return
+		}
+		logger.debug('Vite config loaded:', config)
+
+		// Build with Vite — override outDir to .robo/public for project builds
+		await build({
+			logLevel: 'warn',
+			...(config ?? {}),
+			build: {
+				...(config?.build ?? {}),
+				emptyOutDir: true,
+				outDir: path.join('.robo', 'public')
+			}
+		})
 	}
 
-	if (!config) {
-		logger.debug('No Vite config found. Skipping...')
-		return
-	}
-	logger.debug('Vite config loaded:', config)
-
-	// Build with Vite
-	await build({
-		logLevel: 'warn',
-		...(config ?? {}),
-		build: {
-			...(config?.build ?? {}),
-			emptyOutDir: true,
-			outDir: path.join('.robo', 'public')
-		}
-	})
 	logger.debug('Vite build completed in', Date.now() - time, 'ms')
 }
 
