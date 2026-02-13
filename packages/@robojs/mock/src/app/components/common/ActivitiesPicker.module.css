@@ -10,15 +10,33 @@
 	min-width: 500px;
 	background: var(--main-chat-background);
 	border: 1px solid #2e3035;
-	border-radius: 12px;
+	border-radius: 12px 12px 8px 8px;
 	overflow: hidden;
 }
 
 .container {
-	display: flex;
-	flex-direction: column;
 	width: 500px;
 	height: min(100vh, 680px);
+	overflow: hidden;
+}
+
+.slideWrapper {
+	display: flex;
+	width: 200%;
+	height: 100%;
+	transition: transform 0.25s ease-in-out;
+}
+
+.slideWrapper.slideToDetail {
+	transform: translateX(-50%);
+}
+
+.slidePanel {
+	width: 50%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	flex-shrink: 0;
 }
 
 /* Search section */
@@ -314,4 +332,202 @@
 	font-size: 12px;
 	color: var(--text-default);
 	line-height: 1.4;
+}
+
+/* ── Detail view ── */
+.detailContent {
+	flex: 1;
+	overflow: hidden scroll;
+	padding: 0;
+	position: relative;
+}
+
+.detailContent::-webkit-scrollbar {
+	width: 8px;
+}
+
+.detailContent::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.detailContent::-webkit-scrollbar-thumb {
+	background: var(--scrollbar-thumb);
+	border-radius: 4px;
+}
+
+.detailHeroBanner {
+	padding: 16px 16px 0;
+}
+
+.detailHeroBanner::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 106px;
+	background: #111214;
+}
+
+.detailTopBar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 16px;
+	position: relative;
+}
+
+.detailTopBarActions {
+	display: flex;
+	gap: 8px;
+}
+
+.detailCircleButton {
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	background: rgba(30, 31, 34, 0.7);
+	border: none;
+	color: var(--text-bright);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	transition: background-color 0.15s ease;
+}
+
+.detailCircleButton:hover {
+	background: rgba(30, 31, 34, 0.9);
+}
+
+.detailAppIcon {
+	width: 80px;
+	height: 80px;
+	border-radius: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 32px;
+	font-weight: 700;
+	color: #fff;
+	position: relative;
+}
+
+.detailCard {
+	background: oklab(0.245196 0.00206329 -0.00723176);
+	border-radius: 8px;
+	overflow: hidden;
+	margin: 16px 16px 0;
+}
+
+.detailPreview {
+	width: 100%;
+	height: 263px;
+}
+
+.detailBody {
+	padding: 16px;
+}
+
+.detailAppName {
+	font-size: 24px;
+	font-weight: 700;
+	color: #fff;
+	margin-bottom: 10px;
+}
+
+.detailTags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-bottom: 14px;
+}
+
+.detailTag {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	border-radius: 999px;
+	border: 1px solid #4e5058;
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--text-bright);
+	padding: 4px 12px;
+}
+
+.detailDescriptionWrap {
+	margin-bottom: 16px;
+}
+
+.detailDescription {
+	font-size: 16px;
+	font-weight: 500;
+	color: var(--text-bright);
+	line-height: 1.5;
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.detailDescriptionExpanded {
+	display: block;
+	-webkit-line-clamp: unset;
+	overflow: visible;
+}
+
+.showMoreButton {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	background: none;
+	border: none;
+	color: var(--brand-primary);
+	font-size: 14px;
+	font-weight: 600;
+	cursor: pointer;
+	padding: 4px 0 0;
+}
+
+.showMoreButton:hover {
+	text-decoration: underline;
+}
+
+.detailActions {
+	display: flex;
+	gap: 8px;
+}
+
+.detailActions > * {
+	flex: 1;
+	width: 0;
+	box-sizing: border-box;
+}
+
+.launchDmButton {
+	background: #2b2d31;
+	border: 1px solid #3f4147;
+	color: var(--text-bright);
+	font-size: 14px;
+	font-weight: 600;
+	font-family: var(--font-primary);
+	padding: 10px 16px;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: background-color 0.15s ease;
+}
+
+.launchDmButton:hover {
+	background: #35373c;
+}
+
+.detailFooter {
+	border-top: 1px solid #2e3035;
+	padding: 12px 16px;
+}
+
+.detailFooterText {
+	font-size: 14px;
+	font-weight: 700;
+	color: var(--text-bright);
 }
