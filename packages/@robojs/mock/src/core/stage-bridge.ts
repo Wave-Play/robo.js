@@ -323,6 +323,8 @@ export class StageBridge {
 				return 'message_reaction_remove'
 
 			// Channel events
+			case 'CHANNEL_CREATE':
+				return 'channel_create'
 			case 'CHANNEL_UPDATE':
 				return 'channel_update'
 

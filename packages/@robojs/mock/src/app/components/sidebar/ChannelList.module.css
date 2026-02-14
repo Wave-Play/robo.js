@@ -546,3 +546,24 @@
 	pointer-events: none;
 	width: var(--sidebar-width);
 }
+
+/* Discord-style insertion line indicator */
+.insertLine {
+	position: relative;
+	height: 2px;
+	background: #5865f2;
+	margin: 0 8px;
+	border-radius: 1px;
+	pointer-events: none;
+}
+
+.insertLineCircle {
+	position: absolute;
+	left: -3px;
+	top: -3px;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	border: 2px solid #5865f2;
+	background: var(--sidebar-background, #2b2d31);
+}

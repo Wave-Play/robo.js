@@ -37,6 +37,7 @@ export type StageEventType =
 	| 'voice_state_update' // User joined/left/updated voice channel
 
 	// Guild/Channel events
+	| 'channel_create' // Channel was created
 	| 'channel_update' // Channel was updated
 	| 'guild_emojis_update' // Guild emojis were updated
 

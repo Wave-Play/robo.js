@@ -947,6 +947,18 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 					break
 				}
 
+				case 'channel_create': {
+					const channelData = event.data as StageChannel
+					dispatch({ type: 'INJECT_CHANNELS', payload: [channelData] })
+					break
+				}
+
+				case 'channel_update': {
+					const channelData = event.data as StageChannel
+					dispatch({ type: 'REORDER_CHANNELS', payload: [channelData] })
+					break
+				}
+
 				case 'voice_state_update': {
 					const voiceData = event.data as StageVoiceState
 					dispatch({

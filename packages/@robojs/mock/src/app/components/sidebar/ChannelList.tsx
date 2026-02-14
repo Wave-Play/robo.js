@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { DndContext, DragOverlay, PointerSensor, useDroppable, useSensor, useSensors, type DragEndEvent, type DragOverEvent, type DragStartEvent } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
 import type { StageChannel, StageGuild, StageMember, StageVoiceState, StageUser } from '../../types/stage'
 import { CreateCategoryModal } from './CreateCategoryModal'
 import { CreateChannelModal } from './CreateChannelModal'
@@ -218,144 +217,135 @@ export function ChannelList({
 
 	const isVoiceChannel = (type: number) => type === ChannelType.GUILD_VOICE || type === ChannelType.GUILD_STAGE_VOICE
 
-	// --- Drag-and-drop ---
+	// --- Drag-and-drop (Discord-style insertion line) ---
 	const dndEnabled = !isPlaybackMode && !!onReorderChannels
 	const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
 	const [activeId, setActiveId] = useState<string | null>(null)
+	const [insertIndicator, setInsertIndicator] = useState<{ overId: string; position: 'before' | 'after' } | null>(null)
 
-	// During a drag, we maintain a local copy of channels with temporary parent_id changes
-	// so that items visually move between containers in real time.
-	const [dragChannels, setDragChannels] = useState<StageChannel[] | null>(null)
-
-	// Use drag-local channels when dragging, otherwise the real channels
-	const effectiveRegularChannels = dragChannels
-		? dragChannels.filter((c) => !isThread(c.type))
-		: regularChannels
-	const effectiveUncategorized = effectiveRegularChannels.filter((c) => c.type !== ChannelType.GUILD_CATEGORY && !c.parent_id).sort(sortByPosition)
-	const getEffectiveChannelsInCategory = (categoryId: string) => {
-		return effectiveRegularChannels.filter((c) => c.parent_id === categoryId && c.type !== ChannelType.GUILD_CATEGORY).sort(sortByPosition)
-	}
-
-	// Precompute sorted ID lists for SortableContext
+	// Precompute sorted ID lists for SortableContext (keeps useSortable working for drag handles)
 	const categoryIds = useMemo(() => categories.map((c) => c.id), [categories])
-	const uncategorizedIds = useMemo(() => effectiveUncategorized.map((c) => c.id), [effectiveUncategorized])
+	const uncategorizedIds = useMemo(() => uncategorizedChannels.map((c) => c.id), [uncategorizedChannels])
 	const categoryChildIds = useMemo(() => {
 		const map: Record<string, string[]> = {}
 		for (const cat of categories) {
-			map[cat.id] = getEffectiveChannelsInCategory(cat.id).map((c) => c.id)
+			map[cat.id] = getChannelsInCategory(cat.id).map((c) => c.id)
 		}
 		return map
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [categories, effectiveRegularChannels])
+	}, [categories, regularChannels])
 
 	const activeChannel = activeId ? channels.find((c) => c.id === activeId) ?? null : null
 	const isActiveCategory = activeChannel?.type === ChannelType.GUILD_CATEGORY
 
 	const handleDragStart = useCallback((event: DragStartEvent) => {
 		setActiveId(String(event.active.id))
-		// Snapshot the current regular channels for local mutation during drag
-		setDragChannels([...regularChannels])
-	}, [regularChannels])
+	}, [])
 
 	const handleDragCancel = useCallback(() => {
 		setActiveId(null)
-		setDragChannels(null)
+		setInsertIndicator(null)
 	}, [])
 
-	// Determine which container (parent_id) a droppable/sortable ID belongs to
-	const getContainerId = useCallback(
-		(id: string): string | null => {
-			// The uncategorized droppable zone
-			if (id === 'uncategorized-drop-zone') return null
-			// A category header means "drop into this category"
-			const asCat = categories.find((c) => c.id === id)
-			if (asCat) return asCat.id
-			// Otherwise it's a channel - use its parent_id
-			const ch = (dragChannels ?? regularChannels).find((c) => c.id === id)
-			return ch?.parent_id ?? null
-		},
-		[categories, dragChannels, regularChannels]
-	)
-
+	// Compute insertion line position as cursor moves over items
 	const handleDragOver = useCallback(
 		(event: DragOverEvent) => {
 			const { active, over } = event
-			if (!over || !dragChannels) return
+			if (!over || active.id === over.id) {
+				setInsertIndicator(null)
+				return
+			}
 
-			const activeChannel = dragChannels.find((c) => c.id === active.id)
-			if (!activeChannel || activeChannel.type === ChannelType.GUILD_CATEGORY) return
+			const overId = String(over.id)
+			// Determine before/after by comparing the dragged item's translated center to the over item's center
+			const activeRect = active.rect.current.translated
+			const overRect = over.rect
+			let position: 'before' | 'after' = 'after'
+			if (activeRect && overRect) {
+				const activeCenter = activeRect.top + activeRect.height / 2
+				const overCenter = overRect.top + overRect.height / 2
+				position = activeCenter < overCenter ? 'before' : 'after'
+			}
 
-			const activeContainer = activeChannel.parent_id ?? null
-			const overContainer = getContainerId(String(over.id))
-
-			// Only act when moving between different containers
-			if (activeContainer === overContainer) return
-
-			setDragChannels((prev) => {
-				if (!prev) return prev
-				return prev.map((c) =>
-					c.id === active.id ? { ...c, parent_id: overContainer } : c
-				)
-			})
+			setInsertIndicator({ overId, position })
 		},
-		[dragChannels, getContainerId]
+		[]
 	)
 
 	const handleDragEnd = useCallback(
 		(event: DragEndEvent) => {
 			const { active, over } = event
-			const localChannels = dragChannels
+			const indicator = insertIndicator
 			setActiveId(null)
-			setDragChannels(null)
+			setInsertIndicator(null)
 
-			if (!over || active.id === over.id || !onReorderChannels || !localChannels) return
+			if (!over || active.id === over.id || !onReorderChannels || !indicator) return
 
-			const activeChannel = localChannels.find((c) => c.id === active.id)
-			const overChannel = localChannels.find((c) => c.id === over.id)
-			if (!activeChannel) return
+			const draggedChannel = channels.find((c) => c.id === active.id)
+			if (!draggedChannel) return
 
-			const isActiveACat = activeChannel.type === ChannelType.GUILD_CATEGORY
+			const isDraggedACat = draggedChannel.type === ChannelType.GUILD_CATEGORY
+			const overId = indicator.overId
+			const overChannel = channels.find((c) => c.id === overId)
+			const isOverACat = overChannel?.type === ChannelType.GUILD_CATEGORY
+			const isOverDropZone = overId === 'uncategorized-drop-zone'
 
-			// Case 1: Reorder categories
-			if (isActiveACat && overChannel?.type === ChannelType.GUILD_CATEGORY) {
+			// Case 1: Reorder categories among each other
+			if (isDraggedACat && isOverACat) {
 				const oldIndex = categories.findIndex((c) => c.id === active.id)
-				const newIndex = categories.findIndex((c) => c.id === over.id)
+				let newIndex = categories.findIndex((c) => c.id === overId)
 				if (oldIndex === -1 || newIndex === -1) return
+				if (indicator.position === 'after') newIndex = Math.min(newIndex + 1, categories.length - 1)
+				if (oldIndex === newIndex) return
 				const reordered = arrayMove(categories, oldIndex, newIndex)
 				onReorderChannels(reordered.map((c, i) => ({ ...c, position: i })))
 				return
 			}
 
-			// Case 2: Non-category channel reorder / move
-			if (!isActiveACat) {
-				// The active channel's parent_id has already been updated by handleDragOver
-				const targetParent = activeChannel.parent_id ?? null
-				const siblings = targetParent
-					? localChannels.filter((c) => c.parent_id === targetParent && c.type !== ChannelType.GUILD_CATEGORY).sort(sortByPosition)
-					: localChannels.filter((c) => c.type !== ChannelType.GUILD_CATEGORY && !c.parent_id).sort(sortByPosition)
+			// Case 2: Channel reorder / cross-category move
+			if (!isDraggedACat) {
+				const originalParent = draggedChannel.parent_id ?? null
 
-				const oldIndex = siblings.findIndex((c) => c.id === active.id)
-				// over.id could be the droppable zone or a category header
-				const isOverDropZone = String(over.id) === 'uncategorized-drop-zone'
-				const isOverACat = !!categories.find((c) => c.id === over.id)
-				const newIndex = (!isOverDropZone && !isOverACat)
-					? siblings.findIndex((c) => c.id === over.id)
-					: -1
-
-				let reordered: StageChannel[]
-				if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
-					reordered = arrayMove(siblings, oldIndex, newIndex)
+				// Determine target container from what we're hovering over
+				let targetParent: string | null
+				if (isOverDropZone) {
+					targetParent = null
+				} else if (isOverACat) {
+					// "before" a category = uncategorized (above it); "after" = into that category
+					targetParent = indicator.position === 'before' ? null : overId
 				} else {
-					reordered = siblings
+					targetParent = overChannel?.parent_id ?? null
 				}
 
-				// Also update the old container positions if the channel moved between containers
-				const updated: StageChannel[] = reordered.map((c, i) => ({ ...c, position: i }))
-				const originalParent = channels.find((c) => c.id === active.id)?.parent_id ?? null
+				// Build the target sibling list (excluding the dragged channel)
+				const targetSiblings = (targetParent
+					? getChannelsInCategory(targetParent)
+					: uncategorizedChannels
+				).filter((c) => c.id !== active.id)
+
+				// Compute insertion index
+				let insertIndex: number
+				if (isOverACat || isOverDropZone) {
+					// Dropped on a category or zone: append at end of the target container
+					insertIndex = targetSiblings.length
+				} else {
+					const overIdx = targetSiblings.findIndex((c) => c.id === overId)
+					insertIndex = overIdx === -1
+						? targetSiblings.length
+						: indicator.position === 'after' ? overIdx + 1 : overIdx
+				}
+
+				// Splice the dragged channel into the new list
+				const newList = [...targetSiblings]
+				newList.splice(insertIndex, 0, { ...draggedChannel, parent_id: targetParent })
+				const updated: StageChannel[] = newList.map((c, i) => ({ ...c, position: i }))
+
+				// If we moved between containers, also re-number the old container
 				if (originalParent !== targetParent) {
-					const oldSiblings = originalParent
-						? regularChannels.filter((c) => c.parent_id === originalParent && c.id !== active.id && c.type !== ChannelType.GUILD_CATEGORY).sort(sortByPosition)
-						: regularChannels.filter((c) => !c.parent_id && c.id !== active.id && c.type !== ChannelType.GUILD_CATEGORY).sort(sortByPosition)
+					const oldSiblings = (originalParent
+						? getChannelsInCategory(originalParent)
+						: uncategorizedChannels
+					).filter((c) => c.id !== active.id)
 					oldSiblings.forEach((c, i) => updated.push({ ...c, position: i }))
 				}
 
@@ -363,7 +353,7 @@ export function ChannelList({
 			}
 		},
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-		[channels, regularChannels, categories, dragChannels, onReorderChannels]
+		[channels, regularChannels, categories, uncategorizedChannels, insertIndicator, onReorderChannels]
 	)
 
 	// Render a channel item - uses VoiceChannel for voice channels
@@ -411,8 +401,17 @@ export function ChannelList({
 
 	// Wrap a channel item in a sortable wrapper (when dnd is enabled)
 	const renderSortableChannelItem = (channel: StageChannel) => {
+		const showBefore = insertIndicator?.overId === channel.id && insertIndicator.position === 'before'
+		const showAfter = insertIndicator?.overId === channel.id && insertIndicator.position === 'after'
 		return (
-			<SortableChannelItem key={channel.id} id={channel.id} disabled={!dndEnabled}>
+			<SortableChannelItem
+				key={channel.id}
+				id={channel.id}
+				disabled={!dndEnabled}
+				isDragged={activeId === channel.id}
+				showInsertBefore={showBefore}
+				showInsertAfter={showAfter}
+			>
 				{renderChannelItem(channel)}
 			</SortableChannelItem>
 		)
@@ -423,14 +422,16 @@ export function ChannelList({
 			{/* Uncategorized channels - wrapped in droppable zone so channels can be dropped here */}
 			<DroppableZone id="uncategorized-drop-zone" disabled={!dndEnabled}>
 				<SortableContext items={uncategorizedIds} strategy={verticalListSortingStrategy}>
-					{effectiveUncategorized.map((channel) => renderSortableChannelItem(channel))}
+					{uncategorizedChannels.map((channel) => renderSortableChannelItem(channel))}
 				</SortableContext>
 			</DroppableZone>
 			{/* Categories with their channels */}
 			<SortableContext items={categoryIds} strategy={verticalListSortingStrategy}>
 				{categories.map((category) => {
-					const catChannels = getEffectiveChannelsInCategory(category.id)
+					const catChannels = getChannelsInCategory(category.id)
 					const isCollapsed = collapsedCategories.has(category.id)
+					const showCatBefore = insertIndicator?.overId === category.id && insertIndicator.position === 'before'
+					const showCatAfter = insertIndicator?.overId === category.id && insertIndicator.position === 'after'
 
 					return (
 						<SortableCategory
@@ -439,6 +440,9 @@ export function ChannelList({
 							category={category}
 							isCollapsed={isCollapsed}
 							disabled={!dndEnabled}
+							isDragged={activeId === category.id}
+							showInsertBefore={showCatBefore}
+							showInsertAfter={showCatAfter}
 							onToggle={() => toggleCategory(category.id)}
 							onCreateChannel={() => openCreateChannelModal(category.id, ChannelType.GUILD_TEXT)}
 						>
@@ -910,28 +914,40 @@ function ChannelListContextMenu({ position, onClose, onCreateChannel, onCreateCa
 	)
 }
 
-// Sortable wrapper for individual channel items
-function SortableChannelItem({ id, disabled, children }: { id: string; disabled: boolean; children: React.ReactNode }) {
-	const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id, disabled })
-	const style: React.CSSProperties = {
-		transform: CSS.Transform.toString(transform),
-		transition,
-		opacity: isDragging ? 0.4 : undefined
-	}
+// Insertion line indicator component
+function InsertLine() {
+	return <div className={styles.insertLine}><div className={styles.insertLineCircle} /></div>
+}
+
+// Sortable wrapper for individual channel items - no layout shift, only shows insertion line
+function SortableChannelItem({ id, disabled, isDragged, showInsertBefore, showInsertAfter, children }: {
+	id: string
+	disabled: boolean
+	isDragged: boolean
+	showInsertBefore: boolean
+	showInsertAfter: boolean
+	children: React.ReactNode
+}) {
+	const { attributes, listeners, setNodeRef } = useSortable({ id, disabled })
 
 	return (
-		<div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+		<div ref={setNodeRef} style={{ opacity: isDragged ? 0.4 : undefined }} {...attributes} {...listeners}>
+			{showInsertBefore && <InsertLine />}
 			{children}
+			{showInsertAfter && <InsertLine />}
 		</div>
 	)
 }
 
-// Sortable wrapper for category headers (the category itself is sortable among other categories)
+// Sortable wrapper for category headers - no layout shift, only shows insertion line
 function SortableCategory({
 	id,
 	category,
 	isCollapsed,
 	disabled,
+	isDragged,
+	showInsertBefore,
+	showInsertAfter,
 	onToggle,
 	onCreateChannel,
 	children
@@ -940,19 +956,18 @@ function SortableCategory({
 	category: StageChannel
 	isCollapsed: boolean
 	disabled: boolean
+	isDragged: boolean
+	showInsertBefore: boolean
+	showInsertAfter: boolean
 	onToggle: () => void
 	onCreateChannel: () => void
 	children: React.ReactNode
 }) {
-	const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id, disabled })
-	const style: React.CSSProperties = {
-		transform: CSS.Transform.toString(transform),
-		transition,
-		opacity: isDragging ? 0.4 : undefined
-	}
+	const { attributes, listeners, setNodeRef } = useSortable({ id, disabled })
 
 	return (
-		<div ref={setNodeRef} style={style} className={styles.category}>
+		<div ref={setNodeRef} style={{ opacity: isDragged ? 0.4 : undefined }} className={styles.category}>
+			{showInsertBefore && <InsertLine />}
 			<div className={styles.categoryRow} {...attributes} {...listeners}>
 				<button
 					className={styles.categoryHeader}
@@ -983,15 +998,16 @@ function SortableCategory({
 				</button>
 			</div>
 			{children}
+			{showInsertAfter && <InsertLine />}
 		</div>
 	)
 }
 
 // Droppable zone wrapper - creates a drop target for cross-container moves
 function DroppableZone({ id, disabled, children }: { id: string; disabled: boolean; children: React.ReactNode }) {
-	const { setNodeRef, isOver } = useDroppable({ id, disabled })
+	const { setNodeRef } = useDroppable({ id, disabled })
 	return (
-		<div ref={setNodeRef} style={{ minHeight: isOver ? 8 : undefined }}>
+		<div ref={setNodeRef} style={{ minHeight: 4 }}>
 			{children}
 		</div>
 	)

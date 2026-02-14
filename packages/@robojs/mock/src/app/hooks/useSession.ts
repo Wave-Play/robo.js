@@ -1,5 +1,6 @@
 import { useSession as useSessionState, useSessionDispatch, useWebSocket, type PendingMessage } from '../stores/sessionStore'
 import { CHANNEL_TYPE, buildThreadMetadata, createLocalId, normalizeChannelName, normalizeStageSessionId } from '../utils'
+import { getPluginPrefix } from '../utils/api'
 import type { ModalActionRow } from '../components/modals/Modal'
 import type { StageChannel, StageMessage, StageUser } from '../types/stage'
 
@@ -96,40 +97,43 @@ export function useSession() {
 		}
 	}
 
-	// Create a new mock channel locally for the current guild
-	const createChannel = (options: {
+	// Create a new mock channel for the current guild (persisted to server)
+	const createChannel = async (options: {
 		name: string
 		type?: number
 		parentId?: string | null
 		isPrivate?: boolean
 		topic?: string | null
-	}): StageChannel => {
+	}): Promise<StageChannel> => {
 		const guildId = state.selectedGuildId
 		if (!guildId) {
 			throw new Error('No guild selected')
 		}
 
-		const parentId = options.parentId ?? null
-		const channelId = createLocalId('channel')
 		const channelName = normalizeChannelName(options.name)
-		const siblingCount = state.channels.filter(
-			(channel) => channel.guild_id === guildId && (channel.parent_id ?? null) === parentId
-		).length
 
-		const newChannel: StageChannel = {
-			id: channelId,
-			name: channelName,
-			type: options.type ?? CHANNEL_TYPE.TEXT,
-			guild_id: guildId,
-			parent_id: parentId,
-			position: siblingCount,
-			topic: options.topic ?? null,
-			is_private: options.isPrivate
-		}
+		// Create on server via REST API so it persists in the session
+		const prefix = getPluginPrefix()
+		const response = await fetch(`${prefix}/api/v10/guilds/${guildId}/channels`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'Authorization': `Bot mock:${state.sessionId}`
+			},
+			body: JSON.stringify({
+				name: channelName,
+				type: options.type ?? CHANNEL_TYPE.TEXT,
+				parent_id: options.parentId ?? null,
+				topic: options.topic ?? null
+			})
+		})
 
+		const newChannel = await response.json() as StageChannel
+
+		// Inject locally for immediate UI update (server event will deduplicate)
 		dispatch({ type: 'INJECT_CHANNELS', payload: [newChannel] })
 		if (newChannel.type !== CHANNEL_TYPE.VOICE) {
-			dispatch({ type: 'SELECT_CHANNEL', payload: channelId })
+			dispatch({ type: 'SELECT_CHANNEL', payload: newChannel.id })
 		}
 
 		return newChannel
@@ -577,9 +581,31 @@ export function useSession() {
 		dispatch({ type: 'CLEAR_LOOP_WARNING' })
 	}
 
-	// Reorder channels (for drag-and-drop)
+	// Reorder channels (for drag-and-drop) - persists to server
 	const reorderChannels = (channels: StageChannel[]) => {
 		dispatch({ type: 'REORDER_CHANNELS', payload: channels })
+
+		// Persist to server so changes survive refresh
+		const guildId = state.selectedGuildId
+		if (guildId && state.sessionId) {
+			const prefix = getPluginPrefix()
+			fetch(`${prefix}/api/v10/guilds/${guildId}/channels`, {
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bot mock:${state.sessionId}`
+				},
+				body: JSON.stringify(
+					channels.map((c) => ({
+						id: c.id,
+						position: c.position,
+						parent_id: c.parent_id
+					}))
+				)
+			}).catch(() => {
+				// Local state is already updated; server sync is best-effort
+			})
+		}
 	}
 
 	// Join a voice channel
