@@ -7,6 +7,7 @@
 	min-height: 0;
 	height: 100%;
 	position: relative;
+	border-top: 1px solid var(--accent-overlay);
 }
 
 .resizeHandle {
@@ -98,9 +99,8 @@
 	flex: 1;
 	min-width: 0;
 	color: var(--channel-icon-default);
-	font-size: 11px;
-	font-weight: 600;
-	text-transform: uppercase;
+	font-size: 14px;
+	font-weight: 500;
 	letter-spacing: 0.02em;
 	transition: color 0.1s ease;
 }
@@ -532,4 +532,17 @@
 .contextMenuItem:hover {
 	background: var(--brand-primary);
 	color: #fff;
+}
+
+/* Drag overlay (floating preview during drag) */
+.dragOverlay {
+	background: var(--selected-overlay);
+	border-radius: var(--radius-sm);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+	padding: 6px 8px;
+	font-size: 14px;
+	font-weight: 500;
+	color: var(--interactive-hover);
+	pointer-events: none;
+	width: var(--sidebar-width);
 }

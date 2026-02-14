@@ -1,4 +1,7 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { DndContext, DragOverlay, PointerSensor, useDroppable, useSensor, useSensors, type DragEndEvent, type DragOverEvent, type DragStartEvent } from '@dnd-kit/core'
+import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import type { StageChannel, StageGuild, StageMember, StageVoiceState, StageUser } from '../../types/stage'
 import { CreateCategoryModal } from './CreateCategoryModal'
 import { CreateChannelModal } from './CreateChannelModal'
@@ -37,6 +40,7 @@ interface ChannelListProps {
 	onOpenVoicePanel?: (channelId: string) => void
 	activity?: { isOpen: boolean; channelId: string | null; name: string | null; description: string | null; iconColor: string | null }
 	currentUserSpeaking?: boolean
+	onReorderChannels?: (channels: StageChannel[]) => void
 }
 
 // Discord channel types
@@ -76,7 +80,8 @@ export function ChannelList({
 	onCreateChannel,
 	onOpenVoicePanel,
 	activity,
-	currentUserSpeaking = false
+	currentUserSpeaking = false,
+	onReorderChannels
 }: ChannelListProps) {
 	const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set())
 	const [showArchivedThreads, setShowArchivedThreads] = useState(false)
@@ -177,9 +182,12 @@ export function ChannelList({
 	const regularChannels = channels.filter((c) => !isThread(c.type))
 	const threads = channels.filter((c) => isThread(c.type))
 
+	// Sort by position field
+	const sortByPosition = (a: StageChannel, b: StageChannel) => (a.position ?? 0) - (b.position ?? 0)
+
 	// Group regular channels by category
-	const categories = regularChannels.filter((c) => c.type === ChannelType.GUILD_CATEGORY)
-	const uncategorizedChannels = regularChannels.filter((c) => c.type !== ChannelType.GUILD_CATEGORY && !c.parent_id)
+	const categories = regularChannels.filter((c) => c.type === ChannelType.GUILD_CATEGORY).sort(sortByPosition)
+	const uncategorizedChannels = regularChannels.filter((c) => c.type !== ChannelType.GUILD_CATEGORY && !c.parent_id).sort(sortByPosition)
 
 	// Group threads by parent channel
 	const getThreadsForChannel = (channelId: string, includeArchived = false) => {
@@ -205,10 +213,158 @@ export function ChannelList({
 	}
 
 	const getChannelsInCategory = (categoryId: string) => {
-		return regularChannels.filter((c) => c.parent_id === categoryId && c.type !== ChannelType.GUILD_CATEGORY)
+		return regularChannels.filter((c) => c.parent_id === categoryId && c.type !== ChannelType.GUILD_CATEGORY).sort(sortByPosition)
 	}
 
 	const isVoiceChannel = (type: number) => type === ChannelType.GUILD_VOICE || type === ChannelType.GUILD_STAGE_VOICE
+
+	// --- Drag-and-drop ---
+	const dndEnabled = !isPlaybackMode && !!onReorderChannels
+	const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
+	const [activeId, setActiveId] = useState<string | null>(null)
+
+	// During a drag, we maintain a local copy of channels with temporary parent_id changes
+	// so that items visually move between containers in real time.
+	const [dragChannels, setDragChannels] = useState<StageChannel[] | null>(null)
+
+	// Use drag-local channels when dragging, otherwise the real channels
+	const effectiveRegularChannels = dragChannels
+		? dragChannels.filter((c) => !isThread(c.type))
+		: regularChannels
+	const effectiveUncategorized = effectiveRegularChannels.filter((c) => c.type !== ChannelType.GUILD_CATEGORY && !c.parent_id).sort(sortByPosition)
+	const getEffectiveChannelsInCategory = (categoryId: string) => {
+		return effectiveRegularChannels.filter((c) => c.parent_id === categoryId && c.type !== ChannelType.GUILD_CATEGORY).sort(sortByPosition)
+	}
+
+	// Precompute sorted ID lists for SortableContext
+	const categoryIds = useMemo(() => categories.map((c) => c.id), [categories])
+	const uncategorizedIds = useMemo(() => effectiveUncategorized.map((c) => c.id), [effectiveUncategorized])
+	const categoryChildIds = useMemo(() => {
+		const map: Record<string, string[]> = {}
+		for (const cat of categories) {
+			map[cat.id] = getEffectiveChannelsInCategory(cat.id).map((c) => c.id)
+		}
+		return map
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [categories, effectiveRegularChannels])
+
+	const activeChannel = activeId ? channels.find((c) => c.id === activeId) ?? null : null
+	const isActiveCategory = activeChannel?.type === ChannelType.GUILD_CATEGORY
+
+	const handleDragStart = useCallback((event: DragStartEvent) => {
+		setActiveId(String(event.active.id))
+		// Snapshot the current regular channels for local mutation during drag
+		setDragChannels([...regularChannels])
+	}, [regularChannels])
+
+	const handleDragCancel = useCallback(() => {
+		setActiveId(null)
+		setDragChannels(null)
+	}, [])
+
+	// Determine which container (parent_id) a droppable/sortable ID belongs to
+	const getContainerId = useCallback(
+		(id: string): string | null => {
+			// The uncategorized droppable zone
+			if (id === 'uncategorized-drop-zone') return null
+			// A category header means "drop into this category"
+			const asCat = categories.find((c) => c.id === id)
+			if (asCat) return asCat.id
+			// Otherwise it's a channel - use its parent_id
+			const ch = (dragChannels ?? regularChannels).find((c) => c.id === id)
+			return ch?.parent_id ?? null
+		},
+		[categories, dragChannels, regularChannels]
+	)
+
+	const handleDragOver = useCallback(
+		(event: DragOverEvent) => {
+			const { active, over } = event
+			if (!over || !dragChannels) return
+
+			const activeChannel = dragChannels.find((c) => c.id === active.id)
+			if (!activeChannel || activeChannel.type === ChannelType.GUILD_CATEGORY) return
+
+			const activeContainer = activeChannel.parent_id ?? null
+			const overContainer = getContainerId(String(over.id))
+
+			// Only act when moving between different containers
+			if (activeContainer === overContainer) return
+
+			setDragChannels((prev) => {
+				if (!prev) return prev
+				return prev.map((c) =>
+					c.id === active.id ? { ...c, parent_id: overContainer } : c
+				)
+			})
+		},
+		[dragChannels, getContainerId]
+	)
+
+	const handleDragEnd = useCallback(
+		(event: DragEndEvent) => {
+			const { active, over } = event
+			const localChannels = dragChannels
+			setActiveId(null)
+			setDragChannels(null)
+
+			if (!over || active.id === over.id || !onReorderChannels || !localChannels) return
+
+			const activeChannel = localChannels.find((c) => c.id === active.id)
+			const overChannel = localChannels.find((c) => c.id === over.id)
+			if (!activeChannel) return
+
+			const isActiveACat = activeChannel.type === ChannelType.GUILD_CATEGORY
+
+			// Case 1: Reorder categories
+			if (isActiveACat && overChannel?.type === ChannelType.GUILD_CATEGORY) {
+				const oldIndex = categories.findIndex((c) => c.id === active.id)
+				const newIndex = categories.findIndex((c) => c.id === over.id)
+				if (oldIndex === -1 || newIndex === -1) return
+				const reordered = arrayMove(categories, oldIndex, newIndex)
+				onReorderChannels(reordered.map((c, i) => ({ ...c, position: i })))
+				return
+			}
+
+			// Case 2: Non-category channel reorder / move
+			if (!isActiveACat) {
+				// The active channel's parent_id has already been updated by handleDragOver
+				const targetParent = activeChannel.parent_id ?? null
+				const siblings = targetParent
+					? localChannels.filter((c) => c.parent_id === targetParent && c.type !== ChannelType.GUILD_CATEGORY).sort(sortByPosition)
+					: localChannels.filter((c) => c.type !== ChannelType.GUILD_CATEGORY && !c.parent_id).sort(sortByPosition)
+
+				const oldIndex = siblings.findIndex((c) => c.id === active.id)
+				// over.id could be the droppable zone or a category header
+				const isOverDropZone = String(over.id) === 'uncategorized-drop-zone'
+				const isOverACat = !!categories.find((c) => c.id === over.id)
+				const newIndex = (!isOverDropZone && !isOverACat)
+					? siblings.findIndex((c) => c.id === over.id)
+					: -1
+
+				let reordered: StageChannel[]
+				if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
+					reordered = arrayMove(siblings, oldIndex, newIndex)
+				} else {
+					reordered = siblings
+				}
+
+				// Also update the old container positions if the channel moved between containers
+				const updated: StageChannel[] = reordered.map((c, i) => ({ ...c, position: i }))
+				const originalParent = channels.find((c) => c.id === active.id)?.parent_id ?? null
+				if (originalParent !== targetParent) {
+					const oldSiblings = originalParent
+						? regularChannels.filter((c) => c.parent_id === originalParent && c.id !== active.id && c.type !== ChannelType.GUILD_CATEGORY).sort(sortByPosition)
+						: regularChannels.filter((c) => !c.parent_id && c.id !== active.id && c.type !== ChannelType.GUILD_CATEGORY).sort(sortByPosition)
+					oldSiblings.forEach((c, i) => updated.push({ ...c, position: i }))
+				}
+
+				onReorderChannels(updated)
+			}
+		},
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[channels, regularChannels, categories, dragChannels, onReorderChannels]
+	)
 
 	// Render a channel item - uses VoiceChannel for voice channels
 	const renderChannelItem = (channel: StageChannel) => {
@@ -253,6 +409,94 @@ export function ChannelList({
 		)
 	}
 
+	// Wrap a channel item in a sortable wrapper (when dnd is enabled)
+	const renderSortableChannelItem = (channel: StageChannel) => {
+		return (
+			<SortableChannelItem key={channel.id} id={channel.id} disabled={!dndEnabled}>
+				{renderChannelItem(channel)}
+			</SortableChannelItem>
+		)
+	}
+
+	const channelListContent = (
+		<>
+			{/* Uncategorized channels - wrapped in droppable zone so channels can be dropped here */}
+			<DroppableZone id="uncategorized-drop-zone" disabled={!dndEnabled}>
+				<SortableContext items={uncategorizedIds} strategy={verticalListSortingStrategy}>
+					{effectiveUncategorized.map((channel) => renderSortableChannelItem(channel))}
+				</SortableContext>
+			</DroppableZone>
+			{/* Categories with their channels */}
+			<SortableContext items={categoryIds} strategy={verticalListSortingStrategy}>
+				{categories.map((category) => {
+					const catChannels = getEffectiveChannelsInCategory(category.id)
+					const isCollapsed = collapsedCategories.has(category.id)
+
+					return (
+						<SortableCategory
+							key={category.id}
+							id={category.id}
+							category={category}
+							isCollapsed={isCollapsed}
+							disabled={!dndEnabled}
+							onToggle={() => toggleCategory(category.id)}
+							onCreateChannel={() => openCreateChannelModal(category.id, ChannelType.GUILD_TEXT)}
+						>
+							<SortableContext items={categoryChildIds[category.id] ?? []} strategy={verticalListSortingStrategy}>
+								{!isCollapsed ? (
+									<div className={styles.categoryChannels}>
+										{catChannels.map((channel) => renderSortableChannelItem(channel))}
+									</div>
+								) : (
+									catChannels.some((c) => c.id === selectedId) && (
+										<div className={styles.categoryChannels}>
+											{catChannels.filter((c) => c.id === selectedId).map((channel) => renderSortableChannelItem(channel))}
+										</div>
+									)
+								)}
+							</SortableContext>
+						</SortableCategory>
+					)
+				})}
+			</SortableContext>
+			{/* Archived threads section */}
+			{archivedThreads.length > 0 && (
+				<div className={styles.category}>
+					<button className={styles.categoryHeader} onClick={() => setShowArchivedThreads(!showArchivedThreads)}>
+						<span className={styles.categoryName}>Archived Threads</span>
+						<svg
+							className={`${styles.collapseIcon} ${!showArchivedThreads ? styles.collapsed : ''}`}
+							width="12"
+							height="12"
+							viewBox="0 0 12 12"
+						>
+							<path fill="currentColor" d="M2 4l4 4 4-4H2z" />
+						</svg>
+					</button>
+
+					{showArchivedThreads && (
+						<div className={styles.categoryChannels}>
+							{archivedThreads.map((thread) => (
+								<ThreadItem
+									key={thread.id}
+									thread={thread}
+									isSelected={selectedId === thread.id}
+									onClick={() => onSelect(thread.id)}
+								/>
+							))}
+						</div>
+					)}
+				</div>
+			)}
+			{/* Empty state */}
+			{channels.length === 0 && guild && (
+				<div className={styles.empty}>
+					<p>No channels</p>
+				</div>
+			)}
+		</>
+	)
+
 	return (
 		<div ref={containerRef} className={styles.container}>
 			<div className={styles.resizeHandle} onMouseDown={handleResizeStart} />
@@ -277,93 +521,27 @@ export function ChannelList({
 
 			{/* Channel list */}
 			<nav className={styles.channels} aria-label="Channels" onContextMenu={handleChannelListContextMenu}>
-				{/* Uncategorized channels */}
-				{uncategorizedChannels.map((channel) => renderChannelItem(channel))}
-				{/* Categories with their channels */}
-				{categories.map((category) => {
-					const categoryChannels = getChannelsInCategory(category.id)
-					const isCollapsed = collapsedCategories.has(category.id)
-
-					return (
-						<div key={category.id} className={styles.category}>
-							<div className={styles.categoryRow}>
-								<button
-									className={styles.categoryHeader}
-									onClick={() => toggleCategory(category.id)}
-									aria-expanded={!isCollapsed}
-									aria-label={`${category.name} category, ${isCollapsed ? 'collapsed' : 'expanded'}`}
-								>
-									<svg
-										className={`${styles.collapseIcon} ${isCollapsed ? styles.collapsed : ''}`}
-										width="12"
-										height="12"
-										viewBox="0 0 12 12"
-										aria-hidden="true"
-									>
-										<path fill="currentColor" d="M2 4l4 4 4-4H2z" />
-									</svg>
-									<span className={styles.categoryName}>{category.name.toUpperCase()}</span>
-								</button>
-								<button
-									className={styles.categoryAddButton}
-									type="button"
-									aria-label={`Create channel in ${category.name}`}
-									onClick={() => openCreateChannelModal(category.id, ChannelType.GUILD_TEXT)}
-								>
-									<svg width="16" height="16" viewBox="0 0 18 18" fill="currentColor">
-										<polygon points="15 10 10 10 10 15 8 15 8 10 3 10 3 8 8 8 8 3 10 3 10 8 15 8" />
-									</svg>
-								</button>
-							</div>
-
-							{!isCollapsed ? (
-								<div className={styles.categoryChannels}>
-									{categoryChannels.map((channel) => renderChannelItem(channel))}
+				{dndEnabled ? (
+					<DndContext sensors={sensors} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd} onDragCancel={handleDragCancel}>
+						{channelListContent}
+						<DragOverlay dropAnimation={null}>
+							{activeChannel && (
+								<div className={styles.dragOverlay}>
+									{isActiveCategory ? (
+										<span className={styles.categoryName}>{activeChannel.name}</span>
+									) : (
+										<ChannelItem
+											channel={activeChannel}
+											isSelected={false}
+											onClick={() => {}}
+										/>
+									)}
 								</div>
-							) : (
-								categoryChannels.some((c) => c.id === selectedId) && (
-									<div className={styles.categoryChannels}>
-										{categoryChannels.filter((c) => c.id === selectedId).map((channel) => renderChannelItem(channel))}
-									</div>
-								)
 							)}
-						</div>
-					)
-				})}
-				{/* Archived threads section */}
-				{archivedThreads.length > 0 && (
-					<div className={styles.category}>
-						<button className={styles.categoryHeader} onClick={() => setShowArchivedThreads(!showArchivedThreads)}>
-							<svg
-								className={`${styles.collapseIcon} ${!showArchivedThreads ? styles.collapsed : ''}`}
-								width="12"
-								height="12"
-								viewBox="0 0 12 12"
-							>
-								<path fill="currentColor" d="M2 4l4 4 4-4H2z" />
-							</svg>
-							<span className={styles.categoryName}>ARCHIVED THREADS</span>
-						</button>
-
-						{showArchivedThreads && (
-							<div className={styles.categoryChannels}>
-								{archivedThreads.map((thread) => (
-									<ThreadItem
-										key={thread.id}
-										thread={thread}
-										isSelected={selectedId === thread.id}
-										onClick={() => onSelect(thread.id)}
-									/>
-								))}
-							</div>
-						)}
-					</div>
-				)}
-				{/* Empty state */}
-				{channels.length === 0 && guild && (
-					<div className={styles.empty}>
-						<p>No channels</p>
-					</div>
+						</DragOverlay>
+					</DndContext>
+				) : (
+					channelListContent
 				)}
 			</nav>
 			{contextMenu && (
@@ -729,5 +907,92 @@ function ChannelListContextMenu({ position, onClose, onCreateChannel, onCreateCa
 				role="menuitem"
 			/>
 		</DropdownContainer>
+	)
+}
+
+// Sortable wrapper for individual channel items
+function SortableChannelItem({ id, disabled, children }: { id: string; disabled: boolean; children: React.ReactNode }) {
+	const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id, disabled })
+	const style: React.CSSProperties = {
+		transform: CSS.Transform.toString(transform),
+		transition,
+		opacity: isDragging ? 0.4 : undefined
+	}
+
+	return (
+		<div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+			{children}
+		</div>
+	)
+}
+
+// Sortable wrapper for category headers (the category itself is sortable among other categories)
+function SortableCategory({
+	id,
+	category,
+	isCollapsed,
+	disabled,
+	onToggle,
+	onCreateChannel,
+	children
+}: {
+	id: string
+	category: StageChannel
+	isCollapsed: boolean
+	disabled: boolean
+	onToggle: () => void
+	onCreateChannel: () => void
+	children: React.ReactNode
+}) {
+	const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id, disabled })
+	const style: React.CSSProperties = {
+		transform: CSS.Transform.toString(transform),
+		transition,
+		opacity: isDragging ? 0.4 : undefined
+	}
+
+	return (
+		<div ref={setNodeRef} style={style} className={styles.category}>
+			<div className={styles.categoryRow} {...attributes} {...listeners}>
+				<button
+					className={styles.categoryHeader}
+					onClick={onToggle}
+					aria-expanded={!isCollapsed}
+					aria-label={`${category.name} category, ${isCollapsed ? 'collapsed' : 'expanded'}`}
+				>
+					<span className={styles.categoryName}>{category.name}</span>
+					<svg
+						className={`${styles.collapseIcon} ${isCollapsed ? styles.collapsed : ''}`}
+						width="12"
+						height="12"
+						viewBox="0 0 12 12"
+						aria-hidden="true"
+					>
+						<path fill="currentColor" d="M2 4l4 4 4-4H2z" />
+					</svg>
+				</button>
+				<button
+					className={styles.categoryAddButton}
+					type="button"
+					aria-label={`Create channel in ${category.name}`}
+					onClick={onCreateChannel}
+				>
+					<svg width="16" height="16" viewBox="0 0 18 18" fill="currentColor">
+						<polygon points="15 10 10 10 10 15 8 15 8 10 3 10 3 8 8 8 8 3 10 3 10 8 15 8" />
+					</svg>
+				</button>
+			</div>
+			{children}
+		</div>
+	)
+}
+
+// Droppable zone wrapper - creates a drop target for cross-container moves
+function DroppableZone({ id, disabled, children }: { id: string; disabled: boolean; children: React.ReactNode }) {
+	const { setNodeRef, isOver } = useDroppable({ id, disabled })
+	return (
+		<div ref={setNodeRef} style={{ minHeight: isOver ? 8 : undefined }}>
+			{children}
+		</div>
 	)
 }

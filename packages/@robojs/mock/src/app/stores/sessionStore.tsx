@@ -188,6 +188,7 @@ type SessionAction =
 	| { type: 'HANDLE_COMMANDS_UPDATED'; payload: { commands: StageApplicationCommand[] } }
 	| { type: 'SET_ACTIVITY'; payload: { id: string; name: string; description: string; iconColor: string; bannerGradient: string; channelId: string; guildId: string } }
 	| { type: 'CLEAR_ACTIVITY' }
+	| { type: 'REORDER_CHANNELS'; payload: StageChannel[] }
 
 // Initial state
 const initialState: SessionState = {
@@ -724,6 +725,14 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 				commands: action.payload.commands,
 				eventCount: state.eventCount + 1
 			}
+
+		case 'REORDER_CHANNELS': {
+			const updatedMap = new Map(action.payload.map((c) => [c.id, c]))
+			return {
+				...state,
+				channels: state.channels.map((c) => updatedMap.get(c.id) ?? c)
+			}
+		}
 
 		default:
 			return state

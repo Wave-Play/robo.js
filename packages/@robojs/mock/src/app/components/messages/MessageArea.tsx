@@ -16,6 +16,7 @@ import styles from './MessageArea.module.css'
 
 interface MessageAreaProps {
 	channelId: string | null
+	chatOnly?: boolean
 	onOpenThreads?: () => void
 	onOpenThread?: (threadId: string) => void
 }
@@ -319,7 +320,7 @@ function VirtualizedMessageList({
 	)
 }
 
-export function MessageArea({ channelId, onOpenThreads, onOpenThread }: MessageAreaProps) {
+export function MessageArea({ channelId, chatOnly, onOpenThreads, onOpenThread }: MessageAreaProps) {
 	const {
 		guildChannels,
 		guildVoiceStates,
@@ -504,7 +505,7 @@ export function MessageArea({ channelId, onOpenThreads, onOpenThread }: MessageA
 		selectedChannel.type === 11 ||
 		selectedChannel.type === 12
 	const isForumChannel = selectedChannel.type === 15 || selectedChannel.type === 16
-	const isVoiceChannel = selectedChannel.type === 2 || selectedChannel.type === 13
+	const isVoiceChannel = !chatOnly && (selectedChannel.type === 2 || selectedChannel.type === 13)
 	const voiceParticipants = isVoiceChannel
 		? guildVoiceStates.filter((state) => state.channel_id === selectedChannel.id)
 		: []
@@ -567,134 +568,6 @@ export function MessageArea({ channelId, onOpenThreads, onOpenThread }: MessageA
 						onMessageUser={handleMessageUser}
 					/>
 				)}
-			</div>
-		)
-	}
-
-	if (isVoiceChannel && voicePanelMode === 'split') {
-		return (
-			<div className={`${styles.container} ${styles.voiceLayout}`}>
-				<div className={styles.voiceStage}>
-					<div className={styles.voiceGlow} />
-						<div className={styles.voiceStageContent}>
-							<div className={styles.voiceStageTitle}>{selectedChannel.name}</div>
-							<div className={styles.voiceStageSubtitle}>
-								{isUserInVoice
-									? 'You are connected'
-									: voiceParticipants.length > 0
-										? `${voiceParticipants.length} in voice`
-										: 'No one is currently in voice'}
-						</div>
-						<button
-							type="button"
-							className={`${styles.voiceCta} ${isUserInVoice ? styles.voiceCtaLeave : ''}`}
-							onClick={async () => {
-								if (isUserInVoice) {
-									await leaveVoice(selectedChannel.guild_id)
-								} else {
-									await joinVoice(selectedChannel.id, selectedChannel.guild_id)
-								}
-							}}
-						>
-							{isUserInVoice ? 'Leave Voice' : 'Join Voice'}
-						</button>
-
-						{voiceParticipants.length > 0 && (
-							<div className={styles.voiceParticipants}>
-								{voiceParticipants.map((vs) => {
-									const user = voiceUsers.find((u) => u.id === vs.user_id)
-									const name = user?.username ?? 'Guest'
-									const avatar = user?.avatar ? getAvatarUrl(user.id, user.avatar) : null
-
-									return (
-										<div key={vs.user_id} className={styles.voiceChip}>
-											<div className={styles.voiceAvatar}>
-												{avatar ? <img src={avatar} alt="" /> : <span>{name.charAt(0)}</span>}
-											</div>
-											<div className={styles.voiceChipText}>{name}</div>
-										</div>
-									)
-								})}
-							</div>
-						)}
-					</div>
-				</div>
-
-				<div className={styles.voiceChatPane}>
-					<div className={styles.voiceChatHeader}>
-						<span className={styles.voiceChatTitle}>{selectedChannel.name}</span>
-						<div className={styles.voiceChatActions}>
-							<div className={styles.voiceMenu} ref={voiceMenuRef}>
-								<button
-									type="button"
-									className={styles.voiceActionButton}
-									aria-label="More options"
-									onClick={() => setShowVoiceMenu((prev) => !prev)}
-								>
-									<MoreIcon />
-								</button>
-								{showVoiceMenu && (
-									<div className={styles.voiceMenuDropdown}>
-										<button
-											type="button"
-											className={styles.voiceMenuItem}
-											onClick={() => {
-												setVoicePanelMode('full')
-												setShowVoiceMenu(false)
-											}}
-										>
-											Open full view
-										</button>
-									</div>
-								)}
-							</div>
-							<button
-								type="button"
-								className={styles.voiceActionButton}
-								aria-label="Close voice chat"
-								onClick={() => closeVoicePanel()}
-							>
-								<CloseIcon />
-							</button>
-						</div>
-					</div>
-					<div className={styles.voiceMessages}>
-						<VirtualizedMessageList
-							key={`${channelId}-${isPlaybackMode}`}
-							messages={visibleMessages}
-							isPlaybackMode={isPlaybackMode}
-							channelName={selectedChannel.name}
-							channelTopic={selectedChannel.topic ?? undefined}
-							onButtonClick={async (messageId, customId) => { await clickButton(messageId, customId) }}
-							onSelectOption={async (messageId, customId, values) => { await selectOption(messageId, customId, values) }}
-							onAddReaction={async (messageId, emoji) => { await addReaction(messageId, emoji) }}
-							onRemoveReaction={async (messageId, emoji) => { await removeReaction(messageId, emoji) }}
-							onDismissEphemeral={handleDismissEphemeral}
-							onOpenThreads={onOpenThreads}
-							onOpenThread={onOpenThread}
-							onMessageContextMenu={handleMessageContextMenu}
-							onUserContextMenu={handleUserContextMenu}
-							footer={messageFooter}
-						/>
-					</div>
-					<div className={styles.voiceInput}>
-						<MessageInput channelId={selectedChannel.id} channelName={selectedChannel.name} />
-					</div>
-					{contextMenu && (
-						<ContextMenu
-							type={contextMenu.type}
-							targetId={contextMenu.targetId}
-							targetData={contextMenu.targetData}
-							position={contextMenu.position}
-							commands={commands}
-							onClose={hideContextMenu}
-							onCommandClick={handleContextCommandClick}
-							onReply={handleReply}
-							onPinMessage={handlePinMessage}
-							onMessageUser={handleMessageUser}
-						/>
-					)}
-				</div>
 			</div>
 		)
 	}

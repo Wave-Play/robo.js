@@ -43,10 +43,13 @@ export function AppShell() {
 		leaveVoice,
 		updateVoiceState,
 		openVoicePanel,
+		setVoicePanelMode,
+		closeVoicePanel,
 		createChannel,
 		voicePanelMode,
 		activity,
-		closeActivity
+		closeActivity,
+		reorderChannels
 	} = useSession()
 
 	// Home view toggle (Friends UI) via the top-left Home button in the server list.
@@ -252,6 +255,14 @@ export function AppShell() {
 		})
 	}, [selectChannel])
 
+	const handleOpenChat = useCallback(() => {
+		setVoicePanelMode('split')
+	}, [setVoicePanelMode])
+
+	const handleCloseChat = useCallback(() => {
+		closeVoicePanel()
+	}, [closeVoicePanel])
+
 	const guildName = () => {
 		const filterGuilds = guilds.filter((guild) => guild.id === selectedGuildId)
 		if (filterGuilds.length > 0) {
@@ -261,6 +272,8 @@ export function AppShell() {
 	}
 
 	const topTitle = showHome ? homeTitle : guildName()
+
+	const isVoiceView = (selectedChannel?.type === 2 || selectedChannel?.type === 13) && voicePanelMode !== 'full'
 
 	const shellClassName = `${styles.shell}${mobileSidebarOpen ? ` ${styles.sidebarOpen}` : ''}`
 
@@ -345,8 +358,9 @@ export function AppShell() {
 										onOpenVoicePanel={openVoicePanel}
 										activity={activity}
 										currentUserSpeaking={currentUserSpeaking}
+										onReorderChannels={reorderChannels}
 									/>
-									<div className={styles.main}>
+									<div className={`${styles.main}${isVoiceView ? ` ${styles.voiceView}` : ''}${voicePanelMode === 'split' ? ` ${styles.voiceSplit}` : ''}`}>
 										<Header
 											channel={selectedChannel}
 											guild={selectedGuild}
@@ -367,6 +381,8 @@ export function AppShell() {
 											onCreateThread={handleOpenThreadCreate}
 											onThreadSelect={handleThreadSelect}
 											activityOpen={activity.isOpen && !activityMinimized}
+											isVoiceView={isVoiceView}
+											onOpenChat={voicePanelMode !== 'split' ? handleOpenChat : undefined}
 										/>
 
 										<div className={styles.content}>
@@ -409,6 +425,29 @@ export function AppShell() {
 												)}
 										</div>
 									</div>
+									{voicePanelMode === 'split' && selectedChannel && (
+										<div className={styles.voiceChatPanel}>
+											<div className={styles.voiceChatPanelHeader}>
+												<span className={styles.voiceChatPanelTitle}>{selectedChannel.name}</span>
+												<button
+													type="button"
+													className={styles.voiceChatPanelClose}
+													aria-label="Close chat"
+													onClick={handleCloseChat}
+												>
+													<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+														<path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+													</svg>
+												</button>
+											</div>
+											<MessageArea
+												channelId={selectedChannelId}
+												chatOnly
+												onOpenThreads={handleOpenThreads}
+												onOpenThread={handleThreadSelect}
+											/>
+										</div>
+									)}
 									{activity.isOpen && !activityMinimized && selectedChannel && selectedGuild && (
 										<ActivityInfoBar
 											activityName={activity.name || ''}

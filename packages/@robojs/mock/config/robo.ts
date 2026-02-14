@@ -7,11 +7,15 @@ export default <Config>{
 			'@robojs/server',
 			{
 				cors: true,
-				prefix: 'mock'
+				prefix: 'mock',
+				viteBuild: {
+					configFile: 'config/vite.stage.mjs'
+				}
 			}
 		]
 	],
 	watcher: {
-		ignore: ['src/app', 'src/components', 'src/hooks']
+		ignore: ['src/app', 'src/components', 'src/hooks'],
+		commands: ['vite build --config config/vite.stage.mjs --watch']
 	}
 }

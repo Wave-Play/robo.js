@@ -66,6 +66,7 @@
 	display: flex;
 	width: 100%;
 	border: 1px solid var(--accent-overlay);
+	border-top: none;
 	border-radius: var(--radius-lg) 0 0 0; /* top-left only */
 	overflow: visible;
 	position: relative;
@@ -81,6 +82,18 @@
 	position: relative;
 }
 
+.main.voiceView {
+	background:
+		radial-gradient(ellipse 80% 70% at 50% 55%, rgba(60, 65, 165, 0.5), transparent),
+		radial-gradient(ellipse 60% 50% at 50% 100%, rgba(70, 80, 200, 0.35), transparent),
+		linear-gradient(to bottom, #0c0d1a, #111230 40%, #1a1d50 70%, #202460);
+	overflow: hidden;
+}
+
+.main.voiceSplit {
+	border-radius: 0 8px 8px 0;
+}
+
 .content {
 	justify-content: center;
 	flex: 1;
@@ -88,6 +101,54 @@
 	overflow: hidden;
 	min-height: 0; /* Allow proper overflow scrolling */
 	position: relative;
+}
+
+.voiceChatPanel {
+	display: flex;
+	flex-direction: column;
+	width: 400px;
+	min-width: 320px;
+	flex-shrink: 0;
+	background: var(--main-chat-background);
+	border-radius: 8px 0 0 8px;
+	margin-left: 8px;
+	overflow: hidden;
+}
+
+.voiceChatPanelHeader {
+	height: 48px;
+	min-height: 48px;
+	padding: 0 12px 0 16px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	border-bottom: 1px solid var(--accent-overlay);
+}
+
+.voiceChatPanelTitle {
+	font-size: 15px;
+	font-weight: 700;
+	color: var(--header-text-primary);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.voiceChatPanelClose {
+	width: 28px;
+	height: 28px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 6px;
+	color: var(--interactive-default);
+	transition: color 0.15s ease, background 0.15s ease;
+	flex-shrink: 0;
+}
+
+.voiceChatPanelClose:hover {
+	color: var(--interactive-hover);
+	background: var(--hover-overlay);
 }
 
 .bottomBar {

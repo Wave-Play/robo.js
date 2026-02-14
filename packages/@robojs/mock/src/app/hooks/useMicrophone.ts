@@ -27,9 +27,16 @@ export function useMicrophone(enabled: boolean) {
 				const { MicVAD } = await import('@ricky0123/vad-web')
 				if (cancelled) return
 
+				// Resolve the stage directory as an absolute URL.
+				// onnxruntime-web loads its WASM backend via dynamic import(),
+				// which resolves relative paths from the *importing module* (the
+				// JS chunk in assets/), not the page URL. An absolute URL ensures
+				// the runtime finds the files in the stage root.
+				const stageBaseUrl = new URL('./', window.location.href).href
+
 				const myvad = await MicVAD.new({
-					baseAssetPath: './',
-					onnxWASMBasePath: './',
+					baseAssetPath: stageBaseUrl,
+					onnxWASMBasePath: stageBaseUrl,
 					startOnLoad: false,
 					ortConfig: (ort) => {
 						ort.env.wasm.numThreads = 1

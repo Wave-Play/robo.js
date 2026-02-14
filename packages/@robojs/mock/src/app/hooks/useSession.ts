@@ -577,6 +577,11 @@ export function useSession() {
 		dispatch({ type: 'CLEAR_LOOP_WARNING' })
 	}
 
+	// Reorder channels (for drag-and-drop)
+	const reorderChannels = (channels: StageChannel[]) => {
+		dispatch({ type: 'REORDER_CHANNELS', payload: channels })
+	}
+
 	// Join a voice channel
 	const joinVoice = async (channelId: string, guildId?: string, userId?: string) => {
 		const targetGuildId = guildId || state.selectedGuildId
@@ -707,6 +712,7 @@ export function useSession() {
 		clearLoopWarning,
 		joinVoice,
 		leaveVoice,
-		updateVoiceState
+		updateVoiceState,
+		reorderChannels
 	}
 }
