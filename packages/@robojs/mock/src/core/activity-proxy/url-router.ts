@@ -46,7 +46,7 @@ export function isRedirectResult(result: ResolveRouteResult): result is Redirect
  * Routing rules (order of evaluation):
  * 1. /.proxy/* -> strip prefix, proxy to launch_url + launch_path + remaining
  * 2. URL mapping routes -> longest prefix match, proxy to https://target/remaining
- * 3. Root path "/" -> redirect to /.proxy/
+ * 3. Any other path (including "/") -> proxy to launch_url + launch_path + requestPath
  * 4. No match -> null (404)
  */
 export function resolveRoute(
@@ -74,17 +74,16 @@ export function resolveRoute(
 		}
 	}
 
-	// Rule 3: Root path "/" -> redirect to /.proxy/
-	if (requestPath === '/') {
-		return {
-			redirect: true,
-			location: PROXY_PREFIX + '/',
-			statusCode: 302
-		}
+	// Rule 3: Any other path proxies to the Activity upstream (including "/").
+	// This matches modern Discord behavior: once the iframe is loaded on the proxy origin,
+	// absolute paths like "/src/app/App.tsx" (Vite ESM imports) must still work without
+	// needing a "/.proxy" prefix.
+	return {
+		targetUrl: buildProxyTargetUrl(config.launch_url, config.launch_path, requestPath, queryString),
+		isProxyRoute: true,
+		// Rewrite HTML so shim injections still work on full page reloads.
+		rewriteHtml: true
 	}
-
-	// Rule 4: No match
-	return null
 }
 
 /**
@@ -141,7 +140,7 @@ function buildProxyTargetUrl(
 	queryString: string
 ): URL {
 	const base = new URL(launchUrl)
-	const fullPath = joinPaths(base.pathname, joinPaths(launchPath, remainingPath))
+	const fullPath = joinPaths(base.pathname, applyLaunchPath(launchPath, remainingPath))
 	base.pathname = fullPath
 	if (queryString) {
 		base.search = queryString.startsWith('?') ? queryString : `?${queryString}`
@@ -178,4 +177,32 @@ function joinPaths(base: string, path: string): string {
 	const baseClean = base.endsWith('/') ? base.slice(0, -1) : base
 	const pathClean = path.startsWith('/') ? path : '/' + path
 	return baseClean + pathClean
+}
+
+/**
+ * Apply launch_path to a request path, but avoid double-prefixing.
+ *
+ * - launch_path="/" -> returns requestPath
+ * - launch_path="/foo" + "/bar" -> "/foo/bar"
+ * - launch_path="/foo" + "/foo/bar" -> "/foo/bar" (already applied)
+ */
+function applyLaunchPath(launchPath: string, requestPath: string): string {
+	const lp = normalizePath(launchPath)
+	const rp = normalizePath(requestPath)
+
+	if (lp === '/') return rp
+
+	if (rp === lp || rp.startsWith(lp + '/')) {
+		return rp
+	}
+
+	return joinPaths(lp, rp)
+}
+
+function normalizePath(path: string): string {
+	if (!path) return '/'
+	const ensured = path.startsWith('/') ? path : '/' + path
+	// Keep "/" as-is; otherwise strip trailing slash.
+	if (ensured.length > 1 && ensured.endsWith('/')) return ensured.slice(0, -1)
+	return ensured
 }

@@ -118,12 +118,14 @@ export class ProxyConfigStore {
 		if (firstDot === -1) return null
 
 		const sessionPart = remaining.slice(0, firstDot)
+		const sessionPartLower = sessionPart.toLowerCase()
 
 		// Match against stored sessions by comparing sanitized forms
 		for (const [sessionId, config] of this.configs) {
 			const sanitized = sanitizeSessionId(sessionId)
-			mockLogger.debug(`[proxy resolve] Comparing: stored="${sessionId}" sanitized="${sanitized}" vs hostname="${sessionPart}" match=${sanitized === sessionPart}`)
-			if (sanitized === sessionPart) {
+			const sanitizedLower = sanitized.toLowerCase()
+			mockLogger.debug(`[proxy resolve] Comparing: stored="${sessionId}" sanitized="${sanitized}" vs hostname="${sessionPart}" match=${sanitizedLower === sessionPartLower}`)
+			if (sanitizedLower === sessionPartLower) {
 				return { sessionId, config }
 			}
 		}

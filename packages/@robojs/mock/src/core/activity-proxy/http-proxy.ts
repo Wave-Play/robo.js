@@ -99,27 +99,7 @@ export async function proxyHttpRequest(options: ProxyRequestOptions): Promise<vo
 	const isHttps = targetUrl.protocol === 'https:'
 	const requestModule = isHttps ? https : http
 
-	const upstreamHeaders: Record<string, string | string[]> = {}
-
-	// Copy end-to-end headers from incoming request (skip hop-by-hop)
-	if (req.rawHeaders) {
-		for (let i = 0; i < req.rawHeaders.length; i += 2) {
-			const key = req.rawHeaders[i]
-			const value = req.rawHeaders[i + 1]
-			if (!HOP_BY_HOP_HEADERS.has(key.toLowerCase())) {
-				// Do not forward browser cookies to mapping targets; mapping cookies are managed server-side
-				// via CookieJar keyed by upstream domain. This prevents cross-target cookie leakage.
-				if (!isProxyRoute && key.toLowerCase() === 'cookie') continue
-				upstreamHeaders[key] = value
-			}
-		}
-	}
-
-	// Preserve original Host for /.proxy routes so dev servers (e.g. Vite HMR)
-	// see the proxied origin. For URL-mapping routes, target host is required.
-	if (!isProxyRoute) {
-		upstreamHeaders['Host'] = targetUrl.host
-	}
+	const upstreamHeaders = buildUpstreamHeaders(req, targetUrl, isProxyRoute)
 
 	// Forward cookies from cookie jar
 	const jarCookies = cookieJar.getCookieHeader(targetUrl)
@@ -276,9 +256,57 @@ export async function proxyHttpRequest(options: ProxyRequestOptions): Promise<vo
 			resolve()
 		})
 
-		// Pipe incoming request body to upstream
-		req.pipe(upstreamReq)
+	// Pipe incoming request body to upstream
+	req.pipe(upstreamReq)
 	})
+}
+
+// ============================================================================
+// Header Builder (exported for unit tests)
+// ============================================================================
+
+export function buildUpstreamHeaders(
+	req: IncomingMessage,
+	targetUrl: URL,
+	isProxyRoute: boolean
+): Record<string, string | string[]> {
+	const upstreamHeaders: Record<string, string | string[]> = {}
+
+	// Copy end-to-end headers from incoming request (skip hop-by-hop)
+	if (req.rawHeaders) {
+		for (let i = 0; i < req.rawHeaders.length; i += 2) {
+			const key = req.rawHeaders[i]
+			const value = req.rawHeaders[i + 1]
+			if (!HOP_BY_HOP_HEADERS.has(key.toLowerCase())) {
+				// We'll set Host explicitly based on the upstream target. Forwarding the proxy-origin
+				// Host (e.g. "*.discordsays.localhost") can cause dev servers to return 404/blocked
+				// responses due to host allowlists / virtual hosting.
+				if (key.toLowerCase() === 'host') continue
+				// Do not forward browser cookies to mapping targets; mapping cookies are managed server-side
+				// via CookieJar keyed by upstream domain. This prevents cross-target cookie leakage.
+				if (!isProxyRoute && key.toLowerCase() === 'cookie') continue
+				upstreamHeaders[key] = value
+			}
+		}
+	}
+
+	// Always set Host to the upstream target host.
+	// The Activity proxy origin is represented via X-Forwarded-* instead.
+	upstreamHeaders['Host'] = targetUrl.host
+
+	if (isProxyRoute) {
+		const originalHost = req.headers['host']
+		if (typeof originalHost === 'string' && originalHost.length > 0) {
+			upstreamHeaders['X-Forwarded-Host'] = originalHost
+		}
+		upstreamHeaders['X-Forwarded-Proto'] = 'http'
+		if (typeof originalHost === 'string' && originalHost.includes(':')) {
+			const port = originalHost.split(':')[1]
+			if (port) upstreamHeaders['X-Forwarded-Port'] = port
+		}
+	}
+
+	return upstreamHeaders
 }
 
 // ============================================================================
