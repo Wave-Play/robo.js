@@ -490,6 +490,8 @@ export interface MockRoboHandle {
 	guildId: string
 	/** The Discord.js client (from @robojs/discordjs) - null when hmr: true */
 	client: unknown
+	/** The port the Robo server is running on */
+	serverPort: number
 	/** Stop the bot and clean up */
 	stop: () => Promise<void>
 	/** Child process (only when hmr: true) */
@@ -542,6 +544,15 @@ export interface StartMockRoboOptions {
 	 * - `waitForHmrReload()` and `waitForFullRestart()` will be available
 	 */
 	hmr?: boolean
+	/**
+	 * Skip waiting for a Discord Gateway bot connection.
+	 * Use this for Discord Activities or other projects with `disableBot: true`
+	 * that don't connect to the Gateway.
+	 *
+	 * When enabled, waits for the Robo HTTP server to be ready instead of
+	 * waiting for a Gateway connection.
+	 */
+	activity?: boolean
 }
 
 /**
@@ -695,9 +706,17 @@ async function startHmrMode(options: StartMockRoboOptions): Promise<MockRoboHand
 		}
 	})
 
-	// Wait for bot to connect
+	// Wait for readiness
 	const timeout = options.timeout ?? 60000
-	await waitForBotConnection(sessionId, timeout)
+	// The Robo server port (where API routes are served) is separate from the mock server port
+	const serverPort = parseInt(process.env.PORT ?? '3000')
+	if (options.activity) {
+		// Activity mode: wait for the HTTP server to be ready (no Gateway connection)
+		await waitForServerReady(serverPort, timeout)
+	} else {
+		// Bot mode: wait for Gateway connection
+		await waitForBotConnection(sessionId, timeout)
+	}
 
 	// HMR-specific methods - use counters to detect changes regardless of timing
 	// Get current counts so tests can capture position BEFORE making file changes
@@ -772,6 +791,7 @@ async function startHmrMode(options: StartMockRoboOptions): Promise<MockRoboHand
 		channels: session.channels,
 		guildId: session.guildId,
 		client: null, // Not available in HMR mode (different process)
+		serverPort,
 		process: devProcess,
 		getHmrCount,
 		getRestartCount,
@@ -959,8 +979,17 @@ async function startDirectMode(options: StartMockRoboOptions = {}): Promise<Mock
 	const { Robo } = await import('robo.js')
 	await Robo.start()
 
-	// Wait for the bot to connect to the gateway
-	await waitForBotConnection(sessionId, timeout)
+	// The Robo server port (where API routes are served) is separate from the mock server port
+	const serverPort = parseInt(process.env.PORT ?? '3000')
+
+	// Wait for readiness
+	if (options.activity) {
+		// Activity mode: wait for the HTTP server to be ready (no Gateway connection)
+		await waitForServerReady(serverPort, timeout)
+	} else {
+		// Bot mode: wait for Gateway connection
+		await waitForBotConnection(sessionId, timeout)
+	}
 
 	// Get the Discord.js client (dynamic import to avoid build-time dependency)
 	let client: unknown = null
@@ -981,6 +1010,7 @@ async function startDirectMode(options: StartMockRoboOptions = {}): Promise<Mock
 		channels: session.channels,
 		guildId: session.guildId,
 		client,
+		serverPort,
 		stop: async () => {
 			// IMPORTANT: Destroy client FIRST to stop log generation
 			if (client && typeof (client as { destroy?: () => void }).destroy === 'function') {
@@ -1032,6 +1062,33 @@ async function startDirectMode(options: StartMockRoboOptions = {}): Promise<Mock
 			}
 		}
 	}
+}
+
+/**
+ * Wait for the Robo HTTP server to be ready (for activity/server-only projects).
+ * Polls the server port until it responds to HTTP requests.
+ */
+async function waitForServerReady(
+	serverPort: number,
+	timeout: number
+): Promise<void> {
+	const startTime = Date.now()
+
+	while (Date.now() - startTime < timeout) {
+		try {
+			const response = await fetch(`http://localhost:${serverPort}/`)
+			// Any response (even 404) means the server is up
+			if (response.status > 0) {
+				return
+			}
+		} catch {
+			// Server not ready yet
+		}
+
+		await sleep(500)
+	}
+
+	throw new Error(`Server not ready on port ${serverPort} after ${timeout}ms`)
 }
 
 /**

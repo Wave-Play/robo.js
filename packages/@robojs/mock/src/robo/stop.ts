@@ -19,6 +19,14 @@ export default async () => {
 	// Close the Voice Gateway WebSocket server
 	await stopVoiceGateway()
 
+	// Stop Activity Proxy server
+	try {
+		const { stopActivityProxyServer } = await import('../core/activity-proxy/server.js')
+		await stopActivityProxyServer()
+	} catch {
+		// Proxy may not have been started
+	}
+
 	// Close the Gateway WebSocket server
 	closeGatewayServer()
 

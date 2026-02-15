@@ -95,7 +95,7 @@ export interface StageDataResult {
 	clearReplyingTo: () => void
 	clearFilteredEvents: () => void
 	clearLoopWarning: () => void
-	launchActivity: (activity: { id: string; name: string; description: string; iconColor: string; bannerGradient: string }) => void
+	launchActivity: (activity: { id: string; name: string; description: string; iconColor: string; bannerGradient: string; launchUrl?: string; applicationId?: string }) => void
 	closeActivity: () => void
 
 	// === Connection Actions (live only, no-op in playback) ===
@@ -331,19 +331,87 @@ export function useStageData(options?: UseStageDataOptions): StageDataResult {
 	}, [sessionDispatch])
 
 	// === Activity Actions (work in both modes) ===
-	const launchActivity = useCallback((activity: { id: string; name: string; description: string; iconColor: string; bannerGradient: string }) => {
+	const launchActivity = useCallback(async (activity: { id: string; name: string; description: string; iconColor: string; bannerGradient: string; launchUrl?: string; applicationId?: string }) => {
 		const channelId = selection.selectedChannelId
 		const guildId = selection.selectedGuildId
 		if (!channelId || !guildId) return
+
+		// Set local UI state immediately (optimistic)
 		sessionDispatch({
 			type: 'SET_ACTIVITY',
 			payload: { ...activity, channelId, guildId }
 		})
-	}, [sessionDispatch, selection.selectedChannelId, selection.selectedGuildId])
 
-	const closeActivity = useCallback(() => {
-		sessionDispatch({ type: 'CLEAR_ACTIVITY' })
-	}, [sessionDispatch])
+		// If launchUrl and applicationId are provided, send Stage WS command
+		// to launch activity on backend (real iframe mode)
+		if (activity.launchUrl && activity.applicationId) {
+			// Load root file mappings via project detection API
+			let rootMappings: Array<{ prefix: string; target: string }> = []
+			let rootCspMode: 'discord_strict' | 'relaxed' = 'relaxed'
+
+			try {
+				const pathname = window.location.pathname
+				const stageIndex = pathname.indexOf('/stage')
+				const prefix = stageIndex !== -1 ? pathname.slice(0, stageIndex) : ''
+				const res = await fetch(`${prefix}/api/control/project`)
+				const detection = await res.json()
+
+				if (detection.detectedMappingsFile?.valid) {
+					const matchingActivity = detection.detectedMappingsFile.activities?.find(
+						(a: { application_id?: string; id?: string }) =>
+							a.application_id === activity.applicationId || a.id === activity.id
+					)
+					if (matchingActivity) {
+						rootMappings = matchingActivity.url_mappings ?? []
+						rootCspMode = matchingActivity.proxy?.csp_mode ?? 'relaxed'
+					}
+				}
+			} catch {
+				// Best-effort: continue without root mappings
+			}
+
+			// Load DevTools overrides from localStorage
+			let devtoolsMappings: Array<{ prefix: string; target: string }> = []
+			try {
+				const saved = localStorage.getItem('mock_devtools_url_mappings')
+				if (saved) devtoolsMappings = JSON.parse(saved)
+			} catch { /* ignore */ }
+
+			const savedCsp = localStorage.getItem('mock_devtools_csp_mode')
+			const devtoolsCspMode = (savedCsp === 'discord_strict' || savedCsp === 'relaxed') ? savedCsp : null
+
+			// Merge: DevTools overrides take precedence (by prefix)
+			const mergedMappings = mergeMappings(rootMappings, devtoolsMappings)
+			const mergedCspMode = devtoolsCspMode ?? rootCspMode
+
+			try {
+				await sendCommand('launch_activity', {
+					launch_url: activity.launchUrl,
+					application_id: activity.applicationId,
+					guild_id: guildId,
+					channel_id: channelId,
+					url_mappings: mergedMappings.length > 0 ? mergedMappings : undefined,
+					csp_mode: mergedCspMode,
+					launch_path: '/'
+				})
+				// The backend responds with activity.launched event which triggers
+				// HANDLE_ACTIVITY_LAUNCHED to set instanceId/frameId/queryParams
+			} catch {
+				// Revert on failure
+				sessionDispatch({ type: 'CLEAR_ACTIVITY' })
+			}
+		}
+	}, [sessionDispatch, sendCommand, selection.selectedChannelId, selection.selectedGuildId])
+
+	const closeActivity = useCallback(async () => {
+		try {
+			await sendCommand('close_activity', {})
+			// Backend responds with activity.closed event which triggers HANDLE_ACTIVITY_CLOSED
+		} catch {
+			// Force-clear locally even if server fails
+			sessionDispatch({ type: 'CLEAR_ACTIVITY' })
+		}
+	}, [sendCommand, sessionDispatch])
 
 	// === Connection Actions (no-op in playback) ===
 	const setSessionId = useCallback((sessionId: string) => {
@@ -725,4 +793,30 @@ export function useStageData(options?: UseStageDataOptions): StageDataResult {
 		// Playback Controls
 		playback
 	}
+}
+
+// ============================================================================
+// Helpers
+// ============================================================================
+
+function mergeMappings(
+	rootMappings: Array<{ prefix: string; target: string }>,
+	overrides: Array<{ prefix: string; target: string }>
+): Array<{ prefix: string; target: string }> {
+	const map = new Map<string, string>()
+	for (const m of rootMappings) {
+		map.set(normalizePrefix(m.prefix), m.target)
+	}
+	for (const m of overrides) {
+		if (m.prefix && m.target) {
+			map.set(normalizePrefix(m.prefix), m.target)
+		}
+	}
+	return Array.from(map.entries()).map(([prefix, target]) => ({ prefix, target }))
+}
+
+function normalizePrefix(prefix: string): string {
+	let p = prefix.startsWith('/') ? prefix : '/' + prefix
+	if (p.length > 1 && p.endsWith('/')) p = p.slice(0, -1)
+	return p
 }

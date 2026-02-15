@@ -39,8 +39,28 @@ import type {
 	StageControlCommandKind,
 	StagePlaybackControlPayload,
 	StageNavigationControlPayload,
-	StageControlResponseData
+	StageControlResponseData,
+	StageLaunchActivityData,
+	StageActivityRpcData,
+	StageActivityLaunchedData,
+	StageActivityClosedData,
+	StageActivityRpcOutboundData,
+	StageActivitySetUrlMappingsData,
+	StageActivitySetCspModeData,
+	StageActivityAuthorizeRequestData,
+	StageActivityAuthorizeResultData,
+	StageActivitySetAuthSettingsData,
+	StageActivitySetPlatformStateData,
+	StageActivitySetIapStateData,
+	StageActivitySetRelationshipsData,
+	StageActivitySetQuestsData,
+	StageActivityPurchaseResultData,
+	StageActivityPurchaseRequestData,
+	StageActivitySetOriginModeData,
+	StageActivitySetSdkShimData
 } from '../types/stage.js'
+import { getActivityHostManager } from '../activity/host/activity-host-manager.js'
+import { onVoiceStateChanged, onPlatformStateChanged, onRelationshipStateChanged, onQuestStateChanged, scheduleParticipantsUpdate, cancelCoalesceTimers } from '../activity/host/signal-engine.js'
 import type { MockApplicationCommand, MockApplicationCommandOption, MockUser } from '../types/index.js'
 import type { Session } from '../types/index.js'
 import { safeStringify } from '../utils/json.js'
@@ -251,7 +271,7 @@ export class StageServer {
 	/**
 	 * Send state sync payload to a newly connected client
 	 */
-	private sendStateSync(ws: WebSocket, connState: StageConnectionState, session: Session): void {
+	private async sendStateSync(ws: WebSocket, connState: StageConnectionState, session: Session): Promise<void> {
 		const state = session.state
 
 		// Get last 1,000 logs for history (balance between completeness and payload size)
@@ -275,6 +295,74 @@ export class StageServer {
 			voice_states: this.getStageVoiceStates(state),
 			currentUser: this.toStageUser(state.currentUser),
 			logs: recentLogs.length > 0 ? recentLogs : undefined
+		}
+
+		// Include Activity state if active
+		try {
+			const hostManager = getActivityHostManager()
+			const activityRecord = hostManager.getRecord(session.id)
+			if (activityRecord) {
+				const actQueryParams: Record<string, string> = {
+					client_id: activityRecord.application_id,
+					instance_id: activityRecord.instance_id,
+					frame_id: activityRecord.frame_id,
+					platform: activityRecord.platform,
+					locale: activityRecord.locale
+				}
+				if (activityRecord.guild_id) actQueryParams.guild_id = activityRecord.guild_id
+				if (activityRecord.channel_id) actQueryParams.channel_id = activityRecord.channel_id
+
+				payload.activity = {
+					instance_id: activityRecord.instance_id,
+					frame_id: activityRecord.frame_id,
+					application_id: activityRecord.application_id,
+					guild_id: activityRecord.guild_id,
+					channel_id: activityRecord.channel_id,
+					launch_url: activityRecord.launch_url,
+					query_params: actQueryParams,
+					ready_emitted: activityRecord.ready_emitted,
+					auth_state: activityRecord.auth.state,
+					auth_scopes: activityRecord.auth.scopes,
+					devtools_auth_mode: activityRecord.devtools_auth.mode
+				}
+
+				// Include proxy origin/iframe_url if proxy is running
+				try {
+					const { getActivityProxyServer } = await import('./activity-proxy/server.js')
+					const { getProxyConfigStore } = await import('./activity-proxy/config-store.js')
+					const proxyServer = getActivityProxyServer()
+					if (proxyServer.isStarted()) {
+						const proxyOrigin = proxyServer.getProxyOrigin(session.id, activityRecord.application_id)
+						const queryStr = Object.entries(actQueryParams)
+							.map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+							.join('&')
+						const proxyConfig = getProxyConfigStore().get(session.id)
+						const launchPath = proxyConfig?.launch_path ?? '/'
+						const iframeUrl = `${proxyOrigin}/.proxy${launchPath}?${queryStr}`
+						payload.activity.proxy_origin = proxyOrigin
+						payload.activity.iframe_url = iframeUrl
+					}
+				} catch {
+					// Proxy may not be initialized
+				}
+			}
+		} catch {
+			// Activity host manager may not be initialized -- skip
+		}
+
+		// Include proxy server status
+		try {
+			const { getActivityProxyServer } = await import('./activity-proxy/server.js')
+			const proxyServer = getActivityProxyServer()
+			if (proxyServer.isStarted()) {
+				payload.proxy = {
+					running: true,
+					port: proxyServer.getPort(),
+					origin_template: `http://{session}.{app_id}.discordsays.localhost:${proxyServer.getPort()}`
+				}
+			}
+		} catch {
+			// Proxy may not be initialized
 		}
 
 		this.pushEvent(ws, connState, {
@@ -959,6 +1047,11 @@ export class StageServer {
 						}
 					})
 					this.sendCommandResponse(ws, connState, command.id, true, { user_id: user.id })
+
+					// Emit Activity signals for voice join
+					scheduleParticipantsUpdate(connState.sessionId, (messages) => {
+						this.emitActivityRpcOutbound(connState.sessionId, messages)
+					})
 					break
 				}
 
@@ -988,11 +1081,16 @@ export class StageServer {
 						}
 					})
 					this.sendCommandResponse(ws, connState, command.id, true)
+
+					// Emit Activity signals for voice leave
+					scheduleParticipantsUpdate(connState.sessionId, (messages) => {
+						this.emitActivityRpcOutbound(connState.sessionId, messages)
+					})
 					break
 				}
 
 				case 'update_voice_state': {
-					const data = command.data as StageUpdateVoiceStateData
+					const data = command.data as StageUpdateVoiceStateData & { speaking?: boolean }
 					const user = data.user?.id ? session.state.getUser(data.user.id) : session.state.currentUser
 					if (!user) {
 						this.sendCommandResponse(ws, connState, command.id, false, undefined, 'User not found')
@@ -1005,13 +1103,21 @@ export class StageServer {
 						this.sendCommandResponse(ws, connState, command.id, false, undefined, 'User not in voice channel')
 						break
 					}
-					// Update voice state
+
+					// Capture previous speaking state for delta detection
+					const prevSpeaking = (existingState as { speaking?: boolean }).speaking
+
+					// Update voice state (include speaking if provided)
 					const updatedState = {
 						...existingState,
 						self_mute: data.self_mute ?? existingState.self_mute,
 						self_deaf: data.self_deaf ?? existingState.self_deaf
 					}
+					if (data.speaking !== undefined) {
+						;(updatedState as { speaking?: boolean }).speaking = data.speaking
+					}
 					session.state.voiceStates.set(voiceStateKey, updatedState)
+
 					const stageMember = this.toStageMemberForGuild(session.state, data.guild_id, user.id)
 					// Broadcast update
 					this.broadcastToSession(connState.sessionId, {
@@ -1024,9 +1130,33 @@ export class StageServer {
 							self_deaf: updatedState.self_deaf ?? false,
 							mute: updatedState.mute ?? false,
 							deaf: updatedState.deaf ?? false,
+							speaking: (updatedState as { speaking?: boolean }).speaking,
 							member: stageMember ?? undefined
 						}
 					})
+
+					// Emit Activity signals for speaking changes
+					const activityVoiceEvents = onVoiceStateChanged(
+						connState.sessionId,
+						user.id,
+						updatedState.channel_id,
+						prevSpeaking,
+						data.speaking ?? prevSpeaking
+					)
+					const speakingEvents = activityVoiceEvents.filter(e => {
+						const evtObj = e as { evt?: string }
+						return evtObj.evt === 'SPEAKING_START' || evtObj.evt === 'SPEAKING_STOP'
+					})
+					if (speakingEvents.length > 0) {
+						this.emitActivityRpcOutbound(connState.sessionId, speakingEvents)
+					}
+					// Coalesce participants update for mute/deaf changes
+					if (data.self_mute !== undefined || data.self_deaf !== undefined) {
+						scheduleParticipantsUpdate(connState.sessionId, (messages) => {
+							this.emitActivityRpcOutbound(connState.sessionId, messages)
+						})
+					}
+
 					this.sendCommandResponse(ws, connState, command.id, true)
 					break
 				}
@@ -1069,6 +1199,534 @@ export class StageServer {
 						this.sendCommandResponse(ws, connState, command.id, true, { user: this.toStageUser(switchedUser) })
 					} else {
 						this.sendCommandResponse(ws, connState, command.id, false, undefined, 'User not found')
+					}
+					break
+				}
+
+				case 'launch_activity': {
+					const launchData = command.data as StageLaunchActivityData
+					const hostManager = getActivityHostManager()
+
+					const record = hostManager.launchActivity({
+						session_id: connState.sessionId,
+						application_id: launchData.application_id,
+						guild_id: launchData.guild_id ?? null,
+						channel_id: launchData.channel_id ?? null,
+						launch_url: launchData.launch_url,
+						locale: launchData.locale,
+						platform: launchData.platform
+					})
+
+					// Build query params for iframe URL (spec section 1.1)
+					const launchQueryParams: Record<string, string> = {
+						client_id: record.application_id,
+						instance_id: record.instance_id,
+						frame_id: record.frame_id,
+						platform: record.platform,
+						locale: record.locale
+					}
+					if (record.guild_id) launchQueryParams.guild_id = record.guild_id
+					if (record.channel_id) launchQueryParams.channel_id = record.channel_id
+
+					// Create proxy config for this session
+					let proxyOrigin: string | undefined
+					let iframeUrl: string | undefined
+					try {
+						const { getProxyConfigStore } = await import('./activity-proxy/config-store.js')
+						const { getActivityProxyServer } = await import('./activity-proxy/server.js')
+
+						const proxyServer = getActivityProxyServer()
+						if (proxyServer.isStarted()) {
+							const launchPath = launchData.launch_path ?? '/'
+							const urlMappings = (launchData.url_mappings ?? []).map((m) => ({
+								prefix: m.prefix,
+								target: m.target
+							}))
+
+							getProxyConfigStore().set(connState.sessionId, {
+								launch_url: launchData.launch_url,
+								launch_path: launchPath,
+								url_mappings: urlMappings,
+								csp_mode: launchData.csp_mode ?? 'relaxed',
+								application_id: launchData.application_id
+							})
+
+							proxyOrigin = proxyServer.getProxyOrigin(connState.sessionId, launchData.application_id)
+							const queryStr = Object.entries(launchQueryParams)
+								.map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+								.join('&')
+							iframeUrl = `${proxyOrigin}/.proxy${launchPath}?${queryStr}`
+
+							mockLogger.debug(`Proxy config created for session ${connState.sessionId}: ${proxyOrigin}`)
+						}
+					} catch {
+						// Proxy may not be initialized
+					}
+
+					// Record activity launch
+					const launchSession = sessionManager.get(connState.sessionId)
+					if (launchSession) {
+						launchSession.recorder.record('activity_launch', {
+							instance_id: record.instance_id,
+							frame_id: record.frame_id,
+							application_id: record.application_id,
+							guild_id: record.guild_id,
+							channel_id: record.channel_id,
+							user_id: record.user_id,
+							launch_url: record.launch_url,
+							locale: record.locale,
+							platform: record.platform
+						})
+					}
+
+					// Broadcast launched event to all Stage clients
+					const launchedData: StageActivityLaunchedData = {
+						instance_id: record.instance_id,
+						frame_id: record.frame_id,
+						application_id: record.application_id,
+						guild_id: record.guild_id,
+						channel_id: record.channel_id,
+						user_id: record.user_id,
+						launch_url: record.launch_url,
+						query_params: launchQueryParams
+					}
+					if (proxyOrigin) launchedData.proxy_origin = proxyOrigin
+					if (iframeUrl) launchedData.iframe_url = iframeUrl
+
+					this.broadcastToSession(connState.sessionId, {
+						type: 'activity.launched',
+						data: launchedData
+					})
+
+					this.sendCommandResponse(ws, connState, command.id, true, {
+						instance_id: record.instance_id,
+						frame_id: record.frame_id,
+						query_params: launchQueryParams,
+						proxy_origin: proxyOrigin,
+						iframe_url: iframeUrl
+					})
+					break
+				}
+
+				case 'close_activity': {
+					// Cancel any pending coalesced signal updates
+					cancelCoalesceTimers(connState.sessionId)
+
+					const hostManager = getActivityHostManager()
+					const activityRecord = hostManager.getRecord(connState.sessionId)
+					const closedInstanceId = activityRecord?.instance_id
+
+					const closed = hostManager.closeActivity(connState.sessionId)
+
+					// Clean up proxy config
+					try {
+						const { getProxyConfigStore } = await import('./activity-proxy/config-store.js')
+						getProxyConfigStore().delete(connState.sessionId)
+					} catch {
+						// Proxy may not be initialized
+					}
+
+					if (closed && closedInstanceId) {
+						// Record activity close
+						const closeSession = sessionManager.get(connState.sessionId)
+						if (closeSession) {
+							closeSession.recorder.record('activity_close', {
+								instance_id: closedInstanceId,
+								reason: 'user_closed'
+							})
+						}
+
+						this.broadcastToSession(connState.sessionId, {
+							type: 'activity.closed',
+							data: { instance_id: closedInstanceId } satisfies StageActivityClosedData
+						})
+					}
+
+					this.sendCommandResponse(
+						ws,
+						connState,
+						command.id,
+						closed,
+						undefined,
+						closed ? undefined : 'No active Activity to close'
+					)
+					break
+				}
+
+				case 'activity_rpc': {
+					const rpcData = command.data as StageActivityRpcData
+					const hostManager = getActivityHostManager()
+
+					// Resolve session via routing (frame_id -> instance_id -> session_id fallback)
+					const resolvedRpcSessionId = hostManager.resolveSessionId({
+						frame_id: rpcData.frame_id,
+						instance_id: rpcData.instance_id,
+						session_id: connState.sessionId
+					})
+
+					if (!resolvedRpcSessionId) {
+						this.sendCommandResponse(
+							ws,
+							connState,
+							command.id,
+							false,
+							undefined,
+							'Cannot route RPC: no active Activity'
+						)
+						break
+					}
+
+					// Record inbound RPC
+					const rpcSession = sessionManager.get(resolvedRpcSessionId)
+					const rpcActivityRecord = hostManager.getRecord(resolvedRpcSessionId)
+					if (rpcSession && rpcActivityRecord) {
+						rpcSession.recorder.record('activity_rpc_inbound', {
+							instance_id: rpcActivityRecord.instance_id,
+							frame_id: rpcData.frame_id,
+							message: rpcData.message
+						})
+					}
+
+					// Handle inbound RPC
+					const rpcResult = hostManager.handleInbound(resolvedRpcSessionId, rpcData.message)
+
+					// Record outbound RPC
+					if (rpcSession && rpcActivityRecord && rpcResult.outbound.length > 0) {
+						rpcSession.recorder.record('activity_rpc_outbound', {
+							instance_id: rpcActivityRecord.instance_id,
+							messages: rpcResult.outbound
+						})
+					}
+
+					// Check if AUTHORIZE is pending consent (manual mode)
+					if (rpcResult._pending_authorize) {
+						const actRecord = hostManager.getRecord(resolvedRpcSessionId)
+						if (actRecord?.pending_authorize) {
+							// Emit consent UI event to Stage UI
+							this.broadcastToSession(connState.sessionId, {
+								type: 'activity.ui.authorize_request',
+								data: {
+									nonce: actRecord.pending_authorize.nonce,
+									instance_id: actRecord.instance_id,
+									client_id: actRecord.pending_authorize.client_id,
+									scopes: actRecord.pending_authorize.scopes,
+									state: actRecord.pending_authorize.state,
+									response_type: actRecord.pending_authorize.response_type,
+									prompt: actRecord.pending_authorize.prompt
+								} satisfies StageActivityAuthorizeRequestData
+							})
+						}
+					}
+
+					// Check if START_PURCHASE is pending purchase modal
+					if (rpcResult._pending_purchase) {
+						const actRecord = hostManager.getRecord(resolvedRpcSessionId)
+						if (actRecord?.pending_purchase) {
+							// Emit purchase UI event to Stage UI
+							this.broadcastToSession(connState.sessionId, {
+								type: 'activity.ui.purchase_request',
+								data: {
+									nonce: actRecord.pending_purchase.nonce,
+									instance_id: actRecord.instance_id,
+									sku_id: actRecord.pending_purchase.sku_id,
+									sku_name: actRecord.pending_purchase.sku_name,
+									sku_price: actRecord.pending_purchase.sku_price
+								} satisfies StageActivityPurchaseRequestData
+							})
+						}
+					}
+
+					// Send outbound messages back as command response (may be empty for pending authorize/purchase)
+					this.sendCommandResponse(ws, connState, command.id, true, {
+						outbound: rpcResult.outbound
+					})
+					break
+				}
+
+				case 'activity_set_url_mappings': {
+					const mappingsData = command.data as StageActivitySetUrlMappingsData
+					try {
+						const { getProxyConfigStore } = await import('./activity-proxy/config-store.js')
+						const updated = getProxyConfigStore().updateMappings(
+							connState.sessionId,
+							mappingsData.url_mappings.map((m) => ({ prefix: m.prefix, target: m.target }))
+						)
+						this.sendCommandResponse(ws, connState, command.id, updated, undefined, updated ? undefined : 'No proxy config for session')
+					} catch {
+						this.sendCommandResponse(ws, connState, command.id, false, undefined, 'Proxy not available')
+					}
+					break
+				}
+
+				case 'activity_set_csp_mode': {
+					const cspData = command.data as StageActivitySetCspModeData
+					try {
+						const { getProxyConfigStore } = await import('./activity-proxy/config-store.js')
+						const updated = getProxyConfigStore().updateCspMode(connState.sessionId, cspData.csp_mode)
+						this.sendCommandResponse(ws, connState, command.id, updated, undefined, updated ? undefined : 'No proxy config for session')
+					} catch {
+						this.sendCommandResponse(ws, connState, command.id, false, undefined, 'Proxy not available')
+					}
+					break
+				}
+
+				case 'activity_authorize_result': {
+					const resultData = command.data as StageActivityAuthorizeResultData
+					const hostManager = getActivityHostManager()
+
+					const outbound = hostManager.resolveAuthorize(
+						connState.sessionId,
+						resultData.nonce,
+						resultData.approved,
+						resultData.approved_scopes
+					)
+
+					if (outbound && outbound.length > 0) {
+						// Forward the resolved response to the Activity via Stage UI
+						this.emitActivityRpcOutbound(connState.sessionId, outbound)
+					}
+
+					this.sendCommandResponse(ws, connState, command.id, true)
+					break
+				}
+
+				case 'activity_set_auth_settings': {
+					const settingsData = command.data as StageActivitySetAuthSettingsData
+					const hostManager = getActivityHostManager()
+					const actRecord = hostManager.getRecord(connState.sessionId)
+
+					if (actRecord) {
+						actRecord.devtools_auth.mode = settingsData.mode
+						if (settingsData.default_scopes !== undefined) {
+							actRecord.devtools_auth.default_scopes = settingsData.default_scopes
+						}
+						this.sendCommandResponse(ws, connState, command.id, true, {
+							mode: actRecord.devtools_auth.mode,
+							default_scopes: actRecord.devtools_auth.default_scopes
+						})
+					} else {
+						this.sendCommandResponse(ws, connState, command.id, false, undefined, 'No active Activity')
+					}
+					break
+				}
+
+				case 'activity_reset_auth': {
+					const hostManager = getActivityHostManager()
+					const actRecord = hostManager.getRecord(connState.sessionId)
+
+					if (actRecord) {
+						actRecord.auth = { state: 'UNAUTHENTICATED' }
+						actRecord.pending_authorize = null
+						this.sendCommandResponse(ws, connState, command.id, true)
+					} else {
+						this.sendCommandResponse(ws, connState, command.id, false, undefined, 'No active Activity')
+					}
+					break
+				}
+
+				case 'activity_set_platform_state': {
+					const platformData = command.data as StageActivitySetPlatformStateData
+					const hostManager = getActivityHostManager()
+					const actRecord = hostManager.getRecord(connState.sessionId)
+
+					if (!actRecord) {
+						this.sendCommandResponse(ws, connState, command.id, false, undefined, 'No active Activity')
+						break
+					}
+
+					const outbound: object[] = []
+
+					// Update layout_mode
+					if (platformData.layout_mode !== undefined && platformData.layout_mode !== actRecord.platform_state.layout_mode) {
+						actRecord.platform_state.layout_mode = platformData.layout_mode
+						const events = onPlatformStateChanged(connState.sessionId, 'layout_mode', platformData.layout_mode)
+						outbound.push(...events)
+					}
+
+					// Update orientation
+					if (platformData.screen_orientation !== undefined || platformData.orientation !== undefined) {
+						const newScreenOrientation = platformData.screen_orientation ?? actRecord.platform_state.screen_orientation
+						const newOrientation = platformData.orientation ?? actRecord.platform_state.orientation
+						if (newScreenOrientation !== actRecord.platform_state.screen_orientation ||
+							newOrientation !== actRecord.platform_state.orientation) {
+							actRecord.platform_state.screen_orientation = newScreenOrientation
+							actRecord.platform_state.orientation = newOrientation
+							const events = onPlatformStateChanged(connState.sessionId, 'orientation', {
+								screen_orientation: newScreenOrientation,
+								orientation: newOrientation
+							})
+							outbound.push(...events)
+						}
+					}
+
+					// Update thermal_state
+					if (platformData.thermal_state !== undefined && platformData.thermal_state !== actRecord.platform_state.thermal_state) {
+						actRecord.platform_state.thermal_state = platformData.thermal_state
+						const events = onPlatformStateChanged(connState.sessionId, 'thermal_state', platformData.thermal_state)
+						outbound.push(...events)
+					}
+
+					// Forward events to Activity iframe
+					if (outbound.length > 0) {
+						this.emitActivityRpcOutbound(connState.sessionId, outbound)
+					}
+
+					this.sendCommandResponse(ws, connState, command.id, true, {
+						platform_state: actRecord.platform_state
+					})
+					break
+				}
+
+				case 'activity_set_iap_state': {
+					const iapData = command.data as StageActivitySetIapStateData
+					const hostManager = getActivityHostManager()
+					const actRecord = hostManager.getRecord(connState.sessionId)
+
+					if (!actRecord) {
+						this.sendCommandResponse(ws, connState, command.id, false, undefined, 'No active Activity')
+						break
+					}
+
+					// Update IAP state (data-at-rest, no events emitted)
+					actRecord.iap_state = {
+						skus: iapData.skus,
+						entitlements: iapData.entitlements
+					}
+
+					this.sendCommandResponse(ws, connState, command.id, true, {
+						skus_count: iapData.skus.length,
+						entitlements_count: iapData.entitlements.length
+					})
+					break
+				}
+
+				case 'activity_set_relationships': {
+					const relData = command.data as StageActivitySetRelationshipsData
+					const hostManager = getActivityHostManager()
+					const actRecord = hostManager.getRecord(connState.sessionId)
+
+					if (!actRecord) {
+						this.sendCommandResponse(ws, connState, command.id, false, undefined, 'No active Activity')
+						break
+					}
+
+					// Save previous relationships for delta computation
+					const previousRelationships = actRecord.relationship_state.relationships
+
+					// Update relationship state
+					actRecord.relationship_state = {
+						relationships: relData.relationships
+					}
+
+					// Compute delta: changed or new relationships
+					const prevMap = new Map(previousRelationships.map((r) => [r.id, r]))
+					const changedRelationships = relData.relationships.filter((newRel) => {
+						const prev = prevMap.get(newRel.id)
+						if (!prev) return true // new relationship
+						// Check if type or user data changed
+						return prev.type !== newRel.type ||
+							prev.user.id !== newRel.user.id ||
+							prev.user.username !== newRel.user.username
+					})
+
+					// Emit RELATIONSHIP_UPDATE events for changed entries
+					if (changedRelationships.length > 0) {
+						const outbound = onRelationshipStateChanged(connState.sessionId, changedRelationships)
+						if (outbound.length > 0) {
+							this.emitActivityRpcOutbound(connState.sessionId, outbound)
+						}
+					}
+
+					this.sendCommandResponse(ws, connState, command.id, true, {
+						relationships_count: relData.relationships.length,
+						changed_count: changedRelationships.length
+					})
+					break
+				}
+
+				case 'activity_set_quests': {
+					const questData = command.data as StageActivitySetQuestsData
+					const hostManager = getActivityHostManager()
+					const actRecord = hostManager.getRecord(connState.sessionId)
+
+					if (!actRecord) {
+						this.sendCommandResponse(ws, connState, command.id, false, undefined, 'No active Activity')
+						break
+					}
+
+					// Save previous quests for delta computation
+					const previousQuests = actRecord.quest_state.quests
+
+					// Update quest state
+					actRecord.quest_state = {
+						quests: questData.quests
+					}
+
+					// Compute delta on enrollment_status changes
+					const prevQuestMap = new Map(previousQuests.map((q) => [q.id, q]))
+					const outbound: object[] = []
+					for (const newQuest of questData.quests) {
+						const prev = prevQuestMap.get(newQuest.id)
+						const prevStatus = prev?.enrollment_status
+						const newStatus = newQuest.enrollment_status
+
+						// Emit if enrollment_status changed
+						if (newStatus && (!prevStatus ||
+							prevStatus.progress !== newStatus.progress ||
+							prevStatus.completed_at !== newStatus.completed_at ||
+							prevStatus.timer_started_at !== newStatus.timer_started_at)) {
+							const events = onQuestStateChanged(connState.sessionId, newQuest.id, newStatus)
+							outbound.push(...events)
+						}
+					}
+
+					if (outbound.length > 0) {
+						this.emitActivityRpcOutbound(connState.sessionId, outbound)
+					}
+
+					this.sendCommandResponse(ws, connState, command.id, true, {
+						quests_count: questData.quests.length
+					})
+					break
+				}
+
+				case 'activity_purchase_result': {
+					const purchaseData = command.data as StageActivityPurchaseResultData
+					const hostManager = getActivityHostManager()
+
+					const outbound = hostManager.resolvePurchase(
+						connState.sessionId,
+						purchaseData.nonce,
+						purchaseData.approved
+					)
+
+					if (outbound && outbound.length > 0) {
+						this.emitActivityRpcOutbound(connState.sessionId, outbound)
+					}
+
+					this.sendCommandResponse(ws, connState, command.id, true)
+					break
+				}
+
+				case 'activity_set_origin_mode': {
+					const modeData = command.data as StageActivitySetOriginModeData
+					// Origin mode is a frontend-only setting (controls bridge behavior).
+					// We acknowledge it and include it in state_sync for reconnect persistence.
+					this.sendCommandResponse(ws, connState, command.id, true, {
+						mode: modeData.mode
+					})
+					break
+				}
+
+				case 'activity_set_sdk_shim': {
+					const shimData = command.data as StageActivitySetSdkShimData
+					try {
+						const { getProxyConfigStore } = await import('./activity-proxy/config-store.js')
+						const updated = getProxyConfigStore().updateSdkShim(connState.sessionId, shimData.enabled)
+						this.sendCommandResponse(ws, connState, command.id, updated, undefined,
+							updated ? undefined : 'No proxy config for session')
+					} catch {
+						this.sendCommandResponse(ws, connState, command.id, false, undefined, 'Proxy not available')
 					}
 					break
 				}
@@ -1345,6 +2003,34 @@ export class StageServer {
 				toastType,
 				actor
 			}
+		})
+	}
+
+	/**
+	 * Emit async Activity RPC outbound messages to Stage UI clients.
+	 * Called when the backend host has events to push to the Activity iframe
+	 * (e.g., subscription events triggered by state changes).
+	 *
+	 * @param sessionId - Session ID
+	 * @param messages - Outbound RPC messages to forward to the Activity iframe
+	 */
+	emitActivityRpcOutbound(sessionId: string, messages: unknown[]): void {
+		// Record async outbound RPC messages
+		const asyncSession = sessionManager.get(sessionId)
+		if (asyncSession) {
+			const hostManager = getActivityHostManager()
+			const asyncRecord = hostManager.getRecord(sessionId)
+			if (asyncRecord) {
+				asyncSession.recorder.record('activity_rpc_outbound', {
+					instance_id: asyncRecord.instance_id,
+					messages
+				})
+			}
+		}
+
+		this.broadcastToSession(sessionId, {
+			type: 'activity.rpc.outbound',
+			data: { messages } satisfies StageActivityRpcOutboundData
 		})
 	}
 

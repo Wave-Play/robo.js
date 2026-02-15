@@ -13,5 +13,6 @@ export { executeDispatchStep } from './dispatch.js'
 export { executeWaitStep } from './wait.js'
 export { executeAssertStep } from './assert.js'
 export { executeInteractStep } from './interact.js'
+export { executeActivityStep } from './activity.js'
 
 export type { StepExecutionContext, StepExecutorResult } from './dispatch.js'

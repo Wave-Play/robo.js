@@ -6,12 +6,13 @@ import type {
 	ScenarioWaitStep,
 	ScenarioAssertStep,
 	ScenarioInteractStep,
+	ScenarioActivityStep,
 	ActionType,
 	SnapshotStoreConfig
 } from '../../types/index.js'
 import type { Session } from '../session.js'
 import type { IScenarioManager } from './index.js'
-import { executeDispatchStep, executeWaitStep, executeAssertStep, executeInteractStep } from './step-executors/index.js'
+import { executeDispatchStep, executeWaitStep, executeAssertStep, executeInteractStep, executeActivityStep } from './step-executors/index.js'
 import type { StepExecutionContext } from './step-executors/index.js'
 import type { StageEventType, StageStateRequestResult } from '../../types/stage.js'
 import { getStageServer } from '../../core/stage.js'
@@ -588,6 +589,8 @@ export class ScenarioRunner {
 				return executeAssertStep(this.session, step as ScenarioAssertStep, context)
 			case 'interact':
 				return executeInteractStep(this.session, step as ScenarioInteractStep, context)
+			case 'activity':
+				return executeActivityStep(this.session, step as ScenarioActivityStep, context)
 			default:
 				return {
 					success: false,

@@ -151,6 +151,20 @@ export class ActionRecorder implements IActionRecorder {
 	}
 
 	/**
+	 * Get all Activity-related actions
+	 */
+	getActivityActions(): RecordedAction[] {
+		return this.getByTypes([
+			'activity_launch',
+			'activity_close',
+			'activity_rpc_inbound',
+			'activity_rpc_outbound',
+			'activity_proxy_http',
+			'activity_proxy_ws'
+		])
+	}
+
+	/**
 	 * Clear all recorded actions
 	 */
 	clear(): void {

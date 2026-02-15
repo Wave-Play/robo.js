@@ -46,5 +46,23 @@ export type {
 	StagePlaybackControlPayload,
 	StageNavigationControlPayload,
 	StagePlaybackChangedData,
-	StageNavigationChangedData
+	StageNavigationChangedData,
+	// Activity types
+	StageLaunchActivityData,
+	StageActivityRpcData,
+	StageActivityLaunchedData,
+	StageActivityClosedData,
+	StageActivityRpcOutboundData,
+	StageActivityErrorData,
+	// Activity auth types
+	StageActivityAuthorizeRequestData,
+	StageActivityAuthorizeResultData,
+	StageActivitySetAuthSettingsData,
+	StageActivityResetAuthData,
+	// Activity IAP/Social/Quest types
+	StageActivitySetIapStateData,
+	StageActivitySetRelationshipsData,
+	StageActivitySetQuestsData,
+	StageActivityPurchaseResultData,
+	StageActivityPurchaseRequestData
 } from '../../types/stage.js'

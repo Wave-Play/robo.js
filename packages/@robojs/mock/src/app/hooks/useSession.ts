@@ -75,18 +75,124 @@ export function useSession() {
 		dispatch({ type: 'SET_VOICE_PANEL', payload: { channelId, mode: 'closed' } })
 	}
 
-	const launchActivity = (activity: { id: string; name: string; description: string; iconColor: string; bannerGradient: string }) => {
+	const launchActivity = async (activity: {
+		name: string
+		id?: string
+		description?: string
+		iconColor?: string
+		bannerGradient?: string
+		launchUrl?: string
+		applicationId?: string
+	}) => {
 		const channelId = state.selectedChannelId
 		const guildId = state.selectedGuildId
-		if (!channelId || !guildId) return
+
+		// Set local UI state immediately (optimistic)
 		dispatch({
 			type: 'SET_ACTIVITY',
-			payload: { ...activity, channelId, guildId }
+			payload: {
+				id: activity.id || activity.applicationId || '',
+				name: activity.name,
+				description: activity.description || '',
+				iconColor: activity.iconColor || '',
+				bannerGradient: activity.bannerGradient || '',
+				channelId: channelId ?? '',
+				guildId: guildId ?? ''
+			}
 		})
+
+		// If launchUrl and applicationId are provided, send Stage WS command
+		// to launch activity on backend (real iframe mode)
+		if (activity.launchUrl && activity.applicationId) {
+			// Load root file mappings via project detection API
+			let rootMappings: Array<{ prefix: string; target: string }> = []
+			let rootCspMode: 'discord_strict' | 'relaxed' = 'relaxed'
+
+			try {
+				const prefix = getPluginPrefix()
+				const res = await fetch(`${prefix}/api/control/project`)
+				const detection = await res.json()
+
+				if (detection.detectedMappingsFile?.valid) {
+					const matchingActivity = detection.detectedMappingsFile.activities?.find(
+						(a: { application_id?: string; id?: string }) =>
+							a.application_id === activity.applicationId || a.id === activity.id
+					)
+					if (matchingActivity) {
+						rootMappings = matchingActivity.url_mappings ?? []
+						rootCspMode = matchingActivity.proxy?.csp_mode ?? 'relaxed'
+					}
+				}
+			} catch {
+				// Best-effort: continue without root mappings
+			}
+
+			// Load DevTools overrides from localStorage
+			let devtoolsMappings: Array<{ prefix: string; target: string }> = []
+			try {
+				const saved = localStorage.getItem('mock_devtools_url_mappings')
+				if (saved) devtoolsMappings = JSON.parse(saved)
+			} catch { /* ignore */ }
+
+			const savedCsp = localStorage.getItem('mock_devtools_csp_mode')
+			const devtoolsCspMode = (savedCsp === 'discord_strict' || savedCsp === 'relaxed') ? savedCsp : null
+
+			// Merge: DevTools overrides take precedence (by prefix)
+			const mergedMappings = mergeMappings(rootMappings, devtoolsMappings)
+			const mergedCspMode = devtoolsCspMode ?? rootCspMode
+
+			try {
+				await sendCommand('launch_activity', {
+					launch_url: activity.launchUrl,
+					application_id: activity.applicationId,
+					guild_id: guildId,
+					channel_id: channelId,
+					url_mappings: mergedMappings.length > 0 ? mergedMappings : undefined,
+					csp_mode: mergedCspMode,
+					launch_path: '/'
+				})
+				// The backend responds with activity.launched event which triggers
+				// HANDLE_ACTIVITY_LAUNCHED to set instanceId/frameId/queryParams
+			} catch (err) {
+				// Revert on failure
+				dispatch({ type: 'CLEAR_ACTIVITY' })
+				throw err
+			}
+		}
+		// Otherwise, just show placeholder UI (local-only mode for mock activities)
 	}
 
-	const closeActivity = () => {
-		dispatch({ type: 'CLEAR_ACTIVITY' })
+	const closeActivity = async () => {
+		try {
+			await sendCommand('close_activity', {})
+			// Backend responds with activity.closed event which triggers HANDLE_ACTIVITY_CLOSED
+		} catch {
+			// Force-clear locally even if server fails
+			dispatch({ type: 'CLEAR_ACTIVITY' })
+		}
+	}
+
+	const handleAuthorizeApprove = async (approvedScopes: string[]) => {
+		if (!state.activityAuthorizeRequest) return
+		await sendCommand('activity_authorize_result', {
+			nonce: state.activityAuthorizeRequest.nonce,
+			approved: true,
+			approved_scopes: approvedScopes
+		})
+		dispatch({ type: 'SET_ACTIVITY_AUTHORIZE_REQUEST', payload: null })
+	}
+
+	const handleAuthorizeDeny = async () => {
+		if (!state.activityAuthorizeRequest) return
+		await sendCommand('activity_authorize_result', {
+			nonce: state.activityAuthorizeRequest.nonce,
+			approved: false
+		})
+		dispatch({ type: 'SET_ACTIVITY_AUTHORIZE_REQUEST', payload: null })
+	}
+
+	const clearPurchaseRequest = () => {
+		dispatch({ type: 'SET_ACTIVITY_PURCHASE_REQUEST', payload: null })
 	}
 
 	const deleteThread = (threadId: string) => {
@@ -696,6 +802,8 @@ export function useSession() {
 				? state.voicePanel.mode
 				: 'closed',
 		activity: state.activity,
+		activityAuthorizeRequest: state.activityAuthorizeRequest,
+		activityPurchaseRequest: state.activityPurchaseRequest,
 
 		// Connection
 		connect,
@@ -711,6 +819,9 @@ export function useSession() {
 		closeVoicePanel,
 		launchActivity,
 		closeActivity,
+		handleAuthorizeApprove,
+		handleAuthorizeDeny,
+		clearPurchaseRequest,
 		deleteThread,
 		createChannel,
 		createForumPost,
@@ -741,4 +852,30 @@ export function useSession() {
 		updateVoiceState,
 		reorderChannels
 	}
+}
+
+// ============================================================================
+// Helpers
+// ============================================================================
+
+function mergeMappings(
+	rootMappings: Array<{ prefix: string; target: string }>,
+	overrides: Array<{ prefix: string; target: string }>
+): Array<{ prefix: string; target: string }> {
+	const map = new Map<string, string>()
+	for (const m of rootMappings) {
+		map.set(normalizePrefix(m.prefix), m.target)
+	}
+	for (const m of overrides) {
+		if (m.prefix && m.target) {
+			map.set(normalizePrefix(m.prefix), m.target)
+		}
+	}
+	return Array.from(map.entries()).map(([prefix, target]) => ({ prefix, target }))
+}
+
+function normalizePrefix(prefix: string): string {
+	let p = prefix.startsWith('/') ? prefix : '/' + prefix
+	if (p.length > 1 && p.endsWith('/')) p = p.slice(0, -1)
+	return p
 }

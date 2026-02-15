@@ -17,7 +17,12 @@ import { mockLogger } from '../core/logger.js'
 const DEFAULT_RESPONSE_TIMEOUT = 5000
 
 // Input action types (events sent to bot that we replay)
-const INPUT_ACTION_TYPES: ActionType[] = ['dispatch']
+const INPUT_ACTION_TYPES: ActionType[] = [
+	'dispatch',
+	'activity_launch',
+	'activity_close',
+	'activity_rpc_inbound'
+]
 
 // Output action types (bot responses used for validation)
 const OUTPUT_ACTION_TYPES: ActionType[] = [
@@ -29,7 +34,9 @@ const OUTPUT_ACTION_TYPES: ActionType[] = [
 	'interaction_response',
 	'interaction_followup',
 	'interaction_edit',
-	'rest_request'
+	'rest_request',
+	'activity_rpc_outbound',
+	'activity_proxy_http'
 ]
 
 /**
@@ -402,20 +409,35 @@ export class RecordingPlayer {
 	 * Replay a single action to the session
 	 */
 	private async replayAction(session: Session, action: RecordedAction): Promise<void> {
-		if (action.type !== 'dispatch') {
-			return
+		switch (action.type) {
+			case 'dispatch': {
+				const data = action.data as { event: string; payload: unknown }
+				if (!data.event || !data.payload) {
+					mockLogger.warn(`Invalid dispatch action data: ${JSON.stringify(action.data)}`)
+					return
+				}
+
+				// Dispatch the event to the session
+				await session.dispatch(data.event, data.payload)
+
+				mockLogger.debug(`Replayed: ${data.event}`)
+				break
+			}
+
+			case 'activity_launch':
+			case 'activity_close':
+			case 'activity_rpc_inbound':
+			case 'activity_rpc_outbound':
+			case 'activity_proxy_http':
+			case 'activity_proxy_ws':
+				// Activity actions are NOT replayed as live interactions.
+				// They are logged for the timeline/event viewer.
+				mockLogger.debug(`Playback activity action: ${action.type}`)
+				break
+
+			default:
+				return
 		}
-
-		const data = action.data as { event: string; payload: unknown }
-		if (!data.event || !data.payload) {
-			mockLogger.warn(`Invalid dispatch action data: ${JSON.stringify(action.data)}`)
-			return
-		}
-
-		// Dispatch the event to the session
-		await session.dispatch(data.event, data.payload)
-
-		mockLogger.debug(`Replayed: ${data.event}`)
 	}
 
 	/**

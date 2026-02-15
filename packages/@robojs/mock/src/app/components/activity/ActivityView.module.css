@@ -32,6 +32,13 @@
 	min-height: 0;
 }
 
+.activityIframe {
+	width: 100%;
+	height: 100%;
+	border: none;
+	display: block;
+}
+
 .placeholder {
 	display: flex;
 	flex-direction: column;

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { DropdownContainer, PrimaryButton, useDropdownPosition } from '../base'
 import styles from './ActivitiesPicker.module.css'
 
@@ -19,6 +19,8 @@ export interface Activity {
 	bannerGradient: string
 	tags?: string[]
 	maxPlayers?: string
+	launchUrl?: string
+	applicationId?: string
 }
 
 const PROMOTED_ACTIVITIES: Activity[] = [
@@ -183,6 +185,104 @@ export function ActivitiesPicker({ onClose, position, onPlayActivity }: Activiti
 	const [showFullDescription, setShowFullDescription] = useState(false)
 	const displayedActivity = useRef<Activity | null>(null)
 
+	// Custom URL state
+	const [customUrl, setCustomUrl] = useState('')
+	const [customAppId, setCustomAppId] = useState('')
+
+	// Persist custom URL and App ID in localStorage
+	useEffect(() => {
+		const saved = localStorage.getItem('mock_custom_activity_url')
+		if (saved) setCustomUrl(saved)
+		const savedAppId = localStorage.getItem('mock_custom_activity_app_id')
+		if (savedAppId) setCustomAppId(savedAppId)
+	}, [])
+
+	useEffect(() => {
+		if (customUrl) localStorage.setItem('mock_custom_activity_url', customUrl)
+	}, [customUrl])
+
+	useEffect(() => {
+		if (customAppId) localStorage.setItem('mock_custom_activity_app_id', customAppId)
+	}, [customAppId])
+
+	// Detected activities from project detection
+	const [detectedActivities, setDetectedActivities] = useState<Activity[]>([])
+	const [isDetecting, setIsDetecting] = useState(true)
+
+	const getApiPrefix = useCallback(() => {
+		const pathname = window.location.pathname
+		const stageIndex = pathname.indexOf('/stage')
+		return stageIndex !== -1 ? pathname.slice(0, stageIndex) : ''
+	}, [])
+
+	// Fetch project detection on mount
+	useEffect(() => {
+		const apiPrefix = getApiPrefix()
+		fetch(`${apiPrefix}/api/control/project`)
+			.then((res) => res.json())
+			.then((data: {
+				hasEmbeddedAppSdk: boolean
+				detectedMappingsFile: {
+					valid: boolean
+					activities?: Array<{
+						id: string
+						name: string
+						application_id: string
+						launch_url: string
+					}>
+				}
+				suggestedLaunchUrl: string | null
+				suggestedApplicationId: string | null
+			}) => {
+				const activities: Activity[] = []
+
+				// Add activities from mappings file
+				if (data.detectedMappingsFile.valid && data.detectedMappingsFile.activities) {
+					for (const a of data.detectedMappingsFile.activities) {
+						activities.push({
+							id: `detected-${a.id}`,
+							name: a.name,
+							description: a.launch_url,
+							iconColor: '#43b581',
+							bannerGradient: '',
+							launchUrl: a.launch_url,
+							applicationId: a.application_id,
+							tags: ['Local']
+						})
+					}
+				}
+
+				// If SDK detected but no mappings file activities, add a generic entry
+				if (activities.length === 0 && data.hasEmbeddedAppSdk && data.suggestedLaunchUrl) {
+					activities.push({
+						id: 'detected-local',
+						name: 'Local Activity',
+						description: data.suggestedLaunchUrl,
+						iconColor: '#43b581',
+						bannerGradient: '',
+						launchUrl: data.suggestedLaunchUrl,
+						applicationId: data.suggestedApplicationId ?? '1234567890',
+						tags: ['Local', 'Auto-detected']
+					})
+				}
+
+				setDetectedActivities(activities)
+			})
+			.catch(() => {
+				// Silently fail -- detection is best-effort
+			})
+			.finally(() => setIsDetecting(false))
+	}, [getApiPrefix])
+
+	// Auto-populate custom URL and App ID from detected activities
+	useEffect(() => {
+		if (detectedActivities.length > 0 && !customUrl) {
+			const first = detectedActivities[0]
+			if (first.launchUrl) setCustomUrl(first.launchUrl)
+			if (first.applicationId) setCustomAppId(first.applicationId)
+		}
+	}, [detectedActivities]) // eslint-disable-line react-hooks/exhaustive-deps
+
 	// Keep displayed activity in sync, but preserve it during slide-out
 	if (selectedActivity) {
 		displayedActivity.current = selectedActivity
@@ -301,6 +401,83 @@ export function ActivitiesPicker({ onClose, position, onPlayActivity }: Activiti
 
 							{/* Scrollable content */}
 							<div className={styles.content}>
+								{/* Custom Activity */}
+								<div className={styles.sectionHeader}>
+									<span className={styles.sectionTitle}>Custom Activity</span>
+								</div>
+								<div className={styles.customUrlSection}>
+									<div className={styles.customUrlRow}>
+										<input
+											className={styles.customUrlInput}
+											type="url"
+											placeholder="Activity URL (e.g., http://localhost:5173)"
+											value={customUrl}
+											onChange={(e) => setCustomUrl(e.target.value)}
+										/>
+									</div>
+									<div className={styles.customUrlRow}>
+										<input
+											className={styles.customAppIdInput}
+											type="text"
+											placeholder="Application ID"
+											value={customAppId}
+											onChange={(e) => setCustomAppId(e.target.value)}
+										/>
+										<PrimaryButton
+											disabled={!customUrl.trim()}
+											onClick={() => {
+												if (onPlayActivity && customUrl.trim()) {
+													onPlayActivity({
+														id: 'custom',
+														name: 'Custom Activity',
+														description: customUrl.trim(),
+														iconColor: '#5865f2',
+														bannerGradient: '',
+														launchUrl: customUrl.trim(),
+														applicationId: customAppId.trim() || '1234567890'
+													})
+													onClose()
+												}
+											}}
+										>
+											Play
+										</PrimaryButton>
+									</div>
+								</div>
+
+								{/* Detected Activities */}
+								{!isDetecting && detectedActivities.length > 0 && (
+									<>
+										<div className={styles.sectionHeader}>
+											<span className={styles.sectionTitle}>Detected</span>
+										</div>
+										<div className={styles.sectionContainer}>
+											{detectedActivities.map((act) => (
+												<div
+													key={act.id}
+													className={styles.listItem}
+													role="button"
+													tabIndex={0}
+													onClick={() => {
+														if (onPlayActivity) {
+															onPlayActivity(act)
+														}
+														onClose()
+													}}
+												>
+													<div className={styles.listIcon} style={{ background: act.iconColor }}>
+														{act.name[0]}
+													</div>
+													<div className={styles.listDetails}>
+														<div className={styles.listName}>{act.name}</div>
+														<div className={styles.listDescription}>{act.description}</div>
+													</div>
+												</div>
+											))}
+										</div>
+									</>
+								)}
+
 								{/* Recents */}
 								{filteredRecents.length > 0 && (
 									<>

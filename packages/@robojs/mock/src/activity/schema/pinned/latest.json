@@ -1,0 +1,374 @@
+{
+  "manifest_version": 1,
+  "sdk_version": "1.4.1",
+  "extracted_at": "2026-02-14T00:00:00.000Z",
+  "source": "pinned",
+  "commands": [
+    {
+      "name": "AUTHORIZE",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": false,
+      "category": "auth"
+    },
+    {
+      "name": "AUTHENTICATE",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": false,
+      "category": "auth"
+    },
+    {
+      "name": "GET_GUILDS",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "context"
+    },
+    {
+      "name": "GET_GUILD",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "context"
+    },
+    {
+      "name": "GET_CHANNEL",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "context"
+    },
+    {
+      "name": "GET_CHANNELS",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "context"
+    },
+    {
+      "name": "SELECT_VOICE_CHANNEL",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "voice"
+    },
+    {
+      "name": "SELECT_TEXT_CHANNEL",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "voice"
+    },
+    {
+      "name": "SUBSCRIBE",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "subscription"
+    },
+    {
+      "name": "UNSUBSCRIBE",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "subscription"
+    },
+    {
+      "name": "CAPTURE_SHORTCUT",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "voice"
+    },
+    {
+      "name": "SET_CERTIFIED_DEVICES",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "voice"
+    },
+    {
+      "name": "SET_ACTIVITY",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "platform"
+    },
+    {
+      "name": "GET_SKUS",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "iap"
+    },
+    {
+      "name": "GET_ENTITLEMENTS",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "iap"
+    },
+    {
+      "name": "GET_SKUS_EMBEDDED",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "iap"
+    },
+    {
+      "name": "GET_ENTITLEMENTS_EMBEDDED",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "iap"
+    },
+    {
+      "name": "START_PURCHASE",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "iap"
+    },
+    {
+      "name": "SET_CONFIG",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "platform"
+    },
+    {
+      "name": "SEND_ANALYTICS_EVENT",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "analytics"
+    },
+    {
+      "name": "USER_SETTINGS_GET_LOCALE",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "platform"
+    },
+    {
+      "name": "OPEN_EXTERNAL_LINK",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "ui"
+    },
+    {
+      "name": "ENCOURAGE_HW_ACCELERATION",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "platform"
+    },
+    {
+      "name": "CAPTURE_LOG",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "analytics"
+    },
+    {
+      "name": "SET_ORIENTATION_LOCK_STATE",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "platform"
+    },
+    {
+      "name": "OPEN_INVITE_DIALOG",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "ui"
+    },
+    {
+      "name": "GET_PLATFORM_BEHAVIORS",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "platform"
+    },
+    {
+      "name": "GET_CHANNEL_PERMISSIONS",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "context"
+    },
+    {
+      "name": "GET_ACTIVITY_INSTANCE_CONNECTED_PARTICIPANTS",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "context"
+    },
+    {
+      "name": "GET_QUEST_ENROLLMENT_STATUS",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "quest"
+    },
+    {
+      "name": "GET_RELATIONSHIPS",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "social"
+    },
+    {
+      "name": "GET_USER",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "context"
+    },
+    {
+      "name": "INITIATE_IMAGE_UPLOAD",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "ui"
+    },
+    {
+      "name": "INVITE_USER_EMBEDDED",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "social"
+    },
+    {
+      "name": "OPEN_SHARE_MOMENT_DIALOG",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "ui"
+    },
+    {
+      "name": "QUEST_START_TIMER",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "quest"
+    },
+    {
+      "name": "SHARE_INTERACTION",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "ui"
+    },
+    {
+      "name": "SHARE_LINK",
+      "args_schema": null,
+      "response_schema": null,
+      "auth_required": null,
+      "category": "ui"
+    }
+  ],
+  "events": [
+    {
+      "name": "READY",
+      "subscribe_args_schema": null,
+      "payload_schema": null,
+      "subscribable": false,
+      "snapshot_on_subscribe": false
+    },
+    {
+      "name": "VOICE_STATE_UPDATE",
+      "subscribe_args_schema": null,
+      "payload_schema": null,
+      "subscribable": true,
+      "snapshot_on_subscribe": true
+    },
+    {
+      "name": "SPEAKING_START",
+      "subscribe_args_schema": null,
+      "payload_schema": null,
+      "subscribable": true,
+      "snapshot_on_subscribe": false
+    },
+    {
+      "name": "SPEAKING_STOP",
+      "subscribe_args_schema": null,
+      "payload_schema": null,
+      "subscribable": true,
+      "snapshot_on_subscribe": false
+    },
+    {
+      "name": "ACTIVITY_LAYOUT_MODE_UPDATE",
+      "subscribe_args_schema": null,
+      "payload_schema": null,
+      "subscribable": true,
+      "snapshot_on_subscribe": true
+    },
+    {
+      "name": "ORIENTATION_UPDATE",
+      "subscribe_args_schema": null,
+      "payload_schema": null,
+      "subscribable": true,
+      "snapshot_on_subscribe": true
+    },
+    {
+      "name": "CURRENT_USER_UPDATE",
+      "subscribe_args_schema": null,
+      "payload_schema": null,
+      "subscribable": true,
+      "snapshot_on_subscribe": true
+    },
+    {
+      "name": "CURRENT_GUILD_MEMBER_UPDATE",
+      "subscribe_args_schema": null,
+      "payload_schema": null,
+      "subscribable": true,
+      "snapshot_on_subscribe": true
+    },
+    {
+      "name": "ENTITLEMENT_CREATE",
+      "subscribe_args_schema": null,
+      "payload_schema": null,
+      "subscribable": true,
+      "snapshot_on_subscribe": false
+    },
+    {
+      "name": "THERMAL_STATE_UPDATE",
+      "subscribe_args_schema": null,
+      "payload_schema": null,
+      "subscribable": true,
+      "snapshot_on_subscribe": true
+    },
+    {
+      "name": "ACTIVITY_INSTANCE_PARTICIPANTS_UPDATE",
+      "subscribe_args_schema": null,
+      "payload_schema": null,
+      "subscribable": true,
+      "snapshot_on_subscribe": true
+    },
+    {
+      "name": "RELATIONSHIP_UPDATE",
+      "subscribe_args_schema": null,
+      "payload_schema": null,
+      "subscribable": true,
+      "snapshot_on_subscribe": true
+    },
+    {
+      "name": "ACTIVITY_JOIN",
+      "subscribe_args_schema": null,
+      "payload_schema": null,
+      "subscribable": true,
+      "snapshot_on_subscribe": false
+    },
+    {
+      "name": "QUEST_ENROLLMENT_STATUS_UPDATE",
+      "subscribe_args_schema": null,
+      "payload_schema": null,
+      "subscribable": true,
+      "snapshot_on_subscribe": false
+    }
+  ]
+}

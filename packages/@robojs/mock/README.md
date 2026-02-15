@@ -237,6 +237,109 @@ Press `Ctrl+Shift+D` (or `Cmd+Shift+D` on Mac) to open the DevTools panel:
 | **Performance** | Render times, latency, and memory usage |
 | **Tools** | Clear events, export JSON, inject test data |
 | **Permissions** | Permission matrix visualization |
+| **Activity** | RPC message log, READY payload, active subscriptions |
+
+## Discord Activities Support
+
+`@robojs/mock` supports testing Discord Activities (apps using `@discord/embedded-app-sdk`)
+with a full local RPC Host and Discord Proxy simulation.
+
+### Quick Start (Activities)
+
+1. Ensure your project has `@discord/embedded-app-sdk` installed
+2. Start your Activity dev server (e.g., `npm run dev` for Vite on port 5173)
+3. Start your Robo project in mock mode:
+   ```bash
+   ROBO_MOCK_MODE=true npx robo dev
+   ```
+4. Open the Stage UI at `http://localhost:3000/mock/stage`
+5. Click the Activities button or enter your Activity URL in the picker
+6. Your Activity will load through the proxy with full RPC support
+
+### URL Mappings
+
+Activities that need to reach external APIs through the proxy can configure URL
+mappings. Create a `discord-url-mappings.json` file in your project root:
+
+```json
+{
+  "version": 1,
+  "activities": [
+    {
+      "id": "local",
+      "name": "My Activity",
+      "application_id": "123456789012345678",
+      "launch_url": "http://localhost:5173",
+      "url_mappings": [
+        { "prefix": "/api-ext", "target": "api.example.com" }
+      ],
+      "proxy": {
+        "csp_mode": "relaxed"
+      }
+    }
+  ]
+}
+```
+
+Mappings follow Discord Developer Portal semantics:
+- `prefix`: Path prefix starting with `/` (e.g., `/firestore`)
+- `target`: Hostname (optionally with port) to proxy to (e.g., `firestore.googleapis.com`)
+- Most specific (longest) prefix wins when multiple mappings match
+
+You can also configure mappings live via the DevTools panel in Stage UI.
+
+### Proxy Behavior
+
+The Activity proxy runs on a separate port (default: **50002**, auto-increments if taken) and
+uses `.localhost` subdomains for session isolation:
+
+```
+http://{session}.{app_id}.discordsays.localhost:50002
+```
+
+The proxy provides:
+- `/.proxy/*` routes to your Activity dev server
+- URL mapping routes (e.g., `/firestore/*` routes to the configured target)
+- WebSocket proxying (including Vite HMR)
+- CSP enforcement (`discord_strict` or `relaxed` mode)
+- HTML rewriting for root-relative URLs
+
+### CSP Modes
+
+- **`relaxed`** (default): Permissive CSP allowing all sources. Good for development.
+- **`discord_strict`**: Restrictive CSP matching Discord's production behavior.
+  Only allows connections through the proxy. Use this to catch CSP-related bugs
+  before deploying.
+
+### Activity DevTools
+
+The DevTools panel includes Activity-specific tools:
+
+- **Activity tab**: RPC message log (inbound/outbound), last READY payload,
+  active subscription list
+- **Tools tab** (Activity section):
+  - URL Mappings editor
+  - CSP mode selector
+  - Auth simulator (auto-approve/auto-deny/manual)
+  - Platform state controls (layout, orientation, thermal)
+  - IAP/Relationships/Quests editors
+  - Origin mode toggle (strict/lenient)
+  - SDK shim toggle (opt-in origin compatibility patch)
+
+### Known Limitations
+
+- **One Activity per session**: Only one Activity can run at a time per mock session.
+- **No TLS on proxy**: The proxy uses HTTP (not HTTPS). Some Web APIs that require
+  Secure Context may not work. `.localhost` domains are treated as secure contexts
+  in modern browsers.
+- **SDK shim may be needed**: If the Embedded App SDK enforces strict origin checks
+  against `*.discordsays.com`, enable the SDK shim in DevTools (reduces realism).
+- **No real OAuth**: AUTHORIZE/AUTHENTICATE flows are fully mocked. The generated
+  auth codes and tokens are not valid Discord tokens.
+- **CSP strict mode is approximate**: The strict CSP is modeled after Discord's
+  production headers but may not be an exact match.
+- **Voice/audio not simulated**: Voice state and speaking events are mocked via
+  DevTools controls, but actual audio is not transmitted.
 
 ## Session Management
 

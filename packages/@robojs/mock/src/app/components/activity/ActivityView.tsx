@@ -1,6 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { SessionState } from '../../stores/sessionStore'
+import type { StageActivityAuthorizeRequestData } from '../../types/stage'
+import { useActivityRpcBridge } from '../../hooks/useActivityRpcBridge'
 import { getAvatarUrl } from '../../utils/avatar'
+import { AuthConsentModal } from './AuthConsentModal'
 import styles from './ActivityView.module.css'
 
 interface ActivityViewProps {
@@ -11,12 +14,73 @@ interface ActivityViewProps {
 	minimized?: boolean
 	onMinimize?: () => void
 	onRestore?: () => void
+	/** Callback when an RPC message is rejected (for DevTools diagnostics) */
+	onRpcRejected?: (reason: string, event: MessageEvent) => void
+	/** Pending AUTHORIZE consent request */
+	authorizeRequest?: StageActivityAuthorizeRequestData | null
+	/** Called when user approves the consent modal */
+	onAuthorizeApprove?: (approvedScopes: string[]) => void
+	/** Called when user denies the consent modal */
+	onAuthorizeDeny?: () => void
+	/** Whether in playback mode (show static indicator instead of iframe) */
+	playbackMode?: boolean
 }
 
-export function ActivityView({ activity, onDisconnect, overlayRef, currentUser, minimized, onMinimize, onRestore }: ActivityViewProps) {
+export function ActivityView({ activity, onDisconnect, overlayRef, currentUser, minimized, onMinimize, onRestore, onRpcRejected, authorizeRequest, onAuthorizeApprove, onAuthorizeDeny, playbackMode }: ActivityViewProps) {
 	const [chatHidden, setChatHidden] = useState(false)
 	const gradient = activity.bannerGradient || `linear-gradient(135deg, #2a2a2e 0%, ${activity.iconColor || '#3a3a4a'} 100%)`
 	const activityName = activity.name || 'Activity'
+	const iframeRef = useRef<HTMLIFrameElement>(null)
+
+	// Build iframe URL: prefer proxy-provided iframeUrl, fallback to launch_url + query_params
+	const iframeUrl = useMemo(() => {
+		if (activity.iframeUrl) return activity.iframeUrl
+		if (!activity.launchUrl || !activity.queryParams) return null
+		const url = new URL(activity.launchUrl)
+		for (const [key, value] of Object.entries(activity.queryParams)) {
+			url.searchParams.set(key, value)
+		}
+		return url.toString()
+	}, [activity.iframeUrl, activity.launchUrl, activity.queryParams])
+
+	// Compute target origin for postMessage (derive from actual iframe URL)
+	const iframeOrigin = useMemo(() => {
+		const url = activity.iframeUrl || activity.launchUrl
+		if (!url) return null
+		try {
+			return new URL(url).origin
+		} catch {
+			return null
+		}
+	}, [activity.iframeUrl, activity.launchUrl])
+
+	// Pop out: open iframe URL in a new tab
+	const handlePopOut = useCallback(() => {
+		if (iframeUrl) {
+			window.open(iframeUrl, '_blank', 'noopener,noreferrer')
+		}
+	}, [iframeUrl])
+
+	// Detect iframe reload for DevTools diagnostics
+	const loadCountRef = useRef(0)
+	const handleIframeLoad = useCallback(() => {
+		loadCountRef.current++
+		if (loadCountRef.current > 1) {
+			// Iframe reloaded -- log for DevTools diagnostics
+			onRpcRejected?.(`Iframe reloaded (load #${loadCountRef.current}). SDK will re-handshake.`,
+				new MessageEvent('load'))
+		}
+	}, [onRpcRejected])
+
+	// Wire the postMessage bridge
+	useActivityRpcBridge({
+		iframeRef,
+		frameId: activity.frameId,
+		instanceId: activity.instanceId,
+		iframeOrigin,
+		enabled: activity.isOpen && !!activity.launchUrl,
+		onRejectedMessage: onRpcRejected
+	})
 
 	// Minimized drag state
 	type Corner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
@@ -49,7 +113,7 @@ export function ActivityView({ activity, onDisconnect, overlayRef, currentUser, 
 	}, [])
 
 	const handleMouseDown = useCallback((e: React.MouseEvent) => {
-		if ((e.target as HTMLElement).closest('button, a, img')) return
+		if ((e.target as HTMLElement).closest('button, a, img, iframe')) return
 		e.preventDefault()
 		setIsSnapping(false)
 		pendingCornerRef.current = null
@@ -89,8 +153,6 @@ export function ActivityView({ activity, onDisconnect, overlayRef, currentUser, 
 			drag.lastY = e.clientY
 			drag.lastTime = now
 
-			setOffset((prev) => ({ x: prev.x - (drag.lastX - dx - drag.startX) + dx, y: prev.y - (drag.lastY - dy - drag.startY) + dy }))
-			// Simpler: offset = delta from drag start
 			setOffset({ x: dx, y: dy })
 		}
 
@@ -157,6 +219,43 @@ export function ActivityView({ activity, onDisconnect, overlayRef, currentUser, 
 		setIsSnapping(false)
 	}, [])
 
+	// Render the iframe content (always mounted, never conditionally removed)
+	// In playback mode, show a static indicator instead of an iframe
+	const iframeContent = playbackMode ? (
+		<div className={styles.placeholder}>
+			<div className={styles.placeholderIcon} style={{ background: activity.iconColor || '#3a3a4a' }}>
+				{activity.name?.[0] || '?'}
+			</div>
+			<div className={styles.placeholderName}>Activity (Playback)</div>
+			<div style={{ color: '#b5bac1', fontSize: '12px', marginTop: '8px', textAlign: 'center', maxWidth: '300px', wordBreak: 'break-all' }}>
+				{activity.launchUrl || 'No launch URL'}
+			</div>
+			{activity.instanceId && (
+				<div style={{ color: '#72767d', fontSize: '11px', marginTop: '4px', fontFamily: 'monospace' }}>
+					{activity.instanceId}
+				</div>
+			)}
+		</div>
+	) : iframeUrl ? (
+		<iframe
+			ref={iframeRef}
+			className={styles.activityIframe}
+			src={iframeUrl}
+			title={activityName}
+			allow="microphone; camera; clipboard-write; clipboard-read; fullscreen; autoplay; encrypted-media"
+			sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals allow-popups-to-escape-sandbox allow-downloads"
+			referrerPolicy="origin"
+			onLoad={handleIframeLoad}
+		/>
+	) : (
+		<div className={styles.placeholder}>
+			<div className={styles.placeholderIcon} style={{ background: activity.iconColor || '#3a3a4a' }}>
+				{activity.name?.[0] || '?'}
+			</div>
+			<div className={styles.placeholderName}>{activityName}</div>
+		</div>
+	)
+
 	if (minimized) {
 		const cornerClass = {
 			'top-left': styles.cornerTopLeft,
@@ -184,13 +283,8 @@ export function ActivityView({ activity, onDisconnect, overlayRef, currentUser, 
 				onMouseDown={handleMouseDown}
 				onTransitionEnd={handleTransitionEnd}
 			>
-				<div className={styles.minimizedContent} style={{ background: gradient }}>
-					<div className={styles.placeholder}>
-						<div className={styles.placeholderIcon} style={{ background: activity.iconColor || '#3a3a4a' }}>
-							{activity.name?.[0] || '?'}
-						</div>
-						<div className={styles.placeholderName}>{activityName}</div>
-					</div>
+				<div className={styles.minimizedContent} style={{ background: iframeUrl ? undefined : gradient }}>
+					{iframeContent}
 				</div>
 				<div className={styles.minimizedHoverOverlay}>
 					<div className={styles.minimizedTopBar}>
@@ -230,73 +324,80 @@ export function ActivityView({ activity, onDisconnect, overlayRef, currentUser, 
 	}
 
 	return (
-		<div ref={overlayRef} className={`${styles.overlay}${chatHidden ? ` ${styles.chatHidden}` : ''}`}>
-			<div className={styles.panel}>
-				<div className={styles.contentArea} style={{ background: gradient }}>
-					<div className={styles.placeholder}>
-						<div className={styles.placeholderIcon} style={{ background: activity.iconColor || '#3a3a4a' }}>
-							{activity.name?.[0] || '?'}
+		<>
+			<div ref={overlayRef} className={`${styles.overlay}${chatHidden ? ` ${styles.chatHidden}` : ''}`}>
+				<div className={styles.panel}>
+					<div className={styles.contentArea} style={{ background: iframeUrl ? undefined : gradient }}>
+						{iframeContent}
+					</div>
+
+					<div className={styles.controlBar}>
+						<div className={styles.controlBarLeft}>
+							{currentUser && (
+								<div className={styles.avatarWrapper}>
+									<img
+										className={styles.userAvatar}
+										src={getAvatarUrl(currentUser.id, currentUser.avatar, 32)}
+										alt={currentUser.username}
+										width={32}
+										height={32}
+									/>
+									<span role="tooltip" className={styles.avatarTooltip}>
+										{currentUser.username}
+									</span>
+								</div>
+							)}
 						</div>
-						<div className={styles.placeholderName}>{activityName}</div>
-					</div>
-				</div>
 
-				<div className={styles.controlBar}>
-					<div className={styles.controlBarLeft}>
-						{currentUser && (
-							<div className={styles.avatarWrapper}>
-								<img
-									className={styles.userAvatar}
-									src={getAvatarUrl(currentUser.id, currentUser.avatar, 32)}
-									alt={currentUser.username}
-									width={32}
-									height={32}
-								/>
-								<span role="tooltip" className={styles.avatarTooltip}>
-									{currentUser.username}
-								</span>
+						<div className={styles.controlBarCenter}>
+							<div className={styles.controlGroup}>
+								<div className={styles.buttonTooltipWrapper}>
+									<button className={styles.controlButton} type="button" aria-label={chatHidden ? 'Show Chat' : 'Hide Chat'} onClick={() => setChatHidden((h) => !h)}>
+										<div className={styles.controlButtonInner}>
+											{chatHidden ? <ChevronUpIcon /> : <ChevronDownIcon />}
+										</div>
+									</button>
+									<span role="tooltip" className={styles.buttonTooltip}>{chatHidden ? 'Show Chat' : 'Hide Chat'}</span>
+								</div>
+								<div className={styles.buttonTooltipWrapper}>
+									<button className={styles.controlButton} type="button" aria-label="Minimize Activity" onClick={onMinimize}>
+										<div className={styles.controlButtonInner}>
+											<MinimizeIcon />
+										</div>
+									</button>
+									<span role="tooltip" className={styles.buttonTooltip}>Minimize Activity</span>
+								</div>
 							</div>
-						)}
-					</div>
-
-					<div className={styles.controlBarCenter}>
-						<div className={styles.controlGroup}>
 							<div className={styles.buttonTooltipWrapper}>
-								<button className={styles.controlButton} type="button" aria-label={chatHidden ? 'Show Chat' : 'Hide Chat'} onClick={() => setChatHidden((h) => !h)}>
-									<div className={styles.controlButtonInner}>
-										{chatHidden ? <ChevronUpIcon /> : <ChevronDownIcon />}
-									</div>
+								<button className={styles.disconnectButton} type="button" aria-label="Leave Activity" onClick={onDisconnect}>
+									<LeaveIcon />
 								</button>
-								<span role="tooltip" className={styles.buttonTooltip}>{chatHidden ? 'Show Chat' : 'Hide Chat'}</span>
-							</div>
-							<div className={styles.buttonTooltipWrapper}>
-								<button className={styles.controlButton} type="button" aria-label="Minimize Activity" onClick={onMinimize}>
-									<div className={styles.controlButtonInner}>
-										<MinimizeIcon />
-									</div>
-								</button>
-								<span role="tooltip" className={styles.buttonTooltip}>Minimize Activity</span>
+								<span role="tooltip" className={styles.buttonTooltip}>Leave Activity</span>
 							</div>
 						</div>
-						<div className={styles.buttonTooltipWrapper}>
-							<button className={styles.disconnectButton} type="button" aria-label="Leave Activity" onClick={onDisconnect}>
-								<LeaveIcon />
-							</button>
-							<span role="tooltip" className={styles.buttonTooltip}>Leave Activity</span>
-						</div>
-					</div>
 
-					<div className={styles.controlBarRight}>
-						<div className={styles.buttonTooltipWrapper}>
-							<button className={styles.controlButton} type="button" aria-label="Pop Out">
-								<PopoutIcon />
-							</button>
-							<span role="tooltip" className={styles.buttonTooltip}>Pop Out</span>
+						<div className={styles.controlBarRight}>
+							<div className={styles.buttonTooltipWrapper}>
+								<button className={styles.controlButton} type="button" aria-label="Pop Out" onClick={handlePopOut}>
+									<PopoutIcon />
+								</button>
+								<span role="tooltip" className={styles.buttonTooltip}>Pop Out</span>
+							</div>
 						</div>
 					</div>
 				</div>
 			</div>
-		</div>
+
+			{/* Auth consent modal overlay */}
+			<AuthConsentModal
+				visible={!!authorizeRequest}
+				applicationName={activity?.name ?? `App ${activity?.applicationId ?? 'Unknown'}`}
+				applicationId={authorizeRequest?.client_id ?? ''}
+				scopes={authorizeRequest?.scopes ?? []}
+				onApprove={onAuthorizeApprove ?? (() => {})}
+				onDeny={onAuthorizeDeny ?? (() => {})}
+			/>
+		</>
 	)
 }
 
@@ -350,4 +451,3 @@ function BackArrowIcon() {
 		</svg>
 	)
 }
-

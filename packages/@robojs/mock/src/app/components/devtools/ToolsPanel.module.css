@@ -52,6 +52,25 @@
 	background: var(--brand-dark);
 }
 
+.dangerButton {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 8px 12px;
+	background: var(--status-danger, #da373c);
+	border-radius: var(--radius-sm);
+	font-size: 12px;
+	font-weight: 500;
+	color: white;
+	cursor: pointer;
+	border: none;
+	transition: background 0.15s ease;
+}
+
+.dangerButton:hover {
+	background: #a12d31;
+}
+
 .buttonGroup {
 	display: flex;
 	flex-wrap: wrap;
@@ -374,4 +393,62 @@
 		opacity: 0.5;
 		transform: scale(1.2);
 	}
+}
+
+/* URL Mappings Table */
+.mappingsTable {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	margin-bottom: 8px;
+}
+
+.mappingsHeader {
+	display: grid;
+	grid-template-columns: 1fr 1fr 28px;
+	gap: 4px;
+	padding: 4px 0;
+	font-size: 11px;
+	color: var(--text-muted);
+	text-transform: uppercase;
+	font-weight: 600;
+}
+
+.mappingsRow {
+	display: grid;
+	grid-template-columns: 1fr 1fr 28px;
+	gap: 4px;
+	align-items: center;
+}
+
+.mappingsRow input {
+	background: var(--main-chat-background);
+	border: 1px solid var(--accent-background);
+	border-radius: var(--radius-sm);
+	color: var(--text-bright);
+	font-size: 12px;
+	padding: 4px 8px;
+	outline: none;
+}
+
+.mappingsRow input:focus {
+	border-color: var(--brand-primary);
+}
+
+.removeButton {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	border: none;
+	background: transparent;
+	color: var(--text-muted);
+	cursor: pointer;
+	border-radius: var(--radius-sm);
+}
+
+.removeButton:hover {
+	background: var(--hover-overlay);
+	color: var(--red-medium);
 }

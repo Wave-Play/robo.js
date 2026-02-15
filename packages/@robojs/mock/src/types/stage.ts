@@ -80,6 +80,18 @@ export type StageEventType =
 	| 'stage.navigation.changed' // Navigation state changed (guild, channel)
 	| 'control_command' // Server-initiated control command
 
+	// Activity events
+	| 'activity.launched' // Activity was launched (contains iframe URL + ids)
+	| 'activity.closed' // Activity was closed
+	| 'activity.rpc.outbound' // Host -> Activity message (async events)
+	| 'activity.error' // Activity diagnostics
+	| 'activity.ui.authorize_request' // Backend -> Stage UI: show consent UI for AUTHORIZE
+	| 'activity.ui.purchase_request' // Backend -> Stage UI: show purchase confirmation
+
+	// Activity proxy events
+	| 'activity.proxy.status' // Proxy running, port, origin
+	| 'activity.proxy.network' // Proxy network entry for DevTools
+
 /**
  * Command types sent from stage clients to server
  */
@@ -103,6 +115,24 @@ export type StageCommandType =
 	| 'update_voice_state' // Update mute/deaf state
 	// Simulation Support
 	| 'control_response' // Response to server-initiated control command
+	// Activity commands
+	| 'launch_activity' // Launch an Activity for this session
+	| 'close_activity' // Close the running Activity
+	| 'activity_rpc' // Forward Activity RPC to/from backend host
+	// Activity proxy commands
+	| 'activity_set_url_mappings' // DevTools -> backend: update URL mappings
+	| 'activity_set_csp_mode' // DevTools -> backend: change CSP mode
+	// Activity auth commands
+	| 'activity_authorize_result' // Stage UI -> backend: consent modal result for AUTHORIZE
+	| 'activity_set_auth_settings' // DevTools -> backend: update auth simulator settings
+	| 'activity_reset_auth' // DevTools -> backend: reset auth state to UNAUTHENTICATED
+	| 'activity_set_platform_state' // DevTools -> backend: update layout/orientation/thermal
+	| 'activity_set_iap_state' // DevTools -> backend: update SKUs/entitlements
+	| 'activity_set_relationships' // DevTools -> backend: update relationships
+	| 'activity_set_quests' // DevTools -> backend: update quests
+	| 'activity_purchase_result' // Stage UI -> backend: purchase modal result
+	| 'activity_set_origin_mode' // DevTools -> backend: set origin check mode
+	| 'activity_set_sdk_shim' // DevTools -> backend: toggle SDK origin shim
 
 // ============================================================================
 // Stage Event Payloads
@@ -140,6 +170,30 @@ export interface StateSyncPayload {
 	commands: StageApplicationCommand[] // Available slash commands
 	voice_states: StageVoiceState[] // Voice channel states
 	currentUser?: StageUser
+
+	/** Active Activity state (if any) */
+	activity?: {
+		instance_id: string
+		frame_id: string
+		application_id: string
+		guild_id: string | null
+		channel_id: string | null
+		launch_url: string
+		query_params: Record<string, string>
+		ready_emitted: boolean
+		auth_state: 'UNAUTHENTICATED' | 'AUTHENTICATED'
+		auth_scopes?: string[]
+		devtools_auth_mode?: 'auto_approve' | 'auto_deny' | 'manual'
+		proxy_origin?: string
+		iframe_url?: string
+	}
+
+	/** Activity proxy status (if proxy server is running) */
+	proxy?: {
+		running: boolean
+		port: number
+		origin_template: string
+	}
 }
 
 /**
@@ -696,7 +750,7 @@ export interface BufferedStageEvent {
 /**
  * Step type for scenario step events
  */
-export type ScenarioStepType = 'dispatch' | 'wait' | 'assert' | 'interact'
+export type ScenarioStepType = 'dispatch' | 'wait' | 'assert' | 'interact' | 'activity'
 
 /**
  * Data payload for scenario.step.started events
@@ -965,4 +1019,308 @@ export interface StageServerConfig {
 	heartbeatInterval?: number
 	/** Maximum messages to include in state sync per channel (default: 50) */
 	maxMessagesPerChannel?: number
+}
+
+// ============================================================================
+// User Management Command Payloads
+// ============================================================================
+
+/**
+ * Data for set_current_user command
+ */
+export interface StageSetCurrentUserData {
+	username?: string
+	avatar?: string | null
+	status?: 'online' | 'offline' | 'idle' | 'dnd'
+	activities?: Array<{ name: string; type: number; state?: string; url?: string }>
+}
+
+/**
+ * Data for switch_user command
+ */
+export interface StageSwitchUserData {
+	user_id: string
+}
+
+// ============================================================================
+// Activity Command Payloads
+// ============================================================================
+
+/**
+ * Data for launch_activity command
+ */
+export interface StageLaunchActivityData {
+	/** The URL to load in the Activity iframe */
+	launch_url: string
+	/** OAuth2 client ID / Application ID */
+	application_id: string
+	/** Guild context (optional) */
+	guild_id?: string
+	/** Channel context (optional) */
+	channel_id?: string
+	/** Locale override */
+	locale?: string
+	/** Platform override */
+	platform?: string
+	/** URL mappings for proxy */
+	url_mappings?: Array<{ prefix: string; target: string }>
+	/** CSP mode for proxy */
+	csp_mode?: 'discord_strict' | 'relaxed'
+	/** Launch path override */
+	launch_path?: string
+}
+
+/**
+ * Data for activity_rpc command (Stage UI -> Server)
+ * Forwards an RPC message from the Activity iframe to the backend host.
+ */
+export interface StageActivityRpcData {
+	/** The raw RPC message from the Activity */
+	message: unknown
+	/** Routing hint: frame_id from the iframe */
+	frame_id?: string
+	/** Routing hint: instance_id */
+	instance_id?: string
+}
+
+/**
+ * Data for activity.launched event
+ */
+export interface StageActivityLaunchedData {
+	/** Activity session record details */
+	instance_id: string
+	frame_id: string
+	application_id: string
+	guild_id: string | null
+	channel_id: string | null
+	user_id: string
+	launch_url: string
+	/** Query parameters to append to the iframe URL */
+	query_params: Record<string, string>
+	/** Proxy origin URL (if proxy is running) */
+	proxy_origin?: string
+	/** Full iframe URL through proxy (if proxy is running) */
+	iframe_url?: string
+}
+
+/**
+ * Data for activity.closed event
+ */
+export interface StageActivityClosedData {
+	instance_id: string
+	reason?: string
+}
+
+/**
+ * Data for activity.rpc.outbound event
+ * Sent when the backend host has an async event to push to the Activity.
+ */
+export interface StageActivityRpcOutboundData {
+	/** The outbound RPC message(s) to post to the Activity iframe */
+	messages: unknown[]
+}
+
+/**
+ * Data for activity.error event
+ */
+export interface StageActivityErrorData {
+	instance_id?: string
+	error: string
+	details?: unknown
+}
+
+// ============================================================================
+// Activity Auth Command/Event Payloads
+// ============================================================================
+
+/**
+ * Data for activity.ui.authorize_request event (backend -> Stage UI)
+ * Emitted when AUTHORIZE command needs user consent.
+ */
+export interface StageActivityAuthorizeRequestData {
+	/** The RPC nonce to correlate the response */
+	nonce: string
+	/** The instance_id of the requesting Activity */
+	instance_id: string
+	/** OAuth2 client_id / application_id */
+	client_id: string
+	/** Requested OAuth2 scopes */
+	scopes: string[]
+	/** Opaque state string from Activity */
+	state: string | null
+	/** The response_type from the Activity (typically "code") */
+	response_type: string
+	/** Optional prompt hint from Activity ("none" or "consent") */
+	prompt: string | null
+}
+
+/**
+ * Data for activity_authorize_result command (Stage UI -> backend)
+ * Sent when user approves or denies the consent modal.
+ */
+export interface StageActivityAuthorizeResultData {
+	/** The RPC nonce being resolved */
+	nonce: string
+	/** Whether the user approved the authorization */
+	approved: boolean
+	/** Scopes the user approved (may be subset of requested) */
+	approved_scopes?: string[]
+}
+
+/**
+ * Data for activity_set_auth_settings command
+ */
+export interface StageActivitySetAuthSettingsData {
+	mode: 'auto_approve' | 'auto_deny' | 'manual'
+	default_scopes?: string[]
+}
+
+/**
+ * Data for activity_reset_auth command
+ */
+export interface StageActivityResetAuthData {
+	/** (empty - no data needed, session is implicit) */
+}
+
+/**
+ * Payload for activity_set_platform_state command.
+ * DevTools sends this to update layout mode, orientation, or thermal state.
+ * Only changed fields need to be present.
+ */
+export interface StageActivitySetPlatformStateData {
+	layout_mode?: number
+	screen_orientation?: number
+	orientation?: 'portrait' | 'landscape'
+	thermal_state?: number
+}
+
+// ============================================================================
+// Activity IAP/Social/Quest Command/Event Payloads
+// ============================================================================
+
+/**
+ * Data for activity_set_iap_state command (DevTools -> backend)
+ */
+export interface StageActivitySetIapStateData {
+	skus: Array<{
+		id: string
+		name: string
+		type: number
+		application_id: string
+		slug: string
+		price: { amount: number; currency: string }
+		flags: number
+	}>
+	entitlements: Array<{
+		id: string
+		sku_id: string
+		user_id: string
+		application_id: string
+		type: number
+		consumed: boolean
+		starts_at?: string
+		ends_at?: string
+		guild_id?: string
+	}>
+}
+
+/**
+ * Data for activity_set_relationships command (DevTools -> backend)
+ */
+export interface StageActivitySetRelationshipsData {
+	relationships: Array<{
+		id: string
+		type: number
+		user: {
+			id: string
+			username: string
+			discriminator: string
+			avatar: string | null
+			global_name?: string | null
+		}
+		presence?: {
+			status: string
+			activities?: Array<{ name: string; type: number }>
+		}
+	}>
+}
+
+/**
+ * Data for activity_set_quests command (DevTools -> backend)
+ */
+export interface StageActivitySetQuestsData {
+	quests: Array<{
+		id: string
+		name: string
+		description: string
+		reward_code_sku_id?: string
+		enrollment_status: {
+			quest_id: string
+			enrolled_at: string
+			completed_at: string | null
+			progress: number
+			timer_started_at: string | null
+			timer_duration_seconds: number
+		} | null
+	}>
+}
+
+/**
+ * Data for activity_purchase_result command (Stage UI -> backend)
+ */
+export interface StageActivityPurchaseResultData {
+	nonce: string
+	approved: boolean
+}
+
+/**
+ * Data for activity.ui.purchase_request event (backend -> Stage UI)
+ */
+export interface StageActivityPurchaseRequestData {
+	nonce: string
+	instance_id: string
+	sku_id: string
+	sku_name: string
+	sku_price: { amount: number; currency: string }
+}
+
+// ============================================================================
+// Activity Proxy Command/Event Payloads
+// ============================================================================
+
+/**
+ * Data for activity_set_url_mappings command
+ */
+export interface StageActivitySetUrlMappingsData {
+	url_mappings: Array<{ prefix: string; target: string }>
+}
+
+/**
+ * Data for activity_set_csp_mode command
+ */
+export interface StageActivitySetCspModeData {
+	csp_mode: 'discord_strict' | 'relaxed'
+}
+
+/**
+ * Data for activity.proxy.status event
+ */
+export interface StageActivityProxyStatusData {
+	running: boolean
+	port: number
+	origin_template: string
+}
+
+/**
+ * Data for activity_set_origin_mode command
+ */
+export interface StageActivitySetOriginModeData {
+	mode: 'strict' | 'lenient'
+}
+
+/**
+ * Data for activity_set_sdk_shim command
+ */
+export interface StageActivitySetSdkShimData {
+	enabled: boolean
 }

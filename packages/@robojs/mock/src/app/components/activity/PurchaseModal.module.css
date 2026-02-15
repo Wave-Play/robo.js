@@ -1,0 +1,108 @@
+.overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.7);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+}
+
+.modal {
+	background: var(--bg-primary, #313338);
+	border-radius: 8px;
+	width: 380px;
+	max-width: 90vw;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.header {
+	padding: 24px 24px 12px;
+	text-align: center;
+}
+
+.skuIcon {
+	width: 56px;
+	height: 56px;
+	border-radius: 50%;
+	background: var(--bg-secondary, #2b2d31);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0 auto 12px;
+	font-size: 24px;
+}
+
+.title {
+	color: var(--text-normal, #dbdee1);
+	font-size: 20px;
+	font-weight: 600;
+	margin: 0;
+}
+
+.details {
+	padding: 12px 24px 20px;
+	text-align: center;
+}
+
+.skuName {
+	color: var(--text-normal, #dbdee1);
+	font-size: 16px;
+	font-weight: 500;
+	margin-bottom: 4px;
+}
+
+.skuPrice {
+	color: var(--text-muted, #949ba4);
+	font-size: 24px;
+	font-weight: 700;
+}
+
+.actions {
+	display: flex;
+	gap: 12px;
+	padding: 0 24px 20px;
+	justify-content: flex-end;
+}
+
+.cancelButton {
+	padding: 8px 24px;
+	border-radius: 4px;
+	border: none;
+	background: transparent;
+	color: var(--text-normal, #dbdee1);
+	font-size: 14px;
+	font-weight: 500;
+	cursor: pointer;
+}
+
+.cancelButton:hover {
+	text-decoration: underline;
+}
+
+.buyButton {
+	padding: 8px 24px;
+	border-radius: 4px;
+	border: none;
+	background: var(--status-positive, #23a559);
+	color: white;
+	font-size: 14px;
+	font-weight: 500;
+	cursor: pointer;
+}
+
+.buyButton:hover {
+	background: #1a8a47;
+}
+
+.disclaimer {
+	text-align: center;
+	color: var(--text-muted, #949ba4);
+	font-size: 11px;
+	padding: 0 24px 16px;
+	margin: 0;
+	font-style: italic;
+}

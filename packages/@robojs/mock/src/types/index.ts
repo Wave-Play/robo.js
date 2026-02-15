@@ -2007,6 +2007,88 @@ export type ActionType =
 	| 'automod_rule_created'
 	| 'automod_rule_updated'
 	| 'automod_rule_deleted'
+	// Activity recording action types
+	| 'activity_launch'
+	| 'activity_close'
+	| 'activity_rpc_inbound'
+	| 'activity_rpc_outbound'
+	| 'activity_proxy_http'
+	| 'activity_proxy_ws'
+
+// ============================================================================
+// Activity Action Data Types (Recording)
+// ============================================================================
+
+/**
+ * Data recorded for an activity_launch action.
+ */
+export interface ActivityLaunchActionData {
+	instance_id: string
+	frame_id: string
+	application_id: string
+	guild_id: string | null
+	channel_id: string | null
+	user_id: string
+	launch_url: string
+	locale: string
+	platform: string
+}
+
+/**
+ * Data recorded for an activity_close action.
+ */
+export interface ActivityCloseActionData {
+	instance_id: string
+	reason?: string
+}
+
+/**
+ * Data recorded for an activity_rpc_inbound action (Activity -> Host).
+ */
+export interface ActivityRpcInboundActionData {
+	instance_id: string
+	frame_id?: string
+	/** The raw RPC message from the Activity */
+	message: unknown
+}
+
+/**
+ * Data recorded for an activity_rpc_outbound action (Host -> Activity).
+ */
+export interface ActivityRpcOutboundActionData {
+	instance_id: string
+	/** Outbound RPC messages from the host */
+	messages: unknown[]
+}
+
+/**
+ * Data recorded for an activity_proxy_http action.
+ */
+export interface ActivityProxyHttpActionData {
+	instance_id: string
+	method: string
+	url: string
+	upstream_url: string
+	status_code: number
+	duration_ms: number
+	content_type?: string
+	request_size?: number
+	response_size?: number
+	mapping_prefix?: string | null
+}
+
+/**
+ * Data recorded for an activity_proxy_ws action.
+ */
+export interface ActivityProxyWsActionData {
+	instance_id: string
+	event: 'connect' | 'disconnect' | 'message_up' | 'message_down'
+	url: string
+	upstream_url: string
+	mapping_prefix?: string | null
+	close_code?: number
+	message_size?: number
+}
 
 // ============================================================================
 // Action Metadata Types (Simulation Support)
@@ -2426,7 +2508,7 @@ export interface ScenarioTimeConfig {
  * Union of all possible step types.
  * Each step type has a `type` discriminator for type narrowing.
  */
-export type ScenarioStep = ScenarioDispatchStep | ScenarioWaitStep | ScenarioAssertStep | ScenarioInteractStep
+export type ScenarioStep = ScenarioDispatchStep | ScenarioWaitStep | ScenarioAssertStep | ScenarioInteractStep | ScenarioActivityStep
 
 /**
  * Base fields shared by all step types.
@@ -2668,6 +2750,77 @@ export interface ScenarioInteractConfig {
 	 * Format: { "field_custom_id": "value" }
 	 */
 	modalFields?: Record<string, string>
+}
+
+/**
+ * Activity step: Perform an Activity-related action (launch, RPC, wait, mappings).
+ */
+export interface ScenarioActivityStep extends ScenarioStepBase {
+	type: 'activity'
+
+	/**
+	 * Activity action to perform.
+	 */
+	activity: ScenarioActivityAction
+}
+
+/**
+ * Activity action configuration.
+ */
+export interface ScenarioActivityAction {
+	/**
+	 * Kind of Activity action.
+	 */
+	kind: 'launch' | 'rpc' | 'wait_event' | 'set_mappings'
+
+	/**
+	 * Kind-specific payload.
+	 */
+	payload: unknown
+}
+
+/**
+ * Payload for activity.launch scenario step.
+ */
+export interface ScenarioActivityLaunchPayload {
+	/** URL to launch */
+	launch_url: string
+	/** Application ID */
+	application_id: string
+	/** Guild context */
+	guild_id?: string
+	/** Channel context */
+	channel_id?: string
+	/** URL mappings */
+	url_mappings?: Array<{ prefix: string; target: string }>
+	/** CSP mode */
+	csp_mode?: 'discord_strict' | 'relaxed'
+}
+
+/**
+ * Payload for activity.rpc scenario step.
+ */
+export interface ScenarioActivityRpcPayload {
+	/** Raw RPC message to inject */
+	message: unknown
+}
+
+/**
+ * Payload for activity.wait_event scenario step.
+ */
+export interface ScenarioActivityWaitEventPayload {
+	/** Action type to wait for */
+	action_type: 'activity_rpc_inbound' | 'activity_rpc_outbound' | 'activity_proxy_http' | 'activity_proxy_ws'
+	/** Optional matcher on data fields (shallow equality) */
+	data_contains?: Record<string, unknown>
+}
+
+/**
+ * Payload for activity.set_mappings scenario step.
+ */
+export interface ScenarioActivitySetMappingsPayload {
+	/** URL mappings to apply */
+	url_mappings: Array<{ prefix: string; target: string }>
 }
 
 // ============================================================================

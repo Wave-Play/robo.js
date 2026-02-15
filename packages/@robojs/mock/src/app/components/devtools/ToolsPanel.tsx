@@ -1,18 +1,112 @@
 import { useCallback, useState, useEffect } from 'react'
 import { usePlaybackControls, type RecordedEvent } from '../../stores/playbackStore'
 import { useStageData } from '../../hooks/useStageData'
-import { useSessionDispatch, type PendingInteraction } from '../../stores/sessionStore'
+import { useSessionDispatch, useWebSocket, type PendingInteraction } from '../../stores/sessionStore'
 import { useToaster } from '../common/Toaster'
 import type { StageEventType, StageMessage, StageChannel, StageMember, StageGuild, StateSyncPayload } from '../../types/stage'
 import styles from './ToolsPanel.module.css'
 
 export function ToolsPanel() {
-	const { selectedChannelId, selectedGuildId, sessionId, isConnected, botUser } = useStageData()
+	const { selectedChannelId, selectedGuildId, sessionId, isConnected, botUser, activity } = useStageData()
 	const sessionDispatch = useSessionDispatch()
+	const { sendCommand } = useWebSocket()
 	const { addEvents } = usePlaybackControls()
 	const { showToast } = useToaster()
 	const [isGenerating, setIsGenerating] = useState(false)
 	const [copied, setCopied] = useState(false)
+
+	// URL Mappings editor state
+	const [mappings, setMappings] = useState<Array<{ prefix: string; target: string }>>([])
+	const [cspMode, setCspMode] = useState<'discord_strict' | 'relaxed'>('relaxed')
+	const [isMappingsApplying, setIsMappingsApplying] = useState(false)
+
+	// Auth simulator state
+	const [authMode, setAuthMode] = useState<'auto_approve' | 'auto_deny' | 'manual'>('auto_approve')
+	const [defaultScopes, setDefaultScopes] = useState('')
+	const authState = activity?.authState ?? 'UNAUTHENTICATED'
+
+	// Platform state controls
+	const [layoutMode, setLayoutMode] = useState(0)
+	const [orientationValue, setOrientationValue] = useState('landscape')
+	const [thermalState, setThermalState] = useState(0)
+
+	// IAP editor state
+	const [devtoolsSkus, setDevtoolsSkus] = useState<Array<{ id: string; name: string; type: number; slug: string; application_id: string; price: { amount: number; currency: string }; flags: number }>>([])
+	const [devtoolsEntitlements, setDevtoolsEntitlements] = useState<Array<{ id: string; sku_id: string; user_id: string; application_id: string; type: number; consumed: boolean }>>([])
+
+	// Relationships editor state
+	const [devtoolsRelationships, setDevtoolsRelationships] = useState<Array<{ id: string; type: number; user: { id: string; username: string; discriminator: string; avatar: string | null; global_name?: string | null }; presence?: { status: string } }>>([])
+
+	// Quests editor state
+	const [devtoolsQuests, setDevtoolsQuests] = useState<Array<{ id: string; name: string; description: string; enrollment_status: { quest_id: string; enrolled_at: string; completed_at: string | null; progress: number; timer_started_at: string | null; timer_duration_seconds: number } | null }>>([])
+
+	// Sync auth mode from state_sync
+	useEffect(() => {
+		if (activity?.devtoolsAuthMode) {
+			setAuthMode(activity.devtoolsAuthMode)
+		}
+	}, [activity?.devtoolsAuthMode])
+
+	const handleAuthModeChange = useCallback(async (mode: 'auto_approve' | 'auto_deny' | 'manual') => {
+		setAuthMode(mode)
+		try {
+			await sendCommand('activity_set_auth_settings', {
+				mode,
+				default_scopes: defaultScopes ? defaultScopes.split(',').map(s => s.trim()).filter(Boolean) : []
+			})
+			showToast(`Auth mode set to ${mode.replace(/_/g, ' ')}`, 'success')
+		} catch {
+			showToast('Failed to update auth settings', 'error')
+		}
+	}, [defaultScopes, sendCommand, showToast])
+
+	const handleApplyDefaultScopes = useCallback(async () => {
+		const scopes = defaultScopes ? defaultScopes.split(',').map(s => s.trim()).filter(Boolean) : []
+		try {
+			await sendCommand('activity_set_auth_settings', {
+				mode: authMode,
+				default_scopes: scopes
+			})
+			showToast('Default scopes updated', 'success')
+		} catch {
+			showToast('Failed to update default scopes', 'error')
+		}
+	}, [defaultScopes, authMode, sendCommand, showToast])
+
+	const handleResetAuth = useCallback(async () => {
+		try {
+			await sendCommand('activity_reset_auth', {})
+			showToast('Auth state reset to UNAUTHENTICATED', 'success')
+		} catch {
+			showToast('Failed to reset auth state', 'error')
+		}
+	}, [sendCommand, showToast])
+
+	// Load mappings from localStorage when activity opens
+	useEffect(() => {
+		if (!activity?.isOpen) return
+		const saved = localStorage.getItem('mock_devtools_url_mappings')
+		if (saved) {
+			try {
+				setMappings(JSON.parse(saved))
+			} catch { /* ignore */ }
+		}
+		const savedCsp = localStorage.getItem('mock_devtools_csp_mode')
+		if (savedCsp === 'discord_strict' || savedCsp === 'relaxed') {
+			setCspMode(savedCsp)
+		}
+	}, [activity?.isOpen])
+
+	// Persist mappings to localStorage on change
+	useEffect(() => {
+		if (mappings.length > 0) {
+			localStorage.setItem('mock_devtools_url_mappings', JSON.stringify(mappings))
+		}
+	}, [mappings])
+
+	useEffect(() => {
+		localStorage.setItem('mock_devtools_csp_mode', cspMode)
+	}, [cspMode])
 
 	const copySessionId = useCallback(() => {
 		if (!sessionId) return
@@ -1511,65 +1605,34 @@ export function ToolsPanel() {
 								showToast('No active session or guild selected', 'warning')
 								return
 							}
-							const apiPrefix = getApiPrefix()
-							const baseUrl = `${apiPrefix}/api/control/sessions/${sessionId}`
 							const voiceChannelId = 'test_voice_general'
 
-							// Toggle speaking state for Alice (simulated)
 							try {
-								await fetch(`${baseUrl}/dispatch`, {
-									method: 'POST',
-									headers: { 'Content-Type': 'application/json' },
-									body: JSON.stringify({
-										event: 'VOICE_STATE_UPDATE',
-										data: {
-											guild_id: selectedGuildId,
-											channel_id: voiceChannelId,
-											user_id: 'test_user_001',
-											self_mute: false,
-											self_deaf: false,
-											mute: false,
-											deaf: false,
-											speaking: true,
-											member: {
-												user: { id: 'test_user_001', username: 'Alice', discriminator: '0001', avatar: null },
-												roles: [],
-												joined_at: new Date().toISOString()
-											}
-										}
-									})
+								await sendCommand('update_voice_state', {
+									guild_id: selectedGuildId,
+									channel_id: voiceChannelId,
+									user: { id: 'test_user_001' },
+									speaking: true,
+									self_mute: false,
+									self_deaf: false
 								})
 								showToast('Simulating Alice speaking...', 'success')
 								// Auto-stop speaking after 3 seconds
 								setTimeout(async () => {
 									try {
-										await fetch(`${baseUrl}/dispatch`, {
-											method: 'POST',
-											headers: { 'Content-Type': 'application/json' },
-											body: JSON.stringify({
-												event: 'VOICE_STATE_UPDATE',
-												data: {
-													guild_id: selectedGuildId,
-													channel_id: voiceChannelId,
-													user_id: 'test_user_001',
-													self_mute: false,
-													self_deaf: false,
-													mute: false,
-													deaf: false,
-													speaking: false,
-													member: {
-														user: { id: 'test_user_001', username: 'Alice', discriminator: '0001', avatar: null },
-														roles: [],
-														joined_at: new Date().toISOString()
-													}
-												}
-											})
+										await sendCommand('update_voice_state', {
+											guild_id: selectedGuildId,
+											channel_id: voiceChannelId,
+											user: { id: 'test_user_001' },
+											speaking: false,
+											self_mute: false,
+											self_deaf: false
 										})
 									} catch {
 										// Ignore errors when stopping
 									}
 								}, 3000)
-							} catch (error) {
+							} catch {
 								showToast('Failed to simulate speaking', 'error')
 							}
 						}}
@@ -1579,6 +1642,789 @@ export function ToolsPanel() {
 					</button>
 				</div>
 			</section>
+
+			{/* Activity Proxy Settings */}
+			{activity?.isOpen && (
+				<section className={styles.section}>
+					<h3 className={styles.sectionTitle}>
+						<ProxyIcon /> Activity Proxy
+					</h3>
+					<p className={styles.description}>
+						Configure URL mappings and CSP mode for the Activity proxy.
+					</p>
+
+					{/* CSP Mode Selector */}
+					<div className={styles.selectRow}>
+						<span>CSP Mode</span>
+						<select
+							value={cspMode}
+							onChange={(e) => {
+								const mode = e.target.value as 'discord_strict' | 'relaxed'
+								setCspMode(mode)
+								sendCommand('activity_set_csp_mode', { csp_mode: mode })
+									.then(() => showToast(`CSP mode set to ${mode}`, 'success'))
+									.catch(() => showToast('Failed to set CSP mode', 'error'))
+							}}
+						>
+							<option value="relaxed">Relaxed</option>
+							<option value="discord_strict">Discord Strict</option>
+						</select>
+					</div>
+
+					{/* URL Mappings Table */}
+					<div className={styles.mappingsTable}>
+						<div className={styles.mappingsHeader}>
+							<span>Prefix</span>
+							<span>Target</span>
+							<span></span>
+						</div>
+						{mappings.map((mapping, index) => (
+							<div key={index} className={styles.mappingsRow}>
+								<input
+									type="text"
+									placeholder="/prefix"
+									value={mapping.prefix}
+									onChange={(e) => {
+										const updated = [...mappings]
+										updated[index] = { ...updated[index], prefix: e.target.value }
+										setMappings(updated)
+									}}
+								/>
+								<input
+									type="text"
+									placeholder="hostname:port"
+									value={mapping.target}
+									onChange={(e) => {
+										const updated = [...mappings]
+										updated[index] = { ...updated[index], target: e.target.value }
+										setMappings(updated)
+									}}
+								/>
+								<button
+									className={styles.removeButton}
+									onClick={() => {
+										setMappings(mappings.filter((_, i) => i !== index))
+									}}
+									title="Remove mapping"
+								>
+									<RemoveIcon />
+								</button>
+							</div>
+						))}
+					</div>
+
+					{/* Add / Apply / Upload */}
+					<div className={`${styles.buttonGroup} ${styles.buttonGroupStack}`}>
+						<button
+							className={styles.actionButton}
+							onClick={() => setMappings([...mappings, { prefix: '/', target: '' }])}
+						>
+							<AddIcon /> Add Mapping
+						</button>
+						<button
+							className={styles.actionButton}
+							disabled={isMappingsApplying}
+							onClick={async () => {
+								setIsMappingsApplying(true)
+								try {
+									const validMappings = mappings.filter(m => m.prefix && m.target)
+									await sendCommand('activity_set_url_mappings', {
+										url_mappings: validMappings
+									})
+									showToast(`Applied ${validMappings.length} mapping(s)`, 'success')
+								} catch {
+									showToast('Failed to apply mappings', 'error')
+								} finally {
+									setIsMappingsApplying(false)
+								}
+							}}
+						>
+							<ApplyIcon />
+							{isMappingsApplying ? 'Applying...' : 'Apply Mappings'}
+						</button>
+						<button
+							className={styles.actionButton}
+							onClick={() => {
+								const input = document.createElement('input')
+								input.type = 'file'
+								input.accept = '.json'
+								input.onchange = async (e) => {
+									const file = (e.target as HTMLInputElement).files?.[0]
+									if (!file) return
+									try {
+										const text = await file.text()
+										const parsed = JSON.parse(text)
+										if (parsed.version !== 1 || !Array.isArray(parsed.activities)) {
+											showToast('Invalid mappings file format', 'error')
+											return
+										}
+										const firstActivity = parsed.activities[0]
+										if (firstActivity?.url_mappings) {
+											setMappings(firstActivity.url_mappings.map((m: { prefix: string; target: string }) => ({
+												prefix: m.prefix,
+												target: m.target
+											})))
+											if (firstActivity.proxy?.csp_mode) {
+												setCspMode(firstActivity.proxy.csp_mode)
+											}
+											showToast('Mappings loaded from file', 'success')
+										} else {
+											showToast('No URL mappings found in file', 'warning')
+										}
+									} catch {
+										showToast('Failed to parse mappings file', 'error')
+									}
+								}
+								input.click()
+							}}
+						>
+							<UploadIcon /> Upload Mappings File
+						</button>
+					</div>
+				</section>
+			)}
+
+			{/* Activity Auth Simulator */}
+			{activity?.isOpen && (
+				<section className={styles.section}>
+					<h3 className={styles.sectionTitle}>Activity Auth Simulator</h3>
+					<p className={styles.description}>
+						Configure how AUTHORIZE requests are handled for the Activity.
+					</p>
+
+					{/* Auth State Display */}
+					<div className={styles.selectRow}>
+						<span>Auth State</span>
+						<span style={{
+							color: authState === 'AUTHENTICATED' ? 'var(--status-positive, #23a559)' : 'var(--text-muted, #949ba4)',
+							fontWeight: 600,
+							fontSize: '13px'
+						}}>
+							{authState}
+						</span>
+					</div>
+
+					{/* Auth Mode Selector */}
+					<div className={styles.selectRow}>
+						<span>Authorization Mode</span>
+						<select
+							value={authMode}
+							onChange={(e) => handleAuthModeChange(e.target.value as 'auto_approve' | 'auto_deny' | 'manual')}
+						>
+							<option value="auto_approve">Auto-Approve</option>
+							<option value="auto_deny">Auto-Deny</option>
+							<option value="manual">Manual (Show Consent)</option>
+						</select>
+					</div>
+
+					{/* Default Scopes */}
+					<div className={styles.selectRow}>
+						<span>Default Scopes</span>
+						<div style={{ display: 'flex', gap: '4px', flex: 1 }}>
+							<input
+								type="text"
+								value={defaultScopes}
+								onChange={(e) => setDefaultScopes(e.target.value)}
+								placeholder="identify, guilds"
+								style={{ flex: 1, padding: '4px 8px', fontSize: '12px', background: 'var(--bg-secondary, #2b2d31)', border: '1px solid var(--border-subtle, #3f4147)', borderRadius: '4px', color: 'var(--text-normal, #dbdee1)' }}
+							/>
+							<button className={styles.actionButton} onClick={handleApplyDefaultScopes} style={{ padding: '4px 8px', fontSize: '11px' }}>
+								Apply
+							</button>
+						</div>
+					</div>
+
+					{/* Reset Auth State */}
+					<div className={styles.buttonGroup}>
+						<button className={styles.dangerButton} onClick={handleResetAuth}>
+							Reset Auth State
+						</button>
+					</div>
+				</section>
+			)}
+
+			{/* Activity Platform State */}
+			{activity?.isOpen && (
+				<section className={styles.section}>
+					<h3 className={styles.sectionTitle}>
+						<PlatformStateIcon /> Activity Platform State
+					</h3>
+					<p className={styles.description}>
+						Simulate layout mode, orientation, and thermal state changes for the Activity.
+					</p>
+
+					{/* Layout Mode */}
+					<div className={styles.selectRow}>
+						<span>Layout Mode</span>
+						<select
+							value={layoutMode}
+							onChange={(e) => {
+								const mode = parseInt(e.target.value)
+								setLayoutMode(mode)
+								sendCommand('activity_set_platform_state', { layout_mode: mode })
+							}}
+						>
+							<option value={0}>Focused</option>
+							<option value={1}>PIP</option>
+							<option value={2}>Grid</option>
+						</select>
+					</div>
+
+					{/* Orientation */}
+					<div className={styles.selectRow}>
+						<span>Orientation</span>
+						<select
+							value={orientationValue}
+							onChange={(e) => {
+								const val = e.target.value
+								const screenOrientation = val === 'portrait' ? 0 : 1
+								setOrientationValue(val)
+								sendCommand('activity_set_platform_state', {
+									screen_orientation: screenOrientation,
+									orientation: val
+								})
+							}}
+						>
+							<option value="landscape">Landscape</option>
+							<option value="portrait">Portrait</option>
+						</select>
+					</div>
+
+					{/* Thermal State */}
+					<div className={styles.selectRow}>
+						<span>Thermal State</span>
+						<select
+							value={thermalState}
+							onChange={(e) => {
+								const state = parseInt(e.target.value)
+								setThermalState(state)
+								sendCommand('activity_set_platform_state', { thermal_state: state })
+							}}
+						>
+							<option value={0}>Nominal</option>
+							<option value={1}>Fair</option>
+							<option value={2}>Serious</option>
+							<option value={3}>Critical</option>
+						</select>
+					</div>
+				</section>
+			)}
+
+			{/* Activity IAP */}
+			{activity?.isOpen && (
+				<section className={styles.section}>
+					<h3 className={styles.sectionTitle}>
+						Activity IAP
+					</h3>
+					<p className={styles.description}>
+						Manage SKUs (products) and entitlements (purchases) for the Activity.
+					</p>
+
+					{/* SKU Table */}
+					<div className={styles.mappingsTable}>
+						<div className={styles.mappingsHeader}>
+							<span>Name</span>
+							<span>Type</span>
+							<span>Price</span>
+							<span></span>
+						</div>
+						{devtoolsSkus.map((sku, index) => (
+							<div key={sku.id} className={styles.mappingsRow}>
+								<input
+									type="text"
+									placeholder="SKU Name"
+									value={sku.name}
+									onChange={(e) => {
+										const updated = [...devtoolsSkus]
+										updated[index] = { ...updated[index], name: e.target.value, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') }
+										setDevtoolsSkus(updated)
+									}}
+								/>
+								<select
+									value={sku.type}
+									onChange={(e) => {
+										const updated = [...devtoolsSkus]
+										updated[index] = { ...updated[index], type: parseInt(e.target.value) }
+										setDevtoolsSkus(updated)
+									}}
+								>
+									<option value={5}>Subscription</option>
+									<option value={3}>Consumable</option>
+									<option value={2}>Durable</option>
+								</select>
+								<input
+									type="number"
+									placeholder="499"
+									value={sku.price.amount}
+									onChange={(e) => {
+										const updated = [...devtoolsSkus]
+										updated[index] = { ...updated[index], price: { ...updated[index].price, amount: parseInt(e.target.value) || 0 } }
+										setDevtoolsSkus(updated)
+									}}
+									style={{ width: '70px' }}
+								/>
+								<button
+									className={styles.removeButton}
+									onClick={() => setDevtoolsSkus(devtoolsSkus.filter((_, i) => i !== index))}
+									title="Remove SKU"
+								>
+									<RemoveIcon />
+								</button>
+							</div>
+						))}
+					</div>
+
+					{/* Entitlements Table */}
+					{devtoolsEntitlements.length > 0 && (
+						<div className={styles.mappingsTable} style={{ marginTop: '8px' }}>
+							<div className={styles.mappingsHeader}>
+								<span>SKU</span>
+								<span>Type</span>
+								<span>Consumed</span>
+								<span></span>
+							</div>
+							{devtoolsEntitlements.map((ent, index) => (
+								<div key={ent.id} className={styles.mappingsRow}>
+									<select
+										value={ent.sku_id}
+										onChange={(e) => {
+											const updated = [...devtoolsEntitlements]
+											updated[index] = { ...updated[index], sku_id: e.target.value }
+											setDevtoolsEntitlements(updated)
+										}}
+									>
+										<option value="">-- Select SKU --</option>
+										{devtoolsSkus.map((s) => (
+											<option key={s.id} value={s.id}>{s.name}</option>
+										))}
+									</select>
+									<select
+										value={ent.type}
+										onChange={(e) => {
+											const updated = [...devtoolsEntitlements]
+											updated[index] = { ...updated[index], type: parseInt(e.target.value) }
+											setDevtoolsEntitlements(updated)
+										}}
+									>
+										<option value={7}>Purchase</option>
+										<option value={4}>Subscription</option>
+										<option value={8}>Premium</option>
+									</select>
+									<input
+										type="checkbox"
+										checked={ent.consumed}
+										onChange={(e) => {
+											const updated = [...devtoolsEntitlements]
+											updated[index] = { ...updated[index], consumed: e.target.checked }
+											setDevtoolsEntitlements(updated)
+										}}
+									/>
+									<button
+										className={styles.removeButton}
+										onClick={() => setDevtoolsEntitlements(devtoolsEntitlements.filter((_, i) => i !== index))}
+										title="Remove Entitlement"
+									>
+										<RemoveIcon />
+									</button>
+								</div>
+							))}
+						</div>
+					)}
+
+					<div className={`${styles.buttonGroup} ${styles.buttonGroupStack}`}>
+						<button
+							className={styles.actionButton}
+							onClick={() => {
+								const id = `sku_${Date.now().toString(36)}`
+								setDevtoolsSkus([...devtoolsSkus, { id, name: 'New SKU', type: 3, slug: 'new-sku', application_id: activity.applicationId ?? '', price: { amount: 99, currency: 'usd' }, flags: 0 }])
+							}}
+						>
+							Add SKU
+						</button>
+						<button
+							className={styles.actionButton}
+							onClick={() => {
+								if (devtoolsSkus.length === 0) { showToast('Add SKUs first', 'warning'); return }
+								const id = `ent_${Date.now().toString(36)}`
+								setDevtoolsEntitlements([...devtoolsEntitlements, { id, sku_id: devtoolsSkus[0]?.id ?? '', user_id: 'mock_user', application_id: activity.applicationId ?? '', type: 7, consumed: false }])
+							}}
+						>
+							Add Entitlement
+						</button>
+						<button
+							className={styles.actionButton}
+							onClick={() => {
+								const appId = activity.applicationId ?? ''
+								const seedSkus = [
+									{ id: `sku_${Date.now().toString(36)}_1`, name: 'Premium Pass', type: 5, slug: 'premium-pass', application_id: appId, price: { amount: 499, currency: 'usd' }, flags: 0 },
+									{ id: `sku_${Date.now().toString(36)}_2`, name: 'Gem Pack (100)', type: 3, slug: 'gem-pack-100', application_id: appId, price: { amount: 199, currency: 'usd' }, flags: 0 },
+									{ id: `sku_${Date.now().toString(36)}_3`, name: 'Exclusive Skin', type: 2, slug: 'exclusive-skin', application_id: appId, price: { amount: 299, currency: 'usd' }, flags: 0 }
+								]
+								const seedEntitlements = [
+									{ id: `ent_${Date.now().toString(36)}`, sku_id: seedSkus[0].id, user_id: 'mock_user', application_id: appId, type: 4, consumed: false }
+								]
+								setDevtoolsSkus(seedSkus)
+								setDevtoolsEntitlements(seedEntitlements)
+								showToast('Seeded IAP defaults', 'success')
+							}}
+						>
+							Seed Defaults
+						</button>
+						<button
+							className={styles.actionButton}
+							onClick={() => { setDevtoolsSkus([]); setDevtoolsEntitlements([]) }}
+						>
+							Clear All
+						</button>
+						<button
+							className={styles.actionButton}
+							onClick={async () => {
+								try {
+									await sendCommand('activity_set_iap_state', {
+										skus: devtoolsSkus,
+										entitlements: devtoolsEntitlements
+									})
+									showToast(`Applied ${devtoolsSkus.length} SKUs, ${devtoolsEntitlements.length} entitlements`, 'success')
+								} catch {
+									showToast('Failed to apply IAP state', 'error')
+								}
+							}}
+						>
+							Apply
+						</button>
+					</div>
+				</section>
+			)}
+
+			{/* Activity Relationships */}
+			{activity?.isOpen && (
+				<section className={styles.section}>
+					<h3 className={styles.sectionTitle}>
+						Activity Relationships
+					</h3>
+					<p className={styles.description}>
+						Manage the user's social graph (friends, blocked users) for the Activity.
+					</p>
+
+					<div className={styles.mappingsTable}>
+						<div className={styles.mappingsHeader}>
+							<span>Username</span>
+							<span>Type</span>
+							<span>Status</span>
+							<span></span>
+						</div>
+						{devtoolsRelationships.map((rel, index) => (
+							<div key={rel.id} className={styles.mappingsRow}>
+								<input
+									type="text"
+									placeholder="Username"
+									value={rel.user.username}
+									onChange={(e) => {
+										const updated = [...devtoolsRelationships]
+										updated[index] = { ...updated[index], user: { ...updated[index].user, username: e.target.value } }
+										setDevtoolsRelationships(updated)
+									}}
+								/>
+								<select
+									value={rel.type}
+									onChange={(e) => {
+										const updated = [...devtoolsRelationships]
+										updated[index] = { ...updated[index], type: parseInt(e.target.value) }
+										setDevtoolsRelationships(updated)
+									}}
+								>
+									<option value={1}>Friend</option>
+									<option value={2}>Blocked</option>
+									<option value={3}>Pending In</option>
+									<option value={4}>Pending Out</option>
+								</select>
+								<select
+									value={rel.presence?.status ?? 'online'}
+									onChange={(e) => {
+										const updated = [...devtoolsRelationships]
+										updated[index] = { ...updated[index], presence: { status: e.target.value } }
+										setDevtoolsRelationships(updated)
+									}}
+								>
+									<option value="online">Online</option>
+									<option value="idle">Idle</option>
+									<option value="dnd">DND</option>
+									<option value="offline">Offline</option>
+								</select>
+								<button
+									className={styles.removeButton}
+									onClick={() => setDevtoolsRelationships(devtoolsRelationships.filter((_, i) => i !== index))}
+									title="Remove Relationship"
+								>
+									<RemoveIcon />
+								</button>
+							</div>
+						))}
+					</div>
+
+					<div className={`${styles.buttonGroup} ${styles.buttonGroupStack}`}>
+						<button
+							className={styles.actionButton}
+							onClick={() => {
+								const id = `rel_${Date.now().toString(36)}`
+								const userId = `user_${Date.now().toString(36)}`
+								setDevtoolsRelationships([...devtoolsRelationships, { id, type: 1, user: { id: userId, username: 'NewFriend', discriminator: '0', avatar: null }, presence: { status: 'online' } }])
+							}}
+						>
+							Add Relationship
+						</button>
+						<button
+							className={styles.actionButton}
+							onClick={() => {
+								setDevtoolsRelationships([
+									{ id: `rel_${Date.now().toString(36)}_1`, type: 1, user: { id: `u_${Date.now().toString(36)}_1`, username: 'FriendUser1', discriminator: '0', avatar: null, global_name: 'Friend One' }, presence: { status: 'online' } },
+									{ id: `rel_${Date.now().toString(36)}_2`, type: 1, user: { id: `u_${Date.now().toString(36)}_2`, username: 'FriendUser2', discriminator: '0', avatar: null, global_name: 'Friend Two' }, presence: { status: 'idle' } },
+									{ id: `rel_${Date.now().toString(36)}_3`, type: 3, user: { id: `u_${Date.now().toString(36)}_3`, username: 'PendingUser', discriminator: '0', avatar: null, global_name: 'Pending Request' }, presence: { status: 'offline' } }
+								])
+								showToast('Seeded relationship defaults', 'success')
+							}}
+						>
+							Seed Defaults
+						</button>
+						<button
+							className={styles.actionButton}
+							onClick={() => setDevtoolsRelationships([])}
+						>
+							Clear All
+						</button>
+						<button
+							className={styles.actionButton}
+							onClick={async () => {
+								try {
+									await sendCommand('activity_set_relationships', {
+										relationships: devtoolsRelationships
+									})
+									showToast(`Applied ${devtoolsRelationships.length} relationships`, 'success')
+								} catch {
+									showToast('Failed to apply relationships', 'error')
+								}
+							}}
+						>
+							Apply
+						</button>
+					</div>
+				</section>
+			)}
+
+			{/* Activity Quests */}
+			{activity?.isOpen && (
+				<section className={styles.section}>
+					<h3 className={styles.sectionTitle}>
+						Activity Quests
+					</h3>
+					<p className={styles.description}>
+						Manage quest enrollment status and timers for the Activity.
+					</p>
+
+					<div className={styles.mappingsTable}>
+						<div className={styles.mappingsHeader}>
+							<span>Name</span>
+							<span>Progress</span>
+							<span>Timer (s)</span>
+							<span></span>
+						</div>
+						{devtoolsQuests.map((quest, index) => (
+							<div key={quest.id} className={styles.mappingsRow}>
+								<input
+									type="text"
+									placeholder="Quest Name"
+									value={quest.name}
+									onChange={(e) => {
+										const updated = [...devtoolsQuests]
+										updated[index] = { ...updated[index], name: e.target.value }
+										setDevtoolsQuests(updated)
+									}}
+								/>
+								<input
+									type="number"
+									placeholder="0-100"
+									min={0}
+									max={100}
+									value={quest.enrollment_status?.progress ?? 0}
+									onChange={(e) => {
+										const updated = [...devtoolsQuests]
+										const progress = Math.max(0, Math.min(100, parseInt(e.target.value) || 0))
+										if (updated[index].enrollment_status) {
+											updated[index] = {
+												...updated[index],
+												enrollment_status: { ...updated[index].enrollment_status!, progress }
+											}
+										}
+										setDevtoolsQuests(updated)
+									}}
+									style={{ width: '60px' }}
+								/>
+								<input
+									type="number"
+									placeholder="900"
+									value={quest.enrollment_status?.timer_duration_seconds ?? 900}
+									onChange={(e) => {
+										const updated = [...devtoolsQuests]
+										if (updated[index].enrollment_status) {
+											updated[index] = {
+												...updated[index],
+												enrollment_status: { ...updated[index].enrollment_status!, timer_duration_seconds: parseInt(e.target.value) || 0 }
+											}
+										}
+										setDevtoolsQuests(updated)
+									}}
+									style={{ width: '70px' }}
+								/>
+								<button
+									className={styles.removeButton}
+									onClick={() => setDevtoolsQuests(devtoolsQuests.filter((_, i) => i !== index))}
+									title="Remove Quest"
+								>
+									<RemoveIcon />
+								</button>
+							</div>
+						))}
+					</div>
+
+					<div className={`${styles.buttonGroup} ${styles.buttonGroupStack}`}>
+						<button
+							className={styles.actionButton}
+							onClick={() => {
+								const id = `quest_${Date.now().toString(36)}`
+								setDevtoolsQuests([...devtoolsQuests, {
+									id,
+									name: 'New Quest',
+									description: 'Complete this quest for a reward',
+									enrollment_status: {
+										quest_id: id,
+										enrolled_at: new Date().toISOString(),
+										completed_at: null,
+										progress: 0,
+										timer_started_at: null,
+										timer_duration_seconds: 900
+									}
+								}])
+							}}
+						>
+							Add Quest
+						</button>
+						<button
+							className={styles.actionButton}
+							onClick={() => {
+								const id = `quest_${Date.now().toString(36)}`
+								setDevtoolsQuests([{
+									id,
+									name: 'Play for 15 minutes',
+									description: 'Play the activity for 15 minutes to earn a reward',
+									enrollment_status: {
+										quest_id: id,
+										enrolled_at: new Date(Date.now() - 3600000).toISOString(),
+										completed_at: null,
+										progress: 35,
+										timer_started_at: null,
+										timer_duration_seconds: 900
+									}
+								}])
+								showToast('Seeded quest defaults', 'success')
+							}}
+						>
+							Seed Defaults
+						</button>
+						<button
+							className={styles.actionButton}
+							onClick={() => setDevtoolsQuests([])}
+						>
+							Clear All
+						</button>
+						<button
+							className={styles.actionButton}
+							onClick={async () => {
+								try {
+									await sendCommand('activity_set_quests', {
+										quests: devtoolsQuests
+									})
+									showToast(`Applied ${devtoolsQuests.length} quests`, 'success')
+								} catch {
+									showToast('Failed to apply quests', 'error')
+								}
+							}}
+						>
+							Apply
+						</button>
+					</div>
+				</section>
+			)}
+
+			{/* Activity Compatibility Settings */}
+			{activity?.isOpen && (
+				<section className={styles.section}>
+					<h3 className={styles.sectionTitle}>
+						Activity Compatibility
+					</h3>
+					<p className={styles.description}>
+						Origin check mode and SDK shim for local development compatibility.
+					</p>
+
+					{/* Origin Check Mode */}
+					<div className={styles.selectRow}>
+						<span>Origin Check Mode</span>
+						<select
+							value={activity.originMode}
+							onChange={(e) => {
+								const mode = e.target.value as 'strict' | 'lenient'
+								sessionDispatch({ type: 'SET_ACTIVITY_ORIGIN_MODE', payload: mode })
+								sendCommand('activity_set_origin_mode', { mode })
+									.then(() => showToast(`Origin mode set to ${mode}`, 'success'))
+									.catch(() => showToast('Failed to set origin mode', 'error'))
+							}}
+						>
+							<option value="strict">Strict</option>
+							<option value="lenient">Lenient</option>
+						</select>
+					</div>
+
+					{/* SDK Origin Shim */}
+					<div className={styles.toggleRow}>
+						<label className={styles.toggleLabel}>
+							<span>SDK Origin Shim</span>
+							<button
+								className={`${styles.toggleButton} ${activity.sdkShimEnabled ? styles.enabled : styles.disabled}`}
+								onClick={async () => {
+									const newValue = !activity.sdkShimEnabled
+									sessionDispatch({ type: 'SET_ACTIVITY_SDK_SHIM', payload: newValue })
+									try {
+										await sendCommand('activity_set_sdk_shim', { enabled: newValue })
+										showToast(
+											newValue ? 'SDK shim enabled - reload Activity to apply' : 'SDK shim disabled',
+											'success'
+										)
+									} catch {
+										showToast('Failed to toggle SDK shim', 'error')
+									}
+								}}
+							>
+								<span className={styles.toggleIcon}>
+									{activity.sdkShimEnabled ? (
+										<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+											<path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 1 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0z" />
+										</svg>
+									) : (
+										<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+											<path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+										</svg>
+									)}
+								</span>
+								<span className={styles.toggleText}>{activity.sdkShimEnabled ? 'Enabled' : 'Disabled'}</span>
+							</button>
+						</label>
+					</div>
+					{activity.sdkShimEnabled && (
+						<p className={styles.warning}>
+							SDK shim patches document.referrer and postMessage targetOrigin. This reduces realism. Only enable if the SDK rejects localhost origins.
+						</p>
+					)}
+				</section>
+			)}
 
 			{/* Components V2 Testing */}
 			<section className={styles.section}>
@@ -2182,6 +3028,57 @@ function ToggleOffIcon() {
 	return (
 		<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
 			<path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+		</svg>
+	)
+}
+
+// Activity Proxy Icons
+function ProxyIcon() {
+	return (
+		<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+			<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
+		</svg>
+	)
+}
+
+function AddIcon() {
+	return (
+		<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+			<path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z" />
+		</svg>
+	)
+}
+
+function ApplyIcon() {
+	return (
+		<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+			<path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 1 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0z" />
+		</svg>
+	)
+}
+
+function UploadIcon() {
+	return (
+		<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+			<path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
+			<path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z" />
+		</svg>
+	)
+}
+
+function RemoveIcon() {
+	return (
+		<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+			<path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+		</svg>
+	)
+}
+
+function PlatformStateIcon() {
+	return (
+		<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+			<path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
+			<path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.421 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.421-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.116l.094-.318z"/>
 		</svg>
 	)
 }

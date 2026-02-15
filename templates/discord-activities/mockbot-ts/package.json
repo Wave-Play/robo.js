@@ -1,0 +1,55 @@
+{
+	"name": "mockbot-activity-ts",
+	"version": "1.0.0",
+	"type": "module",
+	"private": true,
+	"keywords": [
+		"activity",
+		"api",
+		"discord",
+		"embedded app",
+		"mock",
+		"robo",
+		"robo.js",
+		"sdk",
+		"server",
+		"testing",
+		"typescript",
+		"vite",
+		"web"
+	],
+	"scripts": {
+		"build": "robo build",
+		"deploy": "robo deploy",
+		"dev": "robox dev",
+		"doctor": "sage doctor",
+		"invite": "robo invite",
+		"lint:style": "prettier --write .",
+		"start": "robo start",
+		"test": "robo mock test",
+		"test:unit": "NODE_OPTIONS=\"--experimental-vm-modules --disable-warning=ExperimentalWarning\" jest --selectProjects unit",
+		"test:integration": "NODE_OPTIONS=\"--experimental-vm-modules --disable-warning=ExperimentalWarning\" jest --selectProjects integration --runInBand",
+		"upgrade": "sage upgrade"
+	},
+	"dependencies": {
+		"@discord/embedded-app-sdk": "^1.4.3",
+		"@robojs/mock": "link:/Users/pkmmte/Documents/GitHub/robo/packages/@robojs/mock",
+		"@robojs/server": "link:/Users/pkmmte/Documents/GitHub/robo/packages/plugin-api",
+		"react": "^18.3.1",
+		"react-dom": "^18.3.1",
+		"robo.js": "link:/Users/pkmmte/Documents/GitHub/robo/packages/robo"
+	},
+	"devDependencies": {
+		"@swc/core": "^1.15.4",
+		"@types/jest": "^29.5.14",
+		"@types/node": "^25.0.2",
+		"@types/react": "^18.3.10",
+		"@types/react-dom": "^18.3.0",
+		"@vitejs/plugin-react-swc": "^3.7.0",
+		"jest": "^29.7.0",
+		"prettier": "^3.7.4",
+		"ts-jest": "^29.2.5",
+		"typescript": "^5.9.3",
+		"vite": "^7.2.7"
+	}
+}

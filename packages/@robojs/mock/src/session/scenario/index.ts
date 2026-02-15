@@ -402,10 +402,10 @@ export class ScenarioManager implements IScenarioManager {
 		} else {
 			// Validate each step has a valid type
 			scenario.steps.forEach((step, index) => {
-				if (!step.type || !['dispatch', 'wait', 'assert', 'interact'].includes(step.type)) {
+				if (!step.type || !['dispatch', 'wait', 'assert', 'interact', 'activity'].includes(step.type)) {
 					errors.push({
 						field: `steps[${index}].type`,
-						message: `Invalid step type: ${step.type}. Must be one of: dispatch, wait, assert, interact`
+						message: `Invalid step type: ${step.type}. Must be one of: dispatch, wait, assert, interact, activity`
 					})
 					return
 				}
@@ -537,6 +537,80 @@ export class ScenarioManager implements IScenarioManager {
 							errors.push({
 								field: `steps[${index}].interact.modalFields`,
 								message: 'Modal interactions require interact.modalFields (non-empty object)'
+							})
+						}
+					}
+				}
+
+				if (step.type === 'activity') {
+					const activity = (step as unknown as { activity?: unknown }).activity
+					if (!isObject(activity)) {
+						errors.push({
+							field: `steps[${index}].activity`,
+							message: 'Activity step must include an activity object'
+						})
+						return
+					}
+
+					const validKinds = ['launch', 'rpc', 'wait_event', 'set_mappings']
+					if (!isNonEmptyString(activity.kind) || !validKinds.includes(activity.kind as string)) {
+						errors.push({
+							field: `steps[${index}].activity.kind`,
+							message: `Activity step must include activity.kind (one of: ${validKinds.join(', ')})`
+						})
+						return
+					}
+
+					if (!('payload' in activity)) {
+						errors.push({
+							field: `steps[${index}].activity.payload`,
+							message: 'Activity step must include activity.payload'
+						})
+					}
+
+					// Kind-specific validation
+					if (activity.kind === 'launch') {
+						const payload = activity.payload as Record<string, unknown> | undefined
+						if (!payload || !isNonEmptyString(payload.launch_url)) {
+							errors.push({
+								field: `steps[${index}].activity.payload.launch_url`,
+								message: 'Activity launch step requires payload.launch_url'
+							})
+						}
+						if (!payload || !isNonEmptyString(payload.application_id)) {
+							errors.push({
+								field: `steps[${index}].activity.payload.application_id`,
+								message: 'Activity launch step requires payload.application_id'
+							})
+						}
+					}
+
+					if (activity.kind === 'rpc') {
+						const payload = activity.payload as Record<string, unknown> | undefined
+						if (!payload || !('message' in payload)) {
+							errors.push({
+								field: `steps[${index}].activity.payload.message`,
+								message: 'Activity rpc step requires payload.message'
+							})
+						}
+					}
+
+					if (activity.kind === 'wait_event') {
+						const payload = activity.payload as Record<string, unknown> | undefined
+						if (!payload || !isNonEmptyString(payload.action_type)) {
+							errors.push({
+								field: `steps[${index}].activity.payload.action_type`,
+								message: 'Activity wait_event step requires payload.action_type'
+							})
+						}
+					}
+
+					if (activity.kind === 'set_mappings') {
+						const payload = activity.payload as Record<string, unknown> | undefined
+						if (!payload || !Array.isArray(payload.url_mappings)) {
+							errors.push({
+								field: `steps[${index}].activity.payload.url_mappings`,
+								message: 'Activity set_mappings step requires payload.url_mappings array'
 							})
 						}
 					}

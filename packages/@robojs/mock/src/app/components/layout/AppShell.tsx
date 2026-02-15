@@ -3,6 +3,7 @@ import { useMicrophone } from '../../hooks/useMicrophone'
 import { useSession } from '../../hooks/useSession'
 import { useIsPlaybackMode, usePlaybackChannels, usePlaybackMembers } from '../../stores/playbackStore'
 import { ActivityView } from '../activity/ActivityView'
+import { PurchaseModal } from '../activity/PurchaseModal'
 import { ActivityInfoBar } from '../activity/ActivityInfoBar'
 import { FriendsAppShell } from '../friends'
 import { ServerList } from '../sidebar/ServerList'
@@ -49,6 +50,11 @@ export function AppShell() {
 		voicePanelMode,
 		activity,
 		closeActivity,
+		activityAuthorizeRequest,
+		activityPurchaseRequest,
+		handleAuthorizeApprove,
+		handleAuthorizeDeny,
+		clearPurchaseRequest,
 		reorderChannels
 	} = useSession()
 
@@ -395,6 +401,10 @@ export function AppShell() {
 													minimized={activityMinimized}
 													onMinimize={() => setActivityMinimized(true)}
 													onRestore={() => setActivityMinimized(false)}
+													authorizeRequest={activityAuthorizeRequest}
+													onAuthorizeApprove={handleAuthorizeApprove}
+													onAuthorizeDeny={handleAuthorizeDeny}
+													playbackMode={isPlaybackMode}
 												/>
 											)}
 											<MessageArea
@@ -486,6 +496,14 @@ export function AppShell() {
 
 			{/* Developer Tools Panel */}
 			<DevToolsPanel />
+
+			{/* Purchase confirmation modal */}
+			{activityPurchaseRequest && (
+				<PurchaseModal
+					purchaseData={activityPurchaseRequest}
+					onClose={clearPurchaseRequest}
+				/>
+			)}
 		</div>
 	)
 }

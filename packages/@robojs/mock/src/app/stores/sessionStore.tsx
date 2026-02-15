@@ -23,7 +23,12 @@ import type {
 	StageEvent,
 	StageCommand,
 	StageInteractionResponseData,
-	StageControlCommand
+	StageControlCommand,
+	StageActivityLaunchedData,
+	StageActivityClosedData,
+	StageActivityRpcOutboundData,
+	StageActivityAuthorizeRequestData,
+	StageActivityPurchaseRequestData
 } from '../types/stage'
 import type { ModalData } from '../components/modals/Modal'
 import { usePlaybackDispatch, type RecordedEvent } from './playbackStore'
@@ -73,6 +78,18 @@ export interface LoopWarning {
 	timestamp: number
 }
 
+// Activity RPC log entry for DevTools
+export interface ActivityRpcLogEntry {
+	id: string
+	timestamp: number
+	direction: 'inbound' | 'outbound'
+	cmd?: string
+	evt?: string
+	nonce?: string
+	data?: unknown
+	error?: boolean
+}
+
 // Session state shape
 export interface SessionState {
 	// Connection
@@ -110,7 +127,32 @@ export interface SessionState {
 		channelId: string | null
 		guildId: string | null
 		isOpen: boolean
+		// Backend-assigned identity (from activity.launched event)
+		instanceId: string | null
+		frameId: string | null
+		applicationId: string | null
+		launchUrl: string | null
+		queryParams: Record<string, string> | null
+		iframeUrl: string | null
+		authState: 'UNAUTHENTICATED' | 'AUTHENTICATED'
+		devtoolsAuthMode: 'auto_approve' | 'auto_deny' | 'manual'
+		originMode: 'strict' | 'lenient'
+		sdkShimEnabled: boolean
 	}
+
+	// Async outbound RPC messages from backend to forward to Activity iframe
+	activityAsyncOutbound: unknown[] | null
+
+	// Pending AUTHORIZE consent request from backend
+	activityAuthorizeRequest: StageActivityAuthorizeRequestData | null
+
+	// Pending START_PURCHASE request from backend
+	activityPurchaseRequest: StageActivityPurchaseRequestData | null
+
+	// Activity RPC log for DevTools
+	activityRpcLog: ActivityRpcLogEntry[]
+	activityLastReady: object | null
+	activitySubscriptions: string[]
 
 	// Typing indicators
 	typingUsers: Record<string, { userId: string; username: string; expiresAt: number }[]>
@@ -188,6 +230,20 @@ type SessionAction =
 	| { type: 'HANDLE_COMMANDS_UPDATED'; payload: { commands: StageApplicationCommand[] } }
 	| { type: 'SET_ACTIVITY'; payload: { id: string; name: string; description: string; iconColor: string; bannerGradient: string; channelId: string; guildId: string } }
 	| { type: 'CLEAR_ACTIVITY' }
+	| { type: 'HANDLE_ACTIVITY_LAUNCHED'; payload: StageActivityLaunchedData }
+	| { type: 'HANDLE_ACTIVITY_CLOSED'; payload: StageActivityClosedData }
+	| { type: 'HANDLE_ACTIVITY_RPC_OUTBOUND'; payload: StageActivityRpcOutboundData }
+	| { type: 'CLEAR_ACTIVITY_ASYNC_OUTBOUND' }
+	| { type: 'SET_ACTIVITY_AUTHORIZE_REQUEST'; payload: StageActivityAuthorizeRequestData | null }
+	| { type: 'SET_ACTIVITY_PURCHASE_REQUEST'; payload: StageActivityPurchaseRequestData | null }
+	| { type: 'ADD_ACTIVITY_RPC_LOG'; entry: ActivityRpcLogEntry }
+	| { type: 'CLEAR_ACTIVITY_RPC_LOG' }
+	| { type: 'SET_ACTIVITY_LAST_READY'; payload: object }
+	| { type: 'SET_ACTIVITY_SUBSCRIPTIONS'; payload: string[] }
+	| { type: 'ADD_ACTIVITY_SUBSCRIPTION'; eventName: string }
+	| { type: 'REMOVE_ACTIVITY_SUBSCRIPTION'; eventName: string }
+	| { type: 'SET_ACTIVITY_ORIGIN_MODE'; payload: 'strict' | 'lenient' }
+	| { type: 'SET_ACTIVITY_SDK_SHIM'; payload: boolean }
 	| { type: 'REORDER_CHANNELS'; payload: StageChannel[] }
 
 // Initial state
@@ -213,7 +269,13 @@ const initialState: SessionState = {
 		channelId: null,
 		mode: 'closed'
 	},
-	activity: { id: null, name: null, description: null, iconColor: null, bannerGradient: null, channelId: null, guildId: null, isOpen: false },
+	activity: { id: null, name: null, description: null, iconColor: null, bannerGradient: null, channelId: null, guildId: null, isOpen: false, instanceId: null, frameId: null, applicationId: null, launchUrl: null, queryParams: null, iframeUrl: null, authState: 'UNAUTHENTICATED' as const, devtoolsAuthMode: 'auto_approve' as const, originMode: 'strict' as const, sdkShimEnabled: false },
+	activityAsyncOutbound: null,
+	activityAuthorizeRequest: null,
+	activityPurchaseRequest: null,
+	activityRpcLog: [],
+	activityLastReady: null,
+	activitySubscriptions: [],
 	typingUsers: {},
 	activeModal: null,
 	pendingInteractions: [],
@@ -241,7 +303,7 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 			return { ...state, error: action.payload, isConnecting: false, isConnected: false }
 
 		case 'HANDLE_STATE_SYNC': {
-			const { session, guilds, channels, members, roles, messages, users, commands, voice_states, currentUser } =
+			const { session, guilds, channels, members, roles, messages, users, commands, voice_states, currentUser, activity: syncActivity } =
 				action.payload
 			const firstGuild = guilds[0]
 			// Find first text channel (type 0) or announcement channel (type 5), not categories (type 4) or voice (type 2)
@@ -269,7 +331,21 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 				currentUser: currentUser ?? null,
 				selectedGuildId: state.selectedGuildId || firstGuild?.id || null,
 				selectedChannelId: state.selectedChannelId || firstChannel?.id || null,
-				eventCount: state.eventCount + 1
+				eventCount: state.eventCount + 1,
+				activity: syncActivity ? {
+					...state.activity,
+					isOpen: true,
+					instanceId: syncActivity.instance_id,
+					frameId: syncActivity.frame_id,
+					applicationId: syncActivity.application_id,
+					channelId: syncActivity.channel_id,
+					guildId: syncActivity.guild_id,
+					launchUrl: syncActivity.launch_url,
+					queryParams: syncActivity.query_params,
+					iframeUrl: syncActivity.iframe_url ?? null,
+					authState: syncActivity.auth_state ?? 'UNAUTHENTICATED',
+					devtoolsAuthMode: syncActivity.devtools_auth_mode ?? 'auto_approve'
+				} : state.activity
 			}
 		}
 
@@ -495,10 +571,44 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 			return { ...state, voicePanel: action.payload }
 
 		case 'SET_ACTIVITY':
-			return { ...state, activity: { ...action.payload, isOpen: true } }
+			return { ...state, activity: { ...state.activity, ...action.payload, isOpen: true } }
 
 		case 'CLEAR_ACTIVITY':
-			return { ...state, activity: initialState.activity }
+			return { ...state, activity: initialState.activity, activityAsyncOutbound: null, activityAuthorizeRequest: null }
+
+		case 'HANDLE_ACTIVITY_LAUNCHED': {
+			const data = action.payload
+			return {
+				...state,
+				activity: {
+					...state.activity,
+					isOpen: true,
+					instanceId: data.instance_id,
+					frameId: data.frame_id,
+					applicationId: data.application_id,
+					channelId: data.channel_id,
+					guildId: data.guild_id,
+					launchUrl: data.launch_url,
+					queryParams: data.query_params,
+					iframeUrl: data.iframe_url ?? null
+				}
+			}
+		}
+
+		case 'HANDLE_ACTIVITY_CLOSED':
+			return { ...state, activity: { ...initialState.activity }, activityAsyncOutbound: null, activityAuthorizeRequest: null }
+
+		case 'HANDLE_ACTIVITY_RPC_OUTBOUND':
+			return { ...state, activityAsyncOutbound: action.payload.messages }
+
+		case 'CLEAR_ACTIVITY_ASYNC_OUTBOUND':
+			return { ...state, activityAsyncOutbound: null }
+
+		case 'SET_ACTIVITY_AUTHORIZE_REQUEST':
+			return { ...state, activityAuthorizeRequest: action.payload }
+
+		case 'SET_ACTIVITY_PURCHASE_REQUEST':
+			return { ...state, activityPurchaseRequest: action.payload }
 
 		case 'SET_CURRENT_USER': {
 			const updatedUser = action.payload
@@ -734,6 +844,50 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 			}
 		}
 
+		case 'ADD_ACTIVITY_RPC_LOG': {
+			const log = [...state.activityRpcLog, action.entry]
+			// Cap at 500 entries, evict oldest
+			if (log.length > 500) {
+				log.splice(0, log.length - 500)
+			}
+			return { ...state, activityRpcLog: log }
+		}
+
+		case 'CLEAR_ACTIVITY_RPC_LOG':
+			return { ...state, activityRpcLog: [] }
+
+		case 'SET_ACTIVITY_LAST_READY':
+			return { ...state, activityLastReady: action.payload }
+
+		case 'SET_ACTIVITY_SUBSCRIPTIONS':
+			return { ...state, activitySubscriptions: action.payload }
+
+		case 'ADD_ACTIVITY_SUBSCRIPTION':
+			return {
+				...state,
+				activitySubscriptions: state.activitySubscriptions.includes(action.eventName)
+					? state.activitySubscriptions
+					: [...state.activitySubscriptions, action.eventName]
+			}
+
+		case 'REMOVE_ACTIVITY_SUBSCRIPTION':
+			return {
+				...state,
+				activitySubscriptions: state.activitySubscriptions.filter((e) => e !== action.eventName)
+			}
+
+		case 'SET_ACTIVITY_ORIGIN_MODE':
+			return {
+				...state,
+				activity: { ...state.activity, originMode: action.payload }
+			}
+
+		case 'SET_ACTIVITY_SDK_SHIM':
+			return {
+				...state,
+				activity: { ...state.activity, sdkShimEnabled: action.payload }
+			}
+
 		default:
 			return state
 	}
@@ -787,6 +941,32 @@ export function useSessionDispatch() {
 // Maximum number of reconnection attempts before giving up
 const MAX_RECONNECT_ATTEMPTS = 5
 
+/**
+ * Attempt to discover the current active session from the server.
+ * Used for auto-recovery when the current session is stale (e.g., server restarted).
+ * Returns the new session ID if exactly one active session is found.
+ */
+async function discoverCurrentSession(): Promise<string | null> {
+	try {
+		// Compute the API prefix from the current page path
+		const pathname = window.location.pathname
+		const stageIndex = pathname.indexOf('/stage')
+		const prefix = stageIndex !== -1 ? pathname.slice(0, stageIndex) : ''
+
+		const res = await fetch(`${prefix}/api/control/sessions`)
+		if (!res.ok) return null
+
+		const sessions = await res.json() as Array<{ id: string }>
+		// Only auto-switch if there's exactly one session (unambiguous)
+		if (sessions.length === 1) {
+			return sessions[0].id
+		}
+		return null
+	} catch {
+		return null
+	}
+}
+
 interface WebSocketContextValue {
 	connect: () => void
 	disconnect: () => void
@@ -827,6 +1007,8 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 	const [hasGivenUp, setHasGivenUp] = useState(false)
 	const [isSessionInvalid, setIsSessionInvalid] = useState(false)
 	const isReconnectingRef = useRef(false) // Track if we're waiting for a reconnect timeout
+	const sessionIdRef = useRef(state.sessionId)
+	sessionIdRef.current = state.sessionId
 
 	// Handle incoming events
 	const handleEvent = useCallback(
@@ -1053,10 +1235,24 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 
 				case 'session_invalid': {
 					// Server sent session_invalid - token is stale/expired
+					// Attempt auto-discovery: the server may have restarted with a new session
 					const invalidData = event.data as { reason: string; code: number }
 					setIsSessionInvalid(true)
 					setError(invalidData.reason || 'Session no longer exists')
-					// Don't dispatch anything else - connection will be closed by server
+
+					// Try to discover the current session from the server
+					discoverCurrentSession().then((newSessionId) => {
+						if (newSessionId && newSessionId !== sessionIdRef.current) {
+							console.log('[Stage] Auto-discovered new session:', newSessionId)
+							localStorage.setItem('stage_session_id', newSessionId)
+							dispatch({ type: 'SET_SESSION_ID', payload: newSessionId })
+							setIsSessionInvalid(false)
+							setError(null)
+							// Auto-connect effect will trigger since sessionId changed
+						}
+					}).catch(() => {
+						// Auto-discovery failed — user can still retry manually
+					})
 					break
 				}
 
@@ -1130,6 +1326,26 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 						eventIndex: number
 					}
 					playbackDispatch({ type: 'SYNC_STATE', payload: externalState })
+					break
+
+				case 'activity.launched':
+					dispatch({ type: 'HANDLE_ACTIVITY_LAUNCHED', payload: event.data as StageActivityLaunchedData })
+					break
+
+				case 'activity.closed':
+					dispatch({ type: 'HANDLE_ACTIVITY_CLOSED', payload: event.data as StageActivityClosedData })
+					break
+
+				case 'activity.rpc.outbound':
+					dispatch({ type: 'HANDLE_ACTIVITY_RPC_OUTBOUND', payload: event.data as StageActivityRpcOutboundData })
+					break
+
+				case 'activity.ui.authorize_request':
+					dispatch({ type: 'SET_ACTIVITY_AUTHORIZE_REQUEST', payload: event.data as StageActivityAuthorizeRequestData })
+					break
+
+				case 'activity.ui.purchase_request':
+					dispatch({ type: 'SET_ACTIVITY_PURCHASE_REQUEST', payload: event.data as StageActivityPurchaseRequestData })
 					break
 
 				default:

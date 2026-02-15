@@ -103,6 +103,18 @@ export default async (context: StartContext<MockPluginConfig>) => {
 	// Initialize the stage bridge (connects session events to stage server)
 	getStageBridge()
 
+	// Load Activity RPC manifest (for Discord Activity support)
+	try {
+		const { loadManifest } = await import('../activity/schema/manifest-loader.js')
+		const manifest = loadManifest()
+		mockLogger.info(
+			`RPC manifest loaded: ${manifest.commands.length} commands, ` +
+			`${manifest.events.length} events (source: ${manifest.source}, SDK v${manifest.sdk_version})`
+		)
+	} catch (error) {
+		mockLogger.warn(`Failed to load RPC manifest: ${(error as Error).message}`)
+	}
+
 	// Start Voice Gateway server on separate port
 	// @discordjs/voice connects to: ws://host:50001/?v=4
 	try {
@@ -110,6 +122,19 @@ export default async (context: StartContext<MockPluginConfig>) => {
 	} catch (error) {
 		// Voice gateway is optional - log warning but don't fail startup
 		mockLogger.warn(`Failed to start Voice Gateway: ${(error as Error).message}`)
+	}
+
+	// Start Activity Proxy server on separate port
+	// Proxies Activity iframe requests through /.proxy/* and URL mappings
+	try {
+		const { getActivityProxyServer, ACTIVITY_PROXY_PORT } = await import(
+			'../core/activity-proxy/server.js'
+		)
+		const proxyServer = getActivityProxyServer()
+		const actualPort = await proxyServer.start(ACTIVITY_PROXY_PORT)
+		mockLogger.info(`Activity Proxy server ready on port ${actualPort}`)
+	} catch (error) {
+		mockLogger.warn(`Failed to start Activity Proxy: ${(error as Error).message}`)
 	}
 
 	mockLogger.info('Gateway WebSocket server ready')
