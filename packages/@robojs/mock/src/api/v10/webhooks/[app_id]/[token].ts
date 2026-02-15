@@ -56,9 +56,23 @@ function resolveRegularWebhook(request: RoboRequest): { session: Session; webhoo
 	return { session: webhookResult.session, webhook: webhookResult.webhook, webhookId, token }
 }
 
+function isInteractionWebhookToken(appId: string, token: string): boolean {
+	const session = sessionManager.findSessionByInteractionToken(token)
+	if (!session) return false
+	const interaction = session.state.getInteractionByToken(token)
+	if (!interaction) return false
+	if (interaction.applicationId !== appId) return false
+	if (Date.now() > interaction.expiresAt) return false
+	return true
+}
+
 export async function GET(request: RoboRequest) {
 	const resolved = resolveRegularWebhook(request)
 	if (!resolved) {
+		const { app_id: appId, token } = request.params as { app_id: string; token: string }
+		if (isInteractionWebhookToken(appId, token)) {
+			return new Response(null, { status: 405 })
+		}
 		return new Response(JSON.stringify({ message: 'Unknown Webhook', code: 10015 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
@@ -80,6 +94,10 @@ export async function GET(request: RoboRequest) {
 export async function PATCH(request: RoboRequest) {
 	const resolved = resolveRegularWebhook(request)
 	if (!resolved) {
+		const { app_id: appId, token } = request.params as { app_id: string; token: string }
+		if (isInteractionWebhookToken(appId, token)) {
+			return new Response(null, { status: 405 })
+		}
 		return new Response(JSON.stringify({ message: 'Unknown Webhook', code: 10015 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
@@ -174,6 +192,10 @@ export async function PATCH(request: RoboRequest) {
 export async function DELETE(request: RoboRequest) {
 	const resolved = resolveRegularWebhook(request)
 	if (!resolved) {
+		const { app_id: appId, token } = request.params as { app_id: string; token: string }
+		if (isInteractionWebhookToken(appId, token)) {
+			return new Response(null, { status: 405 })
+		}
 		return new Response(JSON.stringify({ message: 'Unknown Webhook', code: 10015 }), {
 			status: 404,
 			headers: { 'Content-Type': 'application/json' }
@@ -813,6 +835,21 @@ async function handleInteractionWebhook(request: RoboRequest, appId: string, tok
 		status: 200,
 		headers: { 'Content-Type': 'application/json' }
 	})
+}
+
+export default async function webhookWithTokenHandler(request: RoboRequest): Promise<unknown> {
+	switch (request.method) {
+		case 'GET':
+			return GET(request)
+		case 'PATCH':
+			return PATCH(request)
+		case 'DELETE':
+			return DELETE(request)
+		case 'POST':
+			return POST(request)
+		default:
+			return new Response(null, { status: 405 })
+	}
 }
 
 /**

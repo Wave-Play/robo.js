@@ -1,5 +1,11 @@
 // Hostnames from which activities are proxied
-const ProxyHosts = ['discordsays.com', 'discordsez.com']
+const ProxyHosts = [
+	'discordsays.com',
+	'discordsez.com',
+	// @robojs/mock local proxy origins
+	'discordsays.localhost',
+	'discordsez.localhost'
+]
 
 export const ProxyPrefix = '/.proxy'
 

@@ -275,7 +275,7 @@ describe('Webhook Followup & Edit/Delete', () => {
 		it('should return 405 for unsupported methods', async () => {
 			const request = createMockRequest({
 				method: 'PUT',
-				params: { app_id: interaction.applicationId, token: interaction.token }
+				params: { app_id: interaction.applicationId, token: interaction.token, messageId: '@original' }
 			})
 
 			const response = (await originalHandler(request as never)) as Response
@@ -285,7 +285,7 @@ describe('Webhook Followup & Edit/Delete', () => {
 		it('should return 404 for unknown token', async () => {
 			const request = createMockRequest({
 				method: 'PATCH',
-				params: { app_id: interaction.applicationId, token: 'unknown-token' },
+				params: { app_id: interaction.applicationId, token: 'unknown-token', messageId: '@original' },
 				body: { content: 'Edited' }
 			})
 
@@ -296,7 +296,7 @@ describe('Webhook Followup & Edit/Delete', () => {
 		it('should return 404 for mismatched app_id', async () => {
 			const request = createMockRequest({
 				method: 'PATCH',
-				params: { app_id: 'wrong-app-id', token: interaction.token },
+				params: { app_id: 'wrong-app-id', token: interaction.token, messageId: '@original' },
 				body: { content: 'Edited' }
 			})
 
@@ -310,7 +310,7 @@ describe('Webhook Followup & Edit/Delete', () => {
 
 			const request = createMockRequest({
 				method: 'PATCH',
-				params: { app_id: interaction.applicationId, token: interaction.token },
+				params: { app_id: interaction.applicationId, token: interaction.token, messageId: '@original' },
 				body: { content: 'Edited' }
 			})
 
@@ -324,7 +324,7 @@ describe('Webhook Followup & Edit/Delete', () => {
 		it('should GET the original message', async () => {
 			const request = createMockRequest({
 				method: 'GET',
-				params: { app_id: interaction.applicationId, token: interaction.token }
+				params: { app_id: interaction.applicationId, token: interaction.token, messageId: '@original' }
 			})
 
 			const result = await originalHandler(request as never)
@@ -339,7 +339,7 @@ describe('Webhook Followup & Edit/Delete', () => {
 		it('should PATCH (edit) the original message', async () => {
 			const request = createMockRequest({
 				method: 'PATCH',
-				params: { app_id: interaction.applicationId, token: interaction.token },
+				params: { app_id: interaction.applicationId, token: interaction.token, messageId: '@original' },
 				body: { content: 'Edited response' }
 			})
 
@@ -368,7 +368,7 @@ describe('Webhook Followup & Edit/Delete', () => {
 		it('should DELETE the original message', async () => {
 			const request = createMockRequest({
 				method: 'DELETE',
-				params: { app_id: interaction.applicationId, token: interaction.token }
+				params: { app_id: interaction.applicationId, token: interaction.token, messageId: '@original' }
 			})
 
 			const response = (await originalHandler(request as never)) as Response
@@ -540,7 +540,7 @@ describe('Webhook Followup & Edit/Delete', () => {
 
 			const request = createMockRequest({
 				method: 'PATCH',
-				params: { app_id: interaction.applicationId, token: interaction.token },
+				params: { app_id: interaction.applicationId, token: interaction.token, messageId: '@original' },
 				body: { content: 'Too late' }
 			})
 
@@ -569,7 +569,7 @@ describe('Webhook Followup & Edit/Delete', () => {
 
 			const request = createMockRequest({
 				method: 'PATCH',
-				params: { app_id: interaction.applicationId, token: interaction.token },
+				params: { app_id: interaction.applicationId, token: interaction.token, messageId: '@original' },
 				body: { content: 'Edited' }
 			})
 
@@ -597,7 +597,7 @@ describe('Webhook Followup & Edit/Delete', () => {
 
 			const request = createMockRequest({
 				method: 'DELETE',
-				params: { app_id: interaction.applicationId, token: interaction.token }
+				params: { app_id: interaction.applicationId, token: interaction.token, messageId: '@original' }
 			})
 
 			const response = (await originalHandler(request as never)) as Response
@@ -646,7 +646,7 @@ describe('Webhook Followup & Edit/Delete', () => {
 
 			const request = createMockRequest({
 				method: 'PATCH',
-				params: { app_id: interaction.applicationId, token: interaction.token },
+				params: { app_id: interaction.applicationId, token: interaction.token, messageId: '@original' },
 				body: { content: 'Edited' }
 			})
 

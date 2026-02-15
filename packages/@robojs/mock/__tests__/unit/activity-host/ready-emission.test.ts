@@ -4,6 +4,7 @@
 
 import { ActivityHostManager } from '../../../src/activity/host/activity-host-manager.js'
 import { loadManifest, resetManifest } from '../../../src/activity/schema/manifest-loader.js'
+import { ActivityRpcOpcode } from '../../../src/activity/host/rpc-envelope.js'
 
 // Mock the session manager
 jest.mock('../../../src/core/manager.js', () => {
@@ -17,6 +18,16 @@ jest.mock('../../../src/core/manager.js', () => {
 					discriminator: '0',
 					avatar: 'abc123',
 					globalName: 'Test User'
+				}
+			],
+			[
+				'user-2',
+				{
+					id: 'user-2',
+					username: 'NoAvatarUser',
+					discriminator: '0',
+					avatar: null,
+					globalName: 'No Avatar'
 				}
 			]
 		]),
@@ -62,7 +73,7 @@ describe('READY Emission', () => {
 		manager.closeAll()
 	})
 
-	test('READY emitted exactly once on first DISPATCH', () => {
+	test('READY emitted on HANDSHAKE and re-handshake', () => {
 		manager.launchActivity({
 			session_id: 'sess-ready-1',
 			application_id: 'app-123',
@@ -70,43 +81,31 @@ describe('READY Emission', () => {
 			launch_url: 'https://example.com/activity'
 		})
 
-		// First DISPATCH -> should get READY
-		const result1 = manager.handleInbound('sess-ready-1', {
-			cmd: 'DISPATCH',
-			nonce: 'nonce-1',
-			args: { v: 1, encoding: 'json' }
-		})
+		const record = manager.getRecord('sess-ready-1')!
 
-		// Should have READY event + DISPATCH command response
-		expect(result1.outbound.length).toBeGreaterThanOrEqual(2)
+		// First HANDSHAKE -> should get READY
+		const result1 = manager.handleInbound('sess-ready-1', [
+			ActivityRpcOpcode.HANDSHAKE,
+			{ v: 1, encoding: 'json', client_id: 'app-123', frame_id: record.frame_id }
+		])
 
-		// First message should be READY event (no nonce)
-		const readyEvent = result1.outbound[0] as Record<string, unknown>
-		expect(readyEvent.evt).toBe('READY')
-		expect(readyEvent.nonce).toBeUndefined()
+		expect(result1.outbound).toHaveLength(1)
 
-		// Second message should be DISPATCH command response (with nonce)
-		const dispatchResponse = result1.outbound[1] as Record<string, unknown>
-		expect(dispatchResponse.cmd).toBe('DISPATCH')
-		expect(dispatchResponse.nonce).toBe('nonce-1')
+		const [opcode1, readyFrame] = result1.outbound[0] as [number, Record<string, unknown>]
+		expect(opcode1).toBe(ActivityRpcOpcode.FRAME)
+		expect(readyFrame.cmd).toBe('DISPATCH')
+		expect(readyFrame.evt).toBe('READY')
+		expect(readyFrame.nonce).toBeNull()
 
-		// Second DISPATCH -> should NOT re-emit READY
-		const result2 = manager.handleInbound('sess-ready-1', {
-			cmd: 'DISPATCH',
-			nonce: 'nonce-2',
-			args: { v: 1 }
-		})
+		// Second HANDSHAKE -> should re-emit READY (iframe reload case)
+		const result2 = manager.handleInbound('sess-ready-1', [
+			ActivityRpcOpcode.HANDSHAKE,
+			{ v: 1, encoding: 'json', client_id: 'app-123', frame_id: record.frame_id }
+		])
 
-		// Should only have DISPATCH response, no READY event
 		expect(result2.outbound).toHaveLength(1)
-		const reDispatch = result2.outbound[0] as Record<string, unknown>
-		expect(reDispatch.cmd).toBe('DISPATCH')
-		expect(reDispatch.nonce).toBe('nonce-2')
-		// No READY event in outbound
-		const readyEvents = result2.outbound.filter(
-			(msg) => (msg as Record<string, unknown>).evt === 'READY'
-		)
-		expect(readyEvents).toHaveLength(0)
+		const [, readyFrame2] = result2.outbound[0] as [number, Record<string, unknown>]
+		expect(readyFrame2.evt).toBe('READY')
 	})
 
 	test('READY payload contains v, config, and user fields', () => {
@@ -117,13 +116,13 @@ describe('READY Emission', () => {
 			launch_url: 'https://example.com/activity'
 		})
 
-		const result = manager.handleInbound('sess-ready-2', {
-			cmd: 'DISPATCH',
-			nonce: 'nonce-1',
-			args: { v: 1 }
-		})
+		const record = manager.getRecord('sess-ready-2')!
+		const result = manager.handleInbound('sess-ready-2', [
+			ActivityRpcOpcode.HANDSHAKE,
+			{ v: 1, encoding: 'json', client_id: 'app-123', frame_id: record.frame_id }
+		])
 
-		const readyEvent = result.outbound[0] as Record<string, unknown>
+		const [, readyEvent] = result.outbound[0] as [number, Record<string, unknown>]
 		const data = readyEvent.data as Record<string, unknown>
 
 		expect(data.v).toBe(1)
@@ -133,6 +132,30 @@ describe('READY Emission', () => {
 		expect(data.user).toBeDefined()
 		expect((data.user as Record<string, unknown>).id).toBe('user-1')
 		expect((data.user as Record<string, unknown>).username).toBe('TestUser')
+	})
+
+	test('READY payload omits avatar when null', () => {
+		manager.launchActivity({
+			session_id: 'sess-ready-2b',
+			application_id: 'app-123',
+			user_id: 'user-2',
+			launch_url: 'https://example.com/activity'
+		})
+
+		const record = manager.getRecord('sess-ready-2b')!
+		const result = manager.handleInbound('sess-ready-2b', [
+			ActivityRpcOpcode.HANDSHAKE,
+			{ v: 1, encoding: 'json', client_id: 'app-123', frame_id: record.frame_id }
+		])
+
+		const [, readyEvent] = result.outbound[0] as [number, Record<string, unknown>]
+		const data = readyEvent.data as Record<string, unknown>
+		const user = data.user as Record<string, unknown>
+
+		expect(user.id).toBe('user-2')
+		expect(user.username).toBe('NoAvatarUser')
+		expect(user.discriminator).toBe('0')
+		expect(user.avatar).toBeUndefined()
 	})
 
 	test('event gating: emitEvent returns null before READY', () => {
@@ -156,27 +179,28 @@ describe('READY Emission', () => {
 			launch_url: 'https://example.com/activity'
 		})
 
-		// Emit READY
-		manager.handleInbound('sess-ready-4', {
-			cmd: 'DISPATCH',
-			nonce: 'nonce-1',
-			args: { v: 1 }
-		})
+		const record = manager.getRecord('sess-ready-4')!
+
+		// Emit READY via HANDSHAKE
+		manager.handleInbound('sess-ready-4', [
+			ActivityRpcOpcode.HANDSHAKE,
+			{ v: 1, encoding: 'json', client_id: 'app-123', frame_id: record.frame_id }
+		])
 
 		// Subscribe to VOICE_STATE_UPDATE
-		manager.handleInbound('sess-ready-4', {
-			cmd: 'SUBSCRIBE',
-			nonce: 'nonce-2',
-			args: { evt: 'VOICE_STATE_UPDATE' }
-		})
+		manager.handleInbound('sess-ready-4', [
+			ActivityRpcOpcode.FRAME,
+			{ cmd: 'SUBSCRIBE', evt: 'VOICE_STATE_UPDATE', nonce: 'nonce-2', args: {} }
+		])
 
 		// Now emitEvent should work
 		const result = manager.emitEvent('sess-ready-4', 'VOICE_STATE_UPDATE', { user_id: 'user-1' })
 		expect(result).toBeDefined()
-		expect((result as Record<string, unknown>).evt).toBe('VOICE_STATE_UPDATE')
+		const [, eventFrame] = result as [number, Record<string, unknown>]
+		expect(eventFrame.evt).toBe('VOICE_STATE_UPDATE')
 	})
 
-	test('deferred subscriptions: SUBSCRIBE before DISPATCH is deferred', () => {
+	test('deferred subscriptions: SUBSCRIBE before READY is deferred', () => {
 		const record = manager.launchActivity({
 			session_id: 'sess-ready-5',
 			application_id: 'app-123',
@@ -184,40 +208,36 @@ describe('READY Emission', () => {
 			launch_url: 'https://example.com/activity'
 		})
 
-		// SUBSCRIBE before DISPATCH
-		const subResult = manager.handleInbound('sess-ready-5', {
-			cmd: 'SUBSCRIBE',
-			nonce: 'sub-nonce-1',
-			args: { evt: 'ACTIVITY_LAYOUT_MODE_UPDATE' }
-		})
+		// SUBSCRIBE before READY/handshake (will be deferred)
+		const subResult = manager.handleInbound('sess-ready-5', [
+			ActivityRpcOpcode.FRAME,
+			{ cmd: 'SUBSCRIBE', evt: 'ACTIVITY_LAYOUT_MODE_UPDATE', nonce: 'sub-nonce-1', args: {} }
+		])
 
 		// Should still get confirmation
 		expect(subResult.outbound).toHaveLength(1)
-		const subResponse = subResult.outbound[0] as Record<string, unknown>
+		const [, subResponse] = subResult.outbound[0] as [number, Record<string, unknown>]
 		expect(subResponse.cmd).toBe('SUBSCRIBE')
 
 		// Should be deferred
 		expect(record.deferred_subscriptions).toHaveLength(1)
 
-		// Now DISPATCH -> READY emitted + deferred subs flushed
-		const readyResult = manager.handleInbound('sess-ready-5', {
-			cmd: 'DISPATCH',
-			nonce: 'nonce-1',
-			args: { v: 1 }
-		})
+		// Now HANDSHAKE -> READY emitted + deferred subs flushed (no duplicate SUBSCRIBE response)
+		const readyResult = manager.handleInbound('sess-ready-5', [
+			ActivityRpcOpcode.HANDSHAKE,
+			{ v: 1, encoding: 'json', client_id: 'app-123', frame_id: record.frame_id }
+		])
 
 		// Should include:
 		// 1. READY event
-		// 2. DISPATCH response
-		// 3. Deferred SUBSCRIBE confirmation
-		// 4. Possibly a snapshot for ACTIVITY_LAYOUT_MODE_UPDATE
-		expect(readyResult.outbound.length).toBeGreaterThanOrEqual(3)
+		// 2. Snapshot for ACTIVITY_LAYOUT_MODE_UPDATE (snapshot_on_subscribe)
+		expect(readyResult.outbound.length).toBeGreaterThanOrEqual(1)
 
 		// Deferred subscriptions should be cleared
 		expect(record.deferred_subscriptions).toHaveLength(0)
 	})
 
-	test('re-handshake does not re-emit READY', () => {
+	test('re-handshake clears subscriptions and re-emits READY', () => {
 		manager.launchActivity({
 			session_id: 'sess-ready-6',
 			application_id: 'app-123',
@@ -225,24 +245,30 @@ describe('READY Emission', () => {
 			launch_url: 'https://example.com/activity'
 		})
 
-		// First DISPATCH
-		manager.handleInbound('sess-ready-6', {
-			cmd: 'DISPATCH',
-			nonce: 'nonce-1',
-			args: { v: 1 }
-		})
+		const record = manager.getRecord('sess-ready-6')!
+
+		// First HANDSHAKE
+		manager.handleInbound('sess-ready-6', [
+			ActivityRpcOpcode.HANDSHAKE,
+			{ v: 1, encoding: 'json', client_id: 'app-123', frame_id: record.frame_id }
+		])
+
+		// Subscribe so we can verify it gets cleared
+		manager.handleInbound('sess-ready-6', [
+			ActivityRpcOpcode.FRAME,
+			{ cmd: 'SUBSCRIBE', evt: 'ACTIVITY_LAYOUT_MODE_UPDATE', nonce: 'sub-1', args: {} }
+		])
 
 		// Re-handshake
-		const result = manager.handleInbound('sess-ready-6', {
-			cmd: 'DISPATCH',
-			nonce: 'nonce-2',
-			args: { v: 1 }
-		})
+		const result = manager.handleInbound('sess-ready-6', [
+			ActivityRpcOpcode.HANDSHAKE,
+			{ v: 1, encoding: 'json', client_id: 'app-123', frame_id: record.frame_id }
+		])
 
-		// Should only have DISPATCH response
 		expect(result.outbound).toHaveLength(1)
-		const response = result.outbound[0] as Record<string, unknown>
-		expect(response.cmd).toBe('DISPATCH')
-		expect(response.nonce).toBe('nonce-2')
+
+		// Subscriptions should be cleared on re-handshake (Activity must resubscribe)
+		const subs = manager.getSubscriptions(record.instance_id)!
+		expect(subs.isSubscribed('ACTIVITY_LAYOUT_MODE_UPDATE')).toBe(false)
 	})
 })

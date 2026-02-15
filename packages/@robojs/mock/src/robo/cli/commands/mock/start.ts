@@ -144,6 +144,17 @@ export default async function mockCommand({ options, logger }: CliContext) {
 		mockLogger.warn(`Failed to start Voice Gateway: ${(error as Error).message}`)
 	}
 
+	// Start Activity Proxy server on separate port
+	// NOTE: In standalone mode, @robojs/mock start hook is skipped, so we must start the proxy here.
+	try {
+		const { getActivityProxyServer, ACTIVITY_PROXY_PORT } = await import('../../../../core/activity-proxy/server.js')
+		const proxyServer = getActivityProxyServer()
+		const actualPort = await proxyServer.start(ACTIVITY_PROXY_PORT)
+		mockLogger.debug(`Activity Proxy started on port ${actualPort}`)
+	} catch (error) {
+		mockLogger.warn(`Failed to start Activity Proxy: ${(error as Error).message}`)
+	}
+
 	// 6. Execute prepare hooks
 	// - @robojs/server's prepare: creates engine, sets globalThis.roboServer.engine
 	// - @robojs/mock's prepare: registers WebSocket handlers via callback
@@ -234,6 +245,12 @@ export default async function mockCommand({ options, logger }: CliContext) {
 
 		// Clean up
 		await deleteServerInfo()
+		try {
+			const { stopActivityProxyServer } = await import('../../../../core/activity-proxy/server.js')
+			await stopActivityProxyServer()
+		} catch {
+			// Proxy may not be available
+		}
 		await engine.stop()
 		process.exit(0)
 	}

@@ -5,6 +5,7 @@
 import { ActivityHostManager } from '../../../src/activity/host/activity-host-manager.js'
 import { loadManifest, resetManifest } from '../../../src/activity/schema/manifest-loader.js'
 import { RpcErrorCode } from '../../../src/activity/host/error-codes.js'
+import { ActivityRpcOpcode } from '../../../src/activity/host/rpc-envelope.js'
 
 // Mock the session manager
 jest.mock('../../../src/core/manager.js', () => {
@@ -70,11 +71,11 @@ describe('Auth Command Handlers', () => {
 		})
 
 		// Complete handshake
-		manager.handleInbound('sess-auth-1', {
-			cmd: 'DISPATCH',
-			nonce: 'handshake-nonce',
-			args: { v: 1 }
-		})
+		const record = manager.getRecord('sess-auth-1')!
+		manager.handleInbound('sess-auth-1', [
+			ActivityRpcOpcode.HANDSHAKE,
+			{ v: 1, encoding: 'json', client_id: 'app-123', frame_id: record.frame_id }
+		])
 	})
 
 	afterEach(() => {
@@ -86,19 +87,22 @@ describe('Auth Command Handlers', () => {
 			const record = manager.getRecord('sess-auth-1')!
 			expect(record.devtools_auth.mode).toBe('auto_approve')
 
-			const result = manager.handleInbound('sess-auth-1', {
-				cmd: 'AUTHORIZE',
-				nonce: 'auth-nonce-1',
-				args: {
-					client_id: 'app-123',
-					response_type: 'code',
-					scope: ['identify', 'guilds'],
-					state: 'my-state'
+			const result = manager.handleInbound('sess-auth-1', [
+				ActivityRpcOpcode.FRAME,
+				{
+					cmd: 'AUTHORIZE',
+					nonce: 'auth-nonce-1',
+					args: {
+						client_id: 'app-123',
+						response_type: 'code',
+						scope: ['identify', 'guilds'],
+						state: 'my-state'
+					}
 				}
-			})
+			])
 
 			expect(result.outbound).toHaveLength(1)
-			const response = result.outbound[0] as Record<string, unknown>
+			const [, response] = result.outbound[0] as [number, Record<string, unknown>]
 			expect(response.cmd).toBe('AUTHORIZE')
 			expect(response.nonce).toBe('auth-nonce-1')
 
@@ -114,14 +118,17 @@ describe('Auth Command Handlers', () => {
 			const record = manager.getRecord('sess-auth-1')!
 			record.devtools_auth.default_scopes = ['identify', 'guilds', 'rpc']
 
-			manager.handleInbound('sess-auth-1', {
-				cmd: 'AUTHORIZE',
-				nonce: 'auth-nonce-2',
-				args: {
-					client_id: 'app-123',
-					scope: ['identify']
+			manager.handleInbound('sess-auth-1', [
+				ActivityRpcOpcode.FRAME,
+				{
+					cmd: 'AUTHORIZE',
+					nonce: 'auth-nonce-2',
+					args: {
+						client_id: 'app-123',
+						scope: ['identify']
+					}
 				}
-			})
+			])
 
 			// After AUTHORIZE, authorized_scopes should be the default_scopes, not the requested
 			expect(record.auth.authorized_scopes).toEqual(['identify', 'guilds', 'rpc'])
@@ -131,17 +138,20 @@ describe('Auth Command Handlers', () => {
 			const record = manager.getRecord('sess-auth-1')!
 			record.devtools_auth.mode = 'auto_deny'
 
-			const result = manager.handleInbound('sess-auth-1', {
-				cmd: 'AUTHORIZE',
-				nonce: 'auth-nonce-3',
-				args: {
-					client_id: 'app-123',
-					scope: ['identify']
+			const result = manager.handleInbound('sess-auth-1', [
+				ActivityRpcOpcode.FRAME,
+				{
+					cmd: 'AUTHORIZE',
+					nonce: 'auth-nonce-3',
+					args: {
+						client_id: 'app-123',
+						scope: ['identify']
+					}
 				}
-			})
+			])
 
 			expect(result.outbound).toHaveLength(1)
-			const response = result.outbound[0] as Record<string, unknown>
+			const [, response] = result.outbound[0] as [number, Record<string, unknown>]
 			expect(response.evt).toBe('ERROR')
 
 			const data = response.data as Record<string, unknown>
@@ -152,17 +162,20 @@ describe('Auth Command Handlers', () => {
 			const record = manager.getRecord('sess-auth-1')!
 			record.devtools_auth.mode = 'manual'
 
-			const result = manager.handleInbound('sess-auth-1', {
-				cmd: 'AUTHORIZE',
-				nonce: 'auth-nonce-4',
-				args: {
-					client_id: 'app-123',
-					response_type: 'code',
-					scope: ['identify', 'guilds'],
-					state: 'my-state',
-					prompt: 'consent'
+			const result = manager.handleInbound('sess-auth-1', [
+				ActivityRpcOpcode.FRAME,
+				{
+					cmd: 'AUTHORIZE',
+					nonce: 'auth-nonce-4',
+					args: {
+						client_id: 'app-123',
+						response_type: 'code',
+						scope: ['identify', 'guilds'],
+						state: 'my-state',
+						prompt: 'consent'
+					}
 				}
-			})
+			])
 
 			expect(result.outbound).toHaveLength(0)
 			expect(result._pending_authorize).toBe(true)
@@ -183,15 +196,18 @@ describe('Auth Command Handlers', () => {
 			record.devtools_auth.mode = 'manual'
 
 			// Send AUTHORIZE to create pending request
-			manager.handleInbound('sess-auth-1', {
-				cmd: 'AUTHORIZE',
-				nonce: 'resolve-nonce',
-				args: {
-					client_id: 'app-123',
-					scope: ['identify', 'guilds'],
-					state: 'resolve-state'
+			manager.handleInbound('sess-auth-1', [
+				ActivityRpcOpcode.FRAME,
+				{
+					cmd: 'AUTHORIZE',
+					nonce: 'resolve-nonce',
+					args: {
+						client_id: 'app-123',
+						scope: ['identify', 'guilds'],
+						state: 'resolve-state'
+					}
 				}
-			})
+			])
 		})
 
 		test('approved returns AUTHORIZE response with code', () => {
@@ -200,7 +216,7 @@ describe('Auth Command Handlers', () => {
 			expect(outbound).not.toBeNull()
 			expect(outbound).toHaveLength(1)
 
-			const response = outbound![0] as Record<string, unknown>
+			const [, response] = outbound![0] as [number, Record<string, unknown>]
 			expect(response.cmd).toBe('AUTHORIZE')
 			expect(response.nonce).toBe('resolve-nonce')
 
@@ -219,7 +235,7 @@ describe('Auth Command Handlers', () => {
 			expect(outbound).not.toBeNull()
 			expect(outbound).toHaveLength(1)
 
-			const response = outbound![0] as Record<string, unknown>
+			const [, response] = outbound![0] as [number, Record<string, unknown>]
 			expect(response.evt).toBe('ERROR')
 
 			const data = response.data as Record<string, unknown>
@@ -249,14 +265,17 @@ describe('Auth Command Handlers', () => {
 
 	describe('AUTHENTICATE', () => {
 		test('marks session as authenticated', () => {
-			const result = manager.handleInbound('sess-auth-1', {
-				cmd: 'AUTHENTICATE',
-				nonce: 'auth-token-nonce',
-				args: { access_token: 'my-token' }
-			})
+			const result = manager.handleInbound('sess-auth-1', [
+				ActivityRpcOpcode.FRAME,
+				{
+					cmd: 'AUTHENTICATE',
+					nonce: 'auth-token-nonce',
+					args: { access_token: 'my-token' }
+				}
+			])
 
 			expect(result.outbound).toHaveLength(1)
-			const response = result.outbound[0] as Record<string, unknown>
+			const [, response] = result.outbound[0] as [number, Record<string, unknown>]
 			expect(response.cmd).toBe('AUTHENTICATE')
 
 			const data = response.data as Record<string, unknown>
@@ -272,35 +291,44 @@ describe('Auth Command Handlers', () => {
 
 		test('uses authorized_scopes from AUTHORIZE', () => {
 			// First AUTHORIZE with specific scopes
-			manager.handleInbound('sess-auth-1', {
-				cmd: 'AUTHORIZE',
-				nonce: 'pre-auth-nonce',
-				args: {
-					client_id: 'app-123',
-					scope: ['identify', 'guilds', 'rpc']
+			manager.handleInbound('sess-auth-1', [
+				ActivityRpcOpcode.FRAME,
+				{
+					cmd: 'AUTHORIZE',
+					nonce: 'pre-auth-nonce',
+					args: {
+						client_id: 'app-123',
+						scope: ['identify', 'guilds', 'rpc']
+					}
 				}
-			})
+			])
 
 			// Then AUTHENTICATE
-			const result = manager.handleInbound('sess-auth-1', {
-				cmd: 'AUTHENTICATE',
-				nonce: 'auth-token-nonce',
-				args: { access_token: 'my-token' }
-			})
+			const result = manager.handleInbound('sess-auth-1', [
+				ActivityRpcOpcode.FRAME,
+				{
+					cmd: 'AUTHENTICATE',
+					nonce: 'auth-token-nonce',
+					args: { access_token: 'my-token' }
+				}
+			])
 
-			const response = result.outbound[0] as Record<string, unknown>
+			const [, response] = result.outbound[0] as [number, Record<string, unknown>]
 			const data = response.data as Record<string, unknown>
 			expect(data.scopes).toEqual(['identify', 'guilds', 'rpc'])
 		})
 
 		test('returns user data from mock session', () => {
-			const result = manager.handleInbound('sess-auth-1', {
-				cmd: 'AUTHENTICATE',
-				nonce: 'auth-user-nonce',
-				args: { access_token: 'test-token' }
-			})
+			const result = manager.handleInbound('sess-auth-1', [
+				ActivityRpcOpcode.FRAME,
+				{
+					cmd: 'AUTHENTICATE',
+					nonce: 'auth-user-nonce',
+					args: { access_token: 'test-token' }
+				}
+			])
 
-			const response = result.outbound[0] as Record<string, unknown>
+			const [, response] = result.outbound[0] as [number, Record<string, unknown>]
 			const data = response.data as Record<string, unknown>
 			const user = data.user as Record<string, unknown>
 
@@ -309,13 +337,16 @@ describe('Auth Command Handlers', () => {
 		})
 
 		test('defaults token when not provided', () => {
-			const result = manager.handleInbound('sess-auth-1', {
-				cmd: 'AUTHENTICATE',
-				nonce: 'auth-default-nonce',
-				args: {}
-			})
+			const result = manager.handleInbound('sess-auth-1', [
+				ActivityRpcOpcode.FRAME,
+				{
+					cmd: 'AUTHENTICATE',
+					nonce: 'auth-default-nonce',
+					args: {}
+				}
+			])
 
-			const response = result.outbound[0] as Record<string, unknown>
+			const [, response] = result.outbound[0] as [number, Record<string, unknown>]
 			const data = response.data as Record<string, unknown>
 			expect(data.access_token).toBeDefined()
 			expect(typeof data.access_token).toBe('string')

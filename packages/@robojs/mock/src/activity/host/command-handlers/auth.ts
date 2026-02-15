@@ -72,7 +72,7 @@ export function handleAuthorize(
 
 		return {
 			outbound: [
-				buildErrorResponse(parsed.nonce, RpcErrorCode.FORBIDDEN, 'Authorization denied by user')
+				buildErrorResponse(parsed.cmd, parsed.nonce, RpcErrorCode.FORBIDDEN, 'Authorization denied by user')
 			]
 		}
 	}
@@ -148,15 +148,24 @@ export function handleAuthenticate(
 							username: user.username,
 							discriminator: user.discriminator ?? '0',
 							avatar: user.avatar ?? null,
-							global_name: user.globalName ?? null
+							global_name: user.globalName ?? null,
+							public_flags: 0
 						}
 					: {
 							id: record.user_id,
 							username: 'MockUser',
 							discriminator: '0',
 							avatar: null,
-							global_name: null
-						}
+							global_name: null,
+							public_flags: 0
+						},
+				application: {
+					description: 'Mock Application',
+					icon: null,
+					id: record.application_id,
+					name: 'Mock Application',
+					rpc_origins: []
+				}
 			})
 		]
 	}

@@ -5,6 +5,7 @@
 import { ActivityHostManager } from '../../../src/activity/host/activity-host-manager.js'
 import { loadManifest, resetManifest } from '../../../src/activity/schema/manifest-loader.js'
 import { RpcErrorCode } from '../../../src/activity/host/error-codes.js'
+import { ActivityRpcOpcode } from '../../../src/activity/host/rpc-envelope.js'
 
 // Mock the session manager
 jest.mock('../../../src/core/manager.js', () => {
@@ -95,11 +96,11 @@ describe('Auth Flow Integration', () => {
 		})
 
 		// Complete handshake
-		manager.handleInbound('sess-flow-1', {
-			cmd: 'DISPATCH',
-			nonce: 'handshake-nonce',
-			args: { v: 1 }
-		})
+		const record = manager.getRecord('sess-flow-1')!
+		manager.handleInbound('sess-flow-1', [
+			ActivityRpcOpcode.HANDSHAKE,
+			{ v: 1, encoding: 'json', client_id: 'app-123', frame_id: record.frame_id }
+		])
 	})
 
 	afterEach(() => {
@@ -107,11 +108,14 @@ describe('Auth Flow Integration', () => {
 	})
 
 	function sendCommand(cmd: string, args?: Record<string, unknown>) {
-		return manager.handleInbound('sess-flow-1', {
-			cmd,
-			nonce: `nonce-${cmd}-${Date.now()}-${Math.random()}`,
-			args: args ?? {}
-		})
+		return manager.handleInbound('sess-flow-1', [
+			ActivityRpcOpcode.FRAME,
+			{
+				cmd,
+				nonce: `nonce-${cmd}-${Date.now()}-${Math.random()}`,
+				args: args ?? {}
+			}
+		])
 	}
 
 	test('full auto-approve flow: AUTHORIZE -> AUTHENTICATE -> gated command succeeds', () => {
@@ -126,7 +130,7 @@ describe('Auth Flow Integration', () => {
 			state: 'test-state'
 		})
 		expect(authzResult.outbound).toHaveLength(1)
-		const authzResponse = authzResult.outbound[0] as Record<string, unknown>
+		const [, authzResponse] = authzResult.outbound[0] as [number, Record<string, unknown>]
 		expect(authzResponse.cmd).toBe('AUTHORIZE')
 		const authzData = authzResponse.data as Record<string, unknown>
 		expect(authzData.code).toBeDefined()
@@ -137,7 +141,7 @@ describe('Auth Flow Integration', () => {
 			access_token: 'my-test-token'
 		})
 		expect(authResult.outbound).toHaveLength(1)
-		const authResponse = authResult.outbound[0] as Record<string, unknown>
+		const [, authResponse] = authResult.outbound[0] as [number, Record<string, unknown>]
 		expect(authResponse.cmd).toBe('AUTHENTICATE')
 		const authData = authResponse.data as Record<string, unknown>
 		expect(authData.access_token).toBe('my-test-token')
@@ -149,7 +153,7 @@ describe('Auth Flow Integration', () => {
 		// Step 3: Gated command should now succeed
 		const guildResult = sendCommand('GET_GUILD')
 		expect(guildResult.outbound).toHaveLength(1)
-		const guildResponse = guildResult.outbound[0] as Record<string, unknown>
+		const [, guildResponse] = guildResult.outbound[0] as [number, Record<string, unknown>]
 		expect(guildResponse.cmd).toBe('GET_GUILD')
 		expect(guildResponse.evt).not.toBe('ERROR')
 	})
@@ -159,16 +163,19 @@ describe('Auth Flow Integration', () => {
 		record.devtools_auth.mode = 'manual'
 
 		// Step 1: AUTHORIZE (manual mode -- returns pending)
-		const authzResult = manager.handleInbound('sess-flow-1', {
-			cmd: 'AUTHORIZE',
-			nonce: 'manual-nonce',
-			args: {
-				client_id: 'app-123',
-				response_type: 'code',
-				scope: ['identify', 'guilds', 'rpc'],
-				state: 'manual-state'
+		const authzResult = manager.handleInbound('sess-flow-1', [
+			ActivityRpcOpcode.FRAME,
+			{
+				cmd: 'AUTHORIZE',
+				nonce: 'manual-nonce',
+				args: {
+					client_id: 'app-123',
+					response_type: 'code',
+					scope: ['identify', 'guilds', 'rpc'],
+					state: 'manual-state'
+				}
 			}
-		})
+		])
 		expect(authzResult.outbound).toHaveLength(0)
 		expect(authzResult._pending_authorize).toBe(true)
 		expect(record.pending_authorize).not.toBeNull()
@@ -178,7 +185,7 @@ describe('Auth Flow Integration', () => {
 		expect(outbound).not.toBeNull()
 		expect(outbound).toHaveLength(1)
 
-		const response = outbound![0] as Record<string, unknown>
+		const [, response] = outbound![0] as [number, Record<string, unknown>]
 		expect(response.cmd).toBe('AUTHORIZE')
 		const data = response.data as Record<string, unknown>
 		expect(data.code).toBeDefined()
@@ -191,7 +198,7 @@ describe('Auth Flow Integration', () => {
 		const authResult = sendCommand('AUTHENTICATE', {
 			access_token: 'manual-token'
 		})
-		const authResponse = authResult.outbound[0] as Record<string, unknown>
+		const [, authResponse] = authResult.outbound[0] as [number, Record<string, unknown>]
 		const authData = authResponse.data as Record<string, unknown>
 		expect(authData.scopes).toEqual(['identify', 'guilds', 'rpc'])
 		expect(record.auth.state).toBe('AUTHENTICATED')
@@ -209,7 +216,7 @@ describe('Auth Flow Integration', () => {
 		const cmds = ['GET_GUILD', 'GET_CHANNEL']
 		for (const cmd of cmds) {
 			const result = sendCommand(cmd, cmd === 'GET_CHANNEL' ? { channel_id: 'channel-1' } : {})
-			const response = result.outbound[0] as Record<string, unknown>
+			const [, response] = result.outbound[0] as [number, Record<string, unknown>]
 			expect(response.evt).not.toBe('ERROR')
 		}
 	})
@@ -224,7 +231,7 @@ describe('Auth Flow Integration', () => {
 
 		// Gated command succeeds
 		let result = sendCommand('GET_GUILD')
-		let response = result.outbound[0] as Record<string, unknown>
+		let [, response] = result.outbound[0] as [number, Record<string, unknown>]
 		expect(response.evt).not.toBe('ERROR')
 
 		// Reset auth
@@ -233,7 +240,7 @@ describe('Auth Flow Integration', () => {
 
 		// Gated command fails again
 		result = sendCommand('GET_GUILD')
-		response = result.outbound[0] as Record<string, unknown>
+		;[, response] = result.outbound[0] as [number, Record<string, unknown>]
 		expect(response.evt).toBe('ERROR')
 		const data = response.data as Record<string, unknown>
 		expect(data.code).toBe(RpcErrorCode.UNAUTHORIZED)
@@ -244,21 +251,24 @@ describe('Auth Flow Integration', () => {
 		record.devtools_auth.mode = 'manual'
 
 		// AUTHORIZE
-		manager.handleInbound('sess-flow-1', {
-			cmd: 'AUTHORIZE',
-			nonce: 'deny-nonce',
-			args: {
-				client_id: 'app-123',
-				scope: ['identify'],
-				state: 'deny-state'
+		manager.handleInbound('sess-flow-1', [
+			ActivityRpcOpcode.FRAME,
+			{
+				cmd: 'AUTHORIZE',
+				nonce: 'deny-nonce',
+				args: {
+					client_id: 'app-123',
+					scope: ['identify'],
+					state: 'deny-state'
+				}
 			}
-		})
+		])
 
 		// Deny
 		const outbound = manager.resolveAuthorize('sess-flow-1', 'deny-nonce', false)
 		expect(outbound).not.toBeNull()
 
-		const response = outbound![0] as Record<string, unknown>
+		const [, response] = outbound![0] as [number, Record<string, unknown>]
 		expect(response.evt).toBe('ERROR')
 		const data = response.data as Record<string, unknown>
 		expect(data.code).toBe(RpcErrorCode.FORBIDDEN)

@@ -233,6 +233,8 @@ export function useCurrentUser(): UseCurrentUserResult {
 		// Update local state immediately
 		if (result?.user) {
 			dispatch({ type: 'SET_CURRENT_USER', payload: result.user })
+			// Backend resets Activity auth context on switch_user; keep Stage UI in sync.
+			dispatch({ type: 'SET_ACTIVITY_AUTH_STATE', payload: 'UNAUTHENTICATED' })
 		}
 
 		return result.user

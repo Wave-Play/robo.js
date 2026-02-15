@@ -35,6 +35,15 @@ export function useActivityRpcBridge(options: UseActivityRpcBridgeOptions): UseA
 	const forwardedCountRef = useRef(0)
 	const rejectedCountRef = useRef(0)
 
+	type RpcTuple = [number, unknown]
+	const isRpcTuple = (value: unknown): value is RpcTuple =>
+		Array.isArray(value) && value.length >= 2 && typeof value[0] === 'number'
+
+	const getPayload = (message: unknown): unknown => {
+		if (isRpcTuple(message)) return message[1]
+		return message
+	}
+
 	// Register message listener BEFORE iframe loads
 	useEffect(() => {
 		if (!enabled || !frameId || !instanceId) return
@@ -58,31 +67,77 @@ export function useActivityRpcBridge(options: UseActivityRpcBridgeOptions): UseA
 				}
 			}
 
-			// Validate data is a plain object (RPC envelope)
-			if (typeof event.data !== 'object' || event.data === null) {
+			// Validate data matches Embedded SDK transport (tuple) or legacy object payload
+			const data = event.data as unknown
+			const payload = getPayload(data)
+
+			// Diagnostic channel from proxy-injected scripts (non-RPC).
+			if (!isRpcTuple(data) && typeof payload === 'object' && payload !== null) {
+				const diag = payload as { __robo_mock?: unknown }
+				if (diag.__robo_mock === 'csp_violation') {
+					dispatch({
+						type: 'ADD_ACTIVITY_RPC_LOG',
+						entry: {
+							id: `rpc_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+							timestamp: Date.now(),
+							direction: 'inbound',
+							cmd: 'CSP_VIOLATION',
+							data: payload,
+							error: true
+						}
+					})
+					onRejectedMessage?.('CSP violation reported by Activity iframe', event)
+					return
+				}
+			}
+
+			if (isRpcTuple(data)) {
+				const opcode = data[0]
+				if (![0, 1, 2, 3].includes(opcode)) {
+					rejectedCountRef.current++
+					onRejectedMessage?.(`Unknown RPC opcode: ${opcode}`, event)
+					return
+				}
+				if (typeof payload !== 'object' || payload === null) {
+					rejectedCountRef.current++
+					onRejectedMessage?.('RPC payload is not an object', event)
+					return
+				}
+			} else if (typeof payload !== 'object' || payload === null) {
 				rejectedCountRef.current++
-				onRejectedMessage?.('Message data is not an object', event)
+				onRejectedMessage?.('Message data is not an RPC tuple or object', event)
 				return
 			}
 
 			// Log inbound message for DevTools
-			const inboundData = event.data as { cmd?: string; nonce?: string }
+			const inboundData = payload as { cmd?: string; evt?: string | null; nonce?: string | null }
 			dispatch({
 				type: 'ADD_ACTIVITY_RPC_LOG',
 				entry: {
 					id: `rpc_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
 					timestamp: Date.now(),
 					direction: 'inbound',
-					cmd: inboundData.cmd,
-					nonce: inboundData.nonce,
-					data: event.data
+					cmd: inboundData.cmd ?? (isRpcTuple(data) ? `OP_${data[0]}` : undefined),
+					evt: inboundData.evt ?? undefined,
+					nonce: (typeof inboundData.nonce === 'string' ? inboundData.nonce : undefined),
+					data
 				}
 			})
+
+			// If Activity requests CLOSE, treat it as a close_activity action.
+			if (isRpcTuple(data) && data[0] === 2) {
+				try {
+					await sendCommand('close_activity', {})
+				} catch {
+					// Ignore close failures (may already be closed)
+				}
+				return
+			}
 
 			// Forward to backend via Stage WS
 			try {
 				const result = await sendCommand('activity_rpc', {
-					message: event.data,
+					message: data,
 					frame_id: frameId,
 					instance_id: instanceId
 				})
@@ -97,11 +152,20 @@ export function useActivityRpcBridge(options: UseActivityRpcBridgeOptions): UseA
 						iframeRef.current.contentWindow.postMessage(msg, target)
 
 						// Log outbound message for DevTools
-						const msgObj = msg as { cmd?: string; evt?: string; nonce?: string; data?: unknown }
+						const outPayload = getPayload(msg)
+						const msgObj = outPayload as { cmd?: string; evt?: string | null; nonce?: string | null; data?: unknown }
 
 						// Capture READY payload
-						if (msgObj.evt === 'READY') {
+						if (msgObj.cmd === 'DISPATCH' && msgObj.evt === 'READY') {
 							dispatch({ type: 'SET_ACTIVITY_LAST_READY', payload: msgObj.data as object })
+						}
+
+						// Track auth state from AUTHENTICATE response (success only)
+						if (msgObj.cmd === 'AUTHENTICATE' && msgObj.evt === null) {
+							const data = msgObj.data as { access_token?: unknown } | undefined
+							if (data && typeof data.access_token === 'string') {
+								dispatch({ type: 'SET_ACTIVITY_AUTH_STATE', payload: 'AUTHENTICATED' })
+							}
 						}
 
 						// Track subscriptions
@@ -125,8 +189,8 @@ export function useActivityRpcBridge(options: UseActivityRpcBridgeOptions): UseA
 								timestamp: Date.now(),
 								direction: 'outbound',
 								cmd: msgObj.cmd,
-								evt: msgObj.evt,
-								nonce: msgObj.nonce,
+								evt: (typeof msgObj.evt === 'string' ? msgObj.evt : undefined),
+								nonce: (typeof msgObj.nonce === 'string' ? msgObj.nonce : undefined),
 								data: msgObj.data,
 								error: msgObj.evt === 'ERROR'
 							}
@@ -153,9 +217,16 @@ export function useActivityRpcBridge(options: UseActivityRpcBridgeOptions): UseA
 			iframeRef.current.contentWindow.postMessage(msg, target)
 
 			// Log async outbound message for DevTools
-			const msgObj = msg as { cmd?: string; evt?: string; nonce?: string; data?: unknown }
-			if (msgObj.evt === 'READY') {
+			const outPayload = getPayload(msg)
+			const msgObj = outPayload as { cmd?: string; evt?: string | null; nonce?: string | null; data?: unknown }
+			if (msgObj.cmd === 'DISPATCH' && msgObj.evt === 'READY') {
 				dispatch({ type: 'SET_ACTIVITY_LAST_READY', payload: msgObj.data as object })
+			}
+			if (msgObj.cmd === 'AUTHENTICATE' && msgObj.evt === null) {
+				const data = msgObj.data as { access_token?: unknown } | undefined
+				if (data && typeof data.access_token === 'string') {
+					dispatch({ type: 'SET_ACTIVITY_AUTH_STATE', payload: 'AUTHENTICATED' })
+				}
 			}
 			dispatch({
 				type: 'ADD_ACTIVITY_RPC_LOG',
@@ -164,8 +235,8 @@ export function useActivityRpcBridge(options: UseActivityRpcBridgeOptions): UseA
 					timestamp: Date.now(),
 					direction: 'outbound',
 					cmd: msgObj.cmd,
-					evt: msgObj.evt,
-					nonce: msgObj.nonce,
+					evt: (typeof msgObj.evt === 'string' ? msgObj.evt : undefined),
+					nonce: (typeof msgObj.nonce === 'string' ? msgObj.nonce : undefined),
 					data: msgObj.data,
 					error: msgObj.evt === 'ERROR'
 				}

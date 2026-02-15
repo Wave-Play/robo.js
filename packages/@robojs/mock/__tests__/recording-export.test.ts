@@ -91,7 +91,7 @@ describe('Session Recording Export', () => {
 		})
 
 		it('should export recording with guilds in initial config', () => {
-			const session = new Session()
+			const session = new Session({ config: { guilds: [] } })
 			createDefaultGuildWithChannel(session.state, {
 				guildName: 'Test Guild',
 				channelName: 'general'
@@ -104,7 +104,7 @@ describe('Session Recording Export', () => {
 		})
 
 		it('should export recording with channels in initial config', () => {
-			const session = new Session()
+			const session = new Session({ config: { guilds: [] } })
 			createDefaultGuildWithChannel(session.state, {
 				guildName: 'Test Guild',
 				channelName: 'test-channel'

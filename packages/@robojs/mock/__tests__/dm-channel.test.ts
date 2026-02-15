@@ -201,10 +201,11 @@ describe('DM Channel Creation', () => {
 
 		it('Task 3: DM channel is stored in dmChannels map', () => {
 			const recipientId = '123'
-			sessionState.getOrCreateDMChannel(recipientId)
+			const dmChannel = sessionState.getOrCreateDMChannel(recipientId)
 
 			expect(sessionState.dmChannels.size).toBe(1)
-			expect(sessionState.dmChannels.has(recipientId)).toBe(true)
+			expect(sessionState.getDMChannel(recipientId)).toBe(dmChannel)
+			expect(sessionState.channels.get(dmChannel.id)).toBe(dmChannel)
 		})
 
 		it('Task 4: Messages can be sent to DM channels', async () => {

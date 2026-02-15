@@ -572,7 +572,7 @@ describe('INTERACTION_CREATE Event', () => {
 
 		it('should throw error when no channel available', async () => {
 			// Create a new session without guilds
-			const emptySession = new Session({ name: 'empty-session' })
+			const emptySession = new Session({ name: 'empty-session', config: { guilds: [] } })
 
 			try {
 				await expect(

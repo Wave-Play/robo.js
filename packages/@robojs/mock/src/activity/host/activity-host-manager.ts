@@ -10,6 +10,7 @@ import {
 	buildErrorResponse,
 	buildEventDispatch,
 	validateCommand,
+	ActivityRpcOpcode,
 	RpcValidationError
 } from './rpc-envelope.js'
 import type { InboundRpcMessage } from './rpc-envelope.js'
@@ -37,7 +38,7 @@ export interface LaunchActivityOptions {
  */
 export interface HandleInboundResult {
 	/** Messages to send back to the Activity iframe (may be >1 for deferred events) */
-	outbound: object[]
+	outbound: unknown[]
 	/** If true, an AUTHORIZE request is pending and the caller should emit a consent UI event */
 	_pending_authorize?: boolean
 	/** If true, a START_PURCHASE request is pending and the caller should emit a purchase UI event */
@@ -235,37 +236,70 @@ export class ActivityHostManager {
 	handleInbound(session_id: string, rawMessage: unknown): HandleInboundResult {
 		const record = this.sessions.get(session_id)
 		if (!record) {
-			return {
-				outbound: [buildErrorResponse('unknown', RpcErrorCode.NOT_FOUND, 'No active Activity for this session')]
+			// Best-effort: if this looks like a FRAME payload, respond with an error using its cmd/nonce.
+			try {
+				if (Array.isArray(rawMessage) && rawMessage.length >= 2 && rawMessage[0] === ActivityRpcOpcode.FRAME) {
+					const parsed = parseInboundEnvelope(rawMessage[1])
+					return {
+						outbound: [buildErrorResponse(parsed.cmd, parsed.nonce, RpcErrorCode.NOT_FOUND, 'No active Activity for this session')]
+					}
+				}
+				if (typeof rawMessage === 'object' && rawMessage !== null) {
+					const parsed = parseInboundEnvelope(rawMessage)
+					return {
+						outbound: [buildErrorResponse(parsed.cmd, parsed.nonce, RpcErrorCode.NOT_FOUND, 'No active Activity for this session')]
+					}
+				}
+			} catch {
+				// Ignore parsing failures; nothing to correlate
+			}
+			return { outbound: [] }
+		}
+
+		// Embedded SDK transport: rawMessage may be [opcode, payload]
+		if (Array.isArray(rawMessage) && rawMessage.length >= 2 && typeof rawMessage[0] === 'number') {
+			const opcode = rawMessage[0]
+			const payload = rawMessage[1]
+
+			// HANDSHAKE is not a FRAME payload; it triggers READY emission
+			if (opcode === ActivityRpcOpcode.HANDSHAKE) {
+				return this.handleHandshake(record, payload)
+			}
+
+			// CLOSE/HELLO are lifecycle/compat opcodes; Host does not respond with FRAME
+			if (opcode === ActivityRpcOpcode.CLOSE || opcode === ActivityRpcOpcode.HELLO) {
+				return { outbound: [] }
+			}
+
+			// FRAME payloads are the RPC commands we process below
+			if (opcode === ActivityRpcOpcode.FRAME) {
+				rawMessage = payload
+			} else {
+				return { outbound: [] }
 			}
 		}
 
-		// Parse envelope
+		// Parse FRAME payload
 		let parsed: InboundRpcMessage
 		try {
 			parsed = parseInboundEnvelope(rawMessage)
 		} catch (error) {
+			// If we can't parse cmd+nonce, we can't correlate a response; ignore.
 			if (error instanceof RpcValidationError) {
-				return {
-					outbound: [buildErrorResponse('unknown', error.code, error.message)]
-				}
+				mockLogger.debug(`RPC parse error: ${error.message}`)
+				return { outbound: [] }
 			}
-			return {
-				outbound: [buildErrorResponse('unknown', RpcErrorCode.INTERNAL, 'Failed to parse message')]
-			}
+			mockLogger.debug('RPC parse error: failed to parse message')
+			return { outbound: [] }
 		}
 
-		// Handle DISPATCH command (handshake initiation) specially
-		if (parsed.cmd === 'DISPATCH') {
-			return this.handleHandshake(record, parsed)
-		}
-
-		// Rate limiting (spec section 3.4, code 4290) -- exempt handshake commands
+		// Rate limiting (code 4290)
 		if (!record.rate_limiter.check()) {
 			const retryAfter = record.rate_limiter.retryAfterMs()
 			return {
 				outbound: [
 					buildErrorResponse(
+						parsed.cmd,
 						parsed.nonce,
 						RpcErrorCode.RATE_LIMITED,
 						'Too many requests. Slow down.',
@@ -290,7 +324,7 @@ export class ActivityHostManager {
 		if (!commandDef) {
 			return {
 				outbound: [
-					buildErrorResponse(parsed.nonce, RpcErrorCode.NOT_IMPLEMENTED, `Unknown command: ${parsed.cmd}`)
+					buildErrorResponse(parsed.cmd, parsed.nonce, RpcErrorCode.NOT_IMPLEMENTED, `Unknown command: ${parsed.cmd}`)
 				]
 			}
 		}
@@ -300,6 +334,7 @@ export class ActivityHostManager {
 			return {
 				outbound: [
 					buildErrorResponse(
+						parsed.cmd,
 						parsed.nonce,
 						RpcErrorCode.UNAUTHORIZED,
 						`Command "${parsed.cmd}" requires authentication. Call authorize() and authenticate() first.`
@@ -315,13 +350,13 @@ export class ActivityHostManager {
 		} catch (error) {
 			if (error instanceof RpcValidationError) {
 				return {
-					outbound: [buildErrorResponse(parsed.nonce, error.code, error.message)]
+					outbound: [buildErrorResponse(parsed.cmd, parsed.nonce, error.code, error.message)]
 				}
 			}
 			const msg = error instanceof Error ? error.message : String(error)
 			mockLogger.error(`RPC command error: ${msg}`)
 			return {
-				outbound: [buildErrorResponse(parsed.nonce, RpcErrorCode.INTERNAL, msg)]
+				outbound: [buildErrorResponse(parsed.cmd, parsed.nonce, RpcErrorCode.INTERNAL, msg)]
 			}
 		}
 	}
@@ -331,128 +366,91 @@ export class ActivityHostManager {
 	// =========================================================================
 
 	/**
-	 * Handle the DISPATCH command which initiates the handshake.
+	 * Handle Embedded SDK HANDSHAKE opcode.
 	 *
-	 * The SDK sends { cmd: "DISPATCH", nonce: "...", args: { ... } } as the
-	 * first message. The host must respond with READY (exactly once).
-	 *
-	 * Spec section 4.2: Host MUST emit exactly one READY per session after
-	 * handshake succeeds.
-	 *
-	 * Spec section 12.2: Accept and ignore unknown fields in handshake.
+	 * Activity posts: [Opcodes.HANDSHAKE, { v:1, encoding:"json", client_id, frame_id, sdk_version? }]
+	 * Host responds by emitting READY as a DISPATCH frame:
+	 *   [Opcodes.FRAME, { cmd:"DISPATCH", evt:"READY", nonce:null, data:{...} }]
 	 */
-	private handleHandshake(record: ActivitySessionRecord, parsed: InboundRpcMessage): HandleInboundResult {
-		const outbound: object[] = []
+	private handleHandshake(record: ActivitySessionRecord, _handshakePayload: unknown): HandleInboundResult {
+		const outbound: unknown[] = []
 
 		// Mark handshake received
 		record.handshake_received = true
 
-		// Build READY payload (spec section 4.3)
-		if (!record.ready_emitted) {
-			record.ready_emitted = true
+		// Re-handshake: iframe reloads, SDK must re-initialize.
+		// Clear subscriptions so the Activity can resubscribe cleanly.
+		if (record.ready_emitted) {
+			mockLogger.info(`Re-handshake for instance=${record.instance_id} -- clearing subscriptions and re-emitting READY`)
 
-			// Resolve user data from mock session
-			const mockSession = sessionManager.get(record.session_id)
-			const user = mockSession?.state.users.get(record.user_id) ?? mockSession?.state.currentUser
+			const subs = this.subscriptions.get(record.instance_id)
+			if (subs) subs.clear()
 
-			const readyPayload = {
-				v: 1,
-				config: {
-					cdn_host: 'cdn.discordapp.com',
-					api_endpoint: '//discord.com/api',
-					environment: 'production'
-				},
-				user: user
-					? {
-							id: user.id,
-							username: user.username,
-							discriminator: user.discriminator ?? '0',
-							avatar: user.avatar ?? null,
-							global_name: user.globalName ?? null,
-							flags: 0
+			record.deferred_subscriptions = []
+			record.pending_authorize = null
+			record.pending_purchase = null
+		}
+
+		// Resolve user data from mock session
+		const mockSession = sessionManager.get(record.session_id)
+		const user = mockSession?.state.users.get(record.user_id) ?? mockSession?.state.currentUser
+
+		// READY user schema in @discord/embedded-app-sdk is strict:
+		// - avatar is optional string (NOT nullable)
+		// - extra keys are ignored/stripped by the SDK
+		// When avatar is null, Discord omits the field (do the same) to avoid parse failures.
+		const readyUser: Record<string, unknown> = user
+			? {
+					id: user.id,
+					username: user.username,
+					discriminator: user.discriminator ?? '0'
+				}
+			: {
+					id: record.user_id,
+					username: 'MockUser',
+					discriminator: '0'
+				}
+		if (user?.avatar) {
+			readyUser.avatar = user.avatar
+		}
+
+		const readyPayload = {
+			v: 1,
+			config: {
+				cdn_host: 'cdn.discordapp.com',
+				api_endpoint: '//discord.com/api',
+				environment: 'production'
+			},
+			user: readyUser
+		}
+
+		// READY is a DISPATCH event frame
+		outbound.push(buildEventDispatch('READY', readyPayload))
+		record.ready_emitted = true
+
+		// Flush any deferred subscriptions (subscriptions received before READY)
+		// No events other than READY before READY is emitted.
+		for (const deferred of record.deferred_subscriptions) {
+			const subs = this.subscriptions.get(record.instance_id)
+			if (!subs) continue
+
+			const isNew = subs.subscribe(deferred.event_name, deferred.args)
+			if (isNew) {
+				const snapshot = this.getSnapshotForEvent(deferred.event_name, record)
+				if (snapshot !== null) {
+					if (Array.isArray(snapshot)) {
+						for (const item of snapshot) {
+							outbound.push(buildEventDispatch(deferred.event_name, item))
 						}
-					: {
-							id: record.user_id,
-							username: 'MockUser',
-							discriminator: '0',
-							avatar: null,
-							global_name: null,
-							flags: 0
-						}
-			}
-
-			// Emit READY event (spec section 3.1.4 -- event dispatch, no nonce)
-			outbound.push(buildEventDispatch('READY', readyPayload))
-
-			// Also send command response for DISPATCH
-			outbound.push(buildCommandResponse('DISPATCH', parsed.nonce, readyPayload))
-
-			// Flush any deferred subscriptions (subscriptions received before READY)
-			// Spec section 14.1: No events other than READY before READY is emitted
-			for (const deferred of record.deferred_subscriptions) {
-				const subs = this.subscriptions.get(record.instance_id)
-				if (subs) {
-					const isNew = subs.subscribe(deferred.event_name, deferred.args)
-					// Send subscription confirmation
-					outbound.push(buildCommandResponse('SUBSCRIBE', deferred.nonce, { evt: deferred.event_name }))
-					// Emit snapshot if this is a stateful event and subscription is new
-					if (isNew) {
-						const snapshot = this.getSnapshotForEvent(deferred.event_name, record)
-						if (snapshot !== null) {
-							outbound.push(buildEventDispatch(deferred.event_name, snapshot))
-						}
+					} else {
+						outbound.push(buildEventDispatch(deferred.event_name, snapshot))
 					}
 				}
 			}
-			record.deferred_subscriptions = []
-
-			mockLogger.debug(`READY emitted for instance=${record.instance_id}`)
-		} else {
-			// Re-handshake (spec section 4.4): allow re-handshake for same instance_id
-			mockLogger.info(`Re-handshake for instance=${record.instance_id} -- clearing subscriptions and re-emitting READY`)
-
-			// Clear subscriptions from previous load (iframe lost its state)
-			const subs = this.subscriptions.get(record.instance_id)
-			if (subs) {
-				subs.clear()
-			}
-
-			// Clear any pending deferred subscriptions
-			record.deferred_subscriptions = []
-
-			// Re-emit READY with full payload (SDK needs it to re-initialize)
-			const mockSession = sessionManager.get(record.session_id)
-			const user = mockSession?.state.users.get(record.user_id) ?? mockSession?.state.currentUser
-
-			const reReadyPayload = {
-				v: 1,
-				config: {
-					cdn_host: 'cdn.discordapp.com',
-					api_endpoint: '//discord.com/api',
-					environment: 'production'
-				},
-				user: user
-					? {
-							id: user.id,
-							username: user.username,
-							discriminator: user.discriminator ?? '0',
-							avatar: user.avatar ?? null,
-							global_name: user.globalName ?? null,
-							flags: 0
-						}
-					: {
-							id: record.user_id,
-							username: 'MockUser',
-							discriminator: '0',
-							avatar: null,
-							global_name: null,
-							flags: 0
-						}
-			}
-
-			outbound.push(buildEventDispatch('READY', reReadyPayload))
-			outbound.push(buildCommandResponse('DISPATCH', parsed.nonce, reReadyPayload))
 		}
+		record.deferred_subscriptions = []
+
+		mockLogger.debug(`READY emitted for instance=${record.instance_id}`)
 
 		return { outbound }
 	}
@@ -467,7 +465,7 @@ export class ActivityHostManager {
 	 *
 	 * Returns the event dispatch object if emitted, null if not subscribed or gated.
 	 */
-	emitEvent(session_id: string, event_name: string, data: unknown): object | null {
+	emitEvent(session_id: string, event_name: string, data: unknown): unknown | null {
 		const record = this.sessions.get(session_id)
 		if (!record) return null
 
@@ -495,11 +493,8 @@ export class ActivityHostManager {
 
 		switch (event_name) {
 			case 'ACTIVITY_INSTANCE_PARTICIPANTS_UPDATE': {
-				// Return participants from voice states in the Activity's channel
-				const participants = this.getParticipants(record)
 				return {
-					instance_id: record.instance_id,
-					participants
+					participants: this.getConnectedParticipants(record)
 				}
 			}
 
@@ -520,31 +515,25 @@ export class ActivityHostManager {
 
 			case 'CURRENT_USER_UPDATE': {
 				const user = mockSession.state.users.get(record.user_id) ?? mockSession.state.currentUser
-				return {
-					id: user.id,
-					username: user.username,
-					discriminator: user.discriminator ?? '0',
-					avatar: user.avatar ?? null,
-					global_name: user.globalName ?? null
-				}
+				return this.toSdkUser(user)
 			}
 
 			case 'CURRENT_GUILD_MEMBER_UPDATE': {
 				if (!record.guild_id) return null
 				const member = mockSession.state.getGuildMember(record.guild_id, record.user_id)
-				if (!member) return null
 				return {
-					nick: member.nick ?? null,
-					roles: member.roles ?? [],
-					user: {
-						id: record.user_id
-					}
+					user_id: record.user_id,
+					guild_id: record.guild_id,
+					nick: member?.nick ?? null,
+					avatar: null,
+					avatar_decoration_data: null,
+					color_string: null
 				}
 			}
 
 			case 'VOICE_STATE_UPDATE': {
-				// Return current voice state for the subscribed channel
-				return null // Populated when subscription includes channel_id args
+				// Snapshot: emit current voice states for the Activity's channel (one event per user)
+				return this.getVoiceStateSnapshots(record)
 			}
 
 			case 'RELATIONSHIP_UPDATE': {
@@ -557,47 +546,127 @@ export class ActivityHostManager {
 	}
 
 	/**
-	 * Get participants list for an Activity instance.
-	 * Derives from voice states in the mock session.
+	 * Get connected participants for an Activity instance.
+	 * Shape matches @discord/embedded-app-sdk GET_ACTIVITY_INSTANCE_CONNECTED_PARTICIPANTS
+	 * and ACTIVITY_INSTANCE_PARTICIPANTS_UPDATE payload schemas.
 	 */
-	private getParticipants(
+	getConnectedParticipants(
 		record: ActivitySessionRecord
 	): Array<{
-		user: { id: string; username: string; discriminator: string; avatar: string | null }
-		connected: boolean
-		muted: boolean
-		deafened: boolean
+		id: string
+		username: string
+		global_name?: string | null
+		discriminator: string
+		avatar?: string | null
+		flags: number
+		bot: boolean
+		avatar_decoration_data?: null
+		premium_type?: number | null
+		nickname?: string
 	}> {
 		const mockSession = sessionManager.get(record.session_id)
 		if (!mockSession) return []
 
 		const participants: Array<{
-			user: { id: string; username: string; discriminator: string; avatar: string | null }
-			connected: boolean
-			muted: boolean
-			deafened: boolean
+			id: string
+			username: string
+			global_name?: string | null
+			discriminator: string
+			avatar?: string | null
+			flags: number
+			bot: boolean
+			avatar_decoration_data?: null
+			premium_type?: number | null
+			nickname?: string
 		}> = []
 
 		for (const vs of mockSession.state.voiceStates.values()) {
 			if (vs.channel_id === record.channel_id) {
 				const user = mockSession.state.users.get(vs.user_id)
 				if (user) {
+					const member = record.guild_id ? mockSession.state.getGuildMember(record.guild_id, user.id) : null
 					participants.push({
-						user: {
-							id: user.id,
-							username: user.username,
-							discriminator: user.discriminator ?? '0',
-							avatar: user.avatar ?? null
-						},
-						connected: true,
-						muted: vs.self_mute ?? false,
-						deafened: vs.self_deaf ?? false
+						id: user.id,
+						username: user.username,
+						global_name: user.globalName ?? null,
+						discriminator: user.discriminator ?? '0',
+						avatar: user.avatar ?? null,
+						flags: (user as { flags?: number }).flags ?? 0,
+						bot: Boolean((user as { bot?: boolean }).bot),
+						avatar_decoration_data: null,
+						premium_type: (user as { premiumType?: number | null }).premiumType ?? null,
+						nickname: member?.nick ?? undefined
 					})
 				}
 			}
 		}
 
 		return participants
+	}
+
+	private getVoiceStateSnapshots(record: ActivitySessionRecord): Array<{
+		mute: boolean
+		nick: string
+		user: Record<string, unknown>
+		voice_state: { mute: boolean; deaf: boolean; self_mute: boolean; self_deaf: boolean; suppress: boolean }
+		volume: number
+	}> {
+		const mockSession = sessionManager.get(record.session_id)
+		if (!mockSession || !record.channel_id) return []
+
+		const snapshots: Array<{
+			mute: boolean
+			nick: string
+			user: Record<string, unknown>
+			voice_state: { mute: boolean; deaf: boolean; self_mute: boolean; self_deaf: boolean; suppress: boolean }
+			volume: number
+		}> = []
+
+		for (const vs of mockSession.state.voiceStates.values()) {
+			if (vs.channel_id !== record.channel_id) continue
+			const user = mockSession.state.users.get(vs.user_id)
+			if (!user) continue
+			const member = record.guild_id ? mockSession.state.getGuildMember(record.guild_id, user.id) : null
+
+			snapshots.push({
+				mute: vs.mute ?? false,
+				nick: member?.nick ?? user.username,
+				user: this.toSdkUser(user),
+				voice_state: {
+					mute: vs.mute ?? false,
+					deaf: vs.deaf ?? false,
+					self_mute: vs.self_mute ?? false,
+					self_deaf: vs.self_deaf ?? false,
+					suppress: false
+				},
+				volume: 100
+			})
+		}
+
+		return snapshots
+	}
+
+	private toSdkUser(user: {
+		id: string
+		username: string
+		discriminator?: string
+		avatar?: string | null
+		globalName?: string | null
+		bot?: boolean
+		flags?: number | null
+		premiumType?: number | null
+	}): Record<string, unknown> {
+		return {
+			id: user.id,
+			username: user.username,
+			discriminator: user.discriminator ?? '0',
+			global_name: user.globalName ?? null,
+			avatar: user.avatar ?? null,
+			avatar_decoration_data: null,
+			bot: Boolean(user.bot),
+			flags: user.flags ?? null,
+			premium_type: user.premiumType ?? null
+		}
 	}
 
 	// =========================================================================
@@ -629,6 +698,8 @@ export class ActivityHostManager {
 			'DISPATCH',
 			'GET_INSTANCE_ID',
 			'GET_PLATFORM_BEHAVIORS',
+			'ENCOURAGE_HW_ACCELERATION',
+			// Legacy spelling (keep for compatibility with older manifests/spec drafts)
 			'ENCOURAGE_HARDWARE_ACCELERATION'
 		])
 
@@ -646,7 +717,7 @@ export class ActivityHostManager {
 		nonce: string,
 		approved: boolean,
 		approvedScopes?: string[]
-	): object[] | null {
+	): unknown[] | null {
 		const record = this.sessions.get(session_id)
 		if (!record || !record.pending_authorize) return null
 		if (record.pending_authorize.nonce !== nonce) return null
@@ -655,7 +726,7 @@ export class ActivityHostManager {
 		record.pending_authorize = null
 
 		if (!approved) {
-			return [buildErrorResponse(nonce, RpcErrorCode.FORBIDDEN, 'Authorization denied by user')]
+			return [buildErrorResponse('AUTHORIZE', nonce, RpcErrorCode.FORBIDDEN, 'Authorization denied by user')]
 		}
 
 		const scopes = approvedScopes ?? pending.scopes
@@ -682,7 +753,7 @@ export class ActivityHostManager {
 		session_id: string,
 		nonce: string,
 		approved: boolean
-	): object[] | null {
+	): unknown[] | null {
 		const record = this.sessions.get(session_id)
 		if (!record || !record.pending_purchase) return null
 		if (record.pending_purchase.nonce !== nonce) return null
@@ -691,7 +762,7 @@ export class ActivityHostManager {
 		record.pending_purchase = null
 
 		if (!approved) {
-			return [buildErrorResponse(nonce, RpcErrorCode.FORBIDDEN, 'Purchase cancelled by user')]
+			return [buildErrorResponse('START_PURCHASE', nonce, RpcErrorCode.FORBIDDEN, 'Purchase cancelled by user')]
 		}
 
 		// Create new entitlement
@@ -700,17 +771,18 @@ export class ActivityHostManager {
 			sku_id: pending.sku_id,
 			user_id: record.user_id,
 			application_id: record.application_id,
-			type: 7, // PURCHASE
+			gift_code_flags: 0,
+			type: 7, // PREMIUM_PURCHASE
 			consumed: false
 		}
 
 		// Add to store
 		record.iap_state.entitlements.push(entitlement)
 
-		const outbound: object[] = []
+		const outbound: unknown[] = []
 
-		// Send START_PURCHASE command response (success = empty object)
-		outbound.push(buildCommandResponse('START_PURCHASE', nonce, {}))
+		// Send START_PURCHASE command response (success = entitlements array)
+		outbound.push(buildCommandResponse('START_PURCHASE', nonce, [entitlement]))
 
 		// Emit ENTITLEMENT_CREATE event if subscribed
 		const eventMsg = this.emitEvent(session_id, 'ENTITLEMENT_CREATE', { entitlement })

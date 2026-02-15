@@ -5,6 +5,7 @@
 import { ActivityHostManager } from '../../../src/activity/host/activity-host-manager.js'
 import { loadManifest, resetManifest } from '../../../src/activity/schema/manifest-loader.js'
 import { RpcErrorCode } from '../../../src/activity/host/error-codes.js'
+import { ActivityRpcOpcode } from '../../../src/activity/host/rpc-envelope.js'
 
 // Mock the session manager
 jest.mock('../../../src/core/manager.js', () => {
@@ -95,11 +96,11 @@ describe('Auth Gating', () => {
 		})
 
 		// Complete handshake
-		manager.handleInbound('sess-gate-1', {
-			cmd: 'DISPATCH',
-			nonce: 'handshake-nonce',
-			args: { v: 1 }
-		})
+		const record = manager.getRecord('sess-gate-1')!
+		manager.handleInbound('sess-gate-1', [
+			ActivityRpcOpcode.HANDSHAKE,
+			{ v: 1, encoding: 'json', client_id: 'app-123', frame_id: record.frame_id }
+		])
 	})
 
 	afterEach(() => {
@@ -107,11 +108,23 @@ describe('Auth Gating', () => {
 	})
 
 	function sendCommand(cmd: string, args?: Record<string, unknown>) {
-		return manager.handleInbound('sess-gate-1', {
+		const payload: Record<string, unknown> = {
 			cmd,
 			nonce: `nonce-${cmd}-${Date.now()}`,
 			args: args ?? {}
-		})
+		}
+
+		// SUBSCRIBE/UNSUBSCRIBE use top-level evt in Embedded SDK requests
+		if (cmd === 'SUBSCRIBE' || cmd === 'UNSUBSCRIBE') {
+			const requested = args ?? {}
+			const { evt, ...restArgs } = requested as { evt?: unknown } & Record<string, unknown>
+			if (typeof evt === 'string') {
+				payload.evt = evt
+			}
+			payload.args = restArgs
+		}
+
+		return manager.handleInbound('sess-gate-1', [ActivityRpcOpcode.FRAME, payload])
 	}
 
 	describe('unauthenticated gated commands return 4001', () => {
@@ -131,7 +144,7 @@ describe('Auth Gating', () => {
 			const result = sendCommand(cmd)
 			expect(result.outbound).toHaveLength(1)
 
-			const response = result.outbound[0] as Record<string, unknown>
+			const [, response] = result.outbound[0] as [number, Record<string, unknown>]
 			expect(response.evt).toBe('ERROR')
 
 			const data = response.data as Record<string, unknown>
@@ -146,7 +159,7 @@ describe('Auth Gating', () => {
 			'SUBSCRIBE',
 			'GET_INSTANCE_ID',
 			'GET_PLATFORM_BEHAVIORS',
-			'ENCOURAGE_HARDWARE_ACCELERATION'
+			'ENCOURAGE_HW_ACCELERATION'
 		]
 
 		test.each(alwaysAllowed)('%s succeeds when unauthenticated', (cmd) => {
@@ -154,9 +167,10 @@ describe('Auth Gating', () => {
 			expect(record.auth.state).toBe('UNAUTHENTICATED')
 
 			const result = sendCommand(cmd, cmd === 'SUBSCRIBE' ? { evt: 'ACTIVITY_LAYOUT_MODE_UPDATE' } : {})
-			expect(result.outbound).toHaveLength(1)
+			// SUBSCRIBE may emit a snapshot-on-subscribe DISPATCH in addition to the SUBSCRIBE response
+			expect(result.outbound.length).toBeGreaterThanOrEqual(1)
 
-			const response = result.outbound[0] as Record<string, unknown>
+			const [, response] = result.outbound[0] as [number, Record<string, unknown>]
 			// Should NOT be an ERROR event (it should be a command response or subscription confirmation)
 			expect(response.evt).not.toBe('ERROR')
 		})
@@ -181,7 +195,7 @@ describe('Auth Gating', () => {
 			const result = sendCommand('GET_GUILD')
 			expect(result.outbound).toHaveLength(1)
 
-			const response = result.outbound[0] as Record<string, unknown>
+			const [, response] = result.outbound[0] as [number, Record<string, unknown>]
 			expect(response.cmd).toBe('GET_GUILD')
 			expect(response.evt).not.toBe('ERROR')
 		})
@@ -190,7 +204,7 @@ describe('Auth Gating', () => {
 			const result = sendCommand('GET_CHANNEL', { channel_id: 'channel-1' })
 			expect(result.outbound).toHaveLength(1)
 
-			const response = result.outbound[0] as Record<string, unknown>
+			const [, response] = result.outbound[0] as [number, Record<string, unknown>]
 			expect(response.cmd).toBe('GET_CHANNEL')
 			expect(response.evt).not.toBe('ERROR')
 		})

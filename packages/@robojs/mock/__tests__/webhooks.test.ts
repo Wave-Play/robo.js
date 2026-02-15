@@ -181,7 +181,7 @@ describe('Webhooks', () => {
 			expect(response.status).toBe(400)
 
 			const body = response.body as Record<string, unknown>
-			expect(body.error).toContain('discord')
+			expect(body.message).toContain('discord')
 		})
 
 		it('should record webhook_created action', async () => {
@@ -278,7 +278,7 @@ describe('Webhooks', () => {
 		it('should GET webhook by ID', async () => {
 			const request = createMockRequest({
 				method: 'GET',
-				params: { webhookId: webhook.id },
+				params: { id: webhook.id },
 				headers: { Authorization: `Bot ${token}` }
 			})
 
@@ -296,7 +296,7 @@ describe('Webhooks', () => {
 		it('should return 404 for unknown webhook', async () => {
 			const request = createMockRequest({
 				method: 'GET',
-				params: { webhookId: 'unknown' },
+				params: { id: 'unknown' },
 				headers: { Authorization: `Bot ${token}` }
 			})
 
@@ -308,7 +308,7 @@ describe('Webhooks', () => {
 		it('should PATCH (modify) webhook', async () => {
 			const request = createMockRequest({
 				method: 'PATCH',
-				params: { webhookId: webhook.id },
+				params: { id: webhook.id },
 				headers: { Authorization: `Bot ${token}` },
 				body: { name: 'Updated Webhook' }
 			})
@@ -328,7 +328,7 @@ describe('Webhooks', () => {
 		it('should DELETE webhook', async () => {
 			const request = createMockRequest({
 				method: 'DELETE',
-				params: { webhookId: webhook.id },
+				params: { id: webhook.id },
 				headers: { Authorization: `Bot ${token}` }
 			})
 
@@ -612,7 +612,7 @@ describe('Webhooks', () => {
 				expect(response.status).toBe(400)
 
 				const body = response.body as Record<string, unknown>
-				expect(body.error).toContain('3 stickers')
+				expect(body.message).toContain('3 stickers')
 			})
 
 			it('should return 400 for unknown sticker_id', async () => {
@@ -628,7 +628,7 @@ describe('Webhooks', () => {
 				expect(response.status).toBe(400)
 
 				const body = response.body as Record<string, unknown>
-				expect(body.error).toContain('Unknown sticker')
+				expect(body.message).toContain('Unknown sticker')
 			})
 
 			it('should support thread_name for forum channel thread creation', async () => {
@@ -717,7 +717,7 @@ describe('Webhooks', () => {
 				expect(response.status).toBe(400)
 
 				const body = response.body as Record<string, unknown>
-				expect(body.error).toContain('forum')
+				expect(body.message).toContain('forum')
 			})
 
 			it('should return 400 for invalid applied_tags', async () => {
@@ -750,7 +750,7 @@ describe('Webhooks', () => {
 				expect(response.status).toBe(400)
 
 				const body = response.body as Record<string, unknown>
-				expect(body.error).toContain('Invalid tag')
+				expect(body.message).toContain('Invalid tag')
 			})
 
 			it('should strip interactive components from non-app webhooks without with_components', async () => {
@@ -1032,7 +1032,7 @@ describe('Webhooks', () => {
 
 			const request = createMockRequest({
 				method: 'PATCH',
-				params: { webhookId: webhook.id },
+				params: { id: webhook.id },
 				headers: { Authorization: `Bot ${token}` },
 				body: { name: 'Updated Name' }
 			})
@@ -1053,7 +1053,7 @@ describe('Webhooks', () => {
 
 			const request = createMockRequest({
 				method: 'DELETE',
-				params: { webhookId: webhook.id },
+				params: { id: webhook.id },
 				headers: { Authorization: `Bot ${token}` }
 			})
 
@@ -1123,7 +1123,7 @@ describe('Webhooks', () => {
 
 			const request = createMockRequest({
 				method: 'PATCH',
-				params: { webhookId: webhook.id },
+				params: { id: webhook.id },
 				body: { channel_id: secondChannelId },
 				headers: { Authorization: `Bot ${token}` }
 			})

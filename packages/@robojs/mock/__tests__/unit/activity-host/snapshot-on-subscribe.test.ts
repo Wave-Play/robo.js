@@ -6,6 +6,7 @@
 
 import { ActivityHostManager, resetActivityHostManager } from '../../../src/activity/host/activity-host-manager.js'
 import { loadManifest, resetManifest } from '../../../src/activity/schema/manifest-loader.js'
+import { ActivityRpcOpcode } from '../../../src/activity/host/rpc-envelope.js'
 
 // Mock the session manager
 jest.mock('../../../src/core/manager.js', () => {
@@ -77,8 +78,11 @@ describe('Snapshot-on-Subscribe', () => {
 			channel_id: 'channel-1',
 			launch_url: 'https://example.com'
 		})
-		// Emit READY
-		manager.handleInbound('sess-1', { cmd: 'DISPATCH', nonce: 'n1', args: {} })
+		// Emit READY via HANDSHAKE
+		manager.handleInbound('sess-1', [
+			ActivityRpcOpcode.HANDSHAKE,
+			{ v: 1, encoding: 'json', client_id: 'app-1', frame_id: record.frame_id }
+		])
 		return record
 	}
 
@@ -138,11 +142,9 @@ describe('Snapshot-on-Subscribe', () => {
 	test('ACTIVITY_INSTANCE_PARTICIPANTS_UPDATE returns participants snapshot', () => {
 		const record = launchAndReady()
 		const snapshot = manager.getSnapshotForEvent('ACTIVITY_INSTANCE_PARTICIPANTS_UPDATE', record) as {
-			instance_id: string
 			participants: unknown[]
 		}
 		expect(snapshot).toBeDefined()
-		expect(snapshot.instance_id).toBe(record.instance_id)
 		expect(Array.isArray(snapshot.participants)).toBe(true)
 	})
 

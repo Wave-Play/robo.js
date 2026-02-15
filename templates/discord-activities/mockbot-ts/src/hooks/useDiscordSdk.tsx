@@ -9,11 +9,12 @@ type SdkSetupResult = ReturnType<typeof useDiscordSdkSetup>
 
 const queryParams = new URLSearchParams(window.location.search)
 const isEmbedded = queryParams.get('frame_id') != null
+const clientId = import.meta.env.VITE_DISCORD_CLIENT_ID ?? queryParams.get('client_id') ?? '1234567890'
 
 let discordSdk: DiscordSDK | DiscordSDKMock
 
 if (isEmbedded) {
-	discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID)
+	discordSdk = new DiscordSDK(clientId)
 } else {
 	// We're using session storage for user_id, guild_id, and channel_id
 	// This way the user/guild/channel will be maintained until the tab is closed, even if you refresh
@@ -25,7 +26,7 @@ if (isEmbedded) {
 	const mockGuildId = getOverrideOrRandomSessionValue('guild_id')
 	const mockChannelId = getOverrideOrRandomSessionValue('channel_id')
 
-	discordSdk = new DiscordSDKMock(import.meta.env.VITE_DISCORD_CLIENT_ID, mockGuildId, mockChannelId)
+	discordSdk = new DiscordSDKMock(clientId, mockGuildId, mockChannelId)
 	const discriminator = String(mockUserId.charCodeAt(0) % 5)
 
 	discordSdk._updateCommandMocks({
@@ -141,7 +142,7 @@ export async function authenticateSdk(options?: AuthenticateSdkOptions) {
 
 	await discordSdk.ready()
 	const { code } = await discordSdk.commands.authorize({
-		client_id: import.meta.env.VITE_DISCORD_CLIENT_ID,
+		client_id: clientId,
 		response_type: 'code',
 		state: '',
 		prompt: 'none',

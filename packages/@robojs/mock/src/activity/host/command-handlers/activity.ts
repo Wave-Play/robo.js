@@ -16,6 +16,8 @@ export function handleActivityCommands(
 	_manager: ActivityHostManager,
 	_commandDef: RpcCommandDefinition
 ): HandleInboundResult {
+	let responseActivity: Record<string, unknown> | null = null
+
 	if (parsed.cmd === 'SET_ACTIVITY') {
 		const activity = parsed.args?.activity as Record<string, unknown> | undefined
 		if (activity) {
@@ -26,12 +28,25 @@ export function handleActivityCommands(
 				assets: activity.assets as ActivityPresence['assets'],
 				buttons: activity.buttons as ActivityPresence['buttons']
 			}
+			// Response schema requires at minimum { name, type }.
+			// SDK request payload omits name, so we synthesize it.
+			responseActivity = {
+				...activity,
+				name: (typeof activity.name === 'string' && activity.name) ? activity.name : 'Mock Activity',
+				type: typeof activity.type === 'number' ? activity.type : 0,
+				application_id: record.application_id
+			}
 		} else {
 			record.activity_status = null
+			responseActivity = {
+				name: 'Mock Activity',
+				type: 0,
+				application_id: record.application_id
+			}
 		}
 	}
 
 	return {
-		outbound: [buildCommandResponse(parsed.cmd, parsed.nonce, {})]
+		outbound: [buildCommandResponse(parsed.cmd, parsed.nonce, responseActivity ?? {})]
 	}
 }

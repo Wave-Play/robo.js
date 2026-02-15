@@ -15,26 +15,36 @@ export function handleIapCommands(
 	_manager: ActivityHostManager,
 	_commandDef: RpcCommandDefinition
 ): HandleInboundResult {
+	const skus = record.iap_state.skus.map((s) => ({
+		...s,
+		release_date: (s as { release_date?: string | null }).release_date ?? null
+	}))
+
+	const entitlements = record.iap_state.entitlements.map((e) => ({
+		...e,
+		gift_code_flags: (e as { gift_code_flags?: number }).gift_code_flags ?? 0
+	}))
+
 	switch (parsed.cmd) {
 		case 'GET_SKUS':
 		case 'GET_SKUS_EMBEDDED':
 			return {
-				outbound: [buildCommandResponse(parsed.cmd, parsed.nonce, { skus: record.iap_state.skus })]
+				outbound: [buildCommandResponse(parsed.cmd, parsed.nonce, { skus })]
 			}
 
 		case 'GET_ENTITLEMENTS':
 		case 'GET_ENTITLEMENTS_EMBEDDED': {
-			let entitlements = record.iap_state.entitlements
+			let filtered = entitlements
 
 			// Filter by sku_ids if provided
 			const skuIds = (parsed.args as Record<string, unknown>)?.sku_ids as string[] | undefined
 			if (skuIds && Array.isArray(skuIds) && skuIds.length > 0) {
 				const skuIdSet = new Set(skuIds)
-				entitlements = entitlements.filter((e) => skuIdSet.has(e.sku_id))
+				filtered = filtered.filter((e) => skuIdSet.has(e.sku_id))
 			}
 
 			return {
-				outbound: [buildCommandResponse(parsed.cmd, parsed.nonce, { entitlements })]
+				outbound: [buildCommandResponse(parsed.cmd, parsed.nonce, { entitlements: filtered })]
 			}
 		}
 
@@ -45,7 +55,7 @@ export function handleIapCommands(
 			if (!skuId) {
 				return {
 					outbound: [
-						buildErrorResponse(parsed.nonce, RpcErrorCode.BAD_REQUEST, 'Missing sku_id in START_PURCHASE args')
+						buildErrorResponse(parsed.cmd, parsed.nonce, RpcErrorCode.BAD_REQUEST, 'Missing sku_id in START_PURCHASE args')
 					]
 				}
 			}
@@ -55,7 +65,7 @@ export function handleIapCommands(
 			if (!sku) {
 				return {
 					outbound: [
-						buildErrorResponse(parsed.nonce, RpcErrorCode.NOT_FOUND, `SKU not found: ${skuId}`)
+						buildErrorResponse(parsed.cmd, parsed.nonce, RpcErrorCode.NOT_FOUND, `SKU not found: ${skuId}`)
 					]
 				}
 			}

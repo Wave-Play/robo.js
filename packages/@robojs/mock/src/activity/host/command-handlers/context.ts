@@ -57,6 +57,29 @@ export function handleContextCommands(
 	}
 }
 
+function toSdkUser(user: {
+	id: string
+	username: string
+	discriminator?: string
+	avatar?: string | null
+	globalName?: string | null
+	bot?: boolean
+	flags?: number | null
+	premiumType?: number | null
+}): Record<string, unknown> {
+	return {
+		id: user.id,
+		username: user.username,
+		discriminator: user.discriminator ?? '0',
+		global_name: user.globalName ?? null,
+		avatar: user.avatar ?? null,
+		avatar_decoration_data: null,
+		bot: Boolean(user.bot),
+		flags: user.flags ?? null,
+		premium_type: user.premiumType ?? null
+	}
+}
+
 function handleGetInstanceId(parsed: InboundRpcMessage, record: ActivitySessionRecord): HandleInboundResult {
 	return {
 		outbound: [buildCommandResponse(parsed.cmd, parsed.nonce, { instance_id: record.instance_id })]
@@ -86,7 +109,7 @@ function handleGetUser(parsed: InboundRpcMessage, record: ActivitySessionRecord)
 	const mockSession = sessionManager.get(record.session_id)
 	if (!mockSession) {
 		return {
-			outbound: [buildErrorResponse(parsed.nonce, RpcErrorCode.NOT_FOUND, 'Session not found')]
+			outbound: [buildErrorResponse(parsed.cmd, parsed.nonce, RpcErrorCode.NOT_FOUND, 'Session not found')]
 		}
 	}
 
@@ -111,30 +134,36 @@ function handleGetGuild(parsed: InboundRpcMessage, record: ActivitySessionRecord
 	const mockSession = sessionManager.get(record.session_id)
 	if (!mockSession) {
 		return {
-			outbound: [buildErrorResponse(parsed.nonce, RpcErrorCode.NOT_FOUND, 'Session not found')]
+			outbound: [buildErrorResponse(parsed.cmd, parsed.nonce, RpcErrorCode.NOT_FOUND, 'Session not found')]
 		}
 	}
 
 	const guildId = (parsed.args?.guild_id as string) ?? record.guild_id
 	if (!guildId) {
 		return {
-			outbound: [buildErrorResponse(parsed.nonce, RpcErrorCode.NOT_FOUND, 'No guild context')]
+			outbound: [buildErrorResponse(parsed.cmd, parsed.nonce, RpcErrorCode.NOT_FOUND, 'No guild context')]
 		}
 	}
 
 	const guild = mockSession.state.guilds.get(guildId)
 	if (!guild) {
 		return {
-			outbound: [buildErrorResponse(parsed.nonce, RpcErrorCode.NOT_FOUND, 'Guild not found')]
+			outbound: [buildErrorResponse(parsed.cmd, parsed.nonce, RpcErrorCode.NOT_FOUND, 'Guild not found')]
 		}
 	}
+
+	// icon_url is optional (not nullable) in the Embedded App SDK schema.
+	// Discord omits icon_url when no icon is present (do the same).
+	const iconUrl = guild.icon
+		? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`
+		: undefined
 
 	return {
 		outbound: [
 			buildCommandResponse(parsed.cmd, parsed.nonce, {
 				id: guild.id,
 				name: guild.name,
-				icon_url: guild.icon ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png` : null,
+				...(iconUrl ? { icon_url: iconUrl } : {}),
 				members: []
 			})
 		]
@@ -145,7 +174,7 @@ function handleGetGuilds(parsed: InboundRpcMessage, record: ActivitySessionRecor
 	const mockSession = sessionManager.get(record.session_id)
 	if (!mockSession) {
 		return {
-			outbound: [buildErrorResponse(parsed.nonce, RpcErrorCode.NOT_FOUND, 'Session not found')]
+			outbound: [buildErrorResponse(parsed.cmd, parsed.nonce, RpcErrorCode.NOT_FOUND, 'Session not found')]
 		}
 	}
 
@@ -163,47 +192,50 @@ function handleGetChannel(parsed: InboundRpcMessage, record: ActivitySessionReco
 	const mockSession = sessionManager.get(record.session_id)
 	if (!mockSession) {
 		return {
-			outbound: [buildErrorResponse(parsed.nonce, RpcErrorCode.NOT_FOUND, 'Session not found')]
+			outbound: [buildErrorResponse(parsed.cmd, parsed.nonce, RpcErrorCode.NOT_FOUND, 'Session not found')]
 		}
 	}
 
 	const channelId = (parsed.args?.channel_id as string) ?? record.channel_id
 	if (!channelId) {
 		return {
-			outbound: [buildErrorResponse(parsed.nonce, RpcErrorCode.NOT_FOUND, 'No channel context')]
+			outbound: [buildErrorResponse(parsed.cmd, parsed.nonce, RpcErrorCode.NOT_FOUND, 'No channel context')]
 		}
 	}
 
 	const channel = mockSession.state.channels.get(channelId)
 	if (!channel) {
 		return {
-			outbound: [buildErrorResponse(parsed.nonce, RpcErrorCode.NOT_FOUND, 'Channel not found')]
+			outbound: [buildErrorResponse(parsed.cmd, parsed.nonce, RpcErrorCode.NOT_FOUND, 'Channel not found')]
 		}
 	}
 
 	// Build voice states for this channel
 	const voiceStates: Array<{
-		user: { id: string; username: string; discriminator: string; avatar: string | null }
-		voice_state: { mute: boolean; deaf: boolean; self_mute: boolean; self_deaf: boolean }
+		mute: boolean
+		nick: string
+		user: Record<string, unknown>
+		voice_state: { mute: boolean; deaf: boolean; self_mute: boolean; self_deaf: boolean; suppress: boolean }
+		volume: number
 	}> = []
 
 	for (const vs of mockSession.state.voiceStates.values()) {
 		if (vs.channel_id === channelId) {
 			const user = mockSession.state.users.get(vs.user_id)
 			if (user) {
+				const member = record.guild_id ? mockSession.state.getGuildMember(record.guild_id, user.id) : null
 				voiceStates.push({
-					user: {
-						id: user.id,
-						username: user.username,
-						discriminator: user.discriminator ?? '0',
-						avatar: user.avatar ?? null
-					},
+					mute: vs.mute ?? false,
+					nick: member?.nick ?? user.username,
+					user: toSdkUser(user),
 					voice_state: {
 						mute: vs.mute ?? false,
 						deaf: vs.deaf ?? false,
 						self_mute: vs.self_mute ?? false,
-						self_deaf: vs.self_deaf ?? false
-					}
+						self_deaf: vs.self_deaf ?? false,
+						suppress: false
+					},
+					volume: 100
 				})
 			}
 		}
@@ -228,7 +260,7 @@ function handleGetChannels(parsed: InboundRpcMessage, record: ActivitySessionRec
 	const mockSession = sessionManager.get(record.session_id)
 	if (!mockSession) {
 		return {
-			outbound: [buildErrorResponse(parsed.nonce, RpcErrorCode.NOT_FOUND, 'Session not found')]
+			outbound: [buildErrorResponse(parsed.cmd, parsed.nonce, RpcErrorCode.NOT_FOUND, 'Session not found')]
 		}
 	}
 
@@ -250,7 +282,7 @@ function handleGetChannelPermissions(parsed: InboundRpcMessage, record: Activity
 	const mockSession = sessionManager.get(record.session_id)
 	if (!mockSession) {
 		return {
-			outbound: [buildErrorResponse(parsed.nonce, RpcErrorCode.NOT_FOUND, 'Session not found')]
+			outbound: [buildErrorResponse(parsed.cmd, parsed.nonce, RpcErrorCode.NOT_FOUND, 'Session not found')]
 		}
 	}
 
@@ -286,9 +318,11 @@ function handleGetParticipants(
 	record: ActivitySessionRecord,
 	manager: ActivityHostManager
 ): HandleInboundResult {
-	const snapshot = manager.getSnapshotForEvent('ACTIVITY_INSTANCE_PARTICIPANTS_UPDATE', record)
-
 	return {
-		outbound: [buildCommandResponse(parsed.cmd, parsed.nonce, snapshot ?? { participants: [] })]
+		outbound: [
+			buildCommandResponse(parsed.cmd, parsed.nonce, {
+				participants: manager.getConnectedParticipants(record)
+			})
+		]
 	}
 }

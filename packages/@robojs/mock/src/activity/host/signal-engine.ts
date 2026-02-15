@@ -33,7 +33,7 @@ export function onVoiceStateChanged(
 	channelId: string | null,
 	previousSpeaking?: boolean,
 	currentSpeaking?: boolean
-): object[] {
+): unknown[] {
 	const hostManager = getActivityHostManager()
 	const record = hostManager.getRecord(sessionId)
 	if (!record || !record.ready_emitted) return []
@@ -41,7 +41,7 @@ export function onVoiceStateChanged(
 	const subs = hostManager.getSubscriptions(record.instance_id)
 	if (!subs) return []
 
-	const outbound: object[] = []
+	const outbound: unknown[] = []
 
 	// SPEAKING_START / SPEAKING_STOP
 	// Spec section 8.2: emitted when a user starts/stops speaking
@@ -74,6 +74,28 @@ export function onVoiceStateChanged(
 		}
 	}
 
+	// VOICE_STATE_UPDATE
+	// Scoped by channel_id in subscribe args. Payload schema is UserVoiceState.
+	if (channelId) {
+		const voiceSubs = subs.getSubscriptionsForEvent('VOICE_STATE_UPDATE')
+		for (const sub of voiceSubs) {
+			const scopedChannelId = sub.args.channel_id as string | undefined
+			if (!scopedChannelId || scopedChannelId === channelId) {
+				const snapshot = hostManager.getSnapshotForEvent('VOICE_STATE_UPDATE', record)
+				if (Array.isArray(snapshot)) {
+					const match = snapshot.find((s) => {
+						const payload = s as { user?: { id?: string } }
+						return payload.user?.id === userId
+					})
+					if (match) {
+						outbound.push(buildEventDispatch('VOICE_STATE_UPDATE', match))
+					}
+				}
+				break
+			}
+		}
+	}
+
 	return outbound
 }
 
@@ -94,7 +116,7 @@ export function onPlatformStateChanged(
 	sessionId: string,
 	changedField: 'layout_mode' | 'orientation' | 'thermal_state',
 	newValue: unknown
-): object[] {
+): unknown[] {
 	const hostManager = getActivityHostManager()
 	const record = hostManager.getRecord(sessionId)
 	if (!record || !record.ready_emitted) return []
@@ -102,7 +124,7 @@ export function onPlatformStateChanged(
 	const subs = hostManager.getSubscriptions(record.instance_id)
 	if (!subs) return []
 
-	const outbound: object[] = []
+	const outbound: unknown[] = []
 
 	switch (changedField) {
 		case 'layout_mode': {
@@ -152,7 +174,7 @@ export function onRelationshipStateChanged(
 		user: { id: string; username: string; discriminator: string; avatar: string | null; global_name?: string | null }
 		presence?: { status: string; activities?: Array<{ name: string; type: number }> }
 	}>
-): object[] {
+): unknown[] {
 	const hostManager = getActivityHostManager()
 	const record = hostManager.getRecord(sessionId)
 	if (!record || !record.ready_emitted) return []
@@ -160,7 +182,7 @@ export function onRelationshipStateChanged(
 	const subs = hostManager.getSubscriptions(record.instance_id)
 	if (!subs || !subs.isSubscribed('RELATIONSHIP_UPDATE')) return []
 
-	const outbound: object[] = []
+	const outbound: unknown[] = []
 	for (const rel of changedRelationships) {
 		outbound.push(buildEventDispatch('RELATIONSHIP_UPDATE', rel))
 	}
@@ -185,7 +207,7 @@ export function onQuestStateChanged(
 	sessionId: string,
 	questId: string,
 	enrollmentStatus: unknown
-): object[] {
+): unknown[] {
 	const hostManager = getActivityHostManager()
 	const record = hostManager.getRecord(sessionId)
 	if (!record || !record.ready_emitted) return []
@@ -215,7 +237,7 @@ export function onQuestStateChanged(
  */
 export function scheduleParticipantsUpdate(
 	sessionId: string,
-	emitCallback: (messages: object[]) => void
+	emitCallback: (messages: unknown[]) => void
 ): void {
 	// If already scheduled, skip (will pick up latest state when timer fires)
 	if (participantsCoalesceTimers.has(sessionId)) return
@@ -235,6 +257,8 @@ export function scheduleParticipantsUpdate(
 			emitCallback([buildEventDispatch('ACTIVITY_INSTANCE_PARTICIPANTS_UPDATE', snapshot)])
 		}
 	}, 50)
+	// Don't keep the Node process alive solely for coalescing timers (test friendliness)
+	timer.unref?.()
 
 	participantsCoalesceTimers.set(sessionId, timer)
 }

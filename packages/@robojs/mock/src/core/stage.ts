@@ -57,9 +57,11 @@ import type {
 	StageActivityPurchaseResultData,
 	StageActivityPurchaseRequestData,
 	StageActivitySetOriginModeData,
-	StageActivitySetSdkShimData
+	StageActivitySetSdkShimData,
+	StageActivityEmitEventData
 } from '../types/stage.js'
 import { getActivityHostManager } from '../activity/host/activity-host-manager.js'
+import { getEventMap } from '../activity/schema/manifest-loader.js'
 import { onVoiceStateChanged, onPlatformStateChanged, onRelationshipStateChanged, onQuestStateChanged, scheduleParticipantsUpdate, cancelCoalesceTimers } from '../activity/host/signal-engine.js'
 import type { MockApplicationCommand, MockApplicationCommandOption, MockUser } from '../types/index.js'
 import type { Session } from '../types/index.js'
@@ -341,6 +343,7 @@ export class StageServer {
 						const iframeUrl = `${proxyOrigin}/.proxy${launchPath}?${queryStr}`
 						payload.activity.proxy_origin = proxyOrigin
 						payload.activity.iframe_url = iframeUrl
+						payload.activity.sdk_shim_enabled = proxyConfig?.sdk_shim_enabled ?? false
 					}
 				} catch {
 					// Proxy may not be initialized
@@ -369,6 +372,14 @@ export class StageServer {
 			type: 'state_sync',
 			data: payload
 		})
+
+		// Emit proxy status as a dedicated event for DevTools/agents (in addition to state_sync).
+		if (payload.proxy) {
+			this.pushEvent(ws, connState, {
+				type: 'activity.proxy.status',
+				data: payload.proxy
+			})
+		}
 	}
 
 	/**
@@ -1049,6 +1060,10 @@ export class StageServer {
 					this.sendCommandResponse(ws, connState, command.id, true, { user_id: user.id })
 
 					// Emit Activity signals for voice join
+					const voiceJoinEvents = onVoiceStateChanged(connState.sessionId, user.id, data.channel_id)
+					if (voiceJoinEvents.length > 0) {
+						this.emitActivityRpcOutbound(connState.sessionId, voiceJoinEvents)
+					}
 					scheduleParticipantsUpdate(connState.sessionId, (messages) => {
 						this.emitActivityRpcOutbound(connState.sessionId, messages)
 					})
@@ -1083,6 +1098,10 @@ export class StageServer {
 					this.sendCommandResponse(ws, connState, command.id, true)
 
 					// Emit Activity signals for voice leave
+					const voiceLeaveEvents = onVoiceStateChanged(connState.sessionId, user.id, data.channel_id ?? null)
+					if (voiceLeaveEvents.length > 0) {
+						this.emitActivityRpcOutbound(connState.sessionId, voiceLeaveEvents)
+					}
 					scheduleParticipantsUpdate(connState.sessionId, (messages) => {
 						this.emitActivityRpcOutbound(connState.sessionId, messages)
 					})
@@ -1143,12 +1162,8 @@ export class StageServer {
 						prevSpeaking,
 						data.speaking ?? prevSpeaking
 					)
-					const speakingEvents = activityVoiceEvents.filter(e => {
-						const evtObj = e as { evt?: string }
-						return evtObj.evt === 'SPEAKING_START' || evtObj.evt === 'SPEAKING_STOP'
-					})
-					if (speakingEvents.length > 0) {
-						this.emitActivityRpcOutbound(connState.sessionId, speakingEvents)
+					if (activityVoiceEvents.length > 0) {
+						this.emitActivityRpcOutbound(connState.sessionId, activityVoiceEvents)
 					}
 					// Coalesce participants update for mute/deaf changes
 					if (data.self_mute !== undefined || data.self_deaf !== undefined) {
@@ -1183,6 +1198,23 @@ export class StageServer {
 						type: 'current_user_update',
 						data: { user: this.toStageUser(updatedUser) }
 					})
+
+					// Emit CURRENT_USER_UPDATE signal to Activity (if running + subscribed)
+					try {
+						const hostManager = getActivityHostManager()
+						const actRecord = hostManager.getRecord(connState.sessionId)
+						if (actRecord && actRecord.user_id === updatedUser.id) {
+							const payload = hostManager.getSnapshotForEvent('CURRENT_USER_UPDATE', actRecord)
+							if (payload !== null) {
+								const msg = hostManager.emitEvent(connState.sessionId, 'CURRENT_USER_UPDATE', payload)
+								if (msg) {
+									this.emitActivityRpcOutbound(connState.sessionId, [msg])
+								}
+							}
+						}
+					} catch {
+						// Activity host not available
+					}
 					this.sendCommandResponse(ws, connState, command.id, true, { user: this.toStageUser(updatedUser) })
 					break
 				}
@@ -1196,6 +1228,40 @@ export class StageServer {
 							type: 'current_user_update',
 							data: { user: this.toStageUser(switchedUser) }
 						})
+
+						// If an Activity is running in this session, switch its user context
+						// and emit the corresponding signals (spec: CURRENT_USER_UPDATE, CURRENT_GUILD_MEMBER_UPDATE).
+						try {
+							const hostManager = getActivityHostManager()
+							const actRecord = hostManager.getRecord(connState.sessionId)
+							if (actRecord) {
+								actRecord.user_id = switchedUser.id
+								// User switch invalidates previous auth context
+								actRecord.auth = { state: 'UNAUTHENTICATED' }
+								actRecord.pending_authorize = null
+								actRecord.pending_purchase = null
+
+								const outbound: unknown[] = []
+
+								const userPayload = hostManager.getSnapshotForEvent('CURRENT_USER_UPDATE', actRecord)
+								if (userPayload !== null) {
+									const msg = hostManager.emitEvent(connState.sessionId, 'CURRENT_USER_UPDATE', userPayload)
+									if (msg) outbound.push(msg)
+								}
+
+								const memberPayload = hostManager.getSnapshotForEvent('CURRENT_GUILD_MEMBER_UPDATE', actRecord)
+								if (memberPayload !== null) {
+									const msg = hostManager.emitEvent(connState.sessionId, 'CURRENT_GUILD_MEMBER_UPDATE', memberPayload)
+									if (msg) outbound.push(msg)
+								}
+
+								if (outbound.length > 0) {
+									this.emitActivityRpcOutbound(connState.sessionId, outbound)
+								}
+							}
+						} catch {
+							// Activity host not available
+						}
 						this.sendCommandResponse(ws, connState, command.id, true, { user: this.toStageUser(switchedUser) })
 					} else {
 						this.sendCommandResponse(ws, connState, command.id, false, undefined, 'User not found')
@@ -1248,7 +1314,8 @@ export class StageServer {
 								launch_path: launchPath,
 								url_mappings: urlMappings,
 								csp_mode: launchData.csp_mode ?? 'relaxed',
-								application_id: launchData.application_id
+								application_id: launchData.application_id,
+								sdk_shim_enabled: launchData.sdk_shim_enabled ?? true
 							})
 
 							proxyOrigin = proxyServer.getProxyOrigin(connState.sessionId, launchData.application_id)
@@ -1288,7 +1355,8 @@ export class StageServer {
 						channel_id: record.channel_id,
 						user_id: record.user_id,
 						launch_url: record.launch_url,
-						query_params: launchQueryParams
+						query_params: launchQueryParams,
+						sdk_shim_enabled: launchData.sdk_shim_enabled ?? true
 					}
 					if (proxyOrigin) launchedData.proxy_origin = proxyOrigin
 					if (iframeUrl) launchedData.iframe_url = iframeUrl
@@ -1303,7 +1371,8 @@ export class StageServer {
 						frame_id: record.frame_id,
 						query_params: launchQueryParams,
 						proxy_origin: proxyOrigin,
-						iframe_url: iframeUrl
+						iframe_url: iframeUrl,
+						sdk_shim_enabled: launchData.sdk_shim_enabled ?? true
 					})
 					break
 				}
@@ -1587,10 +1656,32 @@ export class StageServer {
 						break
 					}
 
-					// Update IAP state (data-at-rest, no events emitted)
+					// Save previous entitlements for delta computation (ENTITLEMENT_CREATE)
+					const previousEntitlements = actRecord.iap_state.entitlements
+
+					// Update IAP state
 					actRecord.iap_state = {
 						skus: iapData.skus,
 						entitlements: iapData.entitlements
+					}
+
+					// Emit ENTITLEMENT_CREATE for newly added entitlements when subscribed.
+					// This mirrors Discord's async entitlement grant behavior (SDK event).
+					try {
+						const prevIds = new Set(previousEntitlements.map((e) => e.id))
+						const created = iapData.entitlements.filter((e) => !prevIds.has(e.id))
+						if (created.length > 0) {
+							const outbound: unknown[] = []
+							for (const ent of created) {
+								const msg = hostManager.emitEvent(connState.sessionId, 'ENTITLEMENT_CREATE', { entitlement: ent })
+								if (msg) outbound.push(msg)
+							}
+							if (outbound.length > 0) {
+								this.emitActivityRpcOutbound(connState.sessionId, outbound)
+							}
+						}
+					} catch {
+						// Best-effort: ignore entitlement event failures
 					}
 
 					this.sendCommandResponse(ws, connState, command.id, true, {
@@ -1728,6 +1819,49 @@ export class StageServer {
 					} catch {
 						this.sendCommandResponse(ws, connState, command.id, false, undefined, 'Proxy not available')
 					}
+					break
+				}
+
+				case 'activity_emit_event': {
+					const emitData = command.data as StageActivityEmitEventData
+					const eventName = emitData.event_name
+					if (!eventName) {
+						this.sendCommandResponse(ws, connState, command.id, false, undefined, 'Missing event_name')
+						break
+					}
+
+					const hostManager = getActivityHostManager()
+					const actRecord = hostManager.getRecord(connState.sessionId)
+					if (!actRecord) {
+						this.sendCommandResponse(ws, connState, command.id, false, undefined, 'No active Activity')
+						break
+					}
+
+					// Best-effort: validate against loaded manifest when available.
+					// Do NOT hard-fail unknown events to allow legacy/experimental testing.
+					let manifestKnown = false
+					try {
+						const def = getEventMap().get(eventName)
+						if (def) {
+							manifestKnown = true
+							if (!def.subscribable) {
+								this.sendCommandResponse(ws, connState, command.id, false, undefined, `Event "${eventName}" is not subscribable`)
+								break
+							}
+						}
+					} catch {
+						// Manifest not available
+					}
+
+					const msg = hostManager.emitEvent(connState.sessionId, eventName, emitData.data ?? null)
+					if (msg) {
+						this.emitActivityRpcOutbound(connState.sessionId, [msg])
+					}
+
+					this.sendCommandResponse(ws, connState, command.id, true, {
+						delivered: Boolean(msg),
+						manifest_known: manifestKnown
+					})
 					break
 				}
 

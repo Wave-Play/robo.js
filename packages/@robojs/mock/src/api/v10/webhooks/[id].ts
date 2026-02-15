@@ -251,3 +251,16 @@ export async function DELETE(request: RoboRequest) {
 
 	return new Response(null, { status: 204 })
 }
+
+export default async function webhookByIdHandler(request: RoboRequest): Promise<unknown> {
+	switch (request.method) {
+		case 'GET':
+			return GET(request)
+		case 'PATCH':
+			return PATCH(request)
+		case 'DELETE':
+			return DELETE(request)
+		default:
+			return new Response(null, { status: 405 })
+	}
+}

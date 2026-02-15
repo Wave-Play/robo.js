@@ -110,7 +110,7 @@ export interface StateOptions {
 export class MockServerState implements SessionState {
 	readonly guilds: Map<Snowflake, MockGuild>
 	readonly channels: Map<Snowflake, MockChannel>
-	readonly dmChannels: Map<Snowflake, MockChannel>
+	readonly dmChannels: Map<string, MockChannel>
 	readonly users: Map<Snowflake, MockUser>
 	readonly messages: Map<Snowflake, MockMessage>
 	readonly interactions: Map<Snowflake, MockInteraction>
@@ -755,10 +755,10 @@ export class MockServerState implements SessionState {
 
 	/**
 	 * Get or create a DM channel for a recipient (uses currentUser as the other participant)
-	 * The channel will be keyed by both user IDs for proper multi-user support.
 	 */
 	getOrCreateDMChannel(recipientId: Snowflake): MockChannel {
 		const currentUserId = this.currentUser.id
+
 		const dmKey = this.getDMKey(currentUserId, recipientId)
 
 		let dmChannel = this.dmChannels.get(dmKey)
@@ -769,7 +769,7 @@ export class MockServerState implements SessionState {
 				recipientIds: [currentUserId, recipientId]
 			})
 			// Store in both maps:
-			// - dmChannels keyed by sorted user IDs (for multi-user DM support)
+			// - dmChannels keyed by sorted user IDs (supports switching currentUser)
 			// - channels keyed by channel ID (for O(1) lookup)
 			this.dmChannels.set(dmKey, dmChannel)
 			this.channels.set(dmChannel.id, dmChannel)

@@ -79,7 +79,8 @@ export function ActivityView({ activity, onDisconnect, overlayRef, currentUser, 
 		instanceId: activity.instanceId,
 		iframeOrigin,
 		enabled: activity.isOpen && !!activity.launchUrl,
-		onRejectedMessage: onRpcRejected
+		onRejectedMessage: onRpcRejected,
+		originMode: activity.originMode
 	})
 
 	// Minimized drag state
@@ -256,136 +257,150 @@ export function ActivityView({ activity, onDisconnect, overlayRef, currentUser, 
 		</div>
 	)
 
-	if (minimized) {
-		const cornerClass = {
-			'top-left': styles.cornerTopLeft,
-			'top-right': styles.cornerTopRight,
-			'bottom-left': styles.cornerBottomLeft,
-			'bottom-right': styles.cornerBottomRight
-		}[corner]
+	const cornerClass = minimized ? ({
+		'top-left': styles.cornerTopLeft,
+		'top-right': styles.cornerTopRight,
+		'bottom-left': styles.cornerBottomLeft,
+		'bottom-right': styles.cornerBottomRight
+	}[corner]) : ''
 
-		const className = [
+	const containerClassName = minimized
+		? [
 			styles.minimized,
 			cornerClass,
 			isDragging ? styles.dragging : '',
 			isSnapping ? styles.snapping : ''
 		].filter(Boolean).join(' ')
+		: `${styles.overlay}${chatHidden ? ` ${styles.chatHidden}` : ''}`
 
-		const posStyle: React.CSSProperties = (offset.x !== 0 || offset.y !== 0)
-			? { transform: `translate(${offset.x}px, ${offset.y}px)` }
-			: {}
+	const containerStyle: React.CSSProperties = minimized && (offset.x !== 0 || offset.y !== 0)
+		? { transform: `translate(${offset.x}px, ${offset.y}px)` }
+		: {}
 
-		return (
-			<div
-				ref={minimizedRef}
-				className={className}
-				style={posStyle}
-				onMouseDown={handleMouseDown}
-				onTransitionEnd={handleTransitionEnd}
-			>
-				<div className={styles.minimizedContent} style={{ background: iframeUrl ? undefined : gradient }}>
-					{iframeContent}
-				</div>
-				<div className={styles.minimizedHoverOverlay}>
-					<div className={styles.minimizedTopBar}>
-						<button className={styles.minimizedBackButton} type="button" onClick={onRestore}>
-							<BackArrowIcon />
-							<span className={styles.minimizedName}>{activityName}</span>
-						</button>
-					</div>
-					<div className={styles.minimizedBottomBar}>
-						{currentUser ? (
-							<img
-								className={styles.minimizedAvatar}
-								src={getAvatarUrl(currentUser.id, currentUser.avatar, 24)}
-								alt={currentUser.username}
-								width={24}
-								height={24}
-							/>
-						) : (
-							<div />
-						)}
-						<button
-							className={styles.minimizedLeaveButton}
-							type="button"
-							aria-label="Leave Activity"
-							onClick={(e) => {
-								e.stopPropagation()
-								onDisconnect()
-							}}
-						>
-							<LeaveIcon />
-							<span className={styles.minimizedLeaveTooltip}>Leave Activity</span>
-						</button>
-					</div>
-				</div>
-			</div>
-		)
-	}
+	const setCombinedRef = useCallback((node: HTMLDivElement | null) => {
+		minimizedRef.current = node
+		if (!overlayRef) return
+		if (typeof overlayRef === 'function') {
+			overlayRef(node)
+			return
+		}
+		try {
+			(overlayRef as React.MutableRefObject<HTMLDivElement | null>).current = node
+		} catch {
+			// Ignore if overlayRef isn't mutable
+		}
+	}, [overlayRef])
 
 	return (
 		<>
-			<div ref={overlayRef} className={`${styles.overlay}${chatHidden ? ` ${styles.chatHidden}` : ''}`}>
+			<div
+				ref={setCombinedRef}
+				className={containerClassName}
+				style={containerStyle}
+				onMouseDown={minimized ? handleMouseDown : undefined}
+				onTransitionEnd={minimized ? handleTransitionEnd : undefined}
+			>
 				<div className={styles.panel}>
-					<div className={styles.contentArea} style={{ background: iframeUrl ? undefined : gradient }}>
+					<div
+						className={`${styles.contentArea}${minimized ? ` ${styles.minimizedContent}` : ''}`}
+						style={{ background: iframeUrl ? undefined : gradient }}
+					>
 						{iframeContent}
 					</div>
 
-					<div className={styles.controlBar}>
-						<div className={styles.controlBarLeft}>
-							{currentUser && (
-								<div className={styles.avatarWrapper}>
-									<img
-										className={styles.userAvatar}
-										src={getAvatarUrl(currentUser.id, currentUser.avatar, 32)}
-										alt={currentUser.username}
-										width={32}
-										height={32}
-									/>
-									<span role="tooltip" className={styles.avatarTooltip}>
-										{currentUser.username}
-									</span>
+					{!minimized && (
+						<div className={styles.controlBar}>
+							<div className={styles.controlBarLeft}>
+								{currentUser && (
+									<div className={styles.avatarWrapper}>
+										<img
+											className={styles.userAvatar}
+											src={getAvatarUrl(currentUser.id, currentUser.avatar, 32)}
+											alt={currentUser.username}
+											width={32}
+											height={32}
+										/>
+										<span role="tooltip" className={styles.avatarTooltip}>
+											{currentUser.username}
+										</span>
+									</div>
+								)}
+							</div>
+
+							<div className={styles.controlBarCenter}>
+								<div className={styles.controlGroup}>
+									<div className={styles.buttonTooltipWrapper}>
+										<button className={styles.controlButton} type="button" aria-label={chatHidden ? 'Show Chat' : 'Hide Chat'} onClick={() => setChatHidden((h) => !h)}>
+											<div className={styles.controlButtonInner}>
+												{chatHidden ? <ChevronUpIcon /> : <ChevronDownIcon />}
+											</div>
+										</button>
+										<span role="tooltip" className={styles.buttonTooltip}>{chatHidden ? 'Show Chat' : 'Hide Chat'}</span>
+									</div>
+									<div className={styles.buttonTooltipWrapper}>
+										<button className={styles.controlButton} type="button" aria-label="Minimize Activity" onClick={onMinimize}>
+											<div className={styles.controlButtonInner}>
+												<MinimizeIcon />
+											</div>
+										</button>
+										<span role="tooltip" className={styles.buttonTooltip}>Minimize Activity</span>
+									</div>
 								</div>
+								<div className={styles.buttonTooltipWrapper}>
+									<button className={styles.disconnectButton} type="button" aria-label="Leave Activity" onClick={onDisconnect}>
+										<LeaveIcon />
+									</button>
+									<span role="tooltip" className={styles.buttonTooltip}>Leave Activity</span>
+								</div>
+							</div>
+
+							<div className={styles.controlBarRight}>
+								<div className={styles.buttonTooltipWrapper}>
+									<button className={styles.controlButton} type="button" aria-label="Pop Out" onClick={handlePopOut}>
+										<PopoutIcon />
+									</button>
+									<span role="tooltip" className={styles.buttonTooltip}>Pop Out</span>
+								</div>
+							</div>
+						</div>
+					)}
+				</div>
+
+				{minimized && (
+					<div className={styles.minimizedHoverOverlay}>
+						<div className={styles.minimizedTopBar}>
+							<button className={styles.minimizedBackButton} type="button" onClick={onRestore}>
+								<BackArrowIcon />
+								<span className={styles.minimizedName}>{activityName}</span>
+							</button>
+						</div>
+						<div className={styles.minimizedBottomBar}>
+							{currentUser ? (
+								<img
+									className={styles.minimizedAvatar}
+									src={getAvatarUrl(currentUser.id, currentUser.avatar, 24)}
+									alt={currentUser.username}
+									width={24}
+									height={24}
+								/>
+							) : (
+								<div />
 							)}
-						</div>
-
-						<div className={styles.controlBarCenter}>
-							<div className={styles.controlGroup}>
-								<div className={styles.buttonTooltipWrapper}>
-									<button className={styles.controlButton} type="button" aria-label={chatHidden ? 'Show Chat' : 'Hide Chat'} onClick={() => setChatHidden((h) => !h)}>
-										<div className={styles.controlButtonInner}>
-											{chatHidden ? <ChevronUpIcon /> : <ChevronDownIcon />}
-										</div>
-									</button>
-									<span role="tooltip" className={styles.buttonTooltip}>{chatHidden ? 'Show Chat' : 'Hide Chat'}</span>
-								</div>
-								<div className={styles.buttonTooltipWrapper}>
-									<button className={styles.controlButton} type="button" aria-label="Minimize Activity" onClick={onMinimize}>
-										<div className={styles.controlButtonInner}>
-											<MinimizeIcon />
-										</div>
-									</button>
-									<span role="tooltip" className={styles.buttonTooltip}>Minimize Activity</span>
-								</div>
-							</div>
-							<div className={styles.buttonTooltipWrapper}>
-								<button className={styles.disconnectButton} type="button" aria-label="Leave Activity" onClick={onDisconnect}>
-									<LeaveIcon />
-								</button>
-								<span role="tooltip" className={styles.buttonTooltip}>Leave Activity</span>
-							</div>
-						</div>
-
-						<div className={styles.controlBarRight}>
-							<div className={styles.buttonTooltipWrapper}>
-								<button className={styles.controlButton} type="button" aria-label="Pop Out" onClick={handlePopOut}>
-									<PopoutIcon />
-								</button>
-								<span role="tooltip" className={styles.buttonTooltip}>Pop Out</span>
-							</div>
+							<button
+								className={styles.minimizedLeaveButton}
+								type="button"
+								aria-label="Leave Activity"
+								onClick={(e) => {
+									e.stopPropagation()
+									onDisconnect()
+								}}
+							>
+								<LeaveIcon />
+								<span className={styles.minimizedLeaveTooltip}>Leave Activity</span>
+							</button>
 						</div>
 					</div>
-				</div>
+				)}
 			</div>
 
 			{/* Auth consent modal overlay */}

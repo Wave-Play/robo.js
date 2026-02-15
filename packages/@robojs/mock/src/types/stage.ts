@@ -133,6 +133,7 @@ export type StageCommandType =
 	| 'activity_purchase_result' // Stage UI -> backend: purchase modal result
 	| 'activity_set_origin_mode' // DevTools -> backend: set origin check mode
 	| 'activity_set_sdk_shim' // DevTools -> backend: toggle SDK origin shim
+	| 'activity_emit_event' // DevTools -> backend: emit an Activity event (e.g., ACTIVITY_JOIN)
 
 // ============================================================================
 // Stage Event Payloads
@@ -184,6 +185,7 @@ export interface StateSyncPayload {
 		auth_state: 'UNAUTHENTICATED' | 'AUTHENTICATED'
 		auth_scopes?: string[]
 		devtools_auth_mode?: 'auto_approve' | 'auto_deny' | 'manual'
+		sdk_shim_enabled?: boolean
 		proxy_origin?: string
 		iframe_url?: string
 	}
@@ -1068,6 +1070,8 @@ export interface StageLaunchActivityData {
 	csp_mode?: 'discord_strict' | 'relaxed'
 	/** Launch path override */
 	launch_path?: string
+	/** Whether to inject the Embedded SDK compatibility shim into proxied HTML */
+	sdk_shim_enabled?: boolean
 }
 
 /**
@@ -1101,6 +1105,8 @@ export interface StageActivityLaunchedData {
 	proxy_origin?: string
 	/** Full iframe URL through proxy (if proxy is running) */
 	iframe_url?: string
+	/** Whether the SDK shim is enabled for this proxy session */
+	sdk_shim_enabled?: boolean
 }
 
 /**
@@ -1323,4 +1329,12 @@ export interface StageActivitySetOriginModeData {
  */
 export interface StageActivitySetSdkShimData {
 	enabled: boolean
+}
+
+/**
+ * Data for activity_emit_event command (DevTools -> backend)
+ */
+export interface StageActivityEmitEventData {
+	event_name: string
+	data?: unknown
 }

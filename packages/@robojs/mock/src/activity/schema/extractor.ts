@@ -134,8 +134,56 @@ export function extractEnumValues(content: string, enumName: string): string[] {
  * @throws ExtractorError with code 'SDK_NOT_FOUND'
  */
 function resolveSdkRoot(projectRoot: string): string {
+	const projectPackageJsonPath = join(projectRoot, 'package.json')
+	if (!existsSync(projectPackageJsonPath)) {
+		throw new ExtractorError(
+			'SDK_NOT_FOUND',
+			`Could not resolve @discord/embedded-app-sdk from "${projectRoot}". ` +
+			'No package.json was found at that path.',
+			[join(projectRoot, 'package.json')]
+		)
+	}
+
+	// Only treat the SDK as "installed" when the consumer project explicitly lists it.
+	// This prevents accidental resolution via global installs or unrelated monorepo roots.
 	try {
-		const require = createRequire(join(projectRoot, 'package.json'))
+		const pkg = JSON.parse(readFileSync(projectPackageJsonPath, 'utf-8')) as {
+			dependencies?: Record<string, string>
+			devDependencies?: Record<string, string>
+			peerDependencies?: Record<string, string>
+			optionalDependencies?: Record<string, string>
+		}
+		const declared = {
+			...(pkg.dependencies ?? {}),
+			...(pkg.devDependencies ?? {}),
+			...(pkg.peerDependencies ?? {}),
+			...(pkg.optionalDependencies ?? {})
+		}
+		if (typeof declared['@discord/embedded-app-sdk'] !== 'string') {
+			throw new ExtractorError(
+				'SDK_NOT_FOUND',
+				`@discord/embedded-app-sdk is not listed in "${projectPackageJsonPath}". ` +
+				'Install it in your Activity project to enable version-accurate schema extraction.',
+				[join(projectRoot, 'node_modules/@discord/embedded-app-sdk')]
+			)
+		}
+	} catch (error) {
+		if (error instanceof ExtractorError) throw error
+		throw new ExtractorError(
+			'SDK_NOT_FOUND',
+			`Failed to read "${projectPackageJsonPath}" while checking for @discord/embedded-app-sdk.`,
+			[projectPackageJsonPath]
+		)
+	}
+
+	try {
+		// Prefer a direct on-disk check first (works across npm/yarn/pnpm when present).
+		const directPkgJsonPath = join(projectRoot, 'node_modules/@discord/embedded-app-sdk/package.json')
+		if (existsSync(directPkgJsonPath)) {
+			return dirname(directPkgJsonPath)
+		}
+
+		const require = createRequire(projectPackageJsonPath)
 		const pkgJsonPath = require.resolve('@discord/embedded-app-sdk/package.json')
 		return dirname(pkgJsonPath)
 	} catch {

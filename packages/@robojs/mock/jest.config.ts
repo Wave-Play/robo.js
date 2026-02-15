@@ -42,6 +42,8 @@ const config: Config = {
 				'^(\\.{1,2}/.*)\\.js$': '$1',
 				'^@/(.*)\\.js$': '<rootDir>/src/$1',
 				'^@/(.*)$': '<rootDir>/src/$1',
+				'^@robojs/server$': '<rootDir>/__mocks__/robojs-server.ts',
+				'^robo\\.js/ipc$': '<rootDir>/__mocks__/robo.js-ipc.ts',
 				'^robo\\.js$': '<rootDir>/__mocks__/robo.js.ts'
 			}
 		},

@@ -40,7 +40,7 @@ describe('State Inspection API', () => {
 			// Verify counts
 			expect(session.state.guilds.size).toBe(1)
 			expect(session.state.channels.size).toBe(1) // Default guild has 1 channel
-			expect(session.state.users.size).toBe(2) // Bot user + test user
+			expect(session.state.users.size).toBe(3) // Bot user + current user + test user
 			expect(session.state.messages.size).toBe(0)
 			expect(session.state.interactions.size).toBe(0)
 			expect(session.actionCount).toBe(0)
@@ -78,7 +78,10 @@ describe('State Inspection API', () => {
 
 	describe('GET /api/control/sessions/:id/guilds', () => {
 		it('should return empty array when no guilds', async () => {
-			const session = await mockSessionManager.create({ name: 'no-guilds' })
+			const session = await mockSessionManager.create({
+				name: 'no-guilds',
+				config: { guilds: [] }
+			})
 
 			expect(session.state.guilds.size).toBe(0)
 		})
@@ -102,7 +105,10 @@ describe('State Inspection API', () => {
 		})
 
 		it('should filter guilds by name (case-insensitive)', async () => {
-			const session = await mockSessionManager.create({ name: 'filter-test' })
+			const session = await mockSessionManager.create({
+				name: 'filter-test',
+				config: { guilds: [] }
+			})
 
 			// Add multiple guilds
 			session.state.addGuild(createMockGuild({ name: 'Alpha Server' }))
@@ -264,7 +270,7 @@ describe('State Inspection API', () => {
 			// Verify data exists
 			expect(session.state.guilds.size).toBe(1)
 			expect(session.state.channels.size).toBe(1)
-			expect(session.state.users.size).toBe(2)
+			expect(session.state.users.size).toBe(3) // Bot + current user + added user
 			expect(session.state.messages.size).toBe(1)
 
 			// Reset
@@ -327,7 +333,10 @@ describe('State Inspection API', () => {
 		})
 
 		it('should not reset ending session', async () => {
-			const session = await mockSessionManager.create({ name: 'ending-session-test' })
+			const session = await mockSessionManager.create({
+				name: 'ending-session-test',
+				config: { guilds: [] }
+			})
 
 			// Add data
 			session.state.addGuild(createMockGuild({ name: 'Test Guild' }))

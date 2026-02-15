@@ -32,6 +32,9 @@ export {
 	GATEWAY_VERSION
 } from './discord/opcodes.js'
 
+// Discord payload builders (public-facing)
+export { buildContextMenuInteractionPayload } from './discord/payloads.js'
+
 // Utility exports (public-facing only)
 export {
 	generateSnowflake,

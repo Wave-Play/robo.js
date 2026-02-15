@@ -24,6 +24,7 @@ export function ToolsPanel() {
 	const [authMode, setAuthMode] = useState<'auto_approve' | 'auto_deny' | 'manual'>('auto_approve')
 	const [defaultScopes, setDefaultScopes] = useState('')
 	const authState = activity?.authState ?? 'UNAUTHENTICATED'
+	const [activityJoinSecret, setActivityJoinSecret] = useState('mock_join_secret')
 
 	// Platform state controls
 	const [layoutMode, setLayoutMode] = useState(0)
@@ -76,11 +77,12 @@ export function ToolsPanel() {
 	const handleResetAuth = useCallback(async () => {
 		try {
 			await sendCommand('activity_reset_auth', {})
+			sessionDispatch({ type: 'SET_ACTIVITY_AUTH_STATE', payload: 'UNAUTHENTICATED' })
 			showToast('Auth state reset to UNAUTHENTICATED', 'success')
 		} catch {
 			showToast('Failed to reset auth state', 'error')
 		}
-	}, [sendCommand, showToast])
+	}, [sendCommand, showToast, sessionDispatch])
 
 	// Load mappings from localStorage when activity opens
 	useEffect(() => {
@@ -1843,6 +1845,45 @@ export function ToolsPanel() {
 				</section>
 			)}
 
+			{/* Activity Events */}
+			{activity?.isOpen && (
+				<section className={styles.section}>
+					<h3 className={styles.sectionTitle}>Activity Events</h3>
+					<p className={styles.description}>
+						Emit host events that normally originate from Discord (requires the Activity to be subscribed).
+					</p>
+
+					<div className={styles.mappingsRow} style={{ gridTemplateColumns: '1fr auto' }}>
+						<input
+							type="text"
+							value={activityJoinSecret}
+							onChange={(e) => setActivityJoinSecret(e.target.value)}
+							placeholder="ACTIVITY_JOIN secret"
+						/>
+						<button
+							className={styles.actionButton}
+							onClick={async () => {
+								try {
+									const result = await sendCommand<{ delivered: boolean }>('activity_emit_event', {
+										event_name: 'ACTIVITY_JOIN',
+										data: { secret: activityJoinSecret || 'mock_join_secret' }
+									})
+									if (result.delivered) {
+										showToast('Emitted ACTIVITY_JOIN', 'success')
+									} else {
+										showToast('ACTIVITY_JOIN not delivered (not subscribed or before READY)', 'warning')
+									}
+								} catch {
+									showToast('Failed to emit ACTIVITY_JOIN', 'error')
+								}
+							}}
+						>
+							Emit ACTIVITY_JOIN
+						</button>
+					</div>
+				</section>
+			)}
+
 			{/* Activity Platform State */}
 			{activity?.isOpen && (
 				<section className={styles.section}>
@@ -2393,6 +2434,11 @@ export function ToolsPanel() {
 									const newValue = !activity.sdkShimEnabled
 									sessionDispatch({ type: 'SET_ACTIVITY_SDK_SHIM', payload: newValue })
 									try {
+										localStorage.setItem('mock_devtools_sdk_shim_enabled', String(newValue))
+									} catch {
+										// Ignore storage errors
+									}
+									try {
 										await sendCommand('activity_set_sdk_shim', { enabled: newValue })
 										showToast(
 											newValue ? 'SDK shim enabled - reload Activity to apply' : 'SDK shim disabled',
@@ -2420,7 +2466,7 @@ export function ToolsPanel() {
 					</div>
 					{activity.sdkShimEnabled && (
 						<p className={styles.warning}>
-							SDK shim patches document.referrer and postMessage targetOrigin. This reduces realism. Only enable if the SDK rejects localhost origins.
+							SDK shim patches Embedded App SDK origin checks for local development. This reduces realism. Only enable if the SDK rejects localhost origins.
 						</p>
 					)}
 				</section>

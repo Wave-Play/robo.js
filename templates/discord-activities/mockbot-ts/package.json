@@ -34,6 +34,7 @@
 	"dependencies": {
 		"@discord/embedded-app-sdk": "^1.4.3",
 		"@robojs/mock": "link:/Users/pkmmte/Documents/GitHub/robo/packages/@robojs/mock",
+		"@robojs/patch": "link:/Users/pkmmte/Documents/GitHub/robo/packages/@robojs/patch",
 		"@robojs/server": "link:/Users/pkmmte/Documents/GitHub/robo/packages/plugin-api",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",

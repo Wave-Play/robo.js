@@ -10,6 +10,8 @@ const PROXY_PREFIX = '/.proxy'
 export interface HtmlRewriteOptions {
 	/** Mapping prefixes to skip (existing behavior) */
 	mappingPrefixes: string[]
+	/** CSP mode (used for optional diagnostics injection) */
+	cspMode?: 'discord_strict' | 'relaxed'
 	/** Whether to inject the SDK origin shim script */
 	sdkShimEnabled?: boolean
 	/** Proxy origin for the SDK shim (e.g., "http://sess.app.discordsays.localhost:50002") */
@@ -74,11 +76,57 @@ export function rewriteHtml(html: string, mappingPrefixes: string[]): string {
 export function rewriteHtmlAdvanced(html: string, options: HtmlRewriteOptions): string {
 	let result = rewriteHtml(html, options.mappingPrefixes)
 
+	const injections: string[] = []
+
+	// Inject CSP violation reporter in strict mode (helps agents debug why loads fail).
+	// Emits a small diagnostic postMessage that the Stage UI bridge can capture.
+	if (options.cspMode === 'discord_strict') {
+		injections.push(`
+<script data-mock-csp-violations="true">
+(function(){
+  try {
+    window.addEventListener('securitypolicyviolation', function(e) {
+      try {
+        window.parent && window.parent.postMessage({
+          __robo_mock: 'csp_violation',
+          blockedURI: e.blockedURI,
+          violatedDirective: e.violatedDirective,
+          effectiveDirective: e.effectiveDirective,
+          originalPolicy: e.originalPolicy,
+          disposition: e.disposition,
+          sourceFile: e.sourceFile,
+          lineNumber: e.lineNumber,
+          columnNumber: e.columnNumber,
+          sample: e.sample
+        }, '*');
+      } catch(_) {}
+    });
+  } catch(_) {}
+})();
+</script>`)
+	}
+
+	// Inject URL mapping prefixes for @robojs/patch (Discord proxy compatibility)
+	// This simulates the SDK/Developer Portal providing mappings to the page runtime.
+	injections.push(`
+<script data-mock-url-mappings="true">
+(function(){
+  try {
+    var prefixes = ${JSON.stringify(options.mappingPrefixes)};
+    var patch = globalThis['@robojs/patch'] || (globalThis['@robojs/patch'] = {});
+    patch.mappings = prefixes;
+  } catch(e) {}
+})();
+</script>`)
+
 	// Inject SDK shim if enabled
 	if (options.sdkShimEnabled && options.proxyOrigin) {
-		const shimScript = buildSdkShimScript(options.proxyOrigin)
-		// Inject after <head> tag (or <head ...> with attributes)
-		result = result.replace(/<head([^>]*)>/i, `<head$1>${shimScript}`)
+		injections.push(buildSdkShimScript(options.proxyOrigin))
+	}
+
+	// Inject after <head> tag (or <head ...> with attributes)
+	if (injections.length > 0) {
+		result = result.replace(/<head([^>]*)>/i, `<head$1>${injections.join('')}`)
 	}
 
 	return result

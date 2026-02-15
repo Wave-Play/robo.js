@@ -8,6 +8,7 @@ import {
 	buildErrorResponse,
 	buildEventDispatch,
 	validateCommand,
+	ActivityRpcOpcode,
 	RpcValidationError
 } from '../../../src/activity/host/rpc-envelope.js'
 import { RpcErrorCode } from '../../../src/activity/host/error-codes.js'
@@ -76,33 +77,45 @@ describe('RPC Envelope', () => {
 		test('builds correct shape', () => {
 			const response = buildCommandResponse('GET_USER', 'nonce-1', { id: '123' })
 
-			expect(response).toEqual({
-				cmd: 'GET_USER',
-				nonce: 'nonce-1',
-				data: { id: '123' }
-			})
+			expect(response).toEqual([
+				ActivityRpcOpcode.FRAME,
+				{
+					cmd: 'GET_USER',
+					evt: null,
+					nonce: 'nonce-1',
+					data: { id: '123' }
+				}
+			])
 		})
 
 		test('null-ifies undefined data', () => {
 			const response = buildCommandResponse('SOME_CMD', 'nonce-1', undefined)
 
-			expect(response).toEqual({
-				cmd: 'SOME_CMD',
-				nonce: 'nonce-1',
-				data: null
-			})
+			expect(response).toEqual([
+				ActivityRpcOpcode.FRAME,
+				{
+					cmd: 'SOME_CMD',
+					evt: null,
+					nonce: 'nonce-1',
+					data: null
+				}
+			])
 		})
 	})
 
 	describe('buildErrorResponse', () => {
 		test('builds correct shape', () => {
-			const response = buildErrorResponse('nonce-1', RpcErrorCode.NOT_IMPLEMENTED, 'Not Implemented')
+			const response = buildErrorResponse('SOME_CMD', 'nonce-1', RpcErrorCode.NOT_IMPLEMENTED, 'Not Implemented')
 
-			expect(response).toEqual({
-				evt: 'ERROR',
-				nonce: 'nonce-1',
-				data: { code: 5001, message: 'Not Implemented' }
-			})
+			expect(response).toEqual([
+				ActivityRpcOpcode.FRAME,
+				{
+					cmd: 'SOME_CMD',
+					evt: 'ERROR',
+					nonce: 'nonce-1',
+					data: { code: 5001, message: 'Not Implemented' }
+				}
+			])
 		})
 	})
 
@@ -110,20 +123,29 @@ describe('RPC Envelope', () => {
 		test('builds correct shape with no nonce', () => {
 			const response = buildEventDispatch('READY', { v: 1 })
 
-			expect(response).toEqual({
-				evt: 'READY',
-				data: { v: 1 }
-			})
-			expect((response as Record<string, unknown>).nonce).toBeUndefined()
+			expect(response).toEqual([
+				ActivityRpcOpcode.FRAME,
+				{
+					cmd: 'DISPATCH',
+					evt: 'READY',
+					nonce: null,
+					data: { v: 1 }
+				}
+			])
 		})
 
 		test('null-ifies undefined data', () => {
 			const response = buildEventDispatch('SOME_EVENT', undefined)
 
-			expect(response).toEqual({
-				evt: 'SOME_EVENT',
-				data: null
-			})
+			expect(response).toEqual([
+				ActivityRpcOpcode.FRAME,
+				{
+					cmd: 'DISPATCH',
+					evt: 'SOME_EVENT',
+					nonce: null,
+					data: null
+				}
+			])
 		})
 	})
 

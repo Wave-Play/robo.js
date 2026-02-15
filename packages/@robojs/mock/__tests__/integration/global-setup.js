@@ -5,18 +5,47 @@
  * The server runs for the entire test suite and is shared across all test files.
  */
 const { spawn } = require('node:child_process')
+const net = require('node:net')
 
 // Allow self-signed certificates for voice gateway testing
 // This must be set before any TLS connections are made
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
 
-const SERVER_PORT = process.env.MOCK_PORT || 3000
 const SERVER_STARTUP_TIMEOUT = 30000
+
+async function getAvailablePort(preferredPort) {
+	if (preferredPort) return preferredPort
+
+	return new Promise((resolve, reject) => {
+		const server = net.createServer()
+		server.unref()
+		server.on('error', reject)
+		server.listen(0, '127.0.0.1', () => {
+			const address = server.address()
+			const port = typeof address === 'object' && address ? address.port : null
+			server.close(() => {
+				if (typeof port !== 'number') {
+					reject(new Error('Failed to acquire an available port'))
+					return
+				}
+				resolve(port)
+			})
+		})
+	})
+}
 
 /**
  * Start the Robo server and wait for it to be ready
  */
 async function startServer() {
+	const chosenPort = await getAvailablePort(process.env.MOCK_PORT ? parseInt(process.env.MOCK_PORT, 10) : undefined)
+
+	// Ensure test helpers use the chosen port
+	process.env.MOCK_PORT = String(chosenPort)
+	process.env.MOCK_REST_URL ??= `http://localhost:${chosenPort}/mock/api`
+	process.env.MOCK_WS_URL ??= `ws://localhost:${chosenPort}`
+	process.env.MOCK_CONTROL_URL ??= `http://localhost:${chosenPort}/mock/api/control`
+
 	return new Promise((resolve, reject) => {
 		console.log('\n[Global Setup] Starting mock server...')
 
@@ -26,7 +55,7 @@ async function startServer() {
 			stdio: ['pipe', 'pipe', 'pipe'],
 			env: {
 				...process.env,
-				PORT: String(SERVER_PORT),
+				PORT: String(chosenPort),
 				FORCE_COLOR: '0'
 			},
 			shell: true

@@ -513,6 +513,19 @@ function handleWebhookMessageDelete(
 	return new Response(null, { status: 204 })
 }
 
+export default async function webhookMessagesHandler(request: RoboRequest): Promise<unknown> {
+	switch (request.method) {
+		case 'GET':
+			return GET(request)
+		case 'PATCH':
+			return PATCH(request)
+		case 'DELETE':
+			return DELETE(request)
+		default:
+			return new Response(null, { status: 405 })
+	}
+}
+
 function handleGet(session: Session, message: MockMessage): Response {
 	const author = session.state.getUser(message.authorId) || session.state.botUser
 	return new Response(JSON.stringify(mockMessageToAPIMessage(message, author)), {
@@ -529,7 +542,7 @@ async function handleInteractionPatch(
 	appId: string,
 	token: string,
 	messageId: string,
-	_isOriginal = false
+	isOriginal = false
 ) {
 	const channelId = message.channelId
 
@@ -700,7 +713,7 @@ async function handleInteractionPatch(
 			embeds: updatedMessage.embeds,
 			attachments: updatedMessage.attachments,
 			edited_timestamp: updatedMessage.editedTimestamp,
-			is_original: false,
+			is_original: isOriginal,
 			command_name: interaction.commandName
 		},
 		{
@@ -740,7 +753,7 @@ function handleInteractionDelete(
 	appId: string,
 	token: string,
 	messageId: string,
-	_isOriginal = false
+	isOriginal = false
 ) {
 	// Get channel before deleting for dispatch
 	const channel = session.state.getChannel(message.channelId)
@@ -754,8 +767,10 @@ function handleInteractionDelete(
 		})
 	}
 
-	// Remove from followupMessageIds on interaction
-	if (interaction.followupMessageIds) {
+	// Clear original response tracking or remove followup tracking
+	if (isOriginal) {
+		interaction.responseMessageId = undefined
+	} else if (interaction.followupMessageIds) {
 		const index = interaction.followupMessageIds.indexOf(messageId)
 		if (index !== -1) {
 			interaction.followupMessageIds.splice(index, 1)
@@ -771,7 +786,7 @@ function handleInteractionDelete(
 			channel_id: message.channelId,
 			guild_id: message.guildId,
 			deleted: true,
-			is_original: false,
+			is_original: isOriginal,
 			command_name: interaction.commandName
 		},
 		{

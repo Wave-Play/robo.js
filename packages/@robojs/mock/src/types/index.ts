@@ -67,7 +67,7 @@ export interface SessionState {
 	// Data Maps
 	guilds: Map<Snowflake, MockGuild>
 	channels: Map<Snowflake, MockChannel>
-	dmChannels: Map<Snowflake, MockChannel> // By recipient user ID
+	dmChannels: Map<string, MockChannel> // By sorted user pair key: `${minUserId}:${maxUserId}`
 	users: Map<Snowflake, MockUser>
 	messages: Map<Snowflake, MockMessage>
 	interactions: Map<Snowflake, MockInteraction>

@@ -10,7 +10,7 @@ import { URL } from 'node:url'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { mockLogger } from '../logger.js'
 import type { ProxySessionConfig } from './config-store.js'
-import { rewriteHtml, rewriteHtmlAdvanced } from './html-rewriter.js'
+import { rewriteHtmlAdvanced } from './html-rewriter.js'
 import { rewriteRedirectLocation } from './redirect-rewriter.js'
 import { CookieJar } from './cookie-handler.js'
 import { applyCspHeaders } from './csp-headers.js'
@@ -41,17 +41,22 @@ const UPSTREAM_TIMEOUT = 30_000
 
 const sessionCookieJars = new Map<string, CookieJar>()
 
-function getOrCreateCookieJar(sessionId: string): CookieJar {
-	let jar = sessionCookieJars.get(sessionId)
+function buildCookieJarKey(sessionId: string, applicationId: string): string {
+	return `${sessionId}::${applicationId}`
+}
+
+function getOrCreateCookieJar(sessionId: string, applicationId: string): CookieJar {
+	const key = buildCookieJarKey(sessionId, applicationId)
+	let jar = sessionCookieJars.get(key)
 	if (!jar) {
 		jar = new CookieJar()
-		sessionCookieJars.set(sessionId, jar)
+		sessionCookieJars.set(key, jar)
 	}
 	return jar
 }
 
-export function clearCookieJar(sessionId: string): void {
-	sessionCookieJars.delete(sessionId)
+export function clearCookieJar(sessionId: string, applicationId: string): void {
+	sessionCookieJars.delete(buildCookieJarKey(sessionId, applicationId))
 }
 
 // ============================================================================
@@ -88,7 +93,7 @@ export async function proxyHttpRequest(options: ProxyRequestOptions): Promise<vo
 	const startTime = Date.now()
 	const entryId = generateEntryId()
 
-	const cookieJar = getOrCreateCookieJar(sessionId)
+	const cookieJar = getOrCreateCookieJar(sessionId, sessionConfig.application_id)
 
 	// Build upstream request options
 	const isHttps = targetUrl.protocol === 'https:'
@@ -102,13 +107,19 @@ export async function proxyHttpRequest(options: ProxyRequestOptions): Promise<vo
 			const key = req.rawHeaders[i]
 			const value = req.rawHeaders[i + 1]
 			if (!HOP_BY_HOP_HEADERS.has(key.toLowerCase())) {
+				// Do not forward browser cookies to mapping targets; mapping cookies are managed server-side
+				// via CookieJar keyed by upstream domain. This prevents cross-target cookie leakage.
+				if (!isProxyRoute && key.toLowerCase() === 'cookie') continue
 				upstreamHeaders[key] = value
 			}
 		}
 	}
 
-	// Set Host header to upstream hostname
-	upstreamHeaders['Host'] = targetUrl.host
+	// Preserve original Host for /.proxy routes so dev servers (e.g. Vite HMR)
+	// see the proxied origin. For URL-mapping routes, target host is required.
+	if (!isProxyRoute) {
+		upstreamHeaders['Host'] = targetUrl.host
+	}
 
 	// Forward cookies from cookie jar
 	const jarCookies = cookieJar.getCookieHeader(targetUrl)
@@ -147,12 +158,16 @@ export async function proxyHttpRequest(options: ProxyRequestOptions): Promise<vo
 			const statusCode = upstreamRes.statusCode ?? 200
 
 			// Build CSP context
-			const stageOrigin = proxyOrigin.replace(/:\d+$/, '') // Approximate Stage origin
+			const stagePort = process.env.PORT ?? '3000'
+			const stageOrigin = [
+				process.env.MOCK_STAGE_ORIGIN,
+				`http://localhost:${stagePort}`,
+				`http://127.0.0.1:${stagePort}`
+			].filter(Boolean).join(' ')
 			const cspContext: CspContext = {
 				proxyOrigin,
-				stageOrigin: stageOrigin.includes('localhost') ? '*' : stageOrigin,
-				mode: sessionConfig.csp_mode,
-				mappingTargets: sessionConfig.url_mappings.map((m) => m.target)
+				stageOrigin,
+				mode: sessionConfig.csp_mode
 			}
 
 			// Apply CSP + security headers
@@ -177,16 +192,22 @@ export async function proxyHttpRequest(options: ProxyRequestOptions): Promise<vo
 				}
 			}
 
-			// Handle Set-Cookie: store in jar and rewrite for proxy
+			// Handle Set-Cookie:
+			// - Always store cookies in jar for upstream domain replay.
+			// - Only forward Set-Cookie to the browser for /.proxy routes (Activity upstream).
+			//   For mapping routes, cookies should remain server-side to avoid leaking third-party cookies
+			//   into the Activity's document.cookie (proxy origin).
 			const setCookieHeaders = upstreamRes.headers['set-cookie']
 			if (setCookieHeaders) {
 				cookieJar.addFromSetCookie(setCookieHeaders, targetUrl)
-				const proxyHostname = new URL(proxyOrigin).hostname
-				const rewritten = cookieJar.rewriteSetCookieHeaders(setCookieHeaders, proxyHostname)
-				try {
-					res.setHeader('Set-Cookie', rewritten)
-				} catch {
-					// Ignore
+				if (isProxyRoute) {
+					const proxyHostname = new URL(proxyOrigin).hostname
+					const rewritten = cookieJar.rewriteSetCookieHeaders(setCookieHeaders, proxyHostname)
+					try {
+						res.setHeader('Set-Cookie', rewritten)
+					} catch {
+						// Ignore
+					}
 				}
 			}
 
@@ -298,13 +319,12 @@ function handleHtmlRewrite(
 	decompressStream.on('end', () => {
 		const html = Buffer.concat(chunks).toString('utf-8')
 		const mappingPrefixes = sessionConfig.url_mappings.map((m) => m.prefix)
-		const rewritten = sessionConfig.sdk_shim_enabled
-			? rewriteHtmlAdvanced(html, {
-					mappingPrefixes,
-					sdkShimEnabled: true,
-					proxyOrigin
-				})
-			: rewriteHtml(html, mappingPrefixes)
+		const rewritten = rewriteHtmlAdvanced(html, {
+			mappingPrefixes,
+			cspMode: sessionConfig.csp_mode,
+			sdkShimEnabled: sessionConfig.sdk_shim_enabled ?? false,
+			proxyOrigin
+		})
 
 		const body = Buffer.from(rewritten, 'utf-8')
 		res.setHeader('Content-Length', body.length)

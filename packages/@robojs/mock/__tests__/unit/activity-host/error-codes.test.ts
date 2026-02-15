@@ -3,7 +3,7 @@
  */
 
 import { RpcErrorCode, RpcErrorMessage } from '../../../src/activity/host/error-codes.js'
-import { buildErrorResponse } from '../../../src/activity/host/rpc-envelope.js'
+import { ActivityRpcOpcode, buildErrorResponse } from '../../../src/activity/host/rpc-envelope.js'
 
 describe('RPC Error Codes', () => {
 	test('all codes are numbers', () => {
@@ -22,33 +22,41 @@ describe('RPC Error Codes', () => {
 	})
 
 	test('error response shape is correct', () => {
-		const response = buildErrorResponse('test-nonce', RpcErrorCode.NOT_IMPLEMENTED, 'Not Implemented')
+		const response = buildErrorResponse('SOME_CMD', 'test-nonce', RpcErrorCode.NOT_IMPLEMENTED, 'Not Implemented')
 
-		expect(response).toEqual({
-			evt: 'ERROR',
-			nonce: 'test-nonce',
-			data: {
-				code: 5001,
-				message: 'Not Implemented'
+		expect(response).toEqual([
+			ActivityRpcOpcode.FRAME,
+			{
+				cmd: 'SOME_CMD',
+				evt: 'ERROR',
+				nonce: 'test-nonce',
+				data: {
+					code: 5001,
+					message: 'Not Implemented'
+				}
 			}
-		})
+		])
 	})
 
 	test('error response with details includes details', () => {
-		const response = buildErrorResponse('test-nonce', RpcErrorCode.BAD_REQUEST, 'Bad Request', {
+		const response = buildErrorResponse('SOME_CMD', 'test-nonce', RpcErrorCode.BAD_REQUEST, 'Bad Request', {
 			field: 'cmd',
 			reason: 'missing'
 		})
 
-		expect(response).toEqual({
-			evt: 'ERROR',
-			nonce: 'test-nonce',
-			data: {
-				code: 4000,
-				message: 'Bad Request',
-				details: { field: 'cmd', reason: 'missing' }
+		expect(response).toEqual([
+			ActivityRpcOpcode.FRAME,
+			{
+				cmd: 'SOME_CMD',
+				evt: 'ERROR',
+				nonce: 'test-nonce',
+				data: {
+					code: 4000,
+					message: 'Bad Request',
+					details: { field: 'cmd', reason: 'missing' }
+				}
 			}
-		})
+		])
 	})
 
 	test('expected error codes exist', () => {

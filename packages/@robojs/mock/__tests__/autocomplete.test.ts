@@ -394,8 +394,7 @@ describe('Autocomplete Interactions', () => {
 			// Create session with no guilds (and thus no channels)
 			const emptySession = new Session({
 				id: 'empty-session',
-				token: 'empty-token',
-				config: {}
+				config: { guilds: [] }
 			})
 
 			await expect(

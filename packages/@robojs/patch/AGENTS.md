@@ -82,7 +82,7 @@ Key files and behaviors:
   - Assigns proxy back to global `WebSocket` (ESLint global-assign suppressed intentionally)
 
 - `src/discord-proxy/utils.ts`
-  - `ProxyHosts = ['discordsays.com', 'discordsez.com']`
+  - `ProxyHosts = ['discordsays.com', 'discordsez.com', 'discordsays.localhost', 'discordsez.localhost']`
   - `ProxyPrefix = '/.proxy'`
   - `isDiscordActivity()` returns true if `frame_id` exists in query params
   - `patchUrl(input, prefix = ProxyPrefix)` returns a URL or Request clone with pathname patched when:
@@ -224,7 +224,7 @@ Not recommended for:
 ## 10. Hidden Gotchas & Edge Cases
 
 1) Discord Activity Context Only — patches run only when `frame_id` query param exists; always test inside Discord
-2) Proxy Host Detection — only `discordsays.com` and `discordsez.com` are considered
+2) Proxy Host Detection — `discordsays.com`/`discordsez.com` plus `discordsays.localhost`/`discordsez.localhost` (for `@robojs/mock`) are considered
 3) External URLs Not Patched — external APIs may still require your own proxy config
 4) Vite Plugin Timing — must run before HMR; keep it first and `enforce: 'pre'`
 5) SDK Mapping Tracking — relies on `patchUrlMappings`; SDK renames may break tracking
@@ -283,6 +283,7 @@ Internals referenced in this doc
 - `RoboRequestInit` — RequestInit with `prefix?: string`
 - `ProxyPrefix` — `/.proxy`
 - `ProxyHosts` — `['discordsays.com', 'discordsez.com']`
+- `ProxyHosts` — `['discordsays.com', 'discordsez.com', 'discordsays.localhost', 'discordsez.localhost']`
 - `DiscordEntryPointCommand` — `{ patch() }`
 
 ## 14. Dependencies

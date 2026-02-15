@@ -107,6 +107,7 @@ export function useSession() {
 			// Load root file mappings via project detection API
 			let rootMappings: Array<{ prefix: string; target: string }> = []
 			let rootCspMode: 'discord_strict' | 'relaxed' = 'relaxed'
+			let rootLaunchPath: string = '/'
 
 			try {
 				const prefix = getPluginPrefix()
@@ -121,6 +122,9 @@ export function useSession() {
 					if (matchingActivity) {
 						rootMappings = matchingActivity.url_mappings ?? []
 						rootCspMode = matchingActivity.proxy?.csp_mode ?? 'relaxed'
+						if (typeof matchingActivity.launch_path === 'string' && matchingActivity.launch_path.startsWith('/')) {
+							rootLaunchPath = matchingActivity.launch_path
+						}
 					}
 				}
 			} catch {
@@ -137,6 +141,10 @@ export function useSession() {
 			const savedCsp = localStorage.getItem('mock_devtools_csp_mode')
 			const devtoolsCspMode = (savedCsp === 'discord_strict' || savedCsp === 'relaxed') ? savedCsp : null
 
+			// SDK shim default: enabled (required for most localhost Stage origins)
+			const savedShim = localStorage.getItem('mock_devtools_sdk_shim_enabled')
+			const devtoolsSdkShimEnabled = savedShim === null ? true : savedShim === 'true'
+
 			// Merge: DevTools overrides take precedence (by prefix)
 			const mergedMappings = mergeMappings(rootMappings, devtoolsMappings)
 			const mergedCspMode = devtoolsCspMode ?? rootCspMode
@@ -149,7 +157,8 @@ export function useSession() {
 					channel_id: channelId,
 					url_mappings: mergedMappings.length > 0 ? mergedMappings : undefined,
 					csp_mode: mergedCspMode,
-					launch_path: '/'
+					launch_path: rootLaunchPath,
+					sdk_shim_enabled: devtoolsSdkShimEnabled
 				})
 				// The backend responds with activity.launched event which triggers
 				// HANDLE_ACTIVITY_LAUNCHED to set instanceId/frameId/queryParams

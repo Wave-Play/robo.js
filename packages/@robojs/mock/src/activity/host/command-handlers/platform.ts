@@ -33,7 +33,13 @@ export function handlePlatformCommands(
 			}
 
 		case 'SET_CONFIG':
-			return { outbound: [buildCommandResponse(parsed.cmd, parsed.nonce, {})] }
+			return {
+				outbound: [
+					buildCommandResponse(parsed.cmd, parsed.nonce, {
+						use_interactive_pip: Boolean((parsed.args as { use_interactive_pip?: unknown } | undefined)?.use_interactive_pip)
+					})
+				]
+			}
 
 		case 'USER_SETTINGS_GET_LOCALE':
 			return {
@@ -50,13 +56,23 @@ export function handlePlatformCommands(
 			return { outbound: [buildCommandResponse(parsed.cmd, parsed.nonce, {})] }
 
 		case 'CAPTURE_SHORTCUT':
-			return { outbound: [buildCommandResponse(parsed.cmd, parsed.nonce, {})] }
+			return {
+				outbound: [
+					buildCommandResponse(parsed.cmd, parsed.nonce, {
+						shortcut: {
+							type: 0, // KEYBOARD_KEY
+							code: 0,
+							name: 'Mock'
+						}
+					})
+				]
+			}
 
 		case 'SELECT_VOICE_CHANNEL':
-			return { outbound: [buildCommandResponse(parsed.cmd, parsed.nonce, { channel: null })] }
+			return { outbound: [buildCommandResponse(parsed.cmd, parsed.nonce, null)] }
 
 		case 'SELECT_TEXT_CHANNEL':
-			return { outbound: [buildCommandResponse(parsed.cmd, parsed.nonce, { channel: null })] }
+			return { outbound: [buildCommandResponse(parsed.cmd, parsed.nonce, null)] }
 
 		default:
 			return { outbound: [buildCommandResponse(parsed.cmd, parsed.nonce, {})] }

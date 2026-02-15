@@ -12,6 +12,29 @@ interface RESTCall {
 	data: StageRESTCallData
 }
 
+interface ProxyNetworkEntry {
+	id: string
+	timestamp: number
+	method: string
+	proxyUrl: string
+	upstreamUrl: string
+	statusCode: number
+	duration: number
+	contentType?: string
+	contentLength?: number
+	htmlRewritten?: boolean
+	mappingPrefix?: string
+	error?: string
+	type: 'http' | 'ws_connect' | 'ws_disconnect'
+}
+
+interface ProxyCall {
+	id: string
+	seq: number
+	timestamp: number
+	data: ProxyNetworkEntry
+}
+
 interface RouteInfo {
 	path: string
 	methods: string[]
@@ -66,7 +89,9 @@ export function NetworkLog() {
 	// Log filter state
 	const [filter, setFilter] = useState('')
 	const [selectedId, setSelectedId] = useState<string | null>(null)
-	const [activeTab, setActiveTab] = useState<'client' | 'log'>('client')
+	const [proxyFilter, setProxyFilter] = useState('')
+	const [selectedProxyId, setSelectedProxyId] = useState<string | null>(null)
+	const [activeTab, setActiveTab] = useState<'client' | 'log' | 'proxy'>('client')
 
 	// Fetch routes on mount
 	useEffect(() => {
@@ -260,6 +285,18 @@ export function NetworkLog() {
 			})) as RESTCall[]
 	}, [events])
 
+	// Filter for activity.proxy.network events
+	const proxyCalls = useMemo(() => {
+		return events
+			.filter((e) => e.type === 'activity.proxy.network')
+			.map((e) => ({
+				id: e.id,
+				seq: e.seq,
+				timestamp: e.timestamp,
+				data: e.data as ProxyNetworkEntry
+			})) as ProxyCall[]
+	}, [events])
+
 	// Apply text filter
 	const filteredCalls = useMemo(() => {
 		if (!filter) return restCalls
@@ -274,6 +311,27 @@ export function NetworkLog() {
 
 	// Get selected call details
 	const selectedCall = selectedId ? restCalls.find((c) => c.id === selectedId) : null
+
+	const filteredProxyCalls = useMemo(() => {
+		if (!proxyFilter) return proxyCalls
+		const lowerFilter = proxyFilter.toLowerCase()
+		return proxyCalls.filter((call) => {
+			const proxyUrl = call.data.proxyUrl?.toLowerCase() || ''
+			const upstreamUrl = call.data.upstreamUrl?.toLowerCase() || ''
+			const method = call.data.method?.toLowerCase() || ''
+			const mapping = call.data.mappingPrefix?.toLowerCase() || ''
+			const type = call.data.type?.toLowerCase() || ''
+			return (
+				proxyUrl.includes(lowerFilter) ||
+				upstreamUrl.includes(lowerFilter) ||
+				method.includes(lowerFilter) ||
+				mapping.includes(lowerFilter) ||
+				type.includes(lowerFilter)
+			)
+		})
+	}, [proxyCalls, proxyFilter])
+
+	const selectedProxyCall = selectedProxyId ? proxyCalls.find((c) => c.id === selectedProxyId) : null
 
 	// Get method CSS class
 	const getMethodClass = (method: string) => {
@@ -295,6 +353,7 @@ export function NetworkLog() {
 
 	// Get status CSS class
 	const getStatusClass = (status: number) => {
+		if (status === 0) return styles.status3xx
 		if (status >= 200 && status < 300) return styles.status2xx
 		if (status >= 300 && status < 400) return styles.status3xx
 		if (status >= 400 && status < 500) return styles.status4xx
@@ -332,6 +391,14 @@ export function NetworkLog() {
 					<ListIcon />
 					Log
 					{restCalls.length > 0 && <span className={styles.badge}>{restCalls.length}</span>}
+				</button>
+				<button
+					className={`${styles.tabButton} ${activeTab === 'proxy' ? styles.active : ''}`}
+					onClick={() => setActiveTab('proxy')}
+				>
+					<NetworkIcon />
+					Proxy
+					{proxyCalls.length > 0 && <span className={styles.badge}>{proxyCalls.length}</span>}
 				</button>
 			</div>
 
@@ -578,6 +645,124 @@ export function NetworkLog() {
 													<JsonViewer data={selectedCall.data.responseBody} collapsed={1} />
 												</div>
 											)}
+										</div>
+									</div>
+								)}
+							</div>
+						</>
+					)}
+				</>
+			)}
+
+			{/* Proxy tab */}
+			{activeTab === 'proxy' && (
+				<>
+					{proxyCalls.length === 0 ? (
+						<div className={styles.empty}>
+							<NetworkIcon />
+							<h3 className={styles.title}>No Activity Proxy Traffic</h3>
+							<p className={styles.description}>
+								HTTP and WebSocket requests routed through the Activity proxy will appear here.
+							</p>
+						</div>
+					) : (
+						<>
+							{/* Header with filter */}
+							<div className={styles.header}>
+								<input
+									type="text"
+									className={styles.filterInput}
+									placeholder="Filter by proxy URL, upstream, method..."
+									value={proxyFilter}
+									onChange={(e) => setProxyFilter(e.target.value)}
+								/>
+								<button className={styles.clearButton} onClick={() => { setProxyFilter(''); setSelectedProxyId(null) }}>
+									Clear
+								</button>
+							</div>
+
+							{/* Split view: list and detail */}
+							<div className={styles.splitView}>
+								<div className={styles.listPane}>
+									<div className={styles.requestList}>
+										{filteredProxyCalls.map((call) => (
+											<div
+												key={call.id}
+												className={`${styles.logRow} ${selectedProxyId === call.id ? styles.selected : ''}`}
+												onClick={() => setSelectedProxyId(call.id)}
+											>
+												<span className={`${styles.method} ${getMethodClass(call.data.method)}`}>
+													{call.data.method}
+												</span>
+												<span className={styles.path} title={call.data.proxyUrl}>
+													{call.data.proxyUrl}
+												</span>
+												<span className={`${styles.status} ${getStatusClass(call.data.statusCode)}`}>
+													{call.data.statusCode || ''}
+												</span>
+												<span className={styles.duration}>{formatDuration(call.data.duration)}</span>
+											</div>
+										))}
+									</div>
+								</div>
+
+								{selectedProxyCall && (
+									<div className={styles.detailPane}>
+										<div className={styles.detailHeader}>
+											<span>Proxy Details</span>
+											<button className={styles.closeDetail} onClick={() => setSelectedProxyId(null)}>
+												<CloseIcon />
+											</button>
+										</div>
+										<div className={styles.detailContent}>
+											<div className={styles.detailMeta}>
+												<div className={styles.metaItem}>
+													<span className={styles.metaLabel}>Time</span>
+													<span className={styles.metaValue}>{formatTimestamp(selectedProxyCall.timestamp)}</span>
+												</div>
+												<div className={styles.metaItem}>
+													<span className={styles.metaLabel}>Type</span>
+													<span className={styles.metaValue}>{selectedProxyCall.data.type}</span>
+												</div>
+												<div className={styles.metaItem}>
+													<span className={styles.metaLabel}>Status</span>
+													<span className={`${styles.metaValue} ${getStatusClass(selectedProxyCall.data.statusCode)}`}>
+														{selectedProxyCall.data.statusCode || '-'}
+													</span>
+												</div>
+												<div className={styles.metaItem}>
+													<span className={styles.metaLabel}>Duration</span>
+													<span className={styles.metaValue}>{formatDuration(selectedProxyCall.data.duration)}</span>
+												</div>
+												{selectedProxyCall.data.mappingPrefix && (
+													<div className={styles.metaItem}>
+														<span className={styles.metaLabel}>Mapping</span>
+														<span className={styles.metaValue}>{selectedProxyCall.data.mappingPrefix}</span>
+													</div>
+												)}
+											</div>
+
+											<div className={styles.detailSection}>
+												<div className={styles.detailLabel}>Proxy URL</div>
+												<div className={styles.detailValue}>{selectedProxyCall.data.proxyUrl}</div>
+											</div>
+
+											<div className={styles.detailSection}>
+												<div className={styles.detailLabel}>Upstream URL</div>
+												<div className={styles.detailValue}>{selectedProxyCall.data.upstreamUrl}</div>
+											</div>
+
+											{selectedProxyCall.data.error && (
+												<div className={styles.detailSection}>
+													<div className={styles.detailLabel}>Error</div>
+													<div className={styles.detailValue}>{selectedProxyCall.data.error}</div>
+												</div>
+											)}
+
+											<div className={styles.detailSection}>
+												<div className={styles.detailLabel}>Raw</div>
+												<JsonViewer data={selectedProxyCall.data} collapsed={2} />
+											</div>
 										</div>
 									</div>
 								)}

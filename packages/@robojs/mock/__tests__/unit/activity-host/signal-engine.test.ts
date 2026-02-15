@@ -12,6 +12,7 @@ import {
 } from '../../../src/activity/host/signal-engine.js'
 import { ActivityHostManager, getActivityHostManager, resetActivityHostManager } from '../../../src/activity/host/activity-host-manager.js'
 import { loadManifest, resetManifest } from '../../../src/activity/schema/manifest-loader.js'
+import { ActivityRpcOpcode } from '../../../src/activity/host/rpc-envelope.js'
 
 // Mock the session manager
 jest.mock('../../../src/core/manager.js', () => {
@@ -84,8 +85,11 @@ describe('SignalEngine', () => {
 			channel_id: 'channel-1',
 			launch_url: 'https://example.com'
 		})
-		// Emit READY via handshake
-		manager.handleInbound('sess-1', { cmd: 'DISPATCH', nonce: 'n1', args: {} })
+		// Emit READY via HANDSHAKE
+		manager.handleInbound('sess-1', [
+			ActivityRpcOpcode.HANDSHAKE,
+			{ v: 1, encoding: 'json', client_id: 'app-1', frame_id: record.frame_id }
+		])
 		return record
 	}
 
@@ -117,10 +121,15 @@ describe('SignalEngine', () => {
 
 			const result = onVoiceStateChanged('sess-1', 'user-1', 'channel-1', false, true)
 			expect(result).toHaveLength(1)
-			expect(result[0]).toEqual({
-				evt: 'SPEAKING_START',
-				data: { user_id: 'user-1', channel_id: 'channel-1' }
-			})
+			expect(result[0]).toEqual([
+				ActivityRpcOpcode.FRAME,
+				{
+					cmd: 'DISPATCH',
+					evt: 'SPEAKING_START',
+					nonce: null,
+					data: { user_id: 'user-1', channel_id: 'channel-1' }
+				}
+			])
 		})
 
 		test('emits SPEAKING_STOP when speaking becomes false and subscribed', () => {
@@ -130,10 +139,15 @@ describe('SignalEngine', () => {
 
 			const result = onVoiceStateChanged('sess-1', 'user-1', 'channel-1', true, false)
 			expect(result).toHaveLength(1)
-			expect(result[0]).toEqual({
-				evt: 'SPEAKING_STOP',
-				data: { user_id: 'user-1', channel_id: 'channel-1' }
-			})
+			expect(result[0]).toEqual([
+				ActivityRpcOpcode.FRAME,
+				{
+					cmd: 'DISPATCH',
+					evt: 'SPEAKING_STOP',
+					nonce: null,
+					data: { user_id: 'user-1', channel_id: 'channel-1' }
+				}
+			])
 		})
 
 		test('does NOT emit speaking when speaking state unchanged', () => {
@@ -153,7 +167,8 @@ describe('SignalEngine', () => {
 
 			const result = onVoiceStateChanged('sess-1', 'user-1', 'channel-1', false, true)
 			expect(result).toHaveLength(1)
-			expect((result[0] as { evt: string }).evt).toBe('SPEAKING_START')
+			const [, frame] = result[0] as [number, Record<string, unknown>]
+			expect(frame.evt).toBe('SPEAKING_START')
 		})
 
 		test('SPEAKING_START respects channel_id scoping -- non-matching channel', () => {
@@ -188,10 +203,15 @@ describe('SignalEngine', () => {
 
 			const result = onPlatformStateChanged('sess-1', 'layout_mode', 1)
 			expect(result).toHaveLength(1)
-			expect(result[0]).toEqual({
-				evt: 'ACTIVITY_LAYOUT_MODE_UPDATE',
-				data: { layout_mode: 1 }
-			})
+			expect(result[0]).toEqual([
+				ActivityRpcOpcode.FRAME,
+				{
+					cmd: 'DISPATCH',
+					evt: 'ACTIVITY_LAYOUT_MODE_UPDATE',
+					nonce: null,
+					data: { layout_mode: 1 }
+				}
+			])
 		})
 
 		test('emits ORIENTATION_UPDATE when subscribed', () => {
@@ -202,10 +222,15 @@ describe('SignalEngine', () => {
 			const orientationValue = { screen_orientation: 0, orientation: 'portrait' }
 			const result = onPlatformStateChanged('sess-1', 'orientation', orientationValue)
 			expect(result).toHaveLength(1)
-			expect(result[0]).toEqual({
-				evt: 'ORIENTATION_UPDATE',
-				data: orientationValue
-			})
+			expect(result[0]).toEqual([
+				ActivityRpcOpcode.FRAME,
+				{
+					cmd: 'DISPATCH',
+					evt: 'ORIENTATION_UPDATE',
+					nonce: null,
+					data: orientationValue
+				}
+			])
 		})
 
 		test('emits THERMAL_STATE_UPDATE when subscribed', () => {
@@ -215,10 +240,15 @@ describe('SignalEngine', () => {
 
 			const result = onPlatformStateChanged('sess-1', 'thermal_state', 2)
 			expect(result).toHaveLength(1)
-			expect(result[0]).toEqual({
-				evt: 'THERMAL_STATE_UPDATE',
-				data: { thermal_state: 2 }
-			})
+			expect(result[0]).toEqual([
+				ActivityRpcOpcode.FRAME,
+				{
+					cmd: 'DISPATCH',
+					evt: 'THERMAL_STATE_UPDATE',
+					nonce: null,
+					data: { thermal_state: 2 }
+				}
+			])
 		})
 
 		test('does NOT emit when not subscribed', () => {

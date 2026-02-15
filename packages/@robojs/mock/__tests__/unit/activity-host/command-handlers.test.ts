@@ -5,6 +5,7 @@
 import { ActivityHostManager } from '../../../src/activity/host/activity-host-manager.js'
 import { loadManifest, resetManifest } from '../../../src/activity/schema/manifest-loader.js'
 import { RpcErrorCode } from '../../../src/activity/host/error-codes.js'
+import { ActivityRpcOpcode } from '../../../src/activity/host/rpc-envelope.js'
 
 // Mock the session manager
 jest.mock('../../../src/core/manager.js', () => {
@@ -148,12 +149,18 @@ describe('Command Handlers', () => {
 			launch_url: 'https://example.com/activity'
 		})
 
-		// Complete handshake
-		manager.handleInbound('sess-cmd-1', {
-			cmd: 'DISPATCH',
-			nonce: 'handshake-nonce',
-			args: { v: 1 }
-		})
+		// Complete handshake (READY)
+		const record = manager.getRecord('sess-cmd-1')!
+		manager.handleInbound('sess-cmd-1', [
+			ActivityRpcOpcode.HANDSHAKE,
+			{ v: 1, encoding: 'json', client_id: 'app-123', frame_id: record.frame_id }
+		])
+
+		// Authenticate so auth-gated commands can be exercised here
+		manager.handleInbound('sess-cmd-1', [
+			ActivityRpcOpcode.FRAME,
+			{ cmd: 'AUTHENTICATE', nonce: 'pre-auth', args: { access_token: 'test-token' } }
+		])
 	})
 
 	afterEach(() => {
@@ -161,12 +168,16 @@ describe('Command Handlers', () => {
 	})
 
 	function sendCommand(cmd: string, args?: Record<string, unknown>) {
-		const result = manager.handleInbound('sess-cmd-1', {
-			cmd,
-			nonce: `nonce-${cmd}-${Date.now()}`,
-			args: args ?? {}
-		})
-		return result.outbound[0] as Record<string, unknown>
+		const result = manager.handleInbound('sess-cmd-1', [
+			ActivityRpcOpcode.FRAME,
+			{
+				cmd,
+				nonce: `nonce-${cmd}-${Date.now()}`,
+				args: args ?? {}
+			}
+		])
+		const [, frame] = result.outbound[0] as [number, Record<string, unknown>]
+		return frame
 	}
 
 	test('GET_INSTANCE_ID returns correct instance_id', () => {
@@ -217,6 +228,8 @@ describe('Command Handlers', () => {
 
 		expect(data.id).toBe('guild-1')
 		expect(data.name).toBe('Test Guild')
+		// icon_url is optional (not nullable) in the Embedded App SDK schema
+		expect(data.icon_url).toBeUndefined()
 	})
 
 	test('GET_GUILDS returns all guilds', () => {
@@ -266,7 +279,8 @@ describe('Command Handlers', () => {
 		const response = sendCommand('AUTHORIZE', { state: 'my-state' })
 		const data = response.data as Record<string, unknown>
 
-		expect(data.code).toBe(`mock_auth_code_${record.instance_id}`)
+		expect(typeof data.code).toBe('string')
+		expect((data.code as string).startsWith(`mock_auth_code_${record.instance_id}_`)).toBe(true)
 		expect(data.state).toBe('my-state')
 	})
 
@@ -343,37 +357,31 @@ describe('Command Handlers', () => {
 	})
 
 	test('unknown command returns ERROR 5001', () => {
-		const result = manager.handleInbound('sess-cmd-1', {
-			cmd: 'TOTALLY_FAKE_COMMAND',
-			nonce: 'nonce-unknown',
-			args: {}
-		})
+		const result = manager.handleInbound('sess-cmd-1', [
+			ActivityRpcOpcode.FRAME,
+			{ cmd: 'TOTALLY_FAKE_COMMAND', nonce: 'nonce-unknown', args: {} }
+		])
 
-		const response = result.outbound[0] as Record<string, unknown>
+		const [, response] = result.outbound[0] as [number, Record<string, unknown>]
 		expect(response.evt).toBe('ERROR')
 		expect(response.nonce).toBe('nonce-unknown')
 		const data = response.data as Record<string, unknown>
 		expect(data.code).toBe(RpcErrorCode.NOT_IMPLEMENTED)
 	})
 
-	test('invalid envelope (missing cmd) returns ERROR 4000', () => {
-		const result = manager.handleInbound('sess-cmd-1', {
-			nonce: 'nonce-bad'
-		})
-
-		const response = result.outbound[0] as Record<string, unknown>
-		expect(response.evt).toBe('ERROR')
-		const data = response.data as Record<string, unknown>
-		expect(data.code).toBe(RpcErrorCode.BAD_REQUEST)
+	test('invalid envelope (missing cmd) is ignored', () => {
+		const result = manager.handleInbound('sess-cmd-1', [ActivityRpcOpcode.FRAME, { nonce: 'nonce-bad' }])
+		// Cannot correlate a response without a cmd; ignore.
+		expect(result.outbound).toHaveLength(0)
 	})
 
 	test('no active activity returns ERROR 4040', () => {
-		const result = manager.handleInbound('non-existent-session', {
-			cmd: 'GET_USER',
-			nonce: 'nonce-1'
-		})
+		const result = manager.handleInbound('non-existent-session', [
+			ActivityRpcOpcode.FRAME,
+			{ cmd: 'GET_USER', nonce: 'nonce-1', args: {} }
+		])
 
-		const response = result.outbound[0] as Record<string, unknown>
+		const [, response] = result.outbound[0] as [number, Record<string, unknown>]
 		expect(response.evt).toBe('ERROR')
 		const data = response.data as Record<string, unknown>
 		expect(data.code).toBe(RpcErrorCode.NOT_FOUND)

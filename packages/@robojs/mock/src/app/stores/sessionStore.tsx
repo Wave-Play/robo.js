@@ -244,6 +244,7 @@ type SessionAction =
 	| { type: 'REMOVE_ACTIVITY_SUBSCRIPTION'; eventName: string }
 	| { type: 'SET_ACTIVITY_ORIGIN_MODE'; payload: 'strict' | 'lenient' }
 	| { type: 'SET_ACTIVITY_SDK_SHIM'; payload: boolean }
+	| { type: 'SET_ACTIVITY_AUTH_STATE'; payload: 'UNAUTHENTICATED' | 'AUTHENTICATED' }
 	| { type: 'REORDER_CHANNELS'; payload: StageChannel[] }
 
 // Initial state
@@ -344,7 +345,8 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 					queryParams: syncActivity.query_params,
 					iframeUrl: syncActivity.iframe_url ?? null,
 					authState: syncActivity.auth_state ?? 'UNAUTHENTICATED',
-					devtoolsAuthMode: syncActivity.devtools_auth_mode ?? 'auto_approve'
+					devtoolsAuthMode: syncActivity.devtools_auth_mode ?? 'auto_approve',
+					sdkShimEnabled: syncActivity.sdk_shim_enabled ?? state.activity.sdkShimEnabled
 				} : state.activity
 			}
 		}
@@ -590,7 +592,9 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 					guildId: data.guild_id,
 					launchUrl: data.launch_url,
 					queryParams: data.query_params,
-					iframeUrl: data.iframe_url ?? null
+					iframeUrl: data.iframe_url ?? null,
+					authState: 'UNAUTHENTICATED',
+					sdkShimEnabled: data.sdk_shim_enabled ?? state.activity.sdkShimEnabled
 				}
 			}
 		}
@@ -886,6 +890,12 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 			return {
 				...state,
 				activity: { ...state.activity, sdkShimEnabled: action.payload }
+			}
+
+		case 'SET_ACTIVITY_AUTH_STATE':
+			return {
+				...state,
+				activity: { ...state.activity, authState: action.payload }
 			}
 
 		default:

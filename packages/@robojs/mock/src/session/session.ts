@@ -3024,6 +3024,35 @@ export class Session implements ISession {
 		this.ending = true
 		mockLogger.debug(`Session ending: ${this.id}`)
 
+		// Activity cleanup (best-effort):
+		// - Close Activity host record + subscriptions
+		// - Remove proxy config and cookie jar
+		// - Cancel any coalesced signal timers
+		try {
+			const { getActivityHostManager } = await import('../activity/host/activity-host-manager.js')
+			getActivityHostManager().closeActivity(this.id)
+		} catch {
+			// Activity host not available
+		}
+		try {
+			const { getProxyConfigStore } = await import('../core/activity-proxy/config-store.js')
+			getProxyConfigStore().delete(this.id)
+		} catch {
+			// Proxy not available
+		}
+		try {
+			const { clearCookieJar } = await import('../core/activity-proxy/http-proxy.js')
+			clearCookieJar(this.id)
+		} catch {
+			// Cookie jar not available
+		}
+		try {
+			const { cancelCoalesceTimers } = await import('../activity/host/signal-engine.js')
+			cancelCoalesceTimers(this.id)
+		} catch {
+			// Signal engine not available
+		}
+
 		// Stop auto-archive interval
 		this.stopAutoArchive()
 

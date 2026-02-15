@@ -14,8 +14,6 @@ export interface CspContext {
 	stageOrigin: string
 	/** Session's CSP mode */
 	mode: CspMode
-	/** URL mapping targets (for connect-src in strict mode) */
-	mappingTargets?: string[]
 }
 
 /**
@@ -31,15 +29,24 @@ export function buildCspString(ctx: CspContext): string {
 		].join('; ')
 	}
 
-	// Discord strict mode
-	const proxyHost = new URL(ctx.proxyOrigin).host
-	const connectSources = ["'self'", `wss://${proxyHost}`]
-	if (ctx.mappingTargets) {
-		for (const target of ctx.mappingTargets) {
-			// Ensure target has https:// prefix for CSP
-			connectSources.push(target.includes('://') ? target : `https://${target}`)
-		}
+	// Allow operators to inject a captured strict CSP exactly (no guessing).
+	// This should be used when validating Activities against Discord's real proxy behavior.
+	const injectedStrict = process.env.MOCK_ACTIVITY_PROXY_CSP_STRICT?.trim()
+	if (injectedStrict) {
+		return injectedStrict
 	}
+
+	// Discord strict mode
+	const proxyUrl = new URL(ctx.proxyOrigin)
+	const wsSelf = proxyUrl.protocol === 'https:' ? `wss://${proxyUrl.host}` : `ws://${proxyUrl.host}`
+	const connectSources = [
+		"'self'",
+		wsSelf,
+		'https://discord.com',
+		'https://*.discord.com',
+		'wss://discord.com',
+		'wss://*.discord.com'
+	]
 
 	return [
 		"default-src 'self'",

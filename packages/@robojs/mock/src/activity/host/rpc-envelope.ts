@@ -3,19 +3,39 @@ import { RpcErrorCode } from './error-codes.js'
 import type { RpcErrorCodeValue } from './error-codes.js'
 
 /**
+ * Embedded App SDK postMessage opcodes (DiscordSDK.Opcodes).
+ * Values are stable and used by @discord/embedded-app-sdk.
+ */
+export const ActivityRpcOpcode = {
+	HANDSHAKE: 0,
+	FRAME: 1,
+	CLOSE: 2,
+	HELLO: 3
+} as const
+
+export type ActivityRpcOpcodeValue = (typeof ActivityRpcOpcode)[keyof typeof ActivityRpcOpcode]
+
+/**
+ * postMessage tuple form used by the Embedded App SDK: [opcode, payload]
+ */
+export type ActivityRpcTuple<T = unknown> = [ActivityRpcOpcodeValue, T]
+
+/**
  * Parsed inbound RPC message from Activity.
- * Spec section 3.1.1: { cmd, nonce, args }
+ * FRAME payload (Activity -> Host): { cmd, nonce, args?, evt? }
  */
 export interface InboundRpcMessage {
 	cmd: string
 	nonce: string
 	args?: Record<string, unknown>
+	/** Subscription event name (SUBSCRIBE/UNSUBSCRIBE) */
+	evt?: string | null
 	/** Raw message for logging/debugging */
 	_raw: unknown
 }
 
 /**
- * Parse and validate an inbound RPC envelope.
+ * Parse and validate an inbound FRAME payload.
  * Returns InboundRpcMessage or throws with a descriptive error.
  */
 export function parseInboundEnvelope(raw: unknown): InboundRpcMessage {
@@ -35,55 +55,78 @@ export function parseInboundEnvelope(raw: unknown): InboundRpcMessage {
 		throw new RpcValidationError('Missing or invalid "nonce" field', RpcErrorCode.BAD_REQUEST)
 	}
 
-	// args is optional, must be object if present
-	if (msg.args !== undefined && (typeof msg.args !== 'object' || msg.args === null)) {
-		throw new RpcValidationError('"args" must be an object', RpcErrorCode.BAD_REQUEST)
+	// evt is optional (SUBSCRIBE/UNSUBSCRIBE)
+	const evt = (typeof msg.evt === 'string' ? msg.evt : (msg.evt === null ? null : undefined))
+
+	// args is optional; treat null/undefined as empty object, otherwise must be object
+	let args: Record<string, unknown> = {}
+	if (msg.args !== undefined && msg.args !== null) {
+		if (typeof msg.args !== 'object') {
+			throw new RpcValidationError('"args" must be an object', RpcErrorCode.BAD_REQUEST)
+		}
+		args = msg.args as Record<string, unknown>
 	}
 
 	return {
 		cmd: msg.cmd,
 		nonce: msg.nonce,
-		args: (msg.args as Record<string, unknown>) ?? {},
+		args,
+		evt,
 		_raw: raw
 	}
 }
 
 /**
- * Build a command response (Host -> Activity).
- * Spec section 3.1.2: { cmd, nonce, data }
+ * Build a FRAME payload for a command response (Host -> Activity).
+ * Embedded App SDK expects: { cmd, evt: null, nonce, data }
  */
-export function buildCommandResponse(cmd: string, nonce: string, data: unknown): object {
-	return { cmd, nonce, data: data ?? null }
+export function buildCommandResponse(cmd: string, nonce: string, data: unknown): ActivityRpcTuple<object> {
+	return [
+		ActivityRpcOpcode.FRAME,
+		{ cmd, evt: null, nonce, data: data ?? null }
+	]
 }
 
 /**
- * Build an error response (Host -> Activity).
- * Spec section 3.1.3: { evt: "ERROR", nonce, data: { code, message, details? } }
+ * Build an ERROR event frame (Host -> Activity).
+ * Embedded App SDK expects: { cmd, evt: "ERROR", nonce, data: { code, message?, ... } }
  */
 export function buildErrorResponse(
+	cmd: string,
 	nonce: string,
 	code: RpcErrorCodeValue,
 	message: string,
 	details?: Record<string, unknown>
-): object {
+): ActivityRpcTuple<object> {
 	const errorData: Record<string, unknown> = { code, message }
 	if (details) {
 		errorData.details = details
 	}
-	return {
-		evt: 'ERROR',
-		nonce,
-		data: errorData
-	}
+	return [
+		ActivityRpcOpcode.FRAME,
+		{
+			cmd,
+			evt: 'ERROR',
+			nonce,
+			data: errorData
+		}
+	]
 }
 
 /**
- * Build an event dispatch (Host -> Activity).
- * Spec section 3.1.4: { evt, data }
- * Note: events have NO nonce (they are async, not correlated to requests).
+ * Build a DISPATCH event frame (Host -> Activity).
+ * Embedded App SDK expects: { cmd: "DISPATCH", evt, nonce: null, data }
  */
-export function buildEventDispatch(evt: string, data: unknown): object {
-	return { evt, data: data ?? null }
+export function buildEventDispatch(evt: string, data: unknown, nonce: string | null = null): ActivityRpcTuple<object> {
+	return [
+		ActivityRpcOpcode.FRAME,
+		{
+			cmd: 'DISPATCH',
+			evt,
+			nonce,
+			data: data ?? null
+		}
+	]
 }
 
 export class RpcValidationError extends Error {

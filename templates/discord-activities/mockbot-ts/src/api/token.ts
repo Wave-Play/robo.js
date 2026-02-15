@@ -7,6 +7,13 @@ interface RequestBody {
 export default async (req: RoboRequest) => {
 	const { code } = (await req.json()) as RequestBody
 
+	// Mock-friendly shortcut:
+	// When running against @robojs/mock, AUTHORIZE returns a deterministic fake code.
+	// In that case we can return a fake access_token without requiring real Discord credentials.
+	if (typeof code === 'string' && code.startsWith('mock_auth_code_')) {
+		return { access_token: 'mock_token' }
+	}
+
 	// Exchange the code for an access_token
 	const response = await fetch(`https://discord.com/api/oauth2/token`, {
 		method: 'POST',

@@ -220,6 +220,8 @@ WebSocket server for the Stage UI:
 - **Authentication:** `?token=mock:session_xxx` or `?session=sess_xxx`
 - **Event Buffering:** 1000 events max per session
 - **Reconnection:** Supports `?last_seq=N` for event replay
+- **Activities:** Handles Activity lifecycle + RPC forwarding (`launch_activity`, `close_activity`, `activity_rpc`, `activity.rpc.outbound`) and DevTools controls (proxy mappings/CSP, auth simulator, platform state, IAP, social/quests, and `activity_emit_event`).
+- **User context:** `set_current_user`/`switch_user` also emit Activity signals when subscribed (e.g., `CURRENT_USER_UPDATE`, `CURRENT_GUILD_MEMBER_UPDATE`).
 
 ### Stage Bridge (`src/core/stage-bridge.ts`)
 
@@ -271,8 +273,10 @@ Main initialization:
 ```typescript
 // 1. Fallback WebSocket registration if prepare didn't work
 // 2. Initialize Stage bridge
-// 3. Start Voice Gateway on port 50001
-// 4. If mock mode enabled:
+// 3. Load Activity RPC manifest (Embedded App SDK schema)
+// 4. Start Voice Gateway on port 50001
+// 5. Start Activity Proxy on port 50002 (Node http server)
+// 6. If mock mode enabled:
 //    - Resolve bot user (config → Discord API → default)
 //    - Create mock mode session with pre-generated ID
 //    - Register commands to mock server via HTTP

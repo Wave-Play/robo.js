@@ -19,13 +19,13 @@ export function handleSubscribe(
 	manager: ActivityHostManager,
 	_commandDef: RpcCommandDefinition
 ): HandleInboundResult {
-	const eventName = (parsed.args?.evt as string) ?? (parsed.args?.event as string) ?? ''
+	const eventName = parsed.evt ?? (parsed.args?.evt as string) ?? (parsed.args?.event as string) ?? ''
 	const subscribeArgs = { ...(parsed.args ?? {}) }
 	// Remove the event name key from scoping args
 	delete subscribeArgs.evt
 	delete subscribeArgs.event
 
-	const outbound: object[] = []
+	const outbound: unknown[] = []
 
 	// If READY not yet emitted, defer the subscription
 	if (!record.ready_emitted) {
@@ -51,7 +51,13 @@ export function handleSubscribe(
 		if (isNew) {
 			const snapshot = manager.getSnapshotForEvent(eventName, record)
 			if (snapshot !== null) {
-				outbound.push(buildEventDispatch(eventName, snapshot))
+				if (Array.isArray(snapshot)) {
+					for (const item of snapshot) {
+						outbound.push(buildEventDispatch(eventName, item))
+					}
+				} else {
+					outbound.push(buildEventDispatch(eventName, snapshot))
+				}
 			}
 		}
 	} else {
@@ -74,7 +80,7 @@ export function handleUnsubscribe(
 	manager: ActivityHostManager,
 	_commandDef: RpcCommandDefinition
 ): HandleInboundResult {
-	const eventName = (parsed.args?.evt as string) ?? (parsed.args?.event as string) ?? ''
+	const eventName = parsed.evt ?? (parsed.args?.evt as string) ?? (parsed.args?.event as string) ?? ''
 	const subscribeArgs = { ...(parsed.args ?? {}) }
 	delete subscribeArgs.evt
 	delete subscribeArgs.event

@@ -30,7 +30,7 @@ export function handleUiCommands(
 			if (url) {
 				mockLogger.debug(`Activity SHARE_LINK: ${url}`)
 			}
-			return { outbound: [buildCommandResponse(parsed.cmd, parsed.nonce, {})] }
+			return { outbound: [buildCommandResponse(parsed.cmd, parsed.nonce, { success: true })] }
 		}
 
 		case 'OPEN_INVITE_DIALOG':
