@@ -61,46 +61,60 @@ export async function populatePortal(mode: string, options?: PopulateOptions): P
 
 	logger.debug(`Populating portal from manifest (${eager ? 'eager' : 'lazy'} loading)`)
 
-	// Process each namespace
+	// Phase 1: Register namespaces and collect route work (no I/O needed)
+	const routeWork: Array<{ namespace: string; routeName: string; routeConfig: RouteDefinition }> = []
+
 	for (const [namespace, namespaceConfig] of Object.entries(routeDefs)) {
 		logger.debug(`Processing namespace: ${namespace}`)
 
-		// Register namespace with its route names
 		const routeNames = Object.keys(namespaceConfig.routes)
 		portalInternal.registerNamespace(namespace, routeNames)
 
 		for (const [routeName, routeConfig] of Object.entries(namespaceConfig.routes)) {
-			// Register singular accessor name if specified
 			if (routeConfig.singular) {
 				portalInternal.registerSingularName(namespace, routeName, routeConfig.singular)
 			}
-
-			// Load route manifest entries
-			const entries = await Manifest.load(namespace, routeName)
-			logger.debug(`Loaded ${entries.length} entries for route: ${namespace}.${routeName}`)
-
-			if (entries.length === 0) {
-				logger.debug(`No entries for route: ${namespace}.${routeName}`)
-				continue
-			}
-
-			// Create handler records
-			const handlers = createHandlerRecords(entries, namespace, routeName, routeConfig)
-			logger.debug(`Created ${Object.keys(handlers).length} handler records for ${namespace}.${routeName}`)
-
-			// Register with portal
-			portal.registerRoute(namespace, routeName, handlers)
-
-			// Eager mode: import all handlers immediately
-			if (eager) {
-				await importAllHandlers(namespace, routeName, handlers)
-			}
-
-			// Register controller factory if defined
-			if (routeConfig.controller?.factory) {
-				await registerControllerFactory(namespace, routeName, routeConfig.controller.factory)
-			}
+			routeWork.push({ namespace, routeName, routeConfig })
 		}
+	}
+
+	// Phase 2: Load all manifests in parallel
+	const loadedRoutes = await Promise.all(
+		routeWork.map(async ({ namespace, routeName, routeConfig }) => {
+			const entries = await Manifest.load(namespace, routeName)
+			return { namespace, routeName, routeConfig, entries }
+		})
+	)
+
+	// Phase 3: Process results and register with portal (sync, fast)
+	const eagerImports: Promise<void>[] = []
+	const controllerRegistrations: Promise<void>[] = []
+
+	for (const { namespace, routeName, routeConfig, entries } of loadedRoutes) {
+		logger.debug(`Loaded ${entries.length} entries for route: ${namespace}.${routeName}`)
+
+		if (entries.length === 0) {
+			logger.debug(`No entries for route: ${namespace}.${routeName}`)
+			continue
+		}
+
+		const handlers = createHandlerRecords(entries, namespace, routeName, routeConfig)
+		logger.debug(`Created ${Object.keys(handlers).length} handler records for ${namespace}.${routeName}`)
+
+		portal.registerRoute(namespace, routeName, handlers)
+
+		if (eager) {
+			eagerImports.push(importAllHandlers(namespace, routeName, handlers))
+		}
+
+		if (routeConfig.controller?.factory) {
+			controllerRegistrations.push(registerControllerFactory(namespace, routeName, routeConfig.controller.factory))
+		}
+	}
+
+	// Phase 4: Eager imports and controller registrations in parallel
+	if (eagerImports.length > 0 || controllerRegistrations.length > 0) {
+		await Promise.all([...eagerImports, ...controllerRegistrations])
 	}
 
 	logger.debug('Portal population complete')

@@ -1,7 +1,7 @@
 import { IS_BUN_RUNTIME } from '../cli/utils/runtime-utils.js'
 import { logger } from './logger.js'
 import { existsSync, readFileSync } from 'node:fs'
-import { readFile } from 'node:fs/promises'
+import { readFile, stat as statAsync } from 'node:fs/promises'
 import path from 'node:path'
 
 interface EnvVariable {
@@ -146,7 +146,7 @@ export class Env<T> {
 	 * @returns Record object containing loaded environment variables.
 	 */
 	public static async load(options: LoadOptions = {}) {
-		const filePath = getFilePath(options)
+		const filePath = await getFilePathAsync(options)
 
 		if (filePath) {
 			const envContent = await readFile(filePath, 'utf-8')
@@ -261,6 +261,34 @@ function getFilePath(options: LoadOptions): string | null {
 	}
 
 	return filePath
+}
+
+async function getFilePathAsync(options: LoadOptions): Promise<string | null> {
+	if (IS_BUN_RUNTIME) {
+		return null
+	}
+
+	const { mode } = options
+	let { path: filePath = path.join(process.cwd(), '.env') } = options
+
+	if (mode) {
+		const modePath = filePath + '.' + mode
+		try {
+			await statAsync(modePath)
+			logger.debug('Found .env file for mode:', mode, ':', modePath)
+			filePath = path.join(process.cwd(), '.env' + '.' + mode)
+		} catch {
+			// Mode-specific file doesn't exist, use default
+		}
+	}
+
+	try {
+		await statAsync(filePath)
+		return filePath
+	} catch {
+		logger.debug(`No .env file found at "${filePath}"`)
+		return null
+	}
 }
 
 function parseEnvFile(envFileContent: string): Record<string, string> {

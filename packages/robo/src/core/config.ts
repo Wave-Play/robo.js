@@ -89,39 +89,39 @@ export async function loadConfigPath(file = 'robo'): Promise<string> {
 	const prefixes = ['config', '.config']
 	const mode = Mode.get()
 
-	// Build list of all candidate paths in priority order
-	// Mode-specific files take priority, then by prefix order, then by extension order
-	const candidates: string[] = []
-	for (const prefix of prefixes) {
-		const pathBase = path.join(process.cwd(), prefix)
-		for (const ext of extensions) {
-			// Mode-specific first
-			candidates.push(path.join(pathBase, `${file}.${mode}${ext}`))
-			// Then non-mode
-			candidates.push(path.join(pathBase, `${file}${ext}`))
-		}
-	}
-
-	// Check all paths in parallel
-	const results = await Promise.all(
-		candidates.map(async (fullPath) => {
+	// Read both directories in parallel (2 I/O calls instead of 20 stat calls)
+	const dirContents = await Promise.all(
+		prefixes.map(async (prefix) => {
+			const dirPath = path.join(process.cwd(), prefix)
 			try {
-				await fsPromises.stat(fullPath)
-				return fullPath
+				const files = await fsPromises.readdir(dirPath)
+				return { dirPath, files: new Set(files) }
 			} catch {
-				return null
+				return { dirPath, files: new Set<string>() }
 			}
 		})
 	)
 
-	// Return first existing path (maintains priority order)
-	const foundPath = results.find((p) => p !== null)
-	if (foundPath) {
-		logger.debug(`Found configuration file at`, foundPath)
-		return foundPath
+	// Check candidates in priority order (mode-specific first)
+	for (const { dirPath, files } of dirContents) {
+		for (const ext of extensions) {
+			// Mode-specific first
+			const modeFile = `${file}.${mode}${ext}`
+			if (files.has(modeFile)) {
+				const fullPath = path.join(dirPath, modeFile)
+				logger.debug('Found configuration file at', fullPath)
+				return fullPath
+			}
+			// Then non-mode
+			const baseFile = `${file}${ext}`
+			if (files.has(baseFile)) {
+				const fullPath = path.join(dirPath, baseFile)
+				logger.debug('Found configuration file at', fullPath)
+				return fullPath
+			}
+		}
 	}
 
-	// If no config file was found, return null
 	return null
 }
 
@@ -146,22 +146,16 @@ async function scanPlugins(
 	}
 
 	// For each file in the plugins directory, import it and add it to the config
-	const plugins = await fsPromises.readdir(pluginsPath)
+	// Use withFileTypes to avoid separate stat() calls
+	const plugins = await fsPromises.readdir(pluginsPath, { withFileTypes: true })
 	const pluginData: Array<{ mode: string; name: string; path: string }> = []
 
-	// Gather stats for all plugins in parallel
-	const pluginStats = await Promise.all(
-		plugins.map(async (plugin) => {
-			const pluginPath = path.join(pluginsPath, plugin)
-			const stat = await fsPromises.stat(pluginPath)
-			return { plugin, pluginPath, isDirectory: stat.isDirectory() }
-		})
-	)
+	// Process plugins based on their type (no separate stat() needed)
+	for (const entry of plugins) {
+		const pluginPath = path.join(pluginsPath, entry.name)
 
-	// Process plugins based on their type
-	for (const { pluginPath, isDirectory } of pluginStats) {
 		// Load subdirectories as scoped plugins
-		if (isDirectory) {
+		if (entry.isDirectory()) {
 			const scopedPlugins = await fsPromises.readdir(pluginPath)
 
 			for (const scopedPlugin of scopedPlugins) {

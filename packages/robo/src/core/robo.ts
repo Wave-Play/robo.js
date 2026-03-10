@@ -164,27 +164,24 @@ async function start(options?: StartOptions) {
 		// Init hooks run very early and can modify config/env before manifest processing
 		await executeInitHooks(plugins, mode)
 
-		// 5. Initialize the Manifest API (loads granular manifest files)
-		await Manifest.initialize(mode)
-
-		// 6. Initialize Flashcore and other services
-		await Flashcore.$init({ keyvOptions: config.flashcore?.keyv, namespaceSeparator: config.flashcore?.namespaceSeparator })
-
-		// Wait for states to be loaded
-		if (stateLoad) {
-			// Await external state promise if provided
-			logger.debug('Waiting for state...')
-			await stateLoad
-		} else {
-			// Load state directly otherwise
-			const stateStart = Date.now()
-			const state = await Flashcore.get<Record<string, unknown>>(FLASHCORE_KEYS.state)
-
-			if (state) {
-				loadState(state)
-			}
-			logger.debug(`State loaded in ${Date.now() - stateStart}ms`)
-		}
+		// 5. Initialize Manifest and Flashcore+State in parallel (independent operations)
+		await Promise.all([
+			Manifest.initialize(mode),
+			(async () => {
+				await Flashcore.$init({ keyvOptions: config.flashcore?.keyv, namespaceSeparator: config.flashcore?.namespaceSeparator })
+				if (stateLoad) {
+					logger.debug('Waiting for state...')
+					await stateLoad
+				} else {
+					const stateStart = Date.now()
+					const state = await Flashcore.get<Record<string, unknown>>(FLASHCORE_KEYS.state)
+					if (state) {
+						loadState(state)
+					}
+					logger.debug(`State loaded in ${Date.now() - stateStart}ms`)
+				}
+			})()
+		])
 
 		// Load the portal (commands, context, events)
 		// In production mode, handlers are loaded eagerly for faster runtime access

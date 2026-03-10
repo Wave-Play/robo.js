@@ -178,6 +178,61 @@ export function groupPluginsByPriority(
 }
 
 /**
+ * Result of resolving and grouping plugin hooks by priority.
+ * Includes pre-resolved hook paths (and optionally versions) to avoid redundant I/O.
+ */
+interface ResolvedHookEntry {
+	name: string
+	data: PluginData
+	hookPath: string
+	version?: string
+}
+
+/**
+ * Resolve all plugin hook paths in parallel and group by priority.
+ * This eliminates sequential path resolution and avoids redundant re-resolution
+ * in the individual executePlugin*Hook functions.
+ *
+ * @param plugins - Plugin data map
+ * @param hookType - The lifecycle hook type to resolve
+ * @param options - Additional options
+ * @returns Grouped entries and sorted priority order
+ */
+async function resolveAndGroupHooks(
+	plugins: Map<string, PluginData>,
+	hookType: LifecycleHookType,
+	options?: { reverse?: boolean; fetchVersions?: boolean }
+): Promise<{
+	groups: Map<number, ResolvedHookEntry[]>
+	sortedPriorities: number[]
+}> {
+	const { reverse = false, fetchVersions = false } = options ?? {}
+
+	// Resolve all hook paths (and optionally versions) in parallel
+	const resolved = await Promise.all(
+		Array.from(plugins).map(async ([name, data]) => {
+			const hookPath = await resolvePluginHookPath(name, hookType as Parameters<typeof resolvePluginHookPath>[1])
+			const version = fetchVersions && hookPath ? await getPluginVersion(name) : undefined
+			return { name, data, hookPath, version }
+		})
+	)
+
+	// Group by priority (only plugins with hooks)
+	const groups = new Map<number, ResolvedHookEntry[]>()
+	for (const { name, data, hookPath, version } of resolved) {
+		if (!hookPath) continue
+		const priority = getHookPriority(hookType, name, data)
+		if (!groups.has(priority)) groups.set(priority, [])
+		groups.get(priority)!.push({ name, data, hookPath, version })
+	}
+
+	// Sort priorities: lower first normally, higher first for reverse (stop hooks)
+	const sortedPriorities = [...groups.keys()].sort((a, b) => (reverse ? b - a : a - b))
+
+	return { groups, sortedPriorities }
+}
+
+/**
  * Check if a file exists.
  */
 async function fileExists(filePath: string): Promise<boolean> {
@@ -323,22 +378,8 @@ export async function executeInitHooks(
 	const config = getConfig()
 	const loggerInstance = logger()
 
-	// Group plugins by priority
-	const priorityGroups = new Map<number, Array<[string, PluginData]>>()
-
-	for (const [pluginName, pluginData] of plugins) {
-		const hookPath = await resolvePluginHookPath(pluginName, 'init')
-		if (!hookPath) continue // Plugin doesn't have an init hook
-
-		const priority = getHookPriority('init', pluginName, pluginData)
-		if (!priorityGroups.has(priority)) {
-			priorityGroups.set(priority, [])
-		}
-		priorityGroups.get(priority)!.push([pluginName, pluginData])
-	}
-
-	// Sort priority groups (lower numbers first)
-	const sortedPriorities = [...priorityGroups.keys()].sort((a, b) => a - b)
+	// Resolve all plugin hook paths in parallel and group by priority
+	const { groups: priorityGroups, sortedPriorities } = await resolveAndGroupHooks(plugins, 'init')
 
 	// Execute each priority group sequentially, but hooks within a group run in parallel
 	for (const priority of sortedPriorities) {
@@ -347,14 +388,14 @@ export async function executeInitHooks(
 
 		if (hookCount === 1) {
 			// Single hook - run directly
-			const [pluginName, pluginData] = group[0]
-			await executePluginInitHook(pluginName, pluginData, mode, config, loggerInstance)
+			const { name, data, hookPath } = group[0]
+			await executePluginInitHook(name, data, hookPath, mode, config, loggerInstance)
 		} else {
 			// Multiple hooks at same priority - run in parallel
-			loggerInstance.debug(`Executing ${hookCount} init hooks in parallel (priority ${priority}): ${group.map(([n]) => n).join(', ')}`)
+			loggerInstance.debug(`Executing ${hookCount} init hooks in parallel (priority ${priority}): ${group.map((e) => e.name).join(', ')}`)
 			await Promise.all(
-				group.map(([pluginName, pluginData]) =>
-					executePluginInitHook(pluginName, pluginData, mode, config, loggerInstance)
+				group.map(({ name, data, hookPath }) =>
+					executePluginInitHook(name, data, hookPath, mode, config, loggerInstance)
 				)
 			)
 		}
@@ -390,13 +431,11 @@ export async function executeInitHooks(
 async function executePluginInitHook(
 	pluginName: string,
 	pluginData: PluginData,
+	hookPath: string,
 	mode: string,
 	config: ReturnType<typeof getConfig>,
 	loggerInstance: ReturnType<typeof logger>
 ): Promise<void> {
-	const hookPath = await resolvePluginHookPath(pluginName, 'init')
-	if (!hookPath) return
-
 	const context: InitContext = {
 		mode,
 		projectConfig: config,
@@ -502,22 +541,8 @@ export async function executeStartHooks(
 	const loggerInstance = logger()
 	const timeoutDuration = config?.timeouts?.lifecycle ?? DEFAULT_CONFIG.timeouts.lifecycle
 
-	// Group plugins by priority
-	const priorityGroups = new Map<number, Array<[string, PluginData]>>()
-
-	for (const [pluginName, pluginData] of plugins) {
-		const hookPath = await resolvePluginHookPath(pluginName, 'start')
-		if (!hookPath) continue // Plugin doesn't have a start hook
-
-		const priority = getHookPriority('start', pluginName, pluginData)
-		if (!priorityGroups.has(priority)) {
-			priorityGroups.set(priority, [])
-		}
-		priorityGroups.get(priority)!.push([pluginName, pluginData])
-	}
-
-	// Sort priority groups (lower numbers first)
-	const sortedPriorities = [...priorityGroups.keys()].sort((a, b) => a - b)
+	// Resolve all plugin hook paths and versions in parallel, then group by priority
+	const { groups: priorityGroups, sortedPriorities } = await resolveAndGroupHooks(plugins, 'start', { fetchVersions: true })
 
 	// Execute each priority group sequentially, but hooks within a group run in parallel
 	for (const priority of sortedPriorities) {
@@ -526,15 +551,15 @@ export async function executeStartHooks(
 
 		if (hookCount === 1) {
 			// Single hook - run directly
-			const [pluginName, pluginData] = group[0]
-			loggerInstance.debug(`Executing start hook for ${pluginName} (priority ${priority})...`)
-			await executePluginStartHook(pluginName, pluginData, mode, timeoutDuration, config, loggerInstance)
+			const { name, data, hookPath, version } = group[0]
+			loggerInstance.debug(`Executing start hook for ${name} (priority ${priority})...`)
+			await executePluginStartHook(name, data, hookPath, version ?? '0.0.0', mode, timeoutDuration, config, loggerInstance)
 		} else {
 			// Multiple hooks at same priority - run in parallel
-			loggerInstance.debug(`Executing ${hookCount} start hooks in parallel (priority ${priority}): ${group.map(([n]) => n).join(', ')}`)
+			loggerInstance.debug(`Executing ${hookCount} start hooks in parallel (priority ${priority}): ${group.map((e) => e.name).join(', ')}`)
 			await Promise.all(
-				group.map(([pluginName, pluginData]) =>
-					executePluginStartHook(pluginName, pluginData, mode, timeoutDuration, config, loggerInstance)
+				group.map(({ name, data, hookPath, version }) =>
+					executePluginStartHook(name, data, hookPath, version ?? '0.0.0', mode, timeoutDuration, config, loggerInstance)
 				)
 			)
 		}
@@ -585,17 +610,13 @@ export async function executeStartHooks(
 async function executePluginStartHook(
 	pluginName: string,
 	pluginData: PluginData,
+	hookPath: string,
+	pluginVersion: string,
 	mode: string,
 	timeoutDuration: number,
 	config: ReturnType<typeof getConfig>,
 	loggerInstance: ReturnType<typeof logger>
 ): Promise<void> {
-	const hookPath = await resolvePluginHookPath(pluginName, 'start')
-	if (!hookPath) return
-
-	// Get plugin version from package.json (cached)
-	const pluginVersion = await getPluginVersion(pluginName)
-
 	// Create plugin-scoped context
 	const context: StartContext = {
 		mode,
@@ -658,22 +679,8 @@ export async function executePrepareHooks(
 	const loggerInstance = logger()
 	const timeoutDuration = config?.timeouts?.lifecycle ?? DEFAULT_CONFIG.timeouts.lifecycle
 
-	// Group plugins by priority
-	const priorityGroups = new Map<number, Array<[string, PluginData]>>()
-
-	for (const [pluginName, pluginData] of plugins) {
-		const hookPath = await resolvePluginHookPath(pluginName, 'prepare')
-		if (!hookPath) continue // Plugin doesn't have a prepare hook
-
-		const priority = getHookPriority('prepare', pluginName, pluginData)
-		if (!priorityGroups.has(priority)) {
-			priorityGroups.set(priority, [])
-		}
-		priorityGroups.get(priority)!.push([pluginName, pluginData])
-	}
-
-	// Sort priority groups (lower numbers first)
-	const sortedPriorities = [...priorityGroups.keys()].sort((a, b) => a - b)
+	// Resolve all plugin hook paths and versions in parallel, then group by priority
+	const { groups: priorityGroups, sortedPriorities } = await resolveAndGroupHooks(plugins, 'prepare', { fetchVersions: true })
 
 	// Execute each priority group sequentially, but hooks within a group run in parallel
 	for (const priority of sortedPriorities) {
@@ -682,15 +689,15 @@ export async function executePrepareHooks(
 
 		if (hookCount === 1) {
 			// Single hook - run directly
-			const [pluginName, pluginData] = group[0]
-			loggerInstance.debug(`Executing prepare hook for ${pluginName} (priority ${priority})...`)
-			await executePluginPrepareHook(pluginName, pluginData, mode, timeoutDuration, config, loggerInstance)
+			const { name, data, hookPath, version } = group[0]
+			loggerInstance.debug(`Executing prepare hook for ${name} (priority ${priority})...`)
+			await executePluginPrepareHook(name, data, hookPath, version ?? '0.0.0', mode, timeoutDuration, config, loggerInstance)
 		} else {
 			// Multiple hooks at same priority - run in parallel
-			loggerInstance.debug(`Executing ${hookCount} prepare hooks in parallel (priority ${priority}): ${group.map(([n]) => n).join(', ')}`)
+			loggerInstance.debug(`Executing ${hookCount} prepare hooks in parallel (priority ${priority}): ${group.map((e) => e.name).join(', ')}`)
 			await Promise.all(
-				group.map(([pluginName, pluginData]) =>
-					executePluginPrepareHook(pluginName, pluginData, mode, timeoutDuration, config, loggerInstance)
+				group.map(({ name, data, hookPath, version }) =>
+					executePluginPrepareHook(name, data, hookPath, version ?? '0.0.0', mode, timeoutDuration, config, loggerInstance)
 				)
 			)
 		}
@@ -741,17 +748,13 @@ export async function executePrepareHooks(
 async function executePluginPrepareHook(
 	pluginName: string,
 	pluginData: PluginData,
+	hookPath: string,
+	pluginVersion: string,
 	mode: string,
 	timeoutDuration: number,
 	config: ReturnType<typeof getConfig>,
 	loggerInstance: ReturnType<typeof logger>
 ): Promise<void> {
-	const hookPath = await resolvePluginHookPath(pluginName, 'prepare')
-	if (!hookPath) return
-
-	// Get plugin version from package.json (cached)
-	const pluginVersion = await getPluginVersion(pluginName)
-
 	// Create plugin-scoped context
 	const context: PrepareContext = {
 		mode,
@@ -853,22 +856,8 @@ export async function executeStopHooks(
 		}
 	}
 
-	// Group plugins by priority
-	const priorityGroups = new Map<number, Array<[string, PluginData]>>()
-
-	for (const [pluginName, pluginData] of plugins) {
-		const hookPath = await resolvePluginHookPath(pluginName, 'stop')
-		if (!hookPath) continue // Plugin doesn't have a stop hook
-
-		const priority = getHookPriority('stop', pluginName, pluginData)
-		if (!priorityGroups.has(priority)) {
-			priorityGroups.set(priority, [])
-		}
-		priorityGroups.get(priority)!.push([pluginName, pluginData])
-	}
-
-	// Sort priority groups in REVERSE order (higher numbers first for cleanup)
-	const sortedPriorities = [...priorityGroups.keys()].sort((a, b) => b - a)
+	// Resolve all plugin hook paths and versions in parallel, group by priority (reverse order for cleanup)
+	const { groups: priorityGroups, sortedPriorities } = await resolveAndGroupHooks(plugins, 'stop', { reverse: true, fetchVersions: true })
 
 	// Execute each priority group sequentially, but hooks within a group run in parallel
 	for (const priority of sortedPriorities) {
@@ -877,15 +866,15 @@ export async function executeStopHooks(
 
 		if (hookCount === 1) {
 			// Single hook - run directly
-			const [pluginName, pluginData] = group[0]
-			loggerInstance.debug(`Executing stop hook for ${pluginName} (priority ${priority})...`)
-			await executePluginStopHook(pluginName, pluginData, mode, reason, timeoutDuration, config, loggerInstance)
+			const { name, data, hookPath, version } = group[0]
+			loggerInstance.debug(`Executing stop hook for ${name} (priority ${priority})...`)
+			await executePluginStopHook(name, data, hookPath, version ?? '0.0.0', mode, reason, timeoutDuration, config, loggerInstance)
 		} else {
 			// Multiple hooks at same priority - run in parallel
-			loggerInstance.debug(`Executing ${hookCount} stop hooks in parallel (priority ${priority}): ${group.map(([n]) => n).join(', ')}`)
+			loggerInstance.debug(`Executing ${hookCount} stop hooks in parallel (priority ${priority}): ${group.map((e) => e.name).join(', ')}`)
 			await Promise.all(
-				group.map(([pluginName, pluginData]) =>
-					executePluginStopHook(pluginName, pluginData, mode, reason, timeoutDuration, config, loggerInstance)
+				group.map(({ name, data, hookPath, version }) =>
+					executePluginStopHook(name, data, hookPath, version ?? '0.0.0', mode, reason, timeoutDuration, config, loggerInstance)
 				)
 			)
 		}
@@ -899,18 +888,14 @@ export async function executeStopHooks(
 async function executePluginStopHook(
 	pluginName: string,
 	pluginData: PluginData,
+	hookPath: string,
+	pluginVersion: string,
 	mode: string,
 	reason: 'signal' | 'error' | 'restart',
 	timeoutDuration: number,
 	config: ReturnType<typeof getConfig>,
 	loggerInstance: ReturnType<typeof logger>
 ): Promise<void> {
-	const hookPath = await resolvePluginHookPath(pluginName, 'stop')
-	if (!hookPath) return
-
-	// Get plugin version from cache
-	const pluginVersion = await getPluginVersion(pluginName)
-
 	// Create plugin-scoped context with StopContext
 	const context: StopContext = {
 		mode,
@@ -986,15 +971,22 @@ export async function executeErrorHooks(
 		env: Env
 	}
 
+	// Resolve all plugin error hook paths in parallel
+	const [resolvedPluginHooks, projectHookPath] = await Promise.all([
+		Promise.all(
+			Array.from(plugins).map(async ([pluginName]) => {
+				const hookPath = await resolvePluginHookPath(pluginName, 'error')
+				return { pluginName, hookPath }
+			})
+		),
+		resolveProjectHookPath('error', mode)
+	])
+
 	const hookPromises: Promise<void>[] = []
 
 	// Execute plugin error hooks in parallel
-	for (const [pluginName] of plugins) {
-		const hookPath = await resolvePluginHookPath(pluginName, 'error')
-
-		if (!hookPath) {
-			continue // Plugin doesn't have an error hook
-		}
+	for (const { pluginName, hookPath } of resolvedPluginHooks) {
+		if (!hookPath) continue
 
 		hookPromises.push(
 			(async () => {
@@ -1016,7 +1008,6 @@ export async function executeErrorHooks(
 	}
 
 	// Execute project error hook
-	const projectHookPath = await resolveProjectHookPath('error', mode)
 	if (projectHookPath) {
 		hookPromises.push(
 			(async () => {
@@ -1141,15 +1132,22 @@ export async function executeHmrHooks(
 		loggerInstance.warn('[HMR] Error dispatching to subscribers:', e)
 	}
 
+	// Resolve all plugin HMR hook paths in parallel
+	const [resolvedPluginHooks, projectHookPath] = await Promise.all([
+		Promise.all(
+			Array.from(plugins).map(async ([pluginName]) => {
+				const hookPath = await resolvePluginHookPath(pluginName, 'hmr')
+				return { pluginName, hookPath }
+			})
+		),
+		resolveProjectHookPath('hmr', mode)
+	])
+
 	const hookPromises: Promise<void>[] = []
 
 	// Execute plugin HMR hooks in parallel
-	for (const [pluginName] of plugins) {
-		const hookPath = await resolvePluginHookPath(pluginName, 'hmr')
-
-		if (!hookPath) {
-			continue // Plugin doesn't have an HMR hook
-		}
+	for (const { pluginName, hookPath } of resolvedPluginHooks) {
+		if (!hookPath) continue
 
 		hookPromises.push(
 			(async () => {
@@ -1185,7 +1183,6 @@ export async function executeHmrHooks(
 	}
 
 	// Execute project HMR hook
-	const projectHookPath = await resolveProjectHookPath('hmr', mode)
 	if (projectHookPath) {
 		hookPromises.push(
 			(async () => {
