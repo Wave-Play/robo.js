@@ -1,0 +1,30 @@
+---
+title: "ControllerFactory()<T>"
+---
+
+# Type Alias: ControllerFactory()\<T\>
+
+```ts
+type ControllerFactory<T> = (key, record, pluginState) => T;
+```
+
+Controller factory function type.
+Plugins export these from route files to provide namespace-specific controller methods.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | `unknown` |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `string` |
+| `record` | [`HandlerRecord`](../interfaces/handler-record) |
+| `pluginState` | `unknown` |
+
+## Returns
+
+`T`

@@ -1,0 +1,20 @@
+---
+title: "StagedOperation"
+---
+
+# Type Alias: StagedOperation
+
+```ts
+type StagedOperation = 
+  | {
+  key: string;
+  type: "set";
+  value: unknown;
+ }
+  | {
+  key: string;
+  type: "delete";
+};
+```
+
+Staged operation type for transaction context.

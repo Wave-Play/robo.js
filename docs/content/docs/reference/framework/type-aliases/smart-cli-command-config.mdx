@@ -1,0 +1,18 @@
+---
+title: "SmartCliCommandConfig<C>"
+---
+
+# Type Alias: SmartCliCommandConfig\<C\>
+
+```ts
+type SmartCliCommandConfig<C> = ExactCliConfig<C> & EnforceCliConfig<C>;
+```
+
+Smart CLI command config for use with createCliCommandConfig().
+Combines exact matching and enforcement to enable proper type inference.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `C` *extends* [`CliCommandConfig`](../interfaces/cli-command-config) |

@@ -1,0 +1,46 @@
+---
+title: "OperationResult<Op>"
+---
+
+# Type Alias: OperationResult\<Op\>
+
+```ts
+type OperationResult<Op> = Op extends "create" ? {
+  id: string;
+ } : Op extends "update" ? 
+  | {
+  id: string;
+ }
+  | null : Op extends "delete" ? 
+  | {
+  id: string;
+ }
+  | null : Op extends "findUnique" ? 
+  | {
+  id: string;
+ }
+  | null : Op extends "findMany" ? {
+  id: string;
+ }[] : Op extends "findFirst" ? 
+  | {
+  id: string;
+ }
+  | null : Op extends "count" ? number : Op extends "createMany" ? {
+  count: number;
+  records: {
+     id: ...;
+    }[];
+ } : Op extends "updateMany" ? {
+  count: number;
+ } : Op extends "deleteMany" ? {
+  count: ...;
+ } : ... extends ... ? ... : ...;
+```
+
+Operation result by type.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `Op` *extends* [`OperationType`](operation-type) |

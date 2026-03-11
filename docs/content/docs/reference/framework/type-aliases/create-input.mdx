@@ -1,0 +1,25 @@
+---
+title: "CreateInput<T>"
+---
+
+# Type Alias: CreateInput\<T\>
+
+```ts
+type CreateInput<T> = Omit<T, "id"> & {
+  id: string;
+};
+```
+
+Create input type - omit id (auto-generated), required without defaults are required.
+
+## Type declaration
+
+| Name | Type |
+| ------ | ------ |
+| `id`? | `string` |
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |

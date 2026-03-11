@@ -1,0 +1,26 @@
+---
+title: "WithPluginExtensions<TModel, TPlugins>"
+---
+
+# Type Alias: WithPluginExtensions\<TModel, TPlugins\>
+
+```ts
+type WithPluginExtensions<TModel, TPlugins> = TModel & TPlugins["modelExtensions"];
+```
+
+Plugin extension type helper.
+
+Use this to type model instances that have plugin extensions.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `TModel` |
+| `TPlugins` *extends* [`FlashcorePluginDefinition`](../interfaces/flashcore-plugin-definition)\<`unknown`, `unknown`, `unknown`\> |
+
+## Example
+
+```typescript
+type UserWithPlugins = WithPluginExtensions<User, typeof softDelete & typeof realtime>
+```

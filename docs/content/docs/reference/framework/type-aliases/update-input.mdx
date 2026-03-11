@@ -1,0 +1,17 @@
+---
+title: "UpdateInput<T>"
+---
+
+# Type Alias: UpdateInput\<T\>
+
+```ts
+type UpdateInput<T> = Partial<Omit<T, "id">>;
+```
+
+Update input type - all fields optional except id which is not allowed.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |

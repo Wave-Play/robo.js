@@ -1,0 +1,16 @@
+---
+title: "WalDerivedDelta"
+---
+
+# Type Alias: WalDerivedDelta
+
+```ts
+type WalDerivedDelta = 
+  | FilterAddDelta
+  | FilterRemoveDelta
+  | IndexUpsertDelta
+  | IndexRemoveDelta;
+```
+
+Union of all derived delta types.
+These are optimizations that can be rebuilt from chunks.

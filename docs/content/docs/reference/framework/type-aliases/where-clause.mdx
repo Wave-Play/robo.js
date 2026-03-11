@@ -1,0 +1,29 @@
+---
+title: "WhereClause<T>"
+---
+
+# Type Alias: WhereClause\<T\>
+
+```ts
+type WhereClause<T> = { [K in keyof T]?: T[K] | WhereOperators<T[K]> } & {
+  AND: WhereClause<T>[];
+  NOT: WhereClause<T>;
+  OR: WhereClause<T>[];
+};
+```
+
+Where clause for filtering records.
+
+## Type declaration
+
+| Name | Type |
+| ------ | ------ |
+| `AND`? | [`WhereClause`](where-clause)\<`T`\>[] |
+| `NOT`? | [`WhereClause`](where-clause)\<`T`\> |
+| `OR`? | [`WhereClause`](where-clause)\<`T`\>[] |
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |

@@ -1,0 +1,24 @@
+---
+title: "CreateScopedPortal()"
+---
+
+# Type Alias: CreateScopedPortal()
+
+```ts
+type CreateScopedPortal = (pluginName, routes, namespace) => ScopedPortal;
+```
+
+Create a scoped portal for a plugin.
+Only includes routes defined by that plugin.
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `pluginName` | `string` |
+| `routes` | \{ `name`: `string`; `singular`: `string`; \}[] |
+| `namespace` | `string` |
+
+## Returns
+
+[`ScopedPortal`](../interfaces/scoped-portal)

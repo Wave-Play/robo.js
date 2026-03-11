@@ -1,0 +1,29 @@
+---
+title: "WatcherCallback()<V>"
+---
+
+# Type Alias: WatcherCallback()\<V\>
+
+```ts
+type WatcherCallback<V> = (oldValue, newValue) => void | Promise<void>;
+```
+
+Watcher callback signature.
+Receives (oldValue, newValue) for compatibility with existing code.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `V` | `unknown` |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `oldValue` | `V` \| `undefined` |
+| `newValue` | `V` \| `undefined` |
+
+## Returns
+
+`void` \| `Promise`\<`void`\>

@@ -1,0 +1,18 @@
+---
+title: "InferFieldType<T, Custom>"
+---
+
+# Type Alias: InferFieldType\<T, Custom\>
+
+```ts
+type InferFieldType<T, Custom> = T extends "string" ? string : T extends "number" ? number : T extends "boolean" ? boolean : T extends "date" ? Date : T extends "json" ? Custom : T extends "enum" ? string : never;
+```
+
+Infer the TypeScript type for a field type.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` *extends* [`FieldType`](field-type) | - |
+| `Custom` | `unknown` |

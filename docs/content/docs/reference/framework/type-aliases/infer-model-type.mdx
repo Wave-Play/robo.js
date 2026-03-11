@@ -1,0 +1,17 @@
+---
+title: "InferModelType<S>"
+---
+
+# Type Alias: InferModelType\<S\>
+
+```ts
+type InferModelType<S> = { [K in keyof S as S[K] extends { _def: FieldDef; _isRelation?: false } ? S[K]["_def"] extends { optional: false } ? K : never : never]: S[K] extends { _def: FieldDef } ? InferFieldType<S[K]["_def"]["type"]> : never } & { [K in keyof S as S[K] extends { _def: FieldDef; _isRelation?: false } ? S[K]["_def"] extends { optional: true } ? K : never : never]?: S[K] extends { _def: FieldDef } ? InferFieldType<S[K]["_def"]["type"]> : never };
+```
+
+Infer the TypeScript type for a complete model schema.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `S` *extends* [`SchemaFields`](schema-fields) |

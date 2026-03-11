@@ -1,0 +1,40 @@
+---
+title: "CliOptionsFromConfig<C>"
+---
+
+# Type Alias: CliOptionsFromConfig\<C\>
+
+```ts
+type CliOptionsFromConfig<C> = C extends {
+  options: readonly infer O[];
+} ? { [K in O as ExtractOptionName<K extends { name: infer N } ? N extends string ? N : never : never>]: ValueOfCliOption<K> } : Record<string, never>;
+```
+
+Infers the complete typed options object from a CLI command config.
+Maps each option's 'name' literal to its resolved TypeScript type.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `C` *extends* [`CliCommandConfig`](../interfaces/cli-command-config) |
+
+## Example
+
+```ts
+const config = {
+  options: [
+    { name: '--port', type: 'number', required: true },
+    { name: '--verbose', type: 'boolean', default: false },
+    { name: '--host', type: 'string' }
+  ]
+} as const
+
+type Options = CliOptionsFromConfig<typeof config>
+// Results in:
+// {
+//   port: number        // required
+//   verbose: boolean    // has default
+//   host: string | undefined  // optional
+// }
+```

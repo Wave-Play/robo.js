@@ -1,0 +1,22 @@
+---
+title: "WalAuthoritativeDelta"
+---
+
+# Type Alias: WalAuthoritativeDelta
+
+```ts
+type WalAuthoritativeDelta = 
+  | ChunkPutDelta
+  | ChunkPatchDelta
+  | ChunkDeleteDelta
+  | CatalogSetDelta
+  | CatalogDeleteDelta
+  | CatalogSetSegmentsDelta
+  | UniqueAcquireDelta
+  | UniqueReleaseDelta
+  | SegmentPutDelta
+  | SegmentDeleteDelta;
+```
+
+Union of all authoritative delta types.
+These are the "source of truth" operations.

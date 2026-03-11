@@ -1,0 +1,22 @@
+---
+title: "CliHandler()"
+---
+
+# Type Alias: CliHandler()
+
+```ts
+type CliHandler = (context) => unknown | Promise<unknown>;
+```
+
+CLI command handler function signature.
+Handlers can optionally return a value that will be available in after hooks via context.result.
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `context` | [`CliContext`](../interfaces/cli-context) |
+
+## Returns
+
+`unknown` \| `Promise`\<`unknown`\>

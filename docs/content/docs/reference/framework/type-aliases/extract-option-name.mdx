@@ -1,0 +1,18 @@
+---
+title: "ExtractOptionName<N>"
+---
+
+# Type Alias: ExtractOptionName\<N\>
+
+```ts
+type ExtractOptionName<N> = N extends `--${infer Name}` ? Name : N;
+```
+
+Extracts the option name from the --name format.
+Example: '--verbose' -\> 'verbose', '--dry-run' -\> 'dry-run'
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `N` *extends* `string` |

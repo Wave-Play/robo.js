@@ -1,0 +1,27 @@
+---
+title: "WithClientExtensions<TClient, TPlugins>"
+---
+
+# Type Alias: WithClientExtensions\<TClient, TPlugins\>
+
+```ts
+type WithClientExtensions<TClient, TPlugins> = TClient & { [K in TPlugins["name"]]: TPlugins["clientExtensions"] };
+```
+
+Client extension type helper.
+
+Use this to type Flashcore.$ with plugin client extensions.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `TClient` |
+| `TPlugins` *extends* [`FlashcorePluginDefinition`](../interfaces/flashcore-plugin-definition)\<`unknown`, `unknown`, `unknown`\> |
+
+## Example
+
+```typescript
+type FlashcoreWithAudit = WithClientExtensions<typeof Flashcore.$, typeof auditPlugin>
+// Flashcore.$.audit.history() is now typed
+```

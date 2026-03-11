@@ -1,0 +1,21 @@
+---
+title: "OperationArgs<Op>"
+---
+
+# Type Alias: OperationArgs\<Op\>
+
+```ts
+type OperationArgs<Op> = Op extends "create" ? CreateArgs : Op extends "update" ? PluginUpdateArgs : Op extends "delete" ? PluginDeleteArgs : Op extends "findUnique" ? PluginFindUniqueArgs : Op extends "findMany" ? FindManyArgs<{
+  id: string;
+ }> : Op extends "findFirst" ? FindManyArgs<{
+  id: string;
+ }> : Op extends "count" ? PluginCountArgs : Op extends "createMany" ? PluginCreateManyArgs : Op extends "updateMany" ? PluginUpdateManyArgs : Op extends "deleteMany" ? PluginDeleteManyArgs : ... extends ... ? ... : ...;
+```
+
+Operation arguments by type.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `Op` *extends* [`OperationType`](operation-type) |

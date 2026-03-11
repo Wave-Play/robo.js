@@ -1,0 +1,18 @@
+---
+title: "TransactionMode"
+---
+
+# Type Alias: TransactionMode
+
+```ts
+type TransactionMode = "auto" | "native" | "batch" | "optimistic" | "serial" | "single";
+```
+
+Transaction modes supported by Flashcore.
+
+- `auto`: Default. Picks the strongest supported mode for the adapter.
+- `native`: Use adapter.transaction() for full ACID guarantees.
+- `batch`: Use adapter.atomicBatch() for atomic commit of staged writes.
+- `optimistic`: Optimistic concurrency control with version checking and retries.
+- `serial`: Serialize transactions within the process using a queue.
+- `single`: For minimal adapters. At most one mutation allowed per transaction.

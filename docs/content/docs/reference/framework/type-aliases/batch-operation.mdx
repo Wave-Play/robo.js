@@ -1,0 +1,32 @@
+---
+title: "BatchOperation<K, V>"
+---
+
+# Type Alias: BatchOperation\<K, V\>
+
+```ts
+type BatchOperation<K, V> = 
+  | {
+  key: K;
+  type: "set";
+  value: V;
+ }
+  | {
+  key: K;
+  type: "delete";
+ }
+  | {
+  expectedVersion: number;
+  key: K;
+  type: "check";
+};
+```
+
+Operation types for atomic batch operations.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `K` | `string` |
+| `V` | `unknown` |

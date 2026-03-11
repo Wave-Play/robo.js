@@ -1,0 +1,28 @@
+---
+title: "MetadataAggregator()<T>"
+---
+
+# Type Alias: MetadataAggregator()\<T\>
+
+```ts
+type MetadataAggregator<T> = (entries, pluginDefaults) => T;
+```
+
+Function that aggregates metadata from handler entries.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` *extends* [`AggregatedMetadata`](../interfaces/aggregated-metadata) | [`AggregatedMetadata`](../interfaces/aggregated-metadata) |
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `entries` | [`HandlerEntry`](../interfaces/handler-entry)[] |
+| `pluginDefaults` | `Record`\<`string`, `unknown`\> |
+
+## Returns
+
+`T`

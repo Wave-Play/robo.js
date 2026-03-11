@@ -1,0 +1,22 @@
+---
+title: "CliBeforeHook()"
+---
+
+# Type Alias: CliBeforeHook()
+
+```ts
+type CliBeforeHook = (context) => boolean | void | Promise<boolean | void>;
+```
+
+Hook that runs before the original command handler.
+Return false to abort the command execution.
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `context` | [`CliContext`](../interfaces/cli-context) |
+
+## Returns
+
+`boolean` \| `void` \| `Promise`\<`boolean` \| `void`\>

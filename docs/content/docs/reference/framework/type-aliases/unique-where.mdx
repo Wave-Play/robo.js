@@ -1,0 +1,21 @@
+---
+title: "UniqueWhere<T>"
+---
+
+# Type Alias: UniqueWhere\<T\>
+
+```ts
+type UniqueWhere<T> = 
+  | {
+  id: string;
+ }
+| Partial<Pick<T, keyof T & string>>;
+```
+
+Unique where clause - by id or unique fields.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |

@@ -1,0 +1,21 @@
+---
+title: "CliAfterHook()"
+---
+
+# Type Alias: CliAfterHook()
+
+```ts
+type CliAfterHook = (context) => void | Promise<void>;
+```
+
+Hook that runs after the original command handler completes.
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `context` | [`CliContext`](../interfaces/cli-context) |
+
+## Returns
+
+`void` \| `Promise`\<`void`\>

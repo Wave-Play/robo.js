@@ -1,0 +1,20 @@
+---
+title: "ValueOfCliOption<O>"
+---
+
+# Type Alias: ValueOfCliOption\<O\>
+
+```ts
+type ValueOfCliOption<O> = IsDefinedOption<O> extends true ? BaseValueOfCliOption<O> : BaseValueOfCliOption<O> | undefined;
+```
+
+Computes the final value type for a CLI option:
+- required: true     -\> T (never undefined)
+- has default value  -\> T (never undefined)
+- otherwise          -\> T | undefined
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `O` |

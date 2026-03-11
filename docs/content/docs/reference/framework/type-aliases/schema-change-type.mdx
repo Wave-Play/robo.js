@@ -1,0 +1,25 @@
+---
+title: "SchemaChangeType"
+---
+
+# Type Alias: SchemaChangeType
+
+```ts
+type SchemaChangeType = 
+  | "add_model"
+  | "remove_model"
+  | "add_field"
+  | "remove_field"
+  | "add_required_field"
+  | "change_type"
+  | "add_index"
+  | "remove_index"
+  | "add_unique"
+  | "remove_unique"
+  | "add_relation"
+  | "remove_relation"
+  | "change_optional"
+  | "change_default";
+```
+
+Types of schema changes that can be detected.

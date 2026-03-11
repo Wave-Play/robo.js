@@ -1,0 +1,23 @@
+---
+title: "QueryOperatorFn()"
+---
+
+# Type Alias: QueryOperatorFn()
+
+```ts
+type QueryOperatorFn = (index, operand, context) => string[] | Promise<string[]>;
+```
+
+Custom query operator function.
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `index` | [`Index`](../interfaces/index)\<`unknown`\> \| `undefined` |
+| `operand` | `unknown` |
+| `context` | [`QueryContext`](../interfaces/query-context) |
+
+## Returns
+
+`string`[] \| `Promise`\<`string`[]\>

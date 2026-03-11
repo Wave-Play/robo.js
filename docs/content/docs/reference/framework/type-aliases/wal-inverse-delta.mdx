@@ -1,0 +1,14 @@
+---
+title: "WalInverseDelta"
+---
+
+# Type Alias: WalInverseDelta
+
+```ts
+type WalInverseDelta = WalAuthoritativeDelta;
+```
+
+Inverse deltas use the same types (for rollback).
+The semantic meaning differs:
+- chunk_put in undo means "restore this record"
+- chunk_delete in undo means "remove this record"

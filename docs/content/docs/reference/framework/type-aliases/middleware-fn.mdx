@@ -1,0 +1,28 @@
+---
+title: "MiddlewareFn()<Op>"
+---
+
+# Type Alias: MiddlewareFn()\<Op\>
+
+```ts
+type MiddlewareFn<Op> = (params, next) => Promise<OperationResult<Op>>;
+```
+
+Middleware function signature - Express/Koa style.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `Op` *extends* [`OperationType`](operation-type) |
+
+## Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `params` | [`OperationParams`](../interfaces/operation-params)\<`Op`\> | Operation parameters including model and args |
+| `next` | () =\> `Promise`\<[`OperationResult`](operation-result)\<`Op`\>\> | Call to invoke next middleware or actual operation |
+
+## Returns
+
+`Promise`\<[`OperationResult`](operation-result)\<`Op`\>\>

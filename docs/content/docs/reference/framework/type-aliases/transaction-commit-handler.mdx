@@ -1,0 +1,25 @@
+---
+title: "TransactionCommitHandler()"
+---
+
+# Type Alias: TransactionCommitHandler()
+
+```ts
+type TransactionCommitHandler = (adapter, staged, deletes, readVersions) => Promise<void>;
+```
+
+Transaction commit handler type.
+Used internally to execute the commit logic.
+
+## Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `adapter` | [`FlashcoreAdapter`](../interfaces/flashcore-adapter) |
+| `staged` | `Map`\<`string`, `unknown`\> |
+| `deletes` | `Set`\<`string`\> |
+| `readVersions` | `Map`\<`string`, `number`\> |
+
+## Returns
+
+`Promise`\<`void`\>

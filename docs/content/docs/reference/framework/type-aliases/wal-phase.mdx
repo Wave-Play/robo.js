@@ -1,0 +1,16 @@
+---
+title: "WalPhase"
+---
+
+# Type Alias: WalPhase
+
+```ts
+type WalPhase = "pending" | "authoritative" | "derived" | "complete";
+```
+
+WAL phase markers for tracking operation progress.
+
+- 'pending': WAL entry written, no data changes yet
+- 'authoritative': Chunk/catalog/unique writes completed
+- 'derived': Filter/index updates completed (placeholder for Phase 6)
+- 'complete': Operation fully done, WAL can be cleaned up

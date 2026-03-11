@@ -1,0 +1,16 @@
+---
+title: "IncludeClause"
+---
+
+# Type Alias: IncludeClause
+
+```ts
+type IncludeClause = Record<string, 
+  | boolean
+  | {
+  include: IncludeClause;
+  select: Record<string, boolean>;
+}>;
+```
+
+Include clause for relations.

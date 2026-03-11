@@ -1,0 +1,16 @@
+---
+title: "TimestampFormat"
+---
+
+# Type Alias: TimestampFormat
+
+```ts
+type TimestampFormat = "iso" | "unix" | "short" | "long" | false;
+```
+
+Timestamp format for log entries.
+- 'iso': ISO 8601 format (2025-01-15T10:30:00.123Z)
+- 'unix': Unix timestamp in milliseconds (1736937000123)
+- 'short': Time only (10:30:00.123)
+- 'long': Date and time with space (2025-01-15 10:30:00.123)
+- false: No timestamp
