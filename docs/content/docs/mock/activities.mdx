@@ -1,0 +1,408 @@
+---
+title: Testing Activities
+description: Test Discord activities without Discord
+---
+
+Mock Server simulates Discord's Embedded App SDK host environment, letting you test activities locally without deploying to Discord. Your activity connects to a local proxy that behaves like Discord's `*.discordsays.com` infrastructure, complete with RPC command handling, event subscriptions, and authentication flows.
+
+## How It Works
+
+Mock Server acts as the RPC host for the Embedded App SDK. Instead of running inside a real Discord client, your activity loads in an iframe served through a local proxy server that mimics Discord's hosting environment.
+
+The data flow looks like this:
+
+```
+Activity iframe <-> postMessage bridge <-> Stage UI <-> Stage WS <-> Activity Host Manager
+```
+
+Four components make this work:
+
+- **Activity Host Manager** -- Singleton that manages activity lifecycle, dispatches RPC commands to handlers, and maintains session state. It processes the SDK handshake, routes commands like AUTHORIZE and GET_CHANNEL, and emits events to subscribed activities.
+- **Activity Proxy Server** -- HTTP and WebSocket proxy on port 50002 that simulates `*.discordsays.com`. It rewrites HTML, injects the SDK shim, and proxies requests to your local dev server.
+- **SDK Shim** -- Small script injected into activity HTML responses that intercepts `window.postMessage` events and re-dispatches them with `origin: 'https://discord.com'`. This lets the real `@discord/embedded-app-sdk` pass its origin checks on localhost.
+- **Signal Engine** -- Converts state changes (voice, platform, relationships, quests) into SDK events with 50ms debounce coalescing.
+
+<ScreenshotPlaceholder
+  alt="Stage UI with a Discord activity running inside an iframe in the message area, showing the activity content alongside the standard Discord-like channel list and member list"
+  focus="The activity iframe rendered within Stage UI, showing the proxy connection and RPC communication"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show Stage UI with an activity loaded in the main content area. The activity should be visible inside an iframe. The channel list and other Stage UI elements should be visible around it."
+/>
+
+## Quick Start
+
+Make sure your activity project has `@robojs/mock` installed:
+
+```package-install
+npx robo add @robojs/mock
+```
+
+Start in mock mode:
+
+```bash
+npx robo dev --mock
+```
+
+<Callout type="info">
+Stage UI opens automatically in your browser. Your activity's dev server (typically on port 5173) starts alongside the mock server.
+</Callout>
+
+From Stage UI, launch your activity using the activity picker. The proxy builds an iframe URL, loads your activity, and the RPC handshake happens automatically:
+
+1. Stage UI sends `launch_activity` with your application ID, guild ID, and channel ID
+2. Host Manager creates a session record and configures the proxy
+3. Stage UI renders an iframe pointing to the proxy origin
+4. The SDK sends a HANDSHAKE message: `[0, {v:1, client_id, frame_id}]`
+5. Host Manager responds with a DISPATCH READY event: `[1, {cmd: "DISPATCH", evt: "READY", data: {v:1, config:{...}, user:{...}}}]`
+6. Your activity is now connected and can make RPC calls
+
+## Launching Activities
+
+Use the activity picker in Stage UI to launch an activity. You provide the launch URL (typically `http://localhost:5173` for a Vite dev server) when launching.
+
+The proxy builds the iframe URL with these query parameters:
+
+| Parameter | Description |
+|-----------|-------------|
+| `client_id` | Your application ID |
+| `instance_id` | Unique instance identifier for this session |
+| `frame_id` | Frame identifier for postMessage routing |
+| `platform` | Simulated platform (desktop, mobile) |
+| `locale` | User locale setting |
+
+The full iframe URL follows the pattern:
+
+```
+{proxy_origin}/.proxy/?client_id={id}&instance_id={id}&frame_id={id}&platform=desktop&locale=en-US
+```
+
+<ScreenshotPlaceholder
+  alt="Stage UI activity picker showing available activities to launch, with the default localhost URL and launch button"
+  focus="The activity picker interface in Stage UI for launching Discord activities"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show the activity picker UI element in Stage UI where users select and launch an activity. Include the launch URL field showing localhost:5173 and a launch button."
+/>
+
+## The Proxy System
+
+The Activity Proxy Server runs on port 50002 and simulates Discord's `*.discordsays.com` infrastructure locally. Each session gets a unique hostname:
+
+```
+http://{session}.{application_id}.discordsays.localhost:50002
+```
+
+<Callout type="info">
+If port 50002 is busy, the proxy auto-increments to the next available port.
+</Callout>
+
+### Route Resolution
+
+The proxy resolves incoming requests in this order:
+
+1. **`/.proxy/*`** -- Strips the prefix and proxies to `launch_url + launch_path + remaining path`. This is the primary route for your activity's assets.
+2. **URL mapping routes** -- Checks configured URL mappings using longest-prefix match, then proxies to the mapped target with the remaining path appended.
+3. **Fallback** -- Any other path proxies to `launch_url + launch_path + request path`.
+
+### HTML Rewriting
+
+When the proxy serves HTML responses, it automatically:
+
+- Rewrites root-relative URLs to `/.proxy/*` paths so assets load correctly through the proxy
+- Injects the SDK shim script for origin patching
+- Injects a CSP violation reporter for debugging
+
+### WebSocket Proxying
+
+The proxy handles WebSocket upgrade requests through the same route resolution, so connections like Vite HMR (`/.proxy/__vite_hmr`) work through the proxy just as they do in direct development.
+
+## SDK Compatibility
+
+The SDK shim is the key piece that makes the real `@discord/embedded-app-sdk` work on localhost. It intercepts `window.postMessage` events from the mock environment and re-dispatches them with `origin: 'https://discord.com'`, which satisfies the SDK's origin validation.
+
+You can toggle the SDK shim through DevTools or the Stage WS `activity_set_sdk_shim` command.
+
+### Origin Modes
+
+Two origin checking modes are available:
+
+| Mode | Behavior |
+|------|----------|
+| **strict** | Origin checks enforce `https://discord.com` (default, matches production) |
+| **lenient** | Origin checks are relaxed for debugging |
+
+Switch modes via DevTools or the `activity_set_origin_mode` Stage WS command.
+
+<Callout type="info">
+Keep the SDK shim enabled and origin mode set to strict for the most realistic testing. Only switch to lenient if you are debugging origin-related issues.
+</Callout>
+
+## Authentication Testing
+
+The mock server supports three authentication modes that control how AUTHORIZE and AUTHENTICATE RPC commands behave.
+
+### Auto Approve (Default)
+
+AUTHORIZE immediately returns a mock authorization code. AUTHENTICATE succeeds and returns a mock access token. This is the fastest mode for development since your activity never sees a consent screen.
+
+### Auto Deny
+
+AUTHORIZE returns error code 4003 (user denied). Use this to test how your activity handles authorization failures.
+
+### Manual
+
+AUTHORIZE shows a consent modal in Stage UI. You can approve or deny the request interactively, testing the full OAuth2-like consent flow.
+
+Switch between modes using DevTools or the `activity_set_auth_settings` Stage WS command. You can also reset auth state to test re-authorization flows.
+
+<ScreenshotPlaceholder
+  alt="DevTools panel showing authentication mode selector with auto_approve, auto_deny, and manual options for activity auth testing"
+  focus="The authentication mode controls in DevTools for switching between auto_approve, auto_deny, and manual auth modes"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show the DevTools panel with auth settings visible. Include the three mode options (auto_approve, auto_deny, manual) and a reset auth state button."
+/>
+
+## In-App Purchase Testing
+
+Mock Server simulates Discord's IAP (In-App Purchase) commands so you can test purchase flows without real transactions.
+
+### Configuring Mock Data
+
+Use DevTools to configure mock SKUs (products) and entitlements (owned items). The IAP command handlers use this data to respond to:
+
+| Command | Behavior |
+|---------|----------|
+| `GET_SKUS` | Returns configured mock SKUs |
+| `GET_ENTITLEMENTS` | Returns configured mock entitlements |
+| `START_PURCHASE` | Triggers a purchase modal in Stage UI |
+
+### Purchase Flow
+
+When your activity calls `START_PURCHASE`:
+
+1. Stage UI shows a purchase confirmation modal
+2. Approve the purchase to grant the entitlement
+3. The `ENTITLEMENT_CREATE` event fires, notifying your activity
+4. Deny the purchase to test error handling
+
+Configure mock IAP data via DevTools or the `activity_set_iap_state` Stage WS command.
+
+## Voice and Participant Events
+
+Mock the voice channel environment through Stage UI's voice channel interface.
+
+### Voice States
+
+Click a voice channel in Stage UI to simulate users joining. The mock server generates the corresponding SDK events:
+
+| Event | Trigger |
+|-------|---------|
+| `SPEAKING_START` | User begins speaking (simulated via DevTools) |
+| `SPEAKING_STOP` | User stops speaking |
+| `VOICE_STATE_UPDATE` | User joins, leaves, or changes mute/deaf state |
+| `ACTIVITY_INSTANCE_PARTICIPANTS_UPDATE` | Participant list changes |
+
+The Signal Engine coalesces rapid state changes with a 50ms debounce. If multiple users join in quick succession, you get a single `ACTIVITY_INSTANCE_PARTICIPANTS_UPDATE` event with the combined state rather than one event per user.
+
+<ScreenshotPlaceholder
+  alt="Stage UI voice channel view with multiple users connected showing speaking, muted, and deafened indicators, demonstrating voice state simulation for activities"
+  focus="Voice channel in the sidebar with connected users and their voice state indicators"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show a voice channel with 2-3 users connected. Include visual indicators for speaking (green outline), self-muted (microphone icon), and deafened (headphone icon). The activity should be running alongside the voice channel."
+/>
+
+## Platform Signals
+
+Simulate platform-level state changes that activities can subscribe to. Configure these through DevTools or the `activity_set_platform_state` Stage WS command.
+
+| Signal | Event | Values |
+|--------|-------|--------|
+| Layout mode | `ACTIVITY_LAYOUT_MODE_UPDATE` | `0` = focused, `1` = pip, `2` = grid |
+| Orientation | `ORIENTATION_UPDATE` | `0` = portrait, `1` = landscape |
+| Thermal state | `THERMAL_STATE_UPDATE` | `0` = nominal, `1` = fair, `2` = serious, `3` = critical |
+
+These signals let you test how your activity responds to different display contexts. For example, switching to PIP (picture-in-picture) mode should trigger your activity to show a compact view, while a thermal state change to "critical" might prompt your activity to reduce animations.
+
+## URL Mappings
+
+URL mappings let you route specific URL prefixes through the proxy to different targets, matching how the Discord Developer Portal's URL Mapping configuration works in production.
+
+### Configuration
+
+Configure mappings through DevTools, the `activity_set_url_mappings` Stage WS command, or a `discord-url-mappings.json` file in your project root:
+
+```json
+{
+  "version": 1,
+  "activities": [
+    {
+      "id": "my-activity",
+      "name": "My Activity",
+      "application_id": "1234567890",
+      "launch_url": "http://localhost:5173",
+      "url_mappings": [
+        { "prefix": "/api", "target": "https://api.example.com" },
+        { "prefix": "/assets", "target": "https://cdn.example.com" }
+      ]
+    }
+  ]
+}
+```
+
+When the proxy receives a request matching a prefix, it strips the prefix and forwards the remaining path to the target. Mappings use longest-prefix match, so more specific prefixes take priority.
+
+<Callout type="warn">
+URL mappings configured in the Discord Developer Portal are not automatically synced to the mock server. You need to replicate them manually using one of the methods above.
+</Callout>
+
+## CSP Modes
+
+Control Content Security Policy headers on proxied responses. Two modes are available:
+
+| Mode | Behavior |
+|------|----------|
+| `relaxed` | Allows all sources (default). Best for local development. |
+| `discord_strict` | Restricts to `self` and `discord.com` origins. Matches production behavior. |
+
+Switch modes via DevTools or the `activity_set_csp_mode` Stage WS command. Use `discord_strict` to catch CSP violations before deploying to Discord.
+
+## Supported RPC Commands
+
+The following RPC commands are fully mocked. Your activity can call these through the Embedded App SDK and receive realistic responses.
+
+### Authentication
+
+| Command | Description |
+|---------|-------------|
+| `AUTHORIZE` | Request user authorization (behavior depends on auth mode) |
+| `AUTHENTICATE` | Exchange authorization code for access token |
+
+### Context
+
+| Command | Description |
+|---------|-------------|
+| `GET_INSTANCE_ID` | Returns the activity instance identifier |
+| `GET_PLATFORM_BEHAVIORS` | Returns platform-specific behavior flags |
+| `GET_USER` | Returns the current mock user |
+| `GET_GUILD` | Returns the current mock guild |
+| `GET_CHANNEL` | Returns the current mock channel |
+| `GET_CHANNEL_PERMISSIONS` | Returns computed channel permissions |
+| `GET_ACTIVITY_INSTANCE_CONNECTED_PARTICIPANTS` | Returns participants in the activity |
+
+### Platform
+
+| Command | Description |
+|---------|-------------|
+| `SET_CONFIG` | Update activity configuration |
+| `USER_SETTINGS_GET_LOCALE` | Returns the user's locale setting |
+| `SET_ORIENTATION_LOCK_STATE` | Lock screen orientation |
+| `SET_CERTIFIED_DEVICES` | Register certified audio/video devices |
+
+### Activity
+
+| Command | Description |
+|---------|-------------|
+| `SET_ACTIVITY` | Update rich presence for the activity |
+
+### In-App Purchases
+
+| Command | Description |
+|---------|-------------|
+| `GET_SKUS` | List available SKUs |
+| `GET_ENTITLEMENTS` | List user entitlements |
+| `START_PURCHASE` | Initiate a purchase flow |
+
+### Social
+
+| Command | Description |
+|---------|-------------|
+| `GET_RELATIONSHIPS` | Returns mock relationship data (friends, blocked) |
+
+### UI
+
+| Command | Description |
+|---------|-------------|
+| `OPEN_EXTERNAL_LINK` | Open a URL in the user's browser |
+| `SHARE_LINK` | Share a link via Discord |
+| `OPEN_INVITE_DIALOG` | Open the server invite dialog |
+
+### Analytics (No-op Stubs)
+
+| Command | Description |
+|---------|-------------|
+| `SEND_ANALYTICS_EVENT` | Accepted but not processed |
+| `CAPTURE_LOG` | Accepted but not processed |
+
+### Quests
+
+| Command | Description |
+|---------|-------------|
+| `GET_QUEST_ENROLLMENT_STATUS` | Returns mock quest enrollment status |
+| `QUEST_START_TIMER` | Start a quest progress timer |
+
+## Supported Events
+
+Activities can subscribe to these events using the SDK's `subscribe` method. The Subscription Registry handles idempotent subscribe/unsubscribe operations.
+
+| Event | Description |
+|-------|-------------|
+| `READY` | Dispatched after handshake completes |
+| `SPEAKING_START` | User began speaking in voice channel |
+| `SPEAKING_STOP` | User stopped speaking |
+| `VOICE_STATE_UPDATE` | Voice state changed (join, leave, mute, deaf) |
+| `ACTIVITY_INSTANCE_PARTICIPANTS_UPDATE` | Activity participant list changed |
+| `ACTIVITY_LAYOUT_MODE_UPDATE` | Layout mode changed (focused, pip, grid) |
+| `ORIENTATION_UPDATE` | Device orientation changed |
+| `THERMAL_STATE_UPDATE` | Device thermal state changed |
+| `ENTITLEMENT_CREATE` | New entitlement granted (IAP) |
+| `RELATIONSHIP_UPDATE` | User relationship changed |
+| `QUEST_ENROLLMENT_STATUS_UPDATE` | Quest enrollment status changed |
+
+<Callout type="info">
+Events use a snapshot-on-subscribe model. When your activity subscribes to an event, it may receive an immediate snapshot of the current state before any future updates.
+</Callout>
+
+## Stage WS Commands
+
+Beyond the SDK's RPC commands, the Stage UI WebSocket connection supports additional commands for controlling the activity environment:
+
+| Command | Purpose |
+|---------|---------|
+| `launch_activity` | Launch an activity in the current session |
+| `close_activity` | Close the running activity |
+| `activity_rpc` | Forward an RPC message to the host manager |
+| `activity_set_auth_settings` | Change authentication mode |
+| `activity_set_url_mappings` | Update URL mapping configuration |
+| `activity_set_csp_mode` | Switch CSP mode |
+| `activity_set_sdk_shim` | Toggle SDK shim injection |
+| `activity_set_origin_mode` | Switch origin checking mode |
+| `activity_set_platform_state` | Change layout mode, orientation, or thermal state |
+| `activity_set_iap_state` | Configure mock SKUs and entitlements |
+| `activity_set_relationships` | Set mock relationship data |
+| `activity_set_quests` | Set mock quest data |
+| `activity_emit_event` | Manually emit any SDK event |
+
+The `activity_emit_event` command is a powerful escape hatch. If you need to test your activity's handling of an event that is not yet triggered by the mock UI, you can emit it directly with an arbitrary payload.
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./configuration"
+    title="Configuration"
+    description="Configure mock server behavior."
+  />
+  <Card
+    href="./devtools"
+    title="DevTools"
+    description="Debug with the DevTools panel."
+  />
+  <Card
+    href="./recipes"
+    title="Recipes"
+    description="Common testing patterns."
+  />
+</Cards>

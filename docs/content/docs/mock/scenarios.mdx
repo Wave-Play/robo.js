@@ -3,15 +3,11 @@ title: Scenarios
 description: JSON-based test definitions for reproducible test flows
 ---
 
-Scenarios are versioned JSON documents that define a sequence of steps to execute against a mock session. They provide reproducible, shareable test flows that can be loaded and run through the Control API or Stage UI.
+Automated tests verify individual interactions, but real usage involves multi-step flows. Scenarios let you define complete flows as JSON -- a sequence of dispatch, wait, assert, and interact steps that run against a mock session.
 
-## Overview
-
-A scenario describes:
-- **What to send** to the bot (commands, messages, button clicks)
-- **What to wait for** (durations, specific action types)
-- **What to verify** (assertions on recorded actions)
-- **What to interact with** (component clicks, select menus, modals)
+<Callout type="warn">
+Scenarios are an advanced feature. If you are just getting started with testing, begin with [Stage UI](./stage-ui) for interactive testing or [Automated Testing](./automated-testing) for Jest-based tests.
+</Callout>
 
 <ScreenshotPlaceholder
   alt="Stage UI showing a scenario executing with step-by-step progress indicators, each step displaying its type (dispatch, wait, assert, interact) and pass/fail status"
@@ -20,6 +16,105 @@ A scenario describes:
   aspect="16/9"
   notes="Show a scenario mid-execution or just completed with several steps visible. Each step should show its type badge, description, and pass/fail status. Include the scenario name and overall progress indicator."
 />
+
+## Example Scenario
+
+Here is a complete scenario that tests a `/ping` command:
+
+```json
+{
+  "version": 1,
+  "id": "test-ping-command",
+  "metadata": {
+    "name": "Ping Command Test",
+    "description": "Verifies that /ping responds with Pong",
+    "tags": ["commands", "smoke-test"]
+  },
+  "compatibility": {
+    "requiredCommands": ["ping"]
+  },
+  "steps": [
+    {
+      "id": "dispatch-ping",
+      "type": "dispatch",
+      "description": "Run /ping command",
+      "dispatch": {
+        "kind": "slash_command",
+        "payload": { "command_name": "ping" }
+      }
+    },
+    {
+      "id": "assert-pong",
+      "type": "assert",
+      "description": "Bot should respond with Pong",
+      "assert": {
+        "interactionResponse": {
+          "responseType": 4,
+          "contentContains": "Pong"
+        }
+      }
+    }
+  ]
+}
+```
+
+A more complex scenario with component interactions:
+
+```json
+{
+  "version": 1,
+  "id": "test-confirmation-flow",
+  "metadata": {
+    "name": "Confirmation Flow",
+    "description": "Tests a command with a confirm/cancel button"
+  },
+  "steps": [
+    {
+      "type": "dispatch",
+      "description": "Run /delete-data command",
+      "dispatch": {
+        "kind": "slash_command",
+        "payload": { "command_name": "delete-data" }
+      }
+    },
+    {
+      "type": "assert",
+      "description": "Should show confirmation buttons",
+      "assert": {
+        "interactionResponse": {
+          "responseType": 4,
+          "contentContains": "Are you sure?"
+        }
+      }
+    },
+    {
+      "type": "interact",
+      "description": "Click the confirm button",
+      "interact": {
+        "componentType": "button",
+        "customId": "confirm-delete"
+      }
+    },
+    {
+      "type": "assert",
+      "description": "Should confirm deletion",
+      "assert": {
+        "interactionResponse": {
+          "contentContains": "deleted"
+        }
+      }
+    }
+  ]
+}
+```
+
+## Overview
+
+A scenario describes:
+- **What to send** to the bot (commands, messages, button clicks)
+- **What to wait for** (durations, specific action types)
+- **What to verify** (assertions on recorded actions)
+- **What to interact with** (component clicks, select menus, modals)
 
 Scenarios run inside an existing session. Load a scenario via the Control API, start it, and the runner executes each step in order with automatic completion detection between steps.
 
@@ -59,49 +154,99 @@ Every scenario follows this top-level structure:
 
 ### Metadata
 
-```typescript
-interface ScenarioMetadata {
-  name: string           // Display name (required)
-  description?: string   // Longer description
-  tags?: string[]        // For filtering ("happy-path", "edge-case")
-  createdAt?: string     // ISO 8601 timestamp
-  updatedAt?: string     // ISO 8601 timestamp
-  author?: string        // Author identifier
-}
-```
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    interface ScenarioMetadata {
+      name: string           // Display name (required)
+      description?: string   // Longer description
+      tags?: string[]        // For filtering ("happy-path", "edge-case")
+      createdAt?: string     // ISO 8601 timestamp
+      updatedAt?: string     // ISO 8601 timestamp
+      author?: string        // Author identifier
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // ScenarioMetadata shape:
+    // {
+    //   name: string,           // Display name (required)
+    //   description: string,    // Longer description
+    //   tags: string[],         // For filtering ("happy-path", "edge-case")
+    //   createdAt: string,      // ISO 8601 timestamp
+    //   updatedAt: string,      // ISO 8601 timestamp
+    //   author: string          // Author identifier
+    // }
+    ```
+  </Tab>
+</Tabs>
 
 ### Mock Config
 
 Applied to the session before execution begins:
 
-```typescript
-interface ScenarioMockConfig {
-  user?: MockUserConfig        // Invoking user identity
-  guild?: MockGuildConfig      // Test guild setup
-  channel?: MockChannelConfig  // Test channel setup
-  commandOptions?: Record<string, Record<string, unknown>>
-  time?: { fixedTime?: number; timeScale?: number }
-  flashcoreData?: Record<string, unknown>  // Not yet supported
-  apiMocks?: Record<string, unknown>       // Not yet supported
-}
-```
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    interface ScenarioMockConfig {
+      user?: MockUserConfig        // Invoking user identity
+      guild?: MockGuildConfig      // Test guild setup
+      channel?: MockChannelConfig  // Test channel setup
+      commandOptions?: Record<string, Record<string, unknown>>
+      time?: { fixedTime?: number; timeScale?: number }
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // ScenarioMockConfig shape:
+    // {
+    //   user: MockUserConfig,        // Invoking user identity
+    //   guild: MockGuildConfig,       // Test guild setup
+    //   channel: MockChannelConfig,   // Test channel setup
+    //   commandOptions: object,       // { [command]: { [option]: value } }
+    //   time: { fixedTime: number, timeScale: number }
+    // }
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="info">
+`flashcoreData` and `apiMocks` fields are planned but not yet supported. They are reserved for future use.
+</Callout>
 
 ## Step Types
 
 Each step has a `type` discriminator and optional base fields:
 
-```typescript
-interface ScenarioStepBase {
-  id?: string              // Step identifier for debugging
-  description?: string     // Human-readable description
-  expectedNodeId?: string  // Source system node ID (for UI highlighting)
-  timeout?: number         // Max wait time in ms (overrides default)
-}
-```
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    interface ScenarioStepBase {
+      id?: string              // Step identifier for debugging
+      description?: string     // Human-readable description
+      expectedNodeId?: string  // Source system node ID (for UI highlighting)
+      timeout?: number         // Max wait time in ms (overrides default)
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // ScenarioStepBase shape:
+    // {
+    //   id: string,              // Step identifier for debugging
+    //   description: string,     // Human-readable description
+    //   expectedNodeId: string,  // Source system node ID (for UI highlighting)
+    //   timeout: number          // Max wait time in ms (overrides default)
+    // }
+    ```
+  </Tab>
+</Tabs>
 
 ### dispatch
 
-Send a Discord gateway event to the bot. The `dispatch.kind` field determines the payload shape.
+Send a Discord gateway event (a simulated Discord message or interaction) to the bot. The `dispatch.kind` field determines the payload shape.
 
 ```json
 {
@@ -219,7 +364,7 @@ If no condition is met before the timeout (default: 5000ms), the step fails.
 
 ### assert
 
-Verify that the bot produced expected output by checking recorded actions.
+Verify that the bot produced expected output by checking recorded actions (the history of everything the bot did during the session).
 
 ```json
 {
@@ -415,97 +560,6 @@ DELETE /api/control/sessions/:id/scenario
 
 Removes the loaded scenario and resets run state to idle.
 
-## Example Scenario
-
-A complete scenario that tests a `/ping` command:
-
-```json
-{
-  "version": 1,
-  "id": "test-ping-command",
-  "metadata": {
-    "name": "Ping Command Test",
-    "description": "Verifies that /ping responds with Pong",
-    "tags": ["commands", "smoke-test"]
-  },
-  "compatibility": {
-    "requiredCommands": ["ping"]
-  },
-  "steps": [
-    {
-      "id": "dispatch-ping",
-      "type": "dispatch",
-      "description": "Run /ping command",
-      "dispatch": {
-        "kind": "slash_command",
-        "payload": { "command_name": "ping" }
-      }
-    },
-    {
-      "id": "assert-pong",
-      "type": "assert",
-      "description": "Bot should respond with Pong",
-      "assert": {
-        "interactionResponse": {
-          "responseType": 4,
-          "contentContains": "Pong"
-        }
-      }
-    }
-  ]
-}
-```
-
-A more complex scenario with component interactions:
-
-```json
-{
-  "version": 1,
-  "id": "test-confirmation-flow",
-  "metadata": {
-    "name": "Confirmation Flow",
-    "description": "Tests a command with a confirm/cancel button"
-  },
-  "steps": [
-    {
-      "type": "dispatch",
-      "description": "Run /delete-data command",
-      "dispatch": {
-        "kind": "slash_command",
-        "payload": { "command_name": "delete-data" }
-      }
-    },
-    {
-      "type": "assert",
-      "description": "Should show confirmation buttons",
-      "assert": {
-        "interactionResponse": {
-          "responseType": 4,
-          "contentContains": "Are you sure?"
-        }
-      }
-    },
-    {
-      "type": "interact",
-      "description": "Click the confirm button",
-      "interact": {
-        "componentType": "button",
-        "customId": "confirm-delete"
-      }
-    },
-    {
-      "type": "assert",
-      "description": "Should confirm deletion",
-      "assert": {
-        "interactionResponse": {
-          "contentContains": "deleted"
-        }
-      }
-    }
-  ]
-}
-```
-
 ## Stage UI Integration
 
 When a scenario is running, Stage UI receives real-time events:
@@ -535,8 +589,8 @@ The runner also captures snapshots at each step boundary. Snapshots store lightw
     description="Full API reference for test utilities."
   />
   <Card
-    href="./automated-testing"
-    title="Automated Testing"
-    description="Write Jest tests against the mock server."
+    href="./recipes"
+    title="Recipes"
+    description="Common testing patterns and solutions."
   />
 </Cards>

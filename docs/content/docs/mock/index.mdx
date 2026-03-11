@@ -1,9 +1,11 @@
 ---
-title: Mock Server
-description: Test Discord bots without Discord
+title: Mock Server Overview
+icon: TestTube
 ---
 
-**Mock Server** simulates Discord's API on your machine. Your bot connects to it instead of Discord, giving you full control over messages, users, and events. Test slash commands, buttons, modals, and complex flows without waiting for Discord's servers.
+Testing a Discord bot or activity usually means deploying it, switching to Discord, and clicking through interactions manually. Mock Server eliminates that loop.
+
+**Mock Server** simulates Discord's API and Embedded App SDK on your machine. Your bot connects to it instead of Discord, and your activity runs against a local proxy instead of `*.discordsays.com`. Test slash commands, buttons, modals, SDK commands, and complex flows without waiting for Discord's servers.
 
 ## Quick Start
 
@@ -19,6 +21,12 @@ Start in mock mode:
 npx robo dev --mock
 ```
 
+<Callout type="info">
+You should see the mock server start in your terminal, followed by a browser window opening Stage UI. The terminal shows a session ID and the Stage URL.
+</Callout>
+
+For Discord activities, launch your activity from Stage UI after starting mock mode. The activity loads in an iframe with full Embedded App SDK simulation. See the [Testing Activities](./activities) guide for details.
+
 Stage UI opens automatically in your browser. Send messages, trigger commands, and watch your bot respond in real-time.
 
 <ScreenshotPlaceholder
@@ -29,54 +37,60 @@ Stage UI opens automatically in your browser. Send messages, trigger commands, a
   notes="Show a realistic session: a user has sent a message or slash command, and the bot has replied. Include the server list, channel list, message area, member list, and the bottom bar with playback controls and status indicators."
 />
 
-## Two Ways to Test
+## How to Test
 
-### Interactive Testing
+There are three approaches to testing with Mock Server. Pick the one that fits your needs, or combine them:
 
-Use **Stage UI** to test manually. The browser-based interface mirrors Discord's layout:
+- **[Stage UI](./stage-ui)** -- Best for exploring your bot's behavior, debugging issues, and learning how commands and events work. No code needed; just interact with your bot in a Discord-like interface.
+- **[Automated tests](./automated-testing)** -- When you want repeatable, CI-integrated test suites that catch regressions. Write Jest tests that dispatch interactions and assert on bot responses.
+- **[Scenarios](./scenarios)** -- For complex, shareable test flows defined as JSON documents. Scenarios are version-controlled, reproducible, and can be run through the Control API or Stage UI.
 
-- Send messages as different users
-- Run slash commands with autocomplete
-- Click buttons and submit modals
-- Watch events flow through DevTools
+<Callout type="info">
+Mock Server is designed for testing [Discord bots](/bots) and [Discord activities](/activities). If you're new to building with Robo.js, start with those guides first.
+</Callout>
 
-Best for exploring behavior and debugging issues.
+Here is a quick taste of what an automated test looks like:
 
-### Automated Testing
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/ping.test.ts"
+    import { createTestSession, dispatchInteraction, expectAction } from '@robojs/mock/testing'
 
-Write tests with Jest that run in CI/CD:
+    const session = await createTestSession(__filename)
 
-```typescript
-import { createTestSession, dispatchInteraction, expectAction } from '@robojs/mock/testing'
-
-describe('ping command', () => {
-  let session
-
-  beforeAll(async () => {
-    session = await createTestSession(__filename)
-  })
-
-  afterAll(async () => {
-    await session?.destroy()
-  })
-
-  it('responds with pong', async () => {
     await dispatchInteraction(session.id, {
-      type: 2,
-      data: { name: 'ping', type: 1 },
+      type: 2,                        // APPLICATION_COMMAND
+      data: { name: 'ping', type: 1 },  // CHAT_INPUT
       channel_id: session.channels[0].id
     })
 
     await expectAction(session.id, {
       description: 'Bot should reply with pong',
       type: 'interaction_response',
-      expected: {
-        response_data: { content: expect.stringContaining('Pong') }
-      }
+      expected: { response_data: { content: expect.stringContaining('Pong') } }
     })
-  })
-})
-```
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/ping.test.js"
+    import { createTestSession, dispatchInteraction, expectAction } from '@robojs/mock/testing'
+
+    const session = await createTestSession(__filename)
+
+    await dispatchInteraction(session.id, {
+      type: 2,                        // APPLICATION_COMMAND
+      data: { name: 'ping', type: 1 },  // CHAT_INPUT
+      channel_id: session.channels[0].id
+    })
+
+    await expectAction(session.id, {
+      description: 'Bot should reply with pong',
+      type: 'interaction_response',
+      expected: { response_data: { content: expect.stringContaining('Pong') } }
+    })
+    ```
+  </Tab>
+</Tabs>
 
 Run your tests:
 
@@ -84,18 +98,23 @@ Run your tests:
 npx robo mock test
 ```
 
+<Callout type="info">
+You should see the mock server start, your test suite run, and results printed in the terminal with pass/fail indicators.
+</Callout>
+
 ## What Gets Simulated
 
-Mock Server emulates Discord's Gateway v10 and REST API:
+Mock Server emulates Discord's Gateway (the real-time WebSocket connection, v10 protocol) and REST API:
 
 | Feature | Support |
 |---------|---------|
-| Gateway WebSocket | Full v10 protocol |
+| Gateway WebSocket (real-time events) | Full v10 protocol |
 | REST API | 150+ endpoints |
 | Intents | Filtering and privileged intent enforcement |
 | Permissions | Role hierarchy, channel overwrites |
 | Voice Gateway | Connection handshake (no audio) |
 | Rate Limits | Configurable enforcement |
+| Activity Proxy / Embedded App SDK | RPC host, auth, IAP, platform signals |
 
 ## Session Isolation
 
@@ -114,6 +133,11 @@ This enables parallel test execution without interference.
     href="./stage-ui"
     title="Stage UI"
     description="Learn the interactive testing interface."
+  />
+  <Card
+    href="./activities"
+    title="Testing Activities"
+    description="Test Discord activities locally."
   />
   <Card
     href="./automated-testing"

@@ -25,6 +25,10 @@ This:
 
 Your bot receives events from Mock Server instead of Discord.
 
+<Callout type="info">
+You should see colored terminal output showing mock mode enabled, a session ID, and the Stage UI URL (e.g., `http://localhost:3000/mock/stage/`). A browser window opens automatically.
+</Callout>
+
 <ScreenshotPlaceholder
   alt="Terminal output showing npx robo dev --mock startup sequence with mock mode detection, session creation, and Stage UI URL printed as a clickable link"
   focus="The terminal output showing the startup flow including session ID and Stage UI URL"
@@ -76,6 +80,10 @@ This:
 3. Runs the test suite
 4. Displays results in terminal and Stage UI
 5. Keeps the server running for inspection (default behavior)
+
+<Callout type="info">
+You should see the mock server start on port 6625, followed by test runner detection (Jest or Node), individual test results with pass/fail indicators, and a summary line at the end.
+</Callout>
 
 <ScreenshotPlaceholder
   alt="Terminal output of npx robo mock test showing mock server startup, test execution with pass/fail results, and a summary of total tests run"
@@ -227,6 +235,7 @@ ROBO_MOCK_TEST_RUN_ID=run_123 npx robo mock test
 Add to `package.json`:
 
 ```json
+// package.json
 {
   "scripts": {
     "dev:mock": "robo dev --mock",

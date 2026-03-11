@@ -3,7 +3,7 @@ title: Stage UI
 description: Interactive Discord testing interface
 ---
 
-**Stage UI** provides a Discord-like interface for interactive bot testing. Send messages, run commands, and watch your bot respond in real-time without touching Discord's servers.
+**Stage UI** (the browser-based testing interface) provides a Discord-like interface for interactive bot testing. Send messages, run commands, and watch your bot respond in real-time without touching Discord's servers.
 
 ## Opening Stage UI
 
@@ -13,7 +13,9 @@ Stage UI opens automatically when you start mock mode:
 npx robo dev --mock
 ```
 
-Or navigate directly to `http://localhost:3000/mock/stage` while the server runs.
+<Callout type="info">
+You should see the mock server start in your terminal, followed by a browser window opening to the Stage UI. If the browser does not open, navigate to `http://localhost:3000/mock/stage` manually.
+</Callout>
 
 ## The Interface
 
@@ -67,7 +69,7 @@ Right-click or hover over messages for actions:
 
 ## Running Commands
 
-Press `Ctrl+K` (or `Cmd+K` on Mac) to focus the input with a `/` prefix. Autocomplete shows available commands.
+Press `Ctrl/Cmd + K` to focus the input with a `/` prefix. Autocomplete shows available commands.
 
 <ScreenshotPlaceholder
   alt="Stage UI showing the slash command autocomplete dropdown above the message input, listing available bot commands with their descriptions, or a modal dialog that appeared after a bot interaction"
@@ -154,6 +156,38 @@ An emoji picker is available when adding reactions to messages and within the De
 ## Channel Management
 
 Create and reorder channels and categories directly in Stage UI. Right-click or use the channel list header to create new text, voice, or forum channels and categories. Drag and drop channels to reorder them within or across categories using the built-in sortable interface.
+
+## Testing Activities
+
+Stage UI provides a complete environment for testing Discord activities locally.
+
+### Launching Activities
+
+Click the activities icon in the message input toolbar to open the Activities Picker. Select an activity to launch it in the current channel. The activity loads in an iframe within Stage UI, connected to the mock RPC host.
+
+<ScreenshotPlaceholder
+  alt="Stage UI showing the Activities Picker with a list of available activities to launch, and an activity running in an iframe within the message area"
+  focus="The Activities Picker and the embedded activity iframe view"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show the Activities Picker open with at least one activity listed. If possible, also show an activity loaded in the iframe area. The activity view replaces the message area when active."
+/>
+
+### Activity View
+
+When an activity is running, it appears as an iframe embedded in the channel view. A control bar at the bottom provides activity controls.
+
+- **Minimize** -- Click the Minimize button in the control bar to enter PIP (picture-in-picture) mode. The activity shrinks to a small floating window that you can drag between corners while you continue interacting with channels.
+- **Restore** -- Hover over the minimized activity and click the back arrow button to restore it to full size.
+- **Close** -- Click the Leave Activity button in the control bar to stop the activity.
+
+### Auth Consent Modal
+
+When the activity's auth mode is set to `manual` (via [DevTools](./devtools)), an OAuth2-style consent modal appears when the activity calls `AUTHORIZE`. Approve or deny specific scopes to test different auth flows.
+
+### Purchase Modal
+
+When the activity triggers `START_PURCHASE`, a purchase confirmation modal appears in Stage UI. Approve or deny the purchase to test in-app purchase flows and verify your activity handles both outcomes.
 
 ## Recording and Playback
 

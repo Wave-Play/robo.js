@@ -17,32 +17,56 @@ Write automated tests for your Discord bot using Jest. Tests run against the moc
 
 ### Prerequisites
 
-Mock Server requires `@robojs/server` as a peer dependency. Install both:
+Mock Server requires `@robojs/server` as a peer dependency (a package that must be installed alongside `@robojs/mock` for it to work). Install both:
 
 ```package-install
 npx robo add @robojs/mock
 ```
 
-### Jest Configuration
+If you are using TypeScript with Jest, install the test tooling:
 
-Create or update `jest.config.ts`:
-
-```typescript
-export default {
-  testEnvironment: 'node',
-  extensionsToTreatAsEsm: ['.ts'],
-  transform: {
-    '^.+\\.ts$': ['ts-jest', { useESM: true }]
-  },
-  testMatch: ['**/__tests__/**/*.test.ts'],
-  reporters: [
-    'default',
-    '@robojs/mock/testing/jest-reporter'
-  ]
-}
+```package-install
+npm install --save-dev jest ts-jest @types/jest
 ```
 
-The custom reporter syncs test results to Stage UI for visual debugging.
+### Jest Configuration
+
+Create or update your Jest config:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="jest.config.ts"
+    // jest.config.ts
+    export default {
+      testEnvironment: 'node',
+      extensionsToTreatAsEsm: ['.ts'],
+      transform: {
+        '^.+\\.ts$': ['ts-jest', { useESM: true }]
+      },
+      testMatch: ['**/__tests__/**/*.test.ts'],
+      reporters: [
+        'default',
+        '@robojs/mock/testing/jest-reporter'
+      ]
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="jest.config.js"
+    // jest.config.js
+    export default {
+      testEnvironment: 'node',
+      testMatch: ['**/__tests__/**/*.test.js'],
+      reporters: [
+        'default',
+        '@robojs/mock/testing/jest-reporter'
+      ]
+    }
+    ```
+  </Tab>
+</Tabs>
+
+The custom reporter (a Jest plugin that formats and forwards test results) syncs test results to Stage UI for visual debugging.
 
 <ScreenshotPlaceholder
   alt="Jest custom reporter output synced to Stage UI DevTools Tests tab, showing test file results alongside the terminal reporter output"
@@ -52,109 +76,231 @@ The custom reporter syncs test results to Stage UI for visual debugging.
   notes="Show the DevTools Tests tab with test results that came from the Jest custom reporter. Include test file names, individual test case results with pass/fail status, and durations. This demonstrates how the reporter bridges terminal tests to the visual UI."
 />
 
+## Interaction Type Constants
+
+When dispatching interactions (simulated Discord events like slash commands or button clicks), you'll use numeric type values. Here's a quick reference:
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `APPLICATION_COMMAND` | `2` | Slash command interaction |
+| `MESSAGE_COMPONENT` | `3` | Button, select menu, or modal trigger |
+| `APPLICATION_COMMAND_AUTOCOMPLETE` | `4` | Autocomplete request |
+| `MODAL_SUBMIT` | `5` | Modal form submission |
+
+**Component types** (used within `MESSAGE_COMPONENT` interactions):
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `BUTTON` | `2` | Button component |
+| `STRING_SELECT` | `3` | String select menu |
+| `USER_SELECT` | `5` | User select menu |
+| `ROLE_SELECT` | `6` | Role select menu |
+| `MENTIONABLE_SELECT` | `7` | Mentionable select menu |
+| `CHANNEL_SELECT` | `8` | Channel select menu |
+
 ## Creating Test Sessions
 
-Each test file gets an isolated session:
+The recommended approach is `createTestSession()`, which creates an isolated session on the mock server. The bot should already be running separately (e.g., via `npx robo mock test` or `npx robo mock start`).
 
-```typescript
-import { createTestSession } from '@robojs/mock/testing'
-import type { TestSession } from '@robojs/mock/testing'
+Each test file gets its own session:
 
-describe('my feature', () => {
-  let session: TestSession
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/my-feature.test.ts"
+    import { createTestSession } from '@robojs/mock/testing'
+    import type { TestSession } from '@robojs/mock/testing'
 
-  beforeAll(async () => {
-    session = await createTestSession(__filename)
-  })
+    describe('my feature', () => {
+      let session: TestSession
 
-  afterAll(async () => {
-    await session?.destroy()
-  })
+      beforeAll(async () => {
+        session = await createTestSession(__filename)
+      })
 
-  // tests go here
-})
-```
+      afterAll(async () => {
+        await session?.destroy()
+      })
+
+      // tests go here
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/my-feature.test.js"
+    import { createTestSession } from '@robojs/mock/testing'
+
+    describe('my feature', () => {
+      let session
+
+      beforeAll(async () => {
+        session = await createTestSession(__filename)
+      })
+
+      afterAll(async () => {
+        await session?.destroy()
+      })
+
+      // tests go here
+    })
+    ```
+  </Tab>
+</Tabs>
 
 ### Session Properties
 
 `TestSession` provides access to:
 
-```typescript
-session.id          // Session identifier
-session.token       // Bot token (mock:sess_xxx)
-session.botUser     // { id, username }
-session.guilds      // Array of test guilds
-session.channels    // Array of channels
-session.guildId     // First guild ID (convenience)
-```
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    session.id          // Session identifier
+    session.token       // Bot token (mock:sess_xxx)
+    session.botUser     // { id, username }
+    session.guilds      // Array of test guilds
+    session.channels    // Array of channels
+    session.guildId     // First guild ID (convenience)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    session.id          // Session identifier
+    session.token       // Bot token (mock:sess_xxx)
+    session.botUser     // { id, username }
+    session.guilds      // Array of test guilds
+    session.channels    // Array of channels
+    session.guildId     // First guild ID (convenience)
+    ```
+  </Tab>
+</Tabs>
 
 ### Custom Session Config
 
 Configure guilds, users, and bot settings:
 
-```typescript
-const session = await createTestSession(__filename, {
-  name: 'my-test',
-  config: {
-    botUser: {
-      username: 'TestBot'
-    },
-    guilds: [{
-      name: 'Test Server',
-      channels: [
-        { name: 'general', type: 0 },
-        { name: 'bot-spam', type: 0 }
-      ]
-    }],
-    users: [
-      { username: 'TestUser' },
-      { username: 'Admin' }
-    ]
-  }
-})
-```
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/custom-session.test.ts"
+    const session = await createTestSession(__filename, {
+      name: 'my-test',
+      config: {
+        botUser: {
+          username: 'TestBot'
+        },
+        guilds: [{
+          name: 'Test Server',
+          channels: [
+            { name: 'general', type: 0 },   // 0 = Text channel
+            { name: 'bot-spam', type: 0 }   // 0 = Text channel
+          ]
+        }],
+        users: [
+          { username: 'TestUser' },
+          { username: 'Admin' }
+        ]
+      }
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/custom-session.test.js"
+    const session = await createTestSession(__filename, {
+      name: 'my-test',
+      config: {
+        botUser: {
+          username: 'TestBot'
+        },
+        guilds: [{
+          name: 'Test Server',
+          channels: [
+            { name: 'general', type: 0 },   // 0 = Text channel
+            { name: 'bot-spam', type: 0 }   // 0 = Text channel
+          ]
+        }],
+        users: [
+          { username: 'TestUser' },
+          { username: 'Admin' }
+        ]
+      }
+    })
+    ```
+  </Tab>
+</Tabs>
 
-## Session vs Full Bot Startup
+## Alternative: Full Bot Startup
 
-There are two ways to set up a test environment:
-
-- **`createTestSession()`** creates a session on the mock server but does not start the bot. Use this when the bot is already running separately (e.g., via `npx robo mock test` or a manual `npx robo mock start`).
-- **`startMockRobo()`** creates a session _and_ starts the bot within the test process itself. Use this for fully self-contained tests where no external process is needed.
+As an alternative to `createTestSession()`, you can use `startMockRobo()` which creates a session _and_ starts the bot within the test process itself. Use this for fully self-contained tests where no external process is needed.
 
 `startMockRobo` returns a `MockRoboHandle` with the same session properties plus a `stop()` method and access to the Discord.js `client`:
 
-```typescript
-import { startMockRobo, dispatchInteraction, expectAction } from '@robojs/mock/testing'
-import type { MockRoboHandle } from '@robojs/mock/testing'
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/self-contained.test.ts"
+    import { startMockRobo, dispatchInteraction, expectAction } from '@robojs/mock/testing'
+    import type { MockRoboHandle } from '@robojs/mock/testing'
 
-describe('self-contained test', () => {
-  let bot: MockRoboHandle
+    describe('self-contained test', () => {
+      let bot: MockRoboHandle
 
-  beforeAll(async () => {
-    bot = await startMockRobo({ name: 'my-test', testFilePath: __filename })
-  })
+      beforeAll(async () => {
+        bot = await startMockRobo({ name: 'my-test', testFilePath: __filename })
+      })
 
-  afterAll(async () => {
-    await bot.stop()
-  })
+      afterAll(async () => {
+        await bot.stop()
+      })
 
-  it('responds to ping', async () => {
-    await dispatchInteraction(bot.sessionId, {
-      type: 2,
-      data: { name: 'ping', type: 1 },
-      channel_id: bot.channels[0].id
+      it('responds to ping', async () => {
+        await dispatchInteraction(bot.sessionId, {
+          type: 2,                          // APPLICATION_COMMAND
+          data: { name: 'ping', type: 1 }, // CHAT_INPUT
+          channel_id: bot.channels[0].id
+        })
+
+        await expectAction(bot.sessionId, {
+          description: 'Bot should respond with pong',
+          type: 'interaction_response',
+          expected: {
+            response_data: { content: expect.stringContaining('Pong') }
+          }
+        })
+      })
     })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/self-contained.test.js"
+    import { startMockRobo, dispatchInteraction, expectAction } from '@robojs/mock/testing'
 
-    await expectAction(bot.sessionId, {
-      description: 'Bot should respond with pong',
-      type: 'interaction_response',
-      expected: {
-        response_data: { content: expect.stringContaining('Pong') }
-      }
+    describe('self-contained test', () => {
+      let bot
+
+      beforeAll(async () => {
+        bot = await startMockRobo({ name: 'my-test', testFilePath: __filename })
+      })
+
+      afterAll(async () => {
+        await bot.stop()
+      })
+
+      it('responds to ping', async () => {
+        await dispatchInteraction(bot.sessionId, {
+          type: 2,                          // APPLICATION_COMMAND
+          data: { name: 'ping', type: 1 }, // CHAT_INPUT
+          channel_id: bot.channels[0].id
+        })
+
+        await expectAction(bot.sessionId, {
+          description: 'Bot should respond with pong',
+          type: 'interaction_response',
+          expected: {
+            response_data: { content: expect.stringContaining('Pong') }
+          }
+        })
+      })
     })
-  })
-})
-```
+    ```
+  </Tab>
+</Tabs>
 
 ## Dispatching Events
 
@@ -162,38 +308,77 @@ describe('self-contained test', () => {
 
 Trigger slash commands, buttons, and other interactions:
 
-```typescript
-import { dispatchInteraction } from '@robojs/mock/testing'
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/dispatch-example.test.ts"
+    import { dispatchInteraction } from '@robojs/mock/testing'
 
-// Slash command
-await dispatchInteraction(session.id, {
-  type: 2, // APPLICATION_COMMAND
-  data: {
-    name: 'ping',
-    type: 1 // CHAT_INPUT
-  },
-  channel_id: session.channels[0].id,
-  guild_id: session.guildId
-})
-```
+    // Slash command
+    await dispatchInteraction(session.id, {
+      type: 2, // APPLICATION_COMMAND
+      data: {
+        name: 'ping',
+        type: 1 // CHAT_INPUT
+      },
+      channel_id: session.channels[0].id,
+      guild_id: session.guildId
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/dispatch-example.test.js"
+    import { dispatchInteraction } from '@robojs/mock/testing'
+
+    // Slash command
+    await dispatchInteraction(session.id, {
+      type: 2, // APPLICATION_COMMAND
+      data: {
+        name: 'ping',
+        type: 1 // CHAT_INPUT
+      },
+      channel_id: session.channels[0].id,
+      guild_id: session.guildId
+    })
+    ```
+  </Tab>
+</Tabs>
 
 ### Gateway Events
 
-Inject any Discord Gateway event:
+Inject any Discord Gateway (real-time WebSocket) event:
 
-```typescript
-import { dispatchEvent } from '@robojs/mock/testing'
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/gateway-example.test.ts"
+    import { dispatchEvent } from '@robojs/mock/testing'
 
-await dispatchEvent(session.id, 'MESSAGE_CREATE', {
-  id: '123456789',
-  content: 'Hello bot',
-  channel_id: session.channels[0].id,
-  author: {
-    id: '987654321',
-    username: 'TestUser'
-  }
-})
-```
+    await dispatchEvent(session.id, 'MESSAGE_CREATE', {
+      id: '123456789',
+      content: 'Hello bot',
+      channel_id: session.channels[0].id,
+      author: {
+        id: '987654321',
+        username: 'TestUser'
+      }
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/gateway-example.test.js"
+    import { dispatchEvent } from '@robojs/mock/testing'
+
+    await dispatchEvent(session.id, 'MESSAGE_CREATE', {
+      id: '123456789',
+      content: 'Hello bot',
+      channel_id: session.channels[0].id,
+      author: {
+        id: '987654321',
+        username: 'TestUser'
+      }
+    })
+    ```
+  </Tab>
+</Tabs>
 
 ## Making Assertions
 
@@ -205,82 +390,172 @@ await dispatchEvent(session.id, 'MESSAGE_CREATE', {
 
 Assert that a specific action occurred:
 
-```typescript
-import { expectAction } from '@robojs/mock/testing'
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/assertions.test.ts"
+    import { expectAction } from '@robojs/mock/testing'
 
-await expectAction(session.id, {
-  description: 'Bot should respond with pong',
-  type: 'interaction_response',
-  expected: {
-    response_data: {
-      content: 'Pong'
-    }
-  },
-  timeout: 5000
-})
-```
+    await expectAction(session.id, {
+      description: 'Bot should respond with pong',
+      type: 'interaction_response',
+      expected: {
+        response_data: {
+          content: 'Pong'
+        }
+      },
+      timeout: 5000
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/assertions.test.js"
+    import { expectAction } from '@robojs/mock/testing'
+
+    await expectAction(session.id, {
+      description: 'Bot should respond with pong',
+      type: 'interaction_response',
+      expected: {
+        response_data: {
+          content: 'Pong'
+        }
+      },
+      timeout: 5000
+    })
+    ```
+  </Tab>
+</Tabs>
 
 ### Jest Matchers
 
 Use Jest asymmetric matchers in expectations:
 
-```typescript
-await expectAction(session.id, {
-  description: 'Bot sends embed',
-  type: 'message_sent',
-  expected: {
-    embeds: expect.arrayContaining([
-      expect.objectContaining({
-        title: expect.stringContaining('Results')
-      })
-    ])
-  }
-})
-```
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/matchers.test.ts"
+    await expectAction(session.id, {
+      description: 'Bot sends embed',
+      type: 'message_sent',
+      expected: {
+        embeds: expect.arrayContaining([
+          expect.objectContaining({
+            title: expect.stringContaining('Results')
+          })
+        ])
+      }
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/matchers.test.js"
+    await expectAction(session.id, {
+      description: 'Bot sends embed',
+      type: 'message_sent',
+      expected: {
+        embeds: expect.arrayContaining([
+          expect.objectContaining({
+            title: expect.stringContaining('Results')
+          })
+        ])
+      }
+    })
+    ```
+  </Tab>
+</Tabs>
 
 ### expectNoAction
 
 Assert that an action did not occur:
 
-```typescript
-import { expectNoAction } from '@robojs/mock/testing'
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/no-action.test.ts"
+    import { expectNoAction } from '@robojs/mock/testing'
 
-await expectNoAction(session.id, {
-  description: 'Bot should not respond to ignored message',
-  type: 'message_sent',
-  waitMs: 2000  // How long to wait before confirming no action (default: 500ms)
-})
-```
+    await expectNoAction(session.id, {
+      description: 'Bot should not respond to ignored message',
+      type: 'message_sent',
+      waitMs: 2000  // How long to wait before confirming no action (default: 500ms)
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/no-action.test.js"
+    import { expectNoAction } from '@robojs/mock/testing'
+
+    await expectNoAction(session.id, {
+      description: 'Bot should not respond to ignored message',
+      type: 'message_sent',
+      waitMs: 2000  // How long to wait before confirming no action (default: 500ms)
+    })
+    ```
+  </Tab>
+</Tabs>
 
 ### waitForAction
 
 Wait for an action and get the result:
 
-```typescript
-import { waitForAction } from '@robojs/mock/testing'
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/wait-action.test.ts"
+    import { waitForAction } from '@robojs/mock/testing'
 
-const actions = await waitForAction(session.id, {
-  type: 'interaction_response',
-  timeout: 5000
-})
+    const actions = await waitForAction(session.id, {
+      type: 'interaction_response',
+      timeout: 5000
+    })
 
-expect((actions[0].data as any).content).toBe('Success')
-```
+    expect((actions[0].data as any).content).toBe('Success')
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/wait-action.test.js"
+    import { waitForAction } from '@robojs/mock/testing'
+
+    const actions = await waitForAction(session.id, {
+      type: 'interaction_response',
+      timeout: 5000
+    })
+
+    expect(actions[0].data.content).toBe('Success')
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="info">
+For a typed alternative to `(actions[0].data as any)`, see `waitForInteractionResponse` and `waitForMessage` which provide more targeted results. The [Testing API](./testing-api) page covers all available typed helpers.
+</Callout>
 
 ### waitForMessage
 
 Wait specifically for a message:
 
-```typescript
-import { waitForMessage } from '@robojs/mock/testing'
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/wait-message.test.ts"
+    import { waitForMessage } from '@robojs/mock/testing'
 
-const action = await waitForMessage(session.id, {
-  channelId: session.channels[0].id,
-  timeout: 5000
-})
+    const action = await waitForMessage(session.id, {
+      channelId: session.channels[0].id,
+      timeout: 5000
+    })
 
-expect((action.data as any).content).toContain('Welcome')
-```
+    expect((action.data as any).content).toContain('Welcome')
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/wait-message.test.js"
+    import { waitForMessage } from '@robojs/mock/testing'
+
+    const action = await waitForMessage(session.id, {
+      channelId: session.channels[0].id,
+      timeout: 5000
+    })
+
+    expect(action.data.content).toContain('Welcome')
+    ```
+  </Tab>
+</Tabs>
 
 ## Test Lifecycle
 
@@ -288,23 +563,47 @@ expect((action.data as any).content).toContain('Welcome')
 
 Always clean up sessions in `afterAll`:
 
-```typescript
-afterAll(async () => {
-  await session?.destroy()
-})
-```
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    afterAll(async () => {
+      await session?.destroy()
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    afterAll(async () => {
+      await session?.destroy()
+    })
+    ```
+  </Tab>
+</Tabs>
 
 ### Resetting State
 
 Reset session between tests if needed:
 
-```typescript
-import { resetSession } from '@robojs/mock/testing'
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/stateful.test.ts"
+    import { resetSession } from '@robojs/mock/testing'
 
-beforeEach(async () => {
-  await resetSession(session.id)
-})
-```
+    beforeEach(async () => {
+      await resetSession(session.id)
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/stateful.test.js"
+    import { resetSession } from '@robojs/mock/testing'
+
+    beforeEach(async () => {
+      await resetSession(session.id)
+    })
+    ```
+  </Tab>
+</Tabs>
 
 ## Running Tests
 
@@ -315,6 +614,10 @@ npx robo mock test
 ```
 
 This starts the mock server, runs Jest, and keeps the server running for inspection. Use `--no-watch` to exit immediately after tests complete.
+
+<Callout type="info">
+You should see the mock server start on port 6625, followed by Jest running your test files. Passing tests show green checkmarks; failures show red crosses with details.
+</Callout>
 
 ### Manual Mode
 
@@ -336,11 +639,45 @@ For development:
 npx robo mock test --watch
 ```
 
+## Troubleshooting
+
+Common issues and solutions when running automated tests.
+
+### Tests time out waiting for actions
+
+If `expectAction` or `waitForAction` consistently times out:
+
+- **Bot not connected** -- Ensure the mock server is running and the bot has connected before dispatching events. Use `startMockRobo` or verify `npx robo mock start` is active.
+- **Wrong action type** -- Use `getSessionActions(session.id)` to inspect what actions were actually recorded. You may be waiting for `message_sent` when the bot replies via `interaction_response`.
+- **Wrong channel or guild** -- Double-check that `channel_id` and `guild_id` match the session's channels and guilds.
+
+### Session creation fails
+
+- **Server not running** -- `createTestSession` requires a running mock server. Use `npx robo mock test` (which starts one automatically) or start one manually with `npx robo mock start`.
+- **Port conflict** -- If port 6625 is already in use, set a different port with `--port` or `ROBO_MOCK_PORT`.
+
+### Tests pass locally but fail in CI
+
+- **Missing build step** -- Run `npx robo build` before `npx robo mock test` in CI. The bot needs compiled output to start.
+- **Timing differences** -- CI environments are often slower. Increase `timeout` values for assertions that are sensitive to execution speed.
+- **Environment variables** -- Ensure `ROBO_MOCK_MODE=true` and `NODE_ENV=test` are set in your CI environment.
+
+### "Cannot find module" errors
+
+- **Missing dependencies** -- Ensure `@robojs/mock` and `@robojs/server` are both installed. Mock Server requires the server plugin as a peer dependency (a package that must be installed alongside it).
+- **ESM/CJS mismatch** -- If using TypeScript with Jest, ensure `extensionsToTreatAsEsm: ['.ts']` is set in your Jest config and `ts-jest` is configured with `useESM: true`.
+
+### Actions recorded but assertions fail
+
+- **Data shape mismatch** -- The `expected` field in `expectAction` is matched against `action.data`. Use `getSessionActions` to log the full action shape and adjust your `expected` object accordingly.
+- **Stale actions from previous tests** -- Use `resetSession(session.id)` in `beforeEach` or `clearSessionActions(session.id)` to start with a clean action history.
+
 ## CI Integration
 
 ### GitHub Actions
 
 ```yaml
+# .github/workflows/test.yml
 name: Test
 
 on: [push, pull_request]
@@ -400,41 +737,82 @@ Each test file should create its own session. Avoid sharing state between test f
 
 Set appropriate timeouts for async operations:
 
-```typescript
-await expectAction(session.id, {
-  description: 'Slow operation',
-  type: 'message_sent',
-  timeout: 10000  // 10 seconds for slow operations
-})
-```
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    await expectAction(session.id, {
+      description: 'Slow operation',
+      type: 'message_sent',
+      timeout: 10000  // 10 seconds for slow operations
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    await expectAction(session.id, {
+      description: 'Slow operation',
+      type: 'message_sent',
+      timeout: 10000  // 10 seconds for slow operations
+    })
+    ```
+  </Tab>
+</Tabs>
 
 ### Descriptive Assertions
 
 Use clear descriptions in `expectAction`:
 
-```typescript
-// Good
-description: 'Bot should send welcome message with user mention'
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    // Good
+    description: 'Bot should send welcome message with user mention'
 
-// Less helpful
-description: 'Check message'
-```
+    // Less helpful
+    description: 'Check message'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // Good
+    description: 'Bot should send welcome message with user mention'
+
+    // Less helpful
+    description: 'Check message'
+    ```
+  </Tab>
+</Tabs>
 
 ### Sequential vs Parallel
 
 Run tests sequentially when they share external state:
 
-```typescript
-// jest.config.ts
-export default {
-  // Run integration tests sequentially
-  projects: [{
-    displayName: 'integration',
-    testMatch: ['**/__tests__/integration/**/*.test.ts'],
-    runInBand: true
-  }]
-}
-```
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="jest.config.ts"
+    export default {
+      // Run integration tests sequentially
+      projects: [{
+        displayName: 'integration',
+        testMatch: ['**/__tests__/integration/**/*.test.ts'],
+        runInBand: true
+      }]
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="jest.config.js"
+    export default {
+      // Run integration tests sequentially
+      projects: [{
+        displayName: 'integration',
+        testMatch: ['**/__tests__/integration/**/*.test.js'],
+        runInBand: true
+      }]
+    }
+    ```
+  </Tab>
+</Tabs>
 
 ## Next Steps
 

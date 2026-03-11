@@ -45,6 +45,13 @@ Events are filtered by the Stage event system. Common types include:
 | `message_reaction_remove` | Reaction removed |
 | `connected` | Connection established |
 | `heartbeat` | WebSocket heartbeat |
+| `activity.launched` | Activity started in session |
+| `activity.closed` | Activity stopped |
+| `activity.rpc.outbound` | RPC message sent to activity |
+
+<Callout type="info">
+**What to look for:** If your bot doesn't respond, check that the expected event arrives (e.g., `interaction_create`). If it does arrive but there is no `interaction_response`, the issue is in your command handler. Use the type filter to isolate relevant events.
+</Callout>
 
 ## State Tab
 
@@ -89,12 +96,9 @@ session
   notes="Show the summary bar with realistic counts and the tree expanded one or two levels deep. The tree should show the root 'session' node with children like connection, ui, botUser, guilds, etc."
 />
 
-### Use Cases
-
-- Verify guild setup is correct
-- Check that messages are stored in the right channels
-- Inspect user/member data
-- Monitor connection status and event counts
+<Callout type="info">
+**What to look for:** Verify guild setup is correct, check that messages are stored in the right channels, and inspect user/member data. If the summary bar shows unexpected counts (e.g., 0 channels), your session config may be wrong.
+</Callout>
 
 ## Network Tab
 
@@ -151,6 +155,10 @@ A bar chart showing the distribution of event types, sorted by frequency. This h
   aspect="16/9"
   notes="Show the metrics table with realistic values and the bar chart with several event types sorted by frequency. The bar chart should show interaction_create, message_create, etc."
 />
+
+<Callout type="info">
+**What to look for:** A high Avg Response time may indicate slow command handlers. If Events/min is unexpectedly high, your bot may be triggering loops. Check the event type breakdown to see if one type dominates.
+</Callout>
 
 ## Tools Tab
 
@@ -238,6 +246,10 @@ View and manage active permission overrides. Each override shows the target user
 
 View recent permission check failures with timestamp, HTTP method, path, and the missing permissions that caused the denial.
 
+<Callout type="info">
+**Testing permissions:** Set enforcement to "basic" or "strict", use Quick Actions to grant or deny, then trigger bot operations and check the Permission Denied Log to see what was blocked and why.
+</Callout>
+
 <ScreenshotPlaceholder
   alt="DevTools Permissions tab showing enforcement level selector set to strict, quick action buttons for Grant Admin, Deny All, and Reset, a list of active permission overrides, and a denied log with recent permission check failures"
   focus="The Permissions tab with enforcement level, quick actions, permission overrides list, and denied log"
@@ -302,6 +314,79 @@ Each test case shows:
   notes="Show the file list with a mix of passed and failed test files. On the right, show a selected file's test details with status badges, durations, and at least one expanded assertion showing expected vs actual values with a diff."
 />
 
+## Activity Tab
+
+When an activity is running, the Activity tab shows real-time RPC communication between Stage UI and the Activity iframe.
+
+### RPC Message Log
+
+A chronological list of all inbound and outbound RPC messages:
+
+- **Direction indicators** -- Inbound messages (from activity) show a left arrow, outbound messages (to activity) show a right arrow
+- **Command name** -- The RPC command (e.g., `AUTHORIZE`, `GET_USER`, `SUBSCRIBE`)
+- **Nonce** -- Request/response correlation ID
+- **Expandable payload** -- Click any message to see its full JSON payload
+- **Filter** -- Filter messages by command name or direction
+
+### READY Payload
+
+View the full READY event payload that was sent to the activity on launch. This includes the mock user, guild, channel, and configuration data.
+
+### Active Subscriptions
+
+Lists all events the activity has subscribed to via the `SUBSCRIBE` command, with their subscription keys and arguments.
+
+<ScreenshotPlaceholder
+  alt="DevTools Activity tab showing the RPC message log with inbound and outbound messages, direction arrows, command names, and an expanded JSON payload for a selected message"
+  focus="The Activity tab RPC log with message direction indicators and expandable payloads"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show the Activity tab with several RPC messages listed chronologically. Include both inbound (from activity) and outbound (to activity) messages with direction arrows. One message should be expanded showing its JSON payload. Show the READY Payload and Active Subscriptions sections below."
+/>
+
+## Activity Controls
+
+The Tools tab includes activity-specific controls when an activity is running:
+
+### Auth Settings
+
+- **Mode** -- Switch between `auto_approve`, `auto_deny`, and `manual` authentication modes
+- **Default Scopes** -- Configure which OAuth2 scopes are pre-selected
+- **Reset Auth** -- Clear the current auth state to re-test the authorization flow
+
+### Platform State
+
+- **Layout Mode** -- Switch between `focused`, `pip`, and `grid` modes to trigger `ACTIVITY_LAYOUT_MODE_UPDATE` events
+- **Orientation** -- Set orientation to trigger `ORIENTATION_UPDATE` events
+- **Thermal State** -- Set thermal state (`nominal`, `fair`, `serious`, `critical`) to trigger `THERMAL_STATE_UPDATE` events
+
+### IAP Controls
+
+- **SKU Editor** -- Add, edit, or remove mock SKUs (products) for in-app purchase testing
+- **Entitlement Editor** -- Manage mock entitlements (purchased items) for the current user
+
+### URL Mappings
+
+Edit URL mapping rules that control how the Activity Proxy routes requests. Format: prefix → target URL. Changes take effect immediately.
+
+### Toggle Controls
+
+- **CSP Mode** -- Switch between `relaxed` (allow everything) and `discord_strict` (production-like restrictions)
+- **SDK Shim** -- Enable or disable the SDK origin shim that patches `postMessage` origins
+- **Origin Mode** -- Switch between `strict` (validate message origins) and `lenient` (allow mismatches)
+
+### Manual Event Emission
+
+Send any SDK event to the activity manually. Select an event type, configure the payload, and emit it directly. Useful for testing edge cases and event handlers.
+
+<ScreenshotPlaceholder
+  alt="DevTools Tools tab showing activity-specific controls including auth mode selector, platform state controls for layout mode and orientation, IAP SKU editor, URL mappings editor, and toggle switches for CSP mode and SDK shim"
+  focus="The activity controls section in the Tools tab with auth, platform, IAP, URL mapping, and toggle controls"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show the Tools tab scrolled to the activity controls section. Include the auth mode dropdown, platform state controls, IAP SKU list with add/edit buttons, URL mappings table, and toggle switches for CSP mode, SDK shim, and origin mode."
+/>
+
 ## Keyboard Shortcuts
 
 | Shortcut | Action |
@@ -335,37 +420,6 @@ Filter by severity:
   aspect="16/9"
   notes="Show the Logs panel as a separate overlay from DevTools with several log messages in different colors (green for info, yellow for warn, red for error). Include the level filter buttons and search bar at the top."
 />
-
-## Tips
-
-### Debugging Flow Issues
-
-1. Open Events tab
-2. Trigger the problematic flow
-3. Watch events arrive
-4. Check for filtered events
-5. Inspect payloads for unexpected data
-
-### Debugging State Issues
-
-1. Open State tab
-2. Check the summary bar for expected entity counts
-3. Expand the relevant section in the tree viewer
-4. Verify data matches expectations
-
-### Debugging Performance
-
-1. Open Performance tab
-2. Run the slow operation
-3. Check response times and event throughput
-4. Review the event type breakdown for unexpected patterns
-
-### Testing Permissions
-
-1. Open Permissions tab
-2. Set enforcement level to "basic" or "strict"
-3. Use Quick Actions to grant or deny permissions
-4. Trigger bot operations and check the Permission Denied Log
 
 ## Next Steps
 

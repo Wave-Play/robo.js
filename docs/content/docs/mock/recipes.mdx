@@ -5,110 +5,565 @@ description: Common testing patterns
 
 Common patterns and solutions for testing Discord bots with Mock Server.
 
+## Test Utilities Pattern
+
+The `createTestUtils` helper provides a friendlier API than raw dispatch calls. It bundles user management and interaction helpers into a single object:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/utils-example.test.ts"
+    import { startMockRobo, createTestUtils } from '@robojs/mock/testing'
+
+    const bot = await startMockRobo({ name: 'test' })
+    const { users, interactions } = createTestUtils(bot.sessionId)
+
+    // Send messages
+    await interactions.sendMessage(users.current(), channelId, 'Hello')
+
+    // Invoke commands
+    await interactions.invokeCommand(users.current(), 'ping')
+
+    // Invoke commands with options
+    await interactions.invokeCommand(users.current(), 'echo', { message: 'Hello' })
+
+    // Click buttons
+    await interactions.clickButton(users.current(), messageId, 'button-custom-id')
+
+    // Simulate a multi-user conversation (user is a username string)
+    await interactions.conversation(channelId, [
+      { user: 'Alice', content: 'Hello everyone!' },
+      { user: 'Bob', content: 'Hi Alice!' },
+      { user: 'Alice', content: 'How are you?' }
+    ])
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/utils-example.test.js"
+    import { startMockRobo, createTestUtils } from '@robojs/mock/testing'
+
+    const bot = await startMockRobo({ name: 'test' })
+    const { users, interactions } = createTestUtils(bot.sessionId)
+
+    // Send messages
+    await interactions.sendMessage(users.current(), channelId, 'Hello')
+
+    // Invoke commands
+    await interactions.invokeCommand(users.current(), 'ping')
+
+    // Invoke commands with options
+    await interactions.invokeCommand(users.current(), 'echo', { message: 'Hello' })
+
+    // Click buttons
+    await interactions.clickButton(users.current(), messageId, 'button-custom-id')
+
+    // Simulate a multi-user conversation (user is a username string)
+    await interactions.conversation(channelId, [
+      { user: 'Alice', content: 'Hello everyone!' },
+      { user: 'Bob', content: 'Hi Alice!' },
+      { user: 'Alice', content: 'How are you?' }
+    ])
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="info">
+`createTestUtils` accepts a session ID string or a `Session` instance. When using a string, the mock server must be running in the same process (standard mode, not HMR mode).
+</Callout>
+
+## Cleanup Patterns
+
+### Per-Test Reset
+
+Reset between tests:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/stateful-feature.test.ts"
+    import { resetSession } from '@robojs/mock/testing'
+
+    describe('stateful feature', () => {
+      beforeEach(async () => {
+        await resetSession(session.id)
+      })
+
+      it('test 1', async () => {
+        // Clean slate
+      })
+
+      it('test 2', async () => {
+        // Also clean slate
+      })
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/stateful-feature.test.js"
+    import { resetSession } from '@robojs/mock/testing'
+
+    describe('stateful feature', () => {
+      beforeEach(async () => {
+        await resetSession(session.id)
+      })
+
+      it('test 1', async () => {
+        // Clean slate
+      })
+
+      it('test 2', async () => {
+        // Also clean slate
+      })
+    })
+    ```
+  </Tab>
+</Tabs>
+
+### Shared Setup
+
+Share expensive setup:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/feature.test.ts"
+    import { createTestSession, dispatchInteraction, expectAction } from '@robojs/mock/testing'
+    import type { TestSession } from '@robojs/mock/testing'
+
+    describe('feature tests', () => {
+      let session: TestSession
+
+      beforeAll(async () => {
+        session = await createTestSession(__filename, {
+          config: {
+            // Complex config
+          }
+        })
+
+        // Run setup commands once
+        await dispatchInteraction(session.id, {
+          type: 2,                        // APPLICATION_COMMAND
+          data: { name: 'initialize', type: 1 },  // CHAT_INPUT
+          channel_id: session.channels[0].id
+        })
+
+        await expectAction(session.id, {
+          description: 'Setup complete',
+          type: 'interaction_response'
+        })
+      })
+
+      afterAll(async () => {
+        await session?.destroy()
+      })
+
+      // Tests run against initialized state
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/feature.test.js"
+    import { createTestSession, dispatchInteraction, expectAction } from '@robojs/mock/testing'
+
+    describe('feature tests', () => {
+      let session
+
+      beforeAll(async () => {
+        session = await createTestSession(__filename, {
+          config: {
+            // Complex config
+          }
+        })
+
+        // Run setup commands once
+        await dispatchInteraction(session.id, {
+          type: 2,                        // APPLICATION_COMMAND
+          data: { name: 'initialize', type: 1 },  // CHAT_INPUT
+          channel_id: session.channels[0].id
+        })
+
+        await expectAction(session.id, {
+          description: 'Setup complete',
+          type: 'interaction_response'
+        })
+      })
+
+      afterAll(async () => {
+        await session?.destroy()
+      })
+
+      // Tests run against initialized state
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Error Handling
+
+### Invalid Input
+
+Test error responses:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/errors/invalid-input.test.ts"
+    import { dispatchInteraction, expectAction } from '@robojs/mock/testing'
+
+    it('handles invalid input gracefully', async () => {
+      await dispatchInteraction(session.id, {
+        type: 2,                          // APPLICATION_COMMAND
+        data: {
+          name: 'parse',
+          type: 1,                        // CHAT_INPUT
+          options: [{
+            name: 'json',
+            type: 3,                      // STRING
+            value: 'not valid json {'
+          }]
+        },
+        channel_id: session.channels[0].id
+      })
+
+      await expectAction(session.id, {
+        description: 'Bot should return error message',
+        type: 'interaction_response',
+        expected: {
+          response_data: {
+            content: expect.stringContaining('Invalid'),
+            flags: 64                     // EPHEMERAL
+          }
+        }
+      })
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/errors/invalid-input.test.js"
+    import { dispatchInteraction, expectAction } from '@robojs/mock/testing'
+
+    it('handles invalid input gracefully', async () => {
+      await dispatchInteraction(session.id, {
+        type: 2,                          // APPLICATION_COMMAND
+        data: {
+          name: 'parse',
+          type: 1,                        // CHAT_INPUT
+          options: [{
+            name: 'json',
+            type: 3,                      // STRING
+            value: 'not valid json {'
+          }]
+        },
+        channel_id: session.channels[0].id
+      })
+
+      await expectAction(session.id, {
+        description: 'Bot should return error message',
+        type: 'interaction_response',
+        expected: {
+          response_data: {
+            content: expect.stringContaining('Invalid'),
+            flags: 64                     // EPHEMERAL
+          }
+        }
+      })
+    })
+    ```
+  </Tab>
+</Tabs>
+
+### Missing Resources
+
+Test when expected resources don't exist:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/errors/missing-resource.test.ts"
+    import { dispatchInteraction, expectAction } from '@robojs/mock/testing'
+
+    it('handles missing user gracefully', async () => {
+      await dispatchInteraction(session.id, {
+        type: 2,                          // APPLICATION_COMMAND
+        data: {
+          name: 'profile',
+          type: 1,                        // CHAT_INPUT
+          options: [{
+            name: 'user',
+            type: 6,                      // USER
+            value: '999999999999'         // Non-existent user ID
+          }]
+        },
+        channel_id: session.channels[0].id
+      })
+
+      await expectAction(session.id, {
+        description: 'Bot should handle missing user',
+        type: 'interaction_response',
+        expected: {
+          response_data: {
+            content: expect.stringContaining('not found')
+          }
+        }
+      })
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/errors/missing-resource.test.js"
+    import { dispatchInteraction, expectAction } from '@robojs/mock/testing'
+
+    it('handles missing user gracefully', async () => {
+      await dispatchInteraction(session.id, {
+        type: 2,                          // APPLICATION_COMMAND
+        data: {
+          name: 'profile',
+          type: 1,                        // CHAT_INPUT
+          options: [{
+            name: 'user',
+            type: 6,                      // USER
+            value: '999999999999'         // Non-existent user ID
+          }]
+        },
+        channel_id: session.channels[0].id
+      })
+
+      await expectAction(session.id, {
+        description: 'Bot should handle missing user',
+        type: 'interaction_response',
+        expected: {
+          response_data: {
+            content: expect.stringContaining('not found')
+          }
+        }
+      })
+    })
+    ```
+  </Tab>
+</Tabs>
+
 ## Conversation Flows
 
 ### Multi-Turn Dialog
 
 Test a conversation that spans multiple messages:
 
-```typescript
-it('handles multi-turn conversation', async () => {
-  // User starts conversation
-  await dispatchEvent(session.id, 'MESSAGE_CREATE', {
-    id: generateSnowflake(),
-    content: '!quiz start',
-    channel_id: session.channels[0].id,
-    author: { id: '111', username: 'Player' }
-  })
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/conversations/multi-turn.test.ts"
+    import {
+      dispatchEvent,
+      expectAction,
+      waitForMessage,
+      generateSnowflake
+    } from '@robojs/mock/testing'
 
-  // Wait for question
-  const questionAction = await waitForMessage(session.id, {
-    channelId: session.channels[0].id,
-    timeout: 5000
-  })
+    it('handles multi-turn conversation', async () => {
+      // User starts conversation
+      await dispatchEvent(session.id, 'MESSAGE_CREATE', {
+        id: generateSnowflake(),
+        content: '!quiz start',
+        channel_id: session.channels[0].id,
+        author: { id: '111', username: 'Player' }
+      })
 
-  expect((questionAction.data as any).content).toContain('Question 1')
+      // Wait for question
+      const questionAction = await waitForMessage(session.id, {
+        channelId: session.channels[0].id,
+        timeout: 5000
+      })
 
-  // User answers
-  await dispatchEvent(session.id, 'MESSAGE_CREATE', {
-    id: generateSnowflake(),
-    content: 'A',
-    channel_id: session.channels[0].id,
-    author: { id: '111', username: 'Player' }
-  })
+      expect((questionAction.data as any).content).toContain('Question 1')
 
-  // Wait for response
-  await expectAction(session.id, {
-    description: 'Bot should respond to answer',
-    type: 'message_sent',
-    expected: {
-      content: expect.stringMatching(/Correct|Wrong/)
-    }
-  })
-})
-```
+      // User answers
+      await dispatchEvent(session.id, 'MESSAGE_CREATE', {
+        id: generateSnowflake(),
+        content: 'A',
+        channel_id: session.channels[0].id,
+        author: { id: '111', username: 'Player' }
+      })
+
+      // Wait for response
+      await expectAction(session.id, {
+        description: 'Bot should respond to answer',
+        type: 'message_sent',
+        expected: {
+          content: expect.stringMatching(/Correct|Wrong/)
+        }
+      })
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/conversations/multi-turn.test.js"
+    import {
+      dispatchEvent,
+      expectAction,
+      waitForMessage,
+      generateSnowflake
+    } from '@robojs/mock/testing'
+
+    it('handles multi-turn conversation', async () => {
+      // User starts conversation
+      await dispatchEvent(session.id, 'MESSAGE_CREATE', {
+        id: generateSnowflake(),
+        content: '!quiz start',
+        channel_id: session.channels[0].id,
+        author: { id: '111', username: 'Player' }
+      })
+
+      // Wait for question
+      const questionAction = await waitForMessage(session.id, {
+        channelId: session.channels[0].id,
+        timeout: 5000
+      })
+
+      expect(questionAction.data.content).toContain('Question 1')
+
+      // User answers
+      await dispatchEvent(session.id, 'MESSAGE_CREATE', {
+        id: generateSnowflake(),
+        content: 'A',
+        channel_id: session.channels[0].id,
+        author: { id: '111', username: 'Player' }
+      })
+
+      // Wait for response
+      await expectAction(session.id, {
+        description: 'Bot should respond to answer',
+        type: 'message_sent',
+        expected: {
+          content: expect.stringMatching(/Correct|Wrong/)
+        }
+      })
+    })
+    ```
+  </Tab>
+</Tabs>
 
 ### Command Chain
 
 Test commands that lead to other commands:
 
-```typescript
-it('handles setup wizard', async () => {
-  // Step 1: Run setup command
-  await dispatchInteraction(session.id, {
-    type: 2,
-    data: { name: 'setup', type: 1 },
-    channel_id: session.channels[0].id
-  })
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/conversations/command-chain.test.ts"
+    import { dispatchInteraction, expectAction } from '@robojs/mock/testing'
 
-  await expectAction(session.id, {
-    description: 'Shows setup menu',
-    type: 'interaction_response',
-    expected: {
-      response_data: {
-        components: expect.arrayContaining([
-          expect.objectContaining({ type: 1 })
-        ])
-      }
-    }
-  })
+    it('handles setup wizard', async () => {
+      // Step 1: Run setup command
+      await dispatchInteraction(session.id, {
+        type: 2,                          // APPLICATION_COMMAND
+        data: { name: 'setup', type: 1 },  // CHAT_INPUT
+        channel_id: session.channels[0].id
+      })
 
-  // Step 2: Click button
-  await dispatchInteraction(session.id, {
-    type: 3,
-    data: { component_type: 2, custom_id: 'setup:channels' },
-    channel_id: session.channels[0].id,
-    message: { id: '123', content: '' }
-  })
+      await expectAction(session.id, {
+        description: 'Shows setup menu',
+        type: 'interaction_response',
+        expected: {
+          response_data: {
+            components: expect.arrayContaining([
+              expect.objectContaining({ type: 1 })  // ACTION_ROW
+            ])
+          }
+        }
+      })
 
-  // Step 3: Fill modal
-  await dispatchInteraction(session.id, {
-    type: 5,
-    data: {
-      custom_id: 'setup:channels:modal',
-      components: [{
-        type: 1,
-        components: [{
-          type: 4,
-          custom_id: 'channel-name',
-          value: 'announcements'
-        }]
-      }]
-    },
-    channel_id: session.channels[0].id
-  })
+      // Step 2: Click button
+      await dispatchInteraction(session.id, {
+        type: 3,                          // MESSAGE_COMPONENT
+        data: { component_type: 2, custom_id: 'setup:channels' },  // BUTTON
+        channel_id: session.channels[0].id,
+        message: { id: '123', content: '' }
+      })
 
-  await expectAction(session.id, {
-    description: 'Setup completes',
-    type: 'interaction_response',
-    expected: {
-      response_data: {
-        content: expect.stringContaining('complete')
-      }
-    }
-  })
-})
-```
+      // Step 3: Fill modal
+      await dispatchInteraction(session.id, {
+        type: 5,                          // MODAL_SUBMIT
+        data: {
+          custom_id: 'setup:channels:modal',
+          components: [{
+            type: 1,                      // ACTION_ROW
+            components: [{
+              type: 4,                    // TEXT_INPUT
+              custom_id: 'channel-name',
+              value: 'announcements'
+            }]
+          }]
+        },
+        channel_id: session.channels[0].id
+      })
+
+      await expectAction(session.id, {
+        description: 'Setup completes',
+        type: 'interaction_response',
+        expected: {
+          response_data: {
+            content: expect.stringContaining('complete')
+          }
+        }
+      })
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/conversations/command-chain.test.js"
+    import { dispatchInteraction, expectAction } from '@robojs/mock/testing'
+
+    it('handles setup wizard', async () => {
+      // Step 1: Run setup command
+      await dispatchInteraction(session.id, {
+        type: 2,                          // APPLICATION_COMMAND
+        data: { name: 'setup', type: 1 },  // CHAT_INPUT
+        channel_id: session.channels[0].id
+      })
+
+      await expectAction(session.id, {
+        description: 'Shows setup menu',
+        type: 'interaction_response',
+        expected: {
+          response_data: {
+            components: expect.arrayContaining([
+              expect.objectContaining({ type: 1 })  // ACTION_ROW
+            ])
+          }
+        }
+      })
+
+      // Step 2: Click button
+      await dispatchInteraction(session.id, {
+        type: 3,                          // MESSAGE_COMPONENT
+        data: { component_type: 2, custom_id: 'setup:channels' },  // BUTTON
+        channel_id: session.channels[0].id,
+        message: { id: '123', content: '' }
+      })
+
+      // Step 3: Fill modal
+      await dispatchInteraction(session.id, {
+        type: 5,                          // MODAL_SUBMIT
+        data: {
+          custom_id: 'setup:channels:modal',
+          components: [{
+            type: 1,                      // ACTION_ROW
+            components: [{
+              type: 4,                    // TEXT_INPUT
+              custom_id: 'channel-name',
+              value: 'announcements'
+            }]
+          }]
+        },
+        channel_id: session.channels[0].id
+      })
+
+      await expectAction(session.id, {
+        description: 'Setup completes',
+        type: 'interaction_response',
+        expected: {
+          response_data: {
+            content: expect.stringContaining('complete')
+          }
+        }
+      })
+    })
+    ```
+  </Tab>
+</Tabs>
 
 ## Multiple Users
 
@@ -116,47 +571,100 @@ it('handles setup wizard', async () => {
 
 Test scenarios with multiple users:
 
-```typescript
-import { createTestUtils } from '@robojs/mock/testing'
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/multi-user/interactions.test.ts"
+    import {
+      createTestUtils,
+      dispatchEvent,
+      expectAction,
+      generateSnowflake
+    } from '@robojs/mock/testing'
 
-it('handles multiple users', async () => {
-  // Note: createTestUtils with a string ID requires the mock server
-  // to be running in the same process (standard mode, not HMR mode)
-  const { users, interactions } = createTestUtils(session.id)
+    it('handles multiple users', async () => {
+      const { users, interactions } = createTestUtils(session.id)
 
-  const alice = users.create('Alice')
-  const bob = users.create('Bob')
+      const alice = users.create('Alice')
+      const bob = users.create('Bob')
 
-  // Alice sends message
-  await users.as(alice, async () => {
-    await dispatchEvent(session.id, 'MESSAGE_CREATE', {
-      id: generateSnowflake(),
-      content: 'Hello everyone',
-      channel_id: session.channels[0].id,
-      author: { id: alice.id, username: alice.username }
+      // Alice sends message
+      await users.as(alice, async () => {
+        await dispatchEvent(session.id, 'MESSAGE_CREATE', {
+          id: generateSnowflake(),
+          content: 'Hello everyone',
+          channel_id: session.channels[0].id,
+          author: { id: alice.id, username: alice.username }
+        })
+      })
+
+      // Bob reacts
+      await users.as(bob, async () => {
+        await dispatchEvent(session.id, 'MESSAGE_REACTION_ADD', {
+          user_id: bob.id,
+          channel_id: session.channels[0].id,
+          message_id: '123',
+          emoji: { name: '\u{1F44B}' }
+        })
+      })
+
+      // Check bot response
+      await expectAction(session.id, {
+        description: 'Bot welcomes new user',
+        type: 'message_sent',
+        expected: {
+          content: expect.stringContaining('Welcome')
+        }
+      })
     })
-  })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/multi-user/interactions.test.js"
+    import {
+      createTestUtils,
+      dispatchEvent,
+      expectAction,
+      generateSnowflake
+    } from '@robojs/mock/testing'
 
-  // Bob reacts
-  await users.as(bob, async () => {
-    await dispatchEvent(session.id, 'MESSAGE_REACTION_ADD', {
-      user_id: bob.id,
-      channel_id: session.channels[0].id,
-      message_id: '123',
-      emoji: { name: '👋' }
+    it('handles multiple users', async () => {
+      const { users, interactions } = createTestUtils(session.id)
+
+      const alice = users.create('Alice')
+      const bob = users.create('Bob')
+
+      // Alice sends message
+      await users.as(alice, async () => {
+        await dispatchEvent(session.id, 'MESSAGE_CREATE', {
+          id: generateSnowflake(),
+          content: 'Hello everyone',
+          channel_id: session.channels[0].id,
+          author: { id: alice.id, username: alice.username }
+        })
+      })
+
+      // Bob reacts
+      await users.as(bob, async () => {
+        await dispatchEvent(session.id, 'MESSAGE_REACTION_ADD', {
+          user_id: bob.id,
+          channel_id: session.channels[0].id,
+          message_id: '123',
+          emoji: { name: '\u{1F44B}' }
+        })
+      })
+
+      // Check bot response
+      await expectAction(session.id, {
+        description: 'Bot welcomes new user',
+        type: 'message_sent',
+        expected: {
+          content: expect.stringContaining('Welcome')
+        }
+      })
     })
-  })
-
-  // Check bot response
-  await expectAction(session.id, {
-    description: 'Bot welcomes new user',
-    type: 'message_sent',
-    expected: {
-      content: expect.stringContaining('Welcome')
-    }
-  })
-})
-```
+    ```
+  </Tab>
+</Tabs>
 
 <ScreenshotPlaceholder
   alt="Stage UI user switcher showing multiple test users (e.g., Alice and Bob) with different avatars, demonstrating multi-user testing"
@@ -170,121 +678,116 @@ it('handles multiple users', async () => {
 
 Test with users having different permissions:
 
-```typescript
-it('enforces admin-only command', async () => {
-  // Regular user tries admin command
-  await dispatchInteraction(session.id, {
-    type: 2,
-    data: { name: 'ban', type: 1 },
-    channel_id: session.channels[0].id,
-    member: {
-      user: { id: '111', username: 'RegularUser' },
-      roles: [],
-      permissions: '0'
-    }
-  })
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/multi-user/permissions.test.ts"
+    import { dispatchInteraction, expectAction } from '@robojs/mock/testing'
 
-  await expectAction(session.id, {
-    description: 'Access denied',
-    type: 'interaction_response',
-    expected: {
-      response_data: {
-        content: expect.stringContaining('permission'),
-        flags: 64  // Ephemeral
-      }
-    }
-  })
+    it('enforces admin-only command', async () => {
+      // Regular user tries admin command
+      await dispatchInteraction(session.id, {
+        type: 2,                          // APPLICATION_COMMAND
+        data: { name: 'ban', type: 1 },  // CHAT_INPUT
+        channel_id: session.channels[0].id,
+        member: {
+          user: { id: '111', username: 'RegularUser' },
+          roles: [],
+          permissions: '0'
+        }
+      })
 
-  // Admin tries same command
-  await dispatchInteraction(session.id, {
-    type: 2,
-    data: { name: 'ban', type: 1 },
-    channel_id: session.channels[0].id,
-    member: {
-      user: { id: '222', username: 'Admin' },
-      roles: [adminRoleId],
-      permissions: '8'  // ADMINISTRATOR
-    }
-  })
+      await expectAction(session.id, {
+        description: 'Access denied',
+        type: 'interaction_response',
+        expected: {
+          response_data: {
+            content: expect.stringContaining('permission'),
+            flags: 64                     // EPHEMERAL
+          }
+        }
+      })
 
-  await expectAction(session.id, {
-    description: 'Command executes',
-    type: 'interaction_response',
-    expected: {
-      response_data: {
-        content: expect.not.stringContaining('permission')
-      }
-    }
-  })
-})
-```
+      // Admin tries same command
+      const adminRoleId = '888777666555444333'  // Mock admin role ID
 
-## Error Handling
+      await dispatchInteraction(session.id, {
+        type: 2,                          // APPLICATION_COMMAND
+        data: { name: 'ban', type: 1 },  // CHAT_INPUT
+        channel_id: session.channels[0].id,
+        member: {
+          user: { id: '222', username: 'Admin' },
+          roles: [adminRoleId],
+          permissions: '8'                // ADMINISTRATOR
+        }
+      })
 
-### Invalid Input
+      await expectAction(session.id, {
+        description: 'Command executes',
+        type: 'interaction_response',
+        expected: {
+          response_data: {
+            content: expect.not.stringContaining('permission')
+          }
+        }
+      })
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/multi-user/permissions.test.js"
+    import { dispatchInteraction, expectAction } from '@robojs/mock/testing'
 
-Test error responses:
+    it('enforces admin-only command', async () => {
+      // Regular user tries admin command
+      await dispatchInteraction(session.id, {
+        type: 2,                          // APPLICATION_COMMAND
+        data: { name: 'ban', type: 1 },  // CHAT_INPUT
+        channel_id: session.channels[0].id,
+        member: {
+          user: { id: '111', username: 'RegularUser' },
+          roles: [],
+          permissions: '0'
+        }
+      })
 
-```typescript
-it('handles invalid input gracefully', async () => {
-  await dispatchInteraction(session.id, {
-    type: 2,
-    data: {
-      name: 'parse',
-      type: 1,
-      options: [{
-        name: 'json',
-        type: 3,
-        value: 'not valid json {'
-      }]
-    },
-    channel_id: session.channels[0].id
-  })
+      await expectAction(session.id, {
+        description: 'Access denied',
+        type: 'interaction_response',
+        expected: {
+          response_data: {
+            content: expect.stringContaining('permission'),
+            flags: 64                     // EPHEMERAL
+          }
+        }
+      })
 
-  await expectAction(session.id, {
-    description: 'Bot should return error message',
-    type: 'interaction_response',
-    expected: {
-      response_data: {
-        content: expect.stringContaining('Invalid'),
-        flags: 64
-      }
-    }
-  })
-})
-```
+      // Admin tries same command
+      const adminRoleId = '888777666555444333'  // Mock admin role ID
 
-### Missing Resources
+      await dispatchInteraction(session.id, {
+        type: 2,                          // APPLICATION_COMMAND
+        data: { name: 'ban', type: 1 },  // CHAT_INPUT
+        channel_id: session.channels[0].id,
+        member: {
+          user: { id: '222', username: 'Admin' },
+          roles: [adminRoleId],
+          permissions: '8'                // ADMINISTRATOR
+        }
+      })
 
-Test when expected resources don't exist:
-
-```typescript
-it('handles missing user gracefully', async () => {
-  await dispatchInteraction(session.id, {
-    type: 2,
-    data: {
-      name: 'profile',
-      type: 1,
-      options: [{
-        name: 'user',
-        type: 6,
-        value: '999999999999'  // Non-existent user
-      }]
-    },
-    channel_id: session.channels[0].id
-  })
-
-  await expectAction(session.id, {
-    description: 'Bot should handle missing user',
-    type: 'interaction_response',
-    expected: {
-      response_data: {
-        content: expect.stringContaining('not found')
-      }
-    }
-  })
-})
-```
+      await expectAction(session.id, {
+        description: 'Command executes',
+        type: 'interaction_response',
+        expected: {
+          response_data: {
+            content: expect.not.stringContaining('permission')
+          }
+        }
+      })
+    })
+    ```
+  </Tab>
+</Tabs>
 
 ## Timing and Delays
 
@@ -292,63 +795,145 @@ it('handles missing user gracefully', async () => {
 
 Test commands that take time:
 
-```typescript
-it('handles slow operation', async () => {
-  await dispatchInteraction(session.id, {
-    type: 2,
-    data: { name: 'generate', type: 1 },
-    channel_id: session.channels[0].id
-  })
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/timing/deferred.test.ts"
+    import { dispatchInteraction, expectAction } from '@robojs/mock/testing'
 
-  // Check for defer
-  await expectAction(session.id, {
-    description: 'Bot should defer',
-    type: 'interaction_response',
-    expected: {
-      response_type: 5  // DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
-    },
-    timeout: 2000
-  })
+    it('handles slow operation', async () => {
+      await dispatchInteraction(session.id, {
+        type: 2,                          // APPLICATION_COMMAND
+        data: { name: 'generate', type: 1 },  // CHAT_INPUT
+        channel_id: session.channels[0].id
+      })
 
-  // Check for followup
-  await expectAction(session.id, {
-    description: 'Bot should send followup',
-    type: 'interaction_followup',
-    expected: {
-      content: expect.stringContaining('Generated')
-    },
-    timeout: 30000  // Longer timeout for slow operation
-  })
-})
-```
+      // Check for defer
+      await expectAction(session.id, {
+        description: 'Bot should defer',
+        type: 'interaction_response',
+        expected: {
+          response_type: 5               // DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
+        },
+        timeout: 2000
+      })
+
+      // Check for followup
+      await expectAction(session.id, {
+        description: 'Bot should send followup',
+        type: 'interaction_followup',
+        expected: {
+          content: expect.stringContaining('Generated')
+        },
+        timeout: 30000  // Longer timeout for slow operation
+      })
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/timing/deferred.test.js"
+    import { dispatchInteraction, expectAction } from '@robojs/mock/testing'
+
+    it('handles slow operation', async () => {
+      await dispatchInteraction(session.id, {
+        type: 2,                          // APPLICATION_COMMAND
+        data: { name: 'generate', type: 1 },  // CHAT_INPUT
+        channel_id: session.channels[0].id
+      })
+
+      // Check for defer
+      await expectAction(session.id, {
+        description: 'Bot should defer',
+        type: 'interaction_response',
+        expected: {
+          response_type: 5               // DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
+        },
+        timeout: 2000
+      })
+
+      // Check for followup
+      await expectAction(session.id, {
+        description: 'Bot should send followup',
+        type: 'interaction_followup',
+        expected: {
+          content: expect.stringContaining('Generated')
+        },
+        timeout: 30000  // Longer timeout for slow operation
+      })
+    })
+    ```
+  </Tab>
+</Tabs>
 
 ### Rate Limit Retry
 
 Test rate limit handling:
 
-```typescript
-it('retries on rate limit', async () => {
-  // Send many messages quickly
-  for (let i = 0; i < 10; i++) {
-    await dispatchEvent(session.id, 'MESSAGE_CREATE', {
-      id: generateSnowflake(),
-      content: `Message ${i}`,
-      channel_id: session.channels[0].id,
-      author: { id: '111', username: 'Spammer' }
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/timing/rate-limits.test.ts"
+    import {
+      dispatchEvent,
+      generateSnowflake,
+      getSessionActions,
+      sleep
+    } from '@robojs/mock/testing'
+
+    it('retries on rate limit', async () => {
+      // Send many messages quickly
+      for (let i = 0; i < 10; i++) {
+        await dispatchEvent(session.id, 'MESSAGE_CREATE', {
+          id: generateSnowflake(),
+          content: `Message ${i}`,
+          channel_id: session.channels[0].id,
+          author: { id: '111', username: 'Spammer' }
+        })
+      }
+
+      // Give time for retries
+      await sleep(5000)
+
+      // Check all responses arrived
+      const result = await getSessionActions(session.id, {
+        type: 'message_sent'
+      })
+
+      expect(result.actions.length).toBeGreaterThanOrEqual(10)
     })
-  }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/timing/rate-limits.test.js"
+    import {
+      dispatchEvent,
+      generateSnowflake,
+      getSessionActions,
+      sleep
+    } from '@robojs/mock/testing'
 
-  // Give time for retries
-  await sleep(5000)
+    it('retries on rate limit', async () => {
+      // Send many messages quickly
+      for (let i = 0; i < 10; i++) {
+        await dispatchEvent(session.id, 'MESSAGE_CREATE', {
+          id: generateSnowflake(),
+          content: `Message ${i}`,
+          channel_id: session.channels[0].id,
+          author: { id: '111', username: 'Spammer' }
+        })
+      }
 
-  // Check all responses arrived
-  const result = await getSessionActions(session.id, {
-    type: 'message_sent'
-  })
+      // Give time for retries
+      await sleep(5000)
 
-  expect(result.actions.length).toBeGreaterThanOrEqual(10)
-})
-```
+      // Check all responses arrived
+      const result = await getSessionActions(session.id, {
+        type: 'message_sent'
+      })
+
+      expect(result.actions.length).toBeGreaterThanOrEqual(10)
+    })
+    ```
+  </Tab>
+</Tabs>
 
 ## State Verification
 
@@ -356,59 +941,135 @@ it('retries on rate limit', async () => {
 
 Verify state changes after actions:
 
-```typescript
-it('persists settings', async () => {
-  await dispatchInteraction(session.id, {
-    type: 2,
-    data: {
-      name: 'settings',
-      type: 1,
-      options: [
-        { name: 'set', type: 1, options: [
-          { name: 'prefix', type: 3, value: '!' }
-        ]}
-      ]
-    },
-    channel_id: session.channels[0].id
-  })
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/state/database.test.ts"
+    import {
+      dispatchInteraction,
+      expectAction,
+      getSessionState
+    } from '@robojs/mock/testing'
 
-  await expectAction(session.id, {
-    description: 'Settings updated',
-    type: 'interaction_response'
-  })
+    it('persists settings', async () => {
+      await dispatchInteraction(session.id, {
+        type: 2,                          // APPLICATION_COMMAND
+        data: {
+          name: 'settings',
+          type: 1,                        // CHAT_INPUT
+          options: [
+            { name: 'set', type: 1, options: [           // SUB_COMMAND
+              { name: 'prefix', type: 3, value: '!' }    // STRING
+            ]}
+          ]
+        },
+        channel_id: session.channels[0].id
+      })
 
-  // Verify state
-  const state = await getSessionState(session.id)
-  // Check your persistence layer here
-})
-```
+      await expectAction(session.id, {
+        description: 'Settings updated',
+        type: 'interaction_response'
+      })
+
+      // Verify state
+      const state = await getSessionState(session.id)
+      // Check your persistence layer here
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/state/database.test.js"
+    import {
+      dispatchInteraction,
+      expectAction,
+      getSessionState
+    } from '@robojs/mock/testing'
+
+    it('persists settings', async () => {
+      await dispatchInteraction(session.id, {
+        type: 2,                          // APPLICATION_COMMAND
+        data: {
+          name: 'settings',
+          type: 1,                        // CHAT_INPUT
+          options: [
+            { name: 'set', type: 1, options: [           // SUB_COMMAND
+              { name: 'prefix', type: 3, value: '!' }    // STRING
+            ]}
+          ]
+        },
+        channel_id: session.channels[0].id
+      })
+
+      await expectAction(session.id, {
+        description: 'Settings updated',
+        type: 'interaction_response'
+      })
+
+      // Verify state
+      const state = await getSessionState(session.id)
+      // Check your persistence layer here
+    })
+    ```
+  </Tab>
+</Tabs>
 
 ### Message Content
 
 Verify message was stored:
 
-```typescript
-it('stores message history', async () => {
-  await dispatchEvent(session.id, 'MESSAGE_CREATE', {
-    id: '123456789',
-    content: 'Test message',
-    channel_id: session.channels[0].id,
-    author: { id: '111', username: 'TestUser' }
-  })
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/state/messages.test.ts"
+    import { dispatchEvent, getChannelMessages } from '@robojs/mock/testing'
 
-  const messages = await getChannelMessages(
-    session.id,
-    session.channels[0].id
-  )
+    it('stores message history', async () => {
+      await dispatchEvent(session.id, 'MESSAGE_CREATE', {
+        id: '123456789',
+        content: 'Test message',
+        channel_id: session.channels[0].id,
+        author: { id: '111', username: 'TestUser' }
+      })
 
-  expect(messages).toContainEqual(
-    expect.objectContaining({
-      id: '123456789',
-      content: 'Test message'
+      const messages = await getChannelMessages(
+        session.id,
+        session.channels[0].id
+      )
+
+      expect(messages).toContainEqual(
+        expect.objectContaining({
+          id: '123456789',
+          content: 'Test message'
+        })
+      )
     })
-  )
-})
-```
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/state/messages.test.js"
+    import { dispatchEvent, getChannelMessages } from '@robojs/mock/testing'
+
+    it('stores message history', async () => {
+      await dispatchEvent(session.id, 'MESSAGE_CREATE', {
+        id: '123456789',
+        content: 'Test message',
+        channel_id: session.channels[0].id,
+        author: { id: '111', username: 'TestUser' }
+      })
+
+      const messages = await getChannelMessages(
+        session.id,
+        session.channels[0].id
+      )
+
+      expect(messages).toContainEqual(
+        expect.objectContaining({
+          id: '123456789',
+          content: 'Test message'
+        })
+      )
+    })
+    ```
+  </Tab>
+</Tabs>
 
 ## Component Validation
 
@@ -416,184 +1077,504 @@ it('stores message history', async () => {
 
 Verify buttons are disabled after use:
 
-```typescript
-it('disables button after click', async () => {
-  await dispatchInteraction(session.id, {
-    type: 3,
-    data: { component_type: 2, custom_id: 'claim-reward' },
-    channel_id: session.channels[0].id,
-    message: { id: '123', content: '' }
-  })
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/components/button-states.test.ts"
+    import { dispatchInteraction, waitForAction } from '@robojs/mock/testing'
 
-  const response = await waitForAction(session.id, {
-    type: 'interaction_response',
-    timeout: 5000
-  })
+    it('disables button after click', async () => {
+      await dispatchInteraction(session.id, {
+        type: 3,                          // MESSAGE_COMPONENT
+        data: { component_type: 2, custom_id: 'claim-reward' },  // BUTTON
+        channel_id: session.channels[0].id,
+        message: { id: '123', content: '' }
+      })
 
-  const responseData = (response[0].data as any).response_data
-  const button = responseData.components[0].components[0]
-  expect(button.disabled).toBe(true)
-})
-```
+      const response = await waitForAction(session.id, {
+        type: 'interaction_response',
+        timeout: 5000
+      })
+
+      const responseData = (response[0].data as any).response_data
+      const button = responseData.components[0].components[0]
+      expect(button.disabled).toBe(true)
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/components/button-states.test.js"
+    import { dispatchInteraction, waitForAction } from '@robojs/mock/testing'
+
+    it('disables button after click', async () => {
+      await dispatchInteraction(session.id, {
+        type: 3,                          // MESSAGE_COMPONENT
+        data: { component_type: 2, custom_id: 'claim-reward' },  // BUTTON
+        channel_id: session.channels[0].id,
+        message: { id: '123', content: '' }
+      })
+
+      const response = await waitForAction(session.id, {
+        type: 'interaction_response',
+        timeout: 5000
+      })
+
+      const responseData = response[0].data.response_data
+      const button = responseData.components[0].components[0]
+      expect(button.disabled).toBe(true)
+    })
+    ```
+  </Tab>
+</Tabs>
 
 ### Select Default Values
 
 Verify select menu defaults:
 
-```typescript
-it('shows current selection as default', async () => {
-  await dispatchInteraction(session.id, {
-    type: 2,
-    data: { name: 'preferences', type: 1 },
-    channel_id: session.channels[0].id
-  })
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/components/select-defaults.test.ts"
+    import { dispatchInteraction, waitForAction } from '@robojs/mock/testing'
 
-  const response = await waitForAction(session.id, {
-    type: 'interaction_response',
-    timeout: 5000
-  })
+    it('shows current selection as default', async () => {
+      await dispatchInteraction(session.id, {
+        type: 2,                          // APPLICATION_COMMAND
+        data: { name: 'preferences', type: 1 },  // CHAT_INPUT
+        channel_id: session.channels[0].id
+      })
 
-  const responseData = (response[0].data as any).response_data
-  const select = responseData.components[0].components[0]
-  expect(select.options).toContainEqual(
-    expect.objectContaining({
-      value: 'current-pref',
-      default: true
+      const response = await waitForAction(session.id, {
+        type: 'interaction_response',
+        timeout: 5000
+      })
+
+      const responseData = (response[0].data as any).response_data
+      const select = responseData.components[0].components[0]
+      expect(select.options).toContainEqual(
+        expect.objectContaining({
+          value: 'current-pref',
+          default: true
+        })
+      )
     })
-  )
-})
-```
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/components/select-defaults.test.js"
+    import { dispatchInteraction, waitForAction } from '@robojs/mock/testing'
 
-## Cleanup Patterns
+    it('shows current selection as default', async () => {
+      await dispatchInteraction(session.id, {
+        type: 2,                          // APPLICATION_COMMAND
+        data: { name: 'preferences', type: 1 },  // CHAT_INPUT
+        channel_id: session.channels[0].id
+      })
 
-### Per-Test Reset
+      const response = await waitForAction(session.id, {
+        type: 'interaction_response',
+        timeout: 5000
+      })
 
-Reset between tests:
-
-```typescript
-describe('stateful feature', () => {
-  beforeEach(async () => {
-    await resetSession(session.id)
-  })
-
-  it('test 1', async () => {
-    // Clean slate
-  })
-
-  it('test 2', async () => {
-    // Also clean slate
-  })
-})
-```
-
-### Shared Setup
-
-Share expensive setup:
-
-```typescript
-describe('feature tests', () => {
-  let session: TestSession
-
-  beforeAll(async () => {
-    session = await createTestSession(__filename, {
-      config: {
-        // Complex config
-      }
+      const responseData = response[0].data.response_data
+      const select = responseData.components[0].components[0]
+      expect(select.options).toContainEqual(
+        expect.objectContaining({
+          value: 'current-pref',
+          default: true
+        })
+      )
     })
+    ```
+  </Tab>
+</Tabs>
 
-    // Run setup commands once
-    await dispatchInteraction(session.id, {
-      type: 2,
-      data: { name: 'initialize', type: 1 },
-      channel_id: session.channels[0].id
+## Voice Channel Testing
+
+### Voice State
+
+Test voice channel join, leave, and state changes. Note that mock voice does not process actual audio -- it simulates the gateway protocol.
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/voice/voice-state.test.ts"
+    import {
+      startMockRobo,
+      dispatchEvent,
+      waitForAction,
+      expectAction,
+      generateSnowflake
+    } from '@robojs/mock/testing'
+    import type { MockRoboHandle } from '@robojs/mock/testing'
+
+    describe('voice channels', () => {
+      let bot: MockRoboHandle
+
+      beforeAll(async () => {
+        bot = await startMockRobo({
+          name: 'voice-test',
+          testFilePath: __filename
+        })
+      })
+
+      afterAll(async () => {
+        await bot.stop()
+      })
+
+      it('detects user joining voice channel', async () => {
+        const userId = generateSnowflake()
+        const voiceChannelId = bot.channels.find(c => c.type === 2)?.id  // 2 = Voice
+
+        // Dispatch a voice state update (user joins voice)
+        await dispatchEvent(bot.sessionId, 'VOICE_STATE_UPDATE', {
+          guild_id: bot.guildId,
+          channel_id: voiceChannelId,
+          user_id: userId,
+          session_id: 'voice-session-123',
+          deaf: false,
+          mute: false,
+          self_deaf: false,
+          self_mute: false,
+          suppress: false
+        })
+
+        // Verify bot responds to voice join
+        await expectAction(bot.sessionId, {
+          description: 'Bot acknowledges voice join',
+          type: 'message_sent',
+          expected: {
+            content: expect.stringContaining('joined')
+          },
+          timeout: 5000
+        })
+      })
+
+      it('detects user leaving voice channel', async () => {
+        const userId = generateSnowflake()
+
+        // User leaves voice (channel_id: null)
+        await dispatchEvent(bot.sessionId, 'VOICE_STATE_UPDATE', {
+          guild_id: bot.guildId,
+          channel_id: null,
+          user_id: userId,
+          session_id: 'voice-session-123',
+          deaf: false,
+          mute: false,
+          self_deaf: false,
+          self_mute: false,
+          suppress: false
+        })
+
+        // Check that the voice state update was dispatched to the bot
+        await waitForAction(bot.sessionId, {
+          type: 'dispatch',
+          filter: (a) => {
+            const data = a.data as { t?: string }
+            return data.t === 'VOICE_STATE_UPDATE'
+          },
+          timeout: 5000
+        })
+      })
+
+      it('tracks mute and deaf state', async () => {
+        const userId = generateSnowflake()
+        const voiceChannelId = bot.channels.find(c => c.type === 2)?.id  // 2 = Voice
+
+        // User joins muted
+        await dispatchEvent(bot.sessionId, 'VOICE_STATE_UPDATE', {
+          guild_id: bot.guildId,
+          channel_id: voiceChannelId,
+          user_id: userId,
+          session_id: 'voice-session-456',
+          deaf: false,
+          mute: false,
+          self_deaf: false,
+          self_mute: true,
+          suppress: false
+        })
+
+        // Verify the voice state was recorded
+        const actions = await waitForAction(bot.sessionId, {
+          type: 'dispatch',
+          filter: (a) => {
+            const data = a.data as { t?: string }
+            return data.t === 'VOICE_STATE_UPDATE'
+          },
+          timeout: 5000
+        })
+
+        expect(actions.length).toBeGreaterThan(0)
+      })
     })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/voice/voice-state.test.js"
+    import {
+      startMockRobo,
+      dispatchEvent,
+      waitForAction,
+      expectAction,
+      generateSnowflake
+    } from '@robojs/mock/testing'
 
-    await expectAction(session.id, {
-      description: 'Setup complete',
-      type: 'interaction_response'
+    describe('voice channels', () => {
+      let bot
+
+      beforeAll(async () => {
+        bot = await startMockRobo({
+          name: 'voice-test',
+          testFilePath: __filename
+        })
+      })
+
+      afterAll(async () => {
+        await bot.stop()
+      })
+
+      it('detects user joining voice channel', async () => {
+        const userId = generateSnowflake()
+        const voiceChannelId = bot.channels.find(c => c.type === 2)?.id  // 2 = Voice
+
+        // Dispatch a voice state update (user joins voice)
+        await dispatchEvent(bot.sessionId, 'VOICE_STATE_UPDATE', {
+          guild_id: bot.guildId,
+          channel_id: voiceChannelId,
+          user_id: userId,
+          session_id: 'voice-session-123',
+          deaf: false,
+          mute: false,
+          self_deaf: false,
+          self_mute: false,
+          suppress: false
+        })
+
+        // Verify bot responds to voice join
+        await expectAction(bot.sessionId, {
+          description: 'Bot acknowledges voice join',
+          type: 'message_sent',
+          expected: {
+            content: expect.stringContaining('joined')
+          },
+          timeout: 5000
+        })
+      })
+
+      it('detects user leaving voice channel', async () => {
+        const userId = generateSnowflake()
+
+        // User leaves voice (channel_id: null)
+        await dispatchEvent(bot.sessionId, 'VOICE_STATE_UPDATE', {
+          guild_id: bot.guildId,
+          channel_id: null,
+          user_id: userId,
+          session_id: 'voice-session-123',
+          deaf: false,
+          mute: false,
+          self_deaf: false,
+          self_mute: false,
+          suppress: false
+        })
+
+        // Check that the voice state update was dispatched to the bot
+        await waitForAction(bot.sessionId, {
+          type: 'dispatch',
+          filter: (a) => {
+            return a.data.t === 'VOICE_STATE_UPDATE'
+          },
+          timeout: 5000
+        })
+      })
+
+      it('tracks mute and deaf state', async () => {
+        const userId = generateSnowflake()
+        const voiceChannelId = bot.channels.find(c => c.type === 2)?.id  // 2 = Voice
+
+        // User joins muted
+        await dispatchEvent(bot.sessionId, 'VOICE_STATE_UPDATE', {
+          guild_id: bot.guildId,
+          channel_id: voiceChannelId,
+          user_id: userId,
+          session_id: 'voice-session-456',
+          deaf: false,
+          mute: false,
+          self_deaf: false,
+          self_mute: true,
+          suppress: false
+        })
+
+        // Verify the voice state was recorded
+        const actions = await waitForAction(bot.sessionId, {
+          type: 'dispatch',
+          filter: (a) => {
+            return a.data.t === 'VOICE_STATE_UPDATE'
+          },
+          timeout: 5000
+        })
+
+        expect(actions.length).toBeGreaterThan(0)
+      })
     })
-  })
+    ```
+  </Tab>
+</Tabs>
 
-  afterAll(async () => {
-    await session?.destroy()
-  })
+<Callout type="info">
+The mock server simulates the Discord Voice Gateway protocol (including WSS on port 50001) but does not process actual audio streams. Use these tests to verify your bot's voice state handling logic.
+</Callout>
 
-  // Tests run against initialized state
-})
-```
+<ScreenshotPlaceholder
+  alt="Stage UI voice channel view showing connected users with visual indicators for mute, deafen, and speaking states"
+  focus="Voice channel with connected users displaying various voice state indicators"
+  zoom="100%"
+  aspect="16/9"
+  notes="Show a voice channel with 2-3 users connected displaying different states: one speaking (green outline), one self-muted (microphone slash icon), one deafened (headphone slash icon). This demonstrates the voice state testing capabilities."
+/>
 
 ## HMR Testing
+
+<Callout type="warn">
+HMR (Hot Module Replacement) testing is an advanced pattern. It requires `startMockRobo` with `hmr: true` and involves modifying source files at runtime. Make sure you are comfortable with standard automated testing before using this.
+</Callout>
 
 ### Hot Module Replacement
 
 Test that your bot handles hot module replacement correctly by starting in HMR mode:
 
-```typescript
-import { startMockRobo, dispatchInteraction, waitForAction } from '@robojs/mock/testing'
-import type { MockRoboHandle } from '@robojs/mock/testing'
-import { writeFileSync, readFileSync } from 'node:fs'
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/hmr/reload.test.ts"
+    import { startMockRobo, dispatchInteraction, waitForAction } from '@robojs/mock/testing'
+    import type { MockRoboHandle } from '@robojs/mock/testing'
+    import { writeFileSync, readFileSync } from 'node:fs'
 
-describe('HMR', () => {
-  let bot: MockRoboHandle
+    describe('HMR', () => {
+      let bot: MockRoboHandle
 
-  beforeAll(async () => {
-    bot = await startMockRobo({
-      name: 'hmr-test',
-      testFilePath: __filename,
-      hmr: true
-    })
-  })
-
-  afterAll(async () => {
-    await bot.stop()
-  })
-
-  it('reloads command handler after file change', async () => {
-    // Verify initial response
-    await dispatchInteraction(bot.sessionId, {
-      type: 2,
-      data: { name: 'ping', type: 1 },
-      channel_id: bot.channels[0].id
-    })
-
-    await waitForAction(bot.sessionId, {
-      type: 'interaction_response',
-      timeout: 5000
-    })
-
-    // Capture HMR count BEFORE modifying the file
-    const hmrCount = bot.getHmrCount!()
-
-    // Modify the command handler
-    const handlerPath = 'src/commands/ping.ts'
-    const original = readFileSync(handlerPath, 'utf-8')
-    writeFileSync(handlerPath, original.replace('Pong!', 'Pong v2!'))
-
-    try {
-      // Wait for HMR to pick up the change
-      await bot.waitForHmrReload!(15000, hmrCount)
-
-      // Test the updated handler
-      await dispatchInteraction(bot.sessionId, {
-        type: 2,
-        data: { name: 'ping', type: 1 },
-        channel_id: bot.channels[0].id
+      beforeAll(async () => {
+        bot = await startMockRobo({
+          name: 'hmr-test',
+          testFilePath: __filename,
+          hmr: true
+        })
       })
 
-      const actions = await waitForAction(bot.sessionId, {
-        type: 'interaction_response',
-        timeout: 5000
+      afterAll(async () => {
+        await bot.stop()
       })
 
-      const data = actions[0].data as { response_data?: { content?: string } }
-      expect(data.response_data?.content).toContain('Pong v2!')
-    } finally {
-      // Restore the original file
-      writeFileSync(handlerPath, original)
-    }
-  })
-})
-```
+      it('reloads command handler after file change', async () => {
+        // Verify initial response
+        await dispatchInteraction(bot.sessionId, {
+          type: 2,                        // APPLICATION_COMMAND
+          data: { name: 'ping', type: 1 },  // CHAT_INPUT
+          channel_id: bot.channels[0].id
+        })
+
+        await waitForAction(bot.sessionId, {
+          type: 'interaction_response',
+          timeout: 5000
+        })
+
+        // Capture HMR count BEFORE modifying the file
+        const hmrCount = bot.getHmrCount!()
+
+        // Modify the command handler
+        const handlerPath = 'src/commands/ping.ts'
+        const original = readFileSync(handlerPath, 'utf-8')
+        writeFileSync(handlerPath, original.replace('Pong!', 'Pong v2!'))
+
+        try {
+          // Wait for HMR to pick up the change
+          await bot.waitForHmrReload!(15000, hmrCount)
+
+          // Test the updated handler
+          await dispatchInteraction(bot.sessionId, {
+            type: 2,                      // APPLICATION_COMMAND
+            data: { name: 'ping', type: 1 },  // CHAT_INPUT
+            channel_id: bot.channels[0].id
+          })
+
+          const actions = await waitForAction(bot.sessionId, {
+            type: 'interaction_response',
+            timeout: 5000
+          })
+
+          const data = actions[0].data as { response_data?: { content?: string } }
+          expect(data.response_data?.content).toContain('Pong v2!')
+        } finally {
+          // Restore the original file
+          writeFileSync(handlerPath, original)
+        }
+      })
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/hmr/reload.test.js"
+    import { startMockRobo, dispatchInteraction, waitForAction } from '@robojs/mock/testing'
+    import { writeFileSync, readFileSync } from 'node:fs'
+
+    describe('HMR', () => {
+      let bot
+
+      beforeAll(async () => {
+        bot = await startMockRobo({
+          name: 'hmr-test',
+          testFilePath: __filename,
+          hmr: true
+        })
+      })
+
+      afterAll(async () => {
+        await bot.stop()
+      })
+
+      it('reloads command handler after file change', async () => {
+        // Verify initial response
+        await dispatchInteraction(bot.sessionId, {
+          type: 2,                        // APPLICATION_COMMAND
+          data: { name: 'ping', type: 1 },  // CHAT_INPUT
+          channel_id: bot.channels[0].id
+        })
+
+        await waitForAction(bot.sessionId, {
+          type: 'interaction_response',
+          timeout: 5000
+        })
+
+        // Capture HMR count BEFORE modifying the file
+        const hmrCount = bot.getHmrCount()
+
+        // Modify the command handler
+        const handlerPath = 'src/commands/ping.js'
+        const original = readFileSync(handlerPath, 'utf-8')
+        writeFileSync(handlerPath, original.replace('Pong!', 'Pong v2!'))
+
+        try {
+          // Wait for HMR to pick up the change
+          await bot.waitForHmrReload(15000, hmrCount)
+
+          // Test the updated handler
+          await dispatchInteraction(bot.sessionId, {
+            type: 2,                      // APPLICATION_COMMAND
+            data: { name: 'ping', type: 1 },  // CHAT_INPUT
+            channel_id: bot.channels[0].id
+          })
+
+          const actions = await waitForAction(bot.sessionId, {
+            type: 'interaction_response',
+            timeout: 5000
+          })
+
+          expect(actions[0].data.response_data?.content).toContain('Pong v2!')
+        } finally {
+          // Restore the original file
+          writeFileSync(handlerPath, original)
+        }
+      })
+    })
+    ```
+  </Tab>
+</Tabs>
 
 **HMR-specific properties on `MockRoboHandle`:**
 
@@ -616,261 +1597,377 @@ HMR fires for changes to command handlers, event handlers, and other hot-reloada
   notes="Show a split view or sequential capture: the terminal output showing an HMR reload event (file changed, module reloaded), and the Stage UI message area showing the bot's updated response after the reload."
 />
 
-## Voice Channel Testing
-
-### Voice State
-
-Test voice channel join, leave, and state changes. Note that mock voice does not process actual audio -- it simulates the gateway protocol.
-
-```typescript
-import {
-  startMockRobo,
-  dispatchEvent,
-  waitForAction,
-  expectAction,
-  generateSnowflake
-} from '@robojs/mock/testing'
-import type { MockRoboHandle } from '@robojs/mock/testing'
-
-describe('voice channels', () => {
-  let bot: MockRoboHandle
-
-  beforeAll(async () => {
-    bot = await startMockRobo({
-      name: 'voice-test',
-      testFilePath: __filename
-    })
-  })
-
-  afterAll(async () => {
-    await bot.stop()
-  })
-
-  it('detects user joining voice channel', async () => {
-    const userId = generateSnowflake()
-    const voiceChannelId = bot.channels.find(c => c.type === 2)?.id
-
-    // Dispatch a voice state update (user joins voice)
-    await dispatchEvent(bot.sessionId, 'VOICE_STATE_UPDATE', {
-      guild_id: bot.guildId,
-      channel_id: voiceChannelId,
-      user_id: userId,
-      session_id: 'voice-session-123',
-      deaf: false,
-      mute: false,
-      self_deaf: false,
-      self_mute: false,
-      suppress: false
-    })
-
-    // Verify bot responds to voice join
-    await expectAction(bot.sessionId, {
-      description: 'Bot acknowledges voice join',
-      type: 'message_sent',
-      expected: {
-        content: expect.stringContaining('joined')
-      },
-      timeout: 5000
-    })
-  })
-
-  it('detects user leaving voice channel', async () => {
-    const userId = generateSnowflake()
-
-    // User leaves voice (channel_id: null)
-    await dispatchEvent(bot.sessionId, 'VOICE_STATE_UPDATE', {
-      guild_id: bot.guildId,
-      channel_id: null,
-      user_id: userId,
-      session_id: 'voice-session-123',
-      deaf: false,
-      mute: false,
-      self_deaf: false,
-      self_mute: false,
-      suppress: false
-    })
-
-    // Check that the voice state update was dispatched to the bot
-    await waitForAction(bot.sessionId, {
-      type: 'dispatch',
-      filter: (a) => {
-        const data = a.data as { t?: string }
-        return data.t === 'VOICE_STATE_UPDATE'
-      },
-      timeout: 5000
-    })
-  })
-
-  it('tracks mute and deaf state', async () => {
-    const userId = generateSnowflake()
-    const voiceChannelId = bot.channels.find(c => c.type === 2)?.id
-
-    // User joins muted
-    await dispatchEvent(bot.sessionId, 'VOICE_STATE_UPDATE', {
-      guild_id: bot.guildId,
-      channel_id: voiceChannelId,
-      user_id: userId,
-      session_id: 'voice-session-456',
-      deaf: false,
-      mute: false,
-      self_deaf: false,
-      self_mute: true,
-      suppress: false
-    })
-
-    // Verify the voice state was recorded
-    const actions = await waitForAction(bot.sessionId, {
-      type: 'dispatch',
-      filter: (a) => {
-        const data = a.data as { t?: string }
-        return data.t === 'VOICE_STATE_UPDATE'
-      },
-      timeout: 5000
-    })
-
-    expect(actions.length).toBeGreaterThan(0)
-  })
-})
-```
-
-<Callout type="info">
-The mock server simulates the Discord Voice Gateway protocol (including WSS on port 50001) but does not process actual audio streams. Use these tests to verify your bot's voice state handling logic.
-</Callout>
-
-<ScreenshotPlaceholder
-  alt="Stage UI voice channel view showing connected users with visual indicators for mute, deafen, and speaking states"
-  focus="Voice channel with connected users displaying various voice state indicators"
-  zoom="100%"
-  aspect="16/9"
-  notes="Show a voice channel with 2-3 users connected displaying different states: one speaking (green outline), one self-muted (microphone slash icon), one deafened (headphone slash icon). This demonstrates the voice state testing capabilities."
-/>
-
 ## Multi-Guild Testing
 
 ### Cross-Guild Behavior
 
 Test bots that operate across multiple guilds by configuring multiple guilds in the session:
 
-```typescript
-import {
-  startMockRobo,
-  dispatchInteraction,
-  dispatchEvent,
-  expectAction,
-  waitForAction,
-  generateSnowflake,
-  createTestSession
-} from '@robojs/mock/testing'
-import type { TestSession } from '@robojs/mock/testing'
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/multi-guild/cross-guild.test.ts"
+    import {
+      startMockRobo,
+      dispatchInteraction,
+      dispatchEvent,
+      expectAction,
+      waitForAction,
+      generateSnowflake,
+      createTestSession
+    } from '@robojs/mock/testing'
+    import type { TestSession } from '@robojs/mock/testing'
 
-describe('multi-guild', () => {
-  let session: TestSession
+    describe('multi-guild', () => {
+      let session: TestSession
 
-  beforeAll(async () => {
-    session = await createTestSession(__filename, {
-      config: {
-        guilds: [
-          {
-            name: 'Primary Server',
-            channels: [
-              { name: 'general', type: 0 },
-              { name: 'admin', type: 0 }
-            ]
-          },
-          {
-            name: 'Secondary Server',
-            channels: [
-              { name: 'general', type: 0 },
-              { name: 'logs', type: 0 }
+      beforeAll(async () => {
+        session = await createTestSession(__filename, {
+          config: {
+            guilds: [
+              {
+                name: 'Primary Server',
+                channels: [
+                  { name: 'general', type: 0 },   // 0 = Text
+                  { name: 'admin', type: 0 }       // 0 = Text
+                ]
+              },
+              {
+                name: 'Secondary Server',
+                channels: [
+                  { name: 'general', type: 0 },   // 0 = Text
+                  { name: 'logs', type: 0 }        // 0 = Text
+                ]
+              }
             ]
           }
-        ]
-      }
+        })
+      })
+
+      afterAll(async () => {
+        await session.destroy()
+      })
+
+      it('has two guilds configured', () => {
+        expect(session.guilds).toHaveLength(2)
+        expect(session.guilds[0].name).toBe('Primary Server')
+        expect(session.guilds[1].name).toBe('Secondary Server')
+      })
+
+      it('responds independently per guild', async () => {
+        const primaryGuild = session.guilds[0]
+        const secondaryGuild = session.guilds[1]
+        const primaryChannel = session.channels.find(
+          c => c.guildId === primaryGuild.id
+        )!
+        const secondaryChannel = session.channels.find(
+          c => c.guildId === secondaryGuild.id
+        )!
+
+        // Command in primary guild
+        await dispatchInteraction(session.id, {
+          type: 2,                        // APPLICATION_COMMAND
+          data: { name: 'serverinfo', type: 1 },  // CHAT_INPUT
+          channel_id: primaryChannel.id,
+          guild_id: primaryGuild.id
+        })
+
+        await expectAction(session.id, {
+          description: 'Response includes primary guild name',
+          type: 'interaction_response',
+          expected: {
+            response_data: {
+              content: expect.stringContaining('Primary Server')
+            }
+          }
+        })
+
+        // Same command in secondary guild
+        await dispatchInteraction(session.id, {
+          type: 2,                        // APPLICATION_COMMAND
+          data: { name: 'serverinfo', type: 1 },  // CHAT_INPUT
+          channel_id: secondaryChannel.id,
+          guild_id: secondaryGuild.id
+        })
+
+        await expectAction(session.id, {
+          description: 'Response includes secondary guild name',
+          type: 'interaction_response',
+          expected: {
+            response_data: {
+              content: expect.stringContaining('Secondary Server')
+            }
+          }
+        })
+      })
+
+      it('dispatches events to specific guilds', async () => {
+        const secondaryGuild = session.guilds[1]
+        const logsChannel = session.channels.find(
+          c => c.guildId === secondaryGuild.id && c.name === 'logs'
+        )!
+
+        await dispatchEvent(session.id, 'MESSAGE_CREATE', {
+          id: generateSnowflake(),
+          content: '!log test entry',
+          channel_id: logsChannel.id,
+          guild_id: secondaryGuild.id,
+          author: { id: '111', username: 'Logger' }
+        })
+
+        await waitForAction(session.id, {
+          type: 'message_sent',
+          timeout: 5000
+        })
+      })
     })
-  })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/multi-guild/cross-guild.test.js"
+    import {
+      startMockRobo,
+      dispatchInteraction,
+      dispatchEvent,
+      expectAction,
+      waitForAction,
+      generateSnowflake,
+      createTestSession
+    } from '@robojs/mock/testing'
 
-  afterAll(async () => {
-    await session.destroy()
-  })
+    describe('multi-guild', () => {
+      let session
 
-  it('has two guilds configured', () => {
-    expect(session.guilds).toHaveLength(2)
-    expect(session.guilds[0].name).toBe('Primary Server')
-    expect(session.guilds[1].name).toBe('Secondary Server')
-  })
+      beforeAll(async () => {
+        session = await createTestSession(__filename, {
+          config: {
+            guilds: [
+              {
+                name: 'Primary Server',
+                channels: [
+                  { name: 'general', type: 0 },   // 0 = Text
+                  { name: 'admin', type: 0 }       // 0 = Text
+                ]
+              },
+              {
+                name: 'Secondary Server',
+                channels: [
+                  { name: 'general', type: 0 },   // 0 = Text
+                  { name: 'logs', type: 0 }        // 0 = Text
+                ]
+              }
+            ]
+          }
+        })
+      })
 
-  it('responds independently per guild', async () => {
-    const primaryGuild = session.guilds[0]
-    const secondaryGuild = session.guilds[1]
-    const primaryChannel = session.channels.find(
-      c => c.guildId === primaryGuild.id
-    )!
-    const secondaryChannel = session.channels.find(
-      c => c.guildId === secondaryGuild.id
-    )!
+      afterAll(async () => {
+        await session.destroy()
+      })
 
-    // Command in primary guild
-    await dispatchInteraction(session.id, {
-      type: 2,
-      data: { name: 'serverinfo', type: 1 },
-      channel_id: primaryChannel.id,
-      guild_id: primaryGuild.id
+      it('has two guilds configured', () => {
+        expect(session.guilds).toHaveLength(2)
+        expect(session.guilds[0].name).toBe('Primary Server')
+        expect(session.guilds[1].name).toBe('Secondary Server')
+      })
+
+      it('responds independently per guild', async () => {
+        const primaryGuild = session.guilds[0]
+        const secondaryGuild = session.guilds[1]
+        const primaryChannel = session.channels.find(
+          c => c.guildId === primaryGuild.id
+        )
+        const secondaryChannel = session.channels.find(
+          c => c.guildId === secondaryGuild.id
+        )
+
+        // Command in primary guild
+        await dispatchInteraction(session.id, {
+          type: 2,                        // APPLICATION_COMMAND
+          data: { name: 'serverinfo', type: 1 },  // CHAT_INPUT
+          channel_id: primaryChannel.id,
+          guild_id: primaryGuild.id
+        })
+
+        await expectAction(session.id, {
+          description: 'Response includes primary guild name',
+          type: 'interaction_response',
+          expected: {
+            response_data: {
+              content: expect.stringContaining('Primary Server')
+            }
+          }
+        })
+
+        // Same command in secondary guild
+        await dispatchInteraction(session.id, {
+          type: 2,                        // APPLICATION_COMMAND
+          data: { name: 'serverinfo', type: 1 },  // CHAT_INPUT
+          channel_id: secondaryChannel.id,
+          guild_id: secondaryGuild.id
+        })
+
+        await expectAction(session.id, {
+          description: 'Response includes secondary guild name',
+          type: 'interaction_response',
+          expected: {
+            response_data: {
+              content: expect.stringContaining('Secondary Server')
+            }
+          }
+        })
+      })
+
+      it('dispatches events to specific guilds', async () => {
+        const secondaryGuild = session.guilds[1]
+        const logsChannel = session.channels.find(
+          c => c.guildId === secondaryGuild.id && c.name === 'logs'
+        )
+
+        await dispatchEvent(session.id, 'MESSAGE_CREATE', {
+          id: generateSnowflake(),
+          content: '!log test entry',
+          channel_id: logsChannel.id,
+          guild_id: secondaryGuild.id,
+          author: { id: '111', username: 'Logger' }
+        })
+
+        await waitForAction(session.id, {
+          type: 'message_sent',
+          timeout: 5000
+        })
+      })
     })
-
-    await expectAction(session.id, {
-      description: 'Response includes primary guild name',
-      type: 'interaction_response',
-      expected: {
-        response_data: {
-          content: expect.stringContaining('Primary Server')
-        }
-      }
-    })
-
-    // Same command in secondary guild
-    await dispatchInteraction(session.id, {
-      type: 2,
-      data: { name: 'serverinfo', type: 1 },
-      channel_id: secondaryChannel.id,
-      guild_id: secondaryGuild.id
-    })
-
-    await expectAction(session.id, {
-      description: 'Response includes secondary guild name',
-      type: 'interaction_response',
-      expected: {
-        response_data: {
-          content: expect.stringContaining('Secondary Server')
-        }
-      }
-    })
-  })
-
-  it('dispatches events to specific guilds', async () => {
-    const secondaryGuild = session.guilds[1]
-    const logsChannel = session.channels.find(
-      c => c.guildId === secondaryGuild.id && c.name === 'logs'
-    )!
-
-    await dispatchEvent(session.id, 'MESSAGE_CREATE', {
-      id: generateSnowflake(),
-      content: '!log test entry',
-      channel_id: logsChannel.id,
-      guild_id: secondaryGuild.id,
-      author: { id: '111', username: 'Logger' }
-    })
-
-    await waitForAction(session.id, {
-      type: 'message_sent',
-      timeout: 5000
-    })
-  })
-})
-```
+    ```
+  </Tab>
+</Tabs>
 
 <Callout type="info">
 Each guild in the session config gets its own set of channels, roles, and members. The `session.channels` array includes channels from all guilds -- use `guildId` to filter channels per guild.
 </Callout>
+
+## Testing Activity Auth Flow
+
+Test the full authorization flow by switching auth modes. Auth settings are controlled through Stage WS commands (sent via the Stage UI WebSocket connection) or the [DevTools](./devtools) panel.
+
+**Auto approve (default):** AUTHORIZE immediately returns a mock code and AUTHENTICATE succeeds. Best for rapid development.
+
+**Auto deny:** AUTHORIZE returns error 4003. Use this to verify your activity handles authorization failures gracefully.
+
+**Manual:** AUTHORIZE shows a consent modal in Stage UI where you can approve or deny specific scopes, testing the full OAuth2-like flow.
+
+Switch modes using the Auth Settings in [DevTools](./devtools) or the `activity_set_auth_settings` Stage WS command. Use `activity_reset_auth` to clear auth state and re-test the flow.
+
+<Callout type="info">
+Auth mode changes take effect immediately. Switch between `auto_approve`, `auto_deny`, and `manual` via DevTools to test different auth scenarios without restarting.
+</Callout>
+
+## Testing In-App Purchases
+
+Configure mock SKUs and test purchase flows through [DevTools](./devtools) or the `activity_set_iap_state` Stage WS command.
+
+### Setup
+
+Use the IAP controls in DevTools to add mock SKUs (products) and entitlements (owned items). The activity's `GET_SKUS` and `GET_ENTITLEMENTS` commands return this mock data.
+
+### Purchase Flow
+
+1. Your activity calls `START_PURCHASE` with a SKU ID
+2. A purchase confirmation modal appears in Stage UI
+3. **Approve** the purchase to grant the entitlement and fire the `ENTITLEMENT_CREATE` event
+4. **Deny** the purchase to test error handling
+
+<Callout type="info">
+Mock SKUs and entitlements persist for the session. Use the IAP controls in [DevTools](./devtools) for interactive editing, or the `activity_set_iap_state` Stage WS command for programmatic setup.
+</Callout>
+
+## Simulating Platform Changes
+
+Test how your activity responds to platform state changes using the Platform State controls in [DevTools](./devtools) or the `activity_set_platform_state` Stage WS command.
+
+### Layout Mode
+
+Switch between `focused` (0), `pip` (1), and `grid` (2) to trigger `ACTIVITY_LAYOUT_MODE_UPDATE` events. Your activity should adapt its UI -- for example, showing a compact view in PIP mode.
+
+### Thermal State
+
+Set the thermal state to `nominal` (0), `fair` (1), `serious` (2), or `critical` (3) to trigger `THERMAL_STATE_UPDATE` events. Test that your activity reduces animations or resource usage under thermal pressure.
+
+### Orientation
+
+Switch between `portrait` and `landscape` to trigger `ORIENTATION_UPDATE` events. Test your activity's responsive layout handling.
+
+All platform state values are numeric. See the [Testing API](./testing-api) reference for the full `activity_set_platform_state` command format.
+
+## Multi-User Activity Testing
+
+Test participant updates by switching users in Stage UI:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/activity/participants.test.ts"
+    import { controlAPI } from '@robojs/mock/testing'
+
+    describe('participant events', () => {
+      it('receives participant updates', async () => {
+        // Switch to a different user in Stage UI
+        // The activity receives ACTIVITY_INSTANCE_PARTICIPANTS_UPDATE
+        // with the updated participant list
+
+        // Participant updates are debounced with 50ms coalescing
+        // to batch rapid changes into a single event
+      })
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/activity/participants.test.js"
+    import { controlAPI } from '@robojs/mock/testing'
+
+    describe('participant events', () => {
+      it('receives participant updates', async () => {
+        // Switch to a different user in Stage UI
+        // The activity receives ACTIVITY_INSTANCE_PARTICIPANTS_UPDATE
+        // with the updated participant list
+
+        // Participant updates are debounced with 50ms coalescing
+        // to batch rapid changes into a single event
+      })
+    })
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="info">
+Use the user switcher in Stage UI to simulate multiple users joining and leaving the activity. Each user switch triggers participant update events with 50ms debounce coalescing.
+</Callout>
+
+## Testing with URL Mappings
+
+Configure URL mappings to proxy API calls through the mock:
+
+Create `discord-url-mappings.json` in your project root:
+
+```json
+{
+  "version": 1,
+  "activities": [
+    {
+      "id": "my-activity",
+      "name": "My Activity",
+      "application_id": "1234567890",
+      "launch_url": "http://localhost:5173",
+      "url_mappings": [
+        { "prefix": "/api", "target": "localhost:8080" },
+        { "prefix": "/cdn", "target": "cdn.example.com" }
+      ]
+    }
+  ]
+}
+```
+
+Each activity entry requires `id`, `name`, `application_id`, and `launch_url`. The Activity Proxy resolves routes using longest prefix match. Requests from your activity to `/api/data` are proxied to `http://localhost:8080/data`.
+
+You can also configure URL mappings at runtime through the URL Mappings editor in [DevTools](./devtools). Changes take effect immediately without restarting.
 
 ## Next Steps
 
@@ -881,8 +1978,8 @@ Each guild in the session config gets its own set of channels, roles, and member
     description="Full API reference."
   />
   <Card
-    href="./automated-testing"
-    title="Automated Testing"
-    description="Jest integration guide."
+    href="./scenarios"
+    title="Scenarios"
+    description="JSON-based test flows."
   />
 </Cards>

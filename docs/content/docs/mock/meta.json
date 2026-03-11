@@ -1,24 +1,24 @@
 {
   "title": "Mock Server",
-  "description": "Test Discord bots without Discord",
+  "description": "Test Discord bots and activities without Discord",
   "icon": "TestTube",
   "root": true,
-  "defaultOpen": true,
   "pages": [
     "index",
     "---Getting Started---",
     "stage-ui",
+    "activities",
     "automated-testing",
     "---Testing Guides---",
     "commands",
     "interactions",
-    "scenarios",
     "devtools",
     "---Reference---",
     "configuration",
     "cli",
     "testing-api",
-    "---Examples---",
+    "---Advanced---",
+    "scenarios",
     "recipes"
   ]
 }

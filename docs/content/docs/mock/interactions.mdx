@@ -5,6 +5,10 @@ description: Test buttons, select menus, and modals
 
 Test component interactions like buttons, select menus, and modals. These follow the same pattern as commands but use different interaction types.
 
+<Callout type="info">
+Examples on this page assume you have a test session set up. See [Automated Testing](./automated-testing) for session setup and [Interaction Type Constants](./automated-testing#interaction-type-constants) for a reference of numeric type values used below.
+</Callout>
+
 <ScreenshotPlaceholder
   alt="Stage UI showing a message with interactive button components and a select menu, demonstrating component interactions in action"
   focus="The message area displaying a bot response with action row buttons and a select menu dropdown"
@@ -17,219 +21,492 @@ Test component interactions like buttons, select menus, and modals. These follow
 
 ### Basic Button
 
-```typescript
-import { dispatchInteraction, expectAction } from '@robojs/mock/testing'
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/interactions/button.test.ts"
+    import { dispatchInteraction, expectAction } from '@robojs/mock/testing'
 
-it('handles button click', async () => {
-  await dispatchInteraction(session.id, {
-    type: 3, // MESSAGE_COMPONENT
-    data: {
-      component_type: 2, // BUTTON
-      custom_id: 'confirm-action'
-    },
-    channel_id: session.channels[0].id
-  })
+    it('handles button click', async () => {
+      await dispatchInteraction(session.id, {
+        type: 3,                          // MESSAGE_COMPONENT
+        data: {
+          component_type: 2,             // BUTTON
+          custom_id: 'confirm-action'
+        },
+        channel_id: session.channels[0].id
+      })
 
-  await expectAction(session.id, {
-    description: 'Bot should acknowledge button',
-    type: 'interaction_response',
-    expected: {
-      response_type: 6 // DEFERRED_UPDATE_MESSAGE
-    }
-  })
-})
-```
+      await expectAction(session.id, {
+        description: 'Bot should acknowledge button',
+        type: 'interaction_response',
+        expected: {
+          response_type: 6               // DEFERRED_UPDATE_MESSAGE
+        }
+      })
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/interactions/button.test.js"
+    import { dispatchInteraction, expectAction } from '@robojs/mock/testing'
+
+    it('handles button click', async () => {
+      await dispatchInteraction(session.id, {
+        type: 3,                          // MESSAGE_COMPONENT
+        data: {
+          component_type: 2,             // BUTTON
+          custom_id: 'confirm-action'
+        },
+        channel_id: session.channels[0].id
+      })
+
+      await expectAction(session.id, {
+        description: 'Bot should acknowledge button',
+        type: 'interaction_response',
+        expected: {
+          response_type: 6               // DEFERRED_UPDATE_MESSAGE
+        }
+      })
+    })
+    ```
+  </Tab>
+</Tabs>
 
 ### Button with Data
 
 Pass data through custom_id:
 
-```typescript
-await dispatchInteraction(session.id, {
-  type: 3,
-  data: {
-    component_type: 2,
-    custom_id: 'delete:123:456'  // action:userId:itemId
-  },
-  channel_id: session.channels[0].id
-})
-```
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/interactions/button-data.test.ts"
+    await dispatchInteraction(session.id, {
+      type: 3,                            // MESSAGE_COMPONENT
+      data: {
+        component_type: 2,               // BUTTON
+        custom_id: 'delete:123:456'  // action:userId:itemId
+      },
+      channel_id: session.channels[0].id
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/interactions/button-data.test.js"
+    await dispatchInteraction(session.id, {
+      type: 3,                            // MESSAGE_COMPONENT
+      data: {
+        component_type: 2,               // BUTTON
+        custom_id: 'delete:123:456'  // action:userId:itemId
+      },
+      channel_id: session.channels[0].id
+    })
+    ```
+  </Tab>
+</Tabs>
 
 ### Update vs Reply
 
-Check response type:
+Discord supports two response types for component interactions. Update (type 7) replaces the existing message the component is attached to. Reply (type 4) sends a new message in the channel.
 
-```typescript
-// Update existing message
-await expectAction(session.id, {
-  description: 'Button should update message',
-  type: 'interaction_response',
-  expected: {
-    response_type: 7 // UPDATE_MESSAGE
-  }
-})
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/interactions/response-types.test.ts"
+    // Update existing message (replaces the message content in-place)
+    await expectAction(session.id, {
+      description: 'Button should update message',
+      type: 'interaction_response',
+      expected: {
+        response_type: 7                  // UPDATE_MESSAGE
+      }
+    })
 
-// Reply with new message
-await expectAction(session.id, {
-  description: 'Button should reply',
-  type: 'interaction_response',
-  expected: {
-    response_type: 4 // CHANNEL_MESSAGE_WITH_SOURCE
-  }
-})
-```
+    // Reply with new message (sends a new message to the channel)
+    await expectAction(session.id, {
+      description: 'Button should reply',
+      type: 'interaction_response',
+      expected: {
+        response_type: 4                  // CHANNEL_MESSAGE_WITH_SOURCE
+      }
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/interactions/response-types.test.js"
+    // Update existing message (replaces the message content in-place)
+    await expectAction(session.id, {
+      description: 'Button should update message',
+      type: 'interaction_response',
+      expected: {
+        response_type: 7                  // UPDATE_MESSAGE
+      }
+    })
+
+    // Reply with new message (sends a new message to the channel)
+    await expectAction(session.id, {
+      description: 'Button should reply',
+      type: 'interaction_response',
+      expected: {
+        response_type: 4                  // CHANNEL_MESSAGE_WITH_SOURCE
+      }
+    })
+    ```
+  </Tab>
+</Tabs>
 
 ## Select Menus
 
 ### String Select
 
-```typescript
-await dispatchInteraction(session.id, {
-  type: 3,
-  data: {
-    component_type: 3, // STRING_SELECT
-    custom_id: 'role-select',
-    values: ['admin', 'moderator']  // Selected values
-  },
-  channel_id: session.channels[0].id
-})
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/interactions/string-select.test.ts"
+    await dispatchInteraction(session.id, {
+      type: 3,                            // MESSAGE_COMPONENT
+      data: {
+        component_type: 3,               // STRING_SELECT
+        custom_id: 'role-select',
+        values: ['admin', 'moderator']  // Selected values
+      },
+      channel_id: session.channels[0].id
+    })
 
-await expectAction(session.id, {
-  description: 'Bot should assign selected roles',
-  type: 'interaction_response',
-  expected: {
-    response_data: {
-      content: expect.stringContaining('admin')
-    }
-  }
-})
-```
+    await expectAction(session.id, {
+      description: 'Bot should assign selected roles',
+      type: 'interaction_response',
+      expected: {
+        response_data: {
+          content: expect.stringContaining('admin')
+        }
+      }
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/interactions/string-select.test.js"
+    await dispatchInteraction(session.id, {
+      type: 3,                            // MESSAGE_COMPONENT
+      data: {
+        component_type: 3,               // STRING_SELECT
+        custom_id: 'role-select',
+        values: ['admin', 'moderator']  // Selected values
+      },
+      channel_id: session.channels[0].id
+    })
+
+    await expectAction(session.id, {
+      description: 'Bot should assign selected roles',
+      type: 'interaction_response',
+      expected: {
+        response_data: {
+          content: expect.stringContaining('admin')
+        }
+      }
+    })
+    ```
+  </Tab>
+</Tabs>
 
 ### User Select
 
-```typescript
-// Define test user data inline
-const selectedUserId = '111222333444555666'
-const selectedUsername = 'TestUser'
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/interactions/user-select.test.ts"
+    // These are mock IDs -- any snowflake-format string works for testing
+    const selectedUserId = '111222333444555666'
+    const selectedUsername = 'TestUser'
 
-await dispatchInteraction(session.id, {
-  type: 3,
-  data: {
-    component_type: 5, // USER_SELECT
-    custom_id: 'user-select',
-    values: [selectedUserId],
-    resolved: {
-      users: {
-        [selectedUserId]: {
-          id: selectedUserId,
-          username: selectedUsername
+    await dispatchInteraction(session.id, {
+      type: 3,                            // MESSAGE_COMPONENT
+      data: {
+        component_type: 5,               // USER_SELECT
+        custom_id: 'user-select',
+        values: [selectedUserId],
+        resolved: {
+          users: {
+            [selectedUserId]: {
+              id: selectedUserId,
+              username: selectedUsername
+            }
+          }
         }
-      }
-    }
-  },
-  channel_id: session.channels[0].id
-})
-```
+      },
+      channel_id: session.channels[0].id
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/interactions/user-select.test.js"
+    // These are mock IDs -- any snowflake-format string works for testing
+    const selectedUserId = '111222333444555666'
+    const selectedUsername = 'TestUser'
+
+    await dispatchInteraction(session.id, {
+      type: 3,                            // MESSAGE_COMPONENT
+      data: {
+        component_type: 5,               // USER_SELECT
+        custom_id: 'user-select',
+        values: [selectedUserId],
+        resolved: {
+          users: {
+            [selectedUserId]: {
+              id: selectedUserId,
+              username: selectedUsername
+            }
+          }
+        }
+      },
+      channel_id: session.channels[0].id
+    })
+    ```
+  </Tab>
+</Tabs>
 
 ### Channel Select
 
-```typescript
-const selectedChannel = session.channels[0]
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/interactions/channel-select.test.ts"
+    const selectedChannel = session.channels[0]
 
-await dispatchInteraction(session.id, {
-  type: 3,
-  data: {
-    component_type: 8, // CHANNEL_SELECT
-    custom_id: 'channel-select',
-    values: [selectedChannel.id],
-    resolved: {
-      channels: {
-        [selectedChannel.id]: {
-          id: selectedChannel.id,
-          name: selectedChannel.name,
-          type: selectedChannel.type
+    await dispatchInteraction(session.id, {
+      type: 3,                            // MESSAGE_COMPONENT
+      data: {
+        component_type: 8,               // CHANNEL_SELECT
+        custom_id: 'channel-select',
+        values: [selectedChannel.id],
+        resolved: {
+          channels: {
+            [selectedChannel.id]: {
+              id: selectedChannel.id,
+              name: selectedChannel.name,
+              type: selectedChannel.type
+            }
+          }
         }
-      }
-    }
-  },
-  channel_id: session.channels[0].id
-})
-```
+      },
+      channel_id: session.channels[0].id
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/interactions/channel-select.test.js"
+    const selectedChannel = session.channels[0]
+
+    await dispatchInteraction(session.id, {
+      type: 3,                            // MESSAGE_COMPONENT
+      data: {
+        component_type: 8,               // CHANNEL_SELECT
+        custom_id: 'channel-select',
+        values: [selectedChannel.id],
+        resolved: {
+          channels: {
+            [selectedChannel.id]: {
+              id: selectedChannel.id,
+              name: selectedChannel.name,
+              type: selectedChannel.type
+            }
+          }
+        }
+      },
+      channel_id: session.channels[0].id
+    })
+    ```
+  </Tab>
+</Tabs>
 
 ### Role Select
 
-```typescript
-await dispatchInteraction(session.id, {
-  type: 3,
-  data: {
-    component_type: 6, // ROLE_SELECT
-    custom_id: 'role-picker',
-    values: [roleId],
-    resolved: {
-      roles: {
-        [roleId]: {
-          id: roleId,
-          name: 'Moderator',
-          color: 0x3498db
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/interactions/role-select.test.ts"
+    // Define a mock role ID for testing
+    const roleId = '999888777666555444'
+
+    await dispatchInteraction(session.id, {
+      type: 3,                            // MESSAGE_COMPONENT
+      data: {
+        component_type: 6,               // ROLE_SELECT
+        custom_id: 'role-picker',
+        values: [roleId],
+        resolved: {
+          roles: {
+            [roleId]: {
+              id: roleId,
+              name: 'Moderator',
+              color: 0x3498db
+            }
+          }
         }
-      }
-    }
-  },
-  channel_id: session.channels[0].id
-})
-```
+      },
+      channel_id: session.channels[0].id
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/interactions/role-select.test.js"
+    // Define a mock role ID for testing
+    const roleId = '999888777666555444'
+
+    await dispatchInteraction(session.id, {
+      type: 3,                            // MESSAGE_COMPONENT
+      data: {
+        component_type: 6,               // ROLE_SELECT
+        custom_id: 'role-picker',
+        values: [roleId],
+        resolved: {
+          roles: {
+            [roleId]: {
+              id: roleId,
+              name: 'Moderator',
+              color: 0x3498db
+            }
+          }
+        }
+      },
+      channel_id: session.channels[0].id
+    })
+    ```
+  </Tab>
+</Tabs>
 
 ### Mentionable Select
 
 Combines users and roles:
 
-```typescript
-await dispatchInteraction(session.id, {
-  type: 3,
-  data: {
-    component_type: 7, // MENTIONABLE_SELECT
-    custom_id: 'mention-select',
-    values: [userId, roleId],
-    resolved: {
-      users: { [userId]: userObject },
-      roles: { [roleId]: roleObject }
-    }
-  },
-  channel_id: session.channels[0].id
-})
-```
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/interactions/mentionable-select.test.ts"
+    // Define mock IDs for both a user and a role
+    const userId = '111222333444555666'
+    const roleId = '999888777666555444'
+
+    await dispatchInteraction(session.id, {
+      type: 3,                            // MESSAGE_COMPONENT
+      data: {
+        component_type: 7,               // MENTIONABLE_SELECT
+        custom_id: 'mention-select',
+        values: [userId, roleId],
+        resolved: {
+          users: {
+            [userId]: {
+              id: userId,
+              username: 'TestUser',
+              discriminator: '0',
+              avatar: null
+            }
+          },
+          roles: {
+            [roleId]: {
+              id: roleId,
+              name: 'Moderator',
+              color: 0x3498db
+            }
+          }
+        }
+      },
+      channel_id: session.channels[0].id
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/interactions/mentionable-select.test.js"
+    // Define mock IDs for both a user and a role
+    const userId = '111222333444555666'
+    const roleId = '999888777666555444'
+
+    await dispatchInteraction(session.id, {
+      type: 3,                            // MESSAGE_COMPONENT
+      data: {
+        component_type: 7,               // MENTIONABLE_SELECT
+        custom_id: 'mention-select',
+        values: [userId, roleId],
+        resolved: {
+          users: {
+            [userId]: {
+              id: userId,
+              username: 'TestUser',
+              discriminator: '0',
+              avatar: null
+            }
+          },
+          roles: {
+            [roleId]: {
+              id: roleId,
+              name: 'Moderator',
+              color: 0x3498db
+            }
+          }
+        }
+      },
+      channel_id: session.channels[0].id
+    })
+    ```
+  </Tab>
+</Tabs>
 
 ## Modal Submissions
 
 ### Basic Modal
 
-```typescript
-await dispatchInteraction(session.id, {
-  type: 5, // MODAL_SUBMIT
-  data: {
-    custom_id: 'feedback-modal',
-    components: [{
-      type: 1, // ACTION_ROW
-      components: [{
-        type: 4, // TEXT_INPUT
-        custom_id: 'feedback-input',
-        value: 'Great service'
-      }]
-    }]
-  },
-  channel_id: session.channels[0].id
-})
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/interactions/modal.test.ts"
+    await dispatchInteraction(session.id, {
+      type: 5,                            // MODAL_SUBMIT
+      data: {
+        custom_id: 'feedback-modal',
+        components: [{
+          type: 1,                        // ACTION_ROW
+          components: [{
+            type: 4,                      // TEXT_INPUT
+            custom_id: 'feedback-input',
+            value: 'Great service'
+          }]
+        }]
+      },
+      channel_id: session.channels[0].id
+    })
 
-await expectAction(session.id, {
-  description: 'Bot should process feedback',
-  type: 'interaction_response',
-  expected: {
-    response_data: {
-      content: expect.stringContaining('Thank you')
-    }
-  }
-})
-```
+    await expectAction(session.id, {
+      description: 'Bot should process feedback',
+      type: 'interaction_response',
+      expected: {
+        response_data: {
+          content: expect.stringContaining('Thank you')
+        }
+      }
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/interactions/modal.test.js"
+    await dispatchInteraction(session.id, {
+      type: 5,                            // MODAL_SUBMIT
+      data: {
+        custom_id: 'feedback-modal',
+        components: [{
+          type: 1,                        // ACTION_ROW
+          components: [{
+            type: 4,                      // TEXT_INPUT
+            custom_id: 'feedback-input',
+            value: 'Great service'
+          }]
+        }]
+      },
+      channel_id: session.channels[0].id
+    })
+
+    await expectAction(session.id, {
+      description: 'Bot should process feedback',
+      type: 'interaction_response',
+      expected: {
+        response_data: {
+          content: expect.stringContaining('Thank you')
+        }
+      }
+    })
+    ```
+  </Tab>
+</Tabs>
 
 <ScreenshotPlaceholder
   alt="Stage UI showing a modal form dialog open with text input fields, a title bar, and Submit/Cancel buttons at the bottom"
@@ -241,125 +518,254 @@ await expectAction(session.id, {
 
 ### Multiple Inputs
 
-```typescript
-await dispatchInteraction(session.id, {
-  type: 5,
-  data: {
-    custom_id: 'application-form',
-    components: [
-      {
-        type: 1,
-        components: [{
-          type: 4,
-          custom_id: 'name',
-          value: 'John Doe'
-        }]
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/interactions/modal-multi.test.ts"
+    await dispatchInteraction(session.id, {
+      type: 5,                            // MODAL_SUBMIT
+      data: {
+        custom_id: 'application-form',
+        components: [
+          {
+            type: 1,                      // ACTION_ROW
+            components: [{
+              type: 4,                    // TEXT_INPUT
+              custom_id: 'name',
+              value: 'John Doe'
+            }]
+          },
+          {
+            type: 1,                      // ACTION_ROW
+            components: [{
+              type: 4,                    // TEXT_INPUT
+              custom_id: 'experience',
+              value: '5 years of development'
+            }]
+          },
+          {
+            type: 1,                      // ACTION_ROW
+            components: [{
+              type: 4,                    // TEXT_INPUT
+              custom_id: 'reason',
+              value: 'I want to contribute to the community'
+            }]
+          }
+        ]
       },
-      {
-        type: 1,
-        components: [{
-          type: 4,
-          custom_id: 'experience',
-          value: '5 years of development'
-        }]
+      channel_id: session.channels[0].id
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/interactions/modal-multi.test.js"
+    await dispatchInteraction(session.id, {
+      type: 5,                            // MODAL_SUBMIT
+      data: {
+        custom_id: 'application-form',
+        components: [
+          {
+            type: 1,                      // ACTION_ROW
+            components: [{
+              type: 4,                    // TEXT_INPUT
+              custom_id: 'name',
+              value: 'John Doe'
+            }]
+          },
+          {
+            type: 1,                      // ACTION_ROW
+            components: [{
+              type: 4,                    // TEXT_INPUT
+              custom_id: 'experience',
+              value: '5 years of development'
+            }]
+          },
+          {
+            type: 1,                      // ACTION_ROW
+            components: [{
+              type: 4,                    // TEXT_INPUT
+              custom_id: 'reason',
+              value: 'I want to contribute to the community'
+            }]
+          }
+        ]
       },
-      {
-        type: 1,
-        components: [{
-          type: 4,
-          custom_id: 'reason',
-          value: 'I want to contribute to the community'
-        }]
-      }
-    ]
-  },
-  channel_id: session.channels[0].id
-})
-```
+      channel_id: session.channels[0].id
+    })
+    ```
+  </Tab>
+</Tabs>
 
 ### Paragraph Input
 
-```typescript
-await dispatchInteraction(session.id, {
-  type: 5,
-  data: {
-    custom_id: 'report-modal',
-    components: [{
-      type: 1,
-      components: [{
-        type: 4,
-        custom_id: 'description',
-        value: 'This is a detailed description\nwith multiple lines\nof text.'
-      }]
-    }]
-  },
-  channel_id: session.channels[0].id
-})
-```
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/interactions/modal-paragraph.test.ts"
+    await dispatchInteraction(session.id, {
+      type: 5,                            // MODAL_SUBMIT
+      data: {
+        custom_id: 'report-modal',
+        components: [{
+          type: 1,                        // ACTION_ROW
+          components: [{
+            type: 4,                      // TEXT_INPUT
+            custom_id: 'description',
+            value: 'This is a detailed description\nwith multiple lines\nof text.'
+          }]
+        }]
+      },
+      channel_id: session.channels[0].id
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/interactions/modal-paragraph.test.js"
+    await dispatchInteraction(session.id, {
+      type: 5,                            // MODAL_SUBMIT
+      data: {
+        custom_id: 'report-modal',
+        components: [{
+          type: 1,                        // ACTION_ROW
+          components: [{
+            type: 4,                      // TEXT_INPUT
+            custom_id: 'description',
+            value: 'This is a detailed description\nwith multiple lines\nof text.'
+          }]
+        }]
+      },
+      channel_id: session.channels[0].id
+    })
+    ```
+  </Tab>
+</Tabs>
 
 ## Component Chains
 
 Test multi-step interaction flows:
 
-```typescript
-it('completes multi-step flow', async () => {
-  // Step 1: Run command that shows buttons
-  await dispatchInteraction(session.id, {
-    type: 2,
-    data: { name: 'setup', type: 1 },
-    channel_id: session.channels[0].id
-  })
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/interactions/component-chain.test.ts"
+    it('completes multi-step flow', async () => {
+      // Step 1: Run command that shows buttons
+      await dispatchInteraction(session.id, {
+        type: 2,                          // APPLICATION_COMMAND
+        data: { name: 'setup', type: 1 },  // CHAT_INPUT
+        channel_id: session.channels[0].id
+      })
 
-  await expectAction(session.id, {
-    description: 'Bot shows setup options',
-    type: 'interaction_response',
-    expected: {
-      response_data: {
-        components: expect.arrayContaining([
-          expect.objectContaining({ type: 1 })
-        ])
-      }
-    }
-  })
+      await expectAction(session.id, {
+        description: 'Bot shows setup options',
+        type: 'interaction_response',
+        expected: {
+          response_data: {
+            components: expect.arrayContaining([
+              expect.objectContaining({ type: 1 })  // ACTION_ROW
+            ])
+          }
+        }
+      })
 
-  // Step 2: Click configure button
-  await dispatchInteraction(session.id, {
-    type: 3,
-    data: {
-      component_type: 2,
-      custom_id: 'setup:configure'
-    },
-    channel_id: session.channels[0].id
-  })
+      // Step 2: Click configure button
+      await dispatchInteraction(session.id, {
+        type: 3,                          // MESSAGE_COMPONENT
+        data: {
+          component_type: 2,             // BUTTON
+          custom_id: 'setup:configure'
+        },
+        channel_id: session.channels[0].id
+      })
 
-  // Step 3: Submit modal
-  await dispatchInteraction(session.id, {
-    type: 5,
-    data: {
-      custom_id: 'setup:modal',
-      components: [{
-        type: 1,
-        components: [{
-          type: 4,
-          custom_id: 'setting',
-          value: 'enabled'
-        }]
-      }]
-    },
-    channel_id: session.channels[0].id
-  })
+      // Step 3: Submit modal
+      await dispatchInteraction(session.id, {
+        type: 5,                          // MODAL_SUBMIT
+        data: {
+          custom_id: 'setup:modal',
+          components: [{
+            type: 1,                      // ACTION_ROW
+            components: [{
+              type: 4,                    // TEXT_INPUT
+              custom_id: 'setting',
+              value: 'enabled'
+            }]
+          }]
+        },
+        channel_id: session.channels[0].id
+      })
 
-  await expectAction(session.id, {
-    description: 'Setup completes successfully',
-    type: 'interaction_response',
-    expected: {
-      response_data: {
-        content: expect.stringContaining('Setup complete')
-      }
-    }
-  })
-})
-```
+      await expectAction(session.id, {
+        description: 'Setup completes successfully',
+        type: 'interaction_response',
+        expected: {
+          response_data: {
+            content: expect.stringContaining('Setup complete')
+          }
+        }
+      })
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/interactions/component-chain.test.js"
+    it('completes multi-step flow', async () => {
+      // Step 1: Run command that shows buttons
+      await dispatchInteraction(session.id, {
+        type: 2,                          // APPLICATION_COMMAND
+        data: { name: 'setup', type: 1 },  // CHAT_INPUT
+        channel_id: session.channels[0].id
+      })
+
+      await expectAction(session.id, {
+        description: 'Bot shows setup options',
+        type: 'interaction_response',
+        expected: {
+          response_data: {
+            components: expect.arrayContaining([
+              expect.objectContaining({ type: 1 })  // ACTION_ROW
+            ])
+          }
+        }
+      })
+
+      // Step 2: Click configure button
+      await dispatchInteraction(session.id, {
+        type: 3,                          // MESSAGE_COMPONENT
+        data: {
+          component_type: 2,             // BUTTON
+          custom_id: 'setup:configure'
+        },
+        channel_id: session.channels[0].id
+      })
+
+      // Step 3: Submit modal
+      await dispatchInteraction(session.id, {
+        type: 5,                          // MODAL_SUBMIT
+        data: {
+          custom_id: 'setup:modal',
+          components: [{
+            type: 1,                      // ACTION_ROW
+            components: [{
+              type: 4,                    // TEXT_INPUT
+              custom_id: 'setting',
+              value: 'enabled'
+            }]
+          }]
+        },
+        channel_id: session.channels[0].id
+      })
+
+      await expectAction(session.id, {
+        description: 'Setup completes successfully',
+        type: 'interaction_response',
+        expected: {
+          response_data: {
+            content: expect.stringContaining('Setup complete')
+          }
+        }
+      })
+    })
+    ```
+  </Tab>
+</Tabs>
 
 <ScreenshotPlaceholder
   alt="Stage UI showing a multi-step interaction flow: a slash command response with buttons, followed by a button click resulting in an updated message or new response"
@@ -373,45 +779,91 @@ it('completes multi-step flow', async () => {
 
 Test ephemeral message handling:
 
-```typescript
-await dispatchInteraction(session.id, {
-  type: 3,
-  data: {
-    component_type: 2,
-    custom_id: 'secret-info'
-  },
-  channel_id: session.channels[0].id
-})
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/interactions/ephemeral.test.ts"
+    await dispatchInteraction(session.id, {
+      type: 3,                            // MESSAGE_COMPONENT
+      data: {
+        component_type: 2,               // BUTTON
+        custom_id: 'secret-info'
+      },
+      channel_id: session.channels[0].id
+    })
 
-await expectAction(session.id, {
-  description: 'Response should be ephemeral',
-  type: 'interaction_response',
-  expected: {
-    response_data: {
-      flags: 64
-    }
-  }
-})
-```
+    await expectAction(session.id, {
+      description: 'Response should be ephemeral',
+      type: 'interaction_response',
+      expected: {
+        response_data: {
+          flags: 64                       // EPHEMERAL
+        }
+      }
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/interactions/ephemeral.test.js"
+    await dispatchInteraction(session.id, {
+      type: 3,                            // MESSAGE_COMPONENT
+      data: {
+        component_type: 2,               // BUTTON
+        custom_id: 'secret-info'
+      },
+      channel_id: session.channels[0].id
+    })
+
+    await expectAction(session.id, {
+      description: 'Response should be ephemeral',
+      type: 'interaction_response',
+      expected: {
+        response_data: {
+          flags: 64                       // EPHEMERAL
+        }
+      }
+    })
+    ```
+  </Tab>
+</Tabs>
 
 ## Interaction Context
 
 Specify which user triggers the interaction:
 
-```typescript
-await dispatchInteraction(session.id, {
-  type: 3,
-  data: {
-    component_type: 2,
-    custom_id: 'admin-action'
-  },
-  channel_id: session.channels[0].id,
-  user: {
-    id: '111',
-    username: 'Admin'
-  }
-})
-```
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="__tests__/interactions/context.test.ts"
+    await dispatchInteraction(session.id, {
+      type: 3,                            // MESSAGE_COMPONENT
+      data: {
+        component_type: 2,               // BUTTON
+        custom_id: 'admin-action'
+      },
+      channel_id: session.channels[0].id,
+      user: {
+        id: '111',                        // Mock user ID
+        username: 'Admin'
+      }
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="__tests__/interactions/context.test.js"
+    await dispatchInteraction(session.id, {
+      type: 3,                            // MESSAGE_COMPONENT
+      data: {
+        component_type: 2,               // BUTTON
+        custom_id: 'admin-action'
+      },
+      channel_id: session.channels[0].id,
+      user: {
+        id: '111',                        // Mock user ID
+        username: 'Admin'
+      }
+    })
+    ```
+  </Tab>
+</Tabs>
 
 The mock server generates a guild member for the specified user automatically. If no `user` is provided, the session's current user is used.
 
