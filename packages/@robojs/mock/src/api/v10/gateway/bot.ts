@@ -1,4 +1,6 @@
+import { define } from '@robojs/server'
 import type { RoboRequest } from '@robojs/server'
+import { z } from 'zod'
 
 /**
  * GET /api/v10/gateway/bot - Discord Gateway Bot endpoint mock
@@ -18,7 +20,24 @@ import type { RoboRequest } from '@robojs/server'
  *   }
  * }
  */
-export async function GET(request: RoboRequest) {
+export const GET = define(
+	{
+		summary: 'Get gateway bot',
+		tags: ['Gateway'],
+		response: {
+			200: z.object({
+				url: z.string(),
+				shards: z.number().int(),
+				session_start_limit: z.object({
+					total: z.number().int(),
+					remaining: z.number().int(),
+					reset_after: z.number().int(),
+					max_concurrency: z.number().int()
+				})
+			})
+		}
+	},
+	async (request: RoboRequest) => {
 	// Get host from request header (includes port)
 	const host = request.headers.get('host') || 'localhost:3000'
 
@@ -40,4 +59,4 @@ export async function GET(request: RoboRequest) {
 		status: 200,
 		headers: { 'Content-Type': 'application/json' }
 	})
-}
+})

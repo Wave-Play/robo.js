@@ -1,4 +1,6 @@
+import { define } from '@robojs/server'
 import type { RoboRequest } from '@robojs/server'
+import { z } from 'zod'
 import { sessionManager } from '../../../../core/manager.js'
 import { parseMockToken } from '../../../../utils/id.js'
 import { mockMessageToAPIMessage } from '../../../../discord/payloads.js'
@@ -63,334 +65,438 @@ function resolveChannelForMessages(request: RoboRequest) {
 	return { session, channel, channelId }
 }
 
-export async function GET(request: RoboRequest) {
-	const resolved = resolveChannelForMessages(request)
-	if (resolved instanceof Response) return resolved
-	const { session, channelId } = resolved
+export const GET = define(
+	{
+		summary: 'List channel messages',
+		tags: ['Messages'],
+		params: z.object({
+			id: z.string().describe('Channel ID (Snowflake)')
+		}),
+		query: z.object({
+			around: z.string().optional(),
+			before: z.string().optional(),
+			after: z.string().optional(),
+			limit: z.string().optional()
+		}),
+		response: {
+			200: z.array(
+				z.object({
+					id: z.string(),
+					type: z.number(),
+					content: z.string(),
+					channel_id: z.string(),
+					author: z.object({
+						id: z.string(),
+						username: z.string(),
+						avatar: z.string().nullable(),
+						discriminator: z.string(),
+						public_flags: z.number(),
+						flags: z.number(),
+						global_name: z.string().nullable(),
+						primary_guild: z.unknown().nullable()
+					}).passthrough(),
+					attachments: z.array(z.object({}).passthrough()),
+					embeds: z.array(z.object({}).passthrough()),
+					mentions: z.array(z.object({}).passthrough()),
+					mention_roles: z.array(z.string()),
+					pinned: z.boolean(),
+					mention_everyone: z.boolean(),
+					tts: z.boolean(),
+					timestamp: z.string(),
+					edited_timestamp: z.string().nullable(),
+					flags: z.number(),
+					components: z.array(z.object({}).passthrough())
+				}).passthrough()
+			).nullable()
+		}
+	},
+	async (request) => {
+		const resolved = resolveChannelForMessages(request as unknown as RoboRequest)
+		if (resolved instanceof Response) return resolved
+		const { session, channelId } = resolved
 
-	// Check permissions
-	const permError = enforcePermissions(session, 'GET', `/channels/${channelId}/messages`, channelId)
-	if (permError) return permError
+		// Check permissions
+		const permError = enforcePermissions(session, 'GET', `/channels/${channelId}/messages`, channelId)
+		if (permError) return permError
 
-	// Parse query parameters
-	const url = new URL(request.url)
-	const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10), 100)
-	const before = url.searchParams.get('before')
-	const after = url.searchParams.get('after')
-	const around = url.searchParams.get('around')
+		// Parse query parameters
+		const url = new URL(request.url)
+		const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10), 100)
+		const before = url.searchParams.get('before')
+		const after = url.searchParams.get('after')
+		const around = url.searchParams.get('around')
 
-	// Get messages for channel
-	let messages = session.state.getMessagesForChannel(channelId)
+		// Get messages for channel
+		let messages = session.state.getMessagesForChannel(channelId)
 
-	// Sort by snowflake ID descending (newest first)
-	// Discord snowflake IDs contain a timestamp component, so larger ID = newer message
-	messages.sort((a, b) => {
-		return BigInt(b.id) > BigInt(a.id) ? 1 : BigInt(b.id) < BigInt(a.id) ? -1 : 0
-	})
+		// Sort by snowflake ID descending (newest first)
+		// Discord snowflake IDs contain a timestamp component, so larger ID = newer message
+		messages.sort((a, b) => {
+			return BigInt(b.id) > BigInt(a.id) ? 1 : BigInt(b.id) < BigInt(a.id) ? -1 : 0
+		})
 
-	// Apply pagination
-	if (around) {
-		// Find message and return messages around it
-		const aroundIndex = messages.findIndex((m) => m.id === around)
-		if (aroundIndex >= 0) {
-			const start = Math.max(0, aroundIndex - Math.floor(limit / 2))
-			messages = messages.slice(start, start + limit)
+		// Apply pagination
+		if (around) {
+			// Find message and return messages around it
+			const aroundIndex = messages.findIndex((m) => m.id === around)
+			if (aroundIndex >= 0) {
+				const start = Math.max(0, aroundIndex - Math.floor(limit / 2))
+				messages = messages.slice(start, start + limit)
+			} else {
+				messages = messages.slice(0, limit)
+			}
+		} else if (before) {
+			// Get messages before this ID
+			const beforeIndex = messages.findIndex((m) => m.id === before)
+			if (beforeIndex >= 0) {
+				messages = messages.slice(beforeIndex + 1, beforeIndex + 1 + limit)
+			} else {
+				messages = messages.slice(0, limit)
+			}
+		} else if (after) {
+			// Get messages after this ID
+			const afterIndex = messages.findIndex((m) => m.id === after)
+			if (afterIndex >= 0) {
+				messages = messages.slice(0, afterIndex).slice(-limit)
+			} else {
+				messages = messages.slice(0, limit)
+			}
 		} else {
+			// Just limit
 			messages = messages.slice(0, limit)
 		}
-	} else if (before) {
-		// Get messages before this ID
-		const beforeIndex = messages.findIndex((m) => m.id === before)
-		if (beforeIndex >= 0) {
-			messages = messages.slice(beforeIndex + 1, beforeIndex + 1 + limit)
-		} else {
-			messages = messages.slice(0, limit)
-		}
-	} else if (after) {
-		// Get messages after this ID
-		const afterIndex = messages.findIndex((m) => m.id === after)
-		if (afterIndex >= 0) {
-			messages = messages.slice(0, afterIndex).slice(-limit)
-		} else {
-			messages = messages.slice(0, limit)
-		}
-	} else {
-		// Just limit
-		messages = messages.slice(0, limit)
+
+		// Convert to API format
+		const apiMessages = messages.map((msg) => {
+			const author = session.state.getUser(msg.authorId) || session.state.botUser
+			return mockMessageToAPIMessage(msg, author)
+		})
+
+		return apiMessages
 	}
+)
 
-	// Convert to API format
-	const apiMessages = messages.map((msg) => {
-		const author = session.state.getUser(msg.authorId) || session.state.botUser
-		return mockMessageToAPIMessage(msg, author)
-	})
-
-	return apiMessages
-}
-
-export async function POST(request: RoboRequest) {
-	const resolved = resolveChannelForMessages(request)
-	if (resolved instanceof Response) return resolved
-	const { session, channel, channelId } = resolved
-
-	// Check permissions
-	const permError = enforcePermissions(
-		session,
-		'POST',
-		`/channels/${channelId}/messages`,
-		channelId
-	)
-	if (permError) return permError
-
-	// Parse message payload (JSON or multipart)
-	let body: {
-		content?: string
-		embeds?: unknown[]
-		components?: unknown[]
-		flags?: number
-		tts?: boolean
-		message_reference?: { message_id: string }
-		attachments?: AttachmentPayload[] // Metadata for uploaded files
-		// Message nonce support
-		nonce?: string | number
-		enforceNonce?: boolean
-		// Poll support
-		poll?: {
-			question: { text: string; emoji?: { id?: string; name?: string } }
-			answers: Array<{ poll_media: { text?: string; emoji?: { id?: string; name?: string } } }>
-			duration?: number // Hours until expiry
-			allow_multiselect?: boolean
-			layout_type?: number
+export const POST = define(
+	{
+		summary: 'Create message',
+		tags: ['Messages'],
+		params: z.object({
+			id: z.string().describe('Channel ID (Snowflake)')
+		}),
+		body: z.object({
+			content: z.string().max(4000).nullable().optional(),
+			embeds: z.array(z.object({}).passthrough()).nullable().optional(),
+			allowed_mentions: z.object({}).passthrough().nullable().optional(),
+			sticker_ids: z.array(z.string()).nullable().optional(),
+			components: z.array(z.object({}).passthrough()).nullable().optional(),
+			flags: z.number().nullable().optional(),
+			attachments: z.array(z.object({}).passthrough()).nullable().optional(),
+			poll: z.object({}).passthrough().nullable().optional(),
+			shared_client_theme: z.object({}).passthrough().nullable().optional(),
+			message_reference: z.object({
+				message_id: z.string().optional(),
+				channel_id: z.string().optional(),
+				guild_id: z.string().optional(),
+				type: z.number().optional()
+			}).nullable().optional(),
+			nonce: z.union([z.number(), z.string().max(25), z.null()]).optional(),
+			enforce_nonce: z.boolean().nullable().optional(),
+			tts: z.boolean().nullable().optional()
+		}).passthrough(),
+		response: {
+			200: z.object({
+				id: z.string(),
+				type: z.number(),
+				content: z.string(),
+				channel_id: z.string(),
+				author: z.object({
+					id: z.string(),
+					username: z.string(),
+					avatar: z.string().nullable(),
+					discriminator: z.string(),
+					public_flags: z.number(),
+					flags: z.number(),
+					global_name: z.string().nullable(),
+					primary_guild: z.unknown().nullable()
+				}).passthrough(),
+				attachments: z.array(z.object({}).passthrough()),
+				embeds: z.array(z.object({}).passthrough()),
+				mentions: z.array(z.object({}).passthrough()),
+				mention_roles: z.array(z.string()),
+				pinned: z.boolean(),
+				mention_everyone: z.boolean(),
+				tts: z.boolean(),
+				timestamp: z.string(),
+				edited_timestamp: z.string().nullable(),
+				flags: z.number(),
+				components: z.array(z.object({}).passthrough())
+			}).passthrough()
 		}
-		// Sticker support
-		sticker_ids?: string[]
-	}
+	},
+	async (request) => {
+		const resolved = resolveChannelForMessages(request as unknown as RoboRequest)
+		if (resolved instanceof Response) return resolved
+		const { session, channel, channelId } = resolved
 
-	const attachments: MockAttachment[] = []
-	const messageId = generateSnowflake()
+		// Check permissions
+		const permError = enforcePermissions(
+			session,
+			'POST',
+			`/channels/${channelId}/messages`,
+			channelId
+		)
+		if (permError) return permError
 
-	try {
-		if (isMultipartRequest(request)) {
-			// Handle multipart/form-data (file uploads)
-			const parsed = await parseMultipartMessage(request)
-			body = parsed.body as typeof body
+		// Parse message payload (JSON or multipart)
+		let body: {
+			content?: string
+			embeds?: unknown[]
+			components?: unknown[]
+			flags?: number
+			tts?: boolean
+			message_reference?: { message_id: string }
+			attachments?: AttachmentPayload[] // Metadata for uploaded files
+			// Message nonce support
+			nonce?: string | number
+			enforceNonce?: boolean
+			// Poll support
+			poll?: {
+				question: { text: string; emoji?: { id?: string; name?: string } }
+				answers: Array<{ poll_media: { text?: string; emoji?: { id?: string; name?: string } } }>
+				duration?: number // Hours until expiry
+				allow_multiselect?: boolean
+				layout_type?: number
+			}
+			// Sticker support
+			sticker_ids?: string[]
+		}
 
-			// Process each uploaded file
-			for (let i = 0; i < parsed.files.length; i++) {
-				const file = parsed.files[i]
-				const attachmentId = generateSnowflake()
+		const attachments: MockAttachment[] = []
+		const messageId = generateSnowflake()
 
-				// Find metadata from payload_json.attachments (if provided)
-				const meta: Partial<AttachmentPayload> = body.attachments?.find((a) => a.id === i) || {}
+		try {
+			if (isMultipartRequest(request as unknown as RoboRequest)) {
+				// Handle multipart/form-data (file uploads)
+				const parsed = await parseMultipartMessage(request as unknown as RoboRequest)
+				body = parsed.body as typeof body
 
-				// Detect image dimensions if applicable
-				let width: number | undefined
-				let height: number | undefined
-				if (isImageContentType(file.contentType)) {
-					const dims = getImageDimensions(file.data, file.contentType)
-					if (dims) {
-						width = dims.width
-						height = dims.height
+				// Process each uploaded file
+				for (let i = 0; i < parsed.files.length; i++) {
+					const file = parsed.files[i]
+					const attachmentId = generateSnowflake()
+
+					// Find metadata from payload_json.attachments (if provided)
+					const meta: Partial<AttachmentPayload> = body.attachments?.find((a) => a.id === i) || {}
+
+					// Detect image dimensions if applicable
+					let width: number | undefined
+					let height: number | undefined
+					if (isImageContentType(file.contentType)) {
+						const dims = getImageDimensions(file.data, file.contentType)
+						if (dims) {
+							width = dims.width
+							height = dims.height
+						}
 					}
-				}
 
-				// Store attachment data in session state
-				const storedAttachment: StoredAttachment = {
-					id: attachmentId,
-					channelId,
-					messageId,
-					filename: meta.filename || file.filename,
-					contentType: file.contentType,
-					size: file.size,
-					data: file.data,
-					width,
-					height
-				}
-				session.state.storeAttachment(storedAttachment)
+					// Store attachment data in session state
+					const storedAttachment: StoredAttachment = {
+						id: attachmentId,
+						channelId,
+						messageId,
+						filename: meta.filename || file.filename,
+						contentType: file.contentType,
+						size: file.size,
+						data: file.data,
+						width,
+						height
+					}
+					session.state.storeAttachment(storedAttachment)
 
-				// Build attachment metadata for message
-				const attachment: MockAttachment = {
-					id: attachmentId,
-					filename: storedAttachment.filename,
-					title: meta.title,
-					description: meta.description,
-					content_type: file.contentType,
-					size: file.size,
-					url: `${CDN_BASE_URL}/cdn/attachments/${channelId}/${attachmentId}/${encodeURIComponent(storedAttachment.filename)}`,
-					proxy_url: `${CDN_BASE_URL}/cdn/attachments/${channelId}/${attachmentId}/${encodeURIComponent(storedAttachment.filename)}`,
-					width,
-					height
+					// Build attachment metadata for message
+					const attachment: MockAttachment = {
+						id: attachmentId,
+						filename: storedAttachment.filename,
+						title: meta.title,
+						description: meta.description,
+						content_type: file.contentType,
+						size: file.size,
+						url: `${CDN_BASE_URL}/cdn/attachments/${channelId}/${attachmentId}/${encodeURIComponent(storedAttachment.filename)}`,
+						proxy_url: `${CDN_BASE_URL}/cdn/attachments/${channelId}/${attachmentId}/${encodeURIComponent(storedAttachment.filename)}`,
+						width,
+						height
+					}
+					attachments.push(attachment)
 				}
-				attachments.push(attachment)
+			} else {
+				// Standard JSON body
+				body = await request.json()
 			}
-		} else {
-			// Standard JSON body
-			body = await request.json()
-		}
-	} catch (error) {
-		if (error instanceof MultipartError) {
-			return new Response(JSON.stringify({ message: error.message, code: error.code }), {
-				status: 400,
-				headers: { 'Content-Type': 'application/json' }
-			})
-		}
-		return new Response(JSON.stringify({ message: 'Invalid request body' }), {
-			status: 400,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// Validate Components V2 if flag is set
-	if (body.flags && body.flags & MessageFlags.IsComponentsV2) {
-		// V2 components cannot coexist with content or embeds
-		if (body.content || (body.embeds && body.embeds.length > 0)) {
-			return new Response(JSON.stringify(createV2ConflictError()), {
+		} catch (error) {
+			if (error instanceof MultipartError) {
+				return new Response(JSON.stringify({ message: error.message, code: error.code }), {
+					status: 400,
+					headers: { 'Content-Type': 'application/json' }
+				})
+			}
+			return new Response(JSON.stringify({ message: 'Invalid request body' }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
 		}
 
-		// Validate V2 component structure
-		const attachmentFilenames = new Set(attachments.map((a) => a.filename))
-		const validation = validateComponentsV2(body.components ?? [], attachmentFilenames)
-		if (!validation.valid) {
-			return new Response(JSON.stringify(createComponentValidationError(validation.errors)), {
-				status: 400,
-				headers: { 'Content-Type': 'application/json' }
-			})
-		}
-	} else if (body.components && body.components.length > 0) {
-		// Validate classic (V1) components
-		const validation = validateComponents(body.components)
-		if (!validation.valid) {
-			return new Response(JSON.stringify(createComponentValidationError(validation.errors)), {
-				status: 400,
-				headers: { 'Content-Type': 'application/json' }
-			})
-		}
-	}
+		// Validate Components V2 if flag is set
+		if (body.flags && body.flags & MessageFlags.IsComponentsV2) {
+			// V2 components cannot coexist with content or embeds
+			if (body.content || (body.embeds && body.embeds.length > 0)) {
+				return new Response(JSON.stringify(createV2ConflictError()), {
+					status: 400,
+					headers: { 'Content-Type': 'application/json' }
+				})
+			}
 
-	// Validate message length (2000 character limit)
-	if (body.content && body.content.length > 2000) {
-		return new Response(JSON.stringify({ message: 'Message content exceeds 2000 characters', code: 50035 }), {
-			status: 400,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// Validate poll if present
-	if (body.poll) {
-		if (!body.poll.question?.text) {
-			return new Response(JSON.stringify({ message: 'Poll question text is required', code: 50035 }), {
-				status: 400,
-				headers: { 'Content-Type': 'application/json' }
-			})
-		}
-		if (body.poll.question.text.length > 300) {
-			return new Response(JSON.stringify({ message: 'Poll question text cannot exceed 300 characters', code: 50035 }), {
-				status: 400,
-				headers: { 'Content-Type': 'application/json' }
-			})
-		}
-		if (!body.poll.answers || body.poll.answers.length < 1) {
-			return new Response(JSON.stringify({ message: 'Poll must have at least 1 answer', code: 50035 }), {
-				status: 400,
-				headers: { 'Content-Type': 'application/json' }
-			})
-		}
-		if (body.poll.answers.length > 10) {
-			return new Response(JSON.stringify({ message: 'Poll cannot have more than 10 answers', code: 50035 }), {
-				status: 400,
-				headers: { 'Content-Type': 'application/json' }
-			})
-		}
-		// Validate answer text lengths
-		for (let i = 0; i < body.poll.answers.length; i++) {
-			const answerText = body.poll.answers[i].poll_media?.text
-			if (answerText && answerText.length > 55) {
-				return new Response(JSON.stringify({ message: `Poll answer ${i + 1} text cannot exceed 55 characters`, code: 50035 }), {
+			// Validate V2 component structure
+			const attachmentFilenames = new Set(attachments.map((a) => a.filename))
+			const validation = validateComponentsV2(body.components ?? [], attachmentFilenames)
+			if (!validation.valid) {
+				return new Response(JSON.stringify(createComponentValidationError(validation.errors)), {
+					status: 400,
+					headers: { 'Content-Type': 'application/json' }
+				})
+			}
+		} else if (body.components && body.components.length > 0) {
+			// Validate classic (V1) components
+			const validation = validateComponents(body.components)
+			if (!validation.valid) {
+				return new Response(JSON.stringify(createComponentValidationError(validation.errors)), {
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
 				})
 			}
 		}
-	}
 
-	// Validate sticker_ids if present
-	if (body.sticker_ids?.length) {
-		if (body.sticker_ids.length > 3) {
-			return new Response(JSON.stringify({ message: 'Cannot send more than 3 stickers', code: 50035 }), {
+		// Validate message length (2000 character limit)
+		if (body.content && body.content.length > 2000) {
+			return new Response(JSON.stringify({ message: 'Message content exceeds 2000 characters', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
 			})
 		}
-		// Validate all stickers exist
-		for (const stickerId of body.sticker_ids) {
-			if (!session.state.getSticker(stickerId)) {
-				return new Response(JSON.stringify({ message: `Unknown sticker: ${stickerId}`, code: 50035 }), {
+
+		// Validate poll if present
+		if (body.poll) {
+			if (!body.poll.question?.text) {
+				return new Response(JSON.stringify({ message: 'Poll question text is required', code: 50035 }), {
 					status: 400,
 					headers: { 'Content-Type': 'application/json' }
 				})
 			}
-		}
-	}
-
-	// Create message in state (author is bot user)
-	// Set type to 19 (Reply) when message_reference is present
-	const messageType = body.message_reference ? 19 : 0 // 19 = Reply, 0 = Default
-	const message = session.state.createMessage({
-		id: messageId,
-		channelId,
-		guildId: channel.guildId,
-		authorId: session.state.botUser.id,
-		content: body.content ?? '',
-		embeds: body.embeds ?? [],
-		attachments,
-		tts: body.tts ?? false,
-		type: messageType,
-		nonce: body.nonce,
-		flags: body.flags,
-		components: body.components,
-		poll: body.poll,
-		sticker_ids: body.sticker_ids,
-		message_reference: body.message_reference
-			? {
-					message_id: body.message_reference.message_id,
-					channel_id: channelId,
-					guild_id: channel.guildId
+			if (body.poll.question.text.length > 300) {
+				return new Response(JSON.stringify({ message: 'Poll question text cannot exceed 300 characters', code: 50035 }), {
+					status: 400,
+					headers: { 'Content-Type': 'application/json' }
+				})
+			}
+			if (!body.poll.answers || body.poll.answers.length < 1) {
+				return new Response(JSON.stringify({ message: 'Poll must have at least 1 answer', code: 50035 }), {
+					status: 400,
+					headers: { 'Content-Type': 'application/json' }
+				})
+			}
+			if (body.poll.answers.length > 10) {
+				return new Response(JSON.stringify({ message: 'Poll cannot have more than 10 answers', code: 50035 }), {
+					status: 400,
+					headers: { 'Content-Type': 'application/json' }
+				})
+			}
+			// Validate answer text lengths
+			for (let i = 0; i < body.poll.answers.length; i++) {
+				const answerText = body.poll.answers[i].poll_media?.text
+				if (answerText && answerText.length > 55) {
+					return new Response(JSON.stringify({ message: `Poll answer ${i + 1} text cannot exceed 55 characters`, code: 50035 }), {
+						status: 400,
+						headers: { 'Content-Type': 'application/json' }
+					})
 				}
-			: undefined
-	})
-
-	// Record as 'message_sent' action (use session.recordAction for metadata propagation)
-	session.recordAction(
-		'message_sent',
-		{
-			message_id: message.id,
-			channel_id: channelId,
-			guild_id: channel.guildId,
-			content: message.content,
-			embeds: message.embeds,
-			attachments: message.attachments,
-			components: message.components,
-			flags: message.flags,
-			poll: message.poll
-		},
-		{
-			endpoint: `POST /channels/${channelId}/messages`,
-			method: 'POST'
+			}
 		}
-	)
 
-	// Dispatch MESSAGE_CREATE event via Gateway (routed through session for loop detection)
-	const author = session.state.botUser
-	const apiMessage = mockMessageToAPIMessage(message, author)
-	const dispatchData: Record<string, unknown> = { ...apiMessage }
-	if (message.guildId) {
-		dispatchData.guild_id = message.guildId
+		// Validate sticker_ids if present
+		if (body.sticker_ids?.length) {
+			if (body.sticker_ids.length > 3) {
+				return new Response(JSON.stringify({ message: 'Cannot send more than 3 stickers', code: 50035 }), {
+					status: 400,
+					headers: { 'Content-Type': 'application/json' }
+				})
+			}
+			// Validate all stickers exist
+			for (const stickerId of body.sticker_ids) {
+				if (!session.state.getSticker(stickerId)) {
+					return new Response(JSON.stringify({ message: `Unknown sticker: ${stickerId}`, code: 50035 }), {
+						status: 400,
+						headers: { 'Content-Type': 'application/json' }
+					})
+				}
+			}
+		}
+
+		// Create message in state (author is bot user)
+		// Set type to 19 (Reply) when message_reference is present
+		const messageType = body.message_reference ? 19 : 0 // 19 = Reply, 0 = Default
+		const message = session.state.createMessage({
+			id: messageId,
+			channelId,
+			guildId: channel.guildId,
+			authorId: session.state.botUser.id,
+			content: body.content ?? '',
+			embeds: body.embeds ?? [],
+			attachments,
+			tts: body.tts ?? false,
+			type: messageType,
+			nonce: body.nonce,
+			flags: body.flags,
+			components: body.components,
+			poll: body.poll,
+			sticker_ids: body.sticker_ids,
+			message_reference: body.message_reference
+				? {
+						message_id: body.message_reference.message_id,
+						channel_id: channelId,
+						guild_id: channel.guildId
+					}
+				: undefined
+		})
+
+		// Record as 'message_sent' action (use session.recordAction for metadata propagation)
+		session.recordAction(
+			'message_sent',
+			{
+				message_id: message.id,
+				channel_id: channelId,
+				guild_id: channel.guildId,
+				content: message.content,
+				embeds: message.embeds,
+				attachments: message.attachments,
+				components: message.components,
+				flags: message.flags,
+				poll: message.poll
+			},
+			{
+				endpoint: `POST /channels/${channelId}/messages`,
+				method: 'POST'
+			}
+		)
+
+		// Dispatch MESSAGE_CREATE event via Gateway (routed through session for loop detection)
+		const author = session.state.botUser
+		const apiMessage = mockMessageToAPIMessage(message, author)
+		const dispatchData: Record<string, unknown> = { ...apiMessage }
+		if (message.guildId) {
+			dispatchData.guild_id = message.guildId
+		}
+		await session.dispatch('MESSAGE_CREATE', dispatchData)
+
+		// Return APIMessage response
+		return apiMessage
 	}
-	await session.dispatch('MESSAGE_CREATE', dispatchData)
-
-	// Return APIMessage response
-	return apiMessage
-}
+)

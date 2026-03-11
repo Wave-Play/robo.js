@@ -1,4 +1,5 @@
-import type { RoboRequest } from '@robojs/server'
+import { define } from '@robojs/server'
+import { z } from 'zod'
 
 /**
  * GET /api/v10/voice/regions - Discord Voice Regions endpoint mock
@@ -6,7 +7,21 @@ import type { RoboRequest } from '@robojs/server'
  * Returns a list of available voice regions that can be used when
  * creating/updating voice channels.
  */
-export async function GET(_request: RoboRequest) {
+export const GET = define(
+	{
+		summary: 'List voice regions',
+		tags: ['Voice'],
+		response: {
+			200: z.array(z.object({
+				id: z.string(),
+				name: z.string(),
+				optimal: z.boolean(),
+				deprecated: z.boolean(),
+				custom: z.boolean()
+			})).nullable()
+		}
+	},
+	async () => {
 	// Return mock voice regions matching Discord's format
 	return [
 		{
@@ -101,4 +116,4 @@ export async function GET(_request: RoboRequest) {
 			custom: false
 		}
 	]
-}
+})

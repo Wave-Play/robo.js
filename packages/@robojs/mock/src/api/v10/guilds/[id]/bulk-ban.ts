@@ -1,4 +1,5 @@
-import type { RoboRequest } from '@robojs/server'
+import { define } from '@robojs/server'
+import { z } from 'zod'
 import { sessionManager } from '../../../../core/manager.js'
 import { parseMockToken } from '../../../../utils/id.js'
 import { enforcePermissions } from '../../../../utils/permission-check.js'
@@ -22,7 +23,30 @@ import { createMockUser } from '../../../../session/state.js'
  *
  * @see https://discord.com/developers/docs/resources/guild#bulk-guild-ban
  */
-export async function POST(request: RoboRequest) {
+export const POST = define(
+	{
+		summary: 'Bulk ban users from guild',
+		description: 'Ban up to 200 users from a guild',
+		tags: ['Guilds'],
+		params: z.object({
+			id: z.string().describe('The guild ID (Snowflake)')
+		}),
+		body: z
+			.object({
+				user_ids: z.array(z.string()),
+				delete_message_seconds: z.number().int().min(0).max(604800).nullable().optional()
+			})
+			.passthrough(),
+		response: {
+			200: z
+				.object({
+					banned_users: z.array(z.string()),
+					failed_users: z.array(z.string())
+				})
+				.passthrough()
+		}
+	},
+	async (request) => {
 	// 1. Parse Authorization header → get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
@@ -198,4 +222,5 @@ export async function POST(request: RoboRequest) {
 			headers: { 'Content-Type': 'application/json' }
 		}
 	)
-}
+	}
+)

@@ -1,4 +1,6 @@
+import { define } from '@robojs/server'
 import type { RoboRequest } from '@robojs/server'
+import { z } from 'zod'
 import { sessionManager } from '../../../../../../../core/manager.js'
 import { parseMockToken } from '../../../../../../../utils/id.js'
 import { mockCommandToAPICommand } from '../../../../../../../discord/payloads.js'
@@ -14,6 +16,43 @@ import type { MockApplicationCommandConfig } from '../../../../../../../types/in
  * @see https://discord.com/developers/docs/interactions/application-commands#edit-guild-application-command
  * @see https://discord.com/developers/docs/interactions/application-commands#delete-guild-application-command
  */
+
+const ApplicationCommandResponseSchema = z
+	.object({
+		id: z.string(),
+		application_id: z.string(),
+		version: z.string(),
+		default_member_permissions: z.string().nullable(),
+		type: z.number().int(),
+		name: z.string(),
+		name_localized: z.string().optional(),
+		name_localizations: z.record(z.string()).nullable().optional(),
+		description: z.string(),
+		description_localized: z.string().optional(),
+		description_localizations: z.record(z.string()).nullable().optional(),
+		guild_id: z.string().optional(),
+		dm_permission: z.boolean().optional(),
+		contexts: z.array(z.number()).nullable().optional(),
+		integration_types: z.array(z.number()).optional(),
+		options: z.array(z.object({}).passthrough()).optional(),
+		nsfw: z.boolean().optional()
+	})
+	.passthrough()
+
+const ApplicationCommandPatchBodySchema = z
+	.object({
+		name: z.string().min(1).max(32).optional(),
+		name_localizations: z.record(z.string()).nullable().optional(),
+		description: z.string().max(100).nullable().optional(),
+		description_localizations: z.record(z.string()).nullable().optional(),
+		options: z.array(z.object({}).passthrough()).nullable().optional(),
+		default_member_permissions: z.number().nullable().optional(),
+		dm_permission: z.boolean().nullable().optional(),
+		contexts: z.array(z.number()).nullable().optional(),
+		integration_types: z.array(z.number()).nullable().optional(),
+		handler: z.number().nullable().optional()
+	})
+	.passthrough()
 
 function resolveGuildCommand(request: RoboRequest) {
 	// 1. Parse Authorization header → get session
@@ -73,55 +112,104 @@ function resolveGuildCommand(request: RoboRequest) {
 	return { session, appId, guildId, commandId, command }
 }
 
-export async function GET(request: RoboRequest) {
-	const resolved = resolveGuildCommand(request)
-	if (resolved instanceof Response) return resolved
-	const { command } = resolved
+export const GET = define(
+	{
+		summary: 'Get guild application command',
+		description: 'Fetch a guild command for your application',
+		tags: ['Application Commands'],
+		params: z.object({
+			app_id: z.string().describe('The application ID (Snowflake)'),
+			guild_id: z.string().describe('The guild ID (Snowflake)'),
+			command_id: z.string().describe('The command ID (Snowflake)')
+		}),
+		query: z.object({
+			with_localizations: z.string().optional().describe('Whether to include full localization dictionaries')
+		}),
+		response: {
+			200: ApplicationCommandResponseSchema
+		}
+	},
+	async (request) => {
+		const resolved = resolveGuildCommand(request as unknown as RoboRequest)
+		if (resolved instanceof Response) return resolved
+		const { command } = resolved
 
-	// Parse with_localizations query param (defaults to false per Discord API)
-	const url = new URL(request.url)
-	const withLocalizations = url.searchParams.get('with_localizations') === 'true'
+		// Parse with_localizations query param (defaults to false per Discord API)
+		const url = new URL(request.url)
+		const withLocalizations = url.searchParams.get('with_localizations') === 'true'
 
-	return mockCommandToAPICommand(command, { withLocalizations })
-}
-
-export async function PATCH(request: RoboRequest) {
-	const resolved = resolveGuildCommand(request)
-	if (resolved instanceof Response) return resolved
-	const { session, appId, guildId, commandId, command } = resolved
-
-	let body: Partial<MockApplicationCommandConfig>
-
-	try {
-		body = await request.json()
-	} catch {
-		return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
-			status: 400,
-			headers: { 'Content-Type': 'application/json' }
-		})
+		return mockCommandToAPICommand(command, { withLocalizations })
 	}
+)
 
-	// Validate name if provided
-	if (body.name !== undefined) {
-		if (body.name.length < CommandLimits.MIN_NAME_LENGTH || body.name.length > CommandLimits.MAX_NAME_LENGTH) {
-			return new Response(
-				JSON.stringify({
-					error: `Command name must be between ${CommandLimits.MIN_NAME_LENGTH} and ${CommandLimits.MAX_NAME_LENGTH} characters`,
-					code: 50035
-				}),
-				{
-					status: 400,
-					headers: { 'Content-Type': 'application/json' }
-				}
-			)
+export const PATCH = define(
+	{
+		summary: 'Update guild application command',
+		description: 'Edit a guild command. Returns the updated command object on success',
+		tags: ['Application Commands'],
+		params: z.object({
+			app_id: z.string().describe('The application ID (Snowflake)'),
+			guild_id: z.string().describe('The guild ID (Snowflake)'),
+			command_id: z.string().describe('The command ID (Snowflake)')
+		}),
+		body: ApplicationCommandPatchBodySchema,
+		response: {
+			200: ApplicationCommandResponseSchema
+		}
+	},
+	async (request) => {
+		const resolved = resolveGuildCommand(request as unknown as RoboRequest)
+		if (resolved instanceof Response) return resolved
+		const { session, appId, guildId, commandId, command } = resolved
+
+		let body: Partial<MockApplicationCommandConfig>
+
+		try {
+			body = await request.json()
+		} catch {
+			return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
+				status: 400,
+				headers: { 'Content-Type': 'application/json' }
+			})
 		}
 
-		// Validate name pattern for CHAT_INPUT
-		if (command.type === ApplicationCommandType.ChatInput) {
-			if (!CommandLimits.CHAT_INPUT_NAME_PATTERN.test(body.name.toLowerCase())) {
+		// Validate name if provided
+		if (body.name !== undefined) {
+			if (body.name.length < CommandLimits.MIN_NAME_LENGTH || body.name.length > CommandLimits.MAX_NAME_LENGTH) {
 				return new Response(
 					JSON.stringify({
-						error: 'Command name must be lowercase and contain only letters, numbers, dashes, and underscores',
+						error: `Command name must be between ${CommandLimits.MIN_NAME_LENGTH} and ${CommandLimits.MAX_NAME_LENGTH} characters`,
+						code: 50035
+					}),
+					{
+						status: 400,
+						headers: { 'Content-Type': 'application/json' }
+					}
+				)
+			}
+
+			// Validate name pattern for CHAT_INPUT
+			if (command.type === ApplicationCommandType.ChatInput) {
+				if (!CommandLimits.CHAT_INPUT_NAME_PATTERN.test(body.name.toLowerCase())) {
+					return new Response(
+						JSON.stringify({
+							error: 'Command name must be lowercase and contain only letters, numbers, dashes, and underscores',
+							code: 50035
+						}),
+						{
+							status: 400,
+							headers: { 'Content-Type': 'application/json' }
+						}
+					)
+				}
+			}
+
+			// Check for duplicate name in guild (excluding self)
+			const existingCommand = session.state.findCommandByName(body.name, guildId)
+			if (existingCommand && existingCommand.id !== commandId) {
+				return new Response(
+					JSON.stringify({
+						error: 'A command with this name already exists',
 						code: 50035
 					}),
 					{
@@ -132,12 +220,27 @@ export async function PATCH(request: RoboRequest) {
 			}
 		}
 
-		// Check for duplicate name in guild (excluding self)
-		const existingCommand = session.state.findCommandByName(body.name, guildId)
-		if (existingCommand && existingCommand.id !== commandId) {
+		// Validate description if provided
+		if (body.description !== undefined && command.type === ApplicationCommandType.ChatInput) {
+			if (body.description.length < CommandLimits.MIN_DESCRIPTION_LENGTH || body.description.length > CommandLimits.MAX_DESCRIPTION_LENGTH) {
+				return new Response(
+					JSON.stringify({
+						error: `Command description must be between ${CommandLimits.MIN_DESCRIPTION_LENGTH} and ${CommandLimits.MAX_DESCRIPTION_LENGTH} characters`,
+						code: 50035
+					}),
+					{
+						status: 400,
+						headers: { 'Content-Type': 'application/json' }
+					}
+				)
+			}
+		}
+
+		// Validate options count if provided
+		if (body.options !== undefined && body.options.length > CommandLimits.MAX_OPTIONS) {
 			return new Response(
 				JSON.stringify({
-					error: 'A command with this name already exists',
+					error: `Command cannot have more than ${CommandLimits.MAX_OPTIONS} options`,
 					code: 50035
 				}),
 				{
@@ -146,96 +249,81 @@ export async function PATCH(request: RoboRequest) {
 				}
 			)
 		}
-	}
 
-	// Validate description if provided
-	if (body.description !== undefined && command.type === ApplicationCommandType.ChatInput) {
-		if (body.description.length < CommandLimits.MIN_DESCRIPTION_LENGTH || body.description.length > CommandLimits.MAX_DESCRIPTION_LENGTH) {
-			return new Response(
-				JSON.stringify({
-					error: `Command description must be between ${CommandLimits.MIN_DESCRIPTION_LENGTH} and ${CommandLimits.MAX_DESCRIPTION_LENGTH} characters`,
-					code: 50035
-				}),
-				{
-					status: 400,
-					headers: { 'Content-Type': 'application/json' }
-				}
-			)
-		}
-	}
+		// Update the command
+		const updated = session.state.updateCommand(commandId, body)
 
-	// Validate options count if provided
-	if (body.options !== undefined && body.options.length > CommandLimits.MAX_OPTIONS) {
-		return new Response(
-			JSON.stringify({
-				error: `Command cannot have more than ${CommandLimits.MAX_OPTIONS} options`,
-				code: 50035
-			}),
-			{
+		if (!updated) {
+			return new Response(JSON.stringify({ message: 'Failed to update command', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
+			})
+		}
+
+		// Record action
+		session.recordAction(
+			'rest_request',
+			{
+				command_id: commandId,
+				command_name: updated.name,
+				guild_id: guildId,
+				scope: 'guild'
+			},
+			{
+				endpoint: `PATCH /applications/${appId}/guilds/${guildId}/commands/${commandId}`,
+				method: 'PATCH'
 			}
 		)
-	}
 
-	// Update the command
-	const updated = session.state.updateCommand(commandId, body)
-
-	if (!updated) {
-		return new Response(JSON.stringify({ message: 'Failed to update command', code: 50035 }), {
-			status: 400,
+		return new Response(JSON.stringify(mockCommandToAPICommand(updated)), {
+			status: 200,
 			headers: { 'Content-Type': 'application/json' }
 		})
 	}
+)
 
-	// Record action
-	session.recordAction(
-		'rest_request',
-		{
-			command_id: commandId,
-			command_name: updated.name,
-			guild_id: guildId,
-			scope: 'guild'
-		},
-		{
-			endpoint: `PATCH /applications/${appId}/guilds/${guildId}/commands/${commandId}`,
-			method: 'PATCH'
+export const DELETE = define(
+	{
+		summary: 'Delete guild application command',
+		description: 'Delete a guild command',
+		tags: ['Application Commands'],
+		params: z.object({
+			app_id: z.string().describe('The application ID (Snowflake)'),
+			guild_id: z.string().describe('The guild ID (Snowflake)'),
+			command_id: z.string().describe('The command ID (Snowflake)')
+		}),
+		response: {
+			204: z.undefined()
 		}
-	)
+	},
+	async (request) => {
+		const resolved = resolveGuildCommand(request as unknown as RoboRequest)
+		if (resolved instanceof Response) return resolved
+		const { session, appId, guildId, commandId } = resolved
 
-	return new Response(JSON.stringify(mockCommandToAPICommand(updated)), {
-		status: 200,
-		headers: { 'Content-Type': 'application/json' }
-	})
-}
+		const deleted = session.state.deleteCommand(commandId)
 
-export async function DELETE(request: RoboRequest) {
-	const resolved = resolveGuildCommand(request)
-	if (resolved instanceof Response) return resolved
-	const { session, appId, guildId, commandId } = resolved
+		if (!deleted) {
+			return new Response(JSON.stringify({ message: 'Unknown Application Command', code: 10063 }), {
+				status: 404,
+				headers: { 'Content-Type': 'application/json' }
+			})
+		}
 
-	const deleted = session.state.deleteCommand(commandId)
+		// Record action
+		session.recordAction(
+			'rest_request',
+			{
+				command_id: commandId,
+				guild_id: guildId,
+				scope: 'guild'
+			},
+			{
+				endpoint: `DELETE /applications/${appId}/guilds/${guildId}/commands/${commandId}`,
+				method: 'DELETE'
+			}
+		)
 
-	if (!deleted) {
-		return new Response(JSON.stringify({ message: 'Unknown Application Command', code: 10063 }), {
-			status: 404,
-			headers: { 'Content-Type': 'application/json' }
-		})
+		return new Response(null, { status: 204 })
 	}
-
-	// Record action
-	session.recordAction(
-		'rest_request',
-		{
-			command_id: commandId,
-			guild_id: guildId,
-			scope: 'guild'
-		},
-		{
-			endpoint: `DELETE /applications/${appId}/guilds/${guildId}/commands/${commandId}`,
-			method: 'DELETE'
-		}
-	)
-
-	return new Response(null, { status: 204 })
-}
+)

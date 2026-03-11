@@ -1,4 +1,6 @@
+import { define } from '@robojs/server'
 import type { RoboRequest } from '@robojs/server'
+import { z } from 'zod'
 import { sessionManager } from '../../../../../core/manager.js'
 import { parseMockToken } from '../../../../../utils/id.js'
 import { mockThreadToAPIChannel } from '../../../../../discord/payloads.js'
@@ -42,65 +44,91 @@ function resolveThreadForSelf(request: RoboRequest) {
 	return { session, thread, threadId }
 }
 
-export async function PUT(request: RoboRequest) {
-	const resolved = resolveThreadForSelf(request)
-	if (resolved instanceof Response) return resolved
-	const { session, thread, threadId } = resolved
-
-	const botUserId = session.state.botUser.id
-
-	// Join thread
-	const member = session.state.addThreadMember(threadId, botUserId)
-
-	// Record action
-	session.recordAction(
-		'thread_member_added',
-		{
-			thread_id: threadId,
-			user_id: botUserId
-		},
-		{
-			endpoint: `PUT /channels/${threadId}/thread-members/@me`,
-			method: 'PUT'
+export const PUT = define(
+	{
+		summary: 'Join thread',
+		description: 'Adds the current user to a thread. Returns 204 No Content on success.',
+		tags: ['Threads'],
+		params: z.object({
+			id: z.string().describe('The thread channel ID (Snowflake)')
+		}),
+		response: {
+			204: z.undefined()
 		}
-	)
+	},
+	async (request) => {
+		const resolved = resolveThreadForSelf(request)
+		if (resolved instanceof Response) return resolved
+		const { session, thread, threadId } = resolved
 
-	// Dispatch THREAD_UPDATE so Discord.js updates its local cache
-	const apiChannel = mockThreadToAPIChannel(thread, member ?? undefined)
-	getGatewayServer().dispatchToSession(session.id, 'THREAD_UPDATE', apiChannel, thread.guildId)
+		const botUserId = session.state.botUser.id
 
-	// Return 204 No Content
-	return new Response(null, { status: 204 })
-}
+		// Join thread
+		const member = session.state.addThreadMember(threadId, botUserId)
 
-export async function DELETE(request: RoboRequest) {
-	const resolved = resolveThreadForSelf(request)
-	if (resolved instanceof Response) return resolved
-	const { session, thread, threadId } = resolved
+		// Record action
+		session.recordAction(
+			'thread_member_added',
+			{
+				thread_id: threadId,
+				user_id: botUserId
+			},
+			{
+				endpoint: `PUT /channels/${threadId}/thread-members/@me`,
+				method: 'PUT'
+			}
+		)
 
-	const botUserId = session.state.botUser.id
+		// Dispatch THREAD_UPDATE so Discord.js updates its local cache
+		const apiChannel = mockThreadToAPIChannel(thread, member ?? undefined)
+		getGatewayServer().dispatchToSession(session.id, 'THREAD_UPDATE', apiChannel, thread.guildId)
 
-	// Leave thread
-	session.state.removeThreadMember(threadId, botUserId)
+		// Return 204 No Content
+		return new Response(null, { status: 204 })
+	}
+)
 
-	// Record action
-	session.recordAction(
-		'thread_member_removed',
-		{
-			thread_id: threadId,
-			user_id: botUserId
-		},
-		{
-			endpoint: `DELETE /channels/${threadId}/thread-members/@me`,
-			method: 'DELETE'
+export const DELETE = define(
+	{
+		summary: 'Leave thread',
+		description: 'Removes the current user from a thread. Returns 204 No Content on success.',
+		tags: ['Threads'],
+		params: z.object({
+			id: z.string().describe('The thread channel ID (Snowflake)')
+		}),
+		response: {
+			204: z.undefined()
 		}
-	)
+	},
+	async (request) => {
+		const resolved = resolveThreadForSelf(request)
+		if (resolved instanceof Response) return resolved
+		const { session, thread, threadId } = resolved
 
-	// Dispatch THREAD_UPDATE so Discord.js updates its local cache
-	// After leaving, the member field should not be included
-	const apiChannel = mockThreadToAPIChannel(thread)
-	getGatewayServer().dispatchToSession(session.id, 'THREAD_UPDATE', apiChannel, thread.guildId)
+		const botUserId = session.state.botUser.id
 
-	// Return 204 No Content
-	return new Response(null, { status: 204 })
-}
+		// Leave thread
+		session.state.removeThreadMember(threadId, botUserId)
+
+		// Record action
+		session.recordAction(
+			'thread_member_removed',
+			{
+				thread_id: threadId,
+				user_id: botUserId
+			},
+			{
+				endpoint: `DELETE /channels/${threadId}/thread-members/@me`,
+				method: 'DELETE'
+			}
+		)
+
+		// Dispatch THREAD_UPDATE so Discord.js updates its local cache
+		// After leaving, the member field should not be included
+		const apiChannel = mockThreadToAPIChannel(thread)
+		getGatewayServer().dispatchToSession(session.id, 'THREAD_UPDATE', apiChannel, thread.guildId)
+
+		// Return 204 No Content
+		return new Response(null, { status: 204 })
+	}
+)

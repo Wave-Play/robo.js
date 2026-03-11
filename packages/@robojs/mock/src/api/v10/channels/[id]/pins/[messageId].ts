@@ -1,4 +1,6 @@
+import { define } from '@robojs/server'
 import type { RoboRequest } from '@robojs/server'
+import { z } from 'zod'
 import { sessionManager } from '../../../../../core/manager.js'
 import { parseMockToken } from '../../../../../utils/id.js'
 import { mockMessageToAPIMessage } from '../../../../../discord/payloads.js'
@@ -11,6 +13,11 @@ import { enforcePermissions } from '../../../../../utils/permission-check.js'
  *
  * Response: 204 No Content
  */
+
+const PinMessageParams = z.object({
+	id: z.string().describe('Channel ID (Snowflake)'),
+	messageId: z.string().describe('Message ID (Snowflake)')
+})
 function resolvePin(request: RoboRequest) {
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
@@ -51,102 +58,122 @@ function resolvePin(request: RoboRequest) {
 	return { session, channel, message, channelId, messageId }
 }
 
-export async function PUT(request: RoboRequest) {
-	const resolved = resolvePin(request)
-	if (resolved instanceof Response) return resolved
-	const { session, channel, message, channelId, messageId } = resolved
-
-	// Check permissions
-	const permError = enforcePermissions(
-		session,
-		'PUT',
-		`/channels/${channelId}/pins/${messageId}`,
-		channelId
-	)
-	if (permError) return permError
-
-	// Pin the message
-	const updated = session.state.updateMessage(messageId, { pinned: true })
-	if (!updated) {
-		return new Response(JSON.stringify({ message: 'Failed to pin message' }), {
-			status: 500,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// Record action
-	session.recordAction(
-		'message_pinned',
-		{
-			message_id: messageId,
-			channel_id: channelId,
-			guild_id: channel.guildId
-		},
-		{
-			endpoint: `PUT /channels/${channelId}/pins/${messageId}`,
-			method: 'PUT'
+export const PUT = define(
+	{
+		summary: 'Pin message',
+		tags: ['Channels'],
+		params: PinMessageParams,
+		response: {
+			204: z.undefined()
 		}
-	)
+	},
+	async (request) => {
+		const resolved = resolvePin(request as unknown as RoboRequest)
+		if (resolved instanceof Response) return resolved
+		const { session, channel, message, channelId, messageId } = resolved
 
-	// Dispatch MESSAGE_UPDATE event
-	const author = session.state.getUser(message.authorId) || session.state.botUser
-	const apiMessage = mockMessageToAPIMessage(updated, author)
-	const dispatchData: Record<string, unknown> = { ...apiMessage }
-	if (updated.guildId) {
-		dispatchData.guild_id = updated.guildId
-	}
-	getGatewayServer().dispatchToSession(session.id, 'MESSAGE_UPDATE', dispatchData, channel.guildId)
+		// Check permissions
+		const permError = enforcePermissions(
+			session,
+			'PUT',
+			`/channels/${channelId}/pins/${messageId}`,
+			channelId
+		)
+		if (permError) return permError
 
-	// Return 204 No Content
-	return new Response(null, { status: 204 })
-}
-
-export async function DELETE(request: RoboRequest) {
-	const resolved = resolvePin(request)
-	if (resolved instanceof Response) return resolved
-	const { session, channel, message, channelId, messageId } = resolved
-
-	// Check permissions
-	const permError = enforcePermissions(
-		session,
-		'DELETE',
-		`/channels/${channelId}/pins/${messageId}`,
-		channelId
-	)
-	if (permError) return permError
-
-	// Unpin the message
-	const updated = session.state.updateMessage(messageId, { pinned: false })
-	if (!updated) {
-		return new Response(JSON.stringify({ message: 'Failed to unpin message' }), {
-			status: 500,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// Record action
-	session.recordAction(
-		'message_unpinned',
-		{
-			message_id: messageId,
-			channel_id: channelId,
-			guild_id: channel.guildId
-		},
-		{
-			endpoint: `DELETE /channels/${channelId}/pins/${messageId}`,
-			method: 'DELETE'
+		// Pin the message
+		const updated = session.state.updateMessage(messageId, { pinned: true })
+		if (!updated) {
+			return new Response(JSON.stringify({ message: 'Failed to pin message' }), {
+				status: 500,
+				headers: { 'Content-Type': 'application/json' }
+			})
 		}
-	)
 
-	// Dispatch MESSAGE_UPDATE event
-	const author = session.state.getUser(message.authorId) || session.state.botUser
-	const apiMessage = mockMessageToAPIMessage(updated, author)
-	const dispatchData: Record<string, unknown> = { ...apiMessage }
-	if (updated.guildId) {
-		dispatchData.guild_id = updated.guildId
+		// Record action
+		session.recordAction(
+			'message_pinned',
+			{
+				message_id: messageId,
+				channel_id: channelId,
+				guild_id: channel.guildId
+			},
+			{
+				endpoint: `PUT /channels/${channelId}/pins/${messageId}`,
+				method: 'PUT'
+			}
+		)
+
+		// Dispatch MESSAGE_UPDATE event
+		const author = session.state.getUser(message.authorId) || session.state.botUser
+		const apiMessage = mockMessageToAPIMessage(updated, author)
+		const dispatchData: Record<string, unknown> = { ...apiMessage }
+		if (updated.guildId) {
+			dispatchData.guild_id = updated.guildId
+		}
+		getGatewayServer().dispatchToSession(session.id, 'MESSAGE_UPDATE', dispatchData, channel.guildId)
+
+		// Return 204 No Content
+		return new Response(null, { status: 204 })
 	}
-	getGatewayServer().dispatchToSession(session.id, 'MESSAGE_UPDATE', dispatchData, channel.guildId)
+)
 
-	// Return 204 No Content
-	return new Response(null, { status: 204 })
-}
+export const DELETE = define(
+	{
+		summary: 'Unpin message',
+		tags: ['Channels'],
+		params: PinMessageParams,
+		response: {
+			204: z.undefined()
+		}
+	},
+	async (request) => {
+		const resolved = resolvePin(request as unknown as RoboRequest)
+		if (resolved instanceof Response) return resolved
+		const { session, channel, message, channelId, messageId } = resolved
+
+		// Check permissions
+		const permError = enforcePermissions(
+			session,
+			'DELETE',
+			`/channels/${channelId}/pins/${messageId}`,
+			channelId
+		)
+		if (permError) return permError
+
+		// Unpin the message
+		const updated = session.state.updateMessage(messageId, { pinned: false })
+		if (!updated) {
+			return new Response(JSON.stringify({ message: 'Failed to unpin message' }), {
+				status: 500,
+				headers: { 'Content-Type': 'application/json' }
+			})
+		}
+
+		// Record action
+		session.recordAction(
+			'message_unpinned',
+			{
+				message_id: messageId,
+				channel_id: channelId,
+				guild_id: channel.guildId
+			},
+			{
+				endpoint: `DELETE /channels/${channelId}/pins/${messageId}`,
+				method: 'DELETE'
+			}
+		)
+
+		// Dispatch MESSAGE_UPDATE event
+		const author = session.state.getUser(message.authorId) || session.state.botUser
+		const apiMessage = mockMessageToAPIMessage(updated, author)
+		const dispatchData: Record<string, unknown> = { ...apiMessage }
+		if (updated.guildId) {
+			dispatchData.guild_id = updated.guildId
+		}
+		getGatewayServer().dispatchToSession(session.id, 'MESSAGE_UPDATE', dispatchData, channel.guildId)
+
+		// Return 204 No Content
+		return new Response(null, { status: 204 })
+	}
+)

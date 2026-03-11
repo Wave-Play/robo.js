@@ -1,9 +1,73 @@
+import { define } from '@robojs/server'
+import { z } from 'zod'
 import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../core/manager.js'
 import { parseMockToken } from '../../../../utils/id.js'
 import { mockRoleToAPIRole } from '../../../../discord/payloads.js'
 import { RoleLimits } from '../../../../types/index.js'
 import { enforcePermissions } from '../../../../utils/permission-check.js'
+
+const RoleTagsSchema = z
+	.object({
+		premium_subscriber: z.null().optional(),
+		bot_id: z.string().optional(),
+		integration_id: z.string().optional(),
+		subscription_listing_id: z.string().optional(),
+		available_for_purchase: z.null().optional(),
+		guild_connections: z.null().optional()
+	})
+	.passthrough()
+
+const RoleColorsSchema = z
+	.object({
+		primary_color: z.number().int(),
+		secondary_color: z.number().int().nullable(),
+		tertiary_color: z.number().int().nullable()
+	})
+	.passthrough()
+
+const GuildRoleResponseSchema = z
+	.object({
+		id: z.string(),
+		name: z.string(),
+		description: z.string().nullable(),
+		permissions: z.string(),
+		position: z.number().int(),
+		color: z.number().int(),
+		colors: RoleColorsSchema,
+		hoist: z.boolean(),
+		managed: z.boolean(),
+		mentionable: z.boolean(),
+		icon: z.string().nullable(),
+		unicode_emoji: z.string().nullable(),
+		tags: RoleTagsSchema.optional(),
+		flags: z.number().int()
+	})
+	.passthrough()
+
+const CreateRoleRequestSchema = z
+	.object({
+		name: z.string().max(100).nullable().optional(),
+		permissions: z.number().int().nullable().optional(),
+		color: z.number().int().min(0).max(16777215).nullable().optional(),
+		colors: z
+			.object({})
+			.passthrough()
+			.nullable()
+			.optional(),
+		hoist: z.boolean().nullable().optional(),
+		mentionable: z.boolean().nullable().optional(),
+		icon: z.string().nullable().optional(),
+		unicode_emoji: z.string().max(100).nullable().optional()
+	})
+	.passthrough()
+
+const UpdateRolePositionsRequestSchema = z
+	.object({
+		id: z.string(),
+		position: z.number().int().optional()
+	})
+	.passthrough()
 
 /**
  * GET /api/v10/guilds/:id/roles - List all roles for a guild
@@ -16,7 +80,7 @@ import { enforcePermissions } from '../../../../utils/permission-check.js'
  */
 
 function resolveGuild(request: RoboRequest) {
-	// 1. Parse Authorization header → get session
+	// 1. Parse Authorization header -> get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
 
@@ -50,219 +114,251 @@ function resolveGuild(request: RoboRequest) {
 	return { session, guild, guildId }
 }
 
-export async function GET(request: RoboRequest) {
-	const resolved = resolveGuild(request)
-	if (resolved instanceof Response) return resolved
-	const { session, guildId } = resolved
-
-	const roles = session.state.getGuildRoles(guildId)
-	return roles.map(mockRoleToAPIRole)
-}
-
-export async function POST(request: RoboRequest) {
-	const resolved = resolveGuild(request)
-	if (resolved instanceof Response) return resolved
-	const { session, guild, guildId } = resolved
-
-	// Check permissions
-	const permError = enforcePermissions(
-		session,
-		'POST',
-		`/guilds/${guildId}/roles`,
-		undefined,
-		guildId
-	)
-	if (permError) return permError
-
-	let body: {
-		name?: string
-		permissions?: string
-		color?: number
-		// Discord.js 14+ sends colors as an object with primary_color, secondary_color, tertiary_color
-		colors?: {
-			primary_color?: number | null
-			secondary_color?: number | null
-			tertiary_color?: number | null
+export const GET = define(
+	{
+		summary: 'List guild roles',
+		tags: ['Guild Roles'],
+		params: z.object({ id: z.string().describe('Guild ID (Snowflake)') }),
+		response: {
+			200: z.array(GuildRoleResponseSchema)
 		}
-		hoist?: boolean
-		icon?: string | null
-		unicode_emoji?: string | null
-		mentionable?: boolean
-	} = {}
+	},
+	async (request) => {
+		const resolved = resolveGuild(request)
+		if (resolved instanceof Response) return resolved
+		const { session, guildId } = resolved
 
-	// Body is optional for POST
-	try {
-		const text = await request.text()
-		if (text) {
-			body = JSON.parse(text)
-		}
-	} catch {
-		return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
-			status: 400,
-			headers: { 'Content-Type': 'application/json' }
-		})
+		const roles = session.state.getGuildRoles(guildId)
+		return roles.map(mockRoleToAPIRole)
 	}
+)
 
-	// Validate name length if provided
-	if (body.name !== undefined) {
-		if (body.name.length < RoleLimits.MIN_NAME_LENGTH) {
-			return new Response(
-				JSON.stringify({ message: `Role name must be at least ${RoleLimits.MIN_NAME_LENGTH} character`, code: 50035 }),
-				{
-					status: 400,
-					headers: { 'Content-Type': 'application/json' }
-				}
-			)
+export const POST = define(
+	{
+		summary: 'Create guild role',
+		tags: ['Guild Roles'],
+		params: z.object({ id: z.string().describe('Guild ID (Snowflake)') }),
+		body: CreateRoleRequestSchema,
+		response: {
+			200: GuildRoleResponseSchema
 		}
+	},
+	async (request) => {
+		const resolved = resolveGuild(request)
+		if (resolved instanceof Response) return resolved
+		const { session, guild, guildId } = resolved
 
-		if (body.name.length > RoleLimits.MAX_NAME_LENGTH) {
-			return new Response(
-				JSON.stringify({ message: `Role name cannot exceed ${RoleLimits.MAX_NAME_LENGTH} characters`, code: 50035 }),
-				{
-					status: 400,
-					headers: { 'Content-Type': 'application/json' }
-				}
-			)
-		}
-	}
+		// Check permissions
+		const permError = enforcePermissions(
+			session,
+			'POST',
+			`/guilds/${guildId}/roles`,
+			undefined,
+			guildId
+		)
+		if (permError) return permError
 
-	// Handle color - support both legacy 'color' and new 'colors' object from Discord.js 14+
-	let color: number | undefined = body.color
-	if (body.colors?.primary_color !== undefined && body.colors.primary_color !== null) {
-		color = body.colors.primary_color
-	}
+		let body: {
+			name?: string
+			permissions?: string
+			color?: number
+			// Discord.js 14+ sends colors as an object with primary_color, secondary_color, tertiary_color
+			colors?: {
+				primary_color?: number | null
+				secondary_color?: number | null
+				tertiary_color?: number | null
+			}
+			hoist?: boolean
+			icon?: string | null
+			unicode_emoji?: string | null
+			mentionable?: boolean
+		} = {}
 
-	// Validate color if provided
-	if (color !== undefined) {
-		if (color < 0 || color > RoleLimits.MAX_COLOR_VALUE) {
-			return new Response(
-				JSON.stringify({ message: 'Invalid color value', code: 50035 }),
-				{
-					status: 400,
-					headers: { 'Content-Type': 'application/json' }
-				}
-			)
-		}
-	}
-
-	// Check guild role limit
-	if (guild.roles.length >= RoleLimits.MAX_ROLES_PER_GUILD) {
-		return new Response(
-			JSON.stringify({
-				error: `Guild has reached maximum role limit of ${RoleLimits.MAX_ROLES_PER_GUILD}`,
-				code: 30005
-			}),
-			{
+		// Body is optional for POST
+		try {
+			const text = await request.text()
+			if (text) {
+				body = JSON.parse(text)
+			}
+		} catch {
+			return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
 				status: 400,
 				headers: { 'Content-Type': 'application/json' }
+			})
+		}
+
+		// Validate name length if provided
+		if (body.name !== undefined) {
+			if (body.name.length < RoleLimits.MIN_NAME_LENGTH) {
+				return new Response(
+					JSON.stringify({ message: `Role name must be at least ${RoleLimits.MIN_NAME_LENGTH} character`, code: 50035 }),
+					{
+						status: 400,
+						headers: { 'Content-Type': 'application/json' }
+					}
+				)
+			}
+
+			if (body.name.length > RoleLimits.MAX_NAME_LENGTH) {
+				return new Response(
+					JSON.stringify({ message: `Role name cannot exceed ${RoleLimits.MAX_NAME_LENGTH} characters`, code: 50035 }),
+					{
+						status: 400,
+						headers: { 'Content-Type': 'application/json' }
+					}
+				)
+			}
+		}
+
+		// Handle color - support both legacy 'color' and new 'colors' object from Discord.js 14+
+		let color: number | undefined = body.color
+		if (body.colors?.primary_color !== undefined && body.colors.primary_color !== null) {
+			color = body.colors.primary_color
+		}
+
+		// Validate color if provided
+		if (color !== undefined) {
+			if (color < 0 || color > RoleLimits.MAX_COLOR_VALUE) {
+				return new Response(
+					JSON.stringify({ message: 'Invalid color value', code: 50035 }),
+					{
+						status: 400,
+						headers: { 'Content-Type': 'application/json' }
+					}
+				)
+			}
+		}
+
+		// Check guild role limit
+		if (guild.roles.length >= RoleLimits.MAX_ROLES_PER_GUILD) {
+			return new Response(
+				JSON.stringify({
+					error: `Guild has reached maximum role limit of ${RoleLimits.MAX_ROLES_PER_GUILD}`,
+					code: 30005
+				}),
+				{
+					status: 400,
+					headers: { 'Content-Type': 'application/json' }
+				}
+			)
+		}
+
+		// Get audit log reason from header (may be URL-encoded)
+		const rawReason = request.headers.get('X-Audit-Log-Reason')
+		const reason = rawReason ? decodeURIComponent(rawReason) : undefined
+
+		// Create the role
+		const role = session.state.createGuildRole(guildId, {
+			name: body.name,
+			permissions: body.permissions,
+			color,
+			hoist: body.hoist,
+			icon: body.icon,
+			unicodeEmoji: body.unicode_emoji,
+			mentionable: body.mentionable,
+			reason
+		})
+
+		if (!role) {
+			return new Response(JSON.stringify({ message: 'Failed to create role', code: 50035 }), {
+				status: 400,
+				headers: { 'Content-Type': 'application/json' }
+			})
+		}
+
+		// Record action
+		session.recordAction(
+			'role_created',
+			{
+				role_id: role.id,
+				guild_id: guildId,
+				name: role.name
+			},
+			{
+				endpoint: `POST /guilds/${guildId}/roles`,
+				method: 'POST'
 			}
 		)
-	}
 
-	// Get audit log reason from header (may be URL-encoded)
-	const rawReason = request.headers.get('X-Audit-Log-Reason')
-	const reason = rawReason ? decodeURIComponent(rawReason) : undefined
+		// Dispatch GUILD_ROLE_CREATE event
+		await session.dispatchGuildRoleCreate(guildId, role)
 
-	// Create the role
-	const role = session.state.createGuildRole(guildId, {
-		name: body.name,
-		permissions: body.permissions,
-		color,
-		hoist: body.hoist,
-		icon: body.icon,
-		unicodeEmoji: body.unicode_emoji,
-		mentionable: body.mentionable,
-		reason
-	})
-
-	if (!role) {
-		return new Response(JSON.stringify({ message: 'Failed to create role', code: 50035 }), {
-			status: 400,
+		return new Response(JSON.stringify(mockRoleToAPIRole(role)), {
+			status: 200, // Discord returns 200, not 201
 			headers: { 'Content-Type': 'application/json' }
 		})
 	}
+)
 
-	// Record action
-	session.recordAction(
-		'role_created',
-		{
-			role_id: role.id,
-			guild_id: guildId,
-			name: role.name
-		},
-		{
-			endpoint: `POST /guilds/${guildId}/roles`,
-			method: 'POST'
+export const PATCH = define(
+	{
+		summary: 'Modify guild role positions',
+		tags: ['Guild Roles'],
+		params: z.object({ id: z.string().describe('Guild ID (Snowflake)') }),
+		body: z.array(UpdateRolePositionsRequestSchema),
+		response: {
+			200: z.array(GuildRoleResponseSchema)
 		}
-	)
+	},
+	async (request) => {
+		const resolved = resolveGuild(request)
+		if (resolved instanceof Response) return resolved
+		const { session, guildId } = resolved
 
-	// Dispatch GUILD_ROLE_CREATE event
-	await session.dispatchGuildRoleCreate(guildId, role)
+		// Check permissions
+		const permError = enforcePermissions(
+			session,
+			'PATCH',
+			`/guilds/${guildId}/roles`,
+			undefined,
+			guildId
+		)
+		if (permError) return permError
 
-	return new Response(JSON.stringify(mockRoleToAPIRole(role)), {
-		status: 200, // Discord returns 200, not 201
-		headers: { 'Content-Type': 'application/json' }
-	})
-}
+		let body: Array<{ id: string; position?: number }>
 
-export async function PATCH(request: RoboRequest) {
-	const resolved = resolveGuild(request)
-	if (resolved instanceof Response) return resolved
-	const { session, guildId } = resolved
-
-	// Check permissions
-	const permError = enforcePermissions(
-		session,
-		'PATCH',
-		`/guilds/${guildId}/roles`,
-		undefined,
-		guildId
-	)
-	if (permError) return permError
-
-	let body: Array<{ id: string; position?: number }>
-
-	try {
-		body = await request.json()
-	} catch {
-		return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
-			status: 400,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	if (!Array.isArray(body)) {
-		return new Response(JSON.stringify({ message: 'Expected array of role positions', code: 50035 }), {
-			status: 400,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// Build positions array
-	const positions = body
-		.filter((item) => item.position !== undefined)
-		.map((item) => ({
-			id: item.id,
-			position: item.position!
-		}))
-
-	// Update positions
-	session.state.updateGuildRolePositions(guildId, positions)
-
-	// Record action
-	session.recordAction(
-		'role_positions_updated',
-		{
-			guild_id: guildId,
-			positions
-		},
-		{
-			endpoint: `PATCH /guilds/${guildId}/roles`,
-			method: 'PATCH'
+		try {
+			body = await request.json()
+		} catch {
+			return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
+				status: 400,
+				headers: { 'Content-Type': 'application/json' }
+			})
 		}
-	)
 
-	// Return all roles with updated positions
-	const roles = session.state.getGuildRoles(guildId)
-	return roles.map(mockRoleToAPIRole)
-}
+		if (!Array.isArray(body)) {
+			return new Response(JSON.stringify({ message: 'Expected array of role positions', code: 50035 }), {
+				status: 400,
+				headers: { 'Content-Type': 'application/json' }
+			})
+		}
+
+		// Build positions array
+		const positions = body
+			.filter((item) => item.position !== undefined)
+			.map((item) => ({
+				id: item.id,
+				position: item.position!
+			}))
+
+		// Update positions
+		session.state.updateGuildRolePositions(guildId, positions)
+
+		// Record action
+		session.recordAction(
+			'role_positions_updated',
+			{
+				guild_id: guildId,
+				positions
+			},
+			{
+				endpoint: `PATCH /guilds/${guildId}/roles`,
+				method: 'PATCH'
+			}
+		)
+
+		// Return all roles with updated positions
+		const roles = session.state.getGuildRoles(guildId)
+		return roles.map(mockRoleToAPIRole)
+	}
+)

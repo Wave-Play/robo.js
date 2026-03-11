@@ -1,4 +1,6 @@
+import { define } from '@robojs/server'
 import type { RoboRequest } from '@robojs/server'
+import { z } from 'zod'
 import { sessionManager } from '../../../../core/manager.js'
 import { parseMockToken } from '../../../../utils/id.js'
 import { mockDMChannelToAPIDMChannel } from '../../../../discord/payloads.js'
@@ -23,7 +25,38 @@ import { createMockUser } from '../../../../session/state.js'
  *   last_message_id: null
  * }
  */
-export async function POST(request: RoboRequest) {
+export const POST = define(
+	{
+		summary: 'Create DM',
+		tags: ['Users'],
+		body: z.object({
+			recipient_id: z.string().nullable().optional(),
+			access_tokens: z.array(z.string()).nullable().optional(),
+			nicks: z.record(z.string(), z.string()).nullable().optional()
+		}).passthrough(),
+		response: {
+			200: z.object({
+				id: z.string(),
+				type: z.number().int(),
+				flags: z.number().int().optional(),
+				last_message_id: z.string().nullable().optional(),
+				last_pin_timestamp: z.string().nullable().optional(),
+				recipients: z.array(z.object({
+					id: z.string(),
+					username: z.string(),
+					avatar: z.string().nullable(),
+					discriminator: z.string(),
+					public_flags: z.number().int().optional(),
+					flags: z.number().int().optional(),
+					global_name: z.string().nullable().optional()
+				}).passthrough()).optional(),
+				name: z.string().nullable().optional(),
+				icon: z.string().nullable().optional(),
+				owner_id: z.string().optional()
+			}).passthrough()
+		}
+	},
+	async (request: RoboRequest) => {
 	// 1. Parse Authorization header → get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
@@ -96,4 +129,4 @@ export async function POST(request: RoboRequest) {
 
 	// 6. Return APIDMChannel response
 	return mockDMChannelToAPIDMChannel(dmChannel, recipientUser)
-}
+})

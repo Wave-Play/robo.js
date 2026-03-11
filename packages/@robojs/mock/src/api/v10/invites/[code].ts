@@ -1,4 +1,6 @@
+import { define } from '@robojs/server'
 import type { RoboRequest } from '@robojs/server'
+import { z } from 'zod'
 import { sessionManager } from '../../../core/manager.js'
 import { parseMockToken } from '../../../utils/id.js'
 import { mockInviteToAPIInvite, mockInviteToAPIExtendedInvite } from '../../../discord/payloads.js'
@@ -51,7 +53,32 @@ function resolveInvite(request: RoboRequest) {
 	return { session, code, invite }
 }
 
-export async function GET(request: RoboRequest) {
+export const GET = define(
+	{
+		summary: 'Resolve invite',
+		tags: ['Invites'],
+		params: z.object({
+			code: z.string().describe('Invite code')
+		}),
+		query: z.object({
+			with_counts: z.boolean().optional(),
+			guild_scheduled_event_id: z.string().optional()
+		}),
+		response: {
+			200: z.object({
+				code: z.string(),
+				type: z.number().int(),
+				guild: z.object({}).passthrough().optional().nullable(),
+				channel: z.object({}).passthrough().nullable(),
+				inviter: z.object({}).passthrough().optional(),
+				target_type: z.number().int().optional(),
+				approximate_member_count: z.number().int().nullable().optional(),
+				approximate_presence_count: z.number().int().nullable().optional(),
+				expires_at: z.string().nullable()
+			}).passthrough()
+		}
+	},
+	async (request: RoboRequest) => {
 	const resolved = resolveInvite(request)
 	if (resolved instanceof Response) return resolved
 	const { session, invite } = resolved
@@ -81,9 +108,27 @@ export async function GET(request: RoboRequest) {
 
 	// Basic invite
 	return mockInviteToAPIInvite(invite, session.state)
-}
+})
 
-export async function DELETE(request: RoboRequest) {
+export const DELETE = define(
+	{
+		summary: 'Revoke invite',
+		tags: ['Invites'],
+		params: z.object({
+			code: z.string().describe('Invite code')
+		}),
+		response: {
+			200: z.object({
+				code: z.string(),
+				type: z.number().int(),
+				guild: z.object({}).passthrough().optional().nullable(),
+				channel: z.object({}).passthrough().nullable(),
+				inviter: z.object({}).passthrough().optional(),
+				expires_at: z.string().nullable()
+			}).passthrough()
+		}
+	},
+	async (request: RoboRequest) => {
 	const resolved = resolveInvite(request)
 	if (resolved instanceof Response) return resolved
 	const { session, code, invite } = resolved
@@ -123,4 +168,4 @@ export async function DELETE(request: RoboRequest) {
 
 	// Return the deleted invite
 	return apiInvite
-}
+})

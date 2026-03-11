@@ -1,4 +1,6 @@
+import { define } from '@robojs/server'
 import type { RoboRequest } from '@robojs/server'
+import { z } from 'zod'
 import { sessionManager } from '../../../core/manager.js'
 import { parseMockToken } from '../../../utils/id.js'
 import { mockStickerToAPISticker } from '../../../discord/payloads.js'
@@ -10,7 +12,30 @@ import { mockStickerToAPISticker } from '../../../discord/payloads.js'
  *
  * @see https://discord.com/developers/docs/resources/sticker#get-sticker
  */
-export async function GET(request: RoboRequest) {
+export const GET = define(
+	{
+		summary: 'Get sticker',
+		tags: ['Stickers'],
+		params: z.object({
+			stickerId: z.string().describe('Sticker ID')
+		}),
+		response: {
+			200: z.object({
+				id: z.string(),
+				name: z.string(),
+				tags: z.string(),
+				type: z.number().int(),
+				format_type: z.number().int().nullable(),
+				description: z.string().nullable(),
+				available: z.boolean().optional(),
+				guild_id: z.string().optional(),
+				user: z.object({}).passthrough().optional(),
+				pack_id: z.string().optional(),
+				sort_value: z.number().int().optional()
+			}).passthrough()
+		}
+	},
+	async (request: RoboRequest) => {
 	// 1. Parse Authorization header → get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
@@ -43,4 +68,4 @@ export async function GET(request: RoboRequest) {
 	}
 
 	return mockStickerToAPISticker(sticker)
-}
+})

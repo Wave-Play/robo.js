@@ -1,8 +1,50 @@
+import { define } from '@robojs/server'
+import { z } from 'zod'
 import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../core/manager.js'
 import { parseMockToken } from '../../../../utils/id.js'
 import { mockEmojiToAPIEmoji } from '../../../../discord/payloads.js'
 import { EmojiLimits } from '../../../../types/index.js'
+
+const EmojiUserSchema = z
+	.object({
+		id: z.string(),
+		username: z.string(),
+		avatar: z.string().nullable(),
+		discriminator: z.string(),
+		public_flags: z.number().int(),
+		flags: z.number(),
+		bot: z.boolean().optional(),
+		system: z.boolean().optional(),
+		banner: z.string().nullable().optional(),
+		accent_color: z.number().int().nullable().optional(),
+		global_name: z.string().nullable(),
+		avatar_decoration_data: z.object({}).passthrough().nullable().optional(),
+		collectibles: z.object({}).passthrough().nullable().optional(),
+		primary_guild: z.object({}).passthrough().nullable()
+	})
+	.passthrough()
+
+const EmojiResponseSchema = z
+	.object({
+		id: z.string(),
+		name: z.string(),
+		user: EmojiUserSchema.optional(),
+		roles: z.array(z.string()),
+		require_colons: z.boolean(),
+		managed: z.boolean(),
+		animated: z.boolean(),
+		available: z.boolean()
+	})
+	.passthrough()
+
+const CreateGuildEmojiRequestSchema = z
+	.object({
+		name: z.string().min(2).max(32),
+		image: z.string(),
+		roles: z.array(z.string().nullable()).max(1521).nullable().optional()
+	})
+	.passthrough()
 
 /**
  * GET /api/v10/guilds/:id/emojis - List all emojis for a guild
@@ -12,7 +54,7 @@ import { EmojiLimits } from '../../../../types/index.js'
  * @see https://discord.com/developers/docs/resources/emoji#create-guild-emoji
  */
 function resolveGuild(request: RoboRequest) {
-	// 1. Parse Authorization header → get session
+	// 1. Parse Authorization header -> get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
 
@@ -46,145 +88,166 @@ function resolveGuild(request: RoboRequest) {
 	return { session, guild, guildId }
 }
 
-export async function GET(request: RoboRequest) {
-	const resolved = resolveGuild(request)
-	if (resolved instanceof Response) return resolved
-	const { session, guildId } = resolved
-
-	const emojis = session.state.getGuildEmojis(guildId)
-	return emojis.map(mockEmojiToAPIEmoji)
-}
-
-export async function POST(request: RoboRequest) {
-	const resolved = resolveGuild(request)
-	if (resolved instanceof Response) return resolved
-	const { session, guild, guildId } = resolved
-
-	let body: {
-		name: string
-		image: string
-		roles?: string[]
-	}
-
-	try {
-		body = await request.json()
-	} catch {
-		return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
-			status: 400,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// Validate required fields
-	if (!body.name || typeof body.name !== 'string') {
-		return new Response(JSON.stringify({ message: 'Name is required', code: 50035 }), {
-			status: 400,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// Validate name length
-	if (body.name.length < EmojiLimits.MIN_NAME_LENGTH) {
-		return new Response(
-			JSON.stringify({ message: `Emoji name must be at least ${EmojiLimits.MIN_NAME_LENGTH} characters`, code: 50035 }),
-			{
-				status: 400,
-				headers: { 'Content-Type': 'application/json' }
-			}
-		)
-	}
-
-	if (body.name.length > EmojiLimits.MAX_NAME_LENGTH) {
-		return new Response(
-			JSON.stringify({ message: `Emoji name cannot exceed ${EmojiLimits.MAX_NAME_LENGTH} characters`, code: 50035 }),
-			{
-				status: 400,
-				headers: { 'Content-Type': 'application/json' }
-			}
-		)
-	}
-
-	// Validate name pattern (alphanumeric and underscores only)
-	if (!EmojiLimits.NAME_PATTERN.test(body.name)) {
-		return new Response(
-			JSON.stringify({
-				error: 'Emoji name must only contain alphanumeric characters and underscores',
-				code: 50035
-			}),
-			{
-				status: 400,
-				headers: { 'Content-Type': 'application/json' }
-			}
-		)
-	}
-
-	// Validate image is provided (required by Discord API, but mock allows omission for testing convenience)
-	// Note: Discord requires base64-encoded image data in data URI format
-	if (!body.image || typeof body.image !== 'string') {
-		return new Response(
-			JSON.stringify({ message: 'Image is required', code: 50035 }),
-			{
-				status: 400,
-				headers: { 'Content-Type': 'application/json' }
-			}
-		)
-	}
-
-	// Check guild emoji limit
-	if (guild.emojis.length >= EmojiLimits.MAX_GUILD_EMOJIS) {
-		return new Response(
-			JSON.stringify({
-				error: `Guild has reached maximum emoji limit of ${EmojiLimits.MAX_GUILD_EMOJIS}`,
-				code: 30008
-			}),
-			{
-				status: 400,
-				headers: { 'Content-Type': 'application/json' }
-			}
-		)
-	}
-
-	// Determine if emoji is animated (from image data URL or explicit flag)
-	const animated = body.image?.startsWith('data:image/gif') ?? false
-
-	// Create the emoji
-	const emoji = session.state.createGuildEmoji(
-		guildId,
-		{
-			name: body.name,
-			image: body.image,
-			roles: body.roles,
-			animated
-		},
-		session.state.botUser.id
-	)
-
-	if (!emoji) {
-		return new Response(JSON.stringify({ message: 'Failed to create emoji', code: 50035 }), {
-			status: 400,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// Record action
-	session.recordAction(
-		'emoji_created',
-		{
-			emoji_id: emoji.id,
-			guild_id: guildId,
-			name: emoji.name
-		},
-		{
-			endpoint: `POST /guilds/${guildId}/emojis`,
-			method: 'POST'
+export const GET = define(
+	{
+		summary: 'List guild emojis',
+		tags: ['Guild Emojis'],
+		params: z.object({ id: z.string().describe('Guild ID (Snowflake)') }),
+		response: {
+			200: z.array(EmojiResponseSchema)
 		}
-	)
+	},
+	async (request) => {
+		const resolved = resolveGuild(request)
+		if (resolved instanceof Response) return resolved
+		const { session, guildId } = resolved
 
-	// Dispatch GUILD_EMOJIS_UPDATE event
-	await session.dispatchGuildEmojisUpdate(guildId)
+		const emojis = session.state.getGuildEmojis(guildId)
+		return emojis.map(mockEmojiToAPIEmoji)
+	}
+)
 
-	return new Response(JSON.stringify(mockEmojiToAPIEmoji(emoji)), {
-		status: 201,
-		headers: { 'Content-Type': 'application/json' }
-	})
-}
+export const POST = define(
+	{
+		summary: 'Create guild emoji',
+		tags: ['Guild Emojis'],
+		params: z.object({ id: z.string().describe('Guild ID (Snowflake)') }),
+		body: CreateGuildEmojiRequestSchema,
+		response: {
+			201: EmojiResponseSchema
+		}
+	},
+	async (request) => {
+		const resolved = resolveGuild(request)
+		if (resolved instanceof Response) return resolved
+		const { session, guild, guildId } = resolved
+
+		let body: {
+			name: string
+			image: string
+			roles?: string[]
+		}
+
+		try {
+			body = await request.json()
+		} catch {
+			return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
+				status: 400,
+				headers: { 'Content-Type': 'application/json' }
+			})
+		}
+
+		// Validate required fields
+		if (!body.name || typeof body.name !== 'string') {
+			return new Response(JSON.stringify({ message: 'Name is required', code: 50035 }), {
+				status: 400,
+				headers: { 'Content-Type': 'application/json' }
+			})
+		}
+
+		// Validate name length
+		if (body.name.length < EmojiLimits.MIN_NAME_LENGTH) {
+			return new Response(
+				JSON.stringify({ message: `Emoji name must be at least ${EmojiLimits.MIN_NAME_LENGTH} characters`, code: 50035 }),
+				{
+					status: 400,
+					headers: { 'Content-Type': 'application/json' }
+				}
+			)
+		}
+
+		if (body.name.length > EmojiLimits.MAX_NAME_LENGTH) {
+			return new Response(
+				JSON.stringify({ message: `Emoji name cannot exceed ${EmojiLimits.MAX_NAME_LENGTH} characters`, code: 50035 }),
+				{
+					status: 400,
+					headers: { 'Content-Type': 'application/json' }
+				}
+			)
+		}
+
+		// Validate name pattern (alphanumeric and underscores only)
+		if (!EmojiLimits.NAME_PATTERN.test(body.name)) {
+			return new Response(
+				JSON.stringify({
+					error: 'Emoji name must only contain alphanumeric characters and underscores',
+					code: 50035
+				}),
+				{
+					status: 400,
+					headers: { 'Content-Type': 'application/json' }
+				}
+			)
+		}
+
+		// Validate image is provided (required by Discord API, but mock allows omission for testing convenience)
+		// Note: Discord requires base64-encoded image data in data URI format
+		if (!body.image || typeof body.image !== 'string') {
+			return new Response(
+				JSON.stringify({ message: 'Image is required', code: 50035 }),
+				{
+					status: 400,
+					headers: { 'Content-Type': 'application/json' }
+				}
+			)
+		}
+
+		// Check guild emoji limit
+		if (guild.emojis.length >= EmojiLimits.MAX_GUILD_EMOJIS) {
+			return new Response(
+				JSON.stringify({
+					error: `Guild has reached maximum emoji limit of ${EmojiLimits.MAX_GUILD_EMOJIS}`,
+					code: 30008
+				}),
+				{
+					status: 400,
+					headers: { 'Content-Type': 'application/json' }
+				}
+			)
+		}
+
+		// Determine if emoji is animated (from image data URL or explicit flag)
+		const animated = body.image?.startsWith('data:image/gif') ?? false
+
+		// Create the emoji
+		const emoji = session.state.createGuildEmoji(
+			guildId,
+			{
+				name: body.name,
+				image: body.image,
+				roles: body.roles,
+				animated
+			},
+			session.state.botUser.id
+		)
+
+		if (!emoji) {
+			return new Response(JSON.stringify({ message: 'Failed to create emoji', code: 50035 }), {
+				status: 400,
+				headers: { 'Content-Type': 'application/json' }
+			})
+		}
+
+		// Record action
+		session.recordAction(
+			'emoji_created',
+			{
+				emoji_id: emoji.id,
+				guild_id: guildId,
+				name: emoji.name
+			},
+			{
+				endpoint: `POST /guilds/${guildId}/emojis`,
+				method: 'POST'
+			}
+		)
+
+		// Dispatch GUILD_EMOJIS_UPDATE event
+		await session.dispatchGuildEmojisUpdate(guildId)
+
+		return new Response(JSON.stringify(mockEmojiToAPIEmoji(emoji)), {
+			status: 201,
+			headers: { 'Content-Type': 'application/json' }
+		})
+	}
+)

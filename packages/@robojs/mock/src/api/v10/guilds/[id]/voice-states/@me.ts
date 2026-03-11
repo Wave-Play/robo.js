@@ -5,27 +5,17 @@ import { sessionManager } from '../../../../../core/manager.js'
 import { parseMockToken } from '../../../../../utils/id.js'
 import { generateSnowflake } from '../../../../../utils/snowflake.js'
 import { getGatewayServer } from '../../../../../core/gateway.js'
-import { enforcePermissions } from '../../../../../utils/permission-check.js'
-import type { MockVoiceState as _MockVoiceState } from '../../../../../types/index.js'
 
 /**
- * GET /api/v10/guilds/:id/voice-states/:userId - Get voice state
- * PATCH /api/v10/guilds/:id/voice-states/:userId - Modify voice state
- *
- * Used by discord.js for:
- * - GuildMember.voice (reading voice state)
- * - GuildMember.voice.setMute(boolean)
- * - GuildMember.voice.setDeaf(boolean)
- * - GuildMember.voice.setChannel(channelId)
- * - GuildMember.voice.disconnect()
+ * GET /api/v10/guilds/:id/voice-states/@me - Get own voice state
+ * PATCH /api/v10/guilds/:id/voice-states/@me - Modify own voice state
  *
  * @see https://discord.com/developers/docs/resources/voice#get-voice-state
  * @see https://discord.com/developers/docs/resources/voice#modify-voice-state
  */
 
 const voiceStateParams = z.object({
-	id: z.string().describe('The guild ID (Snowflake)'),
-	userId: z.string().describe('The user ID (Snowflake)')
+	id: z.string().describe('The guild ID (Snowflake)')
 })
 
 const VoiceStateResponseSchema = z
@@ -48,8 +38,8 @@ const VoiceStateResponseSchema = z
 
 export const GET = define(
 	{
-		summary: 'Get voice state',
-		description: 'Returns a voice state object for the given user in the guild',
+		summary: 'Get own voice state',
+		description: 'Returns the voice state of the current user in the guild',
 		tags: ['Voice'],
 		params: voiceStateParams,
 		response: {
@@ -57,7 +47,6 @@ export const GET = define(
 		}
 	},
 	async (request) => {
-		// Extract session from Authorization header
 		const authHeader = request.headers.get('Authorization') || ''
 		const sessionId = parseMockToken(authHeader)
 
@@ -76,7 +65,7 @@ export const GET = define(
 			})
 		}
 
-		const { id: guildId, userId } = request.params as { id: string; userId: string }
+		const { id: guildId } = request.params as { id: string }
 		const guild = session.state.guilds.get(guildId)
 
 		if (!guild) {
@@ -86,7 +75,8 @@ export const GET = define(
 			})
 		}
 
-		// Get voice state
+		// Resolve @me to bot user ID
+		const userId = session.state.botUser.id
 		const voiceStateKey = `${guildId}:${userId}`
 		const voiceState = session.state.voiceStates?.get(voiceStateKey)
 
@@ -97,7 +87,6 @@ export const GET = define(
 			})
 		}
 
-		// Build member data if available
 		const member = session.state.guildMembers.get(`${guildId}:${userId}`)
 		const response: Record<string, unknown> = {
 			channel_id: voiceState.channel_id,
@@ -143,8 +132,8 @@ export const GET = define(
 
 export const PATCH = define(
 	{
-		summary: 'Update voice state',
-		description: 'Updates another user\'s voice state',
+		summary: 'Update own voice state',
+		description: 'Updates the current user\'s voice state in the guild',
 		tags: ['Voice'],
 		params: voiceStateParams,
 		body: z
@@ -154,11 +143,10 @@ export const PATCH = define(
 			})
 			.passthrough(),
 		response: {
-			204: z.undefined().describe('Voice state updated successfully')
+			204: z.undefined()
 		}
 	},
 	async (request) => {
-		// Extract session from Authorization header
 		const authHeader = request.headers.get('Authorization') || ''
 		const sessionId = parseMockToken(authHeader)
 
@@ -177,7 +165,7 @@ export const PATCH = define(
 			})
 		}
 
-		const { id: guildId, userId } = request.params as { id: string; userId: string }
+		const { id: guildId } = request.params as { id: string }
 		const guild = session.state.guilds.get(guildId)
 
 		if (!guild) {
@@ -187,16 +175,12 @@ export const PATCH = define(
 			})
 		}
 
-		// Check permissions
-		const permError = enforcePermissions(session, 'PATCH', `/guilds/${guildId}/voice-states/${userId}`, undefined, guildId)
-		if (permError) return permError
+		// Resolve @me to bot user ID
+		const userId = session.state.botUser.id
 
 		let body: {
 			channel_id?: string | null
-			suppress?: boolean
-			mute?: boolean
-			deaf?: boolean
-			request_to_speak_timestamp?: string | null
+			suppress?: boolean | null
 		}
 
 		try {
@@ -213,7 +197,6 @@ export const PATCH = define(
 		let voiceState = session.state.voiceStates?.get(voiceStateKey)
 
 		if (!voiceState) {
-			// Create new voice state
 			voiceState = {
 				guild_id: guildId,
 				channel_id: null,
@@ -234,17 +217,8 @@ export const PATCH = define(
 		if (body.channel_id !== undefined) {
 			voiceState.channel_id = body.channel_id
 		}
-		if (body.mute !== undefined) {
-			voiceState.mute = body.mute
-		}
-		if (body.deaf !== undefined) {
-			voiceState.deaf = body.deaf
-		}
 		if (body.suppress !== undefined) {
-			voiceState.suppress = body.suppress
-		}
-		if (body.request_to_speak_timestamp !== undefined) {
-			voiceState.request_to_speak_timestamp = body.request_to_speak_timestamp
+			voiceState.suppress = body.suppress ?? false
 		}
 
 		// Store updated voice state
@@ -281,7 +255,7 @@ export const PATCH = define(
 				updates: body
 			},
 			{
-				endpoint: `PATCH /guilds/${guildId}/voice-states/${userId}`,
+				endpoint: `PATCH /guilds/${guildId}/voice-states/@me`,
 				method: 'PATCH'
 			}
 		)
@@ -289,7 +263,6 @@ export const PATCH = define(
 		// Dispatch VOICE_STATE_UPDATE event
 		getGatewayServer().dispatchToSession(session.id, 'VOICE_STATE_UPDATE', voiceStatePayload, guildId)
 
-		// Return 204 No Content (as per Discord API)
 		return new Response(null, { status: 204 })
 	}
 )

@@ -12,9 +12,40 @@ import type { MockInteraction } from '../src/types/index.js'
 import { sessionManager } from '../src/core/manager.js'
 
 // Import the handlers directly for unit testing
-import followupHandler from '../src/api/v10/webhooks/[app_id]/[token].js'
+import { GET as webhookTokenGet, PATCH as webhookTokenPatch, DELETE as webhookTokenDelete, POST as webhookTokenPost } from '../src/api/v10/webhooks/[app_id]/[token].js'
 // The @original endpoint is handled by [messageId].ts with @original as a special case
-import messageHandler from '../src/api/v10/webhooks/[app_id]/[token]/messages/[messageId].js'
+import { GET as webhookMessageGet, PATCH as webhookMessagePatch, DELETE as webhookMessageDelete } from '../src/api/v10/webhooks/[app_id]/[token]/messages/[messageId].js'
+
+// Local routing wrapper for tests that replicate the old default export behavior
+async function followupHandler(request: { method: string; [key: string]: unknown }): Promise<unknown> {
+	switch (request.method) {
+		case 'GET':
+			return webhookTokenGet(request as never)
+		case 'PATCH':
+			return webhookTokenPatch(request as never)
+		case 'DELETE':
+			return webhookTokenDelete(request as never)
+		case 'POST':
+			return webhookTokenPost(request as never)
+		default:
+			return new Response(null, { status: 405 })
+	}
+}
+
+// Local routing wrapper for message handler tests that replicate the old default export behavior
+async function messageHandler(request: { method: string; [key: string]: unknown }): Promise<unknown> {
+	switch (request.method) {
+		case 'GET':
+			return webhookMessageGet(request as never)
+		case 'PATCH':
+			return webhookMessagePatch(request as never)
+		case 'DELETE':
+			return webhookMessageDelete(request as never)
+		default:
+			return new Response(null, { status: 405 })
+	}
+}
+
 // Use messageHandler for @original by passing messageId='@original'
 const originalHandler = messageHandler
 

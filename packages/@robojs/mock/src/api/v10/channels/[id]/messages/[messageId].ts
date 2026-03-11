@@ -1,4 +1,6 @@
+import { define } from '@robojs/server'
 import type { RoboRequest } from '@robojs/server'
+import { z } from 'zod'
 import { sessionManager } from '../../../../../core/manager.js'
 import { parseMockToken } from '../../../../../utils/id.js'
 import { mockMessageToAPIMessage } from '../../../../../discord/payloads.js'
@@ -12,6 +14,39 @@ import { enforcePermissions } from '../../../../../utils/permission-check.js'
 
 // Default port for CDN URLs (can be overridden via environment)
 const CDN_BASE_URL = process.env.MOCK_CDN_URL || 'http://localhost:53596'
+
+const MessageResponseSchema = z.object({
+	id: z.string(),
+	type: z.number(),
+	content: z.string(),
+	channel_id: z.string(),
+	author: z.object({
+		id: z.string(),
+		username: z.string(),
+		avatar: z.string().nullable(),
+		discriminator: z.string(),
+		public_flags: z.number(),
+		flags: z.number(),
+		global_name: z.string().nullable(),
+		primary_guild: z.unknown().nullable()
+	}).passthrough(),
+	attachments: z.array(z.object({}).passthrough()),
+	embeds: z.array(z.object({}).passthrough()),
+	mentions: z.array(z.object({}).passthrough()),
+	mention_roles: z.array(z.string()),
+	pinned: z.boolean(),
+	mention_everyone: z.boolean(),
+	tts: z.boolean(),
+	timestamp: z.string(),
+	edited_timestamp: z.string().nullable(),
+	flags: z.number(),
+	components: z.array(z.object({}).passthrough())
+}).passthrough()
+
+const MessageIdParamsSchema = z.object({
+	id: z.string(),
+	messageId: z.string()
+})
 
 /**
  * GET/PATCH/DELETE /api/v10/channels/:id/messages/:messageId
@@ -78,65 +113,104 @@ function resolveMessage(request: RoboRequest) {
 	return { session, channel, message, channelId, messageId }
 }
 
-export async function GET(request: RoboRequest) {
-	const resolved = resolveMessage(request)
-	if (resolved instanceof Response) return resolved
-	const { session, channel, channelId, messageId, message } = resolved
+export const GET = define(
+	{
+		summary: 'Get channel message',
+		tags: ['Messages'],
+		params: MessageIdParamsSchema,
+		response: {
+			200: MessageResponseSchema
+		}
+	},
+	async (request) => {
+		const resolved = resolveMessage(request as unknown as RoboRequest)
+		if (resolved instanceof Response) return resolved
+		const { session, channel, channelId, messageId, message } = resolved
 
-	// Check permissions
-	const permError = enforcePermissions(
-		session,
-		'GET',
-		`/channels/${channelId}/messages/${messageId}`,
-		channelId,
-		undefined,
-		{ messageId, messageAuthorId: message.authorId }
-	)
-	if (permError) return permError
+		// Check permissions
+		const permError = enforcePermissions(
+			session,
+			'GET',
+			`/channels/${channelId}/messages/${messageId}`,
+			channelId,
+			undefined,
+			{ messageId, messageAuthorId: message.authorId }
+		)
+		if (permError) return permError
 
-	// GET - Return the message (re-fetch to ensure latest state)
-	const freshMessage = session.state.getMessage(messageId)!
-	const author = session.state.getUser(freshMessage.authorId) || session.state.botUser
-	return mockMessageToAPIMessage(freshMessage, author)
-}
+		// GET - Return the message (re-fetch to ensure latest state)
+		const freshMessage = session.state.getMessage(messageId)!
+		const author = session.state.getUser(freshMessage.authorId) || session.state.botUser
+		return mockMessageToAPIMessage(freshMessage, author)
+	}
+)
 
-export async function PATCH(request: RoboRequest) {
-	const resolved = resolveMessage(request)
-	if (resolved instanceof Response) return resolved
-	const { session, channel, channelId, messageId, message } = resolved
+export const PATCH = define(
+	{
+		summary: 'Update message',
+		tags: ['Messages'],
+		params: MessageIdParamsSchema,
+		body: z.object({
+			content: z.string().max(4000).nullable().optional(),
+			embeds: z.array(z.object({}).passthrough()).nullable().optional(),
+			flags: z.number().nullable().optional(),
+			allowed_mentions: z.object({}).passthrough().nullable().optional(),
+			sticker_ids: z.array(z.string()).nullable().optional(),
+			components: z.array(z.object({}).passthrough()).nullable().optional(),
+			attachments: z.array(z.object({}).passthrough()).nullable().optional()
+		}).passthrough(),
+		response: {
+			200: MessageResponseSchema
+		}
+	},
+	async (request) => {
+		const resolved = resolveMessage(request as unknown as RoboRequest)
+		if (resolved instanceof Response) return resolved
+		const { session, channel, channelId, messageId, message } = resolved
 
-	// Check permissions
-	const permError = enforcePermissions(
-		session,
-		'PATCH',
-		`/channels/${channelId}/messages/${messageId}`,
-		channelId,
-		undefined,
-		{ messageId, messageAuthorId: message.authorId }
-	)
-	if (permError) return permError
+		// Check permissions
+		const permError = enforcePermissions(
+			session,
+			'PATCH',
+			`/channels/${channelId}/messages/${messageId}`,
+			channelId,
+			undefined,
+			{ messageId, messageAuthorId: message.authorId }
+		)
+		if (permError) return permError
 
-	return handlePatch(request, session, channel, message, channelId, messageId)
-}
+		return handlePatch(request as unknown as RoboRequest, session, channel, message, channelId, messageId)
+	}
+)
 
-export async function DELETE(request: RoboRequest) {
-	const resolved = resolveMessage(request)
-	if (resolved instanceof Response) return resolved
-	const { session, channel, channelId, messageId, message } = resolved
+export const DELETE = define(
+	{
+		summary: 'Delete message',
+		tags: ['Messages'],
+		params: MessageIdParamsSchema,
+		response: {
+			204: z.undefined()
+		}
+	},
+	async (request) => {
+		const resolved = resolveMessage(request as unknown as RoboRequest)
+		if (resolved instanceof Response) return resolved
+		const { session, channel, channelId, messageId, message } = resolved
 
-	// Check permissions
-	const permError = enforcePermissions(
-		session,
-		'DELETE',
-		`/channels/${channelId}/messages/${messageId}`,
-		channelId,
-		undefined,
-		{ messageId, messageAuthorId: message.authorId }
-	)
-	if (permError) return permError
+		// Check permissions
+		const permError = enforcePermissions(
+			session,
+			'DELETE',
+			`/channels/${channelId}/messages/${messageId}`,
+			channelId,
+			undefined,
+			{ messageId, messageAuthorId: message.authorId }
+		)
+		if (permError) return permError
 
-	return handleDelete(session, channel, channelId, messageId)
-}
+		return handleDelete(session, channel, channelId, messageId)
+	}
+)
 
 async function handlePatch(
 	request: RoboRequest,

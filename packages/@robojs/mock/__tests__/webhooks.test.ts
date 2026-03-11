@@ -17,9 +17,25 @@ import { WebhookLimits, WebhookType } from '../src/types/index.js'
 // Import handlers directly for unit testing
 import channelWebhooksHandler from '../src/api/v10/channels/[id]/webhooks.js'
 import guildWebhooksHandler from '../src/api/v10/guilds/[id]/webhooks.js'
-import webhookByIdHandler from '../src/api/v10/webhooks/[id].js'
-import webhookWithTokenHandler from '../src/api/v10/webhooks/[app_id]/[token].js'
-import webhookMessagesHandler from '../src/api/v10/webhooks/[app_id]/[token]/messages/[messageId].js'
+import { GET as webhookGetById, PATCH as webhookPatchById, DELETE as webhookDeleteById } from '../src/api/v10/webhooks/[id].js'
+import { GET as webhookTokenGet, PATCH as webhookTokenPatch, DELETE as webhookTokenDelete, POST as webhookTokenPost } from '../src/api/v10/webhooks/[app_id]/[token].js'
+import { GET as webhookMessageGet, PATCH as webhookMessagePatch, DELETE as webhookMessageDelete } from '../src/api/v10/webhooks/[app_id]/[token]/messages/[messageId].js'
+
+// Local routing wrapper for tests that replicate the old default export behavior
+async function webhookWithTokenHandler(request: { method: string; [key: string]: unknown }): Promise<unknown> {
+	switch (request.method) {
+		case 'GET':
+			return webhookTokenGet(request as never)
+		case 'PATCH':
+			return webhookTokenPatch(request as never)
+		case 'DELETE':
+			return webhookTokenDelete(request as never)
+		case 'POST':
+			return webhookTokenPost(request as never)
+		default:
+			return new Response(null, { status: 405 })
+	}
+}
 
 // Helper to create a mock RoboRequest
 function createMockRequest(options: {
@@ -282,7 +298,7 @@ describe('Webhooks', () => {
 				headers: { Authorization: `Bot ${token}` }
 			})
 
-			const result = await webhookByIdHandler(request as never)
+			const result = await webhookGetById(request as never)
 			const response = await normalizeResponse(result as Response)
 			expect(response.status).toBe(200)
 
@@ -300,7 +316,7 @@ describe('Webhooks', () => {
 				headers: { Authorization: `Bot ${token}` }
 			})
 
-			const result = await webhookByIdHandler(request as never)
+			const result = await webhookGetById(request as never)
 			const response = await normalizeResponse(result as Response)
 			expect(response.status).toBe(404)
 		})
@@ -313,7 +329,7 @@ describe('Webhooks', () => {
 				body: { name: 'Updated Webhook' }
 			})
 
-			const result = await webhookByIdHandler(request as never)
+			const result = await webhookPatchById(request as never)
 			const response = await normalizeResponse(result as Response)
 			expect(response.status).toBe(200)
 
@@ -332,7 +348,7 @@ describe('Webhooks', () => {
 				headers: { Authorization: `Bot ${token}` }
 			})
 
-			const result = await webhookByIdHandler(request as never)
+			const result = await webhookDeleteById(request as never)
 			const response = await normalizeResponse(result as Response)
 			expect(response.status).toBe(204)
 
@@ -873,7 +889,7 @@ describe('Webhooks', () => {
 				params: { app_id: webhook.id, token: webhook.token!, messageId }
 			})
 
-			const result = await webhookMessagesHandler(request as never)
+			const result = await webhookMessageGet(request as never)
 			const response = await normalizeResponse(result as Response)
 			expect(response.status).toBe(200)
 
@@ -889,7 +905,7 @@ describe('Webhooks', () => {
 				body: { content: 'Edited message' }
 			})
 
-			const result = await webhookMessagesHandler(request as never)
+			const result = await webhookMessagePatch(request as never)
 			const response = await normalizeResponse(result as Response)
 			expect(response.status).toBe(200)
 
@@ -903,7 +919,7 @@ describe('Webhooks', () => {
 				params: { app_id: webhook.id, token: webhook.token!, messageId }
 			})
 
-			const result = await webhookMessagesHandler(request as never)
+			const result = await webhookMessageDelete(request as never)
 			const response = await normalizeResponse(result as Response)
 			expect(response.status).toBe(204)
 
@@ -917,7 +933,7 @@ describe('Webhooks', () => {
 				params: { app_id: webhook.id, token: webhook.token!, messageId: 'unknown' }
 			})
 
-			const result = await webhookMessagesHandler(request as never)
+			const result = await webhookMessageGet(request as never)
 			const response = await normalizeResponse(result as Response)
 			expect(response.status).toBe(404)
 		})
@@ -1037,7 +1053,7 @@ describe('Webhooks', () => {
 				body: { name: 'Updated Name' }
 			})
 
-			await webhookByIdHandler(request as never)
+			await webhookPatchById(request as never)
 
 			const dispatchAction = findWebhooksUpdateDispatch()
 			expect(dispatchAction).toBeDefined()
@@ -1057,7 +1073,7 @@ describe('Webhooks', () => {
 				headers: { Authorization: `Bot ${token}` }
 			})
 
-			await webhookByIdHandler(request as never)
+			await webhookDeleteById(request as never)
 
 			const dispatchAction = findWebhooksUpdateDispatch()
 			expect(dispatchAction).toBeDefined()
@@ -1128,7 +1144,7 @@ describe('Webhooks', () => {
 				headers: { Authorization: `Bot ${token}` }
 			})
 
-			await webhookByIdHandler(request as never)
+			await webhookPatchById(request as never)
 
 			// Find all WEBHOOKS_UPDATE dispatches
 			const actions = session.recorder.getAll()

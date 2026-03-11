@@ -1,4 +1,6 @@
+import { define } from '@robojs/server'
 import type { RoboRequest } from '@robojs/server'
+import { z } from 'zod'
 import { sessionManager } from '../../../../../../core/manager.js'
 import { parseMockToken } from '../../../../../../utils/id.js'
 import { mockThreadToAPIChannel } from '../../../../../../discord/payloads.js'
@@ -15,7 +17,69 @@ import { mockThreadToAPIChannel } from '../../../../../../discord/payloads.js'
  *
  * Response: APIChannel (thread) object
  */
-export async function POST(request: RoboRequest) {
+export const POST = define(
+	{
+		summary: 'Create thread from message',
+		description: 'Creates a new thread from an existing message',
+		tags: ['Threads'],
+		params: z.object({
+			id: z.string().describe('The channel ID (Snowflake)'),
+			messageId: z.string().describe('The message ID (Snowflake)')
+		}),
+		body: z
+			.object({
+				name: z.string().min(1).max(100),
+				auto_archive_duration: z.union([z.literal(60), z.literal(1440), z.literal(4320), z.literal(10080)]).nullable().optional(),
+				rate_limit_per_user: z.number().int().min(0).max(21600).nullable().optional()
+			})
+			.passthrough(),
+		response: {
+			201: z
+				.object({
+					id: z.string(),
+					type: z.number().int(),
+					last_message_id: z.string().nullable().optional(),
+					flags: z.number().int(),
+					last_pin_timestamp: z.string().nullable().optional(),
+					guild_id: z.string(),
+					name: z.string(),
+					parent_id: z.string().nullable().optional(),
+					rate_limit_per_user: z.number().int().optional(),
+					bitrate: z.number().int().optional(),
+					user_limit: z.number().int().optional(),
+					rtc_region: z.string().nullable().optional(),
+					video_quality_mode: z.number().int().optional(),
+					permissions: z.string().nullable().optional(),
+					owner_id: z.string(),
+					thread_metadata: z
+						.object({
+							archived: z.boolean(),
+							archive_timestamp: z.string().nullable(),
+							auto_archive_duration: z.number().int(),
+							locked: z.boolean(),
+							create_timestamp: z.string().optional(),
+							invitable: z.boolean().optional()
+						})
+						.passthrough(),
+					message_count: z.number().int(),
+					member_count: z.number().int(),
+					total_message_sent: z.number().int(),
+					applied_tags: z.array(z.string()).optional(),
+					member: z
+						.object({
+							id: z.string(),
+							user_id: z.string(),
+							join_timestamp: z.string(),
+							flags: z.number().int(),
+							member: z.object({}).passthrough().optional()
+						})
+						.passthrough()
+						.optional()
+				})
+				.passthrough()
+		}
+	},
+	async (request) => {
 	// 1. Parse Authorization header → get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
@@ -140,4 +204,4 @@ export async function POST(request: RoboRequest) {
 	// 12. Return thread as APIChannel (include member since creator is automatically added)
 	const botMember = session.state.getThreadMember(thread.id, session.state.botUser.id)
 	return mockThreadToAPIChannel(thread, botMember ?? undefined)
-}
+})

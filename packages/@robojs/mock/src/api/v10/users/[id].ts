@@ -1,4 +1,6 @@
+import { define } from '@robojs/server'
 import type { RoboRequest } from '@robojs/server'
+import { z } from 'zod'
 import { sessionManager } from '../../../core/manager.js'
 import { parseMockToken } from '../../../utils/id.js'
 
@@ -19,7 +21,33 @@ import { parseMockToken } from '../../../utils/id.js'
  *   ...
  * }
  */
-export async function GET(request: RoboRequest) {
+export const GET = define(
+	{
+		summary: 'Get user',
+		tags: ['Users'],
+		params: z.object({
+			id: z.string().describe('User ID')
+		}),
+		response: {
+			200: z.object({
+				id: z.string(),
+				username: z.string(),
+				avatar: z.string().nullable(),
+				discriminator: z.string(),
+				public_flags: z.number().int(),
+				flags: z.number().int(),
+				global_name: z.string().nullable(),
+				primary_guild: z.object({}).passthrough().nullable().optional(),
+				bot: z.boolean().optional(),
+				system: z.boolean().optional(),
+				banner: z.string().nullable().optional(),
+				accent_color: z.number().int().nullable().optional(),
+				avatar_decoration_data: z.object({}).passthrough().nullable().optional(),
+				collectibles: z.object({}).passthrough().nullable().optional()
+			}).passthrough()
+		}
+	},
+	async (request: RoboRequest) => {
 	const { id } = request.params as { id: string }
 
 	// Get token from Authorization header
@@ -114,4 +142,4 @@ export async function GET(request: RoboRequest) {
 			headers: { 'Content-Type': 'application/json' }
 		}
 	)
-}
+})

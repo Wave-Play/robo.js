@@ -1,3 +1,5 @@
+import { define } from '@robojs/server'
+import { z } from 'zod'
 import type { RoboRequest } from '@robojs/server'
 import { sessionManager } from '../../../../../../../core/manager.js'
 import { parseMockToken } from '../../../../../../../utils/id.js'
@@ -11,7 +13,7 @@ import { enforcePermissions } from '../../../../../../../utils/permission-check.
  * @see https://discord.com/developers/docs/resources/guild#remove-guild-member-role
  */
 function resolveMemberRole(request: RoboRequest) {
-	// 1. Parse Authorization header → get session
+	// 1. Parse Authorization header -> get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
 
@@ -87,92 +89,112 @@ function resolveMemberRole(request: RoboRequest) {
 	return { session, guild, guildId, userId, roleId, member, user }
 }
 
-export async function PUT(request: RoboRequest) {
-	const resolved = resolveMemberRole(request)
-	if (resolved instanceof Response) return resolved
-	const { session, guildId, userId, roleId, user } = resolved
-
-	// Check permissions
-	const permError = enforcePermissions(
-		session,
-		'PUT',
-		`/guilds/${guildId}/members/${userId}/roles/${roleId}`,
-		undefined,
-		guildId,
-		{ targetRoleId: roleId, targetUserId: userId }
-	)
-	if (permError) return permError
-
-	const added = session.state.addMemberRole(guildId, userId, roleId)
-
-	// Record action (even if role was already present)
-	session.recordAction(
-		'member_role_added',
-		{
-			guild_id: guildId,
-			user_id: userId,
-			role_id: roleId,
-			was_new: added
-		},
-		{
-			endpoint: `PUT /guilds/${guildId}/members/${userId}/roles/${roleId}`,
-			method: 'PUT'
+export const PUT = define(
+	{
+		summary: 'Add guild member role',
+		tags: ['Guild Members'],
+		params: z.object({ id: z.string().describe('Guild ID (Snowflake)'), userId: z.string().describe('User ID (Snowflake)'), roleId: z.string().describe('Role ID (Snowflake)') }),
+		response: {
+			204: z.undefined()
 		}
-	)
+	},
+	async (request) => {
+		const resolved = resolveMemberRole(request)
+		if (resolved instanceof Response) return resolved
+		const { session, guildId, userId, roleId, user } = resolved
 
-	// Dispatch GUILD_MEMBER_UPDATE event if role was actually added
-	if (added && user) {
-		const updatedMember = session.state.getGuildMember(guildId, userId)
-		if (updatedMember) {
-			await session.dispatchGuildMemberUpdate(guildId, updatedMember, user)
+		// Check permissions
+		const permError = enforcePermissions(
+			session,
+			'PUT',
+			`/guilds/${guildId}/members/${userId}/roles/${roleId}`,
+			undefined,
+			guildId,
+			{ targetRoleId: roleId, targetUserId: userId }
+		)
+		if (permError) return permError
+
+		const added = session.state.addMemberRole(guildId, userId, roleId)
+
+		// Record action (even if role was already present)
+		session.recordAction(
+			'member_role_added',
+			{
+				guild_id: guildId,
+				user_id: userId,
+				role_id: roleId,
+				was_new: added
+			},
+			{
+				endpoint: `PUT /guilds/${guildId}/members/${userId}/roles/${roleId}`,
+				method: 'PUT'
+			}
+		)
+
+		// Dispatch GUILD_MEMBER_UPDATE event if role was actually added
+		if (added && user) {
+			const updatedMember = session.state.getGuildMember(guildId, userId)
+			if (updatedMember) {
+				await session.dispatchGuildMemberUpdate(guildId, updatedMember, user)
+			}
 		}
+
+		// Discord returns 204 No Content on success
+		return new Response(null, { status: 204 })
 	}
+)
 
-	// Discord returns 204 No Content on success
-	return new Response(null, { status: 204 })
-}
-
-export async function DELETE(request: RoboRequest) {
-	const resolved = resolveMemberRole(request)
-	if (resolved instanceof Response) return resolved
-	const { session, guildId, userId, roleId, user } = resolved
-
-	// Check permissions
-	const permError = enforcePermissions(
-		session,
-		'DELETE',
-		`/guilds/${guildId}/members/${userId}/roles/${roleId}`,
-		undefined,
-		guildId,
-		{ targetRoleId: roleId, targetUserId: userId }
-	)
-	if (permError) return permError
-
-	const removed = session.state.removeMemberRole(guildId, userId, roleId)
-
-	// Record action
-	session.recordAction(
-		'member_role_removed',
-		{
-			guild_id: guildId,
-			user_id: userId,
-			role_id: roleId,
-			was_present: removed
-		},
-		{
-			endpoint: `DELETE /guilds/${guildId}/members/${userId}/roles/${roleId}`,
-			method: 'DELETE'
+export const DELETE = define(
+	{
+		summary: 'Remove guild member role',
+		tags: ['Guild Members'],
+		params: z.object({ id: z.string().describe('Guild ID (Snowflake)'), userId: z.string().describe('User ID (Snowflake)'), roleId: z.string().describe('Role ID (Snowflake)') }),
+		response: {
+			204: z.undefined()
 		}
-	)
+	},
+	async (request) => {
+		const resolved = resolveMemberRole(request)
+		if (resolved instanceof Response) return resolved
+		const { session, guildId, userId, roleId, user } = resolved
 
-	// Dispatch GUILD_MEMBER_UPDATE event if role was actually removed
-	if (removed && user) {
-		const updatedMember = session.state.getGuildMember(guildId, userId)
-		if (updatedMember) {
-			await session.dispatchGuildMemberUpdate(guildId, updatedMember, user)
+		// Check permissions
+		const permError = enforcePermissions(
+			session,
+			'DELETE',
+			`/guilds/${guildId}/members/${userId}/roles/${roleId}`,
+			undefined,
+			guildId,
+			{ targetRoleId: roleId, targetUserId: userId }
+		)
+		if (permError) return permError
+
+		const removed = session.state.removeMemberRole(guildId, userId, roleId)
+
+		// Record action
+		session.recordAction(
+			'member_role_removed',
+			{
+				guild_id: guildId,
+				user_id: userId,
+				role_id: roleId,
+				was_present: removed
+			},
+			{
+				endpoint: `DELETE /guilds/${guildId}/members/${userId}/roles/${roleId}`,
+				method: 'DELETE'
+			}
+		)
+
+		// Dispatch GUILD_MEMBER_UPDATE event if role was actually removed
+		if (removed && user) {
+			const updatedMember = session.state.getGuildMember(guildId, userId)
+			if (updatedMember) {
+				await session.dispatchGuildMemberUpdate(guildId, updatedMember, user)
+			}
 		}
+
+		// Discord returns 204 No Content on success
+		return new Response(null, { status: 204 })
 	}
-
-	// Discord returns 204 No Content on success
-	return new Response(null, { status: 204 })
-}
+)

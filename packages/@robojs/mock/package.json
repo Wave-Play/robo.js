@@ -69,7 +69,8 @@
 		"@robojs/server": "workspace:*",
 		"discord-api-types": "^0.37.115",
 		"robo.js": "workspace:*",
-		"ws": "^8.18.0"
+		"ws": "^8.18.0",
+		"zod": "^4.0.0"
 	},
 	"devDependencies": {
 		"@discordjs/voice": "^0.16.0",

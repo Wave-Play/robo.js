@@ -1,4 +1,6 @@
+import { define } from '@robojs/server'
 import type { RoboRequest } from '@robojs/server'
+import { z } from 'zod'
 import { sessionManager } from '../../../../../core/manager.js'
 import { parseMockToken } from '../../../../../utils/id.js'
 import { getTemplatesForSession } from '../../template-storage.js'
@@ -51,87 +53,158 @@ function resolveTemplate(request: RoboRequest) {
 	return { session, sessionId, guild, id, code, templates, template }
 }
 
-export async function GET(request: RoboRequest) {
-	const resolved = resolveTemplate(request)
-	if (resolved instanceof Response) return resolved
-	const { template } = resolved
+const GuildTemplateResponseSchema = z
+	.object({
+		code: z.string(),
+		name: z.string(),
+		description: z.string().nullable(),
+		usage_count: z.number(),
+		creator_id: z.string(),
+		creator: z.object({}).passthrough().nullable(),
+		created_at: z.string(),
+		updated_at: z.string(),
+		source_guild_id: z.string(),
+		serialized_source_guild: z.object({}).passthrough(),
+		is_dirty: z.boolean().nullable()
+	})
+	.passthrough()
 
-	return template
-}
+const templateParams = z.object({
+	id: z.string().describe('The guild ID (Snowflake)'),
+	code: z.string().describe('The template code')
+})
 
-export async function PUT(request: RoboRequest) {
-	const resolved = resolveTemplate(request)
-	if (resolved instanceof Response) return resolved
-	const { session, guild, id, template } = resolved
+export const GET = define(
+	{
+		summary: 'Get guild template',
+		description: 'Returns a guild template object for the given code',
+		tags: ['Guild Templates'],
+		params: templateParams,
+		response: {
+			200: GuildTemplateResponseSchema
+		}
+	},
+	async (request) => {
+		const resolved = resolveTemplate(request)
+		if (resolved instanceof Response) return resolved
+		const { template } = resolved
 
-	// Sync template - update serialized_source_guild from current guild state
-	const channels = Array.from(session.state.channels.values())
-		.filter((c) => c.guildId === id)
-		.map((c) => ({
-			id: c.id,
-			type: c.type,
-			name: c.name,
-			position: c.position ?? 0,
-			topic: c.topic ?? null,
-			parent_id: c.parentId ?? null,
-			permission_overwrites: []
-		}))
-
-	const roles = Array.from(session.state.roles?.values() ?? [])
-		.filter((r) => r.guildId === id)
-		.map((r) => ({
-			id: r.id,
-			name: r.name,
-			color: r.color ?? 0,
-			hoist: r.hoist ?? false,
-			mentionable: r.mentionable ?? false,
-			permissions: r.permissions ?? '0'
-		}))
-
-	template.serialized_source_guild = {
-		name: guild.name,
-		description: guild.description ?? null,
-		region: null,
-		icon_hash: guild.icon ?? null,
-		verification_level: guild.verificationLevel ?? 0,
-		default_message_notifications: guild.defaultMessageNotifications ?? 0,
-		explicit_content_filter: guild.explicitContentFilter ?? 0,
-		roles,
-		channels,
-		afk_channel_id: guild.afkChannelId ?? null,
-		afk_timeout: guild.afkTimeout ?? 300,
-		system_channel_id: guild.systemChannelId ?? null,
-		system_channel_flags: guild.systemChannelFlags ?? 0
+		return template
 	}
-	template.updated_at = new Date().toISOString()
-	template.is_dirty = false
+)
 
-	return template
-}
+export const PUT = define(
+	{
+		summary: 'Sync guild template',
+		description: 'Syncs the template to the guild\'s current state',
+		tags: ['Guild Templates'],
+		params: templateParams,
+		response: {
+			200: GuildTemplateResponseSchema
+		}
+	},
+	async (request) => {
+		const resolved = resolveTemplate(request)
+		if (resolved instanceof Response) return resolved
+		const { session, guild, id, template } = resolved
 
-export async function PATCH(request: RoboRequest) {
-	const resolved = resolveTemplate(request)
-	if (resolved instanceof Response) return resolved
-	const { template } = resolved
+		// Sync template - update serialized_source_guild from current guild state
+		const channels = Array.from(session.state.channels.values())
+			.filter((c) => c.guildId === id)
+			.map((c) => ({
+				id: c.id,
+				type: c.type,
+				name: c.name,
+				position: c.position ?? 0,
+				topic: c.topic ?? null,
+				parent_id: c.parentId ?? null,
+				permission_overwrites: []
+			}))
 
-	const body = (await request.json()) as { name?: string; description?: string }
+		const roles = Array.from(session.state.roles?.values() ?? [])
+			.filter((r) => r.guildId === id)
+			.map((r) => ({
+				id: r.id,
+				name: r.name,
+				color: r.color ?? 0,
+				hoist: r.hoist ?? false,
+				mentionable: r.mentionable ?? false,
+				permissions: r.permissions ?? '0'
+			}))
 
-	if (body.name !== undefined) {
-		template.name = body.name
+		template.serialized_source_guild = {
+			name: guild.name,
+			description: guild.description ?? null,
+			region: null,
+			icon_hash: guild.icon ?? null,
+			verification_level: guild.verificationLevel ?? 0,
+			default_message_notifications: guild.defaultMessageNotifications ?? 0,
+			explicit_content_filter: guild.explicitContentFilter ?? 0,
+			roles,
+			channels,
+			afk_channel_id: guild.afkChannelId ?? null,
+			afk_timeout: guild.afkTimeout ?? 300,
+			system_channel_id: guild.systemChannelId ?? null,
+			system_channel_flags: guild.systemChannelFlags ?? 0
+		}
+		template.updated_at = new Date().toISOString()
+		template.is_dirty = false
+
+		return template
 	}
-	if (body.description !== undefined) {
-		template.description = body.description
+)
+
+export const PATCH = define(
+	{
+		summary: 'Update guild template',
+		description: 'Modifies the template\'s metadata',
+		tags: ['Guild Templates'],
+		params: templateParams,
+		body: z
+			.object({
+				name: z.string().min(1).max(100).optional(),
+				description: z.string().nullable().max(120).optional()
+			})
+			.passthrough(),
+		response: {
+			200: GuildTemplateResponseSchema
+		}
+	},
+	async (request) => {
+		const resolved = resolveTemplate(request)
+		if (resolved instanceof Response) return resolved
+		const { template } = resolved
+
+		const body = (await request.json()) as { name?: string; description?: string }
+
+		if (body.name !== undefined) {
+			template.name = body.name
+		}
+		if (body.description !== undefined) {
+			template.description = body.description
+		}
+		template.updated_at = new Date().toISOString()
+
+		return template
 	}
-	template.updated_at = new Date().toISOString()
+)
 
-	return template
-}
+export const DELETE = define(
+	{
+		summary: 'Delete guild template',
+		description: 'Deletes the template',
+		tags: ['Guild Templates'],
+		params: templateParams,
+		response: {
+			200: GuildTemplateResponseSchema
+		}
+	},
+	async (request) => {
+		const resolved = resolveTemplate(request)
+		if (resolved instanceof Response) return resolved
+		const { templates, code, template } = resolved
 
-export async function DELETE(request: RoboRequest) {
-	const resolved = resolveTemplate(request)
-	if (resolved instanceof Response) return resolved
-	const { templates, code } = resolved
-
-	templates.delete(code)
-	return new Response(null, { status: 204 })
-}
+		templates.delete(code)
+		return template
+	}
+)

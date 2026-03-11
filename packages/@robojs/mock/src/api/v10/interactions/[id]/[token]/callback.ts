@@ -1,4 +1,6 @@
+import { define } from '@robojs/server'
 import type { RoboRequest } from '@robojs/server'
+import { z } from 'zod'
 import { sessionManager } from '../../../../../core/manager.js'
 import { getStageBridge } from '../../../../../core/stage-bridge.js'
 import { mockMessageToAPIMessage } from '../../../../../discord/payloads.js'
@@ -29,7 +31,27 @@ const CDN_BASE_URL = process.env.MOCK_CDN_URL || 'http://localhost:53596'
  *
  * Response: 204 No Content on success
  */
-export async function POST(request: RoboRequest) {
+export const POST = define(
+	{
+		summary: 'Create interaction response',
+		tags: ['Interactions'],
+		params: z.object({
+			id: z.string().describe('Interaction ID'),
+			token: z.string().describe('Interaction token')
+		}),
+		query: z.object({
+			with_response: z.boolean().optional()
+		}),
+		body: z.object({
+			type: z.number().int(),
+			data: z.object({}).passthrough().optional()
+		}).passthrough(),
+		response: {
+			200: z.object({}).passthrough(),
+			204: z.undefined()
+		}
+	},
+	async (request: RoboRequest) => {
 	// 1. Extract interaction ID and token from URL params
 	const { id: interactionId, token } = request.params as { id: string; token: string }
 
@@ -404,4 +426,4 @@ export async function POST(request: RoboRequest) {
 
 	// 12. Discord returns 204 No Content on success
 	return new Response(null, { status: 204 })
-}
+})

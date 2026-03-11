@@ -1,4 +1,6 @@
+import { define } from '@robojs/server'
 import type { RoboRequest } from '@robojs/server'
+import { z } from 'zod'
 import { sessionManager } from '../../../core/manager.js'
 import { parseMockToken } from '../../../utils/id.js'
 import { mockWebhookToAPIWebhook } from '../../../discord/payloads.js'
@@ -49,7 +51,33 @@ function resolveWebhook(request: RoboRequest) {
 	return { session, webhookId, webhook }
 }
 
-export async function GET(request: RoboRequest) {
+const WebhookResponseSchema = z.object({
+	id: z.string(),
+	type: z.number().int(),
+	name: z.string(),
+	avatar: z.string().nullable(),
+	channel_id: z.string().nullable(),
+	application_id: z.string().nullable(),
+	guild_id: z.string().nullable().optional(),
+	token: z.string().optional(),
+	user: z.object({}).passthrough().optional(),
+	url: z.string().optional(),
+	source_guild: z.object({}).passthrough().optional(),
+	source_channel: z.object({}).passthrough().optional()
+}).passthrough()
+
+export const GET = define(
+	{
+		summary: 'Get webhook',
+		tags: ['Webhooks'],
+		params: z.object({
+			id: z.string().describe('Webhook ID')
+		}),
+		response: {
+			200: WebhookResponseSchema
+		}
+	},
+	async (request: RoboRequest) => {
 	const resolved = resolveWebhook(request)
 	if (resolved instanceof Response) return resolved
 	const { session, webhook } = resolved
@@ -57,9 +85,25 @@ export async function GET(request: RoboRequest) {
 	// Include token only if the requesting user is the webhook creator
 	const isCreator = webhook.user?.id === session.state.botUser.id
 	return mockWebhookToAPIWebhook(webhook, isCreator)
-}
+})
 
-export async function PATCH(request: RoboRequest) {
+export const PATCH = define(
+	{
+		summary: 'Update webhook',
+		tags: ['Webhooks'],
+		params: z.object({
+			id: z.string().describe('Webhook ID')
+		}),
+		body: z.object({
+			name: z.string().min(1).max(80).optional(),
+			avatar: z.string().nullable().optional(),
+			channel_id: z.string().nullable().optional()
+		}).passthrough(),
+		response: {
+			200: WebhookResponseSchema
+		}
+	},
+	async (request: RoboRequest) => {
 	const resolved = resolveWebhook(request)
 	if (resolved instanceof Response) return resolved
 	const { session, webhookId, webhook } = resolved
@@ -209,9 +253,20 @@ export async function PATCH(request: RoboRequest) {
 	// Include token only if the requesting user is the webhook creator
 	const isCreator = updatedWebhook.user?.id === session.state.botUser.id
 	return mockWebhookToAPIWebhook(updatedWebhook, isCreator)
-}
+})
 
-export async function DELETE(request: RoboRequest) {
+export const DELETE = define(
+	{
+		summary: 'Delete webhook',
+		tags: ['Webhooks'],
+		params: z.object({
+			id: z.string().describe('Webhook ID')
+		}),
+		response: {
+			204: z.undefined()
+		}
+	},
+	async (request: RoboRequest) => {
 	const resolved = resolveWebhook(request)
 	if (resolved instanceof Response) return resolved
 	const { session, webhookId, webhook } = resolved
@@ -250,17 +305,4 @@ export async function DELETE(request: RoboRequest) {
 	}
 
 	return new Response(null, { status: 204 })
-}
-
-export default async function webhookByIdHandler(request: RoboRequest): Promise<unknown> {
-	switch (request.method) {
-		case 'GET':
-			return GET(request)
-		case 'PATCH':
-			return PATCH(request)
-		case 'DELETE':
-			return DELETE(request)
-		default:
-			return new Response(null, { status: 405 })
-	}
-}
+})

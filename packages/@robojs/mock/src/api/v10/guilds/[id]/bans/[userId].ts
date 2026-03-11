@@ -1,4 +1,6 @@
+import { define } from '@robojs/server'
 import type { RoboRequest } from '@robojs/server'
+import { z } from 'zod'
 import { sessionManager } from '../../../../../core/manager.js'
 import { parseMockToken } from '../../../../../utils/id.js'
 import { mockUserToAPIUser } from '../../../../../discord/payloads.js'
@@ -17,7 +19,7 @@ import { createMockUser } from '../../../../../session/state.js'
  */
 
 function resolveGuildBan(request: RoboRequest) {
-	// 1. Parse Authorization header → get session
+	// 1. Parse Authorization header -> get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
 
@@ -51,213 +53,267 @@ function resolveGuildBan(request: RoboRequest) {
 	return { session, guild, guildId, userId }
 }
 
-export async function GET(request: RoboRequest) {
-	const resolved = resolveGuildBan(request)
-	if (resolved instanceof Response) return resolved
-	const { session, guildId, userId } = resolved
-
-	// Check permissions (requires BAN_MEMBERS permission)
-	const permError = enforcePermissions(
-		session,
-		'GET',
-		`/guilds/${guildId}/bans/${userId}`,
-		undefined,
-		guildId,
-		{ targetUserId: userId }
-	)
-	if (permError) return permError
-
-	const ban = session.state.getBan(guildId, userId)
-	if (!ban) {
-		return new Response(JSON.stringify({ message: 'Unknown Ban', code: 10026 }), {
-			status: 404,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	const user = session.state.users.get(userId)
-	return new Response(
-		JSON.stringify({
-			reason: ban.reason ?? null,
-			user: user
-				? mockUserToAPIUser(user)
-				: { id: userId, username: 'Unknown', discriminator: '0', global_name: null }
+export const GET = define(
+	{
+		summary: 'Get guild ban',
+		description: 'Returns a ban object for the given user',
+		tags: ['Guilds'],
+		params: z.object({
+			id: z.string().describe('The guild ID (Snowflake)'),
+			userId: z.string().describe('The user ID (Snowflake)')
 		}),
-		{
-			status: 200,
-			headers: { 'Content-Type': 'application/json' }
+		response: {
+			200: z
+				.object({
+					user: z.object({}).passthrough(),
+					reason: z.string().nullable()
+				})
+				.passthrough()
 		}
-	)
-}
+	},
+	async (request) => {
+		const resolved = resolveGuildBan(request)
+		if (resolved instanceof Response) return resolved
+		const { session, guildId, userId } = resolved
 
-export async function PUT(request: RoboRequest) {
-	const resolved = resolveGuildBan(request)
-	if (resolved instanceof Response) return resolved
-	const { session, guildId, userId } = resolved
+		// Check permissions (requires BAN_MEMBERS permission)
+		const permError = enforcePermissions(
+			session,
+			'GET',
+			`/guilds/${guildId}/bans/${userId}`,
+			undefined,
+			guildId,
+			{ targetUserId: userId }
+		)
+		if (permError) return permError
 
-	// Check permissions (requires BAN_MEMBERS permission)
-	const permError = enforcePermissions(
-		session,
-		'PUT',
-		`/guilds/${guildId}/bans/${userId}`,
-		undefined,
-		guildId,
-		{ targetUserId: userId }
-	)
-	if (permError) return permError
-
-	// Cannot ban the bot itself
-	if (userId === session.state.botUser.id) {
-		return new Response(JSON.stringify({ message: 'Cannot ban the bot user', code: 50013 }), {
-			status: 403,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	let body: {
-		delete_message_seconds?: number
-		delete_message_days?: number // Deprecated but still supported
-	} = {}
-
-	// Body is optional
-	try {
-		const text = await request.text()
-		if (text) {
-			body = JSON.parse(text)
+		const ban = session.state.getBan(guildId, userId)
+		if (!ban) {
+			return new Response(JSON.stringify({ message: 'Unknown Ban', code: 10026 }), {
+				status: 404,
+				headers: { 'Content-Type': 'application/json' }
+			})
 		}
-	} catch {
-		return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
-			status: 400,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
 
-	// Get reason from header (X-Audit-Log-Reason)
-	// Discord.js URL-encodes the reason, so decode it
-	const rawReason = request.headers.get('X-Audit-Log-Reason')
-	const reason = rawReason ? decodeURIComponent(rawReason) : null
-
-	// Validate delete_message_seconds
-	let deleteMessageSeconds = body.delete_message_seconds
-	if (deleteMessageSeconds === undefined && body.delete_message_days !== undefined) {
-		// Convert deprecated days to seconds
-		deleteMessageSeconds = body.delete_message_days * 86400
-	}
-	if (
-		deleteMessageSeconds !== undefined &&
-		(deleteMessageSeconds < 0 || deleteMessageSeconds > BanLimits.MAX_DELETE_MESSAGE_SECONDS)
-	) {
+		const user = session.state.users.get(userId)
 		return new Response(
 			JSON.stringify({
-				error: `delete_message_seconds must be between 0 and ${BanLimits.MAX_DELETE_MESSAGE_SECONDS}`,
-				code: 50035
+				reason: ban.reason ?? null,
+				user: user
+					? mockUserToAPIUser(user)
+					: { id: userId, username: 'Unknown', discriminator: '0', global_name: null }
 			}),
 			{
-				status: 400,
+				status: 200,
 				headers: { 'Content-Type': 'application/json' }
 			}
 		)
 	}
+)
 
-	// Ensure user exists (create if not)
-	let user = session.state.users.get(userId)
-	if (!user) {
-		// Create a placeholder user for the ban
-		user = createMockUser({ id: userId, username: 'BannedUser' })
-		session.state.users.set(userId, user)
-	}
+export const PUT = define(
+	{
+		summary: 'Ban user from guild',
+		description: 'Create a guild ban and optionally delete previous messages',
+		tags: ['Guilds'],
+		params: z.object({
+			id: z.string().describe('The guild ID (Snowflake)'),
+			userId: z.string().describe('The user ID (Snowflake)')
+		}),
+		body: z
+			.object({
+				delete_message_seconds: z.number().int().min(0).max(604800).nullable().optional(),
+				delete_message_days: z.number().int().min(0).max(7).nullable().optional()
+			})
+			.passthrough(),
+		response: {
+			204: z.undefined()
+		}
+	},
+	async (request) => {
+		const resolved = resolveGuildBan(request)
+		if (resolved instanceof Response) return resolved
+		const { session, guildId, userId } = resolved
 
-	// Create the ban
-	const ban = session.state.createBan(guildId, userId, {
-		reason,
-		deleteMessageSeconds
-	})
+		// Check permissions (requires BAN_MEMBERS permission)
+		const permError = enforcePermissions(
+			session,
+			'PUT',
+			`/guilds/${guildId}/bans/${userId}`,
+			undefined,
+			guildId,
+			{ targetUserId: userId }
+		)
+		if (permError) return permError
 
-	if (!ban) {
-		return new Response(JSON.stringify({ message: 'Failed to create ban', code: 50035 }), {
-			status: 400,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
+		// Cannot ban the bot itself
+		if (userId === session.state.botUser.id) {
+			return new Response(JSON.stringify({ message: 'Cannot ban the bot user', code: 50013 }), {
+				status: 403,
+				headers: { 'Content-Type': 'application/json' }
+			})
+		}
 
-	// Record action
-	session.recordAction(
-		'ban_created',
-		{
-			guild_id: guildId,
-			user_id: userId,
+		let body: {
+			delete_message_seconds?: number
+			delete_message_days?: number // Deprecated but still supported
+		} = {}
+
+		// Body is optional
+		try {
+			const text = await request.text()
+			if (text) {
+				body = JSON.parse(text)
+			}
+		} catch {
+			return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
+				status: 400,
+				headers: { 'Content-Type': 'application/json' }
+			})
+		}
+
+		// Get reason from header (X-Audit-Log-Reason)
+		// Discord.js URL-encodes the reason, so decode it
+		const rawReason = request.headers.get('X-Audit-Log-Reason')
+		const reason = rawReason ? decodeURIComponent(rawReason) : null
+
+		// Validate delete_message_seconds
+		let deleteMessageSeconds = body.delete_message_seconds
+		if (deleteMessageSeconds === undefined && body.delete_message_days !== undefined) {
+			// Convert deprecated days to seconds
+			deleteMessageSeconds = body.delete_message_days * 86400
+		}
+		if (
+			deleteMessageSeconds !== undefined &&
+			(deleteMessageSeconds < 0 || deleteMessageSeconds > BanLimits.MAX_DELETE_MESSAGE_SECONDS)
+		) {
+			return new Response(
+				JSON.stringify({
+					error: `delete_message_seconds must be between 0 and ${BanLimits.MAX_DELETE_MESSAGE_SECONDS}`,
+					code: 50035
+				}),
+				{
+					status: 400,
+					headers: { 'Content-Type': 'application/json' }
+				}
+			)
+		}
+
+		// Ensure user exists (create if not)
+		let user = session.state.users.get(userId)
+		if (!user) {
+			// Create a placeholder user for the ban
+			user = createMockUser({ id: userId, username: 'BannedUser' })
+			session.state.users.set(userId, user)
+		}
+
+		// Create the ban
+		const ban = session.state.createBan(guildId, userId, {
 			reason,
-			delete_message_seconds: deleteMessageSeconds
-		},
-		{
-			endpoint: `PUT /guilds/${guildId}/bans/${userId}`,
-			method: 'PUT'
-		}
-	)
-
-	// Dispatch GUILD_BAN_ADD event
-	await session.dispatchGuildBanAdd(guildId, user)
-
-	// Discord returns 204 No Content on successful ban
-	return new Response(null, { status: 204 })
-}
-
-export async function DELETE(request: RoboRequest) {
-	const resolved = resolveGuildBan(request)
-	if (resolved instanceof Response) return resolved
-	const { session, guildId, userId } = resolved
-
-	// Check permissions (requires BAN_MEMBERS permission)
-	const permError = enforcePermissions(
-		session,
-		'DELETE',
-		`/guilds/${guildId}/bans/${userId}`,
-		undefined,
-		guildId,
-		{ targetUserId: userId }
-	)
-	if (permError) return permError
-
-	const ban = session.state.getBan(guildId, userId)
-	if (!ban) {
-		return new Response(JSON.stringify({ message: 'Unknown Ban', code: 10026 }), {
-			status: 404,
-			headers: { 'Content-Type': 'application/json' }
+			deleteMessageSeconds
 		})
-	}
 
-	// Get the user before removing the ban
-	let user = session.state.users.get(userId)
-	if (!user) {
-		// Create a placeholder user for the event
-		user = createMockUser({ id: userId, username: 'UnbannedUser' })
-	}
-
-	// Remove the ban
-	const removed = session.state.removeBan(guildId, userId)
-	if (!removed) {
-		return new Response(JSON.stringify({ message: 'Failed to remove ban', code: 50035 }), {
-			status: 400,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// Record action
-	session.recordAction(
-		'ban_removed',
-		{
-			guild_id: guildId,
-			user_id: userId
-		},
-		{
-			endpoint: `DELETE /guilds/${guildId}/bans/${userId}`,
-			method: 'DELETE'
+		if (!ban) {
+			return new Response(JSON.stringify({ message: 'Failed to create ban', code: 50035 }), {
+				status: 400,
+				headers: { 'Content-Type': 'application/json' }
+			})
 		}
-	)
 
-	// Dispatch GUILD_BAN_REMOVE event
-	await session.dispatchGuildBanRemove(guildId, user)
+		// Record action
+		session.recordAction(
+			'ban_created',
+			{
+				guild_id: guildId,
+				user_id: userId,
+				reason,
+				delete_message_seconds: deleteMessageSeconds
+			},
+			{
+				endpoint: `PUT /guilds/${guildId}/bans/${userId}`,
+				method: 'PUT'
+			}
+		)
 
-	// Discord returns 204 No Content on successful unban
-	return new Response(null, { status: 204 })
-}
+		// Dispatch GUILD_BAN_ADD event
+		await session.dispatchGuildBanAdd(guildId, user)
+
+		// Discord returns 204 No Content on successful ban
+		return new Response(null, { status: 204 })
+	}
+)
+
+export const DELETE = define(
+	{
+		summary: 'Unban user from guild',
+		description: 'Remove the ban for a user',
+		tags: ['Guilds'],
+		params: z.object({
+			id: z.string().describe('The guild ID (Snowflake)'),
+			userId: z.string().describe('The user ID (Snowflake)')
+		}),
+		body: z.object({}).passthrough().optional(),
+		response: {
+			204: z.undefined()
+		}
+	},
+	async (request) => {
+		const resolved = resolveGuildBan(request)
+		if (resolved instanceof Response) return resolved
+		const { session, guildId, userId } = resolved
+
+		// Check permissions (requires BAN_MEMBERS permission)
+		const permError = enforcePermissions(
+			session,
+			'DELETE',
+			`/guilds/${guildId}/bans/${userId}`,
+			undefined,
+			guildId,
+			{ targetUserId: userId }
+		)
+		if (permError) return permError
+
+		const ban = session.state.getBan(guildId, userId)
+		if (!ban) {
+			return new Response(JSON.stringify({ message: 'Unknown Ban', code: 10026 }), {
+				status: 404,
+				headers: { 'Content-Type': 'application/json' }
+			})
+		}
+
+		// Get the user before removing the ban
+		let user = session.state.users.get(userId)
+		if (!user) {
+			// Create a placeholder user for the event
+			user = createMockUser({ id: userId, username: 'UnbannedUser' })
+		}
+
+		// Remove the ban
+		const removed = session.state.removeBan(guildId, userId)
+		if (!removed) {
+			return new Response(JSON.stringify({ message: 'Failed to remove ban', code: 50035 }), {
+				status: 400,
+				headers: { 'Content-Type': 'application/json' }
+			})
+		}
+
+		// Record action
+		session.recordAction(
+			'ban_removed',
+			{
+				guild_id: guildId,
+				user_id: userId
+			},
+			{
+				endpoint: `DELETE /guilds/${guildId}/bans/${userId}`,
+				method: 'DELETE'
+			}
+		)
+
+		// Dispatch GUILD_BAN_REMOVE event
+		await session.dispatchGuildBanRemove(guildId, user)
+
+		// Discord returns 204 No Content on successful unban
+		return new Response(null, { status: 204 })
+	}
+)

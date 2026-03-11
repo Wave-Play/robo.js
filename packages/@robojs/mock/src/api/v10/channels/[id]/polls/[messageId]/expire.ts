@@ -1,4 +1,6 @@
+import { define } from '@robojs/server'
 import type { RoboRequest } from '@robojs/server'
+import { z } from 'zod'
 import { sessionManager } from '../../../../../../core/manager.js'
 import { getGatewayServer } from '../../../../../../core/gateway.js'
 import { parseMockToken } from '../../../../../../utils/id.js'
@@ -10,7 +12,50 @@ import { mockMessageToAPIMessage } from '../../../../../../discord/payloads.js'
  * Immediately end a poll and finalize results
  * Returns: APIMessage with finalized poll results
  */
-export async function POST(request: RoboRequest) {
+export const POST = define(
+	{
+		summary: 'Expire poll',
+		description: 'Immediately ends a poll and returns the message with finalized poll results',
+		tags: ['Polls'],
+		params: z.object({
+			id: z.string().describe('The channel ID (Snowflake)'),
+			messageId: z.string().describe('The message ID (Snowflake)')
+		}),
+		response: {
+			200: z
+				.object({
+					id: z.string(),
+					type: z.number().int(),
+					content: z.string(),
+					channel_id: z.string(),
+					author: z.object({}).passthrough(),
+					timestamp: z.string(),
+					edited_timestamp: z.string().nullable(),
+					tts: z.boolean(),
+					mention_everyone: z.boolean(),
+					mentions: z.array(z.object({}).passthrough()),
+					mention_roles: z.array(z.string()),
+					attachments: z.array(z.object({}).passthrough()),
+					embeds: z.array(z.object({}).passthrough()),
+					pinned: z.boolean(),
+					flags: z.number().int(),
+					components: z.array(z.object({}).passthrough()),
+					poll: z
+						.object({
+							question: z.object({}).passthrough(),
+							answers: z.array(z.object({}).passthrough()),
+							expiry: z.string(),
+							allow_multiselect: z.boolean(),
+							layout_type: z.number().int(),
+							results: z.object({}).passthrough()
+						})
+						.passthrough()
+						.optional()
+				})
+				.passthrough()
+		}
+	},
+	async (request) => {
 	// 1. Parse Authorization header → get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
@@ -107,4 +152,4 @@ export async function POST(request: RoboRequest) {
 
 	// 10. Return updated message with finalized poll
 	return mockMessageToAPIMessage(message, author)
-}
+})

@@ -1,4 +1,6 @@
+import { define } from '@robojs/server'
 import type { RoboRequest } from '@robojs/server'
+import { z } from 'zod'
 import { sessionManager } from '../../core/manager.js'
 import { getGatewayServer } from '../../core/gateway.js'
 import { parseMockToken } from '../../utils/id.js'
@@ -41,7 +43,30 @@ function stageInstanceToAPI(instance: {
  *
  * @see https://discord.com/developers/docs/resources/stage-instance#create-stage-instance
  */
-export async function POST(request: RoboRequest) {
+export const POST = define(
+	{
+		summary: 'Create stage instance',
+		tags: ['Stage Instances'],
+		body: z.object({
+			channel_id: z.string(),
+			topic: z.string().min(1).max(120),
+			privacy_level: z.number().int().nullable().optional(),
+			guild_scheduled_event_id: z.string().nullable().optional(),
+			send_start_notification: z.boolean().nullable().optional()
+		}).passthrough(),
+		response: {
+			200: z.object({
+				id: z.string(),
+				guild_id: z.string(),
+				channel_id: z.string(),
+				topic: z.string(),
+				privacy_level: z.number().int(),
+				discoverable_disabled: z.boolean(),
+				guild_scheduled_event_id: z.string().nullable()
+			}).passthrough()
+		}
+	},
+	async (request: RoboRequest) => {
 	// Extract session from Authorization header
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
@@ -160,4 +185,4 @@ export async function POST(request: RoboRequest) {
 		status: 200,
 		headers: { 'Content-Type': 'application/json' }
 	})
-}
+})

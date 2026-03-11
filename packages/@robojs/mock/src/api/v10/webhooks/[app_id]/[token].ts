@@ -1,4 +1,6 @@
+import { define } from '@robojs/server'
 import type { RoboRequest } from '@robojs/server'
+import { z } from 'zod'
 import { sessionManager } from '../../../../core/manager.js'
 import { getStageBridge } from '../../../../core/stage-bridge.js'
 import { mockMessageToAPIMessage, mockWebhookToAPIWebhook } from '../../../../discord/payloads.js'
@@ -66,7 +68,40 @@ function isInteractionWebhookToken(appId: string, token: string): boolean {
 	return true
 }
 
-export async function GET(request: RoboRequest) {
+const WebhookResponseSchema = z.object({
+	id: z.string(),
+	type: z.number().int(),
+	name: z.string(),
+	avatar: z.string().nullable(),
+	channel_id: z.string().nullable(),
+	application_id: z.string().nullable(),
+	guild_id: z.string().nullable().optional(),
+	token: z.string().optional(),
+	url: z.string().optional(),
+	source_guild: z.object({}).passthrough().optional(),
+	source_channel: z.object({}).passthrough().optional()
+}).passthrough()
+
+const MessageResponseSchema = z.object({
+	id: z.string(),
+	channel_id: z.string(),
+	content: z.string(),
+	author: z.object({}).passthrough()
+}).passthrough()
+
+export const GET = define(
+	{
+		summary: 'Get webhook by token',
+		tags: ['Webhooks'],
+		params: z.object({
+			app_id: z.string().describe('Webhook ID'),
+			token: z.string().describe('Webhook token')
+		}),
+		response: {
+			200: WebhookResponseSchema
+		}
+	},
+	async (request: RoboRequest) => {
 	const resolved = resolveRegularWebhook(request)
 	if (!resolved) {
 		const { app_id: appId, token } = request.params as { app_id: string; token: string }
@@ -89,9 +124,25 @@ export async function GET(request: RoboRequest) {
 		status: 200,
 		headers: { 'Content-Type': 'application/json' }
 	})
-}
+})
 
-export async function PATCH(request: RoboRequest) {
+export const PATCH = define(
+	{
+		summary: 'Update webhook by token',
+		tags: ['Webhooks'],
+		params: z.object({
+			app_id: z.string().describe('Webhook ID'),
+			token: z.string().describe('Webhook token')
+		}),
+		body: z.object({
+			name: z.string().min(1).max(80).optional(),
+			avatar: z.string().nullable().optional()
+		}).passthrough(),
+		response: {
+			200: WebhookResponseSchema
+		}
+	},
+	async (request: RoboRequest) => {
 	const resolved = resolveRegularWebhook(request)
 	if (!resolved) {
 		const { app_id: appId, token } = request.params as { app_id: string; token: string }
@@ -187,9 +238,21 @@ export async function PATCH(request: RoboRequest) {
 		status: 200,
 		headers: { 'Content-Type': 'application/json' }
 	})
-}
+})
 
-export async function DELETE(request: RoboRequest) {
+export const DELETE = define(
+	{
+		summary: 'Delete webhook by token',
+		tags: ['Webhooks'],
+		params: z.object({
+			app_id: z.string().describe('Webhook ID'),
+			token: z.string().describe('Webhook token')
+		}),
+		response: {
+			204: z.undefined()
+		}
+	},
+	async (request: RoboRequest) => {
 	const resolved = resolveRegularWebhook(request)
 	if (!resolved) {
 		const { app_id: appId, token } = request.params as { app_id: string; token: string }
@@ -231,9 +294,42 @@ export async function DELETE(request: RoboRequest) {
 	}
 
 	return new Response(null, { status: 204 })
-}
+})
 
-export async function POST(request: RoboRequest) {
+export const POST = define(
+	{
+		summary: 'Execute webhook',
+		tags: ['Webhooks'],
+		params: z.object({
+			app_id: z.string().describe('Webhook ID'),
+			token: z.string().describe('Webhook token')
+		}),
+		query: z.object({
+			wait: z.boolean().optional(),
+			thread_id: z.string().optional(),
+			with_components: z.boolean().optional()
+		}),
+		body: z.object({
+			content: z.string().optional(),
+			username: z.string().optional(),
+			avatar_url: z.string().optional(),
+			tts: z.boolean().optional(),
+			embeds: z.array(z.object({}).passthrough()).optional(),
+			components: z.array(z.object({}).passthrough()).optional(),
+			flags: z.number().int().optional(),
+			attachments: z.array(z.object({}).passthrough()).optional(),
+			poll: z.object({}).passthrough().optional(),
+			allowed_mentions: z.object({}).passthrough().optional(),
+			sticker_ids: z.array(z.string()).optional(),
+			thread_name: z.string().optional(),
+			applied_tags: z.array(z.string()).optional()
+		}).passthrough(),
+		response: {
+			200: MessageResponseSchema,
+			204: z.undefined()
+		}
+	},
+	async (request: RoboRequest) => {
 	// Extract id and token from URL params
 	const { app_id: webhookOrAppId, token } = request.params as { app_id: string; token: string }
 
@@ -252,7 +348,7 @@ export async function POST(request: RoboRequest) {
 
 	// Not a regular webhook - try interaction webhook
 	return handleInteractionWebhook(request, webhookOrAppId, token)
-}
+})
 
 /**
  * Execute a webhook - send a message
@@ -835,21 +931,6 @@ async function handleInteractionWebhook(request: RoboRequest, appId: string, tok
 		status: 200,
 		headers: { 'Content-Type': 'application/json' }
 	})
-}
-
-export default async function webhookWithTokenHandler(request: RoboRequest): Promise<unknown> {
-	switch (request.method) {
-		case 'GET':
-			return GET(request)
-		case 'PATCH':
-			return PATCH(request)
-		case 'DELETE':
-			return DELETE(request)
-		case 'POST':
-			return POST(request)
-		default:
-			return new Response(null, { status: 405 })
-	}
 }
 
 /**

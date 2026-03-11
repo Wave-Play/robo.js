@@ -1,4 +1,5 @@
-import type { RoboRequest } from '@robojs/server'
+import { define } from '@robojs/server'
+import { z } from 'zod'
 import { sessionManager } from '../../../../core/manager.js'
 import { parseMockToken } from '../../../../utils/id.js'
 import { getGatewayServer } from '../../../../core/gateway.js'
@@ -9,78 +10,98 @@ import { mockChannelToAPIChannel } from '../../../../discord/payloads.js'
  *
  * @see https://discord.com/developers/docs/resources/channel#modify-channel-voice-status
  */
-export async function PUT(request: RoboRequest) {
-	// 1. Parse Authorization header → get session
-	const authHeader = request.headers.get('Authorization') || ''
-	const sessionId = parseMockToken(authHeader)
 
-	if (!sessionId) {
-		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
-			status: 401,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
+const VoiceStatusParams = z.object({
+	id: z.string().describe('Channel ID (Snowflake)')
+})
 
-	const session = sessionManager.get(sessionId)
-	if (!session) {
-		return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
-			status: 401,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
+const VoiceStatusBodySchema = z.object({
+	status: z.string().optional().nullable().describe('Voice channel status text (up to 500 characters)')
+}).passthrough()
 
-	// 2. Extract channel ID from params
-	const { id: channelId } = request.params as { id: string }
-
-	// 3. Validate channel exists and is a voice channel
-	const channel = session.state.getChannel(channelId)
-	if (!channel) {
-		return new Response(JSON.stringify({ message: 'Unknown Channel', code: 10003 }), {
-			status: 404,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// Voice channels are type 2
-	if (channel.type !== 2) {
-		return new Response(JSON.stringify({ message: 'Channel is not a voice channel', code: 50035 }), {
-			status: 400,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// 4. Parse request body
-	let body: { status?: string }
-
-	try {
-		body = await request.json()
-	} catch {
-		return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
-			status: 400,
-			headers: { 'Content-Type': 'application/json' }
-		})
-	}
-
-	// 5. Update channel status
-	channel.status = body.status ?? null
-
-	// Record action
-	session.recordAction(
-		'voice_channel_status_updated',
-		{
-			channel_id: channelId,
-			status: channel.status
-		},
-		{
-			endpoint: `PUT /channels/${channelId}/voice-status`,
-			method: 'PUT'
+export const PUT = define(
+	{
+		summary: 'Set voice channel status',
+		tags: ['Channels'],
+		params: VoiceStatusParams,
+		body: VoiceStatusBodySchema,
+		response: {
+			204: z.undefined()
 		}
-	)
+	},
+	async (request) => {
+		// 1. Parse Authorization header → get session
+		const authHeader = request.headers.get('Authorization') || ''
+		const sessionId = parseMockToken(authHeader)
 
-	// 6. Dispatch CHANNEL_UPDATE event
-	const apiChannel = mockChannelToAPIChannel(channel)
-	getGatewayServer().dispatchToSession(session.id, 'CHANNEL_UPDATE', apiChannel, channel.guildId)
+		if (!sessionId) {
+			return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
+				status: 401,
+				headers: { 'Content-Type': 'application/json' }
+			})
+		}
 
-	// 7. Return 204 No Content
-	return new Response(null, { status: 204 })
-}
+		const session = sessionManager.get(sessionId)
+		if (!session) {
+			return new Response(JSON.stringify({ message: 'Unauthorized', code: 0 }), {
+				status: 401,
+				headers: { 'Content-Type': 'application/json' }
+			})
+		}
+
+		// 2. Extract channel ID from params
+		const { id: channelId } = request.params
+
+		// 3. Validate channel exists and is a voice channel
+		const channel = session.state.getChannel(channelId)
+		if (!channel) {
+			return new Response(JSON.stringify({ message: 'Unknown Channel', code: 10003 }), {
+				status: 404,
+				headers: { 'Content-Type': 'application/json' }
+			})
+		}
+
+		// Voice channels are type 2
+		if (channel.type !== 2) {
+			return new Response(JSON.stringify({ message: 'Channel is not a voice channel', code: 50035 }), {
+				status: 400,
+				headers: { 'Content-Type': 'application/json' }
+			})
+		}
+
+		// 4. Parse request body
+		let body: { status?: string }
+
+		try {
+			body = await request.json()
+		} catch {
+			return new Response(JSON.stringify({ message: 'Invalid request body', code: 50035 }), {
+				status: 400,
+				headers: { 'Content-Type': 'application/json' }
+			})
+		}
+
+		// 5. Update channel status
+		channel.status = body.status ?? null
+
+		// Record action
+		session.recordAction(
+			'voice_channel_status_updated',
+			{
+				channel_id: channelId,
+				status: channel.status
+			},
+			{
+				endpoint: `PUT /channels/${channelId}/voice-status`,
+				method: 'PUT'
+			}
+		)
+
+		// 6. Dispatch CHANNEL_UPDATE event
+		const apiChannel = mockChannelToAPIChannel(channel)
+		getGatewayServer().dispatchToSession(session.id, 'CHANNEL_UPDATE', apiChannel, channel.guildId)
+
+		// 7. Return 204 No Content
+		return new Response(null, { status: 204 })
+	}
+)

@@ -1,4 +1,6 @@
+import { define } from '@robojs/server'
 import type { RoboRequest } from '@robojs/server'
+import { z } from 'zod'
 import { sessionManager } from '../../../core/manager.js'
 import { getGatewayServer } from '../../../core/gateway.js'
 import { parseMockToken } from '../../../utils/id.js'
@@ -71,7 +73,28 @@ function resolveStageInstance(request: RoboRequest) {
 	return { session, channelId, stageInstance }
 }
 
-export async function GET(request: RoboRequest) {
+const StageInstanceResponseSchema = z.object({
+	id: z.string(),
+	guild_id: z.string(),
+	channel_id: z.string(),
+	topic: z.string(),
+	privacy_level: z.number().int(),
+	discoverable_disabled: z.boolean(),
+	guild_scheduled_event_id: z.string().nullable()
+}).passthrough()
+
+export const GET = define(
+	{
+		summary: 'Get stage instance',
+		tags: ['Stage Instances'],
+		params: z.object({
+			channelId: z.string().describe('Channel ID')
+		}),
+		response: {
+			200: StageInstanceResponseSchema
+		}
+	},
+	async (request: RoboRequest) => {
 	const resolved = resolveStageInstance(request)
 	if (resolved instanceof Response) return resolved
 	const { stageInstance } = resolved
@@ -80,9 +103,24 @@ export async function GET(request: RoboRequest) {
 		status: 200,
 		headers: { 'Content-Type': 'application/json' }
 	})
-}
+})
 
-export async function PATCH(request: RoboRequest) {
+export const PATCH = define(
+	{
+		summary: 'Update stage instance',
+		tags: ['Stage Instances'],
+		params: z.object({
+			channelId: z.string().describe('Channel ID')
+		}),
+		body: z.object({
+			topic: z.string().min(1).max(120).optional(),
+			privacy_level: z.number().int().optional()
+		}).passthrough(),
+		response: {
+			200: StageInstanceResponseSchema
+		}
+	},
+	async (request: RoboRequest) => {
 	const resolved = resolveStageInstance(request)
 	if (resolved instanceof Response) return resolved
 	const { session, channelId } = resolved
@@ -140,9 +178,20 @@ export async function PATCH(request: RoboRequest) {
 		status: 200,
 		headers: { 'Content-Type': 'application/json' }
 	})
-}
+})
 
-export async function DELETE(request: RoboRequest) {
+export const DELETE = define(
+	{
+		summary: 'Delete stage instance',
+		tags: ['Stage Instances'],
+		params: z.object({
+			channelId: z.string().describe('Channel ID')
+		}),
+		response: {
+			204: z.undefined()
+		}
+	},
+	async (request: RoboRequest) => {
 	const resolved = resolveStageInstance(request)
 	if (resolved instanceof Response) return resolved
 	const { session, channelId } = resolved
@@ -168,4 +217,4 @@ export async function DELETE(request: RoboRequest) {
 	getGatewayServer().dispatchToSession(session.id, 'STAGE_INSTANCE_DELETE', apiPayload, deletedInstance.guildId)
 
 	return new Response(null, { status: 204 })
-}
+})

@@ -1,4 +1,6 @@
+import { define } from '@robojs/server'
 import type { RoboRequest } from '@robojs/server'
+import { z } from 'zod'
 import { sessionManager } from '../../../../core/manager.js'
 import { parseMockToken } from '../../../../utils/id.js'
 
@@ -16,7 +18,30 @@ import { parseMockToken } from '../../../../utils/id.js'
  *
  * @see https://discord.com/developers/docs/resources/user#get-current-user-guilds
  */
-export async function GET(request: RoboRequest) {
+export const GET = define(
+	{
+		summary: 'List current user guilds',
+		tags: ['Users'],
+		query: z.object({
+			before: z.string().optional(),
+			after: z.string().optional(),
+			limit: z.coerce.number().int().min(1).max(200).optional(),
+			with_counts: z.boolean().optional()
+		}),
+		response: {
+			200: z.array(z.object({
+				id: z.string(),
+				name: z.string(),
+				icon: z.string().nullable().optional(),
+				owner: z.boolean(),
+				permissions: z.string(),
+				features: z.array(z.string()),
+				approximate_member_count: z.number().int().optional(),
+				approximate_presence_count: z.number().int().optional()
+			}).passthrough()).nullable()
+		}
+	},
+	async (request: RoboRequest) => {
 	// Get token from Authorization header
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
@@ -92,4 +117,4 @@ export async function GET(request: RoboRequest) {
 
 		return result
 	})
-}
+})

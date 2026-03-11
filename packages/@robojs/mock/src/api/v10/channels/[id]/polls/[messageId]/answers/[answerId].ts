@@ -1,4 +1,6 @@
+import { define } from '@robojs/server'
 import type { RoboRequest } from '@robojs/server'
+import { z } from 'zod'
 import { sessionManager } from '../../../../../../../core/manager.js'
 import { parseMockToken } from '../../../../../../../utils/id.js'
 import { mockUserToAPIUser } from '../../../../../../../discord/payloads.js'
@@ -9,7 +11,48 @@ import { mockUserToAPIUser } from '../../../../../../../discord/payloads.js'
  * Get users who voted for a specific poll answer
  * Returns: { users: APIUser[] }
  */
-export async function GET(request: RoboRequest) {
+export const GET = define(
+	{
+		summary: 'Get answer voters',
+		description: 'Get a list of users that voted for the specified answer in a poll',
+		tags: ['Polls'],
+		params: z.object({
+			id: z.string().describe('The channel ID (Snowflake)'),
+			messageId: z.string().describe('The message ID (Snowflake)'),
+			answerId: z.string().describe('The answer ID (integer)')
+		}),
+		query: z.object({
+			after: z.string().optional().describe('Get users after this user ID (Snowflake)'),
+			limit: z.string().optional().describe('Max number of users to return (1-100)')
+		}),
+		response: {
+			200: z
+				.object({
+					users: z.array(
+						z
+							.object({
+								id: z.string(),
+								username: z.string(),
+								avatar: z.string().nullable(),
+								discriminator: z.string(),
+								public_flags: z.number().int(),
+								flags: z.number().int(),
+								global_name: z.string().nullable(),
+								primary_guild: z.object({}).passthrough().nullable(),
+								bot: z.boolean().optional(),
+								system: z.boolean().optional(),
+								banner: z.string().nullable().optional(),
+								accent_color: z.number().int().nullable().optional(),
+								avatar_decoration_data: z.object({}).passthrough().nullable().optional(),
+								collectibles: z.object({}).passthrough().nullable().optional()
+							})
+							.passthrough()
+					)
+				})
+				.passthrough()
+		}
+	},
+	async (request) => {
 	// 1. Parse Authorization header → get session
 	const authHeader = request.headers.get('Authorization') || ''
 	const sessionId = parseMockToken(authHeader)
@@ -130,4 +173,4 @@ export async function GET(request: RoboRequest) {
 		status: 200,
 		headers: { 'Content-Type': 'application/json' }
 	})
-}
+})

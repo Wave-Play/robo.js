@@ -1,4 +1,6 @@
+import { define } from '@robojs/server'
 import type { RoboRequest } from '@robojs/server'
+import { z } from 'zod'
 import { sessionManager } from '../../../../../../core/manager.js'
 import { mockMessageToAPIMessage } from '../../../../../../discord/payloads.js'
 import { getGatewayServer } from '../../../../../../core/gateway.js'
@@ -184,7 +186,53 @@ function resolveInteractionWebhookMessage(request: RoboRequest): {
 	return { session, interaction, message, webhookOrAppId, token, messageId, actualMessageId, isOriginal }
 }
 
-export async function GET(request: RoboRequest) {
+const MessageResponseSchema = z.object({
+	id: z.string(),
+	type: z.number(),
+	content: z.string(),
+	channel_id: z.string(),
+	author: z.object({
+		id: z.string(),
+		username: z.string(),
+		avatar: z.string().nullable(),
+		discriminator: z.string(),
+		public_flags: z.number(),
+		flags: z.number(),
+		global_name: z.string().nullable(),
+		primary_guild: z.unknown().nullable()
+	}).passthrough(),
+	attachments: z.array(z.object({}).passthrough()),
+	embeds: z.array(z.object({}).passthrough()),
+	mentions: z.array(z.object({}).passthrough()),
+	mention_roles: z.array(z.string()),
+	pinned: z.boolean(),
+	mention_everyone: z.boolean(),
+	tts: z.boolean(),
+	timestamp: z.string(),
+	edited_timestamp: z.string().nullable(),
+	flags: z.number(),
+	components: z.array(z.object({}).passthrough())
+}).passthrough()
+
+const WebhookMessageParamsSchema = z.object({
+	app_id: z.string().describe('Webhook ID or application ID'),
+	token: z.string().describe('Webhook token or interaction token'),
+	messageId: z.string().describe('Message ID or @original for the initial interaction response')
+})
+
+export const GET = define(
+	{
+		summary: 'Get webhook message',
+		tags: ['Webhooks'],
+		params: WebhookMessageParamsSchema,
+		query: z.object({
+			thread_id: z.string().optional().describe('ID of the thread the message is in')
+		}),
+		response: {
+			200: MessageResponseSchema
+		}
+	},
+	async (request: RoboRequest) => {
 	// Extract params from URL (decode messageId since @ may be URL-encoded as %40)
 	const { app_id: webhookOrAppId, token, messageId: rawMessageId } = request.params as { app_id: string; token: string; messageId: string }
 	const messageId = decodeURIComponent(rawMessageId)
@@ -201,9 +249,31 @@ export async function GET(request: RoboRequest) {
 	const resolved = resolveInteractionWebhookMessage(request)
 	if (resolved instanceof Response) return resolved
 	return handleGet(resolved.session, resolved.message)
-}
+})
 
-export async function PATCH(request: RoboRequest) {
+export const PATCH = define(
+	{
+		summary: 'Edit webhook message',
+		tags: ['Webhooks'],
+		params: WebhookMessageParamsSchema,
+		query: z.object({
+			thread_id: z.string().optional().describe('ID of the thread the message is in'),
+			with_components: z.boolean().optional().describe('Whether to include components in the response')
+		}),
+		body: z.object({
+			content: z.string().nullable().optional().describe('Message content (up to 2000 characters)'),
+			embeds: z.array(z.object({}).passthrough()).nullable().optional().describe('Array of embed objects (up to 10)'),
+			components: z.array(z.object({}).passthrough()).nullable().optional().describe('Array of message component objects'),
+			flags: z.number().int().nullable().optional().describe('Message flags combined as a bitfield'),
+			attachments: z.array(z.object({}).passthrough()).nullable().optional().describe('Array of attachment objects with IDs to keep and new file metadata'),
+			allowed_mentions: z.object({}).passthrough().nullable().optional().describe('Allowed mentions object'),
+			poll: z.object({}).passthrough().nullable().optional().describe('Poll object')
+		}).passthrough(),
+		response: {
+			200: MessageResponseSchema
+		}
+	},
+	async (request: RoboRequest) => {
 	// Extract params from URL (decode messageId since @ may be URL-encoded as %40)
 	const { app_id: webhookOrAppId, token, messageId: rawMessageId } = request.params as { app_id: string; token: string; messageId: string }
 	const messageId = decodeURIComponent(rawMessageId)
@@ -220,9 +290,21 @@ export async function PATCH(request: RoboRequest) {
 	const resolved = resolveInteractionWebhookMessage(request)
 	if (resolved instanceof Response) return resolved
 	return handleInteractionPatch(request, resolved.session, resolved.interaction, resolved.message, webhookOrAppId, token, resolved.actualMessageId, resolved.isOriginal)
-}
+})
 
-export async function DELETE(request: RoboRequest) {
+export const DELETE = define(
+	{
+		summary: 'Delete webhook message',
+		tags: ['Webhooks'],
+		params: WebhookMessageParamsSchema,
+		query: z.object({
+			thread_id: z.string().optional().describe('ID of the thread the message is in')
+		}),
+		response: {
+			204: z.undefined()
+		}
+	},
+	async (request: RoboRequest) => {
 	// Extract params from URL (decode messageId since @ may be URL-encoded as %40)
 	const { app_id: webhookOrAppId, token, messageId: rawMessageId } = request.params as { app_id: string; token: string; messageId: string }
 	const messageId = decodeURIComponent(rawMessageId)
@@ -239,7 +321,7 @@ export async function DELETE(request: RoboRequest) {
 	const resolved = resolveInteractionWebhookMessage(request)
 	if (resolved instanceof Response) return resolved
 	return handleInteractionDelete(resolved.session, resolved.interaction, resolved.message, webhookOrAppId, token, resolved.actualMessageId, resolved.isOriginal)
-}
+})
 
 /**
  * Resolve regular webhook message context.
@@ -511,19 +593,6 @@ function handleWebhookMessageDelete(
 	getGatewayServer().dispatchToSession(session.id, 'MESSAGE_DELETE', dispatchData, channel?.guildId)
 
 	return new Response(null, { status: 204 })
-}
-
-export default async function webhookMessagesHandler(request: RoboRequest): Promise<unknown> {
-	switch (request.method) {
-		case 'GET':
-			return GET(request)
-		case 'PATCH':
-			return PATCH(request)
-		case 'DELETE':
-			return DELETE(request)
-		default:
-			return new Response(null, { status: 405 })
-	}
 }
 
 function handleGet(session: Session, message: MockMessage): Response {
