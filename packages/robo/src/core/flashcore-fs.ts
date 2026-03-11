@@ -1,11 +1,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { pipeline } from 'node:stream/promises'
-import zlib from 'node:zlib'
 import { createReadStream, createWriteStream } from 'node:fs'
 import { logger } from './logger.js'
-import { hasProperties } from '../cli/utils/utils.js'
-import { createHash } from 'node:crypto'
 import type { FlashcoreAdapter } from '../types/index.js'
 
 interface FlashcoreFileAdapterOptions {
@@ -31,12 +27,12 @@ export class FlashcoreFileAdapter<K = string, V = unknown> implements FlashcoreA
 
 	public async delete(key: K): Promise<boolean> {
 		try {
-			const fileName = path.join(this.dataDir, _getSafeKey(key))
+			const fileName = path.join(this.dataDir, await _getSafeKey(key))
 			await fs.unlink(fileName)
 			return true
 		} catch (e) {
 			// Warn about failures except ENOENT because that just means the key doesn't exist (normal)
-			if (hasProperties<{ code: unknown }>(e, ['code']) && e.code !== 'ENOENT') {
+			if (e && typeof e === 'object' && 'code' in e && (e as { code: unknown }).code !== 'ENOENT') {
 				logger.warn(`Failed to delete key "${key}" from Flashcore file adapter.`, e)
 			}
 
@@ -46,7 +42,9 @@ export class FlashcoreFileAdapter<K = string, V = unknown> implements FlashcoreA
 
 	public async get(key: K): Promise<V | undefined> {
 		try {
-			const fileName = path.join(this.dataDir, _getSafeKey(key))
+			const zlib = await import('node:zlib')
+			const { pipeline } = await import('node:stream/promises')
+			const fileName = path.join(this.dataDir, await _getSafeKey(key))
 			const gunzip = zlib.createGunzip()
 			await pipeline(createReadStream(fileName), gunzip)
 			const decompressed = gunzip.read()
@@ -70,7 +68,9 @@ export class FlashcoreFileAdapter<K = string, V = unknown> implements FlashcoreA
 
 	public async set(key: K, value: V): Promise<boolean> {
 		try {
-			const fileName = path.join(this.dataDir, _getSafeKey(key))
+			const zlib = await import('node:zlib')
+			const { pipeline } = await import('node:stream/promises')
+			const fileName = path.join(this.dataDir, await _getSafeKey(key))
 			const gzip = zlib.createGzip()
 			gzip.write(JSON.stringify(value))
 			gzip.end()
@@ -82,6 +82,7 @@ export class FlashcoreFileAdapter<K = string, V = unknown> implements FlashcoreA
 	}
 }
 
-function _getSafeKey<K>(key: K): string {
+async function _getSafeKey<K>(key: K): Promise<string> {
+	const { createHash } = await import('node:crypto')
 	return createHash('sha256').update(key.toString()).digest('hex')
 }

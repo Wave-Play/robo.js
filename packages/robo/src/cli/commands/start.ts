@@ -126,6 +126,8 @@ async function startAction(context: CliContext) {
 	startPhase('Robo Start')
 	const { Robo } = await import('../../core/robo.js')
 	await Robo.start({
+		config,
+		envReady: true,
 		logLevel: options['log-level']
 	})
 	endPhase('Robo Start')

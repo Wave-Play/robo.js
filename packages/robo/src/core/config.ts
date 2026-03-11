@@ -1,6 +1,5 @@
 import { Config } from '../types/index.js'
 import { Mode } from './mode.js'
-import { Compiler } from '../cli/utils/compiler.js'
 import { Globals } from './globals.js'
 import { logger } from './logger.js'
 import { existsSync } from 'node:fs'
@@ -293,6 +292,7 @@ async function buildTypescriptConfig(configPath: string, force: boolean): Promis
 		return compiledPath
 	}
 
+	const { Compiler } = await import('../cli/utils/compiler.js')
 	const compilerOptions = dependencyGraph.compilerOptions
 	const compileStart = Date.now()
 
@@ -355,7 +355,8 @@ async function resolveConfigDependencies(configPath: string): Promise<{
 	compilerOptions: CompilerOptions | null
 	files: Set<string>
 }> {
-	const { isTypeScript } = Compiler.isTypescriptProject()
+	const { isTypescriptProject } = await import('../cli/compiler/typescript.js')
+	const { isTypeScript } = isTypescriptProject()
 	const projectRoot = process.cwd()
 	const dependencies = new Set<string>()
 

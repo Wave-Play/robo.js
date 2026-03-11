@@ -13,7 +13,8 @@ import { Mode } from './mode.js'
 import { loadState } from './state.js'
 import { portal, populatePortal } from './portal.js'
 import { isMainThread } from 'node:worker_threads'
-import type { PluginData } from '../types/index.js'
+import { Globals } from './globals.js'
+import type { Config, PluginData } from '../types/index.js'
 import type { BuildCommandOptions } from '../cli/commands/build/index.js'
 import type { CliContext } from '../types/cli.js'
 
@@ -47,6 +48,8 @@ export function getPlugins(): Map<string, PluginData> {
 }
 
 interface StartOptions {
+	config?: Config
+	envReady?: boolean
 	logLevel?: LogLevel
 	stateLoad?: Promise<void>
 }
@@ -91,14 +94,20 @@ async function start(options?: StartOptions) {
 	}
 
 	try {
-		const { logLevel, stateLoad } = options ?? {}
+		const { config: preloadedConfig, envReady, logLevel, stateLoad } = options ?? {}
 
 		// Important! Register process events before doing anything else
 		// This ensures the "ready" signal is sent to the parent process
 		registerProcessEvents()
 
 		// 1. Load config first (needed for plugin list and logger config)
-		const config = await loadConfig()
+		let config: Config
+		if (preloadedConfig) {
+			config = preloadedConfig
+			Globals.registerConfig(config)
+		} else {
+			config = await loadConfig()
+		}
 
 		// 2. Get mode early (needed for logger setup and init hooks)
 		const mode = Mode.get()
@@ -154,7 +163,9 @@ async function start(options?: StartOptions) {
 		}).debug('Starting Robo...')
 
 		// Load environment (needed for init hooks)
-		await Env.load({ mode })
+		if (!envReady) {
+			await Env.load({ mode })
+		}
 
 		// 3. Load plugin data early (needed for init hooks)
 		// Assign to module-level variable for stop/restart lifecycle events
