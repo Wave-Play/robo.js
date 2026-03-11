@@ -6,47 +6,38 @@ import type { HTMLAttributes } from "react"
 import { forwardRef, useCallback, useImperativeHandle, useRef } from "react"
 import { cn } from "@/lib/utils"
 
-export interface ConnectIconHandle {
+export interface BrainIconHandle {
   startAnimation: () => void
   stopAnimation: () => void
 }
 
-interface ConnectIconProps extends HTMLAttributes<HTMLDivElement> {
+interface BrainIconProps extends HTMLAttributes<HTMLDivElement> {
   size?: number
 }
 
-const plugVariants: Variants = {
+const variants: Variants = {
   normal: {
-    x: 0,
-    y: 0,
+    opacity: 1,
+    pathLength: 1,
+    pathOffset: 0,
+    transition: {
+      duration: 0.4,
+      opacity: { duration: 0.1 },
+    },
   },
   animate: {
-    x: -3,
-    y: 3,
+    opacity: [0, 1],
+    pathLength: [0, 1],
+    pathOffset: [1, 0],
+    transition: {
+      duration: 0.6,
+      ease: "linear",
+      opacity: { duration: 0.1 },
+    },
   },
 }
 
-const socketVariants: Variants = {
-  normal: {
-    x: 0,
-    y: 0,
-  },
-  animate: {
-    x: 3,
-    y: -3,
-  },
-}
-
-const pathVariants = {
-  normal: (custom: { x: number; y: number }) => ({
-    d: `M${custom.x} ${custom.y} l2.5 -2.5`,
-  }),
-  animate: (custom: { x: number; y: number }) => ({
-    d: `M${custom.x + 2.93} ${custom.y - 2.93} l0.10 -0.10`,
-  }),
-}
-
-const ConnectIcon = forwardRef<ConnectIconHandle, ConnectIconProps>(
+const BrainIcon = forwardRef<BrainIconHandle, BrainIconProps>(
   ({ onMouseEnter, onMouseLeave, className, size = 28, ...props }, ref) => {
     const controls = useAnimation()
     const isControlledRef = useRef(false)
@@ -104,56 +95,58 @@ const ConnectIcon = forwardRef<ConnectIconHandle, ConnectIconProps>(
           strokeLinejoin="miter"
         >
           <motion.path
-            d="M19 5l3 -3"
-            variants={{
-              normal: {
-                d: "M19 5l3 -3",
-              },
-              animate: {
-                d: "M17 7l5 -5",
-              },
-            }}
+            d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"
+            variants={variants}
             animate={controls}
-            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-          />
-          <motion.path
-            d="m2 22 3-3"
-            variants={{
-              normal: {
-                d: "m2 22 3-3",
-              },
-              animate: {
-                d: "m2 22 6-6",
-              },
-            }}
-            animate={controls}
-            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-          />
-          <motion.path
-            d="M6.3 20.3H9.7L12 18 6 12l-2.3 2.3V17.7Z"
-            variants={socketVariants}
-            animate={controls}
-            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-          />
-          <motion.path
-            variants={pathVariants}
-            custom={{ x: 7.5, y: 13.5 }}
             initial="normal"
-            animate={controls}
-            transition={{ type: "spring", stiffness: 500, damping: 30 }}
           />
           <motion.path
-            variants={pathVariants}
-            custom={{ x: 10.5, y: 16.5 }}
+            d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"
+            variants={variants}
+            animate={controls}
             initial="normal"
-            animate={controls}
-            transition={{ type: "spring", stiffness: 500, damping: 30 }}
           />
           <motion.path
-            d="m12 6 6 6 2.3-2.3V6.3l-2.6-2.6H14.3Z"
-            variants={plugVariants}
+            d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"
+            variants={variants}
             animate={controls}
-            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+            initial="normal"
+          />
+          <motion.path
+            d="M17.599 6.5a3 3 0 0 0 .399-1.375"
+            variants={variants}
+            animate={controls}
+            initial="normal"
+          />
+          <motion.path
+            d="M6.003 5.125A3 3 0 0 0 6.401 6.5"
+            variants={variants}
+            animate={controls}
+            initial="normal"
+          />
+          <motion.path
+            d="M3.477 10.896a4 4 0 0 1 .585-.396"
+            variants={variants}
+            animate={controls}
+            initial="normal"
+          />
+          <motion.path
+            d="M19.938 10.5a4 4 0 0 1 .585.396"
+            variants={variants}
+            animate={controls}
+            initial="normal"
+          />
+          <motion.path
+            d="M6 18a4 4 0 0 1-1.967-.516"
+            variants={variants}
+            animate={controls}
+            initial="normal"
+          />
+          <motion.path
+            d="M19.967 17.484A4 4 0 0 1 18 18"
+            variants={variants}
+            animate={controls}
+            initial="normal"
           />
         </svg>
       </div>
@@ -161,6 +154,6 @@ const ConnectIcon = forwardRef<ConnectIconHandle, ConnectIconProps>(
   },
 )
 
-ConnectIcon.displayName = "ConnectIcon"
+BrainIcon.displayName = "BrainIcon"
 
-export { ConnectIcon }
+export { BrainIcon }

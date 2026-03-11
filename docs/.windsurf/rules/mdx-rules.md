@@ -8,7 +8,7 @@ When editing MDX files in this project which uses fumadocs framework, take in mi
 1. When referencing through  markdown links, use relative paths from the current file and append `.mdx` at the end, like so:
 
 ```mdx
-[Create Robo](../framework/cli/create-robo.mdx) // it's allowed to go back as many levels
+[Create Robo](../cli/create-robo.mdx) // it's allowed to go back as many levels
 [Slash Command](./commands.mdx)
 [Context Commands](./context-menu.mdx)
 ```
@@ -18,9 +18,9 @@ When editing MDX files in this project which uses fumadocs framework, take in mi
 ```mdx
 <Cards>
 	<Card href="./framework/core" title="Core" description="Understand the fundamental features and architecture." />
-	<Card href="./framework/cli" title="CLI" description="Use the command-line interface to manage your projects." />
+	<Card href="./cli" title="CLI" description="Use the command-line interface to manage your projects." />
 	<Card href="./framework/plugins" title="Plugins" description="Extend Robo.js functionality with plugins." />
-	<Card href="./framework/hosting" title="Hosting" description="Learn how to deploy your Robo applications." />
+	<Card href="./hosting" title="Hosting" description="Learn how to deploy your Robo applications." />
 </Cards>
 ```
 

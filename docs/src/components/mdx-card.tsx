@@ -38,9 +38,9 @@ export function Card({ href, title, description, icon, className, ...props }: Ca
         <ExaShape
           highlight
           innerBorderWidth={2}
-          slope={16}
+          slope={24}
         >
-          <div className="flex flex-col gap-2 p-4">
+          <div className="flex flex-col gap-2 p-6">
             {icon && (
               <div className="not-prose mb-1 w-fit shadow-md border bg-muted p-1.5 text-muted-foreground [&_svg]:size-4">
                 {icon}

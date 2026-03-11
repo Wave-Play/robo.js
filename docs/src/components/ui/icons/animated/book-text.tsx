@@ -53,7 +53,7 @@ const BookTextIcon = forwardRef<BookTextIconHandle, BookTextIconProps>(
     return (
       <div
         className={cn(
-          `cursor-pointer select-none p-2  rounded-md transition-colors duration-200 flex items-center justify-center`,
+          `cursor-pointer select-none rounded-md transition-colors duration-200 flex items-center justify-center`,
           className,
         )}
         onMouseEnter={handleMouseEnter}
@@ -86,10 +86,10 @@ const BookTextIcon = forwardRef<BookTextIconHandle, BookTextIconProps>(
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+          strokeLinecap="square"
+          strokeLinejoin="miter"
         >
-          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20" />
+          <path d="M4 19.5V2H20v20H6.5V17H20" />
           <path d="M8 11h8" />
           <path d="M8 7h6" />
         </motion.svg>

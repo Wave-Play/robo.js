@@ -66,7 +66,7 @@ const TerminalIcon = forwardRef<TerminalIconHandle, TerminalIconProps>(
     return (
       <div
         className={cn(
-          `cursor-pointer select-none p-2  rounded-md transition-colors duration-200 flex items-center justify-center`,
+          `cursor-pointer select-none rounded-md transition-colors duration-200 flex items-center justify-center`,
           className,
         )}
         onMouseEnter={handleMouseEnter}
@@ -81,8 +81,8 @@ const TerminalIcon = forwardRef<TerminalIconHandle, TerminalIconProps>(
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+          strokeLinecap="square"
+          strokeLinejoin="miter"
         >
           <polyline points="4 17 10 11 4 5" />
           <motion.line x1="12" x2="20" y1="19" y2="19" variants={lineVariants} animate={controls} initial="normal" />

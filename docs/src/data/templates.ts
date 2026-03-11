@@ -408,8 +408,8 @@ export const typeLabels: Record<string, string> = {
 }
 
 export const typeColors: Record<string, string> = {
-	activity: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
-	bot: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+	activity: 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20',
+	bot: 'bg-[#5865F2]/10 text-[#5865F2] border-[#5865F2]/20',
 	web: 'bg-green-500/10 text-green-500 border-green-500/20',
 	plugin: 'bg-orange-500/10 text-orange-500 border-orange-500/20'
 }

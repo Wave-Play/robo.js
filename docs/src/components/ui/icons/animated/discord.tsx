@@ -73,7 +73,7 @@ const DiscordIcon = forwardRef<DiscordIconHandle, DiscordIconProps>(
     return (
       <div
         className={cn(
-          `cursor-pointer select-none p-2  rounded-md transition-colors duration-200 flex items-center justify-center`,
+          `cursor-pointer select-none rounded-md transition-colors duration-200 flex items-center justify-center`,
           className,
         )}
         onMouseEnter={handleMouseEnter}
@@ -88,8 +88,8 @@ const DiscordIcon = forwardRef<DiscordIconHandle, DiscordIconProps>(
           fill="none"
           stroke="currentColor"
           strokeWidth="3"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+          strokeLinecap="square"
+          strokeLinejoin="miter"
           style={{ overflow: "visible" }}
         >
           <motion.path

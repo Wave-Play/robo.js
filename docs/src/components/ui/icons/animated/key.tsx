@@ -6,31 +6,31 @@ import type { HTMLAttributes } from "react"
 import { forwardRef, useCallback, useImperativeHandle, useRef } from "react"
 import { cn } from "@/lib/utils"
 
-export interface WaypointsIconHandle {
+export interface KeyIconHandle {
   startAnimation: () => void
   stopAnimation: () => void
 }
 
-interface WaypointsIconProps extends HTMLAttributes<HTMLDivElement> {
+interface KeyIconProps extends HTMLAttributes<HTMLDivElement> {
   size?: number
 }
 
 const variants: Variants = {
   normal: {
-    pathLength: 1,
-    opacity: 1,
+    rotate: 0,
+    transition: { duration: 0.3 },
   },
-  animate: (custom: number) => ({
-    pathLength: [0, 1],
-    opacity: [0, 1],
+  animate: {
+    rotate: [0, -20, 10, 0],
     transition: {
-      delay: 0.15 * custom,
-      opacity: { delay: 0.1 * custom },
+      duration: 0.5,
+      ease: "easeInOut",
+      times: [0, 0.3, 0.7, 1],
     },
-  }),
+  },
 }
 
-const WaypointsIcon = forwardRef<WaypointsIconHandle, WaypointsIconProps>(
+const KeyIcon = forwardRef<KeyIconHandle, KeyIconProps>(
   ({ onMouseEnter, onMouseLeave, className, size = 28, ...props }, ref) => {
     const controls = useAnimation()
     const isControlledRef = useRef(false)
@@ -76,7 +76,7 @@ const WaypointsIcon = forwardRef<WaypointsIconHandle, WaypointsIconProps>(
         onMouseLeave={handleMouseLeave}
         {...props}
       >
-        <svg
+        <motion.svg
           xmlns="http://www.w3.org/2000/svg"
           width={size}
           height={size}
@@ -86,20 +86,23 @@ const WaypointsIcon = forwardRef<WaypointsIconHandle, WaypointsIconProps>(
           strokeWidth="2"
           strokeLinecap="square"
           strokeLinejoin="miter"
+          variants={variants}
+          animate={controls}
+          style={{ originX: "70%", originY: "30%" }}
         >
-          <motion.circle cx="12" cy="4.5" r="2.5" variants={variants} animate={controls} custom={0} />
-          <motion.path d="m10.2 6.3-3.9 3.9" variants={variants} animate={controls} custom={1} />
-          <motion.circle cx="4.5" cy="12" r="2.5" variants={variants} animate={controls} custom={0} />
-          <motion.path d="M7 12h10" variants={variants} animate={controls} custom={2} />
-          <motion.circle cx="19.5" cy="12" r="2.5" variants={variants} animate={controls} custom={0} />
-          <motion.path d="m13.8 17.7 3.9-3.9" variants={variants} animate={controls} custom={3} />
-          <motion.circle cx="12" cy="19.5" r="2.5" variants={variants} animate={controls} custom={0} />
-        </svg>
+          {/* Key head - circle */}
+          <circle cx="8" cy="8" r="5" />
+          {/* Key shaft */}
+          <path d="M11.5 11.5L22 22" />
+          {/* Key teeth */}
+          <path d="M16 16l2 2" />
+          <path d="M19 13l2 2" />
+        </motion.svg>
       </div>
     )
   },
 )
 
-WaypointsIcon.displayName = "WaypointsIcon"
+KeyIcon.displayName = "KeyIcon"
 
-export { WaypointsIcon }
+export { KeyIcon }

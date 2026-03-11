@@ -53,7 +53,7 @@ const FileStackIcon = forwardRef<FileStackIconHandle, FileStackIconProps>(
     return (
       <div
         className={cn(
-          `cursor-pointer select-none p-2  rounded-md transition-colors duration-200 flex items-center justify-center`,
+          `cursor-pointer select-none rounded-md transition-colors duration-200 flex items-center justify-center`,
           className,
         )}
         onMouseEnter={handleMouseEnter}
@@ -68,11 +68,11 @@ const FileStackIcon = forwardRef<FileStackIconHandle, FileStackIconProps>(
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+          strokeLinecap="square"
+          strokeLinejoin="miter"
         >
           <motion.path
-            d="M21 7h-3a2 2 0 0 1-2-2V2"
+            d="M21 7h-5V2"
             variants={{
               normal: { translateX: 0, translateY: 0 },
               animate: { translateX: -4, translateY: 4 },
@@ -80,16 +80,16 @@ const FileStackIcon = forwardRef<FileStackIconHandle, FileStackIconProps>(
             animate={controls}
           />
           <motion.path
-            d="M21 6v6.5c0 .8-.7 1.5-1.5 1.5h-7c-.8 0-1.5-.7-1.5-1.5v-9c0-.8.7-1.5 1.5-1.5H17Z"
+            d="M21 6v8h-10V2H17Z"
             variants={{
               normal: { translateX: 0, translateY: 0 },
               animate: { translateX: -4, translateY: 4 },
             }}
             animate={controls}
           />
-          <path d="M7 8v8.8c0 .3.2.6.4.8.2.2.5.4.8.4H15" />
+          <path d="M7 8v10h8" />
           <motion.path
-            d="M3 12v8.8c0 .3.2.6.4.8.2.2.5.4.8.4H11"
+            d="M3 12v10h8"
             variants={{
               normal: { translateX: 0, translateY: 0 },
               animate: { translateX: 4, translateY: -4 },

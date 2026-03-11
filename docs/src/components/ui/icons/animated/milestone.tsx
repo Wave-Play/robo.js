@@ -1,36 +1,20 @@
 "use client"
 
-import type { Variants } from "motion/react"
 import { motion, useAnimation } from "motion/react"
 import type { HTMLAttributes } from "react"
 import { forwardRef, useCallback, useImperativeHandle, useRef } from "react"
 import { cn } from "@/lib/utils"
 
-export interface WaypointsIconHandle {
+export interface MilestoneIconHandle {
   startAnimation: () => void
   stopAnimation: () => void
 }
 
-interface WaypointsIconProps extends HTMLAttributes<HTMLDivElement> {
+interface MilestoneIconProps extends HTMLAttributes<HTMLDivElement> {
   size?: number
 }
 
-const variants: Variants = {
-  normal: {
-    pathLength: 1,
-    opacity: 1,
-  },
-  animate: (custom: number) => ({
-    pathLength: [0, 1],
-    opacity: [0, 1],
-    transition: {
-      delay: 0.15 * custom,
-      opacity: { delay: 0.1 * custom },
-    },
-  }),
-}
-
-const WaypointsIcon = forwardRef<WaypointsIconHandle, WaypointsIconProps>(
+const MilestoneIcon = forwardRef<MilestoneIconHandle, MilestoneIconProps>(
   ({ onMouseEnter, onMouseLeave, className, size = 28, ...props }, ref) => {
     const controls = useAnimation()
     const isControlledRef = useRef(false)
@@ -87,19 +71,53 @@ const WaypointsIcon = forwardRef<WaypointsIconHandle, WaypointsIconProps>(
           strokeLinecap="square"
           strokeLinejoin="miter"
         >
-          <motion.circle cx="12" cy="4.5" r="2.5" variants={variants} animate={controls} custom={0} />
-          <motion.path d="m10.2 6.3-3.9 3.9" variants={variants} animate={controls} custom={1} />
-          <motion.circle cx="4.5" cy="12" r="2.5" variants={variants} animate={controls} custom={0} />
-          <motion.path d="M7 12h10" variants={variants} animate={controls} custom={2} />
-          <motion.circle cx="19.5" cy="12" r="2.5" variants={variants} animate={controls} custom={0} />
-          <motion.path d="m13.8 17.7 3.9-3.9" variants={variants} animate={controls} custom={3} />
-          <motion.circle cx="12" cy="19.5" r="2.5" variants={variants} animate={controls} custom={0} />
+          {/* Vertical timeline */}
+          <path d="M6 2v20" />
+          {/* Flag 1 — top milestone */}
+          <motion.path
+            d="M6 5h8l-2 2.5L14 10H6"
+            variants={{
+              normal: { pathLength: 1, opacity: 1 },
+              animate: {
+                pathLength: [0, 1],
+                opacity: [0, 1],
+                transition: { duration: 0.4, delay: 0.1 },
+              },
+            }}
+            animate={controls}
+          />
+          {/* Marker 2 — middle milestone */}
+          <motion.path
+            d="M6 15h4"
+            variants={{
+              normal: { pathLength: 1, opacity: 1 },
+              animate: {
+                pathLength: [0, 1],
+                opacity: [0, 1],
+                transition: { duration: 0.3, delay: 0.4 },
+              },
+            }}
+            animate={controls}
+          />
+          {/* Marker 3 — bottom milestone */}
+          <motion.path
+            d="M6 19h2"
+            variants={{
+              normal: { pathLength: 1, opacity: 1 },
+              animate: {
+                pathLength: [0, 1],
+                opacity: [0, 1],
+                transition: { duration: 0.3, delay: 0.6 },
+              },
+            }}
+            animate={controls}
+          />
         </svg>
       </div>
     )
   },
 )
 
-WaypointsIcon.displayName = "WaypointsIcon"
+MilestoneIcon.displayName = "MilestoneIcon"
 
-export { WaypointsIcon }
+export { MilestoneIcon }

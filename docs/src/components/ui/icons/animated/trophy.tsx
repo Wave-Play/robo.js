@@ -6,31 +6,34 @@ import type { HTMLAttributes } from "react"
 import { forwardRef, useCallback, useImperativeHandle, useRef } from "react"
 import { cn } from "@/lib/utils"
 
-export interface WaypointsIconHandle {
+export interface TrophyIconHandle {
   startAnimation: () => void
   stopAnimation: () => void
 }
 
-interface WaypointsIconProps extends HTMLAttributes<HTMLDivElement> {
+interface TrophyIconProps extends HTMLAttributes<HTMLDivElement> {
   size?: number
 }
 
-const variants: Variants = {
+const bounceVariants: Variants = {
   normal: {
-    pathLength: 1,
-    opacity: 1,
-  },
-  animate: (custom: number) => ({
-    pathLength: [0, 1],
-    opacity: [0, 1],
+    y: 0,
+    scale: 1,
     transition: {
-      delay: 0.15 * custom,
-      opacity: { delay: 0.1 * custom },
+      duration: 0.3,
     },
-  }),
+  },
+  animate: {
+    y: [0, -3, 0],
+    scale: [1, 1.08, 1],
+    transition: {
+      duration: 0.5,
+      ease: "easeInOut",
+    },
+  },
 }
 
-const WaypointsIcon = forwardRef<WaypointsIconHandle, WaypointsIconProps>(
+const TrophyIcon = forwardRef<TrophyIconHandle, TrophyIconProps>(
   ({ onMouseEnter, onMouseLeave, className, size = 28, ...props }, ref) => {
     const controls = useAnimation()
     const isControlledRef = useRef(false)
@@ -76,7 +79,7 @@ const WaypointsIcon = forwardRef<WaypointsIconHandle, WaypointsIconProps>(
         onMouseLeave={handleMouseLeave}
         {...props}
       >
-        <svg
+        <motion.svg
           xmlns="http://www.w3.org/2000/svg"
           width={size}
           height={size}
@@ -86,20 +89,26 @@ const WaypointsIcon = forwardRef<WaypointsIconHandle, WaypointsIconProps>(
           strokeWidth="2"
           strokeLinecap="square"
           strokeLinejoin="miter"
+          variants={bounceVariants}
+          animate={controls}
         >
-          <motion.circle cx="12" cy="4.5" r="2.5" variants={variants} animate={controls} custom={0} />
-          <motion.path d="m10.2 6.3-3.9 3.9" variants={variants} animate={controls} custom={1} />
-          <motion.circle cx="4.5" cy="12" r="2.5" variants={variants} animate={controls} custom={0} />
-          <motion.path d="M7 12h10" variants={variants} animate={controls} custom={2} />
-          <motion.circle cx="19.5" cy="12" r="2.5" variants={variants} animate={controls} custom={0} />
-          <motion.path d="m13.8 17.7 3.9-3.9" variants={variants} animate={controls} custom={3} />
-          <motion.circle cx="12" cy="19.5" r="2.5" variants={variants} animate={controls} custom={0} />
-        </svg>
+          {/* Cup body */}
+          <path d="M6 2h12v8l-6 4-6-4z" />
+          {/* Left handle */}
+          <path d="M6 4H4v4h2" />
+          {/* Right handle */}
+          <path d="M18 4h2v4h-2" />
+          {/* Stem */}
+          <path d="M12 14v4" />
+          {/* Base */}
+          <path d="M8 22h8" />
+          <path d="M8 18h8" />
+        </motion.svg>
       </div>
     )
   },
 )
 
-WaypointsIcon.displayName = "WaypointsIcon"
+TrophyIcon.displayName = "TrophyIcon"
 
-export { WaypointsIcon }
+export { TrophyIcon }

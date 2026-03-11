@@ -6,31 +6,55 @@ import type { HTMLAttributes } from "react"
 import { forwardRef, useCallback, useImperativeHandle, useRef } from "react"
 import { cn } from "@/lib/utils"
 
-export interface WaypointsIconHandle {
+export interface LanguagesIconHandle {
   startAnimation: () => void
   stopAnimation: () => void
 }
 
-interface WaypointsIconProps extends HTMLAttributes<HTMLDivElement> {
+interface LanguagesIconProps extends HTMLAttributes<HTMLDivElement> {
   size?: number
 }
 
-const variants: Variants = {
+const leftVariants: Variants = {
   normal: {
-    pathLength: 1,
     opacity: 1,
+    pathLength: 1,
+    pathOffset: 0,
+    transition: { duration: 0.3 },
   },
-  animate: (custom: number) => ({
-    pathLength: [0, 1],
+  animate: {
     opacity: [0, 1],
+    pathLength: [0, 1],
+    pathOffset: [1, 0],
     transition: {
-      delay: 0.15 * custom,
-      opacity: { delay: 0.1 * custom },
+      duration: 0.5,
+      ease: "linear",
+      opacity: { duration: 0.1 },
     },
-  }),
+  },
 }
 
-const WaypointsIcon = forwardRef<WaypointsIconHandle, WaypointsIconProps>(
+const rightVariants: Variants = {
+  normal: {
+    opacity: 1,
+    pathLength: 1,
+    pathOffset: 0,
+    transition: { duration: 0.3 },
+  },
+  animate: {
+    opacity: [0, 1],
+    pathLength: [0, 1],
+    pathOffset: [1, 0],
+    transition: {
+      duration: 0.5,
+      delay: 0.2,
+      ease: "linear",
+      opacity: { duration: 0.1, delay: 0.2 },
+    },
+  },
+}
+
+const LanguagesIcon = forwardRef<LanguagesIconHandle, LanguagesIconProps>(
   ({ onMouseEnter, onMouseLeave, className, size = 28, ...props }, ref) => {
     const controls = useAnimation()
     const isControlledRef = useRef(false)
@@ -87,19 +111,23 @@ const WaypointsIcon = forwardRef<WaypointsIconHandle, WaypointsIconProps>(
           strokeLinecap="square"
           strokeLinejoin="miter"
         >
-          <motion.circle cx="12" cy="4.5" r="2.5" variants={variants} animate={controls} custom={0} />
-          <motion.path d="m10.2 6.3-3.9 3.9" variants={variants} animate={controls} custom={1} />
-          <motion.circle cx="4.5" cy="12" r="2.5" variants={variants} animate={controls} custom={0} />
-          <motion.path d="M7 12h10" variants={variants} animate={controls} custom={2} />
-          <motion.circle cx="19.5" cy="12" r="2.5" variants={variants} animate={controls} custom={0} />
-          <motion.path d="m13.8 17.7 3.9-3.9" variants={variants} animate={controls} custom={3} />
-          <motion.circle cx="12" cy="19.5" r="2.5" variants={variants} animate={controls} custom={0} />
+          {/* Left side: "A" character with underline */}
+          <motion.path d="M5 8l3 8" variants={leftVariants} animate={controls} initial="normal" />
+          <motion.path d="M11 8l-3 8" variants={leftVariants} animate={controls} initial="normal" />
+          <motion.path d="M6.5 12h3" variants={leftVariants} animate={controls} initial="normal" />
+          {/* Arrow */}
+          <motion.path d="M10 19l2-2 2 2" variants={leftVariants} animate={controls} initial="normal" />
+          <motion.path d="M12 17v5" variants={leftVariants} animate={controls} initial="normal" />
+          {/* Right side: foreign character strokes */}
+          <motion.path d="M14 4h6" variants={rightVariants} animate={controls} initial="normal" />
+          <motion.path d="M17 2v6" variants={rightVariants} animate={controls} initial="normal" />
+          <motion.path d="M14 10l3-3 3 3" variants={rightVariants} animate={controls} initial="normal" />
         </svg>
       </div>
     )
   },
 )
 
-WaypointsIcon.displayName = "WaypointsIcon"
+LanguagesIcon.displayName = "LanguagesIcon"
 
-export { WaypointsIcon }
+export { LanguagesIcon }

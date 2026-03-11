@@ -2,19 +2,19 @@
 
 import { motion, useAnimation } from "motion/react"
 import type { HTMLAttributes } from "react"
-import React, { forwardRef, useCallback, useImperativeHandle, useRef } from "react"
+import { forwardRef, useCallback, useImperativeHandle, useRef } from "react"
 import { cn } from "@/lib/utils"
 
-export interface FileTextIconHandle {
+export interface BandageIconHandle {
   startAnimation: () => void
   stopAnimation: () => void
 }
 
-interface FileTextIconProps extends HTMLAttributes<HTMLDivElement> {
+interface BandageIconProps extends HTMLAttributes<HTMLDivElement> {
   size?: number
 }
 
-const FileText = forwardRef<FileTextIconHandle, FileTextIconProps>(
+const BandageIcon = forwardRef<BandageIconHandle, BandageIconProps>(
   ({ onMouseEnter, onMouseLeave, className, size = 28, ...props }, ref) => {
     const controls = useAnimation()
     const isControlledRef = useRef(false)
@@ -70,82 +70,59 @@ const FileText = forwardRef<FileTextIconHandle, FileTextIconProps>(
           strokeWidth="2"
           strokeLinecap="square"
           strokeLinejoin="miter"
-          initial="normal"
           animate={controls}
           variants={{
-            normal: { scale: 1 },
+            normal: { rotate: 0 },
             animate: {
-              scale: 1.05,
-              transition: {
-                duration: 0.3,
-                ease: "easeOut",
-              },
+              rotate: [0, -5, 5, 0],
+              transition: { duration: 0.5, ease: "easeInOut" },
             },
           }}
         >
-          <path d="M15 2H4v20h16V7Z" />
-          <path d="M14 2v6h6" />
-
+          {/* Band-aid strip rotated 45deg, sharp corners (rx=0) */}
+          <rect x="2.5" y="8.5" width="19" height="7" rx="0" transform="rotate(-45 12 12)" />
+          {/* Stitch marks in the center */}
           <motion.path
-            d="M10 9H8"
-            stroke="currentColor"
-            strokeWidth="2"
+            d="M8 11.5l1.5-1.5"
             variants={{
-              normal: {
-                pathLength: 1,
-                x1: 8,
-                x2: 10,
-              },
+              normal: { pathLength: 1, opacity: 1 },
               animate: {
-                pathLength: [1, 0, 1],
-                x1: [8, 10, 8],
-                x2: [10, 10, 10],
-                transition: {
-                  duration: 0.7,
-                  delay: 0.3,
-                },
+                pathLength: [0, 1],
+                opacity: [0, 1],
+                transition: { duration: 0.3, delay: 0.2 },
               },
             }}
           />
           <motion.path
-            d="M16 13H8"
-            stroke="currentColor"
-            strokeWidth="2"
+            d="M11 14.5l1.5-1.5"
             variants={{
-              normal: {
-                pathLength: 1,
-                x1: 8,
-                x2: 16,
-              },
+              normal: { pathLength: 1, opacity: 1 },
               animate: {
-                pathLength: [1, 0, 1],
-                x1: [8, 16, 8],
-                x2: [16, 16, 16],
-                transition: {
-                  duration: 0.7,
-                  delay: 0.5,
-                },
+                pathLength: [0, 1],
+                opacity: [0, 1],
+                transition: { duration: 0.3, delay: 0.3 },
               },
             }}
           />
           <motion.path
-            d="M16 17H8"
-            stroke="currentColor"
-            strokeWidth="2"
+            d="M9.5 14l1.5-1.5"
             variants={{
-              normal: {
-                pathLength: 1,
-                x1: 8,
-                x2: 16,
-              },
+              normal: { pathLength: 1, opacity: 1 },
               animate: {
-                pathLength: [1, 0, 1],
-                x1: [8, 16, 8],
-                x2: [16, 16, 16],
-                transition: {
-                  duration: 0.7,
-                  delay: 0.7,
-                },
+                pathLength: [0, 1],
+                opacity: [0, 1],
+                transition: { duration: 0.3, delay: 0.4 },
+              },
+            }}
+          />
+          <motion.path
+            d="M12.5 11l1.5-1.5"
+            variants={{
+              normal: { pathLength: 1, opacity: 1 },
+              animate: {
+                pathLength: [0, 1],
+                opacity: [0, 1],
+                transition: { duration: 0.3, delay: 0.5 },
               },
             }}
           />
@@ -155,6 +132,6 @@ const FileText = forwardRef<FileTextIconHandle, FileTextIconProps>(
   },
 )
 
-FileText.displayName = "FileTextIcon"
+BandageIcon.displayName = "BandageIcon"
 
-export { FileText as FileTextIcon }
+export { BandageIcon }

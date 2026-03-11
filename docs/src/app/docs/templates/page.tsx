@@ -8,15 +8,50 @@ import { templates, typeLabels, typeColors, type Template } from "@/data/templat
 import { ExaCard, ExaCardContent, ExaCardDescription, ExaCardHeader, ExaCardTitle } from "@/components/ui/exa-card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { useSidebar } from "fumadocs-ui/components/sidebar/base"
 import { cn } from "@/lib/utils"
 
-type FilterType = "all" | "activity" | "bot" | "web" | "plugin"
-type FilterLanguage = "all" | "TypeScript" | "JavaScript"
+type FilterType = "activity" | "bot" | "web" | "plugin"
+type FilterLanguage = "TypeScript" | "JavaScript"
+
+const allTypes: FilterType[] = ["activity", "bot", "web", "plugin"]
+const allLanguages: FilterLanguage[] = ["TypeScript", "JavaScript"]
 
 export default function TemplatesPage() {
+  const { collapsed } = useSidebar()
   const [search, setSearch] = useState("")
-  const [typeFilter, setTypeFilter] = useState<FilterType>("all")
-  const [languageFilter, setLanguageFilter] = useState<FilterLanguage>("all")
+  const [typeFilters, setTypeFilters] = useState<Set<FilterType>>(new Set(allTypes))
+  const [langFilters, setLangFilters] = useState<Set<FilterLanguage>>(new Set(allLanguages))
+
+  const allTypesSelected = typeFilters.size === allTypes.length
+  const allLangsSelected = langFilters.size === allLanguages.length
+
+  const toggleType = (type: FilterType) => {
+    setTypeFilters((prev) => {
+      const next = new Set(prev)
+      if (next.has(type)) {
+        // Don't allow deselecting the last one — reselect all instead
+        if (next.size === 1) return new Set(allTypes)
+        next.delete(type)
+      } else {
+        next.add(type)
+      }
+      return next
+    })
+  }
+
+  const toggleLang = (lang: FilterLanguage) => {
+    setLangFilters((prev) => {
+      const next = new Set(prev)
+      if (next.has(lang)) {
+        if (next.size === 1) return new Set(allLanguages)
+        next.delete(lang)
+      } else {
+        next.add(lang)
+      }
+      return next
+    })
+  }
 
   const filteredTemplates = useMemo(() => {
     return templates.filter((template) => {
@@ -33,43 +68,45 @@ export default function TemplatesPage() {
       }
 
       // Type filter
-      if (typeFilter !== "all" && template.type !== typeFilter) {
+      if (!allTypesSelected && !typeFilters.has(template.type as FilterType)) {
         return false
       }
 
       // Language filter
-      if (languageFilter !== "all" && template.language !== languageFilter) {
+      if (!allLangsSelected && !langFilters.has(template.language as FilterLanguage)) {
         return false
       }
 
       return true
     })
-  }, [search, typeFilter, languageFilter])
+  }, [search, typeFilters, langFilters, allTypesSelected, allLangsSelected])
 
-  const typeFilters: { value: FilterType; label: string }[] = [
-    { value: "all", label: "All" },
+  const typeFilterOptions: { value: FilterType; label: string }[] = [
     { value: "activity", label: "Discord Activities" },
     { value: "bot", label: "Discord Bots" },
     { value: "web", label: "Web Apps" },
     { value: "plugin", label: "Plugins" },
   ]
 
-  const languageFilters: { value: FilterLanguage; label: string }[] = [
-    { value: "all", label: "All Languages" },
+  const langFilterOptions: { value: FilterLanguage; label: string }[] = [
     { value: "TypeScript", label: "TypeScript" },
     { value: "JavaScript", label: "JavaScript" },
   ]
 
   const clearFilters = () => {
     setSearch("")
-    setTypeFilter("all")
-    setLanguageFilter("all")
+    setTypeFilters(new Set(allTypes))
+    setLangFilters(new Set(allLanguages))
   }
 
-  const hasActiveFilters = search || typeFilter !== "all" || languageFilter !== "all"
+  const hasActiveFilters = search || !allTypesSelected || !allLangsSelected
 
   return (
-    <main className="container mx-auto px-4 py-12 md:py-16">
+    <main className={cn(
+      "w-full [grid-row:3] [grid-column:2/-1] px-6 py-12 md:px-10 md:py-16 xl:px-14",
+      "transition-[padding] duration-300 ease-in-out",
+      collapsed && "xl:px-20"
+    )}>
       <div className="flex flex-col items-center text-center mb-12">
         <Badge variant="outline" className="mb-4 gap-1.5">
           <LayoutTemplate className="h-3 w-3" />
@@ -108,15 +145,15 @@ export default function TemplatesPage() {
 
         {/* Type Filters */}
         <div className="flex flex-wrap justify-center gap-2">
-          {typeFilters.map((filter) => (
+          {typeFilterOptions.map((filter) => (
             <button
               key={filter.value}
-              onClick={() => setTypeFilter(filter.value)}
+              onClick={() => toggleType(filter.value)}
               className={cn(
-                "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
-                typeFilter === filter.value
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground"
+                "px-4 py-2 rounded-lg text-sm font-medium transition-all border",
+                typeFilters.has(filter.value)
+                  ? neonTypeColors[filter.value]
+                  : "border-transparent bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground"
               )}
             >
               {filter.label}
@@ -126,15 +163,15 @@ export default function TemplatesPage() {
 
         {/* Language Filters */}
         <div className="flex flex-wrap justify-center gap-2">
-          {languageFilters.map((filter) => (
+          {langFilterOptions.map((filter) => (
             <button
               key={filter.value}
-              onClick={() => setLanguageFilter(filter.value)}
+              onClick={() => toggleLang(filter.value)}
               className={cn(
-                "px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
-                languageFilter === filter.value
-                  ? "bg-secondary text-secondary-foreground"
-                  : "bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground"
+                "px-3 py-1.5 rounded-md text-xs font-medium transition-all border",
+                langFilters.has(filter.value)
+                  ? neonLangColors[filter.value]
+                  : "border-transparent bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground"
               )}
             >
               {filter.label}
@@ -164,7 +201,7 @@ export default function TemplatesPage() {
 
       {/* Templates Grid */}
       {filteredTemplates.length > 0 ? (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 justify-center grid-cols-[repeat(auto-fill,minmax(280px,360px))]">
           {filteredTemplates.map((template) => (
             <TemplateCard key={template.href} template={template} />
           ))}
@@ -203,12 +240,38 @@ export default function TemplatesPage() {
   )
 }
 
+const placeholderGradients: Record<string, string> = {
+  activity: "from-cyan-500/15 via-cyan-400/5 to-transparent",
+  bot: "from-[#5865F2]/15 via-[#5865F2]/5 to-transparent",
+  web: "from-green-500/15 via-green-400/5 to-transparent",
+  plugin: "from-orange-500/15 via-orange-400/5 to-transparent",
+}
+
+const placeholderIcons: Record<string, string> = {
+  activity: "text-cyan-500/20",
+  bot: "text-[#5865F2]/20",
+  web: "text-green-500/20",
+  plugin: "text-orange-500/20",
+}
+
+const neonTypeColors: Record<string, string> = {
+  activity: "border-cyan-400/60 bg-cyan-500/10 text-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.3)]",
+  bot: "border-[#5865F2]/60 bg-[#5865F2]/10 text-[#7984F5] shadow-[0_0_8px_rgba(88,101,242,0.3)]",
+  web: "border-green-400/60 bg-green-500/10 text-green-400 shadow-[0_0_8px_rgba(74,222,128,0.3)]",
+  plugin: "border-orange-400/60 bg-orange-500/10 text-orange-400 shadow-[0_0_8px_rgba(251,146,60,0.3)]",
+}
+
+const neonLangColors: Record<string, string> = {
+  TypeScript: "border-[#3178C6]/60 bg-[#3178C6]/10 text-[#3178C6] shadow-[0_0_6px_rgba(49,120,198,0.3)]",
+  JavaScript: "border-[#F7DF1E]/60 bg-[#F7DF1E]/10 text-[#F7DF1E] shadow-[0_0_6px_rgba(247,223,30,0.3)]",
+}
+
 function TemplateCard({ template }: { template: Template }) {
   return (
     <Link href={template.href} className="group block">
       <ExaCard
         className={cn(
-          "h-full min-h-[220px]",
+          "h-full w-full",
           "transition-all duration-300 ease-out"
         )}
         growScale={1.02}
@@ -216,20 +279,31 @@ function TemplateCard({ template }: { template: Template }) {
         innerBorderWidth={2}
       >
         <div className="flex flex-col h-full">
-          {/* Image */}
-          {template.image && (
-            <div className="relative h-32 overflow-hidden">
-              <Image
-                src={template.image}
-                alt={template.title}
-                fill
-                className="object-cover transition-transform duration-300 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
-            </div>
-          )}
+          {/* Image / Placeholder */}
+          <div className="relative aspect-video overflow-hidden">
+            {template.image ? (
+              <>
+                <Image
+                  src={template.image}
+                  alt={template.title}
+                  fill
+                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+              </>
+            ) : (
+              <div className={cn(
+                "absolute inset-0 bg-gradient-to-br",
+                placeholderGradients[template.type]
+              )}>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <LayoutTemplate className={cn("h-10 w-10", placeholderIcons[template.type])} />
+                </div>
+              </div>
+            )}
+          </div>
 
-          <div className={cn("flex flex-col flex-1 p-6", template.image && "pt-4")}>
+          <div className="flex flex-col flex-1 p-6 pt-4">
             <ExaCardHeader className="p-0 mb-2">
               <div className="flex items-start justify-between gap-2">
                 <ExaCardTitle
@@ -256,7 +330,12 @@ function TemplateCard({ template }: { template: Template }) {
                 >
                   {typeLabels[template.type]}
                 </Badge>
-                <span className="text-xs text-muted-foreground">
+                <span className={cn(
+                  "text-xs",
+                  template.language === "TypeScript"
+                    ? "text-[#3178C6]"
+                    : "text-[#F7DF1E]"
+                )}>
                   {template.language}
                 </span>
               </div>
@@ -267,7 +346,13 @@ function TemplateCard({ template }: { template: Template }) {
                 {template.description}
               </ExaCardDescription>
               <p className="text-xs text-muted-foreground">
-                by {template.author}
+                By{" "}
+                <span className={cn(
+                  "font-semibold",
+                  template.author === "WavePlay" && "bg-gradient-to-r from-blue-500 to-pink-500 bg-clip-text text-transparent"
+                )}>
+                  {template.author}
+                </span>
               </p>
             </ExaCardContent>
           </div>

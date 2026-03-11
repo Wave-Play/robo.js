@@ -106,7 +106,7 @@ const PartyPopperIcon = forwardRef<PartyPopperIconHandle, PartyPopperIconProps>(
     return (
       <div
         className={cn(
-          `cursor-pointer select-none p-2  rounded-md transition-colors duration-200 flex items-center justify-center`,
+          `cursor-pointer select-none rounded-md transition-colors duration-200 flex items-center justify-center`,
           className,
         )}
         onMouseEnter={handleMouseEnter}
@@ -121,8 +121,8 @@ const PartyPopperIcon = forwardRef<PartyPopperIconHandle, PartyPopperIconProps>(
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+          strokeLinecap="square"
+          strokeLinejoin="miter"
         >
           <motion.path d="M5.8 11.3 2 22l10.7-3.79" variants={popperVariants} animate={controls} />
           <motion.path

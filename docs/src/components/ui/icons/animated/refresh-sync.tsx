@@ -6,31 +6,38 @@ import type { HTMLAttributes } from "react"
 import { forwardRef, useCallback, useImperativeHandle, useRef } from "react"
 import { cn } from "@/lib/utils"
 
-export interface WaypointsIconHandle {
+export interface RefreshSyncIconHandle {
   startAnimation: () => void
   stopAnimation: () => void
 }
 
-interface WaypointsIconProps extends HTMLAttributes<HTMLDivElement> {
+interface RefreshSyncIconProps extends HTMLAttributes<HTMLDivElement> {
   size?: number
 }
 
-const variants: Variants = {
+const topVariants: Variants = {
   normal: {
-    pathLength: 1,
-    opacity: 1,
+    x: 0,
+    transition: { duration: 0.3 },
   },
-  animate: (custom: number) => ({
-    pathLength: [0, 1],
-    opacity: [0, 1],
-    transition: {
-      delay: 0.15 * custom,
-      opacity: { delay: 0.1 * custom },
-    },
-  }),
+  animate: {
+    x: [0, 3, 0],
+    transition: { duration: 0.5, ease: "easeInOut" },
+  },
 }
 
-const WaypointsIcon = forwardRef<WaypointsIconHandle, WaypointsIconProps>(
+const bottomVariants: Variants = {
+  normal: {
+    x: 0,
+    transition: { duration: 0.3 },
+  },
+  animate: {
+    x: [0, -3, 0],
+    transition: { duration: 0.5, ease: "easeInOut" },
+  },
+}
+
+const RefreshSyncIcon = forwardRef<RefreshSyncIconHandle, RefreshSyncIconProps>(
   ({ onMouseEnter, onMouseLeave, className, size = 28, ...props }, ref) => {
     const controls = useAnimation()
     const isControlledRef = useRef(false)
@@ -87,19 +94,18 @@ const WaypointsIcon = forwardRef<WaypointsIconHandle, WaypointsIconProps>(
           strokeLinecap="square"
           strokeLinejoin="miter"
         >
-          <motion.circle cx="12" cy="4.5" r="2.5" variants={variants} animate={controls} custom={0} />
-          <motion.path d="m10.2 6.3-3.9 3.9" variants={variants} animate={controls} custom={1} />
-          <motion.circle cx="4.5" cy="12" r="2.5" variants={variants} animate={controls} custom={0} />
-          <motion.path d="M7 12h10" variants={variants} animate={controls} custom={2} />
-          <motion.circle cx="19.5" cy="12" r="2.5" variants={variants} animate={controls} custom={0} />
-          <motion.path d="m13.8 17.7 3.9-3.9" variants={variants} animate={controls} custom={3} />
-          <motion.circle cx="12" cy="19.5" r="2.5" variants={variants} animate={controls} custom={0} />
+          {/* Top arrow pointing right */}
+          <motion.path d="M4 8h14" variants={topVariants} animate={controls} />
+          <motion.path d="M15 4l4 4-4 4" variants={topVariants} animate={controls} />
+          {/* Bottom arrow pointing left */}
+          <motion.path d="M20 16H6" variants={bottomVariants} animate={controls} />
+          <motion.path d="M9 12l-4 4 4 4" variants={bottomVariants} animate={controls} />
         </svg>
       </div>
     )
   },
 )
 
-WaypointsIcon.displayName = "WaypointsIcon"
+RefreshSyncIcon.displayName = "RefreshSyncIcon"
 
-export { WaypointsIcon }
+export { RefreshSyncIcon }

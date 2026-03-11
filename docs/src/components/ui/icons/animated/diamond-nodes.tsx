@@ -6,12 +6,12 @@ import type { HTMLAttributes } from "react"
 import { forwardRef, useCallback, useImperativeHandle, useRef } from "react"
 import { cn } from "@/lib/utils"
 
-export interface WaypointsIconHandle {
+export interface DiamondNodesIconHandle {
   startAnimation: () => void
   stopAnimation: () => void
 }
 
-interface WaypointsIconProps extends HTMLAttributes<HTMLDivElement> {
+interface DiamondNodesIconProps extends HTMLAttributes<HTMLDivElement> {
   size?: number
 }
 
@@ -30,7 +30,7 @@ const variants: Variants = {
   }),
 }
 
-const WaypointsIcon = forwardRef<WaypointsIconHandle, WaypointsIconProps>(
+const DiamondNodesIcon = forwardRef<DiamondNodesIconHandle, DiamondNodesIconProps>(
   ({ onMouseEnter, onMouseLeave, className, size = 28, ...props }, ref) => {
     const controls = useAnimation()
     const isControlledRef = useRef(false)
@@ -87,19 +87,26 @@ const WaypointsIcon = forwardRef<WaypointsIconHandle, WaypointsIconProps>(
           strokeLinecap="square"
           strokeLinejoin="miter"
         >
-          <motion.circle cx="12" cy="4.5" r="2.5" variants={variants} animate={controls} custom={0} />
+          {/* Top diamond */}
+          <motion.path d="M12 2l2.5 2.5L12 7 9.5 4.5Z" variants={variants} animate={controls} custom={0} />
+          {/* Top-left connector */}
           <motion.path d="m10.2 6.3-3.9 3.9" variants={variants} animate={controls} custom={1} />
-          <motion.circle cx="4.5" cy="12" r="2.5" variants={variants} animate={controls} custom={0} />
+          {/* Left diamond */}
+          <motion.path d="M4.5 9.5L7 12 4.5 14.5 2 12Z" variants={variants} animate={controls} custom={0} />
+          {/* Middle connector */}
           <motion.path d="M7 12h10" variants={variants} animate={controls} custom={2} />
-          <motion.circle cx="19.5" cy="12" r="2.5" variants={variants} animate={controls} custom={0} />
+          {/* Right diamond */}
+          <motion.path d="M19.5 9.5L22 12l-2.5 2.5L17 12Z" variants={variants} animate={controls} custom={0} />
+          {/* Bottom-right connector */}
           <motion.path d="m13.8 17.7 3.9-3.9" variants={variants} animate={controls} custom={3} />
-          <motion.circle cx="12" cy="19.5" r="2.5" variants={variants} animate={controls} custom={0} />
+          {/* Bottom diamond */}
+          <motion.path d="M12 17l2.5 2.5L12 22l-2.5-2.5Z" variants={variants} animate={controls} custom={0} />
         </svg>
       </div>
     )
   },
 )
 
-WaypointsIcon.displayName = "WaypointsIcon"
+DiamondNodesIcon.displayName = "DiamondNodesIcon"
 
-export { WaypointsIcon }
+export { DiamondNodesIcon }

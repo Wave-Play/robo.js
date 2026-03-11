@@ -76,7 +76,7 @@ const ActivityIcon = forwardRef<ActivityIconHandle, ActivityIconProps>(
     return (
       <div
         className={cn(
-          `cursor-pointer select-none p-2  rounded-md transition-colors duration-200 flex items-center justify-center`,
+          `cursor-pointer select-none rounded-md transition-colors duration-200 flex items-center justify-center`,
           className,
         )}
         onMouseEnter={handleMouseEnter}
@@ -91,8 +91,8 @@ const ActivityIcon = forwardRef<ActivityIconHandle, ActivityIconProps>(
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+          strokeLinecap="square"
+          strokeLinejoin="miter"
         >
           <motion.path
             variants={variants}

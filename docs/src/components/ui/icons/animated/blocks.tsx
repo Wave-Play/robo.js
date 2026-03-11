@@ -59,7 +59,7 @@ const BlocksIcon = forwardRef<BlocksIconHandle, BlocksIconProps>(
     return (
       <div
         className={cn(
-          `cursor-pointer select-none p-2  rounded-md transition-colors duration-200 flex items-center justify-center`,
+          `cursor-pointer select-none rounded-md transition-colors duration-200 flex items-center justify-center`,
           className,
         )}
         onMouseEnter={handleMouseEnter}
@@ -74,10 +74,10 @@ const BlocksIcon = forwardRef<BlocksIconHandle, BlocksIconProps>(
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+          strokeLinecap="square"
+          strokeLinejoin="miter"
         >
-          <path d="M10 21V8a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1H3" />
+          <path d="M10 21V7H3v14h14v-6H3" />
           <motion.path d="M14 3h7v7h-7z" variants={variants} animate={controls} />
         </svg>
       </div>

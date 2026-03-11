@@ -82,7 +82,7 @@ const CpuIcon = forwardRef<CpuIconHandle, CpuIconProps>(
     return (
       <div
         className={cn(
-          `cursor-pointer select-none p-2  rounded-md transition-colors duration-200 flex items-center justify-center`,
+          `cursor-pointer select-none rounded-md transition-colors duration-200 flex items-center justify-center`,
           className,
         )}
         onMouseEnter={handleMouseEnter}
@@ -97,11 +97,11 @@ const CpuIcon = forwardRef<CpuIconHandle, CpuIconProps>(
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+          strokeLinecap="square"
+          strokeLinejoin="miter"
         >
-          <rect width="16" height="16" x="4" y="4" rx="2" />
-          <rect width="6" height="6" x="9" rx="1" y="9" />
+          <rect width="16" height="16" x="4" y="4" />
+          <rect width="6" height="6" x="9" y="9" />
           <motion.path d="M15 2v2" variants={yVariants} transition={transition} animate={controls} />
           <motion.path d="M15 20v2" variants={yVariants} transition={transition} animate={controls} />
           <motion.path d="M2 15h2" variants={xVariants} transition={transition} animate={controls} />

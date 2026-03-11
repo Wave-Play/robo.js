@@ -2,7 +2,8 @@ import type { BaseLayoutProps, LinkItemType } from "fumadocs-ui/layouts/shared"
 import Image from "next/image"
 import FrameworkPreview from "@/../public/fp.png"
 import logo from "@/../public/logo.png"
-import { Blocks, BookText, Connect, Discord, DiscordLogo, PartyPopper } from "@/components/ui/icons"
+import { AnimatedIconWrapper } from "@/components/ui/icons/animated-icon-wrapper"
+import { Blocks, BookText, Connect, Discord, DiscordLogo, PartyPopper, Rocket, Terminal } from "@/components/ui/icons"
 
 /**
  * Shared layout configurations
@@ -12,7 +13,7 @@ import { Blocks, BookText, Connect, Discord, DiscordLogo, PartyPopper } from "@/
  * Docs Layout: app/docs/layout.tsx
  */
 
-const navLinks = [
+export const navLinks = [
   {
     text: "Documentation",
     url: "/docs",
@@ -20,7 +21,7 @@ const navLinks = [
     items: [
       {
         text: "Framework",
-        icon: <Blocks className="p-1" />,
+        icon: <AnimatedIconWrapper><Blocks className="p-1" /></AnimatedIconWrapper>,
         url: "/docs/framework",
         description:
           "Explore the core architecture of Robos, covering Bots, Activities, Websites, Plugins, and their interactions.",
@@ -40,52 +41,59 @@ const navLinks = [
       {
         text: "Bots",
         url: "/docs/bots",
-        icon: <Discord className="p-1" />,
+        icon: <AnimatedIconWrapper><Discord className="p-1" /></AnimatedIconWrapper>,
         description: "Build powerful and interactive Discord bots.",
       },
       {
         text: "Activities",
         url: "/docs/activities",
-        icon: <PartyPopper className="p-1" />,
+        icon: <AnimatedIconWrapper><PartyPopper className="p-1" /></AnimatedIconWrapper>,
         description: "Develop custom, engaging and fun activities.",
+      },
+      {
+        text: "CLI",
+        url: "/docs/cli",
+        icon: <AnimatedIconWrapper><Terminal className="p-1" /></AnimatedIconWrapper>,
+        description: "CLI tools for managing your Robo.js projects.",
+      },
+      {
+        text: "Hosting",
+        url: "/docs/hosting",
+        icon: <AnimatedIconWrapper><Rocket className="p-1" /></AnimatedIconWrapper>,
+        description: "Deploy and host your Robo.js projects.",
       },
       {
         text: "Plugins",
         url: "/docs/plugins",
-        icon: <Connect className="p-1" />,
-        description: "Extend Robo's capabilities by creating custom plugins.",
+        icon: <AnimatedIconWrapper><Connect className="p-1" /></AnimatedIconWrapper>,
+        description: "Browse and discover plugins for your Robo.",
       },
       {
         text: "Reference",
         url: "/docs/reference",
-        icon: <BookText className="p-1" />,
+        icon: <AnimatedIconWrapper><BookText className="p-1" /></AnimatedIconWrapper>,
         description: "Access detailed technical documentation.",
       },
     ],
   },
   {
     text: "Blog",
-    url: "/blog",
-    type: "main",
-  },
-  {
-    text: "Directory",
-    url: "/directory",
+    url: "https://dev.to/waveplay",
     type: "main",
   },
   {
     text: "Plugins",
-    url: "/plugins",
+    url: "/docs/plugins",
     type: "main",
   },
   {
     text: "Templates",
-    url: "/templates",
+    url: "/docs/templates",
     type: "main",
   },
   {
     text: "Discord",
-    url: "https://discord.gg/robojs",
+    url: "https://robojs.dev/discord",
     type: "icon",
     icon: <DiscordLogo className="mx-2" />,
     secondary: true,

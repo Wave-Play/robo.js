@@ -6,31 +6,38 @@ import type { HTMLAttributes } from "react"
 import { forwardRef, useCallback, useImperativeHandle, useRef } from "react"
 import { cn } from "@/lib/utils"
 
-export interface WaypointsIconHandle {
+export interface GlobeIconHandle {
   startAnimation: () => void
   stopAnimation: () => void
 }
 
-interface WaypointsIconProps extends HTMLAttributes<HTMLDivElement> {
+interface GlobeIconProps extends HTMLAttributes<HTMLDivElement> {
   size?: number
 }
 
 const variants: Variants = {
   normal: {
-    pathLength: 1,
     opacity: 1,
-  },
-  animate: (custom: number) => ({
-    pathLength: [0, 1],
-    opacity: [0, 1],
+    pathLength: 1,
+    pathOffset: 0,
     transition: {
-      delay: 0.15 * custom,
-      opacity: { delay: 0.1 * custom },
+      duration: 0.4,
+      opacity: { duration: 0.1 },
     },
-  }),
+  },
+  animate: {
+    opacity: [0, 1],
+    pathLength: [0, 1],
+    pathOffset: [1, 0],
+    transition: {
+      duration: 0.6,
+      ease: "linear",
+      opacity: { duration: 0.1 },
+    },
+  },
 }
 
-const WaypointsIcon = forwardRef<WaypointsIconHandle, WaypointsIconProps>(
+const GlobeIcon = forwardRef<GlobeIconHandle, GlobeIconProps>(
   ({ onMouseEnter, onMouseLeave, className, size = 28, ...props }, ref) => {
     const controls = useAnimation()
     const isControlledRef = useRef(false)
@@ -87,19 +94,32 @@ const WaypointsIcon = forwardRef<WaypointsIconHandle, WaypointsIconProps>(
           strokeLinecap="square"
           strokeLinejoin="miter"
         >
-          <motion.circle cx="12" cy="4.5" r="2.5" variants={variants} animate={controls} custom={0} />
-          <motion.path d="m10.2 6.3-3.9 3.9" variants={variants} animate={controls} custom={1} />
-          <motion.circle cx="4.5" cy="12" r="2.5" variants={variants} animate={controls} custom={0} />
-          <motion.path d="M7 12h10" variants={variants} animate={controls} custom={2} />
-          <motion.circle cx="19.5" cy="12" r="2.5" variants={variants} animate={controls} custom={0} />
-          <motion.path d="m13.8 17.7 3.9-3.9" variants={variants} animate={controls} custom={3} />
-          <motion.circle cx="12" cy="19.5" r="2.5" variants={variants} animate={controls} custom={0} />
+          <motion.circle
+            cx="12"
+            cy="12"
+            r="10"
+            variants={variants}
+            animate={controls}
+            initial="normal"
+          />
+          <motion.path
+            d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"
+            variants={variants}
+            animate={controls}
+            initial="normal"
+          />
+          <motion.path
+            d="M2 12h20"
+            variants={variants}
+            animate={controls}
+            initial="normal"
+          />
         </svg>
       </div>
     )
   },
 )
 
-WaypointsIcon.displayName = "WaypointsIcon"
+GlobeIcon.displayName = "GlobeIcon"
 
-export { WaypointsIcon }
+export { GlobeIcon }
