@@ -1,0 +1,16 @@
+---
+title: "TransactionOptions"
+---
+
+# Interface: TransactionOptions
+
+Transaction options for Flashcore.$.transaction().
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="maxretries"></a> `maxRetries?` | `number` | Maximum retry attempts for optimistic transactions. Only used when mode is 'optimistic'. **Default** `3` |
+| <a id="mode"></a> `mode?` | [`TransactionMode`](../type-aliases/transaction-mode) | Transaction mode. **Default** `'auto'` |
+| <a id="retrydelay"></a> `retryDelay?` | `number` | Delay between retry attempts in milliseconds. Only used when mode is 'optimistic'. **Default** `100` |
+| <a id="timeout"></a> `timeout?` | `number` | Transaction timeout in milliseconds. **Default** `30000` |

@@ -1,0 +1,23 @@
+---
+title: "PluginData"
+---
+
+# Interface: PluginData
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="hooks"></a> `hooks?` | \{ `path`: `string`; `phase`: `"start"` \| `"transform"` \| `"complete"`; `priority`: `number`; `type`: `string`; \}[] | Hook definitions from the plugin |
+| <a id="metaoptions"></a> `metaOptions?` | [`PluginMetaOptions`](plugin-meta-options) | - |
+| <a id="name"></a> `name` | `string` | - |
+| <a id="namespace"></a> `namespace?` | `string` | Portal namespace for this plugin's routes |
+| <a id="options"></a> `options?` | `unknown` | - |
+| <a id="path"></a> `path?` | `string` | Path to the plugin package |
+| <a id="seed"></a> `seed?` | \{ `description`: `string`; `env`: \{ `description`: `string`; `variables`: `Record`\<`string`, \| `string` \| \{ `description`: `string`; `overwrite`: `boolean`; `value`: `string`; \}\>; \}; `hook`: `string`; \} | Seed configuration from the plugin's manifest |
+| `seed.description?` | `string` | - |
+| `seed.env?` | \{ `description`: `string`; `variables`: `Record`\<`string`, \| `string` \| \{ `description`: `string`; `overwrite`: `boolean`; `value`: `string`; \}\>; \} | - |
+| `seed.env.description?` | `string` | - |
+| `seed.env.variables?` | `Record`\<`string`, \| `string` \| \{ `description`: `string`; `overwrite`: `boolean`; `value`: `string`; \}\> | - |
+| `seed.hook?` | `string` | - |
+| <a id="version"></a> `version?` | `string` | Plugin version (from package.json) |

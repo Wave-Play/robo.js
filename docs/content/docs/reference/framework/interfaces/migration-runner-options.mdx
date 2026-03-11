@@ -1,0 +1,15 @@
+---
+title: "MigrationRunnerOptions"
+---
+
+# Interface: MigrationRunnerOptions
+
+Options for the migration runner.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="getmigrations"></a> `getMigrations?` | () =\> [`RegisteredMigration`](registered-migration)[] | Function to discover registered migrations |
+| <a id="getmodelaccessor"></a> `getModelAccessor?` | \<`T`\>(`name`: `string`) =\> [`MigrationModelAccessor`](migration-model-accessor)\<`T`\> | Model accessor factory for migration context |
+| <a id="locktimeoutms"></a> `lockTimeoutMs?` | `number` | Lock timeout in milliseconds |

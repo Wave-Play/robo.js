@@ -1,0 +1,19 @@
+---
+title: "SchemaMetadata"
+---
+
+# Interface: SchemaMetadata
+
+Schema metadata persisted per model.
+Stored at: _model:\{ns\}::\{model\}:_meta
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="checksum"></a> `checksum` | `string` | Deterministic FNV-1a 32-bit checksum of schema structure |
+| <a id="fields"></a> `fields` | `Record`\<`string`, [`FieldMetadata`](field-metadata)\> | Field definitions |
+| <a id="migratedat"></a> `migratedAt` | `string` | Last migration timestamp (ISO string) |
+| <a id="migrationhistory"></a> `migrationHistory` | `string`[] | List of applied migration names |
+| <a id="relations"></a> `relations` | `Record`\<`string`, [`RelationMetadata`](relation-metadata)\> | Relation definitions |
+| <a id="version"></a> `version` | `number` | Schema version number (incremented on each change) |

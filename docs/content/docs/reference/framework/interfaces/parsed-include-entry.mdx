@@ -1,0 +1,17 @@
+---
+title: "ParsedIncludeEntry"
+---
+
+# Interface: ParsedIncludeEntry
+
+Parsed include entry with resolved options.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="field"></a> `field` | `string` | Relation field name. |
+| <a id="foreignkey"></a> `foreignKey?` | `string` | Foreign key field name (undefined for manyToMany). |
+| <a id="options"></a> `options` | [`IncludeOptions`](include-options) | Include options. |
+| <a id="targetmodel"></a> `targetModel` | `string` | Target model name. |
+| <a id="type"></a> `type` | [`RelationType`](../type-aliases/relation-type) | Relation type. |

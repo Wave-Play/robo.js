@@ -1,0 +1,15 @@
+---
+title: "HmrHookConfig"
+---
+
+# Interface: HmrHookConfig
+
+HMR hook configuration for filtering events.
+Export this from your hmr.ts hook to filter which events trigger the hook.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="namespaces"></a> `namespaces?` | `string`[] | Only trigger for these namespaces. If not specified, triggers for all namespaces. **Examples** `['server'] - Only server plugin routes` `['discordjs', 'server'] - Both Discord and server routes` |
+| <a id="routes"></a> `routes?` | `string`[] | Only trigger for these route types. If not specified, triggers for all routes. **Examples** `['api'] - Only API routes` `['commands', 'events'] - Both commands and events` |

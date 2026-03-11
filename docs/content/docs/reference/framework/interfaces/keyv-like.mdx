@@ -1,0 +1,122 @@
+---
+title: "KeyvLike<V>"
+---
+
+# Interface: KeyvLike\<V\>
+
+Keyv instance interface.
+Minimal typing to avoid requiring keyv as a dependency.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `V` | `unknown` |
+
+## Methods
+
+### clear()
+
+```ts
+clear(): Promise<void>
+```
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### delete()
+
+```ts
+delete(key): Promise<boolean>
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `string` |
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+***
+
+### get()
+
+```ts
+get(key): Promise<V>
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `string` |
+
+#### Returns
+
+`Promise`\<`V`\>
+
+***
+
+### has()?
+
+```ts
+optional has(key): Promise<boolean>
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `string` |
+
+#### Returns
+
+`Promise`\<`boolean`\>
+
+***
+
+### on()?
+
+```ts
+optional on(event, callback): void
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `event` | `string` |
+| `callback` | (...`args`) =\> `void` |
+
+#### Returns
+
+`void`
+
+***
+
+### set()
+
+```ts
+set(
+   key, 
+   value, 
+ttl?): Promise<true>
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `string` |
+| `value` | `V` |
+| `ttl`? | `number` |
+
+#### Returns
+
+`Promise`\<`true`\>

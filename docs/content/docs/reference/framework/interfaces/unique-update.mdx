@@ -1,0 +1,15 @@
+---
+title: "UniqueUpdate"
+---
+
+# Interface: UniqueUpdate
+
+Unique constraint update descriptor.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="id"></a> `id` | `string` | Record ID that owns this constraint. |
+| <a id="newkey"></a> `newKey` | `string` | New unique key to acquire (null if field is now null/undefined). |
+| <a id="oldkey"></a> `oldKey` | `string` | Old unique key to release (null if field was previously null/undefined). |

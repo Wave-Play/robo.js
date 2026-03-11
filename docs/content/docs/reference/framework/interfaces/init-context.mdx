@@ -1,0 +1,18 @@
+---
+title: "InitContext"
+---
+
+# Interface: InitContext
+
+Context provided to init hooks.
+Runs BEFORE manifest loading and portal population.
+Use for early setup like log drains, monkey-patching internals.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="env"></a> `env` | *typeof* [`Env`](../classes/env) | Environment variable access |
+| <a id="logger"></a> `logger` | [`Logger`](../../core/logger/classes/logger) | Logger instance |
+| <a id="mode"></a> `mode` | `string` | Current runtime mode (supports custom modes like 'beta', 'staging', etc.) |
+| <a id="projectconfig"></a> `projectConfig` | [`Config`](config) | Full project configuration |

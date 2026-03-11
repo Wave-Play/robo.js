@@ -1,0 +1,26 @@
+---
+title: "SetupContext"
+---
+
+# Interface: SetupContext
+
+Context provided to setup hooks.
+Runs during CLI operations: create-robo or robo add.
+
+## Properties
+
+| Property | Type |
+| ------ | ------ |
+| <a id="env"></a> `env` | *typeof* [`Env`](../classes/env) |
+| <a id="exec"></a> `exec` | (`command`: `string`) =\> `Promise`\<\{ `stderr`: `string`; `stdout`: `string`; \}\> |
+| <a id="logger"></a> `logger` | [`Logger`](../../core/logger/classes/logger) |
+| <a id="package"></a> `package` | \{ `name`: `string`; `type`: `"plugin"` \| `"template"`; `version`: `string`; \} |
+| `package.name` | `string` |
+| `package.type` | `"plugin"` \| `"template"` |
+| `package.version` | `string` |
+| <a id="paths"></a> `paths` | \{ `config`: `string`; `root`: `string`; `src`: `string`; \} |
+| `paths.config` | `string` |
+| `paths.root` | `string` |
+| `paths.src` | `string` |
+| <a id="prompt"></a> `prompt` | \<`T`\>(`questions`: [`PromptQuestion`](prompt-question)[]) =\> `Promise`\<`T`\> |
+| <a id="trigger"></a> `trigger` | `"add"` \| `"create"` |

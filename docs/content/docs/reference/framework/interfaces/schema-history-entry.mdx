@@ -1,0 +1,19 @@
+---
+title: "SchemaHistoryEntry"
+---
+
+# Interface: SchemaHistoryEntry
+
+Schema history entry for visual diff support.
+Stored at: _flashcore:schema-history:\{namespace\} (append-only array)
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="appliedat"></a> `appliedAt` | `string` | When this version was applied (ISO string) |
+| <a id="appliedby"></a> `appliedBy` | `"auto"` \| `"migration"` | How this change was applied |
+| <a id="changes"></a> `changes` | [`SchemaChange`](schema-change)[] | Changes applied in this version |
+| <a id="checksum"></a> `checksum` | `string` | Combined checksum at this version |
+| <a id="migrationname"></a> `migrationName?` | `string` | Migration name if applied by migration |
+| <a id="version"></a> `version` | `number` | Version number at this point in history |

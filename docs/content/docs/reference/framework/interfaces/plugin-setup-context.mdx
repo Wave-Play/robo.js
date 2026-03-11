@@ -1,0 +1,143 @@
+---
+title: "PluginSetupContext<TState>"
+---
+
+# Interface: PluginSetupContext\<TState\>
+
+Context passed to plugin setup() function.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `TState` | `Record`\<`string`, `unknown`\> |
+
+## Properties
+
+| Property | Modifier | Type | Description |
+| ------ | ------ | ------ | ------ |
+| <a id="models"></a> `models` | `readonly` | [`ModelInfo`](model-info)[] | Information about all registered models. |
+| <a id="state"></a> `state` | `public` | `TState` | Plugin state - persists across middleware calls. Initialized as empty object, can be mutated by plugin. |
+
+## Methods
+
+### getModel()
+
+```ts
+getModel<T>(name): FlashcoreModel<T>
+```
+
+Get a model by name.
+
+#### Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` *extends* \{ `id`: `string`; \} |
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `string` |
+
+#### Returns
+
+[`FlashcoreModel`](../classes/flashcore-model)\<`T`\>
+
+***
+
+### hasModel()
+
+```ts
+hasModel(name): boolean
+```
+
+Check if a model with the given name is registered.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### markModel()
+
+```ts
+markModel(
+   name, 
+   key, 
+   value): void
+```
+
+Mark a model with metadata (accessible via model.meta).
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `string` |
+| `key` | `string` |
+| `value` | `unknown` |
+
+#### Returns
+
+`void`
+
+***
+
+### registerIndex()
+
+```ts
+registerIndex(
+   model, 
+   field, 
+   indexType): void
+```
+
+Register a custom index for a field.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `model` | `string` |
+| `field` | `string` |
+| `indexType` | `string` |
+
+#### Returns
+
+`void`
+
+***
+
+### registerModel()
+
+```ts
+registerModel<T>(name, schema): FlashcoreModel<T>
+```
+
+Register a new model (for plugins that create helper models, like audit).
+
+#### Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` *extends* \{ `id`: `string`; \} |
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `string` |
+| `schema` | [`SchemaFields`](../type-aliases/schema-fields) |
+
+#### Returns
+
+[`FlashcoreModel`](../classes/flashcore-model)\<`T`\>

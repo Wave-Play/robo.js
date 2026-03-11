@@ -1,0 +1,17 @@
+---
+title: "RelationInfo"
+---
+
+# Interface: RelationInfo
+
+Relation metadata for a model.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="field"></a> `field` | `string` | Field name in the schema. |
+| <a id="foreignkey"></a> `foreignKey?` | `string` | Foreign key field name. |
+| <a id="ondelete"></a> `onDelete` | [`OnDeleteAction`](../type-aliases/on-delete-action) | Delete behavior. |
+| <a id="targetmodel"></a> `targetModel` | `string` | Target model name. |
+| <a id="type"></a> `type` | [`RelationType`](../type-aliases/relation-type) | Relation type. |

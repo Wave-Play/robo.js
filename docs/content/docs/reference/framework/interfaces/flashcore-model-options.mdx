@@ -1,0 +1,17 @@
+---
+title: "FlashcoreModelOptions"
+---
+
+# Interface: FlashcoreModelOptions
+
+Model options for registration.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="getmodel"></a> `getModel?` | (`name`: `string`) =\> [`FlashcoreModel`](../classes/flashcore-model)\<\{ `id`: `string`; \}\> | Function to get a model by name (for relations). Set by FlashcoreSystem when registering the model. |
+| <a id="getschema"></a> `getSchema?` | (`name`: `string`) =\> [`NormalizedSchema`](normalized-schema) | Function to get a model's schema by name (for cascades). Set by FlashcoreSystem when registering the model. |
+| <a id="hooks"></a> `hooks?` | [`ModelHooks`](model-hooks)\<`unknown`\> | - |
+| <a id="methods"></a> `methods?` | `Record`\<`string`, (...`args`) =\> `unknown`\> | - |
+| <a id="namespace"></a> `namespace?` | `string` | - |

@@ -1,0 +1,19 @@
+---
+title: "ResilienceOptions"
+---
+
+# Interface: ResilienceOptions
+
+Options for the resilience wrapper.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="isretryable"></a> `isRetryable?` | (`error`: `Error`) =\> `boolean` | Custom function to determine if an error is retryable. Default: checks for common transient error codes. |
+| <a id="jitter"></a> `jitter?` | `number` | Jitter factor for retry delays (0 to 1). Adds randomness to prevent thundering herd. Default: 0.1 |
+| <a id="maxretries"></a> `maxRetries?` | `number` | Maximum number of retry attempts. Default: 3 |
+| <a id="ondisconnect"></a> `onDisconnect?` | (`error`: `Error`) =\> `void` | Callback when adapter disconnects (after max retries exhausted). |
+| <a id="onreconnect"></a> `onReconnect?` | () =\> `void` | Callback when adapter reconnects (after successful retry). |
+| <a id="retrybasedelay"></a> `retryBaseDelay?` | `number` | Base delay for exponential backoff in milliseconds. Default: 100 |
+| <a id="retrymaxdelay"></a> `retryMaxDelay?` | `number` | Maximum delay between retries in milliseconds. Default: 5000 |

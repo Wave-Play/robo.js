@@ -1,0 +1,27 @@
+---
+title: "ProcessedEntry"
+---
+
+# Interface: ProcessedEntry
+
+A scanned entry after processing by the route processor.
+Includes extracted metadata for the manifest.
+
+## Extended by
+
+- [`HandlerEntry`](handler-entry)
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="auto"></a> `auto?` | `boolean` | Whether this entry was auto-generated. |
+| <a id="exports"></a> `exports` | \{ `config`: `boolean`; `default`: `boolean`; `named`: `string`[]; \} | Which exports this handler has. Used for lazy loading - can check capabilities before importing. |
+| `exports.config` | `boolean` | Whether config export exists |
+| `exports.default` | `boolean` | Whether default export exists |
+| `exports.named` | `string`[] | List of named exports found (e.g., ['GET', 'POST']) |
+| <a id="extra"></a> `extra?` | `Record`\<`string`, `unknown`\> | Additional data for special cases. **Examples** `{ parent: 'admin', type: 'subcommand' } for Discord` `{ catchAll: { param: 'path', optional: false } } for Server` |
+| <a id="key"></a> `key` | `string` | The handler key. **Example** `"ping", "admin ban", "users/[id]", "auth/[...path]"` |
+| <a id="metadata"></a> `metadata` | `Record`\<`string`, `unknown`\> | Metadata extracted from the handler's config export. Structure depends on the route type. |
+| <a id="module"></a> `module?` | `string` | Module name if from /src/modules/. |
+| <a id="path"></a> `path` | `string` | Path to the handler file (for manifest). **Example** `"commands/admin/ban.js"` |

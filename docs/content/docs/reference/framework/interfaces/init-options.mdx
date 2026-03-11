@@ -1,0 +1,44 @@
+---
+title: "InitOptions"
+---
+
+# Interface: InitOptions
+
+Options for Flashcore.$.init().
+
+## Extends
+
+- `Partial`\<[`FlashcoreConfig`](flashcore-config)\>
+
+## Properties
+
+| Property | Type | Description | Overrides | Inherited from |
+| ------ | ------ | ------ | ------ | ------ |
+| <a id="adapter"></a> `adapter?` | [`FlashcoreAdapter`](flashcore-adapter)\<`string`, `unknown`\> | The storage adapter (required if not using default). | `Partial.adapter` | - |
+| <a id="autorepair"></a> `autoRepair?` | \| `boolean` \| \{ `catalog`: `boolean`; `filter`: `boolean`; `indexes`: `boolean`; `uniqueIndexes`: `boolean`; \} | Auto-repair configuration. | - | `Partial.autoRepair` |
+| <a id="connection"></a> `connection?` | \{ `maxRetries`: `number`; `retryBaseDelay`: `number`; `retryMaxDelay`: `number`; \} | Connection/retry settings. | - | `Partial.connection` |
+| `connection.maxRetries?` | `number` | - | - | - |
+| `connection.retryBaseDelay?` | `number` | - | - | - |
+| `connection.retryMaxDelay?` | `number` | - | - | - |
+| <a id="indexpersistence"></a> `indexPersistence?` | \{ `flushOnShutdown`: `boolean`; `intervalMs`: `number`; `maxInMemoryRecords`: `number`; `memoryLimit`: `number`; `shutdownTimeout`: `number`; `strategy`: `"immediate"` \| `"batched"` \| `"periodic"`; \} | Index persistence configuration. | - | `Partial.indexPersistence` |
+| `indexPersistence.flushOnShutdown?` | `boolean` | - | - | - |
+| `indexPersistence.intervalMs?` | `number` | - | - | - |
+| `indexPersistence.maxInMemoryRecords?` | `number` | Maximum records to hold in memory before evicting (default: 100000) | - | - |
+| `indexPersistence.memoryLimit?` | `number` | Maximum memory for indexes in bytes (default: 50MB) | - | - |
+| `indexPersistence.shutdownTimeout?` | `number` | - | - | - |
+| `indexPersistence.strategy?` | `"immediate"` \| `"batched"` \| `"periodic"` | - | - | - |
+| <a id="kvreadpreference"></a> `kvReadPreference?` | `"legacy"` \| `"v1"` | KV read preference for dual-key resolution. - 'legacy': prefer legacy composed key format (default for robo.js import) - 'v1': prefer safe encoded key format (default for robo.js/flashcore import) | - | `Partial.kvReadPreference` |
+| <a id="kvwritemode"></a> `kvWriteMode?` | `"legacy"` \| `"v1"` \| `"dual"` | KV write mode for key storage. - 'legacy': write only legacy key format - 'v1': write only safe key format - 'dual': write both formats (for migration) | - | `Partial.kvWriteMode` |
+| <a id="lazyloading"></a> `lazyLoading?` | `boolean` | Enable lazy loading of catalogs/indexes. | - | `Partial.lazyLoading` |
+| <a id="namespaceseparator"></a> `namespaceSeparator?` | `string` | Namespace separator for joining array namespaces. Default: '/' | - | `Partial.namespaceSeparator` |
+| <a id="plugins"></a> `plugins?` | [`FlashcorePlugin`](flashcore-plugin)[] | Flashcore plugins to apply. | - | `Partial.plugins` |
+| <a id="safety"></a> `safety?` | \{ `maxBulkOperationWithoutWhere`: `number`; `maxDefaultResults`: `number`; `warnResultsThreshold`: `number`; \} | Safety limits. | - | `Partial.safety` |
+| `safety.maxBulkOperationWithoutWhere?` | `number` | - | - | - |
+| `safety.maxDefaultResults?` | `number` | - | - | - |
+| `safety.warnResultsThreshold?` | `number` | - | - | - |
+| <a id="transactions"></a> `transactions?` | \{ `maxRetries`: `number`; `mode`: `"auto"` \| `"native"` \| `"batch"` \| `"optimistic"` \| `"serial"` \| `"single"`; `retryDelay`: `number`; `timeout`: `number`; \} | Transaction configuration. | - | `Partial.transactions` |
+| `transactions.maxRetries?` | `number` | - | - | - |
+| `transactions.mode?` | `"auto"` \| `"native"` \| `"batch"` \| `"optimistic"` \| `"serial"` \| `"single"` | - | - | - |
+| `transactions.retryDelay?` | `number` | - | - | - |
+| `transactions.timeout?` | `number` | - | - | - |
+| <a id="wal"></a> `wal?` | [`WALConfig`](wal-config) | WAL configuration (Phase 4). | - | `Partial.wal` |

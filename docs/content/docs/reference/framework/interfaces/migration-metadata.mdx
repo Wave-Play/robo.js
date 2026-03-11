@@ -1,0 +1,19 @@
+---
+title: "MigrationMetadata"
+---
+
+# Interface: MigrationMetadata
+
+Migration metadata stored in adapter.
+Stored at: _flashcore:migrations:\{name\}
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="appliedat"></a> `appliedAt?` | `string` | When the migration was applied (ISO string) |
+| <a id="checksum"></a> `checksum` | `string` | Checksum of migration code for drift detection |
+| <a id="error"></a> `error?` | `string` | Error message if failed |
+| <a id="name"></a> `name` | `string` | Migration name |
+| <a id="rollbackattempted"></a> `rollbackAttempted?` | `boolean` | Whether rollback was attempted |
+| <a id="status"></a> `status` | [`MigrationStatus`](../type-aliases/migration-status) | Current status |

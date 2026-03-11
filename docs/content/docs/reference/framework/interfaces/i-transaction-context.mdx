@@ -1,0 +1,84 @@
+---
+title: "ITransactionContext"
+---
+
+# Interface: ITransactionContext
+
+Transaction context interface exposed to user code.
+
+Provides methods for reading and staging writes within a transaction.
+
+## Properties
+
+| Property | Modifier | Type | Description |
+| ------ | ------ | ------ | ------ |
+| <a id="mode"></a> `mode` | `readonly` | [`ResolvedTransactionMode`](../type-aliases/resolved-transaction-mode) | Get the current transaction mode. |
+| <a id="mutationcount"></a> `mutationCount` | `readonly` | `number` | Get mutation count so far. |
+
+## Methods
+
+### delete()
+
+```ts
+delete(key): void
+```
+
+Stage a delete operation. Executed on commit.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `string` |
+
+#### Returns
+
+`void`
+
+***
+
+### read()
+
+```ts
+read<V>(key): Promise<V>
+```
+
+Read a value within the transaction.
+The value is tracked for conflict detection in optimistic mode.
+
+#### Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `V` | `unknown` |
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `string` |
+
+#### Returns
+
+`Promise`\<`V`\>
+
+***
+
+### set()
+
+```ts
+set(key, value): void
+```
+
+Stage a set operation. Written on commit.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `string` |
+| `value` | `unknown` |
+
+#### Returns
+
+`void`

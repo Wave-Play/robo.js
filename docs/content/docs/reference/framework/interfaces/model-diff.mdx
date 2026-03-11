@@ -1,0 +1,16 @@
+---
+title: "ModelDiff"
+---
+
+# Interface: ModelDiff
+
+Diff for a single model between versions.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="added"></a> `added` | `string`[] | Fields added in this diff |
+| <a id="modelname"></a> `modelName` | `string` | Model name |
+| <a id="modified"></a> `modified` | [`FieldDiffEntry`](field-diff-entry)[] | Fields that changed |
+| <a id="removed"></a> `removed` | `string`[] | Fields removed in this diff |

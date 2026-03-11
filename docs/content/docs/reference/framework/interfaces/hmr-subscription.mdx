@@ -1,0 +1,22 @@
+---
+title: "HmrSubscription"
+---
+
+# Interface: HmrSubscription
+
+Subscription handle returned by `hmr.subscribe()`.
+
+## Methods
+
+### unsubscribe()
+
+```ts
+unsubscribe(): void
+```
+
+Unsubscribe from HMR events.
+After calling this, the callback will no longer be invoked.
+
+#### Returns
+
+`void`

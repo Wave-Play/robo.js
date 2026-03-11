@@ -1,0 +1,16 @@
+---
+title: "SpiritMessage"
+---
+
+# Interface: SpiritMessage
+
+## Properties
+
+| Property | Type |
+| ------ | ------ |
+| <a id="error"></a> `error?` | `unknown` |
+| <a id="event"></a> `event?` | \| `"ready"` \| `"start"` \| `"stop"` \| `"restart"` \| `"build"` \| `"get-state"` \| `"command"` \| `"set-state"` \| `"hmr-compile"` \| `"hmr-reload-handler"` \| `"hmr-reload-route"` \| `"hmr-status"` \| `"hmr-notify"` |
+| <a id="loglevel"></a> `logLevel?` | [`LogLevel`](../../core/logger/type-aliases/log-level) |
+| <a id="payload"></a> `payload?` | `unknown` |
+| <a id="state"></a> `state?` | `Record`\<`string`, `unknown`\> |
+| <a id="verbose"></a> `verbose?` | `boolean` |

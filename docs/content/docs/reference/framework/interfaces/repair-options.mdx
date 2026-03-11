@@ -1,0 +1,17 @@
+---
+title: "RepairOptions"
+---
+
+# Interface: RepairOptions
+
+Options for repair operations.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="dryrun"></a> `dryRun?` | `boolean` | Dry run - report what would be repaired without making changes |
+| <a id="onprogress"></a> `onProgress?` | (`progress`: [`RepairProgress`](repair-progress)) =\> `void` | Progress callback |
+| <a id="repairfilter"></a> `repairFilter?` | `boolean` | Repair filter |
+| <a id="repairsortedindexes"></a> `repairSortedIndexes?` | `boolean` | Repair sorted indexes |
+| <a id="repairuniqueindexes"></a> `repairUniqueIndexes?` | `boolean` | Repair unique indexes |

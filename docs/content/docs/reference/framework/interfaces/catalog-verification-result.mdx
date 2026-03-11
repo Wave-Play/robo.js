@@ -1,0 +1,16 @@
+---
+title: "CatalogVerificationResult"
+---
+
+# Interface: CatalogVerificationResult
+
+Result of catalog verification.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="isvalid"></a> `isValid` | `boolean` | Whether the catalog is valid |
+| <a id="missingrecords"></a> `missingRecords` | `string`[] | Record IDs in catalog but missing from storage |
+| <a id="orphanedrecords"></a> `orphanedRecords` | `string`[] | Record IDs in storage but missing from catalog |
+| <a id="warnings"></a> `warnings` | `string`[] | Non-critical warnings |

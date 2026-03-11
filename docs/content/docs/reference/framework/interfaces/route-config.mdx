@@ -1,0 +1,23 @@
+---
+title: "RouteConfig"
+---
+
+# Interface: RouteConfig
+
+Configuration for a route definition.
+Each route tells Robo.js how to scan a directory and process its files.
+
+Note: The directory to scan is inferred from the route filename.
+/src/robo/routes/commands.ts → scans /src/commands/
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="description"></a> `description?` | `string` | Human-readable description for documentation. |
+| <a id="exports"></a> `exports?` | [`ExportsConfig`](exports-config) | Configuration for which exports to capture from handler files. Enables named exports like GET, POST, etc. |
+| <a id="filter"></a> `filter?` | `RegExp` | Regex pattern to filter files. Non-matching files are excluded from scanning. **Example** `/^(?!_)/ excludes files starting with underscore` |
+| <a id="key"></a> `key` | [`KeyConfig`](key-config) | Configuration for generating handler keys from file paths. |
+| <a id="multiple"></a> `multiple?` | `boolean` | If true, multiple handlers can share the same key. Used for events where multiple listeners are common. **Default** `false` |
+| <a id="nesting"></a> `nesting?` | [`NestingConfig`](nesting-config) | Configuration for handling nested directories. |
+| <a id="singular"></a> `singular?` | `string` | Singular accessor name for portal controller access. Used to derive the singular form of the route name for controller factories. **Example** `"command" for "commands", "contextMenu" for "context"` **Default** `Derived by removing trailing 's' from route name` |

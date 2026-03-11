@@ -1,0 +1,22 @@
+---
+title: "PluginManifestInfo"
+---
+
+# Interface: PluginManifestInfo
+
+Minimal plugin manifest info for seed operations.
+Used during CLI operations (robo add) to seed files and env variables.
+
+This is NOT the runtime manifest. For runtime access, use the `Manifest` API:
+- `Manifest.routes(namespace, route)` - Get handler entries
+- `Manifest.hooks(hookType)` - Get lifecycle hooks
+- `Manifest.config()` - Get project config
+- `Manifest.seeds(pluginName)` - Get seed config
+- `Manifest.project()` - Get project metadata
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="language"></a> `language` | `"javascript"` \| `"typescript"` | Source language of the plugin |
+| <a id="seed"></a> `seed?` | [`ManifestSeed`](manifest-seed) | Seed configuration for the plugin |

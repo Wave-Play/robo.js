@@ -1,0 +1,17 @@
+---
+title: "MigrationContext"
+---
+
+# Interface: MigrationContext
+
+Context passed to migration up/down functions.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="adapter"></a> `adapter` | `unknown` | Get adapter for advanced operations. |
+| <a id="batch"></a> `batch` | \<`T`\>(`items`: `T`[], `batchSize`: `number`, `fn`: (`batch`) =\> `Promise`\<`void`\>) =\> `Promise`\<`void`\> | Process items in batches with progress reporting. |
+| <a id="model"></a> `model` | \<`T`\>(`name`: `string`) =\> [`MigrationModelAccessor`](migration-model-accessor)\<`T`\> | Access model for CRUD operations. Usage: ctx.model('user').findMany(\{ where: \{ ... \} \}) |
+| <a id="progress"></a> `progress` | (`message`: `string`) =\> `void` | Report progress to the user. |
+| <a id="raw"></a> `raw` | (`operation`: `string`) =\> `Promise`\<`void`\> | Execute a raw operation (advanced usage). Warning: This bypasses normal safeguards. |

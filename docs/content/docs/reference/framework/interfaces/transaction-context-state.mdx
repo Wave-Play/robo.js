@@ -1,0 +1,17 @@
+---
+title: "TransactionContextState"
+---
+
+# Interface: TransactionContextState
+
+Internal transaction context state.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="completed"></a> `completed` | `boolean` | Whether the transaction has been committed or rolled back. |
+| <a id="deletes"></a> `deletes` | `Set`\<`string`\> | Staged delete operations. |
+| <a id="mutationcount"></a> `mutationCount` | `number` | Mutation count for single-mode enforcement. |
+| <a id="readversions"></a> `readVersions` | `Map`\<`string`, `number`\> | Read set for version tracking (optimistic mode). Maps composite key "model:id" to the version read. |
+| <a id="staged"></a> `staged` | `Map`\<`string`, `unknown`\> | Staged set operations. |

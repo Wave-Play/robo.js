@@ -1,0 +1,15 @@
+---
+title: "MigrationLock"
+---
+
+# Interface: MigrationLock
+
+Migration lock data.
+Stored at: _flashcore:migrations:lock
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="acquiredat"></a> `acquiredAt` | `string` | When the lock was acquired (ISO string) |
+| <a id="holder"></a> `holder` | `string` | Unique identifier of the lock holder |

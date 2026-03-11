@@ -1,0 +1,24 @@
+---
+title: "FlashcoreMetrics"
+---
+
+# Interface: FlashcoreMetrics
+
+Metrics counters for performance tracking.
+
+## Properties
+
+| Property | Type |
+| ------ | ------ |
+| <a id="avgquerytime"></a> `avgQueryTime` | `number` |
+| <a id="cachehits"></a> `cacheHits` | `number` |
+| <a id="cachemisses"></a> `cacheMisses` | `number` |
+| <a id="indexrebuilds"></a> `indexRebuilds` | `number` |
+| <a id="operations"></a> `operations` | \{ `create`: `number`; `delete`: `number`; `findMany`: `number`; `findUnique`: `number`; `update`: `number`; \} |
+| `operations.create` | `number` |
+| `operations.delete` | `number` |
+| `operations.findMany` | `number` |
+| `operations.findUnique` | `number` |
+| `operations.update` | `number` |
+| <a id="transactionretries"></a> `transactionRetries` | `number` |
+| <a id="walrecoveries"></a> `walRecoveries` | `number` |

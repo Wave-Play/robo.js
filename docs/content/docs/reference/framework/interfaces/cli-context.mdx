@@ -1,0 +1,42 @@
+---
+title: "CliContext<C>"
+---
+
+# Interface: CliContext\<C\>
+
+Context passed to CLI command handlers.
+Pass your config type as the generic parameter to get typed options.
+
+## Example
+
+```ts
+import { createCliCommandConfig, type CliContext } from 'robo.js/cli.js'
+
+export const config = createCliCommandConfig({
+  description: 'My command',
+  options: [
+    { alias: '-n', name: '--name', type: 'string', required: true }
+  ]
+} as const)
+
+export default function myCommand(ctx: CliContext<typeof config>) {
+  ctx.options.name // TypeScript knows this is `string`
+}
+```
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `C` *extends* [`CliCommandConfig`](cli-command-config) \| `undefined` | `undefined` |
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="args"></a> `args` | `string`[] | Parsed positional arguments |
+| <a id="argv"></a> `argv` | `string`[] | Raw argv after command name |
+| <a id="cwd"></a> `cwd` | `string` | Project working directory |
+| <a id="logger"></a> `logger` | [`Logger`](../../core/logger/classes/logger) | Logger instance (forked for plugins) |
+| <a id="options"></a> `options` | `C` *extends* [`CliCommandConfig`](cli-command-config) ? [`CliOptionsFromConfig`](../type-aliases/cli-options-from-config)\<`C`\<`C`\>\> : `Record`\<`string`, `unknown`\> | Parsed options (flag values) - typed when using createCliCommandConfig |
+| <a id="result"></a> `result?` | `unknown` | Result data from command handler (available to after hooks) |

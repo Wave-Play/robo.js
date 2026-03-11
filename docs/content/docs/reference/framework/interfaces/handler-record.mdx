@@ -1,0 +1,35 @@
+---
+title: "HandlerRecord<THandler, TNamedExports>"
+---
+
+# Interface: HandlerRecord\<THandler, TNamedExports\>
+
+Handler record representing a registered handler in the portal.
+The handler field is null until lazy-loaded.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `THandler` | `unknown` |
+| `TNamedExports` | `Record`\<`string`, `unknown`\> |
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="auto"></a> `auto?` | `boolean` | Whether this handler was auto-generated |
+| <a id="enabled"></a> `enabled` | `boolean` | Runtime enable/disable state |
+| <a id="exports"></a> `exports` | \{ `config`: `boolean`; `default`: `boolean`; `named`: `string`[]; \} | Which exports this handler has (from manifest). Available BEFORE handler is imported. |
+| `exports.config` | `boolean` | - |
+| `exports.default` | `boolean` | - |
+| `exports.named` | `string`[] | - |
+| <a id="handler"></a> `handler` | [`HandlerModule`](handler-module)\<`THandler`, `Record`\<`string`, `unknown`\>\> & `TNamedExports` | Handler module. NULL until imported (lazy loading). After import, contains default, config, and named exports. |
+| <a id="key"></a> `key` | `string` | Handler key (e.g., 'ping', 'admin ban') |
+| <a id="metadata"></a> `metadata` | `Record`\<`string`, `unknown`\> | Metadata extracted from config export |
+| <a id="module"></a> `module?` | `string` | Module this handler belongs to (for cross-cutting enable/disable) |
+| <a id="path"></a> `path` | `string` | Path to the compiled handler file |
+| <a id="plugin"></a> `plugin?` | \{ `name`: `string`; `version`: `string`; \} | Plugin that provides this handler |
+| `plugin.name` | `string` | - |
+| `plugin.version` | `string` | - |
+| <a id="type"></a> `type` | `string` | Route type in namespace:route format (e.g., 'discord:commands') |

@@ -1,0 +1,15 @@
+---
+title: "CliManifest"
+---
+
+# Interface: CliManifest
+
+CLI manifest structure.
+Stored at .robo/manifest/cli/@.json (mode-agnostic)
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="commands"></a> `commands` | `Record`\<`string`, [`CliCommandEntry`](cli-command-entry)\> | New commands indexed by command path (e.g., 'tunnel start') |
+| <a id="extensions"></a> `extensions` | `Record`\<`string`, [`CliExtensionEntry`](cli-extension-entry)[]\> | Extensions indexed by target command name |

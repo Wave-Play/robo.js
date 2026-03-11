@@ -1,0 +1,16 @@
+---
+title: "HmrRouteInfo"
+---
+
+# Interface: HmrRouteInfo
+
+Route info for HMR events.
+Groups handlers by namespace and route type.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="handlers"></a> `handlers` | [`HmrHandlerInfo`](hmr-handler-info)[] | Handlers affected within this route |
+| <a id="namespace"></a> `namespace` | `string` | Plugin namespace (e.g., 'server', 'discordjs') |
+| <a id="route"></a> `route` | `string` | Route type (e.g., 'api', 'commands', 'events') |

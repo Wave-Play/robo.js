@@ -1,0 +1,22 @@
+---
+title: "EnvMetadata"
+---
+
+# Interface: EnvMetadata
+
+Environment variable metadata stored in env.json.
+Useful for debugging configuration issues without exposing secrets.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="required"></a> `required` | \{ `missing`: `string`[]; `satisfied`: `string`[]; \} | Required variable status |
+| `required.missing` | `string`[] | Required variables that are missing |
+| `required.satisfied` | `string`[] | Required variables that are satisfied |
+| <a id="summary"></a> `summary` | \{ `empty`: `number`; `missing`: `number`; `set`: `number`; `total`: `number`; \} | Summary statistics |
+| `summary.empty` | `number` | Number of variables that exist but are empty |
+| `summary.missing` | `number` | Number of variables that are not defined |
+| `summary.set` | `number` | Number of variables that are set with values |
+| `summary.total` | `number` | Total number of environment variables checked |
+| <a id="variables"></a> `variables` | `Record`\<`string`, [`EnvVariableStatus`](env-variable-status)\> | Status of each environment variable |

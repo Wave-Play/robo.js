@@ -1,0 +1,20 @@
+---
+title: "RegisteredMigration"
+---
+
+# Interface: RegisteredMigration
+
+Registered migration with computed checksum.
+
+## Extends
+
+- [`MigrationDefinition`](migration-definition)
+
+## Properties
+
+| Property | Type | Description | Inherited from |
+| ------ | ------ | ------ | ------ |
+| <a id="checksum"></a> `checksum` | `string` | Checksum of migration code for drift detection | - |
+| <a id="down"></a> `down?` | (`ctx`: [`MigrationContext`](migration-context)) =\> `Promise`\<`void`\> | Rollback migration function (optional) | [`MigrationDefinition`](migration-definition).[`down`](migration-definition#down) |
+| <a id="name"></a> `name` | `string` | Unique name for this migration | [`MigrationDefinition`](migration-definition).[`name`](migration-definition#name) |
+| <a id="up"></a> `up` | (`ctx`: [`MigrationContext`](migration-context)) =\> `Promise`\<`void`\> | Forward migration function | [`MigrationDefinition`](migration-definition).[`up`](migration-definition#up) |

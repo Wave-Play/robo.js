@@ -1,0 +1,60 @@
+---
+title: "ModelTransactionContext"
+---
+
+# Interface: ModelTransactionContext
+
+Model-level transaction context for bulk operations.
+Allows models to participate in a shared transaction.
+
+## Properties
+
+| Property | Modifier | Type | Description |
+| ------ | ------ | ------ | ------ |
+| <a id="context"></a> `context` | `readonly` | [`ITransactionContext`](i-transaction-context) | Get the underlying transaction context. |
+
+## Methods
+
+### stageOperation()
+
+```ts
+stageOperation(model, op): void
+```
+
+Stage a model operation.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `model` | `string` |
+| `op` | [`StagedOperation`](../type-aliases/staged-operation) |
+
+#### Returns
+
+`void`
+
+***
+
+### trackRead()
+
+```ts
+trackRead(
+   model, 
+   id, 
+   version): void
+```
+
+Track a read for version checking.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `model` | `string` |
+| `id` | `string` |
+| `version` | `number` |
+
+#### Returns
+
+`void`

@@ -1,0 +1,17 @@
+---
+title: "CuckooFilterOptions"
+---
+
+# Interface: CuckooFilterOptions
+
+Options for creating a Cuckoo filter.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="bucketsize"></a> `bucketSize?` | `number` | Number of entries per bucket (default: 4) |
+| <a id="fpsize"></a> `fpSize?` | `number` | Fingerprint size in bits (default: 16) |
+| <a id="loadfactor"></a> `loadFactor?` | `number` | Load factor threshold for resize (default: 0.95) |
+| <a id="maxkicks"></a> `maxKicks?` | `number` | Maximum kick attempts before resize (default: 500) |
+| <a id="numbuckets"></a> `numBuckets?` | `number` | Initial number of buckets (default: 256) |

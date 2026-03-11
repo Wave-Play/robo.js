@@ -1,0 +1,18 @@
+---
+title: "IncludeOptions"
+---
+
+# Interface: IncludeOptions
+
+Options for include clause parsing.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="include"></a> `include?` | `IncludeClause` | Nested include for related records. |
+| <a id="orderby"></a> `orderBy?` | `Record`\<`string`, `"asc"` \| `"desc"`\> | Order for related records (hasMany, manyToMany). |
+| <a id="select"></a> `select?` | `Record`\<`string`, `boolean`\> | Select specific fields from the related record(s). |
+| <a id="skip"></a> `skip?` | `number` | Skip records (hasMany, manyToMany). |
+| <a id="take"></a> `take?` | `number` | Limit number of related records (hasMany, manyToMany). |
+| <a id="where"></a> `where?` | `Record`\<`string`, `unknown`\> | Filter for related records (hasMany, manyToMany). |

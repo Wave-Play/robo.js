@@ -1,0 +1,19 @@
+---
+title: "SchemaChange"
+---
+
+# Interface: SchemaChange
+
+Schema change descriptor.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="description"></a> `description` | `string` | Human-readable description |
+| <a id="field"></a> `field?` | `string` | Affected field name |
+| <a id="model"></a> `model?` | `string` | Affected model name |
+| <a id="newvalue"></a> `newValue?` | `unknown` | New value (for change operations) |
+| <a id="oldvalue"></a> `oldValue?` | `unknown` | Previous value (for change operations) |
+| <a id="safe"></a> `safe` | `boolean` | Whether this change is safe to auto-apply |
+| <a id="type"></a> `type` | [`SchemaChangeType`](../type-aliases/schema-change-type) | Type of change |

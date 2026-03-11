@@ -1,0 +1,39 @@
+---
+title: "Config"
+---
+
+# Interface: Config
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="excludepaths"></a> `excludePaths?` | `string`[] | - |
+| <a id="experimental"></a> `experimental?` | \{ `buildDirectory`: `BuildDirectoryOption`; `incrementalBuilds`: `boolean`; \} | - |
+| `experimental.buildDirectory?` | `BuildDirectoryOption` | Custom build output directory. Can be a static string (bypasses mode logic) or a function that receives context with the current mode for dynamic resolution. **Examples** `// Static string buildDirectory: 'dist'` `// Dynamic function buildDirectory: (ctx) => `dist/$\{ctx.mode\}`` |
+| `experimental.incrementalBuilds?` | `boolean` | - |
+| <a id="flashcore"></a> `flashcore?` | \{ `keyv`: `unknown`; `namespaceSeparator`: `string`; \} | - |
+| `flashcore.keyv?` | `unknown` | - |
+| `flashcore.namespaceSeparator?` | `string` | Separator placed between namespace and key when composing Flashcore keys. Defaults to "/". |
+| <a id="logger"></a> `logger?` | \{ `colorMap`: `boolean`; `drain`: [`LogDrain`](../../core/logger/type-aliases/log-drain); `enabled`: `boolean`; `files`: [`FileOutputConfig`](file-output-config)[]; `level`: [`LogLevel`](../../core/logger/type-aliases/log-level); `timestamp`: [`TimestampFormat`](../type-aliases/timestamp-format); \} | - |
+| `logger.colorMap?` | `boolean` | Generate companion .colormap files for file-based log outputs. These files record ANSI escape code positions, allowing colors to be reconstructed. Individual file configs can override this setting. Default: false |
+| `logger.drain?` | [`LogDrain`](../../core/logger/type-aliases/log-drain) | - |
+| `logger.enabled?` | `boolean` | - |
+| `logger.files?` | [`FileOutputConfig`](file-output-config)[] | File-based log outputs. In development mode, defaults to logs/dev.log if undefined. |
+| `logger.level?` | [`LogLevel`](../../core/logger/type-aliases/log-level) | - |
+| `logger.timestamp?` | [`TimestampFormat`](../type-aliases/timestamp-format) | Global timestamp format for all log outputs. Default: false (no timestamps) |
+| <a id="namespace"></a> `namespace?` | `string` | Portal namespace for plugin routes. If omitted, inferred from package name: - @robojs/discord → 'discord' - @robojs/server → 'server' - robo-plugin-analytics → 'analytics' |
+| <a id="plugins"></a> `plugins?` | [`Plugin`](../type-aliases/plugin)[] | - |
+| <a id="portal"></a> `portal?` | \{ `keepRegistered`: `boolean`; `loading`: `"eager"` \| `"lazy"`; \} | - |
+| `portal.keepRegistered?` | `boolean` | When true, disabling a module or component won't unregister commands, events, etc. |
+| `portal.loading?` | `"eager"` \| `"lazy"` | Handler loading strategy. - 'eager': Import all handlers at startup (faster runtime, slower startup) - 'lazy': Import handlers on first access (faster startup, slower first access) Defaults to 'eager' in production, 'lazy' in development. |
+| <a id="roboplay"></a> `roboplay?` | \{ `node`: `"18"` \| `"20"` \| `"latest"`; \} | - |
+| `roboplay.node?` | `"18"` \| `"20"` \| `"latest"` | - |
+| <a id="seed"></a> `seed?` | [`SeedHookConfig`](seed-hook-config) | Configure seed helpers that generate starter files and environment values. |
+| <a id="timeouts"></a> `timeouts?` | \{ `lifecycle`: `number`; \} | - |
+| `timeouts.lifecycle?` | `number` | - |
+| <a id="type"></a> `type?` | `"plugin"` \| `"robo"` | - |
+| <a id="updatecheckinterval"></a> `updateCheckInterval?` | `number` | How often to check for updates to Robo.js in seconds. Default: 1 hour |
+| <a id="watcher"></a> `watcher?` | \{ `commands`: `string`[]; `ignore`: `string`[]; \} | - |
+| `watcher.commands?` | `string`[] | Shell commands to spawn as companion processes during --watch mode. Each command runs once when the watcher starts and is killed on exit. |
+| `watcher.ignore?` | `string`[] | - |

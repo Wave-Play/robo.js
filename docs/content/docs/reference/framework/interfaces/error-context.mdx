@@ -1,0 +1,19 @@
+---
+title: "ErrorContext"
+---
+
+# Interface: ErrorContext
+
+Context provided to error hooks.
+Fires when unhandled errors occur (rejection or exception).
+Runs in PARALLEL with a short timeout - errors must complete quickly.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="env"></a> `env` | *typeof* [`Env`](../classes/env) | Environment variable access |
+| <a id="error"></a> `error` | `unknown` | The error that occurred |
+| <a id="logger"></a> `logger` | [`Logger`](../../core/logger/classes/logger) | Logger instance (forked for plugins) |
+| <a id="mode"></a> `mode` | `string` | Current runtime mode |
+| <a id="type"></a> `type` | `"unhandledRejection"` \| `"uncaughtException"` | Type of error: 'unhandledRejection' or 'uncaughtException' |

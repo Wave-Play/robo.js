@@ -1,0 +1,19 @@
+---
+title: "IndexPersistenceOptions"
+---
+
+# Interface: IndexPersistenceOptions
+
+Options for the IndexPersistenceManager.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="batchsize"></a> `batchSize?` | `number` | Maximum dirty entries before forcing a flush (for batched strategy) |
+| <a id="flushonshutdown"></a> `flushOnShutdown?` | `boolean` | Whether to flush on process shutdown |
+| <a id="intervalms"></a> `intervalMs?` | `number` | Interval for periodic flush in milliseconds |
+| <a id="maxinmemoryrecords"></a> `maxInMemoryRecords?` | `number` | Maximum records to hold in memory |
+| <a id="memorylimit"></a> `memoryLimit?` | `number` | Maximum memory for indexes in bytes |
+| <a id="shutdowntimeout"></a> `shutdownTimeout?` | `number` | Maximum time to wait for flush on shutdown (ms) |
+| <a id="strategy"></a> `strategy?` | `"immediate"` \| `"batched"` \| `"periodic"` | Persistence strategy: immediate, batched, or periodic |

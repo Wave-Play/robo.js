@@ -1,0 +1,14 @@
+---
+title: "CliExtendConfig"
+---
+
+# Interface: CliExtendConfig
+
+Configuration for extending an existing CLI command.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="options"></a> `options?` | [`CliOptionConfig`](cli-option-config)[] | Options to add to the existing command |
+| <a id="priority"></a> `priority?` | `number` | Priority for option conflicts (higher wins). Default: 0 |

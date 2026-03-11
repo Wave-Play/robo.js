@@ -1,0 +1,16 @@
+---
+title: "WalSegmentInfo"
+---
+
+# Interface: WalSegmentInfo
+
+Segmentation info for large WAL entries.
+When an entry exceeds maxValueSize, deltas are split across
+multiple segment keys: _flashcore:wal:seg:\{id\}:\{n\}
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="parts"></a> `parts` | `number` | Number of segment parts. |
+| <a id="partsize"></a> `partSize` | `number` | Size of each part in bytes (approximate). |

@@ -1,0 +1,93 @@
+---
+title: "BuildCompleteContext"
+---
+
+# Interface: BuildCompleteContext
+
+Context provided to build/complete.ts hooks.
+Runs AFTER manifest is written.
+
+**Hook signature:** `(context: BuildCompleteContext) => void | Promise<void>`
+
+Use this hook to perform post-build tasks like:
+- Registering commands with Discord
+- Generating additional files
+- Logging build summaries
+
+## Example
+
+```typescript
+export default function (context: BuildCompleteContext) {
+  const commands = context.entries.get('discordjs', 'commands')
+  context.logger.info(`Built ${commands.length} commands`)
+}
+```
+
+## Extends
+
+- [`BuildContext`](build-context)
+
+## Properties
+
+| Property | Type | Description | Overrides | Inherited from |
+| ------ | ------ | ------ | ------ | ------ |
+| <a id="config"></a> `config` | [`Config`](config) | Loaded configuration | - | [`BuildContext`](build-context).[`config`](build-context#config) |
+| <a id="entries"></a> `entries` | [`EntriesAccessor`](entries-accessor) | Entries accessor is always available in complete hooks | [`BuildContext`](build-context).[`entries`](build-context#entries) | - |
+| <a id="env"></a> `env` | *typeof* [`Env`](../classes/env) | Environment variable access | - | [`BuildContext`](build-context).[`env`](build-context#env) |
+| <a id="logger"></a> `logger` | [`Logger`](../../core/logger/classes/logger) | Logger instance (forked for plugins) | - | [`BuildContext`](build-context).[`logger`](build-context#logger) |
+| <a id="mode"></a> `mode` | `string` | Current build mode (supports custom modes like 'beta', 'staging', etc.) | - | [`BuildContext`](build-context).[`mode`](build-context#mode) |
+| <a id="paths"></a> `paths` | \{ `output`: `string`; `root`: `string`; `src`: `string`; \} | Project paths | - | [`BuildContext`](build-context).[`paths`](build-context#paths) |
+| `paths.output` | `string` | - | - | - |
+| `paths.root` | `string` | - | - | - |
+| `paths.src` | `string` | - | - | - |
+| <a id="store"></a> `store` | [`BuildStore`](build-store) | Key-value store for passing data between build hooks. Use to share computed values between build/start and build/complete. | - | [`BuildContext`](build-context).[`store`](build-context#store) |
+
+## Methods
+
+### registerMetadataAggregator()
+
+```ts
+registerMetadataAggregator<T>(namespace, aggregator): void
+```
+
+Register a metadata aggregator for a namespace.
+Aggregators combine metadata from all handlers into a summary.
+
+#### Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` *extends* [`AggregatedMetadata`](aggregated-metadata) |
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `namespace` | `string` | Plugin namespace to aggregate (e.g., 'discordjs') |
+| `aggregator` | [`MetadataAggregator`](../type-aliases/metadata-aggregator)\<`T`\> | Function that processes entries into aggregated metadata |
+
+#### Returns
+
+`void`
+
+***
+
+### updateMetadata()
+
+```ts
+updateMetadata(namespace, updates): void
+```
+
+Update aggregated metadata for a namespace.
+Can be called multiple times; updates are merged.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `namespace` | `string` | Plugin namespace |
+| `updates` | `Record`\<`string`, `unknown`\> | Partial metadata to merge |
+
+#### Returns
+
+`void`

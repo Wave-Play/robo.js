@@ -1,0 +1,18 @@
+---
+title: "ScopedPortal"
+---
+
+# Interface: ScopedPortal
+
+Scoped portal for plugins.
+Only includes routes defined by the plugin.
+
+## Indexable
+
+```ts
+[routeName: string]: 
+  | Record<string, 
+  | HandlerRecord<unknown, Record<string, unknown>>
+  | HandlerRecord<unknown, Record<string, unknown>>[]>
+  | (key) => unknown
+```

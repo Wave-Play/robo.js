@@ -1,0 +1,21 @@
+---
+title: "UpsertArgs<T>"
+---
+
+# Interface: UpsertArgs\<T\>
+
+Upsert arguments.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |
+
+## Properties
+
+| Property | Type |
+| ------ | ------ |
+| <a id="create"></a> `create` | [`CreateInput`](../type-aliases/create-input)\<`T`\> |
+| <a id="update"></a> `update` | `Partial`\<`Omit`\<`T`, `"id"`\>\> |
+| <a id="where"></a> `where` | [`UniqueWhere`](../type-aliases/unique-where)\<`T`\> |

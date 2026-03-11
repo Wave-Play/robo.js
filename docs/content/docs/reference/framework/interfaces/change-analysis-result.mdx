@@ -1,0 +1,15 @@
+---
+title: "ChangeAnalysisResult"
+---
+
+# Interface: ChangeAnalysisResult
+
+Result of analyzing schema changes.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="breaking"></a> `breaking` | [`SchemaChange`](schema-change)[] | Changes that require explicit migration |
+| <a id="hasbreakingchanges"></a> `hasBreakingChanges` | `boolean` | Whether any breaking changes were detected |
+| <a id="safe"></a> `safe` | [`SchemaChange`](schema-change)[] | Changes that can be auto-applied safely |

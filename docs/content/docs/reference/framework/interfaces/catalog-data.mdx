@@ -1,0 +1,18 @@
+---
+title: "CatalogData"
+---
+
+# Interface: CatalogData
+
+Catalog data for serialization (v2 format).
+Supports both regular chunked records and segmented large records.
+
+## Properties
+
+| Property | Type |
+| ------ | ------ |
+| <a id="chunkstats"></a> `chunkStats` | `ChunkStatsData`[] |
+| <a id="count"></a> `count` | `number` |
+| <a id="entries"></a> `entries` | `CatalogEntryData`[] |
+| <a id="segmentedcount"></a> `segmentedCount?` | `number` |
+| <a id="version"></a> `version` | `number` |

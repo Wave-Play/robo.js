@@ -1,0 +1,18 @@
+---
+title: "CatalogRebuildResult"
+---
+
+# Interface: CatalogRebuildResult
+
+Result of a catalog rebuild operation.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="catalog"></a> `catalog` | [`Catalog`](../classes/catalog) | The rebuilt catalog |
+| <a id="chunksscanned"></a> `chunksScanned` | `number` | Number of chunks scanned |
+| <a id="durationms"></a> `durationMs` | `number` | Time taken in milliseconds |
+| <a id="recordsfound"></a> `recordsFound` | `number` | Number of regular (chunked) records found |
+| <a id="segmentedrecords"></a> `segmentedRecords` | `number` | Number of segmented records found |
+| <a id="warnings"></a> `warnings` | `string`[] | Warnings encountered during rebuild |

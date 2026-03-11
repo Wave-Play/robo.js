@@ -1,0 +1,21 @@
+---
+title: "TransactionExecutionOptions"
+---
+
+# Interface: TransactionExecutionOptions
+
+Internal options for transaction execution.
+
+## Extends
+
+- `Required`\<[`TransactionOptions`](transaction-options)\>
+
+## Properties
+
+| Property | Type | Description | Inherited from |
+| ------ | ------ | ------ | ------ |
+| <a id="maxretries"></a> `maxRetries` | `number` | Maximum retry attempts for optimistic transactions. Only used when mode is 'optimistic'. **Default** `3` | `Required.maxRetries` |
+| <a id="mode"></a> `mode` | [`TransactionMode`](../type-aliases/transaction-mode) | Transaction mode. **Default** `'auto'` | `Required.mode` |
+| <a id="resolvedmode"></a> `resolvedMode` | [`ResolvedTransactionMode`](../type-aliases/resolved-transaction-mode) | Resolved mode (no 'auto'). | - |
+| <a id="retrydelay"></a> `retryDelay` | `number` | Delay between retry attempts in milliseconds. Only used when mode is 'optimistic'. **Default** `100` | `Required.retryDelay` |
+| <a id="timeout"></a> `timeout` | `number` | Transaction timeout in milliseconds. **Default** `30000` | `Required.timeout` |

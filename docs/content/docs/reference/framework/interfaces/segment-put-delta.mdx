@@ -1,0 +1,17 @@
+---
+title: "SegmentPutDelta"
+---
+
+# Interface: SegmentPutDelta
+
+Put a segment for a large record.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="data"></a> `data` | `string` | Segment data (string chunk of serialized record). |
+| <a id="id"></a> `id` | `string` | Record ID this segment belongs to. |
+| <a id="index"></a> `index` | `number` | Segment index (0-based). |
+| <a id="segmentkey"></a> `segmentKey` | `string` | Full segment key (e.g., _model:User:seg:abc123:0). |
+| <a id="t"></a> `t` | `"seg_put"` | - |

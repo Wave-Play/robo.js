@@ -1,0 +1,16 @@
+---
+title: "PortalRouteConfig"
+---
+
+# Interface: PortalRouteConfig
+
+Route configuration from manifest.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="controller"></a> `controller?` | \{ `factory`: `string`; \} | Controller factory path (e.g., 'plugin-path#factoryName') |
+| `controller.factory?` | `string` | - |
+| <a id="multiple"></a> `multiple?` | `boolean` | Whether this route supports multiple handlers per key (like events) |
+| <a id="singular"></a> `singular?` | `string` | Singular accessor name (e.g., 'command' for 'commands' route) |

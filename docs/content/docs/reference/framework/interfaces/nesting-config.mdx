@@ -1,0 +1,17 @@
+---
+title: "NestingConfig"
+---
+
+# Interface: NestingConfig
+
+Configuration for nested directory handling.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="allowindex"></a> `allowIndex?` | `boolean` | Whether index.ts files create handlers for their parent directory. - true: /src/api/users/index.ts → "users" - false: index.ts files are ignored **Default** `true` |
+| <a id="catchallsegment"></a> `catchAllSegment?` | `RegExp` | Regex pattern for catch-all route segments. Matches remaining path segments into an array. **Default** `/^\[\.\.\.([^\]]+)\]$/ matches [...path], [...slug]` **Example** `/api/auth/[...path].ts matches /api/auth/a/b/c` |
+| <a id="dynamicsegment"></a> `dynamicSegment?` | `RegExp` | Regex pattern for dynamic route segments. Matched groups become route parameters. **Default** `/^\[([^\]]+)\]$/ matches [id], [slug], etc.` |
+| <a id="maxdepth"></a> `maxDepth?` | `number` | Maximum allowed directory depth. **Example** `3 allows /src/commands/a/b/c.ts but not deeper` |
+| <a id="optionalcatchall"></a> `optionalCatchAll?` | `RegExp` | Regex pattern for optional catch-all segments. Like catch-all but also matches the base path. **Default** `/^\[\[\.\.\.([^\]]+)\]\]$/ matches [[...slug]]` **Example** `/api/docs/[[...slug]].ts matches /api/docs AND /api/docs/a/b` |

@@ -1,0 +1,15 @@
+---
+title: "ExportsConfig"
+---
+
+# Interface: ExportsConfig
+
+Configuration for which exports to capture from handler files.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="config"></a> `config?` | `"required"` \| `"optional"` \| `"forbidden"` | Whether the config export is required. **Default** `'optional'` |
+| <a id="default"></a> `default?` | `"required"` \| `"optional"` \| `"forbidden"` | Whether the default export is required. - 'required': File must have default export - 'optional': Default export is captured if present - 'forbidden': Default export is ignored/disallowed **Default** `'required'` |
+| <a id="named"></a> `named?` | `string`[] | Named exports to look for (e.g., HTTP methods). **Examples** `['GET', 'POST', 'PUT', 'DELETE'] for API routes` `['autocomplete'] for Discord commands` |

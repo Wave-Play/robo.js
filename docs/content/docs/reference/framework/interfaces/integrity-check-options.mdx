@@ -1,0 +1,17 @@
+---
+title: "IntegrityCheckOptions"
+---
+
+# Interface: IntegrityCheckOptions
+
+Options for integrity checking.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="checkfilter"></a> `checkFilter?` | `boolean` | Check filter integrity |
+| <a id="checksortedindexes"></a> `checkSortedIndexes?` | `boolean` | Check sorted indexes integrity |
+| <a id="checkuniqueindexes"></a> `checkUniqueIndexes?` | `boolean` | Check unique indexes integrity |
+| <a id="filtersamplesize"></a> `filterSampleSize?` | `number` | Sample size for filter checking (0 = check all) |
+| <a id="onprogress"></a> `onProgress?` | (`progress`: [`IntegrityCheckProgress`](integrity-check-progress)) =\> `void` | Progress callback |

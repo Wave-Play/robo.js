@@ -1,0 +1,59 @@
+---
+title: "RecoveryContext"
+---
+
+# Interface: RecoveryContext
+
+Extended recovery context that can be used when models are loaded.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="adapter"></a> `adapter` | [`FlashcoreAdapter`](flashcore-adapter)\<`string`, `unknown`\> | The storage adapter. |
+
+## Methods
+
+### getCatalogKey()
+
+```ts
+getCatalogKey(namespace, modelName): string
+```
+
+Get the catalog key for a model.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `namespace` | `string` |
+| `modelName` | `string` |
+
+#### Returns
+
+`string`
+
+***
+
+### getChunkKey()
+
+```ts
+getChunkKey(
+   namespace, 
+   modelName, 
+   chunkId): string
+```
+
+Get the chunk key for a model.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `namespace` | `string` |
+| `modelName` | `string` |
+| `chunkId` | `string` |
+
+#### Returns
+
+`string`

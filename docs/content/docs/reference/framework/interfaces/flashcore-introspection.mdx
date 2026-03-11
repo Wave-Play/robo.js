@@ -1,0 +1,21 @@
+---
+title: "FlashcoreIntrospection"
+---
+
+# Interface: FlashcoreIntrospection
+
+Introspection data returned by Flashcore.$.introspect().
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="kvnamespaces"></a> `kvNamespaces` | `string`[] | Known KV namespaces (best-effort; may be empty on non-scan adapters). |
+| <a id="models"></a> `models` | \{ `customMethods`: `string`[]; `fields`: `string`[]; `indexes`: `string`[]; `name`: `string`; `namespace`: `string`; `recordCount`: `number`; `relations`: `string`[]; `schemaChecksum`: `string`; \}[] | Registered models with metadata. |
+| <a id="plugins"></a> `plugins` | `string`[] | Registered plugins. |
+| <a id="storage"></a> `storage` | \{ `totalKeys`: `number`; `totalSize`: `number`; \} | Storage statistics. |
+| `storage.totalKeys` | `number` | - |
+| `storage.totalSize?` | `number` | - |
+| <a id="walstatus"></a> `walStatus` | \{ `lastRecovery`: `Date`; `pendingEntries`: `number`; \} | WAL status. |
+| `walStatus.lastRecovery?` | `Date` | - |
+| `walStatus.pendingEntries` | `number` | - |

@@ -1,0 +1,14 @@
+---
+title: "AvailableIndexes"
+---
+
+# Interface: AvailableIndexes
+
+Available indexes for query planning.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="filter"></a> `filter?` | [`CuckooFilter`](../classes/cuckoo-filter) | Cuckoo filter for fast negative lookups |
+| <a id="sortedindexes"></a> `sortedIndexes` | `Map`\<`string`, [`SortedIndex`](../classes/sorted-index)\> | Sorted indexes by field name |

@@ -1,0 +1,20 @@
+---
+title: "MigrationStatusReport"
+---
+
+# Interface: MigrationStatusReport
+
+Migration status report for CLI.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="completed"></a> `completed` | `string`[] | Completed migrations |
+| <a id="failed"></a> `failed` | `string`[] | Failed migrations |
+| <a id="lockstatus"></a> `lockStatus` | \{ `acquiredAt`: `Date`; `holder`: `string`; `locked`: `boolean`; `stale`: `boolean`; \} | Lock status |
+| `lockStatus.acquiredAt?` | `Date` | - |
+| `lockStatus.holder?` | `string` | - |
+| `lockStatus.locked` | `boolean` | - |
+| `lockStatus.stale?` | `boolean` | - |
+| <a id="pending"></a> `pending` | `string`[] | Pending migrations |

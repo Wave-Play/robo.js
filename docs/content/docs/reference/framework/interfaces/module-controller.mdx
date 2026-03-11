@@ -1,0 +1,42 @@
+---
+title: "ModuleController"
+---
+
+# Interface: ModuleController
+
+Controller for module-level enable/disable operations.
+Modules are cross-cutting - they can span multiple namespaces.
+
+## Methods
+
+### isEnabled()
+
+```ts
+isEnabled(): boolean
+```
+
+Check if the module is enabled
+
+#### Returns
+
+`boolean`
+
+***
+
+### setEnabled()
+
+```ts
+setEnabled(value): void
+```
+
+Enable or disable all handlers in this module
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `value` | `boolean` |
+
+#### Returns
+
+`void`

@@ -1,0 +1,21 @@
+---
+title: "TransactionResult<T>"
+---
+
+# Interface: TransactionResult\<T\>
+
+Transaction execution result.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="durationms"></a> `durationMs` | `number` | Total duration in milliseconds. |
+| <a id="result"></a> `result` | `T` | The result returned from the transaction function. |
+| <a id="retries"></a> `retries` | `number` | Number of retry attempts (only relevant for optimistic mode). |

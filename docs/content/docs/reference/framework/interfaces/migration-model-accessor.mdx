@@ -1,0 +1,25 @@
+---
+title: "MigrationModelAccessor<T>"
+---
+
+# Interface: MigrationModelAccessor\<T\>
+
+Model accessor for migrations (subset of full model API).
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` *extends* \{ `id`: `string`; \} |
+
+## Properties
+
+| Property | Type |
+| ------ | ------ |
+| <a id="count"></a> `count` | (`args`?: \{ `where`: `Record`\<`string`, `unknown`\>; \}) =\> `Promise`\<`number`\> |
+| <a id="delete"></a> `delete` | (`args`: \{ `where`: \{ `id`: `string`; \}; \}) =\> `Promise`\<`T`\> |
+| <a id="deletemany"></a> `deleteMany` | (`args`: \{ `where`: `Record`\<`string`, `unknown`\>; \}) =\> `Promise`\<`number`\> |
+| <a id="findmany"></a> `findMany` | (`args`?: \{ `skip`: `number`; `take`: `number`; `where`: `Record`\<`string`, `unknown`\>; \}) =\> `Promise`\<`T`[]\> |
+| <a id="findunique"></a> `findUnique` | (`args`: \{ `where`: \{ `id`: `string`; \}; \}) =\> `Promise`\<`T`\> |
+| <a id="update"></a> `update` | (`args`: \{ `data`: `Partial`\<`T`\>; `where`: \{ `id`: `string`; \}; \}) =\> `Promise`\<`T`\> |
+| <a id="updatemany"></a> `updateMany` | (`args`: \{ `data`: `Partial`\<`T`\>; `where`: `Record`\<`string`, `unknown`\>; \}) =\> `Promise`\<`number`\> |

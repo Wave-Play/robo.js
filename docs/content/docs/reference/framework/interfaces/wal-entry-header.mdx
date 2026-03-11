@@ -1,0 +1,20 @@
+---
+title: "WALEntryHeader"
+---
+
+# Interface: WALEntryHeader
+
+WAL entry header (stored when segmented).
+Contains metadata but not the full deltas.
+
+## Properties
+
+| Property | Type |
+| ------ | ------ |
+| <a id="id"></a> `id` | `string` |
+| <a id="model"></a> `model` | `string` |
+| <a id="namespace"></a> `namespace?` | `string` |
+| <a id="op"></a> `op` | [`WalOp`](../type-aliases/wal-op) |
+| <a id="phase"></a> `phase` | [`WalPhase`](../type-aliases/wal-phase) |
+| <a id="segmented"></a> `segmented` | [`WalSegmentInfo`](wal-segment-info) |
+| <a id="timestamp"></a> `timestamp` | `number` |

@@ -1,0 +1,12 @@
+---
+title: "PluginMetaOptions"
+---
+
+# Interface: PluginMetaOptions
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="failsafe"></a> `failSafe?` | `boolean` | - |
+| <a id="hookpriority"></a> `hookPriority?` | `Partial`\<`Record`\<[`LifecycleHookType`](../type-aliases/lifecycle-hook-type), `number`\>\> | Override hook execution priorities for this plugin. Lower numbers run first. Default priority is 100. Hooks with the same priority run in parallel. **Example** `// In robo.config.ts plugins: [ ['@robojs/server', { port: 3000 }, { hookPriority: { start: 50 } }] ]` |

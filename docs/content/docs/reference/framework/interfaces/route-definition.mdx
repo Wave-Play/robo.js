@@ -1,0 +1,39 @@
+---
+title: "RouteDefinition"
+---
+
+# Interface: RouteDefinition
+
+Route definition with handler and controller info.
+Properties are at the route level (not nested under config) per spec.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="controller"></a> `controller?` | \{ `factory`: `string`; `import`: `string`; `type`: `string`; \} | Controller factory information |
+| `controller.factory` | `string` | - |
+| `controller.import` | `string` | - |
+| `controller.type` | `string` | - |
+| <a id="description"></a> `description?` | `string` | Human-readable description |
+| <a id="directory"></a> `directory` | `string` | Directory this route scans |
+| <a id="exports"></a> `exports?` | \{ `config`: `"required"` \| `"optional"` \| `"forbidden"`; `default`: `"required"` \| `"optional"` \| `"forbidden"`; `named`: `string`[]; \} | Export requirements |
+| `exports.config?` | `"required"` \| `"optional"` \| `"forbidden"` | - |
+| `exports.default?` | `"required"` \| `"optional"` \| `"forbidden"` | - |
+| `exports.named?` | `string`[] | - |
+| <a id="filter"></a> `filter?` | `string` | File filter pattern (string form of regex) |
+| <a id="handler"></a> `handler?` | \{ `import`: `string`; `type`: `string`; \} | Handler type information |
+| `handler.import` | `string` | - |
+| `handler.type` | `string` | - |
+| <a id="key"></a> `key` | \{ `nested`: `"camelCase"` \| `"dotNotation"`; `separator`: `string`; `style`: `"filename"` \| `"filepath"` \| `"parentOrFilename"`; \} | Key generation configuration |
+| `key.nested?` | `"camelCase"` \| `"dotNotation"` | - |
+| `key.separator?` | `string` | - |
+| `key.style` | `"filename"` \| `"filepath"` \| `"parentOrFilename"` | - |
+| <a id="multiple"></a> `multiple?` | `boolean` | Whether multiple handlers per key are allowed |
+| <a id="nesting"></a> `nesting?` | \{ `allowIndex`: `boolean`; `catchAllSegment`: `string`; `dynamicSegment`: `string`; `maxDepth`: `number`; `optionalCatchAll`: `string`; \} | Nesting configuration |
+| `nesting.allowIndex?` | `boolean` | - |
+| `nesting.catchAllSegment?` | `string` | Catch-all pattern (string form of regex) |
+| `nesting.dynamicSegment?` | `string` | Dynamic segment pattern (string form of regex) |
+| `nesting.maxDepth?` | `number` | - |
+| `nesting.optionalCatchAll?` | `string` | Optional catch-all pattern (string form of regex) |
+| <a id="singular"></a> `singular?` | `string` | Singular accessor name (e.g., 'command' for 'commands', 'contextMenu' for 'context') |

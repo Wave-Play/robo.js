@@ -1,0 +1,33 @@
+---
+title: "FieldQueryResolver"
+---
+
+# Interface: FieldQueryResolver
+
+Field-level query resolver for specific operators.
+
+## Methods
+
+### resolve()
+
+```ts
+resolve(
+   operator, 
+   operand, 
+context): string[] | Promise<string[]>
+```
+
+Handle specific operators for this field.
+Returns matching IDs or null to fall through to default.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `operator` | `string` |
+| `operand` | `unknown` |
+| `context` | [`QueryContext`](query-context) |
+
+#### Returns
+
+`string`[] \| `Promise`\<`string`[]\>

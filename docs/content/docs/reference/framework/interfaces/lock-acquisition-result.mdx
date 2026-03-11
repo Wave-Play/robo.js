@@ -1,0 +1,17 @@
+---
+title: "LockAcquisitionResult"
+---
+
+# Interface: LockAcquisitionResult
+
+Result of a lock acquisition attempt.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="acquired"></a> `acquired` | `boolean` | Whether the lock was acquired |
+| <a id="acquiredat"></a> `acquiredAt?` | `Date` | When current lock was acquired |
+| <a id="holder"></a> `holder?` | `string` | Current lock holder info if lock is held |
+| <a id="lockid"></a> `lockId?` | `string` | Unique lock ID (used for release) |
+| <a id="reason"></a> `reason?` | `"error"` \| `"held"` \| `"race"` | If not acquired, reason why |

@@ -1,0 +1,33 @@
+---
+title: "StartContext<TConfig>"
+---
+
+# Interface: StartContext\<TConfig\>
+
+Context provided to start hooks.
+Runs SEQUENTIALLY: plugins in registration order → project.
+
+## Extended by
+
+- [`StopContext`](stop-context)
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `TConfig` | `unknown` |
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="env"></a> `env` | *typeof* [`Env`](../classes/env) | Environment variable access. |
+| <a id="logger"></a> `logger` | [`Logger`](../../core/logger/classes/logger) | Logger instance prefixed with plugin name. |
+| <a id="meta"></a> `meta` | \{ `name`: `string`; `version`: `string`; \} | Plugin metadata. |
+| `meta.name` | `string` | Package name |
+| `meta.version` | `string` | Package version |
+| <a id="mode"></a> `mode` | `string` | Current runtime mode (supports custom modes like 'beta', 'staging', etc.). |
+| <a id="pluginconfig"></a> `pluginConfig` | `TConfig` | Plugin's configuration from user's /config/plugins/. Typed based on plugin's config schema. |
+| <a id="portal"></a> `portal?` | `unknown` | Portal access scoped to this plugin's routes. Reserved for future route system (Phase 3). |
+| <a id="projectconfig"></a> `projectConfig` | [`Config`](config) | Full project configuration. |
+| <a id="state"></a> `state` | [`PluginState`](plugin-state) | Plugin-scoped state storage. Isolated from other plugins. |

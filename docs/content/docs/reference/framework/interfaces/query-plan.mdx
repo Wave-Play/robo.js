@@ -1,0 +1,20 @@
+---
+title: "QueryPlan"
+---
+
+# Interface: QueryPlan
+
+Query execution plan.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="description"></a> `description` | `string` | Description for debugging |
+| <a id="estimatedcost"></a> `estimatedCost` | `number` | Estimated cost (lower is better) |
+| <a id="indexfield"></a> `indexField?` | `string` | Index to use (if applicable) |
+| <a id="indexprovidesorder"></a> `indexProvidesOrder` | `boolean` | Whether index provides ordering (no in-memory sort needed) |
+| <a id="postfilterfields"></a> `postFilterFields` | `string`[] | Fields that need post-filter (after index scan) |
+| <a id="rangeoptions"></a> `rangeOptions?` | [`RangeOptions`](range-options) | Range options for index scan |
+| <a id="type"></a> `type` | `"full-scan"` \| `"index-scan"` \| `"index-range"` \| `"filter-check"` | Strategy type |
+| <a id="usefilter"></a> `useFilter` | `boolean` | Whether to use filter for pre-check |

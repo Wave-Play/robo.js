@@ -1,0 +1,15 @@
+---
+title: "CatalogRebuildOptions"
+---
+
+# Interface: CatalogRebuildOptions
+
+Options for catalog rebuild.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="maxwarnings"></a> `maxWarnings?` | `number` | Maximum number of warnings to collect before stopping |
+| <a id="onprogress"></a> `onProgress?` | (`progress`: [`CatalogRebuildProgress`](catalog-rebuild-progress)) =\> `void` | Progress callback for long-running operations |
+| <a id="validatechunks"></a> `validateChunks?` | `boolean` | Whether to validate chunk contents (slower but more thorough) |

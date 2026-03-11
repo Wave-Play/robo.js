@@ -1,0 +1,88 @@
+---
+title: "ModelQueryResolver"
+---
+
+# Interface: ModelQueryResolver
+
+Model-level query resolver for complete control over queries.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="fields"></a> `fields?` | `Record`\<`string`, [`FieldQueryResolver`](field-query-resolver)\> | Field-specific resolvers. |
+
+## Methods
+
+### afterResolve()?
+
+```ts
+optional afterResolve(ids, args): string[] | Promise<string[]>
+```
+
+Called after default resolution.
+Can filter or reorder results.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `ids` | `string`[] |
+| `args` | [`FindManyArgs`](find-many-args)\<\{ `id`: `string`; \}\> |
+
+#### Returns
+
+`string`[] \| `Promise`\<`string`[]\>
+
+***
+
+### beforeResolve()?
+
+```ts
+optional beforeResolve(args): 
+  | FindManyArgs<{
+  id: string;
+ }>
+  | Promise<FindManyArgs<{
+  id: string;
+}>>
+```
+
+Called before default query resolution.
+Can modify args or short-circuit.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `args` | [`FindManyArgs`](find-many-args)\<\{ `id`: `string`; \}\> |
+
+#### Returns
+
+  \| [`FindManyArgs`](find-many-args)\<\{
+  `id`: `string`;
+ \}\>
+  \| `Promise`\<[`FindManyArgs`](find-many-args)\<\{
+  `id`: `string`;
+ \}\>\>
+
+***
+
+### resolve()?
+
+```ts
+optional resolve(args): string[] | Promise<string[]>
+```
+
+Replace default resolution entirely.
+Returns IDs of matching records.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `args` | [`FindManyArgs`](find-many-args)\<\{ `id`: `string`; \}\> |
+
+#### Returns
+
+`string`[] \| `Promise`\<`string`[]\>

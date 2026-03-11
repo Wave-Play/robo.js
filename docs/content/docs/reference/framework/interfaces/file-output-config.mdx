@@ -1,0 +1,19 @@
+---
+title: "FileOutputConfig"
+---
+
+# Interface: FileOutputConfig
+
+Configuration for a file-based log output.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="colormap"></a> `colorMap?` | `boolean` | Generate a companion .colormap file that records ANSI escape code positions. This allows colors to be reconstructed from stripped log files. Default: false |
+| <a id="format"></a> `format?` | `"text"` \| `"json"` | Output format: 'text' for human-readable, 'json' for structured. Default: 'text' |
+| <a id="level"></a> `level?` | [`LogLevel`](../../core/logger/type-aliases/log-level) | Minimum log level to write to this file. Inherits from logger.level if not set. |
+| <a id="maxfiles"></a> `maxFiles?` | `number` | Maximum number of rotated files to keep. Default: 5 |
+| <a id="maxsize"></a> `maxSize?` | `number` | Maximum file size in bytes before rotation. Default: 10MB (10485760) |
+| <a id="path"></a> `path` | `string` | File path for log output. Relative paths resolved from project root. |
+| <a id="timestamp"></a> `timestamp?` | [`TimestampFormat`](../type-aliases/timestamp-format) | Timestamp format for this file. Overrides global logger.timestamp if set. |

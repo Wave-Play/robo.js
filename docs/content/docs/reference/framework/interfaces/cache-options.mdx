@@ -1,0 +1,15 @@
+---
+title: "CacheOptions"
+---
+
+# Interface: CacheOptions
+
+Options for the LRU cache wrapper.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="maxage"></a> `maxAge?` | `number` | Maximum age of cache entries in milliseconds. Entries older than this are considered stale. Default: 0 (no expiration) |
+| <a id="maxsize"></a> `maxSize?` | `number` | Maximum number of entries in the cache. Default: 1000 |
+| <a id="trackstats"></a> `trackStats?` | `boolean` | Track cache statistics (hits, misses). Default: true |

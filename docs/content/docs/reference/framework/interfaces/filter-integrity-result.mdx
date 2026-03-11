@@ -1,0 +1,16 @@
+---
+title: "FilterIntegrityResult"
+---
+
+# Interface: FilterIntegrityResult
+
+Result of a filter integrity check.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="isvalid"></a> `isValid` | `boolean` | - |
+| <a id="missinginfilter"></a> `missingInFilter` | `string`[] | Record IDs in catalog but not in filter |
+| <a id="orphanedinfilter"></a> `orphanedInFilter` | `string`[] | Record IDs in filter but not in catalog |
+| <a id="recordschecked"></a> `recordsChecked` | `number` | Total records checked |

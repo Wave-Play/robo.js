@@ -1,0 +1,75 @@
+---
+title: "AdapterTransaction<K, V>"
+---
+
+# Interface: AdapterTransaction\<K, V\>
+
+Transaction context provided by native adapter transactions.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `K` | `string` |
+| `V` | `unknown` |
+
+## Methods
+
+### delete()
+
+```ts
+delete(key): void
+```
+
+Stage a delete operation (committed on transaction success).
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `K` |
+
+#### Returns
+
+`void`
+
+***
+
+### get()
+
+```ts
+get(key): Promise<V>
+```
+
+Get a value within the transaction.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `K` |
+
+#### Returns
+
+`Promise`\<`V`\>
+
+***
+
+### set()
+
+```ts
+set(key, value): void
+```
+
+Stage a set operation (committed on transaction success).
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `K` |
+| `value` | `V` |
+
+#### Returns
+
+`void`

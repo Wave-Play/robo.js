@@ -1,0 +1,25 @@
+---
+title: "WALEntry"
+---
+
+# Interface: WALEntry
+
+Complete WAL entry structure.
+
+Stored at: _flashcore:wal:entry:\{id\}
+Optional segments at: _flashcore:wal:seg:\{id\}:\{n\}
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="auth"></a> `auth` | [`WalAuthoritativeDelta`](../type-aliases/wal-authoritative-delta)[] | Authoritative deltas (applied first). These are the "source of truth" changes. |
+| <a id="derived"></a> `derived` | [`WalDerivedDelta`](../type-aliases/wal-derived-delta)[] | Derived deltas (applied after authoritative). Best-effort; can be skipped in favor of rebuild. |
+| <a id="id"></a> `id` | `string` | Unique entry ID (generated). |
+| <a id="model"></a> `model` | `string` | Model name. |
+| <a id="namespace"></a> `namespace?` | `string` | Model namespace (optional). |
+| <a id="op"></a> `op` | [`WalOp`](../type-aliases/wal-op) | Operation type. |
+| <a id="phase"></a> `phase` | [`WalPhase`](../type-aliases/wal-phase) | Current phase of the operation. |
+| <a id="segmented"></a> `segmented?` | [`WalSegmentInfo`](wal-segment-info) | Optional segmentation info for large entries. If present, deltas are stored across segment keys. |
+| <a id="timestamp"></a> `timestamp` | `number` | Timestamp when entry was created (Date.now()). |
+| <a id="undo"></a> `undo` | [`WalAuthoritativeDelta`](../type-aliases/wal-authoritative-delta)[] | Inverse deltas (only for rollback paths). Used to undo the operation if recovery decides to roll back. |

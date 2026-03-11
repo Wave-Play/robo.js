@@ -1,0 +1,362 @@
+---
+title: "PortalAPI"
+---
+
+# Interface: PortalAPI
+
+The Portal API interface.
+Provides namespace-based access to handlers and controllers.
+
+## Extends
+
+- [`PortalNamespaces`](portal-namespaces)
+
+## Properties
+
+| Property | Modifier | Type | Description |
+| ------ | ------ | ------ | ------ |
+| <a id="isinitialized"></a> `isInitialized` | `readonly` | `boolean` | Whether the portal has been initialized |
+| <a id="mode"></a> `mode` | `readonly` | `string` | Current runtime mode |
+
+## Methods
+
+### all()
+
+```ts
+all(): HandlerRecord<unknown, Record<string, unknown>>[]
+```
+
+Get all handler records across all namespaces
+
+#### Returns
+
+[`HandlerRecord`](handler-record)\<`unknown`, `Record`\<`string`, `unknown`\>\>[]
+
+***
+
+### clearCache()
+
+```ts
+clearCache(): void
+```
+
+Clear all cached data
+
+#### Returns
+
+`void`
+
+***
+
+### ensureRoute()
+
+```ts
+ensureRoute(namespace, route): Promise<void>
+```
+
+Ensure a route's manifest is loaded
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `namespace` | `string` |
+| `route` | `string` |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### getByType()
+
+```ts
+getByType(type): Record<string, 
+  | HandlerRecord<unknown, Record<string, unknown>>
+| HandlerRecord<unknown, Record<string, unknown>>[]>
+```
+
+Get handlers by type string (e.g., 'discord:commands')
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `type` | `string` |
+
+#### Returns
+
+`Record`\<`string`, 
+  \| [`HandlerRecord`](handler-record)\<`unknown`, `Record`\<`string`, `unknown`\>\>
+  \| [`HandlerRecord`](handler-record)\<`unknown`, `Record`\<`string`, `unknown`\>\>[]\>
+
+***
+
+### getController()
+
+```ts
+getController<C>(
+   namespace, 
+   route, 
+   key): C
+```
+
+Get controller for a handler
+
+#### Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `C` | `unknown` |
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `namespace` | `string` |
+| `route` | `string` |
+| `key` | `string` |
+
+#### Returns
+
+`C`
+
+***
+
+### getHandler()
+
+```ts
+getHandler<T>(
+   namespace, 
+   route, 
+key): Promise<HandlerModule<T, Record<string, unknown>>>
+```
+
+Get handler with auto-import
+
+#### Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | `unknown` |
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `namespace` | `string` |
+| `route` | `string` |
+| `key` | `string` |
+
+#### Returns
+
+`Promise`\<[`HandlerModule`](handler-module)\<`T`, `Record`\<`string`, `unknown`\>\>\>
+
+***
+
+### getRecord()
+
+```ts
+getRecord(
+   namespace, 
+   route, 
+key): HandlerRecord<unknown, Record<string, unknown>>
+```
+
+Get record without importing
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `namespace` | `string` |
+| `route` | `string` |
+| `key` | `string` |
+
+#### Returns
+
+[`HandlerRecord`](handler-record)\<`unknown`, `Record`\<`string`, `unknown`\>\>
+
+***
+
+### importHandler()
+
+```ts
+importHandler(
+   namespace, 
+   route, 
+key): Promise<void>
+```
+
+Import a handler lazily
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `namespace` | `string` |
+| `route` | `string` |
+| `key` | `string` |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### module()
+
+```ts
+module(name): ModuleController
+```
+
+Get a module controller for cross-cutting enable/disable
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `string` |
+
+#### Returns
+
+[`ModuleController`](module-controller)
+
+***
+
+### registerController()
+
+```ts
+registerController(
+   namespace, 
+   routeName, 
+   factory): void
+```
+
+Register a controller factory
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `namespace` | `string` |
+| `routeName` | `string` |
+| `factory` | [`ControllerFactory`](../type-aliases/controller-factory)\<`unknown`\> |
+
+#### Returns
+
+`void`
+
+***
+
+### registerNamespace()
+
+```ts
+registerNamespace(namespace, routes): void
+```
+
+Register a namespace with its route names
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `namespace` | `string` |
+| `routes` | `string`[] |
+
+#### Returns
+
+`void`
+
+***
+
+### registerPluginState()
+
+```ts
+registerPluginState(namespace, state): void
+```
+
+Register plugin state for controller context
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `namespace` | `string` |
+| `state` | `unknown` |
+
+#### Returns
+
+`void`
+
+***
+
+### registerRoute()
+
+```ts
+registerRoute(
+   namespace, 
+   routeName, 
+   handlers): void
+```
+
+Register a route's handlers
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `namespace` | `string` |
+| `routeName` | `string` |
+| `handlers` | `Record`\<`string`, \| [`HandlerRecord`](handler-record)\<`unknown`, `Record`\<`string`, `unknown`\>\> \| [`HandlerRecord`](handler-record)\<`unknown`, `Record`\<`string`, `unknown`\>\>[]\> |
+
+#### Returns
+
+`void`
+
+***
+
+### reloadHandler()
+
+```ts
+reloadHandler(
+   namespace, 
+   route, 
+key): Promise<void>
+```
+
+Reload a handler (for HMR)
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `namespace` | `string` |
+| `route` | `string` |
+| `key` | `string` |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### reloadRoute()
+
+```ts
+reloadRoute(namespace, route): Promise<void>
+```
+
+Reload all handlers in a route (for HMR)
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `namespace` | `string` |
+| `route` | `string` |
+
+#### Returns
+
+`Promise`\<`void`\>

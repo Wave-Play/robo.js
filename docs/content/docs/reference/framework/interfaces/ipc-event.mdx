@@ -1,0 +1,18 @@
+---
+title: "IpcEvent"
+---
+
+# Interface: IpcEvent
+
+IPC Event that flows between app and host
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="data"></a> `data` | `unknown` | Event payload |
+| <a id="id"></a> `id` | `string` | Unique event ID in format: \{counter\}-\{sessionId\} |
+| <a id="ref"></a> `ref?` | `string` | Optional: reference to previous event ID |
+| <a id="target"></a> `target?` | `string` | Optional: target window/panel |
+| <a id="ts"></a> `ts` | `number` | Unix timestamp in milliseconds |
+| <a id="type"></a> `type` | `string` | Event type (namespaced with colon, e.g., "open:url") |

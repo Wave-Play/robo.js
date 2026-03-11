@@ -1,0 +1,34 @@
+---
+title: "StopContext<TConfig>"
+---
+
+# Interface: StopContext\<TConfig\>
+
+Context provided to stop hooks.
+Runs SEQUENTIALLY: project first → plugins in REVERSE order.
+
+## Extends
+
+- [`StartContext`](start-context)\<`TConfig`\>
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `TConfig` | `unknown` |
+
+## Properties
+
+| Property | Type | Description | Inherited from |
+| ------ | ------ | ------ | ------ |
+| <a id="env"></a> `env` | *typeof* [`Env`](../classes/env) | Environment variable access. | [`StartContext`](start-context).[`env`](start-context#env) |
+| <a id="logger"></a> `logger` | [`Logger`](../../core/logger/classes/logger) | Logger instance prefixed with plugin name. | [`StartContext`](start-context).[`logger`](start-context#logger) |
+| <a id="meta"></a> `meta` | \{ `name`: `string`; `version`: `string`; \} | Plugin metadata. | [`StartContext`](start-context).[`meta`](start-context#meta) |
+| `meta.name` | `string` | Package name | - |
+| `meta.version` | `string` | Package version | - |
+| <a id="mode"></a> `mode` | `string` | Current runtime mode (supports custom modes like 'beta', 'staging', etc.). | [`StartContext`](start-context).[`mode`](start-context#mode) |
+| <a id="pluginconfig"></a> `pluginConfig` | `TConfig` | Plugin's configuration from user's /config/plugins/. Typed based on plugin's config schema. | [`StartContext`](start-context).[`pluginConfig`](start-context#pluginconfig) |
+| <a id="portal"></a> `portal?` | `unknown` | Portal access scoped to this plugin's routes. Reserved for future route system (Phase 3). | [`StartContext`](start-context).[`portal`](start-context#portal) |
+| <a id="projectconfig"></a> `projectConfig` | [`Config`](config) | Full project configuration. | [`StartContext`](start-context).[`projectConfig`](start-context#projectconfig) |
+| <a id="reason"></a> `reason` | `"error"` \| `"signal"` \| `"restart"` | Reason for shutdown. - 'signal': SIGTERM/SIGINT received - 'error': Uncaught exception - 'restart': HMR restart (though stop hooks typically don't run on restart) | - |
+| <a id="state"></a> `state` | [`PluginState`](plugin-state) | Plugin-scoped state storage. Isolated from other plugins. | [`StartContext`](start-context).[`state`](start-context#state) |

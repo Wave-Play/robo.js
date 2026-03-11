@@ -1,0 +1,16 @@
+---
+title: "DrainHandle"
+---
+
+# Interface: DrainHandle
+
+Handle returned when adding a drain to the logger.
+Provides methods to remove the drain and flush pending writes.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="flush"></a> `flush` | () =\> `Promise`\<`void`\> | Flush pending writes for this drain. |
+| <a id="id"></a> `id` | `string` | Unique identifier for this drain. |
+| <a id="remove"></a> `remove` | () =\> `boolean` | Remove this drain from the logger. |

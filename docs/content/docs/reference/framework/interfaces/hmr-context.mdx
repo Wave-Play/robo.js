@@ -1,0 +1,37 @@
+---
+title: "HmrContext"
+---
+
+# Interface: HmrContext
+
+Context provided to HMR hooks.
+Runs in PARALLEL with a 5-second timeout.
+Hook errors are caught and logged but never crash the server.
+
+## Example
+
+```typescript
+// src/robo/hmr.ts
+import type { HmrContext } from 'robo.js'
+
+export const config = {
+  namespaces: ['server'],
+  routes: ['api']
+}
+
+export default async function (context: HmrContext) {
+  context.logger.info(`HMR: ${context.changeType} - ${context.files.join(', ')}`)
+  // Custom logic: clear caches, notify services, etc.
+}
+```
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="changetype"></a> `changeType` | `"change"` \| `"add"` \| `"remove"` | Type of file system change that triggered HMR. - 'change': File was modified - 'add': New file was added - 'remove': File was deleted |
+| <a id="env"></a> `env` | *typeof* [`Env`](../classes/env) | Environment variable access. |
+| <a id="files"></a> `files` | `string`[] | Source files that changed (relative paths from project root). **Example** `['src/api/users.ts', 'src/api/posts.ts']` |
+| <a id="logger"></a> `logger` | [`Logger`](../../core/logger/classes/logger) | Logger instance (forked for plugins). |
+| <a id="mode"></a> `mode` | `string` | Current runtime mode (e.g., 'development', 'production'). |
+| <a id="routes"></a> `routes` | [`HmrRouteInfo`](hmr-route-info)[] | Routes affected by the HMR event. Already filtered by hook's config.namespaces and config.routes if specified. |

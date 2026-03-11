@@ -1,0 +1,24 @@
+---
+title: "ModelHooks<T>"
+---
+
+# Interface: ModelHooks\<T\>
+
+Model hooks for lifecycle events.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | `unknown` |
+
+## Properties
+
+| Property | Type |
+| ------ | ------ |
+| <a id="aftercreate"></a> `afterCreate?` | (`record`: `T`) =\> `void` \| `Promise`\<`void`\> |
+| <a id="afterdelete"></a> `afterDelete?` | (`record`: `T`) =\> `void` \| `Promise`\<`void`\> |
+| <a id="afterupdate"></a> `afterUpdate?` | (`record`: `T`) =\> `void` \| `Promise`\<`void`\> |
+| <a id="beforecreate"></a> `beforeCreate?` | (`data`: `unknown`) =\> `unknown` |
+| <a id="beforedelete"></a> `beforeDelete?` | (`record`: `T`) =\> `void` \| `Promise`\<`void`\> |
+| <a id="beforeupdate"></a> `beforeUpdate?` | (`data`: `unknown`, `existing`: `T`) =\> `unknown` |

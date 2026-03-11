@@ -1,0 +1,44 @@
+---
+title: "FlashcoreSchema"
+---
+
+# Interface: FlashcoreSchema
+
+Schema namespace wrapper for plugin model registration.
+
+## Properties
+
+| Property | Modifier | Type | Description |
+| ------ | ------ | ------ | ------ |
+| <a id="namespace"></a> `namespace` | `readonly` | `string` | Get the namespace name. |
+
+## Methods
+
+### model()
+
+```ts
+model<T>(
+   name, 
+   schema, 
+options?): FlashcoreModel<T>
+```
+
+Register a model in this namespace.
+
+#### Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` *extends* \{ `id`: `string`; \} |
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `string` |
+| `schema` | [`SchemaFields`](../type-aliases/schema-fields) |
+| `options`? | `Omit`\<[`ModelOptions`](model-options), `"namespace"`\> |
+
+#### Returns
+
+[`FlashcoreModel`](../classes/flashcore-model)\<`T`\>

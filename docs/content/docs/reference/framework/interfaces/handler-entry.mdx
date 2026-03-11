@@ -1,0 +1,33 @@
+---
+title: "HandlerEntry"
+---
+
+# Interface: HandlerEntry
+
+A handler entry in the manifest.
+Extends ProcessedEntry with source tracking.
+
+## Extends
+
+- [`ProcessedEntry`](processed-entry)
+
+## Properties
+
+| Property | Type | Description | Inherited from |
+| ------ | ------ | ------ | ------ |
+| <a id="auto"></a> `auto?` | `boolean` | Whether this entry was auto-generated. | [`ProcessedEntry`](processed-entry).[`auto`](processed-entry#auto) |
+| <a id="exports"></a> `exports` | \{ `config`: `boolean`; `default`: `boolean`; `named`: `string`[]; \} | Which exports this handler has. Used for lazy loading - can check capabilities before importing. | [`ProcessedEntry`](processed-entry).[`exports`](processed-entry#exports) |
+| `exports.config` | `boolean` | Whether config export exists | - |
+| `exports.default` | `boolean` | Whether default export exists | - |
+| `exports.named` | `string`[] | List of named exports found (e.g., ['GET', 'POST']) | - |
+| <a id="extra"></a> `extra?` | `Record`\<`string`, `unknown`\> | Additional data for special cases. **Examples** `{ parent: 'admin', type: 'subcommand' } for Discord` `{ catchAll: { param: 'path', optional: false } } for Server` | [`ProcessedEntry`](processed-entry).[`extra`](processed-entry#extra) |
+| <a id="id"></a> `id` | `string` | Unique identifier for this entry. Format: "\{key\}" for project, "\{plugin\}:\{key\}" for plugins For multiple handlers: append ":\{index\}" | - |
+| <a id="index"></a> `index?` | `number` | For multiple handlers per key (events), the index. | - |
+| <a id="key"></a> `key` | `string` | The handler key. **Example** `"ping", "admin ban", "users/[id]", "auth/[...path]"` | [`ProcessedEntry`](processed-entry).[`key`](processed-entry#key) |
+| <a id="metadata"></a> `metadata` | `Record`\<`string`, `unknown`\> | Metadata extracted from the handler's config export. Structure depends on the route type. | [`ProcessedEntry`](processed-entry).[`metadata`](processed-entry#metadata) |
+| <a id="module"></a> `module?` | `string` | Module name if from /src/modules/. | [`ProcessedEntry`](processed-entry).[`module`](processed-entry#module) |
+| <a id="parent"></a> `parent?` | `string` | For commands with subcommands, the parent command key. | - |
+| <a id="path"></a> `path` | `string` | Path to the handler file (for manifest). **Example** `"commands/admin/ban.js"` | [`ProcessedEntry`](processed-entry).[`path`](processed-entry#path) |
+| <a id="plugin"></a> `plugin` | `string` | Plugin name if source is 'plugin', null otherwise. | - |
+| <a id="pluginversion"></a> `pluginVersion?` | `string` | Plugin version if source is 'plugin'. | - |
+| <a id="source"></a> `source` | `"plugin"` \| `"project"` | Where this handler came from. | - |

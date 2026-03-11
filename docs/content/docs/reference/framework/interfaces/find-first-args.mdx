@@ -1,0 +1,28 @@
+---
+title: "FindFirstArgs<T>"
+---
+
+# Interface: FindFirstArgs\<T\>
+
+FindFirst arguments (same as FindMany).
+
+## Extends
+
+- [`FindManyArgs`](find-many-args)\<`T`\>
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |
+
+## Properties
+
+| Property | Type | Inherited from |
+| ------ | ------ | ------ |
+| <a id="include"></a> `include?` | [`IncludeClause`](../type-aliases/include-clause) | [`FindManyArgs`](find-many-args).[`include`](find-many-args#include) |
+| <a id="orderby"></a> `orderBy?` | \| `Partial`\<`Record`\<keyof `T`, [`OrderDirection`](../type-aliases/order-direction)\>\> \| `Partial`\<`Record`\<keyof `T`, [`OrderDirection`](../type-aliases/order-direction)\>\>[] | [`FindManyArgs`](find-many-args).[`orderBy`](find-many-args#orderby) |
+| <a id="select"></a> `select?` | `Partial`\<`Record`\<keyof `T`, `boolean`\>\> | [`FindManyArgs`](find-many-args).[`select`](find-many-args#select) |
+| <a id="skip"></a> `skip?` | `number` | [`FindManyArgs`](find-many-args).[`skip`](find-many-args#skip) |
+| <a id="take"></a> `take?` | `number` | [`FindManyArgs`](find-many-args).[`take`](find-many-args#take) |
+| <a id="where"></a> `where?` | [`WhereClause`](../type-aliases/where-clause)\<`T`\> | [`FindManyArgs`](find-many-args).[`where`](find-many-args#where) |

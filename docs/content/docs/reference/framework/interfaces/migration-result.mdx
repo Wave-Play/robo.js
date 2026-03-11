@@ -1,0 +1,17 @@
+---
+title: "MigrationResult"
+---
+
+# Interface: MigrationResult
+
+Result of running a single migration.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="durationms"></a> `durationMs` | `number` | Duration in milliseconds |
+| <a id="error"></a> `error?` | `string` | Error message if failed |
+| <a id="name"></a> `name` | `string` | Migration name |
+| <a id="rollbackattempted"></a> `rollbackAttempted?` | `boolean` | Whether rollback was attempted |
+| <a id="status"></a> `status` | `"failed"` \| `"success"` \| `"skipped"` | Outcome status |

@@ -1,0 +1,16 @@
+---
+title: "RecoveryResult"
+---
+
+# Interface: RecoveryResult
+
+Result of WAL recovery.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="errors"></a> `errors` | `Error`[] | Any errors encountered during recovery. |
+| <a id="found"></a> `found` | `number` | Total number of orphaned WAL entries found. |
+| <a id="replayed"></a> `replayed` | `number` | Number of entries replayed (forward recovery). |
+| <a id="rolledback"></a> `rolledBack` | `number` | Number of entries rolled back. |

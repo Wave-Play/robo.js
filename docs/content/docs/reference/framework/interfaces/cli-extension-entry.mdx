@@ -1,0 +1,18 @@
+---
+title: "CliExtensionEntry"
+---
+
+# Interface: CliExtensionEntry
+
+CLI extension entry in the manifest.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="hasafter"></a> `hasAfter?` | `boolean` | Whether this extension has an after hook |
+| <a id="hasbefore"></a> `hasBefore?` | `boolean` | Whether this extension has a before hook |
+| <a id="options"></a> `options?` | [`CliOptionConfig`](cli-option-config)[] | Options added by this extension |
+| <a id="path"></a> `path` | `string` | Extension file path |
+| <a id="plugin"></a> `plugin` | `string` | Plugin that provides this extension (null for project) |
+| <a id="priority"></a> `priority` | `number` | Priority for option conflicts |

@@ -1,0 +1,18 @@
+---
+title: "IpcState"
+---
+
+# Interface: IpcState
+
+Host state and capabilities
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="capabilities"></a> `capabilities` | `string`[] | Supported event types |
+| <a id="env"></a> `env` | \{ `platform`: `string`; `type`: `string`; \} | Host environment info |
+| `env.platform?` | `string` | Optional platform info |
+| `env.type` | `string` | Host environment identifier |
+| <a id="targets"></a> `targets` | `string`[] | Available targets for open:url |
+| <a id="version"></a> `version` | `number` | Protocol version (currently 1) |

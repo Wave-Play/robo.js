@@ -1,0 +1,29 @@
+---
+title: "HandlerModule<THandler, TNamedExports>"
+---
+
+# Interface: HandlerModule\<THandler, TNamedExports\>
+
+Handler object returned after lazy import.
+Contains the default export, config, and any named exports.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `THandler` | `unknown` |
+| `TNamedExports` | `Record`\<`string`, `unknown`\> |
+
+## Indexable
+
+```ts
+[key: string]: unknown
+```
+
+## Properties
+
+| Property | Type |
+| ------ | ------ |
+| <a id="config"></a> `config?` | `unknown` |
+| <a id="default"></a> `default?` | `THandler` |
+| <a id="module"></a> `module?` | `string` |

@@ -1,0 +1,16 @@
+---
+title: "AutoRepairConfig"
+---
+
+# Interface: AutoRepairConfig
+
+Configuration for automatic repair on startup.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="catalog"></a> `catalog?` | `boolean` | Rebuild catalog from chunks (DANGEROUS - requires explicit opt-in) |
+| <a id="filter"></a> `filter?` | `boolean` | Rebuild Cuckoo filter if corrupted |
+| <a id="indexes"></a> `indexes?` | `boolean` | Rebuild sorted indexes if corrupted |
+| <a id="uniqueindexes"></a> `uniqueIndexes?` | `boolean` | Clean orphaned unique index keys |

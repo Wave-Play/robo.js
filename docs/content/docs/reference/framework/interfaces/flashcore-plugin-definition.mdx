@@ -1,0 +1,71 @@
+---
+title: "FlashcorePluginDefinition<TClientExtensions, TModelExtensions, TState>"
+---
+
+# Interface: FlashcorePluginDefinition\<TClientExtensions, TModelExtensions, TState\>
+
+Flashcore plugin definition.
+
+Plugins can extend Flashcore with:
+- Middleware that intercepts CRUD operations
+- Model extensions (methods added to all models)
+- Client extensions (methods under Flashcore.$.\{pluginName\})
+- Custom index providers (trie, fulltext, geo, etc.)
+- Custom query operators
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `TClientExtensions` | `Record`\<`string`, `unknown`\> |
+| `TModelExtensions` | `Record`\<`string`, `unknown`\> |
+| `TState` | `Record`\<`string`, `unknown`\> |
+
+## Properties
+
+| Property | Modifier | Type | Description |
+| ------ | ------ | ------ | ------ |
+| <a id="clientextensions"></a> `clientExtensions?` | `public` | `TClientExtensions` | Client extensions - methods under Flashcore.$.\{pluginName\}. e.g., Flashcore.$.audit.history() |
+| <a id="indexproviders"></a> `indexProviders?` | `public` | `Record`\<`string`, [`IndexProvider`](index-provider)\<`unknown`\>\> | Custom index providers (trie, fulltext, geo, etc.). |
+| <a id="methods"></a> `methods?` | `public` | `Record`\<`string`, (...`args`) =\> `unknown`\> | Private plugin methods - available via `this` in middleware. |
+| <a id="middleware"></a> `middleware?` | `public` | [`PluginMiddleware`](plugin-middleware) | Middleware hooks - intercept CRUD operations. |
+| <a id="modelextensions"></a> `modelExtensions?` | `public` | `TModelExtensions` & `ThisType`\<[`FlashcoreModel`](../classes/flashcore-model)\<\{ `id`: `string`; \}\> & `TModelExtensions`\> | Model extensions - methods added directly to all models. e.g., user.restore(), user.subscribe() |
+| <a id="name"></a> `name` | `readonly` | `string` | Plugin name - used as namespace for client extensions. e.g., name: 'audit' → Flashcore.$.audit.* |
+| <a id="queryoperators"></a> `queryOperators?` | `public` | `Record`\<`string`, [`QueryOperatorFn`](../type-aliases/query-operator-fn)\> | Custom query operators that work with custom indexes. |
+| <a id="queryresolvers"></a> `queryResolvers?` | `public` | `Record`\<`string`, [`ModelQueryResolver`](model-query-resolver)\> | Model-level query resolvers for complete control over query execution. |
+
+## Methods
+
+### setup()?
+
+```ts
+optional setup(ctx): void | Promise<void>
+```
+
+Called once when plugin is applied during Flashcore.$.init().
+Use to set up state, mark models with metadata, register indexes.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `ctx` | [`PluginSetupContext`](plugin-setup-context)\<`TState`\> |
+
+#### Returns
+
+`void` \| `Promise`\<`void`\>
+
+***
+
+### shutdown()?
+
+```ts
+optional shutdown(): void | Promise<void>
+```
+
+Called during Flashcore shutdown.
+Use to clean up resources (timers, subscriptions, etc.).
+
+#### Returns
+
+`void` \| `Promise`\<`void`\>

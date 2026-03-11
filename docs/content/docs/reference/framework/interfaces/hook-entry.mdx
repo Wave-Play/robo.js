@@ -1,0 +1,18 @@
+---
+title: "HookEntry"
+---
+
+# Interface: HookEntry
+
+A lifecycle hook entry.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="id"></a> `id` | `string` | Unique identifier |
+| <a id="path"></a> `path` | `string` | Path to the compiled hook file |
+| <a id="phase"></a> `phase?` | `"start"` \| `"transform"` \| `"complete"` | For build hooks, which phase |
+| <a id="plugin"></a> `plugin` | `string` | Plugin name if source is 'plugin' |
+| <a id="priority"></a> `priority` | `number` | Execution priority. Lower runs first. |
+| <a id="source"></a> `source` | `"plugin"` \| `"project"` | Where this hook came from |

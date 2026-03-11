@@ -1,0 +1,19 @@
+---
+title: "CliCommandEntry"
+---
+
+# Interface: CliCommandEntry
+
+CLI command entry in the manifest.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="description"></a> `description` | `string` | Command description |
+| <a id="options"></a> `options?` | [`CliOptionConfig`](cli-option-config)[] | Options defined by this command |
+| <a id="path"></a> `path` | `string` | Handler file path (relative to build directory or node_modules) |
+| <a id="plugin"></a> `plugin` | `string` | Plugin that provides this command (null for project) |
+| <a id="positionalargs"></a> `positionalArgs?` | `boolean` | Whether this command accepts positional arguments |
+| <a id="priority"></a> `priority` | `number` | Priority for conflict resolution |
+| <a id="subcommands"></a> `subcommands?` | `string`[] | Subcommands (keys are subcommand names) |

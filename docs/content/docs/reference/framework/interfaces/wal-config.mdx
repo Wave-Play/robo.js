@@ -1,0 +1,15 @@
+---
+title: "WALConfig"
+---
+
+# Interface: WALConfig
+
+WAL configuration options.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="clockskewtolerancems"></a> `clockSkewToleranceMs?` | `number` | Clock skew tolerance in milliseconds. Entries with timestamps slightly in the future are still valid. Default: 5 seconds (5000ms) |
+| <a id="maxentrysize"></a> `maxEntrySize?` | `number` | Maximum size for a single WAL entry value before segmentation. Default: 100KB or adapter.maxValueSize * 0.8 |
+| <a id="stalethresholdms"></a> `staleThresholdMs?` | `number` | Threshold in milliseconds for considering an entry "stale". Stale pending entries are rolled back instead of replayed. Default: 5 minutes (300000ms) |

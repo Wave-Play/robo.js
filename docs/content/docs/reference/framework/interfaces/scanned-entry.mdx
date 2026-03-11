@@ -1,0 +1,23 @@
+---
+title: "ScannedEntry"
+---
+
+# Interface: ScannedEntry
+
+Represents a file discovered during directory scanning.
+Passed to route processor functions.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="dynamicsegments"></a> `dynamicSegments?` | \{ `catchAll`: \{ `optional`: `boolean`; `param`: `string`; \}; `params`: `string`[]; \} | Dynamic segment information extracted from the path. Only present if the path contains dynamic segments like [id], [...path], [[...slug]]. |
+| `dynamicSegments.catchAll?` | \{ `optional`: `boolean`; `param`: `string`; \} | Catch-all segment info if present. **Examples** `{ param: "path", optional: false } for [...path].ts` `{ param: "slug", optional: true } for [[...slug]].ts` |
+| `dynamicSegments.catchAll.optional` | `boolean` | - |
+| `dynamicSegments.catchAll.param` | `string` | - |
+| `dynamicSegments.params` | `string`[] | List of dynamic parameter names from [param] segments. **Example** `["id", "slug"] for /users/[id]/posts/[slug].ts` |
+| <a id="exports"></a> `exports` | `Record`\<`string`, `unknown`\> | All exports from the handler file. Includes default, config, and any named exports. |
+| <a id="filepath"></a> `filePath` | `string` | File path relative to /src. **Example** `"commands/admin/ban.ts"` |
+| <a id="key"></a> `key` | `string` | Generated key for this handler. Based on file path and route's KeyConfig. **Example** `"ping", "admin ban", "users/[id]"` |
+| <a id="relativepath"></a> `relativePath` | `string` | Relative path within the route directory. **Example** `"admin/ban.ts" for /src/commands/admin/ban.ts` |
+| <a id="type"></a> `type` | `string` | Full type identifier combining namespace and route name. **Example** `"discord:commands", "server:api"` |

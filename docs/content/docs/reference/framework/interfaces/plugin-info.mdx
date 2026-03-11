@@ -1,0 +1,19 @@
+---
+title: "PluginInfo"
+---
+
+# Interface: PluginInfo
+
+Information about an installed plugin.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="hooks"></a> `hooks` | `string`[] | Hook types this plugin provides |
+| <a id="name"></a> `name` | `string` | Package name |
+| <a id="namespace"></a> `namespace` | `string` | Plugin's namespace for routes |
+| <a id="path"></a> `path` | `string` | Path to the plugin (relative to project root) |
+| <a id="prefix"></a> `prefix?` | `string` | Plugin-declared server prefix (without leading slash, e.g., 'mock') |
+| <a id="routes"></a> `routes` | `string`[] | Route names this plugin defines |
+| <a id="version"></a> `version` | `string` | Package version |

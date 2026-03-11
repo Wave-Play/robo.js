@@ -1,0 +1,16 @@
+---
+title: "LockStatus"
+---
+
+# Interface: LockStatus
+
+Current lock status.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="acquiredat"></a> `acquiredAt?` | `Date` | When lock was acquired |
+| <a id="holder"></a> `holder?` | `string` | Lock holder ID if locked |
+| <a id="locked"></a> `locked` | `boolean` | Whether a lock is currently held |
+| <a id="stale"></a> `stale?` | `boolean` | Whether the lock is stale (exceeded timeout) |

@@ -1,0 +1,17 @@
+---
+title: "EnvVariableStatus"
+---
+
+# Interface: EnvVariableStatus
+
+Status of a single environment variable.
+Contains verification info without exposing actual values.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="empty"></a> `empty` | `boolean` | Whether the value is an empty string |
+| <a id="exists"></a> `exists` | `boolean` | Whether the variable is defined in the environment |
+| <a id="length"></a> `length` | `number` | Character count of the value |
+| <a id="pattern"></a> `pattern` | `"valid"` \| `"empty"` \| `"missing"` \| `"invalid"` | Validation status |

@@ -1,0 +1,15 @@
+---
+title: "HmrSubscribeOptions"
+---
+
+# Interface: HmrSubscribeOptions
+
+Options for filtering HMR events when subscribing.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="changetypes"></a> `changeTypes?` | (`"change"` \| `"add"` \| `"remove"`)[] | Only receive events for these change types. If not specified, receives all change types. |
+| <a id="namespaces"></a> `namespaces?` | `string`[] | Only receive events for these namespaces. If not specified, receives all namespaces. |
+| <a id="routes"></a> `routes?` | `string`[] | Only receive events for these route types. If not specified, receives all routes. |

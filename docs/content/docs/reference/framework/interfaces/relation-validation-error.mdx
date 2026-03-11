@@ -1,0 +1,17 @@
+---
+title: "RelationValidationError"
+---
+
+# Interface: RelationValidationError
+
+Result of relation schema validation.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="field"></a> `field` | `string` | Field with the error. |
+| <a id="level"></a> `level?` | `"error"` \| `"warning"` | Error level: 'error' blocks, 'warning' logs but continues. |
+| <a id="message"></a> `message` | `string` | Error message. |
+| <a id="model"></a> `model` | `string` | Model where the error was found. |
+| <a id="suggestion"></a> `suggestion?` | `string` | Suggested fix (if available). |

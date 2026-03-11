@@ -1,0 +1,20 @@
+---
+title: "ProjectMetadata"
+---
+
+# Interface: ProjectMetadata
+
+Project metadata stored in robo.json.
+Core information about the Robo project itself.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="buildhash"></a> `buildHash` | `string` | Hash for cache invalidation |
+| <a id="buildtime"></a> `buildTime` | `string` | When this manifest was generated (ISO 8601) |
+| <a id="language"></a> `language` | `"javascript"` \| `"typescript"` | Source language: typescript or javascript |
+| <a id="mode"></a> `mode` | `string` | Which mode this manifest is for (supports custom modes like 'beta', 'staging', etc.) |
+| <a id="name"></a> `name` | `string` | Project name from package.json |
+| <a id="roboversion"></a> `roboVersion` | `string` | Robo.js version used to build |
+| <a id="version"></a> `version` | `string` | Project version |

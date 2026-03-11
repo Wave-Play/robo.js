@@ -1,0 +1,16 @@
+---
+title: "CatalogRebuildProgress"
+---
+
+# Interface: CatalogRebuildProgress
+
+Progress update during catalog rebuild.
+
+## Properties
+
+| Property | Type |
+| ------ | ------ |
+| <a id="chunksscanned"></a> `chunksScanned` | `number` |
+| <a id="phase"></a> `phase` | `"complete"` \| `"scanning_chunks"` \| `"scanning_segments"` \| `"validating"` |
+| <a id="recordsfound"></a> `recordsFound` | `number` |
+| <a id="segmentedrecords"></a> `segmentedRecords` | `number` |

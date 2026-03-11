@@ -1,0 +1,17 @@
+---
+title: "MetadataIndex"
+---
+
+# Interface: MetadataIndex
+
+Metadata aggregation index stored in metadata/@.json.
+
+## Indexable
+
+```ts
+[namespace: string]: {
+  aggregatedFile: string;
+  lastAggregated: string;
+  sources: string[];
+}
+```

@@ -1,0 +1,16 @@
+---
+title: "KeyConfig"
+---
+
+# Interface: KeyConfig
+
+Configuration for key generation from file paths.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="nested"></a> `nested?` | `"camelCase"` \| `"dotNotation"` | How to join nested path segments for key generation. - 'camelCase': guild/memberAdd → guildMemberAdd - 'dotNotation': guild/memberAdd → guild.memberAdd **Default** `Uses separator` |
+| <a id="separator"></a> `separator?` | `string` | Separator for filepath style. **Default** `'/'` **Example** `' ' produces "admin ban", '.' produces "admin.ban"` |
+| <a id="style"></a> `style` | `"filename"` \| `"filepath"` \| `"parentOrFilename"` | Base style for generating keys. - 'filename': Use only the file name (ping.ts → "ping") - 'filepath': Use the relative path (admin/ban.ts → "admin\{separator\}ban") - 'parentOrFilename': Use parent folder if nested, otherwise filename (events/ready.ts → "ready", events/messageCreate/chat.ts → "messageCreate") |
+| <a id="transform"></a> `transform?` | (`key`: `string`, `segments`: `string`[]) =\> `string` | Custom transformation function applied after key generation. Receives the generated key and the original path segments for full flexibility. **Example** `// Use parent folder for nested files transform: (key, segments) => segments.length > 1 ? segments[0] : key` |

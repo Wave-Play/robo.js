@@ -1,0 +1,15 @@
+---
+title: "VersionDiff"
+---
+
+# Interface: VersionDiff
+
+Diff between two schema versions.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="from"></a> `from` | [`SchemaHistoryEntry`](schema-history-entry) | From version entry |
+| <a id="modeldiffs"></a> `modelDiffs` | [`ModelDiff`](model-diff)[] | Per-model diffs |
+| <a id="to"></a> `to` | [`SchemaHistoryEntry`](schema-history-entry) | To version entry |

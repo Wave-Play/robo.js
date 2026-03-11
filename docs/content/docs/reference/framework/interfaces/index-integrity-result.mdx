@@ -1,0 +1,18 @@
+---
+title: "IndexIntegrityResult"
+---
+
+# Interface: IndexIntegrityResult
+
+Result of a sorted index integrity check.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="entrieschecked"></a> `entriesChecked` | `number` | Total entries checked |
+| <a id="field"></a> `field` | `string` | - |
+| <a id="isvalid"></a> `isValid` | `boolean` | - |
+| <a id="missinginindex"></a> `missingInIndex` | `string`[] | Record IDs in catalog but not in index |
+| <a id="orphanedinindex"></a> `orphanedInIndex` | `string`[] | Record IDs in index but not in catalog |
+| <a id="wrongvalues"></a> `wrongValues` | \{ `actual`: `unknown`; `expected`: `unknown`; `id`: `string`; \}[] | Entries with wrong values |

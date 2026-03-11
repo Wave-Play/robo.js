@@ -1,0 +1,36 @@
+---
+title: "HotModule"
+---
+
+# Interface: HotModule
+
+Interface returned by `hmr.module()` for registering cleanup callbacks
+and accessing persisted data across reloads.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="data"></a> `data` | `Record`\<`string`, `unknown`\> | Persisted data that survives across reloads. Use this to preserve state like singleton instances. |
+
+## Methods
+
+### dispose()
+
+```ts
+dispose(callback): void
+```
+
+Register a cleanup callback for when this module is reloaded.
+Multiple callbacks can be registered and will run in order.
+Async callbacks are fire-and-forget (started but not awaited).
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `callback` | [`DisposeCallback`](../type-aliases/dispose-callback) |
+
+#### Returns
+
+`void`

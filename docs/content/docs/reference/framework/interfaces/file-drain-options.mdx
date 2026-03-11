@@ -1,0 +1,21 @@
+---
+title: "FileDrainOptions"
+---
+
+# Interface: FileDrainOptions
+
+Options for creating a file drain imperatively.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="blocking"></a> `blocking?` | `boolean` | If true, awaits each write before returning (sync-like). Default: false |
+| <a id="colormap"></a> `colorMap?` | `boolean` | Generate a companion .colormap file that records ANSI escape code positions. This allows colors to be reconstructed later. Only used when stripAnsi is true. Default: false |
+| <a id="format"></a> `format?` | `"text"` \| `"json"` | Output format. Default: 'text' |
+| <a id="level"></a> `level?` | [`LogLevel`](../../core/logger/type-aliases/log-level) | Minimum log level to write. |
+| <a id="maxfiles"></a> `maxFiles?` | `number` | Maximum number of rotated files to keep. Default: 5 |
+| <a id="maxsize"></a> `maxSize?` | `number` | Maximum file size in bytes before rotation. Default: 10MB |
+| <a id="path"></a> `path` | `string` | Absolute or relative file path for log output. |
+| <a id="stripansi"></a> `stripAnsi?` | `boolean` | Strip ANSI color codes from output. Default: true |
+| <a id="timestamp"></a> `timestamp?` | [`TimestampFormat`](../type-aliases/timestamp-format) | Timestamp format to prepend to log entries. Default: false (no timestamp) |

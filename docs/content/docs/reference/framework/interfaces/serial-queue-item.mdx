@@ -1,0 +1,15 @@
+---
+title: "SerialQueueItem"
+---
+
+# Interface: SerialQueueItem
+
+Serial mode queue item.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="fn"></a> `fn` | () =\> `Promise`\<`unknown`\> | The transaction function to execute. |
+| <a id="reject"></a> `reject` | (`error`: `Error`) =\> `void` | Reject callback for the queue promise. |
+| <a id="resolve"></a> `resolve` | (`value`: `unknown`) =\> `void` | Resolve callback for the queue promise. |

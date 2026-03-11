@@ -1,0 +1,22 @@
+---
+title: "NormalizedSchema"
+---
+
+# Interface: NormalizedSchema
+
+Normalized schema for internal use.
+
+## Properties
+
+| Property | Type |
+| ------ | ------ |
+| <a id="checksum"></a> `checksum` | `string` |
+| <a id="compounduniques"></a> `compoundUniques` | [`CompoundUniqueConstraint`](compound-unique-constraint)[] |
+| <a id="defaultfields"></a> `defaultFields` | `Map`\<`string`, `unknown`\> |
+| <a id="fields"></a> `fields` | `Map`\<`string`, [`NormalizedField`](normalized-field)\> |
+| <a id="indexedfields"></a> `indexedFields` | `string`[] |
+| <a id="optionalfields"></a> `optionalFields` | `string`[] |
+| <a id="primarykey"></a> `primaryKey` | `string` |
+| <a id="relations"></a> `relations` | `Map`\<`string`, [`RelationDef`](relation-def)\> |
+| <a id="requiredfields"></a> `requiredFields` | `string`[] |
+| <a id="uniquefields"></a> `uniqueFields` | `string`[] |

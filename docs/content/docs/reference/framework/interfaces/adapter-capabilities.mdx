@@ -1,0 +1,25 @@
+---
+title: "AdapterCapabilities"
+---
+
+# Interface: AdapterCapabilities
+
+Normalized adapter capabilities.
+Computed from adapter interface inspection and self-reporting.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="acid"></a> `acid` | `boolean` | Whether the adapter supports multi-key atomic commit. True if transaction OR atomicBatch is available. |
+| <a id="adapter"></a> `adapter` | `string` | Adapter name for identification. |
+| <a id="atomicbatch"></a> `atomicBatch` | `boolean` | Whether atomic batch operations are available. |
+| <a id="compareandswap"></a> `compareAndSwap` | `boolean` | Whether compareAndSwap is available. |
+| <a id="indextypes"></a> `indexTypes` | `string`[] | Registered index types. |
+| <a id="isolation"></a> `isolation` | `"none"` \| `"read-committed"` \| `"serializable"` | Transaction isolation level. |
+| <a id="maxvaluesize"></a> `maxValueSize?` | `number` | Maximum value size in bytes (undefined = no limit known). |
+| <a id="nativetransactions"></a> `nativeTransactions` | `boolean` | Whether native transactions are available. |
+| <a id="plugins"></a> `plugins` | `string`[] | Registered Flashcore plugins. |
+| <a id="scan"></a> `scan` | `boolean` | Whether scan is available. |
+| <a id="setifnotexists"></a> `setIfNotExists` | `boolean` | Whether setIfNotExists is available. |
+| <a id="walenabled"></a> `walEnabled` | `boolean` | Whether WAL recovery is possible. True if scan is available. |

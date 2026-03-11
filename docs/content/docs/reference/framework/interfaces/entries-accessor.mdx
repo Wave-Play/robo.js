@@ -1,0 +1,64 @@
+---
+title: "EntriesAccessor"
+---
+
+# Interface: EntriesAccessor
+
+Accessor interface for route entries during build.
+Provides methods to query and inspect processed entries.
+
+## Methods
+
+### all()
+
+```ts
+all(): RouteEntries
+```
+
+Get all entries organized by namespace and route.
+
+#### Returns
+
+[`RouteEntries`](route-entries)
+
+***
+
+### get()
+
+```ts
+get(namespace, route): ProcessedEntry[]
+```
+
+Get entries for a specific route.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `namespace` | `string` | Plugin namespace (e.g., 'discordjs', 'server') |
+| `route` | `string` | Route name (e.g., 'commands', 'api') |
+
+#### Returns
+
+[`ProcessedEntry`](processed-entry)[]
+
+***
+
+### handlers()
+
+```ts
+handlers(namespace, route): HandlerEntry[]
+```
+
+Get handler entries (with source tracking) for a route.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `namespace` | `string` | Plugin namespace |
+| `route` | `string` | Route name |
+
+#### Returns
+
+[`HandlerEntry`](handler-entry)[]

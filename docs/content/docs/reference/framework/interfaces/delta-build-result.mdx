@@ -1,0 +1,15 @@
+---
+title: "DeltaBuildResult"
+---
+
+# Interface: DeltaBuildResult
+
+Result from building deltas.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="auth"></a> `auth` | [`WalAuthoritativeDelta`](../type-aliases/wal-authoritative-delta)[] | Authoritative deltas (source of truth changes). |
+| <a id="derived"></a> `derived` | [`WalDerivedDelta`](../type-aliases/wal-derived-delta)[] | Derived deltas (filter/index updates, best-effort). |
+| <a id="undo"></a> `undo` | [`WalAuthoritativeDelta`](../type-aliases/wal-authoritative-delta)[] | Inverse deltas (for rollback). |

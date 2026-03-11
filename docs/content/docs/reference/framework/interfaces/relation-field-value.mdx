@@ -1,0 +1,17 @@
+---
+title: "RelationFieldValue"
+---
+
+# Interface: RelationFieldValue
+
+Relation field value in create/update data.
+Supports nested create, connect, and disconnect.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="connect"></a> `connect?` | \| \{ `id`: `string`; \} \| \{ `id`: `string`; \}[] | Connect to existing record(s) by ID. |
+| <a id="create"></a> `create?` | `Record`\<`string`, `unknown`\> \| `Record`\<`string`, `unknown`\>[] | Create new related record(s). |
+| <a id="disconnect"></a> `disconnect?` | \| `true` \| \{ `id`: `string`; \} \| \{ `id`: `string`; \}[] | Disconnect from existing record(s). |
+| <a id="set"></a> `set?` | \{ `id`: `string`; \}[] | Set relations to exactly these IDs (manyToMany only). |

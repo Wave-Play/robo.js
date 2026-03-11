@@ -1,0 +1,22 @@
+---
+title: "OperationParams<Op>"
+---
+
+# Interface: OperationParams\<Op\>
+
+Parameters passed to middleware functions.
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `Op` *extends* [`OperationType`](../type-aliases/operation-type) |
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="args"></a> `args` | [`OperationArgs`](../type-aliases/operation-args)\<`Op`\> | Operation arguments (mutable - can be modified by middleware). |
+| <a id="context"></a> `context` | [`PluginContext`](plugin-context) | Plugin context for accessing state and methods. |
+| <a id="model"></a> `model` | [`FlashcoreModel`](../classes/flashcore-model)\<\{ `id`: `string`; \}\> | The model being operated on. |
+| <a id="operation"></a> `operation` | `Op` | The operation type. |

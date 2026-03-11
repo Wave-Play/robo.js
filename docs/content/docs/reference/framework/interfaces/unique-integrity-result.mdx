@@ -1,0 +1,16 @@
+---
+title: "UniqueIntegrityResult"
+---
+
+# Interface: UniqueIntegrityResult
+
+Result of unique index integrity check.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="duplicates"></a> `duplicates` | \{ `field`: `string`; `ids`: `string`[]; `value`: `string`; \}[] | Multiple records with same unique value |
+| <a id="isvalid"></a> `isValid` | `boolean` | - |
+| <a id="keyschecked"></a> `keysChecked` | `number` | Total unique keys checked |
+| <a id="orphanedkeys"></a> `orphanedKeys` | `string`[] | Unique keys pointing to non-existent records |

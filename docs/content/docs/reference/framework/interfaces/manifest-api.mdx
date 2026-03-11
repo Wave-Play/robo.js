@@ -1,0 +1,470 @@
+---
+title: "ManifestAPI"
+---
+
+# Interface: ManifestAPI
+
+The Manifest API singleton interface.
+Provides lazy-loaded, type-safe access to manifest data.
+
+## Properties
+
+| Property | Modifier | Type | Description |
+| ------ | ------ | ------ | ------ |
+| <a id="isinitialized"></a> `isInitialized` | `readonly` | `boolean` | Whether the manifest has been initialized |
+| <a id="mode"></a> `mode` | `readonly` | `string` | Current runtime mode (supports custom modes like 'beta', 'staging', etc.) |
+
+## Methods
+
+### clearCache()
+
+```ts
+clearCache(): void
+```
+
+Clear all cached data (for testing).
+
+#### Returns
+
+`void`
+
+***
+
+### config()
+
+```ts
+config(options?): Config
+```
+
+Get merged config.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options`? | [`ManifestOptions`](manifest-options) |
+
+#### Returns
+
+[`Config`](config)
+
+***
+
+### env()
+
+```ts
+env(options?): EnvMetadata
+```
+
+Get environment variable status.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options`? | [`ManifestOptions`](manifest-options) |
+
+#### Returns
+
+[`EnvMetadata`](env-metadata)
+
+***
+
+### hooks()
+
+```ts
+hooks(hook, options?): HookEntry[]
+```
+
+Get lifecycle hook entries.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `hook` | `string` |
+| `options`? | [`ManifestOptions`](manifest-options) |
+
+#### Returns
+
+[`HookEntry`](hook-entry)[]
+
+***
+
+### initialize()
+
+```ts
+initialize(mode): Promise<void>
+```
+
+Initialize the manifest by preloading core files.
+Called during Robo.start().
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `mode` | `string` | Runtime mode (supports custom modes like 'beta', 'staging', etc.) |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### isLoaded()
+
+```ts
+isLoaded(namespace, route): boolean
+```
+
+Check if a route is loaded into memory.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `namespace` | `string` |
+| `route` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### load()
+
+```ts
+load(namespace, route): Promise<HandlerEntry[]>
+```
+
+Load a route manifest into memory.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `namespace` | `string` |
+| `route` | `string` |
+
+#### Returns
+
+`Promise`\<[`HandlerEntry`](handler-entry)[]\>
+
+***
+
+### metadata()
+
+#### Call Signature
+
+```ts
+metadata<T>(namespace, options?): T
+```
+
+Get aggregated metadata for a namespace.
+
+##### Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` *extends* [`AggregatedMetadata`](aggregated-metadata) | [`AggregatedMetadata`](aggregated-metadata) |
+
+##### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `namespace` | `string` |
+| `options`? | [`ManifestOptions`](manifest-options) |
+
+##### Returns
+
+`T`
+
+#### Call Signature
+
+```ts
+metadata<T>(
+   namespace, 
+   source, 
+options?): Partial<T>
+```
+
+Get metadata for a specific source within a namespace.
+Loads from metadata/raw/\{namespace\}.\{source\}.json
+
+##### Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` *extends* [`AggregatedMetadata`](aggregated-metadata) | [`AggregatedMetadata`](aggregated-metadata) |
+
+##### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `namespace` | `string` |
+| `source` | `string` |
+| `options`? | [`ManifestOptions`](manifest-options) |
+
+##### Returns
+
+`Partial`\<`T`\>
+
+***
+
+### plugin()
+
+```ts
+plugin(name, options?): PluginInfo
+```
+
+Get info for a specific plugin.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `name` | `string` |
+| `options`? | [`ManifestOptions`](manifest-options) |
+
+#### Returns
+
+[`PluginInfo`](plugin-info)
+
+***
+
+### pluginConfig()
+
+```ts
+pluginConfig(plugin, options?): Record<string, unknown>
+```
+
+Get config for a specific plugin.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `plugin` | `string` |
+| `options`? | [`ManifestOptions`](manifest-options) |
+
+#### Returns
+
+`Record`\<`string`, `unknown`\>
+
+***
+
+### plugins()
+
+```ts
+plugins(options?): PluginInfo[]
+```
+
+Get all plugin info.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options`? | [`ManifestOptions`](manifest-options) |
+
+#### Returns
+
+[`PluginInfo`](plugin-info)[]
+
+***
+
+### project()
+
+```ts
+project(options?): ProjectMetadata
+```
+
+Get project metadata.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options`? | [`ManifestOptions`](manifest-options) |
+
+#### Returns
+
+[`ProjectMetadata`](project-metadata)
+
+***
+
+### reload()
+
+```ts
+reload(namespace, route): Promise<HandlerEntry[]>
+```
+
+Reload a route manifest (for HMR).
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `namespace` | `string` |
+| `route` | `string` |
+
+#### Returns
+
+`Promise`\<[`HandlerEntry`](handler-entry)[]\>
+
+***
+
+### routeDefinitions()
+
+```ts
+routeDefinitions(options?): RouteDefinitions
+```
+
+Get all route definitions from @.json.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options`? | [`ManifestOptions`](manifest-options) |
+
+#### Returns
+
+[`RouteDefinitions`](../type-aliases/route-definitions)
+
+***
+
+### routeDefinitionsForNamespace()
+
+```ts
+routeDefinitionsForNamespace(namespace, options?): NamespaceRouteDefinitions
+```
+
+Get route definitions for a specific namespace.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `namespace` | `string` |
+| `options`? | [`ManifestOptions`](manifest-options) |
+
+#### Returns
+
+[`NamespaceRouteDefinitions`](namespace-route-definitions)
+
+***
+
+### routes()
+
+```ts
+routes(
+   namespace, 
+   route, 
+options?): Promise<HandlerEntry[]>
+```
+
+Get route handler entries.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `namespace` | `string` | Plugin namespace (e.g., 'discord', 'server') |
+| `route` | `string` | Route name (e.g., 'commands', 'api') |
+| `options`? | [`ManifestOptions`](manifest-options) | Optional mode override |
+
+#### Returns
+
+`Promise`\<[`HandlerEntry`](handler-entry)[]\>
+
+***
+
+### routesSync()
+
+```ts
+routesSync(
+   namespace, 
+   route, 
+   options?): HandlerEntry[]
+```
+
+Get route handler entries synchronously (must be pre-loaded).
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `namespace` | `string` |
+| `route` | `string` |
+| `options`? | [`ManifestOptions`](manifest-options) |
+
+#### Returns
+
+[`HandlerEntry`](handler-entry)[]
+
+***
+
+### seeds()
+
+```ts
+seeds(pluginName, options?): SeedConfig
+```
+
+Get seed configuration for a specific plugin.
+Loads from seeds/\{pluginName\}.json
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `pluginName` | `string` |
+| `options`? | [`ManifestOptions`](manifest-options) |
+
+#### Returns
+
+[`SeedConfig`](seed-config)
+
+***
+
+### seedsIndex()
+
+```ts
+seedsIndex(options?): SeedsIndex
+```
+
+Get seeds index (list of plugins with seeds).
+Loads from seeds/@.json
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options`? | [`ManifestOptions`](manifest-options) |
+
+#### Returns
+
+[`SeedsIndex`](../type-aliases/seeds-index)
+
+***
+
+### unload()
+
+```ts
+unload(namespace, route): void
+```
+
+Unload a route manifest (free memory).
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `namespace` | `string` |
+| `route` | `string` |
+
+#### Returns
+
+`void`

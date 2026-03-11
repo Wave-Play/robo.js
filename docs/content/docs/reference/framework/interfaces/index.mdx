@@ -1,0 +1,149 @@
+---
+title: "Index<T>"
+---
+
+# Interface: Index\<T\>
+
+Custom index instance - manages indexed data.
+
+## Type Parameters
+
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | `unknown` |
+
+## Methods
+
+### clear()
+
+```ts
+clear(): void
+```
+
+Clear all entries from the index.
+
+#### Returns
+
+`void`
+
+***
+
+### deserialize()
+
+```ts
+deserialize(data): void
+```
+
+Deserialize index from persisted data.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `data` | `unknown` |
+
+#### Returns
+
+`void`
+
+***
+
+### insert()
+
+```ts
+insert(id, value): void
+```
+
+Insert a value into the index.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+| `value` | `T` |
+
+#### Returns
+
+`void`
+
+***
+
+### query()
+
+```ts
+query(operator, operand): string[]
+```
+
+Query the index - returns matching IDs.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `operator` | `string` |
+| `operand` | `unknown` |
+
+#### Returns
+
+`string`[]
+
+***
+
+### remove()
+
+```ts
+remove(id, value): void
+```
+
+Remove a value from the index.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+| `value` | `T` |
+
+#### Returns
+
+`void`
+
+***
+
+### serialize()
+
+```ts
+serialize(): unknown
+```
+
+Serialize index for persistence.
+
+#### Returns
+
+`unknown`
+
+***
+
+### update()
+
+```ts
+update(
+   id, 
+   oldValue, 
+   newValue): void
+```
+
+Update a value in the index.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `id` | `string` |
+| `oldValue` | `T` |
+| `newValue` | `T` |
+
+#### Returns
+
+`void`

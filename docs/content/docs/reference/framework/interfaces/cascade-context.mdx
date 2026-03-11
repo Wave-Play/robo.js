@@ -1,0 +1,15 @@
+---
+title: "CascadeContext"
+---
+
+# Interface: CascadeContext
+
+Context for cascade operations.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="getjunctionmodels"></a> `getJunctionModels?` | () =\> `string`[] | Function to find registered junction models. |
+| <a id="getmodel"></a> `getModel` | (`name`: `string`) =\> `unknown` | Function to get a model instance by name. |
+| <a id="getschema"></a> `getSchema` | (`name`: `string`) =\> [`NormalizedSchema`](normalized-schema) | Function to get a model's schema by name. |

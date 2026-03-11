@@ -1,0 +1,115 @@
+---
+title: "PluginState"
+---
+
+# Interface: PluginState
+
+Plugin-scoped state storage.
+Isolated from other plugins using namespaced keys.
+
+## Methods
+
+### clear()
+
+```ts
+clear(): void
+```
+
+Clear all plugin state.
+
+#### Returns
+
+`void`
+
+***
+
+### delete()
+
+```ts
+delete(key): boolean
+```
+
+Delete a key from plugin state.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### get()
+
+```ts
+get<T>(key): T
+```
+
+Get a value from plugin state.
+
+#### Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `string` |
+
+#### Returns
+
+`T`
+
+***
+
+### has()
+
+```ts
+has(key): boolean
+```
+
+Check if a key exists in plugin state.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `string` |
+
+#### Returns
+
+`boolean`
+
+***
+
+### set()
+
+```ts
+set<T>(key, value): void
+```
+
+Set a value in plugin state.
+
+#### Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `string` |
+| `value` | `T` |
+
+#### Returns
+
+`void`

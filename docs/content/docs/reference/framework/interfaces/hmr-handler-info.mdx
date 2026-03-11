@@ -1,0 +1,17 @@
+---
+title: "HmrHandlerInfo"
+---
+
+# Interface: HmrHandlerInfo
+
+Handler info for routes affected by HMR.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="key"></a> `key` | `string` | Handler key (e.g., 'ping', 'users/[id]') |
+| <a id="path"></a> `path` | `string` | Path to the compiled handler file |
+| <a id="plugin"></a> `plugin?` | \{ `name`: `string`; `version`: `string`; \} | Plugin that provides this handler, if any |
+| `plugin.name` | `string` | - |
+| `plugin.version` | `string` | - |

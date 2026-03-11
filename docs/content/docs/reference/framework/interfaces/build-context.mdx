@@ -1,0 +1,28 @@
+---
+title: "BuildContext"
+---
+
+# Interface: BuildContext
+
+Context provided to build hooks.
+Base context shared by all build hook types.
+
+## Extended by
+
+- [`BuildTransformContext`](build-transform-context)
+- [`BuildCompleteContext`](build-complete-context)
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="config"></a> `config` | [`Config`](config) | Loaded configuration |
+| <a id="entries"></a> `entries?` | [`EntriesAccessor`](entries-accessor) | Access to processed route entries. **Availability by hook:** - `build/start`: `undefined` - entries have not been scanned yet - `build/transform`: Available - use to inspect entries (modification via return value) - `build/complete`: Available - use to inspect final entries after transformation **Example** `// In build/transform or build/complete hooks: if (context.entries) { const commands = context.entries.get('discordjs', 'commands') console.log(`Found $\{commands.length\} commands`) }` |
+| <a id="env"></a> `env` | *typeof* [`Env`](../classes/env) | Environment variable access |
+| <a id="logger"></a> `logger` | [`Logger`](../../core/logger/classes/logger) | Logger instance (forked for plugins) |
+| <a id="mode"></a> `mode` | `string` | Current build mode (supports custom modes like 'beta', 'staging', etc.) |
+| <a id="paths"></a> `paths` | \{ `output`: `string`; `root`: `string`; `src`: `string`; \} | Project paths |
+| `paths.output` | `string` | - |
+| `paths.root` | `string` | - |
+| `paths.src` | `string` | - |
+| <a id="store"></a> `store` | [`BuildStore`](build-store) | Key-value store for passing data between build hooks. Use to share computed values between build/start and build/complete. |

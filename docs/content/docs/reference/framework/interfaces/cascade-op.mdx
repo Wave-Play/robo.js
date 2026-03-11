@@ -1,0 +1,19 @@
+---
+title: "CascadeOp"
+---
+
+# Interface: CascadeOp
+
+Cascade operation collected during delete traversal.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="action"></a> `action?` | `"cascade"` \| `"setNull"` | Action to take. - 'cascade': Delete the related record - 'setNull': Set the FK to null |
+| <a id="depth"></a> `depth` | `number` | Depth in the cascade tree (0 = direct children). |
+| <a id="foreignkey"></a> `foreignKey` | `string` | Foreign key field name. |
+| <a id="id"></a> `id?` | `string` | Record ID to operate on. |
+| <a id="junctionmodel"></a> `junctionModel?` | `string` | Junction model name (for 'junction' type). |
+| <a id="model"></a> `model?` | `string` | Target model name (for 'relation' type). |
+| <a id="type"></a> `type` | `"relation"` \| `"junction"` | Type of cascade operation. - 'relation': Regular relation (hasMany, hasOne) - 'junction': Many-to-many junction table entry |

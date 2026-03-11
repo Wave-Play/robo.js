@@ -1,0 +1,16 @@
+---
+title: "QueryContext"
+---
+
+# Interface: QueryContext
+
+Context passed to custom query operators.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="field"></a> `field` | `string` | Field being queried. |
+| <a id="index"></a> `index?` | [`Index`](index)\<`unknown`\> | Custom index for the field (if any). |
+| <a id="model"></a> `model` | [`FlashcoreModel`](../classes/flashcore-model)\<\{ `id`: `string`; \}\> | The model being queried. |
+| <a id="plugin"></a> `plugin` | [`PluginContext`](plugin-context) | The plugin that provides this operator. |

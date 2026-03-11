@@ -1,0 +1,28 @@
+---
+title: "FindManyArgs<T>"
+---
+
+# Interface: FindManyArgs\<T\>
+
+FindMany arguments.
+
+## Extended by
+
+- [`FindFirstArgs`](find-first-args)
+
+## Type Parameters
+
+| Type Parameter |
+| ------ |
+| `T` |
+
+## Properties
+
+| Property | Type |
+| ------ | ------ |
+| <a id="include"></a> `include?` | [`IncludeClause`](../type-aliases/include-clause) |
+| <a id="orderby"></a> `orderBy?` | \| `Partial`\<`Record`\<keyof `T`, [`OrderDirection`](../type-aliases/order-direction)\>\> \| `Partial`\<`Record`\<keyof `T`, [`OrderDirection`](../type-aliases/order-direction)\>\>[] |
+| <a id="select"></a> `select?` | `Partial`\<`Record`\<keyof `T`, `boolean`\>\> |
+| <a id="skip"></a> `skip?` | `number` |
+| <a id="take"></a> `take?` | `number` |
+| <a id="where"></a> `where?` | [`WhereClause`](../type-aliases/where-clause)\<`T`\> |

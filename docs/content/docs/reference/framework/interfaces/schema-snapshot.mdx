@@ -1,0 +1,18 @@
+---
+title: "SchemaSnapshot"
+---
+
+# Interface: SchemaSnapshot
+
+Namespace-level schema snapshot.
+Stored at: _flashcore:schema:\{namespace\}
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="checksum"></a> `checksum` | `string` | Combined checksum of all model checksums |
+| <a id="createdat"></a> `createdAt` | `string` | Creation timestamp (ISO string) |
+| <a id="models"></a> `models` | `Record`\<`string`, [`SchemaMetadata`](schema-metadata)\> | All models in this namespace |
+| <a id="namespace"></a> `namespace` | `string` | Namespace name (or '_default' for main namespace) |
+| <a id="version"></a> `version` | `number` | Snapshot version number |

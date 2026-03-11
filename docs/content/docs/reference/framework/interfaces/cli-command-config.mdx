@@ -1,0 +1,16 @@
+---
+title: "CliCommandConfig"
+---
+
+# Interface: CliCommandConfig
+
+Configuration for a CLI command.
+
+## Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="description"></a> `description` | `string` | Command description shown in help text |
+| <a id="options"></a> `options?` | [`CliOptionConfig`](cli-option-config)[] | Options this command accepts |
+| <a id="positionalargs"></a> `positionalArgs?` | `boolean` | Whether this command accepts positional arguments |
+| <a id="priority"></a> `priority?` | `number` | Priority for conflict resolution (higher wins). Default: 0 |

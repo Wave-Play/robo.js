@@ -1,0 +1,78 @@
+---
+title: "HMR"
+---
+
+# Interface: HMR
+
+HMR API interface.
+
+## Properties
+
+| Property | Modifier | Type | Description |
+| ------ | ------ | ------ | ------ |
+| <a id="enabled"></a> `enabled` | `readonly` | `boolean` | Whether HMR is currently enabled. Returns `true` only when running `robo dev --hmr`. |
+
+## Methods
+
+### module()
+
+```ts
+module(metaUrl): HotModule
+```
+
+Get the HMR instance for a module.
+Call this at the top level of your module with `import.meta.url`.
+
+When a module is reloaded, any previously registered dispose callbacks
+are executed before the new module instance registers its own.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `metaUrl` | `string` | The module URL from `import.meta.url` |
+
+#### Returns
+
+[`HotModule`](hot-module)
+
+A HotModule instance for registering cleanup callbacks
+
+***
+
+### subscribe()
+
+```ts
+subscribe(callback, options?): HmrSubscription
+```
+
+Subscribe to HMR events.
+Callbacks are invoked after handlers are reloaded in the portal.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `callback` | [`HmrCallback`](../type-aliases/hmr-callback) | Function to call when HMR events occur |
+| `options`? | [`HmrSubscribeOptions`](hmr-subscribe-options) | Optional filters for events |
+
+#### Returns
+
+[`HmrSubscription`](hmr-subscription)
+
+Subscription handle with unsubscribe method
+
+#### Example
+
+```ts
+import { hmr } from 'robo.js/hmr'
+
+const sub = hmr.subscribe((ctx) => {
+  console.log('Routes reloaded:', ctx.routes)
+}, {
+  namespaces: ['server'],
+  routes: ['api']
+})
+
+// Later: sub.unsubscribe()
+```
