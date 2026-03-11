@@ -17,8 +17,11 @@ import {
 	pathExists,
 	getPluginCliDir,
 	getProjectCliDir,
+	getPluginTerminalDir,
+	getProjectTerminalDir,
 	scanCommands,
 	scanExtensions,
+	scanTerminalCommands,
 	mergeExtensions,
 	applySubcommands,
 	PROJECT_PRIORITY_BOOST,
@@ -35,8 +38,12 @@ import type {
 	CliManifest,
 	CliOptionConfig,
 	LoadedCliCommand,
-	LoadedCliExtension
+	LoadedCliExtension,
+	TerminalCommandEntry,
+	TerminalContext
 } from '../../types/cli.js'
+import type { Config } from '../../types/config.js'
+import type { RuntimeProvider } from './cli-runtime-provider.js'
 
 const logger = createLogger().fork('cli')
 
@@ -64,7 +71,12 @@ export async function loadCliManifest(): Promise<CliManifest | null> {
 
 	try {
 		const content = await fs.readFile(manifestPath, 'utf-8')
-		cachedManifest = JSON.parse(content) as CliManifest
+		const parsed = JSON.parse(content) as CliManifest
+		// Ensure terminal field exists (backward compat with older manifests)
+		if (!parsed.terminal) {
+			parsed.terminal = {}
+		}
+		cachedManifest = parsed
 		return cachedManifest
 	} catch {
 		// No manifest - try runtime discovery
@@ -245,15 +257,66 @@ async function discoverCliAtRuntime(): Promise<CliManifest | null> {
 		// Merge and sort extensions
 		const extensions = mergeExtensions(...allExtensions)
 
+		// 4. Discover terminal commands from plugins and project
+		const terminal: Record<string, TerminalCommandEntry> = {}
+		const terminalSubcommandMaps: Map<string, string[]>[] = []
+
+		// Scan plugin terminal directories
+		const terminalResults = await Promise.all(
+			pluginNames.map(async (pluginName) => {
+				const terminalDir = await getPluginTerminalDir(pluginName)
+				if (!terminalDir) return null
+				return scanTerminalCommands(terminalDir, pluginName, { cacheBust: true })
+			})
+		)
+
+		for (const result of terminalResults) {
+			if (!result) continue
+			for (const [cmdPath, entry] of Object.entries(result.commands)) {
+				const existing = terminal[cmdPath]
+				if (!existing || entry.priority >= existing.priority) {
+					terminal[cmdPath] = entry
+				}
+			}
+			terminalSubcommandMaps.push(result.subcommandMap)
+		}
+
+		// Scan project terminal directory
+		const projectTerminalDir = getProjectTerminalDir()
+		if (await pathExists(projectTerminalDir)) {
+			const { commands: projectTerminal, subcommandMap } = await scanTerminalCommands(projectTerminalDir, null, {
+				priorityBoost: PROJECT_PRIORITY_BOOST,
+				cacheBust: true
+			})
+
+			for (const [cmdPath, entry] of Object.entries(projectTerminal)) {
+				terminal[cmdPath] = entry
+			}
+			terminalSubcommandMaps.push(subcommandMap)
+		}
+
+		// Apply subcommands to terminal commands
+		for (const subcommandMap of terminalSubcommandMaps) {
+			applySubcommands(terminal, subcommandMap)
+		}
+
+		// Generate parent commands for orphan terminal subcommands
+		generateParentCommands(terminal)
+
 		// Return null if nothing found
-		if (Object.keys(commands).length === 0 && Object.keys(extensions).length === 0) {
+		const hasCliContent = Object.keys(commands).length > 0 || Object.keys(extensions).length > 0
+		const hasTerminalContent = Object.keys(terminal).length > 0
+
+		if (!hasCliContent && !hasTerminalContent) {
 			return null
 		}
 
 		logger.debug(
-			`Runtime CLI discovery: Found ${Object.keys(commands).length} commands, ${Object.keys(extensions).length} extension targets`
+			`Runtime CLI discovery: Found ${Object.keys(commands).length} commands, ` +
+			`${Object.keys(extensions).length} extension targets, ` +
+			`${Object.keys(terminal).length} terminal commands`
 		)
-		return { commands, extensions }
+		return { commands, extensions, terminal }
 	} catch (error) {
 		logger.debug('Runtime CLI discovery failed:', error)
 		return null
@@ -264,7 +327,7 @@ async function discoverCliAtRuntime(): Promise<CliManifest | null> {
  * Generate parent commands for orphan subcommands.
  * E.g., if "tunnel start" exists but "tunnel" doesn't, create a parent command.
  */
-function generateParentCommands(commands: Record<string, CliCommandEntry>): void {
+function generateParentCommands(commands: Record<string, CliCommandEntry | TerminalCommandEntry>): void {
 	const generatedParents = new Set<string>()
 
 	// Process commands from deepest to shallowest to ensure children are generated first
@@ -787,4 +850,140 @@ export async function getMergedOptionsForCommand(
 
 	const extensions = getExtensions(manifest, commandName)
 	return mergeOptions(coreOptions, extensions)
+}
+
+// =========================================================================
+// Terminal Command Loading
+// =========================================================================
+
+/**
+ * Load the terminal commands section from the CLI manifest.
+ * Falls back to runtime discovery if no manifest exists.
+ */
+export async function loadTerminalManifest(): Promise<Record<string, TerminalCommandEntry> | null> {
+	const manifest = await loadCliManifest()
+
+	if (!manifest) {
+		return null
+	}
+
+	return manifest.terminal && Object.keys(manifest.terminal).length > 0 ? manifest.terminal : null
+}
+
+/**
+ * Context needed for terminal command registration.
+ */
+export interface TerminalRegistrationContext {
+	config: Config
+	runtime?: RuntimeProvider
+}
+
+/**
+ * Build lazy terminal commands from the manifest for interactive CLI registration.
+ * Returns an array of LazyCliCommand objects that can be passed to registerTerminal().
+ * Only top-level commands are returned; subcommands are dispatched by the parent handler.
+ */
+export function buildTerminalCommands(
+	terminal: Record<string, TerminalCommandEntry>,
+	ctx: TerminalRegistrationContext
+): Array<import('./cli-commands.js').LazyCliCommand> {
+	const result: Array<import('./cli-commands.js').LazyCliCommand> = []
+
+	for (const [commandPath, entry] of Object.entries(terminal)) {
+		const parts = commandPath.split(' ')
+
+		// Only register top-level commands; subcommands are dispatched by parent
+		if (parts.length > 1) {
+			continue
+		}
+
+		const name = parts[0]
+
+		result.push({
+			name,
+			description: entry.description,
+			load: async () => ({
+				handler: createTerminalHandler(commandPath, entry, terminal, ctx)
+			})
+		})
+	}
+
+	return result
+}
+
+/**
+ * Create a handler function for a terminal command entry.
+ * Handles both direct commands and parent commands with subcommands.
+ */
+function createTerminalHandler(
+	commandPath: string,
+	entry: TerminalCommandEntry,
+	allTerminal: Record<string, TerminalCommandEntry>,
+	ctx: TerminalRegistrationContext
+): (args: string[], cmdCtx: import('./cli-commands.js').CliCommandContext) => void | Promise<void> {
+	return async (args: string[]) => {
+		// Check if the first arg is a subcommand
+		if (args.length > 0 && entry.subcommands?.includes(args[0])) {
+			const subName = args[0]
+			const subPath = `${commandPath} ${subName}`
+			const subEntry = allTerminal[subPath]
+
+			if (subEntry) {
+				// Recursively handle (supports nested subcommands)
+				const subHandler = createTerminalHandler(subPath, subEntry, allTerminal, ctx)
+				return subHandler(args.slice(1), {} as import('./cli-commands.js').CliCommandContext)
+			}
+		}
+
+		// No subcommand match — execute this command
+		if (!entry.path) {
+			// Auto-generated parent command: list subcommands
+			process.stdout.write(`Available subcommands for /${commandPath}:\n`)
+			if (entry.subcommands) {
+				for (const sub of entry.subcommands) {
+					const subEntry = allTerminal[`${commandPath} ${sub}`]
+					const desc = subEntry?.description ? ` - ${subEntry.description}` : ''
+					process.stdout.write(`  /${commandPath} ${sub}${desc}\n`)
+				}
+			}
+			process.stdout.write('\n')
+			return
+		}
+
+		// Parse options
+		const options = entry.options ?? []
+		const { parsedOptions, positionalArgs, errors } = parseCliOptions(args, options)
+
+		if (errors.length > 0) {
+			for (const error of errors) {
+				process.stdout.write(`Error: ${error}\n`)
+			}
+			return
+		}
+
+		// Build terminal context
+		const terminalCtx: TerminalContext = {
+			args: positionalArgs,
+			options: parsedOptions,
+			config: ctx.config,
+			runtime: ctx.runtime,
+			write: (text: string) => process.stdout.write(text)
+		}
+
+		// Dynamically import and execute the handler
+		try {
+			const module = await import(pathToFileURL(entry.path).href)
+
+			if (typeof module.default !== 'function') {
+				process.stdout.write(`Terminal command at ${entry.path} is missing default handler\n`)
+				return
+			}
+
+			await module.default(terminalCtx)
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error)
+			process.stdout.write(`Error executing /${commandPath}: ${message}\n`)
+			logger.debug('Terminal command error:', error)
+		}
+	}
 }

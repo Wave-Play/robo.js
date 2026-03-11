@@ -410,10 +410,11 @@ export class ManifestGenerator {
 			// Discover CLI commands and extensions (pass mode for correct path resolution)
 			const cliManifest = await discoverAllCli(this.plugins, this.mode)
 
-			// Only write if there are commands or extensions
+			// Only write if there are commands, extensions, or terminal commands
 			const hasContent =
 				Object.keys(cliManifest.commands).length > 0 ||
-				Object.keys(cliManifest.extensions).length > 0
+				Object.keys(cliManifest.extensions).length > 0 ||
+				Object.keys(cliManifest.terminal).length > 0
 
 			if (hasContent) {
 				// Write to mode-agnostic location (outside the mode folder)

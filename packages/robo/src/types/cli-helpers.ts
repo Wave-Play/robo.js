@@ -5,7 +5,7 @@
  * providing a better developer experience with full type safety.
  */
 
-import type { CliCommandConfig } from './cli.js'
+import type { CliCommandConfig, TerminalCommandConfig } from './cli.js'
 
 // =========================================================================
 // Type Mapping
@@ -134,3 +134,37 @@ export type EnforceCliConfig<C extends CliCommandConfig> = Exclude<keyof C, keyo
  * Combines exact matching and enforcement to enable proper type inference.
  */
 export type SmartCliCommandConfig<C extends CliCommandConfig> = ExactCliConfig<C> & EnforceCliConfig<C>
+
+// =========================================================================
+// Terminal Command Type Helpers
+// =========================================================================
+
+/**
+ * Infers the complete typed options object from a terminal command config.
+ * Terminal configs share the same CliOptionConfig[] shape, so the type inference is identical.
+ */
+export type TerminalOptionsFromConfig<C extends TerminalCommandConfig> = C extends { options: readonly (infer O)[] }
+	? {
+			[K in O as ExtractOptionName<K extends { name: infer N } ? (N extends string ? N : never) : never>]: ValueOfCliOption<K>
+		}
+	: Record<string, never>
+
+/**
+ * Ensures the config only contains valid TerminalCommandConfig properties.
+ */
+export type ExactTerminalConfig<C extends TerminalCommandConfig> = {
+	[K in keyof C]: K extends keyof TerminalCommandConfig ? C[K] : never
+}
+
+/**
+ * Enforces that no extra properties exist beyond TerminalCommandConfig.
+ */
+export type EnforceTerminalConfig<C extends TerminalCommandConfig> = Exclude<keyof C, keyof TerminalCommandConfig> extends never
+	? C
+	: never
+
+/**
+ * Smart terminal command config for use with createTerminalCommandConfig().
+ * Combines exact matching and enforcement to enable proper type inference.
+ */
+export type SmartTerminalCommandConfig<C extends TerminalCommandConfig> = ExactTerminalConfig<C> & EnforceTerminalConfig<C>

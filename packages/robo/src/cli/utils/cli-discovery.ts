@@ -12,14 +12,17 @@ import {
 	pathExists,
 	getPluginCliDir,
 	getProjectCliDir,
+	getPluginTerminalDir,
+	getProjectTerminalDir,
 	scanCommands,
 	scanExtensions,
+	scanTerminalCommands,
 	mergeExtensions,
 	applySubcommands,
 	PROJECT_PRIORITY_BOOST
 } from './cli-shared.js'
 import type { PluginData } from '../../types/common.js'
-import type { CliCommandEntry, CliExtensionEntry, CliManifest } from '../../types/cli.js'
+import type { CliCommandEntry, CliExtensionEntry, CliManifest, TerminalCommandEntry } from '../../types/cli.js'
 
 /**
  * Discover all CLI commands and extensions from plugins.
@@ -128,6 +131,117 @@ export async function discoverProjectCli(mode?: string): Promise<{
 	return { commands, extensions }
 }
 
+// =========================================================================
+// Terminal Command Discovery
+// =========================================================================
+
+/**
+ * Discover terminal commands from plugins.
+ */
+export async function discoverPluginTerminal(
+	plugins: Map<string, PluginData>
+): Promise<Record<string, TerminalCommandEntry>> {
+	const commands: Record<string, TerminalCommandEntry> = {}
+	const allSubcommandMaps: Map<string, string[]>[] = []
+	const loggerInstance = logger()
+
+	for (const [pluginName] of plugins) {
+		const terminalDir = await getPluginTerminalDir(pluginName)
+
+		if (!terminalDir) {
+			continue
+		}
+
+		loggerInstance.debug(`Discovering terminal commands from plugin: ${pluginName}`)
+
+		const { commands: pluginCommands, subcommandMap } = await scanTerminalCommands(terminalDir, pluginName, {
+			requireConfig: true
+		})
+
+		// Merge commands (respecting priority)
+		for (const [cmdPath, entry] of Object.entries(pluginCommands)) {
+			const existing = commands[cmdPath]
+			if (!existing || entry.priority > existing.priority) {
+				commands[cmdPath] = entry
+			} else if (entry.priority === existing.priority) {
+				loggerInstance.warn(
+					`Terminal command "${cmdPath}" defined by both ${existing.plugin} and ${pluginName}. Using ${existing.plugin}.`
+				)
+			}
+		}
+		allSubcommandMaps.push(subcommandMap)
+	}
+
+	// Apply subcommands to commands
+	for (const subcommandMap of allSubcommandMaps) {
+		applySubcommands(commands, subcommandMap)
+	}
+
+	return commands
+}
+
+/**
+ * Discover terminal commands from the current project.
+ *
+ * @param mode - Build mode for mode-specific path resolution (defaults to 'production')
+ */
+export async function discoverProjectTerminal(
+	mode?: string
+): Promise<Record<string, TerminalCommandEntry>> {
+	const terminalDir = getProjectTerminalDir(mode)
+
+	if (!(await pathExists(terminalDir))) {
+		return {}
+	}
+
+	const { commands, subcommandMap } = await scanTerminalCommands(terminalDir, null, {
+		requireConfig: true,
+		priorityBoost: PROJECT_PRIORITY_BOOST
+	})
+
+	applySubcommands(commands, subcommandMap)
+
+	return commands
+}
+
+/**
+ * Discover all terminal commands from plugins and project.
+ * Project commands have implicit higher priority over plugins.
+ *
+ * @param plugins - Plugin data map
+ * @param mode - Build mode for mode-specific path resolution (defaults to 'production')
+ */
+export async function discoverAllTerminal(
+	plugins: Map<string, PluginData>,
+	mode?: string
+): Promise<Record<string, TerminalCommandEntry>> {
+	const loggerInstance = logger()
+
+	// Discover from plugins first
+	const pluginTerminal = await discoverPluginTerminal(plugins)
+
+	// Discover from project (can override plugins)
+	const projectTerminal = await discoverProjectTerminal(mode)
+
+	// Merge (project overrides plugins due to priority boost)
+	const terminal: Record<string, TerminalCommandEntry> = { ...pluginTerminal }
+	for (const [commandPath, entry] of Object.entries(projectTerminal)) {
+		const existing = terminal[commandPath]
+		if (existing && existing.plugin) {
+			loggerInstance.warn(
+				`Terminal command "${commandPath}" defined in project shadows plugin command from ${existing.plugin}`
+			)
+		}
+		terminal[commandPath] = entry
+	}
+
+	return terminal
+}
+
+// =========================================================================
+// Combined Discovery
+// =========================================================================
+
 /**
  * Discover all CLI commands and extensions from plugins and project.
  * Project commands/extensions have implicit higher priority over plugins.
@@ -160,7 +274,10 @@ export async function discoverAllCli(plugins: Map<string, PluginData>, mode?: st
 	// Merge extensions (project extensions go first due to priority boost)
 	const extensions = mergeExtensions(projectExtensions, pluginExtensions)
 
-	return { commands, extensions }
+	// Discover terminal commands
+	const terminal = await discoverAllTerminal(plugins, mode)
+
+	return { commands, extensions, terminal }
 }
 
 /**

@@ -10,7 +10,7 @@ import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { logger as createLogger } from '../../core/logger.js'
 import { RoboPaths } from '../../core/paths.js'
-import type { CliCommandEntry, CliExtensionEntry, CliOptionConfig } from '../../types/cli.js'
+import type { CliCommandEntry, CliExtensionEntry, CliOptionConfig, TerminalCommandEntry } from '../../types/cli.js'
 
 const logger = createLogger().fork('cli')
 
@@ -345,7 +345,7 @@ export function mergeExtensions(
  * Apply subcommand map to command entries.
  */
 export function applySubcommands(
-	commands: Record<string, CliCommandEntry>,
+	commands: Record<string, { subcommands?: string[] }>,
 	subcommandMap: Map<string, string[]>
 ): void {
 	for (const [cmdPath, subs] of subcommandMap) {
@@ -599,4 +599,162 @@ export function parseCliOptions(
 	}
 
 	return { parsedOptions, positionalArgs, errors }
+}
+
+// =========================================================================
+// Terminal Command Scanning
+// =========================================================================
+
+/**
+ * Get possible terminal command directory paths for a plugin.
+ * Plugins don't use mode-specific builds - they're pre-built.
+ */
+export function getPluginTerminalPaths(pluginName: string): string[] {
+	return [
+		path.join(RoboPaths.pluginBuild(pluginName), 'robo', 'terminal', 'commands'),
+		path.join(process.cwd(), 'node_modules', pluginName, 'dist', 'robo', 'terminal', 'commands')
+	]
+}
+
+/**
+ * Get the terminal command directory path for a plugin.
+ */
+export async function getPluginTerminalDir(pluginName: string): Promise<string | null> {
+	for (const terminalDir of getPluginTerminalPaths(pluginName)) {
+		if (await pathExists(terminalDir)) {
+			return terminalDir
+		}
+	}
+	return null
+}
+
+/**
+ * Get the project terminal command directory path.
+ * Uses mode-specific build directory: .robo/build/{mode}/robo/terminal/commands
+ *
+ * @param mode - Runtime mode for mode-specific path resolution (defaults to 'production')
+ */
+export function getProjectTerminalDir(mode?: string): string {
+	return path.join(RoboPaths.build(mode ?? 'production'), 'robo', 'terminal', 'commands')
+}
+
+/**
+ * Recursively scan terminal commands directory to discover commands.
+ * Returns commands indexed by command path (e.g., 'tunnel start').
+ *
+ * Shares the same scanning logic as CLI commands since both use the same
+ * config/handler module convention.
+ */
+export async function scanTerminalCommands(
+	dir: string,
+	pluginName: string | null,
+	options: ScanOptions = {}
+): Promise<{ commands: Record<string, TerminalCommandEntry>; subcommandMap: Map<string, string[]> }> {
+	const commands: Record<string, TerminalCommandEntry> = {}
+	const subcommandMap = new Map<string, string[]>()
+
+	await scanTerminalCommandsRecursive(dir, '', pluginName, commands, subcommandMap, options)
+
+	return { commands, subcommandMap }
+}
+
+async function scanTerminalCommandsRecursive(
+	dir: string,
+	prefix: string,
+	pluginName: string | null,
+	commands: Record<string, TerminalCommandEntry>,
+	subcommandMap: Map<string, string[]>,
+	options: ScanOptions
+): Promise<void> {
+	const { requireConfig = false, priorityBoost = 0, cacheBust = false } = options
+
+	let entries: Awaited<ReturnType<typeof fs.readdir>>
+	try {
+		entries = await fs.readdir(dir, { withFileTypes: true })
+	} catch (error) {
+		logger.debug(`Failed to read terminal commands directory ${dir}:`, error)
+		return
+	}
+
+	for (const entry of entries) {
+		const fullPath = path.join(dir, entry.name)
+
+		if (entry.isDirectory()) {
+			// Recurse into subdirectory with prefix
+			const subPrefix = prefix ? `${prefix} ${entry.name}` : entry.name
+			await scanTerminalCommandsRecursive(fullPath, subPrefix, pluginName, commands, subcommandMap, options)
+		} else if (entry.name.endsWith('.js') || entry.name.endsWith('.mjs')) {
+			const baseName = entry.name.replace(/\.(js|mjs)$/, '')
+
+			// Skip top-level index, use index in subdirs as parent command
+			if (baseName === 'index' && !prefix) continue
+
+			const commandPath = baseName === 'index' ? prefix : prefix ? `${prefix} ${baseName}` : baseName
+
+			try {
+				const module = await importModule(fullPath, cacheBust)
+				const config = module.config as
+					| { description?: string; options?: unknown; priority?: number; positionalArgs?: boolean }
+					| undefined
+
+				// Check if config is required
+				if (requireConfig && !config) {
+					logger.warn(`Terminal command at ${fullPath} is missing 'config' export`)
+					continue
+				}
+
+				// Validate handler exists
+				if (typeof module.default !== 'function') {
+					logger.debug(`Terminal command at ${fullPath} is missing default handler export`)
+					continue
+				}
+
+				const basePriority = config?.priority ?? 0
+				const priority = basePriority + priorityBoost
+
+				// Check for existing command with higher priority
+				const existing = commands[commandPath]
+				if (existing && existing.priority > priority) {
+					logger.debug(
+						`Terminal command "${commandPath}" from ${pluginName ?? 'project'} skipped (lower priority than ${existing.plugin ?? 'project'})`
+					)
+					continue
+				}
+
+				if (existing && existing.priority === priority && existing.plugin !== pluginName) {
+					logger.warn(
+						`Terminal command "${commandPath}" defined by both ${existing.plugin ?? 'project'} and ${pluginName ?? 'project'}. Using ${pluginName ?? 'project'}.`
+					)
+				}
+
+				commands[commandPath] = {
+					path: fullPath,
+					plugin: pluginName,
+					description: config?.description ?? '',
+					priority,
+					options: validateOptions(config?.options),
+					positionalArgs: config?.positionalArgs
+				}
+
+				// Track subcommands for parent commands
+				if (prefix) {
+					const parentParts = prefix.split(' ')
+					for (let i = 0; i < parentParts.length; i++) {
+						const parentPath = parentParts.slice(0, i + 1).join(' ')
+						const childName = i === parentParts.length - 1 ? baseName : parentParts[i + 1]
+
+						if (!subcommandMap.has(parentPath)) {
+							subcommandMap.set(parentPath, [])
+						}
+						const subs = subcommandMap.get(parentPath)!
+						if (baseName !== 'index' && !subs.includes(childName)) {
+							subs.push(childName)
+						}
+					}
+				}
+			} catch (error) {
+				logger.debug(`Failed to load terminal command from ${fullPath}:`, error)
+			}
+		}
+	}
 }

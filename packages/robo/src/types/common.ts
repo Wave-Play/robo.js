@@ -100,6 +100,7 @@ export interface SpiritMessage {
 	error?: unknown
 	event?: 'build' | 'get-state' | 'command' | 'ready' | 'restart' | 'set-state' | 'start' | 'stop'
 		| 'hmr-compile' | 'hmr-reload-handler' | 'hmr-reload-route' | 'hmr-status' | 'hmr-notify'
+		| 'cli-state-set' | 'cli-state-delete' | 'cli-state-forks'
 	logLevel?: LogLevel
 	payload?: unknown
 	state?: Record<string, unknown>

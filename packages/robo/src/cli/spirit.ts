@@ -76,6 +76,19 @@ async function run(message: SpiritMessage): Promise<unknown> {
 	} else if (message.event === 'get-state') {
 		const { state } = await import('../core/state.js')
 		return removeInstances(state)
+	} else if (message.event === 'cli-state-set') {
+		const { key, value } = message.payload as { key: string; value: unknown }
+		const { setState } = await import('../core/state.js')
+		setState(key, value)
+		return true
+	} else if (message.event === 'cli-state-delete') {
+		const { key } = message.payload as { key: string }
+		const { state } = await import('../core/state.js')
+		delete state[key]
+		return true
+	} else if (message.event === 'cli-state-forks') {
+		const { State } = await import('../core/state.js')
+		return State.listForks()
 	} else if (message.event === 'restart') {
 		if (!isRobo) {
 			return 'exit'

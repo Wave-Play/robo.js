@@ -9,6 +9,7 @@ import path from 'node:path'
 import Watcher, { Change } from '../utils/watcher.js'
 import { color, composeColors } from '../../core/color.js'
 import { Spirits } from '../utils/spirits.js'
+import * as interactiveCli from '../utils/interactive-cli.js'
 import { Highlight } from '../../core/constants.js'
 import { Flashcore } from '../../core/flashcore.js'
 import { getPackageExecutor, getPackageManager } from '../utils/runtime-utils.js'
@@ -143,38 +144,120 @@ async function devAction(context: CliContext) {
 		logger.warn(`Experimental flags enabled: ${features}.`)
 	}
 
-	// Ensure worker spirits are ready
-	spirits = new Spirits()
+	// Declare variables early to avoid TDZ issues in closures registered before these lines execute
+	let buildSuccess = false
+	let isUpdating = false
 
-	// Stop spirits on process exit
+	// Define shutdown callback before interactive CLI needs it
 	let isStopping = false
-
 	const callback = async (_signal: NodeJS.Signals) => {
 		if (isStopping) {
 			return
 		}
-
 		isStopping = true
-		await spirits.stopAll()
+
+		try {
+			await spirits?.stopAll()
+		} catch (err) {
+			logger.debug('Spirit cleanup error:', err)
+		}
+		try {
+			await interactiveCli.stop()
+		} catch {
+			// Terminal cleanup is best-effort
+		}
 
 		// Ensure stdout/stderr are fully flushed before exiting
 		// This prevents logs from appearing after the terminal prompt
-		await new Promise<void>((resolve) => {
-			if (process.stdout.write('')) {
-				resolve()
-			} else {
-				process.stdout.once('drain', resolve)
-			}
-		})
+		await Promise.race([
+			new Promise<void>((resolve) => {
+				if (process.stdout.write('')) {
+					resolve()
+				} else {
+					process.stdout.once('drain', resolve)
+				}
+			}),
+			new Promise<void>((resolve) => setTimeout(resolve, 2000))
+		])
 
 		process.exit(0)
 	}
+
+	// Create the dev runtime provider — wraps Spirit IPC for state, direct import for Flashcore.
+	// Uses getters since both `spirits` and `roboSpirit` are set after provider creation.
+	const { createDevProvider } = await import('../utils/cli-runtime-provider.js')
+	let roboSpirit: string
+	const runtimeProvider = createDevProvider(() => spirits, () => roboSpirit)
+
+	// Start interactive CLI (no-op in non-TTY environments)
+	interactiveCli.start({
+		config,
+		runtime: runtimeProvider,
+		onExit: () => callback('SIGINT')
+	})
+	interactiveCli.setStatus('building')
+
+	// Register lazy-loaded interactive commands
+	const { getInteractiveCommands } = await import('./interactive/index.js')
+	const { registerLazy } = await import('../utils/cli-commands.js')
+	for (const cmd of getInteractiveCommands()) {
+		registerLazy(cmd)
+	}
+
+	// Register dev-specific interactive commands early so they're available during initial build
+	interactiveCli.registerCommand({
+		name: 'restart',
+		description: 'Full rebuild and restart',
+		handler: async () => {
+			if (isUpdating) {
+				process.stdout.write('A rebuild is already in progress...\n')
+				return
+			}
+			if (!roboSpirit && !buildSuccess) {
+				process.stdout.write('No running Robo to restart. Waiting for a successful build...\n')
+				return
+			}
+			isUpdating = true
+			interactiveCli.setStatus('restarting')
+			try {
+				logger.wait('Restarting Robo...')
+				spirits.off(roboSpirit, restartCallback)
+				roboSpirit = await rebuildRobo(roboSpirit, config, options.verbose, [])
+				spirits.on(roboSpirit, restartCallback)
+			} finally {
+				interactiveCli.setStatus(roboSpirit ? 'ready' : 'error')
+				isUpdating = false
+			}
+		}
+	})
+
+	// Helper to load and register terminal commands from manifest
+	const loadTerminalCommands = async () => {
+		try {
+			const { loadTerminalManifest, buildTerminalCommands } = await import('../utils/cli-loader.js')
+			const { registerTerminal } = await import('../utils/cli-commands.js')
+			const terminal = await loadTerminalManifest()
+			if (terminal) {
+				const cmds = buildTerminalCommands(terminal, { config, runtime: runtimeProvider })
+				for (const cmd of cmds) {
+					registerTerminal(cmd)
+				}
+			}
+		} catch (error) {
+			logger.debug('Failed to load terminal commands:', error)
+		}
+	}
+
+	// Ensure worker spirits are ready
+	spirits = new Spirits(3, interactiveCli.getOutputCallback())
+
+	// Stop spirits on process exit
 	process.on('SIGINT', () => callback('SIGINT'))
 	process.on('SIGTERM', () => callback('SIGTERM'))
 
 	// Run first build
 	startPhase('Initial Build')
-	let buildSuccess = false
+	buildSuccess = false
 	try {
 		const start = Date.now()
 		// Lazy import buildAction to avoid loading build module at CLI startup
@@ -192,7 +275,6 @@ async function devAction(context: CliContext) {
 		logger.error(error)
 	}
 	endPhase('Initial Build')
-	let roboSpirit: string
 
 	// These callbacks are necessary to ensure "/dev restart" works
 	const restartCallback = async (message: SpiritMessage) => {
@@ -245,6 +327,12 @@ async function devAction(context: CliContext) {
 		logger.wait(`Build failed! Waiting for changes before retrying...`)
 	}
 	endPhase('Spirit Startup')
+	interactiveCli.setStatus(buildSuccess ? 'ready' : 'error')
+
+	// Load terminal commands from manifest (file-based convention system)
+	if (buildSuccess) {
+		await loadTerminalCommands()
+	}
 
 	// Watch for changes in the "src" directory alongside special files
 	const watchedPaths = ['src']
@@ -261,7 +349,6 @@ async function devAction(context: CliContext) {
 	logger.debug(`Watching:`, watchedPaths)
 	logger.debug(`Ignoring paths:`, ignoredPaths)
 	const watcher = new Watcher(watchedPaths, { exclude: ignoredPaths })
-	let isUpdating = false
 	let rebuildCount = 0
 
 	// HMR mode setup
@@ -314,6 +401,7 @@ async function devAction(context: CliContext) {
 		}
 		isUpdating = true
 		rebuildCount++
+		interactiveCli.setStatus('building')
 
 		// Track rebuild cycle for performance metrics
 		const rebuildPhaseName = `Rebuild #${rebuildCount}`
@@ -384,6 +472,16 @@ async function devAction(context: CliContext) {
 			}
 		} finally {
 			endPhase(rebuildPhaseName)
+			interactiveCli.setStatus(roboSpirit ? 'ready' : 'error')
+
+			// Re-register terminal commands (manifest may have changed)
+			if (roboSpirit) {
+				const { clearTerminalCommands } = await import('../utils/cli-commands.js')
+				const { clearCliManifestCache } = await import('../utils/cli-loader.js')
+				clearTerminalCommands()
+				clearCliManifestCache()
+				await loadTerminalCommands()
+			}
 
 			// Print rebuild metrics
 			if (PERF_ENABLED) {

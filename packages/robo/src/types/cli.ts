@@ -138,8 +138,82 @@ export interface CliExtendModule {
 }
 
 // =========================================================================
+// Terminal Command Types
+// =========================================================================
+
+/**
+ * Configuration for an interactive terminal command.
+ * Terminal commands are `/`-prefixed commands in the interactive CLI (robo dev / robo start TTY).
+ * Convention: src/robo/terminal/commands/ping.ts → /ping in the interactive terminal.
+ */
+export interface TerminalCommandConfig {
+	/** Command description shown in help text */
+	description: string
+	/** Options this command accepts */
+	options?: CliOptionConfig[]
+	/** Whether this command accepts positional arguments */
+	positionalArgs?: boolean
+	/** Priority for conflict resolution (higher wins). Default: 0 */
+	priority?: number
+}
+
+import type { TerminalOptionsFromConfig } from './cli-helpers.js'
+
+/**
+ * Context passed to terminal command handlers.
+ * Pass your config type as the generic parameter to get typed options.
+ */
+export interface TerminalContext<C extends TerminalCommandConfig | undefined = undefined> {
+	/** Parsed positional arguments */
+	args: string[]
+	/** Parsed options (flag values) - typed when using createTerminalCommandConfig */
+	options: C extends TerminalCommandConfig ? TerminalOptionsFromConfig<C> : Record<string, unknown>
+	/** Project configuration */
+	config: import('./config.js').Config
+	/** Runtime provider for state/flashcore access */
+	runtime?: import('../cli/utils/cli-runtime-provider.js').RuntimeProvider
+	/** Write text to stdout */
+	write: (text: string) => void
+}
+
+/**
+ * Terminal command handler function signature.
+ */
+export type TerminalHandler = (context: TerminalContext) => unknown | Promise<unknown>
+
+/**
+ * Complete terminal command module exports.
+ */
+export interface TerminalCommandModule {
+	/** Command configuration */
+	config: TerminalCommandConfig
+	/** The command handler */
+	default: TerminalHandler
+}
+
+// =========================================================================
 // Manifest Types
 // =========================================================================
+
+/**
+ * Terminal command entry in the manifest.
+ */
+export interface TerminalCommandEntry {
+	/** Handler file path (relative to build directory or node_modules) */
+	path: string
+	/** Plugin that provides this command (null for project) */
+	plugin: string | null
+	/** Command description */
+	description: string
+	/** Priority for conflict resolution */
+	priority: number
+	/** Options defined by this command */
+	options?: CliOptionConfig[]
+	/** Whether this command accepts positional arguments */
+	positionalArgs?: boolean
+	/** Subcommands (keys are subcommand names) */
+	subcommands?: string[]
+}
 
 /**
  * CLI command entry in the manifest.
@@ -188,6 +262,8 @@ export interface CliManifest {
 	commands: Record<string, CliCommandEntry>
 	/** Extensions indexed by target command name */
 	extensions: Record<string, CliExtensionEntry[]>
+	/** Interactive terminal commands indexed by command path (e.g., 'tunnel start') */
+	terminal: Record<string, TerminalCommandEntry>
 }
 
 // =========================================================================
@@ -230,7 +306,9 @@ export type {
 	SmartCliCommandConfig,
 	CliOptionTypeMap,
 	ValueOfCliOption,
-	ExtractOptionName
+	ExtractOptionName,
+	TerminalOptionsFromConfig,
+	SmartTerminalCommandConfig
 } from './cli-helpers.js'
 
 export default {}

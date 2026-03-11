@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { Worker } from 'node:worker_threads'
+import { Worker, type WorkerOptions } from 'node:worker_threads'
 import { __DIRNAME } from './utils.js'
 import { logger } from '../../core/logger.js'
 import { SpiritMessage } from 'src/types/index.js'
@@ -34,7 +34,10 @@ export class Spirits {
 	private activeSpirits: Spirit[] = []
 	private nextActiveIndex = 0
 
-	constructor(public size = 3) {
+	private outputCallback?: (data: string, stream: 'stdout' | 'stderr') => void
+
+	constructor(public size = 3, outputCallback?: (data: string, stream: 'stdout' | 'stderr') => void) {
+		this.outputCallback = outputCallback
 		for (let i = 0; i < size; i++) {
 			this.newSpirit()
 		}
@@ -42,7 +45,8 @@ export class Spirits {
 
 	public newSpirit(oldSpirit?: Spirit) {
 		const index = oldSpirit ? this.activeSpirits.indexOf(oldSpirit) : this.activeSpirits.length
-		const spiritId = `${this.spiritIndex++}-${nameGenerator()}-${['a', 'b', 'c'][index]}`
+		const suffix = String.fromCharCode(97 + (index % 26))
+		const spiritId = `${this.spiritIndex++}-${nameGenerator()}-${suffix}`
 		const mode = Mode.get()
 
 		// Start with env vars loaded from .env file
@@ -57,9 +61,30 @@ export class Spirits {
 			}
 		}
 
-		const worker = new Worker(path.join(__DIRNAME, '..', 'spirit.js'), {
+		const workerOptions: WorkerOptions = {
 			workerData: { env, mode, spiritId }
-		})
+		}
+
+		// When interactive mode provides an output callback, pipe worker stdout/stderr
+		// through it instead of sharing the parent FD
+		if (this.outputCallback) {
+			workerOptions.stdout = true
+			workerOptions.stderr = true
+		}
+
+		const worker = new Worker(path.join(__DIRNAME, '..', 'spirit.js'), workerOptions)
+
+		// Route worker output through the callback when interactive mode is active
+		if (this.outputCallback) {
+			const cb = this.outputCallback
+			worker.stdout.on('data', (chunk: Buffer) => {
+				try { cb(chunk.toString(), 'stdout') } catch { /* swallow */ }
+			})
+			worker.stderr.on('data', (chunk: Buffer) => {
+				try { cb(chunk.toString(), 'stderr') } catch { /* swallow */ }
+			})
+		}
+
 		const newSpirit: Spirit = { id: spiritId, task: null, worker }
 		this.spirits[newSpirit.id] = newSpirit
 
@@ -79,6 +104,12 @@ export class Spirits {
 
 		worker.on('exit', async (exitCode: number) => {
 			logger.debug(`Spirit (${composeColors(color.bold, color.cyan)(spiritId)}) exited with code ${exitCode}`)
+
+			// Clean up stdout/stderr listeners when worker exits
+			if (this.outputCallback) {
+				worker.stdout.removeAllListeners('data')
+				worker.stderr.removeAllListeners('data')
+			}
 
 			// No need to handle this if the spirit is already terminated elsewhere
 			const spirit = this.spirits[newSpirit.id]
@@ -119,6 +150,13 @@ export class Spirits {
 
 		worker.on('error', async (err) => {
 			logger.error(err)
+
+			// Clean up stdout/stderr listeners
+			if (this.outputCallback) {
+				worker.stdout.removeAllListeners('data')
+				worker.stderr.removeAllListeners('data')
+			}
+
 			const spirit = this.spirits[newSpirit.id]
 			spirit.task?.reject(err)
 			spirit.isTerminated = true

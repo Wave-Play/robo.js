@@ -116,10 +116,16 @@ async function startAction(context: CliContext) {
 		process.exit(1)
 	}
 
+	// Handle graceful shutdown on Ctrl+C
+	process.on('SIGINT', async () => {
+		const { Robo } = await import('../../core/robo.js')
+		await Robo.stop()
+	})
+
 	// Start Roboooooooo!! :D (dynamic to avoid premature process hooks)
 	startPhase('Robo Start')
 	const { Robo } = await import('../../core/robo.js')
-	Robo.start({
+	await Robo.start({
 		logLevel: options['log-level']
 	})
 	endPhase('Robo Start')
