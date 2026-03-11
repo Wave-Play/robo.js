@@ -3,336 +3,329 @@ title: State Management
 description: Manage temporary data using States, with persistence and namespacing options.
 ---
 
-# State Management
+States provide fast, synchronous, in-memory storage for your Robo.js project. They hold data for the duration of the current session and clear when the process shuts down.
 
-States are your Robo's personal memory bank. They store data, allowing your bot to remember information across its lifespan. However, states are ephemeral; they clear out when your Robo powers off.
-
-On the flip side, if you're tweaking your Robo using `/dev restart` or playing around in dev mode, states will survive. They stick around through hot reloads and restarts, waiting patiently for the next run.
+States do survive hot reloads and `/dev restart` commands during development, so you will not lose session data while iterating.
 
 ## Usage
 
-States are a breeze to use. Check out this example:
+Set and retrieve state values with `setState` and `getState`:
 
-<Tabs groupId="examples-script" items={['Javascript', 'Typescript']}>
-<Tab value="Javascript">
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/add-points.ts"
+    import { setState, getState } from 'robo.js'
 
-```javascript title="/src/commands/add-points.js"
-import { setState, getState } from 'robo.js'
+    export default () => {
+    	let currentPoints = getState('currentPoints') ?? 0
+    	setState('currentPoints', currentPoints + 10)
+    	return `You've gained 10 points! Your current total is ${currentPoints + 10} points.`
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/add-points.js"
+    import { setState, getState } from 'robo.js'
 
-export default () => {
-	let currentPoints = getState('currentPoints') ?? 0
-	setState('currentPoints', currentPoints + 10)
-	return `You've gained 10 points! Your current total is ${currentPoints + 10} points.`
-}
-```
-
-</Tab>
-<Tab value="Typescript">
-
-```typescript title="/src/commands/add-points.ts"
-import { setState, getState } from 'robo.js'
-import type { CommandResult } from 'robo.js'
-
-export default (): CommandResult => {
-	let currentPoints = getState('currentPoints') ?? 0
-	setState('currentPoints', currentPoints + 10)
-	return `You've gained 10 points! Your current total is ${currentPoints + 10} points.`
-}
-```
-
-</Tab>
+    export default () => {
+    	let currentPoints = getState('currentPoints') ?? 0
+    	setState('currentPoints', currentPoints + 10)
+    	return `You've gained 10 points! Your current total is ${currentPoints + 10} points.`
+    }
+    ```
+  </Tab>
 </Tabs>
 
-And you can retrieve state values like so:
+Retrieve state values in another command:
 
-<Tabs groupId="examples-script" items={['Javascript', 'Typescript']}>
-<Tab value="Javascript">
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/get-points.ts"
+    import { getState } from 'robo.js'
 
-```javascript title="/src/commands/get-points.js"
-import { getState } from 'robo.js'
+    export default () => {
+    	let currentPoints = getState('currentPoints') ?? 0
+    	return `You currently have ${currentPoints} points.`
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/get-points.js"
+    import { getState } from 'robo.js'
 
-export default () => {
-	let currentPoints = getState('currentPoints') ?? 0
-	return `You currently have ${currentPoints} points.`
-}
-```
-
-</Tab>
-<Tab value="Typescript">
-
-```typescript title="/src/commands/get-points.ts"
-import { getState } from 'robo.js'
-import type { CommandResult } from 'robo.js'
-
-export default (): CommandResult => {
-	let currentPoints = getState('currentPoints') ?? 0
-	return `You currently have ${currentPoints} points.`
-}
-```
-
-</Tab>
+    export default () => {
+    	let currentPoints = getState('currentPoints') ?? 0
+    	return `You currently have ${currentPoints} points.`
+    }
+    ```
+  </Tab>
 </Tabs>
 
 ## Forking Namespace
 
-Imagine two different modules trying to use a state named `counter`. Without careful management, they could conflict, leading to unexpected results. Here's how it might look:
+When multiple modules use the same state key name, their values can collide. For example, two modules both using a `counter` state would overwrite each other.
 
-<Tabs groupId="examples-script" items={['Javascript', 'Typescript']}>
-<Tab value="Javascript">
+The problem:
 
-```javascript title="/src/modules/foo/commands/increment.js"
-import { setState, getState } from 'robo.js'
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/modules/foo/commands/increment.ts"
+    import { setState, getState } from 'robo.js'
 
-export default () => {
-	let counter = getState('counter') ?? 0
-	setState('counter', counter + 1)
-	return `Counter in Foo module is now ${counter + 1}.`
-}
-```
+    export default () => {
+    	let counter = getState('counter') ?? 0
+    	setState('counter', counter + 1)
+    	return `Counter in Foo module is now ${counter + 1}.`
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/modules/foo/commands/increment.js"
+    import { setState, getState } from 'robo.js'
 
-</Tab>
-<Tab value="Typescript">
-
-```typescript title="/src/modules/foo/commands/increment.ts"
-import { setState, getState } from 'robo.js'
-import type { CommandResult } from 'robo.js'
-
-export default (): CommandResult => {
-	let counter = getState('counter') ?? 0
-	setState('counter', counter + 1)
-	return `Counter in Foo module is now ${counter + 1}.`
-}
-```
-
-</Tab>
+    export default () => {
+    	let counter = getState('counter') ?? 0
+    	setState('counter', counter + 1)
+    	return `Counter in Foo module is now ${counter + 1}.`
+    }
+    ```
+  </Tab>
 </Tabs>
 
-<Tabs groupId="examples-script" items={['Javascript', 'Typescript']}>
-<Tab value="Javascript">
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/modules/bar/commands/bar-increment.ts"
+    import { setState, getState } from 'robo.js'
 
-```javascript title="/src/modules/bar/commands/bar-increment.js"
-import { setState, getState } from 'robo.js'
+    export default () => {
+    	let counter = getState('counter') ?? 0
+    	setState('counter', counter + 5)
+    	return `Counter in Bar module is now ${counter + 5}.`
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/modules/bar/commands/bar-increment.js"
+    import { setState, getState } from 'robo.js'
 
-export default () => {
-	let counter = getState('counter') ?? 0
-	setState('counter', counter + 5)
-	return `Counter in Bar module is now ${counter + 5}.`
-}
-```
-
-</Tab>
-<Tab value="Typescript">
-
-```typescript title="/src/modules/bar/commands/bar-increment.ts"
-import { setState, getState } from 'robo.js'
-import type { CommandResult } from 'robo.js'
-
-export default (): CommandResult => {
-	let counter = getState('counter') ?? 0
-	setState('counter', counter + 5)
-	return `Counter in Bar module is now ${counter + 5}.`
-}
-```
-
-</Tab>
+    export default () => {
+    	let counter = getState('counter') ?? 0
+    	setState('counter', counter + 5)
+    	return `Counter in Bar module is now ${counter + 5}.`
+    }
+    ```
+  </Tab>
 </Tabs>
 
-In this scenario, the `counter` state would get jumbled between the `foo` and `bar` modules. To avoid this mess, we can fork the state:
+To prevent this, fork the state into a separate namespace:
 
-```javascript
-const { getState, setState } = State.fork('foo')
-export { getState, setState }
-```
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { State } from 'robo.js'
 
-Now, the `foo` module has its own clean namespace. Import these forked functions in your module's commands and events to prevent state conflicts. Here's an example:
+    const { getState, setState } = State.fork('foo')
+    export { getState, setState }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { State } from 'robo.js'
 
-<Tabs groupId="examples-script" items={['Javascript', 'Typescript']}>
-<Tab value="Javascript">
-
-```javascript title="/src/modules/foo/commands/increment.js"
-import { setState, getState } from '../state.js'
-
-export default () => {
-	let counter = getState('counter') ?? 0
-	setState('counter', counter + 1)
-	return `Counter in Foo module is now ${counter + 1}.`
-}
-```
-
-</Tab>
-<Tab value="Typescript">
-
-```typescript title="/src/modules/foo/commands/increment.ts"
-import { setState, getState } from '../state.js'
-import type { CommandResult } from 'robo.js'
-
-export default (): CommandResult => {
-	let counter = getState('counter') ?? 0
-	setState('counter', counter + 1)
-	return `Counter in Foo module is now ${counter + 1}.`
-}
-```
-
-</Tab>
+    const { getState, setState } = State.fork('foo')
+    export { getState, setState }
+    ```
+  </Tab>
 </Tabs>
+
+Then import the forked functions in your module's commands:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/modules/foo/commands/increment.ts"
+    import { setState, getState } from '../state.js'
+
+    export default () => {
+    	let counter = getState('counter') ?? 0
+    	setState('counter', counter + 1)
+    	return `Counter in Foo module is now ${counter + 1}.`
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/modules/foo/commands/increment.js"
+    import { setState, getState } from '../state.js'
+
+    export default () => {
+    	let counter = getState('counter') ?? 0
+    	setState('counter', counter + 1)
+    	return `Counter in Foo module is now ${counter + 1}.`
+    }
+    ```
+  </Tab>
+</Tabs>
+
+The `foo` module now has its own isolated namespace, preventing conflicts with other modules.
 
 ## Persisting Data
 
-States vanish when your Robo powers off. Unless you set them to persist, that is. With the `persist` option, your data will be stored safely for when Robo gets back to work:
+By default, states clear when the process exits. To preserve a value across shutdowns, use the `persist` option:
 
-<Tabs groupId="examples-script" items={['Javascript', 'Typescript']}>
-<Tab value="Javascript">
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/set-important-data.ts"
+    import { setState } from 'robo.js'
 
-```javascript title="/src/commands/set-important-data.js"
-import { setState } from 'robo.js'
+    export default () => {
+    	setState('importantData', 'Never forget this', { persist: true })
+    	return 'Data has been saved and will survive restarts.'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/set-important-data.js"
+    import { setState } from 'robo.js'
 
-export default () => {
-	// Setting a state with persist option
-	setState('importantData', 'Never forget this', { persist: true })
-	return "Data has been safely stored. Don't worry, Robo won't forget!"
-}
-```
-
-</Tab>
-<Tab value="Typescript">
-
-```typescript title="/src/commands/set-important-data.ts"
-import { setState } from 'robo.js'
-import type { CommandResult } from 'robo.js'
-
-export default (): CommandResult => {
-	// Setting a state with persist option
-	setState('importantData', 'Never forget this', { persist: true })
-	return "Data has been safely stored. Don't worry, Robo won't forget!"
-}
-```
-
-</Tab>
+    export default () => {
+    	setState('importantData', 'Never forget this', { persist: true })
+    	return 'Data has been saved and will survive restarts.'
+    }
+    ```
+  </Tab>
 </Tabs>
 
-Now, even if your Robo powers down, the `importantData` state will still be there when it wakes up. Under the hood, Robo.js uses **Flashcore** to make all this magical persistence happen. Pretty cool, right?
+Under the hood, persisted state values are stored using **Flashcore**, so they follow the same storage rules.
 
 <Callout type="info">
-Values stored as state must be serializable. If they're not, they can't be persisted. Don't try to store complex objects like a Discord.js Guild or Message—keep it simple.
+**Note:** Persisted values must be serializable. Complex objects like Discord.js Guild or Message instances cannot be persisted.
 </Callout>
 
 ## Namespaces
 
-Namespacing in States helps you avoid key collisions and keep your data well-organized, particularly when dealing with multiple contexts like different users or servers.
+Namespaces prevent key collisions when storing data for different contexts such as different servers or users.
 
-### How it Works
+Include a `namespace` in the options object:
 
-Namespacing functions similarly to drawers or compartments where you can categorize and store your data separately. This is incredibly useful when you need to store similar types of data for different entities without any mix-up.
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    setState('my-key', 'example-value', {
+    	namespace: 'my-namespace'
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    setState('my-key', 'example-value', {
+    	namespace: 'my-namespace'
+    })
+    ```
+  </Tab>
+</Tabs>
 
-To use a namespace in States, you include it in the `options` object when you call `getState` or `setState`. This object has a `namespace` property where you define your desired namespace.
+Retrieve values using the same namespace:
 
-For example, setting a value with a namespace looks like this:
-
-```javascript
-setState('my-key', 'example-value', {
-	namespace: 'my-namespace'
-})
-```
-
-Here, the key `'my-key'` is placed under the `'my-namespace'` category, keeping it distinct from the same key in other namespaces. To retrieve the value, you would use the same namespace:
-
-```javascript
-const value = await getState('my-key', {
-	namespace: 'my-namespace'
-})
-```
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const value = getState('my-key', {
+    	namespace: 'my-namespace'
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const value = getState('my-key', {
+    	namespace: 'my-namespace'
+    })
+    ```
+  </Tab>
+</Tabs>
 
 ### Practical Example
 
-Imagine you have a Discord bot that hosts daily challenges in different servers. You want to track each user's participation in these challenges separately for each server. This is where namespacing becomes incredibly useful.
+Track per-server participation in a daily challenge:
 
-<Tabs groupId="examples-script" items={['Javascript', 'Typescript']}>
-<Tab value="Javascript">
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/daily-challenge.ts"
+    import { getState, setState } from 'robo.js'
 
-```javascript title="/src/commmands/daily-challenge.js"
-import { getState, setState } from 'robo.js'
+    import type { ChatInputCommandInteraction } from 'discord.js'
 
-export default async (interaction) => {
-	const userId = interaction.user.id
-	const challengeId = 'daily-challenge' // Example challenge ID
+    export default (interaction: ChatInputCommandInteraction) => {
+    	const userId = interaction.user.id
+    	const challengeId = 'daily-challenge'
 
-	// Fetch the user's challenge participation state for this server
-	const userParticipation =
-		(await getState(userId, {
-			namespace: interaction.guildId
-		})) ?? {}
+    	const userParticipation =
+    		getState(userId, {
+    			namespace: interaction.guildId
+    		}) ?? {}
 
-	// Increment the user's participation count for the specific challenge
-	const newParticipationCount = (userParticipation[challengeId] ?? 0) + 1
-	userParticipation[challengeId] = newParticipationCount
+    	const newParticipationCount = (userParticipation[challengeId] ?? 0) + 1
+    	userParticipation[challengeId] = newParticipationCount
 
-	// Update the state with the new count
-	await setState(userId, userParticipation, {
-		namespace: interaction.guildId
-	})
+    	setState(userId, userParticipation, {
+    		namespace: interaction.guildId
+    	})
 
-	return `You've participated in the '${challengeId}' ${newParticipationCount} times in this server! Keep it up!`
-}
-```
+    	return `You've participated in '${challengeId}' ${newParticipationCount} times in this server.`
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/daily-challenge.js"
+    import { getState, setState } from 'robo.js'
 
-</Tab>
-<Tab value="Typescript">
+    export default (interaction) => {
+    	const userId = interaction.user.id
+    	const challengeId = 'daily-challenge'
 
-```typescript title="/src/commmands/daily-challenge.ts"
-import { getState, setState } from 'robo.js'
-import type { CommandResult } from 'robo.js'
-import type { ChatInputCommandInteraction } from 'discord.js'
+    	const userParticipation =
+    		getState(userId, {
+    			namespace: interaction.guildId
+    		}) ?? {}
 
-export default async (interaction: ChatInputCommandInteraction): Promise<CommandResult> => {
-	const userId = interaction.user.id
-	const challengeId = 'daily-challenge' // Example challenge ID
+    	const newParticipationCount = (userParticipation[challengeId] ?? 0) + 1
+    	userParticipation[challengeId] = newParticipationCount
 
-	// Fetch the user's challenge participation state for this server
-	const userParticipation =
-		(await getState(userId, {
-			namespace: interaction.guildId
-		})) ?? {}
+    	setState(userId, userParticipation, {
+    		namespace: interaction.guildId
+    	})
 
-	// Increment the user's participation count for the specific challenge
-	const newParticipationCount = (userParticipation[challengeId] ?? 0) + 1
-	userParticipation[challengeId] = newParticipationCount
-
-	// Update the state with the new count
-	await setState(userId, userParticipation, {
-		namespace: interaction.guildId
-	})
-
-	return `You've participated in the '${challengeId}' ${newParticipationCount} times in this server! Keep it up!`
-}
-```
-
-</Tab>
+    	return `You've participated in '${challengeId}' ${newParticipationCount} times in this server.`
+    }
+    ```
+  </Tab>
 </Tabs>
 
-In this example, the bot tracks how many times a user has participated in a specific challenge (`daily-challenge`) in each server. The `getState` and `setState` functions use the server ID as the namespace, ensuring that participation counts are kept separate and accurate for each server.
+Using the server ID as the namespace ensures that participation counts are tracked independently per server.
 
-By using namespacing in this way, you can create complex, server-specific interactions that enrich the user experience without data collision or confusion.
+## State vs. Flashcore
 
-{/*
-### Multi-Layered Namespacing
+Use State for data that is needed temporarily or within a single session. Use [Flashcore](./flashcore) when data must survive restarts.
 
-States also support multi-dimensional namespaces using arrays. This is especially handy when you want to organize data by multiple factors, such as server and user.
+- **Speed:** State operations are synchronous and immediate. Flashcore is asynchronous.
+- **Lifetime:** State clears on shutdown (unless persisted). Flashcore persists permanently.
+- **Storage:** State uses in-memory RAM. Flashcore uses the filesystem or an external database.
+- **Data types:** State can hold any JavaScript value, including class instances. Flashcore requires serializable data.
 
-```javascript
-setState('someKey', someData, {
-	namespace: [interaction.guildId, interaction.userId]
-})
-```
+## Next Steps
 
-In this example, the data is tagged with both the server ID and the user ID, creating a highly organized and collision-free storage system in memory.
-
-*/}
-
-## Opting for States over Flashcore
-
-Opt for States when handling data that's needed temporarily or within a single session. States excel in scenarios where speed is crucial and data doesn't need to survive a Robo shutdown.
-
-- **Speed & Synchronicity:** Immediate updates and access, ideal for data requiring quick interactions.
-- **Session-Specific Data:** Perfect for temporary, transient data not meant to be stored long-term.
-- **In-Memory Storage:** Operates using RAM, ensuring rapid data manipulation.
-- **Data Type Flexibility:** Can store diverse data types, including complex objects and classes.
+<Cards>
+  <Card
+    href="./flashcore"
+    title="Flashcore Database"
+    description="Persistent key-value storage that survives restarts."
+  />
+  <Card
+    href="./modules"
+    title="Modules"
+    description="Organize related commands and events with isolated state."
+  />
+  <Card
+    href="./config"
+    title="Configuration"
+    description="Configure project settings and plugin options."
+  />
+</Cards>

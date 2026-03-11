@@ -3,15 +3,11 @@ title: Robo File Structure
 description: Understand the standard file and directory structure of a Robo.js project.
 ---
 
-# 📂 Robo File Structure
-
-The primary way to create with Robo.js is through the file structure. This is the foundation of Robo.js and is used to determine your project's functionality.
-
-If you're familiar with Next.js, you'll feel right at home. If not, no worries — Robo.js keeps things simple. All you need to know is how to arrange your files. And that's it. Seriously!
+The file structure is the foundation of every Robo.js project. Directories and file names determine your project's functionality, similar to frameworks like Next.js.
 
 ## Standard Structure
 
-Standard Robo.js projects contain the following directories:
+A standard Robo.js project contains the following directories:
 
 <Files>
   <Folder name="/" defaultOpen disabled>
@@ -29,60 +25,78 @@ Standard Robo.js projects contain the following directories:
   </Folder>
 </Files>
 
-You will be working primarily in the `/src` directory. This is where you code your Project's features. `/config` is where you can tweak project and plugin configurations.
+You will spend most of your time in the `/src` directory, where your project's features live. The `/config` directory holds project and plugin configurations.
 
-Depending on what other things you have installed - like ESLint or Prettier - you may have additional files or directories outside of these.
+Depending on your setup, you may have additional files from tools like ESLint or Prettier.
 
 ### Source Code
 
-The `/src` directory is where you'll spend most of your time. Depending on what you're building, you'll have to pay attention to different directories in it.
-
-Any type of file is supported as long as Node.js supports it. This includes JavaScript, **[TypeScript](./typescript)**, JSON, and more. TypeScript works out of the box, so you can use it without any additional setup.
+The `/src` directory is where your project's functionality is defined. Any file type supported by Node.js works here, including JavaScript, **[TypeScript](./typescript)**, and JSON. TypeScript works out of the box with no additional setup.
 
 ### Configuration
 
-You can find config files in the `/config` directory. These files are used to configure your project and plugins. Plugin config files are generated in here when you run `npx robo add`.
+Config files live in the `/config` directory. These control project and plugin settings. Plugin config files are generated automatically when you run `npx robo add`.
 
-You may rarely need to edit these files, if at all. See the **[Configuration](./config)** section for more information.
+You may rarely need to edit these files directly. See **[Configuration](./config)** for more details.
 
 ### Environment Variables
 
-The `.env` file is where you store sensitive information, such as API keys, database URLs, or Discord tokens. These variables are loaded into your project when it starts.
+The `.env` file stores sensitive information such as API keys, database URLs, and Discord tokens. These variables are loaded into your project at startup.
 
-See the **[Environment Variables](./environment-variables)** section for more information.
+See **[Environment Variables](./env-vars)** for more details.
 
 ### Package File
 
-The `package.json` file is standard for Node.js projects. It contains metadata about your project, such as the name, version, and dependencies. You can also add scripts to run commands, like `npm run dev`.
+The `package.json` file is standard for Node.js projects. It contains metadata about your project including the name, version, dependencies, and scripts.
 
 ## Modules
 
-For larger projects, you can use modules to group similar functionality together to keep things clean. Each module is its own mini-project within your main project that follows the same Robo File Structure.
+For larger projects, modules let you group related functionality together. Each module is a self-contained unit within your project that follows the same file structure conventions.
 
-Check out **[Modules](./modules)** for more information.
+See **[Modules](./modules)** for more details.
 
 ## .robo Directory
 
-`/.robo` is special because it's managed by Robo.js. It contains generated files that Robo.js uses to manage your project. You can ignore this directory, as it's not meant for manual editing, but feel free to keep reading if you're curious.
+The `/.robo` directory is managed by Robo.js and contains generated files. You should not edit this directory manually, but the following sections explain what it contains.
 
 ### Build
 
-`/.robo/build` contains compiled files from your project. This is where your TypeScript files are compiled to JavaScript, or where your project is bundled for production.
+`/.robo/build` contains compiled output from your project. TypeScript files are compiled to JavaScript here, and production bundles are stored in this location.
 
-For plugins, this is what gets published to NPM.
+For plugins, this is the directory that gets published to npm.
 
 ### Data
 
-`/.robo/data` contains **[Flashcore](./flashcore)** data. Flashcore uses the local filesystem to store data by default, but can be configured to use a database of your choice.
+`/.robo/data` contains **[Flashcore](./flashcore)** data. Flashcore uses the local filesystem by default but can be configured to use an external database.
 
 <Callout type="warn">
-Be careful not to delete this directory or you may lose important data!
+**Warning:** Do not delete this directory or you may lose persisted data.
 </Callout>
 
 ### Manifest
 
-The `/.robo/manifest.json` file contains information about your project, such as the project name, version, plugins, directories in use, and more. This file is generated and updated by Robo.js for performant startup times.
+The `/.robo/manifest.json` file contains project metadata including the project name, version, registered plugins, and directory information. Robo.js generates and updates this file automatically for faster startup times.
 
 ### Temp Files
 
-Sometimes you may see a `/.robo/temp` directory. This is used for temporary files that Robo.js generates during runtime. You know, things like intermediate files during compression and such**.**
+The `/.robo/temp` directory appears occasionally and holds temporary files generated during runtime, such as intermediate files created during compression.
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./config"
+    title="Configuration"
+    description="Customize your project's behavior and features."
+  />
+  <Card
+    href="./modules"
+    title="Modules"
+    description="Organize related commands and events into groups."
+  />
+  <Card
+    href="./env-vars"
+    title="Environment Variables"
+    description="Manage secrets and mode-specific settings."
+  />
+</Cards>

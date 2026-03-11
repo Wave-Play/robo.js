@@ -3,93 +3,148 @@ title: Portal
 description: Access and modify your Robo's internals on the fly using the Portal API.
 ---
 
-What if we told you there was a gateway to your Robo's brain? One that lets you tinker with the bits and bobs that make your bot tick? Well, get ready to step into the _Portal_. This API lets you access your Robo's inner workings and even tweak 'em without messing around with files. Now, that's power at your fingertips!
+The Portal API provides runtime access to your Robo's registered commands, events, context commands, middleware, and modules. You can inspect what is registered and enable or disable modules without modifying files.
 
-## Switch it Up with Portal
+## Enabling and Disabling Modules
 
-Ever wondered what it'd be like to flick a switch and make a module disappear? With Portal, you can enable or disable modules on the fly. When disabled, your Robo will play dumb as if they never existed.
+Toggle modules at runtime. When disabled, the module's commands and events stop responding as if they do not exist.
 
-Here's the magic spell to disable a module:
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { portal } from 'robo.js'
 
-```javascript
-import { portal } from 'robo.js'
+    // Disable a module
+    portal.module('admin').setEnabled(false)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { portal } from 'robo.js'
 
-// Poof! The 'admin' module is gone
-portal.module('admin').setEnabled(false)
-```
+    // Disable a module
+    portal.module('admin').setEnabled(false)
+    ```
+  </Tab>
+</Tabs>
 
-And if you're curious whether a module is enabled or not, just ask:
+Check whether a module is currently enabled:
 
-```javascript
-// Is 'admin' playing hide and seek?
-const isAdminEnabled = portal.module('admin').isEnabled
-```
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const isAdminEnabled = portal.module('admin').isEnabled()
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const isAdminEnabled = portal.module('admin').isEnabled()
+    ```
+  </Tab>
+</Tabs>
 
-## What's Past the Portal?
+## Inspecting Registered Handlers
 
-The Portal isn't just a magic wand for modules—it's a secret map to the commands, context commands, events, and middleware too. They're all nestled up in there, ripe for the picking.
+Access registered handlers through namespaces. For example, Discord handlers live under the `discord` namespace:
 
-Get a peek at your bot's commands:
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    // Access all handlers as a flat list
+    const allHandlers = portal.all()
 
-```javascript
-// Get a list of your bot's commands
-const commands = portal.commands
-```
+    // Access handlers by type string
+    const commands = portal.getByType('discord:commands')
+    const events = portal.getByType('discord:events')
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    // Access all handlers as a flat list
+    const allHandlers = portal.all()
 
-Sneak a look at your bot's events:
+    // Access handlers by type string
+    const commands = portal.getByType('discord:commands')
+    const events = portal.getByType('discord:events')
+    ```
+  </Tab>
+</Tabs>
 
-```javascript
-// Get a list of your bot's events
-const events = portal.events
-```
-
-Take a gander at your bot's context commands:
-
-```javascript
-// Get a list of your bot's context commands
-const context = portal.context
-```
-
-And last but not least, check out your bot's middleware:
-
-```javascript
-// Get a list of your bot's middleware
-const middleware = portal.middleware
-```
-
-<Callout type="info" title="Friendly reminder">
-Changes you make through the Portal are as fleeting as dreams. They're alive and kicking while your Robo's running, but once it restarts, poof—they're gone. Keep that in mind when you're playing around in there!
+<Callout type="info">
+**Note:** Changes made through the Portal are in-memory only. They persist for the current session but reset when the process restarts.
 </Callout>
 
-## Making Changes Stick****
+## Persisting Changes
 
-Okay, so you want to make changes that stick around, even after a restart? We've got your back. You just need a helping hand from a database.
+To preserve module states across restarts, store them in a database and restore them at startup:
 
-Check out this nifty trick to remember which modules should be enabled or disabled:
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/events/_start.ts"
+    import { portal } from 'robo.js'
 
-```javascript title="/src/events/_start.js"
-export default async function() {
-  const database = ... // load your database
+    export default async function () {
+    	const database = ... // load your database
 
-  // Function to update the states of the modules
-  async function updateModuleStates() {
-    const moduleStates = await database.getModuleStates();
+    	async function updateModuleStates() {
+    		const moduleStates = await database.getModuleStates()
 
-    for (const [moduleName, isEnabled] of Object.entries(moduleStates)) {
-      portal.module(moduleName).setEnabled(isEnabled);
+    		for (const [moduleName, isEnabled] of Object.entries(moduleStates)) {
+    			portal.module(moduleName).setEnabled(isEnabled)
+    		}
+    	}
+
+    	// Restore module states at startup
+    	await updateModuleStates()
+
+    	// Poll for changes periodically
+    	setInterval(updateModuleStates, 10 * 60 * 1000)
     }
-  }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/events/_start.js"
+    import { portal } from 'robo.js'
 
-  // Initial update of module states
-  await updateModuleStates();
+    export default async function () {
+    	const database = ... // load your database
 
-  // Poll the database every 10 minutes for changes
-  setInterval(updateModuleStates, 10 * 60 * 1000);
-}
-```
+    	async function updateModuleStates() {
+    		const moduleStates = await database.getModuleStates()
 
-With this trick up your sleeve, you're all set to make your bot as dynamic as you want. Fancy making your own interface to toggle modules? With Portal, it's a cinch!
+    		for (const [moduleName, isEnabled] of Object.entries(moduleStates)) {
+    			portal.module(moduleName).setEnabled(isEnabled)
+    		}
+    	}
 
-## Wrapping Up
+    	// Restore module states at startup
+    	await updateModuleStates()
 
-So, that's Portal for ya. A door to the heart of your Robo. A gateway to tweakin' and tunin'. It's your ticket to a whole new level of control. So step in, explore, and make your Robo _truly_ yours.
+    	// Poll for changes periodically
+    	setInterval(updateModuleStates, 10 * 60 * 1000)
+    }
+    ```
+  </Tab>
+</Tabs>
+
+This pattern enables building admin interfaces that toggle modules through a database, with changes taking effect at the next poll interval.
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./modules"
+    title="Modules"
+    description="Organize commands and events into toggleable groups."
+  />
+  <Card
+    href="./flashcore"
+    title="Flashcore Database"
+    description="Persist module states and other data across restarts."
+  />
+  <Card
+    href="./internals"
+    title="Internals"
+    description="How the runtime loads and manages handlers."
+  />
+</Cards>

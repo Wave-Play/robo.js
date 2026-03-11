@@ -1,6 +1,30 @@
 {
   "title": "Framework",
-  "description": "Learn how to use Robo.js",
+  "icon": "Blocks",
+  "description": "Core framework concepts and tools",
   "root": true,
-  "pages": ["!index", "..."]
+  "pages": [
+    "index",
+    "---Core---",
+    "core/file-structure",
+    "core/config",
+    "core/env-vars",
+    "core/typescript",
+    "---Data & State---",
+    "core/flashcore",
+    "core/state",
+    "---Architecture---",
+    "core/modules",
+    "core/logger",
+    "core/portal",
+    "core/mode",
+    "---Plugins---",
+    "plugins/index",
+    "plugins/install",
+    "plugins/create",
+    "plugins/seed",
+    "---Advanced---",
+    "core/internals",
+    "core/linting"
+  ]
 }

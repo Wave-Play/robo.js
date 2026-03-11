@@ -3,369 +3,382 @@ title: Flashcore Database
 description: The built-in persistent key-value database.
 ---
 
-**Flashcore** is your Robo's built-in database—ready to hold onto all the key-value pairs your Robo needs for the long haul. Trust us, it's a breeze to use!
+Flashcore is the built-in persistent key-value database for Robo.js. It stores data that survives restarts, making it suitable for settings, records, and any information that needs long-term storage.
 
 ## Saving and Fetching Data
 
-Think of **Flashcore** as **[States](./state)** except permanent. It's in it for the long game, and yes, it's async! Here's how we're handling a user's high score in a game:
+Flashcore works like [State](./state) but persists data permanently. All operations are asynchronous.
 
-Stashing the high score:
+Here is an example that stores a user's high score:
 
-<Tabs groupId="examples-script" items={['Javascript', 'Typescript']}>
-<Tab value="Javascript">
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/update-score.ts"
+    import { Flashcore } from 'robo.js'
+    import { createCommandConfig } from '@robojs/discordjs'
+    import type { CommandInteraction } from 'discord.js'
 
-```javascript title="/src/commands/update-score.js"
-import { Flashcore } from 'robo.js'
+    export const config = createCommandConfig({
+    	options: [
+    		{
+    			name: 'score',
+    			description: 'The new high score',
+    			type: 'integer',
+    			required: true
+    		}
+    	] as const
+    })
 
-export const config = {
-	options: [
-		{
-			name: 'score',
-			description: 'The new high score',
-			type: 'integer',
-			required: true
-		}
-	]
-}
+    export default async (interaction: CommandInteraction) => {
+    	const userId = interaction.user.id
+    	const score = interaction.options.get('score')?.value as number
 
-export default async (interaction) => {
-	const userId = interaction.user.id
-	const score = interaction.options.get('score')?.value
+    	await Flashcore.set(userId, score)
+    	return `New high score of ${score} saved.`
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/update-score.js"
+    import { Flashcore } from 'robo.js'
+    import { createCommandConfig } from '@robojs/discordjs'
 
-	await Flashcore.set(userId, score)
-	return `New high score of ${score} stashed away! 🎉`
-}
-```
+    export const config = createCommandConfig({
+    	options: [
+    		{
+    			name: 'score',
+    			description: 'The new high score',
+    			type: 'integer',
+    			required: true
+    		}
+    	]
+    })
 
-</Tab>
-<Tab value="Typescript">
+    export default async (interaction) => {
+    	const userId = interaction.user.id
+    	const score = interaction.options.get('score')?.value
 
-```typescript title="/src/commands/update-score.ts"
-import { Flashcore, type CommandConfig } from 'robo.js'
-import type { CommandInteraction } from 'discord.js'
-
-export const config: CommandConfig = {
-	options: [
-		{
-			name: 'score',
-			description: 'The new high score',
-			type: 'integer',
-			required: true
-		}
-	]
-}
-
-export default async (interaction: CommandInteraction) => {
-	const userId = interaction.user.id
-	const score = interaction.options.get('score')?.value as number
-
-	await Flashcore.set(userId, score)
-	return `New high score of ${score} stashed away! 🎉`
-}
-```
-
-</Tab>
+    	await Flashcore.set(userId, score)
+    	return `New high score of ${score} saved.`
+    }
+    ```
+  </Tab>
 </Tabs>
 
-Fetching the high score:
+And an example that retrieves it:
 
-<Tabs groupId="examples-script" items={['Javascript', 'Typescript']}>
-<Tab value="Javascript">
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/get-score.ts"
+    import { Flashcore } from 'robo.js'
+    import type { CommandInteraction } from 'discord.js'
 
-```javascript title="/src/commands/get-score.js"
-import { Flashcore } from 'robo.js'
+    export default async (interaction: CommandInteraction) => {
+    	const userId = interaction.user.id
 
-export default async (interaction) => {
-	const userId = interaction.user.id
+    	const score = await Flashcore.get(userId)
+    	return score ? `High score: ${score}` : 'No high score found.'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/get-score.js"
+    import { Flashcore } from 'robo.js'
 
-	const score = await Flashcore.get(userId)
-	return score ? `High score alert: ${score}! 🏆` : 'No high score found. Game time! 🎮'
-}
-```
+    export default async (interaction) => {
+    	const userId = interaction.user.id
 
-</Tab>
-<Tab value="Typescript">
-
-```typescript title="/src/commands/get-score.ts"
-import { Flashcore } from 'robo.js'
-import type { CommandInteraction } from 'discord.js'
-
-export default async (interaction: CommandInteraction) => {
-	const userId = interaction.user.id
-
-	const score = await Flashcore.get(userId)
-	return score ? `High score alert: ${score}! 🏆` : 'No high score found. Game time! 🎮'
-}
-```
-
-</Tab>
+    	const score = await Flashcore.get(userId)
+    	return score ? `High score: ${score}` : 'No high score found.'
+    }
+    ```
+  </Tab>
 </Tabs>
 
-<Callout type="info" title="Heads Up!!!">
-Don't forget to `await` your Flashcore calls!
+<Callout type="info">
+**Note:** Always `await` Flashcore calls. They return promises because the underlying storage may be asynchronous.
 </Callout>
 
 ## Deleting Data
 
-You can delete a key from Flashcore with the `delete()` function.
+Remove a key from Flashcore with the `delete()` function:
 
-Here's a command that deletes a user's high score:
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/delete-score.ts"
+    import { Flashcore } from 'robo.js'
+    import type { CommandInteraction } from 'discord.js'
 
-<Tabs groupId="examples-script" items={['Javascript', 'Typescript']}>
-<Tab value="Javascript">
+    export default async (interaction: CommandInteraction) => {
+    	const userId = interaction.user.id
 
-```javascript title="/src/commands/delete-score.js"
-import { Flashcore } from 'robo.js'
+    	await Flashcore.delete(userId)
 
-export default async (interaction) => {
-	const userId = interaction.user.id
+    	return `Deleted ${userId}'s high score.`
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/delete-score.js"
+    import { Flashcore } from 'robo.js'
 
-	await Flashcore.delete(userId)
+    export default async (interaction) => {
+    	const userId = interaction.user.id
 
-	return `Deleted ${userId}'s high score...`
-}
-```
+    	await Flashcore.delete(userId)
 
-</Tab>
-<Tab value="Typescript">
-
-```typescript title="/src/commands/delete-score.ts"
-import { Flashcore } from 'robo.js'
-import type { CommandInteraction } from 'discord.js'
-
-export default async (interaction: CommandInteraction) => {
-	const userId = interaction.user.id
-
-	await Flashcore.delete(userId)
-
-	return `Deleted ${userId}'s high score...`
-}
-```
-
-</Tab>
+    	return `Deleted ${userId}'s high score.`
+    }
+    ```
+  </Tab>
 </Tabs>
 
 ## Data Types
 
-Feel free to store any **_serializable_** data type in Flashcore. Primitives and objects are both supported, but not functions or class instances!
+Flashcore supports any serializable data type. Primitives and plain objects work, but functions and class instances do not.
 
-```javascript
-await Flashcore.set('banned', true)
-await Flashcore.set('score', 40)
-await Flashcore.set('top-name', 'Robo')
-await Flashcore.set('top-user', {
-	name: 'Robo',
-	score: 40
-})
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    await Flashcore.set('banned', true)
+    await Flashcore.set('score', 40)
+    await Flashcore.set('top-name', 'Robo')
+    await Flashcore.set('top-user', {
+    	name: 'Robo',
+    	score: 40
+    })
 
-await Flashcore.set('top-games', [
-	{ name: 'Robo', score: 40 },
-	{ name: 'Robo 2', score: 30 },
-	{ name: 'Robo 3', score: 20 }
-])
-```
+    await Flashcore.set('top-games', [
+    	{ name: 'Robo', score: 40 },
+    	{ name: 'Robo 2', score: 30 },
+    	{ name: 'Robo 3', score: 20 }
+    ])
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    await Flashcore.set('banned', true)
+    await Flashcore.set('score', 40)
+    await Flashcore.set('top-name', 'Robo')
+    await Flashcore.set('top-user', {
+    	name: 'Robo',
+    	score: 40
+    })
 
-When you fetch this data again, it'll be the same type as when you saved it.
+    await Flashcore.set('top-games', [
+    	{ name: 'Robo', score: 40 },
+    	{ name: 'Robo 2', score: 30 },
+    	{ name: 'Robo 3', score: 20 }
+    ])
+    ```
+  </Tab>
+</Tabs>
 
-```javascript
-const isBanned = await Flashcore.get('banned') // boolean
-const score = await Flashcore.get('score') // number
-const topName = await Flashcore.get('top-name') // string
-const topGames = await Flashcore.get('top-games') // object array
-```
+When retrieved, data retains its original type:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const isBanned = await Flashcore.get('banned') // boolean
+    const score = await Flashcore.get('score') // number
+    const topName = await Flashcore.get('top-name') // string
+    const topGames = await Flashcore.get('top-games') // object array
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const isBanned = await Flashcore.get('banned') // boolean
+    const score = await Flashcore.get('score') // number
+    const topName = await Flashcore.get('top-name') // string
+    const topGames = await Flashcore.get('top-games') // object array
+    ```
+  </Tab>
+</Tabs>
 
 ## Watching for Changes
 
-You can also watch for changes to a key's value over time with the `on()` function.
+The `on()` function lets you observe changes to a key's value:
 
-Here's a command that sends a message to a channel whenever a user's high score changes:
-<Tabs groupId="examples-script" items={['Javascript', 'Typescript']}>
-<Tab value="Javascript">
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/watch-score.ts"
+    import { Flashcore } from 'robo.js'
+    import type { CommandInteraction } from 'discord.js'
 
-```javascript title="/src/commands/watch-score.js"
-import { Flashcore } from 'robo.js'
+    export default async (interaction: CommandInteraction) => {
+    	const userId = interaction.user.id
 
-export default async (interaction) => {
-	const userId = interaction.user.id
+    	Flashcore.on(userId, (oldScore, newScore) => {
+    		interaction.channel.send(`High score updated for ${userId}: ${newScore}`)
+    	})
 
-	Flashcore.on(userId, (score) => {
-		interaction.channel.send(`High score alert for ${userId}: ${score}! 🏆`)
-	})
+    	return `Watching for changes to ${userId}'s high score.`
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/watch-score.js"
+    import { Flashcore } from 'robo.js'
 
-	return `Watching for changes to ${userId}'s high score...`
-}
-```
+    export default async (interaction) => {
+    	const userId = interaction.user.id
 
-</Tab>
-<Tab value="Typescript">
+    	Flashcore.on(userId, (oldScore, newScore) => {
+    		interaction.channel.send(`High score updated for ${userId}: ${newScore}`)
+    	})
 
-```typescript title="/src/commands/watch-score.ts"
-import { Flashcore } from 'robo.js'
-import type { CommandInteraction } from 'discord.js'
-
-export default async (interaction: CommandInteraction) => {
-	const userId = interaction.user.id
-
-	Flashcore.on(userId, (score) => {
-		interaction.channel.send(`High score alert for ${userId}: ${score}! 🏆`)
-	})
-
-	return `Watching for changes to ${userId}'s high score...`
-}
-```
-
-</Tab>
+    	return `Watching for changes to ${userId}'s high score.`
+    }
+    ```
+  </Tab>
 </Tabs>
 
 ## Stop Watching for Changes
 
-You can also stop watching for changes with the `off()` function.
+Remove a watcher with the `off()` function:
 
-Here's a command that stops watching for changes to a user's high score:
-<Tabs groupId="examples-script" items={['Javascript', 'Typescript']}>
-<Tab value="Javascript">
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/stop-watching-score.ts"
+    import { Flashcore } from 'robo.js'
+    import type { CommandInteraction } from 'discord.js'
 
-```javascript title="/src/commands/stop-watching-score.js"
-import { Flashcore } from 'robo.js'
+    export default async (interaction: CommandInteraction) => {
+    	const userId = interaction.user.id
 
-export default async (interaction) => {
-	const userId = interaction.user.id
+    	Flashcore.off(userId) // [!code highlight]
 
-	await Flashcore.off(userId) // [!code highlight]
+    	return `Stopped watching ${userId}'s high score.`
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/stop-watching-score.js"
+    import { Flashcore } from 'robo.js'
 
-	return `Stopped watching ${userId}'s high score...`
-}
-```
+    export default async (interaction) => {
+    	const userId = interaction.user.id
 
-</Tab>
-<Tab value="Typescript">
+    	Flashcore.off(userId) // [!code highlight]
 
-```typescript title="/src/commands/stop-watching-score.ts"
-import { Flashcore } from 'robo.js'
-import type { CommandInteraction } from 'discord.js'
-
-export default async (interaction: CommandInteraction) => {
-	const userId = interaction.user.id
-
-	await Flashcore.off(userId) // [!code highlight]
-
-	return `Stopped watching ${userId}'s high score...`
-}
-```
-
-</Tab>
+    	return `Stopped watching ${userId}'s high score.`
+    }
+    ```
+  </Tab>
 </Tabs>
 
 ## Namespaces
 
-In key-value stores, ensuring that your keys are unique is crucial. Flashcore's namespacing feature helps you do just that!
+Namespaces prevent key collisions by categorizing data into separate groups. This is useful when managing data across multiple servers or contexts.
 
-Think of namespacing like creating separate drawers for different categories of items. This way, the same item name in different drawers doesn't get mixed up. It's especially handy when you're managing data for various servers or user groups.
+Pass a `namespace` property in the options object of any Flashcore function:
 
-When you use any Flashcore function, you can include an `options` object as the last parameter. Within this, specify a `namespace` property to categorize your keys.
-
-```javascript
-Flashcore.set('my-key', 'example-value', {
-	namespace: 'my-namespace'
-})
-```
-
-This line effectively places `'my-key'` into a specific category or
-"drawer" labeled `'my-namespace'`.
-
-Let’s apply this to a real-world scenario, like tracking high scores for users across different servers. For each server, you can create a unique namespace. This way, the same user can have different scores on different servers, and there's no mix-up.
-
-Here’s a snippet showing how to set a user's high score in a specific server's namespace:
-
-<Tabs groupId="examples-script" items={['Javascript', 'Typescript']}>
-<Tab value="Javascript">
-
-```javascript title="/src/commands/update-score.js"
-import { Flashcore } from 'robo.js'
-
-export const config = {
-	options: [
-		{
-			name: 'score',
-			description: 'The new high score',
-			type: 'integer',
-			required: true
-		}
-	]
-}
-
-export default async (interaction) => {
-	const userId = interaction.user.id
-	const score = interaction.options.get('score')?.value
-
-	await Flashcore.set(userId, score, { // [!code highlight]
-		namespace: interaction.guildId // [!code highlight]
-	}) // [!code highlight]
-
-	return `New high score of ${score} stashed away! 🎉`
-}
-```
-
-</Tab>
-<Tab value="Typescript">
-
-```typescript title="/src/commands/update-score.ts"
-import { Flashcore, type CommandConfig } from 'robo.js'
-import type { CommandInteraction } from 'discord.js'
-
-export const config: CommandConfig = {
-	options: [
-		{
-			name: 'score',
-			description: 'The new high score',
-			type: 'integer',
-			required: true
-		}
-	]
-}
-
-export default async (interaction: CommandInteraction) => {
-	const userId = interaction.user.id
-	const score = interaction.options.get('score')?.value as number
-
-	await Flashcore.set(userId, score, { // [!code highlight]
-		namespace: interaction.guildId // [!code highlight]
-	}) // [!code highlight]
-
-	return `New high score of ${score} stashed away! 🎉`
-}
-```
-
-</Tab>
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    Flashcore.set('my-key', 'example-value', {
+    	namespace: 'my-namespace'
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    Flashcore.set('my-key', 'example-value', {
+    	namespace: 'my-namespace'
+    })
+    ```
+  </Tab>
 </Tabs>
 
-In this example, `interaction.guildId` is our namespace. By doing this, each server gets its own unique set of high scores for each user.
+For example, to store per-server high scores, use the guild ID as the namespace:
 
-And when you need to get a score, use the same namespace:
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/update-score.ts"
+    import { Flashcore } from 'robo.js'
+    import { createCommandConfig } from '@robojs/discordjs'
+    import type { CommandInteraction } from 'discord.js'
 
-```javascript
-await Flashcore.get(userId, {
-	namespace: interaction.guildId
-})
-```
+    export const config = createCommandConfig({
+    	options: [
+    		{
+    			name: 'score',
+    			description: 'The new high score',
+    			type: 'integer',
+    			required: true
+    		}
+    	] as const
+    })
 
-With namespacing, you efficiently manage data for different groups or contexts without any overlap or confusion!
+    export default async (interaction: CommandInteraction) => {
+    	const userId = interaction.user.id
+    	const score = interaction.options.get('score')?.value as number
 
-{/*
-You can also use arrays to create multi-layered namespaces. This is useful when you want to categorize data by multiple criteria. For instance, to store data for a user within a specific server, you can do something like this:
+    	await Flashcore.set(userId, score, { // [!code highlight]
+    		namespace: interaction.guildId // [!code highlight]
+    	}) // [!code highlight]
 
-```javascript
-await Flashcore.set('someKey', someData, { namespace: ['server123', 'user456'] });
-```
+    	return `New high score of ${score} saved.`
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/update-score.js"
+    import { Flashcore } from 'robo.js'
+    import { createCommandConfig } from '@robojs/discordjs'
 
-Here, the data is categorized under both the server and user IDs, ensuring unique and organized storage.
-*/}
+    export const config = createCommandConfig({
+    	options: [
+    		{
+    			name: 'score',
+    			description: 'The new high score',
+    			type: 'integer',
+    			required: true
+    		}
+    	]
+    })
+
+    export default async (interaction) => {
+    	const userId = interaction.user.id
+    	const score = interaction.options.get('score')?.value
+
+    	await Flashcore.set(userId, score, { // [!code highlight]
+    		namespace: interaction.guildId // [!code highlight]
+    	}) // [!code highlight]
+
+    	return `New high score of ${score} saved.`
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Retrieve data using the same namespace:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    await Flashcore.get(userId, {
+    	namespace: interaction.guildId
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    await Flashcore.get(userId, {
+    	namespace: interaction.guildId
+    })
+    ```
+  </Tab>
+</Tabs>
+
+Each namespace acts as an isolated group, so the same key in different namespaces stores independent values.
 
 ## Using Keyv Adapters
 
-Flashcore's storage medium isn't set in stone. It's cozy with the file system by default but can switch to Keyv adapters. Want to use SQLite instead of the file system? You can configure this in the `/config/robo.mjs` file:
+Flashcore uses the local filesystem by default but supports any Keyv adapter for external storage. For example, to use SQLite:
 
-```javascript title="/config/robo.mjs"
+```typescript
+// config/robo.mjs
 import { SQLite } from '@keyv/sqlite'
 
 export default {
@@ -377,43 +390,89 @@ export default {
 }
 ```
 
-<Callout type="tip">
-Dig into more about Keyv Adapters on their [GitHub repo](https://github.com/jaredwray/keyv/tree/main#storage-adapters).
+<Callout type="info">
+**Note:** See the [Keyv documentation](https://github.com/jaredwray/keyv/tree/main#storage-adapters) for a full list of available storage adapters including Redis, PostgreSQL, MySQL, and MongoDB.
 </Callout>
 
 ## TypeScript Support
 
-Flashcore supports generics when retrieving data with TypeScript. This means you can specify the type of data you're expecting to get back from Flashcore for better type safety.
+Flashcore supports generics for type-safe retrieval:
 
-```typescript
-// Primitives are fully supported
-const isBanned = await Flashcore.get<boolean>(userId + '-banned')
-const score = await Flashcore.get<number>(userId + '-score')
-const topName = await Flashcore.get<string>('top-name')
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const isBanned = await Flashcore.get<boolean>(userId + '-banned')
+    const score = await Flashcore.get<number>(userId + '-score')
+    const topName = await Flashcore.get<string>('top-name')
 
-// Objects are supported too!
-interface Game {
-	name: string
-}
+    interface Game {
+    	name: string
+    }
 
-interface UserSettings {
-	theme: string
-	notifications: boolean
-}
+    interface UserSettings {
+    	theme: string
+    	notifications: boolean
+    }
 
-const topGames = await Flashcore.get<Game[]>('top-games')
-const settings = await Flashcore.get<UserSettings>(userId + '-settings')
-```
+    const topGames = await Flashcore.get<Game[]>('top-games')
+    const settings = await Flashcore.get<UserSettings>(userId + '-settings')
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const isBanned = await Flashcore.get(userId + '-banned')
+    const score = await Flashcore.get(userId + '-score')
+    const topName = await Flashcore.get('top-name')
 
-<Callout type="info" title="Disclaimer">
-This will only tell TypeScript what type of data you're expecting to get back. It won't parse the data into that type for you, so make sure you're saving the right type of data to begin with!
+    const topGames = await Flashcore.get('top-games')
+    const settings = await Flashcore.get(userId + '-settings')
+    ```
+  </Tab>
+</Tabs>
+
+<Callout type="info">
+**Note:** Generics only inform TypeScript of the expected return type. They do not parse or validate the stored data, so ensure you save data in the correct format.
 </Callout>
 
-## Opting for Flashcore over States
+## Flashcore vs. State
 
-Flashcore should be your choice for data that requires long-term storage or needs to be preserved across sessions. It's particularly useful for settings, historical data, or any information that needs consistent and reliable storage.
+Use Flashcore when data needs to survive restarts or be stored externally. Use [State](./state) for fast, in-memory values that only need to last for the current session.
 
-- **Data Persistence:** Ensures long-term data storage, ideal for settings and permanent records.
-- **Asynchronous Operations:** Provides consistent and reliable data operations, necessary for durable storage.
-- **External Storage with Keyv Adapters:** Enables storing data in external databases like Postgres, offering flexibility and scalability.
-- **Serializable Data Only:** Suited for serializable data, maintaining data stability and compatibility.
+- **Persistence:** Flashcore stores data permanently. State clears on shutdown.
+- **Operations:** Flashcore is asynchronous. State is synchronous.
+- **External storage:** Flashcore supports Keyv adapters for databases like PostgreSQL. State is in-memory only.
+- **Data types:** Flashcore requires serializable data. State can hold any JavaScript value, including class instances.
+
+## Troubleshooting
+
+### Data not persisting across restarts
+
+Verify that you are using `Flashcore` and not `State`. State values clear on shutdown unless the `persist` option is set. Also ensure that the `/.robo/data` directory exists and is not being deleted by your deployment process.
+
+### Namespace conflicts
+
+If data from different contexts (e.g., different servers) is overlapping, make sure you are passing a unique `namespace` value to each Flashcore call. Using `interaction.guildId` as the namespace is a common pattern for per-server data.
+
+### Keyv adapter errors
+
+If you configured an external storage adapter and see connection errors, verify that the database is running and accessible. Check the connection string in your `config/robo.mjs` and ensure the adapter package is installed as a dependency.
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./state"
+    title="State Management"
+    description="In-memory data storage for session-scoped values."
+  />
+  <Card
+    href="./config"
+    title="Configuration"
+    description="Configure Flashcore adapters and other project settings."
+  />
+  <Card
+    href="./env-vars"
+    title="Environment Variables"
+    description="Store database credentials and other secrets."
+  />
+</Cards>

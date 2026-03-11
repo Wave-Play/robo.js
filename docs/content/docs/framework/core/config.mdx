@@ -1,155 +1,98 @@
 ---
 title: Configuration
-description: Customize Robo.js to fit your project's needs
+description: Customize Robo.js to fit your project's needs.
 ---
 
-Customizing Robo.js to fit your needs is a piece of cake! 🍰 This guide will walk you through tweaking defaults, adding new intents, specifying permissions, changing sage mode behavior, and more.
-
-To configure your Robo.js, create a config file named `robo.mjs` in a `config` folder.
+Robo.js is configured through a file named `robo.mjs` in the `config` directory. You only need to specify the options you want to change from their defaults.
 
 <Callout type="info">
-Alternatively, you can use CommonJS with the name `robo.cjs` or a simpler JSON format as `robo.json`. Using the JSON format is not as robust as JS, but it's a viable choice if you encounter issues with either `.cjs` or `.mjs` on your web host.
+**Note:** You can also use TypeScript (`robo.ts`), CommonJS (`robo.cjs`), or JSON (`robo.json`). TypeScript configs are compiled automatically. The JSON format is less flexible but can be useful if you encounter issues with other formats on your hosting platform.
 </Callout>
 
-## Example configuration
+## Example Configuration
 
-You only need to provide configuration for the options you want to change. If you're happy with the default settings, there's no need to include them in your configuration file.
-
-Here's an example implementation of a configuration file:
-
-```js title="config/robo.mjs"
+```typescript
+// config/robo.mjs
 // @ts-check
-/**
- * @type {import('robo.js').Config}
- **/
+
+/** @type {import('robo.js').Config} */
 export default {
-	clientOptions: {
-		intents: ['DirectMessages', 'Guilds', 'GuildMembers', 'GuildMessages', 'GuildVoiceStates', 'MessageContent']
-	},
 	logger: {
 		level: 'info'
 	},
-	plugins: [],
-	sage: {
-		defer: true,
-		deferBuffer: 2000,
-		errorReplies: false
-	}
+	plugins: []
 }
 ```
 
-## What it means
+<Callout type="info">
+**Note:** Platform-specific options like Discord's `clientOptions` or `sage` are configured through their respective plugins, not in the core config. See your platform plugin's documentation for those settings.
+</Callout>
 
-Now, let's break down each config key and their options:
-
-### `clientOptions`
-
-These are the options passed to the Discord.js client. Use this to specify intents that your Robo.js should handle.
-
-Example:
-
-```javascript
-clientOptions: {
-  intents: ['DirectMessages', 'Guilds', 'GuildMembers', 'GuildMessages', 'GuildVoiceStates', 'MessageContent'],
-}
-```
-
-### `defaults`
-
-Use this to customize default behavior, like enabling or disabling the help command.
-
-Options:
-
-- `contexts`: Register commands only for specific contexts. ([`CommandContext[]`](../../../references/interfaces.mdx))
-- `dev`: Set to `false` to disable /dev subcommands. (**boolean**)
-- `help`: Set to `false` to disable the /help command. (**boolean**)
-- `integrationTypes`: Change to allow use outside installed guilds. ([`CommandIntegrationType[]`](../../../references/interfaces.mdx))
-
-Example:
-
-```js
-defaults: {
-	// These are the default values
-	contexts: ['Guild', 'BotDM', 'PrivateChannel'],
-	dev: true,
-	help: true,
-	integrationTypes: ['GuildInstall']
-}
-```
+## Configuration Reference
 
 ### `excludePaths`
 
-Got files or directories you don't want to include in the final build? Use excludePaths. Just list the file or directory prefixes you want to exclude, and Robo.js will steer clear of them during the build process.
+Exclude files or directories from the build output by listing their path prefixes.
 
 **Use cases:**
 
 - Keeping test files out of the build.
-- Preventing sensitive files (like config or secrets) from being copied over
+- Preventing sensitive files from being copied.
 
-```js
+```typescript
 excludePaths: ['/src/test', '/src/modules/example/statics.json']
 ```
 
-In this example, any file or directory that starts with `/src/test` or `/src/modules/example/statics.json` will be ignored during the build process.
-
 <Callout type="info">
-This feature works with directory and file prefixes, not glob patterns.
+**Note:** This feature works with directory and file prefixes, not glob patterns.
 </Callout>
 
 ### `experimental`
 
-Activate experimental features or revert to older behaviors for compatibility. This field takes an object containing the following optional boolean values:
+Activate experimental features or change build behavior. These options may change outside of semver.
 
-- `buildDirectory`: Determine where to compile your code. The default is `.robo/build`, but you can specify another location.
-- `disableBot`: Turn off bot features, allowing you to run Robo.js without a bot.
-- `incrementalBuilds`: Enable incremental builds to improve build performance by only recompiling changed files.
-- `shard`: Enable sharding support. Can be `true` or a `ShardingManagerOptions` object.
-- `userInstall`: Optimize command registration for user-installed apps.
+- `buildDirectory`: Output directory for compiled code. Defaults to `.robo/build`. Can be a string or a function that receives context with the current mode.
+- `incrementalBuilds`: Only recompile changed files for faster builds.
 
-```js
+```typescript
 experimental: {
 	buildDirectory: 'dist',
-	disableBot: true,
-	incrementalBuilds: true,
-	shard: true,
-	userInstall: true
+	incrementalBuilds: true
 }
 ```
 
 <Callout type="warn">
-**Experimental Features:** Features toggled through the **experimental field** may be unstable and are subject to change outside of semver. Use at your own risk.
+**Warning:** Experimental features may be unstable and are subject to change outside of semver.
 </Callout>
 
-### `invite`
+### `flashcore`
 
-Configure your Robo's invite options.
+Configure the built-in Flashcore key-value database.
 
-Options:
+- `keyv`: Options passed to the Keyv adapter for external storage.
+- `namespaceSeparator`: (`string`) Separator between namespace and key. Defaults to `"/"`.
 
-- `permissions`: (PermissionsString[] | number) Specify permissions for your Robo.
-- `scopes`: (Scope[]) Specify scopes for your Robo.
-
-Example:
-
-```javascript
-invite: {
-  permissions: ['SEND_MESSAGES', 'MANAGE_MESSAGES'],
-  scopes: ['bot'],
+```typescript
+flashcore: {
+	keyv: {
+		store: new SQLite('sqlite://robo.db')
+	},
+	namespaceSeparator: '/'
 }
 ```
 
 ### `logger`
 
-Customize your logging preferences.
+Customize logging behavior.
 
-Options:
+- `drain`: (`LogDrain`) Custom drain function for log output.
+- `enabled`: (`boolean`) Set to `false` to disable logging.
+- `level`: (`LogLevel`) Minimum log level to output.
+- `timestamp`: (`TimestampFormat`) Global timestamp format for all log outputs.
+- `colorMap`: (`boolean`) Generate companion `.colormap` files for file-based log outputs.
+- `files`: (`FileOutputConfig[]`) File-based log outputs.
 
-- `enabled`: (boolean) Set to `false` to disable logging.
-- `level`: (LogLevel) Specify the log level.
-
-Example:
-
-```javascript
+```typescript
 logger: {
   enabled: true,
   level: 'info',
@@ -158,99 +101,76 @@ logger: {
 
 ### `plugins`
 
-Specify the plugins you want to use in your Robo. You can add plugins to the configuration in a couple of ways:
+Register plugins for your project. Plugins can be specified as a package name string or as an array containing the package name, plugin options, and optional system-wide settings.
 
-1. Simply use the name of the plugin package as a string.
-2. Provide an array with 2 to 3 values: the package name, plugin-specific options, and optional system-wide plugin settings.
+The `failSafe` option prevents plugin initialization failures from crashing the entire project.
 
-The `failSafe` option ensures that plugin initialization won't crash your Robo, allowing it to still run even if some plugins require something you might not have (e.g., the GPT Plugin's OpenAI Key).
-
-Example:
-
-```javascript
+```typescript
 plugins: [gptPlugin, '@roboplay/plugin-poll']
 ```
 
-In the example above, `gptPlugin` is an array containing the package name, plugin-specific options, and optional system-wide plugin settings. The `@roboplay/plugin-poll` is added as a string, using the default settings for that plugin.
-
-For more details about plugins and their options, check out the [Plugins](../plugins/overview.mdx) guide.
+For more details, see the [Plugins](../plugins) guide.
 
 ### `roboplay`
 
-Customize RoboPlay-specific options, like picking the Node.js version to use.
+Configure RoboPlay hosting options.
 
-Options:
+- `node`: (`'18' | '20' | 'latest'`) Node.js version to use.
 
-- `node`: ('18' | '20' | 'latest') Select the Node.js version to use.
-
-Example:
-
-```javascript
+```typescript
 roboplay: {
   node: 'latest',
 }
 ```
 
-### `sage`
-
-Tweak the behavior of sage mode to suit your preferences.
-
-Options:
-
-- `defer`: (boolean) Set to `true` to defer the command until it's ready to be executed.
-- `deferBuffer`: (number) The buffer time in milliseconds before a deferred command is executed.
-- `ephemeral`: (boolean) Set to `true` to make the command's response ephemeral (visible only to the user who invoked the command).
-- `errorReplies`: (boolean) Set to `true` to enable error replies for commands that fail.
-
-Example:
-
-```javascript
-sage: {
-  defer: true,
-  deferBuffer: 2000,
-  ephemeral: false,
-  errorReplies: false,
-}
-```
-
 ### `seed`
 
-For plugins only. Provide additional information about the files that can be optionally included in the user's project when installing the plugin.
-
-Options:
-
-- `description`: (string) A brief description of the seed files. This helps users make an informed decision.
+For plugins only. Configure seed helpers that generate starter files and environment values.
 
 ### `timeouts`
 
-Set custom timeout values for various operations in your Robo. This is useful for enforcing stricter limits than the default.
+Set custom timeout values for lifecycle hooks.
 
-Options:
+- `lifecycle`: (`number`) Timeout in milliseconds for lifecycle hook execution.
 
-- `command`: (number) The timeout in milliseconds for command execution.
-- `interaction`: (number) The timeout in milliseconds for interaction handling.
-
-Example:
-
-```javascript
+```typescript
 timeouts: {
-  command: 5000,
-  interaction: 5000,
+  lifecycle: 5000,
 }
 ```
 
 ### `watcher`
 
-Customize the watcher options to suit your needs.
+Customize the file watcher used during development.
 
-```ts
+```typescript
 watcher: {
 	ignore: ['src/app', 'src/components', 'src/hooks']
 }
 ```
 
-## Sensitive data
+## Sensitive Data
 
-⚠️ **Heads up:** Keep sensitive data like API keys or tokens out of your configuration file. Instead, use a `.env` file to store secrets and refer to them with `process.env`. Configuration files are meant to be pushed to version control (git), while secrets inside `.env` should stay off-limits.
+Keep sensitive values like API keys and tokens out of your configuration file. Use a `.env` file instead and reference values with `process.env`. Configuration files are meant to be committed to version control, while `.env` files should remain excluded.
 
-Take a look at the [Environment Variables](./env-vars.mdx) for more info.
+See [Environment Variables](./env-vars) for more details.
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./env-vars"
+    title="Environment Variables"
+    description="Manage secrets and mode-specific settings."
+  />
+  <Card
+    href="./flashcore"
+    title="Flashcore Database"
+    description="Persistent key-value storage for your project."
+  />
+  <Card
+    href="./mode"
+    title="Mode"
+    description="Run different profiles with distinct configurations."
+  />
+</Cards>

@@ -3,29 +3,25 @@ title: TypeScript
 description: Leverage TypeScript for better type safety and development experience.
 ---
 
-# TypeScript
-
-TypeScript is like JavaScript's cooler cousin, ready to swoop in and save the day by catching those sneaky typos and helping you figure out what code exists. And guess what? It's super easy to learn, too! If you're already buds with JavaScript, hop on over to the [W3Schools TypeScript Tutorial](https://www.w3schools.com/typescript/) to kick things off!
-
-Robo.js and TypeScript? They're BFFs. With first-class TypeScript support, you can say goodbye to setting up compiling or handling it yourself. Just stick to the `dev` and `build` commands, and you're golden. Plus, Robo.js uses the zippy Rust-based compiler, [SWC](https://swc.rs/), for a nice performance boost.
+Robo.js has first-class TypeScript support. There is no need to configure compilation or set up build pipelines manually. The `dev` and `build` commands handle everything, using the Rust-based [SWC](https://swc.rs/) compiler for fast builds.
 
 ## Setting Up TypeScript Projects
 
-Ready to roll? The `create-robo` CLI is here to kickstart your TypeScript projects without breaking a sweat:
+The `create-robo` CLI can scaffold a TypeScript project directly:
 
 ```package-install
 npx create-robo my-awesome-robo --ts
 ```
 
-For existing projects, just install `@swc/core` and `typescript` as dev dependencies, whip up a `tsconfig.json` file, and swap out those `.js` files for `.ts`:
+For existing projects, install `@swc/core` and `typescript` as dev dependencies, create a `tsconfig.json` file, and rename your `.js` files to `.ts`:
 
 ```package-install
 npm install --save-dev @swc/core typescript
 ```
 
-Here's an example `tsconfig.json` file to get you started:
+Example `tsconfig.json`:
 
-```json title="tsconfig.json"
+```json
 {
 	"compilerOptions": {
 		"target": "ESNext",
@@ -49,34 +45,65 @@ Here's an example `tsconfig.json` file to get you started:
 
 ## TypeScript Types in Robo.js
 
-Robo.js was born and raised with TypeScript, so it's got native support for all those types. You'll run into common ones like `CommandConfig`, `EventConfig`, `CommandResult`, and `Config`, along with more advanced types like `Plugin` and `Manifest`. Check out this code example of an async Robo command with a custom export config object:
+Robo.js ships with native TypeScript types. Common types include `Config`, `Plugin`, and `Manifest`. Platform-specific types like `CommandConfig` and `EventConfig` are provided by their respective plugins (e.g., `@robojs/discordjs`).
 
-```typescript title="/src/commands/command.ts"
-import { CommandConfig, CommandResult } from 'robo.js'
+Example of a typed async command:
 
-export const config: CommandConfig = {
-	description: 'An async example command'
-}
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/command.ts"
+    import { createCommandConfig } from '@robojs/discordjs'
 
-export default async (): Promise<CommandResult> => {
-	await new Promise((resolve) => setTimeout(resolve, 1000))
-	return 'Waited for 1 second.'
-}
-```
+    export const config = createCommandConfig({
+    	description: 'An async example command'
+    })
 
-Using TypeScript means you'll need types for interactions and other related objects. No worries, just import them straight from Discord.js! Here's an example:
+    export default async () => {
+    	await new Promise((resolve) => setTimeout(resolve, 1000))
+    	return 'Waited for 1 second.'
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/command.js"
+    import { createCommandConfig } from '@robojs/discordjs'
 
-```typescript title="/src/commands/ts-command.ts"
-import { CommandInteraction } from 'discord.js'
+    export const config = createCommandConfig({
+    	description: 'An async example command'
+    })
 
-export default (interaction: CommandInteraction) => {
-	interaction.reply('Hello, TypeScript!')
-}
-```
+    export default async () => {
+    	await new Promise((resolve) => setTimeout(resolve, 1000))
+    	return 'Waited for 1 second.'
+    }
+    ```
+  </Tab>
+</Tabs>
+
+For interaction types, import directly from Discord.js:
+
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/ts-command.ts"
+    import { CommandInteraction } from 'discord.js'
+
+    export default (interaction: CommandInteraction) => {
+    	interaction.reply('Hello, TypeScript!')
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/ts-command.js"
+    export default (interaction) => {
+    	interaction.reply('Hello, TypeScript!')
+    }
+    ```
+  </Tab>
+</Tabs>
 
 ## Building Plugins with TypeScript
 
-Why not build plugins with TypeScript? It's a match made in heaven for better type-safety and an awesome development experience. And the best part? The `robo build plugin` command already takes care of building plugins with TypeScript for you:
+Plugins can be built with TypeScript for better type safety. The `robo build plugin` command handles compilation:
 
 ```package-install
 npx robo build plugin
@@ -84,37 +111,35 @@ npx robo build plugin
 
 ## TypeScript in Config Files
 
-Config files may be in JavaScript format, but TypeScript's still got your back! Just use `@type` annotation comments to harness its power. Editors like VS Code will support these annotations, giving you a smooth sail with autocompletion suggestions and type checking.
+Config files use JavaScript format, but TypeScript's `@type` annotation comments provide type checking and autocompletion in editors like VS Code:
 
-Here's an example of a config file with the GPT plugin:
-
-```javascript title="config/robo.mjs"
+```typescript
+// config/robo.mjs
 // @ts-check
 
 /** @type {import('robo.js').Plugin} */
 const gptPlugin = [
-	'@roboplay/gpt',
+	'@robojs/ai',
 	{
-		// Your GPT plugin config options...
+		// Plugin config options
 	}
 ]
 
 /** @type {import('robo.js').Config} */
 export default {
-	// Your config options...
 	plugins: [gptPlugin]
 }
 ```
 
-In this example, the `@ts-check` and `@type` annotation comments clue in the editor on the types for the variables below. You'll be treated to autocompletion suggestions and type checking as you code, making your code super readable and easy to maintain. 🎉
+The `@ts-check` and `@type` annotations enable autocompletion and type checking in supported editors without requiring the config file itself to be TypeScript.
 
-## Smoothing Imports with Path Aliases 🚀
+## Path Aliases
 
-Do `../../` paths keep showing up in your nightmares? If the answer is a resounding "Yes!", path aliases in TypeScript can be your dreamscape! This superhero of code organization squashes pesky, winding relative imports, paving the way for cleaner, easier-to-navigate code streets.
+Path aliases simplify deep imports by replacing long relative paths with short, readable prefixes.
 
-Slide this setup into your `tsconfig.json`:
+Add aliases to your `tsconfig.json`:
 
-```json title="tsconfig.json"
+```json
 {
 	"compilerOptions": {
 		"paths": {
@@ -125,23 +150,36 @@ Slide this setup into your `tsconfig.json`:
 }
 ```
 
-Now, TypeScript is your faithful sidekick, transforming any `@/robo/` or `@/something/` imports into `src/` and `src/modules/something/` respectively. Think of the `baseUrl` as your trusty map (defaults to the project directory, `.`) that these paths navigate from.
+TypeScript resolves `@/robo/` to `src/` and `@/something/` to `src/modules/something/`. The `baseUrl` defaults to the project root.
 
-Voila! Your import statements turn magical:
+Before and after:
 
-```typescript title="/src/commands/easy-peasy.ts"
-// Before
-import { someVariable } from '../../../../modules/something/commands/someCommand.js'
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/example.ts"
+    // Before
+    import { someVariable } from '../../../../modules/something/commands/someCommand.js'
 
-// After
-import { someVariable } from '@/something/commands/someCommand.js'
-```
+    // After
+    import { someVariable } from '@/something/commands/someCommand.js'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/example.js"
+    // Before
+    import { someVariable } from '../../../../modules/something/commands/someCommand.js'
 
-## Monorepos: Your Codebase Universe 🌐
+    // After
+    import { someVariable } from '@/something/commands/someCommand.js'
+    ```
+  </Tab>
+</Tabs>
 
-Ever wished for a cozy little universe where all your projects could live together? Monorepos are that dream come true! They bundle multiple projects in one repository, transforming code sharing and management into a walk in the park.
+## Monorepos
 
-In this shared utopia, your Robo can coexist with other projects. Here's a typical monorepo layout:
+Monorepos bundle multiple projects in a single repository, making code sharing straightforward. Robo.js works naturally in monorepo setups.
+
+A typical layout:
 
 <Files>
   <Folder name="my-monorepo" defaultOpen disabled>
@@ -161,13 +199,10 @@ In this shared utopia, your Robo can coexist with other projects. Here's a typic
   </Folder>
 </Files>
 
-Although Robo.js and monorepos naturally get along, there's a secret sauce for importing bits across projects – [the magic of TypeScript's path aliases](#smoothing-imports-with-path-aliases-%F0%9F%9A%80) ✨.
+Use path aliases to import from other packages:
 
-Let's configure the path aliases:
-
-```json title="tsconfig.json"
+```json
 {
-	// ... rest of tsconfig.json
 	"compilerOptions": {
 		"paths": {
 			"@/api/*": ["../api/dist/*"],
@@ -178,15 +213,41 @@ Let's configure the path aliases:
 }
 ```
 
-<Callout type="info" title="Just one golden rule!">
-Always reference the compiled files (residing in `/dist`), not the raw `.ts` ones when sharing code across TypeScript projects.
+<Callout type="info">
+**Note:** Always reference compiled files (in `/dist`), not raw `.ts` sources, when sharing code across TypeScript projects in a monorepo.
 </Callout>
 
-With this, `@/api` points to `/api/dist` — home to the compiled files from the `api` project. For example, importing a function from the api project into your Robo.js project is as simple as:
+With this configuration, importing from another package works as expected:
 
-```ts
-// You can now import from other projects in your Robo!
-import { someFunction } from '@/api/someFile.js'
-```
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { someFunction } from '@/api/someFile.js'
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { someFunction } from '@/api/someFile.js'
+    ```
+  </Tab>
+</Tabs>
 
-And voila! Now your projects can freely share and reuse code across your monorepo universe!
+## Next Steps
+
+<Cards>
+  <Card
+    href="./config"
+    title="Configuration"
+    description="Configure TypeScript-related build options."
+  />
+  <Card
+    href="./linting"
+    title="Linting"
+    description="Set up ESLint and Prettier for TypeScript projects."
+  />
+  <Card
+    href="./env-vars"
+    title="Environment Variables"
+    description="Type-safe access to environment variables with the Env API."
+  />
+</Cards>

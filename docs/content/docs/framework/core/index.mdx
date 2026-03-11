@@ -1,31 +1,46 @@
 ---
 title: Core Overview
+description: Foundational concepts and APIs that power every Robo.js project.
 ---
 
-## Modules
+The Core section covers the foundational concepts, APIs, and conventions that every Robo.js project relies on. Whether you are building a Discord bot, an activity, or a web server, these topics apply across all project types.
 
-For larger projects, you can use modules to group similar functionality together as if they were mini-projects within your main project. Each module follows the same file structure.
+## Project Foundations
+
+Every Robo.js project follows a consistent file structure where directories like `src/commands/` and `src/events/` determine functionality automatically. Configuration lives in the `config/` directory, and sensitive values are stored in `.env` files that Robo.js loads at startup.
 
 <Cards>
-	<Card href="./modules.mdx" title={<div className="flex items-center gap-2"><span>Modules</span></div>} description="Stay organized with modules." />
+  <Card href="./file-structure" title="File Structure" description="Standard directories and conventions for Robo.js projects." />
+  <Card href="./config" title="Configuration" description="Customize project behavior, intents, permissions, and Sage mode." />
+  <Card href="./env-vars" title="Environment Variables" description="Manage secrets and mode-specific settings with .env files." />
 </Cards>
-## Documentation
+
+## Data and State
+
+Robo.js provides two built-in systems for managing data. **State** offers fast, in-memory storage for session-scoped values that survive hot reloads but clear on shutdown. **Flashcore** provides persistent key-value storage that survives restarts, with support for external databases through Keyv adapters.
 
 <Cards>
-	<Card href="./config.mdx" title={<div className="flex items-center gap-2"><span>Configuration</span></div>} description="Customize your Robo's behavior and features." />
-	<Card
-		href="./environment-variables.mdx"
-		title={<div className="flex items-center gap-2"><span>Environment Variables</span></div>}
-		description="Learn how to manage environment variables in Robo.js."
-	/>
-	<Card href="./flashcore.mdx" title={<div className="flex items-center gap-2"><span>Flashcore Database</span></div>} description="Persist data in your Robo with ease." />
-	<Card href="./internals.mdx" title={<div className="flex items-center gap-2"><span>Internals</span></div>} description="Understand how Robo.js works under the hood." />
-	<Card href="./linting.mdx" title={<div className="flex items-center gap-2"><span>Linting</span></div>} description="Check your code for errors and style." />
-	<Card href="./logger.mdx" title={<div className="flex items-center gap-2"><span>Logger</span></div>} description="Keep track of what your Robo is doing." />
-	<Card href="./mode.mdx" title={<div className="flex items-center gap-2"><span>Mode</span></div>} description="Define profiles for your Robo session." />
-	<Card href="./modules.mdx" title={<div className="flex items-center gap-2"><span>Modules</span></div>} description="Stay organized with modules." />
-	<Card href="./portal.mdx" title={<div className="flex items-center gap-2"><span>Portal</span></div>} description="Access your Robo's features directly." />
-	<Card href="./files.mdx" title={<div className="flex items-center gap-2"><span>Robo File Structure</span></div>} description="Learn about standard Robo files." />
-	<Card href="./state.mdx" title={<div className="flex items-center gap-2"><span>State Management</span></div>} description="Pass data around with ease." />
-	<Card href="./typescript.mdx" title={<div className="flex items-center gap-2"><span>TypeScript</span></div>} description="Write better code with type safety." />
+  <Card href="./state" title="State Management" description="In-memory data that persists across hot reloads." />
+  <Card href="./flashcore" title="Flashcore Database" description="Persistent key-value storage with namespace and adapter support." />
+</Cards>
+
+## Developer Tools
+
+The built-in logger provides structured output with log levels, child loggers, and custom drains. TypeScript works out of the box with zero configuration. Modes let you run different profiles (development, production, or custom) with distinct environment variables and code paths.
+
+<Cards>
+  <Card href="./logger" title="Logger" description="Structured logging with levels, child loggers, and custom drains." />
+  <Card href="./typescript" title="TypeScript" description="First-class TypeScript support with no setup required." />
+  <Card href="./mode" title="Mode" description="Run different profiles with distinct configs and environment variables." />
+  <Card href="./linting" title="Linting" description="ESLint and Prettier setup for code quality." />
+</Cards>
+
+## Architecture
+
+For larger projects, modules group related commands and events into self-contained units. The Portal API provides runtime access to your project's registered commands, events, and modules. Understanding the internals helps when debugging or extending the framework.
+
+<Cards>
+  <Card href="./modules" title="Modules" description="Organize related commands and events into logical groups." />
+  <Card href="./portal" title="Portal" description="Runtime access to commands, events, and module state." />
+  <Card href="./internals" title="Internals" description="How the CLI, runtime, build process, and Sage work together." />
 </Cards>

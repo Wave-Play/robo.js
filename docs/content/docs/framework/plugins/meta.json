@@ -1,5 +1,5 @@
 {
   "title": "Plugins",
   "icon": "Connect",
-  "pages": ["overview", "install", "create", "seed"]
+  "pages": ["index", "install", "create", "seed"]
 }

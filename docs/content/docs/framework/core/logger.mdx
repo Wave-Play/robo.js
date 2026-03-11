@@ -1,168 +1,262 @@
 ---
 title: Logger
-description: Built-in logger for advanced logging capabilities, custom levels, and drains.
+description: Built-in logger with log levels, child loggers, and custom drains.
 ---
 
-Effective logging is key to understanding and debugging your Robo.js projects. While you can use JavaScript's native `console.log`, Robo.js offers a more advanced `logger` object for enhanced logging capabilities.
-
-<Callout type="info" title="Overview">
-Logs created using logger are not only prettified but also offer additional benefits like custom log levels, custom drains, and integration with your Robo's `/dev` commands and error replies.
-</Callout>
+Robo.js includes a built-in logger that provides structured output, custom log levels, child loggers, and integration with the `/dev` commands and error replies. While `console.log` works, the logger offers additional capabilities for debugging and monitoring.
 
 ## Using the Logger
 
-The logger is available as a global object in your Robo.js project:
+Import the global `logger` instance:
 
-```javascript
-import { logger } from 'robo.js'
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { logger } from 'robo.js'
 
-logger.info('Hello World!')
-```
+    logger.info('Hello World!')
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { logger } from 'robo.js'
+
+    logger.info('Hello World!')
+    ```
+  </Tab>
+</Tabs>
 
 ## Creating a Logger
 
-Create a new Logger instance:
+You can create a new Logger instance with custom settings:
 
-```javascript
-import { Logger } from 'robo.js'
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { Logger } from 'robo.js'
 
-const customLogger = new Logger()
-```
+    const customLogger = new Logger({
+    	level: 'debug',
+    	prefix: 'DiscordLogger',
+    	maxEntries: 200 // Default: 100
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { Logger } from 'robo.js'
 
-You can pass configuration options during instantiation:
+    const customLogger = new Logger({
+    	level: 'debug',
+    	prefix: 'DiscordLogger',
+    	maxEntries: 200 // Default: 100
+    })
+    ```
+  </Tab>
+</Tabs>
 
-```javascript
-const customLogger = new Logger({
-	level: 'debug', // Set log level
-	prefix: 'DiscordLogger', // Prefix For Logs
-	maxEntries: 200 // Default: 100
-})
-```
-
-<Callout type="warn" title="Warning">
-We do not recommend creating your own own Logger instance. Instead, use the default `logger` instance provided by Robo.js.
+<Callout type="warn">
+**Note:** In most cases, use the default `logger` instance provided by Robo.js rather than creating your own.
 </Callout>
 
-## Logging Messages
+## Log Methods
 
-The Logger provides various log methods to log messages at different levels:
+The logger provides methods for different severity levels:
 
-```javascript
-logger.debug('Debugging message')
-logger.info('Info message')
-logger.warn('Warning message')
-logger.error('Error message')
-logger.other('3rd Party message')
-logger.event('Event Patched message')
-```
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    logger.debug('Debugging message')
+    logger.info('Info message')
+    logger.warn('Warning message')
+    logger.error('Error message')
+    logger.log('3rd Party message')
+    logger.event('Event Patched message')
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    logger.debug('Debugging message')
+    logger.info('Info message')
+    logger.warn('Warning message')
+    logger.error('Error message')
+    logger.log('3rd Party message')
+    logger.event('Event Patched message')
+    ```
+  </Tab>
+</Tabs>
 
-The log level determines which messages get logged.
+The configured log level determines which messages appear in output.
 
 ## Log Levels
 
-The available log levels are:
+| Level   | Description                          |
+|---------|--------------------------------------|
+| `trace` | Very detailed debugging messages     |
+| `debug` | Debugging messages                   |
+| `info`  | Informational messages               |
+| `wait`  | Waiting/pending operation messages   |
+| `other` | Third-party or uncategorized output  |
+| `event` | Event-related messages               |
+| `ready` | Ready/startup messages               |
+| `warn`  | Warning messages                     |
+| `error` | Error messages                       |
 
-| Level   | Description                           |
-|---------|---------------------------------------|
-| `trace` | Very **detailed** debugging messages  |
-| `debug` | **Debugging** messages                |
-| `info`  | **Informational** messages            |
-| `warn`  | **Warning** messages                  |
-| `error` | **Error** messages                    |
-
-<Callout type="info">
-#### The default level is `info`.
-</Callout>
+The default level is `info`.
 
 ### Changing Log Level
 
-Change the log level dynamically:
+Update the log level at runtime by calling `logger()` with new options:
 
-```javascript
-logger.level = 'debug' // Enable debug logs
-```
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    logger({ level: 'debug' })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    logger({ level: 'debug' })
+    ```
+  </Tab>
+</Tabs>
 
-## Creating Child Loggers
+## Child Loggers
 
-You can create namespaced child loggers using `logger.fork()`:
+Create namespaced child loggers with `logger.fork()` to identify the source of log output:
 
-```javascript
-const dbLogger = logger.fork('database')
-dbLogger.info('Connection Initiated!')
-```
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const dbLogger = logger.fork('database')
+    dbLogger.info('Connection initiated!')
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const dbLogger = logger.fork('database')
+    dbLogger.info('Connection initiated!')
+    ```
+  </Tab>
+</Tabs>
 
-**This prefixes all logs with "database"**
-
-This is especially useful in plugins or modules where you want to identify the source of the log easily.
+All output from `dbLogger` is prefixed with `database`, making it easy to filter logs by component. This is particularly useful in plugins and modules.
 
 ## Flushing Logs
 
-You can manually flush pending logs:
+Manually flush pending log writes:
 
-```javascript
-await logger.flush()
-```
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    await logger.flush()
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    await logger.flush()
+    ```
+  </Tab>
+</Tabs>
 
-This ensures all buffered log writes finish before proceeding.
+This ensures all buffered writes complete before proceeding.
 
-## Get Recent Logs
+## Retrieving Recent Logs
 
-Retrieve an array of recent log entries from the logger's buffer.
+Access recent log entries from the logger's buffer:
 
-```javascript
-const recentLogs = logger.getRecentLogs()
-```
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const recentLogs = logger.getRecentLogs()
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const recentLogs = logger.getRecentLogs()
+    ```
+  </Tab>
+</Tabs>
 
-<Callout type="info" title="How Much?">
-You can also specify the number of recent logs to retrieve by passing the `count` parameter:
+Specify a count to limit the number of entries returned:
 
-```javascript
-const recent20Logs = logger.getRecentLogs(20) // Default: 50
-```
-
-<Callout type="info">
-This allows you to customize the length of the retrieved log entries, providing flexibility based on your debugging and analysis needs.
-</Callout>
-</Callout>
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    const recent20Logs = logger.getRecentLogs(20) // Default: 25
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    const recent20Logs = logger.getRecentLogs(20) // Default: 25
+    ```
+  </Tab>
+</Tabs>
 
 ## Custom Drains
 
-A unique feature of the Robo.js logger is the ability to define custom drains. A drain is essentially a target where your logs are sent. By default, logs are sent to the console, but you can configure custom drains to redirect them to external logging services or files.
+A drain is a target where log output is sent. By default, logs go to the console. You can configure custom drains to redirect output to external logging services or files.
 
-<Callout type="info" title="Plugin Available">
-Our official plugin [`@roboplay/plugin-better-stack`](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-better-stack) forwards logs to [Better Stack Logs](https://betterstack.com/logs) for a more user-friendly interface and efficient log searching.
+<Callout type="info">
+**Note:** The official [`@robojs/better-stack`](https://github.com/Wave-Play/robo.js/tree/main/packages/plugin-better-stack) plugin forwards logs to [Better Stack Logs](https://betterstack.com/logs) for searchable, centralized logging.
 </Callout>
 
 ### Setting a Custom Drain
 
-You can set a new log drain using the `setDrain()` function or by specifying it in the logger configuration.
+**Using `setDrain()`:**
 
-**Method 1: Using `setDrain()` Function**
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { logger } from 'robo.js'
 
-```javascript
-import { logger } from 'robo.js'
+    async function customDrain(logger: any, level: string, ...data: any[]): Promise<void> {
+    	// Custom drain logic
+    }
 
-function customDrain(logger, level, ...data) {
-	// Your custom drain logic
-}
+    logger().setDrain(customDrain)
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { logger } from 'robo.js'
 
-logger.setDrain(customDrain)
-```
+    async function customDrain(logger, level, ...data) {
+    	// Custom drain logic
+    }
 
-**Method 2: Specifying in the Logger Constructor**
+    logger().setDrain(customDrain)
+    ```
+  </Tab>
+</Tabs>
 
-```javascript
-import { Logger } from 'robo.js'
+**In the Logger constructor:**
 
-const logger = new Logger({
-	drain: customDrain
-})
-```
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    import { Logger } from 'robo.js'
 
-**Method 3: In the `robo.mjs` Configuration**
+    const logger = new Logger({
+    	drain: customDrain
+    })
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    import { Logger } from 'robo.js'
 
-```javascript
-// robo.mjs
+    const logger = new Logger({
+    	drain: customDrain
+    })
+    ```
+  </Tab>
+</Tabs>
+
+**In the `robo.mjs` configuration:**
+
+```typescript
+// config/robo.mjs
 export default {
 	logger: {
 		drain: customDrain
@@ -170,16 +264,47 @@ export default {
 }
 ```
 
-The default drain function looks like this:
+The default drain function writes to the console. All drains must return a `Promise<void>`:
 
-```javascript
-function consoleDrain(logger, level, ...data) {
-	// Default drain logic
-}
-```
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts
+    async function consoleDrain(logger: any, level: string, ...data: any[]): Promise<void> {
+    	// Default drain logic
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js
+    async function consoleDrain(logger, level, ...data) {
+    	// Default drain logic
+    }
+    ```
+  </Tab>
+</Tabs>
 
-## Optimized Logging for Robo.js
+## Performance
 
-Robo.js's logger is optimized for asynchronous operation, ensuring better performance and reliability. It writes logs in parallel and maintains a flush queue to ensure all logs are written, even if the Robo crashes. This optimization is crucial for capturing every detail of your Robo's operation, especially in critical situations.
+The Robo.js logger is optimized for asynchronous operation. It writes logs in parallel and maintains a flush queue to ensure all entries are captured, even during a crash. This is important for diagnosing issues in production.
 
-Additionally, logs from the logger are integrated into the `/dev logs` command and error replies, enabling in-Discord debugging. This feature allows for efficient troubleshooting without the need to switch between different environments.
+Logger output is also integrated into the `/dev logs` command and error replies, enabling in-Discord debugging without switching between environments.
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./config"
+    title="Configuration"
+    description="Configure log levels and drains in your project settings."
+  />
+  <Card
+    href="./internals"
+    title="Internals"
+    description="How the runtime manages logging and other systems."
+  />
+  <Card
+    href="./mode"
+    title="Mode"
+    description="Use modes to change log levels between development and production."
+  />
+</Cards>

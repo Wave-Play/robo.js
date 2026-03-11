@@ -3,13 +3,29 @@ title: Framework Overview
 icon: Blocks
 ---
 
-This section provides detailed documentation on the core components and functionalities that make up the Robo.js framework. Here you'll find in-depth guides on the fundamental architecture, command-line interface, plugin system, and deployment options.
+Robo.js is a full-featured framework for building Discord bots, activities, web servers, and more with minimal boilerplate.
 
-Explore the different components of the Robo.js framework below:
+## What Makes Robo.js Different
+
+Robo.js takes a convention-over-configuration approach, using file-based routing and automatic registration to eliminate the repetitive setup code that most frameworks require. Drop a file in the right directory and it works.
+
+**File-based routing** turns your project structure into your application architecture. Commands, events, API routes, and more are defined by where you place your files, not by manual wiring.
+
+**Built-in database** through Flashcore gives you persistent key-value storage without configuring an external database. Data survives restarts and can be backed up to external adapters.
+
+**Plugin system** lets you add full features with a single command. Plugins can contribute commands, events, middleware, API routes, seed files, and CLI extensions while remaining fully optional.
+
+**CLI tools** handle scaffolding, building, development mode with hot reload, plugin management, and deployment so you can focus on building features.
+
+## Framework Sections
+
+**Core** covers the fundamentals: file structure conventions, configuration, environment variables, TypeScript support, data storage, state management, modules, logging, and more.
+
+**Plugins** explains how to install, create, and distribute plugins that extend Robo.js functionality.
 
 <Cards>
-	<Card href="./framework/core" title="Core" description="Understand the fundamental features and architecture." />
-	<Card href="./framework/cli" title="CLI" description="Use the command-line interface to manage your projects." />
-	<Card href="./framework/plugins" title="Plugins" description="Extend Robo.js functionality with plugins." />
-	<Card href="./framework/hosting" title="Hosting" description="Learn how to deploy your Robo applications." />
+	<Card href="./core" title="Core" description="Understand the fundamental features and architecture." />
+	<Card href="./plugins" title="Plugins" description="Extend Robo.js functionality with plugins." />
+	<Card href="/docs/cli" title="CLI" description="Use the command-line interface to manage your projects." />
+	<Card href="/docs/hosting" title="Hosting" description="Learn how to deploy your Robo applications." />
 </Cards>

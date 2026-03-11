@@ -3,17 +3,15 @@ title: Robo Plugins
 description: Add custom features to your Robo.
 ---
 
-# Robo Plugins
+Robo Plugins let you add features to your Robo with one command and integrate seamlessly thanks to the **[Robo File Structure](../core/file-structure)**. Anyone can **[create a plugin](./create)**.
 
-**Robo Plugins** are special. They let you add features to your **Robo** with one command and integrate seamlessly thanks to the **[Robo File Structure](../core/file-structure.mdx)**. What's more, anyone can **[create a plugin](./create.mdx)**.
-
-You can install and manage plugins in **Robo.js** either using the **[Robo CLI](../cli/robo.mdx)** or manually.
+You can install and manage plugins using the **[Robo CLI](/docs/cli/robo)** or manually.
 
 ## Using Robo CLI
 
-The **Robo CLI** has its own commands install the plugin's **NPM package** and **register it** in your Robo's **[configuration](../core/config.mdx)**.
+The Robo CLI installs the plugin's npm package and registers it in your Robo's **[configuration](../core/config)**.
 
-When dealing with NPM packages, **Robo CLI** will use the executor command's package manager.
+The CLI automatically uses your current package manager:
 
 | Command         | Package Manager |
 | --------------- | --------------- |
@@ -24,13 +22,13 @@ When dealing with NPM packages, **Robo CLI** will use the executor command's pac
 
 ### Install
 
-Run in your terminal, replacing `<package>` with the name of the plugin you want to install (e.g. **[@robojs/ai](./ai)**):
+Run in your terminal, replacing `<package>` with the plugin name:
 
 ```bash
 robo add <package>
 ```
 
-This will install the package and register it in your Robo's **[configuration](../core/config.mdx)**. To install many at once:
+This installs the package and registers it in your Robo's **[configuration](../core/config)**. To install multiple plugins at once:
 
 ```bash
 robo add @robojs/ai @robojs/moderation @robojs/server
@@ -50,27 +48,25 @@ To remove a plugin:
 robo remove <package>
 ```
 
-This will uninstall the package and remove it from your Robo's **[configuration](../core/config.mdx)**.
+This uninstalls the package and removes it from your Robo's **[configuration](../core/config)**.
 
 ### Updates
 
-You can use `robo upgrade` to not only update **Robo.js** itself, but also all installed plugins.
+Update Robo.js and all installed plugins:
 
 ```bash
 robo upgrade
 ```
 
-This will show you a list of updates and changelogs for you to select.
+This shows a list of available updates and changelogs for you to select.
 
 ## Manually
 
-Don't want to use the **Robo CLI**? You can still install plugins manually. It's not as convenient as using the **Robo CLI**, but it's still a straightforward process.
-
-Here's how you can do it:
+You can install plugins manually if you prefer not to use the Robo CLI.
 
 ### Package Manager
 
-Use the package manager of your choice to install the plugin:
+Install the plugin with your package manager:
 
 ```package-install
 npm install <package>
@@ -78,21 +74,22 @@ npm install <package>
 
 ### Register Plugin
 
-**Robo.js** knows which plugins to use by looking the `/config/plugins` directory. 
+Robo.js discovers plugins by scanning the `/config/plugins` directory.
 
-For each plugin you want, create an `.mjs` file in `/config/plugins` with the same name as the plugin's package. The file should export the plugin's configuration.
+For each plugin, create an `.mjs` file in `/config/plugins` with the same name as the plugin's package. The file should export the plugin's configuration:
 
-```javascript title="config/plugins/<package>.mjs"
+```typescript
+// config/plugins/<package>.mjs
 export default {
 	// ... plugin configuration
 }
 ```
 
-Remember to delete the file if you uninstall the **plugin**.
+Remove the file when uninstalling the plugin.
 
-## Learn More
+## Next Steps
 
 <Cards>
-	<Card href="./plugins/create" title="Creating Plugins" description="Make your own plugins for Robo.js." />
-	<Card href="./directory" title="Plugin Directory" description="Browse plugins for your Robo." />
+	<Card href="./create" title="Creating Plugins" description="Make your own plugins for Robo.js." />
+	<Card href="./seed" title="Seeding" description="Automatically add recommended files to your project." />
 </Cards>

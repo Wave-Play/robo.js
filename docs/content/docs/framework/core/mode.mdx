@@ -3,100 +3,94 @@ title: Mode
 description: Profiles for your Robo session with distinct configurations, environment variables, and code.
 ---
 
-# Mode
-	
-**Modes** are a way to define "profiles" for your **Robo** session. Each with its own config(s), environment variables, and code.
-
-Everything is granular. You can even run multiple modes at the same time!
+Modes define profiles for your Robo.js session. Each mode can have its own configuration files, environment variables, and code paths. You can also run multiple modes simultaneously.
 
 ## Running a Mode
 
-To run a custom mode, use the `--mode` flag with the name of the mode you want to run.
+Use the `--mode` flag to activate a custom mode:
 
 ```bash
 robo dev --mode <mode>
 ```
 
-This will make **Robo.js** prioritize files like `.env.<mode>` and `robo.<mode>.js` over the default ones.
+This makes Robo.js prioritize mode-specific files like `.env.<mode>` and `robo.<mode>.js` over the defaults.
 
 <Callout type="info">
-A mode can be any string you want! For example, `beta`, `catgirl`, `strict`, etc. Make sure there's no spaces, commas, and is lowercase.
+**Note:** A mode can be any lowercase string without spaces or commas. For example: `beta`, `staging`, `strict`.
 </Callout>
 
 ## Use Cases
 
-Let's say you have a `beta` mode for testing new features, or different personalities for your AI chatbot. You can use modes to switch between them easily, or even run multiple at the same time!
-
 ### A/B Testing
 
-Got an economy bot and want to see how users react to different settings? Use custom economy modes!
+Test different configurations by running separate modes:
 
 ```bash
 robo dev --mode expensive
 ```
 
-In this use case, you can have a `.env.expensive` file with `ECONOMY_MULTIPLIER="2"` or `ECONOMY_TAX="0.1"` for example.
+A `.env.expensive` file could contain values like `ECONOMY_MULTIPLIER="2"` or `ECONOMY_TAX="0.1"`.
 
 ### AI Personalities
 
-Got multiple chatbots with different personalities? Run them all at once!
+Run multiple chatbot personalities simultaneously:
 
 ```bash
 robo dev --mode catgirl tsundere weirdo
 ```
 
-In this use case, different `.env.<mode>` files can have different bot tokens and custom `ai.<mode>.mjs` config files for each personality.
+Each mode uses a different `.env.<mode>` file with its own bot token and a custom `ai.<mode>.mjs` config file.
 
 ### Beta Testing
 
-Want to test a new feature with a small group of users? Run a `beta` mode!
+Isolate beta features with a dedicated mode:
 
 ```bash
 robo dev --mode beta
 ```
 
-In this use case, you can have a `.env.beta` file with different tokens or configurations for your beta feature, or entirely different bot tokens for example.
+A `.env.beta` file can point to different tokens or feature flags.
 
 ### Experimental Features
 
-Got an idea for a new feature? Run it in a separate mode to test it out!
+Run experimental code in a separate mode:
 
 ```bash
 robo dev --mode gpt4
 ```
 
-In this use case, you can have a `.env.gpt4` file with different tokens or configurations for your GPT-4 feature. There can even be a `smart.gpt4` module folder with commands specific to this mode.
+A `.env.gpt4` file provides different tokens or API keys. A `smart.gpt4` module folder can contain commands specific to this mode.
 
 ### Secure Tokens
 
-Need additional security features enabled only in production? Use mode modules!
+Enable additional security features only in production using mode-specific modules:
 
 ```bash
 robo start
 ```
 
-In this use case, you can have a `security.production` module folder with additional security features enabled only in production mode, such as middleware or rate limiting.
+A `security.production` module folder can contain middleware for rate limiting or other production-only security features.
 
 ### Staging Environments
 
-Have a staging environment for testing before deploying to production? Use a `staging` mode!
+Use a staging mode to test against different databases or services before deploying:
 
 ```bash
 robo start --mode staging
 ```
 
-In this use case, you can have a `.env.staging` file pointing to different databases or services for testing before deploying to production.
+A `.env.staging` file points to staging databases and services.
 
 ## File Conventions
 
-The following **Robo.js** features support modes:
+The following Robo.js features support modes:
 
 - Environment variable files (`.env.<mode>`)
 - Robo config files (`robo.<mode>.js`)
 - Plugin config files (`pluginname.<mode>.js`)
 - Module folders (`module.<mode>`)
 
-When running a mode, **Robo.js** will prioritize files in the following order:
+When a mode is active, Robo.js prioritizes mode-specific files over defaults:
 
 | Mode-based        | Default    |
 | ----------------- | ---------- |
@@ -105,87 +99,118 @@ When running a mode, **Robo.js** will prioritize files in the following order:
 | `ai.<mode>.mjs`   | `ai.mjs`   |
 | `security.<mode>` | `security` |
 
-This means that if you have a `.env.beta` file, it will be used over the default `.env` file. If it doesn't exist, the default `.env` file will be used just like before.
+If a mode-specific file does not exist, the default file is used.
 
-## Modules
+## Mode-Specific Modules
 
-You can also create mode-specific modules by adding a `.<mode>` suffix to the module folder name. This lets you write code that is only loaded when a specific mode is active.
+Create modules that only load when a specific mode is active by adding a `.<mode>` suffix to the module folder name:
 
-```text title="File Structure"'
+```text
 /src/modules
-└── security.production
-    └── /middleware
-        └── /rate-limiting.js
+  security.production
+    /middleware
+      /rate-limiting.ts
 ```
 
-Here rate limits will only be loaded when the `production` mode is active, allowing you to have additional security features enabled only in production.
+The `rate-limiting.ts` middleware loads only when the `production` mode is active. During `robo dev`, it is skipped entirely.
 
-When running `robo dev`, the `rate-limiting.js` middleware will not be loaded, keeping your dev environment fast and clean.
-
-This can also be used to create slash commands only available in certain modes, or even entire features as a whole!
+This pattern also works for slash commands and other features, allowing entire feature sets to be gated behind a mode.
 
 ## Default Modes
 
-Did you know that you are always running a mode? When you run `dev` or `start` commands, **Robo.js** uses `development` or `production` modes respectively. If you have a `NODE_ENV` environment variable set, that will be used instead.
+A mode is always active. The `dev` command uses `development` mode, and the `start` command uses `production` mode. If a `NODE_ENV` environment variable is set, that value is used instead.
 
-Here's how it works:
-
-```bash title="Mode: development"
+```bash
+# Mode: development
 robo dev
 ```
 
-```bash title="Mode: production"
+```bash
+# Mode: production
 robo start
 ```
 
-```bash title="Mode: beta"
+```bash
+# Mode: beta
 NODE_ENV=beta robo dev
 ```
 
-Because a mode is always set, that means you can use files like `.env.development` to set different tokens or configurations for your development environment by default, or vice versa!
+Since a mode is always set, you can use files like `.env.development` for development-specific values by default.
 
 ## Multiple Modes
 
-You can run multiple **Robo** instances with different modes at the same time! This can be useful for testing or running multiple chatbots with different personalities.
+Run multiple modes simultaneously by listing them after the `--mode` flag:
 
 ```bash
 robo dev --mode <mode1> <mode2> <mode3>
 ```
 
-This will run **Robo** with each mode in a separate process as if you ran them individually in separate terminals. Logs will be prefixed with the mode name for easy debugging.
-
-You can run as many modes as you want, but keep in mind that each mode will run in a separate process and use additional resources.
+Each mode runs in a separate process. Logs are prefixed with the mode name for identification.
 
 <Callout type="info">
-You can run multiple bots in a single **RoboPlay** Pod by running multiple modes!
+**Note:** Each mode runs as a separate process, so multiple modes use additional system resources.
 </Callout>
 
 ## JavaScript API
 
-Need even more granular control? You can import `Mode` from `robo.js` and use it in your code.
+The `Mode` object provides runtime access to the current mode:
 
-```js title="src/commands/what-mode.js"'
-import { logger, Mode } from 'robo.js'
+<Tabs items={["TypeScript", "JavaScript"]} groupId="language" persist>
+  <Tab value="TypeScript">
+    ```ts title="src/commands/what-mode.ts"
+    import { logger, Mode } from 'robo.js'
 
-export default () => {
-	if (Mode.is('development')) {
-		logger.info('This mode is being', Mode.color('tested'))
-	}
+    export default () => {
+    	if (Mode.is('development')) {
+    		logger.info('This mode is being', Mode.color('tested'))
+    	}
 
-	return `Running in ${Mode.get()} mode!`
-}
-```
+    	return `Running in ${Mode.get()} mode!`
+    }
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```js title="src/commands/what-mode.js"
+    import { logger, Mode } from 'robo.js'
 
-The `Mode` object has the following methods:
+    export default () => {
+    	if (Mode.is('development')) {
+    		logger.info('This mode is being', Mode.color('tested'))
+    	}
 
-| Method        | Description                                               |
-| ------------- | --------------------------------------------------------- |
-| `color(text)` | Returns a string colored with the current mode's color.   |
-| `get()`       | Returns the current mode.                                 |
-| `is(mode)`    | Returns `true` if the current mode is the specified mode. |
+    	return `Running in ${Mode.get()} mode!`
+    }
+    ```
+  </Tab>
+</Tabs>
 
-This can be useful for conditionally loading features, or even for debugging purposes!
+| Method        | Description                                                                   |
+| ------------- | ----------------------------------------------------------------------------- |
+| `color(text)` | Returns a string colored with the current mode's color.                       |
+| `get()`       | Returns the current mode.                                                     |
+| `is(mode)`    | Returns `true` if the current mode matches.                                   |
+| `isDev()`     | Returns `true` if running via `robo dev`, regardless of the `--mode` setting. |
 
 <Callout type="info">
-You cannot change modes during runtime. Use the `--mode` flag from the **[command line](../../cli/robo)** instead.
+**Note:** Modes cannot be changed at runtime. Use the `--mode` flag from the [command line](/docs/cli/robo) instead.
 </Callout>
+
+## Next Steps
+
+<Cards>
+  <Card
+    href="./env-vars"
+    title="Environment Variables"
+    description="Mode-specific .env files for different environments."
+  />
+  <Card
+    href="./config"
+    title="Configuration"
+    description="Mode-specific configuration files."
+  />
+  <Card
+    href="./modules"
+    title="Modules"
+    description="Create mode-specific modules for conditional features."
+  />
+</Cards>
